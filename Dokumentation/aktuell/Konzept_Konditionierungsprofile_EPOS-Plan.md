@@ -46,12 +46,12 @@
 > nachgezogen: Rechenschritte 7.5 und 7.6, Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur; hier der Kopf, 4.4,
 > 4.6, 5.4 und 8.
 
-**Stand:** 04.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
+**Stand:** 06.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
 Fragen des KP2-Entwurfs entschieden (E56), die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" aufgenommen
 (E57), die acht Fragen des KP3-Entwurfs entschieden, eine davon als Entscheid nach einer Messung (E58), Aufschlag und
 manuelle Aufheizzeit (E59) und die Auslegungsgröße (E60) aufgenommen, beide in 9.9; KP0 bis KP2
-sind umgesetzt, KP3 ist in Rechenweg, Daten, Referenzprojekt und Basis gebaut (Oberfläche O1b–O3 und Welle A offen), die
+sind umgesetzt, KP3 ist in Rechenweg, Daten, Referenzprojekt, Basis und Oberfläche gebaut (O1b, O2 und O3 gebaut, Statuszeilen #779, #780 und die der Welle O3; Berichtsvorlagen in Katalogfassung 16 statt 12; Welle A mit E99 in Arbeit), die
 Reserve ist Nutzereingabe (E64), die Papiere, Wiki-Quellen und der Logbuch-Entwurf (10.5) sind mit KP4 nachgezogen.
 
 **Zweck.** Jede Größe der Raumkonditionierung — Heiz- und Kühlsollwert, Lüftung, innere Gewinne aus Geräten und
@@ -1503,6 +1503,14 @@ ein Testdatenbankschritt und nur der Vollständigkeit halber genannt:
 | #705 (EV1) | „Im Gebäudedialog lässt sich der wirksame U-Wert der Bodenplatte als Wert vorgeben; leer rechnet das Programm die Erdreichkorrektur nach DIN EN ISO 13370. Die Aufheizreserve zeigt am leeren Feld die Vorgabe 20 %, und der Lauf meldet als Hinweis, wenn sie gilt." |
 
 Version vom Anwender: offen.
+
+Oberfläche und Bericht der Aufheizoptimierung (Wellen O1b, O2, O3; Statuszeilen #779, #780 und die der Welle O3), je ein Satz, Version vom Anwender:
+
+| Welle | Satz |
+|---|---|
+| O1b, O2 (Aufschlag, manuell) | „Die Aufheizoptimierung lässt sich um einen Aufschlag in Stunden oder Prozent verlängern, und im Gebäudedialog kann die Aufheizzeit je Gebäude von Hand vorgegeben werden, mit der bemessenen Zeit als Vorschlag.“ |
+| O2 (Gruppe „Aufheizung“) | „Der Bedarfsdialog zeigt in der Gruppe „Aufheizung“ die Aufheizzeit, die Aufheizleistung, die Rampentage und die Hinweise des Laufs und weist die Auslegungsgröße der Heizung aus Auslegungsheizlast und Aufheizzuschlag aus.“ |
+| O3 (Bericht, Vergleich) | „Bericht und Variantenvergleich weisen die Aufheizung je Gebäude aus: Gebäudetafel, Aufheizabsatz im Kurzbericht, neue Vorlagenfelder und die Kennzahlgruppe „Gebäude“ mit der Abweichung je Kennzahl.“ |
 
 Die Sätze der Oberfläche aus KP2 stehen im [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Abschnitt 7.
 

@@ -37435,7 +37435,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>{0} Flächen ohne Nachbarraum: {1} — keinem Gebäude zugeordnet, nicht übernommen.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
-    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es rechnen die Schichten.</value>
+    <value>Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es gilt der U-Wert der Datei, die Schichten liefern R₁ und C₁.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
     <value>Aufbau {0}: Stoffwerte unvollständig oder außerhalb des Bereichs ({1}) — kein Aufbau, nur der U-Wert.</value>
@@ -37637,6 +37637,39 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
     <value>{0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH" xml:space="preserve">
+    <value>{0} Schicht(en) unter der Relevanzschwelle weggelassen (bis 5 mm und je unter 2 % von Widerstand und Wärmekapazität, Folien und Abdichtungen unter 2 % des Widerstands): {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_A" xml:space="preserve">
+    <value>Zuordnungsstufe A (vollständiger Aufbau): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_B" xml:space="preserve">
+    <value>Zuordnungsstufe B (U-Wert der Datei, Aufbau unvollständig): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
+    <value>Zuordnungsstufe C (nur Geometrie): {0} Bauteil(e), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZAUFBAU" xml:space="preserve">
+    <value>{0} Außenbauteil(e) ohne vollständigen Aufbau, {1} m², tragen einen Ersatzaufbau aus {2} Typaufbau(ten) statt masselos zu rechnen (Zuordnungsstufe bleibt B bzw. C).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL" xml:space="preserve">
+    <value>{0} Ersatzaufbau(ten) mit dem Typ nach dem U-Wert statt nach der Baualtersklasse: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG" xml:space="preserve">
+    <value>{0} Ersatzaufbau(ten) ohne Dämmschicht — der U-Wert liegt über dem des Typaufbaus ohne Dämmung: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_BAND" xml:space="preserve">
+    <value>{0} Ersatzaufbau(ten) außerhalb des Abgleichbands (Dämmdicke bis 40 cm, λ das 0,5- bis 3-Fache) — Typaufbau ohne Abgleich: {1}.</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_DICKE" xml:space="preserve">
+    <value>Ersatzaufbau aus „{0}“: Dämmschicht {1} cm, abgeglichen auf U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_LAMBDA" xml:space="preserve">
+    <value>Ersatzaufbau aus „{0}“: λ der tragenden Schicht {1} W/(mK), abgeglichen auf U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_OHNE" xml:space="preserve">
+    <value>Ersatzaufbau aus „{0}“ ohne Abgleich; U = {1} W/(m²K) gilt in der Transmission.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} Luftschicht(en) rechnen als ruhende Luftschicht nach DIN EN ISO 6946.</value>
@@ -44076,6 +44109,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
   </data>
+  <data name="PAUS_HERK_NENNINHALTE_OHNE_KATALOG" xml:space="preserve">
+    <value>Zapfprofil-Katalog nicht geladen: feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
+  </data>
   <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
     <value>kein Wärmeerzeuger im Projekt</value>
   </data>
@@ -46530,6 +46566,84 @@ Chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Nutzungstage im Jahr: {0} (aus Wochenmuster und Feiertagen), abzüglich {1} Ferientage = {2}</value>
   </data>
+  <data name="ZGEO_DATEIKOERPER" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus dem Grundriss ihres Dateikörpers (aus Dateikörper) — Dachschrägen und Höhenversprünge sind vereinfacht: {1}</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_DATEIKOERPER" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus dem Grundriss der Importdatei in der Datei (aus Dateikörper). Dachschrägen und Höhenversprünge sind vereinfacht.</value>
+  </data>
+  <data name="GEXP_DATEI_DATEIKOERPER" xml:space="preserve">
+    <value>Stufe 2: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie sind Prismen aus dem Grundriss der Importdatei, Dachschrägen und Höhenversprünge sind vereinfacht.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS" xml:space="preserve">
+    <value>IFC-Export aus EPOS-Plan, Stufe S3: Raumkörper als Prismen aus dem Grundriss der Importdatei – Dachschrägen und Höhenversprünge vereinfacht.</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
+    <value>Prisma aus dem Grundriss der Importdatei (aus Dateikörper){0}</value>
+  </data>
+  <data name="ZGEO_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>{0} Räume stehen als Prisma aus einer Quelle ohne Nordwinkel; Modell-Nord ist als Nord angenommen: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>Nordwinkel unbekannt, Modell-Nord angenommen — die Importquelle der Grundrisse nennt keinen Nordwinkel; die Bauteilplatten stehen an den Kanten nach Modell-Nord: {0}</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_TEILPLATTEN" xml:space="preserve">
+    <value>{0} Flächen stehen auf mehreren Kanten ihres Prismas; die PlanarGeometry der Fläche zeigt die größte Platte, die Fläche selbst bleibt vollständig: {1}</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_PLATTE" xml:space="preserve">
+    <value>Platte am Prisma aus dem Grundriss der Importdatei (aus Dateikörper), der Kante nach Himmelsrichtung zugeordnet – kein Aufmaß.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
+    <value>{0} Räume: Die Fläche des Grundrisses weicht mehr als 10 % von der Raumfläche der Datei ab (gespeichert wird er trotzdem): {1}</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_HERLEITUNG" xml:space="preserve">
+    <value>Grundriss je Raum: {0} Räume — {1} aus den Bodenflächen des Körpers, {2} aus den Deckenflächen, {3} als konvexe Hülle, {4} aus Raumgrenzen.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_KNOPF" xml:space="preserve">
+    <value>Grundriss übernehmen</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_TITEL" xml:space="preserve">
+    <value>Grundriss übernehmen</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_ANGEBOT" xml:space="preserve">
+    <value>Für {0} Räume liegt ein Grundriss aus der Datei vor, der beim Gebäude noch nicht gespeichert ist.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FRAGE" xml:space="preserve">
+    <value>Den Grundriss von {0} Räumen aus „{1}“ beim Gebäude speichern? Er dient nur der Ansicht und dem Export; die Rechnung bleibt unverändert.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_GESCHRIEBEN" xml:space="preserve">
+    <value>Grundriss von {0} Räumen übernommen.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FEHLER" xml:space="preserve">
+    <value>Grundriss nicht übernommen: {0}</value>
+  </data>
+  <data name="GANS_HERKUNFT_GRUNDRISS" xml:space="preserve">
+    <value>aus Dateikörper (Grundriss)</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_EXPORT" xml:space="preserve">
+    <value>{0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch</value>
+  </data>
+  <data name="GANS_GVERMERK_STUFEN" xml:space="preserve">
+    <value>Stufen im Boden</value>
+  </data>
+  <data name="GANS_GVERMERK_UEBERLAPPUNG" xml:space="preserve">
+    <value>Überlappung</value>
+  </data>
+  <data name="GANS_GVERMERK_SPLITTER" xml:space="preserve">
+    <value>Splitter entfallen</value>
+  </data>
+  <data name="GANS_GVERMERK_KONVEX" xml:space="preserve">
+    <value>konvexe Hülle</value>
+  </data>
+  <data name="GANS_GVERMERK_DACHSCHRAEGE" xml:space="preserve">
+    <value>Dachschräge</value>
+  </data>
+  <data name="GANS_GVERMERK_GESCHOSSLAGE" xml:space="preserve">
+    <value>Boden abseits der Geschosslage</value>
+  </data>
+  <data name="GANS_GVERMERK_FLAECHE" xml:space="preserve">
+    <value>Fläche weicht ab</value>
+  </data>
   <data name="RNP_CSV_MSG_LEER" xml:space="preserve">
     <value>Die Datei enthält keine Zeile.</value>
   </data>
@@ -47235,6 +47349,150 @@ Chart</value>
   <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
     <value>Die manuelle Aufheizzeit gibt es nur für ein Gebäude im Projekt (Knopf „Hülle und Zonen…“), nicht am Katalogsatz.</value>
   </data>
+  <data name="BV_AUFH_NACHTAUSKUEHLSTUNDEN" xml:space="preserve">
+    <value>Nachtauskühlstunden</value>
+  </data>
+  <data name="BV_AUFH_SOMMERLUEFTUNGSSTUNDEN" xml:space="preserve">
+    <value>Sommerlüftungsstunden</value>
+  </data>
+  <data name="BV_AUFH_ZUSTAND" xml:space="preserve">
+    <value>Aufheizoptimierung</value>
+  </data>
+  <data name="BV_AUFH_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit</value>
+  </data>
+  <data name="BV_AUFH_ZEIT_MAX" xml:space="preserve">
+    <value>Längste Aufheizzeit t_auf,max</value>
+  </data>
+  <data name="BV_AUFH_ZEIT_MANUELL" xml:space="preserve">
+    <value>Aufheizzeit manuell</value>
+  </data>
+  <data name="BV_AUFH_LEISTUNG" xml:space="preserve">
+    <value>Aufheizleistung P_auf</value>
+  </data>
+  <data name="BV_AUFH_TAGE" xml:space="preserve">
+    <value>Rampentage</value>
+  </data>
+  <data name="BV_AUFH_STUNDEN" xml:space="preserve">
+    <value>Aufheizstunden Σ</value>
+  </data>
+  <data name="BV_AUFH_LAENGSTE" xml:space="preserve">
+    <value>Längste Rampe</value>
+  </data>
+  <data name="BV_AUFH_BEGRENZT" xml:space="preserve">
+    <value>Tage durch die Absenkdauer begrenzt (W2)</value>
+  </data>
+  <data name="BV_AUFH_UNERREICHBAR" xml:space="preserve">
+    <value>Tage ohne erreichbare Rampe (W1)</value>
+  </data>
+  <data name="BV_AUFH_KAPPUNG" xml:space="preserve">
+    <value>Kappungsstunden an der Heizleistungsgrenze</value>
+  </data>
+  <data name="BV_AUFH_AUFSCHLAG" xml:space="preserve">
+    <value>Aufschlag (Projekteinstellung)</value>
+  </data>
+  <data name="BV_AUFH_AUFSCHLAG_WERT" xml:space="preserve">
+    <value>{0} h / {1} % (es gilt der größere Wert)</value>
+  </data>
+  <data name="BV_AUFH_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegungsgröße Φ_HL + Φ_RH</value>
+  </data>
+  <data name="BV_AUFH_AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>davon Auslegungsheizlast Φ_HL</value>
+  </data>
+  <data name="BV_AUFH_ZUSCHLAG" xml:space="preserve">
+    <value>davon Aufheizzuschlag Φ_RH</value>
+  </data>
+  <data name="BV_AUFH_HINWEISE" xml:space="preserve">
+    <value>Hinweise</value>
+  </data>
+  <data name="BV_AUFH_KURZ_ZEILE" xml:space="preserve">
+    <value>Konditionierung – {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_AUS" xml:space="preserve">
+    <value>aus</value>
+  </data>
+  <data name="BV_AUFH_KURZ_NACHT" xml:space="preserve">
+    <value>Nacht {0}–{1} Uhr</value>
+  </data>
+  <data name="BV_AUFH_KURZ_WOCHENENDE" xml:space="preserve">
+    <value>Wochenende {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_FERIEN" xml:space="preserve">
+    <value>Ferien {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_SAISON" xml:space="preserve">
+    <value>Saison {0}–{1}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_DATUM" xml:space="preserve">
+    <value>d.M.</value>
+  </data>
+  <data name="BV_AUFH_KURZ_KALENDER" xml:space="preserve">
+    <value>eigener Kalender</value>
+  </data>
+  <data name="BV_AUFH_KURZ_VORLAGE" xml:space="preserve">
+    <value>Vorlage „{0}“</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__NACHTAUSKUEHLSTUNDEN" xml:space="preserve">
+    <value>Stunden mit wirksamer Nachtauskühlung des laufenden Gebäudes; leer ohne Nachtauskühlung, nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SOMMERLUEFTUNGSSTUNDEN" xml:space="preserve">
+    <value>Stunden mit eingeschalteter Sommerlüftung des laufenden Gebäudes; leer ohne Sommerlüftung, nur auf dem Weg nach VDI 6007.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSTAND" xml:space="preserve">
+    <value>Zustand der Aufheizoptimierung des laufenden Gebäudes (bemessen, unerreichbar, gekoppelt); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZART" xml:space="preserve">
+    <value>Wirksame Art der Aufheizzeit des laufenden Gebäudes (täglich, fest oder manuell mit Wert); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT" xml:space="preserve">
+    <value>Längste Aufheizzeit t_auf,max des laufenden Gebäudes in Stunden, bei Art manuell der manuelle Wert; leer ohne Aufheizoptimierung oder bei unerreichbarer Bemessung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_MANUELL" xml:space="preserve">
+    <value>Manuelle Aufheizzeit des laufenden Gebäudes in Stunden; leer, wenn das Gebäude der Art des Projekts folgt.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Außentemperatur der Bemessung T_a,B des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZLEISTUNG" xml:space="preserve">
+    <value>Aufheizleistung P_auf des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZQUELLE" xml:space="preserve">
+    <value>Quelle der Aufheizleistung des laufenden Gebäudes (Heizleistungsgrenze, Zielleistung oder gemischt); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE" xml:space="preserve">
+    <value>Tage mit einer Aufheizrampe des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZSTUNDEN" xml:space="preserve">
+    <value>Summe der Rampenstunden des laufenden Gebäudes im Jahr; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_LAENGSTE" xml:space="preserve">
+    <value>Längste Rampe des Jahres des laufenden Gebäudes in Stunden; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_BEGRENZT" xml:space="preserve">
+    <value>Tage, an denen die Absenkdauer die Rampe des laufenden Gebäudes begrenzt hat (W2); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_UNERREICHBAR" xml:space="preserve">
+    <value>Tage ohne erreichbare Rampe bis 48 h des laufenden Gebäudes (W1); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KAPPUNGSSTUNDEN" xml:space="preserve">
+    <value>Kappungsstunden an der Heizleistungsgrenze des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>Stationäre Auslegungsheizlast Φ_HL des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSCHLAG" xml:space="preserve">
+    <value>Aufheizzuschlag Φ_RH des laufenden Gebäudes (Teil der Aufheizleistung über der stationären Last); leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSGROESSE" xml:space="preserve">
+    <value>Auslegungsgröße Φ_HL + Φ_RH des laufenden Gebäudes; leer ohne Aufheizoptimierung.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZHINWEISE" xml:space="preserve">
+    <value>Die Hinweise W1 bis W5 der Aufheizoptimierung des laufenden Gebäudes, je Hinweis eine Zeile; leer ohne Anlass.</value>
+  </data>
+  <data name="VF_HAT__AUFHEIZUNG" xml:space="preserve">
+    <value>Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit Aufheizoptimierung gerechnet?</value>
+  </data>
   <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
     <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten lässt es sich in die Datenbank übernehmen.</value>
   </data>
@@ -47303,6 +47561,46 @@ Chart</value>
   </data>
   <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
     <value>Letzte Simulation</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_SCHALTER" xml:space="preserve">
+    <value>Aufheizoptimierung</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_BEMESSUNG" xml:space="preserve">
+    <value>Bemessung der Aufheizzeit</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ABZUG" xml:space="preserve">
+    <value>Abzug ΔT_K</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_RESERVE" xml:space="preserve">
+    <value>Aufheizreserve ρ</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ART" xml:space="preserve">
+    <value>Art der Aufheizzeit</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_H" xml:space="preserve">
+    <value>Aufschlag (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT" xml:space="preserve">
+    <value>Aufschlag (%)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_MANUELL" xml:space="preserve">
+    <value>Aufheizzeit manuell (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_WERT_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude je Projekt</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE_HINWEIS" xml:space="preserve">
+    <value>Je Projekt die Gebäudetafel mit Lüftungs- und Aufheizwerten; die Abweichung zum Stamm zeigt die Kennzahlgruppe „Gebäude“.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__GEBAEUDE" xml:space="preserve">
+    <value>Die Gebäudetafel des laufenden Stands, ohne Abweichung: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten, auf dem VDI-Weg die Kühl- und Raumkennzahlen, die Lüftungs- und Aufheizzeilen und die Hinweise W1 bis W5; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="BV_A1B_NACHWEIS_STROMSTEUER" xml:space="preserve">
+    <value> · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1}</value>
+    <comment>Stromsteuer-Vermerk der Nachweiszeile der Wirtschaftlichkeit; {0} hocheffizient, {1} räumlicher Zusammenhang (ja/nein klein).</comment>
   </data>
 </root>
 

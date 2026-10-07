@@ -39,8 +39,8 @@ namespace EPOS.Kern.Tests
         private static GebaeudeAufbauzeile AufbauDerZeile(GebaeudeBauteilvorschlag v, string name)
         {
             GebaeudeBauteilzeile z = v.Zeilen.First(x => x.Bauteil.Bezeichner == name);
-            Assert.True(z.Bauteil.ID_Aufbau.HasValue, name + " trägt keinen Aufbau.");
-            return v.Aufbauten.Single(a => a.Aufbau.ID == z.Bauteil.ID_Aufbau.Value);
+            Assert.True((z.Bauteil.ID_Aufbau.HasValue && z.Typaufbau == null), name + " trägt keinen Aufbau.");
+            return v.Dateiaufbauten().Single(a => a.Aufbau.ID == z.Bauteil.ID_Aufbau.Value);
         }
 
         private static int?[] Stamm(GebaeudeAufbauzeile a) => a.Stammbaustoffe.ToArray();
@@ -65,15 +65,15 @@ namespace EPOS.Kern.Tests
             GebaeudeBauteilvorschlag ohne = BauteilvorschlagProbe.Vorschlag(MATERIALHAUS);
             Assert.False(ohne.Abgelehnt);
             Assert.False(ohne.AbgleichAktiv);
-            Assert.Empty(ohne.Aufbauten);
+            Assert.Empty(ohne.Dateiaufbauten());   // BA-2: nur Ersatzaufbauten
             Assert.Empty(ohne.Materialien);
             Assert.Equal(Innenweg.Innenflaechenfaktor, ohne.Innenweg);
 
             GebaeudeBauteilvorschlag v = Mit(MATERIALHAUS);
             Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Select(m => m.ToString())));
             Assert.True(v.AbgleichAktiv);
-            Assert.Equal(6, v.Aufbauten.Count);
-            Assert.All(v.Aufbauten, a =>
+            Assert.Equal(6, v.Dateiaufbauten().Count);
+            Assert.All(v.Dateiaufbauten(), a =>
             {
                 Assert.Equal(Importherkunft.Katalog, a.Herkunft);
                 Assert.Equal(DbWerte.HERKUNFT_KATALOG, a.Aufbau.Herkunft);
@@ -102,13 +102,18 @@ namespace EPOS.Kern.Tests
             Assert.Null(luft.Rho);
             Assert.Null(luft.Cp);
 
-            // Das Dach ohne die Schraffur; Stahlbeton genau (N3), EPS über das Synonym, die Bahn über das Synonym.
+            // Das Dach ohne die Schraffur; Stahlbeton genau (N3), EPS über das Synonym. Die Bahn trifft über das
+            // Synonym die Bitumenbahn (Abdichtungen) und fällt unter die Relevanzregel — benannt am Aufbau.
             GebaeudeAufbauzeile dach = AufbauDerZeile(v, "Dach");
-            FolgeOderUmkehrung(new int?[] { 56, 39, 10 }, Stamm(dach));
+            FolgeOderUmkehrung(new int?[] { 39, 10 }, Stamm(dach));
+            GebaeudeWeggelasseneSchicht bahn = Assert.Single(dach.Weggelassen);
+            Assert.Equal(Schichtrelevanzgrund.Sperre, bahn.Grund);
+            Assert.True(bahn.AnteilR < Schichtrelevanz.ANTEIL_GRENZE);
+            Assert.Contains(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.SCHICHT_UNERHEBLICH);
 
             // Die Kellerdecke bleibt beim U-Wert der Datei.
             GebaeudeBauteilzeile kd = v.Zeilen.Single(z => z.Bauteil.Bezeichner == "Kellerdecke");
-            Assert.Null(kd.Bauteil.ID_Aufbau);
+            Assert.NotNull(kd.Typaufbau);                                   // BA-2: Ersatzaufbau statt masselos
             Assert.Equal(0.35, kd.Bauteil.U_Wert);
             Assert.Equal(Importherkunft.Ifc, kd.HerkunftU);
 
@@ -153,7 +158,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeBauteilvorschlag v = Mit(MATERIALHAUS, Saat(new BaustoffNamenzuordnung("fussbodenaufbau", 5)));
             Assert.False(v.Abgelehnt);
-            Assert.Equal(7, v.Aufbauten.Count);
+            Assert.Equal(7, v.Dateiaufbauten().Count);
             FolgeOderUmkehrung(new int?[] { 5, 10, 36 }, Stamm(AufbauDerZeile(v, "Kellerdecke")));
             Assert.Empty(v.OhneTreffer);
             Assert.Equal(Abgleichstufe.Anwender, v.Materialien.Single(m => m.Name == "Fußbodenaufbau").Treffer.Stufe);
@@ -167,11 +172,11 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nullwertprobe_nimmt_die_fehlenden_Werte_aus_dem_Katalog_und_behaelt_lambda_der_Datei()
         {
-            Assert.Empty(BauteilvorschlagProbe.Vorschlag("ifc4_schichten_nullwerte.ifc").Aufbauten);
+            Assert.Empty(BauteilvorschlagProbe.Vorschlag("ifc4_schichten_nullwerte.ifc").Dateiaufbauten());
             GebaeudeBauteilvorschlag v = Mit("ifc4_schichten_nullwerte.ifc");
             Assert.False(v.Abgelehnt);
-            Assert.Equal(4, v.Aufbauten.Count);
-            foreach (GebaeudeAufbauzeile a in v.Aufbauten)
+            Assert.Equal(4, v.Dateiaufbauten().Count);
+            foreach (GebaeudeAufbauzeile a in v.Dateiaufbauten())
             {
                 Assert.Equal(Importherkunft.Katalog, a.Herkunft);
                 for (int i = 0; i < a.Aufbau.Schichten.Count; i++)
@@ -183,7 +188,7 @@ namespace EPOS.Kern.Tests
                         Assert.Null(a.Stammbaustoffe[i]);                                   // Putz, Mauerwerk, Beton: Werte der Datei
                 }
             }
-            Assert.All(v.Aufbauten, a => Assert.Contains(36, a.Stammbaustoffe.Where(x => x.HasValue).Select(x => x.Value)));
+            Assert.All(v.Dateiaufbauten(), a => Assert.Contains(36, a.Stammbaustoffe.Where(x => x.HasValue).Select(x => x.Value)));
         }
 
         // =====================================================================
@@ -200,14 +205,14 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeBauteilvorschlag ohne = BauteilvorschlagProbe.Vorschlag("gbxml_haus_si.xml");
             GebaeudeBauteilvorschlag v = Mit("gbxml_haus_si.xml");
-            Assert.Equal(ohne.Aufbauten.Count, v.Aufbauten.Count);
-            for (int j = 0; j < v.Aufbauten.Count; j++)
+            Assert.Equal(ohne.Dateiaufbauten().Count, v.Dateiaufbauten().Count);
+            for (int j = 0; j < v.Dateiaufbauten().Count; j++)
             {
-                Assert.Equal(Importherkunft.GbXml, v.Aufbauten[j].Herkunft);
-                Assert.Equal(ohne.Aufbauten[j].Aufbau.Schichten.Select(s => (s.Dicke, s.Lambda, s.Rho, s.Cp)),
-                             v.Aufbauten[j].Aufbau.Schichten.Select(s => (s.Dicke, s.Lambda, s.Rho, s.Cp)));
-                Assert.All(v.Aufbauten[j].Stammbaustoffe, x => Assert.Null(x));
-                Assert.Empty(v.Aufbauten[j].Baustoffquellen);
+                Assert.Equal(Importherkunft.GbXml, v.Dateiaufbauten()[j].Herkunft);
+                Assert.Equal(ohne.Dateiaufbauten()[j].Aufbau.Schichten.Select(s => (s.Dicke, s.Lambda, s.Rho, s.Cp)),
+                             v.Dateiaufbauten()[j].Aufbau.Schichten.Select(s => (s.Dicke, s.Lambda, s.Rho, s.Cp)));
+                Assert.All(v.Dateiaufbauten()[j].Stammbaustoffe, x => Assert.Null(x));
+                Assert.Empty(v.Dateiaufbauten()[j].Baustoffquellen);
             }
             PruefMeldung g = Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.LAMBDA_GEGENPROBE);
             Assert.Equal(PruefStufe.Warnung, g.Stufe);
@@ -242,11 +247,11 @@ namespace EPOS.Kern.Tests
             a.Gebaeude[0].Bauteile.Add(wand);
 
             GebaeudeBauteilvorschlag ohne = BauteilvorschlagProbe.Bilden(a);
-            Assert.Empty(ohne.Aufbauten);
+            Assert.Empty(ohne.Dateiaufbauten());   // BA-2: nur Ersatzaufbauten
 
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, 0, null, null, new GbxmlImportProfil(), null, Saat());
             Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Select(m => m.ToString())));
-            GebaeudeAufbauzeile z = Assert.Single(v.Aufbauten);
+            GebaeudeAufbauzeile z = Assert.Single(v.Dateiaufbauten());
             Assert.Equal(Importherkunft.Katalog, z.Herkunft);
             // Innen → außen (gbXML: erste Schicht außen): Ziegel, Luft, Beton — die Schraffur fällt weg.
             Assert.Equal(new int?[] { 13, null, 9 }, Stamm(z));
@@ -261,10 +266,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "1", "Beton" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.STOFFWERT_UNGUELTIG).Werte);
             Assert.Equal(new[] { "1", "Solid 123456789" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.SCHICHT_VERWORFEN).Werte);
             Assert.Equal(new[] { "1" }, Assert.Single(v.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.LUFTSCHICHT).Werte);
-            // Der U-Wert der Wand kommt aus den Schichten (E45/2) — samt der ruhenden Luftschicht nach Tabelle 8.
+            // Der U-Wert der Datei bleibt neben dem Aufbau stehen (E95-1); der aus den Schichten — samt der ruhenden
+            // Luftschicht nach Tabelle 8 — steht daneben, die Abweichung trägt den Hinweis.
             GebaeudeBauteilzeile w = v.Zeilen.Single(x => x.Kennung == "aw");
-            Assert.Null(w.Bauteil.U_Wert);
-            Assert.Equal(Importherkunft.Katalog, w.HerkunftU);
+            Assert.Equal(0.5, w.Bauteil.U_Wert);
+            Assert.Equal(Importherkunft.GbXml, w.HerkunftU);
+            Assert.Equal(Importherkunft.Katalog, w.HerkunftAufbau);
+            Assert.True(w.UAbweichungHinweis);
+            Assert.Equal(Bauteilzuordnungsstufe.A, w.Stufe);
             double rLuft = Bauteilreduktion.Luftschichtwiderstand(0.04, Waermestromrichtung.Horizontal);
             BauteilvorschlagProbe.Nah(1.0 / (0.13 + 0.1 / 0.5 + rLuft + 0.2 / 2.0 + 0.04), w.USchichten, 1e-12);
         }
@@ -296,11 +305,11 @@ namespace EPOS.Kern.Tests
             int getroffen = mit.Materialien.Count(m => m.BrauchtAbgleich && m.Treffer != null && m.Treffer.Stufe != Abgleichstufe.Keine);
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "{0}: Aufbauten ohne Abgleich {1}, mit {2} (davon KATALOG {3}); Namen {4}, ohne Werte der Datei {5}, davon getroffen {6}; Innenweg {7} → {8}",
-                probe, ohne.Aufbauten.Count, mit.Aufbauten.Count, mit.Aufbauten.Count(a => a.Herkunft == Importherkunft.Katalog),
+                probe, ohne.Dateiaufbauten().Count, mit.Dateiaufbauten().Count, mit.Dateiaufbauten().Count(a => a.Herkunft == Importherkunft.Katalog),
                 mit.Materialien.Count, namen, getroffen, ohne.Innenweg, mit.Innenweg));
             foreach (GebaeudeMaterialzeile m in mit.Materialien)
                 _aus.WriteLine("  " + m + " · Datei " + m.SchichtenAusDatei + " · Katalog " + m.SchichtenAusKatalog);
-            Assert.True(mit.Aufbauten.Count >= ohne.Aufbauten.Count);
+            Assert.True(mit.Dateiaufbauten().Count >= ohne.Dateiaufbauten().Count);
         }
     }
 }

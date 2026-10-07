@@ -57,6 +57,7 @@ Je Größe stehen nebeneinander der Farbwähler, der Farbwert in der Schreibweis
 
 == Gebäudekennzahlen der Konditionierung ==
 {{Anker|gebaeudekennzahlen}}
+{{Anker|aufheizung}}
 
 Gebäude nach VDI 6007 führen neben dem Wärme- und Kältebedarf (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#ergebnisse|Gebäudemodell VDI 6007: Ergebnisse]]) Kennzahlen, die aus Kalendern und Aufheizoptimierung entstehen. Sie stehen im Ergebnis des Gebäudes – bei Zonen je Zone – und im Datenexport; eine Kennzahl, die nicht wirkt, hat weder Wert noch Schlüssel.
 
@@ -65,7 +66,9 @@ Gebäude nach VDI 6007 führen neben dem Wärme- und Kältebedarf (siehe [[Progr
 * '''Aufheizleistung''' mit Quelle – die Leistung in kW, mit der die Rampe rechnet, und ob sie die Heizleistungsgrenze oder die Zielleistung ist.
 * '''Rampentage''', Aufheizstunden und längste Rampe – wie viele Tage mit Rampe das Jahr hat, deren Stunden zusammen und die längste.
 * '''Begrenzte und unerreichbare Tage''' – Tage, an denen die Absenkdauer die Rampe begrenzt, und Tage, an denen die Aufheizleistung nicht reicht.
-* '''Aufheizzuschlag''' und Auslegungsheizlast – die stationäre Auslegungsheizlast plus der Zuschlag der Aufheizung ergibt die Auslegungsgröße der Heizung.
+* '''Kappungsstunden''' – Stunden, in denen die Heizleistungsgrenze die Rampe kappt.
+* {{Anker|auslegungsgroesse}}'''Aufheizzuschlag''' und Auslegungsheizlast – die stationäre Auslegungsheizlast plus der Zuschlag der Aufheizung ergibt die '''Auslegungsgröße''' der Heizung; die ideale Spitze und das Tagesmittel stehen daneben. Die Auslegungsheizlast steht auch ohne Anlagenkopplung.
+* '''Hinweise W1 bis W5''' und die Spalten je Zone – der Bedarfsdialog des Gebäudes führt die Gruppe ''Aufheizung'' mit allen Kennzahlen dieser Liste, den Hinweisen des Laufs und einer Spalte je beheizter Zone.
 
 Der Export nennt dazu je Gebäude den Zustand der Aufheizung, die Bemessung, die Art und die Quelle der Leistung als Text und die Zahlen als eigene Schlüssel, nur bei eingeschalteter Aufheizoptimierung.
 

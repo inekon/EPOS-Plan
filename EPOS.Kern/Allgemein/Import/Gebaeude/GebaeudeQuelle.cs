@@ -69,6 +69,12 @@ namespace WindowsFormsApplication1
         public int FehlendeEntitaeten { get; }
 
         /// <summary>
+        /// HC-5c: der Nordwinkel der Datei [°], wie der Leser ihn liefert (<see cref="GebaeudeAbbild.NordwinkelGrad"/>);
+        /// <c>null</c> = die Datei nennt keinen. Geschrieben normiert nach <c>Tab_Importquelle.Nordwinkel_Grad</c>.
+        /// </summary>
+        public double? NordwinkelGrad { get; init; }
+
+        /// <summary>
         /// Schneidet jeden Pfadanteil ab — unter Windows <c>\</c>, unter iOS und Linux <c>/</c>, und
         /// zwar unabhängig von der Plattform, auf der der Kern gerade läuft
         /// (<see cref="System.IO.Path.GetFileName(string)"/> kennt je Plattform nur ihr Trennzeichen).

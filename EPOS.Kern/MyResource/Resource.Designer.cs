@@ -70,6 +70,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzug ΔT_K ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_ABZUG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_ABZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_ART {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (h) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_AUFSCHLAG_H {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_AUFSCHLAG_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (%) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bemessung der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_BEMESSUNG {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_BEMESSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzeit manuell (h) ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_MANUELL {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizreserve ρ ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_RESERVE {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_RESERVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_SCHALTER {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die manuell ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_AUFH_WERT_MANUELL {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_AUFH_WERT_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe rechnen ähnelt.
         /// </summary>
         public static string ABW_MERKMAL_HEIZKREIS {
@@ -13064,6 +13145,267 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1} ähnelt.
+        /// </summary>
+        public static string BV_A1B_NACHWEIS_STROMSTEUER {
+            get {
+                return ResourceManager.GetString("BV_A1B_NACHWEIS_STROMSTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art der Aufheizzeit ähnelt.
+        /// </summary>
+        public static string BV_AUFH_ART {
+            get {
+                return ResourceManager.GetString("BV_AUFH_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag (Projekteinstellung) ähnelt.
+        /// </summary>
+        public static string BV_AUFH_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("BV_AUFH_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} h / {1} % (es gilt der größere Wert) ähnelt.
+        /// </summary>
+        public static string BV_AUFH_AUFSCHLAG_WERT {
+            get {
+                return ResourceManager.GetString("BV_AUFH_AUFSCHLAG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße Φ_HL + Φ_RH ähnelt.
+        /// </summary>
+        public static string BV_AUFH_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("BV_AUFH_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Auslegungsheizlast Φ_HL ähnelt.
+        /// </summary>
+        public static string BV_AUFH_AUSLEGUNGSHEIZLAST {
+            get {
+                return ResourceManager.GetString("BV_AUFH_AUSLEGUNGSHEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage durch die Absenkdauer begrenzt (W2) ähnelt.
+        /// </summary>
+        public static string BV_AUFH_BEGRENZT {
+            get {
+                return ResourceManager.GetString("BV_AUFH_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ähnelt.
+        /// </summary>
+        public static string BV_AUFH_HINWEISE {
+            get {
+                return ResourceManager.GetString("BV_AUFH_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappungsstunden an der Heizleistungsgrenze ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KAPPUNG {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_AUS {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die d.M. ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_DATUM {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien {0} ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_FERIEN {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Kalender ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_KALENDER {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nacht {0}–{1} Uhr ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_NACHT {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_NACHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison {0}–{1} ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_SAISON {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“ ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_VORLAGE {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenende {0} ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierung – {0} ähnelt.
+        /// </summary>
+        public static string BV_AUFH_KURZ_ZEILE {
+            get {
+                return ResourceManager.GetString("BV_AUFH_KURZ_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Rampe ähnelt.
+        /// </summary>
+        public static string BV_AUFH_LAENGSTE {
+            get {
+                return ResourceManager.GetString("BV_AUFH_LAENGSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizleistung P_auf ähnelt.
+        /// </summary>
+        public static string BV_AUFH_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_AUFH_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtauskühlstunden ähnelt.
+        /// </summary>
+        public static string BV_AUFH_NACHTAUSKUEHLSTUNDEN {
+            get {
+                return ResourceManager.GetString("BV_AUFH_NACHTAUSKUEHLSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommerlüftungsstunden ähnelt.
+        /// </summary>
+        public static string BV_AUFH_SOMMERLUEFTUNGSSTUNDEN {
+            get {
+                return ResourceManager.GetString("BV_AUFH_SOMMERLUEFTUNGSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizstunden Σ ähnelt.
+        /// </summary>
+        public static string BV_AUFH_STUNDEN {
+            get {
+                return ResourceManager.GetString("BV_AUFH_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rampentage ähnelt.
+        /// </summary>
+        public static string BV_AUFH_TAGE {
+            get {
+                return ResourceManager.GetString("BV_AUFH_TAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ohne erreichbare Rampe (W1) ähnelt.
+        /// </summary>
+        public static string BV_AUFH_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("BV_AUFH_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzeit manuell ähnelt.
+        /// </summary>
+        public static string BV_AUFH_ZEIT_MANUELL {
+            get {
+                return ResourceManager.GetString("BV_AUFH_ZEIT_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Aufheizzeit t_auf,max ähnelt.
+        /// </summary>
+        public static string BV_AUFH_ZEIT_MAX {
+            get {
+                return ResourceManager.GetString("BV_AUFH_ZEIT_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Aufheizzuschlag Φ_RH ähnelt.
+        /// </summary>
+        public static string BV_AUFH_ZUSCHLAG {
+            get {
+                return ResourceManager.GetString("BV_AUFH_ZUSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizoptimierung ähnelt.
+        /// </summary>
+        public static string BV_AUFH_ZUSTAND {
+            get {
+                return ResourceManager.GetString("BV_AUFH_ZUSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung im Stand „{0}“: Im Vergleich mit {1} wird der Netzbezug von {2} MWh/a bepreist und bewertet (Gruppenregel) — die CO₂-Emissionen betragen dann {3} t/a. Die Tafel weist die Einzelbetrachtung des Standes aus. ähnelt.
         /// </summary>
         public static string BV_FUSSNOTE_GRUPPENREGEL_EMISSION {
@@ -13748,6 +14090,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_TEXT_VARIANTEN {
             get {
                 return ResourceManager.GetString("BV_TEXT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude je Projekt ähnelt.
+        /// </summary>
+        public static string BV_VGL_AUFH_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BV_VGL_AUFH_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Projekt die Gebäudetafel mit Lüftungs- und Aufheizwerten; die Abweichung zum Stamm zeigt die Kennzahlgruppe „Gebäude“. ähnelt.
+        /// </summary>
+        public static string BV_VGL_AUFH_GEBAEUDE_HINWEIS {
+            get {
+                return ResourceManager.GetString("BV_VGL_AUFH_GEBAEUDE_HINWEIS", resourceCulture);
             }
         }
         
@@ -24921,11 +25281,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dachschräge ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_DACHSCHRAEGE {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_DACHSCHRAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche weicht ab ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_FLAECHE {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Boden abseits der Geschosslage ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_GESCHOSSLAGE {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_GESCHOSSLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die konvexe Hülle ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_KONVEX {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_KONVEX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Splitter entfallen ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_SPLITTER {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_SPLITTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufen im Boden ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_STUFEN {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überlappung ähnelt.
+        /// </summary>
+        public static string GANS_GVERMERK_UEBERLAPPUNG {
+            get {
+                return ResourceManager.GetString("GANS_GVERMERK_UEBERLAPPUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
         /// </summary>
         public static string GANS_HERKUNFT_DATEI {
             get {
                 return ResourceManager.GetString("GANS_HERKUNFT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Dateikörper (Grundriss) ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_GRUNDRISS", resourceCulture);
             }
         }
         
@@ -24953,6 +25385,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_KENNZEICHEN {
             get {
                 return ResourceManager.GetString("GANS_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch ähnelt.
+        /// </summary>
+        public static string GANS_KENNZEICHEN_EXPORT {
+            get {
+                return ResourceManager.GetString("GANS_KENNZEICHEN_EXPORT", resourceCulture);
             }
         }
         
@@ -30565,6 +31006,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für {0} Räume liegt ein Grundriss aus der Datei vor, der beim Gebäude noch nicht gespeichert ist. ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_ANGEBOT {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_ANGEBOT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss nicht übernommen: {0} ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_FEHLER {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Grundriss von {0} Räumen aus „{1}“ beim Gebäude speichern? Er dient nur der Ansicht und dem Export; die Rechnung bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_FRAGE {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss von {0} Räumen übernommen. ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_KNOPF {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss übernehmen ähnelt.
+        /// </summary>
+        public static string GEB_NL_GRUNDRISS_TITEL {
+            get {
+                return ResourceManager.GetString("GEB_NL_GRUNDRISS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ (geändert am {1}) ist nicht die Datei des Imports: SHA-256 {2}… statt {3}…. Es wird keine Ansicht gezeigt. ähnelt.
         /// </summary>
         public static string GEB_NL_HASH_ABWEICHEND {
@@ -31426,6 +31921,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe 2: Flächen, Orientierungen und Aufbauten sind die des EPOS-Gebäudemodells; die Raumgeometrie sind Prismen aus dem Grundriss der Importdatei, Dachschrägen und Höhenversprünge sind vereinfacht. ähnelt.
+        /// </summary>
+        public static string GEXP_DATEI_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("GEXP_DATEI_DATEIKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzschichtung {0} ähnelt.
         /// </summary>
         public static string GEXP_DATEI_ERSATZ_AUFBAU {
@@ -31845,6 +32349,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_IFC_DATEI_STUFE_S3 {
             get {
                 return ResourceManager.GetString("GEXP_IFC_DATEI_STUFE_S3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die IFC-Export aus EPOS-Plan, Stufe S3: Raumkörper als Prismen aus dem Grundriss der Importdatei – Dachschrägen und Höhenversprünge vereinfacht. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prisma aus dem Grundriss der Importdatei (aus Dateikörper){0} ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ELEMENT_GRUNDRISS {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ELEMENT_GRUNDRISS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platte am Prisma aus dem Grundriss der Importdatei (aus Dateikörper), der Kante nach Himmelsrichtung zugeordnet – kein Aufmaß. ähnelt.
+        /// </summary>
+        public static string GEXP_IFC_ELEMENT_PLATTE {
+            get {
+                return ResourceManager.GetString("GEXP_IFC_ELEMENT_PLATTE", resourceCulture);
             }
         }
         
@@ -32407,6 +32938,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Flächen stehen auf mehreren Kanten ihres Prismas; die PlanarGeometry der Fläche zeigt die größte Platte, die Fläche selbst bleibt vollständig: {1} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_FLAECHE_TEILPLATTEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_FLAECHE_TEILPLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart „{0}“ hat keine Entsprechung in gbXML; die Datei nennt „Unknown“. ähnelt.
         /// </summary>
         public static string GEXP_PROT_GEBAEUDEART_UNBEKANNT {
@@ -32421,6 +32961,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_GEOMETRIE_ABGELEHNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_ABGELEHNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume stehen als Prisma aus dem Grundriss der Importdatei in der Datei (aus Dateikörper). Dachschrägen und Höhenversprünge sind vereinfacht. ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_GEOMETRIE_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_GEOMETRIE_DATEIKOERPER", resourceCulture);
             }
         }
         
@@ -32538,6 +33087,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEXP_PROT_NACHBARZONE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("GEXP_PROT_NACHBARZONE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nordwinkel unbekannt, Modell-Nord angenommen — die Importquelle der Grundrisse nennt keinen Nordwinkel; die Bauteilplatten stehen an den Kanten nach Modell-Nord: {0} ähnelt.
+        /// </summary>
+        public static string GEXP_PROT_NORDWINKEL_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("GEXP_PROT_NORDWINKEL_ANGENOMMEN", resourceCulture);
             }
         }
         
@@ -38680,6 +39238,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenbauteil(e) ohne vollständigen Aufbau, {1} m², tragen einen Ersatzaufbau aus {2} Typaufbau(ten) statt masselos zu rechnen (Zuordnungsstufe bleibt B bzw. C). ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZAUFBAU {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZAUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ersatzaufbau(ten) außerhalb des Abgleichbands (Dämmdicke bis 40 cm, λ das 0,5- bis 3-Fache) — Typaufbau ohne Abgleich: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZ_BAND {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZ_BAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ersatzaufbau(ten) ohne Dämmschicht — der U-Wert liegt über dem des Typaufbaus ohne Dämmung: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ersatzaufbau(ten) mit dem Typ nach dem U-Wert statt nach der Baualtersklasse: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_FENSTER_ERDREICH {
@@ -38878,6 +39472,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schicht(en) unter der Relevanzschwelle weggelassen (bis 5 mm und je unter 2 % von Widerstand und Wärmekapazität, Folien und Abdichtungen unter 2 % des Widerstands): {1}. ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Schicht(en) ohne Stoff verworfen (Schraffur oder leer: {1}). ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN {
@@ -38901,6 +39504,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_STOFFWERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe A (vollständiger Aufbau): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STUFE_A {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STUFE_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe B (U-Wert der Datei, Aufbau unvollständig): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STUFE_B {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STUFE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnungsstufe C (nur Geometrie): {0} Bauteil(e), {1} m². ähnelt.
+        /// </summary>
+        public static string IMP_BAUTEIL_PROT_STUFE_C {
+            get {
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_STUFE_C", resourceCulture);
             }
         }
         
@@ -38932,7 +39562,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es rechnen die Schichten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau {0}: U-Wert der Datei {1} W/(m²K), aus den Schichten {2} W/(m²K), Abweichung {3} % — es gilt der U-Wert der Datei, die Schichten liefern R₁ und C₁. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_U_ABWEICHUNG {
             get {
@@ -39000,6 +39630,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN {
             get {
                 return ResourceManager.GetString("IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“: Dämmschicht {1} cm, abgeglichen auf U = {2} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_ERSATZAUFBAU_DICKE {
+            get {
+                return ResourceManager.GetString("IMP_ERSATZAUFBAU_DICKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“: λ der tragenden Schicht {1} W/(mK), abgeglichen auf U = {2} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_ERSATZAUFBAU_LAMBDA {
+            get {
+                return ResourceManager.GetString("IMP_ERSATZAUFBAU_LAMBDA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“ ohne Abgleich; U = {1} W/(m²K) gilt in der Transmission. ähnelt.
+        /// </summary>
+        public static string IMP_ERSATZAUFBAU_OHNE {
+            get {
+                return ResourceManager.GetString("IMP_ERSATZAUFBAU_OHNE", resourceCulture);
             }
         }
         
@@ -39675,6 +40332,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_GELESEN {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume: Die Fläche des Grundrisses weicht mehr als 10 % von der Raumfläche der Datei ab (gespeichert wird er trotzdem): {1} ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GRUNDRISS_FLAECHE {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GRUNDRISS_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundriss je Raum: {0} Räume — {1} aus den Bodenflächen des Körpers, {2} aus den Deckenflächen, {3} als konvexe Hülle, {4} aus Raumgrenzen. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_GRUNDRISS_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_GRUNDRISS_HERLEITUNG", resourceCulture);
             }
         }
         
@@ -76634,6 +77309,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil-Katalog nicht geladen: feste Liste 100 … 10 000 l, darüber Raster 1 000 l ähnelt.
+        /// </summary>
+        public static string PAUS_HERK_NENNINHALTE_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("PAUS_HERK_NENNINHALTE_OHNE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung.Nenninhalt.* ({0}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_NENNINHALTE_PARAMETER {
@@ -108572,11 +109256,164 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirksame Art der Aufheizzeit des laufenden Gebäudes (täglich, fest oder manuell mit Wert); leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZART {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hinweise W1 bis W5 der Aufheizoptimierung des laufenden Gebäudes, je Hinweis eine Zeile; leer ohne Anlass. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZHINWEISE {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZHINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizleistung P_auf des laufenden Gebäudes; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZLEISTUNG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle der Aufheizleistung des laufenden Gebäudes (Heizleistungsgrenze, Zielleistung oder gemischt); leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZQUELLE {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Rampenstunden des laufenden Gebäudes im Jahr; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit einer Aufheizrampe des laufenden Gebäudes; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage, an denen die Absenkdauer die Rampe des laufenden Gebäudes begrenzt hat (W2); leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage ohne erreichbare Rampe bis 48 h des laufenden Gebäudes (W1); leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_UNERREICHBAR {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_UNERREICHBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Aufheizzeit t_auf,max des laufenden Gebäudes in Stunden, bei Art manuell der manuelle Wert; leer ohne Aufheizoptimierung oder bei unerreichbarer Bemessung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Längste Rampe des Jahres des laufenden Gebäudes in Stunden; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_LAENGSTE {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_LAENGSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Manuelle Aufheizzeit des laufenden Gebäudes in Stunden; leer, wenn das Gebäude der Art des Projekts folgt. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_MANUELL {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizzuschlag Φ_RH des laufenden Gebäudes (Teil der Aufheizleistung über der stationären Last); leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSCHLAG {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zustand der Aufheizoptimierung des laufenden Gebäudes (bemessen, unerreichbar, gekoppelt); leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSTAND {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur der Bemessung T_a,B des laufenden Gebäudes; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße Φ_HL + Φ_RH des laufenden Gebäudes; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSGROESSE {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSGROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stationäre Auslegungsheizlast Φ_HL des laufenden Gebäudes; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSHEIZLAST {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSHEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Heizung des laufenden Gebäudes aus dem Simulationslauf. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__HEIZWAERME {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__HEIZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kappungsstunden an der Heizleistungsgrenze des laufenden Gebäudes; leer ohne Aufheizoptimierung. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__KAPPUNGSSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__KAPPUNGSSTUNDEN", resourceCulture);
             }
         }
         
@@ -108599,6 +109436,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit wirksamer Nachtauskühlung des laufenden Gebäudes; leer ohne Nachtauskühlung, nur auf dem Weg nach VDI 6007. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__NACHTAUSKUEHLSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__NACHTAUSKUEHLSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mittlere Raumtemperatur in der Nutzungszeit des laufenden Gebäudes; nur auf dem Weg nach VDI 6007. ähnelt.
         /// </summary>
         public static string VF_GEBAEUDE__ERGEBNIS__RAUMTEMPERATUR {
@@ -108613,6 +109459,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_GEBAEUDE__ERGEBNIS__RECHENWEG {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__RECHENWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit eingeschalteter Sommerlüftung des laufenden Gebäudes; leer ohne Sommerlüftung, nur auf dem Weg nach VDI 6007. ähnelt.
+        /// </summary>
+        public static string VF_GEBAEUDE__ERGEBNIS__SOMMERLUEFTUNGSSTUNDEN {
+            get {
+                return ResourceManager.GetString("VF_GEBAEUDE__ERGEBNIS__SOMMERLUEFTUNGSSTUNDEN", resourceCulture);
             }
         }
         
@@ -108712,6 +109567,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_GEBAEUDE__WW_BEDARF {
             get {
                 return ResourceManager.GetString("VF_GEBAEUDE__WW_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenschalter: Hat ein Gebäude des Stands (bzw. irgendeines Stands) mit Aufheizoptimierung gerechnet? ähnelt.
+        /// </summary>
+        public static string VF_HAT__AUFHEIZUNG {
+            get {
+                return ResourceManager.GetString("VF_HAT__AUFHEIZUNG", resourceCulture);
             }
         }
         
@@ -112267,6 +113131,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__TABELLE__ERZEUGER {
             get {
                 return ResourceManager.GetString("VF_STAND__TABELLE__ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudetafel des laufenden Stands, ohne Abweichung: je Gebäude eine Gruppenzeile, darunter Rechenweg, Wärmebedarf, Spitzenlasten, auf dem VDI-Weg die Kühl- und Raumkennzahlen, die Lüftungs- und Aufheizzeilen und die Hinweise W1 bis W5; nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__GEBAEUDE {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__GEBAEUDE", resourceCulture);
             }
         }
         
@@ -123849,11 +124722,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume stehen als Prisma aus dem Grundriss ihres Dateikörpers (aus Dateikörper) — Dachschrägen und Höhenversprünge sind vereinfacht: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_DATEIKOERPER {
+            get {
+                return ResourceManager.GetString("ZGEO_DATEIKOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Paare von Räumen liegen nicht aneinander: die Trennwand liegt bei beiden nicht auf gegenüberliegenden Himmelsseiten; beide stehen getrennt: {1} ähnelt.
         /// </summary>
         public static string ZGEO_NICHT_ANGELEGT {
             get {
                 return ResourceManager.GetString("ZGEO_NICHT_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume stehen als Prisma aus einer Quelle ohne Nordwinkel; Modell-Nord ist als Nord angenommen: {1} ähnelt.
+        /// </summary>
+        public static string ZGEO_NORDWINKEL_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("ZGEO_NORDWINKEL_ANGENOMMEN", resourceCulture);
             }
         }
         

@@ -325,6 +325,17 @@ namespace WindowsFormsApplication1
             // Ein Paket führt keinen Katalog der Nutzungsprofile; die Kategorie DIN des Ziels steht schon auf der Ausgabe 2025.
             new Stufe(RaumnutzungDinTsSchema.SCHRITT, Art.Katalog,
                       "Kategorie DIN der Nutzungsprofile nach DIN/TS 18599-10:2025-10: Nummern und Namen ohne Werte"),
+            // Ein älteres Paket führt keine Grundrisse je importiertem Raum; die Tabelle entsteht leer, die
+            // Gebäude exportieren schematisch wie vor dem Schritt.
+            new Stufe(RaumgrundrissSchema.SCHRITT, Art.Ddl,
+                      "Grundriss je importiertem Raum (Ringe, Boden, Höhe, Herleitung) an der Importquelle"),
+            // Ein älteres Paket führt kein Kennzeichen des Ersatzaufbaus; die Spalte kommt leer an (= echter Aufbau).
+            new Stufe(TypaufbauSchema.SCHRITT, Art.Ddl,
+                      "Kennzeichen Typaufbau an Projekt- und Katalogaufbau, Saat der Typaufbauten"),
+            // Ein Paket führt keinen Katalog des Strombedarfs (das Ziel führt die drei Sätze samt Saat); die
+            // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
+            new Stufe(StandardlastprofilSchema.SCHRITT, Art.Katalog,
+                      "BDEW-Standardlastprofile Strom 2025 (H25, G25, L25) im Katalog des Strombedarfs"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -169,7 +169,7 @@ gerechneten Anlagen-Eigenverbräuche, die im Strompfad aufaddiert werden:
 
 | Weg | Datenhaltung | Auflösung | Erzeugung |
 |---|---|---|---|
-| **(a) Synthetisches Profil** | `Tab_Stromverbraucher(_STAMM)` mit `Monat_1…Monat_12` [kWh] × `Tab_Stromverbrauchertyp(_STAMM)` mit 168 Stundenspalten `[1]…[168]` (7 Tage × 24 h), Verknüpfung im Projekt über `ID_Stromverbraucher` (Typsatz und Zuordnungszeile der Projektkopie), im Katalog namensbasiert über `Typ`/`Typname`; Projektzuordnung `Z_Projekt_Stromverbraucher` mit Jahressummen-Override `Summe` | 8.760 h | `WPPlan.Core.BhkwPlan.StromWocheToJahr(wo[168], monat[12], out[8760], …)`, danach monatsweise Normierung (×1.000) — Monatswerte werden in **MWh** gepflegt (`Form_EingDBStromverbraucher`), **Ausgabe damit kWh je Stunde (kW)**, konsistent zum Ganglinienpfad |
+| **(a) Synthetisches Profil** | `Tab_Stromverbraucher(_STAMM)` mit `Monat_1…Monat_12` [MWh] × `Tab_Stromverbrauchertyp(_STAMM)` mit 168 Stundenspalten `[1]…[168]` (7 Tage × 24 h), Verknüpfung im Projekt über `ID_Stromverbraucher` (Typsatz und Zuordnungszeile der Projektkopie), im Katalog namensbasiert über `Typ`/`Typname`; Projektzuordnung `Z_Projekt_Stromverbraucher` mit Jahressummen-Override `Summe` | 8.760 h | `WPPlan.Core.BhkwPlan.StromWocheToJahr(wo[168], monat[12], out[8760], …)`, danach monatsweise Normierung (×1.000) — Monatswerte werden in **MWh** gepflegt (`Form_EingDBStromverbraucher`), **Ausgabe damit kWh je Stunde (kW)**, konsistent zum Ganglinienpfad |
 | **(b) Importierte Ganglinie** | `Tab_Stromganglinie(_STAMM)` (Kopf: `Bezeichner`, `Zeitinterval`) + `Tab_StromganglinieDaten(_STAMM)` (eine Zeile je Intervall, **kein Zeitstempelfeld**, Reihenfolge = ID-Reihenfolge); Projektzuordnung `Z_ProjektStromganglinie` | `Zeitinterval` = 1 (Stunden), 4 (Viertelstunden), 60 (Minuten) | Datei-Import, s. 3.2 |
 
 Der Einstieg in beide Wege ist `SimulationStrombedarf.Stromprofil_Strombedarf_berechnen(List<string>)`
@@ -180,7 +180,8 @@ den Feldern `m_szStromspeicher`/`m_ID_Projekt`. Diese Klasse ist der Startpunkt 
 **Korrektur zur Annahme „Tagesverteilung TagV".** `TagVCtrl`/`TagVModel`/`TagVDatenModel` bedienen
 `Tab_DBTagV(_STAMM)` und gehören zum **Wärme**pfad: Die Verknüpfung läuft über den Gebäudetyp, die Verteilung
 wird per `BhkwPlan.StdWerte(...)` auf den Wärmebedarf angewandt. Für den Strom-Lastgang ist `TagV` irrelevant.
-Ein Standardlastprofil-Verfahren (VDI 4655, BDEW-SLP) existiert im Bestand nicht.
+Ein eigenes Standardlastprofil-Verfahren (VDI 4655, BDEW-SLP mit Monatsform und Viertelstunde) existiert im Bestand
+nicht; die BDEW-Standardlastprofile Strom 2025 H25, G25 und L25 stehen als Typprofile im Weg (a) (10, Punkt 1).
 
 **Definition der Last.** Der Strom-Lastgang setzt sich im Bestand aus dem Profil beziehungsweise der Ganglinie
 **plus den gerechneten Anlagen-Eigenverbräuchen** zusammen (Wärmepumpe, Heizstab, Kesselstrom — Letzterer ist
@@ -1222,13 +1223,19 @@ Jede Stufe endet mit einem lauffähigen, vorführbaren Zwischenstand.
 ## 10. Verbleibende offene Punkte
 
 Die Entscheidungsfragen aus Rev. 1 und 2 sind beantwortet und eingearbeitet; der Excel-Export-Umfang ist durch
-die Code-Prüfung entschieden (CSV, 7.2); die Punkte 2, 5 und 8 wurden am 16.08.2026 entschieden und sind
-unten entsprechend markiert. Die Punkte im Einzelnen:
+die Code-Prüfung entschieden (CSV, 7.2); die Punkte 2, 5 und 8 wurden am 16.08.2026 entschieden, Punkt 1 am
+06.10.2026 beantwortet; alle sind unten entsprechend markiert. Die Punkte im Einzelnen:
 
-1. **Dritte Stromprofil-Option.** Belegt sind zwei Wege — synthetisches Profil aus Stromverbraucher ×
-   Typprofil und importierte Stromganglinie (3.1). Welche dritte Option ist gemeint? Denkbar wären ein geplantes
-   Standardlastprofil-Verfahren (BDEW-SLP / VDI 4655, im Bestand nicht vorhanden), die Unterscheidung
-   Stamm- gegenüber Projektganglinie oder der Anlagen-Eigenbedarf als eigenständiger dritter Beitrag.
+1. **Dritte Stromprofil-Option — beantwortet (06.10.2026, Welle SLP25): jetzt keine dritte Option.** Belegt
+   sind zwei Wege — synthetisches Profil aus Stromverbraucher × Typprofil und importierte Stromganglinie (3.1).
+   Die BDEW-Standardlastprofile Strom 2025 H25, G25 und L25 laufen als **Typprofile im Weg (a)**: gesperrte
+   Katalogsätze `BDEW_H25_Haushalt`, `BDEW_G25_Gewerbe`, `BDEW_L25_Landwirtschaft` mit Typprofil `BDEW_H25` usw.,
+   zwölf Monatswerte mit der Summe 1.000 MWh (H25 mit Dynamisierung), Wochenprofil aus dem Jahresmittel der drei
+   Typtage, Feiertage über den Betriebskalender (Schemaschritt `StandardlastprofilSchema`, Ableitung
+   `Werkzeuge/Standardlastprofile`). Ein **natives BDEW-Verfahren** mit Monatsform der Typtage, Viertelstunde und
+   Dynamisierung je Tag (12 × 3 × 96 Werte, 35.040 Viertelstunden) wäre die dritte Option; es bleibt
+   **zurückgestellt** (eigenes Konzept bei Bedarf). P25 und S25 werden nicht aufgenommen: Sie bilden den Netzbezug
+   von Haushalten mit Photovoltaik bzw. Photovoltaik und Speicher ab, die EPOS-Plan selbst rechnet.
 2. **Ergebnisreihen — beantwortet (16.08.2026): nicht persistieren.** SoC-Gang und Geldwertreihe werden bei
    Bedarf neu gerechnet; persistiert werden nur die Kennzahlen in `Tab_ErgebnisStromspeicher`, Reihen auf
    Wunsch als CSV-Export (8.4).

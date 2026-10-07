@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
             (KennzahlenKatalog.GR_ENERGIE, "energiebilanz"),
             (KennzahlenKatalog.GR_EFFIZIENZ, "effizienz"),
             (KennzahlenKatalog.GR_KAELTE, "kaelte"),
+            (KennzahlenKatalog.GR_GEBAEUDE, "gebaeude"),
             (KennzahlenKatalog.GR_EMISSION, "emissionen"),
             (KennzahlenKatalog.GR_KOSTEN, "kosten"),
         };

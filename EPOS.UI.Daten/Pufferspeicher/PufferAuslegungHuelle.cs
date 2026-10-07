@@ -636,6 +636,32 @@ namespace WindowsFormsApplication1
             {
                 return Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, ex.Message);
             }
+            catch (Exception ex) when (IstZapfAblehnung(ex))
+            {
+                return Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, Zapfgrund(ex));
+            }
+        }
+
+        /// <summary>
+        /// Die benannten Ablehnungen des Zapfprofil-Rechenwegs, die Vorbelegung und Speichern des Kerns
+        /// erreichen können (Parametersatz, Auslegung, Eingabe) — nur sie werden hier zur Meldung;
+        /// jede andere Ausnahme bleibt ein Fehler.
+        /// </summary>
+        private static bool IstZapfAblehnung(Exception ex) =>
+            ex is ParametersatzException || ex is ZapfAuslegungException || ex is ZapfprofilEingabeException;
+
+        /// <summary>Der Grund einer Zapfprofil-Ablehnung in der Oberflächensprache; ohne Satz die Meldung.</summary>
+        private static string Zapfgrund(Exception ex)
+        {
+            ZapfSatz satz = ex switch
+            {
+                ParametersatzException p => p.Satz,
+                ZapfAuslegungException a => a.Satz,
+                ZapfprofilEingabeException z => z.Satz,
+                _ => null
+            };
+            string text = ZapfprofilHuelle.Satztext(satz);
+            return text.Length > 0 ? text : ex.Message;
         }
 
         /// <summary>
@@ -666,8 +692,17 @@ namespace WindowsFormsApplication1
             bool neu = u == null || u.Neu || !_idPuffer.HasValue;
             int? ziel = neu ? (int?)null : _idPuffer;
             string name = neu ? (u?.Bezeichner ?? "").Trim() : "";
-            PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r, Stufe(d));
-            int id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name, u?.Katalogsatz ?? true);
+            int id;
+            try
+            {
+                PufferAuslegungCtrl.Speichern(_auftrag.IdProjekt, ziel, e, r, Stufe(d));
+                id = PufferAuslegungCtrl.Uebernehmen(_auftrag.IdProjekt, ziel, r, name, u?.Katalogsatz ?? true);
+            }
+            catch (Exception ex) when (IstZapfAblehnung(ex))
+            {
+                // Benannt, nie aus dem Blazor-Ereignis heraus (eine entweichende Ausnahme beendet die Schale).
+                return new PufferUebernahmeErgebnis(false, Format(MyResource.Resource.PAUS_FEHLER_RECHNEN, Zapfgrund(ex)), 0);
+            }
             if (id <= 0)
                 return new PufferUebernahmeErgebnis(false, MyResource.Resource.PAUS_GRUND_SCHREIBFEHLER, 0);
 

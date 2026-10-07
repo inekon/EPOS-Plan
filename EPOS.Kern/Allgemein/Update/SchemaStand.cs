@@ -922,7 +922,18 @@ namespace WindowsFormsApplication1
         /// <see cref="RaumnutzungDinTsSchema.SCHRITT"/>: Name und Quellenhinweis der Kategorie, Nummern und Namen der
         /// 43 Nutzungen ohne Werte, Ids bleiben (<see cref="RaumnutzungDinTsSchema"/>). <b>Ergebnisneutral:</b> Kein
         /// Rechenweg liest den Katalog.
-        public const int Zielversion = RaumnutzungDinTsSchema.SCHRITT;
+        /// Danach, mit dem GRUNDRISS JE IMPORTIERTEM RAUM (HC-5), steht das Ziel auf <see cref="RaumgrundrissSchema.SCHRITT"/>:
+        /// <c>Tab_Raumgrundriss</c>, eine Kindliste der Importquelle (<see cref="RaumgrundrissSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Tabelle; sie entsteht leer.
+        /// Danach, mit den TYPAUFBAUTEN (BA-2), steht das Ziel auf <see cref="TypaufbauSchema.SCHRITT"/>: Spalte
+        /// <c>Typaufbau</c> an Projekt- und Katalogaufbau und die Saat der neun Typaufbauten (<see cref="TypaufbauSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte; kein Referenzprojekt trägt einen Aufbau.
+        /// Danach, mit den BDEW-STANDARDLASTPROFILEN STROM 2025 (SLP25), steht das Ziel auf
+        /// <see cref="StandardlastprofilSchema.SCHRITT"/>: die drei gesperrten Sätze H25, G25 und L25 der „Datenbank
+        /// Strombedarf" — je ein Kopf in <c>Tab_Stromverbraucher_STAMM</c> (Monatswerte, normiert auf 1.000 MWh/a) und ein
+        /// Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c> (168 Wochenstunden), mit Katalogschlüssel und Prüfsumme
+        /// (<see cref="StandardlastprofilSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
+        public const int Zielversion = StandardlastprofilSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

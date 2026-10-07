@@ -475,5 +475,28 @@ namespace EPOS.Kern.Tests
             using (new Kulturvorrichtung("en-US"))
                 Assert.Equal("R1 wall to outside", new GebaeudeAnsichtTexte().Gruppenname(Randgruppe.R1));
         }
-    }
+    
+        // ---------------------------------------------------------------- HC-5: Exportmodell aus dem Grundriss
+
+        [Fact]
+        public void HC5_Die_Ansicht_im_Import_zeigt_die_Raeume_aus_dem_Grundriss_des_Dateikoerpers()
+        {
+            string pfad = Path.Combine(IfcProbenTests.Ordner(), "ifc4_koerper_nachbarn.ifc");
+            var a = new GebaeudeImportAblauf();
+            using (FileStream s = File.OpenRead(pfad))
+                a.Lesen(s, pfad, new IfcImportProfil());
+            Zonengeometrie z = GebaeudeGrundriss.BildenMitGrundriss(a.Abbild, 0, null, out IReadOnlyList<Raumgrundriss> gr);
+            GebaeudeAnsichtDaten d = GebaeudeImportAnsicht.AnsichtDaten(z, umhaengbar: false, null, a.Abbild.Gebaeude[0]);
+
+            Assert.Equal(gr.Count, d.Geschosse.SelectMany(g => g.Raeume).Count(r => r.AusDateikoerper));
+            Assert.All(d.Geschosse.SelectMany(g => g.Raeume), r => Assert.False(r.Schematisch));
+            Assert.All(d.Koerperraeume, k => Assert.NotNull(k.Prismen));
+            Assert.All(d.Koerper(), k => Assert.Equal(Koerperherkunft.Grundriss, k.Herkunft));
+            Raumgrundriss erster = gr[0];
+            GebaeudeAnsichtKoerper k0 = d.Koerper().First(k => k.Raum.Kennung == erster.Quellkennung || k.Raum.Name == erster.Raumname);
+            Assert.Equal(erster.BodenM, k0.UnterkanteM, 9);
+            Assert.Equal(erster.HoeheM, k0.HoeheM, 9);
+            Assert.Contains(d.Hinweise, h => h.Contains("aus Dateikörper", StringComparison.Ordinal));
+        }
+}
 }

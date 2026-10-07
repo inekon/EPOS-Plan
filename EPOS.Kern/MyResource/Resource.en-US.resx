@@ -37428,7 +37428,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>{0} surfaces without an adjacent space: {1} — assigned to no building, not taken over.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_U_ABWEICHUNG" xml:space="preserve">
-    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the layers are used.</value>
+    <value>Construction {0}: file U-value {1} W/(m²K), from the layers {2} W/(m²K), deviation {3} % — the file U-value applies, the layers provide R₁ and C₁.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_STOFFWERTE_UNVOLLSTAENDIG" xml:space="preserve">
     <value>Construction {0}: material data incomplete or out of range ({1}) — no construction, U-value only.</value>
@@ -37630,6 +37630,39 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_BAUTEIL_PROT_SCHICHT_VERWORFEN" xml:space="preserve">
     <value>{0} layer(s) without a material discarded (hatch or empty: {1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_SCHICHT_UNERHEBLICH" xml:space="preserve">
+    <value>{0} layer(s) below the relevance threshold omitted (up to 5 mm and each below 2 % of resistance and heat capacity, membranes and sealing below 2 % of resistance): {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_A" xml:space="preserve">
+    <value>Assignment level A (complete construction): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_B" xml:space="preserve">
+    <value>Assignment level B (file U-value, construction incomplete): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_STUFE_C" xml:space="preserve">
+    <value>Assignment level C (geometry only): {0} element(s), {1} m².</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZAUFBAU" xml:space="preserve">
+    <value>{0} exterior element(s) without a complete construction, {1} m², carry a substitute construction from {2} type construction(s) instead of being calculated without mass (assignment level stays B or C).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_TYPWECHSEL" xml:space="preserve">
+    <value>{0} substitute construction(s) with the type chosen by U-value instead of construction age class: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_OHNE_DAEMMUNG" xml:space="preserve">
+    <value>{0} substitute construction(s) without insulation layer — the U-value lies above that of the type construction without insulation: {1}.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_ERSATZ_BAND" xml:space="preserve">
+    <value>{0} substitute construction(s) outside the matching band (insulation up to 40 cm, λ 0.5 to 3 times) — type construction without matching: {1}.</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_DICKE" xml:space="preserve">
+    <value>Substitute construction from “{0}”: insulation layer {1} cm, matched to U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_LAMBDA" xml:space="preserve">
+    <value>Substitute construction from “{0}”: λ of the load-bearing layer {1} W/(mK), matched to U = {2} W/(m²K).</value>
+  </data>
+  <data name="IMP_ERSATZAUFBAU_OHNE" xml:space="preserve">
+    <value>Substitute construction from “{0}” without matching; U = {1} W/(m²K) applies to transmission.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_LUFTSCHICHT" xml:space="preserve">
     <value>{0} air layer(s) are calculated as unventilated air layers to EN ISO 6946.</value>
@@ -44069,6 +44102,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
   </data>
+  <data name="PAUS_HERK_NENNINHALTE_OHNE_KATALOG" xml:space="preserve">
+    <value>draw-off profile catalogue not loaded: fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
+  </data>
   <data name="PAUS_HERK_RANG1_KEINER" xml:space="preserve">
     <value>no heat generator in the project</value>
   </data>
@@ -46523,6 +46559,84 @@ chart</value>
   <data name="RNP_TXT_NUTZUNGSTAGE_FERIEN" xml:space="preserve">
     <value>Usage days per year: {0} (from weekly pattern and public holidays), minus {1} holiday-period days = {2}</value>
   </data>
+  <data name="ZGEO_DATEIKOERPER" xml:space="preserve">
+    <value>{0} rooms are shown as prisms from the floor plan of their file body (from file body) — sloped roofs and floor steps are simplified: {1}</value>
+  </data>
+  <data name="GEXP_PROT_GEOMETRIE_DATEIKOERPER" xml:space="preserve">
+    <value>{0} rooms are written as prisms from the floor plan of the imported file (from file body). Sloped roofs and floor steps are simplified.</value>
+  </data>
+  <data name="GEXP_DATEI_DATEIKOERPER" xml:space="preserve">
+    <value>Level 2: areas, orientations and constructions are those of the EPOS building model; the room geometry consists of prisms from the floor plan of the imported file, sloped roofs and floor steps are simplified.</value>
+  </data>
+  <data name="GEXP_IFC_DATEI_STUFE_S3_GRUNDRISS" xml:space="preserve">
+    <value>IFC export from EPOS-Plan, level S3: room bodies as prisms from the floor plan of the imported file – sloped roofs and floor steps simplified.</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_GRUNDRISS" xml:space="preserve">
+    <value>Prism from the floor plan of the imported file (from file body){0}</value>
+  </data>
+  <data name="ZGEO_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>{0} rooms are prisms from a source without north angle; model north is assumed as north: {1}</value>
+  </data>
+  <data name="GEXP_PROT_NORDWINKEL_ANGENOMMEN" xml:space="preserve">
+    <value>North angle unknown, model north assumed — the import source of the floor plans has no north angle; the element plates stand on the edges by model north: {0}</value>
+  </data>
+  <data name="GEXP_PROT_FLAECHE_TEILPLATTEN" xml:space="preserve">
+    <value>{0} surfaces stand on several edges of their prism; the PlanarGeometry of the surface shows the largest plate, the surface itself stays complete: {1}</value>
+  </data>
+  <data name="GEXP_IFC_ELEMENT_PLATTE" xml:space="preserve">
+    <value>Plate on the prism from the floor plan of the import file (from file body), assigned to the edge by orientation – not a survey.</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_FLAECHE" xml:space="preserve">
+    <value>{0} rooms: the floor plan area differs by more than 10 % from the room area of the file (it is stored anyway): {1}</value>
+  </data>
+  <data name="IMP_GEB_PROT_GRUNDRISS_HERLEITUNG" xml:space="preserve">
+    <value>Floor plan per room: {0} rooms — {1} from the floor faces of the body, {2} from the ceiling faces, {3} as convex hull, {4} from space boundaries.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_KNOPF" xml:space="preserve">
+    <value>Store floor plan</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_TITEL" xml:space="preserve">
+    <value>Store floor plan</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_ANGEBOT" xml:space="preserve">
+    <value>A floor plan from the file is available for {0} rooms that is not yet stored with the building.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FRAGE" xml:space="preserve">
+    <value>Store the floor plan of {0} rooms from “{1}” with the building? It is used only for the view and the export; the calculation remains unchanged.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_GESCHRIEBEN" xml:space="preserve">
+    <value>Floor plan of {0} rooms stored.</value>
+  </data>
+  <data name="GEB_NL_GRUNDRISS_FEHLER" xml:space="preserve">
+    <value>Floor plan not stored: {0}</value>
+  </data>
+  <data name="GANS_HERKUNFT_GRUNDRISS" xml:space="preserve">
+    <value>from file body (floor plan)</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_EXPORT" xml:space="preserve">
+    <value>{0} rooms from file body, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="GANS_GVERMERK_STUFEN" xml:space="preserve">
+    <value>floor steps</value>
+  </data>
+  <data name="GANS_GVERMERK_UEBERLAPPUNG" xml:space="preserve">
+    <value>overlap</value>
+  </data>
+  <data name="GANS_GVERMERK_SPLITTER" xml:space="preserve">
+    <value>slivers dropped</value>
+  </data>
+  <data name="GANS_GVERMERK_KONVEX" xml:space="preserve">
+    <value>convex hull</value>
+  </data>
+  <data name="GANS_GVERMERK_DACHSCHRAEGE" xml:space="preserve">
+    <value>sloped roof</value>
+  </data>
+  <data name="GANS_GVERMERK_GESCHOSSLAGE" xml:space="preserve">
+    <value>floor away from storey level</value>
+  </data>
+  <data name="GANS_GVERMERK_FLAECHE" xml:space="preserve">
+    <value>area differs</value>
+  </data>
   <data name="RNP_CSV_MSG_LEER" xml:space="preserve">
     <value>The file contains no rows.</value>
   </data>
@@ -47228,6 +47342,150 @@ chart</value>
   <data name="KOND_AUFH_MANUELL_KI_NUR_PROJEKT" xml:space="preserve">
     <value>The manual preheat time exists only for a building in the project (button “Envelope and zones…”), not for a catalogue record.</value>
   </data>
+  <data name="BV_AUFH_NACHTAUSKUEHLSTUNDEN" xml:space="preserve">
+    <value>Night purge ventilation hours</value>
+  </data>
+  <data name="BV_AUFH_SOMMERLUEFTUNGSSTUNDEN" xml:space="preserve">
+    <value>Summer ventilation hours</value>
+  </data>
+  <data name="BV_AUFH_ZUSTAND" xml:space="preserve">
+    <value>Preheat optimisation</value>
+  </data>
+  <data name="BV_AUFH_ART" xml:space="preserve">
+    <value>Preheat time mode</value>
+  </data>
+  <data name="BV_AUFH_ZEIT_MAX" xml:space="preserve">
+    <value>Longest preheat time t_auf,max</value>
+  </data>
+  <data name="BV_AUFH_ZEIT_MANUELL" xml:space="preserve">
+    <value>Manual preheat time</value>
+  </data>
+  <data name="BV_AUFH_LEISTUNG" xml:space="preserve">
+    <value>Preheat power P_auf</value>
+  </data>
+  <data name="BV_AUFH_TAGE" xml:space="preserve">
+    <value>Ramp days</value>
+  </data>
+  <data name="BV_AUFH_STUNDEN" xml:space="preserve">
+    <value>Preheat hours Σ</value>
+  </data>
+  <data name="BV_AUFH_LAENGSTE" xml:space="preserve">
+    <value>Longest ramp</value>
+  </data>
+  <data name="BV_AUFH_BEGRENZT" xml:space="preserve">
+    <value>Days limited by the setback duration (W2)</value>
+  </data>
+  <data name="BV_AUFH_UNERREICHBAR" xml:space="preserve">
+    <value>Days without an attainable ramp (W1)</value>
+  </data>
+  <data name="BV_AUFH_KAPPUNG" xml:space="preserve">
+    <value>Capping hours at the heating power limit</value>
+  </data>
+  <data name="BV_AUFH_AUFSCHLAG" xml:space="preserve">
+    <value>Surcharge (project setting)</value>
+  </data>
+  <data name="BV_AUFH_AUFSCHLAG_WERT" xml:space="preserve">
+    <value>{0} h / {1} % (the larger value applies)</value>
+  </data>
+  <data name="BV_AUFH_AUSLEGUNG" xml:space="preserve">
+    <value>Design capacity Φ_HL + Φ_RH</value>
+  </data>
+  <data name="BV_AUFH_AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>of which design heat load Φ_HL</value>
+  </data>
+  <data name="BV_AUFH_ZUSCHLAG" xml:space="preserve">
+    <value>of which heating-up capacity Φ_RH</value>
+  </data>
+  <data name="BV_AUFH_HINWEISE" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="BV_AUFH_KURZ_ZEILE" xml:space="preserve">
+    <value>Conditioning – {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_AUS" xml:space="preserve">
+    <value>off</value>
+  </data>
+  <data name="BV_AUFH_KURZ_NACHT" xml:space="preserve">
+    <value>night {0}:00–{1}:00</value>
+  </data>
+  <data name="BV_AUFH_KURZ_WOCHENENDE" xml:space="preserve">
+    <value>weekend {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_FERIEN" xml:space="preserve">
+    <value>holidays {0}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_SAISON" xml:space="preserve">
+    <value>season {0}–{1}</value>
+  </data>
+  <data name="BV_AUFH_KURZ_DATUM" xml:space="preserve">
+    <value>MMM d</value>
+  </data>
+  <data name="BV_AUFH_KURZ_KALENDER" xml:space="preserve">
+    <value>own calendar</value>
+  </data>
+  <data name="BV_AUFH_KURZ_VORLAGE" xml:space="preserve">
+    <value>template “{0}”</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__NACHTAUSKUEHLSTUNDEN" xml:space="preserve">
+    <value>Hours with effective night purge ventilation of the current building; empty without night purge ventilation, only on the VDI 6007 method.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__SOMMERLUEFTUNGSSTUNDEN" xml:space="preserve">
+    <value>Hours with summer ventilation switched on in the current building; empty without summer ventilation, only on the VDI 6007 method.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSTAND" xml:space="preserve">
+    <value>Status of the preheat optimisation of the current building (designed, unattainable, coupled); empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZART" xml:space="preserve">
+    <value>Effective preheat time mode of the current building (daily, fixed or manual with its value); empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT" xml:space="preserve">
+    <value>Longest preheat time t_auf,max of the current building in hours, with the manual mode the manual value; empty without preheat optimisation or with an unattainable design.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_MANUELL" xml:space="preserve">
+    <value>Manual preheat time of the current building in hours; empty if the building follows the project mode.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZ_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Outdoor design temperature T_a,B of the preheat design of the current building; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZLEISTUNG" xml:space="preserve">
+    <value>Preheat power P_auf of the current building; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZQUELLE" xml:space="preserve">
+    <value>Source of the preheat power of the current building (heating power limit, target power or mixed); empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE" xml:space="preserve">
+    <value>Days with a preheat ramp of the current building; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZSTUNDEN" xml:space="preserve">
+    <value>Total ramp hours of the current building per year; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_LAENGSTE" xml:space="preserve">
+    <value>Longest ramp of the year of the current building in hours; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_BEGRENZT" xml:space="preserve">
+    <value>Days on which the setback duration limited the ramp of the current building (W2); empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZTAGE_UNERREICHBAR" xml:space="preserve">
+    <value>Days without an attainable ramp up to 48 h of the current building (W1); empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__KAPPUNGSSTUNDEN" xml:space="preserve">
+    <value>Capping hours at the heating power limit of the current building; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSHEIZLAST" xml:space="preserve">
+    <value>Steady-state design heat load Φ_HL of the current building; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZUSCHLAG" xml:space="preserve">
+    <value>Heating-up capacity Φ_RH of the current building (the part of the preheat power above the steady-state load); empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUSLEGUNGSGROESSE" xml:space="preserve">
+    <value>Design capacity Φ_HL + Φ_RH of the current building; empty without preheat optimisation.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZHINWEISE" xml:space="preserve">
+    <value>The notes W1 to W5 of the preheat optimisation of the current building, one line per note; empty without cause.</value>
+  </data>
+  <data name="VF_HAT__AUFHEIZUNG" xml:space="preserve">
+    <value>Data switch: has a building of the case (or of any case) been calculated with preheat optimisation?</value>
+  </data>
   <data name="GEB_SPERRE_IN_DB_ASSISTENT" xml:space="preserve">
     <value>The building has not been saved in the project yet – it can be saved to the database once the wizard has finished.</value>
   </data>
@@ -47296,6 +47554,46 @@ chart</value>
   </data>
   <data name="WIZ_STECKBRIEF_SIMULATION" xml:space="preserve">
     <value>Last simulation</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_SCHALTER" xml:space="preserve">
+    <value>Preheat optimisation</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_BEMESSUNG" xml:space="preserve">
+    <value>Preheat time design basis</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ABZUG" xml:space="preserve">
+    <value>Deduction ΔT_K</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_RESERVE" xml:space="preserve">
+    <value>Preheat reserve ρ</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_ART" xml:space="preserve">
+    <value>Preheat time mode</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_H" xml:space="preserve">
+    <value>Surcharge (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_AUFSCHLAG_PROZENT" xml:space="preserve">
+    <value>Surcharge (%)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_MANUELL" xml:space="preserve">
+    <value>Manual preheat time (h)</value>
+  </data>
+  <data name="ABW_MERKMAL_AUFH_WERT_MANUELL" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE" xml:space="preserve">
+    <value>Buildings per project</value>
+  </data>
+  <data name="BV_VGL_AUFH_GEBAEUDE_HINWEIS" xml:space="preserve">
+    <value>The building table with ventilation and preheat values per project; the key figure group “Buildings” shows the deviation from the base.</value>
+  </data>
+  <data name="VF_STAND__TABELLE__GEBAEUDE" xml:space="preserve">
+    <value>The building table of the current case, without deviation: one group row per building, below it calculation method, heat demand, peak loads, on the VDI method the cooling and room figures, the ventilation and preheat rows and the notes W1 to W5; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="BV_A1B_NACHWEIS_STROMSTEUER" xml:space="preserve">
+    <value> · Electricity tax: high-efficiency {0}, spatial connection {1}</value>
+    <comment>Stromsteuer-Vermerk der Nachweiszeile der Wirtschaftlichkeit; {0} hocheffizient, {1} räumlicher Zusammenhang (ja/nein klein).</comment>
   </data>
 </root>
 

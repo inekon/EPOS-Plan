@@ -280,7 +280,7 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(new[] { "ID" }.Concat(new[] { "Bezeichner" }).Concat(BaustoffSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
                          Spalten(SchemaKatalog.TAB_BAUSTOFF_STAMM));
-            Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
+            Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly", TypaufbauSchema.SPALTE }),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
             Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
             // Hinter den Spalten von S-C hängt der eigene Zonenschritt der Kühlübergabe (E37,
@@ -422,7 +422,9 @@ namespace EPOS.Kern.Tests
                 v.Rollback();
             }
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
+            // Der Aufbaukatalog trägt allein die Typaufbauten (Schritt 192, BA-2).
+            Assert.Equal((long)TypaufbauSaattabelle.Alle.Count, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM WHERE Typaufbau IS NULL"));
             // Zonen tragen allein die Zonenprojekte 1052 und 1054 (G6d, AK1z; ZonenReferenzprojektWacheTests).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude NOT IN " +
                                   "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054))"));

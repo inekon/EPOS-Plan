@@ -113,6 +113,8 @@ Die Formeln dazu stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|B
 
 '''Die Zuordnung gilt über die ID.''' Jede Zuordnungszeile des Projekts zeigt auf ihre Projektkopie — wie bei Brauchwasser und Prozesswaerme. Kopf- und Typsatz werden nur im eigenen Projekt gelesen, und die gepflegte Jahressumme der Zuordnungszeile skaliert genau diese Kopie; ein gleichnamiges Profil eines anderen Projekts rechnet nicht mit.
 
+'''BDEW-Standardlastprofile.''' Der Katalog „Datenbank Strombedarf" führt die Standardlastprofile Strom 2025 des BDEW für Haushalt (H25), Gewerbe allgemein (G25) und Landwirtschaftsbetriebe (L25) als gesperrte Sätze. Ihre zwölf Monatswerte summieren auf 1 000 MWh — die Normierung des BDEW auf 1 Mio. kWh Jahresverbrauch —; im Projekt gilt der Jahresverbrauch der Zuordnung, auf den die Monatswerte skaliert werden. Das Wochenprofil ist das Jahresmittel der drei Typtage des BDEW: Montag bis Freitag der Werktag, Samstag der Samstag, Sonntag der Sonn- und Feiertag, je Stunde die Summe der vier Viertelstunden. Die Monatswerte des Haushaltsprofils enthalten die Dynamisierung des BDEW über das Jahr. Feiertage rechnen wie Sonntag, wenn die Zuordnung einen Betriebskalender mit „Feiertag wie Sonntag" und dem Bundesland trägt; ohne Kalender zählt ein Feiertag als Werktag.
+
 Ein Profil '''ohne Typbezug''' geht mit '''Anteil 0''' ein und wird gemeldet; die uebrigen Profile rechnen vollstaendig. '''Bricht die Profilrechnung ab''' — unlesbare Monats- oder Wochenfelder —, '''bricht der ganze Simulationslauf ab''': Ein Ergebnis mit leerem Stromprofil saehe vollstaendig aus und waere keines.
 
 === 2. Von Stunden auf Viertelstunden ===
@@ -214,6 +216,7 @@ Die Peak-Shaving-Maske sucht die '''kleinste erreichbare Netzbezugsspitze''' zu 
 * '''Keine Blindleistung, keine Phasen, keine Spannungsebene.''' <math>P(k)</math> ist Wirkleistung.
 * '''Kein Gleichzeitigkeitsfaktor.''' Die Summe in (2) ist ungedaempft; wer eine Gleichzeitigkeit abbilden will, tut es ueber die Jahressummen.
 * '''Der Wochengang ist ein Muster''' — wie bei den beiden Waermeprofilen: Feiertage und Betriebsferien legt ein Betriebskalender darauf; die Monatsmenge aendert allein dessen Schalter „Ferien kuerzen die Monatsmenge".
+* '''Standardlastprofile als Wochenprofil.''' Ein BDEW-Profil geht mit einer Tagesform je Typtag für das ganze Jahr ein; die je Monat eigene Tagesform des BDEW, die Viertelstunde und die Dynamisierung innerhalb eines Monats entfallen, die Monatsmengen bleiben erhalten.
 * '''Die Vorschau ist nicht der Lauf.''' Der Knopf „Simulation…" des Profildialogs rechnet die AUSGEWAEHLTEN Profile und zaehlt die Stromganglinien bewusst nicht mit; die Gesamtsumme ist dort die Summe der Profile allein, also (4) ohne den zweiten Summanden von (2). Er belegt ausserdem nur die ersten 8 760 der 35 040 Plaetze, weil er das Stundenraster fuehrt — die Bilder wissen das und zeichnen entsprechend.
 * '''Die Peak-Shaving-Maske schreibt keinen Bedarf.''' Sie schreibt allein ueber „In Variante übernehmen“ Zielschwelle und Adaptiv-Kennzeichen in die aktive Speichervariante (siehe Schritt 7).
 

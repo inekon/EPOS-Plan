@@ -283,7 +283,7 @@ namespace Auslieferungsvorlage.Tests
             Werkzeuglauf.Ergebnis e = Werkzeuglauf.StartenMitAusnahmen(quelldatei, o.Datei("Kenndaten.sqlite"),
                                                            "--beispiele", paket, "--trocken");
             Assert.True(e.Code == 5, e.Alles);
-            Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1)", e.Ausgabe);
+            Assert.Contains("FEHLER  Importablage leer (Tab_Importquelle 1, Tab_Importzuordnung 1, Tab_Raumgrundriss 0)", e.Ausgabe);
         }
 
         // =============================================================================
