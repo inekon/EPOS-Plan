@@ -71,6 +71,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Stundenergebnisse der Lösung je Gebäude und Zone (unskaliert; der offene Schritt der Stepper).</summary>
         internal IReadOnlyList<Stundenergebnis>[] Loesung { get; set; }
+
+        /// <summary>Die größte Anhebung des Raumeinflusses (H2), mit der die Lösung gerechnet wurde [K]; 0 ohne H2.</summary>
+        internal double AnhebungK { get; set; }
     }
 
     /// <summary>
@@ -185,6 +188,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Vorlaufnaht Vorlaufkorrektur { get; set; }
 
+        /// <summary>
+        /// <b>Die echte H2</b> (W4a; <see cref="WindowsFormsApplication1.Raumeinfluss"/>): hebt je Gebäude den Vorlauf der Heizkurve
+        /// im Rand jeder Zone an und führt die Anhebung je Durchlauf aus der Lösung derselben Stunde nach; der
+        /// Projektvorlauf des Angebots ist der der Lösung (angehoben, gekappt). <c>null</c> = ohne Raumeinfluss
+        /// (Zeichen für Zeichen der Kreis ohne H2).
+        /// </summary>
+        internal Raumeinfluss Raumeinfluss { get; set; }
+
+        /// <summary>Stunden, in denen am Kreis ein Heizungspuffer steht und nichts aus ihm entnehmbar ist (Festlegung 22).</summary>
+        internal int StundenSpeicherLeer { get; private set; }
+
         /// <summary>Stunden, in denen die Stützstelle pendelte und die des ersten Durchlaufs festgehalten wurde.</summary>
         internal int StundenFestgehalten { get; private set; }
 
@@ -239,6 +253,8 @@ namespace WindowsFormsApplication1
             int n = _gebaeude.Length;
             double v = vorlaufStartC;
             if (Vorlaufkorrektur != null) v = Vorlaufkorrektur(h, v, null);
+            Raumeinfluss h2 = Raumeinfluss;
+            h2?.StundeBeginnen();
             Stundenangebot s = Angebotsfunktion.Angebot(h, v, _erzeuger, _speicher, vorrang);
 
             // Der Verteilschlüssel (Festlegung 9): der unbegrenzte Probeschritt — nur, wenn es etwas zu verteilen gibt
@@ -286,13 +302,17 @@ namespace WindowsFormsApplication1
                     Kopplungsgebaeude g = _gebaeude[i];
                     Anlagenverfuegbarkeit[] anteil = verteilt[i];
                     double faktor = g.Faktor;
+                    int gi = i;
                     jetzt[i] = Kopie(g.Stepper.Schritt(h, (int zone, int stunde, in Stundenrand r) =>
                     {
                         Anlagenverfuegbarkeit a = anteil[zone < anteil.Length ? zone : anteil.Length - 1];
-                        return r.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
+                        if (h2 == null) return r.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
+                        Stundenrand angehoben = h2.Anheben(gi, zone, r, a.VorlaufC);
+                        return angehoben.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
                     }));
                     heizW[i] = HeizlastW(jetzt[i], faktor);
                 }
+                _anhebungLoesung = h2 != null ? h2.AnhebungMax() : 0.0;
 
                 int wechselnd = 0;
                 if (vorher != null)
@@ -309,6 +329,9 @@ namespace WindowsFormsApplication1
                 (double vNeu, _) = Kreis(jetzt, Faktoren());
                 if (double.IsNaN(vNeu)) vNeu = v;
                 if (Vorlaufkorrektur != null) vNeu = Vorlaufkorrektur(h, vNeu, jetzt);
+                // H2 (Q-AK3-2): die Anhebung aus der Lösung DIESER Stunde. Der Projektvorlauf des Angebots ist der der
+                // Lösung (angehoben und gekappt, wie er gerechnet wurde); am Fixpunkt stimmen beide überein.
+                double dH2 = h2 != null ? h2.Nachfuehren(jetzt) : 0.0;
                 Stundenangebot sNeu = Angebotsfunktion.Angebot(h, vNeu, _erzeuger, _speicher, vorrang);
                 if (Stuetzstelle != null && !double.IsNaN(vNeu))
                 {
@@ -334,8 +357,10 @@ namespace WindowsFormsApplication1
                 dV = Math.Abs(vNeu - v);
                 dS = Math.Abs(sNeu.LeistungKw - s.LeistungKw) * 1000.0;
                 // Gleiches Angebot ⇒ der nächste Schritt wäre derselbe (der Vorlauf wirkt nur über das Angebot).
-                bool gleich = sNeu.LeistungKw.Equals(s.LeistungKw) && Gleich(sNeu.VorlaufC, s.VorlaufC) && sNeu.Grund == s.Grund;
-                bool klein = dV <= ABBRUCH_VORLAUF_K && dS <= ABBRUCH_SCHRANKE_W && vorher != null && wechselnd == 0;
+                bool gleich = sNeu.LeistungKw.Equals(s.LeistungKw) && Gleich(sNeu.VorlaufC, s.VorlaufC) && sNeu.Grund == s.Grund
+                              && dH2 == 0.0;
+                bool klein = dV <= ABBRUCH_VORLAUF_K && dS <= ABBRUCH_SCHRANKE_W && vorher != null && wechselnd == 0
+                             && dH2 <= ABBRUCH_VORLAUF_K;
                 if (gleich || klein)
                     return Abschliessen(k, jetzt, heizW, s, vNeu, false);
 
@@ -349,7 +374,13 @@ namespace WindowsFormsApplication1
         internal void Festschreiben(int h)
         {
             foreach (Kopplungsgebaeude g in _gebaeude) g.Stepper.Festschreiben(h);
+            Raumeinfluss?.Festschreiben(_letzteLoesung);
         }
+
+        private IReadOnlyList<Stundenergebnis>[] _letzteLoesung;
+
+        /// <summary>Die größte Anhebung, mit der die Lösung des letzten Durchlaufs gerechnet wurde [K].</summary>
+        private double _anhebungLoesung;
 
         // ----------------------------------------------------------------------------------------------
 
@@ -381,6 +412,8 @@ namespace WindowsFormsApplication1
             DurchlaeufeVerteilung[durchlaeufe]++;
             if (durchlaeufe > DurchlaeufeMax) DurchlaeufeMax = durchlaeufe;
             if (schranke) StundenAnDerSchranke++;
+            if (_speicher != null && _speicher.Vorhanden && !(s.SpeicherKw > 0.0)) StundenSpeicherLeer++;
+            _letzteLoesung = loesung;
             // Die offenen Schritte der Stepper sind die Lösung; Vorlauf und Rücklauf aus ihnen (Festlegung 12).
             (double vor, double rueck) = Kreis(loesung, Faktoren());
             return new Kopplungsstunde
@@ -394,6 +427,7 @@ namespace WindowsFormsApplication1
                 VorlaufKreisC = vorlaufKreisC,
                 Festgehalten = festgehalten,
                 Loesung = loesung,
+                AnhebungK = _anhebungLoesung,
             };
         }
 
