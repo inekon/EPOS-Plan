@@ -332,6 +332,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt kein Kennzeichen des Ersatzaufbaus; die Spalte kommt leer an (= echter Aufbau).
             new Stufe(TypaufbauSchema.SCHRITT, Art.Ddl,
                       "Kennzeichen Typaufbau an Projekt- und Katalogaufbau, Saat der Typaufbauten"),
+            // Ein Paket führt keinen Katalog des Strombedarfs (das Ziel führt die drei Sätze samt Saat); die
+            // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
+            new Stufe(StandardlastprofilSchema.SCHRITT, Art.Katalog,
+                      "BDEW-Standardlastprofile Strom 2025 (H25, G25, L25) im Katalog des Strombedarfs"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

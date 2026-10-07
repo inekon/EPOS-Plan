@@ -98,8 +98,7 @@ namespace Auslieferungsvorlage.Tests
         {
             "Tab_Heizkessel_STAMM", "Tab_PV_STAMM", "Tab_Brennstoff_Stamm", "Tab_DBTagV_STAMM",
             "Tab_Pufferspeicher_STAMM", "Tab_Solarkollektoren_STAMM", "Tab_Solarganglinie_STAMM",
-            "Tab_Stromspeicher_STAMM", "Tab_Stromverbrauchertyp_STAMM", "Tab_Stromverbraucher_STAMM",
-            "Tab_Stromganglinie_STAMM"
+            "Tab_Stromspeicher_STAMM", "Tab_Stromganglinie_STAMM"
         };
 
         /// <summary>Die Argumente samt je einem <c>--ohne-paket</c> fuer jeden leeren Paketteil der Testdatenbank.</summary>

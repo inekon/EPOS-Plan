@@ -720,11 +720,11 @@ und in [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md), Abschnitt 8a. Hier geht es nur 
     im Job `installer` samt Ausnahmeliste (gleich der Liste der Werkzeugtests) und den Kopf-Schritt.
   - `AuslieferungsvorlagenWacheTests` und `BerichtsvorlageDateiWacheTests` halten die Word- und
     Excel-Vorlagen und deren Lieferwege, nicht das Katalogpaket.
-- **Leere Paketteile der Testdatenbank:** Elf Registerkataloge der Testdatenbank führen Zeilen,
+- **Leere Paketteile der Testdatenbank:** Neun Registerkataloge der Testdatenbank führen Zeilen,
   aber keinen Satz mit `ReadOnly = 1`: `Tab_Heizkessel_STAMM`, `Tab_PV_STAMM`,
   `Tab_Brennstoff_Stamm`, `Tab_DBTagV_STAMM`, `Tab_Pufferspeicher_STAMM`,
-  `Tab_Solarkollektoren_STAMM`, `Tab_Solarganglinie_STAMM`, `Tab_Stromspeicher_STAMM`,
-  `Tab_Stromverbrauchertyp_STAMM`, `Tab_Stromverbraucher_STAMM` und `Tab_Stromganglinie_STAMM`.
+  `Tab_Solarkollektoren_STAMM`, `Tab_Solarganglinie_STAMM`, `Tab_Stromspeicher_STAMM` und
+  `Tab_Stromganglinie_STAMM`.
   Der CI-Setup-Lauf und die Werkzeugtests nehmen sie benannt aus. Im Modus `alle` gehen 601
   ungesperrte Zeilen aus 18 Registerkatalogen ohne Schlüssel in die Vorlage; der Bericht weist sie
   aus.
@@ -873,8 +873,8 @@ Der Anwender hat am 06.10.2026 für E1 bis E7 jeweils die Empfehlung gewählt.
 - **E2 Leerer Paketteil eines Registerkatalogs mit Zeilen:** Das Werkzeug bricht mit eigenem
   Rückgabecode ab; je Katalog lässt sich das über eine benannte Ausnahme abschalten
   (`--ohne-paket Tab_PV_STAMM`). Die Testdatenbank im CI-Setup-Lauf läuft mit den benannten
-  Ausnahmen für ihre elf Registerkataloge ohne gesperrten Satz, darunter Heizkessel und PV. Die CI
-  behält diese elf benannten Ausnahmen; die gesperrten Sätze der Testdatenbank werden dafür nicht
+  Ausnahmen für ihre neun Registerkataloge ohne gesperrten Satz, darunter Heizkessel und PV. Die CI
+  behält diese neun benannten Ausnahmen; die gesperrten Sätze der Testdatenbank werden dafür nicht
   gepflegt. Die Liste der Werkzeugtests (`Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK`) und die
   des Jobs `installer` bleiben deckungsgleich (`KatalogpaketSetupWacheTests`). Gebraucht wird sie nur
   im Modus `alle`; im Modus `readonly` leert die ReadOnly-Regel diese Kataloge, auch
@@ -1227,7 +1227,7 @@ bricht deshalb ab, sobald darunter noch eine Datei mit
 nach (er steht in `.gitignore` und fehlt im Klon), prüft `ISCC.exe` im
 Runner-Image und ruft dann Schritt 3 von oben mit `-Quelldatenbank
 Referenzlaeufe/Kenndaten_Test.sqlite`, `-Probe` (die Fassung des Katalogpakets
-kommt als Vorschlag aus dem Register, eingetragen wird nichts) und `-OhnePaket` mit den elf
+kommt als Vorschlag aus dem Register, eingetragen wird nichts) und `-OhnePaket` mit den neun
 Registerkatalogen der Testdatenbank ohne gesperrten Satz (6.5.1), ohne `-Kataloge` (Vorgabe seit
 #160‑E‑1a: `alle`) und ohne `-Beispiele` — das Repository führt keinen
 gepflegten Beispielsatz, und ohne diesen Schalter bleibt die Vorlage
