@@ -229,6 +229,8 @@ namespace EPOS.Kern.Tests
         public async Task Ohne_Projekt_bildet_die_Huelle_den_Abschnitt_ohne_Datenbank()
         {
             IDatenzugriff vorher = DataRepository.Zugriff;
+            // Ohne Datenbank wie der Wirt — auch auf einem Rechner mit Anwenderdatenbank.
+            using var ohneDb = new OhneDatenbankprobe();
             var zugriffe = new Zaehlzugriff(vorher);
             try
             {
