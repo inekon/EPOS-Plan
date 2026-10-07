@@ -112,8 +112,8 @@ namespace EPOS.Kern.Tests
                 ("Fenster", Abweichung(ia.Fenster, pm.Fenster)),
                 ("Erdreich", Abweichung(ia.Erdreich, pm.Erdreich)),
             };
-            // Nur zur Auskunft (keine Abnahmegröße): die Grundfläche des Einzonenwegs, sie hängt an der Einordnung der Decken zu
-            // unbeheizten Räumen.
+            // Nur zur Auskunft (keine Abnahmegröße): die Grundfläche des Einzonenwegs; der IFC-Weg trägt die Decke über unbeheizt
+            // zusätzlich als aus dem Körper abgeleitete Trenndecke (siehe Abweichungen_des_Einzonensatzes_sind_benannt).
             double Grund(GebaeudeImportAblauf x) => x.Zuordnen(0, null).Zeile(GebaeudeZielfelder.FLAECHE_GRUND)?.Wert ?? 0.0;
             _aus.WriteLine("Grundfläche des Einzonenwegs (Auskunft): "
                            + (100.0 * Abweichung(Grund(ib), Grund(pa))).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " %");
@@ -121,6 +121,82 @@ namespace EPOS.Kern.Tests
                 _aus.WriteLine(groesse + ": " + (100.0 * wert).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " %");
             Assert.All(abweichungen, x => Assert.True(Math.Abs(x.Wert) <= TOLERANZ,
                 x.Groesse + ": " + (100.0 * x.Wert).ToString("0.00", CultureInfo.InvariantCulture) + " % > 1 %"));
+        }
+
+        private static string Prozent(double x) => (100.0 * x).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " %";
+
+        /// <summary>
+        /// <b>Die Abweichungen des Einzonensatzes sind benannt</b> (kein Lesefehler der Projektdatei):
+        /// <list type="bullet">
+        /// <item><b>Außenwand:</b> Die Bruttofläche beider Wege stimmt; der Projektdateiweg zieht jede Öffnung von ihrer Wand ab,
+        /// ohne Rückfall auf die Nettofläche der Datei. Der Nettounterschied entsteht auf dem IFC-Weg, wo Öffnungen an Wänden
+        /// hängen, die kleiner sind als ihre Öffnungen (Rückfall auf die Nettofläche der Datei).</item>
+        /// <item><b>Grundfläche:</b> Der Projektdateiweg zählt die Decke über unbeheizt je beheiztem Raum einmal (Bruttomaß, höchstens
+        /// das 1,5-fache der Raumfläche); der IFC-Weg trägt dieselbe Decke zusätzlich als aus dem Körper abgeleitete Trenndecke.</item>
+        /// <item><b>U-Werte:</b> <c>UValue</c> jeder Hüllfläche ist das U ihres verknüpften Aufbaus, und dieses U folgt aus dessen
+        /// Schichten samt Rsi/Rse der Datei — die Datei ist in sich stimmig; die IFC verweist auf andere Aufbauten (Datenstand).</item>
+        /// </list>
+        /// Nur relative Prüfungen; die Datei wird nur gelesen; ohne Datei übersprungen.
+        /// </summary>
+        [Fact]
+        public void Abweichungen_des_Einzonensatzes_sind_benannt()
+        {
+            string sq = Pfad(STAMM + ".sqproj"), ifc = Pfad(STAMM + ".ifc");
+            if (sq == null || ifc == null)
+            {
+                _aus.WriteLine("Anwenderdatei fehlt — übersprungen.");
+                return;
+            }
+            GebaeudeImportAblauf ib = Lesen(ifc), pa = Lesen(sq);
+            Huelleneinordnung ie = GebaeudeHuelleneinordnung.Einordnen(ib.Abbild, 0, r => r.Beheizt);
+            Huelleneinordnung pe = GebaeudeHuelleneinordnung.Einordnen(pa.Abbild, 0, r => r.Beheizt);
+
+            // 1. Außenwand: brutto gleich, netto auf dem Projektdateiweg Brutto − Öffnungen ohne Rückfall.
+            static List<Huellposten> Wand(Huelleneinordnung e)
+                => e.Huelle.Where(p => !p.Verworfen && p.Summenfeld == GebaeudeZielfelder.FLAECHE_AUSSENWAND).ToList();
+            double iBrutto = Wand(ie).Sum(p => p.BruttoM2 ?? 0.0), pBrutto = Wand(pe).Sum(p => p.BruttoM2 ?? 0.0);
+            double iNetto = Wand(ie).Sum(p => p.NettoM2 ?? 0.0), pNetto = Wand(pe).Sum(p => p.NettoM2 ?? 0.0);
+            _aus.WriteLine("Außenwand brutto: " + Prozent(Abweichung(iBrutto, pBrutto)) + ", netto: " + Prozent(Abweichung(iNetto, pNetto))
+                           + ", IFC-Wände mit Rückfall auf die Nettofläche der Datei: " + Wand(ie).Count(p => p.NettoRueckfall));
+            Assert.True(Math.Abs(Abweichung(iBrutto, pBrutto)) <= TOLERANZ, "Außenwand brutto " + Prozent(Abweichung(iBrutto, pBrutto)));
+            Assert.DoesNotContain(Wand(pe), p => p.NettoRueckfall || p.NettoNegativ);
+
+            // 2. Grundfläche: Decken über unbeheizt je beheiztem Raum einmal gezählt.
+            static double GroessterAnteil(GebaeudeImportAblauf a, Huelleneinordnung e)
+            {
+                var raeume = a.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt && r.FlaecheM2 > 0.0).ToDictionary(r => r.Kennung, StringComparer.Ordinal);
+                var je = new Dictionary<string, double>(StringComparer.Ordinal);
+                foreach (Huellposten p in e.Huelle.Where(p => !p.Verworfen && p.Seite == Huellseite.Unbeheizt && p.Boden == true && p.HeizPos >= 0))
+                {
+                    string k = p.Bauteil.Nachbarn[p.HeizPos].Kennung;
+                    if (raeume.ContainsKey(k)) je[k] = (je.TryGetValue(k, out double s) ? s : 0.0) + (p.BruttoM2 ?? 0.0);
+                }
+                return je.Count == 0 ? 0.0 : je.Max(x => x.Value / raeume[x.Key].FlaecheM2.Value);
+            }
+            double pAnteil = GroessterAnteil(pa, pe);
+            double iKoerper = ie.Huelle.Where(p => !p.Verworfen && p.Summenfeld == GebaeudeZielfelder.FLAECHE_GRUND
+                                                   && p.Bauteil.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_KOERPER).Sum(p => p.BruttoM2 ?? 0.0);
+            double iGrund = ie.Huelle.Where(p => !p.Verworfen && p.Summenfeld == GebaeudeZielfelder.FLAECHE_GRUND).Sum(p => p.BruttoM2 ?? 0.0);
+            _aus.WriteLine("Grund: größter Anteil Decke über unbeheizt je Raumfläche (Projektdatei) "
+                           + pAnteil.ToString("0.00", CultureInfo.InvariantCulture)
+                           + ", Anteil der aus dem Körper abgeleiteten Trenndecken an der IFC-Grundfläche " + Prozent(iKoerper / Math.Max(iGrund, 1e-9)));
+            Assert.InRange(pAnteil, 0.5, 1.5);
+
+            // 3. U-Werte: UValue = U des verknüpften Aufbaus = U aus dessen Schichten mit Rsi/Rse der Datei.
+            SqprojAbbild datei = SqprojLeser.Lesen(sq);
+            int geprueft = 0;
+            foreach (SqprojHuellflaeche h in datei.Huellflaechen)
+            {
+                if (h.AufbauKennung == null || !datei.Aufbauten.TryGetValue(h.AufbauKennung, out SqprojAufbau a) || !a.HatSchichten) continue;
+                double r = a.Schichten.Where(s => s.DickeM > 0.0 && s.LambdaWmK > 0.0).Sum(s => s.DickeM.Value / s.LambdaWmK.Value)
+                           + (a.RsiM2KW ?? 0.0) + (a.RseM2KW ?? 0.0);
+                Assert.True(Math.Abs(Abweichung(a.UWert.Value, 1.0 / r)) <= TOLERANZ, "Aufbau-U gegen Schichten " + Prozent(Abweichung(a.UWert.Value, 1.0 / r)));
+                Assert.True(h.UWert.HasValue && Math.Abs(Abweichung(a.UWert.Value, h.UWert.Value)) <= TOLERANZ,
+                            "UValue gegen Aufbau-U " + (h.UWert.HasValue ? Prozent(Abweichung(a.UWert.Value, h.UWert.Value)) : "leer"));
+                geprueft++;
+            }
+            _aus.WriteLine("U-Werte: " + geprueft + " opake Hüllflächen stimmig mit ihrem Aufbau");
+            Assert.True(geprueft > 0);
         }
     }
 }
