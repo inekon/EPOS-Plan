@@ -168,5 +168,28 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, angeboten);
             Assert.True(umgeschaltet > 0);
         }
+
+        /// <summary>
+        /// AK3-K-K2 (4.2, 4.3, Festlegung 14): Mit Schalter trägt der Kreis von 1058 die Kälteschranke — die reversible
+        /// Wärmepumpe als Kälteerzeuger mit Vorrangschätzung —, zählt die Stunden an der Schranke und den Kälte-Restbedarf.
+        /// Ohne Schalter hat der Kreis keine Kälteschranke.
+        /// </summary>
+        [Fact]
+        public void Mit_Schalter_traegt_der_Kreis_die_Kaelteschranke()
+        {
+            if (!_db.Vorhanden) return;
+            SimulationRunner ohne = Rechnen(PROJEKT, false);
+            Assert.Null(ohne.simulation_Waermebedarf.Ak3.Kreis.Kaelteschranke);
+
+            SimulationRunner r = Rechnen(PROJEKT, true);
+            Anlagenkopplung kreis = r.simulation_Waermebedarf.Ak3.Kreis;
+            Assert.NotNull(kreis.Kaelteschranke);
+            WaermepumpeKaeltekapazitaet wp = kreis.Kaelteschranke.Erzeuger.OfType<WaermepumpeKaeltekapazitaet>().Single();
+            Assert.NotNull(wp.Heizzeitanteil);
+            Assert.False(double.IsNaN(kreis.Kaelteschranke.KuehlVorlaufC));
+            _aus.WriteLine("1058 mit Schalter: Kälteschranke gegriffen {0} h, Kälte-Restbedarf {1} h / {2:0.###} kWh, Fallwechsel {3}",
+                           kreis.StundenAnDerKaelteschranke, r.sim.Ak3KaelteRestStunden, r.sim.Ak3KaelteRestKwh, kreis.FallWechsel);
+            Assert.True(r.sim.Ak3KaelteRestKwh >= 0.0);
+        }
     }
 }
