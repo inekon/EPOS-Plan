@@ -977,6 +977,9 @@ namespace EPOS.Kern.Tests
                 // Gebaeudetabellen samt zehntem Sichtneubau, die Kennzahlen des Kreises an Tab_ErgebnisEnergiebedarf,
                 // leer. ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
                 Ak3Schema.Ausfuehren(null);
+                // Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): die Kennzahlen der Zonensperre und der Kaelteseite
+                // im Kreis an Tab_ErgebnisEnergiebedarf, leer. Wiederholbar.
+                Ak3KSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -3124,6 +3124,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrAk3 + " - vollstaendig: " + Ak3Schema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): sieben Kennzahlen der Zonensperre und der
+            //      Kaelteseite im Kreis an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Ak3K bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; die Schalter stehen bis K5 aus.
+            string nrAk3K = Ak3KSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAk3K + " - AK3-K (Kennzahlen der Zonensperre und der Kaelteseite im Kreis): " +
+                              (Ak3KSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAk3K = new List<string>();
+                angelegt += Ak3KSchema.Ausfuehren(berichtAk3K);
+                foreach (string zeile in berichtAk3K)
+                    Console.WriteLine("Schritt " + nrAk3K + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAk3K + " - vollstaendig: " + Ak3KSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

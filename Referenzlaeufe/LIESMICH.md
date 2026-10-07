@@ -928,6 +928,16 @@ rechnet alle dreiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `b4d6a95afa78c842f976e1c1c152bc21e2c1626c02723b4c80b65d43f42b0f61`** (Größe wie vorher). **Die Basis bleibt** — kein
 > Referenzprojekt rechnet AK3, keine Einfrierregel berührt; den Referenzlauf fährt die Orchestrierung im Gate.
 
+> **Nachtrag — Schemaschritt 199 (AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis), Basis unverändert.**
+> `Ak3KSchema` (199 = `Ak3Schema.SCHRITT + 1`) legt sieben nullbare Kennzahlen an `Tab_ErgebnisEnergiebedarf` an
+> (`Zonensperre_Tage`, `Zonensperre_Heizen_Gesperrt_MWh`, `Zonensperre_Kuehlen_Gesperrt_MWh`, `Ak3_Kaelteschranke_Stunden`,
+> `Ak3_Umschalt_Stunden`, `Ak3_Kaelterest_Stunden`, `Ak3_Kaelterest_MWh`); alle Spalten entstehen leer, kein DML an
+> Bestandsdaten. Gehoben aus dem Stand 198 (LFS-SHA-256 `e09fceedc334a57647aac0c69d126c1f9793cdd2a41fd6f8d98bc4da366747f6`).
+> Die Testdatenbank steht auf **199** (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer):
+> **90 497 024 Byte, LFS-SHA-256 `c300e47f89ec3bfb30ce29dc427dadd42a1dd1935d2908777b99f140c897fb98`** (nach `VACUUM`
+> 28 672 Byte kleiner). **Die Basis bleibt** — die Spalten schreibt allein ein Lauf mit Zonensperre oder Kälteseite im
+> Kreis, beide Kernschalter stehen bis K5 aus; der Referenzlauf der dreiundzwanzig Projekte gegen R42 ist byte-gleich.
+
 ### Die Vorgängerbasis R41 (Erdreichprüfung)
 
 Zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare, auf Linux eingefroren gegen die Testdatenbank `6f83f95f…` (Schemastand

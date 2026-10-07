@@ -354,6 +354,10 @@ namespace WindowsFormsApplication1
             // kommen leer an (Raumeinfluss aus, „nicht erhoben").
             new Stufe(Ak3Schema.SCHRITT, Art.Ddl,
                       "Stufe AK3: Raumeinfluss der Heizkurve am Gebäude, Kennzahlen des geschlossenen Kreises im Ergebnis"),
+            // Ein älteres Paket führt keine Kennzahlen der Zonensperre und der Kälteseite im Kreis; die Spalten kommen
+            // leer an („nicht erhoben").
+            new Stufe(Ak3KSchema.SCHRITT, Art.Ddl,
+                      "AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

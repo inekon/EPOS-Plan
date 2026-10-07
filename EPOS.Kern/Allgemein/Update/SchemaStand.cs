@@ -954,7 +954,10 @@ namespace WindowsFormsApplication1
         /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Sichtneubau und
         /// sechs Kennzahlen des geschlossenen Kreises an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3Schema"/>).
         /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
-        public const int Zielversion = Ak3Schema.SCHRITT;
+        /// Danach, mit den KENNZAHLEN VON AK3-K (Entwurf AK3-K 3.5, Festlegung 20), steht das Ziel auf
+        /// <see cref="Ak3KSchema.SCHRITT"/>: sieben Kennzahlen der Zonensperre und der Kälteseite im Kreis an
+        /// <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3KSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        public const int Zielversion = Ak3KSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
