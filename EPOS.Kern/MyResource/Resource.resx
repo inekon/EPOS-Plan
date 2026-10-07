@@ -48638,5 +48638,35 @@ Chart</value>
   <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
     <value>Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt.</value>
   </data>
+  <data name="GANS_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>aus Flächen gebildet</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_ABGELEITET" xml:space="preserve">
+    <value>{0} Räume aus Flächen der Datei gebildet, {1} aus Umriss, {2} schematisch</value>
+  </data>
+  <data name="BTSB_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="BTSB_KOERPER_ABGELEITET" xml:space="preserve">
+    <value>aus Flächen der Datei gebildet ({0})</value>
+  </data>
+  <data name="BTSB_KOERPER_DATEI" xml:space="preserve">
+    <value>aus der Datei ({0})</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMPOLYGON" xml:space="preserve">
+    <value>Raumpolygon</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_HUELLFLAECHEN" xml:space="preserve">
+    <value>Hüllflächen</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_CLOSEDSHELL" xml:space="preserve">
+    <value>Schale der Datei</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMFLAECHEN" xml:space="preserve">
+    <value>Flächen des Raums</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_FLAECHENEXTRUSION" xml:space="preserve">
+    <value>Extrusion der Fläche</value>
+  </data>
 </root>
 

@@ -814,7 +814,9 @@
     {
         if (GezeigterSteckbrief is { } sb)
         {
+            GebaeudeAnsichtKoerperweg? weg = Daten!.Koerperwege.TryGetValue(sb.Kennung, out GebaeudeAnsichtKoerperweg? w) ? w : null;
             <Bauteilsteckbrief Daten="@sb" Texte="@Texte.Steckbrief" StufenName="@Texte.Stufenname(sb.Stufe)" BefundName="@Texte.Befundname(sb.Befund)"
+                               Koerper="@Texte.Koerperzeile(weg)" KoerperAbgeleitet="@(weg?.Abgeleitet)"
                                ZurBaustoffzuordnung="@ZurBaustoffzuordnung" ZumBauteil="@ZumBauteil" Geschlossen="SteckbriefSchliessen" />
         }
     };
@@ -964,11 +966,16 @@
                     </p>
                 }
                 int ausDatei = koerper.Count(k => k.Herkunft == Koerperherkunft.Datei);
+                int abgeleitet = koerper.Count(k => k.Herkunft == Koerperherkunft.Abgeleitet);
                 int ausUmriss = koerper.Count(k => k.Herkunft == Koerperherkunft.Umriss);
                 int schematisch = koerper.Count(k => k.Herkunft == Koerperherkunft.Schematisch);
+                @* 17.5: Körper aus Flächen der Datei gebildet (Projektdatei, gbXML) sind kein Dateikörper und werden so benannt. *@
                 <p class="epos-gebansicht-kennzeichen" data-datei="@ausDatei.ToString(CultureInfo.InvariantCulture)"
+                   data-abgeleitet="@abgeleitet.ToString(CultureInfo.InvariantCulture)"
                    data-umriss="@ausUmriss.ToString(CultureInfo.InvariantCulture)"
-                   data-schematisch="@schematisch.ToString(CultureInfo.InvariantCulture)">@Format(Texte.Kennzeichen, ausDatei, ausUmriss, schematisch)</p>
+                   data-schematisch="@schematisch.ToString(CultureInfo.InvariantCulture)">@(abgeleitet > 0 && ausDatei == 0
+                       ? Format(Texte.KennzeichenAbgeleitet, abgeleitet, ausUmriss, schematisch)
+                       : Format(Texte.Kennzeichen, ausDatei + abgeleitet, ausUmriss, schematisch))</p>
                 IReadOnlyList<string> vermerke = Vermerke(koerper);
                 @if (vermerke.Count > 0)
                 {
@@ -1100,6 +1107,7 @@
         Koerperherkunft.Datei => "datei",
         Koerperherkunft.Schematisch => "schematisch",
         Koerperherkunft.Grundriss => "grundriss",
+        Koerperherkunft.Abgeleitet => "abgeleitet",
         _ => "umriss",
     };
 

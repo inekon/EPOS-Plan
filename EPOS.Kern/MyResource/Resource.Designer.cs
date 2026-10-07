@@ -13325,6 +13325,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPER {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schale der Datei ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_CLOSEDSHELL {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_CLOSEDSHELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Extrusion der Fläche ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_FLAECHENEXTRUSION {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_FLAECHENEXTRUSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hüllflächen ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_HUELLFLAECHEN {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_HUELLFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen des Raums ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_RAUMFLAECHEN {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_RAUMFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumpolygon ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_RAUMPOLYGON {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_RAUMPOLYGON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Flächen der Datei gebildet ({0}) ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPER_ABGELEITET {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPER_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Datei ({0}) ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPER_DATEI {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPER_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die c einer Schicht ähnelt.
         /// </summary>
         public static string BTSB_LUECKE_CP {
@@ -26820,6 +26892,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Flächen gebildet ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_ABGELEITET {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
         /// </summary>
         public static string GANS_HERKUNFT_DATEI {
@@ -26861,6 +26942,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_KENNZEICHEN {
             get {
                 return ResourceManager.GetString("GANS_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume aus Flächen der Datei gebildet, {1} aus Umriss, {2} schematisch ähnelt.
+        /// </summary>
+        public static string GANS_KENNZEICHEN_ABGELEITET {
+            get {
+                return ResourceManager.GetString("GANS_KENNZEICHEN_ABGELEITET", resourceCulture);
             }
         }
         

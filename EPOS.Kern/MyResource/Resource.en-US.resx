@@ -48631,5 +48631,35 @@ chart</value>
   <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
     <value>The opening reaches the edge of its wall surface — the recess is omitted.</value>
   </data>
+  <data name="GANS_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>built from surfaces</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_ABGELEITET" xml:space="preserve">
+    <value>{0} rooms built from the file's surfaces, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="BTSB_KOERPER" xml:space="preserve">
+    <value>Body</value>
+  </data>
+  <data name="BTSB_KOERPER_ABGELEITET" xml:space="preserve">
+    <value>built from the file's surfaces ({0})</value>
+  </data>
+  <data name="BTSB_KOERPER_DATEI" xml:space="preserve">
+    <value>from the file ({0})</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMPOLYGON" xml:space="preserve">
+    <value>room polygon</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_HUELLFLAECHEN" xml:space="preserve">
+    <value>envelope surfaces</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_CLOSEDSHELL" xml:space="preserve">
+    <value>closed shell of the file</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMFLAECHEN" xml:space="preserve">
+    <value>surfaces of the room</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_FLAECHENEXTRUSION" xml:space="preserve">
+    <value>extruded surface</value>
+  </data>
 </root>
 
