@@ -1337,6 +1337,30 @@ namespace WindowsFormsApplication1
         /// (<paramref name="fest"/>) — trifft der gerechnete Vorlauf sie, rechnet die Stunde
         /// Zeichen für Zeichen wie ohne Kopplung. <c>null</c>, wenn nichts zu lesen ist.
         /// </summary>
+        /// <summary>
+        /// <b>Die Wärmepumpe als Kapazität des Kreises</b> (AK3-W3b, Festlegung 5): Kennlinien je Modul (die Wahl der
+        /// Heizseite bzw. die feste Kennlinie), Quelltemperatur je Modul und die Kappung der gekoppelten Pufferquelle
+        /// (<c>KapptUnten</c>) aus dem Modulaufbau — keine zweite Datenbanklesung. <c>null</c>, wenn die Anlage
+        /// <paramref name="idAnlage"/> kein Modul dieses Laufs ist.
+        /// </summary>
+        internal WaermepumpeKapazitaet Ak3Kapazitaet(int idAnlage, Fahrplanerzeuger fahrplan)
+        {
+            for (int i = 0; i < wp_list.Count; i++)
+            {
+                if (wp_list[i] != idAnlage) continue;
+                if (i >= wp_kenndaten.Count || wp_kenndaten[i] == null || wp_kenndaten[i].anz < 1 || i >= wp_quelltemp.Count)
+                    return null;
+                _Kenndaten fest = wp_kenndaten[i];
+                Kennlinienwahl wahl = i < wp_kennlinienwahl.Count ? wp_kennlinienwahl[i] : null;
+                IReadOnlyList<_Kenndaten> kurven = wahl != null && wahl.Kurven != null && wahl.Kurven.Length > 0
+                    ? wahl.Kurven : new[] { fest };
+                bool kappt = _quellKopplung != null && i < _quellKopplung.Length && _quellKopplung[i];
+                return new WaermepumpeKapazitaet(fahrplan, kurven, fest, new Quellprofil(wp_quelltemp[i], kappt),
+                                                 Extrapolation_Erlaubt);
+            }
+            return null;
+        }
+
         internal static Kennlinienwahl KennlinienwahlLaden(int idWp, _Kenndaten fest)
         {
             DataTable dt = StilleDb.Tabelle(
