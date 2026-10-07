@@ -2276,7 +2276,12 @@ die Probe **„ein Erzeuger ohne Grenzen ist bitgleich zu AK1"** als Gate — da
 **Wie gebaut:** O1, O1p und O2 sind als Proben gebaut (Abweichung zur Bisektion ≤ 0,00003 K); dazu
 Fallwechsel, benannter Fehler, Laufzeitprobe (Einzone Faktor 1,16 zu AK1) und ein Mehrzonengebäude. Laufzeit
 mit Kernstufe AK3: 1047 Faktor 1,04, 1054 Faktor 1,21, 1056 Faktor 1,43 (Grenze 3). Die Abnahme am Rechenweg
-(Referenzlauf 22 von 22 gegen R40 byte-gleich) ist geführt; RP-AK3 und der Vergleich AK2/AK3 folgen mit W5.
+(Referenzlauf 22 von 22 gegen R40 byte-gleich) ist geführt. RP-AK3 ist Projekt 1058 (Kopie von 1056 auf Stufe AK3 mit
+Heizungspuffer 10 000 l an der Wärmepumpe und `Heizkurve_Raumeinfluss` 1,0), gehalten von
+`EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` samt dem Vergleich ohne Kreis gegen AK3; es steht in der Basis R42
+`2026-10-07_R42_Vorlaufinterpolation_AK3` und in der CI-Auswahl. Gerechnet: Wärmepumpe 56,28 MWh Wärme bei 13,19 MWh
+Strom (1056: 12,12 MWh Wärme), Puffer 414 Vollzyklen, im Mittel 3,21 Durchläufe je Stunde, 407 Fallwechsel, 0 Stunden
+Restbedarf.
 
 ### 11.3 Datenbankfälle
 
@@ -2390,9 +2395,9 @@ Stunden an allen Tagen, damit sie die Sperre nicht auffangen; kein Pufferspeiche
 1 249 Stunden an der Schranke, 1 854 Komfort-Unterschreitungsstunden (1047: 875), 3 883,19 Kh (1047: 1 281,04), längste
 Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh, im Protokoll der Hinweis der Näherung des Profilwegs. Die
 Einfrierregel „gesäte Auslegungsdaten der Übergabe" umfasst den Anlagenfahrplan eines gekoppelten Referenzprojekts
-(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-07_R41_Erdreichpruefung` mit
-zweiundzwanzig Projekten; dort rechnet die Wärmepumpe von 1047 und 1056 an einer Erdsonde, die Komfortzahlen oben bleiben
-gleich; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
+(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-07_R42_Vorlaufinterpolation_AK3` mit
+dreiundzwanzig Projekten; dort rechnet die Wärmepumpe von 1047 und 1056 an einer Erdsonde und interpoliert ihre Kennlinie
+über den Vorlauf, die Komfortzahlen oben bleiben gleich; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
 gehalten.
 
 ### 11.5 CI, iOS und ChartProben
@@ -2427,7 +2432,7 @@ eingeschalteter Kopplung rechnen wollte, würde die Referenz verlassen** — die
 | **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22, E23 und **E26**; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), der Stufenplan **Q26** mit **E27** (12.3) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; **Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf** (6.1, Erzeugerseite); Texte, Meldungen, Wiki-Abschnitt | **G1 und G2 stehen** — AK1 kommt nach G2 (Q26, E27); ohne Stundenmodell im Produkt keine stündliche Raumtemperatur; das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **10–15** |
 | **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); **Zweipass der Verteilung** samt Randfall, Rundungsrest und zweiter Stufe auf die Zonen (6.2); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6; Q26, E27); Gebäude auf dem Altweg gehen als feste Last ein (E23, E26, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
-| **AK3** | **Der geschlossene Kreis, eigene wählbare Stufe (E102, Vorgabe AK1).** **Stand: W0–W4b gebaut, W5/W6 offen.** Gebäude-Stepper (W1); Kaskadenstunde herausgelöst, Bedarfsnaht, Inventar der Jahresvektor-Leser (W2); **AK3-I**: Interpolation der Kennlinie über den Vorlauf, Wärme- und Kälteseite (W-I); Angebotsfunktion, Klasse `Anlagenkopplung` (Abbruchmaße, Höchstzahl 20, Produktschranke 120, benannter Fehler), Prüforakel (W3); Schema, H2, Oberfläche (W4); Referenzprojekt RP-AK3 (Kopie von 1056 mit Puffer) und Basis (W5); Papiere und Wiki (W6) — [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 6 | AK2 abgenommen; **mit E100 jetzt** statt nach der Feldphase; Basiswechsel erst nach R40 | O1, O1p, O2 getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; W1–W4 und W-I byte-gleich (W-I hinter Kernschalter); Laufzeit nach E102 (Faktor 3, Einzone ≤ 100 ms) an 1054 gemessen; Referenzlauf in W5: 1047/1056 neu (AK3-I), RP-AK3 neu, übrige byte-gleich | **ja** (einmal, W5) | **20,5–33,5** |
+| **AK3** | **Der geschlossene Kreis, eigene wählbare Stufe (E102, Vorgabe AK1).** **Stand: W0–W5 gebaut, Basis R42, W6 offen.** Gebäude-Stepper (W1); Kaskadenstunde herausgelöst, Bedarfsnaht, Inventar der Jahresvektor-Leser (W2); **AK3-I**: Interpolation der Kennlinie über den Vorlauf, Wärme- und Kälteseite (W-I); Angebotsfunktion, Klasse `Anlagenkopplung` (Abbruchmaße, Höchstzahl 20, Produktschranke 120, benannter Fehler), Prüforakel (W3); Schema, H2, Oberfläche (W4); Referenzprojekt RP-AK3 (Kopie von 1056 mit Puffer) und Basis (W5); Papiere und Wiki (W6) — [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 6 | AK2 abgenommen; **mit E100 jetzt** statt nach der Feldphase; Basiswechsel erst nach R40 | O1, O1p, O2 getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; W1–W4 und W-I byte-gleich (W-I hinter Kernschalter); Laufzeit nach E102 (Faktor 3, Einzone ≤ 100 ms) an 1054 gemessen; Referenzlauf in W5: 1047/1056 neu (AK3-I), RP-AK3 neu, übrige byte-gleich | **ja** (einmal, W5) | **20,5–33,5** |
 
 **Summen:** AK0 + AK1 = 11–17 PT; AK0–AK2 = 22–32 PT; AK0–AK3 = **42,5–65,5 PT** mit dem Aufwand
 von AK3 nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) (vorher 45–70 PT, Stufenplan Q26/E27), jeweils zuzüglich rund 0,5 PT je
