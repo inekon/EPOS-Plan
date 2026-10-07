@@ -69,7 +69,8 @@ namespace EPOS.Kern.Tests
         /// <para><b>Keine davon ist eine Energiemenge.</b> Vier rechnen eine LEISTUNG
         /// von Watt auf Kilowatt um (Modul-Nennleistung <c>Tab_PV.Leistung</c> steht in
         /// W je Modul, die Anzeige führt kWp), die fünfte ist eine Untergrenze für eine
-        /// Leistung. Ein Modul, das 400 W leistet, bleibt 0,4 kW — egal, in welcher
+        /// Leistung, drei rechnen eine Wärmekapazität (J/K, J/(m²K)) auf kJ um.
+        /// Ein Modul, das 400 W leistet, bleibt 0,4 kW — egal, in welcher
         /// Einheit die Jahresarbeit steht (Konzept 1.2).</para>
         /// </summary>
         private static readonly (string Datei, string Ausdruck, string Grund)[] AusnahmenAnzeige =
@@ -84,6 +85,12 @@ namespace EPOS.Kern.Tests
              "Modul-Nennleistung [W] x Modulzahl -> kWp."),
             ("SimulationKonfigHuelle.cs", "kwp += modul.m_Leistung / 1000.0 * s.Modulzahl;",
              "Modul-Nennleistung [W] -> kW, je Strang summiert. Leistung, keine Energiemenge."),
+            ("GebaeudeAufbauHuelle.cs", "k.C1korrJeM2_JM2K / 1000.0",
+             "Wirksame Waermekapazitaet C1,korr je m2 [J/(m2K)] -> kJ/(m2K) im Bauteilaufbau. Waermekapazitaet, keine Energiemenge."),
+            ("GebaeudeAufbauHuelle.cs", "k.C1_Jk / 1000.0",
+             "Waermekapazitaet C1 des Bauteils [J/K] -> kJ/K im Bauteilsteckbrief. Waermekapazitaet, keine Energiemenge."),
+            ("GebaeudeAufbauHuelle.cs", "k.Kapazitaet_JM2K / 1000.0",
+             "Flaechenbezogene Waermekapazitaet Summe d*rho*c [J/(m2K)] -> kJ/(m2K) im Bauteilsteckbrief. Keine Energiemenge."),
         };
 
         /// <summary>
