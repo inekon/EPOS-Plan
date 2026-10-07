@@ -48523,6 +48523,7 @@ Chart</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
     <value>Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper).</value>
   </data>

@@ -43306,6 +43306,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND {

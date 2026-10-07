@@ -48516,6 +48516,7 @@ chart</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
     <value>Shows only areas whose component is orange or red in the “Findings” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
   </data>
