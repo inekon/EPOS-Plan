@@ -39,7 +39,7 @@ Abnahmefilter 895 bestanden, 4 übersprungen; UI-Tests 136/136; Kern und Windows
 
 ## 6 Gate 806
 
-⟨GATE806⟩
+Hauptbaum `a9e2e120c`, 88 min: 20 723 Tests, 20 717 grün, 6 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 974 mit 5 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 498 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; UI-Tests Gebäudeimport/Ansicht/Aufbau 136/136.
 
 ## 7 Offen
 
