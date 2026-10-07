@@ -44,6 +44,8 @@ namespace WindowsFormsApplication1
         private static bool? _kopplungVorhanden;
         private static string _pfadNutzungsprofil;
         private static bool? _nutzungsprofilVorhanden;
+        private static string _pfadFlaechenherkunft;
+        private static bool? _flaechenherkunftVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -89,6 +91,8 @@ namespace WindowsFormsApplication1
                 _kopplungVorhanden = null;
                 _pfadNutzungsprofil = null;
                 _nutzungsprofilVorhanden = null;
+                _pfadFlaechenherkunft = null;
+                _flaechenherkunftVorhanden = null;
             }
         }
 
@@ -184,6 +188,28 @@ namespace WindowsFormsApplication1
             {
                 _pfadNutzungsprofil = pfad;
                 _nutzungsprofilVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Trägt <c>Tab_Bauteil</c> die Spalte <c>Flaechenherkunft</c> (Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/>)?
+        /// Gemerkt je Datenbankpfad wie <see cref="NutzungsprofilVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool FlaechenherkunftVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_flaechenherkunftVorhanden.HasValue && string.Equals(pfad, _pfadFlaechenherkunft, StringComparison.OrdinalIgnoreCase))
+                    return _flaechenherkunftVorhanden.Value;
+            }
+
+            bool da = FlaechenherkunftSchema.Vollstaendig();
+            lock (_sperre)
+            {
+                _pfadFlaechenherkunft = pfad;
+                _flaechenherkunftVorhanden = da;
             }
             return da;
         }
