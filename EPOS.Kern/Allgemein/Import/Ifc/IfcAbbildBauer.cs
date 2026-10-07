@@ -2679,8 +2679,9 @@ namespace WindowsFormsApplication1
                 }
                 foreach (KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>> kd in koerperdecken)
                 {
+                    // G5-3d: Eine Bezugsdecke, die die Datei gegen unbeheizt erklärt, bleibt (Hüllfläche; die Erklärung geht vor).
                     if (geschosspaare != null && geschosspaare.TryGetValue(kd.Key, out List<AbbildBauteil> alt))
-                        foreach (AbbildBauteil b in alt.Where(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG)) verbraucht.Add(b);
+                        foreach (AbbildBauteil b in alt.Where(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG && b.Randbedingung != Randbedingung.Unbeheizt)) verbraucht.Add(b);
                     if (geschosspaare == null) _trenndecken[gi] = geschosspaare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
                     geschosspaare[kd.Key] = kd.Value;
                 }

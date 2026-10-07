@@ -210,15 +210,17 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Lage einer Platte gegen ein Körperpaar</b> (G5-3d): Kann <paramref name="b"/> die Decke zwischen den beiden
         /// Raumkörpern des Paars sein? Mit Körper zählt die Lage: Sein Höhenbereich muss die Höhen beider Körperflächen des
-        /// Paars berühren und sein Grundriss (umschließendes Rechteck) die Mitte des Paars enthalten, je mit
+        /// Paars berühren und eine fast waagerechte Fläche des Körpers die Mitte des Paars (bzw. die Mehrheit seiner Prüfpunkte) tragen, je mit
         /// <see cref="DECKENLAGE_TOLERANZ_M"/> — 2 = getroffen, −1 = liegt woanders (etwa die Decke des Geschosses darüber).
         /// Ohne Körper zählt das Geschoss: 1 = Geschoss eines der beiden Räume, −1 = ein anderes, 0 = keines bekannt.
-        /// Ein Wandpaar gibt immer 1.
+        /// Eine Platte gegen unbeheizt liegt nie zwischen zwei gleich beheizten Räumen (−1). Ein Wandpaar gibt immer 1.
         /// </summary>
         private int Deckenlage(AbbildBauteil b, Koerperpaar p, AbbildGebaeude g)
         {
             if (!p.Decke || p.Oben < 0) return 1;
             AbbildRaum oben = g.Raeume[p.Oben], unten = g.Raeume[p.Oben == p.RaumA ? p.RaumB : p.RaumA];
+            // Eine Platte, die die Datei gegen unbeheizt erklärt, trennt keine zwei gleich beheizten Räume (die Erklärung geht vor).
+            if (b.Randbedingung == Randbedingung.Unbeheizt && oben.Beheizt == unten.Beheizt) return -1;
             if (Plattenkoerper().TryGetValue(b, out List<Dateikoerper> koerper) && koerper.Any(k => k != null && k.PunkteM.Count > 0))
             {
                 List<double[]> punkte = koerper.Where(k => k != null).SelectMany(k => k.PunkteM).ToList();
@@ -226,12 +228,44 @@ namespace WindowsFormsApplication1
                 double zu = Math.Min(p.SchwerpunktA[2], p.SchwerpunktB[2]) - T, zo = Math.Max(p.SchwerpunktA[2], p.SchwerpunktB[2]) + T;
                 double x = (p.SchwerpunktA[0] + p.SchwerpunktB[0]) / 2.0, y = (p.SchwerpunktA[1] + p.SchwerpunktB[1]) / 2.0;
                 bool hoehe = punkte.Max(q => q[2]) >= zu && punkte.Min(q => q[2]) <= zo;
-                bool grundriss = x >= punkte.Min(q => q[0]) - T && x <= punkte.Max(q => q[0]) + T
-                                 && y >= punkte.Min(q => q[1]) - T && y <= punkte.Max(q => q[1]) + T;
+                if (!hoehe) return -1;
+                // Der Grundriss: Liegt die Mitte des Paars (bzw. die Mehrheit seiner Prüfpunkte — die Mitte und die Ecken des
+                // Rings, ein Viertel zur Mitte gerückt) über einer waagerechten Fläche des Plattenkörpers?
+                var pruef = new List<(double X, double Y)> { (x, y) };
+                if (p.RandA != null)
+                    foreach (double[] e in p.RandA) pruef.Add((e[0] + 0.25 * (x - e[0]), e[1] + 0.25 * (y - e[1])));
+                int getroffen = pruef.Count(q => koerper.Where(k => k != null).Any(k => UeberWaagerechterFlaeche(k, q.X, q.Y, T)));
+                bool grundriss = 2 * getroffen > pruef.Count;
                 return hoehe && grundriss ? 2 : -1;
             }
             if (b.GeschossKennung == null) return 0;
             return b.GeschossKennung == oben.GeschossKennung || b.GeschossKennung == unten.GeschossKennung ? 1 : -1;
+        }
+
+        /// <summary>Liegt (x, y) in der Projektion eines fast waagerechten Dreiecks (Normale bis 45°) des Körpers, Toleranz <paramref name="t"/> [m]?</summary>
+        private static bool UeberWaagerechterFlaeche(Dateikoerper k, double x, double y, double t)
+        {
+            foreach (int[] d in k.Dreiecke)
+            {
+                double[] a = k.PunkteM[d[0]], b = k.PunkteM[d[1]], c = k.PunkteM[d[2]];
+                double[] n = IfcPlatzierung.Kreuz(IfcPlatzierung.Minus(b, a), IfcPlatzierung.Minus(c, a));
+                double l = Math.Sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
+                if (l <= 1e-12 || Math.Abs(n[2]) / l < 0.7071) continue;
+                if (ImDreieck(x, y, a, b, c, t)) return true;
+            }
+            return false;
+        }
+
+        /// <summary>Punkt (x, y) im Dreieck a, b, c (Projektion auf xy), mit Randtoleranz <paramref name="t"/> [m].</summary>
+        private static bool ImDreieck(double x, double y, double[] a, double[] b, double[] c, double t)
+        {
+            double Seite(double[] p, double[] q)
+            {
+                double dx = q[0] - p[0], dy = q[1] - p[1], l = Math.Sqrt(dx * dx + dy * dy);
+                return l <= 1e-12 ? 0.0 : (dx * (y - p[1]) - dy * (x - p[0])) / l;   // vorzeichenbehafteter Abstand zur Kante
+            }
+            double s1 = Seite(a, b), s2 = Seite(b, c), s3 = Seite(c, a);
+            return (s1 >= -t && s2 >= -t && s3 >= -t) || (s1 <= t && s2 <= t && s3 <= t);
         }
 
         /// <summary>
@@ -284,8 +318,8 @@ namespace WindowsFormsApplication1
         internal const double OEFFNUNG_UEBERSTAND_M2 = 0.01;
 
         /// <summary>
-        /// <b>Öffnungen an der Wand, in der sie liegen</b> (G5-3d): Trägt eine Wand mit Körper laut Datei mehr Fenster- und
-        /// Türfläche, als sie brutto groß ist, fiele die Hülle still auf die Nettofläche der Datei ohne Abzug zurück. Dann wird
+        /// <b>Öffnungen an der Wand, in der sie liegen</b> (G5-3d): Trägt eine Wand mit Körper, deren Bruttofläche die Datei nennt
+        /// (nicht aus dem Körper), laut Datei mehr Fenster- und Türfläche, als sie brutto groß ist, fiele die Hülle still auf die Nettofläche der Datei ohne Abzug zurück. Dann wird
         /// jede ihrer Öffnungen nach Lage geprüft (<see cref="IfcOeffnungen.AbstandZurWand"/>; Mitte des Öffnungskörpers,
         /// sonst des Füllkörpers):
         /// <list type="bullet">
@@ -334,7 +368,9 @@ namespace WindowsFormsApplication1
                 List<AbbildBauteil> liste = gi < 0 ? _abbild.BauteileOhneGebaeude : _abbild.Gebaeude[gi].Bauteile;
                 List<AbbildBauteil> waende = liste.Where(b => koerper.ContainsKey(b) && b.Koerperflaeche != null && b.Koerperflaeche.Teile.Count > 0).ToList();
                 var ziele = new HashSet<AbbildBauteil>();
-                foreach (AbbildBauteil b in waende.Where(ZuKlein).ToList())
+                // Nur Wände, deren Fläche die Datei nennt: Ist die Körperfläche selbst kleiner als die Öffnungen, bleibt es bei
+                // Netto 0 (G5-2, B2).
+                foreach (AbbildBauteil b in waende.Where(b => b.Flaechenherkunft != Flaechenherkunft.Koerper && ZuKlein(b)).ToList())
                 {
                     zuKlein++;
                     List<AbbildBauteil> eigeneTeile = b.Name == null ? new List<AbbildBauteil>()
