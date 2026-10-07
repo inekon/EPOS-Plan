@@ -309,6 +309,18 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_SP_AUFBAU</c></summary>
     public string SpalteAufbau { get; set; } = Resource.ZONDLG_SP_AUFBAU;
 
+    /// <summary>Filter der Bauteiltabelle „ohne vollständige Zuordnung" (<c>ZOND_FILTER_UNVOLLSTAENDIG</c>, BA-3).</summary>
+    public string FilterUnvollstaendig { get; set; } = Resource.ZOND_FILTER_UNVOLLSTAENDIG;
+
+    /// <summary>Kurztext der Stufe in der Spalte „Aufbau": {0} Stufe, {1} Name (<c>ZOND_AUFBAU_TITEL</c>).</summary>
+    public string AufbauTitel { get; set; } = Resource.ZOND_AUFBAU_TITEL;
+
+    /// <summary>Die Namen der Zuordnungsstufen (<c>GANS_STUFE_A</c> … <c>GANS_STUFE_OHNE</c>).</summary>
+    public IReadOnlyList<string> Aufbaustufen { get; set; } = new[]
+    {
+        Resource.GANS_STUFE_A, Resource.GANS_STUFE_B, Resource.GANS_STUFE_C, Resource.GANS_STUFE_TRANSPARENT, Resource.GANS_STUFE_OHNE,
+    };
+
     /// <summary><c>GEBZ_SP_AKTIONEN</c></summary>
     public string SpalteAktionen { get; set; } = Resource.GEBZ_SP_AKTIONEN;
 

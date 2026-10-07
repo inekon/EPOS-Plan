@@ -95,6 +95,12 @@ namespace WindowsFormsApplication1
         internal Bauteilzuordnungsstufe Stufe => Bauteilzuordnung.Stufe(this);
 
         /// <summary>
+        /// Woher der Aufbau der Zeile stammt (Rangfolge E97, BA-4b): Projektdatei, Katalog der Projektdatei, IFC-Schichten oder
+        /// Ersatz/ohne Aufbau; <see cref="Aufbaurang.Keiner"/> für transparente Zeilen.
+        /// </summary>
+        internal Aufbaurang Aufbaurang { get; set; }
+
+        /// <summary>
         /// Der Beleg der Zeile; gesetzt für Trennflächen aus den Raumkörpern (<see cref="BELEG_KOERPER"/>: Raum A, Raum B,
         /// Fläche) — die Herkunft lautet dann „aus Datei (Körper)“. <c>null</c> = keiner.
         /// </summary>
@@ -173,6 +179,28 @@ namespace WindowsFormsApplication1
         /// Aufbau der Datei. Ein Ersatzaufbau hat keine Quellentität (<see cref="Quelltyp"/> und <see cref="Kennung"/> leer).
         /// </summary>
         internal Ersatzergebnis Ersatz { get; init; }
+
+        /// <summary>
+        /// Je Schicht des Aufbaus der Stoff der Projektdatei (BA-4b), der als Projektkopie <c>Tab_Baustoff</c> mit Herkunft
+        /// <c>IFC</c> und Quelle <see cref="GebaeudeBauteilvorschlag.QUELLE_PROJEKTDATEI"/> geschrieben wird; <c>null</c> je Schicht
+        /// ohne solchen Stoff. Leer = keine.
+        /// </summary>
+        internal IReadOnlyList<BaustoffModel> Projektstoffe { get; init; } = Array.Empty<BaustoffModel>();
+
+        /// <summary>Stammt der Aufbau aus der HottCAD-Projektdatei (BA-4b)?</summary>
+        internal bool AusProjektdatei { get; init; }
+
+        /// <summary>
+        /// Je Schicht (in der Reihenfolge von <c>Aufbau.Schichten</c>) der Stoffname der Datei — die Anzeige im
+        /// Bauteilsteckbrief (BA-3); leer = keiner bekannt (etwa beim Ersatzaufbau, dessen Schichten Katalogbaustoffe tragen).
+        /// </summary>
+        internal IReadOnlyList<string> Schichtnamen { get; set; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Der Schlüssel eines Ersatzaufbaus (Bauteilart, Rand, Neigung, Ziel-U) — der Schlüssel der Typwahl je Aufbau (E95-4,
+        /// BA-3); <c>null</c> bei einem Aufbau der Datei.
+        /// </summary>
+        internal string Ersatzschluessel { get; init; }
     }
 
     /// <summary>Eine Schicht der Datei, die die Relevanzregel weggelassen hat: Stoffname, Dicke [m], Grund, Anteile an R und C [–].</summary>
@@ -449,6 +477,28 @@ namespace WindowsFormsApplication1
         /// <summary>F — {0} Σ Zonen [m²], {1} Σ Räume [m²]: Die Zonenflächen summieren nicht die Raumflächen (5.3).</summary>
         internal const string ZONENFLAECHE_ABWEICHUNG = "IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG";
 
+        // ---- Aufbauten aus der Projektdatei (BA-4b, E97) --------------------------------------
+        /// <summary>Zuordnung der Bauteile zur Projektdatei: über GUID, über GlobalId, ohne Gegenstück, mehrdeutig.</summary>
+        internal const string PD_ZUORDNUNG = "IMP_BAUTEIL_PROT_PD_ZUORDNUNG";
+        /// <summary>Rang 1 (Aufbau der Projektdatei, U passt): Zahl, Fläche.</summary>
+        internal const string PD_RANG1 = "IMP_BAUTEIL_PROT_PD_RANG1";
+        /// <summary>Rang 2 (Katalog der Projektdatei trifft das U der IFC): Zahl, Fläche.</summary>
+        internal const string PD_RANG2 = "IMP_BAUTEIL_PROT_PD_RANG2";
+        /// <summary>Rang 3 (IFC-Schichten): Zahl, Fläche.</summary>
+        internal const string PD_RANG3 = "IMP_BAUTEIL_PROT_PD_RANG3";
+        /// <summary>Rang 4 (Ersatzaufbau bzw. ohne Aufbau): Zahl, Fläche.</summary>
+        internal const string PD_RANG4 = "IMP_BAUTEIL_PROT_PD_RANG4";
+        /// <summary>U der Projektdatei weicht vom U der IFC ab (es gilt der IFC-Stand, E97): Zahl, Wertepaare.</summary>
+        internal const string PD_U_ABWEICHUNG = "IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG";
+        /// <summary>Mehrere verschiedene Aufbauten des Katalogs treffen das U der IFC (nicht geraten): Zahl, U-Werte.</summary>
+        internal const string PD_KATALOG_MEHRDEUTIG = "IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG";
+
+        /// <summary>Die Quelle der Baustoffe aus der Projektdatei (<c>Tab_Baustoff.Quelle</c>, Konzept 5.5).</summary>
+        internal const string QUELLE_PROJEKTDATEI = "Projektdatei";
+
+        /// <summary>Der Quelltyp eines Aufbaus der Projektdatei in der Importzuordnung.</summary>
+        internal const string QUELLTYP_PD_AUFBAU = "TcBuildingElementDimension";
+
         /// <summary>
         /// <b>Die Schwelle der Gegenprobe</b> (Datenaustauschkonzept 3.6: bei gbXML ist der Abgleich
         /// meist nur die Gegenprobe): Weicht λ der Datei um mehr als 50 % vom λ des getroffenen
@@ -638,6 +688,9 @@ namespace WindowsFormsApplication1
         /// <summary>Lief der Namensabgleich der Baustoffe (ein <see cref="Baustoffabgleich"/> war übergeben)?</summary>
         internal bool AbgleichAktiv { get; private set; }
 
+        /// <summary>Hat der Lauf die Aufbauten einer Projektdatei betrachtet (Rangfolge E97/E98, BA-4b)? Ohne sie bleibt der Rang der Zeilen ohne Anzeige.</summary>
+        internal bool MitProjektdatei { get; private set; }
+
         /// <summary>
         /// <b>Die Materialnamen der Datei</b> in der Reihenfolge ihres ersten Auftretens — je Name Stufe,
         /// Baustoff oder „ohne Treffer" und die Zahl der Schichten; der Eingang der Anwenderzuordnung.
@@ -657,9 +710,10 @@ namespace WindowsFormsApplication1
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeImportAblauf ablauf, int gebaeudeIndex, char? baualtersklasse,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                         Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
-                                                        bool raumtemperaturAlsSollwert = false)
+                                                        bool raumtemperaturAlsSollwert = false,
+                                                        IReadOnlyDictionary<string, string> typwahl = null)
             => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung,
-                      raumtemperaturAlsSollwert);
+                      raumtemperaturAlsSollwert, ablauf?.Projektdatei, typwahl);
 
         /// <summary>
         /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
@@ -691,11 +745,15 @@ namespace WindowsFormsApplication1
         /// <param name="raumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen"
         /// (<see cref="GebaeudeCadSollwert"/>): im Mehrzonenweg trägt dann jede beheizte Zone das Mittel ihrer Räume als
         /// <c>Raumsolltemperatur_Tag</c>; aus (Vorgabe) bleiben die Sollwerte der Zonen leer und erben das Gebäude.</param>
+        /// <param name="projektdatei">Die gelesene HottCAD-Projektdatei mit Bauteiltabellen (BA-4b, Rangfolge E98); <c>null</c> = ohne.</param>
+        /// <param name="typwahl">Die Typwahl des Anwenders je Ersatzaufbau (<see cref="GebaeudeAufbauzeile.Ersatzschluessel"/> →
+        /// Code des Typaufbaus, E95-4); <c>null</c> = die Vorgabe nach Bauart und Klasse.</param>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeAbbild abbild, int gebaeudeIndex, char? baualtersklasse,
                                                         GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                         Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
-                                                        bool raumtemperaturAlsSollwert = false)
+                                                        bool raumtemperaturAlsSollwert = false, SqprojStand projektdatei = null,
+                                                        IReadOnlyDictionary<string, string> typwahl = null)
         {
             var v = new GebaeudeBauteilvorschlag { AbgleichAktiv = abgleich != null };
             if (abbild == null || profil == null || gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count)
@@ -708,6 +766,8 @@ namespace WindowsFormsApplication1
             {
                 Zonierung = zonierung != null && !zonierung.Einzonig ? zonierung : null,
                 CadSollwert = raumtemperaturAlsSollwert,
+                Projektdatei = projektdatei != null && !projektdatei.Abgelehnt && projektdatei.Abbild?.BauteileGelesen == true ? projektdatei : null,
+                Typwahl = typwahl,
             }.Bauen();
             return v;
         }
@@ -786,6 +846,15 @@ namespace WindowsFormsApplication1
             /// <summary>Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</summary>
             internal bool CadSollwert { get; init; }
 
+            /// <summary>Die gelesene Projektdatei mit Bauteiltabellen (BA-4b); <c>null</c> = ohne.</summary>
+            internal SqprojStand Projektdatei { get; init; }
+
+            // Die Aufbauwahl der Projektdatei (E97); null ohne Projektdatei.
+            private SqprojAufbauwahl _wahl;
+
+            /// <summary>Die Typwahl je Ersatzaufbau (Schlüssel → Code); <c>null</c> = die Vorgabe.</summary>
+            internal IReadOnlyDictionary<string, string> Typwahl { get; init; }
+
             // Der Mehrzonenweg: die Zone, an die Abschliessen die Zeile hängt.
             private ZoneModel _aktuelleZone;
             private int _aktuelleStelle;
@@ -809,6 +878,10 @@ namespace WindowsFormsApplication1
                 _klasse = satz.Baualtersklasse;
                 _v.Baualtersklasse = _klasse;
                 _bauart = satz.Zeile(GebaeudeZielfelder.BAUART)?.Textwert;
+
+                if (Projektdatei != null)
+                    _wahl = SqprojAufbauwahl.Bilden(Projektdatei.Abbild, Projektdatei.Abgleich, _g);
+                _v.MitProjektdatei = _wahl != null;
 
                 _raeume = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
                 foreach (AbbildGebaeude geb in _abbild.Gebaeude)
@@ -1034,7 +1107,7 @@ namespace WindowsFormsApplication1
             private void Opak(GebaeudeBauteilzeile z, AbbildBauteil s, Bauteilart art, Bauteilrand rand, bool gespiegelt, string summenfeld)
             {
                 z.UDatei = s.UWertWm2K;
-                GebaeudeAufbauzeile aufbau = AufbauFuer(s.Aufbau, art, gespiegelt);
+                GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
                 if (aufbau != null)
                 {
                     z.Bauteil.ID_Aufbau = aufbau.Aufbau.ID;
@@ -1456,7 +1529,7 @@ namespace WindowsFormsApplication1
                 z.HerkunftFlaeche = _datei;
                 Setzen(z, neigung, hn, null, Importherkunft.Leer);
                 z.UDatei = s.UWertWm2K;
-                GebaeudeAufbauzeile aufbau = AufbauFuer(s.Aufbau, art, gespiegelt);
+                GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
                 if (aufbau != null)
                 {
                     z.Bauteil.ID_Aufbau = aufbau.Aufbau.ID;
@@ -1588,7 +1661,7 @@ namespace WindowsFormsApplication1
                 z.UDatei = s.UWertWm2K;
                 // Ein Innenbauteil braucht keinen U-Wert: mit Aufbau die Masse aus den Schichten, ohne
                 // Aufbau nur die Fläche (N1.46, 6).
-                GebaeudeAufbauzeile aufbau = AufbauFuer(s.Aufbau, art, gespiegelt);
+                GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
                 if (aufbau != null)
                 {
                     z.Bauteil.ID_Aufbau = aufbau.Aufbau.ID;
@@ -1705,6 +1778,24 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
+            /// <b>Der wirksame Aufbau eines Bauteils</b> nach der Rangfolge E97 (BA-4b): mit Projektdatei zuerst ihr Aufbau (Rang 1
+            /// oder 2, <see cref="SqprojAufbauwahl"/>), sonst die Schichten der IFC (Rang 3), sonst keiner (Rang 4 — Ersatzaufbau
+            /// bzw. ohne). Setzt <see cref="GebaeudeBauteilzeile.Aufbaurang"/>.
+            /// </summary>
+            private GebaeudeAufbauzeile Wirksam(GebaeudeBauteilzeile z, AbbildBauteil s, Bauteilart art, bool gespiegelt)
+            {
+                if (_wahl?.Entscheid(s) is SqprojAufbauentscheid e && _wahl.Abbild(e) is AbbildAufbau pd
+                    && AufbauFuer(pd, art, gespiegelt) is GebaeudeAufbauzeile ausPd)
+                {
+                    z.Aufbaurang = e.Rang;
+                    return ausPd;
+                }
+                GebaeudeAufbauzeile ifc = AufbauFuer(s.Aufbau, art, gespiegelt);
+                z.Aufbaurang = ifc != null ? Aufbaurang.IfcSchichten : Aufbaurang.Ersatz;
+                return ifc;
+            }
+
+            /// <summary>
             /// Der Aufbau eines Bauteils aus Sicht seines Raums — je Konstruktion und Schichtfolge einer;
             /// <c>null</c>, wenn die Stoffwerte nicht vollständig oder außerhalb des Bandes sind (einmal je
             /// Konstruktion gemeldet) oder die Art keinen Aufbau trägt. Mit dem Namensabgleich trägt er die
@@ -1738,12 +1829,14 @@ namespace WindowsFormsApplication1
                 bool gegenseite = _v._aufbauten.Any(x => string.Equals(x.Kennung, a.Kennung, StringComparison.Ordinal));
                 string stamm = string.IsNullOrWhiteSpace(a.Name) ? a.Kennung : a.Name.Trim();
                 string name = FreierName(gegenseite ? stamm + " (Gegenseite)" : stamm);
+                bool ausPd = a.Schichten.Count > 0 && a.Schichten.All(x => x.AusProjektdatei);
+                string quelle = ausPd ? Projektdatei?.Dateiname : _v.Dateiname;
                 var modell = new BauteilaufbauModel
                 {
                     ID = _naechsterAufbau--,
                     Bezeichner = name,
                     Bauteilart = artWert,
-                    Quelle = string.IsNullOrEmpty(_v.Dateiname) ? null : Kuerzen(_v.Dateiname, BaustoffSchema.LAENGE_QUELLE),
+                    Quelle = string.IsNullOrEmpty(quelle) ? null : Kuerzen(quelle, BaustoffSchema.LAENGE_QUELLE),
                     Herkunft = katalog ? DbWerte.HERKUNFT_KATALOG : _herkunftWert,
                     Quellkennung = WindowsFormsApplication1.Quellkennung.Kuerzen(a.Kennung),
                 };
@@ -1762,11 +1855,17 @@ namespace WindowsFormsApplication1
                     .Where(x => x.Stamm.HasValue && !string.IsNullOrWhiteSpace(x.Quelle?.BaustoffKennung))
                     .Select(x => new GebaeudeBaustoffquelle(quelltypStoff, x.Quelle.BaustoffKennung, x.Stamm.Value))
                     .Distinct().ToList();
-                var zeile = new GebaeudeAufbauzeile(modell, _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
+                var zeile = new GebaeudeAufbauzeile(modell, ausPd ? QUELLTYP_PD_AUFBAU : _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
                                                     a.Kennung, gegenseite, a.RichtungAngenommen,
                                                     katalog ? Importherkunft.Katalog : _datei,
-                                                    schichten.Select(x => x.Stamm).ToArray(), quellen);
+                                                    schichten.Select(x => x.Stamm).ToArray(), quellen)
+                {
+                    AusProjektdatei = ausPd,
+                    Projektstoffe = ausPd ? schichten.Select(x => x.Stamm.HasValue ? null : Projektstoff(x.Quelle, x.Schicht)).ToArray()
+                                          : Array.Empty<BaustoffModel>(),
+                };
                 zeile.Weggelassen = weggelassen;
+                zeile.Schichtnamen = schichten.Select(x => x.Quelle?.Name?.Trim() ?? "").ToArray();
                 foreach (GebaeudeWeggelasseneSchicht w in weggelassen)
                     Merken(_unerheblich, stamm + ": " + w.Name + " ("
                                          + Zahl(Math.Round(1000.0 * w.Dicke_M, 2)) + " mm)");
@@ -1985,6 +2084,29 @@ namespace WindowsFormsApplication1
                 return m;
             }
 
+            /// <summary>
+            /// Der Stoff einer Schicht der Projektdatei als Projektkopie (BA-4b, Konzept 5.5): Name der Datei (ein Projektdatum),
+            /// λ, ρ, c der Schicht, Herkunft <c>IFC</c>, Quelle <see cref="QUELLE_PROJEKTDATEI"/>, Quellkennung die Schicht.
+            /// </summary>
+            private static BaustoffModel Projektstoff(AbbildSchicht s, Schicht w)
+            {
+                if (w.IstLuftschicht) return null;
+                string name = string.IsNullOrWhiteSpace(s?.Name) ? null : s.Name.Trim();
+                return new BaustoffModel
+                {
+                    Bezeichner = Kuerzen(name ?? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_SQ_STOFF_NAME,
+                                                               w.Lambda_WmK.ToString("0.###", CultureInfo.CurrentCulture),
+                                                               w.Rohdichte_KgM3.ToString("0", CultureInfo.CurrentCulture)),
+                                         BaustoffSchema.LAENGE_BEZEICHNER),
+                    Lambda = w.Lambda_WmK,
+                    Rho = w.Rohdichte_KgM3,
+                    Cp = w.Cp_JkgK,
+                    Quelle = QUELLE_PROJEKTDATEI,
+                    Herkunft = DbWerte.HERKUNFT_IFC,
+                    Quellkennung = string.IsNullOrEmpty(s?.Kennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(s.Kennung),
+                };
+            }
+
             private static string Stoffname(AbbildSchicht s)
                 => string.IsNullOrWhiteSpace(s?.Name) ? s?.BaustoffKennung ?? "" : s.Name.Trim();
 
@@ -2086,14 +2208,18 @@ namespace WindowsFormsApplication1
                                     + u.ToString("R", CultureInfo.InvariantCulture);
                 if (!_ersatzJeSchluessel.TryGetValue(schluessel, out GebaeudeAufbauzeile zeile))
                 {
-                    Ersatzergebnis e = Ersatzaufbau.Bilden(art, rand, neigung, _bauart, _klasse, u);
+                    // E95-4: die Typwahl des Anwenders je Aufbau überschreibt die Vorgabe (abgeglichen, ohne Typwechsel).
+                    Ersatzergebnis e = Typwahl != null && Typwahl.TryGetValue(schluessel, out string code)
+                                       && TypaufbauSaattabelle.Alle.Any(t => string.Equals(t.Code, code, StringComparison.Ordinal))
+                        ? Ersatzaufbau.Abgleichen(TypaufbauSaattabelle.Zu(code), rand, neigung, u)
+                        : Ersatzaufbau.Bilden(art, rand, neigung, _bauart, _klasse, u);
                     BauteilaufbauModel m = e.Aufbau;
                     m.ID = _naechsterAufbau--;
                     m.Bezeichner = FreierName(e.Typ.Bezeichner + ", U " + Zahl(Math.Round(u, 3)));
                     m.Bauteilart = b.Bauteilart;
                     m.Beschreibung = Kuerzen(Ersatzbeschreibung(e), 250);
                     zeile = new GebaeudeAufbauzeile(m, null, null, false, false, Importherkunft.Vorgabe,
-                                                    m.Schichten.Select(x => x.ID_Baustoff).ToArray()) { Ersatz = e };
+                                                    m.Schichten.Select(x => x.ID_Baustoff).ToArray()) { Ersatz = e, Ersatzschluessel = schluessel };
                     _ersatzJeSchluessel[schluessel] = zeile;
                     _v._aufbauten.Add(zeile);
                     if ((e.Vermerk & Ersatzvermerk.TypNachU) != 0) Merken(_ersatzTypwechsel, m.Bezeichner);
@@ -2164,6 +2290,7 @@ namespace WindowsFormsApplication1
                     if (su.Zahl > 0)
                         Info(su.Stufe == Bauteilzuordnungsstufe.A ? STUFE_A : su.Stufe == Bauteilzuordnungsstufe.B ? STUFE_B : STUFE_C,
                              Ganz(su.Zahl), Zahl(Math.Round(su.Flaeche_M2, 2)));
+                ProjektdateiMeldungen();
                 if (_abgleich == null) return;
 
                 // Der Namensabgleich: was er ergänzt hat, was ohne Treffer bleibt, was verworfen oder
@@ -2178,6 +2305,39 @@ namespace WindowsFormsApplication1
                 if (_verworfen.Count > 0) Warnung(SCHICHT_VERWORFEN, Ganz(_verworfen.Count), Liste(_verworfen));
                 if (_luftschichten > 0) Info(LUFTSCHICHT, Ganz(_luftschichten));
             }
+
+            /// <summary>
+            /// Die Meldungen der Aufbauwahl aus der Projektdatei (BA-4b, E97): Zuordnung, je Rang Zahl und Fläche, Abweichungen
+            /// des U zwischen Projektdatei und IFC (es gilt der IFC-Stand) und mehrdeutige Katalogtreffer. Ohne Projektdatei nichts.
+            /// </summary>
+            private void ProjektdateiMeldungen()
+            {
+                if (_wahl == null) return;
+                Info(PD_ZUORDNUNG, Ganz(_wahl.UeberGuid), Ganz(_wahl.UeberGlobalId), Ganz(_wahl.OhneGegenstueck.Count), Ganz(_wahl.Mehrdeutig.Count));
+                var opak = _v._zeilen.Where(z => z.Aufbaurang != Aufbaurang.Keiner).ToList();
+                foreach ((Aufbaurang rang, string schluessel) in new[]
+                         {
+                             (Aufbaurang.Projektdatei, PD_RANG1), (Aufbaurang.Projektkatalog, PD_RANG2),
+                             (Aufbaurang.IfcSchichten, PD_RANG3), (Aufbaurang.Ersatz, PD_RANG4),
+                         })
+                {
+                    List<GebaeudeBauteilzeile> l = opak.Where(z => z.Aufbaurang == rang).ToList();
+                    if (l.Count > 0) Info(schluessel, Ganz(l.Count), Zahl(Math.Round(l.Sum(z => z.Bauteil.Flaeche), 2)));
+                }
+                List<SqprojAufbauentscheid> abweichend = _wahl.Entscheide.Values.Where(e => e.UAbweichend).ToList();
+                if (abweichend.Count > 0)
+                    Warnung(PD_U_ABWEICHUNG, Ganz(abweichend.Count), Paare(abweichend.Select(e => (e.UProjektdatei.Value, e.UIfc.Value))));
+                List<SqprojAufbauentscheid> mehrdeutig = _wahl.Entscheide.Values.Where(e => e.KatalogMehrdeutig).ToList();
+                if (mehrdeutig.Count > 0)
+                    Warnung(PD_KATALOG_MEHRDEUTIG, Ganz(mehrdeutig.Count),
+                            string.Join(", ", mehrdeutig.Select(e => Zahl(Math.Round(e.UIfc.Value, 3))).Distinct(StringComparer.Ordinal)));
+            }
+
+            /// <summary>Wertepaare „U₁ → U₂ (n×)“, häufigste zuerst, höchstens fünf.</summary>
+            private static string Paare(IEnumerable<(double Von, double Nach)> paare)
+                => string.Join(", ", paare.Select(p => Zahl(Math.Round(p.Von, 3)) + " → " + Zahl(Math.Round(p.Nach, 3)))
+                                          .GroupBy(t => t, StringComparer.Ordinal).OrderByDescending(g => g.Count()).ThenBy(g => g.Key, StringComparer.Ordinal)
+                                          .Take(5).Select(g => g.Key + " (" + Ganz(g.Count()) + "×)"));
 
             /// <summary>Jede Gruppe summiert dieselbe Fläche wie das Summenfeld der Zuordnung.</summary>
             private void Summenprobe(GebaeudeImportSatz satz)

@@ -61,6 +61,24 @@ namespace WindowsFormsApplication1
         private const string SQL_ABSCHNITTSBEZUG = "SELECT * FROM PdProfileTaskSerialReference";
         private const string SQL_NUR_LESEN = "PRAGMA query_only = 1";
 
+        /// <summary>Die Bauteiltabellen (BA-4b, Befund Projektdatei N.10) — optional: Fehlen sie, bleibt es beim Stand ohne Aufbauten.</summary>
+        internal static readonly string[] BAUTEIL_TABELLEN =
+        {
+            "BmElement", "BmElementReference", "TcBuildingElementDimension", "TcBuildingElementDimensionLayer",
+        };
+
+        // Nur die benötigten Spalten — ohne Binärströme (Konzept HottCAD-Verbund 9).
+        private const string SQL_HUELLFLAECHE =
+            "SELECT UUID, GId, ElementType, AdjacentType, CatalogDimUUID, UValue, NetArea FROM BmElement WHERE RepositoryLevel = 3";
+        private const string SQL_ELEMENTBEZUG =
+            "SELECT UUID, Id, SortNum, ReferenceFromUUID, ReferenceToUUID, ReferenceType FROM BmElementReference";
+        private const string SQL_AUFBAU =
+            "SELECT UId, ShortDesc, LongDesc, UValue, Thickness, InternalCoefficientOfHeatTransfer, ExternalCoefficientOfHeatTransfer " +
+            "FROM TcBuildingElementDimension";
+        private const string SQL_AUFBAUSCHICHT =
+            "SELECT UId, DimensionUId, SortNum, ShortDesc, LayerType, MaterialType, MaterialGroupType, Thickness, ThermalConductivity, " +
+            "Density, HeatCapacity FROM TcBuildingElementDimensionLayer";
+
         /// <summary>
         /// <b>Öffnet die Datei nur lesend</b>: <c>Mode=ReadOnly</c>, ohne Verbindungspool (die Datei ist danach sofort frei),
         /// <c>query_only</c>. Jeder Schreibversuch scheitert mit einer <see cref="SqliteException"/>.
@@ -346,6 +364,112 @@ namespace WindowsFormsApplication1
                     p.Key < 0 ? "—" : SqprojProtokoll.Z(p.Key), SqprojProtokoll.Z(p.Value)));
             if (abschnittsartUnbekannt > 0)
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.ABSCHNITTSART_UNBEKANNT, SqprojProtokoll.Z(abschnittsartUnbekannt)));
+
+            // 5) Bauteile und Aufbauten (BA-4b) — optional
+            BauteileLesen(c, a, vorhanden, fassung);
+        }
+
+        /// <summary>
+        /// <b>Liest Hüllflächen, Raumbezüge und den Aufbaukatalog</b> (BA-4b, Befund Projektdatei N.1–N.10): die Level-3-Zeilen
+        /// von <c>BmElement</c> mit ihren Bezügen (mehrere je Zeile zulässig), alle Aufbauten mit ihren Schichten innen → außen
+        /// (<c>SortNum</c> aufsteigend), c · 1 000, Platzhalter und Null-Kennung als „nicht gesetzt“. Fehlt eine der vier
+        /// Tabellen oder ist eine Spalte nicht lesbar, bleibt der Stand ohne Aufbauten — benannt, ohne die Datei abzulehnen.
+        /// </summary>
+        private static void BauteileLesen(SqliteConnection c, SqprojAbbild a, HashSet<string> vorhanden, Dictionary<string, string> fassung)
+        {
+            List<string> fehlen = BAUTEIL_TABELLEN.Where(t => !vorhanden.Contains(t)).ToList();
+            if (fehlen.Count > 0)
+            {
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.BAUTEILE_FEHLEN, string.Join(", ", fehlen)));
+                return;
+            }
+            foreach (string t in BAUTEIL_TABELLEN)
+                if (fassung.TryGetValue(t, out string v) && double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out double f) && f > FASSUNG_MAX)
+                    a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.FASSUNG_UNBEKANNT, t, v));
+            try
+            {
+                var aufbauten = new Dictionary<string, SqprojAufbau>(StringComparer.OrdinalIgnoreCase);
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_AUFBAU))
+                {
+                    string k = SqprojBauteilcodes.Kennung(Text(z, "UId"));
+                    if (k == null || aufbauten.ContainsKey(k)) continue;
+                    aufbauten[k] = new SqprojAufbau
+                    {
+                        Kennung = k,
+                        Name = Text(z, "ShortDesc") ?? Text(z, "LongDesc"),
+                        UWert = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "UValue"))),
+                        DickeM = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Thickness"))),
+                        // Rsi/Rse stehen trotz der Namen als Widerstände [m²K/W] in diesen Spalten (Befund N.5).
+                        RsiM2KW = SqprojBauteilcodes.Gesetzt(Zahl(z, "InternalCoefficientOfHeatTransfer")),
+                        RseM2KW = SqprojBauteilcodes.Gesetzt(Zahl(z, "ExternalCoefficientOfHeatTransfer")),
+                    };
+                }
+                var schichten = new List<(SqprojAufbau Aufbau, int Sort, SqprojSchicht Schicht)>();
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_AUFBAUSCHICHT))
+                {
+                    string d = SqprojBauteilcodes.Kennung(Text(z, "DimensionUId"));
+                    if (d == null || !aufbauten.TryGetValue(d, out SqprojAufbau auf)) continue;
+                    schichten.Add((auf, Ganz(z, "SortNum") ?? 0, new SqprojSchicht
+                    {
+                        Kennung = SqprojBauteilcodes.Kennung(Text(z, "UId")),
+                        Name = Text(z, "ShortDesc"),
+                        Schichttyp = Ganz(z, "LayerType"),
+                        Stofftyp = Ganz(z, "MaterialType"),
+                        Stoffgruppe = Ganz(z, "MaterialGroupType"),
+                        DickeM = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Thickness"))),
+                        LambdaWmK = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "ThermalConductivity"))),
+                        RhoKgM3 = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Density"))),
+                        CpJkgK = SqprojBauteilcodes.CpJkgK(SqprojBauteilcodes.Gesetzt(Zahl(z, "HeatCapacity"))),
+                    }));
+                }
+                foreach (var g in schichten.GroupBy(x => x.Aufbau))
+                {
+                    int stelle = 0;
+                    foreach (var x in g.OrderBy(x => x.Sort).ThenBy(x => x.Schicht.Kennung ?? "", StringComparer.Ordinal))
+                        g.Key.Schichten.Add(new SqprojSchicht
+                        {
+                            Kennung = x.Schicht.Kennung, Name = x.Schicht.Name, Stelle = stelle++, Schichttyp = x.Schicht.Schichttyp,
+                            Stofftyp = x.Schicht.Stofftyp, Stoffgruppe = x.Schicht.Stoffgruppe, DickeM = x.Schicht.DickeM,
+                            LambdaWmK = x.Schicht.LambdaWmK, RhoKgM3 = x.Schicht.RhoKgM3, CpJkgK = x.Schicht.CpJkgK,
+                        });
+                }
+
+                var flaechen = new Dictionary<string, SqprojHuellflaeche>(StringComparer.OrdinalIgnoreCase);
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_HUELLFLAECHE))
+                {
+                    string u = Text(z, "UUID");
+                    if (u == null || flaechen.ContainsKey(u)) continue;
+                    flaechen[u] = new SqprojHuellflaeche
+                    {
+                        Uuid = u,
+                        Gid = SqprojBauteilcodes.Kennung(Text(z, "GId")),
+                        Elementtyp = Ganz(z, "ElementType"),
+                        Nachbarart = Ganz(z, "AdjacentType"),
+                        AufbauKennung = SqprojBauteilcodes.Kennung(Text(z, "CatalogDimUUID")),
+                        UWert = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "UValue"))),
+                        NettoM2 = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "NetArea"))),
+                    };
+                }
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_ELEMENTBEZUG)
+                             .OrderBy(z => Ganz(z, "SortNum") ?? 0).ThenBy(z => Ganz(z, "Id") ?? 0).ThenBy(z => Text(z, "UUID") ?? "", StringComparer.Ordinal))
+                {
+                    string ziel = Text(z, "ReferenceToUUID"), raum = Text(z, "ReferenceFromUUID");
+                    if (ziel == null || raum == null || !flaechen.TryGetValue(ziel, out SqprojHuellflaeche h)) continue;
+                    h.Bezuege.Add(new SqprojBezug(raum, Ganz(z, "ReferenceType"), h.Bezuege.Count));
+                }
+                foreach (SqprojAufbau x in aufbauten.Values.OrderBy(x => x.Kennung, StringComparer.Ordinal)) a.Aufbauten[x.Kennung] = x;
+                a.Huellflaechen.AddRange(flaechen.Values.OrderBy(h => h.Uuid, StringComparer.Ordinal));
+                a.BauteileGelesen = true;
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.BAUTEILE,
+                    SqprojProtokoll.Z(a.Huellflaechen.Count), SqprojProtokoll.Z(a.Aufbauten.Count),
+                    SqprojProtokoll.Z(a.Aufbauten.Values.Count(x => x.HatSchichten)), SqprojProtokoll.Z(a.Aufbauten.Values.Sum(x => x.Schichten.Count))));
+            }
+            catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
+            {
+                a.Huellflaechen.Clear();
+                a.Aufbauten.Clear();
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.BAUTEILE_UNLESBAR, ex.Message));
+            }
         }
 
         private static SqprojNutzungsprofil Nutzungsprofil(Dictionary<string, object> kopf, Dictionary<string, object> n)

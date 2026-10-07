@@ -30,6 +30,8 @@ namespace WindowsFormsApplication1
         internal const string RAUMART_ABWEICHUNG = PRAEFIX + "RAUMART_ABWEICHUNG";
         internal const string ABSCHNITTSART_UNBEKANNT = PRAEFIX + "ABSCHNITTSART_UNBEKANNT";
         internal const string RAUM_OHNE_TREFFER = PRAEFIX + "RAUM_OHNE_TREFFER";
+        internal const string RAUM_HERKUNFT = PRAEFIX + "RAUM_HERKUNFT";
+        internal const string GUID_MEHRDEUTIG = PRAEFIX + "GUID_MEHRDEUTIG";
         internal const string IFC_RAUM_OHNE_GEGENSTUECK = PRAEFIX + "IFC_RAUM_OHNE_GEGENSTUECK";
         internal const string ZONE_LEER = PRAEFIX + "ZONE_LEER";
         internal const string ZONE_ABGELEHNT = PRAEFIX + "ZONE_ABGELEHNT";
@@ -41,6 +43,13 @@ namespace WindowsFormsApplication1
         internal const string ZONIERUNG = PRAEFIX + "ZONIERUNG";
         /// <summary>Die wirksame Zonierung, nur eine vorhanden (E87): Zonierung, Zahl.</summary>
         internal const string ZONIERUNG_EINE = PRAEFIX + "ZONIERUNG_EINE";
+
+        /// <summary>Die Bauteiltabellen fehlen (BA-4b): Tabellen — es bleibt beim Stand ohne Aufbauten.</summary>
+        internal const string BAUTEILE_FEHLEN = PRAEFIX + "BAUTEILE_FEHLEN";
+        /// <summary>Die Bauteiltabellen sind nicht lesbar (BA-4b): Grund.</summary>
+        internal const string BAUTEILE_UNLESBAR = PRAEFIX + "BAUTEILE_UNLESBAR";
+        /// <summary>Gelesene Bauteile (BA-4b): Hüllflächen, Aufbauten, davon mit Schichten, Schichten.</summary>
+        internal const string BAUTEILE = PRAEFIX + "BAUTEILE";
 
         /// <summary>Der Belegtext je Zelle: Tabelle, Spalte, Profilnummer bzw. Profil.</summary>
         internal const string BELEG = "GIMP_BELEG_SQPROJ";
