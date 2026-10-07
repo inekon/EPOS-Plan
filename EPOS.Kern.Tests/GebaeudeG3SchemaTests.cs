@@ -291,9 +291,11 @@ namespace EPOS.Kern.Tests
                                        .Concat(ZonenUebergabeSchema.SPALTEN_ZONE)
                                        .Concat(new[] { RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL }),
                          Spalten(SchemaKatalog.TAB_ZONE));
-            // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an.
+            // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an,
+            // dahinter die Herkunft der Bauteilfläche (G5-0, FlaechenherkunftSchema.SCHRITT).
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten)
-                                       .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key)),
+                                       .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key))
+                                       .Concat(new[] { FlaechenherkunftSchema.SPALTE }),
                          Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }
