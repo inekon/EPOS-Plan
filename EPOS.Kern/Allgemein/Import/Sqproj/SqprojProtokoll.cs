@@ -50,6 +50,8 @@ namespace WindowsFormsApplication1
         internal const string BAUTEILE_UNLESBAR = PRAEFIX + "BAUTEILE_UNLESBAR";
         /// <summary>Gelesene Bauteile (BA-4b): Hüllflächen, Aufbauten, davon mit Schichten, Schichten.</summary>
         internal const string BAUTEILE = PRAEFIX + "BAUTEILE";
+        /// <summary>Lage, Öffnungen oder Standort der Hüllflächen sind nicht lesbar: Grund — Aufbauten und Nettoflächen bleiben.</summary>
+        internal const string LAGE_UNLESBAR = PRAEFIX + "LAGE_UNLESBAR";
 
         /// <summary>Der Belegtext je Zelle: Tabelle, Spalte, Profilnummer bzw. Profil.</summary>
         internal const string BELEG = "GIMP_BELEG_SQPROJ";

@@ -70,6 +70,12 @@ namespace WindowsFormsApplication1
         // Nur die benötigten Spalten — ohne Binärströme (Konzept HottCAD-Verbund 9).
         private const string SQL_HUELLFLAECHE =
             "SELECT UUID, GId, ElementType, AdjacentType, CatalogDimUUID, UValue, NetArea FROM BmElement WHERE RepositoryLevel = 3";
+        // Lage und Öffnungen der Hüllflächen (Gebäudeabbild allein aus der Projektdatei) — eigene Anweisung, damit eine Datei
+        // ohne diese Spalten den Stand der Aufbauten behält.
+        private const string SQL_HUELLFLAECHE_LAGE =
+            "SELECT UUID, GrossArea, Orientation, Slope, ParentUUID, RepositoryElementUUID FROM BmElement WHERE RepositoryLevel = 3";
+        private const string SQL_FENSTER = "SELECT UUID, GValue, FractionOfFrame FROM BmElementWindow";
+        private const string SQL_STANDORT = "SELECT UUID, Location, PostalCode, Latitude, Longitude FROM SmSite";
         private const string SQL_ELEMENTBEZUG =
             "SELECT UUID, Id, SortNum, ReferenceFromUUID, ReferenceToUUID, ReferenceType FROM BmElementReference";
         private const string SQL_AUFBAU =
@@ -162,12 +168,25 @@ namespace WindowsFormsApplication1
                     a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.FASSUNG_UNBEKANNT, t, v));
 
             // 2) Gebäude, Geschosse, Räume
-            a.Gebaeudename = Zeilen(c, SQL_GEBAEUDE).Select(z => Name(z)).OrderBy(n => n, StringComparer.Ordinal).FirstOrDefault();
-            var geschossName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            List<Dictionary<string, object>> gebaeudeZeilen = Zeilen(c, SQL_GEBAEUDE);
+            a.Gebaeudename = gebaeudeZeilen.Select(z => Name(z)).OrderBy(n => n, StringComparer.Ordinal).FirstOrDefault();
+            var gebaeudeKennungen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (Dictionary<string, object> z in gebaeudeZeilen)
+                if (Text(z, "UUID") is string u && gebaeudeKennungen.Add(u))
+                    a.Gebaeude.Add(new SqprojGebaeude
+                    {
+                        Uuid = u, Name = Name(z), BaujahrText = Text(z, "YearOfConstruction"),
+                        Baujahr = Baujahr(z), StandortUuid = SqprojBauteilcodes.Kennung(Text(z, "SiteUUID")) == null ? null : Text(z, "SiteUUID"),
+                    });
+            a.Gebaeude.Sort((x, y) => string.CompareOrdinal(x.Name, y.Name) is int n && n != 0 ? n : string.CompareOrdinal(x.Uuid, y.Uuid));
+            var geschosse = new Dictionary<string, SqprojGeschoss>(StringComparer.OrdinalIgnoreCase);
             foreach (Dictionary<string, object> z in Zeilen(c, SQL_GESCHOSS))
-                if (Text(z, "UUID") is string u && !geschossName.ContainsKey(u)) geschossName[u] = Name(z);
-            a.Geschosse.AddRange(geschossName.Select(p => new SqprojGeschoss(p.Key, p.Value))
-                                             .OrderBy(g => g.Name, StringComparer.Ordinal).ThenBy(g => g.Uuid, StringComparer.Ordinal));
+                if (Text(z, "UUID") is string u && !geschosse.ContainsKey(u))
+                    geschosse[u] = new SqprojGeschoss(u, Name(z), Text(z, "BuildingUUID"),
+                                                      SqprojBauteilcodes.Gesetzt(Zahl(z, "ElevationOfRefHeight")),
+                                                      Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Height"))));
+            var geschossName = geschosse.ToDictionary(p => p.Key, p => p.Value.Name, StringComparer.OrdinalIgnoreCase);
+            a.Geschosse.AddRange(geschosse.Values.OrderBy(g => g.Name, StringComparer.Ordinal).ThenBy(g => g.Uuid, StringComparer.Ordinal));
             var raeume = new List<SqprojRaum>();
             foreach (Dictionary<string, object> z in Zeilen(c, SQL_RAUM))
             {
@@ -182,6 +201,8 @@ namespace WindowsFormsApplication1
                     Raumart = Ganz(z, "RoomType"),
                     FlaecheM2 = Positiv(Zahl(z, "Area")),
                     VolumenM3 = Positiv(Zahl(z, "Volume")),
+                    HoeheM = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Height"))),
+                    Beheizung = Ganz(z, "HeatingType"),
                 });
             }
             a.Raeume.AddRange(raeume.OrderBy(r => r.GeschossName ?? "", StringComparer.Ordinal)
@@ -367,6 +388,7 @@ namespace WindowsFormsApplication1
 
             // 5) Bauteile und Aufbauten (BA-4b) — optional
             BauteileLesen(c, a, vorhanden, fassung);
+            StandorteLesen(c, a, vorhanden);
         }
 
         /// <summary>
@@ -459,6 +481,7 @@ namespace WindowsFormsApplication1
                 }
                 foreach (SqprojAufbau x in aufbauten.Values.OrderBy(x => x.Kennung, StringComparer.Ordinal)) a.Aufbauten[x.Kennung] = x;
                 a.Huellflaechen.AddRange(flaechen.Values.OrderBy(h => h.Uuid, StringComparer.Ordinal));
+                LageLesen(c, a, flaechen, vorhanden);
                 a.BauteileGelesen = true;
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.BAUTEILE,
                     SqprojProtokoll.Z(a.Huellflaechen.Count), SqprojProtokoll.Z(a.Aufbauten.Count),
@@ -470,6 +493,87 @@ namespace WindowsFormsApplication1
                 a.Aufbauten.Clear();
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, SqprojProtokoll.BAUTEILE_UNLESBAR, ex.Message));
             }
+        }
+
+        /// <summary>
+        /// <b>Liest Lage und Öffnungen der Hüllflächen</b> (Gebäudeabbild allein aus der Projektdatei): Bruttofläche,
+        /// Orientierung, Neigung, Wirt (<c>ParentUUID</c>) und CAD-Objekt (<c>RepositoryElementUUID</c>), dazu g-Wert und
+        /// Rahmenanteil aus <c>BmElementWindow</c> (optional). Fehlt eine Spalte, bleibt es bei Aufbau, U-Wert und Nettofläche —
+        /// benannt als Info, ohne die Bauteile zu verwerfen.
+        /// </summary>
+        private static void LageLesen(SqliteConnection c, SqprojAbbild a, Dictionary<string, SqprojHuellflaeche> flaechen, HashSet<string> vorhanden)
+        {
+            try
+            {
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_HUELLFLAECHE_LAGE))
+                {
+                    if (Text(z, "UUID") is not string u || !flaechen.TryGetValue(u, out SqprojHuellflaeche h)) continue;
+                    h.BruttoM2 = Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "GrossArea")));
+                    h.OrientierungGrad = SqprojBauteilcodes.Gesetzt(Zahl(z, "Orientation"));
+                    h.NeigungGrad = SqprojBauteilcodes.Gesetzt(Zahl(z, "Slope"));
+                    h.Eltern = SqprojBauteilcodes.Kennung(Text(z, "ParentUUID")) == null ? null : Text(z, "ParentUUID");
+                    h.CadObjekt = SqprojBauteilcodes.Kennung(Text(z, "RepositoryElementUUID")) == null ? null : Text(z, "RepositoryElementUUID");
+                }
+                if (vorhanden.Contains("BmElementWindow"))
+                    foreach (Dictionary<string, object> z in Zeilen(c, SQL_FENSTER))
+                    {
+                        if (Text(z, "UUID") is not string u || !flaechen.TryGetValue(u, out SqprojHuellflaeche h)) continue;
+                        double? g = SqprojBauteilcodes.Gesetzt(Zahl(z, "GValue"));
+                        h.GWert = g > 0.0 && g <= 1.0 ? g : null;
+                        double? f = SqprojBauteilcodes.Gesetzt(Zahl(z, "FractionOfFrame"));
+                        if (f > 1.0) f /= 100.0;
+                        h.Rahmenanteil = f >= 0.0 && f < 1.0 ? f : null;
+                    }
+                a.LageGelesen = true;
+            }
+            catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
+            {
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.LAGE_UNLESBAR, ex.Message));
+            }
+        }
+
+        /// <summary>Liest die Standorte (<c>SmSite</c>, optional); eine unlesbare Tabelle bleibt still leer — sie ist nur Anzeige.</summary>
+        private static void StandorteLesen(SqliteConnection c, SqprojAbbild a, HashSet<string> vorhanden)
+        {
+            if (!vorhanden.Contains("SmSite")) return;
+            try
+            {
+                foreach (Dictionary<string, object> z in Zeilen(c, SQL_STANDORT))
+                    if (Text(z, "UUID") is string u && !a.Standorte.ContainsKey(u))
+                    {
+                        double? breite = SqprojBauteilcodes.Gesetzt(Zahl(z, "Latitude")), laenge = SqprojBauteilcodes.Gesetzt(Zahl(z, "Longitude"));
+                        a.Standorte[u] = new SqprojStandort
+                        {
+                            Uuid = u, Ort = Text(z, "Location"), Plz = Text(z, "PostalCode"),
+                            BreiteGrad = breite is double b && b >= -90.0 && b <= 90.0 && b != 0.0 ? b : null,
+                            LaengeGrad = laenge is double l && l >= -180.0 && l <= 180.0 && l != 0.0 ? l : null,
+                        };
+                    }
+            }
+            catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
+            {
+                a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.LAGE_UNLESBAR, ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// <b>Das Baujahr eines Gebäudes</b>: die Jahreszahl aus <c>YearOfConstruction</c> (Text „JJJJ-MM-TT …“ oder
+        /// Delphi-Tageszahl; die Nullzeit heißt „keine Angabe“), sonst <c>Constructed</c>, wenn es eine Jahreszahl ist.
+        /// </summary>
+        internal static int? Baujahr(Dictionary<string, object> z)
+        {
+            static int? Jahr(int? j) => j >= 1000 && j <= 2200 ? j : null;
+            object w = Wert(z, "YearOfConstruction");
+            if (w is string s && !string.IsNullOrWhiteSpace(s))
+            {
+                if (!s.TrimStart().StartsWith(NULLZEIT, StringComparison.Ordinal) && Jahr(Baujahrregel.Jahr(s)) is int j) return j;
+            }
+            else if (Zahl(z, "YearOfConstruction") is double tage && tage > 1.0)
+            {
+                int jahr = new DateTime(1899, 12, 30).AddDays(Math.Min(tage, 100000.0)).Year;
+                if (Jahr(jahr) is int j) return j;
+            }
+            return Jahr(Ganz(z, "Constructed"));
         }
 
         private static SqprojNutzungsprofil Nutzungsprofil(Dictionary<string, object> kopf, Dictionary<string, object> n)

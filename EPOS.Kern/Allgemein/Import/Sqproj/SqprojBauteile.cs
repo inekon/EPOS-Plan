@@ -74,6 +74,20 @@ namespace WindowsFormsApplication1
         internal string AufbauKennung { get; init; }
         internal double? UWert { get; init; }
         internal double? NettoM2 { get; init; }
+        /// <summary>Bruttofläche [m²] (<c>GrossArea</c>; an einer Wand Netto + Öffnungen); <c>null</c> = keine.</summary>
+        internal double? BruttoM2 { get; set; }
+        /// <summary>Orientierung [°] (<c>Orientation</c>, 0 = Nord der Planung, im Uhrzeigersinn); <c>null</c> = keine (Innenbauteil, waagerecht).</summary>
+        internal double? OrientierungGrad { get; set; }
+        /// <summary>Neigung gegen die Waagerechte [°] (<c>Slope</c>: Wand 90, Decke und Boden 0); <c>null</c> = keine.</summary>
+        internal double? NeigungGrad { get; set; }
+        /// <summary>Der Wirt einer Öffnung (<c>ParentUUID</c>, die Level-3-Wand desselben Raums); <c>null</c> = keiner.</summary>
+        internal string Eltern { get; set; }
+        /// <summary>Das CAD-Objekt (<c>RepositoryElementUUID</c>, ein Level-2-Bauteil); <c>null</c> = keines.</summary>
+        internal string CadObjekt { get; set; }
+        /// <summary>Gesamtenergiedurchlassgrad g [–] einer Öffnung (<c>BmElementWindow.GValue</c>); <c>null</c> = keiner.</summary>
+        internal double? GWert { get; set; }
+        /// <summary>Rahmenanteil [0–1] einer Öffnung (<c>BmElementWindow.FractionOfFrame</c>, in der Datei in %); <c>null</c> = keiner.</summary>
+        internal double? Rahmenanteil { get; set; }
         internal List<SqprojBezug> Bezuege { get; } = new List<SqprojBezug>();
 
         /// <summary>
@@ -93,6 +107,36 @@ namespace WindowsFormsApplication1
         internal const int STOFF_DAEMMSTOFF = 1;
         /// <summary><c>ReferenceType</c> 8: der Raum, dessen Boden die Fläche ist (bei einer Decke der obere Raum).</summary>
         internal const int ROLLE_BODEN = 8;
+        /// <summary><c>ReferenceType</c> 7: der Raum, dessen Decke die Fläche ist (bei einer Decke der untere Raum).</summary>
+        internal const int ROLLE_DECKE = 7;
+        /// <summary><c>ReferenceType</c> 9: der Raum, dessen Dach die Fläche ist.</summary>
+        internal const int ROLLE_DACH = 9;
+        /// <summary><c>ElementType</c> 1: Wand.</summary>
+        internal const int ELEMENT_WAND = 1;
+        /// <summary><c>ElementType</c> 2: Tür (Öffnung in einer Wand).</summary>
+        internal const int ELEMENT_TUER = 2;
+        /// <summary><c>ElementType</c> 3: Fenster (Öffnung in einer Wand).</summary>
+        internal const int ELEMENT_FENSTER = 3;
+        /// <summary><c>ElementType</c> 4: Decke bzw. Boden zwischen Geschossen.</summary>
+        internal const int ELEMENT_DECKE = 4;
+        /// <summary><c>ElementType</c> 5: Dach bzw. oberste Decke gegen außen.</summary>
+        internal const int ELEMENT_DACH = 5;
+        /// <summary><c>ElementType</c> 11: Bodenplatte.</summary>
+        internal const int ELEMENT_BODENPLATTE = 11;
+        /// <summary><c>AdjacentType</c> 1: beheizt.</summary>
+        internal const int NACHBAR_BEHEIZT = 1;
+        /// <summary><c>AdjacentType</c> 2: unbeheizt.</summary>
+        internal const int NACHBAR_UNBEHEIZT = 2;
+        /// <summary><c>AdjacentType</c> 3: Außenluft.</summary>
+        internal const int NACHBAR_AUSSEN = 3;
+        /// <summary><c>AdjacentType</c> 5: Erdreich.</summary>
+        internal const int NACHBAR_ERDREICH = 5;
+        /// <summary><c>HeatingType</c> 1: beheizt.</summary>
+        internal const int HEIZUNG_BEHEIZT = 1;
+        /// <summary><c>HeatingType</c> 2: unbeheizt.</summary>
+        internal const int HEIZUNG_UNBEHEIZT = 2;
+        /// <summary><c>HeatingType</c> 4: getrennt beheizt (eigene Wärmeversorgung) — für die Hülle beheizt.</summary>
+        internal const int HEIZUNG_GETRENNT = 4;
         /// <summary><c>RepositoryLevel</c> der raumbezogenen Hüllflächen.</summary>
         internal const int LEVEL_HUELLFLAECHE = 3;
         /// <summary>Der Platzhalter „nicht gesetzt“ in Zahlenspalten.</summary>
