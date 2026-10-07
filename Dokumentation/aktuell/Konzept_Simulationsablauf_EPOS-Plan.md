@@ -1873,10 +1873,12 @@ des letzten Laufs zeigt der Dialog nicht.
 - Einfrierregel „gesäte Erdreichquellen der Referenzprojekte“: die Quellfelder und Sondenfeldspalten
   der Referenzanlagen, die Klimazone, der Bodenkatalog, die Normgeometrie und die Festwerte der
   Klasse `Erdsondenfeld` sowie das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
-- Wirkung in der Basis `2026-10-07_R40_Erdreichquellen`: Bei den Kühlprojekten 1047 und 1056 steigt
+- Wirkung in der Basis `2026-10-07_R41_Erdreichpruefung`: Bei den Kühlprojekten 1047 und 1056 steigt
   die JAZ (3,86 → 4,45 bzw. 3,73 → 4,33), die Kälte-EER mit ihr (4,6 → 5,2). Bei den
   Grundlastanlagen 1008 und 1039 fällt sie (4,15 → 3,94 bzw. 3,25 → 3,06), weil das Erdreich unter
   der Last der Sonde auskühlt (Sole im Mittel 4,5 bzw. 1,0 °C gegen 9,9 °C Außenluft). Bei 1023 und
   1050 bleibt sie praktisch gleich (2,38). 1057 rechnet JAZ 3,07 bei 22,12 MWh Strom. Die
-  Erdreichprüfung führt je Projekt einen Block `Erdreich[n].*`; die Kältemaschine von 1055 bleibt
-  unberührt.
+  Erdreichprüfung führt je Anlage mit Erdreichquelle einen Block `Erdreich[n].*`; neben der
+  Luft-Wasser-Wärmepumpe von 1008, 1023 und 1050 prüft sie die Sole-Wärmepumpe für sich (1008:
+  Jahresentzug 52 487 kWh/a, größter Entzug 15,25 kW; 1023 und 1050: 24 283 kWh/a, 6,93 kW). Die
+  Kältemaschine von 1055 bleibt unberührt.
