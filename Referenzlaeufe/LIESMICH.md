@@ -836,6 +836,16 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Der Referenzlauf liest die Ergebnistabelle nicht, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R39
 > GESAMT PASS, 646 CSV byte-gleich.
 
+> **Nachtrag — Schemaschritt 195 (Erdsondenfeld je Anlage), Basis unverändert.** Auf den Stand 194 ist zuerst das
+> Saatskript `Skripte/erdreichquellen_referenzprojekte.py` erneut gelaufen (Erdreichquellen der Referenzprojekte,
+> Zone 6, Projekt 1057). `ErdsondenfeldSchema` (195 = `AufheizAufschlagErgebnisSchema.SCHRITT + 1`) legt an
+> `Tab_Energieanlagen` sechs nullbare Spalten mit Prüfklausel an (`WQ_Sondenabstand`, `WQ_Bohrlochdurchmesser`,
+> `WQ_Bohrlochwiderstand`, `WQ_Kopfueberdeckung`, `WQ_Betrachtungsjahr`, `WQ_Sondenanordnung`; ADD COLUMN, leer =
+> Normvorgabe). Der Zellvergleich gegen den Stand davor zeigt nur `Tab_Applikation.SchemaVersion`. Die Testdatenbank
+> steht auf **195** (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer):
+> **89 690 112 Byte, LFS-SHA-256 `29dbf1dd08e329196c74ee73604892d8b3e9e9852f0a8efc988172687cacf382`**. Der Referenzlauf
+> der 21 Basisprojekte und 1057 ist vor und nach dem Schritt byte-gleich.
+
 ### Die Vorgängerbasis R38 (Vorlaufwahl)
 
 Einundzwanzig Projekte, 646 CSV, 4 271 Skalare, auf Linux eingefroren gegen die Testdatenbank `69322344…` (Schemastand

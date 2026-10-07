@@ -1767,27 +1767,30 @@ einem Einschalten. Die Reihe steht in `SimulationWaermepumpe.Quelltemperaturen` 
 | λ, ρ·c_p (a = λ/ρc_p) | Bodentyp `WQ_Bodentyp` aus dem Katalog nach VDI 4640 Blatt 1, Tabelle 1 (`ErdreichTemperatur.Katalog`) |
 | T_m | Jahresmittel der Außentemperatur (wie bisher) |
 | H, N | `WQ_Tiefe` (Länge je Sonde), `WQ_Anzahl` (mindestens 1) |
-| Abstand B | Festwert 6 m (Bezug der Tabelle B2), Anordnung als möglichst quadratisches Raster, zeilenweise gefüllt |
-| r_b | Festwert 0,075 m (Bohrloch 150 mm, Bezug der Tabelle B2) |
-| R_b | Festwert 0,10 m·K/W (Doppel-U 32 × 3,0, Verfüllung λ = 0,8 W/(m·K), turbulent) |
-| D | Festwert 2 m Kopfüberdeckung |
-| n | Festwert Betrachtungsjahr 10 |
+| Abstand B | `WQ_Sondenabstand`, Vorgabe 6 m (Bezug der Tabelle B2) |
+| Anordnung | `WQ_Sondenanordnung`: `Quadratisch` (Vorgabe, möglichst quadratisches Raster, zeilenweise gefüllt) oder `Reihe` (alle Sonden in einer Linie) |
+| r_b | `WQ_Bohrlochdurchmesser` / 2, Vorgabe 150 mm (r_b = 0,075 m, Bezug der Tabelle B2) |
+| R_b | `WQ_Bohrlochwiderstand`, Vorgabe 0,10 m·K/W (Doppel-U 32 × 3,0, Verfüllung λ = 0,8 W/(m·K), turbulent) |
+| D | `WQ_Kopfueberdeckung`, Vorgabe 2 m |
+| n | `WQ_Betrachtungsjahr`, Vorgabe 10 |
 
 Abstand, r_b, R_b, D, n und die Anordnung stehen im Parameterobjekt `Sondenfeldgeometrie` mit den
-Normwerten als Vorgabe; `WaermequelleClass.SondenfeldgeometrieDerAnlage` liefert es je Anlage und
-gibt heute für jede Anlage die Norm. Für die Pflege je Anlage sind diese Spalten in
-`Tab_Energieanlagen` vorgesehen (ein eigener Schemaschritt):
+Normwerten als Vorgabe; `WaermequelleClass.SondenfeldgeometrieDerAnlage` liest sie je Anlage aus den
+Spalten von `Tab_Energieanlagen` (Schemaschritt 195, `ErdsondenfeldSchema`):
 
-| Spalte | Typ | Vorgabe |
+| Spalte | Typ und Prüfung | Vorgabe |
 |---|---|---|
-| `WQ_Sondenabstand` | REAL, m | 6,0 |
-| `WQ_Bohrlochdurchmesser` | REAL, mm | 150 |
-| `WQ_Bohrlochwiderstand` | REAL, m·K/W | 0,10 |
-| `WQ_Kopfueberdeckung` | REAL, m | 2,0 |
+| `WQ_Sondenabstand` | REAL, m, `CHECK` > 0 | 6,0 |
+| `WQ_Bohrlochdurchmesser` | REAL, mm, `CHECK` > 0 | 150 |
+| `WQ_Bohrlochwiderstand` | REAL, m·K/W, `CHECK` > 0 | 0,10 |
+| `WQ_Kopfueberdeckung` | REAL, m, `CHECK` ≥ 0 | 2,0 |
 | `WQ_Betrachtungsjahr` | INTEGER, `CHECK` ≥ 1 | 10 |
-| `WQ_Sondenanordnung` | TEXT (`Quadratisch`) | Quadratisch |
+| `WQ_Sondenanordnung` | TEXT, `CHECK` in (`Quadratisch`, `Reihe`) | Quadratisch |
 
-NULL heißt Vorgabe; ein unbrauchbarer Wert fällt auf die Norm (`Sondenfeldgeometrie.Bereinigt`).
+NULL heißt Vorgabe; mit allen Spalten leer rechnet das Feld bitgleich mit der Norm. Ein unbrauchbarer Wert
+fällt auf die Norm (`Sondenfeldgeometrie.Bereinigt`). Gepflegt werden die Werte im Erdreichdialog (Zweig
+Erdsonde, leeres Feld = Vorgabe, der Platzhalter nennt sie) über `ErdsondenfeldCtrl`; die Spalten sind
+Fachspalten und überstehen den Speicherweg des Assistenten über dessen Rettung.
 
 ### 23.4 Zweiter Feldlauf: Vorjahre aus der eigenen Last
 

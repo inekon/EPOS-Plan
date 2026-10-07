@@ -283,9 +283,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - gesäte Erdreichquellen der Referenzprojekte: an ihren Wärmepumpen-Anlagen in `Tab_Energieanlagen` die Quellfelder
   `WQ_Typ`, `WQ_Quellsystem`, `WQ_Tiefe`, `WQ_Anzahl`, `WQ_Flaeche`, `WQ_Bodentyp`, `WQ_Spreizung`; die Klimazone
   `Tab_Klimaregion.Klimazone_DIN4710` ihrer Klimaregion; der Bodenkatalog (λ, ρ·c_p) der benutzten Bodentypen; die
-  Normgeometrie von `Sondenfeldgeometrie` samt den Festwerten in `Erdsondenfeld` (Abstand 6 m, Bohrlochradius
-  0,075 m, R_b 0,10 m·K/W, Kopfüberdeckung 2 m, Betrachtungsjahr 10, Heizgrenze 15 °C der Startschätzung,
-  quadratische Anordnung); dazu das Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
+  Sondenfeldspalten derselben Anlagen (`WQ_Sondenabstand`, `WQ_Bohrlochdurchmesser`, `WQ_Bohrlochwiderstand`,
+  `WQ_Kopfueberdeckung`, `WQ_Betrachtungsjahr`, `WQ_Sondenanordnung` — leer heißt Vorgabe); die Normgeometrie von
+  `Sondenfeldgeometrie` samt den Festwerten in `Erdsondenfeld` (Abstand 6 m, Bohrlochradius 0,075 m, R_b 0,10 m·K/W,
+  Kopfüberdeckung 2 m, Betrachtungsjahr 10, Heizgrenze 15 °C der Startschätzung, quadratische Anordnung); dazu das
+  Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
