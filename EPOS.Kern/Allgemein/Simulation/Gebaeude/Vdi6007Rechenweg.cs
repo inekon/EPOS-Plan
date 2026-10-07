@@ -737,7 +737,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+            // AK3-K (Festlegung 10): Rechnet der Projektlauf die Stufe im geschlossenen Kreis (AK3), entfällt der Satz
+            // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
                     string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
 
@@ -793,7 +795,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+            // AK3-K (Festlegung 10): Rechnet der Projektlauf die Stufe im geschlossenen Kreis (AK3), entfällt der Satz
+            // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
                     string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
 
