@@ -113,7 +113,7 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         Assert.Null(cut.Instance.Quelle);
 
         Waehlen(cut, 4);
-        Assert.Equal(GebaeudeImportQuellen.PROJEKTDATEI, cut.Instance.Quelle);
+        Assert.Equal("SQPROJ", cut.Instance.Quelle);
         Einlesen(cut);
         Assert.EndsWith("|*.sqproj", _filter.Last());
 
@@ -130,11 +130,11 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         Einlesen(cut);   // über „alle Formate“: die Quelle folgt der Endung
 
         Assert.True(cut.Instance.NurProjektdatei);
-        Assert.Equal(GebaeudeImportQuellen.PROJEKTDATEI, cut.Instance.Quelle);
+        Assert.Equal("SQPROJ", cut.Instance.Quelle);
         Assert.Empty(cut.FindAll("button[data-aktion='projektdatei']"));
         Assert.Empty(cut.FindAll("button[data-aktion='projektdatei-entfernen']"));
         IElement zeile = cut.Find(".epos-gebimport-quellzeile");
-        Assert.Equal(GebaeudeImportQuellen.PROJEKTDATEI, zeile.GetAttribute("data-quelle"));
+        Assert.Equal(nameof(GebaeudeImportWeg.NurProjektdatei), zeile.GetAttribute("data-quelle"));
         Assert.Contains("Quelle: Projektdatei", zeile.TextContent);
 
         // Die Nordrichtungsabfrage: die Datei nennt keinen Nordwinkel — angenommen, im Warnstil.
@@ -170,7 +170,7 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         Assert.False(cut.Instance.NurProjektdatei);
         Assert.NotEmpty(cut.FindAll("button[data-aktion='projektdatei']"));
         IElement zeile = cut.Find(".epos-gebimport-quellzeile");
-        Assert.Equal(GebaeudeImportQuellen.IFC_PROJEKTDATEI, zeile.GetAttribute("data-quelle"));
+        Assert.Equal(nameof(GebaeudeImportWeg.MitProjektdatei), zeile.GetAttribute("data-quelle"));
         Assert.Contains("Quelle: IFC + Projektdatei", zeile.TextContent);
     }
 
@@ -184,7 +184,7 @@ public class GebaeudeImportNurProjektdateiDialogTests : EposBunitContext
         {
             var en = new GebaeudeImportTexte();
             Assert.Equal("Source", en.Quellwahl);
-            Assert.Equal("IFC + project file", en.QuelleIfcProjektdatei);
+            Assert.Equal("{0} + project file", en.QuelleMitProjektdatei);
             Assert.StartsWith("A zone of the project file", en.SqNurUnbeheizt);
         }
     }

@@ -48598,8 +48598,8 @@ chart</value>
   <data name="GIMP_DLG_QUELLZEILE" xml:space="preserve">
     <value>Source: {0}</value>
   </data>
-  <data name="GIMP_DLG_QUELLE_IFC_SQPROJ" xml:space="preserve">
-    <value>IFC + project file</value>
+  <data name="GIMP_DLG_QUELLE_MIT_SQPROJ" xml:space="preserve">
+    <value>{0} + project file</value>
   </data>
   <data name="GIMP_DLG_QUELLE_SQPROJ" xml:space="preserve">
     <value>Project file only (.sqproj)</value>

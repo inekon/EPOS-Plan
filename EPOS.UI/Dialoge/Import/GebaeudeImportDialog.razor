@@ -139,7 +139,7 @@
             <Herleitungszeile Text="@(_stand is { KlassenHinweis.Length: > 0 } s ? s.KlassenHinweis : Texte.KlasseHinweis)" />
             @if (Quellenliste.Count > 0)
             {
-                @* DIE QUELLENWAHL (Datenaustauschkonzept 16.1): IFC, gbXML, IFC + Projektdatei, nur Projektdatei - sie setzt den
+                @* DIE QUELLENWAHL (Datenaustauschkonzept 16.1): je Format, Format mit Projektdatei, nur Projektdatei - sie setzt den
                    Filter des Dateiwaehlers; ohne Wahl gilt der gemeinsame Filter, und die Quelle folgt der Endung der Datei. *@
                 <div class="epos-gebimport-quellwahl" data-quelle="@(_quelle ?? "")">
                     <Auswahlfeld Bezeichnung="@Texte.Quellwahl" Eintraege="@Quelleneintraege" Auswahl="@QuellenId(_quelle)"
@@ -166,7 +166,7 @@
         <Gruppenkopf Titel="@Texte.GruppeQuelle" />
         @if (_lesestand.Kopf is GebaeudeImportKopf kopf)
         {
-            <div class="epos-gebimport-quellzeile" data-quelle="@GeleseneQuelle">
+            <div class="epos-gebimport-quellzeile" data-quelle="@GelesenerWeg">
                 <Herleitungszeile Text="@Format(Texte.Quellzeile, Quellentext(kopf, stand))" />
             </div>
             <dl class="epos-gebimport-kopf">
@@ -1279,7 +1279,7 @@
     // Die Quellenwahl (Datenaustauschkonzept 16.1)
     // ---------------------------------------------------------------------
 
-    /// <summary>Die gewählte Quelle (<see cref="GebaeudeImportQuellen"/>); <c>null</c> = alle Formate, die Endung entscheidet.</summary>
+    /// <summary>Der Schlüssel der gewählten Quelle (Datenseite); <c>null</c> = alle Formate, die Endung entscheidet.</summary>
     private string? _quelle;
 
     /// <summary>Die gewählte Quelle (Prüfhilfe für Tests); nach dem Lesen einer <c>.sqproj</c> über „alle“ die Projektdatei.</summary>
@@ -1309,21 +1309,24 @@
            ?? Profil?.Dateifilter ?? "";
 
     /// <summary>
-    /// <b>Der Weg „nur Projektdatei“</b>: die gelesene Datei ist eine <c>.sqproj</c> — erkannt am Formatschlüssel des Kopfs,
-    /// gleich ob über die Quellenwahl oder über „alle Formate“ gewählt.
+    /// <b>Der Weg „nur Projektdatei“</b>: die gelesene Datei ist eine <c>.sqproj</c> — erkannt am Weg des Kopfs, gleich ob
+    /// über die Quellenwahl oder über „alle Formate“ gewählt.
     /// </summary>
-    public bool NurProjektdatei
-        => string.Equals(_lesestand?.Kopf?.Formatschluessel, GebaeudeImportQuellen.PROJEKTDATEI, StringComparison.Ordinal);
+    public bool NurProjektdatei => _lesestand?.Kopf?.Weg == GebaeudeImportWeg.NurProjektdatei;
 
-    /// <summary>Die Quelle des gelesenen Laufs als Schlüssel (<c>data-quelle</c> der Quellzeile).</summary>
-    private string GeleseneQuelle
-        => NurProjektdatei ? GebaeudeImportQuellen.PROJEKTDATEI
-         : _stand?.Projektdatei is { Gelesen: true } ? GebaeudeImportQuellen.IFC_PROJEKTDATEI
-         : _lesestand?.Kopf?.Formatschluessel ?? "";
+    /// <summary>Der Weg der gewählten Quelle; ohne Wahl der einer Gebäudedatei.</summary>
+    private GebaeudeImportWeg GewaehlterWeg
+        => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Weg ?? GebaeudeImportWeg.Datei;
 
-    /// <summary>Der Text der Quellzeile: das Format der Datei, nach dem Dazuladen „IFC + Projektdatei“.</summary>
+    /// <summary>Der Weg des gelesenen Laufs (<c>data-quelle</c> der Quellzeile): mit dazugeladener Projektdatei „MitProjektdatei“.</summary>
+    public GebaeudeImportWeg GelesenerWeg
+        => NurProjektdatei ? GebaeudeImportWeg.NurProjektdatei
+         : _stand?.Projektdatei is { Gelesen: true } ? GebaeudeImportWeg.MitProjektdatei
+         : GebaeudeImportWeg.Datei;
+
+    /// <summary>Der Text der Quellzeile: das Format der Datei, nach dem Dazuladen „… + Projektdatei“.</summary>
     private string Quellentext(GebaeudeImportKopf kopf, GebaeudeImportStand stand)
-        => !NurProjektdatei && stand.Projektdatei is { Gelesen: true } ? Texte.QuelleIfcProjektdatei : kopf.Format;
+        => GelesenerWeg == GebaeudeImportWeg.MitProjektdatei ? Format(Texte.QuelleMitProjektdatei, kopf.Format) : kopf.Format;
 
     /// <summary>Im Weg „nur Projektdatei“: Räume, die keine Zone aufnimmt, weil ihre Beheizung offen ist.</summary>
     private bool UnbeheizteOffen
@@ -1470,20 +1473,20 @@
 
     /// <summary>
     /// Die Quelle nach dem Lesen (16.1): Eine <c>.sqproj</c> ist der Weg „nur Projektdatei“ — die Wahl folgt der Endung, und die
-    /// Zonen der Datei gehen gleich als Schritt in den Plan. Beim Weg „IFC + Projektdatei“ öffnet sich danach die Wahl der
-    /// Projektdatei; ist sie für diese IFC nicht möglich, nennt eine leise Meldung den Grund des gesperrten Knopfs.
+    /// Zonen der Datei gehen gleich als Schritt in den Plan. Beim Weg „Gebäudedatei + Projektdatei“ öffnet sich danach die Wahl
+    /// der Projektdatei; ist sie für diese Datei nicht möglich, nennt eine Meldung den Grund des gesperrten Knopfs.
     /// </summary>
     private async Task NachDemLesen()
     {
         if (_lesestand is null || _stand is null) return;
         if (NurProjektdatei)
         {
-            _quelle = GebaeudeImportQuellen.PROJEKTDATEI;
+            _quelle = Quellenliste.FirstOrDefault(q => q.Weg == GebaeudeImportWeg.NurProjektdatei)?.Schluessel;
             if (_stand.Projektdatei is { Gelesen: true } && Plan is not null && _planschritte.Count == 0) ZonenDerProjektdatei();
             return;
         }
-        if (_quelle == GebaeudeImportQuellen.PROJEKTDATEI) _quelle = null;
-        if (_quelle != GebaeudeImportQuellen.IFC_PROJEKTDATEI || ProjektdateiLesen is null) return;
+        if (GewaehlterWeg == GebaeudeImportWeg.NurProjektdatei) _quelle = null;
+        if (GewaehlterWeg != GebaeudeImportWeg.MitProjektdatei || ProjektdateiLesen is null) return;
         if (_stand.ProjektdateiMoeglich) await BeiProjektdatei();
         else Melden(Texte.SqKnopfGrund, WarnStufe.Hinweis);
     }

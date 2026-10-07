@@ -275,15 +275,29 @@ namespace WindowsFormsApplication1
             if (_festesProfil != null) return Array.Empty<GebaeudeImportQuellwahl>();
             var ifc = new IfcImportProfil();
             var gbxml = new GbxmlImportProfil();
+            string ifcText = GebaeudeZuordnungsModell.FormatText(ifc);
             return new[]
             {
-                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.IFC, GebaeudeZuordnungsModell.FormatText(ifc), ifc.Dateifilter),
-                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.GBXML, GebaeudeZuordnungsModell.FormatText(gbxml), gbxml.Dateifilter),
-                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.IFC_PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_IFC_SQPROJ, ifc.Dateifilter),
-                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_SQPROJ,
-                                            MyResource.Resource.GIMP_DLG_SQ_FILTER),
+                new GebaeudeImportQuellwahl(QUELLE_IFC, ifcText, ifc.Dateifilter),
+                new GebaeudeImportQuellwahl(QUELLE_GBXML, GebaeudeZuordnungsModell.FormatText(gbxml), gbxml.Dateifilter),
+                new GebaeudeImportQuellwahl(QUELLE_IFC_PROJEKTDATEI, Formatieren(MyResource.Resource.GIMP_DLG_QUELLE_MIT_SQPROJ, ifcText),
+                                            ifc.Dateifilter, GebaeudeImportWeg.MitProjektdatei),
+                new GebaeudeImportQuellwahl(QUELLE_PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_SQPROJ,
+                                            MyResource.Resource.GIMP_DLG_SQ_FILTER, GebaeudeImportWeg.NurProjektdatei),
             };
         }
+
+        /// <summary>Schlüssel der Quellenwahl: IFC allein (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_IFC = GebaeudeQuelle.FORMAT_IFC;
+
+        /// <summary>Schlüssel der Quellenwahl: gbXML allein (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_GBXML = GebaeudeQuelle.FORMAT_GBXML;
+
+        /// <summary>Schlüssel der Quellenwahl: IFC lesen, danach die Projektdatei dazuladen.</summary>
+        internal const string QUELLE_IFC_PROJEKTDATEI = "IFC_SQPROJ";
+
+        /// <summary>Schlüssel der Quellenwahl: allein die Projektdatei (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_PROJEKTDATEI = GebaeudeQuelle.FORMAT_SQPROJ;
 
         /// <summary>Belegt die Größengrenze eines Profils für die Plattform der Hülle (Softwarearchitektur 1.5, Regel 2).</summary>
         private GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
@@ -461,7 +475,7 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.SchemaText(profil, q.Schemastand),
                 GebaeudeZuordnungsModell.GroesseText(q.Groesse),
                 GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel),
-                profil.Format);
+                profil.Format == GebaeudeQuelle.FORMAT_SQPROJ ? GebaeudeImportWeg.NurProjektdatei : GebaeudeImportWeg.Datei);
             return new GebaeudeLesestand(true, kopf, _ablauf.Gebaeude.ToList(), meldungen, SchonImportiertText(q));
         }
 

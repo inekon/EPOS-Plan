@@ -70,23 +70,29 @@ namespace EPOS.Kern.Tests
         public void Die_Quellenwahl_nennt_vier_Eintraege_mit_ihrem_Filter()
         {
             IReadOnlyList<GebaeudeImportQuellwahl> q = new GebaeudeImportHuelle(ios: false).ProfilDaten().Quellen!;
-            Assert.Equal(new[] { GebaeudeImportQuellen.IFC, GebaeudeImportQuellen.GBXML, GebaeudeImportQuellen.IFC_PROJEKTDATEI,
-                                 GebaeudeImportQuellen.PROJEKTDATEI }, q.Select(x => x.Schluessel));
+            Assert.Equal(new[] { GebaeudeImportHuelle.QUELLE_IFC, GebaeudeImportHuelle.QUELLE_GBXML, GebaeudeImportHuelle.QUELLE_IFC_PROJEKTDATEI,
+                                 GebaeudeImportHuelle.QUELLE_PROJEKTDATEI }, q.Select(x => x.Schluessel));
+            Assert.Equal(new[] { GebaeudeImportWeg.Datei, GebaeudeImportWeg.Datei, GebaeudeImportWeg.MitProjektdatei,
+                                 GebaeudeImportWeg.NurProjektdatei }, q.Select(x => x.Weg));
             Assert.Equal(new[] { "IFC", "gbXML", "IFC + Projektdatei", "Nur Projektdatei (.sqproj)" }, q.Select(x => x.Text));
             Assert.Equal(IfcImportProfil.DATEIFILTER, q[0].Dateifilter);
             Assert.Equal(GbxmlImportProfil.DATEIFILTER, q[1].Dateifilter);
             Assert.Equal(IfcImportProfil.DATEIFILTER, q[2].Dateifilter);
             Assert.EndsWith("|*.sqproj", q[3].Dateifilter);
             // Die Formatschlüssel der Wahl sind die Persistenzwerte des Formats.
-            Assert.Equal(GebaeudeQuelle.FORMAT_SQPROJ, GebaeudeImportQuellen.PROJEKTDATEI);
-            Assert.Equal(GebaeudeQuelle.FORMAT_IFC, GebaeudeImportQuellen.IFC);
-            Assert.Equal(GebaeudeQuelle.FORMAT_GBXML, GebaeudeImportQuellen.GBXML);
+            Assert.Equal(GebaeudeQuelle.FORMAT_SQPROJ, GebaeudeImportHuelle.QUELLE_PROJEKTDATEI);
+            Assert.Equal(GebaeudeQuelle.FORMAT_IFC, GebaeudeImportHuelle.QUELLE_IFC);
+            Assert.Equal(GebaeudeQuelle.FORMAT_GBXML, GebaeudeImportHuelle.QUELLE_GBXML);
 
             // Mit festem Profil gibt es keine Wahl.
             Assert.Empty(new GebaeudeImportHuelle(new IfcImportProfil(), ios: false).ProfilDaten().Quellen ?? Array.Empty<GebaeudeImportQuellwahl>());
 
             using (new Kulturvorrichtung("en-US"))
-                Assert.Equal("Project file only (.sqproj)", new GebaeudeImportHuelle(ios: false).ProfilDaten().Quellen![3].Text);
+                {
+                IReadOnlyList<GebaeudeImportQuellwahl> en = new GebaeudeImportHuelle(ios: false).ProfilDaten().Quellen!;
+                Assert.Equal("IFC + project file", en[2].Text);
+                Assert.Equal("Project file only (.sqproj)", en[3].Text);
+            }
         }
 
         [Fact]
@@ -97,7 +103,7 @@ namespace EPOS.Kern.Tests
             var lesen = (Func<string, IProgress<GebaeudeImportFortschritt>, CancellationToken, Task<GebaeudeLesestand>>)gaben["Lesen"];
             GebaeudeLesestand gelesen = await lesen(Sporthaus(), null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
-            Assert.Equal(GebaeudeImportQuellen.PROJEKTDATEI, gelesen.Kopf!.Formatschluessel);
+            Assert.Equal(GebaeudeImportWeg.NurProjektdatei, gelesen.Kopf!.Weg);
             Assert.Equal("Projektdatei", gelesen.Kopf.Format);
             Assert.Contains(gelesen.Meldungen, m => m.Kennung == "IMP_SQPROJ_PROT_KEIN_NORDEN");
 

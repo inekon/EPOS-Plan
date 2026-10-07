@@ -37240,11 +37240,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die IFC + Projektdatei ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} + Projektdatei ähnelt.
         /// </summary>
-        public static string GIMP_DLG_QUELLE_IFC_SQPROJ {
+        public static string GIMP_DLG_QUELLE_MIT_SQPROJ {
             get {
-                return ResourceManager.GetString("GIMP_DLG_QUELLE_IFC_SQPROJ", resourceCulture);
+                return ResourceManager.GetString("GIMP_DLG_QUELLE_MIT_SQPROJ", resourceCulture);
             }
         }
         
