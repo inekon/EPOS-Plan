@@ -1049,6 +1049,47 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains("Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude.", cut.Markup);
     }
 
+    // =================================================================================
+    // Anlagenkopplung AK3 (Entwurf AK3 Festlegungen 20 und 22): Kennzahlen des Kreises, Rückstufe
+    // =================================================================================
+
+    /// <summary>Die fünf Kacheln des geschlossenen Kreises stehen nur, wenn der letzte Lauf ihn rechnete.</summary>
+    [Fact]
+    public void Die_Kacheln_des_Kreises_stehen_nur_mit_Lauf_AK3()
+    {
+        var cut = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, IstGekoppelt = true,
+            Ak3DurchlaeufeMittel = 1.8437, Ak3DurchlaeufeMax = 6, Ak3Fallwechsel = 42,
+            Ak3SchrankeStundenH = 311, Ak3SpeicherLeerStundenH = 0, Ak3RestbedarfStundenH = null,
+        });
+        IReadOnlyList<IElement> k = cut.FindAll("div.gebb-ak3 .epos-kennzahlkachel");
+        Assert.Equal(5, k.Count);
+        Assert.Equal("Durchläufe je Stunde (Mittel / Höchstwert)", Kachel(k[0], "titel"));
+        Assert.Equal("1,84 / 6", Kachel(k[0], "wert"));
+        Assert.Equal("42", Kachel(k[1], "wert"));
+        Assert.Equal("311 h", Kachel(k[2], "wert"));
+        Assert.Equal("0 h", Kachel(k[3], "wert"));
+        Assert.Equal("—", Kachel(k[4], "wert"));
+
+        Assert.Empty(Aufbauen(KomfortSatz(erhoben: true)).FindAll("div.gebb-ak3"));
+    }
+
+    /// <summary>Die Rückstufe der Auskunft steht als eigene Zeile unter dem Rechenweg — nur mit Text.</summary>
+    [Fact]
+    public void Die_Rueckstufe_steht_unter_dem_Rechenweg()
+    {
+        const string RUECK = "Berechnet ohne geschlossenen Kreis (Profilweg): Probe.";
+        var cut = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "EFH", HeizwaermeMwh = 60.0, MaxLastKw = 40.0, MonatswerteMwh = new double[12],
+            Modelltext = "VDI 6007", IstVdi6007 = true, Rueckstufe = RUECK,
+        });
+        Assert.Equal(RUECK, cut.Find("tr.gebb-rueckstufe").TextContent.Trim());
+        Assert.Empty(Aufbauen(VdiSatz()).FindAll("tr.gebb-rueckstufe"));
+    }
+
     /// <summary>Ohne Kopplung steht kein Komfortblock — jedes Bestandsgebäude bleibt, wie es war.</summary>
     [Fact]
     public void Ohne_Kopplung_steht_kein_Komfortblock()

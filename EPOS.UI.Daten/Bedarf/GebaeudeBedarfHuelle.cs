@@ -120,8 +120,10 @@ namespace WindowsFormsApplication1
             // ausgeschalteter Optimierung die Auskunft der Bemessung fuer die Auslegungsgroesse.
             GebaeudeBedarfAufheizDaten aufheizung = Aufheizung(ergebnis,
                 ohneSchalter => AufheizauskunftCtrl.Gebaeude(projektId, projekt.m_ID_Klimaregion, modell(), ohneSchalter));
+            // Anlagenkopplung AK3 (Festlegung 22): die Kennzahlen des Kreises aus dem letzten Lauf - neben Komfort und Restbedarf.
+            Ak3Kennzahlen ak3 = GebaeudeBedarfCtrl.Ak3KennzahlenDesProjekts(projektId);
             GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser,
-                                              restbedarf, aufheizung);
+                                              restbedarf, aufheizung, ak3);
 
             // Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche mit der größten Unterschreitung -
             // nur, wenn am Gebäude Komfort erhoben ist und eine Stunde zählt.
@@ -194,6 +196,13 @@ namespace WindowsFormsApplication1
                 ["KachelBedarfsbegriff"] = Text_("GEBB_KACHEL_BEDARFSBEGRIFF", "Bedarfsbegriff"),
                 ["KachelFahrplanBegrenzt"] = Text_("GEBB_KACHEL_FAHRPLAN_BEGRENZT", "Stunden am Fahrplan begrenzt"),
                 ["HinweisKomfortOhne"] = Text_("GEBB_HRL_KOMFORT_OHNE", "Komfortstunden gibt es nur für ein gekoppelt gerechnetes Gebäude."),
+                // Anlagenkopplung AK3 (Festlegung 22): die Kacheln des geschlossenen Kreises.
+                ["KachelAk3Durchlaeufe"] = Text_("AK3_GEBB_KACHEL_DURCHLAEUFE", "Durchläufe je Stunde (Mittel / Höchstwert)"),
+                ["KachelAk3Fallwechsel"] = Text_("AK3_GEBB_KACHEL_FALLWECHSEL", "Fallwechsel"),
+                ["KachelAk3Schranke"] = Text_("AK3_GEBB_KACHEL_SCHRANKE", "Stunden an der Schranke"),
+                ["KachelAk3SpeicherLeer"] = Text_("AK3_GEBB_KACHEL_SPEICHER_LEER", "Stunden mit leerem Speicher"),
+                ["KachelAk3Restbedarf"] = Text_("AK3_GEBB_KACHEL_RESTBEDARF", "Stunden mit Restbedarf"),
+                ["QuelleAk3"] = Text_("AK3_GEBB_QUELLE", "Geschlossener Kreis (AK3), Projekt, letzter Lauf"),
                 ["BildtextVorlauf"] = Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
                 ["KachelVorlaufRuecklauf"] = Text_("GEBB_KACHEL_VORLAUF_RUECKLAUF", "Vorlauf / Rücklauf"),
                 ["KachelBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT", "Stunden mit begrenzter Übergabe"),
@@ -269,7 +278,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
                                                  double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null,
-                                                 GebaeudeBedarfAufheizDaten aufheizung = null)
+                                                 GebaeudeBedarfAufheizDaten aufheizung = null, Ak3Kennzahlen ak3 = null)
         {
             ErgebnisGebaeudeModel zeile = ergebnis.Ergebniszeile;
             var monate = new double[12];
@@ -304,6 +313,14 @@ namespace WindowsFormsApplication1
                 RestbedarfProjektMwh = restbedarfProjektMwh,
                 Bedarfsbegriff = zeile?.Bedarfsbegriff is Bedarfsbegriff bb ? Bedarfsbegrifftext(bb) : "",
                 FahrplanBegrenztStundenH = zeile?.FahrplanBegrenztStundenH,
+                // Anlagenkopplung AK3 (Festlegungen 20 und 22): Kennzahlen des Kreises und die Rückstufe der Auskunft.
+                Ak3DurchlaeufeMittel = ak3?.DurchlaeufeMittel,
+                Ak3DurchlaeufeMax = ak3?.DurchlaeufeMax,
+                Ak3Fallwechsel = ak3?.Fallwechsel,
+                Ak3SchrankeStundenH = ak3?.SchrankeStundenH,
+                Ak3SpeicherLeerStundenH = ak3?.SpeicherLeerStundenH,
+                Ak3RestbedarfStundenH = ak3?.RestbedarfStundenH,
+                Rueckstufe = ergebnis.Rueckstufe ?? "",
                 // E37: der Kaeltekreis - nur kuehlgekoppelt, aus demselben Ergebnis.
                 IstKuehlgekoppelt = ergebnis.KuehlGekoppelt,
                 KuehlVorlaufMittelC = ergebnis.KuehlGekoppelt ? ergebnis.KuehlVorlaufMittelC : null,
@@ -398,6 +415,7 @@ namespace WindowsFormsApplication1
                     LeistungKw = a.LeistungKw,
                     Quelle = Aufheizquelle(a.Quelle),
                     FaktorErstImLauf = a.FaktorErstImLauf,
+                    Rueckstufe = a.Rueckstufe ?? "",
                 };
             }
 
@@ -405,7 +423,8 @@ namespace WindowsFormsApplication1
             // nennt die Auskunft (dieselbe Bemessung, ohne Jahreslauf).
             bool manuell = z.AufheizArt == DbWerte.AUFHEIZ_ART_MANUELL;
             int? manuellH = manuell ? z.AufheizzeitMaxH : null;
-            int? bemessenH = manuell ? auskunft?.Invoke(false)?.AufheizzeitMaxH : z.AufheizzeitMaxH;
+            Aufheizauskunft bemessen = manuell ? auskunft?.Invoke(false) : null;
+            int? bemessenH = manuell ? bemessen?.AufheizzeitMaxH : z.AufheizzeitMaxH;
             var hinweise = new List<string>();
             CultureInfo k = CultureInfo.CurrentCulture;
             if (z.AufheizZustand == DbWerte.AUFHEIZ_ZUSTAND_UNERREICHBAR) hinweise.Add(MyResource.Resource.GEBB_AUFH_W1_BEMESSUNG);
@@ -446,6 +465,8 @@ namespace WindowsFormsApplication1
                     : z.AufheizArt == DbWerte.AUFHEIZ_ART_FEST ? MyResource.Resource.SIMKONF_AUFH_ART_FEST
                     : z.AufheizArt == DbWerte.AUFHEIZ_ART_TAEGLICH ? MyResource.Resource.SIMKONF_AUFH_ART_TAEGLICH : "",
                 AufheizzeitManuellH = manuellH,
+                // Festlegung 20: nennt die Bemessung der Auskunft (MANUELL) die Rückstufe, steht sie in der Gruppe.
+                Rueckstufe = bemessen?.Rueckstufe ?? "",
                 LeistungKw = z.AufheizLeistungKw,
                 Quelle = Aufheizquelle(z.AufheizLeistungsquelle),
                 Aufheiztage = z.Aufheiztage,

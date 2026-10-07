@@ -811,6 +811,13 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
         set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveSteilheit = value; }
     }
 
+    /// <summary>Raumeinfluss der Heizkurve in K/K (0 bis 10); leer oder 0 = aus, wirksam nur mit Stufe AK3.</summary>
+    public double? HeizkurveRaumeinfluss
+    {
+        get => Daten?.HeizkurveRaumeinfluss;
+        set { if (Daten is GebaeudeKatalogDaten d) d.HeizkurveRaumeinfluss = value; }
+    }
+
     /// <summary>Proportionalband des Raumreglers in K (0 bis 5); leer = 1 K.</summary>
     public double? Proportionalband
     {

@@ -171,4 +171,18 @@ public sealed class GebaeudeBedarfAufheizungTests : EposBunitContext
         var ohne = Render<GebaeudeBedarfDialog>(p => p.Add(x => x.Daten, new GebaeudeBedarfDaten { Name = "X", HeizwaermeMwh = 1 }));
         Assert.Empty(ohne.FindAll(".gebb-aufheizung"));
     }
+    /// <summary>Anlagenkopplung AK3 (Festlegung 20): die Rückstufe der Auskunft steht als Zeile in der Gruppe — nur mit Text.</summary>
+    [Fact]
+    public void Die_Rueckstufe_der_Auskunft_steht_als_Zeile()
+    {
+        const string RUECK = "Berechnet ohne geschlossenen Kreis (Profilweg): Probe.";
+        var mit = Zeichne(new GebaeudeBedarfAufheizDaten
+        {
+            Zustand = GebaeudeBedarfAufheizDaten.AUS, Zustandtext = "aus", AuslegungsheizlastKw = 10.0,
+            AufheizzuschlagKw = 2.0, AuslegungsgroesseKw = 12.0, SpitzeKw = 20.0, Rueckstufe = RUECK,
+        });
+        Assert.Contains(RUECK, mit.Markup);
+        var ohne = Zeichne(Bemessen());
+        Assert.DoesNotContain("geschlossenen Kreis", ohne.Markup);
+    }
 }

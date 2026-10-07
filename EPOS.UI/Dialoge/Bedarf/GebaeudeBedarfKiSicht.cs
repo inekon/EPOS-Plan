@@ -107,6 +107,29 @@ public sealed class GebaeudeBedarfKiSicht
     /// <summary>Stunden mit wirksamer Nachtauskühlung [h]; <c>null</c> ohne Nachtauskühlung.</summary>
     public int? NachtauskuehlstundenH => Satz?.NachtauskuehlstundenH;
 
+    // ---- Anlagenkopplung AK3 (Festlegungen 20 und 22): Kennzahlen des Kreises und Rückstufe (nur Anzeige) ----
+
+    /// <summary>Durchläufe je Stunde im Mittel; leer ohne Lauf mit AK3.</summary>
+    public double? Ak3DurchlaeufeMittel => Satz?.Ak3DurchlaeufeMittel;
+
+    /// <summary>Die größte Zahl der Durchläufe einer Stunde.</summary>
+    public int? Ak3DurchlaeufeMax => Satz?.Ak3DurchlaeufeMax;
+
+    /// <summary>Wechsel der Stützstelle und des Betriebsfalls.</summary>
+    public int? Ak3Fallwechsel => Satz?.Ak3Fallwechsel;
+
+    /// <summary>Stunden an der Schranke des Angebots [h].</summary>
+    public int? Ak3SchrankeStundenH => Satz?.Ak3SchrankeStundenH;
+
+    /// <summary>Stunden mit leerem Heizungspuffer [h].</summary>
+    public int? Ak3SpeicherLeerStundenH => Satz?.Ak3SpeicherLeerStundenH;
+
+    /// <summary>Stunden mit Restbedarf der Kaskade [h].</summary>
+    public int? Ak3RestbedarfStundenH => Satz?.Ak3RestbedarfStundenH;
+
+    /// <summary>Der Hinweis der Rückstufe der Auskunft; leer ohne Rückstufe.</summary>
+    public string Ak3Rueckstufe => Satz?.Rueckstufe ?? "";
+
     private GebaeudeBedarfAufheizDaten? Aufheizung => Satz?.Aufheizung;
 
     /// <summary>Der Zustand der Aufheizrechnung als Anzeigetext; leer ohne Gruppe.</summary>

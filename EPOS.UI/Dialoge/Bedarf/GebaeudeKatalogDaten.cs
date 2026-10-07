@@ -323,6 +323,12 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Steilheit der Heizkurve [–] (<c>Heizkurve_Steilheit</c>); <c>null</c> = 1,0.</summary>
     public double? HeizkurveSteilheit { get; set; }
 
+    /// <summary>
+    /// Raumeinfluss der Heizkurve k_R [K/K] (<c>Heizkurve_Raumeinfluss</c>, Anlagenkopplung AK3 Festlegung 23);
+    /// <c>null</c> oder 0 = aus. Wirkt nur mit Heizkurve und Stufe AK3.
+    /// </summary>
+    public double? HeizkurveRaumeinfluss { get; set; }
+
     /// <summary>Proportionalband des Raumreglers [K] (<c>Regler_Proportionalband</c>); <c>null</c> = 1,0 K (H1, E25).</summary>
     public double? ReglerProportionalband { get; set; }
 
