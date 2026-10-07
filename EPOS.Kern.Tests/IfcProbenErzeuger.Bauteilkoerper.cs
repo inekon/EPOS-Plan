@@ -34,7 +34,81 @@ namespace EPOS.Kern.Tests
                 ["ifc4_g5_wand_extrusion.ifc"] = Wandhaus("ifc4_g5_wand_extrusion.ifc", mengen: false),
                 ["ifc4_g5_mengen_gegenprobe.ifc"] = Wandhaus("ifc4_g5_mengen_gegenprobe.ifc", mengen: true),
                 ["ifc4_g5_wand_brep_mapped.ifc"] = Koerperhaus(),
+                ["ifc4_g5_flachdach_teile.ifc"] = Flachdachhaus(),
+                ["ifc4_g5_abweichungen.ifc"] = Abweichungshaus(),
             };
+
+        /// <summary>
+        /// <b>Das Abweichungshaus</b> (G5-N, Zusammenfassung der Abweichungen): ein Raum 10 × 8 m, vier Außenwände als
+        /// Extrusion (2,5 m hoch, Körper 25 bzw. 20 m²) mit Mengensatz, der vom Körper abweicht — Süd 26,5 m² (5,7 %), Ost
+        /// 21 m² (4,8 %), Nord 35 m² (28,6 %, über der Grenze der Einzelwarnung), West 20,2 m² (1,0 %, still).
+        /// </summary>
+        private static byte[] Abweichungshaus()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_g5_abweichungen.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuildingStorey s = b.Geschoss(b.Gebaeude("Abweichungshaus", null), "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(s, "0.01", "Wohnen", 0, 0, null, null, null, beheizt: true);
+                b.Grundriss(r, (0, 0), (10000, 0), (10000, 8000), (0, 8000));
+                b.Oeffnungswand(s, "Wand Süd", 0, 0, 1, 0, 10000, 2500, (26.5, 26.5));
+                b.Oeffnungswand(s, "Wand Ost", 10000, 0, 0, 1, 8000, 2500, (21.0, 21.0));
+                b.Oeffnungswand(s, "Wand Nord", 10000, 8000, -1, 0, 10000, 2500, (35.0, 35.0));
+                b.Oeffnungswand(s, "Wand West", 0, 8000, 0, -1, 8000, 2500, (20.2, 20.2));
+                return b.Speichern();
+            }
+        }
+
+        /// <summary>Die Oberlichter des Flachdachs [mm]: eine Spalte x = 8 … 10 m, drei Löcher 2 × 2 m.</summary>
+        internal static readonly (double X0, double Y0, double X1, double Y1)[] OBERLICHTER =
+        {
+            (8000, 1000, 10000, 3000), (8000, 5000, 10000, 7000), (8000, 9000, 10000, 11000),
+        };
+
+        /// <summary>
+        /// <b>Das Flachdachhaus</b> (Teile ohne Darstellung, Löcher in der Fläche): Raum 20 × 12 m; „Dach A“ als
+        /// <c>IfcShellBasedSurfaceModel</c> mit <c>IfcOpenShell</c> — Ober- und Unterseite 20 × 12 m mit drei Oberlichtern
+        /// 2 × 2 m als <c>IfcFaceBound</c> (gleiche größte x-Koordinate, die Oberseite beginnt mit einer Kante längs x),
+        /// vier Seitenflächen, 0,3 m dick: netto 228 m², brutto 240 m². Sein Mengensatz trägt nur einen Teil
+        /// (100/96 m²), die Teile „Dach A-1“ (80/76 m²) und „Dach A-2“ (60/56 m²) stehen als <c>IfcRoof</c> ohne
+        /// Darstellung daneben. „Dach B“ ist ein Kasten 5 × 8 m ohne Teile mit 41 m² im Mengensatz (2,4 %).
+        /// </summary>
+        private static byte[] Flachdachhaus()
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, "ifc4_g5_flachdach_teile.ifc"))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Flachdachhaus", null);
+                IIfcBuildingStorey s = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(s, "0.01", "Halle", 0, 0, null, null, null, beheizt: true);
+                b.Grundriss(r, (0, 0), (20000, 0), (20000, 12000), (0, 12000));
+
+                const double Z0 = 0, Z1 = 300;
+                var oben = new List<(double, double, double)[]>();
+                var unten = new List<(double, double, double)[]>();
+                foreach ((double x0, double y0, double x1, double y1) in OBERLICHTER)
+                {
+                    oben.Add(new[] { (x0, y0, Z1), (x0, y1, Z1), (x1, y1, Z1), (x1, y0, Z1) });
+                    unten.Add(new[] { (x0, y0, Z0), (x1, y0, Z0), (x1, y1, Z0), (x0, y1, Z0) });
+                }
+                var flaechen = new List<((double, double, double)[] Aussen, List<(double, double, double)[]> Loecher)>
+                {
+                    (new[] { (0.0, 0.0, Z1), (20000.0, 0.0, Z1), (20000.0, 12000.0, Z1), (0.0, 12000.0, Z1) }, oben),
+                    (new[] { (0.0, 0.0, Z0), (0.0, 12000.0, Z0), (20000.0, 12000.0, Z0), (20000.0, 0.0, Z0) }, unten),
+                    (new[] { (0.0, 0.0, Z0), (20000.0, 0.0, Z0), (20000.0, 0.0, Z1), (0.0, 0.0, Z1) }, null),
+                    (new[] { (20000.0, 0.0, Z0), (20000.0, 12000.0, Z0), (20000.0, 12000.0, Z1), (20000.0, 0.0, Z1) }, null),
+                    (new[] { (20000.0, 12000.0, Z0), (0.0, 12000.0, Z0), (0.0, 12000.0, Z1), (20000.0, 12000.0, Z1) }, null),
+                    (new[] { (0.0, 12000.0, Z0), (0.0, 0.0, Z0), (0.0, 0.0, Z1), (0.0, 12000.0, Z1) }, null),
+                };
+                IIfcRoof dach = b.Flachdachteil(s, "Dach A", 3000, 100, 96);
+                b.Koerper(dach, "SurfaceModel", b.Lochflaechenmodell(flaechen));
+                b.Flachdachteil(s, "Dach A-1", 3000, 80, 76);
+                b.Flachdachteil(s, "Dach A-2", 3000, 60, 56);
+                IIfcRoof dachB = b.Flachdachteil(s, "Dach B", 3000, 41, null);
+                b.Koerper(dachB, "SurfaceModel", b.Kasten(25000, 0, 0, 30000, 8000, 300));
+                return b.Speichern();
+            }
+        }
 
         /// <summary>Der L-Grundriss der Ostwand im System der Wand [mm]: Wand 8 m, Flügel 2 m nach außen am Ende.</summary>
         internal static readonly (double X, double Y)[] OSTWAND_L =
@@ -132,6 +206,58 @@ namespace EPOS.Kern.Tests
                 Enthalten(s, p);
                 Satz(p, "Pset_SlabCommon", ("IsExternal", new IfcBoolean(true)));
                 return p;
+            }
+
+            /// <summary>
+            /// Ein Flachdach (<c>IfcRoof FLAT_ROOF</c>, außen erklärt) auf der Höhe <paramref name="z"/> [mm] ohne Darstellung
+            /// und ohne Raumgrenze, Mengensatz <c>Qto_RoofBaseQuantities</c> mit <c>GrossArea</c> und, wenn angegeben,
+            /// <c>NetArea</c>.
+            /// </summary>
+            public IIfcRoof Flachdachteil(IIfcBuildingStorey s, string name, double z, double bruttoM2, double? nettoM2)
+            {
+                IIfcRoof d = Wurzel<IIfcRoof>("IfcRoof", name);
+                d.PredefinedType = IfcRoofTypeEnum.FLAT_ROOF;
+                d.ObjectPlacement = Platzierung(s.ObjectPlacement, 0, 0, z);
+                Enthalten(s, d);
+                Satz(d, "Pset_RoofCommon", ("IsExternal", new IfcBoolean(true)));
+                if (nettoM2.HasValue) Mengen(d, "Qto_RoofBaseQuantities", Flaeche("GrossArea", bruttoM2), Flaeche("NetArea", nettoM2.Value));
+                else Mengen(d, "Qto_RoofBaseQuantities", Flaeche("GrossArea", bruttoM2));
+                return d;
+            }
+
+            /// <summary>
+            /// Ein <c>IfcShellBasedSurfaceModel</c> mit <c>IfcOpenShell</c> aus ebenen Flächen [mm]: je Fläche der äußere Ring
+            /// als <c>IfcFaceOuterBound</c> und die Löcher als <c>IfcFaceBound</c> (Umlauf gegen den äußeren Ring), alle mit
+            /// <c>Orientation</c> = wahr.
+            /// </summary>
+            public IIfcRepresentationItem Lochflaechenmodell(IEnumerable<((double X, double Y, double Z)[] Aussen, List<(double X, double Y, double Z)[]> Loecher)> flaechen)
+            {
+                IIfcPolyLoop Ring((double X, double Y, double Z)[] punkte)
+                {
+                    IIfcPolyLoop ring = N<IIfcPolyLoop>("IfcPolyLoop");
+                    foreach ((double x, double y, double z) in punkte) ring.Polygon.Add(Punkt(x, y, z));
+                    return ring;
+                }
+                IIfcConnectedFaceSet schale = N<IIfcConnectedFaceSet>("IfcOpenShell");
+                foreach (((double X, double Y, double Z)[] aussen, List<(double X, double Y, double Z)[]> loecher) in flaechen)
+                {
+                    IIfcFace flaeche = N<IIfcFace>("IfcFace");
+                    IIfcFaceOuterBound rand = N<IIfcFaceOuterBound>("IfcFaceOuterBound");
+                    rand.Bound = Ring(aussen);
+                    rand.Orientation = true;
+                    flaeche.Bounds.Add(rand);
+                    foreach ((double X, double Y, double Z)[] loch in loecher ?? new List<(double X, double Y, double Z)[]>())
+                    {
+                        IIfcFaceBound innen = N<IIfcFaceBound>("IfcFaceBound");
+                        innen.Bound = Ring(loch);
+                        innen.Orientation = true;
+                        flaeche.Bounds.Add(innen);
+                    }
+                    schale.CfsFaces.Add(flaeche);
+                }
+                IIfcShellBasedSurfaceModel m = N<IIfcShellBasedSurfaceModel>("IfcShellBasedSurfaceModel");
+                m.SbsmBoundary.Add((IIfcShell)schale);
+                return m;
             }
 
             /// <summary>Ein Dach (<c>IfcRoof</c>) ohne eigene Darstellung, das die Platte über <c>IfcRelAggregates</c> trägt.</summary>
