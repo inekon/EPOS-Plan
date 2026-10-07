@@ -431,8 +431,8 @@ namespace EPOS.Kern.Tests
             // Dazu die zwei des Aufschlags (KP-S4), ebenso nullbar.
             Assert.Equal(6L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_Einstellungen') " +
                                               "WHERE name LIKE 'Aufheiz\\_%' ESCAPE '\\' AND \"notnull\" = 0 AND dflt_value IS NULL"));
-            // Dazu Aufheiz_Art und Aufheizzuschlag_Kw des Schritts KP-S4.
-            Assert.Equal(16L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisGebaeude') " +
+            // Dazu Aufheiz_Art und Aufheizzuschlag_Kw des Schritts KP-S4 und beide Spalten des Schritts 194 (E99).
+            Assert.Equal(18L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisGebaeude') " +
                                                "WHERE (name LIKE 'Aufheiz%' OR name = 'HeizleistungMax_H') AND \"notnull\" = 0"));
             Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM pragma_table_info('Tab_ErgebnisZone') " +
                                               "WHERE name = 'Sommerlueftungsstunden_H' AND type = 'INTEGER'"));
