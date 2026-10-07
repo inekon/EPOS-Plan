@@ -1396,7 +1396,7 @@ namespace WindowsFormsApplication1
         /// (<c>KapptUnten</c>) aus dem Modulaufbau — keine zweite Datenbanklesung. <c>null</c>, wenn die Anlage
         /// <paramref name="idAnlage"/> kein Modul dieses Laufs ist.
         /// </summary>
-        internal WaermepumpeKapazitaet Ak3Kapazitaet(int idAnlage, Fahrplanerzeuger fahrplan)
+        internal WaermepumpeKapazitaet Ak3Kapazitaet(int idAnlage, Fahrplanerzeuger fahrplan, bool kuehltagSperrt = false)
         {
             for (int i = 0; i < wp_list.Count; i++)
             {
@@ -1413,7 +1413,14 @@ namespace WindowsFormsApplication1
                 IQuellzustand quelle = feld != null
                     ? new Sondenquelle(feld, wp_quelltemp[i], kappt)
                     : (IQuellzustand)new Quellprofil(wp_quelltemp[i], kappt);
-                return new WaermepumpeKapazitaet(fahrplan, kurven, fest, quelle, Extrapolation_Erlaubt);
+                var kapazitaet = new WaermepumpeKapazitaet(fahrplan, kurven, fest, quelle, Extrapolation_Erlaubt);
+                // AK3-K (Fehler 1.1 (b)): die Heizsperre der reversiblen Maschine am Kühltag (K8a).
+                if (kuehltagSperrt)
+                {
+                    int modul = i;
+                    kapazitaet.Kuehltag = h => HeizkanalGesperrt(modul, h);
+                }
+                return kapazitaet;
             }
             return null;
         }

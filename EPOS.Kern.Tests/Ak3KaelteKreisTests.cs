@@ -77,6 +77,24 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Auf_AK3_entfaellt_der_Satz_gebaut_ist_AK1_und_der_Kreis_nennt_die_Kaelteseite()
+        {
+            if (!_db.Vorhanden) return;
+            string nichtGebaut = string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT,
+                                               DbWerte.ANLAGENKOPPLUNG_AK3);
+            Rechnen(PROJEKT, false);
+            var ohne = SimulationProtokoll.Aktuell.Hinweise.ToList();
+            Assert.DoesNotContain(nichtGebaut, ohne);
+            Assert.Contains(ohne, t => t.StartsWith("Anlagenkopplung AK3 (Kernstufe)", StringComparison.Ordinal));
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE, ohne);
+
+            Rechnen(PROJEKT, true);
+            var mit = SimulationProtokoll.Aktuell.Hinweise.ToList();
+            Assert.DoesNotContain(nichtGebaut, mit);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMENG_AK3K_KREIS_MIT_KAELTESEITE, mit);
+        }
+
+        [Fact]
         public void Mit_Schalter_bietet_die_reversible_Waermepumpe_am_Kuehltag_keine_Heizleistung_an()
         {
             if (!_db.Vorhanden) return;
@@ -87,17 +105,22 @@ namespace EPOS.Kern.Tests
             SimulationWaermepumpe modul = r.sim.simulation_wp;
             Assert.NotNull(modul.Kuehltage);
 
-            int kuehlstunden = 0, angeboten = 0;
+            int kuehlstunden = 0, angeboten = 0, umgeschaltet = 0;
             for (int h = 0; h < 8760; h++)
             {
                 if (!modul.HeizkanalGesperrt(0, h)) continue;
                 kuehlstunden++;
                 Erzeugerangebot a = wp.Abfragen(h, double.NaN);
-                if (a.VerfuegbarKw > 0.0 || (a.KapazitaetKw > 0.0 && a.Grund != Verfuegbarkeitsgrund.Umschaltung)) angeboten++;
+                if (a.VerfuegbarKw > 0.0) angeboten++;
+                // Sperrzeit geht vor (sie bindet ohnehin); sonst nennt die Stunde die Umschaltung.
+                if (a.Grund == Verfuegbarkeitsgrund.Umschaltung) umgeschaltet++;
+                else Assert.Equal(Verfuegbarkeitsgrund.Sperrzeit, a.Grund);
             }
-            _aus.WriteLine("1058: {0} Stunden an Kühltagen, davon {1} mit Heizangebot der Wärmepumpe", kuehlstunden, angeboten);
+            _aus.WriteLine("1058: {0} Stunden an Kühltagen, davon {1} mit Heizangebot der Wärmepumpe, {2} mit Grund Umschaltung",
+                           kuehlstunden, angeboten, umgeschaltet);
             Assert.True(kuehlstunden > 0);
             Assert.Equal(0, angeboten);
+            Assert.True(umgeschaltet > 0);
         }
     }
 }

@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
             foreach (Anlagenfahrplan.Erzeugerzeile z in weg.Erzeuger)
             {
                 WaermepumpeKapazitaet wp = z.Typ == WizardItemClass.WP_TYP && _wpInSchleife
-                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan) : null;
+                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan, weg.Kaelte) : null;
                 erzeuger.Add(wp ?? (IErzeugerkapazitaet)new FesteKapazitaet(z.Fahrplan));
             }
             var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()))
