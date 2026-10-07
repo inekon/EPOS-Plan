@@ -31,11 +31,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Theory]
-        [InlineData(1017, 50.12)]   // R40: die Kälte der Wärmepumpe an der Erdsonde braucht weniger Strom (R39 49,98)
+        [InlineData(1017, 50.14)]   // Basis R43: Zonensperre (R42 50,12). R40: die Kälte der Wärmepumpe an der Erdsonde braucht weniger Strom (R39 49,98)
         [InlineData(1018, 0.0)]
         [InlineData(1024, 19.88)]
         [InlineData(1030, 9.02)]
-        [InlineData(1047, 48.92)]   // Basis R42: Kennlinie über den Vorlauf interpoliert (R40 48,95)
+        [InlineData(1047, 48.98)]   // Basis R43: Zonensperre (R42 48,92, Kennlinie über den Vorlauf interpoliert; R40 48,95)
         public void Die_Stromdeckung_ist_der_Eigenverbrauch_am_Gesamtbedarf(int projekt, double gerundet)
         {
             if (!_db.Vorhanden) return;
