@@ -131,8 +131,8 @@ SqlDialektPruefer 2 482 Texte / 0 Fundstellen, Werkzeug „unverändert". Schema
 
 ## Abnahme
 
-Gate: (folgt)
-Referenzlauf: (folgt) gegen `Referenzlaeufe/2026-10-07_R40_Erdreichquellen`.
+Gate (Worktree `slp25b` auf `0ff2881d7`, Log `GATESLP25B`, 07.10.2026 12:46–13:15): Kern-Filter Release 0 Fehler; ChartProben 211 Bilder, Hashes gleich der Windows-Messlatte (211/211); voller Lauf 20 512 bestanden / 0 Fehler / 4 übersprungen (EPOS.Kern.Tests 11 764 / 0 / 3 von 11 767, EPOS.UI.Tests 7 775, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 / 1 übersprungen); Dokumentationswachen 35/35. Die zehn fremden Windows-Fehler aus dem Gate von #787 (GebaeudeEinzonennetz, Zonenuebergabe, GebaeudeImportHuelle) sind auf diesem Stand nicht mehr vorhanden.
+Referenzlauf: 8/8 PASS gegen `Referenzlaeufe/2026-10-07_R40_Erdreichquellen` (Projekte 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051; 2 883 668 Werte im Toleranzvergleich; `EPOS.Referenzlauf` Release auf `0ff2881d7`, 07.10. 13:16), die Basis bleibt — die Katalogsaat hat keinen Projektbezug.
 CI: (folgt)
 
 ## Offen
