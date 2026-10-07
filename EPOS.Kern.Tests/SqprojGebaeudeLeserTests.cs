@@ -368,6 +368,27 @@ namespace EPOS.Kern.Tests
         }
 
         // ------------------------------------------------------------------
+        //  Die formatneutralen Schritte
+        // ------------------------------------------------------------------
+
+        [Fact]
+        public void Satz_Zonierung_Bauteilvorschlag_Zonenplan_und_Grundriss_laufen_auf_dem_Abbild()
+        {
+            var profil = new SqprojImportProfil();
+            var ablauf = new GebaeudeImportAblauf();
+            using (FileStream f = File.OpenRead(Schreiben(Haus(), "ablauf")))
+                Assert.Equal(1, ablauf.Lesen(f, "haus.sqproj", profil));
+            Assert.Equal(GebaeudeQuelle.FORMAT_SQPROJ, ablauf.Quelle.Format);
+            GebaeudeImportSatz satz = ablauf.Zuordnen(0, 'E');
+            Assert.NotNull(satz);
+            GebaeudeZonierung z = GebaeudeZonierung.Bilden(ablauf.Abbild, 0);
+            Assert.NotNull(z);
+            Assert.NotNull(GebaeudeBauteilvorschlag.Bilden(ablauf.Abbild, 0, 'E', ablauf.Quelle, profil, zonierung: z));
+            Assert.NotNull(Zonenplan.Vorschlag(ablauf.Abbild, 0));
+            Assert.NotNull(GebaeudeGrundriss.Bilden(ablauf.Abbild, 0, z));
+        }
+
+        // ------------------------------------------------------------------
         //  Gegenprobe gegen das IFC-Abbild
         // ------------------------------------------------------------------
 
