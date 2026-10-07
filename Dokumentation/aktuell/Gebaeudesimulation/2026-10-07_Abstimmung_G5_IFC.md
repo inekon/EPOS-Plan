@@ -71,8 +71,8 @@ Was G5 dort ablegt, muss diese Größen tragen:
 
 | Teil | Stand |
 |---|---|
-| G5-1 Bauteilkörper | gebaut (#800) |
-| G5-2 Öffnungen | gebaut (#801) |
+| G5-1 Bauteilkörper | gebaut (#801) |
+| G5-2 Öffnungen | gebaut (#802) |
 | G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | wartet auf 196 |
 | G5-3 | offen |
 

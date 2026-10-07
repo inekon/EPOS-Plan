@@ -1,6 +1,6 @@
 # Protokoll G5-1 und G5-2 — Bauteilkörper als Rechengröße und Abzug der Öffnungen beim IFC-Import (07.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeilen **#800** (G5-1) und **#801** (G5-2). Commits G5-1: `b6d6f9e6`, `0b04240a`, `a4313ace`, zusammengeführt in `a7a7f5c16`; G5-2: `2e2067d7b`, `e97a886b5`, zusammengeführt in `519e1db54`.
+**Sitzung:** IFC / Gebäudeimport, Statuszeilen **#801** (G5-1) und **#802** (G5-2). Commits G5-1: `b6d6f9e6`, `0b04240a`, `a4313ace`, zusammengeführt in `a7a7f5c16`; G5-2: `2e2067d7b`, `e97a886b5`, zusammengeführt in `519e1db54`.
 **Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md), Anforderungen A1 bis A5.
 
 ## 1 Auftrag
@@ -41,9 +41,9 @@ Erzeuger `EPOS.Kern.Tests/IfcProbenErzeuger.Bauteilkoerper.cs` und `IfcProbenErz
 - G5-1: `IfcBauteilkoerperTests` 13 grün, 1 übersprungen (Erzeuger). Referenzlauf der acht CI-Projekte gegen R39 byte-gleich; nach dem Merge die betroffenen Kern-Klassen 982/985 (3 übersprungen).
 - G5-2: `IfcOeffnungenTests` 15 grün, 1 übersprungen; voller Filterlauf 997 bestanden, 4 übersprungen; UI-Tests 136/136; Windows-Schale 0 Fehler; Referenzlauf der acht CI-Projekte gegen `2026-10-07_R40_Erdreichquellen` ohne Abweichung. Keine geänderten Erwartungen.
 
-## 5 Gate 800
+## 5 Gate 801
 
-⟨GATE800⟩
+Gemeinsam für G5-1 und G5-2, Hauptbaum `4ff6b13e4`, 89 min: 20 584 Tests, 20 578 grün, 6 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 835 mit 5 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 482 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61. Nach dem Merge mit SLP25b (#800, Schritt 196) gezielt nachgeprüft (Nachtrag folgt in dieser Zeile).
 
 ## 6 Offen
 
