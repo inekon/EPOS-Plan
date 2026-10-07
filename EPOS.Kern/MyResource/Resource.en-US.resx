@@ -48316,6 +48316,27 @@ chart</value>
   <data name="AK3_GEBB_QUELLE" xml:space="preserve">
     <value>Closed loop (AK3), project, last run</value>
   </data>
+  <data name="AK3K_GEBB_KACHEL_SPERRTAGE" xml:space="preserve">
+    <value>Days with the opposite side blocked</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_GESPERRT" xml:space="preserve">
+    <value>Blocked energy (heating / cooling)</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTESCHRANKE" xml:space="preserve">
+    <value>Hours at the cooling limit</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_UMSCHALTUNG" xml:space="preserve">
+    <value>Changeover hours</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTEREST" xml:space="preserve">
+    <value>Residual cooling demand</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_ZONENSPERRE" xml:space="preserve">
+    <value>Zone lock, project, last run</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
+    <value>Cooling side in the loop (AK3), project, last run</value>
+  </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
     <value>Mean iterations per hour (AK3)</value>
   </data>

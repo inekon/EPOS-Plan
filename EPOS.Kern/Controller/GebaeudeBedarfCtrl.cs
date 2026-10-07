@@ -688,6 +688,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzahlen von AK3-K aus dem letzten gespeicherten Lauf</b> (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre
+        /// und Kälteseite im Kreis, im Bedarfsdialog neben den Kennzahlen des Kreises. Gelesen, nicht gerechnet; <c>null</c>
+        /// ohne Projekt, ohne Lauf, vor dem Schemaschritt oder wenn der letzte Lauf keine der beiden Seiten erhob.
+        /// </summary>
+        internal static Ak3KKennzahlen Ak3KKennzahlenDesProjekts(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (!Ak3KSchema.ErgebnisspaltenVorhanden()) return null;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS.Select(sp => "e." + sp)) + " FROM " +
+                    ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " + ErgebnisCtrl.TAB_KOPF +
+                    " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                return Ak3KKennzahlen.Aus(new ErgebnisEnergiebedarfModel
+                {
+                    ZonensperreTage = Ganz(r, Ak3KSchema.SPALTE_ZONENSPERRE_TAGE),
+                    ZonensperreHeizenGesperrtMwh = Zahl(r, Ak3KSchema.SPALTE_ZONENSPERRE_HEIZEN_MWH),
+                    ZonensperreKuehlenGesperrtMwh = Zahl(r, Ak3KSchema.SPALTE_ZONENSPERRE_KUEHLEN_MWH),
+                    Ak3KaelteschrankeStundenH = Ganz(r, Ak3KSchema.SPALTE_KAELTESCHRANKE_STUNDEN),
+                    Ak3UmschaltStundenH = Ganz(r, Ak3KSchema.SPALTE_UMSCHALT_STUNDEN),
+                    Ak3KaelterestStundenH = Ganz(r, Ak3KSchema.SPALTE_KAELTEREST_STUNDEN),
+                    Ak3KaelterestMwh = Zahl(r, Ak3KSchema.SPALTE_KAELTEREST_MWH),
+                });
+            }
+            catch
+            {
+                return null;
+            }
+
+            static int? Ganz(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToInt32(r[spalte], CultureInfo.InvariantCulture);
+
+            static double? Zahl(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToDouble(r[spalte], CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
         /// <b>Das Warmwasser des PROJEKTS</b> [MWh/a] — die Auskunftszeile unter den Kennzahlen des
         /// Gebäudedialogs. Die Heizwärme des Dialogs ist nach VDI 6007 allein der Anteil des Gebäudes
         /// im Heizkanal; das Warmwasser hängt nicht am Gebäude, sondern an den Brauchwasserprofilen

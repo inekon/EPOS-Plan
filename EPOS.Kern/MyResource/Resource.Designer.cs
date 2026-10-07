@@ -1955,6 +1955,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrte Energie (Heizen / Kühlen) ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte-Restbedarf ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_KAELTEREST {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_KAELTEREST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Kälteschranke ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_KAELTESCHRANKE {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_KAELTESCHRANKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit Sperre der Gegenseite ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_SPERRTAGE {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_SPERRTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umschaltstunden ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_UMSCHALTUNG {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_UMSCHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteseite im Kreis (AK3), Projekt, letzter Lauf ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_QUELLE_KREIS {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_QUELLE_KREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonensperre, Projekt, letzter Lauf ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_QUELLE_ZONENSPERRE {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_QUELLE_ZONENSPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde (Mittel / Höchstwert) ähnelt.
         /// </summary>
         public static string AK3_GEBB_KACHEL_DURCHLAEUFE {

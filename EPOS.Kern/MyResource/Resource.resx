@@ -48323,6 +48323,27 @@ Chart</value>
   <data name="AK3_GEBB_QUELLE" xml:space="preserve">
     <value>Geschlossener Kreis (AK3), Projekt, letzter Lauf</value>
   </data>
+  <data name="AK3K_GEBB_KACHEL_SPERRTAGE" xml:space="preserve">
+    <value>Tage mit Sperre der Gegenseite</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_GESPERRT" xml:space="preserve">
+    <value>Gesperrte Energie (Heizen / Kühlen)</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTESCHRANKE" xml:space="preserve">
+    <value>Stunden an der Kälteschranke</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_UMSCHALTUNG" xml:space="preserve">
+    <value>Umschaltstunden</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTEREST" xml:space="preserve">
+    <value>Kälte-Restbedarf</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_ZONENSPERRE" xml:space="preserve">
+    <value>Zonensperre, Projekt, letzter Lauf</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
+    <value>Kälteseite im Kreis (AK3), Projekt, letzter Lauf</value>
+  </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
     <value>Durchläufe je Stunde im Mittel (AK3)</value>
   </data>
