@@ -48328,5 +48328,29 @@ chart</value>
   <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
     <value>VDI 6007 building model: {0} – daily operating mode per zone: on {1} days the opposite side was locked ({2} cooling days without space heating, {3} heating days without space cooling); the trial day showed {4} hours and {5} kWh on the locked side there (space heating {6} kWh, space cooling {7} kWh). On {8} days heating and cooling were both released.</value>
   </data>
+  <data name="KOND_LBL_FREIGABE" xml:space="preserve">
+    <value>Heating and cooling release</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_HEIZEN" xml:space="preserve">
+    <value>heating released</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KUEHLEN" xml:space="preserve">
+    <value>cooling released</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_BEIDES" xml:space="preserve">
+    <value>both</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KOND_TXT_FREIGABE_ZEILE" xml:space="preserve">
+    <value>{0}: heating released {1} days, cooling released {2} days, both {3} days, none {4} days</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_FREIGABE" xml:space="preserve">
+    <value>“off” in the heating or cooling calendar locks that side for the day. On days with both releases the demand decides whether a zone heats or cools – never both on the same day. Cooling only applies when the project calculates cooling.</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
 </root>
 

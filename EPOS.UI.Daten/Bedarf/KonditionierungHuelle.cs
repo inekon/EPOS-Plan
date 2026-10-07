@@ -708,6 +708,7 @@ namespace WindowsFormsApplication1
                 Teppichbild = (s, o) => Teppich(s, art, bezug, o),
                 Bezugsjahr = bezug.Referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),
+                Freigabeband = s => Freigabe(s, art, bezug),
                 Pruefen = s => Pruefen(s, art, bezug),
             };
         }
@@ -934,6 +935,31 @@ namespace WindowsFormsApplication1
                 if (k == null) return null;
                 return ChartRenderer.KalenderteppichModell(Kalenderteppich.Bilden(k, a.Referenzjahr), null,
                                                            ChartRenderer.KalenderteppichTexte.AusRessourcen());
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Das Jahresband der Freigabe (Entwurf AK3-K 3.3) am Gebäude und an jeder Zone des Arbeitsstands — die Regel des
+        /// Laufs über <see cref="Konditionierungsfreigabe.Band"/>; <c>null</c> bei einem ungültigen Stand.
+        /// </summary>
+        private static IReadOnlyList<KonditionierungFreigabeband> Freigabe(KonditionierungStand s, Kalendereigentuemer art, Bezug bezug)
+        {
+            if (s?.Gebaeude == null) return null;
+            try
+            {
+                Konditionierungsarbeitsstand a = Arbeitsstand(s, art, bezug);
+                var liste = new List<KonditionierungFreigabeband>
+                {
+                    new KonditionierungFreigabeband(MyResource.Resource.KOND_LBL_FREIGABE_GEBAEUDE,
+                                                    Konditionierungsfreigabe.Band(a, null).Select(f => (int)f).ToArray()),
+                };
+                foreach (Konditionierungszone z in a.Zonen)
+                    liste.Add(new KonditionierungFreigabeband(z.Name ?? "", Konditionierungsfreigabe.Band(a, z.Id).Select(f => (int)f).ToArray()));
+                return liste;
             }
             catch (ArgumentException)
             {

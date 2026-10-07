@@ -539,6 +539,30 @@ public sealed class KonditionierungTexte
     public string HinweisVdi6007 { get; set; }
         = "Unter VDI 6007 ist die Matrix Vorgabe; angelegte Kalender gehen vor.";
 
+    /// <summary><c>KOND_LBL_FREIGABE</c> — Titel des Jahresbands der Freigabe (Entwurf AK3-K 3.3)</summary>
+    public string LabelFreigabe { get; set; } = "Freigabe Heizen und Kühlen";
+
+    /// <summary><c>KOND_LBL_FREIGABE_HEIZEN</c> — Legende des Jahresbands</summary>
+    public string FreigabeHeizen { get; set; } = "Heizen frei";
+
+    /// <summary><c>KOND_LBL_FREIGABE_KUEHLEN</c> — Legende des Jahresbands</summary>
+    public string FreigabeKuehlen { get; set; } = "Kühlen frei";
+
+    /// <summary><c>KOND_LBL_FREIGABE_BEIDES</c> — Legende des Jahresbands</summary>
+    public string FreigabeBeides { get; set; } = "beides";
+
+    /// <summary><c>KOND_LBL_FREIGABE_KEINE</c> — Legende des Jahresbands</summary>
+    public string FreigabeKeine { get; set; } = "keines";
+
+    /// <summary><c>KOND_TXT_FREIGABE_ZEILE</c> — {0} Ort, {1} Heizen, {2} Kühlen, {3} beides, {4} keines (Tage)</summary>
+    public string FreigabeZeile { get; set; }
+        = "{0}: Heizen frei {1} Tage, Kühlen frei {2} Tage, beides {3} Tage, keines {4} Tage";
+
+    /// <summary><c>KOND_TXT_HINWEIS_FREIGABE</c> — unter dem Jahresband</summary>
+    public string HinweisFreigabe { get; set; }
+        = "„aus“ im Heiz- oder Kühlkalender sperrt die Seite für den Tag. An Tagen mit beiden Freigaben entscheidet der "
+        + "Bedarf, ob eine Zone heizt oder kühlt – nie beides am selben Tag. Gekühlt wird nur, wenn das Projekt Kälte rechnet.";
+
     /// <summary><c>KOND_TXT_HINWEIS_ALTFELDER</c> — die Zeile im Reiter „Gebäude und Hülle“</summary>
     public string HinweisAltfelder { get; set; }
         = "Sollwerte, Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und Maximalraumtemperatur "

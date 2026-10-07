@@ -496,6 +496,8 @@ Nachtabsenkung von / bis, Vorgabe, Zone, Katalogsatz, Tagesbilanz und Rechenweg.
 | erben / vom Gebäude | inherit / from the building | Zone: eine leere Zelle erbt den Gebäudewert, Platzhalter „Vorgabe …" → „Default value …" (Vorgabe, oben); Kartenzustand „vom Gebäude" → „from the building" |
 | Vom Gebäude übernehmen und anpassen | copy from building and adjust | Zone: legt eine eigene Kopie des Gebäudekalenders an |
 | Kalender im Einzelnen | calendar details | Knopf der Kalenderkarte: klappt Grundangabe, Wochenraster, Zeitfenster, Periodenliste, Werkzeuge und Teppichbild auf |
+| Freigabe (Heizen frei / Kühlen frei / beides / keines) | release (heating released / cooling released / both / none) | Jahresband im Reiter „Konditionierung“: je Ort und Tag, welche Seite der Kalender freigibt (`KOND_LBL_FREIGABE*`); „aus“ sperrt die Seite für den Tag |
+| Tagesbetriebsart je Zone, Probetag | daily operating mode per zone, trial day | Laufhinweis `SIMENG_ZONENSPERRE`: an einem Tag mit beiden Freigaben entscheidet der Probetag, ob die Zone heizt oder kühlt; die Gegenseite ist gesperrt (locked) |
 | In den Kalender übernehmen | apply to calendar | Knopf der Gruppe „Wärmeübergabe": das Sollwert-Zeitprogramm wird die Standardwoche des Heizkalenders (Übernehmen → Apply, § 8) |
 
 Abweichende Bestandstexte: Die Kernmeldungen `SIMENG_KOND_*` (Stufe KP1) schreiben an einigen Stellen „heating season",

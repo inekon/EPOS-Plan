@@ -72241,6 +72241,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freigabe Heizen und Kühlen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die beides ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_BEIDES {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_BEIDES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen frei ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_HEIZEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keines ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_KEINE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen frei ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
         /// </summary>
         public static string KOND_LBL_GROESSE {
@@ -73735,6 +73789,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Heizen frei {1} Tage, Kühlen frei {2} Tage, beides {3} Tage, keines {4} Tage ähnelt.
+        /// </summary>
+        public static string KOND_TXT_FREIGABE_ZEILE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_FREIGABE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ganzjährig ähnelt.
         /// </summary>
         public static string KOND_TXT_GANZJAEHRIG {
@@ -73929,6 +73992,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_HINWEIS_FEIERTAGE {
             get {
                 return ResourceManager.GetString("KOND_TXT_HINWEIS_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „aus“ im Heiz- oder Kühlkalender sperrt die Seite für den Tag. An Tagen mit beiden Freigaben entscheidet der Bedarf, ob eine Zone heizt oder kühlt – nie beides am selben Tag. Gekühlt wird nur, wenn das Projekt Kälte rechnet. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_FREIGABE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_FREIGABE", resourceCulture);
             }
         }
         

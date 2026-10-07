@@ -48335,5 +48335,29 @@ Chart</value>
   <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} – Tagesbetriebsart je Zone: an {1} Tagen wurde die Gegenseite gesperrt ({2} Kühltage ohne Raumheizung, {3} Heiztage ohne Raumkühlung); der Probetag zeigte dort {4} Stunden und {5} kWh auf der gesperrten Seite (Raumheizung {6} kWh, Raumkühlung {7} kWh). An {8} Tagen waren Heizen und Kühlen freigegeben.</value>
   </data>
+  <data name="KOND_LBL_FREIGABE" xml:space="preserve">
+    <value>Freigabe Heizen und Kühlen</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_HEIZEN" xml:space="preserve">
+    <value>Heizen frei</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KUEHLEN" xml:space="preserve">
+    <value>Kühlen frei</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_BEIDES" xml:space="preserve">
+    <value>beides</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KEINE" xml:space="preserve">
+    <value>keines</value>
+  </data>
+  <data name="KOND_TXT_FREIGABE_ZEILE" xml:space="preserve">
+    <value>{0}: Heizen frei {1} Tage, Kühlen frei {2} Tage, beides {3} Tage, keines {4} Tage</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_FREIGABE" xml:space="preserve">
+    <value>„aus“ im Heiz- oder Kühlkalender sperrt die Seite für den Tag. An Tagen mit beiden Freigaben entscheidet der Bedarf, ob eine Zone heizt oder kühlt – nie beides am selben Tag. Gekühlt wird nur, wenn das Projekt Kälte rechnet.</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
 </root>
 

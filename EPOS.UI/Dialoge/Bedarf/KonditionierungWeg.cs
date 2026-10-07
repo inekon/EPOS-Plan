@@ -351,6 +351,14 @@ public sealed class KonditionierungWeg
     public Func<KonditionierungStand, int?, KonditionierungLasten?>? Lasten { get; init; }
 
     /// <summary>
+    /// <b>Das Jahresband der Freigabe</b> (Entwurf AK3-K 3.3; Welle KZ): je Ort — das Gebäude, dann seine Zonen — die
+    /// Freigabe der 365 Tage aus dem „aus" der Heiz- und Kühlkalender; <c>null</c> oder leer = kein Band.
+    /// <para>Kern: <c>Konditionierungsfreigabe.Band</c> über den Arbeitsstand (dieselbe Regel wie der Lauf,
+    /// <c>Zonenfreigabe</c>).</para>
+    /// </summary>
+    public Func<KonditionierungStand, IReadOnlyList<KonditionierungFreigabeband>?>? Freigabeband { get; init; }
+
+    /// <summary>
     /// <b>Die Prüfregeln des Kerns</b> über die Konditionierung des Stands (Grenzen je Größe, Rundlauf
     /// auf vier Nachkommastellen, eindeutiger Rang, höchstens 64 Perioden) — der OK-Weg fragt sie VOR
     /// dem ersten Schritt; leer = gültig. Kein Delegat = die Prüfung läuft allein im Schreibweg.
