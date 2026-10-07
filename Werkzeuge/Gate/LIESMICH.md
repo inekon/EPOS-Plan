@@ -27,8 +27,8 @@ gescheitert (etwa ohne `dotnet` im Pfad); Schritt 5 meldet das als „REFERENZLA
 
 | Basis | Lauf | erwartet |
 |---|---|---|
-| R41 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 22/22 PASS, 677/677 CSV byte-gleich; der gestörte Lauf (Schritt 6) GESAMT PASS, 663/677 CSV byte-gleich |
-| R33 (für R41 nicht gemessen) | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
+| R42 (auf Linux eingefroren) | Linux (`gate_linux.sh`, CI) | 23/23 PASS, 718/718 CSV byte-gleich; der gestörte Lauf (Schritt 6) GESAMT PASS, 697/718 CSV byte-gleich |
+| R33 (für R42 nicht gemessen) | Windows | 16/16 PASS; byte-verschieden nur Reste im Band: `heizstab.csv` von 1007 und 1046, `kessel_leistung.csv` und `kessel_strom.csv` von 1024, `puffer_soc.csv` von 1042 |
 
 Die Windows-Zeile ist die Gegenrichtung des gemessenen Plattformwechsels: Der Rechenweg der Basis R25 ergab
 auf Linux gegen die Windows-Basis R25 genau diese fünf Dateien (GESAMT PASS, 455/460), und die Kesselregel

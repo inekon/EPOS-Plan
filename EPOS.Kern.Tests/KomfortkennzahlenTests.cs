@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
@@ -116,7 +116,7 @@ namespace EPOS.Kern.Tests
         {
             var k = new Komfortkennzahlen(3, 4.5, 2);
             var ohne = new ErgebnisEnergiebedarfModel();
-            SimulationRunner.AnlagenfahrplanSpaltenSetzen(ohne, false, 0, k, k);
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(ohne, false, 0, false, k, k);
             Assert.Null(ohne.FahrplanBegrenztStundenH);
             Assert.Null(ohne.KomfortUnterschreitungsstundenH);
             Assert.Null(ohne.KomfortKelvinstundenKh);
@@ -126,7 +126,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(ohne.KomfortUndRestbedarf);
 
             var mit = new ErgebnisEnergiebedarfModel { Waermerestbedarf = 1.25 };
-            SimulationRunner.AnlagenfahrplanSpaltenSetzen(mit, true, 7, k, null);
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(mit, true, 7, true, k, null);
             Assert.Equal(7, mit.FahrplanBegrenztStundenH);
             Assert.Equal(3, mit.KomfortUnterschreitungsstundenH);
             Assert.Equal(4.5, mit.KomfortKelvinstundenKh);
@@ -137,10 +137,19 @@ namespace EPOS.Kern.Tests
 
             // F12/E83: Fahrplan gelaufen, Schranke nie gegriffen - 0 Stunden statt NULL, Komfort steht.
             var frei = new ErgebnisEnergiebedarfModel();
-            SimulationRunner.AnlagenfahrplanSpaltenSetzen(frei, true, 0, k, k);
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(frei, true, 0, true, k, k);
             Assert.Equal(0, frei.FahrplanBegrenztStundenH);
             Assert.Equal(3, frei.KomfortUnterschreitungsstundenH);
             Assert.Equal(3, frei.KomfortUeberschreitungsstundenH);
+
+            // AK3: kein Fahrplanobjekt, der Kreis hat gerechnet - Komfort steht, Fahrplan_Begrenzt_Stunden bleibt NULL.
+            var ak3 = new ErgebnisEnergiebedarfModel();
+            SimulationRunner.AnlagenfahrplanSpaltenSetzen(ak3, false, 5, true, k, k);
+            Assert.Null(ak3.FahrplanBegrenztStundenH);
+            Assert.Equal(3, ak3.KomfortUnterschreitungsstundenH);
+            Assert.Equal(4.5, ak3.KomfortKelvinstundenKh);
+            Assert.Equal(2, ak3.KomfortLaengsteStreckeH);
+            Assert.Equal(3, ak3.KomfortUeberschreitungsstundenH);
         }
 
         // ---- Probe 11.1 „Sperrzeit erzeugt Unterschreitung" am gekoppelten Probegebäude ----

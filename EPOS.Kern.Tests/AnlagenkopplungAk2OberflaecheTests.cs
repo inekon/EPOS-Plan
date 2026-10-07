@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Anlagenkopplung AK2-3 — Oberfläche, Bericht</b> (Konzept 9.3, 9.4, 5.5): die Wahl der Woche mit der größten
-    /// Unterschreitung (E80), die Berichtstafel „Komfort und Restbedarf" nur im Lauf mit Fahrplan samt Bedarfsbegriff und
+    /// Unterschreitung (E80), die Berichtstafel „Komfort und Restbedarf" nur im Lauf mit Fahrplan oder erhobenen Komfortkennzahlen (AK3) samt Bedarfsbegriff und
     /// Zahl der festen Lasten, und der Schreibweg der Gruppe „Betriebszeiten" (NULL-erhaltend).
     /// </summary>
     public sealed class AnlagenkopplungAk2OberflaecheTests : IDisposable
@@ -66,6 +66,9 @@ namespace EPOS.Kern.Tests
             };
 
         private static BerichtsDaten Daten(int? fahrplanStunden, params ErgebnisGebaeudeModel[] gebaeude)
+            => Daten(fahrplanStunden, fahrplanStunden.HasValue, gebaeude);
+
+        private static BerichtsDaten Daten(int? fahrplanStunden, bool komfortErhoben, params ErgebnisGebaeudeModel[] gebaeude)
         {
             var erg = new ErgebnisModel();
             erg.Gebaeude.AddRange(gebaeude);
@@ -73,9 +76,9 @@ namespace EPOS.Kern.Tests
             {
                 Waermerestbedarf = 1.234,
                 FahrplanBegrenztStundenH = fahrplanStunden,
-                KomfortUnterschreitungsstundenH = fahrplanStunden.HasValue ? 300 : null,
-                KomfortKelvinstundenKh = fahrplanStunden.HasValue ? 450.0 : null,
-                KomfortLaengsteStreckeH = fahrplanStunden.HasValue ? 6 : null,
+                KomfortUnterschreitungsstundenH = komfortErhoben ? 300 : null,
+                KomfortKelvinstundenKh = komfortErhoben ? 450.0 : null,
+                KomfortLaengsteStreckeH = komfortErhoben ? 6 : null,
             };
             var eingaben = new DataTable();
             eingaben.Columns.Add("ID", typeof(long));
@@ -126,6 +129,33 @@ namespace EPOS.Kern.Tests
             string text = Schreibe(Daten(null, Zeile(1, "Haus A", true)));
             Assert.DoesNotContain(ProjektbeschreibungBaustein.UEBERSCHRIFT_KOMFORT, text);
             Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMENG_AK2_PROFILWEG_NAEHERUNG, text);
+        }
+
+        [Fact]
+        public void Auf_AK3_steht_die_Komforttafel_mit_erhobenen_Kennzahlen_ohne_Fahrplanstunden()
+        {
+            // AK3: Kreis gerechnet, Komfortkennzahlen erhoben, Fahrplan_Begrenzt_Stunden leer, kein Bedarfsbegriff gesetzt.
+            ErgebnisGebaeudeModel a = Zeile(1, "Haus A", true);
+            string text = Schreibe(Daten(null, true, a));
+
+            int ab = text.IndexOf(ProjektbeschreibungBaustein.UEBERSCHRIFT_KOMFORT, StringComparison.Ordinal);
+            Assert.True(ab >= 0, "Abschnitt fehlt");
+            string teil = text.Substring(ab);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.GEB_BEDARFSBEGRIFF_RUECKWIRKUNG, teil);
+            Assert.Contains("273", teil);
+            Assert.Contains("300", teil);
+            Assert.Contains("1,23", teil);
+            Assert.Contains("—", teil);                        // Fahrplan begrenzt: leer, nicht 0
+            Assert.DoesNotContain("\n0\n", teil);
+            Assert.True(ProjektbeschreibungBaustein.LaufMitKomfort(Daten(null, true, a).Varianten[0], new() { a }));
+        }
+
+        [Fact]
+        public void AK1_ohne_Fahrplan_und_ohne_Komfortkennzahlen_zeigt_keine_Komforttafel()
+        {
+            ErgebnisGebaeudeModel a = Zeile(1, "Haus A", true);
+            Assert.False(ProjektbeschreibungBaustein.LaufMitKomfort(Daten(null, false, a).Varianten[0], new() { a }));
+            Assert.True(ProjektbeschreibungBaustein.LaufMitKomfort(Daten(120, a).Varianten[0], new() { a }));
         }
 
         [Fact]

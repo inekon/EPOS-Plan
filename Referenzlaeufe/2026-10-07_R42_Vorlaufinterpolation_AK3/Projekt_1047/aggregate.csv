@@ -1,7 +1,7 @@
 ﻿Groesse;Wert
 Lauf.ID_Projekt;1047
 Sim.Restwaerme;0
-Sim.Reststrom;7.46039114
+Sim.Reststrom;7.4610825
 Sim.bSimulationWP;True
 Sim.bSimulationKessel;True
 Sim.bSimulationSolarthermie;False
@@ -17,9 +17,9 @@ Erdreich[0].Unwirksam;False
 Erdreich[0].MaxEntzugBelastbar;True
 Erdreich[0].MaxEntzugGeschaetzt;False
 Erdreich[0].InklSpeicherladung;False
-Erdreich[0].JahresentzugKWh;7310.21789
-Erdreich[0].MaxEntzugW;13698.1749
-Erdreich[0].VolllastStunden;533.663639
+Erdreich[0].JahresentzugKWh;7320.44154
+Erdreich[0].MaxEntzugW;13972.6171
+Erdreich[0].VolllastStunden;523.913414
 Erdreich[0].BetriebsStunden;2467
 Erdreich[0].FrostStunden;0
 Erdreich[0].FrostWarnung;False
@@ -115,12 +115,12 @@ Energiebedarf.Komfort_Kelvinstunden_Kuehlung;43
 Waermepumpe.Waermebedarf;10.27
 Waermepumpe.Restwaermebedarf;0.83
 Waermepumpe.Waermeproduktion_WP;9.43
-Waermepumpe.Stromverbrauch_WP;2.12
+Waermepumpe.Stromverbrauch_WP;2.11
 Waermepumpe.Stromverbrauch_Heizstab;0
 Waermepumpe.Kapazitaet_Pufferspeicher;0
 Waermepumpe.Min_Spitzenkesselleistung;23.15
 Waermepumpe.Waermebedarfsdeckung;13.53
-Waermepumpe.Vollbenutzungsstunden;236.4
+Waermepumpe.Vollbenutzungsstunden;236.24
 Waermepumpe.Bivalenzpunkt;17.79
 Waermepumpe.Deckung_Heizung;13.53
 Waermepumpe.Deckung_Brauchwasser;0
@@ -131,9 +131,9 @@ Waermepumpe.Stromverbrauch_Kuehlung;0.73
 WaermepumpeModul[0].Modul;WPE-I 59 H 400 Premium
 WaermepumpeModul[0].Leistung;35
 WaermepumpeModul[0].Waermeproduktion;9.43
-WaermepumpeModul[0].Stromverbrauch;2.12
+WaermepumpeModul[0].Stromverbrauch;2.11
 WaermepumpeModul[0].Heizstab;0
-WaermepumpeModul[0].Betriebsstunden;236.4
+WaermepumpeModul[0].Betriebsstunden;236.24
 WaermepumpeModul[0].Kaelteproduktion;3.84
 WaermepumpeModul[0].Stromverbrauch_Kuehlung;0.73
 WaermepumpeModul[0].Kaeltestrom_Netzbezug;0.73
@@ -150,7 +150,7 @@ BHKW.Stromproduktion;31.3
 BHKW.Betriebsstunden_Gesamt;3129.83
 BHKW.Betriebsstunden_Durchschnitt;3129.83
 BHKW.Waermebedarfsdeckung;85.28
-BHKW.Strombedarfsdeckung;48.95
+BHKW.Strombedarfsdeckung;48.92
 BHKW.Gasverbrauch;99.2
 BHKW.Oelverbrauch;0
 BHKW.Koks;0
@@ -225,13 +225,13 @@ Vektor.kuehlruecklauf_0.Summe;158186.504
 Vektor.kuehluebergabe_0.Summe;0
 Vektor.restwaerme.Summe;0
 Vektor.strombedarf_viertelstunde.Summe;60000
-Vektor.reststrom_viertelstunde.Summe;29841.5645
+Vektor.reststrom_viertelstunde.Summe;29844.33
 Vektor.wp_waermebedarf.Summe;10267.9923
 Vektor.wp_produktion.Summe;9434.82369
-Vektor.wp_strom.Summe;2124.6058
+Vektor.wp_strom.Summe;2114.38215
 Vektor.heizstab.Summe;0
 Vektor.wp_restwaerme.Summe;833.168657
-Vektor.wp_quellentemperatur.Summe;106486.757
+Vektor.wp_quellentemperatur.Summe;106473.35
 Vektor.wp_warmwasserbedarf.Summe;0
 Vektor.kessel_waermebedarf.Summe;833.168657
 Vektor.kessel_leistung.Summe;833.168657
@@ -241,5 +241,5 @@ Vektor.bhkw_waermebedarf.Summe;69734.8018
 Vektor.bhkw_waerme.Summe;59466.8095
 Vektor.bhkw_strom.Summe;31298.3208
 Vektor.bhkw_restwaerme.Summe;10267.9923
-Vektor.ssp_gespeichert_viertelstunde.Summe;210905.8
-Vektor.pv_speicherfuellstand.Summe;52726.45
+Vektor.ssp_gespeichert_viertelstunde.Summe;210920.119
+Vektor.pv_speicherfuellstand.Summe;52730.0297

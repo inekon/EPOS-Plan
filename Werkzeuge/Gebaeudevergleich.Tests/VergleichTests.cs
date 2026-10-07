@@ -57,6 +57,17 @@ namespace Gebaeudevergleich.Tests
         private static double Agg(Dictionary<string, string> agg, int i, string groesse)
             => Werkzeuglauf.Zahl(agg["Geb[" + Id(i) + "]." + groesse]);
 
+        /// <summary>
+        /// Hat der Lauf der Basis den geschlossenen Kreis der Stufe AK3 gerechnet
+        /// (<c>Energiebedarf.Ak3_Durchlaeufe_Mittel</c> im Aggregat), hängt der Gebäudebedarf am
+        /// Kreis (Raumeinfluss der Heizkurve, Schranke der Erzeuger) und ist mit dem Gebäude allein
+        /// nicht nachzurechnen — solche Projekte nehmen die Basisvergleiche benannt aus.
+        /// </summary>
+        private static bool GebaeudeAmKreis(Dictionary<string, string> agg)
+            => agg.ContainsKey("Energiebedarf.Ak3_Durchlaeufe_Mittel");
+
+        private const string GRUND_AK3 = "übersprungen (Stufe AK3: Gebäude am Kreis)";
+
         // =================================================================================
 
         [Fact]
@@ -70,6 +81,11 @@ namespace Gebaeudevergleich.Tests
             {
                 if (projekt == PROJEKT_TAGESBILANZ) continue;
                 int gebaeude = int.Parse(agg["Geb[" + Id(i) + "].ID_Gebaeude"], CultureInfo.InvariantCulture);
+                if (GebaeudeAmKreis(agg))
+                {
+                    _aus.WriteLine("T1: P" + Id(projekt) + "/G" + Id(gebaeude) + " " + GRUND_AK3);
+                    continue;
+                }
                 Dictionary<string, string> z = a.Zeile(projekt, gebaeude);
                 Assert.True(z != null, "Keine Zeile P" + Id(projekt) + "/G" + Id(gebaeude));
                 Assert.Equal("1", z["Neu_ok"]);
@@ -196,6 +212,11 @@ namespace Gebaeudevergleich.Tests
             foreach ((int projekt, int i, Dictionary<string, string> agg) in BasisGebaeude())
             {
                 if (!agg.ContainsKey("Geb[" + Id(i) + "].KuehlenergieMwh")) continue;
+                if (GebaeudeAmKreis(agg))
+                {
+                    _aus.WriteLine("T4: P" + Id(projekt) + " Kälte " + GRUND_AK3);
+                    continue;
+                }
                 Dictionary<string, string> z = a.Zeile(projekt, int.Parse(agg["Geb[" + Id(i) + "].ID_Gebaeude"], CultureInfo.InvariantCulture));
                 Assert.Contains("U-KU", z["Regeln"].Split(' '));
                 Relativ(Agg(agg, i, "KuehlenergieMwh"), Werkzeuglauf.Zahl(z["Kaelte_neu_MWh"]), "P" + Id(projekt) + " Kälte");

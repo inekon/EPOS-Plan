@@ -216,7 +216,7 @@ namespace WindowsFormsApplication1
     /// Stützstelle zum Vorlauf und an der Quelltemperatur der Stunde — nicht aus <c>Tab_WP.Nennleistung</c>.
     /// Die Stützstelle wählt <see cref="SimulationWaermepumpe.VorlaufAuswerten"/> (<c>StuetzstelleWaehlen</c>),
     /// nicht die zählende <c>Kennlinienwahl</c>: gezählt wird allein in der echten Kaskadenstunde
-    /// (Festlegung 8). Mit dem Interpolationsschalter (<see cref="VorlaufInterpolation"/>, gelesen beim Aufbau)
+    /// (Festlegung 8). Mit der Interpolation über den Vorlauf (<see cref="VorlaufInterpolation"/>, gilt)
     /// und einem Vorlauf streng zwischen zwei Stützstellen wird <c>Ptherm</c> beider Kennlinien linear im Vorlauf
     /// gewichtet (I-1). Ränder (F-A8): unter der untersten die unterste Kennlinie, über der obersten bei
     /// erlaubter Extrapolation die oberste, bei verbotener Kapazität 0 — die Wärmepumpe stellt den Vorlauf nicht
@@ -236,10 +236,10 @@ namespace WindowsFormsApplication1
         /// <param name="quelle">Die Quelltemperatur am Stundenbeginn (Naht R40).</param>
         /// <param name="extrapolationErlaubt"><c>Tab_Einstellungen.Extrapolation_erlaubt</c>.</param>
         /// <param name="anzahl">Zahl gleicher Module der Anlagenzeile (≥ 1).</param>
-        /// <param name="interpolieren">Interpolation über den Vorlauf; <c>null</c> = der Kernschalter beim Aufbau.</param>
+        /// <param name="interpolieren">Interpolation über den Vorlauf (I-1, gilt); <c>false</c> allein für Proben der Stützstellenwahl.</param>
         internal WaermepumpeKapazitaet(Fahrplanerzeuger fahrplan, IReadOnlyList<SimulationWaermepumpe._Kenndaten> kurven,
                                        SimulationWaermepumpe._Kenndaten fest, IQuellzustand quelle, bool extrapolationErlaubt,
-                                       int anzahl = 1, bool? interpolieren = null)
+                                       int anzahl = 1, bool interpolieren = true)
             : base(fahrplan)
         {
             if (kurven == null || kurven.Count == 0) throw new ArgumentException("Die Wärmepumpe braucht eine Kennlinie.", nameof(kurven));
@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
             _quelle = quelle ?? throw new ArgumentNullException(nameof(quelle));
             _extrapolationErlaubt = extrapolationErlaubt;
             Anzahl = anzahl > 1 ? anzahl : 1;
-            Interpolieren = interpolieren ?? VorlaufInterpolation.Ein;
+            Interpolieren = interpolieren;
         }
 
         /// <summary>Zahl gleicher Module.</summary>

@@ -9345,11 +9345,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage „{0}&quot;: Bezüge ohne eindeutige gleichnamige Gegenstelle im Zielprojekt wurden weggelassen: {1}. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_KINDBEZUG {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_KINDBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_KINDTABELLE {
             get {
                 return ResourceManager.GetString("BK_KOMP_HINW_KINDTABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnungen „{1}&quot; der Anlage „{0}&quot; konnten nicht übernommen werden. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_KINDZEILEN {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_KINDZEILEN", resourceCulture);
             }
         }
         
@@ -9372,7 +9390,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Projektzeile(n) des Quellprojekts (Quellprofil, Kältemaschine, Wechselrichter) wurden als Projektkopie ins Ziel übernommen. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PROJEKTKOPIE {
             get {
@@ -96357,7 +96375,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C liegt außerhalb der Stützstellen der Kühlkennlinie ({2} °C) — gerechnet wird mit der nächsten Stützstelle {3} °C; über die Stützstellen hinaus wird nicht extrapoliert. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN {
             get {

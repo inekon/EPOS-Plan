@@ -6248,7 +6248,7 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>{0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer.</value>
   </data>
   <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
-    <value>{0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen.</value>
+    <value>{0} Projektzeile(n) des Quellprojekts (Quellprofil, Kältemaschine, Wechselrichter) wurden als Projektkopie ins Ziel übernommen.</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
@@ -6258,6 +6258,12 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDBEZUG" xml:space="preserve">
+    <value>Anlage „{0}": Bezüge ohne eindeutige gleichnamige Gegenstelle im Zielprojekt wurden weggelassen: {1}.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
+    <value>Die Zuordnungen „{1}" der Anlage „{0}" konnten nicht übernommen werden.</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Modulpreis</value>
@@ -28302,7 +28308,7 @@ Möchten Sie das zulassen?</value>
     <value>Wärmepumpe „{0}": Die Kühlkennlinie für den Vorlauf {1} °C trägt auf der Temperaturachse die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur — sie wird nicht umgedeutet; die Maschine kühlt nicht.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
-    <value>Wärmepumpe „{0}": Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert.</value>
+    <value>Wärmepumpe „{0}": Der Kühl-Vorlauf {1} °C liegt außerhalb der Stützstellen der Kühlkennlinie ({2} °C) — gerechnet wird mit der nächsten Stützstelle {3} °C; über die Stützstellen hinaus wird nicht extrapoliert.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
     <value>Wärmepumpe „{0}": {1} Stützstellen der Kühlkennlinie stehen doppelt mit gleichen Werten — sie sind zusammengefasst.</value>

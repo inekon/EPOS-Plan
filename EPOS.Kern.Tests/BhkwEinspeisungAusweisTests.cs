@@ -137,7 +137,7 @@ namespace EPOS.Kern.Tests
         [InlineData(1030, 0.392)]
         [InlineData(1017, 16.5686)]
         [InlineData(1024, 0.0)]
-        [InlineData(1047, 22.1492)]   // R40: Wärmepumpe an der Erdsonde, weniger Eigenbedarf (R39 21,8424)
+        [InlineData(1047, 22.1608)]   // Basis R42: Kennlinie über den Vorlauf interpoliert (R40 22,1492)
         public void Reiter_Reihe_und_KWK_Split_fuehren_dieselbe_Einspeisung(int idProjekt, double erwartetMwh)
         {
             if (!_db.Vorhanden) return;

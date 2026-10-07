@@ -66,4 +66,6 @@ Quelle in `Ursachenregeln.cs`.
 
 `dotnet test Werkzeuge/Gebaeudevergleich/Gebaeudevergleich.sln -c Release` — T1 bis T15 gegen
 Kopien der Testdatenbank und die Referenzbasis unter `Referenzlaeufe/`; ohne Testdatenbank
-(nur LFS-Zeiger) schweigen die Fälle.
+(nur LFS-Zeiger) schweigen die Fälle. Projekte, deren Basislauf den geschlossenen Kreis der Stufe AK3 gerechnet hat
+(`Energiebedarf.Ak3_Durchlaeufe_Mittel` im Aggregat), nehmen T1 und T4 benannt aus: Ihr Gebäudebedarf
+hängt am Kreis und ist mit dem Gebäude allein nicht nachzurechnen.

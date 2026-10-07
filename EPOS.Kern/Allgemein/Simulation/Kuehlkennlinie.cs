@@ -114,12 +114,12 @@ namespace WindowsFormsApplication1
     /// (Stützstellenprobe, Kühlkonzept 10.2).</para>
     ///
     /// <list type="number">
-    /// <item><b>Vorlauf (K21):</b> gewählt wird aus den STÜTZSTELLEN; über den Vorlauf wird nur mit
-    /// dem Kernschalter <see cref="VorlaufInterpolation"/> interpoliert (AK3-I, I-3, Vorgabe aus):
+    /// <item><b>Vorlauf (K21):</b> gewählt wird aus den STÜTZSTELLEN; im Lauf wird über den Vorlauf
+    /// interpoliert (<see cref="VorlaufInterpolation"/>, AK3-I, I-3, gilt):
     /// Dann rechnet ein <c>Kuehl_Vorlauf</c> STRENG zwischen zwei Stützstellen mit Kälteleistung und
     /// EER beider einschließender Vorläufe (je an der Temperatur ausgewertet, je in ihrer höchsten
     /// Laststufe), linear im Vorlauf gewichtet (<see cref="Interpoliert"/>); außerhalb gilt der
-    /// Randwert wie ohne Schalter. <c>Kuehl_Vorlauf</c> NULL heißt kleinster Stützwert — die kälteste
+    /// Randwert (Stützstellenwahl ohne Interpolation). <c>Kuehl_Vorlauf</c> NULL heißt kleinster Stützwert — die kälteste
     /// angebotene Kaltwassertemperatur, die nie eine Leistung verspricht, die die Maschine
     /// nicht hat. Ein Wert, der keine Stützstelle ist, rechnet mit der NÄCHSTEN (bei
     /// gleichem Abstand der kälteren) und wird einmal je Gerät und Vorlauf benannt
@@ -250,7 +250,8 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Baut die Kennlinie aus den Zeilen EINES Geräts für den gewünschten Kühl-Vorlauf.
+        /// Baut die Kennlinie aus den Zeilen EINES Geräts für den gewünschten Kühl-Vorlauf — Stützstellenwahl
+        /// ohne Interpolation (Proben; der Lauf interpoliert, siehe die Überladung mit <c>interpolieren</c>).
         /// </summary>
         /// <param name="zeilen">Alle Kühlkennlinienzeilen des Geräts (Reihenfolge beliebig).</param>
         /// <param name="kuehlVorlauf"><c>Kuehl_Vorlauf</c>; <c>null</c> = kleinster Stützwert (K21).</param>
@@ -259,9 +260,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Wie <see cref="Bilden(IEnumerable{KuehlkennlinienZeile}, int?)"/>; mit
-        /// <paramref name="interpolieren"/> (Kernschalter <see cref="VorlaufInterpolation"/>, AK3-I, I-3)
-        /// rechnet ein Kühl-Vorlauf STRENG zwischen zwei Stützstellen mit beiden — vorausgesetzt, beide
-        /// Blöcke sind rechenbar; sonst, auf einer Stützstelle und außerhalb wie ohne Schalter.
+        /// <paramref name="interpolieren"/> (<see cref="VorlaufInterpolation"/>, AK3-I, I-3; der Lauf
+        /// übergibt true, <see cref="KenndatenKuehlungCtrl.KennlinieProjekt"/>) rechnet ein Kühl-Vorlauf
+        /// STRENG zwischen zwei Stützstellen mit beiden — vorausgesetzt, beide Blöcke sind rechenbar;
+        /// sonst, auf einer Stützstelle und außerhalb die Stützstellenwahl.
         /// </summary>
         public static Kuehlkennlinie Bilden(IEnumerable<KuehlkennlinienZeile> zeilen, int? kuehlVorlauf, bool interpolieren)
         {

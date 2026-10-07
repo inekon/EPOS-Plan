@@ -6232,7 +6232,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>{0} reference(s) to a source profile or chiller of the source project could neither be matched nor copied in the target and were left empty.</value>
   </data>
   <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
-    <value>{0} source profile(s) or chiller(s) of the source project were copied into the target project.</value>
+    <value>{0} project record(s) of the source project (source profile, chiller, inverter) were copied into the target project.</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>
@@ -6242,6 +6242,12 @@ Depending on the project size this takes several minutes. Continue?</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDBEZUG" xml:space="preserve">
+    <value>Unit "{0}": references without a unique namesake in the target project were omitted: {1}.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
+    <value>The assignments "{1}" of unit "{0}" could not be transferred.</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Module price</value>
@@ -28295,7 +28301,7 @@ Do you want to allow this?</value>
     <value>Heat pump "{0}": the cooling characteristic for the flow temperature {1} °C carries the chilled-water temperature on the temperature axis instead of the outdoor or source temperature — it is not reinterpreted; the unit does not cool.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN" xml:space="preserve">
-    <value>Heat pump "{0}": the cooling flow temperature {1} °C is not a data point of the cooling characteristic ({2} °C) — {3} °C is used; there is no interpolation across flow temperatures.</value>
+    <value>Heat pump "{0}": the cooling flow temperature {1} °C lies outside the data points of the cooling characteristic ({2} °C) — the nearest data point {3} °C is used; there is no extrapolation beyond the data points.</value>
   </data>
   <data name="SIMENG_KAELTE_WP_DUBLETTEN" xml:space="preserve">
     <value>Heat pump "{0}": {1} data points of the cooling characteristic are stored twice with equal values — they have been merged.</value>
