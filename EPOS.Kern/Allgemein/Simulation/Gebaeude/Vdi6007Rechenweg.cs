@@ -245,6 +245,12 @@ namespace WindowsFormsApplication1
                     AnlagenVorlaufC, VerfuegbarkeitJeZone);
                 LetztesMehrzonenergebnis = m;
 
+                // AK3-W3c (Entwurf AK3 2.6): Im AK3-Weg ist dieser Lauf Pass 1 auch für das Mehrzonengebäude; daneben
+                // entsteht aus DENSELBEN Zonen (zustandslos, samt Aufheizplänen) eine zweite, noch nicht eingeschwungene
+                // Zonenschleife für den Kreis — Anlage außen, Zonen innen. Ohne Erfassung geschieht nichts.
+                if (Ak3Erfassen != null && !Probelauf && m.Eingaenge.Count > 0 && m.Eingaenge[0].Eingang.KopplungWirksam)
+                    Ak3Erfassen(index, gebaeude, GebaeudeStepper.Mehrzonen(new Zonenschleife(m.Eingaenge, wer)));
+
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
                 verbrauchAltKwh = m.Gebaeude.VerbrauchAltKwh;
                 _traeger.Setzen(index, m.Gebaeude);

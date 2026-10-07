@@ -145,7 +145,7 @@ namespace EPOS.Kern.Tests
     }
 
     /// <summary>
-    /// <b>Der AK3-Weg aus der Datenbank</b> (AK3-W3b): Projekt 1047 bzw. 1056 mit Stufe AK3 im Kern
+    /// <b>Der AK3-Weg aus der Datenbank</b> (AK3-W3b): Projekt 1047, 1056 und das Dreizonenhotel 1054 (Mehrzonen im Kreis, AK3-W3c) mit Stufe AK3 im Kern
     /// (<see cref="Ak3Kernmodus.AlleGekoppelten"/>) — ein Lauf ohne Fehler, der Kreis rechnet jede Stunde, die Kaskade
     /// lässt keinen Restbedarf (Festlegung 15), und ohne Kernstufe bleibt der Lauf der heutige. Die Messung (Durchläufe,
     /// Laufzeit, Heizwärme, Unterdeckung, WP-Strom gegen AK1) schreibt sie nach <c>AK3_MESSUNG</c>, wenn gesetzt.
@@ -180,6 +180,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(1047)]
         [InlineData(1056)]
+        [InlineData(1054)]
         public void Projekt_rechnet_mit_Stufe_AK3_im_Kreis_ohne_Fehler(int projekt)
         {
             if (!_db.Vorhanden) return;

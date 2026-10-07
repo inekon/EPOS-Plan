@@ -6,9 +6,10 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Der AK3-Weg auf der Bedarfsseite</b> (AK3-W3b; Entwurf AK3 2.1, Festlegungen 10, 14, 17): Mit Stufe AK3
+    /// <b>Der AK3-Weg auf der Bedarfsseite</b> (AK3-W3b/W3c; Entwurf AK3 2.1, 2.6, Festlegungen 10, 14, 17): Mit Stufe AK3
     /// im Kern (<see cref="Ak3Kernstufe"/>) ist der Gebäudelauf der Bedarfsrechnung <b>Pass 1</b> — unbegrenzt, ohne
-    /// Profilweg —, und je gekoppeltem Einzonengebäude auf dem VDI-Weg entsteht daneben ein Stepper für den Kreis.
+    /// Profilweg —, und je gekoppeltem Gebäude auf dem VDI-Weg (eine oder mehrere Zonen) entsteht daneben ein Stepper
+    /// für den Kreis.
     /// Die Kaskadenstunde ruft den Kreis über die Naht (<see cref="Ak3Stundenbedarf"/>); nach der Schleife führt
     /// <see cref="Ak3Nachfuehren"/> Gebäudeergebnisse, Heizkreis, Summen-, Monats- und Dauerlinienreihen aus den
     /// Werten der Naht nach. Ohne Stufe AK3 ist <see cref="Ak3"/> <c>null</c> und nichts hiervon wirkt.
@@ -22,8 +23,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt den AK3-Weg an, wenn die Kernstufe für die Projektstufe wirkt und mindestens ein Gebäude gekoppelt
-        /// auf dem VDI-Weg rechnet. Mehrzonengebäude bleiben bis zum Mehrzonenkreis (W3c/W5) feste Last aus Pass 1 —
-        /// benannt, nicht still; Altweg-Gebäude sind feste Last (Festlegung 17).
+        /// auf dem VDI-Weg rechnet — Einzonen- wie Mehrzonengebäude (Entwurf 2.6: Anlage außen, Zonen innen);
+        /// Altweg-Gebäude sind feste Last (Festlegung 17).
         /// </summary>
         /// <returns>false = benannter Abbruch (ungültiges Zeitprogramm, wie im Fahrplan).</returns>
         private bool Ak3Vorbereiten(int idProjekt, int idKlimaregion, ProjektGebaeudeCtrl ctrl)
@@ -33,19 +34,14 @@ namespace WindowsFormsApplication1
             string stufe = AnlagenkopplungProjekt;
             if (FahrplanUnterdrueckt || !Ak3Kernstufe.Wirksam(stufe) || ctrl == null || ctrl.rows == 0) return true;
 
-            bool einzone = false;
+            bool gekoppelt = false;
             for (int i = 0; i < ctrl.rows; i++)
             {
                 ProjektGebaeudeModel item = ctrl.items[i];
-                if (!ReferenceEquals(RechenwegWaehlen(item), _vdi6007) || !Waermeuebergabe.KopplungWirksamFuer(item, stufe)) continue;
-                if (Vdi6007Rechenweg.Mehrzonenweg(item))
-                    SimulationProtokoll.Aktuell.HinweisEinmal(
-                        "ak3-mehrzonen-" + item.ID_Gebaeude.ToString(CultureInfo.InvariantCulture),
-                        "Anlagenkopplung AK3: " + (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude +
-                        ") rechnet mehrere Zonen und geht bis zum Mehrzonenkreis als feste Last aus dem unbegrenzten Lauf ein.");
-                else einzone = true;
+                if (ReferenceEquals(RechenwegWaehlen(item), _vdi6007) && Waermeuebergabe.KopplungWirksamFuer(item, stufe))
+                    gekoppelt = true;
             }
-            if (!einzone) return true;
+            if (!gekoppelt) return true;
 
             // Die Datenbankseite der Angebotsfunktion: Masken, Zeitprogramm, Vorlaufangebot und Ptherm der
             // Heizerzeuger aus demselben Lader wie der Fahrplan (kein neues SQL).
@@ -87,7 +83,7 @@ namespace WindowsFormsApplication1
 
             foreach (Ak3Weg.Eintrag g in _ak3.Gebaeude)
             {
-                GebaeudeModellErgebnis e = g.Stepper.Abschluss(g.Index, g.Zeile.ID_Gebaeude)[0];
+                GebaeudeModellErgebnis e = Zonenrechnung.Abschluss(g.Stepper, g.Index, g.Zeile.ID_Gebaeude);
                 if (g.Skaliert) e = e.Skaliert(g.Faktor);
                 GebaeudeErgebnisse.Setzen(g.Index, e);
                 if (g.Index < GebaeudeKennzahlenListe.Count)
