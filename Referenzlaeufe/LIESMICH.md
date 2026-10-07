@@ -500,6 +500,26 @@ Brennstoff und Emissionen.
 > wer einen davon ändert, friert ebenfalls neu ein. Gehalten wird der Rechenweg von der Basis selbst
 > (`Geb[n].Erdreich_B`, `Erdreich_Ug`, `Erdreich_Umfangsquelle` im Export).
 
+## Die Einfrierregel „gesäte Erdreichquellen“
+
+Fünfzehnter Ort derselben Falle. Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und
+1056 und das Referenzprojekt 1057 rechnen ihre Quelltemperatur aus einem Erdsondenfeld mit Entzugsrückwirkung; Länge,
+Anzahl und Boden der Sonden, die Klimazone und die Feldgeometrie bestimmen sie und damit Wärmepumpenstrom, JAZ, Deckung,
+Kessel und Kälte-EER.
+
+> **Wer gesäte Erdreichquellen eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt die Basis neu
+> ein und begründet den Wechsel hier.**
+>
+> Betroffen sind an den Wärmepumpen-Anlagen der Referenzprojekte in `Tab_Energieanlagen` die Quellfelder `WQ_Typ`,
+> `WQ_Quellsystem`, `WQ_Tiefe`, `WQ_Anzahl`, `WQ_Flaeche`, `WQ_Bodentyp`, `WQ_Spreizung` und die Sondenfeldspalten
+> (`WQ_Sondenabstand`, `WQ_Bohrlochdurchmesser`, `WQ_Bohrlochwiderstand`, `WQ_Kopfueberdeckung`, `WQ_Betrachtungsjahr`,
+> `WQ_Sondenanordnung` — leer heißt Vorgabe), die Klimazone `Tab_Klimaregion.Klimazone_DIN4710` ihrer Klimaregion, der
+> Bodenkatalog (λ, ρ·c_p) der benutzten Bodentypen, die Normgeometrie von `Sondenfeldgeometrie` und die Festwerte in
+> `Erdsondenfeld` (Abstand 6 m, Bohrlochradius 0,075 m, R_b 0,10 m·K/W, Kopfüberdeckung 2 m, Betrachtungsjahr 10,
+> Heizgrenze 15 °C der Startschätzung, quadratische Anordnung), dazu das Anlegen oder Entfernen eines Referenzprojekts
+> mit Erdreichquelle. Die Saat entsteht wiederholbar aus `Skripte/erdreichquellen_referenzprojekte.py`; gehalten von
+> `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` und der Basis selbst (`Erdreich[n].*` im Export).
+
 ## Die Einfrierregel „gesäte Kältemaschinendaten“ (Referenzprojekt 1055)
 
 Weiterer Ort derselben Falle. Projekt 1055 „Kältemaschine mit Kältespeicher“ ist das einzige Referenzprojekt, dessen
@@ -630,7 +650,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-06_R39_Auslegungsheizlast`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-07_R40_Erdreichquellen`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -645,11 +665,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026**
-(55 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast) am 07.10.2026**
+(56 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 55 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 56 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -659,11 +679,11 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-06_R39_Auslegungsheizlast/`** — **einundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056), **646 CSV**, **4 275 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 06.10.2026, Stand `7fad5dc`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **190**, 87 801 856 Byte, LFS-SHA-256
-`2fec4f1484b7f0bf27fe25bec9b2ed00c3c00d2e9d83a66aa4d9ca9193b3ee85`, mit den Projekten 1053 bis 1056; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+**`2026-10-07_R40_Erdreichquellen/`** — **zweiundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057), **677 CSV**, **4 584 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 07.10.2026, Stand `6195ea1`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **195**, 89 690 112 Byte, LFS-SHA-256
+`29dbf1dd08e329196c74ee73604892d8b3e9e9852f0a8efc988172687cacf382`, mit den Projekten 1053 bis 1057; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -681,34 +701,48 @@ Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzpr
 die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
 `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
 Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
-und `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
-Projekt 1056. 1050, 1052, 1054, 1055 und 1056 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
-rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056 und `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057. 1050, 1052, 1054, 1055, 1056 und 1057 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
+rechnet alle zweiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Auslegungsheizlast auch ohne Anlagenkopplung (KP3-R6, E97) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1051 und 1052 tragen je zwei neue Zeilen in `aggregate.csv`.**
+> **Anlass: Erdreichquellen der Referenzprojekte und das neue Referenzprojekt 1057 „Erdsonde“ (Erdwärme B und C,
+> Einfrierregel „gesäte Erdreichquellen“) — acht Projekte rechnen ihre Sole-Wärmepumpe an der Erdsonde, 1057 ist neu,
+> die übrigen dreizehn sind byte-gleich.**
 >
-> Die Auslegungsheizlast Φ_HL je Zone entsteht in `GebaeudeModellEingang.Auslegungslasten` aus einer Quelle: mit
-> Kopplung die Zahl des Kopplungswegs, ohne sie derselbe Ausdruck mit Auslegungstag und Auslegungs-Außentemperatur.
-> Damit füllt jedes ungekoppelte Gebäude mit Aufheizoptimierung `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw`
-> seiner Ergebniszeile, und der Ergebnisexport trägt beide am Gebäude als `Geb[n].AuslegungsheizlastKw` und
-> `Geb[n].AufheizzuschlagKw` (nur gesetzt). Ein gekoppeltes Gebäude bemisst nicht; 1054 bleibt darum ohne die
-> Zeilen. Die exakte innere Umkehr des Zonenmodells (ZM-F) ändert keine Zahl. Der Rechenweg ist sonst unverändert:
-> **Gegen R38 sind 19 Projekte vollständig byte-gleich; 1051 und 1052 tragen allein zwei neue Zeilen in
-> `aggregate.csv`, die der Vergleich als „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 35 bzw. 24 CSV beider
-> Projekte sind byte-gleich (644 von 646 CSV).** Neu stehen bei 1051 `Geb[0].AuslegungsheizlastKw` 22,19 kW und
-> `Geb[0].AufheizzuschlagKw` 3,92 kW, bei 1052 30,09 kW und 5,26 kW. Je Projekt zwei Skalare mehr (gesamt 646 CSV,
-> 4 275 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
+> Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 rechneten ohne gepflegte
+> Quelle an der Außenluft. `Skripte/erdreichquellen_referenzprojekte.py` sät an genau diesen Anlagen eine Erdsonde
+> (`WQ_Typ` Erdreich, `WQ_Quellsystem` Sonde, Mergel/Lehm, Länge nach VDI 4640 Blatt 2 mit Energiegrenze, 60 bis 120 m
+> je Sonde, Spreizung Vorgabe 5 K), setzt die eigene Klimaregion jedes Projekts auf Klimazone 6 und legt 1057 an
+> (Abschnitt „Das Referenzprojekt 1057“ unten); Schemaschritt 195 legt die Sondenfeldspalten leer an (Normvorgabe).
+> Damit gilt die neue Einfrierregel „gesäte Erdreichquellen“ oben. **Gegen R39 sind die dreizehn Projekte ohne
+> Erdreichquelle vollständig byte-gleich (575 von 646 CSV); 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 weichen
+> ab, 1057 ist neu.** Jahresarbeitszahl (Wärme der Wärmepumpe durch ihren Strom) und Wärmepumpenstrom alt → neu:
+>
+> | Projekt | JAZ R39 → R40 | WP-Strom R39 → R40 (MWh) | Wirkung |
+> |---|---|---|---|
+> | 1008 | 4,15 → 3,94 | 18,86 → 20,27 | Grundlast, Sole im Mittel 4,5 °C (Außenluft 9,9 °C); Deckung 79,8 → 81,5 % |
+> | 1023, 1050 | 2,38 → 2,38 | 43,01 → 43,23 | praktisch gleich; Deckung 41,6 → 41,8 % |
+> | 1039 | 3,25 → 3,06 | 58,59 → 58,82 | Grundlast, das Erdreich kühlt unter Last aus (Sole im Mittel 1,0 °C); Wärme der WP 190,7 → 180,0 MWh |
+> | 1047 | 3,86 → 4,45 | 2,44 → 2,12 | Kühlprojekt; Kälte-EER 4,63 → 5,24, Kältedeckung 98,2 → 99,6 % |
+> | 1056 | 3,73 → 4,33 | 3,25 → 2,80 | Kühlprojekt; Kälte-EER 4,62 → 5,24, Komfortstunden unverändert |
+> | 1017 | — | 0,01 → 0,00 | Kälte-EER 4,63 → 5,24, Kältedeckung 98,2 → 99,7 % |
+> | 1055 | — | 0,01 → 0,00 | die Kältemaschine bleibt unberührt |
+> | 1057 | neu 3,07 | neu 22,12 | Sonde 4 × 90 m, Sole im Mittel 1,5 °C, Deckung 85,7 % |
+>
+> Je Projekt mit Erdreichquelle kommt der Block `Erdreich[0].*` (15 Skalare) in `aggregate.csv` hinzu. Gesamt 677 CSV,
+> 4 584 Skalare. Zwei Läufe sind byte-gleich; der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
->   --ziel Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057 \
+>   --ziel Referenzlaeufe/2026-10-07_R40_Erdreichquellen
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../Dokumentation/aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
-> Abschnitt 19.
+> Abschnitt 23.
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
@@ -846,14 +880,14 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **89 690 112 Byte, LFS-SHA-256 `29dbf1dd08e329196c74ee73604892d8b3e9e9852f0a8efc988172687cacf382`**. Der Referenzlauf
 > der 21 Basisprojekte und 1057 ist vor und nach dem Schritt byte-gleich.
 
-### Die Vorgängerbasis R38 (Vorlaufwahl)
+### Die Vorgängerbasis R39 (Auslegungsheizlast)
 
-Einundzwanzig Projekte, 646 CSV, 4 271 Skalare, auf Linux eingefroren gegen die Testdatenbank `69322344…` (Schemastand
-188, mit den Projekten 1053 bis 1056), gehoben auf Schemastand 190; mit R39 aus dem Arbeitsbaum gefallen, Protokoll und
-Anlass (Ausweis der Vorlaufwahl der Wärmepumpe, VW1 und E88) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R39 ist
-die Auslegungsheizlast auch ohne Anlagenkopplung (KP3-R6, E97); 19 Projekte sind byte-gleich, 1051 und 1052 tragen nur
-zwei neue Zeilen in `aggregate.csv`.
+Einundzwanzig Projekte, 646 CSV, 4 275 Skalare, auf Linux eingefroren gegen die Testdatenbank `2fec4f14…` (Schemastand
+190, mit den Projekten 1053 bis 1056), gehoben auf Schemastand 195; mit R40 aus dem Arbeitsbaum gefallen, Protokoll und
+Anlass (Auslegungsheizlast auch ohne Anlagenkopplung, KP3-R6 und E97) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R40 sind
+die Erdreichquellen der Referenzprojekte und das Referenzprojekt 1057; die dreizehn Projekte ohne Erdreichquelle sind
+byte-gleich.
 
 ## Was hier liegt
 
@@ -865,7 +899,7 @@ zwei neue Zeilen in `aggregate.csv`.
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben) und `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben) `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) und `erdreichquellen_referenzprojekte.py` (Erdsonden an den Sole-Wärmepumpen der Referenzprojekte, Klimazone 6, Referenzprojekt 1057 als Kopie von 1029; die Einfrierregel „gesäte Erdreichquellen“ oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -1077,10 +1111,10 @@ Kühlbetrieb gegen Kältemaschine. Gesät sind:
 Die Werte: 20 kW decken die Spitze von 1017 auch an der heißesten Stützstelle (45/6 °C: 18 kW), die Mindestteillast liegt
 bei 4 kW; der Katalogsatz mit 200 kW taktete jede Stunde. Ein abweichender Kühlträger macht die Abrechnungsart wirksam
 (mit dem Netzbezugsträger wäre der eigene Zähler ein wirkungsloser Haken). Der Speicher fasst knapp eine Stunde der
-Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe: 98,2 %), Kälte der Maschine
+Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe an der Erdsonde: 99,7 %), Kälte der Maschine
 4,19 MWh, Kältestrom 1,26 MWh (vollständig Netzbezug über den eigenen Zähler mit Träger 58), EER-Jahreswert 3,25,
 0 Stunden freier Kühlung (der Trockenkühler erreicht 3 °C Rückkühlung an Kühltagen nicht), 166 Taktstunden;
-Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R39
+Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R40
 und nicht in der CI-Auswahl; es gilt die Einfrierregel „gesäte Kältemaschinendaten“ oben.
 
 ```bash
@@ -1122,11 +1156,12 @@ Sperrfenster), Zeilenzahlen der Kopie, die gesetzten Zellen, `foreign_key_check`
 jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1055 als höchste. Nach
 einer Neufassung der Testdatenbank wird es nach 1055 gezogen.
 
-Ergebnis in R39 (unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
+Ergebnis in R40 (Komfort unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
 3 883,19 Kh (1047: 1 281,04), längste Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh; Überschreitungsstunden 32
 und 43 Kh wie 1047. Das Laufprotokoll trägt den Hinweis der Näherung des Profilwegs. Die Wärmepumpe wählt ihre Kennlinie
 am gerechneten Vorlauf: 35 °C 1 122 h, 45 °C 1 411 h, 55 °C 101 h, darunter 1 475 h, darüber 0 h (1047: 1 549, 1 782,
-122, darunter 1 851 h). 1056 steht in der Basis R39 und
+122, darunter 1 851 h). Die Wärmepumpe rechnet an ihrer Erdsonde (5 × 120 m): JAZ 4,33, Strom 2,80 MWh (1047: 4,45 und
+2,12 MWh). 1056 steht in der Basis R40 und
 nicht in der CI-Auswahl; gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
@@ -1202,9 +1237,28 @@ ersten Stand ohne Lastgang zieht es nach), prüft
 Zielzellen, die Unversehrtheit von 1018, `integrity_check` und `foreign_key_check` in einer Arbeitsdatei und ersetzt
 erst dann die Datenbank. Nach einer Neufassung der Testdatenbank wird es **nach 1052** gezogen.
 
-**Die einundzwanzig Projekte der Basis R39:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
-1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055 und 1056. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052, 1054, 1055
-und 1056 stehen nicht in der CI-Auswahl).
+### Das Referenzprojekt 1057 „Erdsonde“
+
+1057 „Referenz Erdsonde (Kopie 1029)“ ist eine Kopie des Beispielprojekts 1029 auf dem Kopierweg des Programms
+(`ProjektDuplizierenCtrl.Duplizieren` samt Nachzug der Kostenanker); die Variantenzeile von 1029 ist gelöst, 1029 selbst
+bleibt unberührt. Die Sole-Wärmepumpe bezieht ihre Wärme aus einem Sondenfeld mit 4 Sonden zu 90 m in Mergel/Lehm, die
+eigene Klimaregion liegt in Klimazone 6; die Sondenfeldspalten bleiben leer (Normvorgabe: Abstand 6 m, Bohrlochradius
+0,075 m, R_b 0,10 m·K/W, Kopfüberdeckung 2 m, Betrachtungsjahr 10). Es hält die Erdsonde mit Entzugsrückwirkung im
+Betrachtungsjahr 10 im Regressionsnetz. Angelegt von `Skripte/erdreichquellen_referenzprojekte.py` (wiederholbar,
+eine Transaktion; nach einer Neufassung der Testdatenbank nach 1056 zu ziehen).
+
+```bash
+python3 Referenzlaeufe/Skripte/erdreichquellen_referenzprojekte.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Gerechnet: Wärmebedarf 78,55 MWh, Wärme der Wärmepumpe 67,92 MWh bei 22,12 MWh Strom (JAZ 3,07), Deckung 85,7 %,
+Kessel 11,23 MWh; Jahresentzug 45,80 MWh, größter Entzug 10,86 kW, 4 216 Volllaststunden, Sole im Mittel 1,5 °C,
+7 036 Froststunden (Warnung gesetzt). 1057 steht in der Basis R40 und nicht in der CI-Auswahl; gehalten von
+`EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`; es gilt die Einfrierregel „gesäte Erdreichquellen“ oben.
+
+**Die zweiundzwanzig Projekte der Basis R40:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
+1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056 und 1057. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049 und 1051 (1050, 1052, 1054, 1055,
+1056 und 1057 stehen nicht in der CI-Auswahl).
 
 ## Die wichtigste Regel
 
@@ -1273,6 +1327,11 @@ Wärmepumpe 1045). **Gegenprobe:** Mit dem blanken
 Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 durch — der Nachweis sieht
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
+
+Stand mit R40 (zweiundzwanzig Projekte, Erdsonde mit Entzugsrückwirkung): GESAMT PASS, 663/677 CSV byte-gleich,
+`aggregate.csv` bei 21 Projekten byte-gleich; die übrigen vierzehn Dateien tragen Rechenreste von höchstens 10⁻⁸
+(Heizstab 1007/1046/1051, BHKW-Restwärme 1018/1052/1054, Kessel 1024 und 1039, Quelltemperatur 1039, Quellpuffer 1042,
+Restwärme von 1057 in der Größe 10⁻¹⁷).
 
 ## Bedienung
 
