@@ -36,6 +36,7 @@ namespace EPOS.Kern.Tests
                 ["ifc4_g5_wand_brep_mapped.ifc"] = Koerperhaus(),
                 ["ifc4_g5_flachdach_teile.ifc"] = Flachdachhaus(),
                 ["ifc4_g5_abweichungen.ifc"] = Abweichungshaus(),
+                ["ifc4_g5_befund.ifc"] = Befundhaus(),
             };
 
         /// <summary>
