@@ -73,9 +73,11 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            SimulationRunner vorgabe = Lauf(1047);
+            // 1047 rechnet seit R40 ein Erdsondenfeld; sein zweiter Feldlauf ruft die Kaskade ein zweites Jahr
+            // (Konzept Simulationsablauf 23.4). Die Probe hält die Naht je Kaskadenjahr, deshalb ohne ihn.
+            SimulationRunner vorgabe = Lauf(1047, sim => sim.ZweitenFeldlaufRechnen = false);
             var naht = new ZaehlendeNaht();
-            SimulationRunner mitNaht = Lauf(1047, sim => sim.Stundenbedarf = naht);
+            SimulationRunner mitNaht = Lauf(1047, sim => { sim.ZweitenFeldlaufRechnen = false; sim.Stundenbedarf = naht; });
 
             Assert.Equal(8760, naht.Aufrufe);
             Assert.True(naht.InFolge);
