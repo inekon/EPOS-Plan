@@ -168,8 +168,8 @@
         @if (_nord is GebaeudeNordrichtungDaten nord)
         {
             @* G5-N (N1-N3): DIE NORDRICHTUNG gleich unter dem Dateikopf - immer sichtbar; im Warnstil, solange sie nur
-               angenommen (die Datei nennt keine) oder nur vorgeschlagen ist (gbXML: CADModelAzimuth wird nie still
-               angewandt, erst "Uebernehmen" bzw. das bestaetigte Feld). Eine Aenderung liest die Datei neu und ordnet
+               angenommen (die Datei nennt keine) oder nur vorgeschlagen ist (die Datei nennt einen Wert, die Huelle wendet ihn
+               nicht still an: erst "Uebernehmen" bzw. das bestaetigte Feld; formatneutral ueber Herkunft und Dateiwert). Eine Aenderung liest die Datei neu und ordnet
                neu zu, ohne den Dialog zu verlassen; Handaenderungen bleiben. Ohne Delegat eine reine Anzeige. *@
             bool angenommen = string.Equals(nord.Herkunft, "ANNAHME", StringComparison.Ordinal);
             bool vorschlag = angenommen && nord.DateiPlanoberseiteGrad.HasValue;
