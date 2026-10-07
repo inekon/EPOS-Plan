@@ -707,6 +707,8 @@
                         <span title="@Texte.FilterOhneGegenstueckHinweis"><Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
                                   WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" /></span>
                         <span title="@Texte.FilterOhneUWertHinweis"><Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" /></span>
+                        <span class="epos-gebimport-filter-bauteilbefund" title="@Texte.FilterBauteilbefundHinweis"><Schalter Bezeichnung="@Texte.FilterBauteilbefund"
+                                  Wert="@_nurBauteilbefund" WertChanged="b => BeiFilter(ref _nurBauteilbefund, b)" /></span>
                     </div>
                     <div class="epos-gebimport-flaechen">
                         <Katalogliste Profil="@mehrere.Flaechenprofil" Zeilen="@_flaechenzeilen" Filterstand="@_flaechenfilter"
@@ -714,6 +716,7 @@
                                       Vergleichbar="false" VirtualisierenAb="@VIRTUALISIEREN_AB" />
                     </div>
                     <Herleitungszeile Text="@Texte.FlaechenHinweis" />
+                    <p class="epos-leisezeile epos-gebimport-flaechenherkunft-hinweis">@Texte.FlaechenherkunftHinweis</p>
                 }
             }
             else if (bauteile.Profil is null || bauteile.Liste.Count == 0)
@@ -1170,7 +1173,7 @@
     private string _notiz = "";
 
     /// <summary>Die Filter der Flächenliste — sie schränken die Zeilen vor der Liste ein.</summary>
-    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert;
+    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert, _nurBauteilbefund;
 
     /// <summary>Suche, Sortierung und Trichter der Flächenliste — sie überdauern ein Neuzuordnen.</summary>
     private Katalogfilterstand _flaechenfilter = new();
@@ -1477,7 +1480,7 @@
         _ziel = null;
         _geschoss = null;
         _raumwahl = null;
-        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = false;
+        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = _nurBauteilbefund = false;
         _flaechenfilter = new Katalogfilterstand();
         _flaecheGewaehlt = "";
         _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
@@ -2008,7 +2011,7 @@
     {
         IReadOnlyList<GebaeudeFlaechenzeileDaten> alle = _stand?.Zonierung?.Flaechen ?? Array.Empty<GebaeudeFlaechenzeileDaten>();
         _flaechenzeilen = alle.Where(f => (!_nurFehler || f.Fehler) && (!_nurOhneGegenstueck || f.OhneGegenstueck)
-                                          && (!_nurOhneUWert || f.OhneUWert))
+                                          && (!_nurOhneUWert || f.OhneUWert) && (!_nurBauteilbefund || f.MitBauteilbefund))
                               .Select(f => f.Zeile).ToList();
     }
 

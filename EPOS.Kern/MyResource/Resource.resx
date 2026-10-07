@@ -48476,5 +48476,47 @@ Chart</value>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
   </data>
+  <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE" xml:space="preserve">
+    <value>„Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag).</value>
+  </data>
+  <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
+    <value>Befund je Bauteil</value>
+  </data>
+  <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GANS_BEFUND_TREFFER" xml:space="preserve">
+    <value>Gewählt: {0} — {1}</value>
+  </data>
+  <data name="BTSB_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Herkunft der Fläche</value>
+  </data>
+  <data name="GIMP_FLHK_MENGENSATZ" xml:space="preserve">
+    <value>Mengensatz</value>
+  </data>
+  <data name="GIMP_FLHK_RAUMGRENZE" xml:space="preserve">
+    <value>Raumgrenze</value>
+  </data>
+  <data name="GIMP_FLHK_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="GIMP_FLHK_SCHEMATISCH" xml:space="preserve">
+    <value>schematisch</value>
+  </data>
+  <data name="GIMP_FL_SP_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Fläche aus</value>
+  </data>
+  <data name="GIMP_FL_FLAECHENHERKUNFT_HINWEIS" xml:space="preserve">
+    <value>Die Spalte „Fläche aus“ nennt den Weg der Fläche: Mengensatz der Datei, Polygon der Raumgrenze, Bauteilkörper oder schematische Vorgabe.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
+    <value>Nur Bauteile mit Befund</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
+    <value>Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+  </data>
 </root>
 

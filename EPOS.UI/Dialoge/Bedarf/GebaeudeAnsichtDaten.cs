@@ -927,6 +927,21 @@ public sealed class GebaeudeAnsichtTexte
         Resource.IMP_BEFUND_OHNE, Resource.IMP_BEFUND_KOERPER_UNLESBAR, Resource.IMP_BEFUND_OHNE_EIGENSCHAFTEN, Resource.GANS_STUFE_OHNE,
     };
 
+    /// <summary>Der Knopf des Farbmodus „Befund" (<c>GANS_FARBMODUS_BEFUND</c>).</summary>
+    public string FarbmodusBefund { get; set; } = Resource.GANS_FARBMODUS_BEFUND;
+
+    /// <summary>Warum „Befund" gesperrt ist: keine Befunde (<c>GANS_BEFUND_OHNE</c>).</summary>
+    public string BefundOhne { get; set; } = Resource.GANS_BEFUND_OHNE;
+
+    /// <summary>Titel der Befundlegende (<c>GANS_BEFUND_LEGENDE</c>).</summary>
+    public string BefundLegende { get; set; } = Resource.GANS_BEFUND_LEGENDE;
+
+    /// <summary>Spaltenkopf „Bauteile" der Befundlegende (<c>GANS_BEFUND_BAUTEILE</c>).</summary>
+    public string BefundBauteile { get; set; } = Resource.GANS_BEFUND_BAUTEILE;
+
+    /// <summary>Die Infozeile zum getroffenen Bauteil im Modus „Befund" — {0} Bauteil oder Raum, {1} Befund (<c>GANS_BEFUND_TREFFER</c>).</summary>
+    public string BefundTreffer { get; set; } = Resource.GANS_BEFUND_TREFFER;
+
     /// <summary>Der Name eines Befunds.</summary>
     public string Befundname(Bauteilbefundstufe s) => (int)s < Befundstufen.Count ? Befundstufen[(int)s] : s.ToString();
 

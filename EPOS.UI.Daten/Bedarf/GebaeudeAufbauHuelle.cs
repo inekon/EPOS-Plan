@@ -38,6 +38,20 @@ namespace WindowsFormsApplication1
             _ => Bauteilbefundstufe.Ohne,
         };
 
+        /// <summary>
+        /// Die Herkunft der Fläche als kurzer Anzeigetext (Mengensatz, Raumgrenze, Körper, schematisch) aus dem gespeicherten
+        /// Wert (<see cref="FlaechenherkunftWerte"/>); leer = von Hand bzw. nicht bestimmt, ein unbekannter Wert bleibt stehen.
+        /// </summary>
+        internal static string FlaechenherkunftText(string wert) => wert switch
+        {
+            null or "" => "",
+            FlaechenherkunftWerte.MENGENSATZ => MyResource.Resource.GIMP_FLHK_MENGENSATZ,
+            FlaechenherkunftWerte.RAUMGRENZE => MyResource.Resource.GIMP_FLHK_RAUMGRENZE,
+            FlaechenherkunftWerte.KOERPER => MyResource.Resource.GIMP_FLHK_KOERPER,
+            FlaechenherkunftWerte.SCHEMATISCH => MyResource.Resource.GIMP_FLHK_SCHEMATISCH,
+            _ => wert,
+        };
+
         /// <summary>Trägt Befund und Grundtext in einen Steckbrief.</summary>
         internal static BauteilsteckbriefDaten MitBefund(BauteilsteckbriefDaten d, Bauteilbefundgrund g)
             => d with { Befund = Befund(Bauteilbefunde.Befund(g)), Befundgrund = Bauteilbefunde.Text(g) };
@@ -474,6 +488,8 @@ namespace WindowsFormsApplication1
                 Stufe = stufe,
                 Transparent = transparent,
                 Flaeche = GebaeudeZuordnungsModell.ZahlText(Math.Round(b.Flaeche, 2)) + " m²",
+                FlaechenherkunftSchluessel = b.Flaechenherkunft ?? "",
+                Flaechenherkunft = FlaechenherkunftText(b.Flaechenherkunft),
                 Azimut = b.Azimut.HasValue ? GebaeudeImportHuelle.AzimutText(b.Azimut.Value) : leer,
                 Neigung = b.Neigung.HasValue ? GebaeudeZuordnungsModell.ZahlText(Math.Round(b.Neigung.Value, 1)) + "°" : leer,
                 Randbedingung = GebaeudeImportHuelle.RandText(b.Randbedingung),

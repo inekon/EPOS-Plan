@@ -13172,6 +13172,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Fläche ähnelt.
+        /// </summary>
+        public static string BTSB_FLAECHENHERKUNFT {
+            get {
+                return ResourceManager.GetString("BTSB_FLAECHENHERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau (innen → außen) ähnelt.
         /// </summary>
         public static string BTSB_GRP_AUFBAU {
@@ -26631,6 +26640,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_BAUTEILE {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund je Bauteil ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_LEGENDE {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag). ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_OHNE {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: {0} — {1} ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_TREFFER {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dateikörper ähnelt.
         /// </summary>
         public static string GANS_DATEIKOERPER {
@@ -26663,6 +26708,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_FARBMODUS_AUFBAU {
             get {
                 return ResourceManager.GetString("GANS_FARBMODUS_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS_BEFUND {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS_BEFUND", resourceCulture);
             }
         }
         
@@ -36538,6 +36592,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Bauteile mit Befund ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_FILTER_BAUTEILBEFUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_FILTER_BAUTEILBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Filter schränken nur die Anzeige der Liste ein; zusammen gelten sie als „und“. Gespeichert wird immer alles. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_ERLAEUTERUNG {
@@ -38248,6 +38320,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_KOERPER {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengensatz ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_MENGENSATZ {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_MENGENSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumgrenze ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_RAUMGRENZE {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_RAUMGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die schematisch ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fläche geschätzt ähnelt.
         /// </summary>
         public static string GIMP_FL_BEFUND_GESCHAETZT {
@@ -38275,6 +38383,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte „Fläche aus“ nennt den Weg der Fläche: Mengensatz der Datei, Polygon der Raumgrenze, Bauteilkörper oder schematische Vorgabe. ähnelt.
+        /// </summary>
+        public static string GIMP_FL_FLAECHENHERKUNFT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_FL_FLAECHENHERKUNFT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ähnelt.
         /// </summary>
         public static string GIMP_FL_SP_AUFBAU {
@@ -38289,6 +38406,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FL_SP_BEFUND {
             get {
                 return ResourceManager.GetString("GIMP_FL_SP_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche aus ähnelt.
+        /// </summary>
+        public static string GIMP_FL_SP_FLAECHENHERKUNFT {
+            get {
+                return ResourceManager.GetString("GIMP_FL_SP_FLAECHENHERKUNFT", resourceCulture);
             }
         }
         
