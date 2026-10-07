@@ -41,6 +41,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Kopie von 1047 im Referenzprojekt des Fahrplans 1056 (AK2-4): Kühlbetrieb wie 1047.</summary>
         private const int WP_REFERENZ_FAHRPLAN = 1672052;
 
+        /// <summary>Die Kopie von 1056 im Referenzprojekt AK3 1058 (AK3-W5a): Kühlbetrieb wie 1056.</summary>
+        private const int WP_REFERENZ_AK3 = 1672054;
+
         /// <summary>Ein Katalogsatz mit Kühlkennlinie (60 Stützstellen, Laststufen gepflegt).</summary>
         private const int STAMM_MIT_KUEHLKENNLINIE = 42;
 
@@ -170,7 +173,8 @@ namespace EPOS.Kern.Tests
             // Anlagenkopplung 1047 (anlagenkopplung_1047_referenzprojekt.py).
             string saat = WP_KOPIE.ToString(CultureInfo.InvariantCulture) + ", " +
                           WP_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", " +
-                          WP_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture);
+                          WP_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture) + ", " +
+                          WP_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture);
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);
@@ -179,7 +183,7 @@ namespace EPOS.Kern.Tests
                                       "OR Kuehl_Hilfsstromanteil IS NOT NULL) AND ID NOT IN (" + saat + ", " +
                                       WP_REFERENZ_KAELTEMASCHINE.ToString(CultureInfo.InvariantCulture) + ")"));
             }
-            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG, WP_REFERENZ_FAHRPLAN })
+            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG, WP_REFERENZ_FAHRPLAN, WP_REFERENZ_AK3 })
                 Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Convert.ToString(DataRepository.ExecuteScalar(

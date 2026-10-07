@@ -94,10 +94,13 @@ namespace EPOS.Kern.Tests
             Assert.True(Ak3Schema.Vollstaendig());
             Assert.True(Ak3Schema.ErgebnisspaltenVorhanden());
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Heizkurve_Raumeinfluss IS NOT NULL"));
+            // Gesät ist allein das Referenzprojekt AK3 1058 (AK3-W5a, referenzprojekt_1058_ak3.py): Stufe AK3 und k_R 1 K/K.
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Heizkurve_Raumeinfluss IS NOT NULL AND ID_Projekt <> 1058"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Heizkurve_Raumeinfluss = 1.0 AND ID_Projekt = 1058"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM WHERE Heizkurve_Raumeinfluss IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisEnergiebedarf WHERE Ak3_Durchlaeufe_Mittel IS NOT NULL"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Anlagenkopplung = 'AK3'"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Anlagenkopplung = 'AK3' AND ID_Projekt <> 1058"));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE Anlagenkopplung = 'AK3' AND ID_Projekt = 1058"));
             Assert.True(Wirft("UPDATE Tab_Gebaeude SET Heizkurve_Raumeinfluss = -1 WHERE ID = " + GEBAEUDE));
         }
 

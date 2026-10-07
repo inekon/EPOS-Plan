@@ -336,14 +336,15 @@ namespace EPOS.Kern.Tests
             // Auslegungsdaten der Übergabe", anlagenkopplung_1047_referenzprojekt.py) und das Referenzprojekt
             // Zonen mit Heizkreis 1054 (AK1z, referenzprojekt_1054_zonen_heizkreis.cs): je die Stufe AK1
             // und am Gebäude Heizkreis, Radiator und Heizkurve, alles Übrige leer. Dazu die Kopie von 1047 im
-            // Referenzprojekt des Fahrplans 1056 (AK2-4, referenzprojekt_1056_fahrplan.py) mit denselben Zellen.
-            const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1054, 1056))";
+            // Referenzprojekt des Fahrplans 1056 (AK2-4, referenzprojekt_1056_fahrplan.py) mit denselben Zellen und deren
+            // Kopie im Referenzprojekt AK3 1058 (AK3-W5a, referenzprojekt_1058_ak3.py), dort mit der Stufe AK3.
+            const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1054, 1056, 1058))";
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {
                 string ausser = s.Tabelle == "Tab_Gebaeude"
                     ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + " AND ID NOT IN " + GEBAEUDE_1054
                     : s.Tabelle == "Tab_Einstellungen"
-                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054, 1056)"
+                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054, 1056, 1058)"
                         : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
