@@ -822,7 +822,9 @@ public sealed record GebaeudeZonenzeileDaten
 /// <param name="Fehler">Hat die Fläche einen Befund (ohne Gegenstück, ohne U-Wert, Fläche geschätzt)?</param>
 /// <param name="OhneGegenstueck">Eine innere Grenze ohne Gegenstück — gerechnet gegen unbeheizt.</param>
 /// <param name="OhneUWert">Weder ein U-Wert noch ein Aufbau.</param>
-public sealed record GebaeudeFlaechenzeileDaten(Katalogfilterzeile Zeile, bool Fehler, bool OhneGegenstueck, bool OhneUWert);
+/// <param name="MitBauteilbefund">Steht das Bauteil im Farbmodus „Befund" orange oder rot (G5-3: Körper unlesbar, ohne Eigenschaften)?</param>
+public sealed record GebaeudeFlaechenzeileDaten(Katalogfilterzeile Zeile, bool Fehler, bool OhneGegenstueck, bool OhneUWert,
+                                                bool MitBauteilbefund = false);
 
 /// <summary>Die Bilanz der Zonierung als Anzeigetexte mit Einheit.</summary>
 public sealed record GebaeudeZonenbilanzDaten(string Zonen, string BeheizteFlaeche, string Volumen, string Aussenflaeche, string Trennflaeche);
@@ -1343,6 +1345,15 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_FILTER_OHNE_UWERT</summary>
     public string FilterOhneUWert { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT;
+
+    /// <summary>GIMP_DLG_FILTER_BAUTEILBEFUND</summary>
+    public string FilterBauteilbefund { get; set; } = Resource.GIMP_DLG_FILTER_BAUTEILBEFUND;
+
+    /// <summary>GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS</summary>
+    public string FilterBauteilbefundHinweis { get; set; } = Resource.GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS;
+
+    /// <summary>GIMP_FL_FLAECHENHERKUNFT_HINWEIS</summary>
+    public string FlaechenherkunftHinweis { get; set; } = Resource.GIMP_FL_FLAECHENHERKUNFT_HINWEIS;
 
     /// <summary>GIMP_DLG_FILTER_ERLAEUTERUNG</summary>
     public string FilterErlaeuterung { get; set; } = Resource.GIMP_DLG_FILTER_ERLAEUTERUNG;

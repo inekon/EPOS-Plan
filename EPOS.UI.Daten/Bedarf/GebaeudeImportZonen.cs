@@ -45,6 +45,8 @@ namespace WindowsFormsApplication1
         internal const string SP_AUFBAU = "AUFBAU";
         internal const string SP_HERKUNFT = "HERKUNFT";
         internal const string SP_BEFUND = "BEFUND";
+        /// <summary>G5-3: die Herkunft der Fläche (Mengensatz, Raumgrenze, Körper, schematisch).</summary>
+        internal const string SP_FLAECHENHERKUNFT = "FLAECHENHERKUNFT";
 
         private static string Leer => MyResource.Resource.GIMP_WERT_LEER;
 
@@ -419,7 +421,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Spalten der Liste „Flächen je Zone": Zone, Bauteil (die elastische Spalte), Art, Fläche,
-        /// Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert, Aufbau, Herkunft und Befund. Zone,
+        /// Azimut, Neigung, Randbedingung, Nachbarzone, U-Wert, Aufbau, Herkunft und Befund, zuletzt die Herkunft der
+        /// Fläche („Fläche aus", G5-3). Zone,
         /// Bauteil, Fläche, Randbedingung, U-Wert und Befund stehen immer; die übrigen weichen, wenn die
         /// Liste schmal wird.
         /// </summary>
@@ -441,6 +444,7 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(SP_AUFBAU, MyResource.Resource.GIMP_FL_SP_AUFBAU, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_BEFUND, MyResource.Resource.GIMP_FL_SP_BEFUND),
+                new Katalogspalte(SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT, rang: Katalogspaltenrang.BeiPlatz),
             });
         }
 
@@ -497,6 +501,7 @@ namespace WindowsFormsApplication1
                     .MitText(SP_ZONE, zone)
                     .MitText(SP_ART, BauteilaufbauCtrl.BauteilartText(b.Bauteilart))
                     .MitZahl(SP_FLAECHE, b.Flaeche, 2)
+                    .MitText(SP_FLAECHENHERKUNFT, GebaeudeAufbauHuelle.FlaechenherkunftText(b.Flaechenherkunft))
                     .MitZahl(SP_AZIMUT, b.Azimut.HasValue ? Azimut(b.Azimut.Value) : (double?)null, 1)
                     .MitZahl(SP_NEIGUNG, b.Neigung, 1)
                     .MitText(SP_RAND, GebaeudeImportHuelle.RandText(b.Randbedingung))
@@ -508,7 +513,8 @@ namespace WindowsFormsApplication1
                     .MitText(SP_HERKUNFT, koerper ? MyResource.Resource.GIMP_HERKUNFT_IFC_KOERPER : GebaeudeZuordnungsModell.HerkunftText(herkunft))
                     .MitText(SP_BEFUND, string.Join("; ", befund));
                 zeile.Schluessel = i.ToString(CultureInfo.InvariantCulture);
-                zeilen.Add(new GebaeudeFlaechenzeileDaten(zeile, befund.Count > 0, ohneGegenstueck, ohneU));
+                zeilen.Add(new GebaeudeFlaechenzeileDaten(zeile, befund.Count > 0, ohneGegenstueck, ohneU,
+                                                          GebaeudeAnsichtBefundstufen.MitBefund(GebaeudeAufbauHuelle.Befund(zl.Befund))));
             }
             return zeilen;
         }

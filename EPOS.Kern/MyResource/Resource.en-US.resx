@@ -34081,9 +34081,6 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} openings without window or door have neither base quantities nor a readable body and are not deducted ({1}).</value>
   </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
-    <value>Component {0}: the openings ({2} m²) are not smaller than the gross area ({1} m²); the net area becomes 0.</value>
-  </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} windows and doors fill no opening of a building component and are not counted ({1}).</value>
   </data>
@@ -37562,8 +37559,41 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} windows or curtain walls in contact with the ground are computed against outdoor air.</value>
   </data>
-  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
-    <value>{0}: net area 0 — no row, the openings remain.</value>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} components omitted: completely occupied by openings ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>No finding</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Body unreadable</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Missing properties</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>No U-value: neither file, project file, catalogue, default nor substitute construction supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>No area: neither quantity set nor body supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Body not or only partly readable: the import cannot read the representation type.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Body only partly read: the clipping is missing, only the first operand is read.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Body with an open shell.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Body only partly read: a hole could not be connected.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Body degenerate: it yields no relevant area.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Finding</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>The orientations include the file's north direction ({0}°).</value>
@@ -48444,6 +48474,48 @@ chart</value>
   </data>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
+  </data>
+  <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
+    <value>Findings</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE" xml:space="preserve">
+    <value>“Findings” is unavailable: there are no findings for the components (no component proposal).</value>
+  </data>
+  <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
+    <value>Findings per component</value>
+  </data>
+  <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GANS_BEFUND_TREFFER" xml:space="preserve">
+    <value>Selected: {0} — {1}</value>
+  </data>
+  <data name="BTSB_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Origin of the area</value>
+  </data>
+  <data name="GIMP_FLHK_MENGENSATZ" xml:space="preserve">
+    <value>Quantity set</value>
+  </data>
+  <data name="GIMP_FLHK_RAUMGRENZE" xml:space="preserve">
+    <value>Space boundary</value>
+  </data>
+  <data name="GIMP_FLHK_KOERPER" xml:space="preserve">
+    <value>Solid</value>
+  </data>
+  <data name="GIMP_FLHK_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GIMP_FL_SP_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Area from</value>
+  </data>
+  <data name="GIMP_FL_FLAECHENHERKUNFT_HINWEIS" xml:space="preserve">
+    <value>The “Area from” column names how the area was obtained: quantity set of the file, polygon of the space boundary, component solid or schematic default.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
+    <value>Only components with findings</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
+    <value>Shows only areas whose component is orange or red in the “Findings” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
   </data>
 </root>
 

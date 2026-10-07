@@ -571,6 +571,7 @@ namespace WindowsFormsApplication1
             var nichtLesbar = new List<string>();
             Dateikoerper k = IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
             foreach (string art in nichtLesbar) Zaehlen(_bauteilkoerperNichtLesbar, art);
+            b.Koerpergrund = Bauteilbefunde.Koerpergrund(IfcRaumkoerper.Darstellung(e) != null, k, nichtLesbar);
             if (k == null) { _bauteilkoerper[gi] = stand; return; }
             if (stand.Raum + stand.Dreiecke + k.DreieckZahl > Dateikoerper.DREIECKSGRENZE)
             {
@@ -620,12 +621,16 @@ namespace WindowsFormsApplication1
             if (b.Koerper != null) koerper.Add(b.Koerper);
             else
             {
-                Dateikoerper k = Rechenkoerper(e);
+                // G5-3: der Körperbefund auch dort, wo der Anzeigekörper wegen der Dreiecksgrenze nicht gelesen wurde.
+                Dateikoerper k = Rechenkoerper(e, out Bauteilbefundgrund grund);
+                if (b.Koerpergrund == Bauteilbefundgrund.Keiner) b.Koerpergrund = grund;
                 if (k != null) koerper.Add(k);
                 else if (e is IIfcRoof)
                     foreach (IIfcElement t in Teile(e).Where(t => t is IIfcSlab))
                     {
-                        Dateikoerper kt = Rechenkoerper(t);
+                        // Die Platten eines Dachs ohne eigenen Körper tragen dessen Befund (der erste gilt).
+                        Dateikoerper kt = Rechenkoerper(t, out Bauteilbefundgrund teilgrund);
+                        if (b.Koerpergrund == Bauteilbefundgrund.Keiner) b.Koerpergrund = teilgrund;
                         if (kt != null) koerper.Add(kt);
                     }
             }
@@ -637,6 +642,24 @@ namespace WindowsFormsApplication1
             Bauteilkoerperart art = senkrecht ? Bauteilkoerperart.Wand
                                   : b.Art == Bauteilart.Bodenplatte ? Bauteilkoerperart.PlatteUnten : Bauteilkoerperart.PlatteOben;
             _koerperVormerkung.Add((b, koerper, art, gi));
+        }
+
+        /// <summary>
+        /// Der Körper eines Elements nur für die Rechnung samt seinem Befund (G5-3, <see cref="Bauteilbefunde.Koerpergrund"/>);
+        /// ohne Darstellung oder Weltrahmen kein Körper und kein Befund.
+        /// </summary>
+        private Dateikoerper Rechenkoerper(IIfcElement e, out Bauteilbefundgrund grund)
+        {
+            grund = Bauteilbefundgrund.Keiner;
+            if (e.Representation == null) return null;
+            IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
+            if (!rahmen.HasValue) return null;
+            var nichtLesbar = new List<string>();
+            Dateikoerper k;
+            try { k = IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar); }
+            catch (Exception) { k = null; }   // ein unlesbarer Körper ist keine Fläche — und ein Befund
+            grund = Bauteilbefunde.Koerpergrund(IfcRaumkoerper.Darstellung(e) != null, k, nichtLesbar);
+            return k;
         }
 
         /// <summary>Der Körper eines Elements nur für die Rechnung; <c>null</c> = keine Darstellung, kein Weltrahmen, nicht lesbar.</summary>
@@ -691,7 +714,12 @@ namespace WindowsFormsApplication1
             {
                 if (!schwerpunkte.TryGetValue(gi, out double[] g)) schwerpunkte[gi] = g = Gebaeudeschwerpunkt(gi);
                 Bauteilkoerperflaeche kf = Vereinigt(koerper.Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
-                if (kf == null) continue;
+                if (kf == null)
+                {
+                    // G5-3: ein Körper mit Dreiecken, aber ohne maßgebliche Fläche ist entartet.
+                    if (b.Koerpergrund == Bauteilbefundgrund.Keiner) b.Koerpergrund = Bauteilbefundgrund.KoerperEntartet;
+                    continue;
+                }
                 b.Koerperflaeche = kf;
                 string name = b.Name ?? b.Kennung;
                 if (b.BruttoflaecheM2 is double menge)
@@ -905,7 +933,8 @@ namespace WindowsFormsApplication1
         /// <item>Öffnungen ohne Füllung: durchdringt eine den Wirt, ist sie ein Loch (<see cref="AbbildBauteil.LochflaecheM2"/>,
         /// Meldung <c>OEFFNUNG_LOCH</c>); ist sie weniger tief als der Wirt dick oder als <c>RECESS</c> erklärt, eine Nische
         /// ohne Abzug (<c>OEFFNUNG_NISCHE</c>); ohne jede Fläche <c>OEFFNUNG_UNBEMESSEN</c>.</item>
-        /// <item>Ein Wirt ohne Nettofläche der Datei bekommt Brutto − Öffnungen; ≤ 0 wird 0 mit <c>OEFFNUNG_NETTO_NULL</c>.
+        /// <item>Ein Wirt ohne Nettofläche der Datei bekommt Brutto − Öffnungen; ≤ 0 wird 0 — der Bauteilvorschlag legt ihn dann
+        /// nicht an und nennt ihn in einer Zeile (Abstimmung G5, B2: <see cref="GebaeudeBauteilvorschlag.NETTO_NULL_ENTFALLEN"/>).
         /// Eine Nettofläche aus dem Mengensatz (<c>NetSideArea</c>, <c>NetArea</c>) bleibt.</item>
         /// <item><b>Ausgesparte Öffnungen</b> (G5-N): Kommt die Fläche des Wirts aus seinem Körper und spart der Körper eine
         /// Öffnung schon aus (<see cref="IfcOeffnungen.Ausgespart"/>: die Mitte der Öffnung liegt in einer Aussparung der
@@ -1002,10 +1031,7 @@ namespace WindowsFormsApplication1
                                            .Sum(o => o.BruttoflaecheM2 ?? 0.0) + b.LochflaecheM2;
                 if (b.NettoflaecheM2.HasValue || !(b.BruttoflaecheM2 is double brutto) || !(abzug > 0.0)) continue;
                 if (_koerperRest.Contains(b) && !(brutto > 0.0)) continue;   // kein Rest neben den Teilen: nichts abzuziehen
-                b.NettoflaecheM2 = Math.Round(IfcOeffnungen.Netto(brutto, abzug, out bool nichtPositiv), 6);
-                if (nichtPositiv)
-                    _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_NETTO_NULL", b.Name ?? b.Kennung,
-                        Zahl(Math.Round(brutto, 2)), Zahl(Math.Round(abzug, 2))));
+                b.NettoflaecheM2 = Math.Round(IfcOeffnungen.Netto(brutto, abzug, out _), 6);
             }
 
             if (ausKoerper.Count > 0)
