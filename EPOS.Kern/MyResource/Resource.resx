@@ -32640,7 +32640,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Anlagenkopplung konnte nicht gespeichert werden.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_ERL" xml:space="preserve">
-    <value>Projekteinstellung Anlagenkopplung: AUS (ideale Regelung) oder AK1 (Heizkreis als Randbedingung); AK2 und AK3 sind noch nicht verfügbar. Wird sofort gespeichert.</value>
+    <value>Projekteinstellung Anlagenkopplung: AUS (ideale Regelung), AK1 (Heizkreis als Randbedingung) oder AK3 (geschlossener Kreis: die verfügbare Leistung wirkt je Stunde auf die Gebäude zurück, Rechenzeit höher); AK2 ist noch nicht verfügbar. Wird sofort gespeichert.</value>
   </data>
   <data name="KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT" xml:space="preserve">
     <value>Die Stufe „{0}“ gibt es nicht; bekannt sind AUS, AK1, AK2 und AK3.</value>
@@ -32745,7 +32745,7 @@ Möchten Sie das zulassen?</value>
     <value>Proportionalband: Schnellwahl 0,5 / 1 / 2 K oder frei von 0 bis {1} K; 0 K ist die ideale Regelung mit Grenze. Leer gilt die Vorgabe {0} K.</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_PROJEKT" xml:space="preserve">
-    <value>Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ (Simulationskonfiguration).</value>
+    <value>Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ oder „geschlossener Kreis (AK3)“ (Simulationskonfiguration).</value>
   </data>
   <data name="GEBK_ZEILE_UEBERGABE_BESTANDSWEG" xml:space="preserve">
     <value>Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — diese Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
@@ -48193,6 +48193,57 @@ Chart</value>
   </data>
   <data name="KI_DLG_QERD_SONDENANORDNUNG_ERL" xml:space="preserve">
     <value>Anordnung der Erdsonden: quadratisches Raster oder Reihe; leer = Vorgabe quadratisch.</value>
+  </data>
+  <data name="AK3_SIMKONF_HRL_ANLAGENKOPPLUNG" xml:space="preserve">
+    <value>Geschlossener Kreis (AK3): Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück — Raumtemperatur, Bedarf und Vorlauf werden im Kreis abgeglichen. Gebäude mit eingeschalteter Wärmeübergabe rechnen den Heizkreis wie bei AK1. Die Rechenzeit ist höher; Auskünfte (Bedarf eines Gebäudes, Aufheizung) rechnen ohne geschlossenen Kreis. Die Einstellung gilt für das ganze Projekt.</value>
+  </data>
+  <data name="AK3_RUECKSTUFE" xml:space="preserve">
+    <value>Berechnet ohne geschlossenen Kreis (Profilweg): Diese Auskunft rechnet die Anlagenkopplung AK3 wie AK2; der Projektlauf rechnet den geschlossenen Kreis.</value>
+  </data>
+  <data name="AK3_MSG_KONVERGENZ" xml:space="preserve">
+    <value>Anlagenkopplung AK3: Der geschlossene Kreis findet in Jahresstunde {1} keine stabile Lösung (Gebäude {0}; beteiligt {2}; größte Abweichung {3}; letzter Stand {4}). Der Lauf bricht ab, statt zu nähern. Prüfen Sie Leistung und Kennlinien der Erzeuger, den Raumeinfluss der Heizkurve und die Wärmeübergabe — oder rechnen Sie das Projekt mit der Anlagenkopplung „Heizkreis (AK1)“.</value>
+  </data>
+  <data name="AK3_GEBK_LBL_RAUMEINFLUSS" xml:space="preserve">
+    <value>Raumeinfluss der Heizkurve :</value>
+  </data>
+  <data name="AK3_GEBK_HRL_RAUMEINFLUSS" xml:space="preserve">
+    <value>Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis (AK3)“.</value>
+  </data>
+  <data name="AK3_KI_GEBK_RAUMEINFLUSS_ERL" xml:space="preserve">
+    <value>Raumeinfluss der Heizkurve in K/K, 0 bis 10; leer oder 0 = aus. Wirkt nur mit eingeschalteter Heizkurve und der Anlagenkopplung AK3.</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_DURCHLAEUFE" xml:space="preserve">
+    <value>Durchläufe je Stunde (Mittel / Höchstwert)</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_FALLWECHSEL" xml:space="preserve">
+    <value>Fallwechsel</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_SCHRANKE" xml:space="preserve">
+    <value>Stunden an der Schranke</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_SPEICHER_LEER" xml:space="preserve">
+    <value>Stunden mit leerem Speicher</value>
+  </data>
+  <data name="AK3_GEBB_KACHEL_RESTBEDARF" xml:space="preserve">
+    <value>Stunden mit Restbedarf</value>
+  </data>
+  <data name="AK3_GEBB_QUELLE" xml:space="preserve">
+    <value>Geschlossener Kreis (AK3), Projekt, letzter Lauf</value>
+  </data>
+  <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
+    <value>Durchläufe je Stunde im Mittel (AK3)</value>
+  </data>
+  <data name="AK3_KI_GEBB_DURCHLAEUFE_MAX" xml:space="preserve">
+    <value>Durchläufe je Stunde, Höchstwert (AK3)</value>
+  </data>
+  <data name="AK3_KI_GEBB_ERL" xml:space="preserve">
+    <value>Kennzahl des geschlossenen Kreises (Anlagenkopplung AK3) aus dem letzten Projektlauf; leer ohne Lauf mit AK3. Nur Anzeige.</value>
+  </data>
+  <data name="AK3_KI_GEBB_RUECKSTUFE" xml:space="preserve">
+    <value>Hinweis der Rückstufe (AK3)</value>
+  </data>
+  <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
+    <value>Bei der Anlagenkopplung AK3 rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige.</value>
   </data>
 </root>
 

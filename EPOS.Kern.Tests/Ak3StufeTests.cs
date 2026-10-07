@@ -62,7 +62,7 @@ namespace EPOS.Kern.Tests
             Ak3Weg weg = ak3.simulation_Waermebedarf.Ak3;
             Assert.NotNull(weg);
             Assert.Equal(8760, weg.Kreis.Stunden);
-            Assert.DoesNotContain(SimulationProtokoll.Aktuell.Hinweise, h => h.Contains(Ak3Kernstufe.RUECKSTUFE_TEXT, StringComparison.Ordinal));
+            Assert.DoesNotContain(SimulationProtokoll.Aktuell.Hinweise, h => h.Contains(Ak3Kernstufe.Rueckstufetext, StringComparison.Ordinal));
             double mittel = Convert.ToDouble(Kennzahl(1047, Ak3Schema.SPALTE_DURCHLAEUFE_MITTEL), CultureInfo.InvariantCulture);
             Assert.Equal(weg.Kreis.DurchlaeufeMittel, mittel, 12);
             Assert.Equal((long)weg.Kreis.DurchlaeufeMax, Convert.ToInt64(Kennzahl(1047, Ak3Schema.SPALTE_DURCHLAEUFE_MAX), CultureInfo.InvariantCulture));
@@ -109,8 +109,8 @@ namespace EPOS.Kern.Tests
             StufeSetzen(PROJEKT, DbWerte.ANLAGENKOPPLUNG_AK3);
             SimulationProtokoll.NeuStarten();
             GebaeudeBedarfErgebnis ak3 = GebaeudeBedarfCtrl.Rechnen(PROJEKT, projekt.m_ID_Klimaregion, g);
-            Assert.Equal(Ak3Kernstufe.RUECKSTUFE_TEXT, ak3.Rueckstufe);
-            Assert.Contains(SimulationProtokoll.Aktuell.Hinweise, h => h.Contains(Ak3Kernstufe.RUECKSTUFE_TEXT, StringComparison.Ordinal));
+            Assert.Equal(Ak3Kernstufe.Rueckstufetext, ak3.Rueckstufe);
+            Assert.Contains(SimulationProtokoll.Aktuell.Hinweise, h => h.Contains(Ak3Kernstufe.Rueckstufetext, StringComparison.Ordinal));
             Assert.Equal(ak2.Stundenwerte.Length, ak3.Stundenwerte.Length);
             for (int h = 0; h < ak2.Stundenwerte.Length; h++)
                 Assert.Equal(BitConverter.DoubleToInt64Bits(ak2.Stundenwerte[h]), BitConverter.DoubleToInt64Bits(ak3.Stundenwerte[h]));
