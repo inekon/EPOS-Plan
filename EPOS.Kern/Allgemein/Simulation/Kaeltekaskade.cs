@@ -517,129 +517,127 @@ namespace WindowsFormsApplication1
             bool mitSpeicher = _mitSpeicher;
             bool mitFreierKuehlung = _mitFreierKuehlung;
             bool extrapolationErlaubt = _extrapolation;
-            {
-                // Der Kühlkanal führt positive Mengen (K2); ein negativer Wert wäre ein Fehler der
-                // Bedarfsseite und wird hier nicht zu einer „Kältelieferung".
-                double b = bedarfKwh > 0 ? bedarfKwh : 0.0;
-                Bedarf_stuendlich[h] = b;
-                BedarfGesamtKwh += b;
+            // Der Kühlkanal führt positive Mengen (K2); ein negativer Wert wäre ein Fehler der
+            // Bedarfsseite und wird hier nicht zu einer „Kältelieferung".
+            double b = bedarfKwh > 0 ? bedarfKwh : 0.0;
+            Bedarf_stuendlich[h] = b;
+            BedarfGesamtKwh += b;
 
-                double rest = b;
+            double rest = b;
 
-                // KU3-5 (5.5 Schritt 4): Ladewunsch der Kältespeicher in der Ladephase - bis zur
-                // Abschaltschwelle, begrenzt durch die Ladeleistung. Die Erzeuger bekommen ihn als
-                // Zusatzlast HINTER dem Raum: Was eine Stunde über den Bedarf hinaus erzeugt, lädt.
-                // Geladen wird nur an Kühltagen (5.2) - sonst hielte die Kältemaschine den Vorrat den
-                // Winter über gegen den Wärmeeintrag. Ohne Tagesbetriebsart (Kuehltage null) an jedem Tag.
-                bool ladetag = Kuehltage == null || (h / 24 < Kuehltage.Length && Kuehltage[h / 24]);
-                double lade = mitSpeicher && ladetag ? Ladewunsch() : 0.0;
+            // KU3-5 (5.5 Schritt 4): Ladewunsch der Kältespeicher in der Ladephase - bis zur
+            // Abschaltschwelle, begrenzt durch die Ladeleistung. Die Erzeuger bekommen ihn als
+            // Zusatzlast HINTER dem Raum: Was eine Stunde über den Bedarf hinaus erzeugt, lädt.
+            // Geladen wird nur an Kühltagen (5.2) - sonst hielte die Kältemaschine den Vorrat den
+            // Winter über gegen den Wärmeeintrag. Ohne Tagesbetriebsart (Kuehltage null) an jedem Tag.
+            bool ladetag = Kuehltage == null || (h / 24 < Kuehltage.Length && Kuehltage[h / 24]);
+            double lade = mitSpeicher && ladetag ? Ladewunsch() : 0.0;
 
-                if (mitFreierKuehlung)
-                    foreach (Kaelteerzeuger e in Erzeuger)
-                    {
-                        if (rest + lade <= 0) break;
-                        if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) MaschineRechnen(e, h, ref rest, ref lade);
-                    }
-
-                // KU3-5: Die Kältespeicher entladen NACH der freien Kühlung und VOR den verdichtenden
-                // Erzeugern.
-                if (mitSpeicher && rest > 0) rest = SpeicherEntladen(h, rest);
-
+            if (mitFreierKuehlung)
                 foreach (Kaelteerzeuger e in Erzeuger)
                 {
                     if (rest + lade <= 0) break;
-                    if (e.Maschine != null)
-                    {
-                        if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h))) MaschineRechnen(e, h, ref rest, ref lade);
-                        continue;
-                    }
-                    double anteil = (e.Zeitanteil != null && h < e.Zeitanteil.Length) ? e.Zeitanteil[h] : 0.0;
-                    if (anteil <= 0 || e.Kennlinie == null) continue;
-
-                    double t = (e.Quelltemperatur != null && h < e.Quelltemperatur.Length) ? e.Quelltemperatur[h] : 0.0;
-                    KennlinienPunkt p = e.Kennlinie.Auswerten(t, extrapolationErlaubt);
-                    switch (p.Lage)
-                    {
-                        case KennlinienLage.KappungUnten: e.StundenUnterKennlinie++; break;
-                        case KennlinienLage.ExtrapolationOben: e.StundenUeberKennlinie++; e.Verlaengert = true; break;
-                        case KennlinienLage.KappungOben: e.StundenUeberKennlinie++; break;
-                        case KennlinienLage.EinzelneStuetzstelle: e.StundenEinzelpunkt++; break;
-                    }
-
-                    double last = rest + lade;
-
-                    // KU3-6 (F3): freie Kühlung über die Wärmequelle VOR dem Verdichter - solange
-                    // Quellentemperatur plus Grädigkeit den Kaltwasser-Vorlauf nicht übersteigen, bis zur
-                    // Leistungsgrenze (ohne sie die Kälteleistung der Kennlinie) im offenen Zeitanteil.
-                    double frei = 0.0;
-                    if (e.FreieKuehlungSole && t + e.FreieKuehlungGraedigkeitK <= e.KuehlVorlaufC)
-                    {
-                        double grenze = e.FreieKuehlungLeistungKw ?? p.Pkuehl;
-                        double moeglich = anteil * grenze;
-                        if (moeglich > 0) frei = last < moeglich ? last : moeglich;
-                    }
-
-                    // Der Rest der Stunde über den Verdichter nach Kennlinie. Ohne freie Kühlung ist
-                    // restLast == last, und die Stunde rechnet Zeichen für Zeichen wie zuvor.
-                    double kapazitaet = anteil * p.Pkuehl;
-                    double restLast = frei > 0 ? last - frei : last;
-                    double verdichterKaelte = 0.0;
-                    double verdichter = 0.0;
-                    if (restLast > 0 && kapazitaet > 0 && p.Eer > 0)
-                    {
-                        verdichterKaelte = restLast < kapazitaet ? restLast : kapazitaet;
-                        verdichter = verdichterKaelte / p.Eer;
-
-                        // Welle M4, WP1: Taktverlust nach EN 14825 auch im Kühlbetrieb - die
-                        // Mindestleistung als Anteil der Kühlleistung der Stunde. Ohne Mindestanteil
-                        // rechnet die Stunde wie zuvor.
-                        if (e.Mindestanteil > 0)
-                            verdichter += Taktverlust(e, h, verdichterKaelte, verdichter, e.Mindestanteil * p.Pkuehl);
-                    }
-                    if (!(frei > 0) && !(verdichterKaelte > 0)) continue;
-
-                    double deckung = frei > 0 ? frei + verdichterKaelte : verdichterKaelte;
-                    double raum = deckung < rest ? deckung : rest;
-                    double ladung = deckung - raum;
-
-                    double strom = verdichter * (1.0 + e.Hilfsstromanteil);
-                    if (frei > 0)
-                    {
-                        // Pumpenstrom der freien Kühlung: EER-Ersatz wie am Rückkühler, mit Hilfsstrom.
-                        double freiStrom = frei / KaelteFestwerte.FREIE_KUEHLUNG_EER;
-                        verdichter += freiStrom;
-                        strom += freiStrom * (1.0 + e.Hilfsstromanteil);
-                        e.StundenFreieKuehlung++;
-                        e.KaelteFreiKwh += frei;
-                        FreieKuehlungWp_stuendlich[h] += frei;
-                    }
-
-                    e.Kaelte_stuendlich[h] = deckung;
-                    e.Strom_stuendlich[h] = strom;
-                    e.KaelteGesamtKwh += deckung;
-                    e.StromGesamtKwh += strom;
-                    e.HilfsstromGesamtKwh += strom - verdichter;
-                    e.StundenMitKaelte++;
-
-                    Deckung_stuendlich[h] += raum;
-                    Stromverbrauch_Kuehlung_stuendlich[h] += strom;
-                    DeckungGesamtKwh += raum;
-                    StromGesamtKwh += strom;
-                    HilfsstromGesamtKwh += strom - verdichter;
-
-                    rest -= raum;
-                    if (rest < 0) rest = 0;
-                    if (ladung > 0) lade -= SpeicherLaden(h, ladung);
+                    if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) MaschineRechnen(e, h, ref rest, ref lade);
                 }
 
-                // KU3-5: Bereitschaftsverlust der Kältespeicher - der Wärmeeintrag der Stunde.
-                if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.StundeAbschliessen(h);
+            // KU3-5: Die Kältespeicher entladen NACH der freien Kühlung und VOR den verdichtenden
+            // Erzeugern.
+            if (mitSpeicher && rest > 0) rest = SpeicherEntladen(h, rest);
 
-                Rest_stuendlich[h] = rest;
-                RestGesamtKwh += rest;
-                if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
-                else RestAnHeiztagenKwh += rest;
+            foreach (Kaelteerzeuger e in Erzeuger)
+            {
+                if (rest + lade <= 0) break;
+                if (e.Maschine != null)
+                {
+                    if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h))) MaschineRechnen(e, h, ref rest, ref lade);
+                    continue;
+                }
+                double anteil = (e.Zeitanteil != null && h < e.Zeitanteil.Length) ? e.Zeitanteil[h] : 0.0;
+                if (anteil <= 0 || e.Kennlinie == null) continue;
+
+                double t = (e.Quelltemperatur != null && h < e.Quelltemperatur.Length) ? e.Quelltemperatur[h] : 0.0;
+                KennlinienPunkt p = e.Kennlinie.Auswerten(t, extrapolationErlaubt);
+                switch (p.Lage)
+                {
+                    case KennlinienLage.KappungUnten: e.StundenUnterKennlinie++; break;
+                    case KennlinienLage.ExtrapolationOben: e.StundenUeberKennlinie++; e.Verlaengert = true; break;
+                    case KennlinienLage.KappungOben: e.StundenUeberKennlinie++; break;
+                    case KennlinienLage.EinzelneStuetzstelle: e.StundenEinzelpunkt++; break;
+                }
+
+                double last = rest + lade;
+
+                // KU3-6 (F3): freie Kühlung über die Wärmequelle VOR dem Verdichter - solange
+                // Quellentemperatur plus Grädigkeit den Kaltwasser-Vorlauf nicht übersteigen, bis zur
+                // Leistungsgrenze (ohne sie die Kälteleistung der Kennlinie) im offenen Zeitanteil.
+                double frei = 0.0;
+                if (e.FreieKuehlungSole && t + e.FreieKuehlungGraedigkeitK <= e.KuehlVorlaufC)
+                {
+                    double grenze = e.FreieKuehlungLeistungKw ?? p.Pkuehl;
+                    double moeglich = anteil * grenze;
+                    if (moeglich > 0) frei = last < moeglich ? last : moeglich;
+                }
+
+                // Der Rest der Stunde über den Verdichter nach Kennlinie. Ohne freie Kühlung ist
+                // restLast == last, und die Stunde rechnet Zeichen für Zeichen wie zuvor.
+                double kapazitaet = anteil * p.Pkuehl;
+                double restLast = frei > 0 ? last - frei : last;
+                double verdichterKaelte = 0.0;
+                double verdichter = 0.0;
+                if (restLast > 0 && kapazitaet > 0 && p.Eer > 0)
+                {
+                    verdichterKaelte = restLast < kapazitaet ? restLast : kapazitaet;
+                    verdichter = verdichterKaelte / p.Eer;
+
+                    // Welle M4, WP1: Taktverlust nach EN 14825 auch im Kühlbetrieb - die
+                    // Mindestleistung als Anteil der Kühlleistung der Stunde. Ohne Mindestanteil
+                    // rechnet die Stunde wie zuvor.
+                    if (e.Mindestanteil > 0)
+                        verdichter += Taktverlust(e, h, verdichterKaelte, verdichter, e.Mindestanteil * p.Pkuehl);
+                }
+                if (!(frei > 0) && !(verdichterKaelte > 0)) continue;
+
+                double deckung = frei > 0 ? frei + verdichterKaelte : verdichterKaelte;
+                double raum = deckung < rest ? deckung : rest;
+                double ladung = deckung - raum;
+
+                double strom = verdichter * (1.0 + e.Hilfsstromanteil);
+                if (frei > 0)
+                {
+                    // Pumpenstrom der freien Kühlung: EER-Ersatz wie am Rückkühler, mit Hilfsstrom.
+                    double freiStrom = frei / KaelteFestwerte.FREIE_KUEHLUNG_EER;
+                    verdichter += freiStrom;
+                    strom += freiStrom * (1.0 + e.Hilfsstromanteil);
+                    e.StundenFreieKuehlung++;
+                    e.KaelteFreiKwh += frei;
+                    FreieKuehlungWp_stuendlich[h] += frei;
+                }
+
+                e.Kaelte_stuendlich[h] = deckung;
+                e.Strom_stuendlich[h] = strom;
+                e.KaelteGesamtKwh += deckung;
+                e.StromGesamtKwh += strom;
+                e.HilfsstromGesamtKwh += strom - verdichter;
+                e.StundenMitKaelte++;
+
+                Deckung_stuendlich[h] += raum;
+                Stromverbrauch_Kuehlung_stuendlich[h] += strom;
+                DeckungGesamtKwh += raum;
+                StromGesamtKwh += strom;
+                HilfsstromGesamtKwh += strom - verdichter;
+
+                rest -= raum;
+                if (rest < 0) rest = 0;
+                if (ladung > 0) lade -= SpeicherLaden(h, ladung);
             }
+
+            // KU3-5: Bereitschaftsverlust der Kältespeicher - der Wärmeeintrag der Stunde.
+            if (mitSpeicher) foreach (SimulationPufferspeicher sp in Speicher) sp.StundeAbschliessen(h);
+
+            Rest_stuendlich[h] = rest;
+            RestGesamtKwh += rest;
+            if (Kuehltage != null && h / 24 < Kuehltage.Length && Kuehltage[h / 24]) RestAnKuehltagenKwh += rest;
+            else RestAnHeiztagenKwh += rest;
         }
 
         /// <summary>Abschluss des Jahres (AK3-K, Festlegung 16): die Kennzahlen der Kältespeicher.</summary>
