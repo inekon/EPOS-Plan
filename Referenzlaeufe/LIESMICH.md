@@ -826,6 +826,16 @@ rechnet alle einundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Projektbezug: Kein Referenzprojekt führt einen der Sätze, keine Einfrierregel ist berührt; den Referenzlauf fährt die
 > Orchestrierung im Gate.
 
+> **Nachtrag — Schemaschritt 194 (verwendeter Aufschlag und bemessene Aufheizzeit im Ergebnis, KP3 Welle A, E99), Basis
+> unverändert.** `AufheizAufschlagErgebnisSchema` (194 = `StandardlastprofilSchema.SCHRITT + 1`) legt an
+> `Tab_ErgebnisGebaeude` `Aufheiz_Aufschlag_Verwendet_H` und `Aufheizzeit_Bemessen_H` an (INTEGER 0–47 h, nullbar, ADD
+> COLUMN; 43 → 45 Spalten). Der Zellvergleich gegen den Stand 193 zeigt sonst nur `Tab_Applikation.SchemaVersion` und drei
+> Zähler in `sqlite_sequence` (die Wiederholung früherer Saatschritte; keine Zeile geändert); beide Spalten sind leer. Die
+> Testdatenbank steht auf **194** (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer):
+> **87 826 432 Byte, LFS-SHA-256 `a771909c537d0ea68bf011031c54d641004ae9817cf310bb5de04df3527c0826`**. **Die Basis bleibt:**
+> Der Referenzlauf liest die Ergebnistabelle nicht, keine Einfrierregel ist berührt; alle 21 Projekte rechnen gegen R39
+> GESAMT PASS, 646 CSV byte-gleich.
+
 ### Die Vorgängerbasis R38 (Vorlaufwahl)
 
 Einundzwanzig Projekte, 646 CSV, 4 271 Skalare, auf Linux eingefroren gegen die Testdatenbank `69322344…` (Schemastand
