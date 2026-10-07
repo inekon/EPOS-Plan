@@ -42361,6 +42361,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Mengenangaben: Fläche aus dem Bauteilkörper (brutto; Außenseite der Wände vom Gebäudeschwerpunkt weg) ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHE_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL {
@@ -42523,11 +42532,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Die Fläche aus dem Bauteilkörper ({2} m²) weicht um {3} % vom Mengensatz ({1} m²) ab (Grenze {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumkörper der Art {1} sind nicht lesbar; die Räume werden aus Umriss bzw. schematisch dargestellt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPER_ART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände aus dem Körper: Die Außenseite ist am Gebäudeschwerpunkt nicht zu unterscheiden; es gilt die Normale der größten Fläche der Datei ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_AUSSENSEITE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_AUSSENSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile aus dem Körper sind gegliedert ({1}): Fläche als Summe der ebenen Teilflächen, Richtung der größten Teilfläche. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_GEGLIEDERT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_GEGLIEDERT", resourceCulture);
             }
         }
         
@@ -42546,6 +42582,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_KOERPER_OHNE_PAAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile aus dem Körper: Teilflächen unter {2}° Richtungsunterschied flächengewichtet zusammengefasst ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST", resourceCulture);
             }
         }
         

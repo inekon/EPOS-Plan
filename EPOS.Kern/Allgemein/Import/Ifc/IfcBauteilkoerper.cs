@@ -62,12 +62,12 @@ namespace WindowsFormsApplication1
     /// <item><b>Ebenen:</b> die Dreiecke werden nach Normale (Richtung gleich bis 1e-6) und Ebenenabstand (1e-4 m) zu
     /// ebenen Flächen gesammelt; die Normale ist die des Netzes (rechte Hand, vom Körper weg).</item>
     /// <item><b>Wand</b> (<see cref="Bauteilkoerperart.Wand"/>): die senkrechten Flächen (|n<sub>z</sub>| &lt; 0,5) ohne die
-    /// Stirnflächen — Flächen, deren Breite (Fläche ÷ Höhe) höchstens das 1,5-fache der Wanddicke ist; die Dicke ist der
+    /// Stirnflächen — Flächen, deren Breite (Fläche ÷ Diagonale) höchstens das 1,5-fache der Wanddicke ist; die Dicke ist der
     /// kleinste Abstand zweier gegenläufiger Ebenen. Außen ist die Seite, deren Flächen vom <b>Gebäudeschwerpunkt</b> weg
     /// zeigen (Mittel der Raumkörper, ersatzweise der Bauteilkörper); lässt sich das nicht trennen, gilt die Seite der
     /// größten Fläche mit der Normalen der Datei (<see cref="Bauteilkoerperflaeche.AussenseiteUnbestimmt"/>). Maßgeblich ist die
     /// größere der beiden Seiten; die Teile tragen die Richtung der Außenseite.</item>
-    /// <item><b>Platte und Dach</b>: Oberseite (n<sub>z</sub> &gt; 0,17) und Unterseite (n<sub>z</sub> &lt; −0,17); maßgeblich
+    /// <item><b>Platte und Dach</b>: ohne Stirnflächen (wie bei der Wand) die Oberseite (n<sub>z</sub> &gt; 0,17) und Unterseite (n<sub>z</sub> &lt; −0,17); maßgeblich
     /// ist die größere, orientiert nach oben (<see cref="Bauteilkoerperart.PlatteOben"/>) bzw. unten
     /// (<see cref="Bauteilkoerperart.PlatteUnten"/>).</item>
     /// <item><b>Gliederung:</b> Flächen der maßgeblichen Seite unter 5° Richtungsunterschied werden flächengewichtet zu einem
@@ -100,7 +100,8 @@ namespace WindowsFormsApplication1
             public double D;
             public double Flaeche;
             public double[] Schwerpunkt = new double[3];
-            public double ZMin = double.PositiveInfinity, ZMax = double.NegativeInfinity;
+            public double[] Min = { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity };
+            public double[] Max = { double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity };
             public int Erstes;
         }
 
@@ -176,8 +177,11 @@ namespace WindowsFormsApplication1
                 }
                 for (int i = 0; i < 3; i++) e.Schwerpunkt[i] = (e.Schwerpunkt[i] * e.Flaeche + mitte[i] * flaeche) / (e.Flaeche + flaeche);
                 e.Flaeche += flaeche;
-                e.ZMin = Math.Min(e.ZMin, Math.Min(a[2], Math.Min(b[2], c[2])));
-                e.ZMax = Math.Max(e.ZMax, Math.Max(a[2], Math.Max(b[2], c[2])));
+                for (int i = 0; i < 3; i++)
+                {
+                    e.Min[i] = Math.Min(e.Min[i], Math.Min(a[i], Math.Min(b[i], c[i])));
+                    e.Max[i] = Math.Max(e.Max[i], Math.Max(a[i], Math.Max(b[i], c[i])));
+                }
             }
             return ebenen;
         }
@@ -191,20 +195,7 @@ namespace WindowsFormsApplication1
             List<Ebene> seiten = ebenen.Where(e => Math.Abs(e.N[2]) < SENKRECHT_NZ).ToList();
             if (seiten.Count == 0) return null;
 
-            // Die Dicke: der kleinste Abstand zweier gegenläufiger Ebenen.
-            double dicke = double.PositiveInfinity;
-            for (int i = 0; i < seiten.Count; i++)
-                for (int j = i + 1; j < seiten.Count; j++)
-                    if (Punkt(seiten[i].N, seiten[j].N) <= -1.0 + RICHTUNG_TOLERANZ)
-                    {
-                        double abstand = Math.Abs(seiten[i].D + seiten[j].D);
-                        if (abstand > 1e-6) dicke = Math.Min(dicke, abstand);
-                    }
-            if (!double.IsInfinity(dicke))
-            {
-                List<Ebene> ohneStirn = seiten.Where(e => Breite(e) > STIRN_DICKEN * dicke + 1e-9).ToList();
-                if (ohneStirn.Count > 0) seiten = ohneStirn;
-            }
+            seiten = OhneStirn(seiten);
 
             // Außen: vom Gebäudeschwerpunkt weg (waagerecht gemessen).
             List<Ebene> aussen = null, innen = null;
@@ -230,10 +221,31 @@ namespace WindowsFormsApplication1
         private static double Weg(Ebene e, double[] g)
             => e.N[0] * (e.Schwerpunkt[0] - g[0]) + e.N[1] * (e.Schwerpunkt[1] - g[1]);
 
+        /// <summary>
+        /// Die Flächen ohne Stirnflächen: Die Dicke ist der kleinste Abstand zweier gegenläufiger Ebenen; Stirn ist eine Fläche,
+        /// deren Breite (Fläche ÷ Diagonale ihres umschließenden Quaders) höchstens <see cref="STIRN_DICKEN"/> Dicken beträgt.
+        /// Ohne gegenläufige Ebenen oder wenn alles Stirn wäre, bleiben alle.
+        /// </summary>
+        private static List<Ebene> OhneStirn(List<Ebene> ebenen)
+        {
+            double dicke = double.PositiveInfinity;
+            for (int i = 0; i < ebenen.Count; i++)
+                for (int j = i + 1; j < ebenen.Count; j++)
+                    if (Punkt(ebenen[i].N, ebenen[j].N) <= -1.0 + RICHTUNG_TOLERANZ)
+                    {
+                        double abstand = Math.Abs(ebenen[i].D + ebenen[j].D);
+                        if (abstand > 1e-6) dicke = Math.Min(dicke, abstand);
+                    }
+            if (double.IsInfinity(dicke)) return ebenen;
+            List<Ebene> ohne = ebenen.Where(e => Breite(e) > STIRN_DICKEN * dicke + 1e-9).ToList();
+            return ohne.Count > 0 ? ohne : ebenen;
+        }
+
         private static double Breite(Ebene e)
         {
-            double hoehe = e.ZMax - e.ZMin;
-            return hoehe > 1e-9 ? e.Flaeche / hoehe : double.PositiveInfinity;
+            double dx = e.Max[0] - e.Min[0], dy = e.Max[1] - e.Min[1], dz = e.Max[2] - e.Min[2];
+            double diagonale = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            return diagonale > 1e-9 ? e.Flaeche / diagonale : 0.0;
         }
 
         // ==================================================================
@@ -242,6 +254,7 @@ namespace WindowsFormsApplication1
 
         private static Bauteilkoerperflaeche Platte(List<Ebene> ebenen, Bauteilkoerperart art, double drehung)
         {
+            ebenen = OhneStirn(ebenen);
             List<Ebene> oben = ebenen.Where(e => e.N[2] > WAAGERECHT_NZ).ToList();
             List<Ebene> unten = ebenen.Where(e => e.N[2] < -WAAGERECHT_NZ).ToList();
             List<Ebene> massgeblich = art == Bauteilkoerperart.PlatteUnten ? unten : oben;
