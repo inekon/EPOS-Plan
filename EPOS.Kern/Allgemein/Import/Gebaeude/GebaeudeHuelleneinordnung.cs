@@ -358,6 +358,7 @@ namespace WindowsFormsApplication1
                 else continue;
                 if (o.BruttoflaecheM2.HasValue) p.AbzugM2 += o.BruttoflaecheM2.Value;
             }
+            p.AbzugM2 += s.LochflaecheM2;   // Löcher ohne Füllung (G5-2)
             if (!p.BruttoM2.HasValue) return;
             double netto = p.BruttoM2.Value - p.AbzugM2;
             if (netto < 0.0 && s.NettoflaecheM2 is double eigen && eigen >= 0.0)
@@ -380,6 +381,7 @@ namespace WindowsFormsApplication1
             foreach (AbbildBauteil o in s.Oeffnungen)
                 if ((o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer) && o.BruttoflaecheM2.HasValue)
                     p.AbzugM2 += o.BruttoflaecheM2.Value;
+            p.AbzugM2 += s.LochflaecheM2;
             if (!p.BruttoM2.HasValue) return;
             double netto = p.BruttoM2.Value - p.AbzugM2;
             if (netto < 0.0 && s.NettoflaecheM2 is double eigen && eigen >= 0.0) netto = eigen;

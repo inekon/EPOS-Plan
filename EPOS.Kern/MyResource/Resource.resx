@@ -6244,6 +6244,12 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_PUFFERVERWEIS" xml:space="preserve">
     <value>{0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer.</value>
   </data>
+  <data name="BK_KOMP_HINW_PROJEKTBEZUG" xml:space="preserve">
+    <value>{0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer.</value>
+  </data>
+  <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen.</value>
+  </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
   </data>
@@ -19318,6 +19324,12 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   </data>
   <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
     <value>Die Übernahme ist fehlgeschlagen; es wurde nichts geschrieben: {0}</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN" xml:space="preserve">
+    <value>Kostenpositionen von „{0}“ wurden mit Faktor {2} nach Kapazität angepasst und gelten für {1}; Anteile an Energiekosten bleiben unverändert.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Kostenpositionen von „{0}“ gelten unverändert für {1} — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
     <value>Größe suchen</value>
@@ -33923,6 +33935,21 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_KEINE_RAEUME" xml:space="preserve">
     <value>Gebäude {0}: kein Raum mit Mengenangaben gefunden ({1} Räume) — Nutzfläche und Raumhöhe bleiben leer.</value>
   </data>
+  <data name="IMP_IFC_PROT_FLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} Bauteile ohne Mengenangaben: Fläche aus dem Bauteilkörper (brutto; Außenseite der Wände vom Gebäudeschwerpunkt weg) ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
+    <value>Bauteil {0}: Die Fläche aus dem Bauteilkörper ({2} m²) weicht um {3} % vom Mengensatz ({1} m²) ab (Grenze {4} %); es gilt der Mengensatz.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
+    <value>{0} Bauteile aus dem Körper sind gegliedert ({1}): Fläche als Summe der ebenen Teilflächen, Richtung der größten Teilfläche.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST" xml:space="preserve">
+    <value>{0} Bauteile aus dem Körper: Teilflächen unter {2}° Richtungsunterschied flächengewichtet zusammengefasst ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_AUSSENSEITE" xml:space="preserve">
+    <value>{0} Wände aus dem Körper: Die Außenseite ist am Gebäudeschwerpunkt nicht zu unterscheiden; es gilt die Normale der größten Fläche der Datei ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} Bauteile ohne Mengenangaben (Qto_…); ihre Flächen fehlen ({1}).</value>
   </data>
@@ -34003,6 +34030,21 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_IFC_PROT_NORDDREHUNG" xml:space="preserve">
     <value>Das Modell ist um {0}° gegen Nord gedreht; die Himmelsrichtungen der Bauteile sind entsprechend gedreht.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_KOERPER" xml:space="preserve">
+    <value>{0} Fenster und Türen ohne Mengenangaben und ohne Gesamtmaße: Fläche aus dem Körper der Öffnung bzw. des Bauteils in der Ebene des Wirts ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_LOCH" xml:space="preserve">
+    <value>{0} Öffnungen ohne Fenster oder Tür durchdringen ihr Bauteil und werden mit zusammen {1} m² von seiner Fläche abgezogen ({2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_NISCHE" xml:space="preserve">
+    <value>{0} Öffnungen durchdringen ihr Bauteil nicht (Nische) und werden nicht abgezogen ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
+    <value>{0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
+    <value>Bauteil {0}: Die Öffnungen ({2} m²) sind nicht kleiner als die Bruttofläche ({1} m²); die Nettofläche wird 0.</value>
   </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}).</value>

@@ -119,6 +119,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die in der Geometrie schon ausgeschnittenen Öffnungen [m²] (Innenränder der Ebene, 6.2).</summary>
         internal double AusschnittM2 { get; set; }
 
+        /// <summary>
+        /// Auf welchem Weg <see cref="BruttoM2"/> entstanden ist (A4): aus den Polygonen der Raumgrenzen
+        /// (<see cref="WindowsFormsApplication1.Flaechenherkunft.Raumgrenze"/>), sonst der Weg der Bauteilfläche
+        /// (<see cref="AbbildBauteil.Flaechenherkunft"/>); <c>null</c> = nicht bestimmt.
+        /// </summary>
+        internal Flaechenherkunft? Flaechenherkunft { get; set; }
+
         /// <summary>Wurde die Fläche des Bauteils ohne Geometrie nach der Zahl der Grenzen aufgeteilt?</summary>
         internal bool Aufgeteilt { get; set; }
 
@@ -826,11 +833,21 @@ namespace WindowsFormsApplication1
             if (s.InnenEinseitig && s.Nachbarn.Count == 0 && s.Grenzen.Count == 0)
             {
                 int zone = Geschosszone(s);
-                if (zone >= 0) teile.Add(new Zonenflaeche { Bauteil = s, Zone = zone, Rand = Zonenrand.Innen, BruttoM2 = s.BruttoflaecheM2 });
+                if (zone >= 0) teile.Add(new Zonenflaeche { Bauteil = s, Zone = zone, Rand = Zonenrand.Innen, BruttoM2 = s.BruttoflaecheM2,
+                                                             Flaechenherkunft = s.Flaechenherkunft });
                 return;
             }
             List<Seite> seiten = SeitenVon(s, luft, out bool geometrie);
             if (seiten.Count == 0) return;
+            int erster = teile.Count;
+            Teile(s, teile, seiten, geometrie);
+            // Der Weg der Fläche je Teil (A4): Polygone der Raumgrenzen, sonst der Weg der Bauteilfläche.
+            for (int i = erster; i < teile.Count; i++)
+                teile[i].Flaechenherkunft = geometrie ? Flaechenherkunft.Raumgrenze : s.Flaechenherkunft;
+        }
+
+        private void Teile(AbbildBauteil s, List<Zonenflaeche> teile, List<Seite> seiten, bool geometrie)
+        {
             double? brutto = s.BruttoflaecheM2;
 
             // Außen: je Zone ein Teil. Mit Geometrie die Polygonflächen, sonst das Bauteil — auf mehrere
