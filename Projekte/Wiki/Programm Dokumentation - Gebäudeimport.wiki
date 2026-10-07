@@ -215,6 +215,14 @@ Eine eigene Zuordnung merkt sich das '''Projekt''', nicht das einzelne Gebäude.
 {{Anker|baustoffzuordnungen}}
 Welche Zuordnungen sich das Projekt gemerkt hat, zeigt im [[Programm Dokumentation/Gebäude|Gebäudedialog]] der Knopf '''Baustoff-Zuordnungen…''' in der Leiste unter dem Katalog, gleich nach ''Importieren (gbXML, IFC)…'': je Zuordnung den Materialnamen, so wie EPOS-Plan ihn vergleicht (klein geschrieben, ohne Umlaute, Satzzeichen und Zusätze wie „verputzt"), den Baustoff und den Zeitpunkt der Zuordnung. ''Entfernen'' nimmt eine Zuordnung aus der Liste; mit ''OK'' der Ansicht ist sie gelöscht, ''Abbrechen'', das Kreuz und Esc lassen alle stehen. Für einen entfernten Namen gilt beim nächsten Import wieder die Zuordnung über Name und Synonyme.
 
+=== Nordrichtung ===
+{{Anker|nordrichtung}}
+Die Zuordnung fragt, wohin die Planoberseite zeigt. Das Feld nimmt Grad: 0° heißt Nord, gezählt wird im Uhrzeigersinn; eine Schnellwahl (N bis NW) und eine Nordpfeil-Vorschau helfen beim Eintragen.
+* Nennt die IFC-Datei eine Nordrichtung, steht sie im Feld und lässt sich überschreiben.
+* Den Wert einer gbXML-Datei zeigt der Dialog als Vorschlag; er gilt erst mit '''Übernehmen'''.
+* Ohne Angabe gilt die Annahme „Planoberseite = Nord“; das Protokoll sagt es.
+Die Ausrichtung dreht Wände, Fenster, Türen und geneigte Dächer; die Neigungen bleiben.
+
 === Meldungen ===
 {{Anker|meldungen}}
 

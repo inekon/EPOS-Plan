@@ -76,6 +76,7 @@ Was G5 dort ablegt, muss diese Größen tragen:
 | Abnahme am Rechenweg (Gebäudesimulation) | G5-1 und G5-2: Referenzlauf 22/22 gegen R40 byte-gleich nach dem Merge (#804); A6 für G5-3 offen |
 | G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | gebaut (#805, Schritt 197) |
 | G5-Nachbesserung (Körpervergleich) | gebaut (#808) |
+| G5-N Nordrichtung (Schritt 199) | gebaut (#809) |
 | G5-3 | offen |
 
 A1 bis A5 halten aus Sicht von G5-1 und G5-2; der Rechenweg ist unverändert, der Referenzlauf der CI-Projekte gegen R40 ohne Abweichung.
@@ -96,4 +97,16 @@ kennt keine `IfcMapConversion`, und die Projektdatei (`BmElement.Orientation`) l
 | N5 | **Nachträglich:** Im Gebäudedialog steht bei Gebäuden mit Importquelle das Feld „Ausrichtung“ mit derselben Eingabe. Eine Änderung dreht nach Rückfrage alle Bauteile des Gebäudes um den Unterschied (auch von Hand angelegte — das Gebäude dreht sich als Ganzes) und speichert den neuen Winkel an der Quelle; „Datei erneut lesen“ übernimmt den gespeicherten Winkel. |
 | N6 | **Herkunft:** neue Spalte `Tab_Importquelle.Nordwinkel_Herkunft` (`DATEI`, `EINGABE`, `ANNAHME`), Schemaschritt 199; Gebäudedialog und Bericht nennen sie. |
 | N7 | **Rechenweg:** unverändert; er liest den Azimut aus `Tab_Bauteil`. Eine Drehung ändert die Ergebnisse (Solargewinne, Fensterflächen je Himmelsrichtung) — gewollt. Keine Einfrierregel berührt: kein Referenzprojekt hat eine Importquelle. |
+
+## 8 G5-3 mit Farbmodus „Befund“ (Zuschnitt)
+
+Anwenderauftrag vom 07.10.2026: Die Gebäudeansicht zeigt Bauteile, die für die Rechnung unvollständig oder fehlerhaft sind;
+Bauteile mit Nettofläche 0 entstehen gar nicht.
+
+| Nr. | Regel |
+|---|---|
+| B1 | **Farbmodus „Befund“** als vierter Knopf neben Zonen, Randbedingung und Aufbau: **rot** — Bauteil ohne U-Wert oder ohne die Eigenschaften, die die Rechnung braucht (kein U aus Datei, Projektdatei, Katalog oder Ersatzaufbau; Fläche fehlt); **orange** — Bauteil mit unlesbarem Körper (Darstellungsart nicht lesbar, offene oder entartete Schale, nur teilweise gelesen; die Fläche kommt dann aus dem Mengensatz oder fehlt); **grau** — ohne Befund. Legende mit Anzahl und Fläche je Stufe, Schalter je Stufe, Klick öffnet den Steckbrief mit der Meldung des Bauteils. |
+| B2 | **Nettofläche 0:** Bleibt nach dem Abzug der Öffnungen keine Fläche, legt der Import das Bauteil nicht an; das Protokoll nennt die entfallenen Bauteile in einer Zeile (Anzahl, Namen). Die Warnung „Nettofläche null“ entfällt damit. |
+| B3 | **G5-3 Kern:** Flächen je Raum und Zone aus Raumkörper ↔ Bauteilkörper (Muster `Koerpernachbarschaft`), gegliederte Wände je Teilfläche als eigene Zeile, Löcher nach Lage statt nach Flächenanteil, Fenster und Türen mit eigener Raumzuordnung, Richtung bei Wänden gegen Erdreich, Dachneigung aus dem Körper bei Dach mit Mengensatz. |
+| B4 | **G5-3 Oberfläche:** Herkunft der Fläche (`Tab_Bauteil.Flaechenherkunft`) im Zuordnungsdialog und im Bauteilsteckbrief; Farbmodus „Befund“ (B1). |
 

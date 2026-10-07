@@ -244,6 +244,13 @@ Der neue Satz übernimmt alle Werte des Gebäudes im Projekt – Bauweise, U-Wer
 * '''Projekt duplizieren''' und der [[Programm Dokumentation/Projekttransfer|Projekttransfer]] nehmen Zonen, Bauteile, Trennflächen, Luftströme und Aufbauten mit.
 * Wird das Gebäude aus dem Projekt entfernt, gehen seine Zonen mit.
 
+=== Ausrichtung ===
+{{Anker|ausrichtung}}
+Bei importierten Gebäuden zeigt der Gebäudedialog die Ausrichtung und ihre Herkunft: aus der Datei, eingegeben oder angenommen.
+* '''Ausrichtung ändern…''' dreht nach Rückfrage alle Bauteile des Gebäudes um den Unterschied, auch von Hand angelegte. Die Simulationsergebnisse folgen, etwa die Solargewinne je Himmelsrichtung.
+* '''Datei erneut lesen''' übernimmt eine eingegebene Ausrichtung.
+* Ohne Importquelle ist der Abschnitt gesperrt.
+
 == Die Verwaltung Gebäude ==
 {{Anker|verwaltung}}
 
