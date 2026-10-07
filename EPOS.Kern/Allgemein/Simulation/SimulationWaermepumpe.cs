@@ -1168,7 +1168,7 @@ namespace WindowsFormsApplication1
         /// (<paramref name="fest"/>) — trifft der gerechnete Vorlauf sie, rechnet die Stunde
         /// Zeichen für Zeichen wie ohne Kopplung. <c>null</c>, wenn nichts zu lesen ist.
         /// </summary>
-        private static Kennlinienwahl KennlinienwahlLaden(int idWp, _Kenndaten fest)
+        internal static Kennlinienwahl KennlinienwahlLaden(int idWp, _Kenndaten fest)
         {
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Vorlauf, Temperatur, COP, Ptherm FROM Tab_Kenndaten " +
@@ -2758,7 +2758,7 @@ namespace WindowsFormsApplication1
         // ausschließlich für den Kappungszähler Modul_Kappung_Oben gebraucht und geht in
         // die Rechnung nicht ein; Zweikanalig_Bedarfsphase führt ihn ohnehin als
         // Schleifenvariable.
-        double[] berechne_wptherm(double temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
+        internal double[] berechne_wptherm(double temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
         {
 
             double[] result = new double[4] { 0, 0, 0, 0 };
@@ -2943,8 +2943,8 @@ namespace WindowsFormsApplication1
         /// gewichtet; die elektrische Leistung folgt als Φ/COP. Ein Abbruch einer der beiden Auswertungen
         /// bricht ab. Die Kappungszähler zählen die Stunde höchstens einmal.
         /// </summary>
-        double[] KennlinieInterpoliertAuswerten(double temperatur, WErzeugerModel model, _Kenndaten unten,
-                                                _Kenndaten oben, double gewicht, int index)
+        internal double[] KennlinieInterpoliertAuswerten(double temperatur, WErzeugerModel model, _Kenndaten unten,
+                                                         _Kenndaten oben, double gewicht, int index)
         {
             bool zaehlbar = index >= 0 && index < MAX_WP;
             int kappungObenVorher = zaehlbar ? Modul_Kappung_Oben[index] : 0;
