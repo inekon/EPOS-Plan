@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-07_R41_Erdreichpruefung`](../../../Referenzlaeufe/2026-10-07_R41_Erdreichpruefung/);
+> [`Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3`](../../../Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -86,6 +86,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-05_R38_Vorlaufwahl` | 05.10.2026 | Basis mit dem Ausweis der Vorlaufwahl der Wärmepumpe an 1047 und 1056 (VW1, E88), auf Linux eingefroren; Testdatenbank `69322344…` (Schemastand 188), gehoben auf Schemastand 190; einundzwanzig Projekte, 646 CSV, 4 271 Skalare — abgelöst durch R39 am 06.10.2026 | [`2026-10-05_R38_Vorlaufwahl/protokoll.txt`](2026-10-05_R38_Vorlaufwahl/protokoll.txt) |
 | `2026-10-06_R39_Auslegungsheizlast` | 06.10.2026 | Basis mit dem Ausweis der Auslegungsheizlast auch ohne Anlagenkopplung an 1051 und 1052 (KP3-R6, E97), auf Linux eingefroren; Testdatenbank `2fec4f14…` (Schemastand 190), gehoben auf Schemastand 195; einundzwanzig Projekte, 646 CSV, 4 275 Skalare — abgelöst durch R40 am 07.10.2026 | [`2026-10-06_R39_Auslegungsheizlast/protokoll.txt`](2026-10-06_R39_Auslegungsheizlast/protokoll.txt) |
 | `2026-10-07_R40_Erdreichquellen` | 07.10.2026 | Basis mit den Erdreichquellen der Referenzprojekte (Sole-Wärmepumpen an der Erdsonde) und dem Referenzprojekt 1057 „Erdsonde“, auf Linux eingefroren; Testdatenbank `29dbf1dd…` (Schemastand 195), gehoben auf Schemastand 196; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R41 am 07.10.2026 | [`2026-10-07_R40_Erdreichquellen/protokoll.txt`](2026-10-07_R40_Erdreichquellen/protokoll.txt) |
+| `2026-10-07_R41_Erdreichpruefung` | 07.10.2026 | Basis mit der Erdreichprüfung je Anlage und dem Entzug des Sondenfelds ohne Taktstrom (Erdwärme-Nachzug), auf Linux eingefroren; Testdatenbank `6f83f95f…` (Schemastand 196), gehoben auf Schemastand 198; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R42 am 07.10.2026 | [`2026-10-07_R41_Erdreichpruefung/protokoll.txt`](2026-10-07_R41_Erdreichpruefung/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4739,5 +4740,50 @@ Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R40 beschrieben �
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
 > Abschnitt 23.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R41 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R41 beschrieben — den Anlass (Erdreichprüfung je Anlage, Entzug des Sondenfelds ohne Taktstrom) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `a1ce23b`, Testdatenbank Schemastand 198.
+
+**Abgelöst wurde R41 durch `2026-10-07_R42_Vorlaufinterpolation_AK3`** (Interpolation der Wärmepumpenkennlinie über den Vorlauf, AK3-I, und Referenzprojekt 1058 auf Stufe AK3, Entscheid E102): 665 von 677 CSV sind byte-gleich; abweichend je sechs Dateien von 1047 und 1056 (WP-Strom −0,48 % bzw. −1,04 %, JAZ 4,45 → 4,47 bzw. 4,33 → 4,36), 1058 ist neu.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Erdreichprüfung je Anlage und Entzug des Sondenfelds ohne Taktstrom (Erdwärme-Nachzug, Anwenderentscheid
+> 07.10.2026) — allein der Block `Erdreich[0].*` in `aggregate.csv` von 1008, 1023 und 1050 ändert sich, alle übrigen
+> Zahlen und Projekte sind gleich.**
+>
+> Zwei Korrekturen am Rechenweg der Erdreichquelle: **Der Entzug der Stunde ist Wärme minus Strom ohne den Taktanteil.**
+> Der Mehrstrom aus Taktverlust (`Taktstrom_KWh_WP`, im Kühlbetrieb `Kaelteerzeuger.Taktstrom_stuendlich`) ist
+> elektrische Arbeit beim Anfahren und geht nicht als Wärme über die Sonde; Entzug und Rückspeisung des Sondenfelds
+> rechnen darum ohne ihn. Kein Referenzprojekt mit Erdreichquelle taktet in der Basis mit Mehrstrom, die Wirkung ist hier
+> null (die Tests `ErzeugerTeillastTests` und `ErdsondeReferenzprojektWacheTests` halten sie an 1039 mit Mindestleistung
+> und an 1017 im Kühlbetrieb). **Die Erdreichprüfung rechnet je Anlage mit Erdreichquelle** aus der Reihe, die der Lauf
+> je Modul und Stunde bucht (dieselbe wie das Sondenfeld), statt aus der Summenganglinie Wärme − Strom der ganzen
+> Wärmepumpenkaskade. Steht neben der Sole-Wärmepumpe eine Luft-Wasser-Wärmepumpe — so bei 1008, 1023 und 1050 —, war die
+> Summe nicht je Modul trennbar: Jahresentzug 0, Prüfung aus. Jetzt geht die Luft-Wasser-Wärmepumpe nicht ein, und die
+> Sole-Wärmepumpe wird für sich geprüft. **Gegen R40 sind 674 von 677 CSV byte-gleich; abweichend allein
+> `aggregate.csv` von 1008, 1023 und 1050, dort nur der Erdreichblock** (Werte alt → neu):
+>
+> | Projekt | Jahresentzug (kWh/a) | größter Entzug (kW) | Volllaststunden | Betriebs-/Froststunden | Prüfung möglich, Entzug belastbar |
+> |---|---|---|---|---|---|
+> | 1008 | 0 → 52 487 | 0 → 15,25 | 0 → 3 442 | unverändert | False → True |
+> | 1023, 1050 | 0 → 24 283 | 0 → 6,93 | 0 → 3 504 | 8 760 → 4 721 / 4 097 → 4 052 | False → True |
+>
+> Keine gesäten Daten sind neu, darum keine neue Einfrierregel. Gesamt 677 CSV, 4 584 Skalare. Zwei Läufe sind
+> byte-gleich (677/677 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057 \
+>   --ziel Referenzlaeufe/2026-10-07_R41_Erdreichpruefung
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 23.2 und 23.7.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
