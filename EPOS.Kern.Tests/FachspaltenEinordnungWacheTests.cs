@@ -45,6 +45,37 @@ namespace EPOS.Kern.Tests
             "WQ_Kopfueberdeckung", "WQ_Betrachtungsjahr", "WQ_Sondenanordnung"
         };
 
+        /// <summary>
+        /// Die eingeordneten MODELLspalten — die Spalten der vollständigen Einfügeanweisung.
+        /// Eine vollständige KOPIE der Zeile (Flottenstudie) überträgt sie mit; eine neue
+        /// Modellspalte muss deshalb hier ebenso eingeordnet werden (Kopie oder
+        /// <see cref="AnlagenFachspalten.KOPIE_AUSSCHLUSS"/>/<see cref="AnlagenFachspalten.GERAETEVERWEISE"/>).
+        /// </summary>
+        private static readonly string[] MODELLSPALTEN =
+        {
+            "ID_Projekt", "Bezeichner", "ID_Type", "ID_WP", "Betriebsart", "Sperrung", "Sperrzeit_von",
+            "Sperrzeit_bis", "Vorlauf", "Rücklauf", "Bivalenter_Betrieb", "Abschaltpunkt", "Nutzungszeit",
+            "ID_SP", "ID_PV", "ID_Solar", "Heizstab", "Volumen", "rendeMix", "Solaranteil", "ID_Kessel",
+            "ID_BHKW", "Grenzleistung", "Kollektormodulanzahl", "PV_Leistung", "Neigung", "Azimut",
+            "ID_PUFFER", "Prioritaet", "WQ_Typ", "WQ_Temp", "WQ_Monatswerte", "WQ_CSV", "WQ_Wochenwerte",
+            "WQ_Puffer", "WQ_Spreizung", "WQ_Regeneration", "WQ_Unbegrenzt", "WS_Typ", "BM_Typ",
+            "ID_Carrier", "WQ_Tiefe", "WQ_Flaeche", "WQ_Anzahl", "WQ_Bodentyp", "WQ_Quellsystem", "WS_Ziel",
+            "WS_ID_Puffer", "WS_Ladeprio", "WS_Ladegrenze", "WS_Ladeprio_PV", "WS_Ziel2", "WS_ID_Puffer2",
+            "WS_Ladeprio2", "WS_Ladegrenze2", "WQ_ID_Puffer", "PV_WrWirkungsgrad", "PV_Systemverluste",
+            "PV_Modell", "PV_WrNennleistungKw", "PV_WrEta10", "PV_WrEta50", "PV_WrEta100",
+            "PV_Wechselrichterweg", "Kuehl_ID_Carrier", "Kuehl_EigenerZaehler", "Albedo", "Pumpenleistung_W",
+            "Solarkreisverluste_Prozent", "Uebertrager_Graedigkeit_K", "Kollektor_Spreizung_K",
+            "Arbeitstemperatur_Weg", "Zeitprogramm", "Vorlauf_Max", "Kuehl_Frei", "Kuehl_Frei_Graedigkeit_K",
+            "Kuehl_Frei_Leistung_kW"
+        };
+
+        /// <summary>Was eine Kopie nie überträgt: der eigene Bezeichner.</summary>
+        private static readonly string[] KOPIE_AUSSCHLUSS = { "Bezeichner" };
+
+        /// <summary>Die Geräteverweise — den eigenen setzt die Kopie neu.</summary>
+        private static readonly string[] GERAETEVERWEISE =
+            { "ID_WP", "ID_SP", "ID_PV", "ID_Solar", "ID_Kessel", "ID_BHKW", "ID_PUFFER", "ID_Kaeltemaschine" };
+
         private const string HINWEIS =
             " Einordnen: ins Modell (AnlagenSql.SQL_ANLAGE_INSERT), als Fachspalte (FACHSPALTEN " +
             "dieser Wache; ein Verweis auf eine projekteigene Zeile zusätzlich in " +
@@ -136,6 +167,92 @@ namespace EPOS.Kern.Tests
             }
 
             Assert.True(fehlend.Count == 0, "Projektverweis ohne Abbildung: " + string.Join(", ", fehlend) + "." + HINWEIS);
+        }
+
+        /// <summary>
+        /// Die Modellspalten der Wache sind genau die der Einfügeanweisung — eine neue
+        /// Modellspalte wandert in die vollständige Kopie und muss eingeordnet werden.
+        /// </summary>
+        [Fact]
+        public void Jede_Modellspalte_ist_eingeordnet()
+        {
+            if (!_db.Vorhanden) return;
+
+            var erwartet = new HashSet<string>(MODELLSPALTEN, StringComparer.OrdinalIgnoreCase);
+            HashSet<string> ist = AnlagenFachspalten.Modellspalten();
+            Assert.True(erwartet.SetEquals(ist),
+                "Nicht eingeordnete Modellspalte(n): " + string.Join(", ", ist.Except(erwartet, StringComparer.OrdinalIgnoreCase)) +
+                "; nicht mehr im Modell: " + string.Join(", ", erwartet.Except(ist, StringComparer.OrdinalIgnoreCase)) +
+                ". Einordnen in MODELLSPALTEN, bei Bedarf zusätzlich in AnlagenFachspalten.KOPIE_AUSSCHLUSS " +
+                "oder GERAETEVERWEISE.");
+        }
+
+        /// <summary>
+        /// Die vollständige Kopie (Flottenstudie) ist genau: Modell- und Fachspalten ohne
+        /// Projekt, Bezeichner und den neu gesetzten Geräteverweis; Ausschluss- und
+        /// Geräteliste des Kernwegs sind die eingeordneten.
+        /// </summary>
+        [Fact]
+        public void Die_vollstaendige_Kopie_ist_genau_eingeordnet()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(new HashSet<string>(KOPIE_AUSSCHLUSS, StringComparer.OrdinalIgnoreCase)
+                            .SetEquals(AnlagenFachspalten.KOPIE_AUSSCHLUSS), "KOPIE_AUSSCHLUSS weicht ab.");
+            Assert.True(new HashSet<string>(GERAETEVERWEISE, StringComparer.OrdinalIgnoreCase)
+                            .SetEquals(AnlagenFachspalten.GERAETEVERWEISE), "GERAETEVERWEISE weicht ab.");
+
+            var schema = new HashSet<string>(Spalten(), StringComparer.OrdinalIgnoreCase);
+            Assert.True(schema.IsSupersetOf(GERAETEVERWEISE), "Geräteverweis ohne Spalte.");
+            Assert.True(schema.IsSupersetOf(KOPIE_AUSSCHLUSS), "Kopie-Ausschluss ohne Spalte.");
+
+            var erwartet = new HashSet<string>(MODELLSPALTEN.Concat(FACHSPALTEN), StringComparer.OrdinalIgnoreCase);
+            erwartet.ExceptWith(AnlagenFachspalten.AUSSCHLUSS);
+            erwartet.ExceptWith(AnlagenFachspalten.ERGEBNIS);
+            erwartet.ExceptWith(KOPIE_AUSSCHLUSS);
+            erwartet.Remove("ID_SP");
+            var ist = new HashSet<string>(AnlagenFachspalten.KopieSpalten("ID_SP"), StringComparer.OrdinalIgnoreCase);
+            Assert.True(erwartet.SetEquals(ist),
+                "Fehlt in der Kopie: " + string.Join(", ", erwartet.Except(ist)) +
+                "; nicht eingeordnet: " + string.Join(", ", ist.Except(erwartet)) + ".");
+        }
+
+        /// <summary>
+        /// Jede Tabelle, die auf eine projekteigene Verweistabelle zeigt, kommt bei deren
+        /// Projektkopie mit (<see cref="AnlagenFachspalten.PROJEKTKINDER"/>) oder ist
+        /// bewusst ausgenommen (<see cref="AnlagenFachspalten.KIND_AUSSCHLUSS"/>, Ergebnisse).
+        /// </summary>
+        [Fact]
+        public void Jede_Kindtabelle_einer_Projektkopie_ist_eingeordnet()
+        {
+            if (!_db.Vorhanden) return;
+
+            DataTable tabellen = DataRepository.GetDataTable(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite%'");
+            var fehlend = new List<string>();
+            foreach (string ziel in AnlagenFachspalten.PROJEKTBEZUG.Values)
+            {
+                AnlagenFachspalten.PROJEKTKINDER.TryGetValue(ziel, out (string Tabelle, string Fk)[] kinder);
+                foreach (DataRow t in tabellen.Rows)
+                {
+                    string name = Convert.ToString(t["name"], CultureInfo.InvariantCulture);
+                    DataTable fks = DataRepository.GetDataTable(
+                        "SELECT \"from\" AS Spalte, \"table\" AS Ziel FROM pragma_foreign_key_list(?)",
+                        new DbParam("@t", name));
+                    foreach (DataRow f in fks.Rows)
+                    {
+                        if (!string.Equals(Convert.ToString(f["Ziel"], CultureInfo.InvariantCulture), ziel,
+                                           StringComparison.OrdinalIgnoreCase)) continue;
+                        string spalte = Convert.ToString(f["Spalte"], CultureInfo.InvariantCulture);
+                        bool eingeordnet = AnlagenFachspalten.KIND_AUSSCHLUSS.Contains(name) ||
+                            (kinder != null && kinder.Any(k => string.Equals(k.Tabelle, name, StringComparison.OrdinalIgnoreCase) &&
+                                                               string.Equals(k.Fk, spalte, StringComparison.OrdinalIgnoreCase)));
+                        if (!eingeordnet) fehlend.Add(name + "." + spalte + " -> " + ziel);
+                    }
+                }
+            }
+            Assert.True(fehlend.Count == 0, "Kindtabelle ohne Einordnung: " + string.Join(", ", fehlend) +
+                ". Einordnen in AnlagenFachspalten.PROJEKTKINDER (wird mitkopiert) oder KIND_AUSSCHLUSS.");
         }
     }
 }
