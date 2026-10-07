@@ -34,8 +34,9 @@ namespace WindowsFormsApplication1
     /// Beziehungsart einmal je Modell durchläuft — nie aus der Eigenschaft der Bibliothek, die je Frage
     /// das ganze Modell durchsucht (O(n²)); dort steht auch, warum nicht <c>BeginInverseCaching</c>.</para>
     ///
-    /// <para><b>Keine Geometrieableitung</b> (3.1): Fehlen die Mengen, bleibt die Fläche leer
-    /// (<c>IMP_IFC_PROT_KEINE_MENGEN</c>); die Ableitung aus Körpern ist Stufe G5. <c>IfcZone</c> wird
+    /// <para><b>Mengen vor Körper</b> (3.1, Abstimmung G5-1): Fehlen die Mengen, tragen Wand, Platte und Dach ihre
+    /// Bruttofläche und Orientierung aus dem Bauteilkörper (<see cref="IfcBauteilkoerper"/>, <c>IMP_IFC_PROT_FLAECHE_KOERPER</c>);
+    /// ohne lesbaren Körper bleibt die Fläche leer (<c>IMP_IFC_PROT_KEINE_MENGEN</c>). <c>IfcZone</c> wird
     /// nicht gelesen (3.5 Nr. 8), <c>Pset_SpaceThermalLoad.AirExchangeRate</c> nicht benutzt (3.4).</para>
     /// </summary>
     internal sealed class IfcAbbildBauer
