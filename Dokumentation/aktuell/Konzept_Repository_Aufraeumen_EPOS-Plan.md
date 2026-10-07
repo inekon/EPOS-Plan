@@ -30,7 +30,7 @@ Sicherung — wird **in demselben Auftrag** entfernt, der es überflüssig macht
 | `VDI-3805-Daten/` | Auslieferung der Herstellerdaten (Setup-Komponente, W6‑O‑9), CEC-Listen, bslib | 186 MB | Setup, Importe, 40 Verweise | bleibt |
 | `Werkzeuge/`, `Proben/`, `Setup/`, `sql/` (Schema- und Reparaturskripte) | Hauswerkzeuge | 5 MB | CLAUDE.md-Werkzeugtabelle, Setup, Gate | bleibt |
 | `Projekte/` | Konzepte (→ Dokumentation seit #241), Wiki-Quellen, Referenzpaket `Speichersimulation/`, fünf docx, Mockup, `.wpx` | 9 MB | Konzepte, Wiki-Upload; docx nach SP‑O‑9 | bleibt |
-| `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
+| `Quellen/` (seit #243 mit `BHKWPlan/` — **entfernt**, Anwender 07.10.2026, Synchronisation `ea2242b82` —, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
 | `Lizenzserver/` | WordPress-Plugin 1.4.1 + Einbauanleitung | 268 KB | Lizenzkonzept | bleibt; die vier `*.original-2026-08-19` gehen (Stufe 1) |
 | `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt; die veraltete Kopie `EPOS-Plan_Beispiele_Geruest.zip` (Stand 16.08.2026, 18 KB) ist entfernt (#602) |
 | `.work/` | Arbeitsordner der Windows-Seite: Einmal-Prüfprogramm, Bericht, **70-MB-Kopie der Produktivdatenbank** | 71 MB | nichts (Bericht liegt seit #241 in `Dokumentation/ueberholt`) | **geht (Stufe 1)** — Anwenderentscheid 12.09.2026 „Lösche .work", Rücknahme von SP‑O‑9 |
@@ -191,6 +191,21 @@ in Kapitel 10, dazu als Regelquelle zitiert in `Konzept_Administrationsdialoge_N
 [`Konzept_Einheiten_EPOS-Plan.md`](Konzept_Einheiten_EPOS-Plan.md) (Befund U2 „offen, harmlos" sitzt im Rechenweg und
 ist nicht entschieden). Nach der Regel dieses Papiers geht nur, was seine Aufgabe erfüllt hat.
 
+**Stufe 7 — offen (AUF‑Q5): Normdokumente aus der Geschichte entfernen.** Anwenderentscheid vom 07.10.2026: Normen liegen nur
+**vorübergehend** im Repository, unter `Quellen/`, und werden nach Gebrauch gelöscht (Regel). Die Geschichte wird **zu einem späteren
+Zeitpunkt** um die Normdokumente bereinigt — ausgeführt nur auf ausdrücklichen Zuruf des Anwenders. Vorbereitung wie bei Stufe 4:
+alle Sitzungen still, Commit-Karte schreiben, jeder Rechner klont danach neu, aus einem alten Klon wird nie gepusht.
+*Die Bereinigung trifft* die heute versionierten Norm-PDFs unter `Quellen/` — `Quellen/DIN_TS 18599-10, Energetische Bewertung von Gebäuden –Berechnunsschuss Heiz- und Raumlufttechnik sowie deren Sicherheit (NHRS).pdf`,
+`Quellen/VALERI/DIN EN 17463 - DIN.pdf` und unter `Quellen/Waermespeicher-Tool/`: `DIN 4708 Teil3 1994 - DIN.pdf`,
+`DIN 4708-Teil2-1994 - DIN.pdf`, `DIN EN 12831-3 - DIN.pdf`, `DIN EN 12831-3_A1 Entwurf - DIN EN.pdf`,
+`DIN EN 12831-3_A100 Entwurf - DIN EN.pdf`, `DIN EN 15316-5 - DIN EN.pdf`, `DIN EN 15332-A1_2023-01-00_ML_3399035.pdf`,
+`DIN EN 15332_2020-01-00_DE_3083503.pdf`, `DIN V 18599-10 - DIN.pdf`, `VDI 4645_2026-03-00_DE_3676820.pdf`,
+`VDI 4655 - VDI e.V_.pdf`, `VDI 6002 Blatt 1_2014-03-00_ML_2074726.pdf`, `VDI 6002 Blatt 2_2014-03-00_ML_2074727.pdf`,
+`VDI-MT 4645 Blatt 1_2023-04-00_ML_3419726.pdf` — und die zwei mit AUF‑Q5 gelöschten
+`Quellen/VDI 4650 Blatt 1 - VDI e.V_.pdf` und `Quellen/DIN EN 14825 - DIN.pdf` (beide mit Commit `dc510eb64` gekommen, für die Prüfung der
+Interpolation über den Vorlauf, Entwurf AK3; abgeschlossen). Herstellerunterlagen, Handbücher, BDEW- und Klimadaten-PDFs sind keine Normen
+und bleiben unberührt.
+
 ## 4. Entscheide und offene Fragen
 
 | Kennung | Inhalt | Stand |
@@ -202,3 +217,4 @@ ist nicht entschieden). Nach der Regel dieses Papiers geht nur, was seine Aufgab
 | AUF‑Q2 | LFS-Regeln entfernen; Testdatenbank/VDI-Archive nach LFS? | **entschieden 12.09.2026** („Nehme VDI-Archive und Testdatenbanken in git-lfs"), **umgesetzt #243** |
 | AUF‑Q3 | Fremdquellen unter `Quellen/` sammeln? | **entschieden 12.09.2026** („Setze Empfehlung um"), **umgesetzt #243** |
 | AUF‑Q4 | `retention-days` 14 in den Workflows? | **gegenstandslos** — stand bereits in allen drei Workflows (12.09.2026) |
+| AUF‑Q5 | Normdokumente im Repository? | **entschieden 07.10.2026** (vorübergehend unter `Quellen/`, nach Gebrauch löschen; Geschichte später bereinigen, auf Zuruf), Stufe 7 offen |
