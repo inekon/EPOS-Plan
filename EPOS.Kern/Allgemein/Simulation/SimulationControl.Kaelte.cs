@@ -306,7 +306,8 @@ namespace WindowsFormsApplication1
         /// beendeten Lauf — null, wenn kein Sondenfeld gerechnet hat, der Lauf gescheitert ist oder er
         /// selbst schon der zweite war. Je Sondenfeld: die gemeldete Entzugsreihe und die Kühlwärme,
         /// die Wärmepumpen dieses Feldes im Kühlbetrieb abgegeben haben, Q_ab = Kälte + Verdichterarbeit
-        /// (Kältestrom ohne Hilfsstromzuschlag; bei freier Kühlung die Kälte samt Pumpenarbeit).
+        /// (Kältestrom ohne Hilfsstromzuschlag und ohne Mehrstrom aus Taktverlust — der geht wie im
+        /// Heizbetrieb nicht als Wärme über die Sonde; bei freier Kühlung die Kälte samt Pumpenarbeit).
         /// Kältemaschinen speisen nicht ins Erdreich — ihre Rückkühlung arbeitet gegen die Luft oder
         /// ein Kühlwerk (<see cref="Kaelteerzeuger.Maschine"/> gesetzt, kein Wärmepumpenmodul).
         /// </summary>
@@ -341,7 +342,7 @@ namespace WindowsFormsApplication1
                         {
                             double kaelte = e.Kaelte_stuendlich[h];
                             if (!(kaelte > 0)) continue;
-                            rueck[h] += kaelte + e.Strom_stuendlich[h] / zuschlag;
+                            rueck[h] += kaelte + e.Strom_stuendlich[h] / zuschlag - e.Taktstrom_stuendlich[h];
                         }
                     }
 

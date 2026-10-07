@@ -97,6 +97,7 @@
 
         /// <summary>Einheit einer Temperaturspreizung in Kelvin (Welle KI-F2).</summary>
         internal const string EINHEIT_KELVIN = "K";
+        internal const string EINHEIT_K_JE_K = "K/K";
 
         /// <summary>
         /// Einheit der Bereitschaftsverluste eines Speichers (Welle KI-F2) —
@@ -1256,6 +1257,9 @@
         internal static string GebkHeizkurveNiveauErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_NIVEAU_ERL;
         internal static string GebkHeizkurveSteilheitName => MyResource.Resource.GEBK_LBL_HEIZKURVE_STEILHEIT;
         internal static string GebkHeizkurveSteilheitErl => MyResource.Resource.KI_DLG_GEBK_HEIZKURVE_STEILHEIT_ERL;
+        // Anlagenkopplung AK3 (Festlegung 23, W4b): der Raumeinfluss der Heizkurve
+        internal static string GebkHeizkurveRaumeinflussName => MyResource.Resource.AK3_GEBK_LBL_RAUMEINFLUSS;
+        internal static string GebkHeizkurveRaumeinflussErl => MyResource.Resource.AK3_KI_GEBK_RAUMEINFLUSS_ERL;
         internal static string GebkProportionalbandName => MyResource.Resource.GEBK_LBL_PROPORTIONALBAND;
         internal static string GebkProportionalbandErl => MyResource.Resource.KI_DLG_GEBK_PROPORTIONALBAND_ERL;
         internal static string GebkSollwertprofilName => MyResource.Resource.GEBK_LBL_SOLLWERTPROFIL;
@@ -1327,6 +1331,16 @@
         internal static string GebbSommerlueftungErl => MyResource.Resource.KI_DLG_GEBB_SOMMERLUEFTUNG_ERL;
         internal static string GebbNachtauskuehlungName => MyResource.Resource.KOND_LBL_STUNDEN_NACHTAUSKUEHLUNG;
         internal static string GebbNachtauskuehlungErl => MyResource.Resource.KI_DLG_GEBB_NACHTAUSKUEHLUNG_ERL;
+        // Anlagenkopplung AK3 (W4b): Kennzahlen des Kreises und Rückstufe der Auskunft im Bedarfsdialog
+        internal static string GebbAk3DurchlaeufeMittelName => MyResource.Resource.AK3_KI_GEBB_DURCHLAEUFE_MITTEL;
+        internal static string GebbAk3DurchlaeufeMaxName => MyResource.Resource.AK3_KI_GEBB_DURCHLAEUFE_MAX;
+        internal static string GebbAk3FallwechselName => MyResource.Resource.AK3_GEBB_KACHEL_FALLWECHSEL;
+        internal static string GebbAk3SchrankeName => MyResource.Resource.AK3_GEBB_KACHEL_SCHRANKE;
+        internal static string GebbAk3SpeicherLeerName => MyResource.Resource.AK3_GEBB_KACHEL_SPEICHER_LEER;
+        internal static string GebbAk3RestbedarfName => MyResource.Resource.AK3_GEBB_KACHEL_RESTBEDARF;
+        internal static string GebbAk3Erl => MyResource.Resource.AK3_KI_GEBB_ERL;
+        internal static string GebbAk3RueckstufeName => MyResource.Resource.AK3_KI_GEBB_RUECKSTUFE;
+        internal static string GebbAk3RueckstufeErl => MyResource.Resource.AK3_KI_GEBB_RUECKSTUFE_ERL;
         internal static string GebbAufhZustandName => MyResource.Resource.GEBB_AUFH_LBL_ZUSTAND;
         internal static string GebbAufhZustandErl => MyResource.Resource.KI_DLG_GEBB_AUFH_ZUSTAND_ERL;
         internal static string GebbAufhZeitName => MyResource.Resource.GEBB_AUFH_LBL_ZEIT_MAX;

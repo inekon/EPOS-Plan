@@ -1527,7 +1527,8 @@ public sealed class GebaeudeArbeitsstand
         if (Stand.HeizkurveAktiv)
         {
             b = Bereich(Stand.HeizkurveNiveau, u.LabelHeizkurveNiveau, Waermeuebergabevorgaben.NIVEAU_MIN, Waermeuebergabevorgaben.NIVEAU_MAX)
-                ?? Bereich(Stand.HeizkurveSteilheit, u.LabelHeizkurveSteilheit, Waermeuebergabevorgaben.STEILHEIT_MIN, Waermeuebergabevorgaben.STEILHEIT_MAX);
+                ?? Bereich(Stand.HeizkurveSteilheit, u.LabelHeizkurveSteilheit, Waermeuebergabevorgaben.STEILHEIT_MIN, Waermeuebergabevorgaben.STEILHEIT_MAX)
+                ?? Bereich(Stand.HeizkurveRaumeinfluss, u.LabelHeizkurveRaumeinfluss, 0, Ak3Schema.RAUMEINFLUSS_MAX);
             if (b is not null) return b;
         }
         if (Stand.UebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Uebergabe(u.MeldungNennleistung);
@@ -1713,6 +1714,7 @@ public sealed class GebaeudeArbeitsstand
         Z(a.AuslegungRaumtemperatur, g.AuslegungRaumtemperatur); Z(a.AuslegungAussentemperatur, g.AuslegungAussentemperatur);
         B(a.HeizkurveAktiv, g.HeizkurveAktiv); Z(a.HeizkurveNiveau, g.HeizkurveNiveau);
         Z(a.HeizkurveSteilheit, g.HeizkurveSteilheit); Z(a.ReglerProportionalband, g.ReglerProportionalband);
+        Z(a.HeizkurveRaumeinfluss, g.HeizkurveRaumeinfluss);
         T(a.Sollwertprofil, g.Sollwertprofil);
 
         // E37: die acht Felder der Kühlübergabe.

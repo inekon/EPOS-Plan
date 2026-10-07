@@ -111,6 +111,8 @@ Die Eingaben stehen im Gebäudedialog in der Gruppe '''Wärmeübergabe''' unter 
 | Niveau / Steilheit der Heizkurve || 0 K / 1 || verschieben bzw. neigen die Heizkurve
 |-
 | Proportionalband des Raumreglers || 1 K || Schnellwahl 0,5 K, 1 K, 2 K oder frei von 0 bis 5 K; 0 K ist die ideale Regelung mit der Grenze der Übergabe
+|-
+| Raumeinfluss der Heizkurve || leer (aus) || k<sub>R</sub> in K/K, 0 bis 10: Der Vorlauf steigt je Kelvin, um das die kälteste Zone derselben Stunde unter ihrem Sollwert liegt, um k<sub>R</sub>; er bleibt am Auslegungsvorlauf und an der Vorlaufgrenze des Erzeugers gekappt. Leer oder 0 schaltet den Einfluss aus; er wirkt nur mit der Anlagenkopplung ''geschlossener Kreis (AK3)'' und eingeschalteter Heizkurve
 |}
 
 Die hergeleiteten Zahlen stehen als Vorgabe im Feld und in einer Zeile darunter, sobald der Gebäudedialog in einem Projekt mit Klimaregion geöffnet ist. Widersprüchliche Angaben meldet ''OK'' mit beiden Werten: ein Auslegungsvorlauf, der nicht über der Raumtemperatur liegt, ein Rücklauf außerhalb von Raumtemperatur und Vorlauf, eine Auslegungs-Außentemperatur über der Raumtemperatur.
@@ -256,6 +258,8 @@ Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf 
 * das Bild '''Vorlauf und Rücklauf''' mit dem Auslegungspunkt als gestrichelten Linien; Stunden ohne Heizbetrieb bleiben im Bild leer. Der Bericht führt dieselben Zahlen je Gebäude im Abschnitt ''Heizkreis und Übergabe''.
 * die Kacheln der [[#komfort|Komfortstunden]] – Unterschreitungsstunden, Kelvinstunden, längste Strecke – und daneben den '''Restbedarf''' des Projekts aus dem letzten Lauf; nicht erhobene Werte stehen als „—“. Im Lauf mit Fahrplan kommen der Bedarfsbegriff (''mit Rückwirkung'' oder ''feste Last'') und die Stunden am Fahrplan dazu;
 * das Bild '''Raumtemperatur und Sollwert''' für die Woche mit der größten Unterschreitung: Raumluft und Sollwert als zwei Linien, die gezählten Unterschreitungsstunden markiert. Der Bericht führt Komfortstunden und Restbedarf im Abschnitt ''Komfort und Restbedarf''.
+
+Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis (AK3)'', zeigt der Wärmebedarf die Gruppe '''Geschlossener Kreis (AK3), Projekt, letzter Lauf''' mit fünf Kacheln: '''Durchläufe je Stunde (Mittel / Höchstwert)''', '''Fallwechsel''', '''Stunden an der Schranke''', '''Stunden mit leerem Speicher''' und '''Stunden mit Restbedarf'''. Die Zahlen gelten für das ganze Projekt und stammen aus dem letzten Projektlauf; ohne Lauf mit AK3 stehen sie leer. Der Bericht führt sie in der Tafel ''Anlagenkopplung AK3 – geschlossener Kreis''. Die Auskunft des Bedarfsdialogs rechnet ohne geschlossenen Kreis auf dem Profilweg und trägt den Hinweis ''Berechnet ohne geschlossenen Kreis''; der Projektlauf rechnet den Kreis.
 
 Rechnet das Gebäude mit [[#kuehluebergabe|Kühlübergabe]], trägt die Zeile '''Rechenweg''' ebenfalls den Zusatz ''gekoppelt (AK1)'', und der Abschnitt '''Kältebedarf''' zeigt zusätzlich:
 * zwei Kacheln: '''Kühlvorlauf / Kühlrücklauf''' – die Mittel über die Stunden mit Kühlbetrieb, darunter Art, Auslegungspunkt und der Vermerk ''sensibel'' – und '''Stunden mit begrenzter Kühlübergabe''', in denen die Kühlübergabe weniger aufnahm, als der Kühlsollwert verlangte, davon die Stunden an der Vorlaufgrenze;

@@ -782,6 +782,8 @@ namespace WindowsFormsApplication1
             u.LabelHeizkurveAktiv = Text_("GEBK_LBL_HEIZKURVE_AKTIV", u.LabelHeizkurveAktiv);
             u.LabelHeizkurveNiveau = Text_("GEBK_LBL_HEIZKURVE_NIVEAU", u.LabelHeizkurveNiveau);
             u.LabelHeizkurveSteilheit = Text_("GEBK_LBL_HEIZKURVE_STEILHEIT", u.LabelHeizkurveSteilheit);
+            u.LabelHeizkurveRaumeinfluss = Text_("AK3_GEBK_LBL_RAUMEINFLUSS", u.LabelHeizkurveRaumeinfluss);
+            u.ZeileRaumeinfluss = Text_("AK3_GEBK_HRL_RAUMEINFLUSS", u.ZeileRaumeinfluss);
             u.LabelProportionalband = Text_("GEBK_LBL_PROPORTIONALBAND", u.LabelProportionalband);
             u.BandFrei = Text_("GEBK_BAND_FREI", u.BandFrei);
             u.LabelBandFrei = Text_("GEBK_LBL_BAND_FREI", u.LabelBandFrei);
@@ -1173,6 +1175,7 @@ namespace WindowsFormsApplication1
                 HeizkurveAktiv = m.Heizkurve_Aktiv,
                 HeizkurveNiveau = m.Heizkurve_Niveau,
                 HeizkurveSteilheit = m.Heizkurve_Steilheit,
+                HeizkurveRaumeinfluss = m.Heizkurve_Raumeinfluss,
                 ReglerProportionalband = m.Regler_Proportionalband,
                 Sollwertprofil = m.Sollwertprofil,
 
@@ -1335,6 +1338,8 @@ namespace WindowsFormsApplication1
             m.Heizkurve_Aktiv = d.HeizkurveAktiv;
             m.Heizkurve_Niveau = d.HeizkurveNiveau;
             m.Heizkurve_Steilheit = d.HeizkurveSteilheit;
+            // AK3 (Festlegung 23): 0 heißt aus - gespeichert wie eingetragen, NULL bleibt null.
+            m.Heizkurve_Raumeinfluss = d.HeizkurveRaumeinfluss;
             m.Regler_Proportionalband = d.ReglerProportionalband;
             m.Sollwertprofil = d.Sollwertprofil;
 

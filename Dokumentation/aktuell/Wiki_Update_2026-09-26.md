@@ -213,6 +213,8 @@ Im Gebäudedialog speichern Löschen, ‚Gebäude im Projekt bearbeiten…‘, �
 Im Projektassistenten nutzt die Projektliste die volle Fensterhöhe, und über den Kacheln stehen die Daten des gewählten Projekts. (#778; Version bestätigt der Anwender beim Upload)
 Die Erdwärmesonde rechnet ihre Soletemperatur stündlich aus dem Entzug im zehnten Betriebsjahr, mit Rückspeisung der Kühlwärme. (#797; Version bestätigt der Anwender beim Upload)
 Im Dialog Wärmequelle Erdreich lassen sich Abstand, Anordnung, Bohrlochdurchmesser, Bohrlochwiderstand, Kopfüberdeckung und Betrachtungsjahr des Sondenfelds je Anlage eingeben. (#797; Version bestätigt der Anwender beim Upload)
+- Bei Komponentenübernahme und Flottenstudie bleiben alle Anlageneinstellungen der Quellanlage erhalten; ein fehlendes Quellprofil oder eine fehlende Kältemaschine wird mitübernommen, und weitere Speicherstücke erhalten Betriebsführung, Senken, Stränge, Sperrfenster und die nach Kapazität angepassten Kosten der vertretenen Anlage. (#803)
+- Die Auslegungsprüfung Erdreich rechnet je Anlage mit Erdreichquelle, auch wenn daneben eine Luft-Wasser-Wärmepumpe arbeitet. (#806)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

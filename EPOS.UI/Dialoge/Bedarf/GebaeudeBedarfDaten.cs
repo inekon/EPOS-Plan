@@ -144,6 +144,37 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Stunden, in denen der Anlagenfahrplan das Gebäude begrenzt hat [h]; <c>null</c> ohne Fahrplan.</summary>
     public int? FahrplanBegrenztStundenH { get; init; }
 
+    // ---- Anlagenkopplung AK3 (Entwurf AK3 Festlegungen 20 und 22): Kennzahlen des Kreises, Rückstufe ------
+    //
+    // Die Kennzahlen stammen aus der Projektzeile des letzten Laufs; null, wenn er den Kreis nicht rechnete.
+
+    /// <summary>Durchläufe je Stunde im Mittel [–]; <c>null</c> ohne Lauf mit AK3.</summary>
+    public double? Ak3DurchlaeufeMittel { get; init; }
+
+    /// <summary>Die größte Zahl der Durchläufe einer Stunde [–].</summary>
+    public int? Ak3DurchlaeufeMax { get; init; }
+
+    /// <summary>Wechsel der Stützstelle und des Betriebsfalls [–].</summary>
+    public int? Ak3Fallwechsel { get; init; }
+
+    /// <summary>Stunden, in denen die Schranke des Angebots eine Zone begrenzte [h].</summary>
+    public int? Ak3SchrankeStundenH { get; init; }
+
+    /// <summary>Stunden mit Heizungspuffer am Kreis und nichts entnehmbar [h].</summary>
+    public int? Ak3SpeicherLeerStundenH { get; init; }
+
+    /// <summary>Stunden mit Restbedarf der Kaskade [h].</summary>
+    public int? Ak3RestbedarfStundenH { get; init; }
+
+    /// <summary>Hat der letzte Lauf den geschlossenen Kreis gerechnet?</summary>
+    public bool Ak3Erhoben => Ak3DurchlaeufeMittel.HasValue;
+
+    /// <summary>
+    /// Der Hinweis der Rückstufe (Festlegung 20): Mit Stufe AK3 rechnet diese Auskunft ohne geschlossenen Kreis auf
+    /// dem Profilweg; leer ohne Rückstufe.
+    /// </summary>
+    public string Rueckstufe { get; init; } = "";
+
     /// <summary>Sind am Gebäude Komfortkennzahlen erhoben?</summary>
     public bool KomfortErhoben => KomfortUnterschreitungsstundenH.HasValue || KomfortUeberschreitungsstundenH.HasValue;
 

@@ -1955,6 +1955,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde (Mittel / Höchstwert) ähnelt.
+        /// </summary>
+        public static string AK3_GEBB_KACHEL_DURCHLAEUFE {
+            get {
+                return ResourceManager.GetString("AK3_GEBB_KACHEL_DURCHLAEUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fallwechsel ähnelt.
+        /// </summary>
+        public static string AK3_GEBB_KACHEL_FALLWECHSEL {
+            get {
+                return ResourceManager.GetString("AK3_GEBB_KACHEL_FALLWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Restbedarf ähnelt.
+        /// </summary>
+        public static string AK3_GEBB_KACHEL_RESTBEDARF {
+            get {
+                return ResourceManager.GetString("AK3_GEBB_KACHEL_RESTBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Schranke ähnelt.
+        /// </summary>
+        public static string AK3_GEBB_KACHEL_SCHRANKE {
+            get {
+                return ResourceManager.GetString("AK3_GEBB_KACHEL_SCHRANKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit leerem Speicher ähnelt.
+        /// </summary>
+        public static string AK3_GEBB_KACHEL_SPEICHER_LEER {
+            get {
+                return ResourceManager.GetString("AK3_GEBB_KACHEL_SPEICHER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschlossener Kreis (AK3), Projekt, letzter Lauf ähnelt.
+        /// </summary>
+        public static string AK3_GEBB_QUELLE {
+            get {
+                return ResourceManager.GetString("AK3_GEBB_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis (AK3)“. ähnelt.
+        /// </summary>
+        public static string AK3_GEBK_HRL_RAUMEINFLUSS {
+            get {
+                return ResourceManager.GetString("AK3_GEBK_HRL_RAUMEINFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss der Heizkurve : ähnelt.
+        /// </summary>
+        public static string AK3_GEBK_LBL_RAUMEINFLUSS {
+            get {
+                return ResourceManager.GetString("AK3_GEBK_LBL_RAUMEINFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde, Höchstwert (AK3) ähnelt.
+        /// </summary>
+        public static string AK3_KI_GEBB_DURCHLAEUFE_MAX {
+            get {
+                return ResourceManager.GetString("AK3_KI_GEBB_DURCHLAEUFE_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde im Mittel (AK3) ähnelt.
+        /// </summary>
+        public static string AK3_KI_GEBB_DURCHLAEUFE_MITTEL {
+            get {
+                return ResourceManager.GetString("AK3_KI_GEBB_DURCHLAEUFE_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl des geschlossenen Kreises (Anlagenkopplung AK3) aus dem letzten Projektlauf; leer ohne Lauf mit AK3. Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string AK3_KI_GEBB_ERL {
+            get {
+                return ResourceManager.GetString("AK3_KI_GEBB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis der Rückstufe (AK3) ähnelt.
+        /// </summary>
+        public static string AK3_KI_GEBB_RUECKSTUFE {
+            get {
+                return ResourceManager.GetString("AK3_KI_GEBB_RUECKSTUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Anlagenkopplung AK3 rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige. ähnelt.
+        /// </summary>
+        public static string AK3_KI_GEBB_RUECKSTUFE_ERL {
+            get {
+                return ResourceManager.GetString("AK3_KI_GEBB_RUECKSTUFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss der Heizkurve in K/K, 0 bis 10; leer oder 0 = aus. Wirkt nur mit eingeschalteter Heizkurve und der Anlagenkopplung AK3. ähnelt.
+        /// </summary>
+        public static string AK3_KI_GEBK_RAUMEINFLUSS_ERL {
+            get {
+                return ResourceManager.GetString("AK3_KI_GEBK_RAUMEINFLUSS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3: Der geschlossene Kreis findet in Jahresstunde {1} keine stabile Lösung (Gebäude {0}; beteiligt {2}; größte Abweichung {3}; letzter Stand {4}). Der Lauf bricht ab, statt zu nähern. Prüfen Sie Leistung und Kennlinien der Erzeuger, den Raumeinfluss der Heizkurve und die Wärmeübergabe — oder rechnen Sie das Projekt mit der Anlagenkopplung „Heizkreis (AK1)“. ähnelt.
+        /// </summary>
+        public static string AK3_MSG_KONVERGENZ {
+            get {
+                return ResourceManager.GetString("AK3_MSG_KONVERGENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnet ohne geschlossenen Kreis (Profilweg): Diese Auskunft rechnet die Anlagenkopplung AK3 wie AK2; der Projektlauf rechnet den geschlossenen Kreis. ähnelt.
+        /// </summary>
+        public static string AK3_RUECKSTUFE {
+            get {
+                return ResourceManager.GetString("AK3_RUECKSTUFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschlossener Kreis (AK3): Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück — Raumtemperatur, Bedarf und Vorlauf werden im Kreis abgeglichen. Gebäude mit eingeschalteter Wärmeübergabe rechnen den Heizkreis wie bei AK1. Die Rechenzeit ist höher; Auskünfte (Bedarf eines Gebäudes, Aufheizung) rechnen ohne geschlossenen Kreis. Die Einstellung gilt für das ganze Projekt. ähnelt.
+        /// </summary>
+        public static string AK3_SIMKONF_HRL_ANLAGENKOPPLUNG {
+            get {
+                return ResourceManager.GetString("AK3_SIMKONF_HRL_ANLAGENKOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string ALLG_BTN_ABBRECHEN {
@@ -9206,6 +9359,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOMP_HINW_KOSTEN {
             get {
                 return ResourceManager.GetString("BK_KOMP_HINW_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PROJEKTBEZUG {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTKOPIE", resourceCulture);
             }
         }
         
@@ -26100,6 +26271,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden mit Faktor {2} nach Kapazität angepasst und gelten für {1}; Anteile an Energiekosten bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_HINW_KOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_HINW_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ gelten unverändert für {1} — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Einheit ausgewählt. ähnelt.
         /// </summary>
         public static string FLOTTE_UEBERNAHME_KEINE_EINHEIT {
@@ -30682,7 +30871,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ (Simulationskonfiguration). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ oder „geschlossener Kreis (AK3)“ (Simulationskonfiguration). ähnelt.
         /// </summary>
         public static string GEBK_ZEILE_UEBERGABE_PROJEKT {
             get {
@@ -58656,7 +58845,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung Anlagenkopplung: AUS (ideale Regelung) oder AK1 (Heizkreis als Randbedingung); AK2 und AK3 sind noch nicht verfügbar. Wird sofort gespeichert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung Anlagenkopplung: AUS (ideale Regelung), AK1 (Heizkreis als Randbedingung) oder AK3 (geschlossener Kreis: die verfügbare Leistung wirkt je Stunde auf die Gebäude zurück, Rechenzeit höher); AK2 ist noch nicht verfügbar. Wird sofort gespeichert. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_ANLAGENKOPPLUNG_ERL {
             get {

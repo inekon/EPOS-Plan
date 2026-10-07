@@ -509,8 +509,8 @@ public class SimulationKonfigSeiteTests : BunitContext
         => Kopplungswahl(seite).QuerySelectorAll("option").First(o => o.GetAttribute("value") == wert);
 
     /// <summary>
-    /// Die Wahl führt die vier Stufen der Wertliste; nur „aus" und „Heizkreis (AK1)" sind wählbar,
-    /// Fahrplan (AK2) und geschlossener Kreis (AK3) stehen gesperrt mit ihrem Grund — kein
+    /// Die Wahl führt die vier Stufen der Wertliste; „aus", „Heizkreis (AK1)" und der geschlossene Kreis (AK3) sind wählbar,
+    /// Fahrplan (AK2) steht gesperrt mit seinem Grund — kein
     /// Persistenzwert ohne Rechenweg (Kühlkonzept K7). Zeichnen schreibt nichts.
     /// </summary>
     [Fact]
@@ -528,9 +528,10 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.False(optionen[0].HasAttribute("disabled"));
         Assert.False(optionen[1].HasAttribute("disabled"));
         Assert.True(optionen[2].HasAttribute("disabled"));
-        Assert.True(optionen[3].HasAttribute("disabled"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[2].TextContent);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[3].TextContent);
+        // AK3 ist gebaut und wählbar (E102 Q-AK3-1, AK3-W4a).
+        Assert.False(optionen[3].HasAttribute("disabled"));
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_ANLAGENKOPPLUNG_NICHT_VERFUEGBAR, optionen[3].TextContent);
 
         Assert.True(optionen[0].HasAttribute("selected"));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS, abschnitt.TextContent);
@@ -551,6 +552,20 @@ public class SimulationKonfigSeiteTests : BunitContext
         Kopplungswahl(seite).Change("0");
         Assert.Equal(new string?[] { WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1, null }, _kopplungGeschrieben);
         Assert.Null(seite.Instance.Laufparameter.Anlagenkopplung);
+    }
+
+    /// <summary>„geschlossener Kreis (AK3)" schreibt sofort und zeigt seinen Erklärtext (E102 Q-AK3-1, AK3-W4b).</summary>
+    [Fact]
+    public void AK3_schreibt_sofort_und_zeigt_den_Erklaertext()
+    {
+        var seite = SeiteMitKopplung(null);
+
+        Kopplungswahl(seite).Change("3");
+        Assert.Equal(new string?[] { WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3 }, _kopplungGeschrieben);
+        Assert.Equal(WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3, seite.Instance.Laufparameter.Anlagenkopplung);
+        string abschnitt = seite.Find("section.epos-simkonfig-anlagenkopplung").TextContent;
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.AK3_SIMKONF_HRL_ANLAGENKOPPLUNG, abschnitt);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1, abschnitt);
     }
 
     /// <summary>Eine gesperrte Stufe lässt das Feld nicht zu: Es wird nichts geschrieben.</summary>

@@ -70,6 +70,9 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Regel, er steht erst in aggregate.csv, wenn ein Modul am gerechneten Vorlauf waehlt. Der Text
             // „Vorlauf:Stunden;...“ geht als Textskalar mit (DbWert setzt das Trennzeichen ';' auf ',').
             foreach (string s in VorlaufwahlSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // Stufe AK3 (Ak3Schema, Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises - dieselbe
+            // Regel, sie stehen erst in aggregate.csv, wenn ein Lauf den Kreis rechnet (keine neuen Schluessel vor W5).
+            foreach (string s in Ak3Schema.SPALTEN_ERGEBNIS) namen.Add(s);
             return namen;
         }
 

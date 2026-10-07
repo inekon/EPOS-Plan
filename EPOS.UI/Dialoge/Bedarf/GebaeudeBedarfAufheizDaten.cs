@@ -83,6 +83,12 @@ public sealed class GebaeudeBedarfAufheizDaten
     /// <summary>Verbrauchsangabe bei ausgeschalteter Optimierung: Den Faktor kennt erst der Jahreslauf.</summary>
     public bool FaktorErstImLauf { get; init; }
 
+    /// <summary>
+    /// Der Hinweis der Rückstufe (Anlagenkopplung AK3, Festlegung 20) aus der Aufheizauskunft: Sie rechnet ohne
+    /// geschlossenen Kreis auf dem Profilweg; leer ohne Rückstufe oder ohne Auskunft.
+    /// </summary>
+    public string Rueckstufe { get; init; } = "";
+
     /// <summary>Die benannten Hinweise W1–W5, fertig formuliert; leer = keiner.</summary>
     public IReadOnlyList<string> Hinweise { get; init; } = new List<string>();
 

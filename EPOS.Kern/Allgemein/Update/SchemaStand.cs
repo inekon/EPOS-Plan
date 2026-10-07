@@ -946,7 +946,15 @@ namespace WindowsFormsApplication1
         /// Netzbezug eines Haushalts mit PV-Anlage (P25) bzw. mit PV-Anlage und Batteriespeicher (S25), keine
         /// Verbrauchsprofile —, je Kopf und Typprofil mit Katalogschlüssel und Prüfsumme
         /// (<see cref="StandardlastprofilPvSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
-        public const int Zielversion = StandardlastprofilPvSchema.SCHRITT;
+        /// Danach, mit der HERKUNFT DER BAUTEILFLÄCHE (G5-0), steht das Ziel auf <see cref="FlaechenherkunftSchema.SCHRITT"/>:
+        /// <c>Tab_Bauteil.Flaechenherkunft</c> — der Weg der importierten Fläche (Mengensatz, Raumgrenze, Körper,
+        /// schematisch; <see cref="FlaechenherkunftSchema"/>). <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der
+        /// Rechenweg liest sie nicht.
+        /// Danach, mit der STUFE AK3 (Entwurf AK3, Festlegungen 22 und 23), steht das Ziel auf <see cref="Ak3Schema.SCHRITT"/>:
+        /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Sichtneubau und
+        /// sechs Kennzahlen des geschlossenen Kreises an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3Schema"/>).
+        /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
+        public const int Zielversion = Ak3Schema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

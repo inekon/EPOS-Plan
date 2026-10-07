@@ -62,7 +62,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Felder eines Bauteils.</summary>
         internal static readonly IReadOnlyDictionary<string, Exporteinstufung> Bauteil = new Dictionary<string, Exporteinstufung>
         {
-            ["ID"] = N, ["ID_Zone"] = N, ["Rang"] = N, ["Herkunft"] = N, ["Quellkennung"] = N,
+            ["ID"] = N, ["ID_Zone"] = N, ["Rang"] = N, ["Herkunft"] = N, ["Quellkennung"] = N, ["Flaechenherkunft"] = N,
             ["Bezeichner"] = R, ["Bauteilart"] = R, ["Flaeche"] = R, ["Randbedingung"] = R,
             ["ID_Aufbau"] = R, ["U_Wert"] = R, ["g_Wert"] = R, ["Neigung"] = R, ["Azimut"] = R,
             ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Psi_L"] = V,
@@ -103,6 +103,8 @@ namespace WindowsFormsApplication1
             ["Aufheizzeit_Manuell_H"] = V,
             // E65: der wirksame U-Wert der Bodenplatte als Vorgabe - die Datei traegt ihn nicht, der Import schreibt NULL.
             ["Erdreich_U_Wirksam"] = V,
+            // AK3 (Festlegung 23): der Raumeinfluss der Heizkurve - die Datei traegt ihn nicht, der Import schreibt NULL.
+            ["Heizkurve_Raumeinfluss"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
             ["Ferienbeginn_3"] = V, ["Ferienende_3"] = V, ["Ferienbeginn_4"] = V, ["Ferienende_4"] = V,
             ["Gebaeude_Modell"] = N, ["WW_Bedarf"] = N, ["spez_Waermeverbrauch"] = N, ["Waermebedarf"] = N,
@@ -145,6 +147,7 @@ namespace WindowsFormsApplication1
                 if (!string.IsNullOrWhiteSpace(g.Uebergabe_Art)) namen.Add("Uebergabe_Art");
                 if (g.Aufheizzeit_Manuell_H.HasValue) namen.Add("Aufheizzeit_Manuell_H");
                 if (g.Erdreich_U_Wirksam.HasValue) namen.Add("Erdreich_U_Wirksam");
+                if (g.Heizkurve_Raumeinfluss.HasValue) namen.Add("Heizkurve_Raumeinfluss");
             }
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {

@@ -187,6 +187,8 @@ namespace WindowsFormsApplication1
             // Energiebedarf: Wärme- und Strombedarf rechnen (ohne Diagramm-/Textbox-Ausgabe).
             simulation_Waermebedarf.Netzverluste = netzverluste;
             simulation_Waermebedarf.Netzverluste_Einheit = ctrl.m_szNetzverlusteEinheit;
+            // Der Projektlauf: nur er rechnet mit Stufe AK3 den geschlossenen Kreis (Festlegung 20).
+            simulation_Waermebedarf.Projektlauf = true;
             simulation_Waermebedarf.Waermebedarf_berechnen(idProjekt, nKlimaregion);
 
             // Zapfprofilgenerator (Umsetzungskonzept 2.2, N8): Kann der Generatorweg für das
@@ -258,6 +260,32 @@ namespace WindowsFormsApplication1
         //
         // Sie rechnen nichts Neues. Jeder Rumpf ist der Ausdruck, der vorher an seiner
         // Stelle stand - der Referenzlauf ist das Gate dafuer.
+
+        /// <summary>Restbedarf einer Stunde, ab dem sie als Restbedarfsstunde des Kreises zählt [kWh] (Festlegung 15).</summary>
+        internal const double AK3_RESTBEDARF_SCHWELLE_KWH = 1e-6;
+
+        /// <summary>
+        /// <b>Die Kennzahlen des geschlossenen Kreises in der Projektzeile</b> (Entwurf AK3, Festlegung 22; Spalten
+        /// <see cref="Ak3Schema.SPALTEN_ERGEBNIS"/>): Durchläufe im Mittel und höchstens, Fallwechsel (Stützstelle der
+        /// Wärmepumpe und Betriebsfall je Zone), Stunden an der Schranke, Stunden mit leerem Speicher und Stunden mit
+        /// Restbedarf der Kaskade (&gt; <see cref="AK3_RESTBEDARF_SCHWELLE_KWH"/>, Festlegung 15). Ohne Kreis — jede Stufe
+        /// außer AK3 — bleibt alles NULL.
+        /// </summary>
+        internal static void Ak3SpaltenSetzen(ErgebnisEnergiebedarfModel e, Anlagenkopplung kreis, double[] restKwh)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            if (kreis == null || kreis.Stunden == 0) return;
+            e.Ak3DurchlaeufeMittel = kreis.DurchlaeufeMittel;
+            e.Ak3DurchlaeufeMax = kreis.DurchlaeufeMax;
+            e.Ak3Fallwechsel = kreis.StuetzstellenWechsel + kreis.FallWechsel;
+            e.Ak3SchrankeStundenH = kreis.StundenAnDerSchranke;
+            e.Ak3SpeicherLeerStundenH = kreis.StundenSpeicherLeer;
+            int rest = 0;
+            if (restKwh != null)
+                foreach (double r in restKwh)
+                    if (r > AK3_RESTBEDARF_SCHWELLE_KWH) rest++;
+            e.Ak3RestbedarfStundenH = rest;
+        }
 
         /// <summary>
         /// <b>Die Spalten des Schemaschritts 186 in der Projektzeile</b> (Anlagenkopplung 8.3; AK2-2a, AK2-2b): die
@@ -447,6 +475,10 @@ namespace WindowsFormsApplication1
                 ? simulation_Waermebedarf.KomfortProjekt()
                 : (null, null);
             AnlagenfahrplanSpaltenSetzen(m.Energiebedarf, fahrplanWirksam, fahrplanStunden, komfortHeizen, komfortKuehlen);
+
+            // ANLAGENKOPPLUNG AK3 (Entwurf AK3, Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur, wenn der
+            // Kreis gerechnet hat, sonst NULL ("nicht erhoben") und dieselbe Zeile wie vorher (SpaltenNurMitWert).
+            Ak3SpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.Ak3?.Kreis, sim.Rest_Waermebedarf_stuendlich);
 
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.

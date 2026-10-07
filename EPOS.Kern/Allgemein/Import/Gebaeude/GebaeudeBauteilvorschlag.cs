@@ -45,10 +45,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Weg der Fläche (Abstimmung G5, A4): Mengensatz, Raumgrenze, Körper oder schematisch; <c>null</c> = nicht
-        /// bestimmt (gbXML, Bestand). Gespeichert erst mit dem Schemaschritt <c>FlaechenherkunftSchema</c>
-        /// (<see cref="FlaechenherkunftWerte.Wert"/> nach <c>Tab_Bauteil.Flaechenherkunft</c>).
+        /// bestimmt (gbXML, Bestand). Das Setzen schreibt den gespeicherten Wert (<see cref="FlaechenherkunftWerte.Wert"/>)
+        /// zugleich in <see cref="BauteilModel.Flaechenherkunft"/> der Zeile — so schreibt die Übernahme ihn nach
+        /// <c>Tab_Bauteil.Flaechenherkunft</c> (Schemaschritt <see cref="FlaechenherkunftSchema"/>).
         /// </summary>
-        internal Flaechenherkunft? Flaechenherkunft { get; set; }
+        internal Flaechenherkunft? Flaechenherkunft
+        {
+            get => _flaechenherkunft;
+            set
+            {
+                _flaechenherkunft = value;
+                if (Bauteil != null) Bauteil.Flaechenherkunft = FlaechenherkunftWerte.Wert(value);
+            }
+        }
+
+        private Flaechenherkunft? _flaechenherkunft;
 
         /// <summary>Herkunft des U-Werts — auch, wenn er aus den Schichten folgt (die Schichten stammen aus der Datei).</summary>
         internal Importherkunft HerkunftU { get; set; }

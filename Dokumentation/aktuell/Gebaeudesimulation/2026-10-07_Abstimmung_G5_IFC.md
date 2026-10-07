@@ -73,7 +73,8 @@ Was G5 dort ablegt, muss diese Größen tragen:
 |---|---|
 | G5-1 Bauteilkörper | gebaut (#801) |
 | G5-2 Öffnungen | gebaut (#802) |
-| G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | wartet auf 196 |
+| Abnahme am Rechenweg (Gebäudesimulation) | G5-1 und G5-2: Referenzlauf 22/22 gegen R40 byte-gleich nach dem Merge (#804); A6 für G5-3 offen |
+| G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | gebaut (#805, Schritt 197) |
 | G5-3 | offen |
 
 A1 bis A5 halten aus Sicht von G5-1 und G5-2; der Rechenweg ist unverändert, der Referenzlauf der CI-Projekte gegen R40 ohne Abweichung.

@@ -1702,44 +1702,16 @@ namespace WindowsFormsApplication1
         /// <summary>Das Projekt, zu dem <see cref="m_FachspaltenSicherung"/> gehoert (siehe <see cref="m_SpVariantenProjekt"/>).</summary>
         private int m_FachspaltenProjekt;
 
-        /// <summary>Die Spalten, die <see cref="SQL_ANLAGE_INSERT"/> nennt - einmal aus der Anweisung gelesen.</summary>
-        private static HashSet<string> m_InsertSpalten;
-
-        private static HashSet<string> InsertSpalten()
-        {
-            if (m_InsertSpalten != null) return m_InsertSpalten;
-
-            HashSet<string> menge = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            int auf = SQL_ANLAGE_INSERT.IndexOf('(');
-            int zu = auf >= 0 ? SQL_ANLAGE_INSERT.IndexOf(')', auf) : -1;
-            if (auf >= 0 && zu > auf)
-            {
-                foreach (string s in SQL_ANLAGE_INSERT.Substring(auf + 1, zu - auf - 1).Split(','))
-                {
-                    string name = s.Trim();
-                    if (name.Length > 0) menge.Add(name);
-                }
-            }
-            m_InsertSpalten = menge;
-            return menge;
-        }
-
         /// <summary>
         /// Die Fachspalten: alle Spalten von <c>Tab_Energieanlagen</c>, die
         /// <see cref="SQL_ANLAGE_INSERT"/> nicht nennt, ohne <c>ID</c> - in
         /// Schemareihenfolge. Leer, wenn die Tabelle nur die Modellspalten fuehrt.
+        /// Weiterleitung auf <see cref="AnlagenFachspalten.Fachspalten"/> - dieselbe Menge
+        /// tragen die Uebernahmewege (Komponentenuebernahme, Flottenstudie).
         /// </summary>
         public static List<string> Fachspalten()
         {
-            List<string> fach = new List<string>();
-            HashSet<string> insert = InsertSpalten();
-            foreach (string spalte in DataRepository.SpaltenVonTabelle("Tab_Energieanlagen"))
-            {
-                if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
-                if (insert.Contains(spalte)) continue;
-                fach.Add(spalte);
-            }
-            return fach;
+            return AnlagenFachspalten.Fachspalten();
         }
 
         private static string FachspaltenSelect(List<string> fach)

@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-07_R40_Erdreichquellen`](../../../Referenzlaeufe/2026-10-07_R40_Erdreichquellen/);
+> [`Referenzlaeufe/2026-10-07_R41_Erdreichpruefung`](../../../Referenzlaeufe/2026-10-07_R41_Erdreichpruefung/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -85,6 +85,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-05_R37_Fahrplan` | 05.10.2026 | Basis mit den Komfortspalten für jedes gekoppelte Projekt (F12, E83) und dem neuen Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4), auf Linux eingefroren; Testdatenbank `63b0bdae…` (Schemastand 186), gehoben auf Schemastand 188; einundzwanzig Projekte, 646 CSV, 4 265 Skalare — abgelöst durch R38 am 05.10.2026 | [`2026-10-05_R37_Fahrplan/protokoll.txt`](2026-10-05_R37_Fahrplan/protokoll.txt) |
 | `2026-10-05_R38_Vorlaufwahl` | 05.10.2026 | Basis mit dem Ausweis der Vorlaufwahl der Wärmepumpe an 1047 und 1056 (VW1, E88), auf Linux eingefroren; Testdatenbank `69322344…` (Schemastand 188), gehoben auf Schemastand 190; einundzwanzig Projekte, 646 CSV, 4 271 Skalare — abgelöst durch R39 am 06.10.2026 | [`2026-10-05_R38_Vorlaufwahl/protokoll.txt`](2026-10-05_R38_Vorlaufwahl/protokoll.txt) |
 | `2026-10-06_R39_Auslegungsheizlast` | 06.10.2026 | Basis mit dem Ausweis der Auslegungsheizlast auch ohne Anlagenkopplung an 1051 und 1052 (KP3-R6, E97), auf Linux eingefroren; Testdatenbank `2fec4f14…` (Schemastand 190), gehoben auf Schemastand 195; einundzwanzig Projekte, 646 CSV, 4 275 Skalare — abgelöst durch R40 am 07.10.2026 | [`2026-10-06_R39_Auslegungsheizlast/protokoll.txt`](2026-10-06_R39_Auslegungsheizlast/protokoll.txt) |
+| `2026-10-07_R40_Erdreichquellen` | 07.10.2026 | Basis mit den Erdreichquellen der Referenzprojekte (Sole-Wärmepumpen an der Erdsonde) und dem Referenzprojekt 1057 „Erdsonde“, auf Linux eingefroren; Testdatenbank `29dbf1dd…` (Schemastand 195), gehoben auf Schemastand 196; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R41 am 07.10.2026 | [`2026-10-07_R40_Erdreichquellen/protokoll.txt`](2026-10-07_R40_Erdreichquellen/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4690,5 +4691,53 @@ Der Abschnitt „Aktuelle Basis“ hat am 06.10.2026 die Basis R39 beschrieben �
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
 > Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R40 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R40 beschrieben — den Anlass (die Erdreichquellen der Referenzprojekte und das Referenzprojekt 1057, Einfrierregel „gesäte Erdreichquellen“) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `7af65de`, Testdatenbank Schemastand 196.
+
+**Abgelöst wurde R40 durch `2026-10-07_R41_Erdreichpruefung`** (Entzug des Sondenfelds ohne Taktstrom, Erdreichprüfung je Anlage, Anwenderentscheid 07.10.2026): 674 von 677 CSV sind byte-gleich; allein der Block `Erdreich[0].*` in `aggregate.csv` von 1008, 1023 und 1050 weicht ab (Jahresentzug 0 → 52 487 bzw. 24 283 kWh/a, Prüfung möglich False → True).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Erdreichquellen der Referenzprojekte und das neue Referenzprojekt 1057 „Erdsonde“ (Erdwärme B und C,
+> Einfrierregel „gesäte Erdreichquellen“) — acht Projekte rechnen ihre Sole-Wärmepumpe an der Erdsonde, 1057 ist neu,
+> die übrigen dreizehn sind byte-gleich.**
+>
+> Die Sole-Wärmepumpen der Referenzprojekte 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 rechneten ohne gepflegte
+> Quelle an der Außenluft. `Skripte/erdreichquellen_referenzprojekte.py` sät an genau diesen Anlagen eine Erdsonde
+> (`WQ_Typ` Erdreich, `WQ_Quellsystem` Sonde, Mergel/Lehm, Länge nach VDI 4640 Blatt 2 mit Energiegrenze, 60 bis 120 m
+> je Sonde, Spreizung Vorgabe 5 K), setzt die eigene Klimaregion jedes Projekts auf Klimazone 6 und legt 1057 an
+> (Abschnitt „Das Referenzprojekt 1057“ unten); Schemaschritt 195 legt die Sondenfeldspalten leer an (Normvorgabe).
+> Damit gilt die neue Einfrierregel „gesäte Erdreichquellen“ oben. **Gegen R39 sind die dreizehn Projekte ohne
+> Erdreichquelle vollständig byte-gleich (575 von 646 CSV); 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 weichen
+> ab, 1057 ist neu.** Jahresarbeitszahl (Wärme der Wärmepumpe durch ihren Strom) und Wärmepumpenstrom alt → neu:
+>
+> | Projekt | JAZ R39 → R40 | WP-Strom R39 → R40 (MWh) | Wirkung |
+> |---|---|---|---|
+> | 1008 | 4,15 → 3,94 | 18,86 → 20,27 | Grundlast, Sole im Mittel 4,5 °C (Außenluft 9,9 °C); Deckung 79,8 → 81,5 % |
+> | 1023, 1050 | 2,38 → 2,38 | 43,01 → 43,23 | praktisch gleich; Deckung 41,6 → 41,8 % |
+> | 1039 | 3,25 → 3,06 | 58,59 → 58,82 | Grundlast, das Erdreich kühlt unter Last aus (Sole im Mittel 1,0 °C); Wärme der WP 190,7 → 180,0 MWh |
+> | 1047 | 3,86 → 4,45 | 2,44 → 2,12 | Kühlprojekt; Kälte-EER 4,63 → 5,24, Kältedeckung 98,2 → 99,6 % |
+> | 1056 | 3,73 → 4,33 | 3,25 → 2,80 | Kühlprojekt; Kälte-EER 4,62 → 5,24, Komfortstunden unverändert |
+> | 1017 | — | 0,01 → 0,00 | Kälte-EER 4,63 → 5,24, Kältedeckung 98,2 → 99,7 % |
+> | 1055 | — | 0,01 → 0,00 | die Kältemaschine bleibt unberührt |
+> | 1057 | neu 3,07 | neu 22,12 | Sonde 4 × 90 m, Sole im Mittel 1,5 °C, Deckung 85,7 % |
+>
+> Je Projekt mit Erdreichquelle kommt der Block `Erdreich[0].*` (15 Skalare) in `aggregate.csv` hinzu. Gesamt 677 CSV,
+> 4 584 Skalare. Zwei Läufe sind byte-gleich; der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057 \
+>   --ziel Referenzlaeufe/2026-10-07_R40_Erdreichquellen
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 23.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
