@@ -145,8 +145,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static List<(double X, double Y)> Lagen(int anzahl, double abstandM)
         {
+            return Lagen(anzahl, abstandM, Sondenanordnung.Quadratisch);
+        }
+
+        /// <summary>
+        /// Lage der Sonden nach der Anordnung: <see cref="Sondenanordnung.Quadratisch"/> ein möglichst
+        /// quadratisches Raster mit Abstand B, zeilenweise gefüllt; <see cref="Sondenanordnung.Reihe"/> alle
+        /// Sonden in einer Linie mit Abstand B.
+        /// </summary>
+        public static List<(double X, double Y)> Lagen(int anzahl, double abstandM, Sondenanordnung anordnung)
+        {
             int n = Math.Max(1, anzahl);
-            int spalten = (int)Math.Ceiling(Math.Sqrt(n));
+            int spalten = anordnung == Sondenanordnung.Reihe ? n : (int)Math.Ceiling(Math.Sqrt(n));
             var lagen = new List<(double, double)>(n);
             for (int i = 0; i < n; i++)
                 lagen.Add(((i % spalten) * abstandM, (i / spalten) * abstandM));
@@ -155,7 +165,7 @@ namespace WindowsFormsApplication1
 
         private void AbstaendeBilden(out double[] abstaende, out double[] gewichte)
         {
-            var lagen = Lagen(Anzahl, AbstandM);
+            var lagen = Lagen(Anzahl, AbstandM, Geometrie.Anordnung);
             var zaehler = new SortedDictionary<long, (double r, int n)>();
             for (int j = 0; j < lagen.Count; j++)
                 for (int k = 0; k < lagen.Count; k++)

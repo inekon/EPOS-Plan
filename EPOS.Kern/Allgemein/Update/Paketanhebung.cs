@@ -340,6 +340,9 @@ namespace WindowsFormsApplication1
             // kommen leer an (der Bericht nennt dann den Aufschlag der Projekteinstellung).
             new Stufe(AufheizAufschlagErgebnisSchema.SCHRITT, Art.Ddl,
                       "Verwendeter Aufschlag und bemessene Aufheizzeit in der Ergebniszeile des Gebäudes"),
+            // Ein älteres Paket führt keine Kennzahlen des Sondenfeldes; die Spalten kommen leer an (= Normvorgabe).
+            new Stufe(ErdsondenfeldSchema.SCHRITT, Art.Ddl,
+                      "Geometrie und Bohrlochkennwerte des Erdsondenfeldes je Anlage"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
