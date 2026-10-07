@@ -3064,6 +3064,28 @@ namespace Testdatenbankschema
                                   ErdsondenfeldSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt StandardlastprofilPvSchema.SCHRITT (SLP25b): die BDEW-Netzbezugsprofile P25 (Haushalt mit
+            //      PV-Anlage) und S25 (Haushalt mit PV-Anlage und Batteriespeicher) als gesperrte Saetze der "Datenbank
+            //      Strombedarf" - je ein Kopf in Tab_Stromverbraucher_STAMM (Monatswerte, Netzbezug 1.000 MWh/a) und ein
+            //      Typprofil in Tab_Stromverbrauchertyp_STAMM (168 Wochenstunden), Katalogschluessel und Pruefsumme.
+            //      Keine Verbrauchsprofile. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_StandardlastprofilPv
+            //      bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen der Saetze.
+            string nrNetzbezug = StandardlastprofilPvSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNetzbezug + " - BDEW-Netzbezugsprofile P25/S25: " +
+                              (StandardlastprofilPvSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNetzbezug = new List<string>();
+                StandardlastprofilPvSchema.Ausfuehren(berichtNetzbezug);
+                foreach (string zeile in berichtNetzbezug)
+                    Console.WriteLine("Schritt " + nrNetzbezug + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNetzbezug + " - vollstaendig: " +
+                                  StandardlastprofilPvSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

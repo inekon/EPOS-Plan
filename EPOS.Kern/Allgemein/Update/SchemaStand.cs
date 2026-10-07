@@ -941,7 +941,12 @@ namespace WindowsFormsApplication1
         /// Kennzahlen des Sondenfeldes an <c>Tab_Energieanlagen</c> (Abstand, Bohrlochdurchmesser, Bohrlochwiderstand,
         /// Kopfüberdeckung, Betrachtungsjahr, Anordnung; <see cref="ErdsondenfeldSchema"/>). <b>Ergebnisneutral:</b> Die
         /// Spalten entstehen leer, leer heißt Normvorgabe.
-        public const int Zielversion = ErdsondenfeldSchema.SCHRITT;
+        /// Danach, mit den BDEW-NETZBEZUGSPROFILEN P25 UND S25 (SLP25b), steht das Ziel auf
+        /// <see cref="StandardlastprofilPvSchema.SCHRITT"/>: zwei weitere gesperrte Sätze der „Datenbank Strombedarf" —
+        /// Netzbezug eines Haushalts mit PV-Anlage (P25) bzw. mit PV-Anlage und Batteriespeicher (S25), keine
+        /// Verbrauchsprofile —, je Kopf und Typprofil mit Katalogschlüssel und Prüfsumme
+        /// (<see cref="StandardlastprofilPvSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze.
+        public const int Zielversion = StandardlastprofilPvSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -5242,6 +5242,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ERDSONDENFELD = ErdsondenfeldSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="StandardlastprofilPvSchema.SCHRITT"/> — <b>BDEW-Netzbezugsprofile Strom 2025</b> (SLP25b): die
+        /// zwei gesperrten Sätze P25 (Haushalt mit PV-Anlage) und S25 (Haushalt mit PV-Anlage und Batteriespeicher) der
+        /// „Datenbank Strombedarf", je ein Kopf in <c>Tab_Stromverbraucher_STAMM</c> (Monatswerte, Netzbezug 1.000 MWh/a)
+        /// und ein Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c> (168 Wochenstunden), mit Katalogschlüssel und
+        /// Prüfsumme. <b>Keine Verbrauchsprofile</b> — der Bezug nach dem Eigenverbrauch. Nur was unter seinem Namen fehlt,
+        /// nie überschreibend; eigene Sätze des Anwenders unter einem der Namen nennt das Protokoll.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt einen der Sätze; Projekte rechnen mit ihren Kopien.</para>
+        /// </summary>
+        public const int SCHRITT_STANDARDLASTPROFIL_PV = StandardlastprofilPvSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7624,6 +7636,12 @@ namespace WindowsFormsApplication1
                         "Das Erdsondenfeld liesse sich je Anlage nicht pflegen. KEIN Rechenergebnis aendert sich - die " +
                         "Spalten entstehen leer und heissen Normvorgabe.",
                         Schritt_Erdsondenfeld),
+            // BDEW-NETZBEZUGSPROFILE P25 UND S25 (SLP25b). Quelle ist StandardlastprofilPvSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_STANDARDLASTPROFIL_PV,
+                        "Tab_Stromverbraucher_STAMM/Tab_Stromverbrauchertyp_STAMM: BDEW-Netzbezugsprofile P25 und S25",
+                        "Der Katalog des Strombedarfs truege die BDEW-Netzbezugsprofile P25 und S25 (Haushalt mit PV-Anlage, " +
+                        "mit PV-Anlage und Batteriespeicher) nicht. KEIN Rechenergebnis aendert sich.",
+                        Schritt_StandardlastprofilPv),
         };
 
         /// <summary>
@@ -14790,6 +14808,64 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": BDEW-Standardlastprofile - " +
+                    (ergebnis.KoepfeGesaet == 0 && ergebnis.TypenGesaet == 0 && ergebnis.Schluessel == 0
+                        ? "standen bereits."
+                        : ergebnis.KoepfeGesaet + " gesaet.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „BDEW-Netzbezugsprofile P25 und S25" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STANDARDLASTPROFIL_PV"/>, die Saat bei <see cref="StandardlastprofilPvSchema"/>, die Mechanik
+        /// (dieselbe wie <see cref="Schritt_Standardlastprofil"/>) bei <see cref="StandardlastprofilSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_StandardlastprofilPv(Lauf l)
+        {
+            string nr = StandardlastprofilPvSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StandardlastprofilPvSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            StandardlastprofilSchema.Bericht ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = StandardlastprofilPvSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!StandardlastprofilPvSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die BDEW-Netzbezugsprofile P25/S25 oder ihre Katalogschluessel stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": BDEW-Netzbezugsprofile P25/S25 - " +
                     (ergebnis.KoepfeGesaet == 0 && ergebnis.TypenGesaet == 0 && ergebnis.Schluessel == 0
                         ? "standen bereits."
                         : ergebnis.KoepfeGesaet + " gesaet.") +

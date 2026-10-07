@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -13,19 +15,20 @@ namespace EPOS.Kern.Tests
     /// Der Schemaschritt der <b>BDEW-Netzbezugsprofile P25 und S25</b> (<see cref="StandardlastprofilPvSchema"/>,
     /// Welle SLP25b) auf einer Arbeitskopie der Testdatenbank.
     ///
-    /// <para><b>Geprüft wird:</b> die Nummer (196, noch nicht eingehängt) und die Saat — die zwei Netzbezugsprofile,
-    /// getrennt von den Verbrauchsprofilen, mit derselben Mechanik wie Schritt 193; dass der Schritt zwei gesperrte Köpfe
+    /// <para><b>Geprüft wird:</b> die Kette (<c>ErdsondenfeldSchema.SCHRITT + 1</c>), der Zielstand, die Stufe der
+    /// Paketanhebung und die Saat — die zwei Netzbezugsprofile, getrennt von den Verbrauchsprofilen, mit derselben
+    /// Mechanik wie Schritt 193; dass der Schritt zwei gesperrte Köpfe
     /// in <c>Tab_Stromverbraucher_STAMM</c> mit je einem gesperrten Typprofil in <c>Tab_Stromverbrauchertyp_STAMM</c>
     /// anlegt (46 statt 44 Köpfe, 45 statt 43 Typprofile), über den Typnamen verknüpft, mit Katalogschlüssel und der
     /// Prüfsumme der gelieferten Werte, ohne die Sätze H25, G25, L25 anzufassen; dass ein zweiter Lauf nichts ändert und
     /// <c>foreign_key_check</c> leer bleibt; dass er nur anlegt, was fehlt, nie überschreibt und eigene Sätze des
     /// Anwenders meldet; dass der Katalogdialog 46 Sätze zeigt; dass eine Projektkopie über <c>ProfilBedarf</c> und
-    /// <c>BhkwPlan.StromWocheToJahr</c> 8 760 Stundenwerte mit dem gepflegten Jahresnetzbezug rechnet.</para>
+    /// <c>BhkwPlan.StromWocheToJahr</c> 8 760 Stundenwerte mit dem gepflegten Jahresnetzbezug rechnet; dass Repo-Datei,
+    /// Werkzeug, Migration und Testkopie den Schritt hinter 195 führen.</para>
     ///
-    /// <para><b>Noch nicht eingehängt:</b> Die Testdatenbank trägt die zwei Sätze nicht; jeder Fall führt den Schritt
-    /// selbst aus. Fälle, die das Säen prüfen, löschen die Sätze trotzdem zuerst (<see cref="SaetzeLoeschen"/>) — so
-    /// gelten sie unverändert, sobald der Schritt registriert und die Testdatenbank nachgezogen ist. <b>Eigene
-    /// Arbeitskopie je Fall</b> — die Fälle schreiben.</para>
+    /// <para><b>Vom gelieferten Stand aus:</b> Die Testdatenbank trägt die zwei Sätze. Fälle, die das Säen prüfen,
+    /// löschen sie zuerst (<see cref="SaetzeLoeschen"/>) und säen dann; die übrigen führen den Schritt vorab aus, der
+    /// dann nichts findet. <b>Eigene Arbeitskopie je Fall</b> — die Fälle schreiben.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class StandardlastprofilPvSchemaTests : IDisposable
@@ -55,19 +58,17 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Die Nummer ist die angemeldete 196 hinter 194 (<see cref="AufheizAufschlagErgebnisSchema"/>) und der angemeldeten
-        /// 195 (Sitzung Dialoge, Erdwärme B). <b>Noch nicht eingehängt</b> — der Zielstand liegt darunter, das Register der
-        /// Paketanhebung führt sie nicht. Mit dem Einhängen prüft dieser Fall die Kette (Vorgänger <c>.SCHRITT + 1</c>),
-        /// <c>SchemaStand.Zielversion &gt;= SCHRITT</c> und die Stufe der Art Katalog.
+        /// Die Nummer folgt lückenlos auf das Erdsondenfeld (195, Sitzung Dialoge); der Zielstand reicht bis zu ihr, und
+        /// das Register der Paketanhebung führt sie als reinen Katalogschritt.
         /// </summary>
         [Fact]
-        public void Die_Nummer_ist_196_und_noch_nicht_eingehaengt()
+        public void Die_Nummer_folgt_auf_das_Erdsondenfeld_und_ist_das_Ziel()
         {
-            Assert.Equal(196, StandardlastprofilPvSchema.SCHRITT);
-            Assert.True(StandardlastprofilPvSchema.SCHRITT > AufheizAufschlagErgebnisSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion < StandardlastprofilPvSchema.SCHRITT,
-                        "Der Schritt ist eingehängt (Zielstand " + SchemaStand.Zielversion + ") - Kette und Zielstand hier prüfen.");
-            Assert.DoesNotContain(Paketanhebung.Stufen, s => s.Nr == StandardlastprofilPvSchema.SCHRITT);
+            Assert.Equal(ErdsondenfeldSchema.SCHRITT + 1, StandardlastprofilPvSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= StandardlastprofilPvSchema.SCHRITT,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter " + StandardlastprofilPvSchema.SCHRITT + ".");
+            Assert.Contains(Paketanhebung.Stufen, s => s.Nr == StandardlastprofilPvSchema.SCHRITT &&
+                                                       s.Wirkung == Paketanhebung.Art.Katalog);
         }
 
         /// <summary>
@@ -348,9 +349,71 @@ namespace EPOS.Kern.Tests
             Assert.True(monate[5] < 0.05 * monate.Sum() && monate[11] > 3 * monate[5], "Juni nicht klein gegen Dezember");
         }
 
+        // =============================================================================
+        //  Teil 3 - Repo-Datei, Werkzeug und Migration
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die Werkzeug-Wache.</b> Migration der Schale, Werkzeug <c>Testdatenbankschema</c> und Testkopie führen den
+        /// Schritt aus derselben Quelle NACH dem Erdsondenfeld (195); die Repo-Datei trägt ihn — Schemastand und die zwei
+        /// gesperrten Sätze samt Typprofil und Katalogschlüssel (lesend geprüft, ohne Spuren).
+        /// </summary>
+        [Fact]
+        public void Repo_Datei_Werkzeug_und_Migration_fuehren_den_Schritt()
+        {
+            string wurzel = Repowurzel();
+            if (wurzel == null) return;
+
+            string werkzeug = File.ReadAllText(Path.Combine(wurzel, "Werkzeuge", "Testdatenbankschema", "Program.cs"));
+            int wSaat = werkzeug.IndexOf("StandardlastprofilPvSchema.Ausfuehren(", StringComparison.Ordinal);
+            Assert.True(wSaat > 0 && wSaat > werkzeug.IndexOf("ErdsondenfeldSchema.Ausfuehren(", StringComparison.Ordinal),
+                        "Die Saat steht im Werkzeug nicht hinter dem Erdsondenfeld.");
+
+            string migration = File.ReadAllText(Path.Combine(wurzel, "WindowsFormsApplication1", "Allgemein",
+                                                             "Update", "SchemaMigration.cs"));
+            Assert.Contains("SCHRITT_STANDARDLASTPROFIL_PV = StandardlastprofilPvSchema.SCHRITT", migration, StringComparison.Ordinal);
+            int ortVorher = migration.IndexOf("new Schritt(SCHRITT_ERDSONDENFELD", StringComparison.Ordinal);
+            int ortSaat = migration.IndexOf("new Schritt(SCHRITT_STANDARDLASTPROFIL_PV", StringComparison.Ordinal);
+            Assert.True(ortVorher > 0 && ortSaat > ortVorher, "Der Schritt steht nicht hinter 195.");
+            Assert.Contains("StandardlastprofilPvSchema.Ausfuehren(bericht)", migration, StringComparison.Ordinal);
+
+            string vorrichtung = File.ReadAllText(Path.Combine(wurzel, "EPOS.Kern.Tests", "TestDatenbank.cs"));
+            int vSaat = vorrichtung.IndexOf("StandardlastprofilPvSchema.Ausfuehren(null)", StringComparison.Ordinal);
+            Assert.True(vSaat > 0 && vSaat > vorrichtung.IndexOf("ErdsondenfeldSchema.Ausfuehren(null)", StringComparison.Ordinal),
+                        "Die Saat steht in der Testkopie nicht hinter dem Erdsondenfeld.");
+
+            string pfad = Path.Combine(wurzel, "Referenzlaeufe", "Kenndaten_Test.sqlite");
+            if (!File.Exists(pfad)) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+
+            string uri = "file:" + pfad.Replace('\\', '/').Replace("?", "%3f") + "?mode=ro&immutable=1";
+            using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = uri }.ToString());
+            verbindung.Open();
+            using SqliteCommand cmd = verbindung.CreateCommand();
+            cmd.CommandText = "SELECT SchemaVersion FROM Tab_Applikation";
+            Assert.True(Convert.ToInt64(cmd.ExecuteScalar(), CultureInfo.InvariantCulture) >= StandardlastprofilPvSchema.SCHRITT);
+            cmd.CommandText = "SELECT COUNT(*) FROM Tab_Stromverbraucher_STAMM k JOIN Tab_Stromverbrauchertyp_STAMM t ON t.Typname = k.Typ " +
+                              "WHERE k.Bezeichner = $b AND t.Typname = $t AND k.ReadOnly = 1 AND t.ReadOnly = 1 " +
+                              "AND k.Katalog_Schluessel IS NOT NULL AND t.Katalog_Schluessel IS NOT NULL";
+            foreach (StandardlastprofilSaat s in Saat)
+            {
+                cmd.Parameters.Clear();
+                cmd.Parameters.AddWithValue("$b", s.Bezeichner);
+                cmd.Parameters.AddWithValue("$t", s.Typname);
+                Assert.Equal(1L, Convert.ToInt64(cmd.ExecuteScalar(), CultureInfo.InvariantCulture));
+            }
+        }
+
         // -----------------------------------------------------------------------------
         //  Hilfen
         // -----------------------------------------------------------------------------
+
+        private static string Repowurzel()
+        {
+            for (DirectoryInfo d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
+                if (File.Exists(Path.Combine(d.FullName, "WP-Plan.sln"))) return d.FullName;
+            return null;
+        }
 
         /// <summary>Löscht P25 und S25 (Köpfe und Typprofile) unter ihren Namen — der Stand vor dem Schritt.</summary>
         private static void SaetzeLoeschen()

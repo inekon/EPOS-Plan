@@ -25,10 +25,10 @@ namespace WindowsFormsApplication1
     // ERGEBNISNEUTRAL. Kein Referenzprojekt fuehrt einen der Saetze; neue Katalogzeilen verschieben allein die
     // Ids des Katalogs.
     //
-    // NUMMER. 196, angemeldet hinter 195 (Sitzung Dialoge, Welle Erdwaerme B). Vorlaeufig als Zahl und NICHT
-    // eingehaengt: weder in SchemaStand.Zielversion noch im Register der Paketanhebung, in der SchemaMigration
-    // der Schale, in Werkzeuge/Testdatenbankschema oder in EPOS.Kern.Tests/TestDatenbank; die Testdatenbank
-    // traegt die Saetze noch nicht.
+    // NUMMER. 196 = ErdsondenfeldSchema.SCHRITT + 1, hinter 195 (ErdsondenfeldSchema, Sitzung Dialoge, Welle
+    // Erdwaerme B). Eingetragen in SchemaStand.Zielversion, im Register der Paketanhebung (Art Katalog), in der
+    // SchemaMigration der Schale, in Werkzeuge/Testdatenbankschema und in EPOS.Kern.Tests/TestDatenbank; die
+    // Testdatenbank traegt die beiden Saetze.
     // ====================================================================================
 
     /// <summary>
@@ -39,10 +39,10 @@ namespace WindowsFormsApplication1
     public static class StandardlastprofilPvSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Vorläufig die angemeldete 196 als
-        /// Zahl; Verkettung an Schritt 195 (Sitzung Dialoge, Erdwärme B) in Phase 2.
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der Schritt hinter
+        /// <see cref="ErdsondenfeldSchema.SCHRITT"/>.
         /// </summary>
-        public const int SCHRITT = 196;   // Verkettung an Schritt 195 (Sitzung Dialoge, Erdwärme B) in Phase 2
+        public const int SCHRITT = ErdsondenfeldSchema.SCHRITT + 1;
 
         /// <summary>Die Art der Sätze in der Protokollzeile (<see cref="StandardlastprofilSchema.Bericht.Zeile"/>).</summary>
         private const string ART = "BDEW-Netzbezugsprofil(e) P25/S25";
