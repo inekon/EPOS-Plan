@@ -6259,6 +6259,12 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
   </data>
+  <data name="BK_KOMP_HINW_KINDBEZUG" xml:space="preserve">
+    <value>Anlage „{0}": Bezüge ohne eindeutige gleichnamige Gegenstelle im Zielprojekt wurden weggelassen: {1}.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
+    <value>Die Zuordnungen „{1}" der Anlage „{0}" konnten nicht übernommen werden.</value>
+  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Modulpreis</value>
   </data>

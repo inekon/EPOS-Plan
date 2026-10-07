@@ -6243,6 +6243,12 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
   </data>
+  <data name="BK_KOMP_HINW_KINDBEZUG" xml:space="preserve">
+    <value>Unit "{0}": references without a unique namesake in the target project were omitted: {1}.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
+    <value>The assignments "{1}" of unit "{0}" could not be transferred.</value>
+  </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Module price</value>
   </data>
