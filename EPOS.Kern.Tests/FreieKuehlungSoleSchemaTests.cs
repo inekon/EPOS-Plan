@@ -145,7 +145,9 @@ namespace EPOS.Kern.Tests
             foreach (var s in FreieKuehlungSoleSchema.SPALTEN.Where(x => x.Spalte != FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI))
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(FreieKuehlungSoleSchema.TAB_ANLAGEN);
-            Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ANLAGE.ToArray(), anlagen.Skip(anlagen.Count - 3).ToArray());
+            // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195).
+            int sonde = ErdsondenfeldSchema.SPALTEN.Count;
+            Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ANLAGE.ToArray(), anlagen.Skip(anlagen.Count - sonde - 3).Take(3).ToArray());
             foreach (string t in FreieKuehlungSoleSchema.TABELLEN_ERGEBNIS)
             {
                 List<string> erg = DataRepository.SpaltenVonTabelle(t);

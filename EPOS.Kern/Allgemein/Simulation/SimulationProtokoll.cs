@@ -114,6 +114,47 @@ namespace WindowsFormsApplication1
             if (vorher != null) _aktuell = vorher;
         }
 
+        /// <summary>Stand eines Kanals: Zahl der Einträge je Liste und die gemeldeten Einmal-Schlüssel.</summary>
+        internal sealed class Meldestand
+        {
+            internal int Hinweise, Warnungen, Fehler;
+            internal string[] Einmal;
+        }
+
+        /// <summary>Hält den gegenwärtigen Stand fest (für <see cref="ZuruecksetzenAuf"/>).</summary>
+        internal Meldestand Merken()
+        {
+            lock (_sperre)
+            {
+                var e = new string[_einmal.Count];
+                _einmal.CopyTo(e);
+                return new Meldestand { Hinweise = _hinweise.Count, Warnungen = _warnungen.Count, Fehler = _fehler.Count, Einmal = e };
+            }
+        }
+
+        /// <summary>
+        /// Verwirft alles, was nach <paramref name="stand"/> gemeldet wurde, samt der Einmal-Schlüssel —
+        /// der zweite Feldlauf der Erdsonde (Konzept Simulationsablauf 23.4) meldet danach wie ein
+        /// einziger Lauf. Die Konsole hat die Zeilen des ersten Laufs schon gesehen.
+        /// </summary>
+        internal void ZuruecksetzenAuf(Meldestand stand)
+        {
+            if (stand == null) return;
+            lock (_sperre)
+            {
+                Kuerzen(_hinweise, stand.Hinweise);
+                Kuerzen(_warnungen, stand.Warnungen);
+                Kuerzen(_fehler, stand.Fehler);
+                _einmal.Clear();
+                foreach (string k in stand.Einmal) _einmal.Add(k);
+            }
+        }
+
+        private static void Kuerzen(List<string> liste, int anzahl)
+        {
+            if (anzahl >= 0 && liste.Count > anzahl) liste.RemoveRange(anzahl, liste.Count - anzahl);
+        }
+
         // =================================================================================
         // Lesen
         // =================================================================================

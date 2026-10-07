@@ -89,10 +89,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Jahressummen der Basis [MWh/a] — Kältebedarf, Deckung der Wärmepumpe, ungedeckter Rest (1017: Übersicht
-        /// des Anwenderbefunds 4,08 / 4,01 / 0,08). Gehalten in einem Band: Der Befund war gedeckt = 0.
+        /// mit der gesäten Erdsonde 4,08 / 4,07 / 0,01). Gehalten in einem Band: Der Befund war gedeckt = 0.
         /// </summary>
         private static (double Bedarf, double Gedeckt, double Ungedeckt) Soll(int projekt)
-            => projekt == PROJEKT_KAELTE ? (4.0826, 4.0075, 0.0751) : (3.8498, 3.7822, 0.0677);
+            => projekt == PROJEKT_KAELTE ? (4.0826, 4.0704, 0.0122) : (3.8498, 3.8355, 0.0143);
 
         /// <summary>
         /// Das Zeichenmodell trägt die Säule der Wärmepumpe (1017: gedeckt ≈ 4,01 MWh/a), darauf den Rest (≈ 0,08 MWh/a),
