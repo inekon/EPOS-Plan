@@ -30911,6 +30911,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
     <value>Anlagenkopplung: Das Projekt steht auf der Stufe {0}; gebaut ist die Stufe AK1 — gerechnet wird der Heizkreis als Randbedingung (AK1).</value>
   </data>
+  <data name="SIMENG_AK3K_KREIS_MIT_KAELTESEITE" xml:space="preserve">
+    <value>Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde.</value>
+  </data>
   <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
     <value>Anlagenkopplung: {0} — die Wärmeübergabe reicht in {1} Stunden nicht; die Raumtemperatur liegt dort bis zu {2} K unter dem Sollwert.</value>
   </data>

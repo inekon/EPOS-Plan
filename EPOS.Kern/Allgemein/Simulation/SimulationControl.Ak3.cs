@@ -80,6 +80,9 @@ namespace WindowsFormsApplication1
         //  AK3-W3b — der AK3-Weg an der Kaskade (Entwurf AK3 2.1 Schritte 3 bis 5)
         // =========================================================================================
 
+        /// <summary>Die Anlagen-Ids der Wärmeerzeuger des Kreises, indexgleich zur Erzeugerliste (AK3-K, Vorrangschätzung).</summary>
+        private List<int> _ak3WaermeAnlagen;
+
         /// <summary>Hat <see cref="Ak3Einrichten"/> Naht und Schalter für den letzten Lauf gesetzt?</summary>
         private bool _ak3Eingerichtet;
 
@@ -123,10 +126,12 @@ namespace WindowsFormsApplication1
                 gebaeude.Add(new Kopplungsgebaeude(e.Index, e.Zeile.ID_Gebaeude, e.Zeile.Gebaeudename, e.Stepper, e.Faktor));
             }
             var erzeuger = new List<IErzeugerkapazitaet>();
+            _ak3WaermeAnlagen = new List<int>();
             foreach (Anlagenfahrplan.Erzeugerzeile z in weg.Erzeuger)
             {
+                _ak3WaermeAnlagen.Add(z.Modell.ID);
                 WaermepumpeKapazitaet wp = z.Typ == WizardItemClass.WP_TYP && _wpInSchleife
-                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan) : null;
+                    ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan, weg.Kaelte) : null;
                 erzeuger.Add(wp ?? (IErzeugerkapazitaet)new FesteKapazitaet(z.Fahrplan));
             }
             var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()))
@@ -134,6 +139,8 @@ namespace WindowsFormsApplication1
                 // H2 (Festlegung 23, Q-AK3-2): nur Gebäude mit Heizkurve und k_R > 0; ohne solches kein Raumeinfluss.
                 Raumeinfluss = Raumeinfluss.AusGebaeuden(weg.Gebaeude.Select(e => e.Zeile).ToList()),
             };
+            // AK3-K (4.2): die Kälteschranke, nur mit Kältestunde im Kreis (Kernschalter); sonst keine.
+            if (weg.Kaelte) kreis.Kaelteschranke = Ak3KaelteschrankeBauen(erzeuger);
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
             WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
             if (erste != null)
@@ -165,8 +172,33 @@ namespace WindowsFormsApplication1
                 SimulationProtokoll.Aktuell.Fehlermeldung("Anlagenkopplung AK3, Gebäudemodell VDI 6007 [" + ex.Grund + "]: " + ex.Message);
                 return false;
             }
-            if (ok) simulation_Waermebedarf.Ak3Nachfuehren();
-            return ok;
+            if (!ok) return false;
+            simulation_Waermebedarf.Ak3Nachfuehren();
+            return Ak3KaelteUebernehmen(kanaele);
+        }
+
+        /// <summary>
+        /// <b>AK3-K (Fehler 1.1 (a))</b>, nur mit <see cref="Ak3KKernschalter"/>: Der Kühlkanal des Kanalsatzes der
+        /// Kaskade nimmt dieselbe Abweichung je Stunde auf wie der Kühlkanal der Bedarfsseite — die Deckungsprobe Kälte
+        /// vergleicht beide. Eine verletzte Bedarfsprobe Kälte bricht den Lauf benannt ab.
+        /// </summary>
+        private bool Ak3KaelteUebernehmen(Kanalsatz kanaele)
+        {
+            Ak3Weg weg = simulation_Waermebedarf.Ak3;
+            if (weg == null || !weg.Kaelte) return true;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
+            if (!string.IsNullOrEmpty(kaelte.Fehlertext))
+            {
+                FehlertextAufnehmen(kaelte.Fehlertext);
+                return false;
+            }
+            if (kanaele != null && kaelte.Gerechnet)
+            {
+                double[] kanal = kanaele.Kuehlung;
+                for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++)
+                    if (weg.KaelteDeltaKwh[h] != 0.0) kanal[h] += weg.KaelteDeltaKwh[h];
+            }
+            return true;
         }
 
         /// <summary>Ist der Heizkessel Mitglied der Stundenschleife des letzten Laufs? (Proben)</summary>

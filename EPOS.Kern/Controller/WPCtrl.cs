@@ -522,7 +522,9 @@ namespace WindowsFormsApplication1
         /// <see cref="AnlagenImKuehlbetrieb"/>). <c>Kuehl_Vorlauf</c> NULL heißt der kleinste
         /// Stützwert der Kühlkennlinie des Geräts (K21), wie im Lauf der Wärmepumpe. Benannte
         /// Regel: Das Gebäude mischt auf seine Vorlaufgrenze hoch, kälter als die Anlage wird es
-        /// nie. NaN, wenn keine Anlage einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// nie. Trägt keine Wärmepumpe einen Wert, gilt der Vorlauf der Kältemaschinen
+        /// (<see cref="KuehlVorlaufDerKaeltemaschinen"/>, AK3-K Festlegung 12); NaN, wenn auch dort keiner steht.
+        /// Dialogfrei; NaN bei jedem Fehler.
         /// </summary>
         public static double KuehlVorlaufDesKaeltekanals(int idProjekt)
         {
@@ -541,6 +543,42 @@ namespace WindowsFormsApplication1
                 object v = r["Vorlauf"] != DBNull.Value ? r["Vorlauf"] : r["Stuetzwert"];
                 if (v == null || v == DBNull.Value) continue;
                 double wert = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+                if (double.IsNaN(wert) || double.IsInfinity(wert)) continue;
+                if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
+            }
+            if (double.IsNaN(kaeltester)) kaeltester = KuehlVorlaufDerKaeltemaschinen(idProjekt);
+            return kaeltester;
+        }
+
+        /// <summary>
+        /// <b>Der Kaltwasser-Vorlauf aus den Kältemaschinen</b> (AK3-K, Festlegung 12): Trägt keine Wärmepumpe im
+        /// Kühlbetrieb einen Vorlauf — ein Projekt nur mit Kältemaschine —, gilt der KÄLTESTE Vorlauf der
+        /// Kältemaschinen-Anlagen nach der Regel von <see cref="Kaeltemaschine.AusModell"/>: <c>Kuehl_Vorlauf</c> der
+        /// Projektkopie, ohne ihn die kleinste Kaltwasser-Stützstelle der Kennlinie (K21), mindestens
+        /// <c>Kaltwasser_Vorlauf_Min</c>. NaN, wenn keine Maschine einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// </summary>
+        internal static double KuehlVorlaufDerKaeltemaschinen(int idProjekt)
+        {
+            if (idProjekt <= 0) return double.NaN;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT k.Kuehl_Vorlauf AS Vorlauf, k.Kaltwasser_Vorlauf_Min AS Untergrenze, " +
+                "(SELECT MIN(c.Kaltwassertemperatur) FROM Tab_Kenndaten_Kaeltemaschine c WHERE c.ID_Kaeltemaschine = k.ID) AS Stuetzwert " +
+                "FROM Tab_Energieanlagen a JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KM_TYP));
+            if (dt == null) return double.NaN;
+            double kaeltester = double.NaN;
+            foreach (DataRow r in dt.Rows)
+            {
+                object v = r["Vorlauf"] != DBNull.Value ? r["Vorlauf"] : r["Stuetzwert"];
+                if (v == null || v == DBNull.Value) continue;
+                double wert = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+                if (r["Untergrenze"] != DBNull.Value)
+                {
+                    double unten = Convert.ToDouble(r["Untergrenze"], System.Globalization.CultureInfo.InvariantCulture);
+                    if (wert < unten) wert = unten;
+                }
                 if (double.IsNaN(wert) || double.IsInfinity(wert)) continue;
                 if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
             }

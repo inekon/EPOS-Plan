@@ -81,7 +81,53 @@ namespace WindowsFormsApplication1
             Verfuegbarkeitsgrund = Verfuegbarkeitsgrund.KeineBegrenzung;
             VerfuegbarkeitIstGrenze = false;
             VorlaufAnlageGekappt = false;
+            KaelteverfuegbarkeitW = double.NaN;
+            Kaelteverfuegbarkeitsgrund = Verfuegbarkeitsgrund.KeineBegrenzung;
+            KaelteverfuegbarkeitIstGrenze = false;
+            KuehlVorlaufAngebotC = double.NaN;
         }
+
+        /// <summary>
+        /// <b>Die Kälteschranke (AK3-K, Entwurf 4.2)</b> — das Gegenstück zu <see cref="MitVerfuegbarkeit"/>: derselbe Rand
+        /// mit der Schranke des Kälteangebots <paramref name="schrankeW"/> [W] samt Anlagengrund und dem festen Kühlvorlauf,
+        /// an dem das Angebot gebildet wurde, <paramref name="kuehlVorlaufC"/> [°C]. Die wirksame Kühlgrenze ist
+        /// min(<see cref="KuehlleistungMaxW"/>, Schranke) — ist es die Schranke, kappt der Löser im vorhandenen Fall
+        /// <c>Kuehlgrenze</c> mit ihr (der Raum wird wärmer) und nennt den Kühlgrund
+        /// <see cref="Begrenzungsgrund.Verfuegbarkeit"/>; liegt sie darüber, bleibt die Grenze Zeichen für Zeichen dieselbe.
+        /// Der Kühlvorlauf ist fest (W6) und wird nur mitgeführt. NaN heißt jeweils „keine Grenze".
+        /// </summary>
+        internal Stundenrand MitKaelteverfuegbarkeit(double schrankeW, Verfuegbarkeitsgrund grund, double kuehlVorlaufC)
+        {
+            double schranke = double.IsNaN(schrankeW) ? double.NaN : Math.Max(schrankeW, 0.0);
+            bool istGrenze = !double.IsNaN(schranke) && (double.IsNaN(KuehlleistungMaxW) || schranke < KuehlleistungMaxW);
+            return this with
+            {
+                KuehlleistungMaxW = istGrenze ? schranke : KuehlleistungMaxW,
+                KaelteverfuegbarkeitW = schranke,
+                Kaelteverfuegbarkeitsgrund = grund,
+                KaelteverfuegbarkeitIstGrenze = istGrenze,
+                KuehlVorlaufAngebotC = kuehlVorlaufC,
+            };
+        }
+
+        /// <summary>Die Schranke des Kälteangebots dieser Stunde [W]; NaN = keine (AK3-K).</summary>
+        internal double KaelteverfuegbarkeitW { get; private init; }
+
+        /// <summary>Der Anlagengrund zur Kälteschranke (Paarungsregel 5.3).</summary>
+        internal Verfuegbarkeitsgrund Kaelteverfuegbarkeitsgrund { get; private init; }
+
+        /// <summary>Ist die Kälteschranke die kleinere Kühlgrenze — trägt <see cref="KuehlleistungMaxW"/> sie?</summary>
+        internal bool KaelteverfuegbarkeitIstGrenze { get; private init; }
+
+        /// <summary>Der feste Kühlvorlauf, an dem das Kälteangebot gebildet wurde [°C]; NaN = keiner (nur mitgeführt).</summary>
+        internal double KuehlVorlaufAngebotC { get; private init; }
+
+        /// <summary>
+        /// Der Anlagengrund, der eine Kappung an der Kälteschranke begleitet (Paarungsregel 5.3): der Grund des Angebots;
+        /// nennt er keinen, ist die Summe der Kälteleistungen die Grenze — <see cref="Verfuegbarkeitsgrund.Leistungsgrenze"/>.
+        /// </summary>
+        internal Verfuegbarkeitsgrund GrundBeiKaeltekappung
+            => Kaelteverfuegbarkeitsgrund == Verfuegbarkeitsgrund.KeineBegrenzung ? Verfuegbarkeitsgrund.Leistungsgrenze : Kaelteverfuegbarkeitsgrund;
 
         /// <summary>
         /// <b>Die vierte Grenze (AK2, 4.5; Schritt H)</b>: derselbe Rand mit der Schranke der Anlagenverfügbarkeit
@@ -169,8 +215,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal double HeizleistungMaxW { get; private init; }
 
-        /// <summary>Größte Kühlleistung [W], als positiver Betrag; NaN = unbegrenzt.</summary>
-        internal double KuehlleistungMaxW { get; }
+        /// <summary>
+        /// Größte Kühlleistung [W], als positiver Betrag; NaN = unbegrenzt. Mit der Kälteschranke (AK3-K) die kleinere der
+        /// beiden Grenzen (<see cref="MitKaelteverfuegbarkeit"/>).
+        /// </summary>
+        internal double KuehlleistungMaxW { get; private init; }
 
         /// <summary>Strahlungsanteil der Heizübergabe [–], 0 = rein konvektiv.</summary>
         internal double HeizungStrahlungsanteil { get; }
@@ -374,6 +423,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Hat die Schranke der Verfügbarkeit in dieser Stunde gekappt — ja/nein?</summary>
         internal bool VerfuegbarkeitBegrenzt => VerfuegbarkeitAnteil > 0.0;
+
+        /// <summary>
+        /// Zeitanteil der Stunde, in dem die Kälteschranke (AK3-K, <see cref="Stundenrand.MitKaelteverfuegbarkeit"/>) die
+        /// Kühlleistung gekappt hat [–]; mit Kühlübergabe aus dem Kühlgrund <see cref="Begrenzungsgrund.Verfuegbarkeit"/>,
+        /// sonst aus dem Fall <c>Kuehlgrenze</c>. 0 ohne Kälteschranke.
+        /// </summary>
+        internal double KaelteverfuegbarkeitAnteil { get; init; }
+
+        /// <summary>Der Anlagengrund zur Kappung an der Kälteschranke (Paarungsregel 5.3); sonst keiner.</summary>
+        internal Verfuegbarkeitsgrund Kaelteverfuegbarkeitsgrund { get; init; }
+
+        /// <summary>Hat die Kälteschranke in dieser Stunde gekappt — ja/nein?</summary>
+        internal bool KaelteverfuegbarkeitBegrenzt => KaelteverfuegbarkeitAnteil > 0.0;
 
         // ---- die Kälteseite der Kopplung (Schritt K, E37) ----
 

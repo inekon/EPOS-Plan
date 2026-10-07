@@ -322,6 +322,19 @@ namespace WindowsFormsApplication1
             _gerechnet = false;
         }
 
+        /// <summary>
+        /// Die <b>unskalierte</b> Kühlreihe des Gebäudes in der festgeschriebenen Stunde <paramref name="h"/> [kWh]
+        /// (AK3-K, Fehler 1.1 (a)): Einzone die Reihe der Zone, Mehrzonen die Summe in Zonenfolge — dieselbe Bildung wie
+        /// das Gebäudeergebnis nach dem Jahr (<see cref="Zonenrechnung.Abschluss"/>), Zeichen für Zeichen.
+        /// </summary>
+        internal double KuehlKwh(int h)
+        {
+            if (_schleife == null) return _lauf.KuehlKwh(h);
+            double summe = 0.0;
+            foreach (Zonenlauf l in _schleife.Laeufe) summe += l.KuehlKwh(h);
+            return summe;
+        }
+
         /// <summary>Die <b>unskalierten</b> Ergebnisse je Zone nach dem Jahr. Einmal zu rufen.</summary>
         /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.ErgebnisUnplausibel"/>.</exception>
         internal GebaeudeModellErgebnis[] Abschluss(int index, int idGebaeude)

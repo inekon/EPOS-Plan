@@ -74,6 +74,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die größte Anhebung des Raumeinflusses (H2), mit der die Lösung gerechnet wurde [K]; 0 ohne H2.</summary>
         internal double AnhebungK { get; set; }
+
+        /// <summary>Das Kälteangebot der Stunde (AK3-K); <c>null</c> ohne Kälteschranke.</summary>
+        internal Kaeltestundenangebot? Kaelteangebot { get; set; }
+
+        /// <summary>true: Die Kälteschranke hat die Kühlleistung einer Zone der Lösung gekappt (AK3-K).</summary>
+        internal bool KaelteschrankeGreift { get; set; }
     }
 
     /// <summary>
@@ -221,6 +227,17 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden, in denen die Schranke gegriffen hat.</summary>
         internal int StundenAnDerSchranke { get; private set; }
 
+        /// <summary>
+        /// <b>Die Kälteschranke</b> (AK3-K 4.2): das Kälteangebot am festen Kühlvorlauf, einmal am Stundenbeginn befragt,
+        /// verteilt wie die Wärmeschranke (bei mehreren Gebäuden oder Zonen nach dem unbegrenzten Kühlbedarf des
+        /// Probeschritts) und je Zone über <see cref="Stundenrand.MitKaelteverfuegbarkeit"/> in den Schritt gegeben.
+        /// <c>null</c> = keine Kälteschranke (Vorgabe; ohne <see cref="Ak3KKernschalter"/>) — Zeichen für Zeichen wie zuvor.
+        /// </summary>
+        internal Kaelteschranke Kaelteschranke { get; set; }
+
+        /// <summary>Stunden, in denen die Kälteschranke gegriffen hat („Kälteschranke gegriffen“, AK3-K).</summary>
+        internal int StundenAnDerKaelteschranke { get; private set; }
+
         /// <summary>Gezählte Wechsel der Stützstelle zwischen zwei Durchläufen.</summary>
         internal int StuetzstellenWechsel { get; private set; }
 
@@ -257,6 +274,8 @@ namespace WindowsFormsApplication1
             Raumeinfluss h2 = Raumeinfluss;
             h2?.StundeBeginnen();
             Stundenangebot s = Angebotsfunktion.Angebot(h, v, _erzeuger, _speicher, vorrang);
+            // AK3-K (4.2): das Kälteangebot am festen Kühlvorlauf — es hängt nicht am Durchlauf.
+            Kaeltestundenangebot? kaelte = Kaelteschranke?.Angebot(h, vorrang);
 
             // Der Verteilschlüssel (Festlegung 9): der unbegrenzte Probeschritt — nur, wenn es etwas zu verteilen gibt
             // (mehrere Gebäude oder Zonen). Er zählt nicht als Durchlauf.
@@ -264,19 +283,39 @@ namespace WindowsFormsApplication1
             foreach (Kopplungsgebaeude g in _gebaeude) zonenMax = Math.Max(zonenMax, g.Stepper.Zonenzahl);
             double[] schluessel = null;
             IReadOnlyList<double>[] probeZonen = null;
+            double[] kaelteSchluessel = null;
+            IReadOnlyList<double>[] kaelteZonen = null;
             if (n > 1 || zonenMax > 1)
             {
                 schluessel = new double[n];
                 probeZonen = new IReadOnlyList<double>[n];
+                if (kaelte != null)
+                {
+                    kaelteSchluessel = new double[n];
+                    kaelteZonen = new IReadOnlyList<double>[n];
+                }
                 for (int i = 0; i < n; i++)
                 {
                     Kopplungsgebaeude g = _gebaeude[i];
                     IReadOnlyList<Stundenergebnis> e = g.Stepper.Schritt(h);
                     schluessel[i] = HeizlastW(e, g.Faktor);
                     if (e.Count > 1) probeZonen[i] = e.Select(z => Math.Max(z.HeizleistungW, 0.0)).ToArray();
+                    if (kaelte != null)
+                    {
+                        kaelteSchluessel[i] = KuehllastW(e, g.Faktor);
+                        if (e.Count > 1) kaelteZonen[i] = e.Select(z => Math.Max(z.KuehlleistungW, 0.0)).ToArray();
+                    }
                 }
-                if (n == 1) schluessel = null;
+                if (n == 1)
+                {
+                    schluessel = null;
+                    kaelteSchluessel = null;
+                }
             }
+            // Die Kälteschranke je Gebäude und Zone (Regel der Wärmeschranke, Schlüssel der unbegrenzte Kühlbedarf).
+            Anlagenverfuegbarkeit[][] kaelteVerteilt = kaelte != null
+                ? Stundenverteilung.Verteilen(kaelte.Value.AlsVerfuegbarkeit(), _ids, _alle, kaelteSchluessel, kaelteZonen)
+                : null;
 
             // Fallwechsel (2.4): die Stützstelle des ersten Durchlaufs wird festgehalten, sobald sie pendelt — also zu
             // einer schon besuchten Stützstelle zurückkehrt; jeder Wechsel wird gezählt.
@@ -302,14 +341,18 @@ namespace WindowsFormsApplication1
                 {
                     Kopplungsgebaeude g = _gebaeude[i];
                     Anlagenverfuegbarkeit[] anteil = verteilt[i];
+                    Anlagenverfuegbarkeit[] kaelteAnteil = kaelteVerteilt?[i];
                     double faktor = g.Faktor;
                     int gi = i;
                     jetzt[i] = Kopie(g.Stepper.Schritt(h, (int zone, int stunde, in Stundenrand r) =>
                     {
                         Anlagenverfuegbarkeit a = anteil[zone < anteil.Length ? zone : anteil.Length - 1];
-                        if (h2 == null) return r.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
-                        Stundenrand angehoben = h2.Anheben(gi, zone, r, a.VorlaufC);
-                        return angehoben.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
+                        Stundenrand mit = h2 == null
+                            ? r.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC)
+                            : h2.Anheben(gi, zone, r, a.VorlaufC).MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
+                        if (kaelteAnteil == null) return mit;
+                        Anlagenverfuegbarkeit k = kaelteAnteil[zone < kaelteAnteil.Length ? zone : kaelteAnteil.Length - 1];
+                        return mit.MitKaelteverfuegbarkeit(k.LeistungKw * 1000.0 / faktor, k.Grund, k.VorlaufC);
                     }));
                     heizW[i] = HeizlastW(jetzt[i], faktor);
                 }
@@ -324,7 +367,7 @@ namespace WindowsFormsApplication1
                 if (festgehalten)
                 {
                     StundenFestgehalten++;
-                    return Abschliessen(k, jetzt, heizW, s, v, true);
+                    return Abschliessen(k, jetzt, heizW, s, v, true, kaelte);
                 }
 
                 (double vNeu, _) = Kreis(jetzt, Faktoren());
@@ -363,7 +406,7 @@ namespace WindowsFormsApplication1
                 bool klein = dV <= ABBRUCH_VORLAUF_K && dS <= ABBRUCH_SCHRANKE_W && vorher != null && wechselnd == 0
                              && dH2 <= ABBRUCH_VORLAUF_K;
                 if (gleich || klein)
-                    return Abschliessen(k, jetzt, heizW, s, vNeu, false);
+                    return Abschliessen(k, jetzt, heizW, s, vNeu, false, kaelte);
 
                 vorher = jetzt;
                 v = vNeu;
@@ -405,10 +448,22 @@ namespace WindowsFormsApplication1
             return false;
         }
 
+        /// <summary>Greift die Kälteschranke in der Lösung — kappt sie die Kühlleistung einer Zone (AK3-K)?</summary>
+        private static bool KaelteBegrenzt(IReadOnlyList<Stundenergebnis>[] e)
+        {
+            foreach (IReadOnlyList<Stundenergebnis> g in e)
+                foreach (Stundenergebnis z in g)
+                    if (z.KaelteverfuegbarkeitBegrenzt) return true;
+            return false;
+        }
+
         private Kopplungsstunde Abschliessen(int durchlaeufe, IReadOnlyList<Stundenergebnis>[] loesung, double[] heizW,
-                                             Stundenangebot s, double vorlaufKreisC, bool festgehalten)
+                                             Stundenangebot s, double vorlaufKreisC, bool festgehalten,
+                                             Kaeltestundenangebot? kaelte)
         {
             bool schranke = Begrenzt(loesung);
+            bool kaelteSchranke = kaelte != null && KaelteBegrenzt(loesung);
+            if (kaelteSchranke) StundenAnDerKaelteschranke++;
             Stunden++;
             DurchlaeufeVerteilung[durchlaeufe]++;
             if (durchlaeufe > DurchlaeufeMax) DurchlaeufeMax = durchlaeufe;
@@ -429,6 +484,8 @@ namespace WindowsFormsApplication1
                 Festgehalten = festgehalten,
                 Loesung = loesung,
                 AnhebungK = _anhebungLoesung,
+                Kaelteangebot = kaelte,
+                KaelteschrankeGreift = kaelteSchranke,
             };
         }
 
@@ -438,6 +495,15 @@ namespace WindowsFormsApplication1
             if (e.Count == 1) return e[0].HeizleistungW * faktor;
             double s = 0.0;
             foreach (Stundenergebnis z in e) if (z.HeizleistungW > 0.0) s += z.HeizleistungW;
+            return s * faktor;
+        }
+
+        /// <summary>Kühlleistung eines Gebäudes [W] im Maßstab des wirklichen Gebäudes: Σ max(Φ_c,z, 0) × Faktor (AK3-K).</summary>
+        internal static double KuehllastW(IReadOnlyList<Stundenergebnis> e, double faktor)
+        {
+            if (e.Count == 1) return e[0].KuehlleistungW * faktor;
+            double s = 0.0;
+            foreach (Stundenergebnis z in e) if (z.KuehlleistungW > 0.0) s += z.KuehlleistungW;
             return s * faktor;
         }
 
@@ -493,7 +559,11 @@ namespace WindowsFormsApplication1
         {
             for (int i = 0; i < vorher.Length; i++)
                 for (int z = 0; z < vorher[i].Count && z < jetzt[i].Count; z++)
+                {
                     if (vorher[i][z].Begrenzungsgrund != jetzt[i][z].Begrenzungsgrund) FallWechsel++;
+                    // AK3-K: mit Kälteschranke zählt der Wechsel des Kühlgrunds in dieselbe Statistik.
+                    else if (Kaelteschranke != null && vorher[i][z].KuehlBegrenzungsgrund != jetzt[i][z].KuehlBegrenzungsgrund) FallWechsel++;
+                }
         }
 
         /// <summary>Der benannte Fehler mit der größten Abweichung zwischen den letzten beiden Durchläufen.</summary>
