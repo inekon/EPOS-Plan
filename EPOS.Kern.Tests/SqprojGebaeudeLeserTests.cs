@@ -65,6 +65,7 @@ namespace EPOS.Kern.Tests
                 .Flaeche("DA", 5, 3, 20.0, 20.0, null, 0.0, cad: "C6").Bezug("E11", "R3", "DA", 9)
                 .Flaeche("W4", 1, 2, 5.0, 5.0, 0.0, 90.0, cad: "C7").Bezug("E12", "R1", "W4", 1)
                 .Flaeche("W5", 1, 5, 6.0, 6.0, 0.0, 90.0, cad: "C8").Bezug("E13", "R2", "W5", 1)
+                .Flaeche("TU1", 2, 3, 1.0, 1.0, 0.0, 90.0, eltern: "W5", cad: "CT1").Bezug("E16", "R2", "TU1", 3)
                 .Flaeche("X1", 1, 6, 4.0, 4.0, 270.0, 90.0, cad: "C9").Bezug("E14", "R2", "X1", 1)
                 .Flaeche("W7", 1, 1, 3.0, 3.0, 90.0, 90.0, cad: "C10").Bezug("E15", "R5", "W7", 1);
             return e;
@@ -184,7 +185,7 @@ namespace EPOS.Kern.Tests
             // Gegenprobe: zwei Außenwände desselben CAD-Objekts bleiben zwei Bauteile.
             Assert.Equal("R1", Assert.Single(Bauteil(a, "W1").Nachbarn).Kennung);
             Assert.Equal("R3", Assert.Single(Bauteil(a, "W6").Nachbarn).Kennung);
-            Assert.True(Hat(a, SqprojGebaeudeLeser.HUELLE, PruefStufe.Info, "11", "1", "1"));
+            Assert.True(Hat(a, SqprojGebaeudeLeser.HUELLE, PruefStufe.Info, "11", "2", "1"));
         }
 
         [Fact]
@@ -239,6 +240,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Bauteilart.Aussenwand, Bauteil(a, "W1").Art);
             Assert.Equal(Randbedingung.Erdreich, Bauteil(a, "W5").Randbedingung);         // 5
             Assert.Equal(Bauteilart.Aussenwand, Bauteil(a, "W5").Art);
+            // Eine Öffnung trägt ihre eigene Angrenzung (Tür gegen Außenluft in einer Wand gegen Erdreich).
+            AbbildBauteil tuer = Assert.Single(Bauteil(a, "W5").Oeffnungen);
+            Assert.Equal(Bauteilart.Tuer, tuer.Art);
+            Assert.Equal(Randbedingung.Aussenluft, tuer.Randbedingung);
             Assert.Null(Bauteil(a, "W1").RandbedingungWirksam);
             // Unbekannt ohne zweiten Raum: unbestimmt und gemeldet, nie still.
             Assert.Equal(Randbedingung.Unbekannt, Bauteil(a, "X1").Randbedingung);

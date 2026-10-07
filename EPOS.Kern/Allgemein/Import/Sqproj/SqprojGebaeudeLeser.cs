@@ -518,7 +518,9 @@ namespace WindowsFormsApplication1
                     Kennung = o.Uuid, Quelltyp = QUELLTYP_BAUTEIL, HottcadGuid = o.Gid,
                     Quellart = o.Elementtyp?.ToString(CultureInfo.InvariantCulture),
                     Art = o.Elementtyp == SqprojBauteilcodes.ELEMENT_TUER ? Bauteilart.Tuer : Bauteilart.Fenster,
-                    Randbedingung = wirt.Randbedingung, RandbedingungWirksam = wirt.RandbedingungWirksam,
+                    // Die eigene Angrenzung der Öffnung, wenn die Wand nur einen Raum trägt und der Code belegt ist; sonst die der Wand.
+                    Randbedingung = wirt.RandbedingungWirksam == null && EigeneRandbedingung(o.Nachbarart) is Randbedingung r ? r : wirt.Randbedingung,
+                    RandbedingungWirksam = wirt.RandbedingungWirksam,
                     NettoflaecheM2 = o.NettoM2, BruttoflaecheM2 = o.BruttoM2 ?? o.NettoM2,
                     UWertWm2K = o.UWert, UWertQuelle = o.UWert.HasValue ? QUELLTYP_BAUTEIL : null,
                     GWert = o.GWert, Rahmenanteil = o.Rahmenanteil, RahmenanteilBeleg = o.Rahmenanteil.HasValue ? BELEG_RAHMENANTEIL : null,
@@ -568,6 +570,14 @@ namespace WindowsFormsApplication1
             /// <summary>Azimut aus <c>Orientation</c> — nur für geneigte Flächen; waagerechte und Innenflächen ohne Orientierung bleiben leer.</summary>
             private static double? Azimut(double? orientierung, double? neigung)
                 => orientierung is double o && neigung is double n && n > 1.0 && n < 179.0 ? Normiert(o) : null;
+
+            private static Randbedingung? EigeneRandbedingung(int? code) => code switch
+            {
+                SqprojBauteilcodes.NACHBAR_AUSSEN => Randbedingung.Aussenluft,
+                SqprojBauteilcodes.NACHBAR_ERDREICH => Randbedingung.Erdreich,
+                SqprojBauteilcodes.NACHBAR_UNBEHEIZT => Randbedingung.Unbeheizt,
+                _ => null,
+            };
 
             private static string Sicht(int? rolle) => rolle switch
             {
