@@ -75,6 +75,10 @@ namespace WindowsFormsApplication1
         private const string SQL_HUELLFLAECHE_LAGE =
             "SELECT UUID, GrossArea, Orientation, Slope, ParentUUID, RepositoryElementUUID FROM BmElement WHERE RepositoryLevel = 3";
         private const string SQL_FENSTER = "SELECT UUID, GValue, FractionOfFrame FROM BmElementWindow";
+        // Geometrie (Datenaustauschkonzept 17.1): die Flächenschleifen der Hüllflächen samt Dicke an der Fläche und das
+        // Raum-XML der Räume — eigene Anweisungen, damit eine Datei ohne diese Spalten den übrigen Stand behält.
+        private const string SQL_GEOMETRIE = "SELECT UUID, GeoDesc, Thickness FROM BmElement WHERE RepositoryLevel = 3";
+        private const string SQL_RAUMDATEN = "SELECT ReferenceUUID, ClassValue FROM BmData WHERE ClassValue IS NOT NULL";
         private const string SQL_STANDORT = "SELECT UUID, Location, PostalCode, Latitude, Longitude FROM SmSite";
         private const string SQL_ELEMENTBEZUG =
             "SELECT UUID, Id, SortNum, ReferenceFromUUID, ReferenceToUUID, ReferenceType FROM BmElementReference";
@@ -389,6 +393,7 @@ namespace WindowsFormsApplication1
             // 5) Bauteile und Aufbauten (BA-4b) — optional
             BauteileLesen(c, a, vorhanden, fassung);
             StandorteLesen(c, a, vorhanden);
+            GeometrieLesen(c, a, vorhanden);
         }
 
         /// <summary>
@@ -529,6 +534,43 @@ namespace WindowsFormsApplication1
             catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
             {
                 a.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.LAGE_UNLESBAR, ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Liest die Rohgeometrie (optional, Datenaustauschkonzept 17.1): je Level-3-Hüllfläche das <c>GeoDesc</c>-XML und die
+        /// Dicke an der Fläche (<c>Thickness</c>), je Raum das Raum-XML aus <c>BmData.ClassValue</c>. Gedeutet wird beides erst in
+        /// <see cref="SqprojGeometrie"/>; eine unlesbare Spalte oder Tabelle lässt die Geometrie leer, still — die Ansicht fällt
+        /// dann benannt auf das Umrissprisma zurück.
+        /// </summary>
+        private static void GeometrieLesen(SqliteConnection c, SqprojAbbild a, HashSet<string> vorhanden)
+        {
+            try
+            {
+                if (vorhanden.Contains("BmElement"))
+                    foreach (Dictionary<string, object> z in Zeilen(c, SQL_GEOMETRIE))
+                    {
+                        if (Text(z, "UUID") is not string u) continue;
+                        if (Text(z, "GeoDesc") is string g && g.Length > 0) a.Flaechengeometrie[u] = g;
+                        if (Positiv(SqprojBauteilcodes.Gesetzt(Zahl(z, "Thickness"))) is double d) a.Flaechendicke[u] = d;
+                    }
+            }
+            catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
+            {
+                a.Flaechengeometrie.Clear();
+                a.Flaechendicke.Clear();
+            }
+            try
+            {
+                if (vorhanden.Contains("BmData"))
+                    foreach (Dictionary<string, object> z in Zeilen(c, SQL_RAUMDATEN))
+                        if (Text(z, "ReferenceUUID") is string r && Text(z, "ClassValue") is string x
+                            && x.Contains("<room", StringComparison.Ordinal) && !a.Raumdaten.ContainsKey(r))
+                            a.Raumdaten[r] = x;
+            }
+            catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
+            {
+                a.Raumdaten.Clear();
             }
         }
 

@@ -13,7 +13,7 @@ namespace WindowsFormsApplication1
     /// gelesenen <see cref="SqprojAbbild"/> (Zonen, Profile, Aufbaukatalog), das die folgenden Schritte (Konditionierung,
     /// Zonenübernahme) ohne zweites Lesen brauchen. Der Nordwinkel bleibt leer: Die Datei nennt keinen verlässlichen.
     /// </summary>
-    internal sealed class SqprojGebaeudeAbbild : GebaeudeAbbild
+    internal sealed partial class SqprojGebaeudeAbbild : GebaeudeAbbild
     {
         /// <summary>Legt ein leeres Abbild im Format Projektdatei an.</summary>
         public SqprojGebaeudeAbbild()
@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
     /// <item><b>Nordrichtung</b>: keine — Warnung <see cref="KEIN_NORDEN"/>, die Ausrichtungsabfrage greift; eine Vorgabe des
     /// Anwenders (<see cref="GebaeudeImportProfil.NordwinkelVorgabeGrad"/>) dreht die Azimute genau einmal.</item>
     /// </list>
-    /// Geometrie (<c>GeoDesc</c>) wird nicht gelesen: Randpunkte und Grundrisse bleiben leer.
+    /// Geometrie: Raumkörper, Bauteilkörper, Randpunkte und Grundrisse bildet danach <see cref="SqprojGeometrie"/> (17.2–17.4).
     /// </summary>
     internal sealed class SqprojGebaeudeLeser : IGebaeudeLeser
     {
@@ -177,6 +177,7 @@ namespace WindowsFormsApplication1
                 return;
             }
             lauf.Bilden();
+            SqprojGeometrie.Bilden(abbild, p);
             NordwinkelVorgeben(abbild, nordwinkelVorgabe);
         }
 

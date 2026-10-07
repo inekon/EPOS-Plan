@@ -27117,6 +27117,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsebene angenommen ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bogen als Sehnenzug ähnelt.
         /// </summary>
         public static string GANS_VERMERK_BOGEN {
@@ -27167,6 +27176,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_VERMERK_UNEBEN {
             get {
                 return ResourceManager.GetString("GANS_VERMERK_UNEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabedicke ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_VORGABEDICKE {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_VORGABEDICKE", resourceCulture);
             }
         }
         
@@ -42055,6 +42073,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_GRENZE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gbXML-Datei konnte nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_LESEFEHLER {
@@ -42105,6 +42150,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_NUR_1STLEVEL {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
             }
         }
         
@@ -45349,6 +45403,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geometrie der Projektdatei: {0} von {1} Raumkörpern und {2} von {3} Bauteilkörpern aus den Flächen der Datei gebildet; {4} mit Vorgabedicke, {5} mit angenommener Bezugsebene. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei führt keine lesbare Geometrie (Raumpolygone, Flächenschleifen) — die Ansicht zeigt Umrissprismen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_GEOMETRIE_FEHLT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_GEOMETRIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hülle aus der Projektdatei: {0} Flächen, {1} Öffnungen, {2} Seitenpaare zusammengeführt. ähnelt.
         /// </summary>
         public static string IMP_SQPROJ_PROT_HUELLE {
@@ -45381,6 +45453,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQPROJ_PROT_KEIN_NORDEN {
             get {
                 return ResourceManager.GetString("IMP_SQPROJ_PROT_KEIN_NORDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkörper nicht gebildet ({0}: {1}) — Rückfall Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KOERPER_BAUTEIL {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KOERPER_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: Raumkörper nicht gebildet ({1}: {2}) — Rückfall Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KOERPER_RAUM {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KOERPER_RAUM", resourceCulture);
             }
         }
         
@@ -45421,11 +45511,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung liegt in keiner Wandfläche desselben Raums — Körper ohne Aussparung. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne lesbare Wand — als eigene Bauteile gelesen. ähnelt.
         /// </summary>
         public static string IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT {
             get {
                 return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OEFFNUNG_RAND {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine lesbare Flächenschleife (GeoDesc) — kein Bauteilkörper. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OHNE_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OHNE_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: kein lesbares Raumpolygon ({1}) — Rückfall Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON", resourceCulture);
             }
         }
         

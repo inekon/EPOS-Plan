@@ -54,6 +54,7 @@ namespace EPOS.Kern.Tests
                 "TaskFriday", "TaskSaturday", "TaskSunday",
             },
             ["PdProfileTaskSerialReference"] = new[] { "UUID", "ReferenceToUUID", "ReferenceClass" },
+            ["BmData"] = new[] { "UUID", "ReferenceUUID", "ClassValue" },
         };
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace EPOS.Kern.Tests
             ["BmElement"] = new[]
             {
                 "UUID", "GId", "RepositoryLevel", "ElementType", "AdjacentType", "CatalogDimUUID", "UValue", "NetArea",
-                "GrossArea", "Orientation", "Slope", "ParentUUID", "RepositoryElementUUID",
+                "GrossArea", "Orientation", "Slope", "ParentUUID", "RepositoryElementUUID", "GeoDesc", "Thickness",
             },
             ["BmElementWindow"] = new[] { "UUID", "GValue", "FractionOfFrame" },
             ["BmElementReference"] = new[] { "UUID", "Id", "SortNum", "ReferenceFromUUID", "ReferenceToUUID", "ReferenceType" },
@@ -264,6 +265,7 @@ namespace EPOS.Kern.Tests
                     if (!_ohne.Contains("BmBuilding")) Einfuegen(c, t, "BmBuilding", new object[] { "B1", "Probegebäude", Gebaeudegruppe, Baujahr, Standort });
                     foreach ((string tabelle, object[] werte) in _zeilen.Where(z => !_ohne.Contains(z.Tabelle)))
                         Einfuegen(c, t, tabelle, werte);
+                    GeometrieNachtragen(c, t);
                     t.Commit();
                 }
             }

@@ -55,6 +55,17 @@ namespace WindowsFormsApplication1
             {
                 string kennung = Quellkennung.Kuerzen(r.Kennung ?? "");
                 if (kennung.Length == 0 || !gesehen.Add(kennung)) continue;
+                // Projektdatei: unmittelbar aus dem Raumpolygon (Datenaustauschkonzept 17.2, Herleitung Boden, Vermerk Raumpolygon).
+                if (abbild is SqprojGebaeudeAbbild sq)
+                {
+                    (string gs, double? gl) = Geschoss(g, r);
+                    Raumgrundriss gp = SqprojGeometrie.Grundriss(sq, r, gs, gl);
+                    if (gp != null)
+                    {
+                        liste.Add(gp);
+                        continue;
+                    }
+                }
                 umrisse.TryGetValue(r.Kennung, out Raumumriss u);
                 Raumgrundriss gr = Raum(g, r, u, ifc ? echte : null);
                 if (gr != null) liste.Add(gr);
@@ -155,7 +166,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein Polygon [m] als Ring in ganzen Millimetern, gegen den Uhrzeigersinn, am kleinsten Punkt beginnend.</summary>
-        private static Grundrissring Ring(IReadOnlyList<double[]> punkteM)
+        internal static Grundrissring Ring(IReadOnlyList<double[]> punkteM)
         {
             if (punkteM == null) return null;
             var p = new List<long[]>();
