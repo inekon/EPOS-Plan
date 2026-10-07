@@ -9,20 +9,21 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Der Nachzug der Komponenten-Übernahme</b>
-    /// (<c>KomponentenUebernahmeCtrl.Uebernehmen</c>, Schritte 8 und 9).
+    /// (<c>KomponentenUebernahmeCtrl.Uebernehmen</c>).
     ///
-    /// <para><b>Worum es geht.</b> Löschen und Anlegen laufen dort in EINER Transaktion;
-    /// die Senkenlisten (Schritt 8) und die Betriebsführung des Stromspeichers
-    /// (Schritt 9) entstehen NACH deren Commit. Der Kommentar an der Stelle begründet
-    /// das mit dem AutoWert der Anlagen-ID. Diese Klasse misst, was an der Begründung
-    /// stimmt — und hält den Nachzug selbst fest.</para>
+    /// <para><b>Worum es geht.</b> Löschen und Anlegen laufen dort in EINER Transaktion,
+    /// und in ihr kommen auch die Kindzeilen jeder Anlage mit (Kernweg
+    /// <c>AnlagenFachspalten.AnlagenkinderUebertragen</c>, je Kindtabelle unter einem
+    /// Sicherungspunkt). Nur das Setzen der aktiven Speichervariante läuft NACH dem Commit,
+    /// weil es über eine zweite Verbindung liest. Diese Klasse misst, was an dieser
+    /// Begründung stimmt — und hält den Senkennachzug selbst fest.</para>
     ///
     /// <para><b>Was hier geprüft wird.</b> Erstens: Eine AutoWert-ID steht beim
     /// <c>INSERT</c> fest und ist innerhalb des Vorgangs sofort lesbar — der Satz „steht
     /// erst nach dem Commit fest" trifft also nicht auf die ID zu. Zweitens: Sie ist
-    /// einer ZWEITEN Verbindung erst nach dem Commit sichtbar — und genau so beschafft
-    /// der Nachzug sie (<c>NeueAnlagenIds</c>, <c>AnlageFinden</c> über
-    /// <c>DataRepository</c>). Das ist der wahre Kern des Kommentars. Drittens: Der
+    /// einer ZWEITEN Verbindung erst nach dem Commit sichtbar — deshalb liegen die
+    /// Kindzeilen im Vorgang, und nur <c>StromspeicherVarianteCtrl.SetzeAktiv</c> (über
+    /// <c>DataRepository</c>) wartet auf den Commit. Drittens: Der
     /// Nachzug trägt die Senkenkette der Quelle tatsächlich an die neuen Anlagenzeilen.</para>
     ///
     /// <para><b>Was hier NICHT geprüft wird: ein Rechenergebnis.</b> Die Übernahme
@@ -183,12 +184,13 @@ namespace EPOS.Kern.Tests
         ///
         /// <para><b>Wie der Fehlschlag erzwungen wird.</b> Ein <c>BEFORE INSERT</c>-
         /// Wächter auf <c>Z_AnlageSenke</c> lässt jede NEUE Senkenzeile des Zielprojekts
-        /// scheitern. Das trifft ausschließlich Schritt 8: Innerhalb des Hauptvorgangs
+        /// scheitern. Das trifft ausschließlich die Kopie der Senkenzeilen im Kernweg
+        /// (<c>AnlagenkinderUebertragen</c>, eigener Sicherungspunkt je Kindtabelle): Sonst
         /// wird <c>Z_AnlageSenke</c> nur per <c>UPDATE</c>
-        /// (<c>SenkenverweiseWiederherstellen</c>, <c>PufferverweiseUmschreiben</c>) und
-        /// über die Löschweitergabe der Anlagenzeile angefasst — die EINZIGE
-        /// <c>INSERT</c>-Stelle des ganzen Ablaufs ist der Nachzug. Ein echter
-        /// Datenbankfehler auf dem echten Schreibweg, kein Haken im Quelltext.</para>
+        /// (<c>SenkenverweiseWiederherstellen</c>) und über die Löschweitergabe der
+        /// Anlagenzeile angefasst. Der Sicherungspunkt nimmt genau die Senken zurück, die
+        /// Übernahme bleibt stehen. Ein echter Datenbankfehler auf dem echten Schreibweg,
+        /// kein Haken im Quelltext.</para>
         ///
         /// <para>Eigene Arbeitskopie, weil die Probe schreibt.</para>
         /// </summary>

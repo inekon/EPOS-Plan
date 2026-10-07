@@ -341,7 +341,9 @@ namespace WindowsFormsApplication1
         /// umgeschlüsselt (<see cref="ANLAGENKIND_GERAETEANKER"/>).</item>
         /// </list>
         /// Verweise der Kindzeilen auf andere projekteigene Zeilen (Puffer, Wechselrichter,
-        /// PV-Modul) bleiben gleich — die Kopie liegt im selben Projekt.
+        /// PV-Modul) bleiben im selben Projekt gleich (Flottenstudie); über Projektgrenzen
+        /// (Komponentenübernahme) werden sie nach <see cref="ANLAGENKIND_PROJEKTBEZUG"/>
+        /// umgeschlüsselt (<see cref="AnlagenkinderUebertragen"/>).
         /// </summary>
         public static readonly (string Tabelle, string Fk)[] ANLAGENKINDER =
         {
@@ -414,6 +416,75 @@ namespace WindowsFormsApplication1
             };
 
         /// <summary>
+        /// Verweise einer Kindzeile auf eine PROJEKTGEBUNDENE Zeile außerhalb der Anlage
+        /// („Tabelle.Spalte“ → Zieltabelle mit <c>ID_Projekt</c> und <c>Bezeichner</c>).
+        /// Im selben Projekt bleiben sie gleich; über Projektgrenzen zeigen sie auf die
+        /// GLEICHNAMIGE Zeile gleicher Art (<see cref="PROJEKTBEZUG_ART"/>) des Zielprojekts —
+        /// nur wenn es genau eine gibt, oder nach der Abbildung des Aufrufers
+        /// (<see cref="KinderAuftrag.Abbildung"/>). Ohne Gegenstelle bleibt der Verweis leer,
+        /// bei einem <see cref="ANLAGENKIND_TRAGEND"/>en Verweis fällt die Kindzeile weg; beides
+        /// wird gemeldet (<see cref="KinderAusgang.FehlendeBezuege"/>).
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> ANLAGENKIND_PROJEKTBEZUG =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Z_AnlageSenke.ID_Puffer", "Tab_Pufferspeicher" },
+                { "Z_AnlagePufferVerbund.ID_Puffer", "Tab_Pufferspeicher" },
+                { "Z_AnlageStrang.ID_Wechselrichter", "Tab_Wechselrichter" },
+                { "Z_AnlageStrang.ID_PV", "Tab_PV" },
+                { "Tab_StromspeicherVariante.ID_Preisreihe", "Tab_Preisreihe" },
+                { "Tab_StromspeicherVariante.ID_Kostenprofil", "Tab_Kostenprofil" }
+            };
+
+        /// <summary>
+        /// Zieltabellen eines Projektbezugs, deren Quellzeile ohne Gegenstelle als PROJEKTKOPIE
+        /// ins Zielprojekt kommt (samt <see cref="PROJEKTKINDER"/>, Muster Quellprofil/Kältemaschine;
+        /// Anwenderentscheid 07.10.2026): der Wechselrichter eines Strangs — ohne ihn rechnete
+        /// der Strang anders. Weitere Stränge mit demselben Wechselrichter teilen die eine Kopie.
+        /// </summary>
+        public static readonly HashSet<string> PROJEKTBEZUG_KOPIE =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_Wechselrichter" };
+
+        /// <summary>
+        /// Projektverweise, ohne die die Kindzeile keinen Sinn trägt: Fehlt die Gegenstelle im
+        /// Zielprojekt, wird die ganze Kindzeile weggelassen (ein Parallelverbund ohne Puffer).
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_TRAGEND =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Z_AnlagePufferVerbund.ID_Puffer" };
+
+        /// <summary>
+        /// Die Art, die eine Gegenstelle außer dem Bezeichner teilen muss (Zieltabelle →
+        /// Spalte): ein Wärme- und ein Kältepuffer gleichen Namens sind verschiedene Speicher.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, string> PROJEKTBEZUG_ART =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Tab_Pufferspeicher", "Verwendung" }
+            };
+
+        /// <summary>
+        /// Projektspalten einer Kindzeile („Tabelle.Spalte“): Sie tragen das Projekt selbst und
+        /// zeigen über Projektgrenzen auf das Zielprojekt.
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_PROJEKTSPALTE =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_ProjektWerte.ProjektID" };
+
+        /// <summary>
+        /// Verweisspalten einer Kindzeile („Tabelle.Spalte“), die auf PROJEKTFREIE Zeilen
+        /// zeigen (Kostenkatalog, Vorlagen, Nutzungsdauern) und deshalb über Projektgrenzen
+        /// unverändert mitgehen. Jede Verweisspalte einer Anlagenkind-Tabelle steht hier, in
+        /// <see cref="ANLAGENKIND_PROJEKTBEZUG"/>, <see cref="ANLAGENKIND_PROJEKTSPALTE"/>,
+        /// <see cref="ANLAGENKIND_UMSCHLUESSEL"/>, <see cref="ANLAGENKIND_GERAETEANKER"/> oder ist
+        /// der Anlagenverweis selbst (Wache <c>FachspaltenEinordnungWacheTests</c>).
+        /// </summary>
+        public static readonly HashSet<string> ANLAGENKIND_PROJEKTFREI =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Tab_ProjektWerte.StammID", "Tab_ProjektWerte.KomponentenID", "Tab_ProjektWerte.KategorieID",
+                "Tab_ProjektWerte.VorlageID", "Tab_ProjektWerte.NutzungsdauerID", "Tab_ProjektWerte.Gruppe"
+            };
+
+        /// <summary>
         /// Tabellen mit Verweis auf eine Anlagenzeile, die eine Kopie NICHT mitnimmt:
         /// Ergebnisse des Laufs (<c>Tab_ErgebnisErdreich</c>, <c>Tab_ErgebnisPufferspeicher</c>,
         /// <c>Tab_ErgebnisStromspeicher</c>), die gespeicherte Auslegungsstudie
@@ -429,12 +500,57 @@ namespace WindowsFormsApplication1
         public static readonly HashSet<string> ANLAGENVERWEIS_SPALTEN =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "ID_Anlage", "ID_Energieanlage" };
 
+        /// <summary>Auftrag an <see cref="AnlagenkinderUebertragen"/>.</summary>
+        public sealed class KinderAuftrag
+        {
+            /// <summary>Faktor der <see cref="ANLAGENKIND_SKALIERT"/>-Spalten; 1 (oder ungültig) = unverändert.</summary>
+            public double Kostenfaktor = 1.0;
+
+            /// <summary>Kindtabellen, die dieser Aufrufer NICHT mitnimmt (die Komponentenübernahme
+            /// lässt die Kostenpositionen stehen, Nutzerentscheidung 18.08.2026).</summary>
+            public ISet<string> Ohne;
+
+            /// <summary>
+            /// Maßgebliche Abbildung „Zieltabelle → (Quell-ID → Ziel-ID)“ für Projektverweise
+            /// (<see cref="ANLAGENKIND_PROJEKTBEZUG"/>), etwa die eben angelegten Gerätekopien
+            /// oder die Pufferabbildung der Übernahme. Sie geht vor; was sie nicht kennt, geht auf
+            /// die eindeutige gleichnamige Zeile gleicher Art — außer für die Tabellen aus
+            /// <see cref="NurAbbildung"/>.
+            /// </summary>
+            public IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> Abbildung;
+
+            /// <summary>Zieltabellen, für die allein <see cref="Abbildung"/> gilt (die Pufferabbildung
+            /// der Übernahme kennt nur den VERBAUTEN Bestand; ein gleichnamiger Altbestand zählt nicht).</summary>
+            public ISet<string> NurAbbildung;
+
+            /// <summary>
+            /// false (Vorgabe): eine scheiternde Kindzeile wirft und rollt mit dem Vorgang zurück
+            /// (Flottenstudie). true: jede Kindtabelle läuft unter einem eigenen Sicherungspunkt;
+            /// ein Scheitern nimmt nur diese Tabelle zurück und steht in
+            /// <see cref="KinderAusgang.GescheiterteTabellen"/> (Komponentenübernahme, NL-Q2).
+            /// </summary>
+            public bool FehlerMelden;
+        }
+
+        /// <summary>Ausgang von <see cref="AnlagenkinderUebertragen"/>.</summary>
+        public sealed class KinderAusgang
+        {
+            /// <summary>Kopierte Kindzeilen.</summary>
+            public int Kopiert;
+            /// <summary>Kindzeilen, die ohne ihren tragenden Projektverweis weggelassen wurden.</summary>
+            public int Weggelassen;
+            /// <summary>Projektzeilen (<see cref="PROJEKTBEZUG_KOPIE"/>), die als Projektkopie ins Ziel kamen.</summary>
+            public int Projektkopien;
+            /// <summary>Bezeichner der Quellzeilen ohne Gegenstelle im Zielprojekt (je Bezeichner einmal).</summary>
+            public List<string> FehlendeBezuege = new List<string>();
+            /// <summary>Kindtabellen, deren Kopie scheiterte (nur mit <see cref="KinderAuftrag.FehlerMelden"/>).</summary>
+            public List<string> GescheiterteTabellen = new List<string>();
+        }
+
         /// <summary>
         /// Kopiert die <see cref="ANLAGENKINDER"/> der Anlage <paramref name="idQuelle"/> auf die
-        /// eben angelegte Anlage <paramref name="idZiel"/> — je Zeile ein INSERT … SELECT mit
-        /// neuer ID, Verweis auf die neue Anlage und <see cref="ANLAGENKIND_UMSCHLUESSEL"/>.
-        /// Läuft im Vorgang der Übernahme; ein scheiterndes INSERT wirft und rollt mit ihr zurück.
-        /// Eine Tabelle, die das Schema (noch) nicht kennt, wird übergangen.
+        /// eben angelegte Anlage <paramref name="idZiel"/> — Kurzform von
+        /// <see cref="AnlagenkinderUebertragen"/> mit Kostenfaktor; ein scheiterndes INSERT wirft.
         /// </summary>
         /// <param name="v">Der offene Vorgang.</param>
         /// <param name="idQuelle">Die vertretene Anlage.</param>
@@ -444,76 +560,242 @@ namespace WindowsFormsApplication1
         /// <returns>Die Zahl der kopierten Kindzeilen.</returns>
         public static int AnlagenkinderKopieren(DbVorgang v, int idQuelle, int idZiel, double kostenfaktor = 1.0)
         {
-            if (v == null || idQuelle <= 0 || idZiel <= 0 || idQuelle == idZiel) return 0;
+            return AnlagenkinderUebertragen(v, idQuelle, idZiel, new KinderAuftrag { Kostenfaktor = kostenfaktor }).Kopiert;
+        }
+
+        /// <summary>
+        /// DER Kernweg der Kindzeilen: kopiert die <see cref="ANLAGENKINDER"/> der Anlage
+        /// <paramref name="idQuelle"/> auf die eben angelegte Anlage <paramref name="idZiel"/> —
+        /// je Zeile ein INSERT … SELECT mit neuer ID, Verweis auf die neue Anlage und
+        /// <see cref="ANLAGENKIND_UMSCHLUESSEL"/>. Liegen beide Anlagen in VERSCHIEDENEN Projekten
+        /// (Komponentenübernahme), werden die Projektverweise nach
+        /// <see cref="ANLAGENKIND_PROJEKTBEZUG"/> umgeschlüsselt, die Projektspalten
+        /// (<see cref="ANLAGENKIND_PROJEKTSPALTE"/>) auf das Zielprojekt gesetzt, und ein Verweis
+        /// innerhalb der Anlage oder ein Geräteanker ohne Entsprechung bleibt leer, statt ins
+        /// Quellprojekt zu zeigen. Läuft im Vorgang des Aufrufers. Eine Tabelle, die das Schema
+        /// (noch) nicht kennt, wird übergangen.
+        /// </summary>
+        public static KinderAusgang AnlagenkinderUebertragen(DbVorgang v, int idQuelle, int idZiel, KinderAuftrag auftrag)
+        {
+            var ausgang = new KinderAusgang();
+            if (v == null || idQuelle <= 0 || idZiel <= 0 || idQuelle == idZiel) return ausgang;
+            auftrag = auftrag ?? new KinderAuftrag();
+            double kostenfaktor = auftrag.Kostenfaktor;
             if (!double.IsFinite(kostenfaktor) || kostenfaktor <= 0.0) kostenfaktor = 1.0;
             Dictionary<long, long> anker = Geraeteanker(v, idQuelle, idZiel);
 
-            int anzahl = 0;
+            DataTable projekte = v.Lese("SELECT q.ID_Projekt AS PQ, z.ID_Projekt AS PZ FROM " + TABELLE + " q, " +
+                                        TABELLE + " z WHERE q.ID = ? AND z.ID = ?",
+                                        new DbParam("@q", idQuelle), new DbParam("@z", idZiel));
+            if (projekte == null || projekte.Rows.Count == 0 || projekte.Rows[0]["PZ"] == DBNull.Value) return ausgang;
+            long projektZiel = Convert.ToInt64(projekte.Rows[0]["PZ"], CultureInfo.InvariantCulture);
+            bool fremd = projekte.Rows[0]["PQ"] == DBNull.Value ||
+                         Convert.ToInt64(projekte.Rows[0]["PQ"], CultureInfo.InvariantCulture) != projektZiel;
+            // Zieltabelle → (Quell-ID → Ziel-ID oder null), je Übertragung einmal aufgelöst.
+            var gegenstellen = new Dictionary<string, Dictionary<long, long?>>(StringComparer.OrdinalIgnoreCase);
+
             // Kindtabelle → (alte ID → neue ID), für die Umschlüsselung späterer Kinder.
             var zuordnung = new Dictionary<string, Dictionary<long, long>>(StringComparer.OrdinalIgnoreCase);
+            int punkt = 0;
             foreach ((string tabelle, string fk) in ANLAGENKINDER)
             {
+                if (auftrag.Ohne != null && auftrag.Ohne.Contains(tabelle)) continue;
                 List<string> spalten = SpaltenImVorgang(v, tabelle);
                 if (spalten.Count == 0) continue;
                 var karte = new Dictionary<long, long>();
                 zuordnung[tabelle] = karte;
 
-                DataTable quelle = v.Lese("SELECT * FROM [" + tabelle + "] WHERE [" + fk + "] = ? ORDER BY ID",
-                                          new DbParam("@a", idQuelle));
-                foreach (DataRow zeile in quelle.Rows)
+                string sicherung = "Kindzeilen_" + (++punkt).ToString(CultureInfo.InvariantCulture);
+                if (auftrag.FehlerMelden) v.Ausfuehren("SAVEPOINT " + sicherung);
+                int kopiert = 0, weggelassen = 0;
+                var fehlend = new List<string>();
+                var kopien = new List<long>();
+                try
                 {
-                    long alteId = Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture);
-                    var ziel = new List<string>();
-                    var werte = new List<string>();
-                    var ps = new List<DbParam>();
-                    foreach (string spalte in spalten)
+                    DataTable quelle = v.Lese("SELECT * FROM [" + tabelle + "] WHERE [" + fk + "] = ? ORDER BY ID",
+                                              new DbParam("@a", idQuelle));
+                    foreach (DataRow zeile in quelle.Rows)
                     {
-                        if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
-                        ziel.Add("[" + spalte + "]");
-                        if (string.Equals(spalte, fk, StringComparison.OrdinalIgnoreCase))
+                        if (KindzeileKopieren(v, tabelle, fk, spalten, zeile, idZiel, projektZiel, fremd, kostenfaktor,
+                                              anker, zuordnung, gegenstellen, auftrag.Abbildung, auftrag.NurAbbildung,
+                                              fehlend, kopien, out long neu))
                         {
-                            werte.Add("?");
-                            ps.Add(new DbParam("@fk", idZiel));
+                            karte[Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture)] = neu;
+                            kopiert++;
                         }
-                        else if (ANLAGENKIND_UMSCHLUESSEL.TryGetValue(tabelle + "." + spalte, out string bezug))
-                        {
-                            object alt = zeile[spalte];
-                            object neu = alt;
-                            if (alt != DBNull.Value && zuordnung.TryGetValue(bezug, out Dictionary<long, long> k) &&
-                                k.TryGetValue(Convert.ToInt64(alt, CultureInfo.InvariantCulture), out long n))
-                                neu = n;
-                            werte.Add("?");
-                            ps.Add(new DbParam("@u", neu));
-                        }
-                        else if (kostenfaktor != 1.0 && ANLAGENKIND_SKALIERT.Contains(tabelle + "." + spalte) &&
-                                 ZeileSkalierbar(tabelle, zeile))
-                        {
-                            // NULL bleibt NULL (nicht gepflegt), sonst Wert × Faktor.
-                            werte.Add("[" + spalte + "] * ?");
-                            ps.Add(new DbParam("@f", kostenfaktor));
-                        }
-                        else if (ANLAGENKIND_GERAETEANKER.Contains(tabelle + "." + spalte))
-                        {
-                            object alt = zeile[spalte];
-                            object neu = alt;
-                            if (alt != DBNull.Value &&
-                                anker.TryGetValue(Convert.ToInt64(alt, CultureInfo.InvariantCulture), out long n))
-                                neu = n;
-                            werte.Add("?");
-                            ps.Add(new DbParam("@g", neu));
-                        }
-                        else werte.Add("[" + spalte + "]");
+                        else weggelassen++;
                     }
-                    ps.Add(new DbParam("@id", alteId));
-                    if (v.Ausfuehren("INSERT INTO [" + tabelle + "] (" + string.Join(", ", ziel) + ") SELECT " +
-                                     string.Join(", ", werte) + " FROM [" + tabelle + "] WHERE ID = ?",
-                                     ps.ToArray()) != 1)
-                        throw new InvalidOperationException("Kindzeile " + tabelle + " " + alteId + " nicht kopiert.");
-                    karte[alteId] = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
-                    anzahl++;
+                    if (auftrag.FehlerMelden) v.Ausfuehren("RELEASE " + sicherung);
                 }
+                catch (Exception) when (auftrag.FehlerMelden)
+                {
+                    v.Ausfuehren("ROLLBACK TO " + sicherung);
+                    v.Ausfuehren("RELEASE " + sicherung);
+                    karte.Clear();
+                    gegenstellen.Clear();      // zurückgenommene Projektkopien gelten nicht mehr
+                    ausgang.GescheiterteTabellen.Add(tabelle);
+                    continue;
+                }
+                ausgang.Kopiert += kopiert;
+                ausgang.Weggelassen += weggelassen;
+                ausgang.Projektkopien += kopien.Count;
+                foreach (string f in fehlend)
+                    if (!ausgang.FehlendeBezuege.Contains(f)) ausgang.FehlendeBezuege.Add(f);
             }
-            return anzahl;
+            return ausgang;
+        }
+
+        /// <summary>
+        /// Eine Kindzeile kopieren. false: Die Zeile wurde weggelassen, weil ihr tragender
+        /// Projektverweis (<see cref="ANLAGENKIND_TRAGEND"/>) im Zielprojekt keine Gegenstelle hat.
+        /// </summary>
+        private static bool KindzeileKopieren(DbVorgang v, string tabelle, string fk, List<string> spalten, DataRow zeile,
+                                              int idZiel, long projektZiel, bool fremd, double kostenfaktor,
+                                              Dictionary<long, long> anker,
+                                              Dictionary<string, Dictionary<long, long>> zuordnung,
+                                              Dictionary<string, Dictionary<long, long?>> gegenstellen,
+                                              IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> abbildung,
+                                              ISet<string> nurAbbildung, List<string> fehlend, List<long> kopien,
+                                              out long neueId)
+        {
+            neueId = 0;
+            long alteId = Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture);
+            var ziel = new List<string>();
+            var werte = new List<string>();
+            var ps = new List<DbParam>();
+            foreach (string spalte in spalten)
+            {
+                if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+                string schluessel = tabelle + "." + spalte;
+                ziel.Add("[" + spalte + "]");
+                if (string.Equals(spalte, fk, StringComparison.OrdinalIgnoreCase))
+                {
+                    werte.Add("?");
+                    ps.Add(new DbParam("@fk", idZiel));
+                }
+                else if (ANLAGENKIND_UMSCHLUESSEL.TryGetValue(schluessel, out string bezug))
+                {
+                    object alt = zeile[spalte];
+                    object neu = alt;
+                    if (alt != DBNull.Value)
+                    {
+                        if (zuordnung.TryGetValue(bezug, out Dictionary<long, long> k) &&
+                            k.TryGetValue(Convert.ToInt64(alt, CultureInfo.InvariantCulture), out long n))
+                            neu = n;
+                        else if (fremd)
+                            neu = DBNull.Value;      // zeigte ins Quellprojekt
+                    }
+                    werte.Add("?");
+                    ps.Add(new DbParam("@u", neu));
+                }
+                else if (fremd && ANLAGENKIND_PROJEKTBEZUG.TryGetValue(schluessel, out string zieltabelle))
+                {
+                    object alt = zeile[spalte];
+                    object neu = DBNull.Value;
+                    if (alt != DBNull.Value)
+                    {
+                        long quellId = Convert.ToInt64(alt, CultureInfo.InvariantCulture);
+                        long? gegen = Gegenstelle(v, zieltabelle, quellId, projektZiel, gegenstellen, abbildung, nurAbbildung);
+                        if (!gegen.HasValue && PROJEKTBEZUG_KOPIE.Contains(zieltabelle) &&
+                            quellId <= int.MaxValue && projektZiel <= int.MaxValue)
+                        {
+                            int kopie = ProjektzeileKopieren(v, zieltabelle, (int)quellId, (int)projektZiel);
+                            if (kopie > 0)
+                            {
+                                gegen = kopie;
+                                gegenstellen[zieltabelle][quellId] = kopie;
+                                kopien.Add(kopie);
+                            }
+                        }
+                        if (gegen.HasValue) neu = gegen.Value;
+                        else
+                        {
+                            string name = Bezeichnung(v, zieltabelle, quellId);
+                            if (!fehlend.Contains(name)) fehlend.Add(name);
+                            if (ANLAGENKIND_TRAGEND.Contains(schluessel)) return false;
+                        }
+                    }
+                    werte.Add("?");
+                    ps.Add(new DbParam("@b", neu));
+                }
+                else if (fremd && ANLAGENKIND_PROJEKTSPALTE.Contains(schluessel))
+                {
+                    werte.Add("?");
+                    ps.Add(new DbParam("@p", projektZiel));
+                }
+                else if (kostenfaktor != 1.0 && ANLAGENKIND_SKALIERT.Contains(schluessel) &&
+                         ZeileSkalierbar(tabelle, zeile))
+                {
+                    // NULL bleibt NULL (nicht gepflegt), sonst Wert × Faktor.
+                    werte.Add("[" + spalte + "] * ?");
+                    ps.Add(new DbParam("@f", kostenfaktor));
+                }
+                else if (ANLAGENKIND_GERAETEANKER.Contains(schluessel))
+                {
+                    object alt = zeile[spalte];
+                    object neu = alt;
+                    if (alt != DBNull.Value)
+                    {
+                        if (anker.TryGetValue(Convert.ToInt64(alt, CultureInfo.InvariantCulture), out long n)) neu = n;
+                        else if (fremd) neu = DBNull.Value;
+                    }
+                    werte.Add("?");
+                    ps.Add(new DbParam("@g", neu));
+                }
+                else werte.Add("[" + spalte + "]");
+            }
+            ps.Add(new DbParam("@id", alteId));
+            if (v.Ausfuehren("INSERT INTO [" + tabelle + "] (" + string.Join(", ", ziel) + ") SELECT " +
+                             string.Join(", ", werte) + " FROM [" + tabelle + "] WHERE ID = ?",
+                             ps.ToArray()) != 1)
+                throw new InvalidOperationException("Kindzeile " + tabelle + " " + alteId + " nicht kopiert.");
+            neueId = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+            return true;
+        }
+
+        /// <summary>
+        /// Die Gegenstelle der Quellzeile <paramref name="quellId"/> von <paramref name="tabelle"/>
+        /// im Zielprojekt: nach der Abbildung des Aufrufers, sonst (außer für
+        /// <paramref name="nurAbbildung"/>) die EINE Zeile gleichen Bezeichners und gleicher Art
+        /// (<see cref="PROJEKTBEZUG_ART"/>); null ohne eindeutige.
+        /// </summary>
+        private static long? Gegenstelle(DbVorgang v, string tabelle, long quellId, long projektZiel,
+                                         Dictionary<string, Dictionary<long, long?>> cache,
+                                         IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> abbildung,
+                                         ISet<string> nurAbbildung)
+        {
+            if (!cache.TryGetValue(tabelle, out Dictionary<long, long?> karte))
+                cache[tabelle] = karte = new Dictionary<long, long?>();
+            if (karte.TryGetValue(quellId, out long? bekannt)) return bekannt;
+
+            long? ergebnis = null;
+            if (abbildung != null && abbildung.TryGetValue(tabelle, out IReadOnlyDictionary<int, int> vorgabe) &&
+                vorgabe != null && quellId <= int.MaxValue && vorgabe.TryGetValue((int)quellId, out int z))
+            {
+                ergebnis = z;
+            }
+            else if (nurAbbildung == null || !nurAbbildung.Contains(tabelle))
+            {
+                string art = PROJEKTBEZUG_ART.TryGetValue(tabelle, out string a) &&
+                             SpaltenImVorgang(v, tabelle).Contains(a, StringComparer.OrdinalIgnoreCase)
+                    ? " AND pz.[" + a + "] IS pq.[" + a + "]" : "";
+                DataTable treffer = v.Lese(
+                    "SELECT pz.ID FROM [" + tabelle + "] pz JOIN [" + tabelle + "] pq ON pq.Bezeichner = pz.Bezeichner" +
+                    art + " WHERE pq.ID = ? AND pz.ID_Projekt = ? ORDER BY pz.ID LIMIT 2",
+                    new DbParam("@q", quellId), new DbParam("@p", projektZiel));
+                if (treffer.Rows.Count == 1)
+                    ergebnis = Convert.ToInt64(treffer.Rows[0]["ID"], CultureInfo.InvariantCulture);
+            }
+            karte[quellId] = ergebnis;
+            return ergebnis;
+        }
+
+        /// <summary>Der Bezeichner einer projektgebundenen Zeile für den Hinweis; „#ID“, wenn er fehlt.</summary>
+        private static string Bezeichnung(DbVorgang v, string tabelle, long id)
+        {
+            object o = v.Skalar("SELECT Bezeichner FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", id));
+            string text = o == null ? "" : Convert.ToString(o, CultureInfo.InvariantCulture);
+            return string.IsNullOrWhiteSpace(text) ? "#" + id.ToString(CultureInfo.InvariantCulture) : text;
         }
 
         /// <summary>

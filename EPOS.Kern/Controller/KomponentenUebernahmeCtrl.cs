@@ -27,8 +27,8 @@ namespace WindowsFormsApplication1
     /// zugehörigen Zeilen in <c>Tab_Energieanlagen</c> über
     /// <see cref="AnlagenSql.SQL_ANLAGE_INSERT"/> mit
     /// <see cref="AnlagenSql.AnlagenParameter"/> — dieselbe eine Einfügeanweisung wie
-    /// Wizard, Karten und Kontextmenüs — und beim Stromspeicher zusätzlich die
-    /// Betriebsführung in <c>Tab_StromspeicherVariante</c>.
+    /// Wizard, Karten und Kontextmenüs — und die
+    /// Kindzeilen der Anlage (siehe TRANSAKTION).
     /// </para>
     ///
     /// <para>
@@ -47,23 +47,24 @@ namespace WindowsFormsApplication1
     /// <para>
     /// TRANSAKTION. Löschen und Anlegen laufen in EINER Transaktion
     /// (<see cref="DataRepository.Vorgang"/>): ein Abbruch in der Mitte ließe
-    /// sonst ein Projekt ohne Gewerk zurück. Die Senkenlisten (Schritt 8) und die
-    /// Betriebsführung des Stromspeichers (Schritt 9) entstehen NACH dem Commit — beide
-    /// beschaffen sich die neuen Anlagen-IDs über eine ZWEITE Verbindung
-    /// (<c>NeueAnlagenIds</c> und <c>AnlageFinden</c> lesen über
-    /// <see cref="DataRepository"/>), und dort ist eine noch nicht festgeschriebene Zeile
-    /// unsichtbar. Für die Betriebsführung kommt hinzu, dass die Zusage „genau eine
-    /// aktive Variante je Projekt" in
-    /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/> ihre EINE Schreibstelle hat
-    /// (dieselbe Begründung wie in <c>StromspeicherKontextMenuCtrl</c>).
+    /// sonst ein Projekt ohne Gewerk zurück. In ihr kommen auch die KINDZEILEN jeder Anlage
+    /// mit — Betriebsführung, Senken, Pufferverbund, Stränge, Sperrfenster — über den
+    /// Kernweg <see cref="AnlagenFachspalten.AnlagenkinderUebertragen"/>, der ihre Verweise auf
+    /// Puffer, Wechselrichter, PV-Modul, Preisreihe und Kostenprofil ins Zielprojekt
+    /// umschlüsselt (gleichnamige Gegenstelle; ohne sie bleibt der Verweis leer bzw. fällt die
+    /// Kindzeile weg, gemeldet als <c>BK_KOMP_HINW_KINDBEZUG</c>). Jede Kindtabelle läuft unter
+    /// einem eigenen Sicherungspunkt: Scheitert sie, bleibt der Austausch stehen und der
+    /// Fehlschlag wird gemeldet (NL-Q2: <c>BK_KOMP_HINW_SENKEN</c>,
+    /// <c>BK_KOMP_HINW_VARIANTE</c>, <c>BK_KOMP_HINW_KINDZEILEN</c>). Nachgemessen in
+    /// <c>EPOS.Kern.Tests/UebernahmeNachzugTests</c> und <c>KomponentenKindzeilenTests</c>.
     /// </para>
     ///
     /// <para>
-    /// <b>Damit liegen diese beiden Schritte ausserhalb der Klammer.</b> Scheitert einer,
-    /// steht der Austausch bereits fest und lässt sich nicht mehr zurücknehmen; seit
-    /// NL-Q2 melden beide Schritte das über ihre Hinweise (Schritt 8
-    /// <c>BK_KOMP_HINW_SENKEN</c>, Schritt 9 <c>BK_KOMP_HINW_VARIANTE</c>). Nachgemessen in
-    /// <c>EPOS.Kern.Tests/UebernahmeNachzugTests</c>.
+    /// <b>Nach dem Commit</b> schließt Schritt 8 nur noch die Betriebsführung des
+    /// Stromspeichers ab: die Zusage „genau eine aktive Variante je Projekt" hat in
+    /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/> ihre EINE Schreibstelle, und die
+    /// liest über eine ZWEITE Verbindung, auf der eine noch nicht festgeschriebene Zeile
+    /// unsichtbar wäre.
     /// </para>
     /// </summary>
     public class KomponentenUebernahmeCtrl
@@ -271,35 +272,6 @@ namespace WindowsFormsApplication1
                 if (a != null) quellAnlagen.Add(a);
             }
 
-            // A1-O2: Die SENKENLISTE (Z_AnlageSenke) jeder Quell-Anlage. Sie hängt an der
-            // Anlage, nicht am Gerät, und wird deshalb weder von der Gerätekopie noch von
-            // der Anlagenkopie miterfasst — bis Paket L startete jede übernommene
-            // Komponente mit der Rang-1-Vorbelegung (Heizkreis/Beides) statt mit der
-            // Senkenkette der Quelle. Gelesen VOR der Transaktion, geschrieben NACH dem
-            // Commit (die neuen Anlagen-IDs werden über eine zweite Verbindung gelesen,
-            // Muster VariantenNachziehen).
-            var quellSenken = new Dictionary<int, List<Z_AnlageSenkeModel>>();
-            {
-                var senkeCtrl = new Z_AnlageSenkeCtrl();
-                foreach (int id in quellAnlagenIds)
-                    quellSenken[id] = senkeCtrl.LesenJeAnlage(id);
-            }
-
-            // Betriebsführung der Quell-Speichervarianten (nur Stromspeicher).
-            var quellVarianten = new Dictionary<int, StromspeicherVarianteModel>();
-            int aktiveQuellAnlage = 0;
-            if (IstStromspeicher(plan))
-            {
-                var spCtrl = new StromspeicherVarianteCtrl();
-                foreach (int id in quellAnlagenIds)
-                {
-                    StromspeicherVarianteModel m = spCtrl.ReadByEnergieanlage(id);
-                    if (m == null) continue;
-                    quellVarianten[id] = m;
-                    if (m.Aktiv && aktiveQuellAnlage == 0) aktiveQuellAnlage = id;
-                }
-            }
-
             // --- 2) Zielzustand lesen -------------------------------------------------
             // BEWUSST über Geraete() und nicht über VerbauteGeraete(): Diese Liste dient
             // dem Aufräumen der Kindtabellen vor dem DELETE … WHERE ID_Projekt, und das
@@ -331,6 +303,10 @@ namespace WindowsFormsApplication1
             // Quellangaben) - aus dem Schema, VOR dem Vorgang erfragt (AnlagenFachspalten).
             List<string> fachspalten = AnlagenFachspalten.UebertragbareSpalten();
             int bezuegeVerloren = 0, bezuegeKopiert = 0;
+            // Die Kindzeilen jeder Anlage (Kernweg AnlagenFachspalten.AnlagenkinderUebertragen);
+            // ihre Hinweise gehen erst nach dem Commit in den Kanal.
+            var kinderHinweise = new List<string>();
+            var neueAnlagenIds = new List<int>();     // Reihenfolge = quellAnlagen
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -434,6 +410,18 @@ namespace WindowsFormsApplication1
                     AnlagenFachspalten.Ausgang aus = AnlagenFachspalten.Uebertragen(v, fachspalten, a.ID, neueAnlage);
                     bezuegeVerloren += aus.Verloren;
                     bezuegeKopiert += aus.Kopiert;
+                    neueAnlagenIds.Add(neueAnlage);
+
+                    // Die Kindzeilen der Anlage (Betriebsfuehrung, Senken, Pufferverbund,
+                    // Straenge, Sperrfenster) - DERSELBE Kernweg wie bei der Flottenstudie,
+                    // ueber Projektgrenzen umgeschluesselt. Die Kostenpositionen bleiben
+                    // stehen (Schritt 10). Jede Kindtabelle laeuft unter einem eigenen
+                    // Sicherungspunkt: Scheitert eine, bleibt die Uebernahme stehen und der
+                    // Fehlschlag wird gemeldet (NL-Q2).
+                    AnlagenFachspalten.KinderAusgang kinder = AnlagenFachspalten.AnlagenkinderUebertragen(
+                        v, a.ID, neueAnlage, KinderAuftrag(plan, quellGeraete, neueGeraeteIds, pufferAbbildung));
+                    KinderMelden(a.Bezeichner, kinder, kinderHinweise);
+                    bezuegeKopiert += kinder.Projektkopien;
                 }
 
                 v.Commit();
@@ -446,6 +434,7 @@ namespace WindowsFormsApplication1
                 if (bezuegeKopiert > 0)
                     warnungen.Add(string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.BK_KOMP_HINW_PROJEKTKOPIE, bezuegeKopiert));
+                warnungen.AddRange(kinderHinweise);
             }
             catch (Exception ex)
             {
@@ -458,41 +447,14 @@ namespace WindowsFormsApplication1
                 if (v != null) { try { v.Dispose(); } catch { } }
             }
 
-            // --- 8) Senkenlisten der Quelle nachziehen (nach dem Commit) --------------
-            // A1-O2, nachgemessen in der Nachlese zur Senkenklammer
-            // (EPOS.Kern.Tests/UebernahmeNachzugTests).
-            //
-            // WARUM NACH DEM COMMIT - der Grund, der trägt: Beide Schritte lesen ihre
-            // neuen Anlagen-IDs über eine ZWEITE Verbindung (NeueAnlagenIds und
-            // AnlageFinden gehen über DataRepository, nicht über v), und dort ist eine
-            // noch nicht festgeschriebene Zeile unsichtbar.
-            //
-            // NICHT, weil die ID erst mit dem Commit entstünde: Sie steht schon beim
-            // INSERT fest (last_insert_rowid, DbVorgang.EinfuegenUndId) - der Bestand
-            // nutzt das an DERSELBEN Einfügeanweisung in
-            // SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen. Und seit
-            // iU9-W16a-O-1 ist auch die eigene Transaktion von
-            // Z_AnlageSenkeCtrl.SchreibenJeAnlage kein Hindernis mehr: Unter einer
-            // angemeldeten Vorgangsklammer wird daraus ein Sicherungspunkt auf DIESER
-            // Verbindung.
-            //
-            // BEIDE Schritte unter die Klammer zu ziehen, wäre also möglich - es ist
-            // aber eine Fachentscheidung und keine Aufräumarbeit: Ein Fehlschlag hier
-            // nähme dann die ganze Übernahme mit zurück, statt sie stehen zu lassen.
-            //
-            // WAS GILT (NL-Q2): Die Übernahme bleibt stehen, der Fehlschlag wird
-            // GEMELDET. Der Rückgabewert von SchreibenJeAnlage geht als
-            // BK_KOMP_HINW_SENKEN in "warnungen" - derselbe Kanal und dieselbe Form wie
-            // bei Schritt 9 (BK_KOMP_HINW_VARIANTE). Die beiden Nachbarschritte
-            // behandeln denselben Fall damit gleich, und die Transaktionsgrenze bleibt,
-            // wo sie ist.
-            SenkenNachziehen(idZiel, plan, quellAnlagen, quellAnlagenIds, quellSenken,
-                             pufferAbbildungNachher, warnungen);
-
-            // --- 9) Betriebsführung des Stromspeichers (nach dem Commit) --------------
+            // --- 8) Betriebsführung des Stromspeichers abschließen (nach dem Commit) --
+            // Die Varianten sind mit den Kindzeilen gekommen (Schritt 7). Hier entsteht
+            // die Vorbelegung fuer eine Anlage ohne Variante, und die Zusage "genau eine
+            // aktive Variante je Projekt" laeuft ueber ihre EINE Schreibstelle
+            // StromspeicherVarianteCtrl.SetzeAktiv - sie liest ueber eine zweite
+            // Verbindung und braucht deshalb den festgeschriebenen Stand.
             if (IstStromspeicher(plan))
-                VariantenNachziehen(idZiel, quellAnlagen, quellAnlagenIds, quellVarianten,
-                                    aktiveQuellAnlage, warnungen);
+                VariantenAbschliessen(idZiel, quellAnlagen, neueAnlagenIds, warnungen);
 
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idZiel);
 
@@ -540,6 +502,16 @@ namespace WindowsFormsApplication1
 
         private static bool IstPuffer(GewerkPlan p)
         { return string.Equals(p.Geraetetabelle, TAB_PUFFER, StringComparison.OrdinalIgnoreCase); }
+
+        private static bool IstPhotovoltaik(GewerkPlan p)
+        { return string.Equals(p.Geraetetabelle, "Tab_PV", StringComparison.OrdinalIgnoreCase); }
+
+        /// <summary>Führt das Schema die Strangtabelle samt Modulverweis (Schritt 66)?</summary>
+        private static bool StrangmoduleVorhanden()
+        {
+            return DataRepository.SpaltenVonTabelle("Z_AnlageStrang")
+                .Exists(s => string.Equals(s, "ID_PV", StringComparison.OrdinalIgnoreCase));
+        }
 
         private static bool IstStromspeicher(GewerkPlan p)
         { return string.Equals(p.Geraetetabelle, "Tab_Stromspeicher", StringComparison.OrdinalIgnoreCase); }
@@ -611,6 +583,19 @@ namespace WindowsFormsApplication1
             if (plan == null) return null;
             try
             {
+                // PHOTOVOLTAIK: Das Modul je Strang (Z_AnlageStrang.ID_PV) ist ebenso verbaut
+                // (Anwenderentscheid 07.10.2026, dieselbe Regel wie GeraeteWaisen) und kommt
+                // bei der Übernahme als Projektkopie mit.
+                if (IstPhotovoltaik(plan) && StrangmoduleVorhanden())
+                    return DataRepository.GetDataTable(
+                        "SELECT * FROM [" + plan.Geraetetabelle + "] WHERE [" + SPALTE_ID + "] IN (" +
+                        "SELECT [" + plan.AnlagenFk + "] FROM [" + TAB_ANLAGEN + "] " +
+                        "WHERE [" + SPALTE_ID_PROJEKT + "] = ? AND " + TypFilter(plan) + ") " +
+                        "OR [" + SPALTE_ID + "] IN (SELECT s.ID_PV FROM Z_AnlageStrang s INNER JOIN [" + TAB_ANLAGEN +
+                        "] a ON a.[" + SPALTE_ID + "] = s.ID_Anlage WHERE a.[" + SPALTE_ID_PROJEKT + "] = ? AND " +
+                        TypFilter(plan, "a") + ") " +
+                        "ORDER BY [" + SPALTE_ID + "]",
+                        new DbParam("@p", idProjekt), new DbParam("@p2", idProjekt));
                 return DataRepository.GetDataTable(
                     "SELECT * FROM [" + plan.Geraetetabelle + "] WHERE [" + SPALTE_ID + "] IN (" +
                     "SELECT [" + plan.AnlagenFk + "] FROM [" + TAB_ANLAGEN + "] " +
@@ -1061,206 +1046,101 @@ namespace WindowsFormsApplication1
             }
         }
 
-        // ------------------------------------------------------------ Senkenlisten
+        // ------------------------------------------------------------- Kindzeilen
 
         /// <summary>
-        /// A1-O2: Legt zu den neuen Anlagenzeilen die SENKENLISTE der Quelle an
-        /// (<c>Z_AnlageSenke</c>, Muster <see cref="VariantenNachziehen"/> und
-        /// <c>ProjektDuplizierenCtrl</c>).
-        ///
-        /// <para><b>Warum es das braucht.</b> Die Senkenliste hängt an der ANLAGE, nicht
-        /// am Gerät. Der Bestandsaustausch löscht die Zielanlagen (die Löschweitergabe
-        /// von <c>FK_AnlageSenke_Anlage</c> nimmt ihre Senken mit) und legt sie aus der
-        /// Quelle neu an — ohne diesen Schritt startete jede übernommene Komponente mit
-        /// der Rang-1-Vorbelegung Heizkreis/Beides statt mit der Senkenkette, die sie in
-        /// der Quelle hatte.</para>
-        ///
-        /// <para><b>Die Anlagen-Abbildung ist POSITIONELL.</b> Schritt 4 hat ALLE
-        /// Anlagenzeilen der Gewerktypen im Ziel gelöscht, Schritt 7 hat genau
-        /// <paramref name="quellAnlagen"/> viele in dieser Reihenfolge neu angelegt; die
-        /// ID ist ein aufsteigender AutoWert. Aufsteigend sortiert stehen die neuen IDs
-        /// deshalb Zeile für Zeile in derselben Reihenfolge wie die Quelle. Stimmt die
-        /// Zahl wider Erwarten nicht, fällt die Zuordnung auf
-        /// <see cref="AnlageFinden"/> zurück — dieselbe (Typ, Bezeichner)-Auflösung wie
-        /// bei den Speichervarianten, mit deren dokumentierter Grenze (S1-O1).</para>
-        ///
-        /// <para><b>Puffer-Verweise:</b> über dieselbe Abbildung wie
-        /// <see cref="PufferverweiseUmschreiben"/>. Was sich nicht abbilden lässt, wird
-        /// GELEERT — nie eine Quell-ID übernehmen. Das Ziel der Zeile bleibt dabei
-        /// unangetastet, genau wie bei den <c>WS_</c>-Spalten: Die Engine normalisiert
-        /// ein Puffer-Ziel ohne Puffer beim Lesen und meldet es
-        /// (<c>WaermesenkeClass.AusZuordnungstabelle</c>).</para>
-        ///
-        /// <para>Fehlt die Tabelle (Datenbank vor Schritt 50), sind Lesen und Schreiben
-        /// still wirkungslos — <c>Z_AnlageSenkeCtrl.SpalteVorhanden</c> fängt beides ab.</para>
+        /// Der Auftrag an den Kernweg der Kindzeilen
+        /// (<see cref="AnlagenFachspalten.AnlagenkinderUebertragen"/>) für eine übernommene
+        /// Anlage. Maßgeblich sind die Abbildungen, die die Übernahme selbst kennt: die eben
+        /// angelegten Gerätekopien des Gewerks (Strang → PV-Modul) und die Pufferabbildung
+        /// (<see cref="PufferAbbildung"/>, Bezeichner im verbauten Bestand — für Puffer gilt
+        /// allein sie). Alle übrigen Projektverweise (Wechselrichter, ein Strangmodul außerhalb
+        /// der Gerätekopien, Preisreihe, Kostenprofil) gehen auf die eindeutige gleichnamige
+        /// Zeile des Zielprojekts. Die Kostenpositionen (<c>Tab_ProjektWerte</c>)
+        /// bleiben stehen — Nutzerentscheidung 4 vom 18.08.2026, Schritt 10.
         /// </summary>
-        private static void SenkenNachziehen(int idZiel, GewerkPlan plan,
-                                             List<WErzeugerCtrl> quellAnlagen,
-                                             List<int> quellAnlagenIds,
-                                             Dictionary<int, List<Z_AnlageSenkeModel>> quellSenken,
-                                             Dictionary<int, int> pufferAbbildung,
-                                             List<string> warnungen)
+        private static AnlagenFachspalten.KinderAuftrag KinderAuftrag(GewerkPlan plan, DataTable quellGeraete,
+                                                                      List<int> neueGeraeteIds,
+                                                                      Dictionary<int, int> pufferAbbildung)
         {
-            if (quellAnlagen == null || quellAnlagen.Count == 0) return;
-            if (!Z_AnlageSenkeCtrl.SpalteVorhanden()) return;
+            var geraete = new Dictionary<int, int>();
+            for (int i = 0; i < quellGeraete.Rows.Count && i < neueGeraeteIds.Count; i++)
+                geraete[Ganz(quellGeraete.Rows[i], SPALTE_ID)] = neueGeraeteIds[i];
 
-            List<int> neueIds = NeueAnlagenIds(idZiel, plan);
-            bool positionell = (neueIds.Count == quellAnlagen.Count);
-
-            var ctrl = new Z_AnlageSenkeCtrl();
-            int verloren = 0;
-
-            for (int i = 0; i < quellAnlagen.Count; i++)
+            var abbildung = new Dictionary<string, IReadOnlyDictionary<int, int>>(StringComparer.OrdinalIgnoreCase)
             {
-                List<Z_AnlageSenkeModel> vorlage;
-                if (!quellSenken.TryGetValue(quellAnlagenIds[i], out vorlage) ||
-                    vorlage == null || vorlage.Count == 0) continue;
+                { TAB_PUFFER, pufferAbbildung ?? new Dictionary<int, int>() }
+            };
+            if (!IstPuffer(plan)) abbildung[plan.Geraetetabelle] = geraete;
 
-                int neueAnlage = positionell
-                    ? neueIds[i]
-                    : AnlageFinden(idZiel, quellAnlagen[i].ID_Type, quellAnlagen[i].Bezeichner);
-                if (neueAnlage <= 0) continue;
-
-                var zeilen = new List<Z_AnlageSenkeModel>();
-                foreach (Z_AnlageSenkeModel q in vorlage)
-                {
-                    if (q == null) continue;
-                    zeilen.Add(new Z_AnlageSenkeModel
-                    {
-                        // ID und ID_Anlage vergibt der Schreibweg; Rang ebenfalls
-                        // (lueckenlos ab 1 in Listenreihenfolge - die Reihenfolge steht
-                        // schon, LesenJeAnlage sortiert nach Rang).
-                        Ziel = q.Ziel,
-                        Bedarfsart = q.Bedarfsart,
-                        ID_Puffer = Abbilden(q.ID_Puffer > 0 ? (int?)q.ID_Puffer : null,
-                                             pufferAbbildung, ref verloren) ?? 0,
-                        Ladeprio = q.Ladeprio,
-                        Ladeprio_PV = q.Ladeprio_PV,
-                        Ladegrenze = q.Ladegrenze,
-                        Anschlusshoehe = q.Anschlusshoehe
-                    });
-                }
-
-                // MELDEN, NICHT ZURÜCKNEHMEN (NL-Q2). SchreibenJeAnlage meldet ein
-                // Scheitern über den Rückgabewert (und auf der Konsole), nicht über eine
-                // Ausnahme; fängt es ab und rollt seine eigenen Zeilen zurück. Der
-                // Hauptvorgang ist zu diesem Zeitpunkt festgeschrieben und die Übernahme
-                // ausdrücklich nicht umkehrbar — deshalb geht der Fehlschlag in denselben
-                // Hinweiskanal und in dieselbe Form wie beim Nachbarschritt 9
-                // (VariantenNachziehen, BK_KOMP_HINW_VARIANTE): eine Zeile je Anlage,
-                // benannt über ihren Bezeichner. Der Lauf macht mit der nächsten Anlage
-                // weiter, "Uebernehmen" meldet wie bisher true.
-                //
-                // Ein "continue" wie bei Schritt 9 steht hier nicht: Der Aufruf IST die
-                // letzte Anweisung des Schleifenrumpfes.
-                if (!ctrl.SchreibenJeAnlage(neueAnlage, zeilen))
-                    warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_SENKEN,
-                                                quellAnlagen[i].Bezeichner));
-            }
-
-            if (verloren > 0)
-                warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_PUFFERVERWEIS, verloren));
+            return new AnlagenFachspalten.KinderAuftrag
+            {
+                Ohne = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_ProjektWerte" },
+                Abbildung = abbildung,
+                NurAbbildung = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { TAB_PUFFER },
+                FehlerMelden = true
+            };
         }
 
         /// <summary>
-        /// Die Anlagen-IDs des Gewerks im Zielprojekt, AUFSTEIGEND — nach dem Commit
-        /// genau die soeben angelegten Zeilen in Anlegereihenfolge.
+        /// Übersetzt den Ausgang der Kindzeilen einer Anlage in Hinweise: eine gescheiterte
+        /// Senkenliste bzw. Betriebsführung in die bestehenden Meldungen
+        /// (<c>BK_KOMP_HINW_SENKEN</c>, <c>BK_KOMP_HINW_VARIANTE</c>), jede andere Kindtabelle in
+        /// <c>BK_KOMP_HINW_KINDZEILEN</c>, und die Bezüge ohne Gegenstelle im Zielprojekt in
+        /// <c>BK_KOMP_HINW_KINDBEZUG</c> — benannt über die Bezeichner, nie still.
         /// </summary>
-        private static List<int> NeueAnlagenIds(int idZiel, GewerkPlan plan)
+        private static void KinderMelden(string anlage, AnlagenFachspalten.KinderAusgang kinder, List<string> hinweise)
         {
-            var liste = new List<int>();
-            try
+            if (kinder == null) return;
+            foreach (string tabelle in kinder.GescheiterteTabellen)
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID FROM [" + TAB_ANLAGEN + "] " +
-                    "WHERE ID_Projekt = ? AND " + TypFilter(plan) + " ORDER BY ID",
-                    new DbParam("@p", idZiel));
-                if (dt != null)
-                    foreach (DataRow r in dt.Rows) liste.Add(Ganz(r, SPALTE_ID));
+                if (string.Equals(tabelle, "Z_AnlageSenke", StringComparison.OrdinalIgnoreCase))
+                    hinweise.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BK_KOMP_HINW_SENKEN, anlage));
+                else if (string.Equals(tabelle, "Tab_StromspeicherVariante", StringComparison.OrdinalIgnoreCase))
+                    hinweise.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BK_KOMP_HINW_VARIANTE, anlage));
+                else
+                    hinweise.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BK_KOMP_HINW_KINDZEILEN,
+                                               anlage, tabelle));
             }
-            catch { }
-            return liste;
+            if (kinder.FehlendeBezuege.Count > 0)
+                hinweise.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BK_KOMP_HINW_KINDBEZUG,
+                                           anlage, string.Join(", ", kinder.FehlendeBezuege)));
         }
 
         // ------------------------------------------------------- Speichervarianten
 
         /// <summary>
-        /// Legt zu den neuen Speicher-Anlagenzeilen die Betriebsführung an und stellt die
-        /// Invariante „genau eine aktive Variante je Projekt" über
-        /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/> her — der einzigen
-        /// Schreibstelle für <c>Aktiv</c>.
-        /// Die Zuordnung läuft über (Typ, Bezeichner): Die neuen Anlagen-IDs werden über
-        /// eine zweite Verbindung gelesen und sind dort erst nach dem Commit sichtbar
-        /// (siehe Schritt 8); der Bezeichner IST der Variantenname.
+        /// Schließt die Betriebsführung der übernommenen Speicheranlagen ab: Eine Anlage, deren
+        /// Quelle keine Variante führte, bekommt die Vorbelegung; danach ist GENAU EINE Variante
+        /// des Projekts aktiv — die mitgekommene aktive, sonst die erste — über
+        /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/>, die einzige Schreibstelle für
+        /// <c>Aktiv</c>. Die neuen Anlagen-IDs stehen positionell zu
+        /// <paramref name="quellAnlagen"/> (Schritt 7).
         /// </summary>
-        private static void VariantenNachziehen(int idZiel, List<WErzeugerCtrl> quellAnlagen,
-                                                List<int> quellAnlagenIds,
-                                                Dictionary<int, StromspeicherVarianteModel> quellVarianten,
-                                                int aktiveQuellAnlage, List<string> warnungen)
+        private static void VariantenAbschliessen(int idZiel, List<WErzeugerCtrl> quellAnlagen,
+                                                  List<int> neueAnlagenIds, List<string> warnungen)
         {
             var ctrl = new StromspeicherVarianteCtrl();
-            int idAktiv = 0;
+            int idErste = 0, idAktiv = 0, aktive = 0;
 
-            for (int i = 0; i < quellAnlagen.Count; i++)
+            for (int i = 0; i < neueAnlagenIds.Count && i < quellAnlagen.Count; i++)
             {
-                WErzeugerCtrl a = quellAnlagen[i];
-                int neueAnlage = AnlageFinden(idZiel, a.ID_Type, a.Bezeichner);
-                if (neueAnlage <= 0)
-                { warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_VARIANTE, a.Bezeichner)); continue; }
-
-                StromspeicherVarianteModel vorlage;
-                StromspeicherVarianteModel neu = new StromspeicherVarianteModel();
-                if (quellVarianten.TryGetValue(quellAnlagenIds[i], out vorlage) && vorlage != null)
-                    neu = ParameterUebernehmen(vorlage);
-
-                neu.ID_Energieanlage = neueAnlage;
-                neu.Aktiv = false;                       // SetzeAktiv ist die einzige Schreibstelle
-                if (ctrl.Insert(neu) <= 0)
-                { warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_VARIANTE, a.Bezeichner)); continue; }
-
-                if (idAktiv <= 0) idAktiv = neu.ID;                                   // Rückfall: die erste
-                if (aktiveQuellAnlage > 0 && quellAnlagenIds[i] == aktiveQuellAnlage) idAktiv = neu.ID;
+                StromspeicherVarianteModel m = ctrl.ReadByEnergieanlage(neueAnlagenIds[i]);
+                if (m == null)
+                {
+                    m = new StromspeicherVarianteModel { ID_Energieanlage = neueAnlagenIds[i], Aktiv = false };
+                    if (ctrl.Insert(m) <= 0)
+                    {
+                        warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_VARIANTE, quellAnlagen[i].Bezeichner));
+                        continue;
+                    }
+                }
+                if (idErste <= 0) idErste = m.ID;
+                if (m.Aktiv) { aktive++; if (idAktiv <= 0) idAktiv = m.ID; }
             }
 
-            if (idAktiv > 0) ctrl.SetzeAktiv(idZiel, idAktiv);
-        }
-
-        private static int AnlageFinden(int idProjekt, int idType, string bezeichner)
-        {
-            object o = DataRepository.ExecuteScalar(
-                "SELECT ID FROM [" + TAB_ANLAGEN + "] " +
-                "WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ? ORDER BY ID DESC LIMIT 1",
-                new DbParam("@p", idProjekt),
-                new DbParam("@t", idType),
-                new DbParam("@b", bezeichner ?? ""));
-            return (o != null && o != DBNull.Value) ? Convert.ToInt32(o) : 0;
-        }
-
-        // Betriebsparameter der Vorlage OHNE ID/Anlagenbezug und OHNE Aktiv-Kennzeichen -
-        // dieselbe Aufteilung wie StromspeicherKontextMenuCtrl.ParameterUebernehmen.
-        private static StromspeicherVarianteModel ParameterUebernehmen(StromspeicherVarianteModel v)
-        {
-            return new StromspeicherVarianteModel
-            {
-                Betriebsart = v.Betriebsart,
-                Berechnungsart = v.Berechnungsart,
-                Preisquelle = v.Preisquelle,
-                PV_Zulaessig = v.PV_Zulaessig,
-                BHKW_Ueberschuss_Zulaessig = v.BHKW_Ueberschuss_Zulaessig,
-                BHKW_Stromgefuehrt = v.BHKW_Stromgefuehrt,
-                Netzentladung = v.Netzentladung,
-                Kompatibilitaetsmodus = v.Kompatibilitaetsmodus,
-                SoC_Min_Prozent = v.SoC_Min_Prozent,
-                SoC_Max_Prozent = v.SoC_Max_Prozent,
-                Kapitalzins = v.Kapitalzins,
-                Nutzungsdauer = v.Nutzungsdauer,
-                L_P = v.L_P,
-                A_Netzlade = v.A_Netzlade,
-                Ladeschwellwert = v.Ladeschwellwert,
-                ID_Preisreihe = v.ID_Preisreihe,
-                ID_Kostenprofil = v.ID_Kostenprofil,
-                Aufschlag_Anwenden = v.Aufschlag_Anwenden
-            };
+            int ziel = idAktiv > 0 ? idAktiv : idErste;
+            if (ziel > 0 && aktive != 1) ctrl.SetzeAktiv(idZiel, ziel);
         }
 
         // ------------------------------------------------------------------ Helfer

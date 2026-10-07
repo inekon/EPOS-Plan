@@ -406,6 +406,109 @@ namespace EPOS.Kern.Tests
             return fehler.ToList();
         }
 
+        /// <summary>
+        /// Jede Verweisspalte einer Anlagenkind-Tabelle (<see cref="AnlagenFachspalten.ANLAGENKINDER"/>) —
+        /// jede Spalte mit Fremdschlüssel und jede, die nach einem Schlüssel heißt (<c>ID_…</c>,
+        /// <c>…ID</c>) — ist eingeordnet: Anlagenverweis, Umschlüsselung innerhalb der Anlage,
+        /// Geräteanker, PROJEKTBEZUG (über Projektgrenzen auf die gleichnamige Gegenstelle),
+        /// Projektspalte oder PROJEKTFREI. Ein Verweis auf eine Tabelle mit <c>ID_Projekt</c>
+        /// darf nicht projektfrei heißen, und jede Zieltabelle eines Projektbezugs trägt
+        /// <c>ID_Projekt</c> und <c>Bezeichner</c> — sonst zeigte die Kindzeile einer
+        /// Komponentenübernahme still ins Quellprojekt.
+        /// </summary>
+        [Fact]
+        public void Jede_Verweisspalte_einer_Anlagenkind_Tabelle_ist_eingeordnet()
+        {
+            if (!_db.Vorhanden) return;
+
+            List<string> fehler = UneingeordneteKindverweise(AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG,
+                                                             AnlagenFachspalten.ANLAGENKIND_PROJEKTFREI);
+            Assert.True(fehler.Count == 0, "Nicht eingeordnete Verweise von Anlagenkindern: " + string.Join("; ", fehler) +
+                ". Einordnen in AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG (projektgebunden, wird über " +
+                "Projektgrenzen umgeschlüsselt) oder ANLAGENKIND_PROJEKTFREI (Katalog).");
+
+            foreach (string zieltabelle in AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG.Values)
+            {
+                List<string> spalten = DataRepository.SpaltenVonTabelle(zieltabelle);
+                Assert.Contains("ID_Projekt", spalten, StringComparer.OrdinalIgnoreCase);
+                Assert.Contains("Bezeichner", spalten, StringComparer.OrdinalIgnoreCase);
+            }
+            foreach (string s in AnlagenFachspalten.ANLAGENKIND_TRAGEND)
+                Assert.True(AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG.ContainsKey(s), s);
+            foreach (KeyValuePair<string, string> art in AnlagenFachspalten.PROJEKTBEZUG_ART)
+                Assert.Contains(art.Value, DataRepository.SpaltenVonTabelle(art.Key), StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Gegenprobe: eine neue Verweisspalte auf eine projektgebundene Tabelle fällt auf, und
+        /// ein projektgebundener Verweis, der als projektfrei eingeordnet wäre, ebenso.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_ein_neuer_oder_falsch_eingeordneter_Kindverweis_faellt_auf()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "ALTER TABLE Z_AnlageStrang ADD COLUMN ID_Probe INTEGER REFERENCES Tab_Wechselrichter (ID)"));
+            List<string> fehler = UneingeordneteKindverweise(AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG,
+                                                             AnlagenFachspalten.ANLAGENKIND_PROJEKTFREI);
+            Assert.Contains("Z_AnlageStrang.ID_Probe", fehler);
+            Assert.Single(fehler);
+            Assert.True(DataRepository.ExecuteSQL("ALTER TABLE Z_AnlageStrang DROP COLUMN ID_Probe"));
+
+            var bezug = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, string> kv in AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG)
+                if (!string.Equals(kv.Key, "Z_AnlageStrang.ID_Wechselrichter", StringComparison.OrdinalIgnoreCase))
+                    bezug[kv.Key] = kv.Value;
+            var frei = new HashSet<string>(AnlagenFachspalten.ANLAGENKIND_PROJEKTFREI, StringComparer.OrdinalIgnoreCase)
+            { "Z_AnlageStrang.ID_Wechselrichter" };
+            fehler = UneingeordneteKindverweise(bezug, frei);
+            Assert.Contains("Z_AnlageStrang.ID_Wechselrichter (projektgebunden)", fehler);
+            Assert.Single(fehler);
+
+            Assert.Empty(UneingeordneteKindverweise(AnlagenFachspalten.ANLAGENKIND_PROJEKTBEZUG,
+                                                    AnlagenFachspalten.ANLAGENKIND_PROJEKTFREI));
+        }
+
+        /// <summary>Die Verweisspalten „Tabelle.Spalte“ der Anlagenkinder ohne (richtige) Einordnung.</summary>
+        private static List<string> UneingeordneteKindverweise(IReadOnlyDictionary<string, string> projektbezug,
+                                                               ISet<string> projektfrei)
+        {
+            var fehler = new List<string>();
+            foreach ((string tabelle, string fk) in AnlagenFachspalten.ANLAGENKINDER)
+            {
+                var ziele = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                DataTable fks = DataRepository.GetDataTable(
+                    "SELECT \"from\" AS Spalte, \"table\" AS Ziel FROM pragma_foreign_key_list(?)",
+                    new DbParam("@t", tabelle));
+                foreach (DataRow f in fks.Rows)
+                    ziele[Convert.ToString(f["Spalte"], CultureInfo.InvariantCulture)] =
+                        Convert.ToString(f["Ziel"], CultureInfo.InvariantCulture);
+
+                foreach (string spalte in DataRepository.SpaltenVonTabelle(tabelle))
+                {
+                    if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+                    bool verweis = ziele.ContainsKey(spalte) ||
+                                   spalte.StartsWith("ID_", StringComparison.OrdinalIgnoreCase) ||
+                                   spalte.EndsWith("ID", StringComparison.Ordinal);
+                    if (!verweis) continue;
+
+                    string schluessel = tabelle + "." + spalte;
+                    bool eingeordnet = string.Equals(spalte, fk, StringComparison.OrdinalIgnoreCase) ||
+                        AnlagenFachspalten.ANLAGENKIND_UMSCHLUESSEL.ContainsKey(schluessel) ||
+                        AnlagenFachspalten.ANLAGENKIND_GERAETEANKER.Contains(schluessel) ||
+                        AnlagenFachspalten.ANLAGENKIND_PROJEKTSPALTE.Contains(schluessel) ||
+                        projektbezug.ContainsKey(schluessel) || projektfrei.Contains(schluessel);
+                    if (!eingeordnet) { fehler.Add(schluessel); continue; }
+
+                    if (projektfrei.Contains(schluessel) && ziele.TryGetValue(spalte, out string ziel) &&
+                        DataRepository.SpaltenVonTabelle(ziel).Contains("ID_Projekt", StringComparer.OrdinalIgnoreCase))
+                        fehler.Add(schluessel + " (projektgebunden)");
+                }
+            }
+            return fehler;
+        }
+
         /// <summary>Die Verweise „Tabelle.Spalte“ auf eine Anlagenzeile ohne Einordnung.</summary>
         private static List<string> UneingeordneteAnlagenkinder()
         {

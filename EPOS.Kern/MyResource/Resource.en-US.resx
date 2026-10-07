@@ -6232,7 +6232,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>{0} reference(s) to a source profile or chiller of the source project could neither be matched nor copied in the target and were left empty.</value>
   </data>
   <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
-    <value>{0} source profile(s) or chiller(s) of the source project were copied into the target project.</value>
+    <value>{0} project record(s) of the source project (source profile, chiller, inverter) were copied into the target project.</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>
@@ -6242,6 +6242,12 @@ Depending on the project size this takes several minutes. Continue?</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDBEZUG" xml:space="preserve">
+    <value>Unit "{0}": references without a unique namesake in the target project were omitted: {1}.</value>
+  </data>
+  <data name="BK_KOMP_HINW_KINDZEILEN" xml:space="preserve">
+    <value>The assignments "{1}" of unit "{0}" could not be transferred.</value>
   </data>
   <data name="KOSTEN_PLANWERT_BASIS_MODUL" xml:space="preserve">
     <value>Module price</value>
