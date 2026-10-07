@@ -59,6 +59,17 @@ namespace WindowsFormsApplication1
         internal SqprojStand Projektdatei { get; private set; }
 
         /// <summary>
+        /// G5-N (N1/N2): <b>Der vom Anwender vorgegebene Nordwinkel</b> [°] für jeden folgenden Lauf; <c>null</c> = der Dateiwert
+        /// bzw. die Annahme Planoberseite = Nord. Der Leser dreht damit die Azimute genau einmal — an derselben Stelle, an der
+        /// sonst der Dateiwert eingeht (IFC: die Drehung des Abbildbaus; gbXML: nach dem Lesen, <see cref="GbxmlLeser.NordwinkelVorgeben"/>).
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
+        // G5-N: der Inhalt des letzten erfolgreich eingelesenen Laufs — für das Neu-Lesen mit anderer Vorgabe.
+        private byte[] _puffer;
+        private string _dateiname;
+
+        /// <summary>
         /// Die Größengrenze der Projektdatei (E87, F4) — eigene Grenze, losgelöst von der des Gebäudeprofils; die Hülle belegt
         /// sie je Plattform (<see cref="SqprojProfil.GrenzeFuerPlattform"/>). Vorgabe die Windows-Grenze; 0 oder weniger = keine.
         /// </summary>
@@ -100,7 +111,9 @@ namespace WindowsFormsApplication1
             Abbild = null;
             Quelle = null;
             Projektdatei = null;
+            _puffer = null;
             Profil = profil ?? throw new ArgumentNullException(nameof(profil));
+            profil.NordwinkelVorgabeGrad = Nordrichtung.Normiert(NordwinkelVorgabeGrad);
 
             if (quelle == null) return 0;
             melder?.Report(new ImportFortschritt(null, MELDUNG + "LESEN", GebaeudeQuelle.NurName(dateiname)));
@@ -124,6 +137,8 @@ namespace WindowsFormsApplication1
                 if (puffer == null) return 0;   // zu groß — gemeldet
 
                 string hash = Convert.ToHexStringLower(SHA256.HashData(puffer));
+                _puffer = puffer;
+                _dateiname = dateiname;
 
                 IGebaeudeLeser leser = profil.LeserErzeugen();
                 GebaeudeAbbild abbild;
@@ -144,8 +159,13 @@ namespace WindowsFormsApplication1
                                             Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
                                             Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten)
                 {
-                    NordwinkelGrad = abbild.NordwinkelGrad,
+                    // G5-N: Die Quelle trägt den Nordwinkel, um den die Azimute gedreht sind (Vorgabe, sonst IFC-Dateiwert).
+                    NordwinkelGrad = abbild.NordwinkelWirksamGrad,
+                    NordwinkelHerkunft = abbild.NordwinkelHerkunft,
                 };
+                if (abbild.NordwinkelVorgabeGrad is double vorgabe)
+                    _meldungen.Add(new PruefMeldung(PruefStufe.Info, MELDUNG + "NORD_VORGABE",
+                                                    Zahl(Nordrichtung.PlanoberseiteAusNordwinkel(vorgabe) ?? 0.0), Zahl(vorgabe)));
                 foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
                 Dateihinweise(abbild, Quelle.Dateiname);
                 // HC-5: Flächenabweichung (F8) und Herleitungen der Grundrisse je Raum - dieselben, die der Import speichert.
@@ -171,6 +191,27 @@ namespace WindowsFormsApplication1
             melder?.Report(new ImportFortschritt(1.0, MELDUNG + "GELESEN",
                 _gebaeude.Count.ToString(CultureInfo.InvariantCulture)));
             return _gebaeude.Count;
+        }
+
+        /// <summary>
+        /// G5-N (N2): <b>Liest dieselbe Datei mit einer neuen Vorgabe des Nordwinkels</b> noch einmal — aus dem Puffer des
+        /// letzten Laufs, ohne Dateizugriff; die dazugeladene Projektdatei bleibt. Danach sind Abbild, Quelle und Meldungen die
+        /// des neuen Laufs, und jede folgende Zuordnung trägt die neuen Azimute. Liefert die Zahl der Gebäude.
+        /// </summary>
+        /// <param name="nordwinkelGrad">Der neue Nordwinkel [°]; <c>null</c> = Dateiwert bzw. Annahme.</param>
+        /// <exception cref="InvalidOperationException">wenn noch nichts gelesen ist.</exception>
+        internal int NordwinkelVorgeben(double? nordwinkelGrad, IProgress<ImportFortschritt> melder = null, CancellationToken abbruch = default)
+        {
+            byte[] puffer = _puffer;
+            GebaeudeImportProfil profil = Profil;
+            if (puffer == null || profil == null) throw new InvalidOperationException("Es ist keine Gebäudedatei gelesen.");
+            SqprojStand projektdatei = Projektdatei;
+            NordwinkelVorgabeGrad = nordwinkelGrad;
+            int zahl;
+            using (var strom = new MemoryStream(puffer, false))
+                zahl = Lesen(strom, _dateiname, profil, melder, abbruch);
+            if (zahl > 0) Projektdatei = projektdatei;
+            return zahl;
         }
 
         /// <summary>

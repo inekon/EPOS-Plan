@@ -886,8 +886,9 @@ namespace WindowsFormsApplication1
                 _v.Format = _abbild.Format ?? "";
                 _v.Dateiname = _quelle?.Dateiname ?? "";
                 _v.Gebaeudekennung = _g.Kennung;
-                _v.NordwinkelGrad = _abbild.NordwinkelGrad;
-                _v.NordwinkelAngewandt = _datei == Importherkunft.Ifc;
+                // G5-N: Eine Vorgabe des Anwenders gilt bei beiden Formaten — der Leser hat die Azimute damit gedreht.
+                _v.NordwinkelGrad = _abbild.NordwinkelVorgabeGrad ?? _abbild.NordwinkelGrad;
+                _v.NordwinkelAngewandt = _datei == Importherkunft.Ifc || _abbild.NordwinkelVorgabeGrad.HasValue;
 
                 // Die Zuordnung des Einzonenwegs — Kenngrößen der Zone, Vorgaben, Summenprobe.
                 GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(_abbild, _index, _klasseGewaehlt, _quelle, _profil, _uebersteuert,

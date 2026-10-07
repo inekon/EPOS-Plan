@@ -63,8 +63,11 @@ namespace WindowsFormsApplication1
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return new Umrisseingang();
             AbbildGebaeude g = abbild.Gebaeude[index];
             bool ifc = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
-            double drehung = ifc ? abbild.NordwinkelGrad ?? 0.0 : 0.0;
-            var e = new Umrisseingang { NordwinkelGrad = abbild.NordwinkelGrad, NordwinkelAngewandt = ifc };
+            // G5-N: Eine Vorgabe des Anwenders gilt bei beiden Formaten — der Leser hat die Azimute damit gedreht.
+            bool angewandt = ifc || abbild.NordwinkelVorgabeGrad.HasValue;
+            double? nordwinkel = abbild.NordwinkelVorgabeGrad ?? abbild.NordwinkelGrad;
+            double drehung = angewandt ? nordwinkel ?? 0.0 : 0.0;
+            var e = new Umrisseingang { NordwinkelGrad = nordwinkel, NordwinkelAngewandt = angewandt };
 
             // Geschosse: die der Datei (IFC), dazu je Raum Kennung, Name und Lage (gbXML).
             foreach (AbbildGeschoss s in g.Geschosse)

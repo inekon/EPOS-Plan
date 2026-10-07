@@ -33201,7 +33201,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Datei enthält kein Gebäude (Wurzel „{0}“ ohne Campus und Building) — sie wird nicht übernommen.</value>
   </data>
   <data name="IMP_GBXML_PROT_KEIN_NORDEN" xml:space="preserve">
-    <value>Die Datei nennt keine Nordrichtung (CADModelAzimuth) — angenommen wird 0°.</value>
+    <value>Die Datei nennt keine Nordrichtung (CADModelAzimuth) — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern.</value>
   </data>
   <data name="IMP_GBXML_PROT_KENNUNG_GEKUERZT" xml:space="preserve">
     <value>Die Kennung eines {0} ist mit {2} Zeichen länger als 64 und wird als „{1}“ geführt.</value>
@@ -33216,7 +33216,7 @@ Möchten Sie das zulassen?</value>
     <value>Fläche {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0.</value>
   </data>
   <data name="IMP_GBXML_PROT_NORDDREHUNG" xml:space="preserve">
-    <value>Die Datei dreht das Modell um {0}° gegen Nord (CADModelAzimuth) — der Wert wird nicht eingerechnet; bitte die Himmelsrichtungen der Fenster prüfen.</value>
+    <value>Die Datei dreht das Modell um {0}° gegen Nord (CADModelAzimuth) — der Wert wird nicht eingerechnet, angenommen ist Nordwinkel 0°; die Richtung der Planoberseite lässt sich beim Import vorgeben oder im Gebäudedialog unter „Ausrichtung“ ändern.</value>
   </data>
   <data name="IMP_GBXML_PROT_OHNE_AUFBAU" xml:space="preserve">
     <value>{0} Flächen ohne Verweis auf eine Konstruktion (z. B. {1}) — nur Fläche und Lage, kein Aufbau.</value>
@@ -33996,7 +33996,7 @@ Möchten Sie das zulassen?</value>
     <value>Gruppe {0}: für {1} % der Fläche fehlt der U-Wert; es gilt die Vorgabe.</value>
   </data>
   <data name="IMP_IFC_PROT_KEIN_NORDEN" xml:space="preserve">
-    <value>Die Datei nennt keine Nordrichtung (TrueNorth); angenommen wird die Schemavorgabe (+y = Nord). Ein falsch genordetes Modell vertauscht die Fensterflächen der Himmelsrichtungen.</value>
+    <value>Die Datei nennt keine Nordrichtung (TrueNorth) — angenommen ist: Die Planoberseite (+y der Datei) zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern.</value>
   </data>
   <data name="IMP_IFC_PROT_MAPCONVERSION" xml:space="preserve">
     <value>Die Datei trägt eine Koordinatenumrechnung (IfcMapConversion); die Himmelsrichtungen folgen deren Drehung, TrueNorth ist dort nur informativ.</value>
@@ -48274,6 +48274,63 @@ Chart</value>
   </data>
   <data name="KI_DLG_QERD_SONDENANORDNUNG_ERL" xml:space="preserve">
     <value>Anordnung der Erdsonden: quadratisches Raster oder Reihe; leer = Vorgabe quadratisch.</value>
+  </data>
+  <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
+    <value>Nordrichtung nach Eingabe: Die Planoberseite (+y der Datei) zeigt nach {0}°, der Nordwinkel ist {1}°; die Himmelsrichtungen aller Bauteile und Grundrisse folgen ihm.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_TITEL" xml:space="preserve">
+    <value>Ausrichtung</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_PLANOBERSEITE" xml:space="preserve">
+    <value>Planoberseite zeigt nach</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_DATEI_NENNT" xml:space="preserve">
+    <value>Die Datei nennt die Nordrichtung: Planoberseite nach {0}°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_DATEI_OHNE" xml:space="preserve">
+    <value>Die Datei nennt keine Nordrichtung.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT_DATEI" xml:space="preserve">
+    <value>aus der Datei</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT_EINGABE" xml:space="preserve">
+    <value>eingegeben</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT_ANNAHME" xml:space="preserve">
+    <value>angenommen (Planoberseite = Nord)</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Richtung der Planoberseite ist keine gültige Zahl.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KEINE_QUELLE" xml:space="preserve">
+    <value>Das Gebäude stammt aus keiner Importdatei — seine Ausrichtung lässt sich nur an den einzelnen Bauteilen ändern.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_GEDREHT" xml:space="preserve">
+    <value>Ausrichtung geändert: {0} Bauteile gedreht, die Planoberseite zeigt jetzt nach {1}°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_N" xml:space="preserve">
+    <value>Nord</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_NO" xml:space="preserve">
+    <value>Nordost</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_O" xml:space="preserve">
+    <value>Ost</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_SO" xml:space="preserve">
+    <value>Südost</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_S" xml:space="preserve">
+    <value>Süd</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_SW" xml:space="preserve">
+    <value>Südwest</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_W" xml:space="preserve">
+    <value>West</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_NW" xml:space="preserve">
+    <value>Nordwest</value>
   </data>
 </root>
 
