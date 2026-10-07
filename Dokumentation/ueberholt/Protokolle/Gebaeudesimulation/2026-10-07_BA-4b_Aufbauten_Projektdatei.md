@@ -52,7 +52,7 @@ Proben mit synthetischer Projektdatei (keine Anwenderdatei im Repositorium); Ref
 
 ## 6 Gate 787
 
-⟨GATE787⟩
+Gemeinsam mit BA-3, Hauptbaum auf `ea4dd254`, 43 min: 20 389 Tests, 20 384 grün, 4 übersprungen, 1 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 772, EPOS.Kern 11 643 mit 3 übersprungen); rot war die Einheitenwache (J→kJ der Wärmekapazität im Steckbrief), behoben in `26242e21`, Wache 9/9 nachgeprüft; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 471 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 60/60.
 
 ## 7 Offen
 

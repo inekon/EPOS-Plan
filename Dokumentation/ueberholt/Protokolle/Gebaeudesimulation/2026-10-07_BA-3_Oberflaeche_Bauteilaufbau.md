@@ -24,11 +24,11 @@ Die Zuordnungsstufen und Aufbauten aus BA-1 bis BA-4b werden in der Oberfläche 
 
 ## 4 Prüfung
 
-bunit-Tests der Komponenten; Rasterprobe unberührt.
+Kern-Filter und Windows-Schale bauen mit 0 Fehlern. Neu sind `GebaeudeAufbauTests` (11 Fälle), `GebaeudeAufbauHuelleTests` (6) und drei Fälle in `GebaeudeImportDialogTests`; im Auftrag liefen EPOS.UI.Tests 541/541 und EPOS.Kern.Tests 1 252/1 252 der betroffenen Klassen. Nach dem Merge mit BA-4b: Kern 724/724, UI 405/405 der betroffenen Klassen, SQL-Dialekt 0 Fundstellen, Referenzlauf 8/8 PASS gegen R39. Die Liste „Bauteilaufbauten“ ist eine schlichte Tabelle ohne `Raster` oder `Katalogliste`; Raster- und Fensterprobe sind nicht betroffen.
 
 ## 5 Gate 787
 
-⟨GATE787⟩
+Gemeinsam mit BA-4b und dem Fix des Raumabgleichs, Hauptbaum auf `ea4dd254`, 43 min: 20 389 Tests, 20 384 grün, 4 übersprungen, 1 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 772, EPOS.Kern 11 643 mit 3 übersprungen); rot war die Einheitenwache (J→kJ der Wärmekapazität im Steckbrief), behoben in `26242e21`, Wache 9/9 nachgeprüft; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 471 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 60/60.
 
 ## 6 Offen
 
