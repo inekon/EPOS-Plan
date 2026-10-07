@@ -741,6 +741,30 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Bemessungsarten, deren Bezugsgröße die ENERGIEKOSTEN bzw. der Endenergieeinsatz
+        /// sind — Prozent der Brennstoff-, Strom- und Endenergiekosten, Prozent des
+        /// Endenergiebedarfs. Ihre Bezugsgröße kommt aus der Energieträgerwelt bzw. dem
+        /// Lauf, nicht aus der Baugröße der Anlage; eine Übernahme mit neuer Kapazität
+        /// (<c>SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen</c>) skaliert sie
+        /// deshalb nicht, sondern kopiert sie unverändert (Anwenderentscheid 07.10.2026).
+        /// </summary>
+        public static readonly IReadOnlyCollection<string> ENERGIEKOSTEN_BEZUG = new HashSet<string>(StringComparer.Ordinal)
+        {
+            DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN,
+            DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN,
+            DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN,
+            DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF
+        };
+
+        /// <summary>
+        /// Wächst eine Position dieser Bemessungsart mit der Baugröße der Anlage? Nein nur
+        /// für die Arten mit Energiekostenbezug (<see cref="ENERGIEKOSTEN_BEZUG"/>); jede
+        /// andere — auch eine leere oder unbekannte — skaliert.
+        /// </summary>
+        public static bool NachKapazitaetSkalierbar(string persistenz)
+            => string.IsNullOrEmpty(persistenz) || !((HashSet<string>)ENERGIEKOSTEN_BEZUG).Contains(persistenz);
+
         // =====================================================================
         // ANWENDERENTSCHEID 15.09.2026 — DIE AUSWAHL FOLGT DER BEZUGSGRÖSSE
         //

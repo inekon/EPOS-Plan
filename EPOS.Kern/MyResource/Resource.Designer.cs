@@ -9210,6 +9210,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PROJEKTBEZUG {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTKOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf einen Pufferspeicher ließen sich im Ziel nicht auflösen und bleiben leer. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PUFFERVERWEIS {
@@ -26100,6 +26118,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ wurden mit Faktor {2} nach Kapazität angepasst und gelten für {1}; Anteile an Energiekosten bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_HINW_KOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_HINW_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen von „{0}“ gelten unverändert für {1} — ohne Kapazität lässt sich kein Faktor bilden; bitte prüfen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Einheit ausgewählt. ähnelt.
         /// </summary>
         public static string FLOTTE_UEBERNAHME_KEINE_EINHEIT {
@@ -42361,6 +42397,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Mengenangaben: Fläche aus dem Bauteilkörper (brutto; Außenseite der Wände vom Gebäudeschwerpunkt weg) ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_FLAECHE_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_FLAECHE_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL {
@@ -42523,11 +42568,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Die Fläche aus dem Bauteilkörper ({2} m²) weicht um {3} % vom Mengensatz ({1} m²) ab (Grenze {4} %); es gilt der Mengensatz. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumkörper der Art {1} sind nicht lesbar; die Räume werden aus Umriss bzw. schematisch dargestellt. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPER_ART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände aus dem Körper: Die Außenseite ist am Gebäudeschwerpunkt nicht zu unterscheiden; es gilt die Normale der größten Fläche der Datei ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_AUSSENSEITE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_AUSSENSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile aus dem Körper sind gegliedert ({1}): Fläche als Summe der ebenen Teilflächen, Richtung der größten Teilfläche. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_GEGLIEDERT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_GEGLIEDERT", resourceCulture);
             }
         }
         
@@ -42546,6 +42618,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_KOERPER_OHNE_PAAR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_OHNE_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile aus dem Körper: Teilflächen unter {2}° Richtungsunterschied flächengewichtet zusammengefasst ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST", resourceCulture);
             }
         }
         
@@ -42649,11 +42730,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen ohne Mengenangaben und ohne Gesamtmaße: Fläche aus dem Körper der Öffnung bzw. des Bauteils in der Ebene des Wirts ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne Fenster oder Tür durchdringen ihr Bauteil und werden mit zusammen {1} m² von seiner Fläche abgezogen ({2}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_LOCH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_LOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Die Öffnungen ({2} m²) sind nicht kleiner als die Bruttofläche ({1} m²); die Nettofläche wird 0. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_NETTO_NULL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_NETTO_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen durchdringen ihr Bauteil nicht (Nische) und werden nicht abgezogen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_NISCHE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_NISCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_OEFFNUNG_TEIL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN", resourceCulture);
             }
         }
         

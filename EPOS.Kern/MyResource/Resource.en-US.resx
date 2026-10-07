@@ -6228,6 +6228,12 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_PUFFERVERWEIS" xml:space="preserve">
     <value>{0} reference(s) to a buffer storage could not be resolved in the target and were left empty.</value>
   </data>
+  <data name="BK_KOMP_HINW_PROJEKTBEZUG" xml:space="preserve">
+    <value>{0} reference(s) to a source profile or chiller of the source project could neither be matched nor copied in the target and were left empty.</value>
+  </data>
+  <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} source profile(s) or chiller(s) of the source project were copied into the target project.</value>
+  </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>
   </data>
@@ -19329,6 +19335,12 @@ Please go through the project page again so that the data of the selected projec
   </data>
   <data name="FLOTTE_UEBERNAHME_FEHLER" xml:space="preserve">
     <value>The transfer failed; nothing was written: {0}</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN" xml:space="preserve">
+    <value>Cost items of “{0}” were scaled by capacity with factor {2} and apply to {1}; shares of energy costs remain unchanged.</value>
+  </data>
+  <data name="FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET" xml:space="preserve">
+    <value>Cost items of “{0}” apply unchanged to {1} — without a capacity no factor can be formed; please check.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE" xml:space="preserve">
     <value>Search for the size</value>
@@ -33916,6 +33928,21 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_KEINE_RAEUME" xml:space="preserve">
     <value>Building {0}: no space with quantities found ({1} spaces) — usable area and room height remain empty.</value>
   </data>
+  <data name="IMP_IFC_PROT_FLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} building components without base quantities: area taken from the component body (gross; outer side of walls facing away from the building centroid) ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ABWEICHUNG" xml:space="preserve">
+    <value>Component {0}: the area from the component body ({2} m²) deviates by {3} % from the quantity set ({1} m²) (limit {4} %); the quantity set applies.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_GEGLIEDERT" xml:space="preserve">
+    <value>{0} components from the body are articulated ({1}): area as the sum of the planar partial faces, orientation of the largest partial face.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_ZUSAMMENGEFASST" xml:space="preserve">
+    <value>{0} components from the body: partial faces differing by less than {2}° in direction merged, weighted by area ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPER_AUSSENSEITE" xml:space="preserve">
+    <value>{0} walls from the body: the outer side cannot be told apart at the building centroid; the normal of the largest face in the file applies ({1}).</value>
+  </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} building components without base quantities (Qto_…); their areas are missing ({1}).</value>
   </data>
@@ -33996,6 +34023,21 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_IFC_PROT_NORDDREHUNG" xml:space="preserve">
     <value>The model is rotated by {0}° against north; the orientations of the building components are rotated accordingly.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_KOERPER" xml:space="preserve">
+    <value>{0} windows and doors without base quantities and overall dimensions: area taken from the body of the opening or of the element in the plane of the host ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_LOCH" xml:space="preserve">
+    <value>{0} openings without window or door pass through their component and are deducted from its area with {1} m² in total ({2}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_NISCHE" xml:space="preserve">
+    <value>{0} openings do not pass through their component (recess) and are not deducted ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
+    <value>{0} openings without window or door have neither base quantities nor a readable body and are not deducted ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
+    <value>Component {0}: the openings ({2} m²) are not smaller than the gross area ({1} m²); the net area becomes 0.</value>
   </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} windows and doors fill no opening of a building component and are not counted ({1}).</value>
