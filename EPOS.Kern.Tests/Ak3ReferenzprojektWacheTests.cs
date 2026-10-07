@@ -213,5 +213,41 @@ namespace EPOS.Kern.Tests
                            kAk3.Stunden, kAk3.Kelvinstunden, kAk3.LaengsteStrecke, ak3.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt, tAk3);
             Assert.True(kAk3.Stunden <= kOhne.Stunden, "AK3 " + kAk3.Stunden + " h > ohne Kreis " + kOhne.Stunden + " h");
         }
+
+        /// <summary>
+        /// <b>Laufzeit von 1054 auf AK3</b> (Q-AK3-5; Muster E36, nicht in der Basis): 1054 im Test auf AK3 gestellt, je
+        /// das Beste aus zwei Läufen nach einem Anlauf gegen AK1. Berichtet Faktor und Zeit des Kreises je Gebäude;
+        /// rot erst beim <see cref="MESS_FAKTOR"/>-fachen der Grenze.
+        /// </summary>
+        [Fact]
+        public void Laufzeit_1054_auf_AK3_gegen_AK1()
+        {
+            if (!_db.Vorhanden) return;
+            const int P = 1054;
+            long gebaeude = Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID_Projekt = ?", P);
+            long zonen = Zahl("SELECT COUNT(*) FROM Tab_Zone z JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE g.ID_Projekt = ?", P);
+            Rechnen(P, out _);   // Anlauf
+            double tAk1 = double.MaxValue, tAk3 = double.MaxValue;
+            SimulationRunner letzter = null;
+            for (int i = 0; i < 2; i++)
+            {
+                StufeSetzen(P, "AK1");
+                Rechnen(P, out double a);
+                tAk1 = Math.Min(tAk1, a);
+                StufeSetzen(P, DbWerte.ANLAGENKOPPLUNG_AK3);
+                letzter = Rechnen(P, out double b);
+                tAk3 = Math.Min(tAk3, b);
+            }
+            Assert.NotNull(letzter.simulation_Waermebedarf.Ak3);
+            Assert.Equal(8760, letzter.simulation_Waermebedarf.Ak3.Kreis.Stunden);
+            double faktor = tAk3 / tAk1;
+            double kreisMs = Math.Max(0.0, tAk3 - tAk1) * 1000.0 / Math.Max(1L, gebaeude);
+            _aus.WriteLine("1054 ({0} Gebäude, {1} Zonen): AK1 {2:0.000} s, AK3 {3:0.000} s, Faktor {4:0.00} (Grenze {5:0}); " +
+                           "Kreis {6:0} ms je Gebäude und Jahr (Grenze Einzone {7:0} ms); Durchläufe Mittel {8:0.000}, max {9}",
+                           gebaeude, zonen, tAk1, tAk3, faktor, LAUFZEIT_FAKTOR_GRENZE, kreisMs, KREIS_GRENZE_MS,
+                           letzter.simulation_Waermebedarf.Ak3.Kreis.DurchlaeufeMittel, letzter.simulation_Waermebedarf.Ak3.Kreis.DurchlaeufeMax);
+            Assert.True(faktor < MESS_FAKTOR * LAUFZEIT_FAKTOR_GRENZE,
+                        $"1054 auf AK3 braucht das {faktor:0.0}-fache von AK1 - mehr als das {MESS_FAKTOR:0}-fache der Grenze {LAUFZEIT_FAKTOR_GRENZE:0} (Q-AK3-5).");
+        }
     }
 }
