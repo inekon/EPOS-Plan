@@ -923,6 +923,10 @@ namespace WindowsFormsApplication1
             // NACH der gesamten Speicherstufe.
             ZwischenstufenAufnehmen();
 
+            // AK3-W2 (Festlegung 13): im AK3-Weg auch die Vektorstufen VOR der Speicherstufe.
+            // Nicht wählbar - ohne den Schalter bleibt die Zuordnung wie oben.
+            if (Ak3VektorstufenInSchleife) Ak3VektorstufenAufnehmen();
+
             bool schleifeGelaufen = false;
 
             // BW5 (Konzept Simulationsablauf 21): Der Zusatzbedarf der Desinfektion steht vor jeder Stufe
@@ -1758,6 +1762,8 @@ namespace WindowsFormsApplication1
             // BW5: die Deckung der Desinfektion - fähig ist, wer die Zieltemperatur erreicht.
             schleife.Desinfektion = _desinfektion;
             if (_desinfektion != null) DesinfektionFaehigkeitSetzen();
+            // AK3-W2: die Bedarfsnaht der Kaskadenstunde; null = Jahresvektor (heutiger Weg).
+            schleife.Stundenbedarf = Stundenbedarf;
 
             // KU2 (Kühlkonzept 5.2, 5.5): die Wärmepumpen im Kühlbetrieb und die
             // Tagesbetriebsart - VOR der Stundenschleife, denn am Kühltag ist ihr Heizkanal
