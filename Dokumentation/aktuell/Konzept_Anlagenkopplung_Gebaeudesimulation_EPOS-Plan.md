@@ -2,6 +2,8 @@
 
 > **Stand 07.10.2026 — AK3 wie gebaut: W0–W5 gebaut, Basis R42; W6 Papiere gebaut, offen: Sichtabnahme unter Windows, AK3-K (Kälteseite).** Gebaut sind der Gebäude-Stepper, die Kaskadenstunde mit Bedarfsnaht, die Interpolation über den Vorlauf (AK3-I, gilt ohne Schalter), der geschlossene Kreis im Kern, die Stufe in der Projekteinstellung, der Raumeinfluss der Heizkurve (H2) und die Oberfläche samt Bericht (Status #796, #799, #804), dazu Referenzprojekt, Basis R42 und Komfortkennzahlen auf AK3 (W5) sowie Wiki-Quellen und Logbuch-Entwürfe (W6). Abweichungen der Umsetzung vom Entwurf stehen in 6.3, 10.6 und 11.2.
 
+> **Nachgezogen 07.10.2026 — AK3-K (E103, E104) in Umsetzung** ([Register](Status_Gebaeudesimulation_VDI6007.md), [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): Die Kälteseite kommt in den geschlossenen Kreis (E103). Nach E104 wird in einer Zone an einem Tag nie geheizt und gekühlt: Am Kühltag der Zone ist ihre Raumheizung gesperrt, am Heiztag ihre Raumkühlung — je Zone und auf allen Stufen; Prozesswärme, Prozesskälte und Brauchwasser bleiben frei. Die Umschaltung der reversiblen Wärmepumpe wirkt als Verfügbarkeitsgrenze nur auf AK3 (Grund `UMSCHALTUNG`). 5.3, 7.3 und 7.4 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
+
 > **Nachgezogen 07.10.2026 — Entscheide E100 und E102** ([Register](Status_Gebaeudesimulation_VDI6007.md)): AK3 wird jetzt gebaut (E100; H6 aufgehoben), nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) mit den Antworten E102. AK3 ist eine **eigene, wählbare Stufe** (Vorgabe AK1), die Kaskade wird **befragt, nicht zurückgenommen**, die Interpolation der Wärmepumpenkennlinie über den Vorlauf ist der eigene Gegenstand **AK3-I** (H-F4 abgelöst). Kapitel 0, 6.3, 11.2, 12, 13 und 14 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
 
 > **Nachgezogen 05.10.2026 — Entscheid E89** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.70): Der Altweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, Q24 und Q25 sind gegenstandslos. Wo dieses Papier GA, „bis zur Ablösung“ oder die Löschliste nennt, gilt: Der Sonderfall „feste Last“ samt Hinweis und Ausweis bleibt dauerhaft und steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
@@ -793,9 +795,12 @@ enum Begrenzungsgrund          // Gebaeudeseite, entsteht in Schritt H (AK1, AK2
 
 **Die Paarungsregel.** Greift die Verfügbarkeit, trägt die Stunde gebäudeseitig `VERFUEGBARKEIT`,
 und der `Verfuegbarkeitsgrund` der Anlagenseite reist **daneben** mit — nicht an seiner Stelle.
-`UMSCHALTUNG` steht in beiden Aufzählungen, weil eine reversible Maschine an einem Kühltag für die
-Heizseite gar nicht erst zur Verfügung steht und die Übergabe dieser Seite dann nichts liefert
-(7.3). `VORLAUFGRENZE_KUEHLUNG` ist das Gegenstück zu `VORLAUF_ANLAGE` auf der Kälteseite (7.2).
+`UMSCHALTUNG` ist ein Grund der Anlagenseite: Auf AK3 mindert sich am Kühltag der reversiblen
+Wärmepumpe die Wärmeschranke um ihren Anteil, am Heiztag ist ihr Kälteanteil null, und der Grund
+steht, wenn gerade dieser Wegfall die Schranke bindet (7.3). Gebäudeseitig trägt die Stunde auch dann
+`VERFUEGBARKEIT`, der Anlagengrund `UMSCHALTUNG` reist daneben; der Wert `UMSCHALTUNG` des
+`Begrenzungsgrund` ist angelegt, wird nach der Paarungsregel aber nicht gebäudeseitig gesetzt. In einer
+Sperrstunde des Fahrplans bleibt der Anlagengrund `SPERRZEIT`, weil die Sperre ohnehin bindet. `VORLAUFGRENZE_KUEHLUNG` ist das Gegenstück zu `VORLAUF_ANLAGE` auf der Kälteseite (7.2).
 `HEIZLEISTUNG_MAX` heißt gebäudeseitig so und nicht `LEISTUNGSGRENZE`, damit es nicht mit der
 Grenzleistung des Erzeugers verwechselt wird.
 
@@ -814,7 +819,7 @@ gegen den nun kleineren Bedarf.
 
 **So gebaut (AK2-2a, 05.10.2026).** `Verfuegbarkeitsgrund` und die Naht `Anlagenverfuegbarkeit` (`LeistungKw`,
 `VorlaufC`, `Grund`) stehen in `EPOS.Kern/Allgemein/Simulation/Anlagenverfuegbarkeit.cs`, neben den Fassaden.
-`Begrenzungsgrund` trägt am Ende `VorlaufAnlage` und `Verfuegbarkeit`; `UMSCHALTUNG` ist noch nicht gebaut. Das Modul
+`Begrenzungsgrund` trägt am Ende `VorlaufAnlage` und `Verfuegbarkeit`; `UMSCHALTUNG` wird mit AK3-K gebaut (7.3). Das Modul
 `Gebaeude/` bekommt die Reihe je Zone am `GebaeudeModellEingang` (`Verfuegbarkeit`) und über
 `Stundenrand.MitVerfuegbarkeit` in den Stundenrand; es liest keine Anlagendaten (`ModultrennungswacheTests`, Satz 5).
 Greift die Schranke, trägt das `Stundenergebnis` den Gebäudegrund `Verfuegbarkeit` und daneben den Anlagengrund
@@ -1293,21 +1298,39 @@ steht**; im Regelbereich hat die Grenze nichts begrenzt. Der Bericht sagt in ein
 Grenze eine **Vorgabe** ist und keine gerechnete Taupunktgrenze. Eine Feuchtebilanz bleibt
 ausgeschlossen (1.3).
 
-### 7.3 Die Umschaltung greift nicht in die Kopplung ein
+### 7.3 Die Umschaltung und die Tagesart je Zone (E104)
 
 Eine reversible Maschine ist nach K8a des Kühlkonzepts **je Tag** entweder Heiz- oder
-Kältemaschine. Die Anlagenkopplung ändert daran nichts: Der Fahrplan trägt für den jeweils anderen
-Betrieb die Verfügbarkeit **null** mit dem `Verfuegbarkeitsgrund` **`UMSCHALTUNG`** (5.3), die
-Stunde bekommt gebäudeseitig denselben `Begrenzungsgrund`, und die Übergabe der anderen Seite
-liefert entsprechend nichts. Das ist genau der Fall, der ohne AK2 als ungedeckte Kilowattstunde
-erscheint und mit AK2 als Komfortstunde — und es ist der Fall, den K8a als „Planungsbefund, kein
-Modellfehler" bezeichnet.
+Kältemaschine. Davon getrennt gilt **je Zone** (E104): In einer Zone wird an einem Tag nie geheizt
+und gekühlt. Zwei Regeln, zwei Ebenen:
+
+- **Die Zonensperre — Bedarfsseite, alle Stufen.** Am Kühltag der Zone ist ihre **Raumheizung**
+  gesperrt (für alle Erzeuger), am Heiztag ihre **Raumkühlung** — ohne Kopplung, auf AK1, AK2 und
+  AK3. Die Tagesart wählt innerhalb der Kalenderfreigabe ([Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md)
+  3.1): beide Seiten frei → Tagessummen des unbegrenzten Probetags der Zone in Pass 1 (Kühltag, wenn
+  Σ Kühlen > Σ Heizen; Gleichstand und ein Tag ohne Bedarf sind Heiztage), nur eine frei → diese,
+  keine → keine Raumkonditionierung. Die Sperre setzt den Sollwert der Gegenseite für den ganzen Tag
+  auf „aus“. **Prozesswärme, Prozesskälte und Brauchwasser** sind keine Raumkonditionierung und
+  bleiben frei. Der Tagesbilanz-Weg rechnet keine Kühlung und bleibt unberührt.
+- **Die Umschaltung — Erzeugerseite, Verfügbarkeitsgrenze nur auf AK3.** Die Erzeugertagesart der
+  reversiblen Wärmepumpe bleibt projektweit nach K8a, gebildet aus Heiz- und Kühlkanal von Pass 1
+  **nach** der Zonensperre. Auf AK3 mindert sich am Kühltag der Wärmepumpe die Wärmeschranke um
+  ihren Anteil, am Heiztag ist ihr Kälteanteil null; bindet gerade dieser Wegfall, trägt die Stunde
+  gebäudeseitig `VERFUEGBARKEIT` und daneben den Anlagengrund `UMSCHALTUNG` (Paarungsregel, 5.3), in
+  einer Sperrstunde des Fahrplans `SPERRZEIT`. Auf AK1 und AK2 trägt die Umschaltung keine Schranke:
+  Eine heizende Zone am Kühltag der Wärmepumpe decken die übrigen Wärmeerzeuger, was offen bleibt,
+  ist Restbedarf; auf AK3 wird die Zone kühler. Spiegelbildlich für eine kühlende Zone am Heiztag.
+
+Ein Gebäude, das in verschiedenen Zonen am selben Tag heizt und kühlt, kann von **einer**
+reversiblen Maschine nicht vollständig versorgt werden — der Fall, den K8a als „Planungsbefund,
+kein Modellfehler" bezeichnet; ohne Kreis erscheint er als ungedeckte Kilowattstunde, auf AK3 als
+Komfortstunde.
 
 ### 7.4 Die benannten Abweichungen von der Symmetrie
 
 Die ersten drei haben denselben Grund: Die Kälteseite ist jünger. Der vierte Punkt ist mit **E37**
-aufgehoben und durch die Punkte 5 bis 9 ersetzt — die benannten Abweichungen der Kälteseite, wie sie
-die vierte Welle von AK1 gebaut hat.
+aufgehoben und durch die Punkte 5 bis 10 ersetzt — die benannten Abweichungen der Kälteseite, wie sie
+die vierte Welle von AK1 gebaut hat; Punkt 10 kommt mit AK3-K.
 
 1. **Keine Kühlkurve im Bestand, auch nicht als Festwert-Ersatz.** Der Heizseite steht
    `Tab_Energieanlagen.Vorlauf` (`:713`) als Bestands-Festwert zur Verfügung; die Kälteseite bekommt
@@ -1343,6 +1366,8 @@ die vierte Welle von AK1 gebaut hat.
    eingeschwungene Tag mit dem höchsten Tagesmittel der Außentemperatur ist das Gegenstück zur
    stationären Heizlast (8.4). Er trifft bei südlastigen Gebäuden nicht immer die Spitzenlast — eine
    eingetragene Nennleistung überschreibt ihn.
+10. **Ein Projekt nur mit Kältemaschine** bekommt seinen Kühlvorlauf aus deren `Kuehl_Vorlauf`
+    (Kühlkonzept 5.2); der Kühlvorlauf bleibt fest (Punkt 5, E104).
 
 Einen eigenen Schalter hat die Kälteseite **wie** die Wärmeseite (`Kuehluebergabe_Aktiv`, E37 A1);
 das ist keine Abweichung.
@@ -1350,11 +1375,10 @@ das ist keine Abweichung.
 **So gebaut (AK2-2b, 05.10.2026).** Die Komfortkennzahlen der Kälteseite (`Komfort_Ueberschreitungsstunden`,
 `Komfort_Kelvinstunden_Kuehlung`) zählen spiegelbildlich: Raumluft über dem Kühlsollwert der Stunde
 (`GebaeudeModellErgebnis.Kuehlsollwertreihe`, mit Kühlkalender seine Reihe) um mehr als die Schwelle, in der
-Nutzungszeit, nur mit wirksamer Kühlung; Zonen und Projekt wie auf der Wärmeseite (5.5). Eine weitere Abweichung
-bleibt benannt offen: **`UMSCHALTUNG` ist nicht gebaut.** Die Tagesbetriebsart der reversiblen Maschine (K8a)
-entsteht in der Kältekaskade (`Kaeltekaskade`) aus den Tagessummen des Projektbedarfs, also nach der Gebäuderechnung und hinter der
-Naht; der Profilweg müsste dafür Pass 1 immer fahren und den Kältebedarf einbeziehen. Das gehört zur echten
-Kopplung (AK3) oder in einen eigenen Auftrag; bis dahin trägt ein Kühltag auf der Heizseite keine Schranke.
+Nutzungszeit, nur mit wirksamer Kühlung; Zonen und Projekt wie auf der Wärmeseite (5.5). **`UMSCHALTUNG` wird mit
+AK3-K gebaut** (E103, E104; [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md) 4.5): Die Tagesbetriebsart der
+reversiblen Maschine (K8a) entsteht aus den Kanälen von Pass 1 nach der Zonensperre (7.3); als Verfügbarkeitsgrenze
+wirkt sie nur auf AK3, auf AK1 und AK2 trägt ein Kühltag der Wärmepumpe auf der Heizseite keine Schranke.
 
 ---
 
