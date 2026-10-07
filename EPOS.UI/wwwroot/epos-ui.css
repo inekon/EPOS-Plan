@@ -15721,3 +15721,113 @@ td.epos-vorlage-katalogbeschreibung {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* G5-N: DIE NORDRICHTUNGSWAHL (Baustein Nordrichtungswahl) - Feld, Uebernehmen und Vorschau in einer
+   umbrechenden Zeile, darunter die Schnellwahl. Nur angenommen oder nur vorgeschlagen: Warnstil mit den
+   Warntokens (Warntext auf Warnflaeche haelt 4,5:1). Die Vorschau zeichnet mit Tokens: Ring, N-Marke,
+   Pfeil der Planoberseite in der Markenfarbe. */
+.epos-nordwahl {
+    display: grid;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 4px;
+    background: var(--epos-flaeche-hell);
+}
+
+.epos-nordwahl--warnung {
+    border-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+}
+
+.epos-nordwahl--warnung .epos-nordwahl-datei,
+.epos-nordwahl--warnung .epos-nordwahl-herkunft {
+    color: var(--epos-warn-text);
+}
+
+.epos-nordwahl-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.epos-nordwahl-wert {
+    width: 6em;
+}
+
+.epos-nordwahl-schnellwahl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.epos-nordwahl-richtung {
+    min-width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+}
+
+.epos-nordwahl-richtung[aria-pressed="true"] {
+    border-color: var(--epos-marke);
+    color: var(--epos-marke);
+    font-weight: 600;
+}
+
+.epos-nordwahl-vorschau {
+    width: 72px;
+    height: 72px;
+    flex: none;
+}
+
+.epos-nordwahl-ring {
+    fill: var(--epos-flaeche-hell);
+    stroke: var(--epos-rahmen);
+    stroke-width: 2;
+}
+
+.epos-nordwahl-nord {
+    fill: var(--epos-text);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.epos-nordwahl-marke {
+    stroke: var(--epos-text);
+    stroke-width: 2;
+}
+
+.epos-nordwahl-pfeil {
+    stroke: var(--epos-marke);
+    fill: var(--epos-marke);
+    stroke-width: 4;
+}
+
+.epos-gebaeude-ausrichtung {
+    display: grid;
+    gap: 6px;
+}
+
+@media (forced-colors: active) {
+
+    .epos-nordwahl--warnung {
+        border-color: Highlight;
+    }
+
+    .epos-nordwahl-ring {
+        fill: Canvas;
+        stroke: CanvasText;
+    }
+
+    .epos-nordwahl-nord {
+        fill: CanvasText;
+    }
+
+    .epos-nordwahl-marke {
+        stroke: CanvasText;
+    }
+
+    .epos-nordwahl-pfeil {
+        stroke: Highlight;
+        fill: Highlight;
+    }
+}

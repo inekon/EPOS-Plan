@@ -165,6 +165,23 @@
                 <dt>@Texte.KopfZonenregel</dt><dd>@(stand.Zonierung?.RegelText ?? kopf.Zonenregel)</dd>
             </dl>
         }
+        @if (_nord is GebaeudeNordrichtungDaten nord)
+        {
+            @* G5-N (N1-N3): DIE NORDRICHTUNG gleich unter dem Dateikopf - immer sichtbar; im Warnstil, solange sie nur
+               angenommen (die Datei nennt keine) oder nur vorgeschlagen ist (gbXML: CADModelAzimuth wird nie still
+               angewandt, erst "Uebernehmen" bzw. das bestaetigte Feld). Eine Aenderung liest die Datei neu und ordnet
+               neu zu, ohne den Dialog zu verlassen; Handaenderungen bleiben. Ohne Delegat eine reine Anzeige. *@
+            bool angenommen = string.Equals(nord.Herkunft, "ANNAHME", StringComparison.Ordinal);
+            bool vorschlag = angenommen && nord.DateiPlanoberseiteGrad.HasValue;
+            <div class="epos-gebimport-nordrichtung" data-herkunft="@nord.Herkunft">
+                <Gruppenkopf Titel="@Texte.GruppeNordrichtung" />
+                <Nordrichtungswahl Wert="@(vorschlag ? nord.DateiPlanoberseiteGrad : nord.PlanoberseiteGrad)"
+                                   OnWert="BeiNordrichtung" Schnellwahl="@nord.Schnellwahl" Beschriftung="@nord.Beschriftung"
+                                   DateiText="@nord.DateiText" Herkunft="@nord.Herkunft" HerkunftText="@nord.HerkunftText"
+                                   Vorschlag="@vorschlag" Unbestaetigt="@angenommen" Hervorgehoben="@angenommen"
+                                   Aktiv="@(NordrichtungSetzen is not null && !Beschaeftigt)" />
+            </div>
+        }
         @if (ProjektdateiLesen is not null)
         {
             @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. *@
@@ -958,6 +975,15 @@
     /// <summary>Lädt die Projektdatei zum Gebäude (Pfad, Gebäudeindex) dazu; <c>null</c> = kein Knopf.</summary>
     [Parameter] public Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>? ProjektdateiLesen { get; set; }
 
+    /// <summary>G5-N (N1–N3): die Nordrichtung des gelesenen Imports; <c>null</c> = vor dem Lesen bzw. ohne Weg.</summary>
+    [Parameter] public Func<GebaeudeNordrichtungDaten?>? NordrichtungDaten { get; set; }
+
+    /// <summary>
+    /// G5-N (N2): setzt die Richtung der Planoberseite und liest die Datei damit neu (im Arbeitsfaden der Hülle); danach
+    /// ordnet der Dialog neu zu. Kein Delegat = die Nordrichtung ist nur Anzeige.
+    /// </summary>
+    [Parameter] public Func<double?, CancellationToken, Task<GebaeudeLesestand>>? NordrichtungSetzen { get; set; }
+
     /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
     [Parameter] public Action? ProjektdateiEntfernen { get; set; }
 
@@ -1026,6 +1052,7 @@
     private CancellationTokenSource? _abbruch;
 
     private GebaeudeLesestand? _lesestand;
+    private GebaeudeNordrichtungDaten? _nord;
     private int _gebaeudeIndex;
     private GebaeudeImportStand? _stand;
     private List<GebaeudeFeldzeileDaten> _zeilen = new();
@@ -1308,6 +1335,7 @@
         _fortschrittText = "";
         _meldung = "";
         _lesestand = null;
+        _nord = null;
         _stand = null;
         _zeilen = new List<GebaeudeFeldzeileDaten>();
         _gebaeudeIndex = 0;
@@ -1336,6 +1364,7 @@
             {
                 _lesestand = stand;
                 NeuZuordnen();
+                _nord = NordrichtungDaten?.Invoke();
             }
             else
             {
@@ -1355,6 +1384,52 @@
             _abbruch?.Dispose();
             _abbruch = null;
         }
+    }
+
+    /// <summary>
+    /// G5-N (N2): <b>Eine neue Richtung der Planoberseite</b> — die Hülle liest die Datei damit neu (Ladezustand wie beim
+    /// Lesen, Esc bricht ab), danach wird neu zugeordnet: Bauteilliste, Ansicht und Meldungen folgen. Gebäudewahl, Klasse,
+    /// Raumhaken und Handänderungen bleiben — es ist dieselbe Datei.
+    /// </summary>
+    private async Task BeiNordrichtung(double planoberseite)
+    {
+        if (NordrichtungSetzen is null || _lesestand is null || Beschaeftigt) return;
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = Texte.NordrichtungLaeuft;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        try
+        {
+            GebaeudeLesestand stand = await NordrichtungSetzen(planoberseite, _abbruch.Token);
+            if (stand.Gelesen && stand.Gebaeude.Count > 0)
+            {
+                _lesestand = stand;
+                if (_gebaeudeIndex >= stand.Gebaeude.Count) _gebaeudeIndex = 0;
+            }
+            else
+            {
+                string text = string.Join(Environment.NewLine, stand.Meldungen.Select(m => m.Text));
+                Melden(text.Length > 0 ? text : Texte.NichtGelesen, WarnStufe.Fehler);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Abgebrochen: Es gilt, was die Hülle danach führt - unten neu gefragt.
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+        string meldung = _meldung;
+        WarnStufe stufe = _meldungStufe;
+        NeuZuordnen();
+        if (meldung.Length > 0 && _meldung.Length == 0) Melden(meldung, stufe);
+        _nord = NordrichtungDaten?.Invoke();
     }
 
     // =====================================================================

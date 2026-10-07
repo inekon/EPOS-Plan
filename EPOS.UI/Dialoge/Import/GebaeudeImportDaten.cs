@@ -1035,6 +1035,12 @@ public sealed class GebaeudeImportTexte
     /// <summary>GIMP_DLG_GRP_QUELLE</summary>
     public string GruppeQuelle { get; set; } = Resource.GIMP_DLG_GRP_QUELLE;
 
+    /// <summary>GEB_AUSRICHTUNG_NORDRICHTUNG — der Abschnitt der Nordrichtung (G5-N).</summary>
+    public string GruppeNordrichtung { get; set; } = Resource.GEB_AUSRICHTUNG_NORDRICHTUNG;
+
+    /// <summary>GEB_AUSRICHTUNG_LAEUFT — der Fortschrittstext des Neulesens mit neuer Nordrichtung (G5-N).</summary>
+    public string NordrichtungLaeuft { get; set; } = Resource.GEB_AUSRICHTUNG_LAEUFT;
+
     /// <summary>GIMP_DLG_KOPF_DATEI</summary>
     public string KopfDatei { get; set; } = Resource.GIMP_DLG_KOPF_DATEI;
 

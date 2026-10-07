@@ -264,6 +264,40 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* --- G5-N (N5/N6): die Ausrichtung des gewaehlten Gebaeudes ----------------
+       Dieselbe Eingabe wie im Zuordnungsdialog. "Ausrichtung aendern..." fragt mit der Zahl der Bauteile zurueck und
+       dreht SOFORT (ein Vorgang des Kerns, wie "In DB uebernehmen"); danach die Meldung und neu gelesen. Ohne
+       Importquelle ist der Abschnitt gesperrt, der Hinweis nennt den Grund, der Knopf ist weich gesperrt. *@
+    @if (Ausrichtung is not null && _gewaehlt is not null && AusrichtungVon(_gewaehlt) is GebaeudeAusrichtungDaten ausrichtung)
+    {
+        <Gruppenkopf Titel="@ausrichtung.Titel">
+            <KindInhalt>
+                <div class="epos-gebaeude-ausrichtung" data-aenderbar="@(ausrichtung.Aenderbar ? "ja" : "nein")">
+                    <Nordrichtungswahl Wert="@(_ausrichtungWert ?? ausrichtung.PlanoberseiteGrad)" OnWert="BeiAusrichtungWert"
+                                       Schnellwahl="@ausrichtung.Schnellwahl" Beschriftung="@ausrichtung.Beschriftung"
+                                       Herkunft="@ausrichtung.Herkunft" HerkunftText="@ausrichtung.HerkunftText"
+                                       Aktiv="@ausrichtung.Aenderbar" Hinweis="@ausrichtung.Hinweis" />
+                    @if (AusrichtungAendern is not null)
+                    {
+                        <div class="epos-leiste">
+                            @if (ausrichtung.Aenderbar)
+                            {
+                                <button type="button" class="epos-knopf epos-gebaeude-ausrichtung-aendern" title="@BtnAusrichtungHinweis"
+                                        @onclick="BeiAusrichtungAendern">@BtnAusrichtungText</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-gebaeude-ausrichtung-aendern" aria-disabled="true"
+                                        title="@ausrichtung.Hinweis"
+                                        @onclick="() => Melden(ausrichtung.Hinweis, WarnStufe.Hinweis)">@BtnAusrichtungText</button>
+                            }
+                        </div>
+                    }
+                </div>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
     @if (!Wizard)
     {
         @* PROJEKT (DL-2, Schritt 7): Die Projektliste ist ein Arbeitsstand des Wirtes -
@@ -565,6 +599,10 @@
     @* --- Rueckfrage vor dem Entfernen eines Gebaeudes mit Zonen (G6a, A2) --- *@
     <Rueckfrage Offen="@_ausProjektFrage" TitelText="@BtnEntfernenText" Frage="@AusProjektFrage"
                 VorgabeNein="true" Beantwortet="AusProjektBeantwortet" JaText="@JaText" NeinText="@NeinText" />
+
+    @* --- G5-N (N5): Rueckfrage vor dem Drehen aller Bauteile ------------------ *@
+    <Rueckfrage Offen="@(_ausrichtungFrage is not null)" TitelText="@BtnAusrichtungText" Frage="@(_ausrichtungFrage ?? "")"
+                VorgabeNein="true" Beantwortet="AusrichtungBeantwortet" JaText="@JaText" NeinText="@NeinText" />
 
     <Rueckfrage Offen="@_loeschfrage" TitelText="@BtnDbLoeschenText"
                 Frage="@Loeschfrage" Beantwortet="LoeschenBeantwortet"
@@ -1780,6 +1818,94 @@
     private string? _neulesenGeschoss;
     private bool _neulesenGrundrissLaeuft;
     private string? _neulesenGrundrissHinweis;
+
+    // =================================================================================
+    // G5-N (N5/N6): Ausrichtung
+    // =================================================================================
+
+    /// <summary>
+    /// Die gespeicherte Ausrichtung einer Zeile (Richtung der Planoberseite, Herkunft, Zahl der Bauteile); ohne Projektkopie
+    /// oder Importquelle gesperrt. Kein Delegat = kein Abschnitt; <c>null</c> als Antwort = kein Abschnitt für diese Zeile.
+    /// </summary>
+    [Parameter] public Func<GebaeudeProjektZeile, GebaeudeAusrichtungDaten?>? Ausrichtung { get; set; }
+
+    /// <summary>„Ausrichtung ändern…“: dreht alle Bauteile der Zeile auf die neue Richtung der Planoberseite und speichert sofort.</summary>
+    [Parameter] public Func<GebaeudeProjektZeile, double, GebaeudeAusrichtungErgebnis>? AusrichtungAendern { get; set; }
+
+    /// <summary>GEB_AUSRICHTUNG_AENDERN</summary>
+    [Parameter] public string BtnAusrichtungText { get; set; } = Resource.GEB_AUSRICHTUNG_AENDERN;
+
+    /// <summary>GEB_AUSRICHTUNG_AENDERN_HINWEIS</summary>
+    [Parameter] public string BtnAusrichtungHinweis { get; set; } = Resource.GEB_AUSRICHTUNG_AENDERN_HINWEIS;
+
+    /// <summary>GEB_AUSRICHTUNG_FRAGE ({0} = Bauteile, {1} = Drehung in Grad)</summary>
+    [Parameter] public string AusrichtungFrageText { get; set; } = Resource.GEB_AUSRICHTUNG_FRAGE;
+
+    /// <summary>GEB_AUSRICHTUNG_UNVERAENDERT</summary>
+    [Parameter] public string AusrichtungUnveraendertText { get; set; } = Resource.GEB_AUSRICHTUNG_UNVERAENDERT;
+
+    private readonly Dictionary<int, GebaeudeAusrichtungDaten?> _ausrichtungen = new();
+    private int? _ausrichtungFuer;
+    private double? _ausrichtungWert;
+    private string? _ausrichtungFrage;
+
+    /// <summary>Die Rückfrage vor dem Drehen, wie sie gerade steht (Prüfhilfe für Tests); <c>null</c> = keine.</summary>
+    public string? AusrichtungFrage => _ausrichtungFrage;
+
+    /// <summary>Die Ausrichtung einer Zeile — je Zeile einmal gefragt, nach einer Änderung neu; der Eingabewert gilt je Zeile.</summary>
+    private GebaeudeAusrichtungDaten? AusrichtungVon(GebaeudeProjektZeile z)
+    {
+        if (Ausrichtung is null) return null;
+        if (_ausrichtungFuer != z.IdZ)
+        {
+            _ausrichtungFuer = z.IdZ;
+            _ausrichtungWert = null;
+            _ausrichtungFrage = null;
+        }
+        if (!_ausrichtungen.TryGetValue(z.IdZ, out GebaeudeAusrichtungDaten? a))
+        {
+            a = Ausrichtung(z);
+            _ausrichtungen[z.IdZ] = a;
+        }
+        return a;
+    }
+
+    /// <summary>Ein bestätigter Wert der Eingabe — noch nichts gedreht; das tut erst „Ausrichtung ändern…“.</summary>
+    private void BeiAusrichtungWert(double wert) => _ausrichtungWert = wert;
+
+    /// <summary>Die Drehung von <paramref name="alt"/> nach <paramref name="neu"/> im Uhrzeigersinn, normiert auf [0, 360).</summary>
+    private static double Drehung(double alt, double neu)
+    {
+        double d = Math.Round(((neu - alt) % 360.0 + 360.0) % 360.0, 1, MidpointRounding.AwayFromZero);
+        return d >= 360.0 ? 0.0 : d;
+    }
+
+    /// <summary>„Ausrichtung ändern…“: unverändert = Hinweis; sonst die Rückfrage mit der Zahl der Bauteile und der Drehung.</summary>
+    private void BeiAusrichtungAendern()
+    {
+        if (_gewaehlt is null || AusrichtungAendern is null || AusrichtungVon(_gewaehlt) is not { Aenderbar: true } a) return;
+        double neu = _ausrichtungWert ?? a.PlanoberseiteGrad;
+        double drehung = Drehung(a.PlanoberseiteGrad, neu);
+        if (drehung == 0.0) { Melden(AusrichtungUnveraendertText, WarnStufe.Hinweis); return; }
+        _ausrichtungFrage = string.Format(System.Globalization.CultureInfo.CurrentCulture, AusrichtungFrageText,
+                                          a.Bauteile, Zahlen.Anzeigetext(drehung));
+    }
+
+    /// <summary>Ja dreht (ein Vorgang des Kerns) und meldet das Ergebnis; danach Ausrichtung und Zeile neu gelesen. Nein lässt alles.</summary>
+    private void AusrichtungBeantwortet(bool? ja)
+    {
+        _ausrichtungFrage = null;
+        if (ja != true || _gewaehlt is not GebaeudeProjektZeile z || AusrichtungAendern is null
+            || AusrichtungVon(z) is not { Aenderbar: true } a) return;
+        GebaeudeAusrichtungErgebnis e = AusrichtungAendern(z, _ausrichtungWert ?? a.PlanoberseiteGrad);
+        Melden(e.Meldung, e.Ok ? WarnStufe.Hinweis : WarnStufe.Fehler);
+        if (!e.Ok) return;
+        _ausrichtungen.Remove(z.IdZ);
+        _ausrichtungWert = null;
+        _neulesenStand = null;   // eine offene Ansicht des Neulesens zeigte die alte Drehung
+        ZeileAuffrischen?.Invoke(z);
+        ProjektzeileWaehlen(z);
+    }
 
     /// <summary>Ist die Überlagerung „Datei erneut lesen“ offen?</summary>
     public bool NeuLesenOffen => _neulesenOffen;
