@@ -189,5 +189,29 @@ namespace EPOS.Kern.Tests
             // Der Puffer überbrückt die Sperre: höchstens eine Sperrstunde je Woche ohne entnehmbaren Vorrat.
             Assert.True(leer <= 52, "Speicher leer in " + leer + " Stunden");
         }
+
+        /// <summary>
+        /// <b>Vergleich ohne Kreis gegen AK3</b> (Anlagenkopplung 11.2, Entwurf AK3 Abschnitt 5): dasselbe Projekt auf
+        /// AK1 mit Fahrplan (Profilweg) und auf AK3; erwartet höchstens so viele Unterschreitungsstunden auf AK3.
+        /// </summary>
+        [Fact]
+        public void Auf_AK3_hoechstens_so_viele_Unterschreitungsstunden_wie_ohne_Kreis()
+        {
+            if (!_db.Vorhanden) return;
+            SimulationRunner ak3 = Rechnen(PROJEKT, out double tAk3);
+            Komfortkennzahlen kAk3 = ak3.simulation_Waermebedarf.KomfortProjekt().Heizen;
+            StufeSetzen(PROJEKT, DbWerte.ANLAGENKOPPLUNG_AK1);
+            SimulationRunner ohne = Rechnen(PROJEKT, out double tOhne);
+            Assert.Null(ohne.simulation_Waermebedarf.Ak3);
+            Assert.True(ohne.simulation_Waermebedarf.FahrplanWirksam);
+            Komfortkennzahlen kOhne = ohne.simulation_Waermebedarf.KomfortProjekt().Heizen;
+            Assert.NotNull(kAk3);
+            Assert.NotNull(kOhne);
+            _aus.WriteLine("1058 ohne Kreis (AK1 mit Fahrplan): {0} h, {1:0.0} Kh, längste Strecke {2} h, Wärme Gebäude {3:0.000}, Laufzeit {4:0.00} s",
+                           kOhne.Stunden, kOhne.Kelvinstunden, kOhne.LaengsteStrecke, ohne.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt, tOhne);
+            _aus.WriteLine("1058 AK3: {0} h, {1:0.0} Kh, längste Strecke {2} h, Wärme Gebäude {3:0.000}, Laufzeit {4:0.00} s",
+                           kAk3.Stunden, kAk3.Kelvinstunden, kAk3.LaengsteStrecke, ak3.simulation_Waermebedarf.Waermebedarf_Gebaeude_Gesamt, tAk3);
+            Assert.True(kAk3.Stunden <= kOhne.Stunden, "AK3 " + kAk3.Stunden + " h > ohne Kreis " + kOhne.Stunden + " h");
+        }
     }
 }
