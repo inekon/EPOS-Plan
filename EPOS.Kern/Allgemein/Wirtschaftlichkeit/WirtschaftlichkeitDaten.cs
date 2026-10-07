@@ -841,8 +841,9 @@ namespace WindowsFormsApplication1
             if (!string.Equals(EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal) &&
                 !string.IsNullOrEmpty(EnergiesteuerWahl))
             {
-                // Die Steuerwerte (PARAGRAF_53, ENERGETISCH …) über ihre Anzeigenamen — dieselben Texte wie die Wahllisten.
-                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_ENERGIESTEUER", kultur, " · Energiesteuer {0} ({1})"),
+                // Die Steuerwerte (PARAGRAF_53, ENERGETISCH …) über ihre Anzeigenamen — dieselben Texte wie die Wahllisten; der Wert
+                // steht hinter Doppelpunkt und Komma, nie in Klammern (die Anzeigenamen tragen selbst welche).
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_ENERGIESTEUER", kultur, " · Energiesteuer: {0}, {1}"),
                                    Anzeigename(EnergiesteuerWahl, kultur), Anzeigename(AufteilungMethode, kultur));
                 if (Jahresnutzungsgrad.HasValue)
                     t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_NUTZUNGSGRAD", kultur, ", Nutzungsgrad {0} %"),
@@ -850,7 +851,7 @@ namespace WindowsFormsApplication1
             }
             if (!string.Equals(Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, StringComparison.Ordinal) &&
                 !string.IsNullOrEmpty(Unternehmensart))
-                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_UNTERNEHMENSART", kultur, " · Unternehmensart {0}"),
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_UNTERNEHMENSART", kultur, " · Unternehmensart: {0}"),
                                    Anzeigename(Unternehmensart, kultur));
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
                 // Der Vermerk in der Sprache der Berichtskultur (KP3-A1b); die Wahrheitswerte aus den Ja/Nein-Texten, klein.

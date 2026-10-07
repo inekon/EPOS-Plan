@@ -35,8 +35,8 @@ namespace EPOS.Kern.Tests
             string zeile = Parameter().Nachweis(CultureInfo.GetCultureInfo("en-US"));
             Assert.StartsWith("i = 3.0 % · T = 20 a · Energy price increase 2.5 %/a, operation 1.5 %/a, " +
                               "investment/replacement 1.5 %/a (as operating) · Feed-in tariff 0.082 €/kWh", zeile);
-            Assert.Contains(" · Energy tax sec. 53 EnergieStG (form 1131) (energy-based (conservative)), annual utilisation rate 75.5 %", zeile);
-            Assert.Contains(" · Type of business manufacturing business", zeile);
+            Assert.Contains(" · Energy tax: sec. 53 EnergieStG (form 1131), energy-based (conservative), annual utilisation rate 75.5 %", zeile);
+            Assert.Contains(" · Type of business: manufacturing business", zeile);
             Assert.Contains(" · CHP feed-in tariff 0.040 €/kWh", zeile);
             foreach (string deutsch in new[] { "Preissteigerung", "wie Betrieb", "Einspeisevergütung", "Energiesteuer",
                                                "Unternehmensart", "Nutzungsgrad", "PARAGRAF_53", "PROD_GEWERBE" })
@@ -49,9 +49,20 @@ namespace EPOS.Kern.Tests
             string zeile = Parameter().Nachweis(CultureInfo.GetCultureInfo("de-DE"));
             Assert.StartsWith("i = 3,0 % · T = 20 a · Preissteigerung Energie 2,5 %/a, Betrieb 1,5 %/a, " +
                               "Investition/Ersatz 1,5 %/a (wie Betrieb) · Einspeisevergütung 0,082 €/kWh", zeile);
-            Assert.Contains(" · Energiesteuer § 53 EnergieStG (Formular 1131) (energetisch (konservativ)), Nutzungsgrad 75,5 %", zeile);
-            Assert.Contains(" · Unternehmensart produzierendes Gewerbe", zeile);
+            Assert.Contains(" · Energiesteuer: § 53 EnergieStG (Formular 1131), energetisch (konservativ), Nutzungsgrad 75,5 %", zeile);
+            Assert.Contains(" · Unternehmensart: produzierendes Gewerbe", zeile);
             Assert.Contains(" · Einspeisevergütung KWK 0,040 €/kWh", zeile);
+        }
+
+        /// <summary>Die Steuer- und Artwerte stehen hinter Doppelpunkt und Komma, nie in umschließenden Klammern.</summary>
+        [Theory]
+        [InlineData("en-US")]
+        [InlineData("de-DE")]
+        public void Keine_doppelten_Klammern(string kultur)
+        {
+            string zeile = Parameter().Nachweis(CultureInfo.GetCultureInfo(kultur));
+            Assert.DoesNotContain("((", zeile);
+            Assert.DoesNotContain("))", zeile);
         }
 
         [Theory]

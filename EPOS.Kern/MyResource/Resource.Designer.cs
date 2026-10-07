@@ -13694,7 +13694,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  · Energiesteuer {0} ({1}) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Energiesteuer: {0}, {1} ähnelt.
         /// </summary>
         public static string BV_A1D_NACHWEIS_ENERGIESTEUER {
             get {
@@ -13766,7 +13766,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  · Unternehmensart {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Unternehmensart: {0} ähnelt.
         /// </summary>
         public static string BV_A1D_NACHWEIS_UNTERNEHMENSART {
             get {

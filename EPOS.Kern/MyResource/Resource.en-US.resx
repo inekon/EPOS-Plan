@@ -47609,7 +47609,7 @@ chart</value>
   </data>
   <!-- KP3-A1d: Variantenvergleich und Nachweiszeile der Wirtschaftlichkeit in der Berichtssprache -->
   <data name="BV_A1D_MERKMAL_ABSCHALTPUNKT" xml:space="preserve">
-    <value>Cut-off point</value>
+    <value>Bivalence point</value>
   </data>
   <data name="BV_A1D_MERKMAL_APERTURFLAECHE" xml:space="preserve">
     <value>Aperture area</value>
@@ -47627,7 +47627,7 @@ chart</value>
     <value>Bivalent operation</value>
   </data>
   <data name="BV_A1D_MERKMAL_BRENNWERT" xml:space="preserve">
-    <value>Condensing operation</value>
+    <value>Condensing mode</value>
   </data>
   <data name="BV_A1D_MERKMAL_WG_GESAMT" xml:space="preserve">
     <value>Total efficiency</value>
@@ -47636,7 +47636,7 @@ chart</value>
     <value>Total volume</value>
   </data>
   <data name="BV_A1D_MERKMAL_GRENZLEISTUNG" xml:space="preserve">
-    <value>Output limit</value>
+    <value>Lower output limit</value>
   </data>
   <data name="BV_A1D_MERKMAL_HERSTELLER" xml:space="preserve">
     <value>Manufacturer</value>
@@ -47690,7 +47690,7 @@ chart</value>
     <value>Return temperature</value>
   </data>
   <data name="BV_A1D_MERKMAL_SOLARANTEIL" xml:space="preserve">
-    <value>Solar fraction</value>
+    <value>Solar coverage</value>
   </data>
   <data name="BV_A1D_MERKMAL_SPEICHERTYP" xml:space="preserve">
     <value>Storage type</value>
@@ -47804,13 +47804,13 @@ chart</value>
     <value>, start of funding {0}</value>
   </data>
   <data name="BV_A1D_NACHWEIS_ENERGIESTEUER" xml:space="preserve">
-    <value> · Energy tax {0} ({1})</value>
+    <value> · Energy tax: {0}, {1}</value>
   </data>
   <data name="BV_A1D_NACHWEIS_NUTZUNGSGRAD" xml:space="preserve">
     <value>, annual utilisation rate {0} %</value>
   </data>
   <data name="BV_A1D_NACHWEIS_UNTERNEHMENSART" xml:space="preserve">
-    <value> · Type of business {0}</value>
+    <value> · Type of business: {0}</value>
   </data>
   <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
     <value> · CHP feed-in tariff {0} €/kWh</value>

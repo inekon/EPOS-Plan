@@ -47811,13 +47811,13 @@ Chart</value>
     <value>, Förderbeginn {0}</value>
   </data>
   <data name="BV_A1D_NACHWEIS_ENERGIESTEUER" xml:space="preserve">
-    <value> · Energiesteuer {0} ({1})</value>
+    <value> · Energiesteuer: {0}, {1}</value>
   </data>
   <data name="BV_A1D_NACHWEIS_NUTZUNGSGRAD" xml:space="preserve">
     <value>, Nutzungsgrad {0} %</value>
   </data>
   <data name="BV_A1D_NACHWEIS_UNTERNEHMENSART" xml:space="preserve">
-    <value> · Unternehmensart {0}</value>
+    <value> · Unternehmensart: {0}</value>
   </data>
   <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
     <value> · Einspeisevergütung KWK {0} €/kWh</value>
