@@ -678,6 +678,26 @@ namespace WindowsFormsApplication1
         /// <exception cref="GebaeudeModellException">bei ungültigem Rand oder verletzter Abschnittsregel.</exception>
         internal Stundenergebnis SchrittMitMuster(in Stundenrand r, Stundenmuster muster)
         {
+            if (!VersucheSchrittMitMuster(in r, muster, out Stundenergebnis ergebnis, out string bruch))
+                throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt, bruch);
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Derselbe Schritt mit festem Muster, ohne Ausnahme im erwarteten Fall</b> — so fragt die Zonenschleife,
+        /// ob das Muster hält: Bricht es die Abschnittsregel (falsches Vorzeichen, Umkehr im Innern, keine haltbare
+        /// Übergabe), kommt <c>false</c> mit dem Grund in <paramref name="bruch"/> zurück, und der Zustand bleibt
+        /// unverändert. Ein Muster, das nicht hält, ist ein regulärer Ausgang der Iteration (Mehrzonenkonzept 2.4),
+        /// kein Fehler; als Ausnahme geworfen und gleich wieder gefangen, hielte er einen Debugger an, der bei
+        /// geworfenen Ausnahmen stoppt — mit einer Meldung, die wie ein Rechenfehler aussieht. Rechnung und Ergebnis
+        /// sind dieselben wie in <see cref="SchrittMitMuster"/>.
+        /// </summary>
+        /// <exception cref="ArgumentException">wie <see cref="SchrittMitMuster"/>.</exception>
+        /// <exception cref="GebaeudeModellException">bei ungültigem Rand.</exception>
+        internal bool VersucheSchrittMitMuster(in Stundenrand r, Stundenmuster muster, out Stundenergebnis ergebnis, out string bruch)
+        {
+            ergebnis = default;
+            bruch = null;
             RandPruefen(in r);
             if (muster == null) throw new ArgumentNullException(nameof(muster));
             if (r.MitKuehluebergabe)
@@ -718,7 +738,9 @@ namespace WindowsFormsApplication1
                         throw new ArgumentException(_bezeichnung + ": Der Fall " + fall + " hat eine Kühlübergabe und lässt sich nicht mit festem Muster nachrechnen.", nameof(muster));
                 }
                 bool uebergabefall = fall == Betriebsfall.UebergabeGesaettigt || fall == Betriebsfall.UebergabeRegelbereich;
-                Abschnitt ab = uebergabefall ? UebergabeImMuster(fall, x, in r, i) : Aufbauen(fall, in r);
+                Abschnitt ab;
+                if (!uebergabefall) ab = Aufbauen(fall, in r);
+                else if (!UebergabeImMuster(fall, x, in r, i, out ab, out bruch)) return false;
 
                 double rest = STUNDE_S - t;
                 double tau = muster.Dauer[i];
@@ -733,9 +755,11 @@ namespace WindowsFormsApplication1
                 // das Muster nicht haltbar — die Zonenschleife rechnet die Stunde dann frei (Schritt).
                 if (InnenpruefungObergrenzeFuerProbe > 0
                     && InnenUmkehr(fall, in ab, x, u.Ende(x, ab.B), tau, in r, out double tExtremum, out _, out _))
-                    throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
-                        _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
-                        " kehrt nach " + tExtremum.ToString("F1", CultureInfo.InvariantCulture) + " s im Innern um; das Muster ist nicht haltbar.");
+                {
+                    bruch = _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
+                            " kehrt nach " + tExtremum.ToString("F1", CultureInfo.InvariantCulture) + " s im Innern um; das Muster ist nicht haltbar.";
+                    return false;
+                }
                 if (Innenumkehrmessung)
                     Messen(fall, in ab, x, u.Ende(x, ab.B), tau, in r, ref mUmkehrJ, ref mUmkehrAb, ref mBandKs, ref mBandAb);
                 double s1 = ab.Ausgang(0, xMittel);
@@ -748,19 +772,19 @@ namespace WindowsFormsApplication1
                 {
                     case Betriebsfall.HeizenGeregelt:
                     case Betriebsfall.Heizgrenze:
-                        if (-q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
+                        if (-q > Rechenrand.Zu(0.0)) { bruch = Abschnittsregeltext(fall, q); return false; }
                         akkHeiz += Math.Max(q, 0.0) * tau;
                         break;
                     case Betriebsfall.KuehlenGeregelt:
                     case Betriebsfall.Kuehlgrenze:
-                        if (q > Rechenrand.Zu(0.0)) AbschnittsregelVerletzt(fall, q);
+                        if (q > Rechenrand.Zu(0.0)) { bruch = Abschnittsregeltext(fall, q); return false; }
                         akkKuehl += Math.Max(-q, 0.0) * tau;
                         break;
                     case Betriebsfall.UebergabeGesaettigt:
                     case Betriebsfall.UebergabeRegelbereich:
                         // Derselbe Zahlenrand des Leitwerts wie in Schritt.
                         if (-q > Rechenrand.Zu(0.0) + ab.LeitwertWK * Rechenrand.Zu(ab.ThetaHC))
-                            AbschnittsregelVerletzt(fall, q);
+                            { bruch = Abschnittsregeltext(fall, q); return false; }
                         akkHeiz += Math.Max(q, 0.0) * tau;
                         break;
                 }
@@ -787,7 +811,8 @@ namespace WindowsFormsApplication1
             double s2Mittel = akkS2 / STUNDE_S;
             double opMittel = 0.5 * airMittel + 0.5 * (_wAW * s1Mittel + _wIW * s2Mittel);
             if (!r.MitUebergabe)
-                return new Stundenergebnis(
+            {
+                ergebnis = new Stundenergebnis(
                     akkHeiz / STUNDE_S,
                     akkKuehl / STUNDE_S,
                     airMittel,
@@ -809,6 +834,8 @@ namespace WindowsFormsApplication1
                     MessungBandKs = mBandKs,
                     MessungBandAbschnitte = mBandAb,
                 };
+                return true;
+            }
 
             // E63: Vorlauf und Rücklauf zur gelieferten mittleren Leistung, der Grund mit dem größten
             // Zeitanteil - dieselben Ausdrücke wie in Schritt (ohne Kälteseite).
@@ -817,7 +844,7 @@ namespace WindowsFormsApplication1
             double ruecklauf = double.IsNaN(vorlauf) ? double.NaN : Waermeuebergabe.RuecklaufC(r.Uebergabe, vorlauf, heizMittel);
             int grund = 0;
             for (int i = 1; i < GRUENDE; i++) if (tauJeGrund[i] > tauJeGrund[grund]) grund = i;
-            return new Stundenergebnis(
+            ergebnis = new Stundenergebnis(
                 heizMittel,
                 akkKuehl / STUNDE_S,
                 airMittel,
@@ -852,6 +879,7 @@ namespace WindowsFormsApplication1
                 MessungBandKs = mBandKs,
                 MessungBandAbschnitte = mBandAb,
             };
+            return true;
         }
 
         /// <summary>
@@ -859,9 +887,11 @@ namespace WindowsFormsApplication1
         /// die Leistungsgleichung des Falls am Zustand <paramref name="x"/> unter dem Rand <paramref name="r"/>,
         /// mit denselben Aufrufen wie H5 in <see cref="SchrittUebergabe"/>.
         /// </summary>
-        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.AbschnittsregelVerletzt"/>: das Muster ist nicht haltbar.</exception>
-        private Abschnitt UebergabeImMuster(Betriebsfall fall, Vektor2 x, in Stundenrand r, int i)
+        /// <returns><c>false</c>, wenn das Muster nicht haltbar ist; der Grund steht dann in <paramref name="bruch"/>.</returns>
+        private bool UebergabeImMuster(Betriebsfall fall, Vektor2 x, in Stundenrand r, int i, out Abschnitt ab, out string bruch)
         {
+            ab = default;
+            bruch = null;
             Uebergabekennwerte k = r.Uebergabe;
             double soll = r.ThetaSoll;
             double xp = r.ReglerbandK;
@@ -895,12 +925,15 @@ namespace WindowsFormsApplication1
             }
             if (!haltbar || !(phiStern > 0.0) || !(leitwert > 0.0) || !Endlich(leitwert)
                 || (Begrenzt(r.HeizleistungMaxW) && phiStern > r.HeizleistungMaxW))
-                throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
-                    _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
-                    " liefert am Zustand des Abschnittsbeginns keine haltbare Übergabe; das Muster ist nicht haltbar.");
+            {
+                bruch = _bezeichnung + ": Der Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture) + " im Betriebsfall " + fall +
+                        " liefert am Zustand des Abschnittsbeginns keine haltbare Übergabe; das Muster ist nicht haltbar.";
+                return false;
+            }
             double thetaH = thetaStern + phiStern / leitwert;
-            return FreiMitLeitwert(leitwert, thetaH, eAW, eIW, eLuft, in r,
+            ab = FreiMitLeitwert(leitwert, thetaH, eAW, eIW, eLuft, in r,
                                    Kopplung.Leitwert(grund, leitwert, thetaH, double.NegativeInfinity, double.PositiveInfinity));
+            return true;
         }
 
         /// <summary>
@@ -1651,12 +1684,13 @@ namespace WindowsFormsApplication1
         /// Wärme gebucht. Kein Teilstundenergebnis, der Zustand bleibt unverändert.
         /// </summary>
         private void AbschnittsregelVerletzt(Betriebsfall fall, double q)
-        {
-            throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt,
-                _bezeichnung + ": Ein Abschnitt im Betriebsfall " + fall + " bucht die Leistung " +
-                q.ToString("G6", CultureInfo.InvariantCulture) + " W mit falschem Vorzeichen " +
-                "(Abschnittsregel: je Abschnitt nie Heizen und Kühlen zugleich).");
-        }
+            => throw new GebaeudeModellException(GebaeudeModellFehler.AbschnittsregelVerletzt, Abschnittsregeltext(fall, q));
+
+        /// <summary>Der Text einer verletzten Abschnittsregel (F-K3) — geworfen in <see cref="Schritt"/>, als Grund gemeldet im Musterweg.</summary>
+        private string Abschnittsregeltext(Betriebsfall fall, double q)
+            => _bezeichnung + ": Ein Abschnitt im Betriebsfall " + fall + " bucht die Leistung " +
+               q.ToString("G6", CultureInfo.InvariantCulture) + " W mit falschem Vorzeichen " +
+               "(Abschnittsregel: je Abschnitt nie Heizen und Kühlen zugleich).";
 
         private void RandPruefen(in Stundenrand r)
         {
