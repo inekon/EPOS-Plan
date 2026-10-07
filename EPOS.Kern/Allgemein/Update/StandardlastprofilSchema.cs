@@ -30,10 +30,9 @@ namespace WindowsFormsApplication1
     // ERGEBNISNEUTRAL. Kein Referenzprojekt fuehrt einen der Saetze - die Projekte rechnen mit ihren
     // Projektkopien; neue Katalogzeilen verschieben allein die Ids des Katalogs.
     //
-    // NUMMER. 193, angemeldet hinter 191 (RaumgrundrissSchema) und 192 (TypaufbauSchema) der Sitzung IFC.
-    // Phase 1 baut den Schritt ohne Registrierung; Phase 2 verkettet ihn an TypaufbauSchema und traegt
-    // ihn an den vier Stellen ein (SchemaStand.Zielversion, SchemaMigration der Schale,
-    // Werkzeuge/Testdatenbankschema, EPOS.Kern.Tests/TestDatenbank).
+    // NUMMER. 193 = TypaufbauSchema.SCHRITT + 1, hinter 191 (RaumgrundrissSchema) und 192 (TypaufbauSchema)
+    // der Sitzung IFC. Eingetragen in SchemaStand.Zielversion, im Register der Paketanhebung (Art Katalog),
+    // in der SchemaMigration der Schale, in Werkzeuge/Testdatenbankschema und in EPOS.Kern.Tests/TestDatenbank.
     // ====================================================================================
 
     /// <summary>
@@ -46,8 +45,7 @@ namespace WindowsFormsApplication1
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Wird der Schritt beim
         /// Zusammenführen umnummeriert, ändert sich nur diese Zeile.
         /// </summary>
-        // Verkettung an TypaufbauSchema in Phase 2: dann SCHRITT = TypaufbauSchema.SCHRITT + 1.
-        public const int SCHRITT = 193;
+        public const int SCHRITT = TypaufbauSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog der Köpfe („Datenbank Strombedarf").</summary>
         public const string TAB_KOPF = "Tab_Stromverbraucher_STAMM";

@@ -3003,6 +3003,27 @@ namespace Testdatenbankschema
                                   TypaufbauSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt StandardlastprofilSchema.SCHRITT (SLP25): die BDEW-Standardlastprofile Strom 2025 H25, G25
+            //      und L25 als gesperrte Saetze der "Datenbank Strombedarf" - je ein Kopf in Tab_Stromverbraucher_STAMM
+            //      (Monatswerte, normiert auf 1.000 MWh/a) und ein Typprofil in Tab_Stromverbrauchertyp_STAMM (168
+            //      Wochenstunden), Katalogschluessel und Pruefsumme. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Standardlastprofil bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen der Saetze.
+            string nrStandardlastprofil = StandardlastprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStandardlastprofil + " - BDEW-Standardlastprofile Strom 2025: " +
+                              (StandardlastprofilSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStandardlastprofil = new List<string>();
+                StandardlastprofilSchema.Ausfuehren(berichtStandardlastprofil);
+                foreach (string zeile in berichtStandardlastprofil)
+                    Console.WriteLine("Schritt " + nrStandardlastprofil + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStandardlastprofil + " - vollstaendig: " +
+                                  StandardlastprofilSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
