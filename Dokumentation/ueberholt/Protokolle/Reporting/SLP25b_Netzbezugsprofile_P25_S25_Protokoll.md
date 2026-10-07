@@ -1,6 +1,6 @@
 # SLP25b — BDEW-Netzbezugsprofile P25 und S25 (Haushalt mit PV bzw. PV und Speicher) als Katalogzeilen der Datenbank Strombedarf, Schemaschritt 196 (Protokoll, 07.10.2026)
 
-Statuszeile #799 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Sitzung „EPOS Plan
+Statuszeile #800 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Sitzung „EPOS Plan
 Wirtschaftlichkeit" (Orchestrierung Fable 5.1, Bau Opus 5.5, Papiere Sonnet). Zweig `slp25b` ab origin
 `676e12e85` (Anmeldung Schemaschritt 196), Merges mit origin `95570cc39` (Schemaschritt 195) und `83643e1a1`.
 
@@ -166,4 +166,4 @@ CI: (folgt)
 ## Commit
 
 Phase 1: `402c37c84`, `572a65989`, `e793eb8ac`. Phase 2: `a1c4f1f7f`, `6fc314977`, `1b658a167`, `8dbf859a4`.
-Papiere dieser Welle (Statuszeile #799, dieses Protokoll, LIESMICH-Indexzeile): Zweig `slp25bp`, HEAD `0ff2881d7`.
+Papiere dieser Welle (Statuszeile #800, dieses Protokoll, LIESMICH-Indexzeile): Zweig `slp25bp`, HEAD `0ff2881d7`.
