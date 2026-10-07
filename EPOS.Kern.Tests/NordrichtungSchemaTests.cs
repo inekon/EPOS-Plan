@@ -36,11 +36,11 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         [Fact]
-        public void Die_Nummer_ist_199_das_Ziel_steht_darauf_und_die_Paketanhebung_fuehrt_DDL()
+        public void Die_Nummer_ist_199_das_Ziel_steht_mindestens_darauf_und_die_Paketanhebung_fuehrt_DDL()
         {
             Assert.Equal(Ak3Schema.SCHRITT + 1, NordrichtungSchema.SCHRITT);
             Assert.Equal(199, NordrichtungSchema.SCHRITT);
-            Assert.Equal(NordrichtungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= NordrichtungSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == NordrichtungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

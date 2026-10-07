@@ -2558,13 +2558,19 @@ namespace WindowsFormsApplication1
         /// <summary>Herkunft: aus einer gbXML-Datei eingelesen.</summary>
         public const string HERKUNFT_GBXML = "GBXML";
 
+        /// <summary>
+        /// Herkunft: aus der Projektdatei eines Gebäudemodells (<c>.sqproj</c>) eingelesen — ein eigener Wert, damit die
+        /// Herkunft wahr bleibt (kein <see cref="HERKUNFT_IFC"/> ohne IFC-Datei; Schritt <see cref="ProjektdateiImportSchema"/>).
+        /// </summary>
+        public const string HERKUNFT_SQPROJ = "SQPROJ";
+
         /// <summary>Herkunft: Auslieferungssaat (Norm- oder Richtwert mit Quelle je Zeile).</summary>
         public const string HERKUNFT_VORGABE = "VORGABE";
 
-        /// <summary>Die fuenf Herkunftswerte in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        /// <summary>Die sechs Herkunftswerte in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
         public static readonly System.Collections.Generic.IReadOnlyList<string> HERKUENFTE = new[]
         {
-            HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE
+            HERKUNFT_MANUELL, HERKUNFT_KATALOG, HERKUNFT_IFC, HERKUNFT_GBXML, HERKUNFT_VORGABE, HERKUNFT_SQPROJ
         };
 
         /// <summary>
@@ -2575,17 +2581,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Format eines Gebäudeimports: gbXML (<c>Tab_Importquelle.Format</c>).</summary>
         public const string IMPORT_FORMAT_GBXML = "GBXML";
-
-        /// <summary>
-        /// Format eines Gebäudeimports allein aus der HottCAD-Projektdatei (<c>.sqproj</c>). Noch nicht in
-        /// <see cref="IMPORT_FORMATE"/>: Den <c>CHECK</c> von <c>Tab_Importquelle.Format</c> erweitert erst ein Schemaschritt.
-        /// </summary>
+        /// <summary>Format eines Gebäudeimports allein aus der Projektdatei (<c>.sqproj</c>).</summary>
         public const string IMPORT_FORMAT_SQPROJ = "SQPROJ";
 
-        /// <summary>Die zwei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>).</summary>
+        /// <summary>
+        /// Die drei Importformate in Schemareihenfolge (Quelle des <c>CHECK</c>); <see cref="IMPORT_FORMAT_SQPROJ"/> ist die
+        /// Projektdatei eines Gebäudemodells (<c>.sqproj</c>, Schritt <see cref="ProjektdateiImportSchema"/>).
+        /// </summary>
         public static readonly System.Collections.Generic.IReadOnlyList<string> IMPORT_FORMATE = new[]
         {
-            IMPORT_FORMAT_IFC, IMPORT_FORMAT_GBXML
+            IMPORT_FORMAT_IFC, IMPORT_FORMAT_GBXML, IMPORT_FORMAT_SQPROJ
         };
 
         // =====================================================================
