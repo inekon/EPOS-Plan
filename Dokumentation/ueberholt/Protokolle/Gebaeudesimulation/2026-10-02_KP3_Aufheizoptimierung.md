@@ -188,6 +188,22 @@ kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsh
   neun Bestandstests mit Spaltenzahlen nachgezogen; `AnlagenkopplungDialogKernTests` führt das Projektfeld.
 - Commits `a894c495`, `34ec3418` (173, vor dem Umhängen), `b03bf720`, `6030b1a8`, `f5c8bb42`, Merge `863419b2`, `3107548f` (Testdatenbank 174); Gate 682 und 686.
 
+### A — Ergebnisspalten der Aufheizung (E99), Schemaschritt 194
+
+- **Schema** `AufheizAufschlagErgebnisSchema` (`SCHRITT = StandardlastprofilSchema.SCHRITT + 1` = 194): an `Tab_ErgebnisGebaeude`
+  `Aufheiz_Aufschlag_Verwendet_H` und `Aufheizzeit_Bemessen_H` (INTEGER 0–47, nullbar, ADD COLUMN, kein DML; 45 Spalten); `SchemaStand`,
+  `Paketanhebung` (Ddl), Schalen-Migration, `Werkzeuge/Testdatenbankschema`, `TestDatenbank.cs`; Testdatenbank 194 (87 826 432 Byte, LFS `a771909c…`).
+- **Werte:** verwendeter Aufschlag = n' − n der längsten Rampe nach der Begrenzung auf D + 1 (Gleichstand: der größte), 0 ohne Rampe mit n > 1
+  oder ohne Aufschlag, NULL bei „manuell“; bemessene Aufheizzeit = t_auf,max nach dem Aufschlag (n' − 1 mit n = t_auf,max + 1, ohne D), bei
+  „manuell“ der manuelle Wert, NULL bei UNERREICHBAR; Mehrzonengebäude: Aufschlag der Zone mit der längsten Rampe, größte bemessene Zeit.
+  Nur am Gebäude — die Zonen erben die Aufheizzeit, der Bericht liest die Gebäudezeile; kein Export (E99). Rechenweg unverändert.
+- **Bericht:** Gebäudetafel (täglich/fest) mit „Aufschlag (verwendet)“ und „Bemessene Aufheizzeit (mit Aufschlag)“; eine ältere Zeile ohne
+  die Werte zeigt „—“ und den Aufschlag benannt als Projekteinstellung; Vorlagenfelder `gebaeude.ergebnis.aufschlag_verwendet` und
+  `.aufheizzeit_bemessen` in Katalogfassung 16, Bausteinvorlagen de/en neu gebaut; Texte `BV_AUFH_A3_*`.
+- **Nachweise:** `AufheizAufschlagErgebnisTests` (19), Spaltenzahlwachen in fünf Bestandsklassen, `AufheizBerichtTests` nachgezogen;
+  Referenzlauf 21 Projekte gegen R39 GESAMT PASS, 646/646 CSV byte-gleich.
+- Commits `352f94ef` (rote Proben), `136289ff` (Schritt, Schreibweg), `bc745df2` (Bericht), `d232104f` (Testdatenbank 194).
+
 ## 3. Schemaschritte
 
 | Schritt | Klasse | Inhalt | Testdatenbank |
@@ -195,6 +211,7 @@ kalenderbezogen an Rampen mit n > 1; P17 (b) — Auslegungsgröße = Auslegungsh
 | 160 | `AufheizvorgabeSchema` | `Aufheizoptimierung`, `Aufheiz_Bemessung`, `Aufheiz_Abzug_K`, `Aufheiz_Reserve`, `Aufheiz_Art` an `Tab_Einstellungen` | 161 (`117f44f9`) |
 | 161 | `AufheizErgebnisSchema` | 14 Ergebnisspalten je Gebäude und Zone, `Sommerlueftungsstunden_H` an der Zone | 161 |
 | 174 | `AufheizManuellSchema` | Aufschläge am Projekt, manuelle Aufheizzeit am Gebäude, `Aufheiz_Art` und E60-Spalten im Ergebnis, GEKOPPELT an der Zone, Sicht neu | 174 (`3107548f`) |
+| 194 | `AufheizAufschlagErgebnisSchema` | verwendeter Aufschlag und bemessene Aufheizzeit an `Tab_ErgebnisGebaeude` (E99) | 194 (`d232104f`) |
 
 ## 4. Befunde der Umsetzung
 

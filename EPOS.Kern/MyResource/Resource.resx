@@ -47905,5 +47905,23 @@ Chart</value>
     <value> · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1}</value>
     <comment>Stromsteuer-Vermerk der Nachweiszeile der Wirtschaftlichkeit; {0} hocheffizient, {1} räumlicher Zusammenhang (ja/nein klein).</comment>
   </data>
+  <data name="BV_AUFH_A3_AUFSCHLAG_VERWENDET" xml:space="preserve">
+    <value>Aufschlag (verwendet)</value>
+    <comment>Zeile der Gebäudetafel: die Stunden, die der Aufschlag der längsten Rampe im Lauf hinzugefügt hat (E99).</comment>
+  </data>
+  <data name="BV_AUFH_A3_ZEIT_BEMESSEN" xml:space="preserve">
+    <value>Bemessene Aufheizzeit (mit Aufschlag)</value>
+    <comment>Zeile der Gebäudetafel: t_auf,max nach dem Aufschlag, mit der der Lauf gerechnet hat (E99).</comment>
+  </data>
+  <data name="BV_AUFH_A3_AUFSCHLAG_ALT_WERT" xml:space="preserve">
+    <value>{0}; nicht im gespeicherten Ergebnis</value>
+    <comment>Wert der Zeile „Aufschlag (Projekteinstellung)“ für ein gespeichertes Ergebnis ohne verwendeten Aufschlag; {0} der Aufschlagtext.</comment>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFSCHLAG_VERWENDET" xml:space="preserve">
+    <value>Verwendeter Aufschlag des laufenden Gebäudes in Stunden: was der Aufschlag der längsten Rampe im Lauf hinzugefügt hat; 0 ohne Rampe mit mehr als einer Stufe, leer bei Art manuell, ohne Aufheizoptimierung oder bei einem älteren Ergebnis.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_BEMESSEN" xml:space="preserve">
+    <value>Bemessene Aufheizzeit des laufenden Gebäudes in Stunden: t_auf,max nach dem Aufschlag, bei Art manuell der manuelle Wert; leer ohne Aufheizoptimierung, bei unerreichbarer Bemessung oder bei einem älteren Ergebnis.</value>
+  </data>
 </root>
 

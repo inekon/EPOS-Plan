@@ -3024,6 +3024,26 @@ namespace Testdatenbankschema
                                   StandardlastprofilSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt AufheizAufschlagErgebnisSchema.SCHRITT (KP3 Welle A, E99): verwendeter Aufschlag und
+            //      bemessene Aufheizzeit an Tab_ErgebnisGebaeude (Aufheiz_Aufschlag_Verwendet_H,
+            //      Aufheizzeit_Bemessen_H), reines ADD COLUMN, leer. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizAufschlagErgebnis bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Referenzlauf liest Tab_ErgebnisGebaeude nicht.
+            string nrAufschlagErgebnis = AufheizAufschlagErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufschlagErgebnis + " - verwendeter Aufschlag und bemessene Aufheizzeit: " +
+                              (AufheizAufschlagErgebnisSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufschlagErgebnis = new List<string>();
+                angelegt += AufheizAufschlagErgebnisSchema.Ausfuehren(berichtAufschlagErgebnis);
+                foreach (string zeile in berichtAufschlagErgebnis)
+                    Console.WriteLine("Schritt " + nrAufschlagErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufschlagErgebnis + " - vollstaendig: " +
+                                  AufheizAufschlagErgebnisSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

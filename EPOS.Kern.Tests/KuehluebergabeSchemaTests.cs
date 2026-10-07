@@ -311,14 +311,14 @@ namespace EPOS.Kern.Tests
             Assert.False(KuehluebergabeSchema.ErgebnisVollstaendig());
             // Der Stand der Messlatte ohne die fünf Spalten des Kältekreises - die Nachtauskühlstunden
             // des späteren Schritts KP-S1v und die Aufheizspalten von KP-S3 und KP-S4 bleiben stehen (B24).
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - KuehluebergabeSchema.SpaltenKuehlkreis.Count,
+            Assert.Equal(AufheizAufschlagErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE - KuehluebergabeSchema.SpaltenKuehlkreis.Count,
                          DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
 
             var bericht = new List<string>();
             Assert.Equal(8, KuehluebergabeSchema.ErgebnisAlle(bericht));
             Assert.Contains(bericht, z => z.StartsWith("8 von 8", StringComparison.Ordinal));
             Assert.True(KuehluebergabeSchema.ErgebnisVollstaendig());
-            Assert.Equal(AufheizManuellSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
+            Assert.Equal(AufheizAufschlagErgebnisSchema.SPALTENZAHL_ERGEBNIS_GEBAEUDE, DataRepository.SpaltenVonTabelle(ErgebnisGebaeudeSchema.TAB).Count);
             Assert.Equal(0, KuehluebergabeSchema.ErgebnisAlle(null));
         }
 

@@ -1,6 +1,6 @@
 # Protokoll BA-4b und Fix Raumabgleich — Aufbauten aus der Projektdatei (07.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#791**. Commits `495df62d` (Fix Raumabgleich), `47cb920c`, `6887149f`, `eeff8f26` (BA-4b); Zusammenführung mit BA-3 in `ade24c26`, `6564d6a1`, `ea4dd254`.
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#792**. Commits `495df62d` (Fix Raumabgleich), `47cb920c`, `6887149f`, `eeff8f26` (BA-4b); Zusammenführung mit BA-3 in `ade24c26`, `6564d6a1`, `ea4dd254`.
 **Entscheid:** E98; Konzept [Bauteilaufbau beim Gebäudeimport](../../../aktuell/Gebaeudesimulation/2026-10-06_Konzept_Bauteilaufbau_Import.md) 5.5 und Welle BA-4; Befund [HottCAD-Projektdatei](../../../aktuell/Gebaeudesimulation/2026-10-05_Befund_HottCAD_Projektdatei.md), Nachtrag BA-4a.
 
 ## 1 Auftrag

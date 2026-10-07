@@ -156,6 +156,7 @@ namespace WindowsFormsApplication1
             var tagW2 = new bool[365];
             var tagBemessung = new bool[365];
             int stunden = 0, laengste = 0, kuerzesteD = int.MaxValue;
+            int aufschlagLaengste = 0;
             var liste = new List<Aufheizsprung>();
 
             var ausStunden = new List<int>();
@@ -172,12 +173,15 @@ namespace WindowsFormsApplication1
                 double phiStat = PhiStat(zone, thetaT, ta, hs / 24, zusatz, zone.MitNachbarn ? zone.NachbarnImSprung(hs) : null);
                 double deltaT = thetaT - thetaN;
                 Aufheizstufenzahl st;
+                int aufschlagSprung = 0;
                 if (manuell is int t)
                     st = StufenzahlManuell(t, d);
                 else
                 {
                     Aufheizantwort antwort = zone.Modell.Aufheizantwort(zone.Strahlungsanteil, zusatz);
-                    st = MitAufschlag(Stufenzahl(antwort, phiStat, deltaT, pAuf, form, obergrenze, d, fest), d, vorgabe);
+                    Aufheizstufenzahl ermittelt = Stufenzahl(antwort, phiStat, deltaT, pAuf, form, obergrenze, d, fest);
+                    st = MitAufschlag(ermittelt, d, vorgabe);
+                    aufschlagSprung = st.N - ermittelt.N;
                 }
                 int n = st.N;
 
@@ -210,7 +214,9 @@ namespace WindowsFormsApplication1
                 {
                     tagRampe[tag] = true;
                     stunden += n - 1;
-                    if (n - 1 > laengste) laengste = n - 1;
+                    // E99: der Aufschlag der längsten Rampe, bei gleich langen Rampen der größte.
+                    if (n - 1 > laengste) { laengste = n - 1; aufschlagLaengste = aufschlagSprung; }
+                    else if (n - 1 == laengste && aufschlagSprung > aufschlagLaengste) aufschlagLaengste = aufschlagSprung;
                     if (d < kuerzesteD) kuerzesteD = d;
                 }
                 if (st.Unerreichbar) tagW1[tag] = true;
@@ -248,6 +254,9 @@ namespace WindowsFormsApplication1
                 Aufheiztage = Zaehlen(tagRampe),
                 AufheizstundenH = stunden,
                 LaengsteRampeH = laengste,
+                AufschlagVerwendetH = manuell.HasValue ? null : aufschlagLaengste,
+                AufheizzeitMitAufschlagH = manuell ?? (bemessung.Wirksam.AufheizzeitMaxH is int tMax
+                                                          ? MitAufschlag(tMax + 1, vorgabe) - 1 : (int?)null),
                 MaskenstundenH = maskenstunden,
                 TageUnerreichbar = Zaehlen(tagW1),
                 TageUnterStationaer = Zaehlen(tagW1Stat),
@@ -588,6 +597,7 @@ namespace WindowsFormsApplication1
             int? tAufMax = null;
             double aussenB = double.NaN, pAuf = double.NaN, phiHL = 0.0, phiRH = 0.0, tau2 = double.NaN;
             int laengste = 0, kuerzeste = int.MaxValue;
+            int? aufschlagLaengste = null, mitAufschlag = null;
             var quellen = new SortedSet<string>(StringComparer.Ordinal);
             var tagRampe = new bool[365];
             var tagW1 = new bool[365];
@@ -613,6 +623,7 @@ namespace WindowsFormsApplication1
                 if (!double.IsNaN(b.AufheizleistungW)) pAuf = double.IsNaN(pAuf) ? b.AufheizleistungW : pAuf + b.AufheizleistungW;
                 quellen.Add(b.Quelle);
                 if (p.LaengsteRampeH > laengste) laengste = p.LaengsteRampeH;
+                if (!unerreichbar && p.AufheizzeitMitAufschlagH is int tm && (mitAufschlag == null || tm > mitAufschlag)) mitAufschlag = tm;
                 if (p.KuerzesteAbsenkdauerH is int d && d < kuerzeste) kuerzeste = d;
                 foreach (Aufheizsprung sp in p.Spruenge)
                 {
@@ -629,6 +640,11 @@ namespace WindowsFormsApplication1
                 foreach (int h in p.SprungstundenAus) ausStunde[h] = true;
                 foreach (int h in p.SprungstundenAusHeizperiode) ausHeizperiode[h] = true;
             }
+
+            // E99: der verwendete Aufschlag der Zone mit der längsten Rampe (bei Gleichstand der größte).
+            foreach (Aufheizplan p in geplant)
+                if (p.LaengsteRampeH == laengste && p.AufschlagVerwendetH is int a && (aufschlagLaengste == null || a > aufschlagLaengste))
+                    aufschlagLaengste = a;
 
             int maskenstunden = Zaehlen(maske);
             return new Aufheizgebaeude
@@ -648,6 +664,8 @@ namespace WindowsFormsApplication1
                 Rampenmaske = maske,
                 MaskenstundenH = maskenstunden,
                 LaengsteRampeH = laengste,
+                AufschlagVerwendetH = aufschlagLaengste,
+                AufheizzeitMitAufschlagH = unerreichbar ? null : mitAufschlag,
                 KuerzesteAbsenkdauerH = kuerzeste == int.MaxValue ? (int?)null : kuerzeste,
                 SpruengeAus = Zaehlen(ausStunde),
                 SpruengeAusHeizperiode = Zaehlen(ausHeizperiode),

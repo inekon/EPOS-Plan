@@ -276,6 +276,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die längste Rampe des Jahres [h] (größtes n − 1).</summary>
         public int? AufheizzeitLaengsteH;
 
+        /// <summary>
+        /// Der verwendete Aufschlag [h] (E99, Schritt 194): die Stunden, die der Aufschlag der längsten Rampe hinzugefügt hat;
+        /// 0 ohne Rampe mit mehr als einer Stufe oder ohne Aufschlag; <c>null</c> bei „manuell", ohne Aufheizrechnung und in
+        /// einer Ergebniszeile vor dem Schritt.
+        /// </summary>
+        public int? AufheizAufschlagVerwendetH;
+
+        /// <summary>
+        /// Die bemessene Aufheizzeit [h] (E99, Schritt 194): bei „manuell" der manuelle Wert, sonst t_auf,max nach dem
+        /// Aufschlag; <c>null</c> bei UNERREICHBAR, ohne Aufheizrechnung und in einer Ergebniszeile vor dem Schritt.
+        /// </summary>
+        public int? AufheizzeitBemessenH;
+
         /// <summary>Sprünge aus „aus" ohne Rampe (W4), darunter der Beginn der Heizperiode.</summary>
         public int? AufheizspruengeAus;
 

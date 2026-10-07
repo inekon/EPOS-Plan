@@ -1,6 +1,6 @@
 # Protokoll BA-3 — Oberfläche Bauteilaufbau mit Bauteilsteckbrief (07.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#792**. Commits `c258878f`, `2c1e4835`, `84772ee0`, `fc84edad`; Zusammenführung mit BA-4b in `ade24c26`, `6564d6a1`, `ea4dd254` (Steckbrief zeigt Projektdatei und Rang, Typwahl nur auf Ersatz).
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#793**. Commits `c258878f`, `2c1e4835`, `84772ee0`, `fc84edad`; Zusammenführung mit BA-4b in `ade24c26`, `6564d6a1`, `ea4dd254` (Steckbrief zeigt Projektdatei und Rang, Typwahl nur auf Ersatz).
 **Entscheid:** E98 (Steckbrief), E95-4 (Typwahl); Konzept [Bauteilaufbau beim Gebäudeimport](../../../aktuell/Gebaeudesimulation/2026-10-06_Konzept_Bauteilaufbau_Import.md) Welle BA-3.
 
 ## 1 Auftrag

@@ -47898,5 +47898,23 @@ chart</value>
     <value> · Electricity tax: high-efficiency {0}, spatial connection {1}</value>
     <comment>Stromsteuer-Vermerk der Nachweiszeile der Wirtschaftlichkeit; {0} hocheffizient, {1} räumlicher Zusammenhang (ja/nein klein).</comment>
   </data>
+  <data name="BV_AUFH_A3_AUFSCHLAG_VERWENDET" xml:space="preserve">
+    <value>Surcharge (applied)</value>
+    <comment>Zeile der Gebäudetafel: die Stunden, die der Aufschlag der längsten Rampe im Lauf hinzugefügt hat (E99).</comment>
+  </data>
+  <data name="BV_AUFH_A3_ZEIT_BEMESSEN" xml:space="preserve">
+    <value>Design preheat time (with surcharge)</value>
+    <comment>Zeile der Gebäudetafel: t_auf,max nach dem Aufschlag, mit der der Lauf gerechnet hat (E99).</comment>
+  </data>
+  <data name="BV_AUFH_A3_AUFSCHLAG_ALT_WERT" xml:space="preserve">
+    <value>{0}; not recorded in the saved result</value>
+    <comment>Wert der Zeile „Aufschlag (Projekteinstellung)“ für ein gespeichertes Ergebnis ohne verwendeten Aufschlag; {0} der Aufschlagtext.</comment>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFSCHLAG_VERWENDET" xml:space="preserve">
+    <value>Applied surcharge of the current building in hours: what the surcharge added to the longest ramp in the run; 0 without a ramp of more than one step, empty with the manual mode, without preheat optimisation or with an older result.</value>
+  </data>
+  <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_BEMESSEN" xml:space="preserve">
+    <value>Design preheat time of the current building in hours: t_auf,max after the surcharge, with the manual mode the manual value; empty without preheat optimisation, with an unattainable design or with an older result.</value>
+  </data>
 </root>
 

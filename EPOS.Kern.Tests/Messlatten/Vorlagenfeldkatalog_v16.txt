@@ -51,10 +51,12 @@ gebaeude.ergebnis.aufheiztage
 gebaeude.ergebnis.aufheiztage_begrenzt
 gebaeude.ergebnis.aufheiztage_unerreichbar
 gebaeude.ergebnis.aufheizzeit
+gebaeude.ergebnis.aufheizzeit_bemessen
 gebaeude.ergebnis.aufheizzeit_laengste
 gebaeude.ergebnis.aufheizzeit_manuell
 gebaeude.ergebnis.aufheizzuschlag
 gebaeude.ergebnis.aufheizzustand
+gebaeude.ergebnis.aufschlag_verwendet
 gebaeude.ergebnis.auslegungsgroesse
 gebaeude.ergebnis.auslegungsheizlast
 gebaeude.ergebnis.heizwaerme

@@ -74,7 +74,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("60,0 kW (Zielleistung)", p["Aufheizleistung P_auf"]);
             Assert.Equal("200", p["Rampentage"]);
             Assert.Equal("10", p["Tage durch die Absenkdauer begrenzt (W2)"]);
-            Assert.Equal("2 h / 10 % (es gilt der größere Wert)", p["Aufschlag (Projekteinstellung)"]);
+            // Die Probe trägt keinen verwendeten Aufschlag (Ergebniszeile vor Schritt 194, E99): der Aufschlag benannt als
+            // Projekteinstellung, die bemessene Aufheizzeit „—“.
+            Assert.Equal("2 h / 10 % (es gilt der größere Wert); nicht im gespeicherten Ergebnis", p["Aufschlag (Projekteinstellung)"]);
+            Assert.Equal(Tabellenzelle.STRICH, p["Bemessene Aufheizzeit (mit Aufschlag)"]);
             Assert.Equal("50,0 kW", p["Auslegungsgröße Φ_HL + Φ_RH"]);
             Assert.Equal("40,0 kW", p["davon Auslegungsheizlast Φ_HL"]);
             Assert.Equal("10,0 kW", p["davon Aufheizzuschlag Φ_RH"]);
@@ -135,7 +138,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("6 h at -12.0 °C (coldest hour)", p["Longest preheat time t_auf,max"]);
             Assert.Equal("50.0 kW", p["Design capacity Φ_HL + Φ_RH"]);
             Assert.Equal("120 h/a", p["Night purge ventilation hours"]);
-            Assert.Equal("2 h / 0 % (the larger value applies)", p["Surcharge (project setting)"]);
+            Assert.Equal("2 h / 0 % (the larger value applies); not recorded in the saved result", p["Surcharge (project setting)"]);
             Assert.DoesNotContain(p.Keys, k => k.Contains("Aufheiz", StringComparison.Ordinal));
         }
 

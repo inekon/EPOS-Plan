@@ -386,6 +386,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die längste Rampe (größtes n − 1) [h].</summary>
         internal int LaengsteRampeH { get; init; }
 
+        /// <summary>
+        /// E99: die Stunden, die der Aufschlag der längsten Rampe hinzugefügt hat (n' − n nach der Begrenzung auf D + 1; bei
+        /// gleich langen Rampen der größte) — 0 ohne Rampe mit n &gt; 1 oder ohne Aufschlag, <c>null</c> bei MANUELL
+        /// (Festlegung 35: nie auf den manuellen Wert).
+        /// </summary>
+        internal int? AufschlagVerwendetH { get; init; }
+
+        /// <summary>
+        /// E99: die bemessene Aufheizzeit nach dem Aufschlag [h] — bei MANUELL der manuelle Wert, sonst n' − 1 mit
+        /// n = t_auf,max + 1 (Festlegung 35, ohne D); <c>null</c> bei unerreichbarer Bemessung.
+        /// </summary>
+        internal int? AufheizzeitMitAufschlagH { get; init; }
+
         /// <summary>Stunden der Rampenmaske [h] (nach Überlappung und Kühlkappung).</summary>
         internal int MaskenstundenH { get; init; }
 
@@ -505,6 +518,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die längste Rampe [h] als Maximum über die Zonen.</summary>
         internal int LaengsteRampeH { get; init; }
+
+        /// <summary>E99: der verwendete Aufschlag der Zone mit der längsten Rampe [h] (bei Gleichstand der größte); <c>null</c> bei MANUELL.</summary>
+        internal int? AufschlagVerwendetH { get; init; }
+
+        /// <summary>E99: die bemessene Aufheizzeit nach dem Aufschlag [h] als Maximum über die Zonen; <c>null</c> bei UNERREICHBAR.</summary>
+        internal int? AufheizzeitMitAufschlagH { get; init; }
 
         /// <summary>Die kürzeste Absenkdauer der gerampten Sprünge [h] als Minimum; <c>null</c> ohne Rampe.</summary>
         internal int? KuerzesteAbsenkdauerH { get; init; }
