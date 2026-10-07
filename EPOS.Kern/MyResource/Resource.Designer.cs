@@ -9210,6 +9210,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kostenposition(en) der ersetzten Anlagen fanden keine neue Anlage als Gegenstück und stehen jetzt ohne Anlagenzuordnung — in der Kostenverwaltung prüfen. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_KOSTEN_LOSE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_KOSTEN_LOSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PROJEKTBEZUG {

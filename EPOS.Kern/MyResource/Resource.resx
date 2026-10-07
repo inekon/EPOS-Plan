@@ -6334,6 +6334,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen.</value>
   </data>
+  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
+    <value>{0} Kostenposition(en) der ersetzten Anlagen fanden keine neue Anlage als Gegenstück und stehen jetzt ohne Anlagenzuordnung — in der Kostenverwaltung prüfen.</value>
+  </data>
   <data name="ANL_DUBLETTE_TITEL" xml:space="preserve">
     <value>Gerät bereits im Projekt</value>
   </data>

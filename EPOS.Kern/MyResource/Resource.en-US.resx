@@ -6318,6 +6318,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…".</value>
   </data>
+  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
+    <value>{0} cost item(s) of the replaced systems found no new system as counterpart and are now without system assignment — check them in cost management.</value>
+  </data>
   <data name="ANL_DUBLETTE_TITEL" xml:space="preserve">
     <value>Device already in the project</value>
   </data>

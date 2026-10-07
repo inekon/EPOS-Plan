@@ -681,7 +681,9 @@ namespace WindowsFormsApplication1
                 { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
                 { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
                 { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
-                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+                { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" },
+                // Gegenstueck zur Ankerkarte in ZuordnungReparieren (07.10.2026).
+                { DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE, "ID_Kaeltemaschine" }
             };
             try
             {
@@ -774,7 +776,11 @@ namespace WindowsFormsApplication1
                     { DbWerte.ERZEUGER_PHOTOVOLTAIK,            "ID_PV" },
                     { DbWerte.ERZEUGER_SOLARTHERMIE,            "ID_Solar" },
                     { DbWerte.ERZEUGER_STROMSPEICHER,           "ID_SP" },
-                    { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" }
+                    { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, "ID_PUFFER" },
+                    // Anwenderentscheid 07.10.2026: auch die Kaeltemaschine heilt ueber
+                    // ihren Anker - sonst blieb ihre Position fuer immer auf einer
+                    // Anlage, die es nicht mehr gibt.
+                    { DbWerte.KOSTEN_KOMPONENTE_KAELTEMASCHINE, "ID_Kaeltemaschine" }
                 };
                 DataTable komp = DataRepository.GetDataTable(
                     "SELECT ID, Komponente FROM Tab_KostenKomponente");

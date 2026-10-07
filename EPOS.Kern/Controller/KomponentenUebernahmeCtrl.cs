@@ -317,6 +317,15 @@ namespace WindowsFormsApplication1
             // erzwungene Beziehung, derselbe Grund.
             List<Senkenbezug> zielSenkenbezuege = SenkenbezuegeSichern(idZiel);
 
+            // Kostenpositionen (Anwenderentscheide 07.10.2026): die Anlagen, die gleich
+            // ersetzt werden, VOR dem Vorgang gemerkt (nach ID, wie die Quelle). Ihre
+            // Positionen wandern der Reihe nach auf die neuen Anlagen (Schritt 7a).
+            List<int> zielAnlagenIds = AnlagenIds(idZiel, plan.AnlagenTypen);
+            bool kostenSpalten = KostenPositionCtrl.StelleSpaltenSicher();
+            var neueAnlagenIds = new List<int>();     // Reihenfolge = quellAnlagen
+            var neueGeraeteJeAnlage = new List<int>();
+            int kostenLose = 0;
+
             var warnungen = new List<string>();
             // ARBEITSPAKET S4e: Der Vorgang (Verbindung + Transaktion) wird bewusst
             // INNERHALB des try geoeffnet - genau dort stand bisher der Aufruf, der das
@@ -428,6 +437,8 @@ namespace WindowsFormsApplication1
 
                     (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(idZiel, a, pufferCache, mitFahrplan, mitFreierKuehlung);
                     int neueAnlage = v.EinfuegenUndId(sqlAnlage, werteAnlage);
+                    neueAnlagenIds.Add(neueAnlage);
+                    neueGeraeteJeAnlage.Add(fkZiel);
 
                     // Was das Modell nicht traegt, kommt aus der Quellzeile nach - derselbe
                     // Kernweg wie bei der Flottenstudie (AnlagenFachspalten.Uebertragen).
@@ -436,8 +447,20 @@ namespace WindowsFormsApplication1
                     bezuegeKopiert += aus.Kopiert;
                 }
 
+                // --- 7a) Kostenpositionen der ersetzten Anlagen umhaengen ------------
+                // Der Reihe nach alt -> neu, Betraege unveraendert (Entscheid 18.08.2026
+                // bleibt: nichts wird ueberschrieben, Schritt 10 meldet die Abweichung).
+                // Ohne Gegenstueck wird die Position lose - mit leerem Geraeteanker, damit
+                // eine wiederverwendete Geraete-ID (MAX(ID)+1) sie nicht still anhaengt.
+                if (kostenSpalten)
+                    kostenLose = AnlagenKostenpositionen.Umhaengen(v, idZiel, zielAnlagenIds,
+                                                                   neueAnlagenIds, neueGeraeteJeAnlage);
+
                 v.Commit();
 
+                if (kostenLose > 0)
+                    warnungen.Add(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.BK_KOMP_HINW_KOSTEN_LOSE, kostenLose));
                 if (bezuegeVerloren > 0)
                     warnungen.Add(string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.BK_KOMP_HINW_PROJEKTBEZUG, bezuegeVerloren));
@@ -496,7 +519,8 @@ namespace WindowsFormsApplication1
 
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idZiel);
 
-            // --- 10) Kostenpositionen: absichtlich NICHT angefasst, aber gemeldet ------
+            // --- 10) Kostenbetraege: absichtlich NICHT angefasst, aber gemeldet --------
+            // (Die ZUORDNUNG der Positionen ist in Schritt 7a umgehaengt; der BETRAG bleibt.)
             // Der Bestandsaustausch tauscht die Gerätezeile; die Kostenposition des
             // Zielprojekts bleibt auf ihrem alten Betrag stehen. Das ist richtig so
             // (Nutzerentscheidung 4 vom 18.08.2026: niemals automatisch überschreiben) —
