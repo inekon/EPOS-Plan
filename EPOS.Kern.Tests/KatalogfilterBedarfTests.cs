@@ -147,7 +147,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(BedarfsArt.Brauchwasser, 16)]
         [InlineData(BedarfsArt.Prozesswaerme, 40)]   // dazu die acht Betriebsweisen (PW5)
-        [InlineData(BedarfsArt.Stromverbraucher, 44)]   // dazu die drei BDEW-Standardlastprofile (Schritt 193)
+        [InlineData(BedarfsArt.Stromverbraucher, 46)]   // dazu die drei BDEW-Standardlastprofile (Schritt 193) und P25, S25 (Schritt 196)
         public void Die_Zeilenzahl_je_Bedarfskatalog(BedarfsArt art, int erwartet)
         {
             if (!_db.Vorhanden) return;
@@ -191,7 +191,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(BedarfsArt.Brauchwasser, 6)]
         [InlineData(BedarfsArt.Prozesswaerme, 8)]    // die acht Betriebsweisen (PW5)
-        [InlineData(BedarfsArt.Stromverbraucher, 3)]    // die drei BDEW-Standardlastprofile (Schritt 193)
+        [InlineData(BedarfsArt.Stromverbraucher, 5)]    // die fünf BDEW-Sätze (Schritte 193 und 196)
         public void Die_Auslieferungssaetze_je_Bedarfskatalog(BedarfsArt art, int erwartet)
         {
             if (!_db.Vorhanden) return;
@@ -241,7 +241,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(BedarfsArt.Brauchwasser, 7)]
         [InlineData(BedarfsArt.Prozesswaerme, 39)]   // dazu die acht Betriebsweisen (PW5)
-        [InlineData(BedarfsArt.Stromverbraucher, 42)]   // dazu die drei BDEW-Sätze mit 1.000 MWh
+        [InlineData(BedarfsArt.Stromverbraucher, 44)]   // dazu die fünf BDEW-Sätze mit 1.000 MWh
         public void Die_Jahressumme_laesst_sich_eingrenzen(BedarfsArt art, int erwartet)
         {
             if (!_db.Vorhanden) return;

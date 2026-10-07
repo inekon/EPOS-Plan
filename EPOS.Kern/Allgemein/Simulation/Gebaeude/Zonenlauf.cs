@@ -12,11 +12,11 @@ namespace WindowsFormsApplication1
     /// iteriert, mit gesicherten Massen —, und übernimmt die Stunde erst nach der Konvergenz
     /// (<see cref="Uebernehmen"/>).
     ///
-    /// <para><b>Derselbe Text wie <see cref="Vdi6007Rechenweg.Laufen"/></b>, Anweisung für Anweisung
-    /// auf Vorlauf, Stunde und Ergebnis verteilt; <see cref="Vdi6007Rechenweg.Laufen"/> selbst bleibt
-    /// für ein Gebäude mit höchstens einer Zone wörtlich. Das Orakel: <see cref="Laufen"/> mit einer
-    /// Einzelzone ist bitgleich zu <see cref="Vdi6007Rechenweg.Laufen"/> (<c>ZonenlaufTests</c>, alle
-    /// Fälle des Einzonennetzes).</para>
+    /// <para><b>Der Stundenrumpf des Jahreslaufs</b>, auf Vorlauf, Stunde und Ergebnis verteilt; ein
+    /// Gebäude mit höchstens einer Zone rechnet ihn über den Gebäude-Stepper
+    /// (<see cref="GebaeudeStepper"/>, Entwurf AK3 2.2) in <see cref="Vdi6007Rechenweg.Laufen"/>. Das
+    /// Orakel: die eingefrorenen Reihen des Einzonennetzes (<c>GebaeudeEinzonennetzTests</c>) und die
+    /// Jahresschleife ohne Stepper in <c>GebaeudeStepperTests</c>.</para>
     ///
     /// <para>Ohne Datenbank, ohne Protokoll, einfädig.</para>
     /// </summary>
@@ -252,38 +252,16 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Eine Zone ohne Nachbarn als ganzer Lauf</b> — Vorlauf von
         /// <see cref="Vdi6007Rechenweg.VORLAUF_H"/> Stunden ab dem Sollwert der ersten Vorlaufstunde,
-        /// dann das Jahr: derselbe Ablauf wie <see cref="Vdi6007Rechenweg.Laufen"/>, über dieses Objekt
-        /// (das Orakel der Welle W3).
+        /// dann das Jahr, Stunde für Stunde über den Gebäude-Stepper (<see cref="GebaeudeStepper"/>,
+        /// Entwurf AK3 2.2); <see cref="Vdi6007Rechenweg.Laufen"/> rechnet über diesen Weg.
         /// </summary>
         /// <exception cref="ArgumentException">für eine Zone mit Nachbarn — sie rechnet in der Zonenschleife.</exception>
         internal static GebaeudeModellErgebnis Laufen(ZonenEingang zone, int index, int idGebaeude)
         {
-            if (zone == null) throw new ArgumentNullException(nameof(zone));
-            if (zone.Gekoppelt) throw new ArgumentException("Eine gekoppelte Zone rechnet in der Zonenschleife.", nameof(zone));
-            var lauf = new Zonenlauf(zone);
-            ReadOnlySpan<double> keine = ReadOnlySpan<double>.Empty;
-
-            int start = 8760 - Vdi6007Rechenweg.VORLAUF_H;
-            // Stufe KP1b (G1): Steht der Heizsollwert der ersten Vorlaufstunde auf „aus", startet
-            // die Zone wie eine unbeheizte (N1.56 Festlegung 7); sonst steht hier der Bestandswert.
-            lauf.Beginnen(Vdi6007Rechenweg.VorlaufStartwertC(zone.Eingang, start));
-            for (int h = start; h < 8760; h++)
-            {
-                bool sommer = lauf.Sommerlueftung(h);
-                bool nacht = lauf.Nachtauskuehlung(h);
-                Stundenrand r = zone.Rand(h, sommer, keine, nacht);
-                Stundenergebnis v = lauf.Modell.Schritt(in r);
-                lauf.VorlaufUebernehmen(h, in v);
-            }
-            for (int h = 0; h < 8760; h++)
-            {
-                bool sommer = lauf.Sommerlueftung(h);
-                bool nacht = lauf.Nachtauskuehlung(h);
-                Stundenrand r = zone.Rand(h, sommer, keine, nacht);
-                Stundenergebnis s = lauf.Modell.Schritt(in r);
-                lauf.Uebernehmen(h, sommer, nacht, in s);
-            }
-            return lauf.Ergebnis(index, idGebaeude);
+            GebaeudeStepper stepper = GebaeudeStepper.Einzone(zone);
+            stepper.Beginnen();
+            stepper.Jahr();
+            return stepper.Abschluss(index, idGebaeude)[0];
         }
 
         private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);

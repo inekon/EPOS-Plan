@@ -1234,8 +1234,13 @@ die Code-Prüfung entschieden (CSV, 7.2); die Punkte 2, 5 und 8 wurden am 16.08.
    Typtage, Feiertage über den Betriebskalender (Schemaschritt `StandardlastprofilSchema`, Ableitung
    `Werkzeuge/Standardlastprofile`). Ein **natives BDEW-Verfahren** mit Monatsform der Typtage, Viertelstunde und
    Dynamisierung je Tag (12 × 3 × 96 Werte, 35.040 Viertelstunden) wäre die dritte Option; es bleibt
-   **zurückgestellt** (eigenes Konzept bei Bedarf). P25 und S25 werden nicht aufgenommen: Sie bilden den Netzbezug
-   von Haushalten mit Photovoltaik bzw. Photovoltaik und Speicher ab, die EPOS-Plan selbst rechnet.
+   **zurückgestellt** (eigenes Konzept bei Bedarf). P25 und S25 sind auf Wunsch des Anwenders als
+   **Netzbezugsprofile** aufgenommen (Welle SLP25b, Schemaschritt `StandardlastprofilPvSchema`): gesperrte Sätze
+   `BDEW_P25_Haushalt_PV` und `BDEW_S25_Haushalt_PV_Speicher` mit Typprofil `BDEW_P25` bzw. `BDEW_S25` im selben
+   Weg (a), Monatswerte mit Dynamisierung wie H25. Sie bilden den Netzbezug von Haushalten mit Photovoltaik bzw.
+   Photovoltaik und Speicher nach dem Eigenverbrauch ab und sind **keine Verbrauchsprofile** — Bezeichner,
+   Beschreibung und Hilfe sagen das; neben einer Photovoltaik- oder Speicherrechnung des Projekts zählten PV und
+   Speicher doppelt.
 2. **Ergebnisreihen — beantwortet (16.08.2026): nicht persistieren.** SoC-Gang und Geldwertreihe werden bei
    Bedarf neu gerechnet; persistiert werden nur die Kennzahlen in `Tab_ErgebnisStromspeicher`, Reihen auf
    Wunsch als CSV-Export (8.4).

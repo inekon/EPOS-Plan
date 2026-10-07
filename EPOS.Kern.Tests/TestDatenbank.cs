@@ -968,6 +968,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ErdsondenfeldSchema.SCHRITT: Geometrie und Bohrlochkennwerte des Sondenfeldes an
                 // Tab_Energieanlagen, leer (= Normvorgabe). Wiederholbar.
                 ErdsondenfeldSchema.Ausfuehren(null);
+                // Schritt StandardlastprofilPvSchema.SCHRITT (SLP25b): die BDEW-Netzbezugsprofile P25 und S25 als gesperrte
+                // Saetze der Datenbank Strombedarf, Katalogschluessel und Pruefsumme. Wiederholbar.
+                StandardlastprofilPvSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

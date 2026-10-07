@@ -343,6 +343,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Kennzahlen des Sondenfeldes; die Spalten kommen leer an (= Normvorgabe).
             new Stufe(ErdsondenfeldSchema.SCHRITT, Art.Ddl,
                       "Geometrie und Bohrlochkennwerte des Erdsondenfeldes je Anlage"),
+            // Ein Paket führt keinen Katalog des Strombedarfs (das Ziel führt die zwei Sätze samt Saat); die
+            // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
+            new Stufe(StandardlastprofilPvSchema.SCHRITT, Art.Katalog,
+                      "BDEW-Netzbezugsprofile Strom 2025 (P25, S25) im Katalog des Strombedarfs"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

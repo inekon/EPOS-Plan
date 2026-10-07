@@ -114,8 +114,12 @@ namespace WindowsFormsApplication1
     /// (Stützstellenprobe, Kühlkonzept 10.2).</para>
     ///
     /// <list type="number">
-    /// <item><b>Vorlauf (K21):</b> gewählt wird aus den STÜTZSTELLEN, über den Vorlauf wird nie
-    /// interpoliert. <c>Kuehl_Vorlauf</c> NULL heißt kleinster Stützwert — die kälteste
+    /// <item><b>Vorlauf (K21):</b> gewählt wird aus den STÜTZSTELLEN; über den Vorlauf wird nur mit
+    /// dem Kernschalter <see cref="VorlaufInterpolation"/> interpoliert (AK3-I, I-3, Vorgabe aus):
+    /// Dann rechnet ein <c>Kuehl_Vorlauf</c> STRENG zwischen zwei Stützstellen mit Kälteleistung und
+    /// EER beider einschließender Vorläufe (je an der Temperatur ausgewertet, je in ihrer höchsten
+    /// Laststufe), linear im Vorlauf gewichtet (<see cref="Interpoliert"/>); außerhalb gilt der
+    /// Randwert wie ohne Schalter. <c>Kuehl_Vorlauf</c> NULL heißt kleinster Stützwert — die kälteste
     /// angebotene Kaltwassertemperatur, die nie eine Leistung verspricht, die die Maschine
     /// nicht hat. Ein Wert, der keine Stützstelle ist, rechnet mit der NÄCHSTEN (bei
     /// gleichem Abstand der kälteren) und wird einmal je Gerät und Vorlauf benannt
@@ -189,11 +193,27 @@ namespace WindowsFormsApplication1
         /// <summary>Der Vorlauf, mit dem gerechnet wird [°C] — immer eine Stützstelle.</summary>
         public int Vorlauf { get; }
 
-        /// <summary>true, wenn <see cref="VorlaufGewuenscht"/> gesetzt, aber keine Stützstelle ist.</summary>
+        /// <summary>
+        /// true, wenn <see cref="VorlaufGewuenscht"/> gesetzt, aber keine Stützstelle ist und nicht
+        /// interpoliert wird (<see cref="Interpoliert"/>).
+        /// </summary>
         public bool VorlaufAusgewichen
         {
-            get { return !Leer && VorlaufGewuenscht.HasValue && VorlaufGewuenscht.Value != Vorlauf; }
+            get { return !Leer && !Interpoliert && VorlaufGewuenscht.HasValue && VorlaufGewuenscht.Value != Vorlauf; }
         }
+
+        /// <summary>
+        /// AK3-I (I-3): die Kennlinie des oberen einschließenden Vorlaufs, wenn zwischen zwei
+        /// Stützstellen interpoliert wird; sonst <c>null</c>. Die Kennlinie selbst trägt dann den
+        /// UNTEREN Vorlauf (<see cref="Vorlauf"/>).
+        /// </summary>
+        public Kuehlkennlinie Oben { get; private set; }
+
+        /// <summary>AK3-I (I-3): Anteil der oberen Kennlinie, (V − V_u)/(V_o − V_u); ohne Interpolation 0.</summary>
+        public double GewichtOben { get; private set; }
+
+        /// <summary>true, wenn über den Vorlauf interpoliert wird (I-3).</summary>
+        public bool Interpoliert { get { return Oben != null; } }
 
         /// <summary>Die Laststufe, deren Zeilen gelten [%]; <c>null</c> = die Zeilen tragen keine.</summary>
         public int? Laststufe { get; }
@@ -235,6 +255,15 @@ namespace WindowsFormsApplication1
         /// <param name="zeilen">Alle Kühlkennlinienzeilen des Geräts (Reihenfolge beliebig).</param>
         /// <param name="kuehlVorlauf"><c>Kuehl_Vorlauf</c>; <c>null</c> = kleinster Stützwert (K21).</param>
         public static Kuehlkennlinie Bilden(IEnumerable<KuehlkennlinienZeile> zeilen, int? kuehlVorlauf)
+            => Bilden(zeilen, kuehlVorlauf, false);
+
+        /// <summary>
+        /// Wie <see cref="Bilden(IEnumerable{KuehlkennlinienZeile}, int?)"/>; mit
+        /// <paramref name="interpolieren"/> (Kernschalter <see cref="VorlaufInterpolation"/>, AK3-I, I-3)
+        /// rechnet ein Kühl-Vorlauf STRENG zwischen zwei Stützstellen mit beiden — vorausgesetzt, beide
+        /// Blöcke sind rechenbar; sonst, auf einer Stützstelle und außerhalb wie ohne Schalter.
+        /// </summary>
+        public static Kuehlkennlinie Bilden(IEnumerable<KuehlkennlinienZeile> zeilen, int? kuehlVorlauf, bool interpolieren)
         {
             List<KuehlkennlinienZeile> alle = zeilen == null
                 ? new List<KuehlkennlinienZeile>()
@@ -243,7 +272,26 @@ namespace WindowsFormsApplication1
             List<int> stuetzstellen = alle.Select(z => z.Vorlauf).Distinct().OrderBy(v => v).ToList();
             if (stuetzstellen.Count == 0) return new Kuehlkennlinie(stuetzstellen, kuehlVorlauf);
 
-            int vorlauf = VorlaufWaehlen(stuetzstellen, kuehlVorlauf);
+            if (interpolieren && kuehlVorlauf.HasValue &&
+                VorlaufInterpolation.Einschliessend(stuetzstellen, kuehlVorlauf.Value, out int unten, out double gewicht))
+            {
+                Kuehlkennlinie ku = Block(alle, stuetzstellen, kuehlVorlauf, stuetzstellen[unten]);
+                Kuehlkennlinie ko = Block(alle, stuetzstellen, kuehlVorlauf, stuetzstellen[unten + 1]);
+                if (ku.Rechenbar && ko.Rechenbar)
+                {
+                    ku.Oben = ko;
+                    ku.GewichtOben = gewicht;
+                    return ku;
+                }
+            }
+
+            return Block(alle, stuetzstellen, kuehlVorlauf, VorlaufWaehlen(stuetzstellen, kuehlVorlauf));
+        }
+
+        /// <summary>Die Kennlinie EINES Vorlaufs: höchste Laststufe, Dubletten, Achsenbefund.</summary>
+        private static Kuehlkennlinie Block(List<KuehlkennlinienZeile> alle, List<int> stuetzstellen,
+                                            int? kuehlVorlauf, int vorlauf)
+        {
 
             int? laststufe;
             List<KuehlkennlinienZeile> block = BlockDerHoechstenLaststufe(alle, vorlauf, out laststufe);
@@ -379,6 +427,20 @@ namespace WindowsFormsApplication1
         /// <param name="extrapolationErlaubt">Projekteinstellung <c>Extrapolation_erlaubt</c> — sie
         /// gilt für die ungünstige Seite (wärmer als die oberste Stützstelle).</param>
         public KennlinienPunkt Auswerten(double temperatur, bool extrapolationErlaubt)
+        {
+            if (Oben == null) return AuswertenEinzeln(temperatur, extrapolationErlaubt);
+
+            // AK3-I (I-3): beide Vorläufe je für sich ausgewertet, dann linear im Vorlauf gewichtet;
+            // die Leistungsregel gilt für das Ergebnis. Die Lage ist die erste, die nicht Innen ist.
+            KennlinienPunkt u = AuswertenEinzeln(temperatur, extrapolationErlaubt);
+            KennlinienPunkt o = Oben.AuswertenEinzeln(temperatur, extrapolationErlaubt);
+            double pk = u.Pkuehl + GewichtOben * (o.Pkuehl - u.Pkuehl);
+            double eer = u.Eer + GewichtOben * (o.Eer - u.Eer);
+            KennlinienLage lage = u.Lage != KennlinienLage.Innen ? u.Lage : o.Lage;
+            return Punkt(pk, eer, lage);
+        }
+
+        private KennlinienPunkt AuswertenEinzeln(double temperatur, bool extrapolationErlaubt)
         {
             int n = _temperatur.Length;
             if (!Rechenbar || n == 0) return new KennlinienPunkt(0.0, 0.0, KennlinienLage.Innen);
