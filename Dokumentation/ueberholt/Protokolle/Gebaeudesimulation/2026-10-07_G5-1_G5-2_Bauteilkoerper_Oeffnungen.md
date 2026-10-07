@@ -43,7 +43,7 @@ Erzeuger `EPOS.Kern.Tests/IfcProbenErzeuger.Bauteilkoerper.cs` und `IfcProbenErz
 
 ## 5 Gate 801
 
-Gemeinsam für G5-1 und G5-2, Hauptbaum `4ff6b13e4`, 89 min: 20 584 Tests, 20 578 grün, 6 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 835 mit 5 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 482 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61. Nach dem Merge mit SLP25b (#800, Schritt 196) gezielt nachgeprüft (Nachtrag folgt in dieser Zeile).
+Gemeinsam für G5-1 und G5-2, Hauptbaum `4ff6b13e4`, 89 min: 20 584 Tests, 20 578 grün, 6 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 835 mit 5 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 482 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61. Nach dem Merge mit SLP25b (#800, Schritt 196) gezielt nachgeprüft auf `65d37db75`: Kern-Filter 0 Fehler, Kern-Tests 1 546 bestanden, 4 übersprungen.
 
 ## 6 Offen
 
