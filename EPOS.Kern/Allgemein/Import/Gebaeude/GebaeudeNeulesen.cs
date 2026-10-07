@@ -166,8 +166,8 @@ namespace WindowsFormsApplication1
                 zahl = ablauf.Lesen(strom, name, profil, null, abbruch);
             // G5-N (N5): Die Bauteile folgen dem gespeicherten Nordwinkel der Quelle (Eingabe oder Annahme des Imports bzw. eine
             // spätere Änderung der Ausrichtung) — weicht der frisch gelesene ab, wird mit dem gespeicherten noch einmal gelesen.
-            if (zahl > 0 && ablauf.Abbild != null && quelle.NordwinkelGrad is double gespeichert
-                && !GebaeudeImportCtrl.NordwinkelGleich(gespeichert, ablauf.Abbild.NordwinkelWirksamGrad))
+            if (zahl > 0 && ablauf.Abbild != null && Nordrichtung.Normiert(quelle.NordwinkelGrad) is double gespeichert
+                && !(Nordrichtung.Normiert(ablauf.Abbild.NordwinkelWirksamGrad) is double frisch && Math.Abs(frisch - gespeichert) <= 1e-9))
                 zahl = ablauf.NordwinkelVorgeben(gespeichert, null, abbruch);
             if (zahl <= 0 || ablauf.Abbild == null)
             {

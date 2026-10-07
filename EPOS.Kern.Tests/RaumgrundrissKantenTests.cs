@@ -293,7 +293,10 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf gb = new GebaeudeImportAblauf();
             string pfad = Path.Combine(IfcProbenTests.Ordner(), "gbxml_norddrehung.xml");
             using (FileStream s = File.OpenRead(pfad)) gb.Lesen(s, pfad, new GbxmlImportProfil());
-            Assert.Equal(60.0, gb.Quelle.NordwinkelGrad.Value, 9);
+            // G5-N: Die Quelle trägt den wirksamen Nordwinkel — beim gbXML-Weg ohne Vorgabe keinen (CADModelAzimuth nur als Angabe).
+            Assert.Equal(60.0, gb.Abbild.NordwinkelGrad.Value, 9);
+            Assert.Null(gb.Quelle.NordwinkelGrad);
+            Assert.Equal(Nordwinkelherkunft.Annahme, gb.Quelle.NordwinkelHerkunft);
 
             Assert.Null(RaumgrundrissSchema.Normiert(double.NaN));
             Assert.Equal(330.0, RaumgrundrissSchema.Normiert(-30.0).Value, 9);
@@ -435,9 +438,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(330.0, g.DrehungGrad.Value, 9);
             Assert.False(g.NordwinkelUnbekannt);
 
-            Schreiben("GBXML", 12.0);                     // gbXML: Angabe, die Azimute der Datei sind nicht gedreht
+            Schreiben("GBXML", 12.0);                     // G5-N: Die Quelle trägt bei beiden Formaten den wirksamen Nordwinkel
             Assert.Equal(12.0, ctrl.LesenQuellen(GEBAEUDE)[0].NordwinkelGrad.Value, 9);
-            Assert.Equal(0.0, Assert.Single(ctrl.LesenRaumgrundrisse(GEBAEUDE)).DrehungGrad.Value, 9);
+            Assert.Equal(12.0, Assert.Single(ctrl.LesenRaumgrundrisse(GEBAEUDE)).DrehungGrad.Value, 9);
 
             int ohne = Schreiben("IFC", null);
             Assert.Null(ctrl.LesenQuellen(GEBAEUDE)[0].NordwinkelGrad);
