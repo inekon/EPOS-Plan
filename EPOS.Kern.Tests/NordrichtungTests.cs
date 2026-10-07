@@ -251,13 +251,14 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Datei_erneut_lesen_uebernimmt_den_gespeicherten_Winkel()
+        public void Datei_erneut_lesen_uebernimmt_den_eingegebenen_Winkel()
         {
             byte[] daten = HausOhneNord();
             var quelle = new ImportquelleModel
             {
                 ID = 1, Format = GebaeudeQuelle.FORMAT_IFC, Dateiname = "ohne_norden.ifc",
                 Hash = Convert.ToHexStringLower(SHA256.HashData(daten)), NordwinkelGrad = 270.0,
+                NordwinkelHerkunft = Nordwinkelherkunft.Eingabe,
             };
             NeulesenErgebnis e;
             using (var s = new MemoryStream(daten)) e = GebaeudeNeulesen.Lesen(s, "ohne_norden.ifc", quelle, "", false);
@@ -270,6 +271,40 @@ namespace EPOS.Kern.Tests
             quelle.NordwinkelGrad = null;
             using (var s = new MemoryStream(daten)) e = GebaeudeNeulesen.Lesen(s, "ohne_norden.ifc", quelle, "", false);
             Assert.Null(e.Abbild.NordwinkelWirksamGrad);
+        }
+
+        /// <summary>
+        /// G5-N (N6, Schritt 199): <b>Neulesen nach den drei Herkünften.</b> Nur ein eingegebener Winkel ersetzt den Dateiwert; ein
+        /// gespeicherter Dateiwert weicht dem frisch gelesenen, eine Annahme dem Dateiwert, falls die Datei einen nennt, sonst
+        /// bleibt die Annahme.
+        /// </summary>
+        [Theory]
+        [InlineData("ifc4_g5_oeffnungen.ifc", Nordwinkelherkunft.Eingabe, 10.0, 10.0)]
+        [InlineData("ifc4_g5_oeffnungen.ifc", Nordwinkelherkunft.Datei, 10.0, null)]       // null = der frische Dateiwert
+        [InlineData("ifc4_g5_oeffnungen.ifc", Nordwinkelherkunft.Annahme, null, null)]
+        [InlineData("ohne_norden.ifc", Nordwinkelherkunft.Datei, 270.0, null)]
+        [InlineData("ohne_norden.ifc", Nordwinkelherkunft.Annahme, null, null)]
+        [InlineData("ohne_norden.ifc", Nordwinkelherkunft.Eingabe, 90.0, 90.0)]
+        public void Neulesen_folgt_der_Herkunft_des_gespeicherten_Winkels(string name, Nordwinkelherkunft herkunft, double? gespeichert,
+                                                                          double? erwartet)
+        {
+            byte[] daten = name == "ohne_norden.ifc" ? HausOhneNord() : File.ReadAllBytes(Probe(name));
+            double? frisch = Lesen(daten, name, null).Abbild.NordwinkelWirksamGrad;
+            var quelle = new ImportquelleModel
+            {
+                ID = 1, Format = GebaeudeQuelle.FORMAT_IFC, Dateiname = name, Hash = Convert.ToHexStringLower(SHA256.HashData(daten)),
+                NordwinkelGrad = gespeichert, NordwinkelHerkunft = herkunft,
+            };
+            Assert.Equal(herkunft == Nordwinkelherkunft.Eingabe ? gespeichert : null, GebaeudeNeulesen.GespeicherterWinkelGilt(quelle));
+            NeulesenErgebnis e;
+            using (var s = new MemoryStream(daten)) e = GebaeudeNeulesen.Lesen(s, name, quelle, "", false);
+            Assert.Equal(NeulesenZustand.Passend, e.Zustand);
+            double? soll = erwartet ?? frisch;
+            Assert.True(GebaeudeImportCtrl.NordwinkelGleich(soll, e.Abbild.NordwinkelWirksamGrad),
+                        name + "/" + herkunft + ": " + soll + " ≠ " + e.Abbild.NordwinkelWirksamGrad);
+            Assert.Equal(Azimute(Lesen(daten, name, erwartet).Abbild), Azimute(e.Abbild));
+            if (name != "ohne_norden.ifc") Assert.NotNull(frisch);                  // die Probe nennt ihren Nordwinkel
+            else Assert.Null(frisch);
         }
     }
 
@@ -356,7 +391,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportCtrl.Ausrichtung vorher = ctrl.LesenAusrichtung(GEBAEUDE);
             Assert.Equal(quelle, vorher.IdImportquelle);
             Assert.Equal(30.0, vorher.NordwinkelGrad.Value, 9);
-            Assert.Equal(Nordwinkelherkunft.Datei, vorher.Herkunft);                // N6 ohne Herkunftsspalte
+            Assert.Equal(Nordwinkelherkunft.Datei, vorher.Herkunft);                // N6: geschrieben als DATEI
             Assert.Equal(330.0, vorher.PlanoberseiteGrad, 9);
             Assert.Equal(30.0, Assert.Single(ctrl.LesenRaumgrundrisse(GEBAEUDE)).DrehungGrad.Value, 9);
             Dictionary<string, (double? Azimut, double? Neigung)> alt = Bauteile();
@@ -420,8 +455,7 @@ namespace EPOS.Kern.Tests
         public void Steht_die_Herkunftsspalte_wird_sie_geschrieben_und_gelesen()
         {
             if (!_db.Vorhanden) return;
-            DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Importquelle\" ADD COLUMN \"" + GebaeudeImportCtrl.SPALTE_NORDWINKEL_HERKUNFT +
-                                           "\" TEXT CHECK (\"" + GebaeudeImportCtrl.SPALTE_NORDWINKEL_HERKUNFT + "\" IN ('DATEI','EINGABE','ANNAHME'))");
+            Assert.True(GebaeudeImportCtrl.NordherkunftVorhanden());       // Schritt 199 steht in der Testdatenbank
             var ctrl = new GebaeudeImportCtrl();
             (int wohnen, _) = ZonenAnlegen();
             QuelleSchreiben(null, wohnen);
