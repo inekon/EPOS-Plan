@@ -14,7 +14,8 @@ namespace WindowsFormsApplication1
     /// </summary>
     public sealed class KomponentenVergleichZeile
     {
-        /// <summary>Das Gewerk — nur in der ersten Zeile seines Blocks belegt.</summary>
+        /// <summary>Das Gewerk als SCHLÜSSEL (<see cref="ProjektDetails.GewerkTabellen"/>) — nur in der ersten Zeile seines
+        /// Blocks belegt; angezeigt über <see cref="AbweichungsErmittler.Gewerkname"/>.</summary>
         public string Gewerk = "";
 
         /// <summary>Das Merkmal: „Anzahl Komponenten“ bzw. „Komponente n“.</summary>
@@ -116,7 +117,7 @@ namespace WindowsFormsApplication1
                 ziel.Add(new KomponentenVergleichZeile
                 {
                     Gewerk = gewerk,
-                    Merkmal = AbweichungsErmittler.MERKMAL_ANZAHL,
+                    Merkmal = AbweichungsErmittler.MerkmalAnzahl,
                     Zellen = anzahlen
                 });
 
