@@ -23,12 +23,43 @@ namespace EPOS.UI.Dialoge.Import;
 /// <param name="Groessengrenze">Die Größengrenze der Plattform als Anzeigetext („25 MB"); leer = keine Angabe.</param>
 /// <param name="Zonierungsregeln">Die wählbaren Zonierungsregeln als Anzeigetexte; die erste gilt.</param>
 /// <param name="HilfeSchluessel">Bereichsschlüssel des Infoknopfs.</param>
+/// <param name="Quellen">
+/// Die Einträge der Quellenwahl (IFC, gbXML, IFC + Projektdatei, nur Projektdatei) mit dem Filter des Dateiwählers;
+/// <c>null</c> oder leer = keine Wahl (festes Profil) — dann gilt <see cref="Dateifilter"/>.
+/// </param>
 public sealed record GebaeudeImportProfilDaten(
     string Formatname,
     string Dateifilter,
     string Groessengrenze,
     IReadOnlyList<string> Zonierungsregeln,
-    string HilfeSchluessel);
+    string HilfeSchluessel,
+    IReadOnlyList<GebaeudeImportQuellwahl>? Quellen = null);
+
+/// <summary>
+/// Ein Eintrag der <b>Quellenwahl</b> des Gebäudeimports: der Schlüssel (<see cref="GebaeudeImportQuellen"/>), der
+/// Anzeigetext und der Filter des Dateiwählers in der Schreibweise von <c>IDateiDienst</c>.
+/// </summary>
+public sealed record GebaeudeImportQuellwahl(string Schluessel, string Text, string Dateifilter);
+
+/// <summary>
+/// Die Schlüssel der Quellenwahl. Die Formatschlüssel <see cref="IFC"/>, <see cref="GBXML"/> und
+/// <see cref="PROJEKTDATEI"/> sind zugleich die Persistenzwerte des Formats (<see cref="GebaeudeImportKopf.Formatschluessel"/>);
+/// <see cref="IFC_PROJEKTDATEI"/> ist der Weg „IFC lesen, danach die Projektdatei dazuladen“.
+/// </summary>
+public static class GebaeudeImportQuellen
+{
+    /// <summary>IFC allein.</summary>
+    public const string IFC = "IFC";
+
+    /// <summary>gbXML allein.</summary>
+    public const string GBXML = "GBXML";
+
+    /// <summary>IFC lesen, danach die Projektdatei dazuladen.</summary>
+    public const string IFC_PROJEKTDATEI = "IFC_SQPROJ";
+
+    /// <summary>Allein die Projektdatei (<c>.sqproj</c>), ohne IFC.</summary>
+    public const string PROJEKTDATEI = "SQPROJ";
+}
 
 /// <summary>
 /// Die Antwort des Dateiwählers der Hülle — Pfad und Größe, oder die BENANNTE Ablehnung vor
@@ -53,8 +84,12 @@ public readonly record struct GebaeudeImportFortschritt(double? Anteil, string T
 /// <param name="Kennung">Sprachneutraler Meldungsschlüssel des Kerns; <c>null</c> = keiner.</param>
 public sealed record GebaeudeImportMeldung(WarnStufe Stufe, string Stufentext, string Text, string? Kennung = null);
 
-/// <summary>Der Kopf des Dialogs nach dem Lesen: Datei, Format, Schema, Größe, Zonenregel — Anzeigetexte.</summary>
-public sealed record GebaeudeImportKopf(string Dateiname, string Format, string Schema, string Groesse, string Zonenregel);
+/// <summary>
+/// Der Kopf des Dialogs nach dem Lesen: Datei, Format, Schema, Größe, Zonenregel — Anzeigetexte; dazu der
+/// sprachneutrale Formatschlüssel (<see cref="GebaeudeImportQuellen"/>), an dem der Dialog den Weg „nur Projektdatei“ erkennt.
+/// </summary>
+public sealed record GebaeudeImportKopf(string Dateiname, string Format, string Schema, string Groesse, string Zonenregel,
+                                        string Formatschluessel = "");
 
 /// <summary>
 /// Was das Lesen ergeben hat. Nicht gelesen: <see cref="Meldungen"/> nennen den Grund (Lesefehler,
@@ -1036,6 +1071,21 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_GRP_QUELLE</summary>
     public string GruppeQuelle { get; set; } = Resource.GIMP_DLG_GRP_QUELLE;
+
+    /// <summary>GIMP_DLG_QUELLWAHL — Beschriftung der Quellenwahl (IFC, gbXML, IFC + Projektdatei, nur Projektdatei).</summary>
+    public string Quellwahl { get; set; } = Resource.GIMP_DLG_QUELLWAHL;
+
+    /// <summary>GIMP_DLG_QUELLWAHL_ALLE — der Platzhalter der Quellenwahl: jede Datei, die Quelle folgt der Endung.</summary>
+    public string QuellwahlAlle { get; set; } = Resource.GIMP_DLG_QUELLWAHL_ALLE;
+
+    /// <summary>GIMP_DLG_QUELLZEILE — Platzhalter {0} = die Quelle des gelesenen Laufs („Quelle: Projektdatei“).</summary>
+    public string Quellzeile { get; set; } = Resource.GIMP_DLG_QUELLZEILE;
+
+    /// <summary>GIMP_DLG_QUELLE_IFC_SQPROJ — die Quelle „IFC + Projektdatei“, sobald die Projektdatei dazugeladen ist.</summary>
+    public string QuelleIfcProjektdatei { get; set; } = Resource.GIMP_DLG_QUELLE_IFC_SQPROJ;
+
+    /// <summary>GIMP_DLG_SQNUR_UNBEHEIZT — leiser Hinweis im Weg „nur Projektdatei“: unbeheizte Räume in einer Zone.</summary>
+    public string SqNurUnbeheizt { get; set; } = Resource.GIMP_DLG_SQNUR_UNBEHEIZT;
 
     /// <summary>GEB_AUSRICHTUNG_NORDRICHTUNG — der Abschnitt der Nordrichtung (G5-N).</summary>
     public string GruppeNordrichtung { get; set; } = Resource.GEB_AUSRICHTUNG_NORDRICHTUNG;

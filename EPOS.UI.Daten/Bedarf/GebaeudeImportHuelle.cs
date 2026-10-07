@@ -101,8 +101,9 @@ namespace WindowsFormsApplication1
         private IReadOnlyDictionary<string, int?> _baustoffzuordnungen = new Dictionary<string, int?>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
-        /// folgt der Endung der gewählten Datei.
+        /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für IFC, gbXML und die Projektdatei
+        /// (<c>.sqproj</c>), das Profil folgt der Endung der gewählten Datei; die Quellenwahl des Dialogs
+        /// (<see cref="Quellen"/>) setzt nur den Filter.
         /// </summary>
         /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines — dann fragt die Hülle keine Datenbank.</param>
         /// <param name="ios">
@@ -225,9 +226,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Was das Format ausmacht, als Daten für die Komponente — mit festem Profil dessen Angaben,
-        /// sonst die beider Formate: Formatnamen, der gemeinsame Filter, die Grenze je Format und
-        /// Plattform („gbXML 25 MB · IFC 50 MB"), die Zonierungsregeln beider und der gemeinsame
-        /// Hilfeschlüssel.
+        /// sonst die aller drei Formate: Formatnamen, der gemeinsame Filter, die Grenze je Format und
+        /// Plattform („gbXML 25 MB · IFC 50 MB · Projektdatei 250 MB"), die Zonierungsregeln aller, der
+        /// gemeinsame Hilfeschlüssel und die Einträge der Quellenwahl (<see cref="Quellen"/>).
         /// </summary>
         internal GebaeudeImportProfilDaten ProfilDaten()
         {
@@ -239,7 +240,7 @@ namespace WindowsFormsApplication1
                     _festesProfil.Zonierungsregeln.Select(GebaeudeZuordnungsModell.ZonenregelText).ToList(),
                     _festesProfil.HilfeSchluessel);
 
-            IReadOnlyList<GebaeudeImportProfil> alle = BeideProfile();
+            IReadOnlyList<GebaeudeImportProfil> alle = AlleProfile();
             return new GebaeudeImportProfilDaten(
                 string.Join(", ", alle.Select(GebaeudeZuordnungsModell.FormatText)),
                 GebaeudeImportProfil.DATEIFILTER_ALLE,
@@ -247,12 +248,42 @@ namespace WindowsFormsApplication1
                                        .Select(p => GebaeudeZuordnungsModell.FormatText(p) + " " +
                                                     GebaeudeZuordnungsModell.GroesseText(p.MaxBytes))),
                 alle.SelectMany(p => p.Zonierungsregeln).Select(GebaeudeZuordnungsModell.ZonenregelText).Distinct().ToList(),
-                GebaeudeImportProfil.HILFE_ZUORDNUNG);
+                GebaeudeImportProfil.HILFE_ZUORDNUNG,
+                Quellen());
         }
 
-        /// <summary>Beide Formate mit der Grenze der Plattform der Hülle — gbXML zuerst.</summary>
-        private IReadOnlyList<GebaeudeImportProfil> BeideProfile()
-            => new[] { MitPlattformgrenze(new GbxmlImportProfil()), MitPlattformgrenze(new IfcImportProfil()) };
+        /// <summary>
+        /// Die drei Formate mit der Grenze der Plattform der Hülle — gbXML, IFC, Projektdatei; die Grenze der Projektdatei
+        /// über <see cref="SqprojImportProfil.GrenzeFuerPlattform"/> (iOS enger als Windows). Eine zu große Datei lehnt
+        /// <see cref="DateiWaehlenAsync"/> benannt ab (<c>ZU_GROSS</c> des Profils).
+        /// </summary>
+        internal IReadOnlyList<GebaeudeImportProfil> AlleProfile()
+            => new GebaeudeImportProfil[]
+            {
+                MitPlattformgrenze(new GbxmlImportProfil()),
+                MitPlattformgrenze(new IfcImportProfil()),
+                MitPlattformgrenze(new SqprojImportProfil()),
+            };
+
+        /// <summary>
+        /// <b>Die Quellenwahl des Dialogs</b>: „IFC“ und „gbXML“ mit dem Filter ihres Profils, „IFC + Projektdatei“ (IFC lesen,
+        /// danach die Projektdatei dazuladen) mit dem IFC-Filter und „Nur Projektdatei (.sqproj)“ mit dem Filter
+        /// <c>GIMP_DLG_SQ_FILTER</c>, den der iOS-Adapter in seine Typkennung übersetzt. Mit festem Profil keine Wahl.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeImportQuellwahl> Quellen()
+        {
+            if (_festesProfil != null) return Array.Empty<GebaeudeImportQuellwahl>();
+            var ifc = new IfcImportProfil();
+            var gbxml = new GbxmlImportProfil();
+            return new[]
+            {
+                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.IFC, GebaeudeZuordnungsModell.FormatText(ifc), ifc.Dateifilter),
+                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.GBXML, GebaeudeZuordnungsModell.FormatText(gbxml), gbxml.Dateifilter),
+                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.IFC_PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_IFC_SQPROJ, ifc.Dateifilter),
+                new GebaeudeImportQuellwahl(GebaeudeImportQuellen.PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_SQPROJ,
+                                            MyResource.Resource.GIMP_DLG_SQ_FILTER),
+            };
+        }
 
         /// <summary>Belegt die Größengrenze eines Profils für die Plattform der Hülle (Softwarearchitektur 1.5, Regel 2).</summary>
         private GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
@@ -429,7 +460,8 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.FormatText(profil),
                 GebaeudeZuordnungsModell.SchemaText(profil, q.Schemastand),
                 GebaeudeZuordnungsModell.GroesseText(q.Groesse),
-                GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel));
+                GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel),
+                profil.Format);
             return new GebaeudeLesestand(true, kopf, _ablauf.Gebaeude.ToList(), meldungen, SchonImportiertText(q));
         }
 

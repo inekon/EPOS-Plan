@@ -137,7 +137,16 @@
             <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@(_stand?.KlasseDerDatei ?? _klasse)"
                          AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt && _stand?.KlasseDerDatei is null)" />
             <Herleitungszeile Text="@(_stand is { KlassenHinweis.Length: > 0 } s ? s.KlassenHinweis : Texte.KlasseHinweis)" />
-            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@(Profil?.Dateifilter ?? "")"
+            @if (Quellenliste.Count > 0)
+            {
+                @* DIE QUELLENWAHL (Datenaustauschkonzept 16.1): IFC, gbXML, IFC + Projektdatei, nur Projektdatei - sie setzt den
+                   Filter des Dateiwaehlers; ohne Wahl gilt der gemeinsame Filter, und die Quelle folgt der Endung der Datei. *@
+                <div class="epos-gebimport-quellwahl" data-quelle="@(_quelle ?? "")">
+                    <Auswahlfeld Bezeichnung="@Texte.Quellwahl" Eintraege="@Quelleneintraege" Auswahl="@QuellenId(_quelle)"
+                                 AuswahlChanged="BeiQuelle" Platzhalter="@Texte.QuellwahlAlle" Aktiv="@(!Beschaeftigt)" />
+                </div>
+            }
+            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@WirksamerFilter"
                        Pfad="@_dateianzeige" Waehlen="@Waehler" PfadChanged="BeiDatei" Aktiv="@(!Beschaeftigt)" />
             @if (GrenzeText.Length > 0)
             {
@@ -157,6 +166,9 @@
         <Gruppenkopf Titel="@Texte.GruppeQuelle" />
         @if (_lesestand.Kopf is GebaeudeImportKopf kopf)
         {
+            <div class="epos-gebimport-quellzeile" data-quelle="@GeleseneQuelle">
+                <Herleitungszeile Text="@Format(Texte.Quellzeile, Quellentext(kopf, stand))" />
+            </div>
             <dl class="epos-gebimport-kopf">
                 <dt>@Texte.KopfDatei</dt><dd>@kopf.Dateiname</dd>
                 <dt>@Texte.KopfFormat</dt><dd>@kopf.Format</dd>
@@ -182,14 +194,18 @@
                                    Aktiv="@(NordrichtungSetzen is not null && !Beschaeftigt)" />
             </div>
         }
-        @if (ProjektdateiLesen is not null)
+        @if (ProjektdateiLesen is not null || NurProjektdatei)
         {
-            @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. *@
+            @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. Im Weg
+               "nur Projektdatei" (16.1) ist die gelesene Datei selbst die Projektdatei: kein Dazuladen, kein Entfernen. *@
             <div class="epos-gebimport-projektdatei">
+                @if (!NurProjektdatei)
+                {
                 <button type="button" class="epos-knopf epos-gebimport-sq-laden" data-aktion="projektdatei"
                         disabled="@(Beschaeftigt || !stand.ProjektdateiMoeglich)"
                         title="@(stand.ProjektdateiMoeglich ? null : Texte.SqKnopfGrund)" @onclick="BeiProjektdatei">@Texte.SqKnopf</button>
-                @if (stand.Projektdatei is not null)
+                }
+                @if (stand.Projektdatei is not null && !NurProjektdatei)
                 {
                     <button type="button" class="epos-knopf epos-gebimport-sq-entfernen" data-aktion="projektdatei-entfernen"
                             disabled="@Beschaeftigt" @onclick="BeiProjektdateiEntfernen">@Texte.SqEntfernen</button>
@@ -261,6 +277,14 @@
                     {
                         <div class="epos-gebimport-sqvorschlag">
                             <Herleitungszeile Text="@sq.Einzonenvorschlag" />
+                        </div>
+                    }
+                    @if (UnbeheizteOffen)
+                    {
+                        @* Weg "nur Projektdatei" (16.1): eine Zone der Datei mit unbeheizten Raeumen laesst diese offen, bis ihre
+                           Beheizung entschieden ist - leise, die Sperre am OK nennt die Zahl. *@
+                        <div class="epos-gebimport-squnbeheizt">
+                            <Herleitungszeile Text="@Texte.SqNurUnbeheizt" />
                         </div>
                     }
                     @if (stand.Zonierung?.Plan is null)
@@ -1251,6 +1275,60 @@
 
     private string GrenzeText => string.IsNullOrEmpty(Profil?.Groessengrenze) ? "" : Format(Texte.Grenze, Profil.Groessengrenze);
 
+    // ---------------------------------------------------------------------
+    // Die Quellenwahl (Datenaustauschkonzept 16.1)
+    // ---------------------------------------------------------------------
+
+    /// <summary>Die gewählte Quelle (<see cref="GebaeudeImportQuellen"/>); <c>null</c> = alle Formate, die Endung entscheidet.</summary>
+    private string? _quelle;
+
+    /// <summary>Die gewählte Quelle (Prüfhilfe für Tests); nach dem Lesen einer <c>.sqproj</c> über „alle“ die Projektdatei.</summary>
+    public string? Quelle => _quelle;
+
+    private IReadOnlyList<GebaeudeImportQuellwahl> Quellenliste
+        => Profil?.Quellen ?? (IReadOnlyList<GebaeudeImportQuellwahl>)Array.Empty<GebaeudeImportQuellwahl>();
+
+    /// <summary>Stabile Ids je Schlüssel: die Stelle in der Liste der Datenseite, ab 1.</summary>
+    private IReadOnlyList<(int Id, string Text)> Quelleneintraege
+        => Quellenliste.Select((q, i) => (i + 1, q.Text)).ToList();
+
+    private int? QuellenId(string? schluessel)
+    {
+        if (schluessel is null) return null;
+        for (int i = 0; i < Quellenliste.Count; i++)
+            if (string.Equals(Quellenliste[i].Schluessel, schluessel, StringComparison.Ordinal)) return i + 1;
+        return null;
+    }
+
+    private void BeiQuelle(int? id)
+        => _quelle = id is int i && i >= 1 && i <= Quellenliste.Count ? Quellenliste[i - 1].Schluessel : null;
+
+    /// <summary>Der Filter des Dateiwählers: der der gewählten Quelle, sonst der des Profils (alle Formate).</summary>
+    private string WirksamerFilter
+        => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Dateifilter
+           ?? Profil?.Dateifilter ?? "";
+
+    /// <summary>
+    /// <b>Der Weg „nur Projektdatei“</b>: die gelesene Datei ist eine <c>.sqproj</c> — erkannt am Formatschlüssel des Kopfs,
+    /// gleich ob über die Quellenwahl oder über „alle Formate“ gewählt.
+    /// </summary>
+    public bool NurProjektdatei
+        => string.Equals(_lesestand?.Kopf?.Formatschluessel, GebaeudeImportQuellen.PROJEKTDATEI, StringComparison.Ordinal);
+
+    /// <summary>Die Quelle des gelesenen Laufs als Schlüssel (<c>data-quelle</c> der Quellzeile).</summary>
+    private string GeleseneQuelle
+        => NurProjektdatei ? GebaeudeImportQuellen.PROJEKTDATEI
+         : _stand?.Projektdatei is { Gelesen: true } ? GebaeudeImportQuellen.IFC_PROJEKTDATEI
+         : _lesestand?.Kopf?.Formatschluessel ?? "";
+
+    /// <summary>Der Text der Quellzeile: das Format der Datei, nach dem Dazuladen „IFC + Projektdatei“.</summary>
+    private string Quellentext(GebaeudeImportKopf kopf, GebaeudeImportStand stand)
+        => !NurProjektdatei && stand.Projektdatei is { Gelesen: true } ? Texte.QuelleIfcProjektdatei : kopf.Format;
+
+    /// <summary>Im Weg „nur Projektdatei“: Räume, die keine Zone aufnimmt, weil ihre Beheizung offen ist.</summary>
+    private bool UnbeheizteOffen
+        => NurProjektdatei && Plan is { } p && p.NichtZugeordnet.Any(r => !r.Beheizt || !r.BeheiztLautDatei);
+
     private IReadOnlyList<(int Id, string Text)> Klassenliste
         => Baualtersklassen.Select((text, index) => (index, text)).ToList();
 
@@ -1387,6 +1465,27 @@
             _abbruch?.Dispose();
             _abbruch = null;
         }
+        await NachDemLesen();
+    }
+
+    /// <summary>
+    /// Die Quelle nach dem Lesen (16.1): Eine <c>.sqproj</c> ist der Weg „nur Projektdatei“ — die Wahl folgt der Endung, und die
+    /// Zonen der Datei gehen gleich als Schritt in den Plan. Beim Weg „IFC + Projektdatei“ öffnet sich danach die Wahl der
+    /// Projektdatei; ist sie für diese IFC nicht möglich, nennt eine leise Meldung den Grund des gesperrten Knopfs.
+    /// </summary>
+    private async Task NachDemLesen()
+    {
+        if (_lesestand is null || _stand is null) return;
+        if (NurProjektdatei)
+        {
+            _quelle = GebaeudeImportQuellen.PROJEKTDATEI;
+            if (_stand.Projektdatei is { Gelesen: true } && Plan is not null && _planschritte.Count == 0) ZonenDerProjektdatei();
+            return;
+        }
+        if (_quelle == GebaeudeImportQuellen.PROJEKTDATEI) _quelle = null;
+        if (_quelle != GebaeudeImportQuellen.IFC_PROJEKTDATEI || ProjektdateiLesen is null) return;
+        if (_stand.ProjektdateiMoeglich) await BeiProjektdatei();
+        else Melden(Texte.SqKnopfGrund, WarnStufe.Hinweis);
     }
 
     /// <summary>

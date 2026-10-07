@@ -48589,5 +48589,23 @@ chart</value>
   <data name="GIMP_FORMAT_SQPROJ" xml:space="preserve">
     <value>Project file</value>
   </data>
+  <data name="GIMP_DLG_QUELLWAHL" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="GIMP_DLG_QUELLWAHL_ALLE" xml:space="preserve">
+    <value>All formats (by file extension)</value>
+  </data>
+  <data name="GIMP_DLG_QUELLZEILE" xml:space="preserve">
+    <value>Source: {0}</value>
+  </data>
+  <data name="GIMP_DLG_QUELLE_IFC_SQPROJ" xml:space="preserve">
+    <value>IFC + project file</value>
+  </data>
+  <data name="GIMP_DLG_QUELLE_SQPROJ" xml:space="preserve">
+    <value>Project file only (.sqproj)</value>
+  </data>
+  <data name="GIMP_DLG_SQNUR_UNBEHEIZT" xml:space="preserve">
+    <value>A zone of the project file contains unheated rooms; the assignment stays incomplete until their heating is decided.</value>
+  </data>
 </root>
 
