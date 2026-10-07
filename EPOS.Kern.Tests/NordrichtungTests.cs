@@ -490,12 +490,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, d.PlanoberseiteGrad, 9);
             Assert.Equal("Ausrichtung", d.Titel);
             Assert.Equal("Planoberseite zeigt nach", d.Beschriftung);
+            Assert.Equal(0, keine.Bauteile);
+            Assert.Equal(4, d.Bauteile);                                            // die Rückfrage nennt die Bauteile mit Azimut
 
             EPOS.UI.Dialoge.Import.GebaeudeAusrichtungErgebnis e = GebaeudeKatalogHuelle.AusrichtungAendern(GEBAEUDE, 180.0);
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal(4, e.GedrehteBauteile);
+            Assert.Equal(e.GedrehteBauteile, d.Bauteile);
             Assert.Equal(180.0, e.PlanoberseiteGrad, 9);
-            Assert.Equal(180.0, GebaeudeKatalogHuelle.Ausrichtung(GEBAEUDE).PlanoberseiteGrad, 9);
+            EPOS.UI.Dialoge.Import.GebaeudeAusrichtungDaten nach = GebaeudeKatalogHuelle.Ausrichtung(GEBAEUDE);
+            Assert.Equal(180.0, nach.PlanoberseiteGrad, 9);
+            // Schritt 199: die Herkunft steht an der Quelle — nach der Änderung zeigt die Anzeige „eingegeben“.
+            Assert.Equal("EINGABE", nach.Herkunft);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_AUSRICHTUNG_HERKUNFT_EINGABE, nach.HerkunftText);
             Assert.Equal(0.0, Bauteile()["Wand Süd"].Azimut.Value, 9);              // Planoberseite Süd: Modell-Süd zeigt nach Nord
         }
     }

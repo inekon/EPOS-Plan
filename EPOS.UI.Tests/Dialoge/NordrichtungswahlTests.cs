@@ -386,13 +386,15 @@ public class GebaeudeDialogAusrichtungTests : EposBunitContext
         public List<(int IdZ, double Wert)> Geaendert { get; } = new();
         public List<int> Aufgefrischt { get; } = new();
         public double Gespeichert { get; set; }
+        /// <summary>Die gespeicherte Herkunft (Schritt 199): nach „Ausrichtung ändern“ EINGABE.</summary>
+        public bool Eingegeben { get; set; }
     }
 
-    private static GebaeudeAusrichtungDaten Daten(bool aenderbar, double planoberseite, int bauteile)
+    private static GebaeudeAusrichtungDaten Daten(bool aenderbar, double planoberseite, int bauteile, bool eingegeben = false)
         => new(aenderbar, aenderbar ? "" : "Das Gebäude stammt aus keiner Importdatei.", planoberseite,
-               aenderbar ? (360 - planoberseite) % 360 : null, aenderbar ? "DATEI" : "ANNAHME",
-               aenderbar ? "aus der Datei" : "angenommen (Planoberseite = Nord)", "Ausrichtung", "Planoberseite zeigt nach",
-               Array.Empty<GebaeudeNordSchnellwahl>(), bauteile);
+               aenderbar ? (360 - planoberseite) % 360 : null, !aenderbar ? "ANNAHME" : eingegeben ? "EINGABE" : "DATEI",
+               !aenderbar ? "angenommen (Planoberseite = Nord)" : eingegeben ? "eingegeben" : "aus der Datei",
+               "Ausrichtung", "Planoberseite zeigt nach", Array.Empty<GebaeudeNordSchnellwahl>(), bauteile);
 
     private IRenderedComponent<GebaeudeDialog> Bauen(Pruefstand p)
         => Render<GebaeudeDialog>(c => c
@@ -407,12 +409,13 @@ public class GebaeudeDialogAusrichtungTests : EposBunitContext
             .Add(x => x.Ausrichtung, z =>
             {
                 p.Gefragt.Add(z.IdZ);
-                return z.IdZ == 1 ? Daten(true, p.Gespeichert, 12) : Daten(false, 0, 0);
+                return z.IdZ == 1 ? Daten(true, p.Gespeichert, 12, p.Eingegeben) : Daten(false, 0, 0);
             })
             .Add(x => x.AusrichtungAendern, (z, w) =>
             {
                 p.Geaendert.Add((z.IdZ, w));
                 p.Gespeichert = w;
+                p.Eingegeben = true;
                 return new GebaeudeAusrichtungErgebnis(true, "Ausrichtung geändert: 12 Bauteile gedreht, die Planoberseite zeigt jetzt nach " + w + "°.", 12, w);
             })
             .Add(x => x.ZeileAuffrischen, z => p.Aufgefrischt.Add(z.IdZ)));
@@ -450,6 +453,7 @@ public class GebaeudeDialogAusrichtungTests : EposBunitContext
         var cut = Bauen(p);
         Zeile(cut, 0);
         Assert.Equal("30", cut.Find("input.epos-nordwahl-wert").GetAttribute("value"));
+        Assert.Contains("aus der Datei", cut.Find(".epos-gebaeude-ausrichtung .epos-nordwahl-herkunft").TextContent);
 
         cut.Find("button[data-kuerzel=\"O\"]").Click();          // nur die Eingabe - gedreht wird noch nichts
         Assert.Empty(p.Geaendert);
@@ -463,6 +467,10 @@ public class GebaeudeDialogAusrichtungTests : EposBunitContext
         Assert.Equal(new[] { 1 }, p.Aufgefrischt);
         Assert.Equal(2, p.Gefragt.Count(i => i == 1));            // neu gelesen
         Assert.Equal("90", cut.Find("input.epos-nordwahl-wert").GetAttribute("value"));
+        // Die Herkunft kommt neu gelesen aus der Quelle (Schritt 199): nach der Änderung „eingegeben“.
+        IElement abschnitt = cut.Find(".epos-gebaeude-ausrichtung .epos-nordwahl");
+        Assert.Equal("EINGABE", abschnitt.GetAttribute("data-herkunft"));
+        Assert.Contains("eingegeben", abschnitt.QuerySelector(".epos-nordwahl-herkunft")!.TextContent);
         Assert.Null(cut.Instance.AusrichtungFrage);
     }
 
