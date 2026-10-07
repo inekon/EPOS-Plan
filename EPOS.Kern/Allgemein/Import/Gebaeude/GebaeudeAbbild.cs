@@ -755,6 +755,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Dateikoerper Koerper { get; set; }
 
+        /// <summary>
+        /// Der Befund des Körpers aus der Datei (Abstimmung G5, B1): nicht oder nur teilweise lesbar, offen, ohne Beschnitt,
+        /// mit nicht angebundenem Loch oder entartet (<see cref="Bauteilbefunde.Koerpergrund"/>); <see cref="Bauteilbefundgrund.Keiner"/>
+        /// = lesbar oder keine Darstellung. Gesetzt allein vom IFC-Leser, auch wo der Körper nur für die Rechnung gelesen wird.
+        /// </summary>
+        public Bauteilbefundgrund Koerpergrund { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
     }

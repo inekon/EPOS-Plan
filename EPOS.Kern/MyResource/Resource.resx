@@ -34082,9 +34082,6 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}).</value>
   </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
-    <value>Bauteil {0}: Die Öffnungen ({2} m²) sind nicht kleiner als die Bruttofläche ({1} m²); die Nettofläche wird 0.</value>
-  </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}).</value>
   </data>
@@ -37563,8 +37560,41 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft.</value>
   </data>
-  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
-    <value>{0}: Nettofläche 0 — keine Zeile, die Öffnungen bleiben.</value>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} Bauteile entfallen: vollständig durch Öffnungen belegt ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>Ohne Befund</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Körper unlesbar</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Ohne Eigenschaften</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>Kein U-Wert: weder Datei, Projektdatei, Katalog, Vorgabe noch Ersatzaufbau liefern einen.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>Keine Fläche: weder Mengensatz noch Körper liefern eine.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Körper nicht oder nur teilweise lesbar: Die Darstellungsart kann der Import nicht lesen.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Körper nur teilweise gelesen: Der Beschnitt fehlt, gelesen ist nur der erste Operand.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Körper mit offener Schale.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Körper nur teilweise gelesen: Ein Loch ließ sich nicht anbinden.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Körper entartet: Er ergibt keine maßgebliche Fläche.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Befund</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>Die Himmelsrichtungen enthalten die Nordrichtung der Datei ({0}°).</value>

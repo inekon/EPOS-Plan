@@ -30,6 +30,30 @@ namespace WindowsFormsApplication1
             _ => Aufbaustufe.Transparent,
         };
 
+        /// <summary>Der Befund des Kerns als Wert der Oberfläche (Abstimmung G5, B1).</summary>
+        internal static Bauteilbefundstufe Befund(Bauteilbefund b) => b switch
+        {
+            Bauteilbefund.KoerperUnlesbar => Bauteilbefundstufe.KoerperUnlesbar,
+            Bauteilbefund.OhneEigenschaften => Bauteilbefundstufe.OhneEigenschaften,
+            _ => Bauteilbefundstufe.Ohne,
+        };
+
+        /// <summary>Trägt Befund und Grundtext in einen Steckbrief.</summary>
+        internal static BauteilsteckbriefDaten MitBefund(BauteilsteckbriefDaten d, Bauteilbefundgrund g)
+            => d with { Befund = Befund(Bauteilbefunde.Befund(g)), Befundgrund = Bauteilbefunde.Text(g) };
+
+        /// <summary>Zahl und Fläche je Befund (ohne, Körper unlesbar, ohne Eigenschaften, ohne Bauteil) — die Legende „Befund".</summary>
+        internal static IReadOnlyList<GebaeudeAnsichtBefundsumme> Befundsummen(IEnumerable<(Bauteilbefundstufe Stufe, double Flaeche)> zeilen)
+        {
+            var liste = zeilen.ToList();
+            return Enumerable.Range(0, GebaeudeAnsichtBefundstufen.ZAHL).Select(i =>
+            {
+                var s = (Bauteilbefundstufe)i;
+                var je = liste.Where(x => x.Stufe == s).ToList();
+                return new GebaeudeAnsichtBefundsumme(s, je.Count, je.Sum(x => x.Flaeche));
+            }).ToList();
+        }
+
         /// <summary>Der Schlüssel einer Herkunft des Imports; „Projektdatei" (BA-4) wird über den Namen erkannt.</summary>
         internal static string Herkunftsschluessel(Importherkunft h) => h switch
         {
@@ -156,19 +180,22 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// Trägt die Stufen, die Legendensummen und die Steckbriefe des Vorschlags in die Daten der Ansicht; ohne Vorschlag oder
-        /// ohne Zeilen bleiben die Daten unverändert (dann ist „Aufbau" gesperrt).
+        /// Trägt die Stufen, die Legendensummen und die Steckbriefe des Vorschlags in die Daten der Ansicht, dazu den Befund je
+        /// Bauteil und seine Legende (G5-3, Farbmodus „Befund" — samt Körperbefund des Imports); ohne Vorschlag oder ohne Zeilen
+        /// bleiben die Daten unverändert (dann sind „Aufbau" und „Befund" gesperrt).
         /// </summary>
         internal static GebaeudeAnsichtDaten MitAufbau(GebaeudeAnsichtDaten daten, GebaeudeBauteilvorschlag v)
         {
             if (daten == null || v == null || v.Zeilen.Count == 0) return daten;
             var aufbauJeId = v.Aufbauten.GroupBy(a => a.Aufbau.ID).ToDictionary(g => g.Key, g => g.First());
             var stufen = new Dictionary<string, Aufbaustufe>(StringComparer.Ordinal);
+            var befunde = new Dictionary<string, Bauteilbefundstufe>(StringComparer.Ordinal);
             var steckbriefe = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
             foreach (GebaeudeBauteilzeile z in v.Zeilen)
             {
                 if (string.IsNullOrEmpty(z.Kennung) || stufen.ContainsKey(z.Kennung)) continue;
                 stufen[z.Kennung] = Stufe(z.Stufe);
+                befunde[z.Kennung] = Befund(z.Befund);
                 GebaeudeAufbauzeile a = z.Bauteil.ID_Aufbau is int id && aufbauJeId.TryGetValue(id, out GebaeudeAufbauzeile x) ? x : null;
                 steckbriefe[z.Kennung] = Steckbrief(z, a, v.MitProjektdatei);
             }
@@ -177,6 +204,8 @@ namespace WindowsFormsApplication1
                 Bauteilstufen = stufen,
                 Steckbriefe = steckbriefe,
                 Aufbausummen = Summen(v.Zeilen.Select(z => (Stufe(z.Stufe), z.Summenfeld == null, z.Bauteil.Flaeche))),
+                Bauteilbefunde = befunde,
+                Befundsummen = Befundsummen(v.Zeilen.Select(z => (Befund(z.Befund), z.Bauteil.Flaeche))),
             };
         }
 
@@ -198,6 +227,9 @@ namespace WindowsFormsApplication1
         /// <paramref name="mitProjektdatei"/> trägt er den Rang der Zeile (E97/E98).
         /// </summary>
         internal static BauteilsteckbriefDaten Steckbrief(GebaeudeBauteilzeile z, GebaeudeAufbauzeile a, bool mitProjektdatei = false)
+            => MitBefund(SteckbriefOhneBefund(z, a, mitProjektdatei), z.Befundgrund);
+
+        private static BauteilsteckbriefDaten SteckbriefOhneBefund(GebaeudeBauteilzeile z, GebaeudeAufbauzeile a, bool mitProjektdatei)
         {
             BauteilModel b = z.Bauteil;
             Aufbaustufe stufe = Stufe(z.Stufe);
@@ -364,12 +396,14 @@ namespace WindowsFormsApplication1
         {
             if (daten == null || bauteile == null || bauteile.Count == 0) return daten;
             var stufen = new Dictionary<string, Aufbaustufe>(StringComparer.Ordinal);
+            var befunde = new Dictionary<string, Bauteilbefundstufe>(StringComparer.Ordinal);
             var steckbriefe = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
             foreach ((string kennung, BauteilModel b) in bauteile)
             {
                 if (string.IsNullOrEmpty(kennung) || b == null || stufen.ContainsKey(kennung)) continue;
                 Aufbaustufe stufe = Stufe(Bauteilzuordnung.Stufe(b, aufbauten));
                 stufen[kennung] = stufe;
+                befunde[kennung] = Befund(Bauteilbefunde.Befund(Bauteilbefunde.Grund(b)));
                 BauteilaufbauModel a = b.ID_Aufbau is int id && aufbauten != null && aufbauten.TryGetValue(id, out BauteilaufbauModel x) ? x : null;
                 steckbriefe[kennung] = Steckbrief(b, kennung, stufe, a, baustoffnamen);
             }
@@ -379,6 +413,10 @@ namespace WindowsFormsApplication1
                 Steckbriefe = steckbriefe,
                 Aufbausummen = Summen(bauteile.Where(p => p.Bauteil != null)
                     .Select(p => (Stufe(Bauteilzuordnung.Stufe(p.Bauteil, aufbauten)), IstInnen(p.Bauteil), p.Bauteil.Flaeche))),
+                // G5-3: gespeicherte Bauteile tragen nur den Befund ihrer Spalten — den Körperbefund gibt es allein beim Import.
+                Bauteilbefunde = befunde,
+                Befundsummen = Befundsummen(bauteile.Where(p => p.Bauteil != null)
+                    .Select(p => (Befund(Bauteilbefunde.Befund(Bauteilbefunde.Grund(p.Bauteil))), p.Bauteil.Flaeche))),
             };
         }
 
@@ -388,6 +426,10 @@ namespace WindowsFormsApplication1
         /// <summary>Der Steckbrief eines gespeicherten Bauteils; die Kennwerte aus seinem Aufbau, Sprung in den Bauteildialog über die Id.</summary>
         internal static BauteilsteckbriefDaten Steckbrief(BauteilModel b, string kennung, Aufbaustufe stufe, BauteilaufbauModel a,
                                                          IReadOnlyDictionary<int, string> baustoffnamen)
+            => MitBefund(SteckbriefOhneBefund(b, kennung, stufe, a, baustoffnamen), Bauteilbefunde.Grund(b));
+
+        private static BauteilsteckbriefDaten SteckbriefOhneBefund(BauteilModel b, string kennung, Aufbaustufe stufe, BauteilaufbauModel a,
+                                                                  IReadOnlyDictionary<int, string> baustoffnamen)
         {
             bool transparent = stufe == Aufbaustufe.Transparent || string.Equals(b.Bauteilart, DbWerte.BAUTEILART_TUER, StringComparison.Ordinal);
             string uSchluessel = b.U_Wert.HasValue ? Herkunftsschluessel(b.Herkunft) : a != null ? SteckbriefHerkunft.Schichten : SteckbriefHerkunft.Leer;

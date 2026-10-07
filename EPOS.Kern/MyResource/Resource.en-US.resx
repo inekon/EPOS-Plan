@@ -34075,9 +34075,6 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} openings without window or door have neither base quantities nor a readable body and are not deducted ({1}).</value>
   </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
-    <value>Component {0}: the openings ({2} m²) are not smaller than the gross area ({1} m²); the net area becomes 0.</value>
-  </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} windows and doors fill no opening of a building component and are not counted ({1}).</value>
   </data>
@@ -37556,8 +37553,41 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} windows or curtain walls in contact with the ground are computed against outdoor air.</value>
   </data>
-  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
-    <value>{0}: net area 0 — no row, the openings remain.</value>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} components omitted: completely occupied by openings ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>No finding</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Body unreadable</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Missing properties</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>No U-value: neither file, project file, catalogue, default nor substitute construction supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>No area: neither quantity set nor body supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Body not or only partly readable: the import cannot read the representation type.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Body only partly read: the clipping is missing, only the first operand is read.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Body with an open shell.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Body only partly read: a hole could not be connected.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Body degenerate: it yields no relevant area.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Finding</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>The orientations include the file's north direction ({0}°).</value>
