@@ -2318,10 +2318,11 @@ dem Raumpolygon**, nicht über `Koerpergrundriss` aus dem abgeleiteten Körper: 
 
 1. **Fläche**: in der Projektdatei die Schleife `DIN18599_2011` (sie trägt die Bruttofläche, mit der gerechnet wird),
    bei Fenstern und Türen die Schleife `Inner`; in gbXML die `PlanarGeometry` der `Surface` bzw. des `Opening`.
-2. **Dicke** in dieser Rangfolge: die Summe der Schichtdicken des Aufbaus (Projektdatei über `CatalogDimUUID`; gbXML
-   `Construction` → `LayerId` → `Layer` → `MaterialId` → `Material/Thickness`); sonst die Dicke an der Fläche
-   (`BmElement.Thickness`); sonst eine **benannte Vorgabedicke** je Bauteilart (Konstante im Kern, Vermerk
-   `Vorgabedicke`, im Steckbrief sichtbar).
+2. **Dicke** in dieser Rangfolge: in der Projektdatei die **gezeichnete Dicke** des Bauteils (`BmElement.Thickness`),
+   wenn nur sie zur gemessenen Lage der Bezugsebene (Punkt 3) passt; sonst die Summe der Schichtdicken des Aufbaus
+   (Projektdatei über `CatalogDimUUID`; gbXML `Construction` → `LayerId` → `Layer` → `MaterialId` →
+   `Material/Thickness`); sonst eine **benannte Vorgabedicke** je Bauteilart (Konstante im Kern, Vermerk
+   `Vorgabedicke`, im Steckbrief sichtbar). In gbXML gilt die Schichtsumme, sonst die Vorgabedicke.
 3. **Richtung der Extrusion** folgt der Bezugsebene, gemessen am Raumkörper (17.2), nicht angenommen: Liegt die Fläche
    in der Innenoberfläche des Raums (≤ 1 cm), wird sie um die Dicke **vom Raum weg** extrudiert; liegt sie eine halbe
    Dicke davor (Achse), **beidseitig** um die halbe Dicke; liegt sie eine Dicke davor (Außenmaß), **zum Raum hin**.
@@ -2344,8 +2345,8 @@ Bei abgeleiteten Körpern ist die Zuordnung **durch die Bauweise bekannt** und w
   Innenoberfläche höchstens die Dicke plus 2 cm beträgt; jedes Teilstück trägt die Fläche mit der größten Überdeckung.
 - Die Flächenklassifikation bekommt dafür eine **erste Regel „Quellfläche“** (Beleg `QUELLFLAECHE`): Trägt ein Dreieck
   eine Quellfläche, gibt deren wirksame Randbedingung die Gruppe wie in der Regel „Bauteil des Raumbezugs“. Die
-  übrigen Regeln bleiben für Dreiecke ohne Quellfläche, wie sie sind; die Paarung nach `Koerpernachbarschaft` läuft
-  als Gegenprobe (Widerspruch: Hinweis, keine Änderung).
+  übrigen Regeln bleiben für Dreiecke ohne Quellfläche, wie sie sind. Körperpaare werden aus gebildeten Körpern gar
+  nicht gebildet.
 - **Warum nicht allein geometrisch:** Die Regel „Bauteil des Raumbezugs“ wählt nach Lage und Orientierung. Hat ein
   Raum zwei Wände gleicher Richtung mit verschiedener Randbedingung (außen und gegen unbeheizt), trifft sie nicht
   sicher; die Quellfläche entscheidet nach der Stelle.
@@ -2359,10 +2360,10 @@ Orientierung und Nachbarschaft stammen.
 
 | Stelle | Festlegung |
 |---|---|
-| Kern: `Dateikoerper` | neue Angabe **Quelle**: `Gezeichnet` (der Körper steht so in der Datei — IFC) oder `AusFlaechen` (der Kern hat ihn aus Flächen der Datei gebildet); der Weg als Schlüssel in `Art` (`Raumpolygon`, `Huellflaechen`, `ClosedShell`, `Raumflaechen`, `Flaechenextrusion`) |
-| Körpervergleich | Die Gegenprobe Mengensatz gegen Körper (Meldungen `KOERPER_ABWEICHUNG*`, `KOERPER_REST`) läuft **nur** für Körper mit Quelle `Gezeichnet` |
+| Kern: `Dateikoerper` | neue Angabe **Quelle**: `Datei` (der Körper steht so in der Datei — IFC) oder `AusFlaechen` (der Kern hat ihn aus Flächen der Datei gebildet); der Weg als Schlüssel in `Art` (`Raumpolygon`, `Huellflaechen`, `ClosedShell`, `Raumflaechen`, `Flaechenextrusion`) |
+| Körpervergleich | Die Gegenprobe Mengensatz gegen Körper (Meldungen `KOERPER_ABWEICHUNG*`, `KOERPER_REST`) läuft **nur** für Körper mit Quelle `Datei` |
 | Flächenherkunft | Ein Körper mit Quelle `AusFlaechen` setzt **nie** `Flaechenherkunft.Koerper`; die Fläche behält die Herkunft ihres Wegs |
-| Nachbarschaft | Flächenpaare aus abgeleiteten Raumkörpern werden nur gezählt, nie gebildet; die Trennflächen kommen aus den Raumbezügen der Hüllflächen bzw. aus `AdjacentSpaceId` |
+| Nachbarschaft | Körperpaare werden aus gebildeten Körpern gar nicht gebildet; die Trennflächen kommen aus den Raumbezügen der Hüllflächen bzw. aus `AdjacentSpaceId` |
 | Ansicht | Kennzeichen je Raum **„aus Flächen gebildet“** — ein weiterer Wert der Körperherkunft neben „aus Datei“, „aus Umriss“, „schematisch“ und „aus Dateikörper (Grundriss)“ —, in der Kennzeichenzeile mitgezählt; der Umschalter „Dateikörper \| Exportmodell“ erscheint, sobald ein Raum einen Körper trägt, gleich welcher Quelle |
 | Steckbrief | Zeile **Körper**: „aus Flächen der Datei gebildet“ mit dem Weg, dazu die Vermerke (`Vorgabedicke`, `Bezugsebene_angenommen`, `Uneben`) |
 
