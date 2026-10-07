@@ -207,6 +207,12 @@ namespace WindowsFormsApplication1
                                       string.Join(", ", k.Stuetzstellen.Select(v => v.ToString(CultureInfo.CurrentCulture))),
                                       k.Vorlauf));
 
+                // AK3-I (I-3): zwischen zwei Stützstellen interpoliert - einmal je Gerät und Vorlauf benannt.
+                if (k.Interpoliert)
+                    Protokoll.HinweisEinmal("kuehl-wp-vorlauf-interpoliert-" + m.ID_WP + "-" + k.VorlaufGewuenscht.Value.ToString(CultureInfo.InvariantCulture),
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_VORLAUF_INTERPOLIERT,
+                                      name, k.VorlaufGewuenscht.Value, k.Vorlauf, k.Oben.Vorlauf));
+
                 // Dubletten deterministisch zusammengefasst - und benannt.
                 if (k.Dubletten > 0)
                     Protokoll.HinweisEinmal("kuehl-wp-dubletten-" + m.ID_WP,

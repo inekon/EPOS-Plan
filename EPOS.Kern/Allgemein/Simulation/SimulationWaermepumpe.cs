@@ -61,6 +61,19 @@ namespace WindowsFormsApplication1
             internal int Darunter;
             internal double DarunterMin = double.PositiveInfinity;
 
+            /// <summary>
+            /// AK3-I (I-1): true, wenn der Lauf über den Vorlauf interpoliert
+            /// (<see cref="VorlaufInterpolation.Ein"/> beim Laden). Aus = Bestand.
+            /// </summary>
+            internal bool Interpolieren;
+
+            /// <summary>
+            /// AK3-I (I-4): Stunden je Intervall [k, k+1], in denen zwischen den Kennlinien k und k+1
+            /// interpoliert wurde — nur mit <see cref="Interpolieren"/>; <see cref="Stunden"/> zählt
+            /// weiter die nächstgelegene Stützstelle.
+            /// </summary>
+            internal int[] Interpoliert;
+
             /// <summary>Eine Wahl über Stützstellen ohne Kennlinienwerte — allein für Proben der Zählung (VW1a).</summary>
             internal static Kennlinienwahl FuerVorlaeufe(params int[] vorlaeufe)
                 => new Kennlinienwahl
@@ -75,24 +88,86 @@ namespace WindowsFormsApplication1
             /// </summary>
             internal Vorlauflage Zaehlen(double vorlauf, bool extrapolationErlaubt, out int stelle)
             {
+                Vorlauflage lage = Abfragen(vorlauf, extrapolationErlaubt, out stelle);
+                Festschreiben();
+                return lage;
+            }
+
+            // AK3-W2 (Befund L1, 8): die vorgemerkte Wahl der laufenden Stunde - gezählt erst
+            // beim Festschreiben, damit eine mehrfach abgefragte Stunde nur einmal zählt.
+            private bool _vorgemerkt;
+            private Vorlauflage _lageVorgemerkt;
+            private int _stelleVorgemerkt;
+            private double _vorlaufVorgemerkt;
+            private int _intervallVorgemerkt = -1;
+
+            /// <summary>
+            /// Wählt die Stützstelle am gerechneten Vorlauf <paramref name="vorlauf"/> OHNE zu zählen
+            /// (AK3-W2): Die Wahl wird für die laufende Stunde vorgemerkt; eine weitere Abfrage derselben
+            /// Stunde ersetzt die Vormerkung. Gezählt wird erst in <see cref="Festschreiben"/>, einmal je
+            /// Stunde. Bei <see cref="Vorlauflage.Verboten"/> wird nichts vorgemerkt.
+            /// </summary>
+            internal Vorlauflage Abfragen(double vorlauf, bool extrapolationErlaubt, out int stelle)
+                => Abfragen(vorlauf, extrapolationErlaubt, out stelle, out _, out _);
+
+            /// <summary>
+            /// Wie <see cref="Abfragen(double, bool, out int)"/>, dazu der Interpolationspartner (AK3-I, I-1):
+            /// Mit <see cref="Interpolieren"/> und einem Vorlauf STRENG zwischen zwei Stützstellen ist
+            /// <paramref name="unten"/> der Index der unteren Kennlinie und <paramref name="gewicht"/> der Anteil
+            /// der oberen; sonst <paramref name="unten"/> = −1 (Stützstelle bzw. Randregel F-A8, I-2).
+            /// </summary>
+            internal Vorlauflage Abfragen(double vorlauf, bool extrapolationErlaubt, out int stelle,
+                                          out int unten, out double gewicht)
+            {
                 int[] vorlaeufe = new int[Kurven.Length];
                 for (int k = 0; k < vorlaeufe.Length; k++) vorlaeufe[k] = Kurven[k].Vorlauf;
                 Vorlauflage lage = VorlaufAuswerten(vorlaeufe, vorlauf, extrapolationErlaubt, out stelle);
-                switch (lage)
+                unten = -1;
+                gewicht = 0.0;
+                if (lage == Vorlauflage.Verboten)
                 {
-                    case Vorlauflage.Verboten:
-                        return lage;
+                    _vorgemerkt = false;
+                    return lage;
+                }
+                if (!(Interpolieren && lage == Vorlauflage.Innerhalb &&
+                      VorlaufInterpolation.Einschliessend(vorlaeufe, vorlauf, out unten, out gewicht)))
+                {
+                    unten = -1;
+                    gewicht = 0.0;
+                }
+                _intervallVorgemerkt = unten;
+                _vorgemerkt = true;
+                _lageVorgemerkt = lage;
+                _stelleVorgemerkt = stelle;
+                _vorlaufVorgemerkt = vorlauf;
+                return lage;
+            }
+
+            /// <summary>
+            /// Zählt die vorgemerkte Wahl der Stunde (AK3-W2): die gewählte Stützstelle und, falls außerhalb,
+            /// darüber oder darunter. Ohne Vormerkung (keine Abfrage, oder schon festgeschrieben) zählt es nichts.
+            /// </summary>
+            internal void Festschreiben()
+            {
+                if (!_vorgemerkt) return;
+                _vorgemerkt = false;
+                switch (_lageVorgemerkt)
+                {
                     case Vorlauflage.Darueber:
                         Darueber++;
-                        if (vorlauf > DarueberMax) DarueberMax = vorlauf;
+                        if (_vorlaufVorgemerkt > DarueberMax) DarueberMax = _vorlaufVorgemerkt;
                         break;
                     case Vorlauflage.Darunter:
                         Darunter++;
-                        if (vorlauf < DarunterMin) DarunterMin = vorlauf;
+                        if (_vorlaufVorgemerkt < DarunterMin) DarunterMin = _vorlaufVorgemerkt;
                         break;
                 }
-                Stunden[stelle]++;
-                return lage;
+                Stunden[_stelleVorgemerkt]++;
+                if (_intervallVorgemerkt >= 0)
+                {
+                    if (Interpoliert == null) Interpoliert = new int[Math.Max(0, Kurven.Length - 1)];
+                    Interpoliert[_intervallVorgemerkt]++;
+                }
             }
 
             /// <summary>
@@ -1262,7 +1337,7 @@ namespace WindowsFormsApplication1
         /// (<paramref name="fest"/>) — trifft der gerechnete Vorlauf sie, rechnet die Stunde
         /// Zeichen für Zeichen wie ohne Kopplung. <c>null</c>, wenn nichts zu lesen ist.
         /// </summary>
-        private static Kennlinienwahl KennlinienwahlLaden(int idWp, _Kenndaten fest)
+        internal static Kennlinienwahl KennlinienwahlLaden(int idWp, _Kenndaten fest)
         {
             DataTable dt = StilleDb.Tabelle(
                 "SELECT Vorlauf, Temperatur, COP, Ptherm FROM Tab_Kenndaten " +
@@ -1290,7 +1365,12 @@ namespace WindowsFormsApplication1
                 });
             }
             if (punkte.Count > 0) kurven.Add(Kurve(idWp, aktuell, punkte, fest));
-            return new Kennlinienwahl { Kurven = kurven.ToArray(), Stunden = new int[kurven.Count] };
+            return new Kennlinienwahl
+            {
+                Kurven = kurven.ToArray(),
+                Stunden = new int[kurven.Count],
+                Interpolieren = VorlaufInterpolation.Ein,   // AK3-I: Vorgabe aus = Bestand
+            };
         }
 
         private static _Kenndaten Kurve(int idWp, int vorlauf, List<_DAT> punkte, _Kenndaten fest)
@@ -1339,15 +1419,21 @@ namespace WindowsFormsApplication1
         /// der Übergangszeit regelmäßig unter jede Stützstelle; ein Abbruch dort machte die
         /// Kopplung mit verbotener Extrapolation unbenutzbar.</para>
         /// </summary>
-        private _Kenndaten KenndatenDerStunde(int index, int stunde)
+        private _Kenndaten KenndatenDerStunde(int index, int stunde, out _Kenndaten oben, out double gewicht,
+                                              out double vorlaufStunde)
         {
+            oben = null;
+            gewicht = 0.0;
             _Kenndaten fest = wp_kenndaten[index];
+            vorlaufStunde = fest.Vorlauf;
             Kennlinienwahl wahl = index < wp_kennlinienwahl.Count ? wp_kennlinienwahl[index] : null;
             if (wahl == null || Heizkreisvorlauf == null || stunde < 0 || stunde >= Heizkreisvorlauf.Length) return fest;
             double v = Heizkreisvorlauf[stunde];
             if (double.IsNaN(v) || double.IsInfinity(v)) return fest;
 
-            if (wahl.Zaehlen(v, Extrapolation_Erlaubt, out int stelle) == Vorlauflage.Verboten)
+            // AK3-W2: abfragen, nicht zählen - gezählt wird einmal je Stunde in Zweikanalig_StundeEnde.
+            // AK3-I (I-1): mit Schalter ein und Vorlauf streng zwischen zwei Stützstellen dazu der Partner.
+            if (wahl.Abfragen(v, Extrapolation_Erlaubt, out int stelle, out int unten, out double g) == Vorlauflage.Verboten)
             {
                 string bezeichner = wp_model[index]?.Bezeichner ?? "";
                 Fehlertext = string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_AUSSERHALB_VERBOTEN,
@@ -1355,6 +1441,14 @@ namespace WindowsFormsApplication1
                 SimulationProtokoll.Aktuell.Fehlermeldung(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + Fehlertext);
                 return null;
             }
+            if (unten >= 0)
+            {
+                oben = wahl.Kurven[unten + 1];
+                gewicht = g;
+                vorlaufStunde = v;
+                return wahl.Kurven[unten];
+            }
+            vorlaufStunde = wahl.Kurven[stelle].Vorlauf;
             return wahl.Kurven[stelle];
         }
 
@@ -1463,6 +1557,22 @@ namespace WindowsFormsApplication1
                         "WP_Vorlaufwahl_" + i + "_" + bezeichner,
                         MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
                         string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_KENNLINIENWAHL, bezeichner, string.Join(", ", teile)));
+                // AK3-I (I-4): mit Schalter ein die Stunden je Intervall, in denen interpoliert wurde.
+                if (w.Interpoliert != null)
+                {
+                    var intervalle = new List<string>();
+                    for (int k = 0; k < w.Interpoliert.Length; k++)
+                        if (w.Interpoliert[k] > 0)
+                            intervalle.Add(w.Kurven[k].Vorlauf.ToString(CultureInfo.InvariantCulture) + "–" +
+                                           w.Kurven[k + 1].Vorlauf.ToString(CultureInfo.InvariantCulture) + " °C: " +
+                                           w.Interpoliert[k].ToString(CultureInfo.InvariantCulture) + " h");
+                    if (intervalle.Count > 0)
+                        SimulationProtokoll.Aktuell.HinweisEinmal(
+                            "WP_Vorlauf_interpoliert_" + i + "_" + bezeichner,
+                            MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE +
+                            string.Format(MyResource.Resource.SIMENG_WP_VORLAUF_INTERPOLIERT, bezeichner,
+                                          string.Join(", ", intervalle)));
+                }
                 if (w.Darueber > 0)
                     SimulationProtokoll.Aktuell.HinweisEinmal(
                         "WP_Vorlauf_darueber_" + i + "_" + bezeichner,
@@ -1861,7 +1971,10 @@ namespace WindowsFormsApplication1
                     WErzeugerModel model = wp_model[index];
                     // ANLAGENKOPPLUNG (AK1, 6.1): die Kennlinie der Stunde - ohne Kopplung die des
                     // projektierten Vorlaufs, wie bisher.
-                    _Kenndaten kenndaten = KenndatenDerStunde(index, stunde);
+                    // AK3-I (I-1): mit Schalter ein zwischen zwei Stützstellen die untere Kennlinie,
+                    // ihr Partner und der Anteil der oberen; sonst kenndatenOben = null (Bestand).
+                    _Kenndaten kenndaten = KenndatenDerStunde(index, stunde, out _Kenndaten kenndatenOben,
+                                                              out double gewichtOben, out double vorlaufStunde);
                     if (kenndaten == null)
                     {
                         AbbruchAufraeumen();
@@ -1880,7 +1993,9 @@ namespace WindowsFormsApplication1
                         senken != null && senken.BedientProzessDirekt)
                     {
                         double gefordert = Prozesstemperatur.Vorlauf(stunde);
-                        if (!double.IsNaN(gefordert) && !Rechenrand.SchwelleErreicht(kenndaten.Vorlauf, gefordert))
+                        // AK3-I (I-5): Mit Interpolation ist der Vorlauf der Stunde der gerechnete; erreicht er
+                        // den Prozessvorlauf nicht, gilt die Regel des Prozessanteils ohne Interpolation.
+                        if (!double.IsNaN(gefordert) && !Rechenrand.SchwelleErreicht(vorlaufStunde, gefordert))
                         {
                             Kennlinienwahl pw = index < wp_prozesswahl.Count ? wp_prozesswahl[index] : null;
                             _Kenndaten kp = ProzessKennlinieWaehlen(pw?.Kurven, kenndaten, gefordert,
@@ -1917,13 +2032,17 @@ namespace WindowsFormsApplication1
                             else
                             {
                                 kenndaten = kp;
+                                kenndatenOben = null;   // I-5: die erreichende Kennlinie, nicht interpoliert
                                 _prozessKennlinieStunden[index]++;
                                 if (gefordert > _prozessKennlinieMax[index]) _prozessKennlinieMax[index] = gefordert;
                             }
                         }
                     }
 
-                    double[] result = berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten, index);
+                    double[] result = kenndatenOben == null
+                        ? berechne_wptherm(wp_quelltemp[index][stunde], model, kenndaten, index)
+                        : KennlinieInterpoliertAuswerten(wp_quelltemp[index][stunde], model, kenndaten,
+                                                         kenndatenOben, gewichtOben, index);
                     if (result[STATUS] == 0)
                     {
                         AbbruchAufraeumen();
@@ -2156,6 +2275,10 @@ namespace WindowsFormsApplication1
         {
             waermerestbedarf_stuendlich[stunde] = (double)Kaskadenschleife.RestSumme(rest);
 
+            // AK3-W2 (Befund L1, 8): die Kennlinienwahl der Stunde EINMAL festschreiben -
+            // auch wenn sie in der Stunde mehrfach abgefragt wurde.
+            KennlinienwahlFestschreiben();
+
             // Welle M4, WP1: Taktverlust und Starts der Stunde.
             if (_taktIrgendein) TaktStundeAbschliessen(stunde);
 
@@ -2169,6 +2292,15 @@ namespace WindowsFormsApplication1
                     if (!KuehlModule[i] || Heizzeitanteil_stuendlich[i] == null) continue;
                     Heizzeitanteil_stuendlich[i][stunde] = Heizzeitanteil(_heizWaermeStunde[i], _heizLeistungStunde[i]);
                 }
+        }
+
+        /// <summary>
+        /// Schreibt die vorgemerkte Kennlinienwahl jedes Moduls fest (AK3-W2): einmal je Stunde gezählt,
+        /// gleich wie oft <see cref="KenndatenDerStunde"/> die Stunde abgefragt hat.
+        /// </summary>
+        private void KennlinienwahlFestschreiben()
+        {
+            for (int i = 0; i < wp_kennlinienwahl.Count; i++) wp_kennlinienwahl[i]?.Festschreiben();
         }
 
         /// <summary>
@@ -2201,7 +2333,9 @@ namespace WindowsFormsApplication1
             // PAKET B1 (F13): dieselbe Stelle für die Kappung nach unten am Booster.
             KappungUntenMelden();
 
-            // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf.
+            // ANLAGENKOPPLUNG (AK1): die Kennlinienwahl am gerechneten Vorlauf. AK3-W2: eine
+            // noch vorgemerkte Wahl zuvor festschreiben (ohne Stundenende ist sie sonst verloren).
+            KennlinienwahlFestschreiben();
             VorlaufwahlMelden();
 
             // PW1 Stufe 1: die Kennlinie am Prozessvorlauf und die Stunden ohne Prozessdeckung.
@@ -2796,7 +2930,7 @@ namespace WindowsFormsApplication1
         // ausschließlich für den Kappungszähler Modul_Kappung_Oben gebraucht und geht in
         // die Rechnung nicht ein; Zweikanalig_Bedarfsphase führt ihn ohnehin als
         // Schleifenvariable.
-        double[] berechne_wptherm(double temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
+        internal double[] berechne_wptherm(double temperatur, WErzeugerModel model, _Kenndaten kenndaten, int index)
         {
 
             double[] result = new double[4] { 0, 0, 0, 0 };
@@ -2972,6 +3106,44 @@ namespace WindowsFormsApplication1
             result[3] = pel;
 
             return result;
+        }
+
+        /// <summary>
+        /// <b>Interpolation über den Vorlauf</b> (AK3-I, I-1): beide einschließenden Kennlinien je für sich
+        /// an der Quelltemperatur ausgewertet, wie <see cref="berechne_wptherm"/> es tut (samt Kappung und
+        /// Extrapolationsregel der Quellachse), danach Heizleistung und COP je für sich linear im Vorlauf
+        /// gewichtet; die elektrische Leistung folgt als Φ/COP. Ein Abbruch einer der beiden Auswertungen
+        /// bricht ab. Die Kappungszähler zählen die Stunde höchstens einmal.
+        /// </summary>
+        internal double[] KennlinieInterpoliertAuswerten(double temperatur, WErzeugerModel model, _Kenndaten unten,
+                                                         _Kenndaten oben, double gewicht, int index)
+        {
+            bool zaehlbar = index >= 0 && index < MAX_WP;
+            int kappungObenVorher = zaehlbar ? Modul_Kappung_Oben[index] : 0;
+            int kappungUntenVorher = zaehlbar ? Modul_Kappung_Unten[index] : 0;
+
+            double[] ru = berechne_wptherm(temperatur, model, unten, index);
+            if (ru[STATUS] == 0) return ru;
+            double[] ro = berechne_wptherm(temperatur, model, oben, index);
+            if (ro[STATUS] == 0) return ro;
+
+            if (zaehlbar)
+            {
+                Modul_Kappung_Oben[index] = Math.Min(Modul_Kappung_Oben[index], kappungObenVorher + 1);
+                Modul_Kappung_Unten[index] = Math.Min(Modul_Kappung_Unten[index], kappungUntenVorher + 1);
+            }
+            return VorlaufGewichten(ru, ro, gewicht);
+        }
+
+        /// <summary>
+        /// Gewichtet zwei Auswertungen (Status, COP, Φ, P_el) linear im Vorlauf (I-1): COP und Φ je für
+        /// sich, P_el = Φ/COP. <paramref name="gewicht"/> ist der Anteil der oberen Kennlinie.
+        /// </summary>
+        internal static double[] VorlaufGewichten(double[] unten, double[] oben, double gewicht)
+        {
+            double cop = unten[1] + gewicht * (oben[1] - unten[1]);
+            double ptherm = unten[2] + gewicht * (oben[2] - unten[2]);
+            return new double[4] { 1, cop, ptherm, cop != 0 ? ptherm / cop : 0 };
         }
 
         public static double Interp(double[] x, double[] y, double[] xq)
