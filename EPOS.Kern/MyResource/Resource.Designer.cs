@@ -13640,6 +13640,627 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht vorhanden ähnelt.
+        /// </summary>
+        public static string BV_A1D_BESTAND_FEHLT {
+            get {
+                return ResourceManager.GetString("BV_A1D_BESTAND_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden ähnelt.
+        /// </summary>
+        public static string BV_A1D_BESTAND_VORHANDEN {
+            get {
+                return ResourceManager.GetString("BV_A1D_BESTAND_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_ANLAGE {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_PUFFERSPEICHER {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_PUFFERSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenkessel ähnelt.
+        /// </summary>
+        public static string BV_A1D_GEWERK_SPITZENKESSEL {
+            get {
+                return ResourceManager.GetString("BV_A1D_GEWERK_SPITZENKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltpunkt ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_ABSCHALTPUNKT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_ABSCHALTPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl Komponenten ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_ANZAHL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_APERTURFLAECHE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_APERTURFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Azimut ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_AZIMUT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_AZIMUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BAUART {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestand ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BESTAND {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenter Betrieb ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BIVALENT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BIVALENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertnutzung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_BRENNWERT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_GESAMTVOLUMEN {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_GESAMTVOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grenzleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hersteller ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_HERSTELLER {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_HERSTELLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektormodulanzahl ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KOLLEKTORMODULE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KOLLEKTORMODULE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektortyp ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KOLLEKTORTYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KOLLEKTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_KUEHLLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die el. Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LEISTUNG_EL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LEISTUNG_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die therm. Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LEISTUNG_TH {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LEISTUNG_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_MODULLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_MODULLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Motortyp ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_MOTORTYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_MOTORTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_NEIGUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_NUTZFLAECHE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_NUTZFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Leistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_PV_LEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_PV_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Rechenmodell ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_PV_MODELL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_PV_MODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_REGELUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_REGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_RUECKLAUFTEMP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_RUECKLAUFTEMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solaranteil ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SOLARANTEIL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SOLARANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SPEICHERTYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SPEICHERTYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervolumen (Anlage) ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SPEICHERVOLUMEN {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SPEICHERVOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Systemverluste ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_SYSTEMVERLUSTE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_SYSTEMVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_TYP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_VORLAUF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_VORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_VORLAUFTEMP {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_VORLAUFTEMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WAERMEQUELLE {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WAERMEQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die el. Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_EL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Gas ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_GAS {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_GAS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ges. Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_GESAMT {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Öl ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_OEL {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_OEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die therm. Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WG_TH {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WG_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Nennleistung ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad bei 10 % ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG10 {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad bei 100 % ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG100 {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG100", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wechselrichter-Wirkungsgrad bei 50 % ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WR_WG50 {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WR_WG50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasserbedarf ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_WW_BEDARF {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_WW_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zelltechnologie ähnelt.
+        /// </summary>
+        public static string BV_A1D_MERKMAL_ZELLTECHNIK {
+            get {
+                return ResourceManager.GetString("BV_A1D_MERKMAL_ZELLTECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Einspeisevergütung KWK {0} €/kWh ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_EINSPEISUNG_KWK {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_EINSPEISUNG_KWK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Energiesteuer: {0}, {1} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KOPF {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · KWKG (Sätze je Anlage ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Förderbeginn {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Negativpreis-Abschlag {0} % ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_NEGATIV {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Stichtag {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_STICHTAG {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_STICHTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Stichtag ungeprüft ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , Nutzungsgrad {0} % ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_NUTZUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_NUTZUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Unternehmensart: {0} ähnelt.
+        /// </summary>
+        public static string BV_A1D_NACHWEIS_UNTERNEHMENSART {
+            get {
+                return ResourceManager.GetString("BV_A1D_NACHWEIS_UNTERNEHMENSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}; nicht im gespeicherten Ergebnis ähnelt.
         /// </summary>
         public static string BV_AUFH_A3_AUFSCHLAG_ALT_WERT {

@@ -802,12 +802,15 @@ namespace WindowsFormsApplication1
             // Herkunft „wie Betrieb". Ein Satz, der die Ersatzbeschaffungen fortschreibt,
             // gehört zu den Annahmen des Laufs; ihn nur bei Pflege zu nennen hieße, den
             // Regelfall zu verschweigen.
-            string t = "i = " + Zinssatz.ToString("N1", kultur) + " % · T = " + Betrachtungszeitraum +
-                   " a · Preissteigerung Energie " + PreissteigerungEnergie.ToString("N1", kultur) +
-                   " %/a, Betrieb " + PreissteigerungBetrieb.ToString("N1", kultur) +
-                   " %/a, Investition/Ersatz " + PreisInvestWirksam.ToString("N1", kultur) +
-                   " %/a (" + (PreissteigerungInvestition.HasValue ? "gepflegt" : "wie Betrieb") +
-                   ") · Einspeisevergütung " + Einspeiseverguetung.ToString("N3", kultur) + " €/kWh";
+            // KP3-A1d: alle Festtexte aus Ressourcen in der Sprache der Berichtskultur, Zahlen und Datum in derselben Kultur.
+            string t = string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KOPF", kultur,
+                    "i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh"),
+                Zinssatz.ToString("N1", kultur), Betrachtungszeitraum.ToString(kultur),
+                PreissteigerungEnergie.ToString("N1", kultur), PreissteigerungBetrieb.ToString("N1", kultur),
+                PreisInvestWirksam.ToString("N1", kultur),
+                PreissteigerungInvestition.HasValue ? RessourceIn("WPAR_PREIS_I_GEPFLEGT", kultur, "gepflegt")
+                                                    : RessourceIn("WPAR_PREIS_I_WIE_B", kultur, "wie Betrieb"),
+                Einspeiseverguetung.ToString("N3", kultur));
             if (CO2Preis > 0)
                 t += " · CO₂ (BEHG) " + CO2Preis.ToString("N0", kultur) + " €/t";
             // ETAPPE BK1 — die Zeile nennt nur noch die PROJEKTWEITEN KWK-Angaben, und
@@ -818,14 +821,18 @@ namespace WindowsFormsApplication1
             // Nachweistafel (KwkgModulNachweis).
             if (KwkgAktivierung.IstAktiv(IdStamm))
             {
-                t += " · KWKG (Sätze je Anlage";
+                t += RessourceIn("BV_A1D_NACHWEIS_KWKG", kultur, " · KWKG (Sätze je Anlage");
                 if (KwkgAbschlagNegativ > 0)
-                    t += ", Negativpreis-Abschlag " + KwkgAbschlagNegativ.ToString("N1", kultur) + " %";
+                    t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KWKG_NEGATIV", kultur, ", Negativpreis-Abschlag {0} %"),
+                                       KwkgAbschlagNegativ.ToString("N1", kultur));
+                // Das Datum im kurzen Format der Berichtskultur: de-DE „dd.MM.yyyy“, en-US „M/d/yyyy“.
                 t += KwkgStichtag.HasValue
-                    ? ", Stichtag " + KwkgStichtag.Value.ToString("dd.MM.yyyy", kultur)
-                    : ", Stichtag ungeprüft";
+                    ? string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KWKG_STICHTAG", kultur, ", Stichtag {0}"),
+                                    KwkgStichtag.Value.ToString("d", kultur))
+                    : RessourceIn("BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT", kultur, ", Stichtag ungeprüft");
                 if (KwkgInbetriebnahme.HasValue)
-                    t += ", Förderbeginn " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
+                    t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN", kultur, ", Förderbeginn {0}"),
+                                       KwkgInbetriebnahme.Value.ToString("d", kultur));
                 t += ")";
             }
             // ETAPPE E4: die Steuerangaben gehören in die Nachweiszeile, sobald sie
@@ -834,20 +841,25 @@ namespace WindowsFormsApplication1
             if (!string.Equals(EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal) &&
                 !string.IsNullOrEmpty(EnergiesteuerWahl))
             {
-                t += " · Energiesteuer " + EnergiesteuerWahl + " (" + AufteilungMethode + ")";
+                // Die Steuerwerte (PARAGRAF_53, ENERGETISCH …) über ihre Anzeigenamen — dieselben Texte wie die Wahllisten; der Wert
+                // steht hinter Doppelpunkt und Komma, nie in Klammern (die Anzeigenamen tragen selbst welche).
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_ENERGIESTEUER", kultur, " · Energiesteuer: {0}, {1}"),
+                                   Anzeigename(EnergiesteuerWahl, kultur), Anzeigename(AufteilungMethode, kultur));
                 if (Jahresnutzungsgrad.HasValue)
-                    t += ", Nutzungsgrad " + Jahresnutzungsgrad.Value.ToString("N1", kultur) + " %";
+                    t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_NUTZUNGSGRAD", kultur, ", Nutzungsgrad {0} %"),
+                                       Jahresnutzungsgrad.Value.ToString("N1", kultur));
             }
             if (!string.Equals(Unternehmensart, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, StringComparison.Ordinal) &&
                 !string.IsNullOrEmpty(Unternehmensart))
-                t += " · Unternehmensart " + Unternehmensart;
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_UNTERNEHMENSART", kultur, " · Unternehmensart: {0}"),
+                                   Anzeigename(Unternehmensart, kultur));
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
                 // Der Vermerk in der Sprache der Berichtskultur (KP3-A1b); die Wahrheitswerte aus den Ja/Nein-Texten, klein.
                 t += string.Format(kultur, RessourceIn("BV_A1B_NACHWEIS_STROMSTEUER", kultur, " · Stromsteuer: hocheffizient {0}, räumlicher Zusammenhang {1}"),
                                    JaNeinIn(HocheffizienzNachweis, kultur), JaNeinIn(RaeumlicherZusammenhang, kultur));
             if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
-                t += " · Einspeisevergütung KWK " +
-                     EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";
+                t += string.Format(kultur, RessourceIn("BV_A1D_NACHWEIS_EINSPEISUNG_KWK", kultur, " · Einspeisevergütung KWK {0} €/kWh"),
+                                   EinspeiseverguetungKWK.Value.ToString("N3", kultur));
             // ETAPPE E15 (V‑G7): das Risiko nur, wenn es gepflegt ist — ohne Pflege bleibt die
             // Zeile Zeichen für Zeichen die von vorher.
             t += RisikoModul.Nachweis(this, kultur);
@@ -861,6 +873,26 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel, kultur); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        /// <summary>
+        /// Der Anzeigename eines Steuerwerts der Nachweiszeile (Energiesteuer, Aufteilung, Unternehmensart) in der Sprache
+        /// der übergebenen Kultur — dieselben Ressourcen wie die Wahllisten des Parameterdialogs. Ein unbekannter Wert
+        /// erscheint, wie er ist.
+        /// </summary>
+        private static string Anzeigename(string steuerwert, System.Globalization.CultureInfo kultur)
+        {
+            switch (steuerwert)
+            {
+                case DbWerte.ENERGIESTEUER_WAHL_53: return RessourceIn("BHW_W_ES_53", kultur, steuerwert);
+                case DbWerte.ENERGIESTEUER_WAHL_53A: return RessourceIn("BHW_W_ES_53A", kultur, steuerwert);
+                case DbWerte.ENERGIESTEUER_WAHL_54: return RessourceIn("BHW_W_ES_54", kultur, steuerwert);
+                case DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF: return RessourceIn("BHW_W_AUF_VOLL", kultur, steuerwert);
+                case DbWerte.AUFTEILUNG_ENERGETISCH: return RessourceIn("BHW_W_AUF_ENERGETISCH", kultur, steuerwert);
+                case DbWerte.UNTERNEHMENSART_PROD_GEWERBE: return RessourceIn("BHW_W_UA_PROD", kultur, steuerwert);
+                case DbWerte.UNTERNEHMENSART_LAND_FORST: return RessourceIn("BHW_W_UA_LAND", kultur, steuerwert);
+                default: return steuerwert ?? "";
+            }
         }
 
         /// <summary>„ja“/„nein“ (englisch „yes“/„no“) in der Sprache der übergebenen Kultur.</summary>

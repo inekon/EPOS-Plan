@@ -473,7 +473,7 @@ namespace WindowsFormsApplication1
             foreach (KomponentenVergleichZeile z in KomponentenVergleich.Gegenueberstellung(versionen))
                 ziel.Add(new VergleichZeile
                 {
-                    Gewerk = z.Gewerk,
+                    Gewerk = AbweichungsErmittler.Gewerkname(z.Gewerk),
                     Merkmal = z.Merkmal,
                     Zellen = z.Zellen,
                     Kurztexte = z.Kurztexte
@@ -515,12 +515,12 @@ namespace WindowsFormsApplication1
                     Merkmal = a.Merkmal
                 };
                 satz.Feld = AbweichungsErmittler.Felder
-                    .FirstOrDefault(x => x.Gewerk == a.Gewerk && x.Label == a.Merkmal);
+                    .FirstOrDefault(x => x.Gewerk == a.Gewerk && AbweichungsErmittler.Schluessel(x) == a.Schluessel);
 
                 var zeile = new VergleichZeile
                 {
                     Schluessel = schluessel,
-                    Gewerk = a.Gewerk,
+                    Gewerk = AbweichungsErmittler.Gewerkname(a.Gewerk),
                     Merkmal = a.Merkmal,
                     Zellen = new List<string> { a.WertStamm, a.WertVariante },
                     MitAktion = true,
@@ -546,7 +546,7 @@ namespace WindowsFormsApplication1
             if (s.Feld == null || string.IsNullOrEmpty(s.Feld.Tabelle) || string.IsNullOrEmpty(s.Feld.Spalte))
                 return KomponentenUebernahmeCtrl.Unterstuetzt(s.Gewerk)
                     ? null
-                    : string.Format(MyResource.Resource.BK_MSG_KOMP_GEWERK_UNBEKANNT, s.Gewerk);
+                    : string.Format(MyResource.Resource.BK_MSG_KOMP_GEWERK_UNBEKANNT, AbweichungsErmittler.Gewerkname(s.Gewerk));
 
             // Stufe 3: der Bezeichner ist der Schluessel der Zuordnung selbst.
             if (MerkmalUebernahmeCtrl.IstSchluesselspalte(s.Feld.Spalte))
@@ -860,7 +860,8 @@ namespace WindowsFormsApplication1
             {
                 ["TitelText"] = mitKlartext ? MyResource.Resource.BK_UEB_TITEL_KOMP
                                             : MyResource.Resource.BK_UEB_TITEL_FELD,
-                ["Gegenstand"] = mitKlartext ? s.Gewerk : s.Gewerk + " · " + s.Merkmal,
+                ["Gegenstand"] = mitKlartext ? AbweichungsErmittler.Gewerkname(s.Gewerk)
+                                             : AbweichungsErmittler.Gewerkname(s.Gewerk) + " · " + s.Merkmal,
                 ["ZielName"] = ZielName(s.IdVariante),
                 ["Quellen"] = (IReadOnlyList<UebernahmeQuelle>)quellen,
                 ["MitKlartext"] = mitKlartext,

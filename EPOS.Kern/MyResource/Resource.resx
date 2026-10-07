@@ -47923,5 +47923,213 @@ Chart</value>
   <data name="VF_GEBAEUDE__ERGEBNIS__AUFHEIZZEIT_BEMESSEN" xml:space="preserve">
     <value>Bemessene Aufheizzeit des laufenden Gebäudes in Stunden: t_auf,max nach dem Aufschlag, bei Art manuell der manuelle Wert; leer ohne Aufheizoptimierung, bei unerreichbarer Bemessung oder bei einem älteren Ergebnis.</value>
   </data>
+  <!-- KP3-A1d: Variantenvergleich und Nachweiszeile der Wirtschaftlichkeit in der Berichtssprache -->
+  <data name="BV_A1D_MERKMAL_ABSCHALTPUNKT" xml:space="preserve">
+    <value>Abschaltpunkt</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_APERTURFLAECHE" xml:space="preserve">
+    <value>Aperturfläche</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_AZIMUT" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BAUART" xml:space="preserve">
+    <value>Bauart</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BIVALENT" xml:space="preserve">
+    <value>Bivalenter Betrieb</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BRENNWERT" xml:space="preserve">
+    <value>Brennwertnutzung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_GESAMT" xml:space="preserve">
+    <value>Ges. Wirkungsgrad</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_GESAMTVOLUMEN" xml:space="preserve">
+    <value>Gesamtvolumen</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_GRENZLEISTUNG" xml:space="preserve">
+    <value>Grenzleistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_HERSTELLER" xml:space="preserve">
+    <value>Hersteller</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KOLLEKTORMODULE" xml:space="preserve">
+    <value>Kollektormodulanzahl</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KOLLEKTORTYP" xml:space="preserve">
+    <value>Kollektortyp</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KOMPONENTE" xml:space="preserve">
+    <value>Komponente</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Kühlleistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LUFTWECHSEL" xml:space="preserve">
+    <value>Luftwechselrate</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_MODULLEISTUNG" xml:space="preserve">
+    <value>Modulleistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_MOTORTYP" xml:space="preserve">
+    <value>Motortyp</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_NEIGUNG" xml:space="preserve">
+    <value>Neigung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_PV_LEISTUNG" xml:space="preserve">
+    <value>PV-Leistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_PV_MODELL" xml:space="preserve">
+    <value>PV-Rechenmodell</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_REGELUNG" xml:space="preserve">
+    <value>Regelung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_RUECKLAUFTEMP" xml:space="preserve">
+    <value>Rücklauftemperatur</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SOLARANTEIL" xml:space="preserve">
+    <value>Solaranteil</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SPEICHERTYP" xml:space="preserve">
+    <value>Speichertyp</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SPEICHERVOLUMEN" xml:space="preserve">
+    <value>Speichervolumen (Anlage)</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_SYSTEMVERLUSTE" xml:space="preserve">
+    <value>Systemverluste</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_TYP" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_VORLAUF" xml:space="preserve">
+    <value>Vorlauf</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_VORLAUFTEMP" xml:space="preserve">
+    <value>Vorlauftemperatur</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WW_BEDARF" xml:space="preserve">
+    <value>Warmwasserbedarf</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_NENNLEISTUNG" xml:space="preserve">
+    <value>Wechselrichter-Nennleistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG" xml:space="preserve">
+    <value>Wechselrichter-Wirkungsgrad</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG10" xml:space="preserve">
+    <value>Wechselrichter-Wirkungsgrad bei 10 %</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG50" xml:space="preserve">
+    <value>Wechselrichter-Wirkungsgrad bei 50 %</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WR_WG100" xml:space="preserve">
+    <value>Wechselrichter-Wirkungsgrad bei 100 %</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG" xml:space="preserve">
+    <value>Wirkungsgrad</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_GAS" xml:space="preserve">
+    <value>Wirkungsgrad Gas</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_OEL" xml:space="preserve">
+    <value>Wirkungsgrad Öl</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_NUTZFLAECHE" xml:space="preserve">
+    <value>Wohn-/Nutzfläche</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WAERMEQUELLE" xml:space="preserve">
+    <value>Wärmequelle</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_ZELLTECHNIK" xml:space="preserve">
+    <value>Zelltechnologie</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LEISTUNG_EL" xml:space="preserve">
+    <value>el. Leistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_EL" xml:space="preserve">
+    <value>el. Wirkungsgrad</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_LEISTUNG_TH" xml:space="preserve">
+    <value>therm. Leistung</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_WG_TH" xml:space="preserve">
+    <value>therm. Wirkungsgrad</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_BESTAND" xml:space="preserve">
+    <value>Bestand</value>
+  </data>
+  <data name="BV_A1D_MERKMAL_ANZAHL" xml:space="preserve">
+    <value>Anzahl Komponenten</value>
+  </data>
+  <data name="BV_A1D_BESTAND_VORHANDEN" xml:space="preserve">
+    <value>vorhanden</value>
+  </data>
+  <data name="BV_A1D_BESTAND_FEHLT" xml:space="preserve">
+    <value>nicht vorhanden</value>
+  </data>
+  <data name="BV_A1D_GEWERK_ANLAGE" xml:space="preserve">
+    <value>Anlage</value>
+  </data>
+  <data name="BV_A1D_GEWERK_SPITZENKESSEL" xml:space="preserve">
+    <value>Spitzenkessel</value>
+  </data>
+  <data name="BV_A1D_GEWERK_PUFFERSPEICHER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="BV_A1D_GEWERK_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KOPF" xml:space="preserve">
+    <value>i = {0} % · T = {1} a · Preissteigerung Energie {2} %/a, Betrieb {3} %/a, Investition/Ersatz {4} %/a ({5}) · Einspeisevergütung {6} €/kWh</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG" xml:space="preserve">
+    <value> · KWKG (Sätze je Anlage</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_NEGATIV" xml:space="preserve">
+    <value>, Negativpreis-Abschlag {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_STICHTAG" xml:space="preserve">
+    <value>, Stichtag {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_UNGEPRUEFT" xml:space="preserve">
+    <value>, Stichtag ungeprüft</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_KWKG_FOERDERBEGINN" xml:space="preserve">
+    <value>, Förderbeginn {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_ENERGIESTEUER" xml:space="preserve">
+    <value> · Energiesteuer: {0}, {1}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_NUTZUNGSGRAD" xml:space="preserve">
+    <value>, Nutzungsgrad {0} %</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_UNTERNEHMENSART" xml:space="preserve">
+    <value> · Unternehmensart: {0}</value>
+  </data>
+  <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
+    <value> · Einspeisevergütung KWK {0} €/kWh</value>
+  </data>
 </root>
 
