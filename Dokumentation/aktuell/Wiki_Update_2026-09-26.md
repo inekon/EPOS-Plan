@@ -157,9 +157,10 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
-Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird der Satz erst, wenn der
-Schemaschritt der Standardlastprofile ausgeliefert ist.
+Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird jeder Satz erst, wenn sein
+Schemaschritt der Standardlastprofile ausgeliefert ist (H25/G25/L25: 193; P25/S25: 196, noch nicht eingehängt).
 
+- Seit 07.10.2026: Der Katalog „Datenbank Strombedarf“ enthält zusätzlich die BDEW-Profile P25 und S25 für den Netzbezug von Haushalten mit PV-Anlage bzw. mit PV-Anlage und Batteriespeicher (Netzbezugsprofile, keine Verbrauchsprofile). (SLP25b)
 - Seit 06.10.2026: Der Katalog „Datenbank Strombedarf“ enthält die BDEW-Standardlastprofile Strom 2025 für Haushalt (H25), Gewerbe (G25) und Landwirtschaft (L25), normiert auf 1.000 MWh im Jahr. (SLP25)
 
 ### Version 1.2.0.7 — nicht veröffentlicht
