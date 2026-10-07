@@ -437,7 +437,22 @@ namespace WindowsFormsApplication1
 
             using (DataRepository.EngineModus())
             {
+                // Erdsonde (Konzept Simulationsablauf 23.4): Der erste Lauf rechnet mit einer
+                // Startschätzung der Vorjahre. Hat er ein Sondenfeld gerechnet, wiederholt ein
+                // zweiter Lauf den ganzen Durchgang — die Wärmepumpe rechnet in der Stundenschleife
+                // der Speicherstufe zusammen mit Speichern, Kessel und BHKW, ein Teildurchgang hätte
+                // keinen eigenen Zustand. Ohne Sondenfeld bleibt es bei einem Lauf.
+                simulation_wp.FeldvorgabeSetzen(null);
+                SimulationProtokoll.Meldestand stand = SimulationProtokoll.Aktuell.Merken();
                 Do_Simulation_Intern(ID_Projekt, fortschritt, abbruch);
+
+                Dictionary<int, SimulationWaermepumpe.Feldvorgabe> vorgabe = FeldvorgabeAusLauf();
+                if (vorgabe != null)
+                {
+                    SimulationProtokoll.Aktuell.ZuruecksetzenAuf(stand);
+                    simulation_wp.FeldvorgabeSetzen(vorgabe);
+                    Do_Simulation_Intern(ID_Projekt, null, abbruch);
+                }
                 DbFehlerUebernehmen();
             }
         }

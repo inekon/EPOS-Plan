@@ -3462,7 +3462,7 @@ Select file now?</value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>The borehole heat exchanger uses a source temperature that is constant all year, made up of the mean ground temperature and a depth allowance; the heat extraction does not act back on it.</value>
+    <value>The preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance. In the simulation the brine temperature drops with the heat extracted from the borefield; its course is shown in the result.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -48129,6 +48129,63 @@ chart</value>
   </data>
   <data name="BV_A1D_NACHWEIS_EINSPEISUNG_KWK" xml:space="preserve">
     <value> · CHP feed-in tariff {0} €/kWh</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: borefield with extraction feedback, {1} × {2:0.#} m, λ = {3:0.0#} W/(m·K), undisturbed temperature {4:0.00} °C, year of assessment {5} after {7} previous years carrying the hourly load of the first borefield pass: extraction {6:N0} kWh/a, of which recharged {8:N0} kWh/a.</value>
+  </data>
+  <data name="SIMENG_ERDSONDE_FELD_FEHLT" xml:space="preserve">
+    <value>Borehole heat exchanger of plant {0}: the borefield could not be set up ({1}) — the constant source temperature is used.</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENABSTAND" xml:space="preserve">
+    <value>Borehole spacing:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BOHRLOCHDURCHMESSER" xml:space="preserve">
+    <value>Borehole diameter:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BOHRLOCHWIDERSTAND" xml:space="preserve">
+    <value>Borehole thermal resistance:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KOPFUEBERDECKUNG" xml:space="preserve">
+    <value>Depth of borehole head:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_BETRACHTUNGSJAHR" xml:space="preserve">
+    <value>Year of operation considered:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENANORDNUNG" xml:space="preserve">
+    <value>Arrangement:</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH" xml:space="preserve">
+    <value>Square</value>
+  </data>
+  <data name="SIMQ_ERDREICH_ANORDNUNG_REIHE" xml:space="preserve">
+    <value>Row</value>
+  </data>
+  <data name="SIMQ_ERDREICH_VORGABE" xml:space="preserve">
+    <value>Default {0}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_SONDENFELD_HINWEIS" xml:space="preserve">
+    <value>(empty field: the default according to VDI 4640 Part 2 applies)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_MSG_SONDENFELD" xml:space="preserve">
+    <value>Borehole spacing, borehole diameter and borehole thermal resistance must be greater than 0, the depth of the borehole head at least 0 and the year of operation at least 1. An empty field stands for the default.</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDENABSTAND_ERL" xml:space="preserve">
+    <value>Spacing of neighbouring borehole heat exchangers in metres, greater than 0; empty = default 6 m.</value>
+  </data>
+  <data name="KI_DLG_QERD_BOHRLOCHDURCHMESSER_ERL" xml:space="preserve">
+    <value>Borehole diameter in millimetres, greater than 0; empty = default 150 mm.</value>
+  </data>
+  <data name="KI_DLG_QERD_BOHRLOCHWIDERSTAND_ERL" xml:space="preserve">
+    <value>Borehole thermal resistance in m·K/W, greater than 0; empty = default 0.10 m·K/W.</value>
+  </data>
+  <data name="KI_DLG_QERD_KOPFUEBERDECKUNG_ERL" xml:space="preserve">
+    <value>Depth of the borehole head below ground in metres, at least 0; empty = default 2 m.</value>
+  </data>
+  <data name="KI_DLG_QERD_BETRACHTUNGSJAHR_ERL" xml:space="preserve">
+    <value>Year of operation for which the borehole field is calculated, at least 1; empty = default 10.</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDENANORDNUNG_ERL" xml:space="preserve">
+    <value>Arrangement of the borehole heat exchangers: square grid or row; empty = default square.</value>
   </data>
 </root>
 

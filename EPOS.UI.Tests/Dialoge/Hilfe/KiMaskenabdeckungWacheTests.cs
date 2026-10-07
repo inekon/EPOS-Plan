@@ -430,7 +430,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
         new("PvModellFelder", 4),
-        new("QuelleErdreichDialog", 9),
+        new("QuelleErdreichDialog", 15),
         new("QuellePufferspeicherDialog", 8),
         new("QuellprofilDialog", 6, "die Tagwahl des nur lesenden Wochengangs (Altweg) ist ein Anzeigeschalter; die 365 bzw. 8 760 Werte " +
             "der Betriebsarten Tag und Stunde sind Zeitreihen (Dateiweg) und stehen in keinem Eingabefeld"),

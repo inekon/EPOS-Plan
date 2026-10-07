@@ -85,6 +85,16 @@ namespace WindowsFormsApplication1
                 ["LblKlimazoneHinweis"] = MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE_HINWEIS,
                 ["LblSpreizung"] = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG,
                 ["LblSpreizungHinweis"] = MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG_HINWEIS,
+                ["LblSondenabstand"] = MyResource.Resource.SIMQ_ERDREICH_SONDENABSTAND,
+                ["LblBohrlochdurchmesser"] = MyResource.Resource.SIMQ_ERDREICH_BOHRLOCHDURCHMESSER,
+                ["LblBohrlochwiderstand"] = MyResource.Resource.SIMQ_ERDREICH_BOHRLOCHWIDERSTAND,
+                ["LblKopfueberdeckung"] = MyResource.Resource.SIMQ_ERDREICH_KOPFUEBERDECKUNG,
+                ["LblBetrachtungsjahr"] = MyResource.Resource.SIMQ_ERDREICH_BETRACHTUNGSJAHR,
+                ["LblSondenanordnung"] = MyResource.Resource.SIMQ_ERDREICH_SONDENANORDNUNG,
+                ["LblAnordnungQuadratisch"] = MyResource.Resource.SIMQ_ERDREICH_ANORDNUNG_QUADRATISCH,
+                ["LblAnordnungReihe"] = MyResource.Resource.SIMQ_ERDREICH_ANORDNUNG_REIHE,
+                ["LblVorgabe"] = MyResource.Resource.SIMQ_ERDREICH_VORGABE,
+                ["LblSondenfeldHinweis"] = MyResource.Resource.SIMQ_ERDREICH_SONDENFELD_HINWEIS,
                 // Der Knopftext ist ein SYMBOL und bleibt unuebersetzt (Katalogregel);
                 // was er tut, steht im Kurztext daneben.
                 ["BtnKarte"] = "…",
@@ -120,6 +130,7 @@ namespace WindowsFormsApplication1
                 ["MsgZahlSonde"] = MyResource.Resource.SIMQ_ERDREICH_MSG_ZAHL_SONDE,
                 ["MsgLaengeNull"] = MyResource.Resource.SIMQ_ERDREICH_MSG_LAENGE_NULL,
                 ["MsgAnzahlMin"] = MyResource.Resource.SIMQ_ERDREICH_MSG_ANZAHL_MIN,
+                ["MsgSondenfeld"] = MyResource.Resource.SIMQ_ERDREICH_MSG_SONDENFELD,
                 ["MsgSpreizung"] =
                     Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_MSG_SPREIZUNG),
 

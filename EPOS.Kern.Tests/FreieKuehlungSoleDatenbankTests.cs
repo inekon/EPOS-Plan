@@ -62,10 +62,13 @@ namespace EPOS.Kern.Tests
                 new DbParam("@f", wert), new DbParam("@id", WP_1047)));
         }
 
-        private static SimulationRunner Rechnen()
+        private static SimulationRunner Rechnen(bool regeneration = false)
         {
             SimulationProtokoll.NeuStarten();
             var lauf = new SimulationRunner();
+            // Die Regeneration der Sonde (Konzept Simulationsablauf 23.5) koppelt die Kälteseite über die
+            // Rückspeisung an die Heizseite; die Proben hier halten die Kälteseite allein und rechnen ohne sie.
+            lauf.sim.RegenerationRechnen = regeneration;
             int kopf = lauf.SimuliereUndSpeichere(PROJEKT, out string fehler);
             Assert.True(kopf > 0, "Lauf gescheitert: " + fehler);
             Assert.DoesNotContain(lauf.Protokoll.Fehler, f => f.StartsWith("Deckungsprobe Kälte", StringComparison.Ordinal));
@@ -148,6 +151,8 @@ namespace EPOS.Kern.Tests
         public void Ohne_tragende_Quelle_bleibt_der_Schalter_wirkungslos_mit_Warnung()
         {
             if (!_db.Vorhanden) return;
+            // Die gesäte Erdsonde der Wärmepumpe von 1047 abnehmen: die Außenluft trägt keine freie Kühlung.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET WQ_Typ = NULL WHERE ID = ?", new DbParam("@p", WP_1047));
             SchalterSetzen(1);
 
             SimulationRunner lauf = Rechnen();

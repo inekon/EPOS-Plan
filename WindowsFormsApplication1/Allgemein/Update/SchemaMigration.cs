@@ -5234,6 +5234,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_AUFHEIZ_AUFSCHLAG_ERGEBNIS = AufheizAufschlagErgebnisSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ErdsondenfeldSchema.SCHRITT"/> — <b>Erdsondenfeld je Anlage</b>: Abstand, Bohrlochdurchmesser,
+        /// Bohrlochwiderstand, Kopfüberdeckung, Betrachtungsjahr und Anordnung des Sondenfeldes an <c>Tab_Energieanlagen</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten entstehen leer; leer heißt Normvorgabe.</para>
+        /// </summary>
+        public const int SCHRITT_ERDSONDENFELD = ErdsondenfeldSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7609,6 +7617,13 @@ namespace WindowsFormsApplication1
                         "Der Bericht naennte den Aufschlag der heutigen Projekteinstellung statt des gerechneten. KEIN " +
                         "Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_AufheizAufschlagErgebnis),
+            // ERDSONDENFELD JE ANLAGE (Konzept Simulationsablauf 23.3). Quelle ist ErdsondenfeldSchema.
+            new Schritt(SCHRITT_ERDSONDENFELD,
+                        "Tab_Energieanlagen.WQ_Sondenabstand/WQ_Bohrlochdurchmesser/WQ_Bohrlochwiderstand/" +
+                        "WQ_Kopfueberdeckung/WQ_Betrachtungsjahr/WQ_Sondenanordnung",
+                        "Das Erdsondenfeld liesse sich je Anlage nicht pflegen. KEIN Rechenergebnis aendert sich - die " +
+                        "Spalten entstehen leer und heissen Normvorgabe.",
+                        Schritt_Erdsondenfeld),
         };
 
         /// <summary>
@@ -14234,6 +14249,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kaeltespitze je Zone - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Erdsondenfeld je Anlage" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ERDSONDENFELD"/>,
+        /// die Anweisungen bei <see cref="ErdsondenfeldSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Erdsondenfeld(Lauf l)
+        {
+            string nr = ErdsondenfeldSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErdsondenfeldSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ErdsondenfeldSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ErdsondenfeldSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten des Erdsondenfeldes stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Erdsondenfeld je Anlage - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

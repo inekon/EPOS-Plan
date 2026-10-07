@@ -937,7 +937,11 @@ namespace WindowsFormsApplication1
         /// <see cref="AufheizAufschlagErgebnisSchema.SCHRITT"/>: <c>Aufheiz_Aufschlag_Verwendet_H</c> und
         /// <c>Aufheizzeit_Bemessen_H</c> an <c>Tab_ErgebnisGebaeude</c> (<see cref="AufheizAufschlagErgebnisSchema"/>).
         /// <b>Ergebnisneutral:</b> Der Referenzlauf liest die Ergebnistabelle nicht.
-        public const int Zielversion = AufheizAufschlagErgebnisSchema.SCHRITT;
+        /// Danach, mit dem ERDSONDENFELD JE ANLAGE, steht das Ziel auf <see cref="ErdsondenfeldSchema.SCHRITT"/>: sechs
+        /// Kennzahlen des Sondenfeldes an <c>Tab_Energieanlagen</c> (Abstand, Bohrlochdurchmesser, Bohrlochwiderstand,
+        /// Kopfüberdeckung, Betrachtungsjahr, Anordnung; <see cref="ErdsondenfeldSchema"/>). <b>Ergebnisneutral:</b> Die
+        /// Spalten entstehen leer, leer heißt Normvorgabe.
+        public const int Zielversion = ErdsondenfeldSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

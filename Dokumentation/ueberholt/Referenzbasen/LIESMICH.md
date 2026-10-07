@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast`](../../../Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast/);
+> [`Referenzlaeufe/2026-10-07_R40_Erdreichquellen`](../../../Referenzlaeufe/2026-10-07_R40_Erdreichquellen/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -84,6 +84,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-05_R36_Kaeltemaschine` | 05.10.2026 | Basis mit dem neuen Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“ (KU3-4b, Einfrierregel „gesäte Kältemaschinendaten“), auf Linux eingefroren; Testdatenbank `fc67a865…` (Schemastand 185), gehoben auf Schemastand 186; zwanzig Projekte, 608 CSV, 4 029 Skalare — abgelöst durch R37 am 05.10.2026 | [`2026-10-05_R36_Kaeltemaschine/protokoll.txt`](2026-10-05_R36_Kaeltemaschine/protokoll.txt) |
 | `2026-10-05_R37_Fahrplan` | 05.10.2026 | Basis mit den Komfortspalten für jedes gekoppelte Projekt (F12, E83) und dem neuen Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“ (AK2-4), auf Linux eingefroren; Testdatenbank `63b0bdae…` (Schemastand 186), gehoben auf Schemastand 188; einundzwanzig Projekte, 646 CSV, 4 265 Skalare — abgelöst durch R38 am 05.10.2026 | [`2026-10-05_R37_Fahrplan/protokoll.txt`](2026-10-05_R37_Fahrplan/protokoll.txt) |
 | `2026-10-05_R38_Vorlaufwahl` | 05.10.2026 | Basis mit dem Ausweis der Vorlaufwahl der Wärmepumpe an 1047 und 1056 (VW1, E88), auf Linux eingefroren; Testdatenbank `69322344…` (Schemastand 188), gehoben auf Schemastand 190; einundzwanzig Projekte, 646 CSV, 4 271 Skalare — abgelöst durch R39 am 06.10.2026 | [`2026-10-05_R38_Vorlaufwahl/protokoll.txt`](2026-10-05_R38_Vorlaufwahl/protokoll.txt) |
+| `2026-10-06_R39_Auslegungsheizlast` | 06.10.2026 | Basis mit dem Ausweis der Auslegungsheizlast auch ohne Anlagenkopplung an 1051 und 1052 (KP3-R6, E97), auf Linux eingefroren; Testdatenbank `2fec4f14…` (Schemastand 190), gehoben auf Schemastand 195; einundzwanzig Projekte, 646 CSV, 4 275 Skalare — abgelöst durch R40 am 07.10.2026 | [`2026-10-06_R39_Auslegungsheizlast/protokoll.txt`](2026-10-06_R39_Auslegungsheizlast/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4650,6 +4651,41 @@ Der Abschnitt „Aktuelle Basis“ hat am 05.10.2026 die Basis R38 beschrieben �
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
 >   --ziel Referenzlaeufe/2026-10-05_R38_Vorlaufwahl
+> ```
+>
+> Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
+> Abschnitt 19.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R39 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 06.10.2026 die Basis R39 beschrieben — den Anlass (die Auslegungsheizlast auch ohne Anlagenkopplung, KP3-R6 und E97) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`. Stand der Übernahme: Codestand `6195ea1`, Testdatenbank Schemastand 195.
+
+**Abgelöst wurde R39 durch `2026-10-07_R40_Erdreichquellen`** (Erdreichquellen der Referenzprojekte und Referenzprojekt 1057, Einfrierregel „gesäte Erdreichquellen“): Die dreizehn Projekte ohne Erdreichquelle sind byte-gleich, 1008, 1017, 1023, 1039, 1047, 1050, 1055 und 1056 rechnen ihre Sole-Wärmepumpe an der Erdsonde, 1057 ist neu.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Auslegungsheizlast auch ohne Anlagenkopplung (KP3-R6, E97) — die Zahlen aller einundzwanzig Projekte sind unverändert, 1051 und 1052 tragen je zwei neue Zeilen in `aggregate.csv`.**
+>
+> Die Auslegungsheizlast Φ_HL je Zone entsteht in `GebaeudeModellEingang.Auslegungslasten` aus einer Quelle: mit
+> Kopplung die Zahl des Kopplungswegs, ohne sie derselbe Ausdruck mit Auslegungstag und Auslegungs-Außentemperatur.
+> Damit füllt jedes ungekoppelte Gebäude mit Aufheizoptimierung `Auslegungsheizlast_Kw` und `Aufheizzuschlag_Kw`
+> seiner Ergebniszeile, und der Ergebnisexport trägt beide am Gebäude als `Geb[n].AuslegungsheizlastKw` und
+> `Geb[n].AufheizzuschlagKw` (nur gesetzt). Ein gekoppeltes Gebäude bemisst nicht; 1054 bleibt darum ohne die
+> Zeilen. Die exakte innere Umkehr des Zonenmodells (ZM-F) ändert keine Zahl. Der Rechenweg ist sonst unverändert:
+> **Gegen R38 sind 19 Projekte vollständig byte-gleich; 1051 und 1052 tragen allein zwei neue Zeilen in
+> `aggregate.csv`, die der Vergleich als „Eintrag nur im Vergleichslauf“ meldet, alle übrigen 35 bzw. 24 CSV beider
+> Projekte sind byte-gleich (644 von 646 CSV).** Neu stehen bei 1051 `Geb[0].AuslegungsheizlastKw` 22,19 kW und
+> `Geb[0].AufheizzuschlagKw` 3,92 kW, bei 1052 30,09 kW und 5,26 kW. Je Projekt zwei Skalare mehr (gesamt 646 CSV,
+> 4 275 Skalare). Keine gesäten Daten sind neu, darum keine neue Einfrierregel.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056 \
+>   --ziel Referenzlaeufe/2026-10-06_R39_Auslegungsheizlast
 > ```
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
