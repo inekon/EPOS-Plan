@@ -318,6 +318,19 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Schleife_ohne_kollineare_Punkte_und_Stichkanten()
+        {
+            var ring = new List<double[]>
+            {
+                new[] { 0.0, 0.0, 0.0 }, new[] { 2.0, 0.0, 0.0 }, new[] { 4.0, 0.0, 0.0 }, new[] { 4.0, 0.0, 1.0 },
+                new[] { 3.0, 0.0, 1.0 }, new[] { 3.0, 0.0, 1.5 }, new[] { 3.0, 0.0, 1.0 }, new[] { 0.0, 0.0, 1.0 },
+            };
+            List<double[]> g = SqprojGeometrie.Gestrafft(ring);
+            Assert.Equal(4, g.Count);
+            Assert.DoesNotContain(g, p => p[2] > 1.0);
+        }
+
+        [Fact]
         public void Richtung_aus_dem_gemessenen_Abstand()
         {
             Assert.Equal((Extrusionsrichtung.NachAussen, false), SqprojGeometrie.Richtung(0.005, 0.30));

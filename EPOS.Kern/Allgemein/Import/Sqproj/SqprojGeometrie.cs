@@ -369,6 +369,8 @@ namespace WindowsFormsApplication1
             internal double[] Normale;
             internal double Dicke;
             internal bool Vorgabe;
+            /// <summary>Die Dicke an der Fläche (<c>Thickness</c>), wenn sie nicht schon <see cref="Dicke"/> ist; <c>null</c> = keine.</summary>
+            internal double? Flaechendicke;
             internal List<string> Raeume = new List<string>();
             internal bool Wand => Math.Abs(Normale[2]) <= SIN_WAAGERECHT;
             internal bool Oeffnung => Bauteil.Art == Bauteilart.Fenster || Bauteil.Art == Bauteilart.Tuer;
@@ -524,7 +526,8 @@ namespace WindowsFormsApplication1
         private static Flaeche FlaecheVon(AbbildBauteil b, SqprojAbbild p, bool oeffnung)
         {
             if (!p.Flaechengeometrie.TryGetValue(b.Kennung, out string geo)) return null;
-            var wahl = Waehlen(SchleifenLesen(geo), oeffnung ? RANG_OEFFNUNG : RANG_OPAK);
+            var wahl = Waehlen(SchleifenLesen(geo).Select(s => new SqprojSchleife { Regel = s.Regel, Nummer = s.Nummer, PunkteM = Gestrafft(s.PunkteM) })
+                                                  .Where(s => s.PunkteM.Count >= 3).ToList(), oeffnung ? RANG_OEFFNUNG : RANG_OPAK);
             if (wahl == null) return null;
             double[] n = Polygonnetz.Normiert(Polygonnetz.Newell(wahl.Value.Aussen));
             if (n == null) return null;
@@ -543,6 +546,7 @@ namespace WindowsFormsApplication1
                 Bauteil = b, Aussen = wahl.Value.Aussen, Loecher = wahl.Value.Loecher, Weitere = wahl.Value.Weitere,
                 Lochkennungen = wahl.Value.Loecher.Select(_ => b.Kennung).ToList(),
                 Normale = n, Dicke = dicke, Vorgabe = vorgabe,
+                Flaechendicke = p.Flaechendicke.TryGetValue(b.Kennung, out double fd) && fd > 0.0 && Math.Abs(fd - dicke) > 1e-9 ? fd : null,
                 Raeume = b.Nachbarn.Select(x => x.Kennung).Where(k => k != null).ToList(),
             };
         }
@@ -756,6 +760,15 @@ namespace WindowsFormsApplication1
             {
                 f.ZumRaum = zumRaum;
                 (f.Richtung, f.Angenommen) = Richtung(bester, f.Dicke);
+                // Befund an der Projektdatei: Der Aufbau trägt oft nur die bauphysikalischen Schichten, die Bezugsebene liegt
+                // aber um die Dicke an der Fläche (Thickness, die gezeichnete Wanddicke) vor der Innenoberfläche. Passt die
+                // Messung nur zu dieser Dicke, gilt sie — gemessen, nicht angenommen.
+                if (f.Angenommen && f.Flaechendicke is double fd && !Richtung(bester, fd).Angenommen)
+                {
+                    f.Dicke = fd;
+                    f.Vorgabe = false;
+                    (f.Richtung, f.Angenommen) = Richtung(bester, fd);
+                }
                 return;
             }
             // Kein Raumkörper trifft: Raumseite zum Schwerpunkt des Raumpolygons, sonst die Gegenrichtung der Dateinormale.
@@ -900,6 +913,34 @@ namespace WindowsFormsApplication1
         {
             var r = ring.Select(q => new[] { q[0], q[1], q[2] }).ToList();
             if (zumRaum != null && Polygonnetz.Punkt(Polygonnetz.Newell(r), zumRaum) > 0.0) r.Reverse();
+            return r;
+        }
+
+        /// <summary>
+        /// Der Ring ohne kollineare Zwischenpunkte und ohne Stichkanten (hin und auf derselben Linie zurück, 1 mm) — die
+        /// Datei führt solche Punkte an T-Stößen; ein Mantelviereck auf einer Stichkante schlösse den Körper nie.
+        /// </summary>
+        internal static List<double[]> Gestrafft(IReadOnlyList<double[]> ring)
+        {
+            var r = Polygonnetz.Bereinigt(ring);
+            bool weiter = true;
+            while (weiter && r.Count >= 3)
+            {
+                weiter = false;
+                for (int i = 0; i < r.Count && r.Count >= 3; i++)
+                {
+                    double[] a = r[(i + r.Count - 1) % r.Count], b = r[i], c = r[(i + 1) % r.Count];
+                    double[] ab = Polygonnetz.Minus(b, a), ac = Polygonnetz.Minus(c, a);
+                    double lac = Math.Sqrt(Polygonnetz.Punkt(ac, ac));
+                    double[] k = Polygonnetz.Kreuz(ab, ac);
+                    double abstand = lac > 1e-12 ? Math.Sqrt(Polygonnetz.Punkt(k, k)) / lac : 0.0;   // a = c: Stichkante
+                    if (abstand > Koerperbildner.TOLERANZ_M) continue;
+                    r.RemoveAt(i);
+                    r = Polygonnetz.Bereinigt(r);
+                    weiter = true;
+                    break;
+                }
+            }
             return r;
         }
 
