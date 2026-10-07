@@ -287,8 +287,35 @@ namespace WindowsFormsApplication1
         /// <summary>Sondenfelder je Anlage in der Reihenfolge des Modulaufbaus.</summary>
         private readonly List<KeyValuePair<int, Erdsondenfeld>> _sondenfelder = new List<KeyValuePair<int, Erdsondenfeld>>();
 
-        /// <summary>Bis zum Ende der Vorstunde gemeldeter Entzug je Modul (Wärme − Strom ohne Taktanteil, kWh).</summary>
+        /// <summary>Bis zum Ende der Vorstunde gebuchter Entzug je Modul (Wärme − Strom ohne Taktanteil, kWh).</summary>
         private readonly double[] _sondeEntzugBisher = new double[MAX_WP];
+
+        /// <summary>Bis zum Ende der Vorstunde gebuchte Wärme je Modul (kWh) — für die Betriebsstunden.</summary>
+        private readonly double[] _waermeBisher = new double[MAX_WP];
+
+        /// <summary>Entzug je Modul und Stunde [kWh]: Wärme − Strom ohne Taktanteil (Konzept 23.2).</summary>
+        private readonly double[][] _entzugModulStuendlich = new double[MAX_WP][];
+
+        /// <summary>Lief das Modul in der Stunde (Wärme &gt; 0)?</summary>
+        private readonly bool[][] _betriebModulStuendlich = new bool[MAX_WP][];
+
+        /// <summary>
+        /// true, sobald der Lauf den Entzug je Modul und Stunde gebucht hat — dann wertet
+        /// <see cref="ErdreichAuswertung"/> je Anlage exakt aus statt aus der Summenganglinie.
+        /// </summary>
+        public bool EntzugJeModulGefuehrt { get; private set; }
+
+        /// <summary>Entzug des Moduls je Stunde [kWh] (Wärme − Strom ohne Taktanteil); null ohne Buchung.</summary>
+        public double[] ModulEntzugStuendlich(int index)
+        {
+            return index >= 0 && index < MAX_WP ? _entzugModulStuendlich[index] : null;
+        }
+
+        /// <summary>Betriebsstunden des Moduls (Wärme &gt; 0 in der Stunde); null ohne Buchung.</summary>
+        public bool[] ModulBetriebStuendlich(int index)
+        {
+            return index >= 0 && index < MAX_WP ? _betriebModulStuendlich[index] : null;
+        }
 
         /// <summary>Das Sondenfeld des Moduls <paramref name="index"/>; null ohne Erdsonde.</summary>
         public Erdsondenfeld Sondenfeld(int index)
@@ -425,9 +452,8 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < wp_list.Count && i < MAX_WP; i++)
                 {
                     if (!ReferenceEquals(_sondeJeModul[i], feld)) continue;
-                    double kum = Modul_WP_Waermeproduktion[i] - (Modul_WP_Strombedarf[i] - Taktstrom_KWh_WP[i]);
-                    entzug += kum - _sondeEntzugBisher[i];
-                    _sondeEntzugBisher[i] = kum;
+                    double[] reihe = _entzugModulStuendlich[i];
+                    if (reihe != null && stunde >= 0 && stunde < reihe.Length) entzug += reihe[stunde];
                 }
 
                 // Regeneration (Konzept 23.5): die Kühlwärme des ersten Laufs als negative Last.
@@ -439,6 +465,30 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < wp_list.Count && i < MAX_WP && i < wp_quelltemp.Count; i++)
                     if (ReferenceEquals(_sondeJeModul[i], feld)) wp_quelltemp[i][stunde + 1] = t;
             }
+        }
+
+        /// <summary>
+        /// Stundenende je Modul: Entzug der Stunde (Wärme − Strom ohne Taktanteil, Zuwachs seit der
+        /// Vorstunde) und Betrieb (Wärme der Stunde &gt; 0). Gebucht für jedes Modul, ob mit Sondenfeld
+        /// oder nicht — Sondenfeld und Erdreichauswertung lesen dieselbe Reihe, die Auswertung damit je
+        /// Anlage statt aus der Summenganglinie aller Wärmepumpen.
+        /// </summary>
+        private void ModulEntzugStundeAbschliessen(int stunde)
+        {
+            if (stunde < 0 || stunde >= 8760) return;
+            int module = Math.Min(wp_list.Count, MAX_WP);
+            for (int i = 0; i < module; i++)
+            {
+                if (_entzugModulStuendlich[i] == null) _entzugModulStuendlich[i] = new double[8760];
+                if (_betriebModulStuendlich[i] == null) _betriebModulStuendlich[i] = new bool[8760];
+                double kum = Modul_WP_Waermeproduktion[i] - (Modul_WP_Strombedarf[i] - Taktstrom_KWh_WP[i]);
+                _entzugModulStuendlich[i][stunde] = kum - _sondeEntzugBisher[i];
+                _sondeEntzugBisher[i] = kum;
+                double waerme = Modul_WP_Waermeproduktion[i];
+                _betriebModulStuendlich[i][stunde] = waerme - _waermeBisher[i] > 0;
+                _waermeBisher[i] = waerme;
+            }
+            EntzugJeModulGefuehrt = true;
         }
 
         // ==================================================================
@@ -2162,7 +2212,8 @@ namespace WindowsFormsApplication1
             // Welle M4, WP1: Taktverlust und Starts der Stunde.
             if (_taktIrgendein) TaktStundeAbschliessen(stunde);
 
-            // Erdsonde (Konzept 23): nach dem Takt, der den Mehrstrom der Stunde bucht.
+            // Entzug je Modul und Erdsonde (Konzept 23): nach dem Takt, der den Mehrstrom der Stunde bucht.
+            if (wp_list.Count > 0) ModulEntzugStundeAbschliessen(stunde);
             if (_sondenfelder.Count > 0) SondenStundeAbschliessen(stunde);
 
             // KU2 (5.2): der Zeitanteil des Heizbetriebs dieser Stunde je Modul im Kühlbetrieb.
@@ -3003,6 +3054,13 @@ namespace WindowsFormsApplication1
             // Erdsonde: Felder und Entzugsstand gehören zum Lauf.
             Array.Clear(_sondeJeModul, 0, _sondeJeModul.Length);
             Array.Clear(_sondeEntzugBisher, 0, _sondeEntzugBisher.Length);
+            Array.Clear(_waermeBisher, 0, _waermeBisher.Length);
+            for (int i = 0; i < MAX_WP; i++)
+            {
+                if (_entzugModulStuendlich[i] != null) Array.Clear(_entzugModulStuendlich[i], 0, 8760);
+                if (_betriebModulStuendlich[i] != null) Array.Clear(_betriebModulStuendlich[i], 0, 8760);
+            }
+            EntzugJeModulGefuehrt = false;
             _sondenfelder.Clear();
             _sondeRueckspeisung.Clear();
 

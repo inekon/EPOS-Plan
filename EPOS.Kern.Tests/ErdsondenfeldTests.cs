@@ -577,5 +577,47 @@ namespace EPOS.Kern.Tests
             Assert.True(takt > 0, "die Wärmepumpe taktet im Kühlbetrieb");
             Assert.Equal(kaelte + verdichter - takt, rueck, 6);
         }
+
+        /// <summary>
+        /// Erdreichprüfung je Anlage (Konzept 23.2) an einer Arbeitskopie von Projekt 1008: Luft-Wasser-
+        /// und Sole-Wärmepumpe nebeneinander. Die Prüfung gilt der Anlage mit Erdreichquelle allein — ihr
+        /// Jahresentzug ist der Entzug ihres Sondenfelds, die Prüfung ist möglich, die Zeile trägt das Modul
+        /// am Sondenfeld, und die Betriebsstunden sind die der Sole-Wärmepumpe (in 1008 die Grundlast: jede
+        /// Stunde), nicht die der Kaskade.
+        /// </summary>
+        [Fact]
+        public void Projekt_1008_prueft_die_Sole_Waermepumpe_neben_der_Luft_Waermepumpe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var laeufer = new SimulationRunner();
+            Assert.True(laeufer.Simuliere(1008, out string fehler), "Lauf gescheitert: " + fehler);
+            SimulationWaermepumpe wp = laeufer.sim.simulation_wp;
+            Assert.True(wp.wp_list.Count >= 2, "zwei Wärmepumpen");
+            Assert.True(wp.EntzugJeModulGefuehrt);
+            int modul = wp.wp_list.IndexOf(10132);
+            Assert.True(modul >= 0);
+            Erdsondenfeld feld = wp.Sondenfeld(modul);
+            Assert.NotNull(feld);
+
+            var liste = ErdreichAuswertung.FuerProjekt(1008);
+            ErdreichAuswertung.AnlageErgebnis e = Assert.Single(liste);
+            _aus.WriteLine($"1008 Anlage {e.ID_Anlage} ({e.Modul}): Entzug {e.JahresentzugKWh:0} kWh/a (Feld {feld.EntzugKwh:0}), " +
+                           $"max {e.MaxEntzugW:0} W, {e.VolllastStunden:0} h/a, Frost {e.FrostStunden}/{e.BetriebsStunden} h, " +
+                           $"Prüfung möglich {e.Pruefung.Moeglich}");
+            Assert.Equal(10132, e.ID_Anlage);
+            Assert.Equal(wp.WP_Modul[modul], e.Modul);
+            Assert.False(e.Unwirksam);
+            Assert.True(e.MaxEntzugBelastbar);
+            Assert.False(e.MaxEntzugGeschaetzt);
+            Assert.True(e.JahresentzugKWh > 0);
+            Assert.True(e.JahresentzugKWh >= feld.EntzugKwh - 1e-6, "Σ positiver Stunden ≥ Entzug des Feldes");
+            Assert.Equal(feld.EntzugKwh, e.JahresentzugKWh, 0);
+            Assert.True(e.MaxEntzugW > 0);
+            Assert.True(e.Pruefung.Moeglich);
+            Assert.Equal(wp.ModulBetriebStuendlich(modul).Count(b => b), e.BetriebsStunden);
+            Assert.True(e.FrostStunden <= e.BetriebsStunden);
+        }
     }
 }

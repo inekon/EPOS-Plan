@@ -33,9 +33,12 @@ namespace WindowsFormsApplication1
     /// belastbarere der beiden Basen; gibt es einen Senkenspeicher, ist die
     /// Speicherladung darin enthalten und der Kurztext sagt das an.
     ///
-    /// GRENZE DER STUFE 1 (bewusst, siehe Protokoll): Wärmeproduktion und Strombedarf
-    /// liegen als Stundenganglinie nur GLOBAL vor (Summe aller WP-Module). Die
-    /// Zuordnung zum Modul ist deshalb gestuft:
+    /// JE ANLAGE (Konzept Simulationsablauf 23.2): Ein Lauf bucht den Entzug je Modul und
+    /// Stunde (<see cref="SimulationWaermepumpe.ModulEntzugStuendlich"/>, Wärme − Strom ohne
+    /// Taktanteil, dieselbe Reihe, die das Sondenfeld liest). Dann gelten Jahresentzug,
+    /// Spitze, Betriebs- und Froststunden der Anlage mit Erdreichquelle allein — auch neben
+    /// einer Luft-Wasser-Wärmepumpe, und je Anlage, wenn mehrere Erdreichanlagen im Projekt
+    /// stehen. Nur ohne diese Buchung gilt die alte Stufung aus der Summenganglinie:
     ///
     ///   • genau ein WP-Modul                → exakt (die globale Ganglinie IST die des Moduls)
     ///   • mehrere Module, alle mit Erdreich → die globale Ganglinie ist vollständig
@@ -386,6 +389,10 @@ namespace WindowsFormsApplication1
                 if (wirksam[i]) anzahlWirksam++;
             }
 
+            // Je Anlage aus dem Entzug je Modul und Stunde (Konzept 23.2).
+            if (wp.EntzugJeModulGefuehrt)
+                return AuswertenJeAnlage(idProjekt, wp, mitSenkenspeicher, konfiguriert, wirksam);
+
             // Entzugsganglinie (therm − el) der GESAMTEN Wärmepumpenkaskade [kW].
             // Jahresarbeit, Spitze und Betriebsstunden kommen aus derselben Reihe -
             // das ist der Kern der Basiskorrektur (siehe Klassenkommentar).
@@ -437,22 +444,13 @@ namespace WindowsFormsApplication1
             {
                 if (!konfiguriert[i]) continue;
 
-                AnlageErgebnis a = new AnlageErgebnis();
-                a.ID_Anlage = wp.wp_list[i];
-                a.Modul = (i < wp.WP_Modul.Length && !string.IsNullOrEmpty(wp.WP_Modul[i]))
-                    ? wp.WP_Modul[i]
-                    : string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.SIMQ_ANLAGE_ERSATZNAME, a.ID_Anlage);
+                AnlageErgebnis a = NeuesErgebnis(wp, i);
 
                 // Luft-Wasser: die Konfiguration wird nicht gerechnet - nichts prüfen,
                 // sondern sagen, warum hier keine Zahlen stehen.
                 if (!wirksam[i])
                 {
-                    a.Unwirksam = true;
-                    a.MaxEntzugBelastbar = false;
-                    a.Grenze = MyResource.Resource.SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER;
-                    a.Pruefung = new VDI4640Pruefung.Ergebnis { Moeglich = false, Hinweis = a.Grenze };
-                    liste.Add(a);
+                    liste.Add(Unwirksam(a));
                     continue;
                 }
 
@@ -492,6 +490,92 @@ namespace WindowsFormsApplication1
             }
 
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Auswertung je Anlage</b> (Konzept Simulationsablauf 23.2): Die Ganglinie der Anlage ist
+        /// die Summe der Entzugsreihen ihrer Module (Wärme − Strom ohne Taktanteil). Jahresentzug (9),
+        /// Spitze (10), Volllaststunden (11), Betriebs- und Froststunden kommen allein aus ihr — ein
+        /// Modul an einer anderen Quelle (Luft-Wasser daneben) geht nicht ein. Eine Zeile je Anlage;
+        /// sie trägt den Namen ihres ersten Moduls.
+        /// </summary>
+        private static List<AnlageErgebnis> AuswertenJeAnlage(int idProjekt, SimulationWaermepumpe wp,
+            bool mitSenkenspeicher, bool[] konfiguriert, bool[] wirksam)
+        {
+            var liste = new List<AnlageErgebnis>();
+            var gesehen = new HashSet<int>();
+            int klimazone = KlimazoneDesProjekts(idProjekt);
+            int anzahlModule = konfiguriert.Length;
+
+            for (int i = 0; i < anzahlModule; i++)
+            {
+                if (!konfiguriert[i]) continue;
+                int idAnlage = wp.wp_list[i];
+                if (!gesehen.Add(idAnlage)) continue;
+
+                AnlageErgebnis a = NeuesErgebnis(wp, i);
+                if (!wirksam[i])
+                {
+                    liste.Add(Unwirksam(a));
+                    continue;
+                }
+
+                var laeuft = new bool[8760];
+                int betriebsStunden = 0;
+                double summe = 0, spitze = 0;
+                for (int h = 0; h < 8760; h++)
+                {
+                    double q = 0;
+                    bool lief = false;
+                    for (int k = i; k < anzahlModule; k++)
+                    {
+                        if (wp.wp_list[k] != idAnlage || !wirksam[k]) continue;
+                        double[] reihe = wp.ModulEntzugStuendlich(k);
+                        bool[] betrieb = wp.ModulBetriebStuendlich(k);
+                        if (reihe != null) q += reihe[h];
+                        if (betrieb != null && betrieb[h]) lief = true;
+                    }
+                    if (lief) { laeuft[h] = true; betriebsStunden++; }
+                    if (q <= 0) continue;
+                    summe += q;
+                    if (q > spitze) spitze = q;
+                }
+
+                a.BetriebsStunden = betriebsStunden;
+                a.InklSpeicherladung = mitSenkenspeicher;
+                a.JahresentzugKWh = summe;
+                a.MaxEntzugW = spitze * 1000.0;   // kW -> W
+                a.VolllastStunden = spitze > 0 ? summe / spitze : betriebsStunden;
+                a.MaxEntzugBelastbar = true;
+                a.MaxEntzugGeschaetzt = false;
+
+                a.Pruefung = Pruefen(a, klimazone);
+                FrostPruefen(a, wp, i, laeuft, betriebsStunden);
+                liste.Add(a);
+            }
+            return liste;
+        }
+
+        /// <summary>Ergebniszeile des Moduls <paramref name="i"/> mit Anlage und Anzeigename.</summary>
+        private static AnlageErgebnis NeuesErgebnis(SimulationWaermepumpe wp, int i)
+        {
+            AnlageErgebnis a = new AnlageErgebnis();
+            a.ID_Anlage = wp.wp_list[i];
+            a.Modul = (i < wp.WP_Modul.Length && !string.IsNullOrEmpty(wp.WP_Modul[i]))
+                ? wp.WP_Modul[i]
+                : string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMQ_ANLAGE_ERSATZNAME, a.ID_Anlage);
+            return a;
+        }
+
+        /// <summary>Luft-Wasser: die Erdreichkonfiguration wirkt nicht - keine Zahlen, keine Prüfung.</summary>
+        private static AnlageErgebnis Unwirksam(AnlageErgebnis a)
+        {
+            a.Unwirksam = true;
+            a.MaxEntzugBelastbar = false;
+            a.Grenze = MyResource.Resource.SIMQ_ERDREICH_UNWIRKSAM_LUFT_WASSER;
+            a.Pruefung = new VDI4640Pruefung.Ergebnis { Moeglich = false, Hinweis = a.Grenze };
+            return a;
         }
 
         /// <summary>
