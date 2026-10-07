@@ -9210,11 +9210,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts haben im Ziel keine gleichnamige Entsprechung und bleiben leer. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PROJEKTBEZUG {
             get {
                 return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen. ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_PROJEKTKOPIE", resourceCulture);
             }
         }
         

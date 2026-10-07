@@ -14,7 +14,8 @@ namespace EPOS.Kern.Tests
     /// Die FACHSPALTEN von <c>Tab_Energieanlagen</c> auf den Übernahmewegen, die eine neue
     /// Anlagenzeile aus einer BESTEHENDEN Quellzeile anlegen: Komponentenübernahme aus
     /// einem anderen Projekt (<see cref="KomponentenUebernahmeCtrl.Uebernehmen"/>) und das
-    /// zweite und jedes weitere Stück einer vertretenen Anlage aus der Flottenstudie
+    /// zweite und jedes weitere Stück einer vertretenen Anlage aus der Flottenstudie (dort als
+    /// vollständige Kopie der Zeile)
     /// (<see cref="SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen"/>).
     ///
     /// <para><b>Befund 07.10.2026:</b> Beide Wege schreiben die Zeile über das Modell
@@ -86,7 +87,9 @@ namespace EPOS.Kern.Tests
                 (string sql, DbParam[] werte) = AnlagenSql.Einfuegen(FLOTTENPROJEKT, zeile, null, fahrplan, freieKuehlung);
                 neu = v.EinfuegenUndId(sql, werte);
                 Setzen(v, neu, "KWKG_Stichtag", "2026-01-01");      // muss zu NULL werden
-                Assert.Equal(0, AnlagenFachspalten.Uebertragen(v, spalten, SPEICHERANLAGE, neu));
+                AnlagenFachspalten.Ausgang aus = AnlagenFachspalten.Uebertragen(v, spalten, SPEICHERANLAGE, neu);
+                Assert.Equal(0, aus.Kopiert);
+                Assert.Equal(0, aus.Verloren);
                 v.Commit();
             }
 
@@ -142,11 +145,12 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Ein Verweis auf ein PROJEKTEIGENES Quellprofil wird über den Bezeichner auf das
-        /// gleichnamige Profil des Ziels abgebildet; fehlt es dort, bleibt der Verweis leer
-        /// und die Übernahme meldet das — sie zeigt nie auf das Profil des Quellprojekts.
+        /// gleichnamige Profil des Ziels abgebildet; fehlt es dort, wird es samt Werten als
+        /// Projektkopie ins Ziel übernommen (Anwenderentscheid 07.10.2026) und gemeldet — die
+        /// Anlage zeigt nie auf das Profil des Quellprojekts.
         /// </summary>
         [Fact]
-        public void Ein_Quellprofilverweis_wird_ueber_den_Bezeichner_abgebildet_oder_gemeldet()
+        public void Ein_Quellprofil_wird_abgebildet_oder_als_Projektkopie_uebernommen()
         {
             if (!_db.Vorhanden) return;
 
@@ -156,18 +160,74 @@ namespace EPOS.Kern.Tests
             int profilQuelleA = Profil(QUELLE, "Sole Feld A");
             int profilQuelleB = Profil(QUELLE, "Sole Feld B");
             int profilZielA = Profil(ZIEL, "Sole Feld A");
+            for (int i = 0; i < 12; i++) Profilwert(profilQuelleB, i, 4.0 + i);
             Setzen(quellen[0], "WQ_ID_Quellprofil", (long)profilQuelleA);
             Setzen(quellen[1], "WQ_ID_Quellprofil", (long)profilQuelleB);
+            int profileVorher = Anzahl("SELECT COUNT(*) FROM Tab_Quellprofil WHERE ID_Projekt = ?", ZIEL);
 
             Assert.True(new KomponentenUebernahmeCtrl().Uebernehmen(QUELLE, ZIEL, GEWERK,
                 out string fehler, out string hinweise), fehler);
 
             List<int> ziele = Anlagen(ZIEL);
+            // Gleichnamig vorhanden: abgebildet, nicht kopiert.
             Assert.Equal((long)profilZielA, Ganzzahl(Zeile(ziele[0])["WQ_ID_Quellprofil"]));
-            Assert.True(Zeile(ziele[1])["WQ_ID_Quellprofil"] == DBNull.Value,
-                "Der Verweis zeigt auf das Profil des Quellprojekts.");
+
+            // Fehlend: Projektkopie im Ziel, samt den zwölf Werten.
+            int kopie = (int)Ganzzahl(Zeile(ziele[1])["WQ_ID_Quellprofil"]);
+            Assert.NotEqual(profilQuelleB, kopie);
+            Assert.Equal(ZIEL, Anzahl("SELECT ID_Projekt FROM Tab_Quellprofil WHERE ID = ?", kopie));
+            Assert.Equal("Sole Feld B", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_Quellprofil WHERE ID = ?", new DbParam("@id", kopie)),
+                CultureInfo.InvariantCulture));
+            Assert.Equal(12, Anzahl("SELECT COUNT(*) FROM Tab_QuellprofilDaten WHERE ID_Quellprofil = ?", kopie));
+            Assert.Equal(15.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Wert FROM Tab_QuellprofilDaten WHERE ID_Quellprofil = ? AND [Index] = 11",
+                new DbParam("@id", kopie)), CultureInfo.InvariantCulture), 9);
+            Assert.Equal(12, Anzahl("SELECT COUNT(*) FROM Tab_QuellprofilDaten WHERE ID_Quellprofil = ?", profilQuelleB));
+            Assert.Equal(profileVorher + 1, Anzahl("SELECT COUNT(*) FROM Tab_Quellprofil WHERE ID_Projekt = ?", ZIEL));
+
             Assert.Contains(string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.BK_KOMP_HINW_PROJEKTKOPIE, 1), hinweise);
+            Assert.DoesNotContain(string.Format(CultureInfo.CurrentCulture,
                 WindowsFormsApplication1.MyResource.Resource.BK_KOMP_HINW_PROJEKTBEZUG, 1), hinweise);
+        }
+
+        /// <summary>
+        /// Dasselbe Muster für die Kältemaschine: Fehlt ihre Projektkopie im Ziel, kommt sie
+        /// samt Kennlinie (<c>Tab_Kenndaten_Kaeltemaschine</c>) mit; zwei Anlagen mit
+        /// demselben Verweis teilen sich EINE Kopie.
+        /// </summary>
+        [Fact]
+        public void Eine_fehlende_Kaeltemaschine_kommt_samt_Kennlinie_einmal_ins_Ziel()
+        {
+            if (!_db.Vorhanden) return;
+
+            List<int> quellen = Anlagen(QUELLE);
+            Assert.True(quellen.Count >= 2, "Die Quelle braucht zwei Wärmepumpen.");
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_Kaeltemaschine (ID_Projekt, Bezeichner, Nennkaelteleistung_kW, Nenn_EER) VALUES (?, 'KM Probe', 50.0, 3.5)",
+                new DbParam("@p", QUELLE)));
+            int km = Anzahl("SELECT MAX(ID) FROM Tab_Kaeltemaschine WHERE ID_Projekt = ?", QUELLE);
+            foreach ((double rk, double kw) in new[] { (27.0, 6.0), (32.0, 6.0), (32.0, 12.0) })
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_Kenndaten_Kaeltemaschine (ID_Projekt, ID_Kaeltemaschine, Rueckkuehltemperatur, Kaltwassertemperatur, EER) VALUES (?, ?, ?, ?, 3.0)",
+                    new DbParam("@p", QUELLE), new DbParam("@k", km), new DbParam("@r", rk), new DbParam("@w", kw)));
+            Setzen(quellen[0], "ID_Kaeltemaschine", (long)km);
+            Setzen(quellen[1], "ID_Kaeltemaschine", (long)km);
+
+            Assert.True(new KomponentenUebernahmeCtrl().Uebernehmen(QUELLE, ZIEL, GEWERK,
+                out string fehler, out string hinweise), fehler);
+
+            List<int> ziele = Anlagen(ZIEL);
+            int kopie = (int)Ganzzahl(Zeile(ziele[0])["ID_Kaeltemaschine"]);
+            Assert.NotEqual(km, kopie);
+            Assert.Equal((long)kopie, Ganzzahl(Zeile(ziele[1])["ID_Kaeltemaschine"]));
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt = ? AND Bezeichner = 'KM Probe'", ZIEL));
+            Assert.Equal(3, Anzahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kaeltemaschine WHERE ID_Kaeltemaschine = ? AND ID_Projekt = ?",
+                                   kopie, ZIEL));
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.BK_KOMP_HINW_PROJEKTKOPIE, 1), hinweise);
         }
 
         // =============================================================================
@@ -176,11 +236,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Zwei Stück einer Einheit, die eine Projektanlage vertritt: das erste schreibt in
-        /// die Anlage zurück, das zweite entsteht neu — mit den Fachspalten der vertretenen
-        /// Anlage, eigener ID und eigenem Bezeichner.
+        /// die Anlage zurück, das zweite entsteht neu — als vollständige Kopie der Anlagenzeile
+        /// mit eigener ID, eigenem Gerät und eigenem Bezeichner.
         /// </summary>
         [Fact]
-        public void Das_zweite_Stueck_einer_vertretenen_Anlage_traegt_ihre_Fachspalten()
+        public void Das_zweite_Stueck_einer_vertretenen_Anlage_ist_eine_vollstaendige_Kopie_ihrer_Zeile()
         {
             if (!_db.Vorhanden) return;
 
@@ -273,6 +333,15 @@ namespace EPOS.Kern.Tests
                 "SELECT MAX(ID) FROM Tab_Quellprofil WHERE ID_Projekt = ? AND Bezeichner = ?",
                 new DbParam("@p", projekt), new DbParam("@b", bezeichner)), CultureInfo.InvariantCulture);
         }
+
+        private static void Profilwert(int profil, int index, double wert)
+            => Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_QuellprofilDaten (ID_Quellprofil, [Index], Wert) VALUES (?, ?, ?)",
+                new DbParam("@p", profil), new DbParam("@i", index), new DbParam("@w", wert)));
+
+        private static int Anzahl(string sql, params int[] werte)
+            => Convert.ToInt32(DataRepository.ExecuteScalar(sql,
+                   werte.Select(w => new DbParam("@w", w)).ToArray()), CultureInfo.InvariantCulture);
 
         private static long Ganzzahl(object o) => Convert.ToInt64(o, CultureInfo.InvariantCulture);
 

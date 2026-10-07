@@ -27,7 +27,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Verweise auf projekteigene Zeilen</b> (<see cref="PROJEKTBEZUG"/>):
     /// Innerhalb eines Projekts unverändert; über Projektgrenzen auf die gleichnamige
     /// Zeile des Zielprojekts abgebildet (Muster <c>KomponentenUebernahmeCtrl</c> bei den
-    /// Pufferverweisen), sonst leer — nie ein Verweis in ein fremdes Projekt.</para>
+    /// Pufferverweisen), sonst als Projektkopie samt Kindzeilen ins Ziel übernommen — nie ein Verweis in ein fremdes Projekt.</para>
     /// </summary>
     internal static class AnlagenFachspalten
     {
@@ -112,71 +112,221 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Überträgt die Fachspalten der Anlagenzeile <paramref name="idQuelle"/> auf die
-        /// eben angelegte Zeile <paramref name="idZiel"/> — EIN UPDATE mit Zeilenwert-
-        /// Zuweisung aus der Quellzeile, NULL eingeschlossen (sonst trüge die neue Zeile die
-        /// Vorgabe ihrer Spalte statt des Quellwerts). Verweise aus <see cref="PROJEKTBEZUG"/>
-        /// werden in das Projekt der Zielzeile abgebildet.
+        /// Die Kindtabellen einer projekteigenen Verweistabelle aus <see cref="PROJEKTBEZUG"/>
+        /// (Tabelle → Kindtabelle mit Fremdschlüssel), die eine Projektkopie mitnimmt.
+        /// Ergebnistabellen (<c>Tab_ErgebnisKaeltemaschine</c>) gehören zum Lauf und stehen in
+        /// <see cref="KIND_AUSSCHLUSS"/>.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, (string Tabelle, string Fk)[]> PROJEKTKINDER =
+            new Dictionary<string, (string Tabelle, string Fk)[]>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Tab_Quellprofil", new[] { ("Tab_QuellprofilDaten", "ID_Quellprofil") } },
+                { KaeltemaschineSchema.TAB_PROJEKT, new[] { ("Tab_Kenndaten_Kaeltemaschine",
+                                                             KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE) } }
+            };
+
+        /// <summary>Tabellen, die auf eine Verweistabelle zeigen, aber nie mitkopiert werden (Ergebnisse).</summary>
+        public static readonly HashSet<string> KIND_AUSSCHLUSS =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_Energieanlagen", "Tab_ErgebnisKaeltemaschine" };
+
+        /// <summary>
+        /// Die Geräteverweise einer Anlagenzeile: die Fremdschlüssel auf die Projektkopie des
+        /// Geräts. Eine KOPIE der Zeile (<see cref="KopieSpalten"/>) lässt den Verweis aus,
+        /// den sie selbst neu setzt.
+        /// </summary>
+        public static readonly HashSet<string> GERAETEVERWEISE =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "ID_WP", "ID_SP", "ID_PV", "ID_Solar", "ID_Kessel", "ID_BHKW", "ID_PUFFER",
+              KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE };
+
+        /// <summary>
+        /// Was eine vollständige KOPIE der Zeile außer <see cref="AUSSCHLUSS"/> und
+        /// <see cref="ERGEBNIS"/> nie überträgt: den Bezeichner (die Kopie trägt ihren eigenen).
+        /// Dazu kommt der Geräteverweis, den der Aufrufer neu setzt.
+        /// </summary>
+        public static readonly HashSet<string> KOPIE_AUSSCHLUSS =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Bezeichner" };
+
+        /// <summary>
+        /// Die Spalten einer vollständigen KOPIE der Anlagenzeile (Anwenderentscheid
+        /// 07.10.2026, weitere Stücke der Flottenstudie): JEDE Spalte des Schemas — Modell-
+        /// wie Fachspalten — ohne <see cref="AUSSCHLUSS"/>, <see cref="ERGEBNIS"/>,
+        /// <see cref="KOPIE_AUSSCHLUSS"/> und den Geräteverweis <paramref name="geraeteverweis"/>.
+        /// Liest das Schema — deshalb VOR einem offenen Vorgang erfragen.
+        /// </summary>
+        public static List<string> KopieSpalten(string geraeteverweis)
+        {
+            if (!GERAETEVERWEISE.Contains(geraeteverweis ?? ""))
+                throw new ArgumentException("Kein Geräteverweis: " + geraeteverweis, nameof(geraeteverweis));
+
+            List<string> liste = new List<string>();
+            foreach (string spalte in DataRepository.SpaltenVonTabelle(TABELLE))
+            {
+                if (AUSSCHLUSS.Contains(spalte) || ERGEBNIS.Contains(spalte) || KOPIE_AUSSCHLUSS.Contains(spalte))
+                    continue;
+                if (string.Equals(spalte, geraeteverweis, StringComparison.OrdinalIgnoreCase)) continue;
+                liste.Add(spalte);
+            }
+            return liste;
+        }
+
+        /// <summary>Ausgang einer Übertragung: Projektverweise, die ins Ziel kopiert wurden bzw. leer blieben.</summary>
+        public sealed class Ausgang
+        {
+            /// <summary>Projekteigene Zeilen (Quellprofil, Kältemaschine), die als Projektkopie ins Ziel kamen.</summary>
+            public int Kopiert;
+            /// <summary>Projektverweise ohne Entsprechung im Ziel, die leer bleiben.</summary>
+            public int Verloren;
+        }
+
+        /// <summary>
+        /// Überträgt die Spalten <paramref name="spalten"/> der Anlagenzeile
+        /// <paramref name="idQuelle"/> auf die eben angelegte Zeile <paramref name="idZiel"/> —
+        /// EIN UPDATE mit Zeilenwert-Zuweisung aus der Quellzeile, NULL eingeschlossen (sonst
+        /// trüge die neue Zeile die Vorgabe ihrer Spalte statt des Quellwerts).
+        ///
+        /// <para>Verweise aus <see cref="PROJEKTBEZUG"/>: im selben Projekt unverändert;
+        /// über Projektgrenzen auf die gleichnamige Zeile des Zielprojekts (kleinste ID bei
+        /// Namensdoppeln); fehlt sie, wird die Quellzeile samt <see cref="PROJEKTKINDER"/> als
+        /// Projektkopie ins Ziel übernommen (Anwenderentscheid 07.10.2026). Eine zweite Anlage
+        /// mit demselben Verweis findet danach die Kopie als gleichnamige Zeile.</para>
         /// </summary>
         /// <param name="v">Der offene Vorgang der Übernahme — die neue Zeile ist nur dort sichtbar.</param>
-        /// <param name="spalten">Aus <see cref="UebertragbareSpalten"/>, vor dem Vorgang erfragt.
-        /// Spaltennamen stammen aus dem Schema, nie aus einer Eingabe.</param>
-        /// <returns>Anzahl der Projektverweise, die im Ziel keine Entsprechung fanden und leer bleiben.</returns>
-        public static int Uebertragen(DbVorgang v, IReadOnlyList<string> spalten, int idQuelle, int idZiel)
+        /// <param name="spalten">Aus <see cref="UebertragbareSpalten"/> oder <see cref="KopieSpalten"/>,
+        /// vor dem Vorgang erfragt. Spaltennamen stammen aus dem Schema, nie aus einer Eingabe.</param>
+        public static Ausgang Uebertragen(DbVorgang v, IReadOnlyList<string> spalten, int idQuelle, int idZiel)
         {
+            var ausgang = new Ausgang();
             if (v == null || spalten == null || spalten.Count == 0 || idQuelle <= 0 || idZiel <= 0 ||
                 idQuelle == idZiel)
-                return 0;
+                return ausgang;
 
-            object projektZiel = v.Skalar("SELECT ID_Projekt FROM " + TABELLE + " WHERE ID = ?",
-                                          new DbParam("@z", idZiel));
-            if (projektZiel == null || projektZiel == DBNull.Value) return 0;
-            int idProjektZiel = Convert.ToInt32(projektZiel, CultureInfo.InvariantCulture);
+            DataTable projekte = v.Lese("SELECT q.ID_Projekt AS PQ, z.ID_Projekt AS PZ FROM " + TABELLE + " q, " +
+                                        TABELLE + " z WHERE q.ID = ? AND z.ID = ?",
+                                        new DbParam("@q", idQuelle), new DbParam("@z", idZiel));
+            if (projekte == null || projekte.Rows.Count == 0 || projekte.Rows[0]["PZ"] == DBNull.Value)
+                return ausgang;
+            int projektZiel = Convert.ToInt32(projekte.Rows[0]["PZ"], CultureInfo.InvariantCulture);
+            bool gleichesProjekt = projekte.Rows[0]["PQ"] != DBNull.Value &&
+                Convert.ToInt32(projekte.Rows[0]["PQ"], CultureInfo.InvariantCulture) == projektZiel;
 
-            var ziel = new List<string>();
-            var quelle = new List<string>();
-            var ps = new List<DbParam>();
+            var direkt = new List<string>();
             var bezuege = new List<string>();
             foreach (string spalte in spalten)
             {
                 if (AUSSCHLUSS.Contains(spalte) || ERGEBNIS.Contains(spalte)) continue;
-                ziel.Add("[" + spalte + "]");
+                if (!gleichesProjekt && PROJEKTBEZUG.ContainsKey(spalte)) bezuege.Add(spalte);
+                else direkt.Add(spalte);
+            }
 
-                if (PROJEKTBEZUG.TryGetValue(spalte, out string tabelle))
+            if (direkt.Count > 0)
+            {
+                var ziel = new List<string>();
+                var quelle = new List<string>();
+                foreach (string spalte in direkt)
                 {
-                    // Gleiches Projekt: der Verweis selbst; sonst die gleichnamige Zeile des
-                    // Zielprojekts (kleinste ID bei Namensdoppeln), sonst NULL.
-                    quelle.Add("CASE WHEN q.ID_Projekt = ? THEN q.[" + spalte + "] ELSE " +
-                               "(SELECT pz.ID FROM [" + tabelle + "] pz JOIN [" + tabelle + "] pq " +
-                               "ON pq.Bezeichner = pz.Bezeichner WHERE pq.ID = q.[" + spalte + "] " +
-                               "AND pz.ID_Projekt = ? ORDER BY pz.ID LIMIT 1) END");
-                    ps.Add(new DbParam("@pz", idProjektZiel));
-                    ps.Add(new DbParam("@pz", idProjektZiel));
-                    bezuege.Add(spalte);
-                }
-                else
-                {
+                    ziel.Add("[" + spalte + "]");
                     quelle.Add("q.[" + spalte + "]");
                 }
+                v.Ausfuehren("UPDATE " + TABELLE + " SET (" + string.Join(", ", ziel) + ") = (SELECT " +
+                             string.Join(", ", quelle) + " FROM " + TABELLE + " q WHERE q.ID = ?) WHERE ID = ?",
+                             new DbParam("@q", idQuelle), new DbParam("@z", idZiel));
             }
-            if (ziel.Count == 0) return 0;
 
-            ps.Add(new DbParam("@q", idQuelle));
-            ps.Add(new DbParam("@z", idZiel));
-            v.Ausfuehren("UPDATE " + TABELLE + " SET (" + string.Join(", ", ziel) + ") = (SELECT " +
-                         string.Join(", ", quelle) + " FROM " + TABELLE + " q WHERE q.ID = ?) WHERE ID = ?",
-                         ps.ToArray());
-
-            int verloren = 0;
             foreach (string spalte in bezuege)
             {
-                object n = v.Skalar("SELECT COUNT(*) FROM " + TABELLE + " q, " + TABELLE + " z " +
-                                    "WHERE q.ID = ? AND z.ID = ? AND q.[" + spalte + "] IS NOT NULL " +
-                                    "AND z.[" + spalte + "] IS NULL",
-                                    new DbParam("@q", idQuelle), new DbParam("@z", idZiel));
-                if (n != null && n != DBNull.Value) verloren += Convert.ToInt32(n, CultureInfo.InvariantCulture);
+                string tabelle = PROJEKTBEZUG[spalte];
+                object wert = v.Skalar("SELECT [" + spalte + "] FROM " + TABELLE + " WHERE ID = ?",
+                                       new DbParam("@q", idQuelle));
+                object neu = DBNull.Value;
+                if (wert != null)
+                {
+                    int idVerweis = Convert.ToInt32(wert, CultureInfo.InvariantCulture);
+                    object namensgleich = v.Skalar(
+                        "SELECT pz.ID FROM [" + tabelle + "] pz JOIN [" + tabelle + "] pq " +
+                        "ON pq.Bezeichner = pz.Bezeichner WHERE pq.ID = ? AND pz.ID_Projekt = ? " +
+                        "ORDER BY pz.ID LIMIT 1",
+                        new DbParam("@v", idVerweis), new DbParam("@p", projektZiel));
+                    if (namensgleich != null)
+                    {
+                        neu = namensgleich;
+                    }
+                    else
+                    {
+                        int kopie = ProjektzeileKopieren(v, tabelle, idVerweis, projektZiel);
+                        if (kopie > 0) { neu = kopie; ausgang.Kopiert++; }
+                        else ausgang.Verloren++;
+                    }
+                }
+                v.Ausfuehren("UPDATE " + TABELLE + " SET [" + spalte + "] = ? WHERE ID = ?",
+                             new DbParam("@w", neu), new DbParam("@z", idZiel));
             }
-            return verloren;
+            return ausgang;
+        }
+
+        /// <summary>
+        /// Kopiert die projekteigene Zeile <paramref name="id"/> von <paramref name="tabelle"/>
+        /// samt ihren <see cref="PROJEKTKINDER"/> in das Projekt <paramref name="projektZiel"/> —
+        /// ganze Zeile außer <c>ID</c>, <c>ID_Projekt</c> auf das Ziel, Kindzeilen mit neuem
+        /// Fremdschlüssel. Spalten aus dem Schema (im Vorgang gelesen), Werte über Parameter.
+        /// </summary>
+        /// <returns>Die ID der Kopie; 0, wenn die Quellzeile fehlt.</returns>
+        private static int ProjektzeileKopieren(DbVorgang v, string tabelle, int id, int projektZiel)
+        {
+            List<string> spalten = SpaltenImVorgang(v, tabelle);
+            var ziel = new List<string>();
+            var quelle = new List<string>();
+            var ps = new List<DbParam>();
+            foreach (string spalte in spalten)
+            {
+                if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+                ziel.Add("[" + spalte + "]");
+                if (string.Equals(spalte, "ID_Projekt", StringComparison.OrdinalIgnoreCase))
+                {
+                    quelle.Add("?");
+                    ps.Add(new DbParam("@p", projektZiel));
+                }
+                else quelle.Add("[" + spalte + "]");
+            }
+            ps.Add(new DbParam("@id", id));
+            if (v.Ausfuehren("INSERT INTO [" + tabelle + "] (" + string.Join(", ", ziel) + ") SELECT " +
+                             string.Join(", ", quelle) + " FROM [" + tabelle + "] WHERE ID = ?", ps.ToArray()) != 1)
+                return 0;
+            int neu = Convert.ToInt32(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+
+            if (PROJEKTKINDER.TryGetValue(tabelle, out (string Tabelle, string Fk)[] kinder))
+            {
+                foreach ((string kind, string fk) in kinder)
+                {
+                    var kz = new List<string>();
+                    var kq = new List<string>();
+                    var kp = new List<DbParam>();
+                    foreach (string spalte in SpaltenImVorgang(v, kind))
+                    {
+                        if (string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)) continue;
+                        kz.Add("[" + spalte + "]");
+                        if (string.Equals(spalte, fk, StringComparison.OrdinalIgnoreCase))
+                        { kq.Add("?"); kp.Add(new DbParam("@fk", neu)); }
+                        else if (string.Equals(spalte, "ID_Projekt", StringComparison.OrdinalIgnoreCase))
+                        { kq.Add("?"); kp.Add(new DbParam("@p", projektZiel)); }
+                        else kq.Add("[" + spalte + "]");
+                    }
+                    kp.Add(new DbParam("@alt", id));
+                    v.Ausfuehren("INSERT INTO [" + kind + "] (" + string.Join(", ", kz) + ") SELECT " +
+                                 string.Join(", ", kq) + " FROM [" + kind + "] WHERE [" + fk + "] = ? ORDER BY ID",
+                                 kp.ToArray());
+                }
+            }
+            return neu;
+        }
+
+        /// <summary>Die Spalten einer Tabelle — auf der Verbindung des Vorgangs gelesen.</summary>
+        private static List<string> SpaltenImVorgang(DbVorgang v, string tabelle)
+        {
+            var liste = new List<string>();
+            DataTable dt = v.Lese("SELECT name FROM pragma_table_info(?)", new DbParam("@t", tabelle));
+            foreach (DataRow r in dt.Rows) liste.Add(Convert.ToString(r["name"], CultureInfo.InvariantCulture));
+            return liste;
         }
     }
 }

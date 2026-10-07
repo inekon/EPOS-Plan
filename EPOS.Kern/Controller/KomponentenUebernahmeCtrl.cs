@@ -330,7 +330,7 @@ namespace WindowsFormsApplication1
             // Die Fachspalten, die das Modell nicht traegt (Sondenfeld, KWKG, Steuer,
             // Quellangaben) - aus dem Schema, VOR dem Vorgang erfragt (AnlagenFachspalten).
             List<string> fachspalten = AnlagenFachspalten.UebertragbareSpalten();
-            int bezuegeVerloren = 0;
+            int bezuegeVerloren = 0, bezuegeKopiert = 0;
             var neueGeraeteIds = new List<int>();     // Reihenfolge = quellGeraete
             var neuePufferNachName = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 
@@ -431,7 +431,9 @@ namespace WindowsFormsApplication1
 
                     // Was das Modell nicht traegt, kommt aus der Quellzeile nach - derselbe
                     // Kernweg wie bei der Flottenstudie (AnlagenFachspalten.Uebertragen).
-                    bezuegeVerloren += AnlagenFachspalten.Uebertragen(v, fachspalten, a.ID, neueAnlage);
+                    AnlagenFachspalten.Ausgang aus = AnlagenFachspalten.Uebertragen(v, fachspalten, a.ID, neueAnlage);
+                    bezuegeVerloren += aus.Verloren;
+                    bezuegeKopiert += aus.Kopiert;
                 }
 
                 v.Commit();
@@ -439,6 +441,11 @@ namespace WindowsFormsApplication1
                 if (bezuegeVerloren > 0)
                     warnungen.Add(string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.BK_KOMP_HINW_PROJEKTBEZUG, bezuegeVerloren));
+                // Eine mitkopierte Projektzeile (Quellprofil, Kaeltemaschine) erscheint im
+                // Zielprojekt neu - das geschieht nicht still (Muster BK_KOMP_HINW_KOSTEN).
+                if (bezuegeKopiert > 0)
+                    warnungen.Add(string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.BK_KOMP_HINW_PROJEKTKOPIE, bezuegeKopiert));
             }
             catch (Exception ex)
             {
