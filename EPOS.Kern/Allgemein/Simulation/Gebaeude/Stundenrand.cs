@@ -108,6 +108,20 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>
+        /// <b>Der Raumeinfluss der Heizkurve (AK3, H2; Entwurf AK3 Festlegung 23)</b>: derselbe Rand mit dem Vorlauf der
+        /// Übergabe um <paramref name="anhebungK"/> [K] angehoben, oben gekappt an <paramref name="obenC"/> [°C] (NaN = keine
+        /// Grenze) und nie unter dem bisherigen Vorlauf. Ohne Übergabe, ohne Vorlauf oder ohne positive Anhebung derselbe
+        /// Rand, Zeichen für Zeichen.
+        /// </summary>
+        internal Stundenrand MitAnhebung(double anhebungK, double obenC)
+        {
+            if (!MitUebergabe || double.IsNaN(VorlaufC) || !(anhebungK > 0.0)) return this;
+            double ziel = VorlaufC + anhebungK;
+            if (!double.IsNaN(obenC) && ziel > obenC) ziel = Math.Max(VorlaufC, obenC);
+            return ziel == VorlaufC ? this : this with { VorlaufC = ziel };
+        }
+
         /// <summary>Die Schranke der Anlagenverfügbarkeit dieser Stunde [W]; NaN = keine (AK2).</summary>
         internal double VerfuegbarkeitW { get; private init; }
 

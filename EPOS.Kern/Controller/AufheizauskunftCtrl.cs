@@ -37,7 +37,9 @@ namespace WindowsFormsApplication1
             sim.KlimakalenderLesen(idKlimaregion);
             if (!sim.AufheizvorgabeProjekt.An && !auchOhneSchalter) return null;
             // E97: der benannte Parameter statt der Testnaht AufheizvorgabeProjekt (Setter) - gilt nur für diesen Aufruf.
-            return sim.AufheizbemessungEinesGebaeudes(gebaeude, auchOhneSchalter: auchOhneSchalter);
+            Aufheizauskunft a = sim.AufheizbemessungEinesGebaeudes(gebaeude, auchOhneSchalter: auchOhneSchalter);
+            // Festlegung 20: mit Stufe AK3 rechnet die Auskunft auf dem Profilweg - benannt im Datenobjekt (W4b).
+            return a != null && sim.Ak3Rueckstufe ? a with { Rueckstufe = Ak3Kernstufe.Rueckstufetext } : a;
         }
 
         /// <summary>

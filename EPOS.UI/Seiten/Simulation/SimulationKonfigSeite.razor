@@ -1336,9 +1336,13 @@
             string? stufe = _parameter.Anlagenkopplung;
             if (!WindowsFormsApplication1.Waermeuebergabevorgaben.StufeGebaut(stufe))
                 return string.Format(Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT, Kopplungsname(stufe));
-            return stufe == WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1
-                ? Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1
-                : Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS;
+            // AK3 (E102 Q-AK3-1): der geschlossene Kreis mit seinem Erklärtext - Rückwirkung je Stunde, Rechenzeit höher.
+            return stufe switch
+            {
+                WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK1 => Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AK1,
+                WindowsFormsApplication1.DbWerte.ANLAGENKOPPLUNG_AK3 => Resource.AK3_SIMKONF_HRL_ANLAGENKOPPLUNG,
+                _ => Resource.SIMKONF_HRL_ANLAGENKOPPLUNG_AUS
+            };
         }
     }
 

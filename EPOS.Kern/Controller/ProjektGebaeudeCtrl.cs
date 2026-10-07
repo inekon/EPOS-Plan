@@ -203,6 +203,9 @@ namespace WindowsFormsApplication1
             // Der wirksame U-Wert der Bodenplatte (E65, neunter Sichtneubau): NULL-ERHALTEND beim Namen gelesen -
             // auf einer Sicht ohne die Spalte bleibt er null (Erdreichkorrektur nach DIN EN ISO 13370).
             item.Erdreich_U_Wirksam = ZahlOderNull(row, GebaeudeSchema.SPALTE_ERDREICH_U_WIRKSAM);
+            // Der Raumeinfluss der Heizkurve (AK3, zehnter Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer
+            // Sicht ohne die Spalte bleibt er null (aus).
+            item.Heizkurve_Raumeinfluss = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS);
             return item;
         }
 

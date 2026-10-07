@@ -624,6 +624,60 @@ namespace WindowsFormsApplication1
             KuehlkreisSchreiben(k, stamm, zeilen);
             // ANLAGENKOPPLUNG AK2 (Konzept 9.4, 5.5): Komfort neben Restbedarf - nur mit Fahrplan.
             KomfortSchreiben(k, stamm, zeilen);
+            // ANLAGENKOPPLUNG AK3 (Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur mit Wert.
+            Ak3Schreiben(k, stamm);
+        }
+
+        /// <summary>Überschrift des Abschnitts Anlagenkopplung AK3 — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_AK3 = "Anlagenkopplung AK3 – geschlossener Kreis (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tafel des Kreises — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_AK3 =
+            "Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück. Gezählt werden die Durchläufe des Kreises je Stunde, die Wechsel des Betriebsfalls, die Stunden, in denen die Schranke des Angebots eine Zone begrenzte, die Stunden mit leerem Heizungspuffer und die Stunden mit Restbedarf der Kaskade.";
+
+        /// <summary>Die Spaltenköpfe der Tafel des Kreises — zugleich Schlüssel der Übersetzung.</summary>
+        internal static readonly string[] TITEL_AK3 =
+        {
+            "Durchläufe Mittel [–]", "Durchläufe Höchstwert [–]", "Fallwechsel [–]",
+            "An der Schranke [h/a]", "Speicher leer [h/a]", "Restbedarf [h/a]"
+        };
+
+        /// <summary>
+        /// <b>ANLAGENKOPPLUNG AK3 — die Kennzahlen des geschlossenen Kreises</b> (Entwurf AK3 Festlegung 22): eine Tafel
+        /// mit der Projektzeile (Durchläufe Mittel und Höchstwert, Fallwechsel, Stunden an der Schranke, Stunden mit
+        /// leerem Speicher, Restbedarfsstunden) und dem Satz, was gezählt wird. <b>Der Abschnitt entfällt</b>, wenn der
+        /// Lauf den Kreis nicht rechnete (<c>Ak3_Durchlaeufe_Mittel</c> NULL) — jedes Projekt ohne Stufe AK3.
+        /// </summary>
+        private static void Ak3Schreiben(WordKontext k, VariantenDaten stamm)
+        {
+            Ak3Kennzahlen a = Ak3Kennzahlen.Aus(stamm?.Ergebnis?.Energiebedarf);
+            if (a == null) return;
+
+            int rest = k.Inhaltsbreite - 5 * 1500;
+            int[] b = { 1500, 1500, 1500, 1500, 1500, rest };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            for (int i = 0; i < TITEL_AK3.Length; i++)
+                kopf.Append(k.Zelle(TITEL_AK3[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            string[] werte =
+            {
+                k.F(a.DurchlaeufeMittel, 2),
+                a.DurchlaeufeMax is int m ? k.F(m, 0) : "—",
+                a.Fallwechsel is int f ? k.F(f, 0) : "—",
+                a.SchrankeStundenH is int s ? k.F(s, 0) : "—",
+                a.SpeicherLeerStundenH is int l ? k.F(l, 0) : "—",
+                a.RestbedarfStundenH is int r ? k.F(r, 0) : "—",
+            };
+            var zeile = new TableRow();
+            for (int i = 0; i < werte.Length; i++)
+                zeile.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Right));
+            t.Append(zeile);
+
+            k.Ueberschrift2(UEBERSCHRIFT_AK3);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_AK3);
         }
 
         /// <summary>Überschrift des Abschnitts Komfort (Anlagenkopplung AK2) — zugleich Schlüssel der Übersetzung.</summary>

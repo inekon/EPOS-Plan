@@ -973,6 +973,10 @@ namespace EPOS.Kern.Tests
                 StandardlastprofilPvSchema.Ausfuehren(null);
                 // Schritt FlaechenherkunftSchema.SCHRITT (G5-0): Tab_Bauteil.Flaechenherkunft, leer. Wiederholbar.
                 FlaechenherkunftSchema.Ausfuehren(null);
+                // Schritt Ak3Schema.SCHRITT (AK3, Festlegungen 22 und 23): Heizkurve_Raumeinfluss an beiden
+                // Gebaeudetabellen samt zehntem Sichtneubau, die Kennzahlen des Kreises an Tab_ErgebnisEnergiebedarf,
+                // leer. ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
+                Ak3Schema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

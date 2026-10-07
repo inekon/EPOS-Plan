@@ -350,6 +350,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Herkunft der Bauteilfläche; die Spalte kommt leer an (= Bestand).
             new Stufe(FlaechenherkunftSchema.SCHRITT, Art.Ddl,
                       "Herkunft der Bauteilfläche (Mengensatz, Raumgrenze, Körper, schematisch)"),
+            // Ein älteres Paket führt keinen Raumeinfluss der Heizkurve und keine Kennzahlen des Kreises; die Spalten
+            // kommen leer an (Raumeinfluss aus, „nicht erhoben").
+            new Stufe(Ak3Schema.SCHRITT, Art.Ddl,
+                      "Stufe AK3: Raumeinfluss der Heizkurve am Gebäude, Kennzahlen des geschlossenen Kreises im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

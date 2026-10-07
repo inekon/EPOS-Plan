@@ -30,11 +30,11 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         [Fact]
-        public void Die_Nummer_ist_197_das_Ziel_und_die_Paketanhebung_fuehrt_DDL()
+        public void Die_Nummer_ist_197_das_Ziel_umfasst_sie_und_die_Paketanhebung_fuehrt_DDL()
         {
             Assert.Equal(StandardlastprofilPvSchema.SCHRITT + 1, FlaechenherkunftSchema.SCHRITT);
             Assert.Equal(197, FlaechenherkunftSchema.SCHRITT);
-            Assert.Equal(FlaechenherkunftSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= FlaechenherkunftSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == FlaechenherkunftSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Null(s.Umformung);

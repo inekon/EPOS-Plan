@@ -129,7 +129,11 @@ namespace WindowsFormsApplication1
                     ? simulation_wp?.Ak3Kapazitaet(z.Modell.ID, z.Fahrplan) : null;
                 erzeuger.Add(wp ?? (IErzeugerkapazitaet)new FesteKapazitaet(z.Fahrplan));
             }
-            var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()));
+            var kreis = new Anlagenkopplung(gebaeude, erzeuger, new Speicherleser(RegistrySpeicher()))
+            {
+                // H2 (Festlegung 23, Q-AK3-2): nur Gebäude mit Heizkurve und k_R > 0; ohne solches kein Raumeinfluss.
+                Raumeinfluss = Raumeinfluss.AusGebaeuden(weg.Gebaeude.Select(e => e.Zeile).ToList()),
+            };
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
             WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
             if (erste != null)

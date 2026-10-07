@@ -421,7 +421,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Pendelhaus (7)", f.Gebaeude);
             Assert.Contains("Probeerzeuger", f.Beteiligte);
             Assert.Contains(Anlagenkopplung.HOECHSTZAHL + " Durchläufe", f.LetzterStand);
-            Assert.Contains("Stunde " + f.Stunde, f.Message);
+            // W4b: die Meldung kommt aus den Ressourcen (Sprache des Läufers) - sie nennt Stunde und Gebäude.
+            Assert.Contains(" " + f.Stunde.ToString(System.Globalization.CultureInfo.InvariantCulture) + " ", f.Message);
+            Assert.Contains(f.Gebaeude, f.Message);
             Assert.DoesNotContain("Produkt", f.Abweichung);
             Assert.DoesNotContain("θ 0 K, Φ 0 W", f.Abweichung);
             _aus.WriteLine(f.Message);

@@ -1,6 +1,6 @@
 # Protokoll G5-Nachbesserung — Körpervergleich an echten HottCAD-Dateien (07.10.2026)
 
-**Sitzung:** IFC / Gebäudeimport, Statuszeile **#806**. Commits: `2b0dc69be` (Ohrenschnitt), `cb251e48c` (Bezugsgrößen), `bc247d1fb` (Meldungen je Bauteilart, Aussparung, Körperrest).
+**Sitzung:** IFC / Gebäudeimport, Statuszeile **#808**. Commits: `2b0dc69be` (Ohrenschnitt), `cb251e48c` (Bezugsgrößen), `bc247d1fb` (Meldungen je Bauteilart, Aussparung, Körperrest).
 **Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md); Vorgänger [G5-1 und G5-2](2026-10-07_G5-1_G5-2_Bauteilkoerper_Oeffnungen.md).
 
 ## 1 Anlass
@@ -37,7 +37,7 @@ Der Anwender importierte unter Windows zwei echte HottCAD-Dateien. Der Import me
 
 Abnahmefilter 895 bestanden, 4 übersprungen; UI-Tests 136/136; Kern und Windows-Schale 0 Fehler; Referenzlauf der acht CI-Projekte gegen `2026-10-07_R40_Erdreichquellen` PASS. Rechenweg unverändert.
 
-## 6 Gate 806
+## 6 Gate 808
 
 Hauptbaum `a9e2e120c`, 88 min: 20 723 Tests, 20 717 grün, 6 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 775, EPOS.Kern 11 974 mit 5 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 22/22 gegen `2026-10-07_R40_Erdreichquellen` PASS, 677/677 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 498 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; UI-Tests Gebäudeimport/Ansicht/Aufbau 136/136.
 

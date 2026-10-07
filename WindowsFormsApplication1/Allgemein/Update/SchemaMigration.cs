@@ -5262,6 +5262,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_FLAECHENHERKUNFT = FlaechenherkunftSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="Ak3Schema.SCHRITT"/> — <b>die Stufe AK3</b> (Entwurf AK3, Festlegungen 22 und 23):
+        /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Neubau der
+        /// Sicht <c>Abfrage_Projektgebaeude</c> und sechs Kennzahlen des geschlossenen Kreises an
+        /// <c>Tab_ErgebnisEnergiebedarf</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer (Raumeinfluss aus, „nicht erhoben").</para>
+        /// </summary>
+        public const int SCHRITT_AK3 = Ak3Schema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7656,6 +7666,13 @@ namespace WindowsFormsApplication1
                         "Der Gebaeudeimport koennte den Weg der Bauteilflaeche (Mengensatz, Raumgrenze, Koerper, schematisch) " +
                         "nicht speichern. KEIN Rechenergebnis aendert sich - die Spalte entsteht leer.",
                         Schritt_Flaechenherkunft),
+            // STUFE AK3: Raumeinfluss der Heizkurve und Kennzahlen des Kreises. Quelle ist Ak3Schema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_AK3,
+                        "Tab_Gebaeude, Tab_Gebaeude_STAMM: Heizkurve_Raumeinfluss; Sicht Abfrage_Projektgebaeude; " +
+                        "Tab_ErgebnisEnergiebedarf: Kennzahlen des Kreises (Ak3_*)",
+                        "Der Raumeinfluss der Heizkurve liesse sich nicht pflegen und die Kennzahlen des geschlossenen Kreises " +
+                        "nicht speichern. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_Ak3),
         };
 
         /// <summary>
@@ -14336,6 +14353,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Herkunft der Bauteilflaeche - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Stufe AK3" — Anlass und Wirkung stehen bei <see cref="SCHRITT_AK3"/>, die Anweisungen bei
+        /// <see cref="Ak3Schema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Ak3(Lauf l)
+        {
+            string nr = Ak3Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in Ak3Schema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = Ak3Schema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!Ak3Schema.Vollstaendig())
+            {
+                l.LetzterFehler = "Heizkurve_Raumeinfluss, die Kennzahlen des Kreises oder die Sicht des zehnten Durchgangs " +
+                                  "stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Stufe AK3 - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

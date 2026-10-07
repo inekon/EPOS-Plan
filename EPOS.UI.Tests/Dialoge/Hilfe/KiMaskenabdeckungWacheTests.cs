@@ -327,8 +327,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KonditionierungReiter und KonditionierungMatrix, dieselben Katalogfelder): 38 → 22.
         new("GebaeudeStammblattFelder", 23, "die Felder des Katalogeditors (Maske Form_Gebaeude_Admin); die Fensterzeile " +
             "des Hüll-Rasters ist gerechnet"),
-        new("GebaeudeWaermeuebergabeFelder", 13, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
-            "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster"),
+        new("GebaeudeWaermeuebergabeFelder", 14, "Schnellwahl und freies Feld des Proportionalbands sind EIN Katalogfeld " +
+            "(proportionalband); das Zeitprogramm ist das Feld sollwertprofil und steht im Baustein Wochenraster; " +
+            "der Raumeinfluss der Heizkurve ist heizkurve_raumeinfluss (AK3-W4b)"),
         new("GebaeudeWohnflaecheDialog", 5, "der Schalter „dezentral“ steht in beiden Zweigen (mit und ohne Zone) - EIN Katalogfeld"),
         new("GebaeudetypDialog", 6, "Name, Beschreibung und Kurvenzahl von „Neu…“ gehören zur Aktion Anlegen (KI‑D‑Q11)"),
         new("GesetzeskatalogDialog", 1),
