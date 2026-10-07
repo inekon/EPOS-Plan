@@ -902,6 +902,16 @@ rechnet alle zweiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `78b62ac35c57bafe4513dedf9030be09ee93def247eb7ad649117e20c618781c`** (Größe wie vorher). **Die Basis
 > bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht CI-Projekte gegen R40 ist PASS.
 
+> **Nachtrag — Schemaschritt 199 (Herkunft des Nordwinkels), Basis unverändert.**
+> `NordrichtungSchema` (199 = `Ak3Schema.SCHRITT + 1`) legt an `Tab_Importquelle` die Spalte `Nordwinkel_Herkunft` mit
+> Prüfklausel an (`ANNAHME`, `DATEI`, `EINGABE`; Nachfüllen nach dem Nordwinkel, wiederholbar). `Tab_Importquelle` hat in der
+> Testdatenbank keine Zeilen (kein Referenzprojekt hat eine Importquelle). Die Testdatenbank steht auf **199**
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok): **89 698 304 Byte, LFS-SHA-256
+> `352e8edc325ca9a1ffd604b5b3cfd3087e507a10d57e11558c929e40d2e9b8d4`** (vorher
+> `b4d6a95afa78c842f976e1c1c152bc21e2c1626c02723b4c80b65d43f42b0f61`, Größe gleich). **Die Basis
+> `2026-10-07_R41_Erdreichpruefung` bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht
+> CI-Projekte gegen R41 ist PASS.
+
 > **Nachtrag — Schemaschritt 198 (Stufe AK3: Raumeinfluss der Heizkurve, Kennzahlen des Kreises), Basis unverändert.**
 > `Ak3Schema` (198 = `FlaechenherkunftSchema.SCHRITT + 1`) legt die nullbare Spalte `Heizkurve_Raumeinfluss` an
 > `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` an, baut die Sicht `Abfrage_Projektgebaeude` zum zehnten Mal neu (105 Spalten)
