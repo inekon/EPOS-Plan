@@ -9237,7 +9237,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Projektzeile(n) des Quellprojekts (Quellprofil, Kältemaschine, Wechselrichter) wurden als Projektkopie ins Ziel übernommen. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_PROJEKTKOPIE {
             get {

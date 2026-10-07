@@ -6232,7 +6232,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>{0} reference(s) to a source profile or chiller of the source project could neither be matched nor copied in the target and were left empty.</value>
   </data>
   <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
-    <value>{0} source profile(s) or chiller(s) of the source project were copied into the target project.</value>
+    <value>{0} project record(s) of the source project (source profile, chiller, inverter) were copied into the target project.</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>

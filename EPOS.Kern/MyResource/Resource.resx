@@ -6248,7 +6248,7 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>{0} Verweis(e) auf ein Quellprofil oder eine Kältemaschine des Quellprojekts ließen sich im Ziel weder zuordnen noch kopieren und bleiben leer.</value>
   </data>
   <data name="BK_KOMP_HINW_PROJEKTKOPIE" xml:space="preserve">
-    <value>{0} Quellprofil(e) bzw. Kältemaschine(n) des Quellprojekts wurden als Projektkopie ins Ziel übernommen.</value>
+    <value>{0} Projektzeile(n) des Quellprojekts (Quellprofil, Kältemaschine, Wechselrichter) wurden als Projektkopie ins Ziel übernommen.</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>

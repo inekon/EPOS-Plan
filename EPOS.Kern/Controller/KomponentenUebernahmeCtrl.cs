@@ -421,6 +421,7 @@ namespace WindowsFormsApplication1
                     AnlagenFachspalten.KinderAusgang kinder = AnlagenFachspalten.AnlagenkinderUebertragen(
                         v, a.ID, neueAnlage, KinderAuftrag(plan, quellGeraete, neueGeraeteIds, pufferAbbildung));
                     KinderMelden(a.Bezeichner, kinder, kinderHinweise);
+                    bezuegeKopiert += kinder.Projektkopien;
                 }
 
                 v.Commit();
@@ -502,6 +503,16 @@ namespace WindowsFormsApplication1
         private static bool IstPuffer(GewerkPlan p)
         { return string.Equals(p.Geraetetabelle, TAB_PUFFER, StringComparison.OrdinalIgnoreCase); }
 
+        private static bool IstPhotovoltaik(GewerkPlan p)
+        { return string.Equals(p.Geraetetabelle, "Tab_PV", StringComparison.OrdinalIgnoreCase); }
+
+        /// <summary>Führt das Schema die Strangtabelle samt Modulverweis (Schritt 66)?</summary>
+        private static bool StrangmoduleVorhanden()
+        {
+            return DataRepository.SpaltenVonTabelle("Z_AnlageStrang")
+                .Exists(s => string.Equals(s, "ID_PV", StringComparison.OrdinalIgnoreCase));
+        }
+
         private static bool IstStromspeicher(GewerkPlan p)
         { return string.Equals(p.Geraetetabelle, "Tab_Stromspeicher", StringComparison.OrdinalIgnoreCase); }
 
@@ -572,6 +583,19 @@ namespace WindowsFormsApplication1
             if (plan == null) return null;
             try
             {
+                // PHOTOVOLTAIK: Das Modul je Strang (Z_AnlageStrang.ID_PV) ist ebenso verbaut
+                // (Anwenderentscheid 07.10.2026, dieselbe Regel wie GeraeteWaisen) und kommt
+                // bei der Übernahme als Projektkopie mit.
+                if (IstPhotovoltaik(plan) && StrangmoduleVorhanden())
+                    return DataRepository.GetDataTable(
+                        "SELECT * FROM [" + plan.Geraetetabelle + "] WHERE [" + SPALTE_ID + "] IN (" +
+                        "SELECT [" + plan.AnlagenFk + "] FROM [" + TAB_ANLAGEN + "] " +
+                        "WHERE [" + SPALTE_ID_PROJEKT + "] = ? AND " + TypFilter(plan) + ") " +
+                        "OR [" + SPALTE_ID + "] IN (SELECT s.ID_PV FROM Z_AnlageStrang s INNER JOIN [" + TAB_ANLAGEN +
+                        "] a ON a.[" + SPALTE_ID + "] = s.ID_Anlage WHERE a.[" + SPALTE_ID_PROJEKT + "] = ? AND " +
+                        TypFilter(plan, "a") + ") " +
+                        "ORDER BY [" + SPALTE_ID + "]",
+                        new DbParam("@p", idProjekt), new DbParam("@p2", idProjekt));
                 return DataRepository.GetDataTable(
                     "SELECT * FROM [" + plan.Geraetetabelle + "] WHERE [" + SPALTE_ID + "] IN (" +
                     "SELECT [" + plan.AnlagenFk + "] FROM [" + TAB_ANLAGEN + "] " +

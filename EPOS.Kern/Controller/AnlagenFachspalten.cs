@@ -437,6 +437,15 @@ namespace WindowsFormsApplication1
             };
 
         /// <summary>
+        /// Zieltabellen eines Projektbezugs, deren Quellzeile ohne Gegenstelle als PROJEKTKOPIE
+        /// ins Zielprojekt kommt (samt <see cref="PROJEKTKINDER"/>, Muster Quellprofil/Kältemaschine;
+        /// Anwenderentscheid 07.10.2026): der Wechselrichter eines Strangs — ohne ihn rechnete
+        /// der Strang anders. Weitere Stränge mit demselben Wechselrichter teilen die eine Kopie.
+        /// </summary>
+        public static readonly HashSet<string> PROJEKTBEZUG_KOPIE =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Tab_Wechselrichter" };
+
+        /// <summary>
         /// Projektverweise, ohne die die Kindzeile keinen Sinn trägt: Fehlt die Gegenstelle im
         /// Zielprojekt, wird die ganze Kindzeile weggelassen (ein Parallelverbund ohne Puffer).
         /// </summary>
@@ -530,6 +539,8 @@ namespace WindowsFormsApplication1
             public int Kopiert;
             /// <summary>Kindzeilen, die ohne ihren tragenden Projektverweis weggelassen wurden.</summary>
             public int Weggelassen;
+            /// <summary>Projektzeilen (<see cref="PROJEKTBEZUG_KOPIE"/>), die als Projektkopie ins Ziel kamen.</summary>
+            public int Projektkopien;
             /// <summary>Bezeichner der Quellzeilen ohne Gegenstelle im Zielprojekt (je Bezeichner einmal).</summary>
             public List<string> FehlendeBezuege = new List<string>();
             /// <summary>Kindtabellen, deren Kopie scheiterte (nur mit <see cref="KinderAuftrag.FehlerMelden"/>).</summary>
@@ -598,6 +609,7 @@ namespace WindowsFormsApplication1
                 if (auftrag.FehlerMelden) v.Ausfuehren("SAVEPOINT " + sicherung);
                 int kopiert = 0, weggelassen = 0;
                 var fehlend = new List<string>();
+                var kopien = new List<long>();
                 try
                 {
                     DataTable quelle = v.Lese("SELECT * FROM [" + tabelle + "] WHERE [" + fk + "] = ? ORDER BY ID",
@@ -606,7 +618,7 @@ namespace WindowsFormsApplication1
                     {
                         if (KindzeileKopieren(v, tabelle, fk, spalten, zeile, idZiel, projektZiel, fremd, kostenfaktor,
                                               anker, zuordnung, gegenstellen, auftrag.Abbildung, auftrag.NurAbbildung,
-                                              fehlend, out long neu))
+                                              fehlend, kopien, out long neu))
                         {
                             karte[Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture)] = neu;
                             kopiert++;
@@ -620,11 +632,13 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren("ROLLBACK TO " + sicherung);
                     v.Ausfuehren("RELEASE " + sicherung);
                     karte.Clear();
+                    gegenstellen.Clear();      // zurückgenommene Projektkopien gelten nicht mehr
                     ausgang.GescheiterteTabellen.Add(tabelle);
                     continue;
                 }
                 ausgang.Kopiert += kopiert;
                 ausgang.Weggelassen += weggelassen;
+                ausgang.Projektkopien += kopien.Count;
                 foreach (string f in fehlend)
                     if (!ausgang.FehlendeBezuege.Contains(f)) ausgang.FehlendeBezuege.Add(f);
             }
@@ -641,7 +655,8 @@ namespace WindowsFormsApplication1
                                               Dictionary<string, Dictionary<long, long>> zuordnung,
                                               Dictionary<string, Dictionary<long, long?>> gegenstellen,
                                               IReadOnlyDictionary<string, IReadOnlyDictionary<int, int>> abbildung,
-                                              ISet<string> nurAbbildung, List<string> fehlend, out long neueId)
+                                              ISet<string> nurAbbildung, List<string> fehlend, List<long> kopien,
+                                              out long neueId)
         {
             neueId = 0;
             long alteId = Convert.ToInt64(zeile["ID"], CultureInfo.InvariantCulture);
@@ -681,6 +696,17 @@ namespace WindowsFormsApplication1
                     {
                         long quellId = Convert.ToInt64(alt, CultureInfo.InvariantCulture);
                         long? gegen = Gegenstelle(v, zieltabelle, quellId, projektZiel, gegenstellen, abbildung, nurAbbildung);
+                        if (!gegen.HasValue && PROJEKTBEZUG_KOPIE.Contains(zieltabelle) &&
+                            quellId <= int.MaxValue && projektZiel <= int.MaxValue)
+                        {
+                            int kopie = ProjektzeileKopieren(v, zieltabelle, (int)quellId, (int)projektZiel);
+                            if (kopie > 0)
+                            {
+                                gegen = kopie;
+                                gegenstellen[zieltabelle][quellId] = kopie;
+                                kopien.Add(kopie);
+                            }
+                        }
                         if (gegen.HasValue) neu = gegen.Value;
                         else
                         {

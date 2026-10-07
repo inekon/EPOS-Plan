@@ -64,7 +64,8 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Photovoltaik 1045 → 1007: Beide Stränge kommen mit. Der Wechselrichter zeigt auf den
         /// gleichnamigen des Ziels; das Modul des ersten Strangs auf die Gerätekopie der Anlage,
-        /// das des zweiten — im Ziel ohne Gegenstück — bleibt leer und wird benannt.
+        /// das des zweiten — ein Strangmodul, verbaut wie das der Anlage — auf seine eigene
+        /// Gerätekopie (Anwenderentscheid 07.10.2026).
         /// </summary>
         [Fact]
         public void Photovoltaik_schluesselt_Wechselrichter_und_Strangmodul_um()
@@ -85,17 +86,21 @@ namespace EPOS.Kern.Tests
                 Assert.Equal((long)wrZiel, Convert.ToInt64(s["ID_Wechselrichter"], CultureInfo.InvariantCulture));
             Assert.Equal(Ganz("SELECT ID_PV FROM Tab_Energieanlagen WHERE ID = ?", ziele[0]),
                          Convert.ToInt32(straenge.Rows[0]["ID_PV"], CultureInfo.InvariantCulture));
-            Assert.Equal(DBNull.Value, straenge.Rows[1]["ID_PV"]);
-            Assert.Contains("Ablytek 6MN6A290", hinweise);
+            int modul2 = Convert.ToInt32(straenge.Rows[1]["ID_PV"], CultureInfo.InvariantCulture);
+            Assert.Equal(1007, Ganz("SELECT ID_Projekt FROM Tab_PV WHERE ID = ?", modul2));
+            Assert.Equal("Ablytek 6MN6A290", Text("SELECT Bezeichner FROM Tab_PV WHERE ID = ?", modul2));
+            Assert.DoesNotContain("Ablytek 6MN6A290", hinweise);
             Assert.DoesNotContain("Muster 2500TL", hinweise);
+            Assert.Equal(1, Ganz("SELECT COUNT(*) FROM Tab_Wechselrichter WHERE ID_Projekt = 1007 AND Bezeichner = 'Muster 2500TL'"));
         }
 
         /// <summary>
-        /// Gegenprobe: Fehlt der Wechselrichter im Ziel, kommen die Stränge trotzdem — ohne
-        /// Wechselrichter —, und der Hinweis nennt ihn.
+        /// Gegenprobe: Fehlt der Wechselrichter im Ziel, kommt er als EINE Projektkopie ins Ziel
+        /// (Anwenderentscheid 07.10.2026), beide Stränge zeigen auf sie, und der Hinweis
+        /// <c>BK_KOMP_HINW_PROJEKTKOPIE</c> meldet sie.
         /// </summary>
         [Fact]
-        public void Ohne_gleichnamigen_Wechselrichter_bleibt_der_Verweis_leer_und_wird_gemeldet()
+        public void Ohne_gleichnamigen_Wechselrichter_kommt_eine_Projektkopie()
         {
             if (!_db.Vorhanden) return;
 
@@ -103,8 +108,14 @@ namespace EPOS.Kern.Tests
                 out string fehler, out string hinweise), fehler);
 
             int ziel = Anlagen(1007, WizardItemClass.PV_TYP)[0];
-            Assert.Equal(2, Ganz("SELECT COUNT(*) FROM Z_AnlageStrang WHERE ID_Anlage = ? AND ID_Wechselrichter IS NULL", ziel));
-            Assert.Contains("Muster 2500TL", hinweise);
+            Assert.Equal(0, Ganz("SELECT COUNT(*) FROM Tab_Wechselrichter WHERE ID_Projekt = 1007 AND Bezeichner = 'Muster 2500TL'") - 1);
+            int kopie = Ganz("SELECT ID FROM Tab_Wechselrichter WHERE ID_Projekt = 1007 AND Bezeichner = 'Muster 2500TL'");
+            Assert.NotEqual(1, kopie);
+            Assert.Equal(2, Ganz("SELECT COUNT(*) FROM Z_AnlageStrang WHERE ID_Anlage = ? AND ID_Wechselrichter = ?", ziel, kopie));
+            Assert.Contains(string.Format(CultureInfo.CurrentCulture, Resource.BK_KOMP_HINW_PROJEKTKOPIE, 1), hinweise);
+            Assert.DoesNotContain("Muster 2500TL", hinweise);
+            // Die Quelle behält ihren Wechselrichter.
+            Assert.Equal(1, Ganz("SELECT COUNT(*) FROM Tab_Wechselrichter WHERE ID = 1 AND ID_Projekt = 1045"));
             // Kein Verweis zeigt ins Quellprojekt.
             Assert.Equal(0, Ganz("SELECT COUNT(*) FROM Z_AnlageStrang s JOIN Tab_Wechselrichter w ON w.ID = s.ID_Wechselrichter " +
                                  "WHERE s.ID_Anlage = ? AND w.ID_Projekt <> 1007", ziel));
