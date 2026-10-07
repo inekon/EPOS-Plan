@@ -69,10 +69,14 @@ namespace WindowsFormsApplication1
         public int FehlendeEntitaeten { get; }
 
         /// <summary>
-        /// HC-5c: der Nordwinkel der Datei [°], wie der Leser ihn liefert (<see cref="GebaeudeAbbild.NordwinkelGrad"/>);
-        /// <c>null</c> = die Datei nennt keinen. Geschrieben normiert nach <c>Tab_Importquelle.Nordwinkel_Grad</c>.
+        /// HC-5c/G5-N: der Nordwinkel [°], um den die Azimute des Imports gedreht sind (<see cref="GebaeudeAbbild.NordwinkelWirksamGrad"/>:
+        /// die Vorgabe des Anwenders, sonst der IFC-Dateiwert); <c>null</c> = keiner (Annahme Planoberseite = Nord). Geschrieben
+        /// normiert nach <c>Tab_Importquelle.Nordwinkel_Grad</c>.
         /// </summary>
         public double? NordwinkelGrad { get; init; }
+
+        /// <summary>G5-N (N6): die Herkunft von <see cref="NordwinkelGrad"/> — Datei, Eingabe oder Annahme.</summary>
+        public Nordwinkelherkunft NordwinkelHerkunft { get; init; }
 
         /// <summary>
         /// Schneidet jeden Pfadanteil ab — unter Windows <c>\</c>, unter iOS und Linux <c>/</c>, und

@@ -55,6 +55,7 @@ namespace WindowsFormsApplication1
         {
             DataTable t = DataRepository.GetDataTable(
                 "SELECT " + QUELLSPALTEN + (RaumgrundrissSchema.NordwinkelVorhanden() ? ", q.\"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\"" : "") +
+                (NordherkunftVorhanden() ? ", q.\"" + SPALTE_NORDWINKEL_HERKUNFT + "\"" : "") +
                 " FROM \"" + ImportzuordnungSchema.TAB_QUELLE + "\" q " +
                 "WHERE q.\"ID_Gebaeude\" = ? ORDER BY q.\"ID\" DESC",
                 new DbParam("@g", idGebaeude));
@@ -288,7 +289,7 @@ namespace WindowsFormsApplication1
                         BaustoffCtrl.Fragezeichen(ImportzuordnungSchema.Quellspalten.Count) + ")",
                         Quellwerte(idGebaeude, quelle).ToArray());
                     // HC-5c: der Nordwinkel der Datei an derselben Quelle (Schritt RaumgrundrissSchema.SCHRITT).
-                    if (mitNordwinkel) NordwinkelSchreiben(v, idQuelle, quelle.NordwinkelGrad);
+                    if (mitNordwinkel) NordwinkelSchreiben(v, idQuelle, quelle.NordwinkelGrad, quelle.NordwinkelHerkunft);
 
                     string einfuegen = "INSERT INTO \"" + ImportzuordnungSchema.TAB_ZUORDNUNG + "\" (" +
                                        string.Join(", ", ImportzuordnungSchema.Zuordnungsspalten.Select(s => "\"" + s + "\"")) +
@@ -392,7 +393,7 @@ namespace WindowsFormsApplication1
 
         private static ImportquelleModel Quelle(DataRow r)
         {
-            return new ImportquelleModel
+            var m = new ImportquelleModel
             {
                 ID = Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture),
                 ID_Gebaeude = Convert.ToInt32(r["ID_Gebaeude"], CultureInfo.InvariantCulture),
@@ -408,6 +409,9 @@ namespace WindowsFormsApplication1
                 NordwinkelGrad = r.Table.Columns.Contains(RaumgrundrissSchema.SPALTE_NORDWINKEL)
                     ? BaustoffCtrl.ZahlAus(r, RaumgrundrissSchema.SPALTE_NORDWINKEL) : null,
             };
+            m.NordwinkelHerkunft = Nordherkunft(m.NordwinkelGrad,
+                r.Table.Columns.Contains(SPALTE_NORDWINKEL_HERKUNFT) ? BaustoffCtrl.TextAus(r, SPALTE_NORDWINKEL_HERKUNFT) : null);
+            return m;
         }
 
         private static List<ImportzuordnungModel> Zuordnungen(DataTable t)

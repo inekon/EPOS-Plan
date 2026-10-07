@@ -363,6 +363,53 @@ namespace WindowsFormsApplication1
             return Lesestand(zahl, profil);
         }
 
+        /// <summary>
+        /// G5-N (N1–N3): <b>Die Nordrichtung des gelesenen Imports</b> für den Zuordnungsdialog — was die Datei nennt (Wert
+        /// oder nichts), die wirksame Richtung der Planoberseite, ihre Herkunft und die Schnellwahl; <c>null</c> vor dem Lesen.
+        /// </summary>
+        internal GebaeudeNordrichtungDaten NordrichtungDaten() => GebaeudeAusrichtungHuelle.Daten(_ablauf.Abbild);
+
+        /// <summary>
+        /// G5-N (N2): <b>Setzt die Richtung der Planoberseite</b> und liest die Datei damit neu (aus dem Puffer des Ablaufs, die
+        /// Projektdatei bleibt): Alle Azimute, Grundrisse und die Ansicht folgen dem neuen Nordwinkel genau einmal.
+        /// <c>null</c> = keine Eingabe (Dateiwert bzw. Annahme Planoberseite = Nord). Danach ist neu zuzuordnen
+        /// (<see cref="ZuordnenMitNordrichtung"/>).
+        /// </summary>
+        internal GebaeudeLesestand NordrichtungSetzen(double? planoberseiteGrad, CancellationToken abbruch = default)
+        {
+            if (_ablauf.Abbild == null || _profil == null) return new GebaeudeLesestand(false, null, Array.Empty<string>(), Array.Empty<GebaeudeImportMeldung>());
+            _satz = null;
+            int zahl = _ablauf.NordwinkelVorgeben(Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad), null, abbruch);
+            return Lesestand(zahl, _profil);
+        }
+
+        /// <summary>
+        /// G5-N (N2): <see cref="NordrichtungSetzen"/> im Arbeitsfaden (Kulturweitergabe) — eine große Datei liest nicht im
+        /// Oberflächenfaden neu.
+        /// </summary>
+        internal async Task<GebaeudeLesestand> NordrichtungSetzenAsync(double? planoberseiteGrad, CancellationToken abbruch)
+        {
+            if (_ablauf.Abbild == null || _profil == null) return NordrichtungSetzen(planoberseiteGrad, abbruch);
+            _satz = null;
+            double? nordwinkel = Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad);
+            int zahl = await Kulturweitergabe.Starten(() => _ablauf.NordwinkelVorgeben(nordwinkel, null, abbruch), abbruch);
+            return Lesestand(zahl, _profil);
+        }
+
+        /// <summary>
+        /// G5-N (N2): <b>Neu zuordnen mit gesetzter Nordrichtung</b> — liest neu, wenn die Richtung von der wirksamen abweicht,
+        /// und ordnet dann mit <paramref name="anfrage"/> zu. Ein Lesefehler ergibt einen leeren Stand.
+        /// </summary>
+        internal GebaeudeImportStand ZuordnenMitNordrichtung(GebaeudeZuordnungsanfrage anfrage, double? planoberseiteGrad)
+        {
+            if (_ablauf.Abbild == null) return new GebaeudeImportStand();
+            double? neu = Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad);
+            double? vorgabe = _ablauf.Abbild.NordwinkelVorgabeGrad;
+            bool gleich = neu.HasValue == vorgabe.HasValue && (!neu.HasValue || Math.Abs(neu.Value - vorgabe.Value) <= 1e-9);
+            if (!gleich && !NordrichtungSetzen(planoberseiteGrad).Gelesen) return new GebaeudeImportStand();
+            return Zuordnen(anfrage);
+        }
+
         private GebaeudeLesestand Lesestand(int zahl, GebaeudeImportProfil profil)
         {
             List<GebaeudeImportMeldung> meldungen = _ablauf.Meldungen.Select(MeldungDaten).ToList();

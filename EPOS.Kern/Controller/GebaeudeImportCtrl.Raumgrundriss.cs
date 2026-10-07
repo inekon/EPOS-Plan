@@ -106,9 +106,10 @@ namespace WindowsFormsApplication1
         /// Nachtragens, F7). Die Zone kommt aus den Paarungen der Quelle in <c>Tab_Importzuordnung</c> (Ziel Zone, dieselbe
         /// Kennung). Mit <paramref name="vorgang"/> im Vorgang des Aufrufers, sonst in einem eigenen.
         /// </summary>
-        /// <param name="nordwinkelGrad">HC-5c: der frisch gelesene Nordwinkel der Datei; er ersetzt den der Quelle (<c>null</c> = keiner).</param>
+        /// <param name="nordwinkelGrad">HC-5c/G5-N: der wirksame Nordwinkel des frischen Lesens; er ersetzt den der Quelle (<c>null</c> = keiner).</param>
+        /// <param name="nordwinkelHerkunft">G5-N (N6): die Herkunft des Nordwinkels; <c>null</c> = aus dem Wert (Datei bzw. Annahme).</param>
         internal Ergebnis SchreibeRaumgrundrisse(int idImportquelle, IReadOnlyList<Raumgrundriss> grundrisse, DbVorgang vorgang = null,
-                                                 double? nordwinkelGrad = null)
+                                                 double? nordwinkelGrad = null, Nordwinkelherkunft? nordwinkelHerkunft = null)
         {
             bool mitNordwinkel = RaumgrundrissSchema.NordwinkelVorhanden();
             if (!DataRepository.TabelleVorhanden(RaumgrundrissSchema.TAB))
@@ -136,7 +137,7 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren("DELETE FROM \"" + RaumgrundrissSchema.TAB + "\" WHERE \"ID_Importquelle\" = ?",
                                  new DbParam("@q", idImportquelle));
                     GrundrisseEinfuegen(v, idImportquelle, grundrisse, zoneJeKennung);
-                    if (mitNordwinkel) NordwinkelSchreiben(v, idImportquelle, nordwinkelGrad);
+                    if (mitNordwinkel) NordwinkelSchreiben(v, idImportquelle, nordwinkelGrad, nordwinkelHerkunft);
                     v.Commit();
                     return Ergebnis.Gut(idImportquelle);
                 }
@@ -201,18 +202,25 @@ namespace WindowsFormsApplication1
         /// HC-5c: schreibt den Nordwinkel einer Quelle (normiert auf [0, 360), <see cref="RaumgrundrissSchema.Normiert"/>);
         /// <c>null</c> setzt NULL.
         /// </summary>
-        private static void NordwinkelSchreiben(DbVorgang v, int idImportquelle, double? nordwinkelGrad)
+        private static void NordwinkelSchreiben(DbVorgang v, int idImportquelle, double? nordwinkelGrad, Nordwinkelherkunft? herkunft = null)
         {
             double? wert = RaumgrundrissSchema.Normiert(nordwinkelGrad);
             v.Ausfuehren("UPDATE \"" + RaumgrundrissSchema.TAB_QUELLE + "\" SET \"" + RaumgrundrissSchema.SPALTE_NORDWINKEL + "\" = ? WHERE \"ID\" = ?",
                          new DbParam("@n", DbParamTyp.Double) { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value },
                          new DbParam("@q", idImportquelle));
+            // G5-N (N6): die Herkunft, sobald die Spalte steht; ohne Wert ein Nordwinkel aus der Datei, NULL eine Annahme.
+            if (NordherkunftVorhanden())
+                v.Ausfuehren("UPDATE \"" + RaumgrundrissSchema.TAB_QUELLE + "\" SET \"" + SPALTE_NORDWINKEL_HERKUNFT + "\" = ? WHERE \"ID\" = ?",
+                             new DbParam("@h", HerkunftWert(herkunft ?? (wert.HasValue ? Nordwinkelherkunft.Datei : Nordwinkelherkunft.Annahme))),
+                             new DbParam("@q", idImportquelle));
         }
 
         /// <summary>
-        /// HC-5c: <b>Die Nordangabe einer Quelle</b> — Format und Nordwinkel. Die Drehung der Prismenkanten ist der Nordwinkel,
-        /// wenn die Bauteilazimute der Quelle gedreht sind (IFC), sonst 0 (gbXML: die Datei schreibt ihre Azimute selbst) —
-        /// dieselbe Regel wie <see cref="GebaeudeGrundriss.Eingang"/>. Ohne Nordwinkel gilt Modell-Nord = Nord (Vermerk).
+        /// HC-5c/G5-N: <b>Die Nordangabe einer Quelle</b>. Die Drehung der Prismenkanten ist der gespeicherte Nordwinkel — er ist
+        /// bei beiden Formaten der, um den die Bauteilazimute gedreht sind (Vorgabe des Anwenders, beim IFC-Weg sonst der
+        /// Dateiwert; <see cref="GebaeudeAbbild.NordwinkelWirksamGrad"/>), dieselbe Regel wie <see cref="GebaeudeGrundriss.Eingang"/>.
+        /// Die Grundrisse stehen in Modellkoordinaten; eine Änderung der Ausrichtung dreht sie über diesen Wert mit. Ohne
+        /// Nordwinkel gilt Modell-Nord = Nord (Vermerk).
         /// </summary>
         internal static (double Drehung, bool Unbekannt) Nordangabe(int idImportquelle)
         {
@@ -222,8 +230,7 @@ namespace WindowsFormsApplication1
                 new DbParam("@q", idImportquelle));
             if (t == null || t.Rows.Count == 0) return (0.0, true);
             double? nord = BaustoffCtrl.ZahlAus(t.Rows[0], RaumgrundrissSchema.SPALTE_NORDWINKEL);
-            bool ifc = string.Equals(BaustoffCtrl.TextAus(t.Rows[0], "Format"), GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
-            return (ifc ? nord ?? 0.0 : 0.0, !nord.HasValue);
+            return (nord ?? 0.0, !nord.HasValue);
         }
 
         private static List<Raumgrundriss> Grundrisse(DataTable t)
