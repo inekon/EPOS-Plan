@@ -17,7 +17,7 @@ Rote Probe unter Linux für Teil C mit eingelegter Datenbank (2 von 2 rot, je 1 
 
 ## 3 Gate 794
 
-Hauptbaum `6119b3c7`, 87 min: 20 455 Tests, 20 451 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 772, EPOS.Kern 11 709 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 480 Texte, 0 Fundstellen; Windows-Schale 0 Fehler. Nach dem Merge mit KP3-A1d (#794, nur Bericht und Variantenvergleich) gezielt nachgeprüft (siehe Statuszeile).
+Hauptbaum `6119b3c7`, 87 min: 20 455 Tests, 20 451 grün, 4 übersprungen, 0 rot (KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 772, EPOS.Kern 11 709 mit 3 übersprungen); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 21/21 gegen `2026-10-06_R39_Auslegungsheizlast` PASS, 646/646 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 480 Texte, 0 Fundstellen; Windows-Schale 0 Fehler. Nach dem Merge mit KP3-A1d (#794, nur Bericht und Variantenvergleich) gezielt nachgeprüft auf `0bd96a03`: Kern-Filter 0 Fehler, Kern-Tests 279/279, UI-Tests 383/383.
 
 ## 4 Offen
 
