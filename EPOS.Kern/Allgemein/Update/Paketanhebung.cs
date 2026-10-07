@@ -347,6 +347,9 @@ namespace WindowsFormsApplication1
             // Projektkopien seiner Stromverbraucher bleiben, wie sie sind.
             new Stufe(StandardlastprofilPvSchema.SCHRITT, Art.Katalog,
                       "BDEW-Netzbezugsprofile Strom 2025 (P25, S25) im Katalog des Strombedarfs"),
+            // Ein älteres Paket führt keine Herkunft der Bauteilfläche; die Spalte kommt leer an (= Bestand).
+            new Stufe(FlaechenherkunftSchema.SCHRITT, Art.Ddl,
+                      "Herkunft der Bauteilfläche (Mengensatz, Raumgrenze, Körper, schematisch)"),
             // Ein älteres Paket führt keinen Raumeinfluss der Heizkurve und keine Kennzahlen des Kreises; die Spalten
             // kommen leer an (Raumeinfluss aus, „nicht erhoben").
             new Stufe(Ak3Schema.SCHRITT, Art.Ddl,

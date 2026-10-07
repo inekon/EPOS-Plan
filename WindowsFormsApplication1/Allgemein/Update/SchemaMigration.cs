@@ -5255,6 +5255,14 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_STANDARDLASTPROFIL_PV = StandardlastprofilPvSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/> — <b>Herkunft der Bauteilfläche</b> (Abstimmung G5, A4):
+        /// <c>Tab_Bauteil.Flaechenherkunft</c> (MENGENSATZ, RAUMGRENZE, KOERPER, SCHEMATISCH; NULL = Bestand oder von Hand).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalte entsteht leer; der Rechenweg liest sie nicht.</para>
+        /// </summary>
+        public const int SCHRITT_FLAECHENHERKUNFT = FlaechenherkunftSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="Ak3Schema.SCHRITT"/> — <b>die Stufe AK3</b> (Entwurf AK3, Festlegungen 22 und 23):
         /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Neubau der
         /// Sicht <c>Abfrage_Projektgebaeude</c> und sechs Kennzahlen des geschlossenen Kreises an
@@ -7652,6 +7660,12 @@ namespace WindowsFormsApplication1
                         "Der Katalog des Strombedarfs truege die BDEW-Netzbezugsprofile P25 und S25 (Haushalt mit PV-Anlage, " +
                         "mit PV-Anlage und Batteriespeicher) nicht. KEIN Rechenergebnis aendert sich.",
                         Schritt_StandardlastprofilPv),
+            // HERKUNFT DER BAUTEILFLAECHE (G5-0). Quelle ist FlaechenherkunftSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_FLAECHENHERKUNFT,
+                        "Tab_Bauteil.Flaechenherkunft",
+                        "Der Gebaeudeimport koennte den Weg der Bauteilflaeche (Mengensatz, Raumgrenze, Koerper, schematisch) " +
+                        "nicht speichern. KEIN Rechenergebnis aendert sich - die Spalte entsteht leer.",
+                        Schritt_Flaechenherkunft),
             // STUFE AK3: Raumeinfluss der Heizkurve und Kennzahlen des Kreises. Quelle ist Ak3Schema, die Nummer steht allein dort.
             new Schritt(SCHRITT_AK3,
                         "Tab_Gebaeude, Tab_Gebaeude_STAMM: Heizkurve_Raumeinfluss; Sicht Abfrage_Projektgebaeude; " +
@@ -14284,6 +14298,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kaeltespitze je Zone - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Herkunft der Bauteilfläche" — Anlass und Wirkung stehen bei <see cref="SCHRITT_FLAECHENHERKUNFT"/>,
+        /// die Anweisung bei <see cref="FlaechenherkunftSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Flaechenherkunft(Lauf l)
+        {
+            string nr = FlaechenherkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in FlaechenherkunftSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = FlaechenherkunftSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!FlaechenherkunftSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalte Tab_Bauteil.Flaechenherkunft steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Herkunft der Bauteilflaeche - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Anweisung(en) ausgefuehrt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

@@ -51,9 +51,9 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der Schritt hinter der
-        /// zuletzt auf <c>origin</c> liegenden Klasse.
+        /// zuletzt auf <c>origin</c> liegenden Klasse: Schritt 198, hängt an 197 <see cref="FlaechenherkunftSchema"/>.
         /// </summary>
-        public const int SCHRITT = StandardlastprofilPvSchema.SCHRITT + 1;
+        public const int SCHRITT = FlaechenherkunftSchema.SCHRITT + 1;
 
         /// <summary>Die Gebäudespalte an beiden Gebäudetabellen.</summary>
         public const string SPALTE_RAUMEINFLUSS = GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS;
