@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -365,7 +366,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Datei_ohne_Geometrie_meldet_einmal_GEOMETRIE_FEHLT()
         {
-            GebaeudeAbbild a = Lesen(SqprojProbenErzeuger.Standard());
+            GebaeudeAbbild a = Lesen(new SqprojProbenErzeuger().Geschoss("FE", "Erdgeschoss").Raum("R1", "Raum Eins", "FE", null, 20.0)
+                .Flaeche("W1", 1, 3, 10.0, 10.0, 180.0, 90.0).Bezug("E1", "R1", "W1", 1));
             Assert.Single(a.Meldungen, m => m.Schluessel == SqprojGeometrie.GEOMETRIE_FEHLT);
             Assert.All(a.Gebaeude.SelectMany(g => g.Raeume), r => Assert.Null(r.Koerper));
         }

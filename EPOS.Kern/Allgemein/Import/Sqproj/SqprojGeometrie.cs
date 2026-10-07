@@ -531,6 +531,7 @@ namespace WindowsFormsApplication1
             double dicke;
             bool vorgabe = false;
             if (b.DickeM > 0.0) dicke = b.DickeM.Value;
+            else if (AufbauDicke(b.Kennung, p) is double s) dicke = s;
             else if (p.Flaechendicke.TryGetValue(b.Kennung, out double d) && d > 0.0) dicke = d;
             else
             {
@@ -544,6 +545,15 @@ namespace WindowsFormsApplication1
                 Normale = n, Dicke = dicke, Vorgabe = vorgabe,
                 Raeume = b.Nachbarn.Select(x => x.Kennung).Where(k => k != null).ToList(),
             };
+        }
+
+        /// <summary>Die Summe der Schichtdicken des Aufbaus der Fläche (über <c>CatalogDimUUID</c>); <c>null</c> = kein Aufbau mit Schichtdicken.</summary>
+        private static double? AufbauDicke(string kennung, SqprojAbbild p)
+        {
+            SqprojHuellflaeche h = p.Huellflaechen.FirstOrDefault(x => string.Equals(x.Uuid, kennung, StringComparison.OrdinalIgnoreCase));
+            if (h?.AufbauKennung == null || !p.Aufbauten.TryGetValue(h.AufbauKennung, out SqprojAufbau a)) return null;
+            double summe = a.Schichten.Where(s => s.DickeM > 0.0).Sum(s => s.DickeM.Value);
+            return summe > 0.0 ? summe : a.DickeM > 0.0 ? a.DickeM : null;
         }
 
         // ---------------- Raumkörper: Zuordnung Dreieck → Hüllfläche (17.4) ----------------
