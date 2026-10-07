@@ -32,6 +32,18 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Die Herkunft eines Dateikörpers (Datenaustauschkonzept 17.5): sprachneutral, nie gespeichert.
+    /// </summary>
+    internal enum Koerperquelle
+    {
+        /// <summary>Der Körper steht so in der Datei (IFC) — Vorgabe.</summary>
+        Datei,
+
+        /// <summary>Der Kern hat ihn aus den Flächen der Datei gebildet (<see cref="Koerperbildner"/>) — kein unabhängiger Beleg.</summary>
+        AusFlaechen,
+    }
+
+    /// <summary>
     /// <b>Der Körper eines Raums, wie die Datei ihn zeichnet</b> (Datenaustauschkonzept 15.3, Stufe G7f-1): ein
     /// Dreiecksnetz in Weltkoordinaten [m] — x Ost, y Nord des Modells, z oben; die Punkte bleiben im Modellsystem,
     /// so decken sich Körper und Grundriss —, je Dreieck die Normale (vom Raum weg, wo die Datei das hergibt), dazu
@@ -79,6 +91,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Vermerke, aufsteigend und ohne Doppel; leer = exakt gelesen.</summary>
         internal IReadOnlyList<Koerpervermerk> Vermerke { get; init; } = Array.Empty<Koerpervermerk>();
 
+        /// <summary>Die Herkunft des Körpers; <see cref="Koerperquelle.Datei"/>, solange nichts anderes gesetzt ist.</summary>
+        internal Koerperquelle Quelle { get; init; } = Koerperquelle.Datei;
+
+        /// <summary>
+        /// Je Dreieck die Kennung seiner Quellfläche (Fläche bzw. Bauteil der Datei), gleich lang wie <see cref="Dreiecke"/>
+        /// bei einem gebildeten Körper (17.4); leer bei einem Körper aus der Datei.
+        /// </summary>
+        internal IReadOnlyList<string> Quellflaechen { get; init; } = Array.Empty<string>();
+
         /// <summary>Die Zahl der Dreiecke.</summary>
         internal int DreieckZahl => Dreiecke.Count;
 
@@ -94,13 +115,18 @@ namespace WindowsFormsApplication1
             var t = new StringBuilder();
             t.Append("Art ").Append(Art).Append('\n');
             t.Append("Vermerke ").Append(string.Join(",", Vermerke.Select(v => v.ToString()))).Append('\n');
+            // Ein Körper aus der Datei schreibt weder Quelle noch Quellflächen — seine Ausgabe bleibt byteweise wie zuvor.
+            if (Quelle != Koerperquelle.Datei) t.Append("Quelle ").Append(Quelle.ToString()).Append('\n');
+            bool mitQuelle = Quellflaechen.Count == Dreiecke.Count && Quellflaechen.Count > 0;
             foreach (double[] p in PunkteM) t.Append("P ").Append(Z(p[0])).Append(' ').Append(Z(p[1])).Append(' ').Append(Z(p[2])).Append('\n');
             for (int i = 0; i < Dreiecke.Count; i++)
             {
                 int[] d = Dreiecke[i];
                 double[] n = Normalen[i];
                 t.Append("D ").Append(G(d[0])).Append(' ').Append(G(d[1])).Append(' ').Append(G(d[2]))
-                 .Append(" N ").Append(Z(n[0])).Append(' ').Append(Z(n[1])).Append(' ').Append(Z(n[2])).Append('\n');
+                 .Append(" N ").Append(Z(n[0])).Append(' ').Append(Z(n[1])).Append(' ').Append(Z(n[2]));
+                if (mitQuelle) t.Append(" Q ").Append(Quellflaechen[i]);
+                t.Append('\n');
             }
             foreach (int[] k in Randkanten) t.Append("K ").Append(G(k[0])).Append(' ').Append(G(k[1])).Append('\n');
             return t.ToString();

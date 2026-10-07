@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Dreieckszerlegung ebener Vielecke, formatfrei</b> (Datenaustauschkonzept 15.2, 17.2 Nr. 3): der Ohrenschnitt mit
     /// Brückenkanten für nichtkonvexe Vielecke mit Löchern, wie ihn der IFC-Körper (<see cref="IfcRaumkoerper"/>) und der
-    /// formatfreie <c>Koerperbildner</c> gemeinsam nutzen, dazu die Zerlegung eines Vielecks im Raum über seine
+    /// formatfreie <see cref="Koerperbildner"/> gemeinsam nutzen, dazu die Zerlegung eines Vielecks im Raum über seine
     /// Ebene. Feste Startecke, keine Zufallswahl: dieselbe Eingabe ergibt dieselben Dreiecke.
     /// </summary>
     internal static class Polygonnetz
