@@ -16,7 +16,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 # '''Gerät''' – Kälte deckt nur eine Wärmepumpe mit '''Kühlkennlinie''': Kälteleistung und EER je Kühl-Vorlauf über der Außen- bzw. Quellentemperatur. Sie kommt mit dem Herstellerdaten-Import nach VDI 3805 in den Katalog und mit dem Gerät ins Projekt. Im ''Wärmepumpen-Katalog'' zeigt ''nur mit Kühlfunktion'' die Geräte mit Kühlleistung.
 # '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
 # '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Block ''Weitere Einstellungen'' ''Kühlung rechnen'' einschalten.
-# '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell]]).
+# '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf, mit mehreren Zonen je Zone ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell]]); auf der Stufe ''geschlossener Kreis (AK3)'' gleitet der Vorlauf wahlweise mit der [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Kühlkurve]].
 
 {{Diagramm-Anfang|titel=Ein Tag mit Kühlung in EPOS-Plan}}
 '''Heiztag''' – der Heizbedarf des Tages überwiegt:
@@ -108,6 +108,8 @@ Kälte deckt allein die Wärmepumpe im Kühlbetrieb, doch die Kühlung wirkt auf
 | Photovoltaik, Stromspeicher || mehr Eigenverbrauch im Sommer || Eigenstrom deckt Kältestrom mit || <math>\text{Kältestrom} = \text{Kälte} / \mathrm{EER} \cdot (1 + \text{Hilfsstromanteil})</math>; mit eigenem Zähler ohne Eigenstrom
 |-
 | Anlagenkopplung (AK1) || – || die Kühlübergabe begrenzt die Kälte im Raum || fester Kaltwasser-Vorlauf, der kälteste Kühl-Vorlauf der Wärmepumpen im Kühlbetrieb; unter der Vorlaufgrenze mischt das Gebäude hoch
+|-
+| Kühlkurve (AK3) || – || der Vorlauf gleitet mit Außen- und Raumtemperatur || Wärmepumpe und Kältemaschine rechnen je Stunde am Vorlauf der Kurve; an milden Tagen mit wärmerem Kaltwasser und besserer Leistungszahl
 |}
 
 In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe heizt oder kühlt:
@@ -140,7 +142,8 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 * '''Kühlsollwert und Zeitprogramm.''' Der Dialog prüft den Kühlsollwert gegen die vier Heizsollwerte, ein Sollwert-Zeitprogramm erst der Lauf: Liegt eine Stunde darin weniger als 1 K unter dem Kühlsollwert, bricht er ab.
 * '''Kühl-Vorlauf.''' Zur Wahl stehen die Stützstellen der Kühlkennlinie, leer die kälteste. Ein Kühl-Vorlauf zwischen zwei Stützstellen rechnet Kälteleistung und Leistungszahl linear zwischen beiden, ein Wert außerhalb mit der nächsten Stützstelle; das Laufprotokoll nennt das je Gerät. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
 * '''Rand der Kennlinie.''' Auf der Achse der Außen- bzw. Quellentemperatur wird über der obersten Stützstelle mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Den Kühl-Vorlauf betrifft der Schalter nicht. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
-* '''Mehrere Zonen.''' Dann rechnet die Kühlung je Zone ideal, ohne Kühlübergabe; der Lauf sagt es.
+* '''Mehrere Zonen.''' Jede gekühlte Zone rechnet ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]); eine Zone ohne wirksame Kühlübergabe kühlt ideal, der Lauf sagt es.
+* '''Kühlkurve.''' Sie wirkt nur auf der Stufe ''geschlossener Kreis (AK3)''. Ihr Gewinn hängt an der Kühlkennlinie: Zwischen zwei Stützstellen rechnet die Wärmepumpe linear, über der obersten mit deren Wert. Liegt der feste Kühl-Vorlauf schon an der obersten Stützstelle, gewinnt die Kurve dort kaum an Leistungszahl.
 * '''Regeneration der Sonde.''' Kühlt eine Wärmepumpe mit Erdwärmesonde, geht ihre Kühlwärme in das Sondenfeld zurück und hebt die Soletemperatur ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]).
 * '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe); weitere [[#grenzen|Grenzen]]. Die freie Kühlung über die Sonde ist abgebildet ([[#freie-kuehlung-waermequelle|Freie Kühlung über die Wärmequelle]]).
 
@@ -173,7 +176,7 @@ Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höch
 
 Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet.
 
-Mit dem Haken steht darunter der Abschnitt '''Kühlübergabe''': Mit ihm rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf statt ideal – in Projekten mit der Anlagenkopplung ''Heizkreis (AK1)''; siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]].
+Mit dem Haken steht darunter der Abschnitt '''Kühlübergabe''': Mit ihm rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor statt ideal – in Projekten mit Anlagenkopplung; auf der Stufe ''geschlossener Kreis (AK3)'' wahlweise mit Kühlkurve; siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]].
 
 === Kühlspalte, Kühlperiode und Kühlkalender ===
 {{Anker|kuehlspalte|kuehlperiode}}
@@ -324,7 +327,7 @@ Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekt
 * '''Kälteerzeuger''': Kälte decken die Wärmepumpe im Kühlbetrieb und die Kältemaschine; freie Kühlung gibt es an der Kältemaschine mit Trocken- oder Nasskühler und an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe über ihre Wärmequelle.
 * '''Rückwirkung nur an der Sonde''': Die Kühlwärme einer Wärmepumpe mit Erdwärmesonde regeneriert das Sondenfeld ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]); bei Erdkollektor, Konstant, Profil und CSV verändert sie die Quellentemperatur nicht. Kältemaschinen kühlen gegen die Umgebung und speisen nicht ins Erdreich.
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
-* '''Ein Kühlsollwert''' je Gebäude für alle Stunden; ein Zeitprogramm für den Kühlsollwert hat kein Bedienelement. Ein Gebäude mit mehreren Zonen rechnet die Kühlung je Zone ideal und ohne Anlagenkopplung ([[#fallstricke|Fallstricke]]).
+* '''Ein Kühlsollwert''' je Gebäude für alle Stunden; ein Zeitprogramm für den Kühlsollwert hat kein Bedienelement. Mehrere Zonen teilen einen Kaltwasserkreis mit einem Vorlauf und einer Kühlkurve ([[#fallstricke|Fallstricke]]).
 * Verluste eines Kältenetzes werden nicht gerechnet.
 
 [[Kategorie:Programm Dokumentation]]

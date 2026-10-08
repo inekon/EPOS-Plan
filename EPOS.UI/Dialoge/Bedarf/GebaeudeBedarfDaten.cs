@@ -200,6 +200,23 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Rechnete der Kreis im letzten Lauf die Kälteseite?</summary>
     public bool Ak3KaelteErhoben => Ak3KaelteschrankeStundenH.HasValue;
 
+    // ---- KK (Entwurf KK, Festlegung 12): die Kennzahlen der Kühlkurve ------------------------------------------
+    //
+    // Aus der Projektzeile des letzten Laufs; null, wenn der Lauf keine wirksame Kühlkurve rechnete.
+
+    /// <summary>Mittlerer verlangter Kühlvorlauf der Kühlstunden [°C].</summary>
+    public double? KuehlkurveVorlaufMittelC { get; init; }
+
+    /// <summary>Summe der Absenkung durch den Raumeinfluss der Kühlkurve [Kh].</summary>
+    public double? KuehlkurveAbsenkungKh { get; init; }
+
+    /// <summary>Kühlstunden mit der Kurve an der Vorlaufgrenze [h].</summary>
+    public int? KuehlkurveVorlaufgrenzeStundenH { get; init; }
+
+    /// <summary>Rechnete der letzte Lauf eine wirksame Kühlkurve?</summary>
+    public bool KuehlkurveErhoben
+        => KuehlkurveVorlaufMittelC.HasValue || KuehlkurveAbsenkungKh.HasValue || KuehlkurveVorlaufgrenzeStundenH.HasValue;
+
     /// <summary>
     /// Der Hinweis der Rückstufe (Festlegung 20): Mit Stufe AK3 rechnet diese Auskunft ohne geschlossenen Kreis auf
     /// dem Profilweg; leer ohne Rückstufe.

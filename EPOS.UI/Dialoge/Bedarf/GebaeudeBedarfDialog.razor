@@ -211,8 +211,8 @@
     }
 
     @* ---- AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis aus dem letzten Projektlauf -
-       jede Seite nur, wenn der Lauf sie erhob. *@
-    @if (Daten.ZonensperreErhoben || Daten.Ak3KaelteErhoben)
+       jede Seite nur, wenn der Lauf sie erhob; daneben die Kennzahlen der Kuehlkurve (Entwurf KK, Festlegung 12). *@
+    @if (Daten.ZonensperreErhoben || Daten.Ak3KaelteErhoben || Daten.KuehlkurveErhoben)
     {
         <div class="gebb-ak3k">
             <Kachelraster>
@@ -227,6 +227,12 @@
                         <Kennzahlkachel Titel="@KachelAk3Kaelteschranke" Wert="@Stunden(Daten.Ak3KaelteschrankeStundenH)" Quelle="@QuelleAk3Kaelte" />
                         <Kennzahlkachel Titel="@KachelAk3Umschaltung" Wert="@Stunden(Daten.Ak3UmschaltStundenH)" />
                         <Kennzahlkachel Titel="@KachelAk3Kaelterest" Wert="@KaelterestWert" />
+                    }
+                    @if (Daten.KuehlkurveErhoben)
+                    {
+                        <Kennzahlkachel Titel="@KachelKuehlkurveVorlauf" Wert="@KuehlkurveVorlaufWert" Quelle="@QuelleKuehlkurve" />
+                        <Kennzahlkachel Titel="@KachelKuehlkurveAbsenkung" Wert="@Kelvinstunden(Daten.KuehlkurveAbsenkungKh)" />
+                        <Kennzahlkachel Titel="@KachelKuehlkurveGrenze" Wert="@Stunden(Daten.KuehlkurveVorlaufgrenzeStundenH)" />
                     }
                 </KindInhalt>
             </Kachelraster>
@@ -712,6 +718,24 @@
 
     /// <summary><c>AK3K_GEBB_QUELLE_KREIS</c></summary>
     [Parameter] public string QuelleAk3Kaelte { get; set; } = "Kälteseite im Kreis (AK3), Projekt, letzter Lauf";
+
+    /// <summary><c>KK_GEBB_KACHEL_VORLAUF_MITTEL</c></summary>
+    [Parameter] public string KachelKuehlkurveVorlauf { get; set; } = "Mittlerer Kühlvorlauf (Kühlkurve)";
+
+    /// <summary><c>KK_GEBB_KACHEL_ABSENKUNG</c></summary>
+    [Parameter] public string KachelKuehlkurveAbsenkung { get; set; } = "Absenkung durch Raumeinfluss";
+
+    /// <summary><c>KK_GEBB_KACHEL_VORLAUFGRENZE</c></summary>
+    [Parameter] public string KachelKuehlkurveGrenze { get; set; } = "Stunden an der Vorlaufgrenze";
+
+    /// <summary><c>KK_GEBB_QUELLE</c></summary>
+    [Parameter] public string QuelleKuehlkurve { get; set; } = "Kühlkurve, Projekt, letzter Lauf";
+
+    /// <summary>„16,3 °C" — der mittlere verlangte Kühlvorlauf; ohne Wert der Leertext.</summary>
+    private string KuehlkurveVorlaufWert
+        => Daten.KuehlkurveVorlaufMittelC is double v
+            ? v.ToString("N1", System.Globalization.CultureInfo.CurrentCulture) + " °C"
+            : LeerText;
 
     /// <summary>„0,05 / 0,01 MWh" — gesperrte Raumheizung und Raumkühlung des Probetags; ohne Wert der Leertext.</summary>
     private string GesperrtWert

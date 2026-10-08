@@ -1350,8 +1350,9 @@ interpoliert, auf einer Stützstelle mit ihr, außerhalb mit dem Randwert ([Entw
 Ein `Kuehl_Vorlauf`, der keine Stützstelle ist (etwa nach einem Kennlinientausch), wird einmal je Gerät
 und Vorlauf als Hinweis benannt; ist ein Block nicht rechenbar, rechnet er mit der nächsten Stützstelle — bei
 gleichem Abstand der kälteren.
-**K21 auf AK3 mit Kühlkurve — im Bau (KK, E105, E106):** Mit gesetzter raumgeführter Kühlkurve rechnen Wärmepumpe und
-Kältemaschine je Stunde am gleitenden Kühlvorlauf, interpoliert wie oben; ohne Kühlkurve und auf AK1/AK2 gilt der feste
+**K21 auf AK3 mit Kühlkurve — gebaut (KK, E105–E107, Basis R44):** Mit gesetzter raumgeführter Kühlkurve rechnen Wärmepumpe und
+Kältemaschine je Stunde am gleitenden Kühlvorlauf, interpoliert wie oben, nach unten begrenzt durch die kleinste Stützstelle
+bzw. `Kaltwasser_Vorlauf_Min`; die Kälteschranke fragt am kältesten verlangten Vorlauf der Stunde ab; ohne Kühlkurve und auf AK1/AK2 gilt der feste
 Kaltwasser-Vorlauf nach E37 (A3) weiter ([Entwurf KK](Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md) 2.3, 2.4).
 
 **Rücklauf und Spreizung werden nicht eingeführt.** Die Kennlinie ist über dem Vorlauf
@@ -1954,7 +1955,7 @@ NULL = Wert des Gebäudes. Wer sie anlegt, hängt an der Reihenfolge der Stufen:
 noch nicht, bringt dieser Schritt sie an alle drei Tabellen. Einen Nachtragsschritt „sobald es
 die Zone gibt" gibt es nicht — mit **einer** Ausnahme nach **E37** (Konzept N1.42): Die drei
 Zonenspalten der Kühlübergabe (`Kuehl_Uebergabe_Art`, `_Exponent`, `_Leistung_Nenn`) kommen in einem
-eigenen Schritt nach S-C (Schemaschritt 137), weil `KAK-S1` (Schemaschritt 135) nach S-C entsteht. Die Typangaben stehen in Access-Schreibweise und werden beim
+eigenen Schritt nach S-C (Schemaschritt 137), weil `KAK-S1` (Schemaschritt 135) nach S-C entsteht. **Wie gebaut (KZ1, E106 Q-KK-7 (a)):** Die drei Zonenspalten der Kühlübergabe rechnen im Mehrzonenweg ab AK1 — leer heißt Wert des Gebäudes; je Gebäude ein Kühlkreis am gemeinsamen Vorlauf, der Rücklauf massenstromgewichtet, die Kälteschranke wirkt je Zone; der Zonendialog führt sie im Abschnitt Kühlung. Auslegungspunkt, Vorlaufgrenze und Kühlkurve stehen allein am Gebäude. Die Typangaben stehen in Access-Schreibweise und werden beim
 Anlegen übersetzt — `YESNO` erzeugt die
 `CHECK`-Klausel von selbst.
 

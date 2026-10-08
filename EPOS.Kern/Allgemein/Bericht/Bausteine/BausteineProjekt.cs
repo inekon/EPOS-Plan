@@ -628,6 +628,56 @@ namespace WindowsFormsApplication1
             Ak3Schreiben(k, stamm);
             // AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis - nur mit Wert.
             Ak3KSchreiben(k, stamm);
+            // KK (Entwurf KK, Festlegung 12): die Kennzahlen der Kuehlkurve - nur mit Wert.
+            KuehlkurveSchreiben(k, stamm);
+        }
+
+        /// <summary>Überschrift der Tafel „Kühlkurve" — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KUEHLKURVE = "Kühlkurve (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tafel „Kühlkurve" — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_KUEHLKURVE =
+            "Mit Kühlkurve gleitet der verlangte Kühlvorlauf mit der Außentemperatur; der Raumeinfluss senkt ihn, wenn ein Raum über dem Kühlsollwert liegt. Ausgewiesen werden der mittlere verlangte Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand. „—“ heißt: nicht erhoben.";
+
+        /// <summary>Die Spaltenköpfe der Tafel „Kühlkurve" — zugleich Schlüssel der Übersetzung.</summary>
+        internal static readonly string[] TITEL_KUEHLKURVE =
+        {
+            "Kühlvorlauf im Mittel [°C]", "Absenkung durch Raumeinfluss [Kh/a]", "An der Vorlaufgrenze [h/a]"
+        };
+
+        /// <summary>
+        /// <b>KK — die Tafel „Kühlkurve"</b> (Entwurf KK, Festlegung 12): die Projektzeile mit den drei Kennzahlen der
+        /// Kühlkurve, ein fehlender Wert als „—". <b>Der Abschnitt entfällt</b>, wenn der Lauf keine wirksame Kühlkurve
+        /// rechnete.
+        /// </summary>
+        private static void KuehlkurveSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            KuehlkurveKennzahlen kk = KuehlkurveKennzahlen.Aus(stamm?.Ergebnis?.Energiebedarf);
+            if (kk == null) return;
+
+            int breite = 2600;
+            int rest = k.Inhaltsbreite - 2 * breite;
+            int[] b = { breite, breite, rest };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            for (int i = 0; i < TITEL_KUEHLKURVE.Length; i++)
+                kopf.Append(k.Zelle(TITEL_KUEHLKURVE[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            string[] werte =
+            {
+                kk.VorlaufMittelC is double v ? k.F(v, 1) : "—",
+                kk.AbsenkungKh is double a ? k.F(a, 1) : "—",
+                kk.VorlaufgrenzeStundenH is int h ? k.F(h, 0) : "—",
+            };
+            var zeile = new TableRow();
+            for (int i = 0; i < werte.Length; i++)
+                zeile.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Right));
+            t.Append(zeile);
+
+            k.Ueberschrift2(UEBERSCHRIFT_KUEHLKURVE);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_KUEHLKURVE);
         }
 
         /// <summary>Überschrift der Tafel „Kälteseite im Kreis" (AK3-K) — zugleich Schlüssel der Übersetzung.</summary>

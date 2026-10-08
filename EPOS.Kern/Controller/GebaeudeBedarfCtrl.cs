@@ -729,6 +729,43 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzahlen der Kühlkurve aus dem letzten gespeicherten Lauf</b> (Entwurf KK, Festlegung 12; Schritt 202):
+        /// mittlerer Kühlvorlauf, Absenkung durch den Raumeinfluss und Stunden an der Vorlaufgrenze, im Bedarfsdialog neben
+        /// den Kennzahlen der Kälteseite im Kreis. Gelesen, nicht gerechnet; <c>null</c> ohne Projekt, ohne Lauf, vor dem
+        /// Schemaschritt oder wenn der letzte Lauf keine wirksame Kühlkurve rechnete.
+        /// </summary>
+        internal static KuehlkurveKennzahlen KuehlkurveKennzahlenDesProjekts(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                if (!KuehlkurveSchema.ErgebnisspaltenVorhanden()) return null;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + string.Join(", ", KuehlkurveSchema.SPALTEN_ERGEBNIS.Select(sp => "e." + sp)) + " FROM " +
+                    ErgebnisCtrl.TAB_ENERGIE + " e INNER JOIN " + ErgebnisCtrl.TAB_KOPF +
+                    " k ON k.ID = e.ID_Ergebnis WHERE k.ID_Projekt = ? ORDER BY k.ID DESC LIMIT 1",
+                    new DbParam("@p", idProjekt));
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+                return KuehlkurveKennzahlen.Aus(new ErgebnisEnergiebedarfModel
+                {
+                    KuehlkurveVorlaufMittelC = Zahl(r, KuehlkurveSchema.SPALTE_VORLAUF_MITTEL),
+                    KuehlkurveAbsenkungKh = Zahl(r, KuehlkurveSchema.SPALTE_ABSENKUNG_KH),
+                    KuehlkurveVorlaufgrenzeStundenH = r[KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN] is DBNull
+                        ? null
+                        : Convert.ToInt32(r[KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN], CultureInfo.InvariantCulture),
+                });
+            }
+            catch
+            {
+                return null;
+            }
+
+            static double? Zahl(DataRow r, string spalte)
+                => r[spalte] is DBNull ? null : Convert.ToDouble(r[spalte], CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
         /// <b>Das Warmwasser des PROJEKTS</b> [MWh/a] — die Auskunftszeile unter den Kennzahlen des
         /// Gebäudedialogs. Die Heizwärme des Dialogs ist nach VDI 6007 allein der Anteil des Gebäudes
         /// im Heizkanal; das Warmwasser hängt nicht am Gebäude, sondern an den Brauchwasserprofilen

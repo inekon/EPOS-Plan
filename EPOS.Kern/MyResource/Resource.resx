@@ -48371,6 +48371,18 @@ Chart</value>
   <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
     <value>Kälteseite im Kreis (AK3), Projekt, letzter Lauf</value>
   </data>
+  <data name="KK_GEBB_KACHEL_VORLAUF_MITTEL" xml:space="preserve">
+    <value>Mittlerer Kühlvorlauf (Kühlkurve)</value>
+  </data>
+  <data name="KK_GEBB_KACHEL_ABSENKUNG" xml:space="preserve">
+    <value>Absenkung durch Raumeinfluss</value>
+  </data>
+  <data name="KK_GEBB_KACHEL_VORLAUFGRENZE" xml:space="preserve">
+    <value>Stunden an der Vorlaufgrenze</value>
+  </data>
+  <data name="KK_GEBB_QUELLE" xml:space="preserve">
+    <value>Kühlkurve, Projekt, letzter Lauf</value>
+  </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
     <value>Durchläufe je Stunde im Mittel (AK3)</value>
   </data>

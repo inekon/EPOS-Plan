@@ -70677,6 +70677,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absenkung durch Raumeinfluss ähnelt.
+        /// </summary>
+        public static string KK_GEBB_KACHEL_ABSENKUNG {
+            get {
+                return ResourceManager.GetString("KK_GEBB_KACHEL_ABSENKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Vorlaufgrenze ähnelt.
+        /// </summary>
+        public static string KK_GEBB_KACHEL_VORLAUFGRENZE {
+            get {
+                return ResourceManager.GetString("KK_GEBB_KACHEL_VORLAUFGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Kühlvorlauf (Kühlkurve) ähnelt.
+        /// </summary>
+        public static string KK_GEBB_KACHEL_VORLAUF_MITTEL {
+            get {
+                return ResourceManager.GetString("KK_GEBB_KACHEL_VORLAUF_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve, Projekt, letzter Lauf ähnelt.
+        /// </summary>
+        public static string KK_GEBB_QUELLE {
+            get {
+                return ResourceManager.GetString("KK_GEBB_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel [°] ähnelt.
         /// </summary>
         public static string KLIMA_ACHSE_SONNENWINKEL {

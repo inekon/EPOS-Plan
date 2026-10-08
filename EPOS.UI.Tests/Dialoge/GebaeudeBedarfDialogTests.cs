@@ -1110,6 +1110,41 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Empty(Aufbauen(VdiSatz()).FindAll("div.gebb-ak3k"));
     }
 
+    /// <summary>
+    /// KK (Entwurf KK, Festlegung 12): die Kacheln der Kühlkurve neben der Kälteseite im Kreis — nur, wenn der letzte Lauf
+    /// eine wirksame Kühlkurve rechnete; allein mit Kühlkurve steht der Block mit ihren drei Kacheln.
+    /// </summary>
+    [Fact]
+    public void Die_Kacheln_der_Kuehlkurve_stehen_nur_mit_Wert()
+    {
+        var mit = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, IstGekoppelt = true,
+            Ak3KaelteschrankeStundenH = 37, Ak3UmschaltStundenH = 0, Ak3KaelterestStundenH = 3, Ak3KaelterestMwh = 0.25,
+            KuehlkurveVorlaufMittelC = 16.27, KuehlkurveAbsenkungKh = 412.46, KuehlkurveVorlaufgrenzeStundenH = 120,
+        });
+        IReadOnlyList<IElement> k = mit.FindAll("div.gebb-ak3k .epos-kennzahlkachel");
+        Assert.Equal(6, k.Count);
+        Assert.Equal("Mittlerer Kühlvorlauf (Kühlkurve)", Kachel(k[3], "titel"));
+        Assert.Equal("16,3 °C", Kachel(k[3], "wert"));
+        Assert.Equal("Absenkung durch Raumeinfluss", Kachel(k[4], "titel"));
+        Assert.Equal("412,5 Kh", Kachel(k[4], "wert"));
+        Assert.Equal("Stunden an der Vorlaufgrenze", Kachel(k[5], "titel"));
+        Assert.Equal("120 h", Kachel(k[5], "wert"));
+
+        var nurKurve = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, KuehlkurveAbsenkungKh = 0.0, KuehlkurveVorlaufgrenzeStundenH = 0,
+        });
+        IReadOnlyList<IElement> n = nurKurve.FindAll("div.gebb-ak3k .epos-kennzahlkachel");
+        Assert.Equal(3, n.Count);
+        Assert.Equal("—", Kachel(n[0], "wert"));
+
+        Assert.Empty(Aufbauen(VdiSatz()).FindAll("div.gebb-ak3k"));
+    }
+
     /// <summary>Die Rückstufe der Auskunft steht als eigene Zeile unter dem Rechenweg — nur mit Text.</summary>
     [Fact]
     public void Die_Rueckstufe_steht_unter_dem_Rechenweg()

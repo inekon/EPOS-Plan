@@ -1,6 +1,7 @@
 # Entwurf KK — die raumgeführte Kühlkurve (Gegenstück zu H2)
 
-**Stand 08.10.2026 · E106 entschieden (Abschnitt 7): alle Fragen nach Empfehlung außer Q-KK-4 — der Mehrzonenweg gehört dazu,
+**Stand 08.10.2026 · gebaut (KK0–KK6, KZ1, KZ2), Basis R44 `2026-10-08_R44_Kuehlkurve`; offen: Sichtabnahme unter Windows.**
+Wie gebaut und wo der Bau vom Entwurf abweicht: Abschnitt 6.2. **E106 entschieden (Abschnitt 7): alle Fragen nach Empfehlung außer Q-KK-4 — der Mehrzonenweg gehört dazu,
 seine Kälteseite wird gekoppelt; Q-KK-6 erweitert um ein Mehrzonen-Referenzprojekt. Q-KK-7 nachgereicht und entschieden: (a) die
 Kühlübergabe je Zone gilt ab AK1 (Abschnitt 7).** Auftrag aus **E105** (Anwender, 08.10.2026: „Starte im Anschluss die raumgeführte
 Kühlkurve“): Q-AK3K-3 wird als eigener Gegenstand aufgenommen, Variante (a) des [Entwurfs AK3-K](2026-10-07_Entwurf_AK3-K.md)
@@ -376,7 +377,37 @@ Kühlübergabefelder hat und RP-KKZ das erste Referenzprojekt ist, das AK3 im Me
 
 ### 6.2 Wie gebaut
 
-(leer bis zum Bau)
+Alle Wellen KK0 bis KK6 samt KZ1 und KZ2 sind gebaut; der Kernschalter ist mit KK5a entfallen, die Kühlkurve wirkt auf Stufe
+AK3 überall, wo `Kuehlkurve_Aktiv` gesetzt ist, die Kühlübergabe je Zone rechnet im Mehrzonenweg ab AK1. Basis **R44**
+`2026-10-08_R44_Kuehlkurve` (sechsundzwanzig Projekte, neu **1061** = RP-KK und **1062** = RP-KKZ, beide nicht in der
+CI-Auswahl; die übrigen vierundzwanzig byte-gleich zu R43).
+
+| Welle | Commits | Gebaut, Befunde und Zahlen |
+|---|---|---|
+| **KK0** | (Papiere) | E106 eingetragen, Anlagenkopplung 7.1, 7.4 Nr. 5 und Kühlkonzept K21 nachgezogen, Mehrzonenweg gelesen (1.4) |
+| **KK1** | `4b6b63597`, `8d91b253b`, `1012a7af2`, `bc0ca883a` | Klasse `Kuehlkurve` (Zwei-Punkt-Kurve, Fußpunkt bis zum Kühlsollwert der Stunde, nie NaN); `KuehlVorlaufC` als Jahresreihe, der feste Vorlauf lebt als `KuehlVorlaufFestC`; Rand liest `[h]`. Mindestabstand **2,5 K** per Probe: schwächster Fall Konvektor bei 30 °C, 2,0 K → 8,7 %, 2,5 K → 10,9 % der Nennleistung. `KuehlkurveTests` 7 Proben |
+| **KK1b** | `90c2175fe`, `0e1bfe747`, `0bbfdd953` | **E107:** Auslegungsweg wählbar (`stunde`, `tagesmittel` — Vorgabe —, `eingabe`); Mindestspanne **8 K** über dem Kühlsollwert, gemessen an acht Klimaregionen der Testdatenbank (wärmstes Tagesmittel 24,4–27,8 °C, höchste Stunde 30,1–34,5 °C); Weg 3 unter Sollwert + 1 K oder ohne Eingabe fällt mit Hinweis auf Weg 2 zurück; Fußpunktregel (Festlegung 18) klemmt einen zu kalten Fußpunkt auf den Auslegungsvorlauf. `KuehlkurveTests` 11/11 |
+| **KK2** | `07e441319`, `4582e6b84`, `03657f4e7` | Kühlkennlinie als Schar aller Blöcke, ausgewertet am gebrochenen Vorlauf; Kältemaschine je Stunde mit Untergrenze `Kaltwasser_Vorlauf_Min`; Kälteschranke mit Vorlauf-Argument, Speicherregel, kältester verlangter Vorlauf; Kältekaskade am Stundenvorlauf. Fester Vorlauf bitgleich; Orakel **O1kk** trifft je Stunde die Bisektionslösung |
+| **KK3** | `4ed08d2fb`, `a8c4a99fd`, `ff2941f5c`, `565de0c16` | Raumeinfluss im Kreis (`KuehlRaumeinfluss`, Abbruchglied ΔK2 ≤ 0,05 K, Pendelregel), Erzeuger gleitet, Untergrenze am kältesten erreichbaren Erzeugervorlauf. **O2kk:** \|Δ\| ≤ 0,0003 K, Kappung an 16 °C in 33 von 196 Stunden, höchstens 7 Durchläufe. Vorgabewert **3 K/K** per Messreihe an 1058 (fester Vorlauf 34 h / 45,9 Kh, EER 5,238; k_K 3 32 h / 45,1 Kh, EER 5,089; darüber sättigt der Komfortgewinn). **Befund:** an 1058 liegt der Vorlauf auf der oberen Stützstelle, der Erzeuger kann nicht wärmer gleiten — deshalb rechnet RP-KK mit einem Kühlvorlauf von 12 °C |
+| **KZ1** | `9a78570c7`, `da5502b1f`, `9f3c43848` | Kühlübergabe je Zone im Mehrzonenweg (Spalten aus Schritt 137, Kühlkreis je Gebäude, Rücklauf massenstromgewichtet, Kälteschranke je Zone); Meldung `SIMENG_G6_AK1_IDEAL` neu gefasst. **Befund:** `Zonenmodell2K` hält Schritt K im festen Muster nicht — Stunden mit Kühlübergabe je Zone rechnen in der Gauß-Seidel-Schleife frei. `ZonenKuehluebergabeTests` 15 |
+| **KK4** | `391d426ba`, `fae5af820`, `7d299d455`, `6b3617bc3`, `ed3a99ebb`, `0c56775fb`, `5b78ba026` | **Schemaschritt 202:** fünf Eingabespalten an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, Sicht `Abfrage_Projektgebaeude` (110 Spalten), drei Ergebnisspalten als **Projektkennzahlen** an `Tab_ErgebnisEnergiebedarf`; Testdatenbank gehoben (Basis R43 blieb). Kopierwege und Katalog NULL-erhaltend, Katalogübernahme 96 → 101 Fachspalten; IFC- und gbXML-Export benennen die Spalten als Verlust. Gebäudedialog: Haken, Fußpunkt, Raumeinfluss, Auslegungsweg, Außentemperatur (Bereich 0–60 °C) nur mit Weg Eingabe; Zonendialog: Kühlübergabe je Zone (Eingabebilanz 19 → 22) |
+| **KZ2** | `62da93155`, `38808ad3c`, `0a90ad33b` | Kühlkurve im Mehrzonenweg am niedrigsten Kühlsollwert der gekühlten, gekoppelten Zonen; Führungsgröße die größte Überschreitung. **Befund:** das Vorlaufangebot der Kälteschranke kappte den abgesenkten Vorlauf auf den des vorigen Durchlaufs; am gleitenden Erzeuger gilt jetzt der verlangte Vorlauf dieses Durchlaufs. **O3kz:** \|Δ\| ≤ 0,0004 K, höchstens 11 Durchläufe, 1317 Stunden mit Heiz- und Kühlzone. Feldlauf 1058 zweizonig: 594 Kühlstunden, Vorlauf Mittel 17,53 °C, Durchläufe Mittel 3,320 / max 7 |
+| **KK5a** | `3b3cb6ec8`, `d38dd1295`, `fd98d2581`, `0e08df6f8`, `7856be854` | Kernschalter und Probenaht entfallen; der Lauf schreibt die drei Kennzahlen; ein Einzonengebäude allein mit gekoppelter Kälteseite kommt in den Kreis. **RP-KK 1061** (Kopie von 1058, Kühlkurve mit 3 K/K, Weg Tagesmittel, Kühlvorlauf der Wärmepumpe 12 °C): EER fest 4,46 → mit Kurve 5,09, Überschreitung 42 → 32 h. **RP-KKZ 1062** (Kopie von 1061, zwei Zonen Süd/West und Nord/Ost, Nord/Ost mit Gebläsekonvektor). Wachen `KuehlkurveReferenzprojektWacheTests`, `ZonenKuehlkurveReferenzprojektWacheTests` |
+| **KK5b** | (Basis) | Basis R44 eingefroren, Einfrierregeln um die Kühlkurve erweitert |
+| **KK6** | (Papiere) | Konzepte, Register, Wiki-Quellen, Logbuch-Entwürfe, Protokoll |
+
+**Abweichungen vom Entwurf:** (a) Die Ergebnisspalten hängen als **Projektkennzahlen** am Projektergebnis, nicht am Gebäude
+(Muster AK3 und AK3-K). (b) Der Mehrzonenweg brauchte die freie Rechnung der Kühlübergabestunden (KZ1) und die Kappungsregel
+am gleitenden Erzeuger (KZ2). (c) Der Kreis nimmt auch ein Einzonengebäude allein mit gekoppelter Kälteseite auf (KK5a).
+(d) Der Vorgabewert der Stärke ist 3 K/K statt des vorläufigen 1 K/K im Dialog von KK4.
+
+**Offene Punkte:**
+
+- **Führende Zone ohne Kennzahl:** Welche Zone den Raumeinfluss im Mehrzonenweg führt, weist das Ergebnis nicht aus.
+- **Rechenzeitreihe des Mehrzonenwegs entfallen:** Die Messreihe hing an der Probenaht (`ZonenKuehlkurveFeldlaufTests`) und
+  ist mit ihr in KK5a entfallen; gemessen bleibt der Feldlauf aus KZ2.
+- **Werkzeug Testdatenbankschema:** Ein zweiter Lauf meldet Schritt 202 als offen, obwohl die Testdatenbank ihn trägt.
+- **Sichtabnahme** der Dialogfelder unter Windows.
 
 ## 7. Fragen an den Anwender
 
@@ -417,5 +448,8 @@ Wärmepumpe je Stunde, Kältenetz und Pumpen, Kühlung im Tagesbilanz-Weg, Ände
 
 ## 10. Logbuch-Entwürfe
 
-(leer bis zum Bau; je ein Satz, veröffentlicht mit dem gebündelten Wiki-Upload, Regel:
-[Konzept Hilfesystem](../Konzept_Hilfesystem_Wikidokumentation.md) 13.3)
+Je ein Satz, veröffentlicht mit dem gebündelten Wiki-Upload (Regel:
+[Konzept Hilfesystem](../Konzept_Hilfesystem_Wikidokumentation.md) 13.3 und 13.4); Datum und Versionsnummer setzt der Anwender.
+
+- (a) Auf der Kopplungsstufe AK3 kann das Gebäude eine raumgeführte Kühlkurve fahren; der Auslegungspunkt der Kurve ist wählbar.
+- (b) Im Mehrzonenmodell rechnet die Kühlübergabe je Zone; der Zonendialog zeigt ihre Felder.
