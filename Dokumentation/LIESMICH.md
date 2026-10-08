@@ -180,6 +180,7 @@ und `README.md`.
 | [`aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) | Übergabegrenze und Bivalenz der Wärmepumpe (Auftrag des Anwenders 07.10.2026): Heizflächenleistung beim Höchstvorlauf als zweite Grenze neben dem Kennfeld (Gleichgewicht Wasserseite/Heizflächengleichung bei Auslegungsmassenstrom), Betriebsbereiche WP allein, parallel, Vorwärmbetrieb (Reihe WP → Kessel), nur Kessel, berechnete Bivalenzpunkte, Spreizungs- und Rücklaufgrenzen, Einbindung direkt/Puffer/Weiche, Vorgabewerte mit Quellen (EN 442, EN 1264, EN 14511, VDI 4650, § 43 GModG), Gruppe „Bivalenz und Übergabe“ mit Herleitungszeile und Bivalenzdiagramm, Etappen UB‑E1–E5 (15–22 PT), Fragen UB‑Q1–Q8; entschieden 08.10.2026 | 2026-10-07 |
 | [`aktuell/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](aktuell/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) | Umsetzungskonzept Übergabegrenze und Bivalenz der Wärmepumpe (Auftrag des Anwenders 08.10.2026): Zielarchitektur mit Kernbausteinen im Ordner `Simulation/Bivalenz/` und nummeriertem Stundenablauf, Wirksamkeit an `Einbindung` gebunden (Bestandsprojekte unverändert), ein Schemaschritt `UebergabegrenzeSchema` mit 41 Spalten, Referenzprojekt 1060 und Basis R44, Etappen UB‑E1–E5 in 13 Agentenwellen, Dialoggruppe „Bivalenz und Übergabe“, Bivalenzdiagramm und Bericht, Prüfungen, Übergabe an die Sitzung Gebäudesimulation; entschieden 08.10.2026 | 2026-10-08 |
 | [`aktuell/Uebergabe_Cloud_Berichterstellung_2026-10-08.md`](aktuell/Uebergabe_Cloud_Berichterstellung_2026-10-08.md) | Übergabe der Sitzung Berichterstellung_Wirtschaftlichkeit an ein anderes Konto (08.10.2026): Stand der Wellen #757–#819, Entscheide, offene Punkte, Arbeitsweise, Startprompt, Übergabetext an die Gebäudesimulation | 2026-10-08 |
+| [`aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) | Projektdialoge mit Katalogauswahl übersichtlich ordnen (Auftrag des Anwenders 08.10.2026, „Scrollbar in Scrollbar“): Befund des Doppelrollens im Baustein `Zweispaltenauswahl`, Funktionsinventar der zwölf Projektdialoge und der Kältemaschinenauswahl, fünf Varianten (V1 gerahmt und gestapelt, V2 Transferliste, V3 Katalog als Schublade, V4 Reiter mit Detailspalte, V5 eine Liste mit Zeilenaktionen), Vergleichstabelle, Empfehlung V4, offene Entscheide KA‑Q1…Q9 (Mockups `aktuell/Mockups/Projektdialog_Katalogauswahl_V1.html` … `_V5.html` samt PNG) | 2026-10-08 |
 
 Alle HTML-Mockups liegen zusammen unter `aktuell/Mockups/` (kein Markdown, deshalb keine
 Indexzeile): `Dialog_Formel_Zahlenprobe.html` — alle acht Kostenkategorien mit Dialog,
@@ -197,7 +198,8 @@ und `Berichtsseite_Anordnung_A.html`, `_B.html`, `_C.html` (Konzept Berichtsseit
 Anordnung; die zugehörigen Bilder liegen beim Anwender, nicht im Repository — sie zeigen ein tatsächliches
 Projekt mit Kundennamen) sowie `Waermepumpe_Bivalenz_Uebergabe.html` (Konzept Übergabegrenze und Bivalenz:
 Gruppe „Bivalenz und Übergabe“ der Wärmepumpen-Konfiguration mit Herleitungszeile, Bivalenzdiagramm und Kacheln
-des Ergebnisreiters).
+des Ergebnisreiters) sowie `Projektdialog_Katalogauswahl_V1.html` bis `_V5.html` samt gleichnamigen PNG in
+1 280 × 800 und `…_klein.png` in 1 280 × 720 (Konzept Projektdialoge Katalogauswahl).
 
 ---
 
