@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Katalogauswahl V1: Gerahmt und gestapelt</title>
-<meta name="description" content="Mockup V1 zum Konzept Projektdialoge Katalogauswahl: Dieselbe Reihenfolge wie heute, aber zwei gerahmte Bereiche mit eigener Kopfleiste; der Dialog rollt nicht, die Höhen teilt ein Raster, der gewählte Satz ist eine einklappbare Zeile unten.">
+<meta name="description" content="Spielbares Mockup V1 zum Konzept Projektdialoge Katalogauswahl: Dieselbe Reihenfolge wie heute, aber zwei gerahmte Bereiche mit eigener Kopfleiste; der Dialog rollt nicht, die Höhen teilt ein Raster, der gewählte Satz ist eine einklappbare Zeile unten.">
 <!--
   MOCKUP V1 "Gerahmt und gestapelt" zum Konzept
   Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md (Kennungen KA-...).
@@ -33,7 +33,13 @@
   der rot gestrichelte Streifen oben und die Randnotiz.
 
   KEINE HERSTELLER- UND PRODUKTDATEN: "BHKW 50 kW Erdgas", "Hersteller A"; alle Werte rund
-  und erfunden. Eigenstaendig: kein CDN, ein kleines Skript fuer Auswahl und Aufklapper.
+  und erfunden. Eigenstaendig: kein CDN.
+
+  SPIELBAR: Ein Skript spielt den Dialog mit einem Datenbestand im Speicher (20 Katalogsaetze,
+  zwei davon gesperrt, zwei Projektsaetze): Waehlen, Uebernehmen (Knopf, Doppelklick, Enter),
+  Entfernen, Suche mit * und ?, Sortieren, Schloss, Loeschen, Neu, Bearbeiten, Vergleichen,
+  Kosten, Tastatur (Pfeile, Enter, Entf, Esc). Die Spiellogik ist in V1 bis V5 wortgleich;
+  die Leiste oben (Spruenge, Fenstergroesse, Zuruecksetzen) gehoert nicht zum Dialog.
 -->
 <style>
 :root {
@@ -248,13 +254,107 @@ body[data-reiter="projekt"] .v4-blatt--projekt, body[data-reiter="katalog"] .v4-
 .v5-pzeile td:first-child { box-shadow: inset 4px 0 0 var(--mk-projekt); }
 .v5-projekt tr:last-child td { border-bottom: 2px solid var(--mk-projekt); }
 body.mk-nur-projekt .v5-katalog { display: none; }
+
+/* ==================== SPIELBAR (gemeinsam fuer V1 bis V5) ==================== */
+:root {
+    /* weitere Token woertlich aus epos-ui.css (Warnbanner, Ueberlagerung) */
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-fehleingabe: rgb(255, 235, 235);
+}
+
+/* ---- Leiste oben: Mockup-Zeichen, gehoert nicht zum Dialog ---- */
+.mk-streifen { gap: 10px; overflow: hidden; font-size: 12px; }
+.mk-streifen > b { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mk-spruenge, .mk-fensterwahl { display: flex; align-items: center; gap: 2px; flex: 0 0 auto; color: var(--epos-text-leise); }
+.mk-sprung { padding: 1px 6px; border: 1px solid transparent; border-radius: 4px; color: var(--epos-quelle-text); text-decoration: none; }
+.mk-sprung:hover { border-color: var(--epos-rahmen-leise); background: var(--epos-karte-flaeche); }
+.mk-sprung[aria-current="page"] { color: var(--epos-text); font-weight: 700; border-color: var(--epos-rahmen); background: var(--epos-karte-flaeche); }
+.mk-legende { flex: 0 1 auto; min-width: 0; overflow: hidden; }
+.mk-legende span { white-space: nowrap; }
+.mk-fensterknopf { font: inherit; font-size: 11px; padding: 1px 6px; border: 1px solid var(--epos-rahmen-leise); border-radius: 4px; background: var(--epos-flaeche-gedaempft); color: var(--epos-text); cursor: pointer; }
+.mk-fensterknopf[aria-pressed="true"] { background: var(--epos-karte-flaeche); border-color: var(--epos-rahmen); font-weight: 700; }
+.mk-streifen .mk-notizknopf { margin-left: 0; flex: 0 0 auto; }
+
+/* ---- Fenster: der Dialog steht in einem Rahmen der gewaehlten Groesse ----
+   transform macht den Rahmen zum Bezugsblock der Ueberlagerungen (position: fixed),
+   damit sie wie im echten Fenster in DIESEM Rahmen stehen. */
+.mk-fenster { position: relative; width: var(--mk-fenster-b, 100%); height: calc(var(--mk-fenster-h, 100vh) - var(--mk-streifen) - 1px);
+    overflow: hidden; transform: translateZ(0); }
+body:not([data-fenster="frei"]) .mk-fenster { outline: 1px dashed var(--epos-stufe-fehler); }
+.mk-fenster > .epos-dialog { height: 100%; }
+
+/* ---- Meldung: Baustein Warnbanner; steht im Kopf an Stelle der Kontextzeile, verdeckt keinen Knopf ---- */
+.epos-dialog-kopf { position: relative; }
+.epos-warnbanner { display: flex; gap: 8px; align-items: flex-start; padding: var(--epos-rand); border: 1px solid transparent; border-radius: var(--epos-ecke); }
+.epos-warnbanner-symbol { flex: 0 0 auto; font-weight: 700; }
+.epos-warnbanner-text { flex: 1 1 auto; }
+.epos-warnbanner-schliessen { flex: 0 0 auto; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; padding: 0 4px; }
+.epos-warnbanner--hinweis { border-color: var(--epos-karte-rahmen-hover); background: var(--epos-karte-flaeche-hover); color: var(--epos-karte-titel); }
+.epos-warnbanner--warnung { border-color: var(--epos-warn-rahmen); background: var(--epos-warn-flaeche); color: var(--epos-warn-text); }
+.epos-warnbanner--fehler { border-color: var(--epos-senke-rahmen); background: var(--epos-fehleingabe); color: var(--epos-senke-text); }
+.epos-warnbanner--erfolg { border-color: rgb(34, 139, 34); background: rgb(240, 250, 240); color: rgb(24, 98, 24); }
+.mk-banner { flex: 1 1 auto; min-width: 0; padding: 3px 10px; align-items: center; white-space: nowrap; }
+.mk-banner .epos-warnbanner-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mk-banner:not([hidden]) + .mk-kontext { display: none; }
+.mk-banner[hidden] { display: none; }
+
+/* ---- Ueberlagerung: Baustein aus epos-ui.css, Masse auf den Rahmen bezogen ---- */
+.epos-ueberlagerung-hintergrund { position: fixed; inset: 0; z-index: 40; background: rgba(15, 31, 61, 0.45); }
+.epos-ueberlagerung { position: fixed; z-index: 41; inset: 0; margin: auto; display: flex; flex-direction: column; gap: var(--epos-rand);
+    width: min(92%, 560px); height: fit-content; max-height: 90%; min-width: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+    padding: var(--epos-karte-rand); background: var(--epos-karte-flaeche); border: 1px solid var(--epos-karte-rahmen-hover);
+    border-radius: var(--epos-ecke); box-shadow: 0 8px 32px rgba(15, 31, 61, 0.35); }
+.epos-ueberlagerung--breit { width: min(92%, 900px); }
+.epos-ueberlagerung-kopf { display: flex; align-items: center; gap: var(--epos-rand); }
+.epos-ueberlagerung-titel { flex: 1 1 auto; margin: 0; font-size: var(--epos-schriftgroesse-kartentitel); font-weight: 700; color: var(--epos-karte-titel); }
+.epos-ueberlagerung-zu { min-width: var(--epos-touchziel); padding: 0; }
+.epos-ueberlagerung-inhalt { min-width: 0; overflow-wrap: break-word; }
+.mk-ov-fuss { display: flex; gap: 8px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--epos-rahmen-leise); }
+.mk-ov-fehler { color: var(--epos-stufe-fehler); min-height: 1.35em; }
+.mk-formular { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.mk-formular .mk-feld--breit { grid-column: 1 / -1; }
+.mk-vergleich { width: 100%; table-layout: fixed; border-collapse: collapse; }
+.mk-vergleich th, .mk-vergleich td { padding: 6px 8px; border-bottom: 1px solid var(--epos-rahmen-leise); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.mk-vergleich thead th { background: var(--epos-flaeche); border-bottom-color: var(--epos-rahmen); }
+.mk-vergleich tbody th { width: 150px; font-weight: 400; color: var(--epos-text-leise); }
+.mk-vergleich colgroup col:first-child { width: 150px; }
+.mk-knopfreihe { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- Eingaben in Satz und Ueberlagerung ---- */
+input.mk-feldwert, select.mk-feldwert { width: 100%; font: inherit; color: var(--epos-text); background: var(--epos-karte-flaeche); border-color: var(--epos-rahmen); }
+input.mk-feldwert[readonly] { background: var(--epos-flaeche); border-color: var(--epos-rahmen-leise); }
+.mk-feldwert--lesen { color: var(--epos-text-leise); }
+
+/* ---- Listen: Fokus, Sortierung, Leerzeile ---- */
+.mk-liste:focus { outline: none; }
+.mk-liste:focus-visible { box-shadow: inset 0 0 0 2px var(--epos-karte-rahmen-hover); }
+.mk-tabelle th[data-sort] { cursor: pointer; }
+.mk-tabelle th[aria-sort] .mk-kopfsym { color: var(--epos-quelle-text); font-weight: 700; }
+.mk-tabelle tr.mk-leerzeile td { color: var(--epos-text-sehr-leise); font-style: italic; cursor: default; background: none !important; }
+.mk-tabelle tr.mk-markiert td { background: var(--mk-katalog-flaeche); }
+.mk-tabelle tr.mk-markiert.mk-gewaehlt td { background: var(--mk-satz-flaeche); }
+.mk-wahl [data-markieren], .mk-wahl .mk-radio { cursor: pointer; }
+.epos-knopf[aria-disabled="true"], .mk-sk[aria-disabled="true"] { cursor: not-allowed; opacity: .7; }
+.mk-leer { padding: 14px 10px; color: var(--epos-text-sehr-leise); font-style: italic; }
+.v5-projekt.mk-nicht-haftend tr { position: static; }
+.v1-zeile .mk-satzzeile { flex: 1 1 auto; min-width: 0; }
+.mk-weg { display: flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; }
+.mk-weg.mk-aus { color: var(--epos-text-sehr-leise); cursor: not-allowed; }
+.mk-weg-feld { margin-left: 24px; }
 </style>
 </head>
-<body data-reiter="katalog" class="">
+<body data-variante="V1" data-reiter="katalog" data-fenster="frei">
 <div class="mk-streifen">
-  <b>Mockup V1 · Gerahmt und gestapelt</b>
-  <span class="mk-legende"><span class="mk-leg-proj">Projekt – ändert die Projektliste</span><span class="mk-leg-kat">Katalog – Datenbank als Liste</span><span class="mk-leg-satz">Gewählter Satz – seine Daten</span></span>
-  <button class="mk-notizknopf" data-klasse="mk-notiz-offen">Randnotiz: andere Dialoge</button>
+  <b title="Mockup V1 · Gerahmt und gestapelt">Mockup V1 · Gerahmt und gestapelt</b>
+  <nav class="mk-spruenge" aria-label="Varianten"><a class="mk-sprung" href="Projektdialog_Katalogauswahl_V1.html" aria-current="page" title="V1 · Gerahmt und gestapelt">V1</a><a class="mk-sprung" href="Projektdialog_Katalogauswahl_V2.html" title="V2 · Nebeneinander (Transferliste)">V2</a><a class="mk-sprung" href="Projektdialog_Katalogauswahl_V3.html" title="V3 · Projekt im Mittelpunkt, Katalog als Schublade">V3</a><a class="mk-sprung" href="Projektdialog_Katalogauswahl_V4.html" title="V4 · Reiter Projekt | Katalog mit Detailspalte">V4</a><a class="mk-sprung" href="Projektdialog_Katalogauswahl_V5.html" title="V5 · Eine Liste mit Zeilenaktionen">V5</a><a class="mk-sprung" href="Projektdialog_Katalogauswahl_Uebersicht.html">Übersicht</a></nav>
+  <span class="mk-legende"><span class="mk-leg-proj" title="Projekt – ändert die Projektliste">Projekt</span><span class="mk-leg-kat" title="Katalog – Datenbank als Liste">Katalog</span><span class="mk-leg-satz" title="Gewählter Satz – seine Daten">Gewählter Satz</span></span>
+  <span class="mk-fueller"></span>
+  <span class="mk-fensterwahl" role="group" aria-label="Fenstergröße">Fenster <button class="mk-fensterknopf" data-fenster="frei" aria-pressed="false" title="Dialog füllt das Browserfenster">frei</button><button class="mk-fensterknopf" data-fenster="1280x800" aria-pressed="false" title="Fenster 1 280 × 800">1280×800</button><button class="mk-fensterknopf" data-fenster="1280x720" aria-pressed="false" title="Fenster 1 280 × 720">1280×720</button><button class="mk-fensterknopf" data-fenster="1024x700" aria-pressed="false" title="kleiner Bildschirm 1 024 × 700">1024×700</button></span>
+  <button class="mk-notizknopf" data-zuruecksetzen title="Ausgangsbestand wiederherstellen">Zurücksetzen</button>
+  <button class="mk-notizknopf" data-klasse="mk-notiz-offen">Randnotiz</button>
 </div>
 <aside class="mk-notiz" aria-label="Randnotiz">
   <h2>V1 in den übrigen Projektdialogen</h2>
@@ -268,9 +368,11 @@ body.mk-nur-projekt .v5-katalog { display: none; }
 <li><b>Grenze:</b> Bei 720 px Höhe bleiben dem Katalog rund drei Zeilen; aufgeklappte Details nehmen ihm weitere.</li></ul>
 </aside>
 
+<div class="mk-fenster">
 <div class="epos-dialog" data-satzart="katalog" tabindex="-1">
   <div class="epos-dialog-kopf">
     <h1 class="epos-dialog-titel">Verwaltung BHKW</h1>
+    <div class="mk-banner" role="status" aria-live="polite" hidden></div>
     <span class="mk-kontext">Geben Sie Daten zu BHKW ein</span>
     <button class="mk-info" title="Hilfe">i</button><button class="mk-ki" title="KI-Assistent">KI</button>
     <button class="mk-zu" title="Schließen (Esc)">✕</button>
@@ -278,25 +380,23 @@ body.mk-nur-projekt .v5-katalog { display: none; }
 
 <div class="v1-inhalt">
   <section class="mk-bereich mk-bereich--projekt" aria-label="Im Projekt">
-    <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--projekt">Im Projekt</span><strong>2 Module</strong>
-      <span class="mk-summe">Summe aller ausgewählten Module <b>190 kWth</b></span><span class="mk-fueller"></span>
-      <button class="epos-knopf k-proj">▼ Aus dem Projekt entfernen</button></div>
-    <div class="mk-liste mk-liste--projekt"><table class="mk-tabelle mk-tabelle--projekt"><thead><tr><th class="mk-wahl">Wahl</th><th>Ausgewählte Module</th><th>Hersteller</th><th>Energieträger</th><th class="mk-zahl">P_el [kW]</th><th class="mk-zahl">P_th [kW]</th><th class="mk-zahl">VL/RL [°C]</th></tr></thead><tbody><tr data-satz="BHKW 50 kW Erdgas" data-art="projekt"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 50 kW Erdgas</td><td>Hersteller A</td><td>Erdgas – Variante 1</td><td class="mk-zahl">20</td><td class="mk-zahl">50</td><td class="mk-zahl">80/60</td></tr><tr data-satz="BHKW 140 kW Erdgas" data-art="projekt"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 140 kW Erdgas</td><td>Hersteller E</td><td>Erdgas – Variante 1</td><td class="mk-zahl">70</td><td class="mk-zahl">140</td><td class="mk-zahl">80/60</td></tr></tbody></table></div>
+    <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--projekt">Im Projekt</span><strong data-bind="modulzahl"></strong>
+      <span class="mk-summe">Summe aller ausgewählten Module <b data-bind="summe"></b></span><span class="mk-fueller"></span>
+      <button class="epos-knopf k-kat" data-aktion="in-db" title="Änderungen des gewählten Projektsatzes in den Katalog übernehmen">In die Datenbank übernehmen…</button>
+      <button class="epos-knopf k-proj" data-aktion="entfernen">▼ Aus dem Projekt entfernen</button></div>
+    <div class="mk-liste mk-liste--projekt" tabindex="0" data-art="projekt" aria-label="Projektliste"><table class="mk-tabelle mk-tabelle--projekt"><thead><tr><th class="mk-wahl">Wahl</th><th>Ausgewählte Module</th><th>Hersteller</th><th>Energieträger</th><th class="mk-zahl">P_el [kW]</th><th class="mk-zahl">P_th [kW]</th><th class="mk-zahl">VL/RL [°C]</th></tr></thead><tbody data-liste="projekt"></tbody></table></div>
   </section>
   <section class="mk-bereich mk-bereich--katalog" aria-label="Katalog (Datenbank)">
-    <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span><label class="mk-suche" style="width:16rem"><input type="search" placeholder="Suche (* und ? erlaubt)"></label><span class="mk-zaehler">79 von 79 Sätzen</span><button class="epos-knopf mk-leise k-kat">Filter zurücksetzen</button><span class="mk-fueller"></span>
-      <button class="epos-knopf k-proj">▲ In das Projekt übernehmen</button></div>
-    <div class="mk-liste"><table class="mk-tabelle"><thead><tr><th class="mk-wahl">Wahl</th><th>Bezeichner <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th>Hersteller <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th>Brennstoff <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-zahl">P_el [kW] <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-zahl">P_th [kW] <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-kurz" title="im Projekt verwendet">im Projekt</th></tr></thead><tbody><tr data-satz="BHKW 5 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 5 kW Erdgas</td><td>Hersteller A</td><td>Erdgas</td><td class="mk-zahl">2</td><td class="mk-zahl">5</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 10 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 10 kW Erdgas</td><td>Hersteller B</td><td>Erdgas</td><td class="mk-zahl">4</td><td class="mk-zahl">10</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 20 kW Flüssiggas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 20 kW Flüssiggas</td><td>Hersteller C</td><td>Flüssiggas</td><td class="mk-zahl">8</td><td class="mk-zahl">20</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 30 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 30 kW Erdgas<svg class="mk-schloss" viewBox="0 0 12 14" aria-label="Auslieferungssatz – nur lesen"><rect x="1" y="6" width="10" height="7" rx="1.5"/><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V6" fill="none" stroke-width="1.6"/></svg></td><td>Hersteller A</td><td>Erdgas</td><td class="mk-zahl">15</td><td class="mk-zahl">30</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 50 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 50 kW Erdgas</td><td>Hersteller A</td><td>Erdgas</td><td class="mk-zahl">20</td><td class="mk-zahl">50</td><td class="mk-kurz"><span class="mk-improjekt" title="im Projekt verwendet">✓</span></td></tr><tr data-satz="BHKW 50 kW Biogas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 50 kW Biogas</td><td>Hersteller D</td><td>Biogas</td><td class="mk-zahl">20</td><td class="mk-zahl">50</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 70 kW Erdgas" data-art="katalog" class="mk-gewaehlt"><td class="mk-wahl"><span class="mk-radio mk-an"></span></td><td class="mk-name">BHKW 70 kW Erdgas</td><td>Hersteller B</td><td>Erdgas</td><td class="mk-zahl">35</td><td class="mk-zahl">70</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 100 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 100 kW Erdgas</td><td>Hersteller C</td><td>Erdgas</td><td class="mk-zahl">50</td><td class="mk-zahl">100</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 200 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 200 kW Erdgas</td><td>Hersteller E</td><td>Erdgas</td><td class="mk-zahl">100</td><td class="mk-zahl">200</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 250 kW Biogas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 250 kW Biogas</td><td>Hersteller D</td><td>Biogas</td><td class="mk-zahl">120</td><td class="mk-zahl">250</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 400 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 400 kW Erdgas</td><td>Hersteller E</td><td>Erdgas</td><td class="mk-zahl">200</td><td class="mk-zahl">400</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 15 kW Pflanzenöl" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 15 kW Pflanzenöl</td><td>Hersteller F</td><td>Pflanzenöl</td><td class="mk-zahl">6</td><td class="mk-zahl">15</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 140 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 140 kW Erdgas</td><td>Hersteller E</td><td>Erdgas</td><td class="mk-zahl">70</td><td class="mk-zahl">140</td><td class="mk-kurz"><span class="mk-improjekt" title="im Projekt verwendet">✓</span></td></tr><tr data-satz="BHKW 600 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 600 kW Erdgas</td><td>Hersteller C</td><td>Erdgas</td><td class="mk-zahl">300</td><td class="mk-zahl">600</td><td class="mk-kurz"></td></tr></tbody></table></div>
-    <div class="mk-leiste mk-bereichsfuss"><span class="mk-auswahlname">BHKW 70 kW Erdgas:</span>
-      <button class="epos-knopf k-kat">Vergleichen…</button><button class="epos-knopf k-kat">Schloss setzen…</button>
-      <button class="epos-knopf k-kat">Löschen</button><span class="mk-fueller"></span><button class="epos-knopf k-kat">Neu…</button></div>
+    <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span><label class="mk-suche" style="width:16rem"><input type="search" data-suche placeholder="Suche (* und ? erlaubt)" aria-label="Katalog durchsuchen"></label><span class="mk-zaehler" data-bind="zaehler"></span><button class="epos-knopf mk-leise k-kat" data-aktion="filter-zuruecksetzen">Filter zurücksetzen</button><span class="mk-fueller"></span>
+      <button class="epos-knopf k-proj" data-aktion="uebernehmen">▲ In das Projekt übernehmen</button></div>
+    <div class="mk-liste" tabindex="0" data-art="katalog" aria-label="Katalogliste"><table class="mk-tabelle"><thead><tr><th class="mk-wahl">Wahl</th><th data-sort="name" title="sortieren">Bezeichner <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="hersteller" title="sortieren">Hersteller <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="brennstoff" title="sortieren">Brennstoff <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="pel" class="mk-zahl" title="sortieren">P_el [kW] <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="pth" class="mk-zahl" title="sortieren">P_th [kW] <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-kurz" title="im Projekt verwendet">im Projekt</th></tr></thead><tbody data-liste="katalog"></tbody></table></div>
+    <div class="mk-leiste mk-bereichsfuss"><span class="mk-auswahlname" data-bind="name-katalog"></span>
+      <button class="epos-knopf k-kat" data-aktion="vergleichen">Vergleichen…</button><button class="epos-knopf k-kat" data-aktion="schloss">Schloss setzen…</button><button class="epos-knopf k-kat" data-aktion="loeschen">Löschen</button><span class="mk-fueller"></span><button class="epos-knopf k-kat" data-aktion="neu">Neu…</button></div>
   </section>
   <section class="mk-bereich mk-bereich--satz v1-satz" aria-label="Gewählter Satz">
     <button class="mk-aufklapper v1-zeile k-satz" data-klasse="mk-details-offen"><span class="v1-pfeil">▸</span>
-      <span class="mk-satzzeile mk-satz--katalog"><span class="mk-marke mk-marke--satz">Katalogsatz</span> <b data-satzname>BHKW 70 kW Erdgas</b> · Hersteller B · Erdgas · 35 kWel · 70 kWth</span>
-      <span class="mk-satzzeile mk-satz--projekt"><span class="mk-marke mk-marke--satz">Projektsatz</span> <b data-satzname>BHKW 50 kW Erdgas</b> · Erdgas – Variante 1 · VL 80 °C / RL 60 °C</span>
-      <span class="mk-leise-text">Details</span></button>
-    <div class="v1-details mk-rollt"><div class="mk-satzinhalt mk-satz--katalog"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Katalogsatz</span><strong data-satzname>BHKW 70 kW Erdgas</strong><span class="mk-leise-text">eigener Satz</span><span class="mk-fueller"></span><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button><button class="epos-knopf k-satz">Bearbeiten…</button></div><div class="mk-raster"><div class="mk-feld"><span class="mk-feldname">Hersteller</span><span class="mk-feldwert">Hersteller B</span></div><div class="mk-feld"><span class="mk-feldname">Brennstoff</span><span class="mk-feldwert">Erdgas</span></div><div class="mk-feld"><span class="mk-feldname">P_el</span><span class="mk-feldwert">35 kW</span></div><div class="mk-feld"><span class="mk-feldname">P_th</span><span class="mk-feldwert">70 kW</span></div><div class="mk-feld"><span class="mk-feldname">P_Brennstoff</span><span class="mk-feldwert">120 kW</span></div><div class="mk-feld"><span class="mk-feldname">η_el / η_th</span><span class="mk-feldwert">29 % / 58 %</span></div><div class="mk-feld"><span class="mk-feldname">Stromkennzahl</span><span class="mk-feldwert">0,50</span></div><div class="mk-feld"><span class="mk-feldname">Mindestleistung</span><span class="mk-feldwert">50 %</span></div><div class="mk-feld mk-feld--breit"><span class="mk-feldname">Beschreibung</span><span class="mk-feldwert">Beispielsatz mit runden Werten</span></div></div><button class="mk-aufklapper k-satz" data-klasse="mk-alle-offen">▸ Alle Daten des Katalogsatzes (bearbeitbar)</button><div class="mk-alle"><div class="mk-feld"><span class="mk-feldname">Motortyp</span><span class="mk-feldwert">Gasmotor</span></div><div class="mk-feld"><span class="mk-feldname">Wartungsintervall</span><span class="mk-feldwert">4 000 h</span></div><div class="mk-feld"><span class="mk-feldname">Investition (Katalog)</span><span class="mk-feldwert">100 000 €</span></div><div class="mk-feld"><span class="mk-feldname">BEHG-Faktor</span><span class="mk-feldwert">0,20 t/MWh</span></div><div class="mk-leiste mk-leiste--fuss"><span class="mk-leise-text">keine Änderung</span><span class="mk-fueller"></span><button class="epos-knopf k-satz" aria-disabled="true">Speichern</button></div></div></div><div class="mk-satzinhalt mk-satz--projekt"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Projektsatz</span><strong data-satzname>BHKW 50 kW Erdgas</strong><span class="mk-leise-text">Kopie aus dem Katalog</span><span class="mk-fueller"></span><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button></div><div class="mk-leiste"><button class="epos-knopf k-satz">Investitionskosten…</button><button class="epos-knopf k-satz">Betriebskosten…</button><button class="epos-knopf k-satz">Energiekosten…</button></div><div class="mk-raster"><div class="mk-feld"><span class="mk-feldname">Energieträger</span><span class="mk-feldwert"><span class="mk-wahlfeld">Erdgas – Variante 1 ▾</span></span></div><div class="mk-feld"><span class="mk-feldname">Grenzleistung</span><span class="mk-feldwert">0 %</span></div><div class="mk-feld"><span class="mk-feldname">Vorlauf</span><span class="mk-feldwert">80 °C</span></div><div class="mk-feld"><span class="mk-feldname">Rücklauf</span><span class="mk-feldwert">60 °C</span></div><div class="mk-herleitung">0 % = Projektvorgabe 30 % greift · Senken: Heizkreis, Puffer 1</div></div></div></div>
+      <span class="mk-satzzeile" data-bind="satzzeile"></span><span class="mk-leise-text">Details</span></button>
+    <div class="v1-details mk-rollt" data-detail="beide"></div>
   </section>
 </div>
   <div class="epos-dialog-fuss">
@@ -304,34 +404,719 @@ body.mk-nur-projekt .v5-katalog { display: none; }
     <button class="epos-knopf epos-knopf--primaer">OK</button>
   </div>
 </div>
+</div>
 
 <script>
-document.addEventListener('click', function (e) {
-  var k = e.target.closest('[data-klasse]');
-  if (k) { document.body.classList.toggle(k.dataset.klasse); return; }
-  var r = e.target.closest('[data-reiter]');
-  if (r) { document.body.dataset.reiter = r.dataset.reiter; return; }
-  var z = e.target.closest('tr[data-satz]');
-  if (z && !e.target.closest('button')) {
-    document.querySelectorAll('tr.mk-gewaehlt').forEach(function (x) { x.classList.remove('mk-gewaehlt'); });
-    z.classList.add('mk-gewaehlt');
-    document.querySelector('.epos-dialog').dataset.satzart = z.dataset.art;
-    document.querySelectorAll('.mk-satz--' + z.dataset.art + ' [data-satzname]').forEach(function (n) { n.textContent = z.dataset.satz; });
-    document.querySelectorAll('.mk-auswahlname').forEach(function (n) {
-      if (n.closest('.mk-bereich--' + z.dataset.art)) n.textContent = z.dataset.satz + ':';
+/* Spiellogik der Katalogauswahl-Mockups - in V1 bis V5 wortgleich; die Variante
+   steht in body[data-variante]. Alles liegt im Speicher; "Zurücksetzen" stellt den
+   Ausgangsbestand wieder her. Keine Hersteller- und Produktdaten. */
+(function () {
+'use strict';
+var V = document.body.dataset.variante;
+var MEHRFACH = V === 'V2' || V === 'V3' || V === 'V4';
+var SCHLOSS_ZU = '<svg class="mk-schloss" viewBox="0 0 12 14" aria-label="Auslieferungssatz – nur lesen"><rect x="1" y="6" width="10" height="7" rx="1.5"/><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V6" fill="none" stroke-width="1.6"/></svg>';
+var SCHLOSS_AUF = '<svg class="mk-schloss" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="6" width="10" height="7" rx="1.5"/><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V3" fill="none" stroke-width="1.6"/></svg>';
+var PAPIERKORB = '<svg class="mk-sym" viewBox="0 0 12 14" aria-hidden="true"><path d="M1 3h10M4.5 3V1.5h3V3M2.5 3l.8 10h5.4l.8-10" fill="none" stroke-width="1.4"/></svg>';
+var BRENNSTOFFE = ['Erdgas', 'Biogas', 'Flüssiggas', 'Pflanzenöl'];
+
+/* ---- Datenbestand: 20 Katalogsätze (zwei gesperrt), zwei Projektsätze ---- */
+var AUSGANG = {
+  katalog: [
+    [1, 'BHKW 5 kW Erdgas', 'Hersteller A', 'Erdgas', 2, 5, false],
+    [2, 'BHKW 10 kW Erdgas', 'Hersteller B', 'Erdgas', 4, 10, false],
+    [3, 'BHKW 15 kW Pflanzenöl', 'Hersteller F', 'Pflanzenöl', 6, 15, false],
+    [4, 'BHKW 20 kW Flüssiggas', 'Hersteller C', 'Flüssiggas', 8, 20, false],
+    [5, 'BHKW 25 kW Pflanzenöl', 'Hersteller F', 'Pflanzenöl', 10, 25, false],
+    [6, 'BHKW 30 kW Erdgas', 'Hersteller A', 'Erdgas', 15, 30, true],
+    [7, 'BHKW 50 kW Erdgas', 'Hersteller A', 'Erdgas', 20, 50, false],
+    [8, 'BHKW 50 kW Biogas', 'Hersteller D', 'Biogas', 20, 50, false],
+    [9, 'BHKW 70 kW Erdgas', 'Hersteller B', 'Erdgas', 35, 70, false],
+    [10, 'BHKW 80 kW Erdgas', 'Hersteller F', 'Erdgas', 40, 80, false],
+    [11, 'BHKW 100 kW Erdgas', 'Hersteller C', 'Erdgas', 50, 100, false],
+    [12, 'BHKW 120 kW Biogas', 'Hersteller D', 'Biogas', 60, 120, false],
+    [13, 'BHKW 140 kW Erdgas', 'Hersteller E', 'Erdgas', 70, 140, false],
+    [14, 'BHKW 160 kW Erdgas', 'Hersteller B', 'Erdgas', 80, 160, false],
+    [15, 'BHKW 200 kW Erdgas', 'Hersteller E', 'Erdgas', 100, 200, false],
+    [16, 'BHKW 250 kW Biogas', 'Hersteller D', 'Biogas', 120, 250, false],
+    [17, 'BHKW 300 kW Erdgas', 'Hersteller A', 'Erdgas', 150, 300, false],
+    [18, 'BHKW 400 kW Erdgas', 'Hersteller E', 'Erdgas', 200, 400, true],
+    [19, 'BHKW 500 kW Biogas', 'Hersteller D', 'Biogas', 250, 500, false],
+    [20, 'BHKW 600 kW Erdgas', 'Hersteller C', 'Erdgas', 300, 600, false]
+  ],
+  projekt: [[101, 7, { pth: 55 }], [102, 13]],   // 101 ist gegenüber seinem Ursprung geändert (P_th 55 statt 50 kW)
+  wahlKatalog: 9
+};
+
+var S = null;          // Zustand
+var fenster = 'frei';  // Fenstergroesse (bleibt beim Zuruecksetzen)
+var bannerUhr = null;
+var ov = null;         // offene Ueberlagerung
+
+function $(sel, wurzel) { return (wurzel || document).querySelector(sel); }
+function $$(sel, wurzel) { return Array.prototype.slice.call((wurzel || document).querySelectorAll(sel)); }
+function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function zahl(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ','); }
+function module(n) { return n === 1 ? '1 Modul' : n + ' Module'; }
+function saetze(n) { return n === 1 ? '1 Satz' : n + ' Sätze'; }
+
+function katalogSatz(id) { return S.katalog.filter(function (k) { return k.id === id; })[0] || null; }
+function projektSatz(id) { return S.projekt.filter(function (p) { return p.id === id; })[0] || null; }
+function projektKopie(k, id) {
+  return { id: id, katId: k.id, name: k.name, hersteller: k.hersteller, brennstoff: k.brennstoff, pel: k.pel, pth: k.pth,
+    traeger: k.brennstoff + ' – Variante 1', grenze: 0, vl: 80, rl: 60 };
+}
+function extra(k) {
+  if (!k.extra) k.extra = { motortyp: k.brennstoff === 'Pflanzenöl' ? 'Dieselmotor' : 'Gasmotor', wartung: k.pth >= 200 ? 2000 : 4000, invest: k.pth * 1500 };
+  return k.extra;
+}
+function kennwerte(k) {
+  var pbr = Math.round((k.pel + k.pth) / 0.87);
+  return { pbr: pbr, eel: Math.round(100 * k.pel / pbr), eth: Math.round(100 * k.pth / pbr), skz: (k.pel / k.pth).toFixed(2).replace('.', ',') };
+}
+
+function ausgang() {
+  S = { katalog: AUSGANG.katalog.map(function (z) { return { id: z[0], name: z[1], hersteller: z[2], brennstoff: z[3], pel: z[4], pth: z[5], schloss: z[6] }; }),
+    projekt: [], naechsteId: 200, suche: '', sort: { feld: null, ab: false },
+    markK: [], markP: [], wahlK: AUSGANG.wahlKatalog, wahlP: null, zuletzt: 'katalog', nurProjekt: false };
+  AUSGANG.projekt.forEach(function (p) { var k = projektKopie(katalogSatz(p[1]), p[0]); if (p[2]) Object.keys(p[2]).forEach(function (f) { k[f] = p[2][f]; }); S.projekt.push(k); });
+  S.wahlP = S.projekt.length ? S.projekt[0].id : null;
+  if (V === 'V3') S.zuletzt = 'projekt';
+  if (V === 'V4') S.zuletzt = S.projekt.length ? 'projekt' : 'katalog';
+  document.body.classList.remove('mk-schublade-offen', 'mk-nur-projekt', 'mk-alle-offen', 'mk-details-offen', 'mk-katsatz-offen');
+  $$('input[data-suche]').forEach(function (i) { i.value = ''; });
+}
+
+/* ---- Suche (* und ? als Platzhalter) und Sortierung ---- */
+function suchmuster(s) {
+  s = s.trim(); if (!s) return null;
+  return new RegExp(s.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.'), 'i');
+}
+function gefiltert() {
+  var m = suchmuster(S.suche);
+  var l = S.katalog.filter(function (k) { return !m || m.test(k.name + ' ' + k.hersteller + ' ' + k.brennstoff); });
+  if (S.sort.feld) {
+    var f = S.sort.feld, r = S.sort.ab ? -1 : 1;
+    l.sort(function (a, b) {
+      var x = a[f], y = b[f];
+      return r * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'de', { numeric: true }));
     });
   }
+  return l;
+}
+function imProjekt(katId) { return S.projekt.some(function (p) { return p.katId === katId; }); }
+function summe() { return S.projekt.reduce(function (s, p) { return s + p.pth; }, 0); }
+
+/* Ist die Wahl einer Liste fuer den Anwender sichtbar? (Radio oder Markierung) */
+function sichtbar(art) { return V === 'V1' || V === 'V3' || V === 'V4' || S.zuletzt === art; }
+function zuUebernehmen() {
+  if (MEHRFACH && S.markK.length) return S.markK.slice();
+  return S.wahlK != null && katalogSatz(S.wahlK) && sichtbar('katalog') ? [S.wahlK] : [];
+}
+function zuEntfernen() {
+  if (V === 'V2' && S.markP.length) return S.markP.slice();
+  return S.wahlP != null && projektSatz(S.wahlP) && sichtbar('projekt') ? [S.wahlP] : [];
+}
+
+/* ---- Zeilen ---- */
+function wahlZelle(art, id) {
+  if (art === 'katalog' && MEHRFACH)
+    return '<td class="mk-wahl"><span class="mk-kaestchen' + (S.markK.indexOf(id) >= 0 ? ' mk-an' : '') + '" data-markieren="katalog" role="checkbox" aria-checked="' + (S.markK.indexOf(id) >= 0) + '"></span></td>';
+  if (art === 'projekt' && V === 'V2')
+    return '<td class="mk-wahl"><span class="mk-kaestchen' + (S.markP.indexOf(id) >= 0 ? ' mk-an' : '') + '" data-markieren="projekt" role="checkbox" aria-checked="' + (S.markP.indexOf(id) >= 0) + '"></span></td>';
+  var an = art === 'katalog' ? S.wahlK === id : S.wahlP === id;
+  return '<td class="mk-wahl"><span class="mk-radio' + (an ? ' mk-an' : '') + '"></span></td>';
+}
+function zeilenKlasse(art, id) {
+  var k = [];
+  var gew = art === 'katalog' ? S.wahlK === id : S.wahlP === id;
+  if (gew && (V === 'V3' || S.zuletzt === art)) k.push('mk-gewaehlt');
+  if ((art === 'katalog' ? S.markK : S.markP).indexOf(id) >= 0) k.push('mk-markiert');
+  if (V === 'V5' && art === 'projekt') k.push('v5-pzeile');
+  return k.length ? ' class="' + k.join(' ') + '"' : '';
+}
+function katalogZeile(k) {
+  var s = '<tr data-id="' + k.id + '" data-art="katalog"' + zeilenKlasse('katalog', k.id) + '>';
+  if (V !== 'V5') s += wahlZelle('katalog', k.id);
+  s += '<td class="mk-name">' + esc(k.name) + (k.schloss ? SCHLOSS_ZU : '') + '</td><td>' + esc(k.hersteller) + '</td><td>' + esc(k.brennstoff) +
+    '</td><td class="mk-zahl">' + k.pel + '</td><td class="mk-zahl">' + k.pth + '</td>';
+  if (V === 'V5') {
+    s += '<td class="mk-aktionen"><button class="mk-sk k-proj" data-aktion="uebernehmen-zeile" title="In das Projekt übernehmen">＋</button>' +
+      '<button class="mk-sk k-satz" data-aktion="bearbeiten-zeile" title="' + (k.schloss ? 'Bearbeiten – erst Schloss aufheben' : 'Bearbeiten…') + '"' + (k.schloss ? ' aria-disabled="true"' : '') + '>✎</button>' +
+      '<button class="mk-sk k-kat" data-aktion="schloss-zeile" title="' + (k.schloss ? 'Schloss aufheben…' : 'Schloss setzen…') + '">' + (k.schloss ? SCHLOSS_ZU : SCHLOSS_AUF) + '</button>' +
+      '<button class="mk-sk k-kat" data-aktion="loeschen-zeile" title="' + (k.schloss ? 'Löschen – gesperrt, erst Schloss aufheben' : 'Löschen') + '"' + (k.schloss ? ' aria-disabled="true"' : '') + '>' + PAPIERKORB + '</button></td>';
+  } else {
+    s += '<td class="mk-kurz">' + (imProjekt(k.id) ? '<span class="mk-improjekt" title="im Projekt verwendet">✓</span>' : '') + '</td>';
+  }
+  return s + '</tr>';
+}
+function projektZeile(p) {
+  var s = '<tr data-id="' + p.id + '" data-art="projekt"' + zeilenKlasse('projekt', p.id) + '>';
+  if (V !== 'V5') s += wahlZelle('projekt', p.id);
+  s += '<td class="mk-name">' + esc(p.name) + '</td>';
+  if (V === 'V2') return s + '<td class="mk-zahl">' + p.pth + '</td></tr>';
+  s += '<td>' + esc(p.hersteller) + '</td><td>' + esc(V === 'V5' ? p.traeger.replace('Variante', 'Var.') : p.traeger) + '</td><td class="mk-zahl">' + p.pel + '</td><td class="mk-zahl">' + p.pth + '</td>';
+  if (V !== 'V5') s += '<td class="mk-zahl">' + p.vl + '/' + p.rl + '</td>';
+  if (V === 'V3' || V === 'V5')
+    s += '<td class="mk-aktionen"><button class="mk-sk k-satz" data-aktion="kosten-zeile" title="Kosten…">€</button><button class="mk-sk k-kat" data-aktion="in-db-zeile" title="In die Datenbank übernehmen…">DB</button><button class="mk-sk k-proj" data-aktion="entfernen-zeile" title="Aus dem Projekt entfernen">−</button></td>';
+  return s + '</tr>';
+}
+function leerzeile(text, spalten) { return '<tr class="mk-leerzeile"><td colspan="' + spalten + '">' + text + '</td></tr>'; }
+
+function zeichneListen() {
+  var l = gefiltert();
+  $$('[data-liste="katalog"]').forEach(function (tb) {
+    var sp = tb.closest('table').querySelectorAll('thead th').length;
+    var h = V === 'V5' ? '<tr class="v5-gruppe v5-gruppe--katalog"><td colspan="6"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span> <b data-bind="katalogzahl"></b> · ＋ übernimmt ins Projekt, Doppelklick ebenso</td></tr>' : '';
+    tb.innerHTML = h + (l.length ? l.map(katalogZeile).join('') : leerzeile('Kein Satz passt zur Suche.', sp));
+  });
+  $$('[data-liste="projekt"]').forEach(function (tb) {
+    var sp = tb.closest('table').querySelectorAll('thead th').length;
+    var h = V === 'V5' ? '<tr class="v5-gruppe v5-gruppe--projekt"><td colspan="6"><span class="mk-marke mk-marke--projekt">Im Projekt</span> <b data-bind="modulzahl"></b> · Summe aller ausgewählten Module <b data-bind="summe"></b></td></tr>' : '';
+    tb.innerHTML = h + (S.projekt.length ? S.projekt.map(projektZeile).join('') : leerzeile('Noch keine Komponente im Projekt.', sp));
+    if (V === 'V5') {
+      /* die Projektzeilen haften oben in der einen Liste - bis drei Zeilen, sonst nehmen sie dem Katalog den Platz */
+      tb.classList.toggle('mk-nicht-haftend', S.projekt.length > 3);
+      $$('tr', tb).forEach(function (tr, i) { tr.style.top = (i === 0 ? 34 : 64 + (i - 1) * 46) + 'px'; });
+    }
+  });
+  binde('modulzahl', module(S.projekt.length));
+  binde('summe', summe() + ' kWth');
+  binde('katalogzahl', saetze(S.katalog.length));
+  binde('zaehler', l.length + ' von ' + S.katalog.length + ' Sätzen');
+  $$('th[data-sort]').forEach(function (th) {
+    var an = S.sort.feld === th.dataset.sort;
+    if (an) th.setAttribute('aria-sort', S.sort.ab ? 'descending' : 'ascending'); else th.removeAttribute('aria-sort');
+    var p = $('.mk-pfeil', th); if (p) p.textContent = an ? (S.sort.ab ? '↓' : '↑') : '↕';
+  });
+  $$('[data-markieren="alle-katalog"]').forEach(function (k) { var an = l.length && l.every(function (x) { return S.markK.indexOf(x.id) >= 0; }); k.classList.toggle('mk-an', !!an); });
+  $$('[data-markieren="alle-projekt"]').forEach(function (k) { var an = S.projekt.length && S.projekt.every(function (x) { return S.markP.indexOf(x.id) >= 0; }); k.classList.toggle('mk-an', !!an); });
+  zeichneKnoepfe();
+}
+function binde(name, text) { $$('[data-bind="' + name + '"]').forEach(function (n) { n.textContent = text; }); }
+
+function zeichneKnoepfe() {
+  var k = katalogSatz(S.wahlK), p = projektSatz(S.wahlP);
+  var nU = zuUebernehmen().length, nE = zuEntfernen().length;
+  $$('[data-aktion="uebernehmen"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!nU)); });
+  $$('[data-aktion="entfernen"], [data-aktion="in-db"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!nE)); });
+  $$('[data-aktion="schloss"]').forEach(function (b) { b.textContent = k && k.schloss ? 'Schloss aufheben…' : 'Schloss setzen…'; b.setAttribute('aria-disabled', String(!k)); });
+  $$('[data-aktion="loeschen"]').forEach(function (b) {
+    b.setAttribute('aria-disabled', String(!k || k.schloss));
+    b.title = k && k.schloss ? 'Gesperrt – erst Schloss aufheben' : 'Katalogsatz löschen (mit Rückfrage)';
+  });
+  var nameK = MEHRFACH && S.markK.length > 1 ? S.markK.length + ' gewählt:' : (k ? k.name + ':' : '—');
+  if (MEHRFACH && S.markK.length === 1) { var m = katalogSatz(S.markK[0]); nameK = m ? m.name + ':' : nameK; }
+  binde('name-katalog', nameK);
+  binde('name-projekt', p ? p.name + ':' : '—');
+  $$('.mk-chip').forEach(function (c) { c.setAttribute('aria-pressed', String(document.body.classList.contains('mk-nur-projekt'))); });
+}
+
+/* ---- Satz (Details) ---- */
+function feld(name, wert, breit) { return '<div class="mk-feld' + (breit ? ' mk-feld--breit' : '') + '"><span class="mk-feldname">' + name + '</span><span class="mk-feldwert">' + wert + '</span></div>'; }
+function eingabe(name, schluessel, wert, lesen, einheit) {
+  return '<label class="mk-feld"><span class="mk-feldname">' + name + (einheit ? ' [' + einheit + ']' : '') + '</span><input class="mk-feldwert" data-kfeld="' + schluessel + '" value="' + esc(wert) + '"' + (lesen ? ' readonly' : '') + '></label>';
+}
+function katalogDetail(k, kompakt) {
+  var e = extra(k), w = kennwerte(k);
+  return '<div class="mk-satzinhalt" data-satz-art="katalog" data-satz-id="' + k.id + '"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Katalogsatz</span><strong>' + esc(k.name) + '</strong>' +
+    (k.schloss ? '<span class="mk-leise-text">' + SCHLOSS_ZU + ' Auslieferungssatz – nur lesen</span>' : '<span class="mk-leise-text">eigener Satz</span>') +
+    '<span class="mk-fueller"></span><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button>' +
+    (k.schloss ? '<span class="mk-leise-text">Erst Schloss aufheben</span>' : '') +
+    '<button class="epos-knopf k-satz" data-aktion="bearbeiten"' + (k.schloss ? ' aria-disabled="true" title="Erst Schloss aufheben"' : '') + '>Bearbeiten…</button></div>' +
+    '<div class="mk-raster' + (kompakt ? ' mk-raster--kompakt' : '') + '">' + feld('Hersteller', esc(k.hersteller)) + feld('Brennstoff', esc(k.brennstoff)) + feld('P_el', k.pel + ' kW') + feld('P_th', k.pth + ' kW') +
+    feld('P_Brennstoff', w.pbr + ' kW') + feld('η_el / η_th', w.eel + ' % / ' + w.eth + ' %') + feld('Stromkennzahl', w.skz) + feld('Mindestleistung', '50 %') +
+    feld('Im Projekt', imProjekt(k.id) ? 'ja' : 'nein') + feld('Beschreibung', 'Beispielsatz mit runden Werten', true) + '</div>' +
+    '<button class="mk-aufklapper k-satz" data-klasse="mk-alle-offen">▸ Alle Daten des Katalogsatzes (' + (k.schloss ? 'nur lesen' : 'bearbeitbar') + ')</button>' +
+    '<div class="mk-alle">' + eingabe('Motortyp', 'motortyp', e.motortyp, k.schloss) + eingabe('Wartungsintervall', 'wartung', zahl(e.wartung), k.schloss, 'h') +
+    eingabe('Investition (Katalog)', 'invest', zahl(e.invest), k.schloss, '€') + feld('BEHG-Faktor', '0,20 t/MWh') +
+    '<div class="mk-leiste mk-leiste--fuss"><span class="mk-leise-text" data-aenderung>' + (k.schloss ? 'gesperrt – nur lesen' : 'keine Änderung') + '</span><span class="mk-fueller"></span><button class="epos-knopf k-satz" data-aktion="speichern" aria-disabled="true">Speichern</button></div></div></div>';
+}
+function projektDetail(p, kompakt) {
+  var opt = [p.brennstoff + ' – Variante 1', p.brennstoff + ' – Variante 2'].map(function (o) { return '<option' + (o === p.traeger ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+  return '<div class="mk-satzinhalt" data-satz-art="projekt" data-satz-id="' + p.id + '"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Projektsatz</span><strong>' + esc(p.name) + '</strong><span class="mk-leise-text">Kopie aus dem Katalog</span>' +
+    '<span class="mk-fueller"></span><button class="epos-knopf k-kat" data-aktion="in-db-satz" title="Änderungen dieses Projektsatzes in den Katalog übernehmen">In die Datenbank übernehmen…</button><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button></div>' +
+    '<div class="mk-leiste"><button class="epos-knopf k-satz" data-aktion="kosten" data-kosten="Investitionskosten">Investitionskosten…</button><button class="epos-knopf k-satz" data-aktion="kosten" data-kosten="Betriebskosten">Betriebskosten…</button><button class="epos-knopf k-satz" data-aktion="kosten" data-kosten="Energiekosten">Energiekosten…</button></div>' +
+    '<div class="mk-raster' + (kompakt ? ' mk-raster--kompakt' : '') + '"><label class="mk-feld"><span class="mk-feldname">Energieträger</span><select class="mk-feldwert" data-pfeld="traeger">' + opt + '</select></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">Grenzleistung [%]</span><input class="mk-feldwert" data-pfeld="grenze" inputmode="numeric" value="' + p.grenze + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">Vorlauf [°C]</span><input class="mk-feldwert" data-pfeld="vl" inputmode="numeric" value="' + p.vl + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">Rücklauf [°C]</span><input class="mk-feldwert" data-pfeld="rl" inputmode="numeric" value="' + p.rl + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">P_el [kW]</span><input class="mk-feldwert" data-pfeld="pel" inputmode="numeric" value="' + p.pel + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">P_th [kW]</span><input class="mk-feldwert" data-pfeld="pth" inputmode="numeric" value="' + p.pth + '"></label>' +
+    '<div class="mk-herleitung" data-herleitung>' + herleitung(p) + '</div><div class="mk-herleitung" data-abweichung>' + esc(abweichungText(p)) + '</div></div></div>';
+}
+function herleitung(p) { return (Number(p.grenze) ? p.grenze + ' % gilt für dieses Modul' : '0 % = Projektvorgabe 30 % greift') + ' · Senken: Heizkreis, Puffer 1'; }
+function leerDetail(art) {
+  if (art === 'projekt') return '<div class="mk-leer">' + (S.projekt.length ? 'Kein Projektsatz gewählt – wählen Sie eine Zeile der Projektliste.' : 'Noch keine Komponente im Projekt – übernehmen Sie einen Satz aus dem Katalog.') + '</div>';
+  return '<div class="mk-leer">Kein Katalogsatz gewählt – wählen Sie eine Zeile des Katalogs.</div>';
+}
+function detailFuer(art, kompakt) {
+  if (art === 'katalog') { var k = katalogSatz(S.wahlK); return k ? katalogDetail(k, kompakt) : leerDetail('katalog'); }
+  var p = projektSatz(S.wahlP); return p ? projektDetail(p, kompakt) : leerDetail('projekt');
+}
+function zeichneDetails() {
+  $$('[data-detail]').forEach(function (d) {
+    var art = d.dataset.detail === 'beide' ? S.zuletzt : d.dataset.detail;
+    d.innerHTML = detailFuer(art, d.dataset.kompakt === 'ja');
+    var dlg = $('.epos-dialog'); if (dlg && d.dataset.detail === 'beide') dlg.dataset.satzart = art;
+  });
+  var k = katalogSatz(S.wahlK), p = projektSatz(S.wahlP);
+  $$('[data-bind="satzzeile"]').forEach(function (z) {
+    var art = S.zuletzt;
+    if (art === 'katalog' && k) z.innerHTML = '<span class="mk-marke mk-marke--satz">Katalogsatz</span> <b>' + esc(k.name) + '</b>' + (k.schloss ? SCHLOSS_ZU : '') + ' · ' + esc(k.hersteller) + ' · ' + esc(k.brennstoff) + ' · ' + k.pel + ' kWel · ' + k.pth + ' kWth';
+    else if (art === 'projekt' && p) z.innerHTML = '<span class="mk-marke mk-marke--satz">Projektsatz</span> <b>' + esc(p.name) + '</b> · ' + esc(p.traeger) + ' · VL ' + p.vl + ' °C / RL ' + p.rl + ' °C';
+    else z.innerHTML = '<span class="mk-marke mk-marke--satz">Satz</span> kein Satz gewählt';
+  });
+  $$('[data-bind="katsatzkopf"]').forEach(function (z) {
+    z.innerHTML = k ? '<span class="mk-marke mk-marke--satz">Katalogsatz</span> <b>' + esc(k.name) + '</b>' + (k.schloss ? SCHLOSS_ZU : '') + ' · ' + k.pel + ' kWel · ' + k.pth + ' kWth · ' + (k.schloss ? 'nur lesen' : 'Bearbeiten…') : 'kein Katalogsatz gewählt';
+  });
+}
+function zeichne() {
+  if (V === 'V4') document.body.dataset.reiter = S.zuletzt;
+  zeichneListen(); zeichneDetails();
+}
+
+/* ---- Wahl ---- */
+function waehle(art, id) {
+  if (art === 'katalog') S.wahlK = id; else S.wahlP = id;
+  S.zuletzt = art;
+  zeichneWahl();
+}
+/* Wahl ohne neue Zeilen: die Zeilen bleiben dieselben Elemente, damit ein Doppelklick ankommt */
+function zeichneWahl() {
+  if (V === 'V4') document.body.dataset.reiter = S.zuletzt;
+  $$('tr[data-id]').forEach(function (tr) {
+    var art = tr.dataset.art, id = Number(tr.dataset.id);
+    var gew = art === 'katalog' ? S.wahlK === id : S.wahlP === id;
+    tr.classList.toggle('mk-gewaehlt', gew && (V === 'V3' || S.zuletzt === art));
+    var r = tr.querySelector('.mk-radio'); if (r) r.classList.toggle('mk-an', gew);
+  });
+  zeichneKnoepfe(); zeichneDetails();
+}
+function zeigeZeile(art, id) {
+  var tr = $('tr[data-art="' + art + '"][data-id="' + id + '"]'); if (!tr) return;
+  var liste = tr.closest('.mk-liste'); if (!liste) return;
+  var lr = liste.getBoundingClientRect(), r = tr.getBoundingClientRect();
+  var oben = lr.top + 34;
+  if (V === 'V5' && art === 'katalog' && !document.querySelector('.v5-projekt.mk-nicht-haftend')) oben = lr.top + 64 + S.projekt.length * 46;
+  if (r.top < oben) liste.scrollTop -= oben - r.top;
+  else if (r.bottom > lr.bottom) liste.scrollTop += r.bottom - lr.bottom;
+}
+
+/* ---- Handlungen ---- */
+function uebernehmen(ids) {
+  ids = ids.filter(function (id) { return katalogSatz(id); });
+  if (!ids.length) { banner('hinweis', 'Erst einen Katalogsatz wählen, dann übernehmen.'); return; }
+  var letzte = null;
+  ids.forEach(function (id) { var p = projektKopie(katalogSatz(id), S.naechsteId++); S.projekt.push(p); letzte = p; });
+  S.markK = [];
+  S.wahlP = letzte.id;
+  zeichne();
+  zeigeZeile('projekt', letzte.id);
+  banner('erfolg', ids.length === 1 ? '1 Modul ins Projekt übernommen: „' + letzte.name + '“.' : ids.length + ' Module ins Projekt übernommen.');
+}
+function entfernen(ids) {
+  ids = ids.filter(function (id) { return projektSatz(id); });
+  if (!ids.length) { banner('hinweis', 'Erst eine Komponente der Projektliste wählen.'); return; }
+  var name = projektSatz(ids[0]).name;
+  var pos = S.projekt.findIndex(function (p) { return p.id === ids[0]; });
+  S.projekt = S.projekt.filter(function (p) { return ids.indexOf(p.id) < 0; });
+  S.markP = S.markP.filter(function (id) { return ids.indexOf(id) < 0; });
+  if (ids.indexOf(S.wahlP) >= 0 || !projektSatz(S.wahlP)) { var n = S.projekt[Math.min(pos, S.projekt.length - 1)]; S.wahlP = n ? n.id : null; }
+  zeichne();
+  banner('erfolg', ids.length === 1 ? '„' + name + '“ aus dem Projekt entfernt.' : ids.length + ' Module aus dem Projekt entfernt.');
+}
+function loeschen(id) {
+  var k = katalogSatz(id);
+  if (!k) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
+  if (k.schloss) { banner('warnung', '„' + k.name + '“ ist gesperrt – Löschen geht erst nach „Schloss aufheben…“.'); return; }
+  rueckfrage('„' + k.name + '“ aus dem Katalog löschen? Projektsätze, die daraus übernommen wurden, bleiben erhalten.', 'Löschen', function () {
+    var l = gefiltert(), pos = l.indexOf(k);
+    S.katalog = S.katalog.filter(function (x) { return x.id !== id; });
+    S.markK = S.markK.filter(function (x) { return x !== id; });
+    if (S.wahlK === id) { var r = l.filter(function (x) { return x.id !== id; }); var n = r[Math.min(pos, r.length - 1)]; S.wahlK = n ? n.id : null; }
+    zeichne();
+    banner('erfolg', 'Katalogsatz „' + k.name + '“ gelöscht.');
+  });
+}
+function schloss(id) {
+  var k = katalogSatz(id);
+  if (!k) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
+  var setzen = !k.schloss;
+  rueckfrage(setzen ? 'Schloss für „' + k.name + '“ setzen? Der Satz ist danach nur lesbar und lässt sich nicht löschen.'
+                    : 'Schloss für „' + k.name + '“ aufheben? Der Satz ist danach bearbeitbar und löschbar.',
+    setzen ? 'Schloss setzen' : 'Schloss aufheben', function () {
+      k.schloss = setzen; S.wahlK = id; if (V !== 'V3') S.zuletzt = 'katalog';
+      zeichne();
+      banner('erfolg', setzen ? '„' + k.name + '“ ist gesperrt.' : 'Schloss von „' + k.name + '“ aufgehoben.');
+    });
+}
+function satzFormular(k) {
+  var bs = BRENNSTOFFE.map(function (b) { return '<option' + (k && k.brennstoff === b ? ' selected' : '') + '>' + b + '</option>'; }).join('');
+  return '<div class="mk-formular">' +
+    '<label class="mk-feld mk-feld--breit"><span class="mk-feldname">Name</span><input class="mk-feldwert" data-neu="name" placeholder="z. B. BHKW 90 kW Erdgas" value="' + (k ? esc(k.name) : '') + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">Hersteller</span><input class="mk-feldwert" data-neu="hersteller" placeholder="z. B. Hersteller A" value="' + (k ? esc(k.hersteller) : '') + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">Brennstoff</span><select class="mk-feldwert" data-neu="brennstoff">' + bs + '</select></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">P_el [kW]</span><input class="mk-feldwert" data-neu="pel" inputmode="numeric" value="' + (k ? k.pel : '') + '"></label>' +
+    '<label class="mk-feld"><span class="mk-feldname">P_th [kW]</span><input class="mk-feldwert" data-neu="pth" inputmode="numeric" value="' + (k ? k.pth : '') + '"></label>' +
+    '</div><div class="mk-ov-fehler" data-fehler></div>';
+}
+function leseFormular(o) {
+  var w = {}; $$('[data-neu]', o).forEach(function (i) { w[i.dataset.neu] = i.value.trim(); });
+  var pel = Number(w.pel.replace(',', '.')), pth = Number(w.pth.replace(',', '.'));
+  var f = !w.name ? 'Bitte einen Namen eingeben.' : !(pel > 0) ? 'P_el muss eine Zahl größer 0 sein.' : !(pth > 0) ? 'P_th muss eine Zahl größer 0 sein.' : '';
+  if (f) { $('[data-fehler]', o).textContent = f; return null; }
+  return { name: w.name, hersteller: w.hersteller || 'Hersteller A', brennstoff: w.brennstoff, pel: pel, pth: pth };
+}
+function neu() {
+  oeffne({ titel: 'Neuer Katalogsatz', html: satzFormular(null), knoepfe: [{ text: 'Abbrechen' }, { text: 'OK', primaer: true, aktion: function (o) {
+    var w = leseFormular(o); if (!w) return false;
+    var k = { id: S.naechsteId++, name: w.name, hersteller: w.hersteller, brennstoff: w.brennstoff, pel: w.pel, pth: w.pth, schloss: false };
+    S.katalog.push(k); S.wahlK = k.id; S.zuletzt = 'katalog';
+    zeichne(); zeigeZeile('katalog', k.id);
+    banner('erfolg', 'Katalogsatz „' + k.name + '“ angelegt' + (gefiltert().indexOf(k) < 0 ? ' – die Suche blendet ihn aus.' : '.'));
+  } }] });
+}
+function bearbeiten(id) {
+  var k = katalogSatz(id);
+  if (!k) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
+  if (k.schloss) { banner('warnung', 'Erst Schloss aufheben: „' + k.name + '“ ist ein gesperrter Satz und nur lesbar.'); return; }
+  oeffne({ titel: 'Katalogsatz bearbeiten – ' + k.name, html: satzFormular(k), knoepfe: [{ text: 'Abbrechen' }, { text: 'OK', primaer: true, aktion: function (o) {
+    var w = leseFormular(o); if (!w) return false;
+    k.name = w.name; k.hersteller = w.hersteller; k.brennstoff = w.brennstoff; k.pel = w.pel; k.pth = w.pth;
+    zeichne();
+    banner('erfolg', 'Katalogsatz „' + k.name + '“ gespeichert. Projektsätze bleiben Kopien und ändern sich nicht.');
+  } }] });
+}
+function vergleichen() {
+  var ids, hinweis;
+  if (MEHRFACH && S.markK.length >= 2) { ids = S.markK.slice(0, 6); hinweis = 'Verglichen werden die markierten Sätze' + (S.markK.length > 6 ? ' (die ersten sechs)' : '') + '.'; }
+  else {
+    var l = gefiltert();
+    var k = katalogSatz(S.wahlK);
+    var rest = l.filter(function (x) { return !k || x.id !== k.id; });
+    ids = (k ? [k.id] : []).concat(rest.map(function (x) { return x.id; })).slice(0, 4);
+    hinweis = (MEHRFACH ? 'Weniger als zwei Sätze markiert – ' : '') + 'verglichen werden der gewählte Satz und die nächsten Treffer der Suche. ' + (MEHRFACH ? 'Mit Häkchen wählen Sie die Sätze selbst.' : 'Die Suche grenzt die Sätze ein.');
+  }
+  var ks = ids.map(katalogSatz).filter(Boolean);
+  if (!ks.length) { banner('hinweis', 'Keine Sätze zum Vergleichen.'); return; }
+  var reihen = [['Hersteller', function (k) { return esc(k.hersteller); }], ['Brennstoff', function (k) { return esc(k.brennstoff); }], ['P_el', function (k) { return k.pel + ' kW'; }],
+    ['P_th', function (k) { return k.pth + ' kW'; }], ['P_Brennstoff', function (k) { return kennwerte(k).pbr + ' kW'; }], ['η_el / η_th', function (k) { var w = kennwerte(k); return w.eel + ' % / ' + w.eth + ' %'; }],
+    ['Stromkennzahl', function (k) { return kennwerte(k).skz; }], ['Schloss', function (k) { return k.schloss ? 'gesperrt' : '–'; }], ['Im Projekt', function (k) { return imProjekt(k.id) ? '✓' : '–'; }]];
+  var h = '<p class="mk-leise-text" style="white-space:normal;margin:0 0 8px">' + hinweis + '</p><table class="mk-vergleich"><thead><tr><th></th>' +
+    ks.map(function (k) { return '<th>' + esc(k.name) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    reihen.map(function (r) { return '<tr><th>' + r[0] + '</th>' + ks.map(function (k) { return '<td>' + r[1](k) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+  oeffne({ titel: 'Vergleichen – ' + ks.length + ' Sätze', html: h, breit: true, knoepfe: [{ text: 'Schließen', primaer: true }] });
+}
+var KOSTEN = {
+  Investitionskosten: function (p) { return [['Anschaffung', zahl(p.pth * 1500), '€'], ['Installation', zahl(p.pth * 300), '€'], ['Förderung', '0', '%']]; },
+  Betriebskosten: function (p) { return [['Wartung', zahl(p.pth * 20), '€/a'], ['Versicherung', '0,5', '%/a'], ['Personal', '0', '€/a']]; },
+  Energiekosten: function (p) { return [['Energieträger', p.traeger, ''], ['Arbeitspreis', '8,0', 'ct/kWh'], ['Grundpreis', '200', '€/a']]; }
+};
+function kosten(art, id) {
+  var p = projektSatz(id);
+  if (!p) { banner('hinweis', 'Erst eine Komponente der Projektliste wählen.'); return; }
+  if (!art) {
+    oeffne({ titel: 'Kosten – ' + p.name, html: '<p style="margin:0 0 8px">Welche Kosten des Projektsatzes möchten Sie bearbeiten?</p><div class="mk-knopfreihe">' +
+      Object.keys(KOSTEN).map(function (a) { return '<button class="epos-knopf k-satz" data-kostenwahl="' + a + '">' + a + '…</button>'; }).join('') + '</div>',
+      knoepfe: [{ text: 'Schließen' }], kostenId: id });
+    return;
+  }
+  var felder = KOSTEN[art](p).map(function (f) { return '<label class="mk-feld"><span class="mk-feldname">' + f[0] + (f[2] ? ' [' + f[2] + ']' : '') + '</span><input class="mk-feldwert" value="' + esc(f[1]) + '"></label>'; }).join('');
+  oeffne({ titel: art + ' – ' + p.name, html: '<p class="mk-leise-text" style="white-space:normal;margin:0 0 8px">Platzhalter: Die Felder zeigen, wo die Kosten des Projektsatzes stehen.</p><div class="mk-formular">' + felder + '</div>',
+    knoepfe: [{ text: 'Abbrechen' }, { text: 'OK', primaer: true, aktion: function () { banner('erfolg', art + ' von „' + p.name + '“ übernommen (Platzhalter).'); } }] });
+}
+
+/* ---- Aus dem Projekt in die Datenbank (Gegenrichtung zu "In das Projekt übernehmen") ---- */
+var VERGLEICHSFELDER = [['hersteller', 'Hersteller', ''], ['brennstoff', 'Brennstoff', ''], ['pel', 'P_el', ' kW'], ['pth', 'P_th', ' kW']];
+function abweichung(p) {
+  var k = katalogSatz(p.katId);
+  if (!k) return null;
+  return VERGLEICHSFELDER.filter(function (f) { return String(p[f[0]]) !== String(k[f[0]]); });
+}
+function abweichungText(p) {
+  var k = katalogSatz(p.katId), a = abweichung(p);
+  if (!k) return 'Ursprungssatz nicht mehr im Katalog';
+  if (!a.length) return 'entspricht dem Katalogsatz „' + k.name + '“';
+  return 'geändert gegenüber Katalog: ' + a.map(function (f) { return f[1]; }).join(', ');
+}
+function nameBelegt(n) { return S.katalog.some(function (k) { return k.name.toLowerCase() === n.trim().toLowerCase(); }); }
+function freierName(n) {
+  if (!nameBelegt(n)) return n;
+  var c = n + ' (Projekt)', i = 2;
+  while (nameBelegt(c)) c = n + ' (Projekt ' + i++ + ')';
+  return c;
+}
+function zuDb() { return zuEntfernen(); }
+function inDb(ids) {
+  var ps = ids.map(projektSatz).filter(Boolean);
+  if (!ps.length) { banner('hinweis', 'Erst eine Komponente der Projektliste wählen.'); return; }
+  var einer = ps.length === 1, p = ps[0];
+  var ueberschreibbar = ps.filter(function (x) { var k = katalogSatz(x.katId); return k && !k.schloss; });
+  var mitUrsprung = ps.filter(function (x) { return katalogSatz(x.katId); });
+  var h = '<p style="margin:0 0 8px">' + (einer ? 'Projektsatz „' + esc(p.name) + '“ in die Datenbank (den Katalog) übernehmen. ' + esc(abweichungText(p)) + '.'
+    : ps.length + ' Projektsätze in die Datenbank (den Katalog) übernehmen.') + '</p>' +
+    '<label class="mk-weg"><input type="radio" name="mk-weg" value="neu" checked> ' + (einer ? 'Als neuen Katalogsatz anlegen' : 'Als neue Katalogsätze anlegen (belegte Namen erhalten den Zusatz „(Projekt)“)') + '</label>';
+  if (einer) {
+    var vorschlag = freierName(p.name);
+    h += '<div class="mk-formular mk-weg-feld"><label class="mk-feld mk-feld--breit"><span class="mk-feldname">Name des neuen Katalogsatzes</span><input class="mk-feldwert" data-dbname value="' + esc(vorschlag) + '"></label></div>' +
+      '<div class="mk-leise-text mk-weg-feld" data-namehinweis>' + (vorschlag !== p.name ? 'Name belegt – Zusatz „(Projekt)“ vorgeschlagen.' : '&nbsp;') + '</div>';
+  }
+  if (einer && mitUrsprung.length) {
+    var k = katalogSatz(p.katId);
+    h += '<label class="mk-weg' + (k.schloss ? ' mk-aus' : '') + '"><input type="radio" name="mk-weg" value="ueber"' + (k.schloss ? ' disabled' : '') + '> Ursprünglichen Katalogsatz „' + esc(k.name) + '“ überschreiben' +
+      (k.schloss ? ' <span class="mk-leise-text">' + SCHLOSS_ZU + ' Erst Schloss aufheben</span>' : '') + '</label>';
+  } else if (!einer && mitUrsprung.length) {
+    var rest = ps.length - ueberschreibbar.length;
+    h += '<label class="mk-weg' + (ueberschreibbar.length ? '' : ' mk-aus') + '"><input type="radio" name="mk-weg" value="ueber"' + (ueberschreibbar.length ? '' : ' disabled') + '> Ursprüngliche Katalogsätze überschreiben' +
+      (rest ? ' <span class="mk-leise-text">' + rest + ' gesperrt oder fehlend – werden neu angelegt</span>' : '') + '</label>';
+  }
+  h += '<div class="mk-ov-fehler" data-fehler></div>';
+  oeffne({ titel: 'In die Datenbank übernehmen', html: h, knoepfe: [{ text: 'Abbrechen' }, { text: 'Übernehmen', primaer: true, aktion: function (o) {
+    var weg = $('input[name="mk-weg"]:checked', o).value;
+    var neuName = einer ? $('[data-dbname]', o).value.trim() : null;
+    if (weg === 'neu' && einer) {
+      if (!neuName) { $('[data-fehler]', o).textContent = 'Bitte einen Namen eingeben.'; return false; }
+      if (nameBelegt(neuName)) { $('[data-fehler]', o).textContent = 'Name belegt – bitte einen anderen Namen wählen.'; return false; }
+    }
+    var namen = [], letzte = null;
+    ps.forEach(function (x) {
+      var k = katalogSatz(x.katId);
+      if (weg === 'ueber' && k && !k.schloss) {
+        k.hersteller = x.hersteller; k.brennstoff = x.brennstoff; k.pel = x.pel; k.pth = x.pth; delete k.extra;
+        namen.push('„' + k.name + '“ überschrieben'); letzte = k;
+      } else {
+        var n = { id: S.naechsteId++, name: einer ? neuName : freierName(x.name), hersteller: x.hersteller, brennstoff: x.brennstoff, pel: x.pel, pth: x.pth, schloss: false };
+        S.katalog.push(n); x.katId = n.id; namen.push('„' + n.name + '“ neu angelegt'); letzte = n;
+      }
+    });
+    S.markP = [];
+    if (letzte) S.wahlK = letzte.id;
+    zeichne();
+    if (letzte) zeigeZeile('katalog', letzte.id);
+    banner('erfolg', 'In die Datenbank übernommen: ' + namen.join(', ') + '.');
+  } }] });
+}
+
+/* ---- Rueckfrage und Ueberlagerung ---- */
+function rueckfrage(text, ja, beiJa) {
+  oeffne({ titel: 'Rückfrage', html: '<p style="margin:0">' + esc(text) + '</p>', fokus: 1,
+    knoepfe: [{ text: ja, aktion: beiJa }, { text: 'Nein', primaer: true }] });
+}
+function oeffne(o) {
+  schliesse();
+  var rahmen = $('.mk-fenster') || document.body;
+  var hg = document.createElement('div'); hg.className = 'epos-ueberlagerung-hintergrund'; hg.dataset.ovZu = '';
+  var el = document.createElement('div'); el.className = 'epos-ueberlagerung' + (o.breit ? ' epos-ueberlagerung--breit' : '');
+  el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', o.titel);
+  el.innerHTML = '<div class="epos-ueberlagerung-kopf"><h2 class="epos-ueberlagerung-titel">' + esc(o.titel) + '</h2><button class="epos-knopf epos-ueberlagerung-zu" data-ov-zu title="Schließen (Esc)">✕</button></div>' +
+    '<div class="epos-ueberlagerung-inhalt">' + o.html + '</div><div class="mk-ov-fuss">' +
+    o.knoepfe.map(function (k, i) { return '<button class="epos-knopf' + (k.primaer ? ' epos-knopf--primaer' : '') + '" data-ov="' + i + '">' + esc(k.text) + '</button>'; }).join('') + '</div>';
+  rahmen.appendChild(hg); rahmen.appendChild(el);
+  ov = { hg: hg, el: el, o: o, vorher: document.activeElement };
+  var f = o.fokus != null ? $('[data-ov="' + o.fokus + '"]', el) : ($('input:not([readonly]), select', el) || $('.epos-knopf--primaer', el));
+  if (f) f.focus();
+}
+function schliesse() {
+  if (!ov) return;
+  var v = ov.vorher; ov.hg.remove(); ov.el.remove(); ov = null;
+  if (v && document.contains(v)) try { v.focus(); } catch (e) { /* egal */ }
+}
+function ovKnopf(i) {
+  var k = ov.o.knoepfe[i], el = ov.el;
+  if (k.aktion) { var o = ov; if (k.aktion(el) === false) return; if (ov !== o) return; }
+  schliesse();
+}
+
+/* ---- Meldung im Banner ---- */
+function banner(art, text) {
+  var b = $('.mk-banner'); if (!b) return;
+  b.className = 'mk-banner epos-warnbanner epos-warnbanner--' + art;
+  b.innerHTML = '<span class="epos-warnbanner-symbol">' + ({ erfolg: '✓', warnung: '!', hinweis: 'i', fehler: '!' }[art]) + '</span><span class="epos-warnbanner-text">' + esc(text) +
+    '</span><button class="epos-warnbanner-schliessen" data-banner-zu title="Meldung ausblenden">✕</button>';
+  b.hidden = false;
+  clearTimeout(bannerUhr); bannerUhr = setTimeout(function () { b.hidden = true; }, 5000);
+}
+
+/* ---- Fenstergroesse ---- */
+function setzeFenster(f) {
+  fenster = f;
+  document.body.dataset.fenster = f;
+  var m = /^(\d+)x(\d+)$/.exec(f);
+  document.body.style.setProperty('--mk-fenster-b', m ? m[1] + 'px' : '100%');
+  document.body.style.setProperty('--mk-fenster-h', m ? m[2] + 'px' : '100vh');
+  $$('[data-fenster]').forEach(function (k) { if (k.tagName === 'BUTTON') k.setAttribute('aria-pressed', String(k.dataset.fenster === f)); });
+  try { localStorage.setItem('mk-katalogauswahl-fenster', f); } catch (e) { /* ohne Ablage */ }
+}
+
+/* ---- Ereignisse ---- */
+function zeileVon(el) { return el.closest('tr[data-id]'); }
+function zeilenId(el) { var tr = zeileVon(el); return tr ? Number(tr.dataset.id) : null; }
+
+document.addEventListener('click', function (e) {
+  var t = e.target;
+  if (ov) {
+    if (t.closest('[data-ov-zu]')) { schliesse(); return; }
+    var kb = t.closest('[data-ov]'); if (kb) { ovKnopf(Number(kb.dataset.ov)); return; }
+    var kw = t.closest('[data-kostenwahl]'); if (kw) { kosten(kw.dataset.kostenwahl, ov.o.kostenId); return; }
+    return;
+  }
+  if (t.closest('[data-banner-zu]')) { $('.mk-banner').hidden = true; return; }
+  var fe = t.closest('button[data-fenster]'); if (fe) { setzeFenster(fe.dataset.fenster); return; }
+  if (t.closest('[data-zuruecksetzen]')) { schliesse(); ausgang(); zeichne(); $$('.mk-liste').forEach(function (l) { l.scrollTop = 0; }); banner('hinweis', 'Ausgangsbestand wiederhergestellt.'); return; }
+  var ak = t.closest('[data-aktion]');
+  if (ak) {
+    if (ak.getAttribute('aria-disabled') === 'true') {
+      var a0 = ak.dataset.aktion;
+      if (/^(bearbeiten|loeschen)/.test(a0)) { var kid = a0.indexOf('zeile') > 0 ? zeilenId(ak) : S.wahlK; var kk = katalogSatz(kid); if (kk && kk.schloss) banner('warnung', 'Erst Schloss aufheben: „' + kk.name + '“ ist gesperrt.'); }
+      return;
+    }
+    handle(ak.dataset.aktion, ak); return;
+  }
+  var mk = t.closest('[data-markieren]');
+  if (mk) { markiere(mk); return; }
+  var so = t.closest('th[data-sort]');
+  if (so) { var f = so.dataset.sort; if (S.sort.feld === f) S.sort.ab = !S.sort.ab; else { S.sort.feld = f; S.sort.ab = false; } zeichneListen(); return; }
+  var kl = t.closest('[data-klasse]');
+  if (kl) {
+    document.body.classList.toggle(kl.dataset.klasse);
+    if (kl.dataset.klasse === 'mk-schublade-offen' && document.body.classList.contains('mk-schublade-offen')) { var si = $('.v3-schublade input[data-suche]'); if (si) si.focus(); }
+    zeichneKnoepfe(); return;
+  }
+  var re = t.closest('button[data-reiter]');
+  if (re) { S.zuletzt = re.dataset.reiter; zeichne(); var li = $('.v4-blatt--' + re.dataset.reiter + ' .mk-liste'); if (li) li.focus(); return; }
+  var tr = zeileVon(t);
+  if (tr && !t.closest('button')) { waehle(tr.dataset.art, Number(tr.dataset.id)); var l = tr.closest('.mk-liste'); if (l) l.focus({ preventScroll: true }); }
+});
+document.addEventListener('dblclick', function (e) {
+  if (ov || e.target.closest('button')) return;
+  var tr = zeileVon(e.target);
+  if (tr && tr.dataset.art === 'katalog') uebernehmen([Number(tr.dataset.id)]);
+});
+function markiere(mk) {
+  var art = mk.dataset.markieren;
+  if (art === 'alle-katalog') {
+    var l = gefiltert().map(function (k) { return k.id; });
+    var alle = l.length && l.every(function (id) { return S.markK.indexOf(id) >= 0; });
+    S.markK = alle ? S.markK.filter(function (id) { return l.indexOf(id) < 0; }) : S.markK.concat(l.filter(function (id) { return S.markK.indexOf(id) < 0; }));
+    S.zuletzt = 'katalog';
+  } else if (art === 'alle-projekt') {
+    var a2 = S.projekt.length && S.projekt.every(function (p) { return S.markP.indexOf(p.id) >= 0; });
+    S.markP = a2 ? [] : S.projekt.map(function (p) { return p.id; });
+    S.zuletzt = 'projekt';
+  } else {
+    var id = zeilenId(mk), liste = art === 'katalog' ? 'markK' : 'markP';
+    var i = S[liste].indexOf(id);
+    if (i >= 0) S[liste].splice(i, 1); else S[liste].push(id);
+    if (art === 'katalog') S.wahlK = id; else S.wahlP = id;
+    S.zuletzt = art;
+  }
+  zeichne();
+}
+function handle(a, el) {
+  switch (a) {
+    case 'uebernehmen': uebernehmen(zuUebernehmen()); break;
+    case 'uebernehmen-zeile': uebernehmen([zeilenId(el)]); break;
+    case 'entfernen': entfernen(zuEntfernen()); break;
+    case 'entfernen-zeile': entfernen([zeilenId(el)]); break;
+    case 'loeschen': loeschen(S.wahlK); break;
+    case 'loeschen-zeile': loeschen(zeilenId(el)); break;
+    case 'schloss': schloss(S.wahlK); break;
+    case 'schloss-zeile': schloss(zeilenId(el)); break;
+    case 'bearbeiten': bearbeiten(S.wahlK); break;
+    case 'bearbeiten-zeile': bearbeiten(zeilenId(el)); break;
+    case 'neu': neu(); break;
+    case 'in-db': inDb(zuDb()); break;
+    case 'in-db-zeile': inDb([zeilenId(el)]); break;
+    case 'in-db-satz': inDb([S.wahlP]); break;
+    case 'vergleichen': vergleichen(); break;
+    case 'kosten': kosten(el.dataset.kosten, S.wahlP); break;
+    case 'kosten-zeile': kosten(null, zeilenId(el)); break;
+    case 'filter-zuruecksetzen': S.suche = ''; S.sort = { feld: null, ab: false }; $$('input[data-suche]').forEach(function (i) { i.value = ''; }); zeichneListen(); break;
+    case 'speichern': {
+      var k = katalogSatz(S.wahlK); if (!k || k.schloss) return;
+      var e = extra(k);
+      $$('[data-kfeld]', el.closest('.mk-satzinhalt')).forEach(function (i) { var v = i.value.trim(); e[i.dataset.kfeld] = i.dataset.kfeld === 'motortyp' ? v : Number(v.replace(/\s/g, '')) || 0; });
+      zeichneDetails(); banner('erfolg', 'Alle Daten von „' + k.name + '“ gespeichert.'); break;
+    }
+  }
+}
+document.addEventListener('input', function (e) {
+  var t = e.target;
+  if (t.matches('input[data-suche]')) { S.suche = t.value; zeichneListen(); return; }
+  if (t.matches('[data-dbname]')) {
+    var nh = $('[data-namehinweis]', t.closest('.epos-ueberlagerung')); if (nh) nh.textContent = nameBelegt(t.value) ? 'Name belegt – bitte einen anderen Namen wählen.' : 'Name frei.';
+    var neuWeg = $('input[name="mk-weg"][value="neu"]', t.closest('.epos-ueberlagerung')); if (neuWeg) neuWeg.checked = true;
+    return;
+  }
+  if (t.matches('[data-kfeld]')) {
+    var s = t.closest('.mk-satzinhalt'); var b = $('[data-aktion="speichern"]', s); if (b) b.setAttribute('aria-disabled', 'false');
+    var h = $('[data-aenderung]', s); if (h) h.textContent = 'geändert – noch nicht gespeichert';
+  }
+});
+document.addEventListener('change', function (e) {
+  var t = e.target;
+  if (!t.matches('[data-pfeld]')) return;
+  var p = projektSatz(Number(t.closest('[data-satz-id]').dataset.satzId)); if (!p) return;
+  var f = t.dataset.pfeld;
+  p[f] = f === 'traeger' ? t.value : (Number(String(t.value).replace(',', '.')) || 0);
+  zeichneListen();
+  var h = $('[data-herleitung]', t.closest('.mk-satzinhalt')); if (h) h.textContent = herleitung(p);
+  var a = $('[data-abweichung]', t.closest('.mk-satzinhalt')); if (a) a.textContent = abweichungText(p);
 });
 document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') { ['mk-notiz-offen', 'mk-schublade-offen'].forEach(function (c) { document.body.classList.remove(c); }); }
+  if (ov) {
+    if (e.key === 'Escape') { e.preventDefault(); schliesse(); return; }
+    if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); var pr = $('.mk-ov-fuss .epos-knopf--primaer', ov.el); if (pr) pr.click(); }
+    if (e.key === 'Tab') { /* Fokus bleibt in der Ueberlagerung */
+      var f = $$('button, input, select', ov.el); var i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
+    }
+    return;
+  }
+  if (e.key === 'Escape') {
+    if (document.body.classList.contains('mk-notiz-offen')) document.body.classList.remove('mk-notiz-offen');
+    else if (document.body.classList.contains('mk-schublade-offen')) { document.body.classList.remove('mk-schublade-offen'); var o3 = $('.v3-oeffner'); if (o3) o3.focus(); }
+    return;
+  }
+  var t = e.target;
+  if (t.matches('input[data-suche]') && e.key === 'ArrowDown') {
+    var lk = t.closest('.mk-bereich').querySelector('.mk-liste'); if (lk) { e.preventDefault(); lk.focus(); bewege(lk, 1); } return;
+  }
+  var liste = t.closest && t.closest('.mk-liste');
+  if (!liste || t.matches('input, select, button')) return;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); bewege(liste, e.key === 'ArrowDown' ? 1 : -1); return; }
+  var art = liste.dataset.art === 'beide' ? S.zuletzt : liste.dataset.art;
+  if (e.key === 'Enter') { e.preventDefault(); if (art === 'katalog') uebernehmen(zuUebernehmen().length ? zuUebernehmen() : (S.wahlK != null ? [S.wahlK] : [])); return; }
+  if (e.key === 'Delete') { e.preventDefault(); if (art === 'katalog') loeschen(S.wahlK); else entfernen(zuEntfernen().length ? zuEntfernen() : (S.wahlP != null ? [S.wahlP] : [])); return; }
+  if (e.key === ' ' && MEHRFACH && art === 'katalog' && S.wahlK != null) {
+    e.preventDefault(); var i = S.markK.indexOf(S.wahlK); if (i >= 0) S.markK.splice(i, 1); else S.markK.push(S.wahlK); zeichne();
+  }
 });
-document.querySelectorAll('.mk-liste tr.mk-gewaehlt').forEach(function (z) {
-  var l = z.closest('.mk-liste'); if (!l) return;
-  var d = z.getBoundingClientRect().top - l.getBoundingClientRect().top;
-  if (d + z.offsetHeight > l.clientHeight) l.scrollTop = d - l.clientHeight / 2;
-});
-if (location.hash === '#notiz') document.body.classList.add('mk-notiz-offen');
-if (location.hash === '#zu') document.body.classList.remove('mk-schublade-offen');
+function bewege(liste, schritt) {
+  var zeilen = $$('tr[data-id]', liste).filter(function (z) { return z.offsetParent !== null; });
+  if (!zeilen.length) return;
+  var art0 = liste.dataset.art === 'beide' ? S.zuletzt : liste.dataset.art;
+  var akt = art0 === 'katalog' ? S.wahlK : S.wahlP;
+  var i = zeilen.findIndex(function (z) { return z.dataset.art === art0 && Number(z.dataset.id) === akt; });
+  var n = i < 0 ? (schritt > 0 ? 0 : zeilen.length - 1) : Math.max(0, Math.min(zeilen.length - 1, i + schritt));
+  var z = zeilen[n];
+  waehle(z.dataset.art, Number(z.dataset.id));
+  zeigeZeile(z.dataset.art, Number(z.dataset.id));
+}
+
+/* ---- Start ---- */
+var gemerkt = 'frei';
+try { gemerkt = localStorage.getItem('mk-katalogauswahl-fenster') || 'frei'; } catch (e) { /* ohne Ablage */ }
+var hf = /fenster=(frei|\d+x\d+)/.exec(location.hash);
+setzeFenster(hf ? hf[1] : gemerkt);
+ausgang();
+zeichne();
+if (/notiz/.test(location.hash)) document.body.classList.add('mk-notiz-offen');
+if (/schublade/.test(location.hash)) document.body.classList.add('mk-schublade-offen');
+if (/details/.test(location.hash)) document.body.classList.add('mk-details-offen');
+setTimeout(function () { zeigeZeile('katalog', S.wahlK); }, 0);
+window.mkSpiel = { zustand: function () { return S; } };
+})();
 </script>
 </body>
 </html>
