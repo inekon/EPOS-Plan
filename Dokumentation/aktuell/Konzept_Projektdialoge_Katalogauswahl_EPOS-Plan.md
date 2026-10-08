@@ -1,12 +1,15 @@
-# Konzept: Projektdialoge mit Katalogauswahl übersichtlich ordnen — fünf Varianten
+# Konzept: Projektdialoge mit Katalogauswahl übersichtlich ordnen — Variante V1 „Gerahmt und gestapelt“
 
-**Stand: Entwurf — Befund und fünf Varianten zur Wahl.** Die Wahl der Variante trifft der Anwender nach dem Ausprobieren der Mockups, danach folgen Detailfragen und erst dann das Konzept. Die Empfehlung V4 ist eine Empfehlung, kein Entscheid; die Umsetzung ist nicht beauftragt.
+**Stand: Variante V1 gewählt (08.10.2026), Umsetzung auf Zuruf.** Der Anwender hat die fünf spielbaren
+Mockups ausprobiert und V1 „Gerahmt und gestapelt“ gewählt; die Entscheide KA‑E‑1 bis KA‑E‑11 stehen in
+Abschnitt 3, das Zielbild in Abschnitt 4, der Rückweg Projekt → Datenbank in Abschnitt 5. Die Varianten
+V2 bis V5 bleiben in Abschnitt 6 als Abwägung stehen. Was für die Umsetzung noch zu klären ist, nennt
+Abschnitt 7 mit Empfehlung; der Stufenplan steht in Abschnitt 8.
 
 **Anlass:** Anwenderauftrag vom 08.10.2026 mit Bildschirmfoto „Verwaltung BHKW“ (Fensterdialog,
 1 546 × 1 000 px): „Dieser Dialog ist sehr unübersichtlich mit Scrollbar in Scrollbar.“ Gefordert sind
 Funktionalität wie bisher, eine übersichtlichere Zuordnung von Datenbank zu Projekt, eine klare Zuordnung
-der Knöpfe zu den Bereichen Projekt und Datenbank, Eignung für alle ähnlichen Dialoge und fünf Mockups
-zur Wahl.
+der Knöpfe zu den Bereichen Projekt und Datenbank und Eignung für alle ähnlichen Dialoge.
 
 **Geltungsbereich:** die zwölf Projektdialoge auf dem Baustein `Zweispaltenauswahl` — `BhkwDialog`,
 `HeizkesselDialog`, `PufferspeicherDialog`, `StromspeicherDialog`, `PhotovoltaikDialog`,
@@ -14,20 +17,21 @@ zur Wahl.
 `WaermebedarfExternDialog`, `StromganglinieDialog`, `SolarganglinieDialog` — und die Katalogauswahl des
 `KaeltemaschineAnlageDialog`. Damit schließt dieses Papier die Lücke, die
 [`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`](Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md)
-in Abschnitt 8 offen lässt (AD-Q12: Projektdialoge außerhalb des Schemas der Verwaltungen). Die dort
-ruhenden Entscheide AD-Q2 bis AD-Q5 und AD-Q10 werden in Abschnitt 6 aufgegriffen.
+in Abschnitt 8 offen lässt (AD-Q12: Projektdialoge außerhalb des Schemas der Verwaltungen); die dort
+ruhenden Entscheide AD-Q3, AD-Q4, AD-Q5 und AD-Q10 sind mit KA‑E‑5 bis KA‑E‑8 beantwortet.
 
-**Mockups:** [`Mockups/Projektdialog_Katalogauswahl_V1.html`](Mockups/Projektdialog_Katalogauswahl_V1.html)
-bis [`Mockups/Projektdialog_Katalogauswahl_V5.html`](Mockups/Projektdialog_Katalogauswahl_V5.html), je mit Bildschirmfoto `…_Vn.png`
-(1 280 × 800) und `…_Vn_klein.png` (1 280 × 720). Der Knopf „Randnotiz“ oben rechts in jedem Mockup zeigt,
-wie die dialogeigenen Teile hineinpassen.
+**Mockups:** maßgeblich ist [`Mockups/Projektdialog_Katalogauswahl_V1.html`](Mockups/Projektdialog_Katalogauswahl_V1.html)
+(spielbar, mit ziehbarer Trennlinie) samt `…_V1.png` (1 280 × 800) und `…_V1_klein.png` (1 280 × 720). Die
+Mockups V2 bis [`Mockups/Projektdialog_Katalogauswahl_V5.html`](Mockups/Projektdialog_Katalogauswahl_V5.html)
+bleiben als Belege der Abwägung liegen. Der Knopf „Randnotiz“ oben rechts zeigt, wie die dialogeigenen
+Teile hineinpassen.
 
 ## 1 Befund: warum es doppelt rollt
 
 Der heutige Projektdialog hat **drei Rollbereiche, zwei davon im dritten**:
 
 | Nr | Rollbereich | Fundstelle | Wirkung |
-|---|---|---|
+|---|---|---|---|
 | ① | das Fenster (Dokument) | `EPOS.UI/wwwroot/epos-ui.css:331` — `.epos-dialog` hat keine Höhengrenze; im eigenen Fenster rollt deshalb das Dokument, nur Kopf und Schlussleiste haften (`epos-ui.css:2535`, `:2545`, Rollpolster `:2602`) | die ganze Maske rollt |
 | ② | die Projektliste | `epos-ui.css:3489` — `.epos-zweispalten-spalte--oben .epos-raster-huelle { max-height: var(--epos-projektlistenhoehe) }` (12 rem, `:175`) mit `overflow: auto` aus `:1598` | rollt in ① |
 | ③ | die Katalogliste | `epos-ui.css:1596` — `.epos-raster-huelle { overflow: auto; max-height: var(--epos-listenhoehe) }` (22 rem, `:131`) | rollt in ① |
@@ -94,167 +98,321 @@ gewählten Satz und seine Daten (**S·P** Projektsatz, **S·K** Katalogsatz).
 Schloss, Satzanzeige, Kopf und Fuß. **Dialogeigen:** Summe, Stückzahl, PV-Stränge, Kosten, Vergleichen,
 Auslegen, Umstellen, In DB übernehmen, Import, Ganglinie, eingebetteter Anlagendialog.
 
-## 3 Gemeinsame Regeln aller fünf Varianten
+## 3 Entscheide des Anwenders
 
-1. **Der Dialogkörper rollt nicht.** Kopf, Inhalt und Fuß teilen das Fenster in einem Raster
-   (`grid-template-rows: auto minmax(0, 1fr) auto`); rollen dürfen nur die Listen und die Satzfläche —
-   jede für sich, nie ineinander. Das ersetzt für diese Dialoge die Haftregel „Dialog im eigenen Fenster“.
-2. **Jeder Bereich trägt seine Knöpfe selbst** und ist gerahmt und beschriftet: „Im Projekt“
-   (Kennfarbe `--epos-schema-versorgung`), „Katalog (Datenbank)“ (`--epos-quelle-rahmen`), „Gewählter
-   Satz“ (`--epos-senke-rahmen`) mit der Marke „Projektsatz“ oder „Katalogsatz“ im Kopf.
-3. **Die Farbe eines Knopfs sagt, was er ändert; sein Ort, woher seine Eingabe kommt.** „In das Projekt
-   übernehmen“ ist grün (ändert das Projekt) und steht beim Katalog (dort wird gewählt).
-4. **Zeilenhandlungen nach dem Haus-Muster der Auswahlleiste:** erstes Wort der gewählte Name
-   („BHKW 70 kW Erdgas:“), dann Vergleichen · Schloss · Löschen; Neu… rechts.
-5. **Kosten gehören zum Projektsatz, Bearbeiten… und Alle Daten zum Katalogsatz** — sie stehen nie mehr in
-   derselben Leiste.
+Entschieden am 08.10.2026 nach dem Ausprobieren der fünf Mockups. Die Kennungen ersetzen die Fragen
+KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 
-Geprüft mit Playwright/Chromium bei 1 280 × 800 und 1 280 × 720 (auch aufgeklappt, Schublade offen,
-Randnotiz offen): in allen fünf Mockups **kein Rollbereich in einem rollenden Element**, der Dialog rollt
-nicht, das Dokument rollt nicht.
+| Kennung | Entscheid | Datum | Frage des Entwurfs |
+|---|---|---|---|
+| **KA‑E‑1** | **Variante V1 „Gerahmt und gestapelt“:** oben der Bereich „Im Projekt“, darunter „Katalog (Datenbank)“, unten die Zeile „gewählter Satz“. Jeder Bereich ist gerahmt und hat eine eigene Kopfleiste mit seinen Knöpfen. Der Dialogkörper rollt nicht, nur die Listen rollen, nie ineinander. | 08.10.2026 | KA‑Q1, KA‑Q2 |
+| **KA‑E‑2** | **Geltung:** alle zwölf Projektdialoge mit Katalogauswahl (BHKW, Heizkessel, Pufferspeicher, Stromspeicher, Photovoltaik, Solarkollektoren, Wärmepumpe, Gebäude, Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie) und die Katalogauswahl der Kältemaschine; **ein** gemeinsamer Baustein. | 08.10.2026 | — |
+| **KA‑E‑3** | **Höhe:** Die Trennlinie zwischen Projekt- und Katalogbereich ist ziehbar; die Höhe wird je Dialog gemerkt (Einstellungsdienst des Kerns, `Dienste.Einstellungen`). | 08.10.2026 | KA‑Q3 (entfällt mit V1) |
+| **KA‑E‑4** | **Detailzeile „gewählter Satz“:** zugeklappt und aufklappbar. Aufgeklappt nimmt sie den Listen Höhe ab, die Listen bleiben bedienbar. Sie enthält „Alle Daten“ und beim Projektsatz die Kostenknöpfe (Investitions-, Betriebs-, Energiekosten). | 08.10.2026 | — |
+| **KA‑E‑5** | **Mehrfachauswahl** in beiden Bereichen. Alle Bereichsaktionen wirken auf die Auswahl. Das Kopfhäkchen „alle wählen“ bezieht sich auf die gefilterte Liste. | 08.10.2026 | KA‑Q4 (AD-Q4) |
+| **KA‑E‑6** | **Doppelklick und Enter** übernehmen eine Katalogzeile ins Projekt (nur im Projektdialog), Sammelübernahme bei Mehrfachauswahl. | 08.10.2026 | KA‑Q5 (AD-Q3) |
+| **KA‑E‑7** | **Katalogpflege bleibt im Projektdialog**, im Katalogbereich: Neu…, Bearbeiten…, Schloss setzen/aufheben…, Löschen, Vergleichen…. | 08.10.2026 | KA‑Q6 (AD-Q10) |
+| **KA‑E‑8** | **Bearbeiten… je Bereich:** Projektbereich → Projektkopie, Katalogbereich → Katalogsatz. Die Marke „Projektsatz“/„Katalogsatz“ im Kopf sagt, was gespeichert wird. Ein gesperrter Katalogsatz ist nur lesbar, mit dem Hinweis „Erst Schloss aufheben“. **Mehrfach-Bearbeiten:** Blätterleiste „‹ 1 von n ›“ und je Feld „für alle gewählten setzen“; gesperrte Katalogsätze werden übersprungen und genannt. | 08.10.2026 | KA‑Q7 (AD-Q5) |
+| **KA‑E‑9** | **Rückweg „In die Datenbank übernehmen…“** im Projektbereich, auch für eine Mehrfachauswahl: immer mit Rückfrage, ob ein neuer Katalogsatz angelegt oder der ursprüngliche überschrieben wird; Überschreiben nur, wenn der Ursprung noch existiert und nicht gesperrt ist, sonst ausgegraut mit „Erst Schloss aufheben“ bzw. „Ursprung nicht mehr vorhanden“. Es gehen technische Daten **und** Kosten mit — Investitions- und Betriebskosten werden Vorgabe im Katalogsatz. Belegter Name: Vorbelegung mit dem Zusatz „(Projekt)“, in der Rückfrage änderbar; ein doppelter Name wird nie gespeichert. | 08.10.2026 | — |
+| **KA‑E‑10** | **Kennfarben** als Rahmenfarbe der Bereiche und Marke im Kopf: Projekt grün, Katalog blau, gewählter Satz orange. Die Knöpfe gehören über ihre Stellung zum Bereich, ohne Farbstreifen. | 08.10.2026 | KA‑Q8 |
+| **KA‑E‑11** | **Breite Projektsätze** (PV-Stränge und Wechselrichter, Wärmepumpen-Anlage, Gebäude) öffnen als Überlagerung im selben Fenster. | 08.10.2026 | KA‑Q9 |
 
-## 4 Die fünf Varianten
+## 4 Zielbild V1
 
-### V1 „Gerahmt und gestapelt“ (geringster Umbau)
-
-```
-┌ Kopf ─────────────────────────────────────────────── i KI ✕ ┐
-│[IM PROJEKT] 2 Module · Summe 190 kWth   [▼ Aus dem Projekt …] │
-│ Projektliste (2 Zeilen, rollt)                               │
-│[KATALOG] Suche · 79 von 79 · Filter     [▲ In das Projekt …] │
-│ Katalogliste (rollt, Rest der Höhe)                          │
-│ BHKW 70 kW: Vergleichen · Schloss · Löschen          Neu…    │
-│▸[KATALOGSATZ] BHKW 70 kW · 35 kWel · 70 kWth        Details   │
-└ Abbrechen · OK ──────────────────────────────────────────────┘
-```
-
-Dieselbe Reihenfolge wie heute, aber zwei Rahmen mit eigener Kopfleiste; der Satz ist eine einklappbare
-Zeile unten. **Vorzüge:** vertraut, kleinster Umbau (Baustein-CSS, Knöpfe der Wirte wandern), Tests bleiben
-fast unberührt. **Nachteile:** bei 720 px bleiben dem Katalog rund **3,8 Zeilen** (gemessen 209 px Liste),
-aufgeklappte Details nehmen ihm weitere; große Satzblöcke (Gebäude, Bedarfsprofile, Wärmepumpe) passen nicht
-in die Zeile.
-
-### V2 „Nebeneinander (Transferliste)“
+### 4.1 Aufbau
 
 ```
-┌ Kopf ──────────────────────────────────────────────────────┐
-│[KATALOG] Suche · Zähler        │  → Hinzu  │[IM PROJEKT] 2  │
-│ Katalogliste (☐, rollt)        │  ← Entf.  │ Projektliste   │
-│ BHKW 70: Vergleichen·Schloss·Löschen  Neu… │ Summe 190 kWth │
-│[KATALOGSATZ] Kenndaten · Bearbeiten… · Alle Daten (rollt)   │
-└ Abbrechen · OK ────────────────────────────────────────────┘
+┌ Kopf: Titel · Kontext ······························· i  KI  ✕ ┐
+│┌[IM PROJEKT] 2 Module · Summe 195 kWth                          ┐│
+││        Bearbeiten… · In die Datenbank übernehmen… · ▼ Entfernen ││
+││ ☐ │ Projektliste (rollt allein)                                 ││
+│└────────────────────────────═══ Trennlinie (ziehbar) ═══─────────┘│
+│┌[KATALOG (DATENBANK)] Suche · 20 von 20 · Filter zurücksetzen    ┐│
+││                                       ▲ In das Projekt übernehmen ││
+││ ☐ │ Katalogliste (rollt allein, Rest der Höhe)                   ││
+││ BHKW 70 kW: Vergleichen… · Schloss… · Löschen · Bearbeiten…  Neu… ││
+│└─────────────────────────────────────────────────────────────────┘│
+│┌▸[KATALOGSATZ | PROJEKTSATZ] Name · Kenndaten in einer Zeile  Details┐│
+│└─────────────────────────────────────────────────────────────────┘│
+└ Abbrechen · OK ──────────────────────────────────────────────────┘
 ```
 
-Klassische Transferliste, Satzband über beide Spalten. **Vorzüge:** Richtung der Übernahme ist
-unmissverständlich, Mehrfachwahl in beiden Listen natürlich, Doppelklick = Hinzufügen. **Nachteile:** der
-Katalog verliert rund 520 px Breite — Spalten mit Rang 2 fallen (genau der Grund für Entscheid
-W14a-E-10-Q2 und offenen Punkt O-5); bei 720 px 4,8 Katalogzeilen; das Band ist für PV-Stränge und den
-Wärmepumpen-Anlagendialog zu niedrig.
+- **Raster:** `.epos-dialog` teilt das Fenster in Kopf, Inhalt und Fuß
+  (`grid-template-rows: auto minmax(0, 1fr) auto`); der Inhalt teilt sich in Projektbereich, Trennlinie,
+  Katalogbereich und Detailzeile (`auto 8px minmax(…, 1fr) auto`). Der Dialogkörper und das Dokument rollen
+  nicht; die Haftregel „Dialog im eigenen Fenster“ ist für diese Dialoge gegenstandslos.
+- **Rollbereiche:** genau drei, keiner im anderen — Projektliste, Katalogliste und die aufgeklappte
+  Detailzeile. Die Kopfzeilen der Listen haften in ihrer Liste.
+- **Rahmen und Marke:** jeder Bereich ist gerahmt; die obere Rahmenkante und die Marke in der Kopfleiste
+  tragen die Kennfarbe (KA‑E‑10: Projekt `--epos-schema-versorgung`, Katalog `--epos-quelle-rahmen`, Satz
+  `--epos-senke-rahmen`). Knöpfe tragen keine Kennfarbe; ihr Ort sagt, worauf sie wirken.
+- **Ein Baustein** (KA‑E‑2): der Umbau sitzt in `Zweispaltenauswahl` (Bereiche, Trennlinie, Detailzeile,
+  Mehrfachwahl, Tastatur); die Wirte reichen nur ihre Spalten, Knöpfe und Satzinhalte als Abschnitte hinein.
 
-### V3 „Projekt im Mittelpunkt, Katalog als Schublade“
+### 4.2 Zuordnung der Knöpfe
 
-```
-┌ Kopf ───────────────────────────────────────────────────────┐
-│[IM PROJEKT] 2 Module · 190 kWth   ┌[KATALOG] Modul hinzuf. ✕┐│
-│ Projektliste  € −                 │ Suche · Zähler · Filter ││
-│[PROJEKTSATZ] Kosten… Träger VL RL │ Katalogliste (☐, rollt) ││
-│                                   │ BHKW 70: ＋Ins Projekt… ││
-│                                   │▸[KATALOGSATZ] Bearbeiten ││
-└ Abbrechen · OK ───────────────────└─────────────────────────┘┘
-```
+Jede Funktion aus dem Inventar (Abschnitt 2) hat genau einen Ort. **P** = Kopfleiste „Im Projekt“,
+**K** = Kopfleiste oder Fußleiste des Katalogs, **S** = Detailzeile „gewählter Satz“, **D** = Kopf oder Fuß
+des Dialogs, **Ü** = Überlagerung im selben Fenster.
 
-Die Hauptansicht ist das Projekt; „＋ Aus Katalog hinzufügen…“ öffnet eine Schublade von rechts (790 px)
-mit allem, was den Katalog betrifft. **Vorzüge:** schärfste Trennung (Katalog nur bei Bedarf),
-Projektsatz mit voller Breite — beste Lösung für PV-Stränge, Gebäude, Bedarfsprofile und den eingebetteten
-Wärmepumpendialog; die Kältemaschine ist heute schon so gebaut; 7,8 Katalogzeilen bei 720 px.
-**Nachteile:** ein Klick mehr je Übernahme, das Projekt ist hinter der Schublade verdeckt, neuer Baustein
-mit Fokusfalle und stufenweisem Esc; größter Eingriff in die Fenster- und Fokusproben.
+| Funktion | Ort | Wirkt auf |
+|---|---|---|
+| Summe der Projektkomponenten, Modulzahl, Jahressumme | P (Kopf, links) | Projektliste |
+| Bearbeiten… (Projektkopie, KA‑E‑8) | P | Auswahl der Projektliste |
+| In die Datenbank übernehmen… (KA‑E‑9) | P | Auswahl der Projektliste → Katalog |
+| ▼ Aus dem Projekt entfernen | P | Auswahl der Projektliste |
+| Umstellen (Gerät ersetzen) | P | gewählte Projektzeile (Wärmepumpe) |
+| Suche, Trefferzahl, Filter zurücksetzen | K (Kopf, links) | Katalogliste |
+| ▲ In das Projekt übernehmen (auch Doppelklick, Enter) | K (Kopf, rechts) | Auswahl des Katalogs → Projekt |
+| Spalten sortieren und filtern, Schloss- und „im Projekt“-Spalte | K (Listenkopf) | Katalogliste |
+| Vergleichen…, Schloss setzen/aufheben…, Löschen, Bearbeiten… (Katalogsatz) | K (Fuß, nach dem gewählten Namen) | Auswahl des Katalogs |
+| Neu…, Import…, Speichern unter… | K (Fuß, rechts) | Katalog |
+| Baustoffzuordnungen… (Gebäude), Typ ändern… / DB ändern… (Bedarfsprofile) | K (Fuß) | Katalog |
+| Kenndaten des gewählten Satzes (eine Zeile, Marke „Projektsatz“/„Katalogsatz“) | S (zugeklappt) | zuletzt gewählte Zeile |
+| Alle Daten (bearbeitbar; gesperrter Katalogsatz nur lesen) · Speichern | S (aufgeklappt) | Projektkopie bzw. Katalogsatz |
+| Investitions-, Betriebs-, Energiekosten… | S (aufgeklappt, nur Projektsatz) | Kosten der Projektzeile |
+| Energieträger, Grenzleistung, Vorlauf, Rücklauf, Senken | S (aufgeklappt, nur Projektsatz) | Anlagenzeile |
+| Stückzahl, Neigung, Azimut, Albedo, Modellfelder | S (aufgeklappt, nur Projektsatz) | Anlagenzeile |
+| Auslegen… (Puffer), Simulation…, Export, Neu lesen | S (aufgeklappt, nur Projektsatz) | Projektsatz |
+| Ganglinie mit Kennzahlen | S (aufgeklappt) | gewählte Zeitreihe |
+| Stränge und Wechselrichter…, Anlage… (Wärmepumpe), Gebäudedaten… | S → Ü (KA‑E‑11) | Projektsatz |
+| Grundlagen-, Berechnungshilfe (i) | S | gewählter Satz |
+| Hilfe (i), KI, ✕ · Abbrechen, OK | D | Dialog |
+| Verwaltungsbetriebsart (Gebäude, nur Katalog) | Projektbereich und Trennlinie entfallen | — |
 
-### V4 „Reiter Projekt | Katalog mit Detailspalte“
+Bei Mehrfachauswahl nennt die Fußleiste des Katalogs statt des Namens die Zahl („3 Sätze:“); Knöpfe, die
+nur einen Satz vertragen (Vergleichen braucht zwei oder mehr, Umstellen genau einen), sind mit Hinweis
+ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Auswahlleiste.
 
-```
-┌ Kopf ───────────────────────────────────────────────────────┐
-│ (Im Projekt · 2 · 190 kWth) (Katalog · 79)  │[KATALOGSATZ]   │
-│ Suche · Zähler · Filter               Neu…  │ Kenndaten      │
-│ Katalogliste in voller Höhe (☐, rollt)      │ Bearbeiten…    │
-│ BHKW 70: ＋ In das Projekt · Vergleichen ·  │ ▸ Alle Daten   │
-│          Schloss · Löschen                  │ (rollt allein) │
-└ Abbrechen · OK ─────────────────────────────────────────────┘
-```
+### 4.3 Trennlinie
 
-Zwei Reiter mit Zählern (der Projektreiter trägt Modulzahl und Summe), je Reiter eine Liste in voller Höhe
-mit eigener Leiste; rechts eine feste Detailspalte (400 px) für den gewählten Satz. **Vorzüge:** längste
-Liste bei 720 px (**8,3 Zeilen**), klare Trennung durch den Reiter, Detailspalte = Stammblatt der
-Verwaltungen (ein Hausmuster für Verwaltung und Projekt; Verwaltungsbetriebsart = nur Reiter „Katalog“),
-nutzt vorhandene Bausteine (`Reiter`, `Stammblatt`, `Auswahlleiste`), deckt sich mit dem ruhenden
-Entscheid AD-Q2 („Umschalter Katalog | Im Projekt (n)“). **Nachteile:** Projekt und Katalog nie zugleich
-sichtbar (gemildert durch Zähler am Reiter und ✓-Spalte); breite Projektsätze (PV-Stränge) brauchen eine
-Überlagerung.
+- Zwischen Projekt- und Katalogbereich liegt eine 8 px hohe Trennlinie mit Griffmarke (`role="separator"`,
+  waagrecht, fokussierbar). Ziehen ändert die Höhe der **Projektliste**; der Katalog nimmt den Rest.
+- **Grenzen:** oben Kopfzeile plus eine Projektzeile; unten behält die Katalogliste Kopfzeile plus zwei
+  Zeilen. Wird das Fenster kleiner oder klappt die Detailzeile auf, klemmt der Baustein die gemerkte Höhe
+  auf das, was passt — es entsteht nie ein Überlauf, der den Dialogkörper rollen ließe.
+- **Vorgabe:** Kopfzeile plus zwei Projektzeilen; Doppelklick auf die Trennlinie stellt sie wieder her.
+- **Tastatur:** Pfeil hoch/runter um eine Zeile, Pos1/Ende an die Grenzen.
+- **Merken (KA‑E‑3):** nach dem Loslassen je Dialog über `Dienste.Einstellungen`
+  (`IEinstellungen.LiesZahl`/`SchreibZahl`, Schlüssel je Dialog, etwa `Katalogauswahl.Trenner.BHKW`) in
+  Pixeln der Projektliste. Ohne Ablage (iOS-Adapter leer, Prüfmodus) gilt die Vorgabe. Speicherort siehe
+  Abschnitt 7, Punkt 4.
 
-### V5 „Eine Liste mit Zeilenaktionen“
+### 4.4 Detailzeile „gewählter Satz“
 
-```
-┌ Kopf ───────────────────────────────────────────────────────┐
-│ Suche · Zähler · Filter · (nur Projekt)  Vergleichen Neu… │[SATZ]│
-│ [IM PROJEKT] 2 · 190 kWth   (angeheftet)            € −   │      │
-│ [KATALOG] 79                                     ＋ ✎ [S] [L] │      │
-│ Katalogzeilen (rollen unter der Projektgruppe)            │      │
-└ Abbrechen · OK ─────────────────────────────────────────────┘
-```
+- **Zugeklappt** (Vorgabe beim Öffnen, KA‑E‑4): eine Zeile mit Pfeil, Marke „Projektsatz“ oder
+  „Katalogsatz“, Name und den wichtigsten Kenndaten. Sie zeigt den zuletzt gewählten Satz, gleich in
+  welchem Bereich.
+- **Aufgeklappt:** die Zeile wird zur Satzfläche mit eigener Rollleiste. Sie nimmt den Listen Höhe ab — der
+  Katalog behält mindestens rund 250 px, die Projektliste wird bei Bedarf bis zur unteren Grenze geklemmt;
+  beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
+  mit „Erst Schloss aufheben“), beim Projektsatz die Kostenknöpfe und die projektbezogenen Felder
+  (Abschnitt 4.2).
+- Der Zustand auf/zu wird nicht gemerkt; die Satzfläche des BHKW startet damit nicht mehr aufgeklappt
+  (heute `_parameterOffen = true`).
 
-Eine gemeinsame Liste; die Projektgruppe ist oben angeheftet und grün hinterlegt, Aktionen stehen als
-Symbole je Zeile. **Vorzüge:** ein Klick ins Projekt, alles in einer Liste, kompakt. **Nachteile:**
-Symbole ohne Wort, fünf Tabulatorhalte je Zeile (braucht wandernden Tabindex), die angeheftete Gruppe frisst
-bei vielen Projektzeilen die Liste, Mehrfachwahl passt schlecht zu Zeilenaktionen; die Katalogliste müsste
-zwei Zeilenarten tragen — größter Umbau an `Katalogliste` und den Rasterproben.
+### 4.5 Mehrfachauswahl
 
-## 5 Vergleich
+- Beide Listen tragen eine Kästchenspalte; Klick wählt eine Zeile, Strg+Klick schaltet, Umschalt+Klick
+  wählt einen Bereich (KA‑E‑5). Das Kopfhäkchen wählt alle Zeilen der **gefilterten** Liste; ein Filter
+  hebt die Wahl verborgener Zeilen nicht stillschweigend auf, die Fußleiste nennt „3 gewählt, 1 verborgen“.
+- **Bereichsaktionen wirken auf die Auswahl:** Übernehmen, Entfernen, Bearbeiten…, In die Datenbank
+  übernehmen…, Schloss, Löschen. Die Rückfrage nennt die Zahl und bei Löschen und Schloss die Namen.
+- **Sammelübernahme** (KA‑E‑6): Doppelklick und Enter übernehmen die Zeile bzw. die Auswahl. Die
+  Trägerwahl fragt je Brennstoff einmal (AD-Q4). Die Detailzeile zeigt die zuletzt angeklickte Zeile.
 
-Zeilen bei 720 / 800 px: sichtbare Katalogzeilen à 46 px, gemessen in den Mockups. Aufwand grob in
-Arbeitstagen für Baustein und zwölf Wirte samt Tests.
+### 4.6 Bearbeiten und Mehrfach-Bearbeiten
+
+- **Bearbeiten…** öffnet den Satzeditor als Überlagerung; im Projektbereich für die Projektkopie, im
+  Katalogbereich für den Katalogsatz (KA‑E‑8). Die Marke im Kopf der Überlagerung sagt, was gespeichert
+  wird.
+- **Mehrere gewählte Sätze:** eine Blätterleiste „‹ 1 von n ›“ wechselt den Satz; je Feld setzt „für alle
+  gewählten setzen“ den Wert in allen Sätzen der Auswahl. Gesperrte Katalogsätze werden übersprungen und
+  in einer Hinweiszeile genannt; Speichern schreibt alle geänderten Sätze in einer Transaktion.
+- Ein gesperrter Katalogsatz allein öffnet nur lesend mit „Erst Schloss aufheben“.
+
+### 4.7 Tastatur
+
+- Tab-Folge: Dialogkopf → Projekt-Kopfleiste → Projektliste → Trennlinie → Katalog-Kopfleiste (Suche,
+  Übernehmen) → Katalogliste → Katalog-Fußleiste → Detailzeile → Dialogfuß. Jede Liste ist **ein**
+  Tabulatorhalt; in der Liste wandern Pfeiltasten, Leertaste schaltet die Wahl, Strg+A wählt die gefilterte
+  Liste.
+- **Enter** in der Katalogliste übernimmt (KA‑E‑6), in der Projektliste öffnet es die Detailzeile;
+  **Entf** in der Projektliste entfernt nach Rückfrage. **Esc** schließt zuerst eine Überlagerung, dann die
+  Detailzeile, dann den Dialog (Abbrechen).
+
+### 4.8 Kleine Fenster
+
+Gemessen im Mockup (BHKW, Projekt mit zwei Modulen, Detailzeile zu, Vorgabe der Trennlinie):
+
+| Fenster | Projektliste | Katalogbereich | Katalogzeilen à 46 px | Trennlinie ganz oben |
+|---|---|---|---|---|
+| 1 280 × 800 | 127 px (2 Zeilen) | 399 px | rund 5,5 | rund 6,5 |
+| 1 280 × 720 | 127 px | 319 px | rund 3,8 | rund 4,8 |
+| 1 024 × 700 | 127 px | 299 px | rund 3,4 | rund 4,4 |
+
+In keinem der drei Fenster und in keiner Stellung der Trennlinie (oben, unten, Tastatur, nach Neuladen,
+Fenster verkleinert, Detailzeile auf) liegt ein Rollbereich in einem anderen; das Dokument rollt nicht
+(Playwright, 48 Zustände). Bei 1 024 px Breite fallen in der Katalogliste die Spalten mit Rang 2 wie heute
+über die Spaltenregel der `Katalogliste`; die Kopfleisten dürfen nicht umbrechen — das hält die neue
+Probe (Abschnitt 8).
+
+### 4.9 Zuschnitt je Dialog (Randnotiz)
+
+| Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |
+|---|---|---|---|---|
+| BHKW, Heizkessel | Summe kWth | Vergleichen, Schloss, Löschen, Bearbeiten · Neu | Alle Daten; Projektsatz: Kosten, Träger, Grenzleistung, VL/RL, Senken | — |
+| Pufferspeicher | Summe Volumen | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Auslegen… | — |
+| Stromspeicher | Summe kWh | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Träger | — |
+| Photovoltaik | Summe kWp | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Stückzahl, Neigung, Azimut, Albedo | Stränge und Wechselrichter… |
+| Solarkollektoren | Summe Module | dieselben · Neu | Alle Daten; Projektsatz: Kosten, Stückzahl, Neigung, Azimut, Solarkreis | — |
+| Wärmepumpe | Umstellen | Schloss, Löschen, Bearbeiten | Kenndaten; Projektsatz: Kosten | Anlage… (`WaermepumpeAnlageDialog`) |
+| Gebäude | — | Neu, Import, Baustoffzuordnungen, Schloss, Löschen | Kenndaten; Projektsatz: Wohnfläche, Ausrichtung, Simulation, Export | Gebäudedaten… |
+| Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
+| Wärmebedarf extern, Strom-, Solarganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten | Ganglinie mit Kennzahlen | — |
+| Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
+
+## 5 Rückweg Projekt → Datenbank
+
+### 5.1 Befund im Code
+
+**Kosten eines Katalogsatzes — zwei Orte, nur einer am Satz:**
+
+1. **Planwerte als Spalten am Katalog.** Die Gerätetabellen führen Investitions- und teils Wartungswerte
+   je Satz, im Katalog (`Tab_*_STAMM`) und in der Projektkopie gleich: BHKW `Kosten_Modul` mit den vier
+   Nebenposten `Kosten_Montage`, `Kosten_Lieferung`, `Kosten_Schallschutzhaube`, `Kosten_Abgasreinigung`,
+   dazu `Investition_kwel` (abgeleitet) und `Wartungskosten_kwhel`; Heizkessel `Investitionskosten`,
+   `Wartungskosten`, `Wartungskosten_Einheit`; Pufferspeicher und Solarkollektoren `Investitionskosten`;
+   Wärmepumpe, Photovoltaik und Kältemaschine `Modulkosten`; Stromspeicher `Modulkosten` (€/kWh),
+   `Leistungskosten`, `Investition_Fix`, `Verschleisskosten`. Gelesen werden sie als Planwert und
+   Vorbelegung des Kostendialogs über `TechnikPlanwertCtrl`
+   (`EPOS.Kern/Controller/TechnikPlanwertCtrl.cs:8–40`, Landkarte der Felder `:404–496`).
+2. **Kostenpositionen des Projekts** stehen in `Tab_ProjektWerte` je Anlage (`ID_Anlage`, Kategorie,
+   Kostenart, Bemessung, Satz, Nutzungsdauer, Ersatz und Restwert). Sie entstehen aus Kostenvorlagen
+   `Tab_KostenVorlage`/`Tab_KostenVorlagePosition` (`EPOS.Kern/Controller/KostenVorlagenCtrl.cs:8–25`,
+   Übernahme `EPOS.Kern/Controller/KostenVorlagenUebernahmeCtrl.cs:16–36`). Eine Vorlage hängt an
+   `KomponentenID` — dem Gewerk aus `Tab_KostenKomponente` (nur `ID`, `Komponente`) —, **nicht an einem
+   Katalogsatz**. Betriebskostenpositionen (Wartung als Satz, Versicherung, Ersatz, Nutzungsdauer) haben
+   damit heute keinen Ort am einzelnen Katalogsatz.
+
+**Ursprung der Projektkopie.** Den Katalogsatz, aus dem eine Kopie stammt, kennen über eine ID nur vier
+Gewerke: Wärmepumpe `Tab_WP.ID_Stamm` (Schemaschritt 80, `EPOS.Kern/Controller/WPCtrl.cs:877`; Rückfall
+über den Bezeichner `EPOS.Kern/Controller/WPStammCtrl.cs:858`), Pufferspeicher `Tab_Pufferspeicher.ID_Stamm`
+(`EPOS.Kern/Controller/PufferSpCtrl.cs:412–417`), Kältemaschine `Tab_Kaeltemaschine.ID_Stamm`
+(`EPOS.Kern/Controller/KaeltemaschineStammCtrl.cs:336`) und Gebäude `Tab_Gebaeude.ID_Gebaeude_Stamm`
+(Schemaschritt 121, `EPOS.Kern/Controller/GebaeudeStammCtrl.cs:649`, `:1166`). **Ohne Verweis** sind
+`Tab_BHKW`, `Tab_Heizkessel`, `Tab_Stromspeicher`, `Tab_PV`, `Tab_Solarkollektoren` und die Projektkopien
+der Bedarfsprofile und Zeitreihen (`Tab_Stromverbraucher`, `Tab_Brauchwasser`, `Tab_Prozesswaerme`,
+`Tab_Waermebedarf`, `Tab_Stromganglinie`, `Tab_Solarganglinie`).
+
+**Vorhandener Kernweg.** Nur das Gebäude hat einen Rückweg: „In DB übernehmen“
+(`EPOS.Kern/Controller/GebaeudeStammCtrl.cs:1464`, `AusProjektUebernehmen`) legt die Projektkopie als
+**neuen** Katalogsatz an — die 95 Fachspalten, die Kopie und Katalog gleich führen (`:1406`), samt Kopie der
+Konditionierung; Zonen und Bauteile bleiben im Projekt. Der Namensvorschlag hängt bei Belegung einen Zähler
+an („… (2)“, `NamensvorschlagAusProjekt`, `:1418`), die Absagen sind benannt (Name leer, Name vergeben).
+Im Dialog sitzt er als `Leistenzusatz` (`EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor:111–117`). Einen Weg
+„Ursprung überschreiben“ gibt es nirgends.
+
+**Projektbezogene Felder.** Die Gerätekopien von BHKW, Heizkessel, Photovoltaik, Stromspeicher,
+Solarkollektoren und Wärmepumpe führen genau die Spalten ihres Katalogs (zusätzlich nur `ID_Projekt`,
+bei der Wärmepumpe `ID_Stamm`); der Katalog hat zusätzlich `ReadOnly`, `Katalog_Schluessel`,
+`Katalog_Pruefsumme`, `Katalog_Ausgelaufen`. Die projektbezogenen Felder liegen nicht am Gerät, sondern an
+der Anlagenzeile `Tab_Energieanlagen` — Energieträger `ID_Carrier` und `Kuehl_ID_Carrier`, `Grenzleistung`,
+`Vorlauf`, `Vorlauf_Max`, `Neigung`, `Azimut`, `Albedo`, `Kollektormodulanzahl`, die Quellfelder `WQ_*` —,
+die Senken in `Z_AnlageSenke`, die Stränge in `Z_AnlageStrang`. Ausnahme ist `Tab_BHKW.Grenzleistung`: eine
+Katalogspalte (Rangfolge Anlage, Katalog, Projekt), sie geht mit. Der Pufferspeicher trägt in der Kopie 25
+Spalten, die der Katalog nicht kennt (`Vorlauf`, `Ruecklauf`, `Verwendung`, die Schwellen, Schichten, Lade-
+und Entladeleistung, `Nutzung_*`, `Entnahme_*`, Frischwassermodul, Aufstellraum) — sie sind projektbezogen.
+Die Kataloge führen einen eindeutigen Index auf `Bezeichner` (geprüft an BHKW, Heizkessel, Photovoltaik,
+Wärmepumpe, Pufferspeicher).
+
+### 5.2 Regel des Rückwegs
+
+1. **Knopf** „In die Datenbank übernehmen…“ in der Projekt-Kopfleiste, wirksam auf die Auswahl (KA‑E‑9).
+2. **Rückfrage immer**, als Überlagerung, je gewähltem Satz eine Zeile:
+   - Wahl **„als neuen Katalogsatz anlegen“** (Vorgabe) oder **„Ursprung überschreiben“**.
+   - „Ursprung überschreiben“ ist ausgegraut mit Grund: „Erst Schloss aufheben“ (Ursprung gesperrt),
+     „Ursprung nicht mehr vorhanden“ (Verweis zeigt ins Leere), „Ursprung nicht bekannt“ (Gewerk ohne
+     Verweis, Abschnitt 7 Punkt 3).
+   - **Name:** Vorbelegung mit dem Namen der Kopie; ist er im Katalog belegt, mit dem Zusatz „(Projekt)“,
+     und ist auch der belegt, „(Projekt 2)“ usw. Das Feld ist änderbar; ein belegter Name sperrt „Übernehmen“
+     mit Hinweis am Feld — gespeichert wird nie ein doppelter Name (der Index fängt es zusätzlich).
+     Beim Überschreiben bleibt der Name des Ursprungs, das Feld ist gesperrt.
+   - Bei Mehrfachauswahl gilt eine Wahl für alle mit Abweichung je Zeile; Zeilen, die nicht überschreiben
+     können, fallen auf „neu“ zurück und werden genannt.
+3. **Was mitgeht:** die Schnittmenge der Spalten von Kopie und Katalog ohne `ID`, `ID_Projekt`, `ID_Stamm`,
+   `ReadOnly` und `Katalog_*`; dazu die Kindzeilen der technischen Daten (Abschnitt 7 Punkt 5) und die
+   Kosten: die Planwertspalten unmittelbar, die Kostenpositionen der Anlage als Vorgabe des Katalogsatzes
+   (Ort: Abschnitt 7 Punkt 3). Projektbezogene Felder der Anlagenzeile, Senken und Stränge gehen nicht mit.
+4. **Danach:** Ein neuer Satz ist ungesperrt; die Projektkopie bekommt ihn als Ursprung (wo ein Verweis
+   existiert), damit ein zweiter Rückweg überschreiben kann. Die Meldung nennt Zahl und Namen. Alles in
+   einer Transaktion je Aufruf; scheitert ein Satz, wird nichts geschrieben.
+5. **Kernweg:** ein Controller im Kern je Gewerk nach dem Muster `GebaeudeStammCtrl.AusProjektUebernehmen`
+   mit benannten Absagen; der Gebäudeweg wird auf die neue Regel gezogen (Namenszusatz, Überschreiben).
+   Die Oberfläche fragt nur.
+
+## 6 Abwägung: die fünf Varianten
+
+Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
+seine Knöpfe selbst und ist gerahmt und beschriftet, Kosten gehören zum Projektsatz, Bearbeiten… und Alle
+Daten zum jeweiligen Satz. Alle fünf Mockups sind spielbar und mit Playwright geprüft (kein Rollbereich im
+Rollbereich).
+
+- **V1 „Gerahmt und gestapelt“** — dieselbe Reihenfolge wie heute in drei Rahmen; gewählt (Abschnitt 4).
+- **V2 „Nebeneinander (Transferliste)“** — Katalog links, Projekt rechts, Pfeilknöpfe dazwischen, Satzband
+  darunter. Richtung der Übernahme unmissverständlich; der Katalog verliert aber rund 520 px Breite (Spalten
+  mit Rang 2 fallen, Entscheid W14a-E-10-Q2), und das Band ist für PV-Stränge und die Wärmepumpen-Anlage zu
+  niedrig.
+- **V3 „Projekt im Mittelpunkt, Katalog als Schublade“** — Projekt mit voller Breite, Katalog als Schublade
+  von rechts. Schärfste Trennung und viel Platz für breite Projektsätze; ein Klick mehr je Übernahme, das
+  Projekt ist verdeckt, Fokusfalle und stufenweises Esc in einem neuen Baustein.
+- **V4 „Reiter Projekt | Katalog mit Detailspalte“** — je Reiter eine Liste in voller Höhe, rechts eine feste
+  Detailspalte. Längste Liste bei 720 px; Projekt und Katalog aber nie zugleich sichtbar.
+- **V5 „Eine Liste mit Zeilenaktionen“** — eine gemeinsame Liste, Projektgruppe angeheftet, Symbole je
+  Zeile. Ein Klick ins Projekt; Symbole ohne Wort, viele Tabulatorhalte, Mehrfachwahl passt schlecht,
+  größter Umbau an `Katalogliste`.
 
 | Kriterium | V1 gestapelt | V2 Transfer | V3 Schublade | V4 Reiter | V5 eine Liste |
 |---|---|---|---|---|---|
 | Klarheit der Zuordnung | gut | sehr gut | sehr gut | sehr gut | mittel (Symbole) |
-| Platz, kleiner Bildschirm (Katalogzeilen 720 / 800) | knapp (3,8 / 5,5) | mittel (4,8 / 5,9) | gut (7,8 / 9,5) | sehr gut (8,3 / 10) | gut (7 / 8,8) |
-| Klicks „Modul ins Projekt“ (heute 2 + Zurückrollen) | 2 | 2 (Doppelklick 1) | 3–4 | 2–3 | 1 |
-| Mehrfachauswahl | nein (nachrüstbar) | ja | ja | ja | schlecht |
-| Tastatur | gut (Tab-Folge wie heute) | gut | mittel (Fokusfalle, Esc stufenweise) | gut (Reiter mit Pfeiltasten) | schwach (viele Halte) |
-| Eignung für alle Dialoge | mittel (große Satzblöcke) | mittel (Breite, Band) | sehr gut | sehr gut | mittel |
-| Umbauaufwand (Tage) | 3–4 | 6–8 | 8–10 | 7–9 | 10–12 |
-| Risiko Tests und Proben | gering: `FensterrahmenTests`, `fensterprobe` anpassen | mittel: Rasterprobe (schmale Liste) | hoch: `fensterprobe`, `fokusprobe`, neue Schublade | mittel: `fensterprobe`, Reitertests | hoch: `rasterprobe`/`katalogprobe` (zwei Zeilenarten) |
+| Katalogzeilen bei 720 / 800 px | 3,8 / 5,5 (Trennlinie oben: 4,8 / 6,5) | 4,8 / 5,9 | 7,8 / 9,5 | 8,3 / 10 | 7 / 8,8 |
+| Projekt und Katalog zugleich sichtbar | ja | ja | nein (Schublade) | nein (Reiter) | ja |
+| Klicks „Modul ins Projekt“ | 1 (Doppelklick) bis 2 | 1 bis 2 | 3–4 | 2–3 | 1 |
+| Umbauaufwand (Tage, Baustein und zwölf Wirte) | 3–4, mit Trennlinie, Mehrfachwahl und Rückweg mehr (Abschnitt 8) | 6–8 | 8–10 | 7–9 | 10–12 |
+| Risiko Tests und Proben | gering | mittel | hoch | mittel | hoch |
 
-Für alle Varianten gilt: Die Katalogliste bekommt eine feste Höhe aus dem Raster statt `max-height` —
-das hilft der Virtualisierung (Rasterprobe), und die Haftregel des Fensterdialogs wird für diese Dialoge
-gegenstandslos (`fensterprobe` misst dann „nichts rollt außer den Listen“).
+**Damalige Empfehlung und Wahl.** Der Entwurf empfahl V4 — meiste Listenhöhe bei 1 280 × 720 und dasselbe
+Schema wie die Verwaltungen (Liste, Auswahlleiste, Stammblatt). Der Anwender hat nach dem Ausprobieren V1
+gewählt: Projekt und Katalog bleiben zugleich sichtbar, die Reihenfolge ist die vertraute, der Umbau der
+kleinste. Den Platznachteil von V1 bei kleinen Fenstern gleicht die ziehbare, gemerkte Trennlinie (KA‑E‑3)
+aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlagerung (KA‑E‑11).
 
-## 6 Empfehlung
+## 7 Offene Punkte für die Umsetzung
 
-**V4 „Reiter Projekt | Katalog mit Detailspalte“** als Ziel für alle zwölf Projektdialoge, Heizkessel als
-Pilot (wie AD-Q8 Stufe 3 vorgesehen):
-
-- Sie löst beide Klagen am gründlichsten: genau **ein** großer Rollbereich je Seite, die Detailspalte rollt
-  daneben, nie darin; jeder Knopf steht im Blatt des Bereichs, auf den er wirkt.
-- Sie hat bei 1 280 × 720 den meisten Platz für die Liste und den Satz.
-- Sie ist das Schema der Verwaltungen (Liste + Auswahlleiste + Stammblatt) mit einem Reiter davor — ein
-  Hausmuster statt zweier; die Verwaltungsbetriebsart des Gebäudes ist einfach der Reiter „Katalog“ allein.
-- Sie greift die ruhenden Entscheide AD-Q2 (Umschalter mit Zähler) und AD-Q4 (Mehrfachwahl mit
-  Sammelübernahme) wieder auf und braucht keinen neuen Baustein außer der Anordnung.
-
-**V3** ist die Ausweichempfehlung für Dialoge mit sehr großem Projektsatz (Gebäude, Wärmepumpe), falls die
-Detailspalte dort nicht reicht. **V1** taugt als Sofortmaßnahme gegen das Doppelrollen (2–3 Tage), wäre
-aber ein Zwischenstand, der später erneut umgebaut wird.
-
-## 7 Offene Anwenderentscheide
-
-| Kennung | Frage | Empfohlene Antwort |
+| Nr | Punkt | Empfehlung |
 |---|---|---|
-| **KA-Q1** | Welche Variante wird Ziel für die Projektdialoge? | **V4** (Abschnitt 6) |
-| **KA-Q2** | Zuerst eine Sofortmaßnahme (V1: Dialog rollt nicht, Rahmen und Knöpfe je Bereich) oder gleich das Ziel? | **Gleich das Ziel**, Heizkessel als Pilot; V1 nur, wenn der Pilot länger als zwei Wochen ausbleibt; Umsetzung auf Zuruf des Anwenders |
-| **KA-Q3** | Welcher Reiter ist beim Öffnen aktiv? | **„Im Projekt“, wenn das Projekt Komponenten hat, sonst „Katalog“**; nach einer Übernahme bleibt „Katalog“ offen |
-| **KA-Q4** | Mehrfachwahl mit Sammelübernahme („＋ 3 in das Projekt“), Trägerwahl einmal je Brennstoff (AD-Q4)? | **Ja** |
-| **KA-Q5** | Doppelklick auf eine Katalogzeile übernimmt ins Projekt (AD-Q3)? | **Ja**, im Projektdialog; in den Verwaltungen weiter nichts |
-| **KA-Q6** | Bleibt die Katalogpflege (Neu…, Schloss, Löschen, Bearbeiten…) im Projektdialog (AD-Q10)? | **Ja, im Reiter „Katalog“** — dort ist sie eindeutig zugeordnet; ein eigener Weg „Katalog verwalten…“ entfällt |
-| **KA-Q7** | Ändert „Alle Daten“ beim Projektsatz die Projektkopie und beim Katalogsatz den Katalog (AD-Q5)? | **Ja** — die Marke „Projektsatz“/„Katalogsatz“ im Kopf der Detailspalte sagt, was gespeichert wird |
-| **KA-Q8** | Die drei Kennfarben (Projekt grün, Katalog blau, Satz orange) als Hausregel auch in der Anwendung? | **Ja, als Rahmenfarbe der Bereiche und Marke im Kopf**; an den Knöpfen nur die Stellung, kein Farbstreifen |
-| **KA-Q9** | Breite Projektsätze (PV-Stränge, Wärmepumpen-Anlage, Gebäude): Detailspalte verbreitern oder Überlagerung? | **Überlagerung im selben Fenster** über „Stränge…“ bzw. „Anlage…“; die Detailspalte bleibt 400 px |
+| 1 | **Umsetzung beauftragen** | Auf Zuruf des Anwenders; als eigene Welle mit dem Stufenplan aus Abschnitt 8, Stufe 1 und 2 zuerst. |
+| 2 | **Erster Dialog** | **Heizkessel** — Katalogpflege vollständig, Kosten mit Planwert und Wartungseinheit, Senken und Temperaturpaar, keine Überlagerung; danach BHKW (gleiches Muster plus Nebenposten). |
+| 3 | **Ort der Katalogkosten** — die Planwerte haben Spalten am Katalog, die Kostenpositionen (Betriebskosten, Nutzungsdauer, Ersatz) nicht; Ursprungsverweis fehlt bei fünf Geräten und den Bedarfs- und Zeitreihenkopien (Abschnitt 5.1) | **Ein Schemaschritt** „Katalogkosten und Ursprung“: an jedem Katalog mit Kosten (`Tab_BHKW_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_Pufferspeicher_STAMM`, `Tab_Stromspeicher_STAMM`, `Tab_PV_STAMM`, `Tab_Solarkollektoren_STAMM`, `Tab_WP_STAMM`, `Tab_Kaeltemaschine_STAMM`) eine Spalte `ID_KostenVorlage` (Verweis auf `Tab_KostenVorlage.ID`, leer = Standardvorlage des Gewerks), an den Kopien ohne Verweis `ID_Stamm`. Der Rückweg schreibt die Planwerte in die vorhandenen Spalten und die übrigen Positionen der Anlage als Kostenvorlage des Satzes (Gewerk = `KomponentenID`, Name = Satzname, nicht Standard); die Übernahme Katalog → Projekt zieht diese Vorlage vor der Standardvorlage. Ohne Schemaschritt gingen nur die Planwerte mit, und „Ursprung überschreiben“ bliebe dort mit „Ursprung nicht bekannt“ ausgegraut — ein Namensabgleich als Ersatz wird nicht empfohlen (Umbenennung trifft den falschen Satz). Die Nummer meldet die Umsetzungssitzung vor dem Bau an. |
+| 4 | **Speicherort der Trennlinienhöhe** | `Dienste.Einstellungen` mit `LiesZahl`/`SchreibZahl`, ein Schlüssel je Dialog (`Katalogauswahl.Trenner.<Dialog>`), Wert in Pixeln der Projektliste, je Anwender, nicht je Projekt; ohne Ablage die Vorgabe. Kein Schemaschritt — die Höhe ist Bedienzustand, keine Projektdatum. |
+| 5 | **Rückweg bei Kindzeilen** — Kennlinien (`Tab_Kenndaten`, `Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), Zeitreihen (`…Daten`), Typsätze der Bedarfsprofile, PV-Stränge, Gebäudezonen | Technische Kindzeilen gehen **vollständig** mit: bei „neu“ als Kopie am neuen Satz, bei „überschreiben“ als Ersatz der Kindzeilen des Ursprungs in derselben Transaktion. Anlagenbezogene Kindzeilen bleiben im Projekt: PV-Stränge und Wechselrichterzuordnung (`Z_AnlageStrang`), Senken; Gebäudezonen und Bauteile wie heute. Die Rückfrage nennt, was im Projekt bleibt. |
+| 6 | **Katalogpaket** — ein ungesperrter Satz aus der Auslieferung (`Katalog_Schluessel` gesetzt) wird überschrieben | Schlüssel stehen lassen, die Prüfsumme nicht nachführen, damit die Katalogaktualisierung den Satz als vom Anwender geändert erkennt; beim Bau gegen die Regeln des Katalogpakets prüfen. |
+
+## 8 Stufenplan
+
+| Stufe | Inhalt | Nachweis |
+|---|---|---|
+| **1 Baustein** | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
+| **2 Heizkessel** | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
+| **3 Erzeuger** | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
+| **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
+| **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
+
+**Proben sind Pflicht in jeder Stufe:** die Rasterprobe (virtualisierte `Katalogliste` mit fester Höhe aus
+dem Raster statt `max-height`), `fensterprobe.mjs` (Kopf und Fuß im eigenen Fenster; sie misst für diese
+Dialoge „nichts rollt außer den Listen und der Detailzeile“) und eine neue Probe „kein Rollbereich im
+Rollbereich“ unter `Proben/Rasterprobe/` nach dem Muster der Mockup-Prüfung: alle zwölf Dialoge und die
+Kältemaschinenauswahl in 1 280 × 800, 1 280 × 720 und 1 024 × 700, Trennlinie an beiden Grenzen, Detailzeile
+auf und zu, Überlagerung offen — kein Element mit `overflow: auto|scroll` in einem anderen, Dokument und
+Dialogkörper rollen nicht, Konsole fehlerfrei, mit Gegenprobe (ein absichtlich verschachtelter Rollbereich
+muss rot werden).
