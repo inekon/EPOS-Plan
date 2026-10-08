@@ -1618,9 +1618,14 @@ namespace WindowsFormsApplication1
                                                      bool extrapolationErlaubt, out int stelle)
         {
             stelle = StuetzstelleWaehlen(vorlaeufe, vorlauf);
-            if (vorlauf > vorlaeufe[vorlaeufe.Count - 1])
+            // Die äußeren Stützstellen sind Marken, auf die die Heizkurve zusteuert (Begrenzung auf den
+            // obersten Vorlauf): Ein Vorlauf, der um weniger als den Zahlenrand darüber oder darunter liegt,
+            // gilt als innerhalb — sonst kippt die Lage am letzten Bit (Störungslauf, Projekt 1062).
+            int oben = vorlaeufe[vorlaeufe.Count - 1];
+            if (vorlauf > oben + Rechenrand.Zu(oben))
                 return extrapolationErlaubt ? Vorlauflage.Darueber : Vorlauflage.Verboten;
-            return vorlauf < vorlaeufe[0] ? Vorlauflage.Darunter : Vorlauflage.Innerhalb;
+            int unten = vorlaeufe[0];
+            return vorlauf < unten - Rechenrand.Zu(unten) ? Vorlauflage.Darunter : Vorlauflage.Innerhalb;
         }
 
         /// <summary>
