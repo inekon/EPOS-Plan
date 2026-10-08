@@ -5,6 +5,7 @@
 Erzeuger** · Codestand `da03e5333` (Zweig `ios_migration_september`,
 Schemastand 201, Referenzbasis `2026-10-07_R43_Kaelteseite_AK3K`) · Mockup
 `Mockups/Waermepumpe_Bivalenz_Uebergabe.html` · Fragen **UB‑Q1 bis UB‑Q11** (Abschnitt 10).
+**Umsetzung:** [`Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 
 Ziel: Eine Wärmepumpe liefert in EPOS-Plan heute so viel, wie ihr Kennfeld an der gewählten Stützstelle hergibt —
 auch in Stunden, in denen der Heizkreis einen Vorlauf über ihrem Höchstvorlauf verlangt. Das Papier legt fest, wie
