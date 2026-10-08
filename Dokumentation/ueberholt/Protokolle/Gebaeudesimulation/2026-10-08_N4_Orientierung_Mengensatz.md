@@ -23,7 +23,7 @@ Befund 4.1: Bei Dateien mit Mengensätzen und Raumgrenzen ohne Orientierung war 
 
 ## 4 Gate 823
 
-GATEZAHLEN
+auf `8e69a3945` (67 min): KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 830, EPOS.Kern 12 284 mit 6 übersprungen, 0 rot; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 24/24 gegen `2026-10-07_R43_Kaelteseite_AK3K` PASS (8 073 156 Werte), 759/759 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 522 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
 ## 5 Offen
 
