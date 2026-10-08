@@ -688,8 +688,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeModellFehler.AbschnittsregelVerletzt"/>) — die Zonenschleife rechnet die
         /// Stunde dann frei (<see cref="Schritt"/>), die Kappung bleibt so beim Fall der Leistungsgrenze.
         /// Die Fälle ohne Leitwert rechnen wie ohne Übergabe; Rücklauf und Gründe der Stunde wie in
-        /// <see cref="Schritt"/>. Eine Kühlübergabe (Schritt K) bleibt ausgeschlossen — im
-        /// Mehrzonenweg rechnet die Kälteseite ideal.</para>
+        /// <see cref="Schritt"/>. Eine Kühlübergabe (Schritt K) bleibt ausgeschlossen — die
+        /// Zonenschleife rechnet eine Stunde mit Kühlübergabe je Zone (Entwurf KK, KZ1) frei.</para>
         /// <para>Die Abschnittsregel (F-K3) gilt wie in <see cref="Schritt"/>. Das Muster muss die Stunde
         /// genau füllen.</para>
         /// </summary>
