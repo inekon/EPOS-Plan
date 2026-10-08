@@ -40,6 +40,10 @@
 // Innenflaeche (Byte 5), nicht 0. Der Klick meldet als fuenften Wert das Dreieck des Netzes (Index der Datei, vor dem
 // Umsortieren) - daran haengt in der Komponente das Bauteil der Raumflaeche (Steckbrief); in "zonen" ist es null.
 //
+// FARBMODUS "befund" (Abstimmung G5, B1; G5-3): derselbe Bauplan mit den Befundbytes - je Raum ab e.befundAb (fuenfter Teil
+// des Bytefelds), je Bauteilkoerper e.befund -, der Farbtafel daten.befundfarben (GebaeudeAnsichtBefundstufen.FARBEN) und
+// den Schaltern daten.befundsichtbar. Halbtransparent ist die neutrale Innenflaeche (Byte 4). Der Klick wie in "aufbau".
+//
 // DETERMINISTISCH. Keine Zufallsfarben, keine Animation: gezeichnet wird bei Aenderung (Kamera,
 // Groesse, Daten). Kann die Umgebung kein WebGL, wirft erzeugen() nicht, sondern gibt false zurueck -
 // der Baustein meldet das benannt statt eines leeren Bildes.
@@ -95,19 +99,35 @@ function imRandmodus(daten) { return daten.farbmodus === 'randbedingung'; }
 /** Ist der Farbmodus "aufbau" gewaehlt (BA-3)? */
 function imAufbaumodus(daten) { return daten.farbmodus === 'aufbau'; }
 
+/** Ist der Farbmodus "befund" gewaehlt (G5-3)? */
+function imBefundmodus(daten) { return daten.farbmodus === 'befund'; }
+
 /** Ist ein Modus mit Gruppen je Dreieck gewaehlt? */
-function imGruppenmodus(daten) { return imRandmodus(daten) || imAufbaumodus(daten); }
+function imGruppenmodus(daten) { return imRandmodus(daten) || imAufbaumodus(daten) || imBefundmodus(daten); }
 
 /** Die Zahl der Stufen mit Schalter (A, B, C, transparent, ohne Bauteil). */
 const STUFEN = 5;
 /** Das Stufenbyte der neutralen Innenflaeche (R0) - halbtransparent. */
 const STUFE_INNEN = 5;
 
-/** Der halbtransparente Wert des Modus: R0 im Randmodus, die neutrale Innenflaeche im Aufbaumodus. */
-function durchsichtigerWert(daten) { return imAufbaumodus(daten) ? STUFE_INNEN : 0; }
+/** Die Zahl der Befunde mit Schalter (ohne, Koerper unlesbar, ohne Eigenschaften, ohne Bauteil). */
+const BEFUNDE = 4;
+/** Das Befundbyte der neutralen Innenflaeche (R0) - halbtransparent. */
+const BEFUND_INNEN = 4;
+
+/** Der halbtransparente Wert des Modus: R0 im Randmodus, die neutrale Innenflaeche im Aufbau- und im Befundmodus. */
+function durchsichtigerWert(daten) { return imAufbaumodus(daten) ? STUFE_INNEN : imBefundmodus(daten) ? BEFUND_INNEN : 0; }
+
+/** Der Wert eines Bauteilkoerpers im gewaehlten Modus: Befund, Stufe oder Gruppe. */
+function bauteilwert(daten, b) { return imBefundmodus(daten) ? b.befund : imAufbaumodus(daten) ? b.stufe : b.gruppe; }
 
 /** Ist die Gruppe (bzw. im Aufbaumodus die Stufe) eingeblendet? Ohne Schalter oder fuer entartete Dreiecke (255) immer. */
 function gruppeSichtbar(daten, gruppe) {
+    if (imBefundmodus(daten)) {
+        if (gruppe < 0 || gruppe >= BEFUNDE) return true;
+        const b = daten.befundsichtbar;
+        return !Array.isArray(b) || b[gruppe] !== false;
+    }
     if (imAufbaumodus(daten)) {
         if (gruppe < 0 || gruppe >= STUFEN) return true;
         const a = daten.aufbausichtbar;
@@ -170,12 +190,14 @@ export function randaufbau(dreiecke, gruppen, sichtbar) {
 function randmaterial(daten, gruppe, bauteil) {
     const z = zustand;
     const aufbau = imAufbaumodus(daten);
-    const schluessel = (aufbau ? 'a' : 'g') + gruppe + (bauteil ? '|b' : '|r');
+    const befund = imBefundmodus(daten);
+    const schluessel = (befund ? 'f' : aufbau ? 'a' : 'g') + gruppe + (bauteil ? '|b' : '|r');
     let m = z.randmaterial.get(schluessel);
     if (m) return m;
-    const tafel = aufbau ? (Array.isArray(daten.aufbaufarben) ? daten.aufbaufarben : [])
+    const tafel = befund ? (Array.isArray(daten.befundfarben) ? daten.befundfarben : [])
+        : aufbau ? (Array.isArray(daten.aufbaufarben) ? daten.aufbaufarben : [])
         : (Array.isArray(daten.randfarben) ? daten.randfarben : []);
-    const grenze = aufbau ? tafel.length : GRUPPEN;
+    const grenze = befund || aufbau ? tafel.length : GRUPPEN;
     const farbwert = gruppe >= 0 && gruppe < grenze && tafel[gruppe] ? tafel[gruppe] : farbe(z.canvas, -1);
     const r0 = gruppe === durchsichtigerWert(daten);
     m = new THREE.MeshLambertMaterial({
@@ -293,6 +315,7 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
     const z = zustand;
     const rand = imGruppenmodus(daten);
     const aufbaumodus = imAufbaumodus(daten);
+    const befundmodus = imBefundmodus(daten);
     const roh = abschnitt(feld, e.punkteAb, e.punktZahl * 3, Float32Array);
     // Achsen wie v3: (x, y, z) -> (x, z, -y); eine Drehung, der Umlauf der Dreiecke bleibt.
     const lage = new Float32Array(roh.length);
@@ -310,8 +333,9 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
         // Gruppen je Dreieck: Raeume aus dem dritten Teil des Felds, ein Bauteilkoerper traegt seine eine Gruppe.
         // Im Aufbaumodus die Stufen: Raeume ab stufenAb, ein Bauteilkoerper traegt seine Stufe.
         let gruppen = null;
-        const ab = aufbaumodus ? e.stufenAb : e.gruppenAb;
-        const eine = aufbaumodus ? e.stufe : e.gruppe;
+        // Im Befundmodus die Befunde: Raeume ab befundAb, ein Bauteilkoerper traegt seinen Befund.
+        const ab = befundmodus ? e.befundAb : aufbaumodus ? e.stufenAb : e.gruppenAb;
+        const eine = befundmodus ? e.befund : aufbaumodus ? e.stufe : e.gruppe;
         if (bauteil !== null) gruppen = new Uint8Array(e.dreieckZahl).fill(Number.isInteger(eine) && eine >= 0 ? eine : KEINE);
         else if (Number.isInteger(ab) && ab >= 0) gruppen = feld.slice(ab, ab + e.dreieckZahl);
         const aufbau = randaufbau(dreiecke, gruppen, gr => gruppeSichtbar(daten, gr));
@@ -368,7 +392,7 @@ function bauen(daten, feld) {
         // Die Bauteilkoerper nur im Randmodus, nur mit Schalter und nur, wo ihre Gruppe eingeblendet ist.
         if (rand && daten.bauteilesichtbar !== false) {
             for (const b of daten.bauteile ?? []) {
-                if (!gruppeSichtbar(daten, imAufbaumodus(daten) ? b.stufe : b.gruppe) || !(b.dreieckZahl > 0)) continue;
+                if (!gruppeSichtbar(daten, bauteilwert(daten, b)) || !(b.dreieckZahl > 0)) continue;
                 dateinetz({ ...b, raum: null, zone: null }, feld, bezug, ziel, box, daten);
             }
         }

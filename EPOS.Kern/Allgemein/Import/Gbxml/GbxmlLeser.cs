@@ -81,6 +81,8 @@ namespace WindowsFormsApplication1
 
             new Lesung(abbild, melder, abbruch).Lesen(dokument);
             NordwinkelVorgeben(abbild, profil?.NordwinkelVorgabeGrad);
+            // Die Flächen der gebildeten Körper nach Randbedingung (17.4) — formatfrei, nach der Drehung der Azimute.
+            Flaechenklassifikation.KlassifizierenAlle(abbild);
             return abbild;
         }
 
@@ -196,6 +198,9 @@ namespace WindowsFormsApplication1
                     Datei(PruefStufe.Warnung, "OHNE_AUFBAU", Ganz(_ohneAufbau.Count), Beispiele(_ohneAufbau));
                 foreach (KeyValuePair<string, int> u in _uebergangen)
                     Datei(PruefStufe.Info, "UEBERGANGEN", u.Key, Ganz(u.Value));
+
+                // Raum- und Bauteilkörper aus den Polygonen der Datei (Datenaustauschkonzept 17.2 bis 17.4).
+                GbxmlKoerper.Bilden(_abbild, wurzel);
             }
 
             // --------------------------------------------------------------

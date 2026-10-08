@@ -144,6 +144,72 @@ namespace WindowsFormsApplication1
                    && ps >= smin - AUSSPARUNG_ABSTAND_M && ps <= smax + AUSSPARUNG_ABSTAND_M;
         }
 
+        /// <summary>
+        /// <b>Liegt die Öffnung in Ebene und Umriss des Wirts?</b> (G5-3d) Abstand [m] der Mitte <paramref name="mitte"/> von
+        /// der nächsten Seitenfläche der Wirtskörper, deren Normale unter 5° parallel zu einer der Richtungen
+        /// <paramref name="normalen"/> liegt: <c>null</c>, wenn die Mitte außerhalb jedes Umrisses (Toleranz
+        /// <see cref="AUSSPARUNG_TOLERANZ_M"/>, in der Ebene) oder weiter als <see cref="AUSSPARUNG_ABSTAND_M"/> vor oder hinter
+        /// den Ebenen liegt; sonst der Abstand quer zur Ebene (0 = in der Wand). Anders als <see cref="Ausgespart"/> zählt der
+        /// Umriss je Seitenfläche samt ihren Aussparungen — eine Öffnung in einem Loch der Wand liegt in ihr. Ohne Körper,
+        /// Richtung oder Mitte: <c>null</c>. <paramref name="normale"/> ist die Richtung der getroffenen Seitenfläche.
+        /// </summary>
+        internal static double? AbstandZurWand(IEnumerable<Dateikoerper> wirt, IEnumerable<double[]> normalen, double[] mitte, out double[] normale)
+        {
+            normale = null;
+            if (wirt == null || normalen == null || mitte == null) return null;
+            double grenze = Math.Cos(IfcBauteilkoerper.ZUSAMMENFASSEN_GRAD * Math.PI / 180.0);
+            double? bester = null;
+            foreach (double[] n in normalen)
+            {
+                if (n == null) continue;
+                double betragN = Math.Sqrt(Punkt(n, n));
+                if (betragN <= 1e-12) continue;
+                double[] e = { n[0] / betragN, n[1] / betragN, n[2] / betragN };
+                double[] hilfe = Math.Abs(e[2]) < 0.9 ? new[] { 0.0, 0.0, 1.0 } : new[] { 1.0, 0.0, 0.0 };
+                double[] u = Einheit(Kreuz(hilfe, e)), v = Kreuz(e, u);
+                double pu = Punkt(mitte, u), pv = Punkt(mitte, v), ps = Punkt(mitte, e);
+                // Die Seitenflächen: zusammenhängende parallele Dreiecke gleicher Ebene, je Ebene ihr Umriss in (u, v).
+                var ebenen = new List<(double S, double Umin, double Umax, double Vmin, double Vmax)>();
+                foreach (Dateikoerper k in wirt)
+                {
+                    if (k == null) continue;
+                    foreach (int[] d in k.Dreiecke)
+                    {
+                        double[] a = Flaechenvektor(k, d);
+                        double betrag = Math.Sqrt(Punkt(a, a));
+                        if (betrag <= 1e-12 || Math.Abs(Punkt(a, e)) / betrag < grenze) continue;
+                        double s = 0.0, umin = double.PositiveInfinity, umax = double.NegativeInfinity, vmin = double.PositiveInfinity, vmax = double.NegativeInfinity;
+                        for (int i = 0; i < 3; i++)
+                        {
+                            double[] q = k.PunkteM[d[i]];
+                            double qu = Punkt(q, u), qv = Punkt(q, v);
+                            umin = Math.Min(umin, qu); umax = Math.Max(umax, qu);
+                            vmin = Math.Min(vmin, qv); vmax = Math.Max(vmax, qv);
+                            s += Punkt(q, e) / 3.0;
+                        }
+                        int j = ebenen.FindIndex(x => Math.Abs(x.S - s) <= AUSSPARUNG_TOLERANZ_M);
+                        if (j < 0) ebenen.Add((s, umin, umax, vmin, vmax));
+                        else
+                        {
+                            var x = ebenen[j];
+                            ebenen[j] = (x.S, Math.Min(x.Umin, umin), Math.Max(x.Umax, umax), Math.Min(x.Vmin, vmin), Math.Max(x.Vmax, vmax));
+                        }
+                    }
+                }
+                const double T = AUSSPARUNG_TOLERANZ_M;
+                foreach (var x in ebenen)
+                {
+                    if (pu < x.Umin - T || pu > x.Umax + T || pv < x.Vmin - T || pv > x.Vmax + T) continue;
+                    double abstand = Math.Abs(ps - x.S);
+                    if (abstand > AUSSPARUNG_ABSTAND_M) continue;
+                    if (bester.HasValue && abstand >= bester.Value) continue;
+                    bester = abstand;
+                    normale = e;
+                }
+            }
+            return bester;
+        }
+
         /// <summary>Der Abstand eines Punkts der Ebene vom Dreieck <paramref name="ecken"/> [m]; 0 = innen oder auf dem Rand.</summary>
         private static double AbstandZumDreieck(double x, double y, double[][] ecken)
         {

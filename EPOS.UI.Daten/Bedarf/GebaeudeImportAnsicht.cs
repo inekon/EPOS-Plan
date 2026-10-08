@@ -55,7 +55,8 @@ namespace WindowsFormsApplication1
                 Dreiecksgrenze = Dateikoerper.DREIECKSGRENZE,
                 Geschosslagen = geometrie.Geschosse.Select(g => new GebaeudeAnsichtGeschosslage(g.Kennung ?? "", g.LageM)).ToList(),
             };
-            return gebaeude == null ? daten : Randgruppen(daten, geometrie, gebaeude, bezug);
+            if (gebaeude == null) return daten;
+            return Randgruppen(daten, geometrie, gebaeude, bezug) with { Koerperwege = Koerperwege(gebaeude) };
         }
 
         // ------------------------------------------------------------------
@@ -302,7 +303,7 @@ namespace WindowsFormsApplication1
             return new GebaeudeAnsichtKoerperraum(r.RaumKennung, hoehe, kanten, Art(r.Boden), Art(r.Decke))
             {
                 Dateikoerper = r.Koerper == null ? null : Koerper(r.Koerper, bezug),
-                Herkunft = r.Koerper != null ? Koerperherkunft.Datei
+                Herkunft = r.Koerper != null ? (r.Koerper.IstBeleg ? Koerperherkunft.Datei : Koerperherkunft.Abgeleitet)
                     : r.AusGrundriss ? Koerperherkunft.Grundriss
                     : r.Herkunft == Geometrieherkunft.Schematisch ? Koerperherkunft.Schematisch : Koerperherkunft.Umriss,
                 // HC-5: das Prisma je Polygon aus dem Grundriss (Boden und Höhe des Grundrisses, nicht V/A).
@@ -311,6 +312,25 @@ namespace WindowsFormsApplication1
                     : null,
                 Grundrissvermerke = r.Grundrissvermerke.Select(v => v.ToString()).ToList(),
             };
+        }
+
+        /// <summary>
+        /// Der Weg des Körpers je Bauteil für die Zeile „Körper" des Steckbriefs (17.5): der eigene Körper des Bauteils bzw. der
+        /// Öffnung, sonst der erste Raumkörper, dessen Dreiecke das Bauteil als Quellfläche tragen.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, GebaeudeAnsichtKoerperweg> Koerperwege(AbbildGebaeude g)
+        {
+            var wege = new Dictionary<string, GebaeudeAnsichtKoerperweg>(StringComparer.Ordinal);
+            static GebaeudeAnsichtKoerperweg Weg(Dateikoerper k)
+                => new GebaeudeAnsichtKoerperweg(!k.IstBeleg, k.Art ?? "", k.Vermerke.Select(v => v.ToString()).ToList());
+            foreach (AbbildBauteil b in g.Bauteile)
+                foreach (AbbildBauteil x in new[] { b }.Concat(b.Oeffnungen))
+                    if (x.Kennung != null && x.Koerper != null) wege.TryAdd(x.Kennung, Weg(x.Koerper));
+            foreach (AbbildRaum r in g.Raeume)
+                if (r.Koerper != null)
+                    foreach (string q in r.Koerper.Quellflaechen.Distinct(StringComparer.Ordinal))
+                        if (q != null) wege.TryAdd(q, Weg(r.Koerper));
+            return wege;
         }
 
         /// <summary>

@@ -29,6 +29,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ein Körper mit Hohlräumen ist allein mit seiner Außenschale gelesen.</summary>
         Mehrschale,
+
+        /// <summary>Die Datei nennt keine Dicke; extrudiert ist mit der Vorgabedicke der Bauteilart (17.3 Nr. 2).</summary>
+        Vorgabedicke,
+
+        /// <summary>Die Bezugsebene ließ sich nicht am Raumkörper messen; extrudiert ist beidseitig um die Achse (17.3 Nr. 3).</summary>
+        Bezugsebene_angenommen,
+    }
+
+    /// <summary>
+    /// Die Herkunft eines Dateikörpers (Datenaustauschkonzept 17.5): sprachneutral, nie gespeichert.
+    /// </summary>
+    internal enum Koerperquelle
+    {
+        /// <summary>Der Körper steht so in der Datei (IFC) — Vorgabe.</summary>
+        Datei,
+
+        /// <summary>Der Kern hat ihn aus den Flächen der Datei gebildet (<see cref="Koerperbildner"/>) — kein unabhängiger Beleg.</summary>
+        AusFlaechen,
     }
 
     /// <summary>
@@ -79,6 +97,34 @@ namespace WindowsFormsApplication1
         /// <summary>Die Vermerke, aufsteigend und ohne Doppel; leer = exakt gelesen.</summary>
         internal IReadOnlyList<Koerpervermerk> Vermerke { get; init; } = Array.Empty<Koerpervermerk>();
 
+        /// <summary>Die Herkunft des Körpers; <see cref="Koerperquelle.Datei"/>, solange nichts anderes gesetzt ist.</summary>
+        internal Koerperquelle Quelle { get; init; } = Koerperquelle.Datei;
+
+        /// <summary>
+        /// Je Dreieck die Kennung seiner Quellfläche (Fläche bzw. Bauteil der Datei), gleich lang wie <see cref="Dreiecke"/>
+        /// bei einem gebildeten Körper (17.4); leer bei einem Körper aus der Datei.
+        /// </summary>
+        internal IReadOnlyList<string> Quellflaechen { get; init; } = Array.Empty<string>();
+
+        /// <summary>
+        /// Ist der Körper ein <b>unabhängiger Beleg</b> (Quelle <see cref="Koerperquelle.Datei"/>)? Nur dann darf er Flächen,
+        /// Körpervergleich, Körperpaare und Körpertrennflächen speisen (17.5); ein gebildeter Körper zeigt nur.
+        /// </summary>
+        internal bool IstBeleg => Quelle == Koerperquelle.Datei;
+
+        /// <summary>Ist <paramref name="k"/> vorhanden und ein unabhängiger Beleg (<see cref="IstBeleg"/>)?</summary>
+        internal static bool Beleg(Dateikoerper k) => k != null && k.IstBeleg;
+
+        /// <summary>
+        /// Derselbe Körper mit der Quelle <paramref name="quelle"/> (Prüfnaht der Sperren, Probe 43); die Quellflächen bleiben.
+        /// </summary>
+        internal Dateikoerper MitQuelle(Koerperquelle quelle)
+            => quelle == Quelle ? this : new Dateikoerper
+            {
+                PunkteM = PunkteM, Dreiecke = Dreiecke, Normalen = Normalen, Randkanten = Randkanten, Art = Art,
+                Vermerke = Vermerke, Quelle = quelle, Quellflaechen = Quellflaechen,
+            };
+
         /// <summary>Die Zahl der Dreiecke.</summary>
         internal int DreieckZahl => Dreiecke.Count;
 
@@ -94,13 +140,18 @@ namespace WindowsFormsApplication1
             var t = new StringBuilder();
             t.Append("Art ").Append(Art).Append('\n');
             t.Append("Vermerke ").Append(string.Join(",", Vermerke.Select(v => v.ToString()))).Append('\n');
+            // Ein Körper aus der Datei schreibt weder Quelle noch Quellflächen — seine Ausgabe bleibt byteweise wie zuvor.
+            if (Quelle != Koerperquelle.Datei) t.Append("Quelle ").Append(Quelle.ToString()).Append('\n');
+            bool mitQuelle = Quellflaechen.Count == Dreiecke.Count && Quellflaechen.Count > 0;
             foreach (double[] p in PunkteM) t.Append("P ").Append(Z(p[0])).Append(' ').Append(Z(p[1])).Append(' ').Append(Z(p[2])).Append('\n');
             for (int i = 0; i < Dreiecke.Count; i++)
             {
                 int[] d = Dreiecke[i];
                 double[] n = Normalen[i];
                 t.Append("D ").Append(G(d[0])).Append(' ').Append(G(d[1])).Append(' ').Append(G(d[2]))
-                 .Append(" N ").Append(Z(n[0])).Append(' ').Append(Z(n[1])).Append(' ').Append(Z(n[2])).Append('\n');
+                 .Append(" N ").Append(Z(n[0])).Append(' ').Append(Z(n[1])).Append(' ').Append(Z(n[2]));
+                if (mitQuelle) t.Append(" Q ").Append(Quellflaechen[i]);
+                t.Append('\n');
             }
             foreach (int[] k in Randkanten) t.Append("K ").Append(G(k[0])).Append(' ').Append(G(k[1])).Append('\n');
             return t.ToString();

@@ -23,12 +23,40 @@ namespace EPOS.UI.Dialoge.Import;
 /// <param name="Groessengrenze">Die Größengrenze der Plattform als Anzeigetext („25 MB"); leer = keine Angabe.</param>
 /// <param name="Zonierungsregeln">Die wählbaren Zonierungsregeln als Anzeigetexte; die erste gilt.</param>
 /// <param name="HilfeSchluessel">Bereichsschlüssel des Infoknopfs.</param>
+/// <param name="Quellen">
+/// Die Einträge der Quellenwahl (je Format, Format mit Projektdatei, nur Projektdatei) mit dem Filter des Dateiwählers;
+/// <c>null</c> oder leer = keine Wahl (festes Profil) — dann gilt <see cref="Dateifilter"/>.
+/// </param>
 public sealed record GebaeudeImportProfilDaten(
     string Formatname,
     string Dateifilter,
     string Groessengrenze,
     IReadOnlyList<string> Zonierungsregeln,
-    string HilfeSchluessel);
+    string HilfeSchluessel,
+    IReadOnlyList<GebaeudeImportQuellwahl>? Quellen = null);
+
+/// <summary>
+/// Der <b>Weg</b> eines Eintrags der Quellenwahl bzw. des gelesenen Laufs (Datenaustauschkonzept 16.1): die Gebäudedatei
+/// allein, die Gebäudedatei mit danach dazugeladener Projektdatei, oder allein die Projektdatei.
+/// </summary>
+public enum GebaeudeImportWeg
+{
+    /// <summary>Die Gebäudedatei allein.</summary>
+    Datei,
+
+    /// <summary>Die Gebäudedatei lesen, danach die Projektdatei dazuladen.</summary>
+    MitProjektdatei,
+
+    /// <summary>Allein die Projektdatei (<c>.sqproj</c>), ohne Gebäudedatei.</summary>
+    NurProjektdatei,
+}
+
+/// <summary>
+/// Ein Eintrag der <b>Quellenwahl</b> des Gebäudeimports: ein stabiler Schlüssel der Datenseite, der Anzeigetext, der
+/// Filter des Dateiwählers in der Schreibweise von <c>IDateiDienst</c> und der Weg, den der Dialog daraus macht.
+/// </summary>
+public sealed record GebaeudeImportQuellwahl(string Schluessel, string Text, string Dateifilter,
+                                             GebaeudeImportWeg Weg = GebaeudeImportWeg.Datei);
 
 /// <summary>
 /// Die Antwort des Dateiwählers der Hülle — Pfad und Größe, oder die BENANNTE Ablehnung vor
@@ -53,8 +81,12 @@ public readonly record struct GebaeudeImportFortschritt(double? Anteil, string T
 /// <param name="Kennung">Sprachneutraler Meldungsschlüssel des Kerns; <c>null</c> = keiner.</param>
 public sealed record GebaeudeImportMeldung(WarnStufe Stufe, string Stufentext, string Text, string? Kennung = null);
 
-/// <summary>Der Kopf des Dialogs nach dem Lesen: Datei, Format, Schema, Größe, Zonenregel — Anzeigetexte.</summary>
-public sealed record GebaeudeImportKopf(string Dateiname, string Format, string Schema, string Groesse, string Zonenregel);
+/// <summary>
+/// Der Kopf des Dialogs nach dem Lesen: Datei, Format, Schema, Größe, Zonenregel — Anzeigetexte; dazu der Weg des Laufs,
+/// an dem der Dialog „nur Projektdatei“ erkennt (<see cref="GebaeudeImportWeg.NurProjektdatei"/>).
+/// </summary>
+public sealed record GebaeudeImportKopf(string Dateiname, string Format, string Schema, string Groesse, string Zonenregel,
+                                        GebaeudeImportWeg Weg = GebaeudeImportWeg.Datei);
 
 /// <summary>
 /// Was das Lesen ergeben hat. Nicht gelesen: <see cref="Meldungen"/> nennen den Grund (Lesefehler,
@@ -822,7 +854,9 @@ public sealed record GebaeudeZonenzeileDaten
 /// <param name="Fehler">Hat die Fläche einen Befund (ohne Gegenstück, ohne U-Wert, Fläche geschätzt)?</param>
 /// <param name="OhneGegenstueck">Eine innere Grenze ohne Gegenstück — gerechnet gegen unbeheizt.</param>
 /// <param name="OhneUWert">Weder ein U-Wert noch ein Aufbau.</param>
-public sealed record GebaeudeFlaechenzeileDaten(Katalogfilterzeile Zeile, bool Fehler, bool OhneGegenstueck, bool OhneUWert);
+/// <param name="MitBauteilbefund">Steht das Bauteil im Farbmodus „Befund" orange oder rot (G5-3: Körper unlesbar, ohne Eigenschaften)?</param>
+public sealed record GebaeudeFlaechenzeileDaten(Katalogfilterzeile Zeile, bool Fehler, bool OhneGegenstueck, bool OhneUWert,
+                                                bool MitBauteilbefund = false);
 
 /// <summary>Die Bilanz der Zonierung als Anzeigetexte mit Einheit.</summary>
 public sealed record GebaeudeZonenbilanzDaten(string Zonen, string BeheizteFlaeche, string Volumen, string Aussenflaeche, string Trennflaeche);
@@ -1034,6 +1068,21 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_GRP_QUELLE</summary>
     public string GruppeQuelle { get; set; } = Resource.GIMP_DLG_GRP_QUELLE;
+
+    /// <summary>GIMP_DLG_QUELLWAHL — Beschriftung der Quellenwahl (je Format, mit Projektdatei, nur Projektdatei).</summary>
+    public string Quellwahl { get; set; } = Resource.GIMP_DLG_QUELLWAHL;
+
+    /// <summary>GIMP_DLG_QUELLWAHL_ALLE — der Platzhalter der Quellenwahl: jede Datei, die Quelle folgt der Endung.</summary>
+    public string QuellwahlAlle { get; set; } = Resource.GIMP_DLG_QUELLWAHL_ALLE;
+
+    /// <summary>GIMP_DLG_QUELLZEILE — Platzhalter {0} = die Quelle des gelesenen Laufs („Quelle: Projektdatei“).</summary>
+    public string Quellzeile { get; set; } = Resource.GIMP_DLG_QUELLZEILE;
+
+    /// <summary>GIMP_DLG_QUELLE_MIT_SQPROJ — die Quelle „Gebäudedatei + Projektdatei“, sobald die Projektdatei dazugeladen ist.</summary>
+    public string QuelleMitProjektdatei { get; set; } = Resource.GIMP_DLG_QUELLE_MIT_SQPROJ;
+
+    /// <summary>GIMP_DLG_SQNUR_UNBEHEIZT — leiser Hinweis im Weg „nur Projektdatei“: unbeheizte Räume in einer Zone.</summary>
+    public string SqNurUnbeheizt { get; set; } = Resource.GIMP_DLG_SQNUR_UNBEHEIZT;
 
     /// <summary>GEB_AUSRICHTUNG_NORDRICHTUNG — der Abschnitt der Nordrichtung (G5-N).</summary>
     public string GruppeNordrichtung { get; set; } = Resource.GEB_AUSRICHTUNG_NORDRICHTUNG;
@@ -1343,6 +1392,15 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_FILTER_OHNE_UWERT</summary>
     public string FilterOhneUWert { get; set; } = Resource.GIMP_DLG_FILTER_OHNE_UWERT;
+
+    /// <summary>GIMP_DLG_FILTER_BAUTEILBEFUND</summary>
+    public string FilterBauteilbefund { get; set; } = Resource.GIMP_DLG_FILTER_BAUTEILBEFUND;
+
+    /// <summary>GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS</summary>
+    public string FilterBauteilbefundHinweis { get; set; } = Resource.GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS;
+
+    /// <summary>GIMP_FL_FLAECHENHERKUNFT_HINWEIS</summary>
+    public string FlaechenherkunftHinweis { get; set; } = Resource.GIMP_FL_FLAECHENHERKUNFT_HINWEIS;
 
     /// <summary>GIMP_DLG_FILTER_ERLAEUTERUNG</summary>
     public string FilterErlaeuterung { get; set; } = Resource.GIMP_DLG_FILTER_ERLAEUTERUNG;

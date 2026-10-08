@@ -5973,6 +5973,35 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-variant-numeric: tabular-nums;
 }
 
+/* Farbmodus "Befund" (Abstimmung G5, B1; G5-3): Die Farben stehen einmal in GebaeudeAnsichtBefundstufen.FARBEN und kommen
+   als Attribut ins SVG bzw. als Stil des Farbfelds; Kanten und Oeffnungen sind anklickbar (Steckbrief). Orange und Grau
+   liegen in der Helligkeit nah beieinander - im Kontrastmodus (unten) zeichnen Muster je data-befund. */
+.epos-gebansicht-kante[data-befund],
+.epos-gebansicht-oeffnung[data-befund] {
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.epos-gebansicht-befundlegende {
+    margin: 6px 0 0;
+}
+
+.epos-gebansicht-befundlegende td.epos-gebimport-zahl {
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-steckbrief-befund {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 6px;
+}
+
+.epos-steckbrief-befundgrund {
+    flex-basis: 100%;
+}
+
 /* Der Bauteilsteckbrief: eine Tafel neben dem Bild (breit) bzw. darunter (schmal). */
 .epos-gebansicht-koerperansicht:has(> .epos-steckbrief) {
     display: grid;
@@ -6079,6 +6108,14 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     .epos-gebansicht-raum text { fill: CanvasText; }
     .epos-gebansicht-farbfeld { background: Canvas; border-color: CanvasText; }
     .epos-gebansicht-kante, .epos-gebansicht-oeffnung { stroke: CanvasText; }
+    /* Befund ueber den Stufenschluessel: ohne Befund leer bzw. duenn, Koerper unlesbar gestrichelt, ohne
+       Eigenschaften voll bzw. kraeftig, ohne Bauteil gepunktet - Farbfelder wie Kanten. */
+    .epos-gebansicht-farbfeld[data-befund="koerper"] { border-style: dashed; border-width: 2px; }
+    .epos-gebansicht-farbfeld[data-befund="eigenschaften"] { background: CanvasText; }
+    .epos-gebansicht-farbfeld[data-befund="ohne-bauteil"] { border-style: dotted; }
+    .epos-gebansicht-kante[data-befund="ohne"] { stroke-width: 2px; }
+    .epos-gebansicht-kante[data-befund="koerper"], .epos-gebansicht-oeffnung[data-befund="koerper"] { stroke-dasharray: 8px 4px; }
+    .epos-gebansicht-kante[data-befund="ohne-bauteil"], .epos-gebansicht-oeffnung[data-befund="ohne-bauteil"] { stroke-dasharray: 2px 4px; }
 }
 
 /* Die Andockung im Zuordnungsdialog: Zonenliste und Grundriss nebeneinander, im schmalen Fenster

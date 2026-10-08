@@ -32,6 +32,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Ringfläche weicht mehr als 10 % von der Raumfläche des Mengensatzes ab (F8).</summary>
         Flaeche,
+
+        /// <summary>Der Grundriss stammt unmittelbar aus dem Raumpolygon der Projektdatei (Datenaustauschkonzept 17.2), nicht aus einem Körper.</summary>
+        Raumpolygon,
     }
 
     /// <summary>

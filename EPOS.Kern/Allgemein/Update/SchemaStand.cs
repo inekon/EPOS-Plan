@@ -957,7 +957,11 @@ namespace WindowsFormsApplication1
         /// Danach, mit der HERKUNFT DES NORDWINKELS (G5-N), steht das Ziel auf <see cref="NordrichtungSchema.SCHRITT"/>:
         /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (Datei, Eingabe, Annahme; <see cref="NordrichtungSchema"/>), Bestand
         /// nachgefüllt aus dem Nordwinkel. <b>Ergebnisneutral:</b> Der Rechenweg liest die Spalte nicht.
-        public const int Zielversion = NordrichtungSchema.SCHRITT;
+        /// Danach, mit dem IMPORT AUS DER PROJEKTDATEI, steht das Ziel auf <see cref="ProjektdateiImportSchema.SCHRITT"/>:
+        /// Format und Herkunft nehmen den Wert <c>SQPROJ</c> an — Neubau von <c>Tab_Importquelle</c> und der sechs
+        /// Herkunftstabellen mit erweiterter Prüfklausel (<see cref="ProjektdateiImportSchema"/>). <b>Ergebnisneutral:</b>
+        /// Keine Zeile ändert sich.
+        public const int Zielversion = ProjektdateiImportSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

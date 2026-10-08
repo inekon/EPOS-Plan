@@ -206,7 +206,7 @@ public class GebaeudeAufbauTests : EposBunitContext
         Assert.Contains("\"stufenAb\":" + ab, json);
         Assert.Contains("\"aufbaufarben\":[\"" + string.Join("\",\"", GebaeudeAnsichtAufbaustufen.FARBEN) + "\"]", json);
         Assert.Contains("\"aufbausichtbar\":[true,false,true,true,true]", json);
-        Assert.Contains("\"stufe\":3}", json);
+        Assert.Contains("\"stufe\":3,\"befund\":-1}", json);
         Assert.DoesNotContain("Außenwand", json);
     }
 

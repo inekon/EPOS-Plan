@@ -33196,6 +33196,18 @@ Do you want to allow this?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>The outline of surface {0} is not planar (deviation {1} mm) — it is not shown in the floor plan; area, azimuth and tilt still apply.</value>
   </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Space {0}: the surfaces of route {1} do not close a solid ({2} open edges) — the outline prism is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: route {1} yields no solid ({2}) — the fallback is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Opening {0} does not lie within surface {1} — it is shown as a solid of its own without a cut-out.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} component solids omitted: space and component solids together exceeded the limit of {1} triangles ({2} up to then).</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>The file contains no constructions — the U-values are taken from the building age class.</value>
   </data>
@@ -33579,6 +33591,12 @@ Do you want to allow this?</value>
   </data>
   <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
     <value>outer shell only</value>
+  </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>default thickness</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>reference plane assumed</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
@@ -34084,8 +34102,17 @@ Do you want to allow this?</value>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} openings without window or door have neither base quantities nor a readable body and are not deducted ({1}).</value>
   </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
-    <value>Component {0}: the openings ({2} m²) are not smaller than the gross area ({1} m²); the net area becomes 0.</value>
+  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
+    <value>In building "{0}", {1} separating slabs from the space bodies are dropped ({2} m²): the file already has slabs against unheated spaces at their location, which count as envelope areas.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
+    <value>{0} walls carry more window and door area in the file than their own size; {1} openings move by their location to {2} other walls or parts of the same wall ({3}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>{0} openings lie in no wall with room for them and stay on the wall given by the file ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
+    <value>{0} walls remain smaller than their openings; the net area of the file applies to them, their openings are not fully deducted ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} windows and doors fill no opening of a building component and are not counted ({1}).</value>
@@ -37565,8 +37592,41 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} windows or curtain walls in contact with the ground are computed against outdoor air.</value>
   </data>
-  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
-    <value>{0}: net area 0 — no row, the openings remain.</value>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} components omitted: completely occupied by openings ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>No finding</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Body unreadable</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Missing properties</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>No U-value: neither file, project file, catalogue, default nor substitute construction supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>No area: neither quantity set nor body supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Body not or only partly readable: the import cannot read the representation type.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Body only partly read: the clipping is missing, only the first operand is read.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Body with an open shell.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Body only partly read: a hole could not be connected.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Body degenerate: it yields no relevant area.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Finding</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>The orientations include the file's north direction ({0}°).</value>
@@ -48447,6 +48507,192 @@ chart</value>
   </data>
   <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
     <value>NW</value>
+  </data>
+  <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
+    <value>Findings</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE" xml:space="preserve">
+    <value>“Findings” is unavailable: there are no findings for the components (no component proposal).</value>
+  </data>
+  <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
+    <value>Findings per component</value>
+  </data>
+  <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="GANS_BEFUND_TREFFER" xml:space="preserve">
+    <value>Selected: {0} — {1}</value>
+  </data>
+  <data name="BTSB_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Origin of the area</value>
+  </data>
+  <data name="GIMP_FLHK_MENGENSATZ" xml:space="preserve">
+    <value>Quantity set</value>
+  </data>
+  <data name="GIMP_FLHK_RAUMGRENZE" xml:space="preserve">
+    <value>Space boundary</value>
+  </data>
+  <data name="GIMP_FLHK_KOERPER" xml:space="preserve">
+    <value>Solid</value>
+  </data>
+  <data name="GIMP_FLHK_SCHEMATISCH" xml:space="preserve">
+    <value>schematic</value>
+  </data>
+  <data name="GIMP_FL_SP_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Area from</value>
+  </data>
+  <data name="GIMP_FL_FLAECHENHERKUNFT_HINWEIS" xml:space="preserve">
+    <value>The “Area from” column names how the area was obtained: quantity set of the file, polygon of the space boundary, component solid or schematic default.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
+    <value>Only components with findings</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
+    <value>Shows only areas whose component is orange or red in the “Findings” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
+    <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
+    <value>{0} external walls: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND" xml:space="preserve">
+    <value>{0} internal walls: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH" xml:space="preserve">
+    <value>{0} roofs: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE" xml:space="preserve">
+    <value>{0} floors and slabs: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
+    <value>{0} other components: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUMFLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} spaces without area quantity and without footprint take the floor area of their body as space area, {1} m² in total ({2}); without a volume quantity the body volume applies.</value>
+  </data>
+  <data name="GIMP_SCHEMA_SQPROJ" xml:space="preserve">
+    <value>Project file, version {0}</value>
+  </data>
+  <data name="IMP_SQ_PROT_LAGE_UNLESBAR" xml:space="preserve">
+    <value>Position, openings or site of the envelope surfaces cannot be read from the project file ({0}); constructions and net areas remain.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>The project file has {0} bytes and exceeds the limit of {1} bytes — it is not read.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>The project file could not be read: {0}</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>The file is not a readable project file (SQLite) — it is not imported.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>The project file lacks tables ({0}) — it is not imported.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Envelope incomplete: the project file holds no room-related envelope surfaces — the building cannot be built from it alone. Please add the IFC file.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>The project file states no reliable north direction — assumed: the top of the plan points north (north angle 0°). The assumption can be changed in the building dialog under “Orientation”.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE" xml:space="preserve">
+    <value>Envelope from the project file: {0} surfaces, {1} openings, {2} side pairs merged.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_HERGELEITET" xml:space="preserve">
+    <value>Adjacency code {0} on {1} surfaces is not documented; the boundary condition follows from the heating of both rooms.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT" xml:space="preserve">
+    <value>Adjacency code {0} on {1} surfaces is not documented and no second room is known — the boundary condition remains undetermined.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT" xml:space="preserve">
+    <value>Element type {0} on {1} surfaces is not documented — read as other component.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT" xml:space="preserve">
+    <value>Heating code {0} on {1} rooms is not documented — assumed heated.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>{0} openings without a readable wall — read as separate components.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
+    <value>{0} room references of envelope surfaces point to a room the project file does not contain.</value>
+  </data>
+  <data name="GIMP_HERKUNFT_SQPROJ" xml:space="preserve">
+    <value>Project file</value>
+  </data>
+  <data name="GIMP_FORMAT_SQPROJ" xml:space="preserve">
+    <value>Project file</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE" xml:space="preserve">
+    <value>Project file geometry: {0} of {1} room bodies and {2} of {3} element bodies built from the surfaces of the file; {4} with default thickness, {5} with assumed reference plane.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
+    <value>The project file carries no readable geometry (room polygons, surface loops) — the view shows outline prisms.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON" xml:space="preserve">
+    <value>Room “{0}”: no readable room polygon ({1}) — fallback outline prism.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_RAUM" xml:space="preserve">
+    <value>Room “{0}”: room body not built ({1}: {2}) — fallback outline prism.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_BAUTEIL" xml:space="preserve">
+    <value>Element body not built ({0}: {1}) — fallback outline prism.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>No readable surface loop (GeoDesc) — no element body.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>The opening lies in no wall surface of the same room — body without recess.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
+    <value>The opening reaches the edge of its wall surface — the recess is omitted.</value>
+  </data>
+  <data name="GANS_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>built from surfaces</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_ABGELEITET" xml:space="preserve">
+    <value>{0} rooms built from the file's surfaces, {1} from outline, {2} schematic</value>
+  </data>
+  <data name="BTSB_KOERPER" xml:space="preserve">
+    <value>Body</value>
+  </data>
+  <data name="BTSB_KOERPER_ABGELEITET" xml:space="preserve">
+    <value>built from the file's surfaces ({0})</value>
+  </data>
+  <data name="BTSB_KOERPER_DATEI" xml:space="preserve">
+    <value>from the file ({0})</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMPOLYGON" xml:space="preserve">
+    <value>room polygon</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_HUELLFLAECHEN" xml:space="preserve">
+    <value>envelope surfaces</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_CLOSEDSHELL" xml:space="preserve">
+    <value>closed shell of the file</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMFLAECHEN" xml:space="preserve">
+    <value>surfaces of the room</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_FLAECHENEXTRUSION" xml:space="preserve">
+    <value>extruded surface</value>
+  </data>
+  <data name="GIMP_DLG_QUELLWAHL" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="GIMP_DLG_QUELLWAHL_ALLE" xml:space="preserve">
+    <value>All formats (by file extension)</value>
+  </data>
+  <data name="GIMP_DLG_QUELLZEILE" xml:space="preserve">
+    <value>Source: {0}</value>
+  </data>
+  <data name="GIMP_DLG_QUELLE_MIT_SQPROJ" xml:space="preserve">
+    <value>{0} + project file</value>
+  </data>
+  <data name="GIMP_DLG_QUELLE_SQPROJ" xml:space="preserve">
+    <value>Project file only (.sqproj)</value>
+  </data>
+  <data name="GIMP_DLG_SQNUR_UNBEHEIZT" xml:space="preserve">
+    <value>A zone of the project file contains unheated rooms; the assignment stays incomplete until their heating is decided.</value>
   </data>
 </root>
 

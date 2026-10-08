@@ -472,7 +472,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Equal(3, zeilen.Count);
         IReadOnlyList<string> zellen = zeilen[0].QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToList();
         // Die Zahlen mit fester Stellenzahl wie in der Flächenliste; die Einheit steht im Spaltenkopf.
-        Assert.Equal(new[] { "Bauteil 1", "Art-Probe", "1,00", "aus Schichten", "180,0", "90,0", "Rand-Probe", "HK-Datei" }, zellen);
+        Assert.Equal(new[] { "Bauteil 1", "Art-Probe", "1,00", "aus Schichten", "180,0", "90,0", "Rand-Probe", "HK-Datei", "–" }, zellen);
         Assert.Contains("Bauteil", cut.Find(".epos-gebimport-bauteilliste thead").TextContent);
         Assert.Contains("Zone-Probe", cut.Find(".epos-gebimport-bauteile-kopf").TextContent);
         Assert.Equal("Innenweg-Probe", cut.Find(".epos-gebimport-innenweg").TextContent);
@@ -559,8 +559,8 @@ public class GebaeudeImportDialogTests : EposBunitContext
 
         IElement liste = cut.Find(".epos-gebimport-bauteilliste");
         Assert.Single(liste.QuerySelectorAll(".epos-katalog-suchzeile input[type=search]"));
-        Assert.Equal(8, liste.QuerySelectorAll(".epos-spaltenkopf-titel").Length);   // Sortierpfeil je Spalte
-        Assert.Equal(8, liste.QuerySelectorAll(".epos-trichter").Length);            // Trichter je Spalte
+        Assert.Equal(9, liste.QuerySelectorAll(".epos-spaltenkopf-titel").Length);   // Sortierpfeil je Spalte
+        Assert.Equal(9, liste.QuerySelectorAll(".epos-trichter").Length);            // Trichter je Spalte
         BauteileGezeichnet(cut, "3 von 3 Sätzen", 3);
 
         // Die Suche geht über alle Spalten, mit * und ?.

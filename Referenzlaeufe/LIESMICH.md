@@ -938,6 +938,18 @@ rechnet alle dreiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `b4d6a95afa78c842f976e1c1c152bc21e2c1626c02723b4c80b65d43f42b0f61`** (Größe wie vorher). **Die Basis bleibt** — kein
 > Referenzprojekt rechnet AK3, keine Einfrierregel berührt; den Referenzlauf fährt die Orchestrierung im Gate.
 
+> **Nachtrag — Schemaschritt 200 (Import aus der Projektdatei: Format und Herkunft `SQPROJ`), Basis unverändert.**
+> `ProjektdateiImportSchema` (200 = `NordrichtungSchema.SCHRITT + 1`) erweitert die Prüfklausel von `Tab_Importquelle.Format`
+> um `SQPROJ` (`IFC`, `GBXML`, `SQPROJ`) und die Herkunftsliste um `SQPROJ` (`MANUELL`, `KATALOG`, `IFC`, `GBXML`, `VORGABE`,
+> `SQPROJ`) an `Tab_Baustoff`, `Tab_Baustoff_STAMM`, `Tab_Bauteilaufbau`, `Tab_Bauteilaufbau_STAMM`, `Tab_Zone` und
+> `Tab_Bauteil`. Weil SQLite einen CHECK nicht ändern kann, werden die sieben Tabellen nach dem Neubaurezept des Hauses neu
+> gebaut (Spaltenfolge, `STRICT`, Fremdschlüssel, Indizes, Trigger und Zähler bleiben; wiederholbar); kein DML an
+> Bestandsdaten, keine Zeile trägt `SQPROJ`. Gehoben aus LFS-SHA-256
+> `f408d3eb185decfba221529ebbeffce818bbae74d35f755fa6bfcff1b6a4c6ce`. Die Testdatenbank steht auf **200**
+> (`Werkzeuge/Testdatenbankschema`, ein zweiter Lauf meldet „steht bereits“; `integrity_check` ok, `foreign_key_check`
+> leer): **90 492 928 Byte, LFS-SHA-256 `f3deb49a72a42b357e92059b38b30bbce82a85985927907e4852c4e890d7ae4d`**. **Die Basis
+> `2026-10-07_R42_Vorlaufinterpolation_AK3` bleibt** — kein gesäter Wert, kein Rechenweg, keine Einfrierregel berührt.
+
 ### Die Vorgängerbasis R41 (Erdreichprüfung)
 
 Zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare, auf Linux eingefroren gegen die Testdatenbank `6f83f95f…` (Schemastand

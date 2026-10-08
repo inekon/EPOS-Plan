@@ -25,9 +25,10 @@ namespace EPOS.Kern.Tests
         internal static readonly IReadOnlyDictionary<string, string[]> SPALTEN = new Dictionary<string, string[]>
         {
             ["XmTables"] = new[] { "UUID", "Name", "Version" },
-            ["BmBuilding"] = new[] { "UUID", "ShortDesc", "ProfileGroupUUID" },
-            ["BmFloor"] = new[] { "UUID", "ShortDesc", "BuildingUUID" },
-            ["BmRoom"] = new[] { "UUID", "ShortDesc", "FloorUUID", "GId", "BIMUUID", "Area", "Volume", "RoomType" },
+            ["BmBuilding"] = new[] { "UUID", "ShortDesc", "ProfileGroupUUID", "YearOfConstruction", "SiteUUID", "Constructed" },
+            ["BmFloor"] = new[] { "UUID", "ShortDesc", "BuildingUUID", "ElevationOfRefHeight", "Height" },
+            ["BmRoom"] = new[] { "UUID", "ShortDesc", "FloorUUID", "GId", "BIMUUID", "Area", "Volume", "RoomType", "HeatingType", "Height" },
+            ["SmSite"] = new[] { "UUID", "Location", "PostalCode", "Latitude", "Longitude" },
             ["BmZone"] = new[] { "UUID", "ShortDesc", "ZoneType", "ProfileGroupUUID", "Area", "Volume" },
             ["BmZoneReference"] = new[] { "UUID", "ReferenceToUUID", "ReferenceClass" },
             ["PdProfile"] = new[] { "UUID", "ShortDesc", "ProfileType", "ProfileGroupUUID" },
@@ -53,6 +54,7 @@ namespace EPOS.Kern.Tests
                 "TaskFriday", "TaskSaturday", "TaskSunday",
             },
             ["PdProfileTaskSerialReference"] = new[] { "UUID", "ReferenceToUUID", "ReferenceClass" },
+            ["BmData"] = new[] { "UUID", "ReferenceUUID", "ClassValue" },
         };
 
         /// <summary>
@@ -61,7 +63,12 @@ namespace EPOS.Kern.Tests
         /// </summary>
         internal static readonly IReadOnlyDictionary<string, string[]> BAUTEIL_SPALTEN = new Dictionary<string, string[]>
         {
-            ["BmElement"] = new[] { "UUID", "GId", "RepositoryLevel", "ElementType", "AdjacentType", "CatalogDimUUID", "UValue", "NetArea" },
+            ["BmElement"] = new[]
+            {
+                "UUID", "GId", "RepositoryLevel", "ElementType", "AdjacentType", "CatalogDimUUID", "UValue", "NetArea",
+                "GrossArea", "Orientation", "Slope", "ParentUUID", "RepositoryElementUUID", "GeoDesc", "Thickness",
+            },
+            ["BmElementWindow"] = new[] { "UUID", "GValue", "FractionOfFrame" },
             ["BmElementReference"] = new[] { "UUID", "Id", "SortNum", "ReferenceFromUUID", "ReferenceToUUID", "ReferenceType" },
             ["TcBuildingElementDimension"] = new[]
             {
@@ -86,6 +93,39 @@ namespace EPOS.Kern.Tests
             MitBauteilen = true;
             return Zeile("BmElement", uuid, gid, 3, elementtyp, nachbarart, aufbau, u, netto);
         }
+
+        /// <summary>
+        /// Eine Level-3-Hüllfläche samt Lage (<c>BmElement</c>): Bruttofläche, Orientierung, Neigung (<c>Slope</c>), Wirt
+        /// (<c>ParentUUID</c>) und CAD-Objekt (<c>RepositoryElementUUID</c>); fehlende Werte stehen als Platzhalter wie in der Datei.
+        /// </summary>
+        internal SqprojProbenErzeuger Flaeche(string uuid, int elementtyp, int nachbarart, double netto, double? brutto = null,
+                                              double? orientierung = null, double? neigung = null, string eltern = null, string cad = null,
+                                              string aufbau = null, double? u = null, string gid = null)
+        {
+            MitBauteilen = true;
+            return Zeile("BmElement", uuid, gid, 3, elementtyp, nachbarart, aufbau, u ?? PLATZHALTER, netto, brutto ?? PLATZHALTER,
+                         orientierung ?? PLATZHALTER, neigung ?? PLATZHALTER, eltern ?? NULLKENNUNG, cad);
+        }
+
+        /// <summary>Die Fensterwerte einer Öffnung (<c>BmElementWindow</c>): g-Wert und Rahmenanteil in % wie in der Datei.</summary>
+        internal SqprojProbenErzeuger Fenster(string uuid, double? g, double? rahmenProzent)
+        {
+            MitBauteilen = true;
+            return Zeile("BmElementWindow", uuid, g ?? PLATZHALTER, rahmenProzent ?? PLATZHALTER);
+        }
+
+        /// <summary>Die Null-Kennung „nicht gesetzt“ der Projektdatei.</summary>
+        internal const string NULLKENNUNG = "{AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}";
+
+        /// <summary>Das Baujahr des Gebäudes als <c>DATE</c>-Text (<c>YearOfConstruction</c>); <c>null</c> = keines.</summary>
+        internal string Baujahr { get; set; }
+
+        /// <summary>Der Standort des Gebäudes (<c>SiteUUID</c>); <c>null</c> = keiner.</summary>
+        internal string Standort { get; set; }
+
+        /// <summary>Ein Standort (<c>SmSite</c>).</summary>
+        internal SqprojProbenErzeuger Ort(string uuid, string ort, string plz, double breite, double laenge)
+            => Zeile("SmSite", uuid, ort, plz, breite, laenge);
 
         /// <summary>Ein Raumbezug einer Hüllfläche (<c>BmElementReference</c>).</summary>
         internal SqprojProbenErzeuger Bezug(string uuid, string raum, string flaeche, int rolle, int sort = 0)
@@ -130,11 +170,13 @@ namespace EPOS.Kern.Tests
             return this;
         }
 
-        internal SqprojProbenErzeuger Geschoss(string uuid, string name) => Zeile("BmFloor", uuid, name, "B1");
+        internal SqprojProbenErzeuger Geschoss(string uuid, string name, double? lage = null, double? hoehe = null)
+            => Zeile("BmFloor", uuid, name, "B1", lage, hoehe);
 
         /// <summary>Ein Raum; <paramref name="gid"/> ist die GUID, die der IFC-Export als GlobalId trägt; <c>BIMUUID</c> ist die Gebäude-GUID.</summary>
-        internal SqprojProbenErzeuger Raum(string uuid, string name, string geschoss, string gid, double flaeche, int? raumart = null)
-            => Zeile("BmRoom", uuid, name, geschoss, gid, GEBAEUDE_GUID, flaeche, flaeche * 3.0, raumart);
+        internal SqprojProbenErzeuger Raum(string uuid, string name, string geschoss, string gid, double flaeche, int? raumart = null,
+                                           int? heizung = null, double? hoehe = null)
+            => Zeile("BmRoom", uuid, name, geschoss, gid, GEBAEUDE_GUID, flaeche, flaeche * 3.0, raumart, heizung, hoehe);
 
         /// <summary>Die Gebäude-GUID in <c>BIMUUID</c> jedes Raums — sie trifft keinen IFC-Raum.</summary>
         internal const string GEBAEUDE_GUID = "{99999999-8888-7777-6666-555555555555}";
@@ -220,9 +262,10 @@ namespace EPOS.Kern.Tests
                         if (tab.Key != "XmTables")
                             Einfuegen(c, t, "XmTables", new object[] { "X-" + tab.Key, tab.Key, tab.Key.StartsWith("Bm", StringComparison.Ordinal) ? "16.7" : "15.1" });
                     }
-                    if (!_ohne.Contains("BmBuilding")) Einfuegen(c, t, "BmBuilding", new object[] { "B1", "Probegebäude", Gebaeudegruppe });
+                    if (!_ohne.Contains("BmBuilding")) Einfuegen(c, t, "BmBuilding", new object[] { "B1", "Probegebäude", Gebaeudegruppe, Baujahr, Standort });
                     foreach ((string tabelle, object[] werte) in _zeilen.Where(z => !_ohne.Contains(z.Tabelle)))
                         Einfuegen(c, t, tabelle, werte);
+                    GeometrieNachtragen(c, t);
                     t.Commit();
                 }
             }

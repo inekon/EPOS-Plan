@@ -38,6 +38,7 @@
        echten Huelle; der Teil mit Kerntypen (SqprojProbenErzeuger.Ifc.cs) bleibt in EPOS.Kern.Tests. -->
   <ItemGroup>
     <Compile Include="..\EPOS.Kern.Tests\SqprojProbenErzeuger.cs" Link="Proben\SqprojProbenErzeuger.cs" />
+    <Compile Include="..\EPOS.Kern.Tests\SqprojProbenErzeuger.Geometrie.cs" Link="Proben\SqprojProbenErzeuger.Geometrie.cs" />
   </ItemGroup>
 
   <!-- xUnit-Einstellungen (Auftrag #531): Sammlungen seriell, hoechstens zwei Threads -

@@ -57,13 +57,13 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_CHECKs_tragen_Laengen_Formate_und_genau_ein_Ziel()
         {
-            Assert.Equal("'IFC','GBXML'", ImportzuordnungSchema.WERTE_FORMAT);
-            Assert.Equal(new[] { DbWerte.IMPORT_FORMAT_IFC, DbWerte.IMPORT_FORMAT_GBXML }, DbWerte.IMPORT_FORMATE);
+            Assert.Equal("'IFC','GBXML','SQPROJ'", ImportzuordnungSchema.WERTE_FORMAT);
+            Assert.Equal(new[] { DbWerte.IMPORT_FORMAT_IFC, DbWerte.IMPORT_FORMAT_GBXML, DbWerte.IMPORT_FORMAT_SQPROJ }, DbWerte.IMPORT_FORMATE);
             Assert.Equal(GebaeudeQuelle.FORMAT_IFC, DbWerte.IMPORT_FORMAT_IFC);
             Assert.Equal(GebaeudeQuelle.FORMAT_GBXML, DbWerte.IMPORT_FORMAT_GBXML);
 
             string q = ImportzuordnungSchema.SQL_CREATE_QUELLE;
-            Assert.Contains("\"Format\" TEXT NOT NULL CHECK (\"Format\" IN ('IFC','GBXML'))", q);
+            Assert.Contains("\"Format\" TEXT NOT NULL CHECK (\"Format\" IN ('IFC','GBXML','SQPROJ'))", q);
             Assert.Contains("CHECK (length(\"Dateiname\") <= " + ImportzuordnungSchema.DATEINAME_MAX + ")", q);
             Assert.Contains("CHECK (length(\"Hash\") = " + ImportzuordnungSchema.HASH_LAENGE + ")", q);
             Assert.Contains("REFERENCES \"Tab_Gebaeude\" (\"ID\") ON DELETE CASCADE", q);

@@ -167,16 +167,46 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Nische", n.Werte[1]);
         }
 
+        /// <summary>
+        /// B2 (Abstimmung G5): Die „Wand Gaube“ (Körper 2 × 1 m = 2 m²) trägt das „Fenster Gaube“ (2,0 × 1,2 m = 2,4 m²) —
+        /// mehr Öffnung als Wand. Das Abbild hält Brutto 2 und Netto 0 (nie negativ), ohne eigene Warnung des Lesers; der
+        /// Bauteilvorschlag legt die Wand nicht an und nennt sie in genau einer Info-Zeile (Zahl 1, Name). Das Fenster bleibt mit
+        /// seinen 2,4 m² und der Orientierung der Wand (Ost, senkrecht) — es ist die Hülle an ihrer Stelle. Jedes übrige Bauteil
+        /// behält seine Fläche (Netto, sonst Brutto des Abbilds).
+        /// </summary>
         [Fact]
-        public void Nettoflaeche_null_oder_kleiner_wird_0_und_gemeldet()
+        public void B2_Wand_mit_Nettoflaeche_null_entfaellt_ihr_Fenster_bleibt()
         {
             GebaeudeImportAblauf a = Lesen("ifc4_g5_oeffnungen.ifc");
             AbbildBauteil g = Bauteil(a, "Wand Gaube");
             Nah(2.0, g.BruttoflaecheM2);
             Nah(0.0, g.NettoflaecheM2);
-            PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_NETTO_NULL");
-            Assert.Equal(PruefStufe.Warnung, m.Stufe);
-            Assert.Equal(new[] { "Wand Gaube", "2", "2.4" }, m.Werte);
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel.EndsWith("NETTO_NULL", StringComparison.Ordinal));
+
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, 0, 'E');
+            Assert.DoesNotContain(v.Zeilen, z => z.Kennung == g.Kennung);
+            PruefMeldung m = Assert.Single(v.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.NETTO_NULL_ENTFALLEN);
+            Assert.Equal(PruefStufe.Info, m.Stufe);
+            Assert.Equal(new[] { "1", "Wand Gaube" }, m.Werte);
+
+            GebaeudeBauteilzeile f = Assert.Single(v.Zeilen, z => z.Kennung == Oeffnung(a, "Fenster Gaube").Kennung);
+            Nah(2.4, f.Bauteil.Flaeche, "Fenster Gaube");
+            Nah(90.0, f.Bauteil.Azimut, "Fenster Gaube Azimut");
+
+            foreach (AbbildBauteil b in Bauteile(a).Where(b => b != g))
+            {
+                GebaeudeBauteilzeile z = Assert.Single(v.Zeilen, x => x.Kennung == b.Kennung);
+                Nah((b.NettoflaecheM2 ?? b.BruttoflaecheM2).Value, z.Bauteil.Flaeche, b.Name);
+            }
+        }
+
+        [Fact]
+        public void B2_Die_Zeile_nennt_hoechstens_zehn_Namen()
+        {
+            var namen = Enumerable.Range(1, 12).Select(i => "W" + i).ToList();
+            Assert.Equal("W1, W2, W3, W4, W5, W6, W7, W8, W9, W10, …", GebaeudeBauteilvorschlag.Entfallenliste(namen));
+            Assert.Equal("W1, W2", GebaeudeBauteilvorschlag.Entfallenliste(namen.Take(2).ToList()));
+            Assert.Equal("W1, W2, W3, W4, W5, W6, W7, W8, W9, W10", GebaeudeBauteilvorschlag.Entfallenliste(namen.Take(10).ToList()));
         }
 
         [Fact]
@@ -253,7 +283,7 @@ namespace EPOS.Kern.Tests
             Nah(1.0, Bauteil(a, "Wand Nord").LochflaecheM2);
             Assert.Single(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_LOCH");
             Assert.Single(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_NISCHE");
-            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_KOERPER" || x.Schluessel == P + "OEFFNUNG_NETTO_NULL"
+            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_KOERPER"
                                                     || x.Schluessel == P + "KOERPER_ABWEICHUNG");
 
             GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, 0, 'E');
@@ -293,7 +323,6 @@ namespace EPOS.Kern.Tests
             PruefMeldung m = Assert.Single(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_AUSGESPART");
             Assert.Equal(PruefStufe.Info, m.Stufe);
             Assert.Equal(new[] { "2", "2.8", "Öffnung Loch, Fenster A" }, m.Werte);
-            Assert.DoesNotContain(a.Meldungen, x => x.Schluessel == P + "OEFFNUNG_NETTO_NULL");
         }
 
         [Fact]

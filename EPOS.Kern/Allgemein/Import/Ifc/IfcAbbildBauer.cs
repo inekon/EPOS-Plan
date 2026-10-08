@@ -39,7 +39,7 @@ namespace WindowsFormsApplication1
     /// ohne lesbaren Körper bleibt die Fläche leer (<c>IMP_IFC_PROT_KEINE_MENGEN</c>). <c>IfcZone</c> wird
     /// nicht gelesen (3.5 Nr. 8), <c>Pset_SpaceThermalLoad.AirExchangeRate</c> nicht benutzt (3.4).</para>
     /// </summary>
-    internal sealed class IfcAbbildBauer
+    internal sealed partial class IfcAbbildBauer
     {
         private const string P = IfcImportProfil.MELDUNGSPRAEFIX;
         private const int BEISPIELE = 5;
@@ -65,6 +65,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>G5-N: der vorgegebene Nordwinkel [°] (Eingabe des Anwenders); <c>null</c> = der Dateiwert bzw. die Annahme gilt.</summary>
         internal double? NordwinkelVorgabe { get; init; }
+
+        /// <summary>
+        /// Prüfnaht der Sperren (Datenaustauschkonzept 17.5, Probe 43): die Quelle, mit der jeder gelesene Körper gestempelt
+        /// wird. Vorgabe <see cref="WindowsFormsApplication1.Koerperquelle.Datei"/> — dann ist alles wie gelesen; mit
+        /// <see cref="WindowsFormsApplication1.Koerperquelle.AusFlaechen"/> greifen die Sperren gebildeter Körper.
+        /// </summary>
+        internal Koerperquelle KoerperquellePruefung { get; init; } = Koerperquelle.Datei;
+
+        /// <summary>Der Körper mit der Quelle der Prüfnaht (<see cref="KoerperquellePruefung"/>).</summary>
+        private Dateikoerper Gestempelt(Dateikoerper k) => k?.MitQuelle(KoerperquellePruefung);
         private IfcRahmen _wurzel = IfcRahmen.Welt;
 
         private readonly Dictionary<int, AbbildRaum> _raum = new Dictionary<int, AbbildRaum>();
@@ -152,6 +162,7 @@ namespace WindowsFormsApplication1
 
             Raumbezuege();
             Bauteile();
+            Koerperflaechenzuordnung();
             Koerpertrennflaechen();
             GrundrissTrenndecken();
             // Die Flächen der Körper nach Randbedingung (Konzept HottCAD-Verbund 4.2) — Anzeige und Gegenprobe.
@@ -531,7 +542,7 @@ namespace WindowsFormsApplication1
             _gebaeudeMitDarstellung.Add(gi);
             if (!rahmen.HasValue) return;
             var nichtLesbar = new List<string>();
-            r.Koerper = IfcRaumkoerper.Lesen(s, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            r.Koerper = Gestempelt(IfcRaumkoerper.Lesen(s, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar));
             foreach (string art in nichtLesbar)
                 _koerperNichtLesbar[art] = _koerperNichtLesbar.TryGetValue(art, out int z) ? z + 1 : 1;
         }
@@ -569,8 +580,9 @@ namespace WindowsFormsApplication1
             IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
             if (!rahmen.HasValue) { _bauteilkoerper[gi] = stand; return; }
             var nichtLesbar = new List<string>();
-            Dateikoerper k = IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar);
+            Dateikoerper k = Gestempelt(IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar));
             foreach (string art in nichtLesbar) Zaehlen(_bauteilkoerperNichtLesbar, art);
+            b.Koerpergrund = Bauteilbefunde.Koerpergrund(IfcRaumkoerper.Darstellung(e) != null, k, nichtLesbar);
             if (k == null) { _bauteilkoerper[gi] = stand; return; }
             if (stand.Raum + stand.Dreiecke + k.DreieckZahl > Dateikoerper.DREIECKSGRENZE)
             {
@@ -620,12 +632,16 @@ namespace WindowsFormsApplication1
             if (b.Koerper != null) koerper.Add(b.Koerper);
             else
             {
-                Dateikoerper k = Rechenkoerper(e);
+                // G5-3: der Körperbefund auch dort, wo der Anzeigekörper wegen der Dreiecksgrenze nicht gelesen wurde.
+                Dateikoerper k = Rechenkoerper(e, out Bauteilbefundgrund grund);
+                if (b.Koerpergrund == Bauteilbefundgrund.Keiner) b.Koerpergrund = grund;
                 if (k != null) koerper.Add(k);
                 else if (e is IIfcRoof)
                     foreach (IIfcElement t in Teile(e).Where(t => t is IIfcSlab))
                     {
-                        Dateikoerper kt = Rechenkoerper(t);
+                        // Die Platten eines Dachs ohne eigenen Körper tragen dessen Befund (der erste gilt).
+                        Dateikoerper kt = Rechenkoerper(t, out Bauteilbefundgrund teilgrund);
+                        if (b.Koerpergrund == Bauteilbefundgrund.Keiner) b.Koerpergrund = teilgrund;
                         if (kt != null) koerper.Add(kt);
                     }
             }
@@ -639,13 +655,31 @@ namespace WindowsFormsApplication1
             _koerperVormerkung.Add((b, koerper, art, gi));
         }
 
+        /// <summary>
+        /// Der Körper eines Elements nur für die Rechnung samt seinem Befund (G5-3, <see cref="Bauteilbefunde.Koerpergrund"/>);
+        /// ohne Darstellung oder Weltrahmen kein Körper und kein Befund.
+        /// </summary>
+        private Dateikoerper Rechenkoerper(IIfcElement e, out Bauteilbefundgrund grund)
+        {
+            grund = Bauteilbefundgrund.Keiner;
+            if (e.Representation == null) return null;
+            IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
+            if (!rahmen.HasValue) return null;
+            var nichtLesbar = new List<string>();
+            Dateikoerper k;
+            try { k = Gestempelt(IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, nichtLesbar)); }
+            catch (Exception) { k = null; }   // ein unlesbarer Körper ist keine Fläche — und ein Befund
+            grund = Bauteilbefunde.Koerpergrund(IfcRaumkoerper.Darstellung(e) != null, k, nichtLesbar);
+            return k;
+        }
+
         /// <summary>Der Körper eines Elements nur für die Rechnung; <c>null</c> = keine Darstellung, kein Weltrahmen, nicht lesbar.</summary>
         private Dateikoerper Rechenkoerper(IIfcElement e)
         {
             if (e.Representation == null) return null;
             IfcRahmen? rahmen = IfcPlatzierung.Weltrahmen(e.ObjectPlacement, _wurzel, out _);
             if (!rahmen.HasValue) return null;
-            try { return IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, new List<string>()); }
+            try { return Gestempelt(IfcRaumkoerper.Lesen(e, rahmen.Value, _einheiten.Laenge, _winkel, new List<string>())); }
             catch (Exception) { return null; }   // ein unlesbarer Körper ist keine Fläche
         }
 
@@ -689,9 +723,17 @@ namespace WindowsFormsApplication1
             var schwerpunkte = new Dictionary<int, double[]>();
             foreach ((AbbildBauteil b, List<Dateikoerper> koerper, Bauteilkoerperart art, int gi) in _koerperVormerkung)
             {
+                // 17.5: Ein aus Flächen gebildeter Körper ist kein unabhängiger Beleg — kein Körpervergleich gegen den Mengensatz
+                // (KOERPER_ABWEICHUNG*), keine Fläche aus dem Körper (Herkunft KOERPER).
+                if (!koerper.Any(Dateikoerper.Beleg)) continue;
                 if (!schwerpunkte.TryGetValue(gi, out double[] g)) schwerpunkte[gi] = g = Gebaeudeschwerpunkt(gi);
-                Bauteilkoerperflaeche kf = Vereinigt(koerper.Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
-                if (kf == null) continue;
+                Bauteilkoerperflaeche kf = Vereinigt(koerper.Where(Dateikoerper.Beleg).Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
+                if (kf == null)
+                {
+                    // G5-3: ein Körper mit Dreiecken, aber ohne maßgebliche Fläche ist entartet.
+                    if (b.Koerpergrund == Bauteilbefundgrund.Keiner) b.Koerpergrund = Bauteilbefundgrund.KoerperEntartet;
+                    continue;
+                }
                 b.Koerperflaeche = kf;
                 string name = b.Name ?? b.Kennung;
                 if (b.BruttoflaecheM2 is double menge)
@@ -905,7 +947,8 @@ namespace WindowsFormsApplication1
         /// <item>Öffnungen ohne Füllung: durchdringt eine den Wirt, ist sie ein Loch (<see cref="AbbildBauteil.LochflaecheM2"/>,
         /// Meldung <c>OEFFNUNG_LOCH</c>); ist sie weniger tief als der Wirt dick oder als <c>RECESS</c> erklärt, eine Nische
         /// ohne Abzug (<c>OEFFNUNG_NISCHE</c>); ohne jede Fläche <c>OEFFNUNG_UNBEMESSEN</c>.</item>
-        /// <item>Ein Wirt ohne Nettofläche der Datei bekommt Brutto − Öffnungen; ≤ 0 wird 0 mit <c>OEFFNUNG_NETTO_NULL</c>.
+        /// <item>Ein Wirt ohne Nettofläche der Datei bekommt Brutto − Öffnungen; ≤ 0 wird 0 — der Bauteilvorschlag legt ihn dann
+        /// nicht an und nennt ihn in einer Zeile (Abstimmung G5, B2: <see cref="GebaeudeBauteilvorschlag.NETTO_NULL_ENTFALLEN"/>).
         /// Eine Nettofläche aus dem Mengensatz (<c>NetSideArea</c>, <c>NetArea</c>) bleibt.</item>
         /// <item><b>Ausgesparte Öffnungen</b> (G5-N): Kommt die Fläche des Wirts aus seinem Körper und spart der Körper eine
         /// Öffnung schon aus (<see cref="IfcOeffnungen.Ausgespart"/>: die Mitte der Öffnung liegt in einer Aussparung der
@@ -937,10 +980,12 @@ namespace WindowsFormsApplication1
             foreach ((AbbildBauteil o, IIfcOpeningElement oeffnung, IIfcElement element, AbbildBauteil wirt) in _oeffnungOhneFlaeche)
             {
                 Dateikoerper ko = oeffnung != null ? Rechenkoerper(oeffnung) : null;
+                if (!Dateikoerper.Beleg(ko)) ko = null;   // 17.5: ein gebildeter Körper gibt keine Fläche
                 double? flaeche = Positiv(IfcOeffnungen.Profilflaeche(ko, Wirtsnormale(wirt, null, ko)));
                 if (!flaeche.HasValue)
                 {
                     Dateikoerper ke = o.Koerper ?? Rechenkoerper(element);
+                    if (!Dateikoerper.Beleg(ke)) ke = null;
                     flaeche = Positiv(IfcOeffnungen.Profilflaeche(ke, Wirtsnormale(wirt, null, ke)));
                 }
                 if (!flaeche.HasValue) continue;
@@ -1002,10 +1047,7 @@ namespace WindowsFormsApplication1
                                            .Sum(o => o.BruttoflaecheM2 ?? 0.0) + b.LochflaecheM2;
                 if (b.NettoflaecheM2.HasValue || !(b.BruttoflaecheM2 is double brutto) || !(abzug > 0.0)) continue;
                 if (_koerperRest.Contains(b) && !(brutto > 0.0)) continue;   // kein Rest neben den Teilen: nichts abzuziehen
-                b.NettoflaecheM2 = Math.Round(IfcOeffnungen.Netto(brutto, abzug, out bool nichtPositiv), 6);
-                if (nichtPositiv)
-                    _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "OEFFNUNG_NETTO_NULL", b.Name ?? b.Kennung,
-                        Zahl(Math.Round(brutto, 2)), Zahl(Math.Round(abzug, 2))));
+                b.NettoflaecheM2 = Math.Round(IfcOeffnungen.Netto(brutto, abzug, out _), 6);
             }
 
             if (ausKoerper.Count > 0)
@@ -1767,6 +1809,7 @@ namespace WindowsFormsApplication1
                 Bauteil(e, klasse);
             }
             Koerperflaechen();
+            OeffnungenNachLage();
             Oeffnungsabzug();
 
             // Fenster und Türen, die keine Öffnung füllen: kein Wirt, keine Himmelsrichtung, nicht gezählt.
@@ -2511,7 +2554,8 @@ namespace WindowsFormsApplication1
             for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
             {
                 AbbildGebaeude g = _abbild.Gebaeude[gi];
-                if (g.Raeume.Count(r => r.Koerper != null) < 2) continue;
+                // 17.5: Körperpaare und Körpertrennflächen nur aus Körpern der Datei, nie aus gebildeten.
+                if (g.Raeume.Count(r => Dateikoerper.Beleg(r.Koerper)) < 2) continue;
                 List<Koerperpaar> paare = Koerpernachbarschaft.Paare(g.Raeume);
                 g.ZahlKoerperpaare = paare.Count;
                 g.KoerperTrennwandM2 = Math.Round(paare.Where(p => !p.Decke).Sum(p => p.FlaecheM2), 6);
@@ -2524,11 +2568,16 @@ namespace WindowsFormsApplication1
                     continue;
                 }
                 var mitPaar = new HashSet<int>(paare.SelectMany(p => new[] { p.RaumA, p.RaumB }));
-                List<string> ohne = Enumerable.Range(0, g.Raeume.Count).Where(i => g.Raeume[i].Koerper != null && !mitPaar.Contains(i))
+                List<string> ohne = Enumerable.Range(0, g.Raeume.Count).Where(i => Dateikoerper.Beleg(g.Raeume[i].Koerper) && !mitPaar.Contains(i))
                                               .Select(i => string.IsNullOrWhiteSpace(g.Raeume[i].Name) ? g.Raeume[i].Kennung : g.Raeume[i].Name.Trim()).ToList();
                 if (ohne.Count > 0)
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_OHNE_PAAR", Ganz(ohne.Count),
                         string.Join(", ", ohne.Take(KOERPER_OHNE_PAAR_NAMEN)) + (ohne.Count > KOERPER_OHNE_PAAR_NAMEN ? ", …" : "")));
+                // G5-3: Ein Raumpaar, das der Körperweg der Bauteilflächen schon verbindet, bekommt kein zweites Trennbauteil.
+                paare = paare.Where(p => !Abgedeckt(g, p)).ToList();
+                // G5-3d: Eine Körperdecke, die eine Platte der Datei schon als Hüllfläche gegen unbeheizt trägt, entfällt.
+                paare = paare.Where(p => !DurchHuelldeckeGedeckt(gi, g, p)).ToList();
+                HuelldeckenMelden(gi, g);
                 if (paare.Count == 0) continue;
                 g.KoerperpaareGebildet = true;
 
@@ -2564,18 +2613,20 @@ namespace WindowsFormsApplication1
                     Func<AbbildBauteil, bool> art = p.Decke ? (Func<AbbildBauteil, bool>)IstDecke : IstWand;
                     bool Beide(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && r.Contains(ra.Kennung) && r.Contains(rb.Kennung); }
                     bool Einer(AbbildBauteil b) { HashSet<string> r = Bezug(b); return r != null && (r.Contains(ra.Kennung) || r.Contains(rb.Kennung)); }
-                    List<AbbildBauteil> beide = bestand.Where(b => Innen(b) && art(b) && Beide(b) && Richtung(b, p)).ToList();
-                    AbbildBauteil vorlage = beide.OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault()
-                        ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p)
+                    // G5-3d: Eine Decke muss in der Höhe des Paars liegen können (Deckenlage); die getroffene geht vor.
+                    List<AbbildBauteil> beide = bestand.Where(b => Innen(b) && art(b) && Beide(b) && Richtung(b, p) && Deckenlage(b, p, g) >= 0).ToList();
+                    AbbildBauteil vorlage = beide.OrderByDescending(b => Deckenlage(b, p, g)).ThenBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault()
+                        ?? bestand.Where(b => Innen(b) && art(b) && Einer(b) && Richtung(b, p) && Deckenlage(b, p, g) >= 0
                                               && (p.Decke ? b.Art == Bauteilart.Decke : b.Art == Bauteilart.Innenwand))
-                                  .OrderBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
+                                  .OrderByDescending(b => Deckenlage(b, p, g)).ThenBy(b => Math.Abs((b.BruttoflaecheM2 ?? 0.0) - p.FlaecheM2)).FirstOrDefault();
                     // Eine Decke ohne Bezug: die größte freie Decke des Geschosspaars, im oberen Geschoss vor dem unteren
                     // (wie die Trenndecke aus dem Grundriss).
                     if (vorlage == null && p.Decke)
                     {
                         string o = (p.Oben == p.RaumA ? ra : rb).GeschossKennung, u = (p.Oben == p.RaumA ? rb : ra).GeschossKennung;
-                        vorlage = bestand.Where(b => FreieDecke(b) && b.GeschossKennung != null && (b.GeschossKennung == o || b.GeschossKennung == u))
-                                         .OrderByDescending(b => b.GeschossKennung == o).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).FirstOrDefault();
+                        vorlage = bestand.Where(b => FreieDecke(b) && b.GeschossKennung != null && (b.GeschossKennung == o || b.GeschossKennung == u)
+                                                     && Deckenlage(b, p, g) >= 0)
+                                         .OrderByDescending(b => Deckenlage(b, p, g)).ThenByDescending(b => b.GeschossKennung == o).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).FirstOrDefault();
                     }
                     var abgedeckt = new List<AbbildBauteil>(beide);
                     if (vorlage != null && !abgedeckt.Contains(vorlage)) abgedeckt.Add(vorlage);
@@ -2644,8 +2695,9 @@ namespace WindowsFormsApplication1
                 }
                 foreach (KeyValuePair<(string Unten, string Oben), List<AbbildBauteil>> kd in koerperdecken)
                 {
+                    // G5-3d: Eine Bezugsdecke, die die Datei gegen unbeheizt erklärt, bleibt (Hüllfläche; die Erklärung geht vor).
                     if (geschosspaare != null && geschosspaare.TryGetValue(kd.Key, out List<AbbildBauteil> alt))
-                        foreach (AbbildBauteil b in alt.Where(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG)) verbraucht.Add(b);
+                        foreach (AbbildBauteil b in alt.Where(b => b.Trenndeckenherkunft == AbbildBauteil.TRENNDECKE_BEZUG && b.Randbedingung != Randbedingung.Unbeheizt)) verbraucht.Add(b);
                     if (geschosspaare == null) _trenndecken[gi] = geschosspaare = new SortedDictionary<(string, string), List<AbbildBauteil>>();
                     geschosspaare[kd.Key] = kd.Value;
                 }
@@ -2711,6 +2763,7 @@ namespace WindowsFormsApplication1
                     var o = geschosse[i];
                     if (u.Lage.Value == o.Lage.Value) continue;
                     if (paare != null && paare.ContainsKey((u.Kennung, o.Kennung))) continue;
+                    if (_huelldeckenpaare.Contains((gi, u.Kennung, o.Kennung))) continue;   // G5-3d: Hülldecke der Datei
                     List<AbbildBauteil> vorlagen = g.Bauteile.Where(b => FreieDecke(b) && !verbraucht.Contains(b)
                                                                          && (b.GeschossKennung == o.Kennung || b.GeschossKennung == u.Kennung))
                         .OrderByDescending(b => b.GeschossKennung == o.Kennung).ThenByDescending(b => b.BruttoflaecheM2 ?? 0.0).ToList();

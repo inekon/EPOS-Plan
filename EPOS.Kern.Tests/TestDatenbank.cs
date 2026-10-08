@@ -980,6 +980,9 @@ namespace EPOS.Kern.Tests
                 // Schritt NordrichtungSchema.SCHRITT (G5-N): Tab_Importquelle.Nordwinkel_Herkunft, Bestand nachgefuellt
                 // (Nordwinkel vorhanden -> DATEI, NULL -> ANNAHME). Wiederholbar.
                 NordrichtungSchema.Ausfuehren(null);
+                // Schritt ProjektdateiImportSchema.SCHRITT: Format und Herkunft SQPROJ - Neubau von Tab_Importquelle und
+                // der sechs Herkunftstabellen mit erweiterter Pruefklausel. Wiederholbar.
+                ProjektdateiImportSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

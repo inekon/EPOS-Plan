@@ -198,16 +198,28 @@ namespace WindowsFormsApplication1
             if (e?.Aufbau == null) return null;
             string schluessel = e.Aufbau.Kennung + "|" + (e.Umgekehrt ? "U" : "G") + (e.RichtungAngenommen ? "A" : "");
             if (_abbilder.TryGetValue(schluessel, out AbbildAufbau bekannt)) return bekannt;
+            AbbildAufbau a = AbbildAus(e.Aufbau, e.Umgekehrt, e.RichtungAngenommen);
+            _abbilder[schluessel] = a;
+            return a;
+        }
+
+        /// <summary>
+        /// <b>Ein Aufbau der Projektdatei als Aufbau des Abbilds</b> — Schichten innen → außen (umgedreht über
+        /// <see cref="Schichtrichtung.AussenNachInnen"/>), Stoffwerte der Schicht, Kennzeichen <see cref="AbbildSchicht.AusProjektdatei"/>.
+        /// Der eine Weg für den IFC-Weg mit Projektdatei (<see cref="Abbild"/>) und das Abbild allein aus der Projektdatei.
+        /// </summary>
+        internal static AbbildAufbau AbbildAus(SqprojAufbau aufbau, bool umgekehrt, bool richtungAngenommen)
+        {
             var a = new AbbildAufbau
             {
-                Kennung = e.Aufbau.Kennung,
-                Name = e.Aufbau.Name ?? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_SQ_AUFBAU_NAME,
-                                                      e.Aufbau.UWert.Value.ToString("0.###", CultureInfo.CurrentCulture)),
-                UWertWm2K = e.Aufbau.UWert,
-                Richtung = e.Umgekehrt ? Schichtrichtung.AussenNachInnen : Schichtrichtung.InnenNachAussen,
-                RichtungAngenommen = e.RichtungAngenommen,
+                Kennung = aufbau.Kennung,
+                Name = aufbau.Name ?? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_SQ_AUFBAU_NAME,
+                                                    (aufbau.UWert ?? 0.0).ToString("0.###", CultureInfo.CurrentCulture)),
+                UWertWm2K = aufbau.UWert,
+                Richtung = umgekehrt ? Schichtrichtung.AussenNachInnen : Schichtrichtung.InnenNachAussen,
+                RichtungAngenommen = richtungAngenommen,
             };
-            foreach (SqprojSchicht s in e.Aufbau.Schichten)
+            foreach (SqprojSchicht s in aufbau.Schichten)
                 a.Schichten.Add(new AbbildSchicht
                 {
                     BaustoffKennung = s.Kennung ?? "",
@@ -222,7 +234,6 @@ namespace WindowsFormsApplication1
                 });
             a.Status = a.Schichten.All(s => s.Vollstaendig) ? Aufbaustatus.Vollstaendig
                      : a.Schichten.All(s => s.HatWiderstand) ? Aufbaustatus.Masselos : Aufbaustatus.Unvollstaendig;
-            _abbilder[schluessel] = a;
             return a;
         }
     }

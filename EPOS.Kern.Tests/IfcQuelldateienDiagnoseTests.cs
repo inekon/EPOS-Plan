@@ -319,35 +319,33 @@ namespace EPOS.Kern.Tests
                 Kopf = "21/14/4", Baujahr = "1984", Klasse = "H", Vorschlagsname = "MFH_mittel_1984",
                 Raeume = "29/24/298.84", Vorgabe = "Z4 5",
                 ZonenZ4 = "DG2 29.43, DG1 104.11, EG 102.12, Keller 63.19, Keller (unbeheizt) 48.35",
-                TrennungenZ4 = "DG2|DG1|27.3, DG1|EG|99.39, EG|Keller|62.53, EG|Keller (unbeheizt)|35.56, Keller|Keller (unbeheizt)|37.23",
+                TrennungenZ4 = "DG2|DG1|27.3, DG1|EG|99.39, EG|Keller|62.53, Keller|Keller (unbeheizt)|37.23",
                 Geschaetzt = "", Innenflaechenfaktor = "2.95",
-                Huelle = "AW 235.21 U 0.49, Dach 135.28 U 0.46, Grund 152.94 U 3.86, Fenster 53.75 U 2.63",
+                Huelle = "AW 229.78 U 0.49, Dach 135.28 U 0.46, Grund 121.91 U 3.89, Fenster 53.75 U 2.63",
                 Beheizungsart = "22/5/0", ErklaerungVorBezug = "Boden EG 002|Fitnessraum", Unbeheizt = "0/0", Fehler = "",
-                Koerper = "100/280.33/224.41", Z6 = "5/9/285.8/0", GegenprobeZ4 = "0",
+                Koerper = "100/280.33/224.41", Z6 = "5/8/250.24/0", GegenprobeZ4 = "0",
             },
             ["MFH-Klein-unsaniert-1964.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/4", Baujahr = "1964", Klasse = "E", Vorschlagsname = "MFH-Klein-unsaniert-1964",
                 Raeume = "30/23/275.21", Vorgabe = "Z4 7",
                 ZonenZ4 = "DG2 48.78, DG1 98.15, OG1 88.53, OG1 (unbeheizt) 19.34, EG 88.53, EG (unbeheizt) 11.3, Keller 114.34",
-                TrennungenZ4 = "DG2|DG1|42.33, DG2|OG1 (unbeheizt)|2.78, DG1|OG1|82.95, DG1|OG1 (unbeheizt)|13.74, OG1|OG1 (unbeheizt)|23.81, "
-                    + "OG1|EG|88.53, OG1 (unbeheizt)|EG (unbeheizt)|11.3, EG|EG (unbeheizt)|23.81, EG|Keller|88.53, "
-                    + "EG (unbeheizt)|Keller|11.3",
+                TrennungenZ4 = "DG2|DG1|12.27, DG2|OG1 (unbeheizt)|2.78, DG1|OG1|82.95, DG1|OG1 (unbeheizt)|13.74, OG1|OG1 (unbeheizt)|23.81, OG1|EG|88.53, OG1 (unbeheizt)|EG (unbeheizt)|11.3, EG|EG (unbeheizt)|23.81, EG|Keller|11.84, EG (unbeheizt)|Keller|11.3",
                 Geschaetzt = "", Innenflaechenfaktor = "3.37",
-                Huelle = "AW 245.59 U 1.4, Dach 178.75 U 0.6, Grund 199.11 U 1, Fenster 41.86 U 1.32",
+                Huelle = "AW 245.59 U 1.4, Dach 148.68 U 0.58, Grund 122.43 U 0.99, Fenster 41.86 U 1.32",
                 Beheizungsart = "18/2/0", ErklaerungVorBezug = "", Unbeheizt = "0/0", Fehler = "",
-                Koerper = "120/305.03/339.02", Z6 = "4/6/308.56/0", GegenprobeZ4 = "0",
+                Koerper = "120/305.03/339.02", Z6 = "4/5/201.81/0", GegenprobeZ4 = "0",
             },
             ["Sportheim_1970_unsaniert.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/4", Baujahr = "1995", Klasse = "I", Vorschlagsname = "Sportheim_1970_unsaniert",
                 Raeume = "56/41/718.99", Vorgabe = "Z4 4",
                 ZonenZ4 = "OG 230.1, EG 450.78, UG (unbeheizt) 464.56, UG 38.11",
-                TrennungenZ4 = "OG|EG|152.78, EG|UG (unbeheizt)|410.82, EG|UG|35.16, UG (unbeheizt)|UG|45.06",
+                TrennungenZ4 = "OG|EG|152.78, EG|UG (unbeheizt)|93.4, EG|UG|35.16, UG (unbeheizt)|UG|45.06",
                 Geschaetzt = "", Innenflaechenfaktor = "2.66",
-                Huelle = "AW 743.53 U 0.27, Dach 698.24 U 0.16, Grund 787.19 U 0.54, Fenster 115.32 U 0.91",
+                Huelle = "AW 661.72 U 0.29, Dach 698.24 U 0.16, Grund 503.84 U 0.53, Fenster 115.32 U 0.91",
                 Beheizungsart = "41/15/0", ErklaerungVorBezug = "Boden EG 005|Flur 003", Unbeheizt = "0/0", Fehler = "",
-                Koerper = "168/952.78/574.99", Z6 = "4/6/847.86/0", GegenprobeZ4 = "0",
+                Koerper = "168/952.78/574.99", Z6 = "4/6/530.44/0", GegenprobeZ4 = "0",
             },
             ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Kennzahlen
             {
@@ -355,14 +353,11 @@ namespace EPOS.Kern.Tests
                 Raeume = "113/91/4343.08", Vorgabe = "Z4 8",
                 ZonenZ4 = "OG4 546.81, OG3 649.47, OG3 (unbeheizt) 132.63, OG2 669.1, OG1 493.9, EG 1003.67, UG1 980.13, "
                     + "UG2 (unbeheizt) 154.46",
-                TrennungenZ4 = "OG4|OG3|578.13, OG4|OG3 (unbeheizt)|67.38, OG3|OG3 (unbeheizt)|93.77, OG3|OG2|761.74, "
-                    + "OG3 (unbeheizt)|OG2|57.93, OG3 (unbeheizt)|OG1|58.55, OG3 (unbeheizt)|EG|119.68, OG3 (unbeheizt)|UG1|124.89, "
-                    + "OG3 (unbeheizt)|UG2 (unbeheizt)|11.26, OG2|OG1|621.36, OG2|EG|169.01, OG1|EG|707.17, EG|UG1|944.76, "
-                    + "UG1|UG2 (unbeheizt)|166.21",
+                TrennungenZ4 = "OG4|OG3|578.13, OG4|OG3 (unbeheizt)|67.38, OG3|OG3 (unbeheizt)|93.77, OG3|OG2|761.74, OG3 (unbeheizt)|OG2|57.93, OG3 (unbeheizt)|OG1|58.55, OG3 (unbeheizt)|EG|72.11, OG3 (unbeheizt)|UG1|124.89, OG3 (unbeheizt)|UG2 (unbeheizt)|11.26, OG2|OG1|621.36, OG2|EG|169.01, OG1|EG|707.17, EG|UG1|944.76, UG1|UG2 (unbeheizt)|32.62",
                 Geschaetzt = "", Innenflaechenfaktor = "2.85",
-                Huelle = "AW 2186.88 U 0.16, Dach 1118.67 U 0.21, Grund 1872.38 U 0.64, Fenster 975.68 U 1.11",
+                Huelle = "AW 1845.49 U 0.16, Dach 1118.67 U 0.21, Grund 1720.62 U 0.63, Fenster 975.68 U 1.11",
                 Beheizungsart = "78/4/0", ErklaerungVorBezug = "Boden UG1 002|Treppenraum", Unbeheizt = "0/0", Fehler = "",
-                Koerper = "467/2577.4/3993.85", Z6 = "4/5/3372.94/0", GegenprobeZ4 = "0",
+                Koerper = "467/2577.4/3993.85", Z6 = "4/5/3191.78/0", GegenprobeZ4 = "0",
             },
             ["WG-EH55_Poroton-GModG-2026.ifc"] = new Kennzahlen
             {
@@ -371,7 +366,7 @@ namespace EPOS.Kern.Tests
                 ZonenZ4 = "DG 114.9, EG 120.26, Keller 107.4",
                 TrennungenZ4 = "DG|EG|113.56, EG|Keller|105.81",
                 Geschaetzt = "", Innenflaechenfaktor = "3.48",
-                Huelle = "AW 335.78 U 0.16, Dach 186.39 U 0.13, Grund 229.75 U 0.2, Fenster 97.56 U 0.87",
+                Huelle = "AW 320.22 U 0.16, Dach 186.39 U 0.13, Grund 229.75 U 0.2, Fenster 97.56 U 0.87",
                 Beheizungsart = "20/0/0", ErklaerungVorBezug = "", Unbeheizt = "0/0", Fehler = "",
                 Koerper = "79/320.64/219.37", Z6 = "4/5/235.85/0", GegenprobeZ4 = "0",
             },
@@ -382,7 +377,7 @@ namespace EPOS.Kern.Tests
                 ZonenZ4 = "OG1 8794.25, EG 9687.41, EG (unbeheizt) 130.54",
                 TrennungenZ4 = "OG1|EG|9098.57, EG|EG (unbeheizt)|149.11",
                 Geschaetzt = "", Innenflaechenfaktor = "1.73",
-                Huelle = "AW 4272.65 U 0.21, Dach 9798.65 U 0.23, Grund 9952.47 U 2.87, Fenster 1253.89 U 1.29",
+                Huelle = "AW 4020.08 U 0.21, Dach 9798.65 U 0.23, Grund 9952.47 U 2.87, Fenster 1253.89 U 1.29",
                 Beheizungsart = "48/1/0", ErklaerungVorBezug = "", Unbeheizt = "0/0", Fehler = "",
                 Koerper = "195/5846.78/8748.9", Z6 = "4/4/5516.08/0", GegenprobeZ4 = "0",
             },
@@ -449,7 +444,7 @@ namespace EPOS.Kern.Tests
             AbbildGebaeude g = a.Abbild.Gebaeude.Single();
             Assert.Equal(0, g.ZahlGrenzen);
             Assert.Equal(0, g.ZahlTrenndeckenReferenz);   // die Körperdecken ersetzen die Trenndecken der Raumbezüge
-            Assert.Equal(new[] { "Gebäude", "100", "280.33", "224.41" },
+            Assert.Equal(new[] { "Gebäude", "92", "280.33", "224.41" },
                          Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_AUS_KOERPER").Werte);
             PruefMeldung jahr = Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_RUECKFALL");
             Assert.Equal(new[] { "HSETU_GebäudeAllgemein", "YearOfConstruction (Datum)", "01.01.1984 00:00:00", "1984" }, jahr.Werte);
@@ -488,7 +483,7 @@ namespace EPOS.Kern.Tests
             PruefMeldung bezug = Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_REFERENZ");
             Assert.Equal(new[] { "Gebäude", "0", "—", "51" }, bezug.Werte);
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_GESCHAETZT");
-            Assert.Equal(new[] { "Gebäude", "120", "305.03", "339.02" },
+            Assert.Equal(new[] { "Gebäude", "106", "305.03", "339.02" },
                          Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_AUS_KOERPER").Werte);
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_TRENNDECKE_KLEIN");
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG");
@@ -503,11 +498,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "19", "89.9" }, einseitig.Werte);
 
             // Die Hülle des Einzonenwegs: Die Trennflächen aus den Körpern zu Abstell- und Treppenräumen (10 °C) und zum
-            // Spitzboden zählen gegen unbeheizt — vollständig, nicht mehr nur die referenzierten Teile.
+            // Spitzboden zählen gegen unbeheizt — vollständig, nicht mehr nur die referenzierten Teile; wo die Datei eine Platte
+            // gegen unbeheizt führt, zählt diese, und die Körperdecke an ihrer Stelle entfällt (G5-3d, keine Doppelzählung).
             GebaeudeImportSatz satz = a.Zuordnen(0, null);
             Assert.Equal("245.59", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_AUSSENWAND).Wert));
-            Assert.Equal("178.75", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_DACH).Wert));
-            Assert.Equal("199.11", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_GRUND).Wert));
+            Assert.Equal("148.68", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_DACH).Wert));
+            Assert.Equal("122.43", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_GRUND).Wert));
             Assert.Equal("61.03", Z(satz.Zeile(GebaeudeZielfelder.FLAECHE_SONSTIGE).Wert));
             Assert.Equal("3.37", Z(satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Wert));
             Assert.Equal(Importherkunft.Ifc, satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Herkunft);
@@ -515,8 +511,8 @@ namespace EPOS.Kern.Tests
             GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0);
             Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, vorgabe.Vorgabe);
             Assert.DoesNotContain(vorgabe.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
-            Assert.Equal(new[] { "DG2|DG1|42.33", "DG2|OG1 (unbeheizt)|2.78", "DG1|OG1|82.95", "DG1|OG1 (unbeheizt)|13.74", "OG1|OG1 (unbeheizt)|23.81",
-                                 "OG1|EG|88.53", "OG1 (unbeheizt)|EG (unbeheizt)|11.3", "EG|EG (unbeheizt)|23.81", "EG|Keller|88.53", "EG (unbeheizt)|Keller|11.3" },
+            Assert.Equal(new[] { "DG2|DG1|12.27", "DG2|OG1 (unbeheizt)|2.78", "DG1|OG1|82.95", "DG1|OG1 (unbeheizt)|13.74", "OG1|OG1 (unbeheizt)|23.81",
+                                 "OG1|EG|88.53", "OG1 (unbeheizt)|EG (unbeheizt)|11.3", "EG|EG (unbeheizt)|23.81", "EG|Keller|11.84", "EG (unbeheizt)|Keller|11.3" },
                          vorgabe.Trennungen.Select(t => vorgabe.Zonen[t.ZoneA].Name + "|" + vorgabe.Zonen[t.ZoneB].Name + "|" + Z(Math.Max(t.FlaecheA, t.FlaecheB))));
         }
 
@@ -892,17 +888,23 @@ namespace EPOS.Kern.Tests
         /// U-Wert der Datei neben den Schichten (E95-1, BA-1) — das verschiebt MFH mittel, Sportheim und Verwaltung.
         /// Außenbauteile der Stufen B und C tragen einen Ersatzaufbau statt masselos zu rechnen (E95-3, BA-2): Die
         /// Speichermasse der Hülle wächst, Jahresheizwärme und Spitze sinken (Jahresheizwärme Z4 −0,6 bis −2,0 %,
-        /// Spitze −0,8 bis −9,3 %); die Auslegungsheizlast ist stationär und bleibt.
+        /// Spitze −0,8 bis −9,3 %); die Auslegungsheizlast ist stationär und bleibt. Der Körperweg der Bauteilflächen (G5-3)
+        /// ordnet in MFH mittel die Bauteile ohne Raumbezug über ihre Körper den Räumen und Zonen zu, statt sie der Zone ihres
+        /// Geschosses zu geben: unter Z4 Jahresheizwärme 46,01 → 47,51 MWh/a (+3,3 %), Spitze 24,80 → 25,41 kW, Tagesmittel
+        /// 16,55 → 17,09 kW; Z5 und die übrigen fünf Dateien bleiben. Die Korrektur G5-3d zählt die Decke über unbeheizt
+        /// einmal (Platten der Datei gegen unbeheizt gehen den Trenndecken aus den Raumkörpern vor) und zieht die Öffnungen
+        /// zu kleiner Wände nach Lage voll ab: Die Einzonenrechnung (Z5) sinkt in den vier Dateien mit Platten gegen unbeheizt
+        /// um 4 bis 16 %, die Vorgabe Z4 um 0 bis 3 %; WG und Produktion verschieben sich nur über den Fensterabzug.
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
-                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 46.01, 24.80, 16.55, 50.66, 19.85),
-                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 41.09, 27.16, 17.29, 52.91, 22.03),
-                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 58.69, 49.28, 27.43, 69.68, 37.17),
-                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 233.59, 261.22, 131.53, 221.66, 185.56),
-                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.53, 20.83, 9.53, 17.22, 14.13),
-                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1828.57, 1251.39, 864.66, 1824.81, 1012.47),
+                ["MFH_mittel_1984.ifc"] = ("Z4", 5, 47.56, 24.73, 16.78, 42.66, 18.76),
+                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 40.62, 26.18, 16.75, 46.2, 21.13),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 58.49, 48.0, 27.08, 61.07, 36.1),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 228.49, 257.17, 129.02, 212.74, 182.42),
+                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.37, 20.74, 9.47, 17.05, 14.05),
+                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1824.25, 1249.16, 863.06, 1820.62, 1010.76),
             };
 
         /// <summary>

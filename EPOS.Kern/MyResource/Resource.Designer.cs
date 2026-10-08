@@ -13127,6 +13127,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        /// </summary>
+        public static string BTSB_BEFUND {
+            get {
+                return ResourceManager.GetString("BTSB_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die C₁ (wirksame Kapazität) ähnelt.
         /// </summary>
         public static string BTSB_C1 {
@@ -13186,6 +13195,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTSB_FLAECHE {
             get {
                 return ResourceManager.GetString("BTSB_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Fläche ähnelt.
+        /// </summary>
+        public static string BTSB_FLAECHENHERKUNFT {
+            get {
+                return ResourceManager.GetString("BTSB_FLAECHENHERKUNFT", resourceCulture);
             }
         }
         
@@ -13312,6 +13330,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTSB_KENNUNG {
             get {
                 return ResourceManager.GetString("BTSB_KENNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPER {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schale der Datei ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_CLOSEDSHELL {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_CLOSEDSHELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Extrusion der Fläche ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_FLAECHENEXTRUSION {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_FLAECHENEXTRUSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hüllflächen ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_HUELLFLAECHEN {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_HUELLFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flächen des Raums ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_RAUMFLAECHEN {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_RAUMFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumpolygon ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPERWEG_RAUMPOLYGON {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPERWEG_RAUMPOLYGON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Flächen der Datei gebildet ({0}) ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPER_ABGELEITET {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPER_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus der Datei ({0}) ähnelt.
+        /// </summary>
+        public static string BTSB_KOERPER_DATEI {
+            get {
+                return ResourceManager.GetString("BTSB_KOERPER_DATEI", resourceCulture);
             }
         }
         
@@ -26649,6 +26739,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteile ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_BAUTEILE {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_BAUTEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund je Bauteil ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_LEGENDE {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag). ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_OHNE {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählt: {0} — {1} ähnelt.
+        /// </summary>
+        public static string GANS_BEFUND_TREFFER {
+            get {
+                return ResourceManager.GetString("GANS_BEFUND_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dateikörper ähnelt.
         /// </summary>
         public static string GANS_DATEIKOERPER {
@@ -26681,6 +26807,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_FARBMODUS_AUFBAU {
             get {
                 return ResourceManager.GetString("GANS_FARBMODUS_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        /// </summary>
+        public static string GANS_FARBMODUS_BEFUND {
+            get {
+                return ResourceManager.GetString("GANS_FARBMODUS_BEFUND", resourceCulture);
             }
         }
         
@@ -26766,6 +26901,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus Flächen gebildet ähnelt.
+        /// </summary>
+        public static string GANS_HERKUNFT_ABGELEITET {
+            get {
+                return ResourceManager.GetString("GANS_HERKUNFT_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus Datei ähnelt.
         /// </summary>
         public static string GANS_HERKUNFT_DATEI {
@@ -26807,6 +26951,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_KENNZEICHEN {
             get {
                 return ResourceManager.GetString("GANS_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume aus Flächen der Datei gebildet, {1} aus Umriss, {2} schematisch ähnelt.
+        /// </summary>
+        public static string GANS_KENNZEICHEN_ABGELEITET {
+            get {
+                return ResourceManager.GetString("GANS_KENNZEICHEN_ABGELEITET", resourceCulture);
             }
         }
         
@@ -27063,6 +27216,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsebene angenommen ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bogen als Sehnenzug ähnelt.
         /// </summary>
         public static string GANS_VERMERK_BOGEN {
@@ -27113,6 +27275,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GANS_VERMERK_UNEBEN {
             get {
                 return ResourceManager.GetString("GANS_VERMERK_UNEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabedicke ähnelt.
+        /// </summary>
+        public static string GANS_VERMERK_VORGABEDICKE {
+            get {
+                return ResourceManager.GetString("GANS_VERMERK_VORGABEDICKE", resourceCulture);
             }
         }
         
@@ -36556,6 +36727,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Bauteile mit Befund ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_FILTER_BAUTEILBEFUND {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_FILTER_BAUTEILBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Filter schränken nur die Anzeige der Liste ein; zusammen gelten sie als „und“. Gespeichert wird immer alles. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_ERLAEUTERUNG {
@@ -37168,6 +37357,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} + Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLE_MIT_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLE_MIT_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Projektdatei (.sqproj) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLE_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLE_SQPROJ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Formate (nach Dateiendung) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLWAHL_ALLE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLWAHL_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: {0} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_QUELLZEILE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_QUELLZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur beheizte Räume bilden die Zone; ein geänderter Haken ordnet neu zu. ähnelt.
         /// </summary>
         public static string GIMP_DLG_RAEUME_HINWEIS {
@@ -37542,6 +37776,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_SP_ZONE {
             get {
                 return ResourceManager.GetString("GIMP_DLG_SP_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone der Projektdatei enthält unbeheizte Räume; die Zuordnung bleibt unvollständig, bis ihre Beheizung entschieden ist. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_SQNUR_UNBEHEIZT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_SQNUR_UNBEHEIZT", resourceCulture);
             }
         }
         
@@ -38266,6 +38509,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_KOERPER {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_KOERPER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengensatz ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_MENGENSATZ {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_MENGENSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumgrenze ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_RAUMGRENZE {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_RAUMGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die schematisch ähnelt.
+        /// </summary>
+        public static string GIMP_FLHK_SCHEMATISCH {
+            get {
+                return ResourceManager.GetString("GIMP_FLHK_SCHEMATISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fläche geschätzt ähnelt.
         /// </summary>
         public static string GIMP_FL_BEFUND_GESCHAETZT {
@@ -38293,6 +38572,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte „Fläche aus“ nennt den Weg der Fläche: Mengensatz der Datei, Polygon der Raumgrenze, Bauteilkörper oder schematische Vorgabe. ähnelt.
+        /// </summary>
+        public static string GIMP_FL_FLAECHENHERKUNFT_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_FL_FLAECHENHERKUNFT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau ähnelt.
         /// </summary>
         public static string GIMP_FL_SP_AUFBAU {
@@ -38307,6 +38595,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FL_SP_BEFUND {
             get {
                 return ResourceManager.GetString("GIMP_FL_SP_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche aus ähnelt.
+        /// </summary>
+        public static string GIMP_FL_SP_FLAECHENHERKUNFT {
+            get {
+                return ResourceManager.GetString("GIMP_FL_SP_FLAECHENHERKUNFT", resourceCulture);
             }
         }
         
@@ -38334,6 +38631,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_FORMAT_IFC {
             get {
                 return ResourceManager.GetString("GIMP_FORMAT_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_FORMAT_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_FORMAT_SQPROJ", resourceCulture);
             }
         }
         
@@ -38478,6 +38784,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_HERKUNFT_MANUELL {
             get {
                 return ResourceManager.GetString("GIMP_HERKUNFT_MANUELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_HERKUNFT_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_HERKUNFT_SQPROJ", resourceCulture);
             }
         }
         
@@ -38667,6 +38982,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_SCHEMA_IFC {
             get {
                 return ResourceManager.GetString("GIMP_SCHEMA_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektdatei, Fassung {0} ähnelt.
+        /// </summary>
+        public static string GIMP_SCHEMA_SQPROJ {
+            get {
+                return ResourceManager.GetString("GIMP_SCHEMA_SQPROJ", resourceCulture);
             }
         }
         
@@ -41407,11 +41731,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Nettofläche 0 — keine Zeile, die Öffnungen bleiben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile entfallen: vollständig durch Öffnungen belegt ({1}). ähnelt.
         /// </summary>
-        public static string IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL {
+        public static string IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN {
             get {
-                return ResourceManager.GetString("IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL", resourceCulture);
+                return ResourceManager.GetString("IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN", resourceCulture);
             }
         }
         
@@ -41686,6 +42010,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper nicht oder nur teilweise lesbar: Die Darstellungsart kann der Import nicht lesen. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_DARSTELLUNG {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_DARSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper entartet: Er ergibt keine maßgebliche Fläche. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_ENTARTET {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_ENTARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper nur teilweise gelesen: Ein Loch ließ sich nicht anbinden. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_LOCH {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_LOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper nur teilweise gelesen: Der Beschnitt fehlt, gelesen ist nur der erste Operand. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_OHNE_BESCHNITT {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_OHNE_BESCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Fläche: weder Mengensatz noch Körper liefern eine. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_OHNE_FLAECHE {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_OHNE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein U-Wert: weder Datei, Projektdatei, Katalog, Vorgabe noch Ersatzaufbau liefern einen. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_OHNE_UWERT {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_OHNE_UWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper mit offener Schale. ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_GRUND_SCHALE_OFFEN {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_GRUND_SCHALE_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Körper unlesbar ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_KOERPER_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_KOERPER_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Befund ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_OHNE {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Eigenschaften ähnelt.
+        /// </summary>
+        public static string IMP_BEFUND_OHNE_EIGENSCHAFTEN {
+            get {
+                return ResourceManager.GetString("IMP_BEFUND_OHNE_EIGENSCHAFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzaufbau aus „{0}“: Dämmschicht {1} cm, abgeglichen auf U = {2} W/(m²K). ähnelt.
         /// </summary>
         public static string IMP_ERSATZAUFBAU_DICKE {
@@ -41812,6 +42226,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_GRENZE {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gbXML-Datei konnte nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_LESEFEHLER {
@@ -41862,6 +42303,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_NUR_1STLEVEL {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_NUR_1STLEVEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
             }
         }
         
@@ -43090,6 +43540,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Gebäude „{0}“ entfallen {1} Trenndecken aus den Raumkörpern ({2} m²): Die Datei führt an ihrer Stelle schon Platten gegen unbeheizte Räume, die als Hüllfläche zählen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERDECKE_HUELLE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERDECKE_HUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Böden und Decken: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Dächer: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Innenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} sonstige Bauteile: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ führt Raumgrenzen; sie gehen vor. Die Raumkörper zeigen {1} Trennflächen (Trennwände {2} m², Trenndecken {3} m²), die nur gezählt werden. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_KOERPERPAARE_GEZAEHLT {
@@ -43405,15 +43918,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil {0}: Die Öffnungen ({2} m²) sind nicht kleiner als die Bruttofläche ({1} m²); die Nettofläche wird 0. ähnelt.
-        /// </summary>
-        public static string IMP_IFC_PROT_OEFFNUNG_NETTO_NULL {
-            get {
-                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_NETTO_NULL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen durchdringen ihr Bauteil nicht (Nische) und werden nicht abgezogen ({1}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_OEFFNUNG_NISCHE {
@@ -43423,11 +43927,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen liegen in keiner Wand, an der sie Platz hätten, und bleiben an der Wand der Datei ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Fenster und Türen hängen als Teile eines Bauteils (IfcRelAggregates, etwa Dachfenster am Dach) statt über eine Öffnung — sie werden als Öffnungen dieses Bauteils übernommen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_OEFFNUNG_TEIL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände tragen laut Datei mehr Fenster- und Türfläche, als sie groß sind; {1} Öffnungen gehen nach ihrer Lage an {2} andere Wände bzw. Teile derselben Wand ({3}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT", resourceCulture);
             }
         }
         
@@ -43599,6 +44121,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_RAEUME_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne Flächenmenge und ohne Grundriss tragen die Bodenfläche ihres Körpers als Raumfläche, zusammen {1} m² ({2}); ohne Volumenmenge gilt das Volumen des Körpers. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_RAUMFLAECHE_KOERPER {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_RAUMFLAECHE_KOERPER", resourceCulture);
             }
         }
         
@@ -43842,6 +44373,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_WAERMEKAPAZITAET_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wände bleiben kleiner als ihre Öffnungen; für sie gilt die Nettofläche der Datei, ihre Öffnungen werden nicht voll abgezogen ({1}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN", resourceCulture);
             }
         }
         
@@ -45034,6 +45574,195 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beheizungscode {0} an {1} Räumen ist nicht belegt — angenommen beheizt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elementart {0} an {1} Flächen ist nicht belegt — gelesen als sonstiges Bauteil. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geometrie der Projektdatei: {0} von {1} Raumkörpern und {2} von {3} Bauteilkörpern aus den Flächen der Datei gebildet; {4} mit Vorgabedicke, {5} mit angenommener Bezugsebene. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei führt keine lesbare Geometrie (Raumpolygone, Flächenschleifen) — die Ansicht zeigt Umrissprismen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_GEOMETRIE_FEHLT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_GEOMETRIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle aus der Projektdatei: {0} Flächen, {1} Öffnungen, {2} Seitenpaare zusammengeführt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_HUELLE {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_HUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hülle unvollständig: Die Projektdatei führt keine raumbezogenen Hüllflächen — das Gebäude lässt sich aus ihr allein nicht bilden. Bitte die IFC-Datei dazunehmen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist keine lesbare Projektdatei (SQLite) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei nennt keine verlässliche Nordrichtung — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KEIN_NORDEN {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KEIN_NORDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilkörper nicht gebildet ({0}: {1}) — Rückfall Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KOERPER_BAUTEIL {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KOERPER_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: Raumkörper nicht gebildet ({1}: {2}) — Rückfall Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_KOERPER_RAUM {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_KOERPER_RAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ließ sich nicht lesen: {0} ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_LESEFEHLER {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_LESEFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angrenzungscode {0} an {1} Flächen ist nicht belegt; die Randbedingung folgt aus der Beheizung der beiden Räume. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_NACHBARART_HERGELEITET {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_NACHBARART_HERGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angrenzungscode {0} an {1} Flächen ist nicht belegt und kein zweiter Raum bekannt — die Randbedingung bleibt unbestimmt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung liegt in keiner Wandfläche desselben Raums — Körper ohne Aussparung. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Öffnungen ohne lesbare Wand — als eigene Bauteile gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OEFFNUNG_RAND {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OEFFNUNG_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine lesbare Flächenschleife (GeoDesc) — kein Bauteilkörper. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_OHNE_GEOMETRIE {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_OHNE_GEOMETRIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“: kein lesbares Raumpolygon ({1}) — Rückfall Umrissprisma. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektdatei fehlen Tabellen ({0}) — sie wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_TABELLE_FEHLT {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_TABELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau Projektdatei (U {0}) ähnelt.
         /// </summary>
         public static string IMP_SQ_AUFBAU_NAME {
@@ -45156,6 +45885,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_KLASSE_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lage, Öffnungen oder Standort der Hüllflächen sind in der Projektdatei nicht lesbar ({0}); Aufbauten und Nettoflächen bleiben. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_LAGE_UNLESBAR {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_LAGE_UNLESBAR", resourceCulture);
             }
         }
         

@@ -127,8 +127,8 @@ namespace WindowsFormsApplication1
                                                   bool raumtemperaturAlsSollwert = false)
         {
             AbbildGebaeude g = abbild.Gebaeude[index];
-            Importherkunft datei = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
-                ? Importherkunft.Ifc : Importherkunft.GbXml;
+            // Die Herkunft der gelesenen Zahlen je Format — die Projektdatei trägt ihre eigene (SQPROJ), die Herkunft bleibt wahr.
+            Importherkunft datei = ImportherkunftWerte.AusFormat(abbild.Format);
             // Die Klasse (Entscheid E47, F2): Das Baujahr führt — trägt die Datei eines, gilt die
             // Klasse daraus (A…M für jedes Jahr); nur ohne Baujahr die gewählte.
             char? k = null;

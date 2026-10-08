@@ -33,6 +33,7 @@ namespace WindowsFormsApplication1
             {
                 case Importherkunft.Ifc: return MyResource.Resource.GIMP_HERKUNFT_IFC;
                 case Importherkunft.GbXml: return MyResource.Resource.GIMP_HERKUNFT_GBXML;
+                case Importherkunft.Sqproj: return MyResource.Resource.GIMP_HERKUNFT_SQPROJ;
                 case Importherkunft.Katalog: return MyResource.Resource.GIMP_HERKUNFT_KATALOG;
                 case Importherkunft.Vorgabe: return MyResource.Resource.GIMP_HERKUNFT_VORGABE;
                 case Importherkunft.VorgabeFrei: return MyResource.Resource.GIMP_HERKUNFT_VORGABEFREI;
@@ -193,7 +194,7 @@ namespace WindowsFormsApplication1
             int ausDatei = 0, vorgabe = 0, leer = 0;
             foreach (GebaeudeFeldzeile z in satz.Zeilen)
             {
-                if (z.Herkunft == Importherkunft.GbXml || z.Herkunft == Importherkunft.Ifc) ausDatei++;
+                if (ImportherkunftWerte.IstDatei(z.Herkunft)) ausDatei++;
                 else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)) vorgabe++;
                 else if (!z.HatWert) leer++;
             }
@@ -249,7 +250,7 @@ namespace WindowsFormsApplication1
         {
             GebaeudeFeldzeile bak = satz?.Zeile(GebaeudeZielfelder.BAUALTERSKLASSE);
             if (bak == null || !satz.Baualtersklasse.HasValue) return null;
-            if (bak.Herkunft != Importherkunft.Ifc && bak.Herkunft != Importherkunft.GbXml) return null;
+            if (!ImportherkunftWerte.IstDatei(bak.Herkunft)) return null;
             return GebaeudeStammCtrl.KlassenIndex(satz.Baualtersklasse.Value.ToString());
         }
 
@@ -267,7 +268,7 @@ namespace WindowsFormsApplication1
             {
                 GebaeudeFeldzeile z = satz.Zeile(feld);
                 if (z == null) continue;
-                if (z.Herkunft == Importherkunft.Ifc || z.Herkunft == Importherkunft.GbXml) ausDatei++;
+                if (ImportherkunftWerte.IstDatei(z.Herkunft)) ausDatei++;
                 else if (ImportherkunftWerte.IstVorgabe(z.Herkunft)
                          && (z.Beleg?.Schluessel == GebaeudeVorgaben.BELEG_KLASSE || z.Beleg?.Schluessel == GebaeudeVorgaben.BELEG_FREI))
                     ausKlasse++;
@@ -301,6 +302,7 @@ namespace WindowsFormsApplication1
             {
                 case ImportherkunftWerte.GBXML: return Importherkunft.GbXml;
                 case ImportherkunftWerte.IFC: return Importherkunft.Ifc;
+                case ImportherkunftWerte.SQPROJ: return Importherkunft.Sqproj;
                 case ImportherkunftWerte.KATALOG: return Importherkunft.Katalog;
                 case ImportherkunftWerte.MANUELL: return Importherkunft.Manuell;
                 case ImportherkunftWerte.VORGABE: return Importherkunft.Vorgabe;
