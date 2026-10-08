@@ -318,7 +318,10 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
 
 ## 6. Referenzprojekt und Basis
 
-- **Basis R43** (angemeldet). Es ändern sich **1017, 1047, 1055, 1056** (Zonensperre: rund 10 Tage und 25 Stunden je
+- **Basis R43** `2026-10-07_R43_Kaelteseite_AK3K` ist eingefroren (vierundzwanzig Projekte, 759 CSV, 5 196 Skalare;
+  gegen R42 596 von 718 CSV byte-gleich, abweichend allein 1017, 1047, 1055, 1056 und 1058, 1059 neu; der Bivalenzpunkt
+  von 1047 und 1056 fällt von 17,79 auf −10,0 °C, weil an Kühltagen kein Raumheizbedarf mehr offen bleibt; 1059 steht
+  190 Stunden an der Kälteschranke; Einzelheiten in `Referenzlaeufe/LIESMICH.md`). Die Planung dazu: Es ändern sich **1017, 1047, 1055, 1056** (Zonensperre: rund 10 Tage und 25 Stunden je
   Projekt, 1.2) und **1058** (Zonensperre und Kreis: Kühlkanal folgt der Kreisreihe, +1,95 kWh; Kälteschranke, Komfort der
   Kühlseite, heute 43 Kh; Erdsonde und Rückspeisung); neu kommt **RP-AK3K**; die übrigen **18** Projekte bleiben
   byte-gleich. **1017, 1047 und 1058 stehen in der CI-Auswahl** von `kern.yml`; Einschalten beider Schalter und Basiswechsel

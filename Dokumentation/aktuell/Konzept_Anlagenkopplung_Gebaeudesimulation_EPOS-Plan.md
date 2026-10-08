@@ -2304,10 +2304,13 @@ Fallwechsel, benannter Fehler, Laufzeitprobe (Einzone Faktor 1,16 zu AK1) und ei
 mit Kernstufe AK3: 1047 Faktor 1,04, 1054 Faktor 1,21, 1056 Faktor 1,43 (Grenze 3). Die Abnahme am Rechenweg
 (Referenzlauf 22 von 22 gegen R40 byte-gleich) ist geführt. RP-AK3 ist Projekt 1058 (Kopie von 1056 auf Stufe AK3 mit
 Heizungspuffer 10 000 l an der Wärmepumpe und `Heizkurve_Raumeinfluss` 1,0), gehalten von
-`EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` samt dem Vergleich ohne Kreis gegen AK3; es steht in der Basis R42
-`2026-10-07_R42_Vorlaufinterpolation_AK3` und in der CI-Auswahl. Gerechnet: Wärmepumpe 56,28 MWh Wärme bei 13,19 MWh
-Strom (1056: 12,12 MWh Wärme), Puffer 414 Vollzyklen, im Mittel 3,21 Durchläufe je Stunde, 407 Fallwechsel, 0 Stunden
-Restbedarf.
+`EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` samt dem Vergleich ohne Kreis gegen AK3; es steht in der Basis R43
+`2026-10-07_R43_Kaelteseite_AK3K` und in der CI-Auswahl. Gerechnet: Wärmepumpe 56,28 MWh Wärme bei 13,19 MWh
+Strom (1056: 12,12 MWh Wärme), Puffer 414 Vollzyklen, im Mittel 3,21 Durchläufe je Stunde, 408 Fallwechsel, 0 Stunden
+Restbedarf, mit der Kälteseite im Kreis 37 Stunden an der Kälteschranke. RP-AK3K ist Projekt 1059 (Kopie von 1058 mit
+einer zu kleinen Kältemaschine von 10 kW und dem Kältespeicher aus 1055), gehalten von
+`EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`: 190 Stunden an der Kälteschranke, Kältedeckung 100 %; es steht in der
+Basis R43 und nicht in der CI-Auswahl.
 
 ### 11.3 Datenbankfälle
 
@@ -2421,8 +2424,8 @@ Stunden an allen Tagen, damit sie die Sperre nicht auffangen; kein Pufferspeiche
 1 249 Stunden an der Schranke, 1 854 Komfort-Unterschreitungsstunden (1047: 875), 3 883,19 Kh (1047: 1 281,04), längste
 Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh, im Protokoll der Hinweis der Näherung des Profilwegs. Die
 Einfrierregel „gesäte Auslegungsdaten der Übergabe" umfasst den Anlagenfahrplan eines gekoppelten Referenzprojekts
-(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-07_R42_Vorlaufinterpolation_AK3` mit
-dreiundzwanzig Projekten; dort rechnet die Wärmepumpe von 1047 und 1056 an einer Erdsonde und interpoliert ihre Kennlinie
+(Sperrzeit samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`). Die Basis ist `2026-10-07_R43_Kaelteseite_AK3K` mit
+vierundzwanzig Projekten; dort rechnet die Wärmepumpe von 1047 und 1056 an einer Erdsonde und interpoliert ihre Kennlinie
 über den Vorlauf, die Komfortzahlen oben bleiben gleich; 1056 steht nicht in der CI-Auswahl und wird von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`
 gehalten.
 
