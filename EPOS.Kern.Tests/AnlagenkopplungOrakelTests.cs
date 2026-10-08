@@ -728,6 +728,79 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>O1kk</b> (KK2; Entwurf KK 2.4, 2.5, Festlegung 11): die Kälteschranke am STUNDENvorlauf mit der echten Kette —
+        /// Kühlkennlinie als Schar über alle Vorläufe, Wärmepumpe als Kapazität am Vorlauf (<c>AbfragenAmVorlauf</c>),
+        /// Kälteschranke mit Vorlauf-Argument. Der Vorlauf folgt der Raumluft des letzten Durchlaufs,
+        /// V(θ_i) = clamp(11 °C + 2 K/K · (θ_i − θ_kühl), 7 °C, 18 °C), und kreuzt die Stützstelle 12 °C; die Kälteleistung ist
+        /// stetig über den Vorlauf und steigt mit ihm, also mit der Raumluft (Muster O1k) — g(P) = P − P_kap(V(θ_i(P))) ist streng
+        /// monoton, der Fixpunkt eindeutig. Der Kreis trifft je Stunde die Bisektionslösung auf 0,0001 K und 0,1 W.
+        /// </summary>
+        [Fact]
+        public void O1kk_Kaelteschranke_am_Stundenvorlauf_trifft_die_Bisektionsloesung()
+        {
+            double spitzeW = KuehlspitzeW();
+            const double V0 = 12.0, VB = 11.0, K_VORLAUF = 2.0, V_MIN = 7.0, V_MAX = 18.0, T_QUELLE = 27.5;
+            Func<double, double> vorlaufVon = theta => Math.Min(V_MAX, Math.Max(V_MIN, VB + K_VORLAUF * (theta - KUEHL_SOLL_C)));
+            // P(12 °C, 27,5 °C) = skala · 1,15 · 0,925 = halbe Kühlspitze.
+            List<KuehlkennlinienZeile> zeilen = KaelteStundenvorlaufTests.Zeilen(0.5 * spitzeW / 1000.0 / (1.15 * 0.925));
+            var wp = new Kaelteerzeuger
+            {
+                Bezeichner = "WP", Modulindex = 0, Kennlinie = Kuehlkennlinie.Bilden(zeilen, (int)V0, true),
+                Schar = new KuehlkennlinienSchar(zeilen), KuehlVorlaufC = V0,
+                Quelltemperatur = Enumerable.Repeat(T_QUELLE, 8760).ToArray(), Zeitanteil = Enumerable.Repeat(1.0, 8760).ToArray(),
+            };
+            var schranke = new Kaelteschranke(new IKaelteerzeugerkapazitaet[] { new WaermepumpeKaeltekapazitaet(wp, null, null, true) },
+                                              null, V0);
+            Func<int, double, double> pVon = (h, theta) => schranke.Angebot(h, default, vorlaufVon(theta)).LeistungKw * 1000.0;
+            GebaeudeStepper s = KuehlStepper();
+            var kreis = new Anlagenkopplung(new[] { new Kopplungsgebaeude(0, 1, "Probe", s, 1.0) },
+                                            new IErzeugerkapazitaet[] { new Kennkapazitaet(_ => WAERME_OHNE_GRENZE_KW, 40.0) }, null)
+            {
+                Kaelteschranke = schranke,
+                Kaeltekorrektur = (h, a, l) => l == null ? a : schranke.Angebot(h, default, vorlaufVon(l[0][0].ThetaAirMittel)),
+            };
+
+            int gegriffen = 0, durchlaeufeMax = 0, unter = 0, ueber = 0;
+            double dThetaMax = 0.0, dPhiMax = 0.0;
+            for (int h = 0; h < 8760; h++)
+            {
+                Kopplungsstunde k = kreis.Stunde(h, double.NaN, default);
+                Stundenergebnis ist = k.Loesung[0][0];
+                if (k.KaelteschrankeGreift)
+                {
+                    double G(double pW) => pW - pVon(h, KaelteSchritt(s, h, pW).ThetaAirMittel);
+                    double lo = 0.0, hi = 4.0 * spitzeW;
+                    Assert.True(G(lo) < 0.0 && G(hi) > 0.0, "Stunde " + h + ": keine Klammer");
+                    for (int i = 0; i < 80; i++)
+                    {
+                        double m = 0.5 * (lo + hi);
+                        if (G(m) > 0.0) hi = m; else lo = m;
+                    }
+                    Stundenergebnis soll = KaelteSchritt(s, h, 0.5 * (lo + hi));
+                    dThetaMax = Math.Max(dThetaMax, Math.Abs(ist.ThetaAirMittel - soll.ThetaAirMittel));
+                    dPhiMax = Math.Max(dPhiMax, Math.Abs(ist.KuehlleistungW - soll.KuehlleistungW));
+                    double v = vorlaufVon(soll.ThetaAirMittel);
+                    if (v < V0) unter++;
+                    else if (v > V0) ueber++;
+                    gegriffen++;
+                    Stundenergebnis wieder = KaelteSchritt(s, h, k.Kaelteangebot.Value.LeistungKw * 1000.0);
+                    Assert.Equal(Bits(ist.ThetaAirMittel), Bits(wieder.ThetaAirMittel));
+                }
+                durchlaeufeMax = Math.Max(durchlaeufeMax, k.Durchlaeufe);
+                kreis.Festschreiben(h);
+            }
+            _aus.WriteLine("O1kk: Kälteschranke gegriffen {0} h (Vorlauf unter / über 12 °C {1} / {2}), Durchläufe max {3} (Mittel {4:0.000}), " +
+                           "|Δθ| {5:0.0000000} K, |ΔΦc| {6:0.000000} W, Fallwechsel {7}", gegriffen, unter, ueber, durchlaeufeMax,
+                           kreis.DurchlaeufeMittel, dThetaMax, dPhiMax, kreis.FallWechsel);
+            Assert.True(gegriffen > 100, "Kälteschranke greift zu selten: " + gegriffen);
+            Assert.True(unter > 0 && ueber > 0, "der Vorlauf kreuzt die Stützstelle nicht");
+            Assert.True(durchlaeufeMax > 2, "der Vorlauf wirkt nicht zurück");
+            Assert.True(durchlaeufeMax <= Anlagenkopplung.HOECHSTZAHL);
+            Assert.True(dThetaMax <= TOL_THETA_KAELTE_K, "Raumluft " + dThetaMax);
+            Assert.True(dPhiMax <= TOL_PHI_W, "Kühlleistung " + dPhiMax);
+        }
+
+        /// <summary>
         /// <b>O2k</b>: ein Kälteerzeuger konstanter Leistung — der Kreis rechnet je Stunde einen Durchlauf, Bit für Bit wie
         /// „AK2 mit Kälteschranke = P“; die Kältestunde danach (Kältekaskade mit einer Wärmepumpe im Kühlbetrieb derselben
         /// konstanten Leistung) lässt keinen Kälte-Restbedarf: „Kälte-Restbedarf 0“ im einfachen Fall.
