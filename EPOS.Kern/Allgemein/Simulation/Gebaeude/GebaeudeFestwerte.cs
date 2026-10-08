@@ -315,6 +315,27 @@ namespace WindowsFormsApplication1
         /// <summary>Größte zulässige Auslegungs-Raumtemperatur der Kühlübergabe [°C] (E37).</summary>
         internal const double KUEHL_AUSLEGUNG_RAUM_MAX = 30.0;
 
+        /// <summary>
+        /// <b>Mindestabstand des Kühlkurvenvorlaufs unter dem Kühlsollwert der Stunde</b> [K] (Entwurf KK, 2.1 und
+        /// Festlegung 4): Kein Vorlauf der Kühlkurve liegt wärmer als θ_max − 2,5 K, sonst wäre die Übergabeleistung
+        /// null. Bestimmt per Probe (<c>KuehlkurveTests.Mindestabstand_Probe</c>): der kleinste Halbkelvinschritt, bei dem
+        /// die voll geöffnete Kühlübergabe jeder Art mit ihren Vorgaben (Kühldecke und Flächenkühlung 16/19 °C, n 1,1;
+        /// Gebläsekonvektor 7/12 °C, n 1,0) bei Raumluft am Kühlsollwert über den ganzen Bereich der
+        /// Auslegungs-Raumtemperatur 20 … 30 °C noch <see cref="KUEHLKURVE_PROBE_LEISTUNGSANTEIL_MIN"/> ihrer
+        /// Nennleistung liefert (schwächster Fall Gebläsekonvektor bei 30 °C: 2,0 K → 8,7 %, 2,5 K → 10,9 %).
+        /// </summary>
+        internal const double KUEHLKURVE_FUSSPUNKT_ABSTAND_K = 2.5;
+
+        /// <summary>Das Kriterium der Probe zum <see cref="KUEHLKURVE_FUSSPUNKT_ABSTAND_K"/>: Leistungsanteil der voll
+        /// geöffneten Übergabe [–] bei Raumluft am Kühlsollwert.</summary>
+        internal const double KUEHLKURVE_PROBE_LEISTUNGSANTEIL_MIN = 0.10;
+
+        /// <summary>Kleinster zulässiger Raumeinfluss der Kühlkurve [K/K] (Entwurf KK, Festlegung 7; wie die Heizseite).</summary>
+        internal const double KUEHLKURVE_RAUMEINFLUSS_MIN = 0.0;
+
+        /// <summary>Größter zulässiger Raumeinfluss der Kühlkurve [K/K] (Entwurf KK, Festlegung 7; wie die Heizseite).</summary>
+        internal const double KUEHLKURVE_RAUMEINFLUSS_MAX = 10.0;
+
         // Prüfregeln der Eingaben (Dialogtabelle 9.1) — der Kern prüft dieselben Grenzen hart,
         // damit eine Eingabe, die am Dialog vorbei in die Datenbank kommt, benannt abbricht.
 
