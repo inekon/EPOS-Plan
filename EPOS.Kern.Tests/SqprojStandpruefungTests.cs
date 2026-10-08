@@ -164,7 +164,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf a = Ablauf();
             Assert.True(a.AufbauquelleWaehlen(Aufbauquelle.Ifc));
             GebaeudeBauteilvorschlag v = Vorschlag(a);
-            // Der heutige Stand: derselbe Vorschlag mit einem Stand ohne Standprüfung (E97).
+            // Der heutige Stand: derselbe Vorschlag mit einem Stand ohne Standprüfung (E98).
             SqprojStand p = a.Projektdatei;
             GebaeudeBauteilvorschlag heute = Vorschlag(a, new SqprojStand(p.Dateiname, p.Hash, p.Bytes, p.Abbild, p.Abgleich, p.Meldungen, null));
             Assert.Equal(heute.Zeilen.Select(z => (z.Kennung, z.Bauteil.U_Wert, z.Aufbaurang, z.HerkunftU)),

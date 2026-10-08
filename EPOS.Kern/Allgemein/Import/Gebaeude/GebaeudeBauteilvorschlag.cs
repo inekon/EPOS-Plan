@@ -113,7 +113,7 @@ namespace WindowsFormsApplication1
         internal Bauteilzuordnungsstufe Stufe => Bauteilzuordnung.Stufe(this);
 
         /// <summary>
-        /// Woher der Aufbau der Zeile stammt (Rangfolge E97, BA-4b): Projektdatei, Katalog der Projektdatei, IFC-Schichten oder
+        /// Woher der Aufbau der Zeile stammt (Rangfolge E98, BA-4b): Projektdatei, Katalog der Projektdatei, IFC-Schichten oder
         /// Ersatz/ohne Aufbau; <see cref="Aufbaurang.Keiner"/> für transparente Zeilen.
         /// </summary>
         internal Aufbaurang Aufbaurang { get; set; }
@@ -513,7 +513,7 @@ namespace WindowsFormsApplication1
         /// <summary>F — {0} Σ Zonen [m²], {1} Σ Räume [m²]: Die Zonenflächen summieren nicht die Raumflächen (5.3).</summary>
         internal const string ZONENFLAECHE_ABWEICHUNG = "IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG";
 
-        // ---- Aufbauten aus der Projektdatei (BA-4b, E97) --------------------------------------
+        // ---- Aufbauten aus der Projektdatei (BA-4b, E98) --------------------------------------
         /// <summary>Zuordnung der Bauteile zur Projektdatei: über GUID, über GlobalId, ohne Gegenstück, mehrdeutig.</summary>
         internal const string PD_ZUORDNUNG = "IMP_BAUTEIL_PROT_PD_ZUORDNUNG";
         /// <summary>Rang 1 (Aufbau der Projektdatei, U passt): Zahl, Fläche.</summary>
@@ -524,7 +524,7 @@ namespace WindowsFormsApplication1
         internal const string PD_RANG3 = "IMP_BAUTEIL_PROT_PD_RANG3";
         /// <summary>Rang 4 (Ersatzaufbau bzw. ohne Aufbau): Zahl, Fläche.</summary>
         internal const string PD_RANG4 = "IMP_BAUTEIL_PROT_PD_RANG4";
-        /// <summary>U der Projektdatei weicht vom U der IFC ab (es gilt der IFC-Stand, E97): Zahl, Wertepaare.</summary>
+        /// <summary>U der Projektdatei weicht vom U der IFC ab (es gilt der IFC-Stand, E98): Zahl, Wertepaare.</summary>
         internal const string PD_U_ABWEICHUNG = "IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG";
         /// <summary>Mehrere verschiedene Aufbauten des Katalogs treffen das U der IFC (nicht geraten): Zahl, U-Werte.</summary>
         internal const string PD_KATALOG_MEHRDEUTIG = "IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG";
@@ -731,7 +731,7 @@ namespace WindowsFormsApplication1
         /// <summary>Lief der Namensabgleich der Baustoffe (ein <see cref="Baustoffabgleich"/> war übergeben)?</summary>
         internal bool AbgleichAktiv { get; private set; }
 
-        /// <summary>Hat der Lauf die Aufbauten einer Projektdatei betrachtet (Rangfolge E97/E98, BA-4b)? Ohne sie bleibt der Rang der Zeilen ohne Anzeige.</summary>
+        /// <summary>Hat der Lauf die Aufbauten einer Projektdatei betrachtet (Rangfolge E98, BA-4b)? Ohne sie bleibt der Rang der Zeilen ohne Anzeige.</summary>
         internal bool MitProjektdatei { get; private set; }
 
         /// <summary>
@@ -907,7 +907,7 @@ namespace WindowsFormsApplication1
             /// <summary>Die gelesene Projektdatei mit Bauteiltabellen (BA-4b); <c>null</c> = ohne.</summary>
             internal SqprojStand Projektdatei { get; init; }
 
-            // Die Aufbauwahl der Projektdatei (E97 bzw. Aufbauquelle „Projektdatei“); null ohne Projektdatei.
+            // Die Aufbauwahl der Projektdatei (E98 bzw. Aufbauquelle „Projektdatei“); null ohne Projektdatei.
             private SqprojAufbauwahl _wahl;
 
             /// <summary>Das wirksame U eines Bauteils der Datei: mit Aufbauquelle „Projektdatei“ ihr U (über die GUID), sonst das der Datei.</summary>
@@ -2013,7 +2013,7 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// <b>Der wirksame Aufbau eines Bauteils</b> nach der Rangfolge E97 (BA-4b): mit Projektdatei zuerst ihr Aufbau (Rang 1
+            /// <b>Der wirksame Aufbau eines Bauteils</b> nach der Rangfolge E98 (BA-4b): mit Projektdatei zuerst ihr Aufbau (Rang 1
             /// oder 2, <see cref="SqprojAufbauwahl"/>), sonst die Schichten der IFC (Rang 3), sonst keiner (Rang 4 — Ersatzaufbau
             /// bzw. ohne). Setzt <see cref="GebaeudeBauteilzeile.Aufbaurang"/>.
             /// </summary>
@@ -2572,7 +2572,7 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// Die Meldungen der Aufbauwahl aus der Projektdatei (BA-4b, E97): Zuordnung, je Rang Zahl und Fläche, Abweichungen
+            /// Die Meldungen der Aufbauwahl aus der Projektdatei (BA-4b, E98): Zuordnung, je Rang Zahl und Fläche, Abweichungen
             /// des U zwischen Projektdatei und IFC (es gilt der IFC-Stand) und mehrdeutige Katalogtreffer. Ohne Projektdatei nichts.
             /// </summary>
             private void ProjektdateiMeldungen()

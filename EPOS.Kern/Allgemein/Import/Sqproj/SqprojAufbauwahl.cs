@@ -6,7 +6,7 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Woher der Aufbau eines Bauteils stammt</b> — die Rangfolge nach Entscheid E97 (Konzept Bauteilaufbau 5.5, BA-4b); mit der
+    /// <b>Woher der Aufbau eines Bauteils stammt</b> — die Rangfolge nach Entscheid E98 (Konzept Bauteilaufbau 5.5, BA-4b); mit der
     /// Aufbauquelle „Projektdatei“ (Anwenderentscheid E108 vom 08.10.2026) trägt Rang 1 den Aufbau der Projektdatei ohne U-Abgleich.
     /// </summary>
     internal enum Aufbaurang
@@ -48,9 +48,9 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Zuordnung und Rangfolge der Aufbauten aus der Projektdatei</b> (BA-4b; Konzept Bauteilaufbau 5.5, Befund Projektdatei
     /// N.6/N.7/N.10). Plattformfrei, ohne Datenbank, schreibt nichts.
-    /// <para><b>Welcher Stand gilt</b> (Anwenderentscheid E108 vom 08.10.2026, ersetzt E97 als feste Vorgabe): Beim Weg „IFC + Projektdatei“
+    /// <para><b>Welcher Stand gilt</b> (Anwenderentscheid E108 vom 08.10.2026, schränkt die feste Vorgabe E98 ein): Beim Weg „IFC + Projektdatei“
     /// prüft der Import zuerst, ob beide Dateien zum selben Projektstand gehören (<see cref="Standpruefung"/>). Schlägt die Prüfung
-    /// nicht an oder wählt der Anwender „IFC“ (<see cref="Aufbauquelle.Ifc"/>), gilt die Rangfolge E97 unten — der Stand der IFC geht
+    /// nicht an oder wählt der Anwender „IFC“ (<see cref="Aufbauquelle.Ifc"/>), gilt die Rangfolge E98 unten — der Stand der IFC geht
     /// vor, ein Aufbau der Projektdatei nur, wenn sein U zum U der IFC passt. Wählt er „Projektdatei“ (<see cref="Aufbauquelle.Projektdatei"/>),
     /// gilt je Bauteil der zugewiesene Aufbau der Projektdatei ohne U-Abgleich (Rang 1) und ihr U (<see cref="SqprojStand.UWirksam"/>);
     /// solange die Wahl offen ist, ist der Zuordnungsstand unvollständig.</para>
@@ -71,7 +71,7 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class SqprojAufbauwahl
     {
-        /// <summary>Die Toleranz des U-Abgleichs (E97): |U₁/U₂ − 1| ≤ 1 %.</summary>
+        /// <summary>Die Toleranz des U-Abgleichs (E98): |U₁/U₂ − 1| ≤ 1 %.</summary>
         internal const double U_TOLERANZ = 0.01;
 
         /// <summary>Ein „gleiches“ U (Befund N.7): |U₁/U₂ − 1| ≤ 0,01 % — entscheidet unter mehreren Katalogtreffern im Band.</summary>

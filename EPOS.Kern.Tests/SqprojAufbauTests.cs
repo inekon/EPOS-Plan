@@ -102,7 +102,7 @@ namespace EPOS.Kern.Tests
 
     /// <summary>
     /// <b>BA-4b — Aufbauten aus der HottCAD-Projektdatei</b> (Konzept Bauteilaufbau 5.5, Befund Projektdatei N.1–N.10,
-    /// Entscheid E97): Leser der vier Bauteiltabellen (Platzhalter, Null-Kennung, c · 1 000, Richtung, zwei Räume je Zeile,
+    /// Entscheid E98): Leser der vier Bauteiltabellen (Platzhalter, Null-Kennung, c · 1 000, Richtung, zwei Räume je Zeile,
     /// fehlende Tabellen), Zuordnung über die GUID mit Ausweich GlobalId, Rangfolge mit U-Abgleich samt mehrdeutigem
     /// Katalogtreffer, und der Bauteilvorschlag mit allen vier Rangstufen.
     /// </summary>

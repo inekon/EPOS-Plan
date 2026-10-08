@@ -130,7 +130,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Rang des Aufbaus nach der Rangfolge E97/E98 (BA-4b) als Anzeigetext; leer ohne Rang oder wenn der Lauf keine
+        /// Der Rang des Aufbaus nach der Rangfolge E98 (BA-4b) als Anzeigetext; leer ohne Rang oder wenn der Lauf keine
         /// Projektdatei betrachtet hat (<paramref name="mitProjektdatei"/>) — dann ist Rang 3/4 keine Auskunft.
         /// </summary>
         internal static string Rangtext(Aufbaurang r, bool mitProjektdatei) => !mitProjektdatei && r != Aufbaurang.Projektdatei && r != Aufbaurang.Projektkatalog
@@ -239,7 +239,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Steckbrief einer Zeile des Vorschlags mit ihrem Aufbau (<c>null</c> = keiner); mit
-        /// <paramref name="mitProjektdatei"/> trägt er den Rang der Zeile (E97/E98).
+        /// <paramref name="mitProjektdatei"/> trägt er den Rang der Zeile (E98).
         /// </summary>
         internal static BauteilsteckbriefDaten Steckbrief(GebaeudeBauteilzeile z, GebaeudeAufbauzeile a, bool mitProjektdatei = false)
             => MitBefund(SteckbriefOhneBefund(z, a, mitProjektdatei), z.Befundgrund);
