@@ -2,8 +2,8 @@
 
 **Auftrag des Anwenders vom 07.10.2026** („Übergabe als begrenzender Faktor der Wärmepumpe") ·
 **Stand 07.10.2026 — Entwurf, nicht entschieden** · **Fassung 2, 08.10.2026: Rücklaufgrenze verallgemeinert, andere
-Erzeuger** · Codestand `feb8db420` (Zweig `ios_migration_september`,
-Schemastand 198, Referenzbasis `2026-10-07_R42_Vorlaufinterpolation_AK3`) · Mockup
+Erzeuger** · Codestand `da03e5333` (Zweig `ios_migration_september`,
+Schemastand 201, Referenzbasis `2026-10-07_R43_Kaelteseite_AK3K`) · Mockup
 `Mockups/Waermepumpe_Bivalenz_Uebergabe.html` · Fragen **UB‑Q1 bis UB‑Q11** (Abschnitt 10).
 
 Ziel: Eine Wärmepumpe liefert in EPOS-Plan heute so viel, wie ihr Kennfeld an der gewählten Stützstelle hergibt —
@@ -454,7 +454,7 @@ Gerätespalten wie die übrigen `Tab_WP`-Spalten.
 das Vorlaufangebot hebt (B4 statt voller Kennfeldleistung) — zu prüfen an **1047, 1054, 1056 und 1058**; ohne
 Kopplung bleibt jedes Projekt byte-gleich. Neue Basis im selben Schritt, begründet in
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Neues Referenzprojekt als **Kopie von 1056**
-(nächste freie Projektnummer, heute 1059): Gebäude mit Heizkörpern 75/60 °C, Wärmepumpe mit `Vorlauf_Max` 55 °C
+(nächste freie Projektnummer, heute 1060): Gebäude mit Heizkörpern 75/60 °C, Wärmepumpe mit `Vorlauf_Max` 55 °C
 und `Vorwaermbetrieb` 1, Kessel in Reihe, Nachtsperre und Zeitprogramme von 1056 zurückgesetzt, damit die Wirkung
 allein der Übergabegrenze gehört (UB‑Q7). Neue Einfrierregel in [`CLAUDE.md`](../../CLAUDE.md): gesäte
 Spreizungs- und Einbindungsdaten eines Referenzprojekts (die sieben Gerätespalten seiner Wärmepumpe, `Einbindung`,
