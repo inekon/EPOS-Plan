@@ -217,6 +217,7 @@ Im Dialog Wärmequelle Erdreich lassen sich Abstand, Anordnung, Bohrlochdurchmes
 - Die Auslegungsprüfung Erdreich rechnet je Anlage mit Erdreichquelle, auch wenn daneben eine Luft-Wasser-Wärmepumpe arbeitet. (#806)
 - Die Übernahme einer Komponente aus einem anderen Projekt bringt Betriebsführung, Wärmesenken, Pufferverbund, Stränge samt Modulen und Wechselrichtern sowie Sperrzeiten der Anlage mit und meldet Bezüge, die es im Zielprojekt nicht gibt.
 - Bei der Übernahme von Komponenten aus einem anderen Projekt bleiben die Kostenpositionen der ersetzten Anlagen erhalten und hängen an den neuen Anlagen; Positionen ohne Gegenstück erscheinen als ‚ohne Anlagenzuordnung‘.
+- In den Projektdialogen der Anlagen, Gebäude und Bedarfsprofile sowie in der Vorlagenverwaltung der Konditionierung lässt sich das Schloss eines Katalogsatzes direkt setzen und aufheben; gesperrte Sätze werden nie überschrieben. (#829)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
