@@ -1,7 +1,8 @@
 # Umsetzungskonzept: Übergabegrenze und Bivalenz der Wärmepumpe in EPOS-Plan
 
 **Auftrag des Anwenders vom 08.10.2026** („Erstelle ein Umsetzungskonzept zur Integration in EPOS-Plan") ·
-**Stand 08.10.2026 — Fassung 1, Umsetzungsentwurf, zur Abnahme durch den Anwender** · Codestand `b1a34adca`
+**Stand 08.10.2026 — Fassung 1, Umsetzungsentwurf, zur Abnahme durch den Anwender; Entscheide U‑1, U‑2 und U‑4
+sowie UB‑Q1–Q11 (nach Empfehlung, UB‑Q3 b) vom 08.10.2026 eingearbeitet** · Codestand `b1a34adca`
 (`origin/ios_migration_september`) · Schemastand 201 (`Ak3KSchema`) · Referenzbasis
 `2026-10-07_R43_Kaelteseite_AK3K` · Fachkonzept
 [`Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) (Fassung 2) ·
@@ -11,7 +12,8 @@ Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html`.
 Bedienung, Vorgabewerte, Prüfungen, Fragen UB‑Q1 bis UB‑Q11). Dieses Papier sagt, *wie, wo, in welcher Reihenfolge
 und mit welcher Abnahme* es gebaut wird. Es wiederholt keinen Fachinhalt; Verweise der Form „FK 4.3" zeigen auf
 Abschnitte des Fachkonzepts. Eigene Ableitungen sind mit „(Abl.)" gekennzeichnet. Wo dieses Papier vom Fachkonzept
-abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4) und wird mit den Fragen beim Anwender vorgelegt.
+abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4); U‑1, U‑2, U‑3 und U‑4 sind entschieden, ebenso
+UB‑Q1 bis UB‑Q11 (08.10.2026, nach Empfehlung, UB‑Q3 b).
 
 ---
 
@@ -24,9 +26,9 @@ abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4) und wird mit 
 2. **Leere Felder rechnen wie heute.** Jede neue Spalte ist nullbar; NULL ist der Bestandsweg. Kein
    Referenzprojekt außer dem neuen 1060 ändert sein Ergebnis — der Referenzlauf gegen R43 ist für die 24
    Bestandsprojekte byte-gleich bzw. innerhalb der Toleranz unverändert. Das ist schärfer als FK 5.3 (dort ändern
-   1047, 1054, 1056, 1058) und wird über U‑1 erreicht.
-3. **Offene Entscheide werden zu Umsetzungsvorgaben.** Gebaut wird nach der Empfehlung des Fachkonzepts; jede
-   Gegenoption bleibt über ein Feld oder einen Schalter erreichbar, ohne Umbau (Tafel unten).
+   1047, 1054, 1056, 1058) und wird über U‑1 erreicht (entschieden 08.10.2026: a, Opt-in).
+3. **UB‑Q1 bis UB‑Q11 sind am 08.10.2026 nach Empfehlung entschieden (UB‑Q3 b).** Die Schalter und Felder
+   bleiben, damit die andere Wahl später ohne Umbau greift (Tafel unten).
 4. **Plattformfrei und deterministisch.** Feste Iterationszahl, Startwert aus der Vorstunde, keine Parallelsummen;
    iOS erbt den Rechenweg ohne eigene Zeile (die iOS-Hülle wird nicht berührt, kein iOS-Lauf nötig).
 
@@ -46,24 +48,42 @@ abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4) und wird mit 
 | UB‑Q10 Mindestrücklauf Kessel | a: Prüfhinweis im Bericht ohne Feld | b: späterer Schemaschritt |
 | UB‑Q11 Stufe „Vorwärmer" | a: in UB‑E2 | b: Stufe bleibt ungenutzt, solange `Vorwaermvorlauf` NaN ist |
 
-**Abweichungen vom Fachkonzept (zur Entscheidung mit den Fragen).**
+**Abweichungen vom Fachkonzept** (U‑1, U‑2, U‑3 und U‑4 entschieden am 08.10.2026).
 
-- **U‑1 Wirksamkeit an `Einbindung` gebunden (Abl.).** Die Bereichsrechnung B0–B4, die Hydraulikgrenze und die
+- **U‑1 Wirksamkeit an `Einbindung` gebunden (Abl.). Entschieden 08.10.2026: a (Opt-in).** Die Bereichsrechnung B0–B4, die Hydraulikgrenze und die
   abgeleitete Rücklaufgrenze wirken nur für eine Wärmepumpe, deren `Einbindung` gesetzt ist. `Einbindung` NULL ist
-  der Bestandsweg (Kennfeld am Vorlauf wie heute); die Herleitungszeile sagt „Übergabegrenze nicht wirksam —
-  Einbindung wählen". Neue Anlagen bekommen die Einbindung beim Anlegen vorbelegt (FK 5.1: `PUFFER` bei
-  Pufferzuordnung, sonst `DIREKT`). Damit bleiben 1047, 1054, 1056, 1058 unverändert. Gegenoption (FK 5.3, B4 für
-  alle gekoppelten Anlagen): ein späterer Datenschritt belegt `Einbindung` in Bestandszeilen — dann neue Basis
-  mit Erklärung je Projekt nach FK 8.3.
-- **U‑2 Kein Kältemittelfeld.** `Tab_WP` trägt `Typ` (Luft-, Sole-, Wasser-Wasser) und `Bauart` (Split,
-  Monoblock), aber kein Kältemittel (Befund an der Testdatenbank, 26 bzw. 28 Spalten). Die Schnellwahl ist eine
-  Auswahl im Dialog, die Werte schreibt (FK 5.1); sie merkt sich keine Klasse.
-- **U‑3 Namensnähe am BHKW.** `Tab_BHKW` trägt schon `Vorlauf` und `Ruecklauf` (Auslegungspaar des Moduls,
-  8 von 15 Zeilen belegt). Die neue Spalte heißt deshalb wie im Fachkonzept `Ruecklauf_Max`; die Hilfe und der
-  Dialog nennen den Unterschied.
-- **U‑4 Stufenstunden des Kessels.** Die Rücklaufstufen des Kessels stehen heute nur im Protokollhinweis
-  `SIMENG_KESSEL_BRENNWERT_BETRIEB`, nicht in einer Ergebnisspalte. Die Stufe „Vorwärmer" kommt dort hinzu (neuer
-  Platzhalter in beiden Sprachen); eine Ergebnisspalte am Kessel legt der Schritt nicht an (FK 5.1 sinngemäß).
+  der Bestandsweg (Kennfeld am Vorlauf wie heute); die Herleitungszeile sagt „Einbindung nicht gesetzt —
+  Übergabegrenze ruht". Neue Anlagen bekommen die Einbindung beim Anlegen vorbelegt (FK 5.1: `PUFFER` bei
+  Pufferzuordnung, sonst `DIREKT`). **Folgen:** keine Ergebnisänderung bei 1047, 1054, 1056, 1058 und den übrigen
+  Bestandsprojekten; ihre Werte in R43 bleiben gültig, die Folgebasis R44 kommt allein um 1060 hinzu (4.4, 8.3).
+  Gegenoption (FK 5.3, B4 für alle gekoppelten Anlagen), nicht beauftragt: ein späterer Datenschritt belegt
+  `Einbindung` in Bestandszeilen — dann neue Basis mit Erklärung je Projekt nach FK 8.3.
+- **U‑2 Katalogfeld `Kaeltemittel`. Entschieden 08.10.2026.** `Tab_WP` trägt `Typ` (Luft-, Sole-, Wasser-Wasser)
+  und `Bauart` (Split, Monoblock), bisher kein Kältemittel (Befund an der Testdatenbank, 26 bzw. 28 Spalten). Neue
+  Gerätespalte `Kaeltemittel` an `Tab_WP` und `Tab_WP_STAMM`: TEXT, nullbar, **ohne** CHECK-Liste — die Werteliste
+  führt der Kern als Klappliste in `Bivalenzvorgaben`, damit ein neues Kältemittel ohne Schemaschritt hinzukommt.
+  Codes `R410A`, `R32`, `R290`, `R744`, `R134a`, `R1234ze(E)`, `R407C`, `R454C`, `R455A`, `R1233zd(E)`,
+  `SONSTIGES`; Anzeige in beiden Sprachen. Wirkung: (1) Die Schnellwahl speichert die Klasse und füllt **leere**
+  Felder mit den Vorgaben der Klasse (Höchstvorlauf, Spreizungen, Rücklaufgrenze, bei R744 Bezugsrücklauf und
+  Abwertung) — Herkunft „Vorgabe nach Kältemittel"; gefüllte Felder bleiben. (2) Leeres `Kaeltemittel` rechnet mit
+  den allgemeinen (unterkritischen) Vorgaben wie bisher. (3) Katalogabgleich, Projektpaket,
+  Auslieferungsvorlage/Katalogpaket und Duplizieren behandeln die Spalte wie die übrigen neuen Gerätespalten (4.2,
+  4.3). (4) Der VDI‑3805-Import liest kein Kältemittel; das Feld bleibt beim Import leer (4.3). Denselben
+  Spaltennamen trägt `Tab_Kaeltemaschine` (`KaeltemaschineSchema.SPALTE_KAELTEMITTEL`, freier Text) — gleiche
+  Bedeutung (Abl.).
+- **U‑3 Namensnähe am BHKW. Entschieden 08.10.2026: a.** `Tab_BHKW` trägt schon `Vorlauf` und `Ruecklauf`
+  (Auslegungspaar des Moduls, 8 von 15 Zeilen belegt) — eine eigene, vom Rücklaufgrenzfeld getrennte Größe:
+  höchster Rücklauf ist beim BHKW anlagenbedingt eine Abschaltung, die Auslegungsrücklauftemperatur muss nur
+  darunter liegen, ist aber eine andere Vorgabe. `Ruecklauf_Max` bleibt der Name — gleicher Name und gleiche
+  Bedeutung „anlagenbedingte Abschaltgrenze des Motorkühlkreises" wie an der Wärmepumpe (Stunde mit Rücklauf ≥
+  Grenze: das BHKW liefert nichts, Grund `RUECKLAUF_MAX`); Abgrenzung zum Auslegungspaar `Vorlauf`/`Ruecklauf` über
+  die Dialogbeschriftung „Höchster Rücklauf (Abschaltgrenze)" gegenüber „Rücklauf (Auslegung)", die Prüfregel
+  Auslegungsrücklauf `Ruecklauf` unter der Abschaltgrenze `Ruecklauf_Max` (sonst Hinweis, kein Abbruch) und die
+  Vorgabe bei Neuanlage 70 °C.
+- **U‑4 Stufenstunden des Kessels. Entschieden 08.10.2026: Empfehlung.** Die Rücklaufstufen des Kessels stehen
+  heute nur im Protokollhinweis `SIMENG_KESSEL_BRENNWERT_BETRIEB`, nicht in einer Ergebnisspalte. Die Stufe
+  „Vorwärmer" (`Ruecklaufstufe.Vorwaermer`) kommt dort mit ihrer Stundenzahl hinzu (neuer Platzhalter in beiden
+  Sprachen); keine neue Ergebnisspalte am Kessel — eine Ergebnisspalte erst, wenn der Bericht sie verlangt.
 
 ## 2 Ausgangslage im Code
 
@@ -98,8 +118,8 @@ abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4) und wird mit 
 
 | Klasse | Aufgabe | Fachkonzept |
 |---|---|---|
-| `Bivalenzvorgaben` | Vorgabewerte der Tafel FK 6.3 als Konstanten mit Quelle; Schnellwahl je Kältemittelklasse als Liste (Text, Höchstvorlauf, Rücklaufgrenze, Bezug, Abwertung) | 6.3, UB‑Q6 |
-| `Geraetegrenzen` | liest die sieben Gerätespalten (NULL → Vorgabe), liefert σ_A, σ_max, σ_min, ṁ_min, θ_R,grenz samt Herkunft je Wert (`Katalog`/`Vorgabe`/`abgeleitet`) | 4.4, 5.1 |
+| `Bivalenzvorgaben` | Vorgabewerte der Tafel FK 6.3 als Konstanten mit Quelle; Klappliste der Kältemittelcodes (U‑2) und Vorgaben je Kältemittelklasse als Liste (Code, Höchstvorlauf, Spreizungen, Rücklaufgrenze, Bezug, Abwertung); unbekannter Code und `SONSTIGES` → allgemeine Vorgabe | 6.3, UB‑Q6, U‑2 |
+| `Geraetegrenzen` | liest die acht Gerätespalten (NULL → Vorgabe der Kältemittelklasse, bei leerem `Kaeltemittel` die allgemeine Vorgabe), liefert σ_A, σ_max, σ_min, ṁ_min, θ_R,grenz samt Herkunft je Wert (`Katalog`/`Vorgabe nach Kältemittel`/`Vorgabe`/`abgeleitet`) | 4.4, 5.1, U‑2 |
 | `Uebergabegrenze` | Kalibrierung W_H je Zone (UB‑a) und Nullstelle Φ_UE,max bei θ_WP,max (UB‑b) mit der Newton-Routine von H2 (`Waermeuebergabe`), Startwert aus der Vorstunde; Weichenfall mit gemischtem Vorlauf | 4.2, 4.3 |
 | `Hydraulikgrenze` | Φ_Hydraulik für `DIREKT`/`WEICHE`/`PUFFER`, σ_max,eff aus Mindestvolumenstrom, Überströmventil, Taktmarke bei σ < σ_min | 4.4, 2.8 |
 | `Ruecklaufgrenze` | θ_R,grenz, Abschaltung, R744-Faktor f(h) auf Leistung und COP; BHKW-Prüfung | 4.4, 2.11, 2.12 |
@@ -169,6 +189,7 @@ Abschnitt 6).
 | dto. | `Ruecklauf_Max` | `REAL … BETWEEN 20 AND 70` | abgeleitet θ_WP,max − σ_min | 5.1 |
 | dto. | `Ruecklauf_Bezug` | `REAL … BETWEEN 20 AND 40` | 30 °C, wenn abgewertet | 5.1 |
 | dto. | `Ruecklauf_Abwertung_ProzentJeK` | `REAL … BETWEEN 0 AND 5` | keine Abwertung | 5.1 |
+| dto. | `Kaeltemittel` | `TEXT` ohne CHECK (Werteliste im Kern, U‑2) | allgemeine (unterkritische) Vorgaben | 5.1, U‑2 |
 | `Tab_BHKW`, `Tab_BHKW_STAMM` | `Ruecklauf_Max` | `REAL … BETWEEN 40 AND 90` | keine Grenze | 5.1, UB‑Q9 |
 | `Tab_Energieanlagen` | `Einbindung` | `TEXT CHECK (Einbindung IS NULL OR Einbindung IN ('DIREKT','PUFFER','WEICHE'))` | Bestandsweg (U‑1) | 5.1 |
 | dto. | `Vorwaermbetrieb` | `INTEGER CHECK (Vorwaermbetrieb IS NULL OR Vorwaermbetrieb IN (0,1))` | 0 | 5.1 |
@@ -179,27 +200,33 @@ Abschnitt 6).
 | dto. | `Uebergabe_Max_kW` | `REAL … >= 0` | nicht berechnet | 5.1 |
 | `Tab_ErgebnisWaermepumpe` | die zehn Stunden-, Wärme- und Zählerspalten | wie oben | dto. | 5.1 |
 
-Zusammen **41 Spalten**: 14 Gerätespalten an `Tab_WP(_STAMM)`, 2 am BHKW, 2 an der Anlage, 13 am Modulergebnis,
+Zusammen **43 Spalten**: 16 Gerätespalten an `Tab_WP(_STAMM)` (je Tabelle acht), 2 am BHKW, 2 an der Anlage, 13 am Modulergebnis,
 10 am Projektergebnis. Hilfsfunktionen `Stunden(...)`, `NichtNegativ(...)` aus `AnlagenfahrplanSchema` übernehmen.
 Nach dem Bau: `py Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite`.
 
 **4.3 Katalog und Lieferwege.**
 
-- `Katalogfassung.STUFE1`: die sieben Spalten an die Liste von `Tab_WP_STAMM`, `Ruecklauf_Max` an `Tab_BHKW_STAMM`.
+- `Katalogfassung.STUFE1`: die acht Spalten (mit `Kaeltemittel`) an die Liste von `Tab_WP_STAMM`, `Ruecklauf_Max` an `Tab_BHKW_STAMM`.
   NULL trägt nichts zur Prüfsumme bei — leer bleibt jede Prüfsumme gleich, die Katalogfassung steigt erst mit
   gepflegten Werten (Probe in `KatalogabgleichTests`).
 - `Katalogabgleich` und Projektpaket führen die Spalten über die Spaltenliste mit (Proben `KatalogabgleichTests`,
-  `ProjektpaketAnhebungTests`); die Projektkopie entsteht über den bestehenden Kopierweg `WPCtrl`.
-- `Werkzeuge/Auslieferungsvorlage`: keine neue Regel; die Spalten entstehen leer. Gepflegte Katalogwerte kommen
-  über Katalogpflege oder VDI 3805, nie aus einem Datenblatt ins Repositorium.
+  `ProjektpaketAnhebungTests`); die Projektkopie und das Duplizieren eines Geräts laufen über den bestehenden
+  Kopierweg `WPCtrl` und nehmen alle acht Gerätespalten mit.
+- `Werkzeuge/Auslieferungsvorlage`: keine neue Regel; die Spalten entstehen leer, das Katalogpaket der Fassung
+  führt sie über `Katalogfassung.STUFE1` (auch `Kaeltemittel`). Gepflegte Katalogwerte kommen über Katalogpflege
+  oder VDI 3805, nie aus einem Datenblatt ins Repositorium.
+- VDI‑3805-Import der Wärmepumpen (`EPOS.Kern/Allgemein/Import/VDI 3805/WaermepumpenImport.cs`): Der Leser wertet
+  die Satzarten 010, 100, 110, 400, 450 und 700 aus (Firma, Typ, Bauart, Aufstellung, Leistungsdaten) und kennt
+  kein Kältemittel-Attribut; im Kern liest allein die Kältemaschine ein Kältemittel. Befund: kein Attribut, das
+  Feld `Kaeltemittel` bleibt beim Import leer und rechnet mit der allgemeinen Vorgabe (U‑2).
 
 **4.4 Testdatenbank und Referenzprojekt.** Die Testdatenbank (LFS) wird mit dem Schritt migriert
 (`TestdatenbankSchemastandWacheTests`). Neues **Referenzprojekt 1060** als Kopie von 1056 nach FK 5.3: Heizkörper
 75/60 °C, `Vorlauf_Max` 55 °C, `Einbindung` `DIREKT`, `Vorwaermbetrieb` 1, Kessel in Reihe hinter der
 Wärmepumpe, Nachtsperre und Zeitprogramme zurückgesetzt; als Skript unter `Referenzlaeufe/` wie die
 Vorgängerprojekte, Begründung in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Basis **R44**
-(`<datum>_R44_Uebergabegrenze`) im selben Schritt; Einfrierregel in [`CLAUDE.md`](../../CLAUDE.md) nach FK 5.3
-(Gerätespalten der Wärmepumpe, `Einbindung`, `Vorwaermbetrieb`, `Vorlauf_Max`, `Ruecklauf_Max` am BHKW, Anlegen
+(`<datum>_R44_Uebergabegrenze`) im selben Schritt; die Bestandsprojekte übernehmen ihre Werte aus R43 unverändert (U‑1); Einfrierregel in [`CLAUDE.md`](../../CLAUDE.md) nach FK 5.3
+(Gerätespalten der Wärmepumpe samt `Kaeltemittel`, `Einbindung`, `Vorwaermbetrieb`, `Vorlauf_Max`, `Ruecklauf_Max` am BHKW, Anlegen
 oder Entfernen von 1060). CI-Auswahl nach UB‑Q8: Empfehlung aufnehmen (`kern.yml`, Projektliste um 1060).
 
 ## 5 Etappen
@@ -230,7 +257,7 @@ Builds laufen nie parallel.
 ### 5.2 UB‑E2 — Betriebsbereiche, Vorwärmbetrieb, Referenzprojekt (frei nach #817)
 
 - **Ziel:** FK 9 UB‑E2. Die Abhängigkeit „nach AK3‑K" ist mit #817 (Basis R43) erfüllt.
-- **Schema:** `UebergabegrenzeSchema` mit allen 41 Spalten (auch die Gerätespalten von UB‑E3, damit es bei einem
+- **Schema:** `UebergabegrenzeSchema` mit allen 43 Spalten (auch die Gerätespalten von UB‑E3, damit es bei einem
   Schritt bleibt); vorher Nummer anmelden.
 - **Code:** `Bivalenzrechner.Bereich`; `SimulationWaermepumpe` (Bereich statt Kennfeldkapazität im Profilweg,
   `Heizkreisruecklauf`, `Vorwaermvorlauf`, Zähler); `Stundenangebot.WaermepumpeKapazitaet` (optionales
@@ -247,7 +274,7 @@ Builds laufen nie parallel.
   Bereichsstunden von 1060.
 - **Abnahme:** SQL-Dialekt grün; Referenzlauf gegen R43: 24 Bestandsprojekte unverändert, 1060 neu; Basis R44
   eingefroren und begründet; Windows-Schale baut auf Linux.
-- **Aufwand:** 5–7 PT. **Abhängigkeit:** UB‑E1; Entscheide UB‑Q1, UB‑Q4, UB‑Q8, UB‑Q11 und U‑1.
+- **Aufwand:** 5–7 PT. **Abhängigkeit:** UB‑E1; Entscheide UB‑Q1, UB‑Q4, UB‑Q8, UB‑Q11 (U‑1 entschieden: a).
 - **Wellen (4):** **E2‑a** `opus` Schemaschritt, vier Leser, Testdatenbank, SQL-Dialekt; **E2‑b** `opus`
   Bereichsrechnung in Profilweg und Angebot, Gründe, Vorwärmer-Stufe, Ergebnisspalten; **E2‑c** `opus` Dialoggruppe,
   Abbildung, Ressourcen, bunit; **E2‑d** `opus` Referenzprojekt 1060, Wache, Einfrierregel, Basis R44 (Vergleich
@@ -256,16 +283,16 @@ Builds laufen nie parallel.
 ### 5.3 UB‑E3 — ΔT-Restriktionen, Einbindung, Rücklaufgrenzen
 
 - **Ziel:** FK 9 UB‑E3.
-- **Code:** `Geraetegrenzen` (liest die sieben Spalten), `Hydraulikgrenze` (direkt, Weiche, Puffer als Näherung,
+- **Code:** `Geraetegrenzen` (liest die acht Spalten, Vorgabe je Kältemittelklasse), `Hydraulikgrenze` (direkt, Weiche, Puffer als Näherung,
   Überströmventil), `Ruecklaufgrenze` (abgeleitet, Datenblattwert, R744-Faktor auf Leistung und COP, Strom
   unverändert), BHKW-Prüfung in `SimulationBHKW`; R744 am Puffer liest die unterste Pufferzone über den
   bestehenden Speicherleser.
-- **Katalog:** `Katalogfassung.STUFE1`, Stammblatt `WaermepumpeStammFelder.razor`/`WaermepumpeStammDaten.cs` und
-  BHKW-Stammblatt; Konfiguration zeigt Lesewerte mit Herkunft.
+- **Katalog:** `Katalogfassung.STUFE1`, Stammblatt `WaermepumpeStammFelder.razor`/`WaermepumpeStammDaten.cs` mit der
+  Klappliste „Kältemittel" (U‑2) und BHKW-Stammblatt; Konfiguration zeigt Lesewerte mit Herkunft.
 - **Tests:** FK 8.1 Zeilen 7, 10, 13–15, 17; `KatalogabgleichTests`, `ProjektpaketAnhebungTests`.
-- **Abnahme:** Referenzlauf: Bestandsprojekte unverändert (U‑1; die abgeleitete Grenze wirkt nur mit
+- **Abnahme:** Referenzlauf: Bestandsprojekte unverändert (U‑1 entschieden: a; die abgeleitete Grenze wirkt nur mit
   `Einbindung`); 1060 ändert sich, wenn die abgeleitete Grenze Stunden zählt → Basis R45 im selben Schritt.
-- **Aufwand:** 4–6 PT. **Abhängigkeit:** UB‑E2; Entscheide UB‑Q2, UB‑Q3, UB‑Q5, UB‑Q9.
+- **Aufwand:** 4–6 PT. **Abhängigkeit:** UB‑E2; Entscheide UB‑Q2, UB‑Q3, UB‑Q5, UB‑Q9 und U‑3.
 - **Wellen (3):** **E3‑a** `opus` Kernklassen und Rechenproben; **E3‑b** `opus` Stammblätter, Katalogfassung,
   Abgleich, Projektpaket, Lesewerte; **E3‑c** `sonnet` Referenzlauf, Vergleichstafel, gegebenenfalls Basis R45
   nach Vorlage.
@@ -312,17 +339,20 @@ Wird doch eine der beiden Leisten angefasst, gilt `Proben/Rasterprobe/fensterpro
 | Feld | Baustein | Datenquelle | Regel |
 |---|---|---|---|
 | Bivalenter Betrieb, Betriebsart, Abschaltpunkt | `Schalter`, `Auswahlfeld`, `Zahlenfeld` | bestehende Felder | ziehen um, Sichtbarkeit wie heute |
-| Einbindung | `Auswahlfeld` | `Einbindung` | Vorbelegung bei neuer Anlage; „leer" zeigt „nicht gewählt — Übergabegrenze nicht wirksam" (U‑1) |
+| Einbindung | `Auswahlfeld` | `Einbindung` | Vorbelegung bei neuer Anlage; „leer" zeigt „nicht gewählt", die Herleitungszeile „Einbindung nicht gesetzt — Übergabegrenze ruht" (U‑1) |
 | Vorwärmbetrieb | `Schalter` | `Vorwaermbetrieb` | sichtbar bei parallel und teilparallel; bei alternativ gesperrt mit Text |
 | Höchstvorlauf | Lesewert | `Vorlauf_Max`, sonst `Vorlauf` | Verweis auf „Betriebszeiten" |
-| Spreizungen, Mindestvolumenstrom, höchster Rücklauf | Lesewerte | `Geraetegrenzen` | Herkunft „Katalog", „Vorgabe" oder „abgeleitet" je Wert; änderbar nur im Stammblatt (UB‑Q2) |
+| Kältemittel | `Auswahlfeld` (Klappliste) | `Kaeltemittel` des Geräts | elf Codes und „leer"; vor der Schnellwahl in „Betriebszeiten"; die Wahl wirkt nach 6.3 (U‑2) |
+| Spreizungen, Mindestvolumenstrom, höchster Rücklauf | Lesewerte | `Geraetegrenzen` | Herkunft „Katalog", „Vorgabe nach Kältemittel", „Vorgabe" oder „abgeleitet" je Wert; änderbar nur im Stammblatt (UB‑Q2) |
 | Herleitungszeile | `Herleitungszeile` | `Bivalenzherleitung` | Wortlaut FK 6.2; ohne Kopplung der Hinweistext; Diagramm klappt darunter auf (ab UB‑E4) |
 | Weiche Sperren | `Warnbanner` (Warnung) | Dialogprüfung im Kern | FK 6.2; zusätzlich „Wärmepumpe steht in der Kaskade hinter dem Kessel" bei Vorwärmbetrieb (Abl.) |
 
-**6.3 Schnellwahl.** Kein Kältemittelfeld (U‑2): Ein `Auswahlfeld` neben dem Höchstvorlauf bietet die
-Kältemittelklassen der Tafel FK 6.3; die Wahl schreibt `Vorlauf_Max` an der Anlage und — nur im Stammblatt —
-`Ruecklauf_Max`, `Ruecklauf_Bezug`, `Ruecklauf_Abwertung_ProzentJeK` am Gerät. Danach zeigt das Feld wieder „—";
-die Klasse wird nicht gespeichert.
+**6.3 Schnellwahl und Kältemittel** (U‑2). Die Klappliste „Kältemittel" steht vor der Schnellwahl des
+Höchstvorlaufs (Konfiguration, „Betriebszeiten") und im Stammblatt. Die Wahl speichert die Klasse in `Kaeltemittel`
+des Geräts und füllt nur **leere** Felder mit den Vorgaben der Klasse aus `Bivalenzvorgaben`: `Vorlauf_Max` an der
+Anlage, im Stammblatt `Spreizung_*`, `Ruecklauf_Max` und bei R744 `Ruecklauf_Bezug`,
+`Ruecklauf_Abwertung_ProzentJeK` am Gerät; gefüllte Felder bleiben. Herkunft der gefüllten Werte „Vorgabe nach
+Kältemittel". Leeres `Kaeltemittel` oder `SONSTIGES`: allgemeine (unterkritische) Vorgaben wie bisher.
 
 **6.4 Schichten.** Rechnung und Prüfungen im Kern (`Bivalenzherleitung`, Dialogprüfung); Lesen und Schreiben der
 Spalten in `WErzeugerCtrl` (Anlage) und `WaermepumpeGeraeteCtrl`/`WPCtrl` (Gerät); Feldsatz
@@ -339,9 +369,10 @@ Abbildung. Wer die Hülle anfasst, baut die Schale vor der Abnahme auf Linux
 | `WPA_LBL_EINBINDUNG`, `WPA_OPT_EINBINDUNG_DIREKT`, `…_PUFFER`, `…_WEICHE`, `…_LEER` | Einbindung; direkt; Puffer; Weiche; nicht gewählt |
 | `WPA_CHK_VORWAERMBETRIEB`, `WPA_HINWEIS_VORWAERMBETRIEB` | Vorwärmbetrieb (Kessel in Reihe); Erläuterung |
 | `WPA_LBL_HOECHSTVORLAUF_LESEN`, `WPA_LBL_SCHNELLWAHL_KAELTEMITTEL` | Höchstvorlauf; Schnellwahl nach Kältemittel |
+| `WPA_LBL_KAELTEMITTEL`, `WPA_OPT_KAELTEMITTEL_<Code>` (elf Codes), `…_LEER` | Kältemittel; Anzeige je Code in beiden Sprachen; nicht gewählt |
 | `WPA_LBL_SPREIZUNG_AUSLEGUNG`, `…_MAX`, `…_MIN`, `WPA_LBL_MINDESTVOLUMENSTROM`, `WPA_LBL_RUECKLAUF_MAX` | Gerätegrenzen |
-| `WPA_HERKUNFT_KATALOG`, `…_VORGABE`, `…_ABGELEITET` | Herkunft je Wert |
-| `WPA_HERLEITUNG_UEBERGABE`, `WPA_HERLEITUNG_OHNE_KOPPLUNG`, `WPA_HERLEITUNG_NICHT_WIRKSAM`, `WPA_HERLEITUNG_ABSCHALTPUNKT` | Herleitungszeilen (Formatplatzhalter) |
+| `WPA_HERKUNFT_KATALOG`, `…_VORGABE_KAELTEMITTEL`, `…_VORGABE`, `…_ABGELEITET` | Herkunft je Wert |
+| `WPA_HERLEITUNG_UEBERGABE`, `WPA_HERLEITUNG_OHNE_KOPPLUNG`, `WPA_HERLEITUNG_NICHT_WIRKSAM`, `WPA_HERLEITUNG_ABSCHALTPUNKT` | Herleitungszeilen (Formatplatzhalter); `…_NICHT_WIRKSAM`: „Einbindung nicht gesetzt — Übergabegrenze ruht" (U‑1) |
 | `WPA_WARN_SPREIZUNG`, `…_HOECHSTVORLAUF`, `…_RUECKLAUF_NIE`, `…_GMODG`, `…_VORWAERM_OHNE_KESSEL`, `…_KASKADE` | weiche Sperren |
 | `SIMENG_WP_GRUND_UEBERGABE`, `…_SPREIZUNG_MAX`, `…_SPREIZUNG_MIN`, `…_RUECKLAUF_MAX` | Verfügbarkeitsgründe im Protokoll |
 | `SIM_KACHEL_BETRIEBSBEREICHE`, `SIM_BEREICH_WP_ALLEIN`, `…_PARALLEL`, `…_VORWAERMUNG`, `…_NUR_KESSEL` | Reiter |
@@ -385,6 +416,8 @@ Rücklauf- und Spreizungsgrenzen der Wärmepumpe." · „Neues Berichtsbild Biva
 | Rücklaufstufe „Vorwärmer" | `KesselKennlinieTests` | E2 |
 | Höchstspreizung direkt, Weiche, Mindestvolumenstrom und Überströmventil | `HydraulikgrenzeTests` | E3 |
 | abgeleitete Rücklaufgrenze, R744-Abwertung, BHKW | `RuecklaufgrenzeTests` | E3 |
+| Vorgabe je Kältemittelklasse: füllt nur leere Felder, leer und `SONSTIGES` → allgemeine Vorgabe (U‑2) | `GeraetegrenzenTests` | E3 |
+| ohne `Einbindung` kein Bivalenzobjekt, Herleitungszeile „Einbindung nicht gesetzt — Übergabegrenze ruht" (U‑1) | `BetriebsbereichTests`, bunit | E2 |
 | Schema mit Wiederholung, Spalten, CHECK | `UebergabegrenzeSchemaTests` | E2 |
 | Dialog: Sichtbarkeit, Schnellwahl, Herleitungszeile, Sperren | `EPOS.UI.Tests/Dialoge/WaermepumpeBivalenzTests` (bunit) | E1, E2 |
 
@@ -397,7 +430,8 @@ Alle Klassen laufen unter en-US; Proben mit deutschen Texten oder Zahlformaten p
 
 **8.3 Referenzlauf.** Vor und nach jeder rechnenden Etappe (E2, E3) gegen R43 bzw. R44:
 `dotnet run --project EPOS.Referenzlauf -c Release -- lauf …` und `… vergleich <basis> <neu>`; Toleranz der CI
-(Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01). Erwartung: alle Bestandsprojekte unverändert (U‑1), 1060 neu;
+(Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01). Erwartung: alle Bestandsprojekte unverändert, auch 1047, 1054, 1056
+und 1058 (U‑1 entschieden: a, Opt-in über `Einbindung`), 1060 neu;
 Begründung und neue Basis in `Referenzlaeufe/LIESMICH.md`.
 
 **8.4 Weitere Abnahmen.** SQL-Dialekt-Prüfer nach jeder neuen Anweisung; Linux-Bau der Windows-Schale bei jeder
@@ -416,7 +450,7 @@ Statuszeile und Protokoll → Push → Nachweis**; ein iOS-Lauf ist nicht begrü
 | Bestandsprojekte | leere Felder = heutiges Verhalten; kein DML im Schritt |
 | Katalogabgleich bei neuen Spalten | leere Spalten ändern keine Prüfsumme; gepflegte Werte heben die Katalogfassung über den gewohnten Weg |
 | Enum-Wert der neuen Rücklaufstufe | `Vorwaermer = 4` hinten angefügt, damit gespeicherte oder gezählte Werte stabil bleiben |
-| Namensnähe `Ruecklauf`/`Ruecklauf_Max` am BHKW | Dialogtext und Hilfe trennen Auslegungspaar und Grenze (U‑3) |
+| Namensnähe `Ruecklauf`/`Ruecklauf_Max` am BHKW | U‑3 entschieden a: Beschriftung „Höchster Rücklauf (Abschaltgrenze)" gegenüber „Rücklauf (Auslegung)", Prüfregel Auslegungsrücklauf `Ruecklauf` unter der Abschaltgrenze `Ruecklauf_Max` (sonst Hinweis), Vorgabe bei Neuanlage 70 °C |
 | Normzahlen und Messdaten | nie ins Repositorium; Vorgabewerte nur als gerundete Konstanten mit Quellverweis |
 | Hersteller- und Produktdaten | nie im Wiki, nicht in Testnamen; Beispiele neutral |
 
@@ -433,10 +467,11 @@ der Tafel 8.1 Zeilen 1 und 2; Bau des Kern-Filters, Tests mit `--filter "FullyQu
 kein Schema, keine Ressourcen, kein Referenzlauf nötig (keine Rechenwirkung). Bericht: Proben n/n, Abweichungen
 zum Zahlenbeispiel.
 
-**Vorher beim Anwender zu entscheiden.** Für E1: nichts zwingend (UB‑Q6 a als Vorgabe). Vor E2: UB‑Q1, UB‑Q4,
-UB‑Q8, UB‑Q11 und **U‑1** (Wirksamkeit an `Einbindung` gebunden, Bestandsprojekte unverändert, oder FK 5.3 mit
-Ergebnisänderung in vier Referenzprojekten). Vor E3: UB‑Q2, UB‑Q3, UB‑Q5, UB‑Q9. Vor E4: UB‑Q7. UB‑Q10 betrifft
-nur Hinweistexte und kann mit E4 fallen.
+**Entscheidlage.** UB‑Q1 bis UB‑Q11 sind am 08.10.2026 nach Empfehlung entschieden (UB‑Q3 b), ebenso **U‑1**
+(a: Wirksamkeit an `Einbindung` gebunden, Bestandsprojekte unverändert), U‑2 (Katalogfeld `Kaeltemittel`), U‑3
+(`Ruecklauf_Max` am BHKW als anlagenbedingte Abschaltgrenze, getrennt vom Auslegungsrücklauf) und U‑4
+(Protokollhinweis). Der Baubeginn UB‑E1 ist frei ab 08.10.2026; UB‑E2 beginnt nach dem Baubeginn-Schemaschritt
+(Anmeldung durch die bauende Sitzung).
 
 **Pflichten jeder Welle.** Schemaschritt vor dem Bau anmelden (E2‑a); `AGENT_LAEUFT` nur bei Arbeit im
 Hauptbaum; Commits sofort mit genauen Pfaden; kein Push und kein CI-Lauf durch Agenten; Bericht mit Zahlen, ohne

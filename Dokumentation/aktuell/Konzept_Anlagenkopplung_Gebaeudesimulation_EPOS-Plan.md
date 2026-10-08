@@ -1270,7 +1270,7 @@ Gegenstück auf der Kälteseite — **oder** die Abweichung steht in der Liste (
 
 | Wärmeseite | Kälteseite | Bemerkung |
 |---|---|---|
-| Heizkurve `theta_V(theta_out)` | **Kühlkurve** `theta_V,k(theta_out)` — steigende Außentemperatur, **sinkender** Kaltwasser-Vorlauf | **vertagt (E37, A3)** — in AK1 fährt die Kälteseite einen festen Vorlauf; benannte Abweichung in 7.4 |
+| Heizkurve `theta_V(theta_out)` | **Kühlkurve** `theta_V,k(theta_out)` — steigende Außentemperatur, **sinkender** Kaltwasser-Vorlauf | **vertagt (E37, A3) bis AK2; auf AK3 im Bau (KK, E105, E106)** — auf AK1 und AK2 fährt die Kälteseite einen festen Vorlauf (benannte Abweichung in 7.4 Nr. 5); auf AK3 die raumgeführte Kühlkurve mit Fußpunkt und Raumeinfluss, Erzeuger am Stundenvorlauf, auch im Mehrzonenweg ([Entwurf KK](Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md)) |
 | `Heizkreis_Aktiv`, `Uebergabe_Art` | `Kuehluebergabe_Aktiv`, `Kuehl_Uebergabe_Art` (Kühldecke, Flächenkühlung, Gebläsekonvektor; NULL = ideal) | eigene Spalten am Gebäude nach **E37** (`KAK-S1`, 8.1) |
 | `Auslegung_Vorlauf` / `_Ruecklauf` / `_Raumtemperatur` (Gebäude) | `Kuehl_Auslegung_Vorlauf` / `_Ruecklauf` / `_Raumtemperatur` (Gebäude) | **Auslegung am Gebäude** (E37); leer heißt Vorgabe der Art bzw. `Kuehl_Sollwert`. Der Kaltwasser-Vorlauf der Stunde kommt fest aus der Anlage (`Tab_WP.Kuehl_Vorlauf`, 7.2) |
 | `Uebergabe_Leistung_Nenn` — hergeleitet aus der stationären Heizlast | `Kuehl_Uebergabe_Leistung_Nenn` — hergeleitet aus der Kühllast eines Auslegungstags (8.4) | benannte Abweichung in 7.4 (A2) |
@@ -1347,13 +1347,18 @@ die vierte Welle von AK1 gebaut hat; Punkt 10 ist mit AK3-K gebaut.
    (`Tab_WP.Kuehl_Vorlauf` mit fester Spreizung); nach **E37** steht er wie auf der Wärmeseite am
    **Gebäude** (`Kuehl_Auslegung_Vorlauf`/`_Ruecklauf`/`_Raumtemperatur`, `KAK-S1`, 8.1). Die Anlage
    liefert nur noch den Kaltwasser-Vorlauf der Stunde (7.2).
-5. **Keine Kühlkurve und keine Kennlinienwahl je Stunde (E37, A3).** Die Kälteseite fährt einen
+5. **Fester Vorlauf ohne Kühlkurve, keine Kennlinienwahl je Stunde (E37, A3) — die raumgeführte Kühlkurve auf AK3 nach
+   Entwurf KK.** Ohne Kühlkurve fährt die Kälteseite einen
    **festen** Vorlauf: den kältesten wirksamen `Kuehl_Vorlauf` der Wärmepumpen im Kühlbetrieb, am
    Gebäude auf die Vorlaufgrenze hochgemischt (7.2). Die Wärmepumpe bleibt wie in KU2 am
    `Kuehl_Vorlauf`, weil die Mischgruppe am Gebäude sitzt; `Kaeltekaskade` und Kennlinienwahl der
    Kälteseite bleiben unberührt. Die gespiegelte Heizkurve taugt nicht: Sie schaltete bei
    θ_out ≤ θ_kühl ab, obwohl Sonne und innere Lasten Kühllast erzeugen, und das gespiegelte H10 gäbe
-   einen entarteten Nenner von 0 bis 3 K. Die belastbare Führung ist die raumgeführte Kurve in AK3.
+   einen entarteten Nenner von 0 bis 3 K. Die belastbare Führung ist die raumgeführte Kurve in AK3:
+   **Auf AK3 ist sie im Bau (KK, E105, E106)** — Zwei-Punkt-Kurve über die Außentemperatur mit Fußpunkt
+   statt Grenze, Absenkung nach der Raumtemperatur im Kreis, Wärmepumpe und Kältemaschine am Stundenvorlauf,
+   im Mehrzonenweg mit Kühlübergabe je Zone ([Entwurf KK](Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md));
+   ohne gesetzte Kühlkurve und auf AK1/AK2 gilt der feste Vorlauf dieses Punkts.
 6. **Ein gemeinsames `Regler_Proportionalband`** — ein Raumregler, zwei Sequenzen. Das Kühlband
    liegt auf [θ_kühl, θ_kühl + Xp] und überlappt das Heizband nicht, weil der Kühlsollwert mindestens
    1 K über dem höchsten Heizsollwert liegt (Kühlkonzept, Eingangsregel zu E32).

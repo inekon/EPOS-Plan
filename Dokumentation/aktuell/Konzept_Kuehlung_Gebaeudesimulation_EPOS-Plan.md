@@ -1350,6 +1350,9 @@ interpoliert, auf einer Stützstelle mit ihr, außerhalb mit dem Randwert ([Entw
 Ein `Kuehl_Vorlauf`, der keine Stützstelle ist (etwa nach einem Kennlinientausch), wird einmal je Gerät
 und Vorlauf als Hinweis benannt; ist ein Block nicht rechenbar, rechnet er mit der nächsten Stützstelle — bei
 gleichem Abstand der kälteren.
+**K21 auf AK3 mit Kühlkurve — im Bau (KK, E105, E106):** Mit gesetzter raumgeführter Kühlkurve rechnen Wärmepumpe und
+Kältemaschine je Stunde am gleitenden Kühlvorlauf, interpoliert wie oben; ohne Kühlkurve und auf AK1/AK2 gilt der feste
+Kaltwasser-Vorlauf nach E37 (A3) weiter ([Entwurf KK](Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md) 2.3, 2.4).
 
 **Rücklauf und Spreizung werden nicht eingeführt.** Die Kennlinie ist über dem Vorlauf
 aufgetragen; eine Spreizung wäre eine zweite, nicht gestützte Eingabe. Braucht ein späterer
