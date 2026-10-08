@@ -77,7 +77,7 @@ Was G5 dort ablegt, muss diese Größen tragen:
 | G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | gebaut (#805, Schritt 197) |
 | G5-Nachbesserung (Körpervergleich) | gebaut (#808) |
 | G5-N Nordrichtung (Schritt 199) | gebaut (#813) |
-| G5-3 | offen |
+| G5-3 mit Farbmodus „Befund“, G5-3d | gebaut (#814) |
 
 A1 bis A5 halten aus Sicht von G5-1 und G5-2; der Rechenweg ist unverändert, der Referenzlauf der CI-Projekte gegen R40 ohne Abweichung.
 
@@ -99,6 +99,8 @@ kennt keine `IfcMapConversion`, und die Projektdatei (`BmElement.Orientation`) l
 | N7 | **Rechenweg:** unverändert; er liest den Azimut aus `Tab_Bauteil`. Eine Drehung ändert die Ergebnisse (Solargewinne, Fensterflächen je Himmelsrichtung) — gewollt. Keine Einfrierregel berührt: kein Referenzprojekt hat eine Importquelle. |
 
 ## 8 G5-3 mit Farbmodus „Befund“ (Zuschnitt)
+
+**Stand: gebaut (#814).**
 
 Anwenderauftrag vom 07.10.2026: Die Gebäudeansicht zeigt Bauteile, die für die Rechnung unvollständig oder fehlerhaft sind;
 Bauteile mit Nettofläche 0 entstehen gar nicht.
