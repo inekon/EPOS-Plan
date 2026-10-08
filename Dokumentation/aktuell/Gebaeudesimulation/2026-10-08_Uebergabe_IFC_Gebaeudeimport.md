@@ -11,7 +11,9 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstim
 
 - **Zweige:** Arbeitszweig `ios_migration_september`. Der Sitzungszweig des alten Kontos
   (`claude/dazzling-babbage-jj93zy`) wurde bei jedem Push mitgezogen; die neue Sitzung nimmt
-  ihren eigenen Sitzungszweig. Zuletzt gepusht: Zeile #832 mit diesem Papier (davor `8703e704d`, #831).
+  ihren eigenen Sitzungszweig. Stand bei Übergabe: `918e7ee51` (CI-Vermerk #831, davor #832 mit
+  diesem Papier) und dieser Nachtrag. Übergeben ohne laufenden Agenten, ohne Worktree, ohne offenen
+  CI-Lauf und ohne angemeldeten Schemaschritt dieser Sitzung.
 - **Zeilen dieser Sitzung** (alle mit grünem Gate gepusht; CI-Nachweis in der Zeile):
 
   | Zeile | Inhalt | CI |
@@ -25,7 +27,7 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstim
   | #823 | Befunde der Abnahme G5: Orientierung bei Mengensatz aus Raumgrenzen bzw. Körper, Hanglage im Einzonenweg | grün |
   | #825 | E108: Standprüfung IFC gegen Projektdatei mit Wahl der Aufbauquelle; Fensterrichtung aus eigenem Körper; Einheitenhinweis | grün |
   | #828 | Prüfpunkte #808/#801: Körpervergleich mit fremdnamigen und fremdklassigen Teilgruppen, Dach erbt U-Wert und Aufbau seiner Platten | grün |
-  | #831 | Anwenderdatei Sportheim neu exportiert (IFC aus dem Bestandsprojekt), Diagnosetests nachgezogen | Kern-Lauf beim Schreiben offen; Ergebnis als CI-Vermerk in Zeile #831 der Statusdatei |
+  | #831 | Anwenderdatei Sportheim neu exportiert (IFC aus dem Bestandsprojekt), Diagnosetests nachgezogen | Kern-Lauf 37810231619 grün auf `8703e704d` |
   | #832 | Übergabe der Sitzung an ein anderes Konto (dieses Papier) | nur Dokumentation, `[skip ci]` |
 
 - **Abnahme G5 am Rechenweg:** durch die Sitzung Gebäudesimulation erfüllt (#820, Nachabnahme
@@ -147,11 +149,14 @@ iOS-, macOS-, Setup-Läufe, Wiki-Upload, Pull Requests, Force-Push, Tags. Anwend
 Quellen/ nur lesen, keine Werte oder Namen daraus in Code, Tests oder Protokolle. Antworten
 auf Deutsch, knapp.
 
-Erste Schritte: (1) Prüfen, ob die Zeile #831 einen CI-Vermerk trägt; sonst den Kern-Lauf
-37810231619 auf 8703e704d abwarten (bricht ihn ein neuerer Push ab: den Lauf auf dem
-neuesten origin) und den Vermerk mit [skip ci] nachtragen. (2) Prüfen, ob die
-nicht versionierte Projektdatei Quellen/Sportheim_1970_unsaniert.sqproj vorliegt; sonst den
-Anwender darum bitten (die Diagnosetests der Projektdatei werden ohne sie übersprungen).
-(3) Die offenen Punkte aus Abschnitt 4 mit dem Anwender abstimmen, zuerst die Versionsnummer
-für das Logbuch und den Wiki-Upload.
+Parallel arbeitet die Sitzung Gebäudesimulation auf demselben Arbeitszweig; abgestimmt wird
+über die Papiere unter Dokumentation/aktuell/Gebaeudesimulation/ und die Statusdatei.
+
+Erste Schritte: (1) Stand prüfen: Zeilen #831 und #832 tragen ihren Vermerk, `git status`
+sauber, keine Konfliktmarker, keine liegen gebliebene AGENT_LAEUFT. (2) Prüfen, ob die nicht
+versionierte Projektdatei Quellen/Sportheim_1970_unsaniert.sqproj vorliegt (die IFC ist
+versioniert); sonst den Anwender darum bitten — ohne sie überspringen die Diagnosetests der
+Projektdatei. (3) Den Stand in höchstens fünf Zeilen melden und die offenen Punkte aus
+Abschnitt 4 mit dem Anwender abstimmen, zuerst die Versionsnummer für das Logbuch und den
+Wiki-Upload. Ohne Auftrag keine neue Welle beginnen.
 ```

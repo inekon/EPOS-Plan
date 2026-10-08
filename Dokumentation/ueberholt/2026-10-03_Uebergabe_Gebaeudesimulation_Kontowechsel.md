@@ -1,9 +1,9 @@
 # Übergabe der Sitzung „Gebäudesimulation“ — Stand 03.10.2026, 23:30 UTC (Kontowechsel)
 
 Dieses Papier hält alles, was eine neue Cloud-Sitzung auf einem anderen Konto braucht, um die Sitzung „Gebäudesimulation“
-ohne Verlust fortzuführen. Es ist eine Übergabe, kein Regelpapier: Regeln stehen in [`CLAUDE.md`](../../../CLAUDE.md) und den
-Projekt-`CLAUDE.md`; der dauerhafte Stand in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) (Zeilen #690–#697
-dieser Sitzung) und der [Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md) (Entscheide E62–E65, Stufentabelle).
+ohne Verlust fortzuführen. Es ist eine Übergabe, kein Regelpapier: Regeln stehen in [`CLAUDE.md`](../../CLAUDE.md) und den
+Projekt-`CLAUDE.md`; der dauerhafte Stand in der [Statusdatei iOS-Migration](../aktuell/Status_iOS_Migration.md) (Zeilen #690–#697
+dieser Sitzung) und der [Statusdatei Gebäudesimulation](../aktuell/Status_Gebaeudesimulation_VDI6007.md) (Entscheide E62–E65, Stufentabelle).
 Es wandert nach `Dokumentation/ueberholt/`, sobald die Fortsetzung die Wellen EV1 und AK1z abgeschlossen hat.
 
 ## 1. Stand beim Wechsel
@@ -23,10 +23,10 @@ Es wandert nach `Dokumentation/ueberholt/`, sobald die Fortsetzung die Wellen EV
 
 | Welle | Statuszeile | Inhalt | Protokoll / Papier |
 |---|---|---|---|
-| G6d | #690 | Referenzprojekt 1052 (Hotel aus 1018 in drei Zonen), Wache `ZonenReferenzprojektWacheTests`, KP3-Zonentests, Variantenfix | [Protokoll G6d](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-03_G6d_Zonenreferenzprojekt.md) |
+| G6d | #690 | Referenzprojekt 1052 (Hotel aus 1018 in drei Zonen), Wache `ZonenReferenzprojektWacheTests`, KP3-Zonentests, Variantenfix | [Protokoll G6d](Protokolle/Gebaeudesimulation/2026-10-03_G6d_Zonenreferenzprojekt.md) |
 | IFC-Quellendiagnose | #691 | sechs HottCAD-Dateien bis zur Rechnung, Beheizungsart je Raum, U ≤ 0, Kopplungswächter, Durchgangstests in der CI | Konzept Mehrzonen 6.5 |
 | IFC-Vorschläge 2/3/5, RB-Z4 | #692 | Jahreswiderspruch, „getrennt beheizt“ nach Raumtemperatur, Wärmekapazität masseloser Schichten; Rechenwegbefund: Lastumkehr im Innern eines geregelten Abschnitts (`Zonenmodell2K.Schritt`), Fensterzweig A7a | E62 |
-| KP3 RP1 (a–c) | #695 | Referenzprojekt 1051 (Bürobau Verw_I_40, Referenzbau 289, Büro-Kalender mit Nachtzeile), Wache `KonditionierungReferenzprojektWacheTests`, Plattformprobe, Messharness ρ_min, A/B-Protokoll; **P14 entschieden (E64)** | [A/B-Protokoll 1051](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-03_KP3_RP1_AB-Protokoll_1051.md) |
+| KP3 RP1 (a–c) | #695 | Referenzprojekt 1051 (Bürobau Verw_I_40, Referenzbau 289, Büro-Kalender mit Nachtzeile), Wache `KonditionierungReferenzprojektWacheTests`, Plattformprobe, Messharness ρ_min, A/B-Protokoll; **P14 entschieden (E64)** | [A/B-Protokoll 1051](Protokolle/Gebaeudesimulation/2026-10-03_KP3_RP1_AB-Protokoll_1051.md) |
 | RP2a | #696 | Messung der inneren Lastumkehr (0 Stunden in allen Referenzprojekten), allgemeine Innenprüfung (Obergrenze 8), **Erdreichwiderstand nach DIN EN ISO 13370** (`Erdreichwiderstand.cs`; Q −2 bis −23 %); Zusammenführung mit Schemaschritt 176; **Erdreich-Entscheid (E65)** | Referenzlaeufe/LIESMICH.md Abschnitt R34 |
 | RP2b | #697 | Basis R34 eingefroren, R33 nach `ueberholt/Referenzbasen/`, Einfrierregeln „gesäte Zonendaten / Konditionierungsdaten / Erdreichdaten“, CI-Auswahl mit 1051, Gebäudevergleich-Tests auf R34 (Kennzeichen U-ERD) | — |
 
@@ -110,12 +110,12 @@ den Stand des Wochenlimits an. Melde dich mit dem Ergebnis von EV1 (Gate-Zahlen,
 
 | Was | Wert |
 |---|---|
-| EV1 | umgesetzt, Statuszeile **#705**, Protokoll [`2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md); E64 und E65 stehen auf „umgesetzt“ |
+| EV1 | umgesetzt, Statuszeile **#705**, Protokoll [`2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md`](Protokolle/Gebaeudesimulation/2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md); E64 und E65 stehen auf „umgesetzt“ |
 | Schemaschritte | 180 `ErdreichVorgabeSchema` vergeben, Kopfzeile „181 — frei“; AK1z meldet 181 an |
 | origin | `91bfdca6` (der Inhalt der Welle liegt als Sync-Commit `3765af5c` des Anwenders auf origin, die Testdatenbank 180 mit `91bfdca6`; die Einzelcommits der Statuszeile #705 stammen aus dem Bundle der Sitzung und sind auf origin nicht einzeln sichtbar); CI-Vermerk zu #705 trägt die Sitzung EV1 nach |
 | Testdatenbank | Schemastand 180, 83 169 280 Byte, LFS-OID `0aa88998…` |
 | Referenzbasis | R34 unverändert, 18/18 byte-gleich; AK1z friert R35 ein (1052 mit abweichender Zone) |
-| AK1z | umgesetzt, Statuszeile **#708**, Protokoll [`2026-10-04_AK1z_Waermeuebergabe_je_Zone.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_AK1z_Waermeuebergabe_je_Zone.md), Basis R35 `2026-10-04_R35_Zonenuebergabe` (19 Projekte, gesät ist die Kopie 1054 statt 1052, weil 1052 den Zonen-Aufheiznachweis trägt), Schemaschritt 181 `ZonenUebergabeSchema`; E63 steht auf „umgesetzt“ |
+| AK1z | umgesetzt, Statuszeile **#708**, Protokoll [`2026-10-04_AK1z_Waermeuebergabe_je_Zone.md`](Protokolle/Gebaeudesimulation/2026-10-04_AK1z_Waermeuebergabe_je_Zone.md), Basis R35 `2026-10-04_R35_Zonenuebergabe` (19 Projekte, gesät ist die Kopie 1054 statt 1052, weil 1052 den Zonen-Aufheiznachweis trägt), Schemaschritt 181 `ZonenUebergabeSchema`; E63 steht auf „umgesetzt“ |
 
 **Umgebung der Cloud-Sitzung — zwingend vor dem Start prüfen.** Die Netzrichtlinie der Umgebung muss
 `lfs.github.com` (LFS-Verify beim Push), `builds.dotnet.microsoft.com` und `download.visualstudio.microsoft.com`
