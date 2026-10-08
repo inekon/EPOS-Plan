@@ -10,8 +10,9 @@ namespace WindowsFormsApplication1
     /// θ_max &lt; θ_out &lt; θ_out,K,N : θ_V = θ_V,F + (θ_V,K,N − θ_V,F)·(θ_out − θ_max)/(θ_out,K,N − θ_max)
     /// θ_out ≥ θ_out,K,N        : θ_V = θ_V,K,N                                 (Auslegungspunkt)
     /// </code>
-    /// θ_max ist der Kühlsollwert der Stunde, θ_V,K,N der Auslegungsvorlauf der Kühlübergabe, θ_out,K,N die hergeleitete
-    /// Auslegungs-Außentemperatur der Kühlung (<see cref="AuslegungAussentemperaturC"/>, Festlegung 3). Keine gespiegelte
+    /// θ_max ist der Kühlsollwert der Stunde, θ_V,K,N der Auslegungsvorlauf der Kühlübergabe, θ_out,K,N die
+    /// Auslegungs-Außentemperatur der Kühlung nach dem gewählten Weg (<see cref="Bilden"/>, Festlegung 3, E107). Ein Fußpunkt
+    /// kälter als θ_V,K,N wird auf θ_V,K,N geklemmt (Fußpunktregel, Festlegung 18). Keine gespiegelte
     /// Heizkurve, kein Exponent (Festlegung 2): Kühllast entsteht auch bei kühler Außenluft (Sonne, innere Lasten).
     /// <para><b>Grenzen</b> (<see cref="VorlaufC(double, double, double, out bool)"/>): oben hält jeder Vorlauf den
     /// Mindestabstand <see cref="GebaeudeFestwerte.KUEHLKURVE_FUSSPUNKT_ABSTAND_K"/> unter dem Kühlsollwert der Stunde
@@ -30,20 +31,48 @@ namespace WindowsFormsApplication1
         /// <summary>Die künftige Spalte des Raumeinflusses k_K [K/K]; leer oder 0 = aus (Festlegung 1, 6).</summary>
         internal const string SPALTE_RAUMEINFLUSS = "Kuehlkurve_Raumeinfluss";
 
-        /// <param name="fusspunktC">Fußpunkt θ_V,F [°C].</param>
+        /// <summary>Die künftige Spalte des Auslegungswegs (E107); leer = <see cref="DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL"/>.</summary>
+        internal const string SPALTE_AUSLEGUNG_WEG = "Kuehlkurve_Auslegung_Weg";
+
+        /// <summary>Die künftige Spalte der eingegebenen Auslegungs-Außentemperatur [°C] (E107, nur Weg „eingabe“).</summary>
+        internal const string SPALTE_AUSLEGUNG_AUSSEN = "Kuehlkurve_Auslegung_Aussen";
+
+        /// <param name="fusspunktC">Fußpunkt θ_V,F [°C]; kälter als <paramref name="auslegungVorlaufC"/> wird er auf den
+        /// Auslegungsvorlauf geklemmt (Fußpunktregel, <see cref="FusspunktGeklemmt"/>).</param>
         /// <param name="auslegungVorlaufC">Auslegungsvorlauf der Kühlübergabe θ_V,K,N [°C].</param>
         /// <param name="auslegungAussenC">Auslegungs-Außentemperatur der Kühlung θ_out,K,N [°C].</param>
         /// <param name="vorlaufgrenzeC">Die Vorlaufgrenze [°C]; NaN = keine (Gebläsekonvektor).</param>
         internal Kuehlkurve(double fusspunktC, double auslegungVorlaufC, double auslegungAussenC, double vorlaufgrenzeC)
         {
-            FusspunktC = fusspunktC;
+            // Fußpunktregel (Entwurf KK, Festlegung 18): Die Kurve fällt nie mit steigender Außentemperatur an — ein
+            // Fußpunkt kälter als der Auslegungsvorlauf ließe den Vorlauf an heißen Tagen steigen; er wird geklemmt.
+            FusspunktEingabeC = fusspunktC;
+            FusspunktGeklemmt = fusspunktC < auslegungVorlaufC;
+            FusspunktC = FusspunktGeklemmt ? auslegungVorlaufC : fusspunktC;
             AuslegungVorlaufC = auslegungVorlaufC;
             AuslegungAussenC = auslegungAussenC;
             VorlaufgrenzeC = vorlaufgrenzeC;
         }
 
-        /// <summary>Fußpunkt θ_V,F [°C].</summary>
+        /// <summary>Fußpunkt θ_V,F [°C], wie die Kurve ihn rechnet (nach der Fußpunktregel).</summary>
         internal double FusspunktC { get; }
+
+        /// <summary>Der Fußpunkt, wie er hereinkam [°C] — für die Meldung der Fußpunktregel.</summary>
+        internal double FusspunktEingabeC { get; }
+
+        /// <summary>War der Fußpunkt kälter als der Auslegungsvorlauf und wurde auf ihn geklemmt (Fußpunktregel)?</summary>
+        internal bool FusspunktGeklemmt { get; }
+
+        /// <summary>Der wirksame Auslegungsweg (E107): einer der drei Werte <c>DbWerte.KUEHLKURVE_AUSLEGUNG_*</c>; gesetzt
+        /// von <see cref="Bilden"/>, sonst <c>null</c> (Auslegungs-Außentemperatur unmittelbar übergeben).</summary>
+        internal string AuslegungWeg { get; private set; }
+
+        /// <summary>Fiel der Weg „eingabe“ auf den Weg „tagesmittel“ zurück (Eingabe fehlt oder liegt nicht über dem
+        /// Kühlsollwert plus <see cref="GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K"/>)?</summary>
+        internal bool AuslegungRueckfall { get; private set; }
+
+        /// <summary>Die eingegebene Auslegungs-Außentemperatur [°C]; NaN ohne Eingabe — für die Meldung des Rückfalls.</summary>
+        internal double AuslegungEingabeC { get; private set; } = double.NaN;
 
         /// <summary>Auslegungsvorlauf θ_V,K,N [°C].</summary>
         internal double AuslegungVorlaufC { get; }
@@ -55,14 +84,80 @@ namespace WindowsFormsApplication1
         internal double VorlaufgrenzeC { get; }
 
         /// <summary>
-        /// <b>Die Auslegungs-Außentemperatur der Kühlung</b> [°C] (Festlegung 3): das höchste Tagesmittel der Außenluft
-        /// der Klimareihe — derselbe Tag wie der Auslegungstag der Nennleistung (<see cref="GebaeudeModellEingang.WaermsterTag"/>),
-        /// keine eigene Spalte.
+        /// <b>Das wärmste Tagesmittel</b> der Außenluft der Klimareihe [°C] — derselbe Tag wie der Auslegungstag der
+        /// Nennleistung (<see cref="GebaeudeModellEingang.WaermsterTag"/>); Grundlage des Wegs „tagesmittel“.
         /// </summary>
         internal static double AuslegungAussentemperaturC(double[] thetaOut)
         {
             GebaeudeModellEingang.WaermsterTag(thetaOut, out double mittel);
             return mittel;
+        }
+
+        /// <summary>Ist <paramref name="weg"/> ein bekannter Auslegungsweg? Leer zählt (Vorgabe „tagesmittel“).</summary>
+        internal static bool WegBekannt(string weg)
+            => string.IsNullOrEmpty(weg)
+               || weg == DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE
+               || weg == DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL
+               || weg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE;
+
+        /// <summary>
+        /// <b>Die Auslegungs-Außentemperatur der Kühlung</b> θ_out,K,N [°C] nach dem gewählten Weg (Entwurf KK, Festlegung 3;
+        /// E107 „1, 2, 3 wählbar, Default 2“):
+        /// <list type="number">
+        /// <item><c>stunde</c> — die höchste Stundentemperatur der Klimareihe;</item>
+        /// <item><c>tagesmittel</c> (Vorgabe, auch leer) — das wärmste Tagesmittel, mindestens Kühlsollwert +
+        /// <see cref="GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K"/>; ohne endlichen Kühlsollwert das Tagesmittel allein;</item>
+        /// <item><c>eingabe</c> — die Eingabe am Gebäude; fehlt sie oder liegt sie nicht über dem Kühlsollwert +
+        /// <see cref="GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K"/>, gilt Weg 2 und
+        /// <paramref name="rueckfall"/> wird <c>true</c> (Laufhinweis).</item>
+        /// </list>
+        /// Ein unbekannter Weg ist Sache des Aufrufers (<see cref="WegBekannt"/>); hier rechnet er wie die Vorgabe.
+        /// </summary>
+        internal static double AuslegungAussentemperaturC(string weg, double? eingabeC, double kuehlSollC, double[] thetaOut,
+                                                         out string wirksamerWeg, out bool rueckfall)
+        {
+            rueckfall = false;
+            bool sollEndlich = !double.IsNaN(kuehlSollC) && !double.IsInfinity(kuehlSollC);
+            if (weg == DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE)
+            {
+                wirksamerWeg = weg;
+                double hoechste = double.NegativeInfinity;
+                for (int h = 0; h < thetaOut.Length; h++)
+                    if (thetaOut[h] > hoechste) hoechste = thetaOut[h];
+                return hoechste;
+            }
+            if (weg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE)
+            {
+                double e = eingabeC ?? double.NaN;
+                bool traegt = !double.IsNaN(e) && !double.IsInfinity(e)
+                              && (!sollEndlich || e > kuehlSollC + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K);
+                if (traegt)
+                {
+                    wirksamerWeg = weg;
+                    return e;
+                }
+                rueckfall = true;
+            }
+            wirksamerWeg = DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL;
+            double mittel = AuslegungAussentemperaturC(thetaOut);
+            return sollEndlich ? Math.Max(mittel, kuehlSollC + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K) : mittel;
+        }
+
+        /// <summary>
+        /// Die Kurve des Gebäudes mit dem Auslegungsweg (E107): Auslegungs-Außentemperatur nach
+        /// <see cref="AuslegungAussentemperaturC(string, double?, double, double[], out string, out bool)"/>, dazu die
+        /// Fußpunktregel des Konstruktors.
+        /// </summary>
+        internal static Kuehlkurve Bilden(double fusspunktC, double auslegungVorlaufC, double vorlaufgrenzeC,
+                                          string weg, double? eingabeC, double kuehlSollC, double[] thetaOut)
+        {
+            double aussen = AuslegungAussentemperaturC(weg, eingabeC, kuehlSollC, thetaOut, out string wirksam, out bool rueckfall);
+            return new Kuehlkurve(fusspunktC, auslegungVorlaufC, aussen, vorlaufgrenzeC)
+            {
+                AuslegungWeg = wirksam,
+                AuslegungRueckfall = rueckfall,
+                AuslegungEingabeC = eingabeC ?? double.NaN,
+            };
         }
 
         /// <summary>Die obere Grenze der Stunde [°C]: θ_max − Mindestabstand; +∞ ohne endlichen Kühlsollwert.</summary>

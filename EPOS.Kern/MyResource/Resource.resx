@@ -33941,6 +33941,15 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
     <value>Anlagenkopplung: {0} — die Vorlaufgrenze {1} °C liegt über dem Auslegungsvorlauf {2} °C der Kühlübergabe; die Nennleistung wird nie erreicht.</value>
   </data>
+  <data name="SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT" xml:space="preserve">
+    <value>Der Auslegungsweg der Kühlkurve „{0}“ ist unbekannt; bekannt sind „stunde“, „tagesmittel“ und „eingabe“. Der Lauf bricht für dieses Gebäude ab.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLKURVE_EINGABE_RUECKFALL" xml:space="preserve">
+    <value>Kühlkurve: {0} — die eingegebene Auslegungs-Außentemperatur {1} °C liegt nicht über dem Kühlsollwert {2} °C plus {3} K; es gilt das wärmste Tagesmittel, mindestens Kühlsollwert plus Mindestspanne: {4} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLKURVE_FUSSPUNKT_GEKLEMMT" xml:space="preserve">
+    <value>Kühlkurve: {0} — der Fußpunkt {1} °C liegt unter dem Auslegungsvorlauf {2} °C; der Vorlauf stiege mit der Außentemperatur. Gerechnet wird mit dem Fußpunkt {2} °C (waagrechte Kurve).</value>
+  </data>
   <data name="SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH" xml:space="preserve">
     <value>Anlagenkopplung: Flächenkühlung ohne Estrichmasse — die Masse der Kühlfläche wird nicht gerechnet.</value>
   </data>

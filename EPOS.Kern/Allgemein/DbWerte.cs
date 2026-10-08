@@ -392,6 +392,22 @@ namespace WindowsFormsApplication1
         public const string KESSEL_BEREITSCHAFT_EINHEIT_PROZENT = "%";
 
         // =====================================================================
+        // Auslegungsweg der Kühlkurve (Entwurf KK, Festlegung 3; E107)
+        //   künftig Tab_Gebaeude(_STAMM).Kuehlkurve_Auslegung_Weg (Schemaschritt S1, KK4),
+        //   TEXT CHECK IN ('stunde','tagesmittel','eingabe'); leer = 'tagesmittel'
+        //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
+        // =====================================================================
+
+        /// <summary>Weg 1: die höchste Stundentemperatur der Klimareihe ist die Auslegungs-Außentemperatur der Kühlung.</summary>
+        public const string KUEHLKURVE_AUSLEGUNG_STUNDE = "stunde";
+
+        /// <summary>Weg 2, die Vorgabe (auch leer): das wärmste Tagesmittel, mindestens Kühlsollwert + Mindestspanne.</summary>
+        public const string KUEHLKURVE_AUSLEGUNG_TAGESMITTEL = "tagesmittel";
+
+        /// <summary>Weg 3: die Eingabe am Gebäude (<c>Kuehlkurve_Auslegung_Aussen</c>); nicht über dem Sollwert → Weg 2.</summary>
+        public const string KUEHLKURVE_AUSLEGUNG_EINGABE = "eingabe";
+
+        // =====================================================================
         // Kollektorfeld der Solarthermie (Welle M2, ST2 und ST6)
         //   Tab_Energieanlagen.Arbeitstemperatur_Weg und
         //   Tab_Solarkollektoren(_STAMM).Bezugsflaeche

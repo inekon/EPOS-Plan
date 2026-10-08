@@ -782,6 +782,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Meldungen der Kühlkurve (Entwurf KK, Festlegungen 3 und 18; E107) — je Gebäude und Lauf einmal: der Rückfall des
+        /// Auslegungswegs „eingabe“ auf das wärmste Tagesmittel und die Fußpunktregel. Ohne wirksame Kühlkurve schweigt sie.
+        /// </summary>
+        internal static void KuehlkurveMelden(GebaeudeModellEingang e, SimulationProtokoll p, string id, string wer)
+        {
+            Kuehlkurve kurve = e.Kuehlkurve;
+            if (!e.KuehlkurveWirksam || kurve == null) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            if (kurve.AuslegungRueckfall)
+                p.HinweisEinmal("kk-auslegung-rueckfall-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLKURVE_EINGABE_RUECKFALL, wer,
+                                  double.IsNaN(kurve.AuslegungEingabeC) ? "—" : kurve.AuslegungEingabeC.ToString("0.#", k),
+                                  e.KuehlSollwert.ToString("0.#", k),
+                                  GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K.ToString("0.#", k),
+                                  kurve.AuslegungAussenC.ToString("0.#", k)));
+            if (kurve.FusspunktGeklemmt)
+                p.HinweisEinmal("kk-fusspunkt-geklemmt-" + id,
+                    string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLKURVE_FUSSPUNKT_GEKLEMMT, wer,
+                                  kurve.FusspunktEingabeC.ToString("0.#", k), kurve.AuslegungVorlaufC.ToString("0.#", k)));
+        }
+
+        /// <summary>
         /// Die Meldungen der Kälteseite (E37, Anlagenkopplung 9.5) — je Gebäude und Lauf einmal.
         /// Ohne Schalter <c>Kuehluebergabe_Aktiv</c> schweigt sie (A1, wie die Heizseite); mit
         /// Schalter und ohne Projektstufe, ohne wirksame Kühlung (E32) oder mit Art „ideal" nennt
@@ -838,6 +860,8 @@ namespace WindowsFormsApplication1
                 p.HinweisEinmal("ak-kuehl-grenze-ueber-auslegung-" + id,
                     string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG, wer,
                                   e.KuehlVorlaufgrenzeC.ToString("0.#", k), e.KuehlUebergabe.AuslegungVorlaufC.ToString("0.#", k)));
+
+            KuehlkurveMelden(e, p, id, wer);
 
             if (e.KuehlUebergabeArt == DbWerte.KUEHLUEBERGABE_FLAECHENKUEHLUNG)
                 p.HinweisEinmal("ak-flaechenkuehlung-estrich", MyResource.Resource.SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH);

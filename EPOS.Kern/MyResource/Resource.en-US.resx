@@ -33934,6 +33934,15 @@ Do you want to allow this?</value>
   <data name="SIMENG_AK_KUEHL_GRENZE_UEBER_AUSLEGUNG" xml:space="preserve">
     <value>System coupling: {0} — the flow temperature limit {1} °C is above the design flow temperature {2} °C of the cooling emitter; the rated output is never reached.</value>
   </data>
+  <data name="SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT" xml:space="preserve">
+    <value>The design method “{0}” of the cooling curve is unknown; known methods are “stunde”, “tagesmittel” and “eingabe”. The run stops for this building.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLKURVE_EINGABE_RUECKFALL" xml:space="preserve">
+    <value>Cooling curve: {0} — the entered design outdoor temperature {1} °C is not above the cooling set point {2} °C plus {3} K; the warmest daily mean applies, at least the cooling set point plus the minimum span: {4} °C.</value>
+  </data>
+  <data name="SIMENG_AK_KUEHLKURVE_FUSSPUNKT_GEKLEMMT" xml:space="preserve">
+    <value>Cooling curve: {0} — the base point {1} °C is below the design flow temperature {2} °C; the flow temperature would rise with the outdoor temperature. The calculation uses the base point {2} °C (flat curve).</value>
+  </data>
   <data name="SIMENG_AK_FLAECHENKUEHLUNG_OHNE_ESTRICH" xml:space="preserve">
     <value>System coupling: surface cooling without screed mass — the mass of the cooling surface is not calculated.</value>
   </data>

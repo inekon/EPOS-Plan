@@ -330,6 +330,25 @@ namespace WindowsFormsApplication1
         /// geöffneten Übergabe [–] bei Raumluft am Kühlsollwert.</summary>
         internal const double KUEHLKURVE_PROBE_LEISTUNGSANTEIL_MIN = 0.10;
 
+        /// <summary>
+        /// <b>Mindestspanne der Auslegungs-Außentemperatur über dem Kühlsollwert</b> [K] (Entwurf KK, Festlegung 3; E107 Weg 2,
+        /// die Vorgabe): θ_out,K,N = max(wärmstes Tagesmittel, Kühlsollwert + 8 K). Kein Normwert, gewählt per Messung über die
+        /// Klimaregionen der Testdatenbank (<c>Tab_Solar_STAMM</c>): In den mitteleuropäischen Regionen liegt das wärmste
+        /// Tagesmittel bei 24,4 … 27,8 °C — mit einem Kühlsollwert von 24 … 26 °C oft darunter oder knapp darüber, die Kurve
+        /// spränge am Sollwert —, die höchste Stundentemperatur bei 30,1 … 34,5 °C (Mitte rund 33 °C). Mit 8 K landet der
+        /// Auslegungspunkt bei Sollwerten 24 … 26 °C bei 32 … 34 °C, also bei den höchsten Stunden des Jahres, und der steigende
+        /// Ast hat über 8 K eine flache Steigung (Kühldecke 19 → 16 °C: 0,375 K/K). 6 K bliebe für 24 °C unter fast jeder
+        /// höchsten Stunde, 10 K läge über allen.
+        /// </summary>
+        internal const double KUEHLKURVE_AUSLEGUNG_SPANNE_K = 8.0;
+
+        /// <summary>
+        /// <b>Kleinster Abstand einer eingegebenen Auslegungs-Außentemperatur über dem Kühlsollwert</b> [K] (E107 Weg 3): Liegt
+        /// die Eingabe nicht um mehr als 1 K über dem Sollwert, stiege der Ast auf weniger als einem Kelvin fast senkrecht an;
+        /// dann gilt Weg 2 mit Laufhinweis. Kein Normwert.
+        /// </summary>
+        internal const double KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K = 1.0;
+
         /// <summary>Kleinster zulässiger Raumeinfluss der Kühlkurve [K/K] (Entwurf KK, Festlegung 7; wie die Heizseite).</summary>
         internal const double KUEHLKURVE_RAUMEINFLUSS_MIN = 0.0;
 

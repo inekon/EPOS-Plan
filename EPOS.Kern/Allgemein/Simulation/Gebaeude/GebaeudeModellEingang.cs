@@ -2202,8 +2202,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Kühlkurve des Gebäudes</b> (Entwurf KK, 2.1; Festlegungen 2–5, 7), nach <see cref="KuehlKopplungAufloesen"/>:
-        /// Fußpunkt aus <c>Kuehlkurve_Fusspunkt</c> oder, leer, der Auslegungsrücklauf der Kühlübergabe; Auslegungspunkt der
-        /// Auslegungsvorlauf bei der hergeleiteten Auslegungs-Außentemperatur der Kühlung (wärmstes Tagesmittel); unten die
+        /// Fußpunkt aus <c>Kuehlkurve_Fusspunkt</c> oder, leer, der Auslegungsrücklauf der Kühlübergabe (kälter als der
+        /// Auslegungsvorlauf: geklemmt, Fußpunktregel); Auslegungspunkt der Auslegungsvorlauf bei der Auslegungs-Außentemperatur
+        /// nach <c>Kuehlkurve_Auslegung_Weg</c> (E107, Vorgabe wärmstes Tagesmittel, mindestens Kühlsollwert + Spanne); unten die
         /// Vorlaufgrenze, kälter als die Anlage nie (Mischgruppe, wie der feste Vorlauf). Die Reihe wird einmal gerechnet,
         /// am Kühlsollwert der Stunde (<see cref="ThetaMax"/>); der feste Vorlauf entfällt (NaN), wie auf der Heizseite.
         /// </summary>
@@ -2218,8 +2219,14 @@ namespace WindowsFormsApplication1
                         GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MIN, GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MAX);
             KuehlkurveRaumeinflussKK = kK;
 
-            Kuehlkurve = new Kuehlkurve(fuss, KuehlUebergabe.AuslegungVorlaufC,
-                                        Kuehlkurve.AuslegungAussentemperaturC(ThetaOut), KuehlVorlaufgrenzeC);
+            // E107: der Auslegungsweg (leer = wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne); ein
+            // unbekannter Weg bricht ab, ein Rückfall des Wegs „eingabe“ und die Fußpunktregel melden sich im Lauf.
+            if (!Kuehlkurve.WegBekannt(g.Kuehlkurve_Auslegung_Weg))
+                Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                       string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT,
+                                     g.Kuehlkurve_Auslegung_Weg));
+            Kuehlkurve = Kuehlkurve.Bilden(fuss, KuehlUebergabe.AuslegungVorlaufC, KuehlVorlaufgrenzeC,
+                                           g.Kuehlkurve_Auslegung_Weg, g.Kuehlkurve_Auslegung_Aussen, KuehlSollwert, ThetaOut);
             double erzeuger = Endlich(kuehlVorlaufAnlageC) ? kuehlVorlaufAnlageC : double.NaN;
             var reihe = new double[8760];
             var anGrenze = new bool[8760];

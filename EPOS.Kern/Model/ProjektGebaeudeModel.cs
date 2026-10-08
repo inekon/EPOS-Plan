@@ -263,6 +263,15 @@ namespace WindowsFormsApplication1
         /// <c>null</c> oder 0 = aus (Festlegungen 1, 6). Gerechnet erst mit KK3.</summary>
         public double? Kuehlkurve_Raumeinfluss { get; set; }
 
+        /// <summary>Der Auslegungsweg der Kühlkurve (künftig <c>Tab_Gebaeude.Kuehlkurve_Auslegung_Weg</c>, E107):
+        /// <c>DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE</c>, <c>…_TAGESMITTEL</c> oder <c>…_EINGABE</c>; <c>null</c> oder leer =
+        /// <c>…_TAGESMITTEL</c> (Festlegung 3).</summary>
+        public string Kuehlkurve_Auslegung_Weg { get; set; }
+
+        /// <summary>Die Auslegungs-Außentemperatur der Kühlkurve [°C] (künftig <c>Tab_Gebaeude.Kuehlkurve_Auslegung_Aussen</c>);
+        /// wirkt nur mit dem Weg <c>eingabe</c> (E107).</summary>
+        public double? Kuehlkurve_Auslegung_Aussen { get; set; }
+
         // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der

@@ -95925,6 +95925,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve: {0} — die eingegebene Auslegungs-Außentemperatur {1} °C liegt nicht über dem Kühlsollwert {2} °C plus {3} K; es gilt das wärmste Tagesmittel, mindestens Kühlsollwert plus Mindestspanne: {4} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHLKURVE_EINGABE_RUECKFALL {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHLKURVE_EINGABE_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve: {0} — der Fußpunkt {1} °C liegt unter dem Auslegungsvorlauf {2} °C; der Vorlauf stiege mit der Außentemperatur. Gerechnet wird mit dem Fußpunkt {2} °C (waagrechte Kurve). ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHLKURVE_FUSSPUNKT_GEKLEMMT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHLKURVE_FUSSPUNKT_GEKLEMMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslegungsweg der Kühlkurve „{0}“ ist unbekannt; bekannt sind „stunde“, „tagesmittel“ und „eingabe“. Der Lauf bricht für dieses Gebäude ab. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — die Kühlübergabe ist eingeschaltet, die Kühlübergabeart ist aber „ideal“ oder leer; gerechnet wird mit idealer Kühlung. ähnelt.
         /// </summary>
         public static string SIMENG_AK_KUEHLUEBERGABEART_IDEAL {
