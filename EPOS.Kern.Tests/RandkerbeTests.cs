@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -168,6 +168,17 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Schmale_Oeffnung_am_Rand_ist_ohne_Flaeche_und_bleibt_ohne_Aussparung()
+        {
+            // 2,4 mm breit, an der Wandkante: im Mittel nicht breiter als zweimal die Kerbtoleranz.
+            Koerperergebnis e = Bilden(out List<Aussparung> a, Oeffnung("Spalt1", 3.9976, 4.0, 1.0, 2.0));
+            Aussparung x = Assert.Single(a);
+            Assert.Equal(Aussparungsart.Keine, x.Art);
+            Assert.Equal(Koerperbildner.GRUND_OEFFNUNG_LEER, x.Grund);
+            Assert.Equal(Koerperbildner.Extrusion(Wand(), 0.3, Extrusionsrichtung.NachInnen, P(0, 1, 0)).Koerper.Text(), e.Koerper.Text());
+        }
+
+        [Fact]
         public void Ohne_Kerbe_ist_der_Koerper_derselbe_wie_mit_Loechern()
         {
             Koerperergebnis neu = Bilden(out List<Aussparung> a, Oeffnung("Fenster1", 1.0, 2.5, 1.0, 2.2));
@@ -183,26 +194,40 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Kerbe_und_Loch_in_einer_Wand_deterministisch_und_ueberlappend_benannt()
+        public void Kerbe_und_ueberlappende_Loecher_in_einer_Wand_deterministisch()
         {
             Wandoeffnung[] o =
             {
                 Oeffnung("Tuer1", 0.5, 1.5, 0.0, 2.1),
                 Oeffnung("Fenster1", 2.0, 3.5, 1.0, 2.2),
-                Oeffnung("Doppelt1", 3.0, 3.8, 1.5, 2.5),   // überlappt Fenster1
+                Oeffnung("Doppelt1", 3.0, 3.8, 1.5, 2.5),   // überlappt Fenster1 auf 0,5 × 0,7 m
             };
             Koerperergebnis e1 = Bilden(out List<Aussparung> a, o);
             Koerperergebnis e2 = Bilden(out _, o.Reverse().Reverse().ToArray());
             Assert.True(e1.Gebildet, e1.ToString());
-            Assert.Equal(new[] { Aussparungsart.Kerbe, Aussparungsart.Loch, Aussparungsart.Keine }, a.Select(x => x.Art));
-            Assert.Equal(Koerperbildner.GRUND_OEFFNUNG_UEBERLAPPT, a[2].Grund);
+            Assert.Equal(new[] { Aussparungsart.Kerbe, Aussparungsart.Loch, Aussparungsart.Loch }, a.Select(x => x.Art));
             GeschlossenNachAussen(e1.Koerper);
-            Assert.Equal((12.0 - 2.1 - 1.8) * 0.3, Volumen(e1.Koerper), 6);
+            // Vereinigung der beiden Fenster: 1,8 + 0,8 − 0,35 = 2,25 m².
+            Assert.Equal((12.0 - 2.1 - 2.25) * 0.3, Volumen(e1.Koerper), 6);
             Assert.Equal(e1.Koerper.Text(), e2.Koerper.Text());
             // Ein Umlauf im Uhrzeigersinn ändert die Fläche nicht.
             var umgekehrt = new Quellflaeche { Kennung = "Wand1", Aussen = Wand().Aussen.Reverse().ToList() };
             Koerperergebnis e3 = Koerperbildner.Extrusion(umgekehrt, o, 0.3, Extrusionsrichtung.NachInnen, P(0, 1, 0), out _);
             Assert.Equal(Volumen(e1.Koerper), Volumen(e3.Koerper), 9);
+        }
+
+        [Fact]
+        public void Fensterband_aus_sich_beruehrenden_Fenstern_wird_gemeinsam_ausgespart()
+        {
+            Koerperergebnis e = Bilden(out List<Aussparung> a, Oeffnung("FensterA", 1.0, 2.0, 1.0, 2.0), Oeffnung("FensterB", 2.0, 3.0, 1.0, 2.0));
+            Assert.True(e.Gebildet, e.ToString());
+            Assert.Equal(new[] { Aussparungsart.Loch, Aussparungsart.Loch }, a.Select(x => x.Art));
+            GeschlossenNachAussen(e.Koerper);
+            Assert.Equal(10.0 * 0.3, Volumen(e.Koerper), 6);
+            // Die Laibung läuft um den gemeinsamen Umriss: je Fenster drei Kanten zu 1 m, an der Stoßkante keine.
+            Assert.Equal(3.0 * 0.3, Laibung(e.Koerper, "FensterA"), 6);
+            Assert.Equal(3.0 * 0.3, Laibung(e.Koerper, "FensterB"), 6);
+            Assert.Equal(2 * 10.0 + (14.0 + 6.0) * 0.3, Oberflaeche(e.Koerper), 6);
         }
 
         [Fact]
