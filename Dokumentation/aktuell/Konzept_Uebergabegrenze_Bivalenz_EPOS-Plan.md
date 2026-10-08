@@ -348,7 +348,9 @@ der Kesselrücklauf θ_V,WP (2.9). `Kesselkennlinie.Ruecklauf` erhält dafür di
 (Kette Vorwärmer → Heizkreis → Speicher → Paar → Rückfall); sonst rechnet der Brennwertkessel im Vorwärmbetrieb mit
 zu viel Brennwertnutzen — bei Erdgas ≈ 99–100 % bei 30–35 °C statt ≈ 93–95 % bei 45–55 °C Rücklauf (Abl. aus [Q58])
 (UB‑E2, UB‑Q11). **BHKW (Option, UB‑Q9):** `Ruecklauf_Max` auch am BHKW; liegt der Rücklauf zum BHKW (Heizkreis
-bzw. unterste Pufferzone) darüber, liefert es in der Stunde nichts (Grund `RUECKLAUF_MAX`).
+bzw. unterste Pufferzone) darüber, liefert es in der Stunde nichts (Grund `RUECKLAUF_MAX`) — anlagenbedingte
+Abschaltgrenze, getrennt vom Auslegungspaar `Vorlauf`/`Ruecklauf`; der Auslegungsrücklauf liegt darunter
+(Prüfregel mit Hinweis, Umsetzungskonzept U‑3).
 
 ### 4.5 Schritt UB‑d — Betriebsbereiche und Bivalenzpunkte
 
@@ -426,7 +428,7 @@ Wärmepumpe ohne die neuen Felder und mit `Vorwaermbetrieb = 0` verhält sich in
 | `Ruecklauf_Bezug` | dto. | REAL | leer = 30 °C, wenn abgewertet wird | 20–40 °C | Bezugsrücklauf des Kennfelds (R744) |
 | `Ruecklauf_Abwertung_ProzentJeK` | dto. | REAL | leer = keine Abwertung | 0–5 | R744 [Q42], [Q43] |
 | `Kaeltemittel` | dto. | TEXT ohne CHECK-Liste (Werteliste im Kern als Klappliste) | leer = allgemeine (unterkritische) Vorgaben | `R410A`, `R32`, `R290`, `R744`, `R134a`, `R1234ze(E)`, `R407C`, `R454C`, `R455A`, `R1233zd(E)`, `SONSTIGES` | wählt die Vorgaben je Kältemittelklasse (6.3); Umsetzungskonzept U‑2 |
-| `Ruecklauf_Max` | `Tab_BHKW` (Option UB‑Q9) | REAL | leer = keine Grenze; Neuanlage und Schnellwahl 70 °C | 40–90 °C | Motorkühlkreis [Q63], [Q64] |
+| `Ruecklauf_Max` | `Tab_BHKW` (Option UB‑Q9) | REAL | leer = keine Grenze; Neuanlage und Schnellwahl 70 °C | 40–90 °C | Motorkühlkreis [Q63], [Q64]; anlagenbedingte Abschaltgrenze, getrennt vom Auslegungspaar `Vorlauf`/`Ruecklauf`, das darunter liegt (Prüfregel mit Hinweis, Umsetzungskonzept U‑3) |
 | `Einbindung` | `Tab_Energieanlagen` | TEXT `CHECK (Einbindung IN ('DIREKT','PUFFER','WEICHE'))` | `PUFFER`, wenn der Anlage ein Heizungspuffer zugeordnet ist, sonst `DIREKT` | — | Anlagenschaltung |
 | `Vorwaermbetrieb` | `Tab_Energieanlagen` | INTEGER `CHECK (Vorwaermbetrieb IN (0,1))` | 0 | 0/1 | Anlagenschaltung (Reihe WP → Kessel) |
 
