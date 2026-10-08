@@ -27841,6 +27841,9 @@ Do you want to allow this?</value>
   <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
     <value>The lock could not be switched; nothing was changed.</value>
   </data>
+  <data name="ADM_SCHLOSS_ERST_AUFHEBEN" xml:space="preserve">
+    <value>Delivered record – read only. To edit it, first choose “Unlock...”.</value>
+  </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Kept (used in projects): {0}</value>
   </data>

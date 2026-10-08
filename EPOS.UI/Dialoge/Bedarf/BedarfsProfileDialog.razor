@@ -158,6 +158,9 @@
                         @onclick="BeiDbAendern">@BtnDbAendernText</button>
                 <button type="button" class="epos-knopf"
                         @onclick="() => _namensfrage = true">@BtnDbNeuText</button>
+                <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
+                                JaText="@JaText" NeinText="@NeinText"
+                                Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
                 <button type="button" class="epos-knopf" disabled="@(_katalogzeile is null)"
                         @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
                 @if (TypProfilGaben is not null)
@@ -1331,9 +1334,36 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
+        if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape" || _ergebnisGaben is not null || _typStammGaben is not null ||
             _typProfilOffen || _namensfrage || _loeschfrage || _zapfprofilGaben is not null)
             return Task.CompletedTask;
         return Abbrechen();
     }
+
+    // =================================================================================
+    // Schloss setzen / aufheben (AD-Q15) - derselbe Baustein wie in den Verwaltungen
+    // =================================================================================
+
+    /// <summary>
+    /// „Schloss setzen…" / „Schloss aufheben…" an der Katalogliste
+    /// (<c>Schlosswege.Aus(…SchlossSetzen)</c>). Ohne ihn steht der Knopf nicht da.
+    /// Die Verwendung im Projekt sperrt nichts: Das Projekt führt eine eigene Kopie.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    private Katalogschloss? _katalogschloss;
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    /// <summary>Nach dem Schalten: Liste neu lesen, Status melden.</summary>
+    private void BeiSchlossGeschaltet(string status)
+    {
+        KatalogLaden();
+        Melden(status ?? "", WarnStufe.Hinweis);
+    }
+
+    /// <summary>Warum nicht geschaltet wurde.</summary>
+    private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", WarnStufe.Warnung);
 }

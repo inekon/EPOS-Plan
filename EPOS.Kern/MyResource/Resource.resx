@@ -27848,6 +27848,9 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
     <value>Das Schloss ließ sich nicht umschalten; nichts wurde geändert.</value>
   </data>
+  <data name="ADM_SCHLOSS_ERST_AUFHEBEN" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen. Zum Bearbeiten zuerst „Schloss aufheben...“ wählen.</value>
+  </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Stehen bleiben (in Projekten verwendet): {0}</value>
   </data>

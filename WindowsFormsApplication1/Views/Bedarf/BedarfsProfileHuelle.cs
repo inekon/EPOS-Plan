@@ -291,6 +291,9 @@ namespace WindowsFormsApplication1
                 // W14a-E-10 / S3.1: die Katalogliste des Hauses statt der zwei- bis
                 // dreispaltigen Tabelle. Sie kommt aus EINER Abfrage und traegt fuenf
                 // Spalten plus "im Projekt verwendet" (Q12).
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) => BedarfStammCtrl.SchlossSetzen(art, ids, gesperrt)),
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     () => BedarfStammCtrl.Katalogfilterzeilen(art)),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerBedarf(art, BedarfAdminHuelle.Filtertext)

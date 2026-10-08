@@ -522,6 +522,10 @@ namespace WindowsFormsApplication1
                 // bekommt; der Aufklapper IST sein Raster. Dieselben Schluessel und
                 // dieselben Texte wie beim Heizkessel - die sechs Erzeugerfamilien
                 // sollen im gleichen Schema stehen.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(BHKWStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => BhkwAdminHuelle.Wege().Detail!(name)!),
 

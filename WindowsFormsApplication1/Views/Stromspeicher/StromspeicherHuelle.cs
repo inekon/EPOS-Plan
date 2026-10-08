@@ -132,6 +132,10 @@ namespace WindowsFormsApplication1
                 // ModulFeldwertBruecke. Erst damit sind die sechs AP3-Geraetewerte
                 // (Wirkungsgrad, Zyklen, Verschleiss- und Leistungskosten, Investition
                 // fix, Standby) aus dem Projektdialog heraus ueberhaupt zu sehen.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(StromspeicherStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => ModulFeldwertBruecke.Felder(StromspeicherAdminHuelle.Wege(), name)),
                 ["KatalogfelderSpeichern"] =

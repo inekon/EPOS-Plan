@@ -278,6 +278,10 @@ namespace WindowsFormsApplication1
                 // Sie kommen aus derselben Quelle wie die des Katalogbrowsers - der
                 // Aufklapper IST sein Raster; der Speicherweg steht seit demselben Tag
                 // im Kern (SolarkollektorenStammCtrl.AnzeigefelderSchreiben).
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(SolarkollektorenStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => SolarkollektorAdminHuelle.Wege().Detail!(name)!),
                 ["KatalogfelderSpeichern"] =

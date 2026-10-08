@@ -1404,6 +1404,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Bearbeiten zuerst „Schloss aufheben...“ wählen. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_ERST_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_ERST_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss ließ sich nicht umschalten; nichts wurde geändert. ähnelt.
         /// </summary>
         public static string ADM_SCHLOSS_FEHLER {
