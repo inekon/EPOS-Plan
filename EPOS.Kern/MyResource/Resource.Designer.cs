@@ -10684,6 +10684,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht geöffnet ähnelt.
+        /// </summary>
+        public static string BK_STATUS_KOSTEN_OFFEN {
+            get {
+                return ResourceManager.GetString("BK_STATUS_KOSTEN_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} nicht aktuell ähnelt.
         /// </summary>
         public static string BK_STATUS_NICHT_AKTUELL {
