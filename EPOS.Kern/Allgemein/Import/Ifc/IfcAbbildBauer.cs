@@ -699,7 +699,8 @@ namespace WindowsFormsApplication1
         /// Elemente ohne Darstellung desselben Gebäudes, deren Name der des Körpers ist oder ihn um „-n“ ergänzt (HottCAD
         /// schreibt so je Raum einen Teil mit eigenem Mengensatz, der Körper trägt das ganze Bauteil), werden die Körper
         /// gegen die Summe aller Mengensätze verglichen (Meldung <c>KOERPER_ABWEICHUNG_TEILE</c>, Info
-        /// <c>KOERPER_TEILE_*</c> je Bauteilart).</item>
+        /// <c>KOERPER_TEILE_*</c> je Bauteilart). Tragen die Teile einen anderen Namensstamm als der Körper, gilt die eine
+        /// passende Teilgruppe nach <see cref="FremdnamigeTeile"/>.</item>
         /// <item><b>Zusammenfassung</b> (G5-N): Jede Abweichung über <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> zählt in
         /// eine Info je Bauteilart (Außenwand, Innenwand, Dach, Boden und Decke, sonstige; <c>KOERPER_ABWEICHUNGEN_*</c>):
         /// Anzahl, Median und größte Abweichung samt Bauteil. Eine Warnung je Bauteil steht erst ab
@@ -723,6 +724,7 @@ namespace WindowsFormsApplication1
             var gruppen = new Dictionary<(int, string, string), List<AbbildBauteil>>();
             var restgruppen = new Dictionary<(int, string, string), List<AbbildBauteil>>();
             var schwerpunkte = new Dictionary<int, double[]>();
+            var ohneTeile = new List<(AbbildBauteil Bauteil, int Gebaeude, string Name)>();
             foreach ((AbbildBauteil b, List<Dateikoerper> koerper, Bauteilkoerperart art, int gi) in _koerperVormerkung)
             {
                 // 17.5: Ein aus Flächen gebildeter Körper ist kein unabhängiger Beleg — kein Körpervergleich gegen den Mengensatz
@@ -750,7 +752,7 @@ namespace WindowsFormsApplication1
                         mitKoerper.Add(b);
                         continue;
                     }
-                    KoerperVergleichen(P + "KOERPER_ABWEICHUNG", name, b.Art, new[] { b }, kf.FlaecheM2);
+                    ohneTeile.Add((b, gi, name));
                     continue;
                 }
                 if (b.Name != null)
@@ -790,6 +792,19 @@ namespace WindowsFormsApplication1
                 }
                 foreach (AbbildBauteil o in b.Oeffnungen)
                     if (o.NeigungGrad == neigungAlt) o.NeigungGrad = b.NeigungGrad;
+            }
+            // Körper mit Mengensatz ohne gleichnamige Teile: gegen den eigenen Mengensatz, sonst gegen eine fremdnamige Teilgruppe.
+            var vergeben = new HashSet<(int, string, string)>();
+            foreach ((AbbildBauteil b, int gi, string name) in ohneTeile)
+            {
+                if (FremdnamigeTeile(b, gi, teile, vergeben) is (int, string, string) fremd)
+                {
+                    vergeben.Add(fremd);
+                    List<AbbildBauteil> alle = new[] { b }.Concat(teile[fremd]).ToList();
+                    _koerperMitTeilen.Add(b.Art);
+                    KoerperVergleichen(P + "KOERPER_ABWEICHUNG_TEILE", name, b.Art, alle, b.Koerperflaeche.FlaecheM2, alle.Count - 1);
+                }
+                else KoerperVergleichen(P + "KOERPER_ABWEICHUNG", name, b.Art, new[] { b }, b.Koerperflaeche.FlaecheM2);
             }
             // Die Bauteile mit Teilen ohne Darstellung: alle Körper gegen alle Mengensätze (Reihenfolge der Körper).
             foreach (KeyValuePair<(int, string, string), List<AbbildBauteil>> gr in gruppen)
@@ -1051,6 +1066,33 @@ namespace WindowsFormsApplication1
         {
             int strich = name.LastIndexOf('-');
             return strich > 0 && strich < name.Length - 1 && name.Skip(strich + 1).All(c => c >= '0' && c <= '9') ? name.Substring(0, strich) : name;
+        }
+
+        /// <summary>
+        /// <b>Teile ohne Darstellung unter fremdem Namen</b> (Prüfpunkt nach G5-N): HottCAD benennt den Körper einer Geschossplatte
+        /// mitunter nach einem anderen Geschosskürzel als ihre Teile je Raum (Körper „… UG1“, Teile „… KG1-n“). Weicht der Körper
+        /// eines Bauteils mit Mengensatz ohne gleichnamige Teile um mehr als <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> nach
+        /// oben ab, gilt als seine Teilgruppe die <b>eine</b> Gruppe von Teilen ohne Darstellung desselben Gebäudes, derselben
+        /// Klasse und derselben Bauteilart, deren Namensstamm keinem Körper gehört, die noch nicht vergeben ist und mit der der
+        /// eigene Mengensatz den Körper bis auf <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> deckt (brutto oder netto).
+        /// Passen keine oder mehrere Gruppen, bleibt der Vergleich gegen den eigenen Mengensatz. Nur der Vergleich ändert sich —
+        /// jedes Teil behält seinen Mengensatz, die Flächen bleiben.
+        /// </summary>
+        private (int, string, string)? FremdnamigeTeile(AbbildBauteil b, int gi, ILookup<(int, string, string), AbbildBauteil> teile,
+                                                       HashSet<(int, string, string)> vergeben)
+        {
+            double koerper = b.Koerperflaeche.FlaecheM2, brutto = b.BruttoflaecheM2.Value, netto = b.NettoflaecheM2 ?? brutto;
+            if (koerper <= brutto || IfcBauteilkoerper.Abweichung(brutto, koerper) <= IfcBauteilkoerper.ABWEICHUNG_GRENZE) return null;
+            var mitKoerper = new HashSet<string>(_koerperVormerkung.Where(v => v.Gebaeude == gi && v.Bauteil.Quelltyp == b.Quelltyp && v.Bauteil.Name != null)
+                                                                   .Select(v => Namensstamm(v.Bauteil.Name)), StringComparer.Ordinal);
+            List<(int, string, string)> passend = teile
+                .Where(g => g.Key.Item1 == gi && g.Key.Item2 == b.Quelltyp && !mitKoerper.Contains(g.Key.Item3) && !vergeben.Contains(g.Key)
+                            && g.All(t => t.Art == b.Art && t.BruttoflaecheM2.HasValue))
+                .Where(g => Math.Min(IfcBauteilkoerper.Abweichung(brutto + g.Sum(t => t.BruttoflaecheM2.Value), koerper),
+                                     IfcBauteilkoerper.Abweichung(netto + g.Sum(t => t.NettoflaecheM2 ?? t.BruttoflaecheM2.Value), koerper))
+                            <= IfcBauteilkoerper.ABWEICHUNG_GRENZE)
+                .Select(g => g.Key).ToList();
+            return passend.Count == 1 ? passend[0] : ((int, string, string)?)null;
         }
 
         /// <summary>
