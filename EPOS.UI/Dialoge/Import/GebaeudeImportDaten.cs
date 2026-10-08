@@ -736,7 +736,79 @@ public sealed record GebaeudeProjektdateiDaten
     /// Gebäudeeditor über „Nutzungsprofil übernehmen…““); kein Auswahlfeld, gesetzt wird nichts. Leer = keiner.
     /// </summary>
     public string Einzonenvorschlag { get; init; } = "";
+
+    /// <summary>
+    /// Die Standprüfung IFC gegen Projektdatei (nur beim Weg „IFC + Projektdatei“, Anwenderentscheid vom 08.10.2026);
+    /// <c>null</c> = nicht geprüft.
+    /// </summary>
+    public GebaeudeStandpruefungDaten? Standpruefung { get; init; }
+
+    /// <summary>Die Wahl der Aufbauquelle (<see cref="GebaeudeAufbauquelleSchluessel"/>); ohne angeschlagene Prüfung „ifc“.</summary>
+    public string Aufbauquelle { get; init; } = GebaeudeAufbauquelleSchluessel.IFC;
+
+    /// <summary>Ist die Wahl offen (Übernehmen gesperrt, bis gewählt ist)?</summary>
+    public bool AufbauquelleOffen => Aufbauquelle == GebaeudeAufbauquelleSchluessel.OFFEN;
 }
+
+/// <summary>Die sprachneutralen Schlüssel der Aufbauquelle (Anwenderentscheid vom 08.10.2026).</summary>
+public static class GebaeudeAufbauquelleSchluessel
+{
+    /// <summary>Noch nicht gewählt — Übernehmen gesperrt.</summary>
+    public const string OFFEN = "offen";
+
+    /// <summary>Aufbauten und U-Werte der Projektdatei.</summary>
+    public const string PROJEKTDATEI = "projektdatei";
+
+    /// <summary>Der Stand der IFC (Rangfolge nach U-Abgleich).</summary>
+    public const string IFC = "ifc";
+}
+
+/// <summary>
+/// <b>Die Standprüfung IFC gegen Projektdatei</b> für den Dialog der Aufbauquelle: ob sie anschlägt, Zahl und Flächenanteil der
+/// abweichenden Bauteile, je Bauteilart die Mediane, bis zu fünf Beispiele und die belegten Anzeichen eines anderen Projektstands.
+/// </summary>
+public sealed record GebaeudeStandpruefungDaten
+{
+    /// <summary>Schlägt die Prüfung an (abweichende Fläche über 5 % der Hüllfläche)?</summary>
+    public bool Angeschlagen { get; init; }
+
+    /// <summary>Bauteile der Hülle mit U auf beiden Seiten.</summary>
+    public int Verglichen { get; init; }
+
+    /// <summary>Davon mit einer Abweichung über 10 %.</summary>
+    public int Abweichend { get; init; }
+
+    /// <summary>Die Bruttofläche der abweichenden Bauteile [m²].</summary>
+    public double AbweichendM2 { get; init; }
+
+    /// <summary>Die Hüllfläche brutto [m²].</summary>
+    public double HuellflaecheM2 { get; init; }
+
+    /// <summary>Der Anteil der abweichenden Fläche an der Hüllfläche [%].</summary>
+    public double AnteilProzent { get; init; }
+
+    /// <summary>Je Bauteilart der Median des U auf beiden Seiten.</summary>
+    public IReadOnlyList<GebaeudeStandpruefungArtDaten> JeArt { get; init; } = Array.Empty<GebaeudeStandpruefungArtDaten>();
+
+    /// <summary>Bis zu fünf abweichende Bauteile, größte Fläche zuerst.</summary>
+    public IReadOnlyList<GebaeudeStandpruefungBeispielDaten> Beispiele { get; init; } = Array.Empty<GebaeudeStandpruefungBeispielDaten>();
+
+    /// <summary>Die belegten Anzeichen eines anderen Projektstands (Kennwort und Satzteil).</summary>
+    public IReadOnlyList<GebaeudeStandanzeichenDaten> Anzeichen { get; init; } = Array.Empty<GebaeudeStandanzeichenDaten>();
+
+    /// <summary>Die Warnung des Protokolls als Anzeigetext; leer, wenn die Prüfung nicht anschlägt.</summary>
+    public string Meldung { get; init; } = "";
+}
+
+/// <summary>Je Bauteilart: Anzeigetext der Art, verglichene und abweichende Bauteile, Median-U der IFC und der Projektdatei [W/(m²K)].</summary>
+public sealed record GebaeudeStandpruefungArtDaten(string Art, int Verglichen, int Abweichend, double MedianUIfc, double MedianUProjektdatei);
+
+/// <summary>Ein abweichendes Bauteil: Name, Art, Bruttofläche [m²], beide U [W/(m²K)] und beide Aufbaunamen (leer = keiner).</summary>
+public sealed record GebaeudeStandpruefungBeispielDaten(string Bauteil, string Art, double FlaecheM2, double UIfc, double UProjektdatei,
+                                                       string AufbauIfc, string AufbauProjektdatei);
+
+/// <summary>Ein Anzeichen: sprachneutrales Kennwort (<c>kopie</c>, <c>baujahr</c>, <c>dicke</c>) und der Satzteil mit seinen Belegen.</summary>
+public sealed record GebaeudeStandanzeichenDaten(string Schluessel, string Text);
 
 /// <summary>
 /// <b>Der Zonenplan für den Zonenbaum</b> (Mehrzonenkonzept 6.4): die Zonen mit ihren Räumen, die nicht zugeordneten

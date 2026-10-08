@@ -528,6 +528,10 @@ namespace WindowsFormsApplication1
         internal const string PD_U_ABWEICHUNG = "IMP_BAUTEIL_PROT_PD_U_ABWEICHUNG";
         /// <summary>Mehrere verschiedene Aufbauten des Katalogs treffen das U der IFC (nicht geraten): Zahl, U-Werte.</summary>
         internal const string PD_KATALOG_MEHRDEUTIG = "IMP_BAUTEIL_PROT_PD_KATALOG_MEHRDEUTIG";
+        /// <summary>Aufbauquelle „Projektdatei“ gewählt (Anwenderentscheid vom 08.10.2026): Bauteile mit Aufbau bzw. U der Projektdatei, Bauteile ohne Gegenstück.</summary>
+        internal const string PD_QUELLE_PROJEKTDATEI = "IMP_BAUTEIL_PROT_PD_QUELLE_PROJEKTDATEI";
+        /// <summary>Aufbauquelle „IFC“ nach angeschlagener Standprüfung gewählt: es gilt die Rangfolge nach U-Abgleich.</summary>
+        internal const string PD_QUELLE_IFC = "IMP_BAUTEIL_PROT_PD_QUELLE_IFC";
 
         /// <summary>Die Quelle der Baustoffe aus der Projektdatei (<c>Tab_Baustoff.Quelle</c>, Konzept 5.5).</summary>
         internal const string QUELLE_PROJEKTDATEI = "Projektdatei";
@@ -903,8 +907,14 @@ namespace WindowsFormsApplication1
             /// <summary>Die gelesene Projektdatei mit Bauteiltabellen (BA-4b); <c>null</c> = ohne.</summary>
             internal SqprojStand Projektdatei { get; init; }
 
-            // Die Aufbauwahl der Projektdatei (E97); null ohne Projektdatei.
+            // Die Aufbauwahl der Projektdatei (E97 bzw. Aufbauquelle „Projektdatei“); null ohne Projektdatei.
             private SqprojAufbauwahl _wahl;
+
+            /// <summary>Das wirksame U eines Bauteils der Datei: mit Aufbauquelle „Projektdatei“ ihr U (über die GUID), sonst das der Datei.</summary>
+            private double? UDatei(AbbildBauteil s) => Projektdatei?.UWirksam(s) ?? s.UWertWm2K;
+
+            /// <summary>Die Herkunft des wirksamen U: <see cref="Importherkunft.Sqproj"/>, wenn es aus der Projektdatei stammt, sonst die des Formats.</summary>
+            private Importherkunft HerkunftUVon(AbbildBauteil s) => Projektdatei?.UWirksam(s) != null ? Importherkunft.Sqproj : _datei;
 
             /// <summary>Die Typwahl je Ersatzaufbau (Schlüssel → Code); <c>null</c> = die Vorgabe.</summary>
             internal IReadOnlyDictionary<string, string> Typwahl { get; init; }
@@ -928,14 +938,18 @@ namespace WindowsFormsApplication1
 
                 // Die Zuordnung des Einzonenwegs — Kenngrößen der Zone, Vorgaben, Summenprobe.
                 GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(_abbild, _index, _klasseGewaehlt, _quelle, _profil, _uebersteuert,
-                                                                     CadSollwert);
+                                                                     CadSollwert, Projektdatei?.ProjektdateiGilt == true ? UDatei : null);
                 _v.Satz = satz;
                 _klasse = satz.Baualtersklasse;
                 _v.Baualtersklasse = _klasse;
                 _bauart = satz.Zeile(GebaeudeZielfelder.BAUART)?.Textwert;
 
                 if (Projektdatei != null)
-                    _wahl = SqprojAufbauwahl.Bilden(Projektdatei.Abbild, Projektdatei.Abgleich, _g);
+                {
+                    _wahl = SqprojAufbauwahl.Bilden(Projektdatei.Abbild, Projektdatei.Abgleich, _g, Projektdatei.ProjektdateiGilt);
+                    // Anwenderentscheid vom 08.10.2026: Nach angeschlagener Standprüfung ist der Stand unvollständig, bis gewählt ist.
+                    if (Projektdatei.Aufbauquellenpruefung() is PruefMeldung offen) _v._meldungen.Add(offen);
+                }
                 _v.MitProjektdatei = _wahl != null;
 
                 _raeume = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
@@ -1178,8 +1192,8 @@ namespace WindowsFormsApplication1
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
 
-                z.UDatei = s.UWertWm2K;
-                if (s.UWertWm2K.HasValue) { z.Bauteil.U_Wert = s.UWertWm2K; z.HerkunftU = _datei; }
+                z.UDatei = UDatei(s);
+                if (z.UDatei.HasValue) { z.Bauteil.U_Wert = z.UDatei; z.HerkunftU = HerkunftUVon(s); }
                 else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
                 // g: ≤ 0 oder > 1 ist eine Fehlstelle (Datenaustauschkonzept 3.6) — dann gilt der Wert des Gebäudes.
                 if (s.GWert > 0.0 && s.GWert <= 1.0) { z.Bauteil.g_Wert = s.GWert; z.HerkunftG = _datei; }
@@ -1212,8 +1226,8 @@ namespace WindowsFormsApplication1
                 z.Flaechenherkunft = f.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
 
-                z.UDatei = f.UWertWm2K;
-                if (f.UWertWm2K.HasValue) { z.Bauteil.U_Wert = f.UWertWm2K; z.HerkunftU = _datei; }
+                z.UDatei = UDatei(f);
+                if (z.UDatei.HasValue) { z.Bauteil.U_Wert = z.UDatei; z.HerkunftU = HerkunftUVon(f); }
                 else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
                 // g: der Wert der Öffnung; ≤ 0 oder > 1 ist eine Fehlstelle (Datenaustauschkonzept 3.6) —
                 // dann bleibt er leer und es gilt der Wert des Gebäudes.
@@ -1250,7 +1264,7 @@ namespace WindowsFormsApplication1
             /// </summary>
             private void Opak(GebaeudeBauteilzeile z, AbbildBauteil s, Bauteilart art, Bauteilrand rand, bool gespiegelt, string summenfeld)
             {
-                z.UDatei = s.UWertWm2K;
+                z.UDatei = UDatei(s);
                 GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
                 if (aufbau != null)
                 {
@@ -1264,7 +1278,7 @@ namespace WindowsFormsApplication1
                     if (z.UDatei is double ud && ud >= GebaeudeFestwerte.U_MIN && ud <= GebaeudeFestwerte.U_MAX)
                     {
                         z.Bauteil.U_Wert = ud;
-                        z.HerkunftU = _datei;
+                        z.HerkunftU = HerkunftUVon(s);
                     }
                     if (z.UDatei.HasValue && z.USchichten > 0.0
                         && Math.Abs(z.UDatei.Value / z.USchichten.Value - 1.0) > U_ABWEICHUNG_GRENZE
@@ -1275,10 +1289,10 @@ namespace WindowsFormsApplication1
                 }
 
                 z.Fehlt = Luecken(s.Aufbau, rand != Bauteilrand.Innen);
-                if (s.UWertWm2K.HasValue)
+                if (z.UDatei.HasValue)
                 {
-                    z.Bauteil.U_Wert = s.UWertWm2K;
-                    z.HerkunftU = _datei;
+                    z.Bauteil.U_Wert = z.UDatei;
+                    z.HerkunftU = HerkunftUVon(s);
                     return;
                 }
                 if (s.Aufbau != null && s.Aufbau.Status == Aufbaustatus.Masselos
@@ -1630,8 +1644,8 @@ namespace WindowsFormsApplication1
                 if (transparent)
                 {
                     _vorhangfassaden++;
-                    z.UDatei = s.UWertWm2K;
-                    if (s.UWertWm2K.HasValue) { z.Bauteil.U_Wert = s.UWertWm2K; z.HerkunftU = _datei; }
+                    z.UDatei = UDatei(s);
+                    if (z.UDatei.HasValue) { z.Bauteil.U_Wert = z.UDatei; z.HerkunftU = HerkunftUVon(s); }
                     else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
                     if (s.GWert > 0.0 && s.GWert <= 1.0) { z.Bauteil.g_Wert = s.GWert; z.HerkunftG = _datei; }
                 }
@@ -1660,10 +1674,10 @@ namespace WindowsFormsApplication1
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = o.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
-                z.UDatei = o.UWertWm2K;
+                z.UDatei = UDatei(o);
                 if (fenster)
                 {
-                    if (o.UWertWm2K.HasValue) { z.Bauteil.U_Wert = o.UWertWm2K; z.HerkunftU = _datei; }
+                    if (z.UDatei.HasValue) { z.Bauteil.U_Wert = z.UDatei; z.HerkunftU = HerkunftUVon(o); }
                     else UVorgabe(z, GebaeudeZielfelder.U_FENSTER);
                     if (o.GWert > 0.0 && o.GWert <= 1.0) { z.Bauteil.g_Wert = o.GWert; z.HerkunftG = _datei; }
                 }
@@ -1747,7 +1761,7 @@ namespace WindowsFormsApplication1
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = weg;
                 Setzen(z, neigung, hn, null, Importherkunft.Leer);
-                z.UDatei = s.UWertWm2K;
+                z.UDatei = UDatei(s);
                 GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
                 if (aufbau != null)
                 {
@@ -1878,7 +1892,7 @@ namespace WindowsFormsApplication1
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = s.Flaechenherkunft;
                 Setzen(z, neigung, hn, null, Importherkunft.Leer);
-                z.UDatei = s.UWertWm2K;
+                z.UDatei = UDatei(s);
                 // Ein Innenbauteil braucht keinen U-Wert: mit Aufbau die Masse aus den Schichten, ohne
                 // Aufbau nur die Fläche (N1.46, 6).
                 GebaeudeAufbauzeile aufbau = Wirksam(z, s, art, gespiegelt);
@@ -2575,7 +2589,17 @@ namespace WindowsFormsApplication1
                     List<GebaeudeBauteilzeile> l = opak.Where(z => z.Aufbaurang == rang).ToList();
                     if (l.Count > 0) Info(schluessel, Ganz(l.Count), Zahl(Math.Round(l.Sum(z => z.Bauteil.Flaeche), 2)));
                 }
-                List<SqprojAufbauentscheid> abweichend = _wahl.Entscheide.Values.Where(e => e.UAbweichend).ToList();
+                if (Projektdatei.ProjektdateiGilt)
+                {
+                    int mitU = _v._zeilen.Count(z => z.HerkunftU == Importherkunft.Sqproj);
+                    int ohne = _v._zeilen.Count(z => z.Bauteil.Flaeche > 0.0 && z.UDatei.HasValue && z.HerkunftU != Importherkunft.Sqproj
+                                                     && z.Aufbaurang != Aufbaurang.Projektdatei);
+                    Info(PD_QUELLE_PROJEKTDATEI, Ganz(mitU), Ganz(ohne));
+                }
+                else if (Projektdatei.Standpruefung?.Angeschlagen == true && Projektdatei.Aufbauquelle == Aufbauquelle.Ifc)
+                    Info(PD_QUELLE_IFC);
+                List<SqprojAufbauentscheid> abweichend = Projektdatei.ProjektdateiGilt ? new List<SqprojAufbauentscheid>()
+                    : _wahl.Entscheide.Values.Where(e => e.UAbweichend).ToList();
                 if (abweichend.Count > 0)
                     Warnung(PD_U_ABWEICHUNG, Ganz(abweichend.Count), Paare(abweichend.Select(e => (e.UProjektdatei.Value, e.UIfc.Value))));
                 List<SqprojAufbauentscheid> mehrdeutig = _wahl.Entscheide.Values.Where(e => e.KatalogMehrdeutig).ToList();

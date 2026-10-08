@@ -6,13 +6,15 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Woher der Aufbau eines Bauteils stammt</b> — die Rangfolge nach Entscheid E97 (Konzept Bauteilaufbau 5.5, BA-4b).
+    /// <b>Woher der Aufbau eines Bauteils stammt</b> — die Rangfolge nach Entscheid E97 (Konzept Bauteilaufbau 5.5, BA-4b); mit der
+    /// Aufbauquelle „Projektdatei“ (Anwenderentscheid vom 08.10.2026) trägt Rang 1 den Aufbau der Projektdatei ohne U-Abgleich.
     /// </summary>
     internal enum Aufbaurang
     {
         /// <summary>Nicht bestimmt (ohne Projektdatei bzw. transparent).</summary>
         Keiner = 0,
-        /// <summary>1: der Aufbau der Projektdatei an der Hüllfläche — sein U passt auf 1 % zum U der IFC (ohne IFC-U: direkt).</summary>
+        /// <summary>1: der Aufbau der Projektdatei an der Hüllfläche — sein U passt auf 1 % zum U der IFC (ohne IFC-U bzw. mit Aufbauquelle
+        /// „Projektdatei“: direkt).</summary>
         Projektdatei = 1,
         /// <summary>2: ein Aufbau aus dem Aufbaukatalog der Projektdatei, dessen U eindeutig auf 1 % das U der IFC trifft.</summary>
         Projektkatalog = 2,
@@ -45,7 +47,13 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Zuordnung und Rangfolge der Aufbauten aus der Projektdatei</b> (BA-4b; Konzept Bauteilaufbau 5.5, Befund Projektdatei
-    /// N.6/N.7/N.10, Entscheid E97). Plattformfrei, ohne Datenbank, schreibt nichts.
+    /// N.6/N.7/N.10). Plattformfrei, ohne Datenbank, schreibt nichts.
+    /// <para><b>Welcher Stand gilt</b> (Anwenderentscheid vom 08.10.2026, ersetzt E97 als feste Vorgabe): Beim Weg „IFC + Projektdatei“
+    /// prüft der Import zuerst, ob beide Dateien zum selben Projektstand gehören (<see cref="Standpruefung"/>). Schlägt die Prüfung
+    /// nicht an oder wählt der Anwender „IFC“ (<see cref="Aufbauquelle.Ifc"/>), gilt die Rangfolge E97 unten — der Stand der IFC geht
+    /// vor, ein Aufbau der Projektdatei nur, wenn sein U zum U der IFC passt. Wählt er „Projektdatei“ (<see cref="Aufbauquelle.Projektdatei"/>),
+    /// gilt je Bauteil der zugewiesene Aufbau der Projektdatei ohne U-Abgleich (Rang 1) und ihr U (<see cref="SqprojStand.UWirksam"/>);
+    /// solange die Wahl offen ist, ist der Zuordnungsstand unvollständig.</para>
     /// <list type="number">
     /// <item><b>Zuordnen</b>: IFC-Bauteil → Eigenschaft <c>GUID</c> (<see cref="AbbildBauteil.HottcadGuid"/>) → Level-3-<c>GId</c> der
     /// Hüllfläche; Ausweich: die dekodierte <c>GlobalId</c> (<see cref="SqprojRaumabgleich.IfcKennung"/>). Trägt eine <c>GId</c>
@@ -100,51 +108,37 @@ namespace WindowsFormsApplication1
         /// <b>Bildet die Zuordnung</b> der opaken Bauteile eines IFC-Gebäudes zur Projektdatei. Ohne gelesene Bauteiltabellen
         /// eine leere Wahl.
         /// </summary>
-        internal static SqprojAufbauwahl Bilden(SqprojAbbild projekt, SqprojRaumabgleich abgleich, AbbildGebaeude ifc)
+        /// <param name="projektdateiGilt">Aufbauquelle „Projektdatei“: der zugewiesene Aufbau der Projektdatei ohne U-Abgleich.</param>
+        internal static SqprojAufbauwahl Bilden(SqprojAbbild projekt, SqprojRaumabgleich abgleich, AbbildGebaeude ifc, bool projektdateiGilt = false)
         {
             var w = new SqprojAufbauwahl();
             if (projekt == null || ifc == null || !projekt.BauteileGelesen) return w;
 
-            var jeGid = projekt.Huellflaechen.Where(h => h.Gid != null).GroupBy(h => h.Gid, StringComparer.OrdinalIgnoreCase)
-                                             .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
-            var jeGlobalId = new Dictionary<string, List<SqprojHuellflaeche>>(StringComparer.Ordinal);
-            foreach (SqprojHuellflaeche h in projekt.Huellflaechen)
-                if (SqprojRaumabgleich.IfcKennung(h.Gid) is string k)
-                {
-                    if (!jeGlobalId.TryGetValue(k, out List<SqprojHuellflaeche> l)) jeGlobalId[k] = l = new List<SqprojHuellflaeche>();
-                    l.Add(h);
-                }
+            var schluessel = new SqprojBauteilschluessel(projekt);
             List<SqprojAufbau> katalog = projekt.Aufbauten.Values.Where(a => a.HatSchichten).OrderBy(a => a.Kennung, StringComparer.Ordinal).ToList();
 
             foreach (AbbildBauteil b in ifc.Bauteile)
             {
                 if (!Opak(b.Art)) continue;
-                bool ueberGuid = true;
-                List<SqprojHuellflaeche> treffer = null;
-                if (b.HottcadGuid != null) jeGid.TryGetValue(b.HottcadGuid, out treffer);
+                List<SqprojHuellflaeche> treffer = schluessel.Treffer(b, out bool ueberGuid);
                 if (treffer == null)
-                {
-                    ueberGuid = false;
-                    if (!string.IsNullOrEmpty(b.Kennung)) jeGlobalId.TryGetValue(b.Kennung, out treffer);
-                }
-                if (treffer == null || treffer.Count == 0)
                 {
                     w.OhneGegenstueck.Add(b);
                     continue;
                 }
-                if (treffer.Select(h => h.AufbauKennung ?? "").Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1)
+                if (SqprojBauteilschluessel.Mehrdeutig(treffer))
                 {
                     w.Mehrdeutig.Add(b);
                     continue;
                 }
                 if (ueberGuid) w.UeberGuid++; else w.UeberGlobalId++;
-                w._je[b] = Entscheiden(b, treffer[0], projekt, katalog, abgleich, ueberGuid);
+                w._je[b] = Entscheiden(b, treffer[0], projekt, katalog, abgleich, ueberGuid, projektdateiGilt);
             }
             return w;
         }
 
         private static SqprojAufbauentscheid Entscheiden(AbbildBauteil b, SqprojHuellflaeche h, SqprojAbbild projekt, List<SqprojAufbau> katalog,
-                                                         SqprojRaumabgleich abgleich, bool ueberGuid)
+                                                         SqprojRaumabgleich abgleich, bool ueberGuid, bool projektdateiGilt)
         {
             SqprojAufbau eigen = h.AufbauKennung != null && projekt.Aufbauten.TryGetValue(h.AufbauKennung, out SqprojAufbau x) ? x : null;
             double? uIfc = b.UWertWm2K > 0.0 ? b.UWertWm2K : null;
@@ -152,12 +146,12 @@ namespace WindowsFormsApplication1
             SqprojAufbau gewaehlt = null;
             Aufbaurang rang = Aufbaurang.Keiner;
             bool mehrdeutig = false;
-            if (eigen != null && eigen.HatSchichten && (!uIfc.HasValue || Passt(eigen.UWert.Value, uIfc.Value)))
+            if (eigen != null && eigen.HatSchichten && (projektdateiGilt || !uIfc.HasValue || Passt(eigen.UWert.Value, uIfc.Value)))
             {
                 gewaehlt = eigen;
                 rang = Aufbaurang.Projektdatei;
             }
-            else if (uIfc.HasValue)
+            else if (uIfc.HasValue && !projektdateiGilt)
             {
                 List<List<SqprojAufbau>> gruppen = katalog.Where(a => Passt(a.UWert.Value, uIfc.Value))
                                                           .GroupBy(a => a.Signatur, StringComparer.Ordinal).Select(g => g.ToList()).ToList();

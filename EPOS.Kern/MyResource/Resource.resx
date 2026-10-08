@@ -48779,5 +48779,29 @@ Chart</value>
   <data name="GIMP_DLG_SQNUR_UNBEHEIZT" xml:space="preserve">
     <value>Eine Zone der Projektdatei enthält unbeheizte Räume; die Zuordnung bleibt unvollständig, bis ihre Beheizung entschieden ist.</value>
   </data>
+  <data name="IMP_SQ_PROT_STAND_ABWEICHEND" xml:space="preserve">
+    <value>IFC und Projektdatei gehören vermutlich nicht zum selben Projektstand: Bei {0} Bauteil(en) mit {1} % der Hüllfläche weicht das U der Projektdatei um mehr als 10 % vom U der IFC ab. Anzeichen: {2}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_AUFBAUQUELLE_OFFEN" xml:space="preserve">
+    <value>IFC und Projektdatei stammen aus verschiedenen Projektständen ({0} % der Hüllfläche mit abweichendem U). Wählen Sie, ob die Aufbauten und U-Werte der Projektdatei oder der IFC gelten, oder exportieren Sie beide Dateien neu.</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_KOPIE" xml:space="preserve">
+    <value>die Projektdatei ist eine Kopie vom {0}, angelegt nach dem Modellstand der IFC vom {1}</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_BAUJAHR" xml:space="preserve">
+    <value>das Baujahr weicht ab (IFC {0}, Projektdatei {1})</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_DICKE" xml:space="preserve">
+    <value>die gezeichnete Dicke passt bei {0} von {1} abweichenden opaken Bauteilen nicht zur Schichtsumme des Aufbaus der Projektdatei</value>
+  </data>
+  <data name="IMP_SQ_STAND_KEIN_ANZEICHEN" xml:space="preserve">
+    <value>keine weiteren</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_QUELLE_PROJEKTDATEI" xml:space="preserve">
+    <value>Aufbauquelle Projektdatei: {0} Bauteil(e) tragen U und Aufbau der Projektdatei; {1} Bauteil(e) ohne Gegenstück behalten den Stand der IFC.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_QUELLE_IFC" xml:space="preserve">
+    <value>Aufbauquelle IFC: Es gilt der Stand der IFC; ein Aufbau der Projektdatei nur, wenn sein U zum U der IFC passt.</value>
+  </data>
 </root>
 

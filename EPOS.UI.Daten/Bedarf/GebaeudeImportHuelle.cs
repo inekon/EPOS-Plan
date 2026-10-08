@@ -74,6 +74,9 @@ namespace WindowsFormsApplication1
     internal sealed class GebaeudeImportHuelle
     {
         private readonly GebaeudeImportAblauf _ablauf = new GebaeudeImportAblauf();
+
+        /// <summary>Der Ablauf der Hülle — für Prüfstände (Abbild vorgeben, Stand der Projektdatei lesen).</summary>
+        internal GebaeudeImportAblauf Ablauf => _ablauf;
         private readonly GebaeudeImportProfil _festesProfil;
         private readonly int _idProjekt;
         private readonly bool _ios;
@@ -629,6 +632,69 @@ namespace WindowsFormsApplication1
                 Meldungen = meldungen,
                 Schwerste = meldungen.Where(m => m.Stufe != WarnStufe.Hinweis)
                                      .OrderBy(m => m.Stufe == WarnStufe.Fehler ? 0 : 1).FirstOrDefault(),
+                Standpruefung = StandpruefungDaten(p.Standpruefung),
+                Aufbauquelle = AufbauquelleSchluessel(p.Aufbauquelle),
+            };
+        }
+
+        // =================================================================================
+        // Standprüfung und Aufbauquelle (Anwenderentscheid vom 08.10.2026) — den Dialog baut W1b
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Wählt die Aufbauquelle</b> (<see cref="GebaeudeAufbauquelleSchluessel"/>) und bildet den Bauteilvorschlag mit den Eingaben
+        /// der letzten Anfrage neu, ohne eine Datei zu lesen. Liefert den Stand der Projektdatei danach; <c>null</c> ohne Projektdatei.
+        /// Ein unbekannter Schlüssel lässt die Wahl unverändert.
+        /// </summary>
+        internal GebaeudeProjektdateiDaten AufbauquelleWaehlen(string schluessel)
+        {
+            Aufbauquelle? wahl = schluessel switch
+            {
+                GebaeudeAufbauquelleSchluessel.PROJEKTDATEI => Aufbauquelle.Projektdatei,
+                GebaeudeAufbauquelleSchluessel.IFC => Aufbauquelle.Ifc,
+                GebaeudeAufbauquelleSchluessel.OFFEN => Aufbauquelle.Offen,
+                _ => null,
+            };
+            if (wahl.HasValue && _ablauf.AufbauquelleWaehlen(wahl.Value, Math.Max(0, _gebaeudeindex)) && _vorschlag != null)
+                _vorschlagWiederholen?.Invoke();
+            return ProjektdateiDaten();
+        }
+
+        // Der letzte Aufruf von VorschlagBilden mit seinen Eingaben — für das Neubilden nach der Wahl der Aufbauquelle.
+        private Action _vorschlagWiederholen;
+
+        /// <summary>Der Schlüssel der Aufbauquelle.</summary>
+        internal static string AufbauquelleSchluessel(Aufbauquelle q) => q switch
+        {
+            Aufbauquelle.Offen => GebaeudeAufbauquelleSchluessel.OFFEN,
+            Aufbauquelle.Projektdatei => GebaeudeAufbauquelleSchluessel.PROJEKTDATEI,
+            _ => GebaeudeAufbauquelleSchluessel.IFC,
+        };
+
+        /// <summary>Die Standprüfung als Daten des Dialogs; <c>null</c> = nicht geprüft.</summary>
+        internal static GebaeudeStandpruefungDaten StandpruefungDaten(Standpruefung p)
+        {
+            if (p == null) return null;
+            return new GebaeudeStandpruefungDaten
+            {
+                Angeschlagen = p.Angeschlagen,
+                Verglichen = p.Verglichen,
+                Abweichend = p.Abweichend,
+                AbweichendM2 = p.AbweichendM2,
+                HuellflaecheM2 = p.HuellflaecheM2,
+                AnteilProzent = 100.0 * p.Anteil,
+                JeArt = p.JeArt.Select(a => new GebaeudeStandpruefungArtDaten(BauteilaufbauCtrl.BauteilartText(GebaeudeZonenabbildung.ArtFuerZeile(a.Art)),
+                                                                             a.Verglichen, a.Abweichend, a.MedianUIfc, a.MedianUProjektdatei)).ToList(),
+                Beispiele = p.Beispiele.Select(b => new GebaeudeStandpruefungBeispielDaten(b.Bauteil,
+                                                        BauteilaufbauCtrl.BauteilartText(GebaeudeZonenabbildung.ArtFuerZeile(b.Art)),
+                                                        b.FlaecheM2, b.UIfc, b.UProjektdatei, b.AufbauIfc, b.AufbauProjektdatei)).ToList(),
+                Anzeichen = p.Anzeichen.Select(a => new GebaeudeStandanzeichenDaten(a switch
+                {
+                    Standanzeichen.KopieNachModellstand => "kopie",
+                    Standanzeichen.BaujahrAbweichend => "baujahr",
+                    _ => "dicke",
+                }, p.Anzeichentext(a))).ToList(),
+                Meldung = p.Meldung() is PruefMeldung m ? Text(m) : "",
             };
         }
 
@@ -729,6 +795,7 @@ namespace WindowsFormsApplication1
                                      IReadOnlyList<GebaeudePlanschritt> schritte = null,
                                      IReadOnlyDictionary<string, bool> grundhaken = null)
         {
+            _vorschlagWiederholen = () => VorschlagBilden(index, klasse, regel, haken, zuordnungen, umhaengungen, cadSollwert, schritte, grundhaken);
             _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
             _plan = null;
             _schritt = (null, false, 0);
@@ -876,7 +943,10 @@ namespace WindowsFormsApplication1
             // abgelehnt, nicht still als Summenweg übernommen.
             // Der Zonenplan mit nicht zugeordneten Räumen wird nicht gespeichert (dieselbe Prüfung des Kerns).
             if (_plan?.Abschlusspruefung() is PruefMeldung offen) meldungen.Add(MeldungDaten(offen));
-            if (ergebnis.AlsZone && (_vorschlag == null || _vorschlag.Abgelehnt))
+            // Anwenderentscheid vom 08.10.2026: Nach angeschlagener Standprüfung sperrt die offene Aufbauquelle die Übernahme.
+            PruefMeldung quelleOffen = _ablauf.Aufbauquellenpruefung();
+            if (quelleOffen != null) meldungen.Add(MeldungDaten(quelleOffen));
+            if (quelleOffen == null && ergebnis.AlsZone && (_vorschlag == null || _vorschlag.Abgelehnt))
                 meldungen.Add(new GebaeudeImportMeldung(WarnStufe.Fehler, GebaeudeZuordnungsModell.StufeText(PruefStufe.Fehler),
                     Formatieren(MyResource.Resource.GIMP_DLG_ALS_ZONE_NICHT, Ablehnungstext(_vorschlag)), ALS_ZONE_NICHT));
             if (meldungen.Any(m => m.Stufe == WarnStufe.Fehler)) return meldungen;
