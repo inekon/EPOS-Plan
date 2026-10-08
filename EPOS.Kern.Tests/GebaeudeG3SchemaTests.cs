@@ -27,13 +27,13 @@ namespace EPOS.Kern.Tests
             Assert.True(BaustoffSchema.SCHRITT > 128, "S-A muss hinter den vergebenen Schritten liegen.");
         }
 
-        /// <summary>Die SQL-Wertlisten sind die Listen in <see cref="DbWerte"/> — neun, vier, fünf (W7 bis W9).</summary>
+        /// <summary>Die SQL-Wertlisten sind die Listen in <see cref="DbWerte"/> — neun, vier, sechs (W7 bis W9, SQPROJ ab Schritt 200).</summary>
         [Fact]
         public void Die_Wertlisten_der_CHECKs_sind_die_Persistenzwerte()
         {
             Assert.Equal(9, DbWerte.BAUTEILARTEN.Count);
             Assert.Equal(4, DbWerte.RANDBEDINGUNGEN.Count);
-            Assert.Equal(5, DbWerte.HERKUENFTE.Count);
+            Assert.Equal(6, DbWerte.HERKUENFTE.Count);
             Assert.DoesNotContain("KELLER", DbWerte.RANDBEDINGUNGEN);
             Assert.Contains(DbWerte.BAUTEILART_VORHANGFASSADE, DbWerte.BAUTEILARTEN);
             Assert.Contains(DbWerte.HERKUNFT_KATALOG, DbWerte.HERKUENFTE);

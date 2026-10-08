@@ -38,6 +38,11 @@
             }
         </dd>
         <dt>@Texte.Rand</dt><dd>@Daten.Art · @Daten.Randbedingung</dd>
+        @if (!string.IsNullOrEmpty(Koerper))
+        {
+            <dt>@Texte.Koerper</dt>
+            <dd class="epos-steckbrief-koerper" data-koerper="@(KoerperAbgeleitet == true ? "abgeleitet" : "datei")">@Koerper</dd>
+        }
     </dl>
 
     <h4 class="epos-steckbrief-gruppe">@Texte.GruppeRechnung</h4>
@@ -173,6 +178,12 @@
 
     /// <summary>Der Name des Befunds (vom Wirt aus seinen Ansichtstexten); leer = der Schlüssel.</summary>
     [Parameter] public string? BefundName { get; set; }
+
+    /// <summary>Die Zeile „Körper" (Datenaustauschkonzept 17.5): Weg und Vermerke als fertiger Text; leer = keine Zeile.</summary>
+    [Parameter] public string? Koerper { get; set; }
+
+    /// <summary>Ist der Körper aus Flächen der Datei gebildet (sonst aus der Datei)? <c>null</c> = keiner.</summary>
+    [Parameter] public bool? KoerperAbgeleitet { get; set; }
 
     private string Befundtext => string.IsNullOrEmpty(BefundName) ? GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund) : BefundName;
 

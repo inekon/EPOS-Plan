@@ -2111,7 +2111,7 @@ ergänzt Kapitel 15 und das Mehrzonenkonzept 6.4 (Zonenplan, E79) und lässt Les
 
 | Gehört dazu | Gehört nicht dazu |
 |---|---|
-| die Projektdatei (`.sqproj`, SQLite 3) **zusätzlich** zur IFC-Datei desselben Projekts lesen | ein Import allein aus der Projektdatei: Wände, Fenster, Türen und Aufbauten liegen dort nur in Binär- und XML-Strömen (Befund 3.5) |
+| die Projektdatei (`.sqproj`, SQLite 3) **zusätzlich** zur IFC-Datei desselben Projekts lesen — oder **allein** als eigene Importoption „nur Projektdatei“ neben „IFC“ und „IFC + Projektdatei“: Hülle aus den Hüllflächen mit ihren Raumbezügen, Format und Herkunft `SQPROJ` (Kapitel 17) | die Geometrie der Wände, Fenster und Türen aus den Binär- und XML-Strömen (Befund 3.5) — die Körper der Ansicht entstehen abgeleitet (Kapitel 17) |
 | Zonen (`BmZone`, `BmZoneReference`) in den Zonenplan übernehmen | Klimareihen (`SmDiagram`), Standort, Ergebnisse, Anlage, Katalog |
 | je Zone die Konditionierung aus den Profilen: Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen als Kalender mit Standardwoche und Perioden | Beleuchtung, Elektro, Trinkwasser, Feuchte, Sonnenschutz (keine Größe in EPOS-Plan — benannt übersprungen) |
 | das DIN-V-18599-Nutzungsprofil (`PdProfileUsage`) als Vorgabe-Matrix und als Nutzung der Zone | das Nachtippen der Normtabelle: ohne Projektdatei gelten die Vorlagen wie heute |
@@ -2251,3 +2251,154 @@ Stand 05.10.2026: Proben 33 bis 38 grün — 33 `SqprojLeserTests`, 34 `SqprojRa
 `SqprojHuelleTests`, 38 `IfcKonditionierungRundlaufTests` (Referenzprojekt 1052: drei Zonen, Woche byteweise, Perioden
 und Nennwerte gleich, zweiter Export byte-gleich; alle Angabearten; Gegenproben ohne `EPOS_*`) und der Fall der
 Anreicherung in `IfcAnreicherungTests`.
+
+---
+
+## 17. Ein Gebäudebetrachter für IFC, Projektdatei und gbXML — Körper aus den Flächen der Datei
+
+Die Gebäudeansicht (`GebaeudeAnsicht.razor`, `epos-gebaeude-koerper.js`) zeigt ein Gebäude aus der Projektdatei
+(`.sqproj`) und aus gbXML **mit demselben Umfang wie aus IFC**: Raumkörper und Bauteilkörper in 3D, die Farbmodi Zone,
+Flächengruppe (Randbedingung), Aufbau und Befund, den Steckbrief auf Klick und den Grundriss je Raum. Der Grundsatz:
+**Der Kern bildet aus den Flächen der Datei Körper derselben Art wie bei IFC** (`Dateikoerper` an `Raumumriss.Koerper`
+und `AbbildBauteil.Koerper`, 15.3) — dann laufen Ansicht, Flächenklassifikation, Farbmodi, Steckbrief und Grundriss
+ohne eigene Weiche je Format. Was ein Format nicht hergibt, fällt benannt auf das Umrissprisma bzw. das schematische
+Rechteck zurück (14.4 Nr. 1, 15.6 Nr. 1); nichts wird still weggelassen. Dieses Kapitel gilt für das Gebäude-Abbild
+aus der Projektdatei ebenso wie für den Konditionierungsweg aus Kapitel 16.
+
+### 17.1 Was die Dateien hergeben
+
+**Projektdatei.** Messbefund an einer Anwenderdatei, deren IFC-Ausgabe desselben Gebäudes daneben liegt (beide nur
+lokal, nicht im Repositorium; Zahlen als Anteile und relative Abweichungen):
+
+| Quelle | Inhalt | Befund |
+|---|---|---|
+| `BmData.ClassValue` je Raum (`geometry/Room/room`) | Bodenpolygon (`points/p`, x;y;z in m, absolut), Polygone (`polygons/plg`, Kennzeichen `with_holes`), Höhen je Polygonkante (`heights/height_ext`: Boden am Anfang, Boden am Ende, Decke am Anfang, Decke am Ende), Deckenebenen (`top_planes`) | in **jedem** Raum vorhanden. Polygonfläche gegen Raumfläche Median 0 %, größte Abweichung 21 %; gegen die `Inner`-Schleifen der Bodenflächen Median +0,5 %, gegen die `DIN18599_2011`-Schleifen −16 %. Das Prisma aus Polygon und Höhen trifft das Volumen des IFC-Raumkörpers im Median auf 0 % (90 % der Räume ≤ 2,2 %, Summe −4,6 %). Höhenwechsel längs der Kanten (geneigte Decke) in rund 2 % der Räume, zwei Polygone je Raum in rund 7 % |
+| `BmElement.GeoDesc` je Hüllfläche (Level 3) | 3×3-Matrix mit Verschiebung (`geoDataData`), Schleifen (`geoLoopData`) mit Punkten (`geoPointData`) | **Mehrere Schleifen je Fläche, je Bezugsregel eine** (`LongDesc`): `Inner`, `DIN18599_2011`, teils `DIN18599` und `EN12831`. Die Matrix ist in allen Flächen die Einheit (Punkte absolut). Die Bruttofläche (`GrossArea`) ist bei Wand, Boden, Decke und Dach die Fläche der Schleife `DIN18599_2011` (Median 0 %), bei Fenster und Tür die der Schleife `Inner`; die `Inner`-Schleife opaker Flächen ist 16 bis 21 % kleiner |
+| Lage der Schleife `DIN18599_2011`, gemessen am Raumpolygon in Vielfachen der Wanddicke | — | Außenwand (ein Raum) in der **Außenoberfläche** (rund 92 %), Innenwand (zwei Räume) in der **Achse** (rund 83 %) — das Bezugsmaß nach DIN V 18599 bzw. DIN EN 12831 |
+| Lage der Schleife `Inner` | — | Innenwand in der Innenoberfläche **eines** der beiden Räume (rund 93 %), Außenwand meist in der Außenebene mit den Grenzen des Innenmaßes (rund 85 %): **keine einheitliche Innenschale** |
+| Umlaufsinn | — | uneinheitlich: Die Normale aus dem Umlauf zeigt bei einem Drittel bis zur Hälfte der Wandflächen in den Raum; gegen `Orientation` ist rund die Hälfte um 180° gedreht |
+| Geschlossenheit der Hüllflächen je Raum | — | Kantenpaarung auf 1 mm: Die `Inner`-Schleifen schließen in **keinem** Raum, die `DIN18599_2011`-Schleifen in rund 5 % der Räume; das Volumen der `Inner`-Hülle weicht im Median um +15 % vom Raumvolumen ab |
+| `GmMedia` | 3D-Grafikmodell, gzip, proprietär | **ungenutzt** — kein Leser für ein undokumentiertes Format |
+
+**gbXML.** Die Proben unter `Referenzlaeufe/Importproben/*.xml` tragen **keine** `Space/ShellGeometry/ClosedShell` und
+keine `SpaceBoundary`; `PlanarGeometry/PolyLoop` steht nur in einem kleinen Teil, `AdjacentSpaceId` in fast allen,
+`Layer` und `Material/Thickness` in rund einem Drittel. gbXML legt die Bezugsebene der Flächen nicht fest; Werkzeuge
+schreiben teils Achs-, teils Innenflächen.
+
+### 17.2 Regel 1 — Raumkörper je Raum
+
+| Format | Weg (in dieser Rangfolge) |
+|---|---|
+| **Projektdatei** | (a) **Raumpolygon**: das Bodenpolygon des Raum-XML (Löcher nach `with_holes`, mehrere Polygone als mehrere Ringe), Boden je Punkt aus `height_ext` an erster und zweiter Stelle, Decke aus der dritten und vierten — so entstehen auch geneigte Decken; Mantel je Kante als ebenes Viereck, Boden und Decke per Ohrenschnitt. (b) **Hüllflächen**: nur wenn (a) fehlt und die `DIN18599_2011`-Schleifen der Hüllflächen des Raums, in die Innenoberfläche verschoben (siehe „Bezugsebene“), nach Teilung an T-Stößen schließen. (c) sonst das Umrissprisma |
+| **gbXML** | (a) `Space/ShellGeometry/ClosedShell`, wenn vorhanden und geschlossen. (b) die `PlanarGeometry` der Flächen mit `AdjacentSpaceId` auf den Raum, wenn sie nach Teilung an T-Stößen schließen. (c) sonst das Umrissprisma aus dem `PolyLoop` der Boden- oder Deckenflächen, ohne ihn das schematische Rechteck |
+
+**Bedingungen an jeden gebildeten Körper:**
+
+1. **Geschlossene Hülle**: Jede Kante gehört — nach Teilung an T-Stößen auf 1 mm — genau zwei Dreiecken mit
+   gegenläufigem Umlauf. Weg (a) der Projektdatei ist durch den Bau geschlossen.
+2. **Einheitlicher Umlaufsinn, Normale nach außen**: Der Umlauf der Datei wird **nicht** übernommen (17.1). Die Flächen
+   werden über die Kantenpaare gleichsinnig gerichtet; ist das Volumen danach negativ, wird jede Fläche gewendet.
+3. **Dreieckszerlegung auch nichtkonvexer Polygone und mit Löchern**: derselbe Ohrenschnitt mit Brückenkanten wie
+   beim IFC-Körper (15.2), feste Startecke; eine nicht ebene Fläche als Fächer mit Vermerk `Uneben`.
+4. **Schließt die Hülle nicht**, wird **kein** Körper gebildet: Der Raum fällt auf das Umrissprisma zurück, mit der
+   Meldung `KOERPER_NICHT_GESCHLOSSEN` samt Zahl der offenen Kanten und dem Kennzeichen „aus Umriss“. Anders als ein
+   gezeichneter IFC-Körper (15.6 Nr. 2) wird ein offener abgeleiteter Körper nicht gezeigt — er wäre eine Aussage des
+   Bildners, nicht der Datei.
+
+**Bezugsebene.** Der Raumkörper liegt in der **Innenoberfläche**: Das Raum-XML ist Innenmaß (17.1); im Hüllflächenweg
+wird jede Fläche aus ihrer Bezugsebene (Außenmaß oder Achse, 17.3 Nr. 3) um die Dicke bzw. die halbe Dicke zum Raum
+hin verschoben, bevor die Hülle geprüft wird. So decken sich Raum- und Bauteilkörper wie bei IFC, und zwischen den
+Raumkörpern zweier Nachbarn bleibt die Wanddicke frei.
+
+**Grundriss.** Der gespeicherte Grundriss je Raum (`Tab_Raumgrundriss`) kommt bei der Projektdatei **unmittelbar aus
+dem Raumpolygon**, nicht über `Koerpergrundriss` aus dem abgeleiteten Körper: Herleitung `Boden`, Vermerk
+`Raumpolygon`. Beim gbXML bleibt es bei `Boden` bzw. `Decke` aus dem `PolyLoop`.
+
+### 17.3 Regel 2 — Bauteilkörper
+
+1. **Fläche**: in der Projektdatei die Schleife `DIN18599_2011` (sie trägt die Bruttofläche, mit der gerechnet wird),
+   bei Fenstern und Türen die Schleife `Inner`; in gbXML die `PlanarGeometry` der `Surface` bzw. des `Opening`.
+2. **Dicke** in dieser Rangfolge: in der Projektdatei die **gezeichnete Dicke** des Bauteils (`BmElement.Thickness`),
+   wenn nur sie zur gemessenen Lage der Bezugsebene (Punkt 3) passt; sonst die Summe der Schichtdicken des Aufbaus
+   (Projektdatei über `CatalogDimUUID`; gbXML `Construction` → `LayerId` → `Layer` → `MaterialId` →
+   `Material/Thickness`); sonst eine **benannte Vorgabedicke** je Bauteilart (Konstante im Kern, Vermerk
+   `Vorgabedicke`, im Steckbrief sichtbar). In gbXML gilt die Schichtsumme, sonst die Vorgabedicke.
+3. **Richtung der Extrusion** folgt der Bezugsebene, gemessen am Raumkörper (17.2), nicht angenommen: Liegt die Fläche
+   in der Innenoberfläche des Raums (≤ 1 cm), wird sie um die Dicke **vom Raum weg** extrudiert; liegt sie eine halbe
+   Dicke davor (Achse), **beidseitig** um die halbe Dicke; liegt sie eine Dicke davor (Außenmaß), **zum Raum hin**.
+   Passt keiner der drei Fälle oder fehlt der Raumkörper, gilt die Achse mit Vermerk `Bezugsebene_angenommen`. Für
+   die Projektdatei folgt aus 17.1: Außenwände nach innen, Innenwände beidseitig.
+4. **Öffnungen** sind eigene Körper: Das Öffnungspolygon wird in die Ebene seiner Wandfläche projiziert, in der Wand
+   als **Loch** ausgespart (Ohrenschnitt mit Brückenkante, die Laibung als Mantel des Lochs) und selbst mit seiner
+   Dicke mittig in der Wanddicke extrudiert. Die Wand einer Öffnung ist die Wandfläche desselben Raums, in deren
+   Polygon die Öffnung nach der Projektion liegt (gbXML: die `Surface`, die das `Opening` trägt). Findet sich keine,
+   bleibt die Öffnung ein Körper ohne Aussparung, Meldung `OEFFNUNG_OHNE_WAND`.
+5. **Jede Hüllfläche einmal**: Eine Fläche, auf die zwei Räume verweisen, ergibt einen Bauteilkörper, nicht zwei.
+
+### 17.4 Regel 3 — Zuordnung Dreieck → Bauteil
+
+Bei abgeleiteten Körpern ist die Zuordnung **durch die Bauweise bekannt** und wird mitgegeben, nicht gesucht:
+
+- Jedes Dreieck eines abgeleiteten Raumkörpers trägt die **Kennung seiner Quellfläche**. Im Hüllflächenweg ist das die
+  Fläche selbst. Beim Raumpolygon wird jede Mantel-, Boden- und Deckenfläche an den Grenzen der Hüllflächen des Raums
+  geteilt (Intervallteilung längs der Kante und in der Höhe), deren Ebene parallel liegt (≤ 1°) und deren Abstand zur
+  Innenoberfläche höchstens die Dicke plus 2 cm beträgt; jedes Teilstück trägt die Fläche mit der größten Überdeckung.
+- Die Flächenklassifikation bekommt dafür eine **erste Regel „Quellfläche“** (Beleg `QUELLFLAECHE`): Trägt ein Dreieck
+  eine Quellfläche, gibt deren wirksame Randbedingung die Gruppe wie in der Regel „Bauteil des Raumbezugs“. Die
+  übrigen Regeln bleiben für Dreiecke ohne Quellfläche, wie sie sind. Körperpaare werden aus gebildeten Körpern gar
+  nicht gebildet.
+- **Warum nicht allein geometrisch:** Die Regel „Bauteil des Raumbezugs“ wählt nach Lage und Orientierung. Hat ein
+  Raum zwei Wände gleicher Richtung mit verschiedener Randbedingung (außen und gegen unbeheizt), trifft sie nicht
+  sicher; die Quellfläche entscheidet nach der Stelle.
+- Die Flächenklassifikation läuft für **jedes** Abbild mit Körpern, nicht allein im IFC-Weg: Ihr Aufruf wandert an
+  eine formatfreie Stelle nach dem Lesen.
+
+### 17.5 Regel 4 — Ehrlichkeit der Herkunft
+
+**Abgeleitete Körper sind kein unabhängiger Beleg.** Sie sind aus denselben Flächen gebildet, aus denen schon Fläche,
+Orientierung und Nachbarschaft stammen.
+
+| Stelle | Festlegung |
+|---|---|
+| Kern: `Dateikoerper` | neue Angabe **Quelle**: `Datei` (der Körper steht so in der Datei — IFC) oder `AusFlaechen` (der Kern hat ihn aus Flächen der Datei gebildet); der Weg als Schlüssel in `Art` (`Raumpolygon`, `Huellflaechen`, `ClosedShell`, `Raumflaechen`, `Flaechenextrusion`) |
+| Körpervergleich | Die Gegenprobe Mengensatz gegen Körper (Meldungen `KOERPER_ABWEICHUNG*`, `KOERPER_REST`) läuft **nur** für Körper mit Quelle `Datei` |
+| Flächenherkunft | Ein Körper mit Quelle `AusFlaechen` setzt **nie** `Flaechenherkunft.Koerper`; die Fläche behält die Herkunft ihres Wegs |
+| Nachbarschaft | Körperpaare werden aus gebildeten Körpern gar nicht gebildet; die Trennflächen kommen aus den Raumbezügen der Hüllflächen bzw. aus `AdjacentSpaceId` |
+| Ansicht | Kennzeichen je Raum **„aus Flächen gebildet“** — ein weiterer Wert der Körperherkunft neben „aus Datei“, „aus Umriss“, „schematisch“ und „aus Dateikörper (Grundriss)“ —, in der Kennzeichenzeile mitgezählt; der Umschalter „Dateikörper \| Exportmodell“ erscheint, sobald ein Raum einen Körper trägt, gleich welcher Quelle |
+| Steckbrief | Zeile **Körper**: „aus Flächen der Datei gebildet“ mit dem Weg, dazu die Vermerke (`Vorgabedicke`, `Bezugsebene_angenommen`, `Uneben`) |
+
+Die Quelle wird **nicht gespeichert**: Körper liegen nie in der Datenbank (15.1), und der gespeicherte Grundriss trägt
+seine Herleitung schon. Ein Schemaschritt entsteht daraus nicht.
+
+### 17.6 Regel 5 — Nordrichtung, Neulesen, Export
+
+1. **Nordrichtung**: Die Projektdatei nennt keinen Nordwinkel; es gilt dieselbe Nordrichtungsabfrage wie bei einer
+   IFC-Datei ohne Nordwinkel. gbXML bringt `CADModelAzimuth` mit (Angabe wie im Import, 3.2). Die Körper bleiben im
+   Modellsystem; nur der Nordpfeil dreht.
+2. **„Datei erneut lesen“** braucht für die Projektdatei eine Importquelle mit dem Format der Projektdatei samt
+   Prüfsumme, den Leser hinter `GebaeudeNeulesen` und den Vergleich der gespeicherten Grundrisse; die Körper entstehen
+   beim Neulesen deterministisch neu. Weil das CAD-Programm die SQLite-Datei bei jedem Speichern ändert, ist eine
+   geänderte Prüfsumme allein kein Befund — erst der Grundrissvergleich entscheidet, ob ein Nachtrag angeboten wird.
+   Die Datei wird nur lesend geöffnet (16.2).
+3. **Export**: Abgeleitete Körper werden **nicht** exportiert, wie Dateikörper (15.3). IFC- und gbXML-Export schreiben
+   die Prismen aus dem gespeicherten Grundriss; geneigte Decken gehen dort benannt verloren.
+
+### 17.7 Regel 6 — Grenzen
+
+- **Dreiecksgrenze**: Raum- und Bauteilkörper zählen gemeinsam gegen `Dateikoerper.DREIECKSGRENZE` (15.4); ein
+  Gebäude aus Prismen und extrudierten Flächen liegt um Größenordnungen darunter.
+- **Rechenzeit**: Der Bildner ist linear in der Zahl der Flächen bis auf den Ohrenschnitt je Polygon; Ziel unter
+  50 ms je Gebäude, gemessen in Probe 42.
+- **Plattformen**: alles im Kern, ohne neues Paket — die Projektdatei liest `Microsoft.Data.Sqlite`, die XML-Ströme
+  `System.Xml.Linq`. Auf iOS gelten dieselbe Grenze und dasselbe Bild (15.6 Nr. 4).
+- **Determinismus**: Dieselbe Datei ergibt dieselben Körper, byteweise (`Dateikoerper.Text`, Probe 25).
+
+### 17.8 Abnahmeproben (Ergänzung zu 14.5 und 15.7)
+
+| Nr. | Probe | Kriterium |
+|---|---|---|
+| 39 | **Körperbildner synthetisch** | Quader, L-Grundriss, Grundriss mit Loch, geneigte Decke: Körper geschlossen, alle Normalen nach außen, Volumen auf 1e‑6 m³, Umlauf der Eingabe beliebig; eine offene Hülle ergibt keinen Körper, sondern den Rückfall mit Meldung |
+| 40 | **Projektdatei-Geometrie** | Probe aus `SqprojProbenErzeuger`: Raumkörper aus dem Raumpolygon, Bauteilkörper in der richtigen Richtung (Außenwand nach innen, Innenwand beidseitig), Fenster ausgespart; ohne Raum-XML der benannte Rückfall |
+| 41 | **gbXML mit `ClosedShell`** | neue Probe unter `Referenzlaeufe/Importproben/`: Raumkörper aus der Schale, Schichtdicken aus `Material/Thickness`; ohne Schale aus den Flächen je Raum, ohne beides das Umrissprisma |
+| 42 | **Gleicher Umfang wie IFC** | Ansicht mit einem Gebäude aus Projektdatei und aus gbXML: Farbmodi Zone, Randbedingung, Aufbau und Befund verfügbar, Steckbrief auf Klick, Kennzeichen „aus Flächen gebildet“; Rechenzeit des Bildners gemessen |
+| 43 | **Keine zweite Quelle** | Mit abgeleiteten Körpern entstehen keine Meldungen `KOERPER_ABWEICHUNG*`, keine Flächenherkunft `KOERPER` und keine gebildeten Körperpaare |

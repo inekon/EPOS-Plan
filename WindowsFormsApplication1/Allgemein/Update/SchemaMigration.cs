@@ -5281,6 +5281,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_NORDRICHTUNG = NordrichtungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ProjektdateiImportSchema.SCHRITT"/> — <b>Import aus der Projektdatei</b>: Format und Herkunft
+        /// nehmen den Wert <c>SQPROJ</c> an; <c>Tab_Importquelle</c> und die sechs Herkunftstabellen (Baustoff, Aufbau, je mit
+        /// Katalog, Zone, Bauteil) werden mit erweiterter Prüfklausel neu gebaut.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Keine Zeile ändert sich.</para>
+        /// </summary>
+        public const int SCHRITT_PROJEKTDATEI_IMPORT = ProjektdateiImportSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7689,6 +7698,12 @@ namespace WindowsFormsApplication1
                         "aus der Annahme stammt; Datei erneut lesen behielte jeden gespeicherten Winkel. KEIN Rechenergebnis " +
                         "aendert sich.",
                         Schritt_Nordrichtung),
+            // IMPORT AUS DER PROJEKTDATEI. Quelle ist ProjektdateiImportSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROJEKTDATEI_IMPORT,
+                        "Tab_Importquelle.Format, Herkunft an Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Zone, Tab_Bauteil",
+                        "Der Gebaeudeimport koennte eine Quelle aus der Projektdatei (.sqproj) und die Herkunft ihrer Zeilen " +
+                        "nicht speichern. KEIN Rechenergebnis aendert sich.",
+                        Schritt_ProjektdateiImport),
         };
 
         /// <summary>
@@ -14478,6 +14493,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Herkunft des Nordwinkels - " +
                     (handgriffe == 0 ? "stand bereits, Bestand nachgefuellt." : "Spalte angelegt, Bestand nachgefuellt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Import aus der Projektdatei" — Anlass und Wirkung stehen bei <see cref="SCHRITT_PROJEKTDATEI_IMPORT"/>, die
+        /// Anweisungen bei <see cref="ProjektdateiImportSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ProjektdateiImport(Lauf l)
+        {
+            string nr = ProjektdateiImportSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProjektdateiImportSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ProjektdateiImportSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ProjektdateiImportSchema.Vollstaendig())
+            {
+                l.LetzterFehler = ProjektdateiImportSchema.Offen().ToString(CultureInfo.InvariantCulture) +
+                                  " Tabelle(n) nehmen SQPROJ nach dem Schritt nicht an.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Import aus der Projektdatei - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) neu gebaut.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

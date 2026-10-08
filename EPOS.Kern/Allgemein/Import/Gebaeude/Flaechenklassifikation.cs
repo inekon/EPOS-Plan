@@ -41,6 +41,10 @@ namespace WindowsFormsApplication1
     /// <b>Die Flächenklassifikation eines Gebäudes</b> (Konzept HottCAD-Verbund 4.2): Jede ebene Fläche eines Raumkörpers bekommt
     /// eine <see cref="Flaechengruppe"/>.
     /// <list type="number">
+    /// <item><b>Quellfläche</b> (Datenaustauschkonzept 17.4, Beleg <see cref="BELEG_QUELLFLAECHE"/>): Trägt ein Dreieck eines aus
+    /// Flächen gebildeten Körpers die Kennung einer Fläche, die einem Bauteil der Datei entspricht, gibt dessen wirksame
+    /// Randbedingung die Gruppe — die Zuordnung ist durch die Bauweise bekannt und wird nicht gesucht. Ersatzkennungen
+    /// (<c>Raum:Mantel…</c>, <c>Raum:Schale…</c>) treffen kein Bauteil und fallen auf die folgenden Regeln zurück.</item>
     /// <item><b>Raumgrenze</b> (Rangfolge wie E73 zuerst): Trägt ein Bauteil eine Raumgrenze des Raums in derselben Ebene, gibt
     /// deren Lage die Gruppe, bei innen die Beheizung des Nachbarn.</item>
     /// <item><b>Gepaart</b> (<see cref="Koerpernachbarschaft"/>): Liegt mindestens die Hälfte der Fläche einem anderen Raum gegenüber,
@@ -75,6 +79,8 @@ namespace WindowsFormsApplication1
         /// <summary>Der größte Abstand einer Raumgrenze von der Ebene der Fläche [m].</summary>
         internal const double GRENZE_ABSTAND_M = 0.05;
 
+        /// <summary>Beleg: die Quellfläche eines gebildeten Körpers (17.4).</summary>
+        internal const string BELEG_QUELLFLAECHE = "QUELLFLAECHE";
         /// <summary>Beleg: Raumgrenze der Datei.</summary>
         internal const string BELEG_RAUMGRENZE = "RAUMGRENZE";
         /// <summary>Beleg: Flächenpaar der Körper.</summary>
@@ -92,9 +98,21 @@ namespace WindowsFormsApplication1
         {
             internal double[] N;
             internal double S;
+            internal string Quelle;
             internal readonly List<int> Dreiecke = new List<int>();
             internal double FlaecheM2;
             internal readonly Dictionary<int, double> Partner = new Dictionary<int, double>();
+        }
+
+        /// <summary>
+        /// Die formatfreie Stelle nach dem Lesen (17.4): klassifiziert jedes Gebäude eines Abbilds mit Raumkörpern, gedreht um
+        /// den wirksamen Nordwinkel (<see cref="GebaeudeAbbild.NordwinkelWirksamGrad"/>). Gerufen von den Lesern der
+        /// Projektdatei und von gbXML; der IFC-Weg ruft <see cref="Klassifizieren"/> in seinem Ablauf selbst.
+        /// </summary>
+        internal static void KlassifizierenAlle(GebaeudeAbbild abbild)
+        {
+            if (abbild == null) return;
+            foreach (AbbildGebaeude g in abbild.Gebaeude) Klassifizieren(g, abbild.NordwinkelWirksamGrad ?? 0.0);
         }
 
         /// <summary>
@@ -142,8 +160,14 @@ namespace WindowsFormsApplication1
                     Flaechengruppe? gruppe = null;
                     string bauteil = null, beleg = null;
 
+                    // 0. Quellfläche eines gebildeten Körpers (17.4).
+                    if (f.Quelle != null && jeKennung.TryGetValue(f.Quelle, out AbbildBauteil quelle)
+                        && AusQuelle(g, raum, quelle, lage) is Flaechengruppe gq)
+                    {
+                        gruppe = gq; bauteil = quelle.Kennung; beleg = BELEG_QUELLFLAECHE;
+                    }
                     // 1. Raumgrenze der Datei.
-                    if (g.ZahlGrenzen > 0 && Raumgrenze(g, raum, f, lage, out Flaechengruppe gg, out string gb))
+                    if (!gruppe.HasValue && g.ZahlGrenzen > 0 && Raumgrenze(g, raum, f, lage, out Flaechengruppe gg, out string gb))
                     {
                         gruppe = gg; bauteil = gb; beleg = BELEG_RAUMGRENZE;
                     }
@@ -252,6 +276,19 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Gruppe aus der Quellfläche: die wirksame Randbedingung des Bauteils wie in der Regel „Bauteil des Raumbezugs“;
+        /// ein inneres Bauteil nach der Beheizung des Nachbarraums, ohne bekannten Nachbarn R0; unbekannt = <c>null</c>.
+        /// </summary>
+        private static Flaechengruppe? AusQuelle(AbbildGebaeude g, AbbildRaum raum, AbbildBauteil b, Lage lage)
+        {
+            Randbedingung rand = Rand(b);
+            if (rand != Randbedingung.Innen) return AusRand(rand, lage);
+            AbbildNachbar n = b.Nachbarn.FirstOrDefault(y => y.Kennung != raum.Kennung);
+            AbbildRaum nachbar = n == null ? null : g.Raeume.FirstOrDefault(r => r.Kennung == n.Kennung);
+            return nachbar == null ? Flaechengruppe.R0 : NachBeheizung(nachbar.Beheizt, lage);
+        }
+
         /// <summary>Ist das Bauteil für den Raum Boden (<c>true</c>), Decke (<c>false</c>) oder offen (<c>null</c>)?</summary>
         private static bool? IstBoden(AbbildBauteil b)
         {
@@ -336,11 +373,15 @@ namespace WindowsFormsApplication1
         //  Geometrie
         // ------------------------------------------------------------------
 
-        /// <summary>Die ebenen Flächen eines Körpers (Normale und Ebenenabstand auf 1/1000 gerundet) mit ihren Dreiecken.</summary>
+        /// <summary>
+        /// Die ebenen Flächen eines Körpers (Normale und Ebenenabstand auf 1/1000 gerundet) mit ihren Dreiecken; trägt der Körper
+        /// Quellflächen (gebildet, 17.4), teilt die Quellfläche die Ebene zusätzlich — zwei Bauteile in einer Ebene bleiben getrennt.
+        /// </summary>
         private static List<Flaeche> Flaechen(Dateikoerper k)
         {
             var liste = new List<Flaeche>();
-            var jeSchluessel = new Dictionary<(long, long, long, long), Flaeche>();
+            var jeSchluessel = new Dictionary<(long, long, long, long, string), Flaeche>();
+            bool mitQuelle = k.Quellflaechen.Count == k.Dreiecke.Count && k.Quellflaechen.Count > 0;
             for (int t = 0; t < k.Dreiecke.Count; t++)
             {
                 int[] d = k.Dreiecke[t];
@@ -350,10 +391,11 @@ namespace WindowsFormsApplication1
                 if (laenge < 1e-12) continue;
                 double[] n = kreuz.Select(x => x / laenge).ToArray();
                 double s = Punkt(n, a);
-                var schluessel = ((long)Math.Round(n[0] * 1e3), (long)Math.Round(n[1] * 1e3), (long)Math.Round(n[2] * 1e3), (long)Math.Round(s * 1e3));
+                string quelle = mitQuelle ? k.Quellflaechen[t] : null;
+                var schluessel = ((long)Math.Round(n[0] * 1e3), (long)Math.Round(n[1] * 1e3), (long)Math.Round(n[2] * 1e3), (long)Math.Round(s * 1e3), quelle);
                 if (!jeSchluessel.TryGetValue(schluessel, out Flaeche f))
                 {
-                    f = new Flaeche { N = n, S = s };
+                    f = new Flaeche { N = n, S = s, Quelle = quelle };
                     jeSchluessel[schluessel] = f;
                     liste.Add(f);
                 }

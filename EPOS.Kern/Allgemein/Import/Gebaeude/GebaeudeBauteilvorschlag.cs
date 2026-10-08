@@ -552,6 +552,9 @@ namespace WindowsFormsApplication1
         /// <summary>Typ der Quellentität eines gbXML-Baustoffs.</summary>
         internal const string QUELLTYP_GBXML_BAUSTOFF = "Material";
 
+        /// <summary>Typ der Quellentität eines Baustoffs beim Import allein aus der Projektdatei: die Schicht des Aufbaus.</summary>
+        internal const string QUELLTYP_PD_BAUSTOFF = "TcBuildingElementDimensionLayer";
+
         /// <summary>
         /// Relative Abweichung zwischen U-Wert der Datei und U-Wert aus den Schichten, ab der gemeldet wird —
         /// dieselbe Schwelle wie der Hinweis der Herleitung (E95-1: 10 %).
@@ -749,7 +752,7 @@ namespace WindowsFormsApplication1
                                                         bool raumtemperaturAlsSollwert = false,
                                                         IReadOnlyDictionary<string, string> typwahl = null)
             => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung,
-                      raumtemperaturAlsSollwert, ablauf?.Projektdatei, typwahl);
+                      raumtemperaturAlsSollwert, ablauf?.ProjektdateiFuer(gebaeudeIndex), typwahl);
 
         /// <summary>
         /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
@@ -913,8 +916,8 @@ namespace WindowsFormsApplication1
             internal void Bauen()
             {
                 _g = _abbild.Gebaeude[_index];
-                _datei = string.Equals(_abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
-                    ? Importherkunft.Ifc : Importherkunft.GbXml;
+                // Je Format die gleichnamige Herkunft; allein aus der Projektdatei SQPROJ (beim Weg „IFC + Projektdatei“ bleibt es IFC).
+                _datei = ImportherkunftWerte.AusFormat(_abbild.Format);
                 _herkunftWert = ImportherkunftWerte.Wert(_datei);
                 _v.Format = _abbild.Format ?? "";
                 _v.Dateiname = _quelle?.Dateiname ?? "";
@@ -1929,12 +1932,13 @@ namespace WindowsFormsApplication1
                         Cp = Wert(x.Schicht.Cp_JkgK),
                         IstLuftschicht = x.Schicht.IstLuftschicht,
                     });
-                string quelltypStoff = _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF;
+                string quelltypStoff = QuelltypBaustoff;
                 List<GebaeudeBaustoffquelle> quellen = schichten
                     .Where(x => x.Stamm.HasValue && !string.IsNullOrWhiteSpace(x.Quelle?.BaustoffKennung))
                     .Select(x => new GebaeudeBaustoffquelle(quelltypStoff, x.Quelle.BaustoffKennung, x.Stamm.Value))
                     .Distinct().ToList();
-                var zeile = new GebaeudeAufbauzeile(modell, ausPd ? QUELLTYP_PD_AUFBAU : _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
+                var zeile = new GebaeudeAufbauzeile(modell, ausPd || _datei == Importherkunft.Sqproj ? QUELLTYP_PD_AUFBAU
+                                                                           : _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
                                                     a.Kennung, gegenseite, a.RichtungAngenommen,
                                                     katalog ? Importherkunft.Katalog : _datei,
                                                     schichten.Select(x => x.Stamm).ToArray(), quellen)
@@ -2150,13 +2154,17 @@ namespace WindowsFormsApplication1
                             Zahl(Math.Round(100.0 * abweichung, 1)));
             }
 
+            /// <summary>Der Quelltyp eines Baustoffs je Format (IFC, gbXML, Projektdatei).</summary>
+            private string QuelltypBaustoff => _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF
+                                             : _datei == Importherkunft.Sqproj ? QUELLTYP_PD_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF;
+
             /// <summary>Die Materialzeile eines Namens — beim ersten Auftreten angelegt; <c>null</c> für eine Schicht ohne Namen.</summary>
             private GebaeudeMaterialzeile Material(AbbildSchicht s)
             {
                 string name = s?.Name?.Trim();
                 if (string.IsNullOrEmpty(name)) return null;
                 if (_materialJeName.TryGetValue(name, out GebaeudeMaterialzeile m)) return m;
-                m = new GebaeudeMaterialzeile(name, _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF,
+                m = new GebaeudeMaterialzeile(name, QuelltypBaustoff,
                                               s.BaustoffKennung);
                 _materialJeName[name] = m;
                 _v._materialien.Add(m);
@@ -2165,9 +2173,10 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// Der Stoff einer Schicht der Projektdatei als Projektkopie (BA-4b, Konzept 5.5): Name der Datei (ein Projektdatum),
-            /// λ, ρ, c der Schicht, Herkunft <c>IFC</c>, Quelle <see cref="QUELLE_PROJEKTDATEI"/>, Quellkennung die Schicht.
+            /// λ, ρ, c der Schicht, Herkunft die des Laufs (<c>IFC</c> beim Weg „IFC + Projektdatei“, <c>SQPROJ</c> allein aus der
+            /// Projektdatei), Quelle <see cref="QUELLE_PROJEKTDATEI"/>, Quellkennung die Schicht.
             /// </summary>
-            private static BaustoffModel Projektstoff(AbbildSchicht s, Schicht w)
+            private BaustoffModel Projektstoff(AbbildSchicht s, Schicht w)
             {
                 if (w.IstLuftschicht) return null;
                 string name = string.IsNullOrWhiteSpace(s?.Name) ? null : s.Name.Trim();
@@ -2181,7 +2190,7 @@ namespace WindowsFormsApplication1
                     Rho = w.Rohdichte_KgM3,
                     Cp = w.Cp_JkgK,
                     Quelle = QUELLE_PROJEKTDATEI,
-                    Herkunft = DbWerte.HERKUNFT_IFC,
+                    Herkunft = _datei == Importherkunft.Sqproj ? DbWerte.HERKUNFT_SQPROJ : DbWerte.HERKUNFT_IFC,
                     Quellkennung = string.IsNullOrEmpty(s?.Kennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(s.Kennung),
                 };
             }

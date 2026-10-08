@@ -263,6 +263,21 @@ public sealed class BauteilsteckbriefTexte
     public string Neigung { get; set; } = Resource.BTSB_NEIGUNG;
     /// <summary><c>BTSB_RAND</c></summary>
     public string Rand { get; set; } = Resource.BTSB_RAND;
+    /// <summary><c>BTSB_KOERPER</c> — die Zeile „Körper" (17.5).</summary>
+    public string Koerper { get; set; } = Resource.BTSB_KOERPER;
+    /// <summary><c>BTSB_KOERPER_ABGELEITET</c> — {0} der Weg.</summary>
+    public string KoerperAbgeleitet { get; set; } = Resource.BTSB_KOERPER_ABGELEITET;
+    /// <summary><c>BTSB_KOERPER_DATEI</c> — {0} die Darstellungsart.</summary>
+    public string KoerperDatei { get; set; } = Resource.BTSB_KOERPER_DATEI;
+    /// <summary><c>BTSB_KOERPERWEG_*</c> — der Weg eines gebildeten Körpers nach seinem Schlüssel.</summary>
+    public IReadOnlyDictionary<string, string> Koerperwege { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["Raumpolygon"] = Resource.BTSB_KOERPERWEG_RAUMPOLYGON,
+        ["Huellflaechen"] = Resource.BTSB_KOERPERWEG_HUELLFLAECHEN,
+        ["ClosedShell"] = Resource.BTSB_KOERPERWEG_CLOSEDSHELL,
+        ["Raumflaechen"] = Resource.BTSB_KOERPERWEG_RAUMFLAECHEN,
+        ["Flaechenextrusion"] = Resource.BTSB_KOERPERWEG_FLAECHENEXTRUSION,
+    };
     /// <summary><c>BTSB_UWERT</c></summary>
     public string UWert { get; set; } = Resource.BTSB_UWERT;
     /// <summary><c>BTSB_R1</c></summary>

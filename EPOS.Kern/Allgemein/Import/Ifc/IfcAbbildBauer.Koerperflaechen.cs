@@ -46,7 +46,8 @@ namespace WindowsFormsApplication1
             for (int gi = 0; gi < _abbild.Gebaeude.Count; gi++)
             {
                 AbbildGebaeude g = _abbild.Gebaeude[gi];
-                if (g.ZahlGrenzen > 0 || !g.Raeume.Any(r => r.Koerper != null)) continue;
+                // 17.5: Der Weg der Bauteilflächen aus Raum- und Bauteilkörpern greift nur mit Körpern der Datei.
+                if (g.ZahlGrenzen > 0 || !g.Raeume.Any(r => Dateikoerper.Beleg(r.Koerper))) continue;
                 Raumflaechen(g);
                 if (KoerperflaechenAus) continue;
 
@@ -54,11 +55,11 @@ namespace WindowsFormsApplication1
                 foreach (int label in _raumbezug.Keys)
                     if (_modell.Instances[label] is IIfcRoot wurzel) mitBezug.Add(wurzel.GlobalId.ToString());
 
-                double untersterBoden = g.Raeume.Where(r => r.Koerper != null && r.Koerper.PunkteM.Count > 0)
+                double untersterBoden = g.Raeume.Where(r => Dateikoerper.Beleg(r.Koerper) && r.Koerper.PunkteM.Count > 0)
                                                 .Min(r => r.Koerper.PunkteM.Min(p => p[2]));
                 List<Koerperflaechenraum> raeume = g.Raeume.Select(r =>
                 {
-                    if (r.Koerper == null || r.Koerper.PunkteM.Count == 0) return new Koerperflaechenraum();
+                    if (!Dateikoerper.Beleg(r.Koerper) || r.Koerper.PunkteM.Count == 0) return new Koerperflaechenraum();
                     double unten = r.Koerper.PunkteM.Min(p => p[2]), oben = r.Koerper.PunkteM.Max(p => p[2]);
                     return new Koerperflaechenraum
                     {
@@ -162,7 +163,7 @@ namespace WindowsFormsApplication1
             double summe = 0.0;
             foreach (AbbildRaum r in g.Raeume)
             {
-                if (r.Koerper == null || r.FlaecheM2.HasValue) continue;
+                if (!Dateikoerper.Beleg(r.Koerper) || r.FlaecheM2.HasValue) continue;
                 double boden = 0.0, volumen = 0.0;
                 foreach (int[] d in r.Koerper.Dreiecke)
                 {

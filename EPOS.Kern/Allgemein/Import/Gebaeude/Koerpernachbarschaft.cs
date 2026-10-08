@@ -110,12 +110,16 @@ namespace WindowsFormsApplication1
         internal static List<Koerperpaar> Paare(IReadOnlyList<AbbildRaum> raeume)
             => Paare(raeume?.Select(r => r?.Koerper).ToList() ?? new List<Dateikoerper>());
 
-        /// <summary>Die Flächenpaare einer Reihe von Körpern (Stelle = Raum); <c>null</c>-Körper tragen nichts bei.</summary>
+        /// <summary>
+        /// Die Flächenpaare einer Reihe von Körpern (Stelle = Raum); <c>null</c>-Körper tragen nichts bei, ein aus Flächen
+        /// gebildeter Körper (<see cref="Dateikoerper.IstBeleg"/> falsch) ebenso — er ist kein unabhängiger Beleg (17.5): Seine
+        /// Trennflächen kommen aus den Raumbezügen der Hüllflächen der Datei, nie aus einem Körperpaar.
+        /// </summary>
         internal static List<Koerperpaar> Paare(IReadOnlyList<Dateikoerper> koerper)
         {
             var flaechen = new List<Flaeche>();
             for (int r = 0; r < (koerper?.Count ?? 0); r++)
-                if (koerper[r] != null) flaechen.AddRange(Flaechen(koerper[r], r));
+                if (Dateikoerper.Beleg(koerper[r])) flaechen.AddRange(Flaechen(koerper[r], r));
 
             // Fächer nach Richtung, darin nach Ebenenabstand sortiert.
             var faecher = new Dictionary<(long, long, long), List<int>>();

@@ -173,6 +173,12 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Die Legende des Farbmodus „Aufbau": Zahl und Fläche je Stufe, außen und innen getrennt.</summary>
     public IReadOnlyList<GebaeudeAnsichtAufbausumme> Aufbausummen { get; init; } = Array.Empty<GebaeudeAnsichtAufbausumme>();
 
+    /// <summary>
+    /// Der Weg des Körpers je Bauteilkennung (Datenaustauschkonzept 17.5) — die Zeile „Körper" des Steckbriefs: der eigene
+    /// Bauteilkörper, sonst der Raumkörper, dessen Dreiecke das Bauteil als Quellfläche tragen; leer = kein Körper.
+    /// </summary>
+    public IReadOnlyDictionary<string, GebaeudeAnsichtKoerperweg> Koerperwege { get; init; } = new Dictionary<string, GebaeudeAnsichtKoerperweg>(StringComparer.Ordinal);
+
     /// <summary>Der Steckbrief je Bauteilkennung — geöffnet beim Klick auf Bauteilkörper oder Raumfläche; leer = keiner.</summary>
     public IReadOnlyDictionary<string, BauteilsteckbriefDaten> Steckbriefe { get; init; } = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
 
@@ -393,9 +399,11 @@ public sealed record GebaeudeAnsichtDaten
         foreach (GebaeudeAnsichtGeschoss g in Geschosse)
             foreach (GebaeudeAnsichtRaum r in g.Raeume)
             {
-                GebaeudeAnsichtDateikoerper? datei = zuGross ? null : Koerperraum(r.Kennung)?.Dateikoerper;
+                GebaeudeAnsichtKoerperraum? kr = Koerperraum(r.Kennung);
+                GebaeudeAnsichtDateikoerper? datei = zuGross ? null : kr?.Dateikoerper;
                 if (datei is not null)
-                    raeume.Add(new GebaeudeAnsichtDateiraum(r, Koerperherkunft.Datei, datei, null));
+                    raeume.Add(new GebaeudeAnsichtDateiraum(r, kr!.Herkunft == Koerperherkunft.Abgeleitet ? Koerperherkunft.Abgeleitet : Koerperherkunft.Datei,
+                                                            datei, null));
                 else if (prismen.TryGetValue(r.Kennung, out GebaeudeAnsichtKoerper? prisma))
                     raeume.Add(new GebaeudeAnsichtDateiraum(r, prisma.Herkunft, null, prisma));
             }
@@ -586,7 +594,20 @@ public enum Koerperherkunft
 
     /// <summary>HC-5: Prisma aus dem Grundriss des Dateikörpers („aus Dateikörper (Grundriss)“).</summary>
     Grundriss,
+
+    /// <summary>Der Raum trägt einen Körper, den der Kern aus den Flächen der Datei gebildet hat (17.5, „aus Flächen gebildet“).</summary>
+    Abgeleitet,
 }
+
+/// <summary>
+/// Der Weg eines Körpers für die Zeile „Körper" des Steckbriefs (Datenaustauschkonzept 17.5): aus Flächen gebildet oder aus der
+/// Datei, der Weg als Schlüssel (<c>Raumpolygon</c>, <c>Huellflaechen</c>, <c>ClosedShell</c>, <c>Raumflaechen</c>,
+/// <c>Flaechenextrusion</c>; bei einem Körper der Datei die Darstellungsart) und die Vermerke als Schlüssel.
+/// </summary>
+/// <param name="Abgeleitet">Aus Flächen der Datei gebildet (sonst so in der Datei).</param>
+/// <param name="Art">Der Weg bzw. die Darstellungsart.</param>
+/// <param name="Vermerke">Die Vermerke (Namen von <c>Koerpervermerk</c>); leer = keine.</param>
+public sealed record GebaeudeAnsichtKoerperweg(bool Abgeleitet, string Art, IReadOnlyList<string> Vermerke);
 
 /// <summary>
 /// Der Körper eines Raums, wie die Datei ihn zeichnet (15.3, 15.4), für die Ansicht: die Punkte als Folge
@@ -611,7 +632,7 @@ public sealed record GebaeudeAnsichtDateikoerper(
     public IReadOnlyList<byte>? Gruppen { get; init; }
 
     /// <summary>Die Schlüssel der Vermerke in ihrer Reihenfolge — die Namen von <c>Koerpervermerk</c> des Kerns.</summary>
-    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale" };
+    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale", "Vorgabedicke", "Bezugsebene_angenommen" };
 }
 
 /// <summary>
@@ -808,6 +829,12 @@ public sealed class GebaeudeAnsichtTexte
     /// <summary>GANS_HERKUNFT_GRUNDRISS — HC-5: Prisma aus dem Grundriss des Dateikörpers.</summary>
     public string HerkunftGrundriss { get; set; } = Resource.GANS_HERKUNFT_GRUNDRISS;
 
+    /// <summary>GANS_HERKUNFT_ABGELEITET — der Körper ist aus Flächen der Datei gebildet (17.5).</summary>
+    public string HerkunftAbgeleitet { get; set; } = Resource.GANS_HERKUNFT_ABGELEITET;
+
+    /// <summary>GANS_KENNZEICHEN_ABGELEITET — {0} Räume aus Flächen gebildet, {1} aus Umriss, {2} schematisch.</summary>
+    public string KennzeichenAbgeleitet { get; set; } = Resource.GANS_KENNZEICHEN_ABGELEITET;
+
     /// <summary>GANS_KENNZEICHEN_EXPORT — Exportmodell: {0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch.</summary>
     public string KennzeichenExport { get; set; } = Resource.GANS_KENNZEICHEN_EXPORT;
 
@@ -844,6 +871,8 @@ public sealed class GebaeudeAnsichtTexte
         ["OhneBeschnitt"] = Resource.GANS_VERMERK_OHNEBESCHNITT,
         ["Offen"] = Resource.GANS_VERMERK_OFFEN,
         ["Mehrschale"] = Resource.GANS_VERMERK_MEHRSCHALE,
+        ["Vorgabedicke"] = Resource.GANS_VERMERK_VORGABEDICKE,
+        ["Bezugsebene_angenommen"] = Resource.GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN,
     };
 
     /// <summary>GANS_FARBMODUS — Beschriftung des Umschalters „Zonen | Randbedingung" für die Sprachausgabe.</summary>
@@ -965,8 +994,23 @@ public sealed class GebaeudeAnsichtTexte
         Koerperherkunft.Datei => HerkunftDatei,
         Koerperherkunft.Schematisch => HerkunftSchematisch,
         Koerperherkunft.Grundriss => HerkunftGrundriss,
+        Koerperherkunft.Abgeleitet => HerkunftAbgeleitet,
         _ => HerkunftUmriss,
     };
+
+    /// <summary>
+    /// Die Zeile „Körper" des Steckbriefs: „aus Flächen der Datei gebildet (Weg)“ bzw. „aus der Datei (Art)“, dazu die Vermerke;
+    /// ohne Weg leer.
+    /// </summary>
+    public string Koerperzeile(GebaeudeAnsichtKoerperweg? weg)
+    {
+        if (weg is null) return "";
+        string art = Steckbrief.Koerperwege.TryGetValue(weg.Art, out string? t) ? t : weg.Art;
+        string text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                    weg.Abgeleitet ? Steckbrief.KoerperAbgeleitet : Steckbrief.KoerperDatei, art);
+        return weg.Vermerke.Count == 0 ? text
+            : text + " — " + string.Format(System.Globalization.CultureInfo.CurrentCulture, Vereinfacht, string.Join(", ", weg.Vermerke.Select(Vermerk)));
+    }
 
     /// <summary>Der Text eines Vermerks nach seinem Schlüssel; unbekannt = der Schlüssel.</summary>
     public string Vermerk(string schluessel) => Vermerke.TryGetValue(schluessel, out string? text) ? text : schluessel;

@@ -276,6 +276,8 @@ namespace WindowsFormsApplication1
                 return GebaeudeZuordnungsModell.FormatText(new IfcImportProfil());
             if (string.Equals(format, GebaeudeQuelle.FORMAT_GBXML, StringComparison.Ordinal))
                 return GebaeudeZuordnungsModell.FormatText(new GbxmlImportProfil());
+            if (string.Equals(format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal))
+                return GebaeudeZuordnungsModell.FormatText(new SqprojImportProfil());
             return format ?? "";
         }
 

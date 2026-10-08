@@ -441,8 +441,11 @@ namespace WindowsFormsApplication1
                     ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
                 return (regeln, vorgabe, grenzen);
             }
+            // Die Projektdatei (SQPROJ) läuft über die X-Regeln wie gbXML: Ihre Zonen (Simulationszone vor Nutzungszone, vom Leser
+            // als Zone des Raums gesetzt) sind die Vorgabe, sobald es eine gibt — auch wenn jeder Raum seine eigene Zone ist.
+            bool sqproj = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal);
             int zonen = g.Raeume.Select(r => r.ZonenKennung).Where(z => z != null).Distinct(StringComparer.Ordinal).Count();
-            bool x1 = zonen >= 1 && zonen < g.Raeume.Count;
+            bool x1 = zonen >= 1 && (zonen < g.Raeume.Count || sqproj);
             if (x1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X1);
             if (geschosse > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X2);
             if (g.Raeume.Count > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X3);

@@ -5,9 +5,33 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Ein Geschoss der Projektdatei</b> (<c>BmFloor</c>): Kennung und Name.
+    /// <b>Ein Geschoss der Projektdatei</b> (<c>BmFloor</c>): Kennung und Name, dazu das Gebäude (<c>BuildingUUID</c>), die
+    /// Höhenlage (<c>ElevationOfRefHeight</c> [m], nur für die Reihenfolge) und die Geschosshöhe (<c>Height</c> [m]).
     /// </summary>
-    internal sealed record SqprojGeschoss(string Uuid, string Name);
+    internal sealed record SqprojGeschoss(string Uuid, string Name, string GebaeudeUuid = null, double? LageM = null, double? HoeheM = null);
+
+    /// <summary>
+    /// <b>Ein Gebäude der Projektdatei</b> (<c>BmBuilding</c>): Kennung, Name, der Baujahrtext (<c>YearOfConstruction</c>,
+    /// ein <c>DATE</c>), das daraus gezogene Baujahr und der Standort (<c>SiteUUID</c> → <c>SmSite</c>).
+    /// </summary>
+    internal sealed class SqprojGebaeude
+    {
+        internal string Uuid { get; init; } = "";
+        internal string Name { get; init; } = "";
+        internal string BaujahrText { get; init; }
+        internal int? Baujahr { get; init; }
+        internal string StandortUuid { get; init; }
+    }
+
+    /// <summary><b>Ein Standort der Projektdatei</b> (<c>SmSite</c>): Ort, Postleitzahl, Breite und Länge [°] — nur zur Anzeige.</summary>
+    internal sealed class SqprojStandort
+    {
+        internal string Uuid { get; init; } = "";
+        internal string Ort { get; init; }
+        internal string Plz { get; init; }
+        internal double? BreiteGrad { get; init; }
+        internal double? LaengeGrad { get; init; }
+    }
 
     /// <summary>
     /// <b>Ein Raum der Projektdatei</b> (<c>BmRoom</c>): Kennung, Name (<c>ShortDesc</c>), Geschoss über <c>FloorUUID</c>,
@@ -24,6 +48,10 @@ namespace WindowsFormsApplication1
         internal int? Raumart { get; init; }
         internal double? FlaecheM2 { get; init; }
         internal double? VolumenM3 { get; init; }
+        /// <summary>Die Raumhöhe der Datei (<c>Height</c> [m]); <c>null</c> = keine.</summary>
+        internal double? HoeheM { get; init; }
+        /// <summary>Der Beheizungscode (<c>HeatingType</c>: 1 beheizt, 2 unbeheizt, 4 getrennt beheizt); <c>null</c> = keiner.</summary>
+        internal int? Beheizung { get; init; }
 
         public override string ToString() => (GeschossName ?? "?") + "/" + Name;
     }
@@ -56,7 +84,7 @@ namespace WindowsFormsApplication1
     /// Tagesganglinien und Abschnitten — samt den Zählern des Übersprungenen und den Meldungen. Formatfrei bis auf die
     /// Belegtexte; ohne Datenbank, ohne Verbindung (der Leser hält keine über das Lesen hinaus).
     /// </summary>
-    internal sealed class SqprojAbbild
+    internal sealed partial class SqprojAbbild
     {
         /// <summary>Der belegte Code der Nutzungszone nach DIN V 18599 (Befund 3.2).</summary>
         internal const int ZONENTYP_NUTZUNG = 5;
@@ -73,6 +101,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Gebäudegruppe (<c>BmBuilding.ProfileGroupUUID</c>, <c>ProfileGroupType</c> 4) — der Weg für die Gebäudeebene; <c>null</c> = keine.</summary>
         internal SqprojProfilgruppe Gebaeudegruppe { get; set; }
 
+        /// <summary>Die Gebäude der Datei nach Name und Kennung.</summary>
+        internal List<SqprojGebaeude> Gebaeude { get; } = new List<SqprojGebaeude>();
+        /// <summary>Die Standorte der Datei (<c>SmSite</c>, optional) nach Kennung.</summary>
+        internal Dictionary<string, SqprojStandort> Standorte { get; } = new Dictionary<string, SqprojStandort>(StringComparer.OrdinalIgnoreCase);
         /// <summary>Die Geschosse nach Name.</summary>
         internal List<SqprojGeschoss> Geschosse { get; } = new List<SqprojGeschoss>();
 
@@ -115,6 +147,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>Sind die vier Bauteiltabellen gelesen? Fehlen sie, bleibt es beim Stand ohne Aufbauten (benannt gemeldet).</summary>
         internal bool BauteileGelesen { get; set; }
+        /// <summary>Sind Lage und Öffnungen der Hüllflächen gelesen (Bruttofläche, Orientierung, Neigung, Wirt, CAD-Objekt)?</summary>
+        internal bool LageGelesen { get; set; }
 
         internal SqprojRaum Raum(string uuid)
             => uuid == null ? null : Raeume.Find(r => string.Equals(r.Uuid, uuid, StringComparison.OrdinalIgnoreCase));
