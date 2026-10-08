@@ -204,9 +204,19 @@ body.mk-nur-projekt .mk-chip { background: var(--mk-projekt); color: var(--epos-
 .mk-leiste--fuss { grid-column: 1 / -1; }
 
 /* ================= V1 gerahmt und gestapelt ================= */
-.v1-inhalt { display: grid; grid-template-rows: auto minmax(150px, 1fr) auto; gap: 8px; min-height: 0; }
-body.mk-details-offen .v1-inhalt { grid-template-rows: auto minmax(250px, 1.2fr) minmax(0, 1fr); }
+.v1-inhalt { display: grid; grid-template-rows: auto 8px minmax(150px, 1fr) auto; gap: 0; row-gap: 0; min-height: 0; }
+.v1-inhalt > .mk-bereich--satz { margin-top: 8px; }
+body.mk-details-offen .v1-inhalt { grid-template-rows: auto 8px minmax(250px, 1.2fr) minmax(120px, 1fr); }
 .mk-liste--projekt { flex: 0 1 auto; max-height: calc(34px + 2 * var(--mk-zeile) + 2px); }
+html.v1-hoehe .mk-liste--projekt { flex: 0 0 auto; max-height: none; height: var(--v1-projektliste); }
+/* Ziehbare Trennlinie zwischen Projekt- und Katalogbereich; die Höhe wird je Dialog gemerkt */
+.v1-trenner { position: relative; cursor: row-resize; touch-action: none; outline: none; }
+.v1-trenner::before { content: ""; position: absolute; left: 50%; top: 2px; width: 48px; height: 4px; margin-left: -24px;
+    border-radius: 2px; background: var(--epos-rahmen); }
+.v1-trenner:hover::before, .v1-trenner:focus-visible::before, body.v1-zieht .v1-trenner::before { background: var(--mk-projekt); }
+body.v1-zieht { cursor: row-resize; user-select: none; }
+/* Entscheid KA-E-10: Knöpfe gehören über ihre Stellung zum Bereich, ohne Farbstreifen */
+.epos-dialog .epos-knopf.k-proj, .epos-dialog .epos-knopf.k-kat, .epos-dialog .epos-knopf.k-satz { border-left: 1px solid var(--epos-rahmen); }
 .v1-satz .v1-zeile { display: flex; align-items: center; gap: 10px; min-height: 40px; border-left: 0; }
 .v1-details { display: none; border-top: 1px solid var(--epos-rahmen-leise); }
 body.mk-details-offen .v1-details { display: block; }
@@ -398,6 +408,8 @@ input.mk-feldwert[readonly] { background: var(--epos-flaeche); border-color: var
       <button class="epos-knopf k-proj" data-aktion="entfernen" title="Aus dem Projekt entfernen">▼ Entfernen</button></div>
     <div class="mk-liste mk-liste--projekt" tabindex="0" data-art="projekt" aria-label="Projektliste"><table class="mk-tabelle mk-tabelle--projekt"><thead><tr><th class="mk-wahl"><span class="mk-kaestchen" data-markieren="alle-projekt" title="alle wählen"></span></th><th>Ausgewählte Module</th><th>Hersteller</th><th>Energieträger</th><th class="mk-zahl">P_el [kW]</th><th class="mk-zahl">P_th [kW]</th><th class="mk-zahl">VL/RL [°C]</th></tr></thead><tbody data-liste="projekt"></tbody></table></div>
   </section>
+  <div class="v1-trenner" role="separator" aria-orientation="horizontal" tabindex="0"
+       aria-label="Höhe zwischen Projekt und Katalog (ziehen oder Pfeiltasten)" title="Ziehen: Höhe zwischen Projekt und Katalog; Doppelklick: Vorgabe"></div>
   <section class="mk-bereich mk-bereich--katalog" aria-label="Katalog (Datenbank)">
     <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span><label class="mk-suche" style="width:16rem"><input type="search" data-suche placeholder="Suche (* und ? erlaubt)" aria-label="Katalog durchsuchen"></label><span class="mk-zaehler" data-bind="zaehler"></span><button class="epos-knopf mk-leise k-kat" data-aktion="filter-zuruecksetzen">Filter zurücksetzen</button><span class="mk-fueller"></span>
       <button class="epos-knopf k-proj" data-aktion="uebernehmen">▲ In das Projekt übernehmen</button></div>
@@ -1224,6 +1236,73 @@ if (/schublade/.test(location.hash)) document.body.classList.add('mk-schublade-o
 if (/details/.test(location.hash)) document.body.classList.add('mk-details-offen');
 setTimeout(function () { zeigeZeile('katalog', S.wahlK); }, 0);
 window.mkSpiel = { zustand: function () { return S; }, zeichne: function () { zeichne(); } };
+})();
+</script>
+<script>
+/* Nur V1: ziehbare Trennlinie zwischen Projekt- und Katalogbereich. Gezogen wird die
+   Höhe der Projektliste; die Katalogliste behält mindestens Kopfzeile und zwei
+   Zeilen, auch mit aufgeklappter Detailzeile. Gemerkt je Dialog in localStorage — in der
+   Anwendung über Dienste.Einstellungen. Ohne Ablage gilt die Vorgabe. */
+(function () {
+  var SCHLUESSEL = 'mk-katalogauswahl-v1-trenner-bhkw';
+  var wurzel = document.documentElement;
+  var inhalt = document.querySelector('.v1-inhalt');
+  var trenner = document.querySelector('.v1-trenner');
+  var liste = document.querySelector('.mk-liste--projekt');
+  if (!inhalt || !trenner || !liste) return;
+  var ZEILE = 46, KOPF = 34;
+  function minProjekt() { return KOPF + ZEILE + 2; }
+  /* Die Katalogliste behält Kopfzeile und zwei Zeilen; was sie darüber hat, kann die Projektliste nehmen. */
+  var katListe = document.querySelector('.mk-liste[data-art=katalog]');
+  function katSpielraum() { return Math.max(0, katListe.getBoundingClientRect().height - (KOPF + 2 * ZEILE)); }
+  function setze(px, merken) {
+    if (px == null) { wurzel.style.removeProperty('--v1-projektliste'); wurzel.classList.remove('v1-hoehe'); }
+    else { wurzel.style.setProperty('--v1-projektliste', Math.round(px) + 'px'); wurzel.classList.add('v1-hoehe'); }
+    if (merken) {
+      try { if (px == null) localStorage.removeItem(SCHLUESSEL); else localStorage.setItem(SCHLUESSEL, String(Math.round(px))); }
+      catch (e) { /* ohne Ablage */ }
+    }
+    trenner.setAttribute('aria-valuenow', String(Math.round(liste.getBoundingClientRect().height)));
+  }
+  function maxProjekt() { return liste.getBoundingClientRect().height + katSpielraum(); }
+  function klemme() {
+    var inhaltUeber = Math.max(inhalt.scrollHeight - inhalt.clientHeight,
+      wurzel.classList.contains('v1-hoehe') ? (KOPF + 2 * ZEILE) - katListe.getBoundingClientRect().height : 0);
+    var h = liste.getBoundingClientRect().height;
+    if (inhaltUeber > 0) setze(Math.max(minProjekt(), h - inhaltUeber), false);
+    else setze(parseFloat(wurzel.style.getPropertyValue('--v1-projektliste')) || null, false);
+  }
+  var start = null;
+  trenner.addEventListener('pointerdown', function (e) {
+    start = { y: e.clientY, h: liste.getBoundingClientRect().height, max: liste.getBoundingClientRect().height + katSpielraum() };
+    trenner.setPointerCapture(e.pointerId); document.body.classList.add('v1-zieht'); e.preventDefault();
+  });
+  trenner.addEventListener('pointermove', function (e) {
+    if (!start) return;
+    setze(Math.max(minProjekt(), Math.min(start.max, start.h + e.clientY - start.y)), false);
+  });
+  function ende() {
+    if (!start) return; start = null; document.body.classList.remove('v1-zieht');
+    klemme(); setze(liste.getBoundingClientRect().height, true);
+  }
+  trenner.addEventListener('pointerup', ende);
+  trenner.addEventListener('pointercancel', ende);
+  trenner.addEventListener('dblclick', function () { setze(null, true); klemme(); });
+  trenner.addEventListener('keydown', function (e) {
+    var h = liste.getBoundingClientRect().height, max = h + katSpielraum();
+    var neu = null;
+    if (e.key === 'ArrowUp') neu = h - ZEILE; else if (e.key === 'ArrowDown') neu = h + ZEILE;
+    else if (e.key === 'Home') neu = minProjekt(); else if (e.key === 'End') neu = max;
+    if (neu == null) return;
+    e.preventDefault(); setze(Math.max(minProjekt(), Math.min(max, neu)), false); klemme(); setze(liste.getBoundingClientRect().height, true);
+  });
+  var gemerkt = null;
+  try { gemerkt = parseFloat(localStorage.getItem(SCHLUESSEL)); } catch (e) { /* ohne Ablage */ }
+  if (gemerkt > 0) setze(gemerkt, false);
+  if (window.ResizeObserver) new ResizeObserver(function () { klemme(); }).observe(inhalt);
+  document.addEventListener('click', function () { requestAnimationFrame(klemme); });
+  requestAnimationFrame(klemme);
+  window.mkTrenner = { setze: function (px) { setze(px, true); klemme(); }, klemme: klemme, max: maxProjekt };
 })();
 </script>
 </body>
