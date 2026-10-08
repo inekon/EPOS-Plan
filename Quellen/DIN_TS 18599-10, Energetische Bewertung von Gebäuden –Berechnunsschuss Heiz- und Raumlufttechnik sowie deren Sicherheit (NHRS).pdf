@@ -109763,12 +109763,12 @@ stream
       <dc:format>application/pdf</dc:format>
     </rdf:Description>
     <rdf:Description xmlns:xmp="http://ns.adobe.com/xap/1.0/" rdf:about="">
-      <xmp:MetadataDate>2026-10-06T18:00:00.678775+02:00</xmp:MetadataDate>
+      <xmp:MetadataDate>2026-10-08T22:23:20.836066+02:00</xmp:MetadataDate>
       <xmp:CreateDate>2025-08-21T07:44:58+02:00</xmp:CreateDate>
       <xmp:CreatorTool>LaTeX with hyperref package</xmp:CreatorTool>
       <xmp:ModifyDate>2026-07-30T19:09:53Z</xmp:ModifyDate>
     </rdf:Description>
-    <rdf:Description xmlns:calibreSI="http://calibre-ebook.com/xmp-namespace-series-index" xmlns:calibre="http://calibre-ebook.com/xmp-namespace" xmlns:calibreCC="http://calibre-ebook.com/xmp-namespace-custom-columns" rdf:about="">
+    <rdf:Description xmlns:calibreSI="http://calibre-ebook.com/xmp-namespace-series-index" xmlns:calibreCC="http://calibre-ebook.com/xmp-namespace-custom-columns" xmlns:calibre="http://calibre-ebook.com/xmp-namespace" rdf:about="">
       <calibre:series rdf:parseType="Resource">
         <rdf:value>DIN</rdf:value>
         <calibreSI:series_index>776.00</calibreSI:series_index>
@@ -109801,7 +109801,7 @@ stream
       <xmpMM:DocumentID>uuid:0f7fe7dd-7428-4572-abd1-a7c914afd043</xmpMM:DocumentID>
       <xmpMM:InstanceID>urn:uuid:0D37BB30-757C-41E7-B521-80733FA6DA60</xmpMM:InstanceID>
     </rdf:Description>
-    <rdf:Description xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/" xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#" xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#" rdf:about="">
+    <rdf:Description xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#" xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/" xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#" rdf:about="">
       <pdfaExtension:schemas>
         <rdf:Bag>
           <rdf:li rdf:parseType="Resource">
