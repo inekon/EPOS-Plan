@@ -43693,6 +43693,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zerlegte Dächer ohne eigenen Aufbau übernehmen den gemeinsamen Aufbau ihrer Platten: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_AUFBAU_PLATTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_AUFBAU_PLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach „{0}“ trägt den U-Wert {1} W/(m²K) selbst; er gilt. Seine {2} Platten tragen {3} bis {4} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_UWERT_EIGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_UWERT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zerlegte Dächer ohne eigenen U-Wert übernehmen den U-Wert ihrer Platten, nach deren Fläche gewichtet: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_UWERT_PLATTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_UWERT_PLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach „{0}“: Die U-Werte seiner {1} Platten reichen von {2} bis {3} W/(m²K) — übernommen ist das Flächenmittel {4} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_UWERT_SPANNE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_UWERT_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Eigenschaft {1} ist als {0} angegeben; gelesen werden Einzel- und Bereichswerte — sie wird übergangen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_EIGENSCHAFTSART {

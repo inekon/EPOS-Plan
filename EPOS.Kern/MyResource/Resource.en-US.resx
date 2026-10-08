@@ -39386,6 +39386,18 @@ This folder holds the standard template, the short report, the detailed template
   <data name="IMP_IFC_PROT_FLAECHE_GRUNDRISS" xml:space="preserve">
     <value>{0} spaces without an area quantity receive the area of their floor plan ({1} m²; {2}).</value>
   </data>
+  <data name="IMP_IFC_PROT_DACH_UWERT_PLATTEN" xml:space="preserve">
+    <value>{0} decomposed roofs without a U-value of their own take the U-value of their slabs, weighted by slab area: {1}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_DACH_UWERT_SPANNE" xml:space="preserve">
+    <value>Roof “{0}”: the U-values of its {1} slabs range from {2} to {3} W/(m²K) — the area-weighted mean {4} W/(m²K) is used.</value>
+  </data>
+  <data name="IMP_IFC_PROT_DACH_UWERT_EIGEN" xml:space="preserve">
+    <value>Roof “{0}” carries the U-value {1} W/(m²K) itself; it applies. Its {2} slabs carry {3} to {4} W/(m²K).</value>
+  </data>
+  <data name="IMP_IFC_PROT_DACH_AUFBAU_PLATTEN" xml:space="preserve">
+    <value>{0} decomposed roofs without a construction of their own take the common construction of their slabs: {1}.</value>
+  </data>
   <data name="IMP_IFC_PROT_GRENZEN_DACHPLATTE" xml:space="preserve">
     <value>{0} decomposed roofs carry their space boundaries themselves — the {1} boundaries apply to their only slab.</value>
   </data>
