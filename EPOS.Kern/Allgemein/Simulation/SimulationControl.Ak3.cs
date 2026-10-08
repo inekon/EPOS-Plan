@@ -143,7 +143,7 @@ namespace WindowsFormsApplication1
             // AK3-K (4.2): die Kälteschranke der Kältestunde im Kreis.
             kreis.Kaelteschranke = Ak3KaelteschrankeBauen(erzeuger);
             // KK3 (Entwurf KK 2.2, 2.3): Raumeinfluss der Kühlkurve und gleitender Erzeugervorlauf — nur mit Kälteschranke und
-            // einem Gebäude mit wirksamer Kühlkurve (Kernschalter, Stufe AK3); sonst null und der Kreis bleibt am festen Vorlauf.
+            // einem Gebäude mit wirksamer Kühlkurve (Stufe AK3); sonst null und der Kreis bleibt am festen Vorlauf.
             if (kreis.Kaelteschranke != null)
                 kreis.KuehlRaumeinfluss = KuehlRaumeinfluss.AusSteppern(gebaeude.Select(g => g.Stepper).ToList());
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.

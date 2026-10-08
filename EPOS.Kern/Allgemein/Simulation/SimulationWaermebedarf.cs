@@ -1196,8 +1196,8 @@ namespace WindowsFormsApplication1
             // Die Kälteseite (E37): der Kaltwasser-Vorlauf der Anlage, nur mit Stufe und Kälte.
             _vdi6007.KuehlVorlaufAnlageC = Waermeuebergabe.StufeAn(stufe) && KuehlbetriebProjekt
                 ? KuehlVorlaufAnlageC : double.NaN;
-            // KK3 (Entwurf KK 2.3): der kälteste erreichbare Erzeugervorlauf - nur mit dem Kernschalter der Kühlkurve gelesen.
-            _vdi6007.KuehlVorlaufErzeugerMinC = KuehlkurveKernschalter.Wirksam(stufe) && KuehlbetriebProjekt
+            // KK3 (Entwurf KK 2.3): der kälteste erreichbare Erzeugervorlauf - nur auf Stufe AK3 gelesen.
+            _vdi6007.KuehlVorlaufErzeugerMinC = Ak3Kernstufe.Wirksam(stufe) && KuehlbetriebProjekt
                 ? WPCtrl.KuehlVorlaufUntergrenzeDesKaeltekanals(m_ID_Projekt) : double.NaN;
             _vdi6007.NennleistungSkalierung = 1.0;
             _vdi6007.Probelauf = _pass1;

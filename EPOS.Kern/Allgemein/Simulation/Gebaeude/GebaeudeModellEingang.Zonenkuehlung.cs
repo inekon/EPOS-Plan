@@ -7,8 +7,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die Kühlübergabe je Zone im Mehrzonenweg</b> (Entwurf KK, KZ1; Festlegungen 14–17; E106 Q-KK-4 (b), Q-KK-7 (a)) —
     /// der Spiegel von AK1z (<see cref="ZonenkopplungAufloesen"/>): je Gebäude ein Kühlkreis mit gemeinsamem, festem
-    /// Kühlvorlauf, je gekühlter Zone Schritt K mit der Kühlübergabe der Zone. Nur mit dem Kernschalter
-    /// (<see cref="KuehlkurveKernschalter.Zonenkuehlung"/>); ohne ihn bleibt die Kälteseite des Mehrzonenwegs ideal.
+    /// Kühlvorlauf, je gekühlter Zone Schritt K mit der Kühlübergabe der Zone. Ohne kühlgekoppelte Zone bleibt die Kälteseite des
+    /// Mehrzonenwegs ideal.
     /// </summary>
     internal sealed partial class GebaeudeModellEingang
     {
@@ -219,8 +219,8 @@ namespace WindowsFormsApplication1
                 e.Gebaeudekuehlkreis = kreis;
             }
 
-            // ---- 5. KZ2: die Kühlkurve des Kühlkreises - nur mit Kernschalter, Stufe AK3 und Kuehlkurve_Aktiv ----
-            if (g.Kuehlkurve_Aktiv && KuehlkurveKernschalter.Wirksam(erste.AnlagenkopplungStufe))
+            // ---- 5. KZ2: die Kühlkurve des Kühlkreises - nur mit Stufe AK3 und Kuehlkurve_Aktiv ----
+            if (g.Kuehlkurve_Aktiv && Ak3Kernstufe.Wirksam(erste.AnlagenkopplungStufe))
                 ZonenKuehlkurveAufloesen(g, kreis, zonen, erste, kuehlVorlaufAnlageC, kuehlErzeugerMinC);
             return kreis;
         }

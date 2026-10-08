@@ -157,8 +157,7 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------------ KZ2: die Kühlkurve im Mehrzonenweg
 
         /// <summary>
-        /// Die Kühlkurve des Kühlkreises (Entwurf KK 2.8, KZ2; Festlegung 14); <c>null</c> = fester Vorlauf (ohne Kernschalter,
-        /// unter AK3 oder ohne <c>Kuehlkurve_Aktiv</c>). Mit ihr ist <see cref="VorlaufC"/> die Kurvenreihe am Bezug
+        /// Die Kühlkurve des Kühlkreises (Entwurf KK 2.8, KZ2; Festlegung 14); <c>null</c> = fester Vorlauf (unter AK3 oder ohne <c>Kuehlkurve_Aktiv</c>). Mit ihr ist <see cref="VorlaufC"/> die Kurvenreihe am Bezug
         /// <see cref="SollwertC"/>.
         /// </summary>
         internal Kuehlkurve Kuehlkurve { get; set; }

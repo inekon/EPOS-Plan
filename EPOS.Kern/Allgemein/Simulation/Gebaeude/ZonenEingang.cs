@@ -396,9 +396,9 @@ namespace WindowsFormsApplication1
             // Ohne gekoppelte Zone kein Aufruf: ein ungekoppeltes Gebäude bleibt Zeichen für Zeichen.
             if (eingaenge.Any(e => e.KopplungWirksam))
                 GebaeudeModellEingang.ZonenkopplungAufloesen(gebaeude, ergebnis, vorlaufAnlageC);
-            // Entwurf KK (KZ1): die Kühlübergabe je Zone - ebenso erst jetzt; ohne Kernschalter oder ohne kühlgekoppelte
-            // Zone kein Aufruf, die Kälteseite bleibt ideal Zeichen für Zeichen.
-            if (KuehlkurveKernschalter.Zonenkuehlung && eingaenge.Any(e => e.KuehlKopplungWirksam))
+            // Entwurf KK (KZ1): die Kühlübergabe je Zone - ebenso erst jetzt; ohne kühlgekoppelte Zone kein Aufruf, die
+            // Kälteseite bleibt ideal Zeichen für Zeichen.
+            if (eingaenge.Any(e => e.KuehlKopplungWirksam))
                 GebaeudeModellEingang.ZonenKuehlkopplungAufloesen(gebaeude, ergebnis, kuehlVorlaufAnlageC, kuehlErzeugerMinC);
 
             // Stufe KP3 (Entwurf KP3, Festlegung 1): die Aufheizrampen erst HIER - in beiden

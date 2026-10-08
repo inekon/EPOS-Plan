@@ -28,21 +28,20 @@ namespace EPOS.Kern.Tests
 
         // ------------------------------------------------------------------------------------------ Bausteine
 
-        private static ProjektGebaeudeModel Gebaeude(double? kK)
+        private static ProjektGebaeudeModel Gebaeude(double? kK, bool kurve = true)
         {
             ProjektGebaeudeModel g = Vdi6007Probe.Gekuehlt(KUEHL_SOLL_C);
             g.Kuehluebergabe_Aktiv = true;
             g.Kuehl_Uebergabe_Art = DbWerte.KUEHLUEBERGABE_KUEHLDECKE;
-            g.Kuehlkurve_Aktiv = true;
+            g.Kuehlkurve_Aktiv = kurve;
             g.Kuehlkurve_Raumeinfluss = kK;
             return g;
         }
 
-        private static GebaeudeModellEingang Eingang(double? kK, bool schalter = true, string stufe = DbWerte.ANLAGENKOPPLUNG_AK3)
+        private static GebaeudeModellEingang Eingang(double? kK, string stufe = DbWerte.ANLAGENKOPPLUNG_AK3, bool kurve = true)
         {
-            using (KuehlkurveKernschalter.Schalten(schalter))
             {
-                GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(Gebaeude(kK), Klima, Vdi6007Probe.Wochenende(),
+                GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(Gebaeude(kK, kurve), Klima, Vdi6007Probe.Wochenende(),
                     Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE, GebaeudeKlimaweg.ZEITBEZUG_VORGABE, true, stufe, double.NaN, 1.0, ANLAGE_C);
                 e.KuehlkurveUntergrenzeSetzen(ERZEUGER_MIN_C);
                 return e;
@@ -174,19 +173,19 @@ namespace EPOS.Kern.Tests
         // ------------------------------------------------------------------------------------------ Schalter
 
         /// <summary>
-        /// <b>Schalter aus</b> (Festlegungen 1, 6, 13): Ohne Kernschalter, auf AK1 oder ohne Kälteseite baut der Kreis keinen
+        /// <b>Ohne Kurve kein Raumeinfluss</b> (Festlegungen 1, 6): Ohne <c>Kuehlkurve_Aktiv</c>, auf AK1 oder ohne Kälteseite baut der Kreis keinen
         /// Raumeinfluss — der Kreis rechnet am festen Vorlauf wie zuvor; Stunden tragen keinen Erzeugervorlauf.
         /// </summary>
         [Fact]
-        public void Schalter_aus_baut_keinen_Raumeinfluss()
+        public void Ohne_Kurve_baut_der_Kreis_keinen_Raumeinfluss()
         {
-            Assert.Null(KuehlRaumeinfluss.AusEingaengen(new[] { Eingang(2.0, schalter: false) }));
+            Assert.Null(KuehlRaumeinfluss.AusEingaengen(new[] { Eingang(2.0, kurve: false) }));
             Assert.Null(KuehlRaumeinfluss.AusEingaengen(new[] { Eingang(2.0, stufe: DbWerte.ANLAGENKOPPLUNG_AK1) }));
             Assert.Null(KuehlRaumeinfluss.AusEingaengen(new GebaeudeModellEingang[] { null }));
             Assert.NotNull(KuehlRaumeinfluss.AusEingaengen(new[] { Eingang(null) }));
 
-            // Ohne Schalter: die Untergrenze am Erzeuger wirkt nicht, die Reihe bleibt der feste Vorlauf.
-            GebaeudeModellEingang aus = Eingang(2.0, schalter: false);
+            // Ohne Kurve: die Untergrenze am Erzeuger wirkt nicht, die Reihe bleibt der feste Vorlauf.
+            GebaeudeModellEingang aus = Eingang(2.0, kurve: false);
             Assert.False(aus.KuehlkurveWirksam);
             Assert.True(double.IsNaN(aus.KuehlkurveErzeugerC));
 

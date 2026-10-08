@@ -60,9 +60,16 @@ namespace EPOS.Kern.Tests
             return g;
         }
 
-        private static Mehrzonenergebnis Rechnen(ProjektGebaeudeModel g, string stufe, bool schalter)
+        /// <summary>Dieselben zwei Hälften mit idealer Kälteseite (ohne Kühlübergabe).</summary>
+        private static ProjektGebaeudeModel Ideal()
         {
-            using (KuehlkurveKernschalter.Schalten(schalter))
+            ProjektGebaeudeModel g = Zwei(kurve: false);
+            g.Kuehluebergabe_Aktiv = false;
+            return g;
+        }
+
+        private static Mehrzonenergebnis Rechnen(ProjektGebaeudeModel g, string stufe)
+        {
                 return Zonenrechnung.Rechnen(g, ZonenschleifeTests.KlimaDes(), true, stufe, 0, g.ID_Gebaeude,
                                              kuehlVorlaufAnlageC: ANLAGE_C, kuehlErzeugerMinC: ERZEUGER_MIN_C);
         }
@@ -103,7 +110,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Kurvenreihe_am_niedrigsten_Kuehlsollwert_der_kuehlenden_Zonen()
         {
-            Mehrzonenergebnis m = Rechnen(Zwei(weg: DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE, aussen: 17.5), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis m = Rechnen(Zwei(weg: DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE, aussen: 17.5), DbWerte.ANLAGENKOPPLUNG_AK3);
             GebaeudeModellEingang a = m.Eingaenge[0].Eingang, b = m.Eingaenge[1].Eingang;
             Gebaeudekuehlkreis k = a.Gebaeudekuehlkreis;
             Assert.NotNull(k?.Kuehlkurve);
@@ -116,7 +123,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(17.5, k.Kuehlkurve.AuslegungAussenC);
             Assert.Equal(ERZEUGER_MIN_C, k.KurveErzeugerC);
 
-            Mehrzonenergebnis v = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis v = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK3);
             double soll = Kuehlkurve.AuslegungAussentemperaturC(null, null, 16.0, a.ThetaOut, out string weg, out _);
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL, weg);
             Assert.Equal(soll, v.Eingaenge[0].Eingang.Gebaeudekuehlkreis.Kuehlkurve.AuslegungAussenC);
@@ -145,22 +152,18 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// <b>Schalter aus bitgleich</b> (Festlegungen 1, 13): ohne Kernschalter rechnet ein Gebäude mit <c>Kuehlkurve_Aktiv</c> und
-        /// k_K Bit für Bit wie eines ohne; unter AK3 (AK1) baut der Kühlkreis keine Kurve und rechnet wie ohne
+        /// <b>Unter AK3 bitgleich ohne Kurve</b> (Festlegung 1): unter AK3 (AK1) baut der Kühlkreis keine Kurve und rechnet wie ohne
         /// <c>Kuehlkurve_Aktiv</c>; auf AK3 ohne <c>Kuehlkurve_Aktiv</c> bleibt der feste Vorlauf von KZ1.
         /// </summary>
         [Fact]
-        public void Schalter_aus_und_unter_AK3_bitgleich_ohne_Kurve()
+        public void Unter_AK3_bitgleich_ohne_Kurve()
         {
-            ErgebnisBitgleich(Rechnen(Zwei(kK: 3.0), DbWerte.ANLAGENKOPPLUNG_AK3, false),
-                              Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3, false));
-
-            Mehrzonenergebnis ak1 = Rechnen(Zwei(kK: 3.0), DbWerte.ANLAGENKOPPLUNG_AK1, true);
+            Mehrzonenergebnis ak1 = Rechnen(Zwei(kK: 3.0), DbWerte.ANLAGENKOPPLUNG_AK1);
             Assert.NotNull(ak1.Eingaenge[0].Eingang.Gebaeudekuehlkreis);
             Assert.Null(ak1.Eingaenge[0].Eingang.Gebaeudekuehlkreis.Kuehlkurve);
-            ErgebnisBitgleich(ak1, Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK1, true));
+            ErgebnisBitgleich(ak1, Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK1));
 
-            Mehrzonenergebnis fest = Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis fest = Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3);
             Gebaeudekuehlkreis k = fest.Eingaenge[0].Eingang.Gebaeudekuehlkreis;
             Assert.Null(k.Kuehlkurve);
             Assert.All(k.VorlaufC, x => Assert.Equal(k.VorlaufFestC, x));
@@ -168,23 +171,21 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Kreis mit gekühlten Zonen</b> (Auftrag KZ2, Punkt 3): Die Zonen tragen keine Heizkopplung; ohne Kernschalter
-        /// bekommt das Gebäude den Kreis nicht (erste Zone nicht heizgekoppelt, Bestand), mit ihm wegen der gekoppelten
-        /// Kälteseite. Der Raumeinfluss entsteht aus dem Stepper des Mehrzonengebäudes; ohne Kurve keiner.
+        /// <b>Kreis mit gekühlten Zonen</b> (Auftrag KZ2, Punkt 3): Die Zonen tragen keine Heizkopplung; das Gebäude
+        /// bekommt den Kreis wegen der gekoppelten Kälteseite. Der Raumeinfluss entsteht aus dem Stepper des Mehrzonengebäudes; ohne Kurve keiner.
         /// </summary>
         [Fact]
         public void Kreis_mit_gekuehlten_Zonen_auch_ohne_heizgekoppelte_erste_Zone()
         {
-            Mehrzonenergebnis m = Rechnen(Zwei(kK: 2.0), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis m = Rechnen(Zwei(kK: 2.0), DbWerte.ANLAGENKOPPLUNG_AK3);
             Assert.False(m.Eingaenge[0].Eingang.KopplungWirksam);
             Assert.True(m.Eingaenge.All(z => z.Eingang.KuehlKopplungWirksam));
-            using (KuehlkurveKernschalter.Schalten(false)) Assert.False(Vdi6007Rechenweg.KreisMitZonen(m.Eingaenge));
-            using (KuehlkurveKernschalter.Schalten(true)) Assert.True(Vdi6007Rechenweg.KreisMitZonen(m.Eingaenge));
+            Assert.True(Vdi6007Rechenweg.KreisMitZonen(m.Eingaenge));
 
             KuehlRaumeinfluss k2 = KuehlRaumeinfluss.AusSteppern(new[] { Stepper(m) });
             Assert.NotNull(k2);
             Assert.Equal(2.0, k2.Kk(0));
-            Assert.Null(KuehlRaumeinfluss.AusSteppern(new[] { Stepper(Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3, true)) }));
+            Assert.Null(KuehlRaumeinfluss.AusSteppern(new[] { Stepper(Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3)) }));
         }
 
         // =====================================================================
@@ -235,7 +236,7 @@ namespace EPOS.Kern.Tests
         public void O3kz_Fuehrungsgroesse_groesste_Ueberschreitung_trifft_den_Fixpunkt(double kK)
         {
             // Zone 1 auf 21 °C mit knapper Kühlübergabe (0,2 kW): an warmen Tagen überschreitet sie weiter als Zone 2 — die Führung wechselt.
-            Mehrzonenergebnis m = Rechnen(Zwei(kK: kK, nennEinsKw: 0.2, kuehlEinsC: 21.0), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis m = Rechnen(Zwei(kK: kK, nennEinsKw: 0.2, kuehlEinsC: 21.0), DbWerte.ANLAGENKOPPLUNG_AK3);
             GebaeudeStepper s = Stepper(m);
             KuehlRaumeinfluss k2 = KuehlRaumeinfluss.AusSteppern(new[] { s });
             Anlagenkopplung kreis = Kreis(s, k2);
@@ -339,7 +340,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Raumeinfluss_null_im_Mehrzonenweg_bitgleich_wie_ohne()
         {
-            Mehrzonenergebnis m = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis m = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK3);
             GebaeudeStepper sa = Stepper(m), sb = Stepper(m);
             KuehlRaumeinfluss k2 = KuehlRaumeinfluss.AusSteppern(new[] { sb });
             // Ohne festen Kühlvorlauf der Schranke: der feste Vorlauf kappte die Kurve im Kühlkreis (KZ1, Vorlaufangebot).
@@ -373,9 +374,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Frei_gerechnete_Kuehlstunden_konvergieren()
         {
-            Mehrzonenergebnis ideal = Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3, false);
-            Mehrzonenergebnis fest = Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3, true);
-            Mehrzonenergebnis kurve = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK3, true);
+            Mehrzonenergebnis ideal = Rechnen(Ideal(), DbWerte.ANLAGENKOPPLUNG_AK3);
+            Mehrzonenergebnis fest = Rechnen(Zwei(kurve: false), DbWerte.ANLAGENKOPPLUNG_AK3);
+            Mehrzonenergebnis kurve = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK3);
             foreach ((string name, Mehrzonenergebnis m) in new[] { ("ideal", ideal), ("fest", fest), ("Kurve", kurve) })
             {
                 Zonenschleife z = m.Schleife;

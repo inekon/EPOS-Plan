@@ -412,7 +412,7 @@ namespace WindowsFormsApplication1
         internal bool[] KuehlVorlaufAnGrenze { get; private set; }
 
         /// <summary>
-        /// <b>Rechnet dieses Gebäude die Kühlkurve?</b> Kernschalter (<see cref="KuehlkurveKernschalter"/>) und Stufe AK3,
+        /// <b>Rechnet dieses Gebäude die Kühlkurve?</b> Stufe AK3 (<see cref="Ak3Kernstufe"/>),
         /// <c>Kuehlkurve_Aktiv</c> und eine wirksame Kälteseite im Einzonenweg (Entwurf KK, Festlegungen 1, 13; E106 Q-KK-2 (a)).
         /// </summary>
         internal bool KuehlkurveWirksam { get; private set; }
@@ -1340,20 +1340,19 @@ namespace WindowsFormsApplication1
             e.KuehluebergabeAktiv = gebaeude.Kuehluebergabe_Aktiv;
             e.KuehlUebergabeArt = gebaeude.Kuehl_Uebergabe_Art;
             bool kuehlKopplung = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
-            // Entwurf KK (KZ1, Festlegungen 14-16; E106 Q-KK-7 (a)): mit dem Kernschalter die Kühlübergabe je Zone im
-            // Mehrzonenweg ab AK1 - aufgelöst erst, wenn alle Zonen stehen (ZonenKuehlkopplungAufloesen). Ohne Schalter
-            // bleibt die Kälteseite des Mehrzonenwegs ideal, Zeile für Zeile wie bisher.
+            // Entwurf KK (KZ1, Festlegungen 14-16; E106 Q-KK-7 (a)): die Kühlübergabe je Zone im Mehrzonenweg ab AK1 -
+            // aufgelöst erst, wenn alle Zonen stehen (ZonenKuehlkopplungAufloesen).
             bool kuehlImVorlaufIdeal = false;
-            bool zonenkuehlung = e.Mehrzonenweg && KuehlkurveKernschalter.Zonenkuehlung;
+            bool zonenkuehlung = e.Mehrzonenweg;
             e.KuehlKopplungWirksam = zonenkuehlung
                 ? e.ZonenKuehlkopplungVormerken(gebaeude, anlagenkopplung, kuehlbetrieb, zone, out kuehlImVorlaufIdeal)
                 : kuehlKopplung && !e.Mehrzonenweg;
             if (e.KuehlKopplungWirksam && !e.Mehrzonenweg)
             {
                 e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
-                // Entwurf KK (Schritt KK1): die Kühlkurve nur mit Kernschalter, Stufe AK3 und Kuehlkurve_Aktiv;
+                // Entwurf KK (Schritt KK1): die Kühlkurve nur mit Stufe AK3 und Kuehlkurve_Aktiv;
                 // sonst bleibt die konstante Reihe des festen Vorlaufs (Festlegung 1).
-                if (gebaeude.Kuehlkurve_Aktiv && KuehlkurveKernschalter.Wirksam(anlagenkopplung))
+                if (gebaeude.Kuehlkurve_Aktiv && Ak3Kernstufe.Wirksam(anlagenkopplung))
                     e.KuehlkurveAufloesen(gebaeude, kuehlVorlaufAnlageC);
             }
             // Im Mehrzonenweg bleibt die Kälteseite ideal (A4 (a)); die Wärmeseite nur im adiabaten

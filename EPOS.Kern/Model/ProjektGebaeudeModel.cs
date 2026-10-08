@@ -244,13 +244,12 @@ namespace WindowsFormsApplication1
 
         // =====================================================================
         //  Die Kühlkurve (Entwurf KK, 2.1–2.2, Festlegungen 1–7) — die Spalten von Tab_Gebaeude aus Schemaschritt 202
-        //  (KuehlkurveSchema), gelesen über die Sicht (ProjektGebaeudeCtrl); wirksam nur mit dem Kernschalter
-        //  (KuehlkurveKernschalter) auf AK3.
+        //  (KuehlkurveSchema), gelesen über die Sicht (ProjektGebaeudeCtrl); wirksam auf AK3.
         // =====================================================================
 
         /// <summary>
-        /// Der Schalter der Kühlkurve (<c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>): Mit Stufe AK3, wirksamer Kühlübergabe und
-        /// dem Kernschalter wird der Kühlvorlauf eine Jahresreihe nach <see cref="Kuehlkurve"/>; <c>false</c> = fester Vorlauf wie
+        /// Der Schalter der Kühlkurve (<c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>): Mit Stufe AK3, wirksamer Kühlübergabe
+        /// wird der Kühlvorlauf eine Jahresreihe nach <see cref="Kuehlkurve"/>; <c>false</c> = fester Vorlauf wie
         /// bisher (Festlegung 1).
         /// </summary>
         public bool Kuehlkurve_Aktiv { get; set; }

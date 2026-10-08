@@ -91,7 +91,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// KK3 (Entwurf KK 2.3): der kälteste erreichbare Erzeugervorlauf der Kälteseite [°C] — die Untergrenze der Kühlkurve
         /// am gleitenden Erzeuger (<see cref="GebaeudeModellEingang.KuehlkurveUntergrenzeSetzen"/>). NaN = keiner; gesetzt nur
-        /// mit dem Kernschalter der Kühlkurve.
+        /// auf Stufe AK3 mit Kühlbetrieb.
         /// </summary>
         internal double KuehlVorlaufErzeugerMinC { get; set; } = double.NaN;
 
@@ -159,8 +159,6 @@ namespace WindowsFormsApplication1
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
             LetzterAufheizplan = null;
-            // KZ2: die Probewerte der Kühlkurve vor der Weiche - so erreichen sie auch den Mehrzonenweg (nur mit Kernschalter).
-            if (KuehlkurveKernschalter.Ein) KuehlkurveKernschalter.Probewerte?.Invoke(gebaeude);
             // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen bis zur Grenze der
             // Regelklasse (GebaeudeZonenregeln.Rechenbar) die Zonenschleife; darüber lehnt der
             // Eingangsbauer das Gebäude benannt ab (MehrereZonen, mit der Grenze).
@@ -293,13 +291,10 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Bekommt ein Mehrzonengebäude im AK3-Weg den Kreis? Ohne Kernschalter der Bestand — die erste Zone ist heizgekoppelt;
-        /// mit ihm (KZ2) eine Zone mit wirksamer Heiz- oder Kühlkopplung.
+        /// Bekommt ein Mehrzonengebäude im AK3-Weg den Kreis? Ja, sobald eine Zone eine wirksame Heiz- oder Kühlkopplung trägt (KZ2).
         /// </summary>
         internal static bool KreisMitZonen(IReadOnlyList<ZonenEingang> zonen)
-            => KuehlkurveKernschalter.Zonenkuehlung
-               ? zonen.Any(z => z.Eingang.KopplungWirksam || z.Eingang.KuehlKopplungWirksam)
-               : zonen[0].Eingang.KopplungWirksam;
+            => zonen.Any(z => z.Eingang.KopplungWirksam || z.Eingang.KuehlKopplungWirksam);
 
         /// <summary>Rechnet das Gebäude in der Zonenschleife (ab zwei Zonen bis zur Grenze der Regelklasse, Stufe G6b)?</summary>
         internal static bool Mehrzonenweg(ProjektGebaeudeModel gebaeude)
@@ -324,8 +319,6 @@ namespace WindowsFormsApplication1
                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
                 Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
 
-            // KK3: die Probewerte der Kühlkurve (nur mit Kernschalter; das Schema trägt sie erst mit KK4).
-            if (KuehlkurveKernschalter.Ein) KuehlkurveKernschalter.Probewerte?.Invoke(gebaeude);
             GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(
                 gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
                 gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
@@ -344,7 +337,6 @@ namespace WindowsFormsApplication1
         /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen oder der Kopplung.</exception>
         internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
         {
-            if (KuehlkurveKernschalter.Ein) KuehlkurveKernschalter.Probewerte?.Invoke(gebaeude);
             return Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
                                         Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
                                         out _, out _, out _, out _, AnlagenVorlaufC, KuehlVorlaufAnlageC,

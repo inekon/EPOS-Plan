@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     /// jedes kühlgekoppelten Gebäudes (der Rand nach der Absenkung); der kälteste geht an die Kälteschranke
     /// (<see cref="Kaelteschranke.Angebot(int, Stundenvorrang, double)"/>) und an die Kältestunde des Kreises.</item>
     /// </list>
-    /// Wirkt nur mit dem Kernschalter (<see cref="KuehlkurveKernschalter"/>), Stufe AK3 und einer wirksamen Kühlkurve
+    /// Wirkt nur auf Stufe AK3 und einer wirksamen Kühlkurve
     /// (<see cref="GebaeudeModellEingang.KuehlkurveWirksam"/>); ohne solche Kurve baut der Kreis keinen (Schalter aus bitgleich).
     /// Ein k_K von 0 an jedem Gebäude rechnet den gleitenden Vorlauf ohne Absenkung.
     /// </summary>

@@ -38,12 +38,6 @@ namespace EPOS.Kern.Tests
             => GebaeudeModellEingang.Bauen(g, Klima, Vdi6007Probe.Wochenende(), Vdi6007Probe.LAENGE, Vdi6007Probe.BREITE,
                                            GebaeudeKlimaweg.ZEITBEZUG_VORGABE, true, stufe, double.NaN, 1.0, kuehlVorlaufAnlage);
 
-        private static GebaeudeModellEingang EingangEin(ProjektGebaeudeModel g, string stufe = DbWerte.ANLAGENKOPPLUNG_AK3,
-                                                        double kuehlVorlaufAnlage = double.NaN)
-        {
-            using (KuehlkurveKernschalter.Schalten(true))
-                return Eingang(g, stufe, kuehlVorlaufAnlage);
-        }
 
         private static void Bitgleich(GebaeudeModellErgebnis a, GebaeudeModellErgebnis b)
         {
@@ -154,13 +148,13 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Der Eingang mit Kernschalter und AK3: Fußpunkt leer = Auslegungsrücklauf, eingetragen gilt er; die
+        /// Der Eingang auf AK3: Fußpunkt leer = Auslegungsrücklauf, eingetragen gilt er; die
         /// Auslegungs-Außentemperatur nach Weg 2 (Festlegung 3, E107); Bereiche (Festlegung 7) hart geprüft.
         /// </summary>
         [Fact]
         public void Fusspunkt_Auslegungsaussentemperatur_und_Bereiche_im_Eingang()
         {
-            GebaeudeModellEingang leer = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            GebaeudeModellEingang leer = Eingang(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
             Assert.True(leer.KuehlkurveWirksam);
             Assert.Equal(GebaeudeFestwerte.KUEHL_AUSLEGUNG_RUECKLAUF_FLAECHE, leer.Kuehlkurve.FusspunktC);
             Assert.Equal(GebaeudeFestwerte.KUEHL_AUSLEGUNG_VORLAUF_FLAECHE, leer.Kuehlkurve.AuslegungVorlaufC);
@@ -171,14 +165,14 @@ namespace EPOS.Kern.Tests
             Assert.True(double.IsNaN(leer.KuehlVorlaufFestC));
             Assert.Equal(0.0, leer.KuehlkurveRaumeinflussKK);
 
-            GebaeudeModellEingang gesetzt = EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 20.0; g.Kuehlkurve_Raumeinfluss = 1.5; }));
+            GebaeudeModellEingang gesetzt = Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 20.0; g.Kuehlkurve_Raumeinfluss = 1.5; }));
             Assert.Equal(20.0, gesetzt.Kuehlkurve.FusspunktC);
             Assert.Equal(1.5, gesetzt.KuehlkurveRaumeinflussKK);
 
             Assert.Equal(GebaeudeModellFehler.UebergabeUngueltig, Assert.Throws<GebaeudeModellException>(
-                () => EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 3.0; }))).Grund);
+                () => Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 3.0; }))).Grund);
             Assert.Equal(GebaeudeModellFehler.UebergabeUngueltig, Assert.Throws<GebaeudeModellException>(
-                () => EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Raumeinfluss = 10.5; }))).Grund);
+                () => Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Raumeinfluss = 10.5; }))).Grund);
         }
 
         /// <summary>
@@ -189,7 +183,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Reihe_gleitet_und_der_Rand_liest_die_Stunde()
         {
-            GebaeudeModellEingang e = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true, kuehlSollC: 21.0));
+            GebaeudeModellEingang e = Eingang(Gebaeude(g => g.Kuehlkurve_Aktiv = true, kuehlSollC: 21.0));
             Assert.True(e.Kuehlkurve.AuslegungAussenC > 21.0, "linearer Ast vorhanden");
             double[] v = e.KuehlVorlaufC;
             Assert.Equal(8760, v.Length);
@@ -228,7 +222,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(18.0, fest.KuehlVorlaufFestC);
             Assert.All(fest.KuehlVorlaufC, x => Assert.True(x.Equals(fest.KuehlVorlaufFestC)));
 
-            GebaeudeModellEingang kurve = EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 18.0; }),
+            GebaeudeModellEingang kurve = Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 18.0; }),
                                                      kuehlVorlaufAnlage: 18.0);
             Assert.True(kurve.KuehlkurveWirksam);
             Assert.All(kurve.KuehlVorlaufC, x => Assert.True(x.Equals(18.0)));
@@ -239,13 +233,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Schalter aus = keine Wirkung</b> (Festlegungen 1, 13; E106 Q-KK-2 (a)): ohne Kernschalter, auf AK1/AK2 oder ohne
+        /// <b>Ohne Wirkung unter AK3 oder ohne Schalter der Spalte</b> (Festlegung 1; E106 Q-KK-2 (a)): auf AK1/AK2 oder ohne
         /// <c>Kuehlkurve_Aktiv</c> rechnet das Gebäude bitgleich zum festen Vorlauf, auch mit gesetztem Fußpunkt.
         /// </summary>
         [Fact]
-        public void Schalter_aus_ist_ohne_Wirkung()
+        public void Unter_AK3_oder_ohne_Kuehlkurve_Aktiv_ohne_Wirkung()
         {
-            Assert.False(KuehlkurveKernschalter.Ein);
             Action<ProjektGebaeudeModel> kurve = g =>
             {
                 g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 21.0; g.Kuehlkurve_Raumeinfluss = 2.0;
@@ -253,28 +246,19 @@ namespace EPOS.Kern.Tests
             };
             GebaeudeModellErgebnis bezug = Vdi6007Rechenweg.Laufen(Eingang(Gebaeude()), 0, 1);
 
-            GebaeudeModellEingang aus = Eingang(Gebaeude(kurve));
-            Assert.False(aus.KuehlkurveWirksam);
-            Assert.Null(aus.Kuehlkurve);
-            Bitgleich(bezug, Vdi6007Rechenweg.Laufen(aus, 0, 1));
-
             foreach (string stufe in new[] { DbWerte.ANLAGENKOPPLUNG_AK1, DbWerte.ANLAGENKOPPLUNG_AK2 })
             {
-                GebaeudeModellEingang e = EingangEin(Gebaeude(kurve), stufe);
+                GebaeudeModellEingang e = Eingang(Gebaeude(kurve), stufe);
                 Assert.False(e.KuehlkurveWirksam, stufe);
                 Bitgleich(Vdi6007Rechenweg.Laufen(Eingang(Gebaeude(), stufe), 0, 1), Vdi6007Rechenweg.Laufen(e, 0, 1));
             }
 
-            GebaeudeModellEingang ohneAktiv = EingangEin(Gebaeude(g =>
+            GebaeudeModellEingang ohneAktiv = Eingang(Gebaeude(g =>
             {
                 g.Kuehlkurve_Fusspunkt = 14.0; g.Kuehlkurve_Auslegung_Weg = "unbekannt"; g.Kuehlkurve_Auslegung_Aussen = 20.0;
             }));
             Assert.False(ohneAktiv.KuehlkurveWirksam);
             Bitgleich(bezug, Vdi6007Rechenweg.Laufen(ohneAktiv, 0, 1));
-
-            // Der Schalter stellt sich nach dem using-Block zurück.
-            using (KuehlkurveKernschalter.Schalten(true)) Assert.True(KuehlkurveKernschalter.Ein);
-            Assert.False(KuehlkurveKernschalter.Ein);
         }
 
         // =====================================================================
@@ -288,7 +272,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Drei_Auslegungswege_Vorgabe_Weg_2()
         {
-            GebaeudeModellEingang leer = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            GebaeudeModellEingang leer = Eingang(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
             GebaeudeModellEingang.WaermsterTag(leer.ThetaOut, out double mittel);
             double hoechste = leer.ThetaOut.Max();
             double weg2 = Math.Max(mittel, 24.0 + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K);
@@ -298,24 +282,24 @@ namespace EPOS.Kern.Tests
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL, leer.Kuehlkurve.AuslegungWeg);
             Assert.False(leer.Kuehlkurve.AuslegungRueckfall);
 
-            GebaeudeModellEingang tag = EingangEin(Gebaeude(g =>
+            GebaeudeModellEingang tag = Eingang(Gebaeude(g =>
             { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL; }));
             Assert.Equal(weg2, tag.Kuehlkurve.AuslegungAussenC);
             Assert.True(leer.KuehlVorlaufC.SequenceEqual(tag.KuehlVorlaufC), "leer = tagesmittel");
 
-            GebaeudeModellEingang stunde = EingangEin(Gebaeude(g =>
+            GebaeudeModellEingang stunde = Eingang(Gebaeude(g =>
             { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE; g.Kuehlkurve_Auslegung_Aussen = 40.0; }));
             Assert.Equal(hoechste, stunde.Kuehlkurve.AuslegungAussenC);
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE, stunde.Kuehlkurve.AuslegungWeg);
 
-            GebaeudeModellEingang eingabe = EingangEin(Gebaeude(g =>
+            GebaeudeModellEingang eingabe = Eingang(Gebaeude(g =>
             { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = 30.0; }));
             Assert.Equal(30.0, eingabe.Kuehlkurve.AuslegungAussenC);
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE, eingabe.Kuehlkurve.AuslegungWeg);
             Assert.False(eingabe.Kuehlkurve.AuslegungRueckfall);
 
             // Die Eingabe wirkt nur auf dem Weg „eingabe“.
-            GebaeudeModellEingang ohneWeg = EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Aussen = 30.0; }));
+            GebaeudeModellEingang ohneWeg = Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Aussen = 30.0; }));
             Assert.Equal(weg2, ohneWeg.Kuehlkurve.AuslegungAussenC);
 
             // Ohne endlichen Kühlsollwert gilt das Tagesmittel allein.
@@ -323,7 +307,7 @@ namespace EPOS.Kern.Tests
 
             // Ein unbekannter Weg bricht ab.
             Assert.Equal(GebaeudeModellFehler.UebergabeUngueltig, Assert.Throws<GebaeudeModellException>(
-                () => EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = "Tagesmittel"; }))).Grund);
+                () => Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = "Tagesmittel"; }))).Grund);
         }
 
         /// <summary>
@@ -334,7 +318,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Spanne_greift_kein_Sprung_am_Sollwert()
         {
-            GebaeudeModellEingang e = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            GebaeudeModellEingang e = Eingang(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
             Kuehlkurve k = e.Kuehlkurve;
             Assert.True(k.AuslegungAussenC >= 24.0 + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K);
             double steigung = (k.FusspunktC - k.AuslegungVorlaufC) / (k.AuslegungAussenC - 24.0);
@@ -359,10 +343,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Weg_3_unter_dem_Sollwert_faellt_mit_Hinweis_auf_Weg_2()
         {
-            GebaeudeModellEingang weg2 = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            GebaeudeModellEingang weg2 = Eingang(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
             foreach (double? eingabe in new double?[] { 24.5, 25.0, 18.0, null })
             {
-                GebaeudeModellEingang e = EingangEin(Gebaeude(g =>
+                GebaeudeModellEingang e = Eingang(Gebaeude(g =>
                 { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = eingabe; }));
                 Assert.True(e.Kuehlkurve.AuslegungRueckfall, "Rückfall bei " + eingabe);
                 Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL, e.Kuehlkurve.AuslegungWeg);
@@ -377,7 +361,7 @@ namespace EPOS.Kern.Tests
                 Assert.Contains(eingabe.HasValue ? eingabe.Value.ToString("0.#") : "—", hinweis);
             }
 
-            GebaeudeModellEingang knapp = EingangEin(Gebaeude(g =>
+            GebaeudeModellEingang knapp = Eingang(Gebaeude(g =>
             { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = 25.5; }));
             Assert.False(knapp.Kuehlkurve.AuslegungRueckfall);
             Assert.Equal(25.5, knapp.Kuehlkurve.AuslegungAussenC);
@@ -401,7 +385,7 @@ namespace EPOS.Kern.Tests
             Assert.False(new Kuehlkurve(16.0, 16.0, 32.0, double.NaN).FusspunktGeklemmt);
             Assert.False(new Kuehlkurve(19.0, 16.0, 32.0, double.NaN).FusspunktGeklemmt);
 
-            GebaeudeModellEingang e = EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 14.0; }));
+            GebaeudeModellEingang e = Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 14.0; }));
             Assert.True(e.Kuehlkurve.FusspunktGeklemmt);
             for (int h = 0; h < 8760; h++)
                 Assert.True(e.KuehlVorlaufC[h] >= 16.0, "nie unter dem Auslegungsvorlauf, Stunde " + h);
@@ -414,7 +398,7 @@ namespace EPOS.Kern.Tests
 
             // Ohne wirksame Kurve schweigt die Meldung.
             SimulationProtokoll.NeuStarten();
-            Vdi6007Rechenweg.KuehlkurveMelden(Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 14.0; })),
+            Vdi6007Rechenweg.KuehlkurveMelden(Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = false; g.Kuehlkurve_Fusspunkt = 14.0; })),
                                               SimulationProtokoll.Aktuell, "7", "Probegebäude");
             Assert.Empty(SimulationProtokoll.Aktuell.Hinweise);
         }

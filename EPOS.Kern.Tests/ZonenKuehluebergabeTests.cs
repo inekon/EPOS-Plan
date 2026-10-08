@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <b>Kühlübergabe je Zone im Mehrzonenweg</b> (Entwurf KK, Welle KZ1; Festlegungen 14–17; E106 Q-KK-4 (b), Q-KK-7 (a))
     /// — ohne Datenbank: Übernahme der drei Kühlspalten der Zone, die Kaskade, der Kühlkreis je Gebäude am gemeinsamen
     /// festen Vorlauf, der massenstromgewichtete Rücklauf, ideale Zonen, das Vorlaufangebot der Kälteschranke je Zone, die
-    /// Stufen AK1 bis AK3 und „ohne Kühlübergabe bzw. ohne Kernschalter bitgleich“.
+    /// Stufen AK1 bis AK3 und „ohne Kühlübergabe bitgleich“.
     /// </summary>
     public class ZonenKuehluebergabeTests
     {
@@ -56,11 +56,6 @@ namespace EPOS.Kern.Tests
         private static Mehrzonenergebnis Rechnen(ProjektGebaeudeModel g, string stufe, double kuehlVorlaufAnlageC = double.NaN)
             => Zonenrechnung.Rechnen(g, ZonenschleifeTests.KlimaDes(), true, stufe, 0, g.ID_Gebaeude,
                                      kuehlVorlaufAnlageC: kuehlVorlaufAnlageC);
-
-        private static Mehrzonenergebnis MitSchalter(ProjektGebaeudeModel g, string stufe, double kuehlVorlaufAnlageC = double.NaN)
-        {
-            using (KuehlkurveKernschalter.Schalten(true)) return Rechnen(g, stufe, kuehlVorlaufAnlageC);
-        }
 
         private static void Bitgleich(double[] a, double[] b, string was)
         {
@@ -155,7 +150,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Kuehlkreis_je_Gebaeude_traegt_alle_gekuehlten_Zonen_am_gemeinsamen_Vorlauf()
         {
-            Mehrzonenergebnis m = MitSchalter(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
+            Mehrzonenergebnis m = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             GebaeudeModellEingang e1 = m.Eingaenge[0].Eingang, e2 = m.Eingaenge[1].Eingang;
             Assert.True(e1.KuehlKopplungWirksam);
             Assert.True(e2.KuehlKopplungWirksam);
@@ -190,7 +185,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Ruecklauf_des_Kuehlkreises_ist_massenstromgewichtet()
         {
-            Mehrzonenergebnis m = MitSchalter(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
+            Mehrzonenergebnis m = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             KuehlkreisErgebnis geb = m.Gebaeude.Kuehlkreis;
             int stunden = 0;
             for (int h = 0; h < 8760; h++)
@@ -220,7 +215,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ideale_und_ungekuehlte_Zonen_rechnen_ohne_Kuehlkreis()
         {
-            Mehrzonenergebnis ideal = MitSchalter(
+            Mehrzonenergebnis ideal = Rechnen(
                 Zwei(zwei: new Zoneneingaben(SollTag: 14.0, SollNacht: 14.0, KuehlSollwert: 16.0,
                                              KuehlUebergabeArt: DbWerte.KUEHLUEBERGABE_IDEAL)), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             Assert.True(ideal.Eingaenge[0].Eingang.KuehlKopplungWirksam);
@@ -234,7 +229,7 @@ namespace EPOS.Kern.Tests
             for (int h = 0; h < 8760; h++)
                 if (!double.IsNaN(eins.VorlaufC[h])) Assert.Equal(eins.RuecklaufC[h], geb.RuecklaufC[h], 9);
 
-            Mehrzonenergebnis aus = MitSchalter(
+            Mehrzonenergebnis aus = Rechnen(
                 Zwei(zwei: new Zoneneingaben(SollTag: 14.0, SollNacht: 14.0, KuehlungAktiv: false)), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             Assert.True(aus.Eingaenge[0].Eingang.KuehlKopplungWirksam);
             Assert.False(aus.Eingaenge[1].Eingang.KuehlKopplungWirksam);
@@ -245,7 +240,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Eine_eigene_Nennleistung_der_Zone_begrenzt_nur_ihre_Zone()
         {
-            Mehrzonenergebnis m = MitSchalter(
+            Mehrzonenergebnis m = Rechnen(
                 Zwei(zwei: new Zoneneingaben(SollTag: 14.0, SollNacht: 14.0, KuehlSollwert: 16.0, KuehlUebergabeLeistungNennKw: 0.05)),
                 DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             GebaeudeModellEingang e2 = m.Eingaenge[1].Eingang;
@@ -279,7 +274,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(10.0, kalt.KuehlVorlaufC);          // ein kälteres Angebot mischt die Zone hoch
             Assert.False(kalt.KuehlVorlaufAngebotGekappt);
 
-            Mehrzonenergebnis m = MitSchalter(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
+            Mehrzonenergebnis m = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             ZonenEingang z0 = m.Eingaenge[0];
             int h = Enumerable.Range(0, 8760).First(s => m.Zonen[0].KuehlbedarfKwh[s] > 0.0);
             double[] luft = { 25.0, 25.0 };
@@ -310,7 +305,7 @@ namespace EPOS.Kern.Tests
         [InlineData(DbWerte.ANLAGENKOPPLUNG_AK3)]
         public void Die_Kuehluebergabe_je_Zone_gilt_ab_AK1(string stufe)
         {
-            Mehrzonenergebnis m = MitSchalter(Zwei(), stufe, 14.0);
+            Mehrzonenergebnis m = Rechnen(Zwei(), stufe, 14.0);
             Assert.All(m.Eingaenge, z => Assert.True(z.Eingang.KuehlKopplungWirksam));
             Assert.NotNull(m.Gebaeude.Kuehlkreis);
         }
@@ -318,41 +313,16 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ohne_Projektstufe_bleibt_die_Kaelteseite_ideal()
         {
-            Mehrzonenergebnis m = MitSchalter(Zwei(), null, 14.0);
+            Mehrzonenergebnis m = Rechnen(Zwei(), null, 14.0);
             Assert.All(m.Eingaenge, z => Assert.False(z.Eingang.KuehlKopplungWirksam));
             Assert.Null(m.Gebaeude.Kuehlkreis);
         }
 
         [Fact]
-        public void Ohne_Kernschalter_bleibt_der_Mehrzonenweg_ideal_und_bitgleich()
-        {
-            using var aus = KuehlkurveKernschalter.Schalten(false);
-            Mehrzonenergebnis mit = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
-            Mehrzonenergebnis ohne = Rechnen(Zwei(kuehluebergabe: false), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
-            Assert.All(mit.Eingaenge, z => Assert.False(z.Eingang.KuehlKopplungWirksam));
-            Assert.All(mit.Eingaenge, z => Assert.Null(z.Eingang.Gebaeudekuehlkreis));
-            Assert.Null(mit.Gebaeude.Kuehlkreis);
-            Assert.True(mit.Eingaenge.Any(z => z.Eingang.KopplungAlsIdealeLast));   // die Warnung wie bisher
-            ErgebnisBitgleich(mit, ohne);
-        }
-
-        [Fact]
-        public void Ohne_Kuehluebergabe_ist_der_Schalter_bitgleich()
-        {
-            Mehrzonenergebnis an = MitSchalter(Zwei(kuehluebergabe: false), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
-            Mehrzonenergebnis aus;
-            using (KuehlkurveKernschalter.Schalten(false)) aus = Rechnen(Zwei(kuehluebergabe: false), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
-            Assert.All(an.Eingaenge, z => Assert.False(z.Eingang.KuehlKopplungWirksam));
-            Assert.Null(an.Gebaeude.Kuehlkreis);
-            ErgebnisBitgleich(an, aus);
-        }
-
-        [Fact]
         public void Mit_Kuehluebergabe_aendert_sich_nur_die_Kaelteseite_und_die_Raumluft()
         {
-            Mehrzonenergebnis ideal;
-            using (KuehlkurveKernschalter.Schalten(false)) ideal = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
-            Mehrzonenergebnis gekoppelt = MitSchalter(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
+            Mehrzonenergebnis ideal = Rechnen(Zwei(kuehluebergabe: false), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
+            Mehrzonenergebnis gekoppelt = Rechnen(Zwei(), DbWerte.ANLAGENKOPPLUNG_AK1, 14.0);
             double sIdeal = ideal.Gebaeude.KuehlbedarfKwh.Sum(), sGekoppelt = gekoppelt.Gebaeude.KuehlbedarfKwh.Sum();
             _aus.WriteLine("Kältebedarf ideal {0} kWh, gekoppelt {1} kWh", F(sIdeal), F(sGekoppelt));
             Assert.True(sGekoppelt > 0.0);

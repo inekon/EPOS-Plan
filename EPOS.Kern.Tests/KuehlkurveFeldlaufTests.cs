@@ -11,8 +11,8 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>KK3 — die Kühlkurve im Feldlauf des Referenzprojekts 1058</b> (Entwurf KK 2.2, 2.3, 2.9; E106 Q-KK-5 (b)): 1058 rechnet
-    /// mit eingeschaltetem Kernschalter und den Probewerten der Kühlkurve (<see cref="KuehlkurveKernschalter.Probewerte"/>),
-    /// der Erzeuger gleitet, der Raumeinfluss senkt im Kreis. Die Messreihe der Stärke (nur mit <c>KK3_MESSUNG</c>) begründet
+    /// mit den Spalten der Kühlkurve, gesetzt in der Arbeitskopie der Testdatenbank (<c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>,
+    /// <c>Kuehlkurve_Raumeinfluss</c>), der Erzeuger gleitet, der Raumeinfluss senkt im Kreis. Die Messreihe der Stärke (nur mit <c>KK3_MESSUNG</c>) begründet
     /// den Vorgabewert beim Einschalten; die Probe hält den Lauf selbst.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -25,28 +25,23 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _db.Dispose();
 
-        /// <summary>Ein Lauf; <paramref name="kurve"/> false = Kernschalter aus (der heutige Weg), sonst Kurve mit k_K.</summary>
+        /// <summary>
+        /// Ein Lauf; setzt zuvor an den Gebäuden des Projekts in der Arbeitskopie <c>Kuehlkurve_Aktiv</c> (<paramref name="kurve"/>)
+        /// und <c>Kuehlkurve_Raumeinfluss</c> (<paramref name="kK"/>); <paramref name="kurve"/> false = fester Kühlvorlauf.
+        /// </summary>
         internal static (SimulationControl sim, double sekunden) Rechnen(int projekt, bool kurve, double? kK)
         {
-            using (KuehlkurveKernschalter.Schalten(kurve))
-            {
-                KuehlkurveKernschalter.Probewerte = g =>
-                {
-                    g.Kuehlkurve_Aktiv = true;
-                    g.Kuehlkurve_Raumeinfluss = kK;
-                };
-                try
-                {
-                    SimulationProtokoll.NeuStarten();
-                    var r = new SimulationRunner();
-                    var uhr = Stopwatch.StartNew();
-                    bool ok = r.Simuliere(projekt, out string fehler);
-                    double s = uhr.Elapsed.TotalSeconds;
-                    Assert.True(ok, "Lauf " + projekt + " (Kurve " + kurve + ", k_K " + kK + ") gescheitert: " + fehler);
-                    return (r.sim, s);
-                }
-                finally { KuehlkurveKernschalter.Probewerte = null; }
-            }
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Gebaeude SET Kuehlkurve_Aktiv = ?, Kuehlkurve_Raumeinfluss = ? WHERE ID_Projekt = ?",
+                new DbParam("?", kurve ? 1 : 0), new DbParam("?", kK.HasValue ? (object)kK.Value : DBNull.Value),
+                new DbParam("?", projekt)));
+            SimulationProtokoll.NeuStarten();
+            var r = new SimulationRunner();
+            var uhr = Stopwatch.StartNew();
+            bool ok = r.Simuliere(projekt, out string fehler);
+            double s = uhr.Elapsed.TotalSeconds;
+            Assert.True(ok, "Lauf " + projekt + " (Kurve " + kurve + ", k_K " + kK + ") gescheitert: " + fehler);
+            return (r.sim, s);
         }
 
         /// <summary>
