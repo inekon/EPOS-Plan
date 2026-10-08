@@ -26,6 +26,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Das Kälteangebot in Stunde <paramref name="stunde"/> am Kühlvorlauf <paramref name="kuehlVorlaufC"/> (NaN = der des Geräts).</summary>
         Erzeugerangebot Abfragen(int stunde, double kuehlVorlaufC);
+
+        /// <summary>
+        /// KK2 (Entwurf KK 2.5, Festlegung 11): das Kälteangebot in Stunde <paramref name="stunde"/> am STUNDENvorlauf
+        /// <paramref name="kuehlVorlaufC"/> — anders als <see cref="Abfragen"/> wertet die Maschine auch ihren Verdichter
+        /// am Vorlauf (Kühlkennlinie mit gebrochenem Vorlauf, Kältemaschine je Stunde), nie kälter als ihre Untergrenze.
+        /// NaN = wie <see cref="Abfragen"/>.
+        /// </summary>
+        Erzeugerangebot AbfragenAmVorlauf(int stunde, double kuehlVorlaufC) => Abfragen(stunde, kuehlVorlaufC);
     }
 
     /// <summary>
@@ -68,8 +76,17 @@ namespace WindowsFormsApplication1
         internal Func<int, double> Heizzeitanteil { get; set; }
 
         public Erzeugerangebot Abfragen(int stunde, double kuehlVorlaufC)
+            => Angebot(stunde, kuehlVorlaufC, KapazitaetBei(stunde, kuehlVorlaufC, _e.Kennlinie));
+
+        public Erzeugerangebot AbfragenAmVorlauf(int stunde, double kuehlVorlaufC)
         {
-            double kapazitaet = KapazitaetBei(stunde, kuehlVorlaufC);
+            if (double.IsNaN(kuehlVorlaufC) || _e.Schar == null) return Abfragen(stunde, kuehlVorlaufC);
+            double v = _e.VorlaufAmErzeuger(kuehlVorlaufC);
+            return Angebot(stunde, v, KapazitaetBei(stunde, v, _e.Schar.Kennlinie(v)));
+        }
+
+        private Erzeugerangebot Angebot(int stunde, double kuehlVorlaufC, double kapazitaet)
+        {
             int tag = stunde / 24;
             if (_kuehltage != null && (tag >= _kuehltage.Length || !_kuehltage[tag]))
                 return new Erzeugerangebot(kapazitaet, 0.0, Verfuegbarkeitsgrund.Umschaltung, false, kuehlVorlaufC, false);
@@ -85,11 +102,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Kälteleistung bei vollem Zeitanteil [kW]: Verdichter nach Kennlinie plus freie Sole-Kühlung.</summary>
-        private double KapazitaetBei(int stunde, double kuehlVorlaufC)
+        private double KapazitaetBei(int stunde, double kuehlVorlaufC, Kuehlkennlinie kennlinie)
         {
-            if (_e.Kennlinie == null) return 0.0;
+            if (kennlinie == null) return 0.0;
             double t = _e.Quelltemperatur != null && stunde < _e.Quelltemperatur.Length ? _e.Quelltemperatur[stunde] : 0.0;
-            KennlinienPunkt p = _e.Kennlinie.Auswerten(t, _extrapolation);
+            KennlinienPunkt p = kennlinie.Auswerten(t, _extrapolation);
             double verdichter = p.Pkuehl > 0.0 && p.Eer > 0.0 ? p.Pkuehl : 0.0;
             double vorlauf = double.IsNaN(kuehlVorlaufC) ? _e.KuehlVorlaufC : kuehlVorlaufC;
             double frei = 0.0;
@@ -126,6 +143,15 @@ namespace WindowsFormsApplication1
         public Erzeugerangebot Abfragen(int stunde, double kuehlVorlaufC)
         {
             double k = _e.Maschine.Stunde(stunde, UNBEGRENZT_KWH).KapazitaetKw;
+            if (!(k > 0.0) || double.IsInfinity(k)) k = 0.0;
+            return new Erzeugerangebot(k, k, Verfuegbarkeitsgrund.KeineBegrenzung, k > 0.0, kuehlVorlaufC, false);
+        }
+
+        /// <summary>KK2: die Kapazität bei der Kaltwassertemperatur der Stunde (<see cref="Kaeltemaschine.KaltwasserAmVorlauf"/>).</summary>
+        public Erzeugerangebot AbfragenAmVorlauf(int stunde, double kuehlVorlaufC)
+        {
+            if (double.IsNaN(kuehlVorlaufC)) return Abfragen(stunde, kuehlVorlaufC);
+            double k = _e.Maschine.Stunde(stunde, UNBEGRENZT_KWH, _e.Maschine.KaltwasserAmVorlauf(kuehlVorlaufC)).KapazitaetKw;
             if (!(k > 0.0) || double.IsInfinity(k)) k = 0.0;
             return new Erzeugerangebot(k, k, Verfuegbarkeitsgrund.KeineBegrenzung, k > 0.0, kuehlVorlaufC, false);
         }
@@ -216,6 +242,11 @@ namespace WindowsFormsApplication1
     {
         internal static Kaeltestundenangebot Angebot(int stunde, double kuehlVorlaufC, IReadOnlyList<IKaelteerzeugerkapazitaet> erzeuger,
                                                      ISpeicherangebot speicher, double prozesskaelteKw)
+            => Angebot(stunde, kuehlVorlaufC, erzeuger, speicher, prozesskaelteKw, false);
+
+        /// <param name="amVorlauf">KK2: true = die Erzeuger werten am Stundenvorlauf (<see cref="IKaelteerzeugerkapazitaet.AbfragenAmVorlauf"/>).</param>
+        internal static Kaeltestundenangebot Angebot(int stunde, double kuehlVorlaufC, IReadOnlyList<IKaelteerzeugerkapazitaet> erzeuger,
+                                                     ISpeicherangebot speicher, double prozesskaelteKw, bool amVorlauf)
         {
             double speicherKw = speicher != null && speicher.Vorhanden ? speicher.EntnehmbarKwh(stunde) : 0.0;
             if (!(speicherKw > 0.0)) speicherKw = 0.0;
@@ -229,7 +260,7 @@ namespace WindowsFormsApplication1
             if (erzeuger != null)
                 foreach (IKaelteerzeugerkapazitaet e in erzeuger)
                 {
-                    Erzeugerangebot a = e.Abfragen(stunde, kuehlVorlaufC);
+                    Erzeugerangebot a = amVorlauf ? e.AbfragenAmVorlauf(stunde, kuehlVorlaufC) : e.Abfragen(stunde, kuehlVorlaufC);
                     summe += a.VerfuegbarKw;
                     double weg = a.KapazitaetKw - a.VerfuegbarKw;
                     if (weg > 0.0) ausfall[(int)a.Grund] += weg;
@@ -288,6 +319,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// KK2 (Entwurf KK 2.5, 2.6; Festlegungen 10, 11): das Kälteangebot der Stunde am STUNDENvorlauf
+        /// <paramref name="kuehlVorlaufC"/> — dem kältesten verlangten Vorlauf der Gebäude (<see cref="Kaeltevorlauf.KaeltesterVerlangter"/>).
+        /// Die Speicherregel greift hier: Mit Kältespeicher wird der Erzeugervorlauf nie wärmer als dessen Vorlauf
+        /// (<see cref="SpeicherVorlaufC"/>). Das Angebot trägt den Erzeugervorlauf. NaN = <see cref="Angebot(int, Stundenvorrang)"/>.
+        /// Die Naht <c>Anlagenkopplung.Kaeltekorrektur</c> bleibt Prüfnaht.
+        /// </summary>
+        internal Kaeltestundenangebot Angebot(int stunde, Stundenvorrang vorrang, double kuehlVorlaufC)
+        {
+            if (double.IsNaN(kuehlVorlaufC)) return Angebot(stunde, vorrang);
+            VorrangDerStunde = vorrang;
+            double v = Kaeltevorlauf.MitSpeicherregel(kuehlVorlaufC, SpeicherVorlaufC);
+            return Kaelteangebotsfunktion.Angebot(stunde, v, Erzeuger, Speicher,
+                                                  Prozesskaelte != null ? Prozesskaelte(stunde) : 0.0, true);
+        }
+
+        /// <summary>
+        /// KK2 (Festlegung 10): der kälteste Vorlauf der Kältespeicher der Schranke [°C] — die Obergrenze des
+        /// Erzeugervorlaufs; NaN = kein Kältespeicher.
+        /// </summary>
+        internal double SpeicherVorlaufC
+            => Speicher is Kaeltespeicherleser l ? Kaeltevorlauf.SpeicherVorlauf(l.Speicher) : double.NaN;
+
+        /// <summary>
         /// <b>Die Vorrangschätzung des Heizzeitanteils</b> (4.5, Festlegung 14): der Teil von (Brauchwasser + Prozess) der
         /// Stunde, den die Erzeuger vor der Wärmepumpe in der Kaskade nicht schon tragen (<paramref name="vorgelagertKw"/>,
         /// ihr Angebot am Stundenbeginn), durch die Heizkapazität der Wärmepumpe, höchstens 1 — eine benannte Näherung am
@@ -309,5 +363,43 @@ namespace WindowsFormsApplication1
             double a = last / heizkapazitaetKw;
             return a >= 1.0 ? 1.0 : a;
         }
+    }
+
+    /// <summary>
+    /// <b>Der Erzeugervorlauf der Kälteseite</b> (KK2; Entwurf KK 2.3, 2.6; Festlegungen 9, 10): der kälteste verlangte
+    /// Vorlauf der gekoppelten Gebäude, mit Kältespeicher nie wärmer als dessen Vorlauf. Die Untergrenze jedes Erzeugers
+    /// (kleinste Stützstelle der Kühlkennlinie, <c>Kaltwasser_Vorlauf_Min</c>) wendet der Erzeuger selbst an.
+    /// </summary>
+    internal static class Kaeltevorlauf
+    {
+        /// <summary>Der kälteste endliche Vorlauf aus <paramref name="verlangtC"/> [°C]; NaN = keiner (kein Gebäude kühlt).</summary>
+        internal static double KaeltesterVerlangter(IEnumerable<double> verlangtC)
+        {
+            double v = double.NaN;
+            if (verlangtC == null) return v;
+            foreach (double x in verlangtC)
+            {
+                if (double.IsNaN(x) || double.IsInfinity(x)) continue;
+                if (double.IsNaN(v) || x < v) v = x;
+            }
+            return v;
+        }
+
+        /// <summary>Der kälteste Vorlauf der Kältespeicher <paramref name="speicher"/> [°C]; NaN = keiner.</summary>
+        internal static double SpeicherVorlauf(IEnumerable<SimulationPufferspeicher> speicher)
+        {
+            double v = double.NaN;
+            if (speicher == null) return v;
+            foreach (SimulationPufferspeicher sp in speicher)
+            {
+                if (sp == null || !(sp.KaltRuecklauf > sp.KaltVorlauf)) continue;
+                if (double.IsNaN(v) || sp.KaltVorlauf < v) v = sp.KaltVorlauf;
+            }
+            return v;
+        }
+
+        /// <summary>Die Speicherregel (Festlegung 10): <paramref name="vorlaufC"/>, höchstens <paramref name="speicherVorlaufC"/> (NaN = keine Grenze).</summary>
+        internal static double MitSpeicherregel(double vorlaufC, double speicherVorlaufC)
+            => !double.IsNaN(speicherVorlaufC) && vorlaufC > speicherVorlaufC ? speicherVorlaufC : vorlaufC;
     }
 }

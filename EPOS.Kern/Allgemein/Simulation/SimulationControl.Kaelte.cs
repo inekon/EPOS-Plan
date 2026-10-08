@@ -176,7 +176,9 @@ namespace WindowsFormsApplication1
                 }
 
                 // 5.0.1: Der Kühlbetrieb hängt an der Kennlinie IM PROJEKT.
-                Kuehlkennlinie k = KenndatenKuehlungCtrl.KennlinieProjekt(m.ID_WP, kuehlVorlauf);
+                // KK2: die Zeilen einmal gelesen — die Kennlinie am festen Vorlauf (wie KennlinieProjekt) und die Schar über alle Vorläufe.
+                List<KuehlkennlinienZeile> kuehlZeilen = KenndatenKuehlungCtrl.ZeilenProjekt(m.ID_WP);
+                Kuehlkennlinie k = Kuehlkennlinie.Bilden(kuehlZeilen, kuehlVorlauf, true);
                 if (k.Leer)
                 {
                     string text = string.Format(CultureInfo.CurrentCulture,
@@ -268,6 +270,7 @@ namespace WindowsFormsApplication1
                     Bezeichner = name,
                     Modulindex = i,
                     Kennlinie = k,
+                    Schar = new KuehlkennlinienSchar(kuehlZeilen),
                     Hilfsstromanteil = hilfsstromanteil,
                     Quelltemperatur = i < simulation_wp.Quelltemperaturen.Count ? simulation_wp.Quelltemperaturen[i] : null,
                     FreieKuehlungSole = freieKuehlung,
