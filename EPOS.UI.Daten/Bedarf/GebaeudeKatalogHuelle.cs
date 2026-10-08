@@ -850,6 +850,16 @@ namespace WindowsFormsApplication1
             k.LabelAuslegungRuecklauf = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF", k.LabelAuslegungRuecklauf);
             k.LabelAuslegungRaum = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RAUM", k.LabelAuslegungRaum);
             k.LabelVorlaufgrenze = Text_("GEBK_LBL_KUEHL_VORLAUFGRENZE", k.LabelVorlaufgrenze);
+            k.LabelKuehlkurve = Text_("GEBK_LBL_KUEHLKURVE_AKTIV", k.LabelKuehlkurve);
+            k.LabelKuehlkurveFusspunkt = Text_("GEBK_LBL_KUEHLKURVE_FUSSPUNKT", k.LabelKuehlkurveFusspunkt);
+            k.LabelKuehlkurveRaumeinfluss = Text_("GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS", k.LabelKuehlkurveRaumeinfluss);
+            k.LabelKuehlkurveWeg = Text_("GEBK_LBL_KUEHLKURVE_WEG", k.LabelKuehlkurveWeg);
+            k.WegStunde = Text_("GEBK_KUEHLKURVE_WEG_STUNDE", k.WegStunde);
+            k.WegTagesmittel = Text_("GEBK_KUEHLKURVE_WEG_TAGESMITTEL", k.WegTagesmittel);
+            k.WegEingabe = Text_("GEBK_KUEHLKURVE_WEG_EINGABE", k.WegEingabe);
+            k.LabelKuehlkurveAussen = Text_("GEBK_LBL_KUEHLKURVE_AUSSEN", k.LabelKuehlkurveAussen);
+            k.ZeileKuehlkurve = Text_("GEBK_ZEILE_KUEHLKURVE", k.ZeileKuehlkurve);
+            k.MeldungFusspunkt = Text_("GEBK_MSG_KUEHLKURVE_FUSSPUNKT", k.MeldungFusspunkt);
             k.VorgabeHergeleitet = Text_("GEBK_VORGABE_HERGELEITET", k.VorgabeHergeleitet);
             k.VorgabeKeineGrenze = Text_("GEBK_VORGABE_KEINE_GRENZE", k.VorgabeKeineGrenze);
             k.ZeileAus = Text_("GEBK_ZEILE_KUEHLUEBERGABE_AUS", k.ZeileAus);

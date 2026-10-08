@@ -396,4 +396,96 @@ public class GebaeudeKuehluebergabeTests : EposBunitContext
         Assert.Equal(8, a.Abweichungen(geladen));
         Assert.Equal(DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR, a.Stand.KuehlUebergabeArt);
     }
+    // =================================================================================
+    // Die Kühlkurve (Entwurf KK, Festlegungen 1, 3, 6, 7, 18; E106 Q-KK-5 (b))
+    // =================================================================================
+
+    private const string KURVE = "Kühlkurve (gleitender Kühlvorlauf)";
+    private const string FUSS = "Fußpunkt der Kühlkurve :";
+    private const string RAUM = "Raumeinfluss der Kühlkurve :";
+    private const string WEG = "Auslegungs-Außentemperatur Kühlung :";
+    private const string AUSSEN = "Auslegungs-Außentemperatur (Eingabe) :";
+
+    /// <summary>Ohne Haken keine Kurvenfelder; der Haken trägt den Vorgabewert des Raumeinflusses ein, der Rest bleibt leer.</summary>
+    [Fact]
+    public void Der_Haken_der_Kuehlkurve_traegt_den_Vorgabewert_ein_und_speichert_leere_Felder_als_NULL()
+    {
+        GebaeudeKatalogDaten? geschrieben = null;
+        var cut = Aufbauen(Kuehldecke(), speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Assert.Null(FeldOderNull(cut, FUSS));
+
+        Haken(cut, KURVE).Change(true);
+
+        Assert.NotNull(FeldOderNull(cut, FUSS));
+        Assert.NotNull(FeldOderNull(cut, WEG));
+        Assert.Null(FeldOderNull(cut, AUSSEN));                  // nur mit dem Weg „Eingabe"
+        Assert.Contains("Kühlkurve: Fußpunkt", Abschnitt(cut));
+        Ok(cut);
+
+        Assert.NotNull(geschrieben);
+        Assert.True(geschrieben!.KuehlkurveAktiv);
+        Assert.Equal(Waermeuebergabevorgaben.KUEHLKURVE_RAUMEINFLUSS_VORGABE, geschrieben.KuehlkurveRaumeinfluss);
+        Assert.Null(geschrieben.KuehlkurveFusspunkt);
+        Assert.Null(geschrieben.KuehlkurveAuslegungWeg);           // Tagesmittel bleibt leer (Vorgabe)
+        Assert.Null(geschrieben.KuehlkurveAuslegungAussen);
+    }
+
+    /// <summary>Bestand: die gespeicherten Werte stehen in den Feldern, der Weg „Eingabe" zeigt die Außentemperatur; der Rückweg trägt Änderungen.</summary>
+    [Fact]
+    public void Der_Bestand_steht_in_den_Feldern_und_der_Rueckweg_traegt_den_Weg()
+    {
+        GebaeudeKatalogDaten d = Kuehldecke();
+        d.KuehlkurveAktiv = true;
+        d.KuehlkurveFusspunkt = 18;
+        d.KuehlkurveRaumeinfluss = 2;
+        d.KuehlkurveAuslegungWeg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE;
+        d.KuehlkurveAuslegungAussen = 32;
+        GebaeudeKatalogDaten? geschrieben = null;
+        var cut = Aufbauen(d, speichern: (x, _, _) => { geschrieben = x; return new(true, ""); });
+
+        Assert.Equal("18", Eingabe(cut, FUSS).GetAttribute("value"));
+        Assert.Equal("2", Eingabe(cut, RAUM).GetAttribute("value"));
+        Assert.Equal("32", Eingabe(cut, AUSSEN).GetAttribute("value"));
+        Assert.Contains("Fußpunkt 18,0 °C", Abschnitt(cut));
+
+        // Weg 1 (Stunde): die Außentemperatur fällt aus der Sicht, ihr Wert reist mit.
+        FeldOderNull(cut, WEG)!.QuerySelector("select")!.Change("0");
+        Assert.Null(FeldOderNull(cut, AUSSEN));
+        Ok(cut);
+
+        Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE, geschrieben!.KuehlkurveAuslegungWeg);
+        Assert.Equal(32, geschrieben.KuehlkurveAuslegungAussen);
+        Assert.Equal(18, geschrieben.KuehlkurveFusspunkt);
+    }
+
+    /// <summary>Fußpunktregel (Festlegung 18): ein Fußpunkt unter dem Auslegungsvorlauf hält das OK an.</summary>
+    [Fact]
+    public void Ein_Fusspunkt_unter_dem_Auslegungsvorlauf_meldet_beim_OK()
+    {
+        GebaeudeKatalogDaten d = Kuehldecke();
+        d.KuehlkurveAktiv = true;
+        bool geschrieben = false;
+        var cut = Aufbauen(d, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+
+        Eingabe(cut, FUSS).Input("12");
+        Ok(cut);
+
+        Assert.False(geschrieben);
+        Assert.Contains("Der Fußpunkt der Kühlkurve (12,0 °C) liegt unter dem Auslegungsvorlauf (16,0 °C)", cut.Instance.Meldung);
+    }
+
+    /// <summary>Ausgeschaltet gilt keine Regel der Kurve — auch nicht für einen gespeicherten Fußpunkt unter dem Vorlauf.</summary>
+    [Fact]
+    public void Ohne_Haken_der_Kuehlkurve_gilt_keine_Regel()
+    {
+        GebaeudeKatalogDaten d = Kuehldecke();
+        d.KuehlkurveFusspunkt = 12;
+        bool geschrieben = false;
+        var cut = Aufbauen(d, speichern: (_, _, _) => { geschrieben = true; return new(true, ""); });
+
+        Assert.Null(FeldOderNull(cut, FUSS));
+        Ok(cut);
+
+        Assert.True(geschrieben);
+    }
 }

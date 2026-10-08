@@ -48788,5 +48788,50 @@ Chart</value>
   <data name="GIMP_DLG_SQNUR_UNBEHEIZT" xml:space="preserve">
     <value>Eine Zone der Projektdatei enthält unbeheizte Räume; die Zuordnung bleibt unvollständig, bis ihre Beheizung entschieden ist.</value>
   </data>
+  <data name="GEBK_LBL_KUEHLKURVE_AKTIV" xml:space="preserve">
+    <value>Kühlkurve (gleitender Kühlvorlauf)</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_FUSSPUNKT" xml:space="preserve">
+    <value>Fußpunkt der Kühlkurve :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS" xml:space="preserve">
+    <value>Raumeinfluss der Kühlkurve :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_WEG" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur Kühlung :</value>
+  </data>
+  <data name="GEBK_KUEHLKURVE_WEG_STUNDE" xml:space="preserve">
+    <value>höchste Stundentemperatur der Klimareihe</value>
+  </data>
+  <data name="GEBK_KUEHLKURVE_WEG_TAGESMITTEL" xml:space="preserve">
+    <value>wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne (Vorgabe)</value>
+  </data>
+  <data name="GEBK_KUEHLKURVE_WEG_EINGABE" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_AUSSEN" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur (Eingabe) :</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLKURVE" xml:space="preserve">
+    <value>Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf Stufe AK3, sonst gilt der feste Vorlauf.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLKURVE_FUSSPUNKT" xml:space="preserve">
+    <value>Der Fußpunkt der Kühlkurve ({0} °C) liegt unter dem Auslegungsvorlauf ({1} °C): Der Vorlauf stiege mit der Außentemperatur. Bitte einen Fußpunkt ab dem Auslegungsvorlauf eintragen oder das Feld leeren.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL" xml:space="preserve">
+    <value>Kühlkurve ein oder aus: Der Kühlvorlauf gleitet über die Außentemperatur vom Fußpunkt zum Auslegungsvorlauf; gerechnet auf Stufe AK3 mit Kühlübergabe. Beim Einschalten wird ein leerer Raumeinfluss mit dem Vorgabewert gefüllt.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL" xml:space="preserve">
+    <value>Fußpunkt der Kühlkurve in °C, 4 bis 22, nicht unter dem Auslegungsvorlauf; leer = der Auslegungsrücklauf der Kühlübergabe.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_RAUMEINFLUSS_ERL" xml:space="preserve">
+    <value>Raumeinfluss der Kühlkurve in K/K, 0 bis 10: um so viel sinkt der Vorlauf je Kelvin über dem Kühlsollwert; leer oder 0 = aus.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_WEG_ERL" xml:space="preserve">
+    <value>Woraus die Auslegungs-Außentemperatur der Kühlung kommt: stunde (höchste Stunde der Klimareihe), tagesmittel (wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne; Vorgabe) oder eingabe (das Feld darunter).</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_AUSSEN_ERL" xml:space="preserve">
+    <value>Auslegungs-Außentemperatur der Kühlung in °C, 0 bis 60; wirkt nur mit dem Weg eingabe und nur, wenn sie mehr als 1 K über dem Kühlsollwert liegt, sonst gilt das Tagesmittel.</value>
+  </data>
 </root>
 

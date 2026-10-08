@@ -359,6 +359,14 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Vorgabewert des Raumeinflusses der Kühlkurve beim Einschalten [K/K] (E106, Q-KK-5 (b)) — ein Dialogwert.</summary>
+        public const double KUEHLKURVE_RAUMEINFLUSS_VORGABE = GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_VORGABE;
+        /// <summary>Die drei Auslegungswege der Kühlkurve in Listenfolge (E107: 1 Stunde, 2 Tagesmittel = Vorgabe, 3 Eingabe).</summary>
+        public static readonly IReadOnlyList<string> KuehlkurveWege = new[]
+        {
+            DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE, DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL, DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE,
+        };
+
         /// <summary>Kleinster Auslegungsvorlauf und kleinste Vorlaufgrenze der Kühlübergabe [°C].</summary>
         public const double KUEHL_VORLAUF_MIN = GebaeudeFestwerte.KUEHL_VORLAUF_MIN;
         /// <summary>Größter Auslegungsvorlauf und größte Vorlaufgrenze der Kühlübergabe [°C].</summary>

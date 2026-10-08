@@ -1321,8 +1321,8 @@ public class KiDialogkatalogTests : IDisposable
         // Profileditors im Blatt „Nutzungsprofile" und die drei Spalten der Zuordnungstabelle (KiNutzungsprofilfelder).
         // Mit NP4c die fünf Umschalter je Größe (nur lesbar) und die Spalten von Zeilenbild (5) und Stundenprofil (3).
         // Mit KP3 O2 (E59) die manuelle Aufheizzeit (aufheizzeit_manuell, nur im Projekt). Mit AK3-W4b der Raumeinfluss
-        // der Heizkurve (heizkurve_raumeinfluss, Festlegung 23).
-        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1 + 1, d.Felder.Count);
+        // der Heizkurve (heizkurve_raumeinfluss, Festlegung 23). Mit KK4 die fünf Felder der Kühlkurve (kuehlkurve_*).
+        Assert.Equal(89 + 47 + 34 + 3 + 5 + 3 + 1 + 1 + 5, d.Felder.Count);
         Assert.Equal(47, KiKonditionierungsfelder.Alle.Count);
         foreach (KiKonditionierungsfelder.Feld f in KiKonditionierungsfelder.Alle)
         {

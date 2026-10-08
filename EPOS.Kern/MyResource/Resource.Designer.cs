@@ -29223,6 +29223,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLKURVE_WEG_EINGABE {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLKURVE_WEG_EINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die höchste Stundentemperatur der Klimareihe ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLKURVE_WEG_STUNDE {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLKURVE_WEG_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne (Vorgabe) ähnelt.
+        /// </summary>
+        public static string GEBK_KUEHLKURVE_WEG_TAGESMITTEL {
+            get {
+                return ResourceManager.GetString("GEBK_KUEHLKURVE_WEG_TAGESMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Flächenkühlung ähnelt.
         /// </summary>
         public static string GEBK_KUEHLUEBERGABE_FLAECHENKUEHLUNG {
@@ -29633,6 +29660,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_LBL_KELLERTEMPERATUR {
             get {
                 return ResourceManager.GetString("GEBK_LBL_KELLERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve (gleitender Kühlvorlauf) ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLKURVE_AKTIV {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLKURVE_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungs-Außentemperatur (Eingabe) : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLKURVE_AUSSEN {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLKURVE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fußpunkt der Kühlkurve : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLKURVE_FUSSPUNKT {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLKURVE_FUSSPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss der Kühlkurve : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungs-Außentemperatur Kühlung : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_KUEHLKURVE_WEG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_KUEHLKURVE_WEG", resourceCulture);
             }
         }
         
@@ -30129,6 +30201,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_MSG_G_WERT {
             get {
                 return ResourceManager.GetString("GEBK_MSG_G_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Fußpunkt der Kühlkurve ({0} °C) liegt unter dem Auslegungsvorlauf ({1} °C): Der Vorlauf stiege mit der Außentemperatur. Bitte einen Fußpunkt ab dem Auslegungsvorlauf eintragen oder das Feld leeren. ähnelt.
+        /// </summary>
+        public static string GEBK_MSG_KUEHLKURVE_FUSSPUNKT {
+            get {
+                return ResourceManager.GetString("GEBK_MSG_KUEHLKURVE_FUSSPUNKT", resourceCulture);
             }
         }
         
@@ -30750,6 +30831,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_ZEILE_HERLEITUNG_BEFUND {
             get {
                 return ResourceManager.GetString("GEBK_ZEILE_HERLEITUNG_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf Stufe AK3, sonst gilt der feste Vorlauf. ähnelt.
+        /// </summary>
+        public static string GEBK_ZEILE_KUEHLKURVE {
+            get {
+                return ResourceManager.GetString("GEBK_ZEILE_KUEHLKURVE", resourceCulture);
             }
         }
         
@@ -55385,6 +55475,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_KELLERTEMPERATUR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_KELLERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve ein oder aus: Der Kühlvorlauf gleitet über die Außentemperatur vom Fußpunkt zum Auslegungsvorlauf; gerechnet auf Stufe AK3 mit Kühlübergabe. Beim Einschalten wird ein leerer Raumeinfluss mit dem Vorgabewert gefüllt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungs-Außentemperatur der Kühlung in °C, 0 bis 60; wirkt nur mit dem Weg eingabe und nur, wenn sie mehr als 1 K über dem Kühlsollwert liegt, sonst gilt das Tagesmittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLKURVE_AUSSEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLKURVE_AUSSEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fußpunkt der Kühlkurve in °C, 4 bis 22, nicht unter dem Auslegungsvorlauf; leer = der Auslegungsrücklauf der Kühlübergabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss der Kühlkurve in K/K, 0 bis 10: um so viel sinkt der Vorlauf je Kelvin über dem Kühlsollwert; leer oder 0 = aus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLKURVE_RAUMEINFLUSS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLKURVE_RAUMEINFLUSS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woraus die Auslegungs-Außentemperatur der Kühlung kommt: stunde (höchste Stunde der Klimareihe), tagesmittel (wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne; Vorgabe) oder eingabe (das Feld darunter). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KUEHLKURVE_WEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KUEHLKURVE_WEG_ERL", resourceCulture);
             }
         }
         

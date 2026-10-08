@@ -1234,6 +1234,17 @@
         internal static string GebkKuehlAuslegungRaumErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_AUSLEGUNG_RAUM_ERL;
         internal static string GebkKuehlVorlaufgrenzeName => MyResource.Resource.GEBK_LBL_KUEHL_VORLAUFGRENZE;
         internal static string GebkKuehlVorlaufgrenzeErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_VORLAUFGRENZE_ERL;
+        // Entwurf KK: die Kuehlkurve
+        internal static string GebkKuehlkurveAktivName => MyResource.Resource.GEBK_LBL_KUEHLKURVE_AKTIV;
+        internal static string GebkKuehlkurveAktivErl => MyResource.Resource.KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL;
+        internal static string GebkKuehlkurveFusspunktName => MyResource.Resource.GEBK_LBL_KUEHLKURVE_FUSSPUNKT;
+        internal static string GebkKuehlkurveFusspunktErl => MyResource.Resource.KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL;
+        internal static string GebkKuehlkurveRaumeinflussName => MyResource.Resource.GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS;
+        internal static string GebkKuehlkurveRaumeinflussErl => MyResource.Resource.KI_DLG_GEBK_KUEHLKURVE_RAUMEINFLUSS_ERL;
+        internal static string GebkKuehlkurveWegName => MyResource.Resource.GEBK_LBL_KUEHLKURVE_WEG;
+        internal static string GebkKuehlkurveWegErl => MyResource.Resource.KI_DLG_GEBK_KUEHLKURVE_WEG_ERL;
+        internal static string GebkKuehlkurveAussenName => MyResource.Resource.GEBK_LBL_KUEHLKURVE_AUSSEN;
+        internal static string GebkKuehlkurveAussenErl => MyResource.Resource.KI_DLG_GEBK_KUEHLKURVE_AUSSEN_ERL;
         // Stufe AK1 (Anlagenkopplung 9.1): die Gruppe „Waermeuebergabe"
         internal static string GebkHeizkreisAktivName => MyResource.Resource.GEBK_LBL_HEIZKREIS_AKTIV;
         internal static string GebkHeizkreisAktivErl => MyResource.Resource.KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL;
