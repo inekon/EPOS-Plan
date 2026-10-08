@@ -88,7 +88,7 @@ namespace WindowsFormsApplication1
         /// Bauteilseite, die der Öffnungskörper <paramref name="oeffnung"/> bis <paramref name="abstandMaxM"/> erreicht, wird die
         /// Fläche seiner zur Seite gleichläufigen Flächen (Normale bis <see cref="Koerperflaechen.PARALLEL_GRAD"/>; sonst der
         /// gegenläufigen) mit den Stücken jedes Raums geschnitten; der Anteil eines Raums ist sein Schnitt durch die Summe der
-        /// Schnitte an dieser Seite — Räume auf derselben Seite teilen die Öffnung, Räume auf beiden Seiten (eine Tür in einer
+        /// Schnitte an dieser Seite (Schnitte unter <see cref="Koerperflaechen.ANTEIL_MIN"/> der Summe entfallen) — Räume auf derselben Seite teilen die Öffnung, Räume auf beiden Seiten (eine Tür in einer
         /// Innenwand) sehen sie ganz. Dazu die Außennormale der Seite aus Sicht des Raums. Leer = kein Schnitt (dann gilt die
         /// Lage der Mitte, <see cref="RaeumeAn"/>).
         /// </summary>
@@ -117,8 +117,11 @@ namespace WindowsFormsApplication1
                 if (!jeSeite.TryGetValue(t.Seite, out var liste)) jeSeite[t.Seite] = liste = new List<(int, double, double[])>();
                 liste.Add((t.Raum, f, t.N));
             }
-            foreach (List<(int Raum, double Flaeche, double[] N)> liste in jeSeite.Values)
+            foreach (List<(int Raum, double Flaeche, double[] N)> alle in jeSeite.Values)
             {
+                // Splitter unter ANTEIL_MIN (Zeichentoleranz am Rand eines Raums) entfallen; der Rest teilt die Öffnung.
+                double gesamt = alle.Sum(x => x.Flaeche);
+                List<(int Raum, double Flaeche, double[] N)> liste = alle.Where(x => x.Flaeche >= Koerperflaechen.ANTEIL_MIN * gesamt).ToList();
                 double summe = liste.Sum(x => x.Flaeche);
                 foreach ((int raum, double f, double[] n) in liste)
                 {
@@ -172,6 +175,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kleinste Fläche eines Stücks [m²]; kleinere Schnitte entfallen.</summary>
         internal const double FLAECHE_MIN_M2 = 1e-4;
+
+        /// <summary>Kleinster Anteil eines Raums an einer Öffnung; kleinere Überlappungen sind Zeichentoleranz und entfallen.</summary>
+        internal const double ANTEIL_MIN = 0.02;
 
         /// <summary>Ohne Dicke der Datei und ohne Gegenseite: größter Abstand zweier Seiten eines Bauteils [m].</summary>
         private const double DICKE_MAX_M = Koerpernachbarschaft.TRENNDICKE_MAX_M;

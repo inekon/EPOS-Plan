@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
         internal List<AbbildBauteil> Oeffnungen { get; } = new List<AbbildBauteil>();
 
         /// <summary>
-        /// Die Grenzen der Datei, aus denen der Teil besteht (nur mit Geometrie, außen und unbeheizt ohne Gegenüber) — der
+        /// Die Grenzen der Datei, aus denen ein Außenteil besteht (nur mit Geometrie) — der
         /// Bauteilvorschlag führt daraus je Orientierung eine Teilfläche (<see cref="Teilflaechen"/>); leer = keine.
         /// </summary>
         internal List<AbbildGrenze> Grenzen { get; } = new List<AbbildGrenze>();
@@ -968,7 +968,6 @@ namespace WindowsFormsApplication1
                 Bauteil = s, Zone = x.Zone, Rand = Zonenrand.Unbeheizt, BruttoM2 = flaeche, AusschnittM2 = ausschnitt,
                 OhneGegenstueck = ohne, Raum = x.Raum,
             };
-            if (x.Grenze != null && x.Flaeche.HasValue && x.Grenze.FlaecheM2 == x.Flaeche) teil.Grenzen.Add(x.Grenze);
             teile.Add(teil);
             if (ohne)
             {
