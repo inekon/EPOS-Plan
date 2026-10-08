@@ -44107,6 +44107,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile mit Mengensatz ohne Orientierung der Datei: Azimut bzw. Dachneigung aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}); die Fläche bleibt die des Mengensatzes ({3}). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raum „{0}“ und Zone „{1}“ sind nicht gleich beheizt — nicht zugeordnet; zuerst den Haken „beheizt“ des Raums umstellen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_PLAN_BEHEIZUNG {

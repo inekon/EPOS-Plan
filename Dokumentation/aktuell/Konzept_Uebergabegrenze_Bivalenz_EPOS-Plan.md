@@ -1,7 +1,7 @@
 # Konzept — Übergabegrenze und Bivalenz der Wärmepumpe
 
 **Auftrag des Anwenders vom 07.10.2026** („Übergabe als begrenzender Faktor der Wärmepumpe") ·
-**Stand 07.10.2026 — Entwurf, nicht entschieden** · **Fassung 2, 08.10.2026: Rücklaufgrenze verallgemeinert, andere
+**Stand 08.10.2026 — entschieden: UB‑Q1–Q11 nach Empfehlung (UB‑Q3 b), U‑1–U‑4 im Umsetzungskonzept** · **Fassung 2, 08.10.2026: Rücklaufgrenze verallgemeinert, andere
 Erzeuger; Entscheide U‑1, U‑2, U‑4 des Umsetzungskonzepts vom 08.10.2026 eingearbeitet** · Codestand `da03e5333` (Zweig `ios_migration_september`,
 Schemastand 201, Referenzbasis `2026-10-07_R43_Kaelteseite_AK3K`) · Mockup
 `Mockups/Waermepumpe_Bivalenz_Uebergabe.html` · Fragen **UB‑Q1 bis UB‑Q11** (Abschnitt 10).
@@ -348,7 +348,9 @@ der Kesselrücklauf θ_V,WP (2.9). `Kesselkennlinie.Ruecklauf` erhält dafür di
 (Kette Vorwärmer → Heizkreis → Speicher → Paar → Rückfall); sonst rechnet der Brennwertkessel im Vorwärmbetrieb mit
 zu viel Brennwertnutzen — bei Erdgas ≈ 99–100 % bei 30–35 °C statt ≈ 93–95 % bei 45–55 °C Rücklauf (Abl. aus [Q58])
 (UB‑E2, UB‑Q11). **BHKW (Option, UB‑Q9):** `Ruecklauf_Max` auch am BHKW; liegt der Rücklauf zum BHKW (Heizkreis
-bzw. unterste Pufferzone) darüber, liefert es in der Stunde nichts (Grund `RUECKLAUF_MAX`).
+bzw. unterste Pufferzone) darüber, liefert es in der Stunde nichts (Grund `RUECKLAUF_MAX`) — anlagenbedingte
+Abschaltgrenze, getrennt vom Auslegungspaar `Vorlauf`/`Ruecklauf`; der Auslegungsrücklauf liegt darunter
+(Prüfregel mit Hinweis, Umsetzungskonzept U‑3).
 
 ### 4.5 Schritt UB‑d — Betriebsbereiche und Bivalenzpunkte
 
@@ -426,7 +428,7 @@ Wärmepumpe ohne die neuen Felder und mit `Vorwaermbetrieb = 0` verhält sich in
 | `Ruecklauf_Bezug` | dto. | REAL | leer = 30 °C, wenn abgewertet wird | 20–40 °C | Bezugsrücklauf des Kennfelds (R744) |
 | `Ruecklauf_Abwertung_ProzentJeK` | dto. | REAL | leer = keine Abwertung | 0–5 | R744 [Q42], [Q43] |
 | `Kaeltemittel` | dto. | TEXT ohne CHECK-Liste (Werteliste im Kern als Klappliste) | leer = allgemeine (unterkritische) Vorgaben | `R410A`, `R32`, `R290`, `R744`, `R134a`, `R1234ze(E)`, `R407C`, `R454C`, `R455A`, `R1233zd(E)`, `SONSTIGES` | wählt die Vorgaben je Kältemittelklasse (6.3); Umsetzungskonzept U‑2 |
-| `Ruecklauf_Max` | `Tab_BHKW` (Option UB‑Q9) | REAL | leer = keine Grenze; Neuanlage und Schnellwahl 70 °C | 40–90 °C | Motorkühlkreis [Q63], [Q64] |
+| `Ruecklauf_Max` | `Tab_BHKW` (Option UB‑Q9) | REAL | leer = keine Grenze; Neuanlage und Schnellwahl 70 °C | 40–90 °C | Motorkühlkreis [Q63], [Q64]; anlagenbedingte Abschaltgrenze, getrennt vom Auslegungspaar `Vorlauf`/`Ruecklauf`, das darunter liegt (Prüfregel mit Hinweis, Umsetzungskonzept U‑3) |
 | `Einbindung` | `Tab_Energieanlagen` | TEXT `CHECK (Einbindung IN ('DIREKT','PUFFER','WEICHE'))` | `PUFFER`, wenn der Anlage ein Heizungspuffer zugeordnet ist, sonst `DIREKT` | — | Anlagenschaltung |
 | `Vorwaermbetrieb` | `Tab_Energieanlagen` | INTEGER `CHECK (Vorwaermbetrieb IN (0,1))` | 0 | 0/1 | Anlagenschaltung (Reihe WP → Kessel) |
 
@@ -625,17 +627,17 @@ UB‑E1 hat keine Rechenwirkung und kann sofort beginnen.
 
 | Kennung | Gegenstand | Optionen | Empfehlung | Entscheid |
 |---|---|---|---|---|
-| **UB‑Q1** | Vorwärmbetrieb | a Reihe WP → Kessel als Schalter je Anlage · b nur parallel/teilparallel (über Höchstvorlauf WP aus) · c zusätzlich Mischung paralleler Erzeuger am gemeinsamen Vorlauf | **a** — anerkannte Grundschaltung [Q7], [Q33], geschlossen rechenbar; c ist hydraulisch unscharf und bleibt benannt abgelehnt | |
-| **UB‑Q2** | Ort der Gerätegrenzen | a Katalog `Tab_WP(_STAMM)` mit Normvorgabe bei NULL · b Projekt `Tab_Energieanlagen` | **a** — Gerätewert, einmal gepflegt, VDI‑3805-fähig | |
-| **UB‑Q3** | Rücklaufgrenze R744 (neu gefasst in Fassung 2) | a harte Grenze 35 °C · b Abwertung 2,5 %/K ab Bezugsrücklauf 30 °C bis harte Grenze 40 °C · c später | **b** — gemessen −1,8 %/K [Q42], ohne Kennfeld über dem Rücklauf auskommend; a bleibt mit k = 0 wählbar | |
-| **UB‑Q4** | vorhandener Abschaltpunkt | a bleibt als Deckel, berechnete Punkte zusätzlich, maßgebend der wärmere · b durch die berechneten Punkte ersetzen · c nur anzeigen | **a** — kein Bestandsprojekt verliert seine Eingabe | |
-| **UB‑Q5** | Einbindungsmodell | a direkt und Weiche jetzt, Puffer als benannte Näherung · b nur direkt · c alle drei mit Mischung am Puffer | **a** — die Weiche ist die häufigste Bestandsschaltung; die Puffermischung gehört in die Pufferstufe | |
-| **UB‑Q6** | Vorgabewerte | a Tafel 6.3 übernehmen, (n. e.)/(sek.)-Werte vor den Hilfetexten gegenlesen · b nur belegte Werte, übrige leer | **a** | |
-| **UB‑Q7** | Bericht und Bild | a Bild, Tafel und Kacheln (UB‑E4) · b nur Tafel und Kacheln · c später | **a** — das Diagramm ist die Aussage, die der Planer dem Kunden zeigt | |
-| **UB‑Q8** | Referenzprojekt und Zuständigkeit | a Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, gebaut von der Sitzung Gebäudesimulation im Zug von AK3 nach AK3‑K · b ohne CI · c eigene Sitzung | **a** — dieselbe Naht (`Angebot(h, V)`, Schritt H) wie AK3 | |
-| **UB‑Q9** | Rücklaufgrenze am BHKW | a ja, `Ruecklauf_Max` am BHKW, Vorgabe 70 °C, in UB‑E3 · b nein | **a** — harte Abschaltung des Motorkühlkreises [Q63], derselbe Mechanismus wie an der Wärmepumpe | |
-| **UB‑Q10** | Mindestrücklauf Biomasse-/NT-Kessel, Anfahrgrenze der Wärmepumpe | a Prüfhinweis ohne Feld · b Feld | **a** — die Rücklaufanhebung sichert ihn in jeder Anlage, die Stundenbilanz ändert sich nicht | |
-| **UB‑Q11** | Rücklaufstufe „Vorwärmer" der Kesselkennlinie | a ja, in UB‑E2 · b später | **a** — Pflicht für den Brennwertnutzen im Vorwärmbetrieb | |
+| **UB‑Q1** | Vorwärmbetrieb | a Reihe WP → Kessel als Schalter je Anlage · b nur parallel/teilparallel (über Höchstvorlauf WP aus) · c zusätzlich Mischung paralleler Erzeuger am gemeinsamen Vorlauf | **a** — anerkannte Grundschaltung [Q7], [Q33], geschlossen rechenbar; c ist hydraulisch unscharf und bleibt benannt abgelehnt | **a** (08.10.2026) |
+| **UB‑Q2** | Ort der Gerätegrenzen | a Katalog `Tab_WP(_STAMM)` mit Normvorgabe bei NULL · b Projekt `Tab_Energieanlagen` | **a** — Gerätewert, einmal gepflegt, VDI‑3805-fähig | **a** (08.10.2026) |
+| **UB‑Q3** | Rücklaufgrenze R744 (neu gefasst in Fassung 2) | a harte Grenze 35 °C · b Abwertung 2,5 %/K ab Bezugsrücklauf 30 °C bis harte Grenze 40 °C · c später | **b** — gemessen −1,8 %/K [Q42], ohne Kennfeld über dem Rücklauf auskommend; a bleibt mit k = 0 wählbar | **b** (08.10.2026) |
+| **UB‑Q4** | vorhandener Abschaltpunkt | a bleibt als Deckel, berechnete Punkte zusätzlich, maßgebend der wärmere · b durch die berechneten Punkte ersetzen · c nur anzeigen | **a** — kein Bestandsprojekt verliert seine Eingabe | **a** (08.10.2026) |
+| **UB‑Q5** | Einbindungsmodell | a direkt und Weiche jetzt, Puffer als benannte Näherung · b nur direkt · c alle drei mit Mischung am Puffer | **a** — die Weiche ist die häufigste Bestandsschaltung; die Puffermischung gehört in die Pufferstufe | **a** (08.10.2026) |
+| **UB‑Q6** | Vorgabewerte | a Tafel 6.3 übernehmen, (n. e.)/(sek.)-Werte vor den Hilfetexten gegenlesen · b nur belegte Werte, übrige leer | **a** | **a** (08.10.2026) |
+| **UB‑Q7** | Bericht und Bild | a Bild, Tafel und Kacheln (UB‑E4) · b nur Tafel und Kacheln · c später | **a** — das Diagramm ist die Aussage, die der Planer dem Kunden zeigt | **a** (08.10.2026) |
+| **UB‑Q8** | Referenzprojekt und Zuständigkeit | a Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, gebaut von der Sitzung Gebäudesimulation im Zug von AK3 nach AK3‑K · b ohne CI · c eigene Sitzung | **a** — dieselbe Naht (`Angebot(h, V)`, Schritt H) wie AK3 | **a** (08.10.2026) |
+| **UB‑Q9** | Rücklaufgrenze am BHKW | a ja, `Ruecklauf_Max` am BHKW, Vorgabe 70 °C, in UB‑E3 · b nein | **a** — harte Abschaltung des Motorkühlkreises [Q63], derselbe Mechanismus wie an der Wärmepumpe | **a** (08.10.2026) |
+| **UB‑Q10** | Mindestrücklauf Biomasse-/NT-Kessel, Anfahrgrenze der Wärmepumpe | a Prüfhinweis ohne Feld · b Feld | **a** — die Rücklaufanhebung sichert ihn in jeder Anlage, die Stundenbilanz ändert sich nicht | **a** (08.10.2026) |
+| **UB‑Q11** | Rücklaufstufe „Vorwärmer" der Kesselkennlinie | a ja, in UB‑E2 · b später | **a** — Pflicht für den Brennwertnutzen im Vorwärmbetrieb | **a** (08.10.2026) |
 
 Zu UB‑Q2 und UB‑Q6: Die Vorgaben gelten je Kältemittelklasse aus dem Gerätefeld `Kaeltemittel` (Umsetzungskonzept
 U‑2, entschieden 08.10.2026); die Fragen selbst bleiben offen.

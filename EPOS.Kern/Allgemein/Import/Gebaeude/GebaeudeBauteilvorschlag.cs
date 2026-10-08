@@ -1074,12 +1074,23 @@ namespace WindowsFormsApplication1
                 if (s.Art == Bauteilart.Vorhangfassade || !(p.BruttoM2 > 0.0) || !p.NettoM2.HasValue || p.NettoRueckfall || p.NettoNegativ) return null;
                 List<AbbildGrenze> grenzen = s.Grenzen.Where(g => g.RaumKennung != null && !g.Virtuell && g.Lage != Randbedingung.Innen
                                                                  && _raeume.TryGetValue(g.RaumKennung, out AbbildRaum r) && IstBeheizt(r)).ToList();
-                List<Teilflaeche> teile = Teilflaechen.Gliedern(grenzen, _v.NordwinkelAngewandt ? _v.NordwinkelGrad ?? 0.0 : 0.0);
+                List<Teilflaeche> teile = Teilflaechen.GliedernAmGelaende(grenzen, _v.NordwinkelAngewandt ? _v.NordwinkelGrad ?? 0.0 : 0.0);
                 if (teile == null) return null;
                 var raeume = new HashSet<string>(grenzen.Select(g => g.RaumKennung), StringComparer.Ordinal);
                 var jeTeil = teile.Select(_ => new List<AbbildBauteil>()).ToList();
                 foreach (AbbildBauteil o in p.Fenster.Concat(p.Tueren))
-                    jeTeil[Teilflaechen.Stelle(teile, o, raeume)].Add(o);
+                {
+                    // Am Gelände geteilt: die Öffnung an die Teile ihrer Lage (Erdreich, sonst Außenluft), darin nach der Richtung.
+                    List<int> stellen = Enumerable.Range(0, teile.Count).ToList();
+                    if (teile.Any(t => t.Rand.HasValue))
+                    {
+                        Randbedingung lage = o.Grenzen.Any(g => g.RaumKennung != null && raeume.Contains(g.RaumKennung) && g.Lage == Randbedingung.Erdreich)
+                                             ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
+                        List<int> passend = stellen.Where(i => teile[i].Rand == lage).ToList();
+                        if (passend.Count > 0) stellen = passend;
+                    }
+                    jeTeil[stellen[Teilflaechen.Stelle(stellen.Select(i => teile[i]).ToList(), o, raeume)]].Add(o);
+                }
                 double summe = teile.Sum(t => t.BruttoM2);
                 double oeffnungen = p.Fenster.Concat(p.Tueren).Sum(o => o.BruttoflaecheM2 ?? 0.0);
                 double rest = p.AbzugM2 - oeffnungen;
@@ -1110,7 +1121,7 @@ namespace WindowsFormsApplication1
                 AbbildBauteil s = p.Bauteil;
                 Bauteilart art = s.Art;
                 if (art == Bauteilart.Vorhangfassade) return Fassadenzeile(p, flaeche, herkunftFlaeche);
-                Bauteilrand rand = RandAus(p.Rand);
+                Bauteilrand rand = RandAus(teil?.Rand ?? p.Rand);
                 bool gespiegelt = p.HeizPos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
@@ -1180,7 +1191,7 @@ namespace WindowsFormsApplication1
             private void Fensterzeile(Huellposten p, AbbildBauteil f, Teilflaeche teil = null)
             {
                 if (!(f.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(f.Kennung); return; }
-                Bauteilrand rand = RandAus(p.Rand);
+                Bauteilrand rand = RandAus(teil?.Rand ?? p.Rand);
                 if (rand == Bauteilrand.Erdreich)
                 {
                     rand = Bauteilrand.Aussenluft;
@@ -1213,7 +1224,7 @@ namespace WindowsFormsApplication1
             private void Tuerzeile(Huellposten p, AbbildBauteil t, Teilflaeche teil = null)
             {
                 if (!(t.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(t.Kennung); return; }
-                Bauteilrand rand = RandAus(p.Rand);
+                Bauteilrand rand = RandAus(teil?.Rand ?? p.Rand);
                 bool gespiegelt = p.HeizPos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(t.NeigungGrad ?? p.Bauteil.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = Azimut(p.Bauteil.AzimutGrad ?? t.AzimutGrad, gespiegelt);

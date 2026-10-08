@@ -2,7 +2,7 @@
 
 **Auftrag des Anwenders vom 08.10.2026** („Erstelle ein Umsetzungskonzept zur Integration in EPOS-Plan") ·
 **Stand 08.10.2026 — Fassung 1, Umsetzungsentwurf, zur Abnahme durch den Anwender; Entscheide U‑1, U‑2 und U‑4
-vom 08.10.2026 eingearbeitet** · Codestand `b1a34adca`
+sowie UB‑Q1–Q11 (nach Empfehlung, UB‑Q3 b) vom 08.10.2026 eingearbeitet** · Codestand `b1a34adca`
 (`origin/ios_migration_september`) · Schemastand 201 (`Ak3KSchema`) · Referenzbasis
 `2026-10-07_R43_Kaelteseite_AK3K` · Fachkonzept
 [`Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) (Fassung 2) ·
@@ -12,8 +12,8 @@ Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html`.
 Bedienung, Vorgabewerte, Prüfungen, Fragen UB‑Q1 bis UB‑Q11). Dieses Papier sagt, *wie, wo, in welcher Reihenfolge
 und mit welcher Abnahme* es gebaut wird. Es wiederholt keinen Fachinhalt; Verweise der Form „FK 4.3" zeigen auf
 Abschnitte des Fachkonzepts. Eigene Ableitungen sind mit „(Abl.)" gekennzeichnet. Wo dieses Papier vom Fachkonzept
-abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4); U‑1, U‑2 und U‑4 sind entschieden, U‑3 liegt mit den
-Fragen UB‑Q1 bis UB‑Q11 beim Anwender.
+abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4); U‑1, U‑2, U‑3 und U‑4 sind entschieden, ebenso
+UB‑Q1 bis UB‑Q11 (08.10.2026, nach Empfehlung, UB‑Q3 b).
 
 ---
 
@@ -27,8 +27,8 @@ Fragen UB‑Q1 bis UB‑Q11 beim Anwender.
    Referenzprojekt außer dem neuen 1060 ändert sein Ergebnis — der Referenzlauf gegen R43 ist für die 24
    Bestandsprojekte byte-gleich bzw. innerhalb der Toleranz unverändert. Das ist schärfer als FK 5.3 (dort ändern
    1047, 1054, 1056, 1058) und wird über U‑1 erreicht (entschieden 08.10.2026: a, Opt-in).
-3. **Offene Entscheide werden zu Umsetzungsvorgaben.** Gebaut wird nach der Empfehlung des Fachkonzepts; jede
-   Gegenoption bleibt über ein Feld oder einen Schalter erreichbar, ohne Umbau (Tafel unten).
+3. **UB‑Q1 bis UB‑Q11 sind am 08.10.2026 nach Empfehlung entschieden (UB‑Q3 b).** Die Schalter und Felder
+   bleiben, damit die andere Wahl später ohne Umbau greift (Tafel unten).
 4. **Plattformfrei und deterministisch.** Feste Iterationszahl, Startwert aus der Vorstunde, keine Parallelsummen;
    iOS erbt den Rechenweg ohne eigene Zeile (die iOS-Hülle wird nicht berührt, kein iOS-Lauf nötig).
 
@@ -48,7 +48,7 @@ Fragen UB‑Q1 bis UB‑Q11 beim Anwender.
 | UB‑Q10 Mindestrücklauf Kessel | a: Prüfhinweis im Bericht ohne Feld | b: späterer Schemaschritt |
 | UB‑Q11 Stufe „Vorwärmer" | a: in UB‑E2 | b: Stufe bleibt ungenutzt, solange `Vorwaermvorlauf` NaN ist |
 
-**Abweichungen vom Fachkonzept** (U‑1, U‑2, U‑4 entschieden am 08.10.2026; U‑3 offen).
+**Abweichungen vom Fachkonzept** (U‑1, U‑2, U‑3 und U‑4 entschieden am 08.10.2026).
 
 - **U‑1 Wirksamkeit an `Einbindung` gebunden (Abl.). Entschieden 08.10.2026: a (Opt-in).** Die Bereichsrechnung B0–B4, die Hydraulikgrenze und die
   abgeleitete Rücklaufgrenze wirken nur für eine Wärmepumpe, deren `Einbindung` gesetzt ist. `Einbindung` NULL ist
@@ -71,12 +71,15 @@ Fragen UB‑Q1 bis UB‑Q11 beim Anwender.
   4.3). (4) Der VDI‑3805-Import liest kein Kältemittel; das Feld bleibt beim Import leer (4.3). Denselben
   Spaltennamen trägt `Tab_Kaeltemaschine` (`KaeltemaschineSchema.SPALTE_KAELTEMITTEL`, freier Text) — gleiche
   Bedeutung (Abl.).
-- **U‑3 Namensnähe am BHKW. Empfehlung a; Entscheid des Anwenders offen.** `Tab_BHKW` trägt schon `Vorlauf` und
-  `Ruecklauf` (Auslegungspaar des Moduls, 8 von 15 Zeilen belegt). **a (Empfehlung):** der Name `Ruecklauf_Max`
-  bleibt — gleicher Name und gleiche Bedeutung „höchster zulässiger Rücklauf, Betriebsgrenze" wie an der
-  Wärmepumpe; Abgrenzung zum Auslegungspaar `Vorlauf`/`Ruecklauf` über die Dialogbeschriftung „Höchster Rücklauf
-  (Betriebsgrenze)" gegenüber „Rücklauf (Auslegung)", die Prüfregel `Ruecklauf_Max ≥ Ruecklauf` (sonst Hinweis)
-  und die Vorgabe bei Neuanlage max(70 °C, Auslegungsrücklauf). **b:** eigener Name `Ruecklauf_Betriebsgrenze`.
+- **U‑3 Namensnähe am BHKW. Entschieden 08.10.2026: a.** `Tab_BHKW` trägt schon `Vorlauf` und `Ruecklauf`
+  (Auslegungspaar des Moduls, 8 von 15 Zeilen belegt) — eine eigene, vom Rücklaufgrenzfeld getrennte Größe:
+  höchster Rücklauf ist beim BHKW anlagenbedingt eine Abschaltung, die Auslegungsrücklauftemperatur muss nur
+  darunter liegen, ist aber eine andere Vorgabe. `Ruecklauf_Max` bleibt der Name — gleicher Name und gleiche
+  Bedeutung „anlagenbedingte Abschaltgrenze des Motorkühlkreises" wie an der Wärmepumpe (Stunde mit Rücklauf ≥
+  Grenze: das BHKW liefert nichts, Grund `RUECKLAUF_MAX`); Abgrenzung zum Auslegungspaar `Vorlauf`/`Ruecklauf` über
+  die Dialogbeschriftung „Höchster Rücklauf (Abschaltgrenze)" gegenüber „Rücklauf (Auslegung)", die Prüfregel
+  Auslegungsrücklauf `Ruecklauf` unter der Abschaltgrenze `Ruecklauf_Max` (sonst Hinweis, kein Abbruch) und die
+  Vorgabe bei Neuanlage 70 °C.
 - **U‑4 Stufenstunden des Kessels. Entschieden 08.10.2026: Empfehlung.** Die Rücklaufstufen des Kessels stehen
   heute nur im Protokollhinweis `SIMENG_KESSEL_BRENNWERT_BETRIEB`, nicht in einer Ergebnisspalte. Die Stufe
   „Vorwärmer" (`Ruecklaufstufe.Vorwaermer`) kommt dort mit ihrer Stundenzahl hinzu (neuer Platzhalter in beiden
@@ -447,7 +450,7 @@ Statuszeile und Protokoll → Push → Nachweis**; ein iOS-Lauf ist nicht begrü
 | Bestandsprojekte | leere Felder = heutiges Verhalten; kein DML im Schritt |
 | Katalogabgleich bei neuen Spalten | leere Spalten ändern keine Prüfsumme; gepflegte Werte heben die Katalogfassung über den gewohnten Weg |
 | Enum-Wert der neuen Rücklaufstufe | `Vorwaermer = 4` hinten angefügt, damit gespeicherte oder gezählte Werte stabil bleiben |
-| Namensnähe `Ruecklauf`/`Ruecklauf_Max` am BHKW | Empfehlung U‑3 a (offen): Beschriftung „Höchster Rücklauf (Betriebsgrenze)" gegenüber „Rücklauf (Auslegung)", Prüfregel `Ruecklauf_Max ≥ Ruecklauf`, Vorgabe bei Neuanlage max(70 °C, Auslegungsrücklauf) |
+| Namensnähe `Ruecklauf`/`Ruecklauf_Max` am BHKW | U‑3 entschieden a: Beschriftung „Höchster Rücklauf (Abschaltgrenze)" gegenüber „Rücklauf (Auslegung)", Prüfregel Auslegungsrücklauf `Ruecklauf` unter der Abschaltgrenze `Ruecklauf_Max` (sonst Hinweis), Vorgabe bei Neuanlage 70 °C |
 | Normzahlen und Messdaten | nie ins Repositorium; Vorgabewerte nur als gerundete Konstanten mit Quellverweis |
 | Hersteller- und Produktdaten | nie im Wiki, nicht in Testnamen; Beispiele neutral |
 
@@ -464,11 +467,11 @@ der Tafel 8.1 Zeilen 1 und 2; Bau des Kern-Filters, Tests mit `--filter "FullyQu
 kein Schema, keine Ressourcen, kein Referenzlauf nötig (keine Rechenwirkung). Bericht: Proben n/n, Abweichungen
 zum Zahlenbeispiel.
 
-**Vorher beim Anwender zu entscheiden.** Für E1: nichts zwingend (UB‑Q6 a als Vorgabe). Vor E2: UB‑Q1, UB‑Q4,
-UB‑Q8, UB‑Q11; **U‑1** ist am 08.10.2026 entschieden (a: Wirksamkeit an `Einbindung` gebunden, Bestandsprojekte
-unverändert), ebenso U‑2 (Katalogfeld `Kaeltemittel`) und U‑4 (Protokollhinweis). Vor E3: UB‑Q2, UB‑Q3, UB‑Q5,
-UB‑Q9 und U‑3 (Name der BHKW-Rücklaufgrenze). Vor E4: UB‑Q7. UB‑Q10 betrifft
-nur Hinweistexte und kann mit E4 fallen.
+**Entscheidlage.** UB‑Q1 bis UB‑Q11 sind am 08.10.2026 nach Empfehlung entschieden (UB‑Q3 b), ebenso **U‑1**
+(a: Wirksamkeit an `Einbindung` gebunden, Bestandsprojekte unverändert), U‑2 (Katalogfeld `Kaeltemittel`), U‑3
+(`Ruecklauf_Max` am BHKW als anlagenbedingte Abschaltgrenze, getrennt vom Auslegungsrücklauf) und U‑4
+(Protokollhinweis). Der Baubeginn UB‑E1 ist frei ab 08.10.2026; UB‑E2 beginnt nach dem Baubeginn-Schemaschritt
+(Anmeldung durch die bauende Sitzung).
 
 **Pflichten jeder Welle.** Schemaschritt vor dem Bau anmelden (E2‑a); `AGENT_LAEUFT` nur bei Arbeit im
 Hauptbaum; Commits sofort mit genauen Pfaden; kein Push und kein CI-Lauf durch Agenten; Bericht mit Zahlen, ohne
