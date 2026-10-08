@@ -740,6 +740,9 @@ namespace WindowsFormsApplication1
                 string name = b.Name ?? b.Kennung;
                 if (b.BruttoflaecheM2 is double menge)
                 {
+                    // Die Fläche bleibt die des Mengensatzes; die Orientierung, die die Datei nicht nennt, kommt aus den
+                    // Raumgrenzen mit Geometrie, sonst aus dem Körper.
+                    OrientierungBeiMengensatz(b, art, kf, name);
                     var schluessel = (gi, b.Quelltyp, b.Name == null ? null : Namensstamm(b.Name));
                     if (b.Name != null && teile.Contains(schluessel))
                     {
@@ -827,6 +830,90 @@ namespace WindowsFormsApplication1
             if (_koerperAussenUnbestimmt.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_AUSSENSEITE", Ganz(_koerperAussenUnbestimmt.Count),
                     Beispiele(_koerperAussenUnbestimmt)));
+            if (_orientierungGrenze.Count + _orientierungKoerper.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "ORIENTIERUNG_ERGAENZT", Ganz(_orientierungGrenze.Count + _orientierungKoerper.Count),
+                    Ganz(_orientierungGrenze.Count), Ganz(_orientierungKoerper.Count), Beispiele(_orientierungGrenze.Concat(_orientierungKoerper).ToList())));
+        }
+
+        /// <summary>Bauteile mit Mengensatz, deren Orientierung aus den Raumgrenzen bzw. aus dem Körper kommt (N4).</summary>
+        private readonly List<string> _orientierungGrenze = new List<string>(), _orientierungKoerper = new List<string>();
+
+        /// <summary>Größte Abweichung [°] einer Grenznormale von der gemittelten, bis zu der die Grenzen eine Richtung tragen.</summary>
+        internal const double GRENZNORMALE_STREUUNG_GRAD = 10.0;
+
+        /// <summary>
+        /// <b>Orientierung bei Mengensatz</b> (N4, Befund G5-A 4.1): Die Fläche bleibt die des Mengensatzes; Azimut und Neigung,
+        /// die die Datei nicht nennt, kommen in dieser Rangfolge aus
+        /// <list type="number">
+        /// <item>den Raumgrenzen des Bauteils mit Geometrie nach außen (Außenluft, Erdreich): die flächengewichtete Normale,
+        /// sofern alle Grenzen innerhalb <see cref="GRENZNORMALE_STREUUNG_GRAD"/> in dieselbe Richtung zeigen;</item>
+        /// <item>dem Bauteilkörper (Außennormale der größten ebenen Seite).</item>
+        /// </list>
+        /// Außenwände ohne Azimut bekommen den Azimut; das Dach Neigung und — ohne Azimut der Datei — Azimut, denn seine Neigung
+        /// steht ohne Körper nur als Vorgabe 0°. Öffnungen mit der Neigung des Wirts folgen ihm. Ohne Richtung bleibt das
+        /// Bauteil, wie es ist (die Meldung des Vorschlags bleibt). Info <c>IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT</c>.
+        /// </summary>
+        private void OrientierungBeiMengensatz(AbbildBauteil b, Bauteilkoerperart art, Bauteilkoerperflaeche kf, string name)
+        {
+            bool aussen = b.Randbedingung == Randbedingung.Aussenluft || b.Randbedingung == Randbedingung.Erdreich;
+            if (art == Bauteilkoerperart.Wand)
+            {
+                if (!aussen || b.AzimutGrad.HasValue) return;
+                double[] n = Grenznormale(b);
+                if (n != null && IfcBauteilkoerper.Azimut(n, _drehung) is double az)
+                {
+                    b.AzimutGrad = Math.Round(az, 6);
+                    _orientierungGrenze.Add(name);
+                }
+                else if (kf.AzimutGrad.HasValue)
+                {
+                    b.AzimutGrad = kf.AzimutGrad;
+                    _orientierungKoerper.Add(name);
+                    if (kf.AussenseiteUnbestimmt) _koerperAussenUnbestimmt.Add(name);
+                }
+                else return;
+                _seiteUnbestimmt.Remove(b.Kennung);
+            }
+            else if (b.Art == Bauteilart.Dach)
+            {
+                double? neigungAlt = b.NeigungGrad;
+                double[] n = Grenznormale(b);
+                if (n != null)
+                {
+                    b.NeigungGrad = Math.Round(IfcBauteilkoerper.Neigung(n), 6);
+                    if (!b.AzimutGrad.HasValue && IfcBauteilkoerper.Azimut(n, _drehung) is double az) b.AzimutGrad = Math.Round(az, 6);
+                    _orientierungGrenze.Add(name);
+                }
+                else
+                {
+                    b.NeigungGrad = kf.NeigungGrad;
+                    if (!b.AzimutGrad.HasValue) b.AzimutGrad = kf.AzimutGrad;
+                    _orientierungKoerper.Add(name);
+                }
+                foreach (AbbildBauteil o in b.Oeffnungen)
+                    if (o.NeigungGrad == neigungAlt) o.NeigungGrad = b.NeigungGrad;
+            }
+        }
+
+        /// <summary>
+        /// Die flächengewichtete Einheitsnormale der Raumgrenzen eines Bauteils nach außen (nicht virtuell, mit Normale);
+        /// <c>null</c> ohne solche Grenze oder wenn eine davon mehr als <see cref="GRENZNORMALE_STREUUNG_GRAD"/> abweicht.
+        /// </summary>
+        private static double[] Grenznormale(AbbildBauteil b)
+        {
+            List<AbbildGrenze> grenzen = b.Grenzen.Where(x => !x.Virtuell && x.Normale != null && x.Herkunft == Grenzherkunft.Raumgrenze
+                                                             && (x.Lage == Randbedingung.Aussenluft || x.Lage == Randbedingung.Erdreich)).ToList();
+            if (grenzen.Count == 0) return null;
+            double[] summe = new double[3];
+            foreach (AbbildGrenze x in grenzen)
+            {
+                double gewicht = x.FlaecheM2 > 0.0 ? x.FlaecheM2.Value : 1.0;
+                for (int i = 0; i < 3; i++) summe[i] += gewicht * x.Normale[i];
+            }
+            double[] n = IfcPlatzierung.Normiert(summe);
+            if (n == null) return null;
+            double grenze = Math.Cos(GRENZNORMALE_STREUUNG_GRAD * Math.PI / 180.0);
+            return grenzen.All(x => IfcPlatzierung.Punktprodukt(n, x.Normale) >= grenze) ? n : null;
         }
 
         /// <summary>Der Name ohne angehängtes „-n“ (Teilnummer): „Dach 001-4“ → „Dach 001“.</summary>
