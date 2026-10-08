@@ -652,9 +652,10 @@ namespace WindowsFormsApplication1
                 double? azimut = HatHimmelsrichtung(s) ? s.AzimutGrad : null;
                 foreach (AbbildBauteil o in h.Fenster)
                 {
+                    // Ohne Richtung der Wand die des Fensters selbst (der IFC-Leser ergänzt sie aus dem eigenen Körper).
                     p.Fenster.Add(new Fensterposten
                     {
-                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut, G = o.GWert,
+                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut ?? (HatHimmelsrichtung(o) ? o.AzimutGrad : null), G = o.GWert,
                     });
                     if (!o.BruttoflaecheM2.HasValue && !p.Verworfen)
                         z[GebaeudeZielfelder.FENSTER_GESAMT].Markieren(PruefStufe.Warnung);

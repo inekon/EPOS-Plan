@@ -895,12 +895,15 @@ namespace EPOS.Kern.Tests
         /// einmal (Platten der Datei gegen unbeheizt gehen den Trenndecken aus den Raumkörpern vor) und zieht die Öffnungen
         /// zu kleiner Wände nach Lage voll ab: Die Einzonenrechnung (Z5) sinkt in den vier Dateien mit Platten gegen unbeheizt
         /// um 4 bis 16 %, die Vorgabe Z4 um 0 bis 3 %; WG und Produktion verschieben sich nur über den Fensterabzug.
+        /// Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, nehmen sie aus dem eigenen Körper: In MFH-Klein bekommt
+        /// ein Fenster einen Azimut, Jahresheizwärme Z4 und Z5 je +0,2 %; in Produktion und Verwaltung sind die übrigen
+        /// Öffnungen ohne Azimut waagerechte Dachfenster im Flachdach (kein Azimut nötig), beide bleiben (0 %).
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
                 ["MFH_mittel_1984.ifc"] = ("Z4", 5, 47.56, 24.73, 16.78, 42.66, 18.76),
-                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 40.62, 26.18, 16.75, 46.2, 21.13),
+                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 40.89, 26.2, 16.79, 46.48, 21.13),
                 ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 58.49, 48.0, 27.08, 61.07, 36.1),
                 ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 228.49, 257.17, 129.02, 212.74, 182.42),
                 ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.37, 20.74, 9.47, 17.05, 14.05),

@@ -44323,7 +44323,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile mit Mengensatz ohne Orientierung der Datei: Azimut bzw. Dachneigung aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}); die Fläche bleibt die des Mengensatzes ({3}). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Orientierung der Datei: Azimut bzw. Dachneigung bei Mengensatz aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}), die Fläche bleibt die des Mengensatzes; Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, aus dem eigenen Körper ({4}) ({3}). ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT {
             get {
