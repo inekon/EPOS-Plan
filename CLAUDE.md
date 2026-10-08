@@ -175,7 +175,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-07_R43_Kaelteseite_AK3K`, vierundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-08_R44_Kuehlkurve`, sechsundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -202,6 +202,8 @@ Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der 
 Projekt 1057 rechnet als Kopie von 1029 eine Erdsonde (4 × 90 m, Mergel/Lehm, Klimazone 6) mit Entzugsrückwirkung im Betrachtungsjahr 10, gehalten von `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1058 rechnet als Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve — der geschlossene Kreis zwischen Gebäude und Erzeugern mit der Kälteseite im Kreis, der Puffer überbrückt die Sperrstunden — und schreibt Komfortstunden und die Kennzahlen des Kreises, gehalten von `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests`,
 Projekt 1059 rechnet als Kopie von 1058 seine Kälte mit einer zu kleinen Kältemaschine und einem Kältespeicher aus 1055 — die Kälteschranke greift —, gehalten von `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1061 rechnet als Kopie von 1058 seinen Kühlvorlauf über eine Kühlkurve am Gebäude — Raumeinfluss 3 K/K, Auslegungsweg Tagesmittel, Kühlvorlauf der Wärmepumpe 12 °C —, gehalten von `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1062 rechnet als Kopie von 1061 das Gebäude in zwei Zonen mit Kühlübergabe je Zone, gehalten von `EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
@@ -237,7 +239,8 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   eines Referenzprojekts (auch die Stufe AK3), an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
   Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Heizkurve_Raumeinfluss`, `Regler_Proportionalband`,
   `Sollwertprofil`), `Kuehluebergabe_Aktiv`, die Spalten `Kuehl_Uebergabe_*` und
-  `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, an seinen Zonen die sieben Übergabespalten von `Tab_Zone` (`Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`, `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband`), die Kaskade eines gekoppelten Referenzprojekts
+  `Kuehl_Auslegung_*` und `Kuehl_Vorlaufgrenze`, die Kühlkurve am Gebäude (`Kuehlkurve_Aktiv`, `Kuehlkurve_Fusspunkt`,
+  `Kuehlkurve_Raumeinfluss`, `Kuehlkurve_Auslegung_Weg`, `Kuehlkurve_Auslegung_Aussen`), an seinen Zonen die sieben Übergabespalten von `Tab_Zone` (`Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn`, `Auslegung_Vorlauf`, `Auslegung_Ruecklauf`, `Auslegung_Raumtemperatur`, `Regler_Proportionalband`), die Kaskade eines gekoppelten Referenzprojekts
   (`Tab_Einstellungen.Tool_1` bis `Tool_4`, sie entscheidet, ob die Wärmepumpe am gerechneten
   Vorlauf Wärme liefert), ihr Anlagenfahrplan in `Tab_Energieanlagen` (Sperrzeit `Sperrung`, `Sperrzeit_von`,
   `Sperrzeit_bis` samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`), die Heizungspuffer eines gekoppelten
@@ -279,7 +282,8 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Selbstentladung_Prozent_Monat`;
 - gesäte Zonendaten eines Referenzprojekts: seine Zonen in `Tab_Zone` (jede Spalte), ihre Bauteile in `Tab_Bauteil`
   samt Fläche, U-Wert, Neigung, Azimut, Randbedingung, ψ·L, Aufbau und den Trennflächen (`ID_Nachbarzone`,
-  `Trennflaeche_Zuordnung`), die Luftströme in `Tab_Zonenluftstrom`, die Zonenkalender (Vorgabezeilen, Kalender und
+  `Trennflaeche_Zuordnung`), die Luftströme in `Tab_Zonenluftstrom`, an seinen Zonen die drei Kühlübergabespalten von
+  `Tab_Zone` (`Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn`), die Zonenkalender (Vorgabezeilen, Kalender und
   Perioden mit `ID_Zone`) und die Aufheizvorgabe des Projekts (`Tab_Einstellungen.Aufheizoptimierung` und
   `Aufheiz_*`), dazu das Anlegen oder Entfernen eines Zonen-Referenzprojekts;
 - gesäte Konditionierungsdaten eines Referenzprojekts: der Referenzkatalogbau „Referenzbau Konditionierung“ (Bauwerte,
@@ -298,7 +302,14 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `WQ_Kopfueberdeckung`, `WQ_Betrachtungsjahr`, `WQ_Sondenanordnung` — leer heißt Vorgabe); die Normgeometrie von
   `Sondenfeldgeometrie` samt den Festwerten in `Erdsondenfeld` (Abstand 6 m, Bohrlochradius 0,075 m, R_b 0,10 m·K/W,
   Kopfüberdeckung 2 m, Betrachtungsjahr 10, Heizgrenze 15 °C der Startschätzung, quadratische Anordnung); dazu das
-  Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle.
+  Anlegen oder Entfernen eines Referenzprojekts mit Erdreichquelle;
+- gesäte Kühlkurvendaten eines Referenzprojekts mit Kühlkurve: die Kühlkennlinie seiner Kälteerzeuger samt aller
+  Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), `Kaltwasser_Vorlauf_Min`, das
+  Temperaturpaar seines Kältespeichers, die Festwerte der Kühlkurve in `GebaeudeFestwerte` (Mindestabstand des Fußpunkts
+  zum Kühlsollwert 2,5 K, Mindestspanne der Auslegungs-Außentemperatur über dem Kühlsollwert 8 K, Abstand der Eingabe über
+  dem Kühlsollwert 1 K, Bereiche, Vorgabe des Raumeinflusses 3 K/K) und das Abbruchmaß ΔK2
+  (`Anlagenkopplung.ABBRUCH_VORLAUF_K`), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Kühlkurve, auch eines
+  Mehrzonen-Referenzprojekts mit gekoppelter Kälteseite.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

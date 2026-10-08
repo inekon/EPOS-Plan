@@ -403,6 +403,9 @@ jobs:
       # Kaelteseite im Kreis (AK3-K). Unter den neun aendern sich 1017, 1047
       # und 1058, die uebrigen sechs bleiben byte-gleich; RP-AK3K 1059 steht
       # nicht in der CI-Auswahl.
+      # R44 (08.10.2026): dieselben neun Projekte, alle byte-gleich; neu sind
+      # RP-KK 1061 (Kuehlkurve) und RP-KKZ 1062 (Kuehlkurve, zwei Zonen),
+      # beide nicht in der CI-Auswahl.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -415,19 +418,19 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-07_R43_Kaelteseite_AK3K
+      - name: Vergleich mit Referenzbasis 2026-10-08_R44_Kuehlkurve
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1058 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058; do

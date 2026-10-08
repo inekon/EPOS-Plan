@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K`](../../../Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/);
+> [`Referenzlaeufe/2026-10-08_R44_Kuehlkurve`](../../../Referenzlaeufe/2026-10-08_R44_Kuehlkurve/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -88,6 +88,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-07_R40_Erdreichquellen` | 07.10.2026 | Basis mit den Erdreichquellen der Referenzprojekte (Sole-Wärmepumpen an der Erdsonde) und dem Referenzprojekt 1057 „Erdsonde“, auf Linux eingefroren; Testdatenbank `29dbf1dd…` (Schemastand 195), gehoben auf Schemastand 196; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R41 am 07.10.2026 | [`2026-10-07_R40_Erdreichquellen/protokoll.txt`](2026-10-07_R40_Erdreichquellen/protokoll.txt) |
 | `2026-10-07_R41_Erdreichpruefung` | 07.10.2026 | Basis mit der Erdreichprüfung je Anlage und dem Entzug des Sondenfelds ohne Taktstrom (Erdwärme-Nachzug), auf Linux eingefroren; Testdatenbank `6f83f95f…` (Schemastand 196), gehoben auf Schemastand 198; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R42 am 07.10.2026 | [`2026-10-07_R41_Erdreichpruefung/protokoll.txt`](2026-10-07_R41_Erdreichpruefung/protokoll.txt) |
 | `2026-10-07_R42_Vorlaufinterpolation_AK3` | 07.10.2026 | Basis mit der Interpolation der Wärmepumpenkennlinie über den Vorlauf (AK3-I, E102) und dem Referenzprojekt 1058 auf Stufe AK3, auf Linux eingefroren; Testdatenbank `e09fceed…` (Schemastand 198), gehoben auf Schemastand 199; dreiundzwanzig Projekte, 718 CSV, 4 862 Skalare — abgelöst durch R43 am 07.10.2026 | [`2026-10-07_R42_Vorlaufinterpolation_AK3/protokoll.txt`](2026-10-07_R42_Vorlaufinterpolation_AK3/protokoll.txt) |
+| `2026-10-07_R43_Kaelteseite_AK3K` | 07.10.2026 | Basis mit der Zonensperre je Zone und der Kälteseite im geschlossenen Kreis auf Stufe AK3 (AK3-K, E103 und E104) und dem Referenzprojekt 1059, auf Linux eingefroren; Testdatenbank `82a1b8c7…` (Schemastand 199 = 201), gehoben auf Schemastand 202; vierundzwanzig Projekte, 759 CSV, 5 196 Skalare — abgelöst durch R44 am 08.10.2026 | [`2026-10-07_R43_Kaelteseite_AK3K/protokoll.txt`](2026-10-07_R43_Kaelteseite_AK3K/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4836,5 +4837,69 @@ Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R42 beschrieben �
 >
 > Die Regeln stehen im [Entwurf AK3](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) Abschnitt 3
 > und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.3.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R43 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R43 beschrieben — den Anlass (Zonensperre je Zone, Kälteseite im Kreis auf Stufe AK3, Referenzprojekt 1059) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R43 durch `2026-10-08_R44_Kuehlkurve`** (Kühlkurve, Referenzprojekte 1061 und 1062, Zahlenrand an den äußeren Stützstellen der Vorlaufwahl): die 759 CSV der vierundzwanzig Projekte sind byte-gleich; 1061 und 1062 neu (je 41 CSV).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: die Zonensperre je Zone auf allen Stufen und die Kälteseite im geschlossenen Kreis auf Stufe AK3 (AK3-K,
+> Entscheide E103 und E104) samt dem neuen Referenzprojekt 1059 (RP-AK3K) — allein 1017, 1047, 1055, 1056 und 1058
+> ändern sich, 1059 ist neu, die übrigen achtzehn Projekte sind byte-gleich.**
+>
+> **Zonensperre:** Ein Gebäude heizt und kühlt eine Zone nie am selben Tag. Die Tagesbetriebsart je Zone wählt innerhalb
+> der Kalenderfreigabe (Heiz- und Kühlsollwertkalender samt „aus“, Heiz- und Kühlperiode); sind beide Seiten frei,
+> entscheiden die Tagessummen des unbegrenzten Probetags der Zone (Kühltag, wenn mehr Kühlen als Heizen; Gleichstand und
+> ein Tag ohne Bedarf sind Heiztage). Die Gegenseite steht den ganzen Tag auf „aus“. Das gilt auf allen Kopplungsstufen; neu im Ergebnis sind
+> `Zonensperre_Tage`, `Zonensperre_Heizen_Gesperrt_MWh` und `Zonensperre_Kuehlen_Gesperrt_MWh`. Wirkung haben nur die
+> Referenzprojekte mit Kühlung: an 9 bis 12 Tagen je Projekt fallen 0,02 bis 0,05 MWh Heizen und 0,01 MWh Kühlen weg.
+> **Kälteseite im Kreis (nur AK3):** Der Kälteerzeuger und der Kältespeicher stehen mit einer Kälteschranke im
+> Stundenschritt des Kreises; greift die Schranke, wird der Raum wärmer (Rückwirkung auf das Gebäude). Auf AK3 rechnet
+> allein 1058 (Kühlkanal folgt der Kreisreihe; 37 Stunden an der Kälteschranke).
+>
+> **Gegen R42 sind 596 von 718 CSV byte-gleich; abweichend 19 Dateien von 1017, 28 von 1047, 18 von 1055, 28 von 1056 und
+> 29 von 1058; 1059 neu (41 CSV)** (Werte R42 → R43):
+>
+> | Projekt | Kältebedarf (MWh) | Kühlstunden | Kältedeckung (%) | Kältestrom (MWh) | Zonensperre (Tage) | Bivalenzpunkt (°C) |
+> |---|---|---|---|---|---|---|
+> | 1017 | 4,08 → 4,05 | 619 → 604 | 99,70 → 100 | 0,777 → 0,773 | 12 | — |
+> | 1047 | 3,85 → 3,83 | 626 → 616 | 99,63 → 100 | 0,732 → 0,731 | 10 | 17,79 → −10,03 |
+> | 1055 | 4,08 → 4,05 | 619 → 604 | 100 → 100 | 1,256 → 1,246 | 12 | — |
+> | 1056 | 3,85 → 3,83 | 625 → 616 | 98,04 → 98,39 | 0,720 → 0,719 | 9 | 17,79 → −10,04 |
+> | 1058 | 3,85 → 3,81 | 626 → 590 | 98,03 → 100 | 0,721 → 0,727 | 10 | — |
+>
+> An 1058 dazu: Puffer 414,07 → 413,93 Vollzyklen, Fallwechsel 407 → 408, Kühlseite 32 → 34 Überschreitungsstunden und
+> 43 → 45,88 Kh; die Heizseite des Komforts bleibt (683 Stunden, 931,7 Kh).
+>
+> **Der Bivalenzpunkt von 1047 und 1056** ist die höchste Außentemperatur, bei der nach der Wärmepumpe noch Wärmebedarf
+> offen bleibt. In R42 blieb an Kühltagen Heizbedarf offen, weil die Wärmepumpe dort im Kühlbetrieb und für die Wärme
+> gesperrt war — so lag der Punkt bei 17,79 °C. Mit der Zonensperre gibt es an Kühltagen keinen Raumheizbedarf mehr; der
+> Punkt fällt auf die tatsächliche Leistungsgrenze der Wärmepumpe bei −10,0 °C.
+>
+> **RP-AK3K (1059):** die Kopie von 1058 mit einer Kältemaschine (10 kW, Trocken-Rückkühler, eigener Zähler) und dem
+> Kältespeicher aus 1055; die Wärmepumpe heizt nur. Die Maschine ist bewusst zu klein, damit die Kälteschranke greift:
+> **190 Stunden an der Kälteschranke**, Kältedeckung 100 %, 0 Stunden Kälterest, Kältespeicher 86,95 Vollzyklen, Kühlseite
+> 91 Überschreitungsstunden und 158,09 Kh (unten „Das Referenzprojekt 1059“) — 41 CSV, 315 Skalare. Gesamt 759 CSV,
+> 5 196 Skalare. Zwei Läufe sind byte-gleich (759/759 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS,
+> 731/759 CSV byte-gleich.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059 \
+>   --ziel Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K
+> ```
+>
+> Die Regeln stehen im [Entwurf AK3-K](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)
+> Abschnitte 3 und 4 und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
+>
+> **Schemastand:** Die Kennzahlen der Zonensperre und der Kälteseite legt der Schritt **201** `Ak3KSchema` an (Nachtrag
+> „Schemaschritt 201“ unten); die Basis ist auf seiner vorläufigen Nummer 199 gerechnet, Inhalt gleich.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
