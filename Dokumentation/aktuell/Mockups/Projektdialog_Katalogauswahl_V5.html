@@ -38,7 +38,9 @@
   SPIELBAR: Ein Skript spielt den Dialog mit einem Datenbestand im Speicher (20 Katalogsaetze,
   zwei davon gesperrt, zwei Projektsaetze): Waehlen, Uebernehmen (Knopf, Doppelklick, Enter),
   Entfernen, Suche mit * und ?, Sortieren, Schloss, Loeschen, Neu, Bearbeiten, Vergleichen,
-  Kosten, Tastatur (Pfeile, Enter, Entf, Esc). Die Spiellogik ist in V1 bis V5 wortgleich;
+  Kosten, Tastatur (Pfeile, Enter, Entf, Esc, Leertaste), Mehrfachwahl mit Haekchen in beiden
+  Bereichen (Strg-/Umschalt-Klick), Bearbeiten je Bereich (Projektkopie oder Katalogsatz, mehrere
+  mit Blaetterleiste), In die Datenbank uebernehmen. Die Spiellogik ist in V1 bis V5 wortgleich;
   die Leiste oben (Spruenge, Fenstergroesse, Zuruecksetzen) gehoert nicht zum Dialog.
 -->
 <style>
@@ -344,6 +346,15 @@ input.mk-feldwert[readonly] { background: var(--epos-flaeche); border-color: var
 .mk-weg { display: flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; }
 .mk-weg.mk-aus { color: var(--epos-text-sehr-leise); cursor: not-allowed; }
 .mk-weg-feld { margin-left: 24px; }
+.mk-bereichskopf, .mk-bereichsfuss { flex-wrap: wrap; row-gap: 4px; }
+.mk-blaetterleiste { display: flex; align-items: center; justify-content: center; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--epos-rahmen-leise); margin-bottom: 8px; }
+.mk-fueralle { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--epos-text-leise); cursor: pointer; }
+.mk-hinweiszeile { margin: 0 0 8px; color: var(--epos-warn-text); }
+.mk-sammelleiste { padding: 4px 8px; flex-wrap: wrap; row-gap: 4px; background: var(--mk-satz-flaeche); border-top: 1px solid var(--epos-rahmen-leise); }
+.mk-sammelleiste[hidden], .mk-sammelleiste [hidden] { display: none !important; }
+.mk-sammelgruppe { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mk-bereichskopf, .mk-bereichsfuss, .mk-sammelleiste { flex-shrink: 0; }
+.mk-sammelleiste .epos-knopf { min-height: 36px; }
 </style>
 </head>
 <body data-variante="V5" data-reiter="katalog" data-fenster="frei">
@@ -383,8 +394,12 @@ input.mk-feldwert[readonly] { background: var(--epos-flaeche); border-color: var
     <div class="mk-leiste mk-bereichskopf"><label class="mk-suche" style="width:14rem"><input type="search" data-suche placeholder="Suche (* und ? erlaubt)" aria-label="Katalog durchsuchen"></label><span class="mk-zaehler" data-bind="zaehler"></span><button class="epos-knopf mk-leise k-kat" data-aktion="filter-zuruecksetzen">Filter zurücksetzen</button>
       <button class="mk-chip" data-klasse="mk-nur-projekt" aria-pressed="false">nur Projekt</button>
       <span class="mk-fueller"></span><button class="epos-knopf k-kat" data-aktion="vergleichen">Vergleichen…</button><button class="epos-knopf k-kat" data-aktion="neu">Neu…</button></div>
+    <div class="mk-leiste mk-sammelleiste" data-sammel hidden>
+      <span class="mk-sammelgruppe" data-sammel-k><b data-bind="sammel-k"></b><button class="epos-knopf k-proj" data-aktion="uebernehmen">＋ Übernehmen</button><button class="epos-knopf k-satz" data-aktion="bearbeiten-k">Bearbeiten…</button><button class="epos-knopf k-kat" data-aktion="schloss">Schloss setzen…</button><button class="epos-knopf k-kat" data-aktion="loeschen">Löschen</button></span>
+      <span class="mk-sammelgruppe" data-sammel-p><b data-bind="sammel-p"></b><button class="epos-knopf k-satz" data-aktion="bearbeiten-p">Bearbeiten…</button><button class="epos-knopf k-kat" data-aktion="in-db" title="In die Datenbank übernehmen…">→ DB…</button><button class="epos-knopf k-proj" data-aktion="entfernen">− Entfernen</button></span>
+      <span class="mk-fueller"></span><button class="epos-knopf mk-leise" data-aktion="auswahl-aufheben">Auswahl aufheben</button></div>
     <div class="mk-liste v5-liste" tabindex="0" data-art="beide" aria-label="Projekt und Katalog">
-      <table class="mk-tabelle v5-tabelle"><thead><tr><th data-sort="name" title="sortieren">Bezeichner <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="hersteller" title="sortieren">Hersteller <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="brennstoff" title="sortieren">Brennstoff <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="pel" class="mk-zahl" title="sortieren">P_el [kW] <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="pth" class="mk-zahl" title="sortieren">P_th [kW] <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-aktionen">Aktionen</th></tr></thead><tbody class="v5-projekt" data-liste="projekt"></tbody><tbody class="v5-katalog" data-liste="katalog"></tbody></table>
+      <table class="mk-tabelle v5-tabelle"><thead><tr><th class="mk-wahl" title="Häkchen: Auswahl">✓</th><th data-sort="name" title="sortieren">Bezeichner <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="hersteller" title="sortieren">Hersteller <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="brennstoff" title="sortieren">Brennstoff <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="pel" class="mk-zahl" title="sortieren">P_el [kW] <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th data-sort="pth" class="mk-zahl" title="sortieren">P_th [kW] <span class="mk-kopfsym"><span class="mk-pfeil">↕</span><svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-aktionen">Aktionen</th></tr></thead><tbody class="v5-projekt" data-liste="projekt"></tbody><tbody class="v5-katalog" data-liste="katalog"></tbody></table>
     </div>
   </section>
   <section class="mk-bereich mk-bereich--satz v5-detail" aria-label="Gewählter Satz">
@@ -405,7 +420,7 @@ input.mk-feldwert[readonly] { background: var(--epos-flaeche); border-color: var
 (function () {
 'use strict';
 var V = document.body.dataset.variante;
-var MEHRFACH = V === 'V2' || V === 'V3' || V === 'V4';
+var MEHRFACH = true;  // Mehrfachwahl in beiden Bereichen und allen Varianten
 var SCHLOSS_ZU = '<svg class="mk-schloss" viewBox="0 0 12 14" aria-label="Auslieferungssatz – nur lesen"><rect x="1" y="6" width="10" height="7" rx="1.5"/><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V6" fill="none" stroke-width="1.6"/></svg>';
 var SCHLOSS_AUF = '<svg class="mk-schloss" viewBox="0 0 12 14" aria-hidden="true"><rect x="1" y="6" width="10" height="7" rx="1.5"/><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V3" fill="none" stroke-width="1.6"/></svg>';
 var PAPIERKORB = '<svg class="mk-sym" viewBox="0 0 12 14" aria-hidden="true"><path d="M1 3h10M4.5 3V1.5h3V3M2.5 3l.8 10h5.4l.8-10" fill="none" stroke-width="1.4"/></svg>';
@@ -499,24 +514,20 @@ function imProjekt(katId) { return S.projekt.some(function (p) { return p.katId 
 function summe() { return S.projekt.reduce(function (s, p) { return s + p.pth; }, 0); }
 
 /* Ist die Wahl einer Liste fuer den Anwender sichtbar? (Radio oder Markierung) */
-function sichtbar(art) { return V === 'V1' || V === 'V3' || V === 'V4' || S.zuletzt === art; }
+function sichtbar(art) { return V === 'V3' || S.zuletzt === art; }
 function zuUebernehmen() {
   if (MEHRFACH && S.markK.length) return S.markK.slice();
   return S.wahlK != null && katalogSatz(S.wahlK) && sichtbar('katalog') ? [S.wahlK] : [];
 }
 function zuEntfernen() {
-  if (V === 'V2' && S.markP.length) return S.markP.slice();
+  if (S.markP.length) return S.markP.slice();
   return S.wahlP != null && projektSatz(S.wahlP) && sichtbar('projekt') ? [S.wahlP] : [];
 }
 
 /* ---- Zeilen ---- */
 function wahlZelle(art, id) {
-  if (art === 'katalog' && MEHRFACH)
-    return '<td class="mk-wahl"><span class="mk-kaestchen' + (S.markK.indexOf(id) >= 0 ? ' mk-an' : '') + '" data-markieren="katalog" role="checkbox" aria-checked="' + (S.markK.indexOf(id) >= 0) + '"></span></td>';
-  if (art === 'projekt' && V === 'V2')
-    return '<td class="mk-wahl"><span class="mk-kaestchen' + (S.markP.indexOf(id) >= 0 ? ' mk-an' : '') + '" data-markieren="projekt" role="checkbox" aria-checked="' + (S.markP.indexOf(id) >= 0) + '"></span></td>';
-  var an = art === 'katalog' ? S.wahlK === id : S.wahlP === id;
-  return '<td class="mk-wahl"><span class="mk-radio' + (an ? ' mk-an' : '') + '"></span></td>';
+  var an = (art === 'katalog' ? S.markK : S.markP).indexOf(id) >= 0;
+  return '<td class="mk-wahl"><span class="mk-kaestchen' + (an ? ' mk-an' : '') + '" data-markieren="' + art + '" role="checkbox" aria-checked="' + an + '" title="wählen (auch Strg+Klick, Leertaste)"></span></td>';
 }
 function zeilenKlasse(art, id) {
   var k = [];
@@ -528,7 +539,7 @@ function zeilenKlasse(art, id) {
 }
 function katalogZeile(k) {
   var s = '<tr data-id="' + k.id + '" data-art="katalog"' + zeilenKlasse('katalog', k.id) + '>';
-  if (V !== 'V5') s += wahlZelle('katalog', k.id);
+  s += wahlZelle('katalog', k.id);
   s += '<td class="mk-name">' + esc(k.name) + (k.schloss ? SCHLOSS_ZU : '') + '</td><td>' + esc(k.hersteller) + '</td><td>' + esc(k.brennstoff) +
     '</td><td class="mk-zahl">' + k.pel + '</td><td class="mk-zahl">' + k.pth + '</td>';
   if (V === 'V5') {
@@ -543,13 +554,13 @@ function katalogZeile(k) {
 }
 function projektZeile(p) {
   var s = '<tr data-id="' + p.id + '" data-art="projekt"' + zeilenKlasse('projekt', p.id) + '>';
-  if (V !== 'V5') s += wahlZelle('projekt', p.id);
+  s += wahlZelle('projekt', p.id);
   s += '<td class="mk-name">' + esc(p.name) + '</td>';
   if (V === 'V2') return s + '<td class="mk-zahl">' + p.pth + '</td></tr>';
   s += '<td>' + esc(p.hersteller) + '</td><td>' + esc(V === 'V5' ? p.traeger.replace('Variante', 'Var.') : p.traeger) + '</td><td class="mk-zahl">' + p.pel + '</td><td class="mk-zahl">' + p.pth + '</td>';
   if (V !== 'V5') s += '<td class="mk-zahl">' + p.vl + '/' + p.rl + '</td>';
   if (V === 'V3' || V === 'V5')
-    s += '<td class="mk-aktionen"><button class="mk-sk k-satz" data-aktion="kosten-zeile" title="Kosten…">€</button><button class="mk-sk k-kat" data-aktion="in-db-zeile" title="In die Datenbank übernehmen…">DB</button><button class="mk-sk k-proj" data-aktion="entfernen-zeile" title="Aus dem Projekt entfernen">−</button></td>';
+    s += '<td class="mk-aktionen">' + (V === 'V5' ? '<button class="mk-sk k-satz" data-aktion="bearbeiten-pzeile" title="Projektsatz bearbeiten…">✎</button>' : '') + '<button class="mk-sk k-satz" data-aktion="kosten-zeile" title="Kosten…">€</button><button class="mk-sk k-kat" data-aktion="in-db-zeile" title="In die Datenbank übernehmen…">DB</button><button class="mk-sk k-proj" data-aktion="entfernen-zeile" title="Aus dem Projekt entfernen">−</button></td>';
   return s + '</tr>';
 }
 function leerzeile(text, spalten) { return '<tr class="mk-leerzeile"><td colspan="' + spalten + '">' + text + '</td></tr>'; }
@@ -558,17 +569,17 @@ function zeichneListen() {
   var l = gefiltert();
   $$('[data-liste="katalog"]').forEach(function (tb) {
     var sp = tb.closest('table').querySelectorAll('thead th').length;
-    var h = V === 'V5' ? '<tr class="v5-gruppe v5-gruppe--katalog"><td colspan="6"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span> <b data-bind="katalogzahl"></b> · ＋ übernimmt ins Projekt, Doppelklick ebenso</td></tr>' : '';
+    var h = V === 'V5' ? '<tr class="v5-gruppe v5-gruppe--katalog"><td class="mk-wahl"><span class="mk-kaestchen" data-markieren="alle-katalog" title="alle Treffer wählen"></span></td><td colspan="6"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span> <b data-bind="katalogzahl"></b> · ＋ übernimmt ins Projekt, Doppelklick ebenso</td></tr>' : '';
     tb.innerHTML = h + (l.length ? l.map(katalogZeile).join('') : leerzeile('Kein Satz passt zur Suche.', sp));
   });
   $$('[data-liste="projekt"]').forEach(function (tb) {
     var sp = tb.closest('table').querySelectorAll('thead th').length;
-    var h = V === 'V5' ? '<tr class="v5-gruppe v5-gruppe--projekt"><td colspan="6"><span class="mk-marke mk-marke--projekt">Im Projekt</span> <b data-bind="modulzahl"></b> · Summe aller ausgewählten Module <b data-bind="summe"></b></td></tr>' : '';
+    var h = V === 'V5' ? '<tr class="v5-gruppe v5-gruppe--projekt"><td class="mk-wahl"><span class="mk-kaestchen" data-markieren="alle-projekt" title="alle wählen"></span></td><td colspan="6"><span class="mk-marke mk-marke--projekt">Im Projekt</span> <b data-bind="modulzahl"></b> · Summe aller ausgewählten Module <b data-bind="summe"></b></td></tr>' : '';
     tb.innerHTML = h + (S.projekt.length ? S.projekt.map(projektZeile).join('') : leerzeile('Noch keine Komponente im Projekt.', sp));
     if (V === 'V5') {
       /* die Projektzeilen haften oben in der einen Liste - bis drei Zeilen, sonst nehmen sie dem Katalog den Platz */
       tb.classList.toggle('mk-nicht-haftend', S.projekt.length > 3);
-      $$('tr', tb).forEach(function (tr, i) { tr.style.top = (i === 0 ? 34 : 64 + (i - 1) * 46) + 'px'; });
+      var oben = tb.closest('table').tHead.offsetHeight || 34; $$('tr', tb).forEach(function (tr) { tr.style.top = oben + 'px'; oben += tr.offsetHeight || 46; });
     }
   });
   binde('modulzahl', module(S.projekt.length));
@@ -587,22 +598,28 @@ function zeichneListen() {
 function binde(name, text) { $$('[data-bind="' + name + '"]').forEach(function (n) { n.textContent = text; }); }
 
 function zeichneKnoepfe() {
-  var k = katalogSatz(S.wahlK), p = projektSatz(S.wahlP);
-  var nU = zuUebernehmen().length, nE = zuEntfernen().length;
-  $$('[data-aktion="uebernehmen"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!nU)); });
-  $$('[data-aktion="entfernen"], [data-aktion="in-db"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!nE)); });
-  $$('[data-aktion="schloss"]').forEach(function (b) { b.textContent = k && k.schloss ? 'Schloss aufheben…' : 'Schloss setzen…'; b.setAttribute('aria-disabled', String(!k)); });
+  var aK = zuUebernehmen(), aP = zuEntfernen();
+  var ks = aK.map(katalogSatz).filter(Boolean);
+  var alleZu = ks.length && ks.every(function (k) { return k.schloss; });
+  var einigeZu = ks.some(function (k) { return k.schloss; });
+  $$('[data-aktion="uebernehmen"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!aK.length)); });
+  $$('[data-aktion="entfernen"], [data-aktion="in-db"], [data-aktion="bearbeiten-p"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!aP.length)); });
+  $$('[data-aktion="bearbeiten-k"]').forEach(function (b) { b.setAttribute('aria-disabled', String(!aK.length)); b.title = alleZu ? 'Gesperrt – Felder nur lesbar, erst Schloss aufheben' : 'Gewählte Katalogsätze bearbeiten'; });
+  $$('[data-aktion="schloss"]').forEach(function (b) { b.textContent = alleZu ? 'Schloss aufheben…' : 'Schloss setzen…'; b.setAttribute('aria-disabled', String(!ks.length)); });
   $$('[data-aktion="loeschen"]').forEach(function (b) {
-    b.setAttribute('aria-disabled', String(!k || k.schloss));
-    b.title = k && k.schloss ? 'Gesperrt – erst Schloss aufheben' : 'Katalogsatz löschen (mit Rückfrage)';
+    b.setAttribute('aria-disabled', String(!ks.length || alleZu));
+    b.title = alleZu ? 'Gesperrt – erst Schloss aufheben' : einigeZu ? 'Löschen (gesperrte Sätze werden übersprungen)' : 'Katalogsatz löschen (mit Rückfrage)';
   });
-  var nameK = MEHRFACH && S.markK.length > 1 ? S.markK.length + ' gewählt:' : (k ? k.name + ':' : '—');
-  if (MEHRFACH && S.markK.length === 1) { var m = katalogSatz(S.markK[0]); nameK = m ? m.name + ':' : nameK; }
-  binde('name-katalog', nameK);
-  binde('name-projekt', p ? p.name + ':' : '—');
+  binde('name-katalog', aK.length > 1 ? aK.length + ' gewählt:' : ks.length ? ks[0].name + ':' : '—');
+  var ps = aP.map(projektSatz).filter(Boolean);
+  binde('name-projekt', ps.length > 1 ? ps.length + ' gewählt:' : ps.length ? ps[0].name + ':' : '—');
+  binde('sammel-k', 'Katalog: ' + S.markK.length + ' gewählt');
+  binde('sammel-p', 'Projekt: ' + S.markP.length + ' gewählt');
+  $$('[data-sammel]').forEach(function (l) { l.hidden = !(S.markK.length || S.markP.length); });
+  $$('[data-sammel-k]').forEach(function (l) { l.hidden = !S.markK.length; });
+  $$('[data-sammel-p]').forEach(function (l) { l.hidden = !S.markP.length; });
   $$('.mk-chip').forEach(function (c) { c.setAttribute('aria-pressed', String(document.body.classList.contains('mk-nur-projekt'))); });
 }
-
 /* ---- Satz (Details) ---- */
 function feld(name, wert, breit) { return '<div class="mk-feld' + (breit ? ' mk-feld--breit' : '') + '"><span class="mk-feldname">' + name + '</span><span class="mk-feldwert">' + wert + '</span></div>'; }
 function eingabe(name, schluessel, wert, lesen, einheit) {
@@ -614,7 +631,7 @@ function katalogDetail(k, kompakt) {
     (k.schloss ? '<span class="mk-leise-text">' + SCHLOSS_ZU + ' Auslieferungssatz – nur lesen</span>' : '<span class="mk-leise-text">eigener Satz</span>') +
     '<span class="mk-fueller"></span><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button>' +
     (k.schloss ? '<span class="mk-leise-text">Erst Schloss aufheben</span>' : '') +
-    '<button class="epos-knopf k-satz" data-aktion="bearbeiten"' + (k.schloss ? ' aria-disabled="true" title="Erst Schloss aufheben"' : '') + '>Bearbeiten…</button></div>' +
+    '<button class="epos-knopf k-satz" data-aktion="bearbeiten"' + (k.schloss ? ' title="Erst Schloss aufheben – öffnet nur lesbar"' : '') + '>Bearbeiten…</button></div>' +
     '<div class="mk-raster' + (kompakt ? ' mk-raster--kompakt' : '') + '">' + feld('Hersteller', esc(k.hersteller)) + feld('Brennstoff', esc(k.brennstoff)) + feld('P_el', k.pel + ' kW') + feld('P_th', k.pth + ' kW') +
     feld('P_Brennstoff', w.pbr + ' kW') + feld('η_el / η_th', w.eel + ' % / ' + w.eth + ' %') + feld('Stromkennzahl', w.skz) + feld('Mindestleistung', '50 %') +
     feld('Im Projekt', imProjekt(k.id) ? 'ja' : 'nein') + feld('Beschreibung', 'Beispielsatz mit runden Werten', true) + '</div>' +
@@ -626,7 +643,7 @@ function katalogDetail(k, kompakt) {
 function projektDetail(p, kompakt) {
   var opt = [p.brennstoff + ' – Variante 1', p.brennstoff + ' – Variante 2'].map(function (o) { return '<option' + (o === p.traeger ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
   return '<div class="mk-satzinhalt" data-satz-art="projekt" data-satz-id="' + p.id + '"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Projektsatz</span><strong>' + esc(p.name) + '</strong><span class="mk-leise-text">Kopie aus dem Katalog</span>' +
-    '<span class="mk-fueller"></span><button class="epos-knopf k-kat" data-aktion="in-db-satz" title="Änderungen dieses Projektsatzes in den Katalog übernehmen">In die Datenbank übernehmen…</button><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button></div>' +
+    '<span class="mk-fueller"></span><button class="epos-knopf k-satz" data-aktion="bearbeiten-satz" title="Projektkopie bearbeiten">Bearbeiten…</button><button class="epos-knopf k-kat" data-aktion="in-db-satz" title="Änderungen dieses Projektsatzes in den Katalog übernehmen">In die Datenbank übernehmen…</button><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button></div>' +
     '<div class="mk-leiste"><button class="epos-knopf k-satz" data-aktion="kosten" data-kosten="Investitionskosten">Investitionskosten…</button><button class="epos-knopf k-satz" data-aktion="kosten" data-kosten="Betriebskosten">Betriebskosten…</button><button class="epos-knopf k-satz" data-aktion="kosten" data-kosten="Energiekosten">Energiekosten…</button></div>' +
     '<div class="mk-raster' + (kompakt ? ' mk-raster--kompakt' : '') + '"><label class="mk-feld"><span class="mk-feldname">Energieträger</span><select class="mk-feldwert" data-pfeld="traeger">' + opt + '</select></label>' +
     '<label class="mk-feld"><span class="mk-feldname">Grenzleistung [%]</span><input class="mk-feldwert" data-pfeld="grenze" inputmode="numeric" value="' + p.grenze + '"></label>' +
@@ -689,7 +706,7 @@ function zeigeZeile(art, id) {
   var liste = tr.closest('.mk-liste'); if (!liste) return;
   var lr = liste.getBoundingClientRect(), r = tr.getBoundingClientRect();
   var oben = lr.top + 34;
-  if (V === 'V5' && art === 'katalog' && !document.querySelector('.v5-projekt.mk-nicht-haftend')) oben = lr.top + 64 + S.projekt.length * 46;
+  if (V === 'V5' && art === 'katalog' && !document.querySelector('.v5-projekt.mk-nicht-haftend')) { var pt = $('.v5-projekt'); oben = lr.top + pt.closest('table').tHead.offsetHeight + pt.offsetHeight; }
   if (r.top < oben) liste.scrollTop -= oben - r.top;
   else if (r.bottom > lr.bottom) liste.scrollTop += r.bottom - lr.bottom;
 }
@@ -717,31 +734,6 @@ function entfernen(ids) {
   zeichne();
   banner('erfolg', ids.length === 1 ? '„' + name + '“ aus dem Projekt entfernt.' : ids.length + ' Module aus dem Projekt entfernt.');
 }
-function loeschen(id) {
-  var k = katalogSatz(id);
-  if (!k) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
-  if (k.schloss) { banner('warnung', '„' + k.name + '“ ist gesperrt – Löschen geht erst nach „Schloss aufheben…“.'); return; }
-  rueckfrage('„' + k.name + '“ aus dem Katalog löschen? Projektsätze, die daraus übernommen wurden, bleiben erhalten.', 'Löschen', function () {
-    var l = gefiltert(), pos = l.indexOf(k);
-    S.katalog = S.katalog.filter(function (x) { return x.id !== id; });
-    S.markK = S.markK.filter(function (x) { return x !== id; });
-    if (S.wahlK === id) { var r = l.filter(function (x) { return x.id !== id; }); var n = r[Math.min(pos, r.length - 1)]; S.wahlK = n ? n.id : null; }
-    zeichne();
-    banner('erfolg', 'Katalogsatz „' + k.name + '“ gelöscht.');
-  });
-}
-function schloss(id) {
-  var k = katalogSatz(id);
-  if (!k) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
-  var setzen = !k.schloss;
-  rueckfrage(setzen ? 'Schloss für „' + k.name + '“ setzen? Der Satz ist danach nur lesbar und lässt sich nicht löschen.'
-                    : 'Schloss für „' + k.name + '“ aufheben? Der Satz ist danach bearbeitbar und löschbar.',
-    setzen ? 'Schloss setzen' : 'Schloss aufheben', function () {
-      k.schloss = setzen; S.wahlK = id; if (V !== 'V3') S.zuletzt = 'katalog';
-      zeichne();
-      banner('erfolg', setzen ? '„' + k.name + '“ ist gesperrt.' : 'Schloss von „' + k.name + '“ aufgehoben.');
-    });
-}
 function satzFormular(k) {
   var bs = BRENNSTOFFE.map(function (b) { return '<option' + (k && k.brennstoff === b ? ' selected' : '') + '>' + b + '</option>'; }).join('');
   return '<div class="mk-formular">' +
@@ -768,16 +760,112 @@ function neu() {
     banner('erfolg', 'Katalogsatz „' + k.name + '“ angelegt' + (gefiltert().indexOf(k) < 0 ? ' – die Suche blendet ihn aus.' : '.'));
   } }] });
 }
-function bearbeiten(id) {
-  var k = katalogSatz(id);
-  if (!k) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
-  if (k.schloss) { banner('warnung', 'Erst Schloss aufheben: „' + k.name + '“ ist ein gesperrter Satz und nur lesbar.'); return; }
-  oeffne({ titel: 'Katalogsatz bearbeiten – ' + k.name, html: satzFormular(k), knoepfe: [{ text: 'Abbrechen' }, { text: 'OK', primaer: true, aktion: function (o) {
-    var w = leseFormular(o); if (!w) return false;
-    k.name = w.name; k.hersteller = w.hersteller; k.brennstoff = w.brennstoff; k.pel = w.pel; k.pth = w.pth;
+function loeschen(ids) {
+  var ks = ids.map(katalogSatz).filter(Boolean);
+  if (!ks.length) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
+  var frei = ks.filter(function (k) { return !k.schloss; }), zu = ks.filter(function (k) { return k.schloss; });
+  if (!frei.length) { banner('warnung', (ks.length === 1 ? '„' + ks[0].name + '“ ist gesperrt' : 'Alle gewählten Sätze sind gesperrt') + ' – Löschen geht erst nach „Schloss aufheben…“.'); return; }
+  var text = (frei.length === 1 ? '„' + frei[0].name + '“' : frei.length + ' Katalogsätze') + ' aus dem Katalog löschen? Projektsätze, die daraus übernommen wurden, bleiben erhalten.' +
+    (zu.length ? ' Übersprungen (gesperrt): ' + zu.map(function (k) { return '„' + k.name + '“'; }).join(', ') + '.' : '');
+  rueckfrage(text, 'Löschen', function () {
+    var weg = frei.map(function (k) { return k.id; });
+    var l = gefiltert(), pos = l.findIndex(function (x) { return x.id === S.wahlK; });
+    S.katalog = S.katalog.filter(function (x) { return weg.indexOf(x.id) < 0; });
+    S.markK = S.markK.filter(function (x) { return weg.indexOf(x) < 0; });
+    if (weg.indexOf(S.wahlK) >= 0) { var r = l.filter(function (x) { return weg.indexOf(x.id) < 0; }); var n = r[Math.min(Math.max(pos, 0), r.length - 1)]; S.wahlK = n ? n.id : null; }
     zeichne();
-    banner('erfolg', 'Katalogsatz „' + k.name + '“ gespeichert. Projektsätze bleiben Kopien und ändern sich nicht.');
-  } }] });
+    banner('erfolg', frei.length === 1 ? 'Katalogsatz „' + frei[0].name + '“ gelöscht.' : frei.length + ' Katalogsätze gelöscht.');
+  });
+}
+function schloss(ids) {
+  var ks = ids.map(katalogSatz).filter(Boolean);
+  if (!ks.length) { banner('hinweis', 'Erst einen Katalogsatz wählen.'); return; }
+  var setzen = !ks.every(function (k) { return k.schloss; });
+  var wen = ks.length === 1 ? '„' + ks[0].name + '“' : ks.length + ' Sätze';
+  rueckfrage(setzen ? 'Schloss für ' + wen + ' setzen? Gesperrte Sätze sind nur lesbar und lassen sich nicht löschen.'
+                    : 'Schloss für ' + wen + ' aufheben? Die Sätze sind danach bearbeitbar und löschbar.',
+    setzen ? 'Schloss setzen' : 'Schloss aufheben', function () {
+      ks.forEach(function (k) { k.schloss = setzen; });
+      if (ks.length === 1) S.wahlK = ks[0].id;
+      if (V !== 'V3') S.zuletzt = 'katalog';
+      zeichne();
+      banner('erfolg', setzen ? wen + (ks.length === 1 ? ' ist' : ' sind') + ' gesperrt.' : 'Schloss von ' + wen + ' aufgehoben.');
+    });
+}
+
+/* ---- Bearbeiten: Projektkopie oder Katalogsatz, einzeln oder mehrere mit Blätterleiste ---- */
+var FELDER = {
+  katalog: [['name', 'Name', 'text'], ['hersteller', 'Hersteller', 'text'], ['brennstoff', 'Brennstoff', 'brennstoff'], ['pel', 'P_el [kW]', 'zahl'], ['pth', 'P_th [kW]', 'zahl']],
+  projekt: [['name', 'Name', 'text'], ['traeger', 'Energieträger', 'traeger'], ['pel', 'P_el [kW]', 'zahl'], ['pth', 'P_th [kW]', 'zahl'],
+    ['grenze', 'Grenzleistung [%]', 'zahl0'], ['vl', 'Vorlauf [°C]', 'zahl'], ['rl', 'Rücklauf [°C]', 'zahl']]
+};
+function bearbeite(art, ids) {
+  var saetze0 = ids.map(art === 'katalog' ? katalogSatz : projektSatz).filter(Boolean);
+  if (!saetze0.length) { banner('hinweis', art === 'katalog' ? 'Erst einen Katalogsatz wählen.' : 'Erst eine Komponente der Projektliste wählen.'); return; }
+  var gesperrt = art === 'katalog' ? saetze0.filter(function (s) { return s.schloss; }) : [];
+  var lesen = gesperrt.length === saetze0.length;
+  var saetze = lesen ? saetze0 : saetze0.filter(function (s) { return art !== 'katalog' || !s.schloss; });
+  var felder = FELDER[art], mehr = saetze.length > 1, i = 0, fuerAlle = {}, gemeinsam = {};
+  var entw = saetze.map(function (s) { var w = {}; felder.forEach(function (f) { w[f[0]] = s[f[0]]; }); return w; });
+  function wert(f) { return fuerAlle[f] ? gemeinsam[f] : entw[i][f]; }
+  function eingabeHtml(f) {
+    var w = wert(f[0]), dis = lesen ? ' disabled' : '';
+    if (f[2] === 'brennstoff' || f[2] === 'traeger') {
+      var opt = f[2] === 'brennstoff' ? BRENNSTOFFE : [saetze[i].brennstoff + ' – Variante 1', saetze[i].brennstoff + ' – Variante 2'];
+      if (opt.indexOf(w) < 0) opt = [w].concat(opt);
+      return '<select class="mk-feldwert" data-ed="' + f[0] + '"' + dis + '>' + opt.map(function (o) { return '<option' + (o === w ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
+    }
+    return '<input class="mk-feldwert" data-ed="' + f[0] + '" value="' + esc(w) + '"' + (lesen ? ' readonly' : '') + (f[2] !== 'text' ? ' inputmode="numeric"' : '') + '>';
+  }
+  function seite() {
+    return (mehr ? '<div class="mk-blaetterleiste"><button class="epos-knopf" data-ov-aktion="zurueck" title="voriger Satz"' + (i === 0 ? ' aria-disabled="true"' : '') + '>‹</button>' +
+        '<span><b data-blatt>' + (i + 1) + ' von ' + entw.length + '</b> · ' + esc(saetze[i].name) + '</span>' +
+        '<button class="epos-knopf" data-ov-aktion="vor" title="nächster Satz"' + (i === entw.length - 1 ? ' aria-disabled="true"' : '') + '>›</button></div>' : '') +
+      (lesen ? '<p class="mk-hinweiszeile">' + SCHLOSS_ZU + ' Erst Schloss aufheben – ' + (saetze.length === 1 ? 'gesperrter Satz' : 'gesperrte Sätze') + ', die Felder sind nur lesbar.</p>' : '') +
+      (gesperrt.length && !lesen ? '<p class="mk-hinweiszeile">Übersprungen (gesperrt): ' + gesperrt.map(function (s) { return '„' + esc(s.name) + '“'; }).join(', ') + '</p>' : '') +
+      '<div class="mk-formular">' + felder.map(function (f) {
+        return '<div class="mk-feld"><span class="mk-feldname">' + f[1] + '</span>' + eingabeHtml(f) +
+          (mehr && f[0] !== 'name' ? '<label class="mk-fueralle"><input type="checkbox" data-fueralle="' + f[0] + '"' + (fuerAlle[f[0]] ? ' checked' : '') + '> für alle gewählten setzen</label>' : '') + '</div>';
+      }).join('') + '</div><div class="mk-ov-fehler" data-fehler></div>';
+  }
+  function lies() {
+    if (!ov) return;
+    $$('[data-ed]', ov.el).forEach(function (inp) { var f = inp.dataset.ed; if (fuerAlle[f]) gemeinsam[f] = inp.value; else entw[i][f] = inp.value; });
+  }
+  function neuZeichnen() { $('.epos-ueberlagerung-inhalt', ov.el).innerHTML = seite(); }
+  var titel = art === 'katalog' ? (mehr ? saetze.length + ' Katalogsätze bearbeiten' : 'Katalogsatz bearbeiten – ' + saetze[0].name)
+                                : (mehr ? saetze.length + ' Projektsätze bearbeiten' : 'Projektsatz bearbeiten – ' + saetze[0].name);
+  var knoepfe = lesen ? [{ text: 'Schließen', primaer: true }] : [{ text: 'Abbrechen' }, { text: 'Speichern', primaer: true, aktion: function (o) {
+    lies();
+    var fehler = '';
+    var werte = entw.map(function (w, k) {
+      var r = {};
+      felder.forEach(function (f) {
+        var v = String(fuerAlle[f[0]] ? gemeinsam[f[0]] : w[f[0]]).trim();
+        if (f[2] === 'zahl' || f[2] === 'zahl0') {
+          var n = Number(v.replace(/\s/g, '').replace(',', '.'));
+          if (!(f[2] === 'zahl0' ? n >= 0 : n > 0) && !fehler) fehler = (mehr ? 'Satz ' + (k + 1) + ': ' : '') + f[1] + ' muss eine Zahl ' + (f[2] === 'zahl0' ? 'ab 0' : 'größer 0') + ' sein.';
+          r[f[0]] = n;
+        } else {
+          if (f[0] === 'name' && !v && !fehler) fehler = (mehr ? 'Satz ' + (k + 1) + ': ' : '') + 'Bitte einen Namen eingeben.';
+          r[f[0]] = v;
+        }
+      });
+      return r;
+    });
+    if (fehler) { $('[data-fehler]', o).textContent = fehler; return false; }
+    saetze.forEach(function (s, k) { felder.forEach(function (f) { s[f[0]] = werte[k][f[0]]; }); if (art === 'katalog') delete s.extra; });
+    if (art === 'katalog') S.markK = []; else S.markP = [];
+    zeichne();
+    banner('erfolg', (art === 'katalog' ? (mehr ? saetze.length + ' Katalogsätze' : 'Katalogsatz „' + saetze[0].name + '“') + ' gespeichert. Projektsätze bleiben Kopien.'
+                                        : (mehr ? saetze.length + ' Projektsätze' : 'Projektsatz „' + saetze[0].name + '“') + ' gespeichert. Der Katalog bleibt unverändert.') +
+      (gesperrt.length && !lesen ? ' Übersprungen (gesperrt): ' + gesperrt.length + '.' : ''));
+  } }];
+  oeffne({ titel: titel, marke: art === 'katalog' ? 'Katalogsatz' : 'Projektsatz', html: seite(), knoepfe: knoepfe, aktionen: {
+    zurueck: function () { if (i > 0) { lies(); i--; neuZeichnen(); } },
+    vor: function () { if (i < entw.length - 1) { lies(); i++; neuZeichnen(); } },
+    fueralle: function (cb) { lies(); var f = cb.dataset.fueralle; fuerAlle[f] = cb.checked; if (cb.checked) gemeinsam[f] = entw[i][f]; else entw[i][f] = gemeinsam[f]; neuZeichnen(); }
+  } });
 }
 function vergleichen() {
   var ids, hinweis;
@@ -900,7 +988,7 @@ function oeffne(o) {
   var hg = document.createElement('div'); hg.className = 'epos-ueberlagerung-hintergrund'; hg.dataset.ovZu = '';
   var el = document.createElement('div'); el.className = 'epos-ueberlagerung' + (o.breit ? ' epos-ueberlagerung--breit' : '');
   el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', o.titel);
-  el.innerHTML = '<div class="epos-ueberlagerung-kopf"><h2 class="epos-ueberlagerung-titel">' + esc(o.titel) + '</h2><button class="epos-knopf epos-ueberlagerung-zu" data-ov-zu title="Schließen (Esc)">✕</button></div>' +
+  el.innerHTML = '<div class="epos-ueberlagerung-kopf">' + (o.marke ? '<span class="mk-marke mk-marke--satz">' + o.marke + '</span>' : '') + '<h2 class="epos-ueberlagerung-titel">' + esc(o.titel) + '</h2><button class="epos-knopf epos-ueberlagerung-zu" data-ov-zu title="Schließen (Esc)">✕</button></div>' +
     '<div class="epos-ueberlagerung-inhalt">' + o.html + '</div><div class="mk-ov-fuss">' +
     o.knoepfe.map(function (k, i) { return '<button class="epos-knopf' + (k.primaer ? ' epos-knopf--primaer' : '') + '" data-ov="' + i + '">' + esc(k.text) + '</button>'; }).join('') + '</div>';
   rahmen.appendChild(hg); rahmen.appendChild(el);
@@ -950,6 +1038,7 @@ document.addEventListener('click', function (e) {
     if (t.closest('[data-ov-zu]')) { schliesse(); return; }
     var kb = t.closest('[data-ov]'); if (kb) { ovKnopf(Number(kb.dataset.ov)); return; }
     var kw = t.closest('[data-kostenwahl]'); if (kw) { kosten(kw.dataset.kostenwahl, ov.o.kostenId); return; }
+    var oa = t.closest('[data-ov-aktion]'); if (oa && ov.o.aktionen && oa.getAttribute('aria-disabled') !== 'true') { ov.o.aktionen[oa.dataset.ovAktion](oa); return; }
     return;
   }
   if (t.closest('[data-banner-zu]')) { $('.mk-banner').hidden = true; return; }
@@ -959,7 +1048,7 @@ document.addEventListener('click', function (e) {
   if (ak) {
     if (ak.getAttribute('aria-disabled') === 'true') {
       var a0 = ak.dataset.aktion;
-      if (/^(bearbeiten|loeschen)/.test(a0)) { var kid = a0.indexOf('zeile') > 0 ? zeilenId(ak) : S.wahlK; var kk = katalogSatz(kid); if (kk && kk.schloss) banner('warnung', 'Erst Schloss aufheben: „' + kk.name + '“ ist gesperrt.'); }
+      if (/^loeschen/.test(a0)) { var kid = a0.indexOf('zeile') > 0 ? zeilenId(ak) : (zuUebernehmen()[0]); var kk = katalogSatz(kid); if (kk && kk.schloss) banner('warnung', 'Erst Schloss aufheben: ' + (zuUebernehmen().length > 1 && a0 === 'loeschen' ? 'alle gewählten Sätze sind gesperrt.' : '„' + kk.name + '“ ist gesperrt.')); }
       return;
     }
     handle(ak.dataset.aktion, ak); return;
@@ -977,13 +1066,26 @@ document.addEventListener('click', function (e) {
   var re = t.closest('button[data-reiter]');
   if (re) { S.zuletzt = re.dataset.reiter; zeichne(); var li = $('.v4-blatt--' + re.dataset.reiter + ' .mk-liste'); if (li) li.focus(); return; }
   var tr = zeileVon(t);
-  if (tr && !t.closest('button')) { waehle(tr.dataset.art, Number(tr.dataset.id)); var l = tr.closest('.mk-liste'); if (l) l.focus({ preventScroll: true }); }
+  if (tr && !t.closest('button')) { zeilenKlick(tr, e); var l = tr.closest('.mk-liste'); if (l) l.focus({ preventScroll: true }); }
 });
 document.addEventListener('dblclick', function (e) {
   if (ov || e.target.closest('button')) return;
   var tr = zeileVon(e.target);
   if (tr && tr.dataset.art === 'katalog') uebernehmen([Number(tr.dataset.id)]);
 });
+/* Klick wählt den Satz (Details); Strg+Klick schaltet sein Häkchen, Umschalt+Klick wählt den Bereich bis hier */
+function zeilenKlick(tr, e) {
+  var art = tr.dataset.art, id = Number(tr.dataset.id), liste = art === 'katalog' ? 'markK' : 'markP';
+  if (e.ctrlKey || e.metaKey) { var i = S[liste].indexOf(id); if (i >= 0) S[liste].splice(i, 1); else S[liste].push(id); }
+  else if (e.shiftKey) {
+    var zeilen = $$('tr[data-art="' + art + '"][data-id]').filter(function (z) { return z.offsetParent !== null; }).map(function (z) { return Number(z.dataset.id); });
+    var a = zeilen.indexOf(art === 'katalog' ? S.wahlK : S.wahlP), b = zeilen.indexOf(id);
+    if (a < 0) a = b;
+    S[liste] = zeilen.slice(Math.min(a, b), Math.max(a, b) + 1);
+  } else { waehle(art, id); return; }
+  if (art === 'katalog') S.wahlK = id; else S.wahlP = id;
+  S.zuletzt = art; zeichne();
+}
 function markiere(mk) {
   var art = mk.dataset.markieren;
   if (art === 'alle-katalog') {
@@ -1005,17 +1107,23 @@ function markiere(mk) {
   zeichne();
 }
 function handle(a, el) {
+  if (/zeile$/.test(a) && a !== 'entfernen-zeile' && a !== 'loeschen-zeile') { var zr = zeileVon(el); if (zr) { if (zr.dataset.art === 'katalog') S.wahlK = Number(zr.dataset.id); else S.wahlP = Number(zr.dataset.id); S.zuletzt = zr.dataset.art; zeichneWahl(); } }
   switch (a) {
     case 'uebernehmen': uebernehmen(zuUebernehmen()); break;
     case 'uebernehmen-zeile': uebernehmen([zeilenId(el)]); break;
     case 'entfernen': entfernen(zuEntfernen()); break;
     case 'entfernen-zeile': entfernen([zeilenId(el)]); break;
-    case 'loeschen': loeschen(S.wahlK); break;
-    case 'loeschen-zeile': loeschen(zeilenId(el)); break;
-    case 'schloss': schloss(S.wahlK); break;
-    case 'schloss-zeile': schloss(zeilenId(el)); break;
-    case 'bearbeiten': bearbeiten(S.wahlK); break;
-    case 'bearbeiten-zeile': bearbeiten(zeilenId(el)); break;
+    case 'loeschen': loeschen(zuUebernehmen()); break;
+    case 'loeschen-zeile': loeschen([zeilenId(el)]); break;
+    case 'schloss': schloss(zuUebernehmen()); break;
+    case 'schloss-zeile': schloss([zeilenId(el)]); break;
+    case 'bearbeiten': bearbeite('katalog', [S.wahlK]); break;
+    case 'bearbeiten-k': bearbeite('katalog', zuUebernehmen()); break;
+    case 'bearbeiten-zeile': bearbeite('katalog', [zeilenId(el)]); break;
+    case 'bearbeiten-p': bearbeite('projekt', zuEntfernen()); break;
+    case 'bearbeiten-satz': bearbeite('projekt', [S.wahlP]); break;
+    case 'bearbeiten-pzeile': bearbeite('projekt', [zeilenId(el)]); break;
+    case 'auswahl-aufheben': S.markK = []; S.markP = []; zeichne(); break;
     case 'neu': neu(); break;
     case 'in-db': inDb(zuDb()); break;
     case 'in-db-zeile': inDb([zeilenId(el)]); break;
@@ -1047,6 +1155,7 @@ document.addEventListener('input', function (e) {
 });
 document.addEventListener('change', function (e) {
   var t = e.target;
+  if (t.matches('[data-fueralle]') && ov && ov.o.aktionen) { ov.o.aktionen.fueralle(t); return; }
   if (!t.matches('[data-pfeld]')) return;
   var p = projektSatz(Number(t.closest('[data-satz-id]').dataset.satzId)); if (!p) return;
   var f = t.dataset.pfeld;
@@ -1079,9 +1188,11 @@ document.addEventListener('keydown', function (e) {
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); bewege(liste, e.key === 'ArrowDown' ? 1 : -1); return; }
   var art = liste.dataset.art === 'beide' ? S.zuletzt : liste.dataset.art;
   if (e.key === 'Enter') { e.preventDefault(); if (art === 'katalog') uebernehmen(zuUebernehmen().length ? zuUebernehmen() : (S.wahlK != null ? [S.wahlK] : [])); return; }
-  if (e.key === 'Delete') { e.preventDefault(); if (art === 'katalog') loeschen(S.wahlK); else entfernen(zuEntfernen().length ? zuEntfernen() : (S.wahlP != null ? [S.wahlP] : [])); return; }
-  if (e.key === ' ' && MEHRFACH && art === 'katalog' && S.wahlK != null) {
-    e.preventDefault(); var i = S.markK.indexOf(S.wahlK); if (i >= 0) S.markK.splice(i, 1); else S.markK.push(S.wahlK); zeichne();
+  if (e.key === 'Delete') { e.preventDefault(); if (art === 'katalog') loeschen(zuUebernehmen().length ? zuUebernehmen() : [S.wahlK]); else entfernen(zuEntfernen().length ? zuEntfernen() : (S.wahlP != null ? [S.wahlP] : [])); return; }
+  if (e.key === ' ') {
+    var wid = art === 'katalog' ? S.wahlK : S.wahlP, ml = art === 'katalog' ? S.markK : S.markP;
+    if (wid == null) return;
+    e.preventDefault(); var i = ml.indexOf(wid); if (i >= 0) ml.splice(i, 1); else ml.push(wid); zeichne();
   }
 });
 function bewege(liste, schritt) {
@@ -1107,7 +1218,7 @@ if (/notiz/.test(location.hash)) document.body.classList.add('mk-notiz-offen');
 if (/schublade/.test(location.hash)) document.body.classList.add('mk-schublade-offen');
 if (/details/.test(location.hash)) document.body.classList.add('mk-details-offen');
 setTimeout(function () { zeigeZeile('katalog', S.wahlK); }, 0);
-window.mkSpiel = { zustand: function () { return S; } };
+window.mkSpiel = { zustand: function () { return S; }, zeichne: function () { zeichne(); } };
 })();
 </script>
 </body>
