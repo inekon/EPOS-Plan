@@ -100,8 +100,14 @@ namespace WindowsFormsApplication1
         {
             double schranke = double.IsNaN(schrankeW) ? double.NaN : Math.Max(schrankeW, 0.0);
             bool istGrenze = !double.IsNaN(schranke) && (double.IsNaN(KuehlleistungMaxW) || schranke < KuehlleistungMaxW);
+            // Entwurf KK (KZ1): an einer Zone im Kühlkreis des Gebäudes wirkt das Vorlaufangebot der Schranke - der Spiegel
+            // der Heizseite: kälter als die Anlage anbietet, wird der Kühlvorlauf der Zone nie. Sonst nur mitgeführt (W6).
+            bool angebot = KuehlVorlaufAmAngebot && MitKuehluebergabe && !double.IsNaN(kuehlVorlaufC)
+                           && !double.IsNaN(KuehlVorlaufC) && kuehlVorlaufC > KuehlVorlaufC;
             return this with
             {
+                KuehlVorlaufC = angebot ? kuehlVorlaufC : KuehlVorlaufC,
+                KuehlVorlaufAngebotGekappt = angebot,
                 KuehlleistungMaxW = istGrenze ? schranke : KuehlleistungMaxW,
                 KaelteverfuegbarkeitW = schranke,
                 Kaelteverfuegbarkeitsgrund = grund,
@@ -109,6 +115,15 @@ namespace WindowsFormsApplication1
                 KuehlVorlaufAngebotC = kuehlVorlaufC,
             };
         }
+
+        /// <summary>
+        /// Wirkt das Vorlaufangebot der Kälteschranke am Kühlvorlauf (Entwurf KK, KZ1)? Nur an einer Zone im Kühlkreis eines
+        /// Mehrzonengebäudes gesetzt (<see cref="GebaeudeModellEingang.Gebaeudekuehlkreis"/>), sonst <c>false</c>.
+        /// </summary>
+        internal bool KuehlVorlaufAmAngebot { get; init; }
+
+        /// <summary>Hob das Vorlaufangebot der Kälteschranke den Kühlvorlauf dieser Stunde an (KZ1)?</summary>
+        internal bool KuehlVorlaufAngebotGekappt { get; private init; }
 
         /// <summary>Die Schranke des Kälteangebots dieser Stunde [W]; NaN = keine (AK3-K).</summary>
         internal double KaelteverfuegbarkeitW { get; private init; }
@@ -264,7 +279,7 @@ namespace WindowsFormsApplication1
         internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; }
 
         /// <summary>Fester Kaltwasser-Vorlauf der Stunde [°C], schon auf die Vorlaufgrenze hochgemischt (7.2). Nur mit Kühlübergabe.</summary>
-        internal double KuehlVorlaufC { get; }
+        internal double KuehlVorlaufC { get; private init; }
 
         /// <summary>Strahlungsanteil der Kühlübergabe [–] (Vorgabe der Art); verteilt wie die Heizseite.</summary>
         internal double KuehlStrahlungsanteil { get; }

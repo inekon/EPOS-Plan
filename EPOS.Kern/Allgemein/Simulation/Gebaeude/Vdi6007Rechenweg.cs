@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
                     gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                    AnlagenVorlaufC, VerfuegbarkeitJeZone);
+                    AnlagenVorlaufC, VerfuegbarkeitJeZone, KuehlVorlaufAnlageC);
                 LetztesMehrzonenergebnis = m;
 
                 // AK3-W3c (Entwurf AK3 2.6): Im AK3-Weg ist dieser Lauf Pass 1 auch für das Mehrzonengebäude; daneben
@@ -320,7 +320,7 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
             => Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
                                         Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                                        out _, out _, out _, out _, AnlagenVorlaufC);
+                                        out _, out _, out _, out _, AnlagenVorlaufC, KuehlVorlaufAnlageC);
 
         private GebaeudeKlima Zonenklima(KlimakalenderGemeinsam gemeinsam)
             => new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
