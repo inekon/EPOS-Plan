@@ -206,6 +206,13 @@ namespace WindowsFormsApplication1
             // Der Raumeinfluss der Heizkurve (AK3, zehnter Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer
             // Sicht ohne die Spalte bleibt er null (aus).
             item.Heizkurve_Raumeinfluss = ZahlOderNull(row, GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS);
+            // Die Kuehlkurve (KK, elfter Sichtneubau): NULL-ERHALTEND beim Namen gelesen - auf einer Sicht ohne die
+            // Spalten bleibt sie aus (fester Vorlauf, Festlegung 1).
+            item.Kuehlkurve_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AKTIV);
+            item.Kuehlkurve_Fusspunkt = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_FUSSPUNKT);
+            item.Kuehlkurve_Raumeinfluss = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_RAUMEINFLUSS);
+            item.Kuehlkurve_Auslegung_Weg = TextOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_WEG);
+            item.Kuehlkurve_Auslegung_Aussen = ZahlOderNull(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN);
             return item;
         }
 

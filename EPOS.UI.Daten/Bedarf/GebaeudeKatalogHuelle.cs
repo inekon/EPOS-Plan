@@ -1188,7 +1188,14 @@ namespace WindowsFormsApplication1
                 KuehlAuslegungVorlauf = m.Kuehl_Auslegung_Vorlauf,
                 KuehlAuslegungRuecklauf = m.Kuehl_Auslegung_Ruecklauf,
                 KuehlAuslegungRaumtemperatur = m.Kuehl_Auslegung_Raumtemperatur,
-                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze
+                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze,
+
+                // KK (Schritt 202): die Kuehlkurve - NULL bleibt null, der Schalter NULL = aus.
+                KuehlkurveAktiv = m.Kuehlkurve_Aktiv,
+                KuehlkurveFusspunkt = m.Kuehlkurve_Fusspunkt,
+                KuehlkurveRaumeinfluss = m.Kuehlkurve_Raumeinfluss,
+                KuehlkurveAuslegungWeg = m.Kuehlkurve_Auslegung_Weg,
+                KuehlkurveAuslegungAussen = m.Kuehlkurve_Auslegung_Aussen
             };
 
             d.Ferienbeginn = new[]
@@ -1353,6 +1360,13 @@ namespace WindowsFormsApplication1
             m.Kuehl_Auslegung_Ruecklauf = d.KuehlAuslegungRuecklauf;
             m.Kuehl_Auslegung_Raumtemperatur = d.KuehlAuslegungRaumtemperatur;
             m.Kuehl_Vorlaufgrenze = d.KuehlVorlaufgrenze;
+
+            // KK (Schritt 202): die Kuehlkurve, NULL-erhaltend; ein leerer Weg wird NULL (= Tagesmittel).
+            m.Kuehlkurve_Aktiv = d.KuehlkurveAktiv;
+            m.Kuehlkurve_Fusspunkt = d.KuehlkurveFusspunkt;
+            m.Kuehlkurve_Raumeinfluss = d.KuehlkurveRaumeinfluss;
+            m.Kuehlkurve_Auslegung_Weg = string.IsNullOrEmpty(d.KuehlkurveAuslegungWeg) ? null : d.KuehlkurveAuslegungWeg;
+            m.Kuehlkurve_Auslegung_Aussen = d.KuehlkurveAuslegungAussen;
 
             return m;
         }

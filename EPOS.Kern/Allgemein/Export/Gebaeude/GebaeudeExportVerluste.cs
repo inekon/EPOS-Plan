@@ -105,7 +105,8 @@ namespace WindowsFormsApplication1
             ["Erdreich_U_Wirksam"] = V,
             // AK3 (Festlegung 23): der Raumeinfluss der Heizkurve - die Datei traegt ihn nicht, der Import schreibt NULL.
             ["Heizkurve_Raumeinfluss"] = V,
-            // Entwurf KK (bis KK4 ohne Spalte): die Kuehlkurve - die Datei traegt sie nicht, der Import laesst sie leer.
+            // KK (KuehlkurveSchema.SCHRITT): die Kuehlkurve - die Datei traegt sie nicht, der Import schreibt NULL; gesetzt
+            // wird sie als Verlust benannt (Getragen). Projektpaket und Katalogpaket tragen die Spalten.
             ["Kuehlkurve_Aktiv"] = V, ["Kuehlkurve_Fusspunkt"] = V, ["Kuehlkurve_Raumeinfluss"] = V,
             ["Kuehlkurve_Auslegung_Weg"] = V, ["Kuehlkurve_Auslegung_Aussen"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
@@ -151,6 +152,11 @@ namespace WindowsFormsApplication1
                 if (g.Aufheizzeit_Manuell_H.HasValue) namen.Add("Aufheizzeit_Manuell_H");
                 if (g.Erdreich_U_Wirksam.HasValue) namen.Add("Erdreich_U_Wirksam");
                 if (g.Heizkurve_Raumeinfluss.HasValue) namen.Add("Heizkurve_Raumeinfluss");
+                if (g.Kuehlkurve_Aktiv) namen.Add("Kuehlkurve_Aktiv");
+                if (g.Kuehlkurve_Fusspunkt.HasValue) namen.Add("Kuehlkurve_Fusspunkt");
+                if (g.Kuehlkurve_Raumeinfluss.HasValue) namen.Add("Kuehlkurve_Raumeinfluss");
+                if (!string.IsNullOrWhiteSpace(g.Kuehlkurve_Auslegung_Weg)) namen.Add("Kuehlkurve_Auslegung_Weg");
+                if (g.Kuehlkurve_Auslegung_Aussen.HasValue) namen.Add("Kuehlkurve_Auslegung_Aussen");
             }
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {

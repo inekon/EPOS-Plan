@@ -393,7 +393,7 @@ namespace WindowsFormsApplication1
 
         // =====================================================================
         // Auslegungsweg der Kühlkurve (Entwurf KK, Festlegung 3; E107)
-        //   künftig Tab_Gebaeude(_STAMM).Kuehlkurve_Auslegung_Weg (Schemaschritt S1, KK4),
+        //   Tab_Gebaeude(_STAMM).Kuehlkurve_Auslegung_Weg (KuehlkurveSchema, Schritt 202),
         //   TEXT CHECK IN ('stunde','tagesmittel','eingabe'); leer = 'tagesmittel'
         //   Persistenzwerte, eingefroren (Drei-Schichten-Regel)
         // =====================================================================
