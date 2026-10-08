@@ -338,14 +338,14 @@ namespace EPOS.Kern.Tests
             },
             ["Sportheim_1970_unsaniert.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "1995", Klasse = "I", Vorschlagsname = "Sportheim_1970_unsaniert",
+                Kopf = "21/14/4", Baujahr = "1985", Klasse = "H", Vorschlagsname = "Sportheim_1970_unsaniert",
                 Raeume = "56/41/718.99", Vorgabe = "Z4 4",
                 ZonenZ4 = "OG 230.1, EG 450.78, UG (unbeheizt) 464.56, UG 38.11",
-                TrennungenZ4 = "OG|EG|152.78, EG|UG (unbeheizt)|93.4, EG|UG|35.16, UG (unbeheizt)|UG|45.06",
+                TrennungenZ4 = "OG|EG|152.78, EG|UG (unbeheizt)|98.82, EG|UG|35.16, UG (unbeheizt)|UG|45.06",
                 Geschaetzt = "", Innenflaechenfaktor = "2.66",
-                Huelle = "AW 661.72 U 0.29, Dach 698.24 U 0.16, Grund 503.84 U 0.53, Fenster 115.32 U 0.91",
+                Huelle = "AW 661.72 U 1.02, Dach 698.24 U 0.51, Grund 503.84 U 0.98, Fenster 115.32 U 1.9",
                 Beheizungsart = "41/15/0", ErklaerungVorBezug = "Boden EG 005|Flur 003", Unbeheizt = "0/0", Fehler = "",
-                Koerper = "168/952.78/574.99", Z6 = "4/6/530.44/0", GegenprobeZ4 = "0",
+                Koerper = "168/952.78/574.99", Z6 = "4/6/535.86/0", GegenprobeZ4 = "0",
             },
             ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Kennzahlen
             {
@@ -550,7 +550,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData("MFH_mittel_1984.ifc", "", "2/0", "62/0/0/0", 4)]
         [InlineData("MFH-Klein-unsaniert-1964.ifc", "", "5/5", "0/0/1/0", 0)]
-        [InlineData("Sportheim_1970_unsaniert.ifc", "1995/1970", "", "91/0/0/0", 11)]
+        [InlineData("Sportheim_1970_unsaniert.ifc", "1985/1970", "", "85/0/0/0", 6)]
         [InlineData("Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc", "1969/2014", "13/18", "0/0/189/0", 0)]
         [InlineData("WG-EH55_Poroton-GModG-2026.ifc", "", "", "46/28/0/0", 5)]
         [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc", "", "", "0/0/70/0", 0)]
@@ -898,13 +898,17 @@ namespace EPOS.Kern.Tests
         /// Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, nehmen sie aus dem eigenen Körper: In MFH-Klein bekommt
         /// ein Fenster einen Azimut, Jahresheizwärme Z4 und Z5 je +0,2 %; in Produktion und Verwaltung sind die übrigen
         /// Öffnungen ohne Azimut waagerechte Dachfenster im Flachdach (kein Azimut nötig), beide bleiben (0 %).
+        /// Die Sportheim-IFC ist aus dem Bestandsprojekt neu exportiert, aus demselben Projektstand wie die Projektdatei
+        /// (Aufbauten des Bestands statt der Sanierung): Die mittleren U der Hülle steigen (Außenwand +252 %, Dach +219 %,
+        /// Grund +85 %, Fenster +109 %), unter Z4 Jahresheizwärme +154,2 %, Spitze +51,3 %, Tagesmittel +109,9 %, unter Z5
+        /// Jahresheizwärme +130,4 % und Auslegungsheizlast +77,5 %; Zonen und Regel bleiben.
         /// </summary>
         private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen, double Q, double Spitze, double Tagesmittel, double QVergleich, double Auslegung)> SOLL
             = new Dictionary<string, (string, int, double, double, double, double, double)>(StringComparer.Ordinal)
             {
                 ["MFH_mittel_1984.ifc"] = ("Z4", 5, 47.56, 24.73, 16.78, 42.66, 18.76),
                 ["MFH-Klein-unsaniert-1964.ifc"] = ("Z4", 7, 40.89, 26.2, 16.79, 46.48, 21.13),
-                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 58.49, 48.0, 27.08, 61.07, 36.1),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z4", 4, 148.68, 72.61, 56.84, 140.73, 64.09),
                 ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z4", 8, 228.49, 257.17, 129.02, 212.74, 182.42),
                 ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z4", 3, 17.37, 20.74, 9.47, 17.05, 14.05),
                 ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1824.25, 1249.16, 863.06, 1820.62, 1010.76),

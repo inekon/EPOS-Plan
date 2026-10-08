@@ -49,10 +49,10 @@ namespace EPOS.Kern.Tests
             SqprojStand stand = a.ProjektdateiLesen(pd, 0);
             Assert.False(stand.Abgelehnt, stand.Ablehnung?.ToString());
             Assert.True(stand.Abbild.BauteileGelesen);
-            // Die Standprüfung (E108) schlägt an dieser Datei an; diese Diagnose hält die Rangfolge E98 fest,
-            // also die Wahl „IFC“ ausdrücklich treffen. Die Wahl „Projektdatei“ prüft SqprojStandpruefungDiagnoseTests.
-            if (stand.Standpruefung?.Angeschlagen == true)
-                Assert.True(a.AufbauquelleWaehlen(Aufbauquelle.Ifc));
+            // IFC und Projektdatei stammen aus demselben Projektstand: Die Standprüfung (E108) schlägt nicht an, es gilt ohne Wahl
+            // die Rangfolge E98 („IFC“), die diese Diagnose festhält. Die Prüfung selbst hält SqprojStandpruefungDiagnoseTests.
+            Assert.False(stand.Standpruefung?.Angeschlagen == true);
+            Assert.Equal(Aufbauquelle.Ifc, stand.Aufbauquelle);
             return a;
         }
 
@@ -111,6 +111,13 @@ namespace EPOS.Kern.Tests
 
             Assert.True(w.UeberGuid > 0);
             Assert.True(pd > 0);
+            // Derselbe Projektstand: Jedes opake Bauteil der IFC findet sein Gegenstück, jede Zuordnung trifft Rang 1 (Aufbau der
+            // Projektdatei, U stimmt) — keine fällt auf den Projektkatalog (Rang 2) zurück, keine trägt eine U-Abweichung.
+            List<AbbildBauteil> opak = g.Bauteile.Where(b => SqprojAufbauwahl.Opak(b.Art)).ToList();
+            Assert.Empty(w.OhneGegenstueck);
+            Assert.All(opak, b => Assert.Equal(Aufbaurang.Projektdatei, w.Entscheid(b)?.Rang));
+            Assert.DoesNotContain(opak, b => w.Entscheid(b).UAbweichend);
+            Assert.DoesNotContain(nachher.Zeilen, z => z.Aufbaurang == Aufbaurang.Projektkatalog);
             Assert.Contains(nachher.Meldungen, m => m.Schluessel == GebaeudeBauteilvorschlag.PD_ZUORDNUNG);
             // Mit der Projektdatei bleibt kein Bauteil, das vorher Stufe A hatte, darunter.
             double aVorher = Bauteilzuordnung.Summen(vorher.Zeilen).Where(s => s.Stufe == Bauteilzuordnungsstufe.A).Sum(s => s.Flaeche_M2);
