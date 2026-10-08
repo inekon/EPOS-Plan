@@ -32,7 +32,7 @@ E37, E102, E104, E105, E106. Die Berichtigung der Konzepte (1.3, WK1–WK3) ist 
   Der Kreis von AK3 rechnet Mehrzonengebäude schon; was fehlt, ist die Kühlübergabe je Zone (1.4). Ob sie wie im Einzonenweg ab
   AK1 gilt oder nur auf AK3, entscheidet **Q-KK-7 (a)**: ab AK1 (E106).
 - **Leere Spalten rechnen wie heute:** Ohne wirksamen Wert entsteht kein Objekt, die Basis R43 bleibt byte-gleich bis zur
-  Basiswelle; Schemaschritt S1 (= 202) mit drei Eingabespalten am Gebäude und drei Ergebnisspalten. Die Zone braucht **keine**
+  Basiswelle; Schemaschritt S1 (= 202) mit fünf Eingabespalten am Gebäude (drei der Kurve, zwei des Auslegungswegs, E107) und drei Ergebnisspalten. Die Zone braucht **keine**
   neue Eingabespalte: Ihre drei Kühlübergabespalten bestehen seit Schritt 137 und werden nur noch nicht gerechnet.
 - **Zwei neue Referenzprojekte**, beide nicht in der CI: **RP-KK** als Kopie von 1058 (Einzonenweg) und **RP-KKZ** als Kopie
   von RP-KK mit zwei Zonen (Mehrzonenweg, Abschnitt 4). R44 bewegt kein bestehendes Projekt.
@@ -135,8 +135,11 @@ Der Spiegel der Heizkurve taugt nicht: Kühllast entsteht auch bei kühler Auße
 daher nie „aus“ liefern. Die Kühlkurve ist eine **Zwei-Punkt-Kurve** über die Außentemperatur:
 
 - **Fußpunkt** θ_V,F: der Vorlauf bei Außentemperatur am Kühlsollwert der Stunde und darunter (waagrecht, nie NaN);
-- **Auslegungspunkt** θ_V,K,N (vorhandene Spalte `Kuehl_Auslegung_Vorlauf`) bei der Auslegungs-Außentemperatur der Kühlung,
-  hergeleitet als wärmstes Tagesmittel wie die Nennleistung aus dem Auslegungstag (`GebaeudeModellEingang.cs:2163-2198`);
+- **Auslegungspunkt** θ_V,K,N (vorhandene Spalte `Kuehl_Auslegung_Vorlauf`) bei der Auslegungs-Außentemperatur der Kühlung
+  θ_out,K,N nach dem gewählten Auslegungsweg (E107, Festlegung 3): höchste Stundentemperatur, wärmstes Tagesmittel mindestens
+  Kühlsollwert + Mindestspanne (Vorgabe) oder Eingabe am Gebäude (`Kuehlkurve.Bilden`);
+- **Fußpunktregel** (Festlegung 18): ein Fußpunkt kälter als der Auslegungsvorlauf wird auf ihn geklemmt — die Kurve fällt nie
+  mit steigender Außentemperatur an;
 - dazwischen linear, darüber waagrecht am Auslegungspunkt;
 - **Grenzen:** unten die Vorlaufgrenze des Gebäudes und der kälteste erreichbare Erzeugervorlauf (2.3), oben der Fußpunkt,
   der stets einen Mindestabstand unter dem Kühlsollwert der Stunde hält (sonst wäre die Übergabeleistung null,
@@ -238,7 +241,15 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
 1. **Leere Spalte = fester Vorlauf wie heute.** `Kuehlkurve_Aktiv` 0 nimmt den heutigen Skalarpfad wörtlich; ein Raumeinfluss
    mit NULL oder 0 baut kein Objekt (Muster `Raumeinfluss.AusGebaeuden`, Schritt 198) — die Basis bleibt byte-gleich.
 2. **Kurvenform:** Zwei-Punkt-Kurve mit Fußpunkt (2.1), keine gespiegelte Heizkurve (WK4), kein Exponent.
-3. **Auslegungs-Außentemperatur der Kühlung** wird hergeleitet (wärmstes Tagesmittel), keine neue Spalte.
+3. **Auslegungs-Außentemperatur der Kühlung** nach einem von drei Wegen, wählbar je Gebäude in `Kuehlkurve_Auslegung_Weg`
+   (E107, „1, 2, 3 wählbar, Default 2“): 1 `stunde` — die höchste Stundentemperatur der Klimareihe; 2 `tagesmittel` — die
+   **Vorgabe**, auch bei leerer Spalte — das wärmste Tagesmittel (Tag der Auslegungskühllast), mindestens Kühlsollwert +
+   Mindestspanne `KUEHLKURVE_AUSLEGUNG_SPANNE_K` = 8 K (Festwert in `GebaeudeFestwerte`, kein Normwert; gemessen über die
+   Klimaregionen der Testdatenbank: mitteleuropäisch wärmstes Tagesmittel 24,4–27,8 °C, höchste Stunde 30,1–34,5 °C — bei
+   Sollwerten 24–26 °C landet der Punkt bei 32–34 °C, nahe den höchsten Stunden); 3 `eingabe` — die Eingabe
+   `Kuehlkurve_Auslegung_Aussen` am Gebäude; fehlt sie oder liegt sie nicht über Kühlsollwert + 1 K
+   (`KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K`), gilt Weg 2 mit Laufhinweis. Ein unbekannter Weg bricht den Lauf des Gebäudes ab.
+   Befund KK1: Das wärmste Tagesmittel allein lag oft unter dem Kühlsollwert, dann sprang die Kurve am Sollwert.
 4. **Fußpunkt leer** bei aktiver Kurve: Vorgabe ist der Auslegungsrücklauf der Kühlübergabe (`Kuehl_Auslegung_Ruecklauf`
    bzw. dessen Vorgabe je Art); der Mindestabstand zum Kühlsollwert ist ein Festwert in `GebaeudeFestwerte`, bestimmt per
    Probe in KK1.
@@ -263,11 +274,14 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
     Kurvenreihe am niedrigsten Kühlsollwert der gekühlten Zonen, Führungsgröße die Zone mit der größten Überschreitung ihres
     Kühlsollwerts, je Stunde im Kreis (2.8). Die Stufe der Kühlübergabe je Zone entscheidet Q-KK-7.
 15. **Keine neue Eingabespalte an der Zone:** Die Kühlübergabe je Zone nimmt die drei Spalten aus Schritt 137; Auslegungspunkt,
-    Vorlaufgrenze und Kühlkurve stehen allein am Gebäude. S1 bleibt bei drei Eingabespalten an `Tab_Gebaeude` und
+    Vorlaufgrenze und Kühlkurve stehen allein am Gebäude. S1 bleibt bei fünf Eingabespalten an `Tab_Gebaeude` und
     `Tab_Gebaeude_STAMM`; die Kopfzeile von Schritt 202 lässt Zonenspalten zu, dieser Entwurf braucht keine.
 16. **Ideale Zonen** im Mehrzonenweg wie auf der Heizseite: `IDEAL` oder leere Art bei leerer Gebäudeart, Zone ohne wirksame
     Kühlung, adiabater Vorlauf der 4-K-Regel (`ZonenEingang.cs:51-56`).
 17. **Kälteschranke im Mehrzonenweg** bleibt je Gebäude und wird nach dem unbegrenzten Kühlbedarf je Zone verteilt (2.8).
+18. **Fußpunktregel** (E107, offener Punkt aus KK1): Ist der Fußpunkt kälter als der Auslegungsvorlauf, stiege der Vorlauf mit
+    der Außentemperatur; der Kern klemmt den Fußpunkt auf den Auslegungsvorlauf (waagrechte Kurve) und meldet es je Gebäude und
+    Lauf einmal. Die Eingabeprüfung im Dialog kommt mit KK4.
 
 ## 4. Referenzprojekte und Basis
 
@@ -298,13 +312,14 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
   nicht). Die Testdatenbank bekommt Schritt S1 und die beiden Projekte (LFS-Commit).
 - **Einfrierregeln (Vorschlag im Wortlaut, mit KK5 in `CLAUDE.md` und `Referenzlaeufe/LIESMICH.md`):**
   - in „gesäte Auslegungsdaten der Übergabe“ nach `Kuehl_Vorlaufgrenze` ergänzt: „die Kühlkurve am Gebäude
-    (`Kuehlkurve_Aktiv`, `Kuehlkurve_Fusspunkt`, `Kuehlkurve_Raumeinfluss`)“;
+    (`Kuehlkurve_Aktiv`, `Kuehlkurve_Fusspunkt`, `Kuehlkurve_Raumeinfluss`, `Kuehlkurve_Auslegung_Weg`,
+    `Kuehlkurve_Auslegung_Aussen`)“;
   - in „gesäte Zonendaten eines Referenzprojekts“ nach den Luftströmen ergänzt: „an seinen Zonen die drei Kühlübergabespalten
     von `Tab_Zone` (`Kuehl_Uebergabe_Art`, `Kuehl_Uebergabe_Exponent`, `Kuehl_Uebergabe_Leistung_Nenn`)“;
   - neu: „gesäte Kühlkurvendaten eines Referenzprojekts mit Kühlkurve: die Kühlkennlinie seiner Kälteerzeuger samt aller
     Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), `Kaltwasser_Vorlauf_Min`, das
     Temperaturpaar seines Kältespeichers, die Festwerte der Kühlkurve in `GebaeudeFestwerte` (Mindestabstand zum Kühlsollwert,
-    Bereiche) und das Abbruchmaß ΔK2, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Kühlkurve, auch eines
+    Mindestspanne der Auslegungs-Außentemperatur über dem Kühlsollwert, Abstand der Eingabe über dem Kühlsollwert, Bereiche) und das Abbruchmaß ΔK2, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Kühlkurve, auch eines
     Mehrzonen-Referenzprojekts mit gekoppelter Kälteseite“.
 - **Tests und Wachen:** neu `KuehlkurveTests` (Form, Fußpunkt, Grenzen, „aus bitgleich“), Orakel **O1kk/O2kk** nach Muster
   O1k/O2k (stetige Kälteleistung über den Vorlauf, Fixpunkt eindeutig; Absenkung mit Kappung), `KuehlkurveSchemaTests`
@@ -335,7 +350,7 @@ jedes Gate „Referenzlauf 24/24 byte-gleich gegen R43“. Schemaschritt: allein
 | **KK2** Erzeuger am Stundenvorlauf | Kühlkennlinie mit gebrochenem Vorlauf, alle Blöcke je Gerät; Kältemaschine je Stunde; Vorlauf-Argument der Kälteschranke; Kältekaskade am Stundenvorlauf; kältester verlangter Vorlauf; Speicherregel | Orakel O1kk; „fester Vorlauf bitgleich“; Kälteklassen grün; Referenzlauf byte-gleich | nein | 2,5–3,5 |
 | **KK3** Raumeinfluss im Kreis | Spiegel von `Raumeinfluss`, Nachführung in `Anlagenkopplung`, Abbruchglied ΔK2, Pendelregel; Rechenzeit messen; Vorgabewert der Stärke per Probe (Q-KK-5 (b)) | Orakel O2kk; Durchläufe gemessen; Vorgabewert benannt; Referenzlauf byte-gleich | nein | 2–3 |
 | **KZ1** Kühlübergabe je Zone | Voraussetzung des Mehrzonenwegs am festen Vorlauf: `Zoneneingaben` um die drei Kühlspalten; Kühlkreis je Gebäude als Spiegel von `ZonenkopplungAufloesen`; `KuehlKopplungWirksam` im Mehrzonenweg frei (Stufe nach Q-KK-7); Kühlübergabe je Zone im Rand, Vorlaufangebot der Kälteschranke je Zone; Meldung `SIMENG_G6_AK1_IDEAL` neu gefasst (beide Sprachen); hinter dem Kernschalter | `ZonenKuehluebergabeTests`; „ohne Kühlübergabe bitgleich“; `AnlagenkopplungZonenmodellTests` grün; Referenzlauf byte-gleich | nein | 2–3 |
-| **KK4** Schema, Oberfläche | S1 (drei Eingabespalten an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, Sicht `Abfrage_Projektgebaeude`, Kopierwege, drei Ergebnisspalten); Modelle, Controller, Katalog, Export, Hülle, Feld in `GebaeudeKuehluebergabeFelder`, Herleitung, Vorgabewert beim Einschalten; im Zonendialog die drei Kühlübergabefelder der Zone (Spalten bestehen); Ressourcen beider Sprachen | Schema- und bunit-Tests; `SqlDialektPruefer`; `designer_neu.py`; Windows-Schale auf Linux kompiliert | nein | 2,5–3,5 |
+| **KK4** Schema, Oberfläche | S1 (fünf Eingabespalten an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` — `Kuehlkurve_Aktiv`, `Kuehlkurve_Fusspunkt`, `Kuehlkurve_Raumeinfluss`, dazu nach E107 `Kuehlkurve_Auslegung_Weg` (`TEXT CHECK IN ('stunde','tagesmittel','eingabe')`, leer = `tagesmittel`) und `Kuehlkurve_Auslegung_Aussen`; Sicht `Abfrage_Projektgebaeude`, Kopierwege, drei Ergebnisspalten); Modelle, Controller, Katalog, Export, Hülle, Feld in `GebaeudeKuehluebergabeFelder`, Herleitung, Vorgabewert beim Einschalten; im Zonendialog die drei Kühlübergabefelder der Zone (Spalten bestehen); Ressourcen beider Sprachen | Schema- und bunit-Tests; `SqlDialektPruefer`; `designer_neu.py`; Windows-Schale auf Linux kompiliert | nein | 2,5–3,5 |
 | **KZ2** Kühlkurve im Mehrzonenweg | Kurvenreihe am niedrigsten Kühlsollwert der gekühlten Zonen; Führungsgröße größte Überschreitung im Kreis; Tage mit Heiz- und Kühlzonen; Rechenzeit des Mehrzonenwegs messen | Orakel O3kz; Durchläufe gemessen; Referenzlauf byte-gleich | nein | 1,5–2 |
 | **KK5** Referenzprojekte und R44 | Kernschalter entfernt; RP-KK und RP-KKZ (Skripte, Wachen); Einfrierregeln; Basis R44 | allein RP-KK und RP-KKZ neu, übrige 24 byte-gleich; CI-Auswahl unverändert | **ja** | 2,5–3 |
 | **KK6** Papiere und Wiki | Konzepte wie gebaut, Register, Status, Protokoll, Wiki-Quellen (Gebäudemodell, Kühlung, Zonen), Logbuch-Entwurf | Link-Wache, Wiki-Gegenlesemuster | nein | 1–1,5 |
