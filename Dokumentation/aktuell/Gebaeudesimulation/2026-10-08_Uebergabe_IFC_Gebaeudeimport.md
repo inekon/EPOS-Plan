@@ -25,7 +25,7 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstim
   | #823 | Befunde der Abnahme G5: Orientierung bei Mengensatz aus Raumgrenzen bzw. Körper, Hanglage im Einzonenweg | grün |
   | #825 | E108: Standprüfung IFC gegen Projektdatei mit Wahl der Aufbauquelle; Fensterrichtung aus eigenem Körper; Einheitenhinweis | grün |
   | #828 | Prüfpunkte #808/#801: Körpervergleich mit fremdnamigen und fremdklassigen Teilgruppen, Dach erbt U-Wert und Aufbau seiner Platten | grün |
-  | #831 | Anwenderdatei Sportheim neu exportiert (IFC aus dem Bestandsprojekt), Diagnosetests nachgezogen | Kern-Lauf beim Schreiben offen; Ergebnis als CI-Vermerk in Zeile #831 der Statusdatei |
+  | #831 | Anwenderdatei Sportheim neu exportiert (IFC aus dem Bestandsprojekt), Diagnosetests nachgezogen | Kern-Lauf 37810231619 grün auf `8703e704d` |
   | #832 | Übergabe der Sitzung an ein anderes Konto (dieses Papier) | nur Dokumentation, `[skip ci]` |
 
 - **Abnahme G5 am Rechenweg:** durch die Sitzung Gebäudesimulation erfüllt (#820, Nachabnahme
