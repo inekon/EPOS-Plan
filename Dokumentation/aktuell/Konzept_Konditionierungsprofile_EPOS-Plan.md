@@ -46,10 +46,12 @@
 > nachgezogen: Rechenschritte 7.5 und 7.6, Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur; hier der Kopf, 4.4,
 > 4.6, 5.4 und 8.
 
-> **Nachgezogen 07.10.2026 — AK3-K (E103, E104) in Umsetzung** ([Register](Status_Gebaeudesimulation_VDI6007.md),
+> **Nachgezogen 08.10.2026 — AK3-K (E103, E104) gebaut (Basis R43)** ([Register](Status_Gebaeudesimulation_VDI6007.md),
 > [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): Das „aus“ der Heiz- und Kühlsollwertkalender samt
 > Heiz- und Kühlperiode ist die **Freigabe** der Raumheizung und Raumkühlung je Zone und Tag; die Karte zeigt sie als
-> Jahresband im Reiter Konditionierung. Kein Schemaschritt, keine Kopierwege. Nachgezogen ist 3.1.
+> Jahresband im Reiter Konditionierung. Ist nur eine Seite frei, gilt sie; sind beide frei, wählt
+> die Tagessumme eines unbegrenzten Probetags; ist keine frei, wird die Zone an dem Tag nicht konditioniert. Kein
+> Schemaschritt, keine Kopierwege. Nachgezogen ist 3.1.
 
 **Stand:** 06.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf

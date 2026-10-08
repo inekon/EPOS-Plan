@@ -1,8 +1,8 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
-> **Stand 07.10.2026 — AK3 wie gebaut: W0–W5 gebaut, Basis R42; W6 Papiere gebaut, offen: Sichtabnahme unter Windows, AK3-K (Kälteseite).** Gebaut sind der Gebäude-Stepper, die Kaskadenstunde mit Bedarfsnaht, die Interpolation über den Vorlauf (AK3-I, gilt ohne Schalter), der geschlossene Kreis im Kern, die Stufe in der Projekteinstellung, der Raumeinfluss der Heizkurve (H2) und die Oberfläche samt Bericht (Status #796, #799, #804), dazu Referenzprojekt, Basis R42 und Komfortkennzahlen auf AK3 (W5) sowie Wiki-Quellen und Logbuch-Entwürfe (W6). Abweichungen der Umsetzung vom Entwurf stehen in 6.3, 10.6 und 11.2.
+> **Stand 07.10.2026 — AK3 wie gebaut: W0–W5 gebaut, Basis R42; W6 Papiere gebaut; AK3-K (Kälteseite) gebaut, Basis R43; offen: Sichtabnahme unter Windows.** Gebaut sind der Gebäude-Stepper, die Kaskadenstunde mit Bedarfsnaht, die Interpolation über den Vorlauf (AK3-I, gilt ohne Schalter), der geschlossene Kreis im Kern, die Stufe in der Projekteinstellung, der Raumeinfluss der Heizkurve (H2) und die Oberfläche samt Bericht (Status #796, #799, #804), dazu Referenzprojekt, Basis R42 und Komfortkennzahlen auf AK3 (W5) sowie Wiki-Quellen und Logbuch-Entwürfe (W6). Abweichungen der Umsetzung vom Entwurf stehen in 6.3, 10.6 und 11.2.
 
-> **Nachgezogen 07.10.2026 — AK3-K (E103, E104) in Umsetzung** ([Register](Status_Gebaeudesimulation_VDI6007.md), [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): Die Kälteseite kommt in den geschlossenen Kreis (E103). Nach E104 wird in einer Zone an einem Tag nie geheizt und gekühlt: Am Kühltag der Zone ist ihre Raumheizung gesperrt, am Heiztag ihre Raumkühlung — je Zone und auf allen Stufen; Prozesswärme, Prozesskälte und Brauchwasser bleiben frei. Die Umschaltung der reversiblen Wärmepumpe wirkt als Verfügbarkeitsgrenze nur auf AK3 (Grund `UMSCHALTUNG`). 5.3, 7.3 und 7.4 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
+> **Nachgezogen 08.10.2026 — AK3-K (E103, E104) gebaut (Basis R43)** ([Register](Status_Gebaeudesimulation_VDI6007.md), [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): Die Kälteseite kommt in den geschlossenen Kreis (E103). Nach E104 wird in einer Zone an einem Tag nie geheizt und gekühlt: Am Kühltag der Zone ist ihre Raumheizung gesperrt, am Heiztag ihre Raumkühlung — je Zone und auf allen Stufen; Prozesswärme, Prozesskälte und Brauchwasser bleiben frei. Die Umschaltung der reversiblen Wärmepumpe wirkt als Verfügbarkeitsgrenze nur auf AK3 (Grund `UMSCHALTUNG`). Auf AK3 rechnet der Kreis die Kälteseite mit: Die Kälteschranke (Kapazität der Kälteerzeuger am Kühlvorlauf samt freier Kühlung plus Kältespeicher, Prozesskälte vorab) begrenzt die Raumkühlung, greift sie, wird der Raum wärmer (Überschreitungsstunden); die Kältestunde folgt je Stunde der Wärmestunde, der Abbruch liegt auch für Kälte bei 0,1 W. Die Kennzahlen (Tage mit Sperre, gesperrte Energie, Stunden an der Kälteschranke, Umschaltstunden, Kälte-Restbedarf) stehen im Bedarfsdialog und in der Berichtstafel „Kälteseite im Kreis“. 5.3, 7.3 und 7.4 tragen diesen Stand; Festlegungen und Abweichungen vom Plan stehen im Entwurf (7.1).
 
 > **Nachgezogen 07.10.2026 — Entscheide E100 und E102** ([Register](Status_Gebaeudesimulation_VDI6007.md)): AK3 wird jetzt gebaut (E100; H6 aufgehoben), nach dem [Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) mit den Antworten E102. AK3 ist eine **eigene, wählbare Stufe** (Vorgabe AK1), die Kaskade wird **befragt, nicht zurückgenommen**, die Interpolation der Wärmepumpenkennlinie über den Vorlauf ist der eigene Gegenstand **AK3-I** (H-F4 abgelöst). Kapitel 0, 6.3, 11.2, 12, 13 und 14 tragen diesen Stand; Architektur, Festlegungen und Wellenplan stehen im Entwurf.
 
@@ -819,7 +819,7 @@ gegen den nun kleineren Bedarf.
 
 **So gebaut (AK2-2a, 05.10.2026).** `Verfuegbarkeitsgrund` und die Naht `Anlagenverfuegbarkeit` (`LeistungKw`,
 `VorlaufC`, `Grund`) stehen in `EPOS.Kern/Allgemein/Simulation/Anlagenverfuegbarkeit.cs`, neben den Fassaden.
-`Begrenzungsgrund` trägt am Ende `VorlaufAnlage` und `Verfuegbarkeit`; `UMSCHALTUNG` wird mit AK3-K gebaut (7.3). Das Modul
+`Begrenzungsgrund` trägt am Ende `VorlaufAnlage` und `Verfuegbarkeit`; `Begrenzungsgrund.Umschaltung` ist mit AK3-K angelegt; nach der Paarungsregel trägt die Gebäudestunde `Verfuegbarkeit`, der Anlagengrund `UMSCHALTUNG` reist daneben (7.3). Das Modul
 `Gebaeude/` bekommt die Reihe je Zone am `GebaeudeModellEingang` (`Verfuegbarkeit`) und über
 `Stundenrand.MitVerfuegbarkeit` in den Stundenrand; es liest keine Anlagendaten (`ModultrennungswacheTests`, Satz 5).
 Greift die Schranke, trägt das `Stundenergebnis` den Gebäudegrund `Verfuegbarkeit` und daneben den Anlagengrund
@@ -1330,7 +1330,7 @@ Komfortstunde.
 
 Die ersten drei haben denselben Grund: Die Kälteseite ist jünger. Der vierte Punkt ist mit **E37**
 aufgehoben und durch die Punkte 5 bis 10 ersetzt — die benannten Abweichungen der Kälteseite, wie sie
-die vierte Welle von AK1 gebaut hat; Punkt 10 kommt mit AK3-K.
+die vierte Welle von AK1 gebaut hat; Punkt 10 ist mit AK3-K gebaut.
 
 1. **Keine Kühlkurve im Bestand, auch nicht als Festwert-Ersatz.** Der Heizseite steht
    `Tab_Energieanlagen.Vorlauf` (`:713`) als Bestands-Festwert zur Verfügung; die Kälteseite bekommt
@@ -1375,10 +1375,11 @@ das ist keine Abweichung.
 **So gebaut (AK2-2b, 05.10.2026).** Die Komfortkennzahlen der Kälteseite (`Komfort_Ueberschreitungsstunden`,
 `Komfort_Kelvinstunden_Kuehlung`) zählen spiegelbildlich: Raumluft über dem Kühlsollwert der Stunde
 (`GebaeudeModellErgebnis.Kuehlsollwertreihe`, mit Kühlkalender seine Reihe) um mehr als die Schwelle, in der
-Nutzungszeit, nur mit wirksamer Kühlung; Zonen und Projekt wie auf der Wärmeseite (5.5). **`UMSCHALTUNG` wird mit
+Nutzungszeit, nur mit wirksamer Kühlung; Zonen und Projekt wie auf der Wärmeseite (5.5). **`UMSCHALTUNG` ist mit
 AK3-K gebaut** (E103, E104; [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md) 4.5): Die Tagesbetriebsart der
 reversiblen Maschine (K8a) entsteht aus den Kanälen von Pass 1 nach der Zonensperre (7.3); als Verfügbarkeitsgrenze
-wirkt sie nur auf AK3, auf AK1 und AK2 trägt ein Kühltag der Wärmepumpe auf der Heizseite keine Schranke.
+wirkt sie nur auf AK3, auf AK1 und AK2 trägt ein Kühltag der Wärmepumpe auf der Heizseite keine Schranke. In einer
+Sperrstunde der Wärmepumpe bleibt der Anlagengrund `SPERRZEIT`.
 
 ---
 
@@ -2646,7 +2647,7 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
 | **Komfortstunden verdecken den Restbedarf** (5.5) | Ein Variantenvergleich sieht aus, als wäre ein Deckungsproblem verschwunden, obwohl es nur die Kennzahl gewechselt hat | **Regel: Wo Komfortstunden stehen, steht der Restbedarf daneben** — und umgekehrt; die Berichtsprobe prüft beides |
 | **Zwei Bedarfsbegriffe nebeneinander** (E23, E89 — dauerhaft) | In einem Projekt mit beiden Rechenwegen stammt ein Teil des Bedarfs aus der Tagesbilanz ohne Rückwirkung und ein Teil aus dem VDI-Weg mit Rückwirkung; eine fehlende Komfortstunde liest sich dann wie ein gutes Ergebnis | **Der Bericht nennt je Gebäude den Rechenweg** (9.4), und die Komfortkennzahlen weisen aus, für wie viele Gebäude sie gar nicht entstehen können; die Probe „Altweg-Gebäude als feste Last" hält beide Seiten fest (11.1) |
 | **Der Profilweg ist zu pessimistisch** (5.4) | Ein Speicher, der die Sperrzeit überbrückt, erzeugt in der Rechnung Komfortstunden, die es nicht gibt | Speichervorrat über die Sperrdauer wird berücksichtigt; die Näherung steht **im Bericht**, nicht im Kleingedruckten |
-| **AK3 wächst zum Anlagensimulator** | Ein Vorhaben, das nicht endet: Rohrnetz, Pumpen, Regelkreise, Taktverhalten | Kapitel 15 und „Nicht in AK3“ des Entwurfs (9) sind die Grenze; die Kälteseite ist als AK3-K vertagt (E102) |
+| **AK3 wächst zum Anlagensimulator** | Ein Vorhaben, das nicht endet: Rohrnetz, Pumpen, Regelkreise, Taktverhalten | Kapitel 15 und „Nicht in AK3“ des Entwurfs (9) sind die Grenze; die Kälteseite ist als AK3-K gebaut (E103, E104) |
 | **Leser des Jahresvektors vor und nach der Kaskadenschleife** (AK3, Hauptrisiko) | Ein übersehener Leser rechnet im AK3-Weg still mit dem unbegrenzten statt dem gekoppelten Bedarf | Inventar als erster Schritt von W2; befragbare Kaskade statt Rücknahme; Gate je Welle „21/21 byte-gleich“; „ein Erzeuger ohne Grenzen bitgleich zu AK1"; Prüforakel 11.2 ([Entwurf AK3](Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) 8) |
 | **AK3-I bewegt 1047/1056 vor dem Basiswechsel** | CI rot, Byte-Gates der späteren Wellen nicht haltbar | Interpolation gilt ohne Schalter (W5); ein Basiswechsel für 1047/1056 |
 | **Iteration in Iteration** (AK3 mit Mehrzonen) | gemessen 11–29 ms je Zone, Durchlauf und Jahr: typisch 2–9 s für 50 Zonen, an der Produktschranke 70–175 s — ein Lauf, der „nur langsam" ist und den niemand als Fehler erkennt; Laufzeitgrenze nach E102 Faktor 3 gegenüber ohne Kreis | Höchstzahlen benannt, Reihenfolge festgelegt (Anlage außen, Zonen innen); **Iterationsschranke:** Produkt der Durchläufe je Stunde ≤ 120, darüber benannter Fehler mit dem letzten Stand statt stiller Näherung (6.3); **Laufzeit gemessen** vor der Abnahme (N-A4) |
