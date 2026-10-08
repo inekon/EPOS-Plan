@@ -96,6 +96,9 @@ namespace WindowsFormsApplication1
         /// <summary>Schaltet die Regel aus — zu Beginn eines Laufs.</summary>
         internal void Zuruecksetzen() => _aktiv = false;
 
+        /// <summary>Setzt den Zustand der Regel (Tagesstand der Zonensperre, <see cref="Zonenlauf.Herstellen"/>).</summary>
+        internal void Setzen(bool aktiv) => _aktiv = aktiv;
+
         /// <summary>
         /// Die Einschaltschwelle der Stunde <paramref name="h"/> [°C]: ohne Kühlkalender die eine
         /// Zahl des Konstruktors, mit ihm θ_K(h) − 3 K bzw. 23 °C bei „aus" (Konzept 3.6).

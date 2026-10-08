@@ -173,8 +173,8 @@ namespace EPOS.Kern.Tests
             Assert.True(KuehlungSchema.Schritt119Vollstaendig());
             foreach (SchemaSpalte s in KuehlungSchema.Schritt119Spalten())
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" +
-                                      // Die Kältemaschine des Referenzprojekts 1055 (KU3-4b) trägt Kühlträger und eigenen Zähler.
-                                      (s.Tabelle == "Tab_Energieanlagen" ? " AND ID_Projekt <> 1055" : "")));
+                                      // Die Kältemaschinen der Referenzprojekte 1055 (KU3-4b) und 1059 (AK3-K-K5a) tragen Kühlträger und eigenen Zähler.
+                                      (s.Tabelle == "Tab_Energieanlagen" ? " AND ID_Projekt NOT IN (1055, 1059)" : "")));
 
             try
             {
@@ -514,6 +514,9 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Einrichten();
+            // Fallbildung: Mit der Zonensperre deckt die eingerichtete Wärmepumpe die Kälte von 1045 ganz (R43); die
+            // Legende braucht den ungedeckten Rest, er kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
             Assert.True(WErzeugerCtrl.KonfigurationSchreiben(ANLAGE, PROJEKT,
                 new WErzeugerCtrl.KonfigurationFelder(KuehlIdCarrier: KUEHLTRAEGER)).Ok);
             Stand s = Rechnen();

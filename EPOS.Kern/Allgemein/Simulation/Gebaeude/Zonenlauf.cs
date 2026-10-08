@@ -121,6 +121,9 @@ namespace WindowsFormsApplication1
         internal void Uebernehmen(int h, bool sommer, in Stundenergebnis s)
             => Uebernehmen(h, sommer, false, in s);
 
+        /// <summary>Die übernommene Kühlreihe der Stunde <paramref name="h"/> [kWh] (AK3-K, Fehler 1.1 (a)); 0 vor der Übernahme.</summary>
+        internal double KuehlKwh(int h) => _kuehl[h];
+
         /// <summary>
         /// Wie <see cref="Uebernehmen(int, bool, in Stundenergebnis)"/>, dazu der Zustand der
         /// Nachtauskühlung <paramref name="nacht"/> (Stufe KP1b): Die Stunde zählt, wenn die Regel
@@ -262,6 +265,47 @@ namespace WindowsFormsApplication1
             stepper.Beginnen();
             stepper.Jahr();
             return stepper.Abschluss(index, idGebaeude)[0];
+        }
+
+        /// <summary>
+        /// <b>Der Tagesstand des Laufs</b> (Zonensperre, Entwurf AK3-K 3.2): Massen, Regelzustände, Vorstunde und alle
+        /// Jahreszähler — was über eine Stunde hinaus trägt. Die Stundenreihen schreibt jede Stunde neu; sie brauchen
+        /// keine Sicherung. Mit <see cref="Herstellen"/> rechnet ein Tag danach Zeichen für Zeichen wie vom Tagesbeginn.
+        /// </summary>
+        internal sealed class Tagesstand
+        {
+            internal double Aw, Iw, LuftVor, AussenVor;
+            internal bool Regel, Nachtregel;
+            internal int Umschaltung, Beides, Sommer, Nacht, Gedeckelt;
+            internal double SummeW, KappungH, StundenHl, StundenHg, Unterschreitung, StundenKl, StundenKk, StundenGrenze, Ueberschreitung;
+            internal Innenumkehrzaehler Messung;
+        }
+
+        /// <summary>Sichert den Stand am Tagesbeginn (nach der letzten übernommenen Stunde).</summary>
+        internal Tagesstand Sichern() => new Tagesstand
+        {
+            Aw = _modell.ThetaMAw, Iw = _modell.ThetaMIw, LuftVor = _luftVor, AussenVor = _aussenVor,
+            Regel = _regel != null && _regel.Aktiv, Nachtregel = _nachtregel != null && _nachtregel.Aktiv,
+            Umschaltung = _umschaltung, Beides = _beides, Sommer = _sommerStunden, Nacht = _nachtStunden, Gedeckelt = _gedeckelt,
+            SummeW = _summeW, KappungH = _kappungH, StundenHl = _stundenHl, StundenHg = _stundenHg, Unterschreitung = _unterschreitung,
+            StundenKl = _stundenKl, StundenKk = _stundenKk, StundenGrenze = _stundenGrenze, Ueberschreitung = _ueberschreitung,
+            Messung = _messung?.Kopie(),
+        };
+
+        /// <summary>Stellt einen mit <see cref="Sichern"/> gesicherten Stand wieder her.</summary>
+        internal void Herstellen(Tagesstand t)
+        {
+            if (t == null) throw new ArgumentNullException(nameof(t));
+            _modell.Zuruecksetzen(t.Aw, t.Iw);
+            _luftVor = t.LuftVor;
+            _aussenVor = t.AussenVor;
+            _regel?.Setzen(t.Regel);
+            _nachtregel?.Setzen(t.Nachtregel);
+            _umschaltung = t.Umschaltung; _beides = t.Beides; _sommerStunden = t.Sommer; _nachtStunden = t.Nacht; _gedeckelt = t.Gedeckelt;
+            _summeW = t.SummeW; _kappungH = t.KappungH; _stundenHl = t.StundenHl; _stundenHg = t.StundenHg;
+            _unterschreitung = t.Unterschreitung; _stundenKl = t.StundenKl; _stundenKk = t.StundenKk;
+            _stundenGrenze = t.StundenGrenze; _ueberschreitung = t.Ueberschreitung;
+            if (_messung != null && t.Messung != null) _messung.Herstellen(t.Messung);
         }
 
         private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);

@@ -689,6 +689,17 @@ public sealed class KonditionierungBearbeitung
     }
 
     /// <summary>
+    /// <b>Das Jahresband der Freigabe</b> (Entwurf AK3-K 3.3) — je Ort die Freigabe der 365 Tage am Arbeitsstand;
+    /// <c>null</c> = keins (ohne Delegat, ohne Weg oder bei einem ungültigen Stand).
+    /// </summary>
+    public IReadOnlyList<KonditionierungFreigabeband>? Freigabebaender()
+    {
+        if (!MitWeg || Weg.Freigabeband is null) return null;
+        try { return Weg.Freigabeband(Eingabestand()); }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>
     /// <b>„In den Kalender übernehmen"</b> an der Wärmeübergabe (Teilkonzept 5.5): das Sollwert-Zeitprogramm
     /// wird die Standardwoche des Heizkalenders. Vor einem angelegten Heizkalender fragt der Reiter
     /// (Vorgabe „Nein"); sonst legt der Weg ihn an und setzt die Woche — ein Schritt für „Zurücknehmen".

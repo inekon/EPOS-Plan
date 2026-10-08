@@ -134,19 +134,21 @@ namespace EPOS.Kern.Tests
             // Kopie im Referenzprojekt AK3 1058 (AK3-W5a): Zeitprogramm an Kessel und BHKW, Vorlauf_Max an der Wärmepumpe.
             foreach (var s in AnlagenfahrplanSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
-                                      (s.Tabelle == AnlagenfahrplanSchema.TAB_ANLAGEN ? " AND ID_Projekt NOT IN (1056, 1058)" : "")));
-            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Zeitprogramm IS NOT NULL"));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));
+                                      (s.Tabelle == AnlagenfahrplanSchema.TAB_ANLAGEN ? " AND ID_Projekt NOT IN (1056, 1058, 1059)" : "")));
+            Assert.Equal(6L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Zeitprogramm IS NOT NULL"));   // 1056, 1058, 1059 (K5a)
+            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ANLAGEN);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ERGEBNIS);
             // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187) und die sechs des
             // Erdsondenfeldes (Schritt 195).
             int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count + ErdsondenfeldSchema.SPALTEN.Count;
             Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
-            // Dahinter stehen allein die sechs Kennzahlen des Kreises (Ak3Schema).
-            int ak3 = Ak3Schema.SPALTEN_ERGEBNIS.Count;
+            // Dahinter stehen allein die sechs Kennzahlen des Kreises (Ak3Schema) und die sieben von AK3-K (Ak3KSchema).
+            int ak3k = Ak3KSchema.SPALTEN_ERGEBNIS.Count;
+            int ak3 = Ak3Schema.SPALTEN_ERGEBNIS.Count + ak3k;
             Assert.Equal(AnlagenfahrplanSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3 - 6).Take(6).ToArray());
-            Assert.Equal(Ak3Schema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3).ToArray());
+            Assert.Equal(Ak3Schema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3).Take(ak3 - ak3k).ToArray());
+            Assert.Equal(Ak3KSchema.SPALTEN_ERGEBNIS.ToArray(), ergebnis.Skip(ergebnis.Count - ak3k).ToArray());
             Assert.Equal(21 + 6 + ak3, ergebnis.Count);
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",
                                                                        new DbParam("@n", AnlagenfahrplanSchema.TAB_ERGEBNIS)));

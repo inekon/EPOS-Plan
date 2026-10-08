@@ -47,6 +47,9 @@ namespace EPOS.Kern.Tests
         public void Der_Kaeltespeicher_entlaedt_senkt_die_Unterdeckung_und_wird_gespeichert()
         {
             if (!_db.Vorhanden) return;
+            // Fallbildung: Mit der Zonensperre deckt die Wärmepumpe von 1017 die Kälte ganz (Basis R43); die
+            // Unterdeckung kommt aus ihrer geminderten Leistungsgrenze.
+            KaelteUnterdeckung.WaermepumpeMindern(PROJEKT);
             int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, Stamm(LUFTGEKUEHLT), "KM Halle");
             KaeltemaschineAnlageModel a = KaeltemaschineAnlageCtrl.Laden(anlage);
             DataRepository.ExecuteNonQuery("UPDATE " + KaeltemaschineSchema.TAB_KENNDATEN + " SET " +

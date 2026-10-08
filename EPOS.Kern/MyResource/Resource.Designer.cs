@@ -1955,6 +1955,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrte Energie (Heizen / Kühlen) ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte-Restbedarf ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_KAELTEREST {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_KAELTEREST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden an der Kälteschranke ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_KAELTESCHRANKE {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_KAELTESCHRANKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tage mit Sperre der Gegenseite ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_SPERRTAGE {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_SPERRTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umschaltstunden ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_KACHEL_UMSCHALTUNG {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_KACHEL_UMSCHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteseite im Kreis (AK3), Projekt, letzter Lauf ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_QUELLE_KREIS {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_QUELLE_KREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonensperre, Projekt, letzter Lauf ähnelt.
+        /// </summary>
+        public static string AK3K_GEBB_QUELLE_ZONENSPERRE {
+            get {
+                return ResourceManager.GetString("AK3K_GEBB_QUELLE_ZONENSPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde (Mittel / Höchstwert) ähnelt.
         /// </summary>
         public static string AK3_GEBB_KACHEL_DURCHLAEUFE {
@@ -73348,6 +73411,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freigabe Heizen und Kühlen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die beides ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_BEIDES {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_BEIDES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizen frei ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_HEIZEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keines ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_KEINE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen frei ähnelt.
+        /// </summary>
+        public static string KOND_LBL_FREIGABE_KUEHLEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_FREIGABE_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
         /// </summary>
         public static string KOND_LBL_GROESSE {
@@ -74842,6 +74959,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Heizen frei {1} Tage, Kühlen frei {2} Tage, beides {3} Tage, keines {4} Tage ähnelt.
+        /// </summary>
+        public static string KOND_TXT_FREIGABE_ZEILE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_FREIGABE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ganzjährig ähnelt.
         /// </summary>
         public static string KOND_TXT_GANZJAEHRIG {
@@ -75036,6 +75162,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_HINWEIS_FEIERTAGE {
             get {
                 return ResourceManager.GetString("KOND_TXT_HINWEIS_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „aus“ im Heiz- oder Kühlkalender sperrt die Seite für den Tag. An Tagen mit beiden Freigaben entscheidet der Bedarf, ob eine Zone heizt oder kühlt – nie beides am selben Tag. Gekühlt wird nur, wenn das Projekt Kälte rechnet. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_FREIGABE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_FREIGABE", resourceCulture);
             }
         }
         
@@ -95637,6 +95772,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3 mit Kälteseite: Kälteschranke gegriffen in {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2:0.###} kWh in {3} h, Fallwechsel {4}; Vorrangschätzung zu knapp in {5} h ({6:0.###} kWh), zu weit in {7} h. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK3K_KREISZAEHLER {
+            get {
+                return ResourceManager.GetString("SIMENG_AK3K_KREISZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde. ähnelt.
+        /// </summary>
+        public static string SIMENG_AK3K_KREIS_MIT_KAELTESEITE {
+            get {
+                return ResourceManager.GetString("SIMENG_AK3K_KREIS_MIT_KAELTESEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: {0} — Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung; die Eingaben der Wärmeübergabe gelten, sobald das Gebäude auf VDI 6007 rechnet. ähnelt.
         /// </summary>
         public static string SIMENG_AK_ALTWEG_OHNE_KOPPLUNG {
@@ -98288,6 +98441,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_ZIRKULATION_BESTANDSWEG {
             get {
                 return ResourceManager.GetString("SIMENG_ZIRKULATION_BESTANDSWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} – Tagesbetriebsart je Zone: an {1} Tagen wurde die Gegenseite gesperrt ({2} Kühltage ohne Raumheizung, {3} Heiztage ohne Raumkühlung); der Probetag zeigte dort {4} Stunden und {5} kWh auf der gesperrten Seite (Raumheizung {6} kWh, Raumkühlung {7} kWh). An {8} Tagen waren Heizen und Kühlen freigegeben. ähnelt.
+        /// </summary>
+        public static string SIMENG_ZONENSPERRE {
+            get {
+                return ResourceManager.GetString("SIMENG_ZONENSPERRE", resourceCulture);
             }
         }
         

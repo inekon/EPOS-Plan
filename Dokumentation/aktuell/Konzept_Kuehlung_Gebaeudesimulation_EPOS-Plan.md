@@ -2,6 +2,8 @@
 
 > **Stand 05.10.2026:** KU3 ist abgeschlossen (KU3-1 bis KU3-5, 4d, 4b; #713 bis #728, Referenzprojekt 1055 in 10.4, Basis R36); die Kühlung je Zone steht in 3.5 („So gebaut“); KU3-6 (freie Kühlung über die Wärmequelle der Wärmepumpe, E75) ist gebaut („So gebaut (KU3-6)“ in 5.4).
 
+> **Nachgezogen 08.10.2026 — AK3-K (E103, E104) gebaut (Basis R43)** ([Register](Status_Gebaeudesimulation_VDI6007.md), [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): In einer Zone wird an einem Tag nie geheizt und gekühlt; die Tagesart je Zone wählt innerhalb der Kalenderfreigabe, die Erzeugertagesart der reversiblen Wärmepumpe bleibt projektweit nach K8a, gebildet aus Pass 1 nach der Zonensperre. Ein Projekt nur mit Kältemaschine bekommt seinen Kühlvorlauf aus deren `Kuehl_Vorlauf`. Auf AK3 begrenzt die Kälteschranke die Raumkühlung; eine zu kleine Kälteanlage zeigt sich als wärmerer Raum (Überschreitungsstunden). Tage mit Sperre, gesperrte Energie, Stunden an der Kälteschranke, Umschaltstunden und Kälte-Restbedarf stehen im Bedarfsdialog und im Bericht. 3.5 und 5.2 tragen diesen Stand.
+
 > **Nachgezogen 05.10.2026 — Entscheid E89** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.70): Der Bestandsweg bleibt dauerhaft als wählbarer Rechenweg, die Stufe **GA — Altweg ablösen** entfällt, Q24 und Q25 sind gegenstandslos. Wo dieses Papier GA, „bis zur Ablösung“, den Übergang oder die Löschliste nennt, gilt: Der Bestandteil bleibt dauerhaft — der Hinweis „Kältebedarf 0“ samt Schlüssel und Proben steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Bestandsweg ist der
@@ -617,6 +619,19 @@ Verschiedenes tun. Deshalb:
   ein Gebäude, das wirklich beides braucht — und das muss der Planer sehen.
 - Im **Einzonenfall** zählt die Kennzahl allein die Umschaltstunden aus 3.3; die Abschnittsregel
   bleibt scharf.
+
+**Tagesart je Zone (E104).** In einer Zone wird an einem Tag nie geheizt und gekühlt — auf allen Stufen
+der [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) (7.3). Je Zone und Tag gilt
+innerhalb der **Kalenderfreigabe** ([Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.1):
+Raumheizung ist frei, wenn der Heizsollwert der Zone an mindestens einer Stunde des Tags nicht „aus“ ist;
+Raumkühlung, wenn Kühlbetrieb und `Kuehlung_Aktiv` gelten und der Kühlsollwert an mindestens einer Stunde nicht
+„aus“ ist. Sind beide frei, entscheiden die Tagessummen des unbegrenzten Probetags der Zone in Pass 1 (Kühltag,
+wenn Σ Kühlen > Σ Heizen; Gleichstand und ein Tag ohne Bedarf sind Heiztage — K8a je Zone); ist nur eine frei,
+gilt diese; ist keine frei, wird die Zone nicht konditioniert. Am Kühltag steht der Heizsollwert der Zone den
+ganzen Tag auf „aus“, am Heiztag der Kühlsollwert. Prozesswärme, Prozesskälte und Brauchwasser bleiben frei.
+Damit entfällt die Gleichzeitigkeit **innerhalb einer Zone**; die Kennzahl „Stunden mit gleichzeitigem Heizen
+und Kühlen“ bleibt für das Gebäude über verschiedene Zonen. Neu je Gebäude und Projekt: die Tage mit Sperre der
+Gegenseite und die gesperrte Energie des Probetags.
 
 **So gebaut (KU3-3, 04.10.2026, #715).** Die Zonenspalten `Tab_Zone.Kuehl_*` werden gelesen, nach dieser
 Vererbungsregel (`GebaeudeModellEingang.KuehlungAufloesen`, gleich in `Zonenvorgaben.Bilden`): (1) der
@@ -1452,6 +1467,17 @@ Prozesswärme bleiben bedienbar. Der **Zeitanteil des Heizbetriebs** je Stunde �
 die Heizleistung der Stunde — steht der Kälte nicht zur Verfügung; in der Sperrzeit des
 Energieversorgers kühlt die Maschine nicht. Der Lauf nennt die Kühltage, den Heizbedarf dieser Tage
 und was davon nach allen Erzeugern offen blieb (Warnung, wenn etwas offen blieb).
+
+**Erzeugertagesart und Zonentagesart (E104).** Die Tagesart der Maschine bleibt **projektweit** nach
+dieser Regel, gebildet aus Heiz- und Kühlkanal von Pass 1 **nach** der Zonensperre (3.5) — nicht mehr aus
+dem Projektbedarf vor der Sperre. Bei einem Einzonengebäude ohne fremde Heizlastgänge stimmen Zonen- und
+Erzeugertagesart überein. Sonst kann eine heizende Zone an einem Kühltag der Wärmepumpe stehen: Dann
+decken die übrigen Wärmeerzeuger, was offen bleibt, ist Restbedarf — auf der Stufe AK3 der
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) wirkt es über die Schranke
+(Grund `UMSCHALTUNG`, 7.3), die Zone wird kühler; spiegelbildlich für eine kühlende Zone am Heiztag.
+**Kühlvorlauf:** Ein Projekt nur mit Kältemaschine bekommt seinen Anlagen-Kühlvorlauf aus deren
+`Kuehl_Vorlauf`; mit Wärmepumpen im Kühlbetrieb gilt deren kältester wirksamer `Kuehl_Vorlauf`. Der
+Kühlvorlauf bleibt fest.
 
 ### 5.3 Die Kältemaschine als eigener Erzeugertyp (KU3)
 

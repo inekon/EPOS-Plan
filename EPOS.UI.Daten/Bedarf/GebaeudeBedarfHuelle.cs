@@ -122,8 +122,10 @@ namespace WindowsFormsApplication1
                 ohneSchalter => AufheizauskunftCtrl.Gebaeude(projektId, projekt.m_ID_Klimaregion, modell(), ohneSchalter));
             // Anlagenkopplung AK3 (Festlegung 22): die Kennzahlen des Kreises aus dem letzten Lauf - neben Komfort und Restbedarf.
             Ak3Kennzahlen ak3 = GebaeudeBedarfCtrl.Ak3KennzahlenDesProjekts(projektId);
+            // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis aus demselben Lauf - nur mit Wert.
+            Ak3KKennzahlen ak3k = GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(projektId);
             GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser,
-                                              restbedarf, aufheizung, ak3);
+                                              restbedarf, aufheizung, ak3, ak3k);
 
             // Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche mit der größten Unterschreitung -
             // nur, wenn am Gebäude Komfort erhoben ist und eine Stunde zählt.
@@ -203,6 +205,13 @@ namespace WindowsFormsApplication1
                 ["KachelAk3SpeicherLeer"] = Text_("AK3_GEBB_KACHEL_SPEICHER_LEER", "Stunden mit leerem Speicher"),
                 ["KachelAk3Restbedarf"] = Text_("AK3_GEBB_KACHEL_RESTBEDARF", "Stunden mit Restbedarf"),
                 ["QuelleAk3"] = Text_("AK3_GEBB_QUELLE", "Geschlossener Kreis (AK3), Projekt, letzter Lauf"),
+                ["KachelZonensperreTage"] = Text_("AK3K_GEBB_KACHEL_SPERRTAGE", "Tage mit Sperre der Gegenseite"),
+                ["KachelZonensperreGesperrt"] = Text_("AK3K_GEBB_KACHEL_GESPERRT", "Gesperrte Energie (Heizen / Kühlen)"),
+                ["QuelleZonensperre"] = Text_("AK3K_GEBB_QUELLE_ZONENSPERRE", "Zonensperre, Projekt, letzter Lauf"),
+                ["KachelAk3Kaelteschranke"] = Text_("AK3K_GEBB_KACHEL_KAELTESCHRANKE", "Stunden an der Kälteschranke"),
+                ["KachelAk3Umschaltung"] = Text_("AK3K_GEBB_KACHEL_UMSCHALTUNG", "Umschaltstunden"),
+                ["KachelAk3Kaelterest"] = Text_("AK3K_GEBB_KACHEL_KAELTEREST", "Kälte-Restbedarf"),
+                ["QuelleAk3Kaelte"] = Text_("AK3K_GEBB_QUELLE_KREIS", "Kälteseite im Kreis (AK3), Projekt, letzter Lauf"),
                 ["BildtextVorlauf"] = Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
                 ["KachelVorlaufRuecklauf"] = Text_("GEBB_KACHEL_VORLAUF_RUECKLAUF", "Vorlauf / Rücklauf"),
                 ["KachelBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT", "Stunden mit begrenzter Übergabe"),
@@ -278,7 +287,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
                                                  double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null,
-                                                 GebaeudeBedarfAufheizDaten aufheizung = null, Ak3Kennzahlen ak3 = null)
+                                                 GebaeudeBedarfAufheizDaten aufheizung = null, Ak3Kennzahlen ak3 = null,
+                                                 Ak3KKennzahlen ak3k = null)
         {
             ErgebnisGebaeudeModel zeile = ergebnis.Ergebniszeile;
             var monate = new double[12];
@@ -320,6 +330,14 @@ namespace WindowsFormsApplication1
                 Ak3SchrankeStundenH = ak3?.SchrankeStundenH,
                 Ak3SpeicherLeerStundenH = ak3?.SpeicherLeerStundenH,
                 Ak3RestbedarfStundenH = ak3?.RestbedarfStundenH,
+                // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis.
+                ZonensperreTage = ak3k?.ZonensperreTage,
+                ZonensperreHeizenGesperrtMwh = ak3k?.HeizenGesperrtMwh,
+                ZonensperreKuehlenGesperrtMwh = ak3k?.KuehlenGesperrtMwh,
+                Ak3KaelteschrankeStundenH = ak3k?.KaelteschrankeStundenH,
+                Ak3UmschaltStundenH = ak3k?.UmschaltStundenH,
+                Ak3KaelterestStundenH = ak3k?.KaelterestStundenH,
+                Ak3KaelterestMwh = ak3k?.KaelterestMwh,
                 Rueckstufe = ergebnis.Rueckstufe ?? "",
                 // E37: der Kaeltekreis - nur kuehlgekoppelt, aus demselben Ergebnis.
                 IstKuehlgekoppelt = ergebnis.KuehlGekoppelt,

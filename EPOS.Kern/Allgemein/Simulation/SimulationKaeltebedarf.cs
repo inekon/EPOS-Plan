@@ -338,6 +338,33 @@ namespace WindowsFormsApplication1
 
             if (!Bedarfsprobe(summe)) return false;
 
+            KennzahlenBilden(moAnfang, moEnde);
+            Gerechnet = true;
+
+            if (Kaeltebedarf_Gesamt > 0)
+            {
+                // F-K12: Unterdeckung ist eine benannte Meldung, kein stiller Rest. Hat das
+                // Projekt Kälteerzeuger, sagt es die Kältekaskade - mit Menge und Grund.
+                if (KaelteerzeugerAngelegt <= 0) OhneErzeugerMelden();
+
+                // K5: die Grenze der Zahl, einmal je Lauf.
+                protokoll.HinweisEinmal("kaelte-grenze-feuchte", GrenzeFeuchte);
+            }
+
+            if (StundenHeizenUndKuehlen > 0)
+                protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.SIMENG_KAELTE_HEIZEN_UND_KUEHLEN,
+                    StundenHeizenUndKuehlen, StundenHeizenUndKuehlenGebaeude));
+
+            return true;
+        }
+
+        /// <summary>
+        /// Summe, Spitze, Stunden, Monatswerte und die eigene Dauerlinie aus <see cref="Kaeltebedarf"/>; danach ist die
+        /// ungedeckte Kälte der Bedarf. Gerufen von <see cref="Abschliessen"/> und <see cref="KreisNachfuehren"/>.
+        /// </summary>
+        private void KennzahlenBilden(int[] moAnfang, int[] moEnde)
+        {
             // Die Jahressummen in Stundenfolge (siehe Kaeltebedarf_Gesamt).
             Kaeltebedarf_Gesamt = Jahressumme(Kaeltebedarf) / 1000.0;
             Kaeltebedarf_Gebaeude_Gesamt = Jahressumme(Kaeltebedarf_Gebaeude) / 1000.0;
@@ -368,24 +395,99 @@ namespace WindowsFormsApplication1
             // Vor der Deckung ist die ungedeckte Kälte der Bedarf; die Kältekaskade (KU2) setzt
             // danach ihren Rest (DeckungUebernehmen).
             Kaelterestbedarf = Kaeltebedarf_Gesamt;
-            Gerechnet = true;
+        }
 
-            if (Kaeltebedarf_Gesamt > 0)
+        // =====================================================================
+        //  AK3-K (Fehler 1.1 (a)): der Kühlkanal folgt dem Kreis
+        // =====================================================================
+
+        /// <summary>
+        /// Bucht <see cref="GebaeudeBuchen"/> die Kühlreihe dieses Gebäudeergebnisses in den Kühlkanal? Dieselbe
+        /// Bedingung wie dort: Projekt rechnet Kälte, Gebäude mit Kühlung, VDI-Weg mit wirksamer Kühlung.
+        /// </summary>
+        internal bool Bucht(ProjektGebaeudeModel gebaeude, GebaeudeModellErgebnis ergebnis)
+            => gebaeude != null && gebaeude.Kuehlung_Aktiv && _kuehlbetrieb && _kanaele != null
+               && ergebnis != null && ergebnis.KuehlungWirksam && ergebnis.KuehlbedarfKwh != null;
+
+        /// <summary>
+        /// <b>Führt die Kälteseite um die Abweichung des Kreises nach</b> (Entwurf AK3-K 1.1 (a)): Kühlkanal, <see cref="Kaeltebedarf_Gebaeude"/> und der Prüfakkumulator der
+        /// Bedarfsprobe nehmen in jeder Stunde mit Abweichung dieselbe Abweichung auf; danach laufen die Bedarfsprobe
+        /// ein zweites Mal und Summe, Spitze, Stunden, Monatswerte und Dauerlinie neu — ohne Meldungen, die stehen
+        /// schon aus Pass 1. Stunden ohne Abweichung bleiben Zeichen für Zeichen Pass 1.
+        /// </summary>
+        /// <param name="deltaKwh">Abweichung der Kühlreihe des Kreises gegen Pass 1 je Stunde [kWh] (0 = keine).</param>
+        /// <returns><c>false</c> = die Bedarfsprobe Kälte ist verletzt (<see cref="Fehlertext"/>).</returns>
+        internal bool KreisNachfuehren(double[] deltaKwh, int[] moAnfang, int[] moEnde)
+        {
+            if (!Gerechnet || _kanaele == null || deltaKwh == null) return true;
+            double[] kanal = _kanaele.Kuehlung;
+            bool geaendert = false;
+            for (int h = 0; h < STUNDEN; h++)
             {
-                // F-K12: Unterdeckung ist eine benannte Meldung, kein stiller Rest. Hat das
-                // Projekt Kälteerzeuger, sagt es die Kältekaskade - mit Menge und Grund.
-                if (KaelteerzeugerAngelegt <= 0) OhneErzeugerMelden();
-
-                // K5: die Grenze der Zahl, einmal je Lauf.
-                protokoll.HinweisEinmal("kaelte-grenze-feuchte", GrenzeFeuchte);
+                double d = deltaKwh[h];
+                if (d == 0.0) continue;
+                kanal[h] += d;
+                Kaeltebedarf_Gebaeude[h] += d;
+                _probe[h] += d;
+                geaendert = true;
             }
-
-            if (StundenHeizenUndKuehlen > 0)
-                protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KAELTE_HEIZEN_UND_KUEHLEN,
-                    StundenHeizenUndKuehlen, StundenHeizenUndKuehlenGebaeude));
-
+            if (!geaendert) return true;
+            double[] summe = _kanaele.SummeKaelte();
+            Array.Copy(summe, Kaeltebedarf, STUNDEN);
+            if (!Bedarfsprobe(summe)) return false;
+            KennzahlenBilden(moAnfang, moEnde);
             return true;
+        }
+
+        /// <summary>Der Stand der Kälteseite nach Pass 1 (AK3-K; zweiter Feldlauf der Erdsonde).</summary>
+        internal sealed class Stand
+        {
+            internal double[] Kuehlkanal, Kaeltebedarf, Gebaeude, Monat, Dauerlinie, DauerlinieNichtSortiert, Probe;
+            internal double Max, Gesamt, GebaeudeGesamt, Restbedarf, ProbeMax;
+            internal int Stunden, ProbeVerletzungen;
+            internal bool Gerechnet;
+        }
+
+        /// <summary>Sichert den Stand nach Pass 1, den <see cref="KreisNachfuehren"/> verändert.</summary>
+        internal Stand Sichern() => new Stand
+        {
+            Kuehlkanal = _kanaele != null ? (double[])_kanaele.Kuehlung.Clone() : null,
+            Kaeltebedarf = (double[])Kaeltebedarf.Clone(),
+            Gebaeude = (double[])Kaeltebedarf_Gebaeude.Clone(),
+            Monat = (double[])Kaeltebedarf_Monat.Clone(),
+            Dauerlinie = (double[])Dauerlinie.Clone(),
+            DauerlinieNichtSortiert = (double[])Dauerlinie_nicht_sortiert.Clone(),
+            Probe = (double[])_probe.Clone(),
+            Max = Kaeltebedarf_Max,
+            Gesamt = Kaeltebedarf_Gesamt,
+            GebaeudeGesamt = Kaeltebedarf_Gebaeude_Gesamt,
+            Restbedarf = Kaelterestbedarf,
+            ProbeMax = Bedarfsprobe_MaxAbweichung,
+            Stunden = StundenMitKuehlbedarf,
+            ProbeVerletzungen = Bedarfsprobe_Verletzungen,
+            Gerechnet = Gerechnet,
+        };
+
+        /// <summary>Stellt den mit <see cref="Sichern"/> gesicherten Stand Zeichen für Zeichen wieder her.</summary>
+        internal void Herstellen(Stand s)
+        {
+            if (s == null) return;
+            if (s.Kuehlkanal != null && _kanaele != null) Array.Copy(s.Kuehlkanal, _kanaele.Kuehlung, STUNDEN);
+            Array.Copy(s.Kaeltebedarf, Kaeltebedarf, STUNDEN);
+            Array.Copy(s.Gebaeude, Kaeltebedarf_Gebaeude, STUNDEN);
+            Array.Copy(s.Monat, Kaeltebedarf_Monat, s.Monat.Length);
+            Array.Copy(s.Dauerlinie, Dauerlinie, STUNDEN);
+            Array.Copy(s.DauerlinieNichtSortiert, Dauerlinie_nicht_sortiert, STUNDEN);
+            Array.Copy(s.Probe, _probe, STUNDEN);
+            Kaeltebedarf_Max = s.Max;
+            Kaeltebedarf_Gesamt = s.Gesamt;
+            Kaeltebedarf_Gebaeude_Gesamt = s.GebaeudeGesamt;
+            Kaelterestbedarf = s.Restbedarf;
+            Bedarfsprobe_MaxAbweichung = s.ProbeMax;
+            StundenMitKuehlbedarf = s.Stunden;
+            Bedarfsprobe_Verletzungen = s.ProbeVerletzungen;
+            Gerechnet = s.Gerechnet;
+            Fehlertext = "";
         }
 
         /// <summary>

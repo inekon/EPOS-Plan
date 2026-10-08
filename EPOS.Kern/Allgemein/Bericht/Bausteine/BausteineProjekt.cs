@@ -626,6 +626,61 @@ namespace WindowsFormsApplication1
             KomfortSchreiben(k, stamm, zeilen);
             // ANLAGENKOPPLUNG AK3 (Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur mit Wert.
             Ak3Schreiben(k, stamm);
+            // AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis - nur mit Wert.
+            Ak3KSchreiben(k, stamm);
+        }
+
+        /// <summary>Überschrift der Tafel „Kälteseite im Kreis" (AK3-K) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_AK3K = "Kälteseite im Kreis (Simulationsergebnis Stamm)";
+
+        /// <summary>Der Satz unter der Tafel „Kälteseite im Kreis" — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string HINWEIS_AK3K =
+            "In einer Zone wird an einem Tag nie geheizt und gekühlt: Gezählt werden die Zonentage, an denen die Gegenseite gesperrt war, und die Energie, die der Probetag auf ihr gezeigt hätte. Im geschlossenen Kreis zählen die Stunden, in denen die Kälteschranke eine Zone begrenzte, die Stunden mit Umschaltung der Wärmepumpe und der Kälte-Restbedarf. „—“ heißt: nicht erhoben.";
+
+        /// <summary>Die Spaltenköpfe der Tafel „Kälteseite im Kreis" — zugleich Schlüssel der Übersetzung.</summary>
+        internal static readonly string[] TITEL_AK3K =
+        {
+            "Sperrtage [d/a]", "Heizen gesperrt [MWh/a]", "Kühlen gesperrt [MWh/a]",
+            "An der Kälteschranke [h/a]", "Umschaltung [h/a]", "Kälte-Restbedarf [h/a]", "Kälte-Restbedarf [MWh/a]"
+        };
+
+        /// <summary>
+        /// <b>AK3-K — die Tafel „Kälteseite im Kreis"</b> (Entwurf AK3-K 3.5, Festlegung 20): die Projektzeile mit den
+        /// Kennzahlen der Zonensperre und der Kälteseite im Kreis, eine nicht erhobene Seite als „—". <b>Der Abschnitt
+        /// entfällt</b>, wenn keine der beiden Seiten erhoben ist — jedes Projekt ohne wirksame Kühlung.
+        /// </summary>
+        private static void Ak3KSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            Ak3KKennzahlen a = Ak3KKennzahlen.Aus(stamm?.Ergebnis?.Energiebedarf);
+            if (a == null) return;
+
+            int breite = 1250;
+            int rest = k.Inhaltsbreite - 6 * breite;
+            int[] b = { breite, breite, breite, breite, breite, breite, rest };
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            for (int i = 0; i < TITEL_AK3K.Length; i++)
+                kopf.Append(k.Zelle(TITEL_AK3K[i], b[i], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Left));
+            t.Append(kopf);
+
+            string[] werte =
+            {
+                a.ZonensperreTage is int d ? k.F(d, 0) : "—",
+                a.HeizenGesperrtMwh is double h ? k.F(h, 2) : "—",
+                a.KuehlenGesperrtMwh is double c ? k.F(c, 2) : "—",
+                a.KaelteschrankeStundenH is int s ? k.F(s, 0) : "—",
+                a.UmschaltStundenH is int u ? k.F(u, 0) : "—",
+                a.KaelterestStundenH is int r ? k.F(r, 0) : "—",
+                a.KaelterestMwh is double m ? k.F(m, 2) : "—",
+            };
+            var zeile = new TableRow();
+            for (int i = 0; i < werte.Length; i++)
+                zeile.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Right));
+            t.Append(zeile);
+
+            k.Ueberschrift2(UEBERSCHRIFT_AK3K);
+            k.Fuege(t);
+            k.Hinweis(HINWEIS_AK3K);
         }
 
         /// <summary>Überschrift des Abschnitts Anlagenkopplung AK3 — zugleich Schlüssel der Übersetzung.</summary>

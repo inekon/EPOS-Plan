@@ -135,7 +135,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(1018, 18.0688)]   // vor RB1 (BHKW-Untergrenze aus dem Anlagenfeld, 35 % statt 30 %): 27,4575
         [InlineData(1030, 0.392)]
-        [InlineData(1017, 16.5686)]
+        [InlineData(1017, 16.5576)]   // Basis R43: Zonensperre und Kälteseite im Kreis (R42 16,5686)
         [InlineData(1024, 0.0)]
         [InlineData(1047, 22.1608)]   // Basis R42: Kennlinie über den Vorlauf interpoliert (R40 22,1492)
         public void Reiter_Reihe_und_KWK_Split_fuehren_dieselbe_Einspeisung(int idProjekt, double erwartetMwh)
@@ -309,7 +309,7 @@ namespace EPOS.Kern.Tests
         /// 4.790,09 MWh.
         /// </summary>
         [Theory]
-        [InlineData(1017, 14.78, 8.17)]
+        [InlineData(1017, 14.76, 8.17)]   // Basis R43: Zonensperre (R42 14,78)
         [InlineData(1030, 0.0, 4790.09)]
         public void Der_Stromgang_fuehrt_den_Stromverbrauch_des_Kessels(int idProjekt, double verbrauchMwh,
                                                                        double stufeneingangMwh)

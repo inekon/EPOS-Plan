@@ -161,6 +161,13 @@ namespace WindowsFormsApplication1
             // Hinweise und Gründe
             t.HinweisVdi6007 = Text_("KOND_TXT_HINWEIS_VDI6007", t.HinweisVdi6007);
             t.HinweisAltfelder = Text_("KOND_TXT_HINWEIS_ALTFELDER", t.HinweisAltfelder);
+            t.LabelFreigabe = Text_("KOND_LBL_FREIGABE", t.LabelFreigabe);
+            t.FreigabeHeizen = Text_("KOND_LBL_FREIGABE_HEIZEN", t.FreigabeHeizen);
+            t.FreigabeKuehlen = Text_("KOND_LBL_FREIGABE_KUEHLEN", t.FreigabeKuehlen);
+            t.FreigabeBeides = Text_("KOND_LBL_FREIGABE_BEIDES", t.FreigabeBeides);
+            t.FreigabeKeine = Text_("KOND_LBL_FREIGABE_KEINE", t.FreigabeKeine);
+            t.TextFreigabeZeile = Text_("KOND_TXT_FREIGABE_ZEILE", t.TextFreigabeZeile);
+            t.HinweisFreigabe = Text_("KOND_TXT_HINWEIS_FREIGABE", t.HinweisFreigabe);
             t.GrundKuehlenGesperrt = Text_("KOND_TXT_KUEHLEN_GESPERRT", t.GrundKuehlenGesperrt);
             t.HinweisTagesbilanz = Text_("KOND_TXT_HINWEIS_TAGESBILANZ", t.HinweisTagesbilanz);
             t.HinweisLesemodus = Text_("KOND_TXT_HINWEIS_LESEMODUS", t.HinweisLesemodus);

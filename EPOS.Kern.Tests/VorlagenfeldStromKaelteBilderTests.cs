@@ -140,8 +140,9 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im Kühlbetrieb, 1047 ebenso mit Anlagenkopplung:
         /// Das Kältebild trägt je Erzeuger eine Säule, gedeckte und ungedeckte Kälte ergeben zusammen den Kältebedarf.
-        /// Geschärft nach dem Anwenderbefund 04.10.2026: Die Wärmepumpe DECKT (1017: ≈ 4,01 MWh/a), der Rest ist klein
-        /// (≈ 0,08 MWh/a) — „gedeckt + ungedeckt = Bedarf" allein ist mit gedeckt = 0 trivial erfüllt.
+        /// Geschärft nach dem Anwenderbefund 04.10.2026: Die Wärmepumpe DECKT (1017 mit Fallbildung
+        /// <see cref="KaelteUnterdeckung"/>: ≈ 3,00 MWh/a), der Rest ist ≈ 1,05 MWh/a — „gedeckt + ungedeckt = Bedarf" allein
+        /// ist mit gedeckt = 0 trivial erfüllt.
         /// </summary>
         [Theory]
         [InlineData(PROJEKT_KAELTE)]
@@ -150,6 +151,9 @@ namespace EPOS.Kern.Tests
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            // Fallbildung: Mit der Zonensperre decken 1017 und 1047 ihre Kälte ganz (Basis R43); das Bild braucht für
+            // seine zweite Säule eine Unterdeckung aus der Leistungsgrenze der Wärmepumpe.
+            KaelteUnterdeckung.WaermepumpeMindern(projekt);
 
             (Berichtswerte w, VariantenDaten v) = Sammle(projekt);
             ZeitreihenSatz z = v.Zeitreihen;
@@ -159,9 +163,10 @@ namespace EPOS.Kern.Tests
             double gedeckt = z.Kaeltereihen.Sum(k => z.Hole(k).Sum());
             double ungedeckt = z.Hole(ZeitreihenSatz.KAELTEREST).Sum();
             double bedarf = z.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG)).Sum();
-            // Jahressummen der Basis [MWh/a], im Band gehalten (Befund: gedeckt = 0).
+            // Jahressummen [MWh/a], im Band gehalten (Befund: gedeckt = 0). Bedarf der Basis R43 (Zonensperre), Deckung und
+            // Rest aus der Fallbildung (Kühlkennlinie der Wärmepumpe × 0,5) — dieselben Zahlen wie KaeltegangLaufTests.
             (double sollBedarf, double sollGedeckt, double sollRest) =
-                projekt == PROJEKT_KAELTE ? (4.0826, 4.0704, 0.0122) : (3.8498, 3.8355, 0.0143);
+                projekt == PROJEKT_KAELTE ? (4.0505, 2.9956, 1.0549) : (3.8294, 2.9121, 0.9173);
             Assert.InRange(bedarf / 1000.0, 0.98 * sollBedarf, 1.02 * sollBedarf);
             Assert.InRange(gedeckt / 1000.0, 0.98 * sollGedeckt, 1.02 * sollGedeckt);
             Assert.InRange(ungedeckt / 1000.0, 0.5 * sollRest, 1.5 * sollRest);

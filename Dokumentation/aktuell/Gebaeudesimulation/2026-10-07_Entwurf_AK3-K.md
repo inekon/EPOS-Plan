@@ -1,12 +1,15 @@
 # Entwurf AK3-K — die Kälteseite im geschlossenen Kreis
 
+**Stand 08.10.2026 · K0–K6 gebaut, Basis R43 (`2026-10-07_R43_Kaelteseite_AK3K`); offen: Sichtabnahme.** Wie gebaut
+und wo der Bau vom Plan abweicht: Abschnitt 7.1.
+
 **Stand 07.10.2026 · vorgelegt; die Fragen Q-AK3K-1 bis Q-AK3K-7 sind mit E104 entschieden (Abschnitt 7), dazu zwei
 Vorgaben des Anwenders: Tagesbetriebsart je Zone (Abschnitt 3) und Kalenderfreigabe für Heizen und Kühlen (3.3).** Auftrag
 aus **E103** (Anwender, 07.10.2026: „setze AK3-K um (Rückwärtswirkung)“); die Vertagung aus E102 (Q-AK3-4 (a)) entfällt.
 Gelesen und gemessen auf `feb8db420` (Basis R42 `2026-10-07_R42_Vorlaufinterpolation_AK3`, dreiundzwanzig Projekte;
 Testdatenbank Schemastand 198). **Nummern laut Kopf der Statusdatei:** die Basis **R43** ist für AK3-K angemeldet;
 Schemaschritt 199 ist von der Sitzung IFC angemeldet, **200** ist frei. Dieses Papier vergibt keine Schemanummer: der eine
-Schemaschritt heißt hier **S1** (Ergebnisspalten, Welle K4), das neue Referenzprojekt **RP-AK3K**; angemeldet wird vor dem
+Schemaschritt heißt hier **S1** (Ergebnisspalten, Welle K4; gebaut als Schritt **201**), das neue Referenzprojekt **RP-AK3K**; angemeldet wird vor dem
 Bau. **Verfahren:** zwei Leser (L1: Laufordnung der Kälte, Nähte, Zustand, Rechenzeit mit Messung, Fehler im gebauten AK3;
 L2: Papiere, Widersprüche, Fragen, Basis, Tests, Wellen), Stichproben ihrer Aussagen am Code, an `kern.yml` und an der
 Basis R42, Synthese in diesem Papier; wo die Leser sich widersprachen, gilt der Code (1058 steht in der CI-Auswahl).
@@ -293,7 +296,9 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
     Stundenbeginn (min(SOC, Entladeleistung)) über eine neue lesende Methode ohne Nebenwirkung.
 12. Ein Projekt **nur mit Kältemaschine** bekommt seinen Anlagen-Kühlvorlauf aus deren `Kuehl_Vorlauf` (heute NaN, weil
     `WPCtrl.KuehlVorlaufDesKaeltekanals` nur Wärmepumpen liest).
-13. `UMSCHALTUNG` wird im `Begrenzungsgrund` der Gebäudeseite angelegt; die Paarungsregel bleibt (W3).
+13. `UMSCHALTUNG` wird im `Begrenzungsgrund` der Gebäudeseite angelegt; die Paarungsregel bleibt (W3). **Wie gebaut:** Der
+    Wert `Begrenzungsgrund.Umschaltung` ist angelegt, wird nach der Paarungsregel gebäudeseitig aber nicht gesetzt — die
+    Gebäudestunde trägt `VERFUEGBARKEIT`, der Anlagengrund `UMSCHALTUNG` reist daneben (4.5).
 14. Der Zeitanteil der Kälte geht als Vorrangschätzung am Stundenbeginn in die Schranke; eine Abweichung zur echten
     Kältestunde wird als Kälte-Restbedarf gezählt, nicht nachiteriert.
 
@@ -311,14 +316,17 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
     `Kaeltekaskade.Rechnen(Kaeltebedarf)`, `TagesbetriebsartBestimmen`, `HeizkanalAnKuehltagenMelden`, `Kuehlkreis`, Monats-
     und Dauerlinienreihen, `SimulationRunner`-Reihen der Kälte.
 20. Kennzahlen (Tage mit Sperre der Gegenseite und gesperrte Energie; auf AK3 Stunden an der Kälteschranke, Umschaltstunden,
-    Kälte-Restbedarf) stehen wie die Kreiskennzahlen von AK3 (Schritt 198) als Ergebnisspalten im Projektergebnis — **S1**,
+    Kälte-Restbedarf) stehen wie die Kreiskennzahlen von AK3 (Schritt 198) als Ergebnisspalten im Projektergebnis — **S1** (Schritt 201),
     NULL außerhalb ihres Geltungsbereichs.
 21. Bis zur Basiswelle K5 rechnen Zonensperre und Kreis nur mit je einem **Kernschalter** (ohne Schema, Vorgabe aus, Muster
     W-I); jedes Gate bis dahin ist „Referenzlauf 23/23 byte-gleich gegen R42“.
 
 ## 6. Referenzprojekt und Basis
 
-- **Basis R43** (angemeldet). Es ändern sich **1017, 1047, 1055, 1056** (Zonensperre: rund 10 Tage und 25 Stunden je
+- **Basis R43** `2026-10-07_R43_Kaelteseite_AK3K` ist eingefroren (vierundzwanzig Projekte, 759 CSV, 5 196 Skalare;
+  gegen R42 596 von 718 CSV byte-gleich, abweichend allein 1017, 1047, 1055, 1056 und 1058, 1059 neu; der Bivalenzpunkt
+  von 1047 und 1056 fällt von 17,79 auf −10,0 °C, weil an Kühltagen kein Raumheizbedarf mehr offen bleibt; 1059 steht
+  190 Stunden an der Kälteschranke; Einzelheiten in `Referenzlaeufe/LIESMICH.md`). Die Planung dazu: Es ändern sich **1017, 1047, 1055, 1056** (Zonensperre: rund 10 Tage und 25 Stunden je
   Projekt, 1.2) und **1058** (Zonensperre und Kreis: Kühlkanal folgt der Kreisreihe, +1,95 kWh; Kälteschranke, Komfort der
   Kühlseite, heute 43 Kh; Erdsonde und Rückspeisung); neu kommt **RP-AK3K**; die übrigen **18** Projekte bleiben
   byte-gleich. **1017, 1047 und 1058 stehen in der CI-Auswahl** von `kern.yml`; Einschalten beider Schalter und Basiswechsel
@@ -345,7 +353,7 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
 
 Je Welle ein Opus-Auftrag mit höchstens rund 150 Werkzeugaufrufen; das Gate fährt die Orchestrierung nach dem Merge. Bis K5
 ist jedes Gate „Referenzlauf 23/23 byte-gleich gegen R42“ mit beiden Schaltern aus. Schemaschritt: allein **S1**
-(Ergebnisspalten nach Festlegung 20) in K4; die Nummer meldet die Orchestrierung vor dem Bau an (heute frei: 200).
+(Ergebnisspalten nach Festlegung 20) in K4, gebaut als Schritt **201**.
 
 | Welle | Inhalt | Abnahme | Basis | PT |
 |---|---|---|---|---|
@@ -363,6 +371,23 @@ K1 kommt zuerst, weil die Fehlerbehebung (a) die Kältereihe festlegt; KZ hängt
 laufen, muss aber vor K3 stehen (der Kreis übernimmt die Zonentagesart); K2 setzt K1 voraus, K3 setzt K2 und KZ voraus; K4 kann
 nach K3 neben K6 beginnen. **Gegenüber dem ersten Schnitt (9–16 PT):** die Zonensperre mit Freigabe (+2–3,5 PT) und die
 größere Basis (+0,5 PT) kommen hinzu; die Kühlkurve entfällt (E104).
+
+### 7.1 Wie gebaut
+
+Alle Wellen K0 bis K6 sind gebaut; die Kernschalter Zonensperre und AK3-K sind mit K5 entfallen, beide Teile rechnen fest.
+Basis **R43** `2026-10-07_R43_Kaelteseite_AK3K` (vierundzwanzig Projekte, neu **1059** = RP-AK3K: Kopie von 1058, die
+Wärmepumpe heizt nur, Kältemaschine 10 kW mit Trocken-Rückkühler und Kältespeicher, 190 Stunden an der Kälteschranke;
+nicht in der CI-Auswahl). Abweichungen vom Plan:
+
+- **Sperrzeit vor Umschaltung:** In einer Sperrstunde der Wärmepumpe bleibt der Anlagengrund `SPERRZEIT`; `UMSCHALTUNG`
+  steht nur außerhalb der Sperrstunden.
+- **Schemaschritt S1** ist als Schritt **201** gebaut (`Ak3KSchema` = `ProjektdateiImportSchema.SCHRITT + 1`, sieben nullbare
+  Kennzahlen an `Tab_ErgebnisEnergiebedarf`).
+- **Vorrangschätzung verbessert:** Ohne Freigabe der Heizseite (Sperre, Zeitprogramm, Umschaltung) rechnet sie der
+  Wärmepumpe keinen Vorrang zu, und Erzeuger vor ihr in der Kaskade tragen den Vorrang zuerst; die Probe mit Brauchwasser
+  am Kombipuffer ist danach weder zu knapp noch zu weit.
+- **Kälte-Bestandstests:** Zwölf Bestandstests der Kälte rechnen ihre Werte mit der Zonensperre in neuer Fallbildung.
+- **Begrenzungsgrund:** `Begrenzungsgrund.Umschaltung` ist angelegt, gebäudeseitig gilt die Paarungsregel (Festlegung 13).
 
 ## 8. Fragen an den Anwender
 
@@ -408,5 +433,11 @@ Kälte-Rückwirkung auf AK1/AK2, Kühlung im Tagesbilanz-Weg.
 
 ## 11. Logbuch-Entwürfe
 
-Noch leer; sie entstehen mit dem Bau (Welle K6) und werden mit dem gebündelten Wiki-Upload veröffentlicht (Regel:
-[Konzept Hilfesystem](../Konzept_Hilfesystem_Wikidokumentation.md) 13.3).
+Je ein Satz, veröffentlicht mit dem gebündelten Wiki-Upload (Regel:
+[Konzept Hilfesystem](../Konzept_Hilfesystem_Wikidokumentation.md) 13.3); Datum und Versionsnummer setzt der Anwender.
+
+- (a) Eine Zone wird an einem Tag entweder geheizt oder gekühlt, nie beides; der Kalender schaltet Heizen und Kühlen
+  frei, das Jahresband der Freigabe steht im Reiter Konditionierung.
+- (b) Auf der Kopplungsstufe AK3 wirkt die Kälteanlage auf das Gebäude zurück: Eine zu kleine Kälteanlage zeigt sich als
+  wärmerer Raum.
+- (c) Der Bedarfsdialog und der Bericht zeigen die Kennzahlen der Zonensperre und der Kälteseite im Kreis.

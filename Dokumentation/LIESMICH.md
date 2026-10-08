@@ -297,7 +297,7 @@ Der Wegweiser des Ordners ist
 [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) mit der Tabelle
 Basis → Datum → Zweck; hier stehen die Dateien selbst. Sie sind **byte-gleiche Kopien** — auch
 in ihren Verweisen, von denen fünf ins Leere zeigen (die Wache führt sie als vorbestehende
-Lücken). Die aktuelle, lauffähige Basis `2026-10-07_R42_Vorlaufinterpolation_AK3` ist nicht abgelöst und
+Lücken). Die aktuelle, lauffähige Basis `2026-10-07_R43_Kaelteseite_AK3K` ist nicht abgelöst und
 liegt deshalb nicht hier, sondern unter [`Referenzlaeufe/`](../Referenzlaeufe/LIESMICH.md).
 
 | Basis | gesichertes Protokoll |

@@ -647,7 +647,7 @@ namespace WindowsFormsApplication1
         private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                              bool nachtauskuehlung)
         {
-            if (!KuehlKopplungWirksam)
+            if (!KuehlKopplungWirksam || !Kuehlstunde(h))
             {
                 if (!KopplungWirksam)
                     return new Stundenrand(thetaLue, thetaEq, ThetaSoll[h], ThetaMax[h],
@@ -885,6 +885,15 @@ namespace WindowsFormsApplication1
         /// <summary>Trägt dieser Eingang eine wirksame Schranke der Verfügbarkeit?</summary>
         internal bool FahrplanWirksam => Verfuegbarkeit != null && KopplungWirksam;
 
+        /// <summary>
+        /// Trägt die Stunde <paramref name="h"/> einen Kühlsollwert (nicht „aus")? Eine Stunde ohne ihn rechnet auch mit
+        /// wirksamer Kühlübergabe ohne Kälteseite — wie die Zweige ohne Kühlkopplung (Zonensperre, Entwurf AK3-K 3.1: der
+        /// Heiztag setzt den Kühlsollwert „aus"). Vorher lehnte der Löser eine solche Stunde ab
+        /// (<see cref="GebaeudeModellFehler.RandUngueltig"/>, „KuehlUebergabe ohne Kuehlung"); jeder gültige Lauf bleibt
+        /// damit Zeichen für Zeichen, wie er war.
+        /// </summary>
+        private bool Kuehlstunde(int h) => !double.IsNaN(ThetaMax[h]) && !double.IsPositiveInfinity(ThetaMax[h]);
+
         private Stundenrand MitFahrplan(int h, Stundenrand r)
         {
             if (!FahrplanWirksam) return r;
@@ -898,7 +907,7 @@ namespace WindowsFormsApplication1
             // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
             // Mit wirksamer Kopplung (AK1) trägt die Stunde Übergabe, Vorlauf und Reglerband.
             // Die beiden Zweige ohne Kälteseite stehen WÖRTLICH wie vor E37.
-            if (!KuehlKopplungWirksam)
+            if (!KuehlKopplungWirksam || !Kuehlstunde(h))
             {
                 if (!KopplungWirksam)
                     return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],

@@ -25,11 +25,12 @@ namespace EPOS.Kern.Tests
     /// Startseite den geteilten Bedarf neu gerechnet hat.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public sealed class KaeltegangLaufTests : IClassFixture<TestDatenbank>
+    public sealed class KaeltegangLaufTests : IDisposable
     {
-        private readonly TestDatenbank _db;
+        /// <summary>Je Test eine eigene Arbeitskopie: Die Fallbildung <see cref="KaelteUnterdeckung"/> schreibt in sie.</summary>
+        private readonly TestDatenbank _db = new TestDatenbank();
 
-        public KaeltegangLaufTests(TestDatenbank db) { _db = db; }
+        public void Dispose() => _db.Dispose();
 
         /// <summary>„WP_PV-Speicher": Kälte über eine Wärmepumpe im Kühlbetrieb.</summary>
         private const int PROJEKT_KAELTE = 1017;
@@ -79,6 +80,9 @@ namespace EPOS.Kern.Tests
 
         private static async Task<SimulationErgebnisDienste> Gerechnet(BedarfsZustand bedarf, int projekt)
         {
+            // Fallbildung: Mit der Zonensperre decken 1017 und 1047 ihre Kälte ganz (Basis R43); die Säule „ungedeckte
+            // Kälte" braucht eine Unterdeckung aus der Leistungsgrenze der Wärmepumpe.
+            KaelteUnterdeckung.WaermepumpeMindern(projekt);
             var quelle = new SimulationAnsichtQuelle(bedarf, null);
             var ansicht = (SimulationAnsichtDienste)quelle.AnsichtGaben(projekt, "")["Dienste"];
             var dienste = (SimulationErgebnisDienste)ansicht.Ergebnis["Dienste"];
@@ -88,14 +92,16 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Jahressummen der Basis [MWh/a] — Kältebedarf, Deckung der Wärmepumpe, ungedeckter Rest (1017: Übersicht
-        /// mit der gesäten Erdsonde 4,08 / 4,07 / 0,01). Gehalten in einem Band: Der Befund war gedeckt = 0.
+        /// Die Jahressummen [MWh/a] — Kältebedarf, Deckung der Wärmepumpe, ungedeckter Rest. Basis R43 (mit Zonensperre)
+        /// und Fallbildung <see cref="KaelteUnterdeckung"/> (Kühlkennlinie der Wärmepumpe × 0,5): 1017 4,05 / 3,00 / 1,05,
+        /// 1047 3,83 / 2,91 / 0,92. Der Bedarf ist der der Basis R43; Deckung und Rest stammen aus der Fallbildung. Gehalten
+        /// in einem Band: Der Befund war gedeckt = 0.
         /// </summary>
         private static (double Bedarf, double Gedeckt, double Ungedeckt) Soll(int projekt)
-            => projekt == PROJEKT_KAELTE ? (4.0826, 4.0704, 0.0122) : (3.8498, 3.8355, 0.0143);
+            => projekt == PROJEKT_KAELTE ? (4.0505, 2.9956, 1.0549) : (3.8294, 2.9121, 0.9173);
 
         /// <summary>
-        /// Das Zeichenmodell trägt die Säule der Wärmepumpe (1017: gedeckt ≈ 4,01 MWh/a), darauf den Rest (≈ 0,08 MWh/a),
+        /// Das Zeichenmodell trägt die Säule der Wärmepumpe (1017 mit Fallbildung: gedeckt ≈ 3,00 MWh/a), darauf den Rest (≈ 1,05 MWh/a),
         /// darüber die Bedarfslinie; je Stunde ist die Stapelhöhe der Kältebedarf, und Rest und Bedarf sind die der
         /// Übersicht.
         /// </summary>

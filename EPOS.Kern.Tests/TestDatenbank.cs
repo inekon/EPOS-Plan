@@ -983,6 +983,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ProjektdateiImportSchema.SCHRITT: Format und Herkunft SQPROJ - Neubau von Tab_Importquelle und
                 // der sechs Herkunftstabellen mit erweiterter Pruefklausel. Wiederholbar.
                 ProjektdateiImportSchema.Ausfuehren(null);
+                // Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): die Kennzahlen der Zonensperre und der Kaelteseite
+                // im Kreis an Tab_ErgebnisEnergiebedarf, leer. Wiederholbar.
+                Ak3KSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

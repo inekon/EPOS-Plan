@@ -182,8 +182,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = 1017033"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt = ?", VORLAGE));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ?", VORLAGE));
-            // 1055 ist das einzige Projekt der Testdatenbank mit einer Kältemaschine.
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Type = ?", TYP_KAELTEMASCHINE));
+            // 1055 und seine Übernahme in 1059 (AK3-K-K5a) sind die einzigen Projekte der Testdatenbank mit einer Kältemaschine.
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Type = ?", TYP_KAELTEMASCHINE));
         }
 
         // =====================================================================

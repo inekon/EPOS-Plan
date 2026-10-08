@@ -399,6 +399,7 @@ namespace WindowsFormsApplication1
                 HinweisNutzungsmaske(m.Eingaenge[z].Eingang, werZone);
                 HinweisUntertemperatur(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
                 HinweisAbschnitte(m.Zonen[z], werZone);
+                HinweisZonensperre(m.Zonen[z].Zonensperre, werZone);
                 HinweisKuehlNachtwert(m.Eingaenge[z].Eingang, werZone);
                 HinweisNachtauskuehlung(m.Eingaenge[z].Eingang, m.Zonen[z], werZone);
                 // E63: die begrenzte Wärmeübergabe je gekoppelter Zone, benannt wie im Einzonenweg.
@@ -609,6 +610,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzahlen der Zonensperre</b> (Entwurf AK3-K 3.5; Welle KZ): Tage mit Sperre der Gegenseite, Stunden und
+        /// gesperrte Energie des Probetags, Tage mit beiden Freigaben — nur mit wirksamer Kühlung. Bis S1
+        /// (K4) allein dieser Laufhinweis.
+        /// </summary>
+        internal static void HinweisZonensperre(Zonensperrkennzahl z, string wer)
+        {
+            if (z == null) return;
+            CultureInfo k = CultureInfo.CurrentCulture;
+            SimulationProtokoll.Aktuell.HinweisEinmal("zonensperre-" + wer,
+                string.Format(k, MyResource.Resource.SIMENG_ZONENSPERRE, wer, z.Tage.ToString(k), z.Kuehltage.ToString(k),
+                              z.Heiztage.ToString(k), z.Stunden.ToString(k), z.GesperrtKwh.ToString("0.0", k),
+                              z.HeizenGesperrtKwh.ToString("0.0", k), z.KuehlenGesperrtKwh.ToString("0.0", k),
+                              z.TageBeides.ToString(k)));
+        }
+
+        /// <summary>
         /// <b>Die Laufhinweise der Aufheizoptimierung</b> (Entwurf KP3, Festlegung 21; Teilkonzept 4.8) —
         /// einmal je Gebäude im Protokoll, mit Zahl in der Kultur des Anwenders; die Zähler stehen in der
         /// Ergebniszeile (<see cref="Aufheizergebnis"/>). <b>Der Lauf rechnet weiter</b> — es sind Hinweise.
@@ -737,7 +754,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+            // AK3-K (Festlegung 10): Rechnet der Projektlauf die Stufe im geschlossenen Kreis (AK3), entfällt der Satz
+            // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
                     string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
 
@@ -793,7 +812,9 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1)
+            // AK3-K (Festlegung 10): Rechnet der Projektlauf die Stufe im geschlossenen Kreis (AK3), entfällt der Satz
+            // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
+            if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
                     string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
 
@@ -858,6 +879,7 @@ namespace WindowsFormsApplication1
             HinweisAbschnitte(r, wer);
             HinweisErdreichumfang(r.Erdreich, wer);
             HinweisAufheizung(r.Aufheizung, wer);
+            HinweisZonensperre(r.Zonensperre, wer);
             if (e.Bauteilweg)
             {
                 // Stufe G3: welcher Weg rechnet, und jeder eingetragene U-Wert, der um mehr als

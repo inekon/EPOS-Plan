@@ -498,7 +498,10 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            // AK3-K (Festlegung 16): Im AK3-Weg hat der Kreis die Kältestunden schon gerechnet.
+            Kaeltekaskade stuendlich = _kaeltestunde;
+            _kaeltestunde = null;
+            foreach (Kaelteerzeuger e in stuendlich != null ? new List<Kaelteerzeuger>() : _kaelteerzeuger)
             {
                 if (e.Maschine != null) continue;   // KU3-2: die Kältemaschine kennt keinen Heizzeitanteil
                 WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
@@ -520,9 +523,18 @@ namespace WindowsFormsApplication1
                 foreach (int k in Kanal.KANAELE_WAERME) vorher[k] = (double[])kanaele.Bedarf[k].Clone();
             }
 
-            var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
+            Kaeltekaskade kaskade;
+            if (stuendlich != null)
+            {
+                kaskade = stuendlich;
+                kaskade.Abschliessen();
+            }
+            else
+            {
+                kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
                                               Speicher = KaeltespeicherLesen() };
-            kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+                kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+            }
             kaelte.DeckungUebernehmen(kaskade);
 
             _waermekanalAbweichungen = 0;
@@ -552,6 +564,166 @@ namespace WindowsFormsApplication1
                     (sp.Ladung_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     (sp.Verluste_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     sp.Vollzyklen.ToString("N1", CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>Die Kältekaskade, die der Kreis je Stunde rechnet (AK3-K); <c>null</c> = Jahreslauf nach der Wärme.</summary>
+        private Kaeltekaskade _kaeltestunde;
+
+        /// <summary>Die Sperrmasken der Wärmepumpen im Kühlbetrieb (AK3-K) — dieselben wie in der Kältestunde.</summary>
+        private Dictionary<Kaelteerzeuger, bool[]> _ak3Kaeltemasken;
+
+        /// <summary>
+        /// <b>Kälte-Restbedarf im Kreis</b> (AK3-K, Festlegung 14): Stunden, in denen die Kältestunde einen Rest lässt —
+        /// die Abweichung der Vorrangschätzung der Kälteschranke zur echten Kältestunde; gezählt, nicht nachiteriert.
+        /// </summary>
+        internal int Ak3KaelteRestStunden { get; private set; }
+
+        /// <summary>Der Kälte-Restbedarf dieser Stunden [kWh] (AK3-K, Festlegung 14).</summary>
+        internal double Ak3KaelteRestKwh { get; private set; }
+
+        /// <summary>
+        /// Prüfauftrag K3 (Entwurf 4.5): true, solange die Kälteschranke nach der Wärmestunde mit dem wirklichen
+        /// Heizzeitanteil nachgerechnet wird — nur zum Vergleich mit der Vorrangschätzung, ohne Wirkung auf den Lauf.
+        /// </summary>
+        private bool _ak3HeizzeitanteilEcht;
+
+        /// <summary>Der wirkliche Heizzeitanteil des Moduls <paramref name="modul"/> in der eben gerechneten Wärmestunde.</summary>
+        private double EchterHeizzeitanteil(int modul, int stunde)
+        {
+            double[] heiz = simulation_wp?.Heizzeitanteil_stuendlich != null && modul < simulation_wp.Heizzeitanteil_stuendlich.Length
+                ? simulation_wp.Heizzeitanteil_stuendlich[modul] : null;
+            return heiz != null && stunde < heiz.Length ? heiz[stunde] : 0.0;
+        }
+
+        /// <summary>
+        /// <b>Die Kälteschranke des Kreises</b> (AK3-K 4.2, 4.3, Festlegung 11): die Kälteerzeuger der Kältestunde als
+        /// Kapazitäten — Wärmepumpen im Kühlbetrieb mit Erzeugertagesart, Sperrmaske und der Vorrangschätzung aus ihrer
+        /// Heizkapazität im Kreis, Kältemaschinen aus ihrer Kennlinie —, die Kältespeicher der Kältestunde über den
+        /// Kältespeicherleser und der Kühlvorlauf der Anlage. <c>null</c> ohne Kältestunde im Kreis.
+        /// </summary>
+        private Kaelteschranke Ak3KaelteschrankeBauen(IReadOnlyList<IErzeugerkapazitaet> waerme)
+        {
+            if (_kaeltestunde == null || _kaelteerzeuger == null) return null;
+            bool extrapolation = simulation_wp != null && simulation_wp.Extrapolation_Erlaubt;
+            var erzeuger = new List<IKaelteerzeugerkapazitaet>();
+            Kaelteschranke schranke = null;
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            {
+                if (e.Maschine != null)
+                {
+                    erzeuger.Add(new KaeltemaschineKapazitaet(e));
+                    continue;
+                }
+                bool[] maske = _ak3Kaeltemasken != null && _ak3Kaeltemasken.TryGetValue(e, out bool[] m) ? m : null;
+                var wp = new WaermepumpeKaeltekapazitaet(e, _kuehltage, maske, extrapolation);
+                // Die Heizkapazität derselben Maschine im Kreis (Modul der Anlagenzeile); ohne sie keine Schätzung.
+                WaermepumpeKapazitaet heiz = null;
+                // Die Erzeuger vor der Wärmepumpe in der Kaskade: Sie tragen den Vorrang der Stunde zuerst (K5a).
+                var vorgelagert = new List<IErzeugerkapazitaet>();
+                if (simulation_wp != null && e.Modulindex >= 0 && e.Modulindex < simulation_wp.wp_list.Count)
+                {
+                    int id = simulation_wp.wp_list[e.Modulindex];
+                    int stelle = 0;
+                    foreach (IErzeugerkapazitaet k in waerme)
+                    {
+                        if (k is WaermepumpeKapazitaet w && _ak3WaermeAnlagen != null && stelle < _ak3WaermeAnlagen.Count
+                            && _ak3WaermeAnlagen[stelle] == id) { heiz = w; break; }
+                        vorgelagert.Add(k);
+                        stelle++;
+                    }
+                }
+                if (heiz != null)
+                {
+                    WaermepumpeKapazitaet h = heiz;
+                    int modul = e.Modulindex;
+                    wp.Heizzeitanteil = stunde =>
+                    {
+                        if (_ak3HeizzeitanteilEcht) return EchterHeizzeitanteil(modul, stunde);
+                        // Gibt der Fahrplan die Heizseite nicht frei (Sperrzeit, Zeitprogramm, Umschaltung am Kühltag),
+                        // heizt die Wärmepumpe in der Stunde nicht - sie trägt keinen Vorrang (K5a).
+                        Erzeugerangebot eigen = h.Abfragen(stunde, double.NaN);
+                        if (!(eigen.VerfuegbarKw > 0.0)) return 0.0;
+                        double vor = 0.0;
+                        foreach (IErzeugerkapazitaet k in vorgelagert) vor += k.Abfragen(stunde, double.NaN).VerfuegbarKw;
+                        return Kaelteschranke.Heizzeitanteil(schranke.VorrangDerStunde, eigen.KapazitaetKw, vor);
+                    };
+                }
+                erzeuger.Add(wp);
+            }
+            schranke = new Kaelteschranke(erzeuger, new Kaeltespeicherleser(_kaeltestunde.Speicher),
+                                          simulation_Waermebedarf.KuehlVorlaufAnlageC);
+            return schranke;
+        }
+
+        /// <summary>
+        /// <b>Die Kältestunde im Kreis</b> (AK3-K, Entwurf 4.1 Schritt 5, Festlegung 16), nur im AK3-Weg: Kälteerzeuger (ohne Wärmepumpe in der Schleife hier statt nach der Wärme),
+        /// Kältespeicher und die Kältekaskade werden vor der Stundenschleife angelegt; die zurückgegebene Aktion rechnet je
+        /// Stunde nach der Wärmestunde den Kühlzeitanteil der Wärmepumpen aus ihrem eben gerechneten Heizzeitanteil und
+        /// die Kältestunde mit dem Kältebedarf des Kreises (Pass 1 plus Abweichung der Stunde). Danach schließt
+        /// <see cref="KaeltekaskadeRechnen"/> das Jahr ab, statt es zu rechnen. <c>null</c> = der Jahreslauf.
+        /// </summary>
+        private Action<int> Ak3KaeltestundeEinrichten()
+        {
+            _kaeltestunde = null;
+            Ak3Weg weg = Stundenbedarf is Ak3Stundenbedarf ? simulation_Waermebedarf?.Ak3 : null;
+            if (weg == null || m_bError) return null;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
+            if (kaelte == null || !kaelte.Gerechnet) return null;
+            if (!_wpInSchleife) KaelteerzeugerVorbereiten();
+            if (_kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return null;
+
+            var masken = new Dictionary<Kaelteerzeuger, bool[]>();
+            _ak3Kaeltemasken = masken;
+            Ak3KaelteRestStunden = 0;
+            Ak3KaelteRestKwh = 0.0;
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            {
+                if (e.Maschine != null) continue;
+                WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
+                Sperrprofil sperre = simulation_wp.SperrprofilDesModuls(e.Modulindex);
+                masken[e] = sperre != null
+                    ? sperre.Verdichter
+                    : Sperrprofil.Bilden(m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis, null, 0).Verdichter;
+                e.Zeitanteil = new double[Kanalsatz.STUNDEN_JAHR];
+            }
+            var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
+                                              Speicher = KaeltespeicherLesen(), ImKreis = true };
+            kaskade.Beginnen(simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+            _kaeltestunde = kaskade;
+            return h =>
+            {
+                foreach (KeyValuePair<Kaelteerzeuger, bool[]> z in masken)
+                {
+                    double[] heiz = simulation_wp.Heizzeitanteil_stuendlich != null &&
+                                    z.Key.Modulindex < simulation_wp.Heizzeitanteil_stuendlich.Length
+                        ? simulation_wp.Heizzeitanteil_stuendlich[z.Key.Modulindex] : null;
+                    z.Key.Zeitanteil[h] = Kaeltekaskade.ZeitanteilDerStunde(_kuehltage, heiz, z.Value, h);
+                }
+                // Prüfauftrag K3 (4.5): die Kälteschranke mit dem wirklichen Heizzeitanteil gegen die Vorrangschätzung —
+                // am Zustand des Stundenbeginns (Kältespeicher erst in der Kältestunde geschrieben), ohne Wirkung.
+                Anlagenkopplung kreis = weg.Kreis;
+                Kopplungsstunde ks = kreis?.LetzteStunde;
+                if (ks != null && ks.Jahresstunde == h && ks.KaelteschrankeGreift && kreis.Kaelteschranke != null)
+                {
+                    _ak3HeizzeitanteilEcht = true;
+                    try
+                    {
+                        Kaelteschranke ksr = kreis.Kaelteschranke;
+                        kreis.VorrangschaetzungPruefen(ks, ksr.Angebot(h, ksr.VorrangDerStunde).LeistungKw);
+                    }
+                    finally { _ak3HeizzeitanteilEcht = false; }
+                }
+                double d = weg.KaelteDeltaKwh[h];
+                kaskade.StundeRechnen(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]);
+                // Festlegung 14: der Rest der echten Kältestunde ist die Abweichung zur Schätzung der Kälteschranke.
+                double rest = kaskade.Rest_stuendlich[h];
+                kreis?.KaelteRestZaehlen(rest);
+                if (rest > 0.0)
+                {
+                    Ak3KaelteRestStunden++;
+                    Ak3KaelteRestKwh += rest;
+                }
+            };
         }
 
         /// <summary>

@@ -158,6 +158,17 @@ namespace WindowsFormsApplication1
             { "Restbedarf [h/a]", "Residual demand [h/a]" },
             { "Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück. Gezählt werden die Durchläufe des Kreises je Stunde, die Wechsel des Betriebsfalls, die Stunden, in denen die Schranke des Angebots eine Zone begrenzte, die Stunden mit leerem Heizungspuffer und die Stunden mit Restbedarf der Kaskade.",
               "Each hour, the available output of the generators and storage acts back on the buildings. Counted are the iterations of the loop per hour, the changes of operating case, the hours in which the limit of the supply restricted a zone, the hours with an empty heating buffer and the hours with residual demand of the cascade." },
+            // AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis
+            { "Kälteseite im Kreis (Simulationsergebnis Stamm)", "Cooling side in the loop (base simulation result)" },
+            { "Sperrtage [d/a]", "Blocked days [d/a]" },
+            { "Heizen gesperrt [MWh/a]", "Heating blocked [MWh/a]" },
+            { "Kühlen gesperrt [MWh/a]", "Cooling blocked [MWh/a]" },
+            { "An der Kälteschranke [h/a]", "At the cooling limit [h/a]" },
+            { "Umschaltung [h/a]", "Changeover [h/a]" },
+            { "Kälte-Restbedarf [h/a]", "Residual cooling demand [h/a]" },
+            { "Kälte-Restbedarf [MWh/a]", "Residual cooling demand [MWh/a]" },
+            { "In einer Zone wird an einem Tag nie geheizt und gekühlt: Gezählt werden die Zonentage, an denen die Gegenseite gesperrt war, und die Energie, die der Probetag auf ihr gezeigt hätte. Im geschlossenen Kreis zählen die Stunden, in denen die Kälteschranke eine Zone begrenzte, die Stunden mit Umschaltung der Wärmepumpe und der Kälte-Restbedarf. „—“ heißt: nicht erhoben.",
+              "A zone is never heated and cooled on the same day: counted are the zone days on which the opposite side was blocked and the energy the trial day would have shown on it. In the closed loop, counted are the hours in which the cooling limit restricted a zone, the hours with heat pump changeover and the residual cooling demand. “—” means: not recorded." },
             // KU3-3: der Kaeltebedarf je Zone
             { "Kältebedarf je Zone", "Cooling demand per zone" },
             { "Kältebedarf [MWh/a]", "Cooling demand [MWh/a]" },

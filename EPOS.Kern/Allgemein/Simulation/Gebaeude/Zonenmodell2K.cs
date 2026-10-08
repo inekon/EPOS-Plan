@@ -361,6 +361,8 @@ namespace WindowsFormsApplication1
             // Der Kappungsanteil von Heizleistung_Max [s] auch im idealen Fall (Entwurf KP3, Befund B1,
             // Festlegung 20): ein eigener Akkumulator, nur geschrieben, nie in eine andere Summe gelesen.
             double akkKappung = 0.0;
+            // AK3-K: der Kappungsanteil an der Kälteschranke [s] im idealen Fall — nur geschrieben, nie in eine andere Summe.
+            double akkKuehlKappung = 0.0;
             // Messung RP2a (nur mit Innenumkehrmessung): innere Lastumkehr [J] und Bandverletzung [K·s].
             double mUmkehrJ = 0.0, mBandKs = 0.0;
             int mUmkehrAb = 0, mBandAb = 0;
@@ -482,6 +484,7 @@ namespace WindowsFormsApplication1
                         break;
                 }
                 if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
+                else if (fall == Betriebsfall.Kuehlgrenze) akkKuehlKappung += tau;
                 if (ab.Gekoppelt && ab.K.Seite == Uebergabeseite.Kuehlen) tauJeGrundKuehl[(int)ab.Grund] += tau;
                 else if (r.MitUebergabe) tauJeGrund[(int)ab.Grund] += tau;
                 // Spiegelbildlich zur Heizseite zählt ein ungekoppelter Abschnitt auf der Kälteseite
@@ -523,6 +526,9 @@ namespace WindowsFormsApplication1
                     VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
                     Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
                         ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    KaelteverfuegbarkeitAnteil = r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0,
+                    Kaelteverfuegbarkeitsgrund = r.KaelteverfuegbarkeitIstGrenze && akkKuehlKappung > 0.0
+                        ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                     MessungUmkehrJ = mUmkehrJ,
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
@@ -583,6 +589,9 @@ namespace WindowsFormsApplication1
                 VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
                 Verfuegbarkeitsgrund = VerfuegbarkeitAnteilDerStunde(tauJeGrund, akkKappung, in r) > 0.0
                     ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                KaelteverfuegbarkeitAnteil = KaelteverfuegbarkeitAnteilDerStunde(tauJeGrundKuehl, akkKuehlKappung, in r),
+                Kaelteverfuegbarkeitsgrund = KaelteverfuegbarkeitAnteilDerStunde(tauJeGrundKuehl, akkKuehlKappung, in r) > 0.0
+                    ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
@@ -604,8 +613,20 @@ namespace WindowsFormsApplication1
             => r.MitUebergabe ? tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S
                : r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0;
 
+        /// <summary>
+        /// Der Grund einer gekappten Kühlleistung (AK3-K, 4.2): Ist die Kälteschranke die kleinere Grenze, heißt er
+        /// <see cref="Begrenzungsgrund.Verfuegbarkeit"/>, sonst wie im Bestand <see cref="Begrenzungsgrund.KuehlleistungMax"/>.
+        /// </summary>
+        private static Begrenzungsgrund KappungsgrundKuehlen(in Stundenrand r)
+            => r.KaelteverfuegbarkeitIstGrenze ? Begrenzungsgrund.Verfuegbarkeit : Begrenzungsgrund.KuehlleistungMax;
+
+        /// <summary>Zeitanteil der Stunde an der Kälteschranke [–]: mit Kühlübergabe aus den Gründen, sonst aus der Kappung.</summary>
+        private static double KaelteverfuegbarkeitAnteilDerStunde(Span<double> tauJeGrundKuehl, double akkKuehlKappung, in Stundenrand r)
+            => r.MitKuehluebergabe ? tauJeGrundKuehl[(int)Begrenzungsgrund.Verfuegbarkeit] / STUNDE_S
+               : r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0;
+
         /// <summary>Zahl der Begrenzungsgründe beider Seiten (Länge der Zeitsummen je Grund).</summary>
-        private const int GRUENDE = 10;
+        private const int GRUENDE = 11;
 
         // Das Muster der zuletzt gerechneten Stunde (G6b W3): Fallfolge und Abschnittsdauern.
         private readonly Betriebsfall[] _letzteFolge = new Betriebsfall[ABSCHNITTSDECKEL];
@@ -712,6 +733,7 @@ namespace WindowsFormsApplication1
             double akkHeiz = 0.0, akkKuehl = 0.0, akkAir = 0.0;
             double akkS1 = 0.0, akkS2 = 0.0, akkM1 = 0.0, akkM2 = 0.0;
             double akkKappung = 0.0;     // Kappungsanteil wie in Schritt (Entwurf KP3, Festlegung 20)
+            double akkKuehlKappung = 0.0; // Kappung an der Kälteschranke wie in Schritt (AK3-K)
             double mUmkehrJ = 0.0, mBandKs = 0.0;
             int mUmkehrAb = 0, mBandAb = 0;
             // E63: Zeit je Begrenzungsgrund [s], nur mit Übergabe geführt (wie in Schritt).
@@ -789,6 +811,7 @@ namespace WindowsFormsApplication1
                         break;
                 }
                 if (fall == Betriebsfall.Heizgrenze) akkKappung += tau;
+                else if (fall == Betriebsfall.Kuehlgrenze) akkKuehlKappung += tau;
                 if (r.MitUebergabe) tauJeGrund[(int)GrundImMuster(fall, x, in r)] += tau;
                 akkAir += air * tau;
                 akkS1 += s1 * tau;
@@ -829,6 +852,9 @@ namespace WindowsFormsApplication1
                     VerfuegbarkeitAnteil = r.VerfuegbarkeitIstGrenze ? akkKappung / STUNDE_S : 0.0,
                     Verfuegbarkeitsgrund = r.VerfuegbarkeitIstGrenze && akkKappung > 0.0
                         ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                    KaelteverfuegbarkeitAnteil = r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0,
+                    Kaelteverfuegbarkeitsgrund = r.KaelteverfuegbarkeitIstGrenze && akkKuehlKappung > 0.0
+                        ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                     MessungUmkehrJ = mUmkehrJ,
                     MessungUmkehrAbschnitte = mUmkehrAb,
                     MessungBandKs = mBandKs,
@@ -874,6 +900,9 @@ namespace WindowsFormsApplication1
                 VorlaufAnlageAnteil = tauJeGrund[(int)Begrenzungsgrund.VorlaufAnlage] / STUNDE_S,
                 Verfuegbarkeitsgrund = tauJeGrund[(int)Begrenzungsgrund.Verfuegbarkeit] > 0.0
                     ? r.GrundBeiKappung : Verfuegbarkeitsgrund.KeineBegrenzung,
+                KaelteverfuegbarkeitAnteil = r.KaelteverfuegbarkeitIstGrenze ? akkKuehlKappung / STUNDE_S : 0.0,
+                Kaelteverfuegbarkeitsgrund = r.KaelteverfuegbarkeitIstGrenze && akkKuehlKappung > 0.0
+                    ? r.GrundBeiKaeltekappung : Verfuegbarkeitsgrund.KeineBegrenzung,
                 MessungUmkehrJ = mUmkehrJ,
                 MessungUmkehrAbschnitte = mUmkehrAb,
                 MessungBandKs = mBandKs,
@@ -1150,7 +1179,7 @@ namespace WindowsFormsApplication1
 
             // Die Gründe und Fälle der Seite (Spiegel: Heizgrenze ↔ KeineKaelte usw.).
             Begrenzungsgrund grundNichts = heizen ? Begrenzungsgrund.Heizgrenze : Begrenzungsgrund.KeineKaelte;
-            Begrenzungsgrund grundLeistungMax = heizen ? KappungsgrundHeizen(in r) : Begrenzungsgrund.KuehlleistungMax;
+            Begrenzungsgrund grundLeistungMax = heizen ? KappungsgrundHeizen(in r) : KappungsgrundKuehlen(in r);
             Betriebsfall fallGrenze = heizen ? Betriebsfall.Heizgrenze : Betriebsfall.Kuehlgrenze;
 
             // Der freie Lauf ohne Heizung am Abschnittsbeginn und die Antwort der Raumluft auf

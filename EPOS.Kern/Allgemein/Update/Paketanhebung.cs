@@ -362,6 +362,10 @@ namespace WindowsFormsApplication1
             // die Prüfklauseln nehmen danach auch SQPROJ an.
             new Stufe(ProjektdateiImportSchema.SCHRITT, Art.Ddl,
                       "Format und Herkunft SQPROJ für den Gebäudeimport aus der Projektdatei"),
+            // Ein älteres Paket führt keine Kennzahlen der Zonensperre und der Kälteseite im Kreis; die Spalten kommen
+            // leer an („nicht erhoben").
+            new Stufe(Ak3KSchema.SCHRITT, Art.Ddl,
+                      "AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

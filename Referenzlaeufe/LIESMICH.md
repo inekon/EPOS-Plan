@@ -277,6 +277,10 @@ entstehen oder verschwinden.
 > Senkenzuordnung in `Z_AnlageSenke` und die Lade-Prioritäten der Erzeuger), die **Heizkennlinie** der Projektwärmepumpe
 > in `Tab_Kenndaten` samt ihren Vorlauf-Stützstellen — über sie wird am Vorlauf interpoliert (Entwurf AK3, I-1 bis
 > I-3) — und `Ptherm` der Projektkopien `Tab_Heizkessel` und `Tab_BHKW`, die in die Schranke des Kreises eingehen.
+> Betroffen ist ebenso die **Kälteseite** eines gekoppelten Referenzprojekts auf Stufe AK3, die die Kälteschranke des
+> Kreises bildet: seine Kälteerzeuger (Kühlkennlinie der Wärmepumpe samt Stützstellen und ihr Kühlbetrieb, die
+> Kältemaschine samt Kennlinie und Anlagenzeile, freie Kühlung), sein Kältespeicher und die Kaskade (`Tool_1` bis
+> `Tool_6`), dazu das Anlegen oder Entfernen eines solchen Projekts (1058 und 1059).
 >
 > **Rechenwirkung haben die Projekte 1047, 1054, 1056 und 1058.** Projekt **1047 „Referenz Anlagenkopplung AK1"**, die Kopie von 1017:
 > Kopplungsstufe „AK1", Gebäude 10653 mit Heizkreis (Radiator, Heizkurve gefahren) und Kühlübergabe
@@ -298,6 +302,9 @@ entstehen oder verschwinden.
 > Projekt **1058 „Referenzprojekt AK3"**, die Kopie von 1056 (unten „Das Referenzprojekt 1058“): Kopplungsstufe AK3,
 > `Heizkurve_Raumeinfluss` 1,0 und ein Heizungspuffer an der Wärmepumpe samt Senken und Lade-Prioritäten aus
 > [`Skripte/referenzprojekt_1058_ak3.py`](Skripte/referenzprojekt_1058_ak3.py).
+> Projekt **1059 „Referenzprojekt AK3-K"**, die Kopie von 1058 (unten „Das Referenzprojekt 1059“): die Wärmepumpe heizt
+> nur, die Kälte deckt eine Kältemaschine von 10 kW mit dem Kältespeicher aus 1055 aus
+> [`Skripte/referenzprojekt_1059_ak3k.py`](Skripte/referenzprojekt_1059_ak3k.py).
 > Eine leere Spalte ist hier eine Setzung wie eine gefüllte: Wer eine Vorgabe von Hand einträgt, ändert
 > die Basis. Die übrigen Referenzprojekte stehen ohne Kopplungsstufe und ohne Haken; ihre
 > Gebäude rechnen ideal.
@@ -555,6 +562,23 @@ Speicherbilanz, Kosten und Emissionen.
 > Kopie von 1017, ein Lauf mit Kälte allein aus der Kältemaschine, eigenem Zähler und Ladung und Entladung des
 > Kältespeichers). Die Vorlage 1017 bleibt unverändert; für 1055 gelten daneben die Regeln „gesäte Gebäudedaten“ und
 > „gesäte Kältedaten“ wie für 1017.
+>
+> Dieselbe Regel gilt für die Kältemaschine und den Kältespeicher eines **gekoppelten** Referenzprojekts auf Stufe AK3:
+> Projekt 1059 (unten „Das Referenzprojekt 1059“) trägt die Kältemaschine aus 1055 auf 10 kW skaliert samt dem
+> Kältespeicher; dort bilden sie die Kälteschranke des Kreises (Regel „gesäte Auslegungsdaten der Übergabe“). Gehalten
+> von `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`.
+
+## Die Einfrierregel „Freigabe der Konditionierung“ (Zonensperre)
+
+Die Gebäude heizen und kühlen eine Zone nie am selben Tag: Die Tagesbetriebsart je Zone wählt innerhalb der
+Kalenderfreigabe (Entwurf AK3-K Abschnitt 3). Was die Freigabe setzt, entscheidet damit über Heiz- und Kühltage.
+
+> **Wer bei einem Referenzprojekt mit Kühlung die Freigabe der Konditionierung ändert, friert im selben Schritt die
+> Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind je Gebäude und Zone das „aus“ der Heiz- und Kühlsollwertkalender (Vorgabezeilen, Kalender und Perioden),
+> die Heiz- und die Kühlperiode und der Schalter `Kuehlbetrieb` samt `Kuehlung_Aktiv`. Rechenwirkung haben 1017, 1047,
+> 1055, 1056, 1058 und 1059; für sie gelten daneben die Regeln „gesäte Kältedaten“ und „gesäte Konditionierungsdaten“.
 
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
@@ -659,7 +683,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-07_R42_Vorlaufinterpolation_AK3`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-07_R43_Kaelteseite_AK3K`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -674,11 +698,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen) und die Basis R41 (Erdreichprüfung) am 07.10.2026**
-(58 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026**
+(59 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 58 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 59 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -688,11 +712,12 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-07_R42_Vorlaufinterpolation_AK3/`** — **dreiundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058), **718 CSV**, **4 862 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 07.10.2026, Stand `a1ce23b`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **198**, 90 525 696 Byte, LFS-SHA-256
-`e09fceedc334a57647aac0c69d126c1f9793cdd2a41fd6f8d98bc4da366747f6`, mit den Projekten 1053 bis 1058; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+**`2026-10-07_R43_Kaelteseite_AK3K/`** — **vierundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059), **759 CSV**, **5 196 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 07.10.2026, Stand `8a54ce0`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **199** — die vorläufige Nummer von `Ak3KSchema`, gleich **201** nach der
+Umnummerierung hinter 199 `NordrichtungSchema` und 200 `ProjektdateiImportSchema` —, 91 340 800 Byte, LFS-SHA-256
+`82a1b8c7e3ec06dd1a904dbff8cd2639f3bee84cdc667c3034865f504715cd78`, mit den Projekten 1053 bis 1059; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
@@ -713,48 +738,63 @@ Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektW
 `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
 Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
 Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
-und Kennzahlen des Kreises von Projekt 1058. 1050, 1052, 1054, 1055, 1056 und 1057 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
-rechnet alle dreiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+und Kennzahlen des Kreises von Projekt 1058 und `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059. 1050, 1052, 1054, 1055, 1056, 1057 und 1059 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh`
+rechnet alle vierundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Interpolation der Wärmepumpenkennlinie über den Vorlauf (AK3-I, Entscheid E102 zu Q-AK3-6) und das neue
-> Referenzprojekt 1058 auf Stufe AK3 (RP-AK3, E102 zu Q-AK3-7) — allein 1047 und 1056 ändern sich, 1058 ist neu, alle
-> übrigen Projekte sind byte-gleich.**
+> **Anlass: die Zonensperre je Zone auf allen Stufen und die Kälteseite im geschlossenen Kreis auf Stufe AK3 (AK3-K,
+> Entscheide E103 und E104) samt dem neuen Referenzprojekt 1059 (RP-AK3K) — allein 1017, 1047, 1055, 1056 und 1058
+> ändern sich, 1059 ist neu, die übrigen achtzehn Projekte sind byte-gleich.**
 >
-> **AK3-I:** Die Wärmepumpe rechnet am gerechneten Vorlauf zwischen den beiden einschließenden Kennlinien linear —
-> Heizleistung und Leistungszahl je für sich, die elektrische Leistung folgt als Quotient (I-1); auf einer Stützstelle
-> rechnet deren Kennlinie, außerhalb gilt die Randregel (I-2); die Kälteseite interpoliert ebenso zwischen den
-> Kühl-Vorläufen (I-3). Das ist eine **EPOS-Lesart** in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und
-> DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6 ([Entwurf AK3](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md)
-> Abschnitt 3); das Halten der obersten Kennlinie über der höchsten Stützstelle benennt der Lauf je Gerät im Hinweis.
-> Wirkung haben nur die gekoppelten Projekte mit Wärmepumpe: Ihr Vorlauf folgt der Heizkurve und liegt meist zwischen
-> zwei Stützstellen; alle ungekoppelten Vorläufe liegen auf einer Stützstelle, der Kühl-Vorlauf 18 °C ist eine.
-> **Gegen R41 sind 665 von 677 CSV byte-gleich; abweichend je sechs Dateien von 1047 und 1056** (`aggregate.csv`,
-> `wp_strom`, `wp_quellentemperatur`, `reststrom_viertelstunde`, `ssp_gespeichert_viertelstunde`,
-> `pv_speicherfuellstand`), je 14 Skalare; die Wärme der Wärmepumpe und die Komfortzahlen bleiben gleich:
+> **Zonensperre:** Ein Gebäude heizt und kühlt eine Zone nie am selben Tag. Die Tagesbetriebsart je Zone wählt innerhalb
+> der Kalenderfreigabe (Heiz- und Kühlsollwertkalender samt „aus“, Heiz- und Kühlperiode); sind beide Seiten frei,
+> entscheiden die Tagessummen des unbegrenzten Probetags der Zone (Kühltag, wenn mehr Kühlen als Heizen; Gleichstand und
+> ein Tag ohne Bedarf sind Heiztage). Die Gegenseite steht den ganzen Tag auf „aus“. Das gilt auf allen Kopplungsstufen; neu im Ergebnis sind
+> `Zonensperre_Tage`, `Zonensperre_Heizen_Gesperrt_MWh` und `Zonensperre_Kuehlen_Gesperrt_MWh`. Wirkung haben nur die
+> Referenzprojekte mit Kühlung: an 9 bis 12 Tagen je Projekt fallen 0,02 bis 0,05 MWh Heizen und 0,01 MWh Kühlen weg.
+> **Kälteseite im Kreis (nur AK3):** Der Kälteerzeuger und der Kältespeicher stehen mit einer Kälteschranke im
+> Stundenschritt des Kreises; greift die Schranke, wird der Raum wärmer (Rückwirkung auf das Gebäude). Auf AK3 rechnet
+> allein 1058 (Kühlkanal folgt der Kreisreihe; 37 Stunden an der Kälteschranke).
 >
-> | Projekt | WP-Strom (kWh/a) | JAZ | Jahresentzug der Sonde (kWh/a) | größter Entzug (kW) | BHKW-Strombedarfsdeckung (%) |
-> |---|---|---|---|---|---|
-> | 1047 | 2 124,6 → 2 114,4 (−0,48 %) | 4,45 → 4,47 | 7 310 → 7 320 | 13,70 → 13,97 | 48,95 → 48,92 |
-> | 1056 | 2 804,5 → 2 775,4 (−1,04 %) | 4,33 → 4,36 | 9 313 → 9 342 | 16,45 → 16,81 | 49,09 → 49,01 |
+> **Gegen R42 sind 596 von 718 CSV byte-gleich; abweichend 19 Dateien von 1017, 28 von 1047, 18 von 1055, 28 von 1056 und
+> 29 von 1058; 1059 neu (41 CSV)** (Werte R42 → R43):
 >
-> Die Messung mit Schalter vor dem Basiswechsel (auf R39, Wärmepumpe noch ohne Erdsonde) zeigte −0,59 % und −1,14 %.
+> | Projekt | Kältebedarf (MWh) | Kühlstunden | Kältedeckung (%) | Kältestrom (MWh) | Zonensperre (Tage) | Bivalenzpunkt (°C) |
+> |---|---|---|---|---|---|---|
+> | 1017 | 4,08 → 4,05 | 619 → 604 | 99,70 → 100 | 0,777 → 0,773 | 12 | — |
+> | 1047 | 3,85 → 3,83 | 626 → 616 | 99,63 → 100 | 0,732 → 0,731 | 10 | 17,79 → −10,03 |
+> | 1055 | 4,08 → 4,05 | 619 → 604 | 100 → 100 | 1,256 → 1,246 | 12 | — |
+> | 1056 | 3,85 → 3,83 | 625 → 616 | 98,04 → 98,39 | 0,720 → 0,719 | 9 | 17,79 → −10,04 |
+> | 1058 | 3,85 → 3,81 | 626 → 590 | 98,03 → 100 | 0,721 → 0,727 | 10 | — |
 >
-> **RP-AK3 (1058):** die Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve
-> (unten „Das Referenzprojekt 1058“) — 41 CSV, 278 Skalare. Neu sind die Einfrierregeln zur Heizkennlinie der
-> Projektwärmepumpe, zu `Ptherm` der Projektkessel und -BHKW und zu Puffer, Raumeinfluss und Stufe eines gekoppelten
-> Referenzprojekts (Abschnitt „gesäte Auslegungsdaten der Übergabe“ oben). Gesamt 718 CSV, 4 862 Skalare. Zwei Läufe
-> sind byte-gleich (718/718 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+> An 1058 dazu: Puffer 414,07 → 413,93 Vollzyklen, Fallwechsel 407 → 408, Kühlseite 32 → 34 Überschreitungsstunden und
+> 43 → 45,88 Kh; die Heizseite des Komforts bleibt (683 Stunden, 931,7 Kh).
+>
+> **Der Bivalenzpunkt von 1047 und 1056** ist die höchste Außentemperatur, bei der nach der Wärmepumpe noch Wärmebedarf
+> offen bleibt. In R42 blieb an Kühltagen Heizbedarf offen, weil die Wärmepumpe dort im Kühlbetrieb und für die Wärme
+> gesperrt war — so lag der Punkt bei 17,79 °C. Mit der Zonensperre gibt es an Kühltagen keinen Raumheizbedarf mehr; der
+> Punkt fällt auf die tatsächliche Leistungsgrenze der Wärmepumpe bei −10,0 °C.
+>
+> **RP-AK3K (1059):** die Kopie von 1058 mit einer Kältemaschine (10 kW, Trocken-Rückkühler, eigener Zähler) und dem
+> Kältespeicher aus 1055; die Wärmepumpe heizt nur. Die Maschine ist bewusst zu klein, damit die Kälteschranke greift:
+> **190 Stunden an der Kälteschranke**, Kältedeckung 100 %, 0 Stunden Kälterest, Kältespeicher 86,95 Vollzyklen, Kühlseite
+> 91 Überschreitungsstunden und 158,09 Kh (unten „Das Referenzprojekt 1059“) — 41 CSV, 315 Skalare. Gesamt 759 CSV,
+> 5 196 Skalare. Zwei Läufe sind byte-gleich (759/759 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS,
+> 731/759 CSV byte-gleich.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058 \
->   --ziel Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059 \
+>   --ziel Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K
 > ```
 >
-> Die Regeln stehen im [Entwurf AK3](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) Abschnitt 3
-> und im [Konzept Anlagenkopplung](../Dokumentation/aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.3.
+> Die Regeln stehen im [Entwurf AK3-K](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)
+> Abschnitte 3 und 4 und im [Konzept Anlagenkopplung](../Dokumentation/aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
+>
+> **Schemastand:** Die Kennzahlen der Zonensperre und der Kälteseite legt der Schritt **201** `Ak3KSchema` an (Nachtrag
+> „Schemaschritt 201“ unten); die Basis ist auf seiner vorläufigen Nummer 199 gerechnet, Inhalt gleich.
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
@@ -950,13 +990,25 @@ rechnet alle dreiundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > leer): **90 492 928 Byte, LFS-SHA-256 `f3deb49a72a42b357e92059b38b30bbce82a85985927907e4852c4e890d7ae4d`**. **Die Basis
 > `2026-10-07_R42_Vorlaufinterpolation_AK3` bleibt** — kein gesäter Wert, kein Rechenweg, keine Einfrierregel berührt.
 
-### Die Vorgängerbasis R41 (Erdreichprüfung)
+> **Nachtrag — Schemaschritt 201 (AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis), Basis unverändert.**
+> `Ak3KSchema` (201 = `ProjektdateiImportSchema.SCHRITT + 1`; auf dem Arbeitszweig von AK3-K vorläufig 199 = `Ak3Schema.SCHRITT + 1`)
+> legt sieben nullbare Kennzahlen an `Tab_ErgebnisEnergiebedarf` an
+> (`Zonensperre_Tage`, `Zonensperre_Heizen_Gesperrt_MWh`, `Zonensperre_Kuehlen_Gesperrt_MWh`, `Ak3_Kaelteschranke_Stunden`,
+> `Ak3_Umschalt_Stunden`, `Ak3_Kaelterest_Stunden`, `Ak3_Kaelterest_MWh`); alle Spalten entstehen leer, kein DML an
+> Bestandsdaten. Gehoben aus dem Stand 200 (LFS-SHA-256 `f3deb49a72a42b357e92059b38b30bbce82a85985927907e4852c4e890d7ae4d`)
+> mit `Werkzeuge/Testdatenbankschema`, danach das Referenzprojekt 1059 mit `Skripte/referenzprojekt_1059_ak3k.py`
+> angelegt (Gegenprobe des Skripts grün). Die Testdatenbank steht auf **201** (`integrity_check` ok, `foreign_key_check`
+> leer): **91 336 704 Byte, LFS-SHA-256 `6843896dbc1760fe57fff6527e12b8ae0ffa6cd8f593b7dceb6302ace663fd10`**. **Die Basis
+> `2026-10-07_R43_Kaelteseite_AK3K` bleibt** — die Schritte 199 und 200 berühren weder gesäte Werte noch Rechenweg.
 
-Zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare, auf Linux eingefroren gegen die Testdatenbank `6f83f95f…` (Schemastand
-196, mit den Projekten 1053 bis 1057); mit R42 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Erdreichprüfung je
-Anlage, Entzug ohne Taktstrom) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R42 sind
-die Interpolation der Wärmepumpenkennlinie über den Vorlauf und das Referenzprojekt 1058; allein 1047 und 1056 weichen ab.
+### Die Vorgängerbasis R42 (Vorlaufinterpolation AK3)
+
+Dreiundzwanzig Projekte, 718 CSV, 4 862 Skalare, auf Linux eingefroren gegen die Testdatenbank `e09fceed…` (Schemastand
+198, mit den Projekten 1053 bis 1058); mit R43 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Interpolation der
+Wärmepumpenkennlinie über den Vorlauf, Referenzprojekt 1058 auf Stufe AK3) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R43 sind
+die Zonensperre je Zone, die Kälteseite im Kreis auf Stufe AK3 und das Referenzprojekt 1059; allein 1017, 1047, 1055,
+1056 und 1058 weichen ab.
 
 ## Was hier liegt
 
@@ -1183,7 +1235,7 @@ bei 4 kW; der Katalogsatz mit 200 kW taktete jede Stunde. Ein abweichender Kühl
 Kühlspitze. Gerechnet: Kältebedarf 4,08 MWh, gedeckt 100,0 % (1017 mit der Wärmepumpe an der Erdsonde: 99,7 %), Kälte der Maschine
 4,19 MWh, Kältestrom 1,26 MWh (vollständig Netzbezug über den eigenen Zähler mit Träger 58), EER-Jahreswert 3,25,
 0 Stunden freier Kühlung (der Trockenkühler erreicht 3 °C Rückkühlung an Kühltagen nicht), 166 Taktstunden;
-Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen. 1055 steht in der Basis R42
+Kaltwasserspeicher Ladung 2,52 MWh, Entladung 2,42 MWh, Wärmeeintrag 0,10 MWh, 181 Vollzyklen (mit der Zonensperre in R43: Kältebedarf 4,05 MWh, Kältestrom 1,25 MWh, EER 3,25, 178 Vollzyklen). 1055 steht in der Basis R43
 und nicht in der CI-Auswahl; es gilt die Einfrierregel „gesäte Kältemaschinendaten“ oben.
 
 ```bash
@@ -1225,12 +1277,12 @@ Sperrfenster), Zeilenzahlen der Kopie, die gesetzten Zellen, `foreign_key_check`
 jeder Abweichung zurück. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1055 als höchste. Nach
 einer Neufassung der Testdatenbank wird es nach 1055 gezogen.
 
-Ergebnis in R42 (Komfort unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
+Ergebnis in R43 (Komfort unverändert seit R37): `Fahrplan_Begrenzt_Stunden` 1 249, Komfort-Unterschreitungsstunden 1 854 (1047: 875), Kelvinstunden
 3 883,19 Kh (1047: 1 281,04), längste Strecke 16 h (1047: 11), Wärmerestbedarf daneben 0 MWh; Überschreitungsstunden 32
 und 43 Kh wie 1047. Das Laufprotokoll trägt den Hinweis der Näherung des Profilwegs. Die Wärmepumpe wählt ihre Kennlinie
-am gerechneten Vorlauf: 35 °C 1 122 h, 45 °C 1 411 h, 55 °C 101 h, darunter 1 475 h, darüber 0 h (1047: 1 549, 1 782,
-122, darunter 1 851 h). Die Wärmepumpe rechnet an ihrer Erdsonde (5 × 120 m): JAZ 4,36, Strom 2,78 MWh (1047: 4,47 und
-2,11 MWh), die Kennlinie über den Vorlauf interpoliert. 1056 steht in der Basis R42 und
+am gerechneten Vorlauf: 35 °C 1 120 h, 45 °C 1 411 h, 55 °C 101 h, darunter 1 462 h, darüber 0 h (1047: 1 547, 1 782,
+122, darunter 1 839 h). Die Wärmepumpe rechnet an ihrer Erdsonde (5 × 120 m): JAZ 4,36, Strom 2,78 MWh (1047: 4,47 und
+2,11 MWh), die Kennlinie über den Vorlauf interpoliert. 1056 steht in der Basis R43 und
 nicht in der CI-Auswahl; gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`.
 
 ### Das Referenzprojekt 1051 „Konditionierung“
@@ -1322,7 +1374,7 @@ python3 Referenzlaeufe/Skripte/erdreichquellen_referenzprojekte.py Referenzlaeuf
 
 Gerechnet: Wärmebedarf 78,55 MWh, Wärme der Wärmepumpe 67,92 MWh bei 22,12 MWh Strom (JAZ 3,07), Deckung 85,7 %,
 Kessel 11,23 MWh; Jahresentzug 45,80 MWh, größter Entzug 10,86 kW, 4 216 Volllaststunden, Sole im Mittel 1,5 °C,
-7 036 Froststunden (Warnung gesetzt). 1057 steht in der Basis R42 und nicht in der CI-Auswahl; gehalten von
+7 036 Froststunden (Warnung gesetzt). 1057 steht in der Basis R43 und nicht in der CI-Auswahl; gehalten von
 `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`; es gilt die Einfrierregel „gesäte Erdreichquellen“ oben.
 
 ### Das Referenzprojekt 1058 „Referenzprojekt AK3“
@@ -1345,12 +1397,35 @@ BHKW 18,5 %, Kessel 3,5 %; Puffer geladen 72,05 MWh, entladen 70,15 MWh, Verlust
 im Mittel 3,21 Durchläufe je Stunde (höchstens 7), 407 Fallwechsel, 1 Stunde an der Schranke, 1 Stunde mit leerem
 Speicher, 0 Stunden Restbedarf. 1058 schreibt die Komfortkennzahlen und die sechs Kennzahlen des Kreises: 683
 Unterschreitungsstunden, 931,7 Kh, längste Strecke 6 h, Kühlseite 32 Überschreitungsstunden und 43 Kh;
-`Fahrplan_Begrenzt_Stunden` bleibt leer, seine Entsprechung auf AK3 ist `Ak3_Schranke_Stunden`. 1058 steht in der Basis R42 und in der CI-Auswahl; gehalten von
+`Fahrplan_Begrenzt_Stunden` bleibt leer, seine Entsprechung auf AK3 ist `Ak3_Schranke_Stunden`. Mit der Zonensperre und der
+Kälteseite im Kreis (R43): Puffer 413,93 Vollzyklen, 408 Fallwechsel, 37 Stunden an der Kälteschranke, 0 Umschalt- und
+0 Kälterest-Stunden, Kühlseite 34 Überschreitungsstunden und 45,88 Kh, Kältedeckung 100 %. 1058 steht in der Basis R43 und in der CI-Auswahl; gehalten von
 `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests`; es gilt die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben.
 
-**Die dreiundzwanzig Projekte der Basis R42:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
-1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057 und 1058. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051 und 1058 (1050, 1052, 1054, 1055,
-1056 und 1057 stehen nicht in der CI-Auswahl).
+### Das Referenzprojekt 1059 „Referenzprojekt AK3-K“
+
+1059 „Referenzprojekt AK3-K“ ist eine Kopie von 1058 auf dem Kopierweg des Programms (`ProjektDuplizierenCtrl.Duplizieren`)
+und rechnet die Kälteseite im geschlossenen Kreis (RP-AK3K). Gegenüber 1058 heizt die Wärmepumpe nur (Kühlbetrieb aus);
+die Kälte deckt die Kältemaschine aus 1055 mit Trocken-Rückkühler und eigenem Zähler (Träger 58), auf **10 kW** skaliert,
+samt dem Kaltwasserspeicher aus 1055. Kopplungsstufe AK3, Heizungspuffer, Raumeinfluss, Fahrplan und Kaskade bleiben wie in
+1058. Die Maschine ist bewusst zu klein, damit die Kälteschranke greift (1055 deckt mit 20 kW 100 %; gemessen: 6 kW
+387 Stunden an der Schranke, 8 kW 271, 10 kW 190, 12 kW 119). Angelegt von `Skripte/referenzprojekt_1059_ak3k.py`
+(wiederholbar, eine Transaktion; nach einer Neufassung der Testdatenbank nach 1058 zu ziehen).
+
+```bash
+python3 Referenzlaeufe/Skripte/referenzprojekt_1059_ak3k.py Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Gerechnet: Kältebedarf 3,73 MWh, Kälte der Maschine 3,83 MWh, Kältestrom 1,13 MWh, EER-Jahreswert 3,31, Kältedeckung
+100 %; Kältespeicher Ladung 1,21 MWh, Entladung 1,11 MWh, Wärmeeintrag 0,10 MWh, 86,95 Vollzyklen. Kreis: **190 Stunden an
+der Kälteschranke**, 0 Umschalt- und 0 Kälterest-Stunden, 1 Stunde an der Wärmeschranke, 408 Fallwechsel; Kühlseite 91
+Überschreitungsstunden und 158,09 Kh (1058: 34 und 45,88), Heizseite wie 1058 (683 Stunden, 931,7 Kh). 1059 steht in der
+Basis R43 und nicht in der CI-Auswahl; gehalten von `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`; es gelten die
+Einfrierregeln „gesäte Kältemaschinendaten“ und „gesäte Auslegungsdaten der Übergabe“ oben.
+
+**Die vierundzwanzig Projekte der Basis R43:** 1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045,
+1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058 und 1059. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051 und 1058 (1050, 1052, 1054, 1055,
+1056, 1057 und 1059 stehen nicht in der CI-Auswahl).
 
 ## Die wichtigste Regel
 
@@ -1420,11 +1495,11 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R42 (dreiundzwanzig Projekte, Interpolation über den Vorlauf, Referenzprojekt 1058 auf Stufe AK3): GESAMT PASS,
-697/718 CSV byte-gleich,
-`aggregate.csv` bei 22 Projekten byte-gleich; die übrigen zwanzig Dateien tragen Rechenreste von höchstens 10⁻⁸
+Stand mit R43 (vierundzwanzig Projekte, Zonensperre je Zone, Kälteseite im Kreis, Referenzprojekt 1059): GESAMT PASS,
+731/759 CSV byte-gleich,
+`aggregate.csv` bei 23 Projekten byte-gleich; die übrigen 28 Dateien tragen Rechenreste innerhalb der Toleranz
 (Heizstab 1007/1046/1051, BHKW-Restwärme 1018/1052/1054, Kessel 1024 und 1039, Quelltemperatur 1039, Quellpuffer 1042,
-Restwärme von 1057, an 1058 Wärmebedarf und Pufferentladung des Kreises).
+Restwärme von 1057, an 1058 und 1059 Wärmebedarf und Pufferentladung des Kreises).
 
 ## Bedienung
 

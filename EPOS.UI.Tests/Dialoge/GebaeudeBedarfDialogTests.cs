@@ -1076,6 +1076,40 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Empty(Aufbauen(KomfortSatz(erhoben: true)).FindAll("div.gebb-ak3"));
     }
 
+    /// <summary>
+    /// AK3-K (Entwurf AK3-K 3.5, Festlegung 20): die Kacheln der Zonensperre und der Kälteseite im Kreis — jede Seite nur,
+    /// wenn der letzte Lauf sie erhob; ohne beide steht der Block nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Kacheln_der_Zonensperre_und_der_Kaelteseite_stehen_nur_mit_Wert()
+    {
+        var beide = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, IstGekoppelt = true,
+            ZonensperreTage = 12, ZonensperreHeizenGesperrtMwh = 0.0512, ZonensperreKuehlenGesperrtMwh = 0.0134,
+            Ak3KaelteschrankeStundenH = 37, Ak3UmschaltStundenH = 0, Ak3KaelterestStundenH = 3, Ak3KaelterestMwh = 0.25,
+        });
+        IReadOnlyList<IElement> k = beide.FindAll("div.gebb-ak3k .epos-kennzahlkachel");
+        Assert.Equal(5, k.Count);
+        Assert.Equal("Tage mit Sperre der Gegenseite", Kachel(k[0], "titel"));
+        Assert.Equal("12", Kachel(k[0], "wert"));
+        Assert.Equal("0,05 / 0,01 MWh", Kachel(k[1], "wert"));
+        Assert.Equal("Stunden an der Kälteschranke", Kachel(k[2], "titel"));
+        Assert.Equal("37 h", Kachel(k[2], "wert"));
+        Assert.Equal("0 h", Kachel(k[3], "wert"));
+        Assert.Equal("3 h, 0,25 MWh", Kachel(k[4], "wert"));
+
+        var nurSperre = Aufbauen(new GebaeudeBedarfDaten
+        {
+            Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, MonatswerteMwh = new double[12],
+            IstVdi6007 = true, ZonensperreTage = 9, ZonensperreHeizenGesperrtMwh = 0.02, ZonensperreKuehlenGesperrtMwh = 0.01,
+        });
+        Assert.Equal(2, nurSperre.FindAll("div.gebb-ak3k .epos-kennzahlkachel").Count);
+
+        Assert.Empty(Aufbauen(VdiSatz()).FindAll("div.gebb-ak3k"));
+    }
+
     /// <summary>Die Rückstufe der Auskunft steht als eigene Zeile unter dem Rechenweg — nur mit Text.</summary>
     [Fact]
     public void Die_Rueckstufe_steht_unter_dem_Rechenweg()

@@ -6324,9 +6324,6 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Cost item "{0}" was left unchanged and now differs from the engineering value — align it in cost management via "Apply engineering value…".</value>
   </data>
-  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
-    <value>{0} cost item(s) of the replaced systems found no new system as counterpart and are now without system assignment — check them in cost management.</value>
-  </data>
   <data name="ANL_DUBLETTE_TITEL" xml:space="preserve">
     <value>Device already in the project</value>
   </data>
@@ -30907,6 +30904,12 @@ Do you want to allow this?</value>
   <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
     <value>System coupling: the project is set to level {0}; level AK1 is implemented — the heating circuit is calculated as a boundary condition (AK1).</value>
   </data>
+  <data name="SIMENG_AK3K_KREIS_MIT_KAELTESEITE" xml:space="preserve">
+    <value>System coupling AK3 (core level): building and cascade are calculated hour by hour in a closed loop with the cooling side — the cooling channel follows the loop, the cooling cascade is calculated each hour after the heating hour.</value>
+  </data>
+  <data name="SIMENG_AK3K_KREISZAEHLER" xml:space="preserve">
+    <value>System coupling AK3 with cooling side: cooling limit reached in {0} h, changeover hours {1} h, unmet cooling demand {2:0.###} kWh in {3} h, case changes {4}; priority estimate too tight in {5} h ({6:0.###} kWh), too wide in {7} h.</value>
+  </data>
   <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
     <value>System coupling: {0} — the heat emitter is insufficient in {1} hours; the room temperature there is up to {2} K below the set point.</value>
   </data>
@@ -33196,18 +33199,6 @@ Do you want to allow this?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>The outline of surface {0} is not planar (deviation {1} mm) — it is not shown in the floor plan; area, azimuth and tilt still apply.</value>
   </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
-    <value>Space {0}: the surfaces of route {1} do not close a solid ({2} open edges) — the outline prism is shown.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
-    <value>{0}: route {1} yields no solid ({2}) — the fallback is shown.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
-    <value>Opening {0} does not lie within surface {1} — it is shown as a solid of its own without a cut-out.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
-    <value>{0} component solids omitted: space and component solids together exceeded the limit of {1} triangles ({2} up to then).</value>
-  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>The file contains no constructions — the U-values are taken from the building age class.</value>
   </data>
@@ -33591,12 +33582,6 @@ Do you want to allow this?</value>
   </data>
   <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
     <value>outer shell only</value>
-  </data>
-  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
-    <value>default thickness</value>
-  </data>
-  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
-    <value>reference plane assumed</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Storeys</value>
@@ -34101,18 +34086,6 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} openings without window or door have neither base quantities nor a readable body and are not deducted ({1}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
-    <value>In building "{0}", {1} separating slabs from the space bodies are dropped ({2} m²): the file already has slabs against unheated spaces at their location, which count as envelope areas.</value>
-  </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
-    <value>{0} walls carry more window and door area in the file than their own size; {1} openings move by their location to {2} other walls or parts of the same wall ({3}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
-    <value>{0} openings lie in no wall with room for them and stay on the wall given by the file ({1}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
-    <value>{0} walls remain smaller than their openings; the net area of the file applies to them, their openings are not fully deducted ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} windows and doors fill no opening of a building component and are not counted ({1}).</value>
@@ -37591,42 +37564,6 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} windows or curtain walls in contact with the ground are computed against outdoor air.</value>
-  </data>
-  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
-    <value>{0} components omitted: completely occupied by openings ({1}).</value>
-  </data>
-  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
-    <value>No finding</value>
-  </data>
-  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
-    <value>Body unreadable</value>
-  </data>
-  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
-    <value>Missing properties</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
-    <value>No U-value: neither file, project file, catalogue, default nor substitute construction supplies one.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
-    <value>No area: neither quantity set nor body supplies one.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
-    <value>Body not or only partly readable: the import cannot read the representation type.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
-    <value>Body only partly read: the clipping is missing, only the first operand is read.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
-    <value>Body with an open shell.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
-    <value>Body only partly read: a hole could not be connected.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
-    <value>Body degenerate: it yields no relevant area.</value>
-  </data>
-  <data name="BTSB_BEFUND" xml:space="preserve">
-    <value>Finding</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>The orientations include the file's north direction ({0}°).</value>
@@ -48373,6 +48310,27 @@ chart</value>
   <data name="AK3_GEBB_QUELLE" xml:space="preserve">
     <value>Closed loop (AK3), project, last run</value>
   </data>
+  <data name="AK3K_GEBB_KACHEL_SPERRTAGE" xml:space="preserve">
+    <value>Days with the opposite side blocked</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_GESPERRT" xml:space="preserve">
+    <value>Blocked energy (heating / cooling)</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTESCHRANKE" xml:space="preserve">
+    <value>Hours at the cooling limit</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_UMSCHALTUNG" xml:space="preserve">
+    <value>Changeover hours</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTEREST" xml:space="preserve">
+    <value>Residual cooling demand</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_ZONENSPERRE" xml:space="preserve">
+    <value>Zone lock, project, last run</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
+    <value>Cooling side in the loop (AK3), project, last run</value>
+  </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
     <value>Mean iterations per hour (AK3)</value>
   </data>
@@ -48387,6 +48345,102 @@ chart</value>
   </data>
   <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
     <value>With system coupling AK3 the information calculates without the closed loop on the profile path; empty otherwise. Display only.</value>
+  </data>
+  <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
+    <value>VDI 6007 building model: {0} – daily operating mode per zone: on {1} days the opposite side was locked ({2} cooling days without space heating, {3} heating days without space cooling); the trial day showed {4} hours and {5} kWh on the locked side there (space heating {6} kWh, space cooling {7} kWh). On {8} days heating and cooling were both released.</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE" xml:space="preserve">
+    <value>Heating and cooling release</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_HEIZEN" xml:space="preserve">
+    <value>heating released</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KUEHLEN" xml:space="preserve">
+    <value>cooling released</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_BEIDES" xml:space="preserve">
+    <value>both</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="KOND_TXT_FREIGABE_ZEILE" xml:space="preserve">
+    <value>{0}: heating released {1} days, cooling released {2} days, both {3} days, none {4} days</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_FREIGABE" xml:space="preserve">
+    <value>“off” in the heating or cooling calendar locks that side for the day. On days with both releases the demand decides whether a zone heats or cools – never both on the same day. Cooling only applies when the project calculates cooling.</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_GEBAEUDE" xml:space="preserve">
+    <value>Building</value>
+  </data>
+  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
+    <value>{0} cost item(s) of the replaced systems found no new system as counterpart and are now without system assignment — check them in cost management.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Space {0}: the surfaces of route {1} do not close a solid ({2} open edges) — the outline prism is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: route {1} yields no solid ({2}) — the fallback is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Opening {0} does not lie within surface {1} — it is shown as a solid of its own without a cut-out.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} component solids omitted: space and component solids together exceeded the limit of {1} triangles ({2} up to then).</value>
+  </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>default thickness</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>reference plane assumed</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
+    <value>In building "{0}", {1} separating slabs from the space bodies are dropped ({2} m²): the file already has slabs against unheated spaces at their location, which count as envelope areas.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
+    <value>{0} walls carry more window and door area in the file than their own size; {1} openings move by their location to {2} other walls or parts of the same wall ({3}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>{0} openings lie in no wall with room for them and stay on the wall given by the file ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
+    <value>{0} walls remain smaller than their openings; the net area of the file applies to them, their openings are not fully deducted ({1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} components omitted: completely occupied by openings ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>No finding</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Body unreadable</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Missing properties</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>No U-value: neither file, project file, catalogue, default nor substitute construction supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>No area: neither quantity set nor body supplies one.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Body not or only partly readable: the import cannot read the representation type.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Body only partly read: the clipping is missing, only the first operand is read.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Body with an open shell.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Body only partly read: a hole could not be connected.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Body degenerate: it yields no relevant area.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Finding</value>
   </data>
   <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
     <value>North direction as entered: the top of the plan (+y of the file) points to {0}°, the north angle is {1}°; the orientations of all components and floor plans follow it.</value>

@@ -97,12 +97,25 @@ namespace WindowsFormsApplication1
         /// <summary>Das Vorlaufangebot [°C], NaN = keine Grenze.</summary>
         internal virtual double VorlaufAngebotC => Fahrplan.VorlaufAngebotC;
 
+        /// <summary>
+        /// Ist der Heizkanal des Erzeugers in Stunde <paramref name="stunde"/> umgeschaltet (AK3-K, Fehler 1.1 (b))? Dann
+        /// gibt der Fahrplan nichts frei, Grund <see cref="Verfuegbarkeitsgrund.Umschaltung"/>. Vorgabe: nie.
+        /// </summary>
+        protected virtual bool Umgeschaltet(int stunde) => false;
+
         /// <summary>Die Kapazität beim Vorlauf ohne Fahrplan [kW]; 0, wenn der Erzeuger den Vorlauf nicht stellt.</summary>
         protected abstract double KapazitaetBei(int stunde, double vorlaufC, out bool vorlaufNichtErreicht);
 
         public Erzeugerangebot Abfragen(int stunde, double vorlaufC)
         {
             double faktor = Verfuegbarkeit(Fahrplan, stunde, out Verfuegbarkeitsgrund grund, out double zeitprogrammAnteil);
+            if (faktor > 0.0 && Umgeschaltet(stunde))
+            {
+                // AK3-K (Fehler 1.1 (b), K8a): Die reversible Wärmepumpe ist am Kühltag Kältemaschine.
+                faktor = 0.0;
+                grund = Verfuegbarkeitsgrund.Umschaltung;
+                zeitprogrammAnteil = 0.0;
+            }
             double angebot = VorlaufAngebotC;
             bool nichtErreicht = false;
             double kapazitaet;
@@ -254,6 +267,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Zahl gleicher Module.</summary>
         internal int Anzahl { get; }
+
+        /// <summary>
+        /// <b>Die Heizsperre am Kühltag</b> (AK3-K, Fehler 1.1 (b); Kühlkonzept 5.2, K8a): true in einer Stunde, in der
+        /// das Modul im Kühlbetrieb Kältemaschine ist (<see cref="SimulationWaermepumpe.HeizkanalGesperrt"/>). <c>null</c> =
+        /// keine Sperre.
+        /// </summary>
+        internal Func<int, bool> Kuehltag { get; set; }
+
+        protected override bool Umgeschaltet(int stunde) => Kuehltag != null && Kuehltag(stunde);
 
         /// <summary>Die Quelle der Stunde (Jahresprofil oder Feldzustand der Erdsonde); für Proben.</summary>
         internal IQuellzustand Quelle => _quelle;

@@ -169,6 +169,37 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Hat der letzte Lauf den geschlossenen Kreis gerechnet?</summary>
     public bool Ak3Erhoben => Ak3DurchlaeufeMittel.HasValue;
 
+    // ---- AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kälteseite im Kreis ------------------------
+    //
+    // Aus der Projektzeile des letzten Laufs; null, wenn die jeweilige Seite nicht erhoben wurde.
+
+    /// <summary>Zonentage mit Sperre der Gegenseite [d]; <c>null</c> ohne Zonensperre im Lauf.</summary>
+    public int? ZonensperreTage { get; init; }
+
+    /// <summary>Raumheizung des Probetags an Kühltagen, gesperrt [MWh].</summary>
+    public double? ZonensperreHeizenGesperrtMwh { get; init; }
+
+    /// <summary>Raumkühlung des Probetags an Heiztagen, gesperrt [MWh].</summary>
+    public double? ZonensperreKuehlenGesperrtMwh { get; init; }
+
+    /// <summary>Stunden, in denen die Kälteschranke des Kreises griff [h]; <c>null</c> ohne Kälteseite im Kreis.</summary>
+    public int? Ak3KaelteschrankeStundenH { get; init; }
+
+    /// <summary>Stunden mit Umschaltung der Wärmepumpe [h].</summary>
+    public int? Ak3UmschaltStundenH { get; init; }
+
+    /// <summary>Stunden mit Kälte-Restbedarf [h].</summary>
+    public int? Ak3KaelterestStundenH { get; init; }
+
+    /// <summary>Kälte-Restbedarf im Jahr [MWh].</summary>
+    public double? Ak3KaelterestMwh { get; init; }
+
+    /// <summary>Lief im letzten Lauf die Zonensperre?</summary>
+    public bool ZonensperreErhoben => ZonensperreTage.HasValue;
+
+    /// <summary>Rechnete der Kreis im letzten Lauf die Kälteseite?</summary>
+    public bool Ak3KaelteErhoben => Ak3KaelteschrankeStundenH.HasValue;
+
     /// <summary>
     /// Der Hinweis der Rückstufe (Festlegung 20): Mit Stufe AK3 rechnet diese Auskunft ohne geschlossenen Kreis auf
     /// dem Profilweg; leer ohne Rückstufe.

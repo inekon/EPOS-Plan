@@ -5289,6 +5289,13 @@ namespace WindowsFormsApplication1
         /// <para><b>Wiederholbar, ergebnisneutral:</b> Keine Zeile ändert sich.</para>
         /// </summary>
         public const int SCHRITT_PROJEKTDATEI_IMPORT = ProjektdateiImportSchema.SCHRITT;
+        /// Schritt <see cref="Ak3KSchema.SCHRITT"/> — <b>die Kennzahlen von AK3-K</b> (Entwurf AK3-K 3.5, Festlegung 20):
+        /// Tage und gesperrte Energie der Zonensperre, Stunden an der Kälteschranke, Umschaltstunden und Kälte-Restbedarf
+        /// an <c>Tab_ErgebnisEnergiebedarf</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer („nicht erhoben").</para>
+        /// </summary>
+        public const int SCHRITT_AK3K = Ak3KSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -7704,6 +7711,12 @@ namespace WindowsFormsApplication1
                         "Der Gebaeudeimport koennte eine Quelle aus der Projektdatei (.sqproj) und die Herkunft ihrer Zeilen " +
                         "nicht speichern. KEIN Rechenergebnis aendert sich.",
                         Schritt_ProjektdateiImport),
+            // AK3-K: Kennzahlen der Zonensperre und der Kaelteseite im Kreis. Quelle ist Ak3KSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_AK3K,
+                        "Tab_ErgebnisEnergiebedarf: Kennzahlen der Zonensperre (Zonensperre_*) und der Kaelteseite im Kreis (Ak3_Kaelte*, Ak3_Umschalt_Stunden)",
+                        "Die Kennzahlen der Zonensperre und der Kaelteseite im geschlossenen Kreis liessen sich nicht speichern. " +
+                        "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_Ak3K),
         };
 
         /// <summary>
@@ -14548,6 +14561,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Import aus der Projektdatei - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) neu gebaut.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kennzahlen von AK3-K" — Anlass und Wirkung stehen bei <see cref="SCHRITT_AK3K"/>, die Anweisungen bei
+        /// <see cref="Ak3KSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Ak3K(Lauf l)
+        {
+            string nr = Ak3KSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in Ak3KSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = Ak3KSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!Ak3KSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kennzahlen der Zonensperre und der Kaelteseite im Kreis stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": AK3-K - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

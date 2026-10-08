@@ -210,6 +210,29 @@
         </div>
     }
 
+    @* ---- AK3-K (Entwurf AK3-K 3.5, Festlegung 20): Zonensperre und Kaelteseite im Kreis aus dem letzten Projektlauf -
+       jede Seite nur, wenn der Lauf sie erhob. *@
+    @if (Daten.ZonensperreErhoben || Daten.Ak3KaelteErhoben)
+    {
+        <div class="gebb-ak3k">
+            <Kachelraster>
+                <KindInhalt>
+                    @if (Daten.ZonensperreErhoben)
+                    {
+                        <Kennzahlkachel Titel="@KachelZonensperreTage" Wert="@Anzahl(Daten.ZonensperreTage)" Quelle="@QuelleZonensperre" />
+                        <Kennzahlkachel Titel="@KachelZonensperreGesperrt" Wert="@GesperrtWert" />
+                    }
+                    @if (Daten.Ak3KaelteErhoben)
+                    {
+                        <Kennzahlkachel Titel="@KachelAk3Kaelteschranke" Wert="@Stunden(Daten.Ak3KaelteschrankeStundenH)" Quelle="@QuelleAk3Kaelte" />
+                        <Kennzahlkachel Titel="@KachelAk3Umschaltung" Wert="@Stunden(Daten.Ak3UmschaltStundenH)" />
+                        <Kennzahlkachel Titel="@KachelAk3Kaelterest" Wert="@KaelterestWert" />
+                    }
+                </KindInhalt>
+            </Kachelraster>
+        </div>
+    }
+
     @* ---- Stufe KP3, Welle O2 (E59, E60): die Gruppe „Aufheizung" - Bemessung, Zaehlungen, Hinweise W1-W5,
        Zonen und die Auslegungsgroesse mit ihren Teilen; ohne Daten steht sie nicht da. *@
     <GebaeudeBedarfAufheizung Daten="@Daten.Aufheizung" Texte="@AufheizTexte" />
@@ -668,6 +691,40 @@
 
     /// <summary><c>AK3_GEBB_QUELLE</c></summary>
     [Parameter] public string QuelleAk3 { get; set; } = "Geschlossener Kreis (AK3), Projekt, letzter Lauf";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_SPERRTAGE</c></summary>
+    [Parameter] public string KachelZonensperreTage { get; set; } = "Tage mit Sperre der Gegenseite";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_GESPERRT</c></summary>
+    [Parameter] public string KachelZonensperreGesperrt { get; set; } = "Gesperrte Energie (Heizen / Kühlen)";
+
+    /// <summary><c>AK3K_GEBB_QUELLE_ZONENSPERRE</c></summary>
+    [Parameter] public string QuelleZonensperre { get; set; } = "Zonensperre, Projekt, letzter Lauf";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_KAELTESCHRANKE</c></summary>
+    [Parameter] public string KachelAk3Kaelteschranke { get; set; } = "Stunden an der Kälteschranke";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_UMSCHALTUNG</c></summary>
+    [Parameter] public string KachelAk3Umschaltung { get; set; } = "Umschaltstunden";
+
+    /// <summary><c>AK3K_GEBB_KACHEL_KAELTEREST</c></summary>
+    [Parameter] public string KachelAk3Kaelterest { get; set; } = "Kälte-Restbedarf";
+
+    /// <summary><c>AK3K_GEBB_QUELLE_KREIS</c></summary>
+    [Parameter] public string QuelleAk3Kaelte { get; set; } = "Kälteseite im Kreis (AK3), Projekt, letzter Lauf";
+
+    /// <summary>„0,05 / 0,01 MWh" — gesperrte Raumheizung und Raumkühlung des Probetags; ohne Wert der Leertext.</summary>
+    private string GesperrtWert
+        => Daten.ZonensperreHeizenGesperrtMwh is double h && Daten.ZonensperreKuehlenGesperrtMwh is double c
+            ? h.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " / " +
+              c.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh"
+            : LeerText;
+
+    /// <summary>„3 h, 0,25 MWh" — Stunden und Menge des Kälte-Restbedarfs; ohne Wert der Leertext.</summary>
+    private string KaelterestWert
+        => Daten.Ak3KaelterestStundenH is int s && Daten.Ak3KaelterestMwh is double m
+            ? Stunden(s) + ", " + m.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " MWh"
+            : LeerText;
 
     /// <summary>„1,84 / 6" — Mittel und Höchstwert der Durchläufe je Stunde; ohne Wert der Leertext.</summary>
     private string Ak3DurchlaeufeWert

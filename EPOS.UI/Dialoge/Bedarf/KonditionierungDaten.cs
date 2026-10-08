@@ -812,3 +812,31 @@ public sealed record KonditionierungProfilergebnis(bool Ok, string Meldung, Kond
     public static KonditionierungProfilergebnis Fehler(string meldung)
         => new(false, meldung ?? "", null, "", Array.Empty<KonditionierungProfilposten>(), false, false);
 }
+
+/// <summary>
+/// <b>Das Jahresband der Freigabe eines Orts</b> (Entwurf AK3-K 3.3; Welle KZ): je Tag, ob der Kalender Heizen, Kühlen,
+/// beides oder keines freigibt — an Tagen mit beiden Freigaben entscheidet im Lauf der Bedarf die Tagesart der Zone.
+/// </summary>
+/// <param name="Ort">Der Name des Orts (Gebäude oder Zone).</param>
+/// <param name="Tage">Die 365 Tage: 0 keines, 1 Heizen, 2 Kühlen, 3 beides (Kern: <c>Freigabeart</c>).</param>
+public sealed record KonditionierungFreigabeband(string Ort, IReadOnlyList<int> Tage)
+{
+    /// <summary>Tage mit Heizen frei, Kühlen gesperrt.</summary>
+    public int TageHeizen => Zahl(1);
+
+    /// <summary>Tage mit Kühlen frei, Heizen gesperrt.</summary>
+    public int TageKuehlen => Zahl(2);
+
+    /// <summary>Tage mit beiden Freigaben — an ihnen entscheidet der Bedarf.</summary>
+    public int TageBeides => Zahl(3);
+
+    /// <summary>Tage ohne Raumkonditionierung.</summary>
+    public int TageKeine => Zahl(0);
+
+    private int Zahl(int art)
+    {
+        int n = 0;
+        foreach (int t in Tage) if (t == art) n++;
+        return n;
+    }
+}

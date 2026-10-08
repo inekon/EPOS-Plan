@@ -6340,9 +6340,6 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_KOSTEN" xml:space="preserve">
     <value>Die Kostenposition „{0}" wurde nicht verändert und weicht jetzt vom Technik-Planwert ab — in der Kostenverwaltung über „Planwert übernehmen…" angleichen.</value>
   </data>
-  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
-    <value>{0} Kostenposition(en) der ersetzten Anlagen fanden keine neue Anlage als Gegenstück und stehen jetzt ohne Anlagenzuordnung — in der Kostenverwaltung prüfen.</value>
-  </data>
   <data name="ANL_DUBLETTE_TITEL" xml:space="preserve">
     <value>Gerät bereits im Projekt</value>
   </data>
@@ -30914,6 +30911,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_AK_STUFE_NICHT_GEBAUT" xml:space="preserve">
     <value>Anlagenkopplung: Das Projekt steht auf der Stufe {0}; gebaut ist die Stufe AK1 — gerechnet wird der Heizkreis als Randbedingung (AK1).</value>
   </data>
+  <data name="SIMENG_AK3K_KREIS_MIT_KAELTESEITE" xml:space="preserve">
+    <value>Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde.</value>
+  </data>
+  <data name="SIMENG_AK3K_KREISZAEHLER" xml:space="preserve">
+    <value>Anlagenkopplung AK3 mit Kälteseite: Kälteschranke gegriffen in {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2:0.###} kWh in {3} h, Fallwechsel {4}; Vorrangschätzung zu knapp in {5} h ({6:0.###} kWh), zu weit in {7} h.</value>
+  </data>
   <data name="SIMENG_AK_UEBERGABE_BEGRENZT" xml:space="preserve">
     <value>Anlagenkopplung: {0} — die Wärmeübergabe reicht in {1} Stunden nicht; die Raumtemperatur liegt dort bis zu {2} K unter dem Sollwert.</value>
   </data>
@@ -33203,18 +33206,6 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter.</value>
   </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
-    <value>Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
-    <value>{0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
-    <value>Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
-    <value>{0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}).</value>
-  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>Die Datei enthält keine Konstruktionen — die U-Werte kommen aus der Baualtersklasse.</value>
   </data>
@@ -33598,12 +33589,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="GANS_VERMERK_MEHRSCHALE" xml:space="preserve">
     <value>nur Außenschale</value>
-  </data>
-  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
-    <value>Vorgabedicke</value>
-  </data>
-  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
-    <value>Bezugsebene angenommen</value>
   </data>
   <data name="GIMP_ANS_GESCHOSSE" xml:space="preserve">
     <value>Geschosse</value>
@@ -34108,18 +34093,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
-    <value>Im Gebäude „{0}“ entfallen {1} Trenndecken aus den Raumkörpern ({2} m²): Die Datei führt an ihrer Stelle schon Platten gegen unbeheizte Räume, die als Hüllfläche zählen.</value>
-  </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
-    <value>{0} Wände tragen laut Datei mehr Fenster- und Türfläche, als sie groß sind; {1} Öffnungen gehen nach ihrer Lage an {2} andere Wände bzw. Teile derselben Wand ({3}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
-    <value>{0} Öffnungen liegen in keiner Wand, an der sie Platz hätten, und bleiben an der Wand der Datei ({1}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
-    <value>{0} Wände bleiben kleiner als ihre Öffnungen; für sie gilt die Nettofläche der Datei, ihre Öffnungen werden nicht voll abgezogen ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}).</value>
@@ -37598,42 +37571,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft.</value>
-  </data>
-  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
-    <value>{0} Bauteile entfallen: vollständig durch Öffnungen belegt ({1}).</value>
-  </data>
-  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
-    <value>Ohne Befund</value>
-  </data>
-  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
-    <value>Körper unlesbar</value>
-  </data>
-  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
-    <value>Ohne Eigenschaften</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
-    <value>Kein U-Wert: weder Datei, Projektdatei, Katalog, Vorgabe noch Ersatzaufbau liefern einen.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
-    <value>Keine Fläche: weder Mengensatz noch Körper liefern eine.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
-    <value>Körper nicht oder nur teilweise lesbar: Die Darstellungsart kann der Import nicht lesen.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
-    <value>Körper nur teilweise gelesen: Der Beschnitt fehlt, gelesen ist nur der erste Operand.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
-    <value>Körper mit offener Schale.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
-    <value>Körper nur teilweise gelesen: Ein Loch ließ sich nicht anbinden.</value>
-  </data>
-  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
-    <value>Körper entartet: Er ergibt keine maßgebliche Fläche.</value>
-  </data>
-  <data name="BTSB_BEFUND" xml:space="preserve">
-    <value>Befund</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>Die Himmelsrichtungen enthalten die Nordrichtung der Datei ({0}°).</value>
@@ -48380,6 +48317,27 @@ Chart</value>
   <data name="AK3_GEBB_QUELLE" xml:space="preserve">
     <value>Geschlossener Kreis (AK3), Projekt, letzter Lauf</value>
   </data>
+  <data name="AK3K_GEBB_KACHEL_SPERRTAGE" xml:space="preserve">
+    <value>Tage mit Sperre der Gegenseite</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_GESPERRT" xml:space="preserve">
+    <value>Gesperrte Energie (Heizen / Kühlen)</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTESCHRANKE" xml:space="preserve">
+    <value>Stunden an der Kälteschranke</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_UMSCHALTUNG" xml:space="preserve">
+    <value>Umschaltstunden</value>
+  </data>
+  <data name="AK3K_GEBB_KACHEL_KAELTEREST" xml:space="preserve">
+    <value>Kälte-Restbedarf</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_ZONENSPERRE" xml:space="preserve">
+    <value>Zonensperre, Projekt, letzter Lauf</value>
+  </data>
+  <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
+    <value>Kälteseite im Kreis (AK3), Projekt, letzter Lauf</value>
+  </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
     <value>Durchläufe je Stunde im Mittel (AK3)</value>
   </data>
@@ -48394,6 +48352,102 @@ Chart</value>
   </data>
   <data name="AK3_KI_GEBB_RUECKSTUFE_ERL" xml:space="preserve">
     <value>Bei der Anlagenkopplung AK3 rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige.</value>
+  </data>
+  <data name="SIMENG_ZONENSPERRE" xml:space="preserve">
+    <value>Gebäudemodell VDI 6007: {0} – Tagesbetriebsart je Zone: an {1} Tagen wurde die Gegenseite gesperrt ({2} Kühltage ohne Raumheizung, {3} Heiztage ohne Raumkühlung); der Probetag zeigte dort {4} Stunden und {5} kWh auf der gesperrten Seite (Raumheizung {6} kWh, Raumkühlung {7} kWh). An {8} Tagen waren Heizen und Kühlen freigegeben.</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE" xml:space="preserve">
+    <value>Freigabe Heizen und Kühlen</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_HEIZEN" xml:space="preserve">
+    <value>Heizen frei</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KUEHLEN" xml:space="preserve">
+    <value>Kühlen frei</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_BEIDES" xml:space="preserve">
+    <value>beides</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_KEINE" xml:space="preserve">
+    <value>keines</value>
+  </data>
+  <data name="KOND_TXT_FREIGABE_ZEILE" xml:space="preserve">
+    <value>{0}: Heizen frei {1} Tage, Kühlen frei {2} Tage, beides {3} Tage, keines {4} Tage</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_FREIGABE" xml:space="preserve">
+    <value>„aus“ im Heiz- oder Kühlkalender sperrt die Seite für den Tag. An Tagen mit beiden Freigaben entscheidet der Bedarf, ob eine Zone heizt oder kühlt – nie beides am selben Tag. Gekühlt wird nur, wenn das Projekt Kälte rechnet.</value>
+  </data>
+  <data name="KOND_LBL_FREIGABE_GEBAEUDE" xml:space="preserve">
+    <value>Gebäude</value>
+  </data>
+  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
+    <value>{0} Kostenposition(en) der ersetzten Anlagen fanden keine neue Anlage als Gegenstück und stehen jetzt ohne Anlagenzuordnung — in der Kostenverwaltung prüfen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}).</value>
+  </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>Vorgabedicke</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>Bezugsebene angenommen</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
+    <value>Im Gebäude „{0}“ entfallen {1} Trenndecken aus den Raumkörpern ({2} m²): Die Datei führt an ihrer Stelle schon Platten gegen unbeheizte Räume, die als Hüllfläche zählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
+    <value>{0} Wände tragen laut Datei mehr Fenster- und Türfläche, als sie groß sind; {1} Öffnungen gehen nach ihrer Lage an {2} andere Wände bzw. Teile derselben Wand ({3}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>{0} Öffnungen liegen in keiner Wand, an der sie Platz hätten, und bleiben an der Wand der Datei ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
+    <value>{0} Wände bleiben kleiner als ihre Öffnungen; für sie gilt die Nettofläche der Datei, ihre Öffnungen werden nicht voll abgezogen ({1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} Bauteile entfallen: vollständig durch Öffnungen belegt ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>Ohne Befund</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Körper unlesbar</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Ohne Eigenschaften</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>Kein U-Wert: weder Datei, Projektdatei, Katalog, Vorgabe noch Ersatzaufbau liefern einen.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>Keine Fläche: weder Mengensatz noch Körper liefern eine.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Körper nicht oder nur teilweise lesbar: Die Darstellungsart kann der Import nicht lesen.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Körper nur teilweise gelesen: Der Beschnitt fehlt, gelesen ist nur der erste Operand.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Körper mit offener Schale.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Körper nur teilweise gelesen: Ein Loch ließ sich nicht anbinden.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Körper entartet: Er ergibt keine maßgebliche Fläche.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Befund</value>
   </data>
   <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
     <value>Nordrichtung nach Eingabe: Die Planoberseite (+y der Datei) zeigt nach {0}°, der Nordwinkel ist {1}°; die Himmelsrichtungen aller Bauteile und Grundrisse folgen ihm.</value>

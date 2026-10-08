@@ -288,6 +288,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzahlen von AK3-K in der Projektzeile</b> (Entwurf AK3-K 3.5, Festlegung 20; Spalten
+        /// <see cref="Ak3KSchema.SPALTEN_ERGEBNIS"/>): die Zonentage mit Sperre der Gegenseite und die gesperrte Energie
+        /// des Probetags, wenn die Zonensperre lief; die Stunden an der Kälteschranke, die Umschaltstunden und der
+        /// Kälte-Restbedarf, wenn der Kreis auf AK3 die Kälteseite rechnete. Sonst bleibt die Seite NULL.
+        /// </summary>
+        internal static void Ak3KSpaltenSetzen(ErgebnisEnergiebedarfModel e, Zonensperrkennzahl sperre, Anlagenkopplung kreis,
+                                               bool kaelteImKreis)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            if (sperre != null)
+            {
+                e.ZonensperreTage = sperre.Tage;
+                e.ZonensperreHeizenGesperrtMwh = sperre.HeizenGesperrtKwh / 1000.0;
+                e.ZonensperreKuehlenGesperrtMwh = sperre.KuehlenGesperrtKwh / 1000.0;
+            }
+            if (kaelteImKreis && kreis != null && kreis.Stunden > 0 && kreis.Kaelteschranke != null)
+            {
+                e.Ak3KaelteschrankeStundenH = kreis.StundenAnDerKaelteschranke;
+                e.Ak3UmschaltStundenH = kreis.StundenUmschaltung;
+                e.Ak3KaelterestStundenH = kreis.KaelteRestStunden;
+                e.Ak3KaelterestMwh = kreis.KaelteRestKwh / 1000.0;
+            }
+        }
+
+        /// <summary>
         /// <b>Die Spalten des Schemaschritts 186 in der Projektzeile</b> (Anlagenkopplung 8.3; AK2-2a, AK2-2b): die
         /// Stunden an der Schranke des Fahrplans und die Komfortkennzahlen des Projekts (5.5, F8, F9). Erhoben wird
         /// für jedes Projekt, dessen Fahrplan lief — Anlagenkopplung ab AK1 und mindestens ein gekoppeltes Gebäude
@@ -485,6 +510,11 @@ namespace WindowsFormsApplication1
             // ANLAGENKOPPLUNG AK3 (Entwurf AK3, Festlegung 22): die Kennzahlen des geschlossenen Kreises - nur, wenn der
             // Kreis gerechnet hat, sonst NULL ("nicht erhoben") und dieselbe Zeile wie vorher (SpaltenNurMitWert).
             Ak3SpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.Ak3?.Kreis, sim.Rest_Waermebedarf_stuendlich);
+
+            // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis - nur, wenn sie liefen, sonst NULL und dieselbe
+            // Zeile wie vorher (SpaltenNurMitWert).
+            Ak3KSpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.ZonensperreProjekt(), simulation_Waermebedarf.Ak3?.Kreis,
+                              simulation_Waermebedarf.Ak3 != null);
 
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.

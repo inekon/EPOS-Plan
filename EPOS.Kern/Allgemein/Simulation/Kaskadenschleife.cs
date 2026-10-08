@@ -119,6 +119,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal IStundenbedarf Stundenbedarf;
 
+        /// <summary>
+        /// <b>Nach jeder Kaskadenstunde</b> (AK3-K, Festlegung 16): im AK3-Weg die
+        /// Kältestunde (<see cref="Kaeltekaskade.StundeRechnen"/>) nach der Wärmestunde. <c>null</c> = nichts (Vorgabe).
+        /// </summary>
+        internal Action<int> NachStunde;
+
         // AK3-W2: Stundenzustand der Schleife, je Lauf in Rechnen angelegt und von
         // StundeRechnen fortgeschrieben (vorher lokale Felder der Stundenschleife).
         private double[] _rest = new double[Kanal.ANZAHL];
@@ -967,7 +973,10 @@ namespace WindowsFormsApplication1
             _rest = new double[Kanal.ANZAHL];
 
             for (int stunde = 0; stunde < 8760; stunde++)
+            {
                 if (!StundeRechnen(stunde, kanaele)) return false;
+                NachStunde?.Invoke(stunde);
+            }
 
             if (MitWP) WP.Zweikanalig_Ende(_biv);
             if (MitSolar) Solar.Abschluss_Zweikanalig();

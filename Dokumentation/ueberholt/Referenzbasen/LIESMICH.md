@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3`](../../../Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3/);
+> [`Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K`](../../../Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -87,6 +87,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-06_R39_Auslegungsheizlast` | 06.10.2026 | Basis mit dem Ausweis der Auslegungsheizlast auch ohne Anlagenkopplung an 1051 und 1052 (KP3-R6, E97), auf Linux eingefroren; Testdatenbank `2fec4f14…` (Schemastand 190), gehoben auf Schemastand 195; einundzwanzig Projekte, 646 CSV, 4 275 Skalare — abgelöst durch R40 am 07.10.2026 | [`2026-10-06_R39_Auslegungsheizlast/protokoll.txt`](2026-10-06_R39_Auslegungsheizlast/protokoll.txt) |
 | `2026-10-07_R40_Erdreichquellen` | 07.10.2026 | Basis mit den Erdreichquellen der Referenzprojekte (Sole-Wärmepumpen an der Erdsonde) und dem Referenzprojekt 1057 „Erdsonde“, auf Linux eingefroren; Testdatenbank `29dbf1dd…` (Schemastand 195), gehoben auf Schemastand 196; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R41 am 07.10.2026 | [`2026-10-07_R40_Erdreichquellen/protokoll.txt`](2026-10-07_R40_Erdreichquellen/protokoll.txt) |
 | `2026-10-07_R41_Erdreichpruefung` | 07.10.2026 | Basis mit der Erdreichprüfung je Anlage und dem Entzug des Sondenfelds ohne Taktstrom (Erdwärme-Nachzug), auf Linux eingefroren; Testdatenbank `6f83f95f…` (Schemastand 196), gehoben auf Schemastand 198; zweiundzwanzig Projekte, 677 CSV, 4 584 Skalare — abgelöst durch R42 am 07.10.2026 | [`2026-10-07_R41_Erdreichpruefung/protokoll.txt`](2026-10-07_R41_Erdreichpruefung/protokoll.txt) |
+| `2026-10-07_R42_Vorlaufinterpolation_AK3` | 07.10.2026 | Basis mit der Interpolation der Wärmepumpenkennlinie über den Vorlauf (AK3-I, E102) und dem Referenzprojekt 1058 auf Stufe AK3, auf Linux eingefroren; Testdatenbank `e09fceed…` (Schemastand 198), gehoben auf Schemastand 199; dreiundzwanzig Projekte, 718 CSV, 4 862 Skalare — abgelöst durch R43 am 07.10.2026 | [`2026-10-07_R42_Vorlaufinterpolation_AK3/protokoll.txt`](2026-10-07_R42_Vorlaufinterpolation_AK3/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -4785,5 +4786,55 @@ Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R41 beschrieben �
 >
 > Die Regeln stehen im [Konzept Simulationsablauf](../../aktuell/Konzept_Simulationsablauf_EPOS-Plan.md),
 > Abschnitt 23.2 und 23.7.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R42 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R42 beschrieben — den Anlass (Interpolation der Wärmepumpenkennlinie über den Vorlauf, AK3-I, und Referenzprojekt 1058 auf Stufe AK3) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R42 durch `2026-10-07_R43_Kaelteseite_AK3K`** (Zonensperre je Zone auf allen Stufen und Kälteseite im geschlossenen Kreis auf Stufe AK3, AK3-K, Entscheide E103 und E104, dazu das Referenzprojekt 1059): 596 von 718 CSV sind byte-gleich; abweichend allein 1017, 1047, 1055, 1056 (Zonensperre) und 1058 (Zonensperre und Kälteseite im Kreis), 1059 neu (41 CSV); der Bivalenzpunkt von 1047 und 1056 fällt von 17,79 auf −10,03 bzw. −10,04 °C.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+> **Anlass: Interpolation der Wärmepumpenkennlinie über den Vorlauf (AK3-I, Entscheid E102 zu Q-AK3-6) und das neue
+> Referenzprojekt 1058 auf Stufe AK3 (RP-AK3, E102 zu Q-AK3-7) — allein 1047 und 1056 ändern sich, 1058 ist neu, alle
+> übrigen Projekte sind byte-gleich.**
+>
+> **AK3-I:** Die Wärmepumpe rechnet am gerechneten Vorlauf zwischen den beiden einschließenden Kennlinien linear —
+> Heizleistung und Leistungszahl je für sich, die elektrische Leistung folgt als Quotient (I-1); auf einer Stützstelle
+> rechnet deren Kennlinie, außerhalb gilt die Randregel (I-2); die Kälteseite interpoliert ebenso zwischen den
+> Kühl-Vorläufen (I-3). Das ist eine **EPOS-Lesart** in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und
+> DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6 ([Entwurf AK3](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md)
+> Abschnitt 3); das Halten der obersten Kennlinie über der höchsten Stützstelle benennt der Lauf je Gerät im Hinweis.
+> Wirkung haben nur die gekoppelten Projekte mit Wärmepumpe: Ihr Vorlauf folgt der Heizkurve und liegt meist zwischen
+> zwei Stützstellen; alle ungekoppelten Vorläufe liegen auf einer Stützstelle, der Kühl-Vorlauf 18 °C ist eine.
+> **Gegen R41 sind 665 von 677 CSV byte-gleich; abweichend je sechs Dateien von 1047 und 1056** (`aggregate.csv`,
+> `wp_strom`, `wp_quellentemperatur`, `reststrom_viertelstunde`, `ssp_gespeichert_viertelstunde`,
+> `pv_speicherfuellstand`), je 14 Skalare; die Wärme der Wärmepumpe und die Komfortzahlen bleiben gleich:
+>
+> | Projekt | WP-Strom (kWh/a) | JAZ | Jahresentzug der Sonde (kWh/a) | größter Entzug (kW) | BHKW-Strombedarfsdeckung (%) |
+> |---|---|---|---|---|---|
+> | 1047 | 2 124,6 → 2 114,4 (−0,48 %) | 4,45 → 4,47 | 7 310 → 7 320 | 13,70 → 13,97 | 48,95 → 48,92 |
+> | 1056 | 2 804,5 → 2 775,4 (−1,04 %) | 4,33 → 4,36 | 9 313 → 9 342 | 16,45 → 16,81 | 49,09 → 49,01 |
+>
+> Die Messung mit Schalter vor dem Basiswechsel (auf R39, Wärmepumpe noch ohne Erdsonde) zeigte −0,59 % und −1,14 %.
+>
+> **RP-AK3 (1058):** die Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve
+> (unten „Das Referenzprojekt 1058“) — 41 CSV, 278 Skalare. Neu sind die Einfrierregeln zur Heizkennlinie der
+> Projektwärmepumpe, zu `Ptherm` der Projektkessel und -BHKW und zu Puffer, Raumeinfluss und Stufe eines gekoppelten
+> Referenzprojekts (Abschnitt „gesäte Auslegungsdaten der Übergabe“ oben). Gesamt 718 CSV, 4 862 Skalare. Zwei Läufe
+> sind byte-gleich (718/718 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058 \
+>   --ziel Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3
+> ```
+>
+> Die Regeln stehen im [Entwurf AK3](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) Abschnitt 3
+> und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.3.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

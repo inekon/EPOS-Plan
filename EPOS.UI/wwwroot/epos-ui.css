@@ -15183,6 +15183,49 @@ td.epos-vorlage-katalogbeschreibung {
     }
 }
 
+/* Das Jahresband der Freigabe im Reiter Konditionierung (Entwurf AK3-K 3.3; Welle KZ). */
+.epos-kond-freigabe {
+    margin: var(--epos-rand) 0;
+    min-width: 0;
+}
+
+.epos-kond-freigabe-titel {
+    margin: 0 0 4px;
+    font-weight: 600;
+}
+
+.epos-kond-freigabe-band {
+    display: block;
+    width: 100%;
+    height: 14px;
+    border: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-kond-freigabe-zeile {
+    margin: 2px 0 6px;
+    overflow-wrap: anywhere;
+}
+
+.epos-kond-freigabe-legende {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin: 4px 0;
+}
+
+.epos-kond-freigabe-marke {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-freigabe-0 { fill: var(--epos-flaeche); background: var(--epos-flaeche); }
+.epos-freigabe-1 { fill: var(--epos-senke-rahmen); background: var(--epos-senke-rahmen); }
+.epos-freigabe-2 { fill: var(--epos-quelle-rahmen); background: var(--epos-quelle-rahmen); }
+.epos-freigabe-3 { fill: var(--epos-schema-prozess); background: var(--epos-schema-prozess); }
+
 /* ===================================================================== */
 /*  DAS BLATT „NUTZUNGSPROFILE" (Stufe NP3a; Konzept Nutzungsprofile 6.1) */
 /* ===================================================================== */

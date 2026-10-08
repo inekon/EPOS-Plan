@@ -119,6 +119,8 @@ namespace WindowsFormsApplication1
             bool komfortEnergie = AnlagenfahrplanSchema.ErgebnisspaltenVorhanden();
             // Stufe AK3 (Ak3Schema): die Kennzahlen des geschlossenen Kreises - vor dem Schritt fehlen die Spalten.
             bool ak3Energie = Ak3Schema.ErgebnisspaltenVorhanden();
+            // AK3-K (Ak3KSchema): die Kennzahlen der Zonensperre und der Kaelteseite im Kreis - ebenso.
+            bool ak3kEnergie = Ak3KSchema.ErgebnisspaltenVorhanden();
             // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
             // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
             bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
@@ -268,9 +270,11 @@ namespace WindowsFormsApplication1
                                   KuehluebergabeSchema.SPALTE_KUEHL_UEBERGABE_BEGRENZT_STUNDEN
                                 : "") +
                             (komfortEnergie ? ", " + string.Join(", ", AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) : "") +
-                            (ak3Energie ? ", " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            (ak3Energie ? ", " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS) : "") +
+                            (ak3kEnergie ? ", " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS) : "") + ") " +
                             "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") +
-                            (komfortEnergie ? ", ?,?,?,?,?,?" : "") + (ak3Energie ? ", ?,?,?,?,?,?" : "") + ")";
+                            (komfortEnergie ? ", ?,?,?,?,?,?" : "") + (ak3Energie ? ", ?,?,?,?,?,?" : "") +
+                            (ak3kEnergie ? ", ?,?,?,?,?,?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -317,6 +321,18 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@a3s", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3SchrankeStundenH) });
                                 p.Add(new DbParam("@a3l", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3SpeicherLeerStundenH) });
                                 p.Add(new DbParam("@a3r", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3RestbedarfStundenH) });
+                            }
+                            // AK3-K (Ak3KSchema, Festlegung 20): NULL ausserhalb des Geltungsbereichs; Reihenfolge wie
+                            // Ak3KSchema.SPALTEN_ERGEBNIS.
+                            if (ak3kEnergie)
+                            {
+                                p.Add(new DbParam("@k3t", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.ZonensperreTage) });
+                                p.Add(new DbParam("@k3h", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.ZonensperreHeizenGesperrtMwh) });
+                                p.Add(new DbParam("@k3k", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.ZonensperreKuehlenGesperrtMwh) });
+                                p.Add(new DbParam("@k3s", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3KaelteschrankeStundenH) });
+                                p.Add(new DbParam("@k3u", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3UmschaltStundenH) });
+                                p.Add(new DbParam("@k3r", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3KaelterestStundenH) });
+                                p.Add(new DbParam("@k3m", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Ak3KaelterestMwh) });
                             }
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -1129,6 +1145,14 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Ak3SchrankeStundenH = GanzOderNull(re, Ak3Schema.SPALTE_SCHRANKE_STUNDEN);
                 m.Energiebedarf.Ak3SpeicherLeerStundenH = GanzOderNull(re, Ak3Schema.SPALTE_SPEICHER_LEER_STUNDEN);
                 m.Energiebedarf.Ak3RestbedarfStundenH = GanzOderNull(re, Ak3Schema.SPALTE_RESTBEDARF_STUNDEN);
+                // AK3-K (Ak3KSchema): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.ZonensperreTage = GanzOderNull(re, Ak3KSchema.SPALTE_ZONENSPERRE_TAGE);
+                m.Energiebedarf.ZonensperreHeizenGesperrtMwh = DN(re, Ak3KSchema.SPALTE_ZONENSPERRE_HEIZEN_MWH);
+                m.Energiebedarf.ZonensperreKuehlenGesperrtMwh = DN(re, Ak3KSchema.SPALTE_ZONENSPERRE_KUEHLEN_MWH);
+                m.Energiebedarf.Ak3KaelteschrankeStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_KAELTESCHRANKE_STUNDEN);
+                m.Energiebedarf.Ak3UmschaltStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_UMSCHALT_STUNDEN);
+                m.Energiebedarf.Ak3KaelterestStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_KAELTEREST_STUNDEN);
+                m.Energiebedarf.Ak3KaelterestMwh = DN(re, Ak3KSchema.SPALTE_KAELTEREST_MWH);
             }
 
             // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine; vor dem Schritt fehlt die Tabelle.

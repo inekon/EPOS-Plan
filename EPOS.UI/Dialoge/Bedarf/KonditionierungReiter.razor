@@ -129,6 +129,9 @@
                                Einzelheiten="@(MitEinzelheiten ? Einzelheiten(groesse) : null)" />
             }
         </div>
+
+        @* Das Jahresband der Freigabe (Entwurf AK3-K 3.3): je Ort Heizen frei, Kühlen frei, beides, keines. *@
+        <Freigabeband Baender="@Bearbeitung.Freigabebaender()" Texte="@Texte" />
     }
 
     @* Die Zusatzzeilen neben der Matrix (Teilkonzept 3.3): Maximalraumtemperatur und Sommerlueftung;

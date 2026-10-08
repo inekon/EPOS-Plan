@@ -961,7 +961,10 @@ namespace WindowsFormsApplication1
         /// Format und Herkunft nehmen den Wert <c>SQPROJ</c> an — Neubau von <c>Tab_Importquelle</c> und der sechs
         /// Herkunftstabellen mit erweiterter Prüfklausel (<see cref="ProjektdateiImportSchema"/>). <b>Ergebnisneutral:</b>
         /// Keine Zeile ändert sich.
-        public const int Zielversion = ProjektdateiImportSchema.SCHRITT;
+        /// Danach, mit den KENNZAHLEN VON AK3-K (Entwurf AK3-K 3.5, Festlegung 20), steht das Ziel auf
+        /// <see cref="Ak3KSchema.SCHRITT"/>: sieben Kennzahlen der Zonensperre und der Kälteseite im Kreis an
+        /// <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3KSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        public const int Zielversion = Ak3KSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
