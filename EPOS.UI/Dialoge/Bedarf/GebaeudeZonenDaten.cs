@@ -111,6 +111,17 @@ public sealed class ZoneDaten
     /// <summary>Proportionalband des Raumreglers [K]; <c>null</c> = Gebäudewert, sonst Vorgabe 1 K.</summary>
     public double? ReglerProportionalband { get; set; }
 
+    // ---- Die Kühlübergabe der Zone (Schritt 137, gerechnet seit KZ1; Entwurf KK Festlegung 15) — leer = wie Gebäude ----
+
+    /// <summary>Kühlübergabeart (<c>DbWerte.KUEHLUEBERGABE_*</c>); <c>null</c> = die des Gebäudes. <c>IDEAL</c> = diese Zone kühlt ideal.</summary>
+    public string? KuehlUebergabeArt { get; set; }
+
+    /// <summary>Exponent der Kühlübergabe [–]; <c>null</c> = Gebäudewert, sonst Vorgabe der wirksamen Art.</summary>
+    public double? KuehlUebergabeExponent { get; set; }
+
+    /// <summary>Nennleistung der Kühlübergabe [kW]; <c>null</c> = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? KuehlUebergabeLeistungNennKw { get; set; }
+
     /// <summary>Die Eingaben der Zone für die Vorgabenkaskade des Kerns (<see cref="Zonenvorgaben"/>) samt den sieben Übergabefeldern und den vier Kühlfeldern.</summary>
     public Zoneneingaben Eingaben()
         => new(Nutzflaeche, Raumhoehe, Volumen, IstBeheizt, SollTag, SollNacht, SollWochenende, SollFerien,

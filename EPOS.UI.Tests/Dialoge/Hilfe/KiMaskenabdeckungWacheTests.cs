@@ -248,7 +248,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // auslegung_*, proportionalband): 9 → 16.
         // BA-3: der Filter „Ohne vollständige Zuordnung“ der Bauteiltabelle - eine Ansichtswahl, kein Wert der Zone
         // (bewusst draußen): 18 → 19.
-        new("ZonenDialog", 19),
+        // KK4 (Entwurf KK Festlegung 15): die Kühlübergabe der Zone - Art und zwei Zahlenfelder (Katalogfelder
+        // kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung): 19 → 22.
+        new("ZonenDialog", 22),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.

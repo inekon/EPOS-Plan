@@ -237,6 +237,10 @@ namespace WindowsFormsApplication1
                 KuehlSollwert = z.Kuehl_Sollwert,
                 KuehlSollwertNacht = z.Kuehl_Sollwert_Nacht,
                 KuehlleistungMaxKw = z.Kuehlleistung_Max,
+                // KK4 (Festlegung 15): die drei Kuehluebergabefelder der Zone (Schritt 137); NULL = wie Gebaeude.
+                KuehlUebergabeArt = z.Kuehl_Uebergabe_Art,
+                KuehlUebergabeExponent = z.Kuehl_Uebergabe_Exponent,
+                KuehlUebergabeLeistungNennKw = z.Kuehl_Uebergabe_Leistung_Nenn,
                 // NP3b (Q41, NP-F14): das zuletzt übernommene Nutzungsprofil; die Kalendernutzung nur zur Anzeige.
                 Nutzungsprofil = z.Nutzungsprofil,
                 Kalendernutzung = z.ID > 0 && RaumnutzungCtrl.Lesbar() ? RaumnutzungCtrl.Kalendernutzung(idGebaeude, z.ID) : null,
@@ -343,6 +347,10 @@ namespace WindowsFormsApplication1
                     z.Kuehl_Sollwert = d.KuehlSollwert;
                     z.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
                     z.Kuehlleistung_Max = d.KuehlleistungMaxKw;
+                    // KK4 (Festlegung 15): die Kuehluebergabe je Zone fuehrt der Dialog - leer = wie Gebaeude.
+                    z.Kuehl_Uebergabe_Art = d.KuehlUebergabeArt;
+                    z.Kuehl_Uebergabe_Exponent = d.KuehlUebergabeExponent;
+                    z.Kuehl_Uebergabe_Leistung_Nenn = d.KuehlUebergabeLeistungNennKw;
                     // NP3b: „Nutzungsprofil übernehmen…" setzt den Namen im Arbeitsstand, das OK schreibt ihn.
                     z.Nutzungsprofil = d.Nutzungsprofil;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel

@@ -113,6 +113,34 @@ public class ZonenKuehlungDialogTests : EposBunitContext
         Assert.Equal(1.5, zurueck!.KuehlleistungMaxKw);
     }
 
+    /// <summary>KK4: die Kühlübergabe der Zone - leer = wie Gebäude, die Art wählt, Exponent und Nennleistung gehen zurück.</summary>
+    [Fact]
+    public void Die_Kuehluebergabe_der_Zone_geht_in_den_Arbeitsstand_und_zurueck()
+    {
+        ZoneDaten? zurueck = null;
+        var cut = Aufbauen(zone: new ZoneDaten { Id = 7, Bezeichner = "Wohnen", Nutzflaeche = 50, KuehlUebergabeExponent = 1.2 },
+                           geschlossen: z => zurueck = z);
+        IElement art = FeldOderNichts(Kuehlung(cut), "Kühlübergabeart der Zone :")!;
+        Assert.Equal("0", art.GetAttribute("value"));
+        Assert.Equal("wie Gebäude", art.QuerySelector("option[value=\"0\"]")!.TextContent.Trim());
+        Assert.Equal("1.2", FeldOderNichts(Kuehlung(cut), "Exponent der Kühlübergabe (Zone) :")!.GetAttribute("value")!.Replace(',', '.'));
+
+        // IDEAL rechnet nicht: Exponent und Nennleistung fallen aus der Sicht.
+        int ideal = 1 + Waermeuebergabevorgaben.KuehlArten.ToList().IndexOf(DbWerte.KUEHLUEBERGABE_IDEAL);
+        art.Change(ideal.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Null(FeldOderNichts(Kuehlung(cut), "Exponent der Kühlübergabe (Zone) :"));
+
+        int decke = 1 + Waermeuebergabevorgaben.KuehlArten.ToList().IndexOf(DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR);
+        FeldOderNichts(Kuehlung(cut), "Kühlübergabeart der Zone :")!.Change(decke.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        FeldOderNichts(Kuehlung(cut), "Nennleistung der Kühlübergabe (Zone) :")!.Input("3");
+        cut.Find(".epos-zonendialog > .epos-leiste button.epos-knopf--primaer").Click();
+
+        Assert.NotNull(zurueck);
+        Assert.Equal(DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR, zurueck!.KuehlUebergabeArt);
+        Assert.Equal(1.2, zurueck.KuehlUebergabeExponent);
+        Assert.Equal(3.0, zurueck.KuehlUebergabeLeistungNennKw);
+    }
+
     [Fact]
     public void Unbeheizte_Zone_zeigt_keine_Kuehlfelder()
     {

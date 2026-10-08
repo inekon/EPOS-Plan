@@ -48826,5 +48826,29 @@ chart</value>
   <data name="KI_DLG_GEBK_KUEHLKURVE_AUSSEN_ERL" xml:space="preserve">
     <value>Cooling design outdoor temperature in °C, 0 to 60; applies only with the way eingabe and only if it lies more than 1 K above the cooling setpoint, otherwise the daily mean applies.</value>
   </data>
+  <data name="ZONDLG_LBL_KUEHL_UEBERGABE_ART" xml:space="preserve">
+    <value>Cooling emission type of the zone :</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Cooling emission exponent (zone) :</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Cooling emission rated output (zone) :</value>
+  </data>
+  <data name="ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE" xml:space="preserve">
+    <value>as building</value>
+  </data>
+  <data name="ZONDLG_ZEILE_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Cooling emission of the zone: empty fields apply as at the building, an empty rated output as the building share by usable area. Design point, flow limit and cooling curve are set at the building only; the cooling emission per zone is calculated when the building calculates its cooling emission.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHL_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Cooling emission type of the zone: empty = as building, otherwise IDEAL, KUEHLDECKE, FLAECHENKUEHLUNG or GEBLAESEKONVEKTOR.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHL_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Cooling emission exponent of the zone, 1.0 to 1.6; empty = building value or default of the type.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHL_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Rated output of the zone cooling emission in kW, sensible; empty = building share by usable area.</value>
+  </data>
 </root>
 

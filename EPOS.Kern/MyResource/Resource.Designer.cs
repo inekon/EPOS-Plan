@@ -64398,6 +64398,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabeart der Zone: leer = wie Gebäude, sonst IDEAL, KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHL_UEBERGABE_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHL_UEBERGABE_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exponent der Kühlübergabe der Zone, 1,0 bis 1,6; leer = Gebäudewert bzw. Vorgabe der Art. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHL_UEBERGABE_EXPONENT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHL_UEBERGABE_EXPONENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung der Kühlübergabe der Zone in kW, sensibel; leer = Anteil des Gebäudes nach Nutzfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ZON_KUEHL_UEBERGABE_NENNLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ZON_KUEHL_UEBERGABE_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Luftwechsel der Zone in 1/h; leer = der Wert des Gebäudes. ähnelt.
         /// </summary>
         public static string KI_DLG_ZON_LUEFTUNG_ERL {
@@ -128628,6 +128655,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Gebäude ähnelt.
+        /// </summary>
+        public static string ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zone wird beheizt ähnelt.
         /// </summary>
         public static string ZONDLG_LBL_BEHEIZT {
@@ -128696,6 +128732,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_LBL_KUEHLUNG_AKTIV {
             get {
                 return ResourceManager.GetString("ZONDLG_LBL_KUEHLUNG_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabeart der Zone : ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHL_UEBERGABE_ART {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHL_UEBERGABE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exponent der Kühlübergabe (Zone) : ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung der Kühlübergabe (Zone) : ähnelt.
+        /// </summary>
+        public static string ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG", resourceCulture);
             }
         }
         
@@ -129128,6 +129191,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONDLG_ZEILE_GEGENSEITE {
             get {
                 return ResourceManager.GetString("ZONDLG_ZEILE_GEGENSEITE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe der Zone: leere Felder gelten wie am Gebäude, die Nennleistung leer als Anteil des Gebäudes nach Nutzfläche. Auslegungspunkt, Vorlaufgrenze und Kühlkurve stehen allein am Gebäude; gerechnet wird die Kühlübergabe je Zone, wenn das Gebäude seine Kühlübergabe rechnet. ähnelt.
+        /// </summary>
+        public static string ZONDLG_ZEILE_KUEHLUEBERGABE {
+            get {
+                return ResourceManager.GetString("ZONDLG_ZEILE_KUEHLUEBERGABE", resourceCulture);
             }
         }
         

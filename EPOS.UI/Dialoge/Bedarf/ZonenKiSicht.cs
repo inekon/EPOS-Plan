@@ -65,6 +65,19 @@ public sealed class ZonenKiSicht : IKiFeldtafel
     /// <summary>Setzt die Kühlleistungsgrenze der Zone.</summary>
     public Action<double?>? KuehlleistungMaxSetzen { get; init; }
 
+    /// <summary>Liest die Kühlübergabeart der Zone (leer = wie Gebäude).</summary>
+    public Func<string?>? KuehlUebergabeArtLesen { get; init; }
+    /// <summary>Setzt die Kühlübergabeart der Zone; ein unbekannter Wert wirft.</summary>
+    public Action<string?>? KuehlUebergabeArtSetzen { get; init; }
+    /// <summary>Liest den Exponenten der Kühlübergabe der Zone.</summary>
+    public Func<double?>? KuehlUebergabeExponentLesen { get; init; }
+    /// <summary>Setzt den Exponenten der Kühlübergabe der Zone.</summary>
+    public Action<double?>? KuehlUebergabeExponentSetzen { get; init; }
+    /// <summary>Liest die Nennleistung der Kühlübergabe der Zone.</summary>
+    public Func<double?>? KuehlUebergabeNennleistungLesen { get; init; }
+    /// <summary>Setzt die Nennleistung der Kühlübergabe der Zone.</summary>
+    public Action<double?>? KuehlUebergabeNennleistungSetzen { get; init; }
+
     // E63 (AK1z): die Uebergabe je Zone; leer = wie Gebaeude.
     /// <summary>Liest die Übergabeart der Zone (<c>null</c> = wie Gebäude).</summary>
     public Func<string?>? UebergabeArtLesen { get; init; }
@@ -178,6 +191,15 @@ public sealed class ZonenKiSicht : IKiFeldtafel
 
     /// <summary>Leistungsgrenze der Kühlung [kW]; leer = die des Gebäudes (ab zwei Zonen anteilig).</summary>
     public double? KuehlleistungMax { get => KuehlleistungMaxLesen?.Invoke(); set => KuehlleistungMaxSetzen?.Invoke(value); }
+
+    /// <summary>Kühlübergabeart der Zone: leer = wie Gebäude, sonst IDEAL, KUEHLDECKE, FLAECHENKUEHLUNG oder GEBLAESEKONVEKTOR.</summary>
+    public string? KuehlUebergabeArt { get => KuehlUebergabeArtLesen?.Invoke(); set => KuehlUebergabeArtSetzen?.Invoke(value); }
+
+    /// <summary>Exponent der Kühlübergabe der Zone; leer = Gebäudewert bzw. Vorgabe der Art.</summary>
+    public double? KuehlUebergabeExponent { get => KuehlUebergabeExponentLesen?.Invoke(); set => KuehlUebergabeExponentSetzen?.Invoke(value); }
+
+    /// <summary>Nennleistung der Kühlübergabe der Zone in kW; leer = Anteil des Gebäudes nach Nutzfläche.</summary>
+    public double? KuehlUebergabeNennleistung { get => KuehlUebergabeNennleistungLesen?.Invoke(); set => KuehlUebergabeNennleistungSetzen?.Invoke(value); }
 
     /// <summary>Übergabeart der Zone (IDEAL, RADIATOR, FLAECHE, KONVEKTOR); leer = wie Gebäude.</summary>
     public string UebergabeArt { get => UebergabeArtLesen?.Invoke() ?? ""; set => UebergabeArtSetzen?.Invoke(value); }
