@@ -101,7 +101,7 @@ namespace EPOS.Kern.Tests
             GebaeudeZonierungDaten zon = Zuordnen(gaben)!.Zonierung!;
 
             Assert.NotNull(zon.Flaechenprofil);
-            Assert.Equal(12, zon.Flaechenprofil!.Spalten.Count);
+            Assert.Equal(13, zon.Flaechenprofil!.Spalten.Count);
             Assert.Equal(h.Vorschlag.Zeilen.Count, zon.Flaechen.Count);
             Assert.Equal(zon.Flaechen.Count, zon.Flaechen.Select(f => f.Zeile.Schluessel).Distinct().Count());
 

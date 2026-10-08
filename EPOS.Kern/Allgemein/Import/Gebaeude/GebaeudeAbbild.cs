@@ -253,6 +253,13 @@ namespace WindowsFormsApplication1
         /// <summary>Tragen Trennflächen aus den Körperpaaren die Nachbarschaft der Räume (Gebäude ohne Raumgrenzen)?</summary>
         public bool KoerperpaareGebildet { get; set; }
 
+        /// <summary>
+        /// Koppeln die Trennflächen des Körperwegs der Bauteilflächen (Abstimmung G5, Teil G5-3) alle Geschosse mit beheizten
+        /// Räumen zu einem Verbund (auch über ein unbeheiztes Geschoss)? Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die
+        /// Vorgabe — wie bei <see cref="GeschosseGekoppelt"/>.
+        /// </summary>
+        public bool KoerperflaechenGekoppelt { get; set; }
+
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
@@ -755,6 +762,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Dateikoerper Koerper { get; set; }
 
+        /// <summary>
+        /// Der Befund des Körpers aus der Datei (Abstimmung G5, B1): nicht oder nur teilweise lesbar, offen, ohne Beschnitt,
+        /// mit nicht angebundenem Loch oder entartet (<see cref="Bauteilbefunde.Koerpergrund"/>); <see cref="Bauteilbefundgrund.Keiner"/>
+        /// = lesbar oder keine Darstellung. Gesetzt allein vom IFC-Leser, auch wo der Körper nur für die Rechnung gelesen wird.
+        /// </summary>
+        public Bauteilbefundgrund Koerpergrund { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
     }
@@ -810,6 +824,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Typ einer Geometrie, die sich nicht auswerten lässt; <c>null</c> = ausgewertet oder keine.</summary>
         public string Geometriefehler { get; set; }
+
+        /// <summary>
+        /// Nur der Körperweg (<see cref="Grenzherkunft.Bauteilkoerper"/>, G5-3): der Azimut der Außennormale aus Sicht des Raums
+        /// [°], 0° = Nord, im Uhrzeigersinn, nach TrueNorth bzw. <c>IfcMapConversion</c>; <c>null</c> = waagerecht oder nicht bestimmt.
+        /// </summary>
+        public double? AzimutGrad { get; set; }
+
+        /// <summary>Nur der Körperweg: die Neigung der Außennormale aus Sicht des Raums [°] (0° = nach oben, 180° = nach unten); <c>null</c> = keine.</summary>
+        public double? NeigungGrad { get; set; }
+
+        /// <summary>
+        /// Nur der Körperweg: Liegt der Raum auf der Gegenseite der maßgeblichen Seite des Bauteilkörpers (G5-1)? Dann gilt der
+        /// Aufbau gespiegelt.
+        /// </summary>
+        public bool Gegenseite { get; set; }
     }
 
     /// <summary>Ein Aufbau (gbXML <c>Construction</c>) mit seinen Schichten.</summary>
