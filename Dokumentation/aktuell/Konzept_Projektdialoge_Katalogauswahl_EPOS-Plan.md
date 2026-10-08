@@ -1,5 +1,7 @@
 # Konzept: Projektdialoge mit Katalogauswahl übersichtlich ordnen — fünf Varianten
 
+**Stand: Entwurf — Befund und fünf Varianten zur Wahl.** Die Wahl der Variante trifft der Anwender nach dem Ausprobieren der Mockups, danach folgen Detailfragen und erst dann das Konzept. Die Empfehlung V4 ist eine Empfehlung, kein Entscheid; die Umsetzung ist nicht beauftragt.
+
 **Anlass:** Anwenderauftrag vom 08.10.2026 mit Bildschirmfoto „Verwaltung BHKW“ (Fensterdialog,
 1 546 × 1 000 px): „Dieser Dialog ist sehr unübersichtlich mit Scrollbar in Scrollbar.“ Gefordert sind
 Funktionalität wie bisher, eine übersichtlichere Zuordnung von Datenbank zu Projekt, eine klare Zuordnung
@@ -25,7 +27,7 @@ wie die dialogeigenen Teile hineinpassen.
 Der heutige Projektdialog hat **drei Rollbereiche, zwei davon im dritten**:
 
 | Nr | Rollbereich | Fundstelle | Wirkung |
-|---|---|---|---|
+|---|---|---|
 | ① | das Fenster (Dokument) | `EPOS.UI/wwwroot/epos-ui.css:331` — `.epos-dialog` hat keine Höhengrenze; im eigenen Fenster rollt deshalb das Dokument, nur Kopf und Schlussleiste haften (`epos-ui.css:2535`, `:2545`, Rollpolster `:2602`) | die ganze Maske rollt |
 | ② | die Projektliste | `epos-ui.css:3489` — `.epos-zweispalten-spalte--oben .epos-raster-huelle { max-height: var(--epos-projektlistenhoehe) }` (12 rem, `:175`) mit `overflow: auto` aus `:1598` | rollt in ① |
 | ③ | die Katalogliste | `epos-ui.css:1596` — `.epos-raster-huelle { overflow: auto; max-height: var(--epos-listenhoehe) }` (22 rem, `:131`) | rollt in ① |
@@ -243,16 +245,16 @@ Pilot (wie AD-Q8 Stufe 3 vorgesehen):
 Detailspalte dort nicht reicht. **V1** taugt als Sofortmaßnahme gegen das Doppelrollen (2–3 Tage), wäre
 aber ein Zwischenstand, der später erneut umgebaut wird.
 
-## 7 Anwenderentscheide (entschieden am 08.10.2026)
+## 7 Offene Anwenderentscheide
 
-| Kennung | Frage | Empfohlene Antwort | Entscheid 08.10.2026 |
-|---|---|---|---|
-| **KA-Q1** | Welche Variante wird Ziel für die Projektdialoge? | **V4** (Abschnitt 6) | **Entschieden: V4** (Reiter „Im Projekt“ | „Katalog“ mit Detailspalte) für alle Projektdialoge mit Katalogauswahl |
-| **KA-Q2** | Zuerst eine Sofortmaßnahme (V1: Dialog rollt nicht, Rahmen und Knöpfe je Bereich) oder gleich das Ziel? | **Gleich das Ziel**, Heizkessel als Pilot; V1 nur, wenn der Pilot länger als zwei Wochen ausbleibt | **Entschieden: gleich das Ziel**, keine Sofortmaßnahme V1; Heizkessel als Pilot, danach die übrigen Dialoge |
-| **KA-Q3** | Welcher Reiter ist beim Öffnen aktiv? | **„Im Projekt“, wenn das Projekt Komponenten hat, sonst „Katalog“**; nach einer Übernahme bleibt „Katalog“ offen | **Entschieden** (einzeln bestätigt): Startreiter „Im Projekt“, wenn Komponenten da sind, sonst „Katalog“; nach einer Übernahme bleibt „Katalog“ offen |
-| **KA-Q4** | Mehrfachwahl mit Sammelübernahme („＋ 3 in das Projekt“), Trägerwahl einmal je Brennstoff (AD-Q4)? | **Ja** | **Entschieden: ja**, Mehrfachwahl mit Sammelübernahme |
-| **KA-Q5** | Doppelklick auf eine Katalogzeile übernimmt ins Projekt (AD-Q3)? | **Ja**, im Projektdialog; in den Verwaltungen weiter nichts | **Entschieden: ja**, Doppelklick übernimmt im Projektdialog |
-| **KA-Q6** | Bleibt die Katalogpflege (Neu…, Schloss, Löschen, Bearbeiten…) im Projektdialog (AD-Q10)? | **Ja, im Reiter „Katalog“** — dort ist sie eindeutig zugeordnet; ein eigener Weg „Katalog verwalten…“ entfällt | **Entschieden** (einzeln bestätigt): Katalogpflege bleibt im Projektdialog im Reiter „Katalog“ |
-| **KA-Q7** | Ändert „Alle Daten“ beim Projektsatz die Projektkopie und beim Katalogsatz den Katalog (AD-Q5)? | **Ja** — die Marke „Projektsatz“/„Katalogsatz“ im Kopf der Detailspalte sagt, was gespeichert wird | **Entschieden** (einzeln bestätigt): „Alle Daten“ schreibt beim Projektsatz die Projektkopie, beim Katalogsatz den Katalog; Marke im Kopf der Detailspalte |
-| **KA-Q8** | Die drei Kennfarben (Projekt grün, Katalog blau, Satz orange) als Hausregel auch in der Anwendung? | **Ja, als Rahmenfarbe der Bereiche und Marke im Kopf**; an den Knöpfen nur die Stellung, kein Farbstreifen | **Entschieden** (einzeln bestätigt): Kennfarben (Projekt grün, Katalog blau, Satz orange) als Rahmenfarbe der Bereiche und Marke im Kopf, Knöpfe ohne Farbstreifen |
-| **KA-Q9** | Breite Projektsätze (PV-Stränge, Wärmepumpen-Anlage, Gebäude): Detailspalte verbreitern oder Überlagerung? | **Überlagerung im selben Fenster** über „Stränge…“ bzw. „Anlage…“; die Detailspalte bleibt 400 px | **Entschieden** (einzeln bestätigt): breite Projektsätze als Überlagerung im selben Fenster, Detailspalte 400 px |
+| Kennung | Frage | Empfohlene Antwort |
+|---|---|---|
+| **KA-Q1** | Welche Variante wird Ziel für die Projektdialoge? | **V4** (Abschnitt 6) |
+| **KA-Q2** | Zuerst eine Sofortmaßnahme (V1: Dialog rollt nicht, Rahmen und Knöpfe je Bereich) oder gleich das Ziel? | **Gleich das Ziel**, Heizkessel als Pilot; V1 nur, wenn der Pilot länger als zwei Wochen ausbleibt; Umsetzung auf Zuruf des Anwenders |
+| **KA-Q3** | Welcher Reiter ist beim Öffnen aktiv? | **„Im Projekt“, wenn das Projekt Komponenten hat, sonst „Katalog“**; nach einer Übernahme bleibt „Katalog“ offen |
+| **KA-Q4** | Mehrfachwahl mit Sammelübernahme („＋ 3 in das Projekt“), Trägerwahl einmal je Brennstoff (AD-Q4)? | **Ja** |
+| **KA-Q5** | Doppelklick auf eine Katalogzeile übernimmt ins Projekt (AD-Q3)? | **Ja**, im Projektdialog; in den Verwaltungen weiter nichts |
+| **KA-Q6** | Bleibt die Katalogpflege (Neu…, Schloss, Löschen, Bearbeiten…) im Projektdialog (AD-Q10)? | **Ja, im Reiter „Katalog“** — dort ist sie eindeutig zugeordnet; ein eigener Weg „Katalog verwalten…“ entfällt |
+| **KA-Q7** | Ändert „Alle Daten“ beim Projektsatz die Projektkopie und beim Katalogsatz den Katalog (AD-Q5)? | **Ja** — die Marke „Projektsatz“/„Katalogsatz“ im Kopf der Detailspalte sagt, was gespeichert wird |
+| **KA-Q8** | Die drei Kennfarben (Projekt grün, Katalog blau, Satz orange) als Hausregel auch in der Anwendung? | **Ja, als Rahmenfarbe der Bereiche und Marke im Kopf**; an den Knöpfen nur die Stellung, kein Farbstreifen |
+| **KA-Q9** | Breite Projektsätze (PV-Stränge, Wärmepumpen-Anlage, Gebäude): Detailspalte verbreitern oder Überlagerung? | **Überlagerung im selben Fenster** über „Stränge…“ bzw. „Anlage…“; die Detailspalte bleibt 400 px |
