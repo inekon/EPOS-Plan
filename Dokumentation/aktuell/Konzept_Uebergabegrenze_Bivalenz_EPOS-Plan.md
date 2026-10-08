@@ -1,9 +1,11 @@
 # Konzept — Übergabegrenze und Bivalenz der Wärmepumpe
 
 **Auftrag des Anwenders vom 07.10.2026** („Übergabe als begrenzender Faktor der Wärmepumpe") ·
-**Stand 07.10.2026 — Entwurf, nicht entschieden** · Codestand `feb8db420` (Zweig `ios_migration_september`,
-Schemastand 198, Referenzbasis `2026-10-07_R42_Vorlaufinterpolation_AK3`) · Mockup
-`Mockups/Waermepumpe_Bivalenz_Uebergabe.html` · Fragen **UB‑Q1 bis UB‑Q8** (Abschnitt 10).
+**Stand 07.10.2026 — Entwurf, nicht entschieden** · **Fassung 2, 08.10.2026: Rücklaufgrenze verallgemeinert, andere
+Erzeuger** · Codestand `da03e5333` (Zweig `ios_migration_september`,
+Schemastand 201, Referenzbasis `2026-10-07_R43_Kaelteseite_AK3K`) · Mockup
+`Mockups/Waermepumpe_Bivalenz_Uebergabe.html` · Fragen **UB‑Q1 bis UB‑Q11** (Abschnitt 10).
+**Umsetzung:** [`Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 
 Ziel: Eine Wärmepumpe liefert in EPOS-Plan heute so viel, wie ihr Kennfeld an der gewählten Stützstelle hergibt —
 auch in Stunden, in denen der Heizkreis einen Vorlauf über ihrem Höchstvorlauf verlangt. Das Papier legt fest, wie
@@ -74,7 +76,7 @@ Volumenstrom je kW: 172 l/h bei 5 K, 86 l/h bei 10 K [Q8]. Der **Mindestvolumens
 Zu wenig Durchfluss führt zur Hochdruckabschaltung, zu wenig Volumen zum Takten; Mindestvolumen ohne Puffer
 3–5 l/kW [Q8], nach VDI 4645 ≥ 3 l/kW (sek. [Q37]). **Höchstvorlauf je Kältemittelklasse:** R410A 55–60 °C,
 R32 55–65 °C (sek.), R290 65–75 °C, R1234ze(E) 70–85 °C in Großanlagen [Q16], [Q18], [Q19], [Q21]. **R744 ist ein
-Sonderfall:** Vorlauf 80–90 °C sind möglich, begrenzend ist der **Rücklauf** (Faustregel < 35 °C) [Q18]–[Q20].
+Sonderfall:** Vorlauf 80–90 °C sind möglich, begrenzend ist der **Rücklauf** (Faustregel < 35 °C) [Q18]–[Q20]; Rücklaufgrenzen aller Wärmepumpen in 2.11.
 Der Höchstvorlauf sinkt bei tiefer Quellentemperatur (Einsatzgrenze im Kennfeld) [Q7], [Q9].
 
 **2.5 COP und Leistung über dem Vorlauf.** Eigene Medianauswertung der WPZ-Prüfresultate [Q13]: COP −1,5 bis
@@ -112,13 +114,38 @@ Trennstelle [Q3], [Q7], [Q8]. Mischungsbilanz (Abl.):
 ```
 
 Ist der Verbraucherstrom größer, fährt die Wärmepumpe stets über der Heizkurve [Q7]; gefordert wird
-ṁ_Erzeuger > ṁ_Verbraucher [Q3].
+ṁ_Erzeuger > ṁ_Verbraucher [Q3]. Beide Zweige sind energieerhaltend und am Umschaltpunkt ṁ_WP = ṁ_HK stetig;
+kompakt gilt σ_WP·ṁ_WP = σ_HK·ṁ_HK (Abl.; ideale Mischung, kein Speicherinhalt, eingeprägte Ströme, stationär in
+der Stunde). Mit r = ṁ_HK/ṁ_WP hebt r > 1 den nötigen Vorlauf der Wärmepumpe um (r − 1)·σ_HK (trifft θ_WP,max und
+σ_max), r < 1 ihren Rücklauf um (1 − r)·σ_HK (trifft σ_min und die Rücklaufgrenze 2.11).
+
+**Puffer.** Die Näherung „Mischung an der Entladeseite nicht gerechnet" (4.4) ist vertretbar, wenn ṁ_WP ≥ ṁ_HK oder
+der Puffer geschichtet rechnet; sonst unterschätzt sie den Vorlauf der Wärmepumpe um bis zu (r − 1)·σ_HK, und die
+Weichenbilanz wird als Schranke ausgewiesen. Bei R744 kommt der Rücklauf der Wärmepumpe aus der untersten
+Pufferzone (wie der Kollektoreintritt der Solarthermie heute). Größenordnung (Abl., Heizkörper n = 1,3, Auslegung
+65/55 °C bei −12 °C, θ_WP,max = 55 °C): Puffermischung verschiebt den Bivalenzpunkt einer unterkritischen
+Wärmepumpe von −3,3 °C um +1,1 K (r = 1,2) bzw. +2,7 K (r = 1,5); der Deckungsanteil nach 2.7 sinkt parallel um 1
+bzw. 5, alternativ um 5 bzw. 17 Prozentpunkte [Q23]. R744 an Heizkörpern 55/45 °C mit Rücklaufgrenze 35 °C:
+Abschaltgrenze ohne Mischung bei +4 °C, mit 1,43-fachem Strom der Wärmepumpe bei +6 °C, Deckungsanteil alternativ
+von ≈ 28 % auf unter 19 %. Eine belastbare JAZ-Differenz zwischen Parallel- und Reihenpuffer fand sich in
+Feldstudien und Leitfäden nicht [Q55], [Q56].
 
 **2.9 Reihenschaltung Wärmepumpe → Kessel (Vorwärmbetrieb).** Anerkannte Grundschaltung: Die Wärmepumpe fährt
 Grundlast, der Kessel hebt im Vorlauf auf den Sollwert [Q7]; die serielle Einbindung gilt als robust, Nachteil rund
 1 % Mehrverbrauch wegen höheren Kesselrücklaufs [Q33]. Die Wärmepumpe liefert dann auch Teilwärme, wenn sie den
 Sollvorlauf nicht mehr erreicht — bis der Rücklauf ihre Spreizungsgrenze erreicht. Die Schaltung wirkt damit eher
-parallel als teilparallel (Abl.).
+parallel als teilparallel (Abl.). Rechenweg der Reihe (Abl.):
+
+```
+θ_V,WP = min( θ_WP,max ; θ_V,HK ; θ_R,sys + Φ_WP / (ṁ_WP · c_p) )
+Φ_WP   = min( Φ_KF(θ_V,WP) ; ṁ_WP · c_p · (θ_WP,max − θ_R,sys) ) ,   Φ_WP = 0, wenn < Φ_min
+Betrieb nur, wenn θ_R,sys < θ_WP,max − σ_min ;   R744 zusätzlich θ_R,sys ≤ θ_R,grenz (4.4)
+Φ_K    = ṁ_sys · c_p · (θ_V,HK − θ_V,WP) ,       Rücklauf des Kessels = θ_V,WP
+```
+
+Der Kessel sieht als Rücklauf den **Vorlauf der Wärmepumpe**, nicht den Heizkreisrücklauf; das mindert seinen
+Brennwertnutzen (2.12) und verlangt eine eigene Rücklaufstufe der Kesselkennlinie (4.4). Bei großem Systemstrom
+(Kesselauslegung 15–20 K) unterschreitet σ_WP oft σ_min — dann Teilstrom oder Bypass um die Wärmepumpe (Abl.).
 
 **2.10 Recht und Förderung (Stand 07.10.2026).** Das Gebäudemodernisierungsgesetz (GModG, in Kraft ab 29.07.2026)
 löst das GEG ab; § 71h GEG und die 65‑%‑Pflicht sind aufgehoben [Q29], [Q30]. **§ 43 GModG:** Eine
@@ -127,6 +154,66 @@ Wärmepumpen-Hybridheizung erfüllt die Pflicht, wenn die Wärmepumpenleistung i
 beträgt [Q27], [Q28] (sek.). Die **BEG** verlangt weiter 65 % erneuerbare Wärme; Hybride gelten mit denselben
 30/40‑%‑Anteilen als erfüllt, bilanziert nach DIN V 18599 [Q31], [Q32]. EPOS-Plan weist diese Anteile aus,
 prüft aber keine Förderfähigkeit.
+
+**2.11 Rücklaufgrenzen der Wärmepumpe.** Fünf Arten, getrennt nach Ursache:
+
+| Art | Gilt für | Wirkt über | Wert | Folge im Rechenweg (4.4) |
+|---|---|---|---|---|
+| (i) physikalisch | R744 (transkritisch) | Gaskühleraustritt ≈ Wassereintritt + Grädigkeit | Planungsgrenze 35 °C [Q19]; Geräte bis 63–65 °C Eintritt [Q45], [Q46] | stetige Abwertung bis zur harten Grenze |
+| (ii) abgeleitet | alle unterkritischen Kältemittel | Verflüssigungstemperatur am Vorlauf | θ_R,grenz = θ_WP,max − σ_min | aus vorhandenen Feldern, kein Eintrag nötig |
+| (iii) Hersteller, Regler | Datenblatt- oder Reglerwert | Hochdruckwächter, Rücklaufsoll-Maximum | Datenblattwerte 50–65 °C | `Ruecklauf_Max`, wirkt als min(Feld, (ii)) |
+| (iv) Anfahrgrenze unten | Luft/Wasser, Kaltstart | Mindestverflüssigungsdruck | unter ≈ 15 °C Rücklauf, Ende ≈ 23 °C [Q48] | Prüfhinweis, kein Feld |
+| (v) Gas-Absorption | NH₃/H₂O | Absorber und Kondensator | ≈ θ_WP,max − 10 K [Q50] | Randnotiz |
+
+(i) **R744.** Über dem kritischen Punkt (31 °C) gibt CO₂ Wärme gleitend ab; die Temperatur vor der Drossel folgt
+dem Wassereintritt, und nahe der pseudokritischen Temperatur hebt jedes Kelvin Rücklauf die Enthalpie vor der
+Drossel, den Drosselverlust und den optimalen Hochdruck [Q18], [Q42], [Q43] (sek.). Gemessen sinkt der COP um rund
+1,8 %/K zwischen 28 und 35 °C Rücklauf [Q42], ein Fachaufsatz nennt 2–3 %/K [Q43] (sek.); der Vorlauf wirkt kaum (≈
+−0,07 %/K, Abl. aus [Q20]). Die Geräte schalten bei 35 °C nicht ab: Leistung und COP sinken ab ≈ 29 °C Eintritt
+stetig, zulässig sind 63–65 °C [Q45], [Q46]. 35 °C ist eine Effizienz- und Planungsgrenze.
+Trinkwarmwasser-Kennwerte gelten bei 9–17 °C Eintritt [Q44] und überschätzen den COP in der Raumheizung um 15–30 %
+(Abl.) — ein R744-Kennfeld ist nur mit seinem Bezugsrücklauf verwendbar.
+
+(ii) **Unterkritisch.** Die Einsatzgrenzen der Verdichter sind in Verdampfungs- und Verflüssigungstemperatur
+gegeben [Q49]; die Verflüssigungstemperatur folgt dem Vorlauf (θ_c ≈ θ_V + 3–5 K [Q3]). Der Rücklauf wirkt nur über
+θ_V = θ_R + σ: Über θ_WP,max − σ_min kann die Wärmepumpe nicht mehr mit σ_min heizen. Für sich wirkt er allein über
+die Unterkühlung, +0,3 … +1 %/K COP je K tieferem Rücklauf bei festem Vorlauf (Abl.) — zu klein für eine eigene
+Kennlinie.
+
+(iii) **Datenblatt und Regler.** Von sechzehn untersuchten Produktlinien nennen neun eine ausdrückliche höchste
+Rücklauf- bzw. Eintrittstemperatur, fünf davon außerhalb R744: zwei R290-Geräte (65 °C; Abschaltschwelle ab Werk 50
+°C, einstellbar bis 55 °C) [Q52], [Q53], zwei R32-Geräte (59 °C; ein R32-Gerät nennt 55 °C) [Q54], [Q51] und eine
+Gas-Absorptionswärmepumpe [Q50]. Begründet wird das mit dem Schutz vor dem Ansprechen des Hochdruckwächters bzw.
+der Verflüssigungsdruckgrenze [Q53], [Q50]. Der Abstand Höchstvorlauf − Höchstrücklauf beträgt 5–10 K bei
+ΔT-geregelten Geräten, 20–25 K bei R290-Hochtemperaturgeräten mit fester Schwelle, 25–30 K bei R744.
+Rücklaufgeregelte Geräte bilden die Heizkurve auf den Rücklauf ab; ihr „Rücklauf max." ist der Höchstvorlauf
+abzüglich der Auslegungsspreizung, einstellbar 25–70 °C [Q47], [Q48] — eine Regelungsgrenze, die enger sein kann
+als (ii).
+
+(iv) **Anfahrgrenze.** Luft/Wasser-Geräte holen bei Außentemperatur unter 10 °C und Rücklauf unter 15 °C den
+zweiten Erzeuger hinzu, bis der Rücklauf 23 °C erreicht [Q48]. In beheizten Gebäuden liegt der Rücklauf über der
+Raumtemperatur, nach Sperrzeiten kühlt das Systemwasser höchstens gegen sie ab (Abl.) — vernachlässigbar,
+Prüfhinweis nur bei Sollwerten unter 15 °C (UB‑Q10). (v) **Gas-Absorption:** Eintritt höchstens 50 °C im
+Dauerbetrieb, 55 °C absolut [Q50]; nur von Belang, falls eine Gas-Wärmepumpe als Typ geführt wird.
+
+**2.12 Rücklaufgrenzen anderer Wärmeerzeuger.**
+
+| Erzeuger | Art der Grenze | typischer Wert | Wirkung | heute im Kern | Folge für das Konzept |
+|---|---|---|---|---|---|
+| Brennwertkessel Gas/Öl | stetig, oben | Taupunkt Erdgas ≈ 57 °C, Öl ≈ 47 °C [Q57]; Nutzungsgrad Erdgas ≈ 102 % (Hi) bei 20 °C → ≈ 92 % bei 60 °C Rücklauf [Q58] | kein Schaden, der Kessel läuft ohne Brennwertnutzen weiter [Q59] | `Kennlinie_Brennwert` über `Kesselkennlinie.Ruecklauf` (Heizkreis → Speicher → Paar → Rückfall) | Rücklaufstufe „Vorwärmer" (4.4, UB‑Q11) |
+| NT-/Konstanttemperaturkessel | hart, unten (Taupunktkorrosion, zeitverzögert) | Mindestrücklauf 55–65 °C [Q59], [Q60] | Versottung über Monate | keine Grenze; Rücklaufanhebung vorausgesetzt, Energie unverändert | Prüfhinweis, kein Feld (UB‑Q10) |
+| Biomassekessel | hart, unten (Pflichtbauteil Rücklaufanhebung) | Pellet ≈ 55 °C, Scheitholz 60–65 °C; Norm ≥ 55 °C [Q61], [Q62] | Versottung, Teer, Gewährleistung | wie NT-Kessel | Prüfhinweis, kein Feld (UB‑Q10) |
+| BHKW (Verbrennungsmotor) | hart, oben (Motorkühlkreis) | ≈ 70 °C; Mikro-BHKW einstellbar bis 73 °C [Q63], [Q64] | Abschaltung | kein Temperaturbezug | `Ruecklauf_Max` am BHKW, Vorgabe 70 °C, Grund `RUECKLAUF_MAX` (UB‑Q9, UB‑E3) |
+| Brennstoffzelle PEM | hart, oben | ≈ 50 °C [Q65] | kein Betrieb darüber | kein eigener Typ | Datenblattwert in dasselbe Feld, falls als BHKW geführt |
+| Solarthermie | stetig (Kollektorgleichung) | Flachkollektor ≈ 0,5–0,7 Prozentpunkte je K (Abl. aus [Q67]) | Ertrag sinkt | Kollektoreintritt aus der untersten Pufferzone der Vorstunde | kein Feld |
+| Fernwärme | vertraglich, oben | meist 50 °C [Q66] | Preiszuschlag | kein Erzeugertyp | Randnotiz |
+| Heizstab | keine (Temperaturbegrenzer am Vorlauf) | — | — | an der Wärmepumpe | keine |
+| Puffer | stetig (Schichtung) | — | vermischte Schichten mindern die nutzbare Spreizung | Paar nur für die Kapazität, `T_unten` bei Schichtung | Randnotiz; Herkunft des R744-Rücklaufs (2.8) |
+
+Eine harte Höchstgrenze mit Stundenwirkung hat neben der Wärmepumpe nur das BHKW — derselbe Mechanismus wie
+`Ruecklauf_Max`. Die Mindestgrenzen der NT- und Festbrennstoffkessel sichert in jeder Anlage eine Rücklaufanhebung;
+die Stundenbilanz ändert sie nicht (Abl.). Brennwert und Solarthermie wirken stetig und sind im Kern abgebildet;
+offen ist allein der richtige Kesselrücklauf im Vorwärmbetrieb.
 
 ## 3 Ausgangslage am Code
 
@@ -159,7 +246,9 @@ Steht die Wärmepumpe vorn, deckt sie bis zur Kennfeldleistung, der Kessel den R
 | Spreizung, Mindestvolumenstrom der Wärmepumpe | kein Feld; nur `WQ_Spreizung` auf der Quellseite |
 | Einbindung (direkt, Puffer, Weiche) | nur Senken und Pufferzuordnung (`Z_AnlageSenke`, `ID_PUFFER`), keine Mischungsbilanz |
 | Vorwärmbetrieb (Reihe) | nicht vorhanden; der Kessel ergänzt nur parallel am selben Vorlauf |
-| Rücklaufgrenze (R744) | nicht vorhanden |
+| Rücklaufgrenze (alle Wärmepumpen) | nicht vorhanden; der Rücklauf erreicht die Wärmepumpe nicht — `SimulationWaermepumpe` erhält nur `Heizkreisvorlauf`, obwohl `Anlagenkopplung.Kreis` Vor- und Rücklauf liefert |
+| Kesselrücklauf im Vorwärmbetrieb | `Kesselkennlinie.Ruecklauf` kennt nur Heizkreis → Speicher → Paar → Rückfall; ein vorgewärmter Rücklauf fehlt |
+| Rücklaufgrenze BHKW | kein Temperaturbezug in `SimulationBHKW` |
 | berechnete Bivalenzpunkte, Bivalenzdiagramm, Herleitungszeile | `Bivalenzpunkt = -100` ist ein unbelegtes Feld; kein Bild im `ChartRenderer` |
 
 **3.4 Abgrenzung zu AK3.** AK3 schließt den Kreis zwischen Gebäude und Erzeugern; der Vorlauf bleibt dort eine
@@ -217,16 +306,49 @@ Auslegungsraumtemperatur. Grenzfälle: θ_WP,max ≤ θ_i → Φ_UE,max = 0; θ_
 | Einbindung | Φ_Hydraulik | Regel |
 |---|---|---|
 | **direkt** | W_H · min(θ_V − θ_R, σ_max) | Die Wärmepumpe sieht den Heizkreisstrom. Ist die Heizkreisspreizung größer als σ_max, erreicht sie den Vorlauf nicht; ihre Leistung ist W_H · σ_max (Grund `SPREIZUNG_MAX`). Ist sie kleiner als σ_min, unterschreitet der Durchfluss den Mindestvolumenstrom nicht, aber die Wärmepumpe moduliert unter ihre Mindestleistung: **die Stunde taktet** — Energie wie heute, Taktverlust über `Mindestleistung_kW` und `Taktverlustfaktor_Cd`, gezählt als Stunde „Spreizung unterschritten" |
-| **Puffer** (Reihen- oder Parallelpuffer) | ṁ_WP·c_p · σ_max an der Ladeseite | Die Ladeseite rechnet das Puffermodell des Bestands; der Puffer kann nie wärmer sein als θ_WP,max. Die Mischungsbilanz der Entladeseite wird **benannt nicht gerechnet** (Näherung: Entnahme mit `TNutz` des Kanals, wie AK3 Festlegung 6) |
+| **Puffer** (Reihen- oder Parallelpuffer) | ṁ_WP·c_p · σ_max an der Ladeseite | Die Ladeseite rechnet das Puffermodell des Bestands; der Puffer kann nie wärmer sein als θ_WP,max. Die Mischungsbilanz der Entladeseite wird **benannt nicht gerechnet** (Näherung: Entnahme mit `TNutz` des Kanals, wie AK3 Festlegung 6); vertretbar bei ṁ_WP ≥ ṁ_HK oder geschichtetem Puffer, sonst Weichenbilanz als Schranke (2.8); R744 liest den Rücklauf aus der untersten Pufferzone |
 | **Weiche** | ṁ_WP·c_p · (θ_V,WP − θ_R,HK) bei ṁ_WP < ṁ_HK | Mischungsbilanz 2.8: Ist der Heizkreisstrom größer, sinkt der Heizkreisvorlauf unter θ_WP,max; die Übergabegrenze 4.3 wird dann am gemischten Vorlauf gelöst (dieselbe Nullstellenroutine mit einer zweiten Gleichung, eindeutig). Bei ṁ_WP ≥ ṁ_HK wie direkt, ohne σ-Grenze aus dem Heizkreis |
 
-**Mindestvolumenstrom.** Er wird als Anteil des Auslegungsvolumenstroms geführt und in die Mindestspreizung
-übersetzt: σ_min,eff = Φ_WP(h) / (ṁ_WP,min · c_p). Wer nur einen der beiden Werte kennt, gibt diesen ein; der
-andere folgt (Herleitungszeile). Gelten beide, gilt die strengere.
+**Mindestvolumenstrom.** Er wird als Anteil des Auslegungsvolumenstroms geführt (Vorgabe 60 %, belegt 56–84 % des
+Nennstroms [Q50], [Q51]). Zum kleinsten Volumenstrom gehört die größte Spreizung, ṁ ≥ ṁ_min ⇔ σ ≤ Φ/(ṁ_min·c_p); er
+wirkt deshalb als **Höchst**spreizung der Stunde:
 
-**Rücklaufgrenze (R744).** Liegt der Rücklauf zur Wärmepumpe über `Ruecklauf_Max`, liefert sie in dieser Stunde
-nichts (Grund `RUECKLAUF_MAX`). Eine stetige Abwertung des COP über dem Rücklauf führt das Papier nicht ein; sie
-braucht Kennfelddaten über dem Rücklauf, die der Katalog nicht trägt (UB‑Q3).
+```
+σ_max,eff(h) = min( σ_max , Φ_WP(h) / (ṁ_WP,min · c_p) )
+```
+
+Die Mindestspreizung σ_min bindet bei kleinster Leistung oder beim Bypass mit ṁ_min. Direkte Einbindung mit
+Überströmventil: ṁ_WP = max(ṁ_HK, ṁ_min), gerechnet mit dem Zweig ṁ_WP ≥ ṁ_HK der Mischungsbilanz 2.8 — der
+Rücklauf der Wärmepumpe steigt durch die Beimischung, die Rücklaufgrenze wird an ihm geprüft; σ_WP ≥ σ_min verlangt
+Φ_HK ≥ ṁ_min·c_p·σ_min, sonst taktet die Stunde (ṁ_min = 0,6·ṁ_N, σ_A = 5 K, σ_min = 3 K: Φ_HK ≥ 0,36·Φ_N, Abl.).
+Wer nur einen der Werte Mindestvolumenstrom und σ_max kennt, gibt diesen ein; der andere folgt aus ṁ_min/ṁ_N =
+σ_A/σ_max (Herleitungszeile). Gelten beide, gilt die strengere.
+
+**Rücklaufgrenze (alle Wärmepumpen).** Feld `Ruecklauf_Max` an jeder Wärmepumpe (nullbar). θ_R,WP ist der Rücklauf
+zur Wärmepumpe: direkt der Heizkreisrücklauf, an Weiche oder Überströmventil der gemischte nach 2.8, am Puffer bei
+R744 die unterste Pufferzone.
+
+```
+θ_R,grenz = min( Ruecklauf_Max , θ_WP,max − σ_min )       leeres Feld: nur der zweite Term
+θ_R,WP(h) > θ_R,grenz   →   Φ_WP = 0                       Grund RUECKLAUF_MAX
+R744:  f(h) = 1 − k · (θ_R,WP − θ_R,bez)   für θ_R,bez < θ_R,WP ≤ Ruecklauf_Max, sonst f = 1
+       Φ_WP = Φ_KF · f ,   COP = COP_KF · f ,   Stromaufnahme unverändert
+```
+
+Die Stromaufnahme bleibt, weil die Verdichterarbeit beim transkritischen Prozess bei festem Hochdruck nahezu gleich
+bleibt (Abl.). Vorgaben für R744: k = 2,5 %/K (belegt 1,8–3 %/K [Q42], [Q43]), θ_R,bez = 30 °C (Bezugsrücklauf des
+Kennfelds, EN-14511-Paar 30/35 °C [Q14]), `Ruecklauf_Max` = 40 °C; mit k = 0 bleibt die harte Grenze 35 °C wählbar
+(UB‑Q3). Neue nullbare Felder `Ruecklauf_Bezug` und `Ruecklauf_Abwertung_ProzentJeK` (leer = keine Abwertung). Die
+Unterkühlungswirkung unterkritischer Geräte (2.11) bleibt ungerechnet. **Übergabe des Rücklaufs:**
+`SimulationWaermepumpe` bekommt neben `Heizkreisvorlauf` den `Heizkreisruecklauf` aus `Anlagenkopplung.Kreis`
+(UB‑E3); ohne Kopplung gibt es keinen Rücklauf, die Grenze ruht, und die Herleitungszeile sagt das.
+
+**Rücklaufstufe „Vorwärmer" der Kesselkennlinie.** In Stunden mit Vorwärmbetrieb und laufender Wärmepumpe (B3) ist
+der Kesselrücklauf θ_V,WP (2.9). `Kesselkennlinie.Ruecklauf` erhält dafür die Stufe „Vorwärmer" vor „Heizkreis"
+(Kette Vorwärmer → Heizkreis → Speicher → Paar → Rückfall); sonst rechnet der Brennwertkessel im Vorwärmbetrieb mit
+zu viel Brennwertnutzen — bei Erdgas ≈ 99–100 % bei 30–35 °C statt ≈ 93–95 % bei 45–55 °C Rücklauf (Abl. aus [Q58])
+(UB‑E2, UB‑Q11). **BHKW (Option, UB‑Q9):** `Ruecklauf_Max` auch am BHKW; liegt der Rücklauf zum BHKW (Heizkreis
+bzw. unterste Pufferzone) darüber, liefert es in der Stunde nichts (Grund `RUECKLAUF_MAX`).
 
 ### 4.5 Schritt UB‑d — Betriebsbereiche und Bivalenzpunkte
 
@@ -296,10 +418,13 @@ Wärmepumpe ohne die neuen Felder und mit `Vorwaermbetrieb = 0` verhält sich in
 | Spalte | Tabelle | Typ | Vorgabe bei NULL | Bereich | Begründung |
 |---|---|---|---|---|---|
 | `Spreizung_Auslegung_K` | `Tab_WP`, `Tab_WP_STAMM` | REAL | 5 K | 3–8 | Gerätewert (EN 14511-Paar); bestimmt ṁ_WP |
-| `Spreizung_Max_K` | dto. | REAL | 10 K (R744: 20 K) | 5–40 | Herstellergrenze [Q8] |
+| `Spreizung_Max_K` | dto. | REAL | 10 K (R744: 30 K) | 5–40 | Herstellergrenze [Q8] |
 | `Spreizung_Min_K` | dto. | REAL | 3 K | 0–8 | Pumpenaufwand, Takten [Q8] (Abl.) |
 | `Mindestvolumenstrom_Prozent` | dto. | REAL | 60 % | 20–100 | σ_N/σ_max (Abl.); Herstellerwert hat Vorrang |
-| `Ruecklauf_Max` | dto. | REAL | leer = keine Grenze | 20–70 °C | R744 [Q18]–[Q20] |
+| `Ruecklauf_Max` | dto. | REAL | leer = abgeleitet θ_WP,max − σ_min | 20–70 °C | Datenblatt, Regler [Q51]–[Q54]; R744 [Q42]–[Q46] |
+| `Ruecklauf_Bezug` | dto. | REAL | leer = 30 °C, wenn abgewertet wird | 20–40 °C | Bezugsrücklauf des Kennfelds (R744) |
+| `Ruecklauf_Abwertung_ProzentJeK` | dto. | REAL | leer = keine Abwertung | 0–5 | R744 [Q42], [Q43] |
+| `Ruecklauf_Max` | `Tab_BHKW` (Option UB‑Q9) | REAL | leer = keine Grenze; Neuanlage und Schnellwahl 70 °C | 40–90 °C | Motorkühlkreis [Q63], [Q64] |
 | `Einbindung` | `Tab_Energieanlagen` | TEXT `CHECK (Einbindung IN ('DIREKT','PUFFER','WEICHE'))` | `PUFFER`, wenn der Anlage ein Heizungspuffer zugeordnet ist, sonst `DIREKT` | — | Anlagenschaltung |
 | `Vorwaermbetrieb` | `Tab_Energieanlagen` | INTEGER `CHECK (Vorwaermbetrieb IN (0,1))` | 0 | 0/1 | Anlagenschaltung (Reihe WP → Kessel) |
 
@@ -317,22 +442,23 @@ Die Übergabespalten an `Tab_Gebaeude` und `Tab_Zone` bleiben unverändert.
 **Ergebnisspalten** an `Tab_ErgebnisWaermepumpeModul` (und summiert an `Tab_ErgebnisWaermepumpe`):
 `Bereich_WpAllein_h`, `Bereich_Parallel_h`, `Bereich_Vorwaermung_h`, `Bereich_NurKessel_h` (INTEGER), die
 zugehörigen Wärmemengen `…_MWh` der Wärmepumpe (REAL), `Spreizung_Unterschritten_h`, `Ruecklauf_Ueberschritten_h`,
-`Bivalenzpunkt_1`, `Bivalenzpunkt_2`, `Uebergabe_Max_kW` (REAL, berechnet nach 4.3/4.5).
+`Bivalenzpunkt_1`, `Bivalenzpunkt_2`, `Uebergabe_Max_kW` (REAL, berechnet nach 4.3/4.5); an den Kesselergebnissen die
+Stufenstunden der Kesselkennlinie (`RuecklaufStufenstunden`) um die Stufe „Vorwärmer".
 
 **5.2 Schemaschritt.** Ein Schritt für Eingabe- und Ergebnisspalten, **Nummer erst bei der Umsetzung anmelden**
 (Zeile „Schemaschritt angemeldet" der [Statusdatei](Status_iOS_Migration.md); heute ist 200 die nächste freie
 Nummer, 199 ist vergeben). Spalten nullbar, Boolean mit `CHECK (… IN (0,1))`, Tabellen bleiben `STRICT`; der
-`SqlDialektPruefer` läuft nach jeder neuen Anweisung. Der Katalogabgleich und das Projektpaket führen die fünf
+`SqlDialektPruefer` läuft nach jeder neuen Anweisung. Der Katalogabgleich und das Projektpaket führen die sieben
 Gerätespalten wie die übrigen `Tab_WP`-Spalten.
 
 **5.3 Einfrierregel und Basis.** Der Rechenweg ändert Ergebnisse überall dort, wo θ_V,soll > θ_WP,max und ein Kessel
 das Vorlaufangebot hebt (B4 statt voller Kennfeldleistung) — zu prüfen an **1047, 1054, 1056 und 1058**; ohne
 Kopplung bleibt jedes Projekt byte-gleich. Neue Basis im selben Schritt, begründet in
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Neues Referenzprojekt als **Kopie von 1056**
-(nächste freie Projektnummer, heute 1059): Gebäude mit Heizkörpern 75/60 °C, Wärmepumpe mit `Vorlauf_Max` 55 °C
+(nächste freie Projektnummer, heute 1060): Gebäude mit Heizkörpern 75/60 °C, Wärmepumpe mit `Vorlauf_Max` 55 °C
 und `Vorwaermbetrieb` 1, Kessel in Reihe, Nachtsperre und Zeitprogramme von 1056 zurückgesetzt, damit die Wirkung
 allein der Übergabegrenze gehört (UB‑Q7). Neue Einfrierregel in [`CLAUDE.md`](../../CLAUDE.md): gesäte
-Spreizungs- und Einbindungsdaten eines Referenzprojekts (die fünf Gerätespalten seiner Wärmepumpe, `Einbindung`,
+Spreizungs- und Einbindungsdaten eines Referenzprojekts (die sieben Gerätespalten seiner Wärmepumpe, `Einbindung`,
 `Vorwaermbetrieb`, `Vorlauf_Max`) und das Anlegen oder Entfernen dieses Referenzprojekts.
 
 ## 6 Bedienung und Eingabe
@@ -354,8 +480,9 @@ Gerätegrenzen (Spreizungen, Mindestvolumenstrom, Rücklaufgrenze) stehen zusät
 | Bivalenztemperatur (Abschaltpunkt) | `Zahlenfeld` °C | leer | teilparallel, alternativ | „eingegeben … — berechnet … — maßgebend …" |
 | Einbindung | `Auswahlfeld` direkt / Puffer / Weiche | aus der Pufferzuordnung | bivalent oder Kopplung aktiv | „Puffer: Entladeseite als Näherung" |
 | Vorwärmbetrieb (Kessel in Reihe) | `Schalter` | aus | parallel, teilparallel | „Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf" |
-| Höchstvorlauf | Lesewert | `Vorlauf_Max`, sonst `Vorlauf` | immer | Schnellwahl in „Betriebszeiten": R410A/R32 55 °C · R290 70 °C · R744 80 °C (mit Rücklaufgrenze 35 °C) · R1234ze(E) 80 °C |
-| Spreizung Auslegung / max. / min., Mindestvolumenstrom, Rücklaufgrenze | Lesewerte | Katalog, sonst Tafel 6.3 | Kopplung aktiv | Herkunft je Wert |
+| Höchstvorlauf | Lesewert | `Vorlauf_Max`, sonst `Vorlauf` | immer | Schnellwahl in „Betriebszeiten": R410A/R32 55 °C · R290 70 °C · R744 80 °C, Rücklauf ≤ 40 °C (Abwertung ab 30 °C) · R1234ze(E) 80 °C |
+| Spreizung Auslegung / max. / min., Mindestvolumenstrom | Lesewerte | Katalog, sonst Tafel 6.3 | Kopplung aktiv | Herkunft je Wert |
+| Höchster Rücklauf | Lesewert | `Ruecklauf_Max`, sonst abgeleitet | Kopplung aktiv | Herkunft „Katalog" bzw. „abgeleitet: 52 °C = 55 − 3"; bei R744 „Bezugsrücklauf 30 °C · Abwertung 2,5 %/K · Grenze 40 °C" |
 
 **Herleitungszeile der Gruppe** (aus den vorhandenen Gebäudedaten gerechnet, `Herleitungszeile`-Baustein):
 „Übergabe bei Höchstvorlauf 55 °C: **5,7 kW von 10,0 kW** Heizlast (57 %), Rücklauf 46,5 °C, Spreizung 8,5 K ·
@@ -377,11 +504,15 @@ Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade.
 | Exponent Konvektor / Gebläsekonvektor / Fläche | 1,40 / 1,10 / 1,10 | 1,25–1,50 / 1,0–1,2 / 1,0–1,1 | [Q1], [Q2], [Q5] |
 | Auslegungsspreizung Heizkreis Fläche / Heizkörper an WP | 5 K / 7 K | 3–7 / 5–10 K | [Q5], [Q8] |
 | Spreizung Verflüssiger, Auslegung | 5 K | 3–8 K | [Q3], [Q8], [Q11] |
-| Höchstspreizung | 10 K (R744 ≥ 20 K) | 8–10 K | [Q8]; R744 [Q18], [Q20] (Abl.) |
+| Höchstspreizung | 10 K; R744 30 K (Herstellerwert hat Vorrang) | 8–10 K | [Q8]; R744 [Q42], [Q44] (Abl.: bei R744 begrenzt der Rücklauf, nicht die Spreizung) |
 | Mindestspreizung | 3 K | 2–5 K | [Q8] (Abl.) |
-| Mindestvolumenstrom | 60 % | 40–100 % | (Abl.), [Q6], [Q8] |
+| Mindestvolumenstrom | 60 % | 40–100 % (belegt 56–84 %) | (Abl.), [Q6], [Q8], [Q50], [Q51] |
 | Höchstvorlauf R410A/R32 · R290 · R744 · R1234ze(E) | 55 · 70 · 80 · 80 °C | 55–65 · 65–75 · 65–90 · 70–85 °C | [Q16], [Q18]–[Q21]; R32-Band (sek.) |
-| Rücklaufgrenze R744 | 35 °C | 25–35 °C | [Q19] |
+| Rücklaufgrenze R744 | 40 °C (mit Abwertung) · 35 °C (harte Grenze ohne Abwertung) | 30–50 °C | [Q19], [Q42], [Q45], [Q46] |
+| Bezugsrücklauf R744 | 30 °C | 25–35 °C | [Q14], [Q42] |
+| Abwertung R744 | 2,5 %/K | 1,8–3 %/K | [Q42], [Q43] (sek.) |
+| Rücklaufgrenze unterkritisch | leer (abgeleitet θ_WP,max − σ_min) | Datenblattwerte 50–65 °C | [Q49], [Q51]–[Q54] |
+| Rücklaufgrenze BHKW (Option) | 70 °C | 60–73 °C | [Q63], [Q64] |
 | Bivalenzpunkt parallel/monoenergetisch (Orientierung) | −5 °C | −10 … +2 °C | [Q9], [Q23] (sek.) |
 | Hybrid-Mindestanteil § 43 GModG / BEG | 30 % parallel, 40 % alternativ | fest | [Q27], [Q32] |
 
@@ -400,7 +531,8 @@ in `EPOS.UI.Daten`; KI-Sicht (`WaermepumpeAnlageKiSicht.cs`) um die neuen Felder
 **7.1 Ergebnisreiter Wärmepumpe** (`EPOS.UI/Seiten/Simulation/WaermepumpeReiter.razor`): eine Kachelzeile
 „Betriebsbereiche" — Stunden und Wärme der Wärmepumpe je Bereich (allein, mit Kessel parallel, Vorwärmung, nur
 Kessel), dazu die beiden berechneten Bivalenzpunkte und die Übergabegrenze in kW; die Stunden mit unterschrittener
-Spreizung und überschrittener Rücklaufgrenze als leise Zeile, nur wenn > 0.
+Spreizung und der Stundenzähler „Rücklaufgrenze" (jede Wärmepumpe, abgeleitete oder eingetragene Grenze) als leise
+Zeile, nur wenn > 0. Der Kesselreiter weist die Stunden der Rücklaufstufe „Vorwärmer" aus.
 
 **7.2 Bivalenzdiagramm.** Neue Methode `ChartRenderer.Bivalenzdiagramm` mit `BivalenzdiagrammModell` (Muster
 `VorlaufRuecklauf`/`VorlaufRuecklaufModell`): x Außentemperatur, y Leistung; Heizlast (Gerade aus Φ_N und
@@ -417,7 +549,9 @@ bauen (Wachen `BerichtsvorlageDateiWacheTests`, `AuslieferungsvorlagenWacheTests
 Bivalenzpunkte (berechnet, eingegeben, maßgebend), Stunden und Wärme je Bereich, Anteil nach § 43 GModG.
 **Hinweiszeilen** im Bericht und im Reiter: „Stundenmodell: Speichermasse des Estrichs, Ventil- und Reglerdynamik
 und die Abtauung sind nicht abgebildet. Herstellerwerte zu Spreizung, Volumenstrom und Einsatzgrenze haben Vorrang
-vor den Vorgaben."
+vor den Vorgaben." Prüfhinweise ohne Feld (UB‑Q10): Rücklauf unter 15 °C bei Außentemperatur unter 10 °C
+(Anfahrgrenze der Luft/Wasser-Wärmepumpe, der Zusatzheizer deckt); NT- oder Biomassekessel mit Mindestrücklauf
+55–65 °C (Rücklaufanhebung vorausgesetzt).
 
 **7.4 KI-Sicht und Export.** Die Ergebnisspalten gehen in die KI-Sicht des Reiters und in den Ergebnisexport
 (gleiche Schlüssel wie die Spalten); die Herleitungszeile der Konfiguration in `WaermepumpeAnlageKiSicht`.
@@ -440,13 +574,18 @@ vor den Vorgaben."
 | Weiche mit ṁ_WP < ṁ_HK | gemischter Vorlauf nach 2.8, Leistung kleiner als direkt |
 | alternativ, Last über Φ_WP,grenz | Wärmepumpe 0, Kessel alles |
 | Wärmepumpe ohne neue Felder, `Vorwaermbetrieb` 0, θ_V,soll ≤ θ_WP,max | byte-gleich zum Bestand |
+| abgeleitete Rücklaufgrenze unterkritisch (θ_WP,max 55 °C, σ_min 3 K, Feld leer) | θ_R,grenz 52 °C; Rücklauf 52,5 °C → 0, Grund `RUECKLAUF_MAX`; Feld 50 °C → Grenze 50 °C |
+| R744-Abwertung (k 2,5 %/K, θ_R,bez 30 °C, Grenze 40 °C) | Rücklauf 34 °C → Leistung und COP × 0,90, Strom gleich; 40,1 °C → 0; k = 0 mit 35 °C → harte Grenze |
+| Mindestvolumenstrom als Höchstspreizung, Überströmventil (ṁ_min 60 %, σ_A 5 K, σ_min 3 K) | σ_max,eff = min(σ_max, Φ/(ṁ_min·c_p)); Φ_HK < 0,36·Φ_N taktet; Rücklauf der Wärmepumpe gemischt nach 2.8 |
+| Rücklaufstufe „Vorwärmer" | Brennwertkessel in B3 rechnet `EtaBrennwert` am Vorlauf der Wärmepumpe; ohne Vorwärmbetrieb Stufenkette unverändert |
+| BHKW-Rücklaufgrenze (Option) | Rücklauf 71 °C bei Grenze 70 °C → BHKW 0; Feld leer → byte-gleich |
 
 **8.2 Datenbankfälle und Wachen.** Schemaschritt mit Wiederholprobe; Dialogtests (bunit) für Sichtbarkeit,
 Schnellwahl und Herleitungszeile; Wache des Referenzprojekts (`UebergabegrenzeReferenzprojektWacheTests`) hält
 Übergabe, `Vorlauf_Max`, `Vorwaermbetrieb` und die Bereichsstunden.
 
 **8.3 Referenzlauf.** Lauf vor und nach dem Rechenweg; die Abweichungen von 1047/1054/1056/1058 werden je Projekt
-erklärt (Stunden B4 statt Kennfeldleistung). Neue Basis mit dem neuen Referenzprojekt; ob es in die CI-Auswahl
+erklärt (Stunden B4 statt Kennfeldleistung, Stunden der abgeleiteten Rücklaufgrenze, Vorwärmer-Stufe des Kessels). Neue Basis mit dem neuen Referenzprojekt; ob es in die CI-Auswahl
 kommt, entscheidet UB‑Q7.
 
 **8.4 Wiki und Logbuch.** Quellen `Projekte/Wiki/Programm Dokumentation - Wärmepumpe.wiki` (Gruppe „Bivalenz und
@@ -463,12 +602,12 @@ Bivalenzdiagramm." Gegenlesen mit dem Muster aus `CLAUDE.md`; keine Hersteller- 
 | Etappe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
 | **UB‑E1** Übergabegrenze und Herleitungszeile | Klasse im Kern (4.2, 4.3, Bivalenzpunkte 4.5 statisch), Herleitungszeile und Lesewerte in der Konfiguration, Schnellwahl Höchstvorlauf; **keine Rechenwirkung** | Rechenproben 8.1 (Gleichgewicht, Grenzfälle); Basis byte-gleich; Windows-Schale kompiliert | 3–4 PT |
-| **UB‑E2** Betriebsbereiche, Vorwärmbetrieb, Bivalenzpunkte | Schemaschritt (5.1), B0–B4 in Kaskadenstunde und `Angebot(h, V)`, Verfügbarkeitsgründe, Ergebnisspalten, Gruppe „Bivalenz und Übergabe", Referenzprojekt, Einfrierregel, neue Basis | Rechenproben, Referenzvergleich mit Erklärung je Projekt, SQL-Dialekt, Wache | 5–7 PT |
-| **UB‑E3** ΔT-Restriktionen und Einbindung | Spreizungen, Mindestvolumenstrom, Rücklaufgrenze, Einbindung direkt/Weiche (Puffer als Näherung), Stammblatt des Katalogs, Katalogabgleich und Projektpaket | Rechenproben Höchst-/Mindestspreizung, Weiche, R744; Basis neu nur, wenn das Referenzprojekt Werte trägt | 3–5 PT |
+| **UB‑E2** Betriebsbereiche, Vorwärmbetrieb, Bivalenzpunkte | Schemaschritt (5.1), B0–B4 in Kaskadenstunde und `Angebot(h, V)`, Verfügbarkeitsgründe, Ergebnisspalten, Rücklaufstufe „Vorwärmer" der Kesselkennlinie, Gruppe „Bivalenz und Übergabe", Referenzprojekt, Einfrierregel, neue Basis | Rechenproben (mit Vorwärmer-Stufe), Referenzvergleich mit Erklärung je Projekt, SQL-Dialekt, Wache | 5–7 PT |
+| **UB‑E3** ΔT-Restriktionen und Einbindung | Spreizungen, Mindestvolumenstrom als Höchstspreizung, Überströmventil, Rücklaufübergabe an die Wärmepumpe (`Heizkreisruecklauf`), `Ruecklauf_Max` mit abgeleiteter Grenze, `Ruecklauf_Bezug`, `Ruecklauf_Abwertung_ProzentJeK`, BHKW-Option (UB‑Q9), Einbindung direkt/Weiche (Puffer als Näherung), Stammblatt des Katalogs, Katalogabgleich und Projektpaket | Rechenproben Höchst-/Mindestspreizung, Weiche, Überströmventil, abgeleitete Grenze, R744-Abwertung, BHKW; Basis neu, wenn die abgeleitete Grenze in einem gekoppelten Referenzprojekt Stunden zählt oder das Referenzprojekt Werte trägt | 4–6 PT |
 | **UB‑E4** Bivalenzdiagramm und Bericht | `ChartRenderer.Bivalenzdiagramm`, ChartProben-Messlatte, Kacheln im Reiter, Berichtsbild und Tafel, Katalogfassung, Vorlagen neu bauen, KI-Sicht, Export | ChartProben grün mit neuer Messlatte, Vorlagenwachen grün | 3–4 PT |
 | **UB‑E5** Wiki und Logbuch | Wiki-Quellen, Logbuch-Entwurf, Konzept „wie gebaut", dann nach `ueberholt/` | Link-Wache, Wiki-Gegenlesemuster, `WikiProduktdatenWacheTests` | 1–2 PT |
 
-Summe **15–22 PT**. **Abhängigkeit zu AK3:** UB‑E2 setzt die AK3-Basis (W5, R42) und AK3‑I voraus — die
+Summe **16–23 PT**. **Abhängigkeit zu AK3:** UB‑E2 setzt die AK3-Basis (W5, R42) und AK3‑I voraus — die
 Kennfeldleistung bei θ_WP,max ist die interpolierte; sie greift in `Angebot(h, V)` ein und sollte deshalb **nach**
 AK3‑W6 und der laufenden Kältewelle AK3‑K (Basis R43) gebaut werden, damit keine zwei Basiswechsel ineinanderlaufen.
 UB‑E1 hat keine Rechenwirkung und kann sofort beginnen.
@@ -479,17 +618,21 @@ UB‑E1 hat keine Rechenwirkung und kann sofort beginnen.
 |---|---|---|---|---|
 | **UB‑Q1** | Vorwärmbetrieb | a Reihe WP → Kessel als Schalter je Anlage · b nur parallel/teilparallel (über Höchstvorlauf WP aus) · c zusätzlich Mischung paralleler Erzeuger am gemeinsamen Vorlauf | **a** — anerkannte Grundschaltung [Q7], [Q33], geschlossen rechenbar; c ist hydraulisch unscharf und bleibt benannt abgelehnt | |
 | **UB‑Q2** | Ort der Gerätegrenzen | a Katalog `Tab_WP(_STAMM)` mit Normvorgabe bei NULL · b Projekt `Tab_Energieanlagen` | **a** — Gerätewert, einmal gepflegt, VDI‑3805-fähig | |
-| **UB‑Q3** | Rücklaufgrenze R744 | a harte Grenze (Leistung 0 darüber) · b stetige COP-Abwertung · c später | **a** — ohne Kennfelddaten über dem Rücklauf ist b geraten | |
+| **UB‑Q3** | Rücklaufgrenze R744 (neu gefasst in Fassung 2) | a harte Grenze 35 °C · b Abwertung 2,5 %/K ab Bezugsrücklauf 30 °C bis harte Grenze 40 °C · c später | **b** — gemessen −1,8 %/K [Q42], ohne Kennfeld über dem Rücklauf auskommend; a bleibt mit k = 0 wählbar | |
 | **UB‑Q4** | vorhandener Abschaltpunkt | a bleibt als Deckel, berechnete Punkte zusätzlich, maßgebend der wärmere · b durch die berechneten Punkte ersetzen · c nur anzeigen | **a** — kein Bestandsprojekt verliert seine Eingabe | |
 | **UB‑Q5** | Einbindungsmodell | a direkt und Weiche jetzt, Puffer als benannte Näherung · b nur direkt · c alle drei mit Mischung am Puffer | **a** — die Weiche ist die häufigste Bestandsschaltung; die Puffermischung gehört in die Pufferstufe | |
 | **UB‑Q6** | Vorgabewerte | a Tafel 6.3 übernehmen, (n. e.)/(sek.)-Werte vor den Hilfetexten gegenlesen · b nur belegte Werte, übrige leer | **a** | |
 | **UB‑Q7** | Bericht und Bild | a Bild, Tafel und Kacheln (UB‑E4) · b nur Tafel und Kacheln · c später | **a** — das Diagramm ist die Aussage, die der Planer dem Kunden zeigt | |
 | **UB‑Q8** | Referenzprojekt und Zuständigkeit | a Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, gebaut von der Sitzung Gebäudesimulation im Zug von AK3 nach AK3‑K · b ohne CI · c eigene Sitzung | **a** — dieselbe Naht (`Angebot(h, V)`, Schritt H) wie AK3 | |
+| **UB‑Q9** | Rücklaufgrenze am BHKW | a ja, `Ruecklauf_Max` am BHKW, Vorgabe 70 °C, in UB‑E3 · b nein | **a** — harte Abschaltung des Motorkühlkreises [Q63], derselbe Mechanismus wie an der Wärmepumpe | |
+| **UB‑Q10** | Mindestrücklauf Biomasse-/NT-Kessel, Anfahrgrenze der Wärmepumpe | a Prüfhinweis ohne Feld · b Feld | **a** — die Rücklaufanhebung sichert ihn in jeder Anlage, die Stundenbilanz ändert sich nicht | |
+| **UB‑Q11** | Rücklaufstufe „Vorwärmer" der Kesselkennlinie | a ja, in UB‑E2 · b später | **a** — Pflicht für den Brennwertnutzen im Vorwärmbetrieb | |
 
 **Technische Festlegungen zur Kenntnis (Widerspruch möglich):** arithmetisches Mittel wie AK1; konstanter
 Massenstrom aus dem Auslegungspunkt; Herleitungszeile und Diagramm mit lastlinearer Heizlast und
 Auslegungsraumtemperatur, die Stundenrechnung mit der Raumtemperatur der Stunde; σ_min-Unterschreitung im
-Direktbetrieb ist Takten, keine Abschaltung; Heizstab wirkt in B3 wie ein Kessel in Reihe.
+Direktbetrieb ist Takten, keine Abschaltung; Heizstab wirkt in B3 wie ein Kessel in Reihe; die Rücklaufgrenze jeder
+Wärmepumpe ist min(`Ruecklauf_Max`, θ_WP,max − σ_min).
 
 **Risiken.** Ergebnisänderung bei vier Referenzprojekten (erklärbar, aber Basiswechsel); Rückkopplung von θ_R in
 der AK3-Iteration (monoton, Prüforakel erweitern); Bestandsprojekte mit `Vorlauf_Max` als Fahrplankniff (1056)
@@ -497,7 +640,7 @@ der AK3-Iteration (monoton, Prüforakel erweitern); Bestandsprojekte mit `Vorlau
 
 ## 11 Quellen
 
-Alle abgerufen am 07.10.2026; Kurzfassung der Recherche, Nummern wie dort.
+[Q1]–[Q41] abgerufen am 07.10.2026, [Q42]–[Q67] (Fassung 2) am 08.10.2026; Kurzfassung der Recherchen.
 
 1. [Q1] Wolff, D.; Jagnow, K.: Heizflächenauslegung bei Heizkörperheizungen, Überarbeitung Recknagel/Sprenger/Schramek (2007). http://www.bosy-online.de/hydraulischer_abgleich/heizflaechenauslegung_recknagel.pdf
 2. [Q2] Paschotta, R.: Heizkörperexponent. RP-Energie-Lexikon, 04.05.2025. https://www.energie-lexikon.info/heizkoerperexponent.html
@@ -540,3 +683,29 @@ Alle abgerufen am 07.10.2026; Kurzfassung der Recherche, Nummern wie dort.
 39. [Q39] Planungsanleitung Grundlagen für Wärmepumpen, 05/2015 (nur herstellerübergreifende Aussagen). https://www.meinhausshop.de/media/pdf/meinhausshop-grundlagen-waermepumpen-de.pdf
 40. [Q40] autarc: Welche Wärmepumpen bekommen ab 2026 noch Förderung? 05.01.2026 (sek.). https://www.autarc.energy/wissen/schallanforderungen-warmepumpe-forderung
 41. [Q41] GÖRG: Gebäudemodernisierungsgesetz (GModG) schafft GEG ab, 17.07.2026. https://www.goerg.de/de/aktuelles/veroeffentlichungen/17-07-2026/gebaeudemodernisierungsgesetz-gmodg-schafft-geg-ab-was-sich-aendert-und-was-bleibt
+42. [Q42] Stene, J.: Residential CO2 Heat Pump System for Combined Space Heating and Hot Water Heating. Dissertation, NTNU Trondheim, EPT-Report 2004:6, 02/2004. https://www.osti.gov/etdeweb/servlets/purl/20559406
+43. [Q43] IIAR / Natural Refrigeration Review: CO2 Heat Pumps: Main Differences from Refrigeration Systems and Real-World Applications (Rangelov, Karampour). Fachaufsatz, 2026 (sek., Artikelseite). https://naturalrefrigerationreview.com/co2-heat-pumps-main-differences-from-refrigeration-systems-and-real-world-applications/
+44. [Q44] Mitsubishi Electric: Data Book QAHV-N560YA-HPB(-BS) Hot Water Heat Pump (MEE15K075). Herstellerunterlage, o. J. https://ecoinnovation.lv/wp-content/uploads/2023/02/GAISS_U%CC%84DENS_SILTUMSU%CC%84KNIS_QAHV_DataBook.pdf
+45. [Q45] Mitsubishi Electric UK: High temperature CO2 heat pump increases hot water efficiency. Pressemitteilung, 10.09.2020, https://les.mitsubishielectric.co.uk/latest-news/high-temperature-co2-heat-pump-increases-hot-water-efficiency-2 · Eintrittsbereich 5–63 °C nach Produktseite Mitsubishi Electric Australia (sek.). https://www.mitsubishielectric.com.au/product/qahv-n560ya-hpb-hot-water-heat-pump/
+46. [Q46] Mayekawa: Unimo-AW – Air Source CO2 Heat Pump. Datenblatt, o. J. https://americas.mayekawa.com/mna/downloads/pdf/Heat%20Pumps/Unimo-AW.pdf
+47. [Q47] Dimplex: Wärmepumpenmanager – Bedienungsanleitung für den Installateur, FD 9709. Herstellerunterlage, o. J. https://www.dimplex.eu/sites/g/files/emiian586/files/media_import/medias/docus/7/Dimplex_WPM_Bedienungsanleitung2_fd9709_de.pdf
+48. [Q48] alpha innotec: Betriebsanleitung Luxtronik 2.0/2.1 (Fachhandwerker). Herstellerunterlage, o. J. https://www.alpha-innotec.ch/fileadmin/content/downloads/Lux_Fachhandwerker_de.pdf
+49. [Q49] Copeland: Copeland scroll compressors for R290 comfort applications (DSC167). Produktbroschüre, o. J. https://media.copeland.com/c35cd3b3-ac35-40ec-9fc6-b2ab00acbba9/DSC167-Comfort-Propane-Scroll-Compressors-EN.pdf
+50. [Q50] Robur: Abso Pro design manual, Section B01 – Aerothermic heat pump GAHP A, Rev. B, https://www.robur.com/hubfs/doc/D-FSC003EN_B_22MCLSDC016_ADM_Section_B01_GAHP_A_EN.pdf · GAHP-A Installation, Use and Maintenance Manual. Herstellerunterlagen, o. J. https://www.robur.com/hubfs/doc/D-LBR369_H_24MCLSVI015_GAHP-A_USA_CSA_60Hz_Tinlet_EU.pdf
+51. [Q51] Daikin: Installation manual Daikin Altherma low temperature monobloc EBLQ/EDLQ05+07CAV3, 4P403578-1F. Installationsanleitung, 06/2018. https://www.daikin.co.uk/content/dam/document-library/installation-manuals/heat/air-to-water-heat-pump-low-temperature/eblq-cv3/EBLQ05-07CV3-EDLQ05-07CV3_4PEN403578-1F_Installation%20Manual_English.pdf
+52. [Q52] Viessmann: Vitocal 250-A PRO AWO-AC-AF 251.A40 – Datenblatt/Planungsanleitung (sek., Händlerspiegelung). https://www.heizprofishop.at/Datenbl%C3%A4tter/Viessmann/250A/250%20pro%20datenblatt.pdf
+53. [Q53] Stiebel Eltron: WPMW II / WPMS II – Wärmepumpen-Manager, Datenblatt (Funktion „Rücklauftemperatur-MAX") (sek., Händlerspiegelung). https://www.eibmarkt.com/isroot/eibmarkt/Files/Datenblatt/WPMW%20II.pdf
+54. [Q54] Mitsubishi Electric: Ecodan R32 – Single Phase Spec Sheet, 07/2021. https://static1.squarespace.com/static/5894a3b0be659481ff6f152c/t/60f031af7fedc2490c0ccfc1/1626354096029/Mitsubishi+Ecodan+Single+Phase+Spec+Sheet+Jul+2021.pdf
+55. [Q55] Russ, C.; Miara, M. u. a. (Fraunhofer ISE): Feldmessung Wärmepumpen im Gebäudebestand – Kurzfassung zum Abschlussbericht, 08/2010. https://wp-monitoring.ise.fraunhofer.de/wp-im-gebaeudebestand/download/WP_im_Gebaeudebestand_Kurzfassung.pdf
+56. [Q56] Prinzing, M. u. a. (OST): Vorschlag zur Einbindung leistungsvariabler Wärmepumpen in WPesti. Wegleitung im Auftrag von EnergieSchweiz, 18.12.2020. https://pubdb.bfe.admin.ch/de/publication/download/10357
+57. [Q57] Wikipedia: Rauchgaskondensation. https://de.wikipedia.org/wiki/Rauchgaskondensation
+58. [Q58] Böhm, G.: Wie effektiv sind Brennwertkessel? SBZ (Tabelle Nutzungsgrad über Rücklauftemperatur, über Suchindex-Auszug). https://www.sbz-online.de/sites/default/files/ulmer/de-sbz/document/file_186069.pdf
+59. [Q59] Paschotta, R.: Rücklaufanhebung. RP-Energie-Lexikon. https://www.energie-lexikon.info/ruecklaufanhebung.html
+60. [Q60] bosy-online.de: Rücklauftemperaturanhebung für Holz- und Pelletkessel (sek., Suchindex-Auszug). http://www.bosy-online.de/Ruecklauftemperaturanhebung.htm
+61. [Q61] Kesselheld: Rücklaufanhebung für Holzkessel – Möglichkeiten und Vorgehen (sek.). https://www.kesselheld.de/ruecklaufanhebung-fuer-holzkessel/
+62. [Q62] DIN EN 303-5:2021-11, Heizkessel – Teil 5 (Mindestkesseleintrittstemperatur paraphrasiert nach Sekundärquelle). https://webstore.ansi.org/standards/din/dinen3032021de · SBZ-Monteur: Auslegung eines Pufferspeichers für Festbrennstoffkessel (sek.). https://www.sbz-monteur.de/wie-funktioniert-eigentlich/die-auslegung-eines-pufferspeichers-fuer-festbrennstoffkessel
+63. [Q63] Yados: Betriebsanleitung Blockheizkraftwerke (BHKW) mit Otto- und Dieselmotoren, Stand 09/2021. https://yados.de/medias/Betriebsanleitung-Blockheizkraftwerke-09-2021-DE.pdf
+64. [Q64] SenerTec: Technisches Datenblatt Dachs 2.9; Bedien- und Einstellanleitung MSR2. Herstellerunterlagen, o. J. https://www.senertec.de/wp-content/uploads/2021/01/8098-501-000-06-Technisches-Datenblatt-Dachs-2_9.pdf
+65. [Q65] Viessmann: Datenblatt Vitovalor PT2, Brennstoffzellen-Heizgerät. Herstellerunterlage, o. J. https://community.viessmann.de/viessmann/attachments/viessmann/customers-fuel-cell/1149/1/Datenblatt%20Vitovalor%20PT2.PDF
+66. [Q66] AGFW FW 515, nach Technischen Anschlussbedingungen Fernwärme (Beispiel eines Versorgers, 02/2025; paraphrasiert). https://www.estw.de/de/Energie-Wasser/Hausanschluss/Fernwaerme/TAB-FW-515-M-2025-02.pdf
+67. [Q67] kollektorleistung.de: Die Kollektorgleichung zur Berechnung der Wirkungsgradkennlinie. https://www.kollektorleistung.de/Kollektorgleichung.html
