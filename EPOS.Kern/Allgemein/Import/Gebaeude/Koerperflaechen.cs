@@ -34,6 +34,12 @@ namespace WindowsFormsApplication1
         /// <summary>Was auf der anderen Seite liegt: <see cref="Randbedingung.Innen"/> (Gegenraum), sonst Außenluft, Erdreich oder unbeheizt.</summary>
         internal Randbedingung Lage { get; init; }
 
+        /// <summary>
+        /// Der Teil einer am Gelände geteilten Wand unter Gelände: Tiefe seiner Unterkante unter der Geländehöhe [m]
+        /// (Geländehöhe minus Unterkante); <c>null</c> = nicht am Gelände geteilt.
+        /// </summary>
+        internal double? UnterGelaendeM { get; init; }
+
         /// <summary>Die Stelle der Bauteilseite (ebene Fläche des Bauteilkörpers), an der das Stück liegt.</summary>
         internal int Seite { get; init; }
     }
@@ -82,6 +88,59 @@ namespace WindowsFormsApplication1
             }
             return raeume;
         }
+
+        /// <summary>
+        /// <b>Die Anteile einer Öffnung je Raum</b> nach ihrer Überlappung mit den Stücken (Abstimmung G5, Teil G5-3): Je
+        /// Bauteilseite, die der Öffnungskörper <paramref name="oeffnung"/> bis <paramref name="abstandMaxM"/> erreicht, wird die
+        /// Fläche seiner zur Seite gleichläufigen Flächen (Normale bis <see cref="Koerperflaechen.PARALLEL_GRAD"/>; sonst der
+        /// gegenläufigen) mit den Stücken jedes Raums geschnitten; der Anteil eines Raums ist sein Schnitt durch die Summe der
+        /// Schnitte an dieser Seite (Schnitte unter <see cref="Koerperflaechen.ANTEIL_MIN"/> der Summe entfallen) — Räume auf derselben Seite teilen die Öffnung, Räume auf beiden Seiten (eine Tür in einer
+        /// Innenwand) sehen sie ganz. Dazu die Außennormale der Seite aus Sicht des Raums. Leer = kein Schnitt (dann gilt die
+        /// Lage der Mitte, <see cref="RaeumeAn"/>).
+        /// </summary>
+        internal List<(int Raum, double Anteil, double[] Normale)> Anteile(Dateikoerper oeffnung, double abstandMaxM)
+        {
+            var ergebnis = new List<(int Raum, double Anteil, double[] Normale)>();
+            if (oeffnung == null || oeffnung.Dreiecke.Count == 0) return ergebnis;
+            double cosMax = Math.Cos(Koerperflaechen.PARALLEL_GRAD * Math.PI / 180.0);
+            var dreiecke = new List<(double[][] D, double[] N)>();
+            foreach (int[] d in oeffnung.Dreiecke)
+            {
+                double[] a = oeffnung.PunkteM[d[0]], b = oeffnung.PunkteM[d[1]], c = oeffnung.PunkteM[d[2]];
+                double[] n = Koerperflaechen.Normale(a, b, c);
+                if (n != null) dreiecke.Add((new[] { a, b, c }, n));
+            }
+            var jeSeite = new SortedDictionary<int, List<(int Raum, double Flaeche, double[] N)>>();
+            foreach (var t in Treffer)
+            {
+                double tiefMin = oeffnung.PunkteM.Min(p => Koerperflaechen.Punkt(t.N, p)), tiefMax = oeffnung.PunkteM.Max(p => Koerperflaechen.Punkt(t.N, p));
+                if (tiefMin > t.S + abstandMaxM || tiefMax < t.S - abstandMaxM) continue;
+                List<double[][]> gleich = dreiecke.Where(x => Koerperflaechen.Punkt(x.N, t.N) > cosMax).Select(x => x.D).ToList();
+                if (gleich.Count == 0) gleich = dreiecke.Where(x => Koerperflaechen.Punkt(x.N, t.N) < -cosMax).Select(x => x.D).ToList();
+                if (gleich.Count == 0) continue;
+                double f = Koerperflaechen.Ueberdeckung(gleich, t.Stuecke, t.N, out _);
+                if (f < Koerperflaechen.FLAECHE_MIN_M2) continue;
+                if (!jeSeite.TryGetValue(t.Seite, out var liste)) jeSeite[t.Seite] = liste = new List<(int, double, double[])>();
+                liste.Add((t.Raum, f, t.N));
+            }
+            foreach (List<(int Raum, double Flaeche, double[] N)> alle in jeSeite.Values)
+            {
+                // Splitter unter ANTEIL_MIN (Zeichentoleranz am Rand eines Raums) entfallen; der Rest teilt die Öffnung.
+                double gesamt = alle.Sum(x => x.Flaeche);
+                List<(int Raum, double Flaeche, double[] N)> liste = alle.Where(x => x.Flaeche >= Koerperflaechen.ANTEIL_MIN * gesamt).ToList();
+                double summe = liste.Sum(x => x.Flaeche);
+                foreach ((int raum, double f, double[] n) in liste)
+                {
+                    double anteil = f / summe;
+                    int i = ergebnis.FindIndex(x => x.Raum == raum);
+                    if (i >= 0 && ergebnis[i].Anteil >= anteil) continue;
+                    var eintrag = (raum, anteil, n.Select(x => Math.Round(-x, 6) + 0.0).ToArray());
+                    if (i >= 0) ergebnis[i] = eintrag;
+                    else ergebnis.Add(eintrag);
+                }
+            }
+            return ergebnis;
+        }
     }
 
     /// <summary>
@@ -108,6 +167,9 @@ namespace WindowsFormsApplication1
     /// <item><b>Randbedingung ohne Gegenraum:</b> Erdreich für Wände und Böden eines unterirdischen Raums und für den Boden
     /// eines Raums im untersten Geschoss; sonst unbeheizt bei einem inneren Bauteil (die Datei nennt es innen, der Raum
     /// dahinter fehlt), sonst Außenluft.</item>
+    /// <item><b>Teilung am Gelände:</b> Mit Geländehöhe wird eine Wand eines Raums, dessen Körper das Gelände schneidet
+    /// (<see cref="Hanglage"/>), an der Ebene z = Geländehöhe geteilt: der Teil darunter am Erdreich, der Teil darüber an der
+    /// Außenluft; unter <see cref="ANTEIL_MIN"/> auf einer Seite keine Teilung (<see cref="AmGelaende"/>).</item>
     /// </list>
     /// <para><b>Deterministisch:</b> Bauteilseiten in der Reihenfolge ihres ersten Dreiecks, Räume in der Reihenfolge der
     /// Eingabe; Punkte auf 1e-6 gerundet.</para>
@@ -122,6 +184,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kleinste Fläche eines Stücks [m²]; kleinere Schnitte entfallen.</summary>
         internal const double FLAECHE_MIN_M2 = 1e-4;
+
+        /// <summary>Kleinster Anteil eines Raums an einer Öffnung; kleinere Überlappungen sind Zeichentoleranz und entfallen.</summary>
+        internal const double ANTEIL_MIN = 0.02;
 
         /// <summary>Ohne Dicke der Datei und ohne Gegenseite: größter Abstand zweier Seiten eines Bauteils [m].</summary>
         private const double DICKE_MAX_M = Koerpernachbarschaft.TRENNDICKE_MAX_M;
@@ -152,8 +217,9 @@ namespace WindowsFormsApplication1
         /// <param name="bauteil">Die Körper des Bauteils [m].</param>
         /// <param name="dickeM">Die Dicke der Datei [m]; <c>null</c> = aus dem Körper (kleinster Abstand gegenläufiger Seiten).</param>
         /// <param name="innen">Ist das Bauteil innen (die Datei nennt es nicht außen)? Bestimmt den Rest ohne Gegenraum.</param>
+        /// <param name="gelaendeM">Die Geländehöhe in den Koordinaten der Körper [m]; <c>null</c> = keine Teilung am Gelände.</param>
         internal static Koerperflaechenergebnis Zuordnen(IReadOnlyList<Koerperflaechenraum> raeume, IReadOnlyList<Dateikoerper> bauteil,
-                                                       double? dickeM, bool innen)
+                                                       double? dickeM, bool innen, double? gelaendeM = null)
         {
             var seiten = new List<Ebene>();
             foreach (Dateikoerper k in bauteil ?? Array.Empty<Dateikoerper>())
@@ -231,6 +297,8 @@ namespace WindowsFormsApplication1
                 if (verteilen || rest < FLAECHE_MIN_M2) continue;
                 Koerperflaechenraum raum = raeume[h.Raum];
                 bool boden = n[2] <= -WAAGERECHT_NZ, wand = Math.Abs(n[2]) < WAAGERECHT_NZ;
+                if (wand && gelaendeM.HasValue && Hanglage(raum, gelaendeM.Value)
+                    && AmGelaende(h.Stuecke, f.N, gelaendeM.Value, rest, innen, h, stueckliste)) continue;
                 Randbedingung lage = (boden && (raum.Unterster || raum.Unterirdisch)) || (wand && raum.Unterirdisch) ? Randbedingung.Erdreich
                                    : innen ? Randbedingung.Unbeheizt : Randbedingung.Aussenluft;
                 double[] schwerpunkt = Schwerpunkt(h.Stuecke, f.N);
@@ -249,6 +317,82 @@ namespace WindowsFormsApplication1
             e.Stuecke.AddRange(stueckliste);
             e.Treffer.AddRange(ergebnisTreffer);
             return e;
+        }
+
+        /// <summary>
+        /// Schneidet der Körper des Raums die Geländehöhe (Unterkante mehr als <see cref="TOLERANZ_M"/> darunter, Oberkante mehr
+        /// als <see cref="TOLERANZ_M"/> darüber)? Nur dann teilt <see cref="AmGelaende"/> seine Wände.
+        /// </summary>
+        internal static bool Hanglage(Koerperflaechenraum raum, double gelaendeM)
+        {
+            if (raum?.Koerper == null || raum.Koerper.PunkteM.Count == 0) return false;
+            double unten = raum.Koerper.PunkteM.Min(p => p[2]), oben = raum.Koerper.PunkteM.Max(p => p[2]);
+            return unten < gelaendeM - TOLERANZ_M && oben > gelaendeM + TOLERANZ_M;
+        }
+
+        /// <summary>
+        /// <b>Die Teilung einer Wand am Gelände</b> (Hanglage, Souterrain): Die Stücke der Raumseite werden an der Ebene
+        /// z = <paramref name="gelaendeM"/> geschnitten; der Teil darunter liegt am Erdreich, der Teil darüber an der Außenluft
+        /// (bzw. unbeheizt bei einem inneren Bauteil). Der Rest ohne Gegenraum (<paramref name="rest"/>) teilt sich im Verhältnis
+        /// der Schnittflächen. Liegt eine Seite unter <see cref="ANTEIL_MIN"/>, wird nicht geteilt: Das ganze Stück geht an die
+        /// größere Seite. Die Stücke tragen die Schlüssel mit „E“ (Erdreich) bzw. „L“ (über Gelände). <c>false</c> = keine
+        /// Schnittfläche (dann gilt die Regel ohne Gelände).
+        /// </summary>
+        private static bool AmGelaende(List<double[][]> stuecke, double[] nSeite, double gelaendeM, double rest, bool innen,
+                                       (int Seite, int Raum, double[] N, double S, double Abstand, List<double[][]> Stuecke) h,
+                                       List<Koerperflaechenstueck> stueckliste)
+        {
+            List<double[][]> unten = stuecke.Select(x => Hoehenschnitt(x, gelaendeM, true)).Where(x => x.Length >= 3).ToList();
+            List<double[][]> oben = stuecke.Select(x => Hoehenschnitt(x, gelaendeM, false)).Where(x => x.Length >= 3).ToList();
+            double aUnten = unten.Count > 0 ? Summe(unten, nSeite) : 0.0, aOben = oben.Count > 0 ? Summe(oben, nSeite) : 0.0;
+            double summe = aUnten + aOben;
+            if (summe <= EPS) return false;
+            Randbedingung luft = innen ? Randbedingung.Unbeheizt : Randbedingung.Aussenluft;
+            double[] n = nSeite.Select(x => R(-x)).ToArray();
+            string schluessel = Schluessel(h.Seite, h.Raum, -1, -1);
+            if (aUnten < ANTEIL_MIN * summe || aOben < ANTEIL_MIN * summe)
+            {
+                bool erde = aUnten >= aOben;
+                stueckliste.Add(new Koerperflaechenstueck
+                {
+                    Raum = h.Raum, Seite = h.Seite, Schluessel = schluessel, FlaecheM2 = R(rest), Normale = n,
+                    SchwerpunktM = Verschoben(Schwerpunkt(stuecke, nSeite), nSeite, h.Abstand), Lage = erde ? Randbedingung.Erdreich : luft,
+                });
+                return true;
+            }
+            stueckliste.Add(new Koerperflaechenstueck
+            {
+                Raum = h.Raum, Seite = h.Seite, Schluessel = schluessel + "E", FlaecheM2 = R(rest * aUnten / summe), Normale = n,
+                SchwerpunktM = Verschoben(Schwerpunkt(unten, nSeite), nSeite, h.Abstand), Lage = Randbedingung.Erdreich,
+                UnterGelaendeM = R(gelaendeM - unten.SelectMany(x => x).Min(p => p[2])),
+            });
+            stueckliste.Add(new Koerperflaechenstueck
+            {
+                Raum = h.Raum, Seite = h.Seite, Schluessel = schluessel + "L", FlaecheM2 = R(rest * aOben / summe), Normale = n,
+                SchwerpunktM = Verschoben(Schwerpunkt(oben, nSeite), nSeite, h.Abstand), Lage = luft,
+            });
+            return true;
+        }
+
+        /// <summary>
+        /// Ein ebenes Vieleck [m] gegen die Ebene z = <paramref name="z"/> geschnitten (Sutherland–Hodgman gegen einen Halbraum):
+        /// <paramref name="unten"/> = der Teil darunter, sonst der darüber. Leer bzw. weniger als drei Punkte = nichts.
+        /// </summary>
+        internal static double[][] Hoehenschnitt(double[][] vieleck, double z, bool unten)
+        {
+            var aus = new List<double[]>();
+            for (int i = 0; i < vieleck.Length; i++)
+            {
+                double[] p = vieleck[i], q = vieleck[(i + 1) % vieleck.Length];
+                double sp = unten ? z - p[2] : p[2] - z, sq = unten ? z - q[2] : q[2] - z;
+                if (sp >= 0.0) aus.Add(p);
+                if ((sp >= 0.0) != (sq >= 0.0))
+                {
+                    double t = sp / (sp - sq);
+                    aus.Add(new[] { p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]), p[2] + t * (q[2] - p[2]) });
+                }
+            }
+            return aus.Count >= 3 ? aus.ToArray() : Array.Empty<double[]>();
         }
 
         private static string Schluessel(int seite, int raum, int gegenseite, int gegenraum)
@@ -358,7 +502,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Überdeckung zweier Stücklisten in der Ebene mit der Normalen <paramref name="n"/> [m²] und ihr Schwerpunkt.</summary>
-        private static double Ueberdeckung(List<double[][]> a, List<double[][]> b, double[] n, out double[] schwerpunkt)
+        internal static double Ueberdeckung(List<double[][]> a, List<double[][]> b, double[] n, out double[] schwerpunkt)
         {
             (double[] u, double[] v) = Basis(n);
             List<List<double[]>> pa = a.Select(x => Eben(x, u, v)).ToList(), pb = b.Select(x => Eben(x, u, v)).ToList();
@@ -476,6 +620,14 @@ namespace WindowsFormsApplication1
             cu = Math.Abs(a) > EPS ? x / (6.0 * a) : p.Average(q => q[0]);
             cv = Math.Abs(a) > EPS ? y / (6.0 * a) : p.Average(q => q[1]);
             return a;
+        }
+
+        /// <summary>Die Einheitsnormale des Dreiecks (a, b, c); <c>null</c> = entartet.</summary>
+        internal static double[] Normale(double[] a, double[] b, double[] c)
+        {
+            double[] k = Kreuz(Minus(b, a), Minus(c, a));
+            double l = Math.Sqrt(Punkt(k, k));
+            return l < 1e-12 ? null : new[] { k[0] / l, k[1] / l, k[2] / l };
         }
 
         internal static double Punkt(double[] a, double[] b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];

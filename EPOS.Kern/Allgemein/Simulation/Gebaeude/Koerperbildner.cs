@@ -117,6 +117,40 @@ namespace WindowsFormsApplication1
         public override string ToString() => Gebildet ? Koerper.ToString() : Grund + " (" + string.Join(",", Werte) + ")";
     }
 
+    /// <summary>Eine Öffnung, die aus einer Wandfläche ausgespart werden soll: Kennung und Ring (in der Ebene der Wand oder nah daran).</summary>
+    internal sealed class Wandoeffnung
+    {
+        internal string Kennung { get; init; } = "";
+
+        internal IReadOnlyList<double[]> Ring { get; init; } = Array.Empty<double[]>();
+    }
+
+    /// <summary>Wie eine Öffnung aus ihrer Wand ausgespart wurde.</summary>
+    internal enum Aussparungsart
+    {
+        /// <summary>Als Loch im Inneren der Fläche, die Laibung als Mantel des Lochs.</summary>
+        Loch,
+        /// <summary>Als Kerbe am Rand der Fläche, die Laibung nur an den Kanten im Inneren der Wand.</summary>
+        Kerbe,
+        /// <summary>Nicht ausgespart; der Grund steht in <see cref="Aussparung.Grund"/>.</summary>
+        Keine,
+    }
+
+    /// <summary>Das Ergebnis der Aussparung je Öffnung, in der Reihenfolge der Eingabe.</summary>
+    internal sealed class Aussparung
+    {
+        internal string Kennung { get; init; } = "";
+
+        internal Aussparungsart Art { get; init; }
+
+        /// <summary>Bei <see cref="Aussparungsart.Keine"/>: einer der Gründe <c>Koerperbildner.GRUND_*</c>.</summary>
+        internal string Grund { get; init; } = "";
+
+        internal bool Ausgespart => Art != Aussparungsart.Keine;
+
+        public override string ToString() => Kennung + ":" + Art + (string.IsNullOrEmpty(Grund) ? "" : "(" + Grund + ")");
+    }
+
     /// <summary>
     /// <b>Der formatfreie Körperbildner</b> (Datenaustauschkonzept 17.2 bis 17.5, Stufe K1): bildet aus den Flächen einer
     /// Datei Körper derselben Art wie der IFC-Körper (<see cref="Dateikoerper"/> mit Quelle
@@ -167,6 +201,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ein Raumring ohne passende Höhen (Zahl der Höhen ungleich Zahl der Punkte, oder Decke unter Boden).</summary>
         internal const string GRUND_HOEHEN = "KOERPER_HOEHEN";
+
+        /// <summary>Die Öffnung liegt ganz außerhalb ihrer Wandfläche.</summary>
+        internal const string GRUND_OEFFNUNG_AUSSERHALB = "OEFFNUNG_AUSSERHALB";
+
+        /// <summary>Die Öffnung deckt ihre Wandfläche ganz.</summary>
+        internal const string GRUND_OEFFNUNG_DECKT = "OEFFNUNG_DECKT";
+
+        /// <summary>Der Ring der Öffnung ist leer oder ohne Fläche: im Mittel nicht breiter als zweimal <see cref="KERBTOLERANZ_M"/> (Fläche ≤ Toleranz · Umfang).</summary>
+        internal const string GRUND_OEFFNUNG_LEER = "OEFFNUNG_LEER";
+
+        /// <summary>Der Schnitt ergibt kein einfaches Vieleck (etwa eine Berührung in einem Punkt).</summary>
+        internal const string GRUND_KERBE_NICHT_EINFACH = "KERBE_NICHT_EINFACH";
+
+        /// <summary>
+        /// Die Toleranz der Aussparung: Eine Öffnung, deren Ecke höchstens so weit vom Wandrand liegt oder deren Rand den
+        /// Wandrand schneidet, wird als Kerbe geschnitten, sonst als Loch ausgespart.
+        /// </summary>
+        internal const double KERBTOLERANZ_M = 0.002;
 
         // ==================================================================
         //  Schnittstelle
@@ -309,6 +361,162 @@ namespace WindowsFormsApplication1
                 if (l.Count >= 3) Mantel(l, kl);
             }
             return Schliessen(teile, ART_FLAECHENEXTRUSION, TOLERANZ_M, vermerke);
+        }
+
+        /// <summary>
+        /// Der Bauteilkörper einer Wandfläche mit ihren Öffnungen (17.3 Nr. 4): Eine Öffnung im Inneren der Fläche wird als
+        /// Loch ausgespart wie bei <see cref="Extrusion(Quellflaeche, double, Extrusionsrichtung, double[])"/>; eine Öffnung,
+        /// die den Rand berührt oder überschreitet, wird als <b>Kerbe</b> aus der Fläche geschnitten (Differenz in der
+        /// Wandebene, <see cref="Kerbschnitt"/>) — die Laibung entsteht nur an den Kanten der Kerbe im Inneren der Wand, an
+        /// Kanten auf dem Wandrand bleibt die Stirnfläche der Wand. Öffnungen, die einander berühren oder überlappen (ein
+        /// Fensterband), werden gemeinsam ausgespart, die Laibung läuft um ihren gemeinsamen Umriss. Zerfällt die Fläche,
+        /// wird jedes Teil extrudiert; der Körper trägt dann mehrere Bestandteile. Liegen alle Öffnungen frei im Inneren,
+        /// ist das Ergebnis dasselbe wie das der Extrusion mit Löchern. Löcher der Fläche selbst
+        /// (<see cref="Quellflaeche.Loecher"/>) gehen vor den Öffnungen ein. <paramref name="aussparungen"/> nennt je
+        /// Öffnung, wie sie ausgespart wurde, oder den Grund, warum nicht.
+        /// </summary>
+        internal static Koerperergebnis Extrusion(Quellflaeche flaeche, IReadOnlyList<Wandoeffnung> oeffnungen, double dickeM, Extrusionsrichtung richtung,
+                                                  double[] zumRaum, out List<Aussparung> aussparungen)
+        {
+            var liste = new List<Aussparung>();
+            aussparungen = liste;
+            var alle = new List<Wandoeffnung>();
+            int eigene = 0;
+            if (flaeche?.Loecher != null)
+                for (int i = 0; i < flaeche.Loecher.Count; i++, eigene++)
+                    alle.Add(new Wandoeffnung
+                    {
+                        Kennung = i < flaeche.Lochkennungen.Count && !string.IsNullOrEmpty(flaeche.Lochkennungen[i]) ? flaeche.Lochkennungen[i] : flaeche.Kennung,
+                        Ring = flaeche.Loecher[i],
+                    });
+            alle.AddRange(oeffnungen ?? Array.Empty<Wandoeffnung>());
+
+            List<double[]> aussen = Polygonnetz.Bereinigt(flaeche?.Aussen ?? Array.Empty<double[]>());
+            double[] n = aussen.Count >= 3 ? Polygonnetz.Normiert(Polygonnetz.Newell(aussen)) : null;
+            if (n == null || !(dickeM > 0.0) || double.IsInfinity(dickeM))
+            {
+                foreach (Wandoeffnung o in alle.Skip(eigene)) liste.Add(new Aussparung { Kennung = o.Kennung, Art = Aussparungsart.Keine, Grund = GRUND_LEER });
+                return Extrusion(flaeche ?? new Quellflaeche(), dickeM, richtung, zumRaum);
+            }
+
+            // Die Ebene der Wand: Ursprung, zwei Achsen.
+            double[] ursprung = aussen[0];
+            double[] hilf = Math.Abs(n[2]) < 0.9 ? new[] { 0.0, 0.0, 1.0 } : new[] { 1.0, 0.0, 0.0 };
+            double[] e1 = Polygonnetz.Normiert(Polygonnetz.Kreuz(hilf, n));
+            double[] e2 = Polygonnetz.Kreuz(n, e1);
+            List<double[]> Flach(IEnumerable<double[]> ring)
+                => ring.Select(q => { double[] d = Polygonnetz.Minus(q, ursprung); return new[] { Polygonnetz.Punkt(d, e1), Polygonnetz.Punkt(d, e2) }; }).ToList();
+            const double tol = KERBTOLERANZ_M;
+
+            // Lage je Öffnung zur Wand.
+            List<double[]> wand2D = Flach(aussen);
+            var ergebnis = new Aussparung[alle.Count];
+            var ringe = new List<double[]>[alle.Count];
+            var lage = new Kerblage[alle.Count];
+            var kandidaten = new List<int>();
+            for (int i = 0; i < alle.Count; i++)
+            {
+                Wandoeffnung o = alle[i];
+                ringe[i] = Kerbschnitt.Bereinigt(Flach(Polygonnetz.Bereinigt(o.Ring ?? Array.Empty<double[]>())), tol);
+                if (ringe[i].Count < 3 || Math.Abs(Kerbschnitt.Flaeche(ringe[i])) <= tol * Kerbschnitt.Umfang(ringe[i]))
+                {
+                    ergebnis[i] = new Aussparung { Kennung = o.Kennung, Art = Aussparungsart.Keine, Grund = GRUND_OEFFNUNG_LEER };
+                    continue;
+                }
+                lage[i] = Kerbschnitt.Lage(wand2D, ringe[i], tol);
+                if (lage[i] == Kerblage.Aussen || lage[i] == Kerblage.Deckt)
+                    ergebnis[i] = new Aussparung
+                    {
+                        Kennung = o.Kennung, Art = Aussparungsart.Keine, Grund = lage[i] == Kerblage.Aussen ? GRUND_OEFFNUNG_AUSSERHALB : GRUND_OEFFNUNG_DECKT,
+                    };
+                else kandidaten.Add(i);
+            }
+            // Frei: im Inneren und ohne Berührung mit einer anderen Öffnung — ein Loch wie bisher.
+            bool Frei(int i) => lage[i] == Kerblage.Innen && kandidaten.All(j => j == i || Kerbschnitt.Lage(ringe[j], ringe[i], tol) == Kerblage.Aussen);
+            var frei = kandidaten.Where(Frei).ToList();
+            var geschnitten = kandidaten.Except(frei).ToList();
+
+            Koerperergebnis Ohne()
+            {
+                return Extrusion(new Quellflaeche
+                {
+                    Kennung = flaeche.Kennung, Aussen = flaeche.Aussen,
+                    Loecher = frei.Select(i => alle[i].Ring).ToList(), Lochkennungen = frei.Select(i => alle[i].Kennung).ToList(),
+                }, dickeM, richtung, zumRaum);
+            }
+            void Abschliessen(string grund)
+            {
+                foreach (int i in frei) ergebnis[i] = new Aussparung { Kennung = alle[i].Kennung, Art = Aussparungsart.Loch };
+                foreach (int i in geschnitten)
+                    ergebnis[i] = grund == null
+                        ? new Aussparung { Kennung = alle[i].Kennung, Art = lage[i] == Kerblage.Innen ? Aussparungsart.Loch : Aussparungsart.Kerbe }
+                        : new Aussparung { Kennung = alle[i].Kennung, Art = Aussparungsart.Keine, Grund = grund };
+                liste.AddRange(ergebnis.Skip(eigene));
+            }
+
+            if (geschnitten.Count == 0)
+            {
+                Abschliessen(null);
+                return Ohne();
+            }
+
+            var wandring = new Kerbring
+            {
+                Punkte = wand2D,
+                Kanten = Enumerable.Repeat(flaeche.Kennung ?? "", aussen.Count).ToList(),
+                Herkunft = Enumerable.Range(0, aussen.Count).ToList(),
+            };
+            List<Kerbstueck> stuecke = Kerbschnitt.Differenz(wandring, kandidaten.Select(i => ((IReadOnlyList<double[]>)ringe[i], alle[i].Kennung)).ToList(), tol);
+            if (stuecke == null || stuecke.Count == 0)
+            {
+                Abschliessen(stuecke == null ? GRUND_KERBE_NICHT_EINFACH : GRUND_OEFFNUNG_DECKT);
+                return Ohne();
+            }
+
+            double[] raum = zumRaum != null && Polygonnetz.Punkt(zumRaum, n) > 0.0 ? n : Polygonnetz.Mal(n, -1.0);
+            (double von, double bis) = richtung switch
+            {
+                Extrusionsrichtung.NachInnen => (0.0, dickeM),
+                Extrusionsrichtung.NachAussen => (-dickeM, 0.0),
+                _ => (-dickeM / 2.0, dickeM / 2.0),
+            };
+            double[] Versetzt(double[] p, double um) => Polygonnetz.Plus(p, Polygonnetz.Mal(raum, um));
+            List<double[]> Raum(Kerbring r)
+                => Enumerable.Range(0, r.Punkte.Count).Select(k => r.Herkunft[k] >= 0 ? aussen[r.Herkunft[k]]
+                       : Polygonnetz.Plus(ursprung, Polygonnetz.Plus(Polygonnetz.Mal(e1, r.Punkte[k][0]), Polygonnetz.Mal(e2, r.Punkte[k][1])))).ToList();
+            var vermerke = new SortedSet<Koerpervermerk>();
+            var teile = new List<Teilflaeche>();
+            void Mantel(List<double[]> ring, List<string> kennungen)
+            {
+                for (int k = 0; k < ring.Count; k++)
+                {
+                    double[] a = ring[k], b = ring[(k + 1) % ring.Count];
+                    Teilflaeche m = Vieleck(new List<double[]> { Versetzt(a, von), Versetzt(b, von), Versetzt(b, bis), Versetzt(a, bis) }, null, kennungen[k], vermerke);
+                    if (m != null) teile.Add(m);
+                }
+            }
+            foreach (Kerbstueck st in stuecke)
+            {
+                List<double[]> ring = Raum(st.Aussen);
+                List<List<double[]>> loecher = st.Loecher.Select(Raum).ToList();
+                foreach (double um in new[] { von, bis })
+                {
+                    Teilflaeche f = Vieleck(ring.Select(p => Versetzt(p, um)).ToList(),
+                                            loecher.Select(l => (IReadOnlyList<double[]>)l.Select(p => Versetzt(p, um)).ToList()).ToList(), flaeche.Kennung, vermerke);
+                    if (f != null) teile.Add(f);
+                }
+                Mantel(ring, st.Aussen.Kanten);
+                for (int j = 0; j < loecher.Count; j++) Mantel(loecher[j], st.Loecher[j].Kanten);
+            }
+            Koerperergebnis e = Schliessen(teile, ART_FLAECHENEXTRUSION, TOLERANZ_M, vermerke);
+            if (!e.Gebildet || vermerke.Contains(Koerpervermerk.Loch))
+            {
+                // Der Schnitt gelingt nicht: Rückfall auf die freien Löcher, die übrigen mit dem Grund.
+                Abschliessen(e.Gebildet ? GRUND_KERBE_NICHT_EINFACH : e.Grund);
+                return Ohne();
+            }
+            Abschliessen(null);
+            return e;
         }
 
         // ==================================================================

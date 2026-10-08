@@ -33199,6 +33199,27 @@ Do you want to allow this?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>The outline of surface {0} is not planar (deviation {1} mm) — it is not shown in the floor plan; area, azimuth and tilt still apply.</value>
   </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Space {0}: the surfaces of route {1} do not close a solid ({2} open edges) — the outline prism is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: route {1} yields no solid ({2}) — the fallback is shown.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Opening {0} does not lie within surface {1} — it is shown as a solid of its own without a cut-out.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_RAND" xml:space="preserve">
+    <value>Opening {0} reaches the edge of surface {1} and the notch cannot be cut ({2}) — it is shown in the wall without a cut-out.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FLAECHE_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0}: {1} space body faces ({2} m²) without a matching element — group taken from the face normal (display only).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FLAECHENGRUPPE_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: boundary group {1} has {2} m² of body area against {3} m² of element area — a hint, not a calculation value.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} component solids omitted: space and component solids together exceeded the limit of {1} triangles ({2} up to then).</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>The file contains no constructions — the U-values are taken from the building age class.</value>
   </data>
@@ -48376,18 +48397,6 @@ chart</value>
   <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
     <value>{0} cost item(s) of the replaced systems found no new system as counterpart and are now without system assignment — check them in cost management.</value>
   </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
-    <value>Space {0}: the surfaces of route {1} do not close a solid ({2} open edges) — the outline prism is shown.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
-    <value>{0}: route {1} yields no solid ({2}) — the fallback is shown.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
-    <value>Opening {0} does not lie within surface {1} — it is shown as a solid of its own without a cut-out.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
-    <value>{0} component solids omitted: space and component solids together exceeded the limit of {1} triangles ({2} up to then).</value>
-  </data>
   <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
     <value>default thickness</value>
   </data>
@@ -48607,6 +48616,12 @@ chart</value>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
   </data>
+  <data name="IMP_IFC_PROT_GELAENDE_DATEI" xml:space="preserve">
+    <value>Building "{0}": terrain level {1} m from the file (ElevationOfTerrain against the reference height); {2} wall areas of spaces on a slope lie below ground against the earth, their part above ground against outside air.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GELAENDE_NULL" xml:space="preserve">
+    <value>Building "{0}" states no terrain level; z = 0 of the building coordinates applies. {1} wall areas of spaces on a slope lie below ground against the earth, their part above ground against outside air.</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
     <value>{0} external walls: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
   </data>
@@ -48698,7 +48713,13 @@ chart</value>
     <value>The opening lies in no wall surface of the same room — body without recess.</value>
   </data>
   <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
-    <value>The opening reaches the edge of its wall surface — the recess is omitted.</value>
+    <value>The opening reaches the edge of its wall surface and the notch cannot be cut ({0}) — the recess is omitted.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_FLAECHE_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0}: {1} space body faces ({2} m²) without a matching element — group taken from the face normal (display only).</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_FLAECHENGRUPPE_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: boundary group {1} has {2} m² of body area against {3} m² of element area — a hint, not a calculation value.</value>
   </data>
   <data name="GANS_HERKUNFT_ABGELEITET" xml:space="preserve">
     <value>built from surfaces</value>

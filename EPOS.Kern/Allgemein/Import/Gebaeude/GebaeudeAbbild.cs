@@ -793,6 +793,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Randbedingung Lage { get; set; } = Randbedingung.Unbekannt;
 
+        /// <summary>
+        /// Der Teil einer am Gelände geteilten Wand am Erdreich (Körperweg, Hanglage): Tiefe seiner Unterkante unter der
+        /// Geländehöhe [m]. Nur Auskunft des Imports — die Erdreichrechnung (DIN EN ISO 13370) kennt kein Feld je Bauteil und
+        /// nimmt die Tiefe als Fläche der Wände am Erdreich durch den Umfang. <c>null</c> = keine Teilung am Gelände.
+        /// </summary>
+        public double? UnterGelaendeM { get; set; }
+
         /// <summary>Eine virtuelle Grenze (<c>VIRTUAL</c>) — keine Bauteilfläche, sondern eine Luftverbindung.</summary>
         public bool Virtuell { get; set; }
 

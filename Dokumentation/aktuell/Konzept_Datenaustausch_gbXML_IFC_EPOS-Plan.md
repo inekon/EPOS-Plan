@@ -2332,7 +2332,13 @@ dem Raumpolygon**, nicht über `Koerpergrundriss` aus dem abgeleiteten Körper: 
    als **Loch** ausgespart (Ohrenschnitt mit Brückenkante, die Laibung als Mantel des Lochs) und selbst mit seiner
    Dicke mittig in der Wanddicke extrudiert. Die Wand einer Öffnung ist die Wandfläche desselben Raums, in deren
    Polygon die Öffnung nach der Projektion liegt (gbXML: die `Surface`, die das `Opening` trägt). Findet sich keine,
-   bleibt die Öffnung ein Körper ohne Aussparung, Meldung `OEFFNUNG_OHNE_WAND`.
+   bleibt die Öffnung ein Körper ohne Aussparung, Meldung `OEFFNUNG_OHNE_WAND`. Berührt oder überschreitet die Öffnung
+   den Rand der Wandfläche (Fenstertür bis zum Boden, Öffnung an der Wandkante), wird sie als **Kerbe** geschnitten:
+   die Differenz Wandpolygon minus Öffnungspolygon in der Wandebene (2 mm Toleranz), die Laibung nur an den Kanten der
+   Kerbe im Inneren der Wand; zerfällt die Fläche, wird jedes Teil extrudiert. Öffnungen, die einander berühren
+   (Fensterband), werden gemeinsam ausgespart. Gelingt der Schnitt nicht, entfällt die Aussparung mit Meldung
+   `OEFFNUNG_RAND` und Grund. Formatfrei im Körperbildner (`Kerbschnitt`), für Projektdatei und gbXML; der IFC-Weg
+   bleibt bei seinen Löchern.
 5. **Jede Hüllfläche einmal**: Eine Fläche, auf die zwei Räume verweisen, ergibt einen Bauteilkörper, nicht zwei.
 
 ### 17.4 Regel 3 — Zuordnung Dreieck → Bauteil

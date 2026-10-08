@@ -974,6 +974,19 @@ namespace WindowsFormsApplication1
                     if (p.NettoNegativ)
                         _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
                             p.Bauteil.Kennung, Zahl(p.BruttoM2 ?? 0.0), Zahl(p.AbzugM2)));
+                    List<(Teilflaeche Teil, double Netto, List<AbbildBauteil> Oeffnungen)> gliederung = Einzonengliederung(p);
+                    if (gliederung != null)
+                    {
+                        // Teilflächen verschiedener Richtung (gegliederte Wand, Flächen eines Dachs): je Richtung eine Zeile.
+                        foreach ((Teilflaeche t, double netto, List<AbbildBauteil> oeffnungen) in gliederung)
+                        {
+                            if (netto > 0.0) Huellzeile(p, netto, _datei, t);
+                            foreach (AbbildBauteil o in oeffnungen)
+                                if (o.Art == Bauteilart.Fenster) Fensterzeile(p, o, t);
+                                else Tuerzeile(p, o, t);
+                        }
+                        continue;
+                    }
                     if (p.NettoM2.HasValue)
                     {
                         if (p.NettoM2.Value > 0.0) Huellzeile(p, p.NettoM2.Value, _datei);
@@ -1049,8 +1062,50 @@ namespace WindowsFormsApplication1
             //  Hülle
             // ------------------------------------------------------------------
 
-            /// <summary>Die Zeile eines Hüllbauteils mit der Fläche <paramref name="flaeche"/>.</summary>
-            private GebaeudeBauteilzeile Huellzeile(Huellposten p, double flaeche, Importherkunft herkunftFlaeche)
+            /// <summary>
+            /// <b>Die Gliederung eines Hüllpostens</b> im Einzonenweg (<see cref="Teilflaechen"/>): aus den Grenzen beheizter Räume
+            /// ohne Gegenraum je Richtung eine Teilfläche; ihr Anteil an der Bruttofläche des Postens nach den Flächen der Grenzen, ihre
+            /// Öffnungen nach der Richtung ihrer Grenze, die übrigen Abzüge (Löcher) anteilig. <c>null</c> = keine Gliederung: eine
+            /// Richtung, keine Nettofläche, Vorhangfassade, Nettofläche der Datei als Rückfall oder ein Teil unter 0.
+            /// </summary>
+            private List<(Teilflaeche Teil, double Netto, List<AbbildBauteil> Oeffnungen)> Einzonengliederung(Huellposten p)
+            {
+                AbbildBauteil s = p.Bauteil;
+                if (s.Art == Bauteilart.Vorhangfassade || !(p.BruttoM2 > 0.0) || !p.NettoM2.HasValue || p.NettoRueckfall || p.NettoNegativ) return null;
+                List<AbbildGrenze> grenzen = s.Grenzen.Where(g => g.RaumKennung != null && !g.Virtuell && g.Lage != Randbedingung.Innen
+                                                                 && _raeume.TryGetValue(g.RaumKennung, out AbbildRaum r) && IstBeheizt(r)).ToList();
+                List<Teilflaeche> teile = Teilflaechen.Gliedern(grenzen, _v.NordwinkelAngewandt ? _v.NordwinkelGrad ?? 0.0 : 0.0);
+                if (teile == null) return null;
+                var raeume = new HashSet<string>(grenzen.Select(g => g.RaumKennung), StringComparer.Ordinal);
+                var jeTeil = teile.Select(_ => new List<AbbildBauteil>()).ToList();
+                foreach (AbbildBauteil o in p.Fenster.Concat(p.Tueren))
+                    jeTeil[Teilflaechen.Stelle(teile, o, raeume)].Add(o);
+                double summe = teile.Sum(t => t.BruttoM2);
+                double oeffnungen = p.Fenster.Concat(p.Tueren).Sum(o => o.BruttoflaecheM2 ?? 0.0);
+                double rest = p.AbzugM2 - oeffnungen;
+                var ergebnis = new List<(Teilflaeche, double, List<AbbildBauteil>)>();
+                for (int i = 0; i < teile.Count; i++)
+                {
+                    double anteil = teile[i].BruttoM2 / summe;
+                    double netto = p.BruttoM2.Value * anteil - jeTeil[i].Sum(o => o.BruttoflaecheM2 ?? 0.0) - rest * anteil;
+                    if (netto < -1e-9) return null;
+                    ergebnis.Add((teile[i], Math.Max(0.0, netto), jeTeil[i]));
+                }
+                return ergebnis;
+            }
+
+            /// <summary>
+            /// Die Seite einer Teilfläche als Träger von Neigung, Azimut und Spiegelung: die Spiegelung nach ihrer größten Grenze
+            /// (Körperweg), sonst <paramref name="gespiegelt"/>.
+            /// </summary>
+            private static (double? Neigung, double? Azimut, bool Gespiegelt) Richtung(Teilflaeche t, bool gespiegelt)
+            {
+                AbbildGrenze g = t.Grenzen[0];
+                return (t.NeigungGrad, t.AzimutGrad, g.Herkunft == Grenzherkunft.Bauteilkoerper ? g.Gegenseite : gespiegelt);
+            }
+
+            /// <summary>Die Zeile eines Hüllbauteils mit der Fläche <paramref name="flaeche"/>; mit <paramref name="teil"/> die einer Teilfläche.</summary>
+            private GebaeudeBauteilzeile Huellzeile(Huellposten p, double flaeche, Importherkunft herkunftFlaeche, Teilflaeche teil = null)
             {
                 AbbildBauteil s = p.Bauteil;
                 Bauteilart art = s.Art;
@@ -1058,12 +1113,19 @@ namespace WindowsFormsApplication1
                 Bauteilrand rand = RandAus(p.Rand);
                 bool gespiegelt = p.HeizPos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
+                if (teil != null)
+                {
+                    (double? n, double? a, bool g) = Richtung(teil, gespiegelt);
+                    (neigung, hn) = Neigung(n, false);
+                    (azimut, ha) = Azimut(a, false);
+                    gespiegelt = g;
+                }
                 if (!neigung.HasValue && p.Boden.HasValue)
                 {
                     neigung = p.Boden.Value ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN;
                     hn = _datei;
                 }
-                (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
 
                 GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null);
                 z.HerkunftFlaeche = herkunftFlaeche;
@@ -1115,7 +1177,7 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            private void Fensterzeile(Huellposten p, AbbildBauteil f)
+            private void Fensterzeile(Huellposten p, AbbildBauteil f, Teilflaeche teil = null)
             {
                 if (!(f.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(f.Kennung); return; }
                 Bauteilrand rand = RandAus(p.Rand);
@@ -1127,6 +1189,11 @@ namespace WindowsFormsApplication1
                 bool gespiegelt = p.HeizPos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(f.NeigungGrad ?? p.Bauteil.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = Azimut(p.Bauteil.AzimutGrad ?? f.AzimutGrad, gespiegelt);
+                if (teil != null)
+                {
+                    (neigung, hn) = Neigung(teil.NeigungGrad, false);
+                    (azimut, ha) = Azimut(teil.AzimutGrad, false);
+                }
 
                 GebaeudeBauteilzeile z = NeueZeile(Name(f), Bauteilart.Fenster, f.BruttoflaecheM2.Value, rand,
                                                    GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null);
@@ -1143,13 +1210,20 @@ namespace WindowsFormsApplication1
                 Abschliessen(z);
             }
 
-            private void Tuerzeile(Huellposten p, AbbildBauteil t)
+            private void Tuerzeile(Huellposten p, AbbildBauteil t, Teilflaeche teil = null)
             {
                 if (!(t.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(t.Kennung); return; }
                 Bauteilrand rand = RandAus(p.Rand);
                 bool gespiegelt = p.HeizPos > 0;
                 (double? neigung, Importherkunft hn) = Neigung(t.NeigungGrad ?? p.Bauteil.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = Azimut(p.Bauteil.AzimutGrad ?? t.AzimutGrad, gespiegelt);
+                if (teil != null)
+                {
+                    (double? n, double? a, bool g) = Richtung(teil, gespiegelt);
+                    (neigung, hn) = Neigung(n, false);
+                    (azimut, ha) = Azimut(a, false);
+                    gespiegelt = g;
+                }
 
                 GebaeudeBauteilzeile z = NeueZeile(Name(t), Bauteilart.Tuer, t.BruttoflaecheM2.Value, rand,
                                                    GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null);
@@ -1364,7 +1438,7 @@ namespace WindowsFormsApplication1
                 double? brutto = f.Rand == Zonenrand.Zone ? f.GroessereM2 : f.BruttoM2;
                 if (!brutto.HasValue) return null;
                 double abzug = f.AusschnittM2 > 0.0 ? f.AusschnittM2
-                             : f.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer).Sum(o => o.BruttoflaecheM2 ?? 0.0)
+                             : f.Oeffnungen.Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer).Sum(o => f.OeffnungM2(o) ?? 0.0)
                                + Lochanteil(f.Bauteil, brutto.Value);
                 double netto = brutto.Value - abzug;
                 if (netto >= 0.0) return netto;
@@ -1451,10 +1525,19 @@ namespace WindowsFormsApplication1
                 string feld = Summenfeld(rand, s.Art, boden);
                 int? nachbar = f.Rand == Zonenrand.Zone ? _v._zonen[f.Nachbarzone].ID : (int?)null;
 
+                // Teilflächen verschiedener Richtung (gegliederte Wand, Flächen eines Dachs): je Richtung eine Zeile.
+                List<Teilflaeche> gliederung = f.Rand == Zonenrand.Zone || f.Rand == Zonenrand.Innen ? null
+                    : Teilflaechen.Gliedern(f.Grenzen, _v.NordwinkelAngewandt ? _v.NordwinkelGrad ?? 0.0 : 0.0);
+                if (gliederung != null)
+                {
+                    Gegliedert(f, gliederung, rand, boden, feld, gespiegelt);
+                    return;
+                }
+
                 double? netto = Netto(f, out bool negativ);
                 if (negativ)
                     _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
-                        s.Kennung, Zahl(f.GroessereM2 ?? 0.0), Zahl(f.AusschnittM2 > 0.0 ? f.AusschnittM2 : f.Oeffnungen.Sum(o => o.BruttoflaecheM2 ?? 0.0))));
+                        s.Kennung, Zahl(f.GroessereM2 ?? 0.0), Zahl(f.AusschnittM2 > 0.0 ? f.AusschnittM2 : f.Oeffnungen.Sum(o => f.OeffnungM2(o) ?? 0.0))));
                 if (!netto.HasValue) _ohneFlaeche.Add(s.Kennung);
                 else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld, f.Flaechenherkunft, seite);
                 else Entfallen(s);
@@ -1462,9 +1545,53 @@ namespace WindowsFormsApplication1
                 foreach (AbbildBauteil o in f.Oeffnungen)
                 {
                     if (o.Art != Bauteilart.Fenster && o.Art != Bauteilart.Tuer) continue;
-                    if (!(o.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(o.Kennung); continue; }
-                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt, seite);
+                    if (!(f.OeffnungM2(o) > 0.0)) { _ohneFlaeche.Add(o.Kennung); continue; }
+                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt, seite, f.OeffnungM2(o).Value);
                 }
+            }
+
+            /// <summary>
+            /// <b>Die Zeilen einer gegliederten Zonenfläche</b> (<see cref="Teilflaechen"/>): je Teilfläche eine Zeile mit eigener
+            /// Neigung und eigenem Azimut; ihre Öffnungen liegen an der Teilfläche, die ihre Grenze trifft, und werden dort abgezogen
+            /// (schon ausgeschnittene Innenränder statt der Öffnungen, wie bei der ganzen Zonenfläche), die Löcher ohne Füllung
+            /// anteilig. Die Spiegelung des Aufbaus gilt je Teilfläche nach ihrer größten Grenze.
+            /// </summary>
+            private void Gegliedert(Zonenflaeche f, List<Teilflaeche> teile, Bauteilrand rand, bool? boden, string feld, bool gespiegelt)
+            {
+                AbbildBauteil s = f.Bauteil;
+                var raeume = new HashSet<string>(f.Grenzen.Where(g => g.RaumKennung != null).Select(g => g.RaumKennung), StringComparer.Ordinal);
+                var jeTeil = teile.Select(_ => new List<AbbildBauteil>()).ToList();
+                foreach (AbbildBauteil o in f.Oeffnungen)
+                    jeTeil[Teilflaechen.Stelle(teile, o, raeume)].Add(o);
+                bool zeile = false;
+                for (int i = 0; i < teile.Count; i++)
+                {
+                    Teilflaeche t = teile[i];
+                    AbbildGrenze groesste = t.Grenzen[0];
+                    bool spiegel = groesste.Herkunft == Grenzherkunft.Bauteilkoerper ? groesste.Gegenseite : gespiegelt;
+                    var seite = new AbbildGrenze
+                    {
+                        Kennung = groesste.Kennung, RaumKennung = groesste.RaumKennung, Normale = t.Normale, Herkunft = groesste.Herkunft,
+                        NeigungGrad = t.NeigungGrad, AzimutGrad = t.AzimutGrad, Gegenseite = spiegel,
+                    };
+                    List<AbbildBauteil> oeffnungen = jeTeil[i].Where(o => o.Art == Bauteilart.Fenster || o.Art == Bauteilart.Tuer).ToList();
+                    double abzug = t.AusschnittM2 > 0.0 ? t.AusschnittM2 : oeffnungen.Sum(o => f.OeffnungM2(o) ?? 0.0) + Lochanteil(s, t.BruttoM2);
+                    double netto = t.BruttoM2 - abzug;
+                    if (netto < 0.0)
+                        _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
+                            s.Kennung, Zahl(t.BruttoM2), Zahl(abzug)));
+                    else if (netto > 0.0)
+                    {
+                        Teilzeile(s, netto, rand, null, spiegel, boden, feld, f.Flaechenherkunft, seite);
+                        zeile = true;
+                    }
+                    foreach (AbbildBauteil o in oeffnungen)
+                    {
+                        if (!(f.OeffnungM2(o) > 0.0)) { _ohneFlaeche.Add(o.Kennung); continue; }
+                        Oeffnungszeile(s, o, rand, null, spiegel, seite, f.OeffnungM2(o).Value);
+                    }
+                }
+                if (!zeile) Entfallen(s);
             }
 
             private void Teilzeile(AbbildBauteil s, double flaeche, Bauteilrand rand, int? nachbar, bool gespiegelt, bool? boden, string feld,
@@ -1509,14 +1636,15 @@ namespace WindowsFormsApplication1
                 return r == null || string.IsNullOrWhiteSpace(r.Name) ? kennung : r.Name.Trim();
             }
 
-            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt, AbbildGrenze seite = null)
+            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt, AbbildGrenze seite,
+                                        double flaeche)
             {
                 bool fenster = o.Art == Bauteilart.Fenster;
                 if (fenster && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
                 (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
                 string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
-                GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, o.BruttoflaecheM2.Value, rand, feld, o.Quelltyp, o.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = o.Flaechenherkunft;
