@@ -164,7 +164,11 @@ namespace EPOS.Kern.Tests
             zustand.KurzstandGeaendert += () => gemeldet++;
 
             Assert.Null(status(BerichteKostenSeite.SEITE_UEBERSICHT));
-            Assert.Null(status(BerichteKostenSeite.SEITE_KOSTEN));
+            // Die Kosten tragen vor dem Laden ihrer Seite einen ruhigen Stand, nie KEINEN:
+            // sonst stuende ihr Reiter beim ersten Zeichnen einzeilig da.
+            Reiterstatus kostenVorher = status(BerichteKostenSeite.SEITE_KOSTEN);
+            Assert.NotNull(kostenVorher);
+            Assert.Equal(R.BK_STATUS_KOSTEN_OFFEN, kostenVorher.Text);
 
             var seiten = (Func<string, IReadOnlyDictionary<string, object>>)gaben["SeitenGaben"];
             ((Func<UebersichtStand>)seiten(BerichteKostenSeite.SEITE_UEBERSICHT)["Laden"])();

@@ -5716,6 +5716,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_STATUS_BERICHT_KEINER" xml:space="preserve">
     <value>none created yet</value>
   </data>
+  <data name="BK_STATUS_KOSTEN_OFFEN" xml:space="preserve">
+    <value>not opened yet</value>
+  </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Base project:</value>
   </data>

@@ -424,6 +424,30 @@ public class ReiterTests : BunitContext
         Assert.Equal("2", zeile.QuerySelector(".epos-reiter-status-kurz")!.TextContent);
     }
 
+    /// <summary>
+    /// Trägt EIN Blatt eine Statuszeile, tragen alle die zweizeilige Gestalt: Das Blatt ohne
+    /// Stand bekommt Titelspanne und eine leere Zeile (geschütztes Leerzeichen, nur fürs Auge
+    /// verborgen) — kein kleinerer, einzeiliger Knopf, der springt, sobald sein Stand kommt.
+    /// </summary>
+    [Fact]
+    public void Neben_einer_Statuszeile_traegt_ein_Blatt_ohne_Stand_den_Platzhalter()
+    {
+        var cut = Render<Reiter>(p => p.Add(x => x.KindInhalt, BlaetterMitStatus("")));
+
+        IElement knopf = cut.FindAll(".epos-reiter-knopf")[0];
+        Assert.Contains("epos-reiter-knopf--status", knopf.ClassName, StringComparison.Ordinal);
+        Assert.Equal("Erstes", knopf.QuerySelector(".epos-reiter-titel")!.TextContent);
+        IElement zeile = knopf.QuerySelector(".epos-reiter-status")!;
+        Assert.Equal("epos-reiter-status epos-reiter-status--leer", zeile.ClassName);
+        Assert.Equal("true", zeile.GetAttribute("aria-hidden"));
+        Assert.Equal(" ", Assert.Single(zeile.QuerySelectorAll(".epos-reiter-status-text")).TextContent);
+
+        // Kommt der Stand, steht er in derselben Gestalt — ohne Platzhalter.
+        cut.Render(p => p.Add(x => x.KindInhalt, BlaetterMitStatus("1 Version")));
+        cut.WaitForAssertion(() => Assert.Equal("epos-reiter-status",
+            cut.FindAll(".epos-reiter-knopf")[0].QuerySelector(".epos-reiter-status")!.ClassName));
+    }
+
     /// <summary>Ein neuer Status des Wirts erreicht die Leiste — der Reiter zeichnet sie nach.</summary>
     [Fact]
     public void Ein_neuer_Status_erreicht_die_Leiste()

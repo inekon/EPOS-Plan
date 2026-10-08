@@ -656,19 +656,72 @@ public class BerichteKostenSeiteTests : BunitContext
                               StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Ein Reiter OHNE Kurzstand neben Reitern MIT trägt dieselbe zweizeilige Gestalt: Titel in
+    /// derselben Klasse, darunter eine leere Statuszeile gleicher Höhe — sonst stünde er kleiner
+    /// und einzeilig da und spränge, sobald sein Stand kommt.
+    /// </summary>
     [Fact]
-    public void Ohne_Kurzstand_traegt_der_Reiter_nur_seinen_Titel()
+    public void Ohne_Kurzstand_traegt_der_Reiter_Titel_und_leere_Statuszeile()
     {
         var cut = Zeige(p => p.Add(x => x.Status,
             (string s) => s == BerichteKostenSeite.SEITE_BERICHT ? new Reiterstatus("zuletzt 26.09.2026 18:12") : null));
 
-        Assert.Empty(Navknoepfe(cut)[0].QuerySelectorAll(".epos-reiter-status"));
-        Assert.Equal("Übersicht", Navknoepfe(cut)[0].TextContent.Trim());
+        IElement uebersicht = Navknoepfe(cut)[0];
+        Assert.Contains("epos-reiter-knopf--status", uebersicht.ClassName, StringComparison.Ordinal);
+        Assert.Equal("Übersicht", uebersicht.QuerySelector(".epos-reiter-titel")!.TextContent.Trim());
+        IElement leer = uebersicht.QuerySelector(".epos-reiter-status")!;
+        Assert.Contains("epos-reiter-status--leer", leer.ClassName, StringComparison.Ordinal);
+        Assert.Equal("true", leer.GetAttribute("aria-hidden"));
+        Assert.Equal(" ", leer.QuerySelector(".epos-reiter-status-text")!.TextContent);
 
         // Ohne eigene Kurzform steht EIN Text — keine lange und kurze Fassung nebeneinander.
         IElement bericht = Navknoepfe(cut)[3];
         Assert.Single(bericht.QuerySelectorAll(".epos-reiter-status-text"));
         Assert.Empty(bericht.QuerySelectorAll(".epos-reiter-status-kurz"));
+    }
+
+    /// <summary>
+    /// Anwendermeldung 08.10.2026: Beim ersten Zeichnen kennt die Hülle den Stand der Kosten noch
+    /// nicht (er entsteht erst beim Laden ihrer Seite). Trotzdem tragen ALLE vier Reiter vom
+    /// ersten Zeichnen an Titel und Statuszeile mit denselben Klassen.
+    /// </summary>
+    [Fact]
+    public void Beim_ersten_Zeichnen_tragen_alle_Reiter_Titel_und_Statuszeile()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => s switch
+        {
+            BerichteKostenSeite.SEITE_UEBERSICHT => new Reiterstatus("1 Version · simuliert"),
+            BerichteKostenSeite.SEITE_WIRTSCHAFT => new Reiterstatus("nicht berechnet"),
+            BerichteKostenSeite.SEITE_BERICHT => new Reiterstatus("noch keiner erstellt", "—"),
+            _ => null
+        }));
+
+        var knoepfe = Navknoepfe(cut);
+        Assert.Equal(4, knoepfe.Count);
+        Assert.All(knoepfe, k =>
+        {
+            Assert.Contains("epos-reiter-knopf--status", k.ClassName, StringComparison.Ordinal);
+            Assert.Single(k.QuerySelectorAll(".epos-reiter-titel"));
+            Assert.Single(k.QuerySelectorAll(".epos-reiter-status"));
+            Assert.NotEmpty(k.QuerySelectorAll(".epos-reiter-status-text"));
+        });
+        Assert.Equal("Kosten", knoepfe[1].QuerySelector(".epos-reiter-titel")!.TextContent.Trim());
+    }
+
+    /// <summary>Gegenprobe: Kennt KEIN Reiter einen Stand, bleibt die Leiste einzeilig.</summary>
+    [Fact]
+    public void Ohne_jeden_Kurzstand_bleibt_die_Leiste_einzeilig()
+    {
+        var cut = Zeige(p => p.Add(x => x.Status, (string s) => (Reiterstatus?)null));
+
+        Assert.All(Navknoepfe(cut), k =>
+        {
+            Assert.DoesNotContain("epos-reiter-knopf--status", k.ClassName, StringComparison.Ordinal);
+            Assert.Empty(k.QuerySelectorAll(".epos-reiter-titel"));
+            Assert.Empty(k.QuerySelectorAll(".epos-reiter-status"));
+        });
+        Assert.Equal("Kosten", Navknoepfe(cut)[1].TextContent.Trim());
     }
 
     /// <summary>Ein Fehler der Hülle kostet nur die Zeile, nie die Seite.</summary>

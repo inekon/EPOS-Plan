@@ -5732,6 +5732,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_STATUS_BERICHT_KEINER" xml:space="preserve">
     <value>noch keiner erstellt</value>
   </data>
+  <data name="BK_STATUS_KOSTEN_OFFEN" xml:space="preserve">
+    <value>noch nicht geöffnet</value>
+  </data>
   <data name="BK_LBL_STAMM" xml:space="preserve">
     <value>Stammprojekt:</value>
   </data>

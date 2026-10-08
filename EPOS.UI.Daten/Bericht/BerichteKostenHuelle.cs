@@ -429,7 +429,13 @@ namespace WindowsFormsApplication1
 
         private Reiterstatus KostenKurzstand()
         {
-            if (_kurzTraeger < 0 || _kurzKostenProjekt <= 0 || _kurzKostenProjekt != _stand.KostenId) return null;
+            // Ohne Projekt keine Zeile. Mit Projekt, aber vor dem ersten Laden der Kostenseite
+            // (Zahl der Träger und Befunde entstehen erst dort; die Lesung schreibt den
+            // Stromträger fest und ist zu schwer für jedes Zeichnen): ein ruhiger Stand statt
+            // keiner — der Reiter trägt so vom ersten Zeichnen an Titel UND Statuszeile.
+            if (_stand.KostenId <= 0) return null;
+            if (_kurzTraeger < 0 || _kurzKostenProjekt <= 0 || _kurzKostenProjekt != _stand.KostenId)
+                return new Reiterstatus(R.BK_STATUS_KOSTEN_OFFEN, "—");
 
             string traeger = Anzahl(_kurzTraeger, R.BK_STATUS_TRAEGER_1, R.BK_STATUS_TRAEGER);
             if (_kurzBefunde > 0)
