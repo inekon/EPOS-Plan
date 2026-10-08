@@ -168,6 +168,19 @@ namespace WindowsFormsApplication1
             return ziel == VorlaufC ? this : this with { VorlaufC = ziel };
         }
 
+        /// <summary>
+        /// <b>Der Raumeinfluss der Kühlkurve (KK3; Entwurf KK 2.2)</b>: derselbe Rand mit dem Kühlvorlauf
+        /// <paramref name="kuehlVorlaufC"/> [°C] — der abgesenkte, vom Aufrufer schon gekappte Vorlauf — und dem Befund der
+        /// Vorlaufgrenze <paramref name="anVorlaufgrenze"/>. Ohne Kühlübergabe, ohne Vorlauf oder ohne Änderung derselbe
+        /// Rand, Zeichen für Zeichen.
+        /// </summary>
+        internal Stundenrand MitKuehlvorlauf(double kuehlVorlaufC, bool anVorlaufgrenze)
+        {
+            if (!MitKuehluebergabe || double.IsNaN(KuehlVorlaufC) || double.IsNaN(kuehlVorlaufC)) return this;
+            if (kuehlVorlaufC.Equals(KuehlVorlaufC) && anVorlaufgrenze == KuehlVorlaufGekappt) return this;
+            return this with { KuehlVorlaufC = kuehlVorlaufC, KuehlVorlaufGekappt = anVorlaufgrenze };
+        }
+
         /// <summary>Die Schranke der Anlagenverfügbarkeit dieser Stunde [W]; NaN = keine (AK2).</summary>
         internal double VerfuegbarkeitW { get; private init; }
 
@@ -264,13 +277,13 @@ namespace WindowsFormsApplication1
         internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; }
 
         /// <summary>Fester Kaltwasser-Vorlauf der Stunde [°C], schon auf die Vorlaufgrenze hochgemischt (7.2). Nur mit Kühlübergabe.</summary>
-        internal double KuehlVorlaufC { get; }
+        internal double KuehlVorlaufC { get; private init; }
 
         /// <summary>Strahlungsanteil der Kühlübergabe [–] (Vorgabe der Art); verteilt wie die Heizseite.</summary>
         internal double KuehlStrahlungsanteil { get; }
 
         /// <summary>Steht der Kaltwasser-Vorlauf an der Vorlaufgrenze, weil die Anlage kälter liefert (7.2)?</summary>
-        internal bool KuehlVorlaufGekappt { get; }
+        internal bool KuehlVorlaufGekappt { get; private init; }
 
         /// <summary>Rechnet die Kühlung als Kühlübergabe (Anlagenkopplung, Schritt K, E37)?</summary>
         internal bool MitKuehluebergabe => KuehlUebergabeGespiegelt != null;

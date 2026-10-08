@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>Unveränderlich nach <see cref="Bauen"/>; ohne Datenbank, ohne Protokoll.</para>
     /// </summary>
-    internal sealed class GebaeudeModellEingang
+    internal sealed partial class GebaeudeModellEingang
     {
         private GebaeudeModellEingang() { }
 
@@ -2228,6 +2228,7 @@ namespace WindowsFormsApplication1
             Kuehlkurve = Kuehlkurve.Bilden(fuss, KuehlUebergabe.AuslegungVorlaufC, KuehlVorlaufgrenzeC,
                                            g.Kuehlkurve_Auslegung_Weg, g.Kuehlkurve_Auslegung_Aussen, KuehlSollwert, ThetaOut);
             double erzeuger = Endlich(kuehlVorlaufAnlageC) ? kuehlVorlaufAnlageC : double.NaN;
+            KuehlkurveErzeugerC = erzeuger;
             var reihe = new double[8760];
             var anGrenze = new bool[8760];
             for (int h = 0; h < 8760; h++)

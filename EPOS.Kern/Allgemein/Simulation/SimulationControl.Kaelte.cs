@@ -706,18 +706,20 @@ namespace WindowsFormsApplication1
                 // am Zustand des Stundenbeginns (Kältespeicher erst in der Kältestunde geschrieben), ohne Wirkung.
                 Anlagenkopplung kreis = weg.Kreis;
                 Kopplungsstunde ks = kreis?.LetzteStunde;
+                // KK3 (Entwurf KK 2.5): der Erzeugervorlauf der konvergierten Stunde; NaN = der feste Vorlauf (bitgleich).
+                double vK = ks != null && ks.Jahresstunde == h ? ks.KuehlVorlaufC : double.NaN;
                 if (ks != null && ks.Jahresstunde == h && ks.KaelteschrankeGreift && kreis.Kaelteschranke != null)
                 {
                     _ak3HeizzeitanteilEcht = true;
                     try
                     {
                         Kaelteschranke ksr = kreis.Kaelteschranke;
-                        kreis.VorrangschaetzungPruefen(ks, ksr.Angebot(h, ksr.VorrangDerStunde).LeistungKw);
+                        kreis.VorrangschaetzungPruefen(ks, ksr.Angebot(h, ksr.VorrangDerStunde, vK).LeistungKw);
                     }
                     finally { _ak3HeizzeitanteilEcht = false; }
                 }
                 double d = weg.KaelteDeltaKwh[h];
-                kaskade.StundeRechnen(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]);
+                kaskade.StundeRechnen(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h], vK);
                 // Festlegung 14: der Rest der echten Kältestunde ist die Abweichung zur Schätzung der Kälteschranke.
                 double rest = kaskade.Rest_stuendlich[h];
                 kreis?.KaelteRestZaehlen(rest);

@@ -89,6 +89,13 @@ namespace WindowsFormsApplication1
         internal double KuehlVorlaufAnlageC { get; set; } = double.NaN;
 
         /// <summary>
+        /// KK3 (Entwurf KK 2.3): der kälteste erreichbare Erzeugervorlauf der Kälteseite [°C] — die Untergrenze der Kühlkurve
+        /// am gleitenden Erzeuger (<see cref="GebaeudeModellEingang.KuehlkurveUntergrenzeSetzen"/>). NaN = keiner; gesetzt nur
+        /// mit dem Kernschalter der Kühlkurve.
+        /// </summary>
+        internal double KuehlVorlaufErzeugerMinC { get; set; } = double.NaN;
+
+        /// <summary>
         /// <b>Die Schranke der Anlagenverfügbarkeit je Zone</b> (AK2, 5.3, 6.2) für den nächsten Aufruf — von
         /// der Fassade verteilt (Projekt → Gebäude → Zone) und auf den Rechenmaßstab dieses Wegs umgerechnet;
         /// Eintrag 0 gilt dem Gebäude ohne Zonenschleife. <c>null</c> = keine Schranke, der Bestand. Das Modul
@@ -304,11 +311,14 @@ namespace WindowsFormsApplication1
                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
                 Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
 
-            return GebaeudeModellEingang.Bauen(
+            GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(
                 gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
                 gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,
                 Anlagenkopplung, AnlagenVorlaufC, NennleistungSkalierung, KuehlVorlaufAnlageC,
                 konditionierung);
+            // KK3: am gleitenden Erzeuger die Untergrenze der Kühlkurve (nur mit wirksamer Kurve, sonst ohne Wirkung).
+            e.KuehlkurveUntergrenzeSetzen(KuehlVorlaufErzeugerMinC);
+            return e;
         }
 
         /// <summary>

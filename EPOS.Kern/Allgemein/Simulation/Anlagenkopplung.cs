@@ -83,6 +83,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Jahresstunde (AK3-K: Zuordnung zur Kältestunde danach).</summary>
         internal int Jahresstunde { get; set; } = -1;
+
+        /// <summary>
+        /// KK3: der Erzeugervorlauf der Kälteseite der Stunde [°C] — der kälteste verlangte Vorlauf der Lösung (gleitender
+        /// Erzeuger, Entwurf KK 2.3); NaN = der feste Vorlauf (ohne <see cref="Anlagenkopplung.KuehlRaumeinfluss"/>).
+        /// </summary>
+        internal double KuehlVorlaufC { get; set; } = double.NaN;
+
+        /// <summary>KK3: die größte Absenkung des Raumeinflusses der Kühlkurve, mit der die Lösung gerechnet wurde [K].</summary>
+        internal double KuehlAbsenkungK { get; set; }
     }
 
     /// <summary>
@@ -217,6 +226,14 @@ namespace WindowsFormsApplication1
         /// (Zeichen für Zeichen der Kreis ohne H2).
         /// </summary>
         internal Raumeinfluss Raumeinfluss { get; set; }
+
+        /// <summary>
+        /// <b>KK3 — Raumeinfluss der Kühlkurve und gleitender Erzeugervorlauf</b> (<see cref="WindowsFormsApplication1.KuehlRaumeinfluss"/>):
+        /// senkt je Gebäude den Kühlvorlauf im Rand jeder Zone, führt die Absenkung je Durchlauf nach (ΔK2) und fragt die
+        /// Kälteschranke am kältesten verlangten Vorlauf. Wirkt nur mit <see cref="Kaelteschranke"/>; <c>null</c> = fester
+        /// Kühlvorlauf (Schalter aus bitgleich).
+        /// </summary>
+        internal KuehlRaumeinfluss KuehlRaumeinfluss { get; set; }
 
         /// <summary>Stunden, in denen am Kreis ein Heizungspuffer steht und nichts aus ihm entnehmbar ist (Festlegung 22).</summary>
         internal int StundenSpeicherLeer { get; private set; }
@@ -357,9 +374,14 @@ namespace WindowsFormsApplication1
             if (Vorlaufkorrektur != null) v = Vorlaufkorrektur(h, v, null);
             Raumeinfluss h2 = Raumeinfluss;
             h2?.StundeBeginnen();
+            // KK3: Raumeinfluss der Kühlkurve und gleitender Erzeugervorlauf — nur mit Kälteschranke; ohne ihn NaN = fest.
+            KuehlRaumeinfluss k2 = Kaelteschranke != null ? KuehlRaumeinfluss : null;
+            k2?.StundeBeginnen();
+            double vK = k2 != null ? k2.StartC(h) : double.NaN;
             Stundenangebot s = Angebotsfunktion.Angebot(h, v, _erzeuger, _speicher, vorrang);
-            // AK3-K (4.2): das Kälteangebot am festen Kühlvorlauf — es hängt nicht am Durchlauf.
-            Kaeltestundenangebot? kaelte = Kaelteschranke?.Angebot(h, vorrang);
+            // AK3-K (4.2): das Kälteangebot am festen Kühlvorlauf — es hängt nicht am Durchlauf; KK3: am gleitenden
+            // Erzeugervorlauf vK (NaN = fest, Zeichen für Zeichen wie ohne Vorlauf).
+            Kaeltestundenangebot? kaelte = Kaelteschranke?.Angebot(h, vorrang, vK);
             // K3 (4.1): die nachgezogene Kälteschranke — ohne Naht gilt das Angebot am Stundenbeginn in jedem Durchlauf.
             Kaeltestundenangebot kaelteBasis = kaelte ?? default;
             if (kaelte != null && Kaeltekorrektur != null) kaelte = Kaeltekorrektur(h, kaelteBasis, null);
@@ -422,11 +444,15 @@ namespace WindowsFormsApplication1
                 kaelteBesucht = new HashSet<long> { BitConverter.DoubleToInt64Bits(kaelte.Value.LeistungKw) };
             double dPhiK = double.NaN, dSK = double.NaN;
             double[] heizW = new double[n];
+            // KK3: Pendelregel der Absenkung (Festlegung 8) — besuchte Absenkungen, Durchlauf 1 mit 0.
+            double vKEins = vK;
+            HashSet<long> k2Besucht = k2 != null ? new HashSet<long> { BitConverter.DoubleToInt64Bits(0.0) } : null;
             for (int k = 1; ; k++)
             {
                 if (GrenzeErreicht(zonenMax, k))
                     throw Fehler(h, k - 1, v, s, dTheta, dPhi, dV, dS, zonenMax > 1 && k <= HOECHSTZAHL, kaelte, dPhiK, dSK);
-                if (kaelteBesucht != null && k > 1)
+                k2?.DurchlaufBeginnen();
+                if ((kaelteBesucht != null || k2 != null) && k > 1)
                     kaelteVerteilt = Stundenverteilung.Verteilen(kaelte.Value.AlsVerfuegbarkeit(), _ids, _alle, kaelteSchluessel, kaelteZonen);
 
                 // Durchlauf k: S_k verteilt, je Gebäude der Schritt mit der Schranke (wie AK2 mit Schranke = S_k).
@@ -439,9 +465,11 @@ namespace WindowsFormsApplication1
                     Anlagenverfuegbarkeit[] kaelteAnteil = kaelteVerteilt?[i];
                     double faktor = g.Faktor;
                     int gi = i;
-                    jetzt[i] = Kopie(g.Stepper.Schritt(h, (int zone, int stunde, in Stundenrand r) =>
+                    jetzt[i] = Kopie(g.Stepper.Schritt(h, (int zone, int stunde, in Stundenrand r0) =>
                     {
                         Anlagenverfuegbarkeit a = anteil[zone < anteil.Length ? zone : anteil.Length - 1];
+                        // KK3: der Raumeinfluss der Kühlkurve senkt den Kühlvorlauf vor allen Schranken; ohne ihn derselbe Rand.
+                        Stundenrand r = k2 == null ? r0 : k2.Absenken(gi, zone, r0);
                         Stundenrand mit = h2 == null
                             ? r.MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC)
                             : h2.Anheben(gi, zone, r, a.VorlaufC).MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
@@ -452,6 +480,7 @@ namespace WindowsFormsApplication1
                     heizW[i] = HeizlastW(jetzt[i], faktor);
                 }
                 _anhebungLoesung = h2 != null ? h2.AnhebungMax() : 0.0;
+                _absenkungLoesung = k2 != null ? k2.AbsenkungMax() : 0.0;
 
                 int wechselnd = 0;
                 if (vorher != null)
@@ -464,7 +493,7 @@ namespace WindowsFormsApplication1
                 if (festgehalten)
                 {
                     StundenFestgehalten++;
-                    return Abschliessen(h, k, jetzt, heizW, s, v, true, kaelte);
+                    return KuehlAbschliessen(Abschliessen(h, k, jetzt, heizW, s, v, true, kaelte), k2, vK);
                 }
 
                 // K3 (4.1): die Kälteschranke des nächsten Durchlaufs aus der Lösung dieses Durchlaufs.
@@ -491,6 +520,38 @@ namespace WindowsFormsApplication1
                     kaelteBesucht.Add(bits);
                 }
                 else if (kaelte != null) dSK = 0.0;
+
+                // KK3 (Entwurf KK 2.2, 2.5): die Absenkung aus der Lösung DIESER Stunde (ΔK2) und die Kälteschranke am
+                // kältesten verlangten Vorlauf des Durchlaufs; ohne Raumeinfluss 0 und unverändert.
+                double dK2 = 0.0;
+                double vKNeu = vK;
+                if (k2 != null)
+                {
+                    dK2 = k2.Nachfuehren(jetzt);
+                    if (!double.IsNaN(k2.VerlangterC)) vKNeu = k2.VerlangterC;
+                    if (kaelteBesucht == null && !Gleich(vKNeu, vK))
+                    {
+                        kaelteNeu = Kaelteschranke.Angebot(h, vorrang, vKNeu);
+                        dSK = Math.Abs(kaelteNeu.Value.LeistungKw - kaelte.Value.LeistungKw) * 1000.0;
+                        kaelteGleich = kaelteNeu.Value.LeistungKw.Equals(kaelte.Value.LeistungKw) && kaelteNeu.Value.Grund == kaelte.Value.Grund;
+                    }
+                    long bits = BitConverter.DoubleToInt64Bits(k2.AbsenkungMax());
+                    if (dK2 > ABBRUCH_VORLAUF_K && StuetzstelleHalten && k2Besucht.Contains(bits))
+                    {
+                        // Pendeln der Absenkung (Pendelregel 2.4 wie AK3): ein letzter Durchlauf am ersten.
+                        k2.Festhalten();
+                        FallWechsel++;
+                        festgehalten = true;
+                        vorher = jetzt;
+                        v = vEins;
+                        s = sEins;
+                        kaelte = kaelteEins;
+                        vK = vKEins;
+                        stelleVorher = stelleEins;
+                        continue;
+                    }
+                    k2Besucht.Add(bits);
+                }
 
                 (double vNeu, _) = Kreis(jetzt, Faktoren());
                 if (double.IsNaN(vNeu)) vNeu = v;
@@ -525,16 +586,18 @@ namespace WindowsFormsApplication1
                 dS = Math.Abs(sNeu.LeistungKw - s.LeistungKw) * 1000.0;
                 // Gleiches Angebot ⇒ der nächste Schritt wäre derselbe (der Vorlauf wirkt nur über das Angebot).
                 bool gleich = sNeu.LeistungKw.Equals(s.LeistungKw) && Gleich(sNeu.VorlaufC, s.VorlaufC) && sNeu.Grund == s.Grund
-                              && dH2 == 0.0 && kaelteGleich;
+                              && dH2 == 0.0 && kaelteGleich && dK2 == 0.0;
                 bool klein = dV <= ABBRUCH_VORLAUF_K && dS <= ABBRUCH_SCHRANKE_W && vorher != null && wechselnd == 0
-                             && dH2 <= ABBRUCH_VORLAUF_K && (kaelteGleich || dSK <= ABBRUCH_KAELTESCHRANKE_W);
+                             && dH2 <= ABBRUCH_VORLAUF_K && (kaelteGleich || dSK <= ABBRUCH_KAELTESCHRANKE_W)
+                             && dK2 <= ABBRUCH_VORLAUF_K;
                 if (gleich || klein)
-                    return Abschliessen(h, k, jetzt, heizW, s, vNeu, false, kaelte);
+                    return KuehlAbschliessen(Abschliessen(h, k, jetzt, heizW, s, vNeu, false, kaelte), k2, vK);
 
                 vorher = jetzt;
                 v = vNeu;
                 s = sNeu;
                 kaelte = kaelteNeu;
+                vK = vKNeu;
             }
         }
 
@@ -543,7 +606,23 @@ namespace WindowsFormsApplication1
         {
             foreach (Kopplungsgebaeude g in _gebaeude) g.Stepper.Festschreiben(h);
             Raumeinfluss?.Festschreiben(_letzteLoesung);
+            if (Kaelteschranke != null) KuehlRaumeinfluss?.Festschreiben(_letzteLoesung);
         }
+
+        /// <summary>
+        /// KK3: trägt Erzeugervorlauf und Absenkung der Kälteseite in die Stunde ein — der kälteste verlangte Vorlauf der
+        /// Lösung, ohne kühlendes Gebäude der Vorlauf der Schranke <paramref name="vK"/>. Ohne Raumeinfluss unverändert.
+        /// </summary>
+        private Kopplungsstunde KuehlAbschliessen(Kopplungsstunde stunde, KuehlRaumeinfluss k2, double vK)
+        {
+            if (k2 == null) return stunde;
+            stunde.KuehlVorlaufC = double.IsNaN(k2.VerlangterC) ? vK : k2.VerlangterC;
+            stunde.KuehlAbsenkungK = _absenkungLoesung;
+            return stunde;
+        }
+
+        /// <summary>Die größte Absenkung (KK3), mit der die Lösung des letzten Durchlaufs gerechnet wurde [K].</summary>
+        private double _absenkungLoesung;
 
         private IReadOnlyList<Stundenergebnis>[] _letzteLoesung;
 

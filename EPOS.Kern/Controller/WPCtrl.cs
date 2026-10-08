@@ -586,6 +586,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der kälteste erreichbare Erzeugervorlauf des Kältekanals</b> [°C] (Entwurf KK 2.3, KK3) — die Untergrenze der
+        /// Kühlkurve, wenn der Erzeuger gleitet: je Wärmepumpe im Kühlbetrieb die kleinste Vorlauf-Stützstelle ihrer
+        /// Kühlkennlinie (ohne Kennlinie ihr <c>Kuehl_Vorlauf</c>), je Kältemaschine <c>Kaltwasser_Vorlauf_Min</c>, ohne ihn
+        /// die kleinste Kaltwasser-Stützstelle (ohne Kennlinie ihr <c>Kuehl_Vorlauf</c>) — dieselben Regeln wie
+        /// <see cref="Kuehlkennlinie"/> und <see cref="Kaeltemaschine.AusModell"/> am Stundenvorlauf; davon der kälteste.
+        /// NaN, wenn kein Erzeuger einen Wert trägt. Dialogfrei; NaN bei jedem Fehler.
+        /// </summary>
+        public static double KuehlVorlaufUntergrenzeDesKaeltekanals(int idProjekt)
+        {
+            if (idProjekt <= 0) return double.NaN;
+            DataTable wp = StilleDb.Tabelle(
+                "SELECT w.Kuehl_Vorlauf AS Vorlauf, " +
+                "(SELECT MIN(k.Vorlauf) FROM Tab_Kenndaten_Kuehlung k WHERE k.ID_WP = w.ID) AS Stuetzwert " +
+                "FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ? AND w.Kuehlbetrieb = 1",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.WP_TYP));
+            DataTable km = StilleDb.Tabelle(
+                "SELECT k.Kuehl_Vorlauf AS Vorlauf, k.Kaltwasser_Vorlauf_Min AS Stuetzwert, " +
+                "(SELECT MIN(c.Kaltwassertemperatur) FROM Tab_Kenndaten_Kaeltemaschine c WHERE c.ID_Kaeltemaschine = k.ID) AS Kennlinie " +
+                "FROM Tab_Energieanlagen a JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KM_TYP));
+            double kaeltester = double.NaN;
+            void Nehmen(object v)
+            {
+                if (v == null || v == DBNull.Value) return;
+                double wert = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture);
+                if (double.IsNaN(wert) || double.IsInfinity(wert)) return;
+                if (double.IsNaN(kaeltester) || wert < kaeltester) kaeltester = wert;
+            }
+            if (wp != null)
+                foreach (DataRow r in wp.Rows)
+                    Nehmen(r["Stuetzwert"] != DBNull.Value ? r["Stuetzwert"] : r["Vorlauf"]);
+            if (km != null)
+                foreach (DataRow r in km.Rows)
+                    Nehmen(r["Stuetzwert"] != DBNull.Value ? r["Stuetzwert"]
+                           : r["Kennlinie"] != DBNull.Value ? r["Kennlinie"] : r["Vorlauf"]);
+            return kaeltester;
+        }
+
+        /// <summary>
         /// Fuehrt das Projekt zu dieser Geraete-Id eine eigene KOPIE?
         /// (<c>Tab_WP.ID = ? AND ID_Projekt = ?</c>)
         /// </summary>
