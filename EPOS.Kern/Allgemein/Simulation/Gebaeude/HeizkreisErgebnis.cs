@@ -342,7 +342,8 @@ namespace WindowsFormsApplication1
             kk.AuslegungRaumC = k.AuslegungRaumC;
             kk.ReglerbandK = e.ReglerbandK;
             kk.Vorlaufquelle = e.KuehlVorlaufquelle;
-            kk.VorlaufFestC = e.KuehlVorlaufFestC;
+            // KK (Festlegung 12): mit Kühlkurve weist das Ergebnis den gerechneten Vorlauf aus (Mittel der Kühlstunden).
+            kk.VorlaufFestC = e.KuehlkurveWirksam ? kk.VorlaufMittelC : e.KuehlVorlaufFestC;
             kk.VorlaufQuelleC = e.KuehlVorlaufQuelleC;
             kk.VorlaufGekappt = e.KuehlVorlaufGekappt;
             kk.VorlaufgrenzeC = e.KuehlVorlaufgrenzeC;
@@ -380,7 +381,7 @@ namespace WindowsFormsApplication1
             kk.AuslegungRaumC = k.AuslegungRaumC;
             kk.ReglerbandK = g.ReglerbandK;
             kk.Vorlaufquelle = g.Vorlaufquelle;
-            kk.VorlaufFestC = g.VorlaufFestC;
+            kk.VorlaufFestC = g.Kuehlkurve != null ? kk.VorlaufMittelC : g.VorlaufFestC;
             kk.VorlaufQuelleC = g.VorlaufQuelleC;
             kk.VorlaufGekappt = g.VorlaufGekappt;
             kk.VorlaufgrenzeC = g.VorlaufgrenzeC;

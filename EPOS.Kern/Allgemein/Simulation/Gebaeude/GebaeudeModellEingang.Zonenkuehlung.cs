@@ -263,6 +263,7 @@ namespace WindowsFormsApplication1
             double erzeuger = Endlich(kuehlErzeugerMinC) ? kuehlErzeugerMinC
                             : Endlich(kuehlVorlaufAnlageC) ? kuehlVorlaufAnlageC : double.NaN;
             kreis.Kuehlkurve = kurve;
+            kreis.VorlaufFestC = double.NaN;
             kreis.KurveErzeugerC = erzeuger;
             kreis.RaumeinflussKK = kK;
             kreis.SollwertC = new double[8760];

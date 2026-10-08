@@ -121,6 +121,8 @@ namespace WindowsFormsApplication1
             bool ak3Energie = Ak3Schema.ErgebnisspaltenVorhanden();
             // AK3-K (Ak3KSchema): die Kennzahlen der Zonensperre und der Kaelteseite im Kreis - ebenso.
             bool ak3kEnergie = Ak3KSchema.ErgebnisspaltenVorhanden();
+            // KK (KuehlkurveSchema, Schritt 202): die Kennzahlen der Kühlkurve - ebenso.
+            bool kuehlkurveEnergie = KuehlkurveSchema.ErgebnisspaltenVorhanden();
             // KU3-6a (Schritt 187): die Zaehler der freien Kuehlung an beiden Ergebnistabellen der Waermepumpe -
             // ebenso vor der Transaktion gefragt; auf einer Datenbank davor bleiben die Zeilen, wie sie waren.
             bool freieKuehlungWp = FreieKuehlungSoleSchema.ErgebnisspaltenVorhanden();
@@ -271,10 +273,11 @@ namespace WindowsFormsApplication1
                                 : "") +
                             (komfortEnergie ? ", " + string.Join(", ", AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) : "") +
                             (ak3Energie ? ", " + string.Join(", ", Ak3Schema.SPALTEN_ERGEBNIS) : "") +
-                            (ak3kEnergie ? ", " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            (ak3kEnergie ? ", " + string.Join(", ", Ak3KSchema.SPALTEN_ERGEBNIS) : "") +
+                            (kuehlkurveEnergie ? ", " + string.Join(", ", KuehlkurveSchema.SPALTEN_ERGEBNIS) : "") + ") " +
                             "VALUES (?,?,?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?,?,?" + (kuehlkreisEnergie ? ", ?,?,?" : "") +
                             (komfortEnergie ? ", ?,?,?,?,?,?" : "") + (ak3Energie ? ", ?,?,?,?,?,?" : "") +
-                            (ak3kEnergie ? ", ?,?,?,?,?,?,?" : "") + ")";
+                            (ak3kEnergie ? ", ?,?,?,?,?,?,?" : "") + (kuehlkurveEnergie ? ", ?,?,?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = eId });
@@ -333,6 +336,14 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@k3u", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3UmschaltStundenH) });
                                 p.Add(new DbParam("@k3r", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.Ak3KaelterestStundenH) });
                                 p.Add(new DbParam("@k3m", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Ak3KaelterestMwh) });
+                            }
+                            // KK (KuehlkurveSchema, Festlegung 12): NULL ohne wirksame Kühlkurve; Reihenfolge wie
+                            // KuehlkurveSchema.SPALTEN_ERGEBNIS.
+                            if (kuehlkurveEnergie)
+                            {
+                                p.Add(new DbParam("@kkm", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlkurveVorlaufMittelC) });
+                                p.Add(new DbParam("@kka", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.KuehlkurveAbsenkungKh) });
+                                p.Add(new DbParam("@kkg", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Energiebedarf.KuehlkurveVorlaufgrenzeStundenH) });
                             }
                             v.Ausfuehren(sql, p.ToArray());
                         }
@@ -1153,6 +1164,10 @@ namespace WindowsFormsApplication1
                 m.Energiebedarf.Ak3UmschaltStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_UMSCHALT_STUNDEN);
                 m.Energiebedarf.Ak3KaelterestStundenH = GanzOderNull(re, Ak3KSchema.SPALTE_KAELTEREST_STUNDEN);
                 m.Energiebedarf.Ak3KaelterestMwh = DN(re, Ak3KSchema.SPALTE_KAELTEREST_MWH);
+                // KK (KuehlkurveSchema): dieselbe Regel; eine fehlende Spalte liest null.
+                m.Energiebedarf.KuehlkurveVorlaufMittelC = DN(re, KuehlkurveSchema.SPALTE_VORLAUF_MITTEL);
+                m.Energiebedarf.KuehlkurveAbsenkungKh = DN(re, KuehlkurveSchema.SPALTE_ABSENKUNG_KH);
+                m.Energiebedarf.KuehlkurveVorlaufgrenzeStundenH = GanzOderNull(re, KuehlkurveSchema.SPALTE_VORLAUFGRENZE_STUNDEN);
             }
 
             // KU3-4 (Schemaschritt 183): das Ergebnis je Kaeltemaschine; vor dem Schritt fehlt die Tabelle.

@@ -586,6 +586,18 @@ namespace WindowsFormsApplication1
         public double? Ak3KaelterestMwh;
 
         /// <summary>
+        /// <c>Kuehlkurve_Vorlauf_Mittel_C</c> [°C] (Entwurf KK, Festlegung 12; Schritt 202): der mittlere verlangte Kühlvorlauf
+        /// der Kühlstunden im Kreis mit Kühlkurve. NULL ohne wirksame Kühlkurve.
+        /// </summary>
+        public double? KuehlkurveVorlaufMittelC;
+
+        /// <summary><c>Kuehlkurve_Absenkung_Kh</c> [Kh]: Summe der Absenkung durch den Raumeinfluss der Kühlkurve.</summary>
+        public double? KuehlkurveAbsenkungKh;
+
+        /// <summary><c>Kuehlkurve_Vorlaufgrenze_Stunden</c> [h]: Kühlstunden mit der Kurve am unteren Rand (Vorlaufgrenze).</summary>
+        public int? KuehlkurveVorlaufgrenzeStundenH;
+
+        /// <summary>
         /// <b>Komfort und Restbedarf nebeneinander</b> (Anlagenkopplung 5.5, F8): Wo Komfortstunden ausgewiesen
         /// werden, steht der Restbedarf daneben — mit Kopplung ist ein Teil der Unterdeckung eine gesunkene
         /// Raumtemperatur. <c>null</c>, solange keine Komfortstunden erhoben sind.

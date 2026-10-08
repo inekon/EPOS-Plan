@@ -313,6 +313,23 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzahlen der Kühlkurve in der Projektzeile</b> (Entwurf KK, Festlegung 12; Spalten
+        /// <see cref="KuehlkurveSchema.SPALTEN_ERGEBNIS"/>): der mittlere verlangte Kühlvorlauf der Kühlstunden, die Summe der
+        /// Absenkung durch den Raumeinfluss und die Stunden an der Vorlaufgrenze — nur, wenn der Kreis eine wirksame Kühlkurve
+        /// rechnete (<see cref="Anlagenkopplung.KuehlRaumeinfluss"/>); sonst bleibt die Seite NULL und die Zeile wie vorher.
+        /// </summary>
+        internal static void KuehlkurveSpaltenSetzen(ErgebnisEnergiebedarfModel e, Anlagenkopplung kreis)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            KuehlRaumeinfluss k2 = kreis?.KuehlRaumeinfluss;
+            if (k2 == null || kreis.Stunden <= 0) return;
+            double mittel = k2.KuehlVorlaufMittelC;
+            e.KuehlkurveVorlaufMittelC = double.IsNaN(mittel) ? (double?)null : mittel;
+            e.KuehlkurveAbsenkungKh = k2.AbsenkungSummeKh;
+            e.KuehlkurveVorlaufgrenzeStundenH = k2.StundenAnVorlaufgrenze;
+        }
+
+        /// <summary>
         /// <b>Die Spalten des Schemaschritts 186 in der Projektzeile</b> (Anlagenkopplung 8.3; AK2-2a, AK2-2b): die
         /// Stunden an der Schranke des Fahrplans und die Komfortkennzahlen des Projekts (5.5, F8, F9). Erhoben wird
         /// für jedes Projekt, dessen Fahrplan lief — Anlagenkopplung ab AK1 und mindestens ein gekoppeltes Gebäude
@@ -515,6 +532,9 @@ namespace WindowsFormsApplication1
             // Zeile wie vorher (SpaltenNurMitWert).
             Ak3KSpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.ZonensperreProjekt(), simulation_Waermebedarf.Ak3?.Kreis,
                               simulation_Waermebedarf.Ak3 != null);
+
+            // KK (Festlegung 12): die Kennzahlen der Kühlkurve - nur mit wirksamer Kurve im Kreis, sonst NULL (SpaltenNurMitWert).
+            KuehlkurveSpaltenSetzen(m.Energiebedarf, simulation_Waermebedarf.Ak3?.Kreis);
 
             // ANLAGENKOPPLUNG, KAELTESEITE (E37, KAK-S3): dieselbe Regel - nur, wenn ein Gebaeude
             // kuehlgekoppelt gerechnet hat, sonst NULL.

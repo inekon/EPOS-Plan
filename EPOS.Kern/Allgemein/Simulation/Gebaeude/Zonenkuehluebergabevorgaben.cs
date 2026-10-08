@@ -141,8 +141,8 @@ namespace WindowsFormsApplication1
         internal double ReglerbandK { get; init; }
         /// <summary>Woher der Kühlvorlauf kommt.</summary>
         internal Vorlaufquelle Vorlaufquelle { get; init; }
-        /// <summary>Der feste Kühlvorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze).</summary>
-        internal double VorlaufFestC { get; init; } = double.NaN;
+        /// <summary>Der feste Kühlvorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze); NaN mit Kühlkurve (die Reihe <see cref="VorlaufC"/> gilt).</summary>
+        internal double VorlaufFestC { get; set; } = double.NaN;
         /// <summary>Der Kühlvorlauf der Quelle vor dem Hochmischen [°C].</summary>
         internal double VorlaufQuelleC { get; init; } = double.NaN;
         /// <summary>Steht der Vorlauf an der Vorlaufgrenze, weil die Quelle kälter liefert?</summary>
