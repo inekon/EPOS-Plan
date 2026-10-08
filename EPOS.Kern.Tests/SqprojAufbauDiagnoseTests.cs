@@ -49,6 +49,10 @@ namespace EPOS.Kern.Tests
             SqprojStand stand = a.ProjektdateiLesen(pd, 0);
             Assert.False(stand.Abgelehnt, stand.Ablehnung?.ToString());
             Assert.True(stand.Abbild.BauteileGelesen);
+            // Die Standprüfung (E108) schlägt an dieser Datei an; diese Diagnose hält die Rangfolge E98 fest,
+            // also die Wahl „IFC“ ausdrücklich treffen. Die Wahl „Projektdatei“ prüft SqprojStandpruefungDiagnoseTests.
+            if (stand.Standpruefung?.Angeschlagen == true)
+                Assert.True(a.AufbauquelleWaehlen(Aufbauquelle.Ifc));
             return a;
         }
 
