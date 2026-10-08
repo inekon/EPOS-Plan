@@ -132,3 +132,46 @@ Sitzung IFC: Befund 4.1 (Orientierung bei Mengensatz und Raumgrenzen); Hinweis 4
 `dotnet build WP-Plan.Kern.slnf -c Release` 0 Fehler; `EPOS.Kern.Tests` mit dem Filter der Abnahme (G5, Ifc, GebaeudeImport,
 Koerper, Dokumentationswachen, Ordnungswache) 753 Fälle, 748 grün, 5 übersprungen, 0 rot; die Testdatenbank im Repositorium
 unverändert, gerechnet nur in Arbeitskopien.
+
+## 7 Nachabnahme (#823)
+
+Stand: Zweig mit #823 (Befund 4.1 behoben: bei Mengensatz bleibt die Fläche, Azimut und Neigung kommen aus der flächengewichteten
+Außennormale der Raumgrenzen, sonst aus dem Körper). Die Wache rechnet die Probe mit Mengensätzen jetzt **ohne** Ergänzung der
+Orientierung; die Ergänzung ist aus `G5AbnahmeRechenwegTests` entfernt.
+
+`ifc4_g5_kleinhaus_mit_mengen.ifc`, wie gespeichert (`Tab_Bauteil` der Arbeitskopie); der Zonenvorschlag läuft ohne Ablehnung durch.
+
+| Zone | Bauteil | Art | Fläche m² | Neigung | Azimut | Herkunft |
+|---|---|---|---|---|---|---|
+| Kellergeschoss | Bodenplatte | Bodenplatte | 50,76 | 180° | — | RAUMGRENZE |
+| Kellergeschoss | Wand Süd / Nord KG | Außenwand (Erdreich) | je 20,68 | 90° | 180° / 0° | RAUMGRENZE |
+| Kellergeschoss | Wand West / Ost KG | Außenwand (Erdreich) | je 11,88 | 90° | 270° / 90° | RAUMGRENZE |
+| Erdgeschoss | Kellerdecke | Decke | 50,76 | 180° | — | RAUMGRENZE |
+| Erdgeschoss | Wand Süd EG | Außenwand | 19,90 | 90° | 180° | RAUMGRENZE |
+| Erdgeschoss | Fenster Wohnen / Küche | Fenster | 1,80 / 1,20 | 90° | 180° (Wand Süd) | MENGENSATZ |
+| Erdgeschoss | Wand Nord EG | Außenwand | 22,90 | 90° | 0° | RAUMGRENZE |
+| Erdgeschoss | Wand West / Ost EG | Außenwand | je 13,50 | 90° | 270° / 90° | RAUMGRENZE |
+| Erdgeschoss | Geschossdecke | Decke | 50,76 | 0° | — | RAUMGRENZE |
+| Obergeschoss | Wand Süd OG | Außenwand | 9,40 | 90° | 180° | RAUMGRENZE |
+| Obergeschoss | Wand Nord OG | Außenwand | 47,47 | 90° | 0° | RAUMGRENZE |
+| Obergeschoss | Wand West / Ost OG | Außenwand | 16,335 / 15,135 | 90° | 270° / 90° | RAUMGRENZE |
+| Obergeschoss | Fenster Schlafen | Fenster | 1,20 | 90° | 90° (Wand Ost OG) | MENGENSATZ |
+| Obergeschoss | Dachplatte | Dach | 63,45 | 36,87° | 180° | RAUMGRENZE |
+
+- **A2:** alle Außenwände senkrecht auf den Achsen, die Fenster mit der Richtung ihrer Wand, das Pultdach 3 : 4 mit 36,87° nach Süd —
+  erfüllt.
+- **B3:** die Dachneigung kommt bei Mengensatz aus den Raumgrenzen und trifft den Körper — erfüllt.
+- **Gleich dem Körperweg:** 19 Zeilen, in jeder Zeile Bauteil, Art, Randbedingung, Neigung und Azimut gleich, Fläche bis auf
+  1,4e-14 m²; Heizwärme 10,090 MWh/a und Heizlast 6,873 kW gleich dem Körperweg (0,0 %), der Rückfall ohne Raumzuordnung
+  +30,1 % / +8,1 %.
+- **Restunterschiede im gelesenen Abbild, ohne Ergebniswirkung, benannt in der Wache:** (1) die Dachneigung der Raumgrenzen steht auf
+  sechs Stellen gerundet (36,869898° gegen 36,8698976…° des Körpers, 3,5e-7°) — gehalten mit fünf Stellen, gespeichert gleich;
+  (2) die Innenwand trägt keinen Azimut (keine Außenseite, wie am Körperweg), ihr Körper 90° — sie wird nicht als Außenbauteil
+  gespeichert.
+- **Hinweis 4.2 geklärt:** Die Ostwand der Gegenprobe ist ein L mit einem Flügel ohne Raum dahinter; die Abweichung von 17,5 % ist
+  echt, die Zuordnung vollständig, die Meldung richtig.
+
+Wache: `G5AbnahmeRechenwegTests` 8 Fälle (neu `B3_Orientierung_im_Abbild_mit_Mengensatz_gleich_Koerper`; der Jahreslauf hält A2, B3
+und die Gleichheit mit dem Körperweg je Zeile).
+
+**Urteil: A1–A6 erfüllt, G5 am Rechenweg abgenommen.**
