@@ -1,6 +1,6 @@
 # Protokoll N2/N3 — Teilflächen, Öffnungen über zwei Räume, Hanglage (08.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#820**. Commits: `ebcc1a94b`, `79171c15a`, `7f9955fcf`, `af4a61c7d`; Merge in die Integration `8212a008a`, Merge origin `618496530`.
+**Sitzung:** Gebäudesimulation, Statuszeile **#822**. Commits: `ebcc1a94b`, `79171c15a`, `7f9955fcf`, `af4a61c7d`; Merge in die Integration `8212a008a`, Merge origin `618496530`.
 **Entscheid:** Anwenderwunsch, den IFC-Körperweg für Gebäude ohne Raumgrenzen zu vervollständigen.
 
 ## 1 Anlass
@@ -18,7 +18,7 @@ Bauteilflächen je Raum aus Körpern ergaben eine Zeile je Bauteil, auch bei geg
 
 Tests `TeilflaechenTests` (5), `HanglageTests` (8). Keine Erwartung geändert; Heizwärme der Kleinhausprobe unverändert 10,09 MWh/a.
 
-## 4 Gate 819
+## 4 Gate 821
 
 auf `e3ad59f20` (64 min): KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 830, EPOS.Kern 12 272 mit 6 übersprungen, 0 rot; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 24/24 gegen `2026-10-07_R43_Kaelteseite_AK3K` PASS (8 073 156 Werte), 759/759 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 522 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
