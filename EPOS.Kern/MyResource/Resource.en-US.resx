@@ -12409,14 +12409,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
     <value>Service life (device data):</value>
   </data>
-  <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>This record comes from the delivery catalogue and is write-protected.
-
-Overwrite it anyway?</value>
-  </data>
-  <data name="BHKWK_TITEL_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>Write-protected record</value>
-  </data>
   <data name="BHKWK_MSG_GESPEICHERT" xml:space="preserve">
     <value>Record saved</value>
   </data>

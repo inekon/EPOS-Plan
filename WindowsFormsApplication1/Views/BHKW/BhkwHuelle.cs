@@ -90,8 +90,8 @@ namespace WindowsFormsApplication1
                 ["Modus"] = neu ? KatalogModus.Neu : KatalogModus.Bearbeiten,
                 ["Brennstoffe"] = Brennstoffe(ctrl),
 
-                ["Ueberschreiben"] = new Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>(
-                    (d, schutz) => Uebersetzen(BHKWStammCtrl.Ueberschreiben(NachModell(d), schutz))),
+                ["Ueberschreiben"] = new Func<BhkwKatalogDaten, KatalogSpeicherErgebnis>(
+                    d => Uebersetzen(BHKWStammCtrl.Ueberschreiben(NachModell(d)))),
 
                 ["Anlegen"] = new Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>(
                     (d, n) => Uebersetzen(BHKWStammCtrl.Anlegen(NachModell(d), n))),
@@ -172,13 +172,6 @@ namespace WindowsFormsApplication1
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
-                ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
-                ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
-                ["FrageSchreibschutz"] = Text_("BHKWK_FRAGE_SCHREIBSCHUTZ",
-                    "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt." +
-                    Environment.NewLine + Environment.NewLine +
-                    "Soll er trotzdem überschrieben werden?"),
-                ["TitelSchreibschutz"] = Text_("BHKWK_TITEL_SCHREIBSCHUTZ", "Schreibgeschützter Datensatz"),
                 ["MeldungZahlUngueltig"] = Text_("HZKK_MSG_ZAHL",
                     "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt)."),
                 ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!")

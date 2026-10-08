@@ -4659,17 +4659,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
-        ///
-        ///Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string BHKWK_FRAGE_SCHREIBSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_FRAGE_SCHREIBSCHUTZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
         /// </summary>
         public static string BHKWK_GRP_BEZEICHNUNG {
@@ -5062,15 +5051,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_TITEL {
             get {
                 return ResourceManager.GetString("BHKWK_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string BHKWK_TITEL_SCHREIBSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_TITEL_SCHREIBSCHUTZ", resourceCulture);
             }
         }
         

@@ -155,28 +155,18 @@ namespace WindowsFormsApplication1
             return val != null && val != DBNull.Value && Convert.ToBoolean(val);
         }
 
-        /// <summary>
-        /// Hebt den ReadOnly-Schutz fuer genau den naechsten <see cref="Update"/>-Aufruf auf.
-        /// Nur setzen, wenn der Anwender das Ueberschreiben eines Katalogsatzes ausdruecklich
-        /// bestaetigt hat (siehe Form_DBBHKW); wird danach selbsttaetig zurueckgesetzt.
-        /// </summary>
-        public bool SchreibschutzUebergehen = false;
-
         public bool Update()
         {
             // ReadOnly-Schutz: schreibgeschuetzte Stammdatensaetze duerfen nicht geaendert werden.
             // Nur bei Standalone-Aufruf pruefen (kein externer Transaktions-Connection gesetzt),
             // um Sperrkonflikte mit einer bereits laufenden Transaktion zu vermeiden. Bei
             // transaktionalen Neuanlagen ist der Datensatz ohnehin frisch (ReadOnly = false).
-            if (!SchreibschutzUebergehen && Vorgang == null && IsReadOnly(model.m_szBezeichner))
+            if (Vorgang == null && IsReadOnly(model.m_szBezeichner))
             {
                 Meldung.Hinweis("Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.",
                     "Schreibgeschützt");
                 return false;
             }
-
-            // Die Freigabe gilt nur fuer diesen einen Aufruf.
-            SchreibschutzUebergehen = false;
 
             try
             {
@@ -613,13 +603,12 @@ namespace WindowsFormsApplication1
         /// „Überschreiben" (<c>Form_DBBHKW.btn_Überschreiben_Click</c>, Z. 255).
         /// </summary>
         /// <param name="daten">Der Feldsatz aus der Maske.</param>
-        /// <param name="schreibschutzUebergehen">
-        /// <c>true</c> hebt den ReadOnly-Schutz fuer GENAU diesen Schreibvorgang auf. Der
-        /// Vorlaeufer setzte das nach einer ausdruecklichen Ja/Nein-Rueckfrage; die
-        /// Rueckfrage selbst steht jetzt in der Komponente (<c>Rueckfrage</c>-Baustein),
-        /// die Antwort kommt hier an.
-        /// </param>
-        public static SpeicherErgebnis Ueberschreiben(BHKWStammModel daten, bool schreibschutzUebergehen)
+        /// <remarks>
+        /// Ein gesperrter Satz (<c>ReadOnly</c>, das Schloss) wird NIE ueberschrieben - auch
+        /// nicht nach einer Rueckfrage. Der Weg fuehrt ueber „Schloss aufheben…“ in der
+        /// Verwaltung (<see cref="SchlossSetzen"/>); die Ablehnung nennt ihn.
+        /// </remarks>
+        public static SpeicherErgebnis Ueberschreiben(BHKWStammModel daten)
         {
             if (daten == null)
                 return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
@@ -631,11 +620,13 @@ namespace WindowsFormsApplication1
 
             try
             {
-                var ctrl = new BHKWStammCtrl { model = daten, SchreibschutzUebergehen = schreibschutzUebergehen };
+                var ctrl = new BHKWStammCtrl { model = daten };
 
-                // Ohne diese Freigabe prueft Update() selbst erneut auf ReadOnly. Es
-                // meldet den Grund ueber Meldung.* - hier zaehlt nur, ob geschrieben
-                // wurde; die Oberflaeche sagt es danach.
+                // Das Schloss: benannt ablehnen, bevor Update() es ueber Meldung.* tut.
+                if (ctrl.IsReadOnly(daten.m_szBezeichner))
+                    return new SpeicherErgebnis(false, Text("ADM_SCHLOSS_ERST_AUFHEBEN",
+                        "Auslieferungssatz – nur lesen. Zum Bearbeiten zuerst „Schloss aufheben...“ wählen."), "");
+
                 if (!ctrl.Update())
                     return new SpeicherErgebnis(false, Text("BHKWK_MSG_NICHT_GESCHRIEBEN",
                         "Der Datensatz konnte nicht überschrieben werden."), "");
