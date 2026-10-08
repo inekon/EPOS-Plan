@@ -177,6 +177,8 @@ Die Kurve hat zwei Punkte. Solange die Außenluft nicht über dem Kühlsollwert 
 
 Die Vorgaben sind Vorgaben von EPOS-Plan, keine Normwerte. Unter den Feldern nennt eine Zeile Fußpunkt, Auslegungsvorlauf und Auslegungs-Außentemperatur, mit denen gerechnet wird. Die Wärmepumpe im Kühlbetrieb und die Kältemaschine rechnen in jeder Stunde am Vorlauf der Kurve, die [[Programm Dokumentation/Kühlung#kaelteschranke|Kälteschranke]] ebenso. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' wirkt die Kurve nicht, es gilt der feste Kaltwasser-Vorlauf. Mit mehreren Zonen gilt die Kurve für den Kaltwasserkreis des Gebäudes am niedrigsten Kühlsollwert der gekühlten Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]).
 
+Hat ein Lauf mit Kühlkurve gerechnet, zeigen das Ergebnis des Gebäudes und der Bericht (Tafel „Kühlkurve“) drei Kennzahlen des Projekts: den mittleren verlangten Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss in Kelvinstunden und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand.
+
 == Komfortstunden ==
 {{Anker|komfort}}
 
