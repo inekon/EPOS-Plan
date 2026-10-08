@@ -14,6 +14,10 @@ namespace EPOS.Kern.Tests
     /// eigenem Mengensatz 8 m², ihre Teile ohne Darstellung heißen „Platte B1-1“ (40 m²) und „Platte B1-2“ (32 m²) — der
     /// Körper deckt die ganze Platte, die Mengensätze je Teil. „Platte C“ ist ein Kasten 5 × 8 m (40 m²) mit 4 m² im
     /// Mengensatz; die übrige Gruppe „Platte X-1“ (30 m²) deckt ihn nicht (Gegenprobe).</item>
+    /// <item><b>Gleichnamige Teile einer anderen Klasse</b> (wie „Fremdnamige Teile“): „Platte D“ (Körper 80 m², Mengensatz
+    /// 8 m²) mit dem Dachteil „Platte D-1“ (30 m²) und der Platte „Platte D-2“ (<c>IfcSlab</c>, 42 m²) — zusammen genau der
+    /// Körper. „Platte E“ (Körper 40 m², 4 m²) mit „Platte E-1“ (6 m²) und „Platte E-2“ (<c>IfcSlab</c>, 50 m²), die den
+    /// Körper überdecken würde (Gegenprobe).</item>
     /// <item><b>Satteldach aus Platten mit Mengensatz am Dach</b> (ein Geschoss, keine Raumgrenzen): Räume, Traufe, First
     /// und Neigung 3 : 4 wie <see cref="TEILFLAECHEN_SATTEL"/>; das <c>IfcRoof</c> „Dach“ ohne eigene Darstellung trägt den
     /// Mengensatz 75 m² und U = 0,25 W/(m²·K) und über <c>IfcRelAggregates</c> die Platten „Dachfläche Süd“ und „Dachfläche Nord“ mit je einem
@@ -27,6 +31,7 @@ namespace EPOS.Kern.Tests
     internal static partial class IfcProbenErzeuger
     {
         internal const string PRUEFPUNKT_FREMDTEILE = "ifc4_pruefpunkt_fremdteile.ifc";
+        internal const string PRUEFPUNKT_FREMDKLASSE = "ifc4_pruefpunkt_fremdklasse.ifc";
         internal const string PRUEFPUNKT_SATTEL_MENGE = "ifc4_pruefpunkt_satteldach_menge.ifc";
         internal const string PRUEFPUNKT_SATTEL_U_GLEICH = "ifc4_pruefpunkt_satteldach_u_gleich.ifc";
         internal const string PRUEFPUNKT_SATTEL_U_VERSCHIEDEN = "ifc4_pruefpunkt_satteldach_u_verschieden.ifc";
@@ -39,6 +44,7 @@ namespace EPOS.Kern.Tests
             => new SortedDictionary<string, byte[]>(StringComparer.Ordinal)
             {
                 [PRUEFPUNKT_FREMDTEILE] = Fremdteilhaus(PRUEFPUNKT_FREMDTEILE),
+                [PRUEFPUNKT_FREMDKLASSE] = Fremdklassenhaus(PRUEFPUNKT_FREMDKLASSE),
                 [PRUEFPUNKT_SATTEL_MENGE] = SatteldachMitMenge(PRUEFPUNKT_SATTEL_MENGE, 0.25, 0.25, 0.25, null, null),
                 [PRUEFPUNKT_SATTEL_U_GLEICH] = SatteldachMitMenge(PRUEFPUNKT_SATTEL_U_GLEICH, null, 0.2, 0.2, null, null),
                 [PRUEFPUNKT_SATTEL_U_VERSCHIEDEN] = SatteldachMitMenge(PRUEFPUNKT_SATTEL_U_VERSCHIEDEN, null, 0.2, 0.3, 50.0, 25.0),
@@ -64,6 +70,28 @@ namespace EPOS.Kern.Tests
                 IIfcRoof c = b.Flachdachteil(s, "Platte C", 3000, 4, null);
                 b.Koerper(c, "SurfaceModel", b.Kasten(12000, 0, 0, 17000, 8000, 300));
                 b.Flachdachteil(s, "Platte X-1", 3000, 30, null);
+                return b.Speichern();
+            }
+        }
+
+        private static byte[] Fremdklassenhaus(string datei)
+        {
+            using (var b = new Bau(XbimSchemaVersion.Ifc4, datei))
+            {
+                b.Anfang(new[] { 0.0, 1.0, 0.0 }, karte: false);
+                IIfcBuilding g = b.Gebaeude("Plattenhaus", null);
+                IIfcBuildingStorey s = b.Geschoss(g, "Erdgeschoss", 0);
+                IIfcSpace r = b.Raum(s, "0.01", "Halle", 0, 0, null, null, null, beheizt: true);
+                b.Grundriss(r, (0, 0), (20000, 0), (20000, 12000), (0, 12000));
+
+                IIfcRoof d = b.Flachdachteil(s, "Platte D", 3000, 8, null);
+                b.Koerper(d, "SurfaceModel", b.Kasten(0, 0, 0, 10000, 8000, 300));
+                b.Flachdachteil(s, "Platte D-1", 3000, 30, null);
+                b.Platte(s, "Platte D-2", IfcSlabTypeEnum.ROOF, true, null, 42.0, new IIfcSpace[0], IfcInternalOrExternalEnum.EXTERNAL);
+                IIfcRoof e = b.Flachdachteil(s, "Platte E", 3000, 4, null);
+                b.Koerper(e, "SurfaceModel", b.Kasten(12000, 0, 0, 17000, 8000, 300));
+                b.Flachdachteil(s, "Platte E-1", 3000, 6, null);
+                b.Platte(s, "Platte E-2", IfcSlabTypeEnum.ROOF, true, null, 50.0, new IIfcSpace[0], IfcInternalOrExternalEnum.EXTERNAL);
                 return b.Speichern();
             }
         }

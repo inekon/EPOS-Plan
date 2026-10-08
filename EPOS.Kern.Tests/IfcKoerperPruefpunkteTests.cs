@@ -15,6 +15,8 @@ namespace EPOS.Kern.Tests
     /// Teil, und tragen die Teile ohne Darstellung einen anderen Namensstamm, wird der Körper gegen den eigenen Mengensatz und
     /// die eine passende Teilgruppe verglichen — keine falsche Abweichung; die Flächen bleiben die der Mengensätze. Ohne
     /// passende Gruppe bleibt die Warnung (Gegenprobe).</item>
+    /// <item><b>Gleichnamige Teile einer anderen Klasse:</b> Bleiben die gleichnamigen Teile unter dem Körper, zählen die
+    /// gleichnamigen Teile einer anderen Klasse dazu, wenn sie den Körper nicht überdecken (Gegenprobe).</item>
     /// <item><b>Dach mit Mengensatz, Körper nur in den Platten:</b> Fläche aus dem Mengensatz des Dachs, Neigung und Azimut je
     /// Platte aus dem Körper, Körpervergleich ohne Abweichung, Flächen je Raum aus den Körpern ohne Raumgrenzen.</item>
     /// <item><b>U-Wert des zerlegten Dachs:</b> Ohne eigenen gilt der U-Wert der Platten, nach ihrer Fläche gewichtet, mit
@@ -70,6 +72,24 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Platte C", "4", "40", "900", "25" }, c.Werte);
             Assert.Equal(new[] { "1", "900", "900", "Platte C", "2" },
                          Assert.Single(a.Meldungen, m => m.Schluessel == P + "KOERPER_ABWEICHUNGEN_DACH").Werte);
+        }
+
+        [Fact]
+        public void Gleichnamige_Teile_einer_anderen_Klasse_fuellen_den_Koerpervergleich_auf()
+        {
+            GebaeudeImportAblauf a = Lesen(IfcProbenErzeuger.PRUEFPUNKT_FREMDKLASSE);
+
+            // Die Flächen bleiben die der Mengensätze; die Platte bleibt ein eigenes Bauteil.
+            Nah(8.0, Bauteil(a, "Platte D").BruttoflaecheM2, "Platte D");
+            Nah(30.0, Bauteil(a, "Platte D-1").BruttoflaecheM2, "Platte D-1");
+            Nah(42.0, Bauteil(a, "Platte D-2").BruttoflaecheM2, "Platte D-2");
+
+            // Körper 80 m² gegen 8 + 30 + 42 m²: keine Abweichung.
+            Assert.DoesNotContain(a.Meldungen, m => m.Werte.Length > 0 && m.Werte[0] == "Platte D");
+
+            // Gegenprobe: „Platte E-2“ (50 m²) überdeckte den Körper (40 m²) — Vergleich nur gegen 4 + 6 m².
+            PruefMeldung e = Assert.Single(a.Meldungen, m => m.Schluessel == P + "KOERPER_ABWEICHUNG_TEILE");
+            Assert.Equal(new[] { "Platte E", "1", "10", "40", "300", "25" }, e.Werte);
         }
 
         [Fact]

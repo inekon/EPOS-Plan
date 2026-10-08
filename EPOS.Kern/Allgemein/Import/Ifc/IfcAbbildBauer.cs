@@ -700,7 +700,8 @@ namespace WindowsFormsApplication1
         /// schreibt so je Raum einen Teil mit eigenem Mengensatz, der Körper trägt das ganze Bauteil), werden die Körper
         /// gegen die Summe aller Mengensätze verglichen (Meldung <c>KOERPER_ABWEICHUNG_TEILE</c>, Info
         /// <c>KOERPER_TEILE_*</c> je Bauteilart). Tragen die Teile einen anderen Namensstamm als der Körper, gilt die eine
-        /// passende Teilgruppe nach <see cref="FremdnamigeTeile"/>.</item>
+        /// passende Teilgruppe nach <see cref="FremdnamigeTeile"/>; bleiben die gleichnamigen Teile unter dem Körper, zählen
+        /// gleichnamige Teile anderer Klassen nach <see cref="FremdklassigeTeile"/> dazu.</item>
         /// <item><b>Zusammenfassung</b> (G5-N): Jede Abweichung über <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> zählt in
         /// eine Info je Bauteilart (Außenwand, Innenwand, Dach, Boden und Decke, sonstige; <c>KOERPER_ABWEICHUNGEN_*</c>):
         /// Anzahl, Median und größte Abweichung samt Bauteil. Eine Warnung je Bauteil steht erst ab
@@ -810,6 +811,11 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<(int, string, string), List<AbbildBauteil>> gr in gruppen)
             {
                 List<AbbildBauteil> alle = gr.Value.Concat(teile[gr.Key]).ToList();
+                foreach ((int, string, string) fremd in FremdklassigeTeile(gr.Key, alle, gr.Value.Sum(x => x.Koerperflaeche.FlaecheM2), teile, vergeben))
+                {
+                    vergeben.Add(fremd);
+                    alle.AddRange(teile[fremd]);
+                }
                 string stamm = gr.Key.Item3;
                 _koerperMitTeilen.Add(gr.Value[0].Art);
                 KoerperVergleichen(P + "KOERPER_ABWEICHUNG_TEILE", stamm, gr.Value[0].Art, alle, gr.Value.Sum(b => b.Koerperflaeche.FlaecheM2),
@@ -1093,6 +1099,35 @@ namespace WindowsFormsApplication1
                             <= IfcBauteilkoerper.ABWEICHUNG_GRENZE)
                 .Select(g => g.Key).ToList();
             return passend.Count == 1 ? passend[0] : ((int, string, string)?)null;
+        }
+
+        /// <summary>
+        /// <b>Gleichnamige Teile einer anderen Klasse</b> (Prüfpunkt nach G5-N): HottCAD schreibt die Teile je Raum einer
+        /// Geschossplatte mitunter teils als <c>IfcSlab</c>, teils als <c>IfcRoof</c> — gleicher Namensstamm, gleiches Gebäude.
+        /// Bleibt die Summe der Mengensätze der eigenen Klasse um mehr als <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/>
+        /// unter dem Körper, zählen die Teilgruppen ohne Darstellung desselben Gebäudes und Namensstamms aus anderen Klassen
+        /// dazu, deren Stamm in ihrer Klasse keinem Körper gehört und die noch nicht vergeben sind — alle zusammen und nur,
+        /// wenn jedes Teil einen Mengensatz trägt und die Summe danach den Körper um höchstens
+        /// <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> übersteigt: Die Teile füllen auf, sie überdecken nicht. Nur der
+        /// Vergleich ändert sich — jedes Teil behält seinen Mengensatz und seine Art, die Flächen bleiben.
+        /// </summary>
+        private List<(int, string, string)> FremdklassigeTeile((int, string, string) schluessel, List<AbbildBauteil> eigene, double koerper,
+                                                               ILookup<(int, string, string), AbbildBauteil> teile, HashSet<(int, string, string)> vergeben)
+        {
+            var keine = new List<(int, string, string)>();
+            if (eigene.Any(x => !x.BruttoflaecheM2.HasValue)) return keine;
+            double summe = eigene.Sum(x => x.BruttoflaecheM2.Value);
+            if (koerper <= summe || IfcBauteilkoerper.Abweichung(summe, koerper) <= IfcBauteilkoerper.ABWEICHUNG_GRENZE) return keine;
+            (int gi, string klasse, string stamm) = schluessel;
+            var mitKoerper = new HashSet<(string, string)>(_koerperVormerkung.Where(v => v.Gebaeude == gi && v.Bauteil.Name != null)
+                                                                             .Select(v => (v.Bauteil.Quelltyp, Namensstamm(v.Bauteil.Name))));
+            List<(int, string, string)> fremd = teile
+                .Where(g => g.Key.Item1 == gi && g.Key.Item3 == stamm && g.Key.Item2 != klasse && !vergeben.Contains(g.Key)
+                            && !mitKoerper.Contains((g.Key.Item2, g.Key.Item3)))
+                .Select(g => g.Key).OrderBy(k => k.Item2, StringComparer.Ordinal).ToList();
+            if (fremd.Count == 0 || fremd.SelectMany(k => teile[k]).Any(t => !t.BruttoflaecheM2.HasValue)) return keine;
+            double neu = summe + fremd.SelectMany(k => teile[k]).Sum(t => t.BruttoflaecheM2.Value);
+            return neu <= koerper || IfcBauteilkoerper.Abweichung(neu, koerper) <= IfcBauteilkoerper.ABWEICHUNG_GRENZE ? fremd : keine;
         }
 
         /// <summary>
