@@ -409,6 +409,14 @@ namespace WindowsFormsApplication1
                         string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABE_BEGRENZT, werZone,
                                       hz.UebergabeBegrenztStundenH.ToString("0.#", k),
                                       hz.GroessteUnterschreitungK.ToString("0.0#", k)));
+                // Entwurf KK (KZ1): die begrenzte Kühlübergabe je kühlgekoppelter Zone, benannt wie im Einzonenweg.
+                KuehlkreisErgebnis kz = m.Zonen[z].Kuehlkreis;
+                if (m.Eingaenge[z].Eingang.Gebaeudekuehlkreis != null && kz != null && kz.UebergabeBegrenztStundenH > 0.0)
+                    p.HinweisEinmal("ak-kuehluebergabe-begrenzt-" + werZone,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLUEBERGABE_BEGRENZT, werZone,
+                                      kz.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                      kz.VorlaufgrenzeStundenH.ToString("0.#", k),
+                                      kz.GroessteUeberschreitungK.ToString("0.0#", k)));
             }
             // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
             HinweisAufheizung(m.Gebaeude.Aufheizung, wer);

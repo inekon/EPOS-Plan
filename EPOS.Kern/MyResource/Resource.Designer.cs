@@ -96780,7 +96780,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Kühlübergabe ist für ein Gebäude mit mehreren Zonen nicht abgebildet – die Kühlung rechnet je Zone ideal und geht als feste Last in die Anlage; die Wärmeübergabe rechnet je Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; nicht jede gekoppelte Zone rechnet ihre Übergabe – ideal und als feste Last in die Anlage gehen die Kühlung jeder Zone ohne wirksame Kühlübergabe je Zone und jede Zone im adiabaten Vorlauf der 4-K-Regel; die übrigen gekoppelten Zonen rechnen Wärme- und Kühlübergabe je Zone am gemeinsamen Vorlauf des Gebäudes. ähnelt.
         /// </summary>
         public static string SIMENG_G6_AK1_IDEAL {
             get {
