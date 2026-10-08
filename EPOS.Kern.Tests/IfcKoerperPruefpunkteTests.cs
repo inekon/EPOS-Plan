@@ -17,6 +17,9 @@ namespace EPOS.Kern.Tests
     /// passende Gruppe bleibt die Warnung (Gegenprobe).</item>
     /// <item><b>Dach mit Mengensatz, Körper nur in den Platten:</b> Fläche aus dem Mengensatz des Dachs, Neigung und Azimut je
     /// Platte aus dem Körper, Körpervergleich ohne Abweichung, Flächen je Raum aus den Körpern ohne Raumgrenzen.</item>
+    /// <item><b>U-Wert des zerlegten Dachs:</b> Ohne eigenen gilt der U-Wert der Platten, nach ihrer Fläche gewichtet, mit
+    /// Info bei einer Spanne über 10 %; fehlt er an einer Platte, lehnt der Vorschlag ab (<c>UWERT_FEHLT</c>). Ein eigener
+    /// U-Wert gilt, abweichende Platten nur als Info.</item>
     /// </list>
     /// </summary>
     public sealed class IfcKoerperPruefpunkteTests : IDisposable
@@ -109,6 +112,75 @@ namespace EPOS.Kern.Tests
             Nah(0.0, nord.Bauteil.Azimut, "Dach Nord Azimut");
             Assert.All(zeilen, z => Nah(DACHNEIGUNG, z.Bauteil.Neigung, "Dach Neigung"));
             Assert.All(zeilen, z => Nah(37.5, z.Bauteil.Flaeche, "Dachzeile"));
+
+            // Eigener U-Wert gleich dem der Platten: keine Info.
+            Assert.DoesNotContain(a.Meldungen, m => m.Schluessel.StartsWith(P + "DACH_UWERT", StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [InlineData(IfcProbenErzeuger.PRUEFPUNKT_SATTEL_U_GLEICH, 0.2, false)]
+        [InlineData(IfcProbenErzeuger.PRUEFPUNKT_SATTEL_U_VERSCHIEDEN, 17.5 / 75.0, true)]
+        public void Dach_ohne_eigenen_U_Wert_uebernimmt_den_U_Wert_seiner_Platten(string datei, double u, bool spanne)
+        {
+            GebaeudeImportAblauf a = Lesen(datei);
+            AbbildBauteil dach = Bauteil(a, "Dach");
+
+            // Flächengewichtet: bei „verschieden“ aus den Mengensätzen der Platten (0,2 · 50 + 0,3 · 25) / 75.
+            Nah(u, dach.UWertWm2K, "Dach U");
+            Assert.Equal("Pset_SlabCommon (Platten)", dach.UWertQuelle);
+            Assert.Equal(new[] { "1", "Dach" }, Assert.Single(a.Meldungen, m => m.Schluessel == P + "DACH_UWERT_PLATTEN").Werte);
+            if (spanne)
+                Assert.Equal(new[] { "Dach", "2", "0.2", "0.3", "0.233" },
+                             Assert.Single(a.Meldungen, m => m.Schluessel == P + "DACH_UWERT_SPANNE").Werte);
+            else Assert.DoesNotContain(a.Meldungen, m => m.Schluessel == P + "DACH_UWERT_SPANNE");
+
+            // Der Vorschlag läuft durch; jede Dachzeile trägt den übernommenen U-Wert.
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, null);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(m => m.Schluessel)));
+            List<GebaeudeBauteilzeile> zeilen = v.Zeilen.Where(z => z.Bauteil.Bezeichner == "Dach").ToList();
+            Assert.Equal(2, zeilen.Count);
+            Assert.All(zeilen, z => Nah(u, z.Bauteil.U_Wert, "Dachzeile U", 1e-3));
+        }
+
+        [Fact]
+        public void Dach_ohne_U_Wert_und_Platte_ohne_U_Wert_lehnt_ab()
+        {
+            GebaeudeImportAblauf a = Lesen(IfcProbenErzeuger.PRUEFPUNKT_SATTEL_U_LUECKE);
+            Assert.Null(Bauteil(a, "Dach").UWertWm2K);
+            Assert.DoesNotContain(a.Meldungen, m => m.Schluessel.StartsWith(P + "DACH_UWERT", StringComparison.Ordinal));
+
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, null);
+            Assert.True(v.Abgelehnt);
+            Assert.Contains(v.Meldungen, m => m.Stufe == PruefStufe.Fehler && m.Schluessel == GebaeudeBauteilvorschlag.UWERT_FEHLT);
+        }
+
+        [Fact]
+        public void Dach_ohne_eigenen_Aufbau_erbt_den_gemeinsamen_Aufbau_seiner_Platten()
+        {
+            GebaeudeImportAblauf a = Lesen(IfcProbenErzeuger.PRUEFPUNKT_SATTEL_AUFBAU);
+            AbbildBauteil dach = Bauteil(a, "Dach");
+            Assert.Null(dach.UWertWm2K);
+            Assert.NotNull(dach.Aufbau);
+            Assert.Equal("Dachaufbau", dach.Aufbau.Name);
+            Assert.Equal(3, dach.Aufbau.Schichten.Count);
+            Assert.Equal(new[] { "1", "Dach" }, Assert.Single(a.Meldungen, m => m.Schluessel == P + "DACH_AUFBAU_PLATTEN").Werte);
+
+            // Der Vorschlag rechnet den U-Wert aus den Schichten statt abzulehnen.
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.BildenMitZonen(a, 0, null, null);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(m => m.Schluessel)));
+            Assert.All(v.Zeilen.Where(z => z.Bauteil.Bezeichner == "Dach"), z => Assert.True(z.USchichten > 0.0));
+        }
+
+        [Fact]
+        public void Dach_mit_eigenem_U_Wert_behaelt_ihn_und_meldet_die_Platten()
+        {
+            GebaeudeImportAblauf a = Lesen(IfcProbenErzeuger.PRUEFPUNKT_SATTEL_U_EIGEN);
+            AbbildBauteil dach = Bauteil(a, "Dach");
+            Nah(0.25, dach.UWertWm2K, "Dach U");
+            Assert.Equal("Pset_RoofCommon", dach.UWertQuelle);
+            Assert.DoesNotContain(a.Meldungen, m => m.Schluessel == P + "DACH_UWERT_PLATTEN");
+            Assert.Equal(new[] { "Dach", "0.25", "2", "0.2", "0.3" },
+                         Assert.Single(a.Meldungen, m => m.Schluessel == P + "DACH_UWERT_EIGEN").Werte);
         }
     }
 }

@@ -2069,6 +2069,10 @@ namespace WindowsFormsApplication1
                 if (uebersprungen.Contains(e.EntityLabel)) continue;
                 Bauteil(e, klasse);
             }
+            if (_dachUAusPlatten.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_UWERT_PLATTEN", Ganz(_dachUAusPlatten.Count), Beispiele(_dachUAusPlatten)));
+            if (_dachAufbauAusPlatten.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_AUFBAU_PLATTEN", Ganz(_dachAufbauAusPlatten.Count), Beispiele(_dachAufbauAusPlatten)));
             Koerperflaechen();
             OeffnungenNachLage();
             Oeffnungsabzug();
@@ -2445,6 +2449,10 @@ namespace WindowsFormsApplication1
 
             bool uNichtPositiv = UWert(e, satz, b);
             b.Aufbau = Aufbau(e, out IIfcMaterialLayerSetUsage nutzung);
+            // Ein zerlegtes Dach mit Mengensatz ohne eigenen U-Wert bzw. Aufbau erbt ihn von seinen Platten.
+            IIfcElement schichtelement = e;
+            if (e is IIfcRoof zerlegt && PlattenErbe(zerlegt, b, ref nutzung) is IIfcElement aufbauPlatte) schichtelement = aufbauPlatte;
+            if (b.UWertWm2K.HasValue) uNichtPositiv = false;
 
             // Ohne Raumgrenzen im ganzen Gebäude: die Raumbezüge (IfcRelReferencedInSpatialStructure, Mehrzonenkonzept 6.5).
             // Ein Bauteil mit U-Wert null oder kleiner und ohne Aufbau bewertet die Datei nicht (eine Bodenöffnung, ein
@@ -2467,7 +2475,7 @@ namespace WindowsFormsApplication1
             b.InnenEinseitig = ohneGrenzen && e is IIfcWall && rand == Randbedingung.Innen && b.Nachbarn.Count == 0;
 
             if (senkrecht) Azimut(e, b, grenzen, gi);
-            if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
+            if (b.Aufbau != null) Schichtfolge(schichtelement, b, nutzung, grenzen, gi);
 
             // Stufe G6c: die Raumgrenzen je Seite, Dicke und Geschoss — der Eingang der Zonierung.
             GrenzenUebernehmen(b, grenzen);
@@ -3417,6 +3425,115 @@ namespace WindowsFormsApplication1
         /// <returns>Bleibt das Bauteil ohne U-Wert, weil die Datei ihn null oder kleiner angibt?</returns>
         private bool UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
+            (IfcFund gewaehlt, double? u, string nichtPositiv, List<string> abweichend) = UWertWaehlen(e, satz);
+            foreach (string a in abweichend.Distinct())
+            {
+                if (!_uEinheit.TryGetValue(a, out int[] z)) _uEinheit[a] = z = new int[2];
+                z[0]++;
+                if (gewaehlt == null) z[1]++;
+            }
+            if (gewaehlt == null && nichtPositiv != null) Zaehlen(_uNichtPositiv, nichtPositiv);
+            if (gewaehlt == null) return nichtPositiv != null;
+            if (!(IfcEigenschaften.Gleich(gewaehlt.Satz, satz) && gewaehlt.Eigenschaft.Name.ToString().Trim()
+                      .Equals("ThermalTransmittance", StringComparison.OrdinalIgnoreCase)))
+                Zaehlen(_uRueckfall, gewaehlt.Satz + "\u0001" + gewaehlt.Eigenschaft.Name);
+            _abbild.ZahlUWerte++;
+            b.UWertWm2K = u;
+            b.UWertQuelle = UWertBeleg(gewaehlt);
+            return false;
+        }
+
+        /// <summary>Zerlegte Dächer, die den U-Wert bzw. den Aufbau ihrer Platten übernommen haben (<see cref="PlattenErbe"/>).</summary>
+        private readonly List<string> _dachUAusPlatten = new List<string>(), _dachAufbauAusPlatten = new List<string>();
+
+        /// <summary>
+        /// <b>Das Erbe der Platten eines zerlegten Dachs</b>: Ein <c>IfcRoof</c> mit Mengensatz ist das Bauteil, seine Platten
+        /// (<c>IfcSlab</c> über <c>IfcRelAggregates</c>) sind es nicht (3.4, Zeile Dach) — U-Wert und Aufbau tragen aber oft nur
+        /// sie.
+        /// <list type="bullet">
+        /// <item><b>U-Wert:</b> Trägt das Dach keinen, gilt der U-Wert der Platten, nach ihrer Fläche gewichtet (Mengensatz der
+        /// Platte, sonst ihr Körper; fehlt einer Platte die Fläche, zu gleichen Teilen) — nur, wenn jede Platte einen trägt.
+        /// Beleg: die Sätze der Platten mit „(Platten)“; Info <c>DACH_UWERT_PLATTEN</c>, und liegen die Platten um mehr als
+        /// <see cref="GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS"/> auseinander, je Dach die Spanne
+        /// (<c>DACH_UWERT_SPANNE</c>, I). Trägt das Dach einen eigenen, gilt er; weicht eine Platte um mehr als dieselbe
+        /// Grenze ab, nur eine Info (<c>DACH_UWERT_EIGEN</c>).</item>
+        /// <item><b>Aufbau:</b> Trägt das Dach keinen, gilt der Aufbau der Platten, wenn jede einen trägt und alle gleich
+        /// sind (Name, Baustoffe und Dicken der Schichten); die Schichtrichtung dann aus der ersten Platte. Verschiedene
+        /// Aufbauten bleiben ungeerbt — der U-Wert deckt das Dach.</item>
+        /// </list>
+        /// </summary>
+        /// <returns>Die Platte, deren Aufbau das Dach geerbt hat (für die Schichtrichtung); sonst <c>null</c>.</returns>
+        private IIfcElement PlattenErbe(IIfcRoof dach, AbbildBauteil b, ref IIfcMaterialLayerSetUsage nutzung)
+        {
+            List<IIfcSlab> platten = Teile(dach).OfType<IIfcSlab>().ToList();
+            if (platten.Count == 0) return null;
+            string name = b.Name ?? b.Kennung;
+            var werte = platten.Select(t => UWertWaehlen(t, "Pset_SlabCommon")).ToList();
+            if (werte.All(w => w.U.HasValue))
+            {
+                double min = werte.Min(w => w.U.Value), max = werte.Max(w => w.U.Value);
+                if (b.UWertWm2K is double eigen)
+                {
+                    if (werte.Any(w => Math.Abs(w.U.Value / eigen - 1.0) > GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS))
+                        _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_UWERT_EIGEN", name, Zahl(eigen),
+                                                               Ganz(platten.Count), Zahl(min), Zahl(max)));
+                }
+                else
+                {
+                    List<double?> flaechen = platten.Select(Plattenflaeche).ToList();
+                    bool gewichtet = flaechen.All(f => f > 0.0);
+                    double summe = 0.0, gewicht = 0.0;
+                    for (int i = 0; i < platten.Count; i++)
+                    {
+                        double a = gewichtet ? flaechen[i].Value : 1.0;
+                        summe += a * werte[i].U.Value;
+                        gewicht += a;
+                    }
+                    b.UWertWm2K = summe / gewicht;
+                    b.UWertQuelle = string.Join(", ", werte.Select(w => UWertBeleg(w.Gewaehlt)).Distinct(StringComparer.Ordinal)) + " (Platten)";
+                    _abbild.ZahlUWerte++;
+                    _dachUAusPlatten.Add(name);
+                    if (max / min - 1.0 > GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS)
+                        _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_UWERT_SPANNE", name, Ganz(platten.Count),
+                                                               Zahl(min), Zahl(max), Zahl(Math.Round(b.UWertWm2K.Value, 3))));
+                }
+            }
+            if (b.Aufbau != null) return null;
+            var aufbauten = new List<(IIfcSlab Platte, AbbildAufbau Aufbau, IIfcMaterialLayerSetUsage Nutzung)>();
+            foreach (IIfcSlab t in platten)
+            {
+                AbbildAufbau a = Aufbau(t, out IIfcMaterialLayerSetUsage n);
+                if (a == null) return null;
+                aufbauten.Add((t, a, n));
+            }
+            if (aufbauten.Select(x => Aufbausignatur(x.Aufbau)).Distinct(StringComparer.Ordinal).Count() != 1) return null;
+            b.Aufbau = aufbauten[0].Aufbau;
+            nutzung = aufbauten[0].Nutzung;
+            _dachAufbauAusPlatten.Add(name);
+            return aufbauten[0].Platte;
+        }
+
+        /// <summary>Die Fläche einer Dachplatte: Mengensatz, sonst ein Flächenname eines beliebigen Satzes, sonst ihr Körper.</summary>
+        private double? Plattenflaeche(IIfcSlab t)
+            => Positiv(IfcEigenschaften.Menge(_bezuege, t, "Slab", "GrossArea", _einheiten))
+               ?? Positiv(IfcEigenschaften.MengeRueckfall(_bezuege, t, RUECKFALL_BAUTEIL_BRUTTO, _einheiten, out _, out _))
+               ?? (Rechenkoerper(t) is Dateikoerper k ? IfcBauteilkoerper.Auswerten(k, Bauteilkoerperart.PlatteOben, null, _drehung)?.FlaecheM2 : null);
+
+        /// <summary>Name, Baustoffe und Dicken der Schichten eines Aufbaus — gleiche Signatur heißt gleicher Aufbau.</summary>
+        private static string Aufbausignatur(AbbildAufbau a)
+            => (a.Name ?? "") + "\u0002" + string.Join("\u0001", a.Schichten.Select(x => x.BaustoffKennung + "|"
+                   + (x.DickeM.HasValue ? Zahl(Math.Round(x.DickeM.Value, 6)) : "-")));
+
+        /// <summary>Der Beleg eines gewählten U-Werts: der Satz, vom Typ mit „(Typ)“.</summary>
+        private static string UWertBeleg(IfcFund gewaehlt)
+            => gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
+
+        /// <summary>
+        /// Die Wahl des U-Werts nach <see cref="UWert"/> ohne Zählung und Meldung: der gewählte Fund samt Wert (oder keiner),
+        /// der erste Wert null oder kleiner und die Angaben mit fremder Einheit.
+        /// </summary>
+        private (IfcFund Gewaehlt, double? U, string NichtPositiv, List<string> Abweichend) UWertWaehlen(IIfcElement e, string satz)
+        {
             IfcFund gewaehlt = null;
             double? u = null;
             string nichtPositiv = null;
@@ -3449,21 +3566,7 @@ namespace WindowsFormsApplication1
                 gewaehlt = f;
                 break;
             }
-            foreach (string a in abweichend.Distinct())
-            {
-                if (!_uEinheit.TryGetValue(a, out int[] z)) _uEinheit[a] = z = new int[2];
-                z[0]++;
-                if (gewaehlt == null) z[1]++;
-            }
-            if (gewaehlt == null && nichtPositiv != null) Zaehlen(_uNichtPositiv, nichtPositiv);
-            if (gewaehlt == null) return nichtPositiv != null;
-            if (!(IfcEigenschaften.Gleich(gewaehlt.Satz, satz) && gewaehlt.Eigenschaft.Name.ToString().Trim()
-                      .Equals("ThermalTransmittance", StringComparison.OrdinalIgnoreCase)))
-                Zaehlen(_uRueckfall, gewaehlt.Satz + "\u0001" + gewaehlt.Eigenschaft.Name);
-            _abbild.ZahlUWerte++;
-            b.UWertWm2K = u;
-            b.UWertQuelle = gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
-            return false;
+            return (gewaehlt, gewaehlt == null ? null : u, nichtPositiv, abweichend);
         }
 
         /// <summary>Größte relative Abweichung, bis zu der zwei U-Werte desselben Bauteils als derselbe Wert gelten.</summary>

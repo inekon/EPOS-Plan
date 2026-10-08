@@ -39384,6 +39384,18 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="IMP_IFC_PROT_FLAECHE_GRUNDRISS" xml:space="preserve">
     <value>{0} Räume ohne Flächenmenge erhalten die Fläche ihres Grundrisses ({1} m²; {2}).</value>
   </data>
+  <data name="IMP_IFC_PROT_DACH_UWERT_PLATTEN" xml:space="preserve">
+    <value>{0} zerlegte Dächer ohne eigenen U-Wert übernehmen den U-Wert ihrer Platten, nach deren Fläche gewichtet: {1}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_DACH_UWERT_SPANNE" xml:space="preserve">
+    <value>Dach „{0}“: Die U-Werte seiner {1} Platten reichen von {2} bis {3} W/(m²K) — übernommen ist das Flächenmittel {4} W/(m²K).</value>
+  </data>
+  <data name="IMP_IFC_PROT_DACH_UWERT_EIGEN" xml:space="preserve">
+    <value>Dach „{0}“ trägt den U-Wert {1} W/(m²K) selbst; er gilt. Seine {2} Platten tragen {3} bis {4} W/(m²K).</value>
+  </data>
+  <data name="IMP_IFC_PROT_DACH_AUFBAU_PLATTEN" xml:space="preserve">
+    <value>{0} zerlegte Dächer ohne eigenen Aufbau übernehmen den gemeinsamen Aufbau ihrer Platten: {1}.</value>
+  </data>
   <data name="IMP_IFC_PROT_GRENZEN_DACHPLATTE" xml:space="preserve">
     <value>{0} zerlegte Dächer tragen ihre Raumgrenzen selbst — die {1} Grenzen gelten für ihre einzige Platte.</value>
   </data>
