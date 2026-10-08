@@ -1001,6 +1001,18 @@ rechnet alle vierundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > leer): **91 336 704 Byte, LFS-SHA-256 `6843896dbc1760fe57fff6527e12b8ae0ffa6cd8f593b7dceb6302ace663fd10`**. **Die Basis
 > `2026-10-07_R43_Kaelteseite_AK3K` bleibt** — die Schritte 199 und 200 berühren weder gesäte Werte noch Rechenweg.
 
+> **Nachtrag — Schemaschritt 202 (Kühlkurve: Eingaben am Gebäude, Kennzahlen im Ergebnis), Basis unverändert.**
+> `KuehlkurveSchema` (202 = `Ak3KSchema.SCHRITT + 1`) legt an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` die fünf nullbaren
+> Eingabespalten der Kühlkurve an (`Kuehlkurve_Aktiv` 0/1, `Kuehlkurve_Fusspunkt` 4–22 °C, `Kuehlkurve_Raumeinfluss`
+> 0–10 K/K, `Kuehlkurve_Auslegung_Weg` `stunde`/`tagesmittel`/`eingabe`, `Kuehlkurve_Auslegung_Aussen` 0–60 °C), baut die
+> Sicht `Abfrage_Projektgebaeude` zum elften Mal (110 Spalten) und legt drei Kennzahlen an `Tab_ErgebnisEnergiebedarf` an
+> (`Kuehlkurve_Vorlauf_Mittel_C`, `Kuehlkurve_Absenkung_Kh`, `Kuehlkurve_Vorlaufgrenze_Stunden`); alle Spalten entstehen
+> leer, kein DML an Bestandsdaten. Gehoben aus dem Stand 201 (LFS-SHA-256
+> `6843896dbc1760fe57fff6527e12b8ae0ffa6cd8f593b7dceb6302ace663fd10`) mit `Werkzeuge/Testdatenbankschema`. Die
+> Testdatenbank steht auf **202** (`integrity_check` ok, `foreign_key_check` leer): **91 303 936 Byte, LFS-SHA-256
+> `7b49110cb2c3941a135302288ba881f2fc05601c3fd97c08f1fc7e98f8370132`**. **Die Basis `2026-10-07_R43_Kaelteseite_AK3K`
+> bleibt** — leere Spalten heißen fester Kühlvorlauf wie bisher (Entwurf KK, Festlegung 1), keine Einfrierregel berührt.
+
 ### Die Vorgängerbasis R42 (Vorlaufinterpolation AK3)
 
 Dreiundzwanzig Projekte, 718 CSV, 4 862 Skalare, auf Linux eingefroren gegen die Testdatenbank `e09fceed…` (Schemastand
