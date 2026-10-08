@@ -124,8 +124,10 @@ namespace WindowsFormsApplication1
             Ak3Kennzahlen ak3 = GebaeudeBedarfCtrl.Ak3KennzahlenDesProjekts(projektId);
             // AK3-K (Festlegung 20): Zonensperre und Kaelteseite im Kreis aus demselben Lauf - nur mit Wert.
             Ak3KKennzahlen ak3k = GebaeudeBedarfCtrl.Ak3KKennzahlenDesProjekts(projektId);
+            // KK (Festlegung 12): die Kennzahlen der Kuehlkurve aus demselben Lauf - nur mit Wert.
+            KuehlkurveKennzahlen kk = GebaeudeBedarfCtrl.KuehlkurveKennzahlenDesProjekts(projektId);
             GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null, warmwasser,
-                                              restbedarf, aufheizung, ak3, ak3k);
+                                              restbedarf, aufheizung, ak3, ak3k, kk);
 
             // Das Bild „Raumtemperatur und Sollwert" (AK2, E80): die Woche mit der größten Unterschreitung -
             // nur, wenn am Gebäude Komfort erhoben ist und eine Stunde zählt.
@@ -212,6 +214,10 @@ namespace WindowsFormsApplication1
                 ["KachelAk3Umschaltung"] = Text_("AK3K_GEBB_KACHEL_UMSCHALTUNG", "Umschaltstunden"),
                 ["KachelAk3Kaelterest"] = Text_("AK3K_GEBB_KACHEL_KAELTEREST", "Kälte-Restbedarf"),
                 ["QuelleAk3Kaelte"] = Text_("AK3K_GEBB_QUELLE_KREIS", "Kälteseite im Kreis (AK3), Projekt, letzter Lauf"),
+                ["KachelKuehlkurveVorlauf"] = Text_("KK_GEBB_KACHEL_VORLAUF_MITTEL", "Mittlerer Kühlvorlauf (Kühlkurve)"),
+                ["KachelKuehlkurveAbsenkung"] = Text_("KK_GEBB_KACHEL_ABSENKUNG", "Absenkung durch Raumeinfluss"),
+                ["KachelKuehlkurveGrenze"] = Text_("KK_GEBB_KACHEL_VORLAUFGRENZE", "Stunden an der Vorlaufgrenze"),
+                ["QuelleKuehlkurve"] = Text_("KK_GEBB_QUELLE", "Kühlkurve, Projekt, letzter Lauf"),
                 ["BildtextVorlauf"] = Text_("GEBB_BILD_VORLAUF_RUECKLAUF", "Vorlauf und Rücklauf"),
                 ["KachelVorlaufRuecklauf"] = Text_("GEBB_KACHEL_VORLAUF_RUECKLAUF", "Vorlauf / Rücklauf"),
                 ["KachelBegrenzt"] = Text_("GEBB_KACHEL_BEGRENZT", "Stunden mit begrenzter Übergabe"),
@@ -288,7 +294,7 @@ namespace WindowsFormsApplication1
         private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich,
                                                  double? warmwasserProjektMwh = null, double? restbedarfProjektMwh = null,
                                                  GebaeudeBedarfAufheizDaten aufheizung = null, Ak3Kennzahlen ak3 = null,
-                                                 Ak3KKennzahlen ak3k = null)
+                                                 Ak3KKennzahlen ak3k = null, KuehlkurveKennzahlen kk = null)
         {
             ErgebnisGebaeudeModel zeile = ergebnis.Ergebniszeile;
             var monate = new double[12];
@@ -338,6 +344,10 @@ namespace WindowsFormsApplication1
                 Ak3UmschaltStundenH = ak3k?.UmschaltStundenH,
                 Ak3KaelterestStundenH = ak3k?.KaelterestStundenH,
                 Ak3KaelterestMwh = ak3k?.KaelterestMwh,
+                // KK (Festlegung 12): die Kennzahlen der Kuehlkurve.
+                KuehlkurveVorlaufMittelC = kk?.VorlaufMittelC,
+                KuehlkurveAbsenkungKh = kk?.AbsenkungKh,
+                KuehlkurveVorlaufgrenzeStundenH = kk?.VorlaufgrenzeStundenH,
                 Rueckstufe = ergebnis.Rueckstufe ?? "",
                 // E37: der Kaeltekreis - nur kuehlgekoppelt, aus demselben Ergebnis.
                 IstKuehlgekoppelt = ergebnis.KuehlGekoppelt,

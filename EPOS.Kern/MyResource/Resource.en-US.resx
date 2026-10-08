@@ -48364,6 +48364,18 @@ chart</value>
   <data name="AK3K_GEBB_QUELLE_KREIS" xml:space="preserve">
     <value>Cooling side in the loop (AK3), project, last run</value>
   </data>
+  <data name="KK_GEBB_KACHEL_VORLAUF_MITTEL" xml:space="preserve">
+    <value>Mean cooling flow temperature (cooling curve)</value>
+  </data>
+  <data name="KK_GEBB_KACHEL_ABSENKUNG" xml:space="preserve">
+    <value>Reduction by room influence</value>
+  </data>
+  <data name="KK_GEBB_KACHEL_VORLAUFGRENZE" xml:space="preserve">
+    <value>Hours at the flow temperature limit</value>
+  </data>
+  <data name="KK_GEBB_QUELLE" xml:space="preserve">
+    <value>Cooling curve, project, last run</value>
+  </data>
   <data name="AK3_KI_GEBB_DURCHLAEUFE_MITTEL" xml:space="preserve">
     <value>Mean iterations per hour (AK3)</value>
   </data>

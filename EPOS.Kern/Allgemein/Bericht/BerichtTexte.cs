@@ -169,6 +169,13 @@ namespace WindowsFormsApplication1
             { "Kälte-Restbedarf [MWh/a]", "Residual cooling demand [MWh/a]" },
             { "In einer Zone wird an einem Tag nie geheizt und gekühlt: Gezählt werden die Zonentage, an denen die Gegenseite gesperrt war, und die Energie, die der Probetag auf ihr gezeigt hätte. Im geschlossenen Kreis zählen die Stunden, in denen die Kälteschranke eine Zone begrenzte, die Stunden mit Umschaltung der Wärmepumpe und der Kälte-Restbedarf. „—“ heißt: nicht erhoben.",
               "A zone is never heated and cooled on the same day: counted are the zone days on which the opposite side was blocked and the energy the trial day would have shown on it. In the closed loop, counted are the hours in which the cooling limit restricted a zone, the hours with heat pump changeover and the residual cooling demand. “—” means: not recorded." },
+            // KK (Entwurf KK, Festlegung 12): die Kennzahlen der Kuehlkurve
+            { "Kühlkurve (Simulationsergebnis Stamm)", "Cooling curve (base simulation result)" },
+            { "Kühlvorlauf im Mittel [°C]", "Mean cooling flow temperature [°C]" },
+            { "Absenkung durch Raumeinfluss [Kh/a]", "Reduction by room influence [Kh/a]" },
+            { "An der Vorlaufgrenze [h/a]", "At the flow temperature limit [h/a]" },
+            { "Mit Kühlkurve gleitet der verlangte Kühlvorlauf mit der Außentemperatur; der Raumeinfluss senkt ihn, wenn ein Raum über dem Kühlsollwert liegt. Ausgewiesen werden der mittlere verlangte Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand. „—“ heißt: nicht erhoben.",
+              "With a cooling curve, the requested cooling flow temperature slides with the outdoor temperature; the room influence lowers it when a room is above the cooling setpoint. Shown are the mean requested cooling flow temperature of the cooling hours, the sum of the reduction by the room influence and the cooling hours in which the curve stood at the flow temperature limit. “—” means: not recorded." },
             // KU3-3: der Kaeltebedarf je Zone
             { "Kältebedarf je Zone", "Cooling demand per zone" },
             { "Kältebedarf [MWh/a]", "Cooling demand [MWh/a]" },
