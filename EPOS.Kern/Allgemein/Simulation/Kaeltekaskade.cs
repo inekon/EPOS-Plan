@@ -32,6 +32,23 @@ namespace WindowsFormsApplication1
         public Kuehlkennlinie Kennlinie;
 
         /// <summary>
+        /// KK2 (Entwurf KK 2.4): die Kühlkennlinie des Geräts über ALLE Kühl-Vorläufe — ausgewertet nur am Stundenvorlauf
+        /// (<see cref="Kaeltekaskade.StundeRechnen(int, double, double)"/>, <c>AbfragenAmVorlauf</c>); <c>null</c> = nur
+        /// <see cref="Kennlinie"/>.
+        /// </summary>
+        public KuehlkennlinienSchar Schar;
+
+        /// <summary>
+        /// KK2 (Entwurf KK 2.3): der Vorlauf, den die Wärmepumpe am verlangten Vorlauf <paramref name="vorlaufC"/> fährt — nie
+        /// kälter als die kleinste Stützstelle ihrer Kühlkennlinie; ohne <see cref="Schar"/> unverändert.
+        /// </summary>
+        public double VorlaufAmErzeuger(double vorlaufC)
+        {
+            double min = Schar != null ? Schar.VorlaufMinC : double.NaN;
+            return !double.IsNaN(min) && vorlaufC < min ? min : vorlaufC;
+        }
+
+        /// <summary>
         /// Hilfsstromanteil des Kältekreises an der Verdichterarbeit [—] (<c>Kuehl_Hilfsstromanteil</c>,
         /// K23): 0 = kein Zuschlag — so wird NULL gelesen, damit keine geratene Zahl entsteht.
         /// </summary>
@@ -509,7 +526,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="h">Die Stunde; muss <see cref="NaechsteStunde"/> sein.</param>
         /// <param name="bedarfKwh">Kältebedarf der Stunde [kWh] (<c>SimulationKaeltebedarf.Kaeltebedarf[h]</c>).</param>
-        public void StundeRechnen(int h, double bedarfKwh)
+        public void StundeRechnen(int h, double bedarfKwh) => StundeRechnen(h, bedarfKwh, double.NaN);
+
+        /// <summary>
+        /// KK2 (Entwurf KK 2.5, 2.6): die Kältestunde am Stundenvorlauf <paramref name="kuehlVorlaufC"/> [°C] — dem kältesten
+        /// verlangten Vorlauf der konvergierten Stunde. Mit Kältespeicher nie wärmer als dessen Vorlauf (Festlegung 10); jede
+        /// Wärmepumpe wertet ihre <see cref="Kaelteerzeuger.Schar"/> am Vorlauf (nie kälter als ihre kleinste Stützstelle) und
+        /// prüft die freie Kühlung gegen ihn, jede Kältemaschine rechnet bei <see cref="Kaeltemaschine.KaltwasserAmVorlauf"/>.
+        /// NaN = der feste Vorlauf, Zeichen für Zeichen <see cref="StundeRechnen(int, double)"/>.
+        /// </summary>
+        public void StundeRechnen(int h, double bedarfKwh, double kuehlVorlaufC)
         {
             if (h != _naechsteStunde)
                 throw new InvalidOperationException("Die Kältekaskade erwartet die Stunde " + _naechsteStunde + ", nicht " + h + ".");
@@ -524,6 +550,10 @@ namespace WindowsFormsApplication1
             BedarfGesamtKwh += b;
 
             double rest = b;
+            bool gleitend = !double.IsNaN(kuehlVorlaufC);
+            double vorlauf = gleitend && mitSpeicher
+                ? Kaeltevorlauf.MitSpeicherregel(kuehlVorlaufC, Kaeltevorlauf.SpeicherVorlauf(Speicher))
+                : kuehlVorlaufC;
 
             // KU3-5 (5.5 Schritt 4): Ladewunsch der Kältespeicher in der Ladephase - bis zur
             // Abschaltschwelle, begrenzt durch die Ladeleistung. Die Erzeuger bekommen ihn als
@@ -537,7 +567,9 @@ namespace WindowsFormsApplication1
                 foreach (Kaelteerzeuger e in Erzeuger)
                 {
                     if (rest + lade <= 0) break;
-                    if (e.Maschine != null && e.Maschine.FreieKuehlung(h)) MaschineRechnen(e, h, ref rest, ref lade);
+                    if (e.Maschine == null) continue;
+                    double kw = gleitend ? e.Maschine.KaltwasserAmVorlauf(vorlauf) : e.Maschine.Kaltwassertemperatur;
+                    if (e.Maschine.FreieKuehlung(h, kw)) MaschineRechnen(e, h, ref rest, ref lade, kw);
                 }
 
             // KU3-5: Die Kältespeicher entladen NACH der freien Kühlung und VOR den verdichtenden
@@ -549,14 +581,19 @@ namespace WindowsFormsApplication1
                 if (rest + lade <= 0) break;
                 if (e.Maschine != null)
                 {
-                    if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h))) MaschineRechnen(e, h, ref rest, ref lade);
+                    double kw = gleitend ? e.Maschine.KaltwasserAmVorlauf(vorlauf) : e.Maschine.Kaltwassertemperatur;
+                    if (!(mitFreierKuehlung && e.Maschine.FreieKuehlung(h, kw))) MaschineRechnen(e, h, ref rest, ref lade, kw);
                     continue;
                 }
                 double anteil = (e.Zeitanteil != null && h < e.Zeitanteil.Length) ? e.Zeitanteil[h] : 0.0;
                 if (anteil <= 0 || e.Kennlinie == null) continue;
 
+                // KK2: am Stundenvorlauf die Schar am Vorlauf der Maschine, die freie Kühlung gegen ihn.
+                bool amVorlauf = gleitend && e.Schar != null;
+                double vorlaufWp = amVorlauf ? e.VorlaufAmErzeuger(vorlauf) : e.KuehlVorlaufC;
+                Kuehlkennlinie kennlinie = amVorlauf ? e.Schar.Kennlinie(vorlaufWp) : e.Kennlinie;
                 double t = (e.Quelltemperatur != null && h < e.Quelltemperatur.Length) ? e.Quelltemperatur[h] : 0.0;
-                KennlinienPunkt p = e.Kennlinie.Auswerten(t, extrapolationErlaubt);
+                KennlinienPunkt p = kennlinie.Auswerten(t, extrapolationErlaubt);
                 switch (p.Lage)
                 {
                     case KennlinienLage.KappungUnten: e.StundenUnterKennlinie++; break;
@@ -571,7 +608,7 @@ namespace WindowsFormsApplication1
                 // Quellentemperatur plus Grädigkeit den Kaltwasser-Vorlauf nicht übersteigen, bis zur
                 // Leistungsgrenze (ohne sie die Kälteleistung der Kennlinie) im offenen Zeitanteil.
                 double frei = 0.0;
-                if (e.FreieKuehlungSole && t + e.FreieKuehlungGraedigkeitK <= e.KuehlVorlaufC)
+                if (e.FreieKuehlungSole && t + e.FreieKuehlungGraedigkeitK <= vorlaufWp)
                 {
                     double grenze = e.FreieKuehlungLeistungKw ?? p.Pkuehl;
                     double moeglich = anteil * grenze;
@@ -738,11 +775,11 @@ namespace WindowsFormsApplication1
         /// Ladewunsch <paramref name="lade"/> der Kältespeicher (KU3-5), bucht Kälte und Strom (Verdichter ·
         /// (1 + Hilfsstromanteil) + Hilfsstrom der Rückkühlung) und schreibt Rest und Ladewunsch fort.
         /// </summary>
-        private void MaschineRechnen(Kaelteerzeuger e, int h, ref double rest, ref double lade)
+        private void MaschineRechnen(Kaelteerzeuger e, int h, ref double rest, ref double lade, double kaltwasserC)
         {
             // KU3-5: Die Maschine sieht Raum und Ladewunsch als EINE Last; der Raum hat Vorrang.
             double last = rest + lade;
-            KaeltemaschinenStunde s = e.Maschine.Stunde(h, last);
+            KaeltemaschinenStunde s = e.Maschine.Stunde(h, last, kaltwasserC);
             if (s.Randwert) e.StundenRandwert++;
             if (!(s.KaelteKwh > 0))
             {

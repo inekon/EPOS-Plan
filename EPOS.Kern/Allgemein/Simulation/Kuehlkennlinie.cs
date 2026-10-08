@@ -290,6 +290,27 @@ namespace WindowsFormsApplication1
             return Block(alle, stuetzstellen, kuehlVorlauf, VorlaufWaehlen(stuetzstellen, kuehlVorlauf));
         }
 
+        /// <summary>
+        /// KK2: die Kennlinie des unteren Blocks <paramref name="unten"/> mit dem oberen <paramref name="oben"/> und dem
+        /// Gewicht <paramref name="gewicht"/> — dieselben Felder, die <see cref="Bilden(IEnumerable{KuehlkennlinienZeile}, int?, bool)"/>
+        /// zwischen zwei Stützstellen setzt; die Blöcke selbst bleiben unverändert (sie werden je Gerät einmal gebildet).
+        /// </summary>
+        internal static Kuehlkennlinie Gewichtet(Kuehlkennlinie unten, Kuehlkennlinie oben, double gewicht, int? gewuenscht)
+        {
+            var k = new Kuehlkennlinie(unten.Stuetzstellen, gewuenscht, unten.Vorlauf, unten.Laststufe, unten._temperatur,
+                                       unten._eer, unten._pkuehl, unten.Dubletten, unten.DublettenAbweichend, unten.Befund);
+            if (oben != null)
+            {
+                k.Oben = oben;
+                k.GewichtOben = gewicht;
+            }
+            return k;
+        }
+
+        /// <summary>KK2: die Kennlinie EINES Vorlaufs <paramref name="vorlauf"/> (eine Stützstelle) aus allen Zeilen, nach ID geordnet.</summary>
+        internal static Kuehlkennlinie BlockAusZeilen(List<KuehlkennlinienZeile> alleNachId, List<int> stuetzstellen, int vorlauf)
+            => Block(alleNachId, stuetzstellen, null, vorlauf);
+
         /// <summary>Die Kennlinie EINES Vorlaufs: höchste Laststufe, Dubletten, Achsenbefund.</summary>
         private static Kuehlkennlinie Block(List<KuehlkennlinienZeile> alle, List<int> stuetzstellen,
                                             int? kuehlVorlauf, int vorlauf)
@@ -500,5 +521,87 @@ namespace WindowsFormsApplication1
         {
             return y0 + (xq - x0) * (y1 - y0) / (x1 - x0);
         }
+    }
+
+    /// <summary>
+    /// <b>Die Kühlkennlinie EINES Projektgeräts über ALLE Kühl-Vorläufe</b> (KK2; Entwurf KK 2.4, Befund L1): alle Blöcke
+    /// je Gerät einmal gebildet, ausgewertet an einem beliebigen, auch gebrochenen Stundenvorlauf. STRENG zwischen zwei
+    /// rechenbaren Stützstellen wird linear im Vorlauf gewichtet (<see cref="VorlaufInterpolation"/>, AK3-I, I-3), sonst
+    /// gilt die nächste Stützstelle — bei gleichem Abstand die kältere —, außerhalb also der Randwert. An einem
+    /// ganzzahligen Vorlauf ist das Zeichen für Zeichen <see cref="Kuehlkennlinie.Bilden(IEnumerable{KuehlkennlinienZeile}, int?, bool)"/>
+    /// mit <c>interpolieren</c> = true (Probe „fester Vorlauf bitgleich“).
+    /// </summary>
+    public sealed class KuehlkennlinienSchar
+    {
+        private readonly List<int> _stuetzstellen;
+        private readonly Kuehlkennlinie[] _bloecke;
+        private double _letzterVorlauf = double.NaN;
+        private Kuehlkennlinie _letzte;
+
+        /// <param name="zeilen">Alle Kühlkennlinienzeilen des Geräts (Reihenfolge beliebig).</param>
+        public KuehlkennlinienSchar(IEnumerable<KuehlkennlinienZeile> zeilen)
+        {
+            List<KuehlkennlinienZeile> alle = zeilen == null
+                ? new List<KuehlkennlinienZeile>()
+                : zeilen.OrderBy(z => z.ID).ToList();
+            _stuetzstellen = alle.Select(z => z.Vorlauf).Distinct().OrderBy(v => v).ToList();
+            _bloecke = new Kuehlkennlinie[_stuetzstellen.Count];
+            for (int i = 0; i < _bloecke.Length; i++)
+                _bloecke[i] = Kuehlkennlinie.BlockAusZeilen(alle, _stuetzstellen, _stuetzstellen[i]);
+        }
+
+        /// <summary>Alle Vorlauf-Stützstellen, aufsteigend.</summary>
+        public IReadOnlyList<int> Stuetzstellen => _stuetzstellen;
+
+        /// <summary>true, wenn das Gerät keine Kühlkennlinienzeile trägt.</summary>
+        public bool Leer => _stuetzstellen.Count == 0;
+
+        /// <summary>Die kleinste Stützstelle [°C] — die Untergrenze des Erzeugervorlaufs (Entwurf KK 2.3); ohne Zeilen NaN.</summary>
+        public double VorlaufMinC => _stuetzstellen.Count > 0 ? _stuetzstellen[0] : double.NaN;
+
+        /// <summary>
+        /// Die Kennlinie am Vorlauf <paramref name="vorlaufC"/> [°C]; NaN = kleinster Stützwert (wie <c>Kuehl_Vorlauf</c>
+        /// NULL). Ohne Zeilen eine leere Kennlinie. Der zuletzt gefragte Vorlauf wird gehalten (eine Stunde fragt mehrfach).
+        /// </summary>
+        public Kuehlkennlinie Kennlinie(double vorlaufC)
+        {
+            if (_letzte != null && vorlaufC.Equals(_letzterVorlauf)) return _letzte;
+            Kuehlkennlinie k = Bilden(vorlaufC);
+            _letzterVorlauf = vorlaufC;
+            _letzte = k;
+            return k;
+        }
+
+        private Kuehlkennlinie Bilden(double vorlaufC)
+        {
+            if (_stuetzstellen.Count == 0) return Kuehlkennlinie.Bilden(null, null);
+            bool ohne = double.IsNaN(vorlaufC) || double.IsInfinity(vorlaufC);
+            int? gewuenscht = !ohne && vorlaufC == Math.Floor(vorlaufC) && Math.Abs(vorlaufC) < int.MaxValue
+                ? (int?)(int)vorlaufC : null;
+            if (!ohne && VorlaufInterpolation.Einschliessend(_stuetzstellen, vorlaufC, out int unten, out double gewicht))
+            {
+                Kuehlkennlinie ku = _bloecke[unten], ko = _bloecke[unten + 1];
+                if (ku.Rechenbar && ko.Rechenbar) return Kuehlkennlinie.Gewichtet(ku, ko, gewicht, gewuenscht);
+            }
+            return Kuehlkennlinie.Gewichtet(_bloecke[Naechste(vorlaufC, ohne)], null, 0.0, gewuenscht);
+        }
+
+        /// <summary>Die nächste Stützstelle (K21): ohne Vorlauf die kleinste, bei gleichem Abstand die kältere.</summary>
+        private int Naechste(double vorlaufC, bool ohne)
+        {
+            if (ohne) return 0;
+            int beste = 0;
+            double abstand = double.MaxValue;
+            for (int i = 0; i < _stuetzstellen.Count; i++)
+            {
+                double d = Math.Abs(_stuetzstellen[i] - vorlaufC);
+                if (d < abstand) { abstand = d; beste = i; }
+            }
+            return beste;
+        }
+
+        /// <summary>Kälteleistung und EER am Vorlauf <paramref name="vorlaufC"/> bei der Stundentemperatur <paramref name="temperatur"/>.</summary>
+        public KennlinienPunkt Auswerten(double vorlaufC, double temperatur, bool extrapolationErlaubt)
+            => Kennlinie(vorlaufC).Auswerten(temperatur, extrapolationErlaubt);
     }
 }

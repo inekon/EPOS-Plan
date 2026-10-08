@@ -224,8 +224,24 @@ namespace WindowsFormsApplication1
         /// <summary>Elektrische Leistung der Rückkühlung im Nennpunkt [kW]; 0 = im EER enthalten.</summary>
         public double HilfsstromRueckkuehlungKw;
 
-        /// <summary>Kaltwassertemperatur des Laufs [°C].</summary>
+        /// <summary>Kaltwassertemperatur des Laufs [°C] — der feste Vorlauf; am Stundenvorlauf (KK2) die Vorgabe ohne Stundenwert.</summary>
         public double Kaltwassertemperatur;
+
+        /// <summary>
+        /// KK2 (Entwurf KK 2.3): die Untergrenze des Kaltwasservorlaufs am Stundenvorlauf [°C] — <c>Kaltwasser_Vorlauf_Min</c>
+        /// der Projektkopie, ohne ihn die kleinste Kaltwasser-Stützstelle der Kennlinie; NaN = keine.
+        /// </summary>
+        public double KaltwasserVorlaufMinC = double.NaN;
+
+        /// <summary>
+        /// KK2: die Kaltwassertemperatur der Stunde am verlangten Vorlauf <paramref name="vorlaufC"/> [°C] — nie kälter als
+        /// <see cref="KaltwasserVorlaufMinC"/>; NaN = <see cref="Kaltwassertemperatur"/> (der feste Vorlauf).
+        /// </summary>
+        public double KaltwasserAmVorlauf(double vorlaufC)
+        {
+            if (double.IsNaN(vorlaufC) || double.IsInfinity(vorlaufC)) return Kaltwassertemperatur;
+            return !double.IsNaN(KaltwasserVorlaufMinC) && vorlaufC < KaltwasserVorlaufMinC ? KaltwasserVorlaufMinC : vorlaufC;
+        }
 
         /// <summary>
         /// Anzahl gleicher Maschinen der Anlagenzeile (KU3-4, <c>Kaeltemaschine_Anzahl</c>), mindestens 1: Die
@@ -245,33 +261,43 @@ namespace WindowsFormsApplication1
             Rueckkuehlart == KaeltemaschineSchema.RUECKKUEHLART_NASSKUEHLER;
 
         /// <summary>Kühlt die Maschine in Stunde <paramref name="h"/> frei?</summary>
-        public bool FreieKuehlung(int h)
+        public bool FreieKuehlung(int h) => FreieKuehlung(h, Kaltwassertemperatur);
+
+        /// <summary>KK2: Kühlt die Maschine in Stunde <paramref name="h"/> bei der Kaltwassertemperatur <paramref name="kaltwasserC"/> frei?</summary>
+        public bool FreieKuehlung(int h, double kaltwasserC)
         {
             if (!FreieKuehlungMoeglich || Rueckkuehltemperatur_stuendlich == null ||
                 h < 0 || h >= Rueckkuehltemperatur_stuendlich.Length) return false;
-            return Rueckkuehltemperatur_stuendlich[h] <= Kaltwassertemperatur - KaelteFestwerte.FREIE_KUEHLUNG_ABSTAND_K;
+            return Rueckkuehltemperatur_stuendlich[h] <= kaltwasserC - KaelteFestwerte.FREIE_KUEHLUNG_ABSTAND_K;
         }
 
         /// <summary>
         /// Rechnet eine Stunde: wie viel der Last <paramref name="lastKwh"/> die Maschine deckt und mit
         /// welchem Strom. Die Last ist der offene Kältebedarf der Stunde [kWh].
         /// </summary>
-        public KaeltemaschinenStunde Stunde(int h, double lastKwh)
+        public KaeltemaschinenStunde Stunde(int h, double lastKwh) => Stunde(h, lastKwh, Kaltwassertemperatur);
+
+        /// <summary>
+        /// KK2 (Entwurf KK 2.4): eine Stunde bei der Kaltwassertemperatur <paramref name="kaltwasserC"/> [°C] — die
+        /// zweidimensionale Kennlinie trägt die Achse; mit <see cref="Kaltwassertemperatur"/> Zeichen für Zeichen
+        /// <see cref="Stunde(int, double)"/>.
+        /// </summary>
+        public KaeltemaschinenStunde Stunde(int h, double lastKwh, double kaltwasserC)
         {
-            if (Anzahl <= 1) return StundeEinzeln(h, lastKwh);
-            KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl);
+            if (Anzahl <= 1) return StundeEinzeln(h, lastKwh, kaltwasserC);
+            KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl, kaltwasserC);
             return new KaeltemaschinenStunde(s.KaelteKwh * Anzahl, s.VerdichterKwh * Anzahl, s.HilfsstromKwh * Anzahl,
                                              s.KapazitaetKw * Anzahl, s.FreieKuehlung, s.Randwert, s.Takt);
         }
 
         /// <summary>Eine Stunde EINER Maschine der Anlagenzeile.</summary>
-        private KaeltemaschinenStunde StundeEinzeln(int h, double lastKwh)
+        private KaeltemaschinenStunde StundeEinzeln(int h, double lastKwh, double kaltwasserC)
         {
             if (!(lastKwh > 0)) return default;
             double rk = Rueckkuehltemperatur_stuendlich != null && h >= 0 && h < Rueckkuehltemperatur_stuendlich.Length
                 ? Rueckkuehltemperatur_stuendlich[h] : KaelteFestwerte.RUECKKUEHLTEMPERATUR_WASSER_C;
 
-            if (FreieKuehlung(h))
+            if (FreieKuehlung(h, kaltwasserC))
             {
                 double kap = NennleistungKw;
                 if (!(kap > 0)) return default;
@@ -282,7 +308,7 @@ namespace WindowsFormsApplication1
             }
 
             if (Kennlinie == null || Kennlinie.Leer) return default;
-            KaeltemaschinenPunkt p = Kennlinie.Auswerten(rk, Kaltwassertemperatur);
+            KaeltemaschinenPunkt p = Kennlinie.Auswerten(rk, kaltwasserC);
             if (!(p.LeistungKw > 0) || !(p.Eer > 0))
                 return new KaeltemaschinenStunde(0, 0, 0, 0, false, p.Randwert, false);
 
@@ -377,6 +403,9 @@ namespace WindowsFormsApplication1
             var k = new KaeltemaschinenKennlinie(m.Kennlinie.Select(p =>
                 (p.Rueckkuehltemperatur, p.Kaltwassertemperatur, p.EER, p.Kaelteleistung_kW)));
             double kw = k.Kaltwasserstuetzstellen.Count > 0 ? k.Kaltwasserstuetzstellen[0] : 0.0;
+            // KK2: die Untergrenze am Stundenvorlauf — Kaltwasser_Vorlauf_Min, ohne ihn die kleinste Stützstelle.
+            double untergrenze = m.Kaltwasser_Vorlauf_Min.HasValue ? m.Kaltwasser_Vorlauf_Min.Value
+                : (k.Kaltwasserstuetzstellen.Count > 0 ? k.Kaltwasserstuetzstellen[0] : double.NaN);
             // KU3-4: der Kaltwasservorlauf der Projektkopie (Kuehl_Vorlauf) vor der kleinsten Stützstelle.
             if (m.Kuehl_Vorlauf.HasValue) kw = m.Kuehl_Vorlauf.Value;
             if (m.Kaltwasser_Vorlauf_Min.HasValue && kw < m.Kaltwasser_Vorlauf_Min.Value)
@@ -397,6 +426,7 @@ namespace WindowsFormsApplication1
                 Mindestteillast = Math.Max(0.0, Math.Min(100.0, m.Mindestteillast_Prozent ?? 0.0)) / 100.0,
                 HilfsstromRueckkuehlungKw = Math.Max(0.0, m.Hilfsstrom_Rueckkuehlung_kW ?? 0.0),
                 Kaltwassertemperatur = kw,
+                KaltwasserVorlaufMinC = untergrenze,
                 Kennlinie = k
             };
         }
