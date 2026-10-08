@@ -50,8 +50,10 @@ namespace WindowsFormsApplication1
         /// </list>
         /// </summary>
         /// <returns>Der Kühlkreis des Gebäudes; <c>null</c> ohne kühlgekoppelte Zone.</returns>
+        /// <param name="kuehlErzeugerMinC">KZ2: der kälteste erreichbare Erzeugervorlauf als Untergrenze der Kühlkurve [°C];
+        /// NaN = der Anlagenvorlauf (wie <see cref="KuehlkurveUntergrenzeSetzen"/> im Einzonenweg).</param>
         internal static Gebaeudekuehlkreis ZonenKuehlkopplungAufloesen(ProjektGebaeudeModel g, IReadOnlyList<ZonenEingang> zonen,
-                                                                     double kuehlVorlaufAnlageC)
+                                                                     double kuehlVorlaufAnlageC, double kuehlErzeugerMinC = double.NaN)
         {
             if (g == null) throw new ArgumentNullException(nameof(g));
             if (zonen == null) throw new ArgumentNullException(nameof(zonen));
@@ -216,7 +218,102 @@ namespace WindowsFormsApplication1
                 e.AuslegungstagKuehlungMittelC = tagMittel;
                 e.Gebaeudekuehlkreis = kreis;
             }
+
+            // ---- 5. KZ2: die Kühlkurve des Kühlkreises - nur mit Kernschalter, Stufe AK3 und Kuehlkurve_Aktiv ----
+            if (g.Kuehlkurve_Aktiv && KuehlkurveKernschalter.Wirksam(erste.AnlagenkopplungStufe))
+                ZonenKuehlkurveAufloesen(g, kreis, zonen, erste, kuehlVorlaufAnlageC, kuehlErzeugerMinC);
             return kreis;
+        }
+
+        /// <summary>
+        /// <b>Die Kühlkurve im Mehrzonenweg</b> (Entwurf KK 2.8, KZ2; Festlegung 14; E107) — der Spiegel der Heizkurve am
+        /// höchsten Heizsollwert (<see cref="ZonenkopplungAufloesen"/>): EINE Kurve je Kühlkreis aus den Werten des Gebäudes —
+        /// Fußpunkt <c>Kuehlkurve_Fusspunkt</c>, sonst der Auslegungsrücklauf des Gebäudes; Auslegungspunkt der
+        /// Auslegungsvorlauf des Gebäudes bei der Auslegungs-Außentemperatur nach <c>Kuehlkurve_Auslegung_Weg</c>, deren
+        /// Bezug der <b>niedrigste</b> Kühlsollwert der gekühlten, gekoppelten Zonen ist (auch für die Wege 2 und 3, E107);
+        /// unten die Vorlaufgrenze des Gebäudes und der kälteste erreichbare Erzeugervorlauf. Die Reihe wird je Stunde am
+        /// niedrigsten Kühlsollwert der Zonen gerechnet, die in dieser Stunde kühlen (<see cref="ZonenKuehlkurveBilden"/>),
+        /// dieselbe Reihe für jede Zone; der feste Vorlauf entfällt (NaN), wie im Einzonenweg.
+        /// </summary>
+        private static void ZonenKuehlkurveAufloesen(ProjektGebaeudeModel g, Gebaeudekuehlkreis kreis, IReadOnlyList<ZonenEingang> zonen,
+                                                     GebaeudeModellEingang erste, double kuehlVorlaufAnlageC, double kuehlErzeugerMinC)
+        {
+            double fuss = g.Kuehlkurve_Fusspunkt ?? kreis.Uebergabe.AuslegungRuecklaufC;
+            if (g.Kuehlkurve_Fusspunkt.HasValue)
+                erste.Bereich(Kuehlkurve.SPALTE_FUSSPUNKT, fuss, GebaeudeFestwerte.KUEHL_VORLAUF_MIN, GebaeudeFestwerte.KUEHL_VORLAUF_MAX);
+            double kK = g.Kuehlkurve_Raumeinfluss ?? 0.0;
+            if (g.Kuehlkurve_Raumeinfluss.HasValue)
+                erste.Bereich(Kuehlkurve.SPALTE_RAUMEINFLUSS, kK,
+                              GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MIN, GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MAX);
+            if (!Kuehlkurve.WegBekannt(g.Kuehlkurve_Auslegung_Weg))
+                erste.Fehler(GebaeudeModellFehler.UebergabeUngueltig,
+                             string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_AK_KUEHLKURVE_WEG_UNBEKANNT,
+                                           g.Kuehlkurve_Auslegung_Weg));
+
+            // Bezug: der niedrigste Kühlsollwert der gekühlten, gekoppelten Zonen (Spiegel des höchsten Heizsollwerts).
+            double sollMin = double.PositiveInfinity;
+            foreach (ZonenEingang z in zonen)
+            {
+                GebaeudeModellEingang e = z.Eingang;
+                if (e.KuehlKopplungWirksam && Endlich(e.KuehlSollwert) && e.KuehlSollwert < sollMin) sollMin = e.KuehlSollwert;
+            }
+            Kuehlkurve kurve = Kuehlkurve.Bilden(fuss, kreis.Uebergabe.AuslegungVorlaufC, kreis.VorlaufgrenzeC,
+                                                 g.Kuehlkurve_Auslegung_Weg, g.Kuehlkurve_Auslegung_Aussen,
+                                                 double.IsPositiveInfinity(sollMin) ? double.NaN : sollMin, erste.ThetaOut);
+            double erzeuger = Endlich(kuehlErzeugerMinC) ? kuehlErzeugerMinC
+                            : Endlich(kuehlVorlaufAnlageC) ? kuehlVorlaufAnlageC : double.NaN;
+            kreis.Kuehlkurve = kurve;
+            kreis.KurveErzeugerC = erzeuger;
+            kreis.RaumeinflussKK = kK;
+            kreis.SollwertC = new double[8760];
+            kreis.VorlaufAnGrenze = new bool[8760];
+            foreach (ZonenEingang z in zonen)
+            {
+                GebaeudeModellEingang e = z.Eingang;
+                if (!e.KuehlKopplungWirksam) continue;
+                e.Kuehlkurve = kurve;
+                e.KuehlkurveWirksam = true;
+                e.KuehlkurveRaumeinflussKK = kK;
+                e.KuehlkurveErzeugerC = erzeuger;
+                e.KuehlVorlaufAnGrenze = kreis.VorlaufAnGrenze;
+                e.KuehlVorlaufFestC = double.NaN;
+                e.KuehlVorlaufGekappt = false;
+            }
+            ZonenKuehlkurveBilden(kreis, zonen);
+        }
+
+        /// <summary>
+        /// <b>Die Kurvenreihe des Kühlkreises</b> (KZ2): je Stunde am niedrigsten Kühlsollwert der gekühlten, gekoppelten Zonen,
+        /// die in dieser Stunde kühlen — eine Zone mit „aus“ (θ_max = +∞, KP1) oder in Heiztagesart der Zonensperre zählt nicht;
+        /// kühlt keine, gilt der Fußpunkt (θ_max +∞). Schreibt <see cref="Gebaeudekuehlkreis.VorlaufC"/>,
+        /// <see cref="Gebaeudekuehlkreis.SollwertC"/> und <see cref="Gebaeudekuehlkreis.VorlaufAnGrenze"/> an Ort und Stelle — die
+        /// Zonen lesen dieselben Felder. Der Kreis von AK3 ruft sie nach Pass 1 erneut (<see cref="KuehlRaumeinfluss.AusSteppern"/>),
+        /// weil die Zonensperre des Pass 1 die Kühlsollwertreihen der Heiztage auf „aus“ setzt. Ohne Kurve geschieht nichts.
+        /// </summary>
+        internal static void ZonenKuehlkurveBilden(Gebaeudekuehlkreis kreis, IReadOnlyList<ZonenEingang> zonen)
+        {
+            if (kreis?.Kuehlkurve == null || zonen == null) return;
+            double[] aussen = null;
+            var max = new List<double[]>();
+            foreach (ZonenEingang z in zonen)
+            {
+                GebaeudeModellEingang e = z.Eingang;
+                if (!e.KuehlKopplungWirksam || !ReferenceEquals(e.Gebaeudekuehlkreis, kreis)) continue;
+                aussen ??= e.ThetaOut;
+                max.Add(e.ThetaMax);
+            }
+            if (aussen == null) return;
+            for (int h = 0; h < 8760; h++)
+            {
+                double s = double.PositiveInfinity;
+                foreach (double[] m in max)
+                {
+                    double x = m[h];
+                    if (Endlich(x) && x < s) s = x;
+                }
+                kreis.SollwertC[h] = s;
+                kreis.VorlaufC[h] = kreis.Kuehlkurve.VorlaufC(s, aussen[h], kreis.KurveErzeugerC, out kreis.VorlaufAnGrenze[h]);
+            }
         }
 
         /// <summary>

@@ -159,6 +159,8 @@ namespace WindowsFormsApplication1
                             KlimakalenderGemeinsam gemeinsam, out double verbrauchAltKwh)
         {
             LetzterAufheizplan = null;
+            // KZ2: die Probewerte der Kühlkurve vor der Weiche - so erreichen sie auch den Mehrzonenweg (nur mit Kernschalter).
+            if (KuehlkurveKernschalter.Ein) KuehlkurveKernschalter.Probewerte?.Invoke(gebaeude);
             // Die Weiche nach der Zahl der Zonen (Stufe G6b): ab zwei Zonen bis zur Grenze der
             // Regelklasse (GebaeudeZonenregeln.Rechenbar) die Zonenschleife; darüber lehnt der
             // Eingangsbauer das Gebäude benannt ab (MehrereZonen, mit der Grenze).
@@ -256,13 +258,15 @@ namespace WindowsFormsApplication1
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
                     gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                    AnlagenVorlaufC, VerfuegbarkeitJeZone, KuehlVorlaufAnlageC);
+                    AnlagenVorlaufC, VerfuegbarkeitJeZone, KuehlVorlaufAnlageC, KuehlVorlaufErzeugerMinC);
                 LetztesMehrzonenergebnis = m;
 
                 // AK3-W3c (Entwurf AK3 2.6): Im AK3-Weg ist dieser Lauf Pass 1 auch für das Mehrzonengebäude; daneben
                 // entsteht aus DENSELBEN Zonen (zustandslos, samt Aufheizplänen) eine zweite, noch nicht eingeschwungene
                 // Zonenschleife für den Kreis — Anlage außen, Zonen innen. Ohne Erfassung geschieht nichts.
-                if (Ak3Erfassen != null && !Probelauf && m.Eingaenge.Count > 0 && m.Eingaenge[0].Eingang.KopplungWirksam)
+                // KZ2 (Kreis mit gekühlten Zonen): mit dem Kernschalter bekommt jedes Mehrzonengebäude mit einer heiz- ODER
+                // kühlgekoppelten Zone den Kreis, auch ohne heizgekoppelte erste Zone; ohne Schalter Zeichen für Zeichen wie bisher.
+                if (Ak3Erfassen != null && !Probelauf && m.Eingaenge.Count > 0 && KreisMitZonen(m.Eingaenge))
                     Ak3Erfassen(index, gebaeude, () => GebaeudeStepper.Mehrzonen(new Zonenschleife(m.Eingaenge, wer)));
 
                 Array.Copy(m.Gebaeude.HeizlastW, ziel, 8760);
@@ -287,6 +291,15 @@ namespace WindowsFormsApplication1
         // =====================================================================
         //  Die Eingänge des Laufs - auch für die Auskunft ohne Jahreslauf
         // =====================================================================
+
+        /// <summary>
+        /// Bekommt ein Mehrzonengebäude im AK3-Weg den Kreis? Ohne Kernschalter der Bestand — die erste Zone ist heizgekoppelt;
+        /// mit ihm (KZ2) eine Zone mit wirksamer Heiz- oder Kühlkopplung.
+        /// </summary>
+        internal static bool KreisMitZonen(IReadOnlyList<ZonenEingang> zonen)
+            => KuehlkurveKernschalter.Zonenkuehlung
+               ? zonen.Any(z => z.Eingang.KopplungWirksam || z.Eingang.KuehlKopplungWirksam)
+               : zonen[0].Eingang.KopplungWirksam;
 
         /// <summary>Rechnet das Gebäude in der Zonenschleife (ab zwei Zonen bis zur Grenze der Regelklasse, Stufe G6b)?</summary>
         internal static bool Mehrzonenweg(ProjektGebaeudeModel gebaeude)
@@ -330,9 +343,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <exception cref="GebaeudeModellException">bei jedem benannten Fehler der Zonen oder der Kopplung.</exception>
         internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
-            => Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
+        {
+            if (KuehlkurveKernschalter.Ein) KuehlkurveKernschalter.Probewerte?.Invoke(gebaeude);
+            return Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
                                         Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                                        out _, out _, out _, out _, AnlagenVorlaufC, KuehlVorlaufAnlageC);
+                                        out _, out _, out _, out _, AnlagenVorlaufC, KuehlVorlaufAnlageC,
+                                        KuehlVorlaufErzeugerMinC);
+        }
 
         private GebaeudeKlima Zonenklima(KlimakalenderGemeinsam gemeinsam)
             => new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,

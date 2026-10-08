@@ -262,6 +262,8 @@ namespace WindowsFormsApplication1
         /// <param name="aufheizleistungTestW">Testnaht der Grenzfallprobe (N-AH8): P_auf statt der Bemessung [W]; NaN = keine.</param>
         /// <param name="vorlaufAnlageC">Der feste Vorlauf der Anlage [°C] für ein gekoppeltes Gebäude ohne Heizkurve (E63,
         /// wie im Einzonenweg); NaN = keiner.</param>
+        /// <param name="kuehlErzeugerMinC">KZ2: der kälteste erreichbare Erzeugervorlauf als Untergrenze der Kühlkurve [°C];
+        /// NaN = der Anlagenvorlauf.</param>
         /// <param name="kuehlVorlaufAnlageC">Der Kühlvorlauf der Anlage [°C] für die Kühlübergabe je Zone (Entwurf KK, KZ1;
         /// nur mit dem Kernschalter); NaN = keiner.</param>
         /// <exception cref="GebaeudeModellException">benannt: keine beheizte Zone, eine Trennfläche oder
@@ -275,7 +277,8 @@ namespace WindowsFormsApplication1
                                                           Aufheizvorgabe aufheizvorgabe = null,
                                                           double aufheizleistungTestW = double.NaN,
                                                           double vorlaufAnlageC = double.NaN,
-                                                          double kuehlVorlaufAnlageC = double.NaN)
+                                                          double kuehlVorlaufAnlageC = double.NaN,
+                                                          double kuehlErzeugerMinC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -396,7 +399,7 @@ namespace WindowsFormsApplication1
             // Entwurf KK (KZ1): die Kühlübergabe je Zone - ebenso erst jetzt; ohne Kernschalter oder ohne kühlgekoppelte
             // Zone kein Aufruf, die Kälteseite bleibt ideal Zeichen für Zeichen.
             if (KuehlkurveKernschalter.Zonenkuehlung && eingaenge.Any(e => e.KuehlKopplungWirksam))
-                GebaeudeModellEingang.ZonenKuehlkopplungAufloesen(gebaeude, ergebnis, kuehlVorlaufAnlageC);
+                GebaeudeModellEingang.ZonenKuehlkopplungAufloesen(gebaeude, ergebnis, kuehlVorlaufAnlageC, kuehlErzeugerMinC);
 
             // Stufe KP3 (Entwurf KP3, Festlegung 1): die Aufheizrampen erst HIER - in beiden
             // Aufbauten (adiabater Vorlauf der 4-K-Regel und gekoppelter Lauf) -, denn erst jetzt

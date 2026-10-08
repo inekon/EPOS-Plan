@@ -145,7 +145,7 @@ namespace WindowsFormsApplication1
             // KK3 (Entwurf KK 2.2, 2.3): Raumeinfluss der Kühlkurve und gleitender Erzeugervorlauf — nur mit Kälteschranke und
             // einem Gebäude mit wirksamer Kühlkurve (Kernschalter, Stufe AK3); sonst null und der Kreis bleibt am festen Vorlauf.
             if (kreis.Kaelteschranke != null)
-                kreis.KuehlRaumeinfluss = KuehlRaumeinfluss.AusEingaengen(gebaeude.Select(g => g.Stepper.EingangEinzone).ToList());
+                kreis.KuehlRaumeinfluss = KuehlRaumeinfluss.AusSteppern(gebaeude.Select(g => g.Stepper).ToList());
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
             WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
             if (erste != null)

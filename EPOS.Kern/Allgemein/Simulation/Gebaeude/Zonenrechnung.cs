@@ -114,7 +114,8 @@ namespace WindowsFormsApplication1
                                                   double aufheizleistungTestW = double.NaN,
                                                   double vorlaufAnlageC = double.NaN,
                                                   IReadOnlyList<Anlagenverfuegbarkeit[]> verfuegbarkeitJeZone = null,
-                                                  double kuehlVorlaufAnlageC = double.NaN)
+                                                  double kuehlVorlaufAnlageC = double.NaN,
+                                                  double kuehlErzeugerMinC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -127,7 +128,8 @@ namespace WindowsFormsApplication1
                                                            out List<(int A, int B)> regelpaare,
                                                            out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                            out Dictionary<(int, int), double> deltaVorlauf,
-                                                           out double zeitAdiabat, vorlaufAnlageC, kuehlVorlaufAnlageC);
+                                                           out double zeitAdiabat, vorlaufAnlageC, kuehlVorlaufAnlageC,
+                                                           kuehlErzeugerMinC);
 
             // AK2 (6.2, zweite Verteilungsstufe): die Schranke je Zone - von der Fassade verteilt, in der
             // Reihenfolge der Zonen; ohne Reihe bleibt jede Zone, wie sie ist.
@@ -211,7 +213,8 @@ namespace WindowsFormsApplication1
                                                              out Dictionary<(int, int), double> deltaVorlauf,
                                                              out double zeitAdiabatMs,
                                                              double vorlaufAnlageC = double.NaN,
-                                                             double kuehlVorlaufAnlageC = double.NaN)
+                                                             double kuehlVorlaufAnlageC = double.NaN,
+                                                             double kuehlErzeugerMinC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -250,7 +253,8 @@ namespace WindowsFormsApplication1
                                       aufheizvorgabe: aufheizvorgabe,
                                       aufheizleistungTestW: aufheizleistungTestW,
                                       vorlaufAnlageC: vorlaufAnlageC,
-                                      kuehlVorlaufAnlageC: kuehlVorlaufAnlageC);
+                                      kuehlVorlaufAnlageC: kuehlVorlaufAnlageC,
+                                      kuehlErzeugerMinC: kuehlErzeugerMinC);
         }
 
         /// <summary>

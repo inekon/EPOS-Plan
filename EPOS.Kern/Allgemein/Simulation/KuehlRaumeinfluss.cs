@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -85,6 +86,73 @@ namespace WindowsFormsApplication1
             {
                 GebaeudeModellEingang e = eingaenge[i];
                 erzeuger[i] = grenze[i] = double.NaN;
+                if (e == null || !e.KuehlKopplungWirksam || e.KuehlVorlaufC == null) continue;
+                reihe[i] = e.KuehlVorlaufC;
+                thetaMax[i] = e.ThetaMax;
+                if (!e.KuehlkurveWirksam || e.Kuehlkurve == null) continue;
+                kurve = true;
+                kk[i] = e.KuehlkurveRaumeinflussKK > 0.0 ? e.KuehlkurveRaumeinflussKK : 0.0;
+                erzeuger[i] = e.KuehlkurveErzeugerC;
+                grenze[i] = e.Kuehlkurve.VorlaufgrenzeC;
+            }
+            return kurve ? new KuehlRaumeinfluss(kk, erzeuger, grenze, reihe, thetaMax) : null;
+        }
+
+        /// <summary>
+        /// <b>Der Raumeinfluss aus den Steppern des Kreises</b> (KK3; KZ2 Mehrzonenweg): je Gebäude im Einzonenweg der Eingang
+        /// (<see cref="AusEingaengen"/>), im Mehrzonenweg der Kühlkreis des Gebäudes (Entwurf KK 2.8, Festlegung 14) — k_K,
+        /// Erzeugergrenze, Vorlaufgrenze und Kurvenreihe kommen vom Kühlkreis; die Kurvenreihe wird zuvor an den Kühlsollwerten
+        /// nach der Zonensperre des Pass 1 neu gebildet (<see cref="GebaeudeModellEingang.ZonenKuehlkurveBilden"/>), der Bezug
+        /// ist der niedrigste Kühlsollwert der Zonen, die in der Stunde kühlen. Führungsgröße ist je Gebäude die Zone mit der
+        /// größten Überschreitung (<see cref="Absenken"/>, <see cref="Nachfuehren"/>). <c>null</c>, wenn kein Gebäude eine
+        /// wirksame Kühlkurve rechnet.
+        /// </summary>
+        internal static KuehlRaumeinfluss AusSteppern(IReadOnlyList<GebaeudeStepper> stepper)
+        {
+            if (stepper == null || stepper.Count == 0) return null;
+            int n = stepper.Count;
+            var eingaenge = new GebaeudeModellEingang[n];
+            var kreise = new Gebaeudekuehlkreis[n];
+            bool mehrzonen = false;
+            for (int i = 0; i < n; i++)
+            {
+                GebaeudeStepper s = stepper[i];
+                eingaenge[i] = s?.EingangEinzone;
+                if (s?.Schleife == null) continue;
+                List<ZonenEingang> zonen = s.Schleife.Laeufe.Select(l => l.Zone).ToList();
+                foreach (ZonenEingang z in zonen)
+                    if (z.Eingang.KuehlKopplungWirksam && z.Eingang.Gebaeudekuehlkreis?.Kuehlkurve != null)
+                    {
+                        kreise[i] = z.Eingang.Gebaeudekuehlkreis;
+                        break;
+                    }
+                if (kreise[i] == null) continue;
+                GebaeudeModellEingang.ZonenKuehlkurveBilden(kreise[i], zonen);
+                mehrzonen = true;
+            }
+            if (!mehrzonen) return AusEingaengen(eingaenge);
+
+            var kk = new double[n];
+            var erzeuger = new double[n];
+            var grenze = new double[n];
+            var reihe = new double[n][];
+            var thetaMax = new double[n][];
+            bool kurve = false;
+            for (int i = 0; i < n; i++)
+            {
+                erzeuger[i] = grenze[i] = double.NaN;
+                Gebaeudekuehlkreis k = kreise[i];
+                if (k != null)
+                {
+                    kurve = true;
+                    reihe[i] = k.VorlaufC;
+                    thetaMax[i] = k.SollwertC;
+                    kk[i] = k.RaumeinflussKK > 0.0 ? k.RaumeinflussKK : 0.0;
+                    erzeuger[i] = k.KurveErzeugerC;
+                    grenze[i] = k.Kuehlkurve.VorlaufgrenzeC;
+                    continue;
+                }
+                GebaeudeModellEingang e = eingaenge[i];
                 if (e == null || !e.KuehlKopplungWirksam || e.KuehlVorlaufC == null) continue;
                 reihe[i] = e.KuehlVorlaufC;
                 thetaMax[i] = e.ThetaMax;
@@ -196,7 +264,9 @@ namespace WindowsFormsApplication1
         {
             List<double> max = _max[i];
             while (max.Count <= zone) max.Add(double.NaN);
-            max[zone] = r.MitKuehlung ? r.ThetaMax : double.NaN;
+            // KZ2: die Führungsgröße kennt nur gekühlte, GEKOPPELTE Zonen in Kühltagesart — eine ideal gekühlte Zone eines
+            // Mehrzonengebäudes zählt nicht (im Einzonenweg trägt jeder Rand des Raumeinflusses die Kühlübergabe).
+            max[zone] = r.MitKuehlung && r.MitKuehluebergabe ? r.ThetaMax : double.NaN;
             if (!r.MitKuehluebergabe || double.IsNaN(r.KuehlVorlaufC)) return r;
             Stundenrand aus = r;
             double a = _absenkung[i];

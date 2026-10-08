@@ -153,5 +153,29 @@ namespace WindowsFormsApplication1
         internal double[] VorlaufC { get; init; }
         /// <summary>Der Strahlungsanteil der Kühlübergabe des Gebäudes [–] (Vorgabe der Art).</summary>
         internal double Strahlungsanteil { get; init; }
+
+        // ------------------------------------------------------------------ KZ2: die Kühlkurve im Mehrzonenweg
+
+        /// <summary>
+        /// Die Kühlkurve des Kühlkreises (Entwurf KK 2.8, KZ2; Festlegung 14); <c>null</c> = fester Vorlauf (ohne Kernschalter,
+        /// unter AK3 oder ohne <c>Kuehlkurve_Aktiv</c>). Mit ihr ist <see cref="VorlaufC"/> die Kurvenreihe am Bezug
+        /// <see cref="SollwertC"/>.
+        /// </summary>
+        internal Kuehlkurve Kuehlkurve { get; set; }
+
+        /// <summary>Der kälteste erreichbare Erzeugervorlauf als Untergrenze der Kurve [°C]; NaN = keine.</summary>
+        internal double KurveErzeugerC { get; set; } = double.NaN;
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K des Gebäudes [K/K]; 0 = ohne Absenkung.</summary>
+        internal double RaumeinflussKK { get; set; }
+
+        /// <summary>
+        /// Der Bezug der Kurvenreihe je Stunde [°C]: der niedrigste Kühlsollwert der gekühlten, gekoppelten Zonen in dieser
+        /// Stunde; +∞, wenn keine kühlt (Kalender „aus“ oder Heiztagesart der Zonensperre).
+        /// </summary>
+        internal double[] SollwertC { get; set; }
+
+        /// <summary>Steht der Kurvenvorlauf der Stunde an der Vorlaufgrenze (Festlegung 5)? Mit der Kurve, sonst <c>null</c>.</summary>
+        internal bool[] VorlaufAnGrenze { get; set; }
     }
 }
