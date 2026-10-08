@@ -17,7 +17,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 05.10.2026
   #812 Kostenpositionen folgen der Anlage (mit Selbstheilung ohne Änderungsstempel), #829 Schloss
   in Projektdialogen und Vorlagenverwaltung, #830 Reiter „Kosten“ zweizeilig, #834 Katalogauswahl
   (Befund, fünf spielbare Mockups), dazu die beiden Zeilen vom Kontowechsel: Katalogauswahl V1
-  gewählt und diese Übergabe (die letzten beiden Zeilen der Sitzung in der Statusdatei).
+  gewählt (#835) und diese Übergabe (#836).
 - **Basis:** gültig ist R44 `2026-10-08_R44_Kuehlkurve` (Sitzung Gebäudesimulation, #827).
   Kopfzeile „Schemaschritt angemeldet“: zuletzt gebaut 202 (#827), 203 frei.
 - Es laufen keine Agenten, es gibt keine offenen Worktrees dieser Sitzung.
