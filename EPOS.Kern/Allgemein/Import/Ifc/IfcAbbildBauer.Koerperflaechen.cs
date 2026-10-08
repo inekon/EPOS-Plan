@@ -342,7 +342,9 @@ namespace WindowsFormsApplication1
         {
             var koerper = new Dictionary<AbbildBauteil, List<Dateikoerper>>();
             foreach (var v in _koerperVormerkung)
-                if (v.Art == Bauteilkoerperart.Wand) koerper.TryAdd(v.Bauteil, v.Koerper);
+                // 17.5: Lage nur aus Körpern der Datei, nie aus gebildeten.
+                if (v.Art == Bauteilkoerperart.Wand && v.Koerper.Any(Dateikoerper.Beleg))
+                    koerper.TryAdd(v.Bauteil, v.Koerper.Where(Dateikoerper.Beleg).ToList());
             if (koerper.Count == 0) return;
             ILookup<(int, string, string), AbbildBauteil> teile = _teileOhneDarstellung.Where(t => t.Bauteil.Name != null)
                 .ToLookup(t => (t.Gebaeude, t.Bauteil.Quelltyp, Namensstamm(t.Bauteil.Name)), t => t.Bauteil);
