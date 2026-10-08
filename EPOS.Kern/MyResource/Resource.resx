@@ -34443,7 +34443,7 @@ Möchten Sie das zulassen?</value>
     <value>{0}: Die Kopplung der Zonen {1} ist in Stunde {2} nach {3} Durchläufen nicht zur Ruhe gekommen (größte Änderung zuletzt {4} K bzw. {5} W, Luftaustausch zwischen ihnen {6} m³/h). Der Bedarfslauf bricht ab.</value>
   </data>
   <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
-    <value>Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; die Kühlübergabe ist für ein Gebäude mit mehreren Zonen nicht abgebildet – die Kühlung rechnet je Zone ideal und geht als feste Last in die Anlage; die Wärmeübergabe rechnet je Zone.</value>
+    <value>Gebäudemodell VDI 6007: {0} rechnet mit {1} Zonen; nicht jede gekoppelte Zone rechnet ihre Übergabe – ideal und als feste Last in die Anlage gehen die Kühlung jeder Zone ohne wirksame Kühlübergabe je Zone und jede Zone im adiabaten Vorlauf der 4-K-Regel; die übrigen gekoppelten Zonen rechnen Wärme- und Kühlübergabe je Zone am gemeinsamen Vorlauf des Gebäudes.</value>
   </data>
   <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
     <value>Gebäudemodell VDI 6007: {0} rechnet {1} Zonen gekoppelt ({2} Teilgruppen); Vorlauf {3} Stunden; im Mittel {4} Durchläufe je gekoppelter Stunde, höchstens {5}.</value>

@@ -27,6 +27,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Action<ProjektGebaeudeModel> Probewerte { get; set; }
 
+        /// <summary>
+        /// Rechnet der Mehrzonenweg die Kühlübergabe je Zone (Entwurf KK, KZ1)? Allein der Schalter — die Stufe entscheidet
+        /// wie im Einzonenweg die Kälteseite selbst, ab AK1 (E106, Q-KK-7 (a)).
+        /// </summary>
+        internal static bool Zonenkuehlung => Ein;
+
         /// <summary>Setzt den Schalter für die Dauer eines <c>using</c>-Blocks und stellt danach den vorherigen zurück.</summary>
         public static IDisposable Schalten(bool ein)
         {

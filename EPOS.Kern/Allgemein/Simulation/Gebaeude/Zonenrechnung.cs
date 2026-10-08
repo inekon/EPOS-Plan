@@ -113,7 +113,8 @@ namespace WindowsFormsApplication1
                                                   Aufheizvorgabe aufheizvorgabe = null,
                                                   double aufheizleistungTestW = double.NaN,
                                                   double vorlaufAnlageC = double.NaN,
-                                                  IReadOnlyList<Anlagenverfuegbarkeit[]> verfuegbarkeitJeZone = null)
+                                                  IReadOnlyList<Anlagenverfuegbarkeit[]> verfuegbarkeitJeZone = null,
+                                                  double kuehlVorlaufAnlageC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -126,7 +127,7 @@ namespace WindowsFormsApplication1
                                                            out List<(int A, int B)> regelpaare,
                                                            out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                            out Dictionary<(int, int), double> deltaVorlauf,
-                                                           out double zeitAdiabat, vorlaufAnlageC);
+                                                           out double zeitAdiabat, vorlaufAnlageC, kuehlVorlaufAnlageC);
 
             // AK2 (6.2, zweite Verteilungsstufe): die Schranke je Zone - von der Fassade verteilt, in der
             // Reihenfolge der Zonen; ohne Reihe bleibt jede Zone, wie sie ist.
@@ -209,7 +210,8 @@ namespace WindowsFormsApplication1
                                                              out Dictionary<(int, int), Trennflaechenzuordnung> zuordnung,
                                                              out Dictionary<(int, int), double> deltaVorlauf,
                                                              out double zeitAdiabatMs,
-                                                             double vorlaufAnlageC = double.NaN)
+                                                             double vorlaufAnlageC = double.NaN,
+                                                             double kuehlVorlaufAnlageC = double.NaN)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             if (klima == null) throw new ArgumentNullException(nameof(klima));
@@ -247,7 +249,8 @@ namespace WindowsFormsApplication1
                                       konditionierung: konditionierung,
                                       aufheizvorgabe: aufheizvorgabe,
                                       aufheizleistungTestW: aufheizleistungTestW,
-                                      vorlaufAnlageC: vorlaufAnlageC);
+                                      vorlaufAnlageC: vorlaufAnlageC,
+                                      kuehlVorlaufAnlageC: kuehlVorlaufAnlageC);
         }
 
         /// <summary>
@@ -325,7 +328,8 @@ namespace WindowsFormsApplication1
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, thetaMax, summeW / 1000.0, 1.0, umschaltung, beides,
                                               soll, sommer, kuehlWirksam ? kuehlSoll : null,
-                                              Gebaeudeheizkreis(zonen, ergebnisse, heiz), null, erste.Nachtzeit,
+                                              Gebaeudeheizkreis(zonen, ergebnisse, heiz), GebaeudekuehlkreisErgebnis(zonen, ergebnisse, kuehl),
+                                              erste.Nachtzeit,
                                               schleife.NachtauskuehlungGesetzt ? (int?)nacht : null,
                                               Gebaeudenutzung(zonen), aufheizung: aufheizung)
             {
@@ -339,6 +343,39 @@ namespace WindowsFormsApplication1
                 GleichzeitigKuehlenKwh = kuehlWirksam ? gleichKuehlKwh : (double?)null,
                 FahrplanBegrenzt = FahrplanJeStunde(ergebnisse),
             };
+        }
+
+        /// <summary>
+        /// <b>Der Kühlkreis des Gebäudes im Mehrzonenweg</b> (Entwurf KK, KZ1; Spiegel von <see cref="Gebaeudeheizkreis(IReadOnlyList{ZonenEingang}, IReadOnlyList{GebaeudeModellErgebnis}, double[])"/>)
+        /// aus den Kühlkreisen der kühlgekoppelten Zonen: gemeinsamer Vorlauf, Rücklauf massenstromgewichtet mit W_K der Zone,
+        /// Begrenzt-Anteil je Stunde als Maximum (<see cref="WindowsFormsApplication1.Gebaeudeheizkreis.Mischen"/>), Kältebedarf
+        /// die Summe der Zonen. Die Stunden an <c>Kuehlleistung_Max</c>, ohne Kälte und an der Vorlaufgrenze sowie die größte
+        /// Überschreitung sind das Maximum über die Zonen (wie die Heizseite). <c>null</c> ohne kühlgekoppelte Zone — dann
+        /// bleibt das Gebäudeergebnis Zeichen für Zeichen wie ohne Kühlübergabe je Zone.
+        /// </summary>
+        private static KuehlkreisErgebnis GebaeudekuehlkreisErgebnis(IReadOnlyList<ZonenEingang> zonen,
+                                                                     IReadOnlyList<GebaeudeModellErgebnis> ergebnisse, double[] kuehlKwh)
+        {
+            Gebaeudekuehlkreis g = null;
+            var reihen = new List<(double WHWK, double[] VorlaufC, double[] RuecklaufC, double[] Begrenzt)>();
+            double kl = 0.0, kk = 0.0, grenze = 0.0, ueber = 0.0;
+            for (int z = 0; z < zonen.Count; z++)
+            {
+                KuehlkreisErgebnis kz = ergebnisse[z].Kuehlkreis;
+                GebaeudeModellEingang e = zonen[z].Eingang;
+                if (kz == null || !e.KuehlKopplungWirksam || e.Gebaeudekuehlkreis == null) continue;
+                g ??= e.Gebaeudekuehlkreis;
+                reihen.Add((e.KuehlUebergabeGespiegelt.WHWK, kz.VorlaufC, kz.RuecklaufC, kz.UebergabeBegrenztAnteil));
+                kl = Math.Max(kl, kz.KuehlleistungMaxStundenH);
+                kk = Math.Max(kk, kz.KeineKaelteStundenH);
+                grenze = Math.Max(grenze, kz.VorlaufgrenzeStundenH);
+                ueber = Math.Max(ueber, kz.GroessteUeberschreitungK);
+            }
+            if (g == null || kuehlKwh == null) return null;
+            WindowsFormsApplication1.Gebaeudeheizkreis.Mischen(reihen, out double[] vorlauf, out double[] ruecklauf, out double[] begrenzt);
+            var kuehlW = new double[8760];
+            for (int h = 0; h < 8760; h++) kuehlW[h] = kuehlKwh[h] * 1000.0;
+            return KuehlkreisErgebnis.Bilden(g, vorlauf, ruecklauf, begrenzt, kl, kk, grenze, kuehlW, ueber);
         }
 
         /// <summary>

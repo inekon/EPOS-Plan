@@ -82,7 +82,9 @@ namespace WindowsFormsApplication1
     /// der Wert des Gebäudes gilt — auch für die vier Kühlspalten der Zone (KU3-3, E67/E68).
     /// Die sieben Übergabefelder (E63, AK1z) löst <see cref="Zonenuebergabevorgaben.Aufloesen"/> auf, nicht
     /// <see cref="Zonenvorgaben"/>: Art, Exponent, Nennleistung [kW], Auslegungsvorlauf, -rücklauf und
-    /// -raumtemperatur [°C], Proportionalband [K].
+    /// -raumtemperatur [°C], Proportionalband [K]. Die drei Kühlübergabefelder (Schritt 137; Entwurf KK, KZ1,
+    /// Festlegung 15) — Art, Exponent, Nennleistung [kW] — löst <see cref="Zonenkuehluebergabevorgaben.Aufloesen"/> auf;
+    /// <c>null</c> heißt der Wert des Gebäudes bzw. der Anteil der Zonenfläche.
     /// </summary>
     public sealed record Zoneneingaben(
         double? Nutzflaeche = null, double? Raumhoehe = null, double? Volumen = null, bool IstBeheizt = true,
@@ -94,7 +96,8 @@ namespace WindowsFormsApplication1
         double? AuslegungVorlaufC = null, double? AuslegungRuecklaufC = null, double? AuslegungRaumtemperaturC = null,
         double? ReglerProportionalbandK = null,
         bool? KuehlungAktiv = null, double? KuehlSollwert = null, double? KuehlSollwertNacht = null,
-        double? KuehlleistungMaxKw = null)
+        double? KuehlleistungMaxKw = null,
+        string KuehlUebergabeArt = null, double? KuehlUebergabeExponent = null, double? KuehlUebergabeLeistungNennKw = null)
     {
         /// <summary>Die Eingaben einer gespeicherten Zone.</summary>
         public static Zoneneingaben Aus(ZoneModel z)
@@ -106,7 +109,8 @@ namespace WindowsFormsApplication1
                 z.Luftwechsel_Infiltration, z.Luftwechsel_Nutzer, z.Interne_Waermegewinne, z.Bewohner,
                 z.Uebergabe_Art, z.Uebergabe_Exponent, z.Uebergabe_Leistung_Nenn,
                 z.Auslegung_Vorlauf, z.Auslegung_Ruecklauf, z.Auslegung_Raumtemperatur, z.Regler_Proportionalband,
-                z.Kuehlung_Aktiv, z.Kuehl_Sollwert, z.Kuehl_Sollwert_Nacht, z.Kuehlleistung_Max);
+                z.Kuehlung_Aktiv, z.Kuehl_Sollwert, z.Kuehl_Sollwert_Nacht, z.Kuehlleistung_Max,
+                z.Kuehl_Uebergabe_Art, z.Kuehl_Uebergabe_Exponent, z.Kuehl_Uebergabe_Leistung_Nenn);
         }
     }
 
