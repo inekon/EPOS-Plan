@@ -79,6 +79,8 @@ namespace WindowsFormsApplication1
         // Raum-XML der Räume — eigene Anweisungen, damit eine Datei ohne diese Spalten den übrigen Stand behält.
         private const string SQL_GEOMETRIE = "SELECT UUID, GeoDesc, Thickness FROM BmElement WHERE RepositoryLevel = 3";
         private const string SQL_RAUMDATEN = "SELECT ReferenceUUID, ClassValue FROM BmData WHERE ClassValue IS NOT NULL";
+        // Das Journal (Standprüfung): nur der Text der Einträge, gesucht wird „DBL:COPY“.
+        private const string SQL_JOURNAL = "SELECT JournalData FROM PrJournalEntry";
         private const string SQL_STANDORT = "SELECT UUID, Location, PostalCode, Latitude, Longitude FROM SmSite";
         private const string SQL_ELEMENTBEZUG =
             "SELECT UUID, Id, SortNum, ReferenceFromUUID, ReferenceToUUID, ReferenceType FROM BmElementReference";
@@ -394,6 +396,7 @@ namespace WindowsFormsApplication1
             BauteileLesen(c, a, vorhanden, fassung);
             StandorteLesen(c, a, vorhanden);
             GeometrieLesen(c, a, vorhanden);
+            JournalLesen(c, a, vorhanden);
         }
 
         /// <summary>
@@ -571,6 +574,23 @@ namespace WindowsFormsApplication1
             catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
             {
                 a.Raumdaten.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Liest das Journal der Projektdatei (<c>PrJournalEntry</c>, optional) auf Einträge <c>DBL:COPY</c> — den jüngsten als
+        /// <see cref="SqprojAbbild.Kopiezeitpunkt"/> (Standprüfung). Eine unlesbare Tabelle bleibt still leer.
+        /// </summary>
+        private static void JournalLesen(SqliteConnection c, SqprojAbbild a, HashSet<string> vorhanden)
+        {
+            if (!vorhanden.Contains("PrJournalEntry")) return;
+            try
+            {
+                a.Kopiezeitpunkt = Standpruefung.Kopie(Zeilen(c, SQL_JOURNAL).Select(z => Text(z, "JournalData")));
+            }
+            catch (Exception ex) when (ex is SqliteException || ex is InvalidOperationException || ex is FormatException)
+            {
+                a.Kopiezeitpunkt = null;
             }
         }
 

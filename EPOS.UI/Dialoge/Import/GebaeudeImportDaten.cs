@@ -736,7 +736,79 @@ public sealed record GebaeudeProjektdateiDaten
     /// Gebäudeeditor über „Nutzungsprofil übernehmen…““); kein Auswahlfeld, gesetzt wird nichts. Leer = keiner.
     /// </summary>
     public string Einzonenvorschlag { get; init; } = "";
+
+    /// <summary>
+    /// Die Standprüfung Gebäudedatei gegen Projektdatei (nur beim Weg „Gebäudedatei + Projektdatei“, Anwenderentscheid vom 08.10.2026);
+    /// <c>null</c> = nicht geprüft.
+    /// </summary>
+    public GebaeudeStandpruefungDaten? Standpruefung { get; init; }
+
+    /// <summary>Die Wahl der Aufbauquelle (<see cref="GebaeudeAufbauquelleSchluessel"/>); ohne angeschlagene Prüfung „datei“.</summary>
+    public string Aufbauquelle { get; init; } = GebaeudeAufbauquelleSchluessel.DATEI;
+
+    /// <summary>Ist die Wahl offen (Übernehmen gesperrt, bis gewählt ist)?</summary>
+    public bool AufbauquelleOffen => Aufbauquelle == GebaeudeAufbauquelleSchluessel.OFFEN;
 }
+
+/// <summary>Die sprachneutralen Schlüssel der Aufbauquelle (Anwenderentscheid vom 08.10.2026).</summary>
+public static class GebaeudeAufbauquelleSchluessel
+{
+    /// <summary>Noch nicht gewählt — Übernehmen gesperrt.</summary>
+    public const string OFFEN = "offen";
+
+    /// <summary>Aufbauten und U-Werte der Projektdatei.</summary>
+    public const string PROJEKTDATEI = "projektdatei";
+
+    /// <summary>Der Stand der Gebäudedatei (Rangfolge nach U-Abgleich).</summary>
+    public const string DATEI = "datei";
+}
+
+/// <summary>
+/// <b>Die Standprüfung Gebäudedatei gegen Projektdatei</b> für den Dialog der Aufbauquelle: ob sie anschlägt, Zahl und Flächenanteil der
+/// abweichenden Bauteile, je Bauteilart die Mediane, bis zu fünf Beispiele und die belegten Anzeichen eines anderen Projektstands.
+/// </summary>
+public sealed record GebaeudeStandpruefungDaten
+{
+    /// <summary>Schlägt die Prüfung an (abweichende Fläche über 5 % der Hüllfläche)?</summary>
+    public bool Angeschlagen { get; init; }
+
+    /// <summary>Bauteile der Hülle mit U auf beiden Seiten.</summary>
+    public int Verglichen { get; init; }
+
+    /// <summary>Davon mit einer Abweichung über 10 %.</summary>
+    public int Abweichend { get; init; }
+
+    /// <summary>Die Bruttofläche der abweichenden Bauteile [m²].</summary>
+    public double AbweichendM2 { get; init; }
+
+    /// <summary>Die Hüllfläche brutto [m²].</summary>
+    public double HuellflaecheM2 { get; init; }
+
+    /// <summary>Der Anteil der abweichenden Fläche an der Hüllfläche [%].</summary>
+    public double AnteilProzent { get; init; }
+
+    /// <summary>Je Bauteilart der Median des U auf beiden Seiten.</summary>
+    public IReadOnlyList<GebaeudeStandpruefungArtDaten> JeArt { get; init; } = Array.Empty<GebaeudeStandpruefungArtDaten>();
+
+    /// <summary>Bis zu fünf abweichende Bauteile, größte Fläche zuerst.</summary>
+    public IReadOnlyList<GebaeudeStandpruefungBeispielDaten> Beispiele { get; init; } = Array.Empty<GebaeudeStandpruefungBeispielDaten>();
+
+    /// <summary>Die belegten Anzeichen eines anderen Projektstands (Kennwort und Satzteil).</summary>
+    public IReadOnlyList<GebaeudeStandanzeichenDaten> Anzeichen { get; init; } = Array.Empty<GebaeudeStandanzeichenDaten>();
+
+    /// <summary>Die Warnung des Protokolls als Anzeigetext; leer, wenn die Prüfung nicht anschlägt.</summary>
+    public string Meldung { get; init; } = "";
+}
+
+/// <summary>Je Bauteilart: Anzeigetext der Art, verglichene und abweichende Bauteile, Median-U der Gebäudedatei und der Projektdatei [W/(m²K)].</summary>
+public sealed record GebaeudeStandpruefungArtDaten(string Art, int Verglichen, int Abweichend, double MedianUDatei, double MedianUProjektdatei);
+
+/// <summary>Ein abweichendes Bauteil: Name, Art, Bruttofläche [m²], beide U [W/(m²K)] und beide Aufbaunamen (leer = keiner).</summary>
+public sealed record GebaeudeStandpruefungBeispielDaten(string Bauteil, string Art, double FlaecheM2, double UDatei, double UProjektdatei,
+                                                       string AufbauDatei, string AufbauProjektdatei);
+
+/// <summary>Ein Anzeichen: sprachneutrales Kennwort (<c>kopie</c>, <c>baujahr</c>, <c>dicke</c>) und der Satzteil mit seinen Belegen.</summary>
+public sealed record GebaeudeStandanzeichenDaten(string Schluessel, string Text);
 
 /// <summary>
 /// <b>Der Zonenplan für den Zonenbaum</b> (Mehrzonenkonzept 6.4): die Zonen mit ihren Räumen, die nicht zugeordneten
@@ -1631,6 +1703,77 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_SQ_HINWEIS</summary>
     public string SqHinweis { get; set; } = Resource.GIMP_DLG_SQ_HINWEIS;
+
+    // Die Wahl der Aufbauquelle bei abweichendem Projektstand (Anwenderentscheid vom 08.10.2026)
+
+    /// <summary>GIMP_DLG_AQ_TITEL</summary>
+    public string AqTitel { get; set; } = Resource.GIMP_DLG_AQ_TITEL;
+
+    /// <summary>GIMP_DLG_AQ_SATZ</summary>
+    public string AqSatz { get; set; } = Resource.GIMP_DLG_AQ_SATZ;
+
+    /// <summary>GIMP_DLG_AQ_ANZEICHEN</summary>
+    public string AqAnzeichen { get; set; } = Resource.GIMP_DLG_AQ_ANZEICHEN;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_ART</summary>
+    public string AqSpalteArt { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_ART;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_ZAHL</summary>
+    public string AqSpalteZahl { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_ZAHL;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_DATEI</summary>
+    public string AqSpalteDatei { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_DATEI;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_PROJEKTDATEI</summary>
+    public string AqSpalteProjektdatei { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_PROJEKTDATEI;
+
+    /// <summary>GIMP_DLG_AQ_TABELLE</summary>
+    public string AqTabelle { get; set; } = Resource.GIMP_DLG_AQ_TABELLE;
+
+    /// <summary>GIMP_DLG_AQ_ZAHL_WERT</summary>
+    public string AqZahlWert { get; set; } = Resource.GIMP_DLG_AQ_ZAHL_WERT;
+
+    /// <summary>GIMP_DLG_AQ_BEISPIELE</summary>
+    public string AqBeispiele { get; set; } = Resource.GIMP_DLG_AQ_BEISPIELE;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_BAUTEIL</summary>
+    public string AqSpalteBauteil { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_BAUTEIL;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_FLAECHE</summary>
+    public string AqSpalteFlaeche { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_FLAECHE;
+
+    /// <summary>GIMP_DLG_AQ_U_AUFBAU</summary>
+    public string AqUAufbau { get; set; } = Resource.GIMP_DLG_AQ_U_AUFBAU;
+
+    /// <summary>GIMP_DLG_AQ_PROJEKTDATEI</summary>
+    public string AqProjektdatei { get; set; } = Resource.GIMP_DLG_AQ_PROJEKTDATEI;
+
+    /// <summary>GIMP_DLG_AQ_DATEI</summary>
+    public string AqDatei { get; set; } = Resource.GIMP_DLG_AQ_DATEI;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT</summary>
+    public string AqNeuExport { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT;
+
+    /// <summary>GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI</summary>
+    public string AqGewaehltProjektdatei { get; set; } = Resource.GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI;
+
+    /// <summary>GIMP_DLG_AQ_GEWAEHLT_DATEI</summary>
+    public string AqGewaehltDatei { get; set; } = Resource.GIMP_DLG_AQ_GEWAEHLT_DATEI;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_TITEL</summary>
+    public string AqNeuExportTitel { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_TITEL;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_FRAGE</summary>
+    public string AqNeuExportFrage { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_FRAGE;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_JA</summary>
+    public string AqNeuExportJa { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_JA;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_NEIN</summary>
+    public string AqNeuExportNein { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_NEIN;
+
+    /// <summary>IMP_SQ_PROT_AUFBAUQUELLE_OFFEN — der Sperrgrund am OK, derselbe Text wie die Prüfung; {0} = Anteil in %.</summary>
+    public string AqSperre { get; set; } = Resource.IMP_SQ_PROT_AUFBAUQUELLE_OFFEN;
 }
 
 /// <summary>Die sprachneutralen Schlüssel der Schalter des Zuordnungsdialogs (als <c>data-schluessel</c>).</summary>

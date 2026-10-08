@@ -38,6 +38,10 @@ namespace WindowsFormsApplication1
         internal const string RAUM_BEHEIZUNG = PRAEFIX + "RAUM_BEHEIZUNG";
         internal const string NUTZUNG_OHNE_ABBILDUNG = PRAEFIX + "NUTZUNG_OHNE_ABBILDUNG";
         internal const string WERT_BEGRENZT = PRAEFIX + "WERT_BEGRENZT";
+        /// <summary>Standprüfung: IFC und Projektdatei stammen vermutlich aus verschiedenen Projektständen (Warnung).</summary>
+        internal const string STAND_ABWEICHEND = PRAEFIX + "STAND_ABWEICHEND";
+        /// <summary>Die Aufbauquelle ist nach angeschlagener Standprüfung noch nicht gewählt (Fehler, sperrt Übernehmen).</summary>
+        internal const string AUFBAUQUELLE_OFFEN = PRAEFIX + "AUFBAUQUELLE_OFFEN";
         internal const string BILANZ = PRAEFIX + "BILANZ";
         /// <summary>Die wirksame Zonierung und die andere vorhandene (E87): Zonierung, Zahl, andere, Zahl.</summary>
         internal const string ZONIERUNG = PRAEFIX + "ZONIERUNG";

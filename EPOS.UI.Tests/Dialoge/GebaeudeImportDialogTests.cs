@@ -1122,7 +1122,7 @@ public class GebaeudeImportDialogTests : EposBunitContext
     public void Im_Quelltext_der_Komponente_steht_kein_Formatname()
     {
         var funde = new List<string>();
-        foreach (string datei in new[] { "GebaeudeImportDialog.razor", "GebaeudeImportDaten.cs" })
+        foreach (string datei in new[] { "GebaeudeImportDialog.razor", "GebaeudeImportDaten.cs", "Aufbauquellenwahl.razor" })
         {
             string text = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "Dialoge", "Import", datei));
             Assert.True(text.Length > 1000, datei + " ist nicht gelesen worden.");

@@ -82,6 +82,34 @@ namespace WindowsFormsApplication1
         /// <summary>Die wirksame Zonierung: die gewählte, wenn vorhanden, sonst die vorhandene (<see cref="SqprojZonen.Wirksam"/>).</summary>
         internal SqprojZonierung Zonierung => SqprojZonen.Wirksam(Abbild, Abgleich, Gewaehlt);
 
+        /// <summary>
+        /// Die Standprüfung gegen die IFC (nur beim Weg „IFC + Projektdatei“, Anwenderentscheid vom 08.10.2026); <c>null</c> =
+        /// nicht geprüft (allein aus der Projektdatei, abgelehnt).
+        /// </summary>
+        internal Standpruefung Standpruefung { get; set; }
+
+        /// <summary>
+        /// Die Wahl der Aufbauquelle: <see cref="WindowsFormsApplication1.Aufbauquelle.Offen"/>, solange die Standprüfung angeschlagen hat
+        /// und nicht gewählt ist; ohne Anschlag <see cref="WindowsFormsApplication1.Aufbauquelle.Ifc"/> (der heutige Weg). Wird nicht
+        /// gespeichert — ein neues Lesen beginnt wieder bei der Prüfung.
+        /// </summary>
+        internal Aufbauquelle Aufbauquelle { get; set; } = Aufbauquelle.Ifc;
+
+        /// <summary>Gelten Aufbau und U der Projektdatei (Wahl <see cref="WindowsFormsApplication1.Aufbauquelle.Projektdatei"/>)?</summary>
+        internal bool ProjektdateiGilt => !Abgelehnt && Aufbauquelle == Aufbauquelle.Projektdatei;
+
+        /// <summary>
+        /// <b>Die Sperre am Übernehmen</b>: Ist die Aufbauquelle offen, ist der Zuordnungsstand unvollständig — eine Meldung der
+        /// Stufe Fehler (<see cref="SqprojProtokoll.AUFBAUQUELLE_OFFEN"/>) mit Flächenanteil; <c>null</c> = übernehmbar.
+        /// </summary>
+        internal PruefMeldung Aufbauquellenpruefung()
+            => Abgelehnt || Aufbauquelle != Aufbauquelle.Offen ? null
+             : new PruefMeldung(PruefStufe.Fehler, SqprojProtokoll.AUFBAUQUELLE_OFFEN,
+                                System.Math.Round(100.0 * (Standpruefung?.Anteil ?? 0.0), 1).ToString(System.Globalization.CultureInfo.CurrentCulture));
+
+        /// <summary>Das U der Projektdatei eines IFC-Bauteils, wenn sie gilt; sonst <c>null</c> (es gilt das U der IFC).</summary>
+        internal double? UWirksam(AbbildBauteil b) => ProjektdateiGilt ? Standpruefung?.UProjektdatei(b) : null;
+
         /// <summary>Der Protokollsatz der wirksamen Zonierung (<c>IMP_SQ_PROT_ZONIERUNG</c> bzw. <c>…_EINE</c>); <c>null</c> bei einer Ablehnung.</summary>
         internal PruefMeldung Zonierungsmeldung() => Abgelehnt || Abbild == null ? null : SqprojZonen.Zonierungsmeldung(Abbild, Abgleich, Zonierung);
     }
