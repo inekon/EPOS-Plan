@@ -311,6 +311,8 @@ namespace WindowsFormsApplication1
                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
                 Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
 
+            // KK3: die Probewerte der Kühlkurve (nur mit Kernschalter; das Schema trägt sie erst mit KK4).
+            if (KuehlkurveKernschalter.Ein) KuehlkurveKernschalter.Probewerte?.Invoke(gebaeude);
             GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(
                 gebaeude, gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
                 gemeinsam.Laengengrad, gemeinsam.Breitengrad, Zeitbezug, Kuehlbetrieb,

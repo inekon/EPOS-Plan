@@ -20,6 +20,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static bool Wirksam(string stufe) => Ein && Ak3Kernstufe.Wirksam(stufe);
 
+        /// <summary>
+        /// KK3 (Proben bis KK4): setzt an jeder Gebäudezeile vor dem Eingangsbauer die Werte der Kühlkurve, die das Schema
+        /// erst mit KK4 trägt (<c>Kuehlkurve_Aktiv</c>, Fußpunkt, Raumeinfluss); wirkt nur mit eingeschaltetem Schalter.
+        /// <c>null</c> = keine (Vorgabe). Mit KK5 entfällt die Naht samt Schalter.
+        /// </summary>
+        internal static Action<ProjektGebaeudeModel> Probewerte { get; set; }
+
         /// <summary>Setzt den Schalter für die Dauer eines <c>using</c>-Blocks und stellt danach den vorherigen zurück.</summary>
         public static IDisposable Schalten(bool ein)
         {
