@@ -34436,7 +34436,7 @@ Do you want to allow this?</value>
     <value>{0}: The coupling of zones {1} did not settle in hour {2} after {3} passes (largest last change {4} K or {5} W, air exchange between them {6} m³/h). The demand calculation stops.</value>
   </data>
   <data name="SIMENG_G6_AK1_IDEAL" xml:space="preserve">
-    <value>VDI 6007 building model: {0} is calculated with {1} zones; the cooling transfer is not available for a building with several zones – cooling is ideal per zone and enters the plant as a fixed load; the heat transfer is calculated per zone.</value>
+    <value>VDI 6007 building model: {0} is calculated with {1} zones; not every coupled zone calculates its transfer – the cooling of every zone without an effective cooling transfer per zone and every zone in the adiabatic preliminary run of the 4 K rule are ideal and enter the plant as a fixed load; the other coupled zones calculate heat and cooling transfer per zone at the building's common flow.</value>
   </data>
   <data name="SIMENG_G6_ZONENRECHNUNG" xml:space="preserve">
     <value>VDI 6007 building model: {0} calculates {1} coupled zones ({2} sub-groups); pre-run {3} hours; on average {4} passes per coupled hour, at most {5}.</value>

@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>Unveränderlich nach <see cref="Bauen"/>; ohne Datenbank, ohne Protokoll.</para>
     /// </summary>
-    internal sealed class GebaeudeModellEingang
+    internal sealed partial class GebaeudeModellEingang
     {
         private GebaeudeModellEingang() { }
 
@@ -680,6 +680,14 @@ namespace WindowsFormsApplication1
 
         private Stundenrand RandOhneFahrplan(int h, bool sommerlueftung, double thetaEq, double thetaLue,
                                              bool nachtauskuehlung)
+        {
+            Stundenrand r = RandOhneFahrplanZone(h, sommerlueftung, thetaEq, thetaLue, nachtauskuehlung);
+            // Entwurf KK (KZ1): an einer Zone im Kühlkreis des Gebäudes wirkt das Vorlaufangebot der Kälteschranke.
+            return Gebaeudekuehlkreis != null && KuehlKopplungWirksam ? r with { KuehlVorlaufAmAngebot = true } : r;
+        }
+
+        private Stundenrand RandOhneFahrplanZone(int h, bool sommerlueftung, double thetaEq, double thetaLue,
+                                                 bool nachtauskuehlung)
         {
             if (!KuehlKopplungWirksam || !Kuehlstunde(h))
             {
@@ -1332,8 +1340,15 @@ namespace WindowsFormsApplication1
             e.KuehluebergabeAktiv = gebaeude.Kuehluebergabe_Aktiv;
             e.KuehlUebergabeArt = gebaeude.Kuehl_Uebergabe_Art;
             bool kuehlKopplung = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
-            e.KuehlKopplungWirksam = kuehlKopplung && !e.Mehrzonenweg;
-            if (e.KuehlKopplungWirksam)
+            // Entwurf KK (KZ1, Festlegungen 14-16; E106 Q-KK-7 (a)): mit dem Kernschalter die Kühlübergabe je Zone im
+            // Mehrzonenweg ab AK1 - aufgelöst erst, wenn alle Zonen stehen (ZonenKuehlkopplungAufloesen). Ohne Schalter
+            // bleibt die Kälteseite des Mehrzonenwegs ideal, Zeile für Zeile wie bisher.
+            bool kuehlImVorlaufIdeal = false;
+            bool zonenkuehlung = e.Mehrzonenweg && KuehlkurveKernschalter.Zonenkuehlung;
+            e.KuehlKopplungWirksam = zonenkuehlung
+                ? e.ZonenKuehlkopplungVormerken(gebaeude, anlagenkopplung, kuehlbetrieb, zone, out kuehlImVorlaufIdeal)
+                : kuehlKopplung && !e.Mehrzonenweg;
+            if (e.KuehlKopplungWirksam && !e.Mehrzonenweg)
             {
                 e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
                 // Entwurf KK (Schritt KK1): die Kühlkurve nur mit Kernschalter, Stufe AK3 und Kuehlkurve_Aktiv;
@@ -1343,7 +1358,9 @@ namespace WindowsFormsApplication1
             }
             // Im Mehrzonenweg bleibt die Kälteseite ideal (A4 (a)); die Wärmeseite nur im adiabaten
             // Vorlauf der 4-K-Regel (E63).
-            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt && (kopplungImVorlaufIdeal || (kuehlKopplung && e.KuehlungWirksam));
+            e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt
+                                      && (kopplungImVorlaufIdeal
+                                          || (zonenkuehlung ? kuehlImVorlaufIdeal : kuehlKopplung && e.KuehlungWirksam));
             return e;
         }
 

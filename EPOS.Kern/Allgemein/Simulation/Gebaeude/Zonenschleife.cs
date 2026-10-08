@@ -487,9 +487,11 @@ namespace WindowsFormsApplication1
                     else if (!m.LetzteFolgeGleich(_muster[z]))
                     {
                         // Das Muster des ersten Durchlaufs festhalten (Mehrzonenkonzept 2.4). Hält es nicht, ist das
-                        // ein regulärer Ausgang, keine Ausnahme: die Stunde rechnet dann frei.
+                        // ein regulärer Ausgang, keine Ausnahme: die Stunde rechnet dann frei. Entwurf KK (KZ1): eine
+                        // Stunde mit Kühlübergabe je Zone hält kein Muster (Schritt K im festen Muster gibt es nicht) -
+                        // sie rechnet frei wie ein nicht haltbares Muster; ohne Kühlübergabe Zeile für Zeile wie bisher.
                         m.Zuruecksetzen(_sicherAw[z], _sicherIw[z]);
-                        if (m.VersucheSchrittMitMuster(in r, _muster[z], out Stundenergebnis gehalten, out _))
+                        if (!r.MitKuehluebergabe && m.VersucheSchrittMitMuster(in r, _muster[z], out Stundenergebnis gehalten, out _))
                         {
                             s = gehalten;
                             _gehalten[z] = true;

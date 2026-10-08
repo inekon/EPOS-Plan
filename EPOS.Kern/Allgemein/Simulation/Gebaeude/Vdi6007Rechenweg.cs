@@ -249,7 +249,7 @@ namespace WindowsFormsApplication1
                 // Aufbauten - Schalter aus = kein Aufruf (Grundsatz 3).
                 Mehrzonenergebnis m = Zonenrechnung.Rechnen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index,
                     gebaeude.ID_Gebaeude, Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                    AnlagenVorlaufC, VerfuegbarkeitJeZone);
+                    AnlagenVorlaufC, VerfuegbarkeitJeZone, KuehlVorlaufAnlageC);
                 LetztesMehrzonenergebnis = m;
 
                 // AK3-W3c (Entwurf AK3 2.6): Im AK3-Weg ist dieser Lauf Pass 1 auch für das Mehrzonengebäude; daneben
@@ -320,7 +320,7 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<ZonenEingang> ZonenBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam, int index)
             => Zonenrechnung.ZonenBauen(gebaeude, Zonenklima(gemeinsam), Kuehlbetrieb, Anlagenkopplung, index, gebaeude.ID_Gebaeude,
                                         Zonenkonditionierung(gebaeude, gemeinsam), AufheizvorgabeAn, AufheizleistungTestW,
-                                        out _, out _, out _, out _, AnlagenVorlaufC);
+                                        out _, out _, out _, out _, AnlagenVorlaufC, KuehlVorlaufAnlageC);
 
         private GebaeudeKlima Zonenklima(KlimakalenderGemeinsam gemeinsam)
             => new GebaeudeKlima(gemeinsam.SolarOrtszeit, gemeinsam.WochenendeOrtszeit,
@@ -409,6 +409,14 @@ namespace WindowsFormsApplication1
                         string.Format(k, MyResource.Resource.SIMENG_AK_UEBERGABE_BEGRENZT, werZone,
                                       hz.UebergabeBegrenztStundenH.ToString("0.#", k),
                                       hz.GroessteUnterschreitungK.ToString("0.0#", k)));
+                // Entwurf KK (KZ1): die begrenzte Kühlübergabe je kühlgekoppelter Zone, benannt wie im Einzonenweg.
+                KuehlkreisErgebnis kz = m.Zonen[z].Kuehlkreis;
+                if (m.Eingaenge[z].Eingang.Gebaeudekuehlkreis != null && kz != null && kz.UebergabeBegrenztStundenH > 0.0)
+                    p.HinweisEinmal("ak-kuehluebergabe-begrenzt-" + werZone,
+                        string.Format(k, MyResource.Resource.SIMENG_AK_KUEHLUEBERGABE_BEGRENZT, werZone,
+                                      kz.UebergabeBegrenztStundenH.ToString("0.#", k),
+                                      kz.VorlaufgrenzeStundenH.ToString("0.#", k),
+                                      kz.GroessteUeberschreitungK.ToString("0.0#", k)));
             }
             // Stufe KP3 (Festlegung 21): die Laufhinweise der Aufheizoptimierung einmal je Gebaeude.
             HinweisAufheizung(m.Gebaeude.Aufheizung, wer);

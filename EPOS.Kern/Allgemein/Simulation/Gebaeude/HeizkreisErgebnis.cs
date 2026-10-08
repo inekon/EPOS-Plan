@@ -350,6 +350,44 @@ namespace WindowsFormsApplication1
             return kk;
         }
 
+        /// <summary>
+        /// Bildet das Ergebnis des Kühlkreises eines Mehrzonengebäudes (Entwurf KK, KZ1) aus dem Kühlkreis des Gebäudes und
+        /// den gemischten Reihen der Zonen (<see cref="Gebaeudeheizkreis.Mischen"/>) — die Kennwerte der Kühlübergabe des
+        /// Gebäudes, sonst wie <see cref="Bilden(GebaeudeModellEingang, double[], double[], double[], double, double, double, double[], double)"/>.
+        /// </summary>
+        internal static KuehlkreisErgebnis Bilden(Gebaeudekuehlkreis g, double[] vorlaufC, double[] ruecklaufC,
+                                                  double[] uebergabeBegrenztAnteil, double kuehlleistungMaxStundenH,
+                                                  double keineKaelteStundenH, double vorlaufgrenzeStundenH,
+                                                  double[] kuehlbedarfW, double groessteUeberschreitungK)
+        {
+            if (g == null) throw new ArgumentNullException(nameof(g));
+            var kk = new KuehlkreisErgebnis();
+            kk.KennzahlenBilden(vorlaufC, ruecklaufC, uebergabeBegrenztAnteil, kuehlbedarfW);
+
+            Uebergabekennwerte k = g.Uebergabe;
+            kk.KuehlleistungMaxStundenH = kuehlleistungMaxStundenH;
+            kk.KeineKaelteStundenH = keineKaelteStundenH;
+            kk.VorlaufgrenzeStundenH = vorlaufgrenzeStundenH;
+            kk.GroessteUeberschreitungK = groessteUeberschreitungK;
+            kk.UebergabeArt = g.UebergabeArt;
+            kk.Exponent = k.Exponent;
+            kk.UebergabeNennKw = k.PhiNW / 1000.0;
+            kk.UebergabeNennleistungHergeleitet = g.NennleistungHergeleitet;
+            kk.AuslegungskuehllastKw = g.AuslegungskuehllastW / 1000.0;
+            kk.AuslegungstagKuehlung = g.AuslegungstagKuehlung;
+            kk.AuslegungVorlaufC = k.AuslegungVorlaufC;
+            kk.AuslegungRuecklaufC = k.AuslegungRuecklaufC;
+            kk.AuslegungRaumC = k.AuslegungRaumC;
+            kk.ReglerbandK = g.ReglerbandK;
+            kk.Vorlaufquelle = g.Vorlaufquelle;
+            kk.VorlaufFestC = g.VorlaufFestC;
+            kk.VorlaufQuelleC = g.VorlaufQuelleC;
+            kk.VorlaufGekappt = g.VorlaufGekappt;
+            kk.VorlaufgrenzeC = g.VorlaufgrenzeC;
+            kk.Strahlungsanteil = g.Strahlungsanteil;
+            return kk;
+        }
+
         /// <summary>Zahl der Kühlstunden (Kühlleistung &gt; 0) — die Stunden der Mittelwerte.</summary>
         internal int Kuehlstunden => Bedarfsstunden;
 
