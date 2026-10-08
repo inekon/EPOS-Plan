@@ -82,6 +82,56 @@ namespace WindowsFormsApplication1
             }
             return raeume;
         }
+
+        /// <summary>
+        /// <b>Die Anteile einer Öffnung je Raum</b> nach ihrer Überlappung mit den Stücken (Abstimmung G5, Teil G5-3): Je
+        /// Bauteilseite, die der Öffnungskörper <paramref name="oeffnung"/> bis <paramref name="abstandMaxM"/> erreicht, wird die
+        /// Fläche seiner zur Seite gleichläufigen Flächen (Normale bis <see cref="Koerperflaechen.PARALLEL_GRAD"/>; sonst der
+        /// gegenläufigen) mit den Stücken jedes Raums geschnitten; der Anteil eines Raums ist sein Schnitt durch die Summe der
+        /// Schnitte an dieser Seite — Räume auf derselben Seite teilen die Öffnung, Räume auf beiden Seiten (eine Tür in einer
+        /// Innenwand) sehen sie ganz. Dazu die Außennormale der Seite aus Sicht des Raums. Leer = kein Schnitt (dann gilt die
+        /// Lage der Mitte, <see cref="RaeumeAn"/>).
+        /// </summary>
+        internal List<(int Raum, double Anteil, double[] Normale)> Anteile(Dateikoerper oeffnung, double abstandMaxM)
+        {
+            var ergebnis = new List<(int Raum, double Anteil, double[] Normale)>();
+            if (oeffnung == null || oeffnung.Dreiecke.Count == 0) return ergebnis;
+            double cosMax = Math.Cos(Koerperflaechen.PARALLEL_GRAD * Math.PI / 180.0);
+            var dreiecke = new List<(double[][] D, double[] N)>();
+            foreach (int[] d in oeffnung.Dreiecke)
+            {
+                double[] a = oeffnung.PunkteM[d[0]], b = oeffnung.PunkteM[d[1]], c = oeffnung.PunkteM[d[2]];
+                double[] n = Koerperflaechen.Normale(a, b, c);
+                if (n != null) dreiecke.Add((new[] { a, b, c }, n));
+            }
+            var jeSeite = new SortedDictionary<int, List<(int Raum, double Flaeche, double[] N)>>();
+            foreach (var t in Treffer)
+            {
+                double tiefMin = oeffnung.PunkteM.Min(p => Koerperflaechen.Punkt(t.N, p)), tiefMax = oeffnung.PunkteM.Max(p => Koerperflaechen.Punkt(t.N, p));
+                if (tiefMin > t.S + abstandMaxM || tiefMax < t.S - abstandMaxM) continue;
+                List<double[][]> gleich = dreiecke.Where(x => Koerperflaechen.Punkt(x.N, t.N) > cosMax).Select(x => x.D).ToList();
+                if (gleich.Count == 0) gleich = dreiecke.Where(x => Koerperflaechen.Punkt(x.N, t.N) < -cosMax).Select(x => x.D).ToList();
+                if (gleich.Count == 0) continue;
+                double f = Koerperflaechen.Ueberdeckung(gleich, t.Stuecke, t.N, out _);
+                if (f < Koerperflaechen.FLAECHE_MIN_M2) continue;
+                if (!jeSeite.TryGetValue(t.Seite, out var liste)) jeSeite[t.Seite] = liste = new List<(int, double, double[])>();
+                liste.Add((t.Raum, f, t.N));
+            }
+            foreach (List<(int Raum, double Flaeche, double[] N)> liste in jeSeite.Values)
+            {
+                double summe = liste.Sum(x => x.Flaeche);
+                foreach ((int raum, double f, double[] n) in liste)
+                {
+                    double anteil = f / summe;
+                    int i = ergebnis.FindIndex(x => x.Raum == raum);
+                    if (i >= 0 && ergebnis[i].Anteil >= anteil) continue;
+                    var eintrag = (raum, anteil, n.Select(x => Math.Round(-x, 6) + 0.0).ToArray());
+                    if (i >= 0) ergebnis[i] = eintrag;
+                    else ergebnis.Add(eintrag);
+                }
+            }
+            return ergebnis;
+        }
     }
 
     /// <summary>
@@ -358,7 +408,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Überdeckung zweier Stücklisten in der Ebene mit der Normalen <paramref name="n"/> [m²] und ihr Schwerpunkt.</summary>
-        private static double Ueberdeckung(List<double[][]> a, List<double[][]> b, double[] n, out double[] schwerpunkt)
+        internal static double Ueberdeckung(List<double[][]> a, List<double[][]> b, double[] n, out double[] schwerpunkt)
         {
             (double[] u, double[] v) = Basis(n);
             List<List<double[]>> pa = a.Select(x => Eben(x, u, v)).ToList(), pb = b.Select(x => Eben(x, u, v)).ToList();
@@ -476,6 +526,14 @@ namespace WindowsFormsApplication1
             cu = Math.Abs(a) > EPS ? x / (6.0 * a) : p.Average(q => q[0]);
             cv = Math.Abs(a) > EPS ? y / (6.0 * a) : p.Average(q => q[1]);
             return a;
+        }
+
+        /// <summary>Die Einheitsnormale des Dreiecks (a, b, c); <c>null</c> = entartet.</summary>
+        internal static double[] Normale(double[] a, double[] b, double[] c)
+        {
+            double[] k = Kreuz(Minus(b, a), Minus(c, a));
+            double l = Math.Sqrt(Punkt(k, k));
+            return l < 1e-12 ? null : new[] { k[0] / l, k[1] / l, k[2] / l };
         }
 
         internal static double Punkt(double[] a, double[] b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];

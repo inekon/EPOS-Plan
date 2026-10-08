@@ -144,6 +144,21 @@ namespace WindowsFormsApplication1
         /// <summary>Die Öffnungen (Fenster, Türen), die auf diesem Teil liegen.</summary>
         internal List<AbbildBauteil> Oeffnungen { get; } = new List<AbbildBauteil>();
 
+        /// <summary>
+        /// Die Grenzen der Datei, aus denen der Teil besteht (nur mit Geometrie, außen und unbeheizt ohne Gegenüber) — der
+        /// Bauteilvorschlag führt daraus je Orientierung eine Teilfläche (<see cref="Teilflaechen"/>); leer = keine.
+        /// </summary>
+        internal List<AbbildGrenze> Grenzen { get; } = new List<AbbildGrenze>();
+
+        /// <summary>
+        /// Die Fläche einer Öffnung, die über mehrere Zonen reicht, in diesem Teil [m²] (nach den Flächen ihrer Grenzen je Zone);
+        /// fehlt sie, liegt die ganze Öffnung hier.
+        /// </summary>
+        internal Dictionary<AbbildBauteil, double> Oeffnungsanteile { get; } = new Dictionary<AbbildBauteil, double>();
+
+        /// <summary>Die Fläche der Öffnung <paramref name="o"/> in diesem Teil [m²]; <c>null</c> = die Öffnung trägt keine.</summary>
+        internal double? OeffnungM2(AbbildBauteil o) => Oeffnungsanteile.TryGetValue(o, out double a) ? a : o.BruttoflaecheM2;
+
         /// <summary>Die größere Beschreibung einer Trennfläche (Gegenprobe), sonst die eigene [m²].</summary>
         internal double? GroessereM2 => BruttoM2 is double a ? (GegenseiteM2 is double b ? Math.Max(a, b) : a) : GegenseiteM2;
 
@@ -722,6 +737,7 @@ namespace WindowsFormsApplication1
             internal double[] Normale;
             internal string Gegenstueck;
             internal int Partner = -1;
+            internal AbbildGrenze Grenze;
         }
 
         private readonly List<string> _ohneGegenstueck = new List<string>();
@@ -778,7 +794,7 @@ namespace WindowsFormsApplication1
                         Kennung = g.Kennung, Raum = g.RaumKennung, Zone = ZoneOderArt(g.RaumKennung),
                         Lage = g.Lage == Randbedingung.Unbekannt ? s.Randbedingung : g.Lage,
                         Flaeche = g.FlaecheM2, Ausschnitt = g.AusschnittM2, Punkt = g.SchwerpunktM, Normale = g.Normale,
-                        Gegenstueck = g.GegenstueckKennung,
+                        Gegenstueck = g.GegenstueckKennung, Grenze = g,
                     });
                 }
                 foreach (var a in virtuell.Where(v => v.Zone >= 0))
@@ -868,13 +884,15 @@ namespace WindowsFormsApplication1
                 {
                     List<Seite> hier = aussen.Where(x => x.Zone == z).ToList();
                     Randbedingung lage = hier.Any(x => x.Lage == Randbedingung.Erdreich) ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
-                    teile.Add(new Zonenflaeche
+                    var teil = new Zonenflaeche
                     {
                         Bauteil = s, Zone = z, Rand = lage == Randbedingung.Erdreich ? Zonenrand.Erdreich : Zonenrand.Aussenluft,
                         BruttoM2 = geometrie ? hier.Sum(x => x.Flaeche.Value) : brutto * hier.Count / aussen.Count,
                         AusschnittM2 = geometrie ? hier.Sum(x => x.Ausschnitt) : 0.0,
                         Aufgeteilt = teilen, Raum = hier[0].Raum,
-                    });
+                    };
+                    if (geometrie) teil.Grenzen.AddRange(hier.Where(x => x.Grenze != null).Select(x => x.Grenze));
+                    teile.Add(teil);
                 }
             }
 
@@ -945,11 +963,13 @@ namespace WindowsFormsApplication1
                 ohne = !s.HuelleOhneNachbar
                        && !s.Nachbarn.Any(n => n.Kennung != x.Raum) && !s.Grenzen.Any(g => g.RaumKennung != null && g.RaumKennung != x.Raum);
             }
-            teile.Add(new Zonenflaeche
+            var teil = new Zonenflaeche
             {
                 Bauteil = s, Zone = x.Zone, Rand = Zonenrand.Unbeheizt, BruttoM2 = flaeche, AusschnittM2 = ausschnitt,
                 OhneGegenstueck = ohne, Raum = x.Raum,
-            });
+            };
+            if (x.Grenze != null && x.Flaeche.HasValue && x.Grenze.FlaecheM2 == x.Flaeche) teil.Grenzen.Add(x.Grenze);
+            teile.Add(teil);
             if (ohne)
             {
                 _ohneGegenstueck.Add(s.Kennung);
@@ -1048,6 +1068,7 @@ namespace WindowsFormsApplication1
             if (teile.Count == 0) return;
             foreach (AbbildBauteil o in s.Oeffnungen)
             {
+                if (Aufteilen(o, teile)) continue;
                 var zonen = new HashSet<int>(o.Grenzen.Where(g => g.RaumKennung != null).Select(g => ZoneOderArt(g.RaumKennung)).Where(z => z >= 0));
                 List<Zonenflaeche> passend = teile.Where(t => zonen.Contains(t.Zone) && (t.Nachbarzone < 0 || zonen.Count < 2 || zonen.Contains(t.Nachbarzone))).ToList();
                 if (passend.Count == 0)
@@ -1061,6 +1082,41 @@ namespace WindowsFormsApplication1
                 if (ziel.Rand == Zonenrand.Zone)
                     teile.FirstOrDefault(t => t.Rand == Zonenrand.Zone && t.Zone == ziel.Nachbarzone && t.Nachbarzone == ziel.Zone)?.Oeffnungen.Add(o);
             }
+        }
+
+        /// <summary>
+        /// <b>Eine Öffnung über mehrere Zonen</b>: Liegen die Grenzen einer Öffnung (der Datei oder aus den Körpern) mit Fläche
+        /// in zwei oder mehr Zonen und hat jede davon einen Außenteil des Bauteils, geht die Öffnung an jeden dieser Teile mit
+        /// dem Anteil ihrer Bruttofläche nach den Flächen ihrer Grenzen je Zone (<see cref="Zonenflaeche.Oeffnungsanteile"/>) —
+        /// abgezogen wird je Teil nur sein Anteil. Sonst <c>false</c>: Es gilt die Regel des größten Teils.
+        /// </summary>
+        private bool Aufteilen(AbbildBauteil o, List<Zonenflaeche> teile)
+        {
+            if (!(o.BruttoflaecheM2 > 0.0)) return false;
+            var jeZone = new SortedDictionary<int, double>();
+            foreach (AbbildGrenze g in o.Grenzen)
+            {
+                if (g.RaumKennung == null || g.Virtuell) continue;
+                int z = ZoneOderArt(g.RaumKennung);
+                if (z < 0 || !(g.FlaecheM2 > 0.0)) return false;
+                jeZone[z] = (jeZone.TryGetValue(z, out double f) ? f : 0.0) + g.FlaecheM2.Value;
+            }
+            if (jeZone.Count < 2) return false;
+            var ziele = new List<(Zonenflaeche Teil, double Flaeche)>();
+            foreach (KeyValuePair<int, double> e in jeZone)
+            {
+                Zonenflaeche t = teile.Where(x => x.Zone == e.Key && (x.Rand == Zonenrand.Aussenluft || x.Rand == Zonenrand.Erdreich))
+                                      .OrderByDescending(x => x.BruttoM2 ?? 0.0).FirstOrDefault();
+                if (t == null) return false;
+                ziele.Add((t, e.Value));
+            }
+            double summe = ziele.Sum(x => x.Flaeche);
+            foreach ((Zonenflaeche t, double f) in ziele)
+            {
+                t.Oeffnungen.Add(o);
+                t.Oeffnungsanteile[o] = o.BruttoflaecheM2.Value * f / summe;
+            }
+            return true;
         }
 
         // ------------------------------------------------------------------

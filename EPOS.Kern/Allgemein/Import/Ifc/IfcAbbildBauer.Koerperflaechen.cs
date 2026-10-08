@@ -95,20 +95,25 @@ namespace WindowsFormsApplication1
                         summe += s.FlaecheM2;
                     }
 
-                    // Öffnungen nach Lage: die Räume, in deren Überlappung die Mitte der Öffnung liegt.
+                    // Öffnungen nach Lage: je Raum ihr Anteil nach der Überlappung des Öffnungskörpers mit seinen Stücken (eine
+                    // Öffnung über zwei Räume teilt sich); ohne Schnitt die Räume, in deren Überlappung die Mitte der Öffnung liegt.
                     double abstand = (b.DickeM > 0.0 ? b.DickeM.Value : Koerpernachbarschaft.TRENNDICKE_MAX_M) + KF.TOLERANZ_M;
                     foreach (AbbildBauteil o in b.Oeffnungen.Where(x => x.Grenzen.Count == 0))
                     {
-                        double[] mitte = null;
+                        Dateikoerper koerperOeffnung;
                         if (_oeffnungsquelle.TryGetValue(o, out (IIfcOpeningElement Oeffnung, IIfcElement Element) q))
-                            mitte = (q.Oeffnung != null ? Mitte(Rechenkoerper(q.Oeffnung)) : null)
-                                    ?? Mitte(o.Koerper ?? (q.Element != null ? Rechenkoerper(q.Element) : null));
-                        else mitte = Mitte(o.Koerper);
-                        foreach (int r in e.RaeumeAn(mitte, abstand))
+                            koerperOeffnung = Belegt(q.Oeffnung != null ? Rechenkoerper(q.Oeffnung) : null)
+                                              ?? Belegt(o.Koerper ?? (q.Element != null ? Rechenkoerper(q.Element) : null));
+                        else koerperOeffnung = o.Koerper;
+                        double[] mitte = Mitte(koerperOeffnung);
+                        List<(int Raum, double Anteil, double[] Normale)> anteile = e.Anteile(koerperOeffnung, abstand);
+                        if (anteile.Count == 0) anteile = e.RaeumeAn(mitte, abstand).Select(r => (r, 1.0, (double[])null)).ToList();
+                        foreach ((int r, double anteil, double[] normale) in anteile)
                             o.Grenzen.Add(new AbbildGrenze
                             {
-                                Kennung = o.Kennung + "|KF|R" + r, RaumKennung = g.Raeume[r].Kennung, FlaecheM2 = o.BruttoflaecheM2,
-                                SchwerpunktM = mitte, Herkunft = Grenzherkunft.Bauteilkoerper,
+                                Kennung = o.Kennung + "|KF|R" + r, RaumKennung = g.Raeume[r].Kennung,
+                                FlaecheM2 = o.BruttoflaecheM2 is double brutto ? Math.Round(brutto * anteil, 6) : (double?)null,
+                                SchwerpunktM = mitte, Normale = normale, Herkunft = Grenzherkunft.Bauteilkoerper,
                                 Lage = e.Stuecke.Any(s => s.Raum == r && s.Lage == Randbedingung.Innen) ? Randbedingung.Innen
                                      : e.Stuecke.Where(s => s.Raum == r).Select(s => s.Lage).DefaultIfEmpty(Randbedingung.Unbekannt).First(),
                             });
@@ -149,6 +154,9 @@ namespace WindowsFormsApplication1
                     Zahl(Math.Round(groesste.Abweichung * 100.0, 1)), groesste.Name, Zahl(IfcBauteilkoerper.ABWEICHUNG_GRENZE * 100.0)));
             }
         }
+
+        /// <summary>Der Körper, wenn er Punkte trägt; sonst <c>null</c>.</summary>
+        private static Dateikoerper Belegt(Dateikoerper k) => k != null && k.PunkteM.Count > 0 ? k : null;
 
         /// <summary>
         /// <b>Raumfläche und Volumen aus dem Raumkörper</b> (G5-3): Ein Raum mit Körper ohne Flächenmenge und ohne
