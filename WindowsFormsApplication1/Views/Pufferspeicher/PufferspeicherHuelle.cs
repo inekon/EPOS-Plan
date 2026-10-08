@@ -173,6 +173,10 @@ namespace WindowsFormsApplication1
                 // Sie kommen aus derselben Quelle wie die der Speicherverwaltung - der
                 // Aufklapper IST deren Raster; der Speicherweg steht seit demselben Tag
                 // im Kern (PufferSpStammCtrl.AnzeigefelderSchreiben).
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(PufferSpStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => PufferSpAdminHuelle.Wege().Detail!(name)!),
                 ["KatalogfelderSpeichern"] =

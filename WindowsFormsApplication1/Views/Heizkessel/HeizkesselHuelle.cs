@@ -551,6 +551,10 @@ namespace WindowsFormsApplication1
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
                 // Sie kommen aus derselben Quelle, aus der auch der - jetzt entfallene -
                 // Katalogbrowser sie bekam; der Aufklapper IST sein Raster.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(HeizkesselStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => HeizkesselAdminHuelle.Wege().Detail!(name)!),
                 ["KatalogfelderSpeichern"] =

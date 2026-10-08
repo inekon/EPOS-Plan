@@ -104,6 +104,9 @@
                bleiben HIER: Sie wirken auf die LISTE, nicht auf den gewaehlten Satz. *@
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
+                <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
+                                Ungespeichert="@_felderGeaendert" JaText="@JaText" NeinText="@NeinText"
+                                Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
                         @onclick="BeiLoeschen">@BtnLoeschenText</button>
             </div>
@@ -127,8 +130,16 @@
                                          EnergieText="@KostenEnergieText" />
                 }
                 <span class="epos-leiste-fueller"></span>
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+                @if (KatalogsatzGesperrt)
+                {
+                    <button type="button" class="epos-knopf" aria-disabled="true" title="@Resource.ADM_SCHLOSS_ERST_AUFHEBEN"
+                            @onclick="() => BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN)">@BtnBearbeitenText</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                            @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+                }
             </div>
 
             @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
@@ -247,11 +258,11 @@
 
                 @if (_parameterOffen && _felder is not null)
                 {
-                    <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
+                    <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null || KatalogsatzGesperrt)"
                                    Geaendert="FeldGeaendert"
                                    FehlerZustand="BeiFeldFehler" />
 
-                    @if (KatalogfelderSpeichern is not null)
+                    @if (KatalogfelderSpeichern is not null && !KatalogsatzGesperrt)
                     {
                         @* Die Rueckmeldung steht AM Knopf (Speichervermerk): „Gespeichert um …"
                            bzw. der Grund der Ablehnung rot; ohne Aenderung weich gesperrt. *@
@@ -319,13 +330,6 @@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
                 Frage="@(string.Format(FrageLoeschen, _katalogZeile?.Bezeichner ?? ""))"
                 Beantwortet="BeiLoeschfrage" />
-
-    @* Rueckfrage vor dem Ueberschreiben eines AUSLIEFERUNGSsatzes aus dem Aufklapper -
-       derselbe Weg, den der Katalogbrowser geht (KatalogBrowserDialog.BeiSpeichern).
-       Ohne den Delegaten KatalogfelderGeschuetzt gibt es sie nicht: Ein Katalog ohne
-       Schreibschutz soll nicht nach einem Schutz fragen, den es nicht gibt. *@
-    <Rueckfrage Offen="@_schutzfrage" TitelText="@TitelSchutz" JaText="@JaText" NeinText="@NeinText"
-                Frage="@_schutztext" Beantwortet="BeiSchutzAntwort" />
 </div>
 
 @code {
@@ -466,23 +470,12 @@
     /// Speicherweg, dann ist der Aufklapper reine Anzeige.
     /// </summary>
     /// <remarks>
-    /// <b>Drei Parameter und nicht zwei — anders als beim Heizkessel.</b> Der
-    /// BHKW-Katalog ist der einzige mit Schreibschutz: In der Auslieferungsdatenbank ist
-    /// JEDER Satz von <c>Tab_BHKW_STAMM</c> geschützt, und <c>AnzeigefelderSchreiben</c>
-    /// verlangt die Antwort auf die Rückfrage als eigenes Argument. Die Signatur ist
-    /// damit dieselbe wie <c>KatalogBrowserWege.Speichern</c> — die Hülle reicht ihn
-    /// unverändert durch.
+    /// <b>Zwei Parameter wie bei den übrigen Erzeugern.</b> Ein Satz mit Schloss wird hier
+    /// nie geschrieben — er ist nur lesbar, bis das Schloss aufgehoben ist (AD-Q15).
     /// </remarks>
     [Parameter]
-    public Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>?
+    public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>?
         KatalogfelderSpeichern { get; set; }
-
-    /// <summary>
-    /// Ist dieser Katalogsatz ein Auslieferungssatz (<c>ReadOnly</c>)? Dann fragt der
-    /// Aufklapper vor dem Speichern nach (<c>KatalogBrowserWege.IstGeschuetzt</c>).
-    /// <c>null</c> = kein Schreibschutz, keine Rückfrage.
-    /// </summary>
-    [Parameter] public Func<string, bool>? KatalogfelderGeschuetzt { get; set; }
 
     /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
     [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
@@ -545,16 +538,6 @@
     [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
     [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
 
-    /// <summary>
-    /// Rückfrage vor dem Überschreiben eines Auslieferungssatzes aus dem Aufklapper;
-    /// <c>{0}</c> nimmt den Bezeichner auf (<c>ADM_SCHUTZ_FRAGE</c>, derselbe Text wie
-    /// im Katalogbrowser).
-    /// </summary>
-    [Parameter] public string FrageSchutz { get; set; } =
-        "Der Datensatz \"{0}\" gehört zum Auslieferungskatalog. Trotzdem überschreiben?";
-
-    [Parameter] public string TitelSchutz { get; set; } = "Schreibgeschützter Datensatz";
-
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_BHKWEing.btn_Help";
 
@@ -612,8 +595,6 @@
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private bool _namensfrage;
     private bool _loeschfrage;
-    private bool _schutzfrage;
-    private string _schutztext = "";
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
@@ -651,9 +632,6 @@
 
     /// <summary>Steht der Katalogeditor? (Pruefhilfe fuer Tests.)</summary>
     public bool Katalogeditor => _editorGaben is not null;
-
-    /// <summary>Steht die Schreibschutzrueckfrage des Aufklappers? (Pruefhilfe fuer Tests.)</summary>
-    public bool Schutzfrage => _schutzfrage;
 
     /// <summary>Die angezeigte Leistungssumme (Pruefhilfe fuer Tests).</summary>
     public string Summe => _summeText;
@@ -716,12 +694,8 @@
         AlleDaten = new AlleDatenTafel
         {
             Felder = () => _parameterOffen ? _felder : null,
-            // Der BHKW-Katalog kennt den Auslieferungssatz ZUSAETZLICH ueber seinen
-            // eigenen Weg (KatalogfelderGeschuetzt) - derselbe, vor dem der Knopf fragt.
             Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
-                                                    _katalogZeile?.Geschuetzt == true ||
-                                                    (_katalogZeile is not null &&
-                                                     KatalogfelderGeschuetzt?.Invoke(_katalogZeile.Bezeichner) == true)),
+                                                    _katalogZeile?.Geschuetzt == true),
             Gesetzt = () => _felderGeaendert = true
         }
     };
@@ -775,10 +749,6 @@
         if (!_felderGeaendert) return KiUebernehmen();
 
         FelderSpeichern();
-
-        // Ein Auslieferungssatz fragt erst nach - die Antwort gibt der Anwender, nicht
-        // der Assistent.
-        if (_schutzfrage) return KiKern.KiErgebnis.Abgelehnt(Resource.ADM_SPEICHERN_GESPERRT);
 
         return _felderGeaendert
             ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
@@ -1037,45 +1007,21 @@
         => _feldFehler = meldung.Fehler;
 
     /// <summary>
-    /// „Speichern" im Aufklapper. Ein AUSLIEFERUNGSSATZ wird vorher erfragt — genau die
-    /// Reihenfolge des Katalogbrowsers (erst die Rückfrage, dann der Schreibvorgang).
-    /// </summary>
-    private void FelderSpeichern()
-    {
-        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
-
-        if (KatalogfelderGeschuetzt?.Invoke(_katalogZeile.Bezeichner) == true)
-        {
-            _schutztext = string.Format(FrageSchutz, _katalogZeile.Bezeichner);
-            _schutzfrage = true;
-            return;
-        }
-
-        FelderSchreiben(false);
-    }
-
-    /// <summary>„Nein" schreibt nichts, „Ja" hebt den Schutz für DIESEN Vorgang auf.</summary>
-    private void BeiSchutzAntwort(bool? antwort)
-    {
-        _schutzfrage = false;
-        if (antwort != true) return;
-        FelderSchreiben(true);
-    }
-
-    /// <summary>
-    /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
+    /// „Speichern" im Aufklapper: schreibt die geänderten Felder zurück und lädt die
+    /// Katalogliste neu. Ein Satz mit Schloss kommt hier nicht an — sein Aufklapper ist
+    /// nur lesbar (AD-Q15).
     /// </summary>
     /// <remarks>
     /// <b>Der Befund des Katalogs zählt, nicht die Absicht.</b> Lehnt der Speicherweg ab
     /// (Prüfmeldung, Schreibschutz), bleibt der geänderte Stand im Aufklapper stehen -
     /// der Anwender soll ihn verbessern können, statt ihn zu verlieren.
     /// </remarks>
-    private void FelderSchreiben(bool schutzUebergehen)
+    private void FelderSpeichern()
     {
         if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
 
         KatalogSpeicherErgebnis ergebnis =
-            KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder, schutzUebergehen);
+            KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
 
         if (!ergebnis.Ok)
         {
@@ -1169,9 +1115,45 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
+        if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_traegerGaben is not null || _editorGaben is not null ||
-            _namensfrage || _loeschfrage || _schutzfrage) return Task.CompletedTask;
+            _namensfrage || _loeschfrage) return Task.CompletedTask;
         return Abbrechen();
+    }
+
+    // =================================================================================
+    // Schloss setzen / aufheben (AD-Q15) - derselbe Baustein wie in den Verwaltungen
+    // =================================================================================
+
+    /// <summary>
+    /// „Schloss setzen…" / „Schloss aufheben…" an der Katalogliste
+    /// (<c>Schlosswege.Aus(…StammCtrl.SchlossSetzen)</c>). Ohne ihn steht der Knopf nicht da.
+    /// Die Verwendung im Projekt sperrt nichts: Das Projekt führt eine eigene Kopie.
+    /// </summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    private Katalogschloss? _katalogschloss;
+
+    /// <summary>Trägt der gewählte Katalogsatz das Schloss? Dann ist er nur lesbar.</summary>
+    private bool KatalogsatzGesperrt => _katalogZeile?.Geschuetzt == true;
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe für Tests.)</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    /// <summary>Nach dem Schalten: Liste neu lesen, Felder des Satzes nachziehen, Status melden.</summary>
+    private void BeiSchlossGeschaltet(string status)
+    {
+        KatalogNeuLaden();
+        FelderNachziehen();
+        _meldung = status ?? "";
+        _meldungStufe = WarnStufe.Hinweis;
+    }
+
+    /// <summary>Warum nicht geschaltet (oder nicht bearbeitet) wurde.</summary>
+    private void BeiSchlossAbgelehnt(string grund)
+    {
+        _meldung = grund ?? "";
+        _meldungStufe = WarnStufe.Warnung;
     }
 }

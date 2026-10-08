@@ -826,6 +826,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierungsvorlagen ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_KONDITIONIERUNGSVORLAGE {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_KONDITIONIERUNGSVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Typprofile ähnelt.
         /// </summary>
         public static string ADM_KATALOG_PROZESSTYP {
@@ -1404,6 +1413,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Bearbeiten zuerst „Schloss aufheben...“ wählen. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_ERST_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_ERST_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss ließ sich nicht umschalten; nichts wurde geändert. ähnelt.
         /// </summary>
         public static string ADM_SCHLOSS_FEHLER {
@@ -1499,26 +1517,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SCHLOSS_UNVERAENDERT {
             get {
                 return ResourceManager.GetString("ADM_SCHLOSS_UNVERAENDERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
-        ///
-        ///Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_FRAGE {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_TITEL {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
             }
         }
         
@@ -4661,17 +4659,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
-        ///
-        ///Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string BHKWK_FRAGE_SCHREIBSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_FRAGE_SCHREIBSCHUTZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
         /// </summary>
         public static string BHKWK_GRP_BEZEICHNUNG {
@@ -5064,15 +5051,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_TITEL {
             get {
                 return ResourceManager.GetString("BHKWK_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string BHKWK_TITEL_SCHREIBSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_TITEL_SCHREIBSCHUTZ", resourceCulture);
             }
         }
         

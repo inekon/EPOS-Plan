@@ -429,8 +429,7 @@ namespace EPOS.Kern.Tests
                 NOx: 90, SO2: 2, CO: 210, CO2: 199000, Staub: 1,
                 WirkungsgradEl: 0.30, WirkungsgradTh: 0.56);
 
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder,
-                                                                schreibschutzUebergehen: true);
+            var ergebnis = EntsperrtSchreiben(BHKW, felder);
             Assert.True(ergebnis.Ok, ergebnis.Meldung);
 
             var nachher = BHKWStammCtrl.KatalogsatzAnzeige(BHKW);
@@ -482,7 +481,7 @@ namespace EPOS.Kern.Tests
                     AnfahrverlustKwh: anfahr, MindestlaufzeitMin: laufzeit);
             static string Wert(string feld) => BHKWStammCtrl.KatalogsatzAnzeige(BHKW)[feld];
             static BHKWStammCtrl.SpeicherErgebnis Schreiben(BHKWStammCtrl.AnzeigefelderBhkw f)
-                => BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, f, schreibschutzUebergehen: true);
+                => EntsperrtSchreiben(BHKW, f);
 
             var gepflegt = Schreiben(Satz("0,33", "0.55", "1,5", "15"));
             Assert.True(gepflegt.Ok, gepflegt.Meldung);
@@ -537,7 +536,7 @@ namespace EPOS.Kern.Tests
                 KostenModul: 20000, KostenMontage: 1000, KostenLieferung: 500,
                 KostenSchallschutzhaube: 2000, KostenAbgasreinigung: 500);
 
-            Assert.True(BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder, true).Ok);
+            Assert.True(EntsperrtSchreiben(BHKW, felder).Ok);
 
             var satz = BHKWStammCtrl.KatalogsatzAnzeige(BHKW);
             Assert.Equal("100", satz[KatalogBrowserProfil.FeldInvestitionJeKwel]);
@@ -560,7 +559,7 @@ namespace EPOS.Kern.Tests
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw(
                 "Geht nicht", 1, 2, 3, 4, 5, Motortyp: "Geht auch nicht");
 
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder, false);
+            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder);
 
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
@@ -578,7 +577,7 @@ namespace EPOS.Kern.Tests
             using var _ = new Kulturvorrichtung();
 
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw("x", 10, 10, 150, 80, 60);
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder, true);
+            var ergebnis = EntsperrtSchreiben(BHKW, felder);
 
             Assert.False(ergebnis.Ok);
             Assert.Contains("100", ergebnis.Meldung);
@@ -773,6 +772,16 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", felder[bb].Einheit);
             Assert.Equal(KatalogBrowserProfil.FeldBBEinheit, felder[bb + 1].Schluessel);
             Assert.True(felder[bb + 1].Editierbar);
+        }
+
+        /// <summary>
+        /// Schreibt die Anzeigefelder eines BHKW-Satzes, nachdem sein Schloss aufgehoben ist — der
+        /// Weg des Anwenders (AD-Q15): Ein Satz mit Schloss wird nie geschrieben.
+        /// </summary>
+        private static BHKWStammCtrl.SpeicherErgebnis EntsperrtSchreiben(string name, BHKWStammCtrl.AnzeigefelderBhkw felder)
+        {
+            Assert.True(BHKWStammCtrl.SchlossSetzen(new[] { BHKWStammCtrl.IdZu(name) }, false).Ok);
+            return BHKWStammCtrl.AnzeigefelderSchreiben(name, felder);
         }
     }
 }

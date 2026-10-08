@@ -536,4 +536,61 @@ public class KonditionierungVorlagenDialogTests : EposBunitContext
         Knopf(cut, "OK").Click();
         Assert.Equal("Schule", Assert.Single(_geschrieben).Konditionierung!.Spalte(KonditionierungGroesse.Heizen).Kalender.Vorlage);
     }
+
+    // =================================================================================
+    // Das Schloss der Vorlagen (AD-Q15, Anwenderentscheid 08.10.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Schloss aufheben und wieder setzen</b> in der Vorlagenverwaltung: dieselbe Rückfrage mit
+    /// Vorgabe „Nein" wie in den Verwaltungen. Entsperrt lässt sich die Vorlage umbenennen; gesperrt
+    /// ist sie nur lesbar, Duplizieren und „Kopieren nach …" gehen weiter.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_und_setzen_mit_Rueckfrage_Duplizieren_und_Kopieren_bleiben()
+    {
+        // Der Schlossweg fragt die Schreibnaht (Lesemodus der Lizenz) - im Prüfstand ist Schreiben erlaubt.
+        Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var ablage = Konditionierungsvorlagenablage.AusSaat();
+            var cut = Editor(ablage);
+            ReiterWaehlen(cut, REITER);
+            Karte(cut, KonditionierungGroesse.Heizen).QuerySelector("button.epos-kond-verwalten")!.Click();
+
+            IElement schloss = Zeile(cut, "Büro").QuerySelector("button.epos-kond-schloss")!;
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_AW_SCHLOSS_AUFHEBEN, schloss.TextContent.Trim());
+            Assert.False(Zeile(cut, "Büro").QuerySelector("button.epos-kond-duplizieren")!.HasAttribute("aria-disabled"));
+            Assert.False(Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.HasAttribute("aria-disabled"));
+
+            // „Nein" schreibt nichts.
+            schloss.Click();
+            cut.FindAll(".epos-rueckfrage button").First(b => b.TextContent.Trim() == "Nein").Click();
+            Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Büro" && v.Ausgeliefert);
+
+            // „Ja" hebt das Schloss auf: kein Kennzeichen, Umbenennen geht.
+            Zeile(cut, "Büro").QuerySelector("button.epos-kond-schloss")!.Click();
+            EPOS.UI.Tests.Dialoge.Schlosspruefung.Ja(cut);
+            Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Büro" && !v.Ausgeliefert);
+            Assert.Null(Zeile(cut, "Büro").QuerySelector(".epos-schloss"));
+            Assert.False(Zeile(cut, "Büro").QuerySelector("button.epos-kond-umbenennen")!.HasAttribute("aria-disabled"));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ADM_AW_SCHLOSS_SETZEN,
+                         Zeile(cut, "Büro").QuerySelector("button.epos-kond-schloss")!.TextContent.Trim());
+
+            // Wieder sperren: nur lesbar, Duplizieren aus der gesperrten Vorlage geht weiter.
+            Zeile(cut, "Büro").QuerySelector("button.epos-kond-schloss")!.Click();
+            EPOS.UI.Tests.Dialoge.Schlosspruefung.Ja(cut);
+            Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Büro" && v.Ausgeliefert);
+            Assert.Equal("true", Zeile(cut, "Büro").QuerySelector("button.epos-kond-umbenennen")!.GetAttribute("aria-disabled"));
+            Zeile(cut, "Büro").QuerySelector("button.epos-kond-duplizieren")!.Click();
+            Assert.Contains(ablage.Liste(Konditionierungsgroesse.Heizsoll), v => v.Bezeichner == "Büro (Kopie)" && !v.Ausgeliefert);
+            Zeile(cut, "Büro").QuerySelector("button.epos-kond-kopieren-nach")!.Click();
+            Assert.True(cut.FindComponent<KonditionierungVorlagenverwaltung>().Instance.KopierenOffen);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = schreibrechtVorher;
+        }
+    }
 }

@@ -6501,14 +6501,6 @@ After that the value will be missing from every calculation concerning that year
   <data name="ADM_STATUS_FEHLER" xml:space="preserve">
     <value>Not saved</value>
   </data>
-  <data name="ADM_SCHUTZ_TITEL" xml:space="preserve">
-    <value>Write-protected record</value>
-  </data>
-  <data name="ADM_SCHUTZ_FRAGE" xml:space="preserve">
-    <value>The record “{0}” comes from the shipped catalogue and is write-protected.
-
-Overwrite it anyway?</value>
-  </data>
   <data name="ADM_MEHRDEUTIG_TITEL" xml:space="preserve">
     <value>Designation not unique</value>
   </data>
@@ -8676,6 +8668,9 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
     <value>Building types (daily profiles)</value>
+  </data>
+  <data name="ADM_KATALOG_KONDITIONIERUNGSVORLAGE" xml:space="preserve">
+    <value>Conditioning templates</value>
   </data>
   <data name="ADM_KATALOG_BAUSTOFF" xml:space="preserve">
     <value>Building materials</value>
@@ -12413,14 +12408,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHKWK_LBL_NUTZUNGSDAUER" xml:space="preserve">
     <value>Service life (device data):</value>
-  </data>
-  <data name="BHKWK_FRAGE_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>This record comes from the delivery catalogue and is write-protected.
-
-Overwrite it anyway?</value>
-  </data>
-  <data name="BHKWK_TITEL_SCHREIBSCHUTZ" xml:space="preserve">
-    <value>Write-protected record</value>
   </data>
   <data name="BHKWK_MSG_GESPEICHERT" xml:space="preserve">
     <value>Record saved</value>
@@ -27840,6 +27827,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
     <value>The lock could not be switched; nothing was changed.</value>
+  </data>
+  <data name="ADM_SCHLOSS_ERST_AUFHEBEN" xml:space="preserve">
+    <value>Delivered record – read only. To edit it, first choose “Unlock...”.</value>
   </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Kept (used in projects): {0}</value>

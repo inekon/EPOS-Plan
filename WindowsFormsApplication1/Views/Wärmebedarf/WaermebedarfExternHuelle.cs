@@ -106,6 +106,10 @@ namespace WindowsFormsApplication1
                 // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung, mit
                 // Jahresarbeit und Spitze aus EINER Gruppenabfrage - und der Spalte
                 // "im Projekt verwendet" (Q12), die es nur im Projektdialog gibt.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.Waermebedarf, ids, gesperrt)),
                 ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(
                     WaermebedarfAdminHuelle.KatalogLesen),
                 ["Katalogprofil"] = Katalogfilterprofil

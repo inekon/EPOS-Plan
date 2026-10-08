@@ -309,6 +309,10 @@ namespace WindowsFormsApplication1
                 // "Modul Bearbeiten..." seine Felder bekommt; der Aufklapper IST sein
                 // Raster. Uebersetzt wird zwischen den zwei Feldtypen in der
                 // ModulFeldwertBruecke.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(PhotovoltaikStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(Katalogfelder),
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
