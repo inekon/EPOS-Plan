@@ -475,7 +475,12 @@ namespace WindowsFormsApplication1
                             : h2.Anheben(gi, zone, r, a.VorlaufC).MitVerfuegbarkeit(a.LeistungKw * 1000.0 / faktor, a.Grund, a.VorlaufC);
                         if (kaelteAnteil == null) return mit;
                         Anlagenverfuegbarkeit k = kaelteAnteil[zone < kaelteAnteil.Length ? zone : kaelteAnteil.Length - 1];
-                        return mit.MitKaelteverfuegbarkeit(k.LeistungKw * 1000.0 / faktor, k.Grund, k.VorlaufC);
+                        // KZ2: Am gleitenden Erzeuger fährt die Anlage den verlangten Vorlauf DIESES Durchlaufs — das Angebot
+                        // des vorigen Durchlaufs (vor der neuen Absenkung) kappt die Zone im Kühlkreis nicht zurück; ohne
+                        // Raumeinfluss oder außerhalb des Kühlkreises derselbe Rand.
+                        double vAngebot = k.VorlaufC;
+                        if (k2 != null && mit.KuehlVorlaufAmAngebot && mit.KuehlVorlaufC < vAngebot) vAngebot = mit.KuehlVorlaufC;
+                        return mit.MitKaelteverfuegbarkeit(k.LeistungKw * 1000.0 / faktor, k.Grund, vAngebot);
                     }));
                     heizW[i] = HeizlastW(jetzt[i], faktor);
                 }
