@@ -101,10 +101,12 @@ namespace EPOS.Kern.Tests
             string ziel = Environment.GetEnvironmentVariable("KK3_MESSUNG");
             if (!_db.Vorhanden || string.IsNullOrEmpty(ziel)) return;
             CultureInfo c = CultureInfo.InvariantCulture;
+            // KK5a: das Projekt der Messung (KK3_PROJEKT, Vorgabe 1058) - so misst dieselbe Reihe RP-KK (1061).
+            int projekt = int.TryParse(Environment.GetEnvironmentVariable("KK3_PROJEKT"), NumberStyles.Integer, c, out int p) ? p : 1058;
             void Messen(string name, bool kurve, double? kK)
             {
-                (SimulationControl sim, double s) a = Rechnen(1058, kurve, kK);
-                double s2 = Math.Min(Rechnen(1058, kurve, kK).sekunden, Rechnen(1058, kurve, kK).sekunden);
+                (SimulationControl sim, double s) a = Rechnen(projekt, kurve, kK);
+                double s2 = Math.Min(Rechnen(projekt, kurve, kK).sekunden, Rechnen(projekt, kurve, kK).sekunden);
                 SimulationControl sim = a.sim;
                 Ak3Weg weg = sim.simulation_Waermebedarf.Ak3;
                 Anlagenkopplung kreis = weg.Kreis;
@@ -114,7 +116,7 @@ namespace EPOS.Kern.Tests
                 double deckung = kas?.DeckungGesamtKwh ?? double.NaN, strom = kas?.StromGesamtKwh ?? double.NaN;
                 KuehlRaumeinfluss k2 = kreis.KuehlRaumeinfluss;
                 File.AppendAllText(ziel, string.Format(c,
-                    "{0}|Feldläufe {1}|Durchläufe Mittel {2:0.000} max {3}|Kühlen {4} h {5:0.0} Kh|Kälte {6:0.0} kWh|Strom {7:0.0} kWh|" +
+                    projekt + " {0}|Feldläufe {1}|Durchläufe Mittel {2:0.000} max {3}|Kühlen {4} h {5:0.0} Kh|Kälte {6:0.0} kWh|Strom {7:0.0} kWh|" +
                     "EER {8:0.000}|Rest {9:0.0} kWh|Laufzeit {10:0.00} s|Kühlstunden {11}|Vorlauf {12:0.00}/{13:0.00} °C|Grenze {14} h|" +
                     "abgesenkt {15} h {16:0.0} Kh|festgehalten {17}\n",
                     name, kreise.Count, kreis.DurchlaeufeMittel, kreise.Max(k => k.DurchlaeufeMax), kuehlen.Stunden, kuehlen.Kelvinstunden,
@@ -122,7 +124,7 @@ namespace EPOS.Kern.Tests
                     k2?.Kuehlstunden ?? 0, k2?.KuehlVorlaufMittelC ?? double.NaN, k2?.KuehlVorlaufMinC ?? double.NaN,
                     k2?.StundenAnVorlaufgrenze ?? 0, k2?.StundenAbgesenkt ?? 0, k2?.AbsenkungSummeKh ?? 0.0, k2?.StundenFestgehalten ?? 0));
             }
-            Rechnen(1058, false, null);   // Aufwärmen (JIT, Testdatenbank), nicht gezählt
+            Rechnen(projekt, false, null);   // Aufwärmen (JIT, Testdatenbank), nicht gezählt
             Messen("aus", false, null);
             Messen("Kurve k_K 0", true, null);
             foreach (double kK in new[] { 0.5, 1.0, 2.0, 3.0, 5.0 })
