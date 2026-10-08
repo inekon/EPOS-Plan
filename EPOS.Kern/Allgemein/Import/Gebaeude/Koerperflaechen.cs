@@ -34,6 +34,12 @@ namespace WindowsFormsApplication1
         /// <summary>Was auf der anderen Seite liegt: <see cref="Randbedingung.Innen"/> (Gegenraum), sonst Außenluft, Erdreich oder unbeheizt.</summary>
         internal Randbedingung Lage { get; init; }
 
+        /// <summary>
+        /// Der Teil einer am Gelände geteilten Wand unter Gelände: Tiefe seiner Unterkante unter der Geländehöhe [m]
+        /// (Geländehöhe minus Unterkante); <c>null</c> = nicht am Gelände geteilt.
+        /// </summary>
+        internal double? UnterGelaendeM { get; init; }
+
         /// <summary>Die Stelle der Bauteilseite (ebene Fläche des Bauteilkörpers), an der das Stück liegt.</summary>
         internal int Seite { get; init; }
     }
@@ -161,6 +167,9 @@ namespace WindowsFormsApplication1
     /// <item><b>Randbedingung ohne Gegenraum:</b> Erdreich für Wände und Böden eines unterirdischen Raums und für den Boden
     /// eines Raums im untersten Geschoss; sonst unbeheizt bei einem inneren Bauteil (die Datei nennt es innen, der Raum
     /// dahinter fehlt), sonst Außenluft.</item>
+    /// <item><b>Teilung am Gelände:</b> Mit Geländehöhe wird eine Wand eines Raums, dessen Körper das Gelände schneidet
+    /// (<see cref="Hanglage"/>), an der Ebene z = Geländehöhe geteilt: der Teil darunter am Erdreich, der Teil darüber an der
+    /// Außenluft; unter <see cref="ANTEIL_MIN"/> auf einer Seite keine Teilung (<see cref="AmGelaende"/>).</item>
     /// </list>
     /// <para><b>Deterministisch:</b> Bauteilseiten in der Reihenfolge ihres ersten Dreiecks, Räume in der Reihenfolge der
     /// Eingabe; Punkte auf 1e-6 gerundet.</para>
@@ -208,8 +217,9 @@ namespace WindowsFormsApplication1
         /// <param name="bauteil">Die Körper des Bauteils [m].</param>
         /// <param name="dickeM">Die Dicke der Datei [m]; <c>null</c> = aus dem Körper (kleinster Abstand gegenläufiger Seiten).</param>
         /// <param name="innen">Ist das Bauteil innen (die Datei nennt es nicht außen)? Bestimmt den Rest ohne Gegenraum.</param>
+        /// <param name="gelaendeM">Die Geländehöhe in den Koordinaten der Körper [m]; <c>null</c> = keine Teilung am Gelände.</param>
         internal static Koerperflaechenergebnis Zuordnen(IReadOnlyList<Koerperflaechenraum> raeume, IReadOnlyList<Dateikoerper> bauteil,
-                                                       double? dickeM, bool innen)
+                                                       double? dickeM, bool innen, double? gelaendeM = null)
         {
             var seiten = new List<Ebene>();
             foreach (Dateikoerper k in bauteil ?? Array.Empty<Dateikoerper>())
@@ -287,6 +297,8 @@ namespace WindowsFormsApplication1
                 if (verteilen || rest < FLAECHE_MIN_M2) continue;
                 Koerperflaechenraum raum = raeume[h.Raum];
                 bool boden = n[2] <= -WAAGERECHT_NZ, wand = Math.Abs(n[2]) < WAAGERECHT_NZ;
+                if (wand && gelaendeM.HasValue && Hanglage(raum, gelaendeM.Value)
+                    && AmGelaende(h.Stuecke, f.N, gelaendeM.Value, rest, innen, h, stueckliste)) continue;
                 Randbedingung lage = (boden && (raum.Unterster || raum.Unterirdisch)) || (wand && raum.Unterirdisch) ? Randbedingung.Erdreich
                                    : innen ? Randbedingung.Unbeheizt : Randbedingung.Aussenluft;
                 double[] schwerpunkt = Schwerpunkt(h.Stuecke, f.N);
@@ -305,6 +317,82 @@ namespace WindowsFormsApplication1
             e.Stuecke.AddRange(stueckliste);
             e.Treffer.AddRange(ergebnisTreffer);
             return e;
+        }
+
+        /// <summary>
+        /// Schneidet der Körper des Raums die Geländehöhe (Unterkante mehr als <see cref="TOLERANZ_M"/> darunter, Oberkante mehr
+        /// als <see cref="TOLERANZ_M"/> darüber)? Nur dann teilt <see cref="AmGelaende"/> seine Wände.
+        /// </summary>
+        internal static bool Hanglage(Koerperflaechenraum raum, double gelaendeM)
+        {
+            if (raum?.Koerper == null || raum.Koerper.PunkteM.Count == 0) return false;
+            double unten = raum.Koerper.PunkteM.Min(p => p[2]), oben = raum.Koerper.PunkteM.Max(p => p[2]);
+            return unten < gelaendeM - TOLERANZ_M && oben > gelaendeM + TOLERANZ_M;
+        }
+
+        /// <summary>
+        /// <b>Die Teilung einer Wand am Gelände</b> (Hanglage, Souterrain): Die Stücke der Raumseite werden an der Ebene
+        /// z = <paramref name="gelaendeM"/> geschnitten; der Teil darunter liegt am Erdreich, der Teil darüber an der Außenluft
+        /// (bzw. unbeheizt bei einem inneren Bauteil). Der Rest ohne Gegenraum (<paramref name="rest"/>) teilt sich im Verhältnis
+        /// der Schnittflächen. Liegt eine Seite unter <see cref="ANTEIL_MIN"/>, wird nicht geteilt: Das ganze Stück geht an die
+        /// größere Seite. Die Stücke tragen die Schlüssel mit „E“ (Erdreich) bzw. „L“ (über Gelände). <c>false</c> = keine
+        /// Schnittfläche (dann gilt die Regel ohne Gelände).
+        /// </summary>
+        private static bool AmGelaende(List<double[][]> stuecke, double[] nSeite, double gelaendeM, double rest, bool innen,
+                                       (int Seite, int Raum, double[] N, double S, double Abstand, List<double[][]> Stuecke) h,
+                                       List<Koerperflaechenstueck> stueckliste)
+        {
+            List<double[][]> unten = stuecke.Select(x => Hoehenschnitt(x, gelaendeM, true)).Where(x => x.Length >= 3).ToList();
+            List<double[][]> oben = stuecke.Select(x => Hoehenschnitt(x, gelaendeM, false)).Where(x => x.Length >= 3).ToList();
+            double aUnten = unten.Count > 0 ? Summe(unten, nSeite) : 0.0, aOben = oben.Count > 0 ? Summe(oben, nSeite) : 0.0;
+            double summe = aUnten + aOben;
+            if (summe <= EPS) return false;
+            Randbedingung luft = innen ? Randbedingung.Unbeheizt : Randbedingung.Aussenluft;
+            double[] n = nSeite.Select(x => R(-x)).ToArray();
+            string schluessel = Schluessel(h.Seite, h.Raum, -1, -1);
+            if (aUnten < ANTEIL_MIN * summe || aOben < ANTEIL_MIN * summe)
+            {
+                bool erde = aUnten >= aOben;
+                stueckliste.Add(new Koerperflaechenstueck
+                {
+                    Raum = h.Raum, Seite = h.Seite, Schluessel = schluessel, FlaecheM2 = R(rest), Normale = n,
+                    SchwerpunktM = Verschoben(Schwerpunkt(stuecke, nSeite), nSeite, h.Abstand), Lage = erde ? Randbedingung.Erdreich : luft,
+                });
+                return true;
+            }
+            stueckliste.Add(new Koerperflaechenstueck
+            {
+                Raum = h.Raum, Seite = h.Seite, Schluessel = schluessel + "E", FlaecheM2 = R(rest * aUnten / summe), Normale = n,
+                SchwerpunktM = Verschoben(Schwerpunkt(unten, nSeite), nSeite, h.Abstand), Lage = Randbedingung.Erdreich,
+                UnterGelaendeM = R(gelaendeM - unten.SelectMany(x => x).Min(p => p[2])),
+            });
+            stueckliste.Add(new Koerperflaechenstueck
+            {
+                Raum = h.Raum, Seite = h.Seite, Schluessel = schluessel + "L", FlaecheM2 = R(rest * aOben / summe), Normale = n,
+                SchwerpunktM = Verschoben(Schwerpunkt(oben, nSeite), nSeite, h.Abstand), Lage = luft,
+            });
+            return true;
+        }
+
+        /// <summary>
+        /// Ein ebenes Vieleck [m] gegen die Ebene z = <paramref name="z"/> geschnitten (Sutherland–Hodgman gegen einen Halbraum):
+        /// <paramref name="unten"/> = der Teil darunter, sonst der darüber. Leer bzw. weniger als drei Punkte = nichts.
+        /// </summary>
+        internal static double[][] Hoehenschnitt(double[][] vieleck, double z, bool unten)
+        {
+            var aus = new List<double[]>();
+            for (int i = 0; i < vieleck.Length; i++)
+            {
+                double[] p = vieleck[i], q = vieleck[(i + 1) % vieleck.Length];
+                double sp = unten ? z - p[2] : p[2] - z, sq = unten ? z - q[2] : q[2] - z;
+                if (sp >= 0.0) aus.Add(p);
+                if ((sp >= 0.0) != (sq >= 0.0))
+                {
+                    double t = sp / (sp - sq);
+                    aus.Add(new[] { p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]), p[2] + t * (q[2] - p[2]) });
+                }
+            }
+            return aus.Count >= 3 ? aus.ToArray() : Array.Empty<double[]>();
         }
 
         private static string Schluessel(int seite, int raum, int gegenseite, int gegenraum)

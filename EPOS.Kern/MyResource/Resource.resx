@@ -48560,6 +48560,12 @@ Chart</value>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper).</value>
   </data>
+  <data name="IMP_IFC_PROT_GELAENDE_DATEI" xml:space="preserve">
+    <value>Das Gebäude „{0}“: Geländehöhe {1} m aus der Datei (ElevationOfTerrain gegen die Bezugshöhe); {2} Wandflächen von Räumen in Hanglage liegen unter Gelände am Erdreich, ihr Teil darüber an der Außenluft.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GELAENDE_NULL" xml:space="preserve">
+    <value>Das Gebäude „{0}“ nennt keine Geländehöhe; es gilt z = 0 der Gebäudekoordinaten. {1} Wandflächen von Räumen in Hanglage liegen unter Gelände am Erdreich, ihr Teil darüber an der Außenluft.</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
     <value>{0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
   </data>

@@ -880,9 +880,23 @@ namespace WindowsFormsApplication1
                 var zonen = aussen.Select(x => x.Zone).Distinct().OrderBy(x => x).ToList();
                 bool teilen = !geometrie && zonen.Count > 1;
                 if (teilen) _aufgeteilt.Add(s.Kennung);
+                // Eine am Gelände geteilte Wand des Körperwegs (Hanglage) führt je Zone einen Teil am Erdreich und einen an der
+                // Außenluft; sonst entscheidet je Zone eine Seite am Erdreich für den ganzen Teil.
+                bool gelaende = geometrie && s.Grenzen.Count > 0 && s.Grenzen.All(g => g.Herkunft == Grenzherkunft.Bauteilkoerper)
+                                && s.Grenzen.Any(g => g.UnterGelaendeM.HasValue);
+                var randgruppen = new List<(int Zone, List<Seite> Hier)>();
                 foreach (int z in zonen)
                 {
-                    List<Seite> hier = aussen.Where(x => x.Zone == z).ToList();
+                    List<Seite> alle = aussen.Where(x => x.Zone == z).ToList();
+                    if (gelaende && alle.Any(x => x.Lage == Randbedingung.Erdreich) && alle.Any(x => x.Lage != Randbedingung.Erdreich))
+                    {
+                        randgruppen.Add((z, alle.Where(x => x.Lage == Randbedingung.Erdreich).ToList()));
+                        randgruppen.Add((z, alle.Where(x => x.Lage != Randbedingung.Erdreich).ToList()));
+                    }
+                    else randgruppen.Add((z, alle));
+                }
+                foreach ((int z, List<Seite> hier) in randgruppen)
+                {
                     Randbedingung lage = hier.Any(x => x.Lage == Randbedingung.Erdreich) ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
                     var teil = new Zonenflaeche
                     {
@@ -1070,6 +1084,7 @@ namespace WindowsFormsApplication1
                 if (Aufteilen(o, teile)) continue;
                 var zonen = new HashSet<int>(o.Grenzen.Where(g => g.RaumKennung != null).Select(g => ZoneOderArt(g.RaumKennung)).Where(z => z >= 0));
                 List<Zonenflaeche> passend = teile.Where(t => zonen.Contains(t.Zone) && (t.Nachbarzone < 0 || zonen.Count < 2 || zonen.Contains(t.Nachbarzone))).ToList();
+                passend = NachLage(o, passend);
                 if (passend.Count == 0)
                 {
                     passend = teile;
@@ -1081,6 +1096,21 @@ namespace WindowsFormsApplication1
                 if (ziel.Rand == Zonenrand.Zone)
                     teile.FirstOrDefault(t => t.Rand == Zonenrand.Zone && t.Zone == ziel.Nachbarzone && t.Nachbarzone == ziel.Zone)?.Oeffnungen.Add(o);
             }
+        }
+
+        /// <summary>
+        /// Die Teile, deren Rand zur Lage der Grenzen der Öffnung passt — ein Kellerfenster über Gelände geht an den Teil an der
+        /// Außenluft einer am Gelände geteilten Wand, nicht an den größeren am Erdreich. Ohne passenden Teil alle.
+        /// </summary>
+        private static List<Zonenflaeche> NachLage(AbbildBauteil o, List<Zonenflaeche> teile)
+        {
+            if (teile.Count < 2 || !teile.Any(t => t.Rand == Zonenrand.Erdreich) || !teile.Any(t => t.Rand == Zonenrand.Aussenluft)) return teile;
+            var lagen = o.Grenzen.Where(g => g.RaumKennung != null && !g.Virtuell).Select(g => g.Lage).ToList();
+            Zonenrand? rand = lagen.Count > 0 && lagen.All(l => l == Randbedingung.Erdreich) ? Zonenrand.Erdreich
+                            : lagen.Count > 0 && lagen.All(l => l == Randbedingung.Aussenluft) ? Zonenrand.Aussenluft : (Zonenrand?)null;
+            if (rand == null) return teile;
+            List<Zonenflaeche> passend = teile.Where(t => t.Rand == rand.Value || (t.Rand != Zonenrand.Erdreich && t.Rand != Zonenrand.Aussenluft)).ToList();
+            return passend.Any(t => t.Rand == rand.Value) ? passend : teile;
         }
 
         /// <summary>
@@ -1104,7 +1134,7 @@ namespace WindowsFormsApplication1
             var ziele = new List<(Zonenflaeche Teil, double Flaeche)>();
             foreach (KeyValuePair<int, double> e in jeZone)
             {
-                Zonenflaeche t = teile.Where(x => x.Zone == e.Key && (x.Rand == Zonenrand.Aussenluft || x.Rand == Zonenrand.Erdreich))
+                Zonenflaeche t = NachLage(o, teile.Where(x => x.Zone == e.Key && (x.Rand == Zonenrand.Aussenluft || x.Rand == Zonenrand.Erdreich)).ToList())
                                       .OrderByDescending(x => x.BruttoM2 ?? 0.0).FirstOrDefault();
                 if (t == null) return false;
                 ziele.Add((t, e.Value));

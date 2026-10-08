@@ -43432,6 +43432,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“: Geländehöhe {1} m aus der Datei (ElevationOfTerrain gegen die Bezugshöhe); {2} Wandflächen von Räumen in Hanglage liegen unter Gelände am Erdreich, ihr Teil darüber an der Außenluft. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GELAENDE_DATEI {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GELAENDE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude „{0}“ nennt keine Geländehöhe; es gilt z = 0 der Gebäudekoordinaten. {1} Wandflächen von Räumen in Hanglage liegen unter Gelände am Erdreich, ihr Teil darüber an der Außenluft. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_GELAENDE_NULL {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_GELAENDE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Gebäude, {1} Räume, {2} Bauteile gelesen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_GELESEN {

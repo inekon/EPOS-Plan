@@ -253,6 +253,7 @@ namespace WindowsFormsApplication1
             _abbild.Gebaeude.Add(g);
 
             Baujahr(b, g);
+            _gelaende[index] = Gelaendehoehe(b);
 
             var besucht = new HashSet<int>();
             _enthalteneGeschosse = _enthalteneRaeume = 0;
@@ -480,6 +481,7 @@ namespace WindowsFormsApplication1
                 Quelltyp = s.ExpressType.ExpressName,
                 Name = langname ?? name,
                 GeschossKennung = geschoss?.GlobalId.ToString(),
+                GeschossLageM = Lage(geschoss),
                 HottcadGuid = HottcadGuid(s),
             };
             double?[] flaechen =

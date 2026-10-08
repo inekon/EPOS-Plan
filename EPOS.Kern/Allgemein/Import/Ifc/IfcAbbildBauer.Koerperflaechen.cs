@@ -19,6 +19,35 @@ namespace WindowsFormsApplication1
         private readonly List<(Bauteilart Art, string Name, double Abweichung)> _zuordnungAbweichungen
             = new List<(Bauteilart, string, double)>();
 
+        /// <summary>Je Gebäude die Geländehöhe der Datei in den Weltkoordinaten [m]; <c>null</c> = die Datei nennt keine.</summary>
+        private readonly Dictionary<int, double?> _gelaende = new Dictionary<int, double?>();
+
+        /// <summary>
+        /// <b>Die Geländehöhe eines Gebäudes</b> aus der Datei, in den Koordinaten der Körper [m]: <c>IfcBuilding.ElevationOfTerrain</c>
+        /// (über Normalnull) gegen die Bezugshöhe — <c>ElevationOfRefHeight</c> des Gebäudes auf der z-Lage seiner Platzierung, sonst
+        /// <c>RefElevation</c> des Grundstücks auf der z-Lage seiner Platzierung, sonst 0. <c>null</c> = keine Geländehöhe in der
+        /// Datei; dann gilt z = 0 der Gebäudekoordinaten.
+        /// </summary>
+        private double? Gelaendehoehe(IIfcBuilding b)
+        {
+            double gelaende = IfcEigenschaften.Wert(b.ElevationOfTerrain);
+            if (double.IsNaN(gelaende)) return null;
+            double bezug = IfcEigenschaften.Wert(b.ElevationOfRefHeight);
+            IIfcObjectPlacement platzierung = b.ObjectPlacement;
+            if (double.IsNaN(bezug))
+            {
+                List<IIfcSite> grundstuecke = Sortiert<IIfcSite>().ToList();
+                IIfcSite grundstueck = grundstuecke.FirstOrDefault(x => _bezuege.ZerlegtDurch(x).Any(r => r.RelatedObjects.Contains(b)))
+                                       ?? grundstuecke.FirstOrDefault();
+                bezug = grundstueck == null ? double.NaN : IfcEigenschaften.Wert(grundstueck.RefElevation);
+                platzierung = double.IsNaN(bezug) ? null : grundstueck.ObjectPlacement;
+                if (double.IsNaN(bezug)) bezug = 0.0;
+            }
+            IfcRahmen? r0 = platzierung == null ? null : IfcPlatzierung.Weltrahmen(platzierung, _wurzel, out _);
+            double z0 = r0.HasValue ? r0.Value.Ursprung[2] : 0.0;
+            return Math.Round((gelaende - bezug + z0) * _einheiten.Laenge, 6);
+        }
+
         /// <summary>Die Schlüssel der Gegenprobe je Gruppe (<see cref="Koerpergruppe"/>).</summary>
         private static readonly string[] ZUORDNUNG_SCHLUESSEL =
         {
@@ -55,6 +84,8 @@ namespace WindowsFormsApplication1
                 foreach (int label in _raumbezug.Keys)
                     if (_modell.Instances[label] is IIfcRoot wurzel) mitBezug.Add(wurzel.GlobalId.ToString());
 
+                double? gelaendeDatei = _gelaende.TryGetValue(gi, out double? gd) ? gd : null;
+                double gelaende = gelaendeDatei ?? 0.0;
                 double untersterBoden = g.Raeume.Where(r => Dateikoerper.Beleg(r.Koerper) && r.Koerper.PunkteM.Count > 0)
                                                 .Min(r => r.Koerper.PunkteM.Min(p => p[2]));
                 List<Koerperflaechenraum> raeume = g.Raeume.Select(r =>
@@ -64,18 +95,18 @@ namespace WindowsFormsApplication1
                     return new Koerperflaechenraum
                     {
                         Koerper = r.Koerper,
-                        Unterirdisch = r.GeschossLageM.HasValue ? r.GeschossLageM.Value < -0.01 : oben <= 0.01,
+                        Unterirdisch = r.GeschossLageM.HasValue ? r.GeschossLageM.Value < -0.01 : oben <= gelaende + 0.01,
                         Unterster = unten <= untersterBoden + 0.1,
                     };
                 }).ToList();
 
-                int bauteile = 0, flaechen = 0;
+                int bauteile = 0, flaechen = 0, geteilt = 0;
                 double summe = 0.0;
                 foreach ((AbbildBauteil b, List<Dateikoerper> koerper, _, _) in _koerperVormerkung.Where(v => v.Gebaeude == gi))
                 {
                     if (!g.Bauteile.Contains(b) || b.Grenzen.Count > 0 || b.Nachbarn.Count > 0 || mitBezug.Contains(b.Kennung)) continue;
                     bool innen = b.Randbedingung == Randbedingung.Innen || b.Randbedingung == Randbedingung.Unbeheizt;
-                    Koerperflaechenergebnis e = KF.Zuordnen(raeume, koerper, b.DickeM, innen);
+                    Koerperflaechenergebnis e = KF.Zuordnen(raeume, koerper, b.DickeM, innen, gelaende);
                     if (e.Stuecke.Count == 0) continue;
                     bauteile++;
                     double[] massgeblich = b.Koerperflaeche?.Teile.FirstOrDefault()?.Normale;
@@ -90,7 +121,9 @@ namespace WindowsFormsApplication1
                             NeigungGrad = Math.Round(IfcBauteilkoerper.Neigung(s.Normale), 6),
                             AzimutGrad = IfcBauteilkoerper.Azimut(s.Normale, _drehung) is double az ? Math.Round(az, 6) : (double?)null,
                             Gegenseite = massgeblich != null && KF.Punkt(massgeblich, s.Normale) < 0.0,
+                            UnterGelaendeM = s.UnterGelaendeM,
                         });
+                        if (s.UnterGelaendeM.HasValue) geteilt++;
                         flaechen++;
                         summe += s.FlaecheM2;
                     }
@@ -115,6 +148,10 @@ namespace WindowsFormsApplication1
                                 FlaecheM2 = o.BruttoflaecheM2 is double brutto ? Math.Round(brutto * anteil, 6) : (double?)null,
                                 SchwerpunktM = mitte, Normale = normale, Herkunft = Grenzherkunft.Bauteilkoerper,
                                 Lage = e.Stuecke.Any(s => s.Raum == r && s.Lage == Randbedingung.Innen) ? Randbedingung.Innen
+                                     // Am Gelände geteilt: die Lage des Teils, in dem die Mitte der Öffnung liegt.
+                                     : e.Stuecke.Any(s => s.Raum == r && s.UnterGelaendeM.HasValue) && mitte != null
+                                       ? (mitte[2] < gelaende ? Randbedingung.Erdreich
+                                          : e.Stuecke.Where(s => s.Raum == r && s.Lage != Randbedingung.Erdreich).Select(s => s.Lage).DefaultIfEmpty(Randbedingung.Aussenluft).First())
                                      : e.Stuecke.Where(s => s.Raum == r).Select(s => s.Lage).DefaultIfEmpty(Randbedingung.Unbekannt).First(),
                             });
                     }
@@ -142,8 +179,15 @@ namespace WindowsFormsApplication1
                 List<string> warm = g.Raeume.Where(r => r.Beheizt && r.GeschossKennung != null).Select(r => r.GeschossKennung).Distinct(StringComparer.Ordinal).ToList();
                 g.KoerperflaechenGekoppelt = warm.Count > 1 && Gekoppelt(warm, paare);
                 if (bauteile > 0)
+                {
                     g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPERFLAECHEN", g.Anzeigename, Ganz(bauteile), Ganz(flaechen),
                         Zahl(Math.Round(summe, 2))));
+                    // Die Herkunft der Geländehöhe, an der Wände von Räumen in Hanglage geteilt werden.
+                    if (gelaendeDatei.HasValue)
+                        g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GELAENDE_DATEI", g.Anzeigename, Zahl(Math.Round(gelaende, 3)), Ganz(geteilt)));
+                    else
+                        g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "GELAENDE_NULL", g.Anzeigename, Ganz(geteilt)));
+                }
             }
             for (int gruppe = 0; gruppe < ZUORDNUNG_SCHLUESSEL.Length; gruppe++)
             {
