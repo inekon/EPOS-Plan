@@ -35,7 +35,7 @@ Die Gebäudeansicht soll Bauteile zeigen, die für die Rechnung unvollständig o
 
 ## 4 Gate 814
 
-GATEZAHLEN
+auf `08ea6386e` (62 min): KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 825, EPOS.Kern 12 198 mit 6 übersprungen, 0 rot; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 23/23 gegen `2026-10-07_R42_Vorlaufinterpolation_AK3` PASS (7 643 582 Werte), 718/718 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 520 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
 ## 5 Offen
 
