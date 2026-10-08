@@ -48616,6 +48616,12 @@ chart</value>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
   </data>
+  <data name="IMP_IFC_PROT_GELAENDE_DATEI" xml:space="preserve">
+    <value>Building "{0}": terrain level {1} m from the file (ElevationOfTerrain against the reference height); {2} wall areas of spaces on a slope lie below ground against the earth, their part above ground against outside air.</value>
+  </data>
+  <data name="IMP_IFC_PROT_GELAENDE_NULL" xml:space="preserve">
+    <value>Building "{0}" states no terrain level; z = 0 of the building coordinates applies. {1} wall areas of spaces on a slope lie below ground against the earth, their part above ground against outside air.</value>
+  </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
     <value>{0} external walls: the sum of their areas per space from the bodies deviates by more than {3} % from the body area (largest deviation {1} %, {2}) — check for duplicate or missing assignment.</value>
   </data>
