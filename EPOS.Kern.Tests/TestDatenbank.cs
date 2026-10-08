@@ -986,6 +986,10 @@ namespace EPOS.Kern.Tests
                 // Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): die Kennzahlen der Zonensperre und der Kaelteseite
                 // im Kreis an Tab_ErgebnisEnergiebedarf, leer. Wiederholbar.
                 Ak3KSchema.Ausfuehren(null);
+                // Schritt KuehlkurveSchema.SCHRITT (KK, Festlegungen 1, 3, 7, 12): die Kuehlkurve an beiden
+                // Gebaeudetabellen samt elftem Sichtneubau, die Kennzahlen an Tab_ErgebnisEnergiebedarf, leer.
+                // ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
+                KuehlkurveSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

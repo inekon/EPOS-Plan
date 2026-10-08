@@ -24,7 +24,6 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(ProjektdateiImportSchema.SCHRITT + 1, Ak3KSchema.SCHRITT);
             Assert.Equal(201, Ak3KSchema.SCHRITT);
-            Assert.Equal(Ak3KSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.True(Ak3KSchema.SCHRITT <= SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == Ak3KSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

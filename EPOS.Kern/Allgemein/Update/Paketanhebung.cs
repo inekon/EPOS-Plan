@@ -366,6 +366,10 @@ namespace WindowsFormsApplication1
             // leer an („nicht erhoben").
             new Stufe(Ak3KSchema.SCHRITT, Art.Ddl,
                       "AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis im Ergebnis"),
+            // Ein älteres Paket führt keine Kühlkurve und keine ihrer Kennzahlen; die Spalten kommen leer an (fester
+            // Vorlauf, „nicht erhoben").
+            new Stufe(KuehlkurveSchema.SCHRITT, Art.Ddl,
+                      "Kühlkurve am Gebäude (Schalter, Fußpunkt, Raumeinfluss, Auslegungsweg), Kennzahlen im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

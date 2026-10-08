@@ -3181,6 +3181,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrAk3K + " - vollstaendig: " + Ak3KSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KuehlkurveSchema.SCHRITT (KK, Festlegungen 1, 3, 7, 12): fuenf Eingabespalten der Kuehlkurve
+            //      an Tab_Gebaeude und Tab_Gebaeude_STAMM samt elftem Sichtneubau, drei Kennzahlen an
+            //      Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Kuehlkurve bedient.
+            //      ZULETZT, weil er die Sicht in seiner Form baut.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; die Kuehlkurve steht aus.
+            string nrKk = KuehlkurveSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKk + " - Kuehlkurve (Eingaben am Gebaeude, Kennzahlen im Ergebnis): " +
+                              (KuehlkurveSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKk = new List<string>();
+                angelegt += KuehlkurveSchema.Ausfuehren(berichtKk);
+                foreach (string zeile in berichtKk)
+                    Console.WriteLine("Schritt " + nrKk + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKk + " - vollstaendig: " + KuehlkurveSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
