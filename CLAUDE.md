@@ -175,8 +175,8 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-07_R42_Vorlaufinterpolation_AK3`, dreiundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
-ohne wirksame Kühlung frei, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
+`2026-10-07_R43_Kaelteseite_AK3K`, vierundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
 Stromverbraucher-Zuordnung (über die ID, gehalten von `EPOS.Kern.Tests/StromverbraucherZuordnungTests`),
@@ -200,7 +200,8 @@ Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und He
 Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1056 rechnet als Kopie von 1047 mit Anlagenfahrplan — Nachtsperre der Wärmepumpe 0 bis 6 Uhr, Zeitprogramm 0 in denselben Stunden an Kessel und BHKW, `Vorlauf_Max` 50 °C — und schreibt Komfortstunden, gehalten von `EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1057 rechnet als Kopie von 1029 eine Erdsonde (4 × 90 m, Mergel/Lehm, Klimazone 6) mit Entzugsrückwirkung im Betrachtungsjahr 10, gehalten von `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
-Projekt 1058 rechnet als Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve — der geschlossene Kreis zwischen Gebäude und Erzeugern, der Puffer überbrückt die Sperrstunden — und schreibt Komfortstunden und die Kennzahlen des Kreises, gehalten von `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests`,
+Projekt 1058 rechnet als Kopie von 1056 auf Stufe AK3 mit Heizungspuffer an der Wärmepumpe und Raumeinfluss der Heizkurve — der geschlossene Kreis zwischen Gebäude und Erzeugern mit der Kälteseite im Kreis, der Puffer überbrückt die Sperrstunden — und schreibt Komfortstunden und die Kennzahlen des Kreises, gehalten von `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests`,
+Projekt 1059 rechnet als Kopie von 1058 seine Kälte mit einer zu kleinen Kältemaschine und einem Kältespeicher aus 1055 — die Kälteschranke greift —, gehalten von `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
@@ -231,7 +232,7 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   Kaskadenplatz der Wärmepumpe, ihr Kühlbetrieb, `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil`,
   Kühlträger und Abrechnungsart ihrer Anlagenzeile (`Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`)
   und die Kühlkennlinie des Projektgeräts samt Vorlauf-Stützstellen (`Tab_Kenndaten_Kuehlung`);
-- gesäte Kältemaschinendaten eines Referenzprojekts: die Anlagenzeile seiner Kältemaschine (`Kaeltemaschine_Anzahl`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), ihre Projektkopie `Tab_Kaeltemaschine` (Nennkälteleistung, EER, Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung, `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil`) samt `Tab_Kenndaten_Kaeltemaschine`, sein Kältespeicher (Pufferzeile mit Verwendung Kälte, Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Bereitschaftsverlust, Schwellen) und die Kaskade (`Tool_1` bis `Tool_6`), dazu das Anlegen oder Entfernen eines solchen Referenzprojekts;
+- gesäte Kältemaschinendaten eines Referenzprojekts: die Anlagenzeile seiner Kältemaschine (`Kaeltemaschine_Anzahl`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), ihre Projektkopie `Tab_Kaeltemaschine` (Nennkälteleistung, EER, Rückkühlart, Mindestteillast, Hilfsstrom der Rückkühlung, `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil`) samt `Tab_Kenndaten_Kaeltemaschine`, sein Kältespeicher (Pufferzeile mit Verwendung Kälte, Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Bereitschaftsverlust, Schwellen) und die Kaskade (`Tool_1` bis `Tool_6`), dazu das Anlegen oder Entfernen eines solchen Referenzprojekts; ebenso Kältemaschine und Kältespeicher eines gekoppelten Referenzprojekts auf Stufe AK3;
 - gesäte Auslegungsdaten der Übergabe: die Kopplungsstufe `Tab_Einstellungen.Anlagenkopplung`
   eines Referenzprojekts (auch die Stufe AK3), an seinen Gebäuden `Heizkreis_Aktiv` und die Übergabespalten (Art,
   Exponent, Nennleistung, Auslegungspunkt, Heizkurve, `Heizkurve_Raumeinfluss`, `Regler_Proportionalband`,
@@ -242,8 +243,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Sperrzeit_bis` samt `Tab_Sperrfenster`, `Zeitprogramm`, `Vorlauf_Max`), die Heizungspuffer eines gekoppelten
   Referenzprojekts (Volumen, Temperaturpaar `Vorlauf`/`Ruecklauf`, Schwellen, Lade- und Entladeleistung, Senkenzuordnung
   in `Z_AnlageSenke`, Lade-Prioritäten der Erzeuger), die Heizkennlinie `Tab_Kenndaten` seiner Projektwärmepumpe samt
-  Vorlauf-Stützstellen, `Ptherm` seiner Projektkopien `Tab_Heizkessel` und `Tab_BHKW`, dazu das Anlegen oder Entfernen eines
-  gekoppelten Referenzprojekts;
+  Vorlauf-Stützstellen, `Ptherm` seiner Projektkopien `Tab_Heizkessel` und `Tab_BHKW`, auf Stufe AK3 die Kälteseite, die die
+  Kälteschranke bildet (Kälteerzeuger, Kältespeicher, Kaskade), dazu das Anlegen oder Entfernen eines gekoppelten
+  Referenzprojekts, auch eines auf Stufe AK3 mit Kälteseite;
+- die Freigabe der Konditionierung eines Referenzprojekts mit Kühlung: je Gebäude und Zone das „aus“ der Heiz- und
+  Kühlsollwertkalender und die Heiz- und Kühlperiode;
 - gesäte Zapfprofil-Eingaben eines Referenzprojekts: `Tab_TwwProjekt` (`Weg`, Seed,
   Realisierungen, Temperaturen, Bilanzgrenze), seine Zonen (`Tab_TwwZone`) und Wohnungstypen,
   die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, und das Umstellen eines

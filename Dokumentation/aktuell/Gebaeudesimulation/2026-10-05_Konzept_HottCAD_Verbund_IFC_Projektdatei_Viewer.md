@@ -613,7 +613,7 @@ die Kette hängt über `+ 1` an der Vorgängerklasse. Ohne DML, ohne Saat; die T
 - `Tab_Raumgrundriss` lesen allein der Export und die Ansicht.
 
 **Einfrierregeln: nicht berührt (nein).** Kein Referenzprojekt ist importiert; die Testdatenbank bekommt nur die
-leere Tabelle. Erwartet ist der Referenzlauf **byte-gleich** gegen `2026-10-07_R42_Vorlaufinterpolation_AK3`.
+leere Tabelle. Erwartet ist der Referenzlauf **byte-gleich** gegen `2026-10-07_R43_Kaelteseite_AK3K`.
 
 ### 11.6 Bestand
 
