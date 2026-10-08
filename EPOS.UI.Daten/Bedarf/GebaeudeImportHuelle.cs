@@ -651,7 +651,7 @@ namespace WindowsFormsApplication1
             Aufbauquelle? wahl = schluessel switch
             {
                 GebaeudeAufbauquelleSchluessel.PROJEKTDATEI => Aufbauquelle.Projektdatei,
-                GebaeudeAufbauquelleSchluessel.IFC => Aufbauquelle.Ifc,
+                GebaeudeAufbauquelleSchluessel.DATEI => Aufbauquelle.Ifc,
                 GebaeudeAufbauquelleSchluessel.OFFEN => Aufbauquelle.Offen,
                 _ => null,
             };
@@ -668,7 +668,7 @@ namespace WindowsFormsApplication1
         {
             Aufbauquelle.Offen => GebaeudeAufbauquelleSchluessel.OFFEN,
             Aufbauquelle.Projektdatei => GebaeudeAufbauquelleSchluessel.PROJEKTDATEI,
-            _ => GebaeudeAufbauquelleSchluessel.IFC,
+            _ => GebaeudeAufbauquelleSchluessel.DATEI,
         };
 
         /// <summary>Die Standprüfung als Daten des Dialogs; <c>null</c> = nicht geprüft.</summary>

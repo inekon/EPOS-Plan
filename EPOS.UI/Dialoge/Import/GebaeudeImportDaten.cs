@@ -738,13 +738,13 @@ public sealed record GebaeudeProjektdateiDaten
     public string Einzonenvorschlag { get; init; } = "";
 
     /// <summary>
-    /// Die Standprüfung IFC gegen Projektdatei (nur beim Weg „IFC + Projektdatei“, Anwenderentscheid vom 08.10.2026);
+    /// Die Standprüfung Gebäudedatei gegen Projektdatei (nur beim Weg „Gebäudedatei + Projektdatei“, Anwenderentscheid vom 08.10.2026);
     /// <c>null</c> = nicht geprüft.
     /// </summary>
     public GebaeudeStandpruefungDaten? Standpruefung { get; init; }
 
-    /// <summary>Die Wahl der Aufbauquelle (<see cref="GebaeudeAufbauquelleSchluessel"/>); ohne angeschlagene Prüfung „ifc“.</summary>
-    public string Aufbauquelle { get; init; } = GebaeudeAufbauquelleSchluessel.IFC;
+    /// <summary>Die Wahl der Aufbauquelle (<see cref="GebaeudeAufbauquelleSchluessel"/>); ohne angeschlagene Prüfung „datei“.</summary>
+    public string Aufbauquelle { get; init; } = GebaeudeAufbauquelleSchluessel.DATEI;
 
     /// <summary>Ist die Wahl offen (Übernehmen gesperrt, bis gewählt ist)?</summary>
     public bool AufbauquelleOffen => Aufbauquelle == GebaeudeAufbauquelleSchluessel.OFFEN;
@@ -759,12 +759,12 @@ public static class GebaeudeAufbauquelleSchluessel
     /// <summary>Aufbauten und U-Werte der Projektdatei.</summary>
     public const string PROJEKTDATEI = "projektdatei";
 
-    /// <summary>Der Stand der IFC (Rangfolge nach U-Abgleich).</summary>
-    public const string IFC = "ifc";
+    /// <summary>Der Stand der Gebäudedatei (Rangfolge nach U-Abgleich).</summary>
+    public const string DATEI = "datei";
 }
 
 /// <summary>
-/// <b>Die Standprüfung IFC gegen Projektdatei</b> für den Dialog der Aufbauquelle: ob sie anschlägt, Zahl und Flächenanteil der
+/// <b>Die Standprüfung Gebäudedatei gegen Projektdatei</b> für den Dialog der Aufbauquelle: ob sie anschlägt, Zahl und Flächenanteil der
 /// abweichenden Bauteile, je Bauteilart die Mediane, bis zu fünf Beispiele und die belegten Anzeichen eines anderen Projektstands.
 /// </summary>
 public sealed record GebaeudeStandpruefungDaten
@@ -800,12 +800,12 @@ public sealed record GebaeudeStandpruefungDaten
     public string Meldung { get; init; } = "";
 }
 
-/// <summary>Je Bauteilart: Anzeigetext der Art, verglichene und abweichende Bauteile, Median-U der IFC und der Projektdatei [W/(m²K)].</summary>
-public sealed record GebaeudeStandpruefungArtDaten(string Art, int Verglichen, int Abweichend, double MedianUIfc, double MedianUProjektdatei);
+/// <summary>Je Bauteilart: Anzeigetext der Art, verglichene und abweichende Bauteile, Median-U der Gebäudedatei und der Projektdatei [W/(m²K)].</summary>
+public sealed record GebaeudeStandpruefungArtDaten(string Art, int Verglichen, int Abweichend, double MedianUDatei, double MedianUProjektdatei);
 
 /// <summary>Ein abweichendes Bauteil: Name, Art, Bruttofläche [m²], beide U [W/(m²K)] und beide Aufbaunamen (leer = keiner).</summary>
-public sealed record GebaeudeStandpruefungBeispielDaten(string Bauteil, string Art, double FlaecheM2, double UIfc, double UProjektdatei,
-                                                       string AufbauIfc, string AufbauProjektdatei);
+public sealed record GebaeudeStandpruefungBeispielDaten(string Bauteil, string Art, double FlaecheM2, double UDatei, double UProjektdatei,
+                                                       string AufbauDatei, string AufbauProjektdatei);
 
 /// <summary>Ein Anzeichen: sprachneutrales Kennwort (<c>kopie</c>, <c>baujahr</c>, <c>dicke</c>) und der Satzteil mit seinen Belegen.</summary>
 public sealed record GebaeudeStandanzeichenDaten(string Schluessel, string Text);

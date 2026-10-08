@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using WindowsFormsApplication1;
 
 namespace EPOS.Kern.Tests
@@ -75,12 +74,6 @@ namespace EPOS.Kern.Tests
             }
             return e;
         }
-
-        /// <summary>Das Journal der Projektdatei (<c>PrJournalEntry</c>, nur die gelesenen Spalten) — nur geschrieben, wenn eine Zeile es trägt.</summary>
-        internal static readonly IReadOnlyDictionary<string, string[]> JOURNAL_SPALTEN = new Dictionary<string, string[]>
-        {
-            ["PrJournalEntry"] = new[] { "UUID", "JournalData" },
-        };
 
         /// <summary>
         /// <b>Die IFC des Standpaars</b> (HottCAD, <c>TModelBuilding</c>): dieselbe Geometrie und dieselben GUIDs, aber sanierte

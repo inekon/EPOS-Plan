@@ -84,6 +84,12 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Platzhalter „nicht gesetzt“ der Projektdatei.</summary>
         internal const double PLATZHALTER = -987654321.99;
 
+        /// <summary>Das Journal der Projektdatei (<c>PrJournalEntry</c>, nur die gelesenen Spalten) — nur geschrieben, wenn eine Zeile es trägt.</summary>
+        internal static readonly IReadOnlyDictionary<string, string[]> JOURNAL_SPALTEN = new Dictionary<string, string[]>
+        {
+            ["PrJournalEntry"] = new[] { "UUID", "JournalData" },
+        };
+
         /// <summary>Trägt die Probe Bauteiltabellen?</summary>
         internal bool MitBauteilen { get; set; }
 
