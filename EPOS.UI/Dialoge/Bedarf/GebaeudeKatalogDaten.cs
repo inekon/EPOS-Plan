@@ -374,8 +374,8 @@ public sealed class GebaeudeKatalogDaten
     // Unter der Kühlübergabe: außentemperaturgeführter Kühlvorlauf (Zwei-Punkt-Kurve mit Fußpunkt),
     // auf Stufe AK3 mit Raumeinfluss. NULL-erhaltend; leer heißt fester Vorlauf (Festlegung 1).
 
-    /// <summary>„Kühlkurve" (<c>Kuehlkurve_Aktiv</c>, 0/1, NULL = aus).</summary>
-    public bool KuehlkurveAktiv { get; set; }
+    /// <summary>„Kühlkurve" (<c>Kuehlkurve_Aktiv</c>, 0/1); <c>null</c> = aus, bleibt beim Speichern NULL.</summary>
+    public bool? KuehlkurveAktiv { get; set; }
 
     /// <summary>Fußpunkt der Kühlkurve [°C] (<c>Kuehlkurve_Fusspunkt</c>, 4 … 22); <c>null</c> = Auslegungsrücklauf der Kühlübergabe.</summary>
     public double? KuehlkurveFusspunkt { get; set; }

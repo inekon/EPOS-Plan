@@ -941,7 +941,7 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     /// <summary>„Kühlkurve" — gleitender Kühlvorlauf über die Außentemperatur; gerechnet auf Stufe AK3.</summary>
     public bool KuehlkurveAktiv
     {
-        get => Daten?.KuehlkurveAktiv ?? false;
+        get => Daten?.KuehlkurveAktiv == true;
         set
         {
             if (KuehlkurveSetzen is not null) KuehlkurveSetzen(value);

@@ -156,7 +156,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE, g.Kuehlkurve_Auslegung_Weg);
             Assert.Equal(31.0, g.Kuehlkurve_Auslegung_Aussen);
             GebaeudeModel k = GebaeudeStammCtrl.LiesProjektkopie(GEBAEUDE);
-            Assert.True(k.Kuehlkurve_Aktiv);
+            Assert.True(k.Kuehlkurve_Aktiv == true);
             Assert.Equal(19.0, k.Kuehlkurve_Fusspunkt);
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE, k.Kuehlkurve_Auslegung_Weg);
         }
@@ -210,7 +210,7 @@ namespace EPOS.Kern.Tests
                 "SELECT Bezeichner FROM Tab_Gebaeude_STAMM ORDER BY ID LIMIT 1"), CultureInfo.InvariantCulture);
             GebaeudeModel m = ctrl.Lies(name);
             Assert.NotNull(m);
-            Assert.False(m.Kuehlkurve_Aktiv);
+            Assert.Null(m.Kuehlkurve_Aktiv);
             Assert.Null(m.Kuehlkurve_Fusspunkt);
 
             // Katalog speichern und lesen (Insert): die Werte und NULL bleiben, was sie sind.
@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
             m.Kuehlkurve_Auslegung_Aussen = null;
             Assert.True(ctrl.Insert(m));
             GebaeudeModel gelesen = ctrl.Lies("KK Kuehlkurve Probe");
-            Assert.True(gelesen.Kuehlkurve_Aktiv);
+            Assert.True(gelesen.Kuehlkurve_Aktiv == true);
             Assert.Equal(19.0, gelesen.Kuehlkurve_Fusspunkt);
             Assert.Null(gelesen.Kuehlkurve_Raumeinfluss);
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE, gelesen.Kuehlkurve_Auslegung_Weg);
@@ -234,7 +234,7 @@ namespace EPOS.Kern.Tests
             int kopie = ctrl.CopyFromStamm("KK Kuehlkurve Probe", PROJEKT, zuordnung);
             Assert.True(kopie > 0, "Kopie in das Projekt fehlgeschlagen.");
             GebaeudeModel p = GebaeudeStammCtrl.LiesProjektkopie(kopie);
-            Assert.True(p.Kuehlkurve_Aktiv);
+            Assert.True(p.Kuehlkurve_Aktiv == true);
             Assert.Equal(19.0, p.Kuehlkurve_Fusspunkt);
             Assert.Null(p.Kuehlkurve_Raumeinfluss);
             Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE, p.Kuehlkurve_Auslegung_Weg);

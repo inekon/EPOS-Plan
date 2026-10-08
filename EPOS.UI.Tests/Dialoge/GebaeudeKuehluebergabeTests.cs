@@ -423,7 +423,7 @@ public class GebaeudeKuehluebergabeTests : EposBunitContext
         Ok(cut);
 
         Assert.NotNull(geschrieben);
-        Assert.True(geschrieben!.KuehlkurveAktiv);
+        Assert.True(geschrieben!.KuehlkurveAktiv == true);
         Assert.Equal(Waermeuebergabevorgaben.KUEHLKURVE_RAUMEINFLUSS_VORGABE, geschrieben.KuehlkurveRaumeinfluss);
         Assert.Null(geschrieben.KuehlkurveFusspunkt);
         Assert.Null(geschrieben.KuehlkurveAuslegungWeg);           // Tagesmittel bleibt leer (Vorgabe)

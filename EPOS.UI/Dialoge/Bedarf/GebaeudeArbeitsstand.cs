@@ -989,7 +989,7 @@ public sealed class GebaeudeArbeitsstand
     private readonly HashSet<string> _kurveFehlerfelder = new();
 
     /// <summary>Stehen die Felder der Kühlkurve da? Die Kühlübergabe rechnet und der Haken „Kühlkurve" ist gesetzt.</summary>
-    public bool KuehlkurveFelderSichtbar => KuehlUebergabeAktiv && Stand.KuehlkurveAktiv;
+    public bool KuehlkurveFelderSichtbar => KuehlUebergabeAktiv && Stand.KuehlkurveAktiv == true;
 
     /// <summary>
     /// Der Haken „Kühlkurve" (Festlegung 6, E106 Q-KK-5 (b)): Beim Einschalten trägt er in ein leeres Raumeinflussfeld den
@@ -1676,7 +1676,7 @@ public sealed class GebaeudeArbeitsstand
         if (Stand.KuehlUebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Kuehlung(k.MeldungNennleistung);
 
         // Die Kühlkurve (Festlegungen 7 und 18): Bereiche, die Eingabe nur mit dem Weg „Eingabe", die Fußpunktregel.
-        if (Stand.KuehlkurveAktiv)
+        if (Stand.KuehlkurveAktiv == true)
         {
             GebaeudePruefbefund? kk =
                 Bereich(Stand.KuehlkurveFusspunkt, k.LabelKuehlkurveFusspunkt, KuehlkurveSchema.FUSSPUNKT_MIN, KuehlkurveSchema.FUSSPUNKT_MAX)
@@ -1827,7 +1827,7 @@ public sealed class GebaeudeArbeitsstand
         Z(a.KuehlAuslegungRaumtemperatur, g.KuehlAuslegungRaumtemperatur); Z(a.KuehlVorlaufgrenze, g.KuehlVorlaufgrenze);
 
         // KK: die fünf Felder der Kühlkurve.
-        B(a.KuehlkurveAktiv, g.KuehlkurveAktiv); Z(a.KuehlkurveFusspunkt, g.KuehlkurveFusspunkt);
+        B(a.KuehlkurveAktiv == true, g.KuehlkurveAktiv == true); Z(a.KuehlkurveFusspunkt, g.KuehlkurveFusspunkt);
         Z(a.KuehlkurveRaumeinfluss, g.KuehlkurveRaumeinfluss); T(a.KuehlkurveAuslegungWeg, g.KuehlkurveAuslegungWeg);
         Z(a.KuehlkurveAuslegungAussen, g.KuehlkurveAuslegungAussen);
 

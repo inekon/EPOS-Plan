@@ -86,7 +86,7 @@
                     @* Entwurf KK: die Kuehlkurve - beim Einschalten traegt der Haken den Vorgabewert des Raumeinflusses
                        ein (E106, Q-KK-5 (b)); leere Felder heissen Vorgabe, der Haken aus heisst fester Vorlauf. *@
                     <Schalter Bezeichnung="@K.LabelKuehlkurve"
-                              Wert="@Arbeit.Stand.KuehlkurveAktiv"
+                              Wert="@(Arbeit.Stand.KuehlkurveAktiv == true)"
                               WertChanged="@(w => Setze(() => Arbeit.KuehlkurveSetzen(w)))" />
                     @if (Arbeit.KuehlkurveFelderSichtbar)
                     {

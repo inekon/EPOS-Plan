@@ -423,9 +423,9 @@ namespace WindowsFormsApplication1
                 new DbParam("@b96", DbParamTyp.Double) { Wert = Wert(m.Erdreich_U_Wirksam) },
                 // Der Raumeinfluss der Heizkurve (AK3, Ak3Schema.SCHRITT): NULL-erhaltend, NULL = aus
                 new DbParam("@b97", DbParamTyp.Double) { Wert = Wert(m.Heizkurve_Raumeinfluss) },
-                // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): der Schalter 0/1, die Werte NULL-erhaltend,
-                // NULL = Vorgabe (Fusspunkt: Auslegungsruecklauf; Raumeinfluss: aus; Weg: tagesmittel)
-                new DbParam("@b98", DbParamTyp.Boolean) { Wert = m.Kuehlkurve_Aktiv },
+                // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): alle fuenf NULL-erhaltend, NULL = aus bzw. Vorgabe
+                // (Fusspunkt: Auslegungsruecklauf; Raumeinfluss: aus; Weg: tagesmittel)
+                new DbParam("@b98", DbParamTyp.Integer) { Wert = m.Kuehlkurve_Aktiv.HasValue ? (object)(m.Kuehlkurve_Aktiv.Value ? 1 : 0) : DBNull.Value },
                 new DbParam("@b99", DbParamTyp.Double) { Wert = Wert(m.Kuehlkurve_Fusspunkt) },
                 new DbParam("@b100", DbParamTyp.Double) { Wert = Wert(m.Kuehlkurve_Raumeinfluss) },
                 new DbParam("@b101", DbParamTyp.VarWChar) { Wert = Standardwert(m.Kuehlkurve_Auslegung_Weg) },
@@ -603,8 +603,9 @@ namespace WindowsFormsApplication1
             // Der Raumeinfluss der Heizkurve (AK3, Ak3Schema.SCHRITT): NULL-ERHALTEND, null = aus.
             item.Heizkurve_Raumeinfluss = Zahl(row, GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS);
 
-            // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): NULL-ERHALTEND, der Schalter NULL = aus.
-            item.Kuehlkurve_Aktiv = Schalter(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AKTIV);
+            // Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT): NULL-ERHALTEND, auch der Schalter (NULL = aus).
+            int? kurve = Ganzzahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AKTIV);
+            item.Kuehlkurve_Aktiv = kurve.HasValue ? kurve.Value != 0 : (bool?)null;
             item.Kuehlkurve_Fusspunkt = Zahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_FUSSPUNKT);
             item.Kuehlkurve_Raumeinfluss = Zahl(row, GebaeudeSchema.SPALTE_KUEHLKURVE_RAUMEINFLUSS);
             string weg = Text(row, GebaeudeSchema.SPALTE_KUEHLKURVE_AUSLEGUNG_WEG);
@@ -1445,7 +1446,7 @@ namespace WindowsFormsApplication1
         /// <see cref="CopyFromStamm(int?, string, int, int)"/>.
         ///
         /// <list type="bullet">
-        /// <item><b>Kopf:</b> alle 96 Fachspalten (<see cref="KOPFSPALTEN"/>) wörtlich aus
+        /// <item><b>Kopf:</b> alle 101 Fachspalten (<see cref="KOPFSPALTEN"/>) wörtlich aus
         /// <c>Tab_Gebaeude</c> — NULL bleibt NULL, Schalter bleiben 0/1. Neue Id, <c>ReadOnly = 0</c>;
         /// Projekt, Zuordnung und Katalogverweis der Kopie gehören nicht zum Katalog.</item>
         /// <item><b>Beschreibung:</b> die der Kopie, darunter die Herkunft „aus Projekt …, Datum"
