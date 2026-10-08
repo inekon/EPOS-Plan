@@ -55,8 +55,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(105, GebaeudeSchema.SICHT_AK3.Length);
             Assert.Equal("Heizkurve_Raumeinfluss", GebaeudeSchema.SICHT_AK3[104]);
             Assert.Equal(GebaeudeSchema.SICHT_ERDREICH_VORGABE, GebaeudeSchema.SICHT_AK3.Take(104));
-            Assert.Equal(GebaeudeSchema.SICHT_AK3, GebaeudeSchema.SICHT_AKTUELL);
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_AK3, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SICHT_AK3, GebaeudeSchema.SICHT_AKTUELL.Take(105));
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLKURVE, GebaeudeSchema.SQL_VIEW_AKTUELL);
             Assert.Contains("Tab_Gebaeude.Heizkurve_Raumeinfluss", GebaeudeSchema.SQL_VIEW_AKTUELL, StringComparison.Ordinal);
         }
 
@@ -122,7 +122,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8, Ak3Schema.Ausfuehren(bericht));
             Assert.Contains(bericht, z => z.Contains("105 Spalten", StringComparison.Ordinal));
             Assert.True(Ak3Schema.Vollstaendig());
-            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.SICHT_AK3, GebaeudeSchema.SichtSpalten());
             Assert.Equal(zeilen, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));
 

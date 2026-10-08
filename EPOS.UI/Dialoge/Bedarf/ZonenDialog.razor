@@ -169,11 +169,33 @@
                                             Feldname="@Feld(Texte.KuehlLabelLeistungMax)" FehlerZustand="FehlerMelden"
                                             Wert="@_stand.KuehlleistungMaxKw"
                                             WertChanged="w => Setzen(() => _stand.KuehlleistungMaxKw = w)" />
+                                @* KK4 (Entwurf KK Festlegung 15): die Kuehluebergabe der Zone - leer = wie Gebaeude;
+                                   Auslegungspunkt, Vorlaufgrenze und Kuehlkurve stehen allein am Gebaeude. *@
+                                <Auswahlfeld Bezeichnung="@Texte.KuehlLabelUebergabeArt" Eintraege="@KuehlUebergabeArteintraege"
+                                             Auswahl="@KuehlUebergabeArtindex" AuswahlChanged="KuehlUebergabeArtWaehlen" />
+                                @if (KuehlUebergabeRechnet)
+                                {
+                                    <Zahlenfeld Bezeichnung="@Texte.KuehlLabelUebergabeExponent"
+                                                Min="@Waermeuebergabevorgaben.EXPONENT_MIN" Max="@Waermeuebergabevorgaben.EXPONENT_MAX"
+                                                Platzhalter="@UebergabePlatzhalter(null, Waermeuebergabevorgaben.KuehlExponent(_stand.KuehlUebergabeArt), 2)"
+                                                Feldname="@Feld(Texte.KuehlLabelUebergabeExponent)" FehlerZustand="FehlerMelden"
+                                                Wert="@_stand.KuehlUebergabeExponent"
+                                                WertChanged="w => Setzen(() => _stand.KuehlUebergabeExponent = w)" />
+                                    <Zahlenfeld Bezeichnung="@Texte.KuehlLabelUebergabeNennleistung" Einheit="kW" Min="0.01"
+                                                Platzhalter="@Texte.UebergabePlatzhalterNennleistung"
+                                                Feldname="@Feld(Texte.KuehlLabelUebergabeNennleistung)" FehlerZustand="FehlerMelden"
+                                                Wert="@_stand.KuehlUebergabeLeistungNennKw"
+                                                WertChanged="w => Setzen(() => _stand.KuehlUebergabeLeistungNennKw = w)" />
+                                }
                             }
                         </KindInhalt>
                     </Formularraster>
                 </div>
                 <Herleitungszeile Text="@Texte.KuehlZeile" />
+                @if (KuehlungAktivWirksam)
+                {
+                    <Herleitungszeile Text="@Texte.KuehlUebergabeZeile" />
+                }
             }
         </KindInhalt>
     </Gruppenkopf>
@@ -596,6 +618,13 @@
             KuehlungAktivSetzen = w => Setzen(() => _stand.KuehlungAktiv = w),
             KuehlleistungMaxLesen = () => _stand.KuehlleistungMaxKw,
             KuehlleistungMaxSetzen = w => Setzen(() => _stand.KuehlleistungMaxKw = w),
+            // KK4: die Kuehluebergabe der Zone - leer = wie Gebaeude.
+            KuehlUebergabeArtLesen = () => _stand.KuehlUebergabeArt,
+            KuehlUebergabeArtSetzen = KuehlUebergabeArtSetzenKi,
+            KuehlUebergabeExponentLesen = () => _stand.KuehlUebergabeExponent,
+            KuehlUebergabeExponentSetzen = w => Setzen(() => _stand.KuehlUebergabeExponent = w),
+            KuehlUebergabeNennleistungLesen = () => _stand.KuehlUebergabeLeistungNennKw,
+            KuehlUebergabeNennleistungSetzen = w => Setzen(() => _stand.KuehlUebergabeLeistungNennKw = w),
             // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; die Art prueft ihren Wert.
             UebergabeArtLesen = () => _stand.UebergabeArt,
             UebergabeArtSetzen = UebergabeArtSetzenKi,
@@ -795,6 +824,53 @@
     {
         if (index is not int i || i < 0 || i > Waermeuebergabevorgaben.Arten.Count) return;
         Setzen(() => _stand.UebergabeArt = i == 0 ? null : Waermeuebergabevorgaben.Arten[i - 1]);
+    }
+
+    // ---- KK4: die Kühlübergabe der Zone (leer = wie Gebäude) ----
+
+    /// <summary>Stehen Exponent und Nennleistung der Kühlübergabe? Kühlung wirksam und Art leer (wie Gebäude) oder rechnend.</summary>
+    private bool KuehlUebergabeRechnet
+        => KuehlungAktivWirksam && (_stand.KuehlUebergabeArt is null || Waermeuebergabevorgaben.KuehlArtRechnet(_stand.KuehlUebergabeArt));
+
+    /// <summary>Die Einträge der Kühlübergabeart: 0 = „wie Gebäude", dann die vier Arten; eine unbekannte steht als −1.</summary>
+    private IReadOnlyList<(int Id, string Text)> KuehlUebergabeArteintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (KuehlUebergabeArtindex < 0) l.Add((-1, _stand.KuehlUebergabeArt ?? ""));
+            l.Add((0, Texte.KuehlUebergabeWieGebaeude));
+            for (int i = 0; i < Waermeuebergabevorgaben.KuehlArten.Count; i++)
+                l.Add((i + 1, Waermeuebergabevorgaben.KuehlAnzeigename(Waermeuebergabevorgaben.KuehlArten[i])));
+            return l;
+        }
+    }
+
+    /// <summary>Der Listenplatz der Kühlübergabeart: NULL = 0 („wie Gebäude"), sonst 1 bis 4; unbekannt = −1.</summary>
+    private int KuehlUebergabeArtindex
+    {
+        get
+        {
+            if (_stand.KuehlUebergabeArt is null) return 0;
+            for (int i = 0; i < Waermeuebergabevorgaben.KuehlArten.Count; i++)
+                if (Waermeuebergabevorgaben.KuehlArten[i] == _stand.KuehlUebergabeArt) return i + 1;
+            return -1;
+        }
+    }
+
+    private void KuehlUebergabeArtWaehlen(int? index)
+    {
+        if (index is not int i || i < 0 || i > Waermeuebergabevorgaben.KuehlArten.Count) return;
+        Setzen(() => _stand.KuehlUebergabeArt = i == 0 ? null : Waermeuebergabevorgaben.KuehlArten[i - 1]);
+    }
+
+    /// <summary>Der Assistent setzt die Kühlübergabeart: leer = wie Gebäude, sonst einer der vier Steuerwerte.</summary>
+    private void KuehlUebergabeArtSetzenKi(string? wert)
+    {
+        string? w = string.IsNullOrWhiteSpace(wert) ? null : wert.Trim().ToUpperInvariant();
+        if (w is not null && !Waermeuebergabevorgaben.KuehlArten.Contains(w))
+            throw new InvalidOperationException(string.Join(", ", Waermeuebergabevorgaben.KuehlArten));
+        Setzen(() => _stand.KuehlUebergabeArt = w);
     }
 
     /// <summary>Der Assistent setzt die Art: leer = wie Gebäude, sonst einer der vier Steuerwerte.</summary>

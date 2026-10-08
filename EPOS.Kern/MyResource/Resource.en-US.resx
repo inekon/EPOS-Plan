@@ -48781,5 +48781,74 @@ chart</value>
   <data name="GIMP_DLG_SQNUR_UNBEHEIZT" xml:space="preserve">
     <value>A zone of the project file contains unheated rooms; the assignment stays incomplete until their heating is decided.</value>
   </data>
+  <data name="GEBK_LBL_KUEHLKURVE_AKTIV" xml:space="preserve">
+    <value>Cooling curve (sliding chilled water flow)</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_FUSSPUNKT" xml:space="preserve">
+    <value>Cooling curve base point :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS" xml:space="preserve">
+    <value>Room influence of the cooling curve :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_WEG" xml:space="preserve">
+    <value>Cooling design outdoor temperature :</value>
+  </data>
+  <data name="GEBK_KUEHLKURVE_WEG_STUNDE" xml:space="preserve">
+    <value>highest hourly temperature of the climate series</value>
+  </data>
+  <data name="GEBK_KUEHLKURVE_WEG_TAGESMITTEL" xml:space="preserve">
+    <value>warmest daily mean, at least cooling setpoint + minimum span (default)</value>
+  </data>
+  <data name="GEBK_KUEHLKURVE_WEG_EINGABE" xml:space="preserve">
+    <value>Entered value</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLKURVE_AUSSEN" xml:space="preserve">
+    <value>Design outdoor temperature (entered) :</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLKURVE" xml:space="preserve">
+    <value>Cooling curve: base point {0} °C with outdoor air at the cooling setpoint and below, design flow {1} °C at the design outdoor temperature ({2}), linear in between, never below the flow limit; the room influence lowers the flow by k · excess over the cooling setpoint. It is calculated at level AK3, otherwise the fixed flow applies.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLKURVE_FUSSPUNKT" xml:space="preserve">
+    <value>The cooling curve base point ({0} °C) is below the design flow ({1} °C): the flow would rise with the outdoor temperature. Please enter a base point from the design flow upwards or clear the field.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL" xml:space="preserve">
+    <value>Cooling curve on or off: the chilled water flow slides with the outdoor temperature from the base point to the design flow; calculated at level AK3 with cooling emission. Switching on fills an empty room influence with the default value.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_FUSSPUNKT_ERL" xml:space="preserve">
+    <value>Cooling curve base point in °C, 4 to 22, not below the design flow; empty = the design return of the cooling emission.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_RAUMEINFLUSS_ERL" xml:space="preserve">
+    <value>Room influence of the cooling curve in K/K, 0 to 10: the flow drops by this much per kelvin above the cooling setpoint; empty or 0 = off.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_WEG_ERL" xml:space="preserve">
+    <value>Source of the cooling design outdoor temperature: stunde (highest hour of the climate series), tagesmittel (warmest daily mean, at least cooling setpoint + minimum span; default) or eingabe (the field below).</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLKURVE_AUSSEN_ERL" xml:space="preserve">
+    <value>Cooling design outdoor temperature in °C, 0 to 60; applies only with the way eingabe and only if it lies more than 1 K above the cooling setpoint, otherwise the daily mean applies.</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHL_UEBERGABE_ART" xml:space="preserve">
+    <value>Cooling emission type of the zone :</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT" xml:space="preserve">
+    <value>Cooling emission exponent (zone) :</value>
+  </data>
+  <data name="ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG" xml:space="preserve">
+    <value>Cooling emission rated output (zone) :</value>
+  </data>
+  <data name="ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE" xml:space="preserve">
+    <value>as building</value>
+  </data>
+  <data name="ZONDLG_ZEILE_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Cooling emission of the zone: empty fields apply as at the building, an empty rated output as the building share by usable area. Design point, flow limit and cooling curve are set at the building only; the cooling emission per zone is calculated when the building calculates its cooling emission.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHL_UEBERGABE_ART_ERL" xml:space="preserve">
+    <value>Cooling emission type of the zone: empty = as building, otherwise IDEAL, KUEHLDECKE, FLAECHENKUEHLUNG or GEBLAESEKONVEKTOR.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHL_UEBERGABE_EXPONENT_ERL" xml:space="preserve">
+    <value>Cooling emission exponent of the zone, 1.0 to 1.6; empty = building value or default of the type.</value>
+  </data>
+  <data name="KI_DLG_ZON_KUEHL_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Rated output of the zone cooling emission in kW, sensible; empty = building share by usable area.</value>
+  </data>
 </root>
 

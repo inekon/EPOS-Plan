@@ -154,6 +154,16 @@ namespace WindowsFormsApplication1
         // Name: GebaeudeSchema.SPALTE_HEIZKURVE_RAUMEINFLUSS.
         public double? Heizkurve_Raumeinfluss;
 
+        // ---- Die Kuehlkurve (KK, KuehlkurveSchema.SCHRITT; Entwurf KK Festlegungen 1, 3, 7) -------------------
+        // Schalter (NULL/0 = aus, fester Vorlauf; NULL bleibt NULL), Fusspunkt [°C], Raumeinfluss k_K [K/K], Auslegungsweg
+        // (DbWerte.KUEHLKURVE_AUSLEGUNG_*, null = tagesmittel) und Auslegungs-Aussentemperatur [°C] (nur Weg eingabe);
+        // die Werte NULL-ERHALTEND. Namen: GebaeudeSchema.SPALTE_KUEHLKURVE_*.
+        public bool? Kuehlkurve_Aktiv;
+        public double? Kuehlkurve_Fusspunkt;
+        public double? Kuehlkurve_Raumeinfluss;
+        public string Kuehlkurve_Auslegung_Weg;
+        public double? Kuehlkurve_Auslegung_Aussen;
+
         public GebaeudeModel()
         {
             ID = 0;

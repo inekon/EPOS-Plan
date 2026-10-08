@@ -748,14 +748,58 @@ namespace WindowsFormsApplication1
                                  .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
                                  .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS }));
 
+        // ---- der elfte Durchgang: die Kuehlkurve (Entwurf KK, Festlegungen 1, 3, 7; Schemaschritt S1 = 202) ----
+
+        /// <summary>Der Schalter der Kühlkurve (0/1, NULL = aus; Entwurf KK Festlegung 1).</summary>
+        public const string SPALTE_KUEHLKURVE_AKTIV = "Kuehlkurve_Aktiv";
+
+        /// <summary>Der Fußpunkt der Kühlkurve θ_V,F [°C] (4 … 22; NULL = Auslegungsrücklauf der Kühlübergabe, Festlegung 4).</summary>
+        public const string SPALTE_KUEHLKURVE_FUSSPUNKT = "Kuehlkurve_Fusspunkt";
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K] (0 … 10; NULL oder 0 = aus, Festlegung 6).</summary>
+        public const string SPALTE_KUEHLKURVE_RAUMEINFLUSS = "Kuehlkurve_Raumeinfluss";
+
+        /// <summary>Der Auslegungsweg der Kühlkurve (<c>stunde</c>, <c>tagesmittel</c>, <c>eingabe</c>; NULL = <c>tagesmittel</c>, E107).</summary>
+        public const string SPALTE_KUEHLKURVE_AUSLEGUNG_WEG = "Kuehlkurve_Auslegung_Weg";
+
+        /// <summary>Die Auslegungs-Außentemperatur der Kühlkurve [°C] (wirkt nur mit dem Weg <c>eingabe</c>, E107).</summary>
+        public const string SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN = "Kuehlkurve_Auslegung_Aussen";
+
+        /// <summary>Die fünf Spalten der Kühlkurve in Sicht- und Anlegereihenfolge.</summary>
+        public static readonly string[] KUEHLKURVE_SPALTEN =
+        {
+            SPALTE_KUEHLKURVE_AKTIV, SPALTE_KUEHLKURVE_FUSSPUNKT, SPALTE_KUEHLKURVE_RAUMEINFLUSS,
+            SPALTE_KUEHLKURVE_AUSLEGUNG_WEG, SPALTE_KUEHLKURVE_AUSLEGUNG_AUSSEN,
+        };
+
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der des Raumeinflusses, AK3).
+        /// Alle Spalten der Sicht ab dem Schritt der Kühlkurve (<see cref="KuehlkurveSchema.SCHRITT"/>, der elfte
+        /// Durchgang): die 105 aus <see cref="SICHT_AK3"/>, dahinter die fünf Spalten der Kühlkurve - an den Stellen 105 bis 109.
+        /// </summary>
+        public static readonly string[] SICHT_KUEHLKURVE = SICHT_AK3.Concat(KUEHLKURVE_SPALTEN).ToArray();
+
+        /// <summary>Die Sichtdefinition der Kühlkurve: alle zehn Durchgänge davor und dahinter die fünf Spalten der Kühlkurve.</summary>
+        public static readonly string SQL_VIEW_KUEHLKURVE =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
+                                 .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS })
+                                 .Concat(KUEHLKURVE_SPALTEN));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Kühlkurve, KK).
         /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_AK3;
+        public static string[] SICHT_AKTUELL => SICHT_KUEHLKURVE;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der des Raumeinflusses, AK3).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_AK3;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Kühlkurve, KK).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KUEHLKURVE;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)

@@ -73,7 +73,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Tab_Gebaeude.Energiestandard", GebaeudeSchema.SQL_VIEW_ENERGIESTANDARD, StringComparison.Ordinal);
             Assert.DoesNotContain("Energiestandard", GebaeudeSchema.SQL_VIEW_NACHTZEIT, StringComparison.Ordinal);
             // Die GELTENDE Sicht (der manuellen Aufheizzeit, E59) beginnt mit der des Energiestandards.
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_AK3, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLKURVE, GebaeudeSchema.SQL_VIEW_AKTUELL);
             Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AKTUELL.Take(102));
         }
 

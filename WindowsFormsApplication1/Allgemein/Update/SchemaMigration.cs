@@ -5297,6 +5297,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_AK3K = Ak3KSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KuehlkurveSchema.SCHRITT"/> — <b>die Kühlkurve</b> (Entwurf KK, Festlegungen 1, 3, 7, 12):
+        /// fünf Eingabespalten der Kühlkurve an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt elftem Neubau der
+        /// Sicht <c>Abfrage_Projektgebaeude</c>, drei Kennzahlen an <c>Tab_ErgebnisEnergiebedarf</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer (fester Vorlauf, „nicht erhoben").</para>
+        /// </summary>
+        public const int SCHRITT_KUEHLKURVE = KuehlkurveSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7717,6 +7726,13 @@ namespace WindowsFormsApplication1
                         "Die Kennzahlen der Zonensperre und der Kaelteseite im geschlossenen Kreis liessen sich nicht speichern. " +
                         "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Ak3K),
+            // KK: die Kuehlkurve am Gebaeude und ihre Kennzahlen. Quelle ist KuehlkurveSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KUEHLKURVE,
+                        "Tab_Gebaeude, Tab_Gebaeude_STAMM: Kuehlkurve_*; Sicht Abfrage_Projektgebaeude; " +
+                        "Tab_ErgebnisEnergiebedarf: Kuehlkurve_Vorlauf_Mittel_C, Kuehlkurve_Absenkung_Kh, Kuehlkurve_Vorlaufgrenze_Stunden",
+                        "Die Kuehlkurve eines Gebaeudes und ihre Kennzahlen liessen sich nicht speichern. " +
+                        "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_Kuehlkurve),
         };
 
         /// <summary>
@@ -14614,6 +14630,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": AK3-K - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kühlkurve" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KUEHLKURVE"/>, die Anweisungen bei
+        /// <see cref="KuehlkurveSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kuehlkurve(Lauf l)
+        {
+            string nr = KuehlkurveSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KuehlkurveSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KuehlkurveSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KuehlkurveSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kuehlkurve, ihre Kennzahlen oder die Sicht des elften Durchgangs stehen nach dem Schritt " +
+                                  "nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kuehlkurve - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

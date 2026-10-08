@@ -416,6 +416,21 @@ public sealed class ZonenDialogTexte
     /// <summary><c>ZONDLG_ZEILE_KUEHLUNG</c> — wo die Kühlsollwerte der Zone stehen und was der Projektschalter tut.</summary>
     public string KuehlZeile { get; set; } = Resource.ZONDLG_ZEILE_KUEHLUNG;
 
+    /// <summary><c>ZONDLG_LBL_KUEHL_UEBERGABE_ART</c></summary>
+    public string KuehlLabelUebergabeArt { get; set; } = Resource.ZONDLG_LBL_KUEHL_UEBERGABE_ART;
+
+    /// <summary><c>ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT</c></summary>
+    public string KuehlLabelUebergabeExponent { get; set; } = Resource.ZONDLG_LBL_KUEHL_UEBERGABE_EXPONENT;
+
+    /// <summary><c>ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG</c></summary>
+    public string KuehlLabelUebergabeNennleistung { get; set; } = Resource.ZONDLG_LBL_KUEHL_UEBERGABE_NENNLEISTUNG;
+
+    /// <summary><c>ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE</c> — der erste Eintrag der Art (leer = wie Gebäude).</summary>
+    public string KuehlUebergabeWieGebaeude { get; set; } = Resource.ZONDLG_KUEHLUEBERGABE_WIE_GEBAEUDE;
+
+    /// <summary><c>ZONDLG_ZEILE_KUEHLUEBERGABE</c> — was je Zone gilt und was allein am Gebäude steht.</summary>
+    public string KuehlUebergabeZeile { get; set; } = Resource.ZONDLG_ZEILE_KUEHLUEBERGABE;
+
     /// <summary><c>ZONDLG_LBL_HEIZLEISTUNG_MAX</c></summary>
     public string LabelHeizleistungMax { get; set; } = Resource.ZONDLG_LBL_HEIZLEISTUNG_MAX;
 

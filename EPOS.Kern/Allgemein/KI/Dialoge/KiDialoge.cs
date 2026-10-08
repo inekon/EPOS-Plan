@@ -5299,6 +5299,14 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehlleistung_max", SICHT + "KuehlleistungMax", KiDialogTexte.ZonKuehlleistungName,
                                      KiParameterTyp.Zahl, KiDialogTexte.ZonKuehlleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
+                    // KK4 (Entwurf KK Festlegung 15): die Kuehluebergabe je Zone - leer = wie Gebaeude.
+                    new KiDialogFeld("kuehl_uebergabe_art", SICHT + "KuehlUebergabeArt", KiDialogTexte.ZonKuehlUebergabeArtName,
+                                     KiParameterTyp.Text, KiDialogTexte.ZonKuehlUebergabeArtErl, leerErlaubt: true),
+                    new KiDialogFeld("kuehl_uebergabe_exponent", SICHT + "KuehlUebergabeExponent", KiDialogTexte.ZonKuehlUebergabeExponentName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonKuehlUebergabeExponentErl, leerErlaubt: true, min: 1.0, max: 1.6),
+                    new KiDialogFeld("kuehl_uebergabe_nennleistung", SICHT + "KuehlUebergabeNennleistung", KiDialogTexte.ZonKuehlUebergabeNennleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.ZonKuehlUebergabeNennleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true, min: 0.01),
                     // E63 (AK1z): die Uebergabe je Zone - leer = wie Gebaeude; dieselben Baender wie am Gebaeude.
                     new KiDialogFeld("uebergabe_art", SICHT + "UebergabeArt", KiDialogTexte.GebkUebergabeArtName,
                                      KiParameterTyp.Text, KiDialogTexte.ZonUebergabeArtErl, leerErlaubt: true),
@@ -6222,6 +6230,24 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.GebkKuehlVorlaufgrenzeName, KiParameterTyp.Zahl,
                                      KiDialogTexte.GebkKuehlVorlaufgrenzeErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 4, max: 22),
+                    // ---- Kuehlkurve (Entwurf KK): Haken und Weg ueber die Wege des Arbeitsstands ----
+                    new KiDialogFeld("kuehlkurve_aktiv", "GebaeudeKatalogKiSicht.KuehlkurveAktiv",
+                                     KiDialogTexte.GebkKuehlkurveAktivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebkKuehlkurveAktivErl),
+                    new KiDialogFeld("kuehlkurve_fusspunkt", "GebaeudeKatalogKiSicht.KuehlkurveFusspunkt",
+                                     KiDialogTexte.GebkKuehlkurveFusspunktName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlkurveFusspunktErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 4, max: 22),
+                    new KiDialogFeld("kuehlkurve_raumeinfluss", "GebaeudeKatalogKiSicht.KuehlkurveRaumeinfluss",
+                                     KiDialogTexte.GebkKuehlkurveRaumeinflussName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlkurveRaumeinflussErl, leerErlaubt: true, min: 0, max: 10),
+                    new KiDialogFeld("kuehlkurve_auslegung_weg", "GebaeudeKatalogKiSicht.KuehlkurveAuslegungWeg",
+                                     KiDialogTexte.GebkKuehlkurveWegName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkKuehlkurveWegErl),
+                    new KiDialogFeld("kuehlkurve_auslegung_aussen", "GebaeudeKatalogKiSicht.KuehlkurveAuslegungAussen",
+                                     KiDialogTexte.GebkKuehlkurveAussenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkKuehlkurveAussenErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true, min: 0, max: 60),
                     // ---- Waermeuebergabe (Stufe AK1, Anlagenkopplung 9.1, 9.2) ------------
                     //
                     // Schalter, Art und Zeitprogramm gehen ueber die Wege des Arbeitsstands

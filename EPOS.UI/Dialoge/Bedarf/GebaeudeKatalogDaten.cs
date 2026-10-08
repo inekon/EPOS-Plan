@@ -369,6 +369,26 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Untere Grenze des Kaltwasser-Vorlaufs [°C] (<c>Kuehl_Vorlaufgrenze</c>) — eine Vorgabe, keine Taupunktrechnung; <c>null</c> = Vorgabe der Art.</summary>
     public double? KuehlVorlaufgrenze { get; set; }
 
+    // ------------------ Kühlkurve (Entwurf KK, Festlegungen 1, 3, 7; Schemaschritt 202)
+    //
+    // Unter der Kühlübergabe: außentemperaturgeführter Kühlvorlauf (Zwei-Punkt-Kurve mit Fußpunkt),
+    // auf Stufe AK3 mit Raumeinfluss. NULL-erhaltend; leer heißt fester Vorlauf (Festlegung 1).
+
+    /// <summary>„Kühlkurve" (<c>Kuehlkurve_Aktiv</c>, 0/1); <c>null</c> = aus, bleibt beim Speichern NULL.</summary>
+    public bool? KuehlkurveAktiv { get; set; }
+
+    /// <summary>Fußpunkt der Kühlkurve [°C] (<c>Kuehlkurve_Fusspunkt</c>, 4 … 22); <c>null</c> = Auslegungsrücklauf der Kühlübergabe.</summary>
+    public double? KuehlkurveFusspunkt { get; set; }
+
+    /// <summary>Raumeinfluss der Kühlkurve k_K [K/K] (<c>Kuehlkurve_Raumeinfluss</c>, 0 … 10); <c>null</c> oder 0 = aus.</summary>
+    public double? KuehlkurveRaumeinfluss { get; set; }
+
+    /// <summary>Auslegungsweg (<c>Kuehlkurve_Auslegung_Weg</c>, <c>DbWerte.KUEHLKURVE_AUSLEGUNG_*</c>); <c>null</c> = Tagesmittel (Weg 2).</summary>
+    public string? KuehlkurveAuslegungWeg { get; set; }
+
+    /// <summary>Auslegungs-Außentemperatur der Kühlung [°C] (<c>Kuehlkurve_Auslegung_Aussen</c>); wirkt nur mit dem Weg „Eingabe".</summary>
+    public double? KuehlkurveAuslegungAussen { get; set; }
+
     // ------------------ Stufe KP2: Konditionierung (Entwurf KP2 Abschnitt 2; Teilkonzept 3, 7)
     //
     // Die neuen Zellen der Vorgabe-Matrix und die Kalender der fünf Größen. Die neun Bestandszellen

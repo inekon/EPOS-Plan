@@ -243,32 +243,32 @@ namespace WindowsFormsApplication1
         public double? Heizkurve_Raumeinfluss;
 
         // =====================================================================
-        //  Die Kühlkurve (Entwurf KK, 2.1–2.2, Festlegungen 1–7) — bis zum Schemaschritt S1 (KK4) Eigenschaften
-        //  OHNE Spalte: allein Proben setzen sie, wirksam nur mit dem Kernschalter (KuehlkurveKernschalter) auf AK3.
-        //  Die Namen sind die künftigen Spalten von Tab_Gebaeude; mit KK4 werden sie Felder mit Spalte.
+        //  Die Kühlkurve (Entwurf KK, 2.1–2.2, Festlegungen 1–7) — die Spalten von Tab_Gebaeude aus Schemaschritt 202
+        //  (KuehlkurveSchema), gelesen über die Sicht (ProjektGebaeudeCtrl); wirksam nur mit dem Kernschalter
+        //  (KuehlkurveKernschalter) auf AK3.
         // =====================================================================
 
         /// <summary>
-        /// Der Schalter der Kühlkurve (künftig <c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>): Mit Stufe AK3, wirksamer Kühlübergabe und
+        /// Der Schalter der Kühlkurve (<c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>): Mit Stufe AK3, wirksamer Kühlübergabe und
         /// dem Kernschalter wird der Kühlvorlauf eine Jahresreihe nach <see cref="Kuehlkurve"/>; <c>false</c> = fester Vorlauf wie
         /// bisher (Festlegung 1).
         /// </summary>
         public bool Kuehlkurve_Aktiv { get; set; }
 
-        /// <summary>Der Fußpunkt der Kühlkurve θ_V,F [°C] (künftig <c>Tab_Gebaeude.Kuehlkurve_Fusspunkt</c>, 4 … 22 °C);
+        /// <summary>Der Fußpunkt der Kühlkurve θ_V,F [°C] (<c>Tab_Gebaeude.Kuehlkurve_Fusspunkt</c>, 4 … 22 °C);
         /// <c>null</c> = der Auslegungsrücklauf der Kühlübergabe (Festlegung 4).</summary>
         public double? Kuehlkurve_Fusspunkt { get; set; }
 
-        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K] (künftig <c>Tab_Gebaeude.Kuehlkurve_Raumeinfluss</c>, 0 … 10);
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K] (<c>Tab_Gebaeude.Kuehlkurve_Raumeinfluss</c>, 0 … 10);
         /// <c>null</c> oder 0 = aus (Festlegungen 1, 6). Gerechnet erst mit KK3.</summary>
         public double? Kuehlkurve_Raumeinfluss { get; set; }
 
-        /// <summary>Der Auslegungsweg der Kühlkurve (künftig <c>Tab_Gebaeude.Kuehlkurve_Auslegung_Weg</c>, E107):
+        /// <summary>Der Auslegungsweg der Kühlkurve (<c>Tab_Gebaeude.Kuehlkurve_Auslegung_Weg</c>, E107):
         /// <c>DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE</c>, <c>…_TAGESMITTEL</c> oder <c>…_EINGABE</c>; <c>null</c> oder leer =
         /// <c>…_TAGESMITTEL</c> (Festlegung 3).</summary>
         public string Kuehlkurve_Auslegung_Weg { get; set; }
 
-        /// <summary>Die Auslegungs-Außentemperatur der Kühlkurve [°C] (künftig <c>Tab_Gebaeude.Kuehlkurve_Auslegung_Aussen</c>);
+        /// <summary>Die Auslegungs-Außentemperatur der Kühlkurve [°C] (<c>Tab_Gebaeude.Kuehlkurve_Auslegung_Aussen</c>);
         /// wirkt nur mit dem Weg <c>eingabe</c> (E107).</summary>
         public double? Kuehlkurve_Auslegung_Aussen { get; set; }
 

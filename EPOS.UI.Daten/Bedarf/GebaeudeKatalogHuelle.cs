@@ -237,6 +237,10 @@ namespace WindowsFormsApplication1
                 KuehlSollwert = z.Kuehl_Sollwert,
                 KuehlSollwertNacht = z.Kuehl_Sollwert_Nacht,
                 KuehlleistungMaxKw = z.Kuehlleistung_Max,
+                // KK4 (Festlegung 15): die drei Kuehluebergabefelder der Zone (Schritt 137); NULL = wie Gebaeude.
+                KuehlUebergabeArt = z.Kuehl_Uebergabe_Art,
+                KuehlUebergabeExponent = z.Kuehl_Uebergabe_Exponent,
+                KuehlUebergabeLeistungNennKw = z.Kuehl_Uebergabe_Leistung_Nenn,
                 // NP3b (Q41, NP-F14): das zuletzt übernommene Nutzungsprofil; die Kalendernutzung nur zur Anzeige.
                 Nutzungsprofil = z.Nutzungsprofil,
                 Kalendernutzung = z.ID > 0 && RaumnutzungCtrl.Lesbar() ? RaumnutzungCtrl.Kalendernutzung(idGebaeude, z.ID) : null,
@@ -343,6 +347,10 @@ namespace WindowsFormsApplication1
                     z.Kuehl_Sollwert = d.KuehlSollwert;
                     z.Kuehl_Sollwert_Nacht = d.KuehlSollwertNacht;
                     z.Kuehlleistung_Max = d.KuehlleistungMaxKw;
+                    // KK4 (Festlegung 15): die Kuehluebergabe je Zone fuehrt der Dialog - leer = wie Gebaeude.
+                    z.Kuehl_Uebergabe_Art = d.KuehlUebergabeArt;
+                    z.Kuehl_Uebergabe_Exponent = d.KuehlUebergabeExponent;
+                    z.Kuehl_Uebergabe_Leistung_Nenn = d.KuehlUebergabeLeistungNennKw;
                     // NP3b: „Nutzungsprofil übernehmen…" setzt den Namen im Arbeitsstand, das OK schreibt ihn.
                     z.Nutzungsprofil = d.Nutzungsprofil;
                     z.Bauteile = d.Bauteile.Select(b => new BauteilModel
@@ -850,6 +858,16 @@ namespace WindowsFormsApplication1
             k.LabelAuslegungRuecklauf = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RUECKLAUF", k.LabelAuslegungRuecklauf);
             k.LabelAuslegungRaum = Text_("GEBK_LBL_KUEHL_AUSLEGUNG_RAUM", k.LabelAuslegungRaum);
             k.LabelVorlaufgrenze = Text_("GEBK_LBL_KUEHL_VORLAUFGRENZE", k.LabelVorlaufgrenze);
+            k.LabelKuehlkurve = Text_("GEBK_LBL_KUEHLKURVE_AKTIV", k.LabelKuehlkurve);
+            k.LabelKuehlkurveFusspunkt = Text_("GEBK_LBL_KUEHLKURVE_FUSSPUNKT", k.LabelKuehlkurveFusspunkt);
+            k.LabelKuehlkurveRaumeinfluss = Text_("GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS", k.LabelKuehlkurveRaumeinfluss);
+            k.LabelKuehlkurveWeg = Text_("GEBK_LBL_KUEHLKURVE_WEG", k.LabelKuehlkurveWeg);
+            k.WegStunde = Text_("GEBK_KUEHLKURVE_WEG_STUNDE", k.WegStunde);
+            k.WegTagesmittel = Text_("GEBK_KUEHLKURVE_WEG_TAGESMITTEL", k.WegTagesmittel);
+            k.WegEingabe = Text_("GEBK_KUEHLKURVE_WEG_EINGABE", k.WegEingabe);
+            k.LabelKuehlkurveAussen = Text_("GEBK_LBL_KUEHLKURVE_AUSSEN", k.LabelKuehlkurveAussen);
+            k.ZeileKuehlkurve = Text_("GEBK_ZEILE_KUEHLKURVE", k.ZeileKuehlkurve);
+            k.MeldungFusspunkt = Text_("GEBK_MSG_KUEHLKURVE_FUSSPUNKT", k.MeldungFusspunkt);
             k.VorgabeHergeleitet = Text_("GEBK_VORGABE_HERGELEITET", k.VorgabeHergeleitet);
             k.VorgabeKeineGrenze = Text_("GEBK_VORGABE_KEINE_GRENZE", k.VorgabeKeineGrenze);
             k.ZeileAus = Text_("GEBK_ZEILE_KUEHLUEBERGABE_AUS", k.ZeileAus);
@@ -1188,7 +1206,14 @@ namespace WindowsFormsApplication1
                 KuehlAuslegungVorlauf = m.Kuehl_Auslegung_Vorlauf,
                 KuehlAuslegungRuecklauf = m.Kuehl_Auslegung_Ruecklauf,
                 KuehlAuslegungRaumtemperatur = m.Kuehl_Auslegung_Raumtemperatur,
-                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze
+                KuehlVorlaufgrenze = m.Kuehl_Vorlaufgrenze,
+
+                // KK (Schritt 202): die Kuehlkurve - NULL bleibt null, der Schalter NULL = aus.
+                KuehlkurveAktiv = m.Kuehlkurve_Aktiv,
+                KuehlkurveFusspunkt = m.Kuehlkurve_Fusspunkt,
+                KuehlkurveRaumeinfluss = m.Kuehlkurve_Raumeinfluss,
+                KuehlkurveAuslegungWeg = m.Kuehlkurve_Auslegung_Weg,
+                KuehlkurveAuslegungAussen = m.Kuehlkurve_Auslegung_Aussen
             };
 
             d.Ferienbeginn = new[]
@@ -1353,6 +1378,13 @@ namespace WindowsFormsApplication1
             m.Kuehl_Auslegung_Ruecklauf = d.KuehlAuslegungRuecklauf;
             m.Kuehl_Auslegung_Raumtemperatur = d.KuehlAuslegungRaumtemperatur;
             m.Kuehl_Vorlaufgrenze = d.KuehlVorlaufgrenze;
+
+            // KK (Schritt 202): die Kuehlkurve, NULL-erhaltend; ein leerer Weg wird NULL (= Tagesmittel).
+            m.Kuehlkurve_Aktiv = d.KuehlkurveAktiv;
+            m.Kuehlkurve_Fusspunkt = d.KuehlkurveFusspunkt;
+            m.Kuehlkurve_Raumeinfluss = d.KuehlkurveRaumeinfluss;
+            m.Kuehlkurve_Auslegung_Weg = string.IsNullOrEmpty(d.KuehlkurveAuslegungWeg) ? null : d.KuehlkurveAuslegungWeg;
+            m.Kuehlkurve_Auslegung_Aussen = d.KuehlkurveAuslegungAussen;
 
             return m;
         }

@@ -927,6 +927,64 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
         set { if (Daten is GebaeudeKatalogDaten d) d.KuehlVorlaufgrenze = value; }
     }
 
+    // ---- Die Kühlkurve (Entwurf KK): Haken und Weg über die Wege des Arbeitsstands, die Zahlen unmittelbar ----
+
+    /// <summary>Der Weg des Hakens „Kühlkurve" (trägt beim Einschalten den Vorgabewert des Raumeinflusses ein).</summary>
+    public Action<bool>? KuehlkurveSetzen { get; init; }
+
+    /// <summary>Wählt den Auslegungsweg über seinen Steuerwert; Rückgabe: der Grund einer Ablehnung, sonst <c>null</c>.</summary>
+    public Func<string, string?>? KuehlkurveWegSetzen { get; init; }
+
+    /// <summary>Die Auslegungswege als Einträge des Wahlfeldes (Schlüssel = Steuerwert).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? KuehlkurveWegEintraege { get; init; }
+
+    /// <summary>„Kühlkurve" — gleitender Kühlvorlauf über die Außentemperatur; gerechnet auf Stufe AK3.</summary>
+    public bool KuehlkurveAktiv
+    {
+        get => Daten?.KuehlkurveAktiv == true;
+        set
+        {
+            if (KuehlkurveSetzen is not null) KuehlkurveSetzen(value);
+            else if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveAktiv = value;
+        }
+    }
+
+    /// <summary>Fußpunkt der Kühlkurve in °C; leer = der Auslegungsrücklauf der Kühlübergabe.</summary>
+    public double? KuehlkurveFusspunkt
+    {
+        get => Daten?.KuehlkurveFusspunkt;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveFusspunkt = value; }
+    }
+
+    /// <summary>Raumeinfluss der Kühlkurve in K/K; leer oder 0 = aus.</summary>
+    public double? KuehlkurveRaumeinfluss
+    {
+        get => Daten?.KuehlkurveRaumeinfluss;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveRaumeinfluss = value; }
+    }
+
+    /// <summary>Der Auslegungsweg als Steuerwert: stunde, tagesmittel (Vorgabe) oder eingabe.</summary>
+    public string KuehlkurveAuslegungWeg
+    {
+        get => string.IsNullOrEmpty(Daten?.KuehlkurveAuslegungWeg) ? WindowsFormsApplication1.DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL : Daten!.KuehlkurveAuslegungWeg!;
+        set
+        {
+            string? grund = KuehlkurveWegSetzen?.Invoke(value ?? "");
+            if (!string.IsNullOrEmpty(grund)) throw new InvalidOperationException(grund);
+        }
+    }
+
+    /// <summary>Die drei Auslegungswege.</summary>
+    public IReadOnlyList<KiWahleintrag> KuehlkurveAuslegungWegWahl
+        => KuehlkurveWegEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Auslegungs-Außentemperatur der Kühlung in °C; wirkt nur mit dem Weg „eingabe".</summary>
+    public double? KuehlkurveAuslegungAussen
+    {
+        get => Daten?.KuehlkurveAuslegungAussen;
+        set { if (Daten is GebaeudeKatalogDaten d) d.KuehlkurveAuslegungAussen = value; }
+    }
+
     /// <summary>Der Rechenweg, auf dem das Gebäude rechnet — nur lesend (VDI 6007 oder Tagesbilanz).</summary>
     public string Rechenweg => WindowsFormsApplication1.Gebaeuderechenweg.Wirksam(Daten?.Modell);
 

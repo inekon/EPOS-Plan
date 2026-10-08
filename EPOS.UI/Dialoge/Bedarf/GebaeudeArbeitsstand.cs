@@ -983,6 +983,95 @@ public sealed class GebaeudeArbeitsstand
         return l;
     }
 
+    // ---- Die Kühlkurve (Entwurf KK, Festlegungen 1, 3, 6, 7, 18) ----
+
+    /// <summary>Die Fehlerfelder der Kühlkurve — sie fallen, sobald die Kurve ausgeschaltet wird.</summary>
+    private readonly HashSet<string> _kurveFehlerfelder = new();
+
+    /// <summary>Stehen die Felder der Kühlkurve da? Die Kühlübergabe rechnet und der Haken „Kühlkurve" ist gesetzt.</summary>
+    public bool KuehlkurveFelderSichtbar => KuehlUebergabeAktiv && Stand.KuehlkurveAktiv == true;
+
+    /// <summary>
+    /// Der Haken „Kühlkurve" (Festlegung 6, E106 Q-KK-5 (b)): Beim Einschalten trägt er in ein leeres Raumeinflussfeld den
+    /// Vorgabewert ein — ein Dialogwert, die Rechnung kennt keine Vorgabe. Beim Ausschalten bleiben die Werte stehen; eine
+    /// Fehleingabe in einem ausgeblendeten Feld hält den Speicherweg nicht mehr an.
+    /// </summary>
+    public void KuehlkurveSetzen(bool wert)
+    {
+        Stand.KuehlkurveAktiv = wert;
+        if (wert && Stand.KuehlkurveRaumeinfluss is null)
+            Stand.KuehlkurveRaumeinfluss = Waermeuebergabevorgaben.KUEHLKURVE_RAUMEINFLUSS_VORGABE;
+        if (!wert)
+        {
+            foreach (string f in _kurveFehlerfelder) Fehlerfelder.Remove(f);
+            _kurveFehlerfelder.Clear();
+        }
+    }
+
+    /// <summary>Ein Feld der Kühlkurve meldet seinen Fehlerzustand — gemerkt für das Ausschalten.</summary>
+    public void KuehlkurveFehlerMelden((string Feld, bool Fehlerhaft) e)
+    {
+        KuehlFehlerMelden(e);
+        if (e.Fehlerhaft) _kurveFehlerfelder.Add(e.Feld); else _kurveFehlerfelder.Remove(e.Feld);
+    }
+
+    /// <summary>Der Listenplatz des Auslegungswegs; leer = Tagesmittel (Weg 2, Vorgabe); ein unbekannter Wert = −1.</summary>
+    public int KuehlkurveWegIndex
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Stand.KuehlkurveAuslegungWeg)) return 1;
+            for (int i = 0; i < Waermeuebergabevorgaben.KuehlkurveWege.Count; i++)
+                if (Waermeuebergabevorgaben.KuehlkurveWege[i] == Stand.KuehlkurveAuslegungWeg) return i;
+            return -1;
+        }
+    }
+
+    /// <summary>Die Einträge des Auslegungswegs: die drei Wege — ein unbekannter gespeicherter Wert vorangestellt.</summary>
+    public IReadOnlyList<(int Id, string Text)> KuehlkurveWegeintraege(GebaeudeHuelleTexte t)
+    {
+        var l = new List<(int, string)>();
+        if (KuehlkurveWegIndex < 0) l.Add((-1, Stand.KuehlkurveAuslegungWeg ?? ""));
+        for (int i = 0; i < Waermeuebergabevorgaben.KuehlkurveWege.Count; i++)
+            l.Add((i, t.Kuehluebergabe.Wegname(Waermeuebergabevorgaben.KuehlkurveWege[i])));
+        return l;
+    }
+
+    /// <summary>
+    /// Wählt den Auslegungsweg über seinen Listenplatz. Das Tagesmittel ist die Vorgabe: War das Feld leer, bleibt es leer
+    /// (NULL-erhaltend wie „ideal" bei der Art).
+    /// </summary>
+    public void KuehlkurveWegWaehlen(int? index)
+    {
+        if (index is null || index.Value < 0 || index.Value >= Waermeuebergabevorgaben.KuehlkurveWege.Count) return;
+        string gewaehlt = Waermeuebergabevorgaben.KuehlkurveWege[index.Value];
+        if (gewaehlt == DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL && string.IsNullOrEmpty(Stand.KuehlkurveAuslegungWeg)) return;
+        Stand.KuehlkurveAuslegungWeg = gewaehlt;
+    }
+
+    /// <summary>Steht der Weg „Eingabe"? Nur dann ist die Auslegungs-Außentemperatur ein Feld.</summary>
+    public bool KuehlkurveAussenSichtbar
+        => KuehlkurveFelderSichtbar && Stand.KuehlkurveAuslegungWeg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE;
+
+    /// <summary>Der Auslegungsrücklauf der Kühlung, der gilt: das Feld, sonst die Vorgabe der Art (Fußpunkt leer, Festlegung 4).</summary>
+    public double? KuehlAuslegungRuecklaufWirksam
+        => Stand.KuehlAuslegungRuecklauf ?? Waermeuebergabevorgaben.KuehlRuecklauf(Stand.KuehlUebergabeArt);
+
+    /// <summary>Die Herleitungszeile der Kühlkurve: Fußpunkt und Auslegungsvorlauf als Zahlen, dazu der Auslegungsweg.</summary>
+    public string KuehlkurveZeile(GebaeudeHuelleTexte t)
+    {
+        KuehluebergabeTexte k = t.Kuehluebergabe;
+        double? fuss = Stand.KuehlkurveFusspunkt ?? KuehlAuslegungRuecklaufWirksam;
+        double? vorlauf = KuehlAuslegungVorlaufWirksam;
+        string weg = KuehlkurveWegIndex >= 0
+            ? k.Wegname(Waermeuebergabevorgaben.KuehlkurveWege[KuehlkurveWegIndex])
+            : Stand.KuehlkurveAuslegungWeg ?? "";
+        if (Stand.KuehlkurveAuslegungWeg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE && Stand.KuehlkurveAuslegungAussen is double a)
+            weg += " " + Zahl(a, 1) + " °C";
+        return string.Format(CultureInfo.CurrentCulture, k.ZeileKuehlkurve,
+                             fuss is double f ? Zahl(f, 1) : "—", vorlauf is double v ? Zahl(v, 1) : "—", weg);
+    }
+
     /// <summary>Die Raumtemperatur im Auslegungspunkt der Kühlung, die gilt: das Feld, sonst der Kühlsollwert.</summary>
     public double? KuehlAuslegungRaumWirksam => Stand.KuehlAuslegungRaumtemperatur ?? Stand.KuehlSollwert;
 
@@ -1586,6 +1675,20 @@ public sealed class GebaeudeArbeitsstand
         if (b is not null) return b;
         if (Stand.KuehlUebergabeLeistungNennKw is double nenn && !(nenn > 0)) return Kuehlung(k.MeldungNennleistung);
 
+        // Die Kühlkurve (Festlegungen 7 und 18): Bereiche, die Eingabe nur mit dem Weg „Eingabe", die Fußpunktregel.
+        if (Stand.KuehlkurveAktiv == true)
+        {
+            GebaeudePruefbefund? kk =
+                Bereich(Stand.KuehlkurveFusspunkt, k.LabelKuehlkurveFusspunkt, KuehlkurveSchema.FUSSPUNKT_MIN, KuehlkurveSchema.FUSSPUNKT_MAX)
+                ?? Bereich(Stand.KuehlkurveRaumeinfluss, k.LabelKuehlkurveRaumeinfluss, 0, KuehlkurveSchema.RAUMEINFLUSS_MAX)
+                ?? (Stand.KuehlkurveAuslegungWeg == DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE
+                    ? Bereich(Stand.KuehlkurveAuslegungAussen, k.LabelKuehlkurveAussen, KuehlkurveSchema.AUSSEN_MIN, KuehlkurveSchema.AUSSEN_MAX)
+                    : null);
+            if (kk is not null) return kk;
+            if (Stand.KuehlkurveFusspunkt is double fuss && KuehlAuslegungVorlaufWirksam is double av && fuss < av)
+                return Kuehlung(string.Format(k.MeldungFusspunkt, Zahl(fuss, 1), Zahl(av, 1)));
+        }
+
         string art = Stand.KuehlUebergabeArt!;
         double vorlauf = Stand.KuehlAuslegungVorlauf ?? Waermeuebergabevorgaben.KuehlVorlauf(art)!.Value;
         double ruecklauf = Stand.KuehlAuslegungRuecklauf ?? Waermeuebergabevorgaben.KuehlRuecklauf(art)!.Value;
@@ -1723,6 +1826,11 @@ public sealed class GebaeudeArbeitsstand
         Z(a.KuehlAuslegungVorlauf, g.KuehlAuslegungVorlauf); Z(a.KuehlAuslegungRuecklauf, g.KuehlAuslegungRuecklauf);
         Z(a.KuehlAuslegungRaumtemperatur, g.KuehlAuslegungRaumtemperatur); Z(a.KuehlVorlaufgrenze, g.KuehlVorlaufgrenze);
 
+        // KK: die fünf Felder der Kühlkurve.
+        B(a.KuehlkurveAktiv == true, g.KuehlkurveAktiv == true); Z(a.KuehlkurveFusspunkt, g.KuehlkurveFusspunkt);
+        Z(a.KuehlkurveRaumeinfluss, g.KuehlkurveRaumeinfluss); T(a.KuehlkurveAuslegungWeg, g.KuehlkurveAuslegungWeg);
+        Z(a.KuehlkurveAuslegungAussen, g.KuehlkurveAuslegungAussen);
+
         for (int i = 0; i < 4; i++)
         {
             (int? bt, int? bm) = Ferienzeit.TagUndMonat(g.Ferienbeginn[i]);
@@ -1825,7 +1933,13 @@ public sealed class GebaeudeArbeitsstand
             // E37: der Unterabschnitt „Kühlübergabe" über dieselben Wege.
             KuehluebergabeSetzen = KuehluebergabeSetzen,
             KuehlUebergabeArtSetzen = w => KiKuehlArtSetzen(w, wege.Texte ?? new GebaeudeHuelleTexte()),
-            KuehlUebergabeArtEintraege = () => KiKuehlArteintraege(wege.Texte ?? new GebaeudeHuelleTexte())
+            KuehlUebergabeArtEintraege = () => KiKuehlArteintraege(wege.Texte ?? new GebaeudeHuelleTexte()),
+
+            // KK: die Kühlkurve - Haken und Weg über die Wege der Bedienelemente.
+            KuehlkurveSetzen = KuehlkurveSetzen,
+            KuehlkurveWegSetzen = KiKuehlkurveWegSetzen,
+            KuehlkurveWegEintraege = () => Waermeuebergabevorgaben.KuehlkurveWege
+                .Select(w => new KiWahleintrag(w, (wege.Texte ?? new GebaeudeHuelleTexte()).Kuehluebergabe.Wegname(w))).ToList()
         };
     }
 
@@ -1841,6 +1955,20 @@ public sealed class GebaeudeArbeitsstand
                 return null;
             }
         return string.Format(t.Kuehluebergabe.MeldungArtUnbekannt, gesucht);
+    }
+
+    /// <summary>Der Auslegungsweg des Assistenten: der Steuerwert über denselben Weg wie die Klappliste; leer = Tagesmittel.</summary>
+    private string? KiKuehlkurveWegSetzen(string wert)
+    {
+        string gesucht = (wert ?? "").Trim();
+        if (gesucht.Length == 0) gesucht = DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL;
+        for (int i = 0; i < Waermeuebergabevorgaben.KuehlkurveWege.Count; i++)
+            if (string.Equals(Waermeuebergabevorgaben.KuehlkurveWege[i], gesucht, StringComparison.OrdinalIgnoreCase))
+            {
+                KuehlkurveWegWaehlen(i);
+                return null;
+            }
+        return string.Join(", ", Waermeuebergabevorgaben.KuehlkurveWege);
     }
 
     private static IReadOnlyList<KiWahleintrag> KiKuehlArteintraege(GebaeudeHuelleTexte t)

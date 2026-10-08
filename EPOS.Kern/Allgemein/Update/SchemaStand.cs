@@ -964,7 +964,11 @@ namespace WindowsFormsApplication1
         /// Danach, mit den KENNZAHLEN VON AK3-K (Entwurf AK3-K 3.5, Festlegung 20), steht das Ziel auf
         /// <see cref="Ak3KSchema.SCHRITT"/>: sieben Kennzahlen der Zonensperre und der Kälteseite im Kreis an
         /// <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3KSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
-        public const int Zielversion = Ak3KSchema.SCHRITT;
+        /// Danach, mit der KÜHLKURVE (Entwurf KK, Festlegungen 1, 3, 7, 12), steht das Ziel auf
+        /// <see cref="KuehlkurveSchema.SCHRITT"/>: fünf Eingabespalten der Kühlkurve an beiden Gebäudetabellen samt elftem
+        /// Sichtneubau, drei Kennzahlen an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="KuehlkurveSchema"/>).
+        /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        public const int Zielversion = KuehlkurveSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

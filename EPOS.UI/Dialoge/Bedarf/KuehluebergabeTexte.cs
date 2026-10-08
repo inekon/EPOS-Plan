@@ -49,6 +49,38 @@ public sealed class KuehluebergabeTexte
     /// <summary><c>GEBK_LBL_KUEHL_VORLAUFGRENZE</c></summary>
     public string LabelVorlaufgrenze { get; set; } = "Untere Vorlaufgrenze :";
 
+    // ---- Die Kühlkurve (Entwurf KK, Festlegungen 1, 3, 7, 18) ----------------------------
+    /// <summary><c>GEBK_LBL_KUEHLKURVE_AKTIV</c></summary>
+    public string LabelKuehlkurve { get; set; } = "Kühlkurve (gleitender Kühlvorlauf)";
+    /// <summary><c>GEBK_LBL_KUEHLKURVE_FUSSPUNKT</c></summary>
+    public string LabelKuehlkurveFusspunkt { get; set; } = "Fußpunkt der Kühlkurve :";
+    /// <summary><c>GEBK_LBL_KUEHLKURVE_RAUMEINFLUSS</c></summary>
+    public string LabelKuehlkurveRaumeinfluss { get; set; } = "Raumeinfluss der Kühlkurve :";
+    /// <summary><c>GEBK_LBL_KUEHLKURVE_WEG</c></summary>
+    public string LabelKuehlkurveWeg { get; set; } = "Auslegungs-Außentemperatur Kühlung :";
+    /// <summary><c>GEBK_KUEHLKURVE_WEG_STUNDE</c></summary>
+    public string WegStunde { get; set; } = "höchste Stundentemperatur der Klimareihe";
+    /// <summary><c>GEBK_KUEHLKURVE_WEG_TAGESMITTEL</c></summary>
+    public string WegTagesmittel { get; set; } = "wärmstes Tagesmittel, mindestens Kühlsollwert + Mindestspanne (Vorgabe)";
+    /// <summary><c>GEBK_KUEHLKURVE_WEG_EINGABE</c></summary>
+    public string WegEingabe { get; set; } = "Eingabe";
+    /// <summary><c>GEBK_LBL_KUEHLKURVE_AUSSEN</c></summary>
+    public string LabelKuehlkurveAussen { get; set; } = "Auslegungs-Außentemperatur (Eingabe) :";
+    /// <summary><c>GEBK_ZEILE_KUEHLKURVE</c> — „{0}" Fußpunkt, „{1}" Auslegungsvorlauf [°C], „{2}" der Auslegungsweg.</summary>
+    public string ZeileKuehlkurve { get; set; }
+        = "Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf Stufe AK3, sonst gilt der feste Vorlauf.";
+    /// <summary><c>GEBK_MSG_KUEHLKURVE_FUSSPUNKT</c> — „{0}" Fußpunkt, „{1}" Auslegungsvorlauf [°C].</summary>
+    public string MeldungFusspunkt { get; set; }
+        = "Der Fußpunkt der Kühlkurve ({0} °C) liegt unter dem Auslegungsvorlauf ({1} °C): Der Vorlauf stiege mit der Außentemperatur. Bitte einen Fußpunkt ab dem Auslegungsvorlauf eintragen oder das Feld leeren.";
+
+    /// <summary>Der Anzeigename eines Auslegungswegs der Kühlkurve.</summary>
+    public string Wegname(string weg) => weg switch
+    {
+        WindowsFormsApplication1.DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE => WegStunde,
+        WindowsFormsApplication1.DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE => WegEingabe,
+        _ => WegTagesmittel,
+    };
+
     /// <summary><c>GEBK_VORGABE_HERGELEITET</c> — Platzhalter eines hergeleiteten Feldes ohne Zahl.</summary>
     public string VorgabeHergeleitet { get; set; } = "Vorgabe: hergeleitet";
 

@@ -248,7 +248,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // auslegung_*, proportionalband): 9 → 16.
         // BA-3: der Filter „Ohne vollständige Zuordnung“ der Bauteiltabelle - eine Ansichtswahl, kein Wert der Zone
         // (bewusst draußen): 18 → 19.
-        new("ZonenDialog", 19),
+        // KK4 (Entwurf KK Festlegung 15): die Kühlübergabe der Zone - Art und zwei Zahlenfelder (Katalogfelder
+        // kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung): 19 → 22.
+        new("ZonenDialog", 22),
         new("BauteilDialog", 15, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
@@ -319,8 +321,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // KP2 U1, E56 F3 (a): Wärmegewinne, Infiltration, Nutzerlüftung, Sommerlüftung und
         // Kühlsollwert stehen nur noch im Reiter „Konditionierung" (Katalogfelder unverändert): 37 → 32.
         new("GebaeudeKatalogDialog", 33),
-        new("GebaeudeKuehluebergabeFelder", 8, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
-            "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze"),
+        new("GebaeudeKuehluebergabeFelder", 13, "die acht Felder der Kühlübergabe (E37) - Katalogfelder kuehluebergabe_aktiv, " +
+            "kuehl_uebergabe_art, kuehl_uebergabe_exponent, kuehl_uebergabe_nennleistung, kuehl_auslegung_*, kuehl_vorlaufgrenze; " +
+            "dazu die fünf der Kühlkurve (KK4) - kuehlkurve_aktiv, _fusspunkt, _raumeinfluss, _auslegung_weg, _auslegung_aussen"),
         // E43: Beginn und Ende der Nachtabsenkung (Katalogfelder nacht_beginn, nacht_ende): 36 → 38.
         // KP2 U4, E56 F3 (a): Sollwerte, Nachtzeit, Ferien, Wärmegewinne, Infiltration, Nutzerlüftung,
         // Sommerlüftung und Kühlsollwert stehen im Blatt „Konditionierung" der Verwaltung (Bausteine
