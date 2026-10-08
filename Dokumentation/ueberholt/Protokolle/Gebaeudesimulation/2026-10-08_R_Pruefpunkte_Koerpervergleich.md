@@ -21,7 +21,7 @@
 
 ## 4 Gate 828
 
-GATEZAHLEN
+auf `046d05996` (79 min): KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 843, EPOS.Kern 12 383 mit 7 übersprungen, 0 rot; Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 26/26 gegen `2026-10-08_R44_Kuehlkurve` PASS (8 932 241 Werte), 841/841 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 527 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61.
 
 ## 5 Offen
 
