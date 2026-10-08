@@ -155,7 +155,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Eingang mit Kernschalter und AK3: Fußpunkt leer = Auslegungsrücklauf, eingetragen gilt er; die
-        /// Auslegungs-Außentemperatur ist das wärmste Tagesmittel (Festlegung 3); Bereiche (Festlegung 7) hart geprüft.
+        /// Auslegungs-Außentemperatur nach Weg 2 (Festlegung 3, E107); Bereiche (Festlegung 7) hart geprüft.
         /// </summary>
         [Fact]
         public void Fusspunkt_Auslegungsaussentemperatur_und_Bereiche_im_Eingang()
@@ -165,7 +165,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeFestwerte.KUEHL_AUSLEGUNG_RUECKLAUF_FLAECHE, leer.Kuehlkurve.FusspunktC);
             Assert.Equal(GebaeudeFestwerte.KUEHL_AUSLEGUNG_VORLAUF_FLAECHE, leer.Kuehlkurve.AuslegungVorlaufC);
             GebaeudeModellEingang.WaermsterTag(leer.ThetaOut, out double mittel);
-            Assert.Equal(mittel, leer.Kuehlkurve.AuslegungAussenC);
+            Assert.Equal(Math.Max(mittel, 24.0 + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K), leer.Kuehlkurve.AuslegungAussenC);
             Assert.Equal(mittel, Kuehlkurve.AuslegungAussentemperaturC(leer.ThetaOut));
             Assert.Equal(16.0, leer.Kuehlkurve.VorlaufgrenzeC);
             Assert.True(double.IsNaN(leer.KuehlVorlaufFestC));
@@ -184,8 +184,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Die Reihe am Eingang und im Jahreslauf: Jede Stunde hält die Grenzen, der Rand liest <c>[h]</c> — der Vorlauf des
         /// Kältekreises ist Stunde für Stunde die Reihe; an warmen Stunden kälter als am Fußpunkt. Kühlsollwert 21 °C, damit
-        /// die Probeklima-Reihe (wärmstes Tagesmittel 22 °C) einen linearen Ast hat; bei 24 °C läge die
-        /// Auslegungs-Außentemperatur unter dem Sollwert und die Kurve spränge (siehe <see cref="Form_der_Zwei_Punkt_Kurve"/>).
+        /// die Probeklima-Reihe viele Stunden auf dem linearen Ast hat (Auslegungspunkt nach Weg 2: 29 °C).
         /// </summary>
         [Fact]
         public void Die_Reihe_gleitet_und_der_Rand_liest_die_Stunde()
@@ -247,7 +246,11 @@ namespace EPOS.Kern.Tests
         public void Schalter_aus_ist_ohne_Wirkung()
         {
             Assert.False(KuehlkurveKernschalter.Ein);
-            Action<ProjektGebaeudeModel> kurve = g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 21.0; g.Kuehlkurve_Raumeinfluss = 2.0; };
+            Action<ProjektGebaeudeModel> kurve = g =>
+            {
+                g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 21.0; g.Kuehlkurve_Raumeinfluss = 2.0;
+                g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = 20.0;
+            };
             GebaeudeModellErgebnis bezug = Vdi6007Rechenweg.Laufen(Eingang(Gebaeude()), 0, 1);
 
             GebaeudeModellEingang aus = Eingang(Gebaeude(kurve));
@@ -262,13 +265,158 @@ namespace EPOS.Kern.Tests
                 Bitgleich(Vdi6007Rechenweg.Laufen(Eingang(Gebaeude(), stufe), 0, 1), Vdi6007Rechenweg.Laufen(e, 0, 1));
             }
 
-            GebaeudeModellEingang ohneAktiv = EingangEin(Gebaeude(g => { g.Kuehlkurve_Fusspunkt = 21.0; }));
+            GebaeudeModellEingang ohneAktiv = EingangEin(Gebaeude(g =>
+            {
+                g.Kuehlkurve_Fusspunkt = 14.0; g.Kuehlkurve_Auslegung_Weg = "unbekannt"; g.Kuehlkurve_Auslegung_Aussen = 20.0;
+            }));
             Assert.False(ohneAktiv.KuehlkurveWirksam);
             Bitgleich(bezug, Vdi6007Rechenweg.Laufen(ohneAktiv, 0, 1));
 
             // Der Schalter stellt sich nach dem using-Block zurück.
             using (KuehlkurveKernschalter.Schalten(true)) Assert.True(KuehlkurveKernschalter.Ein);
             Assert.False(KuehlkurveKernschalter.Ein);
+        }
+
+        // =====================================================================
+        //  Der Auslegungsweg (E107) und die Fußpunktregel
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Drei Wege, Vorgabe Weg 2</b> (Festlegung 3, E107): leer und „tagesmittel“ rechnen das wärmste Tagesmittel,
+        /// mindestens Kühlsollwert + Mindestspanne; „stunde“ die höchste Stundentemperatur; „eingabe“ die Eingabe am Gebäude.
+        /// </summary>
+        [Fact]
+        public void Drei_Auslegungswege_Vorgabe_Weg_2()
+        {
+            GebaeudeModellEingang leer = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            GebaeudeModellEingang.WaermsterTag(leer.ThetaOut, out double mittel);
+            double hoechste = leer.ThetaOut.Max();
+            double weg2 = Math.Max(mittel, 24.0 + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K);
+            _aus.WriteLine($"Probeklima: wärmstes Tagesmittel {mittel:0.00} °C, höchste Stunde {hoechste:0.00} °C, Weg 2 {weg2:0.00} °C");
+            Assert.True(mittel < 24.0, "Probeklima: Tagesmittel unter dem Sollwert (Befund KK1)");
+            Assert.Equal(weg2, leer.Kuehlkurve.AuslegungAussenC);
+            Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL, leer.Kuehlkurve.AuslegungWeg);
+            Assert.False(leer.Kuehlkurve.AuslegungRueckfall);
+
+            GebaeudeModellEingang tag = EingangEin(Gebaeude(g =>
+            { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL; }));
+            Assert.Equal(weg2, tag.Kuehlkurve.AuslegungAussenC);
+            Assert.True(leer.KuehlVorlaufC.SequenceEqual(tag.KuehlVorlaufC), "leer = tagesmittel");
+
+            GebaeudeModellEingang stunde = EingangEin(Gebaeude(g =>
+            { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE; g.Kuehlkurve_Auslegung_Aussen = 40.0; }));
+            Assert.Equal(hoechste, stunde.Kuehlkurve.AuslegungAussenC);
+            Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_STUNDE, stunde.Kuehlkurve.AuslegungWeg);
+
+            GebaeudeModellEingang eingabe = EingangEin(Gebaeude(g =>
+            { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = 30.0; }));
+            Assert.Equal(30.0, eingabe.Kuehlkurve.AuslegungAussenC);
+            Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE, eingabe.Kuehlkurve.AuslegungWeg);
+            Assert.False(eingabe.Kuehlkurve.AuslegungRueckfall);
+
+            // Die Eingabe wirkt nur auf dem Weg „eingabe“.
+            GebaeudeModellEingang ohneWeg = EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Aussen = 30.0; }));
+            Assert.Equal(weg2, ohneWeg.Kuehlkurve.AuslegungAussenC);
+
+            // Ohne endlichen Kühlsollwert gilt das Tagesmittel allein.
+            Assert.Equal(mittel, Kuehlkurve.AuslegungAussentemperaturC(null, null, double.PositiveInfinity, leer.ThetaOut, out _, out _));
+
+            // Ein unbekannter Weg bricht ab.
+            Assert.Equal(GebaeudeModellFehler.UebergabeUngueltig, Assert.Throws<GebaeudeModellException>(
+                () => EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = "Tagesmittel"; }))).Grund);
+        }
+
+        /// <summary>
+        /// <b>Die Spanne greift</b>: Am Probeklima (wärmstes Tagesmittel unter 24 °C) springt die Kurve nach Weg 2 am Sollwert
+        /// nicht mehr vom Fußpunkt auf den Auslegungsvorlauf — kurz über dem Sollwert liegt der Vorlauf am Fußpunkt, die Reihe
+        /// gleitet, die Kurve fällt stetig.
+        /// </summary>
+        [Fact]
+        public void Spanne_greift_kein_Sprung_am_Sollwert()
+        {
+            GebaeudeModellEingang e = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            Kuehlkurve k = e.Kuehlkurve;
+            Assert.True(k.AuslegungAussenC >= 24.0 + GebaeudeFestwerte.KUEHLKURVE_AUSLEGUNG_SPANNE_K);
+            double steigung = (k.FusspunktC - k.AuslegungVorlaufC) / (k.AuslegungAussenC - 24.0);
+            double vor = k.KurveC(24.0, 24.0);
+            for (double t = 24.0; t <= k.AuslegungAussenC + 2.0; t += 0.1)
+            {
+                double v = k.KurveC(24.0, t);
+                Assert.True(vor - v <= steigung * 0.1 + 1e-9, "kein Sprung bei " + t);
+                vor = v;
+            }
+            Assert.True(k.FusspunktC - k.KurveC(24.0, 24.1) < 0.05, "kurz über dem Sollwert am Fußpunkt");
+
+            // Weg 1 und Weg 2 liegen am Probeklima über dem Sollwert; die Reihe gleitet bei 24 °C.
+            double[] v24 = e.KuehlVorlaufC;
+            Assert.True(v24.Distinct().Count() > 2, "die Reihe gleitet bei 24 °C");
+        }
+
+        /// <summary>
+        /// <b>Weg 3 unter dem Sollwert</b>: Eine Eingabe nicht über Kühlsollwert + 1 K oder ohne Wert fällt auf Weg 2 zurück
+        /// und meldet sich je Lauf einmal; knapp darüber gilt sie.
+        /// </summary>
+        [Fact]
+        public void Weg_3_unter_dem_Sollwert_faellt_mit_Hinweis_auf_Weg_2()
+        {
+            GebaeudeModellEingang weg2 = EingangEin(Gebaeude(g => g.Kuehlkurve_Aktiv = true));
+            foreach (double? eingabe in new double?[] { 24.5, 25.0, 18.0, null })
+            {
+                GebaeudeModellEingang e = EingangEin(Gebaeude(g =>
+                { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = eingabe; }));
+                Assert.True(e.Kuehlkurve.AuslegungRueckfall, "Rückfall bei " + eingabe);
+                Assert.Equal(DbWerte.KUEHLKURVE_AUSLEGUNG_TAGESMITTEL, e.Kuehlkurve.AuslegungWeg);
+                Assert.Equal(weg2.Kuehlkurve.AuslegungAussenC, e.Kuehlkurve.AuslegungAussenC);
+                Assert.True(weg2.KuehlVorlaufC.SequenceEqual(e.KuehlVorlaufC), "Reihe wie Weg 2 bei " + eingabe);
+
+                SimulationProtokoll.NeuStarten();
+                Vdi6007Rechenweg.KuehlkurveMelden(e, SimulationProtokoll.Aktuell, "7", "Probegebäude");
+                Vdi6007Rechenweg.KuehlkurveMelden(e, SimulationProtokoll.Aktuell, "7", "Probegebäude");
+                string hinweis = Assert.Single(SimulationProtokoll.Aktuell.Hinweise);
+                Assert.Contains("Probegebäude", hinweis);
+                Assert.Contains(eingabe.HasValue ? eingabe.Value.ToString("0.#") : "—", hinweis);
+            }
+
+            GebaeudeModellEingang knapp = EingangEin(Gebaeude(g =>
+            { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Auslegung_Weg = DbWerte.KUEHLKURVE_AUSLEGUNG_EINGABE; g.Kuehlkurve_Auslegung_Aussen = 25.5; }));
+            Assert.False(knapp.Kuehlkurve.AuslegungRueckfall);
+            Assert.Equal(25.5, knapp.Kuehlkurve.AuslegungAussenC);
+            SimulationProtokoll.NeuStarten();
+            Vdi6007Rechenweg.KuehlkurveMelden(knapp, SimulationProtokoll.Aktuell, "7", "Probegebäude");
+            Assert.Empty(SimulationProtokoll.Aktuell.Hinweise);
+        }
+
+        /// <summary>
+        /// <b>Fußpunktregel</b> (Festlegung 18): Ein Fußpunkt kälter als der Auslegungsvorlauf wird auf ihn geklemmt — die Kurve
+        /// ist waagrecht und fällt nie mit der Außentemperatur an —, je Lauf einmal gemeldet; gleich oder wärmer bleibt er.
+        /// </summary>
+        [Fact]
+        public void Fusspunktregel_klemmt_auf_den_Auslegungsvorlauf()
+        {
+            var k = new Kuehlkurve(14.0, 16.0, 32.0, double.NaN);
+            Assert.True(k.FusspunktGeklemmt);
+            Assert.Equal(16.0, k.FusspunktC);
+            Assert.Equal(14.0, k.FusspunktEingabeC);
+            for (double t = 10.0; t <= 40.0; t += 0.5) Assert.Equal(16.0, k.KurveC(24.0, t));
+            Assert.False(new Kuehlkurve(16.0, 16.0, 32.0, double.NaN).FusspunktGeklemmt);
+            Assert.False(new Kuehlkurve(19.0, 16.0, 32.0, double.NaN).FusspunktGeklemmt);
+
+            GebaeudeModellEingang e = EingangEin(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 14.0; }));
+            Assert.True(e.Kuehlkurve.FusspunktGeklemmt);
+            for (int h = 0; h < 8760; h++)
+                Assert.True(e.KuehlVorlaufC[h] >= 16.0, "nie unter dem Auslegungsvorlauf, Stunde " + h);
+            SimulationProtokoll.NeuStarten();
+            Vdi6007Rechenweg.KuehlkurveMelden(e, SimulationProtokoll.Aktuell, "7", "Probegebäude");
+            Vdi6007Rechenweg.KuehlkurveMelden(e, SimulationProtokoll.Aktuell, "7", "Probegebäude");
+            string hinweis = Assert.Single(SimulationProtokoll.Aktuell.Hinweise);
+            Assert.Contains("14", hinweis);
+            Assert.Contains("16", hinweis);
+
+            // Ohne wirksame Kurve schweigt die Meldung.
+            SimulationProtokoll.NeuStarten();
+            Vdi6007Rechenweg.KuehlkurveMelden(Eingang(Gebaeude(g => { g.Kuehlkurve_Aktiv = true; g.Kuehlkurve_Fusspunkt = 14.0; })),
+                                              SimulationProtokoll.Aktuell, "7", "Probegebäude");
+            Assert.Empty(SimulationProtokoll.Aktuell.Hinweise);
         }
     }
 }
