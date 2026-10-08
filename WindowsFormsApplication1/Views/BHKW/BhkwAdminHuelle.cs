@@ -175,7 +175,7 @@ namespace WindowsFormsApplication1
                 MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit));
 
             BHKWStammCtrl.SpeicherErgebnis e =
-                BHKWStammCtrl.AnzeigefelderSchreiben(name, werte, schutzUebergehen);
+                BHKWStammCtrl.AnzeigefelderSchreiben(name, werte);
             return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 

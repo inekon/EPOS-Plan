@@ -104,8 +104,7 @@ public class BhkwDialogTests : EposBunitContext
         Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
         Func<ErzeugerZeile?, Task>? energiekosten = null,
         Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
-        Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>? katalogfelderSpeichern = null,
-        Func<string, bool>? katalogfelderGeschuetzt = null)
+        Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? katalogfelderSpeichern = null)
     {
         return Render<BhkwDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
@@ -136,7 +135,6 @@ public class BhkwDialogTests : EposBunitContext
             .Add(x => x.EnergiekostenOeffnen, energiekosten)
             .Add(x => x.Katalogfelder, katalogfelder)
             .Add(x => x.KatalogfelderSpeichern, katalogfelderSpeichern)
-            .Add(x => x.KatalogfelderGeschuetzt, katalogfelderGeschuetzt)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
@@ -861,13 +859,12 @@ public class BhkwDialogTests : EposBunitContext
     {
         string? name = null;
         IReadOnlyList<BrowserFeldwert>? geschrieben = null;
-        bool? schutz = null;
 
         var cut = Aufbauen(
             katalogfelder: _ => Felder(),
-            katalogfelderSpeichern: (n, f, s) =>
+            katalogfelderSpeichern: (n, f) =>
             {
-                name = n; geschrieben = f; schutz = s;
+                name = n; geschrieben = f;
                 return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
             });
 
@@ -886,9 +883,6 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Equal("60000",
             geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldKostenModul).Wert);
 
-        // Ohne Schreibschutzweg wird ohne Rueckfrage und ohne Uebergehen geschrieben.
-        Assert.False(schutz);
-        Assert.False(cut.Instance.Schutzfrage);
         Assert.Equal("", cut.Instance.Meldung);
         Assert.StartsWith("Gespeichert um ", Vermerk(cut).TextContent);
     }
@@ -903,7 +897,7 @@ public class BhkwDialogTests : EposBunitContext
         int schreibvorgaenge = 0;
         var cut = Aufbauen(
             katalogfelder: _ => Felder(),
-            katalogfelderSpeichern: (n, _, _) => { schreibvorgaenge++; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); });
+            katalogfelderSpeichern: (n, _) => { schreibvorgaenge++; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); });
 
         KatalogsatzWaehlen(cut);
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
@@ -935,7 +929,7 @@ public class BhkwDialogTests : EposBunitContext
     {
         var cut = Aufbauen(
             katalogfelder: _ => Felder(),
-            katalogfelderSpeichern: (_, _, _) =>
+            katalogfelderSpeichern: (_, _) =>
                 new KatalogSpeicherErgebnis(false, "„Modul“ darf nicht negativ sein.", ""));
 
         KatalogsatzWaehlen(cut);
@@ -949,87 +943,6 @@ public class BhkwDialogTests : EposBunitContext
         // Der Grund steht auch rot AM Knopf - das Band oben bleibt fuer den Fehler.
         Assert.Contains("darf nicht negativ sein", Vermerk(cut).TextContent);
         Assert.Contains("epos-status--fehler", Vermerk(cut).ClassName);
-    }
-
-    /// <summary>
-    /// <b>Das BHKW ist die einzige Familie mit Schreibschutz:</b> Ein Auslieferungssatz
-    /// wird vor dem Überschreiben erfragt, und erst „Ja" hebt den Schutz für GENAU
-    /// diesen Vorgang auf.
-    /// </summary>
-    [Fact]
-    public void Ein_geschuetzter_Satz_fragt_nach_und_Ja_hebt_den_Schutz_auf()
-    {
-        bool? schutz = null;
-        var cut = Aufbauen(
-            katalogfelder: _ => Felder(),
-            katalogfelderSpeichern: (n, _, s) =>
-            {
-                schutz = s;
-                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
-            },
-            katalogfelderGeschuetzt: _ => true);
-
-        KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
-        Knopf(cut, "Speichern").Click();
-
-        // Erst die Rueckfrage - geschrieben ist noch nichts.
-        Assert.True(cut.Instance.Schutzfrage);
-        Assert.Null(schutz);
-        Assert.Contains("Modul A", cut.Find(".epos-rueckfrage-text").TextContent);
-
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.True(schutz);
-    }
-
-    /// <summary>„Nein" schreibt nichts.</summary>
-    [Fact]
-    public void Nein_auf_die_Schreibschutzfrage_schreibt_nichts()
-    {
-        bool geschrieben = false;
-        var cut = Aufbauen(
-            katalogfelder: _ => Felder(),
-            katalogfelderSpeichern: (n, _, _) =>
-            {
-                geschrieben = true;
-                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
-            },
-            katalogfelderGeschuetzt: _ => true);
-
-        KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
-        Knopf(cut, "Speichern").Click();
-        cut.FindAll(".epos-rueckfrage button")[1].Click();
-
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.False(geschrieben);
-    }
-
-    /// <summary>
-    /// <b>Ein eigener Satz wird ohne Rückfrage geschrieben</b> — der Schreibschutzweg
-    /// meldet <c>false</c>, und der Dialog fragt dann nicht.
-    /// </summary>
-    [Fact]
-    public void Ein_eigener_Satz_wird_ohne_Rueckfrage_geschrieben()
-    {
-        bool? schutz = null;
-        var cut = Aufbauen(
-            katalogfelder: _ => Felder(),
-            katalogfelderSpeichern: (n, _, s) =>
-            {
-                schutz = s;
-                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
-            },
-            katalogfelderGeschuetzt: _ => false);
-
-        KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
-        Knopf(cut, "Speichern").Click();
-
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.False(schutz);
     }
 
     // =====================================================================

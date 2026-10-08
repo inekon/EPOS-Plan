@@ -90,8 +90,8 @@ namespace WindowsFormsApplication1
                 ["Modus"] = neu ? KatalogModus.Neu : KatalogModus.Bearbeiten,
                 ["Brennstoffe"] = Brennstoffe(ctrl),
 
-                ["Ueberschreiben"] = new Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>(
-                    (d, schutz) => Uebersetzen(BHKWStammCtrl.Ueberschreiben(NachModell(d), schutz))),
+                ["Ueberschreiben"] = new Func<BhkwKatalogDaten, KatalogSpeicherErgebnis>(
+                    d => Uebersetzen(BHKWStammCtrl.Ueberschreiben(NachModell(d)))),
 
                 ["Anlegen"] = new Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>(
                     (d, n) => Uebersetzen(BHKWStammCtrl.Anlegen(NachModell(d), n))),
@@ -172,13 +172,6 @@ namespace WindowsFormsApplication1
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
-                ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
-                ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
-                ["FrageSchreibschutz"] = Text_("BHKWK_FRAGE_SCHREIBSCHUTZ",
-                    "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt." +
-                    Environment.NewLine + Environment.NewLine +
-                    "Soll er trotzdem überschrieben werden?"),
-                ["TitelSchreibschutz"] = Text_("BHKWK_TITEL_SCHREIBSCHUTZ", "Schreibgeschützter Datensatz"),
                 ["MeldungZahlUngueltig"] = Text_("HZKK_MSG_ZAHL",
                     "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt)."),
                 ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!")
@@ -522,24 +515,20 @@ namespace WindowsFormsApplication1
                 // bekommt; der Aufklapper IST sein Raster. Dieselben Schluessel und
                 // dieselben Texte wie beim Heizkessel - die sechs Erzeugerfamilien
                 // sollen im gleichen Schema stehen.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(BHKWStammCtrl.SchlossSetzen),
+
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => BhkwAdminHuelle.Wege().Detail!(name)!),
 
-                // DREI Argumente, anders als beim Heizkessel: Der BHKW-Katalog ist der
-                // einzige mit Schreibschutz, und der Kern verlangt die Antwort auf die
-                // Rueckfrage als eigenes Argument (AnzeigefelderSchreiben).
+                // Ein Satz mit Schloss wird hier nie geschrieben (AD-Q15): Der Aufklapper zeigt
+                // ihn nur lesbar, bis das Schloss aufgehoben ist.
                 ["KatalogfelderSpeichern"] =
-                    new Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>(
-                        (name, felder, schutz) => BhkwAdminHuelle.Wege().Speichern!(name, felder, schutz)),
-
-                // Der Schutz kommt unmittelbar aus dem Kern - KatalogBrowserWege.IstGeschuetzt
-                // ist mit Stufe 3 der Neuordnung gefallen (die Verwaltung liest ihn aus der
-                // Zeile der Liste).
-                ["KatalogfelderGeschuetzt"] = new Func<string, bool>(BHKWStammCtrl.IstSchreibgeschuetzt),
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => BhkwAdminHuelle.Wege().Speichern!(name, felder, false)),
 
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
-                ["FrageSchutz"] = MyResource.Resource.ADM_SCHUTZ_FRAGE,
-                ["TitelSchutz"] = MyResource.Resource.ADM_SCHUTZ_TITEL,
 
                 ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),

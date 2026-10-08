@@ -192,6 +192,13 @@ public sealed class KonditionierungWeg
     public Func<long, string, KonditionierungVorlageErgebnis>? VorlageDuplizieren { get; init; }
 
     /// <summary>
+    /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> einer Vorlage (Entscheid AD-Q15, Anwenderentscheid
+    /// 08.10.2026) — derselbe Schlossweg wie in den Verwaltungen. Ohne ihn steht der Knopf nicht da.
+    /// <para>Kern: <c>KonditionierungsvorlageCtrl.SchlossSetzen</c> über <c>Schlosswege.Aus</c>.</para>
+    /// </summary>
+    public EPOS.UI.Bausteine.Schlossweg? VorlageSchloss { get; init; }
+
+    /// <summary>
     /// <b>„Kopieren nach …"</b> (Vorlagenverwaltung, Teilkonzept 3.5, 7.4): legt aus einer Vorlage — auch einer
     /// ausgelieferten — eine eigene Vorlage einer anderen Größe an: Geräte ↔ Personen unverändert, Heizen →
     /// Kühlen mit Zeitstruktur und Aus-Zeiten, jede Zelle mit Sollwert in Höhe des Tagwerts auf dem

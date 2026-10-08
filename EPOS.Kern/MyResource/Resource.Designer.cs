@@ -826,6 +826,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierungsvorlagen ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_KONDITIONIERUNGSVORLAGE {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_KONDITIONIERUNGSVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Typprofile ähnelt.
         /// </summary>
         public static string ADM_KATALOG_PROZESSTYP {
@@ -1404,6 +1413,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Bearbeiten zuerst „Schloss aufheben...“ wählen. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_ERST_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_ERST_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss ließ sich nicht umschalten; nichts wurde geändert. ähnelt.
         /// </summary>
         public static string ADM_SCHLOSS_FEHLER {
@@ -1499,26 +1517,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SCHLOSS_UNVERAENDERT {
             get {
                 return ResourceManager.GetString("ADM_SCHLOSS_UNVERAENDERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
-        ///
-        ///Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_FRAGE {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_TITEL {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
             }
         }
         
@@ -4661,17 +4659,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
-        ///
-        ///Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string BHKWK_FRAGE_SCHREIBSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_FRAGE_SCHREIBSCHUTZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
         /// </summary>
         public static string BHKWK_GRP_BEZEICHNUNG {
@@ -5064,15 +5051,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_TITEL {
             get {
                 return ResourceManager.GetString("BHKWK_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string BHKWK_TITEL_SCHREIBSCHUTZ {
-            get {
-                return ResourceManager.GetString("BHKWK_TITEL_SCHREIBSCHUTZ", resourceCulture);
             }
         }
         
@@ -10702,6 +10680,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_STATUS_BESTE {
             get {
                 return ResourceManager.GetString("BK_STATUS_BESTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht geöffnet ähnelt.
+        /// </summary>
+        public static string BK_STATUS_KOSTEN_OFFEN {
+            get {
+                return ResourceManager.GetString("BK_STATUS_KOSTEN_OFFEN", resourceCulture);
             }
         }
         
@@ -43689,6 +43676,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_BEHEIZUNGSART_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zerlegte Dächer ohne eigenen Aufbau übernehmen den gemeinsamen Aufbau ihrer Platten: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_AUFBAU_PLATTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_AUFBAU_PLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach „{0}“ trägt den U-Wert {1} W/(m²K) selbst; er gilt. Seine {2} Platten tragen {3} bis {4} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_UWERT_EIGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_UWERT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} zerlegte Dächer ohne eigenen U-Wert übernehmen den U-Wert ihrer Platten, nach deren Fläche gewichtet: {1}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_UWERT_PLATTEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_UWERT_PLATTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dach „{0}“: Die U-Werte seiner {1} Platten reichen von {2} bis {3} W/(m²K) — übernommen ist das Flächenmittel {4} W/(m²K). ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DACH_UWERT_SPANNE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DACH_UWERT_SPANNE", resourceCulture);
             }
         }
         

@@ -170,10 +170,13 @@
     /// <summary>
     /// Die Leiste: ein Knopf je Blatt. Mit Statuszeile traegt der Knopf Titel und Zeile
     /// untereinander, ohne sie nur den Titel - das Markup der Knoepfe ohne Status bleibt,
-    /// wie es war.
+    /// wie es war. Traegt EIN Blatt eine Statuszeile, tragen ALLE die zweizeilige Gestalt:
+    /// ein Blatt ohne Stand bekommt eine leere Zeile gleicher Hoehe (Platzhalter), sonst
+    /// stuende sein Titel kleiner und einzeilig da und spraenge, sobald sein Stand kommt.
     /// </summary>
     private RenderFragment Leiste => __builder =>
     {
+        bool leisteMitStatus = LeisteMitStatus;
         <div class="epos-reiter-leiste" role="tablist" aria-label="@Bezeichnung"
              @onkeydown="BeiTaste">
             @foreach (Reiterblatt blatt in _blaetter)
@@ -207,6 +210,13 @@
                             }
                         </span>
                     }
+                    else if (leisteMitStatus)
+                    {
+                        <span class="epos-reiter-titel">@b.Titel</span>
+                        <span class="epos-reiter-status epos-reiter-status--leer" aria-hidden="true">
+                            <span class="epos-reiter-status-text">@PLATZHALTER</span>
+                        </span>
+                    }
                     else
                     {
                         @b.Titel
@@ -215,6 +225,12 @@
             }
         </div>
     };
+
+    /// <summary>Die leere Statuszeile: ein geschuetztes Leerzeichen haelt die Zeilenhoehe.</summary>
+    private const string PLATZHALTER = " ";
+
+    /// <summary>Traegt irgendein Blatt eine Statuszeile? Dann tragen alle die zweizeilige Gestalt.</summary>
+    private bool LeisteMitStatus => _blaetter.Exists(b => b.HatStatus);
 
     private static string Statusklasse(Reiterblatt b)
         => b.Statusstufe == Statusstufe.Warnung
@@ -275,7 +291,7 @@
         string klasse = IstAktiv(b.Schluessel)
             ? "epos-reiter-knopf epos-reiter-knopf--aktiv"
             : "epos-reiter-knopf";
-        return b.HatStatus ? klasse + " epos-reiter-knopf--status" : klasse;
+        return b.HatStatus || LeisteMitStatus ? klasse + " epos-reiter-knopf--status" : klasse;
     }
 
     /// <summary>

@@ -311,7 +311,7 @@ namespace EPOS.Kern.Tests
                 vorher.m_Vorlauf, vorher.m_Ruecklauf, WirkungsgradEl: 29.5);
 
             BHKWStammCtrl.SpeicherErgebnis ergebnis =
-                BHKWStammCtrl.AnzeigefelderSchreiben(satz, abgelehnt, true);
+                EntsperrtSchreiben(satz, abgelehnt);
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
             Assert.Contains("Faktor", ergebnis.Meldung);
@@ -325,7 +325,7 @@ namespace EPOS.Kern.Tests
                 vorher.m_Vorlauf, vorher.m_Ruecklauf,
                 WirkungsgradEl: 0.30, WirkungsgradTh: 0.62);
 
-            Assert.True(BHKWStammCtrl.AnzeigefelderSchreiben(satz, erlaubt, true).Ok);
+            Assert.True(EntsperrtSchreiben(satz, erlaubt).Ok);
             BHKWStammModel nachher = new BHKWStammCtrl().ReadModel(satz);
             Assert.Equal(0.92, nachher.m_Wirkungsgrad, 4);
             Assert.Equal(0.30, nachher.m_Wirkungsgrad_el.Value, 4);
@@ -337,7 +337,7 @@ namespace EPOS.Kern.Tests
                 vorher.m_Vorlauf, vorher.m_Ruecklauf,
                 WirkungsgradEl: vorher.m_Wirkungsgrad_el,
                 WirkungsgradTh: vorher.m_Wirkungsgrad_th);
-            Assert.True(BHKWStammCtrl.AnzeigefelderSchreiben(satz, zurueck, true).Ok);
+            Assert.True(EntsperrtSchreiben(satz, zurueck).Ok);
             Assert.Equal(vorher.m_Wirkungsgrad, new BHKWStammCtrl().ReadModel(satz).m_Wirkungsgrad, 6);
         }
 
@@ -386,6 +386,16 @@ namespace EPOS.Kern.Tests
             foreach (KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
                      in BhkwWirkungsgradFaktor.Anweisungen)
                 DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+        }
+
+        /// <summary>
+        /// Schreibt die Anzeigefelder eines BHKW-Satzes, nachdem sein Schloss aufgehoben ist — der
+        /// Weg des Anwenders (AD-Q15): Ein Satz mit Schloss wird nie geschrieben.
+        /// </summary>
+        private static BHKWStammCtrl.SpeicherErgebnis EntsperrtSchreiben(string name, BHKWStammCtrl.AnzeigefelderBhkw felder)
+        {
+            Assert.True(BHKWStammCtrl.SchlossSetzen(new[] { BHKWStammCtrl.IdZu(name) }, false).Ok);
+            return BHKWStammCtrl.AnzeigefelderSchreiben(name, felder);
         }
     }
 }

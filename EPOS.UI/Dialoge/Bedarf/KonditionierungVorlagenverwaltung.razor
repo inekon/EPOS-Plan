@@ -33,6 +33,7 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
+@using WindowsFormsApplication1
 
 <div class="epos-kond-verwaltung">
     @* Das Banner des Blattes: Der Kopf des Editors steht nicht, solange das Blatt offen ist - ein Grund
@@ -137,6 +138,15 @@
                                                     aria-label="@(vorlage.Name + " – " + Texte.KnopfKopierenNach)"
                                                     @onclick="() => KopierenOeffnen(vorlage, kopierSperre)">@Texte.KnopfKopierenNach</button>
                                         }
+                                        @if (_schloss.Handlung(Bearbeitung.Weg.VorlageSchloss, EventCallback.Empty,
+                                                               new[] { Schlosszeile(vorlage) }, false) is { } schlosshandlung)
+                                        {
+                                            <button type="button" class="epos-knopf epos-kond-schloss"
+                                                    disabled="@schlosshandlung.Aus"
+                                                    title="@schlosshandlung.Kurztext"
+                                                    aria-label="@(vorlage.Name + " – " + schlosshandlung.Text)"
+                                                    @onclick="() => SchlossFragen(vorlage)">@schlosshandlung.Text</button>
+                                        }
                                         @if (Bearbeitung.Weg.VorlageLoeschen is not null)
                                         {
                                             <button type="button" class="epos-knopf epos-kond-loeschen"
@@ -176,6 +186,8 @@
         </div>
     }
 
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage" VorgabeNein="true"
+                Beantwortet="SchlossBeantwortet" JaText="@JaText" NeinText="@NeinText" />
     <Rueckfrage Offen="@(_loeschen is not null)" TitelText="@Texte.KnopfLoeschen" Frage="@Loeschfrage" VorgabeNein="true"
                 Beantwortet="LoeschenBeantwortet" JaText="@JaText" NeinText="@NeinText" />
 
@@ -611,5 +623,38 @@
             _meldungStufe = stufe;
         }
         return Task.CompletedTask;
+    }
+
+    // ------------------------------------------------------------ Schloss setzen / aufheben (AD-Q15)
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" — dieselbe Rechnung wie in den Verwaltungen.</summary>
+    private readonly Schlossumschaltung _schloss = new();
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? Prüfhilfe für die Tests.</summary>
+    public bool Schlossfrage => _schloss.FrageOffen;
+
+    /// <summary>Die Vorlage als Zeile der Schlossumschaltung: Id, Name und ob sie das Schloss trägt.</summary>
+    private static Katalogfilterzeile Schlosszeile(KonditionierungVorlageDaten v)
+        => new((int)v.Id, v.Name) { Geschuetzt = v.Ausgeliefert };
+
+    /// <summary>Der Klick: Rückfrage in beiden Richtungen, Vorgabe „Nein"; ein offenes Umbenennen hält sie auf.</summary>
+    private async Task SchlossFragen(KonditionierungVorlageDaten v)
+    {
+        string? grund = _schloss.Fragen(Bearbeitung.Weg.VorlageSchloss, new[] { Schlosszeile(v) }, _umbenennen is not null);
+        if (grund is not null) await Melden(grund, WarnStufe.Warnung);
+    }
+
+    /// <summary>Nach dem „Ja": schalten, die Liste neu lesen, die leise Zeile sagt, was geschah.</summary>
+    private async Task SchlossBeantwortet(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Bearbeitung.Weg.VorlageSchloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) await Melden(a.Fehler, WarnStufe.Warnung);
+            return;
+        }
+        Bearbeitung.VorlagenNeuLaden();
+        _zeile = a.Status;
+        await Geaendert.InvokeAsync();
     }
 }

@@ -481,7 +481,7 @@ namespace WindowsFormsApplication1
                 E("Ruecklauf", t("BHKWK_LBL_RUECKLAUF"), "°C", BER,
                   "AbweichungsErmittler.Felder (Tab_BHKW.Ruecklauf) — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
-                  "BHKWStammCtrl.IstSchreibgeschuetzt (Rueckfrage beim Ueberschreiben)"),
+                  "BHKWStammCtrl.IsReadOnly (Schloss: Ueberschreiben abgelehnt)"),
                 // SCHEMASCHRITT 99, und deshalb ZULETZT: Die Reihenfolge dieser Liste
                 // folgt der SPALTENFOLGE der Tabelle (Waechter
                 // ParameterVerwendungTests), und ein ADD COLUMN haengt hinten an. Der

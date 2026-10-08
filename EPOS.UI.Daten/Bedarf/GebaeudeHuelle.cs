@@ -107,6 +107,9 @@ namespace WindowsFormsApplication1
                 // Zeilen und dasselbe Profil wie die Gebaeudeverwaltung (GebaeudeAdminHuelle);
                 // den Filterstand holt der Dialog aus dem Register, geteilt mit ihr. KP2 K4
                 // (Festlegung 15): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus(GebaeudeStammCtrl.SchlossSetzen),
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     () => GebaeudeKatalogkalender.Katalogfilterzeilen()),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerGebaeude(s => Text_(s, s)),

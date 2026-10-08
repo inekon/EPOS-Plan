@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using KiKern;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -12,7 +13,7 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Katalogeditor BHKW (iU9-W6.2). Soll sind ZWEI Gruppen — „Modul" und „Technische
-/// Daten" — und die Rueckfrage vor dem Ueberschreiben eines Katalogsatzes.
+/// Daten" — und die Ablehnung eines gesperrten Satzes beim Ueberschreiben.
 ///
 /// <para><b>Anwenderentscheid 15.09.2026:</b> „Der Dialog ueber Button Bearbeiten soll
 /// keine Kosten und Emissionen enthalten." Damit sind die Gruppen „Eingabedaten zur
@@ -72,7 +73,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     private IRenderedComponent<BhkwKatalogDialog> Aufbauen(
         BhkwKatalogDaten? daten = null,
         KatalogModus modus = KatalogModus.Bearbeiten,
-        Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>? ueberschreiben = null,
+        Func<BhkwKatalogDaten, KatalogSpeicherErgebnis>? ueberschreiben = null,
         Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>? anlegen = null,
         Action<string?>? geschlossen = null)
     {
@@ -80,7 +81,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
             .Add(x => x.Daten, daten ?? Bestand())
             .Add(x => x.Modus, modus)
             .Add(x => x.Brennstoffe, Brennstoffe)
-            .Add(x => x.Ueberschreiben, ueberschreiben ?? ((d, _) => new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner)))
+            .Add(x => x.Ueberschreiben, ueberschreiben ?? (d => new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner)))
             .Add(x => x.Anlegen, anlegen ?? ((_, n) => new KatalogSpeicherErgebnis(true, "ok", n)))
             .Add(x => x.Geschlossen, n => geschlossen?.Invoke(n)));
     }
@@ -184,7 +185,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         BhkwKatalogDaten? geschrieben = null;
         var daten = Bestand();
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = d;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -232,77 +233,45 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.False(neu.FindAll("input[type=text]:not([inputmode])")[0].HasAttribute("readonly"));
     }
 
+    /// <summary>
+    /// <b>Ein gesperrter Satz wird nie ueberschrieben</b> (Anwenderentscheid 08.10.2026):
+    /// keine Rueckfrage, sondern die benannte Ablehnung mit dem Weg „Schloss aufheben…“.
+    /// </summary>
     [Fact]
-    public void Ein_Katalogsatz_loest_vor_dem_Ueberschreiben_die_Rueckfrage_aus()
+    public void Ein_gesperrter_Satz_wird_ohne_Rueckfrage_benannt_abgelehnt()
     {
         bool geschrieben = false;
+        string? geschlossen = "offen";
         var daten = Bestand();
         daten.Katalogsatz = true;
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
+        }, geschlossen: n => geschlossen = n);
 
         cut.FindAll(".epos-leiste button")[^4].Click();
 
-        Assert.True(cut.Instance.Schutzfrage);
         Assert.False(geschrieben);
-        Assert.Contains("schreibgeschützt", cut.Find(".epos-rueckfrage-text").TextContent);
-    }
-
-    [Fact]
-    public void Nein_auf_die_Rueckfrage_schreibt_nichts()
-    {
-        bool geschrieben = false;
-        var daten = Bestand();
-        daten.Katalogsatz = true;
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
-        {
-            geschrieben = true;
-            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
-
-        cut.FindAll(".epos-leiste button")[^4].Click();
-        // Ja / Nein der Rueckfrage - der zweite Knopf im Rueckfragebereich.
-        cut.FindAll(".epos-rueckfrage button")[1].Click();
-
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.False(geschrieben);
-    }
-
-    [Fact]
-    public void Ja_auf_die_Rueckfrage_hebt_den_Schutz_fuer_diesen_Vorgang_auf()
-    {
-        bool? schutzUebergangen = null;
-        var daten = Bestand();
-        daten.Katalogsatz = true;
-        var cut = Aufbauen(daten, ueberschreiben: (d, schutz) =>
-        {
-            schutzUebergangen = schutz;
-            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
-
-        cut.FindAll(".epos-leiste button")[^4].Click();
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-
-        Assert.True(schutzUebergangen);
+        Assert.Equal("offen", geschlossen);
+        Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Instance.Meldung);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
     }
 
     [Fact]
     public void Ein_eigener_Satz_wird_ohne_Rueckfrage_ueberschrieben()
     {
-        bool? schutzUebergangen = null;
-        var cut = Aufbauen(ueberschreiben: (d, schutz) =>
+        bool geschrieben = false;
+        var cut = Aufbauen(ueberschreiben: d =>
         {
-            schutzUebergangen = schutz;
+            geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
         });
 
         cut.FindAll(".epos-leiste button")[^4].Click();
 
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.False(schutzUebergangen);
+        Assert.True(geschrieben);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
     }
 
     // HIER STANDEN DIE FAELLE ZU DEN VORGABEWERTKNOEPFEN "CO2 BEHG" und "Eintragen"
@@ -319,7 +288,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     public void Eine_ungueltige_Zahl_meldet_den_Feldnamen_und_schreibt_nicht()
     {
         bool geschrieben = false;
-        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        var cut = Aufbauen(ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -412,7 +381,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         daten.WirkungsgradEl = 0.30;
         daten.WirkungsgradTh = 0.60;
 
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = d;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -441,7 +410,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         daten.WirkungsgradEl = 0.30;
         daten.WirkungsgradTh = 0.80;
 
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -473,7 +442,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         daten.WirkungsgradEl = el;
         daten.WirkungsgradTh = th;
 
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -533,7 +502,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         bool geschlossen = false;
         var cut = Aufbauen(
-            ueberschreiben: (_, _) => new KatalogSpeicherErgebnis(false, "Name existiert bereits!", ""),
+            ueberschreiben: _ => new KatalogSpeicherErgebnis(false, "Name existiert bereits!", ""),
             geschlossen: _ => geschlossen = true);
 
         cut.FindAll(".epos-leiste button")[^4].Click();
@@ -681,7 +650,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     public void Der_Speicherweg_schreibt_und_lehnt_den_Auslieferungssatz_benannt_ab()
     {
         int gerufen = 0;
-        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        var cut = Aufbauen(ueberschreiben: d =>
         {
             gerufen++;
             return new KatalogSpeicherErgebnis(true, "geschrieben", d.Bezeichner);
@@ -697,9 +666,8 @@ public class BhkwKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Am AUSLIEFERUNGSSATZ lehnt der Speicherweg benannt ab.</b> Die Rückfrage
-    /// „Schreibgeschützter Datensatz" ist eine ausdrückliche Bestätigung an genau
-    /// diesem Satz; der Assistent lässt sie nicht aus.
+    /// <b>Am GESPERRTEN Satz lehnt der Speicherweg benannt ab</b> — wie die Maske; das
+    /// Schloss hebt nur „Schloss aufheben…“ in der Verwaltung auf.
     /// </summary>
     [Fact]
     public void Der_Speicherweg_lehnt_den_Auslieferungssatz_benannt_ab()
@@ -708,7 +676,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         katalogsatz.Katalogsatz = true;
 
         int gerufen = 0;
-        Aufbauen(daten: katalogsatz, ueberschreiben: (d, _) =>
+        Aufbauen(daten: katalogsatz, ueberschreiben: d =>
         {
             gerufen++;
             return new KatalogSpeicherErgebnis(true, "geschrieben", d.Bezeichner);
@@ -718,6 +686,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
                                               .Speichern().GetAwaiter().GetResult();
 
         Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
+        Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, abgelehnt.Text);
         Assert.Equal(0, gerufen);
     }
 
@@ -733,7 +702,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     public void Teillastfelder_landen_im_Feldsatz()
     {
         BhkwKatalogDaten? geschrieben = null;
-        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        var cut = Aufbauen(ueberschreiben: d =>
         {
             geschrieben = d;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -760,7 +729,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     public void Ein_Teillastwirkungsgrad_ueber_eins_wird_nicht_geschrieben()
     {
         int gerufen = 0;
-        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        var cut = Aufbauen(ueberschreiben: d =>
         {
             gerufen++;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);

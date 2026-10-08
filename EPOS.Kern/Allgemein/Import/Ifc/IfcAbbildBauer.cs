@@ -699,7 +699,9 @@ namespace WindowsFormsApplication1
         /// Elemente ohne Darstellung desselben Gebäudes, deren Name der des Körpers ist oder ihn um „-n“ ergänzt (HottCAD
         /// schreibt so je Raum einen Teil mit eigenem Mengensatz, der Körper trägt das ganze Bauteil), werden die Körper
         /// gegen die Summe aller Mengensätze verglichen (Meldung <c>KOERPER_ABWEICHUNG_TEILE</c>, Info
-        /// <c>KOERPER_TEILE_*</c> je Bauteilart).</item>
+        /// <c>KOERPER_TEILE_*</c> je Bauteilart). Tragen die Teile einen anderen Namensstamm als der Körper, gilt die eine
+        /// passende Teilgruppe nach <see cref="FremdnamigeTeile"/>; bleiben die gleichnamigen Teile unter dem Körper, zählen
+        /// gleichnamige Teile anderer Klassen nach <see cref="FremdklassigeTeile"/> dazu.</item>
         /// <item><b>Zusammenfassung</b> (G5-N): Jede Abweichung über <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> zählt in
         /// eine Info je Bauteilart (Außenwand, Innenwand, Dach, Boden und Decke, sonstige; <c>KOERPER_ABWEICHUNGEN_*</c>):
         /// Anzahl, Median und größte Abweichung samt Bauteil. Eine Warnung je Bauteil steht erst ab
@@ -723,6 +725,7 @@ namespace WindowsFormsApplication1
             var gruppen = new Dictionary<(int, string, string), List<AbbildBauteil>>();
             var restgruppen = new Dictionary<(int, string, string), List<AbbildBauteil>>();
             var schwerpunkte = new Dictionary<int, double[]>();
+            var ohneTeile = new List<(AbbildBauteil Bauteil, int Gebaeude, string Name)>();
             foreach ((AbbildBauteil b, List<Dateikoerper> koerper, Bauteilkoerperart art, int gi) in _koerperVormerkung)
             {
                 // 17.5: Ein aus Flächen gebildeter Körper ist kein unabhängiger Beleg — kein Körpervergleich gegen den Mengensatz
@@ -750,7 +753,7 @@ namespace WindowsFormsApplication1
                         mitKoerper.Add(b);
                         continue;
                     }
-                    KoerperVergleichen(P + "KOERPER_ABWEICHUNG", name, b.Art, new[] { b }, kf.FlaecheM2);
+                    ohneTeile.Add((b, gi, name));
                     continue;
                 }
                 if (b.Name != null)
@@ -791,10 +794,28 @@ namespace WindowsFormsApplication1
                 foreach (AbbildBauteil o in b.Oeffnungen)
                     if (o.NeigungGrad == neigungAlt) o.NeigungGrad = b.NeigungGrad;
             }
+            // Körper mit Mengensatz ohne gleichnamige Teile: gegen den eigenen Mengensatz, sonst gegen eine fremdnamige Teilgruppe.
+            var vergeben = new HashSet<(int, string, string)>();
+            foreach ((AbbildBauteil b, int gi, string name) in ohneTeile)
+            {
+                if (FremdnamigeTeile(b, gi, teile, vergeben) is (int, string, string) fremd)
+                {
+                    vergeben.Add(fremd);
+                    List<AbbildBauteil> alle = new[] { b }.Concat(teile[fremd]).ToList();
+                    _koerperMitTeilen.Add(b.Art);
+                    KoerperVergleichen(P + "KOERPER_ABWEICHUNG_TEILE", name, b.Art, alle, b.Koerperflaeche.FlaecheM2, alle.Count - 1);
+                }
+                else KoerperVergleichen(P + "KOERPER_ABWEICHUNG", name, b.Art, new[] { b }, b.Koerperflaeche.FlaecheM2);
+            }
             // Die Bauteile mit Teilen ohne Darstellung: alle Körper gegen alle Mengensätze (Reihenfolge der Körper).
             foreach (KeyValuePair<(int, string, string), List<AbbildBauteil>> gr in gruppen)
             {
                 List<AbbildBauteil> alle = gr.Value.Concat(teile[gr.Key]).ToList();
+                foreach ((int, string, string) fremd in FremdklassigeTeile(gr.Key, alle, gr.Value.Sum(x => x.Koerperflaeche.FlaecheM2), teile, vergeben))
+                {
+                    vergeben.Add(fremd);
+                    alle.AddRange(teile[fremd]);
+                }
                 string stamm = gr.Key.Item3;
                 _koerperMitTeilen.Add(gr.Value[0].Art);
                 KoerperVergleichen(P + "KOERPER_ABWEICHUNG_TEILE", stamm, gr.Value[0].Art, alle, gr.Value.Sum(b => b.Koerperflaeche.FlaecheM2),
@@ -1051,6 +1072,62 @@ namespace WindowsFormsApplication1
         {
             int strich = name.LastIndexOf('-');
             return strich > 0 && strich < name.Length - 1 && name.Skip(strich + 1).All(c => c >= '0' && c <= '9') ? name.Substring(0, strich) : name;
+        }
+
+        /// <summary>
+        /// <b>Teile ohne Darstellung unter fremdem Namen</b> (Prüfpunkt nach G5-N): HottCAD benennt den Körper einer Geschossplatte
+        /// mitunter nach einem anderen Geschosskürzel als ihre Teile je Raum (Körper „… UG1“, Teile „… KG1-n“). Weicht der Körper
+        /// eines Bauteils mit Mengensatz ohne gleichnamige Teile um mehr als <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> nach
+        /// oben ab, gilt als seine Teilgruppe die <b>eine</b> Gruppe von Teilen ohne Darstellung desselben Gebäudes, derselben
+        /// Klasse und derselben Bauteilart, deren Namensstamm keinem Körper gehört, die noch nicht vergeben ist und mit der der
+        /// eigene Mengensatz den Körper bis auf <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> deckt (brutto oder netto).
+        /// Passen keine oder mehrere Gruppen, bleibt der Vergleich gegen den eigenen Mengensatz. Nur der Vergleich ändert sich —
+        /// jedes Teil behält seinen Mengensatz, die Flächen bleiben.
+        /// </summary>
+        private (int, string, string)? FremdnamigeTeile(AbbildBauteil b, int gi, ILookup<(int, string, string), AbbildBauteil> teile,
+                                                       HashSet<(int, string, string)> vergeben)
+        {
+            double koerper = b.Koerperflaeche.FlaecheM2, brutto = b.BruttoflaecheM2.Value, netto = b.NettoflaecheM2 ?? brutto;
+            if (koerper <= brutto || IfcBauteilkoerper.Abweichung(brutto, koerper) <= IfcBauteilkoerper.ABWEICHUNG_GRENZE) return null;
+            var mitKoerper = new HashSet<string>(_koerperVormerkung.Where(v => v.Gebaeude == gi && v.Bauteil.Quelltyp == b.Quelltyp && v.Bauteil.Name != null)
+                                                                   .Select(v => Namensstamm(v.Bauteil.Name)), StringComparer.Ordinal);
+            List<(int, string, string)> passend = teile
+                .Where(g => g.Key.Item1 == gi && g.Key.Item2 == b.Quelltyp && !mitKoerper.Contains(g.Key.Item3) && !vergeben.Contains(g.Key)
+                            && g.All(t => t.Art == b.Art && t.BruttoflaecheM2.HasValue))
+                .Where(g => Math.Min(IfcBauteilkoerper.Abweichung(brutto + g.Sum(t => t.BruttoflaecheM2.Value), koerper),
+                                     IfcBauteilkoerper.Abweichung(netto + g.Sum(t => t.NettoflaecheM2 ?? t.BruttoflaecheM2.Value), koerper))
+                            <= IfcBauteilkoerper.ABWEICHUNG_GRENZE)
+                .Select(g => g.Key).ToList();
+            return passend.Count == 1 ? passend[0] : ((int, string, string)?)null;
+        }
+
+        /// <summary>
+        /// <b>Gleichnamige Teile einer anderen Klasse</b> (Prüfpunkt nach G5-N): HottCAD schreibt die Teile je Raum einer
+        /// Geschossplatte mitunter teils als <c>IfcSlab</c>, teils als <c>IfcRoof</c> — gleicher Namensstamm, gleiches Gebäude.
+        /// Bleibt die Summe der Mengensätze der eigenen Klasse um mehr als <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/>
+        /// unter dem Körper, zählen die Teilgruppen ohne Darstellung desselben Gebäudes und Namensstamms aus anderen Klassen
+        /// dazu, deren Stamm in ihrer Klasse keinem Körper gehört und die noch nicht vergeben sind — alle zusammen und nur,
+        /// wenn jedes Teil einen Mengensatz trägt und die Summe danach den Körper um höchstens
+        /// <see cref="IfcBauteilkoerper.ABWEICHUNG_GRENZE"/> übersteigt: Die Teile füllen auf, sie überdecken nicht. Nur der
+        /// Vergleich ändert sich — jedes Teil behält seinen Mengensatz und seine Art, die Flächen bleiben.
+        /// </summary>
+        private List<(int, string, string)> FremdklassigeTeile((int, string, string) schluessel, List<AbbildBauteil> eigene, double koerper,
+                                                               ILookup<(int, string, string), AbbildBauteil> teile, HashSet<(int, string, string)> vergeben)
+        {
+            var keine = new List<(int, string, string)>();
+            if (eigene.Any(x => !x.BruttoflaecheM2.HasValue)) return keine;
+            double summe = eigene.Sum(x => x.BruttoflaecheM2.Value);
+            if (koerper <= summe || IfcBauteilkoerper.Abweichung(summe, koerper) <= IfcBauteilkoerper.ABWEICHUNG_GRENZE) return keine;
+            (int gi, string klasse, string stamm) = schluessel;
+            var mitKoerper = new HashSet<(string, string)>(_koerperVormerkung.Where(v => v.Gebaeude == gi && v.Bauteil.Name != null)
+                                                                             .Select(v => (v.Bauteil.Quelltyp, Namensstamm(v.Bauteil.Name))));
+            List<(int, string, string)> fremd = teile
+                .Where(g => g.Key.Item1 == gi && g.Key.Item3 == stamm && g.Key.Item2 != klasse && !vergeben.Contains(g.Key)
+                            && !mitKoerper.Contains((g.Key.Item2, g.Key.Item3)))
+                .Select(g => g.Key).OrderBy(k => k.Item2, StringComparer.Ordinal).ToList();
+            if (fremd.Count == 0 || fremd.SelectMany(k => teile[k]).Any(t => !t.BruttoflaecheM2.HasValue)) return keine;
+            double neu = summe + fremd.SelectMany(k => teile[k]).Sum(t => t.BruttoflaecheM2.Value);
+            return neu <= koerper || IfcBauteilkoerper.Abweichung(neu, koerper) <= IfcBauteilkoerper.ABWEICHUNG_GRENZE ? fremd : keine;
         }
 
         /// <summary>
@@ -2027,6 +2104,10 @@ namespace WindowsFormsApplication1
                 if (uebersprungen.Contains(e.EntityLabel)) continue;
                 Bauteil(e, klasse);
             }
+            if (_dachUAusPlatten.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_UWERT_PLATTEN", Ganz(_dachUAusPlatten.Count), Beispiele(_dachUAusPlatten)));
+            if (_dachAufbauAusPlatten.Count > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_AUFBAU_PLATTEN", Ganz(_dachAufbauAusPlatten.Count), Beispiele(_dachAufbauAusPlatten)));
             Koerperflaechen();
             OeffnungenNachLage();
             Oeffnungsabzug();
@@ -2403,6 +2484,10 @@ namespace WindowsFormsApplication1
 
             bool uNichtPositiv = UWert(e, satz, b);
             b.Aufbau = Aufbau(e, out IIfcMaterialLayerSetUsage nutzung);
+            // Ein zerlegtes Dach mit Mengensatz ohne eigenen U-Wert bzw. Aufbau erbt ihn von seinen Platten.
+            IIfcElement schichtelement = e;
+            if (e is IIfcRoof zerlegt && PlattenErbe(zerlegt, b, ref nutzung) is IIfcElement aufbauPlatte) schichtelement = aufbauPlatte;
+            if (b.UWertWm2K.HasValue) uNichtPositiv = false;
 
             // Ohne Raumgrenzen im ganzen Gebäude: die Raumbezüge (IfcRelReferencedInSpatialStructure, Mehrzonenkonzept 6.5).
             // Ein Bauteil mit U-Wert null oder kleiner und ohne Aufbau bewertet die Datei nicht (eine Bodenöffnung, ein
@@ -2425,7 +2510,7 @@ namespace WindowsFormsApplication1
             b.InnenEinseitig = ohneGrenzen && e is IIfcWall && rand == Randbedingung.Innen && b.Nachbarn.Count == 0;
 
             if (senkrecht) Azimut(e, b, grenzen, gi);
-            if (b.Aufbau != null) Schichtfolge(e, b, nutzung, grenzen, gi);
+            if (b.Aufbau != null) Schichtfolge(schichtelement, b, nutzung, grenzen, gi);
 
             // Stufe G6c: die Raumgrenzen je Seite, Dicke und Geschoss — der Eingang der Zonierung.
             GrenzenUebernehmen(b, grenzen);
@@ -3375,6 +3460,115 @@ namespace WindowsFormsApplication1
         /// <returns>Bleibt das Bauteil ohne U-Wert, weil die Datei ihn null oder kleiner angibt?</returns>
         private bool UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
+            (IfcFund gewaehlt, double? u, string nichtPositiv, List<string> abweichend) = UWertWaehlen(e, satz);
+            foreach (string a in abweichend.Distinct())
+            {
+                if (!_uEinheit.TryGetValue(a, out int[] z)) _uEinheit[a] = z = new int[2];
+                z[0]++;
+                if (gewaehlt == null) z[1]++;
+            }
+            if (gewaehlt == null && nichtPositiv != null) Zaehlen(_uNichtPositiv, nichtPositiv);
+            if (gewaehlt == null) return nichtPositiv != null;
+            if (!(IfcEigenschaften.Gleich(gewaehlt.Satz, satz) && gewaehlt.Eigenschaft.Name.ToString().Trim()
+                      .Equals("ThermalTransmittance", StringComparison.OrdinalIgnoreCase)))
+                Zaehlen(_uRueckfall, gewaehlt.Satz + "\u0001" + gewaehlt.Eigenschaft.Name);
+            _abbild.ZahlUWerte++;
+            b.UWertWm2K = u;
+            b.UWertQuelle = UWertBeleg(gewaehlt);
+            return false;
+        }
+
+        /// <summary>Zerlegte Dächer, die den U-Wert bzw. den Aufbau ihrer Platten übernommen haben (<see cref="PlattenErbe"/>).</summary>
+        private readonly List<string> _dachUAusPlatten = new List<string>(), _dachAufbauAusPlatten = new List<string>();
+
+        /// <summary>
+        /// <b>Das Erbe der Platten eines zerlegten Dachs</b>: Ein <c>IfcRoof</c> mit Mengensatz ist das Bauteil, seine Platten
+        /// (<c>IfcSlab</c> über <c>IfcRelAggregates</c>) sind es nicht (3.4, Zeile Dach) — U-Wert und Aufbau tragen aber oft nur
+        /// sie.
+        /// <list type="bullet">
+        /// <item><b>U-Wert:</b> Trägt das Dach keinen, gilt der U-Wert der Platten, nach ihrer Fläche gewichtet (Mengensatz der
+        /// Platte, sonst ihr Körper; fehlt einer Platte die Fläche, zu gleichen Teilen) — nur, wenn jede Platte einen trägt.
+        /// Beleg: die Sätze der Platten mit „(Platten)“; Info <c>DACH_UWERT_PLATTEN</c>, und liegen die Platten um mehr als
+        /// <see cref="GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS"/> auseinander, je Dach die Spanne
+        /// (<c>DACH_UWERT_SPANNE</c>, I). Trägt das Dach einen eigenen, gilt er; weicht eine Platte um mehr als dieselbe
+        /// Grenze ab, nur eine Info (<c>DACH_UWERT_EIGEN</c>).</item>
+        /// <item><b>Aufbau:</b> Trägt das Dach keinen, gilt der Aufbau der Platten, wenn jede einen trägt und alle gleich
+        /// sind (Name, Baustoffe und Dicken der Schichten); die Schichtrichtung dann aus der ersten Platte. Verschiedene
+        /// Aufbauten bleiben ungeerbt — der U-Wert deckt das Dach.</item>
+        /// </list>
+        /// </summary>
+        /// <returns>Die Platte, deren Aufbau das Dach geerbt hat (für die Schichtrichtung); sonst <c>null</c>.</returns>
+        private IIfcElement PlattenErbe(IIfcRoof dach, AbbildBauteil b, ref IIfcMaterialLayerSetUsage nutzung)
+        {
+            List<IIfcSlab> platten = Teile(dach).OfType<IIfcSlab>().ToList();
+            if (platten.Count == 0) return null;
+            string name = b.Name ?? b.Kennung;
+            var werte = platten.Select(t => UWertWaehlen(t, "Pset_SlabCommon")).ToList();
+            if (werte.All(w => w.U.HasValue))
+            {
+                double min = werte.Min(w => w.U.Value), max = werte.Max(w => w.U.Value);
+                if (b.UWertWm2K is double eigen)
+                {
+                    if (werte.Any(w => Math.Abs(w.U.Value / eigen - 1.0) > GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS))
+                        _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_UWERT_EIGEN", name, Zahl(eigen),
+                                                               Ganz(platten.Count), Zahl(min), Zahl(max)));
+                }
+                else
+                {
+                    List<double?> flaechen = platten.Select(Plattenflaeche).ToList();
+                    bool gewichtet = flaechen.All(f => f > 0.0);
+                    double summe = 0.0, gewicht = 0.0;
+                    for (int i = 0; i < platten.Count; i++)
+                    {
+                        double a = gewichtet ? flaechen[i].Value : 1.0;
+                        summe += a * werte[i].U.Value;
+                        gewicht += a;
+                    }
+                    b.UWertWm2K = summe / gewicht;
+                    b.UWertQuelle = string.Join(", ", werte.Select(w => UWertBeleg(w.Gewaehlt)).Distinct(StringComparer.Ordinal)) + " (Platten)";
+                    _abbild.ZahlUWerte++;
+                    _dachUAusPlatten.Add(name);
+                    if (max / min - 1.0 > GebaeudeFestwerte.UWERT_ABWEICHUNG_HINWEIS)
+                        _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "DACH_UWERT_SPANNE", name, Ganz(platten.Count),
+                                                               Zahl(min), Zahl(max), Zahl(Math.Round(b.UWertWm2K.Value, 3))));
+                }
+            }
+            if (b.Aufbau != null) return null;
+            var aufbauten = new List<(IIfcSlab Platte, AbbildAufbau Aufbau, IIfcMaterialLayerSetUsage Nutzung)>();
+            foreach (IIfcSlab t in platten)
+            {
+                AbbildAufbau a = Aufbau(t, out IIfcMaterialLayerSetUsage n);
+                if (a == null) return null;
+                aufbauten.Add((t, a, n));
+            }
+            if (aufbauten.Select(x => Aufbausignatur(x.Aufbau)).Distinct(StringComparer.Ordinal).Count() != 1) return null;
+            b.Aufbau = aufbauten[0].Aufbau;
+            nutzung = aufbauten[0].Nutzung;
+            _dachAufbauAusPlatten.Add(name);
+            return aufbauten[0].Platte;
+        }
+
+        /// <summary>Die Fläche einer Dachplatte: Mengensatz, sonst ein Flächenname eines beliebigen Satzes, sonst ihr Körper.</summary>
+        private double? Plattenflaeche(IIfcSlab t)
+            => Positiv(IfcEigenschaften.Menge(_bezuege, t, "Slab", "GrossArea", _einheiten))
+               ?? Positiv(IfcEigenschaften.MengeRueckfall(_bezuege, t, RUECKFALL_BAUTEIL_BRUTTO, _einheiten, out _, out _))
+               ?? (Rechenkoerper(t) is Dateikoerper k ? IfcBauteilkoerper.Auswerten(k, Bauteilkoerperart.PlatteOben, null, _drehung)?.FlaecheM2 : null);
+
+        /// <summary>Name, Baustoffe und Dicken der Schichten eines Aufbaus — gleiche Signatur heißt gleicher Aufbau.</summary>
+        private static string Aufbausignatur(AbbildAufbau a)
+            => (a.Name ?? "") + "\u0002" + string.Join("\u0001", a.Schichten.Select(x => x.BaustoffKennung + "|"
+                   + (x.DickeM.HasValue ? Zahl(Math.Round(x.DickeM.Value, 6)) : "-")));
+
+        /// <summary>Der Beleg eines gewählten U-Werts: der Satz, vom Typ mit „(Typ)“.</summary>
+        private static string UWertBeleg(IfcFund gewaehlt)
+            => gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
+
+        /// <summary>
+        /// Die Wahl des U-Werts nach <see cref="UWert"/> ohne Zählung und Meldung: der gewählte Fund samt Wert (oder keiner),
+        /// der erste Wert null oder kleiner und die Angaben mit fremder Einheit.
+        /// </summary>
+        private (IfcFund Gewaehlt, double? U, string NichtPositiv, List<string> Abweichend) UWertWaehlen(IIfcElement e, string satz)
+        {
             IfcFund gewaehlt = null;
             double? u = null;
             string nichtPositiv = null;
@@ -3407,21 +3601,7 @@ namespace WindowsFormsApplication1
                 gewaehlt = f;
                 break;
             }
-            foreach (string a in abweichend.Distinct())
-            {
-                if (!_uEinheit.TryGetValue(a, out int[] z)) _uEinheit[a] = z = new int[2];
-                z[0]++;
-                if (gewaehlt == null) z[1]++;
-            }
-            if (gewaehlt == null && nichtPositiv != null) Zaehlen(_uNichtPositiv, nichtPositiv);
-            if (gewaehlt == null) return nichtPositiv != null;
-            if (!(IfcEigenschaften.Gleich(gewaehlt.Satz, satz) && gewaehlt.Eigenschaft.Name.ToString().Trim()
-                      .Equals("ThermalTransmittance", StringComparison.OrdinalIgnoreCase)))
-                Zaehlen(_uRueckfall, gewaehlt.Satz + "\u0001" + gewaehlt.Eigenschaft.Name);
-            _abbild.ZahlUWerte++;
-            b.UWertWm2K = u;
-            b.UWertQuelle = gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
-            return false;
+            return (gewaehlt, gewaehlt == null ? null : u, nichtPositiv, abweichend);
         }
 
         /// <summary>Größte relative Abweichung, bis zu der zwei U-Werte desselben Bauteils als derselbe Wert gelten.</summary>

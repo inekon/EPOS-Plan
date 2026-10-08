@@ -2,8 +2,8 @@
 
    VORBILD. Views/BHKW/Form_DBBHKW (712 Z., NICHT lokalisiert, 58 Kartenzeilen
    in fuenf Gruppen, 13 MessageBox). Er schreibt ausschliesslich in
-   Tab_BHKW_STAMM; schreibgeschuetzte Saetze (ReadOnly) koennen nur nach
-   ausdruecklicher Rueckfrage ueberschrieben werden.
+   Tab_BHKW_STAMM; gesperrte Saetze (ReadOnly, das Schloss) werden nie
+   ueberschrieben - der Dialog lehnt benannt ab und nennt "Schloss aufheben...".
 
    ZWEI GRUPPEN, KEINE KOSTEN UND KEINE EMISSIONEN (Anwenderentscheid vom
    15.09.2026: "Der Dialog ueber Button Bearbeiten soll keine Kosten und
@@ -33,10 +33,9 @@
    ExecuteSQL gilt auch bei null betroffenen Zeilen als gelungen. Umbenannt
    wird ueber "Speichern unter", das eine Kopie anlegt.
 
-   DIE RUECKFRAGE VOR DEM UEBERSCHREIBEN eines Katalogsatzes steht als
-   Rueckfrage-Baustein im selben Fenster (iU9-W4.0). Der Vorlaeufer zeigte eine
-   MessageBox mit MessageBoxDefaultButton.Button2 - hier liegt der Fokus beim
-   Oeffnen auf dem Bereich, nicht auf "Ja" (Baustein-Regel).
+   KEINE RUECKFRAGE VOR DEM UEBERSCHREIBEN eines gesperrten Satzes: "Ueberschreiben"
+   lehnt ihn mit ADM_SCHLOSS_ERST_AUFHEBEN ab; entsperrt wird nur ueber
+   "Schloss aufheben..." in der Verwaltung.
 
    TASTATUR. Wurzel-div mit tabindex="-1", Erstfokus dort, Esc = Abbrechen.
    Enter ist nicht belegt: Drei Knoepfe schreiben sofort in den Katalog. *@
@@ -212,10 +211,6 @@
                 @onclick="BeiSpeichern">@BtnSpeichernText</button>
     </div>
 
-    @* Katalogsatz ueberschreiben: einmal ausdruecklich nachfragen. *@
-    <Rueckfrage Offen="@_schutzfrage" Frage="@FrageSchreibschutz" TitelText="@TitelSchreibschutz"
-                JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiSchutzfrage" />
-
     @* "Speichern unter": Namensabfrage im SELBEN Fenster (Risiko R2). *@
     <Ueberlagerung Offen="@_namensfrage" Titel="@BtnSpeichernUnterText"
                    Geschlossen="() => _namensfrage = false">
@@ -243,10 +238,10 @@
         = Array.Empty<(int, string)>();
 
     /// <summary>
-    /// Schreibt den geladenen Satz zurueck. Der zweite Parameter ist die Antwort auf die
-    /// Schreibschutzfrage: <c>true</c> hebt den Schutz fuer diesen Vorgang auf.
+    /// Schreibt den geladenen Satz zurueck. Einen gesperrten Satz lehnt schon der Dialog ab,
+    /// der Kern noch einmal (<c>BHKWStammCtrl.Ueberschreiben</c>).
     /// </summary>
-    [Parameter] public Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>? Ueberschreiben { get; set; }
+    [Parameter] public Func<BhkwKatalogDaten, KatalogSpeicherErgebnis>? Ueberschreiben { get; set; }
 
     /// <summary>Legt einen neuen Satz an - zweiter Parameter ist der gewuenschte Name.</summary>
     [Parameter] public Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
@@ -364,15 +359,6 @@
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
-    [Parameter] public string JaText { get; set; } = "Ja";
-    [Parameter] public string NeinText { get; set; } = "Nein";
-
-    /// <summary>Die Rueckfrage vor dem Ueberschreiben eines Auslieferungssatzes.</summary>
-    [Parameter] public string FrageSchreibschutz { get; set; } =
-        "Dieser Datensatz stammt aus dem Auslieferungskatalog und ist schreibgeschützt.\n\n" +
-        "Soll er trotzdem überschrieben werden?";
-
-    [Parameter] public string TitelSchreibschutz { get; set; } = "Schreibgeschützter Datensatz";
 
     [Parameter] public string MeldungZahlUngueltig { get; set; } =
         "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).";
@@ -391,7 +377,6 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private bool _namensfrage;
-    private bool _schutzfrage;
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -399,9 +384,6 @@
 
     /// <summary>Steht die Namensabfrage? (Pruefhilfe fuer Tests.)</summary>
     public bool Namensfrage => _namensfrage;
-
-    /// <summary>Steht die Schreibschutzfrage? (Pruefhilfe fuer Tests.)</summary>
-    public bool Schutzfrage => _schutzfrage;
 
     /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
@@ -551,24 +533,15 @@
         if (Ueberschreiben is null) return;
         if (!EingabenPruefen()) return;
 
-        // Katalogsatz: einmal ausdruecklich nachfragen und den Schutz nur fuer genau
-        // diesen Schreibvorgang aufheben.
-        if (Daten.Katalogsatz) { _schutzfrage = true; return; }
+        // Gesperrter Satz: nie ueberschreiben, benannt ablehnen und den Weg nennen.
+        if (Daten.Katalogsatz)
+        {
+            _meldung = Resource.ADM_SCHLOSS_ERST_AUFHEBEN;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
 
-        await Schreiben(false);
-    }
-
-    private async Task BeiSchutzfrage(bool? antwort)
-    {
-        _schutzfrage = false;
-        if (antwort != true) return;   // "Nein" schreibt nichts
-        await Schreiben(true);
-    }
-
-    private async Task Schreiben(bool schutzUebergehen)
-    {
-        KatalogSpeicherErgebnis ergebnis = Ueberschreiben!(Daten, schutzUebergehen);
-        await NachDemSchreiben(ergebnis);
+        await NachDemSchreiben(Ueberschreiben(Daten));
     }
 
     private async Task BeiSpeichern()
@@ -630,11 +603,9 @@
     /// </summary>
     /// <remarks>
     /// <para><b>Kein Haken „Schreibgeschützt".</b> <c>Daten.Katalogsatz</c> sagt, dass
-    /// der Satz aus der AUSLIEFERUNG stammt — er sperrt das Überschreiben aber nicht,
-    /// sondern verlangt eine ausdrückliche Rückfrage. Ein Schreibschutz auf
-    /// <c>feld_setzen</c> wäre hier also zu scharf: Er verböte ein Ändern, das die
-    /// Maske von Hand erlaubt. Abgelehnt wird stattdessen der SPEICHERWEG, und zwar
-    /// benannt.</para>
+    /// der Satz gesperrt ist — die Maske lässt Felder ändern, aber nicht zurückschreiben.
+    /// Ein Schreibschutz auf <c>feld_setzen</c> wäre also zu scharf; abgelehnt wird der
+    /// SPEICHERWEG, und zwar benannt.</para>
     /// <para><b>Der Speicherweg folgt dem MODUS</b>, genau wie die Knopfleiste: Im
     /// Modus Bearbeiten schreibt „Überschreiben" den geladenen Satz zurück, im Modus
     /// Neu legt „Speichern" ihn unter seinem Namen an. „Speichern unter" fragt einen
@@ -653,15 +624,13 @@
         if (!EingabenPruefen())
             return KiKern.KiErgebnis.Abgelehnt(_meldung);
 
-        // DER SCHREIBSCHUTZ EINES AUSLIEFERUNGSSATZES wird auf der MASKE aufgehoben
-        // und nirgends sonst: Die Rueckfrage "Schreibgeschuetzter Datensatz" ist eine
-        // ausdrueckliche Bestaetigung an genau diesem Satz. Der Assistent laesst sie
-        // nicht aus, er lehnt benannt ab.
+        // DAS SCHLOSS wird nur in der Verwaltung aufgehoben ("Schloss aufheben...");
+        // der Assistent lehnt wie die Maske benannt ab.
         if (Modus == KatalogModus.Bearbeiten && Daten.Katalogsatz)
-            return KiKern.KiErgebnis.Abgelehnt(FrageSchreibschutz);
+            return KiKern.KiErgebnis.Abgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
 
         KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
-            ? Ueberschreiben?.Invoke(Daten, false)
+            ? Ueberschreiben?.Invoke(Daten)
             : Anlegen?.Invoke(Daten, Daten.Bezeichner);
 
         if (ergebnis is null)
@@ -683,7 +652,7 @@
     /// <summary>Esc schliesst; Enter bleibt unbelegt. Die Ueberlagerungen zuerst.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || _namensfrage || _schutzfrage) return Task.CompletedTask;
+        if (e.Key != "Escape" || _namensfrage) return Task.CompletedTask;
         return Abbrechen();
     }
 }

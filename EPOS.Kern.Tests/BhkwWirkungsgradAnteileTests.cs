@@ -546,7 +546,7 @@ namespace EPOS.Kern.Tests
                     WirkungsgradEl: 0.31, WirkungsgradTh: 0.55);
 
                 BHKWStammCtrl.SpeicherErgebnis e =
-                    BHKWStammCtrl.AnzeigefelderSchreiben(name, felder, false);
+                    BHKWStammCtrl.AnzeigefelderSchreiben(name, felder);
                 Assert.True(e.Ok, e.Meldung);
 
                 // Die Spalte traegt die SUMME, nicht den alten Wert 0,50.
@@ -565,7 +565,7 @@ namespace EPOS.Kern.Tests
                     "Probe GmbH", 30.0, 15.0, 50, 80, 60,
                     WirkungsgradEl: 55.0, WirkungsgradTh: 0.55);
                 BHKWStammCtrl.SpeicherErgebnis nein =
-                    BHKWStammCtrl.AnzeigefelderSchreiben(name, abgelehnt, false);
+                    BHKWStammCtrl.AnzeigefelderSchreiben(name, abgelehnt);
                 Assert.False(nein.Ok);
                 Assert.Contains("Faktor", nein.Meldung);
                 Assert.Equal(0.86, Gesamtwert(id), 4);
@@ -605,7 +605,7 @@ namespace EPOS.Kern.Tests
                     "Probe GmbH", 30.0, 15.0, 50, 80, 60, Motortyp: "Ottomotor");
 
                 BHKWStammCtrl.SpeicherErgebnis e =
-                    BHKWStammCtrl.AnzeigefelderSchreiben(name, felder, false);
+                    BHKWStammCtrl.AnzeigefelderSchreiben(name, felder);
                 Assert.True(e.Ok, e.Meldung);
 
                 Assert.Equal(0.9216, Gesamtwert(id), 4);

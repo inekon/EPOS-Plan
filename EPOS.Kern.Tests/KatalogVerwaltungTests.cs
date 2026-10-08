@@ -926,8 +926,7 @@ namespace EPOS.Kern.Tests
             var vorher = BHKWStammCtrl.KatalogsatzAnzeige("2G 250kw.el Gas");
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw("W14a-Probe", 1, 2, 3, 4, 5);
 
-            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben("2G 250kw.el Gas", felder,
-                                                                schreibschutzUebergehen: false);
+            var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben("2G 250kw.el Gas", felder);
             Assert.False(ergebnis.Ok);
             Assert.False(string.IsNullOrEmpty(ergebnis.Meldung));
 
