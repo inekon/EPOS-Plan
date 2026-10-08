@@ -7,6 +7,14 @@
   Linux-Messlatte `Proben/ChartProben/Messlatte_*.sha256`, Tests mit den xUnit-Schaltern, Dokumentationswachen und der Referenzlauf
   gegen die in `Referenzlaeufe/LIESMICH.md` genannte aktuelle Basis (mit eigenem Build von `EPOS.Referenzlauf`). Ablage unter
   `$GATE_ABLAGE/GATE<Nr>` (Vorgabe `/tmp/gate`).
+- `gate_rest_linux.sh <Repo-Wurzel> <Ablage>` — das Gate einer Cloud-Sitzung ohne den Kern-Testlauf (rund 15 statt 80 Minuten):
+  Kern-Filter, kleine Testprojekte, Dokumentationswachen, Windows-Schale auf Linux, Designer, SQL-Dialekt, Werkzeugtests der CI,
+  BOM, Konfliktmarker und der Referenzlauf aller Projekte der aktuellen Basis samt Byte-Vergleich. Die `EPOS.Kern.Tests` und die
+  ChartProben liefert dann der Kern-Lauf der CI auf demselben Commit (Push auf den Sitzungszweig) — für Container, deren Neustart
+  den langen Testlauf beendet.
+- `kern_bloecke.sh <Repo-Wurzel> <Ablage> <Block>...` — `EPOS.Kern.Tests` in Blöcken nach Anfangsbuchstaben der Testklassen
+  (etwa `AB CD EF GH IJ K` und `LM NO PQ R S TUVWXYZ` als zwei parallele Aufrufe, zusammen rund 35 Minuten); fertige Blöcke
+  überspringt ein erneuter Aufruf. Zum Eingrenzen eines roten CI-Laufs, dessen Protokoll die Sitzung nicht laden kann.
 
 Regeln, die beide voraussetzen: Tests nie ohne die Schalter `-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2`;
 `EPOS.Referenzlauf` vor jedem Referenzlauf bauen; das Bildmaß der Windows-Liste gilt nur auf Windows. Kommen Probebilder
