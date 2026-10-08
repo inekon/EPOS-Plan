@@ -207,7 +207,7 @@ namespace Gebaeudevergleich.Tests
             // 1017 (und jedes gekühlte Basisgebäude): U-KU und die Kälte des Laufs.
             Dictionary<string, string> k = a.Zeile(1017, 10599);
             Assert.Contains("U-KU", k["Regeln"].Split(' '));
-            Relativ(4.08260404, Werkzeuglauf.Zahl(k["Kaelte_neu_MWh"]), "1017 Kälte"); // Basis R34 (Erdreichwiderstand)
+            Relativ(4.05051694, Werkzeuglauf.Zahl(k["Kaelte_neu_MWh"]), "1017 Kälte"); // Basis R43 (Zonensperre; R42 4,08260404)
             Assert.Contains("U-ERD", k["Regeln"].Split(' '));
             foreach ((int projekt, int i, Dictionary<string, string> agg) in BasisGebaeude())
             {
