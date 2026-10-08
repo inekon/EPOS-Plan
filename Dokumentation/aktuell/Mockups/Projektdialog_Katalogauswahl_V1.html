@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Katalogauswahl V1: Gerahmt und gestapelt</title>
+<meta name="description" content="Mockup V1 zum Konzept Projektdialoge Katalogauswahl: Dieselbe Reihenfolge wie heute, aber zwei gerahmte Bereiche mit eigener Kopfleiste; der Dialog rollt nicht, die Höhen teilt ein Raster, der gewählte Satz ist eine einklappbare Zeile unten.">
+<!--
+  MOCKUP V1 "Gerahmt und gestapelt" zum Konzept
+  Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md (Kennungen KA-...).
+
+  ANLASS: Anwenderauftrag vom 08.10.2026 mit Bildschirmfoto der Projektdialog-Verwaltung
+  "Verwaltung BHKW": "Dieser Dialog ist sehr unuebersichtlich mit Scrollbar in Scrollbar."
+  Gefordert: Funktionalitaet wie bisher, Zuordnung DB -> Projekt uebersichtlicher, klare
+  Zuordnung der Knoepfe zu den Bereichen Projekt und Datenbank, geeignet fuer alle aehnlichen
+  Dialoge; fuenf Varianten zur Wahl.
+
+  GELTUNGSBEREICH: die zwoelf Projektdialoge auf dem Baustein Zweispaltenauswahl (BHKW,
+  Heizkessel, Pufferspeicher, Stromspeicher, Photovoltaik, Solarkollektoren, Waermepumpe,
+  Gebaeude, Bedarfsprofile, Waermebedarf extern, Strom- und Solarganglinie) und die
+  Katalogauswahl der Kaeltemaschine. Gezeigt ist der BHKW-Dialog; die Randnotiz (Knopf oben
+  rechts) sagt, wie die dialogeigenen Teile hineinpassen. Die Verwaltungen (Konzept
+  Administrationsdialoge) sind nicht Gegenstand.
+
+  FENSTER: Der Dialog fuellt das Fenster (1 280 x 800, klein 1 280 x 720) abzueglich des
+  gestrichelten Mockup-Streifens. Der Dialogkoerper rollt NICHT; rollen duerfen nur die
+  Listen und die Detailflaeche, jede fuer sich und nie ineinander. Zeilenhoehe 46 px
+  (Konzept Administrationsdialoge V4), Knoepfe 44 px (--epos-touchziel).
+
+  FARBEN UND MASSE woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root); keine neue Farbe. Die
+  drei Kennfarben sind Verweise auf vorhandene Token: Projekt = --epos-schema-versorgung,
+  Katalog = --epos-quelle-rahmen, gewaehlter Satz = --epos-senke-rahmen. Mockup-Zeichen:
+  der rot gestrichelte Streifen oben und die Randnotiz.
+
+  KEINE HERSTELLER- UND PRODUKTDATEN: "BHKW 50 kW Erdgas", "Hersteller A"; alle Werte rund
+  und erfunden. Eigenstaendig: kein CDN, ein kleines Skript fuer Auswahl und Aufklapper.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-schriftgroesse-kartentitel: 16px;
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-rahmen: #D85A30;
+    --epos-senke-text: #993C1D;
+    --epos-badge-flaeche: #FAECE7;
+    --epos-badge-text: #712B13;
+    --epos-schema-versorgung: #1D9E75;
+    --epos-stufe-fehler: rgb(176, 0, 32);
+    --epos-ampel-gruen: #007800;
+    --epos-ampel-gruen-flaeche: rgb(236, 248, 239);
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+    --epos-flaeche-gedaempft: #efefef;
+    --epos-menue-marke: #d9e8f7;
+
+    /* Kennfarben des Mockups - Verweise, keine neuen Farben */
+    --mk-projekt: var(--epos-schema-versorgung);
+    --mk-projekt-flaeche: var(--epos-ampel-gruen-flaeche);
+    --mk-katalog: var(--epos-quelle-rahmen);
+    --mk-katalog-text: var(--epos-quelle-text);
+    --mk-katalog-flaeche: var(--epos-karte-flaeche-hover);
+    --mk-satz: var(--epos-senke-rahmen);
+    --mk-satz-text: var(--epos-senke-text);
+    --mk-satz-flaeche: var(--epos-badge-flaeche);
+    --mk-zeile: 46px;
+    --mk-streifen: 30px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { font: var(--epos-schriftgroesse)/1.35 var(--epos-schrift); color: var(--epos-text); background: var(--epos-karte-flaeche); }
+
+/* ---- Mockup-Streifen (Mockup-Zeichen) ---- */
+.mk-streifen { height: var(--mk-streifen); display: flex; align-items: center; gap: 14px; padding: 0 16px;
+    border-bottom: 1px dashed var(--epos-stufe-fehler); background: var(--epos-flaeche-gedaempft); font-size: 12px; white-space: nowrap; }
+.mk-streifen b { color: var(--epos-stufe-fehler); }
+.mk-legende { display: flex; gap: 12px; align-items: center; }
+.mk-legende span::before { content: ""; display: inline-block; width: 14px; height: 10px; margin-right: 4px; vertical-align: -1px; border-left: 4px solid; }
+.mk-leg-proj::before { border-color: var(--mk-projekt) !important; background: var(--mk-projekt); }
+.mk-leg-kat::before { border-color: var(--mk-katalog) !important; background: var(--mk-katalog); }
+.mk-leg-satz::before { border-color: var(--mk-satz) !important; background: var(--mk-satz); }
+.mk-notizknopf { margin-left: auto; font: inherit; font-size: 12px; padding: 2px 10px; border: 1px dashed var(--epos-stufe-fehler); background: var(--epos-karte-flaeche); border-radius: var(--epos-ecke); cursor: pointer; }
+.mk-notiz { display: none; position: fixed; z-index: 50; top: calc(var(--mk-streifen) + 6px); right: 16px; width: 440px;
+    max-height: calc(100vh - var(--mk-streifen) - 24px); overflow: auto; padding: 10px 14px; background: var(--epos-karte-flaeche);
+    border: 1px dashed var(--epos-stufe-fehler); border-radius: var(--epos-ecke); box-shadow: 0 6px 24px rgba(15, 31, 61, 0.25); }
+body.mk-notiz-offen .mk-notiz { display: block; }
+.mk-notiz h2 { font-size: 13px; margin: 4px 0 6px; color: var(--epos-stufe-fehler); }
+.mk-notiz ul { margin: 0; padding-left: 18px; } .mk-notiz li { margin: 3px 0; }
+
+/* ---- Dialog: Kopf | Inhalt | Fuss, der Koerper rollt nicht ---- */
+.epos-dialog { height: calc(100vh - var(--mk-streifen) - 1px); display: grid; grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px; padding: 10px var(--epos-karte-rand) 10px; overflow: hidden; }
+.epos-dialog-kopf { display: flex; align-items: center; gap: var(--epos-rand); padding-bottom: 6px; border-bottom: 1px solid var(--epos-rahmen-leise); }
+.epos-dialog-titel { margin: 0; font-size: var(--epos-schriftgroesse-kartentitel); font-weight: 700; color: var(--epos-karte-titel); }
+.mk-kontext { flex: 1 1 auto; color: var(--epos-text-leise); font-weight: 600; }
+.mk-info, .mk-ki, .mk-zu { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--epos-rahmen); background: var(--epos-karte-flaeche);
+    font: italic 700 13px/1 Georgia, serif; color: var(--epos-quelle-text); cursor: pointer; flex: 0 0 auto; }
+.mk-ki { font: 700 11px/1 var(--epos-schrift); }
+.mk-zu { border-radius: var(--epos-ecke); font: 15px/1 var(--epos-schrift); color: var(--epos-text); }
+.epos-dialog-fuss { display: flex; gap: 8px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--epos-rahmen-leise); }
+
+/* ---- Knoepfe und Kennung ---- */
+.epos-knopf { min-height: var(--epos-touchziel); padding: 4px 12px; font: inherit; color: var(--epos-text); background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); cursor: pointer; white-space: nowrap; flex: 0 0 auto; }
+.epos-knopf--primaer { color: var(--epos-gruppenkopf-text); background: var(--epos-karte-titel); border-color: var(--epos-karte-titel); min-width: 96px; }
+.epos-knopf[aria-disabled="true"], .mk-sk[aria-disabled="true"] { color: var(--epos-text-sehr-leise); }
+.mk-leise { background: var(--epos-karte-flaeche); }
+.k-proj { border-left: 4px solid var(--mk-projekt); }
+.k-kat { border-left: 4px solid var(--mk-katalog); }
+.k-satz { border-left: 4px solid var(--mk-satz); }
+.mk-sk { width: 36px; height: 36px; margin-right: 3px; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-flaeche);
+    font: 700 15px/1 var(--epos-schrift); color: var(--epos-text); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+.mk-sk.k-proj, .mk-sk.k-kat, .mk-sk.k-satz { border-left-width: 1px; border-bottom: 3px solid; }
+.mk-sk.k-proj { border-bottom-color: var(--mk-projekt); } .mk-sk.k-kat { border-bottom-color: var(--mk-katalog); } .mk-sk.k-satz { border-bottom-color: var(--mk-satz); }
+.mk-sym, .mk-sk .mk-schloss { width: 12px; height: 14px; stroke: currentColor; fill: none; }
+.mk-sk .mk-schloss rect { fill: currentColor; }
+
+/* ---- Bereiche ---- */
+.mk-bereich { display: flex; flex-direction: column; min-height: 0; min-width: 0; border: 1px solid var(--epos-karte-rahmen);
+    border-top-width: 4px; border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); overflow: hidden; }
+.mk-bereich--projekt { border-top-color: var(--mk-projekt); }
+.mk-bereich--katalog { border-top-color: var(--mk-katalog); }
+.mk-bereich--satz { border-top-color: var(--mk-satz); }
+.mk-bereichskopf { padding: 4px 8px; min-height: 53px; }
+.mk-bereich--projekt > .mk-bereichskopf { background: var(--mk-projekt-flaeche); }
+.mk-bereich--katalog > .mk-bereichskopf { background: var(--mk-katalog-flaeche); }
+.mk-bereichsfuss { padding: 4px 8px; border-top: 1px solid var(--epos-rahmen-leise); }
+.mk-leiste { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-width: 0; }
+.mk-fueller { flex: 1 1 auto; }
+.mk-marke { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; }
+.mk-marke--projekt { color: var(--epos-gruppenkopf-text); background: var(--mk-projekt); }
+.mk-marke--katalog { color: var(--epos-gruppenkopf-text); background: var(--mk-katalog); }
+.mk-marke--satz { color: var(--epos-gruppenkopf-text); background: var(--mk-satz); }
+.mk-summe { color: var(--epos-text-leise); white-space: nowrap; } .mk-summe b { color: var(--epos-text); }
+.mk-auswahlname { font-weight: 700; white-space: nowrap; }
+.mk-leise-text { color: var(--epos-text-sehr-leise); white-space: nowrap; }
+.mk-suche input { width: 100%; height: 32px; padding: 0 8px; font: inherit; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); background: var(--epos-karte-flaeche); }
+.mk-zaehler { color: var(--epos-text-leise); white-space: nowrap; }
+.mk-chip { min-height: 32px; padding: 0 12px; border-radius: 16px; border: 1px solid var(--mk-projekt); background: var(--epos-karte-flaeche); color: var(--epos-text); font: inherit; cursor: pointer; white-space: nowrap; }
+body.mk-nur-projekt .mk-chip { background: var(--mk-projekt); color: var(--epos-gruppenkopf-text); }
+
+/* ---- Listen: die einzigen Rollbereiche ---- */
+.mk-liste { flex: 1 1 auto; min-height: 0; overflow: auto; border-top: 1px solid var(--epos-rahmen-leise); }
+.mk-rollt { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.mk-tabelle { width: 100%; border-collapse: separate; border-spacing: 0; }
+.mk-tabelle th { position: sticky; top: 0; z-index: 1; height: 34px; padding: 0 8px; text-align: left; font-weight: 600; white-space: nowrap;
+    background: var(--epos-flaeche); border-bottom: 1px solid var(--epos-rahmen); }
+.mk-tabelle td { height: var(--mk-zeile); padding: 0 8px; border-bottom: 1px solid var(--epos-rahmen-leise); white-space: nowrap; }
+.mk-tabelle tbody tr { cursor: pointer; }
+.mk-tabelle tbody tr:hover td { background: var(--epos-flaeche); }
+.mk-tabelle tr.mk-gewaehlt td { background: var(--mk-satz-flaeche); }
+.mk-tabelle tr.mk-gewaehlt td:first-child { box-shadow: inset 4px 0 0 var(--mk-satz); }
+.mk-zahl { text-align: right !important; }
+.mk-wahl { width: 52px; text-align: center !important; }
+.mk-kurz { width: 86px; text-align: center !important; }
+.mk-aktionen { width: 1%; white-space: nowrap; }
+.mk-kopfsym { color: var(--epos-text-sehr-leise); font-weight: 400; margin-left: 4px; }
+.mk-trichter { width: 9px; height: 9px; fill: var(--epos-text-sehr-leise); margin-left: 3px; }
+.mk-schloss { width: 11px; height: 13px; margin-left: 6px; vertical-align: -1px; fill: var(--epos-text-leise); stroke: var(--epos-text-leise); }
+.mk-improjekt { color: var(--mk-projekt); font-weight: 700; }
+.mk-radio, .mk-kaestchen { display: inline-block; width: 16px; height: 16px; border: 1.5px solid var(--epos-text-leise); border-radius: 50%; vertical-align: middle; }
+.mk-kaestchen { border-radius: 3px; }
+.mk-radio.mk-an { background: radial-gradient(circle, var(--epos-quelle-text) 0 4px, transparent 4.5px); border-color: var(--epos-quelle-text); }
+.mk-kaestchen.mk-an { background: var(--epos-quelle-text); border-color: var(--epos-quelle-text); box-shadow: inset 0 0 0 2px var(--epos-karte-flaeche); }
+
+/* ---- Satz (Detail) ---- */
+.mk-satzinhalt { padding: 6px 10px 10px; display: flex; flex-direction: column; gap: 8px; }
+.mk-satzinhalt > .mk-leiste { flex-wrap: wrap; }
+.v4-detail .mk-raster, .v5-detail .mk-raster, .v4-detail .mk-alle, .v5-detail .mk-alle { grid-template-columns: 1fr 1fr !important; }
+.epos-dialog[data-satzart="katalog"] .mk-satz--projekt, .epos-dialog[data-satzart="projekt"] .mk-satz--katalog { display: none !important; }
+.mk-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 14px; }
+.mk-raster--kompakt { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.mk-feld { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mk-feld--breit { grid-column: 1 / -1; }
+.mk-feldname { font-size: 11px; color: var(--epos-text-leise); }
+.mk-feldwert { min-height: 28px; padding: 4px 8px; border: 1px solid var(--epos-rahmen-leise); border-radius: 4px; background: var(--epos-flaeche); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mk-wahlfeld { color: var(--epos-text); }
+.mk-herleitung { grid-column: 1 / -1; color: var(--epos-text-leise); font-style: italic; }
+.mk-aufklapper { font: inherit; text-align: left; background: none; border: 0; border-left: 4px solid var(--mk-satz); padding: 6px 8px; cursor: pointer; color: var(--epos-text); }
+.mk-alle { display: none; } body.mk-alle-offen .mk-alle { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 14px; }
+.mk-leiste--fuss { grid-column: 1 / -1; }
+
+/* ================= V1 gerahmt und gestapelt ================= */
+.v1-inhalt { display: grid; grid-template-rows: auto minmax(150px, 1fr) auto; gap: 8px; min-height: 0; }
+body.mk-details-offen .v1-inhalt { grid-template-rows: auto minmax(250px, 1.2fr) minmax(0, 1fr); }
+.mk-liste--projekt { flex: 0 1 auto; max-height: calc(34px + 2 * var(--mk-zeile) + 2px); }
+.v1-satz .v1-zeile { display: flex; align-items: center; gap: 10px; min-height: 40px; border-left: 0; }
+.v1-details { display: none; border-top: 1px solid var(--epos-rahmen-leise); }
+body.mk-details-offen .v1-details { display: block; }
+body.mk-details-offen .v1-pfeil { transform: rotate(90deg); }
+.v1-pfeil { display: inline-block; color: var(--mk-satz); }
+.mk-satzzeile { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ================= V2 Transferliste ================= */
+.v2-inhalt { display: grid; grid-template-columns: minmax(0, 1fr) 132px 380px; grid-template-rows: minmax(0, 1fr) minmax(120px, 34%); gap: 8px; min-height: 0; }
+.v2-mitte { display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.v2-pfeil { display: flex; flex-direction: column; align-items: center; gap: 0; padding: 6px 4px; min-height: 64px; }
+.v2-pfeil span { font-size: 20px; line-height: 1; }
+.v2-satz { grid-column: 1 / -1; }
+.v2-katalog .mk-tabelle th:nth-child(3), .v2-katalog .mk-tabelle td:nth-child(3) { display: none; } /* Hersteller: Rang 2 */
+
+/* ================= V3 Schublade ================= */
+.v3-inhalt { position: relative; display: grid; grid-template-rows: minmax(0, auto) minmax(0, 1fr); gap: 8px; min-height: 0; }
+.v3-liste { flex: 0 1 auto; }
+.v3-schleier { display: none; position: absolute; inset: 0; background: rgba(15, 31, 61, 0.45); border-radius: var(--epos-ecke); z-index: 3; }
+.v3-schublade { display: none; position: absolute; top: 0; right: 0; bottom: 0; width: 790px; z-index: 4; box-shadow: -6px 0 18px rgba(15, 31, 61, 0.25); }
+body.mk-schublade-offen .v3-schleier, body.mk-schublade-offen .v3-schublade { display: flex; }
+.v3-schublade > .mk-leiste:not(.mk-bereichskopf) { padding: 4px 8px; }
+.v3-katalogsatz { flex: 0 0 auto; border-top: 3px solid var(--mk-satz); display: flex; flex-direction: column; min-height: 0; }
+.v3-katsatzkopf { border-left: 0; padding: 8px 10px; }
+.v3-katsatzrumpf { display: none; max-height: 220px; }
+body.mk-katsatz-offen .v3-katsatzrumpf { display: block; }
+
+/* ================= V4 Reiter ================= */
+.v4-inhalt { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 10px; min-height: 0; }
+.v4-links { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+.v4-reiterleiste { display: flex; gap: 4px; }
+.v4-reiter { font: inherit; min-height: 40px; padding: 4px 14px; border: 1px solid var(--epos-karte-rahmen); border-bottom: 0; border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+    background: var(--epos-flaeche); color: var(--epos-text-leise); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+body[data-reiter="projekt"] .v4-reiter--projekt, body[data-reiter="katalog"] .v4-reiter--katalog { background: var(--epos-karte-flaeche); color: var(--epos-text); font-weight: 600; position: relative; top: 1px; }
+.v4-blatt { display: none; border-top-left-radius: 0; }
+body[data-reiter="projekt"] .v4-blatt--projekt, body[data-reiter="katalog"] .v4-blatt--katalog { display: flex; }
+
+/* ================= V5 eine Liste ================= */
+.v5-inhalt { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 10px; min-height: 0; }
+.v5-liste-bereich { border-top-color: var(--epos-karte-rahmen); }
+.v5-gruppe td { height: 30px; font-size: 12px; background: var(--epos-flaeche); }
+.v5-gruppe--projekt td { background: var(--mk-projekt-flaeche); border-bottom-color: var(--mk-projekt); }
+.v5-gruppe--katalog td { background: var(--mk-katalog-flaeche); }
+.v5-projekt tr { position: sticky; z-index: 1; }
+.v5-projekt tr:nth-child(1) { top: 34px; } .v5-projekt tr:nth-child(2) { top: 64px; } .v5-projekt tr:nth-child(3) { top: 110px; }
+.v5-pzeile td { background: var(--mk-projekt-flaeche); }
+.v5-pzeile td:first-child { box-shadow: inset 4px 0 0 var(--mk-projekt); }
+.v5-projekt tr:last-child td { border-bottom: 2px solid var(--mk-projekt); }
+body.mk-nur-projekt .v5-katalog { display: none; }
+</style>
+</head>
+<body data-reiter="katalog" class="">
+<div class="mk-streifen">
+  <b>Mockup V1 · Gerahmt und gestapelt</b>
+  <span class="mk-legende"><span class="mk-leg-proj">Projekt – ändert die Projektliste</span><span class="mk-leg-kat">Katalog – Datenbank als Liste</span><span class="mk-leg-satz">Gewählter Satz – seine Daten</span></span>
+  <button class="mk-notizknopf" data-klasse="mk-notiz-offen">Randnotiz: andere Dialoge</button>
+</div>
+<aside class="mk-notiz" aria-label="Randnotiz">
+  <h2>V1 in den übrigen Projektdialogen</h2>
+  <p>Dieselbe Reihenfolge wie heute, aber zwei gerahmte Bereiche mit eigener Kopfleiste; der Dialog rollt nicht, die Höhen teilt ein Raster, der gewählte Satz ist eine einklappbare Zeile unten.</p>
+  <ul><li><b>Summe kWth/kWp</b> steht im Kopf des Projektrahmens, rechts neben der Modulzahl.</li>
+<li><b>Stückzahl</b> (PV-Module, Kollektoren) wird eine Spalte der Projektliste und ein Feld im Projektsatz.</li>
+<li><b>PV-Stränge und Wechselrichter</b> gehen als Gruppe in die aufgeklappte Satzzeile; die Strangtabelle öffnet über „Stränge…“ als Überlagerung, weil die Zeile zu niedrig ist.</li>
+<li><b>Kosten</b> stehen im Projektsatz (aufgeklappt) – sie wirken auf die gewählte Projektzeile.</li>
+<li><b>Vergleichen, Import…, Speichern unter…</b> (Zeitreihen), <b>Baustoffzuordnungen…</b> (Gebäude) stehen im Fuß des Katalograhmens; „In DB übernehmen“ des Gebäudes im Kopf des Projektrahmens.</li>
+<li><b>Verwaltungsbetriebsart</b> (nur Katalog): Der Projektrahmen entfällt, der Katalog erbt die Höhe.</li>
+<li><b>Grenze:</b> Bei 720 px Höhe bleiben dem Katalog rund drei Zeilen; aufgeklappte Details nehmen ihm weitere.</li></ul>
+</aside>
+
+<div class="epos-dialog" data-satzart="katalog" tabindex="-1">
+  <div class="epos-dialog-kopf">
+    <h1 class="epos-dialog-titel">Verwaltung BHKW</h1>
+    <span class="mk-kontext">Geben Sie Daten zu BHKW ein</span>
+    <button class="mk-info" title="Hilfe">i</button><button class="mk-ki" title="KI-Assistent">KI</button>
+    <button class="mk-zu" title="Schließen (Esc)">✕</button>
+  </div>
+
+<div class="v1-inhalt">
+  <section class="mk-bereich mk-bereich--projekt" aria-label="Im Projekt">
+    <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--projekt">Im Projekt</span><strong>2 Module</strong>
+      <span class="mk-summe">Summe aller ausgewählten Module <b>190 kWth</b></span><span class="mk-fueller"></span>
+      <button class="epos-knopf k-proj">▼ Aus dem Projekt entfernen</button></div>
+    <div class="mk-liste mk-liste--projekt"><table class="mk-tabelle mk-tabelle--projekt"><thead><tr><th class="mk-wahl">Wahl</th><th>Ausgewählte Module</th><th>Hersteller</th><th>Energieträger</th><th class="mk-zahl">P_el [kW]</th><th class="mk-zahl">P_th [kW]</th><th class="mk-zahl">VL/RL [°C]</th></tr></thead><tbody><tr data-satz="BHKW 50 kW Erdgas" data-art="projekt"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 50 kW Erdgas</td><td>Hersteller A</td><td>Erdgas – Variante 1</td><td class="mk-zahl">20</td><td class="mk-zahl">50</td><td class="mk-zahl">80/60</td></tr><tr data-satz="BHKW 140 kW Erdgas" data-art="projekt"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 140 kW Erdgas</td><td>Hersteller E</td><td>Erdgas – Variante 1</td><td class="mk-zahl">70</td><td class="mk-zahl">140</td><td class="mk-zahl">80/60</td></tr></tbody></table></div>
+  </section>
+  <section class="mk-bereich mk-bereich--katalog" aria-label="Katalog (Datenbank)">
+    <div class="mk-leiste mk-bereichskopf"><span class="mk-marke mk-marke--katalog">Katalog (Datenbank)</span><label class="mk-suche" style="width:16rem"><input type="search" placeholder="Suche (* und ? erlaubt)"></label><span class="mk-zaehler">79 von 79 Sätzen</span><button class="epos-knopf mk-leise k-kat">Filter zurücksetzen</button><span class="mk-fueller"></span>
+      <button class="epos-knopf k-proj">▲ In das Projekt übernehmen</button></div>
+    <div class="mk-liste"><table class="mk-tabelle"><thead><tr><th class="mk-wahl">Wahl</th><th>Bezeichner <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th>Hersteller <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th>Brennstoff <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-zahl">P_el [kW] <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-zahl">P_th [kW] <span class="mk-kopfsym">↕<svg class="mk-trichter" viewBox="0 0 10 10" aria-hidden="true"><path d="M0 1h10L6 5.5V10L4 9V5.5z"/></svg></span></th><th class="mk-kurz" title="im Projekt verwendet">im Projekt</th></tr></thead><tbody><tr data-satz="BHKW 5 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 5 kW Erdgas</td><td>Hersteller A</td><td>Erdgas</td><td class="mk-zahl">2</td><td class="mk-zahl">5</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 10 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 10 kW Erdgas</td><td>Hersteller B</td><td>Erdgas</td><td class="mk-zahl">4</td><td class="mk-zahl">10</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 20 kW Flüssiggas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 20 kW Flüssiggas</td><td>Hersteller C</td><td>Flüssiggas</td><td class="mk-zahl">8</td><td class="mk-zahl">20</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 30 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 30 kW Erdgas<svg class="mk-schloss" viewBox="0 0 12 14" aria-label="Auslieferungssatz – nur lesen"><rect x="1" y="6" width="10" height="7" rx="1.5"/><path d="M3.5 6V4.2a2.5 2.5 0 0 1 5 0V6" fill="none" stroke-width="1.6"/></svg></td><td>Hersteller A</td><td>Erdgas</td><td class="mk-zahl">15</td><td class="mk-zahl">30</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 50 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 50 kW Erdgas</td><td>Hersteller A</td><td>Erdgas</td><td class="mk-zahl">20</td><td class="mk-zahl">50</td><td class="mk-kurz"><span class="mk-improjekt" title="im Projekt verwendet">✓</span></td></tr><tr data-satz="BHKW 50 kW Biogas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 50 kW Biogas</td><td>Hersteller D</td><td>Biogas</td><td class="mk-zahl">20</td><td class="mk-zahl">50</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 70 kW Erdgas" data-art="katalog" class="mk-gewaehlt"><td class="mk-wahl"><span class="mk-radio mk-an"></span></td><td class="mk-name">BHKW 70 kW Erdgas</td><td>Hersteller B</td><td>Erdgas</td><td class="mk-zahl">35</td><td class="mk-zahl">70</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 100 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 100 kW Erdgas</td><td>Hersteller C</td><td>Erdgas</td><td class="mk-zahl">50</td><td class="mk-zahl">100</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 200 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 200 kW Erdgas</td><td>Hersteller E</td><td>Erdgas</td><td class="mk-zahl">100</td><td class="mk-zahl">200</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 250 kW Biogas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 250 kW Biogas</td><td>Hersteller D</td><td>Biogas</td><td class="mk-zahl">120</td><td class="mk-zahl">250</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 400 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 400 kW Erdgas</td><td>Hersteller E</td><td>Erdgas</td><td class="mk-zahl">200</td><td class="mk-zahl">400</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 15 kW Pflanzenöl" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 15 kW Pflanzenöl</td><td>Hersteller F</td><td>Pflanzenöl</td><td class="mk-zahl">6</td><td class="mk-zahl">15</td><td class="mk-kurz"></td></tr><tr data-satz="BHKW 140 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 140 kW Erdgas</td><td>Hersteller E</td><td>Erdgas</td><td class="mk-zahl">70</td><td class="mk-zahl">140</td><td class="mk-kurz"><span class="mk-improjekt" title="im Projekt verwendet">✓</span></td></tr><tr data-satz="BHKW 600 kW Erdgas" data-art="katalog"><td class="mk-wahl"><span class="mk-radio"></span></td><td class="mk-name">BHKW 600 kW Erdgas</td><td>Hersteller C</td><td>Erdgas</td><td class="mk-zahl">300</td><td class="mk-zahl">600</td><td class="mk-kurz"></td></tr></tbody></table></div>
+    <div class="mk-leiste mk-bereichsfuss"><span class="mk-auswahlname">BHKW 70 kW Erdgas:</span>
+      <button class="epos-knopf k-kat">Vergleichen…</button><button class="epos-knopf k-kat">Schloss setzen…</button>
+      <button class="epos-knopf k-kat">Löschen</button><span class="mk-fueller"></span><button class="epos-knopf k-kat">Neu…</button></div>
+  </section>
+  <section class="mk-bereich mk-bereich--satz v1-satz" aria-label="Gewählter Satz">
+    <button class="mk-aufklapper v1-zeile k-satz" data-klasse="mk-details-offen"><span class="v1-pfeil">▸</span>
+      <span class="mk-satzzeile mk-satz--katalog"><span class="mk-marke mk-marke--satz">Katalogsatz</span> <b data-satzname>BHKW 70 kW Erdgas</b> · Hersteller B · Erdgas · 35 kWel · 70 kWth</span>
+      <span class="mk-satzzeile mk-satz--projekt"><span class="mk-marke mk-marke--satz">Projektsatz</span> <b data-satzname>BHKW 50 kW Erdgas</b> · Erdgas – Variante 1 · VL 80 °C / RL 60 °C</span>
+      <span class="mk-leise-text">Details</span></button>
+    <div class="v1-details mk-rollt"><div class="mk-satzinhalt mk-satz--katalog"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Katalogsatz</span><strong data-satzname>BHKW 70 kW Erdgas</strong><span class="mk-leise-text">eigener Satz</span><span class="mk-fueller"></span><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button><button class="epos-knopf k-satz">Bearbeiten…</button></div><div class="mk-raster"><div class="mk-feld"><span class="mk-feldname">Hersteller</span><span class="mk-feldwert">Hersteller B</span></div><div class="mk-feld"><span class="mk-feldname">Brennstoff</span><span class="mk-feldwert">Erdgas</span></div><div class="mk-feld"><span class="mk-feldname">P_el</span><span class="mk-feldwert">35 kW</span></div><div class="mk-feld"><span class="mk-feldname">P_th</span><span class="mk-feldwert">70 kW</span></div><div class="mk-feld"><span class="mk-feldname">P_Brennstoff</span><span class="mk-feldwert">120 kW</span></div><div class="mk-feld"><span class="mk-feldname">η_el / η_th</span><span class="mk-feldwert">29 % / 58 %</span></div><div class="mk-feld"><span class="mk-feldname">Stromkennzahl</span><span class="mk-feldwert">0,50</span></div><div class="mk-feld"><span class="mk-feldname">Mindestleistung</span><span class="mk-feldwert">50 %</span></div><div class="mk-feld mk-feld--breit"><span class="mk-feldname">Beschreibung</span><span class="mk-feldwert">Beispielsatz mit runden Werten</span></div></div><button class="mk-aufklapper k-satz" data-klasse="mk-alle-offen">▸ Alle Daten des Katalogsatzes (bearbeitbar)</button><div class="mk-alle"><div class="mk-feld"><span class="mk-feldname">Motortyp</span><span class="mk-feldwert">Gasmotor</span></div><div class="mk-feld"><span class="mk-feldname">Wartungsintervall</span><span class="mk-feldwert">4 000 h</span></div><div class="mk-feld"><span class="mk-feldname">Investition (Katalog)</span><span class="mk-feldwert">100 000 €</span></div><div class="mk-feld"><span class="mk-feldname">BEHG-Faktor</span><span class="mk-feldwert">0,20 t/MWh</span></div><div class="mk-leiste mk-leiste--fuss"><span class="mk-leise-text">keine Änderung</span><span class="mk-fueller"></span><button class="epos-knopf k-satz" aria-disabled="true">Speichern</button></div></div></div><div class="mk-satzinhalt mk-satz--projekt"><div class="mk-leiste"><span class="mk-marke mk-marke--satz">Projektsatz</span><strong data-satzname>BHKW 50 kW Erdgas</strong><span class="mk-leise-text">Kopie aus dem Katalog</span><span class="mk-fueller"></span><button class="mk-info" title="Grundlagen">i</button><button class="mk-info" title="Berechnungsweg BHKW">i</button></div><div class="mk-leiste"><button class="epos-knopf k-satz">Investitionskosten…</button><button class="epos-knopf k-satz">Betriebskosten…</button><button class="epos-knopf k-satz">Energiekosten…</button></div><div class="mk-raster"><div class="mk-feld"><span class="mk-feldname">Energieträger</span><span class="mk-feldwert"><span class="mk-wahlfeld">Erdgas – Variante 1 ▾</span></span></div><div class="mk-feld"><span class="mk-feldname">Grenzleistung</span><span class="mk-feldwert">0 %</span></div><div class="mk-feld"><span class="mk-feldname">Vorlauf</span><span class="mk-feldwert">80 °C</span></div><div class="mk-feld"><span class="mk-feldname">Rücklauf</span><span class="mk-feldwert">60 °C</span></div><div class="mk-herleitung">0 % = Projektvorgabe 30 % greift · Senken: Heizkreis, Puffer 1</div></div></div></div>
+  </section>
+</div>
+  <div class="epos-dialog-fuss">
+    <button class="epos-knopf">Abbrechen</button>
+    <button class="epos-knopf epos-knopf--primaer">OK</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('click', function (e) {
+  var k = e.target.closest('[data-klasse]');
+  if (k) { document.body.classList.toggle(k.dataset.klasse); return; }
+  var r = e.target.closest('[data-reiter]');
+  if (r) { document.body.dataset.reiter = r.dataset.reiter; return; }
+  var z = e.target.closest('tr[data-satz]');
+  if (z && !e.target.closest('button')) {
+    document.querySelectorAll('tr.mk-gewaehlt').forEach(function (x) { x.classList.remove('mk-gewaehlt'); });
+    z.classList.add('mk-gewaehlt');
+    document.querySelector('.epos-dialog').dataset.satzart = z.dataset.art;
+    document.querySelectorAll('.mk-satz--' + z.dataset.art + ' [data-satzname]').forEach(function (n) { n.textContent = z.dataset.satz; });
+    document.querySelectorAll('.mk-auswahlname').forEach(function (n) {
+      if (n.closest('.mk-bereich--' + z.dataset.art)) n.textContent = z.dataset.satz + ':';
+    });
+  }
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') { ['mk-notiz-offen', 'mk-schublade-offen'].forEach(function (c) { document.body.classList.remove(c); }); }
+});
+document.querySelectorAll('.mk-liste tr.mk-gewaehlt').forEach(function (z) {
+  var l = z.closest('.mk-liste'); if (!l) return;
+  var d = z.getBoundingClientRect().top - l.getBoundingClientRect().top;
+  if (d + z.offsetHeight > l.clientHeight) l.scrollTop = d - l.clientHeight / 2;
+});
+if (location.hash === '#notiz') document.body.classList.add('mk-notiz-offen');
+if (location.hash === '#zu') document.body.classList.remove('mk-schublade-offen');
+</script>
+</body>
+</html>
