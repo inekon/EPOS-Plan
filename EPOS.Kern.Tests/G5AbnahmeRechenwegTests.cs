@@ -22,6 +22,8 @@ namespace EPOS.Kern.Tests
     /// Trennflächen tragen Nachbarzone und Zuordnung.</item>
     /// <item><b>A6:</b> Die Jahresheizwärme des Körperwegs liegt näher an der Gegenprobe mit Mengensätzen als der Rückfall
     /// ohne Raumzuordnung (<see cref="GebaeudeImportProfil.KoerperflaechenAus"/>) — als Aussage, nicht als Zahl.</item>
+    /// <item><b>A2 und B3 mit Mengensätzen:</b> Die Gegenprobe mit Mengensätzen geht ohne Ergänzung durch den Zonenvorschlag;
+    /// Azimut und Neigung kommen aus den Raumgrenzen, je Bauteilzeile gleich dem Körperweg, Heizwärme und Heizlast gleich.</item>
     /// </list>
     /// Die Klasse rechnet drei Jahresläufe nach VDI 6007 auf je einer Arbeitskopie (Klima und Einstellungen des
     /// Referenzprojekts 1045); zusammen rund eine halbe Minute — die Aussage A6 braucht alle drei Läufe.
@@ -235,25 +237,6 @@ namespace EPOS.Kern.Tests
                     + (z.Nachbarzone.HasValue ? " → " + z.Nachbarzone + " (" + z.Trennflaeche + ")" : "") + " | " + (z.Herkunft ?? "NULL"));
         }
 
-        /// <summary>
-        /// Die Gegenprobe mit Mengensätzen und Raumgrenzen trägt an Wänden, Fenstern und Dach keinen Azimut und am Dach die
-        /// Neigung 0° (Befund an die Sitzung IFC, Protokoll G5-A): Der Vorschlag lehnt sie mit <c>IMP_BAUTEIL_PROT_AZIMUT_FEHLT</c>
-        /// ab. Für den Bezug der Heizwärme ergänzt die Abnahme die Orientierung im gelesenen Abbild aus dem Bauteilkörper (Fenster:
-        /// die des Wirts) — die Flächen bleiben die des Mengensatz- und Raumgrenzenwegs. Der Import bleibt unverändert.
-        /// </summary>
-        private static GebaeudeImportAblauf OrientierungErgaenzen(GebaeudeImportAblauf a, out int ergaenzt)
-        {
-            ergaenzt = 0;
-            foreach (AbbildGebaeude g in a.Abbild.Gebaeude)
-                foreach (AbbildBauteil b in g.Bauteile.Where(x => x.Koerperflaeche != null))
-                {
-                    if (!b.AzimutGrad.HasValue && b.Koerperflaeche.AzimutGrad.HasValue) { b.AzimutGrad = b.Koerperflaeche.AzimutGrad; ergaenzt++; }
-                    if (b.Art == Bauteilart.Dach && b.NeigungGrad != b.Koerperflaeche.NeigungGrad) { b.NeigungGrad = b.Koerperflaeche.NeigungGrad; ergaenzt++; }
-                    foreach (AbbildBauteil o in b.Oeffnungen.Where(o => !o.AzimutGrad.HasValue)) { o.AzimutGrad = b.AzimutGrad; ergaenzt++; }
-                }
-            return a;
-        }
-
         [Fact]
         public void A1_bis_A4_und_A6_Koerperweg_gegen_Mengensatz_und_Rueckfall()
         {
@@ -263,10 +246,9 @@ namespace EPOS.Kern.Tests
             if (koerper == null) return;
             Lauf rueckfall = Rechnen(KoerperflaechenTests.Lesen(KoerperflaechenTests.OHNE, koerperflaechenAus: true));
             GebaeudeImportAblauf mit = KoerperflaechenTests.Lesen(KoerperflaechenTests.MIT);
-            Lauf roh = Rechnen(mit);
-            _ausgabe.WriteLine("A6 Mengensatz roh: " + (roh.Abgelehnt ? "abgelehnt — " + roh.Ablehnung : "angenommen"));
-            Lauf bezug = Rechnen(OrientierungErgaenzen(KoerperflaechenTests.Lesen(KoerperflaechenTests.MIT), out int ergaenzt));
-            _ausgabe.WriteLine("A6 Mengensatz: Orientierung ergänzt an " + ergaenzt + " Stellen");
+            // Die Gegenprobe mit Mengensätzen geht ohne jede Ergänzung durch den Zonenvorschlag: Fläche aus dem Mengensatz bzw.
+            // den Raumgrenzen, Azimut und Neigung aus der flächengewichteten Außennormale der Raumgrenzen (B3).
+            Lauf bezug = Rechnen(mit);
             Ausgeben("Körperweg", koerper);
             Ausgeben("Rückfall", rueckfall);
             Ausgeben("Mengensatz", bezug);
@@ -314,6 +296,93 @@ namespace EPOS.Kern.Tests
             Assert.Equal(5, koerper.Zeilen.Count(z => z.Rand == DbWerte.RANDBEDINGUNG_ERDREICH));
             Assert.All(koerper.Zeilen.Where(z => z.Art == DbWerte.BAUTEILART_DECKE), z => Assert.True(z.Nachbarzone.HasValue, z.Name));
             Assert.Contains(koerper.Zonenliste, z => z.Contains("beheizt 0", StringComparison.Ordinal));
+
+            // A2 und B3 an der Gegenprobe mit Mengensätzen: Außenwände senkrecht auf den Achsen, das Pultdach 3 : 4 nach Süd aus
+            // den Raumgrenzen, jedes Fenster mit der Richtung seiner Wand (Fenster Wohnen/Küche Süd, Fenster Schlafen Ost).
+            foreach (Zeile z in bezug.Zeilen.Where(z => z.Art == DbWerte.BAUTEILART_AUSSENWAND || z.Art == DbWerte.BAUTEILART_FENSTER))
+            {
+                Assert.True(z.Neigung.HasValue && z.Azimut.HasValue, z.Name + ": Orientierung fehlt");
+                Assert.Equal(90.0, z.Neigung.Value, 6);
+                Assert.Contains(Math.Round(z.Azimut.Value, 6), new[] { 0.0, 90.0, 180.0, 270.0 });
+            }
+            Assert.Equal(new[] { 180.0, 180.0, 90.0 }, bezug.Zeilen.Where(z => z.Art == DbWerte.BAUTEILART_FENSTER).Select(z => Math.Round(z.Azimut.Value, 6)));
+            Zeile dachM = Assert.Single(bezug.Zeilen, z => z.Art == DbWerte.BAUTEILART_DACH);
+            Assert.Equal(Math.Acos(0.8) * 180.0 / Math.PI, dachM.Neigung.Value, WINKEL_STELLEN);
+            Assert.Equal(180.0, dachM.Azimut.Value, 6);
+
+            // Zeile für Zeile gleich dem Körperweg (Bauteil, Art, Fläche, Neigung, Azimut, Randbedingung), Heizwärme und Heizlast
+            // gleich. Die Flächen stammen aus verschiedenen Quellen (Raumgrenze bzw. Körper); die Dachneigung der Raumgrenzen steht
+            // im Abbild auf sechs Stellen gerundet (siehe B3) — gehalten mit WINKEL_STELLEN.
+            Assert.Equal(koerper.Zeilen.Count, bezug.Zeilen.Count);
+            for (int i = 0; i < koerper.Zeilen.Count; i++)
+            {
+                Zeile k = koerper.Zeilen[i], m = bezug.Zeilen[i];
+                _ausgabe.WriteLine("A2 Mengensatz gegen Körperweg | " + m.Name + " | dF " + (m.Flaeche - k.Flaeche).ToString("E2", CultureInfo.InvariantCulture)
+                    + " | dN " + ((m.Neigung ?? 0.0) - (k.Neigung ?? 0.0)).ToString("E2", CultureInfo.InvariantCulture)
+                    + " | dA " + ((m.Azimut ?? 0.0) - (k.Azimut ?? 0.0)).ToString("E2", CultureInfo.InvariantCulture));
+            }
+            for (int i = 0; i < koerper.Zeilen.Count; i++)
+            {
+                Zeile k = koerper.Zeilen[i], m = bezug.Zeilen[i];
+                Assert.Equal(k.Name, m.Name);
+                Assert.Equal(k.Art, m.Art);
+                Assert.Equal(k.Rand, m.Rand);
+                Assert.Equal(k.Flaeche, m.Flaeche, 3);
+                Assert.Equal(k.Neigung.HasValue, m.Neigung.HasValue);
+                Assert.Equal(k.Azimut.HasValue, m.Azimut.HasValue);
+                if (k.Neigung.HasValue) Assert.Equal(k.Neigung.Value, m.Neigung.Value, WINKEL_STELLEN);
+                if (k.Azimut.HasValue) Assert.Equal(k.Azimut.Value, m.Azimut.Value, WINKEL_STELLEN);
+            }
+            Assert.Equal(koerper.Mwh, bezug.Mwh, 3);
+            Assert.Equal(koerper.SpitzeKw, bezug.SpitzeKw, 3);
         }
+
+        /// <summary>Nachkommastellen der Winkel beim Vergleich Mengensatzweg gegen Körperweg (Grad).</summary>
+        private const int WINKEL_STELLEN = 6;
+
+        /// <summary>
+        /// B3 im gelesenen Abbild: Neigung und Azimut je Bauteil der Probe mit Mengensätzen (aus den Raumgrenzen) gegen den
+        /// Bauteilkörper derselben Probe und gegen die Probe ohne Mengensätze.
+        /// </summary>
+        [Fact]
+        public void B3_Orientierung_im_Abbild_mit_Mengensatz_gleich_Koerper()
+        {
+            GebaeudeImportAblauf mit = KoerperflaechenTests.Lesen(KoerperflaechenTests.MIT);
+            GebaeudeImportAblauf ohne = KoerperflaechenTests.Lesen(KoerperflaechenTests.OHNE);
+            var ohneJe = ohne.Abbild.Gebaeude[0].Bauteile.GroupBy(b => b.Name).ToDictionary(x => x.Key, x => x.First());
+            foreach (AbbildBauteil b in mit.Abbild.Gebaeude[0].Bauteile)
+            {
+                ohneJe.TryGetValue(b.Name, out AbbildBauteil o);
+                _ausgabe.WriteLine("B3 | " + b.Name + " | " + b.Art + " | N " + W(b.NeigungGrad) + " A " + W(b.AzimutGrad)
+                    + " | Körper N " + W(b.Koerperflaeche?.NeigungGrad) + " A " + W(b.Koerperflaeche?.AzimutGrad)
+                    + " | ohne Mengen N " + W(o?.NeigungGrad) + " A " + W(o?.AzimutGrad));
+                Assert.NotNull(o);
+
+                // Neigung und Azimut gleich dem Körperweg. Rest 1: Die Dachneigung der Raumgrenzen steht auf sechs Stellen gerundet
+                // (36,869898° gegen 36,8698976…° des Körpers, 3,5e-7°) — gehalten mit fünf Stellen.
+                Assert.Equal(o.NeigungGrad.HasValue, b.NeigungGrad.HasValue);
+                if (o.NeigungGrad.HasValue) Assert.Equal(o.NeigungGrad.Value, b.NeigungGrad.Value, 5);
+                Assert.Equal(o.AzimutGrad.HasValue, b.AzimutGrad.HasValue);
+                if (o.AzimutGrad.HasValue) Assert.Equal(o.AzimutGrad.Value, b.AzimutGrad.Value, 5);
+                if (b.Art == Bauteilart.Dach || b.Art == Bauteilart.Aussenwand)
+                {
+                    Assert.Equal(b.Koerperflaeche.NeigungGrad, b.NeigungGrad.Value, 5);
+                    Assert.Equal(b.Koerperflaeche.AzimutGrad.Value, b.AzimutGrad.Value, 5);
+                }
+
+                // Rest 2: Die Innenwand trägt keinen Azimut (ohne Außenseite, wie am Körperweg), ihr Körper 90° — ohne Ergebniswirkung,
+                // denn sie wird nicht als Außenbauteil gespeichert.
+                if (b.Art == Bauteilart.Innenwand) Assert.Null(b.AzimutGrad);
+
+                // Fenster mit der Richtung ihrer Wand.
+                foreach (AbbildBauteil f in b.Oeffnungen)
+                    Assert.Equal(b.AzimutGrad, f.AzimutGrad);
+            }
+            AbbildBauteil dach = Assert.Single(mit.Abbild.Gebaeude[0].Bauteile, x => x.Art == Bauteilart.Dach);
+            Assert.Equal(Math.Acos(0.8) * 180.0 / Math.PI, dach.NeigungGrad.Value, 5);
+            Assert.Equal(180.0, dach.AzimutGrad.Value, 6);
+        }
+
+        private static string W(double? w) => w.HasValue ? w.Value.ToString("R", CultureInfo.InvariantCulture) : "-";
     }
 }
