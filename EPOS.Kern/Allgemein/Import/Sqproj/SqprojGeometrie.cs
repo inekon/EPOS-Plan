@@ -81,7 +81,7 @@ namespace WindowsFormsApplication1
         internal const string OHNE_GEOMETRIE = SqprojGebaeudeLeser.PRAEFIX + "OHNE_GEOMETRIE";
         /// <summary>W (an der Öffnung) — keine Wandfläche desselben Raums trägt die Öffnung (17.3 Nr. 4).</summary>
         internal const string OEFFNUNG_OHNE_WAND = SqprojGebaeudeLeser.PRAEFIX + "OEFFNUNG_OHNE_WAND";
-        /// <summary>I (an der Öffnung) — die Öffnung reicht an den Rand ihrer Wand; die Aussparung entfällt.</summary>
+        /// <summary>I (an der Öffnung) — {0} Grund: die Öffnung reicht an den Rand ihrer Wand, die Kerbe gelingt nicht; die Aussparung entfällt.</summary>
         internal const string OEFFNUNG_RAND = SqprojGebaeudeLeser.PRAEFIX + "OEFFNUNG_RAND";
 
         // ---------------- Schleifen ----------------
@@ -113,9 +113,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>Senkrecht (Wand) heißt: die Normale höchstens 1° neben der Waagerechten.</summary>
         internal static readonly double SIN_WAAGERECHT = Math.Sin(Math.PI / 180.0);
-
-        /// <summary>Abstand eines Lochs zum Rand seiner Wand, unter dem die Aussparung entfällt [m].</summary>
-        internal const double LOCHRAND_M = 0.002;
 
         /// <summary>
         /// Die benannte Vorgabedicke je Bauteilart [m] (17.3 Nr. 2) — gilt, wenn weder ein Aufbau mit Schichten noch eine
@@ -365,6 +362,8 @@ namespace WindowsFormsApplication1
             internal List<double[]> Aussen;
             internal List<List<double[]>> Loecher = new List<List<double[]>>();
             internal List<string> Lochkennungen = new List<string>();
+            /// <summary>Die Öffnungen dieser Wand mit ihrem in die Wandebene projizierten Ring, in der Reihenfolge der Zuordnung.</summary>
+            internal List<(AbbildBauteil Oeffnung, List<double[]> Ring)> Oeffnungsringe = new List<(AbbildBauteil, List<double[]>)>();
             internal List<List<double[]>> Weitere = new List<List<double[]>>();
             internal double[] Normale;
             internal double Dicke;
@@ -468,14 +467,8 @@ namespace WindowsFormsApplication1
                     o.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, OEFFNUNG_OHNE_WAND));
                     continue;
                 }
-                List<double[]> loch = Projiziert(of.Aussen, wand);
-                if (!StrengInnen(loch, wand))
-                {
-                    o.Meldungen.Add(new PruefMeldung(PruefStufe.Info, OEFFNUNG_RAND));
-                    continue;
-                }
-                wand.Loecher.Add(loch);
-                wand.Lochkennungen.Add(o.Kennung);
+                // Ausgespart wird beim Extrudieren der Wand: im Inneren als Loch, am Rand als Kerbe.
+                wand.Oeffnungsringe.Add((o, Projiziert(of.Aussen, wand)));
             }
 
             int bauteilGebildet = 0, bauteilZahl = 0, vorgabe = 0, angenommen = 0;
@@ -812,13 +805,25 @@ namespace WindowsFormsApplication1
             var teile = new List<Dateikoerper>();
             var ringe = new List<(List<double[]> Aussen, List<List<double[]>> Loecher, List<string> Kennungen)> { (f.Aussen, f.Loecher, f.Lochkennungen) };
             ringe.AddRange(f.Weitere.Select(w => (w, new List<List<double[]>>(), new List<string>())));
+            bool erster = true;
             foreach (var r in ringe)
             {
                 var q = new Quellflaeche
                 {
                     Kennung = f.Bauteil.Kennung, Aussen = r.Aussen, Loecher = r.Loecher.Cast<IReadOnlyList<double[]>>().ToList(), Lochkennungen = r.Kennungen,
                 };
-                Koerperergebnis e = Koerperbildner.Extrusion(q, f.Dicke, f.Richtung, f.ZumRaum);
+                Koerperergebnis e;
+                if (erster)
+                {
+                    // Der Hauptring trägt die Öffnungen; was weder Loch noch Kerbe wird, meldet seinen Grund.
+                    e = Koerperbildner.Extrusion(q, f.Oeffnungsringe.Select(o => new Wandoeffnung { Kennung = o.Oeffnung.Kennung, Ring = o.Ring }).ToList(),
+                                                 f.Dicke, f.Richtung, f.ZumRaum, out List<Aussparung> aussparungen);
+                    for (int i = 0; i < f.Oeffnungsringe.Count; i++)
+                        if (!aussparungen[i].Ausgespart)
+                            f.Oeffnungsringe[i].Oeffnung.Meldungen.Add(new PruefMeldung(PruefStufe.Info, OEFFNUNG_RAND, aussparungen[i].Grund));
+                    erster = false;
+                }
+                else e = Koerperbildner.Extrusion(q, f.Dicke, f.Richtung, f.ZumRaum);
                 if (!e.Gebildet)
                 {
                     f.Bauteil.Koerper = null;
@@ -859,21 +864,6 @@ namespace WindowsFormsApplication1
         /// <summary>Der Ring, senkrecht in die Ebene der Wand projiziert.</summary>
         private static List<double[]> Projiziert(List<double[]> ring, Flaeche wand)
             => ring.Select(q => Polygonnetz.Minus(q, Polygonnetz.Mal(wand.Normale, Polygonnetz.Punkt(Polygonnetz.Minus(q, wand.Aussen[0]), wand.Normale)))).ToList();
-
-        /// <summary>Liegt der Lochring ganz im Wandring, jede Ecke mindestens <see cref="LOCHRAND_M"/> vom Rand und von den übrigen Löchern frei?</summary>
-        private static bool StrengInnen(List<double[]> loch, Flaeche wand)
-        {
-            (double[] o, double[] e1, double[] e2) = Ebene(wand.Aussen);
-            if (e1 == null) return false;
-            List<double[]> w = Flach(wand.Aussen, o, e1, e2), l = Flach(loch, o, e1, e2);
-            if (!l.All(q => Innen2D(w, q) && RandAbstand2D(w, q) >= LOCHRAND_M)) return false;
-            foreach (List<double[]> anderes in wand.Loecher)
-            {
-                List<double[]> a = Flach(anderes, o, e1, e2);
-                if (l.Any(q => Innen2D(a, q)) || a.Any(q => Innen2D(l, q))) return false;
-            }
-            return true;
-        }
 
         // ==================================================================
         //  Grundriss (17.2 „Grundriss“)

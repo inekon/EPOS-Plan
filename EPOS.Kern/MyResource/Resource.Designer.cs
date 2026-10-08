@@ -42217,11 +42217,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Gruppe {1} der Randbedingungen hat {2} m² Körperfläche gegen {3} m² Bauteilfläche — Hinweis, keine Rechengröße. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_FLAECHENGRUPPE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_FLAECHENGRUPPE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ohne Grenzgeometrie liegen an mehreren Zonen — ihre Fläche ist nach der Zahl der Raumgrenzen geteilt: {1} ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_FLAECHE_AUFGETEILT {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_FLAECHE_AUFGETEILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_FLAECHE_OHNE_BAUTEIL {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_FLAECHE_OHNE_BAUTEIL", resourceCulture);
             }
         }
         
@@ -42375,6 +42393,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND {
             get {
                 return ResourceManager.GetString("IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung {0} reicht an den Rand der Fläche {1}, die Kerbe gelingt nicht ({2}) — sie wird ohne Aussparung in der Wand gezeigt. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_OEFFNUNG_RAND {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_OEFFNUNG_RAND", resourceCulture);
             }
         }
         
@@ -45655,6 +45682,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Gruppe {1} der Randbedingungen hat {2} m² Körperfläche gegen {3} m² Bauteilfläche — Hinweis, keine Rechengröße. ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_FLAECHENGRUPPE_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_FLAECHENGRUPPE_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string IMP_SQPROJ_PROT_FLAECHE_OHNE_BAUTEIL {
+            get {
+                return ResourceManager.GetString("IMP_SQPROJ_PROT_FLAECHE_OHNE_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Geometrie der Projektdatei: {0} von {1} Raumkörpern und {2} von {3} Bauteilkörpern aus den Flächen der Datei gebildet; {4} mit Vorgabedicke, {5} mit angenommener Bezugsebene. ähnelt.
         /// </summary>
         public static string IMP_SQPROJ_PROT_GEOMETRIE {
@@ -45781,7 +45826,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Öffnung reicht an den Rand ihrer Wandfläche, die Kerbe gelingt nicht ({0}) — die Aussparung entfällt. ähnelt.
         /// </summary>
         public static string IMP_SQPROJ_PROT_OEFFNUNG_RAND {
             get {

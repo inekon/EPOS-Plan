@@ -33206,6 +33206,27 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GBXML_PROT_UMRISS_NICHT_EBEN" xml:space="preserve">
     <value>Der Umriss der Fläche {0} liegt nicht in einer Ebene (Abweichung {1} mm) — er steht nicht im Grundriss; Fläche, Azimut und Neigung gelten weiter.</value>
   </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_RAND" xml:space="preserve">
+    <value>Die Öffnung {0} reicht an den Rand der Fläche {1}, die Kerbe gelingt nicht ({2}) — sie wird ohne Aussparung in der Wand gezeigt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FLAECHE_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige).</value>
+  </data>
+  <data name="IMP_GBXML_PROT_FLAECHENGRUPPE_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: Gruppe {1} der Randbedingungen hat {2} m² Körperfläche gegen {3} m² Bauteilfläche — Hinweis, keine Rechengröße.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}).</value>
+  </data>
   <data name="IMP_GBXML_PROT_KEINE_KONSTRUKTIONEN" xml:space="preserve">
     <value>Die Datei enthält keine Konstruktionen — die U-Werte kommen aus der Baualtersklasse.</value>
   </data>
@@ -48383,18 +48404,6 @@ Chart</value>
   <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
     <value>{0} Kostenposition(en) der ersetzten Anlagen fanden keine neue Anlage als Gegenstück und stehen jetzt ohne Anlagenzuordnung — in der Kostenverwaltung prüfen.</value>
   </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
-    <value>Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
-    <value>{0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
-    <value>Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt.</value>
-  </data>
-  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
-    <value>{0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}).</value>
-  </data>
   <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
     <value>Vorgabedicke</value>
   </data>
@@ -48705,7 +48714,13 @@ Chart</value>
     <value>Die Öffnung liegt in keiner Wandfläche desselben Raums — Körper ohne Aussparung.</value>
   </data>
   <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
-    <value>Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt.</value>
+    <value>Die Öffnung reicht an den Rand ihrer Wandfläche, die Kerbe gelingt nicht ({0}) — die Aussparung entfällt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_FLAECHE_OHNE_BAUTEIL" xml:space="preserve">
+    <value>{0}: {1} Flächen der Raumkörper ({2} m²) ohne passendes Bauteil — Gruppe aus der Flächennormale (nur Anzeige).</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_FLAECHENGRUPPE_ABWEICHUNG" xml:space="preserve">
+    <value>{0}: Gruppe {1} der Randbedingungen hat {2} m² Körperfläche gegen {3} m² Bauteilfläche — Hinweis, keine Rechengröße.</value>
   </data>
   <data name="GANS_HERKUNFT_ABGELEITET" xml:space="preserve">
     <value>aus Flächen gebildet</value>

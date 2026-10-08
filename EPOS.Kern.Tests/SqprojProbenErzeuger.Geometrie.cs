@@ -157,5 +157,14 @@ namespace EPOS.Kern.Tests
                 .Flaeche("DA", 5, 3, 20.0, 20.0, null, 0.0).Bezug("E7", "R1", "DA", 9)
                 .Geometrie("DA", GeoXml(null, ("DIN18599_2011", RechteckZ(2.5, 0.0, 4.0, 0.0, 5.0))), 0.20);
         }
+
+        /// <summary>
+        /// <b>Das Geometriehaus mit Fenstertür</b> (Randkerbe, 17.3 Nr. 4): dazu in der Außenwand AW die Fenstertür FT
+        /// (<c>Inner</c>, 1,0 × 2,1 m, x = 2,5 … 3,5, bis zum Boden z = 0) — sie sitzt am unteren Rand der Wandfläche.
+        /// </summary>
+        internal static SqprojProbenErzeuger Fenstertuerhaus()
+            => Geometriehaus()
+                .Flaeche("FT", 3, 3, 2.1, 2.1, 180.0, 90.0, eltern: "AW", u: 1.3).Bezug("E8", "R1", "FT", 5)
+                .Geometrie("FT", GeoXml(null, ("Inner", RechteckY(-0.30, 2.5, 3.5, 0.0, 2.1))));
     }
 }
