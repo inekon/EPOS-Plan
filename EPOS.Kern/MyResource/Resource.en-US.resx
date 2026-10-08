@@ -6501,14 +6501,6 @@ After that the value will be missing from every calculation concerning that year
   <data name="ADM_STATUS_FEHLER" xml:space="preserve">
     <value>Not saved</value>
   </data>
-  <data name="ADM_SCHUTZ_TITEL" xml:space="preserve">
-    <value>Write-protected record</value>
-  </data>
-  <data name="ADM_SCHUTZ_FRAGE" xml:space="preserve">
-    <value>The record “{0}” comes from the shipped catalogue and is write-protected.
-
-Overwrite it anyway?</value>
-  </data>
   <data name="ADM_MEHRDEUTIG_TITEL" xml:space="preserve">
     <value>Designation not unique</value>
   </data>
@@ -8676,6 +8668,9 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   </data>
   <data name="ADM_KATALOG_GEBAEUDETYP" xml:space="preserve">
     <value>Building types (daily profiles)</value>
+  </data>
+  <data name="ADM_KATALOG_KONDITIONIERUNGSVORLAGE" xml:space="preserve">
+    <value>Conditioning templates</value>
   </data>
   <data name="ADM_KATALOG_BAUSTOFF" xml:space="preserve">
     <value>Building materials</value>

@@ -826,6 +826,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konditionierungsvorlagen ähnelt.
+        /// </summary>
+        public static string ADM_KATALOG_KONDITIONIERUNGSVORLAGE {
+            get {
+                return ResourceManager.GetString("ADM_KATALOG_KONDITIONIERUNGSVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Typprofile ähnelt.
         /// </summary>
         public static string ADM_KATALOG_PROZESSTYP {
@@ -1508,26 +1517,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SCHLOSS_UNVERAENDERT {
             get {
                 return ResourceManager.GetString("ADM_SCHLOSS_UNVERAENDERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Datensatz „{0}“ stammt aus dem Auslieferungskatalog und ist schreibgeschützt.
-        ///
-        ///Soll er trotzdem überschrieben werden? ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_FRAGE {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_FRAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibgeschützter Datensatz ähnelt.
-        /// </summary>
-        public static string ADM_SCHUTZ_TITEL {
-            get {
-                return ResourceManager.GetString("ADM_SCHUTZ_TITEL", resourceCulture);
             }
         }
         

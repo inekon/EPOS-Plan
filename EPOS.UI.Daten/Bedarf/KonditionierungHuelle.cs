@@ -680,6 +680,9 @@ namespace WindowsFormsApplication1
                     KonditionierungCtrl.Ergebnis e = vorlagen.Duplizieren(id, name, out long neu);
                     return new KonditionierungVorlageErgebnis(e.Ok, e.Meldung, e.Ok ? VorlageDaten(vorlagen.Lesen(neu)) : null);
                 },
+                // Das Schloss der Vorlagen (AD-Q15, Anwenderentscheid 08.10.2026) - derselbe Weg wie in den
+                // Verwaltungen; nur das Kennzeichen, eine Transaktion.
+                VorlageSchloss = vorlagen == null ? null : Schlosswege.Aus(vorlagen.SchlossUmschalten),
                 // „Kopieren nach …" (Teilkonzept 3.5, 7.4): die Ziele und die Kopie nach Vorlagenkopierregel.
                 Kopierziele = vorlagen == null ? null : g => Kopierzielliste(g),
                 VorlageKopieren = vorlagen == null ? null : (id, k) => Kopieren(vorlagen, id, k),

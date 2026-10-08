@@ -529,21 +529,13 @@ namespace WindowsFormsApplication1
                 ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
                     name => BhkwAdminHuelle.Wege().Detail!(name)!),
 
-                // DREI Argumente, anders als beim Heizkessel: Der BHKW-Katalog ist der
-                // einzige mit Schreibschutz, und der Kern verlangt die Antwort auf die
-                // Rueckfrage als eigenes Argument (AnzeigefelderSchreiben).
+                // Ein Satz mit Schloss wird hier nie geschrieben (AD-Q15): Der Aufklapper zeigt
+                // ihn nur lesbar, bis das Schloss aufgehoben ist.
                 ["KatalogfelderSpeichern"] =
-                    new Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>(
-                        (name, felder, schutz) => BhkwAdminHuelle.Wege().Speichern!(name, felder, schutz)),
-
-                // Der Schutz kommt unmittelbar aus dem Kern - KatalogBrowserWege.IstGeschuetzt
-                // ist mit Stufe 3 der Neuordnung gefallen (die Verwaltung liest ihn aus der
-                // Zeile der Liste).
-                ["KatalogfelderGeschuetzt"] = new Func<string, bool>(BHKWStammCtrl.IstSchreibgeschuetzt),
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => BhkwAdminHuelle.Wege().Speichern!(name, felder, false)),
 
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
-                ["FrageSchutz"] = MyResource.Resource.ADM_SCHUTZ_FRAGE,
-                ["TitelSchutz"] = MyResource.Resource.ADM_SCHUTZ_TITEL,
 
                 ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),

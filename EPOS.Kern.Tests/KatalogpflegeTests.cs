@@ -65,7 +65,8 @@ namespace EPOS.Kern.Tests
             // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
             // Gebaeudesimulation G3 (Welle B, W21): Baustoff und Bauteilaufbau dazu - 25.
             // KU3-1: die Kaeltemaschine dazu - 26.
-            Assert.Equal(26, KatalogRegistry.Alle.Count);
+            // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
+            Assert.Equal(27, KatalogRegistry.Alle.Count);
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -88,7 +89,9 @@ namespace EPOS.Kern.Tests
                 // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
                 "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                 "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
-                "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP"
+                "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP",
+                // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen (Schloss der Vorlagenverwaltung).
+                "KONDITIONIERUNGSVORLAGE"
             };
             Assert.Equal(erwartet, KatalogRegistry.Alle.Select(k => k.Schluessel).ToArray());
         }
@@ -151,14 +154,18 @@ namespace EPOS.Kern.Tests
             // Gebaeudesimulation G3: Baustoff und Bauteilaufbau pflegen ihre eigenen
             // Verwaltungen und stehen nicht im Dublettendialog; der Baustoff fuehrt den
             // Hersteller als zweiten Teil des natuerlichen Schluessels.
-            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU" };
+            string[] ohneDialog = { "BAUSTOFF", "BAUTEILAUFBAU", "KONDITIONIERUNGSVORLAGE" };
             Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
                                                          && !ohneDialog.Contains(k.Schluessel))
                                              .Select(k => k.Schluessel).ToArray(),
                          KatalogRegistry.Dublettendialog.Select(k => k.Schluessel).ToArray());
             Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)
-                                                       && k.Schluessel != "BAUSTOFF"),
+                                                       && k.Schluessel != "BAUSTOFF"
+                                                       && k.Schluessel != "KONDITIONIERUNGSVORLAGE"),
                        k => Assert.Empty(k.SchluesselZusatzSpalten));
+            // Die Konditionierungsvorlagen: derselbe Name einmal je Groesse.
+            Assert.Equal(new[] { "Groesse" },
+                         KatalogRegistry.Finde("KONDITIONIERUNGSVORLAGE").SchluesselZusatzSpalten);
             Assert.Equal(new[] { BaustoffSchema.SPALTE_HERSTELLER },
                          KatalogRegistry.Finde("BAUSTOFF").SchluesselZusatzSpalten);
         }

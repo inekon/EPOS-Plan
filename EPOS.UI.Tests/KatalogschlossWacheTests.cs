@@ -25,6 +25,9 @@ public class KatalogschlossWacheTests
             "Tww-Katalog: ReadOnly folgt dem Freigabestatus (KatalogDefinition.SchlossAusStatus); der Kern lehnt das Umschalten ab.",
         ["PeakShavingDialog.razor"] =
             "Lastspitzenkappung: Die Auswahlleiste wirkt auf gerechnete Varianten, nicht auf einen Katalog.",
+        ["RaumnutzungBlatt.razor"] =
+            "Nutzungsprofile: Ihr Katalog steht nicht im Register der Katalogfassung und nicht in der KatalogRegistry; " +
+            "ausgelieferte Zeilen sind nur duplizierbar (NP-F19).",
     };
 
     /// <summary>Hüllen mit Katalogpflege, die den Schlossweg mit Grund NICHT hereinreichen.</summary>
@@ -46,7 +49,16 @@ public class KatalogschlossWacheTests
     private static readonly Regex HuelleSchloss =
         new(@"\[""Schloss""\]\s*=\s*Schlosswege\.Aus\(|\bSchloss\s*=\s*Schlosswege\.Aus\(", RegexOptions.Compiled);
 
-    internal static bool DialogOhneSchloss(string text) => DialogPflegt.IsMatch(text) && !DialogSchloss.IsMatch(text);
+    /// <summary>
+    /// Eine Verwaltung OHNE Auswahlleiste: Sie zeichnet das Kennzeichen eines Auslieferungssatzes und
+    /// bietet Löschen an (Vorbild: die Vorlagenverwaltung der Konditionierung).
+    /// </summary>
+    private static readonly Regex Kennzeichen = new(@"<Kennzeichen\b", RegexOptions.Compiled);
+    private static readonly Regex Loeschen = new(@"\bLoeschen\b", RegexOptions.Compiled);
+
+    internal static bool DialogOhneSchloss(string text)
+        => (DialogPflegt.IsMatch(text) || (Kennzeichen.IsMatch(text) && Loeschen.IsMatch(text)))
+           && !DialogSchloss.IsMatch(text);
 
     internal static bool HuelleOhneSchloss(string text) => HuellePflegt.IsMatch(text) && !HuelleSchloss.IsMatch(text);
 
@@ -54,7 +66,8 @@ public class KatalogschlossWacheTests
     public void Jeder_pflegende_Dialog_bietet_das_Schloss()
     {
         string wurzel = Wurzel();
-        var treffer = Dateien(Path.Combine(wurzel, "EPOS.UI"), ".razor")
+        var treffer = Dateien(Path.Combine(wurzel, "EPOS.UI", "Dialoge"), ".razor")
+            .Concat(Dateien(Path.Combine(wurzel, "EPOS.UI", "Seiten"), ".razor"))
             .Where(p => !DialogAusnahmen.ContainsKey(Path.GetFileName(p)))
             .Where(p => DialogOhneSchloss(File.ReadAllText(p)))
             .Select(p => Path.GetRelativePath(wurzel, p))
@@ -94,6 +107,9 @@ public class KatalogschlossWacheTests
     [InlineData("[Parameter] public Func<int, string>? KatalogLoeschen { get; set; }", true)]
     [InlineData("[Parameter] public Func<int, string>? KatalogLoeschen { get; set; }\n<Katalogschloss Weg=\"@Schloss\" />", false)]
     [InlineData("<Katalogliste Zeilen=\"@_z\" />", false)]
+    [InlineData("<Kennzeichen Kurztext=\"@K\" />\n<button @onclick=\"() => Loeschen(v)\">x</button>", true)]
+    [InlineData("<Kennzeichen Kurztext=\"@K\" />\n@onclick=\"() => Loeschen(v)\"\nprivate readonly Schlossumschaltung _s = new();", false)]
+    [InlineData("<Kennzeichen Kurztext=\"@K\" />", false)]
     public void Gegenprobe_Dialog(string text, bool verstoss) => Assert.Equal(verstoss, DialogOhneSchloss(text));
 
     [Theory]

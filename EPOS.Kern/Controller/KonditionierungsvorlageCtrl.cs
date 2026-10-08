@@ -113,6 +113,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> der Vorlagenverwaltung (Entscheid AD-Q15,
+        /// Anwenderentscheid 08.10.2026): schaltet nur das Kennzeichen <c>ReadOnly</c> der Vorlagen, eine
+        /// Transaktion, kein Wert (<see cref="Auslieferungskennzeichen"/>). Eine gesperrte Vorlage ist nur
+        /// lesbar; Duplizieren und „Kopieren nach …" bleiben erlaubt.
+        /// </summary>
+        public static Auslieferungskennzeichen.Ergebnis SchlossSetzen(IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.Setzen("KONDITIONIERUNGSVORLAGE", ids, gesperrt);
+
+        /// <inheritdoc/>
+        public Auslieferungskennzeichen.Ergebnis SchlossUmschalten(IReadOnlyList<int> ids, bool gesperrt)
+            => SchlossSetzen(ids, gesperrt);
+
+        /// <summary>
         /// <b>Die Reihenfolge der Auswahlliste</b> (Teilkonzept 7.4) als reine Funktion — dieselbe wie
         /// <c>ORDER BY IIF("ReadOnly" = 1, 0, 1), "Bezeichner" COLLATE NOCASE, "ID"</c> in
         /// <see cref="Liste"/>: die ausgelieferten zuerst, dann nach Name ohne Unterschied der

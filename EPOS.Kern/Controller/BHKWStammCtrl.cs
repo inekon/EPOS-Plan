@@ -947,15 +947,11 @@ namespace WindowsFormsApplication1
         /// Satz wird VOLLSTAENDIG gelesen und nur in den angezeigten Feldern geaendert,
         /// weil <see cref="Update"/> alle Spalten schreibt und ein halb gefuelltes Modell
         /// Kosten, Emissionen und Wirkungsgrad nullen wuerde.</para>
-        /// <para><paramref name="schreibschutzUebergehen"/> ist die Antwort auf die
-        /// Rueckfrage <c>ADM_SCHUTZ_FRAGE</c>, die der Aufrufer stellt, wenn
-        /// <see cref="IstSchreibgeschuetzt"/> zutrifft. Der Schutz wird nur fuer genau
-        /// diesen Schreibvorgang aufgehoben — dieselbe Regel wie beim Knopf
-        /// „Überschreiben" des Katalogeditors.</para>
+        /// <para><b>Ein Satz mit Schloss wird nie geschrieben</b> (AD-Q15): Er ist nur lesbar,
+        /// bis der Anwender das Schloss aufhebt (<see cref="SchlossSetzen"/>).</para>
         /// </remarks>
         public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
-                                                              AnzeigefelderBhkw felder,
-                                                              bool schreibschutzUebergehen)
+                                                              AnzeigefelderBhkw felder)
         {
             if (string.IsNullOrEmpty(bezeichner) || felder == null)
                 return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
@@ -983,12 +979,8 @@ namespace WindowsFormsApplication1
 
                 var schreiber = new BHKWStammCtrl { model = m };
                 if (m.m_bReadOnly)
-                {
-                    if (!schreibschutzUebergehen)
-                        return new SpeicherErgebnis(false, Text("BHKWK_MSG_SCHUTZ",
-                            "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
-                    schreiber.SchreibschutzUebergehen = true;
-                }
+                    return new SpeicherErgebnis(false, Text("BHKWK_MSG_SCHUTZ",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
 
                 if (!schreiber.Update())
                     return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",

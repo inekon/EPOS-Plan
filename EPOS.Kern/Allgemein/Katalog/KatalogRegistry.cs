@@ -612,6 +612,20 @@ namespace WindowsFormsApplication1
                     }
                 }
             },
+            new KatalogDefinition
+            {
+                // DIE KONDITIONIERUNGSVORLAGEN (Anwenderentscheid 08.10.2026): Sie stehen im Register der
+                // Katalogfassung und bekommen hier ihren Eintrag, damit Auslieferungskennzeichen ihr Schloss
+                // umschaltet (KonditionierungsvorlageCtrl.SchlossSetzen). Derselbe Name darf in jeder der
+                // fuenf Groessen einmal stehen - die Groesse ist zweiter Teil des natuerlichen Schluessels.
+                // Gepflegt wird in der Vorlagenverwaltung, nicht im Dublettendialog.
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Uebernommene Vorlagen sind Kopien am
+                // Gebaeude bzw. an der Zone, nie Verweise auf den Katalog.
+                Schluessel = "KONDITIONIERUNGSVORLAGE",
+                Tabelle = SchemaKatalog.TAB_KONDITIONIERUNGSVORLAGE_STAMM,
+                ImDublettendialog = false,
+                SchluesselZusatzSpalten = new[] { "Groesse" }
+            },
         };
 
         /// <summary>Alle Kataloge des Admin-Menues (Entscheidung 9.5 des Konzepts).</summary>
@@ -673,6 +687,7 @@ namespace WindowsFormsApplication1
                 case "SOLARGANGLINIE": return MyResource.Resource.ADM_KATALOG_SOLARGANGLINIE;
                 case "WAERMEBEDARF": return MyResource.Resource.ADM_KATALOG_WAERMEBEDARF;
                 case "GEBAEUDETYP": return MyResource.Resource.ADM_KATALOG_GEBAEUDETYP;
+                case "KONDITIONIERUNGSVORLAGE": return MyResource.Resource.ADM_KATALOG_KONDITIONIERUNGSVORLAGE;
                 default: return schluessel ?? "";
             }
         }

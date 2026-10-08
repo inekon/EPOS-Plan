@@ -56,6 +56,13 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = der Name ist frei, sonst die benannte Ablehnung.
         /// </summary>
         string NamePruefen(Konditionierungsgroesse groesse, string bezeichner, long ausser);
+
+        /// <summary>
+        /// <b>Das Schloss umschalten</b> (AD-Q15, Anwenderentscheid 08.10.2026): nur das Kennzeichen
+        /// <c>ReadOnly</c> der genannten Vorlagen, kein Inhalt. Eine gesperrte Vorlage ist nur lesbar;
+        /// Duplizieren und „Kopieren nach …" bleiben erlaubt.
+        /// </summary>
+        Auslieferungskennzeichen.Ergebnis SchlossUmschalten(IReadOnlyList<int> ids, bool gesperrt);
     }
 
     /// <summary>
@@ -245,6 +252,28 @@ namespace WindowsFormsApplication1
         {
             KonditionierungsvorlageCtrl.Namensregel(groesse, bezeichner, Namen(groesse, ausser), out string meldung);
             return meldung;
+        }
+
+        /// <inheritdoc/>
+        public Auslieferungskennzeichen.Ergebnis SchlossUmschalten(IReadOnlyList<int> ids, bool gesperrt)
+        {
+            var eintraege = new List<Eintrag>();
+            foreach (int id in (ids ?? Array.Empty<int>()).Distinct())
+            {
+                Eintrag e = Finde(id);
+                if (e == null)
+                    return new Auslieferungskennzeichen.Ergebnis(false, Fehlt(id), Array.Empty<int>(), Array.Empty<int>());
+                eintraege.Add(e);
+            }
+            var geaendert = new List<int>();
+            var unveraendert = new List<int>();
+            foreach (Eintrag e in eintraege)
+            {
+                if (e.Kopf.Ausgeliefert == gesperrt) { unveraendert.Add((int)e.Kopf.Id); continue; }
+                e.Kopf = e.Kopf with { Ausgeliefert = gesperrt };
+                geaendert.Add((int)e.Kopf.Id);
+            }
+            return new Auslieferungskennzeichen.Ergebnis(true, "", geaendert, unveraendert);
         }
 
         private Eintrag Finde(long id) => _eintraege.FirstOrDefault(e => e.Kopf.Id == id);

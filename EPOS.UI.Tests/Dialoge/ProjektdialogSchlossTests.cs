@@ -58,7 +58,7 @@ public class ProjektdialogSchlossTests : EposBunitContext
     private IRenderedComponent<BhkwDialog> Aufbauen(
         Schlosspruefung pruefung, bool mitSchloss = true,
         Func<int, string>? katalogLoeschen = null,
-        Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>? speichern = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? speichern = null,
         Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null)
     {
         IReadOnlyList<Katalogfilterzeile> zeilen = Zeilen();
@@ -76,7 +76,7 @@ public class ProjektdialogSchlossTests : EposBunitContext
             .Add(x => x.EditorGaben, editorGaben ?? (_ => new Dictionary<string, object>()))
             .Add(x => x.Katalogfelder, _ => Felder())
             .Add(x => x.KatalogfelderSpeichern, speichern ??
-                 ((n, _, _) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)))
+                 ((n, _) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)))
             .Add(x => x.Schloss, mitSchloss ? pruefung.Weg() : null));
     }
 
@@ -122,9 +122,8 @@ public class ProjektdialogSchlossTests : EposBunitContext
     {
         var pruefung = new Schlosspruefung(21);
         string? gespeichert = null;
-        var cut = Aufbauen(pruefung, speichern: (n, _, schutz) =>
+        var cut = Aufbauen(pruefung, speichern: (n, _) =>
         {
-            Assert.False(schutz);
             gespeichert = n;
             return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
         });
@@ -167,7 +166,7 @@ public class ProjektdialogSchlossTests : EposBunitContext
         string? gespeichert = null;
         var cut = Aufbauen(new Schlosspruefung(),
             katalogLoeschen: id => { geloescht.Add(id); return ""; },
-            speichern: (n, _, _) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "ok", n); });
+            speichern: (n, _) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "ok", n); });
 
         KatalogsatzWaehlen(cut, 0);       // „Modul A" steht in der Projektliste
 
