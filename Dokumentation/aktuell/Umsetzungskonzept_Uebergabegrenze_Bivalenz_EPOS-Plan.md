@@ -2,7 +2,7 @@
 
 **Auftrag des Anwenders vom 08.10.2026** („Erstelle ein Umsetzungskonzept zur Integration in EPOS-Plan") ·
 **Stand 08.10.2026 — Fassung 1, Umsetzungsentwurf, zur Abnahme durch den Anwender; Entscheide U‑1, U‑2 und U‑4
-vom 08.10.2026 eingearbeitet** · Codestand `b1a34adca`
+sowie UB‑Q1–Q11 (nach Empfehlung, UB‑Q3 b) vom 08.10.2026 eingearbeitet** · Codestand `b1a34adca`
 (`origin/ios_migration_september`) · Schemastand 201 (`Ak3KSchema`) · Referenzbasis
 `2026-10-07_R43_Kaelteseite_AK3K` · Fachkonzept
 [`Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) (Fassung 2) ·
@@ -12,8 +12,8 @@ Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html`.
 Bedienung, Vorgabewerte, Prüfungen, Fragen UB‑Q1 bis UB‑Q11). Dieses Papier sagt, *wie, wo, in welcher Reihenfolge
 und mit welcher Abnahme* es gebaut wird. Es wiederholt keinen Fachinhalt; Verweise der Form „FK 4.3" zeigen auf
 Abschnitte des Fachkonzepts. Eigene Ableitungen sind mit „(Abl.)" gekennzeichnet. Wo dieses Papier vom Fachkonzept
-abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4); U‑1, U‑2, U‑3 und U‑4 sind entschieden, die Fragen
-UB‑Q1 bis UB‑Q11 liegen beim Anwender.
+abweicht, steht das ausdrücklich in Abschnitt 1 (U‑1 bis U‑4); U‑1, U‑2, U‑3 und U‑4 sind entschieden, ebenso
+UB‑Q1 bis UB‑Q11 (08.10.2026, nach Empfehlung, UB‑Q3 b).
 
 ---
 
@@ -27,8 +27,8 @@ UB‑Q1 bis UB‑Q11 liegen beim Anwender.
    Referenzprojekt außer dem neuen 1060 ändert sein Ergebnis — der Referenzlauf gegen R43 ist für die 24
    Bestandsprojekte byte-gleich bzw. innerhalb der Toleranz unverändert. Das ist schärfer als FK 5.3 (dort ändern
    1047, 1054, 1056, 1058) und wird über U‑1 erreicht (entschieden 08.10.2026: a, Opt-in).
-3. **Offene Entscheide werden zu Umsetzungsvorgaben.** Gebaut wird nach der Empfehlung des Fachkonzepts; jede
-   Gegenoption bleibt über ein Feld oder einen Schalter erreichbar, ohne Umbau (Tafel unten).
+3. **UB‑Q1 bis UB‑Q11 sind am 08.10.2026 nach Empfehlung entschieden (UB‑Q3 b).** Die Schalter und Felder
+   bleiben, damit die andere Wahl später ohne Umbau greift (Tafel unten).
 4. **Plattformfrei und deterministisch.** Feste Iterationszahl, Startwert aus der Vorstunde, keine Parallelsummen;
    iOS erbt den Rechenweg ohne eigene Zeile (die iOS-Hülle wird nicht berührt, kein iOS-Lauf nötig).
 
@@ -467,11 +467,11 @@ der Tafel 8.1 Zeilen 1 und 2; Bau des Kern-Filters, Tests mit `--filter "FullyQu
 kein Schema, keine Ressourcen, kein Referenzlauf nötig (keine Rechenwirkung). Bericht: Proben n/n, Abweichungen
 zum Zahlenbeispiel.
 
-**Vorher beim Anwender zu entscheiden.** Für E1: nichts zwingend (UB‑Q6 a als Vorgabe). Vor E2: UB‑Q1, UB‑Q4,
-UB‑Q8, UB‑Q11; **U‑1** ist am 08.10.2026 entschieden (a: Wirksamkeit an `Einbindung` gebunden, Bestandsprojekte
-unverändert), ebenso U‑2 (Katalogfeld `Kaeltemittel`), U‑3 (`Ruecklauf_Max` am BHKW als anlagenbedingte
-Abschaltgrenze, getrennt vom Auslegungsrücklauf) und U‑4 (Protokollhinweis). Vor E3: UB‑Q2, UB‑Q3, UB‑Q5 und
-UB‑Q9. Vor E4: UB‑Q7. UB‑Q10 betrifft nur Hinweistexte und kann mit E4 fallen.
+**Entscheidlage.** UB‑Q1 bis UB‑Q11 sind am 08.10.2026 nach Empfehlung entschieden (UB‑Q3 b), ebenso **U‑1**
+(a: Wirksamkeit an `Einbindung` gebunden, Bestandsprojekte unverändert), U‑2 (Katalogfeld `Kaeltemittel`), U‑3
+(`Ruecklauf_Max` am BHKW als anlagenbedingte Abschaltgrenze, getrennt vom Auslegungsrücklauf) und U‑4
+(Protokollhinweis). Der Baubeginn UB‑E1 ist frei ab 08.10.2026; UB‑E2 beginnt nach dem Baubeginn-Schemaschritt
+(Anmeldung durch die bauende Sitzung).
 
 **Pflichten jeder Welle.** Schemaschritt vor dem Bau anmelden (E2‑a); `AGENT_LAEUFT` nur bei Arbeit im
 Hauptbaum; Commits sofort mit genauen Pfaden; kein Push und kein CI-Lauf durch Agenten; Bericht mit Zahlen, ohne
