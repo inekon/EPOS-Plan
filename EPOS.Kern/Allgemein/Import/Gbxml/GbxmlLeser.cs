@@ -80,7 +80,33 @@ namespace WindowsFormsApplication1
             }
 
             new Lesung(abbild, melder, abbruch).Lesen(dokument);
+            NordwinkelVorgeben(abbild, profil?.NordwinkelVorgabeGrad);
+            // Die Flächen der gebildeten Körper nach Randbedingung (17.4) — formatfrei, nach der Drehung der Azimute.
+            Flaechenklassifikation.KlassifizierenAlle(abbild);
             return abbild;
+        }
+
+        /// <summary>
+        /// G5-N (N2/N4): <b>Die Vorgabe des Anwenders dreht die Azimute</b> — beim gbXML-Weg stehen sie wie in der Datei
+        /// (der Dateiwert <c>CADModelAzimuth</c> wird nie still angewandt, 3.2); erst eine Eingabe dreht sie, genau einmal je
+        /// Bauteil und Öffnung: wahrer Azimut = Azimut der Datei − Vorgabe. Die Warnungen zur Nordrichtung der Datei entfallen
+        /// dann, die Meldung zur Vorgabe gibt der Ablauf.
+        /// </summary>
+        internal static void NordwinkelVorgeben(GebaeudeAbbild abbild, double? vorgabeGrad)
+        {
+            if (abbild == null || !(RaumgrundrissSchema.Normiert(vorgabeGrad) is double vorgabe)) return;
+            abbild.NordwinkelVorgabeGrad = vorgabe;
+            var gedreht = new HashSet<AbbildBauteil>(ReferenceEqualityComparer.Instance);
+            void Drehen(AbbildBauteil b)
+            {
+                if (b == null || !gedreht.Add(b)) return;
+                b.AzimutGrad = Nordrichtung.Gedreht(b.AzimutGrad, 0.0, vorgabe);
+                foreach (AbbildBauteil o in b.Oeffnungen) Drehen(o);
+            }
+            foreach (AbbildGebaeude g in abbild.Gebaeude)
+                foreach (AbbildBauteil b in g.Bauteile) Drehen(b);
+            foreach (AbbildBauteil b in abbild.BauteileOhneGebaeude) Drehen(b);
+            abbild.Meldungen.RemoveAll(m => m.Schluessel == P + "KEIN_NORDEN" || m.Schluessel == P + "NORDDREHUNG");
         }
 
         /// <summary>
@@ -172,6 +198,9 @@ namespace WindowsFormsApplication1
                     Datei(PruefStufe.Warnung, "OHNE_AUFBAU", Ganz(_ohneAufbau.Count), Beispiele(_ohneAufbau));
                 foreach (KeyValuePair<string, int> u in _uebergangen)
                     Datei(PruefStufe.Info, "UEBERGANGEN", u.Key, Ganz(u.Value));
+
+                // Raum- und Bauteilkörper aus den Polygonen der Datei (Datenaustauschkonzept 17.2 bis 17.4).
+                GbxmlKoerper.Bilden(_abbild, wurzel);
             }
 
             // --------------------------------------------------------------

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wärmepumpe — Bivalenz und Übergabe</title>
+<!--
+  MOCKUP zum Konzept Dokumentation/aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md
+  (Auftrag des Anwenders vom 07.10.2026: Uebergabe als begrenzender Faktor der Waermepumpe).
+
+  Statisch, 1 280 px breit. Farben, Masse und Bausteinnamen aus EPOS.UI/wwwroot/epos-ui.css
+  (Token woertlich in :root, uebernommen aus Mockups/BerichteKosten_Navigation_A.html); keine
+  neue Farbe ausser den Diagrammreihen. Alle Namen und Zahlen sind Beispielwerte des
+  Zahlenbeispiels im Konzept (Heizkoerper 75/60/20 C, n = 1,3, 10 kW bei -12 C, Hoechstvorlauf
+  55 C, Kennfeld 7 kW bei -7 C bis 9 kW bei +7 C, Mindestspreizung 3 K). Keine Hersteller- oder
+  Produktdaten.
+-->
+<style>
+:root {
+  --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --epos-schriftgroesse: 13px;
+  --epos-rahmen: #b4b2a9;
+  --epos-rahmen-leise: #d9d7cf;
+  --epos-text: #2c2c2a;
+  --epos-text-leise: #5f5e5a;
+  --epos-text-sehr-leise: #888780;
+  --epos-flaeche: #f5f4ef;
+  --epos-quelle-rahmen: #378ADD;
+  --epos-quelle-text: #185FA5;
+  --epos-warn-rahmen: rgb(200, 138, 0);
+  --epos-warn-flaeche: rgb(255, 246, 224);
+  --epos-warn-text: rgb(138, 91, 0);
+  --epos-ampel-gruen: #007800;
+  --epos-karte-rahmen: #D1D5DB;
+  --epos-karte-titel: #0F1F3D;
+  --epos-karte-text: #5A6270;
+  --epos-marke: #005aa0;
+  --epos-ecke: 6px;
+  --epos-touchziel: 44px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: #e6e5e0; color: var(--epos-text);
+       font: var(--epos-schriftgroesse)/1.4 var(--epos-schrift); }
+.blatt { max-width: 1312px; margin: 0 auto; padding: 16px; }
+.blatt > h1 { font-size: 20px; margin: 0 0 4px; color: var(--epos-karte-titel); }
+.blatt > p.unter { margin: 0 0 12px; color: var(--epos-text-leise); max-width: 1100px; }
+.fenster { background: #fff; border: 1px solid #9a988f; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+.dialogkopf { display: flex; justify-content: space-between; align-items: center;
+              padding: 10px 16px; border-bottom: 1px solid var(--epos-rahmen-leise); }
+.dialogkopf b { font-size: 16px; color: var(--epos-karte-titel); }
+.dialogkopf span { color: var(--epos-text-leise); }
+.inhalt { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px; }
+.formulargruppe { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); padding: 10px 12px; }
+.formulargruppe > h2 { font-size: 14px; margin: 0 0 8px; color: var(--epos-karte-titel); }
+.zeile { display: grid; grid-template-columns: 220px 1fr; align-items: center; gap: 8px;
+         min-height: var(--epos-touchziel); }
+.zeile label { color: var(--epos-text); }
+.feld { border: 1px solid var(--epos-rahmen); border-radius: 3px; padding: 6px 8px; min-height: 32px;
+        display: flex; align-items: center; justify-content: space-between; max-width: 260px; }
+.feld .einheit { color: var(--epos-text-leise); margin-left: 8px; }
+.feld--lese { background: var(--epos-flaeche); border-color: var(--epos-rahmen-leise); }
+.schalter { display: inline-flex; align-items: center; gap: 8px; }
+.schalter i { width: 36px; height: 20px; border-radius: 10px; background: var(--epos-marke); position: relative; }
+.schalter i::after { content: ""; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px;
+                     border-radius: 8px; background: #fff; }
+.schalter--aus i { background: var(--epos-rahmen); }
+.schalter--aus i::after { right: auto; left: 2px; }
+.herkunft { color: var(--epos-quelle-text); font-size: 11px; margin-left: 6px; }
+.herleitung { color: var(--epos-text-leise); font-size: 12px; margin: 2px 0 6px 228px; }
+.herleitung--gross { margin: 8px 0 0; padding: 8px 10px; border-left: 3px solid var(--epos-quelle-rahmen);
+                     background: #f3f8fd; color: var(--epos-text); font-size: 13px; }
+.schnellwahl { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 6px 228px; }
+.knopf { min-height: var(--epos-touchziel); padding: 4px 12px; font: inherit; border: 1px solid var(--epos-rahmen);
+         border-radius: var(--epos-ecke); background: #fff; color: var(--epos-text); }
+.knopf--aktiv { border-color: var(--epos-marke); color: var(--epos-marke); font-weight: 600; }
+.warnbanner { border: 1px solid var(--epos-warn-rahmen); background: var(--epos-warn-flaeche);
+              color: var(--epos-warn-text); border-radius: var(--epos-ecke); padding: 8px 12px; margin-top: 8px; }
+.leise { color: var(--epos-text-sehr-leise); font-size: 12px; }
+.kacheln { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px; }
+.kachel { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); padding: 8px; }
+.kachel b { display: block; font-size: 18px; color: var(--epos-karte-titel); }
+.kachel span { color: var(--epos-karte-text); font-size: 12px; }
+.schluss { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 16px;
+           border-top: 1px solid var(--epos-rahmen-leise); }
+svg text { font-family: var(--epos-schrift); }
+@media (max-width: 900px) { .inhalt { grid-template-columns: 1fr; } .kacheln { grid-template-columns: repeat(2, 1fr); }
+  .zeile { grid-template-columns: 1fr; } .herleitung, .schnellwahl { margin-left: 0; } }
+</style>
+</head>
+<body>
+<div class="blatt">
+<h1>Wärmepumpe › Konfiguration — Gruppe „Bivalenz und Übergabe“</h1>
+<p class="unter">Mockup zum Konzept „Übergabegrenze und Bivalenz der Wärmepumpe“. Links die Gruppe mit Feldern und
+Herleitungszeile, rechts das Bivalenzdiagramm, das unter der Herleitungszeile aufklappt und als Berichtsbild
+<code>stand.bild.wp_bivalenz</code> erscheint. Darunter die Kacheln des Ergebnisreiters. Alle Werte sind Beispielwerte.</p>
+
+<div class="fenster">
+  <div class="dialogkopf"><b>Wärmepumpe 1 — Konfiguration</b><span>Projekt „Beispielhaus“ · Kopplung AK1 aktiv</span></div>
+  <div class="inhalt">
+
+    <!-- Linke Spalte: Gruppen -->
+    <div>
+      <div class="formulargruppe">
+        <h2>Betriebszeiten</h2>
+        <div class="zeile"><label>Höchster Vorlauf</label><div class="feld"><span>55</span><span class="einheit">°C</span></div></div>
+        <div class="schnellwahl" aria-label="Schnellwahl nach Kältemittelklasse">
+          <button class="knopf knopf--aktiv" type="button">R410A / R32 · 55 °C</button>
+          <button class="knopf" type="button">R290 · 70 °C</button>
+          <button class="knopf" type="button">R744 · 80 °C, Rücklauf ≤ 35 °C</button>
+          <button class="knopf" type="button">R1234ze(E) · 80 °C</button>
+        </div>
+        <p class="herleitung">Die Schnellwahl schreibt nur den Wert; Herstellerangaben zur Einsatzgrenze haben Vorrang.</p>
+      </div>
+
+      <div class="formulargruppe" style="margin-top:12px">
+        <h2>Bivalenz und Übergabe</h2>
+        <div class="zeile"><label>Bivalenter Betrieb</label><span class="schalter"><i></i>ein</span></div>
+        <div class="zeile"><label>Betriebsart</label><div class="feld"><span>Bivalent-teilparallel</span><span class="einheit">▾</span></div></div>
+        <div class="zeile"><label>Bivalenztemperatur (Abschaltpunkt)</label><div class="feld"><span>−10</span><span class="einheit">°C</span></div></div>
+        <p class="herleitung">eingegeben −10 °C · aus der Übergabe berechnet −3,6 °C · <b>maßgebend −3,6 °C</b></p>
+        <div class="zeile"><label>Einbindung</label><div class="feld"><span>direkt (ohne Puffer)</span><span class="einheit">▾</span></div></div>
+        <div class="zeile"><label>Vorwärmbetrieb (Kessel in Reihe)</label><span class="schalter"><i></i>ein</span></div>
+        <p class="herleitung">Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf.</p>
+        <div class="zeile"><label>Höchster Vorlauf</label><div class="feld feld--lese"><span>55</span><span class="einheit">°C<span class="herkunft">Betriebszeiten</span></span></div></div>
+        <div class="zeile"><label>Spreizung Auslegung / max. / min.</label><div class="feld feld--lese"><span>5 / 10 / 3</span><span class="einheit">K<span class="herkunft">Vorgabe</span></span></div></div>
+        <div class="zeile"><label>Mindestvolumenstrom</label><div class="feld feld--lese"><span>60</span><span class="einheit">%<span class="herkunft">Vorgabe</span></span></div></div>
+        <div class="zeile"><label>Rücklaufgrenze</label><div class="feld feld--lese"><span>—</span><span class="einheit">°C<span class="herkunft">keine</span></span></div></div>
+        <p class="herleitung">Gerätegrenzen werden im Katalog gepflegt; leere Felder rechnen mit der Vorgabe.</p>
+
+        <div class="herleitung herleitung--gross">
+          Übergabe bei Höchstvorlauf 55 °C: <b>5,7 kW von 10,0 kW</b> Heizlast (57 %), Rücklauf 46,5 °C, Spreizung 8,5 K ·
+          erster Bivalenzpunkt <b>+1,8 °C</b> (nach Kennfeld allein −3,8 °C) · zweiter Bivalenzpunkt <b>−3,6 °C</b>
+          (Vorwärmbetrieb) · Wärmepumpe bei −7 °C 70 % der Kesselleistung (§ 43 GModG: mindestens 30 %).
+        </div>
+        <div class="warnbanner">Die Heizflächen begrenzen die Wärmepumpe stärker als ihr Kennfeld: Unter +1,8 °C reicht
+          der Höchstvorlauf nicht mehr für die Heizlast.</div>
+      </div>
+    </div>
+
+    <!-- Rechte Spalte: Bivalenzdiagramm -->
+    <div class="formulargruppe">
+      <h2>Bivalenzdiagramm</h2>
+      <svg viewBox="0 0 660 400" width="100%" role="img" aria-label="Bivalenzdiagramm: Leistung über der Außentemperatur">
+        <!-- Bereiche -->
+        <rect x="70" y="40" width="195.1" height="290" fill="#f3f1ea"/>
+        <rect x="265.1" y="40" width="100.4" height="290" fill="#fbf3dd"/>
+        <rect x="365.5" y="40" width="264.5" height="290" fill="#eef6ee"/>
+        <text x="167" y="56" text-anchor="middle" font-size="11" fill="#5f5e5a">nur Kessel</text>
+        <text x="315" y="56" text-anchor="middle" font-size="11" fill="#8a5b00">Vorwärmung</text>
+        <text x="497" y="56" text-anchor="middle" font-size="11" fill="#007800">Wärmepumpe allein</text>
+        <!-- Gitter und Achsen -->
+        <g stroke="#d9d7cf" stroke-width="1">
+          <line x1="70" y1="277.3" x2="630" y2="277.3"/><line x1="70" y1="224.5" x2="630" y2="224.5"/>
+          <line x1="70" y1="171.8" x2="630" y2="171.8"/><line x1="70" y1="119.1" x2="630" y2="119.1"/>
+          <line x1="70" y1="66.4" x2="630" y2="66.4"/>
+        </g>
+        <line x1="70" y1="330" x2="630" y2="330" stroke="#2c2c2a"/>
+        <line x1="70" y1="40" x2="70" y2="330" stroke="#2c2c2a"/>
+        <g font-size="11" fill="#5f5e5a" text-anchor="end">
+          <text x="64" y="334">0</text><text x="64" y="281">2</text><text x="64" y="228">4</text>
+          <text x="64" y="176">6</text><text x="64" y="123">8</text><text x="64" y="70">10</text>
+        </g>
+        <g font-size="11" fill="#5f5e5a" text-anchor="middle">
+          <text x="70" y="346">−14</text><text x="144.7" y="346">−10</text><text x="219.3" y="346">−6</text>
+          <text x="294" y="346">−2</text><text x="368.7" y="346">2</text><text x="443.3" y="346">6</text>
+          <text x="518" y="346">10</text><text x="592.7" y="346">14</text>
+        </g>
+        <text x="350" y="366" text-anchor="middle" font-size="12" fill="#2c2c2a">Außentemperatur [°C]</text>
+        <text x="20" y="185" text-anchor="middle" font-size="12" fill="#2c2c2a" transform="rotate(-90 20 185)">Leistung [kW]</text>
+        <!-- Reihen -->
+        <polyline points="70,49.9 630,297" fill="none" stroke="#0F1F3D" stroke-width="2.5"/>
+        <polyline points="70,171.8 630,58.8" fill="none" stroke="#378ADD" stroke-width="2" stroke-dasharray="6 4"/>
+        <polyline points="70,180.3 630,180.3" fill="none" stroke="#c88a00" stroke-width="2" stroke-dasharray="2 3"/>
+        <polygon points="630,297 592.7,280.6 555.3,264.1 518,247.6 480.7,231.1 443.3,214.7 406,198.2 368.7,181.7 365.5,180.3 359.3,186.3 350,195.6 340.7,204.9 331.3,214 322,223.1 312.7,232.1 303.3,241.1 294,250 284.7,258.9 275.3,267.7 265.1,277.3 265.1,330 630,330"
+                 fill="#007800" fill-opacity="0.18" stroke="#007800" stroke-width="1.5"/>
+        <!-- Marken -->
+        <line x1="365.5" y1="40" x2="365.5" y2="330" stroke="#2c2c2a" stroke-dasharray="4 3"/>
+        <line x1="265.1" y1="40" x2="265.1" y2="330" stroke="#2c2c2a" stroke-dasharray="4 3"/>
+        <line x1="259.7" y1="100" x2="259.7" y2="330" stroke="#378ADD" stroke-dasharray="1 3"/>
+        <line x1="144.7" y1="40" x2="144.7" y2="330" stroke="#888780" stroke-dasharray="1 4"/>
+        <text x="369" y="76" font-size="11" fill="#2c2c2a">θ_biv,1 = +1,8 °C</text>
+        <text x="261" y="90" font-size="11" fill="#2c2c2a" text-anchor="end">θ_biv,2 = −3,6 °C</text>
+        <text x="148" y="320" font-size="10" fill="#888780">Abschaltpunkt −10 °C</text>
+        <text x="256" y="112" font-size="10" fill="#185FA5" text-anchor="end">nach Kennfeld −3,8 °C</text>
+        <!-- Legende -->
+        <g font-size="11" fill="#2c2c2a">
+          <line x1="80" y1="386" x2="104" y2="386" stroke="#0F1F3D" stroke-width="2.5"/><text x="108" y="390">Heizlast</text>
+          <line x1="170" y1="386" x2="194" y2="386" stroke="#378ADD" stroke-width="2" stroke-dasharray="6 4"/><text x="198" y="390">Kennfeld bei 55 °C</text>
+          <line x1="318" y1="386" x2="342" y2="386" stroke="#c88a00" stroke-width="2" stroke-dasharray="2 3"/><text x="346" y="390">Übergabe bei 55 °C</text>
+          <rect x="474" y="380" width="24" height="12" fill="#007800" fill-opacity="0.18" stroke="#007800"/><text x="502" y="390">Wärmepumpe</text>
+        </g>
+      </svg>
+      <p class="leise">Heizlast als Gerade aus Auslegungspunkt (10 kW bei −12 °C, Raum 20 °C). Zwischen den Bivalenzpunkten
+        hebt die Wärmepumpe den Rücklauf bis 55 °C (0 °C: 4,4 kW von 6,3 kW); unter −3,6 °C bleibt weniger als die
+        Mindestspreizung von 3 K, die Wärmepumpe schaltet ab. Ohne Vorwärmbetrieb endete ihr Beitrag bei +1,8 °C.</p>
+    </div>
+  </div>
+
+  <div style="padding:0 16px 12px">
+    <div class="formulargruppe">
+      <h2>Ergebnisreiter Wärmepumpe — Betriebsbereiche (Beispiel eines Jahreslaufs)</h2>
+      <div class="kacheln">
+        <div class="kachel"><b>5 210 h</b><span>Wärmepumpe allein · 14,2 MWh</span></div>
+        <div class="kachel"><b>0 h</b><span>mit Kessel parallel · 0,0 MWh</span></div>
+        <div class="kachel"><b>870 h</b><span>Vorwärmung · 3,1 MWh WP, 1,4 MWh Kessel</span></div>
+        <div class="kachel"><b>310 h</b><span>nur Kessel · 2,2 MWh</span></div>
+        <div class="kachel"><b>5,7 kW</b><span>Übergabe bei 55 °C · Bivalenz +1,8 / −3,6 °C</span></div>
+      </div>
+      <p class="leise">Stundenmodell: Speichermasse des Estrichs, Ventil- und Reglerdynamik und die Abtauung sind nicht
+        abgebildet. Herstellerwerte zu Spreizung, Volumenstrom und Einsatzgrenze haben Vorrang vor den Vorgaben.</p>
+    </div>
+  </div>
+
+  <div class="schluss"><button class="knopf" type="button">Abbrechen</button><button class="knopf knopf--aktiv" type="button">Speichern</button></div>
+</div>
+</div>
+</body>
+</html>

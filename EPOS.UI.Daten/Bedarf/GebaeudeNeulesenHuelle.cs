@@ -215,7 +215,7 @@ namespace WindowsFormsApplication1
             {
                 // HC-5c: auch ein fehlender oder abweichender Nordwinkel der Quelle macht das Nachtragen sinnvoll.
                 return !GebaeudeImportCtrl.Gleich(new GebaeudeImportCtrl().LesenRaumgrundrisseDerQuelle(q.ID), e.Raumgrundrisse)
-                       || !GebaeudeImportCtrl.NordwinkelGleich(GebaeudeImportCtrl.NordwinkelDerQuelle(q.ID), e.Abbild?.NordwinkelGrad);
+                       || !GebaeudeImportCtrl.NordwinkelGleich(GebaeudeImportCtrl.NordwinkelDerQuelle(q.ID), e.Abbild?.NordwinkelWirksamGrad);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
@@ -235,7 +235,8 @@ namespace WindowsFormsApplication1
                                                      MyResource.Resource.GEB_NL_GRUNDRISS_TITEL);
             if (!ja) return null;
             GebaeudeImportCtrl.Ergebnis erg = new GebaeudeImportCtrl().SchreibeRaumgrundrisse(q.ID, e.Raumgrundrisse,
-                                                                                          nordwinkelGrad: e.Abbild?.NordwinkelGrad);
+                                                                                          nordwinkelGrad: e.Abbild?.NordwinkelWirksamGrad,
+                                                                                          nordwinkelHerkunft: e.Abbild?.NordwinkelHerkunft);
             return erg.Ok ? Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_GESCHRIEBEN, raeume)
                           : Formatieren(MyResource.Resource.GEB_NL_GRUNDRISS_FEHLER, erg.Meldung);
         }
@@ -275,6 +276,8 @@ namespace WindowsFormsApplication1
                 return GebaeudeZuordnungsModell.FormatText(new IfcImportProfil());
             if (string.Equals(format, GebaeudeQuelle.FORMAT_GBXML, StringComparison.Ordinal))
                 return GebaeudeZuordnungsModell.FormatText(new GbxmlImportProfil());
+            if (string.Equals(format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal))
+                return GebaeudeZuordnungsModell.FormatText(new SqprojImportProfil());
             return format ?? "";
         }
 

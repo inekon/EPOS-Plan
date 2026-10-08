@@ -656,6 +656,16 @@ namespace WindowsFormsApplication1
                     return zeilen;
                 }
 
+                if (profil.Format == GebaeudeQuelle.FORMAT_SQPROJ)
+                {
+                    // Die Projektdatei: der Leser ohne die fangenden Blöcke des Ablaufs — SQLite lesen, Abbild bilden.
+                    schritt = "sqlite";
+                    GebaeudeAbbild sq = profil.LeserErzeugen().Lesen(new MemoryStream(daten, false), profil, null, CancellationToken.None);
+                    zeilen.Add(kopf + " schritt=sqlite ergebnis=" + (sq.Gebaeude.Count > 0 ? "OK" : "FEHLER " + Einzeilig(string.Join(" | ", sq.Meldungen)))
+                               + " gebaeude=" + Ganz(sq.Gebaeude.Count) + " raeume=" + Ganz(sq.Gebaeude.Sum(g => g.Raeume.Count))
+                               + " bauteile=" + Ganz(sq.Gebaeude.Sum(g => g.Bauteile.Count)));
+                    return zeilen;
+                }
                 if (profil.Format != GebaeudeQuelle.FORMAT_IFC)
                 {
                     schritt = "xml";

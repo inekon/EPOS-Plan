@@ -103,6 +103,25 @@ namespace WindowsFormsApplication1
         /// <summary>Die Drehung des Modells gegen Nord [°], wie gelesen; <c>null</c> = die Datei sagt nichts (Annahme 0°).</summary>
         public double? NordwinkelGrad { get; set; }
 
+        /// <summary>
+        /// G5-N: der vom Anwender vorgegebene Nordwinkel [°] (N1/N2, aus „Planoberseite zeigt nach α“); <c>null</c> = keine
+        /// Vorgabe. Der Leser hat die Azimute damit gedreht — statt mit dem Dateiwert bzw. der Annahme.
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
+        /// <summary>
+        /// G5-N: <b>Der Nordwinkel, um den die Azimute dieses Abbilds gedreht sind</b> — die Vorgabe, sonst beim IFC-Weg der
+        /// Dateiwert; <c>null</c> = keiner (Annahme Planoberseite = Nord; beim gbXML-Weg stehen die Azimute wie in der Datei).
+        /// Diesen Wert trägt die Quelle (<see cref="GebaeudeQuelle.NordwinkelGrad"/>).
+        /// </summary>
+        public double? NordwinkelWirksamGrad
+            => NordwinkelVorgabeGrad ?? (string.Equals(Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) ? NordwinkelGrad : null);
+
+        /// <summary>G5-N (N6): die Herkunft des wirksamen Nordwinkels.</summary>
+        public Nordwinkelherkunft NordwinkelHerkunft
+            => NordwinkelVorgabeGrad.HasValue ? Nordwinkelherkunft.Eingabe
+             : NordwinkelWirksamGrad.HasValue ? Nordwinkelherkunft.Datei : Nordwinkelherkunft.Annahme;
+
         /// <summary>Ortsangabe der Datei, nur zur Anzeige.</summary>
         public string Ort { get; set; }
 
@@ -234,6 +253,13 @@ namespace WindowsFormsApplication1
         /// <summary>Tragen Trennflächen aus den Körperpaaren die Nachbarschaft der Räume (Gebäude ohne Raumgrenzen)?</summary>
         public bool KoerperpaareGebildet { get; set; }
 
+        /// <summary>
+        /// Koppeln die Trennflächen des Körperwegs der Bauteilflächen (Abstimmung G5, Teil G5-3) alle Geschosse mit beheizten
+        /// Räumen zu einem Verbund (auch über ein unbeheiztes Geschoss)? Dann ist die Geschosszonierung (Z4) ohne Raumgrenzen die
+        /// Vorgabe — wie bei <see cref="GeschosseGekoppelt"/>.
+        /// </summary>
+        public bool KoerperflaechenGekoppelt { get; set; }
+
         /// <summary>Die Zonenregel, die der Leser vorschlüge (<c>X1</c>, <c>X2</c>, <c>X4</c>); gewählt wird in G4c immer X4.</summary>
         public string Zonenvorschlag { get; set; } = GebaeudeImportProfil.ZONENREGEL_X4;
 
@@ -363,7 +389,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Körper des Raums aus der Datei (IFC: <c>IfcSpace</c>, Darstellung „Body“; Datenaustauschkonzept 15.3),
-        /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML lässt ihn leer. Nur Anzeige.
+        /// formatfrei in Weltkoordinaten [m]; <c>null</c> = keiner. gbXML bildet ihn aus Schale oder Flächen (17.2, Quelle <see cref="Koerperquelle.AusFlaechen"/>). Nur Anzeige.
         /// </summary>
         public Dateikoerper Koerper { get; set; }
 
@@ -736,6 +762,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Dateikoerper Koerper { get; set; }
 
+        /// <summary>
+        /// Der Befund des Körpers aus der Datei (Abstimmung G5, B1): nicht oder nur teilweise lesbar, offen, ohne Beschnitt,
+        /// mit nicht angebundenem Loch oder entartet (<see cref="Bauteilbefunde.Koerpergrund"/>); <see cref="Bauteilbefundgrund.Keiner"/>
+        /// = lesbar oder keine Darstellung. Gesetzt allein vom IFC-Leser, auch wo der Körper nur für die Rechnung gelesen wird.
+        /// </summary>
+        public Bauteilbefundgrund Koerpergrund { get; set; }
+
         /// <summary>Meldungen zu genau diesem Bauteil (Geometrie, Aufbau, Verweise).</summary>
         public List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
     }
@@ -791,6 +824,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Typ einer Geometrie, die sich nicht auswerten lässt; <c>null</c> = ausgewertet oder keine.</summary>
         public string Geometriefehler { get; set; }
+
+        /// <summary>
+        /// Nur der Körperweg (<see cref="Grenzherkunft.Bauteilkoerper"/>, G5-3): der Azimut der Außennormale aus Sicht des Raums
+        /// [°], 0° = Nord, im Uhrzeigersinn, nach TrueNorth bzw. <c>IfcMapConversion</c>; <c>null</c> = waagerecht oder nicht bestimmt.
+        /// </summary>
+        public double? AzimutGrad { get; set; }
+
+        /// <summary>Nur der Körperweg: die Neigung der Außennormale aus Sicht des Raums [°] (0° = nach oben, 180° = nach unten); <c>null</c> = keine.</summary>
+        public double? NeigungGrad { get; set; }
+
+        /// <summary>
+        /// Nur der Körperweg: Liegt der Raum auf der Gegenseite der maßgeblichen Seite des Bauteilkörpers (G5-1)? Dann gilt der
+        /// Aufbau gespiegelt.
+        /// </summary>
+        public bool Gegenseite { get; set; }
     }
 
     /// <summary>Ein Aufbau (gbXML <c>Construction</c>) mit seinen Schichten.</summary>

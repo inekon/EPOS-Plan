@@ -134,6 +134,54 @@ namespace WindowsFormsApplication1
             return s;
         }
 
+        /// <summary>
+        /// Führt eine <b>Pflege ohne Kostenänderung</b> aus, ohne den Projektstempel zu bewegen:
+        /// Der Stempel des Projekts wird vorher gelesen und danach unverändert zurückgeschrieben.
+        ///
+        /// <para><b>Wofür:</b> Die Selbstheilung der Anlagenzuordnung
+        /// (<c>KostenProjektPositionenCtrl.ZuordnungReparieren</c>) schreibt <c>Tab_ProjektWerte</c>
+        /// und liefe sonst durch die Trigger des Projektstempels. Sie läuft vor jeder Rechnung und
+        /// vor dem Aufbau der Kostenseite; sie stellt nur nach, was eine gestempelte Änderung schon
+        /// verursacht hat (Anlage gelöscht oder neu angelegt). Stempelte sie selbst, hinge das Band
+        /// davon ab, ob die Kostenseite nach der Rechnung geöffnet wurde.</para>
+        ///
+        /// <para>Das Zurückschreiben setzt allein die Stempelspalte von <c>Tab_Projekt</c>; deren
+        /// Trigger feuert nur über den Emissionsmodus. Eine Datenbank vor dem Schemaschritt
+        /// <see cref="KostenStempelSchema.SCHRITT"/> kennt die Spalte nicht — dann läuft nur die Pflege.</para>
+        /// </summary>
+        internal static void OhneProjektstempel(int idProjekt, Action pflege)
+        {
+            if (pflege == null) return;
+            bool spalte = false;
+            try { spalte = idProjekt > 0 && DataRepository.SpalteVorhanden(KostenStempelSchema.TAB_PROJEKT, KostenStempelSchema.SPALTE_PROJEKT); }
+            catch { spalte = false; }
+            if (!spalte) { pflege(); return; }
+
+            object vorher = DataRepository.ExecuteScalar(SQL_PROJEKTSTEMPEL_LESEN, new DbParam("@p", idProjekt));
+            try
+            {
+                pflege();
+            }
+            finally
+            {
+                // Der Text so, wie er stand: Liefert die Zugriffsschicht ein Datum, wird es im
+                // Stempelformat zurückgeschrieben, nie im Format der Kultur.
+                var wert = new DbParam("@s", DbParamTyp.VarWChar);
+                wert.Wert = vorher == null || vorher == DBNull.Value
+                    ? (object)DBNull.Value
+                    : vorher is DateTime d
+                        ? d.ToString(KostenStempelSchema.FORMAT, CultureInfo.InvariantCulture)
+                        : Convert.ToString(vorher, CultureInfo.InvariantCulture);
+                DataRepository.ExecuteSQL(SQL_PROJEKTSTEMPEL_SETZEN, wert, new DbParam("@p", idProjekt));
+            }
+        }
+
+        private const string SQL_PROJEKTSTEMPEL_LESEN =
+            "SELECT \"" + KostenStempelSchema.SPALTE_PROJEKT + "\" FROM \"" + KostenStempelSchema.TAB_PROJEKT + "\" WHERE \"ID\" = ?";
+
+        private const string SQL_PROJEKTSTEMPEL_SETZEN =
+            "UPDATE \"" + KostenStempelSchema.TAB_PROJEKT + "\" SET \"" + KostenStempelSchema.SPALTE_PROJEKT + "\" = ? WHERE \"ID\" = ?";
+
         /// <summary>Der Grund, aus dem das letzte <see cref="Lies"/> keine Stempel lesen konnte; <c>null</c> = keiner.</summary>
         public static string Lesefehler { get; private set; }
 

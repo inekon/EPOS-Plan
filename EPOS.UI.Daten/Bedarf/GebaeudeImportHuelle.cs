@@ -101,8 +101,9 @@ namespace WindowsFormsApplication1
         private IReadOnlyDictionary<string, int?> _baustoffzuordnungen = new Dictionary<string, int?>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für gbXML und IFC, das Profil
-        /// folgt der Endung der gewählten Datei.
+        /// Die Hülle des Einstiegs im Gebäudedialog: EINE Dateiwahl für IFC, gbXML und die Projektdatei
+        /// (<c>.sqproj</c>), das Profil folgt der Endung der gewählten Datei; die Quellenwahl des Dialogs
+        /// (<see cref="Quellen"/>) setzt nur den Filter.
         /// </summary>
         /// <param name="idProjekt">Das Projekt für den Hinweis „schon importiert"; 0 = keines — dann fragt die Hülle keine Datenbank.</param>
         /// <param name="ios">
@@ -205,6 +206,9 @@ namespace WindowsFormsApplication1
                 ["ProjektdateiWaehlen"] = new Func<Task<string>>(ProjektdateiWaehlenAsync),
                 ["ProjektdateiLesen"] = new Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>(ProjektdateiLesenAsync),
                 ["ProjektdateiEntfernen"] = new Action(ProjektdateiEntfernen),
+                // G5-N (N1-N3): die Nordrichtung des gelesenen Imports und ihr Setzen samt Neulesen.
+                ["NordrichtungDaten"] = new Func<GebaeudeNordrichtungDaten>(NordrichtungDaten),
+                ["NordrichtungSetzen"] = new Func<double?, CancellationToken, Task<GebaeudeLesestand>>(NordrichtungSetzenAsync),
             };
             // Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofile…" am Zonenbaum - nur mit Projekt, denn ohne
             // Projekt fragt die Hülle keine Datenbank (Prüfstand ohne Datenbank).
@@ -222,9 +226,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Was das Format ausmacht, als Daten für die Komponente — mit festem Profil dessen Angaben,
-        /// sonst die beider Formate: Formatnamen, der gemeinsame Filter, die Grenze je Format und
-        /// Plattform („gbXML 25 MB · IFC 50 MB"), die Zonierungsregeln beider und der gemeinsame
-        /// Hilfeschlüssel.
+        /// sonst die aller drei Formate: Formatnamen, der gemeinsame Filter, die Grenze je Format und
+        /// Plattform („gbXML 25 MB · IFC 50 MB · Projektdatei 250 MB"), die Zonierungsregeln aller, der
+        /// gemeinsame Hilfeschlüssel und die Einträge der Quellenwahl (<see cref="Quellen"/>).
         /// </summary>
         internal GebaeudeImportProfilDaten ProfilDaten()
         {
@@ -236,7 +240,7 @@ namespace WindowsFormsApplication1
                     _festesProfil.Zonierungsregeln.Select(GebaeudeZuordnungsModell.ZonenregelText).ToList(),
                     _festesProfil.HilfeSchluessel);
 
-            IReadOnlyList<GebaeudeImportProfil> alle = BeideProfile();
+            IReadOnlyList<GebaeudeImportProfil> alle = AlleProfile();
             return new GebaeudeImportProfilDaten(
                 string.Join(", ", alle.Select(GebaeudeZuordnungsModell.FormatText)),
                 GebaeudeImportProfil.DATEIFILTER_ALLE,
@@ -244,12 +248,56 @@ namespace WindowsFormsApplication1
                                        .Select(p => GebaeudeZuordnungsModell.FormatText(p) + " " +
                                                     GebaeudeZuordnungsModell.GroesseText(p.MaxBytes))),
                 alle.SelectMany(p => p.Zonierungsregeln).Select(GebaeudeZuordnungsModell.ZonenregelText).Distinct().ToList(),
-                GebaeudeImportProfil.HILFE_ZUORDNUNG);
+                GebaeudeImportProfil.HILFE_ZUORDNUNG,
+                Quellen());
         }
 
-        /// <summary>Beide Formate mit der Grenze der Plattform der Hülle — gbXML zuerst.</summary>
-        private IReadOnlyList<GebaeudeImportProfil> BeideProfile()
-            => new[] { MitPlattformgrenze(new GbxmlImportProfil()), MitPlattformgrenze(new IfcImportProfil()) };
+        /// <summary>
+        /// Die drei Formate mit der Grenze der Plattform der Hülle — gbXML, IFC, Projektdatei; die Grenze der Projektdatei
+        /// über <see cref="SqprojImportProfil.GrenzeFuerPlattform"/> (iOS enger als Windows). Eine zu große Datei lehnt
+        /// <see cref="DateiWaehlenAsync"/> benannt ab (<c>ZU_GROSS</c> des Profils).
+        /// </summary>
+        internal IReadOnlyList<GebaeudeImportProfil> AlleProfile()
+            => new GebaeudeImportProfil[]
+            {
+                MitPlattformgrenze(new GbxmlImportProfil()),
+                MitPlattformgrenze(new IfcImportProfil()),
+                MitPlattformgrenze(new SqprojImportProfil()),
+            };
+
+        /// <summary>
+        /// <b>Die Quellenwahl des Dialogs</b>: „IFC“ und „gbXML“ mit dem Filter ihres Profils, „IFC + Projektdatei“ (IFC lesen,
+        /// danach die Projektdatei dazuladen) mit dem IFC-Filter und „Nur Projektdatei (.sqproj)“ mit dem Filter
+        /// <c>GIMP_DLG_SQ_FILTER</c>, den der iOS-Adapter in seine Typkennung übersetzt. Mit festem Profil keine Wahl.
+        /// </summary>
+        internal IReadOnlyList<GebaeudeImportQuellwahl> Quellen()
+        {
+            if (_festesProfil != null) return Array.Empty<GebaeudeImportQuellwahl>();
+            var ifc = new IfcImportProfil();
+            var gbxml = new GbxmlImportProfil();
+            string ifcText = GebaeudeZuordnungsModell.FormatText(ifc);
+            return new[]
+            {
+                new GebaeudeImportQuellwahl(QUELLE_IFC, ifcText, ifc.Dateifilter),
+                new GebaeudeImportQuellwahl(QUELLE_GBXML, GebaeudeZuordnungsModell.FormatText(gbxml), gbxml.Dateifilter),
+                new GebaeudeImportQuellwahl(QUELLE_IFC_PROJEKTDATEI, Formatieren(MyResource.Resource.GIMP_DLG_QUELLE_MIT_SQPROJ, ifcText),
+                                            ifc.Dateifilter, GebaeudeImportWeg.MitProjektdatei),
+                new GebaeudeImportQuellwahl(QUELLE_PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_SQPROJ,
+                                            MyResource.Resource.GIMP_DLG_SQ_FILTER, GebaeudeImportWeg.NurProjektdatei),
+            };
+        }
+
+        /// <summary>Schlüssel der Quellenwahl: IFC allein (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_IFC = GebaeudeQuelle.FORMAT_IFC;
+
+        /// <summary>Schlüssel der Quellenwahl: gbXML allein (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_GBXML = GebaeudeQuelle.FORMAT_GBXML;
+
+        /// <summary>Schlüssel der Quellenwahl: IFC lesen, danach die Projektdatei dazuladen.</summary>
+        internal const string QUELLE_IFC_PROJEKTDATEI = "IFC_SQPROJ";
+
+        /// <summary>Schlüssel der Quellenwahl: allein die Projektdatei (zugleich der Persistenzwert des Formats).</summary>
+        internal const string QUELLE_PROJEKTDATEI = GebaeudeQuelle.FORMAT_SQPROJ;
 
         /// <summary>Belegt die Größengrenze eines Profils für die Plattform der Hülle (Softwarearchitektur 1.5, Regel 2).</summary>
         private GebaeudeImportProfil MitPlattformgrenze(GebaeudeImportProfil profil)
@@ -363,6 +411,53 @@ namespace WindowsFormsApplication1
             return Lesestand(zahl, profil);
         }
 
+        /// <summary>
+        /// G5-N (N1–N3): <b>Die Nordrichtung des gelesenen Imports</b> für den Zuordnungsdialog — was die Datei nennt (Wert
+        /// oder nichts), die wirksame Richtung der Planoberseite, ihre Herkunft und die Schnellwahl; <c>null</c> vor dem Lesen.
+        /// </summary>
+        internal GebaeudeNordrichtungDaten NordrichtungDaten() => GebaeudeAusrichtungHuelle.Daten(_ablauf.Abbild);
+
+        /// <summary>
+        /// G5-N (N2): <b>Setzt die Richtung der Planoberseite</b> und liest die Datei damit neu (aus dem Puffer des Ablaufs, die
+        /// Projektdatei bleibt): Alle Azimute, Grundrisse und die Ansicht folgen dem neuen Nordwinkel genau einmal.
+        /// <c>null</c> = keine Eingabe (Dateiwert bzw. Annahme Planoberseite = Nord). Danach ist neu zuzuordnen
+        /// (<see cref="ZuordnenMitNordrichtung"/>).
+        /// </summary>
+        internal GebaeudeLesestand NordrichtungSetzen(double? planoberseiteGrad, CancellationToken abbruch = default)
+        {
+            if (_ablauf.Abbild == null || _profil == null) return new GebaeudeLesestand(false, null, Array.Empty<string>(), Array.Empty<GebaeudeImportMeldung>());
+            _satz = null;
+            int zahl = _ablauf.NordwinkelVorgeben(Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad), null, abbruch);
+            return Lesestand(zahl, _profil);
+        }
+
+        /// <summary>
+        /// G5-N (N2): <see cref="NordrichtungSetzen"/> im Arbeitsfaden (Kulturweitergabe) — eine große Datei liest nicht im
+        /// Oberflächenfaden neu.
+        /// </summary>
+        internal async Task<GebaeudeLesestand> NordrichtungSetzenAsync(double? planoberseiteGrad, CancellationToken abbruch)
+        {
+            if (_ablauf.Abbild == null || _profil == null) return NordrichtungSetzen(planoberseiteGrad, abbruch);
+            _satz = null;
+            double? nordwinkel = Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad);
+            int zahl = await Kulturweitergabe.Starten(() => _ablauf.NordwinkelVorgeben(nordwinkel, null, abbruch), abbruch);
+            return Lesestand(zahl, _profil);
+        }
+
+        /// <summary>
+        /// G5-N (N2): <b>Neu zuordnen mit gesetzter Nordrichtung</b> — liest neu, wenn die Richtung von der wirksamen abweicht,
+        /// und ordnet dann mit <paramref name="anfrage"/> zu. Ein Lesefehler ergibt einen leeren Stand.
+        /// </summary>
+        internal GebaeudeImportStand ZuordnenMitNordrichtung(GebaeudeZuordnungsanfrage anfrage, double? planoberseiteGrad)
+        {
+            if (_ablauf.Abbild == null) return new GebaeudeImportStand();
+            double? neu = Nordrichtung.NordwinkelAusPlanoberseite(planoberseiteGrad);
+            double? vorgabe = _ablauf.Abbild.NordwinkelVorgabeGrad;
+            bool gleich = neu.HasValue == vorgabe.HasValue && (!neu.HasValue || Math.Abs(neu.Value - vorgabe.Value) <= 1e-9);
+            if (!gleich && !NordrichtungSetzen(planoberseiteGrad).Gelesen) return new GebaeudeImportStand();
+            return Zuordnen(anfrage);
+        }
+
         private GebaeudeLesestand Lesestand(int zahl, GebaeudeImportProfil profil)
         {
             List<GebaeudeImportMeldung> meldungen = _ablauf.Meldungen.Select(MeldungDaten).ToList();
@@ -379,7 +474,8 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.FormatText(profil),
                 GebaeudeZuordnungsModell.SchemaText(profil, q.Schemastand),
                 GebaeudeZuordnungsModell.GroesseText(q.Groesse),
-                GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel));
+                GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel),
+                profil.Format == GebaeudeQuelle.FORMAT_SQPROJ ? GebaeudeImportWeg.NurProjektdatei : GebaeudeImportWeg.Datei);
             return new GebaeudeLesestand(true, kopf, _ablauf.Gebaeude.ToList(), meldungen, SchonImportiertText(q));
         }
 
@@ -1087,7 +1183,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Spalten der Bauteilliste (eine Zone) in der Katalogliste mit Suche, Sortierung und
         /// Trichter je Spalte: Bauteil (die elastische Spalte), Art, Fläche, U-Wert,
-        /// Azimut, Neigung, Randbedingung und Herkunft; die Einheit steht im Spaltenkopf. Bauteil, Fläche,
+        /// Azimut, Neigung, Randbedingung, Herkunft und zuletzt die Herkunft der Fläche („Fläche aus", G5-3); die Einheit steht im Spaltenkopf. Bauteil, Fläche,
         /// U-Wert und Randbedingung stehen immer, die übrigen weichen, wenn die Liste schmal wird.
         /// </summary>
         internal static Katalogfilterprofil Bauteilprofil()
@@ -1104,6 +1200,8 @@ namespace WindowsFormsApplication1
                                   rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(GebaeudeImportZonen.SP_RAND, MyResource.Resource.GIMP_DLG_SP_RAND),
                 new Katalogspalte(GebaeudeImportZonen.SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
+                new Katalogspalte(GebaeudeImportZonen.SP_FLAECHENHERKUNFT, MyResource.Resource.GIMP_FL_SP_FLAECHENHERKUNFT,
+                                  rang: Katalogspaltenrang.BeiPlatz),
             });
         }
 
@@ -1120,6 +1218,7 @@ namespace WindowsFormsApplication1
                 .MitText(Katalogfilterprofil.SpBezeichner, b.Bezeichner ?? "")
                 .MitText(GebaeudeImportZonen.SP_ART, BauteilaufbauCtrl.BauteilartText(b.Bauteilart))
                 .MitZahl(GebaeudeImportZonen.SP_FLAECHE, b.Flaeche, 2)
+                .MitText(GebaeudeImportZonen.SP_FLAECHENHERKUNFT, GebaeudeAufbauHuelle.FlaechenherkunftText(b.Flaechenherkunft))
                 .Mit(GebaeudeImportZonen.SP_UWERT, b.U_Wert.HasValue ? Katalogwert.AusZahl(b.U_Wert, 3)
                                                    : b.ID_Aufbau.HasValue ? Katalogwert.AusText(MyResource.Resource.GIMP_BT_AUS_SCHICHTEN)
                                                    : Katalogwert.Leer)

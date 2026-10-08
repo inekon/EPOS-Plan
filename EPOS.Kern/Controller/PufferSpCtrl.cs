@@ -680,7 +680,19 @@ namespace WindowsFormsApplication1
             StilleDb.NonQuery("DELETE FROM Z_ProjektPufferSp WHERE ID_Pufferspeicher = ?",
                               StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
 
-            // Anlagenzeile (ID_Type = 12) des Speichers
+            // Anlagenzeile (ID_Type = 12) des Speichers - ihre Kostenpositionen gehen mit
+            // (Anwenderentscheid 07.10.2026, wie WizardCtrl.Del_Projekt_ID_Waermeerzeuger).
+            if (bezeichner.Length > 0)
+            {
+                DataTable anlagen = DataRepository.GetDataTable(
+                    "SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",
+                    new DbParam("@proj", idProjekt),
+                    new DbParam("@typ", ProjektPuffer.TYP_PUFFER),
+                    new DbParam("@bez", bezeichner));
+                if (anlagen != null)
+                    foreach (DataRow r in anlagen.Rows)
+                        AnlagenKostenpositionen.Loeschen(null, idProjekt, Convert.ToInt32(r[0], System.Globalization.CultureInfo.InvariantCulture));
+            }
             if (bezeichner.Length > 0)
                 StilleDb.NonQuery(
                     "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ? AND Bezeichner = ?",

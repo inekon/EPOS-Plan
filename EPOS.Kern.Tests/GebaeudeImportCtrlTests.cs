@@ -57,13 +57,13 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_CHECKs_tragen_Laengen_Formate_und_genau_ein_Ziel()
         {
-            Assert.Equal("'IFC','GBXML'", ImportzuordnungSchema.WERTE_FORMAT);
-            Assert.Equal(new[] { DbWerte.IMPORT_FORMAT_IFC, DbWerte.IMPORT_FORMAT_GBXML }, DbWerte.IMPORT_FORMATE);
+            Assert.Equal("'IFC','GBXML','SQPROJ'", ImportzuordnungSchema.WERTE_FORMAT);
+            Assert.Equal(new[] { DbWerte.IMPORT_FORMAT_IFC, DbWerte.IMPORT_FORMAT_GBXML, DbWerte.IMPORT_FORMAT_SQPROJ }, DbWerte.IMPORT_FORMATE);
             Assert.Equal(GebaeudeQuelle.FORMAT_IFC, DbWerte.IMPORT_FORMAT_IFC);
             Assert.Equal(GebaeudeQuelle.FORMAT_GBXML, DbWerte.IMPORT_FORMAT_GBXML);
 
             string q = ImportzuordnungSchema.SQL_CREATE_QUELLE;
-            Assert.Contains("\"Format\" TEXT NOT NULL CHECK (\"Format\" IN ('IFC','GBXML'))", q);
+            Assert.Contains("\"Format\" TEXT NOT NULL CHECK (\"Format\" IN ('IFC','GBXML','SQPROJ'))", q);
             Assert.Contains("CHECK (length(\"Dateiname\") <= " + ImportzuordnungSchema.DATEINAME_MAX + ")", q);
             Assert.Contains("CHECK (length(\"Hash\") = " + ImportzuordnungSchema.HASH_LAENGE + ")", q);
             Assert.Contains("REFERENCES \"Tab_Gebaeude\" (\"ID\") ON DELETE CASCADE", q);
@@ -204,8 +204,9 @@ namespace EPOS.Kern.Tests
                                  new DbParam("@t", t)) == 1, t + " fehlt oder ist nicht STRICT.");
             Assert.Equal(new[] { "ID_Importquelle" }, IndexSpalten(ImportzuordnungSchema.INDEX_ZUORDNUNG_QUELLE));
             Assert.Equal(new[] { "Quellkennung" }, IndexSpalten(ImportzuordnungSchema.INDEX_ZUORDNUNG_KENNUNG));
-            // HC-5c: Schritt 191 hängt den Nordwinkel an die Quelle (RaumgrundrissSchema).
-            Assert.Equal(new[] { "ID" }.Concat(ImportzuordnungSchema.Quellspalten).Concat(new[] { RaumgrundrissSchema.SPALTE_NORDWINKEL }),
+            // HC-5c: Schritt 191 hängt den Nordwinkel an die Quelle (RaumgrundrissSchema), G5-N Schritt 199 seine Herkunft.
+            Assert.Equal(new[] { "ID" }.Concat(ImportzuordnungSchema.Quellspalten)
+                                       .Concat(new[] { RaumgrundrissSchema.SPALTE_NORDWINKEL, NordrichtungSchema.SPALTE }),
                          DataRepository.SpaltenVonTabelle("Tab_Importquelle"));
             Assert.Equal(new[] { "ID" }.Concat(ImportzuordnungSchema.Zuordnungsspalten),
                          DataRepository.SpaltenVonTabelle("Tab_Importzuordnung"));

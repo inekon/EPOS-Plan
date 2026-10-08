@@ -173,6 +173,12 @@ public sealed record GebaeudeAnsichtDaten
     /// <summary>Die Legende des Farbmodus „Aufbau": Zahl und Fläche je Stufe, außen und innen getrennt.</summary>
     public IReadOnlyList<GebaeudeAnsichtAufbausumme> Aufbausummen { get; init; } = Array.Empty<GebaeudeAnsichtAufbausumme>();
 
+    /// <summary>
+    /// Der Weg des Körpers je Bauteilkennung (Datenaustauschkonzept 17.5) — die Zeile „Körper" des Steckbriefs: der eigene
+    /// Bauteilkörper, sonst der Raumkörper, dessen Dreiecke das Bauteil als Quellfläche tragen; leer = kein Körper.
+    /// </summary>
+    public IReadOnlyDictionary<string, GebaeudeAnsichtKoerperweg> Koerperwege { get; init; } = new Dictionary<string, GebaeudeAnsichtKoerperweg>(StringComparer.Ordinal);
+
     /// <summary>Der Steckbrief je Bauteilkennung — geöffnet beim Klick auf Bauteilkörper oder Raumfläche; leer = keiner.</summary>
     public IReadOnlyDictionary<string, BauteilsteckbriefDaten> Steckbriefe { get; init; } = new Dictionary<string, BauteilsteckbriefDaten>(StringComparer.Ordinal);
 
@@ -198,6 +204,35 @@ public sealed record GebaeudeAnsichtDaten
            : gruppe == (byte)Randgruppe.R0 ? GebaeudeAnsichtAufbaustufen.INNEN_NEUTRAL
            : (byte)StufeVon(bauteil);
 
+    // ------------------------------------------------------------------
+    //  Farbmodus „Befund" (Abstimmung G5, B1) — die Daten; die Razor-Seite folgt
+    // ------------------------------------------------------------------
+
+    /// <summary>Der Befund je Bauteilkennung der Datei; leer = kein Bauteilvorschlag bzw. keine gespeicherten Bauteile.</summary>
+    public IReadOnlyDictionary<string, Bauteilbefundstufe> Bauteilbefunde { get; init; } = new Dictionary<string, Bauteilbefundstufe>(StringComparer.Ordinal);
+
+    /// <summary>Die Legende des Farbmodus „Befund": Zahl und Fläche je Befund (ohne, Körper unlesbar, ohne Eigenschaften).</summary>
+    public IReadOnlyList<GebaeudeAnsichtBefundsumme> Befundsummen { get; init; } = Array.Empty<GebaeudeAnsichtBefundsumme>();
+
+    /// <summary>Liegen Befunde vor?</summary>
+    public bool HatBefunde => Bauteilbefunde.Count > 0;
+
+    /// <summary>Ist der Farbmodus „Befund" wählbar? Wie „Aufbau": mit Befunden und mit der Flächenklassifikation.</summary>
+    public bool BefundWaehlbar => HatBefunde && RandbedingungWaehlbar;
+
+    /// <summary>Der Befund eines Bauteils; ohne Kennung oder unbekannt <see cref="Bauteilbefundstufe.OhneBauteil"/>.</summary>
+    public Bauteilbefundstufe BefundVon(string? bauteil)
+        => bauteil is not null && Bauteilbefunde.TryGetValue(bauteil, out Bauteilbefundstufe s) ? s : Bauteilbefundstufe.OhneBauteil;
+
+    /// <summary>
+    /// Das Befundbyte eines Raumdreiecks — dieselbe Regel wie <see cref="Stufenbyte"/>: entartet bleibt 255, eine neutrale
+    /// Innenfläche (R0) wird <see cref="GebaeudeAnsichtBefundstufen.INNEN_NEUTRAL"/>, sonst der Befund des Bauteils.
+    /// </summary>
+    public byte Befundbyte(byte gruppe, string? bauteil)
+        => gruppe >= GebaeudeAnsichtRandgruppen.ZAHL ? GebaeudeAnsichtBefundstufen.KEINE
+           : gruppe == (byte)Randgruppe.R0 ? GebaeudeAnsichtBefundstufen.INNEN_NEUTRAL
+           : (byte)BefundVon(bauteil);
+
     /// <summary>
     /// <b>Die Dateikörper als Bytefeld</b> für das Modul (15.4): je Raum mit Dateikörper, in der Reihenfolge von
     /// <see cref="Koerperraeume"/>, erst die Punkte (float32, je Punkt x, y, z relativ zum <see cref="Bezugspunkt"/>),
@@ -220,6 +255,10 @@ public sealed record GebaeudeAnsichtDaten
     /// <item><b>Stufenbytes</b> (BA-3, nur mit <see cref="Bauteilstufen"/>): je Raum mit Gruppen und
     /// <see cref="GebaeudeAnsichtKoerperraum.Dreiecksbauteile"/> ein Byte je Dreieck (<see cref="Stufenbyte"/>), Offset in
     /// <see cref="GebaeudeAnsichtKoerperfeldEintrag.StufenAb"/>; ein Bauteilkörper trägt seine Stufe im Eintrag.</item>
+    /// <item><b>Befundbytes</b> (G5-3, nur mit <see cref="Bauteilbefunde"/>): ebenso je Raum ein Byte je Dreieck
+    /// (<see cref="Befundbyte"/>), Offset in <see cref="GebaeudeAnsichtKoerperfeldEintrag.BefundAb"/>; ein Bauteilkörper trägt
+    /// seinen Befund im Eintrag (<see cref="GebaeudeAnsichtKoerperfeldEintrag.Befund"/>). Ohne Befunde ist das Feld byteweise das
+    /// ohne diesen Teil.</item>
     /// </list>
     /// Teil 2 und 3 stehen hinter allen Abschnitten des ersten: Jeder Leser, der über die Offsets des Verzeichnisses geht, liest
     /// unverändert; ohne Klassifikation sind beide leer und das Feld ist byteweise das bisherige.
@@ -230,7 +269,8 @@ public sealed record GebaeudeAnsichtDaten
         foreach (GebaeudeAnsichtKoerperraum k in Koerperraeume)
             if (k.Dateikoerper is { } d)
                 laenge += 4L * (d.Punkte.Count + d.Dreiecke.Count + d.Randkanten.Count) + (d.Gruppen?.Count ?? 0)
-                          + (HatAufbaustufen && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0);
+                          + (HatAufbaustufen && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0)
+                          + (HatBefunde && d.Gruppen is not null && k.Dreiecksbauteile is not null ? d.Gruppen.Count : 0);
         foreach (GebaeudeAnsichtBauteilkoerper b in Bauteilkoerper)
             laenge += 4L * (b.Koerper.Punkte.Count + b.Koerper.Dreiecke.Count + b.Koerper.Randkanten.Count);
         laenge = (laenge + 3) / 4 * 4;
@@ -249,6 +289,7 @@ public sealed record GebaeudeAnsichtDaten
             bauteile.Add(Abschnitte(bytes, ref stelle, "", b.Koerper) with
             {
                 Bauteil = b.Bauteil, Gruppe = (int)b.Gruppe, Stufe = HatAufbaustufen ? (int)StufeVon(b.Bauteil) : -1,
+                Befund = HatBefunde ? (int)BefundVon(b.Bauteil) : -1,
             });
         for (int i = 0; i < raeume.Count; i++)
         {
@@ -265,6 +306,17 @@ public sealed record GebaeudeAnsichtDaten
                 if (raeume[i].Gruppen is not { } gruppen || mitKoerper[i].Dreiecksbauteile is not { } je) continue;
                 verzeichnis[i] = verzeichnis[i] with { StufenAb = stelle };
                 for (int t = 0; t < gruppen.Count; t++) bytes[stelle++] = Stufenbyte(gruppen[t], t < je.Count ? je[t] : null);
+            }
+        }
+        // Teil 5 (G5-3): je Raum mit Gruppen und Bauteil je Dreieck das Befundbyte — nur mit Befunden.
+        if (HatBefunde)
+        {
+            var mitKoerper = Koerperraeume.Where(k => k.Dateikoerper is not null).ToList();
+            for (int i = 0; i < raeume.Count; i++)
+            {
+                if (raeume[i].Gruppen is not { } gruppen || mitKoerper[i].Dreiecksbauteile is not { } je) continue;
+                verzeichnis[i] = verzeichnis[i] with { BefundAb = stelle };
+                for (int t = 0; t < gruppen.Count; t++) bytes[stelle++] = Befundbyte(gruppen[t], t < je.Count ? je[t] : null);
             }
         }
         return new GebaeudeAnsichtKoerperfeld(bytes, verzeichnis) { Bauteile = bauteile };
@@ -347,9 +399,11 @@ public sealed record GebaeudeAnsichtDaten
         foreach (GebaeudeAnsichtGeschoss g in Geschosse)
             foreach (GebaeudeAnsichtRaum r in g.Raeume)
             {
-                GebaeudeAnsichtDateikoerper? datei = zuGross ? null : Koerperraum(r.Kennung)?.Dateikoerper;
+                GebaeudeAnsichtKoerperraum? kr = Koerperraum(r.Kennung);
+                GebaeudeAnsichtDateikoerper? datei = zuGross ? null : kr?.Dateikoerper;
                 if (datei is not null)
-                    raeume.Add(new GebaeudeAnsichtDateiraum(r, Koerperherkunft.Datei, datei, null));
+                    raeume.Add(new GebaeudeAnsichtDateiraum(r, kr!.Herkunft == Koerperherkunft.Abgeleitet ? Koerperherkunft.Abgeleitet : Koerperherkunft.Datei,
+                                                            datei, null));
                 else if (prismen.TryGetValue(r.Kennung, out GebaeudeAnsichtKoerper? prisma))
                     raeume.Add(new GebaeudeAnsichtDateiraum(r, prisma.Herkunft, null, prisma));
             }
@@ -540,7 +594,20 @@ public enum Koerperherkunft
 
     /// <summary>HC-5: Prisma aus dem Grundriss des Dateikörpers („aus Dateikörper (Grundriss)“).</summary>
     Grundriss,
+
+    /// <summary>Der Raum trägt einen Körper, den der Kern aus den Flächen der Datei gebildet hat (17.5, „aus Flächen gebildet“).</summary>
+    Abgeleitet,
 }
+
+/// <summary>
+/// Der Weg eines Körpers für die Zeile „Körper" des Steckbriefs (Datenaustauschkonzept 17.5): aus Flächen gebildet oder aus der
+/// Datei, der Weg als Schlüssel (<c>Raumpolygon</c>, <c>Huellflaechen</c>, <c>ClosedShell</c>, <c>Raumflaechen</c>,
+/// <c>Flaechenextrusion</c>; bei einem Körper der Datei die Darstellungsart) und die Vermerke als Schlüssel.
+/// </summary>
+/// <param name="Abgeleitet">Aus Flächen der Datei gebildet (sonst so in der Datei).</param>
+/// <param name="Art">Der Weg bzw. die Darstellungsart.</param>
+/// <param name="Vermerke">Die Vermerke (Namen von <c>Koerpervermerk</c>); leer = keine.</param>
+public sealed record GebaeudeAnsichtKoerperweg(bool Abgeleitet, string Art, IReadOnlyList<string> Vermerke);
 
 /// <summary>
 /// Der Körper eines Raums, wie die Datei ihn zeichnet (15.3, 15.4), für die Ansicht: die Punkte als Folge
@@ -565,7 +632,7 @@ public sealed record GebaeudeAnsichtDateikoerper(
     public IReadOnlyList<byte>? Gruppen { get; init; }
 
     /// <summary>Die Schlüssel der Vermerke in ihrer Reihenfolge — die Namen von <c>Koerpervermerk</c> des Kerns.</summary>
-    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale" };
+    public static readonly string[] VERMERKE = { "Bogen", "Loch", "Uneben", "OhneBeschnitt", "Offen", "Mehrschale", "Vorgabedicke", "Bezugsebene_angenommen" };
 }
 
 /// <summary>
@@ -613,6 +680,12 @@ public sealed record GebaeudeAnsichtKoerperfeldEintrag(
 
     /// <summary>BA-3: die Stufe des Bauteilkörpers (<see cref="Aufbaustufe"/>); −1 = ohne Stufen bzw. bei Räumen.</summary>
     public int Stufe { get; init; } = -1;
+
+    /// <summary>G5-3: Byte-Offset der Befundbytes eines Raums (ein Byte je Dreieck); −1 = keine.</summary>
+    public int BefundAb { get; init; } = -1;
+
+    /// <summary>G5-3: der Befund des Bauteilkörpers (<see cref="Bauteilbefundstufe"/>); −1 = ohne Befunde bzw. bei Räumen.</summary>
+    public int Befund { get; init; } = -1;
 }
 
 /// <summary>Die Höhenlage eines Geschosses für die Körper; <c>null</c> = unbekannt (dann gestapelt).</summary>
@@ -756,6 +829,12 @@ public sealed class GebaeudeAnsichtTexte
     /// <summary>GANS_HERKUNFT_GRUNDRISS — HC-5: Prisma aus dem Grundriss des Dateikörpers.</summary>
     public string HerkunftGrundriss { get; set; } = Resource.GANS_HERKUNFT_GRUNDRISS;
 
+    /// <summary>GANS_HERKUNFT_ABGELEITET — der Körper ist aus Flächen der Datei gebildet (17.5).</summary>
+    public string HerkunftAbgeleitet { get; set; } = Resource.GANS_HERKUNFT_ABGELEITET;
+
+    /// <summary>GANS_KENNZEICHEN_ABGELEITET — {0} Räume aus Flächen gebildet, {1} aus Umriss, {2} schematisch.</summary>
+    public string KennzeichenAbgeleitet { get; set; } = Resource.GANS_KENNZEICHEN_ABGELEITET;
+
     /// <summary>GANS_KENNZEICHEN_EXPORT — Exportmodell: {0} Räume aus Dateikörper, {1} aus Umriss, {2} schematisch.</summary>
     public string KennzeichenExport { get; set; } = Resource.GANS_KENNZEICHEN_EXPORT;
 
@@ -792,6 +871,8 @@ public sealed class GebaeudeAnsichtTexte
         ["OhneBeschnitt"] = Resource.GANS_VERMERK_OHNEBESCHNITT,
         ["Offen"] = Resource.GANS_VERMERK_OFFEN,
         ["Mehrschale"] = Resource.GANS_VERMERK_MEHRSCHALE,
+        ["Vorgabedicke"] = Resource.GANS_VERMERK_VORGABEDICKE,
+        ["Bezugsebene_angenommen"] = Resource.GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN,
     };
 
     /// <summary>GANS_FARBMODUS — Beschriftung des Umschalters „Zonen | Randbedingung" für die Sprachausgabe.</summary>
@@ -866,6 +947,33 @@ public sealed class GebaeudeAnsichtTexte
     /// <summary>Der Name einer Stufe.</summary>
     public string Stufenname(Aufbaustufe s) => (int)s < Aufbaustufen.Count ? Aufbaustufen[(int)s] : s.ToString();
 
+    /// <summary>
+    /// Die Namen der Befunde nach <see cref="Bauteilbefundstufe"/> (<c>IMP_BEFUND_OHNE</c>, <c>IMP_BEFUND_KOERPER_UNLESBAR</c>,
+    /// <c>IMP_BEFUND_OHNE_EIGENSCHAFTEN</c>, <c>GANS_STUFE_OHNE</c>).
+    /// </summary>
+    public IReadOnlyList<string> Befundstufen { get; set; } = new[]
+    {
+        Resource.IMP_BEFUND_OHNE, Resource.IMP_BEFUND_KOERPER_UNLESBAR, Resource.IMP_BEFUND_OHNE_EIGENSCHAFTEN, Resource.GANS_STUFE_OHNE,
+    };
+
+    /// <summary>Der Knopf des Farbmodus „Befund" (<c>GANS_FARBMODUS_BEFUND</c>).</summary>
+    public string FarbmodusBefund { get; set; } = Resource.GANS_FARBMODUS_BEFUND;
+
+    /// <summary>Warum „Befund" gesperrt ist: keine Befunde (<c>GANS_BEFUND_OHNE</c>).</summary>
+    public string BefundOhne { get; set; } = Resource.GANS_BEFUND_OHNE;
+
+    /// <summary>Titel der Befundlegende (<c>GANS_BEFUND_LEGENDE</c>).</summary>
+    public string BefundLegende { get; set; } = Resource.GANS_BEFUND_LEGENDE;
+
+    /// <summary>Spaltenkopf „Bauteile" der Befundlegende (<c>GANS_BEFUND_BAUTEILE</c>).</summary>
+    public string BefundBauteile { get; set; } = Resource.GANS_BEFUND_BAUTEILE;
+
+    /// <summary>Die Infozeile zum getroffenen Bauteil im Modus „Befund" — {0} Bauteil oder Raum, {1} Befund (<c>GANS_BEFUND_TREFFER</c>).</summary>
+    public string BefundTreffer { get; set; } = Resource.GANS_BEFUND_TREFFER;
+
+    /// <summary>Der Name eines Befunds.</summary>
+    public string Befundname(Bauteilbefundstufe s) => (int)s < Befundstufen.Count ? Befundstufen[(int)s] : s.ToString();
+
     /// <summary>Die Texte des Bauteilsteckbriefs.</summary>
     public BauteilsteckbriefTexte Steckbrief { get; set; } = new();
 
@@ -886,8 +994,23 @@ public sealed class GebaeudeAnsichtTexte
         Koerperherkunft.Datei => HerkunftDatei,
         Koerperherkunft.Schematisch => HerkunftSchematisch,
         Koerperherkunft.Grundriss => HerkunftGrundriss,
+        Koerperherkunft.Abgeleitet => HerkunftAbgeleitet,
         _ => HerkunftUmriss,
     };
+
+    /// <summary>
+    /// Die Zeile „Körper" des Steckbriefs: „aus Flächen der Datei gebildet (Weg)“ bzw. „aus der Datei (Art)“, dazu die Vermerke;
+    /// ohne Weg leer.
+    /// </summary>
+    public string Koerperzeile(GebaeudeAnsichtKoerperweg? weg)
+    {
+        if (weg is null) return "";
+        string art = Steckbrief.Koerperwege.TryGetValue(weg.Art, out string? t) ? t : weg.Art;
+        string text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                    weg.Abgeleitet ? Steckbrief.KoerperAbgeleitet : Steckbrief.KoerperDatei, art);
+        return weg.Vermerke.Count == 0 ? text
+            : text + " — " + string.Format(System.Globalization.CultureInfo.CurrentCulture, Vereinfacht, string.Join(", ", weg.Vermerke.Select(Vermerk)));
+    }
 
     /// <summary>Der Text eines Vermerks nach seinem Schlüssel; unbekannt = der Schlüssel.</summary>
     public string Vermerk(string schluessel) => Vermerke.TryGetValue(schluessel, out string? text) ? text : schluessel;

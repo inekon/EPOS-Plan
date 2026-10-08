@@ -8,6 +8,9 @@
    je Wert (weggelassene Schichten ausgegraut mit Grund, ein Ersatzaufbau mit Typ und Abgleich), bei Fenster und Tuer U,
    g und Rahmen. Er schreibt nichts: Die Spruenge (Baustoffzuordnung, Bauteildialog) sind Rueckrufe des Wirts - kein
    Delegat, kein Knopf. Gesteuert wird ueber Werte (data-stufe, data-herkunft), nie ueber einen Text.
+   G5-3: Die Zeile "Befund" nennt den Befund des Bauteils (Farbpunkt aus GebaeudeAnsichtBefundstufen, Name vom Wirt, im
+   Kontrastmodus ueber data-befund gemustert) und seinen Grund; "Herkunft der Flaeche" nennt den Weg der Flaeche (Mengensatz,
+   Raumgrenze, Koerper, schematisch; leer bei Eingabe von Hand), data-flaechenherkunft traegt den gespeicherten Wert.
 *@
 
 <aside class="epos-steckbrief" aria-label="@Texte.Titel" data-kennung="@Daten.Kennung"
@@ -24,12 +27,29 @@
     <dl class="epos-steckbrief-werte">
         <dt>@Texte.Kennung</dt><dd class="epos-steckbrief-kennung">@Daten.Kennung</dd>
         <dt>@Texte.Stufe</dt><dd class="epos-steckbrief-stufe">@Stufentext</dd>
+        <dt>@Texte.Befund</dt>
+        <dd class="epos-steckbrief-befund" data-befund="@GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund)">
+            <span class="epos-gebansicht-farbfeld" data-befund="@GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund)"
+                  style="@("background:" + GebaeudeAnsichtBefundstufen.Farbe(Daten.Befund))" aria-hidden="true"></span>
+            <span class="epos-steckbrief-befundname">@Befundtext</span>
+            @if (Daten.Befundgrund.Length > 0)
+            {
+                <span class="epos-steckbrief-grund epos-steckbrief-befundgrund">@Daten.Befundgrund</span>
+            }
+        </dd>
         <dt>@Texte.Rand</dt><dd>@Daten.Art · @Daten.Randbedingung</dd>
+        @if (!string.IsNullOrEmpty(Koerper))
+        {
+            <dt>@Texte.Koerper</dt>
+            <dd class="epos-steckbrief-koerper" data-koerper="@(KoerperAbgeleitet == true ? "abgeleitet" : "datei")">@Koerper</dd>
+        }
     </dl>
 
     <h4 class="epos-steckbrief-gruppe">@Texte.GruppeRechnung</h4>
     <dl class="epos-steckbrief-werte">
         <dt>@Texte.Flaeche</dt><dd class="epos-steckbrief-flaeche">@Daten.Flaeche</dd>
+        <dt>@Texte.Flaechenherkunft</dt>
+        <dd class="epos-steckbrief-flaechenherkunft" data-flaechenherkunft="@(Daten.FlaechenherkunftSchluessel.Length > 0 ? Daten.FlaechenherkunftSchluessel : null)">@Daten.Flaechenherkunft</dd>
         <dt>@Texte.Azimut</dt><dd>@Daten.Azimut</dd>
         <dt>@Texte.Neigung</dt><dd>@Daten.Neigung</dd>
         <dt>@Texte.UWert</dt>
@@ -155,6 +175,17 @@
 
     /// <summary>Schließt die Tafel; ohne Delegat kein Kreuz.</summary>
     [Parameter] public EventCallback Geschlossen { get; set; }
+
+    /// <summary>Der Name des Befunds (vom Wirt aus seinen Ansichtstexten); leer = der Schlüssel.</summary>
+    [Parameter] public string? BefundName { get; set; }
+
+    /// <summary>Die Zeile „Körper" (Datenaustauschkonzept 17.5): Weg und Vermerke als fertiger Text; leer = keine Zeile.</summary>
+    [Parameter] public string? Koerper { get; set; }
+
+    /// <summary>Ist der Körper aus Flächen der Datei gebildet (sonst aus der Datei)? <c>null</c> = keiner.</summary>
+    [Parameter] public bool? KoerperAbgeleitet { get; set; }
+
+    private string Befundtext => string.IsNullOrEmpty(BefundName) ? GebaeudeAnsichtBefundstufen.Schluessel(Daten.Befund) : BefundName;
 
     private string Stufentext => string.IsNullOrEmpty(StufenName) ? GebaeudeAnsichtAufbaustufen.Schluessel(Daten.Stufe) : StufenName;
 

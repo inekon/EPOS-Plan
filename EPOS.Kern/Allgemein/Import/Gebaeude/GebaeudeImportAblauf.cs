@@ -59,6 +59,23 @@ namespace WindowsFormsApplication1
         internal SqprojStand Projektdatei { get; private set; }
 
         /// <summary>
+        /// G5-N (N1/N2): <b>Der vom Anwender vorgegebene Nordwinkel</b> [°] für jeden folgenden Lauf; <c>null</c> = der Dateiwert
+        /// bzw. die Annahme Planoberseite = Nord. Der Leser dreht damit die Azimute genau einmal — an derselben Stelle, an der
+        /// sonst der Dateiwert eingeht (IFC: die Drehung des Abbildbaus; gbXML: nach dem Lesen, <see cref="GbxmlLeser.NordwinkelVorgeben"/>).
+        /// </summary>
+        public double? NordwinkelVorgabeGrad { get; set; }
+
+        // G5-N: der Inhalt des letzten erfolgreich eingelesenen Laufs — für das Neu-Lesen mit anderer Vorgabe.
+        private byte[] _puffer;
+        private string _dateiname;
+        private string _hash;
+        private long _bytes;
+
+        // Allein aus der Projektdatei: die gelesene Projektdatei (für das Neu-Bilden ohne Datei) und das Gebäude ihres Stands.
+        private SqprojAbbild _sqprojGelesen;
+        private int _projektdateiIndex = -1;
+
+        /// <summary>
         /// Die Größengrenze der Projektdatei (E87, F4) — eigene Grenze, losgelöst von der des Gebäudeprofils; die Hülle belegt
         /// sie je Plattform (<see cref="SqprojProfil.GrenzeFuerPlattform"/>). Vorgabe die Windows-Grenze; 0 oder weniger = keine.
         /// </summary>
@@ -100,7 +117,11 @@ namespace WindowsFormsApplication1
             Abbild = null;
             Quelle = null;
             Projektdatei = null;
+            _puffer = null;
+            _sqprojGelesen = null;
+            _projektdateiIndex = -1;
             Profil = profil ?? throw new ArgumentNullException(nameof(profil));
+            profil.NordwinkelVorgabeGrad = Nordrichtung.Normiert(NordwinkelVorgabeGrad);
 
             if (quelle == null) return 0;
             melder?.Report(new ImportFortschritt(null, MELDUNG + "LESEN", GebaeudeQuelle.NurName(dateiname)));
@@ -120,37 +141,37 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                byte[] puffer = Einlesen(quelle, profil, abbruch);
-                if (puffer == null) return 0;   // zu groß — gemeldet
-
-                string hash = Convert.ToHexStringLower(SHA256.HashData(puffer));
-
-                IGebaeudeLeser leser = profil.LeserErzeugen();
                 GebaeudeAbbild abbild;
-                using (var strom = new MemoryStream(puffer, false))
-                    abbild = leser.Lesen(strom, profil, melder, abbruch);
-                if (abbild == null)
+                byte[] puffer = null;
+                string hash;
+                long bytes;
+                IGebaeudeLeser leser = profil.LeserErzeugen();
+                if (leser is SqprojGebaeudeLeser sqLeser)
                 {
-                    _meldungen.Add(new PruefMeldung(PruefStufe.Fehler, profil.Meldung("LESEFEHLER"), ""));
-                    return 0;
+                    // Allein aus der Projektdatei: Der Strom geht ohne Puffer durch — der Leser schreibt ihn in seine Arbeitskopie
+                    // (die Grenze prüft er unterwegs), gezählt und gehasht wird beim Durchreichen.
+                    sqLeser.Arbeitsordner = Arbeitsordner;
+                    using (var strom = new Pruefstrom(quelle))
+                    {
+                        abbild = leser.Lesen(strom, profil, melder, abbruch);
+                        hash = strom.Hash();
+                        bytes = strom.Bytes;
+                    }
                 }
-
-                _meldungen.AddRange(abbild.Meldungen);
-                if (HatFehler(abbild.Meldungen))
-                    return 0;   // Lesefehler oder kein Gebäude — gemeldet, der Lauf endet
-
-                Abbild = abbild;
-                Quelle = new GebaeudeQuelle(profil.Format, dateiname, hash, puffer.LongLength, abbild.Schemastand,
-                                            Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
-                                            Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten)
+                else
                 {
-                    NordwinkelGrad = abbild.NordwinkelGrad,
-                };
-                foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
-                Dateihinweise(abbild, Quelle.Dateiname);
-                // HC-5: Flächenabweichung (F8) und Herleitungen der Grundrisse je Raum - dieselben, die der Import speichert.
-                for (int i = 0; i < abbild.Gebaeude.Count; i++)
-                    _meldungen.AddRange(GebaeudeRaumgrundrisse.Meldungen(GebaeudeRaumgrundrisse.Bilden(abbild, i)));
+                    puffer = Einlesen(quelle, profil, abbruch);
+                    if (puffer == null) return 0;   // zu groß — gemeldet
+                    hash = Convert.ToHexStringLower(SHA256.HashData(puffer));
+                    bytes = puffer.LongLength;
+                    using (var strom = new MemoryStream(puffer, false))
+                        abbild = leser.Lesen(strom, profil, melder, abbruch);
+                }
+                _puffer = puffer;
+                _dateiname = dateiname;
+                _hash = hash;
+                _bytes = bytes;
+                if (!Auswerten(abbild, profil, dateiname, hash, bytes)) return 0;
             }
             catch (OperationCanceledException)
             {
@@ -171,6 +192,73 @@ namespace WindowsFormsApplication1
             melder?.Report(new ImportFortschritt(1.0, MELDUNG + "GELESEN",
                 _gebaeude.Count.ToString(CultureInfo.InvariantCulture)));
             return _gebaeude.Count;
+        }
+
+        /// <summary>
+        /// <b>Wertet ein gelesenes Abbild aus</b>: Meldungen, Quelle (Format, Name, SHA-256, Größe, Nordwinkel), Gebäude,
+        /// Dateihinweise und Grundrisse; allein aus der Projektdatei dazu der Stand der Projektdatei im Selbstbezug.
+        /// <c>false</c> = Lesefehler oder kein Gebäude (gemeldet).
+        /// </summary>
+        private bool Auswerten(GebaeudeAbbild abbild, GebaeudeImportProfil profil, string dateiname, string hash, long bytes)
+        {
+            if (abbild == null)
+            {
+                _meldungen.Add(new PruefMeldung(PruefStufe.Fehler, profil.Meldung("LESEFEHLER"), ""));
+                return false;
+            }
+
+            _meldungen.AddRange(abbild.Meldungen);
+            if (HatFehler(abbild.Meldungen))
+                return false;   // Lesefehler oder kein Gebäude — gemeldet, der Lauf endet
+
+            Abbild = abbild;
+            Quelle = new GebaeudeQuelle(profil.Format, dateiname, hash, bytes, abbild.Schemastand,
+                                        Uhr().ToString("yyyy-MM-dd'T'HH:mm:sszzz", CultureInfo.InvariantCulture),
+                                        Programmfassung(), profil.Zonenregel, abbild.FehlendeEntitaeten)
+            {
+                // G5-N: Die Quelle trägt den Nordwinkel, um den die Azimute gedreht sind (Vorgabe, sonst IFC-Dateiwert).
+                NordwinkelGrad = abbild.NordwinkelWirksamGrad,
+                NordwinkelHerkunft = abbild.NordwinkelHerkunft,
+            };
+            if (abbild.NordwinkelVorgabeGrad is double vorgabe)
+                _meldungen.Add(new PruefMeldung(PruefStufe.Info, MELDUNG + "NORD_VORGABE",
+                                                Zahl(Nordrichtung.PlanoberseiteAusNordwinkel(vorgabe) ?? 0.0), Zahl(vorgabe)));
+            foreach (AbbildGebaeude g in abbild.Gebaeude) _gebaeude.Add(g.Anzeigename);
+            Dateihinweise(abbild, Quelle.Dateiname);
+            // HC-5: Flächenabweichung (F8) und Herleitungen der Grundrisse je Raum - dieselben, die der Import speichert.
+            for (int i = 0; i < abbild.Gebaeude.Count; i++)
+                _meldungen.AddRange(GebaeudeRaumgrundrisse.Meldungen(GebaeudeRaumgrundrisse.Bilden(abbild, i)));
+            // Allein aus der Projektdatei: Die gelesene Projektdatei ist zugleich die „dazugeladene“ — Zonen, Konditionierung,
+            // Aufbauten, Nutzung und Profile laufen über dieselben Wege wie beim Weg „IFC + Projektdatei“, ohne zweites Lesen.
+            if (abbild is SqprojGebaeudeAbbild sq && sq.Projektdatei != null && !sq.Projektdatei.Abgelehnt)
+            {
+                _sqprojGelesen = sq.Projektdatei;
+                ProjektdateiFuer(0);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// G5-N (N2): <b>Liest dieselbe Datei mit einer neuen Vorgabe des Nordwinkels</b> noch einmal — aus dem Puffer des
+        /// letzten Laufs, ohne Dateizugriff; die dazugeladene Projektdatei bleibt. Danach sind Abbild, Quelle und Meldungen die
+        /// des neuen Laufs, und jede folgende Zuordnung trägt die neuen Azimute. Liefert die Zahl der Gebäude.
+        /// </summary>
+        /// <param name="nordwinkelGrad">Der neue Nordwinkel [°]; <c>null</c> = Dateiwert bzw. Annahme.</param>
+        /// <exception cref="InvalidOperationException">wenn noch nichts gelesen ist.</exception>
+        internal int NordwinkelVorgeben(double? nordwinkelGrad, IProgress<ImportFortschritt> melder = null, CancellationToken abbruch = default)
+        {
+            byte[] puffer = _puffer;
+            GebaeudeImportProfil profil = Profil;
+            if (profil != null && _sqprojGelesen != null && AlleinAusProjektdatei)
+                return ProjektdateiNeuBilden(nordwinkelGrad, melder);
+            if (puffer == null || profil == null) throw new InvalidOperationException("Es ist keine Gebäudedatei gelesen.");
+            SqprojStand projektdatei = Projektdatei;
+            NordwinkelVorgabeGrad = nordwinkelGrad;
+            int zahl;
+            using (var strom = new MemoryStream(puffer, false))
+                zahl = Lesen(strom, _dateiname, profil, melder, abbruch);
+            if (zahl > 0) Projektdatei = projektdatei;
+            return zahl;
         }
 
         /// <summary>
@@ -340,6 +428,102 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Läuft der Import allein aus der Projektdatei (Format <see cref="GebaeudeQuelle.FORMAT_SQPROJ"/>)?</summary>
+        internal bool AlleinAusProjektdatei => string.Equals(Profil?.Format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal);
+
+        /// <summary>
+        /// <b>Der Stand der Projektdatei für ein Gebäude</b>: beim Weg „IFC + Projektdatei“ die dazugeladene
+        /// (<see cref="Projektdatei"/>); allein aus der Projektdatei der Stand im <b>Selbstbezug</b> — der Raumabgleich zwischen
+        /// dem Abbild und der gelesenen Projektdatei ergibt die Identität (<see cref="SqprojRaumabgleich.Bilden"/>), die
+        /// Zonierung folgt den Zonen des Abbilds (Simulationszone vor Nutzungszone). Der Stand wird je Gebäude einmal gebildet.
+        /// </summary>
+        internal SqprojStand ProjektdateiFuer(int gebaeudeIndex)
+        {
+            SqprojAbbild a = _sqprojGelesen;
+            if (a == null || !AlleinAusProjektdatei || Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count)
+                return Projektdatei;
+            if (Projektdatei != null && _projektdateiIndex == gebaeudeIndex) return Projektdatei;
+            SqprojRaumabgleich abgleich = SqprojRaumabgleich.Bilden(a, Abbild.Gebaeude[gebaeudeIndex]);
+            var stand = new SqprojStand(Quelle?.Dateiname ?? GebaeudeQuelle.NurName(_dateiname ?? ""), _hash, _bytes, a, abgleich,
+                                        abgleich.Meldungen, null);
+            stand.Gewaehlt = stand.HatSimulationszonen ? SqprojZonierung.Simulation : SqprojZonierung.Din18599;
+            _projektdateiIndex = gebaeudeIndex;
+            return Projektdatei = stand;
+        }
+
+        /// <summary>
+        /// Allein aus der Projektdatei: <b>bildet das Abbild mit einer neuen Vorgabe des Nordwinkels neu</b> — aus der gelesenen
+        /// Projektdatei, ohne Datei und ohne Puffer. Danach sind Abbild, Quelle und Meldungen die des neuen Laufs.
+        /// </summary>
+        private int ProjektdateiNeuBilden(double? nordwinkelGrad, IProgress<ImportFortschritt> melder)
+        {
+            SqprojAbbild gelesen = _sqprojGelesen;
+            GebaeudeImportProfil profil = Profil;
+            string dateiname = _dateiname, hash = _hash;
+            long bytes = _bytes;
+            _meldungen.Clear();
+            _gebaeude.Clear();
+            Abbild = null;
+            Quelle = null;
+            Projektdatei = null;
+            _projektdateiIndex = -1;
+            NordwinkelVorgabeGrad = nordwinkelGrad;
+            profil.NordwinkelVorgabeGrad = Nordrichtung.Normiert(nordwinkelGrad);
+            var abbild = new SqprojGebaeudeAbbild();
+            SqprojGebaeudeLeser.Bilden(abbild, gelesen, profil.NordwinkelVorgabeGrad);
+            if (!Auswerten(abbild, profil, dateiname, hash, bytes)) _sqprojGelesen = gelesen;
+            melder?.Report(new ImportFortschritt(1.0, MELDUNG + "GELESEN", _gebaeude.Count.ToString(CultureInfo.InvariantCulture)));
+            return _gebaeude.Count;
+        }
+
+        /// <summary>Hash und Größe der zuletzt gelesenen Datei (SHA-256 klein, Byte); <c>null</c> bzw. 0 vor dem ersten Lauf.</summary>
+        internal (string Hash, long Bytes) GeleseneDatei => (_hash, _bytes);
+
+        /// <summary>
+        /// Reicht einen Strom lesend durch und zählt und hasht dabei (SHA-256) — damit eine große Projektdatei nicht als Ganzes
+        /// in den Speicher muss. Schließt den inneren Strom nicht.
+        /// </summary>
+        private sealed class Pruefstrom : Stream
+        {
+            private readonly Stream _innen;
+            private readonly IncrementalHash _sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+
+            internal Pruefstrom(Stream innen) { _innen = innen; }
+
+            /// <summary>Die bisher gelesenen Byte.</summary>
+            internal long Bytes { get; private set; }
+
+            /// <summary>Der SHA-256 des bisher Gelesenen, klein geschrieben.</summary>
+            internal string Hash() => Convert.ToHexStringLower(_sha.GetHashAndReset());
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int n = _innen.Read(buffer, offset, count);
+                if (n > 0)
+                {
+                    _sha.AppendData(buffer, offset, n);
+                    Bytes += n;
+                }
+                return n;
+            }
+
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => throw new NotSupportedException();
+            public override long Position { get => Bytes; set => throw new NotSupportedException(); }
+            public override void Flush() { }
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+            public override void SetLength(long value) => throw new NotSupportedException();
+            public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing) _sha.Dispose();
+                base.Dispose(disposing);
+            }
+        }
+
         /// <summary><b>Entfernt die dazugeladene Projektdatei</b> (Knopf „Projektdatei entfernen“) — die IFC-Daten bleiben.</summary>
         internal void ProjektdateiEntfernen() => Projektdatei = null;
 
@@ -373,14 +557,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? Gebaeudeprofilnummer(int gebaeudeIndex)
         {
-            SqprojStand p = Projektdatei;
+            SqprojStand p = ProjektdateiFuer(gebaeudeIndex);
             if (p == null || p.Abgelehnt || Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count) return null;
             return SqprojZonen.Gebaeudeprofilnummer(p.Abbild, p.Abgleich, p.Gewaehlt);
         }
 
         internal Zonenkonditionierung Gebaeudekonditionierung(int gebaeudeIndex)
         {
-            SqprojStand p = Projektdatei;
+            SqprojStand p = ProjektdateiFuer(gebaeudeIndex);
             if (p == null || p.Abgelehnt || Abbild == null || gebaeudeIndex < 0 || gebaeudeIndex >= Abbild.Gebaeude.Count) return null;
             List<AbbildRaum> warm = Abbild.Gebaeude[gebaeudeIndex].Raeume.Where(r => r.Beheizt).ToList();
             double flaeche = warm.Sum(r => r.FlaecheM2 ?? 0.0), volumen = warm.Sum(r => r.VolumenM3 ?? 0.0);
@@ -418,7 +602,7 @@ namespace WindowsFormsApplication1
             GebaeudePruefen(gebaeudeIndex);
             GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
                                                                  raumtemperaturAlsSollwert);
-            if (satz != null) satz.Projektdatei = Projektdatei;
+            if (satz != null) satz.Projektdatei = ProjektdateiFuer(gebaeudeIndex);
             return satz;
         }
 

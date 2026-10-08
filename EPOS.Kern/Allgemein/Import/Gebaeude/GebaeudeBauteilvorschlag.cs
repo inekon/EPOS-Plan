@@ -127,6 +127,18 @@ namespace WindowsFormsApplication1
         /// <summary>Belegschlüssel einer Trennfläche aus den Raumkörpern: {0} Raum A, {1} Raum B, {2} Fläche [m²].</summary>
         internal const string BELEG_KOERPER = "GIMP_BELEG_KOERPER";
 
+        /// <summary>
+        /// Der Körperbefund des Quellbauteils (<see cref="AbbildBauteil.Koerpergrund"/>, nur beim IFC-Import);
+        /// <see cref="Bauteilbefundgrund.Keiner"/> = lesbar, keine Darstellung oder Vorgabezeile.
+        /// </summary>
+        internal Bauteilbefundgrund Koerpergrund { get; set; }
+
+        /// <summary>Der Grund des Befunds der Zeile (abgeleitet, <see cref="Bauteilbefunde.Grund(GebaeudeBauteilzeile)"/>).</summary>
+        internal Bauteilbefundgrund Befundgrund => Bauteilbefunde.Grund(this);
+
+        /// <summary>Der Befund der Zeile (Abstimmung G5, B1; abgeleitet aus <see cref="Befundgrund"/>).</summary>
+        internal Bauteilbefund Befund => Bauteilbefunde.Befund(Befundgrund);
+
         /// <summary>Kurzfassung für Tests.</summary>
         public override string ToString()
             => Bauteil.Bauteilart + " " + Bauteil.Bezeichner + " " + Bauteil.Flaeche.ToString("0.###", CultureInfo.InvariantCulture)
@@ -434,8 +446,14 @@ namespace WindowsFormsApplication1
         internal const string VORHANGFASSADE = "IMP_BAUTEIL_PROT_VORHANGFASSADE";
         /// <summary>I — {0} Zahl: Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft.</summary>
         internal const string FENSTER_ERDREICH = "IMP_BAUTEIL_PROT_FENSTER_ERDREICH";
-        /// <summary>I — {0} Kennung: Nettofläche der Datei 0 — keine Zeile, die Öffnungen bleiben.</summary>
-        internal const string NETTOFLAECHE_NULL = "IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL";
+        /// <summary>
+        /// I — {0} Zahl, {1} Namen (höchstens <see cref="ENTFALLEN_NAMEN"/>, dann „…“): Bauteile, deren Öffnungen die ganze
+        /// Fläche belegen (Nettofläche ≤ 0), entfallen — keine Zeile; ihre Fenster und Türen bleiben (Abstimmung G5, B2).
+        /// </summary>
+        internal const string NETTO_NULL_ENTFALLEN = "IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN";
+
+        /// <summary>Die Zahl der Namen in der Zeile <see cref="NETTO_NULL_ENTFALLEN"/>; danach „…“.</summary>
+        internal const int ENTFALLEN_NAMEN = 10;
         /// <summary>I — {0} Winkel [°]: Die Azimute tragen die Nordrichtung der Datei (IFC).</summary>
         internal const string NORDWINKEL_ANGEWANDT = "IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT";
         /// <summary>I — {0} Winkel [°]: Die Nordangabe der Datei ist nicht aufaddiert (gbXML, 3.2).</summary>
@@ -533,6 +551,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Typ der Quellentität eines gbXML-Baustoffs.</summary>
         internal const string QUELLTYP_GBXML_BAUSTOFF = "Material";
+
+        /// <summary>Typ der Quellentität eines Baustoffs beim Import allein aus der Projektdatei: die Schicht des Aufbaus.</summary>
+        internal const string QUELLTYP_PD_BAUSTOFF = "TcBuildingElementDimensionLayer";
 
         /// <summary>
         /// Relative Abweichung zwischen U-Wert der Datei und U-Wert aus den Schichten, ab der gemeldet wird —
@@ -731,7 +752,7 @@ namespace WindowsFormsApplication1
                                                         bool raumtemperaturAlsSollwert = false,
                                                         IReadOnlyDictionary<string, string> typwahl = null)
             => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung,
-                      raumtemperaturAlsSollwert, ablauf?.Projektdatei, typwahl);
+                      raumtemperaturAlsSollwert, ablauf?.ProjektdateiFuer(gebaeudeIndex), typwahl);
 
         /// <summary>
         /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
@@ -818,6 +839,21 @@ namespace WindowsFormsApplication1
             private readonly HashSet<string> _gemeldeteAufbauten = new HashSet<string>(StringComparer.Ordinal);
 
             private readonly List<string> _ohneFlaeche = new List<string>();
+
+            // B2 (G5-3): die Bauteile, deren Öffnungen die ganze Fläche belegen — je Bauteil einmal, in der Folge des Antreffens.
+            private readonly List<AbbildBauteil> _entfallen = new List<AbbildBauteil>();
+
+            /// <summary>
+            /// <b>B2 — Nettofläche ≤ 0</b> (Abstimmung G5): Belegen die Öffnungen die ganze Fläche, legt der Import das Bauteil
+            /// nicht an; das Protokoll nennt es in einer Zeile (<see cref="NETTO_NULL_ENTFALLEN"/>). <b>Seine Fenster und Türen
+            /// bleiben</b> — mit der Randbedingung und der Orientierung des Wirts: Sie sind die Hülle an seiner Stelle, ihre Fläche
+            /// deckt die Bruttofläche des Wirts (bei Netto = 0 genau). Entfielen sie mit, fehlte der Hülle die ganze Fläche des
+            /// Wirts; so verfälscht das Entfallen die Gesamtfläche der Hülle nicht.
+            /// </summary>
+            private void Entfallen(AbbildBauteil s)
+            {
+                if (!_entfallen.Contains(s)) _entfallen.Add(s);
+            }
             private readonly List<string> _ohneAzimut = new List<string>();
             private readonly List<string> _ohneU = new List<string>();
             private int _uVorgabe, _uVorgabeFrei, _vorhangfassaden, _fensterErdreich, _unbeheizt;
@@ -880,14 +916,15 @@ namespace WindowsFormsApplication1
             internal void Bauen()
             {
                 _g = _abbild.Gebaeude[_index];
-                _datei = string.Equals(_abbild.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
-                    ? Importherkunft.Ifc : Importherkunft.GbXml;
+                // Je Format die gleichnamige Herkunft; allein aus der Projektdatei SQPROJ (beim Weg „IFC + Projektdatei“ bleibt es IFC).
+                _datei = ImportherkunftWerte.AusFormat(_abbild.Format);
                 _herkunftWert = ImportherkunftWerte.Wert(_datei);
                 _v.Format = _abbild.Format ?? "";
                 _v.Dateiname = _quelle?.Dateiname ?? "";
                 _v.Gebaeudekennung = _g.Kennung;
-                _v.NordwinkelGrad = _abbild.NordwinkelGrad;
-                _v.NordwinkelAngewandt = _datei == Importherkunft.Ifc;
+                // G5-N: Eine Vorgabe des Anwenders gilt bei beiden Formaten — der Leser hat die Azimute damit gedreht.
+                _v.NordwinkelGrad = _abbild.NordwinkelVorgabeGrad ?? _abbild.NordwinkelGrad;
+                _v.NordwinkelAngewandt = _datei == Importherkunft.Ifc || _abbild.NordwinkelVorgabeGrad.HasValue;
 
                 // Die Zuordnung des Einzonenwegs — Kenngrößen der Zone, Vorgaben, Summenprobe.
                 GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(_abbild, _index, _klasseGewaehlt, _quelle, _profil, _uebersteuert,
@@ -940,7 +977,7 @@ namespace WindowsFormsApplication1
                     if (p.NettoM2.HasValue)
                     {
                         if (p.NettoM2.Value > 0.0) Huellzeile(p, p.NettoM2.Value, _datei);
-                        else if (!p.NettoNegativ) Info(NETTOFLAECHE_NULL, p.Bauteil.Kennung);
+                        else Entfallen(p.Bauteil);
                     }
                     else
                     {
@@ -1406,7 +1443,10 @@ namespace WindowsFormsApplication1
             {
                 AbbildBauteil s = f.Bauteil;
                 Bauteilrand rand = ZonenrandAus(f.Rand);
-                bool gespiegelt = Gespiegelt(s, f.Raum);
+                // Körperweg (G5-3): die Seite des Raums trägt Orientierung und Spiegelung selbst.
+                AbbildGrenze seite = f.Raum == null ? null
+                    : s.Grenzen.FirstOrDefault(x => x.Herkunft == Grenzherkunft.Bauteilkoerper && x.RaumKennung == f.Raum && x.NeigungGrad.HasValue);
+                bool gespiegelt = seite?.Gegenseite ?? Gespiegelt(s, f.Raum);
                 bool? boden = GebaeudeHuelleneinordnung.IstWaagerechteArt(s.Art) ? Boden(s, f.Raum, f.AndererRaum) : null;
                 string feld = Summenfeld(rand, s.Art, boden);
                 int? nachbar = f.Rand == Zonenrand.Zone ? _v._zonen[f.Nachbarzone].ID : (int?)null;
@@ -1416,30 +1456,30 @@ namespace WindowsFormsApplication1
                     _v._meldungen.Add(new PruefMeldung(PruefStufe.Fehler, _profil.Meldung("NETTOFLAECHE_NEGATIV"),
                         s.Kennung, Zahl(f.GroessereM2 ?? 0.0), Zahl(f.AusschnittM2 > 0.0 ? f.AusschnittM2 : f.Oeffnungen.Sum(o => o.BruttoflaecheM2 ?? 0.0))));
                 if (!netto.HasValue) _ohneFlaeche.Add(s.Kennung);
-                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld, f.Flaechenherkunft);
-                else if (!negativ) Info(NETTOFLAECHE_NULL, s.Kennung);
+                else if (netto.Value > 0.0) Teilzeile(s, netto.Value, rand, nachbar, gespiegelt, boden, feld, f.Flaechenherkunft, seite);
+                else Entfallen(s);
 
                 foreach (AbbildBauteil o in f.Oeffnungen)
                 {
                     if (o.Art != Bauteilart.Fenster && o.Art != Bauteilart.Tuer) continue;
                     if (!(o.BruttoflaecheM2 > 0.0)) { _ohneFlaeche.Add(o.Kennung); continue; }
-                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt);
+                    Oeffnungszeile(s, o, rand, nachbar, gespiegelt, seite);
                 }
             }
 
             private void Teilzeile(AbbildBauteil s, double flaeche, Bauteilrand rand, int? nachbar, bool gespiegelt, bool? boden, string feld,
-                                   Flaechenherkunft? weg)
+                                   Flaechenherkunft? weg, AbbildGrenze seite = null)
             {
                 Bauteilart art = s.Art;
                 bool transparent = art == Bauteilart.Vorhangfassade;
                 if (transparent && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
-                (double? neigung, Importherkunft hn) = Neigung(s.NeigungGrad, gespiegelt);
+                (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(s.NeigungGrad, gespiegelt);
                 if (!neigung.HasValue && boden.HasValue)
                 {
                     neigung = boden.Value ? GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_UNTEN : GebaeudeZonenuebernahme.NEIGUNG_WAAGERECHT_OBEN;
                     hn = _datei;
                 }
-                (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(s.AzimutGrad, gespiegelt);
                 GebaeudeBauteilzeile z = NeueZeile(Name(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
@@ -1469,12 +1509,12 @@ namespace WindowsFormsApplication1
                 return r == null || string.IsNullOrWhiteSpace(r.Name) ? kennung : r.Name.Trim();
             }
 
-            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt)
+            private void Oeffnungszeile(AbbildBauteil wirt, AbbildBauteil o, Bauteilrand rand, int? nachbar, bool gespiegelt, AbbildGrenze seite = null)
             {
                 bool fenster = o.Art == Bauteilart.Fenster;
                 if (fenster && rand == Bauteilrand.Erdreich) { rand = Bauteilrand.Aussenluft; _fensterErdreich++; }
-                (double? neigung, Importherkunft hn) = Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
-                (double? azimut, Importherkunft ha) = Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
+                (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
+                (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
                 string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
                 GebaeudeBauteilzeile z = NeueZeile(Name(o), o.Art, o.BruttoflaecheM2.Value, rand, feld, o.Quelltyp, o.Kennung, null);
                 z.Bauteil.ID_Nachbarzone = nachbar;
@@ -1892,12 +1932,13 @@ namespace WindowsFormsApplication1
                         Cp = Wert(x.Schicht.Cp_JkgK),
                         IstLuftschicht = x.Schicht.IstLuftschicht,
                     });
-                string quelltypStoff = _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF;
+                string quelltypStoff = QuelltypBaustoff;
                 List<GebaeudeBaustoffquelle> quellen = schichten
                     .Where(x => x.Stamm.HasValue && !string.IsNullOrWhiteSpace(x.Quelle?.BaustoffKennung))
                     .Select(x => new GebaeudeBaustoffquelle(quelltypStoff, x.Quelle.BaustoffKennung, x.Stamm.Value))
                     .Distinct().ToList();
-                var zeile = new GebaeudeAufbauzeile(modell, ausPd ? QUELLTYP_PD_AUFBAU : _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
+                var zeile = new GebaeudeAufbauzeile(modell, ausPd || _datei == Importherkunft.Sqproj ? QUELLTYP_PD_AUFBAU
+                                                                           : _datei == Importherkunft.Ifc ? "IfcMaterialLayerSet" : "Construction",
                                                     a.Kennung, gegenseite, a.RichtungAngenommen,
                                                     katalog ? Importherkunft.Katalog : _datei,
                                                     schichten.Select(x => x.Stamm).ToArray(), quellen)
@@ -2113,13 +2154,17 @@ namespace WindowsFormsApplication1
                             Zahl(Math.Round(100.0 * abweichung, 1)));
             }
 
+            /// <summary>Der Quelltyp eines Baustoffs je Format (IFC, gbXML, Projektdatei).</summary>
+            private string QuelltypBaustoff => _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF
+                                             : _datei == Importherkunft.Sqproj ? QUELLTYP_PD_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF;
+
             /// <summary>Die Materialzeile eines Namens — beim ersten Auftreten angelegt; <c>null</c> für eine Schicht ohne Namen.</summary>
             private GebaeudeMaterialzeile Material(AbbildSchicht s)
             {
                 string name = s?.Name?.Trim();
                 if (string.IsNullOrEmpty(name)) return null;
                 if (_materialJeName.TryGetValue(name, out GebaeudeMaterialzeile m)) return m;
-                m = new GebaeudeMaterialzeile(name, _datei == Importherkunft.Ifc ? QUELLTYP_IFC_BAUSTOFF : QUELLTYP_GBXML_BAUSTOFF,
+                m = new GebaeudeMaterialzeile(name, QuelltypBaustoff,
                                               s.BaustoffKennung);
                 _materialJeName[name] = m;
                 _v._materialien.Add(m);
@@ -2128,9 +2173,10 @@ namespace WindowsFormsApplication1
 
             /// <summary>
             /// Der Stoff einer Schicht der Projektdatei als Projektkopie (BA-4b, Konzept 5.5): Name der Datei (ein Projektdatum),
-            /// λ, ρ, c der Schicht, Herkunft <c>IFC</c>, Quelle <see cref="QUELLE_PROJEKTDATEI"/>, Quellkennung die Schicht.
+            /// λ, ρ, c der Schicht, Herkunft die des Laufs (<c>IFC</c> beim Weg „IFC + Projektdatei“, <c>SQPROJ</c> allein aus der
+            /// Projektdatei), Quelle <see cref="QUELLE_PROJEKTDATEI"/>, Quellkennung die Schicht.
             /// </summary>
-            private static BaustoffModel Projektstoff(AbbildSchicht s, Schicht w)
+            private BaustoffModel Projektstoff(AbbildSchicht s, Schicht w)
             {
                 if (w.IstLuftschicht) return null;
                 string name = string.IsNullOrWhiteSpace(s?.Name) ? null : s.Name.Trim();
@@ -2144,7 +2190,7 @@ namespace WindowsFormsApplication1
                     Rho = w.Rohdichte_KgM3,
                     Cp = w.Cp_JkgK,
                     Quelle = QUELLE_PROJEKTDATEI,
-                    Herkunft = DbWerte.HERKUNFT_IFC,
+                    Herkunft = _datei == Importherkunft.Sqproj ? DbWerte.HERKUNFT_SQPROJ : DbWerte.HERKUNFT_IFC,
                     Quellkennung = string.IsNullOrEmpty(s?.Kennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(s.Kennung),
                 };
             }
@@ -2223,6 +2269,7 @@ namespace WindowsFormsApplication1
             {
                 BauteilModel b = z.Bauteil;
                 ErsatzSetzen(z);
+                if (z.Kennung != null && Quellbauteil(z.Kennung) is AbbildBauteil quelle) z.Koerpergrund = quelle.Koerpergrund;
                 b.Herkunft = ImportherkunftWerte.IstVorgabe(z.HerkunftFlaeche) || ImportherkunftWerte.IstVorgabe(z.HerkunftU)
                     ? DbWerte.HERKUNFT_VORGABE : _herkunftWert;
                 if (!b.Azimut.HasValue && GebaeudeZonenCtrl.BrauchtAzimut(b))
@@ -2230,6 +2277,24 @@ namespace WindowsFormsApplication1
                 z.Zone = _aktuelleZone == null ? 0 : _aktuelleStelle;
                 _v._zeilen.Add(z);
                 (_aktuelleZone ?? _v.Zone).Bauteile.Add(b);
+            }
+
+            // Die Bauteile und Öffnungen der Datei nach Kennung (G5-3, Körperbefund der Zeile); erst bei Bedarf gebildet.
+            private Dictionary<string, AbbildBauteil> _quellbauteile;
+
+            /// <summary>Das Bauteil oder die Öffnung der Datei mit der Kennung <paramref name="kennung"/>; <c>null</c> = keines.</summary>
+            private AbbildBauteil Quellbauteil(string kennung)
+            {
+                if (_quellbauteile == null)
+                {
+                    _quellbauteile = new Dictionary<string, AbbildBauteil>(StringComparer.Ordinal);
+                    foreach (AbbildBauteil b in _abbild.Gebaeude.SelectMany(g => g.Bauteile).Concat(_abbild.BauteileOhneGebaeude))
+                    {
+                        _quellbauteile.TryAdd(b.Kennung ?? "", b);
+                        foreach (AbbildBauteil o in b.Oeffnungen) _quellbauteile.TryAdd(o.Kennung ?? "", o);
+                    }
+                }
+                return _quellbauteile.TryGetValue(kennung, out AbbildBauteil x) ? x : null;
             }
 
             /// <summary>
@@ -2315,6 +2380,11 @@ namespace WindowsFormsApplication1
                 if (_ohneAzimut.Count > 0) Fehler(AZIMUT_FEHLT, Ganz(_ohneAzimut.Count), Liste(_ohneAzimut));
                 if (_ohneU.Count > 0) Fehler(UWERT_FEHLT, Ganz(_ohneU.Count), Liste(_ohneU), _klasse?.ToString() ?? "");
                 if (_ohneFlaeche.Count > 0) Warnung(OHNE_FLAECHE, Ganz(_ohneFlaeche.Count), Liste(_ohneFlaeche));
+                if (_entfallen.Count > 0)
+                {
+                    List<string> namen = _entfallen.Select(b => b.Name ?? b.Kennung).ToList();
+                    Info(NETTO_NULL_ENTFALLEN, Ganz(namen.Count), Entfallenliste(namen));
+                }
                 List<string> ohneNachbar = _abbild.BauteileOhneGebaeude.Select(b => b.Kennung).ToList();
                 if (ohneNachbar.Count > 0) Warnung(OHNE_NACHBAR, Ganz(ohneNachbar.Count), Liste(ohneNachbar));
                 if (_uVorgabe > 0) Info(U_VORGABE, Ganz(_uVorgabe), _klasse?.ToString() ?? "");
@@ -2485,6 +2555,10 @@ namespace WindowsFormsApplication1
             int n = char.IsHighSurrogate(text[laenge - 1]) ? laenge - 1 : laenge;
             return text.Substring(0, n);
         }
+
+        /// <summary>Die Namen der Zeile <see cref="NETTO_NULL_ENTFALLEN"/>: höchstens <see cref="ENTFALLEN_NAMEN"/>, dann „…“.</summary>
+        internal static string Entfallenliste(IReadOnlyList<string> namen)
+            => string.Join(", ", namen.Take(ENTFALLEN_NAMEN)) + (namen.Count > ENTFALLEN_NAMEN ? ", …" : "");
 
         private static string Liste(List<string> kennungen)
             => kennungen.Count <= 5 ? string.Join(", ", kennungen) : string.Join(", ", kennungen.Take(5)) + ", …";

@@ -1547,6 +1547,7 @@ namespace WindowsFormsApplication1
             var matrizen = new Dictionary<int, StromMatrix>();   // W3: je Projekt (szenariounabhängig)
             if (daten == null || daten.Varianten.Count == 0 || p == null) return alle;
             StelleTabellenSicher();
+            ZuordnungenHeilen(daten);
             TarifParameter tarif = LadeTarif(daten.IdStamm);      // W3: gilt für die ganze Gruppe
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
             _refKesselCache.Clear();                                       // frischer Lauf
@@ -1689,6 +1690,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="idReferenz">0 = die Gruppenreferenz (bzw. A in Sicht 2), und die
         /// wiederum 0 = Stamm — dieselbe Kette wie in <c>Berechne</c>.</param>
+        /// <summary>
+        /// Anwenderentscheid 07.10.2026: Die Anlagenzuordnung der Kostenpositionen wird
+        /// VOR dem Lesen geheilt (<see cref="KostenProjektPositionenCtrl.ZuordnungReparieren"/>,
+        /// bei gesundem Bestand ein COUNT je Projekt). Sonst hinge das Ergebnis davon ab, ob
+        /// die Kostenseite schon einmal geöffnet war: Ein Verweis auf eine gelöschte Anlage
+        /// rechnet anders als dieselbe Position „ohne Anlagenzuordnung".
+        /// </summary>
+        private static void ZuordnungenHeilen(BerichtsDaten daten)
+        {
+            var gesehen = new HashSet<int>();
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                if (v == null || v.IdProjekt <= 0 || !gesehen.Add(v.IdProjekt)) continue;
+                try { KostenProjektPositionenCtrl.ZuordnungReparieren(v.IdProjekt); }
+                catch (Exception ex) { Console.WriteLine("Zuordnung der Kostenpositionen (übergangen): " + ex.Message); }
+            }
+        }
+
         public WirtschaftlichkeitBandbreite BerechneBandbreite(BerichtsDaten daten,
             WirtschaftlichkeitParameter p, int idReferenz)
         {
@@ -1732,6 +1751,7 @@ namespace WindowsFormsApplication1
                 Szenario = szenario ?? WirtschaftlichkeitSzenario.ERWARTET
             };
             if (daten == null || daten.Varianten.Count == 0 || p == null) return verlauf;
+            ZuordnungenHeilen(daten);
 
             // ETAPPE W5-B-9: erst das Szenario, dann der Horizont. FuerSzenario gibt
             // fuer ERWARTET p selbst zurueck - die Kopie danach ist also unverzichtbar,

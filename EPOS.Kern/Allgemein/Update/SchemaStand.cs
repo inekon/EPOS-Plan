@@ -954,6 +954,13 @@ namespace WindowsFormsApplication1
         /// <c>Heizkurve_Raumeinfluss</c> an <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> samt zehntem Sichtneubau und
         /// sechs Kennzahlen des geschlossenen Kreises an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3Schema"/>).
         /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
+        /// Danach, mit der HERKUNFT DES NORDWINKELS (G5-N), steht das Ziel auf <see cref="NordrichtungSchema.SCHRITT"/>:
+        /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (Datei, Eingabe, Annahme; <see cref="NordrichtungSchema"/>), Bestand
+        /// nachgefüllt aus dem Nordwinkel. <b>Ergebnisneutral:</b> Der Rechenweg liest die Spalte nicht.
+        /// Danach, mit dem IMPORT AUS DER PROJEKTDATEI, steht das Ziel auf <see cref="ProjektdateiImportSchema.SCHRITT"/>:
+        /// Format und Herkunft nehmen den Wert <c>SQPROJ</c> an — Neubau von <c>Tab_Importquelle</c> und der sechs
+        /// Herkunftstabellen mit erweiterter Prüfklausel (<see cref="ProjektdateiImportSchema"/>). <b>Ergebnisneutral:</b>
+        /// Keine Zeile ändert sich.
         /// Danach, mit den KENNZAHLEN VON AK3-K (Entwurf AK3-K 3.5, Festlegung 20), steht das Ziel auf
         /// <see cref="Ak3KSchema.SCHRITT"/>: sieben Kennzahlen der Zonensperre und der Kälteseite im Kreis an
         /// <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="Ak3KSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.

@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // AK3-K - KENNZAHLEN DER ZONENSPERRE UND DER KAELTESEITE IM KREIS (Entwurf AK3-K, Abschnitt 3.5,
-    // Festlegung 20; Schemaschritt S1 des Wellenplans, Welle K4).
+    // Festlegung 20; Schemaschritt 201, im Wellenplan S1, Welle K4; haengt an 200 ProjektdateiImportSchema).
     //
     // WOZU. Die Zonensperre (in einer Zone wird an einem Tag nie geheizt und gekuehlt) und die
     // Kaelteseite im geschlossenen Kreis der Stufe AK3 zaehlen im Lauf; das Ergebnis des Projekts
@@ -40,10 +40,10 @@ namespace WindowsFormsApplication1
     public static class Ak3KSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht: der Schritt hinter der zuletzt
-        /// gebauten Klasse <see cref="Ak3Schema"/>.
+        /// <b>Die Nummer des Schemaschritts</b> (Schritt 201) — die EINE Stelle, an der sie steht: der Schritt hinter der
+        /// zuletzt gebauten Klasse <see cref="ProjektdateiImportSchema"/> (Schritt 200).
         /// </summary>
-        public const int SCHRITT = Ak3Schema.SCHRITT + 1;
+        public const int SCHRITT = ProjektdateiImportSchema.SCHRITT + 1;
 
         /// <summary>Die Ergebnistabelle des Projekts (Energiebedarf).</summary>
         public const string TAB_ERGEBNIS = SchemaKatalog.TAB_ERGEBNISENERGIEBEDARF;

@@ -1399,6 +1399,19 @@ namespace WindowsFormsApplication1
 
         internal static string Titel() => Text_("GEBK_TITEL", "Gebäudedaten: Flächen, U-Werte");
 
+        /// <summary>
+        /// G5-N (N5/N6): der Abschnitt „Ausrichtung“ des Gebäudedialogs — gespeicherte Richtung der Planoberseite, Nordwinkel,
+        /// Herkunft und Schnellwahl; ohne Importquelle nicht änderbar (<see cref="GebaeudeAusrichtungHuelle.Lesen"/>).
+        /// </summary>
+        internal static EPOS.UI.Dialoge.Import.GebaeudeAusrichtungDaten Ausrichtung(int idGebaeude) => GebaeudeAusrichtungHuelle.Lesen(idGebaeude);
+
+        /// <summary>
+        /// G5-N (N5): „Ausrichtung ändern“ — dreht alle Bauteile des Gebäudes in einem Vorgang und speichert den neuen
+        /// Nordwinkel an der Quelle; liefert die Zahl der gedrehten Bauteile (<see cref="GebaeudeAusrichtungHuelle.Aendern"/>).
+        /// </summary>
+        internal static EPOS.UI.Dialoge.Import.GebaeudeAusrichtungErgebnis AusrichtungAendern(int idGebaeude, double planoberseiteGrad)
+            => GebaeudeAusrichtungHuelle.Aendern(idGebaeude, planoberseiteGrad);
+
         private static string Text_(string schluessel, string rueckfall)
         {
             string t = null;

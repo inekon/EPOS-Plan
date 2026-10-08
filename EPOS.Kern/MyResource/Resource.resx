@@ -33213,7 +33213,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Datei enthält kein Gebäude (Wurzel „{0}“ ohne Campus und Building) — sie wird nicht übernommen.</value>
   </data>
   <data name="IMP_GBXML_PROT_KEIN_NORDEN" xml:space="preserve">
-    <value>Die Datei nennt keine Nordrichtung (CADModelAzimuth) — angenommen wird 0°.</value>
+    <value>Die Datei nennt keine Nordrichtung (CADModelAzimuth) — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern.</value>
   </data>
   <data name="IMP_GBXML_PROT_KENNUNG_GEKUERZT" xml:space="preserve">
     <value>Die Kennung eines {0} ist mit {2} Zeichen länger als 64 und wird als „{1}“ geführt.</value>
@@ -33228,7 +33228,7 @@ Möchten Sie das zulassen?</value>
     <value>Fläche {0}: Fenster und Türen ({2} m²) sind größer als die Wand ({1} m²) — die Nettofläche wird 0.</value>
   </data>
   <data name="IMP_GBXML_PROT_NORDDREHUNG" xml:space="preserve">
-    <value>Die Datei dreht das Modell um {0}° gegen Nord (CADModelAzimuth) — der Wert wird nicht eingerechnet; bitte die Himmelsrichtungen der Fenster prüfen.</value>
+    <value>Die Datei dreht das Modell um {0}° gegen Nord (CADModelAzimuth) — der Wert wird nicht eingerechnet, angenommen ist Nordwinkel 0°; die Richtung der Planoberseite lässt sich beim Import vorgeben oder im Gebäudedialog unter „Ausrichtung“ ändern.</value>
   </data>
   <data name="IMP_GBXML_PROT_OHNE_AUFBAU" xml:space="preserve">
     <value>{0} Flächen ohne Verweis auf eine Konstruktion (z. B. {1}) — nur Fläche und Lage, kein Aufbau.</value>
@@ -34008,7 +34008,7 @@ Möchten Sie das zulassen?</value>
     <value>Gruppe {0}: für {1} % der Fläche fehlt der U-Wert; es gilt die Vorgabe.</value>
   </data>
   <data name="IMP_IFC_PROT_KEIN_NORDEN" xml:space="preserve">
-    <value>Die Datei nennt keine Nordrichtung (TrueNorth); angenommen wird die Schemavorgabe (+y = Nord). Ein falsch genordetes Modell vertauscht die Fensterflächen der Himmelsrichtungen.</value>
+    <value>Die Datei nennt keine Nordrichtung (TrueNorth) — angenommen ist: Die Planoberseite (+y der Datei) zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern.</value>
   </data>
   <data name="IMP_IFC_PROT_MAPCONVERSION" xml:space="preserve">
     <value>Die Datei trägt eine Koordinatenumrechnung (IfcMapConversion); die Himmelsrichtungen folgen deren Drehung, TrueNorth ist dort nur informativ.</value>
@@ -34093,9 +34093,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_IFC_PROT_OEFFNUNG_UNBEMESSEN" xml:space="preserve">
     <value>{0} Öffnungen ohne Fenster oder Tür haben weder Mengenangaben noch einen lesbaren Körper und werden nicht abgezogen ({1}).</value>
-  </data>
-  <data name="IMP_IFC_PROT_OEFFNUNG_NETTO_NULL" xml:space="preserve">
-    <value>Bauteil {0}: Die Öffnungen ({2} m²) sind nicht kleiner als die Bruttofläche ({1} m²); die Nettofläche wird 0.</value>
   </data>
   <data name="IMP_IFC_PROT_OHNE_WIRT" xml:space="preserve">
     <value>{0} Fenster und Türen füllen keine Öffnung eines Bauteils und werden nicht gezählt ({1}).</value>
@@ -37574,9 +37571,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="IMP_BAUTEIL_PROT_FENSTER_ERDREICH" xml:space="preserve">
     <value>{0} Fenster oder Vorhangfassaden an Erdreich rechnen an Außenluft.</value>
-  </data>
-  <data name="IMP_BAUTEIL_PROT_NETTOFLAECHE_NULL" xml:space="preserve">
-    <value>{0}: Nettofläche 0 — keine Zeile, die Öffnungen bleiben.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_NORDWINKEL_ANGEWANDT" xml:space="preserve">
     <value>Die Himmelsrichtungen enthalten die Nordrichtung der Datei ({0}°).</value>
@@ -48385,6 +48379,381 @@ Chart</value>
   </data>
   <data name="KOND_LBL_FREIGABE_GEBAEUDE" xml:space="preserve">
     <value>Gebäude</value>
+  </data>
+  <data name="BK_KOMP_HINW_KOSTEN_LOSE" xml:space="preserve">
+    <value>{0} Kostenposition(en) der ersetzten Anlagen fanden keine neue Anlage als Gegenstück und stehen jetzt ohne Anlagenzuordnung — in der Kostenverwaltung prüfen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GESCHLOSSEN" xml:space="preserve">
+    <value>Raum {0}: Die Flächen des Wegs {1} schließen keinen Körper ({2} offene Kanten) — gezeigt wird das Umrissprisma.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_NICHT_GEBILDET" xml:space="preserve">
+    <value>{0}: Aus dem Weg {1} entsteht kein Körper ({2}) — gezeigt wird der Rückfall.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Die Öffnung {0} liegt nicht in der Fläche {1} — sie wird als eigener Körper ohne Aussparung gezeigt.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_KOERPER_GRENZE" xml:space="preserve">
+    <value>{0} Bauteilkörper entfallen: Raum- und Bauteilkörper überschritten zusammen die Grenze von {1} Dreiecken (bis dahin {2}).</value>
+  </data>
+  <data name="GANS_VERMERK_VORGABEDICKE" xml:space="preserve">
+    <value>Vorgabedicke</value>
+  </data>
+  <data name="GANS_VERMERK_BEZUGSEBENE_ANGENOMMEN" xml:space="preserve">
+    <value>Bezugsebene angenommen</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERDECKE_HUELLE" xml:space="preserve">
+    <value>Im Gebäude „{0}“ entfallen {1} Trenndecken aus den Raumkörpern ({2} m²): Die Datei führt an ihrer Stelle schon Platten gegen unbeheizte Räume, die als Hüllfläche zählen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_UMGEHAENGT" xml:space="preserve">
+    <value>{0} Wände tragen laut Datei mehr Fenster- und Türfläche, als sie groß sind; {1} Öffnungen gehen nach ihrer Lage an {2} andere Wände bzw. Teile derselben Wand ({3}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>{0} Öffnungen liegen in keiner Wand, an der sie Platz hätten, und bleiben an der Wand der Datei ({1}).</value>
+  </data>
+  <data name="IMP_IFC_PROT_WAND_KLEINER_OEFFNUNGEN" xml:space="preserve">
+    <value>{0} Wände bleiben kleiner als ihre Öffnungen; für sie gilt die Nettofläche der Datei, ihre Öffnungen werden nicht voll abgezogen ({1}).</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_NETTO_NULL_ENTFALLEN" xml:space="preserve">
+    <value>{0} Bauteile entfallen: vollständig durch Öffnungen belegt ({1}).</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE" xml:space="preserve">
+    <value>Ohne Befund</value>
+  </data>
+  <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
+    <value>Körper unlesbar</value>
+  </data>
+  <data name="IMP_BEFUND_OHNE_EIGENSCHAFTEN" xml:space="preserve">
+    <value>Ohne Eigenschaften</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_UWERT" xml:space="preserve">
+    <value>Kein U-Wert: weder Datei, Projektdatei, Katalog, Vorgabe noch Ersatzaufbau liefern einen.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_FLAECHE" xml:space="preserve">
+    <value>Keine Fläche: weder Mengensatz noch Körper liefern eine.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_DARSTELLUNG" xml:space="preserve">
+    <value>Körper nicht oder nur teilweise lesbar: Die Darstellungsart kann der Import nicht lesen.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_OHNE_BESCHNITT" xml:space="preserve">
+    <value>Körper nur teilweise gelesen: Der Beschnitt fehlt, gelesen ist nur der erste Operand.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_SCHALE_OFFEN" xml:space="preserve">
+    <value>Körper mit offener Schale.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_LOCH" xml:space="preserve">
+    <value>Körper nur teilweise gelesen: Ein Loch ließ sich nicht anbinden.</value>
+  </data>
+  <data name="IMP_BEFUND_GRUND_ENTARTET" xml:space="preserve">
+    <value>Körper entartet: Er ergibt keine maßgebliche Fläche.</value>
+  </data>
+  <data name="BTSB_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
+    <value>Nordrichtung nach Eingabe: Die Planoberseite (+y der Datei) zeigt nach {0}°, der Nordwinkel ist {1}°; die Himmelsrichtungen aller Bauteile und Grundrisse folgen ihm.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_TITEL" xml:space="preserve">
+    <value>Ausrichtung</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_PLANOBERSEITE" xml:space="preserve">
+    <value>Planoberseite zeigt nach</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_DATEI_NENNT" xml:space="preserve">
+    <value>Die Datei nennt die Nordrichtung: Planoberseite nach {0}°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_DATEI_OHNE" xml:space="preserve">
+    <value>Die Datei nennt keine Nordrichtung.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT_DATEI" xml:space="preserve">
+    <value>aus der Datei</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT_EINGABE" xml:space="preserve">
+    <value>eingegeben</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT_ANNAHME" xml:space="preserve">
+    <value>angenommen (Planoberseite = Nord)</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Richtung der Planoberseite ist keine gültige Zahl.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KEINE_QUELLE" xml:space="preserve">
+    <value>Das Gebäude stammt aus keiner Importdatei — seine Ausrichtung lässt sich nur an den einzelnen Bauteilen ändern.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_GEDREHT" xml:space="preserve">
+    <value>Ausrichtung geändert: {0} Bauteile gedreht, die Planoberseite zeigt jetzt nach {1}°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_N" xml:space="preserve">
+    <value>Nord</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_NO" xml:space="preserve">
+    <value>Nordost</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_O" xml:space="preserve">
+    <value>Ost</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_SO" xml:space="preserve">
+    <value>Südost</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_S" xml:space="preserve">
+    <value>Süd</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_SW" xml:space="preserve">
+    <value>Südwest</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_W" xml:space="preserve">
+    <value>West</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_NW" xml:space="preserve">
+    <value>Nordwest</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_NORDRICHTUNG" xml:space="preserve">
+    <value>Nordrichtung</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_FRAGE_FELD" xml:space="preserve">
+    <value>Wohin zeigt die Planoberseite (+y der Datei)? In Grad, 0° = Nord, im Uhrzeigersinn.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_SCHNELLWAHL" xml:space="preserve">
+    <value>Schnellwahl der Himmelsrichtung</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_VORSCHAU" xml:space="preserve">
+    <value>Vorschau: Die Planoberseite zeigt nach {0}°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_VORSCHLAG" xml:space="preserve">
+    <value>aus der Datei, noch nicht angewandt</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_BEREICH" xml:space="preserve">
+    <value>Zulässig sind 0° bis unter 360°.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_LAEUFT" xml:space="preserve">
+    <value>Die Datei wird mit der neuen Nordrichtung neu gelesen …</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_AENDERN" xml:space="preserve">
+    <value>Ausrichtung ändern…</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_AENDERN_HINWEIS" xml:space="preserve">
+    <value>Dreht alle Bauteile des Gebäudes auf die eingegebene Richtung der Planoberseite und speichert sofort.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_FRAGE" xml:space="preserve">
+    <value>Alle {0} Bauteile des Gebäudes werden um {1}° gedreht. Fortfahren?</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_UNVERAENDERT" xml:space="preserve">
+    <value>Die eingegebene Richtung entspricht der gespeicherten — es gibt nichts zu drehen.</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_HERKUNFT" xml:space="preserve">
+    <value>Herkunft: {0}</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_N" xml:space="preserve">
+    <value>N</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_NO" xml:space="preserve">
+    <value>NO</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_O" xml:space="preserve">
+    <value>O</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_SO" xml:space="preserve">
+    <value>SO</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_S" xml:space="preserve">
+    <value>S</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_SW" xml:space="preserve">
+    <value>SW</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_W" xml:space="preserve">
+    <value>W</value>
+  </data>
+  <data name="GEB_AUSRICHTUNG_KURZ_NW" xml:space="preserve">
+    <value>NW</value>
+  </data>
+  <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
+    <value>Befund</value>
+  </data>
+  <data name="GANS_BEFUND_OHNE" xml:space="preserve">
+    <value>„Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag).</value>
+  </data>
+  <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
+    <value>Befund je Bauteil</value>
+  </data>
+  <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
+    <value>Bauteile</value>
+  </data>
+  <data name="GANS_BEFUND_TREFFER" xml:space="preserve">
+    <value>Gewählt: {0} — {1}</value>
+  </data>
+  <data name="BTSB_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Herkunft der Fläche</value>
+  </data>
+  <data name="GIMP_FLHK_MENGENSATZ" xml:space="preserve">
+    <value>Mengensatz</value>
+  </data>
+  <data name="GIMP_FLHK_RAUMGRENZE" xml:space="preserve">
+    <value>Raumgrenze</value>
+  </data>
+  <data name="GIMP_FLHK_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="GIMP_FLHK_SCHEMATISCH" xml:space="preserve">
+    <value>schematisch</value>
+  </data>
+  <data name="GIMP_FL_SP_FLAECHENHERKUNFT" xml:space="preserve">
+    <value>Fläche aus</value>
+  </data>
+  <data name="GIMP_FL_FLAECHENHERKUNFT_HINWEIS" xml:space="preserve">
+    <value>Die Spalte „Fläche aus“ nennt den Weg der Fläche: Mengensatz der Datei, Polygon der Raumgrenze, Bauteilkörper oder schematische Vorgabe.</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
+    <value>Nur Bauteile mit Befund</value>
+  </data>
+  <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
+    <value>Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
+    <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper).</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_AUSSENWAND" xml:space="preserve">
+    <value>{0} Außenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_INNENWAND" xml:space="preserve">
+    <value>{0} Innenwände: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_DACH" xml:space="preserve">
+    <value>{0} Dächer: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_BODEN_DECKE" xml:space="preserve">
+    <value>{0} Böden und Decken: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_KOERPERFLAECHEN_ABWEICHUNG_SONSTIGE" xml:space="preserve">
+    <value>{0} sonstige Bauteile: Die Summe ihrer Flächen je Raum aus den Körpern weicht um mehr als {3} % von der Körperfläche ab (größte Abweichung {1} %, {2}) — doppelte oder fehlende Zuordnung prüfen.</value>
+  </data>
+  <data name="IMP_IFC_PROT_RAUMFLAECHE_KOERPER" xml:space="preserve">
+    <value>{0} Räume ohne Flächenmenge und ohne Grundriss tragen die Bodenfläche ihres Körpers als Raumfläche, zusammen {1} m² ({2}); ohne Volumenmenge gilt das Volumen des Körpers.</value>
+  </data>
+  <data name="GIMP_SCHEMA_SQPROJ" xml:space="preserve">
+    <value>Projektdatei, Fassung {0}</value>
+  </data>
+  <data name="IMP_SQ_PROT_LAGE_UNLESBAR" xml:space="preserve">
+    <value>Lage, Öffnungen oder Standort der Hüllflächen sind in der Projektdatei nicht lesbar ({0}); Aufbauten und Nettoflächen bleiben.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ZU_GROSS" xml:space="preserve">
+    <value>Die Projektdatei ist mit {0} Byte größer als die Grenze von {1} Byte — sie wird nicht gelesen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_LESEFEHLER" xml:space="preserve">
+    <value>Die Projektdatei ließ sich nicht lesen: {0}</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEINE_DATEI" xml:space="preserve">
+    <value>Die Datei ist keine lesbare Projektdatei (SQLite) — sie wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_TABELLE_FEHLT" xml:space="preserve">
+    <value>Der Projektdatei fehlen Tabellen ({0}) — sie wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Hülle unvollständig: Die Projektdatei führt keine raumbezogenen Hüllflächen — das Gebäude lässt sich aus ihr allein nicht bilden. Bitte die IFC-Datei dazunehmen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KEIN_NORDEN" xml:space="preserve">
+    <value>Die Projektdatei nennt keine verlässliche Nordrichtung — angenommen ist: Die Planoberseite zeigt nach Norden (Nordwinkel 0°). Die Annahme lässt sich im Gebäudedialog unter „Ausrichtung“ ändern.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_HUELLE" xml:space="preserve">
+    <value>Hülle aus der Projektdatei: {0} Flächen, {1} Öffnungen, {2} Seitenpaare zusammengeführt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_HERGELEITET" xml:space="preserve">
+    <value>Angrenzungscode {0} an {1} Flächen ist nicht belegt; die Randbedingung folgt aus der Beheizung der beiden Räume.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBARART_UNBEKANNT" xml:space="preserve">
+    <value>Angrenzungscode {0} an {1} Flächen ist nicht belegt und kein zweiter Raum bekannt — die Randbedingung bleibt unbestimmt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_ELEMENTTYP_UNBEKANNT" xml:space="preserve">
+    <value>Elementart {0} an {1} Flächen ist nicht belegt — gelesen als sonstiges Bauteil.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_BEHEIZUNG_UNBEKANNT" xml:space="preserve">
+    <value>Beheizungscode {0} an {1} Räumen ist nicht belegt — angenommen beheizt.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WIRT" xml:space="preserve">
+    <value>{0} Öffnungen ohne lesbare Wand — als eigene Bauteile gelesen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_NACHBAR_UNBEKANNT" xml:space="preserve">
+    <value>{0} Raumbezüge der Hüllflächen zeigen auf einen Raum, den die Projektdatei nicht führt.</value>
+  </data>
+  <data name="GIMP_HERKUNFT_SQPROJ" xml:space="preserve">
+    <value>Projektdatei</value>
+  </data>
+  <data name="GIMP_FORMAT_SQPROJ" xml:space="preserve">
+    <value>Projektdatei</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE" xml:space="preserve">
+    <value>Geometrie der Projektdatei: {0} von {1} Raumkörpern und {2} von {3} Bauteilkörpern aus den Flächen der Datei gebildet; {4} mit Vorgabedicke, {5} mit angenommener Bezugsebene.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_GEOMETRIE_FEHLT" xml:space="preserve">
+    <value>Die Projektdatei führt keine lesbare Geometrie (Raumpolygone, Flächenschleifen) — die Ansicht zeigt Umrissprismen.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_RAUM_OHNE_POLYGON" xml:space="preserve">
+    <value>Raum „{0}“: kein lesbares Raumpolygon ({1}) — Rückfall Umrissprisma.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_RAUM" xml:space="preserve">
+    <value>Raum „{0}“: Raumkörper nicht gebildet ({1}: {2}) — Rückfall Umrissprisma.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_KOERPER_BAUTEIL" xml:space="preserve">
+    <value>Bauteilkörper nicht gebildet ({0}: {1}) — Rückfall Umrissprisma.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OHNE_GEOMETRIE" xml:space="preserve">
+    <value>Keine lesbare Flächenschleife (GeoDesc) — kein Bauteilkörper.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_OHNE_WAND" xml:space="preserve">
+    <value>Die Öffnung liegt in keiner Wandfläche desselben Raums — Körper ohne Aussparung.</value>
+  </data>
+  <data name="IMP_SQPROJ_PROT_OEFFNUNG_RAND" xml:space="preserve">
+    <value>Die Öffnung reicht an den Rand ihrer Wandfläche — die Aussparung entfällt.</value>
+  </data>
+  <data name="GANS_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>aus Flächen gebildet</value>
+  </data>
+  <data name="GANS_KENNZEICHEN_ABGELEITET" xml:space="preserve">
+    <value>{0} Räume aus Flächen der Datei gebildet, {1} aus Umriss, {2} schematisch</value>
+  </data>
+  <data name="BTSB_KOERPER" xml:space="preserve">
+    <value>Körper</value>
+  </data>
+  <data name="BTSB_KOERPER_ABGELEITET" xml:space="preserve">
+    <value>aus Flächen der Datei gebildet ({0})</value>
+  </data>
+  <data name="BTSB_KOERPER_DATEI" xml:space="preserve">
+    <value>aus der Datei ({0})</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMPOLYGON" xml:space="preserve">
+    <value>Raumpolygon</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_HUELLFLAECHEN" xml:space="preserve">
+    <value>Hüllflächen</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_CLOSEDSHELL" xml:space="preserve">
+    <value>Schale der Datei</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_RAUMFLAECHEN" xml:space="preserve">
+    <value>Flächen des Raums</value>
+  </data>
+  <data name="BTSB_KOERPERWEG_FLAECHENEXTRUSION" xml:space="preserve">
+    <value>Extrusion der Fläche</value>
+  </data>
+  <data name="GIMP_DLG_QUELLWAHL" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="GIMP_DLG_QUELLWAHL_ALLE" xml:space="preserve">
+    <value>Alle Formate (nach Dateiendung)</value>
+  </data>
+  <data name="GIMP_DLG_QUELLZEILE" xml:space="preserve">
+    <value>Quelle: {0}</value>
+  </data>
+  <data name="GIMP_DLG_QUELLE_MIT_SQPROJ" xml:space="preserve">
+    <value>{0} + Projektdatei</value>
+  </data>
+  <data name="GIMP_DLG_QUELLE_SQPROJ" xml:space="preserve">
+    <value>Nur Projektdatei (.sqproj)</value>
+  </data>
+  <data name="GIMP_DLG_SQNUR_UNBEHEIZT" xml:space="preserve">
+    <value>Eine Zone der Projektdatei enthält unbeheizte Räume; die Zuordnung bleibt unvollständig, bis ihre Beheizung entschieden ist.</value>
   </data>
 </root>
 

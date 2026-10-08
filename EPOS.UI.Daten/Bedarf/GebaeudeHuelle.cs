@@ -139,6 +139,12 @@ namespace WindowsFormsApplication1
                     z => { idsNachziehen(); return GebaeudeNeulesenHuelle.Angabe(z); }),
                 ["DateiNeuLesen"] = new Func<GebaeudeProjektZeile, Task<GebaeudeNeulesestand>>(
                     z => { idsNachziehen(); return new GebaeudeNeulesenHuelle().LesenAsync(z); }),
+                // G5-N (N5/N6): der Abschnitt "Ausrichtung" - je Zeile die gespeicherte Richtung der Planoberseite;
+                // eine Zeile ohne Projektkopie oder ohne Importquelle ist nicht aenderbar (Hinweis statt Eingabe).
+                ["Ausrichtung"] = new Func<GebaeudeProjektZeile, EPOS.UI.Dialoge.Import.GebaeudeAusrichtungDaten>(
+                    z => { idsNachziehen(); return GebaeudeKatalogHuelle.Ausrichtung(AusrichtungsGebaeude(z)); }),
+                ["AusrichtungAendern"] = new Func<GebaeudeProjektZeile, double, EPOS.UI.Dialoge.Import.GebaeudeAusrichtungErgebnis>(
+                    (z, planoberseite) => { idsNachziehen(); return GebaeudeKatalogHuelle.AusrichtungAendern(AusrichtungsGebaeude(z), planoberseite); }),
                 ["BtnImportText"] = Text_("GEB_BTN_IMPORT", "Importieren (gbXML, IFC)…"),
                 ["BtnImportHinweis"] = Text_("GEB_BTN_IMPORT_HINWEIS",
                     "Ein Gebäude aus einer gbXML- oder IFC-Datei als neuen Katalogsatz anlegen und in die Projektliste übernehmen"),
@@ -619,6 +625,13 @@ namespace WindowsFormsApplication1
         {
             return Text_("GEB_TITEL", "Eingabe der Gebäudedaten");
         }
+
+        /// <summary>
+        /// G5-N: das Projektgebäude (<c>Tab_Gebaeude.ID</c>) einer Zeile für die Ausrichtung; 0 = keines (ohne Projektkopie
+        /// oder eben aufgenommen) — dann liefert die Hülle die gesperrte Ausrichtung.
+        /// </summary>
+        private static int AusrichtungsGebaeude(GebaeudeProjektZeile z)
+            => z == null || !z.HatProjektkopie || z.IdZ <= 0 || z.IdZ >= STARTINDEX ? 0 : GebaeudeBedarfCtrl.TabGebaeudeId(z.IdZ);
 
         private static string Text_(string schluessel, string rueckfall)
         {

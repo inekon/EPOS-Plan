@@ -22,7 +22,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_haengt_an_der_Vorgaengerklasse_und_die_Paketanhebung_fuehrt_DDL()
         {
-            Assert.Equal(Ak3Schema.SCHRITT + 1, Ak3KSchema.SCHRITT);
+            Assert.Equal(ProjektdateiImportSchema.SCHRITT + 1, Ak3KSchema.SCHRITT);
+            Assert.Equal(201, Ak3KSchema.SCHRITT);
+            Assert.Equal(Ak3KSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.True(Ak3KSchema.SCHRITT <= SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == Ak3KSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

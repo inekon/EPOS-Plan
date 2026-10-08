@@ -3124,6 +3124,45 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrAk3 + " - vollstaendig: " + Ak3Schema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt NordrichtungSchema.SCHRITT (G5-N): Tab_Importquelle.Nordwinkel_Herkunft, die Herkunft des
+            //      Nordwinkels (ANNAHME, DATEI, EINGABE), Bestand nachgefuellt (Nordwinkel vorhanden -> DATEI, NULL ->
+            //      ANNAHME). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Nordrichtung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Rechenweg liest die Spalte nicht; kein Referenzprojekt hat eine Importquelle.
+            string nrNordrichtung = NordrichtungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNordrichtung + " - Herkunft des Nordwinkels (Tab_Importquelle): " +
+                              (NordrichtungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNordrichtung = new List<string>();
+                angelegt += NordrichtungSchema.Ausfuehren(berichtNordrichtung);
+                foreach (string zeile in berichtNordrichtung)
+                    Console.WriteLine("Schritt " + nrNordrichtung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNordrichtung + " - vollstaendig: " + NordrichtungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ProjektdateiImportSchema.SCHRITT: Format und Herkunft SQPROJ fuer den Gebaeudeimport aus der
+            //      Projektdatei (.sqproj) - Neubau von Tab_Importquelle und der sechs Herkunftstabellen (Baustoff, Aufbau,
+            //      je mit Katalog, Zone, Bauteil) mit erweiterter Pruefklausel. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ProjektdateiImport bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile aendert sich; der Rechenweg liest weder Format noch Herkunft.
+            string nrProjektdatei = ProjektdateiImportSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrProjektdatei + " - Format und Herkunft SQPROJ (Import aus der Projektdatei): " +
+                              (ProjektdateiImportSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtProjektdatei = new List<string>();
+                ProjektdateiImportSchema.Ausfuehren(berichtProjektdatei);
+                foreach (string zeile in berichtProjektdatei)
+                    Console.WriteLine("Schritt " + nrProjektdatei + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrProjektdatei + " - vollstaendig: " + ProjektdateiImportSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): sieben Kennzahlen der Zonensperre und der
             //      Kaelteseite im Kreis an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich
             //      SchemaMigration.Schritt_Ak3K bedient.

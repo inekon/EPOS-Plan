@@ -167,8 +167,12 @@ namespace WindowsFormsApplication1
             new KeyValuePair<string, string>(SPALTE_ZIEL_BAUSTOFF, SchemaKatalog.TAB_BAUSTOFF)
         };
 
-        /// <summary>Die Wertliste des Formats als SQL-Literal (Quelle des <c>CHECK</c>).</summary>
-        public const string WERTE_FORMAT = "'" + DbWerte.IMPORT_FORMAT_IFC + "','" + DbWerte.IMPORT_FORMAT_GBXML + "'";
+        /// <summary>
+        /// Die Wertliste des Formats als SQL-Literal (Quelle des <c>CHECK</c>); <c>SQPROJ</c> trägt eine nachgezogene
+        /// Datenbank ab Schritt <see cref="ProjektdateiImportSchema.SCHRITT"/>.
+        /// </summary>
+        public const string WERTE_FORMAT = "'" + DbWerte.IMPORT_FORMAT_IFC + "','" + DbWerte.IMPORT_FORMAT_GBXML + "','" +
+                                           DbWerte.IMPORT_FORMAT_SQPROJ + "'";
 
         // =================================================================
         //  Die DDL

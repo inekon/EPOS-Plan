@@ -437,11 +437,15 @@ namespace WindowsFormsApplication1
                     if (gruppen > 1 && gruppen < g.Raeume.Count) regeln.Add(IfcImportProfil.ZONENREGEL_Z6);
                 }
                 regeln.Add(IfcImportProfil.ZONENREGEL_Z5);
-                string vorgabe = (grenzen || g.GeschosseGekoppelt) && geschosse > 1 ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
+                string vorgabe = (grenzen || g.GeschosseGekoppelt || g.KoerperflaechenGekoppelt) && geschosse > 1
+                    ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
                 return (regeln, vorgabe, grenzen);
             }
+            // Die Projektdatei (SQPROJ) läuft über die X-Regeln wie gbXML: Ihre Zonen (Simulationszone vor Nutzungszone, vom Leser
+            // als Zone des Raums gesetzt) sind die Vorgabe, sobald es eine gibt — auch wenn jeder Raum seine eigene Zone ist.
+            bool sqproj = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal);
             int zonen = g.Raeume.Select(r => r.ZonenKennung).Where(z => z != null).Distinct(StringComparer.Ordinal).Count();
-            bool x1 = zonen >= 1 && zonen < g.Raeume.Count;
+            bool x1 = zonen >= 1 && (zonen < g.Raeume.Count || sqproj);
             if (x1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X1);
             if (geschosse > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X2);
             if (g.Raeume.Count > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X3);
@@ -841,9 +845,11 @@ namespace WindowsFormsApplication1
             if (seiten.Count == 0) return;
             int erster = teile.Count;
             Teile(s, teile, seiten, geometrie);
-            // Der Weg der Fläche je Teil (A4): Polygone der Raumgrenzen, sonst der Weg der Bauteilfläche.
+            // Der Weg der Fläche je Teil (A4): Polygone der Raumgrenzen, Grenzen aus Körpern (Raumkörperpaare, G7f-4, und
+            // Bauteilkörper, G5-3), sonst der Weg der Bauteilfläche.
+            bool koerper = s.Grenzen.Count > 0 && s.Grenzen.All(g => g.Herkunft == Grenzherkunft.Koerper || g.Herkunft == Grenzherkunft.Bauteilkoerper);
             for (int i = erster; i < teile.Count; i++)
-                teile[i].Flaechenherkunft = geometrie ? Flaechenherkunft.Raumgrenze : s.Flaechenherkunft;
+                teile[i].Flaechenherkunft = !geometrie ? s.Flaechenherkunft : koerper ? Flaechenherkunft.Koerper : Flaechenherkunft.Raumgrenze;
         }
 
         private void Teile(AbbildBauteil s, List<Zonenflaeche> teile, List<Seite> seiten, bool geometrie)

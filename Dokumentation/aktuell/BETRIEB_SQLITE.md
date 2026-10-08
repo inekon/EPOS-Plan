@@ -181,6 +181,20 @@ die Simulation, deren Lauf die Frage nach dem Ergebnis ohnehin prüft —, `Tab_
 Die Trigger an `Tab_Projekt` und `Tab_Applikation` lösen sich nicht selbst aus: Sie hören nur auf
 den Emissionsmodus, ihr eigenes `UPDATE` setzt allein die Stempelspalte.
 
+**Pflege ohne Kostenänderung stempelt nicht.** Die Selbstheilung der Anlagenzuordnung
+(`KostenProjektPositionenCtrl.ZuordnungReparieren`) schlüsselt Kostenpositionen einer gelöschten
+oder neu angelegten Anlage um; sie läuft vor jeder Rechnung und beim Aufbau der Kostenseite und
+stellt nur nach, was das gestempelte Löschen oder Anlegen der Anlage verursacht hat. Sie läuft
+deshalb in `KostenAenderungsstempel.OhneProjektstempel`: Der Projektstempel wird vorher gelesen und
+danach unverändert zurückgeschrieben. Die Simulation schreibt an der Anlage nur Spalten außerhalb
+der Liste von `UPDATE OF` (`WQ_*`, `WS_*`) und stempelt nicht.
+
+**Bearbeitet, nicht „Wert geändert“.** Ein `UPDATE`, das eine Zeile mit denselben Werten
+zurückschreibt, stempelt. Ein `WHEN` mit Wertvergleich steht nur an den drei Einspalten-Triggern
+(`Tab_Projekt`, `Tab_Applikation`, `emissionsart`). An den übrigen Tabellen müsste es jede Spalte
+im Trigger nennen: Ein späteres `DROP COLUMN` scheiterte dann („no such column: OLD.…“), und eine
+neue Spalte bliebe ohne Vergleich.
+
 **Trigger sind Teil des Schemas.** Die 63 Trigger (`trg_Kostenstempel_*`, `trg_Katalogstempel_*`)
 stehen in `sqlite_master` neben Tabellen und Indizes; sie reisen mit jeder Dateikopie, mit
 `VACUUM INTO` (Abschnitt 3.2) und mit der Auslieferungsvorlage. Daraus folgt:

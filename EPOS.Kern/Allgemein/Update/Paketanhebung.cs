@@ -354,6 +354,14 @@ namespace WindowsFormsApplication1
             // kommen leer an (Raumeinfluss aus, „nicht erhoben").
             new Stufe(Ak3Schema.SCHRITT, Art.Ddl,
                       "Stufe AK3: Raumeinfluss der Heizkurve am Gebäude, Kennzahlen des geschlossenen Kreises im Ergebnis"),
+            // Ein älteres Paket führt keine Herkunft des Nordwinkels; die Spalte kommt leer an, der Leseweg nimmt dann
+            // Nordwinkel vorhanden → Datei, NULL → Annahme.
+            new Stufe(NordrichtungSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des Nordwinkels an der Importquelle (Datei, Eingabe, Annahme)"),
+            // Ein älteres Paket führt nur die Formate IFC und gbXML und die fünf alten Herkünfte; seine Zeilen bleiben gültig,
+            // die Prüfklauseln nehmen danach auch SQPROJ an.
+            new Stufe(ProjektdateiImportSchema.SCHRITT, Art.Ddl,
+                      "Format und Herkunft SQPROJ für den Gebäudeimport aus der Projektdatei"),
             // Ein älteres Paket führt keine Kennzahlen der Zonensperre und der Kälteseite im Kreis; die Spalten kommen
             // leer an („nicht erhoben").
             new Stufe(Ak3KSchema.SCHRITT, Art.Ddl,

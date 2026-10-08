@@ -221,6 +221,21 @@ public sealed record BauteilsteckbriefDaten
     /// <summary>Rahmenanteil (Fenster) oder Strich; leer bei opaken Bauteilen.</summary>
     public string Rahmenanteil { get; init; } = "";
 
+    /// <summary>Der Befund des Bauteils (Abstimmung G5, B1; Farbmodus „Befund").</summary>
+    public Bauteilbefundstufe Befund { get; init; } = Bauteilbefundstufe.Ohne;
+
+    /// <summary>Der Grund des Befunds als Text; leer ohne Befund.</summary>
+    public string Befundgrund { get; init; } = "";
+
+    /// <summary>
+    /// Der gespeicherte Wert der Herkunft der Fläche (<c>Tab_Bauteil.Flaechenherkunft</c>: <c>MENGENSATZ</c>, <c>RAUMGRENZE</c>,
+    /// <c>KOERPER</c>, <c>SCHEMATISCH</c>); leer = von Hand bzw. nicht bestimmt.
+    /// </summary>
+    public string FlaechenherkunftSchluessel { get; init; } = "";
+
+    /// <summary>Die Herkunft der Fläche als Anzeigetext; leer = von Hand bzw. nicht bestimmt.</summary>
+    public string Flaechenherkunft { get; init; } = "";
+
     /// <summary>Das gespeicherte Bauteil (Datei erneut lesen) — Sprung in den Bauteildialog; <c>null</c> = nicht gespeichert.</summary>
     public int? IdBauteil { get; init; }
 }
@@ -240,12 +255,29 @@ public sealed class BauteilsteckbriefTexte
     public string GruppeRechnung { get; set; } = Resource.BTSB_GRP_RECHNUNG;
     /// <summary><c>BTSB_FLAECHE</c></summary>
     public string Flaeche { get; set; } = Resource.BTSB_FLAECHE;
+    /// <summary><c>BTSB_FLAECHENHERKUNFT</c></summary>
+    public string Flaechenherkunft { get; set; } = Resource.BTSB_FLAECHENHERKUNFT;
     /// <summary><c>BTSB_AZIMUT</c></summary>
     public string Azimut { get; set; } = Resource.BTSB_AZIMUT;
     /// <summary><c>BTSB_NEIGUNG</c></summary>
     public string Neigung { get; set; } = Resource.BTSB_NEIGUNG;
     /// <summary><c>BTSB_RAND</c></summary>
     public string Rand { get; set; } = Resource.BTSB_RAND;
+    /// <summary><c>BTSB_KOERPER</c> — die Zeile „Körper" (17.5).</summary>
+    public string Koerper { get; set; } = Resource.BTSB_KOERPER;
+    /// <summary><c>BTSB_KOERPER_ABGELEITET</c> — {0} der Weg.</summary>
+    public string KoerperAbgeleitet { get; set; } = Resource.BTSB_KOERPER_ABGELEITET;
+    /// <summary><c>BTSB_KOERPER_DATEI</c> — {0} die Darstellungsart.</summary>
+    public string KoerperDatei { get; set; } = Resource.BTSB_KOERPER_DATEI;
+    /// <summary><c>BTSB_KOERPERWEG_*</c> — der Weg eines gebildeten Körpers nach seinem Schlüssel.</summary>
+    public IReadOnlyDictionary<string, string> Koerperwege { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["Raumpolygon"] = Resource.BTSB_KOERPERWEG_RAUMPOLYGON,
+        ["Huellflaechen"] = Resource.BTSB_KOERPERWEG_HUELLFLAECHEN,
+        ["ClosedShell"] = Resource.BTSB_KOERPERWEG_CLOSEDSHELL,
+        ["Raumflaechen"] = Resource.BTSB_KOERPERWEG_RAUMFLAECHEN,
+        ["Flaechenextrusion"] = Resource.BTSB_KOERPERWEG_FLAECHENEXTRUSION,
+    };
     /// <summary><c>BTSB_UWERT</c></summary>
     public string UWert { get; set; } = Resource.BTSB_UWERT;
     /// <summary><c>BTSB_R1</c></summary>
@@ -282,6 +314,8 @@ public sealed class BauteilsteckbriefTexte
     public string GWert { get; set; } = Resource.BTSB_GWERT;
     /// <summary><c>BTSB_RAHMEN</c></summary>
     public string Rahmen { get; set; } = Resource.BTSB_RAHMEN;
+    /// <summary><c>BTSB_BEFUND</c></summary>
+    public string Befund { get; set; } = Resource.BTSB_BEFUND;
     /// <summary><c>BTSB_ZUR_BAUSTOFFZUORDNUNG</c></summary>
     public string ZurBaustoffzuordnung { get; set; } = Resource.BTSB_ZUR_BAUSTOFFZUORDNUNG;
     /// <summary><c>BTSB_ZUM_BAUTEIL</c></summary>

@@ -175,6 +175,7 @@ und `README.md`.
 | [`aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md`](aktuell/Zapfprofilgenerator/2026-09-26_Validierung_offene_Messreihen.md) | Zapfprofilgenerator: erster Rechennachweis der Stufe Z5 an gemessenen Reihen — 21 Objekte aus drei offen lizenzierten Quellen (zwölf norwegische Gebäude, zehn spanische Wohnhäuser, zwei Mehrfamilienhäuser in New York; eine vierte Quelle geprüft und ungeeignet), Rechenweg und Kalibrierung, die vier Abnahmekriterien mit Zahlen, Ursachen der roten Kriterien und sechs Folgen (V1–V5, K5); Abschnitt 7 zweiter Lauf nach den Folgen (belegte Bezugsmengen, Feiertage je Land, Band je Größenklasse als Analyse, Frage ZU35); Abschnitt 8 dritter Lauf (ZU35, Hoteltyp), Abschnitt 9 vierter Lauf (V9, V10; Datenanfragen nicht versandt); nur Verhältniszahlen, Namensnennung nach CC BY 4.0 | 2026-09-26 |
 | [`aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md`](aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md) | Zapfprofilgenerator: Quellendossier der Kataloge (Posten P13 der Stufe Z0) — Wertemengen `Status` und `Herkunftsart`, Provenienzpflicht, je Wertgruppe (Bedarf mit Bandbreite, Jahresgang, Wochengang, Tagesgang, Bedarfstag, Parameter, DIN-4708-Werte) die zulässigen Quellen mit Regelwerk, Ausgabe, Fundstellenart, Bilanzgrenze und Temperaturbezug, was nie in Repository und Auslieferung steht, lokale Testdaten, fiktiver Testkatalog, Wege für Auslieferungs- und Anwenderdaten, Lizenzstand; ohne Werte | 2026-09-23 |
 | [`aktuell/Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md`](aktuell/Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md) | Berichtsseite: VALERI-Darstellung des Wirtschaftlichkeitsberichts (Teil A, Fachvorgabe VB, Entscheide VB‑Q1…Q9 → Register R‑E32) und Anordnung der Bedienelemente (Teil B, Varianten A/B/C mit Mockups, Entscheide BL‑Q1…Q5), beide nach Empfehlung entschieden (06.10.2026) | 2026-10-06 |
+| [`aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) | Übergabegrenze und Bivalenz der Wärmepumpe (Auftrag des Anwenders 07.10.2026): Heizflächenleistung beim Höchstvorlauf als zweite Grenze neben dem Kennfeld (Gleichgewicht Wasserseite/Heizflächengleichung bei Auslegungsmassenstrom), Betriebsbereiche WP allein, parallel, Vorwärmbetrieb (Reihe WP → Kessel), nur Kessel, berechnete Bivalenzpunkte, Spreizungs- und Rücklaufgrenzen, Einbindung direkt/Puffer/Weiche, Vorgabewerte mit Quellen (EN 442, EN 1264, EN 14511, VDI 4650, § 43 GModG), Gruppe „Bivalenz und Übergabe“ mit Herleitungszeile und Bivalenzdiagramm, Etappen UB‑E1–E5 (15–22 PT), Fragen UB‑Q1–Q8; Entwurf | 2026-10-07 |
 
 Alle HTML-Mockups liegen zusammen unter `aktuell/Mockups/` (kein Markdown, deshalb keine
 Indexzeile): `Dialog_Formel_Zahlenprobe.html` — alle acht Kostenkategorien mit Dialog,
@@ -190,7 +191,9 @@ Beispielen, Ergebnisblatt und den zwei Einstiegen; Mockup zur Abnahme, Konzept f
 `BerichteKosten_Navigation_A.html`, `_B.html`, `_C.html` samt gleichnamigen PNG (Konzept Navigation Berichte & Kosten)
 und `Berichtsseite_Anordnung_A.html`, `_B.html`, `_C.html` (Konzept Berichtsseite: VALERI-Darstellung und
 Anordnung; die zugehörigen Bilder liegen beim Anwender, nicht im Repository — sie zeigen ein tatsächliches
-Projekt mit Kundennamen).
+Projekt mit Kundennamen) sowie `Waermepumpe_Bivalenz_Uebergabe.html` (Konzept Übergabegrenze und Bivalenz:
+Gruppe „Bivalenz und Übergabe“ der Wärmepumpen-Konfiguration mit Herleitungszeile, Bivalenzdiagramm und Kacheln
+des Ergebnisreiters).
 
 ---
 

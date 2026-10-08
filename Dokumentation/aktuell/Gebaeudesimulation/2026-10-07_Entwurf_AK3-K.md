@@ -9,7 +9,7 @@ aus **E103** (Anwender, 07.10.2026: „setze AK3-K um (Rückwärtswirkung)“); 
 Gelesen und gemessen auf `feb8db420` (Basis R42 `2026-10-07_R42_Vorlaufinterpolation_AK3`, dreiundzwanzig Projekte;
 Testdatenbank Schemastand 198). **Nummern laut Kopf der Statusdatei:** die Basis **R43** ist für AK3-K angemeldet;
 Schemaschritt 199 ist von der Sitzung IFC angemeldet, **200** ist frei. Dieses Papier vergibt keine Schemanummer: der eine
-Schemaschritt heißt hier **S1** (Ergebnisspalten, Welle K4), das neue Referenzprojekt **RP-AK3K**; angemeldet wird vor dem
+Schemaschritt heißt hier **S1** (Ergebnisspalten, Welle K4; gebaut als Schritt **201**), das neue Referenzprojekt **RP-AK3K**; angemeldet wird vor dem
 Bau. **Verfahren:** zwei Leser (L1: Laufordnung der Kälte, Nähte, Zustand, Rechenzeit mit Messung, Fehler im gebauten AK3;
 L2: Papiere, Widersprüche, Fragen, Basis, Tests, Wellen), Stichproben ihrer Aussagen am Code, an `kern.yml` und an der
 Basis R42, Synthese in diesem Papier; wo die Leser sich widersprachen, gilt der Code (1058 steht in der CI-Auswahl).
@@ -316,7 +316,7 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
     `Kaeltekaskade.Rechnen(Kaeltebedarf)`, `TagesbetriebsartBestimmen`, `HeizkanalAnKuehltagenMelden`, `Kuehlkreis`, Monats-
     und Dauerlinienreihen, `SimulationRunner`-Reihen der Kälte.
 20. Kennzahlen (Tage mit Sperre der Gegenseite und gesperrte Energie; auf AK3 Stunden an der Kälteschranke, Umschaltstunden,
-    Kälte-Restbedarf) stehen wie die Kreiskennzahlen von AK3 (Schritt 198) als Ergebnisspalten im Projektergebnis — **S1**,
+    Kälte-Restbedarf) stehen wie die Kreiskennzahlen von AK3 (Schritt 198) als Ergebnisspalten im Projektergebnis — **S1** (Schritt 201),
     NULL außerhalb ihres Geltungsbereichs.
 21. Bis zur Basiswelle K5 rechnen Zonensperre und Kreis nur mit je einem **Kernschalter** (ohne Schema, Vorgabe aus, Muster
     W-I); jedes Gate bis dahin ist „Referenzlauf 23/23 byte-gleich gegen R42“.
@@ -353,7 +353,7 @@ Was ohne weiteren Anwenderentscheid festgelegt wird; Widerspruch ist möglich, b
 
 Je Welle ein Opus-Auftrag mit höchstens rund 150 Werkzeugaufrufen; das Gate fährt die Orchestrierung nach dem Merge. Bis K5
 ist jedes Gate „Referenzlauf 23/23 byte-gleich gegen R42“ mit beiden Schaltern aus. Schemaschritt: allein **S1**
-(Ergebnisspalten nach Festlegung 20) in K4; die Nummer meldet die Orchestrierung vor dem Bau an (heute frei: 200).
+(Ergebnisspalten nach Festlegung 20) in K4, gebaut als Schritt **201**.
 
 | Welle | Inhalt | Abnahme | Basis | PT |
 |---|---|---|---|---|
@@ -381,8 +381,8 @@ nicht in der CI-Auswahl). Abweichungen vom Plan:
 
 - **Sperrzeit vor Umschaltung:** In einer Sperrstunde der Wärmepumpe bleibt der Anlagengrund `SPERRZEIT`; `UMSCHALTUNG`
   steht nur außerhalb der Sperrstunden.
-- **Schemaschritt S1** ist als Schritt **199** gebaut (`Ak3KSchema`, sieben nullbare Kennzahlen an
-  `Tab_ErgebnisEnergiebedarf`), angemeldet war 201.
+- **Schemaschritt S1** ist als Schritt **201** gebaut (`Ak3KSchema` = `ProjektdateiImportSchema.SCHRITT + 1`, sieben nullbare
+  Kennzahlen an `Tab_ErgebnisEnergiebedarf`).
 - **Vorrangschätzung verbessert:** Ohne Freigabe der Heizseite (Sperre, Zeitprogramm, Umschaltung) rechnet sie der
   Wärmepumpe keinen Vorrang zu, und Erzeuger vor ihr in der Kaskade tragen den Vorrang zuerst; die Probe mit Brauchwasser
   am Kombipuffer ist danach weder zu knapp noch zu weit.

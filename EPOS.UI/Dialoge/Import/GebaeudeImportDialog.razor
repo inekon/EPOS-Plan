@@ -137,7 +137,16 @@
             <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@(_stand?.KlasseDerDatei ?? _klasse)"
                          AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt && _stand?.KlasseDerDatei is null)" />
             <Herleitungszeile Text="@(_stand is { KlassenHinweis.Length: > 0 } s ? s.KlassenHinweis : Texte.KlasseHinweis)" />
-            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@(Profil?.Dateifilter ?? "")"
+            @if (Quellenliste.Count > 0)
+            {
+                @* DIE QUELLENWAHL (Datenaustauschkonzept 16.1): je Format, Format mit Projektdatei, nur Projektdatei - sie setzt den
+                   Filter des Dateiwaehlers; ohne Wahl gilt der gemeinsame Filter, und die Quelle folgt der Endung der Datei. *@
+                <div class="epos-gebimport-quellwahl" data-quelle="@(_quelle ?? "")">
+                    <Auswahlfeld Bezeichnung="@Texte.Quellwahl" Eintraege="@Quelleneintraege" Auswahl="@QuellenId(_quelle)"
+                                 AuswahlChanged="BeiQuelle" Platzhalter="@Texte.QuellwahlAlle" Aktiv="@(!Beschaeftigt)" />
+                </div>
+            }
+            <Dateiwahl Bezeichnung="@Texte.Datei" KnopfText="@Texte.DateiKnopf" Filter="@WirksamerFilter"
                        Pfad="@_dateianzeige" Waehlen="@Waehler" PfadChanged="BeiDatei" Aktiv="@(!Beschaeftigt)" />
             @if (GrenzeText.Length > 0)
             {
@@ -157,6 +166,9 @@
         <Gruppenkopf Titel="@Texte.GruppeQuelle" />
         @if (_lesestand.Kopf is GebaeudeImportKopf kopf)
         {
+            <div class="epos-gebimport-quellzeile" data-quelle="@GelesenerWeg">
+                <Herleitungszeile Text="@Format(Texte.Quellzeile, Quellentext(kopf, stand))" />
+            </div>
             <dl class="epos-gebimport-kopf">
                 <dt>@Texte.KopfDatei</dt><dd>@kopf.Dateiname</dd>
                 <dt>@Texte.KopfFormat</dt><dd>@kopf.Format</dd>
@@ -165,14 +177,35 @@
                 <dt>@Texte.KopfZonenregel</dt><dd>@(stand.Zonierung?.RegelText ?? kopf.Zonenregel)</dd>
             </dl>
         }
-        @if (ProjektdateiLesen is not null)
+        @if (_nord is GebaeudeNordrichtungDaten nord)
         {
-            @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. *@
+            @* G5-N (N1-N3): DIE NORDRICHTUNG gleich unter dem Dateikopf - immer sichtbar; im Warnstil, solange sie nur
+               angenommen (die Datei nennt keine) oder nur vorgeschlagen ist (die Datei nennt einen Wert, die Huelle wendet ihn
+               nicht still an: erst "Uebernehmen" bzw. das bestaetigte Feld; formatneutral ueber Herkunft und Dateiwert). Eine Aenderung liest die Datei neu und ordnet
+               neu zu, ohne den Dialog zu verlassen; Handaenderungen bleiben. Ohne Delegat eine reine Anzeige. *@
+            bool angenommen = string.Equals(nord.Herkunft, "ANNAHME", StringComparison.Ordinal);
+            bool vorschlag = angenommen && nord.DateiPlanoberseiteGrad.HasValue;
+            <div class="epos-gebimport-nordrichtung" data-herkunft="@nord.Herkunft">
+                <Gruppenkopf Titel="@Texte.GruppeNordrichtung" />
+                <Nordrichtungswahl Wert="@(vorschlag ? nord.DateiPlanoberseiteGrad : nord.PlanoberseiteGrad)"
+                                   OnWert="BeiNordrichtung" Schnellwahl="@nord.Schnellwahl" Beschriftung="@nord.Beschriftung"
+                                   DateiText="@nord.DateiText" Herkunft="@nord.Herkunft" HerkunftText="@nord.HerkunftText"
+                                   Vorschlag="@vorschlag" Unbestaetigt="@angenommen" Hervorgehoben="@angenommen"
+                                   Aktiv="@(NordrichtungSetzen is not null && !Beschaeftigt)" />
+            </div>
+        }
+        @if (ProjektdateiLesen is not null || NurProjektdatei)
+        {
+            @* DIE PROJEKTDATEI (Datenaustauschkonzept 16.4): Knopf, Bilanz und schwerste Meldung; Schluessel steuern. Im Weg
+               "nur Projektdatei" (16.1) ist die gelesene Datei selbst die Projektdatei: kein Dazuladen, kein Entfernen. *@
             <div class="epos-gebimport-projektdatei">
+                @if (!NurProjektdatei)
+                {
                 <button type="button" class="epos-knopf epos-gebimport-sq-laden" data-aktion="projektdatei"
                         disabled="@(Beschaeftigt || !stand.ProjektdateiMoeglich)"
                         title="@(stand.ProjektdateiMoeglich ? null : Texte.SqKnopfGrund)" @onclick="BeiProjektdatei">@Texte.SqKnopf</button>
-                @if (stand.Projektdatei is not null)
+                }
+                @if (stand.Projektdatei is not null && !NurProjektdatei)
                 {
                     <button type="button" class="epos-knopf epos-gebimport-sq-entfernen" data-aktion="projektdatei-entfernen"
                             disabled="@Beschaeftigt" @onclick="BeiProjektdateiEntfernen">@Texte.SqEntfernen</button>
@@ -244,6 +277,14 @@
                     {
                         <div class="epos-gebimport-sqvorschlag">
                             <Herleitungszeile Text="@sq.Einzonenvorschlag" />
+                        </div>
+                    }
+                    @if (UnbeheizteOffen)
+                    {
+                        @* Weg "nur Projektdatei" (16.1): eine Zone der Datei mit unbeheizten Raeumen laesst diese offen, bis ihre
+                           Beheizung entschieden ist - leise, die Sperre am OK nennt die Zahl. *@
+                        <div class="epos-gebimport-squnbeheizt">
+                            <Herleitungszeile Text="@Texte.SqNurUnbeheizt" />
                         </div>
                     }
                     @if (stand.Zonierung?.Plan is null)
@@ -690,6 +731,8 @@
                         <span title="@Texte.FilterOhneGegenstueckHinweis"><Schalter Bezeichnung="@Texte.FilterOhneGegenstueck" Wert="@_nurOhneGegenstueck"
                                   WertChanged="b => BeiFilter(ref _nurOhneGegenstueck, b)" /></span>
                         <span title="@Texte.FilterOhneUWertHinweis"><Schalter Bezeichnung="@Texte.FilterOhneUWert" Wert="@_nurOhneUWert" WertChanged="b => BeiFilter(ref _nurOhneUWert, b)" /></span>
+                        <span class="epos-gebimport-filter-bauteilbefund" title="@Texte.FilterBauteilbefundHinweis"><Schalter Bezeichnung="@Texte.FilterBauteilbefund"
+                                  Wert="@_nurBauteilbefund" WertChanged="b => BeiFilter(ref _nurBauteilbefund, b)" /></span>
                     </div>
                     <div class="epos-gebimport-flaechen">
                         <Katalogliste Profil="@mehrere.Flaechenprofil" Zeilen="@_flaechenzeilen" Filterstand="@_flaechenfilter"
@@ -697,6 +740,7 @@
                                       Vergleichbar="false" VirtualisierenAb="@VIRTUALISIEREN_AB" />
                     </div>
                     <Herleitungszeile Text="@Texte.FlaechenHinweis" />
+                    <p class="epos-leisezeile epos-gebimport-flaechenherkunft-hinweis">@Texte.FlaechenherkunftHinweis</p>
                 }
             }
             else if (bauteile.Profil is null || bauteile.Liste.Count == 0)
@@ -958,6 +1002,15 @@
     /// <summary>Lädt die Projektdatei zum Gebäude (Pfad, Gebäudeindex) dazu; <c>null</c> = kein Knopf.</summary>
     [Parameter] public Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>? ProjektdateiLesen { get; set; }
 
+    /// <summary>G5-N (N1–N3): die Nordrichtung des gelesenen Imports; <c>null</c> = vor dem Lesen bzw. ohne Weg.</summary>
+    [Parameter] public Func<GebaeudeNordrichtungDaten?>? NordrichtungDaten { get; set; }
+
+    /// <summary>
+    /// G5-N (N2): setzt die Richtung der Planoberseite und liest die Datei damit neu (im Arbeitsfaden der Hülle); danach
+    /// ordnet der Dialog neu zu. Kein Delegat = die Nordrichtung ist nur Anzeige.
+    /// </summary>
+    [Parameter] public Func<double?, CancellationToken, Task<GebaeudeLesestand>>? NordrichtungSetzen { get; set; }
+
     /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
     [Parameter] public Action? ProjektdateiEntfernen { get; set; }
 
@@ -1026,6 +1079,7 @@
     private CancellationTokenSource? _abbruch;
 
     private GebaeudeLesestand? _lesestand;
+    private GebaeudeNordrichtungDaten? _nord;
     private int _gebaeudeIndex;
     private GebaeudeImportStand? _stand;
     private List<GebaeudeFeldzeileDaten> _zeilen = new();
@@ -1143,7 +1197,7 @@
     private string _notiz = "";
 
     /// <summary>Die Filter der Flächenliste — sie schränken die Zeilen vor der Liste ein.</summary>
-    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert;
+    private bool _nurFehler, _nurOhneGegenstueck, _nurOhneUWert, _nurBauteilbefund;
 
     /// <summary>Suche, Sortierung und Trichter der Flächenliste — sie überdauern ein Neuzuordnen.</summary>
     private Katalogfilterstand _flaechenfilter = new();
@@ -1220,6 +1274,63 @@
         => Profil is { HilfeSchluessel.Length: > 0 } p ? p.HilfeSchluessel : HilfeSchluessel;
 
     private string GrenzeText => string.IsNullOrEmpty(Profil?.Groessengrenze) ? "" : Format(Texte.Grenze, Profil.Groessengrenze);
+
+    // ---------------------------------------------------------------------
+    // Die Quellenwahl (Datenaustauschkonzept 16.1)
+    // ---------------------------------------------------------------------
+
+    /// <summary>Der Schlüssel der gewählten Quelle (Datenseite); <c>null</c> = alle Formate, die Endung entscheidet.</summary>
+    private string? _quelle;
+
+    /// <summary>Die gewählte Quelle (Prüfhilfe für Tests); nach dem Lesen einer <c>.sqproj</c> über „alle“ die Projektdatei.</summary>
+    public string? Quelle => _quelle;
+
+    private IReadOnlyList<GebaeudeImportQuellwahl> Quellenliste
+        => Profil?.Quellen ?? (IReadOnlyList<GebaeudeImportQuellwahl>)Array.Empty<GebaeudeImportQuellwahl>();
+
+    /// <summary>Stabile Ids je Schlüssel: die Stelle in der Liste der Datenseite, ab 1.</summary>
+    private IReadOnlyList<(int Id, string Text)> Quelleneintraege
+        => Quellenliste.Select((q, i) => (i + 1, q.Text)).ToList();
+
+    private int? QuellenId(string? schluessel)
+    {
+        if (schluessel is null) return null;
+        for (int i = 0; i < Quellenliste.Count; i++)
+            if (string.Equals(Quellenliste[i].Schluessel, schluessel, StringComparison.Ordinal)) return i + 1;
+        return null;
+    }
+
+    private void BeiQuelle(int? id)
+        => _quelle = id is int i && i >= 1 && i <= Quellenliste.Count ? Quellenliste[i - 1].Schluessel : null;
+
+    /// <summary>Der Filter des Dateiwählers: der der gewählten Quelle, sonst der des Profils (alle Formate).</summary>
+    private string WirksamerFilter
+        => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Dateifilter
+           ?? Profil?.Dateifilter ?? "";
+
+    /// <summary>
+    /// <b>Der Weg „nur Projektdatei“</b>: die gelesene Datei ist eine <c>.sqproj</c> — erkannt am Weg des Kopfs, gleich ob
+    /// über die Quellenwahl oder über „alle Formate“ gewählt.
+    /// </summary>
+    public bool NurProjektdatei => _lesestand?.Kopf?.Weg == GebaeudeImportWeg.NurProjektdatei;
+
+    /// <summary>Der Weg der gewählten Quelle; ohne Wahl der einer Gebäudedatei.</summary>
+    private GebaeudeImportWeg GewaehlterWeg
+        => Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Weg ?? GebaeudeImportWeg.Datei;
+
+    /// <summary>Der Weg des gelesenen Laufs (<c>data-quelle</c> der Quellzeile): mit dazugeladener Projektdatei „MitProjektdatei“.</summary>
+    public GebaeudeImportWeg GelesenerWeg
+        => NurProjektdatei ? GebaeudeImportWeg.NurProjektdatei
+         : _stand?.Projektdatei is { Gelesen: true } ? GebaeudeImportWeg.MitProjektdatei
+         : GebaeudeImportWeg.Datei;
+
+    /// <summary>Der Text der Quellzeile: das Format der Datei, nach dem Dazuladen „… + Projektdatei“.</summary>
+    private string Quellentext(GebaeudeImportKopf kopf, GebaeudeImportStand stand)
+        => GelesenerWeg == GebaeudeImportWeg.MitProjektdatei ? Format(Texte.QuelleMitProjektdatei, kopf.Format) : kopf.Format;
+
+    /// <summary>Im Weg „nur Projektdatei“: Räume, die keine Zone aufnimmt, weil ihre Beheizung offen ist.</summary>
+    private bool UnbeheizteOffen
+        => NurProjektdatei && Plan is { } p && p.NichtZugeordnet.Any(r => !r.Beheizt || !r.BeheiztLautDatei);
 
     private IReadOnlyList<(int Id, string Text)> Klassenliste
         => Baualtersklassen.Select((text, index) => (index, text)).ToList();
@@ -1308,6 +1419,7 @@
         _fortschrittText = "";
         _meldung = "";
         _lesestand = null;
+        _nord = null;
         _stand = null;
         _zeilen = new List<GebaeudeFeldzeileDaten>();
         _gebaeudeIndex = 0;
@@ -1336,6 +1448,7 @@
             {
                 _lesestand = stand;
                 NeuZuordnen();
+                _nord = NordrichtungDaten?.Invoke();
             }
             else
             {
@@ -1355,6 +1468,73 @@
             _abbruch?.Dispose();
             _abbruch = null;
         }
+        await NachDemLesen();
+    }
+
+    /// <summary>
+    /// Die Quelle nach dem Lesen (16.1): Eine <c>.sqproj</c> ist der Weg „nur Projektdatei“ — die Wahl folgt der Endung, und die
+    /// Zonen der Datei gehen gleich als Schritt in den Plan. Beim Weg „Gebäudedatei + Projektdatei“ öffnet sich danach die Wahl
+    /// der Projektdatei; ist sie für diese Datei nicht möglich, nennt eine Meldung den Grund des gesperrten Knopfs.
+    /// </summary>
+    private async Task NachDemLesen()
+    {
+        if (_lesestand is null || _stand is null) return;
+        if (NurProjektdatei)
+        {
+            _quelle = Quellenliste.FirstOrDefault(q => q.Weg == GebaeudeImportWeg.NurProjektdatei)?.Schluessel;
+            if (_stand.Projektdatei is { Gelesen: true } && Plan is not null && _planschritte.Count == 0) ZonenDerProjektdatei();
+            return;
+        }
+        if (GewaehlterWeg == GebaeudeImportWeg.NurProjektdatei) _quelle = null;
+        if (GewaehlterWeg != GebaeudeImportWeg.MitProjektdatei || ProjektdateiLesen is null) return;
+        if (_stand.ProjektdateiMoeglich) await BeiProjektdatei();
+        else Melden(Texte.SqKnopfGrund, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// G5-N (N2): <b>Eine neue Richtung der Planoberseite</b> — die Hülle liest die Datei damit neu (Ladezustand wie beim
+    /// Lesen, Esc bricht ab), danach wird neu zugeordnet: Bauteilliste, Ansicht und Meldungen folgen. Gebäudewahl, Klasse,
+    /// Raumhaken und Handänderungen bleiben — es ist dieselbe Datei.
+    /// </summary>
+    private async Task BeiNordrichtung(double planoberseite)
+    {
+        if (NordrichtungSetzen is null || _lesestand is null || Beschaeftigt) return;
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = Texte.NordrichtungLaeuft;
+        _meldung = "";
+        _abbruch = new CancellationTokenSource();
+        try
+        {
+            GebaeudeLesestand stand = await NordrichtungSetzen(planoberseite, _abbruch.Token);
+            if (stand.Gelesen && stand.Gebaeude.Count > 0)
+            {
+                _lesestand = stand;
+                if (_gebaeudeIndex >= stand.Gebaeude.Count) _gebaeudeIndex = 0;
+            }
+            else
+            {
+                string text = string.Join(Environment.NewLine, stand.Meldungen.Select(m => m.Text));
+                Melden(text.Length > 0 ? text : Texte.NichtGelesen, WarnStufe.Fehler);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Abgebrochen: Es gilt, was die Hülle danach führt - unten neu gefragt.
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+            _abbruch?.Dispose();
+            _abbruch = null;
+        }
+        string meldung = _meldung;
+        WarnStufe stufe = _meldungStufe;
+        NeuZuordnen();
+        if (meldung.Length > 0 && _meldung.Length == 0) Melden(meldung, stufe);
+        _nord = NordrichtungDaten?.Invoke();
     }
 
     // =====================================================================
@@ -1402,7 +1582,7 @@
         _ziel = null;
         _geschoss = null;
         _raumwahl = null;
-        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = false;
+        _nurFehler = _nurOhneGegenstueck = _nurOhneUWert = _nurBauteilbefund = false;
         _flaechenfilter = new Katalogfilterstand();
         _flaecheGewaehlt = "";
         _flaechenzeilen = Array.Empty<Katalogfilterzeile>();
@@ -1933,7 +2113,7 @@
     {
         IReadOnlyList<GebaeudeFlaechenzeileDaten> alle = _stand?.Zonierung?.Flaechen ?? Array.Empty<GebaeudeFlaechenzeileDaten>();
         _flaechenzeilen = alle.Where(f => (!_nurFehler || f.Fehler) && (!_nurOhneGegenstueck || f.OhneGegenstueck)
-                                          && (!_nurOhneUWert || f.OhneUWert))
+                                          && (!_nurOhneUWert || f.OhneUWert) && (!_nurBauteilbefund || f.MitBauteilbefund))
                               .Select(f => f.Zeile).ToList();
     }
 

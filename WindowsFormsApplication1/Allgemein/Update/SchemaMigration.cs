@@ -5273,6 +5273,22 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_AK3 = Ak3Schema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="NordrichtungSchema.SCHRITT"/> — <b>Herkunft des Nordwinkels</b> (Abstimmungspapier G5, N6):
+        /// <c>Tab_Importquelle.Nordwinkel_Herkunft</c> (ANNAHME, DATEI, EINGABE), Bestand nachgefüllt (Nordwinkel vorhanden →
+        /// DATEI, NULL → ANNAHME).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg liest die Spalte nicht.</para>
+        /// </summary>
+        public const int SCHRITT_NORDRICHTUNG = NordrichtungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ProjektdateiImportSchema.SCHRITT"/> — <b>Import aus der Projektdatei</b>: Format und Herkunft
+        /// nehmen den Wert <c>SQPROJ</c> an; <c>Tab_Importquelle</c> und die sechs Herkunftstabellen (Baustoff, Aufbau, je mit
+        /// Katalog, Zone, Bauteil) werden mit erweiterter Prüfklausel neu gebaut.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Keine Zeile ändert sich.</para>
+        /// </summary>
+        public const int SCHRITT_PROJEKTDATEI_IMPORT = ProjektdateiImportSchema.SCHRITT;
         /// Schritt <see cref="Ak3KSchema.SCHRITT"/> — <b>die Kennzahlen von AK3-K</b> (Entwurf AK3-K 3.5, Festlegung 20):
         /// Tage und gesperrte Energie der Zonensperre, Stunden an der Kälteschranke, Umschaltstunden und Kälte-Restbedarf
         /// an <c>Tab_ErgebnisEnergiebedarf</c>.
@@ -7682,6 +7698,19 @@ namespace WindowsFormsApplication1
                         "Der Raumeinfluss der Heizkurve liesse sich nicht pflegen und die Kennzahlen des geschlossenen Kreises " +
                         "nicht speichern. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Ak3),
+            // HERKUNFT DES NORDWINKELS (G5-N). Quelle ist NordrichtungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_NORDRICHTUNG,
+                        "Tab_Importquelle.Nordwinkel_Herkunft",
+                        "Der Gebaeudeimport koennte nicht speichern, ob der Nordwinkel aus der Datei, aus einer Eingabe oder " +
+                        "aus der Annahme stammt; Datei erneut lesen behielte jeden gespeicherten Winkel. KEIN Rechenergebnis " +
+                        "aendert sich.",
+                        Schritt_Nordrichtung),
+            // IMPORT AUS DER PROJEKTDATEI. Quelle ist ProjektdateiImportSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PROJEKTDATEI_IMPORT,
+                        "Tab_Importquelle.Format, Herkunft an Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM), Tab_Zone, Tab_Bauteil",
+                        "Der Gebaeudeimport koennte eine Quelle aus der Projektdatei (.sqproj) und die Herkunft ihrer Zeilen " +
+                        "nicht speichern. KEIN Rechenergebnis aendert sich.",
+                        Schritt_ProjektdateiImport),
             // AK3-K: Kennzahlen der Zonensperre und der Kaelteseite im Kreis. Quelle ist Ak3KSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_AK3K,
                         "Tab_ErgebnisEnergiebedarf: Kennzahlen der Zonensperre (Zonensperre_*) und der Kaelteseite im Kreis (Ak3_Kaelte*, Ak3_Umschalt_Stunden)",
@@ -14423,6 +14452,115 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Stufe AK3 - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Herkunft des Nordwinkels" — Anlass und Wirkung stehen bei <see cref="SCHRITT_NORDRICHTUNG"/>, die Anweisungen bei
+        /// <see cref="NordrichtungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Nordrichtung(Lauf l)
+        {
+            string nr = NordrichtungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in NordrichtungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = NordrichtungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!NordrichtungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tab_Importquelle.Nordwinkel_Herkunft steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Herkunft des Nordwinkels - " +
+                    (handgriffe == 0 ? "stand bereits, Bestand nachgefuellt." : "Spalte angelegt, Bestand nachgefuellt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Import aus der Projektdatei" — Anlass und Wirkung stehen bei <see cref="SCHRITT_PROJEKTDATEI_IMPORT"/>, die
+        /// Anweisungen bei <see cref="ProjektdateiImportSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ProjektdateiImport(Lauf l)
+        {
+            string nr = ProjektdateiImportSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ProjektdateiImportSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ProjektdateiImportSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ProjektdateiImportSchema.Vollstaendig())
+            {
+                l.LetzterFehler = ProjektdateiImportSchema.Offen().ToString(CultureInfo.InvariantCulture) +
+                                  " Tabelle(n) nehmen SQPROJ nach dem Schritt nicht an.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Import aus der Projektdatei - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) neu gebaut.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

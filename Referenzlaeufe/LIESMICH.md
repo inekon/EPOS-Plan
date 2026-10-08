@@ -715,7 +715,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-07_R43_Kaelteseite_AK3K/`** — **vierundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059), **759 CSV**, **5 196 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 07.10.2026, Stand `8a54ce0`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **199**, 91 340 800 Byte, LFS-SHA-256
+gegen `Kenndaten_Test.sqlite` (Schemastand **199** — die vorläufige Nummer von `Ak3KSchema`, gleich **201** nach der
+Umnummerierung hinter 199 `NordrichtungSchema` und 200 `ProjektdateiImportSchema` —, 91 340 800 Byte, LFS-SHA-256
 `82a1b8c7e3ec06dd1a904dbff8cd2639f3bee84cdc667c3034865f504715cd78`, mit den Projekten 1053 bis 1059; Nachträge „Schemaschritte 177 bis 179“, „Schemaschritt 180“ und „Schemaschritt 181“ unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
@@ -792,8 +793,8 @@ rechnet alle vierundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Die Regeln stehen im [Entwurf AK3-K](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)
 > Abschnitte 3 und 4 und im [Konzept Anlagenkopplung](../Dokumentation/aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
 >
-> **Schemastand:** Die Kennzahlen der Zonensperre und der Kälteseite legt der Schritt S1 `Ak3KSchema` an; er trägt auf
-> diesem Zweig vorläufig die Nummer **199**, angemeldet ist **201** (Nachtrag „Schemaschritt 199“ unten).
+> **Schemastand:** Die Kennzahlen der Zonensperre und der Kälteseite legt der Schritt **201** `Ak3KSchema` an (Nachtrag
+> „Schemaschritt 201“ unten); die Basis ist auf seiner vorläufigen Nummer 199 gerechnet, Inhalt gleich.
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
@@ -956,6 +957,16 @@ rechnet alle vierundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `78b62ac35c57bafe4513dedf9030be09ee93def247eb7ad649117e20c618781c`** (Größe wie vorher). **Die Basis
 > bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht CI-Projekte gegen R40 ist PASS.
 
+> **Nachtrag — Schemaschritt 199 (Herkunft des Nordwinkels), Basis unverändert.**
+> `NordrichtungSchema` (199 = `Ak3Schema.SCHRITT + 1`) legt an `Tab_Importquelle` die Spalte `Nordwinkel_Herkunft` mit
+> Prüfklausel an (`ANNAHME`, `DATEI`, `EINGABE`; Nachfüllen nach dem Nordwinkel, wiederholbar). `Tab_Importquelle` hat in der
+> Testdatenbank keine Zeilen (kein Referenzprojekt hat eine Importquelle). Die Testdatenbank steht auf **199**
+> (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok): **89 698 304 Byte, LFS-SHA-256
+> `352e8edc325ca9a1ffd604b5b3cfd3087e507a10d57e11558c929e40d2e9b8d4`** (vorher
+> `b4d6a95afa78c842f976e1c1c152bc21e2c1626c02723b4c80b65d43f42b0f61`, Größe gleich). **Die Basis
+> `2026-10-07_R41_Erdreichpruefung` bleibt** — kein Rechenweg, keine Einfrierregel berührt; der Referenzlauf der acht
+> CI-Projekte gegen R41 ist PASS.
+
 > **Nachtrag — Schemaschritt 198 (Stufe AK3: Raumeinfluss der Heizkurve, Kennzahlen des Kreises), Basis unverändert.**
 > `Ak3Schema` (198 = `FlaechenherkunftSchema.SCHRITT + 1`) legt die nullbare Spalte `Heizkurve_Raumeinfluss` an
 > `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` an, baut die Sicht `Abfrage_Projektgebaeude` zum zehnten Mal neu (105 Spalten)
@@ -967,15 +978,28 @@ rechnet alle vierundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `b4d6a95afa78c842f976e1c1c152bc21e2c1626c02723b4c80b65d43f42b0f61`** (Größe wie vorher). **Die Basis bleibt** — kein
 > Referenzprojekt rechnet AK3, keine Einfrierregel berührt; den Referenzlauf fährt die Orchestrierung im Gate.
 
-> **Nachtrag — Schemaschritt 199 (AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis), Basis unverändert.**
-> `Ak3KSchema` (199 = `Ak3Schema.SCHRITT + 1`) legt sieben nullbare Kennzahlen an `Tab_ErgebnisEnergiebedarf` an
+> **Nachtrag — Schemaschritt 200 (Import aus der Projektdatei: Format und Herkunft `SQPROJ`), Basis unverändert.**
+> `ProjektdateiImportSchema` (200 = `NordrichtungSchema.SCHRITT + 1`) erweitert die Prüfklausel von `Tab_Importquelle.Format`
+> um `SQPROJ` (`IFC`, `GBXML`, `SQPROJ`) und die Herkunftsliste um `SQPROJ` (`MANUELL`, `KATALOG`, `IFC`, `GBXML`, `VORGABE`,
+> `SQPROJ`) an `Tab_Baustoff`, `Tab_Baustoff_STAMM`, `Tab_Bauteilaufbau`, `Tab_Bauteilaufbau_STAMM`, `Tab_Zone` und
+> `Tab_Bauteil`. Weil SQLite einen CHECK nicht ändern kann, werden die sieben Tabellen nach dem Neubaurezept des Hauses neu
+> gebaut (Spaltenfolge, `STRICT`, Fremdschlüssel, Indizes, Trigger und Zähler bleiben; wiederholbar); kein DML an
+> Bestandsdaten, keine Zeile trägt `SQPROJ`. Gehoben aus LFS-SHA-256
+> `f408d3eb185decfba221529ebbeffce818bbae74d35f755fa6bfcff1b6a4c6ce`. Die Testdatenbank steht auf **200**
+> (`Werkzeuge/Testdatenbankschema`, ein zweiter Lauf meldet „steht bereits“; `integrity_check` ok, `foreign_key_check`
+> leer): **90 492 928 Byte, LFS-SHA-256 `f3deb49a72a42b357e92059b38b30bbce82a85985927907e4852c4e890d7ae4d`**. **Die Basis
+> `2026-10-07_R42_Vorlaufinterpolation_AK3` bleibt** — kein gesäter Wert, kein Rechenweg, keine Einfrierregel berührt.
+
+> **Nachtrag — Schemaschritt 201 (AK3-K: Kennzahlen der Zonensperre und der Kälteseite im Kreis), Basis unverändert.**
+> `Ak3KSchema` (201 = `ProjektdateiImportSchema.SCHRITT + 1`; auf dem Arbeitszweig von AK3-K vorläufig 199 = `Ak3Schema.SCHRITT + 1`)
+> legt sieben nullbare Kennzahlen an `Tab_ErgebnisEnergiebedarf` an
 > (`Zonensperre_Tage`, `Zonensperre_Heizen_Gesperrt_MWh`, `Zonensperre_Kuehlen_Gesperrt_MWh`, `Ak3_Kaelteschranke_Stunden`,
 > `Ak3_Umschalt_Stunden`, `Ak3_Kaelterest_Stunden`, `Ak3_Kaelterest_MWh`); alle Spalten entstehen leer, kein DML an
-> Bestandsdaten. Gehoben aus dem Stand 198 (LFS-SHA-256 `e09fceedc334a57647aac0c69d126c1f9793cdd2a41fd6f8d98bc4da366747f6`).
-> Die Testdatenbank steht auf **199** (`Werkzeuge/Testdatenbankschema`; `integrity_check` ok, `foreign_key_check` leer):
-> **90 497 024 Byte, LFS-SHA-256 `c300e47f89ec3bfb30ce29dc427dadd42a1dd1935d2908777b99f140c897fb98`** (nach `VACUUM`
-> 28 672 Byte kleiner). **Die Basis bleibt** — die Spalten schreibt allein ein Lauf mit Zonensperre oder Kälteseite im
-> Kreis, beide Kernschalter stehen bis K5 aus; der Referenzlauf der dreiundzwanzig Projekte gegen R42 ist byte-gleich.
+> Bestandsdaten. Gehoben aus dem Stand 200 (LFS-SHA-256 `f3deb49a72a42b357e92059b38b30bbce82a85985927907e4852c4e890d7ae4d`)
+> mit `Werkzeuge/Testdatenbankschema`, danach das Referenzprojekt 1059 mit `Skripte/referenzprojekt_1059_ak3k.py`
+> angelegt (Gegenprobe des Skripts grün). Die Testdatenbank steht auf **201** (`integrity_check` ok, `foreign_key_check`
+> leer): **91 336 704 Byte, LFS-SHA-256 `6843896dbc1760fe57fff6527e12b8ae0ffa6cd8f593b7dceb6302ace663fd10`**. **Die Basis
+> `2026-10-07_R43_Kaelteseite_AK3K` bleibt** — die Schritte 199 und 200 berühren weder gesäte Werte noch Rechenweg.
 
 ### Die Vorgängerbasis R42 (Vorlaufinterpolation AK3)
 
