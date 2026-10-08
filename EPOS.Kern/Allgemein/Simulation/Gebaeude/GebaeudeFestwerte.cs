@@ -355,6 +355,16 @@ namespace WindowsFormsApplication1
         /// <summary>Größter zulässiger Raumeinfluss der Kühlkurve [K/K] (Entwurf KK, Festlegung 7; wie die Heizseite).</summary>
         internal const double KUEHLKURVE_RAUMEINFLUSS_MAX = 10.0;
 
+        /// <summary>
+        /// <b>Vorgabewert des Raumeinflusses der Kühlkurve beim Einschalten</b> [K/K] (E106, Q-KK-5 (b); Entwurf KK 2.2,
+        /// Festlegung 6) — ein Dialogwert, kein Rechenwert: Die Rechnung kennt keine Vorgabe, leer heißt aus. Bestimmt per Probe
+        /// an 1058 mit Kühlkurve (KK3, <c>KuehlkurveFeldlaufTests</c>): Die Kelvinstunden über dem Kühlsollwert fallen von 47,9 Kh
+        /// (k_K 0 und 1) über 46,4 (2) auf 45,1 (3) und 44,7 (5) — 3 K/K ist der kleinste runde Wert, der den Komfort des festen
+        /// Vorlaufs (45,9 Kh) erreicht; darüber sättigt der Gewinn, während die EER weiter fällt (5,089 bei 3, 5,048 bei 5) und
+        /// die Durchläufe kaum steigen (Mittel 3,479 bei 3, 3,484 bei 5).
+        /// </summary>
+        internal const double KUEHLKURVE_RAUMEINFLUSS_VORGABE = 3.0;
+
         // Prüfregeln der Eingaben (Dialogtabelle 9.1) — der Kern prüft dieselben Grenzen hart,
         // damit eine Eingabe, die am Dialog vorbei in die Datenbank kommt, benannt abbricht.
 

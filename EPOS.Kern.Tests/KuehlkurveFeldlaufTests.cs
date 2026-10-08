@@ -73,7 +73,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Messreihe der Stärke</b> (nur mit <c>KK3_MESSUNG</c> = Zieldatei): 1058 ohne Kurve, mit Kurve ohne Raumeinfluss
         /// und mit k_K 0,5 … 5 — Überschreitungsstunden und Kelvinstunden der Kühlung, Durchläufe, Kälteleistung, EER, Laufzeit
-        /// (bester von zwei Läufen).
+        /// (bester von drei Läufen, nach einem Aufwärmlauf).
         /// </summary>
         [Fact]
         public void Messreihe_der_Staerke_an_1058()
@@ -84,7 +84,7 @@ namespace EPOS.Kern.Tests
             void Messen(string name, bool kurve, double? kK)
             {
                 (SimulationControl sim, double s) a = Rechnen(1058, kurve, kK);
-                double s2 = Rechnen(1058, kurve, kK).sekunden;
+                double s2 = Math.Min(Rechnen(1058, kurve, kK).sekunden, Rechnen(1058, kurve, kK).sekunden);
                 SimulationControl sim = a.sim;
                 Ak3Weg weg = sim.simulation_Waermebedarf.Ak3;
                 Anlagenkopplung kreis = weg.Kreis;
@@ -102,6 +102,7 @@ namespace EPOS.Kern.Tests
                     k2?.Kuehlstunden ?? 0, k2?.KuehlVorlaufMittelC ?? double.NaN, k2?.KuehlVorlaufMinC ?? double.NaN,
                     k2?.StundenAnVorlaufgrenze ?? 0, k2?.StundenAbgesenkt ?? 0, k2?.AbsenkungSummeKh ?? 0.0, k2?.StundenFestgehalten ?? 0));
             }
+            Rechnen(1058, false, null);   // Aufwärmen (JIT, Testdatenbank), nicht gezählt
             Messen("aus", false, null);
             Messen("Kurve k_K 0", true, null);
             foreach (double kK in new[] { 0.5, 1.0, 2.0, 3.0, 5.0 })

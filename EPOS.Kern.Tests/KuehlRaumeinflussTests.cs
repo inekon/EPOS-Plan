@@ -148,6 +148,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(16.0, mitGrenze.KuehlVorlaufMittelC, 12);
         }
 
+        /// <summary>Der Vorgabewert beim Einschalten (Q-KK-5 (b)) liegt im Bereich der Spalte (Festlegung 7).</summary>
+        [Fact]
+        public void Vorgabewert_der_Staerke_liegt_im_Bereich()
+        {
+            Assert.Equal(3.0, GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_VORGABE);
+            Assert.InRange(GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_VORGABE,
+                           GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MIN, GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MAX);
+        }
+
         /// <summary>Pendelregel (Festlegung 8): Festhalten setzt die Absenkung auf die des ersten Durchlaufs (0) und zählt.</summary>
         [Fact]
         public void Pendelregel_haelt_die_Absenkung_des_ersten_Durchlaufs()
