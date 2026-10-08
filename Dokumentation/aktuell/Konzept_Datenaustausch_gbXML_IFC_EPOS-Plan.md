@@ -2214,6 +2214,17 @@ Der Zonenbaum (E79) zeigt die Zonen der Projektdatei mit Nutzung; nicht abgeglic
 Konditionierung je Zone erscheint in der Zonenzeile (Heizsollwert Tag aus der Ganglinie, Nutzung) und nach dem
 Speichern im Reiter „Konditionierung“ mit Herkunft „aus Projektdatei“. Ohne Projektdatei bleibt alles wie heute. Enthält die gelesene Datei beide Zonierungen, steht neben dem Knopf das Wahlfeld **„DIN-V-18599-Zonen | Simulationszonen“** (`select[data-zonierung]`, Werte `din` und `sim`, Vorgabe DIN); bei nur einer Zonierung fehlt es. Der Wechsel läuft als Planschritt `PROJEKTDATEI` mit dem Feld `Zonierung` ohne erneutes Lesen (das Abbild bleibt im Speicher) und fragt nach, wenn Handschritte verloren gingen; „Nein“ stellt die Wahl zurück. Die Bilanz nennt die Zonierung (`dd[data-wert="zonierung"]`), und jede Zone trägt ihre Herkunft (`data-herkunft` = `projektdatei-din` oder `projektdatei-sim`, Text „aus Projektdatei (DIN-Zonen)“ bzw. „(Simulationszonen)“). Eine Wahl vor der Übernahme gilt erst für die nächste Übernahme.
 
+**Welche Aufbauten gelten (E108).** Beim Weg „IFC + Projektdatei“ prüft die Standprüfung (`Standpruefung`), ob beide Dateien
+zum selben Projektstand gehören: U je Bauteil über die `GUID`, Abweichung über 10 % (`UWERT_ABWEICHUNG_HINWEIS`); die
+Prüfung schlägt an, wenn die abweichenden Bauteile mehr als 5 % der Bruttohüllfläche ausmachen. Der Dialog nennt als
+Anzeichen eines anderen Stands: Kopie im Journal der Projektdatei jünger als der Modellstand der IFC, verschiedenes
+Baujahr, gezeichnete Dicke ungleich Schichtsumme bei mehr als der Hälfte der abweichenden Bauteile. Schlägt die Prüfung
+an, zeigt der Abschnitt „Welche Aufbauten gelten?“ Anteil, Anzeichen und je Bauteilart den Median-U beider Seiten und
+fragt jedes Mal ohne Vorwahl: „Aufbauten der Projektdatei verwenden“ (Aufbau und U aus der Projektdatei,
+`HerkunftU = Sqproj`), „Aufbauten der IFC verwenden“ (Rangfolge E98, Stand der IFC) oder „Abbrechen und neu
+exportieren“. Bis zur Wahl ist Übernehmen gesperrt (Fehler `IMP_SQ_PROT_AUFBAUQUELLE_OFFEN`); nach „Datei erneut lesen“
+wird wieder gefragt, die Wahl wird nicht gespeichert. Schlägt die Prüfung nicht an, gilt E98.
+
 ### 16.5 Stufen und Aufwand
 
 | Stufe | Inhalt | Abnahme | Aufwand |

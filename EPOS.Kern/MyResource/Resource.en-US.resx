@@ -34025,7 +34025,7 @@ Do you want to allow this?</value>
     <value>{0} walls from the body: the outer side cannot be told apart at the building centroid; the normal of the largest face in the file applies ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT" xml:space="preserve">
-    <value>{0} components with a quantity set but no orientation in the file: azimuth or roof pitch from the space boundaries ({1}) or from the component body ({2}); the area remains that of the quantity set ({3}).</value>
+    <value>{0} components without orientation in the file: with a quantity set, azimuth or roof pitch from the space boundaries ({1}) or from the component body ({2}), the area remains that of the quantity set; windows and doors whose wall or roof has no orientation, from their own body ({4}) ({3}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} building components without base quantities (Qto_…); their areas are missing ({1}).</value>
@@ -48861,6 +48861,96 @@ chart</value>
   </data>
   <data name="KI_DLG_ZON_KUEHL_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
     <value>Rated output of the zone cooling emission in kW, sensible; empty = building share by usable area.</value>
+  </data>
+  <data name="IMP_SQ_PROT_STAND_ABWEICHEND" xml:space="preserve">
+    <value>IFC and project file probably do not belong to the same project state: for {0} component(s) covering {1} % of the envelope area the U-value of the project file differs from the IFC U-value by more than 10 %. Indications: {2}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_AUFBAUQUELLE_OFFEN" xml:space="preserve">
+    <value>IFC and project file come from different project states ({0} % of the envelope area with differing U-value). Choose whether the constructions and U-values of the project file or of the IFC apply, or export both files again.</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_KOPIE" xml:space="preserve">
+    <value>the project file is a copy from {0}, created after the IFC model state of {1}</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_BAUJAHR" xml:space="preserve">
+    <value>the year of construction differs (IFC {0}, project file {1})</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_DICKE" xml:space="preserve">
+    <value>the drawn thickness does not match the layer sum of the project file construction for {0} of {1} differing opaque components</value>
+  </data>
+  <data name="IMP_SQ_STAND_KEIN_ANZEICHEN" xml:space="preserve">
+    <value>none further</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_QUELLE_PROJEKTDATEI" xml:space="preserve">
+    <value>Construction source project file: {0} component(s) carry the U-value and construction of the project file; {1} component(s) without counterpart keep the IFC state.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_QUELLE_IFC" xml:space="preserve">
+    <value>Construction source IFC: the IFC state applies; a project file construction only where its U-value matches the IFC U-value.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_TITEL" xml:space="preserve">
+    <value>Which constructions apply?</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SATZ" xml:space="preserve">
+    <value>The constructions of the IFC and the project file do not match: the U-values differ on {0} % of the envelope area. Choose which constructions apply.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_ANZEICHEN" xml:space="preserve">
+    <value>Signs of different project states:</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_ART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_ZAHL" xml:space="preserve">
+    <value>Differing</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_DATEI" xml:space="preserve">
+    <value>U IFC [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_PROJEKTDATEI" xml:space="preserve">
+    <value>U project file [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_TABELLE" xml:space="preserve">
+    <value>Typical U-values per component type (median)</value>
+  </data>
+  <data name="GIMP_DLG_AQ_ZAHL_WERT" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="GIMP_DLG_AQ_BEISPIELE" xml:space="preserve">
+    <value>Examples ({0})</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_BAUTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_U_AUFBAU" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="GIMP_DLG_AQ_PROJEKTDATEI" xml:space="preserve">
+    <value>Use constructions of the project file</value>
+  </data>
+  <data name="GIMP_DLG_AQ_DATEI" xml:space="preserve">
+    <value>Use constructions of the IFC</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT" xml:space="preserve">
+    <value>Cancel and export again</value>
+  </data>
+  <data name="GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI" xml:space="preserve">
+    <value>Constructions: project file</value>
+  </data>
+  <data name="GIMP_DLG_AQ_GEWAEHLT_DATEI" xml:space="preserve">
+    <value>Constructions: IFC</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_TITEL" xml:space="preserve">
+    <value>Cancel import</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_FRAGE" xml:space="preserve">
+    <value>The import ends without taking over any data. Export the IFC and the project file again from the same project state, then start the import again.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_JA" xml:space="preserve">
+    <value>End import</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_NEIN" xml:space="preserve">
+    <value>Back</value>
   </data>
 </root>
 

@@ -34032,7 +34032,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} Wände aus dem Körper: Die Außenseite ist am Gebäudeschwerpunkt nicht zu unterscheiden; es gilt die Normale der größten Fläche der Datei ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT" xml:space="preserve">
-    <value>{0} Bauteile mit Mengensatz ohne Orientierung der Datei: Azimut bzw. Dachneigung aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}); die Fläche bleibt die des Mengensatzes ({3}).</value>
+    <value>{0} Bauteile ohne Orientierung der Datei: Azimut bzw. Dachneigung bei Mengensatz aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}), die Fläche bleibt die des Mengensatzes; Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, aus dem eigenen Körper ({4}) ({3}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} Bauteile ohne Mengenangaben (Qto_…); ihre Flächen fehlen ({1}).</value>
@@ -48868,6 +48868,96 @@ Chart</value>
   </data>
   <data name="KI_DLG_ZON_KUEHL_UEBERGABE_NENNLEISTUNG_ERL" xml:space="preserve">
     <value>Nennleistung der Kühlübergabe der Zone in kW, sensibel; leer = Anteil des Gebäudes nach Nutzfläche.</value>
+  </data>
+  <data name="IMP_SQ_PROT_STAND_ABWEICHEND" xml:space="preserve">
+    <value>IFC und Projektdatei gehören vermutlich nicht zum selben Projektstand: Bei {0} Bauteil(en) mit {1} % der Hüllfläche weicht das U der Projektdatei um mehr als 10 % vom U der IFC ab. Anzeichen: {2}.</value>
+  </data>
+  <data name="IMP_SQ_PROT_AUFBAUQUELLE_OFFEN" xml:space="preserve">
+    <value>IFC und Projektdatei stammen aus verschiedenen Projektständen ({0} % der Hüllfläche mit abweichendem U). Wählen Sie, ob die Aufbauten und U-Werte der Projektdatei oder der IFC gelten, oder exportieren Sie beide Dateien neu.</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_KOPIE" xml:space="preserve">
+    <value>die Projektdatei ist eine Kopie vom {0}, angelegt nach dem Modellstand der IFC vom {1}</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_BAUJAHR" xml:space="preserve">
+    <value>das Baujahr weicht ab (IFC {0}, Projektdatei {1})</value>
+  </data>
+  <data name="IMP_SQ_STAND_ANZEICHEN_DICKE" xml:space="preserve">
+    <value>die gezeichnete Dicke passt bei {0} von {1} abweichenden opaken Bauteilen nicht zur Schichtsumme des Aufbaus der Projektdatei</value>
+  </data>
+  <data name="IMP_SQ_STAND_KEIN_ANZEICHEN" xml:space="preserve">
+    <value>keine weiteren</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_QUELLE_PROJEKTDATEI" xml:space="preserve">
+    <value>Aufbauquelle Projektdatei: {0} Bauteil(e) tragen U und Aufbau der Projektdatei; {1} Bauteil(e) ohne Gegenstück behalten den Stand der IFC.</value>
+  </data>
+  <data name="IMP_BAUTEIL_PROT_PD_QUELLE_IFC" xml:space="preserve">
+    <value>Aufbauquelle IFC: Es gilt der Stand der IFC; ein Aufbau der Projektdatei nur, wenn sein U zum U der IFC passt.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_TITEL" xml:space="preserve">
+    <value>Welche Aufbauten gelten?</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SATZ" xml:space="preserve">
+    <value>Die Aufbauten von IFC und Projektdatei passen nicht zueinander: Die U-Werte weichen auf {0} % der Hüllfläche ab. Wählen Sie, welche Aufbauten gelten sollen.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_ANZEICHEN" xml:space="preserve">
+    <value>Anzeichen für verschiedene Projektstände:</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_ART" xml:space="preserve">
+    <value>Bauteilart</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_ZAHL" xml:space="preserve">
+    <value>Abweichend</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_DATEI" xml:space="preserve">
+    <value>U IFC [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_PROJEKTDATEI" xml:space="preserve">
+    <value>U Projektdatei [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_TABELLE" xml:space="preserve">
+    <value>Mittlere U-Werte je Bauteilart (Median)</value>
+  </data>
+  <data name="GIMP_DLG_AQ_ZAHL_WERT" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="GIMP_DLG_AQ_BEISPIELE" xml:space="preserve">
+    <value>Beispiele ({0})</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_BAUTEIL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Fläche [m²]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_U_AUFBAU" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="GIMP_DLG_AQ_PROJEKTDATEI" xml:space="preserve">
+    <value>Aufbauten der Projektdatei verwenden</value>
+  </data>
+  <data name="GIMP_DLG_AQ_DATEI" xml:space="preserve">
+    <value>Aufbauten der IFC verwenden</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT" xml:space="preserve">
+    <value>Abbrechen und neu exportieren</value>
+  </data>
+  <data name="GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI" xml:space="preserve">
+    <value>Aufbauten: Projektdatei</value>
+  </data>
+  <data name="GIMP_DLG_AQ_GEWAEHLT_DATEI" xml:space="preserve">
+    <value>Aufbauten: IFC</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_TITEL" xml:space="preserve">
+    <value>Import abbrechen</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_FRAGE" xml:space="preserve">
+    <value>Der Import wird ohne Übernahme beendet. Exportieren Sie IFC und Projektdatei aus demselben Projektstand neu und starten Sie den Import danach erneut.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_JA" xml:space="preserve">
+    <value>Import beenden</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_NEIN" xml:space="preserve">
+    <value>Zurück</value>
   </data>
 </root>
 

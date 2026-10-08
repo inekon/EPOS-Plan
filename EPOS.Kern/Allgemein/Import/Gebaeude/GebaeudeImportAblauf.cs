@@ -195,6 +195,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Für Prüfstände: übernimmt ein schon gebautes Abbild</b> wie ein gelesenes — samt dem Inhalt der Datei als Puffer
+        /// (<paramref name="puffer"/>, etwa der STEP-Text, aus dem der Modellstand kommt). Liefert die Zahl der Gebäude.
+        /// </summary>
+        internal int AbbildVorgeben(GebaeudeAbbild abbild, GebaeudeImportProfil profil, string dateiname, byte[] puffer = null)
+        {
+            _meldungen.Clear();
+            _gebaeude.Clear();
+            Abbild = null;
+            Quelle = null;
+            Projektdatei = null;
+            _sqprojGelesen = null;
+            _projektdateiIndex = -1;
+            Profil = profil ?? throw new ArgumentNullException(nameof(profil));
+            _puffer = puffer ?? Array.Empty<byte>();
+            _dateiname = dateiname;
+            _hash = Convert.ToHexStringLower(SHA256.HashData(_puffer));
+            _bytes = _puffer.LongLength;
+            return Auswerten(abbild, profil, dateiname, _hash, _bytes) ? _gebaeude.Count : 0;
+        }
+
+        /// <summary>
         /// <b>Wertet ein gelesenes Abbild aus</b>: Meldungen, Quelle (Format, Name, SHA-256, Größe, Nordwinkel), Gebäude,
         /// Dateihinweise und Grundrisse; allein aus der Projektdatei dazu der Stand der Projektdatei im Selbstbezug.
         /// <c>false</c> = Lesefehler oder kein Gebäude (gemeldet).
@@ -407,7 +428,14 @@ namespace WindowsFormsApplication1
                 SqprojRaumabgleich abgleich = SqprojRaumabgleich.Bilden(a, Abbild.Gebaeude[gebaeudeIndex]);
                 var meldungen = new List<PruefMeldung>(a.Meldungen);
                 meldungen.AddRange(abgleich.Meldungen);
-                return Projektdatei = new SqprojStand(name, hash, bytes, a, abgleich, meldungen, null);
+                // Die Standprüfung (Anwenderentscheid vom 08.10.2026): Schlägt sie an, ist die Aufbauquelle offen, bis gewählt ist.
+                Standpruefung pruefung = Standpruefen(a, gebaeudeIndex);
+                if (pruefung.Meldung() is PruefMeldung warnung) meldungen.Add(warnung);
+                return Projektdatei = new SqprojStand(name, hash, bytes, a, abgleich, meldungen, null)
+                {
+                    Standpruefung = pruefung,
+                    Aufbauquelle = pruefung.Angeschlagen ? Aufbauquelle.Offen : Aufbauquelle.Ifc,
+                };
             }
             catch (IOException ex)
             {
@@ -427,6 +455,36 @@ namespace WindowsFormsApplication1
                 catch (UnauthorizedAccessException) { }
             }
         }
+
+        /// <summary>Die Standprüfung der Projektdatei gegen das IFC-Gebäude <paramref name="gebaeudeIndex"/> samt Modellstand aus dem Puffer.</summary>
+        private Standpruefung Standpruefen(SqprojAbbild a, int gebaeudeIndex)
+        {
+            AbbildGebaeude g = Abbild.Gebaeude[gebaeudeIndex];
+            return Standpruefung.Pruefen(a, g, Standpruefung.IfcModellstand(_puffer, g.Kennung));
+        }
+
+        /// <summary>
+        /// <b>Wählt die Aufbauquelle</b> der dazugeladenen Projektdatei (Anwenderentscheid vom 08.10.2026): <see cref="Aufbauquelle.Projektdatei"/>
+        /// — Aufbau und U je Bauteil aus der Projektdatei, Bauteile ohne Gegenstück behalten den Stand der IFC —, <see cref="Aufbauquelle.Ifc"/>
+        /// — die Rangfolge nach U-Abgleich — oder zurück auf <see cref="Aufbauquelle.Offen"/>. Gelesen wird nichts: Jede folgende
+        /// Zuordnung (<see cref="Zuordnen"/>) und jeder Bauteilvorschlag bildet sich mit der Wahl neu. Gespeichert wird die Wahl nicht.
+        /// <c>false</c> = keine gelesene Projektdatei beim Weg „IFC + Projektdatei“ (nichts geändert).
+        /// </summary>
+        internal bool AufbauquelleWaehlen(Aufbauquelle wahl, int gebaeudeIndex = 0)
+        {
+            SqprojStand p = Projektdatei;
+            if (p == null || p.Abgelehnt || p.Abbild == null || AlleinAusProjektdatei || Abbild == null) return false;
+            if (p.Standpruefung == null && gebaeudeIndex >= 0 && gebaeudeIndex < Abbild.Gebaeude.Count)
+                p.Standpruefung = Standpruefen(p.Abbild, gebaeudeIndex);
+            p.Aufbauquelle = wahl;
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Die Prüfung am OK</b> zur Aufbauquelle: offen nach angeschlagener Standprüfung = eine Meldung der Stufe Fehler, Übernehmen
+        /// und Speichern sind gesperrt; <c>null</c> = übernehmbar.
+        /// </summary>
+        internal PruefMeldung Aufbauquellenpruefung() => Projektdatei?.Aufbauquellenpruefung();
 
         /// <summary>Läuft der Import allein aus der Projektdatei (Format <see cref="GebaeudeQuelle.FORMAT_SQPROJ"/>)?</summary>
         internal bool AlleinAusProjektdatei => string.Equals(Profil?.Format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal);
@@ -600,9 +658,11 @@ namespace WindowsFormsApplication1
                                            bool raumtemperaturAlsSollwert = false)
         {
             GebaeudePruefen(gebaeudeIndex);
+            SqprojStand projektdatei = ProjektdateiFuer(gebaeudeIndex);
             GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
-                                                                 raumtemperaturAlsSollwert);
-            if (satz != null) satz.Projektdatei = ProjektdateiFuer(gebaeudeIndex);
+                                                                 raumtemperaturAlsSollwert,
+                                                                 projektdatei?.ProjektdateiGilt == true ? projektdatei.UWirksam : null);
+            if (satz != null) satz.Projektdatei = projektdatei;
             return satz;
         }
 

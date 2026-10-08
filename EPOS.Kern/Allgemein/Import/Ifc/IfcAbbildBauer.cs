@@ -830,13 +830,143 @@ namespace WindowsFormsApplication1
             if (_koerperAussenUnbestimmt.Count > 0)
                 _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "KOERPER_AUSSENSEITE", Ganz(_koerperAussenUnbestimmt.Count),
                     Beispiele(_koerperAussenUnbestimmt)));
-            if (_orientierungGrenze.Count + _orientierungKoerper.Count > 0)
-                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "ORIENTIERUNG_ERGAENZT", Ganz(_orientierungGrenze.Count + _orientierungKoerper.Count),
-                    Ganz(_orientierungGrenze.Count), Ganz(_orientierungKoerper.Count), Beispiele(_orientierungGrenze.Concat(_orientierungKoerper).ToList())));
+        }
+
+        /// <summary>
+        /// Die Info <c>IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT</c>: Bauteile mit Mengensatz, deren Orientierung aus den Raumgrenzen
+        /// bzw. aus dem Körper kommt, und Fenster und Türen, deren Richtung aus dem eigenen Körper kommt — nach dem Abzug der
+        /// Öffnungen, wenn alle Öffnungen ihre Richtung haben.
+        /// </summary>
+        private void OrientierungMelden()
+        {
+            int zahl = _orientierungGrenze.Count + _orientierungKoerper.Count + _orientierungEigen.Count;
+            if (zahl > 0)
+                _abbild.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "ORIENTIERUNG_ERGAENZT", Ganz(zahl),
+                    Ganz(_orientierungGrenze.Count), Ganz(_orientierungKoerper.Count),
+                    Beispiele(_orientierungGrenze.Concat(_orientierungKoerper).Concat(_orientierungEigen).ToList()), Ganz(_orientierungEigen.Count)));
         }
 
         /// <summary>Bauteile mit Mengensatz, deren Orientierung aus den Raumgrenzen bzw. aus dem Körper kommt (N4).</summary>
         private readonly List<string> _orientierungGrenze = new List<string>(), _orientierungKoerper = new List<string>();
+
+        /// <summary>Fenster und Türen, deren Richtung aus dem eigenen Körper kommt, weil ihr Wirt keine hat.</summary>
+        private readonly List<string> _orientierungEigen = new List<string>();
+
+        /// <summary>Größter Abstand [m] des Öffnungskörpers vom Quader eines Raumkörpers, bis zu dem die Öffnung an diesem Raum liegt.</summary>
+        internal const double OEFFNUNG_RAUM_ABSTAND_M = 1.0;
+
+        /// <summary>
+        /// <b>Richtung der Öffnung aus dem eigenen Körper</b>: Fehlt einem Fenster bzw. einer Tür (Fenstertür) der Azimut und
+        /// hat auch sein Wirt keinen — eine Außenwand ohne Azimut nach Datei, Raumgrenze und Wandkörper, ein Dach ohne Körper
+        /// oder ein flaches Dach —, gilt die Richtung des eigenen Körpers: zuerst der Öffnungskörper, dann der Füllkörper. Die
+        /// Rangfolge Datei → Raumgrenze → Wandkörper → eigener Körper bleibt, denn der Wirt hat seine Richtung schon vorher
+        /// bekommen. Maßgeblich ist die größere Seite des Körpers:
+        /// <list type="bullet">
+        /// <item><b>Senkrecht</b> (Seite als <see cref="Bauteilkoerperart.Wand"/> größer als Oberseite): Neigung 90°, außen ist
+        /// die Seite, die vom Raum weg zeigt, an dem die Öffnung liegt — der Raum aus dem Raumbezug der Öffnung, aus den
+        /// Raumgrenzen von Öffnung und Wirt und den Nachbarn des Wirts oder, ohne Körper unter ihnen, der Raumkörper, dessen
+        /// Quader dem Öffnungskörper am nächsten liegt (bis <see cref="OEFFNUNG_RAUM_ABSTAND_M"/>); Bezugspunkt ist die Mitte
+        /// seines Körpers. Ohne Raumkörper gilt der Gebäudeschwerpunkt. Ist die Seite auch so nicht eindeutig, bleibt die
+        /// Öffnung ohne Azimut (die Meldung des Vorschlags bleibt).</item>
+        /// <item><b>Geneigt oder waagerecht</b> (<see cref="Bauteilkoerperart.PlatteOben"/>): Neigung und Azimut der Oberseite;
+        /// eine waagerechte Öffnung hat keinen Azimut und bleibt, wie sie ist.</item>
+        /// </list>
+        /// Gezählt in <c>IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT</c> („aus eigenem Körper“), ohne Meldung je Bauteil.
+        /// </summary>
+        private void OeffnungsrichtungAusEigenemKoerper()
+        {
+            var raeume = new Dictionary<string, AbbildRaum>(StringComparer.Ordinal);
+            foreach (AbbildRaum r in _abbild.Gebaeude.SelectMany(g => g.Raeume)) raeume.TryAdd(r.Kennung, r);
+            var schwerpunkte = new Dictionary<int, double[]>();
+            IEnumerable<(AbbildBauteil Wirt, int Gebaeude)> wirte = _abbild.Gebaeude.SelectMany((g, gi) => g.Bauteile.Select(b => (b, gi)))
+                .Concat(_abbild.BauteileOhneGebaeude.Select(b => (b, -1)));
+            foreach ((AbbildBauteil b, int gi) in wirte)
+            {
+                bool aussen = b.Randbedingung == Randbedingung.Aussenluft || b.Randbedingung == Randbedingung.Erdreich;
+                if (b.AzimutGrad.HasValue || !(aussen || b.Art == Bauteilart.Dach)) continue;
+                foreach (AbbildBauteil o in b.Oeffnungen)
+                {
+                    if (o.AzimutGrad.HasValue || (o.Art != Bauteilart.Fenster && o.Art != Bauteilart.Tuer)) continue;
+                    if (!_oeffnungsquelle.TryGetValue(o, out var quelle)) continue;
+                    var koerper = new List<Dateikoerper>();
+                    if (quelle.Oeffnung != null && Rechenkoerper(quelle.Oeffnung) is Dateikoerper ko) koerper.Add(ko);
+                    if ((o.Koerper ?? Rechenkoerper(quelle.Element)) is Dateikoerper kf) koerper.Add(kf);
+                    // Die Lage aus dem ersten auswertbaren Körper: senkrecht, wenn seine Seite größer ist als seine Oberseite.
+                    Bauteilkoerperflaeche seite = null, oben = null;
+                    foreach (Dateikoerper k in koerper)
+                    {
+                        seite = IfcBauteilkoerper.Auswerten(k, Bauteilkoerperart.Wand, null, _drehung);
+                        oben = IfcBauteilkoerper.Auswerten(k, Bauteilkoerperart.PlatteOben, null, _drehung);
+                        if (seite != null || oben != null) break;
+                    }
+                    if (seite == null && oben == null) continue;
+                    string name = o.Name ?? o.Kennung;
+                    if (oben != null && (seite == null || oben.FlaecheM2 >= seite.FlaecheM2))
+                    {
+                        if (!oben.AzimutGrad.HasValue && o.NeigungGrad is double n && Math.Abs(n - oben.NeigungGrad) <= 1e-6) continue;
+                        o.NeigungGrad = oben.NeigungGrad;
+                        o.AzimutGrad = oben.AzimutGrad;
+                        _orientierungEigen.Add(name);
+                        continue;
+                    }
+                    if (!schwerpunkte.TryGetValue(gi, out double[] g)) schwerpunkte[gi] = g = Gebaeudeschwerpunkt(gi);
+                    double[] raum = Raumpunkt(o, b, quelle.Element, koerper, raeume);
+                    double? azimut = null;
+                    foreach (double[] bezug in new[] { raum, g }.Where(x => x != null))
+                    {
+                        azimut = koerper.Select(k => IfcBauteilkoerper.Auswerten(k, Bauteilkoerperart.Wand, bezug, _drehung))
+                                        .FirstOrDefault(x => x != null && !x.AussenseiteUnbestimmt && x.AzimutGrad.HasValue)?.AzimutGrad;
+                        if (azimut.HasValue) break;
+                    }
+                    if (!azimut.HasValue) continue;
+                    o.AzimutGrad = azimut;
+                    o.NeigungGrad = 90.0;
+                    _orientierungEigen.Add(name);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Die Mitte des Raums, an dem die Öffnung <paramref name="o"/> in der Wand <paramref name="wirt"/> liegt [m]: das Mittel
+        /// der Körpermitten der Räume aus dem Raumbezug der Öffnung, aus den Raumgrenzen von Öffnung und Wand und aus den
+        /// Nachbarn der Wand; ohne Körper unter ihnen der Raumkörper, dessen Quader dem Öffnungskörper am nächsten liegt
+        /// (bis <see cref="OEFFNUNG_RAUM_ABSTAND_M"/>); sonst <c>null</c>.
+        /// </summary>
+        private double[] Raumpunkt(AbbildBauteil o, AbbildBauteil wirt, IIfcElement element, List<Dateikoerper> koerper,
+                                   Dictionary<string, AbbildRaum> raeume)
+        {
+            var kennungen = new List<string>();
+            if (element != null && _raumbezug.TryGetValue(element.EntityLabel, out List<int> bezug))
+                kennungen.AddRange(bezug.Where(_raum.ContainsKey).Select(r => _raum[r].Kennung));
+            kennungen.AddRange(o.Grenzen.Concat(wirt.Grenzen).Select(x => x.RaumKennung).Where(x => x != null));
+            kennungen.AddRange(wirt.Nachbarn.Select(x => x.Kennung));
+            double[] mitte = IfcBauteilkoerper.Schwerpunkt(kennungen.Distinct().Where(raeume.ContainsKey).Select(k => raeume[k].Koerper).Where(k => k != null));
+            if (mitte != null) return mitte;
+
+            double[] p = Mitte(koerper[0]);
+            if (p == null) return null;
+            Dateikoerper naechster = null;
+            double abstand = OEFFNUNG_RAUM_ABSTAND_M;
+            foreach (Dateikoerper k in raeume.Values.Select(r => r.Koerper).Where(k => k != null && k.PunkteM.Count > 0))
+            {
+                double d = Quaderabstand(k, p);
+                if (d <= abstand && (naechster == null || d < abstand)) { naechster = k; abstand = d; }
+            }
+            return naechster == null ? null : IfcBauteilkoerper.Mitte(naechster);
+        }
+
+        /// <summary>Der Abstand [m] des Punkts <paramref name="p"/> vom umschließenden Quader des Körpers <paramref name="k"/> (innen 0).</summary>
+        private static double Quaderabstand(Dateikoerper k, double[] p)
+        {
+            double summe = 0.0;
+            for (int i = 0; i < 3; i++)
+            {
+                double min = k.PunkteM.Min(q => q[i]), max = k.PunkteM.Max(q => q[i]);
+                double d = p[i] < min ? min - p[i] : p[i] > max ? p[i] - max : 0.0;
+                summe += d * d;
+            }
+            return Math.Sqrt(summe);
+        }
 
         /// <summary>Größte Abweichung [°] einer Grenznormale von der gemittelten, bis zu der die Grenzen eine Richtung tragen.</summary>
         internal const double GRENZNORMALE_STREUUNG_GRAD = 10.0;
@@ -1900,6 +2030,8 @@ namespace WindowsFormsApplication1
             Koerperflaechen();
             OeffnungenNachLage();
             Oeffnungsabzug();
+            OeffnungsrichtungAusEigenemKoerper();
+            OrientierungMelden();
 
             // Fenster und Türen, die keine Öffnung füllen: kein Wirt, keine Himmelsrichtung, nicht gezählt.
             List<string> ohneWirt = Sortiert<IIfcWindow>().Cast<IIfcElement>().Concat(Sortiert<IIfcDoor>())
@@ -3257,7 +3389,10 @@ namespace WindowsFormsApplication1
                 IfcEigenschaften.NameOhneEinheit(f.Eigenschaft.Name.ToString(), out string einheit);
                 if (einheit != null && !IfcEigenschaften.IstUWertEinheit(einheit))
                 {
-                    abweichend.Add(f.Satz + "\u0001" + f.Eigenschaft.Name + "\u0001" + einheit);
+                    // Verworfen wird immer; benannt nur, wenn kein anderer Satz desselben Bauteils denselben Wert in der
+                    // richtigen Einheit trägt — dann ist nur die Einheitenangabe falsch, der Wert gilt über den anderen Satz.
+                    if (!UWertAnderweitigBelegt(f, kandidaten))
+                        abweichend.Add(f.Satz + "\u0001" + f.Eigenschaft.Name + "\u0001" + einheit);
                     continue;
                 }
                 u = Zahl(f);
@@ -3286,6 +3421,27 @@ namespace WindowsFormsApplication1
             _abbild.ZahlUWerte++;
             b.UWertWm2K = u;
             b.UWertQuelle = gewaehlt.Satz + (gewaehlt.Quelle == IfcEigenschaftsquelle.Typ ? " (Typ)" : "");
+            return false;
+        }
+
+        /// <summary>Größte relative Abweichung, bis zu der zwei U-Werte desselben Bauteils als derselbe Wert gelten.</summary>
+        internal const double UWERT_GLEICH_RELATIV = 1e-3;
+
+        /// <summary>
+        /// Trägt ein anderer Satz desselben Bauteils den Wert der Eigenschaft <paramref name="falsch"/> (falsche Einheit im
+        /// Namen) positiv und in richtiger Einheit — ohne Einheit im Namen oder W/(m²K) —, relativ höchstens
+        /// <see cref="UWERT_GLEICH_RELATIV"/> abweichend? Dann bleibt der Einheitenhinweis aus.
+        /// </summary>
+        private bool UWertAnderweitigBelegt(IfcFund falsch, IReadOnlyList<IfcFund> kandidaten)
+        {
+            if (!(Zahl(falsch) is double w) || !(w > 0.0)) return false;
+            foreach (IfcFund f in kandidaten)
+            {
+                if (ReferenceEquals(f, falsch) || IfcEigenschaften.Gleich(f.Satz, falsch.Satz)) continue;
+                IfcEigenschaften.NameOhneEinheit(f.Eigenschaft.Name.ToString(), out string einheit);
+                if (einheit != null && !IfcEigenschaften.IstUWertEinheit(einheit)) continue;
+                if (Zahl(f) is double v && v > 0.0 && Math.Abs(v - w) <= UWERT_GLEICH_RELATIV * Math.Max(v, w)) return true;
+            }
             return false;
         }
 

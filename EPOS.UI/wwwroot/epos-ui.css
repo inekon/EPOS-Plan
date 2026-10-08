@@ -14595,6 +14595,40 @@ td.epos-vorlage-katalogbeschreibung {
     }
 }
 
+/* Gebaeudeimport, die Wahl der Aufbauquelle (Anwenderentscheid vom 08.10.2026): die Rueckfrage als Abschnitt oberhalb
+   der Zuordnung, die drei Wege in einer Zeile ohne Hauptknopf, nach der Wahl die leise Zeile mit dem Knopf zum Wechsel. */
+.epos-gebimport-aufbauquelle {
+    margin: 6px 0;
+}
+
+.epos-gebimport-aqsatz,
+.epos-gebimport-aqanzeichenkopf {
+    margin: 4px 0;
+}
+
+.epos-gebimport-aqanzeichen {
+    margin: 0 0 6px;
+    padding-left: 1.2em;
+}
+
+.epos-gebimport-aqarten {
+    width: auto;
+    margin: 4px 0;
+}
+
+.epos-gebimport-aqbeispiele {
+    margin: 4px 0;
+}
+
+.epos-gebimport-aqwege,
+.epos-gebimport-aqgewaehlt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    margin-top: 6px;
+}
+
 /* ==========================================================================
    DER REITER „KONDITIONIERUNG" (Stufe KP2, Welle U1; Teilkonzept
    Konditionierungsprofile 7.1, 7.2; Entwurf KP2 Festlegung 7) — die

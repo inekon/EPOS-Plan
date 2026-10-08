@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="..\EPOS.Kern.Tests\SqprojProbenErzeuger.cs" Link="Proben\SqprojProbenErzeuger.cs" />
     <Compile Include="..\EPOS.Kern.Tests\SqprojProbenErzeuger.Geometrie.cs" Link="Proben\SqprojProbenErzeuger.Geometrie.cs" />
+    <Compile Include="..\EPOS.Kern.Tests\SqprojProbenErzeuger.Standhaus.cs" Link="Proben\SqprojProbenErzeuger.Standhaus.cs" />
   </ItemGroup>
 
   <!-- xUnit-Einstellungen (Auftrag #531): Sammlungen seriell, hoechstens zwei Threads -

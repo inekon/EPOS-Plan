@@ -84,6 +84,12 @@ namespace EPOS.Kern.Tests
         /// <summary>Der Platzhalter „nicht gesetzt“ der Projektdatei.</summary>
         internal const double PLATZHALTER = -987654321.99;
 
+        /// <summary>Das Journal der Projektdatei (<c>PrJournalEntry</c>, nur die gelesenen Spalten) — nur geschrieben, wenn eine Zeile es trägt.</summary>
+        internal static readonly IReadOnlyDictionary<string, string[]> JOURNAL_SPALTEN = new Dictionary<string, string[]>
+        {
+            ["PrJournalEntry"] = new[] { "UUID", "JournalData" },
+        };
+
         /// <summary>Trägt die Probe Bauteiltabellen?</summary>
         internal bool MitBauteilen { get; set; }
 
@@ -251,6 +257,8 @@ namespace EPOS.Kern.Tests
                 using (SqliteTransaction t = c.BeginTransaction())
                 {
                     foreach (KeyValuePair<string, string[]> tab in SPALTEN.Concat(MitBauteilen ? BAUTEIL_SPALTEN : Enumerable.Empty<KeyValuePair<string, string[]>>())
+                                                                          .Concat(_zeilen.Any(z => JOURNAL_SPALTEN.ContainsKey(z.Tabelle)) ? JOURNAL_SPALTEN
+                                                                                  : Enumerable.Empty<KeyValuePair<string, string[]>>())
                                                                           .Where(p => !_ohne.Contains(p.Key)))
                     {
                         using (SqliteCommand k = c.CreateCommand())
@@ -274,7 +282,8 @@ namespace EPOS.Kern.Tests
 
         private static void Einfuegen(SqliteConnection c, SqliteTransaction t, string tabelle, object[] werte)
         {
-            string[] spalten = SPALTEN.TryGetValue(tabelle, out string[] sp) ? sp : BAUTEIL_SPALTEN[tabelle];
+            string[] spalten = SPALTEN.TryGetValue(tabelle, out string[] sp) ? sp
+                             : JOURNAL_SPALTEN.TryGetValue(tabelle, out string[] js) ? js : BAUTEIL_SPALTEN[tabelle];
             using (SqliteCommand k = c.CreateCommand())
             {
                 k.Transaction = t;

@@ -230,12 +230,18 @@
             }
             @if (stand.Projektdatei is GebaeudeProjektdateiDaten sq)
             {
-                @if (sq.Schwerste is GebaeudeImportMeldung sqs)
+                @if (sq.Schwerste is GebaeudeImportMeldung sqs && !(AufbauquelleFrageOffen && sqs.Text == sq.Standpruefung?.Meldung))
                 {
                     <div class="epos-gebimport-sqbanner" data-kennung="@sqs.Kennung">
                         <Warnbanner Stufe="@sqs.Stufe" Text="@sqs.Text" />
                     </div>
                 }
+                @* DIE WAHL DER AUFBAUQUELLE (Anwenderentscheid vom 08.10.2026): nach angeschlagener Standpruefung die Rueckfrage mit
+                   drei Wegen ohne Vorgabe; danach die gewaehlte Quelle als leise Zeile, aenderbar bis zur Uebernahme. Solange die
+                   Rueckfrage steht, traegt sie den Befund - das Banner derselben Warnung entfaellt. *@
+                <Aufbauquellenwahl Pruefung="@sq.Standpruefung" Wahl="@sq.Aufbauquelle" Texte="@Texte"
+                                   Aktiv="@(!Beschaeftigt && AufbauquelleWaehlen is not null)"
+                                   Gewaehlt="BeiAufbauquelle" NeuExportierenGewaehlt="BeiNeuExport" />
                 @if (sq.Gelesen)
                 {
                     IReadOnlyList<GebaeudeImportMeldung> uebersprungen = Uebersprungen(sq);
@@ -939,6 +945,9 @@
     @* Die Rueckfrage vor der Uebernahme der Zonen der Projektdatei, solange Schritte von Hand bestehen - Vorgabe "Nein". *@
     <Rueckfrage Offen="@_sqFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqFrage, _planschritte.Count)" VorgabeNein="true"
                 Beantwortet="SqBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+    @* "Abbrechen und neu exportieren" (Aufbauquelle): der Hinweis, dann endet der Import ohne Uebernahme - Vorgabe "Zurueck". *@
+    <Rueckfrage Offen="@_neuExportFrage" TitelText="@Texte.AqNeuExportTitel" Frage="@Texte.AqNeuExportFrage" VorgabeNein="true"
+                Beantwortet="NeuExportBeantwortet" JaText="@Texte.AqNeuExportJa" NeinText="@Texte.AqNeuExportNein" />
     @* Die Rueckfrage vor dem Wechsel der Zonierung, solange Schritte von Hand bestehen - Vorgabe "Nein" stellt die Wahl zurueck. *@
     <Rueckfrage Offen="@_sqZonierungFrage" TitelText="@Texte.SqFrageTitel" Frage="@Format(Texte.SqZonierungFrage, Handschritte)" VorgabeNein="true"
                 Beantwortet="SqZonierungBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
@@ -1010,6 +1019,12 @@
     /// ordnet der Dialog neu zu. Kein Delegat = die Nordrichtung ist nur Anzeige.
     /// </summary>
     [Parameter] public Func<double?, CancellationToken, Task<GebaeudeLesestand>>? NordrichtungSetzen { get; set; }
+
+    /// <summary>
+    /// Die Wahl der Aufbauquelle an der Datenseite (Schlüssel <see cref="GebaeudeAufbauquelleSchluessel"/>): setzt die Wahl, bildet den
+    /// Bauteilvorschlag neu und liefert den Stand der Projektdatei; <c>null</c> = keine Wahl möglich (die Knöpfe sind gesperrt).
+    /// </summary>
+    [Parameter] public Func<string, GebaeudeProjektdateiDaten?>? AufbauquelleWaehlen { get; set; }
 
     /// <summary>„Projektdatei entfernen“ an der Datenseite.</summary>
     [Parameter] public Action? ProjektdateiEntfernen { get; set; }
@@ -1255,6 +1270,9 @@
     /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei?</summary>
     private bool _sqFrage;
 
+    // Der Hinweis vor „Abbrechen und neu exportieren“ (Aufbauquelle).
+    private bool _neuExportFrage;
+
     /// <summary>Steht die Rückfrage vor der Übernahme der Zonen der Projektdatei offen (Prüfhilfe für Tests)?</summary>
     public bool ProjektdateiFrageOffen => _sqFrage;
 
@@ -1344,7 +1362,17 @@
          : _stand is null ? Texte.OkOhneDatei
          : Uebernehmen is null ? Texte.OkOhneWeg
          : NichtZugeordnet > 0 ? Format(Texte.PlanOkGesperrt, NichtZugeordnet)
+         : AufbauquelleFrageOffen ? Format(Texte.AqSperre, Math.Round(_stand.Projektdatei!.Standpruefung!.AnteilProzent, 1).ToString(CultureInfo.CurrentCulture))
          : null;
+
+    /// <summary>
+    /// Steht die Rückfrage der Aufbauquelle offen (Standprüfung angeschlagen, Wahl offen)? Dann ist OK gesperrt, mit demselben
+    /// Grund wie die Prüfung der Datenseite.
+    /// </summary>
+    public bool AufbauquelleFrageOffen => _stand?.Projektdatei is { AufbauquelleOffen: true, Standpruefung.Angeschlagen: true };
+
+    /// <summary>Steht der Hinweis vor „Abbrechen und neu exportieren“ offen (Prüfhilfe für Tests)?</summary>
+    public bool NeuExportFrageOffen => _neuExportFrage;
 
     private Func<string, Task<string?>>? Waehler => DateiWaehlen is null ? null : WaehlenUndPruefen;
 
@@ -2431,6 +2459,27 @@
     }
 
     /// <summary>Abbrechen, ✕ und Esc: verwirft, ohne zu prüfen und ohne zu übernehmen; ein Lesegang wird abgebrochen.</summary>
+    /// <summary>Die Wahl der Aufbauquelle: an der Datenseite setzen, dann neu zuordnen — die Zuordnung zeigt U und Herkunft der Quelle.</summary>
+    private void BeiAufbauquelle(string schluessel)
+    {
+        if (Beschaeftigt || AufbauquelleWaehlen is null) return;
+        AufbauquelleWaehlen(schluessel);
+        NeuZuordnen();
+    }
+
+    /// <summary>„Abbrechen und neu exportieren“: erst der Hinweis, das Beenden nach der Bestätigung.</summary>
+    private void BeiNeuExport()
+    {
+        if (Beschaeftigt) return;
+        _neuExportFrage = true;
+    }
+
+    private async Task NeuExportBeantwortet(bool? ja)
+    {
+        _neuExportFrage = false;
+        if (ja == true) await BeiAbbrechen();
+    }
+
     private async Task BeiAbbrechen()
     {
         if (_schreibt) return;
@@ -2442,7 +2491,7 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_nutzungsblatt) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
-        if (_regelFrage is not null || _aufhebenFrage) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
+        if (_regelFrage is not null || _aufhebenFrage || _neuExportFrage) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
         if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
         if (_schreibt) return Task.CompletedTask;
         return BeiAbbrechen();

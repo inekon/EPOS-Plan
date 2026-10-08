@@ -150,6 +150,12 @@ namespace WindowsFormsApplication1
         /// <summary>Sind Lage und Öffnungen der Hüllflächen gelesen (Bruttofläche, Orientierung, Neigung, Wirt, CAD-Objekt)?</summary>
         internal bool LageGelesen { get; set; }
 
+        /// <summary>
+        /// Der jüngste Eintrag <c>DBL:COPY</c> im Journal (<c>PrJournalEntry.JournalData</c>, Ortszeit der Datei): Die Projektdatei
+        /// ist eine Kopie, angelegt zu diesem Zeitpunkt (Standprüfung, Anzeichen a); <c>null</c> = kein Eintrag bzw. kein Journal.
+        /// </summary>
+        internal DateTime? Kopiezeitpunkt { get; set; }
+
         internal SqprojRaum Raum(string uuid)
             => uuid == null ? null : Raeume.Find(r => string.Equals(r.Uuid, uuid, StringComparison.OrdinalIgnoreCase));
     }

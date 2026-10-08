@@ -121,10 +121,13 @@ namespace WindowsFormsApplication1
         /// <param name="uebersteuert">Raumkennung → beheizt (die Haken der Raumliste); <c>null</c> = keine.</param>
         /// <param name="raumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen"
         /// (<see cref="GebaeudeCadSollwert"/>); wirkt nur, wenn <see cref="GebaeudeImportSatz.CadSollwertMoeglich"/>.</param>
+        /// <param name="uWirksam">Das U eines Bauteils aus einer anderen Quelle, das dem eingetragenen vorgeht (Aufbauquelle
+        /// „Projektdatei“, <see cref="SqprojStand.UWirksam"/>); <c>null</c> bzw. Rückgabe <c>null</c> = das U der Datei.</param>
         internal static GebaeudeImportSatz Bilden(GebaeudeAbbild abbild, int index, char? klasse,
                                                   GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                   IReadOnlyDictionary<string, bool> uebersteuert = null,
-                                                  bool raumtemperaturAlsSollwert = false)
+                                                  bool raumtemperaturAlsSollwert = false,
+                                                  Func<AbbildBauteil, double?> uWirksam = null)
         {
             AbbildGebaeude g = abbild.Gebaeude[index];
             // Die Herkunft der gelesenen Zahlen je Format — die Projektdatei trägt ihre eigene (SQPROJ), die Herkunft bleibt wahr.
@@ -176,7 +179,7 @@ namespace WindowsFormsApplication1
             List<Posten> posten = einordnung.Huelle.Select(h => Einordnen(h, zaehler, z)).ToList();
             Trennflaechen(einordnung.Paare, profil, meldungen);
             Oeffnungen(posten, profil, z, meldungen);
-            UWerte(posten, meldungen);
+            UWerte(posten, meldungen, uWirksam);
             foreach (KeyValuePair<string, double[]> e in zaehler)
                 meldungen.Add(new PruefMeldung(PruefStufe.Info, GebaeudeImportAblauf.MELDUNG + e.Key,
                     Zahl(e.Value[0]), Zahl(e.Value[1])));
@@ -585,16 +588,16 @@ namespace WindowsFormsApplication1
         /// Die U-Werte der Hüllenbauteile, ihrer Fenster und Türen — nach dem Einordnen, weil erst
         /// dann die Randbedingung feststeht; Öffnungen ohne eigene Neigung nehmen die ihres Wirts.
         /// </summary>
-        private static void UWerte(List<Posten> posten, List<PruefMeldung> meldungen)
+        private static void UWerte(List<Posten> posten, List<PruefMeldung> meldungen, Func<AbbildBauteil, double?> uWirksam)
         {
             var gemeldet = new HashSet<string>(StringComparer.Ordinal);
             foreach (Posten p in posten)
             {
-                p.U = UWert(p.Bauteil, p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                p.U = uWirksam?.Invoke(p.Bauteil) ?? UWert(p.Bauteil, p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
                 foreach (Fensterposten f in p.Fenster)
-                    f.U = UWert(f.Oeffnung, f.Oeffnung.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                    f.U = uWirksam?.Invoke(f.Oeffnung) ?? UWert(f.Oeffnung, f.Oeffnung.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
                 foreach (Posten t in p.Tueren)
-                    t.U = UWert(t.Bauteil, t.Bauteil.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
+                    t.U = uWirksam?.Invoke(t.Bauteil) ?? UWert(t.Bauteil, t.Bauteil.NeigungGrad ?? p.Bauteil.NeigungGrad, p.Rand, meldungen, gemeldet);
             }
         }
 
@@ -649,9 +652,10 @@ namespace WindowsFormsApplication1
                 double? azimut = HatHimmelsrichtung(s) ? s.AzimutGrad : null;
                 foreach (AbbildBauteil o in h.Fenster)
                 {
+                    // Ohne Richtung der Wand die des Fensters selbst (der IFC-Leser ergänzt sie aus dem eigenen Körper).
                     p.Fenster.Add(new Fensterposten
                     {
-                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut, G = o.GWert,
+                        Oeffnung = o, FlaecheM2 = o.BruttoflaecheM2, AzimutGrad = azimut ?? (HatHimmelsrichtung(o) ? o.AzimutGrad : null), G = o.GWert,
                     });
                     if (!o.BruttoflaecheM2.HasValue && !p.Verworfen)
                         z[GebaeudeZielfelder.FENSTER_GESAMT].Markieren(PruefStufe.Warnung);
