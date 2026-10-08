@@ -88798,12 +88798,12 @@ stream
       <dc:format>application/pdf</dc:format>
     </rdf:Description>
     <rdf:Description xmlns:xmp="http://ns.adobe.com/xap/1.0/" rdf:about="">
-      <xmp:MetadataDate>2026-10-07T18:55:50.714293+02:00</xmp:MetadataDate>
+      <xmp:MetadataDate>2026-10-08T22:21:11.730964+02:00</xmp:MetadataDate>
       <xmp:CreateDate>2023-08-14T08:25:32+02:00</xmp:CreateDate>
       <xmp:CreatorTool>Acrobat PDFMaker 17 für Word</xmp:CreatorTool>
       <xmp:ModifyDate>2024-06-23T10:47:37Z</xmp:ModifyDate>
     </rdf:Description>
-    <rdf:Description xmlns:calibreSI="http://calibre-ebook.com/xmp-namespace-series-index" xmlns:calibre="http://calibre-ebook.com/xmp-namespace" xmlns:calibreCC="http://calibre-ebook.com/xmp-namespace-custom-columns" rdf:about="">
+    <rdf:Description xmlns:calibreSI="http://calibre-ebook.com/xmp-namespace-series-index" xmlns:calibreCC="http://calibre-ebook.com/xmp-namespace-custom-columns" xmlns:calibre="http://calibre-ebook.com/xmp-namespace" rdf:about="">
       <calibre:series rdf:parseType="Resource">
         <rdf:value>DIN</rdf:value>
         <calibreSI:series_index>756.00</calibreSI:series_index>
@@ -88853,7 +88853,7 @@ stream
         </rdf:Seq>
       </xmpMM:History>
     </rdf:Description>
-    <rdf:Description xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#" xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/" xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#" rdf:about="">
+    <rdf:Description xmlns:pdfaExtension="http://www.aiim.org/pdfa/ns/extension/" xmlns:pdfaSchema="http://www.aiim.org/pdfa/ns/schema#" xmlns:pdfaProperty="http://www.aiim.org/pdfa/ns/property#" rdf:about="">
       <pdfaExtension:schemas>
         <rdf:Bag>
           <rdf:li rdf:parseType="Resource">
