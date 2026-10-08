@@ -66,6 +66,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Einzonengebäude allein mit gekoppelter Kälteseite</b> (KK5a, offener Punkt aus KZ2; Muster
+        /// <see cref="Vdi6007Rechenweg.KreisMitZonen"/>): 1058 ohne Heizkreis am Gebäude (<c>Heizkreis_Aktiv</c> 0) bekommt auf
+        /// AK3 den Kreis wegen der gekoppelten Kälteseite; mit Kühlkurve baut der Kreis den Raumeinfluss.
+        /// </summary>
+        [Fact]
+        public void Einzonengebaeude_allein_mit_Kaelteseite_bekommt_den_Kreis()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Heizkreis_Aktiv = 0 WHERE ID_Projekt = ?",
+                                                  new DbParam("?", 1058)));
+            SimulationControl sim = Rechnen(1058, true, 3.0).sim;
+            Ak3Weg weg = sim.simulation_Waermebedarf.Ak3;
+            Assert.NotNull(weg);
+            Assert.Equal(8760, weg.Kreis.Stunden);
+            Assert.Single(weg.Gebaeude);
+            Assert.Equal(1, weg.Gebaeude[0].Stepper.Zonenzahl);
+            KuehlRaumeinfluss k2 = weg.Kreis.KuehlRaumeinfluss;
+            Assert.NotNull(k2);
+            Assert.True(k2.Kuehlstunden > 100, "Kühlstunden " + k2.Kuehlstunden);
+            Assert.True(weg.Kreis.DurchlaeufeMax <= Anlagenkopplung.HOECHSTZAHL);
+            _aus.WriteLine("1058 ohne Heizkreis, k_K 3: Kühlstunden {0}, Vorlauf Mittel {1:0.00} °C, abgesenkt {2} h, Durchläufe max {3}",
+                           k2.Kuehlstunden, k2.KuehlVorlaufMittelC, k2.StundenAbgesenkt, weg.Kreis.DurchlaeufeMax);
+        }
+
+        /// <summary>
         /// <b>Messreihe der Stärke</b> (nur mit <c>KK3_MESSUNG</c> = Zieldatei): 1058 ohne Kurve, mit Kurve ohne Raumeinfluss
         /// und mit k_K 0,5 … 5 — Überschreitungsstunden und Kelvinstunden der Kühlung, Durchläufe, Kälteleistung, EER, Laufzeit
         /// (bester von drei Läufen, nach einem Aufwärmlauf).

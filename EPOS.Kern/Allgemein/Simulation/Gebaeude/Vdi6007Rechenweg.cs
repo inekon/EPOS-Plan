@@ -193,8 +193,9 @@ namespace WindowsFormsApplication1
 
                 // AK3-W3b (Entwurf AK3 2.1 Schritt 3): Im AK3-Weg ist dieser Lauf Pass 1; daneben entsteht aus
                 // DEMSELBEN Eingang ein zweiter, noch nicht eingeschwungener Stepper für den Kreis. Ohne Erfassung
-                // (jeder Lauf außer AK3) und im Probelauf geschieht nichts.
-                if (Ak3Erfassen != null && !Probelauf && eingang.KopplungWirksam)
+                // (jeder Lauf außer AK3) und im Probelauf geschieht nichts. KK5a: auch ein Gebäude allein mit gekoppelter
+                // Kälteseite (Muster KreisMitZonen).
+                if (Ak3Erfassen != null && !Probelauf && (eingang.KopplungWirksam || eingang.KuehlKopplungWirksam))
                 {
                     // AK3-W3d: eine Fabrik statt eines Steppers — jeder Feldlauf der Erdsonde (Konzept Simulationsablauf
                     // 23.4) baut seinen Kreis aus einem frischen, noch nicht eingeschwungenen Stepper.

@@ -67,9 +67,9 @@ namespace WindowsFormsApplication1
                 ProjektGebaeudeModel item = ctrl.items[i];
                 if (ReferenceEquals(RechenwegWaehlen(item), _vdi6007) && Waermeuebergabe.KopplungWirksamFuer(item, stufe))
                     gekoppelt = true;
-                // KZ2 (Kreis mit gekühlten Zonen): auch ein Mehrzonengebäude allein mit gekoppelter Kälteseite trägt den Kreis.
+                // KZ2, KK5a: auch ein Gebäude allein mit gekoppelter Kälteseite trägt den Kreis - Mehrzonen- wie Einzonengebäude.
                 else if (ReferenceEquals(RechenwegWaehlen(item), _vdi6007)
-                         && Vdi6007Rechenweg.Mehrzonenweg(item) && Kuehluebergabe.KopplungWirksamFuer(item, stufe, KuehlbetriebProjekt))
+                         && Kuehluebergabe.KopplungWirksamFuer(item, stufe, KuehlbetriebProjekt))
                     gekoppelt = true;
             }
             if (!gekoppelt) return true;
