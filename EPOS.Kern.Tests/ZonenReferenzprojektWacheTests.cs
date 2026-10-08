@@ -11,19 +11,26 @@ using Xunit.Abstractions;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Der Zonenbestand ohne die Zonenprojekte 1052 und 1054</b> (G6d, AK1z): Tests, die auf einer Arbeitskopie
+    /// <b>Der Zonenbestand ohne die Zonenprojekte 1052, 1054 und 1062</b> (G6d, AK1z, KK5a): Tests, die auf einer Arbeitskopie
     /// eigene Zonen, Bauteile, Luftströme oder Zonenkalender anlegen und die Tabellen im Ganzen zählen, zählen ohne
     /// die Zeilen von 1052 (<see cref="ZonenReferenzprojektWacheTests"/>) und seiner Kopie 1054
-    /// (<see cref="ZonenHeizkreisReferenzprojektWacheTests"/>) — den einzigen Projekten der Testdatenbank mit Zonen.
+    /// (<see cref="ZonenHeizkreisReferenzprojektWacheTests"/>) und des Referenzprojekts der Kühlkurve mit Zonen 1062
+    /// (<see cref="ZonenKuehlkurveReferenzprojektWacheTests"/>) — den einzigen Projekten der Testdatenbank mit Zonen.
     /// Ohne sie ist jede Abfrage die Zählung der ganzen Tabelle.
     /// </summary>
     internal static class Zonenbestand
     {
         /// <summary>Die Zonenprojekte der Testdatenbank.</summary>
-        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU };
+        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, KUEHLKURVE };
+
+        /// <summary>Das Referenzprojekt der Kühlkurve mit Zonen (KK5a): Zonen und Trennfläche, kein Luftstrom, kein Zonenkalender.</summary>
+        internal const long KUEHLKURVE = 1062;
+
+        /// <summary>Die Zonenprojekte mit Luftströmen und Zonenkalendern (1052 und seine Kopie 1054).</summary>
+        internal static readonly long[] PROJEKTE_MIT_KALENDER = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU };
 
         /// <summary>Die Gebäude der Zonenprojekte.</summary>
-        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054)";
+        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062)";
 
         /// <summary>Die Zonen der Zonenprojekte.</summary>
         internal const string ZONEN_ZONENPROJEKTE = "SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (" + GEBAEUDE_ZONENPROJEKTE + ")";
@@ -108,10 +115,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(PROJEKTE, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Bauteil b JOIN Tab_Zone z ON z.ID = b.ID_Zone " +
                 "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE b.ID_Nachbarzone IS NOT NULL ORDER BY 1"));
-            Assert.Equal(PROJEKTE, Liste(
+            Assert.Equal(Zonenbestand.PROJEKTE_MIT_KALENDER, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Zonenluftstrom l JOIN Tab_Zone z ON z.ID = l.ID_ZoneA " +
                 "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude ORDER BY 1"));
-            Assert.Equal(PROJEKTE, Liste(
+            Assert.Equal(Zonenbestand.PROJEKTE_MIT_KALENDER, Liste(
                 "SELECT DISTINCT g.ID_Projekt FROM Tab_Konditionierungskalender k JOIN Tab_Gebaeude g ON g.ID = k.ID_Gebaeude " +
                 "WHERE k.ID_Zone IS NOT NULL ORDER BY 1"));
             Assert.Equal(Zonenprojekt1052.NAME, Convert.ToString(DataRepository.ExecuteScalar(

@@ -204,6 +204,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Das Gebäude der Kopie von 1058 im Referenzprojekt AK3-K 1059 (AK3-K-K5a): dieselbe Kühlübergabe.</summary>
         private const int GEBAEUDE_REFERENZ_AK3K = 10665;
 
+        /// <summary>Die Gebäude der Referenzprojekte der Kühlkurve 1061 und 1062 (KK5a): dieselbe Kühlübergabe.</summary>
+        private const int GEBAEUDE_REFERENZ_KK = 10666, GEBAEUDE_REFERENZ_KKZ = 10667;
+
         /// <summary>
         /// Alle Strukturen stehen, die Sicht ist die geltende, alle neuen Spalten sind leer (der
         /// Schalter 0) — bis auf die gesäte Kühlübergabe des Referenzprojekts der Anlagenkopplung
@@ -238,13 +241,16 @@ namespace EPOS.Kern.Tests
                     ? " AND ID NOT IN (" + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", " +
                       GEBAEUDE_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture) + ", " +
                       GEBAEUDE_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture) + ", " +
-                      GEBAEUDE_REFERENZ_AK3K.ToString(CultureInfo.InvariantCulture) + ")" : "";
+                      GEBAEUDE_REFERENZ_AK3K.ToString(CultureInfo.InvariantCulture) + ", " +
+                      GEBAEUDE_REFERENZ_KK.ToString(CultureInfo.InvariantCulture) + ", " +
+                      GEBAEUDE_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture) + ")" : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.KUEHLUEBERGABE_SCHALTER.Contains(s.Name))
                     Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL" + ausser));
             }
-            foreach (int gebaeude in new[] { GEBAEUDE_REFERENZ_KOPPLUNG, GEBAEUDE_REFERENZ_FAHRPLAN, GEBAEUDE_REFERENZ_AK3, GEBAEUDE_REFERENZ_AK3K })
+            foreach (int gebaeude in new[] { GEBAEUDE_REFERENZ_KOPPLUNG, GEBAEUDE_REFERENZ_FAHRPLAN, GEBAEUDE_REFERENZ_AK3, GEBAEUDE_REFERENZ_AK3K,
+                                          GEBAEUDE_REFERENZ_KK, GEBAEUDE_REFERENZ_KKZ })
             {
                 DataRow referenz = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
                                                                new DbParam("?", gebaeude)).Rows[0];
@@ -260,8 +266,10 @@ namespace EPOS.Kern.Tests
             }
             foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenKuehlkreis)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + ErgebnisGebaeudeSchema.TAB + "] WHERE [" + s.Key + "] IS NOT NULL"));
+            // An Zonen gesät ist allein die Kühlübergabe der Zone Nord/Ost im Referenzprojekt 1062 (KK5a).
             foreach (KeyValuePair<string, string> s in KuehluebergabeSchema.SpaltenZone)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + ZonenSchema.TAB_ZONE + "] WHERE [" + s.Key + "] IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + ZonenSchema.TAB_ZONE + "] WHERE [" + s.Key + "] IS NOT NULL AND ID_Gebaeude <> " +
+                                      GEBAEUDE_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture)));
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Gebaeude") > 0);
 
             foreach (string t in new[] { ErgebnisGebaeudeSchema.TAB, ZonenSchema.TAB_ZONE })

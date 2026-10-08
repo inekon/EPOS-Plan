@@ -105,9 +105,11 @@ namespace EPOS.Kern.Tests
             Assert.True(KuehlkurveSchema.ErgebnisspaltenVorhanden());
             Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
             // Kein DML: jede Zeile steht leer - fester Vorlauf (Festlegung 1), Kennzahlen „nicht erhoben".
+            // Gesät sind allein die Gebäude der Referenzprojekte der Kühlkurve 1061 und 1062 (KK5a).
             foreach (string t in new[] { "Tab_Gebaeude", "Tab_Gebaeude_STAMM" })
                 foreach (string k in GebaeudeSchema.KUEHLKURVE_SPALTEN)
-                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + t + " WHERE " + k + " IS NOT NULL"));
+                    Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + t + " WHERE " + k + " IS NOT NULL" +
+                                          (t == "Tab_Gebaeude" ? " AND ID_Projekt NOT IN (1061, 1062)" : "")));
             foreach (string k in KuehlkurveSchema.SPALTEN_ERGEBNIS)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_ErgebnisEnergiebedarf WHERE " + k + " IS NOT NULL"));
             Assert.True(Wirft("UPDATE Tab_Gebaeude SET Kuehlkurve_Fusspunkt = 30 WHERE ID = " + GEBAEUDE));

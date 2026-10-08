@@ -32,7 +32,7 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         /// <summary>Die Elektrokessel der Testdatenbank (1017, 1024, 1047) — ihr Katalogsatz ist keiner.</summary>
-        private static readonly int[] ELEKTROKESSEL = { 1017237, 1018320, 1018344, 1018352, 1018353, 1018355, 1018356 };   // 1018352: Kopie in 1055 (KU3-4b), 1018353: Kopie in 1056 (AK2-4), 1018355: Kopie in 1058 (AK3-W5a), 1018356: Kopie in 1059 (AK3-K)
+        private static readonly int[] ELEKTROKESSEL = { 1017237, 1018320, 1018344, 1018352, 1018353, 1018355, 1018356, 1018357, 1018358 };   // 1018352: Kopie in 1055 (KU3-4b), 1018353: Kopie in 1056 (AK2-4), 1018355: Kopie in 1058 (AK3-W5a), 1018356: Kopie in 1059 (AK3-K), 1018357: Kopie in 1061 (KK5a, RP-KK), 1018358: Kopie in 1062 (KK5a, RP-KKZ)
 
         /// <summary>Die Projektkopie ohne Katalogsatz („… (2)“ in 1009), Beschreibung „Brennwert-Kombi-Kessel“.</summary>
         private const int OHNE_KATALOG = 1018328;
@@ -223,7 +223,7 @@ namespace EPOS.Kern.Tests
             verbindung.Open();
             Assert.True(Repo(verbindung, "SELECT SchemaVersion FROM Tab_Applikation") >= KesselBrennwertNachzug.SCHRITT);
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 0 AND Brennstoff <> 13"));
-            Assert.Equal(7L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 0 AND Brennstoff = 13"));   // + 1055 (KU3-4b), + 1056 (AK2-4), + 1058 (AK3-W5a), + 1059 (AK3-K)
+            Assert.Equal(9L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 0 AND Brennstoff = 13"));   // + 1055 (KU3-4b), + 1056 (AK2-4), + 1058 (AK3-W5a), + 1059 (AK3-K), + 1061, + 1062 (KK5a)
             // Der Schalter der Brennwertkennlinie bleibt allein an 1050 (Konzept 3.1).
             Assert.Equal(1L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Kennlinie_Brennwert = 1"));
         }

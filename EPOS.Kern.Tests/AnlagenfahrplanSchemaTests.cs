@@ -134,9 +134,9 @@ namespace EPOS.Kern.Tests
             // Kopie im Referenzprojekt AK3 1058 (AK3-W5a): Zeitprogramm an Kessel und BHKW, Vorlauf_Max an der Wärmepumpe.
             foreach (var s in AnlagenfahrplanSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
-                                      (s.Tabelle == AnlagenfahrplanSchema.TAB_ANLAGEN ? " AND ID_Projekt NOT IN (1056, 1058, 1059)" : "")));
-            Assert.Equal(6L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Zeitprogramm IS NOT NULL"));   // 1056, 1058, 1059 (K5a)
-            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));
+                                      (s.Tabelle == AnlagenfahrplanSchema.TAB_ANLAGEN ? " AND ID_Projekt NOT IN (1056, 1058, 1059, 1061, 1062)" : "")));
+            Assert.Equal(10L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Zeitprogramm IS NOT NULL"));   // 1056, 1058, 1059 (K5a), 1061, 1062 (KK5a)
+            Assert.Equal(5L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));   // + 1061, 1062 (KK5a)
             List<string> anlagen = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ANLAGEN);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ERGEBNIS);
             // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187) und die sechs des

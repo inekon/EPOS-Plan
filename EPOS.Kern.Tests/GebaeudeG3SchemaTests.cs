@@ -427,9 +427,9 @@ namespace EPOS.Kern.Tests
             // Der Aufbaukatalog trägt allein die Typaufbauten (Schritt 192, BA-2).
             Assert.Equal((long)TypaufbauSaattabelle.Alle.Count, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM WHERE Typaufbau IS NULL"));
-            // Zonen tragen allein die Zonenprojekte 1052 und 1054 (G6d, AK1z; ZonenReferenzprojektWacheTests).
+            // Zonen tragen allein die Zonenprojekte 1052, 1054 und 1062 (G6d, AK1z, KK5a; ZonenReferenzprojektWacheTests).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude NOT IN " +
-                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054))"));
+                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062))"));
         }
 
         /// <summary>

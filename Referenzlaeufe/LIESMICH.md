@@ -1012,6 +1012,21 @@ rechnet alle vierundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Testdatenbank steht auf **202** (`integrity_check` ok, `foreign_key_check` leer): **91 303 936 Byte, LFS-SHA-256
 > `7b49110cb2c3941a135302288ba881f2fc05601c3fd97c08f1fc7e98f8370132`**. **Die Basis `2026-10-07_R43_Kaelteseite_AK3K`
 > bleibt** — leere Spalten heißen fester Kühlvorlauf wie bisher (Entwurf KK, Festlegung 1), keine Einfrierregel berührt.
+>
+> **Nachtrag — Projekte 1061 und 1062 angelegt (Kühlkurve, KK5a), Basis unverändert.** Auf den Stand 202 (LFS-SHA-256
+> `7b49110cb2c3941a135302288ba881f2fc05601c3fd97c08f1fc7e98f8370132`) sind die zwei Referenzprojekte der Kühlkurve gesät:
+> **1061 „Referenzprojekt KK“** (RP-KK), die Kopie von 1058 auf dem Kopierweg des Programms mit Kühlkurve am Gebäude
+> (`Kuehlkurve_Aktiv` 1, `Kuehlkurve_Raumeinfluss` 3 K/K, `Kuehlkurve_Auslegung_Weg` `tagesmittel`, Fußpunkt leer =
+> Auslegungsrücklauf 19 °C) und dem Kühlvorlauf der Wärmepumpe auf 12 °C, damit der Erzeuger mit der Kurve an milden Tagen
+> wärmer gleitet ([`Skripte/referenzprojekt_1061_kk.py`](Skripte/referenzprojekt_1061_kk.py), Messung fester Vorlauf gegen
+> Kurve im Kopf); **1062 „Referenzprojekt KK Zonen“** (RP-KKZ), die Kopie von 1061, das Gebäude über die Wege des
+> Zonendialogs in die Zonen „Süd und West“ und „Nord und Ost“ geteilt (Trennwand, die Zone Nord/Ost mit Gebläsekonvektor)
+> ([`Skripte/referenzprojekt_1062_kkz.cs`](Skripte/referenzprojekt_1062_kkz.cs)). Beide fallen unter „gesäte
+> Auslegungsdaten der Übergabe“, 1062 dazu unter „gesäte Zonendaten“; gehalten von
+> `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` und `ZonenKuehlkurveReferenzprojektWacheTests`. Die Testdatenbank
+> (`integrity_check` ok, `foreign_key_check` leer): **92 979 200 Byte, LFS-SHA-256
+> `19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`**. **Die Basis `2026-10-07_R43_Kaelteseite_AK3K`
+> bleibt** — die vierundzwanzig Projekte rechnen byte-gleich; 1061 und 1062 kommen mit der Basis R44 (KK5b) ins Netz.
 
 ### Die Vorgängerbasis R42 (Vorlaufinterpolation AK3)
 
