@@ -81,13 +81,15 @@ Ist der Heizkreis des Gebäudes aus, die Übergabeart des Gebäudes ''ideal'' od
 
 '''Ergebnisse.''' Die Gruppe ''Zonen'' im Wärmebedarf und die Tabelle ''Zonen'' im Bericht führen je Zone im Heizkreis zusätzlich ''Vorlauf'' und ''Rücklauf'' (Mittel über die Heizstunden der Zone) und ''Übergabe begrenzt'' (Stunden, in denen die Übergabe der Zone weniger lieferte, als ihr Sollwert verlangte); bei einer Zone ohne Heizkreis bleiben die Spalten leer. Die Stunden mit begrenzter Übergabe des Gebäudes zählen eine Stunde, wenn mindestens eine Zone begrenzt war.
 
+{{Anker|kuehluebergabe}}'''Kühlübergabe je Zone.''' Rechnet das Gebäude seine [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Kühlübergabe]] und das Projekt mit Anlagenkopplung, stellt jede gekühlte Zone ihre eigene Kühlfläche ein. Der Zonendialog führt dazu in der Gruppe ''Kühlung der Zone'' die Felder ''Kühlübergabeart der Zone'' (mit ''wie Gebäude'', ''ideal'', ''Kühldecke'', ''Flächenkühlung'' und ''Gebläsekonvektor''), ''Exponent der Kühlübergabe (Zone)'' und ''Nennleistung der Kühlübergabe (Zone)''; ein leeres Feld gilt wie am Gebäude, die Nennleistung leer als Anteil des Gebäudes nach der Nutzfläche. Exponent und Nennleistung wirken nur mit einer rechnenden Art. Auslegungspunkt, Untere Vorlaufgrenze und [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Kühlkurve]] stehen allein am Gebäude: Alle Zonen hängen an einem Kaltwasserkreis mit '''einem''' Vorlauf. Jede Zone nimmt auf, was ihre Kühlfläche bei ihrer Raumtemperatur hergibt; der Rücklauf des Gebäudes ist das Mittel der Zonenrückläufe, gewichtet mit ihrem Kaltwasserstrom. Mit Kühlkurve läuft die Kurve am niedrigsten Kühlsollwert der Zonen, die in der Stunde kühlen, und der Raumeinfluss folgt der Zone mit der größten Überschreitung. Auf der Stufe ''geschlossener Kreis (AK3)'' begrenzt die [[Programm Dokumentation/Kühlung#kaelteschranke|Kälteschranke]] die Kälte je Zone.
+
 == Grenzen ==
 {{Anker|grenzen}}
 
 * Höchstens 50 Zonen je Gebäude.
 * Die Kopplung rechnet mit Stundenwerten: Jede Zone sieht die Raumtemperatur ihrer Nachbarn als Mittel der Stunde.
 * Ein Heizkreis je Gebäude: Die Zonen teilen Vorlauf und Heizkurve; getrennte Heizkreise mit eigenen Heizkurven legen Sie als zwei Gebäude an.
-* Die Kühlübergabe (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#heizkreis|Heizkreis und Wärmeübergabe]]) gilt für ein Gebäude mit höchstens einer Zone. Mit mehreren Zonen rechnet die Kühlung je Zone ideal; das Protokoll nennt es.
+* Ein Kaltwasserkreis je Gebäude: Die gekühlten Zonen teilen Vorlauf und Kühlkurve; eine Zone ohne wirksame Kühlübergabe kühlt ideal, das Protokoll nennt es.
 * Betriebszeiten des Wärmeerzeugers wirken nicht auf die Zonen; das Gebäude geht als Last in die Anlage.
 * Die Kühlung der Zonen nimmt Kühlsollwert und Kühlbetrieb vom Gebäude, die Kühlleistungsgrenze nach dem Flächenanteil der Zone.
 * Der Rechenweg ''Tagesbilanz'' rechnet keine Zonen.

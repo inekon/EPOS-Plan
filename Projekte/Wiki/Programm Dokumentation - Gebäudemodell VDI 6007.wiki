@@ -150,9 +150,32 @@ Die Eingaben stehen in der Gruppe '''Kühlung''' im Abschnitt '''Kühlübergabe'
 
 Den Strahlungsanteil bringt die Art mit (Kühldecke und Flächenkühlung 0,5, Gebläsekonvektor 0); er hat kein eigenes Feld. Der Raumregler ist derselbe wie beim Heizen und nimmt dessen Proportionalband.
 
-'''Kaltwasser-Vorlauf.''' Der Vorlauf der Kühlübergabe ist fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
+'''Kaltwasser-Vorlauf.''' Ohne [[#kuehlkurve|Kühlkurve]] ist der Vorlauf der Kühlübergabe fest: der kälteste Kühl-Vorlauf der Wärmepumpen im [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlbetrieb]] des Projekts, ohne solche Anlage der Auslegungsvorlauf. Liegt er unter der Vorlaufgrenze, mischt das Gebäude auf die Grenze hoch; die Wärmepumpe rechnet weiter an ihrem Kühl-Vorlauf. Eine Vorlaufgrenze über dem Auslegungsvorlauf ist erlaubt – die Nennleistung wird dann nie erreicht, und eine Zeile unter den Feldern sagt es.
 
 Unter den Feldern steht, ob die Kühlübergabe im geöffneten Projekt wirkt und woran es fehlt, der Auslegungstag mit seiner Kühllast, der Kaltwasser-Vorlauf und seine Herkunft. Zwei Zeilen stehen immer da: '''Die Vorlaufgrenze ist eine Vorgabe, keine gerechnete Taupunktgrenze''' – EPOS-Plan prüft nicht, ob an der Kühlfläche Tauwasser ausfällt –, und die Kühlübergabe rechnet '''sensibel, ohne Entfeuchtung'''. Widersprüchliche Angaben meldet ''OK'' mit den Werten: Vorlauf, Rücklauf und Raumtemperatur des Auslegungspunkts müssen aufsteigen.
+
+=== Kühlkurve ===
+{{Anker|kuehlkurve}}
+
+Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis (AK3)'', kann ein Gebäude mit Kühlübergabe seinen Kaltwasser-Vorlauf gleiten lassen. Mit dem Haken '''Kühlkurve (gleitender Kühlvorlauf)''' im Abschnitt ''Kühlübergabe'' folgt der Vorlauf der Außentemperatur und der Raumtemperatur: An milden Tagen bleibt das Kaltwasser wärmer und die Kälteerzeuger arbeiten mit besserer Leistungszahl; an heißen Tagen und wenn der Raum zu warm wird, sinkt der Vorlauf.
+
+Die Kurve hat zwei Punkte. Solange die Außenluft nicht über dem Kühlsollwert der Stunde liegt, gilt der '''Fußpunkt'''; ab der '''Auslegungs-Außentemperatur''' gilt der Auslegungsvorlauf der Kühlübergabe; dazwischen fällt der Vorlauf linear. Der '''Raumeinfluss''' senkt den Vorlauf zusätzlich, wenn der Raum über dem Kühlsollwert liegt; maßgeblich ist die Zone mit der größten Überschreitung derselben Stunde. Der Vorlauf bleibt mindestens 2,5 K unter dem Kühlsollwert, er wird nicht kälter, als die Kälteerzeuger liefern können, und nie kälter als die '''Untere Vorlaufgrenze''' – diese Grenze gilt vor allen anderen.
+
+{| class="wikitable"
+! Eingabe !! Vorgabe !! Bedeutung
+|-
+| Kühlkurve (gleitender Kühlvorlauf) || aus || schaltet die Kurve ein; beim Einschalten erhält ein leerer Raumeinfluss den Vorgabewert
+|-
+| Fußpunkt der Kühlkurve || Auslegungsrücklauf der Kühlübergabe || Vorlauf in °C, 4 bis 22, bei Außenluft am Kühlsollwert und darunter; er darf nicht unter dem Auslegungsvorlauf liegen – ''OK'' meldet es, und ein solcher Wert rechnet als waagrechte Kurve am Auslegungsvorlauf
+|-
+| Raumeinfluss der Kühlkurve || leer (aus); beim Einschalten 3 K/K || k in K/K, 0 bis 10: Der Vorlauf sinkt je Kelvin, um das die Zone über ihrem Kühlsollwert liegt, um k. Leer oder 0 schaltet den Einfluss aus
+|-
+| Auslegungs-Außentemperatur Kühlung || wärmstes Tagesmittel || woraus der zweite Punkt der Kurve kommt: ''höchste Stundentemperatur der Klimareihe'', ''wärmstes Tagesmittel'' der Klimareihe, mindestens Kühlsollwert + 8 K, oder ''Eingabe''
+|-
+| Auslegungs-Außentemperatur (Eingabe) || – || °C, 0 bis 60, nur mit dem Weg ''Eingabe''; liegt sie nicht mehr als 1 K über dem Kühlsollwert oder fehlt sie, rechnet der Lauf mit dem wärmsten Tagesmittel und sagt es im Laufprotokoll
+|}
+
+Die Vorgaben sind Vorgaben von EPOS-Plan, keine Normwerte. Unter den Feldern nennt eine Zeile Fußpunkt, Auslegungsvorlauf und Auslegungs-Außentemperatur, mit denen gerechnet wird. Die Wärmepumpe im Kühlbetrieb und die Kältemaschine rechnen in jeder Stunde am Vorlauf der Kurve, die [[Programm Dokumentation/Kühlung#kaelteschranke|Kälteschranke]] ebenso. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' wirkt die Kurve nicht, es gilt der feste Kaltwasser-Vorlauf. Mit mehreren Zonen gilt die Kurve für den Kaltwasserkreis des Gebäudes am niedrigsten Kühlsollwert der gekühlten Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]).
 
 == Komfortstunden ==
 {{Anker|komfort}}
@@ -277,9 +300,9 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
 * Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
 * Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
-* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; mit mehreren Zonen stellt jede Zone ihre eigene Übergabe am gemeinsamen Vorlauf ein (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]). Die Kühlübergabe gilt für ein Gebäude mit höchstens einer Zone – mit mehreren Zonen rechnet die Kühlung je Zone ideal; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
+* Die Wärmeübergabe kennt '''einen Heizkreis je Gebäude'''; mit mehreren Zonen stellt jede Zone ihre eigene Übergabe am gemeinsamen Vorlauf ein (siehe [[Programm Dokumentation/Mehrzonenmodell#uebergabe|Mehrzonenmodell: Übergabe je Zone]]). Ebenso stellt jede gekühlte Zone ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ein; die Aufheizzeit einer Flächenheizung rechnet ohne Estrichmasse. Die hergeleitete Nennleistung ist die stationäre Heizlast des Modells, keine Heizlastberechnung nach Norm.
 * Der Fahrplan der Anlagen ist eine Vorabrechnung je Projekt ohne Ladezustand der Speicher; die Komfortschwelle ist ein fester Wert von 1,0 K.
-* Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit festem Vorlauf; eine Kühlkurve und eine Wahl der Kühlkennlinie je Stunde gibt es nicht, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
+* Die Kühlübergabe kennt '''einen Kaltwasserkreis je Gebäude''' mit einem Vorlauf; die [[#kuehlkurve|Kühlkurve]] gibt es nur auf der Stufe ''geschlossener Kreis (AK3)'' und nur am Gebäude, nicht je Zone, und die Flächenkühlung rechnet ohne Estrichmasse. Sie rechnet sensibel ohne Entfeuchtung, die Vorlaufgrenze ist eine Vorgabe, keine Taupunktrechnung. Ein eigenes Zeitprogramm für den Kühlsollwert gibt es nicht.
 * Ohne Zone rechnet das Modell wie der Bestandsweg das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch. Mit Zonen rechnet es die Hülle seiner Zonen ohne Hochrechnung.
 
 [[Kategorie:Programm Dokumentation]]
