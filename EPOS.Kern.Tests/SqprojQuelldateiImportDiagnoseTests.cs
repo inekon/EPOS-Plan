@@ -112,8 +112,8 @@ namespace EPOS.Kern.Tests
                 ("Fenster", Abweichung(ia.Fenster, pm.Fenster)),
                 ("Erdreich", Abweichung(ia.Erdreich, pm.Erdreich)),
             };
-            // Nur zur Auskunft (keine Abnahmegröße): die Grundfläche des Einzonenwegs; der IFC-Weg trägt die Decke über unbeheizt
-            // zusätzlich als aus dem Körper abgeleitete Trenndecke (siehe Abweichungen_des_Einzonensatzes_sind_benannt).
+            // Nur zur Auskunft (keine Abnahmegröße): die Grundfläche des Einzonenwegs; beide Wege zählen die Decke über unbeheizt
+            // einmal (siehe Abweichungen_des_Einzonensatzes_sind_benannt).
             double Grund(GebaeudeImportAblauf x) => x.Zuordnen(0, null).Zeile(GebaeudeZielfelder.FLAECHE_GRUND)?.Wert ?? 0.0;
             _aus.WriteLine("Grundfläche des Einzonenwegs (Auskunft): "
                            + (100.0 * Abweichung(Grund(ib), Grund(pa))).ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " %");
@@ -128,11 +128,10 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Die Abweichungen des Einzonensatzes sind benannt</b> (kein Lesefehler der Projektdatei):
         /// <list type="bullet">
-        /// <item><b>Außenwand:</b> Die Bruttofläche beider Wege stimmt; der Projektdateiweg zieht jede Öffnung von ihrer Wand ab,
-        /// ohne Rückfall auf die Nettofläche der Datei. Der Nettounterschied entsteht auf dem IFC-Weg, wo Öffnungen an Wänden
-        /// hängen, die kleiner sind als ihre Öffnungen (Rückfall auf die Nettofläche der Datei).</item>
-        /// <item><b>Grundfläche:</b> Der Projektdateiweg zählt die Decke über unbeheizt je beheiztem Raum einmal (Bruttomaß, höchstens
-        /// das 1,5-fache der Raumfläche); der IFC-Weg trägt dieselbe Decke zusätzlich als aus dem Körper abgeleitete Trenndecke.</item>
+        /// <item><b>Außenwand:</b> Brutto- und Nettofläche beider Wege stimmen. Beide Wege ziehen jede Öffnung von ihrer Wand ab,
+        /// ohne Rückfall auf die Nettofläche der Datei; der IFC-Weg hängt Öffnungen an die Wand ihrer Lage.</item>
+        /// <item><b>Grundfläche:</b> Beide Wege zählen die Decke über unbeheizt je beheiztem Raum einmal (Bruttomaß, höchstens
+        /// das 1,5-fache der Raumfläche); die Hülldecke der Datei geht vor, eine zweite Trenndecke aus dem Körper entfällt.</item>
         /// <item><b>U-Werte:</b> <c>UValue</c> jeder Hüllfläche ist das U ihres verknüpften Aufbaus, und dieses U folgt aus dessen
         /// Schichten samt Rsi/Rse der Datei — die Datei ist in sich stimmig; die IFC verweist auf andere Aufbauten (Datenstand).</item>
         /// </list>
@@ -151,7 +150,7 @@ namespace EPOS.Kern.Tests
             Huelleneinordnung ie = GebaeudeHuelleneinordnung.Einordnen(ib.Abbild, 0, r => r.Beheizt);
             Huelleneinordnung pe = GebaeudeHuelleneinordnung.Einordnen(pa.Abbild, 0, r => r.Beheizt);
 
-            // 1. Außenwand: brutto gleich, netto auf dem Projektdateiweg Brutto − Öffnungen ohne Rückfall.
+            // 1. Außenwand: brutto und netto gleich, auf beiden Wegen Brutto − Öffnungen ohne Rückfall.
             static List<Huellposten> Wand(Huelleneinordnung e)
                 => e.Huelle.Where(p => !p.Verworfen && p.Summenfeld == GebaeudeZielfelder.FLAECHE_AUSSENWAND).ToList();
             double iBrutto = Wand(ie).Sum(p => p.BruttoM2 ?? 0.0), pBrutto = Wand(pe).Sum(p => p.BruttoM2 ?? 0.0);
@@ -159,9 +158,11 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine("Außenwand brutto: " + Prozent(Abweichung(iBrutto, pBrutto)) + ", netto: " + Prozent(Abweichung(iNetto, pNetto))
                            + ", IFC-Wände mit Rückfall auf die Nettofläche der Datei: " + Wand(ie).Count(p => p.NettoRueckfall));
             Assert.True(Math.Abs(Abweichung(iBrutto, pBrutto)) <= TOLERANZ, "Außenwand brutto " + Prozent(Abweichung(iBrutto, pBrutto)));
+            Assert.True(Math.Abs(Abweichung(iNetto, pNetto)) <= TOLERANZ, "Außenwand netto " + Prozent(Abweichung(iNetto, pNetto)));
             Assert.DoesNotContain(Wand(pe), p => p.NettoRueckfall || p.NettoNegativ);
+            Assert.DoesNotContain(Wand(ie), p => p.NettoRueckfall);
 
-            // 2. Grundfläche: Decken über unbeheizt je beheiztem Raum einmal gezählt.
+            // 2. Grundfläche: Decken über unbeheizt je beheiztem Raum einmal gezählt — auf beiden Wegen, ohne Körpertrenndecke.
             static double GroessterAnteil(GebaeudeImportAblauf a, Huelleneinordnung e)
             {
                 var raeume = a.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt && r.FlaecheM2 > 0.0).ToDictionary(r => r.Kennung, StringComparer.Ordinal);
@@ -181,6 +182,7 @@ namespace EPOS.Kern.Tests
                            + pAnteil.ToString("0.00", CultureInfo.InvariantCulture)
                            + ", Anteil der aus dem Körper abgeleiteten Trenndecken an der IFC-Grundfläche " + Prozent(iKoerper / Math.Max(iGrund, 1e-9)));
             Assert.InRange(pAnteil, 0.5, 1.5);
+            Assert.True(iKoerper / Math.Max(iGrund, 1e-9) <= TOLERANZ, "Körpertrenndecken an der IFC-Grundfläche " + Prozent(iKoerper / Math.Max(iGrund, 1e-9)));
 
             // 3. U-Werte: UValue = U des verknüpften Aufbaus = U aus dessen Schichten mit Rsi/Rse der Datei.
             SqprojAbbild datei = SqprojLeser.Lesen(sq);
