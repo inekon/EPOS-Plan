@@ -1,7 +1,7 @@
 # Protokoll EV1 — Erdreichvorgabe und Reservehinweis (04.10.2026)
 
 **Sitzung:** Gebäudesimulation (Cloud), Zweig `ev1` (Worktree), Fast-Forward-Merge auf `7c0a92b`.
-**Anlass:** Übergabe [`2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md`](../../../aktuell/Gebaeudesimulation/2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 3.1; Entscheide E64 und E65. Statuszeile #705.
+**Anlass:** Übergabe [`2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md`](../../2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 3.1; Entscheide E64 und E65. Statuszeile #705.
 
 ## 1 Auftrag
 

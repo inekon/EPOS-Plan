@@ -1,7 +1,7 @@
 # Protokoll AK1z — Wärmeübergabe je Zone (04.10.2026)
 
 **Sitzung:** Gebäudesimulation (Cloud), Orchestrierung Fable 5.1, Zweig `ak1z` mit den Worktrees `ak1z-ui` (Oberfläche) und `ak1z-doc` (Papiere), Stand der Teile A bis E `b845355`.
-**Anlass:** Entscheid E63 (Anwender, 03.10.2026, am Zonenprojekt 1052): „Wärmeübergabe soll für jede Zone einstellbar sein.“ Übergabe [`2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md`](../../../aktuell/Gebaeudesimulation/2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 3.2. Statuszeile #708, Schemaschritt 181.
+**Anlass:** Entscheid E63 (Anwender, 03.10.2026, am Zonenprojekt 1052): „Wärmeübergabe soll für jede Zone einstellbar sein.“ Übergabe [`2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md`](../../2026-10-03_Uebergabe_Gebaeudesimulation_Kontowechsel.md), Abschnitt 3.2. Statuszeile #708, Schemaschritt 181.
 
 ## 1 Auftrag
 
