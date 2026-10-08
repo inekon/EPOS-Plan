@@ -106,7 +106,7 @@ Herleitungszeile, rechts das Bivalenzdiagramm, das unter der Herleitungszeile au
         <div class="schnellwahl" aria-label="Schnellwahl nach Kältemittelklasse">
           <button class="knopf knopf--aktiv" type="button">R410A / R32 · 55 °C</button>
           <button class="knopf" type="button">R290 · 70 °C</button>
-          <button class="knopf" type="button">R744 · 80 °C, Rücklauf ≤ 35 °C</button>
+          <button class="knopf" type="button">R744 · 80 °C, Rücklauf ≤ 40 °C (Abwertung ab 30 °C)</button>
           <button class="knopf" type="button">R1234ze(E) · 80 °C</button>
         </div>
         <p class="herleitung">Die Schnellwahl schreibt nur den Wert; Herstellerangaben zur Einsatzgrenze haben Vorrang.</p>
@@ -124,7 +124,10 @@ Herleitungszeile, rechts das Bivalenzdiagramm, das unter der Herleitungszeile au
         <div class="zeile"><label>Höchster Vorlauf</label><div class="feld feld--lese"><span>55</span><span class="einheit">°C<span class="herkunft">Betriebszeiten</span></span></div></div>
         <div class="zeile"><label>Spreizung Auslegung / max. / min.</label><div class="feld feld--lese"><span>5 / 10 / 3</span><span class="einheit">K<span class="herkunft">Vorgabe</span></span></div></div>
         <div class="zeile"><label>Mindestvolumenstrom</label><div class="feld feld--lese"><span>60</span><span class="einheit">%<span class="herkunft">Vorgabe</span></span></div></div>
-        <div class="zeile"><label>Rücklaufgrenze</label><div class="feld feld--lese"><span>—</span><span class="einheit">°C<span class="herkunft">keine</span></span></div></div>
+        <div class="zeile"><label>Höchster Rücklauf</label><div class="feld feld--lese"><span>52</span><span class="einheit">°C<span class="herkunft">abgeleitet</span></span></div></div>
+        <p class="herleitung">abgeleitet: 52 °C = 55 − 3 (Höchstvorlauf − Mindestspreizung) · ein kleinerer Katalogwert gilt vor („Katalog“) · darüber liefert die Wärmepumpe in der Stunde nichts</p>
+        <div class="zeile"><label>Rücklauf R744: Bezug / Abwertung / Grenze</label><div class="feld feld--lese"><span>— / — / —</span><span class="einheit">°C · %/K · °C<span class="herkunft">nur R744</span></span></div></div>
+        <p class="herleitung">bei R744 (Schnellwahl): Bezugsrücklauf 30 °C · Abwertung 2,5 %/K · Grenze 40 °C — Leistung und COP sinken je K über 30 °C um 2,5 %</p>
         <p class="herleitung">Gerätegrenzen werden im Katalog gepflegt; leere Felder rechnen mit der Vorgabe.</p>
 
         <div class="herleitung herleitung--gross">
@@ -205,6 +208,8 @@ Herleitungszeile, rechts das Bivalenzdiagramm, das unter der Herleitungszeile au
         <div class="kachel"><b>870 h</b><span>Vorwärmung · 3,1 MWh WP, 1,4 MWh Kessel</span></div>
         <div class="kachel"><b>310 h</b><span>nur Kessel · 2,2 MWh</span></div>
         <div class="kachel"><b>5,7 kW</b><span>Übergabe bei 55 °C · Bivalenz +1,8 / −3,6 °C</span></div>
+        <div class="kachel"><b>0 h</b><span>Rücklaufgrenze überschritten (52 °C abgeleitet)</span></div>
+        <div class="kachel"><b>870 h</b><span>Kessel · Rücklaufstufe Vorwärmer</span></div>
       </div>
       <p class="leise">Stundenmodell: Speichermasse des Estrichs, Ventil- und Reglerdynamik und die Abtauung sind nicht
         abgebildet. Herstellerwerte zu Spreizung, Volumenstrom und Einsatzgrenze haben Vorrang vor den Vorgaben.</p>
