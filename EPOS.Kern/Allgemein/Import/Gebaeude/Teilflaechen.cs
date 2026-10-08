@@ -24,6 +24,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Azimut der Außennormale [°] (0° = Nord, im Uhrzeigersinn); <c>null</c> = waagerecht.</summary>
         internal double? AzimutGrad { get; set; }
+
+        /// <summary>
+        /// Die Randbedingung der Teilfläche, wenn sie aus der Teilung am Gelände stammt (<see cref="Teilflaechen.GliedernAmGelaende"/>:
+        /// Erdreich oder Außenluft); <c>null</c> = die des ganzen Bauteils.
+        /// </summary>
+        internal Randbedingung? Rand { get; set; }
     }
 
     /// <summary>
@@ -57,6 +63,36 @@ namespace WindowsFormsApplication1
         internal static List<Teilflaeche> Gliedern(IReadOnlyList<AbbildGrenze> grenzen, double drehungGrad)
         {
             if (grenzen == null || grenzen.Count < 2) return null;
+            List<Teilflaeche> teile = Gruppieren(grenzen, drehungGrad);
+            return teile == null || teile.Count < 2 ? null : teile;
+        }
+
+        /// <summary>
+        /// <b>Die Gliederung am Gelände</b> (Hanglage, Einzonenweg): Trägt eine Zonenfläche des Körperwegs Stücke unter und über
+        /// dem Gelände (<see cref="AbbildGrenze.UnterGelaendeM"/>, Lage Erdreich und Außenluft), führt sie je Randbedingung eigene
+        /// Teilflächen — erst die am Erdreich, dann die an der Außenluft, je Richtung gegliedert — mit gesetzter
+        /// <see cref="Teilflaeche.Rand"/>; dieselbe Teilung wie im Zonenweg. Sonst gilt <see cref="Gliedern"/>.
+        /// </summary>
+        internal static List<Teilflaeche> GliedernAmGelaende(IReadOnlyList<AbbildGrenze> grenzen, double drehungGrad)
+        {
+            bool gelaende = grenzen != null && grenzen.Count > 1 && grenzen.All(g => g.Herkunft == Grenzherkunft.Bauteilkoerper)
+                            && grenzen.Any(g => g.UnterGelaendeM.HasValue)
+                            && grenzen.Any(g => g.Lage == Randbedingung.Erdreich) && grenzen.Any(g => g.Lage != Randbedingung.Erdreich);
+            if (!gelaende) return Gliedern(grenzen, drehungGrad);
+            var teile = new List<Teilflaeche>();
+            foreach (bool erde in new[] { true, false })
+            {
+                List<Teilflaeche> hier = Gruppieren(grenzen.Where(g => (g.Lage == Randbedingung.Erdreich) == erde).ToList(), drehungGrad);
+                if (hier == null) return null;
+                foreach (Teilflaeche t in hier) t.Rand = erde ? Randbedingung.Erdreich : Randbedingung.Aussenluft;
+                teile.AddRange(hier);
+            }
+            return teile;
+        }
+
+        /// <summary>Die Gruppen gleicher Richtung, die größte zuerst; <c>null</c>, wenn einer Grenze Fläche oder Normale fehlt.</summary>
+        private static List<Teilflaeche> Gruppieren(IReadOnlyList<AbbildGrenze> grenzen, double drehungGrad)
+        {
             if (grenzen.Any(g => !(g.FlaecheM2 > 0.0) || g.Normale == null || g.Normale.Length < 3 || Laenge(g.Normale) < 1e-9)) return null;
             double cosGrenze = Math.Cos(ZUSAMMENFASSEN_GRAD * Math.PI / 180.0);
             var gruppen = new List<(double[] Summe, Teilflaeche Teil, int Erstes)>();
@@ -78,7 +114,6 @@ namespace WindowsFormsApplication1
                 t.BruttoM2 += a;
                 t.AusschnittM2 += g.AusschnittM2;
             }
-            if (gruppen.Count < 2) return null;
             var teile = new List<Teilflaeche>();
             foreach ((double[] summe, Teilflaeche t, _) in gruppen.OrderByDescending(x => x.Teil.BruttoM2).ThenBy(x => x.Erstes))
             {

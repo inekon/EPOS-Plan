@@ -92,6 +92,65 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Einzonenweg_fuehrt_je_Wand_einen_Posten_am_Erdreich_und_einen_an_der_Aussenluft()
+        {
+            GebaeudeImportAblauf a = Lesen(IfcProbenErzeuger.HANGLAGE_HANG);
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(a, 0, null);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler).Select(m => m.Schluessel)));
+            // Wie im Zonenweg: Süd 1,0 m im Erdreich, 1,5 m darüber mit dem Kellerfenster an der Außenluft.
+            List<GebaeudeBauteilzeile> sued = v.Zeilen.Where(z => z.Bauteil.Bezeichner == "Wand Süd UG").ToList();
+            Assert.Equal(2, sued.Count);
+            GebaeudeBauteilzeile erde = sued.Single(z => z.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_ERDREICH);
+            GebaeudeBauteilzeile luft = sued.Single(z => z.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_AUSSENLUFT);
+            // Der Einzonenweg trägt die Bruttofläche des Bauteils (Körper); sie teilt sich nach den Flächen der Stücke am Raum
+            // (1,0 : 1,5), das Kellerfenster geht vom Teil an der Außenluft ab.
+            double brutto = erde.Bauteil.Flaeche + luft.Bauteil.Flaeche + 0.8;
+            Nah(brutto * 1.0 / 2.5, erde.Bauteil.Flaeche, "Posten Erdreich");
+            Nah(brutto * 1.5 / 2.5 - 0.8, luft.Bauteil.Flaeche, "Posten Außenluft ohne Fenster");
+            Assert.Equal(erde.Bauteil.Azimut, luft.Bauteil.Azimut);
+            GebaeudeBauteilzeile fenster = Assert.Single(v.Zeilen, z => z.Bauteil.Bezeichner == "Kellerfenster");
+            Nah(0.8, fenster.Bauteil.Flaeche, "Kellerfenster");
+            Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, fenster.Bauteil.Randbedingung);
+            // Die übrigen Wände des Untergeschosses: je ein Posten am Erdreich und einer an der Außenluft.
+            foreach (string w in new[] { "Wand Nord UG", "Wand West UG", "Wand Ost UG" })
+            {
+                List<GebaeudeBauteilzeile> z = v.Zeilen.Where(x => x.Bauteil.Bezeichner == w).ToList();
+                Assert.Equal(2, z.Count);
+                Assert.Single(z, x => x.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_ERDREICH);
+                Assert.Single(z, x => x.Bauteil.Randbedingung == DbWerte.RANDBEDINGUNG_AUSSENLUFT);
+            }
+            // Das Erdgeschoss liegt ganz über Gelände: ein Posten an der Außenluft.
+            GebaeudeBauteilzeile eg = Assert.Single(v.Zeilen, x => x.Bauteil.Bezeichner == "Wand Süd EG");
+            Assert.Equal(DbWerte.RANDBEDINGUNG_AUSSENLUFT, eg.Bauteil.Randbedingung);
+        }
+
+        [Fact]
+        public void Gliederung_am_Gelaende_teilt_nur_Stuecke_des_Koerperwegs()
+        {
+            AbbildGrenze Stueck(Randbedingung lage, double flaeche, double? tiefe, Grenzherkunft herkunft) => new AbbildGrenze
+            {
+                Kennung = lage + "|" + flaeche, RaumKennung = "R", Lage = lage, FlaecheM2 = flaeche, Normale = new[] { 0.0, -1.0, 0.0 },
+                UnterGelaendeM = tiefe, Herkunft = herkunft,
+            };
+            List<Teilflaeche> teile = Teilflaechen.GliedernAmGelaende(new[]
+            {
+                Stueck(Randbedingung.Erdreich, 10.0, 1.0, Grenzherkunft.Bauteilkoerper),
+                Stueck(Randbedingung.Aussenluft, 15.0, null, Grenzherkunft.Bauteilkoerper),
+            }, 0.0);
+            Assert.Equal(2, teile.Count);
+            Assert.Equal(Randbedingung.Erdreich, teile[0].Rand);
+            Assert.Equal(10.0, teile[0].BruttoM2, 9);
+            Assert.Equal(Randbedingung.Aussenluft, teile[1].Rand);
+            Assert.Equal(180.0, teile[1].AzimutGrad.Value, 6);
+            // Raumgrenzen der Datei teilen sich nicht am Gelände; eine Richtung allein ist keine Gliederung.
+            Assert.Null(Teilflaechen.GliedernAmGelaende(new[]
+            {
+                Stueck(Randbedingung.Erdreich, 10.0, 1.0, Grenzherkunft.Raumgrenze),
+                Stueck(Randbedingung.Aussenluft, 15.0, null, Grenzherkunft.Raumgrenze),
+            }, 0.0));
+        }
+
+        [Fact]
         public void Ohne_Gelaendehoehe_in_der_Datei_gilt_z_null_mit_Info()
         {
             GebaeudeImportAblauf a = Lesen(IfcProbenErzeuger.HANGLAGE_OHNE);
