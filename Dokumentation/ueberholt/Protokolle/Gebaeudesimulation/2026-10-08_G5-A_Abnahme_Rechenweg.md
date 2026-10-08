@@ -67,7 +67,7 @@ Bauteil mit Namen in einer Warnung.
   4.1). Für den Bezug ergänzt die Abnahme im gelesenen Abbild die Orientierung aus dem Bauteilkörper (18 Stellen: Azimut der Wände und
   Fenster, Neigung und Azimut des Dachs); die Flächen bleiben die des Mengensatz- und Raumgrenzenwegs.
 
-### 3.4 Stichprobe A1–A4 — erfüllt
+### 3.4 Stichprobe A1–A4 — an der Probe ohne Mengensätze erfüllt (A2 mit Mengensätzen: Befund 4.1)
 
 Kleinhaus ohne Mengensätze über den Körperweg, wie gespeichert (`Tab_Bauteil` der Arbeitskopie); Nordwinkel aus der Datei, 0°
 (`Nordwinkelherkunft.Datei`).
@@ -123,7 +123,7 @@ Rückfall ohne Raumzuordnung“ — ohne eingefrorene Zahl.
 
 ## 5 Urteil
 
-**Abgenommen mit Befunden.** A1–A6 sind am Rechenweg erfüllt: Referenzlauf ohne Abweichung, keine stille Abweichung über 2 %, der
+**Abgenommen mit Befunden.** A1 und A3–A6 sind am Rechenweg erfüllt, **A2 an Dateien mit Mengensätzen und Raumgrenzen ohne Orientierung nicht** (Befund 4.1: die Probe mit Mengensätzen lehnt der Zonenvorschlag ab, B3 greift dort nicht; Nachabnahme von A2 und B3 an dieser Probe nach der Behebung). Referenzlauf ohne Abweichung, keine stille Abweichung über 2 %, der
 Körperweg trifft den Mengensatzweg der Kleinhausprobe in Heizwärme und Heizlast, der Rückfall liegt 30 % darüber. Offen bei der
 Sitzung IFC: Befund 4.1 (Orientierung bei Mengensatz und Raumgrenzen); Hinweis 4.2.
 

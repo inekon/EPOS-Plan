@@ -73,7 +73,7 @@ Was G5 dort ablegt, muss diese Größen tragen:
 |---|---|
 | G5-1 Bauteilkörper | gebaut (#801) |
 | G5-2 Öffnungen | gebaut (#802) |
-| Abnahme am Rechenweg (Gebäudesimulation) | G5-1 und G5-2: Referenzlauf 22/22 gegen R40 byte-gleich nach dem Merge (#804); G5-3: **abgenommen mit Befunden** — Referenzlauf 24/24 gegen R43, A5 an sechs Proben ohne stille Abweichung, Heizwärme der Kleinhausprobe auf dem Körperweg gleich dem Mengensatzweg (Rückfall ohne Raumzuordnung +30 %); offen Befund 4.1 (Orientierung bei Mengensatz und Raumgrenzen) ([Protokoll G5-A](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-08_G5-A_Abnahme_Rechenweg.md)) |
+| Abnahme am Rechenweg (Gebäudesimulation) | G5-1 und G5-2: Referenzlauf 22/22 gegen R40 byte-gleich nach dem Merge (#804); G5-3: **abgenommen mit Befunden** — Referenzlauf 24/24 gegen R43, A5 an sechs Proben ohne stille Abweichung, Heizwärme der Kleinhausprobe auf dem Körperweg gleich dem Mengensatzweg (Rückfall ohne Raumzuordnung +30 %); offen Befund 4.1 — A2 an Dateien mit Mengensätzen und Raumgrenzen ohne Orientierung nicht erfüllt (11 Bauteile ohne Azimut, Dachneigung 0° statt aus dem Körper, B3 greift nicht; der Zonenvorschlag lehnt ab), Nachabnahme nach der Behebung ([Protokoll G5-A](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-08_G5-A_Abnahme_Rechenweg.md)) |
 | G5-0 Schemaschritt 197 (`Tab_Bauteil.Flaechenherkunft`) | gebaut (#805, Schritt 197) |
 | G5-Nachbesserung (Körpervergleich) | gebaut (#808) |
 | G5-N Nordrichtung (Schritt 199) | gebaut (#813) |
