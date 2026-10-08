@@ -147,8 +147,9 @@ iOS-, macOS-, Setup-Läufe, Wiki-Upload, Pull Requests, Force-Push, Tags. Anwend
 Quellen/ nur lesen, keine Werte oder Namen daraus in Code, Tests oder Protokolle. Antworten
 auf Deutsch, knapp.
 
-Erste Schritte: (1) Prüfen, ob die Zeile #831 einen CI-Vermerk trägt; sonst den Kern-Lauf auf
-dem neuesten origin abwarten und den Vermerk mit [skip ci] nachtragen. (2) Prüfen, ob die
+Erste Schritte: (1) Prüfen, ob die Zeile #831 einen CI-Vermerk trägt; sonst den Kern-Lauf
+37810231619 auf 8703e704d abwarten (bricht ihn ein neuerer Push ab: den Lauf auf dem
+neuesten origin) und den Vermerk mit [skip ci] nachtragen. (2) Prüfen, ob die
 nicht versionierte Projektdatei Quellen/Sportheim_1970_unsaniert.sqproj vorliegt; sonst den
 Anwender darum bitten (die Diagnosetests der Projektdatei werden ohne sie übersprungen).
 (3) Die offenen Punkte aus Abschnitt 4 mit dem Anwender abstimmen, zuerst die Versionsnummer
