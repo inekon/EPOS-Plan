@@ -209,6 +209,8 @@ namespace WindowsFormsApplication1
                 ["ProjektdateiWaehlen"] = new Func<Task<string>>(ProjektdateiWaehlenAsync),
                 ["ProjektdateiLesen"] = new Func<string, int, CancellationToken, Task<GebaeudeProjektdateiDaten>>(ProjektdateiLesenAsync),
                 ["ProjektdateiEntfernen"] = new Action(ProjektdateiEntfernen),
+                // Die Wahl der Aufbauquelle nach angeschlagener Standprüfung (Anwenderentscheid vom 08.10.2026).
+                ["AufbauquelleWaehlen"] = new Func<string, GebaeudeProjektdateiDaten>(AufbauquelleWaehlen),
                 // G5-N (N1-N3): die Nordrichtung des gelesenen Imports und ihr Setzen samt Neulesen.
                 ["NordrichtungDaten"] = new Func<GebaeudeNordrichtungDaten>(NordrichtungDaten),
                 ["NordrichtungSetzen"] = new Func<double?, CancellationToken, Task<GebaeudeLesestand>>(NordrichtungSetzenAsync),
@@ -638,7 +640,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Standprüfung und Aufbauquelle (Anwenderentscheid vom 08.10.2026) — den Dialog baut W1b
+        // Standprüfung und Aufbauquelle (Anwenderentscheid vom 08.10.2026) — der Dialog: Aufbauquellenwahl
         // =================================================================================
 
         /// <summary>

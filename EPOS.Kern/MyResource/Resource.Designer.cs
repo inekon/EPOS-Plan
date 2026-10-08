@@ -36610,6 +36610,204 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeichen für verschiedene Projektstände: ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_ANZEICHEN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_ANZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beispiele ({0}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_BEISPIELE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_BEISPIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten der IFC verwenden ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_DATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten: IFC ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_GEWAEHLT_DATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_GEWAEHLT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten: Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen und neu exportieren ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_NEU_EXPORT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_NEU_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Import wird ohne Übernahme beendet. Exportieren Sie IFC und Projektdatei aus demselben Projektstand neu und starten Sie den Import danach erneut. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_NEU_EXPORT_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_NEU_EXPORT_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import beenden ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_NEU_EXPORT_JA {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_NEU_EXPORT_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurück ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_NEU_EXPORT_NEIN {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_NEU_EXPORT_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import abbrechen ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_NEU_EXPORT_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_NEU_EXPORT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbauten der Projektdatei verwenden ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufbauten von IFC und Projektdatei passen nicht zueinander: Die U-Werte weichen auf {0} % der Hüllfläche ab. Wählen Sie, welche Aufbauten gelten sollen. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SATZ {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilart ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SPALTE_ART {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SPALTE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauteil ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SPALTE_BAUTEIL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SPALTE_BAUTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U IFC [W/(m²K)] ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SPALTE_DATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SPALTE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²] ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SPALTE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SPALTE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die U Projektdatei [W/(m²K)] ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SPALTE_PROJEKTDATEI {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SPALTE_PROJEKTDATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichend ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_SPALTE_ZAHL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_SPALTE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlere U-Werte je Bauteilart (Median) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_TABELLE {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Aufbauten gelten? ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_U_AUFBAU {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_U_AUFBAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_AQ_ZAHL_WERT {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_AQ_ZAHL_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Umstellen wird „{0}“ der Zone „{1}“ zugeordnet. ähnelt.
         /// </summary>
         public static string GIMP_DLG_AUSWEG {

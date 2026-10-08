@@ -48796,5 +48796,71 @@ chart</value>
   <data name="IMP_BAUTEIL_PROT_PD_QUELLE_IFC" xml:space="preserve">
     <value>Construction source IFC: the IFC state applies; a project file construction only where its U-value matches the IFC U-value.</value>
   </data>
+  <data name="GIMP_DLG_AQ_TITEL" xml:space="preserve">
+    <value>Which constructions apply?</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SATZ" xml:space="preserve">
+    <value>The constructions of the IFC and the project file do not match: the U-values differ on {0} % of the envelope area. Choose which constructions apply.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_ANZEICHEN" xml:space="preserve">
+    <value>Signs of different project states:</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_ART" xml:space="preserve">
+    <value>Component type</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_ZAHL" xml:space="preserve">
+    <value>Differing</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_DATEI" xml:space="preserve">
+    <value>U IFC [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_PROJEKTDATEI" xml:space="preserve">
+    <value>U project file [W/(m²K)]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_TABELLE" xml:space="preserve">
+    <value>Typical U-values per component type (median)</value>
+  </data>
+  <data name="GIMP_DLG_AQ_ZAHL_WERT" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="GIMP_DLG_AQ_BEISPIELE" xml:space="preserve">
+    <value>Examples ({0})</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_BAUTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="GIMP_DLG_AQ_SPALTE_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="GIMP_DLG_AQ_U_AUFBAU" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="GIMP_DLG_AQ_PROJEKTDATEI" xml:space="preserve">
+    <value>Use constructions of the project file</value>
+  </data>
+  <data name="GIMP_DLG_AQ_DATEI" xml:space="preserve">
+    <value>Use constructions of the IFC</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT" xml:space="preserve">
+    <value>Cancel and export again</value>
+  </data>
+  <data name="GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI" xml:space="preserve">
+    <value>Constructions: project file</value>
+  </data>
+  <data name="GIMP_DLG_AQ_GEWAEHLT_DATEI" xml:space="preserve">
+    <value>Constructions: IFC</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_TITEL" xml:space="preserve">
+    <value>Cancel import</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_FRAGE" xml:space="preserve">
+    <value>The import ends without taking over any data. Export the IFC and the project file again from the same project state, then start the import again.</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_JA" xml:space="preserve">
+    <value>End import</value>
+  </data>
+  <data name="GIMP_DLG_AQ_NEU_EXPORT_NEIN" xml:space="preserve">
+    <value>Back</value>
+  </data>
 </root>
 

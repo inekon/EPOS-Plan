@@ -1703,6 +1703,77 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_SQ_HINWEIS</summary>
     public string SqHinweis { get; set; } = Resource.GIMP_DLG_SQ_HINWEIS;
+
+    // Die Wahl der Aufbauquelle bei abweichendem Projektstand (Anwenderentscheid vom 08.10.2026)
+
+    /// <summary>GIMP_DLG_AQ_TITEL</summary>
+    public string AqTitel { get; set; } = Resource.GIMP_DLG_AQ_TITEL;
+
+    /// <summary>GIMP_DLG_AQ_SATZ</summary>
+    public string AqSatz { get; set; } = Resource.GIMP_DLG_AQ_SATZ;
+
+    /// <summary>GIMP_DLG_AQ_ANZEICHEN</summary>
+    public string AqAnzeichen { get; set; } = Resource.GIMP_DLG_AQ_ANZEICHEN;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_ART</summary>
+    public string AqSpalteArt { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_ART;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_ZAHL</summary>
+    public string AqSpalteZahl { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_ZAHL;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_DATEI</summary>
+    public string AqSpalteDatei { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_DATEI;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_PROJEKTDATEI</summary>
+    public string AqSpalteProjektdatei { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_PROJEKTDATEI;
+
+    /// <summary>GIMP_DLG_AQ_TABELLE</summary>
+    public string AqTabelle { get; set; } = Resource.GIMP_DLG_AQ_TABELLE;
+
+    /// <summary>GIMP_DLG_AQ_ZAHL_WERT</summary>
+    public string AqZahlWert { get; set; } = Resource.GIMP_DLG_AQ_ZAHL_WERT;
+
+    /// <summary>GIMP_DLG_AQ_BEISPIELE</summary>
+    public string AqBeispiele { get; set; } = Resource.GIMP_DLG_AQ_BEISPIELE;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_BAUTEIL</summary>
+    public string AqSpalteBauteil { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_BAUTEIL;
+
+    /// <summary>GIMP_DLG_AQ_SPALTE_FLAECHE</summary>
+    public string AqSpalteFlaeche { get; set; } = Resource.GIMP_DLG_AQ_SPALTE_FLAECHE;
+
+    /// <summary>GIMP_DLG_AQ_U_AUFBAU</summary>
+    public string AqUAufbau { get; set; } = Resource.GIMP_DLG_AQ_U_AUFBAU;
+
+    /// <summary>GIMP_DLG_AQ_PROJEKTDATEI</summary>
+    public string AqProjektdatei { get; set; } = Resource.GIMP_DLG_AQ_PROJEKTDATEI;
+
+    /// <summary>GIMP_DLG_AQ_DATEI</summary>
+    public string AqDatei { get; set; } = Resource.GIMP_DLG_AQ_DATEI;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT</summary>
+    public string AqNeuExport { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT;
+
+    /// <summary>GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI</summary>
+    public string AqGewaehltProjektdatei { get; set; } = Resource.GIMP_DLG_AQ_GEWAEHLT_PROJEKTDATEI;
+
+    /// <summary>GIMP_DLG_AQ_GEWAEHLT_DATEI</summary>
+    public string AqGewaehltDatei { get; set; } = Resource.GIMP_DLG_AQ_GEWAEHLT_DATEI;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_TITEL</summary>
+    public string AqNeuExportTitel { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_TITEL;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_FRAGE</summary>
+    public string AqNeuExportFrage { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_FRAGE;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_JA</summary>
+    public string AqNeuExportJa { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_JA;
+
+    /// <summary>GIMP_DLG_AQ_NEU_EXPORT_NEIN</summary>
+    public string AqNeuExportNein { get; set; } = Resource.GIMP_DLG_AQ_NEU_EXPORT_NEIN;
+
+    /// <summary>IMP_SQ_PROT_AUFBAUQUELLE_OFFEN — der Sperrgrund am OK, derselbe Text wie die Prüfung; {0} = Anteil in %.</summary>
+    public string AqSperre { get; set; } = Resource.IMP_SQ_PROT_AUFBAUQUELLE_OFFEN;
 }
 
 /// <summary>Die sprachneutralen Schlüssel der Schalter des Zuordnungsdialogs (als <c>data-schluessel</c>).</summary>
