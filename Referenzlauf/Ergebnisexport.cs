@@ -76,6 +76,9 @@ namespace WindowsFormsApplication1.Referenzlauf
             // AK3-K (Ak3KSchema, Festlegung 20): Zonensperre und Kaelteseite im Kreis - dieselbe Regel, sie stehen erst in
             // aggregate.csv, wenn ein Lauf sie erhebt (beide Kernschalter bis K5 aus).
             foreach (string s in Ak3KSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // KK (KuehlkurveSchema, Festlegung 12): die Kennzahlen der Kuehlkurve - dieselbe Regel, sie stehen erst in
+            // aggregate.csv, wenn ein Lauf sie erhebt (Kernschalter bis KK5 aus).
+            foreach (string s in KuehlkurveSchema.SPALTEN_ERGEBNIS) namen.Add(s);
             return namen;
         }
 
