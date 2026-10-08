@@ -1,8 +1,8 @@
 # Entwurf KK — die raumgeführte Kühlkurve (Gegenstück zu H2)
 
 **Stand 08.10.2026 · E106 entschieden (Abschnitt 7): alle Fragen nach Empfehlung außer Q-KK-4 — der Mehrzonenweg gehört dazu,
-seine Kälteseite wird gekoppelt; Q-KK-6 erweitert um ein Mehrzonen-Referenzprojekt. Offen ist allein Q-KK-7 (Stufe der
-Kühlübergabe je Zone, Abschnitt 7).** Auftrag aus **E105** (Anwender, 08.10.2026: „Starte im Anschluss die raumgeführte
+seine Kälteseite wird gekoppelt; Q-KK-6 erweitert um ein Mehrzonen-Referenzprojekt. Q-KK-7 nachgereicht und entschieden: (a) die
+Kühlübergabe je Zone gilt ab AK1 (Abschnitt 7).** Auftrag aus **E105** (Anwender, 08.10.2026: „Starte im Anschluss die raumgeführte
 Kühlkurve“): Q-AK3K-3 wird als eigener Gegenstand aufgenommen, Variante (a) des [Entwurfs AK3-K](2026-10-07_Entwurf_AK3-K.md)
 (Spalte am Gebäude, nur AK3, Schemaschritt, Dialogfeld, Einfrierregel) ist die Ausgangsskizze. Gelesen auf `fc601d202`,
 Stichproben auf `76c32d5f0`, der Mehrzonenweg auf `3cd7e01e7` (Basis R43 `2026-10-07_R43_Kaelteseite_AK3K`, vierundzwanzig
@@ -30,7 +30,7 @@ E37, E102, E104, E105, E106. Die Berichtigung der Konzepte (1.3, WK1–WK3) ist 
 - **Der Mehrzonenweg gehört dazu** (E106, Q-KK-4 (b)): Seine Kälteseite wird gekoppelt — Kühlübergabe je Zone am gemeinsamen
   Kühlvorlauf des Gebäudes, Führungsgröße des Raumeinflusses die Zone mit der größten Überschreitung ihres Kühlsollwerts.
   Der Kreis von AK3 rechnet Mehrzonengebäude schon; was fehlt, ist die Kühlübergabe je Zone (1.4). Ob sie wie im Einzonenweg ab
-  AK1 gilt oder nur auf AK3, fragt **Q-KK-7** (Empfehlung: ab AK1).
+  AK1 gilt oder nur auf AK3, entscheidet **Q-KK-7 (a)**: ab AK1 (E106).
 - **Leere Spalten rechnen wie heute:** Ohne wirksamen Wert entsteht kein Objekt, die Basis R43 bleibt byte-gleich bis zur
   Basiswelle; Schemaschritt S1 (= 202) mit drei Eingabespalten am Gebäude und drei Ergebnisspalten. Die Zone braucht **keine**
   neue Eingabespalte: Ihre drei Kühlübergabespalten bestehen seit Schritt 137 und werden nur noch nicht gerechnet.
@@ -125,7 +125,7 @@ E37, E102, E104, E105, E106. Die Berichtigung der Konzepte (1.3, WK1–WK3) ist 
 - **Folge für Q-KK-4 (b):** Die Voraussetzung „Kälteseite im Mehrzonenweg koppeln“ ist die Kühlübergabe je Zone am gemeinsamen
   Kühlvorlauf — ein Spiegel von AK1z, kein neuer Kreis. Sie ist **gebäudeseitig und stufenunabhängig** wie die Kühlübergabe im
   Einzonenweg (ab AK1); E106 beschränkt aber nur die Kühlkurve auf AK3. Ob die Kühlübergabe je Zone ab AK1 oder nur auf AK3
-  gilt, ist deshalb als **Q-KK-7** offen (Abschnitt 7), nicht still entschieden.
+  gilt, war deshalb als **Q-KK-7** offen; entschieden (a) ab AK1 (E106).
 
 ## 2. Architektur
 
@@ -217,8 +217,8 @@ Kühlübergabe je Zone am festen Vorlauf, der Spiegel von AK1z — und **KZ2**, 
 - **Kälteschranke je Gebäude, verteilt je Zone.** Die Schranke bleibt eine Größe der Erzeuger; der Kreis verteilt sie wie
   heute nach dem unbegrenzten Kühlbedarf je Zone (`Anlagenkopplung.cs:374-405`). Neu wirkt mit der Kühlübergabe auch das
   Vorlaufangebot der Schranke in jeder Zone (`Stundenrand.cs:99-111`).
-- **Stufe.** Kühlkurve und Raumeinfluss nur auf AK3 (E106, Q-KK-2 (a)). Die Kühlübergabe je Zone (KZ1) nach **Q-KK-7**:
-  Empfehlung ab AK1 wie im Einzonenweg; bei Antwort „nur AK3“ bleibt der Mehrzonenweg auf AK1/AK2 ideal mit der heutigen Warnung.
+- **Stufe.** Kühlkurve und Raumeinfluss nur auf AK3 (E106, Q-KK-2 (a)). Die Kühlübergabe je Zone (KZ1) nach **Q-KK-7 (a)**:
+  ab AK1 wie im Einzonenweg (E106); die Warnung „Kühlung je Zone ideal“ entfällt.
 - **Meldung.** `SIMENG_G6_AK1_IDEAL` entfällt, wo die Kälteseite gekoppelt rechnet; sie bleibt (umformuliert) für die Stufen,
   auf denen sie nach Q-KK-7 ideal bleibt.
 - **Rechenzeit.** Jeder Durchlauf des Kreises rechnet die Zonenschleife; die Schutzgrenze Zonen × Durchläufe ≤ 120 begrenzt
@@ -365,7 +365,7 @@ Kühlübergabefelder hat und RP-KKZ das erste Referenzprojekt ist, das AK3 im Me
 
 ## 7. Fragen an den Anwender
 
-Q-KK-1 bis Q-KK-6 sind mit **E106** entschieden (Anwender, 08.10.2026); offen ist **Q-KK-7**.
+Q-KK-1 bis Q-KK-7 sind mit **E106** entschieden (Anwender, 08.10.2026; Q-KK-7 nachgereicht).
 
 | # | Frage | Optionen und Folgen | Empfehlung | Entschieden |
 |---|---|---|---|---|
@@ -375,7 +375,7 @@ Q-KK-1 bis Q-KK-6 sind mit **E106** entschieden (Anwender, 08.10.2026); offen is
 | **Q-KK-4** | **Gehört der Mehrzonenweg dazu?** | (a) nein, benannt abgelehnt mit Meldung, fester Vorlauf · (b) ja: die Kälteseite im Mehrzonenweg wird gekoppelt (Nachzug G6), Führungsgröße die Zone mit der größten Überschreitung, +4–6 PT, eigener Gegenstand | (a) | **E106: (b)**, abweichend von der Empfehlung — 2.8, KZ1 und KZ2 |
 | **Q-KK-5** | **Welche Stärke gilt beim Einschalten des Raumeinflusses?** | (a) keine Vorgabe: leer heißt aus, der Anwender trägt den Wert ein · (b) Vorgabewert im Dialog beim Einschalten, per Probe in KK3 bestimmt · (c) der Wert von `Heizkurve_Raumeinfluss` desselben Gebäudes | (b) | **E106: (b)** |
 | **Q-KK-6** | **Welches Referenzprojekt hält die Kühlkurve?** | (a) neu RP-KK als Kopie von 1058 (Wärmepumpe mit Kühlkennlinie), nicht in der CI; R44 bewegt kein bestehendes Projekt · (b) neu als Kopie von 1059 (Kältemaschine mit Kältespeicher): die Speicherregel begrenzt das Gleiten, wenig Wirkung · (c) 1058 selbst umstellen: bewegt ein CI-Projekt, Basiswechsel für die CI · (d) 1059 selbst umstellen: die reine Schrankenmessung von AK3-K geht verloren | (a) | **E106: (a), erweitert** um ein Mehrzonen-Referenzprojekt mit Kühlung auf AK3 (Grundlage wählt der Entwurf: RP-KKZ, Abschnitt 4); beide nicht in der CI |
-| **Q-KK-7** | **Ab welcher Stufe gilt die Kühlübergabe je Zone im Mehrzonenweg?** Q-KK-4 (b) setzt sie voraus (1.4); sie ist gebäudeseitig und im Einzonenweg ab AK1 wirksam, Q-KK-2 (a) beschränkt aber nur die Kühlkurve | (a) ab AK1 wie im Einzonenweg und wie die Heizseite des Mehrzonenwegs (AK1z): eine Regel für beide Wege, die Warnung „Kühlung je Zone ideal“ entfällt ganz; kein Referenzprojekt bewegt sich (keines rechnet ein Mehrzonengebäude mit Kühlung gekoppelt) · (b) nur AK3: auf AK1/AK2 bleibt der Mehrzonenweg ideal mit Warnung, −0,5 PT, aber eine Stufenausnahme allein im Mehrzonenweg | (a) | offen |
+| **Q-KK-7** | **Ab welcher Stufe gilt die Kühlübergabe je Zone im Mehrzonenweg?** Q-KK-4 (b) setzt sie voraus (1.4); sie ist gebäudeseitig und im Einzonenweg ab AK1 wirksam, Q-KK-2 (a) beschränkt aber nur die Kühlkurve | (a) ab AK1 wie im Einzonenweg und wie die Heizseite des Mehrzonenwegs (AK1z): eine Regel für beide Wege, die Warnung „Kühlung je Zone ideal“ entfällt ganz; kein Referenzprojekt bewegt sich (keines rechnet ein Mehrzonengebäude mit Kühlung gekoppelt) · (b) nur AK3: auf AK1/AK2 bleibt der Mehrzonenweg ideal mit Warnung, −0,5 PT, aber eine Stufenausnahme allein im Mehrzonenweg | (a) | **entschieden (a)**, E106 |
 
 ## 8. Risiken
 
