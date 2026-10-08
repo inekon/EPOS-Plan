@@ -387,8 +387,14 @@ namespace EPOS.Kern.Tests
             // Einziger Unterschied der Meldungen: Der Kontext der Stufe S3 nennt den Norden (TrueNorth auf der Vorgabe).
             Assert.Contains(zo.Meldungen, x => x.Schluessel == "IMP_IFC_PROT_KEIN_NORDEN");
             Assert.DoesNotContain(zm.Meldungen, x => x.Schluessel == "IMP_IFC_PROT_KEIN_NORDEN");
-            Assert.Equal(zo.Meldungen.Where(x => x.Schluessel != "IMP_IFC_PROT_KEIN_NORDEN").Select(x => x.Schluessel + "|" + string.Join("|", x.Werte)),
-                         zm.Meldungen.Select(x => x.Schluessel + "|" + string.Join("|", x.Werte)));
+            // Mit Körper kommt die Orientierung, die die Datei bei Mengensatz nicht nennt, aus dem Körper (N4): Statt „Seite
+            // unbestimmt“ steht die Info der ergänzten Orientierung.
+            Assert.Contains(zo.Meldungen, x => x.Schluessel == "IMP_IFC_PROT_SEITE_UNBESTIMMT");
+            Assert.DoesNotContain(zm.Meldungen, x => x.Schluessel == "IMP_IFC_PROT_SEITE_UNBESTIMMT");
+            Assert.Contains(zm.Meldungen, x => x.Schluessel == "IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT");
+            string[] orientierung = { "IMP_IFC_PROT_KEIN_NORDEN", "IMP_IFC_PROT_SEITE_UNBESTIMMT", "IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT" };
+            Assert.Equal(zo.Meldungen.Where(x => !orientierung.Contains(x.Schluessel)).Select(x => x.Schluessel + "|" + string.Join("|", x.Werte)),
+                         zm.Meldungen.Where(x => !orientierung.Contains(x.Schluessel)).Select(x => x.Schluessel + "|" + string.Join("|", x.Werte)));
             AbbildGebaeude gm = Assert.Single(zm.Gebaeude), go = Assert.Single(zo.Gebaeude);
             Assert.Equal(go.Raeume.Count, gm.Raeume.Count);
             Assert.Equal(quelle.Gebaeude[0].Raeume.Count, gm.Raeume.Count);
@@ -402,8 +408,11 @@ namespace EPOS.Kern.Tests
             foreach (AbbildBauteil bo in go.Bauteile)
             {
                 AbbildBauteil bm = gm.Bauteile.Single(x => x.Name == bo.Name);
-                Assert.Equal((bo.Art, bo.Randbedingung, bo.BruttoflaecheM2, bo.UWertWm2K, bo.AzimutGrad, bo.NeigungGrad, bo.Oeffnungen.Count),
-                             (bm.Art, bm.Randbedingung, bm.BruttoflaecheM2, bm.UWertWm2K, bm.AzimutGrad, bm.NeigungGrad, bm.Oeffnungen.Count));
+                Assert.Equal((bo.Art, bo.Randbedingung, bo.BruttoflaecheM2, bo.UWertWm2K, bo.Oeffnungen.Count),
+                             (bm.Art, bm.Randbedingung, bm.BruttoflaecheM2, bm.UWertWm2K, bm.Oeffnungen.Count));
+                // Was die Datei ohne Körper an Orientierung trägt, bleibt; der Körper ergänzt nur, was fehlt.
+                if (bo.AzimutGrad.HasValue) Assert.Equal(bo.AzimutGrad, bm.AzimutGrad);
+                if (bo.Art != Bauteilart.Dach) Assert.Equal(bo.NeigungGrad, bm.NeigungGrad);
                 Assert.Equal(bo.Nachbarn.Select(n => n.Kennung), bm.Nachbarn.Select(n => n.Kennung));
             }
             // Und gegen die Quelle: Flächen, Räume und Öffnungen wie geschrieben.
@@ -412,6 +421,9 @@ namespace EPOS.Kern.Tests
                 AbbildBauteil x = gm.Bauteile.Single(y => y.Name == q.Name);
                 Assert.Equal(q.BruttoflaecheM2.Value, x.BruttoflaecheM2.Value, 9);
                 Assert.Equal(q.Oeffnungen.Count, x.Oeffnungen.Count);
+                // Die Orientierung aus dem Körper trifft die der Quelle.
+                if (q.AzimutGrad.HasValue && x.AzimutGrad.HasValue) Assert.Equal(q.AzimutGrad.Value, x.AzimutGrad.Value, 6);
+                if (q.NeigungGrad.HasValue && x.NeigungGrad.HasValue) Assert.Equal(q.NeigungGrad.Value, x.NeigungGrad.Value, 6);
             }
         }
 
