@@ -9,7 +9,7 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Woher Aufbauten und U-Werte beim Weg „IFC + Projektdatei“ kommen</b> (Anwenderentscheid vom 08.10.2026): Schlägt die
+    /// <b>Woher Aufbauten und U-Werte beim Weg „IFC + Projektdatei“ kommen</b> (Anwenderentscheid E108 vom 08.10.2026): Schlägt die
     /// <see cref="Standpruefung"/> an, ist die Wahl <see cref="Offen"/>, bis der Anwender entscheidet; sonst gilt
     /// <see cref="Ifc"/> (die Rangfolge nach U-Abgleich, <see cref="SqprojAufbauwahl"/>).
     /// </summary>
@@ -83,7 +83,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Die Standprüfung beim Weg „IFC + Projektdatei“</b> (Anwenderentscheid vom 08.10.2026): Gehören IFC und Projektdatei
+    /// <b>Die Standprüfung beim Weg „IFC + Projektdatei“</b> (Anwenderentscheid E108 vom 08.10.2026): Gehören IFC und Projektdatei
     /// zum selben Projektstand? Plattformfrei, ohne Datenbank, schreibt nichts.
     /// <list type="number">
     /// <item><b>Je Bauteil</b> der Hülle (opak und Öffnung), über die GUID abgeglichen: das U der IFC (wie im Abbild) gegen das U

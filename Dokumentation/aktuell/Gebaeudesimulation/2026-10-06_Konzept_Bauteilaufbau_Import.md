@@ -403,7 +403,7 @@ Flächenanteile der drei Stufen.
 - **Rangfolge**, wenn beide Quellen etwas liefern: Projektdatei vor IFC-Schichtsatz für Aufbau und
   Stoffwerte, weil sie c trägt und den energetischen Aufbau beschreibt. U der Datei bleibt wie in
   Stufe A. Die Projektdatei liefert auch Innenaufbauten.
-- **Rangfolge nach E98:** Bei abweichenden Aufbauten gilt der IFC-Stand: Aufbau der Projektdatei, wenn U auf 1 % gleich ist, sonst Katalogaufbau der Projektdatei mit dem U der IFC, sonst IFC-Schichten, sonst Ersatzaufbau. Der Raumabgleich läuft über die HottCAD-Eigenschaft `GUID`.
+- **Rangfolge nach E98, beim Weg „IFC + Projektdatei“ nach der Standprüfung (E108):** Schlägt die Prüfung an, wählt der Anwender im Dialog die Aufbauten der Projektdatei oder der IFC; sonst gilt der IFC-Stand: Aufbau der Projektdatei, wenn U auf 1 % gleich ist, sonst Katalogaufbau der Projektdatei mit dem U der IFC, sonst IFC-Schichten, sonst Ersatzaufbau. Der Raumabgleich läuft über die HottCAD-Eigenschaft `GUID`.
 - **Stoffe:** Projektkopie `Tab_Baustoff` mit Herkunft `IFC` und `Quelle` „Projektdatei“ (die Projektdatei ergänzt den IFC-Import; kein neuer Herkunftswert, kein `CHECK` zu ändern). Materialnamen aus der
   Datei (Herstellerprodukte) bleiben Projektdaten und kommen nie in Katalog, Wiki oder Repositorium.
 - **Vorab Diagnose** (0,5 PT) an den lokalen Projektdateien neben den IFC-Dateien:

@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Woher der Aufbau eines Bauteils stammt</b> — die Rangfolge nach Entscheid E97 (Konzept Bauteilaufbau 5.5, BA-4b); mit der
-    /// Aufbauquelle „Projektdatei“ (Anwenderentscheid vom 08.10.2026) trägt Rang 1 den Aufbau der Projektdatei ohne U-Abgleich.
+    /// Aufbauquelle „Projektdatei“ (Anwenderentscheid E108 vom 08.10.2026) trägt Rang 1 den Aufbau der Projektdatei ohne U-Abgleich.
     /// </summary>
     internal enum Aufbaurang
     {
@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Zuordnung und Rangfolge der Aufbauten aus der Projektdatei</b> (BA-4b; Konzept Bauteilaufbau 5.5, Befund Projektdatei
     /// N.6/N.7/N.10). Plattformfrei, ohne Datenbank, schreibt nichts.
-    /// <para><b>Welcher Stand gilt</b> (Anwenderentscheid vom 08.10.2026, ersetzt E97 als feste Vorgabe): Beim Weg „IFC + Projektdatei“
+    /// <para><b>Welcher Stand gilt</b> (Anwenderentscheid E108 vom 08.10.2026, ersetzt E97 als feste Vorgabe): Beim Weg „IFC + Projektdatei“
     /// prüft der Import zuerst, ob beide Dateien zum selben Projektstand gehören (<see cref="Standpruefung"/>). Schlägt die Prüfung
     /// nicht an oder wählt der Anwender „IFC“ (<see cref="Aufbauquelle.Ifc"/>), gilt die Rangfolge E97 unten — der Stand der IFC geht
     /// vor, ein Aufbau der Projektdatei nur, wenn sein U zum U der IFC passt. Wählt er „Projektdatei“ (<see cref="Aufbauquelle.Projektdatei"/>),
