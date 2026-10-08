@@ -2,7 +2,7 @@
 
 **Auftrag des Anwenders vom 07.10.2026** („Übergabe als begrenzender Faktor der Wärmepumpe") ·
 **Stand 07.10.2026 — Entwurf, nicht entschieden** · **Fassung 2, 08.10.2026: Rücklaufgrenze verallgemeinert, andere
-Erzeuger** · Codestand `da03e5333` (Zweig `ios_migration_september`,
+Erzeuger; Entscheide U‑1, U‑2, U‑4 des Umsetzungskonzepts vom 08.10.2026 eingearbeitet** · Codestand `da03e5333` (Zweig `ios_migration_september`,
 Schemastand 201, Referenzbasis `2026-10-07_R43_Kaelteseite_AK3K`) · Mockup
 `Mockups/Waermepumpe_Bivalenz_Uebergabe.html` · Fragen **UB‑Q1 bis UB‑Q11** (Abschnitt 10).
 **Umsetzung:** [`Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
@@ -409,7 +409,8 @@ AK3: in `Angebot(h, V)` (Festlegung 5) dieselbe Regel; θ_R hängt dort vom Durc
 monoton und wird von den Abbruchschwellen des Kreises mitgeführt (benannt im Prüforakel). Neue
 Verfügbarkeitsgründe: `UEBERGABE_HOECHSTVORLAUF`, `SPREIZUNG_MAX`, `SPREIZUNG_MIN`, `RUECKLAUF_MAX`. Eine
 Wärmepumpe ohne die neuen Felder und mit `Vorwaermbetrieb = 0` verhält sich in B1/B2 wie heute; **neu wirkt B4**
-(UB‑Q1).
+(UB‑Q1). Wirksam wird die Übergabegrenze nur bei gesetztem `Einbindung`; leer bleibt der heutige Weg
+(Umsetzungskonzept U‑1, entschieden 08.10.2026).
 
 ## 5 Datenmodell
 
@@ -424,14 +425,16 @@ Wärmepumpe ohne die neuen Felder und mit `Vorwaermbetrieb = 0` verhält sich in
 | `Ruecklauf_Max` | dto. | REAL | leer = abgeleitet θ_WP,max − σ_min | 20–70 °C | Datenblatt, Regler [Q51]–[Q54]; R744 [Q42]–[Q46] |
 | `Ruecklauf_Bezug` | dto. | REAL | leer = 30 °C, wenn abgewertet wird | 20–40 °C | Bezugsrücklauf des Kennfelds (R744) |
 | `Ruecklauf_Abwertung_ProzentJeK` | dto. | REAL | leer = keine Abwertung | 0–5 | R744 [Q42], [Q43] |
+| `Kaeltemittel` | dto. | TEXT ohne CHECK-Liste (Werteliste im Kern als Klappliste) | leer = allgemeine (unterkritische) Vorgaben | `R410A`, `R32`, `R290`, `R744`, `R134a`, `R1234ze(E)`, `R407C`, `R454C`, `R455A`, `R1233zd(E)`, `SONSTIGES` | wählt die Vorgaben je Kältemittelklasse (6.3); Umsetzungskonzept U‑2 |
 | `Ruecklauf_Max` | `Tab_BHKW` (Option UB‑Q9) | REAL | leer = keine Grenze; Neuanlage und Schnellwahl 70 °C | 40–90 °C | Motorkühlkreis [Q63], [Q64] |
 | `Einbindung` | `Tab_Energieanlagen` | TEXT `CHECK (Einbindung IN ('DIREKT','PUFFER','WEICHE'))` | `PUFFER`, wenn der Anlage ein Heizungspuffer zugeordnet ist, sonst `DIREKT` | — | Anlagenschaltung |
 | `Vorwaermbetrieb` | `Tab_Energieanlagen` | INTEGER `CHECK (Vorwaermbetrieb IN (0,1))` | 0 | 0/1 | Anlagenschaltung (Reihe WP → Kessel) |
 
 `Vorlauf_Max` an `Tab_Energieanlagen` **genügt als Höchstvorlauf** — eine eigene Spalte
 `Bivalenz_Abschalt_Vorlauf` brächte eine zweite Wahrheit. Die Vorgabe bei NULL bleibt `Vorlauf` (AK2); neu ist allein
-die Schnellwahl nach Kältemittelklasse im Dialog (Abschnitt 6). Ein Kältemittelfeld am Gerät legt das Papier nicht
-an: Die Schnellwahl schreibt einen Wert, keine Klasse.
+die Schnellwahl nach Kältemittelklasse im Dialog (Abschnitt 6). Die Klasse steht im Gerätefeld `Kaeltemittel`
+(Umsetzungskonzept U‑2, entschieden 08.10.2026): Die Schnellwahl speichert sie und füllt nur leere Felder mit den
+Vorgaben der Klasse; gefüllte Felder bleiben.
 
 **Katalog oder Projekt (UB‑Q2).** Empfehlung: Gerätegrenzen am Katalog (`Tab_WP` und `Tab_WP_STAMM`, mit den
 Projektkopien des Katalogs wie `Mindestleistung_kW`), weil sie zum Gerät gehören und mit VDI-3805-Daten kommen
@@ -443,22 +446,25 @@ Die Übergabespalten an `Tab_Gebaeude` und `Tab_Zone` bleiben unverändert.
 `Bereich_WpAllein_h`, `Bereich_Parallel_h`, `Bereich_Vorwaermung_h`, `Bereich_NurKessel_h` (INTEGER), die
 zugehörigen Wärmemengen `…_MWh` der Wärmepumpe (REAL), `Spreizung_Unterschritten_h`, `Ruecklauf_Ueberschritten_h`,
 `Bivalenzpunkt_1`, `Bivalenzpunkt_2`, `Uebergabe_Max_kW` (REAL, berechnet nach 4.3/4.5); an den Kesselergebnissen die
-Stufenstunden der Kesselkennlinie (`RuecklaufStufenstunden`) um die Stufe „Vorwärmer".
+Stufenstunden der Kesselkennlinie (`RuecklaufStufenstunden`) um die Stufe „Vorwärmer" — ausgewiesen im
+Protokollhinweis `SIMENG_KESSEL_BRENNWERT_BETRIEB`, keine Ergebnisspalte am Kessel (Umsetzungskonzept U‑4).
 
 **5.2 Schemaschritt.** Ein Schritt für Eingabe- und Ergebnisspalten, **Nummer erst bei der Umsetzung anmelden**
 (Zeile „Schemaschritt angemeldet" der [Statusdatei](Status_iOS_Migration.md); heute ist 200 die nächste freie
 Nummer, 199 ist vergeben). Spalten nullbar, Boolean mit `CHECK (… IN (0,1))`, Tabellen bleiben `STRICT`; der
-`SqlDialektPruefer` läuft nach jeder neuen Anweisung. Der Katalogabgleich und das Projektpaket führen die sieben
+`SqlDialektPruefer` läuft nach jeder neuen Anweisung. Der Katalogabgleich und das Projektpaket führen die acht
 Gerätespalten wie die übrigen `Tab_WP`-Spalten.
 
 **5.3 Einfrierregel und Basis.** Der Rechenweg ändert Ergebnisse überall dort, wo θ_V,soll > θ_WP,max und ein Kessel
 das Vorlaufangebot hebt (B4 statt voller Kennfeldleistung) — zu prüfen an **1047, 1054, 1056 und 1058**; ohne
-Kopplung bleibt jedes Projekt byte-gleich. Neue Basis im selben Schritt, begründet in
+Kopplung bleibt jedes Projekt byte-gleich. Die Wirksamkeit hängt an `Einbindung` (Umsetzungskonzept U‑1, entschieden
+08.10.2026: Opt-in): Bei leerem Feld bleibt der heutige Weg, 1047, 1054, 1056 und 1058 ändern ihr Ergebnis nicht,
+und die Basis wächst allein um das neue Referenzprojekt. Neue Basis im selben Schritt, begründet in
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md). Neues Referenzprojekt als **Kopie von 1056**
 (nächste freie Projektnummer, heute 1060): Gebäude mit Heizkörpern 75/60 °C, Wärmepumpe mit `Vorlauf_Max` 55 °C
 und `Vorwaermbetrieb` 1, Kessel in Reihe, Nachtsperre und Zeitprogramme von 1056 zurückgesetzt, damit die Wirkung
 allein der Übergabegrenze gehört (UB‑Q7). Neue Einfrierregel in [`CLAUDE.md`](../../CLAUDE.md): gesäte
-Spreizungs- und Einbindungsdaten eines Referenzprojekts (die sieben Gerätespalten seiner Wärmepumpe, `Einbindung`,
+Spreizungs- und Einbindungsdaten eines Referenzprojekts (die acht Gerätespalten seiner Wärmepumpe, `Einbindung`,
 `Vorwaermbetrieb`, `Vorlauf_Max`) und das Anlegen oder Entfernen dieses Referenzprojekts.
 
 ## 6 Bedienung und Eingabe
@@ -480,7 +486,7 @@ Gerätegrenzen (Spreizungen, Mindestvolumenstrom, Rücklaufgrenze) stehen zusät
 | Bivalenztemperatur (Abschaltpunkt) | `Zahlenfeld` °C | leer | teilparallel, alternativ | „eingegeben … — berechnet … — maßgebend …" |
 | Einbindung | `Auswahlfeld` direkt / Puffer / Weiche | aus der Pufferzuordnung | bivalent oder Kopplung aktiv | „Puffer: Entladeseite als Näherung" |
 | Vorwärmbetrieb (Kessel in Reihe) | `Schalter` | aus | parallel, teilparallel | „Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf" |
-| Höchstvorlauf | Lesewert | `Vorlauf_Max`, sonst `Vorlauf` | immer | Schnellwahl in „Betriebszeiten": R410A/R32 55 °C · R290 70 °C · R744 80 °C, Rücklauf ≤ 40 °C (Abwertung ab 30 °C) · R1234ze(E) 80 °C |
+| Höchstvorlauf | Lesewert | `Vorlauf_Max`, sonst `Vorlauf` | immer | Klappliste „Kältemittel" und Schnellwahl in „Betriebszeiten" (speichert die Klasse in `Kaeltemittel`, füllt nur leere Felder): R410A/R32 55 °C · R290 70 °C · R744 80 °C, Rücklauf ≤ 40 °C (Abwertung ab 30 °C) · R1234ze(E) 80 °C |
 | Spreizung Auslegung / max. / min., Mindestvolumenstrom | Lesewerte | Katalog, sonst Tafel 6.3 | Kopplung aktiv | Herkunft je Wert |
 | Höchster Rücklauf | Lesewert | `Ruecklauf_Max`, sonst abgeleitet | Kopplung aktiv | Herkunft „Katalog" bzw. „abgeleitet: 52 °C = 55 − 3"; bei R744 „Bezugsrücklauf 30 °C · Abwertung 2,5 %/K · Grenze 40 °C" |
 
@@ -513,6 +519,7 @@ Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade.
 | Abwertung R744 | 2,5 %/K | 1,8–3 %/K | [Q42], [Q43] (sek.) |
 | Rücklaufgrenze unterkritisch | leer (abgeleitet θ_WP,max − σ_min) | Datenblattwerte 50–65 °C | [Q49], [Q51]–[Q54] |
 | Rücklaufgrenze BHKW (Option) | 70 °C | 60–73 °C | [Q63], [Q64] |
+| Vorgaben je Kältemittelklasse | über `Kaeltemittel` gewählt: Höchstvorlauf, Spreizungen, Rücklaufgrenze, bei R744 Bezugsrücklauf und Abwertung; leer = allgemeine Vorgaben | wie die Zeilen oben | 2.4, 2.11; Umsetzungskonzept U‑2 |
 | Bivalenzpunkt parallel/monoenergetisch (Orientierung) | −5 °C | −10 … +2 °C | [Q9], [Q23] (sek.) |
 | Hybrid-Mindestanteil § 43 GModG / BEG | 30 % parallel, 40 % alternativ | fest | [Q27], [Q32] |
 
@@ -532,7 +539,9 @@ in `EPOS.UI.Daten`; KI-Sicht (`WaermepumpeAnlageKiSicht.cs`) um die neuen Felder
 „Betriebsbereiche" — Stunden und Wärme der Wärmepumpe je Bereich (allein, mit Kessel parallel, Vorwärmung, nur
 Kessel), dazu die beiden berechneten Bivalenzpunkte und die Übergabegrenze in kW; die Stunden mit unterschrittener
 Spreizung und der Stundenzähler „Rücklaufgrenze" (jede Wärmepumpe, abgeleitete oder eingetragene Grenze) als leise
-Zeile, nur wenn > 0. Der Kesselreiter weist die Stunden der Rücklaufstufe „Vorwärmer" aus.
+Zeile, nur wenn > 0. Die Stunden der Rücklaufstufe „Vorwärmer" des Kessels stehen im Protokollhinweis
+`SIMENG_KESSEL_BRENNWERT_BETRIEB` (`Ruecklaufstufe.Vorwaermer`); eine Ergebnisspalte am Kessel erst, wenn der
+Bericht sie verlangt (Umsetzungskonzept U‑4).
 
 **7.2 Bivalenzdiagramm.** Neue Methode `ChartRenderer.Bivalenzdiagramm` mit `BivalenzdiagrammModell` (Muster
 `VorlaufRuecklauf`/`VorlaufRuecklaufModell`): x Außentemperatur, y Leistung; Heizlast (Gerade aus Φ_N und
@@ -627,6 +636,9 @@ UB‑E1 hat keine Rechenwirkung und kann sofort beginnen.
 | **UB‑Q9** | Rücklaufgrenze am BHKW | a ja, `Ruecklauf_Max` am BHKW, Vorgabe 70 °C, in UB‑E3 · b nein | **a** — harte Abschaltung des Motorkühlkreises [Q63], derselbe Mechanismus wie an der Wärmepumpe | |
 | **UB‑Q10** | Mindestrücklauf Biomasse-/NT-Kessel, Anfahrgrenze der Wärmepumpe | a Prüfhinweis ohne Feld · b Feld | **a** — die Rücklaufanhebung sichert ihn in jeder Anlage, die Stundenbilanz ändert sich nicht | |
 | **UB‑Q11** | Rücklaufstufe „Vorwärmer" der Kesselkennlinie | a ja, in UB‑E2 · b später | **a** — Pflicht für den Brennwertnutzen im Vorwärmbetrieb | |
+
+Zu UB‑Q2 und UB‑Q6: Die Vorgaben gelten je Kältemittelklasse aus dem Gerätefeld `Kaeltemittel` (Umsetzungskonzept
+U‑2, entschieden 08.10.2026); die Fragen selbst bleiben offen.
 
 **Technische Festlegungen zur Kenntnis (Widerspruch möglich):** arithmetisches Mittel wie AK1; konstanter
 Massenstrom aus dem Auslegungspunkt; Herleitungszeile und Diagramm mit lastlinearer Heizlast und
