@@ -45,7 +45,7 @@ Bei einer Anwenderdatei stammen IFC und Projektdatei aus zwei Projektständen de
 
 ## 5 Gate 825
 
-GATEZAHLEN
+auf `39dd31692` (72 min): KiKern 549, SpeicherEngine 397, SpeicherPlanung 28 mit 1 übersprungen, EPOS.UI 7 837, EPOS.Kern 12 303 mit 7 übersprungen, 2 rot (`SqprojAufbauDiagnoseTests` an der lokalen Anwenderdatei: die Standprüfung schlägt dort an, die Diagnose der Rangfolge E98 trifft jetzt die Wahl „IFC“ — behoben in `b651dd3b3`, danach Diagnose- und Standprüfungsklassen 14/14); Dokumentationswachen 35/35; ChartProben 211 Hashes gleich `Messlatte_2026-10-05`; Referenzlauf 24/24 gegen `2026-10-07_R43_Kaelteseite_AK3K` PASS (8 073 156 Werte), 759/759 CSV byte-gleich; Störlauf ulp PASS; SQL-Dialekt-Prüfer 2 523 Texte, 0 Fundstellen; Windows-Schale 0 Fehler; Auslieferungsvorlage-Tests 61/61. Kommentare zur Aufbaurangfolge von E97 auf E98 berichtigt (`2c7fb205f`).
 
 ## 6 Offen
 
