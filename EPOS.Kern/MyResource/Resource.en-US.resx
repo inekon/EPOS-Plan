@@ -34016,7 +34016,7 @@ Do you want to allow this?</value>
     <value>{0} walls from the body: the outer side cannot be told apart at the building centroid; the normal of the largest face in the file applies ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT" xml:space="preserve">
-    <value>{0} components with a quantity set but no orientation in the file: azimuth or roof pitch from the space boundaries ({1}) or from the component body ({2}); the area remains that of the quantity set ({3}).</value>
+    <value>{0} components without orientation in the file: with a quantity set, azimuth or roof pitch from the space boundaries ({1}) or from the component body ({2}), the area remains that of the quantity set; windows and doors whose wall or roof has no orientation, from their own body ({4}) ({3}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} building components without base quantities (Qto_…); their areas are missing ({1}).</value>

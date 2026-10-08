@@ -34023,7 +34023,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} Wände aus dem Körper: Die Außenseite ist am Gebäudeschwerpunkt nicht zu unterscheiden; es gilt die Normale der größten Fläche der Datei ({1}).</value>
   </data>
   <data name="IMP_IFC_PROT_ORIENTIERUNG_ERGAENZT" xml:space="preserve">
-    <value>{0} Bauteile mit Mengensatz ohne Orientierung der Datei: Azimut bzw. Dachneigung aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}); die Fläche bleibt die des Mengensatzes ({3}).</value>
+    <value>{0} Bauteile ohne Orientierung der Datei: Azimut bzw. Dachneigung bei Mengensatz aus den Raumgrenzen ({1}) bzw. aus dem Bauteilkörper ({2}), die Fläche bleibt die des Mengensatzes; Fenster und Türen, deren Wand bzw. Dach keine Richtung hat, aus dem eigenen Körper ({4}) ({3}).</value>
   </data>
   <data name="IMP_IFC_PROT_KEINE_MENGEN" xml:space="preserve">
     <value>{0} Bauteile ohne Mengenangaben (Qto_…); ihre Flächen fehlen ({1}).</value>
