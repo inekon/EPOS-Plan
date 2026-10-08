@@ -832,7 +832,7 @@ namespace WindowsFormsApplication1
             else if (e.KuehlVorlaufGekappt)
                 p.HinweisEinmal("ak-kuehl-vorlauf-gemischt-" + id,
                     string.Format(k, MyResource.Resource.SIMENG_AK_KUEHL_VORLAUF_GEMISCHT, wer,
-                                  e.KuehlVorlaufQuelleC.ToString("0.#", k), e.KuehlVorlaufC.ToString("0.#", k)));
+                                  e.KuehlVorlaufQuelleC.ToString("0.#", k), e.KuehlVorlaufFestC.ToString("0.#", k)));
 
             if (e.KuehlGrenzeUeberAuslegung)
                 p.HinweisEinmal("ak-kuehl-grenze-ueber-auslegung-" + id,

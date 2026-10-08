@@ -105,6 +105,8 @@ namespace WindowsFormsApplication1
             ["Erdreich_U_Wirksam"] = V,
             // AK3 (Festlegung 23): der Raumeinfluss der Heizkurve - die Datei traegt ihn nicht, der Import schreibt NULL.
             ["Heizkurve_Raumeinfluss"] = V,
+            // Entwurf KK (bis KK4 ohne Spalte): die Kuehlkurve - die Datei traegt sie nicht, der Import laesst sie leer.
+            ["Kuehlkurve_Aktiv"] = V, ["Kuehlkurve_Fusspunkt"] = V, ["Kuehlkurve_Raumeinfluss"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
             ["Ferienbeginn_3"] = V, ["Ferienende_3"] = V, ["Ferienbeginn_4"] = V, ["Ferienende_4"] = V,
             ["Gebaeude_Modell"] = N, ["WW_Bedarf"] = N, ["spez_Waermeverbrauch"] = N, ["Waermebedarf"] = N,

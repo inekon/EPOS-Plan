@@ -392,8 +392,42 @@ namespace WindowsFormsApplication1
         /// <summary>Dieselben Kennwerte gespiegelt (−V, −R, −θ_i,N) — so rechnet Schritt K (10.5).</summary>
         internal Uebergabekennwerte KuehlUebergabeGespiegelt { get; private set; }
 
-        /// <summary>Der feste Kaltwasser-Vorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze) (7.2); NaN ohne Kälteseite.</summary>
-        internal double KuehlVorlaufC { get; private set; } = double.NaN;
+        /// <summary>
+        /// Der feste Kaltwasser-Vorlauf am Gebäude [°C] = max(Quelle, Vorlaufgrenze) (7.2); NaN ohne Kälteseite und mit
+        /// wirksamer Kühlkurve (dann trägt allein <see cref="KuehlVorlaufC"/> den Vorlauf, wie <see cref="VorlaufFestC"/>).
+        /// </summary>
+        internal double KuehlVorlaufFestC { get; private set; } = double.NaN;
+
+        /// <summary>
+        /// <b>Der Kaltwasser-Vorlauf am Gebäude je Stunde</b> [°C] (Entwurf KK, Schritt KK1): ohne Kühlkurve die konstante Reihe
+        /// des festen Vorlaufs <see cref="KuehlVorlaufFestC"/> (Zeichen für Zeichen wie der frühere Skalar), mit wirksamer
+        /// Kühlkurve deren Vorlauf je Stunde; <c>null</c> ohne Kälteseite. Der Stundenrand liest <c>[h]</c>.
+        /// </summary>
+        internal double[] KuehlVorlaufC { get; private set; }
+
+        /// <summary>
+        /// Steht der Vorlauf der Stunde an der Vorlaufgrenze, weil die Kühlkurve oder der Erzeuger kälter verlangt
+        /// (Festlegung 5)? Nur mit wirksamer Kühlkurve, sonst <c>null</c> — dann gilt <see cref="KuehlVorlaufGekappt"/>.
+        /// </summary>
+        internal bool[] KuehlVorlaufAnGrenze { get; private set; }
+
+        /// <summary>
+        /// <b>Rechnet dieses Gebäude die Kühlkurve?</b> Kernschalter (<see cref="KuehlkurveKernschalter"/>) und Stufe AK3,
+        /// <c>Kuehlkurve_Aktiv</c> und eine wirksame Kälteseite im Einzonenweg (Entwurf KK, Festlegungen 1, 13; E106 Q-KK-2 (a)).
+        /// </summary>
+        internal bool KuehlkurveWirksam { get; private set; }
+
+        /// <summary>Die Kühlkurve des Gebäudes; <c>null</c> ohne <see cref="KuehlkurveWirksam"/>.</summary>
+        internal Kuehlkurve Kuehlkurve { get; private set; }
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K], geprüft; 0 ohne Wert oder ohne wirksame Kurve (Rechnung mit KK3).</summary>
+        internal double KuehlkurveRaumeinflussKK { get; private set; }
+
+        /// <summary>Der Kaltwasser-Vorlauf des Stundenrands [°C]: <c>[h]</c> der Reihe, NaN ohne Kälteseite.</summary>
+        private double KuehlVorlaufBei(int h) => KuehlVorlaufC != null ? KuehlVorlaufC[h] : double.NaN;
+
+        /// <summary>Steht der Vorlauf der Stunde an der Vorlaufgrenze? Mit Kühlkurve je Stunde, sonst der feste Befund.</summary>
+        private bool KuehlVorlaufGekapptBei(int h) => KuehlVorlaufAnGrenze != null ? KuehlVorlaufAnGrenze[h] : KuehlVorlaufGekappt;
 
         /// <summary>Der Kaltwasser-Vorlauf der Quelle [°C] vor dem Hochmischen: der Anlage oder, ohne sie, der Auslegung.</summary>
         internal double KuehlVorlaufQuelleC { get; private set; } = double.NaN;
@@ -676,9 +710,9 @@ namespace WindowsFormsApplication1
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
                                    kuehlUebergabeGespiegelt: KuehlUebergabeGespiegelt,
-                                   kuehlVorlaufC: KuehlVorlaufC,
+                                   kuehlVorlaufC: KuehlVorlaufBei(h),
                                    kuehlStrahlungsanteil: KuehlStrahlungsanteil,
-                                   kuehlVorlaufGekappt: KuehlVorlaufGekappt);
+                                   kuehlVorlaufGekappt: KuehlVorlaufGekapptBei(h));
         }
 
         /// <summary>
@@ -939,9 +973,9 @@ namespace WindowsFormsApplication1
                                    vorlaufC: KopplungWirksam ? VorlaufC[h] : double.NaN,
                                    reglerbandK: ReglerbandK,
                                    kuehlUebergabeGespiegelt: KuehlUebergabeGespiegelt,
-                                   kuehlVorlaufC: KuehlVorlaufC,
+                                   kuehlVorlaufC: KuehlVorlaufBei(h),
                                    kuehlStrahlungsanteil: KuehlStrahlungsanteil,
-                                   kuehlVorlaufGekappt: KuehlVorlaufGekappt);
+                                   kuehlVorlaufGekappt: KuehlVorlaufGekapptBei(h));
         }
 
         /// <summary>
@@ -1300,7 +1334,13 @@ namespace WindowsFormsApplication1
             bool kuehlKopplung = Kuehluebergabe.KopplungWirksamFuer(gebaeude, anlagenkopplung, kuehlbetrieb);
             e.KuehlKopplungWirksam = kuehlKopplung && !e.Mehrzonenweg;
             if (e.KuehlKopplungWirksam)
+            {
                 e.KuehlKopplungAufloesen(gebaeude, kuehlVorlaufAnlageC, nennleistungSkalierung);
+                // Entwurf KK (Schritt KK1): die Kühlkurve nur mit Kernschalter, Stufe AK3 und Kuehlkurve_Aktiv;
+                // sonst bleibt die konstante Reihe des festen Vorlaufs (Festlegung 1).
+                if (gebaeude.Kuehlkurve_Aktiv && KuehlkurveKernschalter.Wirksam(anlagenkopplung))
+                    e.KuehlkurveAufloesen(gebaeude, kuehlVorlaufAnlageC);
+            }
             // Im Mehrzonenweg bleibt die Kälteseite ideal (A4 (a)); die Wärmeseite nur im adiabaten
             // Vorlauf der 4-K-Regel (E63).
             e.KopplungAlsIdealeLast = e.Mehrzonenweg && e.IstBeheizt && (kopplungImVorlaufIdeal || (kuehlKopplung && e.KuehlungWirksam));
@@ -2121,7 +2161,11 @@ namespace WindowsFormsApplication1
             KuehlVorlaufquelle = anlage ? Vorlaufquelle.Anlage : Vorlaufquelle.Auslegung;
             KuehlVorlaufQuelleC = anlage ? kuehlVorlaufAnlageC : vN;
             KuehlVorlaufGekappt = Endlich(grenze) && KuehlVorlaufQuelleC < grenze;
-            KuehlVorlaufC = KuehlVorlaufGekappt ? grenze : KuehlVorlaufQuelleC;
+            KuehlVorlaufFestC = KuehlVorlaufGekappt ? grenze : KuehlVorlaufQuelleC;
+            // Entwurf KK (KK1): der Vorlauf als Jahresreihe; ohne Kühlkurve konstant = der feste Vorlauf.
+            var reihe = new double[8760];
+            for (int h = 0; h < 8760; h++) reihe[h] = KuehlVorlaufFestC;
+            KuehlVorlaufC = reihe;
 
             // Die Nennleistung (sensibel). Fest eingetragen gilt sie dem wirklichen Gebäude und
             // wird auf den Katalogbau umgerechnet (H7); leer kommt sie aus dem Auslegungstag (A2).
@@ -2154,6 +2198,38 @@ namespace WindowsFormsApplication1
 
             KuehlUebergabe = new Uebergabekennwerte(phiN, n, vN, rN, iN);
             KuehlUebergabeGespiegelt = Kuehluebergabe.Gespiegelt(phiN, n, vN, rN, iN);
+        }
+
+        /// <summary>
+        /// <b>Die Kühlkurve des Gebäudes</b> (Entwurf KK, 2.1; Festlegungen 2–5, 7), nach <see cref="KuehlKopplungAufloesen"/>:
+        /// Fußpunkt aus <c>Kuehlkurve_Fusspunkt</c> oder, leer, der Auslegungsrücklauf der Kühlübergabe; Auslegungspunkt der
+        /// Auslegungsvorlauf bei der hergeleiteten Auslegungs-Außentemperatur der Kühlung (wärmstes Tagesmittel); unten die
+        /// Vorlaufgrenze, kälter als die Anlage nie (Mischgruppe, wie der feste Vorlauf). Die Reihe wird einmal gerechnet,
+        /// am Kühlsollwert der Stunde (<see cref="ThetaMax"/>); der feste Vorlauf entfällt (NaN), wie auf der Heizseite.
+        /// </summary>
+        private void KuehlkurveAufloesen(ProjektGebaeudeModel g, double kuehlVorlaufAnlageC)
+        {
+            double fuss = g.Kuehlkurve_Fusspunkt ?? KuehlUebergabe.AuslegungRuecklaufC;
+            if (g.Kuehlkurve_Fusspunkt.HasValue)
+                Bereich(Kuehlkurve.SPALTE_FUSSPUNKT, fuss, GebaeudeFestwerte.KUEHL_VORLAUF_MIN, GebaeudeFestwerte.KUEHL_VORLAUF_MAX);
+            double kK = g.Kuehlkurve_Raumeinfluss ?? 0.0;
+            if (g.Kuehlkurve_Raumeinfluss.HasValue)
+                Bereich(Kuehlkurve.SPALTE_RAUMEINFLUSS, kK,
+                        GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MIN, GebaeudeFestwerte.KUEHLKURVE_RAUMEINFLUSS_MAX);
+            KuehlkurveRaumeinflussKK = kK;
+
+            Kuehlkurve = new Kuehlkurve(fuss, KuehlUebergabe.AuslegungVorlaufC,
+                                        Kuehlkurve.AuslegungAussentemperaturC(ThetaOut), KuehlVorlaufgrenzeC);
+            double erzeuger = Endlich(kuehlVorlaufAnlageC) ? kuehlVorlaufAnlageC : double.NaN;
+            var reihe = new double[8760];
+            var anGrenze = new bool[8760];
+            for (int h = 0; h < 8760; h++)
+                reihe[h] = Kuehlkurve.VorlaufC(ThetaMax[h], ThetaOut[h], erzeuger, out anGrenze[h]);
+            KuehlVorlaufC = reihe;
+            KuehlVorlaufAnGrenze = anGrenze;
+            KuehlVorlaufFestC = double.NaN;
+            KuehlVorlaufGekappt = false;
+            KuehlkurveWirksam = true;
         }
 
         /// <summary>

@@ -243,6 +243,27 @@ namespace WindowsFormsApplication1
         public double? Heizkurve_Raumeinfluss;
 
         // =====================================================================
+        //  Die Kühlkurve (Entwurf KK, 2.1–2.2, Festlegungen 1–7) — bis zum Schemaschritt S1 (KK4) Eigenschaften
+        //  OHNE Spalte: allein Proben setzen sie, wirksam nur mit dem Kernschalter (KuehlkurveKernschalter) auf AK3.
+        //  Die Namen sind die künftigen Spalten von Tab_Gebaeude; mit KK4 werden sie Felder mit Spalte.
+        // =====================================================================
+
+        /// <summary>
+        /// Der Schalter der Kühlkurve (künftig <c>Tab_Gebaeude.Kuehlkurve_Aktiv</c>): Mit Stufe AK3, wirksamer Kühlübergabe und
+        /// dem Kernschalter wird der Kühlvorlauf eine Jahresreihe nach <see cref="Kuehlkurve"/>; <c>false</c> = fester Vorlauf wie
+        /// bisher (Festlegung 1).
+        /// </summary>
+        public bool Kuehlkurve_Aktiv { get; set; }
+
+        /// <summary>Der Fußpunkt der Kühlkurve θ_V,F [°C] (künftig <c>Tab_Gebaeude.Kuehlkurve_Fusspunkt</c>, 4 … 22 °C);
+        /// <c>null</c> = der Auslegungsrücklauf der Kühlübergabe (Festlegung 4).</summary>
+        public double? Kuehlkurve_Fusspunkt { get; set; }
+
+        /// <summary>Der Raumeinfluss der Kühlkurve k_K [K/K] (künftig <c>Tab_Gebaeude.Kuehlkurve_Raumeinfluss</c>, 0 … 10);
+        /// <c>null</c> oder 0 = aus (Festlegungen 1, 6). Gerechnet erst mit KK3.</summary>
+        public double? Kuehlkurve_Raumeinfluss { get; set; }
+
+        // =====================================================================
         //  Die Zonen des Gebäudes (Stufe G3, Entscheid A14/E27) — KEINE Spalte der
         //  Sicht: gefüllt vom Zonenleser über GebaeudeZonenanschluss, nicht aus der
         //  Gebäudezeile. Bewusst internal und eine Eigenschaft: Die Feldspiegel

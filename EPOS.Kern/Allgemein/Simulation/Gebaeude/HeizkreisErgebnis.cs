@@ -342,7 +342,7 @@ namespace WindowsFormsApplication1
             kk.AuslegungRaumC = k.AuslegungRaumC;
             kk.ReglerbandK = e.ReglerbandK;
             kk.Vorlaufquelle = e.KuehlVorlaufquelle;
-            kk.VorlaufFestC = e.KuehlVorlaufC;
+            kk.VorlaufFestC = e.KuehlVorlaufFestC;
             kk.VorlaufQuelleC = e.KuehlVorlaufQuelleC;
             kk.VorlaufGekappt = e.KuehlVorlaufGekappt;
             kk.VorlaufgrenzeC = e.KuehlVorlaufgrenzeC;

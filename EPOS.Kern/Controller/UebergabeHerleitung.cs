@@ -163,7 +163,7 @@ namespace WindowsFormsApplication1
                     AuslegungskuehllastKw = e.AuslegungskuehllastW / 1000.0,
                     Vorlaufquelle = e.KuehlVorlaufquelle,
                     VorlaufQuelleC = e.KuehlVorlaufQuelleC,
-                    VorlaufC = e.KuehlVorlaufC,
+                    VorlaufC = e.KuehlVorlaufFestC,
                     Gekappt = e.KuehlVorlaufGekappt,
                     VorlaufgrenzeC = double.IsNaN(e.KuehlVorlaufgrenzeC) ? (double?)null : e.KuehlVorlaufgrenzeC,
                     GrenzeUeberAuslegung = e.KuehlGrenzeUeberAuslegung,

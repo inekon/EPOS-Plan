@@ -200,22 +200,22 @@ namespace EPOS.Kern.Tests
             GebaeudeModellEingang kalt = Eingang(Kuehlgekoppelt(), kuehlVorlaufAnlage: 7.0);
             Assert.Equal(Vorlaufquelle.Anlage, kalt.KuehlVorlaufquelle);
             Assert.True(kalt.KuehlVorlaufGekappt);
-            Assert.Equal(16.0, kalt.KuehlVorlaufC);
+            Assert.Equal(16.0, kalt.KuehlVorlaufFestC);
             Assert.Equal(7.0, kalt.KuehlVorlaufQuelleC);
 
             GebaeudeModellEingang warm = Eingang(Kuehlgekoppelt(), kuehlVorlaufAnlage: 18.0);
             Assert.False(warm.KuehlVorlaufGekappt);
-            Assert.Equal(18.0, warm.KuehlVorlaufC);
+            Assert.Equal(18.0, warm.KuehlVorlaufFestC);
 
             GebaeudeModellEingang ohne = Eingang(Kuehlgekoppelt());
             Assert.Equal(Vorlaufquelle.Auslegung, ohne.KuehlVorlaufquelle);
             Assert.False(ohne.KuehlVorlaufGekappt);
-            Assert.Equal(16.0, ohne.KuehlVorlaufC);
+            Assert.Equal(16.0, ohne.KuehlVorlaufFestC);
 
             GebaeudeModellEingang konvektor = Eingang(Kuehlgekoppelt(g => g.Kuehl_Uebergabe_Art = DbWerte.KUEHLUEBERGABE_GEBLAESEKONVEKTOR),
                                                       kuehlVorlaufAnlage: 7.0);
             Assert.False(konvektor.KuehlVorlaufGekappt);
-            Assert.Equal(7.0, konvektor.KuehlVorlaufC);
+            Assert.Equal(7.0, konvektor.KuehlVorlaufFestC);
         }
 
         /// <summary>
