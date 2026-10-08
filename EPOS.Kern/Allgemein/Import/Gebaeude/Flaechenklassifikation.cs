@@ -61,11 +61,23 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class Flaechenklassifikation
     {
-        /// <summary>Die Meldung zu Flächen ohne passendes Bauteil.</summary>
-        internal const string MELDUNG_OHNE_BAUTEIL = "IMP_IFC_PROT_FLAECHE_OHNE_BAUTEIL";
+        /// <summary>Der Name der Meldung zu Flächen ohne passendes Bauteil; davor steht das Meldungspräfix des Formats.</summary>
+        internal const string NAME_OHNE_BAUTEIL = "FLAECHE_OHNE_BAUTEIL";
 
-        /// <summary>Die Meldung zur Gegenprobe über der Abweichungsgrenze.</summary>
-        internal const string MELDUNG_ABWEICHUNG = "IMP_IFC_PROT_FLAECHENGRUPPE_ABWEICHUNG";
+        /// <summary>Der Name der Meldung zur Gegenprobe über der Abweichungsgrenze; davor steht das Meldungspräfix des Formats.</summary>
+        internal const string NAME_ABWEICHUNG = "FLAECHENGRUPPE_ABWEICHUNG";
+
+        /// <summary>Die Meldung zu Flächen ohne passendes Bauteil im IFC-Weg.</summary>
+        internal const string MELDUNG_OHNE_BAUTEIL = IfcImportProfil.MELDUNGSPRAEFIX + NAME_OHNE_BAUTEIL;
+
+        /// <summary>Die Meldung zur Gegenprobe über der Abweichungsgrenze im IFC-Weg.</summary>
+        internal const string MELDUNG_ABWEICHUNG = IfcImportProfil.MELDUNGSPRAEFIX + NAME_ABWEICHUNG;
+
+        /// <summary>Das Meldungspräfix des Formats eines Abbilds: IFC, Projektdatei oder gbXML (Vorgabe).</summary>
+        internal static string Praefix(string format)
+            => string.Equals(format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) ? IfcImportProfil.MELDUNGSPRAEFIX
+             : string.Equals(format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal) ? SqprojImportProfil.MELDUNGSPRAEFIX
+             : GbxmlImportProfil.MELDUNGSPRAEFIX;
 
         /// <summary>Die Toleranz der Orientierung einer Wand gegen die Flächennormale [°].</summary>
         internal const double ORIENTIERUNG_TOLERANZ_GRAD = 15.0;
@@ -112,7 +124,8 @@ namespace WindowsFormsApplication1
         internal static void KlassifizierenAlle(GebaeudeAbbild abbild)
         {
             if (abbild == null) return;
-            foreach (AbbildGebaeude g in abbild.Gebaeude) Klassifizieren(g, abbild.NordwinkelWirksamGrad ?? 0.0);
+            string praefix = Praefix(abbild.Format);
+            foreach (AbbildGebaeude g in abbild.Gebaeude) Klassifizieren(g, abbild.NordwinkelWirksamGrad ?? 0.0, praefix);
         }
 
         /// <summary>
@@ -121,7 +134,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="g">Das Gebäude.</param>
         /// <param name="nordwinkelGrad">Die Drehung, mit der der Leser die Azimute gedreht hat (<see cref="GebaeudeAbbild.NordwinkelGrad"/>).</param>
-        internal static void Klassifizieren(AbbildGebaeude g, double nordwinkelGrad = 0.0)
+        /// <param name="praefix">Das Meldungspräfix des Formats (<see cref="Praefix"/>); ohne Angabe das des IFC-Wegs.</param>
+        internal static void Klassifizieren(AbbildGebaeude g, double nordwinkelGrad = 0.0, string praefix = IfcImportProfil.MELDUNGSPRAEFIX)
         {
             if (g == null || g.Raeume.All(r => r.Koerper == null)) return;
             var zeilen = new List<Flaechengruppenzeile>();
@@ -231,9 +245,9 @@ namespace WindowsFormsApplication1
             g.FlaechengruppenMengeM2 = menge.ToDictionary(x => x.Key, x => Math.Round(x.Value, 6));
 
             if (ohneBauteil > 0)
-                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, MELDUNG_OHNE_BAUTEIL, g.Anzeigename, Ganz(ohneBauteil), Zahl(ohneBauteilM2)));
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, praefix + NAME_OHNE_BAUTEIL, g.Anzeigename, Ganz(ohneBauteil), Zahl(ohneBauteilM2)));
             foreach (Flaechengruppe x in Abweichungen(g))
-                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, MELDUNG_ABWEICHUNG, g.Anzeigename, x.ToString(),
+                g.Meldungen.Add(new PruefMeldung(PruefStufe.Info, praefix + NAME_ABWEICHUNG, g.Anzeigename, x.ToString(),
                     Zahl(g.FlaechengruppenBilanzM2[x]), Zahl(g.FlaechengruppenMengeM2[x])));
         }
 

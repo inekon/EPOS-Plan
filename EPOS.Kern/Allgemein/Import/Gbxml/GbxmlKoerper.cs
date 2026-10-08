@@ -205,29 +205,41 @@ namespace WindowsFormsApplication1
                 (Extrusionsrichtung richtung, double[] zumRaum, bool angenommen) = Richtung(b, dicke);
 
                 double[] n = Polygonnetz.Normiert(Polygonnetz.Newell(b.RandpunkteM));
-                var loecher = new List<IReadOnlyList<double[]>>();
-                var lochkennungen = new List<string>();
-                var mitLoch = new List<(AbbildBauteil Oeffnung, List<double[]> Ring)>();
+                // Öffnungen in die Ebene der Fläche: im Inneren als Loch, am Rand als Kerbe (17.3 Nr. 4).
+                var kandidaten = new List<(AbbildBauteil Oeffnung, List<double[]> Ring)>();
                 foreach (AbbildBauteil o in b.Oeffnungen)
                 {
                     if (o.RandpunkteM == null || o.RandpunkteM.Count < 3) continue;
-                    List<double[]> ring = n == null ? null : Projiziert(o.RandpunkteM, b.RandpunkteM[0], n);
-                    if (ring != null && ring.All(p => ImPolygon(p, b.RandpunkteM, n, TOLERANZ_RAND_M)))
+                    if (n == null)
                     {
-                        loecher.Add(ring);
-                        lochkennungen.Add(o.Kennung);
-                        mitLoch.Add((o, ring));
+                        o.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_OHNE_WAND", o.Kennung, b.Kennung));
+                        Oeffnung(o, null, 0.0, null, 0.0);
+                        continue;
                     }
-                    else
+                    kandidaten.Add((o, Projiziert(o.RandpunkteM, b.RandpunkteM[0], n)));
+                }
+
+                Koerperergebnis e = Koerperbildner.Extrusion(
+                    new Quellflaeche { Kennung = b.Kennung, Aussen = b.RandpunkteM },
+                    kandidaten.Select(k => new Wandoeffnung { Kennung = k.Oeffnung.Kennung, Ring = k.Ring }).ToList(),
+                    dicke, richtung, zumRaum, out List<Aussparung> aussparungen);
+                var mitLoch = new List<(AbbildBauteil Oeffnung, List<double[]> Ring)>();
+                for (int i = 0; i < kandidaten.Count; i++)
+                {
+                    (AbbildBauteil o, List<double[]> ring) = kandidaten[i];
+                    Aussparung a = aussparungen[i];
+                    if (a.Ausgespart) mitLoch.Add((o, ring));
+                    else if (a.Grund == Koerperbildner.GRUND_OEFFNUNG_AUSSERHALB)
                     {
                         o.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_OHNE_WAND", o.Kennung, b.Kennung));
                         Oeffnung(o, null, 0.0, null, 0.0);
                     }
+                    else
+                    {
+                        o.Meldungen.Add(new PruefMeldung(PruefStufe.Info, P + "OEFFNUNG_RAND", o.Kennung, b.Kennung, a.Grund));
+                        mitLoch.Add((o, ring));
+                    }
                 }
-
-                Koerperergebnis e = Koerperbildner.Extrusion(
-                    new Quellflaeche { Kennung = b.Kennung, Aussen = b.RandpunkteM, Loecher = loecher, Lochkennungen = lochkennungen },
-                    dicke, richtung, zumRaum);
                 if (e.Gebildet)
                     Ablegen(b, MitVermerken(e.Koerper, vorgabe, angenommen));
                 else
