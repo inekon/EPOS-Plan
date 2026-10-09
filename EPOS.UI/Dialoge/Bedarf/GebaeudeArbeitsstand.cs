@@ -99,7 +99,7 @@ public sealed class GebaeudeArbeitsstand
     //  Die Zonen eines Projektgebäudes (Gebäudesimulation G3, Welle D2; G6a)
     // =====================================================================
     //
-    // Ein Katalogsatz trägt keine Zonen (Softwarearchitektur 2.9); ein Gebäude im Projekt bis zu
+    // Ein Katalogsatz trägt Zonen (Schritt ZK), bearbeitet werden sie im Projekt; ein Gebäude im Projekt bis zu
     // GebaeudeZonenregeln.Hoechstzahl() (G6a), und der Lauf rechnet sie alle (G6b). Die Zonen gehören
     // zum Arbeitsstand wie die Felder: Übernehmen, Anlegen, Öffnen, Duplizieren, Umordnen und
     // Entfernen ändern nur ihn, geschrieben wird im OK-Weg des Editors (Softwarearchitektur 3.3).
@@ -352,7 +352,7 @@ public sealed class GebaeudeArbeitsstand
     /// Die Herleitungszeile „Rechenweg der Hülle" — in BEIDEN Stellungen (Softwarearchitektur 3.2
     /// Regel 3): Klassenweg über die U-Wert-Gruppen und die Bauweise, oder Bauteilweg mit der Zone
     /// (bzw. der Zahl der Zonen) und der Zahl der Bauteile; für einen Katalogsatz der Klassenweg samt
-    /// dem Satz, dass er keine Zonen trägt.
+    /// dem Satz, dass die Übernahme ins Projekt seine Zonen kopiert.
     /// </summary>
     public string Huellwegzeile(GebaeudeZonenTexte t)
     {

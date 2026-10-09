@@ -14743,13 +14743,13 @@ Alle Eingaben überprüfen!</value>
     <value>Name in der Datenbank:</value>
   </data>
   <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
-    <value>Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen.</value>
+    <value>Übernommen werden alle Gebäudewerte, die Konditionierung des Gebäudes und seine Zonen samt Bauteilen, Luftaustausch und Konditionierung der Zonen.</value>
   </data>
   <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
     <value>Gebäude „{0}“ in die Datenbank übernommen.</value>
   </data>
   <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
-    <value>Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt.</value>
+    <value>Gebäude „{0}“ samt seinen {1} Zonen mit {2} Bauteilen in die Datenbank übernommen.</value>
   </data>
   <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
     <value>Im Projekt ist kein gespeichertes Gebäude gewählt.</value>
@@ -34637,7 +34637,7 @@ Möchten Sie das zulassen?</value>
     <value>Rechenweg der Hülle: Bauteilweg – {0} Zonen, {1} Bauteile. Die U-Wert-Gruppen sind aus den Bauteilen aller Zonen abgeleitet; die Werte des Gebäudes gelten wieder ohne Zone.</value>
   </data>
   <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
-    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Gebäude im Projekt bearbeiten…“ im Gebäudedialog).</value>
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt Zonen; die Übernahme ins Projekt kopiert sie, und das Gebäude im Projekt rechnet dann nach dem Zonenmodell.</value>
   </data>
   <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Gebäude als eine Zone übernehmen</value>
@@ -34646,7 +34646,7 @@ Möchten Sie das zulassen?</value>
     <value>Legt aus den U-Wert-Gruppen eine Zone mit Bauteilen an, auf die Projektfläche hochgerechnet; geschrieben wird mit OK.</value>
   </data>
   <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
-    <value>Nur für ein Gebäude im Projekt: Ein Katalogsatz trägt keine Zonen.</value>
+    <value>Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt („In DB übernehmen“, „Speichern unter“); die Übernahme ins Projekt kopiert sie, bearbeitet werden sie dort.</value>
   </data>
   <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
     <value>Das Gebäude führt schon die Zone „{0}“.</value>
@@ -34793,13 +34793,13 @@ Möchten Sie das zulassen?</value>
     <value>Im Projekt behält das Gebäude den Namen „{0}“; ein anderer Name gilt für „Speichern unter“ (neuer Katalogsatz).</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
-    <value>Der Katalogsatz trägt die Zone „{0}“ mit {1} Bauteilen nicht mit – trotzdem speichern?</value>
+    <value>Der Katalogsatz übernimmt die Zone „{0}“ mit {1} Bauteilen in ihrem gespeicherten Stand – speichern?</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
-    <value>Der Katalogsatz trägt die {0} Zonen mit {1} Bauteilen nicht mit; sie bleiben an der Projektkopie – trotzdem speichern?</value>
+    <value>Der Katalogsatz übernimmt die {0} Zonen mit {1} Bauteilen in ihrem gespeicherten Stand – speichern?</value>
   </data>
   <data name="GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
-    <value>Der neue Katalogsatz trägt keine Zonen; die Zonen ({0}) mit {1} Bauteilen bleiben an der Projektkopie.</value>
+    <value>Der neue Katalogsatz übernimmt die Zonen ({0}) mit {1} Bauteilen in ihrem gespeicherten Stand.</value>
   </data>
   <data name="GEBZ_ZONEN_ZAHL" xml:space="preserve">
     <value>{0} Zonen</value>
@@ -41622,7 +41622,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Lüftung dieses Gebäudes steht als Gesamtangabe: Luftwechselrate {0} 1/h. Eine Vorgabe der Lüftung braucht Infiltration und Nutzerlüftung getrennt. Aufteilen in Infiltration {1} 1/h und Nutzerlüftung {2} 1/h? Die Summe bleibt.</value>
   </data>
   <data name="KOND_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
-    <value>„Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: {0}. Trotzdem anlegen?</value>
+    <value>„Speichern unter“ legt einen Katalogsatz mit der Gebäudeebene an; die Zonen kommen in ihrem gespeicherten Stand mit, darunter: {0}. Anlegen?</value>
   </data>
   <data name="KOND_FRAGE_ZONEN" xml:space="preserve">
     <value>Betroffene Zonen: {0}.</value>

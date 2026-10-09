@@ -204,7 +204,7 @@ public class GebaeudeDialogInDbTests : EposBunitContext
         Assert.True(cut.Instance.InDbOffen);
         Assert.Equal("Haus A (2)", cut.Instance.InDbName);
         Assert.Equal("Haus A (2)", cut.Find(".epos-gebaeude-in-db-name input").GetAttribute("value"));
-        Assert.Contains("Zonen und Bauteile bleiben im Projekt", cut.Find(".epos-gebaeude-in-db-regel").TextContent);
+        Assert.Contains("seine Zonen samt Bauteilen", cut.Find(".epos-gebaeude-in-db-regel").TextContent);
 
         Ok(cut);
 

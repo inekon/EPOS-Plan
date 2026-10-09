@@ -1081,7 +1081,8 @@ namespace WindowsFormsApplication1
             // (keine Konditionierung im Feldsatz) die Kopie der Quelle wie bisher.
             Konditionierungsstand stand = KonditionierungHuelle.Schreibstand(daten, Kalendereigentuemer.Katalogbau, immer: istNeu);
             GebaeudeStammCtrl.Katalogschreibergebnis ergebnis =
-                GebaeudeStammCtrl.KatalogSchreiben(modell, istNeu, bezeichner, stand, istNeu && stand == null ? quelle : null);
+                GebaeudeStammCtrl.KatalogSchreiben(modell, istNeu, bezeichner, stand, istNeu && stand == null ? quelle : null,
+                                                   istNeu ? quelle : null);
             return new GebaeudeKatalogErgebnis(ergebnis.Ok,
                 ergebnis.Ok
                     ? ""

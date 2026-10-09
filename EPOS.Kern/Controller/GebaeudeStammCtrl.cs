@@ -1219,9 +1219,12 @@ namespace WindowsFormsApplication1
         /// Duplizieren), ohne beides nur den Kopf. Scheitert ein Schritt, fällt alles zurück. Das Schloss und
         /// den freien Namen prüft der Aufrufer (die Hülle meldet es mit eigenem Text).
         /// </summary>
+        /// <param name="zonenquelle">Schritt ZK: der Satz, dessen Zonen ein NEUER Satz in ihrem gespeicherten Stand übernimmt
+        /// (Projektgebäude oder Katalogbau, <see cref="Zonenkopie"/>); <c>null</c> ohne Zonen.</param>
         public static Katalogschreibergebnis KatalogSchreiben(GebaeudeModel modell, bool neu, string ursprungsname,
                                                               Konditionierungsstand stand,
-                                                              KonditionierungCtrl.Eigner quelle = null)
+                                                              KonditionierungCtrl.Eigner quelle = null,
+                                                              KonditionierungCtrl.Eigner zonenquelle = null)
         {
             if (modell == null) throw new ArgumentNullException(nameof(modell));
             if (!neu) modell.Gebaeudename = ursprungsname;
@@ -1273,8 +1276,11 @@ namespace WindowsFormsApplication1
                             return Katalogschreibergebnis.Fehler(b.Meldung);
                         }
                         geschrieben = b.Vorgaben + b.Kalender > 0;
+                    }
 
-                        Zonenkopie.Befund z = ZonenDerQuelle(vorgang, quelle, id);
+                    if (neu && id > 0 && (zonenquelle ?? quelle) != null)
+                    {
+                        Zonenkopie.Befund z = ZonenDerQuelle(vorgang, zonenquelle ?? quelle, id);
                         if (!z.Ok)
                         {
                             vorgang.Rollback();

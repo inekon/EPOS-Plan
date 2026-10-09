@@ -1352,7 +1352,7 @@
     private string Flaechentext(ZoneDaten zone, Zonenkennwerte k)
         => _arbeit.Zonen.Count >= 2 && zone.Nutzflaeche is null ? ZonenTexte.FlaecheFehlt : Zahl(k.Nutzflaeche, 2) + " m²";
 
-    /// <summary>Die Zeile unter „Speichern unter" mit Zonen: Sie bleiben an der Projektkopie.</summary>
+    /// <summary>Die Zeile unter „Speichern unter" mit Zonen: Der Katalogsatz übernimmt sie im gespeicherten Stand.</summary>
     private string SpeichernUnterZonenzeile
         => string.Format(CultureInfo.CurrentCulture, ZonenTexte.HinweisSpeichernUnterZonen,
                          _arbeit.Zonen.Count.ToString(CultureInfo.CurrentCulture),
@@ -2120,7 +2120,7 @@
     /// <summary>
     /// „Speichern unter" — dieselben Prüfregeln, angelegt unter dem eingegebenen Namen als
     /// Katalogsatz. Trägt das Gebäude eine Zone, fragt der Dialog VOR dem Schreiben
-    /// (Softwarearchitektur 2.9): Der Katalogsatz trägt keine Zonen. Im Projekt nennt die Frage aus dem
+    /// (Softwarearchitektur 2.9): Der Katalogsatz übernimmt die Zonen im gespeicherten Stand. Im Projekt nennt die Frage aus dem
     /// Befund des Wegs Zonen, Bauteile und die Konditionierung der Zonen zusammen (Entwurf KP2
     /// Festlegung 3); ohne diesen Befund bleibt die Frage der Zonen.
     /// </summary>

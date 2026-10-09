@@ -160,7 +160,7 @@ public class GebaeudeZonenTests : EposBunitContext
         var cut = Aufbauen(weg, GebaeudeKatalogModus.Bearbeiten);
 
         Assert.StartsWith("Rechenweg der Hülle: Klassenweg", cut.Instance.Huellwegzeile);
-        Assert.Contains("Ein Katalogsatz trägt keine Zonen", cut.Instance.Huellwegzeile);
+        Assert.Contains("Ein Katalogsatz trägt Zonen; die Übernahme ins Projekt kopiert sie", cut.Instance.Huellwegzeile);
         Assert.Contains(cut.FindAll(".epos-herleitung"), z => z.TextContent == cut.Instance.Huellwegzeile);
 
         IElement knopf = Knoepfe(cut, KNOPF).Single();
@@ -168,7 +168,7 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Contains("Katalogsatz", knopf.GetAttribute("title"));
 
         knopf.Click();
-        Assert.Contains("Katalogsatz trägt keine Zonen", cut.Instance.Meldung);
+        Assert.Contains("Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt", cut.Instance.Meldung);
         Assert.Empty(weg.Probestaende);
         Assert.False(cut.Instance.UebernahmefrageOffen);
     }
@@ -426,7 +426,7 @@ public class GebaeudeZonenTests : EposBunitContext
 
         Knoepfe(cut, "Speichern unter")[0].Click();
 
-        Assert.Contains("trägt die Zone „Haus A“ mit 3 Bauteilen nicht mit", cut.Find(".epos-rueckfrage-text").TextContent);
+        Assert.Contains("übernimmt die Zone „Haus A“ mit 3 Bauteilen in ihrem gespeicherten Stand", cut.Find(".epos-rueckfrage-text").TextContent);
         Assert.Empty(weg.Gespeichert);
 
         Antwort(cut, "Nein").Click();
@@ -489,8 +489,8 @@ public class GebaeudeZonenTests : EposBunitContext
 
         Assert.Equal(1, befragt);
         Assert.Empty(weg.Gespeichert);
-        Assert.Equal("„Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: " +
-                     "2 Kalender und Zellen von Zonen, 3 Bauteile. Trotzdem anlegen? Betroffene Zonen: Haus A.",
+        Assert.Equal("„Speichern unter“ legt einen Katalogsatz mit der Gebäudeebene an; die Zonen kommen in ihrem gespeicherten " +
+                     "Stand mit, darunter: 2 Kalender und Zellen von Zonen, 3 Bauteile. Anlegen? Betroffene Zonen: Haus A.",
                      cut.Find(".epos-rueckfrage-text").TextContent);
         Assert.Contains("epos-knopf--primaer", Antwort(cut, "Nein").ClassName);
 
