@@ -3563,8 +3563,9 @@ namespace WindowsFormsApplication1
         /// Dieselbe Bauart wie die Solarganglinie: Das Wahlfeld ist die KATALOGWAHL (sie markiert die
         /// Ganglinie, die „In das Projekt übernehmen" aufnimmt); alles Übrige liest der Assistent nur —
         /// Quelle, Raster, Jahresarbeit, Nennleistung der markierten Ganglinie, ob sie dem Projekt
-        /// zugeordnet ist und wie der letzte Import steht. Import, Löschen und Schloss bleiben Handlungen
-        /// des Anwenders, die Zuordnung geht erst mit dem OK an den Wirt.
+        /// zugeordnet ist, ob ihre Projektkopie vom Katalogsatz abweicht (E113) und wie der letzte Import
+        /// steht. Import, Löschen, Schloss und „Aus dem Katalog erneuern…" bleiben Handlungen des Anwenders,
+        /// die Zuordnung geht erst mit dem OK an den Wirt.
         /// </remarks>
         private static KiDialog PvGanglinie()
         {
@@ -3594,6 +3595,9 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("im_projekt", "PvGanglinieKiSicht.ImProjekt",
                                      KiDialogTexte.PvgImProjektName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.PvgImProjektErl, nurLesen: true),
+                    new KiDialogFeld("katalogabweichung", "PvGanglinieKiSicht.KatalogAbweichung",
+                                     KiDialogTexte.PvgAbweichungName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgAbweichungErl, leerErlaubt: true, nurLesen: true),
                     new KiDialogFeld("importzustand", "PvGanglinieKiSicht.Importzustand",
                                      KiDialogTexte.PvgImportName, KiParameterTyp.Text,
                                      KiDialogTexte.PvgImportErl, leerErlaubt: true, nurLesen: true),

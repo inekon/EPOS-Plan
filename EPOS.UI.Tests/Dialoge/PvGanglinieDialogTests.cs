@@ -386,4 +386,120 @@ public class PvGanglinieDialogTests : EposBunitContext
             Katalogwege.PvGanglinienDatei = vorher;
         }
     }
+
+    // =================================================================================
+    // Projektkopie und Katalog (E113)
+    // =================================================================================
+
+    /// <summary>Der Dialog mit den Wegen „Abweichung" und „Erneuern"; zwei Projektzeilen, nur die erste weicht ab.</summary>
+    private IRenderedComponent<PvGanglinieDialog> MitErneuerung(Dictionary<string, string> abweichung,
+                                                                 Func<string, Task<PvGanglinieErneuerung>> erneuern)
+        => Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31), Zeile(2, "PV Dach West", 32) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.KatalogAbweichung, n => abweichung.TryGetValue(n, out string? t) ? t : "")
+            .Add(x => x.AusKatalogErneuern, erneuern));
+
+    private static void ProjektzeileWaehlen(IRenderedComponent<PvGanglinieDialog> cut, int index)
+        => cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[index].Click();
+
+    /// <summary>
+    /// Die abweichende Projektzeile trägt das Zeichen samt Satz; markiert, zeigt der Detailblock den Satz und den Knopf
+    /// „Aus dem Katalog erneuern…" — eine gleiche Zeile trägt beides nicht. Der Assistent liest die Abweichung mit.
+    /// </summary>
+    [Fact]
+    public void Die_Abweichung_steht_an_der_Projektzeile_und_im_Detailblock()
+    {
+        var abw = new Dictionary<string, string> { ["PV Dach Ost"] = "weicht vom Katalog ab: Nennleistung, Reihe" };
+        var cut = MitErneuerung(abw, _ => throw new InvalidOperationException("darf nicht schreiben"));
+
+        IReadOnlyList<IElement> zeichen = cut.FindAll(".epos-pvg-abweichung");
+        Assert.Single(zeichen);
+        Assert.Equal("weicht vom Katalog ab: Nennleistung, Reihe", zeichen[0].GetAttribute("title"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+
+        ProjektzeileWaehlen(cut, 1);
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichungszeile"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+        Assert.Equal("", KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Lesen());
+
+        ProjektzeileWaehlen(cut, 0);
+        Assert.Contains("weicht vom Katalog ab: Nennleistung, Reihe", cut.Find(".epos-pvg-abweichungszeile").TextContent);
+        Assert.Equal(Resource.PVG_BTN_ERNEUERN, cut.Find(".epos-pvg-erneuernknopf").TextContent.Trim());
+        Assert.Equal("weicht vom Katalog ab: Nennleistung, Reihe",
+                     KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Lesen());
+        Assert.False(KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Setzbar);
+    }
+
+    /// <summary>
+    /// „Aus dem Katalog erneuern…" fragt zurück (Name, Abweichung, Hinweis auf die nächste Simulation); Abbrechen
+    /// schreibt nichts, ein Fehlschlag hält die Rückfrage mit dem Grund offen, OK erneuert, das Zeichen fällt und die
+    /// Bestätigung steht im Dialog.
+    /// </summary>
+    [Fact]
+    public void Erneuern_fragt_zurueck_bricht_ab_meldet_den_Grund_und_erneuert()
+    {
+        var abw = new Dictionary<string, string> { ["PV Dach Ost"] = "weicht vom Katalog ab: Reihe" };
+        var gerufen = new List<string>();
+        bool scheitern = true;
+        var cut = MitErneuerung(abw, name =>
+        {
+            gerufen.Add(name);
+            if (scheitern) return Task.FromResult(new PvGanglinieErneuerung(false, "Schreibfehler"));
+            abw.Remove(name);
+            return Task.FromResult(new PvGanglinieErneuerung(true, "erneuert: " + name));
+        });
+
+        ProjektzeileWaehlen(cut, 0);
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        Assert.True(cut.Instance.ErneuernOffen);
+        string frage = cut.Find(".epos-pvg-erneuern").TextContent;
+        Assert.Contains("PV Dach Ost", frage);
+        Assert.Contains("weicht vom Katalog ab: Reihe", frage);
+        Assert.Contains(Resource.PVG_ERNEUERN_SIMULATION, frage);
+
+        // Abbrechen: nichts geschrieben, die Rückfrage ist zu, die Abweichung bleibt.
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(cut.Instance.ErneuernOffen);
+        Assert.Empty(gerufen);
+        Assert.Single(cut.FindAll(".epos-pvg-abweichung"));
+
+        // Fehlschlag: die Rückfrage bleibt mit dem Grund offen.
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(cut.Instance.ErneuernOffen);
+        Assert.Contains("Schreibfehler", cut.Find(".epos-pvg-erneuern").TextContent);
+
+        // OK: erneuert, das Zeichen fällt, die Bestätigung steht.
+        scheitern = false;
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.False(cut.Instance.ErneuernOffen);
+        Assert.Equal(new[] { "PV Dach Ost", "PV Dach Ost" }, gerufen);
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichung"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+        Assert.Equal("erneuert: PV Dach Ost", cut.Find(".epos-pvg-erneuernstatus").TextContent);
+    }
+
+    /// <summary>Esc schließt bei offener Rückfrage nicht den Dialog (Blätter zuerst).</summary>
+    [Fact]
+    public void Esc_schliesst_bei_offener_Rueckfrage_nicht_den_Dialog()
+    {
+        var abw = new Dictionary<string, string> { ["PV Dach Ost"] = "weicht vom Katalog ab: Raster" };
+        bool? geschlossen = null;
+        var cut = Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.KatalogAbweichung, n => abw.TryGetValue(n, out string? t) ? t : "")
+            .Add(x => x.AusKatalogErneuern, _ => Task.FromResult(new PvGanglinieErneuerung(true, "")))
+            .Add(x => x.Geschlossen, b => geschlossen = b));
+
+        ProjektzeileWaehlen(cut, 0);
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        cut.Find(".epos-dialog").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(geschlossen);
+    }
 }

@@ -73,6 +73,45 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Der Satz „weicht vom Katalog ab: Nennleistung, Reihe" zur Projektkopie eines Namens (Kern:
+        /// <see cref="PvGanglinieStammCtrl.AbweichungZumKatalog"/>); "" bei Gleichheit, ohne Kopie oder ohne Katalogsatz.
+        /// </summary>
+        internal static string AbweichungText(int projektId, string bezeichner)
+        {
+            PvKatalogabweichung a = PvGanglinieStammCtrl.AbweichungZumKatalog(projektId, bezeichner);
+            if (!a.Weicht) return "";
+            var teile = new List<string>();
+            if (a.Nennleistung) teile.Add(MyResource.Resource.PVG_ABW_NENNLEISTUNG);
+            if (a.Raster) teile.Add(MyResource.Resource.PVG_ABW_RASTER);
+            if (a.Jahressumme) teile.Add(MyResource.Resource.PVG_ABW_JAHRESSUMME);
+            if (a.Reihe) teile.Add(MyResource.Resource.PVG_ABW_REIHE);
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 MyResource.Resource.PVG_ABW_TEXT, string.Join(", ", teile));
+        }
+
+        /// <summary>
+        /// Erneuert die Projektkopie eines Namens aus dem Katalog (Kern: <see cref="PvGanglinieStammCtrl.AusKatalogErneuern"/>)
+        /// und übersetzt den Ausgang in den Satz des Dialogs.
+        /// </summary>
+        internal static PvGanglinieErneuerung Erneuern(int projektId, string bezeichner)
+        {
+            switch (PvGanglinieStammCtrl.AusKatalogErneuern(projektId, bezeichner))
+            {
+                case PvKatalogerneuerung.Erneuert:
+                    return new PvGanglinieErneuerung(true, string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                                         MyResource.Resource.PVG_MSG_ERNEUERT, bezeichner));
+                case PvKatalogerneuerung.KeinKatalogsatz:
+                    return new PvGanglinieErneuerung(false, MyResource.Resource.PVG_MSG_ERNEUERN_KEIN_KATALOG);
+                case PvKatalogerneuerung.KeineProjektkopie:
+                    return new PvGanglinieErneuerung(false, MyResource.Resource.PVG_MSG_ERNEUERN_KEINE_KOPIE);
+                case PvKatalogerneuerung.Gleich:
+                    return new PvGanglinieErneuerung(false, MyResource.Resource.PVG_MSG_ERNEUERN_GLEICH);
+                default:
+                    return new PvGanglinieErneuerung(false, MyResource.Resource.PVG_MSG_SCHREIBFEHLER);
+            }
+        }
+
         /// <summary>Die Spalten der Liste — mit oder ohne „im Projekt verwendet".</summary>
         internal static Katalogfilterprofil Profil(bool mitVerwendung)
         {
@@ -140,6 +179,10 @@ namespace WindowsFormsApplication1
                     zuModell[schluessel] = z;
                     return new ErzeugerZeile { Schluessel = schluessel, Bezeichner = bez, GeraetId = stammId };
                 }),
+                // Projektkopie und Katalog (E113): die Abweichung je Name und das Erneuern der Kopie.
+                ["KatalogAbweichung"] = new Func<string, string>(n => AbweichungText(projektId, n)),
+                ["AusKatalogErneuern"] = new Func<string, Task<PvGanglinieErneuerung>>(n =>
+                    Task.FromResult(Erneuern(projektId, n))),
                 ["Entfernen"] = new Action<ErzeugerZeile>(zeile =>
                 {
                     if (!zuModell.TryGetValue(zeile.Schluessel, out PvGanglinieZuordnung z)) return;
