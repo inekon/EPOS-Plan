@@ -166,11 +166,12 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Stufenhinweis der Waermepumpe ist mit W13-E-2 ins PROFIL gewandert
-        /// (vorher stand er als Sonderfall im Markup). Er ist unveraendert, und er
-        /// ist der EINZIGE der vier.
+        /// (vorher stand er als Sonderfall im Markup). Er ist unveraendert. Einen
+        /// Hinweis tragen ausser ihm nur der Stromspeicher und die Kaeltemaschine
+        /// (Lizenzsatz der Typkennfelder, KM1).
         /// </summary>
         [Fact]
-        public void NurDieWaermepumpeUndDerStromspeicherFuehrenEinenHinweis()
+        public void NurWaermepumpeStromspeicherUndKaeltemaschineFuehrenEinenHinweis()
         {
             Assert.Equal("* 0=modulierend",
                 KatalogImportProfil.Finde(KatalogImportArt.Waermepumpe, s =>
@@ -180,7 +181,7 @@ namespace EPOS.Kern.Tests
                 .Where(a => KatalogImportProfil.Finde(a).Hinweis.Length > 0)
                 .Select(a => a.ToString()).ToArray();
 
-            Assert.Equal(new[] { "Waermepumpe", "Stromspeicher" }, mitHinweis);
+            Assert.Equal(new[] { "Waermepumpe", "Stromspeicher", "Kaeltemaschine" }, mitHinweis);
         }
 
         // ==================================================================
