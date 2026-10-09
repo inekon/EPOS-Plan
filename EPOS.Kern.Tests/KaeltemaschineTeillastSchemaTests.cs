@@ -107,10 +107,12 @@ namespace EPOS.Kern.Tests
             Assert.True(KaeltemaschineTeillastSchema.ErgebnisspaltenVorhanden());
             Assert.True(KaeltemaschineTeillastSchema.EingabespaltenVorhanden("Tab_Kaeltemaschine_STAMM"));
             Assert.True(KaeltemaschineTeillastSchema.EingabespaltenVorhanden("Tab_Kaeltemaschine"));
-            // DML allein an den ausgelieferten Typkennfeldern: Projektkopien, Ergebnis und alle übrigen Katalogsätze leer.
+            // DML allein an den ausgelieferten Typkennfeldern: Projektkopien, Ergebnis und alle übrigen Katalogsätze leer -
+            // ausgenommen die gesäte Projektkopie des Referenzprojekts 1063 (KaeltemaschineTeillastReferenzprojektWacheTests).
             foreach ((string tabelle, string spalte, string _) in KaeltemaschineTeillastSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL" +
-                                      (tabelle == KaeltemaschineTeillastSchema.TAB_STAMM ? " AND " + NICHT_TYPKENNFELD : "")));
+                                      (tabelle == KaeltemaschineTeillastSchema.TAB_STAMM ? " AND " + NICHT_TYPKENNFELD : "") +
+                                      (tabelle == KaeltemaschineTeillastSchema.TAB_PROJEKT ? " AND ID_Projekt <> 1063" : "")));
             // Die 34 Typkennfelder: Verdichterregelung überall, Weg an allen 34 (31 Kurven, 3 linear), C_d und Randweg leer.
             Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Verdichterregelung IS NOT NULL"));
             Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));

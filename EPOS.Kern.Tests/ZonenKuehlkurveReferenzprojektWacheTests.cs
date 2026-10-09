@@ -100,7 +100,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(W.Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", VORLAGE),
                          W.Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", PROJEKT));
             Assert.Equal(0, Zonen(VORLAGE).Rows.Count);
-            Assert.Equal(0L, W.Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID > ?", PROJEKT));
+            // Nach 1062 allein das Referenzprojekt Kältemaschine Teillast 1063 (KM3).
+            Assert.Equal(0L, W.Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID > ? AND ID <> 1063", PROJEKT));
         }
 
         [Fact]
