@@ -92930,6 +92930,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung bearbeiten… ähnelt.
+        /// </summary>
+        public static string PVG_BTN_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVG_BTN_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ist dem Projekt eine PV-Ganglinie zugeordnet, ersetzt sie die Modulrechnung: Die Werte sind die AC-Leistung der Anlage in kW, je Stunde oder je Viertelstunde. ähnelt.
         /// </summary>
         public static string PVG_HINWEIS_WEICHE {
@@ -93020,6 +93029,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung von „{0}“ gespeichert. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_NENN_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("PVG_MSG_NENN_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese PV-Ganglinie ist ein Auslieferungssatz; ihre Nennleistung kann erst nach dem Aufheben des Schlosses bearbeitet werden. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_NENN_SCHREIBGESCHUETZT {
+            get {
+                return ResourceManager.GetString("PVG_MSG_NENN_SCHREIBGESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese PV-Ganglinie steht nicht mehr im Katalog. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_NENN_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("PVG_MSG_NENN_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung muss größer als 0 sein; leer heißt „nicht gepflegt“. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_NENN_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("PVG_MSG_NENN_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Ganglinie konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string PVG_MSG_SCHREIBFEHLER {
@@ -93047,11 +93092,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = nicht gepflegt; der Lauf rechnet dann mit der Spitze der Reihe. ähnelt.
+        /// </summary>
+        public static string PVG_NENN_LEER_HINWEIS {
+            get {
+                return ResourceManager.GetString("PVG_NENN_LEER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nicht gepflegt – der Lauf nimmt die Spitze der Reihe ähnelt.
         /// </summary>
         public static string PVG_NENN_NICHT_GEPFLEGT {
             get {
                 return ResourceManager.GetString("PVG_NENN_NICHT_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie. ähnelt.
+        /// </summary>
+        public static string PVG_NENN_PROJEKTKOPIEN {
+            get {
+                return ResourceManager.GetString("PVG_NENN_PROJEKTKOPIEN", resourceCulture);
             }
         }
         
@@ -93097,6 +93160,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVG_TITEL_KATALOG {
             get {
                 return ResourceManager.GetString("PVG_TITEL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung bearbeiten ähnelt.
+        /// </summary>
+        public static string PVG_TITEL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVG_TITEL_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kenndaten Photovoltaik ähnelt.
+        /// </summary>
+        public static string PVG_XLS_KENNDATEN {
+            get {
+                return ResourceManager.GetString("PVG_XLS_KENNDATEN", resourceCulture);
             }
         }
         

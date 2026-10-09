@@ -442,7 +442,52 @@ namespace WindowsFormsApplication1
                 r++;
             }
 
+            // PVG: rechnet ein Stand seine Photovoltaik ueber eine PV-Ganglinie, folgen die Kenndaten der
+            // Photovoltaik je Stand - dieselbe Tabelle wie im Word-Bericht.
+            r = PvKenndatenBlock(ws, r + 1, daten);
+
             ws.Columns().AdjustToContents(1, 60);
+        }
+
+        /// <summary>
+        /// <b>Die Kenndaten der Photovoltaik je Stand</b> auf der Übersicht — nur, wenn ein Stand über eine PV-Ganglinie
+        /// rechnet: dieselbe Tabelle wie im Word-Bericht (<see cref="Berichtstabellen.Kenndaten"/>, Gewerk
+        /// „Photovoltaik"), vorn die Quellzeile („Modulmodell" bzw. „Ganglinie ‚Name‘ (…), Nennleistung … kWp",
+        /// <see cref="PvGanglinieAusweis"/>), die Merkmale des Modulmodells beim Ganglinienstand als „entfällt (Ganglinie)".
+        /// Ausweis, keine Kennzahl. Gibt die Zeile hinter dem Block zurück; ohne Ganglinie <paramref name="r"/> unverändert.
+        /// </summary>
+        internal static int PvKenndatenBlock(IXLWorksheet ws, int r, BerichtsDaten daten)
+        {
+            if (daten?.Varianten == null || !daten.Varianten.Any(v => v.Details?.PvGanglinie != null)) return r;
+            Berichtstabelle t = Berichtstabellen.Kenndaten(daten, "Photovoltaik", BerichtTexte.Englisch, BerichtTexte.Kultur);
+            if (t == null || t.IstLeer || t.Kopf == null) return r;
+
+            string titel;
+            try { titel = MyResource.Resource.ResourceManager.GetString("PVG_XLS_KENNDATEN", BerichtTexte.Kultur); }
+            catch { titel = null; }
+            ws.Cell(r, 1).Value = titel ?? "Kenndaten Photovoltaik";
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            r++;
+
+            Action<Tabellenzeile, bool> schreibe = (zeile, kopf) =>
+            {
+                for (int i = 0; i < zeile.Zellen.Count; i++)
+                {
+                    Tabellenzelle z = zeile.Zellen[i];
+                    IXLCell c = ws.Cell(r, 1 + i);
+                    c.Value = z.Text ?? "";
+                    if (i > 0)
+                        c.Style.Alignment.Horizontal = z.Ausrichtung == Tabellenausrichtung.Rechts ? XLAlignmentHorizontalValues.Right
+                            : z.Ausrichtung == Tabellenausrichtung.Mitte ? XLAlignmentHorizontalValues.Center
+                            : XLAlignmentHorizontalValues.Left;
+                    if (!kopf && i > 0 && z.Hinterlegung == Tabellenhinterlegung.Stamm) c.Style.Fill.BackgroundColor = STAMM;
+                }
+                if (kopf) KopfZeile(ws, r, zeile.Zellen.Count);
+                r++;
+            };
+            schreibe(t.Kopf, true);
+            foreach (Tabellenzeile zeile in t.Zeilen) schreibe(zeile, false);
+            return r + 1;
         }
 
         // ------------------------------------------------------------- Vergleich

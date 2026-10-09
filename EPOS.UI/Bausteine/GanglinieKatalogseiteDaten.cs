@@ -68,6 +68,20 @@ public sealed class GanglinienKatalogwege
     /// </summary>
     public Func<string, double?, IProgress<ImportFortschritt>, Task<GanglinienKatalogimport>>? EinlesenMitNennleistung { get; init; }
 
+    /// <summary>
+    /// <b>Die Nennleistung eines Katalogsatzes nachträglich bearbeiten</b> (nur die PV-Ganglinie): Ist der Weg
+    /// gesetzt, trägt die Leiste „Nennleistung bearbeiten…"; er schreibt den Wert [kWp] (<c>null</c> = nicht
+    /// gepflegt) an den Katalogsatz des Namens — sofort, wie Löschen und Schloss. Ein Auslieferungssatz bleibt
+    /// gesperrt (die Sperre steht im Kern).
+    /// </summary>
+    public Func<string, double?, Task<GanglinienNennleistungsschrieb>>? NennleistungSchreiben { get; init; }
+
+    /// <summary>
+    /// Der Prüfhinweis zu einer Nennleistung [kWp] für einen Katalogsatz (Name) — derselbe Satz wie beim Import,
+    /// gegen die Spitze der Reihe im Raster der Datei; "" ohne Hinweis.
+    /// </summary>
+    public Func<string, double?, string>? NennleistungPruefenFuer { get; init; }
+
     /// <summary>Der Ganglinienordner als Anzeigetext; leer = keine Zeile.</summary>
     public string Ordner { get; init; } = "";
 
@@ -84,6 +98,12 @@ public sealed class GanglinienKatalogwege
 /// Wert im Dateikopf stand oder die Spitze <paramref name="SpitzeKw"/> der Reihe ist.
 /// </summary>
 public sealed record GanglinienNennleistungsvorschlag(double? VorschlagKwp, bool AusDateikopf, double SpitzeKw);
+
+/// <summary>Wie das Schreiben einer Nennleistung ausgegangen ist (<see cref="GanglinienKatalogwege.NennleistungSchreiben"/>).</summary>
+/// <param name="Erfolgreich">Trägt der Katalogsatz den Wert?</param>
+/// <param name="Meldung">Der Grund eines Misserfolgs, sonst die Statuszeile.</param>
+/// <param name="Hinweis">Der Prüfhinweis (Spitze über Nennleistung × 1,1); leer ohne.</param>
+public sealed record GanglinienNennleistungsschrieb(bool Erfolgreich, string Meldung, string Hinweis);
 
 /// <summary>Wie ein Import auf der Katalogseite ausgegangen ist.</summary>
 /// <param name="Erfolgreich">Steht der neue Satz im Katalog?</param>
@@ -165,4 +185,25 @@ public sealed class GanglinienKatalogtexte
 
     /// <summary>Herkunft der Vorbelegung: Spitze der Reihe, {0} = kW — <c>PVG_IMP_NENN_AUS_SPITZE</c>.</summary>
     public string NennleistungAusSpitze { get; set; } = Resource.PVG_IMP_NENN_AUS_SPITZE;
+
+    /// <summary>Der Knopf der Leiste — <c>PVG_BTN_NENNLEISTUNG</c>.</summary>
+    public string NennleistungKnopf { get; set; } = Resource.PVG_BTN_NENNLEISTUNG;
+
+    /// <summary>Der Titel der Überlagerung — <c>PVG_TITEL_NENNLEISTUNG</c>.</summary>
+    public string NennleistungTitel { get; set; } = Resource.PVG_TITEL_NENNLEISTUNG;
+
+    /// <summary>Was ein leeres Feld heißt — <c>PVG_NENN_LEER_HINWEIS</c>.</summary>
+    public string NennleistungLeer { get; set; } = Resource.PVG_NENN_LEER_HINWEIS;
+
+    /// <summary>Katalogsatz, nicht Projektkopie — <c>PVG_NENN_PROJEKTKOPIEN</c>.</summary>
+    public string NennleistungProjektkopien { get; set; } = Resource.PVG_NENN_PROJEKTKOPIEN;
+
+    /// <summary>Sperrgrund am Auslieferungssatz — <c>PVG_MSG_NENN_SCHREIBGESCHUETZT</c>.</summary>
+    public string NennleistungGesperrt { get; set; } = Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT;
+
+    /// <summary>Der Name des Satzes in der Überlagerung — <c>HZK_LBL_NAME</c>.</summary>
+    public string LabelName { get; set; } = Resource.HZK_LBL_NAME;
+
+    /// <summary>OK der Überlagerung — <c>ALLG_BTN_OK</c>.</summary>
+    public string OkKnopf { get; set; } = Resource.ALLG_BTN_OK;
 }

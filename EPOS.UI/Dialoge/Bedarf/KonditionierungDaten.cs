@@ -548,6 +548,7 @@ public sealed class KonditionierungDaten
         for (int i = 0; i < _spalten.Length; i++) k._spalten[i] = _spalten[i].Kopie();
         k.Gemeinsam = Gemeinsam.Select(p => p with { Periode = p.Periode.Kopie() }).ToList();
         k.Ferienliste = Ferienliste.ToList();
+        k.Feriennamen = Feriennamen.ToList();
         k.Wochen = Wochen.Select(w => w with { Werte = (double[])w.Werte.Clone() }).ToList();
         return k;
     }
@@ -560,6 +561,12 @@ public sealed class KonditionierungDaten
 
     /// <summary>Die Ferienzeiträume ab dem fünften (Ferienliste des gemeinsamen Kalenders, nur am Gebäude).</summary>
     public List<KalenderFerienzeile> Ferienliste { get; set; } = new();
+
+    /// <summary>
+    /// Die Namen der Ferienzeiträume 1 bis 4 (Bezeichner ihrer Spiegelperioden, nur am Gebäude); ein Eintrag
+    /// <c>null</c> heißt „unbekannt" und lässt den gespeicherten Namen stehen.
+    /// </summary>
+    public List<string?> Feriennamen { get; set; } = new();
 
     /// <summary>Die benannten Wochen der Ebene — in den Einheiten des Kerns.</summary>
     public List<KalenderBenannteWoche> Wochen { get; set; } = new();

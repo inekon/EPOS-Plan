@@ -403,6 +403,11 @@ namespace WindowsFormsApplication1
                     });
             }
 
+            // PVG: die Quelle der Photovoltaik als eigene Zeile - Modulmodell oder Ganglinie (Name, Raster,
+            // Nennleistung), sobald einer der beiden Stände ueber eine Ganglinie rechnet.
+            Abweichung quelle = PvQuelleVergleichen(stamm, variante);
+            if (quelle != null) liste.Add(quelle);
+
             // Stufe 2/3: Merkmalsvergleich über die deklarative Feldliste.
             // Artefakt-Guard (Nutzerbefund 28.08.2026): Der Anlage-Block vergleicht
             // die jeweils erste ECHTE Anlagenzeile — führen Stamm und Variante dort
@@ -427,6 +432,41 @@ namespace WindowsFormsApplication1
             }
 
             return liste;
+        }
+
+        /// <summary>Der Schlüssel der Zeile „Quelle" der Photovoltaik (Modulmodell oder PV-Ganglinie).</summary>
+        public const string SCHLUESSEL_PV_QUELLE = "PV_QUELLE";
+
+        /// <summary>
+        /// Die Quelle der Photovoltaik eines Stands als Text: der Ausweis der rechnenden Ganglinie
+        /// (<see cref="PvGanglinieAusweis.Text"/> — Name, Raster, Nennleistung), sonst „Modulmodell", wenn der Stand
+        /// Photovoltaik führt; <c>null</c> ohne Photovoltaik.
+        /// </summary>
+        public static string PvQuelle(ProjektDetails d)
+        {
+            if (d == null) return null;
+            if (d.PvGanglinie != null) return d.PvGanglinie.Text(Zahlkultur);
+            return Anzahl(d, "Photovoltaik") > 0 ? Text("PVG_AUSWEIS_MODULMODELL", "Modulmodell") : null;
+        }
+
+        /// <summary>
+        /// <b>Die Abweichung in der Quelle der Photovoltaik</b> (Modulmodell ↔ Ganglinie, eine andere Ganglinie, ein
+        /// anderes Raster oder eine andere Nennleistung) — nur, wenn mindestens einer der beiden Stände über eine
+        /// Ganglinie rechnet; Modulmodell gegen keine Photovoltaik meldet schon die Bestandszeile. Ein Stand ohne
+        /// Photovoltaik steht als „nicht vorhanden". <c>null</c> ohne Unterschied.
+        /// </summary>
+        public static Abweichung PvQuelleVergleichen(ProjektDetails stamm, ProjektDetails variante)
+        {
+            if (stamm == null || variante == null) return null;
+            if (stamm.PvGanglinie == null && variante.PvGanglinie == null) return null;
+            string qS = PvQuelle(stamm) ?? BestandFehlt;
+            string qV = PvQuelle(variante) ?? BestandFehlt;
+            if (string.Equals(qS, qV, StringComparison.Ordinal)) return null;
+            return new Abweichung
+            {
+                Gewerk = "Photovoltaik", Merkmal = Text("PVG_AUSWEIS_MERKMAL_QUELLE", "Quelle"),
+                Schluessel = SCHLUESSEL_PV_QUELLE, WertStamm = qS, WertVariante = qV
+            };
         }
 
         /// <summary>

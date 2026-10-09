@@ -50212,5 +50212,32 @@ Chart</value>
   <data name="KOND_LBL_KALB_LEGENDE_GEMEINSAM" xml:space="preserve">
     <value>Zeile für mehrere Größen</value>
   </data>
+  <data name="PVG_BTN_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung bearbeiten…</value>
+  </data>
+  <data name="PVG_TITEL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung bearbeiten</value>
+  </data>
+  <data name="PVG_NENN_LEER_HINWEIS" xml:space="preserve">
+    <value>Leer = nicht gepflegt; der Lauf rechnet dann mit der Spitze der Reihe.</value>
+  </data>
+  <data name="PVG_NENN_PROJEKTKOPIEN" xml:space="preserve">
+    <value>Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie.</value>
+  </data>
+  <data name="PVG_MSG_NENN_GESPEICHERT" xml:space="preserve">
+    <value>Nennleistung von „{0}“ gespeichert.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNGUELTIG" xml:space="preserve">
+    <value>Die Nennleistung muss größer als 0 sein; leer heißt „nicht gepflegt“.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNBEKANNT" xml:space="preserve">
+    <value>Diese PV-Ganglinie steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="PVG_MSG_NENN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Diese PV-Ganglinie ist ein Auslieferungssatz; ihre Nennleistung kann erst nach dem Aufheben des Schlosses bearbeitet werden.</value>
+  </data>
+  <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten Photovoltaik</value>
+  </data>
 </root>
 

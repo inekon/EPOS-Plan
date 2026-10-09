@@ -88,8 +88,8 @@
                             {
                                 int n = i;
                                 <div class="epos-kalb-ferienzeile" data-ferien="@(n + 1)" @key="n">
-                                    @* Die ersten vier Zeitraeume stehen in den Gebaeudespalten ohne Namen: ihre Bezeichnung ist nur lesbar. *@
-                                    <Textfeld Bezeichnung="@Texte.LabelKalbFerienName" Wert="@_ferien[n].Name" NurLesen="@(n < 4)"
+                                    @* Jeder Zeitraum traegt seinen Namen; die ersten vier im Bezeichner ihrer Spiegelperiode. *@
+                                    <Textfeld Bezeichnung="@Texte.LabelKalbFerienName" Wert="@_ferien[n].Name"
                                               WertChanged="t => FerienNameSetzen(n, t)" />
                                     <Datumsfeld Bezeichnung="@Texte.LabelKalbVon" Wert="@_ferien[n].Von" Min="@ErsterTag" Max="@LetzterTag"
                                                 WertChanged="d => FerienFeld(n, d, true)" />

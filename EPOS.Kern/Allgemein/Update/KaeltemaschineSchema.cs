@@ -263,11 +263,15 @@ namespace WindowsFormsApplication1
             Q(SPALTE_HILFSSTROM_RUECKKUEHLUNG) + ", " + Q(SPALTE_KALTWASSER_VORLAUF_MIN) + ", \"ReadOnly\") " +
             "SELECT ?, ?, ?, ?, ?, ?, ?, ?, 1 WHERE NOT EXISTS (SELECT 1 FROM " + Q(TAB_STAMM) + " WHERE \"Bezeichner\" = ?)";
 
+        // Ohne INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand auch bei ignoriertem Einfügen hoch;
+        // NOT EXISTS über den UNIQUE-Schlüssel (Gerät, Rückkühl-, Kaltwassertemperatur) lässt ihn stehen.
         internal static readonly string SQL_SAAT_PUNKT =
-            "INSERT OR IGNORE INTO " + Q(TAB_KENNDATEN_STAMM) + " (" + Q(SPALTE_ID_KAELTEMASCHINE) + ", " +
+            "INSERT INTO " + Q(TAB_KENNDATEN_STAMM) + " (" + Q(SPALTE_ID_KAELTEMASCHINE) + ", " +
             Q(SPALTE_RUECKKUEHLTEMPERATUR) + ", " + Q(SPALTE_KALTWASSERTEMPERATUR) + ", " + Q(SPALTE_EER) + ", " +
             Q(SPALTE_KAELTELEISTUNG) + ", \"ReadOnly\") " +
-            "SELECT ID, ?, ?, ?, ?, 1 FROM " + Q(TAB_STAMM) + " WHERE \"Bezeichner\" = ? AND \"ReadOnly\" = 1";
+            "SELECT s.ID, ?, ?, ?, ?, 1 FROM " + Q(TAB_STAMM) + " s WHERE s.\"Bezeichner\" = ? AND s.\"ReadOnly\" = 1 " +
+            "AND NOT EXISTS (SELECT 1 FROM " + Q(TAB_KENNDATEN_STAMM) + " k WHERE k." + Q(SPALTE_ID_KAELTEMASCHINE) + " = s.ID " +
+            "AND k." + Q(SPALTE_RUECKKUEHLTEMPERATUR) + " = ? AND k." + Q(SPALTE_KALTWASSERTEMPERATUR) + " = ?)";
 
         /// <summary>Legt die Beispielgeräte samt Kennlinie an, die noch fehlen; liefert die Zahl neuer Zeilen.</summary>
         public static int Saat(IList<string> bericht)
@@ -289,7 +293,8 @@ namespace WindowsFormsApplication1
                             p += v.Ausfuehren(SQL_SAAT_PUNKT,
                                 new DbParam("?", k.Rueckkuehl), new DbParam("?", k.Kaltwasser),
                                 new DbParam("?", k.Eer), new DbParam("?", k.Leistung),
-                                new DbParam("?", b.Bezeichner));
+                                new DbParam("?", b.Bezeichner),
+                                new DbParam("?", k.Rueckkuehl), new DbParam("?", k.Kaltwasser));
                     }
                     v.Commit();
                 }

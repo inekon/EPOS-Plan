@@ -1278,12 +1278,17 @@ namespace WindowsFormsApplication1
                     }
                     else
                     {
+                        // Die Namen der Ferienzeitraeume 1 bis 4 ueberstehen das Schreiben der Ferienspalten (Spiegel-Trigger).
+                        var schluessel = modell.ID > 0
+                            ? Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Katalogbau(modell.ID)) : null;
+                        string[] feriennamen = Kalendergemeinschaft.FeriennamenLesen(schluessel);
                         if (!ctrl.Overwrite(modell))
                         {
                             vorgang.Rollback();
                             return Katalogschreibergebnis.Fehler("");
                         }
                         id = ctrl.Lies(modell.Gebaeudename)?.ID ?? 0;
+                        if (schluessel != null && id == modell.ID) Kalendergemeinschaft.FeriennamenSchreiben(vorgang, schluessel, feriennamen);
                     }
 
                     bool geschrieben = false;
@@ -1344,11 +1349,16 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
+                    // Die Namen der Ferienzeitraeume 1 bis 4 vor dem Schreiben der Ferienspalten merken - der Spiegel-Trigger
+                    // legt ihre Perioden bei einer Datumsaenderung neu als „Ferien k" an.
+                    var schluessel = Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
+                    string[] feriennamen = Kalendergemeinschaft.FeriennamenLesen(schluessel);
                     if (!ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
                     {
                         vorgang.Rollback();
                         return KonditionierungCtrl.Ergebnis.Fehler(MyResource.Resource.GEBZ_MSG_GEBAEUDE);
                     }
+                    Kalendergemeinschaft.FeriennamenSchreiben(vorgang, schluessel, feriennamen);
                     if (stand != null)
                     {
                         KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(

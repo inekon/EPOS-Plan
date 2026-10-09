@@ -42,8 +42,35 @@ namespace WindowsFormsApplication1
                 NennleistungVorschlagen = datei is null ? null : Vorschlagen,
                 NennleistungPruefen = PvGanglinieImportCtrl.Pruefhinweis,
                 EinlesenMitNennleistung = datei is null ? null : EinlesenMitNennleistung,
-                ImportAbgelehnt = datei is null ? MyResource.Resource.PVG_IMP_NICHT_VERFUEGBAR : ""
+                ImportAbgelehnt = datei is null ? MyResource.Resource.PVG_IMP_NICHT_VERFUEGBAR : "",
+                // Die Nennleistung eines Katalogsatzes nachtraeglich: auf jeder Plattform (keine Datei noetig).
+                NennleistungSchreiben = (n, kwp) => Task.FromResult(NennleistungSchreiben(n, kwp)),
+                NennleistungPruefenFuer = PvGanglinieStammCtrl.Pruefhinweis
             };
+        }
+
+        /// <summary>
+        /// Schreibt die Nennleistung [kWp] an den Katalogsatz (Kern: <see cref="PvGanglinieStammCtrl.NennleistungSetzen"/>)
+        /// und übersetzt den Ausgang in die Texte der Katalogseite — samt Prüfhinweis nach dem Speichern.
+        /// </summary>
+        internal static GanglinienNennleistungsschrieb NennleistungSchreiben(string bezeichner, double? nennleistungKwp)
+        {
+            switch (PvGanglinieStammCtrl.NennleistungSetzen(bezeichner, nennleistungKwp))
+            {
+                case PvNennleistungSchreibergebnis.Geschrieben:
+                    return new GanglinienNennleistungsschrieb(true,
+                        string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                      MyResource.Resource.PVG_MSG_NENN_GESPEICHERT, bezeichner),
+                        PvGanglinieStammCtrl.Pruefhinweis(bezeichner, nennleistungKwp));
+                case PvNennleistungSchreibergebnis.Schreibgeschuetzt:
+                    return new GanglinienNennleistungsschrieb(false, MyResource.Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT, "");
+                case PvNennleistungSchreibergebnis.Unbekannt:
+                    return new GanglinienNennleistungsschrieb(false, MyResource.Resource.PVG_MSG_NENN_UNBEKANNT, "");
+                case PvNennleistungSchreibergebnis.Ungueltig:
+                    return new GanglinienNennleistungsschrieb(false, MyResource.Resource.PVG_MSG_NENN_UNGUELTIG, "");
+                default:
+                    return new GanglinienNennleistungsschrieb(false, MyResource.Resource.PVG_MSG_SCHREIBFEHLER, "");
+            }
         }
 
         /// <summary>Die Spalten der Liste — mit oder ohne „im Projekt verwendet".</summary>
