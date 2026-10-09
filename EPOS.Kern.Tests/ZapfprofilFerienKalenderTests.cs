@@ -125,9 +125,12 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(r);
         }
 
-        /// <summary>Leer und Samstag + Sonntag lassen die Kennzeichen der Klimaregion unverändert (dasselbe Feld).</summary>
+        /// <summary>
+        /// Leer und Samstag + Sonntag nehmen zu den Kennzeichen der Klimaregion nur die Feiertage des Kerns hinzu (E112);
+        /// ohne Feiertage bleibt es dasselbe Feld.
+        /// </summary>
         [Fact]
-        public void Das_Wochenende_der_Vorgabe_laesst_die_Kennzeichen_unveraendert()
+        public void Das_Wochenende_der_Vorgabe_nimmt_nur_die_Feiertage_hinzu()
         {
             var we = new bool[365];
             we[5] = we[6] = we[2] = true;                     // Samstag, Sonntag und ein Feiertag am Mittwoch
@@ -139,11 +142,76 @@ namespace EPOS.Kern.Tests
             Assert.False(fr[5]);
             Assert.False(fr[6]);
 
-            // Auch mit Feiertagen des Kerns bleibt die Vorgabe das Feld der Klimaregion.
+            // Mit Feiertagen des Kerns kommen unter der Vorgabe genau die Feiertage hinzu, sonst bleibt jedes Kennzeichen.
             var feiertage = new[] { 6, 10 };
-            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, null, feiertage));
-            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, KalenderbedienungSchema.WOCHENENDE_VORGABE, feiertage));
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, null, new int[0]));
+            foreach (int? maske in new int?[] { null, KalenderbedienungSchema.WOCHENENDE_VORGABE })
+            {
+                bool[] k = Zapfkalender.Kennzeichen(0, we, maske, feiertage);
+                Assert.NotSame(we, k);
+                for (int d = 1; d <= 365; d++)
+                    Assert.Equal(we[d - 1] || d == 6 || d == 10, k[d - 1]);
+                Assert.Equal(we.Count(x => x) + 1, k.Count(x => x));   // der 6. war schon gekennzeichnet
+            }
             Assert.Equal(Zapfkalender.Bilden(0, we, null), Zapfkalender.Bilden(0, we, null, KalenderbedienungSchema.WOCHENENDE_VORGABE));
+        }
+
+        /// <summary>
+        /// Vorgabe Samstag + Sonntag (E112): Ein Feiertag am Donnerstag und ein Feiertag am Samstag tragen den Sonntagsgang,
+        /// ein gewöhnlicher Samstag den Samstagsgang — leer und Sa + So gleich, im Formvektor- wie im Typtagweg.
+        /// </summary>
+        [Fact]
+        public void Feiertage_tragen_unter_der_Vorgabe_den_Sonntagsgang()
+        {
+            var we = new bool[365];
+            for (int d = 6; d <= 365; d += 7) { we[d - 1] = true; if (d < 365) we[d] = true; }   // Samstag, Sonntag
+            var feiertage = new[] { 4, 13 };                  // Donnerstag 4. Januar, Samstag 13. Januar
+            foreach (int? maske in new int?[] { null, KalenderbedienungSchema.WOCHENENDE_VORGABE })
+            {
+                ZapfTagtyp[] t = Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, maske, feiertage), null, maske, feiertage);
+                Assert.Equal(ZapfTagtyp.SonnFeiertag, t[3]);    // Feiertag am Donnerstag
+                Assert.Equal(ZapfTagtyp.Werktag, t[2]);         // Mittwoch
+                Assert.Equal(ZapfTagtyp.Samstag, t[5]);         // gewöhnlicher Samstag
+                Assert.Equal(ZapfTagtyp.SonnFeiertag, t[6]);    // Sonntag
+                Assert.Equal(ZapfTagtyp.SonnFeiertag, t[12]);   // Feiertag am Samstag
+
+                // Ohne die Feiertage bleibt es der Kalender der Klimaregion.
+                ZapfTagtyp[] ohne = Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, maske), null, maske);
+                Assert.Equal(ZapfTagtyp.Werktag, ohne[3]);
+                Assert.Equal(ZapfTagtyp.Samstag, ohne[12]);
+                Assert.Equal(2, Enumerable.Range(0, 365).Count(d => t[d] != ohne[d]));
+            }
+        }
+
+        /// <summary>
+        /// Der Eingang belegt die Feiertage jeder Zone (E112): mit gebundenem Gebäude der Vorgabe nach dessen Feiertagsland,
+        /// ohne Gebäude die bundeseinheitlichen — beide für das Bezugsjahr des Projekts.
+        /// </summary>
+        [Fact]
+        public void Der_Eingang_belegt_die_Feiertage_jeder_Zone()
+        {
+            if (!Bereit()) return;
+            int gebaeude = GebaeudeMitBestandsferien();
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Wochenendtage = NULL WHERE ID = ?", new DbParam("@id", gebaeude)));
+            int jahr = Konditionierungdatenweg.Bezugsjahr(PROJEKT);
+
+            ZonenStand gebunden = Eingang(gebaeude).Zonen[0];
+            Assert.NotNull(gebunden.Feiertage);
+            Assert.Contains(1, gebunden.Feiertage);           // Neujahr
+            Assert.Contains(276, gebunden.Feiertage);         // 3. Oktober
+
+            var frei = new ZonenStand
+            {
+                IdNutzungsart = Nutzung("Testnutzung B (fiktiv)"), Name = "Freie Zone", Bezugsmenge = 20.0,
+                Ferienbeginn = new int?[4], Ferienende = new int?[4],
+            };
+            Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { frei }, null),
+                                                         0, new bool[365]);
+            Assert.Equal(Landesfeiertage.Jahrestage(null, jahr), e.Zonen[0].Feiertage);
+            ZapfTagtyp[] k = Zapfkalender.Bilden(0, Zapfkalender.KennzeichenDerZone(0, new bool[365], e.Zonen[0]),
+                                                 Zapfkalender.FensterDerZone(e.Zonen[0]), e.Zonen[0].Wochenendtage, e.Zonen[0].Feiertage);
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[0]);      // Neujahr
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[275]);    // 3. Oktober
         }
 
         /// <summary>
@@ -171,10 +239,12 @@ namespace EPOS.Kern.Tests
             // Ohne die Feiertage des Kerns ginge der Samstagsfeiertag verloren (die Klimaregion trennt ihn nicht).
             Assert.Equal(ZapfTagtyp.Werktag, Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, montagDienstag), null, montagDienstag)[5]);
 
-            // Eine Maske mit Samstag: der Samstag trägt den Samstagsgang, auch als Feiertag.
+            // Eine Maske mit Samstag: der gewöhnliche Samstag trägt den Samstagsgang, der Feiertag am Samstag den
+            // Sonntagsgang (Feiertag geht vor, E112).
             const int samstagMontag = (1 << Zapfkalender.SAMSTAG) | 1;
-            ZapfTagtyp[] s = Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, samstagMontag, feiertage), null, samstagMontag);
-            Assert.Equal(ZapfTagtyp.Samstag, s[5]);
+            ZapfTagtyp[] s = Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, samstagMontag, feiertage), null, samstagMontag,
+                                                 feiertage);
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, s[5]);
             Assert.Equal(ZapfTagtyp.Samstag, s[12]);
             Assert.Equal(ZapfTagtyp.Werktag, s[6]);
         }

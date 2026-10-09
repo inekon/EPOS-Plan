@@ -146,11 +146,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Typtagjahr Zuordnen(Typtaganbindung a, int wochentagJan1, bool[] we, string zone,
                                             IReadOnlyList<Ferienfenster> ferien = null,
-                                            ICollection<ZapfHinweis> hinweise = null, int? wochenendmaske = null)
+                                            ICollection<ZapfHinweis> hinweise = null, int? wochenendmaske = null,
+                                            IReadOnlyCollection<int> feiertage = null)
         {
-            // Ein gekennzeichneter Samstag ist ein Werktag, außer er ist unter einer Maske ohne Samstag ein Feiertag
-            // (Zapfkalender.Samstagsgang).
+            // Ein gekennzeichneter gewöhnlicher Samstag ist ein Werktag, außer er ist unter einer Maske ohne Samstag ein
+            // Feiertag (Zapfkalender.Samstagsgang); ein Feiertag ist unter jeder Maske ein Sonntag (E112).
             bool samstagWerktag = Zapfkalender.Samstagsgang(wochenendmaske);
+            bool[] feiertag = Zapfkalender.Feiertagsraster(feiertage);
             if (a == null || a.Daten == null || !a.Daten.Traegt)
                 throw Ablehnen(zone, ZapfSatz.Neu("EINGABE_TYPTAGE_NICHT_VERFUEGBAR"));
             Normformvektorsatz satz = a.Daten;
@@ -193,7 +195,8 @@ namespace WindowsFormsApplication1
                                     : Typtagjahreszeit.Uebergang;
 
                 int wochentag = Zapfkalender.Wochentag(wochentagJan1, d);
-                Typtagart ta = we[d - 1] && (wochentag != Zapfkalender.SAMSTAG || !samstagWerktag) ? Typtagart.Sonntag : Typtagart.Werktag;
+                Typtagart ta = we[d - 1] && (wochentag != Zapfkalender.SAMSTAG || !samstagWerktag || feiertag[d - 1])
+                    ? Typtagart.Sonntag : Typtagart.Werktag;
 
                 Typtagbewoelkung bw = Typtagbewoelkung.Ohne;
                 if (nachBewoelkung)
