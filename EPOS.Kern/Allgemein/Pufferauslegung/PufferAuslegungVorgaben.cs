@@ -7,12 +7,12 @@ namespace WindowsFormsApplication1
     // ====================================================================================
     // DIE VORGABEN DER PUFFERSPEICHER-AUSLEGUNG - EINE Quelle der Zahlen (Konzept
     // Pufferspeicher-Auslegung, Abschnitt 4.1). Aus dieser Liste speisen sich
-    //   (1) die Saat des Schemaschritts PufferAuslegungSchema (INSERT OR IGNORE in
+    //   (1) die Saat des Schemaschritts PufferAuslegungSchema (INSERT ... WHERE NOT EXISTS in
     //       Tab_PufferAuslegungParameter_STAMM) und
     //   (2) der Rueckfall von PufferAuslegungParameter, wenn die Tabelle fehlt oder ein
     //       Schluessel nicht in ihr steht.
     // Wer eine Zahl aendert, aendert sie HIER; die Saat bestehender Datenbanken bleibt
-    // (INSERT OR IGNORE), der Rueckfall folgt sofort.
+    // (INSERT ... WHERE NOT EXISTS), der Rueckfall folgt sofort.
     //
     // Normen und Richtlinien stehen nur als Quellenangabe (Zitat), nie als abgeschriebener
     // Text. Keine Produkt- oder Herstellerdaten; Beispielwerte sind runde, neutrale Zahlen.
