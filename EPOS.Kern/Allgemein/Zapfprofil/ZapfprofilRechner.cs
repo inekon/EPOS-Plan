@@ -115,7 +115,7 @@ namespace WindowsFormsApplication1
                     a.Struktur = Formvektor.Bilden(z, a.Art, satz, e.Parameter, prot, hinweise);
                     a.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(a.Temperaturen, a.Name);
                     a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, z),
-                                                     Zapfkalender.FensterDerZone(z), z.Wochenendtage);
+                                                     Zapfkalender.FensterDerZone(z), z.Wochenendtage, z.Feiertage);
                     a.Messwert = Mengengeruest.MesswertAus(z, a.Temperaturen, prot);
                     a.InZ1 = z.Zirkulation && a.Art.Grenze == ZapfBilanzgrenze.Zapfstelle;
                     a.ZapfungKwh = a.Menge.JahresenergieKwh;
@@ -209,7 +209,8 @@ namespace WindowsFormsApplication1
                     {
                         a.Typtagjahr = Typtagzuordnung.Zuordnen(e.Typtage, e.WochentagJan1,
                                                                Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, a.Stand), a.Name,
-                                                               Zapfkalender.FensterDerZone(a.Stand), hinweise, a.Stand?.Wochenendtage);
+                                                               Zapfkalender.FensterDerZone(a.Stand), hinweise, a.Stand?.Wochenendtage,
+                                                               a.Stand?.Feiertage);
                         tage = Typtagzuordnung.Tagesmengen(a.ZapfungKwh,
                                    Typtagzuordnung.Einheiten(a.Art, a.Menge, a.Name), a.Typtagjahr, a.Name, hinweise);
                         stunden = Typtagzuordnung.Stundenreihe(tage, a.Typtagjahr, e.Typtage.Daten,
@@ -494,7 +495,7 @@ namespace WindowsFormsApplication1
                 JahresmengeKwh = a.ZapfungKwh, Struktur = a.Struktur, Kalender = a.Kalender, Ferien = ferien,
                 Kaltwasserfaktor = a.Kaltwasserfaktor, SpreizungJeMonatK = spreizung,
                 WochentagJan1 = e.WochentagJan1, We = Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, a.Stand),
-                Wochenendtage = a.Stand?.Wochenendtage,
+                Wochenendtage = a.Stand?.Wochenendtage, Feiertage = a.Stand?.Feiertage,
                 Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz,
                 TyptagmengenKwh = a.Typtagjahr != null ? a.Tagesmengen : null,
                 TyptagdichteJeTag = a.Typtagjahr != null

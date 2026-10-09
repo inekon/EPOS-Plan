@@ -398,24 +398,28 @@ namespace WindowsFormsApplication1
                 else
                     flaechenteiler[g] = (flaechenteiler.TryGetValue(g, out int n) ? n : 0) + 1;
             }
-            if (gebaeude.Count == 0) return zonen;
-
+            // Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag (E112): Jede Zone bekommt die
+            // Feiertage des Kerns für das Bezugsjahr — mit gebundenem Gebäude nach dessen Feiertagsland, sonst die
+            // bundeseinheitlichen.
+            int bezugsjahr = Konditionierungdatenweg.Bezugsjahr(idProjekt);
+            IReadOnlyList<int> bund = null;
             var ergebnis = new List<ZonenStand>(zonen.Count);
             foreach (ZonenStand z in zonen)
             {
                 if (z?.IdGebaeude == null || !gebaeude.TryGetValue(z.IdGebaeude.Value, out GebaeudeAngaben a) || a == null)
                 {
-                    ergebnis.Add(z);
+                    ergebnis.Add(z != null && z.Feiertage == null
+                        ? z with { Feiertage = bund ??= Landesfeiertage.Jahrestage(null, bezugsjahr) }
+                        : z);
                     continue;
                 }
                 ZonenStand neu = z;
                 if (a.FerienAktiv && !FerienGesetzt(z))
                     neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
                 if (a.Wochenendtage.HasValue) neu = neu with { Wochenendtage = a.Wochenendtage };
-                // Mit einer Maske außer der Vorgabe trennt der Kalender Wochenende und Feiertag: die Feiertage aus den
-                // Regeln des Kerns für das Bezugsjahr, bundeseinheitlich und nach dem Feiertagsland des Gebäudes.
-                if (!Zapfkalender.IstVorgabe(a.Wochenendtage))
-                    neu = neu with { Feiertage = Landesfeiertage.Jahrestage(a.Feiertagsland, Konditionierungdatenweg.Bezugsjahr(idProjekt)) };
+                // Die Feiertage aus den Regeln des Kerns für das Bezugsjahr, bundeseinheitlich und nach dem Feiertagsland
+                // des Gebäudes — unter jeder Wochenendmaske (Zapfkalender.Kennzeichen).
+                neu = neu with { Feiertage = Landesfeiertage.Jahrestage(a.Feiertagsland, bezugsjahr) };
                 double rest = a.FlaecheM2.HasValue
                     ? a.FlaecheM2.Value - (eigeneFlaechen.TryGetValue(z.IdGebaeude.Value, out double abzug) ? abzug : 0.0)
                     : 0.0;

@@ -44,7 +44,7 @@ In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eint
 * '''Zirkulation vorhanden''' – ''nein'' nimmt die Zone aus dem Zirkulationsanteil.
 * '''Kalender''' – der Kalender der Nutzungsart oder die Ferien eines Gebäudes des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor; eigene Ferien der Zone gehen vor.
 * '''Ferienzeitraum 1 bis 4''' – Beginn und Ende als Tag und Monat. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an.
-* '''Bundesland''' – gesperrt: Es wirkt erst mit einer Kalendertabelle je Bundesland; ohne sie gelten Wochenende und Feiertage der Klimaregion.
+* '''Bundesland''' – gesperrt. Feiertage zählen im Brauchwasserprofil als Sonntag; das Feiertagsland des Gebäudes bestimmt die Landesfeiertage, ohne Gebäude gelten die bundeseinheitlichen.
 * '''Jahresmesswert''' – ein gemessener Jahresverbrauch der Zone in kWh/a oder m³/a mit Bilanzgrenze (an der Zapfstelle, mit Verteil- und Zirkulationsverlust oder zusätzlich mit Speicherverlust, dann mit dem Speicherverlust in kWh/a), Quelle und Zeitraum. Der Messwert skaliert die Zone mit einem ausgewiesenen Faktor.
 
 === Tagesbedarf, Ladeleistung, Zirkulation ===
@@ -247,7 +247,7 @@ Gewählt wird der Weg im Zapfprofil: In der Stufe ''Experte'' steht bei den [[#f
 Steht der Schalter, bildet das Programm den Jahresgang aus dem Wetter der Klimaregion des Projekts:
 
 * '''Jahreszeit''' – aus dem Tagesmittel der Außentemperatur gegen die Heizgrenze der Gebäudeart und die Wintergrenze.
-* '''Tagart''' – Sonntag aus dem Kennzeichen „Wochenende oder Feiertag“ des Klimakalenders; ein Samstag bleibt Werktag.
+* '''Tagart''' – Sonntag aus dem Kennzeichen „Wochenende oder Feiertag“ des Klimakalenders und an jedem Feiertag, auch am Samstag; ein gewöhnlicher Samstag bleibt Werktag.
 * '''Bewölkung''' – aus dem Tagesmittel des Bedeckungsgrads. Unterscheidet das Paket nach Bewölkung und führt die Klimareihe keinen Bedeckungsgrad, wird die Zone mit Grund abgelehnt.
 
 Die Jahresmenge bleibt erhalten: Negative Tagesmengen werden auf 0 gesetzt, danach werden die Tagesmengen auf die Jahresmenge gebracht; ein Hinweis nennt das. Führt das Paket zu den benutzten Typtagen Tagesgänge, tragen sie auch die Tagesform, sonst bleibt der Tagesgangsatz der Zone die Quelle. Die Ferienfenster einer Zone wirken auf dem Typtagweg nicht; auch das nennt ein Hinweis. Der Typtagweg gilt nur für Wohngrößen – Personen und Wohneinheiten –, jede andere Bezugsart wird mit Grund abgelehnt. Weicht die gerechnete Zahl der Kalendertage je Typtag von der eingespielten Tabelle ab, ist das ein Hinweis und kein Fehler: Das Wetter des Projekts und die Tabelle stammen aus verschiedenen Jahren.

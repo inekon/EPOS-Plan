@@ -28,6 +28,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Wochenmaske, mit der <see cref="We"/> gebildet ist (<see cref="Zapfkalender.Samstagsgang"/>); <c>null</c> = Vorgabe.</summary>
         public int? Wochenendtage { get; init; }
+
+        /// <summary>Die Feiertage der Zone (Jahrestage 1 … 365, <see cref="ZonenStand.Feiertage"/>); sie tragen den Sonntagsgang, auch am Samstag.</summary>
+        public IReadOnlyCollection<int> Feiertage { get; init; }
         public IReadOnlyList<Ferienfenster> Ferien { get; init; } = new Ferienfenster[0];
 
         /// <summary>Entkoppelt jede Einheit ihre Ferienfenster (Kalenderart Wohnen, 4.4)?</summary>
@@ -419,7 +422,8 @@ namespace WindowsFormsApplication1
                 if (z.Urlaubsentkopplung)
                 {
                     int versatz = zufall.Ganzzahl(2 * z.UrlaubsversatzTage + 1) - z.UrlaubsversatzTage;
-                    kalender = Zapfkalender.Bilden(z.WochentagJan1, z.We, Versetzt(z.Ferien, versatz), z.Wochenendtage);
+                    kalender = Zapfkalender.Bilden(z.WochentagJan1, z.We, Versetzt(z.Ferien, versatz), z.Wochenendtage,
+                                                       z.Feiertage);
                     tage = Formvektor.Tagesmengen(v.JeEinheitKwh, z.Struktur, kalender, z.WochentagJan1, z.Kaltwasserfaktor, z.Zone);
                 }
                 for (int d = 0; d < Zapfkalender.TAGE; d++)

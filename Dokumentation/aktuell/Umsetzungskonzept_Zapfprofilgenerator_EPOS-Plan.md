@@ -702,7 +702,7 @@ Temperaturen). Toleranz exakt bzw. relativ 1e-12.
 Tagtyp(d), d = 1..365:
   Wochentag(d) = (WochentagJan1 + d − 1) mod 7
   Ferienfenster der Zone enthält d            -> Ruhetag
-  sonst We[d] und Wochentag = Samstag         -> Samstag
+  sonst We[d], Wochentag = Samstag, kein Feiertag -> Samstag
   sonst We[d]                                 -> SonnFeiertag   (Feiertag wie Sonntag)
   sonst                                       -> Werktag
 Tagesgewicht nach Tagtyp:
@@ -717,6 +717,8 @@ Gewicht:     g(d) = f_Monat(m(d)) · f_KW(m(d)) · 7 · w_T(d)
 Tagesmenge:  Q_d = Q_a · g(d) / Σ_d g(d)            -> Σ_d Q_d = Q_a
 Stundenwert: q_h = Q_d · φ_Tagtyp(d)(h),  Σ_h φ = 1 -> Σ_h q_h = Q_a
 ```
+
+Feiertage zählen unter jeder Wochenendmaske als Sonn-/Feiertag: Die Kennzeichen `We` der Klimaregion werden mit den Feiertagen des Kerns für das Bezugsjahr vereinigt (Feiertagsland des gebundenen Gebäudes, ohne Gebäude bundeseinheitlich), und ein Feiertag am Samstag trägt den Sonntagsgang (Konzept Konditionierungsprofile 9.10, E112).
 
 `Runden₉` ist `Math.Round(x, 9)`: Die zwölf Monatswerte entstehen einmal je Lauf und sind danach
 Zahlen ohne Abhängigkeit von der Mathematik-Bibliothek der Plattform (4.4). Der Faktor der Monate
@@ -2652,10 +2654,8 @@ verhältnis 1,5; Anzeigetemperatur 45 °C; Stundenschwelle 0,1 kW.
     der Strahlung, nicht der Bedeckungsgrad. Unterscheidet das Paket nach Bewölkung und fehlen die
     Tagesmittel, wird die Zone **benannt abgelehnt**; es gibt keinen stillen Rückfall.
   - **Feiertage und Samstag:** Sonntag ist jeder Tag mit dem Kennzeichen „Wochenende oder Feiertag"
-    der Klimaregion, dessen Wochentag **nicht Samstag** ist — ein Feiertag zählt damit als Sonntag,
-    ein Samstag bleibt Werktag. **Abweichung, benannt:** Ein Feiertag, der auf einen Samstag fällt,
-    bleibt Werktag, weil der Klimakalender ihn nicht von einem gewöhnlichen Samstag unterscheidet
-    (A6 bringt den Feiertagskalender).
+    der Zone, dessen Wochentag **nicht Samstag** ist, und jeder Feiertag des Kerns — ein Feiertag zählt
+    damit als Sonntag, auch am Samstag; ein gewöhnlicher Samstag bleibt Werktag (4.2, E112).
   - **Ferien:** Der Urlaubstag der Richtlinie (kein Warmwasser) wird **nicht** umgesetzt; ein
     Ferientag der Zone bleibt Werktag oder Sonntag seiner Jahreszeit, damit die Jahresenergie
     erhalten bleibt. Ein Hinweis nennt das, sobald die Zone Ferienfenster trägt.
