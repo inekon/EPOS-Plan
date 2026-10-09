@@ -32,8 +32,36 @@ namespace WindowsFormsApplication1
                 ["Speichern"] = new Func<KaeltemaschineDaten, KaeltemaschineSpeicherErgebnis>(Speichern),
                 ["Loeschen"] = new Func<int, KaeltemaschineSpeicherErgebnis>(id => Abbild(KaeltemaschineStammCtrl.Loeschen(id))),
                 ["Duplizieren"] = new Func<int, string, KaeltemaschineSpeicherErgebnis>(Duplizieren),
-                ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen)
+                ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
+                // KM1: die eingebauten Typkennfelder - auf beiden Plattformen (keine Dateiwahl noetig).
+                ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(TypkennfelderLaden),
+                ["TypkennfelderAnzahl"] = TypkennfelderAnzahl()
             };
+        }
+
+        /// <summary>
+        /// Die Gaben samt Importweg der Plattform (Windows: <c>KatalogImportHuelle.Gaben(KatalogImportArt.Kaeltemaschine)</c>).
+        /// Ohne Weg (<see cref="Gaben()"/>) lehnt der Knopf „Import…" benannt ab.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(Func<IReadOnlyDictionary<string, object>> import)
+        {
+            var g = new Dictionary<string, object>(Gaben());
+            if (import != null) g["ImportGaben"] = import;
+            return g;
+        }
+
+        /// <summary>Lädt die eingebauten Typkennfelder (<see cref="KaeltemaschinenTypkennfelder.Einspielen"/>).</summary>
+        internal static KaeltemaschineTypkennfelderErgebnis TypkennfelderLaden()
+        {
+            KaeltemaschinenTypkennfelder.Einspielergebnis e = KaeltemaschinenTypkennfelder.Einspielen();
+            return new KaeltemaschineTypkennfelderErgebnis(e.Ok, e.Neu, e.Uebersprungen, e.Fehler ?? "");
+        }
+
+        /// <summary>Die Zahl der eingebauten Typkennfelder; 0, wenn die Ressource nicht lesbar ist.</summary>
+        internal static int TypkennfelderAnzahl()
+        {
+            try { return KaeltemaschinenTypkennfelder.Lesen().Count; }
+            catch (Exception) { return 0; }
         }
 
         /// <summary>Die Anzeigetexte der Rückkühlarten in der Reihenfolge der Persistenzwerte.</summary>

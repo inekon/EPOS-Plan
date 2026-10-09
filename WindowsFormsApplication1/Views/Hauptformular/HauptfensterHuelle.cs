@@ -142,7 +142,9 @@ namespace WindowsFormsApplication1
 
                 // DIE KAELTEMASCHINEN (KU3-1) - dieselbe Bauart, die Huelle liegt in EPOS.UI.Daten.
                 ["KaeltemaschineKatalogGaben"] =
-                    new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
+                    // KM1: mit "Import..." (Copper-Kurvendatei, CSV-Kennfeldvorlage) ueber den Dateiwaehler.
+                    new Func<IReadOnlyDictionary<string, object>>(() => KaeltemaschineKatalogHuelle.Gaben(
+                        () => KatalogImportHuelle.Gaben(KatalogImportArt.Kaeltemaschine))),
                 // Die Kaeltemaschinen des offenen Projekts (KU3-4c) - der Erzeugerdialog als freie Ansicht.
                 ["KaeltemaschineAnlageGaben"] =
                     new Func<int, IReadOnlyDictionary<string, object>>(KaeltemaschineAnlageHuelle.Gaben),

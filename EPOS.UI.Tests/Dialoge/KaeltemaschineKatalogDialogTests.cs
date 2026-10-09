@@ -173,7 +173,7 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
             Assert.Contains(spalte, kopf);
         Assert.Contains(R.KM_RUECKKUEHLART_LUFT, cut.Find(".epos-katalogliste tbody").TextContent);
         Assert.DoesNotContain("TROCKENKUEHLER", cut.Markup);
-        Assert.Equal(new[] { R.ADM_BTN_SPEICHERN, R.ADM_BTN_VERWERFEN, R.ADM_BTN_NEU, R.ADM_BTN_BEENDEN },
+        Assert.Equal(new[] { R.ADM_BTN_SPEICHERN, R.ADM_BTN_VERWERFEN, R.ADM_BTN_IMPORT, R.ADM_BTN_NEU, R.ADM_BTN_BEENDEN },
                      Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
     }
 

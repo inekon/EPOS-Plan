@@ -219,6 +219,18 @@ namespace EPOS.UI.Dialoge.Import
                 case "SPIMP_MSG_CEC_ALT": return Resource.SPIMP_MSG_CEC_ALT;
                 case "SPIMP_MSG_CEC_KEINE_QUELLE": return Resource.SPIMP_MSG_CEC_KEINE_QUELLE;
 
+                // KM1 - der Kaeltemaschinenimport (Copper-Kurvendatei, CSV-Kennfeldvorlage).
+                case "IMP_KAT_FELD_RUECKKUEHLART": return Resource.IMP_KAT_FELD_RUECKKUEHLART;
+                case "IMP_KAT_FELD_KAELTELEISTUNG": return Resource.IMP_KAT_FELD_KAELTELEISTUNG;
+                case "IMP_KAT_FELD_NENN_EER": return Resource.IMP_KAT_FELD_NENN_EER;
+                case "IMP_KAT_FELD_MINDESTTEILLAST": return Resource.IMP_KAT_FELD_MINDESTTEILLAST;
+                case "IMP_KAT_FELD_KAELTEMITTEL": return Resource.IMP_KAT_FELD_KAELTEMITTEL;
+                case "IMP_KAT_FELD_KENNFELDPUNKTE": return Resource.IMP_KAT_FELD_KENNFELDPUNKTE;
+                case "IMP_KAT_SP_KAELTELEISTUNG": return Resource.IMP_KAT_SP_KAELTELEISTUNG;
+                case "IMP_KAT_HINWEIS_KAELTEMASCHINE": return Resource.IMP_KAT_HINWEIS_KAELTEMASCHINE;
+                case "KM_IMP_MSG_UEBERGANGEN": return Resource.KM_IMP_MSG_UEBERGANGEN;
+                case "KM_IMP_MSG_LEER": return Resource.KM_IMP_MSG_LEER;
+
                 default: return schluessel;
             }
         }
