@@ -116,13 +116,13 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        // Sechzehn Felder: 8 Zahlen (Ptherm, Pel, elektrischer und thermischer
+        // Siebzehn Felder: 9 Zahlen (Ptherm, Pel, elektrischer und thermischer
         // Wirkungsgrad, Grenzleistung; Welle M4: die zwei Wirkungsgrade bei 50 % Last und
-        // der Anfahrverlust), 3 Ganzzahlen (Vorlauf, Ruecklauf, Mindestlaufzeit),
+        // der Anfahrverlust; UB-E3-b: die Abschaltgrenze des Ruecklaufs), 3 Ganzzahlen (Vorlauf, Ruecklauf, Mindestlaufzeit),
         // 4 Texte (Modulname, Hersteller, Motortyp und die BERECHNETE Anzeige des
         // Gesamtwirkungsgrads), 1 mehrzeilige Beschreibung und die Klappliste des
         // Energietraegers.
-        Assert.Equal(8, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(9, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         Assert.Equal(4, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Single(cut.FindAll("textarea"));
@@ -709,8 +709,9 @@ public class BhkwKatalogDialogTests : EposBunitContext
         });
 
         var dez = cut.FindAll("input[inputmode=decimal]");
-        dez[5].Input("0,27");
-        cut.FindAll("input[inputmode=decimal]")[7].Input("0,5");
+        // UB-E3-b: Platz 5 ist die Abschaltgrenze des Ruecklaufs, die Teillastfelder folgen.
+        dez[6].Input("0,27");
+        cut.FindAll("input[inputmode=decimal]")[8].Input("0,5");
         cut.FindAll("input[inputmode=numeric]")[2].Input("15");
         cut.FindAll(".epos-leiste button")[^4].Click();
 
@@ -765,7 +766,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         double el100 = 0.85 * 40 / 120;
         Assert.All(bild.Instance.Modell!.Reihen[0].Werte, w => Assert.Equal(el100, w, 9));
 
-        cut.FindAll("input[inputmode=decimal]")[5].Input("0,25");
+        cut.FindAll("input[inputmode=decimal]")[6].Input("0,25");   // Platz 5: Abschaltgrenze (UB-E3-b)
         Assert.Equal(2, bilder);
         var reihen = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell!.Reihen;
         Assert.Equal(0.25, reihen[0].Werte[0], 9);

@@ -42533,7 +42533,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Refrigerant</value>
   </data>
   <data name="BHKWK_LBL_RUECKLAUF_MAX" xml:space="preserve">
-    <value>Maximum return temperature</value>
+    <value>Highest return temperature (cut-off limit)</value>
   </data>
   <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
     <value>degradation coefficient C_d</value>
@@ -49235,6 +49235,63 @@ chart</value>
   </data>
   <data name="KI_DLG_WPA_BEFUNDE_ERL" xml:space="preserve">
     <value>Read only: the soft locks and notes of the group; saving remains possible.</value>
+  </data>
+  <data name="WPS_GRP_GERAETEGRENZEN" xml:space="preserve">
+    <value>Device limits</value>
+  </data>
+  <data name="WPS_HINT_KAELTEMITTEL_SCHNELLWAHL" xml:space="preserve">
+    <value>Choosing the refrigerant fills only empty device fields with the refrigerant default; maintained values stay.</value>
+  </data>
+  <data name="WPS_HINT_SCHNELLWAHL_GEFUELLT" xml:space="preserve">
+    <value>{0} empty fields filled with the refrigerant default.</value>
+  </data>
+  <data name="WPS_HINT_NUR_R744" xml:space="preserve">
+    <value>Reference return and derating apply only to R744.</value>
+  </data>
+  <data name="WPS_HINT_GRENZE_BEREICH" xml:space="preserve">
+    <value>“{0}” lies outside {1} to {2} — the record cannot be saved like this.</value>
+  </data>
+  <data name="WPS_PLATZHALTER_VORGABE" xml:space="preserve">
+    <value>empty = default</value>
+  </data>
+  <data name="WPS_HERLEITUNG_GERAETEGRENZEN" xml:space="preserve">
+    <value>Empty fields use the refrigerant default or the general default; maintained values show the origin “catalogue” in the configuration.</value>
+  </data>
+  <data name="BHKWK_FELD_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Highest return temperature</value>
+  </data>
+  <data name="BHKWK_HINT_RUECKLAUF_MAX" xml:space="preserve">
+    <value>The design return temperature ({0} °C) reaches the cut-off limit ({1} °C): at this return temperature the module delivers nothing.</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_RUECKLAUF_MAX" xml:space="preserve">
+    <value>empty = no limit</value>
+  </data>
+  <data name="KI_DLG_WP_KAELTEMITTEL_ERL" xml:space="preserve">
+    <value>The device refrigerant (code such as R410A, R290, R744). In the record sheet the choice fills only empty device fields with the refrigerant default.</value>
+  </data>
+  <data name="KI_DLG_WP_SPREIZUNG_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>Flow/return temperature difference at the design point (3 to 8 K). Empty = refrigerant default.</value>
+  </data>
+  <data name="KI_DLG_WP_SPREIZUNG_MAX_ERL" xml:space="preserve">
+    <value>Largest permitted temperature difference at the condenser (5 to 40 K). Empty = refrigerant default.</value>
+  </data>
+  <data name="KI_DLG_WP_SPREIZUNG_MIN_ERL" xml:space="preserve">
+    <value>Smallest temperature difference at the condenser (0 to 8 K); together with the maximum flow temperature it sets the return limit. Empty = refrigerant default.</value>
+  </data>
+  <data name="KI_DLG_WP_MINDESTVOLUMENSTROM_ERL" xml:space="preserve">
+    <value>Smallest flow rate as a percentage of the nominal flow rate (20 to 100 %). Empty = default.</value>
+  </data>
+  <data name="KI_DLG_WP_RUECKLAUF_MAX_ERL" xml:space="preserve">
+    <value>Highest return temperature at which the device still delivers heat (20 to 70 °C); above it, it switches off. Empty = derived from maximum flow temperature and smallest temperature difference.</value>
+  </data>
+  <data name="KI_DLG_WP_RUECKLAUF_BEZUG_ERL" xml:space="preserve">
+    <value>Reference return temperature of the derating (20 to 40 °C) — applies only to R744. Empty = refrigerant default.</value>
+  </data>
+  <data name="KI_DLG_WP_RUECKLAUF_ABWERTUNG_ERL" xml:space="preserve">
+    <value>Output derating per kelvin of return temperature above the reference (0 to 5 %/K) — applies only to R744. Empty = refrigerant default.</value>
+  </data>
+  <data name="KI_DLG_BHKK_RUECKLAUF_MAX_ERL" xml:space="preserve">
+    <value>Return temperature cut-off limit (40 to 90 °C): if the return to the module is above it, the module delivers nothing in that hour. The design return must lie below it. Empty = no limit; default for new records 70 °C.</value>
   </data>
 </root>
 

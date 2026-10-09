@@ -205,6 +205,15 @@
                             </Reiter>
                         </KindInhalt>
                     </Stammblattgruppe>
+                    @* DIE GERAETEGRENZEN (UB-E3-b): Kaeltemittel und die sieben Zahlspalten der
+                       Uebergabegrenze. Ein Auslieferungssatz zeigt sie als Lesewerte. *@
+                    <Stammblattgruppe Titel="@_felderTexte.GruppeGeraetegrenzen" Lesemodus="@NurLesbar"
+                                      Werte="@(NurLesbar ? WaermepumpeGeraetegrenzenFelder.Grenzwerte(Daten, _felderTexte) : null)">
+                        <KindInhalt>
+                            <WaermepumpeGeraetegrenzenFelder Daten="@Daten" Texte="@_felderTexte"
+                                                             Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
+                        </KindInhalt>
+                    </Stammblattgruppe>
                 </Gruppen>
                 <Kenndaten>
                     @* DAS FELDRASTER STEHT IM BAUSTEIN WaermepumpeStammFelder - derselbe
@@ -959,7 +968,11 @@
                                                                         Leistungsstufen, s => s, s => s)),
                                           ("aufstellung", () => KiMaskenanmeldung.Eintraege(
                                                                         Aufstellungen, s => s, s => s)),
-                                          ("baujahr", Baujahreintraege));
+                                          ("baujahr", Baujahreintraege),
+                                          // UB-E3-b: die Kaeltemittel der Gruppe "Geraetegrenzen" - Schluessel ist der Code.
+                                          ("kaeltemittel", () => KiMaskenanmeldung.Eintraege(
+                                                                        Daten.Kaeltemittelliste, e => e.Code,
+                                                                        e => _felderTexte.KaeltemittelText(e.Code))));
     }
 
     /// <summary>Die Baujahre als Wahleinträge — Schlüssel und Text sind die Jahreszahl (KI-F1b).</summary>
@@ -1227,7 +1240,8 @@
         _hatKuehlung = false;
         _kuehlung = false;
         _bilder = KennlinienBilder.Leer;
-        Daten = new WaermepumpeStammDaten();
+        // UB-E3-b: die Klappliste der Kaeltemittel kommt mit dem Satz der Huelle und bleibt fuer die Neuanlage stehen.
+        Daten = new WaermepumpeStammDaten { Kaeltemittelliste = Daten.Kaeltemittelliste };
     }
 
     /// <summary>

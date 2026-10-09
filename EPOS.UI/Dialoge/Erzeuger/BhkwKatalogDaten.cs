@@ -83,6 +83,14 @@ public sealed class BhkwKatalogDaten
     /// <summary>Rücklauftemperatur [°C], ganzzahlig.</summary>
     public int? Ruecklauf { get; set; }
 
+    /// <summary>
+    /// Höchster Rücklauf — die Abschaltgrenze [°C] (<c>Ruecklauf_Max</c>, Bereich 40 … 90; UB‑E3‑b, U‑3): Liegt der
+    /// Rücklauf zum Modul darüber, liefert es in der Stunde nichts. <c>null</c> = keine Grenze. Ein neuer Satz trägt
+    /// die Vorgabe 70 °C (<see cref="WindowsFormsApplication1.GeraetegrenzWerte.BHKW_RUECKLAUF_MAX_VORGABE_C"/>); ein
+    /// gelesener Satz überschreibt sie mit seinem Wert, auch mit leer.
+    /// </summary>
+    public double? RuecklaufMax { get; set; } = WindowsFormsApplication1.GeraetegrenzWerte.BHKW_RUECKLAUF_MAX_VORGABE_C;
+
     // --- Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ---------------------
 
     /// <summary>

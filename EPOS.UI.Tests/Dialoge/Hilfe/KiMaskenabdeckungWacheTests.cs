@@ -72,6 +72,7 @@ public sealed class KiMaskenabdeckungWacheTests
     {
         new("PvModellFelder",                 "PhotovoltaikDialog",          KiMaskennamen.PHOTOVOLTAIK),
         new("WaermepumpeStammFelder",         "WaermepumpeStammDialog",      KiMaskennamen.WAERMEPUMPE),
+        new("WaermepumpeGeraetegrenzenFelder", "WaermepumpeStammDialog",     KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeKonfiguration",       "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
         new("EnergietraegerEinstellungen",    "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("BrennstoffBestandteile",         "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),

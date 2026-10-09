@@ -8158,7 +8158,40 @@ namespace WindowsFormsApplication1
                                      einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
                     new KiDialogFeld("taktverlust_cd", "WaermepumpeStammDaten.TaktverlustfaktorCd",
                                      KiDialogTexte.WpTaktverlustCdName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.WpTaktverlustCdErl, leerErlaubt: true)
+                                     KiDialogTexte.WpTaktverlustCdErl, leerErlaubt: true),
+
+                    // ---- UB-E3-b: die Gruppe „Gerätegrenzen" (WaermepumpeGeraetegrenzenFelder) ----
+                    new KiDialogFeld("kaeltemittel", "WaermepumpeStammDaten.Kaeltemittel",
+                                     KiDialogTexte.WpKaeltemittelName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpKaeltemittelErl, leerErlaubt: true),
+                    new KiDialogFeld("spreizung_auslegung", "WaermepumpeStammDaten.SpreizungAuslegungK",
+                                     KiDialogTexte.WpSpreizungAuslegungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpSpreizungAuslegungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("spreizung_max", "WaermepumpeStammDaten.SpreizungMaxK",
+                                     KiDialogTexte.WpSpreizungMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpSpreizungMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("spreizung_min", "WaermepumpeStammDaten.SpreizungMinK",
+                                     KiDialogTexte.WpSpreizungMinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpSpreizungMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("mindestvolumenstrom", "WaermepumpeStammDaten.MindestvolumenstromProzent",
+                                     KiDialogTexte.WpMindestvolumenstromName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpMindestvolumenstromErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf_max", "WaermepumpeStammDaten.RuecklaufMaxC",
+                                     KiDialogTexte.WpRuecklaufMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpRuecklaufMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf_bezug", "WaermepumpeStammDaten.RuecklaufBezugC",
+                                     KiDialogTexte.WpRuecklaufBezugName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpRuecklaufBezugErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf_abwertung", "WaermepumpeStammDaten.RuecklaufAbwertungProzentJeK",
+                                     KiDialogTexte.WpRuecklaufAbwertungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpRuecklaufAbwertungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_K, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -9174,6 +9207,11 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ruecklauf", "BhkwKatalogDaten.Ruecklauf",
                                      KiDialogTexte.BhkkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkkRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    // UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs.
+                    new KiDialogFeld("ruecklauf_max", "BhkwKatalogDaten.RuecklaufMax",
+                                     KiDialogTexte.BhkkRuecklaufMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkRuecklaufMaxErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
                     // ---- Die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ----------

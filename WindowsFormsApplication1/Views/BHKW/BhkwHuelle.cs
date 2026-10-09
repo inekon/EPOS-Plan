@@ -133,6 +133,11 @@ namespace WindowsFormsApplication1
                 ["FeldVorlauf"] = Text_("BHKWK_FELD_VORLAUF", "Vorlauftemperatur"),
                 ["LabelRuecklauf"] = Text_("BHKWK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["FeldRuecklauf"] = Text_("BHKWK_FELD_RUECKLAUF", "Rücklauftemperatur"),
+                ["LabelRuecklaufMax"] = Text_("BHKWK_LBL_RUECKLAUF_MAX", "Höchster Rücklauf (Abschaltgrenze)"),
+                ["FeldRuecklaufMax"] = Text_("BHKWK_FELD_RUECKLAUF_MAX", "Höchster Rücklauf"),
+                ["PlatzhalterRuecklaufMax"] = Text_("BHKWK_PLATZHALTER_RUECKLAUF_MAX", "leer = keine Grenze"),
+                ["HinweisRuecklaufMax"] = Text_("BHKWK_HINT_RUECKLAUF_MAX",
+                    "Der Auslegungsrücklauf ({0} °C) erreicht die Abschaltgrenze ({1} °C): Bei diesem Rücklauf liefert das Modul nichts."),
 
                 // Welle M4 (BH1, BH2): Teillast und Takten samt der kleinen Kurve - dieselbe Kennlinie
                 // wie der Lauf (BhkwKennlinienbild), zum Arbeitsstand des Dialogs.
@@ -201,6 +206,7 @@ namespace WindowsFormsApplication1
             d.Grenzleistung = m.m_Grenzleistung;
             d.Vorlauf = m.m_Vorlauf;
             d.Ruecklauf = m.m_Ruecklauf;
+            d.RuecklaufMax = m.m_Ruecklauf_Max;   // UB-E3-b: leer bleibt leer (keine Grenze)
             d.KostenModul = m.m_Kosten_Modul;
             d.KostenMontage = m.m_Kosten_Montage;
             d.KostenLieferung = m.m_Kosten_Lieferung;
@@ -284,7 +290,10 @@ namespace WindowsFormsApplication1
                 m_Wirkungsgrad_el_Teillast50 = d.WirkungsgradEl50,
                 m_Wirkungsgrad_th_Teillast50 = d.WirkungsgradTh50,
                 m_Anfahrverlust_kWh = d.AnfahrverlustKwh,
-                m_Mindestlaufzeit_min = d.MindestlaufzeitMin
+                m_Mindestlaufzeit_min = d.MindestlaufzeitMin,
+
+                // UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs, NULL-treu.
+                m_Ruecklauf_Max = d.RuecklaufMax
             };
         }
 

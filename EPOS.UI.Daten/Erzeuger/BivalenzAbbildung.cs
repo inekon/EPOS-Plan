@@ -30,7 +30,10 @@ namespace WindowsFormsApplication1
             => Bivalenzvorgaben.Kaeltemittelcodes.Select(code =>
             {
                 Kaeltemittelvorgabe v = Bivalenzvorgaben.Vorgabe(code);
-                return new KaeltemittelEintrag(code, v.HoechstvorlaufC, v.RuecklaufGrenzeC, v.BezugsruecklaufC);
+                return new KaeltemittelEintrag(code, v.HoechstvorlaufC, v.RuecklaufGrenzeC, v.BezugsruecklaufC,
+                    v.Herkunft == Kaeltemittelherkunft.Kaeltemittelklasse,
+                    v.SpreizungAuslegungK, v.SpreizungMaxK, v.SpreizungMinK, v.MindestvolumenstromAnteil * 100.0,
+                    v.AbwertungProzentJeK);
             }).ToList();
 
         /// <summary>

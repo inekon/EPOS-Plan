@@ -1,0 +1,207 @@
+﻿@* DIE GRUPPE "GERAETEGRENZEN" DES WAERMEPUMPEN-STAMMBLATTS (UB-E3-b; Umsetzungskonzept
+   Uebergabegrenze 6.3/6.4, Fachkonzept 5.1 und 6.1).
+
+   WAS HIER STEHT. Die Klappliste "Kaeltemittel" und die sieben Zahlspalten der
+   Uebergabegrenze - alle nullbar: Leer heisst nicht 0, sondern "der Kern nimmt die Vorgabe
+   der Kaeltemittelklasse bzw. die allgemeine Vorgabe". Gepflegte Werte tragen in der
+   Konfiguration der Anlage die Herkunft "Katalog".
+
+   DIE SCHNELLWAHL. Die Wahl eines Kaeltemittels mit eigener Klasse fuellt NUR LEERE
+   Geraetefelder mit den Vorgaben der Klasse; gepflegte Werte bleiben stehen. Die Vorgaben
+   kommen ueber das DTO (KaeltemittelEintrag) - die Oberflaeche sieht die Vorgabentafel des
+   Kerns nicht.
+
+   DIE BEREICHE sind weich: Ein Wert ausserhalb des CHECK-Bereichs steht im Feld und loest
+   einen Hinweis aus; der Speicherweg des Kerns nennt ihn benannt, bevor die Datenbank ihn
+   abweist. Bezugsruecklauf und Abwertung wirken nur bei R744 - sichtbar, mit Hinweis.
+
+   Ein Auslieferungssatz zeigt die Gruppe im Stammblatt als Lesewerte (Werte), nicht hier. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-wp-geraetegrenzen">
+    <Formularraster>
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Texte.LabelKaeltemittel" Eintraege="@KaeltemittelEintraege"
+                         Auswahl="@KaeltemittelIndex" Aktiv="@Aktiv"
+                         AuswahlChanged="BeiKaeltemittel" Platzhalter="@Texte.KaeltemittelLeer" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelSpreizungAuslegung" Einheit="@Texte.EinheitKelvin"
+                        Feldname="@Texte.LabelSpreizungAuslegung" Wert="@Daten.SpreizungAuslegungK"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.SpreizungAuslegungK = w)" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelSpreizungMax" Einheit="@Texte.EinheitKelvin"
+                        Feldname="@Texte.LabelSpreizungMax" Wert="@Daten.SpreizungMaxK"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.SpreizungMaxK = w)" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelSpreizungMin" Einheit="@Texte.EinheitKelvin"
+                        Feldname="@Texte.LabelSpreizungMin" Wert="@Daten.SpreizungMinK"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.SpreizungMinK = w)" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelMindestvolumenstrom" Einheit="@Texte.EinheitProzent"
+                        Feldname="@Texte.LabelMindestvolumenstrom" Wert="@Daten.MindestvolumenstromProzent"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.MindestvolumenstromProzent = w)" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelRuecklaufMax" Einheit="@Texte.EinheitGrad"
+                        Feldname="@Texte.LabelRuecklaufMax" Wert="@Daten.RuecklaufMaxC"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.RuecklaufMaxC = w)" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelRuecklaufBezug" Einheit="@Texte.EinheitGrad"
+                        Feldname="@Texte.LabelRuecklaufBezug" Wert="@Daten.RuecklaufBezugC"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.RuecklaufBezugC = w)" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelRuecklaufAbwertung" Einheit="@Texte.EinheitProzentJeK"
+                        Feldname="@Texte.LabelRuecklaufAbwertung" Wert="@Daten.RuecklaufAbwertungProzentJeK"
+                        Platzhalter="@Texte.PlatzhalterVorgabe" Aktiv="@Aktiv"
+                        WertChanged="w => Setzen(() => Daten.RuecklaufAbwertungProzentJeK = w)" />
+        </KindInhalt>
+    </Formularraster>
+    <Herleitungszeile Text="@Texte.HinweisSchnellwahl" />
+    @if (_gefuellt > 0)
+    {
+        <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisSchnellwahlGefuellt, _gefuellt)" />
+    }
+    @if (!IstR744)
+    {
+        <Herleitungszeile Text="@Texte.HinweisNurR744" />
+    }
+    @foreach (string hinweis in Bereichshinweise(Daten, Texte))
+    {
+        <Herleitungszeile Text="@hinweis" />
+    }
+    <Herleitungszeile Text="@Texte.HerleitungGeraetegrenzen" />
+</div>
+
+@code {
+    /// <summary>Der bearbeitete Satz; der Baustein schreibt AN ORT UND STELLE hinein.</summary>
+    [Parameter] public WaermepumpeStammDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen — dasselbe Bündel wie das Feldraster der Kenndaten.</summary>
+    [Parameter] public WaermepumpeStammFelderTexte Texte { get; set; } = new();
+
+    /// <summary>Bedienbar? <c>false</c> sperrt jedes Feld (Auslieferungssatz, AD-Q11).</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Jede Eingabe meldet sich — der Wirt zieht Sperren und Änderungserkennung nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Wie viele leere Felder die letzte Schnellwahl gefüllt hat (nur Anzeige).</summary>
+    private int _gefuellt;
+
+    /// <summary>Wie viele Felder die letzte Schnellwahl gefüllt hat? (Prüfhilfe für Tests.)</summary>
+    public int ZuletztGefuellt => _gefuellt;
+
+    private bool IstR744 => string.Equals(Daten.Kaeltemittel?.Trim(), GeraetegrenzWerte.KAELTEMITTEL_R744,
+                                          StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Die Klappliste: Id = Platz in der Liste, −1 = Bestandswert außerhalb der Liste (A-16).</summary>
+    private IReadOnlyList<(int Id, string Text)> KaeltemittelEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (!string.IsNullOrWhiteSpace(Daten.Kaeltemittel) && KaeltemittelPlatz(Daten.Kaeltemittel) < 0)
+                l.Add((-1, Daten.Kaeltemittel));
+            for (int i = 0; i < Daten.Kaeltemittelliste.Count; i++)
+                l.Add((i, Texte.KaeltemittelText(Daten.Kaeltemittelliste[i].Code)));
+            return l;
+        }
+    }
+
+    private int? KaeltemittelIndex
+        => string.IsNullOrWhiteSpace(Daten.Kaeltemittel) ? null : KaeltemittelPlatz(Daten.Kaeltemittel);
+
+    private int KaeltemittelPlatz(string code)
+    {
+        for (int i = 0; i < Daten.Kaeltemittelliste.Count; i++)
+            if (string.Equals(Daten.Kaeltemittelliste[i].Code, code.Trim(), StringComparison.OrdinalIgnoreCase)) return i;
+        return -1;
+    }
+
+    private Task BeiKaeltemittel(int? index)
+    {
+        if (index is int i && i < 0) return Task.CompletedTask;   // Bestandswert bleibt
+        KaeltemittelEintrag? e = index is int j && j < Daten.Kaeltemittelliste.Count ? Daten.Kaeltemittelliste[j] : null;
+        Daten.Kaeltemittel = e?.Code ?? "";
+        _gefuellt = Schnellwahl(Daten, e);
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task Setzen(Action zuweisung)
+    {
+        zuweisung();
+        return Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// <b>Die Schnellwahl</b> (Umsetzungskonzept 6.3): füllt NUR LEERE Gerätefelder mit den Vorgaben der Klasse von
+    /// <paramref name="eintrag"/>; gepflegte Werte bleiben. Ein Code ohne eigene Klasse (allgemeine Vorgabe) füllt nichts —
+    /// der Kern rechnet dann ohnehin mit der allgemeinen Vorgabe. Liefert die Zahl der gefüllten Felder.
+    /// </summary>
+    public static int Schnellwahl(WaermepumpeStammDaten d, KaeltemittelEintrag? eintrag)
+    {
+        if (d is null || eintrag is null || !eintrag.Klasse) return 0;
+        int n = 0;
+        double? Fuellen(double? feld, double? vorgabe)
+        {
+            if (feld.HasValue || !vorgabe.HasValue) return feld;
+            n++;
+            return vorgabe;
+        }
+        d.SpreizungAuslegungK = Fuellen(d.SpreizungAuslegungK, eintrag.SpreizungAuslegungK);
+        d.SpreizungMaxK = Fuellen(d.SpreizungMaxK, eintrag.SpreizungMaxK);
+        d.SpreizungMinK = Fuellen(d.SpreizungMinK, eintrag.SpreizungMinK);
+        d.MindestvolumenstromProzent = Fuellen(d.MindestvolumenstromProzent, eintrag.MindestvolumenstromProzent);
+        d.RuecklaufMaxC = Fuellen(d.RuecklaufMaxC, eintrag.RuecklaufGrenzeC);
+        d.RuecklaufBezugC = Fuellen(d.RuecklaufBezugC, eintrag.BezugsruecklaufC);
+        d.RuecklaufAbwertungProzentJeK = Fuellen(d.RuecklaufAbwertungProzentJeK, eintrag.AbwertungProzentJeK);
+        return n;
+    }
+
+    /// <summary>Die Bereichshinweise der sieben Zahlfelder, in der Folge des Schemas (<see cref="GeraetegrenzWerte.WP_BEREICHE"/>).</summary>
+    public static IReadOnlyList<string> Bereichshinweise(WaermepumpeStammDaten d, WaermepumpeStammFelderTexte t)
+    {
+        double?[] werte =
+        {
+            d.SpreizungAuslegungK, d.SpreizungMaxK, d.SpreizungMinK, d.MindestvolumenstromProzent,
+            d.RuecklaufMaxC, d.RuecklaufBezugC, d.RuecklaufAbwertungProzentJeK,
+        };
+        string[] namen =
+        {
+            t.LabelSpreizungAuslegung, t.LabelSpreizungMax, t.LabelSpreizungMin, t.LabelMindestvolumenstrom,
+            t.LabelRuecklaufMax, t.LabelRuecklaufBezug, t.LabelRuecklaufAbwertung,
+        };
+        var l = new List<string>();
+        for (int i = 0; i < GeraetegrenzWerte.WP_BEREICHE.Count; i++)
+        {
+            GeraetegrenzWerte.Bereich b = GeraetegrenzWerte.WP_BEREICHE[i];
+            if (!b.Enthaelt(werte[i]))
+                l.Add(string.Format(CultureInfo.CurrentCulture, t.HinweisBereich, namen[i],
+                                    b.Von.ToString(CultureInfo.CurrentCulture), b.Bis.ToString(CultureInfo.CurrentCulture)));
+        }
+        return l;
+    }
+
+    /// <summary>
+    /// <b>Die Gruppe als Lesewerte</b> (V13): Ein Auslieferungssatz zeigt sie im Stammblatt als Text statt als
+    /// gesperrte Eingaben — in derselben Folge und mit denselben Beschriftungen; leer bleibt leer.
+    /// </summary>
+    public static IReadOnlyList<EPOS.UI.Bausteine.Stammblattwert> Grenzwerte(
+        WaermepumpeStammDaten d, WaermepumpeStammFelderTexte t)
+    {
+        string Zahl(double? w) => w is double x ? x.ToString(CultureInfo.CurrentCulture) : "";
+        return new[]
+        {
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelKaeltemittel,
+                string.IsNullOrWhiteSpace(d.Kaeltemittel) ? t.KaeltemittelLeer : t.KaeltemittelText(d.Kaeltemittel)),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelSpreizungAuslegung, Zahl(d.SpreizungAuslegungK), t.EinheitKelvin),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelSpreizungMax, Zahl(d.SpreizungMaxK), t.EinheitKelvin),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelSpreizungMin, Zahl(d.SpreizungMinK), t.EinheitKelvin),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelMindestvolumenstrom, Zahl(d.MindestvolumenstromProzent), t.EinheitProzent),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelRuecklaufMax, Zahl(d.RuecklaufMaxC), t.EinheitGrad),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelRuecklaufBezug, Zahl(d.RuecklaufBezugC), t.EinheitGrad),
+            new EPOS.UI.Bausteine.Stammblattwert(t.LabelRuecklaufAbwertung, Zahl(d.RuecklaufAbwertungProzentJeK), t.EinheitProzentJeK),
+        };
+    }
+}
