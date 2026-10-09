@@ -63,7 +63,7 @@ namespace WindowsFormsApplication1
         /// <summary>Hilfsstromanteil des Kältekreises [0…1) (<c>Kuehl_Hilfsstromanteil</c>, Schritt 183); <c>null</c> = kein Zuschlag.</summary>
         public double? Kuehl_Hilfsstromanteil { get; set; }
 
-        // ---- Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 208); leer = Vorgabe, nie 0 ----
+        // ---- Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 210); leer = Vorgabe, nie 0 ----
 
         /// <summary>Weg der Teillast (<c>LINEAR</c>, <c>KURVE</c>); <c>null</c> = heutiger Weg.</summary>
         public string Teillast_Weg { get; set; }

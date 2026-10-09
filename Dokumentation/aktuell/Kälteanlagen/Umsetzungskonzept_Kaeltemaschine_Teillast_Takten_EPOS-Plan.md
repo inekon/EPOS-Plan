@@ -58,7 +58,7 @@ betroffenen Klassen und den xUnit-Schaltern aus `CLAUDE.md`. Das Modell wird je 
 - **Ziel:** FK 4 und FK 6 — Spalten, Lesen und Schreiben, Prüfregeln, Import, ergänzte Typkennfelder; **keine
   Rechenwirkung** (die Felder werden gelesen, aber nicht gerechnet).
 - **Vorher:** Schemanummer in der Zeile „Schemaschritt angemeldet“ der
-  [Statusdatei](../Status_iOS_Migration.md) anmelden (derzeit 208) und allein diese Zeile sofort pushen lassen
+  [Statusdatei](../Status_iOS_Migration.md) anmelden (gebaut als 210) und allein diese Zeile sofort pushen lassen
   (Orchestrierung).
 - **Schema:** `EPOS.Kern/Allgemein/Update/KaeltemaschineTeillastSchema.cs` (acht Eingabespalten an beiden Tabellen,
   fünf Ergebnisspalten, CHECK, Wiederholbarkeit, DML nur über `KaeltemaschinenTypkennfelder.Ergaenzen()`), Einträge in

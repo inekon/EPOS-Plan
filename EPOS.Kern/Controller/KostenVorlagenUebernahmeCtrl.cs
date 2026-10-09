@@ -251,6 +251,30 @@ namespace WindowsFormsApplication1
                 int komponentenId = KomponenteZuTyp(Convert.ToInt32(r["ID_Type"]));
                 if (komponentenId <= 0) continue;
 
+                // Katalogauswahl Stufe 2 (KA-E-9, KA-E-14): Die Satzvorlagen des Katalogsatzes, aus dem das Geraet stammt,
+                // gehen je Kategorie (Betrieb, Investition) der Standardvorlage des Gewerks vor (Schemaschritt
+                // KatalogkostenUrsprungSchema). An einer Anlage OHNE Position dieser Kategorie legt die Satzvorlage alle ihre
+                // Positionen an (die Kosten des Satzes reisen mit), danach wie die Standardvorlage nur noch die
+                // Pflichtpositionen - eine geloeschte Position kehrt nicht zurueck. Eine Kategorie ohne Satzvorlage faellt
+                // auf den bisherigen Weg (Betrieb: Pflichtpositionen der Standardvorlage).
+                bool betriebAusSatz = false;
+                foreach (KostenVorlageKopf satzvorlage in Katalogrueckweg.SatzvorlagenDerAnlage(
+                             idAnlage, Convert.ToInt32(r["ID_Type"]), komponentenId))
+                {
+                    if (satzvorlage.KategorieId == DbWerte.KOSTEN_KATEGORIE_BETRIEB) betriebAusSatz = true;
+                    try
+                    {
+                        object vorhanden = DataRepository.ExecuteScalar(
+                            "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ? AND KategorieID = ?",
+                            new DbParam("@p", projektId), new DbParam("@a", idAnlage),
+                            new DbParam("@k", satzvorlage.KategorieId));
+                        bool frisch = vorhanden == null || vorhanden == DBNull.Value || Convert.ToInt64(vorhanden) == 0;
+                        angelegt += AusVorlage(projektId, satzvorlage, idAnlage, !frisch).Angelegt;
+                    }
+                    catch { }
+                }
+                if (betriebAusSatz) continue;
+
                 KostenVorlageKopf vorlage;
                 if (!vorlageJeKomponente.TryGetValue(komponentenId, out vorlage))
                 {

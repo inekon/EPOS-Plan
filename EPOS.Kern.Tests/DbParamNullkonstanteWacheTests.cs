@@ -89,6 +89,19 @@ namespace EPOS.Kern.Tests
             + @"(?:[+-]?\s*(?:0+(?:\.0+)?[dDfFmMlLuU]{0,2}|0[xX]0+[uUlL]{0,2}))\s*;",
             RegexOptions.Compiled);
 
+        /// <summary>
+        /// Die <c>const</c>-Deklaration eines beliebigen Typs — <c>string</c>, Zahl, Aufzählung.
+        /// Sie dient der Auflösung in DERSELBEN Datei: Trägt die Datei, die den Aufruf enthält,
+        /// eine eigene Konstante dieses Namens, gilt allein diese Deklaration. Eine
+        /// <c>const string ALLE</c> (<c>Kalendergemeinschaft</c>) ist so keine Nullkonstante, nur
+        /// weil eine andere Klasse (<c>Vergleichssicht</c>) ein <c>const int ALLE = 0</c> trägt —
+        /// eine Textkonstante geht nie in den Aufzählungstyp über, die Überladung mit
+        /// <c>object</c> gewinnt.
+        /// </summary>
+        private static readonly Regex Konstantendeklaration = new Regex(
+            @"\bconst\s+(?<typ>[A-Za-z_][A-Za-z0-9_.?]*)\s+(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*=",
+            RegexOptions.Compiled);
+
         /// <summary>Ein einfacher Bezeichner, ggf. qualifiziert (<c>Klasse.NAME</c>).</summary>
         private static readonly Regex Bezeichner = new Regex(
             @"^(?:[A-Za-z_][A-Za-z0-9_]*\.)*(?<letzt>[A-Za-z_][A-Za-z0-9_]*)$",
@@ -204,6 +217,76 @@ class Probe
         }
 
         /// <summary>
+        /// <b>Gegenprobe zur Auflösung in derselben Datei:</b> Eine <c>const string</c> der
+        /// eigenen Datei ist keine Nullkonstante, auch wenn eine andere Klasse denselben
+        /// Namen als <c>const int … = 0</c> trägt; ein <c>const int X = 0</c> der eigenen
+        /// Datei bleibt ein Treffer, auch wenn die Sammlung des Bestands ihn nicht kennt;
+        /// eine eigene Zahl ungleich 0 überdeckt einen fremden Nullnamen.
+        /// </summary>
+        [Fact]
+        public void Die_Aufloesung_in_derselben_Datei_unterscheidet_Text_und_Nullkonstante()
+        {
+            var bestand = new HashSet<string>(StringComparer.Ordinal) { "ALLE", "GRENZE" };
+            var leer = new HashSet<string>(StringComparer.Ordinal);
+
+            const string text = @"
+class Probe
+{
+    private const string ALLE = DbWerte.KOND_GROESSE_ALLE;
+    private const double GRENZE = 0.5;
+    void Tun()
+    {
+        var a = new DbParam(""@a"", ALLE);
+        var b = new DbParam(""@a2"", ALLE);
+        var c = new DbParam(""@g"", GRENZE);
+    }
+}";
+            Assert.Empty(Fundstellen(text, bestand));
+
+            // Qualifiziert entscheidet weiter die Sammlung des Bestands.
+            const string qualifiziert = @"
+class Probe
+{
+    private const string ALLE = ""alle"";
+    void Tun() { var a = new DbParam(""@a"", Vergleichssicht.ALLE); }
+}";
+            Assert.Single(Fundstellen(qualifiziert, bestand));
+
+            const string nullInt = @"
+class Probe
+{
+    private const int X = 0;
+    private const long ALLE = 0L;
+    void Tun()
+    {
+        var a = new DbParam(""@x"", X);
+        var b = new DbParam(""@a"", ALLE);
+    }
+}";
+            Assert.Equal(2, Fundstellen(nullInt, leer).Count());
+            Assert.Equal(2, Fundstellen(nullInt, bestand).Count());
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe am Bestand:</b> <c>Kalendergemeinschaft</c> bindet ihre Textkonstante
+        /// <c>ALLE</c> an neun Stellen und bleibt still, obwohl <c>Vergleichssicht.ALLE</c> ein
+        /// <c>const int … = 0</c> ist und in der Sammlung steht.
+        /// </summary>
+        [Fact]
+        public void Die_Textkonstante_ALLE_der_Kalendergemeinschaft_ist_keine_Nullkonstante()
+        {
+            string[] dateien = Quelldateien();
+            HashSet<string> namen = Nullkonstanten(dateien);
+            Assert.Contains("ALLE", namen);
+
+            string datei = dateien.Single(d => Path.GetFileName(d) == "Kalendergemeinschaft.cs");
+            string quelltext = File.ReadAllText(datei);
+            Assert.Contains("private const string ALLE", quelltext, StringComparison.Ordinal);
+            Assert.True(Aufruf.Matches(quelltext).Cast<Match>().Count(m => m.Groups["b"].Value.Trim() == "ALLE") >= 9);
+            Assert.Empty(Fundstellen(quelltext, namen));
+        }
+
+        /// <summary>
         /// <b>Gegenprobe zur Sammlung der <c>const</c>-Nullen:</b> Sie findet die
         /// bekannten Stellen des Bestands wieder. Fände sie nichts, prüfte der Wächter
         /// oben nur noch die Literale — und die gefährlichere Hälfte der Falle, der
@@ -290,10 +373,16 @@ class Probe
 
             string gelesen = text.ToString();
 
+            // Die Konstanten DIESER Datei: jede deklarierte und die mit dem Wert 0.
+            var lokal = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Match k in Konstantendeklaration.Matches(gelesen)) lokal.Add(k.Groups["name"].Value);
+            var lokalNull = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Match k in Nullkonstante.Matches(gelesen)) lokalNull.Add(k.Groups["name"].Value);
+
             foreach (Match m in Aufruf.Matches(gelesen))
             {
                 string zweites = m.Groups["b"].Value.Trim();
-                if (!IstKonstanteNull(zweites, nullkonstanten)) continue;
+                if (!IstKonstanteNull(zweites, nullkonstanten, lokal, lokalNull)) continue;
 
                 yield return new Fund(ZeileZu(m.Index, anfang, nummer),
                                       Regex.Replace(m.Value, @"\s+", " ").Trim());
@@ -303,14 +392,27 @@ class Probe
         /// <summary>
         /// Ist dieser Ausdruck eine konstante Null — als Literal oder als Name einer
         /// <c>const</c>-Deklaration mit dem Wert 0?
+        ///
+        /// <para><b>Auflösung:</b> Ein UNQUALIFIZIERTER Name, den dieselbe Datei als
+        /// <c>const</c> deklariert, wird gegen diese Deklaration entschieden — Treffer nur,
+        /// wenn sie numerisch mit dem Wert 0 ist; eine <c>const string</c> oder eine Zahl
+        /// ungleich 0 derselben Datei ist keiner. Alle übrigen Namen (qualifizierte und
+        /// solche aus anderen Dateien) prüft weiter die Sammlung des ganzen Bestands —
+        /// bewusst vorsichtig: Ein gleichnamiges <c>const int … = 0</c> irgendwo genügt.</para>
         /// </summary>
-        private static bool IstKonstanteNull(string ausdruck, HashSet<string> nullkonstanten)
+        private static bool IstKonstanteNull(string ausdruck, HashSet<string> nullkonstanten,
+                                             HashSet<string> lokal, HashSet<string> lokalNull)
         {
             if (ausdruck.Length == 0) return false;
             if (Nullliteral.IsMatch(ausdruck)) return true;
 
             Match b = Bezeichner.Match(ausdruck);
-            return b.Success && nullkonstanten.Contains(b.Groups["letzt"].Value);
+            if (!b.Success) return false;
+
+            string name = b.Groups["letzt"].Value;
+            if (ausdruck.IndexOf('.') < 0 && lokal.Contains(name)) return lokalNull.Contains(name);
+
+            return nullkonstanten.Contains(name);
         }
 
         /// <summary>Alle <c>const</c>-Bezeichner des Bestands, deren Wert 0 ist.</summary>

@@ -2922,6 +2922,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten… ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Katalogsätze bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Projektsätze bearbeiten (Projektkopie) ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Projekt entfernen ähnelt.
         /// </summary>
         public static string AUSWAHL_BTN_ENTFERNEN {
@@ -2940,6 +2967,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu… ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_NEU {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die In das Projekt übernehmen ähnelt.
         /// </summary>
         public static string AUSWAHL_BTN_UEBERNEHMEN {
@@ -2954,6 +2990,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_BTN_UEBERNEHMEN_HINWEIS {
             get {
                 return ResourceManager.GetString("AUSWAHL_BTN_UEBERNEHMEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichen… ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_VERGLEICHEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_VERGLEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwei oder mehr Katalogsätze wählen, um sie zu vergleichen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_BTN_VERGLEICHEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_BTN_VERGLEICHEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogeinträge werden für ALLE Projekte gelöscht: {1}. Fortfahren? ähnelt.
+        /// </summary>
+        public static string AUSWAHL_FRAGE_LOESCHEN_N {
+            get {
+                return ResourceManager.GetString("AUSWAHL_FRAGE_LOESCHEN_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze: ähnelt.
+        /// </summary>
+        public static string AUSWAHL_FUSS_SAETZE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_FUSS_SAETZE", resourceCulture);
             }
         }
         
@@ -3035,6 +3107,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_SATZ_LEER {
             get {
                 return ResourceManager.GetString("AUSWAHL_SATZ_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur lesen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_NUR_LESEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_NUR_LESEN", resourceCulture);
             }
         }
         
@@ -41475,6 +41556,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe [kWth]: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("HZK_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff Variante: ähnelt.
         /// </summary>
         public static string HZK_LBL_TRAEGER {
@@ -41507,6 +41597,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZK_MSG_NICHT_GEFUNDEN {
             get {
                 return ResourceManager.GetString("HZK_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_SAMMEL_FEHLT {
+            get {
+                return ResourceManager.GetString("HZK_MSG_SAMMEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_SAMMEL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_SAMMEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_SAMMEL_KEINE {
+            get {
+                return ResourceManager.GetString("HZK_MSG_SAMMEL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string HZK_MSG_SAMMEL_VERSTOSS {
+            get {
+                return ResourceManager.GetString("HZK_MSG_SAMMEL_VERSTOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage. ähnelt.
+        /// </summary>
+        public static string HZK_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("HZK_RUECK_BLEIBT", resourceCulture);
             }
         }
         
@@ -48266,6 +48410,321 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATEIN_LISTE {
             get {
                 return ResourceManager.GetString("KATEIN_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Übernehmen in die Datenbank. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_FEHLER {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Ursprung ist gesperrt – erst Schloss aufheben. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektsatz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_KEINE_KOPIE {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_KEINE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist im Katalog schon vergeben. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Bitte einen Namen für den neuen Katalogsatz eingeben. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_NAME_LEER {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Ursprung ist nicht mehr vorhanden. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_URSPRUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_URSPRUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Ursprung ist nicht bekannt. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_VERSTOSS {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_VERSTOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitions- und Betriebskosten aus Projekt „{0}“, {1} ähnelt.
+        /// </summary>
+        public static string KATRUECK_BEMERKUNG_VORLAGE {
+            get {
+                return ResourceManager.GetString("KATRUECK_BEMERKUNG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In die Datenbank übernehmen… ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Projektsätze als Katalogsätze in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ursprung nicht mehr vorhanden ähnelt.
+        /// </summary>
+        public static string KATRUECK_GRUND_FEHLT {
+            get {
+                return ResourceManager.GetString("KATRUECK_GRUND_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst Schloss aufheben ähnelt.
+        /// </summary>
+        public static string KATRUECK_GRUND_GESPERRT {
+            get {
+                return ResourceManager.GetString("KATRUECK_GRUND_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ursprung nicht bekannt ähnelt.
+        /// </summary>
+        public static string KATRUECK_GRUND_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KATRUECK_GRUND_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Investitions- und Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit. ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_KOSTEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name im Katalog vergeben ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name zweimal gewählt ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name fehlt ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_NAME_LEER {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als neuer Satz, weil der Ursprung nicht überschrieben werden kann: {0} ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_RUECKFALL {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz „{0}“ ist gelöscht. Seine Kostenvorlage bleibt erhalten, weil Kostenpositionen in Projekten aus ihr stammen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_LOESCHEN_VORLAGE_PROJEKT {
+            get {
+                return ResourceManager.GetString("KATRUECK_LOESCHEN_VORLAGE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze in die Datenbank übernommen: {1}. ähnelt.
+        /// </summary>
+        public static string KATRUECK_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ in die Datenbank übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_MSG_UEBERNOMMEN_1 {
+            get {
+                return ResourceManager.GetString("KATRUECK_MSG_UEBERNOMMEN_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projekt) ähnelt.
+        /// </summary>
+        public static string KATRUECK_NAME_ZUSATZ {
+            get {
+                return ResourceManager.GetString("KATRUECK_NAME_ZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projekt {1}) ähnelt.
+        /// </summary>
+        public static string KATRUECK_NAME_ZUSATZ_N {
+            get {
+                return ResourceManager.GetString("KATRUECK_NAME_ZUSATZ_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name im Katalog ähnelt.
+        /// </summary>
+        public static string KATRUECK_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KATRUECK_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektsatz ähnelt.
+        /// </summary>
+        public static string KATRUECK_SPALTE_PROJEKTSATZ {
+            get {
+                return ResourceManager.GetString("KATRUECK_SPALTE_PROJEKTSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahl ähnelt.
+        /// </summary>
+        public static string KATRUECK_SPALTE_WAHL {
+            get {
+                return ResourceManager.GetString("KATRUECK_SPALTE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_TITEL {
+            get {
+                return ResourceManager.GetString("KATRUECK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz gelöscht ähnelt.
+        /// </summary>
+        public static string KATRUECK_TITEL_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_TITEL_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_TITEL_N {
+            get {
+                return ResourceManager.GetString("KATRUECK_TITEL_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für alle: ähnelt.
+        /// </summary>
+        public static string KATRUECK_WAHL_ALLE {
+            get {
+                return ResourceManager.GetString("KATRUECK_WAHL_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die als neuen Katalogsatz anlegen ähnelt.
+        /// </summary>
+        public static string KATRUECK_WAHL_NEU {
+            get {
+                return ResourceManager.GetString("KATRUECK_WAHL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ursprung überschreiben ähnelt.
+        /// </summary>
+        public static string KATRUECK_WAHL_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_WAHL_UEBERSCHREIBEN", resourceCulture);
             }
         }
         
@@ -60790,6 +61249,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PVA_NENNLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PVA_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht. „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_ABWEICHUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_ABWEICHUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung vom Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_ABWEICHUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_ABWEICHUNG_NAME", resourceCulture);
             }
         }
         
@@ -82696,6 +83173,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenvorlage des Satzes: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_KOSTENVORLAGE {
+            get {
+                return ResourceManager.GetString("PARV_LBL_KOSTENVORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionsvorlage des Satzes: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_KOSTENVORLAGE_INVESTITION {
+            get {
+                return ResourceManager.GetString("PARV_LBL_KOSTENVORLAGE_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. therm. Leistung: ähnelt.
         /// </summary>
         public static string PARV_LBL_MAXPTHERM {
@@ -92867,6 +93362,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string PVG_ABW_JAHRESSUMME {
+            get {
+                return ResourceManager.GetString("PVG_ABW_JAHRESSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string PVG_ABW_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVG_ABW_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raster ähnelt.
+        /// </summary>
+        public static string PVG_ABW_RASTER {
+            get {
+                return ResourceManager.GetString("PVG_ABW_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe ähnelt.
+        /// </summary>
+        public static string PVG_ABW_REIHE {
+            get {
+                return ResourceManager.GetString("PVG_ABW_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weicht vom Katalog ab: {0} ähnelt.
+        /// </summary>
+        public static string PVG_ABW_TEXT {
+            get {
+                return ResourceManager.GetString("PVG_ABW_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die entfällt (Ganglinie) ähnelt.
         /// </summary>
         public static string PVG_AUSWEIS_ENTFAELLT {
@@ -92930,11 +93470,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Katalog erneuern… ähnelt.
+        /// </summary>
+        public static string PVG_BTN_ERNEUERN {
+            get {
+                return ResourceManager.GetString("PVG_BTN_ERNEUERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung bearbeiten… ähnelt.
         /// </summary>
         public static string PVG_BTN_NENNLEISTUNG {
             get {
                 return ResourceManager.GetString("PVG_BTN_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie „{0}“ wird durch den Katalogsatz gleichen Namens ersetzt: Beschreibung, Raster, Nennleistung, Jahresarbeit und die Reihe. Die Zuordnung zum Projekt bleibt. ähnelt.
+        /// </summary>
+        public static string PVG_ERNEUERN_FRAGE {
+            get {
+                return ResourceManager.GetString("PVG_ERNEUERN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        /// </summary>
+        public static string PVG_ERNEUERN_SIMULATION {
+            get {
+                return ResourceManager.GetString("PVG_ERNEUERN_SIMULATION", resourceCulture);
             }
         }
         
@@ -93029,6 +93596,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie gleicht dem Katalogsatz bereits. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERN_GLEICH {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERN_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt noch keine Kopie dieser Ganglinie; sie entsteht beim OK aus dem Katalog. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERN_KEINE_KOPIE {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERN_KEINE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt keine PV-Ganglinie dieses Namens mehr; die Projektkopie bleibt, wie sie ist. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERN_KEIN_KATALOG {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERN_KEIN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie „{0}“ trägt jetzt den Stand des Katalogs. Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERT {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung von „{0}“ gespeichert. ähnelt.
         /// </summary>
         public static string PVG_MSG_NENN_GESPEICHERT {
@@ -93110,7 +93713,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie, bis sie im Projekt über „Aus dem Katalog erneuern…“ erneuert wird. ähnelt.
         /// </summary>
         public static string PVG_NENN_PROJEKTKOPIEN {
             get {
@@ -93151,6 +93754,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVG_TITEL {
             get {
                 return ResourceManager.GetString("PVG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkopie aus dem Katalog erneuern ähnelt.
+        /// </summary>
+        public static string PVG_TITEL_ERNEUERN {
+            get {
+                return ResourceManager.GetString("PVG_TITEL_ERNEUERN", resourceCulture);
             }
         }
         
@@ -98815,6 +99427,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_TXT_ZONENKOPF {
             get {
                 return ResourceManager.GetString("RNP_TXT_ZONENKOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string SATZBEARB_BLATT {
+            get {
+                return ResourceManager.GetString("SATZBEARB_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für alle gewählten setzen ähnelt.
+        /// </summary>
+        public static string SATZBEARB_FUER_ALLE {
+            get {
+                return ResourceManager.GetString("SATZBEARB_FUER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Sätzen geändert ähnelt.
+        /// </summary>
+        public static string SATZBEARB_GEAENDERT {
+            get {
+                return ResourceManager.GetString("SATZBEARB_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung ähnelt.
+        /// </summary>
+        public static string SATZBEARB_KEINE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("SATZBEARB_KEINE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesperrt – die Felder sind nur lesbar. ähnelt.
+        /// </summary>
+        public static string SATZBEARB_NUR_LESEN {
+            get {
+                return ResourceManager.GetString("SATZBEARB_NUR_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        /// </summary>
+        public static string SATZBEARB_SCHLIESSEN {
+            get {
+                return ResourceManager.GetString("SATZBEARB_SCHLIESSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz bearbeiten – {0} ähnelt.
+        /// </summary>
+        public static string SATZBEARB_TITEL_KATALOG {
+            get {
+                return ResourceManager.GetString("SATZBEARB_TITEL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogsätze bearbeiten ähnelt.
+        /// </summary>
+        public static string SATZBEARB_TITEL_KATALOG_N {
+            get {
+                return ResourceManager.GetString("SATZBEARB_TITEL_KATALOG_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektsatz bearbeiten – {0} ähnelt.
+        /// </summary>
+        public static string SATZBEARB_TITEL_PROJEKT {
+            get {
+                return ResourceManager.GetString("SATZBEARB_TITEL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Projektsätze bearbeiten ähnelt.
+        /// </summary>
+        public static string SATZBEARB_TITEL_PROJEKT_N {
+            get {
+                return ResourceManager.GetString("SATZBEARB_TITEL_PROJEKT_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersprungen (gesperrt): {0} ähnelt.
+        /// </summary>
+        public static string SATZBEARB_UEBERSPRUNGEN {
+            get {
+                return ResourceManager.GetString("SATZBEARB_UEBERSPRUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nächster Satz ähnelt.
+        /// </summary>
+        public static string SATZBEARB_VOR {
+            get {
+                return ResourceManager.GetString("SATZBEARB_VOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Voriger Satz ähnelt.
+        /// </summary>
+        public static string SATZBEARB_ZURUECK {
+            get {
+                return ResourceManager.GetString("SATZBEARB_ZURUECK", resourceCulture);
             }
         }
         

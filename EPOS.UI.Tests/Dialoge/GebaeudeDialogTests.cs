@@ -156,7 +156,7 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll("select"));
         Assert.Empty(cut.FindAll("input[type=radio]"));
         Assert.Single(cut.FindAll(".epos-katalogliste"));
-        Assert.Single(cut.FindAll(".epos-katalogliste input[type=search]"));
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile input[type=search]"));
         Assert.Equal(6, cut.FindAll("input[type=text][readonly]").Count);
         Assert.Single(cut.FindAll("textarea[readonly]"));
 

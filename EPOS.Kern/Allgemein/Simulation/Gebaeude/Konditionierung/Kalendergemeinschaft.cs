@@ -494,6 +494,37 @@ namespace WindowsFormsApplication1
             return n;
         }
 
+        /// <summary>
+        /// <b>Die Hülle jedes Schreibwegs der Ferienspalten</b> <c>Ferienbeginn/-ende_1…4</c>: liest vor der
+        /// <paramref name="aktion"/> die Namen der Ferienzeiträume 1 bis 4 (<see cref="FeriennamenLesen"/>), führt sie aus und
+        /// schreibt die Namen danach zurück (<see cref="FeriennamenSchreiben"/>) — der Spiegel-Trigger legt die Spiegelperioden
+        /// bei jeder Datumsänderung neu als „Ferien k" an. Im laufenden Vorgang (<see cref="Vorgangsklammer"/>) schreibt sie in
+        /// ihm, sonst in einem eigenen. Ein Name, dessen Zeitraum die Aktion entfernt, fällt mit seiner Spiegelperiode; ein
+        /// unverändertes Datum lässt den Trigger ruhen und die Namen stehen. Namen wirken nie auf die Rechnung.
+        /// </summary>
+        /// <param name="eigner">Gebäude oder Katalogbau; <c>null</c> führt nur die Aktion aus.</param>
+        /// <param name="aktion">Das Schreiben der Spalten; <c>false</c> heißt gescheitert, dann bleibt alles, wie die Aktion es lässt.</param>
+        /// <returns>Das Ergebnis der Aktion.</returns>
+        public static bool MitFeriennamen(Schluessel eigner, Func<bool> aktion)
+        {
+            if (aktion == null) throw new ArgumentNullException(nameof(aktion));
+            string[] namen = FeriennamenLesen(eigner);
+            if (!aktion()) return false;
+            if (eigner == null || namen.All(n => n == null)) return true;
+            DbVorgang laufend = Vorgangsklammer.Aktueller;
+            if (laufend != null)
+            {
+                FeriennamenSchreiben(laufend, eigner, namen);
+                return true;
+            }
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                FeriennamenSchreiben(v, eigner, namen);
+                v.Commit();
+            }
+            return true;
+        }
+
         private static DbParam[] SpiegelParameter(Schluessel eigner, int k)
             => new[] { new DbParam("@r", KalenderbedienungSchema.RANG_FERIEN_ERSTER + k), new DbParam("@art", DbWerte.KOND_ART_FERIEN) }
                .Concat(eigner.Parameter()).Concat(new[] { new DbParam("@a", GROESSE_ALLE) }).ToArray();

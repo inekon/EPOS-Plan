@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // KM3 - TEILLAST UND TAKTEN DER KAELTEMASCHINE (Fachkonzept Teillast und Takten der Kaeltemaschine,
-    // Abschnitte 4.1, 5.3 und 6; Umsetzungskonzept Abschnitt 3.1, Etappe KM3-E1, Welle E1-a; Schemaschritt 208).
+    // Abschnitte 4.1, 5.3 und 6; Umsetzungskonzept Abschnitt 3.1, Etappe KM3-E1, Welle E1-a; Schemaschritt 210).
     //
     // WOZU. Die Kaeltemaschine bekommt eine Lastachse (Teillastkurve EIRFPLR mit drei Beiwerten und ihrer unteren
     // Gueltigkeit), den Taktverlustfaktor C_d, die Verdichterregelung und den Weg an den Raendern des Kennfelds; das
@@ -34,7 +34,7 @@ namespace WindowsFormsApplication1
     // wo leer, Pruefsumme neu (KatalogSchluesselSaat). Projektkopien und eigene Saetze bleiben unberuehrt. Das DDL in
     // EINEM Vorgang mit abgeschalteten Fremdschluesseln, die Ergaenzung in einem eigenen; wiederholbar.
     //
-    // NUMMER. 208 haengt ueber KalenderbedienungSchema.SCHRITT + 1 an 207 (Anwenderentscheid: KM3 auf 208, KA1 auf 209).
+    // NUMMER. 210 haengt ueber KatalogkostenInvestitionSchema.SCHRITT + 1 an 209 (Anwenderentscheid: KM3 auf 210, KA1 auf 208/209).
     //
     // VIER LESER: SchemaMigration (Schale), Werkzeuge/Testdatenbankschema, die Testvorrichtung in EPOS.Kern.Tests und
     // die Paketanhebung (Art Katalog).
@@ -48,10 +48,10 @@ namespace WindowsFormsApplication1
     public static class KaeltemaschineTeillastSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> (Schritt 208) — die EINE Stelle, an der sie steht. Hängt an 207
-        /// <c>KalenderbedienungSchema</c>.
+        /// <b>Die Nummer des Schemaschritts</b> (Schritt 210) — die EINE Stelle, an der sie steht. Hängt an 209
+        /// <c>KatalogkostenInvestitionSchema</c>.
         /// </summary>
-        public const int SCHRITT = KalenderbedienungSchema.SCHRITT + 1;
+        public const int SCHRITT = KatalogkostenInvestitionSchema.SCHRITT + 1;
 
         /// <summary>Der Katalog der Kältemaschinen.</summary>
         public const string TAB_STAMM = KaeltemaschineSchema.TAB_STAMM;

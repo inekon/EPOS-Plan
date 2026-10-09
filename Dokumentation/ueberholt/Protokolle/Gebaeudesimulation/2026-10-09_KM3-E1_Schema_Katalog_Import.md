@@ -1,11 +1,11 @@
-# Protokoll KM3-E1 — Schemaschritt 208, Katalog, Import der Teillastkurve (09.10.2026)
+# Protokoll KM3-E1 — Schemaschritt 210, Katalog, Import der Teillastkurve (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#870**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E114 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+**Sitzung:** Gebäudesimulation, Statuszeile **#874**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E114 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 
 ## 1 Auftrag und Entscheidlage
 
 - **E114** (Anwender, 09.10.2026): Startfreigabe KM3 mit den Entscheiden KM3-Q1 bis Q11 nach Empfehlung a.
-- Schemanummer: angemeldet als 209, mit Anwenderentscheid vom 09.10.2026 (Weg B) auf **208** gesetzt, hängt an 207 `KalenderbedienungSchema` (`8cbda3b97`); KA1 (Konto 2) rückt auf 209.
+- Schemanummer: angemeldet als 209, mit Anwenderentscheid vom 09.10.2026 (Weg B) auf 208 gesetzt (`8cbda3b97`); nach dem Bau von 208 `KatalogkostenUrsprungSchema` und 209 `KatalogkostenInvestitionSchema` durch KA1 (Konto 2, #873) mit Anwenderentscheid 09.10.2026 19:55 UTC auf **210** verschoben, hängt an 209 `KatalogkostenInvestitionSchema` (KM3-M2).
 - Entscheid der Orchestrierung: Die Plausibilitätsgrenze des Gütemaßes sinkt auf 0,3, weil sieben Festdrehzahl-Sätze physikalisch plausibel sind.
 
 ## 2 Wellen
@@ -19,7 +19,7 @@
 ## 3 Dateien
 
 - Kern: Schemaschritt `KaeltemaschineTeillastSchema` (`SchemaMigration`), `KaeltemaschineStammCtrl`, `KaeltemaschinenTypkennfelder`, `KaelteFestwerte`, Import (Copper, CSV).
-- Testdatenbank: `Referenzlaeufe/Kenndaten_Test.sqlite` (Schemastand 208).
+- Testdatenbank: `Referenzlaeufe/Kenndaten_Test.sqlite` (Schemastand 210).
 - Ressourcen in beiden Sprachen (14 Schlüssel).
 
 ## 4 Proben

@@ -59,6 +59,10 @@
         @if (!string.IsNullOrEmpty(Titel) || Schliessbar)
         {
             <div class="epos-ueberlagerung-kopf">
+                @if (Kopfzusatz is not null)
+                {
+                    <span class="epos-ueberlagerung-kopfzusatz">@Kopfzusatz</span>
+                }
                 <h2 class="epos-ueberlagerung-titel">@Titel</h2>
                 @if (Schliessbar)
                 {
@@ -106,6 +110,12 @@
 
     /// <summary>Der Inhalt — ueblich ein vollstaendiger Dialog aus <c>Dialoge/</c>.</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// Eine Marke vor dem Titel im Kopf (Katalogauswahl: „Projektsatz"/„Katalogsatz" sagt,
+    /// was gespeichert wird, KA‑E‑8). Ohne sie bleibt der Kopf, wie er war.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfzusatz { get; set; }
 
     /// <summary>Zeigt das ✕ in der Kopfzeile. <c>false</c> = nur der Inhalt schliesst.</summary>
     [Parameter] public bool Schliessbar { get; set; } = true;

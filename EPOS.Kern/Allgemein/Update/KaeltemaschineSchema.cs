@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die zwölf Grundspalten des Kopfs, die seit diesem Schritt stehen — der Kopf, den die Schreibwege in EINER
         /// Anweisung schreiben. Die acht Spalten von Teillast und Takten (<see cref="KaeltemaschineTeillastSchema"/>,
-        /// Schritt 208) schreiben sie in einem eigenen Schritt, nur wenn die Spalten stehen.
+        /// Schritt 210) schreiben sie in einem eigenen Schritt, nur wenn die Spalten stehen.
         /// </summary>
         public static readonly string[] Grundspalten =
         {
@@ -139,7 +139,7 @@ namespace WindowsFormsApplication1
 
         static KaeltemaschineSchema()
         {
-            // KaeltemaschineTeillastSchema (Schritt 208): die acht Eingabespalten haengen hinten an; leer tragen sie nichts
+            // KaeltemaschineTeillastSchema (Schritt 210): die acht Eingabespalten haengen hinten an; leer tragen sie nichts
             // zur Pruefsumme bei, eine Datenbank vor dem Schritt fuehrt sie nicht (Katalogfassung.VorhandeneFachspalten).
             Fachspalten = Grundspalten.Concat(KaeltemaschineTeillastSchema.EINGABESPALTEN).ToArray();
         }

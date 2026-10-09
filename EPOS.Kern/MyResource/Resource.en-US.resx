@@ -28350,12 +28350,6 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
   </data>
-  <data name="SIMENG_KAELTE_KM_KURVE_VERWORFEN" xml:space="preserve">
-    <value>Chiller "{0}": the part-load curve is incomplete or not plausible — calculated linearly with cycling loss.</value>
-  </data>
-  <data name="SIMENG_KAELTE_KM_EXTRAPOLIERT" xml:space="preserve">
-    <value>Chiller "{0}": in {1} hours the EER was continued beyond the edge of the performance map using the efficiency grade.</value>
-  </data>
   <data name="SIMENG_KAELTE_KM_BETRIEB" xml:space="preserve">
     <value>Chiller "{0}" (chilled water {1} °C): {2} MWh cooling, of which {3} MWh in {4} hours of free cooling, {5} MWh electricity; cycling below minimum part load in {6} hours.</value>
   </data>
@@ -49992,6 +49986,90 @@ chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV generation profile</value>
   </data>
+  <data name="AUSWAHL_FUSS_SAETZE" xml:space="preserve">
+    <value>{0} records:</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Edit the selected project records (project copy)</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Edit the selected catalogue records</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN" xml:space="preserve">
+    <value>Compare…</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN_HINWEIS" xml:space="preserve">
+    <value>Select two or more catalogue records to compare them</value>
+  </data>
+  <data name="AUSWAHL_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="AUSWAHL_FRAGE_LOESCHEN_N" xml:space="preserve">
+    <value>{0} catalogue entries will be deleted for ALL projects: {1}. Continue?</value>
+  </data>
+  <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
+    <value>read-only</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
+    <value>Edit project record – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG" xml:space="preserve">
+    <value>Edit catalogue record – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT_N" xml:space="preserve">
+    <value>Edit {0} project records</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG_N" xml:space="preserve">
+    <value>Edit {0} catalogue records</value>
+  </data>
+  <data name="SATZBEARB_BLATT" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="SATZBEARB_ZURUECK" xml:space="preserve">
+    <value>Previous record</value>
+  </data>
+  <data name="SATZBEARB_VOR" xml:space="preserve">
+    <value>Next record</value>
+  </data>
+  <data name="SATZBEARB_FUER_ALLE" xml:space="preserve">
+    <value>set for all selected</value>
+  </data>
+  <data name="SATZBEARB_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Skipped (locked): {0}</value>
+  </data>
+  <data name="SATZBEARB_NUR_LESEN" xml:space="preserve">
+    <value>Locked – the fields are read-only.</value>
+  </data>
+  <data name="SATZBEARB_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="SATZBEARB_GEAENDERT" xml:space="preserve">
+    <value>{0} of {1} records changed</value>
+  </data>
+  <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
+    <value>No change</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+    <value>No change.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+    <value>The record with number {0} was not found. Nothing was saved.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+    <value>“{0}” is locked. Nothing was saved.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+    <value>“{0}”: {1} Nothing was saved.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+    <value>{0} records saved.</value>
+  </data>
+  <data name="HZK_LBL_SUMME" xml:space="preserve">
+    <value>Total [kWth]:</value>
+  </data>
   <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
     <value>The peak of the series ({0:N1} kW) exceeds the rated power × 1.1 ({1:N2} kWp). Please check the rated power and the unit of the file (kW, not W).</value>
   </data>
@@ -50082,53 +50160,107 @@ chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Module model</value>
   </data>
-  <data name="KM_MSG_TEILLASTWEG_UNGUELTIG" xml:space="preserve">
-    <value>The part-load method must be “linear”, “curve” or empty.</value>
+  <data name="KATRUECK_NAME_ZUSATZ" xml:space="preserve">
+    <value>{0} (project)</value>
   </data>
-  <data name="KM_MSG_VERDICHTERREGELUNG_UNGUELTIG" xml:space="preserve">
-    <value>The compressor control must be “on/off”, “staged”, “variable speed” or empty.</value>
+  <data name="KATRUECK_NAME_ZUSATZ_N" xml:space="preserve">
+    <value>{0} (project {1})</value>
   </data>
-  <data name="KM_MSG_RANDWEG_UNGUELTIG" xml:space="preserve">
-    <value>The method at the edges of the performance map must be “edge value”, “efficiency grade” or empty.</value>
+  <data name="KATRUECK_ABSAGE_KEINE_KOPIE" xml:space="preserve">
+    <value>The project record number {0} was not found. Nothing was copied.</value>
   </data>
-  <data name="KM_MSG_TEILLASTANTEIL_UNGUELTIG" xml:space="preserve">
-    <value>The minimum load ratio of the part-load curve and the cycling loss factor C_d must be between 0 and 1.</value>
+  <data name="KATRUECK_ABSAGE_NAME_LEER" xml:space="preserve">
+    <value>“{0}”: Please enter a name for the new catalogue record. Nothing was copied.</value>
   </data>
-  <data name="KM_MSG_TEILLASTKURVE_BEIWERTE" xml:space="preserve">
-    <value>The part-load curve needs all three coefficients: a between −1 and 2, b and c between −2 and 3.</value>
+  <data name="KATRUECK_ABSAGE_NAME_BELEGT" xml:space="preserve">
+    <value>The name “{0}” is already used in the catalogue. Nothing was copied.</value>
   </data>
-  <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
-    <value>The part-load curve is not plausible: at full load a + b + c must be between 0.9 and 1.1, and the EER ratio must stay between 0.5 and 2.0 within the valid load range.</value>
+  <data name="KATRUECK_ABSAGE_GESPERRT" xml:space="preserve">
+    <value>“{0}”: The origin is locked – unlock it first. Nothing was copied.</value>
   </data>
-  <data name="KM_IMP_MSG_TEILLAST_HINWEISE" xml:space="preserve">
-    <value>{0} note(s) on the part-load curve: {1}</value>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_FEHLT" xml:space="preserve">
+    <value>“{0}”: The origin no longer exists. Nothing was copied.</value>
   </data>
-  <data name="KM_MSG_NENN_EER_ABWEICHUNG" xml:space="preserve">
-    <value>Note: The rated EER {0} deviates by {2} from the EER of the performance map at the rating point ({1}). Please check the rated EER and the map.</value>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT" xml:space="preserve">
+    <value>“{0}”: The origin is not known. Nothing was copied.</value>
   </data>
-  <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
-    <value>Part-load method</value>
+  <data name="KATRUECK_ABSAGE_VERSTOSS" xml:space="preserve">
+    <value>“{0}”: {1} Nothing was copied.</value>
   </data>
-  <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
-    <value>Part-load curve a</value>
+  <data name="KATRUECK_ABSAGE_FEHLER" xml:space="preserve">
+    <value>Error while copying to the database. Nothing was copied.</value>
   </data>
-  <data name="KM_LBL_TEILLASTKURVE_B" xml:space="preserve">
-    <value>Part-load curve b</value>
+  <data name="KATRUECK_MSG_UEBERNOMMEN_1" xml:space="preserve">
+    <value>“{0}” copied to the database.</value>
   </data>
-  <data name="KM_LBL_TEILLASTKURVE_C" xml:space="preserve">
-    <value>Part-load curve c</value>
+  <data name="KATRUECK_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} records copied to the database: {1}.</value>
   </data>
-  <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
-    <value>Minimum load ratio of the curve</value>
+  <data name="KATRUECK_BEMERKUNG_VORLAGE" xml:space="preserve">
+    <value>Investment and operating costs from project “{0}”, {1}</value>
   </data>
-  <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
-    <value>Cycling loss factor C_d</value>
+  <data name="KATRUECK_GRUND_GESPERRT" xml:space="preserve">
+    <value>Unlock first</value>
   </data>
-  <data name="KM_LBL_VERDICHTERREGELUNG" xml:space="preserve">
-    <value>Compressor control</value>
+  <data name="KATRUECK_GRUND_FEHLT" xml:space="preserve">
+    <value>Origin no longer exists</value>
   </data>
-  <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
-    <value>Method at the map edges</value>
+  <data name="KATRUECK_GRUND_UNBEKANNT" xml:space="preserve">
+    <value>Origin not known</value>
+  </data>
+  <data name="KATRUECK_BTN" xml:space="preserve">
+    <value>Copy to database…</value>
+  </data>
+  <data name="KATRUECK_BTN_HINWEIS" xml:space="preserve">
+    <value>Copy the selected project records to the database as catalogue records</value>
+  </data>
+  <data name="KATRUECK_TITEL" xml:space="preserve">
+    <value>Copy “{0}” to the database</value>
+  </data>
+  <data name="KATRUECK_TITEL_N" xml:space="preserve">
+    <value>Copy {0} records to the database</value>
+  </data>
+  <data name="KATRUECK_WAHL_ALLE" xml:space="preserve">
+    <value>For all:</value>
+  </data>
+  <data name="KATRUECK_WAHL_NEU" xml:space="preserve">
+    <value>create as new catalogue record</value>
+  </data>
+  <data name="KATRUECK_WAHL_UEBERSCHREIBEN" xml:space="preserve">
+    <value>overwrite origin</value>
+  </data>
+  <data name="KATRUECK_SPALTE_PROJEKTSATZ" xml:space="preserve">
+    <value>Project record</value>
+  </data>
+  <data name="KATRUECK_SPALTE_WAHL" xml:space="preserve">
+    <value>Choice</value>
+  </data>
+  <data name="KATRUECK_SPALTE_NAME" xml:space="preserve">
+    <value>Name in catalogue</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>Name already used in catalogue</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_DOPPELT" xml:space="preserve">
+    <value>Name chosen twice</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_LEER" xml:space="preserve">
+    <value>Name missing</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_RUECKFALL" xml:space="preserve">
+    <value>As a new record because the origin cannot be overwritten: {0}</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_KOSTEN" xml:space="preserve">
+    <value>Technical data, investment and maintenance values and the plant's investment and operating cost items (as the record's cost template) are copied.</value>
+  </data>
+  <data name="KATRUECK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="KATRUECK_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier, temperature pair, sinks and time schedule of the plant.</value>
   </data>
   <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
     <value>The week “{0}” is still used by {1} row(s) and cannot be deleted.</value>
@@ -50144,6 +50276,12 @@ chart</value>
   </data>
   <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
     <value>Epiphany;International Women’s Day;Corpus Christi;Assumption Day;World Children’s Day;Reformation Day;All Saints’ Day;Day of Repentance and Prayer</value>
+  </data>
+  <data name="PARV_LBL_KOSTENVORLAGE" xml:space="preserve">
+    <value>Record cost template:</value>
+  </data>
+  <data name="PARV_LBL_KOSTENVORLAGE_INVESTITION" xml:space="preserve">
+    <value>Record investment cost template:</value>
   </data>
   <data name="KOND_LBL_KALB_GILT_ALLE" xml:space="preserve">
     <value>all</value>
@@ -50215,7 +50353,7 @@ chart</value>
     <value>Empty = not maintained; the run then uses the peak of the series.</value>
   </data>
   <data name="PVG_NENN_PROJEKTKOPIEN" xml:space="preserve">
-    <value>The change applies to the catalogue entry. Projects that already use this profile keep their copy.</value>
+    <value>The change applies to the catalogue entry. Projects that already use this profile keep their copy until it is renewed in the project via “Renew from catalogue…”.</value>
   </data>
   <data name="PVG_MSG_NENN_GESPEICHERT" xml:space="preserve">
     <value>Rated power of “{0}” saved.</value>
@@ -50231,6 +50369,111 @@ chart</value>
   </data>
   <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
     <value>Photovoltaics characteristics</value>
+  </data>
+  <data name="PVG_ABW_TEXT" xml:space="preserve">
+    <value>differs from the catalogue: {0}</value>
+  </data>
+  <data name="PVG_ABW_NENNLEISTUNG" xml:space="preserve">
+    <value>rated power</value>
+  </data>
+  <data name="PVG_ABW_RASTER" xml:space="preserve">
+    <value>interval</value>
+  </data>
+  <data name="PVG_ABW_JAHRESSUMME" xml:space="preserve">
+    <value>annual total</value>
+  </data>
+  <data name="PVG_ABW_REIHE" xml:space="preserve">
+    <value>series</value>
+  </data>
+  <data name="PVG_BTN_ERNEUERN" xml:space="preserve">
+    <value>Renew from catalogue…</value>
+  </data>
+  <data name="PVG_TITEL_ERNEUERN" xml:space="preserve">
+    <value>Renew project copy from catalogue</value>
+  </data>
+  <data name="PVG_ERNEUERN_FRAGE" xml:space="preserve">
+    <value>The project copy “{0}” is replaced by the catalogue entry of the same name: description, interval, rated power, annual yield and the series. The assignment to the project remains.</value>
+  </data>
+  <data name="PVG_ERNEUERN_SIMULATION" xml:space="preserve">
+    <value>Results change only with the next simulation.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERT" xml:space="preserve">
+    <value>The project copy “{0}” now carries the catalogue state. Results change only with the next simulation.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_KEIN_KATALOG" xml:space="preserve">
+    <value>The catalogue no longer holds a PV profile of this name; the project copy stays as it is.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_KEINE_KOPIE" xml:space="preserve">
+    <value>The project does not yet hold a copy of this profile; it is created from the catalogue on OK.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_GLEICH" xml:space="preserve">
+    <value>The project copy already matches the catalogue entry.</value>
+  </data>
+  <data name="KI_DLG_PVG_ABWEICHUNG_NAME" xml:space="preserve">
+    <value>Difference from catalogue</value>
+  </data>
+  <data name="KI_DLG_PVG_ABWEICHUNG_ERL" xml:space="preserve">
+    <value>How the project copy of the selected project profile differs from the catalogue entry of the same name (rated power, interval, annual total, series); empty if it matches. “Renew from catalogue…” replaces header and series of the project copy after a confirmation — an action of the user; results change only with the next simulation.</value>
+  </data>
+  <data name="KATRUECK_LOESCHEN_VORLAGE_PROJEKT" xml:space="preserve">
+    <value>The catalogue record “{0}” has been deleted. Its cost template is kept because cost items in projects originate from it.</value>
+  </data>
+  <data name="KATRUECK_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Catalogue record deleted</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_KURVE_VERWORFEN" xml:space="preserve">
+    <value>Chiller "{0}": the part-load curve is incomplete or not plausible — calculated linearly with cycling loss.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_EXTRAPOLIERT" xml:space="preserve">
+    <value>Chiller "{0}": in {1} hours the EER was continued beyond the edge of the performance map using the efficiency grade.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTWEG_UNGUELTIG" xml:space="preserve">
+    <value>The part-load method must be “linear”, “curve” or empty.</value>
+  </data>
+  <data name="KM_MSG_VERDICHTERREGELUNG_UNGUELTIG" xml:space="preserve">
+    <value>The compressor control must be “on/off”, “staged”, “variable speed” or empty.</value>
+  </data>
+  <data name="KM_MSG_RANDWEG_UNGUELTIG" xml:space="preserve">
+    <value>The method at the edges of the performance map must be “edge value”, “efficiency grade” or empty.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTANTEIL_UNGUELTIG" xml:space="preserve">
+    <value>The minimum load ratio of the part-load curve and the cycling loss factor C_d must be between 0 and 1.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_BEIWERTE" xml:space="preserve">
+    <value>The part-load curve needs all three coefficients: a between −1 and 2, b and c between −2 and 3.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
+    <value>The part-load curve is not plausible: at full load a + b + c must be between 0.9 and 1.1, and the EER ratio must stay between 0.5 and 2.0 within the valid load range.</value>
+  </data>
+  <data name="KM_IMP_MSG_TEILLAST_HINWEISE" xml:space="preserve">
+    <value>{0} note(s) on the part-load curve: {1}</value>
+  </data>
+  <data name="KM_MSG_NENN_EER_ABWEICHUNG" xml:space="preserve">
+    <value>Note: The rated EER {0} deviates by {2} from the EER of the performance map at the rating point ({1}). Please check the rated EER and the map.</value>
+  </data>
+  <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
+    <value>Part-load method</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
+    <value>Part-load curve a</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_B" xml:space="preserve">
+    <value>Part-load curve b</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_C" xml:space="preserve">
+    <value>Part-load curve c</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
+    <value>Minimum load ratio of the curve</value>
+  </data>
+  <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Cycling loss factor C_d</value>
+  </data>
+  <data name="KM_LBL_VERDICHTERREGELUNG" xml:space="preserve">
+    <value>Compressor control</value>
+  </data>
+  <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
+    <value>Method at the map edges</value>
   </data>
 </root>
 

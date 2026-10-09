@@ -58,7 +58,7 @@ const TOL = 1;
 const FENSTER = [{ breite: 1088, hoehe: 624 }, { breite: 520, hoehe: 624 }];
 // Je Fall: was vor dem Rollen gewaehlt wird, und der Knopf, der die Meldung ausloest.
 const FAELLE = {
-  heizkessel: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-anlagenwahl', ausloeser: '.epos-zweispalten-knopf--uebernehmen', fuellt: true },
+  heizkessel: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-zeilenzelle--name', ausloeser: '.epos-zweispalten-knopf--uebernehmen', fuellt: true },
   bhkw: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-anlagenwahl', ausloeser: '.epos-zweispalten-knopf--uebernehmen', fuellt: true },
   gebaeude: { wahl: '', ausloeser: '.epos-gebaeude-in-db', fuellt: true },
 };

@@ -204,11 +204,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Spalten, die KEIN Fachwert sind: Kennung, Auslieferungskennzeichen und die drei
         /// Katalogspalten. Eine Katalogkopie, die Dublettenprüfung und die Prüfsumme lassen sie aus.
+        /// <para>Dazu die Kostenvorlage des Satzes (<see cref="KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE"/>,
+        /// Schritt 208, und die Investitionsvorlage aus Schritt 209): ein Verweis auf eine Anwendervorlage, die kein Paket führt — sie verändert weder Prüfsumme noch
+        /// Paket, und eine Katalogkopie beginnt mit der Standardvorlage des Gewerks.</para>
         /// </summary>
         public static readonly IReadOnlyCollection<string> Metaspalten =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "ID", SPALTE_READONLY, SPALTE_SCHLUESSEL, SPALTE_PRUEFSUMME, SPALTE_AUSGELAUFEN
+                "ID", SPALTE_READONLY, SPALTE_SCHLUESSEL, SPALTE_PRUEFSUMME, SPALTE_AUSGELAUFEN,
+                KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION
             };
 
         /// <summary>Ist <paramref name="spalte"/> eine der drei Katalogspalten?</summary>
@@ -456,7 +460,7 @@ namespace WindowsFormsApplication1
         private static readonly Katalogtabelle[] STUFE3 =
         {
             new Katalogtabelle(KaeltemaschineSchema.TAB_STAMM, "KM",
-                // KaeltemaschineTeillastSchema (Schritt 208): die acht Eingabespalten von Teillast und Takten haengen ueber
+                // KaeltemaschineTeillastSchema (Schritt 210): die acht Eingabespalten von Teillast und Takten haengen ueber
                 // KaeltemaschineSchema.Fachspalten hinten an; leer tragen sie nichts zur Pruefsumme bei.
                 KaeltemaschineSchema.Fachspalten,
                 new Katalogkind(KaeltemaschineSchema.TAB_KENNDATEN_STAMM, KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,

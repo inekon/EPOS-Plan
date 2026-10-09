@@ -3295,6 +3295,40 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrK2 + " - vollstaendig: " + KalenderbedienungSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KatalogkostenUrsprungSchema.SCHRITT (KA1): ID_KostenVorlage an den acht Katalogen mit Kosten,
+            //      ID_Stamm an den elf Projektkopien ohne Ursprung. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KatalogkostenUrsprung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer, kein Leser der Simulation fragt sie.
+            string nrKa = KatalogkostenUrsprungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKa + " - Katalogkosten und Ursprung: " +
+                              (KatalogkostenUrsprungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKa = new List<string>();
+                angelegt += KatalogkostenUrsprungSchema.Ausfuehren(berichtKa);
+                foreach (string zeile in berichtKa)
+                    Console.WriteLine("Schritt " + nrKa + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKa + " - vollstaendig: " + KatalogkostenUrsprungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogkostenInvestitionSchema.SCHRITT (KA1, KA-E-14): ID_KostenVorlageInvestition an den acht
+            //      Katalogen mit Kosten. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenInvestition.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: Die Spalte entsteht leer.
+            string nrKi = KatalogkostenInvestitionSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKi + " - Katalogkosten Investition: " +
+                              (KatalogkostenInvestitionSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKi = new List<string>();
+                angelegt += KatalogkostenInvestitionSchema.Ausfuehren(berichtKi);
+                foreach (string zeile in berichtKi)
+                    Console.WriteLine("Schritt " + nrKi + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKi + " - vollstaendig: " + KatalogkostenInvestitionSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): acht Eingabespalten von Teillast und Takten an
             //      Tab_Kaeltemaschine_STAMM und Tab_Kaeltemaschine, fuenf Kennzahlspalten an Tab_ErgebnisKaeltemaschine,
             //      dazu die Ergaenzung der Typkennfelder. Aus DERSELBEN Quelle, aus der sich

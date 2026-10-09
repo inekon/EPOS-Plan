@@ -107,7 +107,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(beispieleVorher, Beispielgeraete());
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));
             Assert.Equal(0, KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe3));
-            // KM3 (Schritt 208 steht auf der Arbeitskopie): Das Einspielen trägt Teillastkurve und Verdichterregelung mit.
+            // KM3 (Schritt 210 steht auf der Arbeitskopie): Das Einspielen trägt Teillastkurve und Verdichterregelung mit.
             if (KaeltemaschineTeillastSchema.EingabespaltenVorhanden(TAB))
             {
                 Assert.Equal((long)Anzahl, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE ReadOnly = 1 AND Verdichterregelung IS NOT NULL"));

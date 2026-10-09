@@ -637,7 +637,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Spitze ihres Kältestroms je Stunde [kW] — der Leistungspreis eines eigenen Zählers.</summary>
         public double? Stromspitze_kW;
 
-        // KM3 (Schemaschritt 208; Fachkonzept Teillast und Takten 5.3): nur für eine Maschine mit Teillast_Weg belegt
+        // KM3 (Schemaschritt 210; Fachkonzept Teillast und Takten 5.3): nur für eine Maschine mit Teillast_Weg belegt
         // (Stunden_Extrapoliert mit Kennfeld_Randweg GUETEGRAD); sonst null = NULL, der Satz bleibt wie ohne KM3.
         /// <summary>Mehrstrom aus dem Taktverlust [MWh/a] — Teil von <see cref="Stromverbrauch_MWh"/>.</summary>
         public double? Taktstrom_MWh;

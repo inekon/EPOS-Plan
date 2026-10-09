@@ -1,0 +1,163 @@
+﻿@* DIE RUECKFRAGE „In die Datenbank übernehmen…" (Konzept Projektdialoge mit Katalogauswahl 5.2, Entscheid
+   KA-E-9). Inhalt einer Ueberlagerung im selben Fenster, IMMER vor dem Schreiben: je gewaehltem Projektsatz eine
+   Zeile mit der Wahl „als neuen Katalogsatz anlegen" (Vorgabe) oder „Ursprung überschreiben"; letzteres ausgegraut
+   mit Grund („Erst Schloss aufheben", „Ursprung nicht mehr vorhanden", „Ursprung nicht bekannt").
+
+   NAME: vorbelegt mit dem Vorschlag des Kerns (Name der Kopie, bei Belegung „(Projekt)", „(Projekt 2)" ...), aenderbar;
+   ein belegter, leerer oder doppelter Name sperrt „Übernehmen" mit Hinweis am Feld. Beim Ueberschreiben bleibt der Name
+   des Ursprungs, das Feld ist gesperrt.
+
+   MEHRFACHAUSWAHL: Die Kopfzeile „Für alle" setzt die Wahl aller Zeilen; je Zeile darf abgewichen werden. Zeilen, die
+   nicht ueberschreiben koennen, bleiben bei „neu" und werden in einer Hinweiszeile genannt. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using WindowsFormsApplication1
+
+<div class="epos-rueckweg">
+    @if (Zeilen.Count > 1)
+    {
+        <div class="epos-rueckweg-alle" role="radiogroup" aria-label="@Resource.KATRUECK_WAHL_ALLE">
+            <span class="epos-rueckweg-alle-text">@Resource.KATRUECK_WAHL_ALLE</span>
+            <label><input type="radio" name="rueckweg-alle" class="epos-rueckweg-alle-neu" checked="@(!_alleUeberschreiben)"
+                          @onchange="() => AlleSetzen(false)" /> @Resource.KATRUECK_WAHL_NEU</label>
+            <label><input type="radio" name="rueckweg-alle" class="epos-rueckweg-alle-ueber" checked="@_alleUeberschreiben"
+                          disabled="@(Zeilen.All(z => z.Sperre != Rueckwegsperre.Keine))"
+                          @onchange="() => AlleSetzen(true)" /> @Resource.KATRUECK_WAHL_UEBERSCHREIBEN</label>
+        </div>
+    }
+    @if (Rueckfall().Count > 0)
+    {
+        <p class="epos-rueckweg-hinweis epos-rueckweg-rueckfall" role="note">
+            @string.Format(Resource.Culture, Resource.KATRUECK_HINWEIS_RUECKFALL,
+                           string.Join(", ", Rueckfall().Select(z => "„" + z.NameKopie + "“ (" + Rueckwegregel.Grund(z.Sperre) + ")")))
+        </p>
+    }
+
+    <table class="epos-rueckweg-tabelle">
+        <thead>
+            <tr>
+                <th scope="col">@Resource.KATRUECK_SPALTE_PROJEKTSATZ</th>
+                <th scope="col">@Resource.KATRUECK_SPALTE_WAHL</th>
+                <th scope="col">@Resource.KATRUECK_SPALTE_NAME</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Zeilen.Count; i++)
+            {
+                int n = i;
+                Rueckwegvorschlag z = Zeilen[n];
+                bool ueber = _ueberschreiben[n];
+                string hinweis = Hinweis(n);
+                <tr class="epos-rueckweg-zeile" data-id="@z.Id">
+                    <td class="epos-rueckweg-kopie">@z.NameKopie</td>
+                    <td class="epos-rueckweg-wahl">
+                        <label><input type="radio" name="@("rueckweg-" + n)" class="epos-rueckweg-neu" checked="@(!ueber)"
+                                      @onchange="() => Setzen(n, false)" /> @Resource.KATRUECK_WAHL_NEU</label>
+                        <label title="@Rueckwegregel.Grund(z.Sperre)">
+                            <input type="radio" name="@("rueckweg-" + n)" class="epos-rueckweg-ueber" checked="@ueber"
+                                   disabled="@(z.Sperre != Rueckwegsperre.Keine)" @onchange="() => Setzen(n, true)" />
+                            @Resource.KATRUECK_WAHL_UEBERSCHREIBEN
+                            @if (z.Sperre != Rueckwegsperre.Keine)
+                            {
+                                <span class="epos-rueckweg-grund"> — @Rueckwegregel.Grund(z.Sperre)</span>
+                            }
+                        </label>
+                    </td>
+                    <td class="epos-rueckweg-name">
+                        <input type="text" class="epos-rueckweg-namensfeld" value="@(ueber ? z.NameUrsprung : _namen[n])"
+                               disabled="@ueber" aria-invalid="@(hinweis.Length > 0 ? "true" : "false")"
+                               @oninput="e => NameGeaendert(n, e.Value?.ToString())" />
+                        @if (hinweis.Length > 0)
+                        {
+                            <span class="epos-rueckweg-namenshinweis epos-feldfehler" role="alert">@hinweis</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p class="epos-rueckweg-hinweis" role="note">@Resource.KATRUECK_HINWEIS_KOSTEN</p>
+    @if (!string.IsNullOrEmpty(BleibtText))
+    {
+        <p class="epos-rueckweg-hinweis epos-rueckweg-bleibt" role="note">@BleibtText</p>
+    }
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <p class="epos-rueckweg-meldung epos-feldfehler" role="alert">@_meldung</p>
+    }
+
+    <div class="epos-leiste epos-rueckweg-fuss">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" @onclick="() => Geschlossen.InvokeAsync(null)">@Resource.KATRUECK_BTN_ABBRECHEN</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer epos-rueckweg-uebernehmen"
+                disabled="@(!Uebernehmbar())" @onclick="Uebernehmen">@Resource.KATRUECK_BTN_UEBERNEHMEN</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>Die Zeilen der Rückfrage (aus <see cref="Rueckwegwege.Vorschau"/>).</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<Rueckwegvorschlag> Zeilen { get; set; } = Array.Empty<Rueckwegvorschlag>();
+    /// <summary>Prüfung und Schreibweg.</summary>
+    [Parameter, EditorRequired] public Rueckwegwege Wege { get; set; } = null!;
+    /// <summary>Was im Projekt bleibt (je Gewerk, von der Hülle).</summary>
+    [Parameter] public string BleibtText { get; set; } = "";
+    /// <summary>Zu: <c>null</c> = abgebrochen, sonst die Meldung des Kerns nach dem Schreiben.</summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    private bool[] _ueberschreiben = Array.Empty<bool>();
+    private string[] _namen = Array.Empty<string>();
+    private bool _alleUeberschreiben;
+    private string _meldung = "";
+    private IReadOnlyList<Rueckwegvorschlag>? _geladen;
+
+    /// <summary>Die Wahl je Zeile (Prüfhilfe).</summary>
+    public IReadOnlyList<bool> Ueberschreiben => _ueberschreiben;
+    /// <summary>Die Namen je Zeile (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Namen => _namen;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_geladen, Zeilen)) return;
+        _geladen = Zeilen;
+        _ueberschreiben = new bool[Zeilen.Count];
+        _namen = Zeilen.Select(z => z.Namensvorschlag ?? "").ToArray();
+        _alleUeberschreiben = false;
+        _meldung = "";
+    }
+
+    /// <summary>„Für alle": jede Zeile, die kann, bekommt die Wahl; die übrigen bleiben bei „neu".</summary>
+    private void AlleSetzen(bool ueber)
+    {
+        _alleUeberschreiben = ueber;
+        for (int i = 0; i < Zeilen.Count; i++) _ueberschreiben[i] = ueber && Zeilen[i].Sperre == Rueckwegsperre.Keine;
+    }
+
+    private void Setzen(int i, bool ueber)
+        => _ueberschreiben[i] = ueber && Zeilen[i].Sperre == Rueckwegsperre.Keine;
+
+    private void NameGeaendert(int i, string? wert) => _namen[i] = wert ?? "";
+
+    /// <summary>Die Zeilen, die bei „Für alle: Ursprung überschreiben" auf „neu" zurückfallen.</summary>
+    private List<Rueckwegvorschlag> Rueckfall()
+        => _alleUeberschreiben ? Zeilen.Where(z => z.Sperre != Rueckwegsperre.Keine).ToList() : new();
+
+    private string Hinweis(int i)
+    {
+        if (_ueberschreiben[i]) return "";
+        var andere = Enumerable.Range(0, Zeilen.Count).Where(j => j != i && !_ueberschreiben[j]).Select(j => _namen[j]);
+        return Rueckwegregel.Namenshinweis(_namen[i], andere, Wege.NameBelegt);
+    }
+
+    private bool Uebernehmbar() => Zeilen.Count > 0 && Enumerable.Range(0, Zeilen.Count).All(i => Hinweis(i).Length == 0);
+
+    private async Task Uebernehmen()
+    {
+        if (!Uebernehmbar()) return;
+        var wahl = Zeilen.Select((z, i) => new Rueckwegwahl(z.Id, _ueberschreiben[i], _ueberschreiben[i] ? "" : _namen[i].Trim()))
+                         .ToList();
+        KatalogSpeicherErgebnis e = Wege.Uebernehmen(wahl);
+        if (!e.Ok) { _meldung = e.Meldung; return; }
+        await Geschlossen.InvokeAsync(e.Meldung);
+    }
+}

@@ -349,8 +349,8 @@ Vorlage + 1. KI-Sicht des Katalog- und des Anlagendialogs mit den Spaltennamen a
 
 ## 6 Schema
 
-- **Ein Schritt** für Eingabe- und Ergebnisspalten: nächste freie Nummer, **derzeit 208** (205 `UebergabegrenzeSchema`
-  gebaut, 206 PVG und 207 K2 angemeldet). Die Nummer wird **vor dem Bau** in der Zeile „Schemaschritt angemeldet“
+- **Ein Schritt** für Eingabe- und Ergebnisspalten: nächste freie Nummer, **gebaut als 210** (hängt an 209
+  `KatalogkostenInvestitionSchema`; 208 und 209 sind mit KA1 gebaut). Die Nummer wird **vor dem Bau** in der Zeile „Schemaschritt angemeldet“
   der [Statusdatei](../Status_iOS_Migration.md) angemeldet; die Klasse `KaeltemaschineTeillastSchema` hängt über
   `SCHRITT = <Vorgängerklasse>.SCHRITT + 1` an der Klasse, die zur Bauzeit die höchste Nummer trägt.
 - Spalten nach 4.1 und 5.3, alle nullbar, Texte mit `CHECK … IN (…)`, Bereiche mit `CHECK … BETWEEN`; Tabellen
