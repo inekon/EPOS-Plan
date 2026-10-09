@@ -1,7 +1,7 @@
 # Konzept: Projektdialoge mit Katalogauswahl übersichtlich ordnen — Variante V1 „Gerahmt und gestapelt“
 
 **Stand: Variante V1 gewählt (08.10.2026), Umsetzung auf Zuruf.** Der Anwender hat die fünf spielbaren
-Mockups ausprobiert und V1 „Gerahmt und gestapelt“ gewählt; die Entscheide KA‑E‑1 bis KA‑E‑13 stehen in
+Mockups ausprobiert und V1 „Gerahmt und gestapelt“ gewählt; die Entscheide KA‑E‑1 bis KA‑E‑16 stehen in
 Abschnitt 3, das Zielbild in Abschnitt 4, der Rückweg Projekt → Datenbank in Abschnitt 5. Die Varianten
 V2 bis V5 bleiben in Abschnitt 6 als Abwägung stehen. Was für die Umsetzung noch zu klären ist, nennt
 Abschnitt 7 mit Empfehlung; der Stufenplan steht in Abschnitt 8.
@@ -118,6 +118,9 @@ KA‑Q1 bis KA‑Q9 des Entwurfs (Zuordnung in der letzten Spalte).
 | **KA‑E‑11** | **Breite Projektsätze** (PV-Stränge und Wechselrichter, Wärmepumpen-Anlage, Gebäude) öffnen als Überlagerung im selben Fenster. | 08.10.2026 | KA‑Q9 |
 | **KA‑E‑12** | **Kostenknöpfe nur beim gewählten Projektsatz:** Investitions-, Betriebs- und Energiekosten stehen in der Detailzeile des Projektsatzes; die Kostenverwaltung ohne Einengung auf einen Satz bleibt über das Menü erreichbar. | 09.10.2026 | — |
 | **KA‑E‑13** | **Ein einzelner ungesperrter Katalogsatz öffnet weiter den vollen Katalogeditor** (Kennlinie, Speichern unter); die Satzbearbeitung gilt für mehrere Sätze, gesperrte Sätze und die Projektkopie — auch in Stufe 3. | 09.10.2026 | — |
+| **KA‑E‑14** | **Investitionspositionen gehen mit:** Der Rückweg nimmt neben den Betriebs- auch die Investitionspositionen der Anlage in die Satzvorlage des Katalogsatzes; der Planwert reist weiter als Spalte. Ein zweiter Rückweg ersetzt die Positionen der eigenen, ungesperrten Vorlage vollständig (Betrieb und Investition). Bei der Übernahme Katalog → Projekt gilt der Vorrang der Satzvorlage für Investitionspositionen wie für Betriebspositionen: an einer Anlage ohne Positionen alle, danach nur Pflichtpositionen. | 09.10.2026 | — |
+| **KA‑E‑15** | **Der Name der Projektkopie bleibt** nach „neu“ unverändert, auch wenn der Katalogsatz einen Zusatz „(Projekt)“ bekommt. | 09.10.2026 | — |
+| **KA‑E‑16** | **Satzvorlage beim Löschen mitlöschen:** Wird ein Katalogsatz gelöscht, dessen Kostenvorlage nicht als Standard markiert ist, geht sie mit, wenn kein anderer Katalogsatz auf sie verweist; sonst bleibt sie. Brauchen Kostenpositionen in Projekten sie als Herkunft, bleibt sie ebenfalls, und die Meldung nennt es. | 09.10.2026 | — |
 
 ## 4 Zielbild V1
 
@@ -355,8 +358,8 @@ Wärmepumpe, Pufferspeicher).
      können, fallen auf „neu“ zurück und werden genannt.
 3. **Was mitgeht:** die Schnittmenge der Spalten von Kopie und Katalog ohne `ID`, `ID_Projekt`, `ID_Stamm`,
    `ReadOnly` und `Katalog_*`; dazu die Kindzeilen der technischen Daten (Abschnitt 7 Punkt 5) und die
-   Kosten: die Planwertspalten unmittelbar, die Kostenpositionen der Anlage als Vorgabe des Katalogsatzes
-   (Ort: Abschnitt 7 Punkt 3). Projektbezogene Felder der Anlagenzeile, Senken und Stränge gehen nicht mit.
+   Kosten: die Planwertspalten unmittelbar, die Investitions- und Betriebskostenpositionen der Anlage als
+   Vorgabe des Katalogsatzes (KA‑E‑14; Ort: Abschnitt 7 Punkt 3). Projektbezogene Felder der Anlagenzeile, Senken und Stränge gehen nicht mit.
 4. **Danach:** Ein neuer Satz ist ungesperrt; die Projektkopie bekommt ihn als Ursprung (wo ein Verweis
    existiert), damit ein zweiter Rückweg überschreiben kann. Die Meldung nennt Zahl und Namen. Alles in
    einer Transaktion je Aufruf; scheitert ein Satz, wird nichts geschrieben.
@@ -378,23 +381,33 @@ Wärmepumpe, Pufferspeicher).
   Mindestlaufzeit) und Bereitschaft sind Spalten am Satz und gehen mit der Schnittmenge. Der Mechanismus (bei
   „neu“ Kopie, bei „überschreiben“ Ersatz in derselben Transaktion) steht im Kernweg und ist an einem Prüfgewerk
   getestet.
-- **Kosten:** Die Planwertspalten (`Investitionskosten`, `Wartungskosten`, `Wartungskosten_Einheit`,
-  `Nutzungsdauer`) gehen mit der Schnittmenge. Die **Betriebskostenpositionen** (Kategorie Betrieb) der ersten
-  Anlage, die auf die Kopie zeigt, werden Kostenvorlage des Satzes; ein zweiter Rückweg ersetzt die Positionen
-  derselben eigenen, ungesperrten Vorlage, statt eine zweite anzulegen. Ohne Betriebskostenposition bleibt der
-  Verweis, wie er ist. Investitionspositionen der Anlage gehen nicht in die Vorlage — der Investitionswert reist
-  als Planwert.
+- **Kosten (KA‑E‑14):** Die Planwertspalten (`Investitionskosten`, `Wartungskosten`, `Wartungskosten_Einheit`,
+  `Nutzungsdauer`) gehen mit der Schnittmenge. Die **Betriebs- und Investitionspositionen** der ersten Anlage, die
+  auf die Kopie zeigt, werden Satzvorlage. Weil eine Kostenvorlage genau eine Kategorie führt, ist die Satzvorlage
+  ein **Paar** gleichen Namens und gleicher Bemerkung (je Kategorie mit Positionen eine Vorlage, Gewerk =
+  `KomponentenID`, nicht Standard): `ID_KostenVorlage` zeigt auf die Betriebsvorlage, ohne Betriebspositionen auf
+  die Investitionsvorlage; die Partnerin findet der Kernweg über Gewerk, Name und Bemerkung. Der Name ist in beiden
+  Kategorien frei (sonst Zusatz „(2)“ …). Ein zweiter Rückweg ersetzt die Positionen der eigenen, ungesperrten
+  Vorlagen vollständig; eine Kategorie ohne Positionen verliert ihre Vorlage. Hat die Anlage gar keine Position,
+  bleibt der Verweis, wie er ist.
 - **Vorrang bei der Übernahme:** `KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen` fragt je Anlage
-  zuerst die Satzvorlage (`Katalogrueckweg.SatzvorlageDerAnlage`: Anlage → Kopie → `ID_Stamm` →
-  `ID_KostenVorlage`). An einer Anlage ohne Betriebskostenposition legt sie alle Positionen an, danach wie die
-  Standardvorlage nur die Pflichtpositionen — eine gelöschte Position kehrt nicht zurück.
+  zuerst die Satzvorlagen (`Katalogrueckweg.SatzvorlagenDerAnlage`: Anlage → Kopie → `ID_Stamm` →
+  `ID_KostenVorlage` und Partnerin), je Kategorie: An einer Anlage ohne Position dieser Kategorie legt die
+  Satzvorlage alle Positionen an, danach wie die Standardvorlage nur die Pflichtpositionen — eine gelöschte Position
+  kehrt nicht zurück. Ohne Betriebs-Satzvorlage gelten die Pflichtpositionen der Standardvorlage.
+- **Löschen eines Katalogsatzes (KA‑E‑16):** `Katalogrueckweg.SatzvorlageBeimLoeschen` läuft im Vorgang des
+  Löschens (beim Heizkessel `HeizkesselStammCtrl.KatalogsatzLoeschen`, Stufe 3 verdrahtet die übrigen Gewerke) und
+  löscht das Paar mit — außer die Vorlage ist Standard oder gesperrt, ein anderer Satz in einem der acht Kataloge
+  mit `ID_KostenVorlage` verweist auf sie, oder Projektzeilen tragen sie als Herkunft (`Tab_ProjektWerte.VorlageID`);
+  im letzten Fall nennt die Meldung, dass die Vorlage bleibt. Scheitert das Mitlöschen, bleibt auch der Satz.
 - **Ursprung:** `HeizkesselCtrl.CopyFromStamm` trägt `ID_Stamm` ein. Bestandskopien bleiben leer („Ursprung nicht
   bekannt“), kein Namensabgleich. Ein gelöschter Katalogsatz leert den Verweis (`ON DELETE SET NULL`); „Ursprung
   nicht mehr vorhanden“ entsteht damit nur bei einem Verweis ohne Fremdschlüsselprüfung. Im Projektpaket reisen die
   neuen Ursprungsverweise nicht (am Ziel leer), damit ein Rückweg nie einen fremden Satz überschreibt.
 - **Katalogkopie und Prüfsumme:** `ID_KostenVorlage` ist Metaspalte der Katalogfassung (keine Prüfsumme, kein
   Paket); „Duplizieren“ übernimmt sie nicht — die Kopie beginnt mit der Standardvorlage.
-- **Name der Projektkopie:** bleibt nach „neu“ unverändert, auch wenn der Katalogsatz einen anderen Namen bekommt.
+- **Name der Projektkopie:** bleibt nach „neu“ unverändert, auch wenn der Katalogsatz einen anderen Namen bekommt
+  (KA‑E‑15).
 - **Rückfrage:** `Rueckwegfrage` als Überlagerung mit der Marke „Katalogsatz“; Kopfzeile „Für alle“ bei mehreren
   Sätzen, Hinweiszeile für die Zeilen, die auf „neu“ zurückfallen; Hinweise zu Kosten und zu dem, was im Projekt
   bleibt (Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage). Die Meldung danach (Banner) nennt
