@@ -731,8 +731,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-09_R48_Gemeinjahr/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `0a395e3e4`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **207**, 93 958 144 Byte, LFS-SHA-256
-`ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`, mit den Projekten 1053 bis 1062; Nachträge der
+gegen `Kenndaten_Test.sqlite` (Schemastand **209**, 93 958 144 Byte, LFS-SHA-256
+`7b6b2cc8144e581e60304156e7986f8bebc3186c54b9f091eb3a7a156f29ea40`, mit den Projekten 1053 bis 1062; Testdatenbank nach dem Einfrieren (Stand 207, `ec23b962…`) durch Schritte 208–209 gehoben, Ergebnisse unverändert (Gate REST7928); Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
