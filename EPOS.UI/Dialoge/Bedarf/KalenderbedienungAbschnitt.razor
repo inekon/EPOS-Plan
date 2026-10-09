@@ -2,12 +2,16 @@
    "Kalender {Groesse} im Einzelnen" nach dem angenommenen Mockup (Mockups/Konditionierung_Kalender.html, Variante V2
    "Wochenprofile" mit dem anklickbaren Jahresraster aus V1):
 
-   - OBEN die Schnellfelder: Wochenende (Sa + So, nur lesbar), Ferien als Liste benannter Datumsbereiche (beliebig
-     viele), Saison von-bis der Groesse, "Vorlage uebernehmen (alle Groessen)".
-   - LINKS die Wochenprofile der Groesse (Standardwoche und die Wochen der Zuordnungszeilen) im 7 x 24-Raster mit
-     Pinsel, "Montag nach Di-Fr", "Samstag nach Sonntag", "Woche kopieren..." und "Tag kopieren...".
+   - OBEN die Schnellfelder: Wochenende (sieben Tageskaestchen, "Sa + So"), Feiertagsland (leer = nur bundeseinheitlich,
+     mit Hinweiszeile der Landesregeln), Ferien als Liste benannter Datumsbereiche (beliebig viele), Saison von-bis der
+     Groesse, "Vorlage uebernehmen (alle Groessen)". Wochenende, Land und Ferien gehoeren dem Gebaeude; die Zone liest sie.
+   - LINKS die Wochenprofile der Groesse (Standardwoche, benannte Wochen, Altbestand eingebetteter Wochen) im
+     7 x 24-Raster mit Pinsel, "Montag nach Di-Fr", "Samstag nach Sonntag", "Woche kopieren..." und "Tag kopieren...";
+     darunter Anlegen, Umbenennen und Loeschen benannter Wochen. Ist eine benannte Woche gewaehlt, wirkt jede Handlung
+     ueber ihren Verweis (IdWoche) - auf alle Zeilen, die sie waehlen.
    - RECHTS die Zuordnung "von - bis -> Wirkung, gilt fuer" mit dem Jahresband darueber, der Warnzeile der Rangfolge
-     und "Monat kopieren...".
+     und "Monat kopieren..."; "gilt fuer" ist je Zeile die Maske aus fuenf Kaestchen mit "alle". Zeilen der Lesebruecke
+     (je Groesse eine eigene Kopie, Altbestand) tragen das Kennzeichen "je Groesse getrennt" und keine Maskenbedienung.
    - DARUNTER die Einzeltage mit "Feiertage laden" und das Jahresraster (12 x 31) im eigenen Rollkasten.
 
    DIE KOMPONENTE RECHNET NICHTS. Was sie zeigt, kommt in EINEM Aufruf aus der Huelle (KalenderAnsicht, Kern-Schicht
@@ -37,9 +41,31 @@
             <div class="epos-kalb-schnellfelder">
                 <div class="epos-kalb-feldgruppe epos-kalb-wochenende">
                     <h5 class="epos-kalb-titel">@Texte.LabelKalbWochenende</h5>
-                    <p class="epos-kalb-wert">@Texte.TextKalbWochenendeTage</p>
                     @Zeilenwert(KonditionierungZeile.Wochenende)
-                    <p class="epos-leisezeile">@Texte.HinweisKalbWochenende</p>
+                    <div class="epos-kalb-tageswahl" role="group" aria-label="@Texte.LabelKalbWochenende">
+                        @for (int t = 0; t < 7; t++)
+                        {
+                            int tag = t;
+                            bool an = a.Wochenendtage.Contains(tag);
+                            <button type="button" class="epos-knopf epos-kalb-wochenendtag @(an ? "epos-knopf--gewaehlt" : "")" data-tag="@tag"
+                                    aria-pressed="@(an ? "true" : "false")" @attributes="Sperre(WochenendSperre)"
+                                    @onclick="() => WochenendtagSchalten(tag)">@Tageskurz(tag)</button>
+                        }
+                        <button type="button" class="epos-knopf epos-kalb-sa-so" @attributes="Sperre(WochenendSperre)"
+                                @onclick="SaSo">@Texte.KnopfKalbSaSo</button>
+                    </div>
+                    <p class="epos-leisezeile">@(Bearbeitung.IstZone ? Texte.HinweisKalbWochenendeZone : Texte.HinweisKalbWochenende)</p>
+                </div>
+
+                <div class="epos-kalb-feldgruppe epos-kalb-land">
+                    <h5 class="epos-kalb-titel">@Texte.LabelKalbFeiertagsland</h5>
+                    <Auswahlfeld Bezeichnung="@Texte.LabelKalbFeiertagsland" Eintraege="@Landeintraege" Auswahl="@Landindex"
+                                 Platzhalter="@Texte.PlatzhalterKalbLand" Aktiv="@(LandSperre is null)" AuswahlChanged="LandGewaehlt" />
+                    <p class="epos-leisezeile epos-kalb-land-hinweis">@Landhinweis</p>
+                    @if (Bearbeitung.IstZone)
+                    {
+                        <p class="epos-leisezeile">@Texte.HinweisKalbFeiertagslandZone</p>
+                    }
                 </div>
 
                 <div class="epos-kalb-feldgruppe epos-kalb-ferien">
@@ -62,7 +88,9 @@
                             {
                                 int n = i;
                                 <div class="epos-kalb-ferienzeile" data-ferien="@(n + 1)" @key="n">
-                                    <span class="epos-kalb-fername">@FerienName(n)</span>
+                                    @* Die ersten vier Zeitraeume stehen in den Gebaeudespalten ohne Namen: ihre Bezeichnung ist nur lesbar. *@
+                                    <Textfeld Bezeichnung="@Texte.LabelKalbFerienName" Wert="@_ferien[n].Name" NurLesen="@(n < 4)"
+                                              WertChanged="t => FerienNameSetzen(n, t)" />
                                     <Datumsfeld Bezeichnung="@Texte.LabelKalbVon" Wert="@_ferien[n].Von" Min="@ErsterTag" Max="@LetzterTag"
                                                 WertChanged="d => FerienFeld(n, d, true)" />
                                     <Datumsfeld Bezeichnung="@Texte.LabelKalbBis" Wert="@_ferien[n].Bis" Min="@ErsterTag" Max="@LetzterTag"
@@ -119,10 +147,11 @@
                     @foreach (KalenderWochenprofil p in a.Profile)
                     {
                         KalenderWochenprofil profil = p;
-                        bool gewaehlt = profil.Rang == Profil?.Rang;
-                        <button type="button" class="epos-knopf epos-kalb-profil @(gewaehlt ? "epos-knopf--gewaehlt" : "")"
+                        bool gewaehlt = profil.Rang == Profil?.Rang && profil.IdWoche == Profil?.IdWoche;
+                        <button type="button" class="epos-knopf epos-kalb-profil @(gewaehlt ? "epos-knopf--gewaehlt" : "") @(profil.IstBenannt ? "epos-kalb-profil--benannt" : "")"
                                 aria-pressed="@(gewaehlt ? "true" : "false")" data-rang="@(profil.Rang?.ToString(CultureInfo.InvariantCulture) ?? "")"
-                                @onclick="() => ProfilWaehlen(profil.Rang)">@profil.Name</button>
+                                data-woche="@(profil.IdWoche?.ToString(CultureInfo.InvariantCulture) ?? "")"
+                                @onclick="() => ProfilWaehlen(profil.Rang, profil.IdWoche)">@profil.Name</button>
                     }
                 </div>
                 @if (Profilsperre is string psperre)
@@ -184,6 +213,22 @@
                     <button type="button" class="epos-knopf epos-kalb-tag-kopieren" title="@Texte.HinweisKalbKopieren"
                             @attributes="Sperre(Kopiersperre(KonditionierungHandlung.TagKopieren))" @onclick="TagKopieren">@Texte.KnopfKalbTagKopieren</button>
                 </div>
+                <div class="epos-kalb-wochen" role="group" aria-label="@Texte.LabelKalbWochen">
+                    <h5 class="epos-kalb-titel">@Texte.LabelKalbWochen</h5>
+                    <Textfeld Bezeichnung="@Texte.LabelKalbWocheName" Wert="@_wochenname" WertChanged="t => _wochenname = t" />
+                    <div class="epos-zeilenknoepfe">
+                        <button type="button" class="epos-knopf epos-kalb-woche-anlegen"
+                                @attributes="Sperre(Profilsperre ?? Handlungssperre(KonditionierungHandlung.WocheAnlegen))"
+                                @onclick="WocheAnlegen">@Texte.KnopfKalbWocheAnlegen</button>
+                        <button type="button" class="epos-knopf epos-kalb-woche-umbenennen"
+                                @attributes="Sperre(Wochensperre(KonditionierungHandlung.WocheUmbenennen))"
+                                @onclick="WocheUmbenennen">@Texte.KnopfKalbWocheUmbenennen</button>
+                        <button type="button" class="epos-knopf epos-kalb-woche-loeschen"
+                                @attributes="Sperre(Wochensperre(KonditionierungHandlung.WocheLoeschen))"
+                                @onclick="WocheLoeschen">@Texte.KnopfKalbWocheLoeschen</button>
+                    </div>
+                    <p class="epos-leisezeile">@Texte.HinweisKalbWochen</p>
+                </div>
             </section>
 
             @* ============================================================ Zuordnung *@
@@ -199,8 +244,8 @@
                         {
                             @* Ein Abschnitt ist oft nur wenige Pixel breit - kein eigenes Bedienziel: Der Klick ist eine
                                Abkuerzung fuer Maus und Finger; Tastatur und Sprachausgabe nehmen Tabelle und Jahresraster. *@
-                            <span class="epos-kalb-bandteil epos-kalb-bandteil--zeile epos-kalb-art-@((int)b.Art) @(s == _gewaehlt ? "epos-kalb-bandteil--gewaehlt" : "")"
-                                  style="@stil" title="@titel" aria-hidden="true" data-name="@s.Name" @onclick="() => ZeileWaehlen(s)"></span>
+                            <span class="epos-kalb-bandteil epos-kalb-bandteil--zeile epos-kalb-art-@((int)b.Art) @(s == _gewaehlt ? "epos-kalb-bandteil--gewaehlt" : "") @(IstGemeinsam(s) ? "epos-kalb-bandteil--gemeinsam" : "")"
+                                  style="@stil" title="@titel" aria-hidden="true" data-name="@s.Name" @onclick="() => ZeileOeffnen(s)"></span>
                         }
                         else
                         {
@@ -234,7 +279,7 @@
                                     <td>@Kalendertage.Kurz(zeile.Schluessel.Ende, Jahr)</td>
                                     <td>@zeile.Schluessel.Name</td>
                                     <td>@Wirkungstext(zeile.Wirkung)</td>
-                                    <td>@Groessenliste(zeile.GiltFuer)</td>
+                                    <td>@Maske(zeile)</td>
                                     <td>
                                         <div class="epos-kalb-zeilenknoepfe">
                                             @if (!zeile.IstFerien)
@@ -299,7 +344,7 @@
                                 <td>@Kalendertage.Kurz(zeile.ErsterTag, Jahr)</td>
                                 <td>@zeile.Schluessel.Name</td>
                                 <td>@Wirkungstext(zeile.Wirkung)</td>
-                                <td>@Groessenliste(zeile.GiltFuer)</td>
+                                <td>@Maske(zeile)</td>
                                 <td>
                                     <div class="epos-kalb-zeilenknoepfe">
                                         <button type="button" class="epos-knopf epos-kalb-bearbeiten" aria-label="@(zeile.Schluessel.Name + " · " + Texte.KnopfKalbBearbeiten)"
@@ -337,6 +382,7 @@
                 {
                     <li><span class="epos-kalb-muster epos-kalb-art-@k" aria-hidden="true"></span>@Artname((KalenderTagart)k)</li>
                 }
+                <li><span class="epos-kalb-muster epos-kalb-muster--gemeinsam" aria-hidden="true"></span>@Texte.LabelKalbLegendeGemeinsam</li>
             </ul>
             <div class="epos-kalb-rolle">
                 <div class="epos-kalb-jahr" role="group" aria-label="@Texte.LabelKalbJahresraster">
@@ -353,7 +399,7 @@
                             }
                             KalenderRastertag tag = a.Raster[Kalendertage.Jahrestag(monat, t) - 1];
                             string titel = Kalendertage.Kurz(tag.Tag, Jahr) + " · " + Quelltext(tag.Art, tag.Quelle);
-                            <button type="button" class="epos-kalb-jahrtag epos-kalb-art-@((int)tag.Art) @(tag.Schluessel is not null && tag.Schluessel == _gewaehlt ? "epos-kalb-jahrtag--gewaehlt" : "")"
+                            <button type="button" class="epos-kalb-jahrtag epos-kalb-art-@((int)tag.Art) @(tag.Schluessel is not null && tag.Schluessel == _gewaehlt ? "epos-kalb-jahrtag--gewaehlt" : "") @(IstGemeinsam(tag.Schluessel) ? "epos-kalb-jahrtag--gemeinsam" : "")"
                                     data-tag="@tag.Tag" title="@titel" aria-label="@titel" @onclick="() => TagGeklickt(tag)">@t</button>
                         }
                     }
@@ -410,11 +456,17 @@
     {
         _ansicht = Bearbeitung.Kalenderansicht(Groesse);
         _ferien = (_ansicht?.Ferien ?? Array.Empty<KalenderFerienzeile>())
-                  .Select(f => new Ferienfeld(Kalendertage.Datum(f.Beginn, Jahr), Kalendertage.Datum(f.Ende, Jahr))).ToList();
+                  .Select(f => new Ferienfeld(f.Name, Kalendertage.Datum(f.Beginn, Jahr), Kalendertage.Datum(f.Ende, Jahr))).ToList();
         (int? von, int? bis) = Bearbeitung.Zeiten(Groesse, KonditionierungZeile.Saison);
         _saisonVon = Kalendertage.Datum(von, Jahr);
         _saisonBis = Kalendertage.Datum(bis, Jahr);
-        if (_ansicht is not null && !_ansicht.Profile.Any(p => p.Rang == _profilRang)) _profilRang = null;
+        if (_ansicht is not null && !_ansicht.Profile.Any(p => p.Rang == _profilRang && p.IdWoche == _profilWoche))
+        {
+            _profilRang = null;
+            _profilWoche = null;
+        }
+        _gemeinsam = (_ansicht?.Zuordnungen ?? Array.Empty<KalenderZuordnungszeile>())
+                     .Where(z => z.IstGemeinsam).Select(z => z.Schluessel).ToHashSet();
     }
 
     /// <summary>Nach einer Handlung: neu lesen, dann den Wirt zeichnen lassen.</summary>
@@ -444,7 +496,18 @@
     private string? Zuordnungssperre
         => Bearbeitung.AngelegteGroessen.Count == 0 ? Texte.GrundNichtAngelegt : Handlungssperre(KonditionierungHandlung.ZuordnungSetzen);
 
-    private string? FerienSperre => Handlungssperre(KonditionierungHandlung.FerienSetzen);
+    private string? FerienSperre => Handlungssperre(KonditionierungHandlung.FerienlisteSetzen);
+
+    /// <summary>Wochenende und Feiertagsland gehören dem Gebäude: an der Zone nur lesbar, mit Grund.</summary>
+    private string? WochenendSperre
+        => Bearbeitung.IstZone ? Texte.HinweisKalbWochenendeZone : Handlungssperre(KonditionierungHandlung.WochenendeSetzen);
+
+    private string? LandSperre
+        => Bearbeitung.IstZone ? Texte.HinweisKalbFeiertagslandZone : Handlungssperre(KonditionierungHandlung.FeiertagslandSetzen);
+
+    /// <summary>Umbenennen und Löschen wirken nur auf eine gewählte benannte Woche.</summary>
+    private string? Wochensperre(KonditionierungHandlung h)
+        => Profilsperre ?? Handlungssperre(h) ?? (Profil?.IstBenannt == true ? null : Texte.GrundKalbWocheWahl);
 
     private string? Kopiersperre(KonditionierungHandlung h)
         => Profilsperre ?? Handlungssperre(h) ?? (Zielort is null ? Texte.GrundKalbZiel : null);
@@ -459,7 +522,7 @@
 
     // ------------------------------------------------------------ Schnellfelder
 
-    private sealed record Ferienfeld(DateOnly? Von, DateOnly? Bis);
+    private sealed record Ferienfeld(string Name, DateOnly? Von, DateOnly? Bis);
 
     private List<Ferienfeld> _ferien = new();
     private DateOnly? _saisonVon;
@@ -478,7 +541,14 @@
     private async Task FerienHinzufuegen()
     {
         if (await Gesperrt(FerienSperre)) return;
-        _ferien.Add(new Ferienfeld(null, null));
+        _ferien.Add(new Ferienfeld(FerienName(_ferien.Count), null, null));
+    }
+
+    private async Task FerienNameSetzen(int n, string name)
+    {
+        if (n >= _ferien.Count) return;
+        _ferien[n] = _ferien[n] with { Name = name ?? "" };
+        await FerienSchreiben();
     }
 
     private async Task FerienEntfernen(int n)
@@ -492,9 +562,59 @@
     private async Task FerienSchreiben()
     {
         if (await Gesperrt(FerienSperre) || _ferien.Any(f => f.Von is null || f.Bis is null)) return;
-        var liste = _ferien.Select((f, i) => new KalenderFerienzeile(FerienName(i), Kalendertage.Jahrestag(f.Von)!.Value,
+        var liste = _ferien.Select((f, i) => new KalenderFerienzeile(string.IsNullOrWhiteSpace(f.Name) ? FerienName(i) : f.Name.Trim(),
+                                                                       Kalendertage.Jahrestag(f.Von)!.Value,
                                                                        Kalendertage.Jahrestag(f.Bis)!.Value)).ToList();
-        await Danach(Bearbeitung.FerienSetzen(liste));
+        await Danach(Bearbeitung.FerienlisteSetzen(liste));
+    }
+
+    private async Task WochenendtagSchalten(int tag)
+    {
+        if (await Gesperrt(WochenendSperre) || _ansicht is null) return;
+        var tage = _ansicht.Wochenendtage.ToList();
+        if (!tage.Remove(tag)) tage.Add(tag);
+        tage.Sort();
+        await Danach(Bearbeitung.WochenendeSetzen(tage));
+    }
+
+    private async Task SaSo()
+    {
+        if (await Gesperrt(WochenendSperre)) return;
+        await Danach(Bearbeitung.WochenendeSetzen(new[] { 5, 6 }));
+    }
+
+    /// <summary>Die Länder der Auswahl (Id = Stelle + 1 in der Länderliste der Ansicht; leer = nur bundeseinheitlich).</summary>
+    private IReadOnlyList<(int Id, string Text)> Landeintraege
+    {
+        get
+        {
+            IReadOnlyList<string> laender = _ansicht?.Feiertagslaender ?? Array.Empty<string>();
+            string[] namen = (Texte.TextKalbBundeslaender ?? "").Split(';');
+            return laender.Select((l, i) => (i + 1, i < namen.Length && namen[i].Length > 0 ? namen[i] + " (" + l + ")" : l)).ToList();
+        }
+    }
+
+    private int? Landindex
+    {
+        get
+        {
+            IReadOnlyList<string> laender = _ansicht?.Feiertagslaender ?? Array.Empty<string>();
+            for (int i = 0; i < laender.Count; i++)
+                if (string.Equals(laender[i], _ansicht?.Feiertagsland, StringComparison.Ordinal)) return i + 1;
+            return null;
+        }
+    }
+
+    private string Landhinweis
+        => _ansicht is { Landesregeln.Count: > 0 } a
+            ? string.Format(CultureInfo.CurrentCulture, Texte.TextKalbLandRegeln, string.Join(", ", a.Landesregeln))
+            : Texte.TextKalbLandKeine;
+
+    private async Task LandGewaehlt(int? id)
+    {
+        if (await Gesperrt(LandSperre) || _ansicht is null) return;
+        string? land = id is int i && i >= 1 && i <= _ansicht.Feiertagslaender.Count ? _ansicht.Feiertagslaender[i - 1] : null;
+        await Danach(Bearbeitung.FeiertagslandSetzen(land));
     }
 
     private async Task SaisonFeld(DateOnly? d, bool beginn)
@@ -544,6 +664,8 @@
     // ------------------------------------------------------------ Wochenprofile und Pinsel
 
     private int? _profilRang;
+    private long? _profilWoche;
+    private string _wochenname = "";
     private double? _pinselwert;
     private bool _pinselAus;
     private (int Tag, int Stunde)? _anker;
@@ -554,18 +676,23 @@
 
     /// <summary>Das gewählte Wochenprofil; die Standardwoche, wenn das gewählte fehlt.</summary>
     private KalenderWochenprofil? Profil
-        => _ansicht?.Profile.FirstOrDefault(p => p.Rang == _profilRang) ?? _ansicht?.Profile.FirstOrDefault();
+        => _ansicht?.Profile.FirstOrDefault(p => p.Rang == _profilRang && p.IdWoche == _profilWoche) ?? _ansicht?.Profile.FirstOrDefault();
 
     /// <summary>Der Rang des gewählten Profils. Prüfhilfe.</summary>
     public int? GewaehltesProfil => Profil?.Rang;
 
+    /// <summary>Die gewählte benannte Woche (<c>null</c> = keine benannte gewählt). Prüfhilfe.</summary>
+    public long? GewaehlteWoche => Profil?.IdWoche;
+
     /// <summary>Die erste Zelle des Pinsels. Prüfhilfe.</summary>
     public (int Tag, int Stunde)? Anker => _anker;
 
-    private void ProfilWaehlen(int? rang)
+    private void ProfilWaehlen(int? rang, long? idWoche = null)
     {
         _profilRang = rang;
+        _profilWoche = idWoche;
         _anker = null;
+        if (Profil?.IstBenannt == true) _wochenname = Profil.Name;
     }
 
     private void Gedrueckt(int tag, int stunde)
@@ -618,39 +745,39 @@
         var strich = new KalenderPinselstrich(Math.Min(a.Tag, b.Tag), Math.Max(a.Tag, b.Tag),
                                               Math.Min(a.Stunde, b.Stunde), Math.Max(a.Stunde, b.Stunde) + 1,
                                               _pinselAus ? null : _pinselwert);
-        await Danach(Bearbeitung.ProfilPinseln(Groesse, Profil?.Rang, strich));
+        await Danach(Bearbeitung.ProfilPinseln(Groesse, Profil?.Rang, strich, Profil?.IdWoche));
     }
 
     private async Task TagEigen(int quelltag, int[] zieltage)
     {
         if (await Gesperrt(Profilsperre ?? Handlungssperre(KonditionierungHandlung.TagKopieren))) return;
-        await Danach(Bearbeitung.TagKopieren(Groesse, Profil?.Rang, quelltag, Groesse, Profil?.Rang, zieltage));
+        await Danach(Bearbeitung.TagKopieren(Groesse, Profil?.Rang, quelltag, Groesse, Profil?.Rang, zieltage, Profil?.IdWoche, Profil?.IdWoche));
     }
 
     /// <summary>Die Ziele von „Woche kopieren" und „Tag kopieren": die Profile der Größen gleicher Einheit mit angelegtem Kalender.</summary>
-    private List<(KonditionierungGroesse Groesse, int? Rang, string Text)> Ziele()
+    private List<(KonditionierungGroesse Groesse, int? Rang, long? IdWoche, string Text)> Ziele()
     {
-        var liste = new List<(KonditionierungGroesse, int?, string)>();
+        var liste = new List<(KonditionierungGroesse, int?, long?, string)>();
         foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
         {
             if (!GleicheEinheit(g, Groesse) || !Bearbeitung.Angelegt(g)) continue;
             IReadOnlyList<KalenderWochenprofil> profile = g == Groesse ? _ansicht?.Profile ?? Array.Empty<KalenderWochenprofil>()
                                                                       : Bearbeitung.Kalenderansicht(g)?.Profile ?? Array.Empty<KalenderWochenprofil>();
             foreach (KalenderWochenprofil p in profile)
-                liste.Add((g, p.Rang, Bearbeitung.Groessenname(g) + " · " + p.Name));
+                liste.Add((g, p.Rang, p.IdWoche, Bearbeitung.Groessenname(g) + " · " + p.Name));
         }
         return liste;
     }
 
     private IReadOnlyList<(int Id, string Text)> Zieleintraege => Ziele().Select((z, i) => (i + 1, z.Text)).ToList();
 
-    private (KonditionierungGroesse Groesse, int? Rang)? Zielort
+    private (KonditionierungGroesse Groesse, int? Rang, long? IdWoche)? Zielort
     {
         get
         {
             if (_ziel is not int i) return null;
             var ziele = Ziele();
-            return i >= 1 && i <= ziele.Count ? (ziele[i - 1].Groesse, ziele[i - 1].Rang) : null;
+            return i >= 1 && i <= ziele.Count ? (ziele[i - 1].Groesse, ziele[i - 1].Rang, ziele[i - 1].IdWoche) : null;
         }
     }
 
@@ -670,14 +797,41 @@
     {
         if (await Gesperrt(Kopiersperre(KonditionierungHandlung.WocheKopieren))) return;
         var z = Zielort!.Value;
-        await Danach(Bearbeitung.WocheKopieren(Groesse, Profil?.Rang, z.Groesse, z.Rang));
+        await Danach(Bearbeitung.WocheKopieren(Groesse, Profil?.Rang, z.Groesse, z.Rang, Profil?.IdWoche, z.IdWoche));
     }
 
     private async Task TagKopieren()
     {
         if (await Gesperrt(Kopiersperre(KonditionierungHandlung.TagKopieren))) return;
         var z = Zielort!.Value;
-        await Danach(Bearbeitung.TagKopieren(Groesse, Profil?.Rang, (_quelltag ?? 1) - 1, z.Groesse, z.Rang, new[] { (_zieltag ?? 1) - 1 }));
+        await Danach(Bearbeitung.TagKopieren(Groesse, Profil?.Rang, (_quelltag ?? 1) - 1, z.Groesse, z.Rang, new[] { (_zieltag ?? 1) - 1 },
+                                             Profil?.IdWoche, z.IdWoche));
+    }
+
+    // ------------------------------------------------------------ Benannte Wochen
+
+    private async Task WocheAnlegen()
+    {
+        if (await Gesperrt(Profilsperre ?? Handlungssperre(KonditionierungHandlung.WocheAnlegen))) return;
+        string name = (_wochenname ?? "").Trim();
+        bool ok = Bearbeitung.WocheAnlegen(Groesse, name, Profil?.Rang, Profil?.IdWoche);
+        await Danach(ok);
+        if (ok && _ansicht?.Profile.FirstOrDefault(p => p.IstBenannt && p.Name == name) is KalenderWochenprofil neu)
+            ProfilWaehlen(neu.Rang, neu.IdWoche);
+    }
+
+    private async Task WocheUmbenennen()
+    {
+        if (await Gesperrt(Wochensperre(KonditionierungHandlung.WocheUmbenennen))) return;
+        await Danach(Bearbeitung.WocheUmbenennen(Groesse, Profil!.IdWoche!.Value, (_wochenname ?? "").Trim()));
+    }
+
+    private async Task WocheLoeschen()
+    {
+        if (await Gesperrt(Wochensperre(KonditionierungHandlung.WocheLoeschen))) return;
+        bool ok = Bearbeitung.WocheLoeschen(Groesse, Profil!.IdWoche!.Value);
+        if (ok) ProfilWaehlen(null);
+        await Danach(ok);
     }
 
     // ------------------------------------------------------------ Zuordnung und Einzeltage
@@ -865,6 +1019,55 @@
         return p[i - 1].Name;
     }
 
+    private HashSet<KalenderZeilenschluessel> _gemeinsam = new();
+
+    private bool IstGemeinsam(KalenderZeilenschluessel? s) => s is not null && _gemeinsam.Contains(s);
+
+    /// <summary>Bit der Größe in der Maske „gilt für" (Heizen = 1 … Personen = 16).</summary>
+    private static int Bit(KonditionierungGroesse g) => 1 << (int)g;
+
+    /// <summary>
+    /// „gilt für" einer Zeile: die Maske als fünf Kästchen mit „alle" — oder, bei einer Zeile der Lesebrücke (je Größe eine
+    /// eigene Kopie), das Kennzeichen „je Größe getrennt" mit den Größen, ohne Maskenbedienung.
+    /// </summary>
+    private RenderFragment Maske(KalenderZuordnungszeile z) => __builder =>
+    {
+        if (!z.IstGemeinsam)
+        {
+            <span class="epos-kalb-getrennt" title="@Texte.HinweisKalbGetrennt" data-name="@z.Schluessel.Name">
+                <span aria-hidden="true">⧉</span>
+                <span>@Texte.TextKalbGetrennt</span>
+            </span>
+            <span class="epos-kalb-giltliste">@Groessenliste(z.GiltFuer)</span>
+            return;
+        }
+        string? sperre = Handlungssperre(KonditionierungHandlung.ZuordnungSetzen);
+        <div class="epos-kalb-maske" role="group" aria-label="@(z.Schluessel.Name + " · " + Texte.LabelKalbGiltFuer)">
+            @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+            {
+                KonditionierungGroesse groesse = g;
+                bool an = (z.Maske & Bit(groesse)) != 0;
+                <button type="button" class="epos-knopf epos-kalb-maskenbit @(an ? "epos-knopf--gewaehlt" : "")" data-groesse="@((int)groesse)"
+                        aria-pressed="@(an ? "true" : "false")" @attributes="Sperre(sperre)"
+                        @onclick="() => MaskeSetzen(z, z.Maske ^ Bit(groesse))">@Bearbeitung.Groessenname(groesse)</button>
+            }
+            <button type="button" class="epos-knopf epos-kalb-maske-alle @(z.Maske == 31 ? "epos-knopf--gewaehlt" : "")"
+                    aria-pressed="@(z.Maske == 31 ? "true" : "false")" @attributes="Sperre(sperre)"
+                    @onclick="() => MaskeSetzen(z, 31)">@Texte.LabelKalbGiltAlle</button>
+        </div>
+    };
+
+    /// <summary>Setzt die Maske einer gemeinsamen Zeile — dieselbe Zeile, dieselbe Wirkung, neue Größen.</summary>
+    private async Task MaskeSetzen(KalenderZuordnungszeile z, int maske)
+    {
+        if (await Gesperrt(Handlungssperre(KonditionierungHandlung.ZuordnungSetzen))) return;
+        // Eine leere Maske lehnt der Kern benannt ab (keine Größe gewählt) - die Meldung kommt über den Wirt.
+        IReadOnlyList<KonditionierungGroesse> gilt = KonditionierungDaten.Alle.Where(g => (maske & Bit(g)) != 0).ToList();
+        bool ok = Bearbeitung.ZuordnungSetzen(z.Schluessel, z.Schluessel, z.Wirkung, gilt);
+        if (ok) _gewaehlt = z.Schluessel;
+        await Danach(ok);
+    }
+
     private async Task Entfernen(KalenderZeilenschluessel s)
     {
         if (await Gesperrt(Handlungssperre(KonditionierungHandlung.ZuordnungLoeschen))) return;
@@ -891,15 +1094,25 @@
     {
         _gewaehlt = s;
         KalenderZuordnungszeile? z = _ansicht?.Zuordnungen.FirstOrDefault(x => x.Schluessel == s);
-        if (z is not null && z.Wirkung.Wirkung == KalenderWirkung.Wochenprofil && z.Raenge.TryGetValue(Groesse, out int rang)
-            && _ansicht!.Profile.Any(p => p.Rang == rang))
+        if (z is null || z.Wirkung.Wirkung != KalenderWirkung.Wochenprofil) return;
+        if (z.IdWoche is long id && _ansicht!.Profile.FirstOrDefault(p => p.IdWoche == id) is KalenderWochenprofil woche)
+            ProfilWaehlen(woche.Rang, woche.IdWoche);
+        else if (z.Raenge.TryGetValue(Groesse, out int rang) && _ansicht!.Profile.Any(p => p.Rang == rang && !p.IstBenannt))
             ProfilWaehlen(rang);
+    }
+
+    /// <summary>Ein Klick in Jahresband oder Jahresraster wählt die bestimmende Zeile und öffnet sie im Editor (Ferien nicht).</summary>
+    private void ZeileOeffnen(KalenderZeilenschluessel s)
+    {
+        ZeileWaehlen(s);
+        KalenderZuordnungszeile? z = _ansicht?.Zuordnungen.FirstOrDefault(x => x.Schluessel == s);
+        if (z is not null && !z.IstFerien && Bearbeitung.Bietet(KonditionierungHandlung.ZuordnungSetzen)) Bearbeiten(z);
     }
 
     private void TagGeklickt(KalenderRastertag t)
     {
         _tagzeile = Kalendertage.Kurz(t.Tag, Jahr) + " · " + Quelltext(t.Art, t.Quelle);
-        if (t.Schluessel is KalenderZeilenschluessel s) ZeileWaehlen(s);
+        if (t.Schluessel is KalenderZeilenschluessel s) ZeileOeffnen(s);
     }
 
     // ------------------------------------------------------------ Anzeige
@@ -913,6 +1126,12 @@
     };
 
     private string Wert(double w) => double.IsNaN(w) ? Texte.ZelleAus : w.ToString("0.##", CultureInfo.CurrentCulture);
+
+    private string Tageskurz(int t)
+    {
+        string n = Tagesname(t);
+        return n.Length > 2 ? n[..2] : n;
+    }
 
     private string Tagesname(int t) => t < Tagesnamen.Count ? Tagesnamen[t] : (t + 1).ToString(CultureInfo.InvariantCulture);
 
