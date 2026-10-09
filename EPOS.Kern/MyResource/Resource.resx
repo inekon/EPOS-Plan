@@ -49187,7 +49187,7 @@ Chart</value>
     <value>Der höchste Vorlauf ({0} °C) liegt unter dem Auslegungsvorlauf der Flächenheizung ({1} °C).</value>
   </data>
   <data name="WPA_WARN_RUECKLAUF_NIE" xml:space="preserve">
-    <value>Die Rücklaufgrenze ({0} °C) liegt unter dem Auslegungsrücklauf aller Zonen ({1} °C). Die Wärmepumpe liefert bei diesem Rücklauf nie.</value>
+    <value>Höchster Rücklauf {0} °C liegt unter dem Rücklauf an der Übergabegrenze ({1} °C) — die Wärmepumpe liefert bei diesem Rücklauf nie.</value>
   </data>
   <data name="WPA_WARN_VORWAERM_OHNE_KESSEL" xml:space="preserve">
     <value>Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade — niemand hebt auf den Sollvorlauf.</value>

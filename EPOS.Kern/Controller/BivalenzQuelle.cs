@@ -36,9 +36,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>Größter Auslegungsvorlauf der gekoppelten Flächenheizungen [°C]; NaN = keine Fläche.</summary>
         internal double FlaechenVorlaufC { get; init; } = double.NaN;
-
-        /// <summary>Kleinster Auslegungsrücklauf der gekoppelten Übergaben [°C]; NaN = keine.</summary>
-        internal double AuslegungRuecklaufMinC { get; init; } = double.NaN;
     }
 
     /// <summary>
@@ -70,7 +67,6 @@ namespace WindowsFormsApplication1
                 Befund = p.Befund,
                 GebaeudeIds = p.GebaeudeIds,
                 FlaechenVorlaufC = p.FlaechenVorlaufC,
-                AuslegungRuecklaufMinC = p.AuslegungRuecklaufMinC,
                 Kaskade = kaskade,
             };
         }
@@ -108,7 +104,7 @@ namespace WindowsFormsApplication1
             var zonen = new List<Uebergabezone>();
             var ids = new List<int>();
             double heizlast = 0.0, aussen = double.PositiveInfinity, raum = double.NegativeInfinity;
-            double flaeche = double.NaN, ruecklaufMin = double.NaN;
+            double flaeche = double.NaN;
             foreach (ProjektGebaeudeModel item in gekoppelt)
             {
                 if (GebaeudeZonensatz.HatZonen(item))
@@ -130,7 +126,6 @@ namespace WindowsFormsApplication1
                 zonen.Add(new Uebergabezone(phiNKw, u.AuslegungVorlaufC, u.AuslegungRuecklaufC, u.AuslegungRaumC, u.Exponent));
                 if (item.Uebergabe_Art == DbWerte.UEBERGABE_FLAECHE && !(u.AuslegungVorlaufC <= flaeche))
                     flaeche = u.AuslegungVorlaufC;
-                if (!(u.AuslegungRuecklaufC >= ruecklaufMin)) ruecklaufMin = u.AuslegungRuecklaufC;
                 ids.Add(item.ID_Gebaeude);
                 heizlast += e.AuslegungsheizlastW / 1000.0 * f;
                 aussen = Math.Min(aussen, e.AuslegungAussentemperaturC);
@@ -142,7 +137,6 @@ namespace WindowsFormsApplication1
                 KesselleistungKw = kessel,
                 GebaeudeIds = ids,
                 FlaechenVorlaufC = flaeche,
-                AuslegungRuecklaufMinC = ruecklaufMin,
                 Gebaeude = new BivalenzGebaeudedaten
                 {
                     Zonen = zonen,

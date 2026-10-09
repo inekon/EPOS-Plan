@@ -49180,7 +49180,7 @@ chart</value>
     <value>The maximum flow temperature ({0} °C) is below the design flow temperature of the surface heating ({1} °C).</value>
   </data>
   <data name="WPA_WARN_RUECKLAUF_NIE" xml:space="preserve">
-    <value>The return limit ({0} °C) is below the design return temperature of all zones ({1} °C). The heat pump never delivers at this return temperature.</value>
+    <value>Highest return temperature {0} °C is below the return temperature at the transfer limit ({1} °C) — the heat pump never delivers at this return temperature.</value>
   </data>
   <data name="WPA_WARN_VORWAERM_OHNE_KESSEL" xml:space="preserve">
     <value>Preheating mode without a boiler or heating rod in the cascade — nothing raises the flow to the set temperature.</value>

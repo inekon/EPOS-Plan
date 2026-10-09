@@ -121,7 +121,7 @@ namespace WindowsFormsApplication1
                 HoechstvorlaufC = g.HoechstvorlaufC,
                 Grenzen = grenzen,
                 FlaechenVorlaufC = p.FlaechenVorlaufC,
-                AuslegungRuecklaufMinC = p.AuslegungRuecklaufMinC,
+                RuecklaufUebergabeC = w.RuecklaufC,
                 Bivalent = bivalent,
                 Betriebsart = g.Betriebsart,
                 Vorwaermbetrieb = g.Vorwaermbetrieb,

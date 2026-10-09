@@ -80,8 +80,12 @@ namespace WindowsFormsApplication1
         /// <summary>Größter Auslegungsvorlauf der gekoppelten Flächenheizungen [°C]; NaN = keine Fläche.</summary>
         internal double FlaechenVorlaufC { get; init; } = double.NaN;
 
-        /// <summary>Kleinster Auslegungsrücklauf der gekoppelten Zonen [°C]; NaN = keine Übergabe beschrieben.</summary>
-        internal double AuslegungRuecklaufMinC { get; init; } = double.NaN;
+        /// <summary>
+        /// Rücklauf an der Übergabegrenze θ_R,UE [°C] — Gleichgewicht bei θ_WP,max, Auslegungsmassenstrom und
+        /// Auslegungsraumtemperatur, über mehrere Zonen massenstromgewichtet (<see cref="Bivalenzherleitung.RuecklaufUeC"/>);
+        /// NaN = keine Übergabe beschrieben (ohne Kopplung, unvollständig).
+        /// </summary>
+        internal double RuecklaufUebergabeC { get; init; } = double.NaN;
 
         /// <summary>Bivalenter Betrieb eingeschaltet?</summary>
         internal bool Bivalent { get; init; }
@@ -184,9 +188,11 @@ namespace WindowsFormsApplication1
             if (!double.IsNaN(e.HoechstvorlaufC) && !double.IsNaN(e.FlaechenVorlaufC) && e.HoechstvorlaufC < e.FlaechenVorlaufC)
                 befunde.Add(new Bivalenzbefund(Bivalenzbefundart.Hoechstvorlauf, false, e.HoechstvorlaufC, e.FlaechenVorlaufC));
 
-            if (g != null && !double.IsNaN(g.RuecklaufMaxC) && !double.IsNaN(e.AuslegungRuecklaufMinC)
-                && g.RuecklaufMaxC < e.AuslegungRuecklaufMinC)
-                befunde.Add(new Bivalenzbefund(Bivalenzbefundart.RuecklaufNie, false, g.RuecklaufMaxC, e.AuslegungRuecklaufMinC));
+            // Die Wärmepumpe fährt höchstens θ_WP,max: maßgebend ist der Rücklauf an der Übergabegrenze, nicht der
+            // Auslegungsrücklauf. Sperre genau dann, wenn θ_R,UE über θ_R,grenz liegt.
+            if (g != null && !double.IsNaN(g.RuecklaufMaxC) && !double.IsNaN(e.RuecklaufUebergabeC)
+                && e.RuecklaufUebergabeC > g.RuecklaufMaxC)
+                befunde.Add(new Bivalenzbefund(Bivalenzbefundart.RuecklaufNie, false, g.RuecklaufMaxC, e.RuecklaufUebergabeC));
 
             bool vorwaerm = e.Bivalent && e.Vorwaermbetrieb && VorwaermbetriebWaehlbar(e.Betriebsart);
             if (vorwaerm && e.Kaskade != null)

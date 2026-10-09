@@ -113,6 +113,28 @@ public class WaermepumpeBivalenzTests : EposBunitContext
     }
 
     [Fact]
+    public void Die_Sperre_Ruecklauf_nie_erscheint_bei_R744_und_nicht_bei_R410A()
+    {
+        // Zahlenbeispiel: θ_R,UE 46,48 °C bei θ_WP,max 55 °C — R410A (Grenze 52 °C) frei, R744 (Grenze 40 °C) gesperrt.
+        const string SPERRE = "Höchster Rücklauf 40 °C liegt unter dem Rücklauf an der Übergabegrenze (46,5 °C) — "
+                              + "die Wärmepumpe liefert bei diesem Rücklauf nie.";
+        var d = Daten(vorlaufMax: 55.0);
+        d.Kaeltemittel = "R410A";
+        d.BivalenzRechnen = x => Beispiel(BivalenzKennzeichen.Wirksam) with
+        {
+            Grenzen = x.Kaeltemittel == "R744" ? R744() : R410a(),
+            Befunde = x.Kaeltemittel == "R744"
+                ? new[] { new WaermepumpeBivalenzBefund(BivalenzBefundArt.RuecklaufNie, false, 40.0, 46.48) }
+                : Array.Empty<WaermepumpeBivalenzBefund>(),
+        };
+        var c = Aufbauen(d);
+        Assert.DoesNotContain("liefert bei diesem Rücklauf nie", c.Markup);
+        c.Find("[data-kaeltemittel='R744']").Click();
+        Assert.Contains(SPERRE, c.Find("[data-gruppe=bivalenz-befunde]").TextContent);
+        Assert.Single(c.FindAll("[data-gruppe=bivalenz-befunde] .epos-warnbanner--warnung"));
+    }
+
+    [Fact]
     public void Die_Schnellwahl_zeigt_vier_Knoepfe_und_die_Regel()
     {
         var t = new WaermepumpeKonfigurationTexte();
@@ -317,7 +339,7 @@ public class WaermepumpeBivalenzTests : EposBunitContext
         string text = c.Find("[data-gruppe=bivalenz-befunde]").TextContent;
         Assert.Contains("Mindestspreizung (10 K) ist nicht kleiner als die Höchstspreizung (8 K)", text);
         Assert.Contains("höchste Vorlauf (30 °C) liegt unter dem Auslegungsvorlauf der Flächenheizung (35 °C)", text);
-        Assert.Contains("Die Wärmepumpe liefert bei diesem Rücklauf nie.", text);
+        Assert.Contains("Höchster Rücklauf 40 °C liegt unter dem Rücklauf an der Übergabegrenze (45 °C) — die Wärmepumpe liefert bei diesem Rücklauf nie.", text);
         Assert.Contains("ohne Kessel oder Heizstab in der Kaskade", text);
         Assert.Contains("hinter dem Kessel (Platz 2 nach Platz 1)", text);
         Assert.Contains("25 % der Kesselleistung; § 43 GModG verlangt mindestens 30 %", text);

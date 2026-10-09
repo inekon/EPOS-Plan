@@ -501,7 +501,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.GrenzwertHerkunft.VorgabeKaeltemittel, w.Grenzen.SpreizungHerkunft);
             // Das Zahlenbeispiel: Die Übergabe begrenzt stärker als das Kennfeld (Hinweis), keine Warnung.
             Assert.Contains(w.Befunde, b => b.Art == EPOS.UI.Dialoge.Waermepumpe.BivalenzBefundArt.UebergabeBegrenzt && b.NurHinweis);
-            Assert.DoesNotContain(w.Befunde, b => !b.NurHinweis && b.Art != EPOS.UI.Dialoge.Waermepumpe.BivalenzBefundArt.RuecklaufNie);
+            Assert.DoesNotContain(w.Befunde, b => !b.NurHinweis);
+
+            // R744 (Rücklaufgrenze 40 °C) am selben Beispiel: θ_R,UE 46,48 °C liegt darüber — die Sperre „Rücklauf nie".
+            var w744 = BivalenzAbbildung.Werte(projekt, GeraetBeispiel("DIREKT"), Bivalenzpruefung.Grenzen("R744", 55.0), false, true);
+            var nie = Assert.Single(w744.Befunde, b => !b.NurHinweis);
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.BivalenzBefundArt.RuecklaufNie, nie.Art);
+            Assert.Equal(40.0, nie.Wert1, 9);
+            Assert.Equal(46.48, nie.Wert2, 2);
+            Assert.Equal(w744.RuecklaufC, nie.Wert2, 9);
+
+            // Ohne Kopplung keine Übergabedaten — keine Sperre.
+            var ohne = BivalenzAbbildung.Werte(new BivalenzProjektdaten(), GeraetBeispiel("DIREKT"), Bivalenzpruefung.Grenzen("R744", 55.0));
+            Assert.DoesNotContain(ohne.Befunde, b => b.Art == EPOS.UI.Dialoge.Waermepumpe.BivalenzBefundArt.RuecklaufNie);
         }
     }
 }

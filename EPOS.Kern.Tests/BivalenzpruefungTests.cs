@@ -115,15 +115,39 @@ namespace EPOS.Kern.Tests
             Assert.Equal((30.0, 35.0), (b.Wert1, b.Wert2));
         }
 
+        /// <summary>θ_R,UE des Zahlenbeispiels: Heizkörper 75/60/20 °C, n 1,3, 10 kW bei θ_WP,max 55 °C (46,48 °C).</summary>
+        private static double RuecklaufZahlenbeispiel()
+            => Uebergabegrenze.Gebaeude(null, new Uebergabezone(10.0, 75.0, 60.0, 20.0, 1.3), 55.0, 20.0).RuecklaufC;
+
         [Fact]
-        public void Ruecklaufgrenze_unter_dem_Auslegungsruecklauf_aller_Zonen()
+        public void Ruecklauf_nie_R410A_am_Zahlenbeispiel_ohne_Sperre()
         {
-            Geraetegrenzwerte r744 = Bivalenzpruefung.Grenzen("R744", 80.0);
-            Assert.Empty(Bivalenzpruefung.Pruefen(new Bivalenzpruefeingang { Grenzen = r744, AuslegungRuecklaufMinC = 35.0 }));
+            double rUe = RuecklaufZahlenbeispiel();
+            Assert.Equal(46.48, rUe, 2);
+            // Der Auslegungsrücklauf 60 °C liegt über der Grenze 52 °C — maßgebend ist aber θ_R,UE.
+            Assert.Empty(Bivalenzpruefung.Pruefen(new Bivalenzpruefeingang
+                { Grenzen = Bivalenzpruefung.Grenzen("R410A", 55.0), RuecklaufUebergabeC = rUe }));
+        }
+
+        [Fact]
+        public void Ruecklauf_nie_R744_am_Zahlenbeispiel_mit_Sperre()
+        {
+            double rUe = RuecklaufZahlenbeispiel();
             Bivalenzbefund b = Assert.Single(Bivalenzpruefung.Pruefen(new Bivalenzpruefeingang
-                { Grenzen = r744, AuslegungRuecklaufMinC = 45.0 }));
+                { Grenzen = Bivalenzpruefung.Grenzen("R744", 55.0), RuecklaufUebergabeC = rUe }));
             Assert.Equal(Bivalenzbefundart.RuecklaufNie, b.Art);
-            Assert.Equal((40.0, 45.0), (b.Wert1, b.Wert2));
+            Assert.False(b.NurHinweis);
+            Assert.Equal(40.0, b.Wert1, 9);
+            Assert.Equal(rUe, b.Wert2, 9);
+            // Gleich der Grenze: keine Sperre.
+            Assert.Empty(Bivalenzpruefung.Pruefen(new Bivalenzpruefeingang
+                { Grenzen = Bivalenzpruefung.Grenzen("R744", 55.0), RuecklaufUebergabeC = 40.0 }));
+        }
+
+        [Fact]
+        public void Ruecklauf_nie_ohne_Uebergabedaten_ohne_Sperre()
+        {
+            Assert.Empty(Bivalenzpruefung.Pruefen(new Bivalenzpruefeingang { Grenzen = Bivalenzpruefung.Grenzen("R744", 55.0) }));
         }
 
         [Fact]

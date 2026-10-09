@@ -281,7 +281,7 @@ public sealed class WaermepumpeKonfigurationTexte
     public string WarnHoechstvorlauf { get; set; } = T("WPA_WARN_HOECHSTVORLAUF", "Der höchste Vorlauf ({0} °C) liegt unter dem Auslegungsvorlauf der Flächenheizung ({1} °C).");
 
     /// <summary>WPA_WARN_RUECKLAUF_NIE</summary>
-    public string WarnRuecklaufNie { get; set; } = T("WPA_WARN_RUECKLAUF_NIE", "Die Rücklaufgrenze ({0} °C) liegt unter dem Auslegungsrücklauf aller Zonen ({1} °C). Die Wärmepumpe liefert bei diesem Rücklauf nie.");
+    public string WarnRuecklaufNie { get; set; } = T("WPA_WARN_RUECKLAUF_NIE", "Höchster Rücklauf {0} °C liegt unter dem Rücklauf an der Übergabegrenze ({1} °C) — die Wärmepumpe liefert bei diesem Rücklauf nie.");
 
     /// <summary>WPA_WARN_VORWAERM_OHNE_KESSEL</summary>
     public string WarnVorwaermOhneKessel { get; set; } = T("WPA_WARN_VORWAERM_OHNE_KESSEL", "Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade — niemand hebt auf den Sollvorlauf.");

@@ -126887,7 +126887,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklaufgrenze ({0} °C) liegt unter dem Auslegungsrücklauf aller Zonen ({1} °C). Die Wärmepumpe liefert bei diesem Rücklauf nie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Rücklauf {0} °C liegt unter dem Rücklauf an der Übergabegrenze ({1} °C) — die Wärmepumpe liefert bei diesem Rücklauf nie. ähnelt.
         /// </summary>
         public static string WPA_WARN_RUECKLAUF_NIE {
             get {
