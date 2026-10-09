@@ -50340,5 +50340,77 @@ chart</value>
   <data name="KOND_LBL_KALB_LEGENDE_GEMEINSAM" xml:space="preserve">
     <value>Row for several quantities</value>
   </data>
+  <data name="PVG_BTN_NENNLEISTUNG" xml:space="preserve">
+    <value>Edit rated power…</value>
+  </data>
+  <data name="PVG_TITEL_NENNLEISTUNG" xml:space="preserve">
+    <value>Edit rated power</value>
+  </data>
+  <data name="PVG_NENN_LEER_HINWEIS" xml:space="preserve">
+    <value>Empty = not maintained; the run then uses the peak of the series.</value>
+  </data>
+  <data name="PVG_NENN_PROJEKTKOPIEN" xml:space="preserve">
+    <value>The change applies to the catalogue entry. Projects that already use this profile keep their copy until it is renewed in the project via “Renew from catalogue…”.</value>
+  </data>
+  <data name="PVG_MSG_NENN_GESPEICHERT" xml:space="preserve">
+    <value>Rated power of “{0}” saved.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNGUELTIG" xml:space="preserve">
+    <value>The rated power must be greater than 0; empty means “not maintained”.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNBEKANNT" xml:space="preserve">
+    <value>This PV profile is no longer in the catalogue.</value>
+  </data>
+  <data name="PVG_MSG_NENN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This PV profile is a delivery entry; its rated power can only be edited after the lock has been removed.</value>
+  </data>
+  <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
+    <value>Photovoltaics characteristics</value>
+  </data>
+  <data name="PVG_ABW_TEXT" xml:space="preserve">
+    <value>differs from the catalogue: {0}</value>
+  </data>
+  <data name="PVG_ABW_NENNLEISTUNG" xml:space="preserve">
+    <value>rated power</value>
+  </data>
+  <data name="PVG_ABW_RASTER" xml:space="preserve">
+    <value>interval</value>
+  </data>
+  <data name="PVG_ABW_JAHRESSUMME" xml:space="preserve">
+    <value>annual total</value>
+  </data>
+  <data name="PVG_ABW_REIHE" xml:space="preserve">
+    <value>series</value>
+  </data>
+  <data name="PVG_BTN_ERNEUERN" xml:space="preserve">
+    <value>Renew from catalogue…</value>
+  </data>
+  <data name="PVG_TITEL_ERNEUERN" xml:space="preserve">
+    <value>Renew project copy from catalogue</value>
+  </data>
+  <data name="PVG_ERNEUERN_FRAGE" xml:space="preserve">
+    <value>The project copy “{0}” is replaced by the catalogue entry of the same name: description, interval, rated power, annual yield and the series. The assignment to the project remains.</value>
+  </data>
+  <data name="PVG_ERNEUERN_SIMULATION" xml:space="preserve">
+    <value>Results change only with the next simulation.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERT" xml:space="preserve">
+    <value>The project copy “{0}” now carries the catalogue state. Results change only with the next simulation.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_KEIN_KATALOG" xml:space="preserve">
+    <value>The catalogue no longer holds a PV profile of this name; the project copy stays as it is.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_KEINE_KOPIE" xml:space="preserve">
+    <value>The project does not yet hold a copy of this profile; it is created from the catalogue on OK.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_GLEICH" xml:space="preserve">
+    <value>The project copy already matches the catalogue entry.</value>
+  </data>
+  <data name="KI_DLG_PVG_ABWEICHUNG_NAME" xml:space="preserve">
+    <value>Difference from catalogue</value>
+  </data>
+  <data name="KI_DLG_PVG_ABWEICHUNG_ERL" xml:space="preserve">
+    <value>How the project copy of the selected project profile differs from the catalogue entry of the same name (rated power, interval, annual total, series); empty if it matches. “Renew from catalogue…” replaces header and series of the project copy after a confirmation — an action of the user; results change only with the next simulation.</value>
+  </data>
 </root>
 

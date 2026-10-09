@@ -1045,6 +1045,29 @@ je Kultur aus einer Tafel, sie läuft mit `--kultur de-DE` und `--kultur en-US` 
 
 ---
 
+## Kalenderprobe (Kalenderbedienung Stufe 2) — Seite `/konditionierungsprobe?fall=karte`
+
+**Zweck.** Die Kalenderbedienung (`EPOS.UI/Dialoge/Bedarf/KalenderbedienungAbschnitt.razor`) im echten Browser:
+Jahresraster, Maske „gilt für“, benannte Wochen und Schnellfelder ordnen sich über Stilregeln an, die bunit nicht
+misst. Die Probe nimmt die Seite der Konditionierungsprobe im Fall `karte` (kein eigener Wirt, keine eigene
+Probenseite), wählt den Reiter „Konditionierung“ und klappt die Karte „Heizen“ im Einzelnen auf.
+
+```bash
+node kalenderprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--ohne-gegenprobe]
+```
+
+| Fenster | Gemessen | Sollwert |
+|---|---|---|
+| 1 280 × 800 | Jahresraster: Monate, Zellen (Tage und Leerzellen), Zeilen nach Lage, kleinste Tageszelle | 12 × 31 = 372 Zellen, 365 Tage, 12 Zeilen, jede Tageszelle ≥ 20 px |
+| 1 280 × 800 | Maske „gilt für“: nach „Kalender anlegen“ an der Lüftung eine neue Zeile „Probezeile“ (10.–14.03., Wirkung „aus“), ihre Maskenknöpfe, ein Klick auf „Lüftung“ | fünf Knöpfe, der Klick schaltet `aria-pressed` um |
+| 1 280 × 800 | Block „Benannte Wochen“ (samt „Woche anlegen“), Schnellfelder Wochenende und Feiertagsland | sichtbar, sieben Tagesknöpfe |
+| 1 024 × 700 | horizontales Rollen von Seite, Überlagerung (samt rollender Kästen außerhalb der Bedienung), Kalenderbedienung und Rollkasten des Jahresrasters | je 0 px |
+| je Fenster | Konsole (`console.error`, Seitenfehler) | fehlerfrei |
+
+**Gegenprobe.** Dieselbe Messung im absichtlich verengten Fenster 360 × 700 mit den Sollwerten des Breitfensters muss
+rot werden (dort rollen Überlagerung und Kalenderbedienung quer); bleibt sie grün, ist der Lauf rot. Rückgabe `0` =
+alle Sollwerte erfüllt und Gegenprobe rot, `1` = Verstoß, `2` = Aufruf- oder Verbindungsfehler.
+
 ## Fensterprobe (Kopf+Fuß fest) — Seite `/fensterprobe`
 
 **Zweck.** Ein Dialog im eigenen Fenster (`BlazorDialogForm`) rollt als **Dokument**. Nach dem

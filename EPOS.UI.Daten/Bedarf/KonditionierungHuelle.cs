@@ -241,6 +241,7 @@ namespace WindowsFormsApplication1
             // Stufe 2: gemeinsamer Kalender, Ferienliste und benannte Wochen reisen in Kern-Einheiten mit.
             d.Gemeinsam = e.Gemeinsam.Select(p => new KalenderGemeinschaftsperiode(Periode(p.Regel, false), p.Maske)).ToList();
             d.Ferienliste = e.Ferienliste.Select(f => new KalenderFerienzeile(f.Name, f.Beginn, f.Ende)).ToList();
+            d.Feriennamen = e.Feriennamen.ToList();
             d.Wochen = e.Wochen.Select(w => new KalenderBenannteWoche(w.Id, Oberflaeche(w.Groesse), w.Name, w.Werte.ToArray())).ToList();
             return d;
         }
@@ -292,7 +293,8 @@ namespace WindowsFormsApplication1
             }
             return e.MitGemeinsamAbgeglichen(gemeinsam)
                     .MitFerienliste((d.Ferienliste ?? new List<KalenderFerienzeile>()).Select(f => new Ferienzeile(f.Name, f.Beginn, f.Ende)))
-                    .MitWochen((d.Wochen ?? new List<KalenderBenannteWoche>()).Select(w => new BenannteWoche(w.Id, Kern(w.Groesse), w.Name, w.Werte.ToArray())));
+                    .MitWochen((d.Wochen ?? new List<KalenderBenannteWoche>()).Select(w => new BenannteWoche(w.Id, Kern(w.Groesse), w.Name, w.Werte.ToArray())))
+                    .MitFeriennamen(d.Feriennamen);
         }
 
         // =================================================================================

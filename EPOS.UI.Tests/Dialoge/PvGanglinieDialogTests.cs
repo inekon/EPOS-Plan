@@ -193,6 +193,103 @@ public class PvGanglinieDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Nennleistung eines Katalogsatzes nachträglich bearbeiten</b>: „Nennleistung bearbeiten…" öffnet eine
+    /// Überlagerung mit dem gepflegten Wert, der Prüfhinweis des Imports (Spitze über Nennleistung × 1,1) steht als
+    /// Banner, OK schreibt über den Weg der Hülle, die Seite liest neu, der Detailblock zeigt den neuen Wert und der
+    /// Hinweis bleibt als Banner stehen; ein Fehlschlag hält die Überlagerung mit dem Grund offen.
+    /// </summary>
+    [Fact]
+    public void Die_Nennleistung_eines_Katalogsatzes_wird_bearbeitet_und_geprueft()
+    {
+        double? gepflegt = 12.0;
+        string? geschriebenFuer = null;
+        bool scheitern = true;
+        IReadOnlyList<Katalogfilterzeile> Katalogstand() => new[]
+        {
+            gepflegt.HasValue
+                ? Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 60, jahresarbeitMwh: 9.5, spitzeKw: 10.0)
+                    .MitZahl(Katalogfilterprofil.SpNennleistungKwp, gepflegt.Value, 2)
+                : Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 60, jahresarbeitMwh: 9.5, spitzeKw: 10.0),
+            Zeitreihenproben.Zeile(32, "PV Dach West", geschuetzt: true, zeitintervall: 60, jahresarbeitMwh: 8.8, spitzeKw: 9.0)
+        };
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(Katalogstand()),
+            NennleistungPruefenFuer = (_, kwp) => PvGanglinieImportCtrl.Pruefhinweis(10.0, kwp),
+            NennleistungSchreiben = (name, kwp) =>
+            {
+                if (scheitern) return Task.FromResult(new GanglinienNennleistungsschrieb(false, "Schreibfehler", ""));
+                geschriebenFuer = name;
+                gepflegt = kwp;
+                return Task.FromResult(new GanglinienNennleistungsschrieb(true, "gespeichert",
+                    PvGanglinieImportCtrl.Pruefhinweis(10.0, kwp)));
+            }
+        });
+
+        // Ohne Wahl ist der Knopf gesperrt.
+        Assert.True(cut.Find("button.epos-nennleistungknopf").HasAttribute("disabled"));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        cut.Find("button.epos-nennleistungknopf").Click();
+        Assert.True(cut.Instance.Katalogseite!.NennleistungOffen);
+        Assert.True(cut.Instance.Katalogseite.HaeltEsc);
+        Assert.Equal("", cut.Instance.Katalogseite.NennleistungBearbeitenHinweis);
+        Assert.Contains(Resource.PVG_NENN_PROJEKTKOPIEN, cut.Markup);
+
+        cut.Find(".epos-nennleistung-bearbeiten input[inputmode=decimal]").Input("5");
+        string hinweis = cut.Instance.Katalogseite.NennleistungBearbeitenHinweis;
+        Assert.NotEqual("", hinweis);
+        Assert.Contains(hinweis, cut.Find(".epos-nennleistung-bearbeiten").TextContent);
+
+        // Ein Fehlschlag hält die Überlagerung mit dem Grund offen.
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(cut.Instance.Katalogseite.NennleistungOffen);
+        Assert.Contains("Schreibfehler", cut.Markup);
+
+        scheitern = false;
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.Equal("PV Dach Ost", geschriebenFuer);
+        Assert.Equal(5.0, gepflegt);
+        Assert.False(cut.Instance.Katalogseite.NennleistungOffen);
+        Assert.Equal(hinweis, cut.Instance.Katalogseite.Meldung);
+        Assert.Equal("gespeichert", cut.Instance.Katalogseite.Status);
+        var werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
+        Assert.Contains("5,00 kWp", werte);
+
+        // Abbrechen schreibt nicht.
+        cut.Find("button.epos-nennleistungknopf").Click();
+        cut.Find(".epos-nennleistung-bearbeiten input[inputmode=decimal]").Input("");
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(cut.Instance.Katalogseite.NennleistungOffen);
+        Assert.Equal(5.0, gepflegt);
+    }
+
+    /// <summary>Ein Auslieferungssatz: der Knopf ist weich gesperrt und nennt den Grund, statt zu öffnen.</summary>
+    [Fact]
+    public void Am_Auslieferungssatz_ist_die_Nennleistung_weich_gesperrt()
+    {
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[]
+            {
+                Zeitreihenproben.Zeile(32, "PV Dach West", geschuetzt: true, zeitintervall: 60, jahresarbeitMwh: 8.8, spitzeKw: 9.0)
+            }),
+            NennleistungSchreiben = (_, _) => throw new InvalidOperationException("darf nicht schreiben")
+        });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        var knopf = cut.Find("button.epos-nennleistungknopf");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT, knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.False(cut.Instance.Katalogseite!.NennleistungOffen);
+        Assert.Equal(Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT, cut.Instance.Katalogseite.Meldung);
+    }
+
+    /// <summary>
     /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die Sichtklasse
     /// <c>PvGanglinieKiSicht</c>: Die Katalogwahl ist ein WAHLFELD, ein Setzen zieht den Detailblock nach
     /// (Quelle, Raster, Jahresarbeit, Nennleistung); Zuordnung und Importstand liest der Assistent nur.
@@ -288,5 +385,121 @@ public class PvGanglinieDialogTests : EposBunitContext
         {
             Katalogwege.PvGanglinienDatei = vorher;
         }
+    }
+
+    // =================================================================================
+    // Projektkopie und Katalog (E113)
+    // =================================================================================
+
+    /// <summary>Der Dialog mit den Wegen „Abweichung" und „Erneuern"; zwei Projektzeilen, nur die erste weicht ab.</summary>
+    private IRenderedComponent<PvGanglinieDialog> MitErneuerung(Dictionary<string, string> abweichung,
+                                                                 Func<string, Task<PvGanglinieErneuerung>> erneuern)
+        => Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31), Zeile(2, "PV Dach West", 32) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.KatalogAbweichung, n => abweichung.TryGetValue(n, out string? t) ? t : "")
+            .Add(x => x.AusKatalogErneuern, erneuern));
+
+    private static void ProjektzeileWaehlen(IRenderedComponent<PvGanglinieDialog> cut, int index)
+        => cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr button")[index].Click();
+
+    /// <summary>
+    /// Die abweichende Projektzeile trägt das Zeichen samt Satz; markiert, zeigt der Detailblock den Satz und den Knopf
+    /// „Aus dem Katalog erneuern…" — eine gleiche Zeile trägt beides nicht. Der Assistent liest die Abweichung mit.
+    /// </summary>
+    [Fact]
+    public void Die_Abweichung_steht_an_der_Projektzeile_und_im_Detailblock()
+    {
+        var abw = new Dictionary<string, string> { ["PV Dach Ost"] = "weicht vom Katalog ab: Nennleistung, Reihe" };
+        var cut = MitErneuerung(abw, _ => throw new InvalidOperationException("darf nicht schreiben"));
+
+        IReadOnlyList<IElement> zeichen = cut.FindAll(".epos-pvg-abweichung");
+        Assert.Single(zeichen);
+        Assert.Equal("weicht vom Katalog ab: Nennleistung, Reihe", zeichen[0].GetAttribute("title"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+
+        ProjektzeileWaehlen(cut, 1);
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichungszeile"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+        Assert.Equal("", KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Lesen());
+
+        ProjektzeileWaehlen(cut, 0);
+        Assert.Contains("weicht vom Katalog ab: Nennleistung, Reihe", cut.Find(".epos-pvg-abweichungszeile").TextContent);
+        Assert.Equal(Resource.PVG_BTN_ERNEUERN, cut.Find(".epos-pvg-erneuernknopf").TextContent.Trim());
+        Assert.Equal("weicht vom Katalog ab: Nennleistung, Reihe",
+                     KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Lesen());
+        Assert.False(KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Setzbar);
+    }
+
+    /// <summary>
+    /// „Aus dem Katalog erneuern…" fragt zurück (Name, Abweichung, Hinweis auf die nächste Simulation); Abbrechen
+    /// schreibt nichts, ein Fehlschlag hält die Rückfrage mit dem Grund offen, OK erneuert, das Zeichen fällt und die
+    /// Bestätigung steht im Dialog.
+    /// </summary>
+    [Fact]
+    public void Erneuern_fragt_zurueck_bricht_ab_meldet_den_Grund_und_erneuert()
+    {
+        var abw = new Dictionary<string, string> { ["PV Dach Ost"] = "weicht vom Katalog ab: Reihe" };
+        var gerufen = new List<string>();
+        bool scheitern = true;
+        var cut = MitErneuerung(abw, name =>
+        {
+            gerufen.Add(name);
+            if (scheitern) return Task.FromResult(new PvGanglinieErneuerung(false, "Schreibfehler"));
+            abw.Remove(name);
+            return Task.FromResult(new PvGanglinieErneuerung(true, "erneuert: " + name));
+        });
+
+        ProjektzeileWaehlen(cut, 0);
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        Assert.True(cut.Instance.ErneuernOffen);
+        string frage = cut.Find(".epos-pvg-erneuern").TextContent;
+        Assert.Contains("PV Dach Ost", frage);
+        Assert.Contains("weicht vom Katalog ab: Reihe", frage);
+        Assert.Contains(Resource.PVG_ERNEUERN_SIMULATION, frage);
+
+        // Abbrechen: nichts geschrieben, die Rückfrage ist zu, die Abweichung bleibt.
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(cut.Instance.ErneuernOffen);
+        Assert.Empty(gerufen);
+        Assert.Single(cut.FindAll(".epos-pvg-abweichung"));
+
+        // Fehlschlag: die Rückfrage bleibt mit dem Grund offen.
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(cut.Instance.ErneuernOffen);
+        Assert.Contains("Schreibfehler", cut.Find(".epos-pvg-erneuern").TextContent);
+
+        // OK: erneuert, das Zeichen fällt, die Bestätigung steht.
+        scheitern = false;
+        cut.Find(".epos-pvg-erneuern").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.False(cut.Instance.ErneuernOffen);
+        Assert.Equal(new[] { "PV Dach Ost", "PV Dach Ost" }, gerufen);
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichung"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+        Assert.Equal("erneuert: PV Dach Ost", cut.Find(".epos-pvg-erneuernstatus").TextContent);
+    }
+
+    /// <summary>Esc schließt bei offener Rückfrage nicht den Dialog (Blätter zuerst).</summary>
+    [Fact]
+    public void Esc_schliesst_bei_offener_Rueckfrage_nicht_den_Dialog()
+    {
+        var abw = new Dictionary<string, string> { ["PV Dach Ost"] = "weicht vom Katalog ab: Raster" };
+        bool? geschlossen = null;
+        var cut = Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.KatalogAbweichung, n => abw.TryGetValue(n, out string? t) ? t : "")
+            .Add(x => x.AusKatalogErneuern, _ => Task.FromResult(new PvGanglinieErneuerung(true, "")))
+            .Add(x => x.Geschlossen, b => geschlossen = b));
+
+        ProjektzeileWaehlen(cut, 0);
+        cut.Find(".epos-pvg-erneuernknopf").Click();
+        cut.Find(".epos-dialog").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(geschlossen);
     }
 }

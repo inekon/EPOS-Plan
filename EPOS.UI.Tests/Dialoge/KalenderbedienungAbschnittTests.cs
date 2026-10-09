@@ -476,11 +476,15 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
 
         Assert.Equal(vorher + monate.Length, b.FindAll(".epos-kalb-ferienzeile").Count);
 
-        // Die Bezeichnung ist ein eigenes Feld; ab dem fünften Zeitraum reist sie mit der Ferienliste. Die ersten vier stehen
-        // in den Gebäudespalten ohne Namen - ihr Feld ist nur lesbar.
+        // Die Bezeichnung ist ein eigenes Feld, für jeden Zeitraum schreibbar: Ab dem fünften reist sie mit der Ferienliste,
+        // die ersten vier tragen sie im Bezeichner ihrer Spiegelperiode.
         int letzte = vorher + monate.Length - 1;
         Assert.True(letzte >= 4);
-        Assert.True(b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([type=date])")!.HasAttribute("readonly"));
+        IElement erstes = b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([type=date])")!;
+        Assert.False(erstes.HasAttribute("readonly"));
+        erstes.Input("Winterferien");
+        Assert.Equal("Winterferien", b.Instance.Ansicht!.Ferien[0].Name);
+        Assert.Equal("Winterferien", b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([type=date])")!.GetAttribute("value"));
         b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([type=date])")!.Input("Sommerpause");
         Assert.Contains(b.Instance.Ansicht!.Ferien, f => f.Name == "Sommerpause" && f.Beginn == Kalendertage.Jahrestag(7, 10));
         Assert.Equal("Sommerpause", b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([type=date])")!.GetAttribute("value"));

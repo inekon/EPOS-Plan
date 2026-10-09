@@ -124,6 +124,54 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungswoche WHERE ID_Gebaeude = ?", gebaeude));
         }
 
+        [Fact]
+        public void Die_Namen_der_ersten_vier_Ferienzeitraeume_stehen_in_den_Spiegelperioden_und_ueberleben_den_Trigger()
+        {
+            if (!_db.Vorhanden || !KonditionierungSchema.Lesbar() || !Kalendergemeinschaft.SchrittSteht()) return;
+            long gebaeude = Gebaeude1051();
+            var ctrl = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand a = ctrl.ArbeitsstandLesen(gebaeude, null, out string meldung);
+            Assert.True(a != null, meldung);
+            a = Gut(Kalenderbedienung.FerienlisteSetzen(a, new[]
+            {
+                new Ferienzeile("Winterferien", 10, 12), new Ferienzeile("Ostern", 60, 62),
+                new Ferienzeile("Pfingsten", 150, 152), new Ferienzeile("Sommer", 200, 210),
+            }));
+            Schreiben(ctrl, gebaeude, a.Gebaeude, out _);
+            const string NAMEN = "SELECT group_concat(Bezeichner, '|') FROM (SELECT p.Bezeichner FROM Tab_Konditionierungsperiode p " +
+                                 "JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE k.ID_Gebaeude = ? AND k.ID_Zone IS NULL " +
+                                 "AND k.Groesse = 'ALLE' AND p.Rang BETWEEN 200 AND 203 ORDER BY p.Rang)";
+            Assert.Equal("Winterferien|Ostern|Pfingsten|Sommer", Text(NAMEN, gebaeude));
+
+            Konditionierungsarbeitsstand b = ctrl.ArbeitsstandLesen(gebaeude, null, out meldung);
+            Assert.Equal(new[] { "Winterferien", "Ostern", "Pfingsten", "Sommer" }, Kalenderbedienung.Ferienzeitraeume(b).Select(f => f.Name));
+            Schreiben(ctrl, gebaeude, b.Gebaeude, out bool zweimal);
+            Assert.False(zweimal);                                                              // ein zweites OK schreibt nichts
+
+            // Ein anderer Schreibweg ändert ein Datum: Der Trigger legt die Spiegelperioden neu als „Ferien k" an; der
+            // Schreibweg der Konditionierung im selben Vorgang setzt die Namen danach wieder.
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                v.Ausfuehren("UPDATE Tab_Gebaeude SET Ferienende_2 = 63 WHERE ID = ?", new DbParam("@id", gebaeude));
+                Assert.Equal("Ferien 1|Ferien 2|Ferien 3|Ferien 4",
+                             Convert.ToString(v.Skalar(NAMEN, new DbParam("@id", gebaeude)), CultureInfo.InvariantCulture));
+                KonditionierungCtrl.Ergebnis e = ctrl.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(gebaeude), b.Gebaeude, false, out bool neu);
+                Assert.True(e.Ok, e.Meldung);
+                Assert.True(neu);
+                v.Commit();
+            }
+            Assert.Equal("Winterferien|Ostern|Pfingsten|Sommer", Text(NAMEN, gebaeude));
+            Assert.Equal(63, Kalendergemeinschaft.Ferienperioden(Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(gebaeude)))[1].Ende);
+
+            // Ein unbekannter Name lässt den gespeicherten stehen.
+            Schreiben(ctrl, gebaeude, b.Gebaeude.MitFeriennamen(new string[] { null, "Frühjahr" }), out _);
+            Assert.Equal("Winterferien|Frühjahr|Pfingsten|Sommer", Text(NAMEN, gebaeude));
+        }
+
+        private static string Text(string sql, long id)
+            => Convert.ToString(DataRepository.ExecuteScalar(sql, new DbParam("@id", id)), CultureInfo.InvariantCulture);
+
         private static long Gebaeude1051()
             => Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT k.ID_Gebaeude FROM Tab_Konditionierungskalender k JOIN Tab_Gebaeude g ON g.ID = k.ID_Gebaeude " +

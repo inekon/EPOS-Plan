@@ -50347,5 +50347,77 @@ Chart</value>
   <data name="KOND_LBL_KALB_LEGENDE_GEMEINSAM" xml:space="preserve">
     <value>Zeile für mehrere Größen</value>
   </data>
+  <data name="PVG_BTN_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung bearbeiten…</value>
+  </data>
+  <data name="PVG_TITEL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung bearbeiten</value>
+  </data>
+  <data name="PVG_NENN_LEER_HINWEIS" xml:space="preserve">
+    <value>Leer = nicht gepflegt; der Lauf rechnet dann mit der Spitze der Reihe.</value>
+  </data>
+  <data name="PVG_NENN_PROJEKTKOPIEN" xml:space="preserve">
+    <value>Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie, bis sie im Projekt über „Aus dem Katalog erneuern…“ erneuert wird.</value>
+  </data>
+  <data name="PVG_MSG_NENN_GESPEICHERT" xml:space="preserve">
+    <value>Nennleistung von „{0}“ gespeichert.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNGUELTIG" xml:space="preserve">
+    <value>Die Nennleistung muss größer als 0 sein; leer heißt „nicht gepflegt“.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNBEKANNT" xml:space="preserve">
+    <value>Diese PV-Ganglinie steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="PVG_MSG_NENN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Diese PV-Ganglinie ist ein Auslieferungssatz; ihre Nennleistung kann erst nach dem Aufheben des Schlosses bearbeitet werden.</value>
+  </data>
+  <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten Photovoltaik</value>
+  </data>
+  <data name="PVG_ABW_TEXT" xml:space="preserve">
+    <value>weicht vom Katalog ab: {0}</value>
+  </data>
+  <data name="PVG_ABW_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung</value>
+  </data>
+  <data name="PVG_ABW_RASTER" xml:space="preserve">
+    <value>Raster</value>
+  </data>
+  <data name="PVG_ABW_JAHRESSUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="PVG_ABW_REIHE" xml:space="preserve">
+    <value>Reihe</value>
+  </data>
+  <data name="PVG_BTN_ERNEUERN" xml:space="preserve">
+    <value>Aus dem Katalog erneuern…</value>
+  </data>
+  <data name="PVG_TITEL_ERNEUERN" xml:space="preserve">
+    <value>Projektkopie aus dem Katalog erneuern</value>
+  </data>
+  <data name="PVG_ERNEUERN_FRAGE" xml:space="preserve">
+    <value>Die Projektkopie „{0}“ wird durch den Katalogsatz gleichen Namens ersetzt: Beschreibung, Raster, Nennleistung, Jahresarbeit und die Reihe. Die Zuordnung zum Projekt bleibt.</value>
+  </data>
+  <data name="PVG_ERNEUERN_SIMULATION" xml:space="preserve">
+    <value>Ergebnisse ändern sich erst mit der nächsten Simulation.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERT" xml:space="preserve">
+    <value>Die Projektkopie „{0}“ trägt jetzt den Stand des Katalogs. Ergebnisse ändern sich erst mit der nächsten Simulation.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_KEIN_KATALOG" xml:space="preserve">
+    <value>Der Katalog führt keine PV-Ganglinie dieses Namens mehr; die Projektkopie bleibt, wie sie ist.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_KEINE_KOPIE" xml:space="preserve">
+    <value>Das Projekt führt noch keine Kopie dieser Ganglinie; sie entsteht beim OK aus dem Katalog.</value>
+  </data>
+  <data name="PVG_MSG_ERNEUERN_GLEICH" xml:space="preserve">
+    <value>Die Projektkopie gleicht dem Katalogsatz bereits.</value>
+  </data>
+  <data name="KI_DLG_PVG_ABWEICHUNG_NAME" xml:space="preserve">
+    <value>Abweichung vom Katalog</value>
+  </data>
+  <data name="KI_DLG_PVG_ABWEICHUNG_ERL" xml:space="preserve">
+    <value>Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht. „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation.</value>
+  </data>
 </root>
 

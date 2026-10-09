@@ -44,6 +44,23 @@
                     title="@Wege.ImportAbgelehnt"
                     @onclick="() => Warnen(Wege.ImportAbgelehnt)">@Texte.ImportKnopf</button>
         }
+        @if (Wege.NennleistungSchreiben is not null)
+        {
+            @* Nur die PV-Ganglinie: die Nennleistung des gewaehlten Katalogsatzes. Ein Auslieferungssatz
+               ist weich gesperrt und nennt den Grund. *@
+            if (_zeile is not null && _zeile.Geschuetzt)
+            {
+                <button type="button" class="epos-knopf epos-nennleistungknopf" aria-disabled="true"
+                        title="@Texte.NennleistungGesperrt"
+                        @onclick="() => Warnen(Texte.NennleistungGesperrt)">@Texte.NennleistungKnopf</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-nennleistungknopf"
+                        disabled="@(_zeile is null || _laeuft)"
+                        @onclick="NennleistungOeffnen">@Texte.NennleistungKnopf</button>
+            }
+        }
         <Katalogschloss @ref="_katalogschloss" Weg="@Wege.Schloss" Zeile="@_zeile"
                         NurLesen="@_laeuft" JaText="@Texte.Ja" NeinText="@Texte.Nein"
                         Geschaltet="BeiSchlossGeschaltet" Abgelehnt="Warnen" />
@@ -141,6 +158,39 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* DIE NENNLEISTUNG EINES KATALOGSATZES als kurze Ueberlagerung: OK schreibt sofort an den Katalogsatz
+       (wie Loeschen und Schloss), Abbrechen, Kreuz und Esc verwerfen. Der Pruefhinweis des Imports steht
+       als Banner, sobald der Wert ihn ausloest - und nach dem Speichern auf der Seite. *@
+    <Ueberlagerung Offen="@_nennOffen" Titel="@Texte.NennleistungTitel" Geschlossen="NennleistungSchliessen">
+        <KindInhalt>
+            @if (_nennOffen)
+            {
+                <div class="epos-nennleistung-bearbeiten">
+                    @if (_nennFehler.Length > 0)
+                    {
+                        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_nennFehler" />
+                    }
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Textfeld Bezeichnung="@Texte.LabelName" Wert="@_nennZiel" NurLesen="true" />
+                            <Zahlenfeld Bezeichnung="@Texte.LabelNennleistung" Einheit="kWp" Wert="@_nennWert"
+                                        WertChanged="BeiNennWert" Min="0" Nachkommastellen="2"
+                                        Feldname="nennleistung_bearbeiten" />
+                        </KindInhalt>
+                    </Formularraster>
+                    <Herleitungszeile Text="@Texte.NennleistungLeer" />
+                    @if (_nennBearbeitenHinweis.Length > 0)
+                    {
+                        <Warnbanner Stufe="@WarnStufe.Hinweis" Text="@_nennBearbeitenHinweis" />
+                    }
+                    <p class="epos-leisezeile">@Texte.NennleistungProjektkopien</p>
+                    <SpeichernLeiste OkText="@Texte.OkKnopf" AbbrechenText="@Texte.AbbrechenKnopf"
+                                     Ergebnis="BeiNennErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -229,7 +279,7 @@
     /// Hält die Seite Esc bei sich? Solange eine Rückfrage oder der Import offen ist,
     /// schließt der Wirt nicht.
     /// </summary>
-    public bool HaeltEsc => _loeschfrageOffen || _importOffen || Schlossfrage;
+    public bool HaeltEsc => _loeschfrageOffen || _importOffen || _nennOffen || Schlossfrage;
 
     private bool AnzeigenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.MitSystemOeffnen is not null;
     private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.Einlesen is not null;
@@ -491,5 +541,79 @@
             _anteil = null;
             _fortschrittText = "";
         }
+    }
+
+    // =====================================================================
+    // Die Nennleistung eines Katalogsatzes bearbeiten (nur PV-Ganglinie)
+    // =====================================================================
+
+    private bool _nennOffen;
+    private string _nennZiel = "";
+    private double? _nennWert;
+    private string _nennBearbeitenHinweis = "";
+    private string _nennFehler = "";
+
+    /// <summary>Steht die Überlagerung „Nennleistung bearbeiten"? (Prüfhilfe.)</summary>
+    public bool NennleistungOffen => _nennOffen;
+
+    /// <summary>Der Prüfhinweis in der Überlagerung (Prüfhilfe); "" ohne.</summary>
+    public string NennleistungBearbeitenHinweis => _nennBearbeitenHinweis;
+
+    private void NennleistungOeffnen()
+    {
+        if (_zeile is null || Wege.NennleistungSchreiben is null) return;
+        if (_zeile.Geschuetzt) { Warnen(Texte.NennleistungGesperrt); return; }
+        _nennZiel = _zeile.Bezeichner;
+        _nennWert = _zeile.Zahl(Katalogfilterprofil.SpNennleistungKwp);
+        _nennFehler = "";
+        _meldung = "";
+        NennWertPruefen();
+        _nennOffen = true;
+    }
+
+    private void BeiNennWert(double? wert)
+    {
+        _nennWert = wert;
+        _nennFehler = "";
+        NennWertPruefen();
+    }
+
+    private void NennWertPruefen()
+        => _nennBearbeitenHinweis = Wege.NennleistungPruefenFuer?.Invoke(_nennZiel, _nennWert) ?? "";
+
+    private void NennleistungSchliessen()
+    {
+        _nennOffen = false;
+        _nennFehler = "";
+        _nennBearbeitenHinweis = "";
+    }
+
+    /// <summary>
+    /// OK schreibt — scheitert es, bleibt die Überlagerung mit dem Grund offen; sonst liest die Seite neu,
+    /// meldet die Wahl erneut (der Detailblock des Wirts zeigt den neuen Wert) und hält den Prüfhinweis
+    /// als Banner fest.
+    /// </summary>
+    private async Task BeiNennErgebnis(bool ok)
+    {
+        if (!ok || Wege.NennleistungSchreiben is null) { NennleistungSchliessen(); return; }
+        GanglinienNennleistungsschrieb erg = await Wege.NennleistungSchreiben(_nennZiel, _nennWert);
+        if (!erg.Erfolgreich)
+        {
+            _nennFehler = erg.Meldung;
+            return;
+        }
+        string ziel = _nennZiel;
+        NennleistungSchliessen();
+        await Neuladen();
+        _status = erg.Meldung;
+        _meldung = erg.Hinweis;
+        _meldungStufe = WarnStufe.Hinweis;
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == ziel);
+        if (zeile is not null)
+        {
+            _zeile = zeile;
+            await ZeileGewaehlt.InvokeAsync(zeile);
+        }
+        await Geaendert.InvokeAsync();
     }
 }
