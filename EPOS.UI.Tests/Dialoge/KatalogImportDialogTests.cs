@@ -1674,4 +1674,23 @@ public class KatalogImportDialogTests : EposBunitContext
         return new KatalogVorpruefung(pruefungen, new[] { "kessel klein" }, konflikt,
                                       KatalogImportAblauf.AllesImportieren(pruefungen));
     }
+
+    /// <summary>
+    /// <b>Kältemaschine</b> (KM1): Titel und Hilfe der Art — die Hilfe nennt die CSV-Kennfeldvorlage, die
+    /// Copper-Kurvendatei und deren Lizenz; Filterspalte ist die Nennkälteleistung.
+    /// </summary>
+    [Fact]
+    public void Die_Kaeltemaschine_traegt_Titel_und_Hilfe_mit_Vorlage_und_Lizenz()
+    {
+        var cut = Bauen(KatalogImportArt.Kaeltemaschine);
+
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.IMP_KAT_TITEL_KAELTEMASCHINE,
+                     cut.Find(".epos-dialog-titel").TextContent.Trim());
+        string hilfe = WindowsFormsApplication1.MyResource.Resource.IMP_KAT_HINWEIS_KAELTEMASCHINE;
+        Assert.Contains(hilfe, string.Concat(cut.Nodes.Select(n => n.TextContent)));
+        Assert.Contains("Kaeltemaschine_Kennfeldvorlage.csv", hilfe, StringComparison.Ordinal);
+        Assert.Contains("chiller_curves.json", hilfe, StringComparison.Ordinal);
+        Assert.Contains("BSD-2", hilfe, StringComparison.Ordinal);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.IMP_KAT_SP_KAELTELEISTUNG, cut.Markup);
+    }
 }
