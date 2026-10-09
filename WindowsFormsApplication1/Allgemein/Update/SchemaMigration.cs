@@ -5336,6 +5336,13 @@ namespace WindowsFormsApplication1
         /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer (Bestandsweg, „nicht erhoben").</para>
         /// </summary>
         public const int SCHRITT_UEBERGABEGRENZE = UebergabegrenzeSchema.SCHRITT;
+        /// Schritt <see cref="PvGanglinieSchema.SCHRITT"/> — <b>Photovoltaik mit Ganglinie</b> (PVG): Katalog
+        /// (<c>Tab_PvGanglinie_STAMM</c>, <c>Tab_PvGanglinieDaten_STAMM</c>), Projektkopie (<c>Tab_PvGanglinie</c>,
+        /// <c>Tab_PvGanglinieDaten</c>) und Zuordnung (<c>Z_ProjektPvGanglinie</c>) einer PV-Ganglinie im Raster der Datei.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Reines DDL, kein Referenzprojekt führt eine PV-Ganglinie.</para>
+        /// </summary>
+        public const int SCHRITT_PV_GANGLINIE = PvGanglinieSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -7786,6 +7793,13 @@ namespace WindowsFormsApplication1
                         "Die Grenzen der Uebergabe, Einbindung und Vorwaermbetrieb und die Betriebsbereiche liessen sich nicht " +
                         "speichern. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Uebergabegrenze),
+            // PVG: Photovoltaik mit Ganglinie. Quelle ist PvGanglinieSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_PV_GANGLINIE,
+                        "Tab_PvGanglinie_STAMM, Tab_PvGanglinieDaten_STAMM, Tab_PvGanglinie, Tab_PvGanglinieDaten, " +
+                        "Z_ProjektPvGanglinie",
+                        "Eine Photovoltaikanlage koennte nicht ueber eine eingelesene Ganglinie rechnen. " +
+                        "KEIN Rechenergebnis aendert sich.",
+                        Schritt_PvGanglinie),
         };
 
         /// <summary>
@@ -14903,6 +14917,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Uebergabegrenze - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Photovoltaik mit Ganglinie" — Anlass und Wirkung stehen bei <see cref="SCHRITT_PV_GANGLINIE"/>, die
+        /// Anweisungen bei <see cref="PvGanglinieSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_PvGanglinie(Lauf l)
+        {
+            string nr = PvGanglinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in PvGanglinieSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = PvGanglinieSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!PvGanglinieSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Tabellen oder Indizes der PV-Ganglinie stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": PV-Ganglinie - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

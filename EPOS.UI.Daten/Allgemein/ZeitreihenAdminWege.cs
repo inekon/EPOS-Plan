@@ -60,6 +60,7 @@ namespace WindowsFormsApplication1
             {
                 case Zeitreihenart.Stromganglinie: return Farbrolle.BEDARF;
                 case Zeitreihenart.Solarganglinie: return Farbrolle.WAERME_SOLAR;
+                case Zeitreihenart.PvGanglinie:    return Farbrolle.STROM_PV;
                 default:                           return Farbrolle.HEIZWAERME;
             }
         }

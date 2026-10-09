@@ -1097,6 +1097,53 @@ Gehalten von `EPOS.Kern.Tests/SolarganglinieRechenwegTests` und
 `EPOS.UI.Tests/Seiten/ErzeugerReiterTests.Solarthermie_Ganglinienzeile_zeigt_keine_Flaeche_und_keine_Anzahl`.
 Kein Referenzprojekt führt eine Solarthermieganglinie.
 
+## 14a. Photovoltaik-Ganglinie als Rechenweg
+
+Die Photovoltaik eines Projekts rechnet entweder über die **Module** ihrer Anlagen (Klimadaten,
+Modulkennwerte, Ausrichtung, Stränge — die Vorgabe, „Profil“) oder über eine zugeordnete
+**PV-Ganglinie** (`Allgemein/Simulation/PvGanglinieWeiche.cs`, Rechenweg in
+`SimulationPV.GanglinieRechnen`).
+
+**Datenstand.** Schemaschritt 205 (`PvGanglinieSchema`) führt den Katalog `Tab_PvGanglinie_STAMM` mit
+den Werten in `Tab_PvGanglinieDaten_STAMM`, die Projektkopie `Tab_PvGanglinie`/`Tab_PvGanglinieDaten`
+und die Zuordnung `Z_ProjektPvGanglinie` (über die ID der Projektkopie). Der Kopf trägt Bezeichner,
+Beschreibung, `Raster_Minuten` (60 oder 15), optional `Nennleistung_kWp` und die beim Import
+gerechneten Kennzahlen `Jahresarbeit_kWh` und `Spitze_kW`; der Katalog steht im Register der
+Katalogfassung unter dem Kürzel `PVG`. Kein Referenzprojekt führt eine PV-Ganglinie.
+
+**Raster.** Die Werte stehen im **Raster der Datei**: 8 760 Stundenwerte oder 35 040
+Viertelstundenwerte, je Wert die AC-Leistung der Anlage in kW. Der Import
+(`PvGanglinieImportCtrl`) liest über `StundenganglinieDatei` mit derselben Formaterkennung wie die
+Solarthermie — Trennzeichen (`;`, Tab, `|`, `,`), Dezimalzeichen, Kopfzeile, Zeitstempel, laufende
+Nummer — und behält eine Viertelstundenreihe ungemittelt (`StundenganglinieLesung.WerteImDateirasterKw`).
+Jede andere Wertzahl ist ein benannter Fehler.
+
+**Weiche.** Wie bei der Solarthermie entscheidet der Datenstand, nicht die Auswahl „Profil“/„Ganglinie“
+der Kachel: Die Weiche steht auf Ganglinie genau dann, wenn dem Projekt eine Ganglinie zugeordnet ist,
+deren Projektkopie zum Raster passend vollständig ist (8 760 bzw. 35 040 endliche, nicht negative
+Werte, gelesen nach `ID`). Bei mehreren Zuordnungen rechnet die mit der kleinsten Zuordnungs-ID.
+Eine unvollständige Ganglinie meldet `SIM_PV_GANGLINIE_MANGEL`, und die Module rechnen.
+
+**Rechenweg.** Eine rechnende Ganglinie **ersetzt die Modulrechnung ganz**; Anlagenzeilen, Module und
+Stränge bleiben unberührt, rechnen aber nicht. Im **Stundenraster** wird sie zum Stundenertrag
+`pvPotentialGesamt_stuendlich` und wie der Modulweg mit den Viertelgewichten des Sonnenstands
+(`Viertelgewichte`) energieerhaltend auf die vier Viertel verteilt. Im **Viertelstundenraster** gehen
+ihre Werte unmittelbar in die Viertelstundenbilanz (`BilanzierenViertel`), der Stundenertrag ist das
+Mittel der vier Viertel. Direktverbrauch, Überschuss, Reststrom und die Einspeisegrenze rechnen danach
+wie im Modulweg.
+
+**Kennzahlen.** Die installierte Leistung (`PhotovoltaikCtrl.KwpDesProjekts`) ist bei rechnender
+Ganglinie deren Kennleistung: die gepflegte `Nennleistung_kWp`, sonst die Spitze der Ganglinie. Sie
+ist die Prozentbasis der Einspeisegrenze und die kWp-Größe der Wirtschaftlichkeit (Vergütung, Kosten je
+kWp). Im Ergebnis steht die Ganglinie als eine Zeile mit ihrem Bezeichner, Jahresertrag und Fläche und
+Anzahl 0.
+
+**Kaskade.** Die Ganglinie rechnet nur, wenn die Photovoltaik auf dem Platz des Stromerzeugers steht;
+führt das Projekt keine PV-Anlage, aber eine vollständige Ganglinie ohne diesen Platz, meldet der Lauf
+`SIM_W_PVGANGLINIE_OHNE_STROMPLATZ` (`SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`).
+
+Gehalten von `EPOS.Kern.Tests/PvGanglinieSchemaTests` und `EPOS.Kern.Tests/PvGanglinieRechenwegTests`.
+
 ## 15. Prozesswärme: Temperaturniveau und Betriebsweisen
 
 Ein Prozesswärmesatz trägt neben Monatswerten und Wochenprofil ein **Temperaturpaar**: `Vorlauf`

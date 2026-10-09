@@ -1060,6 +1060,19 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > LFS-SHA-256 `a47e7163762191b1da36d0f601ac1aa422cf6d293c88b24ba302a2232d6ce99c`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
 > bleibt** — weder die Typkennfelder noch die Zonen des Gebäudekatalogs führt ein Referenzprojekt; die siebenundzwanzig
 > Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879 CSV byte-gleich.
+>
+> **Nachtrag — Testdatenbank auf 206 (PV-Ganglinie hinter der Übergabegrenze, nur Tabellen), Basis R46 unberührt.**
+> `PvGanglinieSchema` (206 = `UebergabegrenzeSchema.SCHRITT + 1`) legt Katalog, Projektkopie und Zuordnung der
+> PV-Ganglinie an — `Tab_PvGanglinie_STAMM`, `Tab_PvGanglinieDaten_STAMM`, `Tab_PvGanglinie`, `Tab_PvGanglinieDaten`
+> und `Z_ProjektPvGanglinie` (STRICT, Raster 60 oder 15 Minuten mit `CHECK`, Beziehungen über IDs) samt sieben Indizes;
+> reines DDL, keine Zeile entsteht. Gehoben aus dem Stand 205 (LFS-SHA-256
+> `a47e7163762191b1da36d0f601ac1aa422cf6d293c88b24ba302a2232d6ce99c`) mit `Werkzeuge/Testdatenbankschema`; der Hash
+> über alle übrigen Tabellen ist vorher und nachher gleich (außer der Schemanummer in `Tab_Applikation`; die
+> `sqlite_sequence`-Stände, die der wiederholte Werkzeuglauf fortzählt, sind auf den Stand 205 zurückgesetzt). Die
+> Testdatenbank steht auf **206** (`integrity_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen):
+> **93 908 992 Byte, LFS-SHA-256 `5280818a0476dbfc0174f15a237b0d29ce9e9bf9251a145c4f7581e141551902`**. **Die Basis
+> `2026-10-09_R46_Geraetegrenzen` bleibt** — kein Referenzprojekt führt eine PV-Ganglinie, keine Einfrierregel ist
+> berührt; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879 CSV byte-gleich.
 
 ### Die Vorgängerbasis R45 (Übergabegrenze)
 

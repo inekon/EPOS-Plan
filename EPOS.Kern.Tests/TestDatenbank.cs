@@ -999,6 +999,9 @@ namespace EPOS.Kern.Tests
                 // Schritt UebergabegrenzeSchema.SCHRITT (UB, Abschnitt 4): Grenzen an Waermepumpe und BHKW, Einbindung und
                 // Vorwaermbetrieb an der Anlage, Bereiche und Zaehler im Ergebnis, leer. Wiederholbar.
                 UebergabegrenzeSchema.Ausfuehren(null);
+                // Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie, reines DDL.
+                // Wiederholbar.
+                PvGanglinieSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

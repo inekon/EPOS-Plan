@@ -197,7 +197,8 @@ public class MenuebandTests : EposBunitContext
         // Energietraegern die Projektkopie des Brennstoffkatalogs - ein neuer Weg. Also 66 Punkte
         // und 52 Handlungen.
         // KU3-1: der Punkt „Kältemaschinen" neben der Wärmepumpe (66 -> 67, 52 -> 53).
-        Assert.Equal(67, Punkte.Count);
+        // PVG (Schemaschritt 206): der Punkt „PV-Ganglinie" unter „Profile & Lastgänge" (67 -> 68, 53 -> 54).
+        Assert.Equal(68, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -326,6 +327,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_WaermebedarfExtern",
             "MenuItem_Prozesswaerme",
             "MenuItem_SolThermGanglinie",
+            // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien neben dem der Solarthermie.
+            "MenuItem_PvGanglinie",
             // PW2/BW2: die Betriebskalender der Bedarfsprofile.
             "MenuItem_Betriebskalender",
         }, Kinder(rubrik));
@@ -902,6 +905,8 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.PvAdmin,
             Seitenschluessel.PvImport,
             Seitenschluessel.SolarganglinieAdmin,
+            // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien.
+            Seitenschluessel.PvGanglinieAdmin,
             Seitenschluessel.SolarkollektorenAdmin,
             Seitenschluessel.SolarkollektorenImport,
             Seitenschluessel.StromganglinieAdmin,
@@ -1256,7 +1261,9 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal(14, Punkte.Count(p => p.Klappt));
         //
         // „Brennstoffe des Projekts…" (Anwenderentscheid 03.10.2026) ist ein echter Weg (51 -> 52).
-        Assert.Equal(53, Punkte.Count(p => !p.Klappt));
+        //
+        // „PV-Ganglinie" (PVG, Schemaschritt 206) ist ein echter Weg (53 -> 54).
+        Assert.Equal(54, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]

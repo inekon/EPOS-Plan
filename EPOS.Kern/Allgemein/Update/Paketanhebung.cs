@@ -382,6 +382,10 @@ namespace WindowsFormsApplication1
             // leer an (Bestandsweg, „nicht erhoben").
             new Stufe(UebergabegrenzeSchema.SCHRITT, Art.Ddl,
                       "Übergabegrenze und Bivalenz: Grenzen an Wärmepumpe und BHKW, Einbindung, Bereiche im Ergebnis"),
+            // Ein Paket führt keinen Katalog der PV-Ganglinien (der Katalog bleibt im Ziel); seine Projekte rechnen ihre
+            // Photovoltaik über die Module wie bisher, Projektkopie und Zuordnung bleiben leer.
+            new Stufe(PvGanglinieSchema.SCHRITT, Art.Katalog,
+                      "Photovoltaik mit Ganglinie (Katalog, Projektkopie und Zuordnung der PV-Ganglinie)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

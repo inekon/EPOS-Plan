@@ -187,6 +187,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double KwpDesProjekts(int idProjekt)
         {
+            // PVG (Schemaschritt 206): Rechnet das Projekt seine Photovoltaik ueber eine PV-Ganglinie, ist deren
+            // Kennleistung die installierte Leistung (gepflegte Nennleistung, sonst die Spitze der Ganglinie) -
+            // die Module rechnen dann nicht. Ohne Zuordnung bleibt es bei der Summe der Module.
+            PvGanglinieWeiche.Stand ganglinie = PvGanglinieWeiche.Lesen(idProjekt);
+            if (ganglinie.RechnetGanglinie) return ganglinie.KennleistungKwp;
             return KwpSumme(idProjekt, 0);
         }
 

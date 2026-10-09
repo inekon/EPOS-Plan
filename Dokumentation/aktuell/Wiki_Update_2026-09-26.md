@@ -208,6 +208,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Ein Gebäude-Katalogsatz trägt seine Zonen mit Bauteilen, Luftströmen und Zonen-Konditionierung; „In DB übernehmen“, „Speichern unter“ und die Übernahme ins Projekt kopieren sie mit. (#849)
 - Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
 - Seit 09.10.2026: Der Strom einer Kältemaschine zählt in Kosten und Emissionen auch dann, wenn sie der einzige Stromverbraucher des Projekts ist. (#852)
+- Seit 09.10.2026: Die Photovoltaik kann statt des Modulmodells mit einer importierten Ganglinie (Stunden- oder Viertelstundenwerte) rechnen; Ganglinien werden im Katalog gepflegt und dem Projekt zugeordnet. (#857)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 

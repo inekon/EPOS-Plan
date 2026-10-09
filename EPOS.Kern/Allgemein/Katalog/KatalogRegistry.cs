@@ -565,6 +565,22 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
+                Schluessel = "PVGANGLINIE",
+                Tabelle = "Tab_PvGanglinie_STAMM",
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = "Tab_PvGanglinieDaten_STAMM",
+                        FkSpalte = "ID_Ganglinie",
+                        Sortierung = "ID",
+                        WertSpalten = new[] { "Wert" }
+                    }
+                },
+                ImportSpalten = new[] { "Raster_Minuten" }
+            },
+            new KatalogDefinition
+            {
                 Schluessel = "WAERMEBEDARF",
                 Tabelle = "Tab_Waermebedarf_STAMM",
                 // LEERES Array und nicht null (iU9-W13.0g): null heisst "dieser
@@ -685,6 +701,7 @@ namespace WindowsFormsApplication1
                 case "PROZESSTYP": return MyResource.Resource.ADM_KATALOG_PROZESSTYP;
                 case "STROMGANGLINIE": return MyResource.Resource.ADM_KATALOG_STROMGANGLINIE;
                 case "SOLARGANGLINIE": return MyResource.Resource.ADM_KATALOG_SOLARGANGLINIE;
+                case "PVGANGLINIE": return MyResource.Resource.ADM_KATALOG_PVGANGLINIE;
                 case "WAERMEBEDARF": return MyResource.Resource.ADM_KATALOG_WAERMEBEDARF;
                 case "GEBAEUDETYP": return MyResource.Resource.ADM_KATALOG_GEBAEUDETYP;
                 case "KONDITIONIERUNGSVORLAGE": return MyResource.Resource.ADM_KATALOG_KONDITIONIERUNGSVORLAGE;

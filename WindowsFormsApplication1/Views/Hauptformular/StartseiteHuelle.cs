@@ -43,6 +43,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Weiche der Solarthermiekachel (Profil / Ganglinie).</summary>
         private bool _solarGanglinie;
 
+        /// <summary>Die Weiche der Photovoltaikkachel (PVG): <c>true</c> = Ganglinie.</summary>
+        private bool _pvGanglinie;
+
         /// <summary>Ein einmaliger Kurzhinweis für die Seite; leer = keiner.</summary>
         private string _kurzhinweis = "";
 
@@ -109,6 +112,7 @@ namespace WindowsFormsApplication1
                 ["KlimaHerkunft"] = new Func<KlimaHerkunftGaben>(Klimaherkunft),
                 ["Bericht"] = new Func<Zusammenfassung>(Zusammenfassen),
                 ["SolarartGewaehlt"] = new Action<bool>(an => _solarGanglinie = an),
+                ["PvartGewaehlt"] = new Action<bool>(an => _pvGanglinie = an),
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
                 ["Fehlerhinweis"] = new Func<string>(FehlerhinweisAbholen),
                 ["BerichteGaben"] = BerichteGaben(),
@@ -1002,6 +1006,14 @@ namespace WindowsFormsApplication1
 
         private void Photovoltaik(IWin32Window wirt)
         {
+            // PVG (Schemaschritt 206): die Weiche der Kachel - "Ganglinie" oeffnet den Dialog
+            // "Photovoltaik Ganglinie"; er schreibt seine Zuordnungen beim OK selbst.
+            if (_pvGanglinie)
+            {
+                PvGanglinieHuelle.Oeffnen(wirt, _kontext.Id);
+                return;
+            }
+
             // Woertlich pBox_PV_Click (:1374-1412).
             List<WErzeugerModel> liste = Anlagen(WizardItemClass.PV_TYP);
             if (PhotovoltaikHuelle.Oeffnen(wirt, _kontext.Id, WizardItemClass.PV_TYP, liste))
