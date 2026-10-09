@@ -216,7 +216,7 @@ public class KachelbilderTests : EposBunitContext
 
         var bilder = cut.FindAll(".epos-kachel img");
         // Sieben Ausschnitte der Bestandskacheln, als achtes das eigene Symbol der Kachel
-        // „Kühlung und Kälteanlagen" (sie steht im eigenen Wirt mit Schaltern, ohne Kachelschlüssel).
+        // „Kühlung und Kälteanlagen" (ohne Kachelschlüssel).
         Assert.Equal(8, bilder.Count);
         Assert.Equal(Kachelbilder.KuehlungQuelle, bilder[7].GetAttribute("src"));
         Assert.Contains(Kachelbilder.KLASSE_SYMBOL, bilder[7].ClassName);

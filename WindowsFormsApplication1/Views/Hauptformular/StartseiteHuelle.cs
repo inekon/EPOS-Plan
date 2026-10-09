@@ -90,11 +90,9 @@ namespace WindowsFormsApplication1
                 ["ProjektId"] = new Func<int>(() => _kontext.Id),
                 ["Varianten"] = new Func<IReadOnlyList<(int Id, string Name)>>(Varianten),
                 ["VarianteGewaehlt"] = new Action<int>(VarianteWechseln),
-                // Die Kachel „Kühlung“ im Reiter Energieerzeuger: Bestand und Schreibweg aus der
-                // plattformfreien Hülle (EPOS.UI.Daten), je Aufruf mit dem offenen Projekt.
+                // Die Kachel „Kühlung und Kälteanlagen“ im Reiter Energieerzeuger: ihr Bestand (Statuspunkt)
+                // aus der plattformfreien Hülle (EPOS.UI.Daten), je Aufruf mit dem offenen Projekt.
                 ["Kuehlung"] = new Func<KuehlungKachelDaten>(() => KuehlungKachelBau.Daten(_kontext.Id)),
-                ["KuehlbetriebSchreiben"] = new Func<int, bool, string>(
-                    (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(_kontext.Id, idWp, an)),
                 // Variante anlegen und umbenennen AM KOPFBAND (Anwenderwunsch 08.09.2026):
                 // derselbe Weg wie das Menue "Als Variante speichern…", nur meldet er als
                 // Banner der Seite statt als MessageBox.

@@ -232,7 +232,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
         // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
         // der Geraetewahl ist eine Auswahl, kein Wert.
-        new("KaeltemaschineAnlageDialog", 6),
+        new("KaeltemaschineAnlageDialog", 7, "die Schalter „Wärmepumpen im Kühlbetrieb“ schreiben beim OK den Kühlbetrieb des Geräts über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, keine Eingabe der Kältemaschine"),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
@@ -292,7 +292,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("EnergietraegerEinstellungen", 21),
         new("EnergietraegerVarianteDialog", 2),
         new("ErgebnisReiter", 1),
-        new("ErzeugerReiter", 2, "die Schalter der Kachel „Kühlung“ schreiben den Kühlbetrieb des Geräts sofort über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, kein Einstellwert der Startseite"),
+        new("ErzeugerReiter", 1),
         new("ErtragBonus", 2),
         // Welle #465: die Kenndaten des Stammblatts samt Wohnfläche und Bauart (Katalogfelder
         // gebaeudetyp, gebaeudeart, baualtersklasse, verwendung, wohnflaeche, bauart,

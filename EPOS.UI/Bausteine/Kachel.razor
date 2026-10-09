@@ -18,7 +18,7 @@
    Ein <button disabled> ist dabei mehr als eine Optik: Er nimmt die Kachel auch
    aus der Tabreihenfolge und meldet sich einer Sprachausgabe als gesperrt. *@
 
-<button type="button" class="epos-kachel" disabled="@(!Aktiv)" @onclick="Geklickt">
+<button type="button" class="epos-kachel @Zusatzklasse" disabled="@(!Aktiv)" @onclick="Geklickt">
     @if (!string.IsNullOrEmpty(Bild))
     {
         <img class="@Bildklassen" src="@Bild" alt="" />
@@ -84,6 +84,9 @@
     /// entgegen, die Kachelbilder.Klasse nennt.</para>
     /// </summary>
     [Parameter] public string? Bildklasse { get; set; }
+
+    /// <summary>Eine zusätzliche Stilklasse am Knopf (Kennung für Wirt und Tests); leer = keine.</summary>
+    [Parameter] public string? Zusatzklasse { get; set; }
 
     /// <summary>Die Kachel wurde angeklickt.</summary>
     [Parameter] public EventCallback Geklickt { get; set; }

@@ -117,8 +117,7 @@ public static class Kachelbilder
 
     /// <summary>
     /// Das Sinnbild der Kachel „Kühlung und Kälteanlagen" im Reiter Energieerzeuger. Die Kachel
-    /// hat keinen <see cref="Kachelschluessel"/> (sie ist keine der 21 Kacheln des Vorläufers und
-    /// steht im eigenen Wirt mit Schaltern), ihr Bild steht deshalb neben der Tabelle. Es ist
+    /// hat keinen <see cref="Kachelschluessel"/> (sie ist keine der 21 Kacheln des Vorläufers),, ihr Bild steht deshalb neben der Tabelle. Es ist
     /// ein EIGENES Bild im Stil der übrigen (violettes abgerundetes Quadrat, Eiskristall mit
     /// Umrisslinie), als Vektor gezeichnet und in ein fertig zugeschnittenes Symbol von
     /// 84 × 84 Pixeln gerechnet — es trägt deshalb <see cref="KLASSE_SYMBOL"/>, keinen Ausschnitt.

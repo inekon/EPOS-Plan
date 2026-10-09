@@ -45572,6 +45572,12 @@ Chart</value>
   <data name="KMA_MSG_ANLEGEN_FEHLT" xml:space="preserve">
     <value>Die Kältemaschine „{0}“ gibt es im Katalog nicht mehr.</value>
   </data>
+  <data name="KMA_WP_LEER" xml:space="preserve">
+    <value>Keine Wärmepumpe des Projekts hat eine Kühlfunktion.</value>
+  </data>
+  <data name="KMA_WP_HINWEIS" xml:space="preserve">
+    <value>Der Kühlbetrieb der Wärmepumpen wird mit OK gespeichert.</value>
+  </data>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>Die Kältemaschinen des Projekts lassen sich nicht öffnen — ist ein Projekt geöffnet?</value>
   </data>
@@ -45581,16 +45587,10 @@ Chart</value>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
     <value>Kälteerzeugung mit Kältemaschinen und Wärmepumpen</value>
   </data>
-  <data name="START_E_KUEHL_KM" xml:space="preserve">
-    <value>Kältemaschinen</value>
-  </data>
-  <data name="START_E_KUEHL_WP" xml:space="preserve">
+  <data name="KMA_GRUPPE_WP" xml:space="preserve">
     <value>Wärmepumpen im Kühlbetrieb</value>
   </data>
-  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
-    <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+  <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">

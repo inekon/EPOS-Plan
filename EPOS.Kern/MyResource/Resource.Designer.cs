@@ -71980,6 +71980,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_WP {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag auf den Strom der Maschine für Pumpen und Regelung; leer = 0 %. ähnelt.
         /// </summary>
         public static string KMA_HINWEIS_HILFSSTROM {
@@ -72192,6 +72201,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_TITEL_KATALOG {
             get {
                 return ResourceManager.GetString("KMA_TITEL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string KMA_WP_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_WP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpen wird mit OK gespeichert. ähnelt.
+        /// </summary>
+        public static string KMA_WP_HINWEIS {
+            get {
+                return ResourceManager.GetString("KMA_WP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wärmepumpe des Projekts hat eine Kühlfunktion. ähnelt.
+        /// </summary>
+        public static string KMA_WP_LEER {
+            get {
+                return ResourceManager.GetString("KMA_WP_LEER", resourceCulture);
             }
         }
         
@@ -109629,33 +109665,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_KM {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_KM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} ×) ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_KM_ANZAHL {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_KM_ANZAHL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_MSG_FEHLER {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_MSG_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung mit Kältemaschinen und Wärmepumpen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TEXT {
@@ -109670,15 +109679,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_E_KUEHL_TITEL {
             get {
                 return ResourceManager.GetString("START_E_KUEHL_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_WP {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_WP", resourceCulture);
             }
         }
         

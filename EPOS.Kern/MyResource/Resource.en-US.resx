@@ -45565,6 +45565,12 @@ chart</value>
   <data name="KMA_MSG_ANLEGEN_FEHLT" xml:space="preserve">
     <value>The chiller “{0}” no longer exists in the catalogue.</value>
   </data>
+  <data name="KMA_WP_LEER" xml:space="preserve">
+    <value>No heat pump of the project has a cooling function.</value>
+  </data>
+  <data name="KMA_WP_HINWEIS" xml:space="preserve">
+    <value>The cooling mode of the heat pumps is saved with OK.</value>
+  </data>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>The project chillers cannot be opened — is a project open?</value>
   </data>
@@ -45574,16 +45580,10 @@ chart</value>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
     <value>Cooling with chillers and heat pumps</value>
   </data>
-  <data name="START_E_KUEHL_KM" xml:space="preserve">
-    <value>Chillers</value>
-  </data>
-  <data name="START_E_KUEHL_WP" xml:space="preserve">
+  <data name="KMA_GRUPPE_WP" xml:space="preserve">
     <value>Heat pumps in cooling mode</value>
   </data>
-  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
-    <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+  <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>The cooling mode of the heat pump could not be saved.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
