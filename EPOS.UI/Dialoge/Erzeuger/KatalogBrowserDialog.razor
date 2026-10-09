@@ -1116,7 +1116,7 @@
     /// </summary>
     private bool Schreiben()
     {
-        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder, false);
+        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder);
 
         if (!ergebnis.Ok)
         {

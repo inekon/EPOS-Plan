@@ -139,7 +139,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
             Detail = name => Felder(art, name),
             Existiert = _ => false,
             Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
-            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)
+            Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)
         };
 
         return Render<KatalogBrowserDialog>(p => p
@@ -604,7 +604,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, f, _) => { gesehen = f; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, f) => { gesehen = f; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege);
 
@@ -657,7 +657,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege);
 
@@ -690,7 +690,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
@@ -719,18 +719,17 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
     /// <summary>
     /// Ein EIGENER Satz desselben Katalogs bleibt bearbeitbar — die Sperre hängt am
-    /// Satz, nicht an der Ausprägung. Der Schreibweg bekommt nie die Erlaubnis, den
-    /// Schutz zu übergehen.
+    /// Satz, nicht an der Ausprägung. Gespeichert wird über den Schreibweg.
     /// </summary>
     [Fact]
-    public void Ein_eigener_Satz_bleibt_bearbeitbar_und_uebergeht_nie_den_Schutz()
+    public void Ein_eigener_Satz_bleibt_bearbeitbar()
     {
-        bool? uebergangen = null;
+        bool gerufen = false;
         var wege = new KatalogBrowserWege
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            Speichern = (n, _, u) => { uebergangen = u; return new KatalogSpeicherErgebnis(true, "gespeichert", n); }
+            Speichern = (n, _) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "gespeichert", n); }
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
@@ -742,7 +741,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Null(speichern.GetAttribute("aria-disabled"));
         speichern.Click();
 
-        Assert.False(uebergangen);
+        Assert.True(gerufen);
         Assert.Equal("gespeichert", cut.Instance.Status);
         Assert.Equal("", cut.Instance.Meldung);
     }
@@ -755,7 +754,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege);
 
@@ -804,7 +803,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
+            Speichern = (n, _) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(wege: wege, geschlossen: e => ergebnis = e);
 
@@ -994,7 +993,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "", n),
+            Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "", n),
             Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name)
         };
         var cut = Aufbauen(wege: wege);
@@ -1695,7 +1694,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
             Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (n, f, _) => { geschrieben = f; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); }
+            Speichern = (n, f) => { geschrieben = f; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); }
         };
         var cut = Aufbauen(wege: wege);
         const string maske = KiMaskennamen.HEIZKESSEL_ADMIN;
@@ -1845,7 +1844,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         {
             Katalogzeilen = () => schloss.Markieren(Zeilen(KatalogBrowserArt.Bhkw)),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            Speichern = (n, _, __) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "gespeichert", n); },
+            Speichern = (n, _) => { gespeichert = n; return new KatalogSpeicherErgebnis(true, "gespeichert", n); },
             Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name),
             Schloss = schloss.Weg()
         };
