@@ -461,3 +461,6 @@ Referenzlaeufe/Schemakopien/*
 # HottCAD-Projektdateien (SQLite) sind Anwenderdaten: nur lokal fuer die Diagnose
 # (SqprojQuelldateienDiagnoseTests), nie versioniert (Datenaustauschkonzept 16.6 Nr. 1).
 Quellen/*.sqproj
+
+# FUSE-Temporaerdateien (Sync von einem gemounteten Laufwerk)
+.fuse_hidden*
