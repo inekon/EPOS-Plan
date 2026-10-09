@@ -153,6 +153,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KalenderkarteInhalt",            "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
         // KP2, Welle U3 (Festlegung 15): die Periodenliste der aufgeklappten Kalenderkarte.
         new("Periodenliste",                  "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
+        // K1b (Konzept 7.8, E110): die Kalenderbedienung im Abschnitt „Kalender {Größe} im Einzelnen".
+        new("KalenderbedienungAbschnitt",     "GebaeudeKatalogDialog",       KiMaskennamen.GEBAEUDE_KATALOG),
 
         // Berichtsvorlagen BV-E1 (Konzept 9.7, 10.2): der Platzhalterkatalog steht als
         // Überlagerung IN der Berichtsseite; seine Suche führt der Wirt (Suche/SucheChanged)
@@ -402,6 +404,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // „Periode hinzufügen“ / „Periode bearbeiten“.
         new("Periodenliste", 8, "Art, Name, Tage, Feiertagsregel und Angabe sind Angaben der Handlung „Periode " +
             "hinzufügen“ bzw. „Periode bearbeiten“ mit eigenem „Übernehmen“ — keine Einstellwerte des Gebäudes"),
+        // K1b (Konzept 7.8, E110): Ferien von/bis, Saison von/bis, Vorlage „alle Größen", Pinselwert, Ziel, Quell- und
+        // Zieltag, Monat und Zielmonat, dazu der Zeileneditor (Datum, Bezeichnung, Wirkung, Profil, Wochentag, Wert).
+        new("KalenderbedienungAbschnitt", 19, "die Werte von Wochenende und Ferien sind dieselben Matrixzellen wie in der Matrix (Feldname gleich); Ferien und Saison führt die Feldkarte als Bestandsfelder des Gebäudes " +
+            "(Ferienzeiträume, kond_<größe>_saison); Pinselwert, Ziel, Quell- und Zieltag, die Monate und die Felder des " +
+            "Zeileneditors sind Angaben der Handlungen „Pinsel“, „Woche/Tag/Monat kopieren“ und „Zeile übernehmen“ — " +
+            "keine Einstellwerte des Gebäudes; die Wahl „Vorlage (alle Größen)“ führt die Rückfrage der Matrix"),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),

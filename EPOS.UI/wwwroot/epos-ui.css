@@ -49,6 +49,17 @@
     --epos-warn-flaeche: rgb(255, 246, 224);/* WARN_FLAECHE                 */
     --epos-warn-text: rgb(138, 91, 0);      /* WARN_TEXT                    */
 
+    /* ---- Kalenderbedienung der Konditionierung (Konzept 7.8, K1b) -------
+       Die Flaechen der Tagesarten im Jahresband und Jahresraster; Schrift
+       --epos-text haelt auf jeder mehr als 4,5:1. */
+    --epos-kalb-grundwoche: #ffffff;
+    --epos-kalb-wochenende: #e4e2da;
+    --epos-kalb-zeitraum: #d6e6f7;
+    --epos-kalb-einzeltag: #FAECE7;
+    --epos-kalb-ferien: #fff1c7;
+    --epos-kalb-feiertag: #f3d3c6;
+    --epos-kalb-saison: #cfcdc4;
+
     /* Die beiden Kantenfarben des Hydraulikschemas (SchemaAnsicht:481/495).
        Blau, Koralle und Amber stehen schon oben; Gruen und Violett gab es nur
        dort. */
@@ -14708,6 +14719,308 @@ td.epos-vorlage-katalogbeschreibung {
     .epos-sperrfenster-tage .epos-schalter,
     .epos-sperrfenster-rueckfrage {
         border-color: CanvasText;
+    }
+}
+
+/* ==========================================================================
+   DIE KALENDERBEDIENUNG DER KONDITIONIERUNG (Konzept 7.8, E110; Welle K1b) —
+   der Abschnitt „Kalender {Groesse} im Einzelnen": Schnellfelder oben,
+   Wochenprofile links, Zuordnung rechts, darunter Einzeltage und das
+   Jahresraster im eigenen Rollkasten. Sie steht VOR dem Block des Reiters,
+   weil zwischen .epos-kond und dem Formularraster keine Medienabfrage stehen
+   darf (StilblattTests); der Umbruch der zwei Spalten fragt den Behaelter
+   epos-kond (900 px), die Zellen halten das Beruehrungsmass und liegen nur
+   mit der Maus (pointer: fine) enger.
+   ========================================================================== */
+
+.epos-kalb {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kalb-schnellfelder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+.epos-kalb-feldgruppe {
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 6px;
+    padding: 8px;
+    min-width: 0;
+}
+
+.epos-kalb-titel {
+    margin: 0 0 6px;
+    font-size: var(--epos-schriftgroesse);
+    font-weight: 600;
+}
+
+.epos-kalb-wert {
+    margin: 0 0 4px;
+}
+
+.epos-kalb-ferienliste {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-kalb-ferienzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-kalb-fername {
+    flex-basis: 100%;
+    font-weight: 600;
+}
+
+.epos-kalb-haupt {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+@container epos-kond (width >= 900px) {
+    .epos-kalb-haupt {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+}
+
+.epos-kalb-profile,
+.epos-kalb-zuordnung,
+.epos-kalb-einzeltage,
+.epos-kalb-jahresraster {
+    min-width: 0;
+}
+
+.epos-kalb-profilwahl,
+.epos-kalb-pinsel,
+.epos-kalb-giltfuer,
+.epos-kalb-zeilenknoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.epos-kalb-giltfuer-text {
+    flex-basis: 100%;
+}
+
+.epos-kalb-woche {
+    display: grid;
+    grid-template-columns: 2.2em repeat(7, minmax(var(--epos-touchziel), 1fr));
+    gap: 1px;
+    margin: 6px 0;
+    min-width: 0;
+    user-select: none;
+}
+
+.epos-kalb-woche-kopf,
+.epos-kalb-woche-stunde {
+    align-self: center;
+    font-size: 12px;
+    color: var(--epos-text-leise);
+    text-align: center;
+}
+
+.epos-kalb-zelle {
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+    padding: 0 2px;
+    border: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-flaeche-hell);
+    color: var(--epos-text);
+    font: inherit;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.epos-kalb-zelle--aus {
+    background: var(--epos-flaeche);
+    color: var(--epos-text-leise);
+}
+
+.epos-kalb-zelle--anker {
+    outline: 2px solid var(--epos-marke);
+    outline-offset: -2px;
+}
+
+.epos-kalb-band {
+    display: flex;
+    height: var(--epos-touchziel);
+    border: 1px solid var(--epos-rahmen);
+    margin-bottom: 6px;
+    min-width: 0;
+}
+
+.epos-kalb-bandteil {
+    flex-basis: 0;
+    min-width: 1px;
+    border: 0;
+    padding: 0;
+}
+
+.epos-kalb-bandteil--zeile {
+    cursor: pointer;
+}
+
+.epos-kalb-bandteil--gewaehlt,
+.epos-kalb-jahrtag--gewaehlt {
+    outline: 2px solid var(--epos-marke);
+    outline-offset: -2px;
+}
+
+.epos-kalb-warnung {
+    margin: 4px 0;
+    padding: 4px 8px;
+    border: 1px solid var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+.epos-kalb-tabellenhuelle {
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+
+.epos-kalb-tabelle {
+    width: 100%;
+    min-width: 36em;
+    table-layout: fixed;
+}
+
+.epos-kalb-tabelle th,
+.epos-kalb-tabelle td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.epos-kalb-zeile--gewaehlt td {
+    background: var(--epos-kalb-zeitraum);
+}
+
+.epos-kalb-editor {
+    margin: 6px 0;
+    padding: 8px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 6px;
+}
+
+.epos-kalb-legende {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: 0 0 6px;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-kalb-legende li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-kalb-muster {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--epos-rahmen);
+}
+
+.epos-kalb-rolle {
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+
+.epos-kalb-jahr {
+    display: grid;
+    grid-template-columns: 3em repeat(31, var(--epos-touchziel));
+    gap: 1px;
+    width: max-content;
+}
+
+.epos-kalb-monat {
+    align-self: center;
+    font-size: 12px;
+}
+
+.epos-kalb-jahrtag {
+    min-height: var(--epos-touchziel);
+    padding: 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    color: var(--epos-text);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.epos-kalb-art-0 { background: var(--epos-kalb-grundwoche); }
+.epos-kalb-art-1 { background: var(--epos-kalb-wochenende); }
+.epos-kalb-art-2 { background: var(--epos-kalb-zeitraum); }
+.epos-kalb-art-3 { background: var(--epos-kalb-einzeltag); }
+.epos-kalb-art-4 { background: var(--epos-kalb-ferien); }
+.epos-kalb-art-5 { background: var(--epos-kalb-feiertag); }
+.epos-kalb-art-6 { background: var(--epos-kalb-saison); }
+
+.epos-kalb-werte-titel {
+    margin-top: var(--epos-rand);
+}
+
+@media (pointer: fine) {
+    .epos-kalb .epos-kalb-woche {
+        grid-template-columns: 2.2em repeat(7, minmax(0, 1fr));
+    }
+
+    .epos-kalb .epos-kalb-zelle {
+        min-height: 22px;
+    }
+
+    .epos-kalb .epos-kalb-jahrtag {
+        min-height: 22px;
+    }
+
+    .epos-kalb .epos-kalb-jahr {
+        grid-template-columns: 3em repeat(31, 24px);
+    }
+
+    .epos-kalb .epos-kalb-band {
+        height: 22px;
+    }
+}
+
+@media (forced-colors: active) {
+    .epos-kalb-warnung,
+    .epos-kalb-zelle,
+    .epos-kalb-jahrtag,
+    .epos-kalb-bandteil {
+        border: 1px solid CanvasText;
+    }
+
+    .epos-kalb-zelle--anker,
+    .epos-kalb-bandteil--gewaehlt,
+    .epos-kalb-jahrtag--gewaehlt {
+        outline-color: Highlight;
     }
 }
 

@@ -260,6 +260,16 @@ public sealed class KonditionierungDatenTests
         Teppichbild = (_, _) => null,
         Lasten = (_, _) => null,
         Pruefen = _ => "",
+        // Welle K1b: die Kalenderbedienung.
+        ProfilPinsel = (s, _, _) => Gut(s),
+        TagKopieren = (s, _, _, _, _) => Gut(s),
+        WocheKopieren = (s, _, _) => Gut(s),
+        ZuordnungSetzen = (s, _, _, _, _, _) => Gut(s),
+        ZuordnungLoeschen = (s, _, _) => Gut(s),
+        FerienSetzen = (s, _) => Gut(s),
+        SaisonSetzen = (s, _, _, _) => Gut(s),
+        FeiertageLaden = (s, _, _) => Gut(s),
+        MonatKopieren = (s, _, _, _) => Gut(s),
         Sperre = sperre
     };
 
@@ -301,6 +311,15 @@ public sealed class KonditionierungDatenTests
             Nutzungsprofile = () => Array.Empty<KonditionierungProfilwahl>(),
             ProfilUebernehmen = (_, _) => KonditionierungProfilergebnis.Fehler("")
         },
+        KonditionierungHandlung.ProfilPinsel => new() { ProfilPinsel = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.TagKopieren => new() { TagKopieren = (s, _, _, _, _) => Gut(s) },
+        KonditionierungHandlung.WocheKopieren => new() { WocheKopieren = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.ZuordnungSetzen => new() { ZuordnungSetzen = (s, _, _, _, _, _) => Gut(s) },
+        KonditionierungHandlung.ZuordnungLoeschen => new() { ZuordnungLoeschen = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.FerienSetzen => new() { FerienSetzen = (s, _) => Gut(s) },
+        KonditionierungHandlung.SaisonSetzen => new() { SaisonSetzen = (s, _, _, _) => Gut(s) },
+        KonditionierungHandlung.FeiertageLaden => new() { FeiertageLaden = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.MonatKopieren => new() { MonatKopieren = (s, _, _, _) => Gut(s) },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
 

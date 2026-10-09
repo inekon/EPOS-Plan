@@ -1007,6 +1007,13 @@ am Zeitfenster; den Vermerk des letzten Werkzeugs; das Teppichbild mit 1 bis 2 0
 in der Zeile darunter und Zeitraum, Wert und Quelle am Zeiger. Je Breite EIN Foto der aufgeklappten Karte
 (`karte_<breite>_einzelheiten.png`), die Fotos je Reiter entfallen in diesem Fall.
 
+**Welle K1b — die Kalenderbedienung.** Derselbe Fall `karte` läuft mit Berührung (`hasTouch`, `pointer: coarse`) und
+misst zusätzlich die Kalenderbedienung über den Einzelheiten: 168 Zellen des Wochenprofils und 365 Tage des
+Jahresrasters je ≥ 44 px, kein Querrollen der Kalenderbedienung (Wochenprofil, Tabellen und Jahresraster rollen im
+eigenen Kasten), das Jahresraster in einem Kasten mit `overflow-x: auto`, und ab 1 300 px alle fünf Karten in einer
+Zeile. Ergebnis vom 09.10.2026 bei 390, 820, 1 180 und 1 300 px: kein Verstoß im Fall `karte`; der volle Lauf meldet
+acht Verstöße im Zonenblatt (ein Kästchen 217,6 × 15 px), die die Kalenderbedienung nicht berührt.
+
 **Ergebnis vom 30.09.2026** (Welle U3 auf dem Stand mit U4 und der vorgebbaren Reiterfolge; Wirt Release auf
 Port 5299, Chromium headless über das globale Playwright, `kultur=de-DE`): **vorher ein Befund, nachher kein
 Verstoß** in 36 Läufen (9 Fälle × 4 Breiten, Rückgabe 0). Der Befund stand im Foto bei 390 px; die Probe misst

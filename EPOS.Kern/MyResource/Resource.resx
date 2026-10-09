@@ -49234,5 +49234,221 @@ Chart</value>
   <data name="KOND_MSG_BEDIENUNG_FERIEN_ZONE" xml:space="preserve">
     <value>Die Ferienzeiträume gehören dem Gebäude; eine Zone erbt sie.</value>
   </data>
+  <data name="KOND_LBL_KALB_SCHNELLFELDER" xml:space="preserve">
+    <value>Schnellfelder</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHENENDE" xml:space="preserve">
+    <value>Wochenende</value>
+  </data>
+  <data name="KOND_TXT_KALB_WOCHENENDE_TAGE" xml:space="preserve">
+    <value>Samstag und Sonntag</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_WOCHENENDE" xml:space="preserve">
+    <value>Nur lesbar; wählbar ab Stufe 2.</value>
+  </data>
+  <data name="KOND_LBL_KALB_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_FERIEN" xml:space="preserve">
+    <value>Ferien gelten für Gebäude und Zonen in allen Größen. Ab dem fünften Zeitraum tragen ihn nur angelegte Kalender.</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_FERIEN_ZONE" xml:space="preserve">
+    <value>Die Ferien gehören dem Gebäude; die Zone erbt sie.</value>
+  </data>
+  <data name="KOND_BTN_KALB_FERIEN_NEU" xml:space="preserve">
+    <value>+ Ferien</value>
+  </data>
+  <data name="KOND_LBL_KALB_SAISON" xml:space="preserve">
+    <value>Saison {0}</value>
+  </data>
+  <data name="KOND_BTN_KALB_GANZJAEHRIG" xml:space="preserve">
+    <value>ganzjährig</value>
+  </data>
+  <data name="KOND_LBL_KALB_VON" xml:space="preserve">
+    <value>von</value>
+  </data>
+  <data name="KOND_LBL_KALB_BIS" xml:space="preserve">
+    <value>bis</value>
+  </data>
+  <data name="KOND_BTN_KALB_VORLAGE_ALLE" xml:space="preserve">
+    <value>Vorlage übernehmen (alle Größen)</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHENPROFILE" xml:space="preserve">
+    <value>Wochenprofile</value>
+  </data>
+  <data name="KOND_LBL_KALB_PINSEL" xml:space="preserve">
+    <value>Pinsel</value>
+  </data>
+  <data name="KOND_BTN_KALB_PINSEL_AUS" xml:space="preserve">
+    <value>Pinsel „aus“</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_PINSEL" xml:space="preserve">
+    <value>Erste Zelle wählen, dann die zweite: Der Bereich dazwischen bekommt den Pinselwert. Ziehen mit der Maus geht ebenso; Esc verwirft die erste Zelle.</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_NUR_LESBAR" xml:space="preserve">
+    <value>Ohne angelegten Kalender sind die Wochenprofile nur lesbar — „Kalender anlegen“ steht an der Karte.</value>
+  </data>
+  <data name="KOND_BTN_KALB_MONTAG" xml:space="preserve">
+    <value>Montag nach Di–Fr</value>
+  </data>
+  <data name="KOND_BTN_KALB_SAMSTAG" xml:space="preserve">
+    <value>Samstag nach Sonntag</value>
+  </data>
+  <data name="KOND_LBL_KALB_ZIEL" xml:space="preserve">
+    <value>Ziel</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_KOPIEREN" xml:space="preserve">
+    <value>Woche kopieren…</value>
+  </data>
+  <data name="KOND_LBL_KALB_QUELLTAG" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="KOND_LBL_KALB_ZIELTAG" xml:space="preserve">
+    <value>nach</value>
+  </data>
+  <data name="KOND_BTN_KALB_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren…</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_KOPIEREN" xml:space="preserve">
+    <value>Ziel ist ein Profil derselben Größe oder einer Größe gleicher Einheit: Heizen und Kühlen, Geräte und Personen.</value>
+  </data>
+  <data name="KOND_LBL_KALB_ZUORDNUNG" xml:space="preserve">
+    <value>Zuordnung im Jahr</value>
+  </data>
+  <data name="KOND_LBL_KALB_JAHRESBAND" xml:space="preserve">
+    <value>Jahresband der Zuordnung</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_ZUORDNUNG" xml:space="preserve">
+    <value>Ohne Zeile gilt die Standardwoche; eine später angelegte Zeile geht vor. „gilt für“ koppelt die Zeile in den gewählten Größen.</value>
+  </data>
+  <data name="KOND_LBL_KALB_NAME" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="KOND_LBL_KALB_WIRKUNG" xml:space="preserve">
+    <value>Wirkung</value>
+  </data>
+  <data name="KOND_LBL_KALB_GILT_FUER" xml:space="preserve">
+    <value>gilt für</value>
+  </data>
+  <data name="KOND_LBL_KALB_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHENTAG" xml:space="preserve">
+    <value>Wochentag</value>
+  </data>
+  <data name="KOND_LBL_KALB_HANDLUNGEN" xml:space="preserve">
+    <value>Handlungen</value>
+  </data>
+  <data name="KOND_LBL_KALB_WIRKUNG_PROFIL" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KOND_LBL_KALB_WIRKUNG_WOCHENTAG" xml:space="preserve">
+    <value>wie Wochentag</value>
+  </data>
+  <data name="KOND_LBL_KALB_WIRKUNG_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="KOND_TXT_KALB_WIE_TAG" xml:space="preserve">
+    <value>wie {0}</value>
+  </data>
+  <data name="KOND_TXT_KALB_EIGENE_WOCHE" xml:space="preserve">
+    <value>Woche „{0}“</value>
+  </data>
+  <data name="KOND_BTN_KALB_ZEILE_NEU" xml:space="preserve">
+    <value>+ Zeitraum</value>
+  </data>
+  <data name="KOND_BTN_KALB_UEBERNEHMEN" xml:space="preserve">
+    <value>Zeile übernehmen</value>
+  </data>
+  <data name="KOND_BTN_KALB_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="KOND_BTN_KALB_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="KOND_BTN_KALB_ABBRECHEN" xml:space="preserve">
+    <value>Verwerfen</value>
+  </data>
+  <data name="KOND_LBL_KALB_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="KOND_LBL_KALB_NACH_MONAT" xml:space="preserve">
+    <value>nach</value>
+  </data>
+  <data name="KOND_BTN_KALB_MONAT_KOPIEREN" xml:space="preserve">
+    <value>Monat kopieren…</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_MONAT" xml:space="preserve">
+    <value>Kopiert Zuordnung und Einzeltage des Quellmonats Tag für Tag in den Zielmonat.</value>
+  </data>
+  <data name="KOND_LBL_KALB_EINZELTAGE" xml:space="preserve">
+    <value>Einzeltage (Feiertage, Ausnahmen)</value>
+  </data>
+  <data name="KOND_LBL_KALB_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="KOND_LBL_KALB_WIE_SONNTAG" xml:space="preserve">
+    <value>wie Sonntag</value>
+  </data>
+  <data name="KOND_BTN_KALB_EINZELTAG_NEU" xml:space="preserve">
+    <value>+ Einzeltag</value>
+  </data>
+  <data name="KOND_BTN_KALB_FEIERTAGE_LADEN" xml:space="preserve">
+    <value>Feiertage laden</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_FEIERTAGE" xml:space="preserve">
+    <value>Lädt die neun bundeseinheitlichen Feiertage als Regel „wie Sonntag“. Die Feiertage der Länder kommen in Stufe 2 als Regeln.</value>
+  </data>
+  <data name="KOND_LBL_KALB_JAHRESRASTER" xml:space="preserve">
+    <value>Jahresraster</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_JAHRESRASTER" xml:space="preserve">
+    <value>Jeder Tag in der Farbe seiner Quelle; ein Klick wählt die Zeile oder den Einzeltag, der ihn bestimmt.</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_GRUNDWOCHE" xml:space="preserve">
+    <value>Standardwoche</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_WOCHENENDE" xml:space="preserve">
+    <value>Wochenende</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_EINZELTAG" xml:space="preserve">
+    <value>Einzeltag</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_FEIERTAG" xml:space="preserve">
+    <value>Feiertag</value>
+  </data>
+  <data name="KOND_TXT_KALB_ART_SAISON" xml:space="preserve">
+    <value>außerhalb der Saison</value>
+  </data>
+  <data name="KOND_TXT_KALB_RANGWARNUNG" xml:space="preserve">
+    <value>Rangfolge weicht ab: „{0}“ steht in {1} über „{2}“, in {3} darunter.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_GILT_FUER" xml:space="preserve">
+    <value>Mindestens eine Größe wählen.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_DATUM" xml:space="preserve">
+    <value>Das Datum fehlt.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_NAME" xml:space="preserve">
+    <value>Die Bezeichnung fehlt.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_WERT" xml:space="preserve">
+    <value>Der Wert fehlt.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_ZIEL" xml:space="preserve">
+    <value>Kein Zielprofil gewählt.</value>
+  </data>
+  <data name="KOND_LBL_KALB_WERTE_JE_STUNDE" xml:space="preserve">
+    <value>Grundangabe, Werte je Stunde und Perioden</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT" xml:space="preserve">
+    <value>Nur Übersicht: Wochenende und Ferien werden in den Schnellfeldern unter „Kalender bearbeiten…“ gesetzt.</value>
+  </data>
 </root>
 
