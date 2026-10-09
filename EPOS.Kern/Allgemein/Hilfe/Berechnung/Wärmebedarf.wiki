@@ -209,7 +209,7 @@ Dieser Wochentag gilt fuer '''alle''' Bedarfsarten, auch fuer den Strombedarf.
 
 === 2. Die Heizlast eines Gebaeudes ===
 
-Dieser Schritt rechnet ein Gebaeude auf dem Rechenweg „Tagesbilanz". Ein Gebaeude auf dem Rechenweg VDI 6007 rechnet das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] Stunde fuer Stunde. Die Heiz- und Kuehlsollwerte eines solchen Gebaeudes kommen je Stunde aus seinem Reiter „Konditionierung", eine Zone kann eigene Heizsollwerte tragen: aus einem angelegten Kalender, sonst aus der Vorgabe-Matrix; mit wirksamer Anlagenkopplung ersetzt ein gepflegtes Sollwert-Zeitprogramm der Waermeuebergabe dort die Woche der Heizspalte.
+Dieser Schritt rechnet ein Gebaeude auf dem Rechenweg „Tagesbilanz". Ein Gebaeude auf dem Rechenweg VDI 6007 rechnet das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] Stunde fuer Stunde. Die Heiz- und Kuehlsollwerte eines solchen Gebaeudes kommen je Stunde aus seinem Reiter „Konditionierung", eine Zone kann eigene Heizsollwerte tragen: aus einem angelegten Kalender, sonst aus der Vorgabe-Matrix; mit wirksamer Anlagenkopplung ersetzt ein gepflegtes Sollwert-Zeitprogramm der Wärmeübergabe dort die Woche der Heizspalte.
 
 Je Gebaeude und Tag werden drei Groessen gebildet.
 
