@@ -59,4 +59,4 @@ Die Kachelzeile trägt bewusst keine Vorlagenfeld-Markierung (die Wertzeilen des
 ## 7 Gate und CI
 
 `Rest-Gate auf `bc579cb1a` grün: Kern-Filter-Bau 0 Fehler; EPOS.UI.Tests 7962/7962, KiKern.Tests 549/549, SpeicherEngine.Tests 397/397, SpeicherPlanung.Tests 27/28 (1 übersprungen), Dokumentationswachen (EPOS.Kern.Tests-Filter) 35/35; Windows-Schale auf Linux 0 Fehler; Designer wiederholbar (16482 Einträge); SQL-Dialekt 2575 Texte, 0 Fundstellen; Werkzeugtests Formularkarte 124/124, Auslieferungsvorlage 61/61, Gebaeudevergleich 24/24, ZapfprofilValidierung 39/39; keine BOM, keine Konfliktmarker; Referenzlauf 27 von 27, GESAMT PASS (9335471 Werte), CSV byte-gleich 879 von 879; ChartProben und volle EPOS.Kern.Tests liefert der Kern-Lauf der CI`
-CI: `Kern-Lauf der CI auf dem Sitzungszweig: läuft (Vermerk folgt)`
+CI: `Kern-Lauf der CI auf dem Sitzungszweig: Run 37915060058 auf bc579cb1a grün (11:07 UTC)`

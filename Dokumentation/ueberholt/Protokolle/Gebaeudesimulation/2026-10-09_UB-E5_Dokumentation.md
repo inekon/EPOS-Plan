@@ -39,7 +39,7 @@ Gegenlesen der geänderten Quellen auf Änderungs- und Entscheidvermerke: 0 Tref
 ## 5 Offen
 
 - Wiki-Upload der fünf Seiten und Veröffentlichung der Logbuch-Sätze; Versionsnummer beim Anwender (Vorschlag 1.2.1).
-- Der Oberflächentext `WPA_HINWEIS_EINBINDUNG_PUFFER` („rechnet mit der Entladeseite als Näherung“) widerspricht dem Code wie zuvor der Wiki-Satz; nicht Teil von E5.
+- Der Oberflächentext `WPA_HINWEIS_EINBINDUNG_PUFFER` („rechnet mit der Entladeseite als Näherung“) widerspricht dem Code wie zuvor der Wiki-Satz; nicht Teil von E5. **Behoben** mit `090f80d54` (Text beider Sprachen: Ladeseite mit dem Rücklauf aus der untersten Pufferzone, Entladeseite nicht gerechnet).
 
 ## 6 Wachen
 
