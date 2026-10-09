@@ -260,4 +260,27 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         Assert.Contains("„B“", warnung.TextContent);
         Assert.Contains("Heizen", warnung.TextContent);
     }
+
+    [Fact]
+    public void Die_Matrix_zeigt_Wochenende_und_Ferien_nur_als_Uebersicht_die_Schnellfelder_setzen_sie()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        // Matrix: die Zeilen Wochenende (3) und Ferien (4) tragen kein Eingabefeld mehr, nur Text mit Hinweis.
+        foreach (int zeile in new[] { 3, 4 })
+        {
+            IElement zelle = cut.Find($"td.epos-kond-zelle[data-groesse='0'][data-zeile='{zeile}']");
+            Assert.Empty(zelle.QuerySelectorAll("input"));
+            Assert.NotNull(zelle.QuerySelector(".epos-kond-uebersicht"));
+        }
+        Assert.NotEmpty(cut.Find("td.epos-kond-zelle[data-groesse='0'][data-zeile='1']").QuerySelectorAll("input"));
+
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+        b.Find(".epos-kalb-wochenende input").Input("15");
+        Assert.Equal(15.0, _bearbeitung.Wert(H, KonditionierungZeile.Wochenende));
+        Assert.Contains("15", cut.Find("td.epos-kond-zelle[data-groesse='0'][data-zeile='3']").TextContent);
+
+        // Ohne Kalenderbedienung (leerer Weg) bleibt die Matrix bedienbar.
+        IRenderedComponent<KonditionierungReiter> ohne = Aufbauen(KonditionierungWeg.Keiner);
+        Assert.Empty(ohne.FindAll(".epos-kond-uebersicht"));
+    }
 }

@@ -38,11 +38,13 @@
                 <div class="epos-kalb-feldgruppe epos-kalb-wochenende">
                     <h5 class="epos-kalb-titel">@Texte.LabelKalbWochenende</h5>
                     <p class="epos-kalb-wert">@Texte.TextKalbWochenendeTage</p>
+                    @Zeilenwert(KonditionierungZeile.Wochenende)
                     <p class="epos-leisezeile">@Texte.HinweisKalbWochenende</p>
                 </div>
 
                 <div class="epos-kalb-feldgruppe epos-kalb-ferien">
                     <h5 class="epos-kalb-titel">@Texte.LabelKalbFerien</h5>
+                    @Zeilenwert(KonditionierungZeile.Ferien)
                     @if (Bearbeitung.IstZone)
                     {
                         <ul class="epos-kalb-ferienliste">
@@ -515,6 +517,24 @@
         }
         Bearbeitung.VorlageAlleWaehlen(namen[p - 1].Name);
         await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Der Wert der Größe am Wochenende bzw. in den Ferien (E110: die Matrix ist nur noch Übersicht) — dieselbe Zelle,
+    /// derselbe Feldname und derselbe Schreibweg wie in der Matrix.
+    /// </summary>
+    private RenderFragment Zeilenwert(KonditionierungZeile z) => __builder =>
+    {
+        if (!KonditionierungBearbeitung.Gibt(Groesse, z)) return;
+        string feld = KonditionierungBearbeitung.Feldname(Texte, Groesse, z);
+        <Zahlenfeld Bezeichnung="@feld" Feldname="@feld" Einheit="@Einheit" Aktiv="@Bearbeitung.Bearbeitbar(Groesse, z)"
+                    AusText="@(KonditionierungBearbeitung.MitAus(Groesse, z) ? Texte.ZelleAus : "")"
+                    Wert="@Bearbeitung.Wert(Groesse, z)" WertChanged="w => ZeilenwertSetzen(z, w)" />
+    };
+
+    private async Task ZeilenwertSetzen(KonditionierungZeile z, double? w)
+    {
+        await Danach(Bearbeitung.WertSetzen(Groesse, z, w));
     }
 
     // ------------------------------------------------------------ Wochenprofile und Pinsel

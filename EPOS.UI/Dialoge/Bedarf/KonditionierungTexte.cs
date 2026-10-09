@@ -1155,4 +1155,7 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_LBL_KALB_WERTE_JE_STUNDE</c> — die Überschrift über Grundangabe, Werten je Stunde und Perioden</summary>
     public string LabelKalbWerteJeStunde { get; set; } = "Grundangabe, Werte je Stunde und Perioden";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT</c> — der Hinweis an den Zeilen Wochenende und Ferien der Matrix (E110)</summary>
+    public string HinweisKalbMatrixUebersicht { get; set; } = "Nur Übersicht: Wochenende und Ferien werden in den Schnellfeldern unter „Kalender bearbeiten…“ gesetzt.";
 }

@@ -76890,6 +76890,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Übersicht: Wochenende und Ferien werden in den Schnellfeldern unter „Kalender bearbeiten…“ gesetzt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert Zuordnung und Einzeltage des Quellmonats Tag für Tag in den Zielmonat. ähnelt.
         /// </summary>
         public static string KOND_TXT_KALB_HINWEIS_MONAT {

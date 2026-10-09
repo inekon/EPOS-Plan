@@ -406,7 +406,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "hinzufügen“ bzw. „Periode bearbeiten“ mit eigenem „Übernehmen“ — keine Einstellwerte des Gebäudes"),
         // K1b (Konzept 7.8, E110): Ferien von/bis, Saison von/bis, Vorlage „alle Größen", Pinselwert, Ziel, Quell- und
         // Zieltag, Monat und Zielmonat, dazu der Zeileneditor (Datum, Bezeichnung, Wirkung, Profil, Wochentag, Wert).
-        new("KalenderbedienungAbschnitt", 18, "Ferien und Saison führt die Feldkarte als Bestandsfelder des Gebäudes " +
+        new("KalenderbedienungAbschnitt", 19, "die Werte von Wochenende und Ferien sind dieselben Matrixzellen wie in der Matrix (Feldname gleich); Ferien und Saison führt die Feldkarte als Bestandsfelder des Gebäudes " +
             "(Ferienzeiträume, kond_<größe>_saison); Pinselwert, Ziel, Quell- und Zieltag, die Monate und die Felder des " +
             "Zeileneditors sind Angaben der Handlungen „Pinsel“, „Woche/Tag/Monat kopieren“ und „Zeile übernehmen“ — " +
             "keine Einstellwerte des Gebäudes; die Wahl „Vorlage (alle Größen)“ führt die Rückfrage der Matrix"),

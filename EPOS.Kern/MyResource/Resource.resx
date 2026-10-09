@@ -49447,5 +49447,8 @@ Chart</value>
   <data name="KOND_LBL_KALB_WERTE_JE_STUNDE" xml:space="preserve">
     <value>Grundangabe, Werte je Stunde und Perioden</value>
   </data>
+  <data name="KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT" xml:space="preserve">
+    <value>Nur Übersicht: Wochenende und Ferien werden in den Schnellfeldern unter „Kalender bearbeiten…“ gesetzt.</value>
+  </data>
 </root>
 

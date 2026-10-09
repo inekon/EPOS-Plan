@@ -146,6 +146,12 @@
     /// <summary>Rechnet das Gebäude auf dem Tagesbilanz-Weg? Dann nur die Felder des Altwegs (Teilkonzept 2.2).</summary>
     [Parameter] public bool Altweg { get; set; }
 
+    /// <summary>
+    /// Stehen die Zeilen Wochenende und Ferien nur als Übersicht (E110, Konzept 7.8)? Dann bedienen sie die
+    /// Schnellfelder der Kalenderbedienung; der Wirt setzt es, wo die Kalenderbedienung angeboten wird.
+    /// </summary>
+    [Parameter] public bool Uebersicht { get; set; }
+
     /// <summary>Die Größe, deren Spalte schmal (Container unter 900 px) steht.</summary>
     [Parameter] public KonditionierungGroesse AktiveGroesse { get; set; }
 
@@ -239,6 +245,14 @@
         if (Lesemodus)
         {
             <span class="epos-kond-text" data-feld="@Feldname(Texte, g, z)">@Lesetext(g, z)</span>
+            return;
+        }
+        if (Uebersicht && z is KonditionierungZeile.Wochenende or KonditionierungZeile.Ferien)
+        {
+            @* E110: Die Matrix bleibt Uebersicht - Wochenende und Ferien bedienen die Schnellfelder der
+               Kalenderbedienung; gespeichert wird unveraendert in denselben Zellen. *@
+            <span class="epos-kond-text epos-kond-uebersicht" data-feld="@Feldname(Texte, g, z)"
+                  title="@Texte.HinweisKalbMatrixUebersicht">@Lesetext(g, z)</span>
             return;
         }
         if (Spaltensperre(g) is string sperre)

@@ -301,6 +301,7 @@ namespace WindowsFormsApplication1
             t.GrundKalbWert = Text_("KOND_TXT_KALB_GRUND_WERT", t.GrundKalbWert);
             t.GrundKalbZiel = Text_("KOND_TXT_KALB_GRUND_ZIEL", t.GrundKalbZiel);
             t.LabelKalbWerteJeStunde = Text_("KOND_LBL_KALB_WERTE_JE_STUNDE", t.LabelKalbWerteJeStunde);
+            t.HinweisKalbMatrixUebersicht = Text_("KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT", t.HinweisKalbMatrixUebersicht);
             t.GrundNichtAngelegt = Text_("KOND_TXT_GRUND_NICHT_ANGELEGT", t.GrundNichtAngelegt);
             t.HinweisGrundangabe = Text_("KOND_TXT_HINWEIS_GRUNDANGABE", t.HinweisGrundangabe);
             t.TextGrundangabeWoche = Text_("KOND_TXT_GRUNDANGABE_WOCHE", t.TextGrundangabeWoche);

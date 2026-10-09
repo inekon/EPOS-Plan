@@ -49440,5 +49440,8 @@ chart</value>
   <data name="KOND_LBL_KALB_WERTE_JE_STUNDE" xml:space="preserve">
     <value>Base value, hourly values and periods</value>
   </data>
+  <data name="KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT" xml:space="preserve">
+    <value>Overview only: weekend and holidays are set in the quick fields under “Edit calendar…”.</value>
+  </data>
 </root>
 
