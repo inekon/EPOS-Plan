@@ -186,6 +186,7 @@ Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwend
 - Seit 09.10.2026: Im Reiter „Konditionierung“ öffnet „Kalender bearbeiten…“ die Einzelheiten eines Kalenders als eigenen Abschnitt unter den Karten; die Karten bleiben an ihrem Platz. (#842)
 - Seit 09.10.2026: Die Baualtersklasse eines Gebäudes ist immer wählbar; das Baujahr macht nur noch einen Vorschlag. (#842)
 - Seit 09.10.2026: Der Gebäudeimport leitet die Verwendung (Wohngebäude / Nicht Wohngebäude) aus der Gebäudeart der Datei oder aus den Nutzungen der Räume ab und nennt die Herleitung im Importbericht. (#842)
+- Seit 09.10.2026: Die Solarthermie-Ganglinien werden im Dialog der Startseiten-Kachel gepflegt und importiert (CSV oder Text, Stunden- oder Viertelstundenwerte, Format wird erkannt); der eigene Verwaltungsdialog entfällt, der Menüpunkt öffnet denselben Dialog. (#844)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
