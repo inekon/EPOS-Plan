@@ -800,6 +800,8 @@
         internal static string SimSpeicherEntladungErl => MyResource.Resource.KI_DLG_SIM_SP_ENTLADUNG_ERL;
         internal static string SimSpeicherSocName => MyResource.Resource.KI_DLG_SIM_SP_SOC_NAME;
         internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
+        internal static string SimWpBereicheName => MyResource.Resource.KI_DLG_SIM_WP_BEREICHE_NAME;
+        internal static string SimWpBereicheErl => MyResource.Resource.KI_DLG_SIM_WP_BEREICHE_ERL;
         internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
         internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
 

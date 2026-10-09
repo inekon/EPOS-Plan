@@ -810,6 +810,20 @@ namespace WindowsFormsApplication1
             return w.ToArray();
         }
 
+        /// <summary>
+        /// UB‑E4 (Fachkonzept 7.4): die Werte unter den Spaltennamen des Ergebnisses als Schlüssel — für den CSV-Export
+        /// und die KI-Sicht des Reiters. Reihenfolge wie <see cref="UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL"/>;
+        /// ein nicht erhobener Wert (<c>null</c>) fehlt.
+        /// </summary>
+        public IReadOnlyList<KeyValuePair<string, double>> Schluesselwerte()
+        {
+            object[] w = Werte(true);
+            var l = new List<KeyValuePair<string, double>>();
+            for (int i = 0; i < w.Length && i < UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL.Count; i++)
+                if (w[i] != null) l.Add(new KeyValuePair<string, double>(UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL[i], Convert.ToDouble(w[i])));
+            return l;
+        }
+
         /// <summary>Die Summe der Module (Stunden und Wärme je Bereich, Zähler); <c>null</c> ohne Modul mit Bereichen.</summary>
         public static Bereichskennzahlen Summe(IEnumerable<Bereichskennzahlen> module)
         {

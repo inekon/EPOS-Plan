@@ -62027,6 +62027,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesend: Stunden und Wärme der Wärmepumpe je Betriebsbereich, Zähler der Spreizungs- und Rücklaufgrenze, berechnete Bivalenzpunkte und Übergabegrenze des letzten Laufs — je Wert „Spaltenname=Wert“ mit den Spaltennamen des Ergebnisses (Bereich_WpAllein_h, Bereich_WpAllein_MWh, …, Bivalenzpunkt_1, Bivalenzpunkt_2, Uebergabe_Max_kW); leer ohne Bivalenzobjekt (Einbindung nicht gesetzt oder Kopplung aus). ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WP_BEREICHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WP_BEREICHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereiche der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WP_BEREICHE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WP_BEREICHE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmemenge, die nach allen Erzeugern der Kaskade ungedeckt bleibt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_WREST_ERL {

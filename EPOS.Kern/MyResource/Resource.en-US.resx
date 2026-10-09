@@ -49587,5 +49587,11 @@ chart</value>
   <data name="VF_STAND__TABELLE__BIVALENZ" xml:space="preserve">
     <value>Table “Bivalence and heat emission” of the current state: maximum flow temperature, heat emission limit, bivalence points, hours and heat per operating range, share according to § 43 GModG; only in the block {{#je stand}}.</value>
   </data>
+  <data name="KI_DLG_SIM_WP_BEREICHE_NAME" xml:space="preserve">
+    <value>Heat pump operating ranges</value>
+  </data>
+  <data name="KI_DLG_SIM_WP_BEREICHE_ERL" xml:space="preserve">
+    <value>Read-only: hours and heat of the heat pump per operating range, counters of the spread and return limits, calculated bivalence points and heat emission limit of the last run — each value as “column=value” with the result column names (Bereich_WpAllein_h, Bereich_WpAllein_MWh, …, Bivalenzpunkt_1, Bivalenzpunkt_2, Uebergabe_Max_kW); empty without bivalence object (integration not set or coupling off).</value>
+  </data>
 </root>
 
