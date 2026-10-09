@@ -49881,6 +49881,29 @@ Chart</value>
   </data>
   <data name="KI_DLG_SIM_WP_BEREICHE_ERL" xml:space="preserve">
     <value>Nur lesend: Stunden und Wärme der Wärmepumpe je Betriebsbereich, Zähler der Spreizungs- und Rücklaufgrenze, berechnete Bivalenzpunkte und Übergabegrenze des letzten Laufs — je Wert „Spaltenname=Wert“ mit den Spaltennamen des Ergebnisses (Bereich_WpAllein_h, Bereich_WpAllein_MWh, …, Bivalenzpunkt_1, Bivalenzpunkt_2, Uebergabe_Max_kW); leer ohne Bivalenzobjekt (Einbindung nicht gesetzt oder Kopplung aus).</value>
+  <data name="IMP_IFC_PROT_DATEI_MVD" xml:space="preserve">
+    <value>Datei: {0}, Modellansicht (MVD): {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_DATEI_OHNE_MVD" xml:space="preserve">
+    <value>Datei: {0}, keine Modellansicht (MVD) angegeben</value>
+  </data>
+  <data name="IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN" xml:space="preserve">
+    <value>Die Datei enthält keine Raumgrenzen 2. Ebene und keine Basismengen; Flächen und Ausrichtung kommen aus den Bauteilkörpern. Genauer wird der Import, wenn das CAD-Programm mit Basismengen und Raumgrenzen 2. Ebene exportiert.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3" xml:space="preserve">
+    <value>Die Datei enthält keine Raumgrenzen 2. Ebene und keine Basismengen; Flächen und Ausrichtung kommen aus den Bauteilkörpern. Genauer wird der Import, wenn das CAD-Programm mit Basismengen und Raumgrenzen 2. Ebene exportiert. Aus IFC2X3 werden zudem die Stoffwerte der Baustoffe nicht gelesen, und die Rückgabe der angereicherten Datei braucht IFC4.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3_RUECKGABE" xml:space="preserve">
+    <value>Die Datei enthält keine Raumgrenzen 2. Ebene und keine Basismengen; Flächen und Ausrichtung kommen aus den Bauteilkörpern. Genauer wird der Import, wenn das CAD-Programm mit Basismengen und Raumgrenzen 2. Ebene exportiert. Die Rückgabe der angereicherten Datei braucht IFC4.</value>
+  </data>
+  <data name="GIMP_DLG_IFC_EXPORTHINWEIS" xml:space="preserve">
+    <value>Empfohlene Exporteinstellung: IFC4 mit Basismengen und Raumgrenzen 2. Ebene. IFC2x3 (Coordination View 2.0) wird gelesen, dann aber ohne Stoffwerte und ohne Rückgabe der angereicherten Datei.</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_MVD" xml:space="preserve">
+    <value>Modellansicht (MVD)</value>
+  </data>
+  <data name="GIMP_WERT_KEINE_MVD" xml:space="preserve">
+    <value>keine Angabe</value>
   </data>
 </root>
 

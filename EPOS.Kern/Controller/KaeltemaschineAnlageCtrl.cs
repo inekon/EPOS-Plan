@@ -108,6 +108,13 @@ namespace WindowsFormsApplication1
             object id = DataRepository.ExecuteScalar(
                 "SELECT MAX(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Kaeltemaschine = ?",
                 new DbParam("?", projektId), new DbParam("?", kopie));
+
+            // Die Kältemaschine bezieht Strom: Wie jede Anlage der elektrischen Welt bekommt ihr
+            // Projekt seinen Stromträger (ProjektEnergietraegerCtrl.BrauchtStromTraeger). Idempotent,
+            // ein Fehlschlag bricht das Anlegen nicht ab.
+            try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(projektId); }
+            catch { }
+
             return id == null || id == DBNull.Value ? -1 : Convert.ToInt32(id, CultureInfo.InvariantCulture);
         }
 

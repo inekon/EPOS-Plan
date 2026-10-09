@@ -448,7 +448,7 @@ namespace WindowsFormsApplication1
         /// Führt das Projekt einen Erzeuger, der Strom VERWENDET — eine Anlage der
         /// elektrischen Welt (Wärmepumpe, Photovoltaik, Stromspeicher, gesetzter Heizstab,
         /// ein ELEKTROKESSEL), ein BHKW oder eine Brenneranlage mit gepflegtem
-        /// HILFSENERGIE-Anteil? Dieselbe Fassung fragen <c>WizardCtrl.BrauchtStromTraeger</c>,
+        /// HILFSENERGIE-Anteil oder eine KÄLTEMASCHINE? Dieselbe Fassung fragen <c>WizardCtrl.BrauchtStromTraeger</c>,
         /// die Stromträger-Automatik (<see cref="StromTraegerSicherstellen"/>), der
         /// Rückfallträger (<see cref="Emissionsquelle.KatalogStromTraeger"/>), die
         /// Trägerauswahl des Projekts (<see cref="EnergietraegerZulaessigkeit"/>) und die
@@ -472,9 +472,17 @@ namespace WindowsFormsApplication1
         /// BRENNSTOFFträger: Dort steht, was eine Anlage BEZIEHT, und das BHKW bezieht
         /// Brennstoff, keinen Strom.</para>
         ///
-        /// <para>Der Kesselweg und der Hilfsstromweg kosten je eine ZWEITE Abfrage und
-        /// werden deshalb erst gezogen, wenn keine der anderen Anlagen schon geantwortet
-        /// hat.</para>
+        /// <para><b>Die KÄLTEMASCHINE</b> (<c>Tab_Energieanlagen.ID_Kaeltemaschine</c>) bezieht
+        /// Strom wie die Wärmepumpe im Kühlbetrieb und zählt deshalb zur elektrischen Welt —
+        /// gleich, ob ihr Kältestrom über den Projektträger läuft (leerer Kühlträger, „wie
+        /// Heizbetrieb") oder über einen eigenen Kühlträger samt eigenem Zähler
+        /// (<see cref="Kaeltestromabrechnung"/>). Ohne sie fiele der Kältestrom eines Projekts,
+        /// dessen einziger Stromverbraucher eine Kältemaschine ist, unter „Strombedarf ohne
+        /// Verwendung" aus Kosten und Emissionen, und das Projekt bekäme keinen Stromträger.</para>
+        ///
+        /// <para>Der Kesselweg, der Kältemaschinenweg und der Hilfsstromweg kosten je eine
+        /// ZWEITE Abfrage und werden deshalb erst gezogen, wenn keine der anderen Anlagen
+        /// schon geantwortet hat.</para>
         /// </summary>
         internal static bool BrauchtStromTraeger(int projektID)
         {
@@ -496,8 +504,27 @@ namespace WindowsFormsApplication1
                 foreach (DataRow r in anlagen.Rows)
                     if (IstElektrokessel(kesselBrennstoff, Ganz(r, "ID_Kessel"))) return true;
             }
+            if (MitKaeltemaschine(projektID)) return true;
 
             return HilfsenergieGepflegt(projektID);
+        }
+
+        /// <summary>
+        /// Führt das Projekt eine Kältemaschine (<c>Tab_Energieanlagen.ID_Kaeltemaschine &gt; 0</c>)?
+        /// Eine eigene Abfrage, damit ein Bestand ohne die Spalte nur diesen Weg verliert
+        /// (<c>false</c>), nicht die übrigen Anlagen von <see cref="BrauchtStromTraeger"/>.
+        /// </summary>
+        private static bool MitKaeltemaschine(int projektID)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
+                    "WHERE ID_Projekt = ? AND [" + KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE + "] > 0",
+                    new DbParam("@p", (Int32)projektID));
+                return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
+            }
+            catch { return false; }
         }
 
         /// <summary>

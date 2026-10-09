@@ -37803,6 +37803,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfohlene Exporteinstellung: IFC4 mit Basismengen und Raumgrenzen 2. Ebene. IFC2x3 (Coordination View 2.0) wird gelesen, dann aber ohne Stoffwerte und ohne Rückgabe der angereicherten Datei. ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_IFC_EXPORTHINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_IFC_EXPORTHINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Bauteile. ähnelt.
         /// </summary>
         public static string GIMP_DLG_KEINE_BAUTEILE {
@@ -37880,6 +37889,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_DLG_KOPF_GROESSE {
             get {
                 return ResourceManager.GetString("GIMP_DLG_KOPF_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modellansicht (MVD) ähnelt.
+        /// </summary>
+        public static string GIMP_DLG_KOPF_MVD {
+            get {
+                return ResourceManager.GetString("GIMP_DLG_KOPF_MVD", resourceCulture);
             }
         }
         
@@ -39869,6 +39887,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_VORBELEGT_VORGABEN {
             get {
                 return ResourceManager.GetString("GIMP_VORBELEGT_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe ähnelt.
+        /// </summary>
+        public static string GIMP_WERT_KEINE_MVD {
+            get {
+                return ResourceManager.GetString("GIMP_WERT_KEINE_MVD", resourceCulture);
             }
         }
         
@@ -44265,6 +44292,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0}, Modellansicht (MVD): {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DATEI_MVD {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DATEI_MVD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0}, keine Modellansicht (MVD) angegeben ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DATEI_OHNE_MVD {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DATEI_OHNE_MVD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Eigenschaft {1} ist als {0} angegeben; gelesen werden Einzel- und Bereichswerte — sie wird übergangen. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_EIGENSCHAFTSART {
@@ -44315,6 +44360,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine Raumgrenzen 2. Ebene und keine Basismengen; Flächen und Ausrichtung kommen aus den Bauteilkörpern. Genauer wird der Import, wenn das CAD-Programm mit Basismengen und Raumgrenzen 2. Ebene exportiert. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine Raumgrenzen 2. Ebene und keine Basismengen; Flächen und Ausrichtung kommen aus den Bauteilkörpern. Genauer wird der Import, wenn das CAD-Programm mit Basismengen und Raumgrenzen 2. Ebene exportiert. Aus IFC2X3 werden zudem die Stoffwerte der Baustoffe nicht gelesen, und die Rückgabe der angereicherten Datei braucht IFC4. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3 {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine Raumgrenzen 2. Ebene und keine Basismengen; Flächen und Ausrichtung kommen aus den Bauteilkörpern. Genauer wird der Import, wenn das CAD-Programm mit Basismengen und Raumgrenzen 2. Ebene exportiert. Die Rückgabe der angereicherten Datei braucht IFC4. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3_RUECKGABE {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3_RUECKGABE", resourceCulture);
             }
         }
         

@@ -2131,8 +2131,8 @@ der Stufe, in der die Spitze liegt.
 
 **Netzbezug ohne Stromverwendung — die Gruppenregel** (→ Register R‑EZ, EZ‑13 bis EZ‑19). Führt ein Stand
 Netzbezug, aber keinen Erzeuger, der Strom verwendet (`ProjektEnergietraegerCtrl.BrauchtStromTraeger`:
-Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW oder eine Anlage mit Hilfsenergieanteil),
-gehen Kosten und Emissionen dieses Netzbezugs in der Einzelbetrachtung mit 0 ein; ein Hinweis „Strombedarf ohne
+Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Kältemaschine — mit leerem wie mit eigenem
+Kühlträger — oder eine Anlage mit Hilfsenergieanteil), gehen Kosten und Emissionen dieses Netzbezugs in der Einzelbetrachtung mit 0 ein; ein Hinweis „Strombedarf ohne
 Verwendung" nennt die Menge. Im Vergleich bepreist und bewertet ihn jeder Stand, sobald ein Stand des Laufs Strom
 verwendet (`ProjektEnergietraegerCtrl.GruppeVerwendetStrom`) — ohne zugeordneten Stromträger mit dem
 Auslieferungsträger des Katalogs (`StromTraegerImVergleich`), mit Arbeits- und Grundpreis; der Leistungspreis gilt nur

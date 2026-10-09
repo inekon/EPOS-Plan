@@ -27,13 +27,18 @@ namespace EPOS.UI.Dialoge.Import;
 /// Die Einträge der Quellenwahl (je Format, Format mit Projektdatei, nur Projektdatei) mit dem Filter des Dateiwählers;
 /// <c>null</c> oder leer = keine Wahl (festes Profil) — dann gilt <see cref="Dateifilter"/>.
 /// </param>
+/// <param name="Exporthinweis">
+/// Der Hinweis zur Exporteinstellung an der Dateiwahl, solange keine Quelle gewählt ist (mit festem Profil der des
+/// Formats); leer = keiner. Mit gewählter Quelle gilt <see cref="GebaeudeImportQuellwahl.Exporthinweis"/>.
+/// </param>
 public sealed record GebaeudeImportProfilDaten(
     string Formatname,
     string Dateifilter,
     string Groessengrenze,
     IReadOnlyList<string> Zonierungsregeln,
     string HilfeSchluessel,
-    IReadOnlyList<GebaeudeImportQuellwahl>? Quellen = null);
+    IReadOnlyList<GebaeudeImportQuellwahl>? Quellen = null,
+    string Exporthinweis = "");
 
 /// <summary>
 /// Der <b>Weg</b> eines Eintrags der Quellenwahl bzw. des gelesenen Laufs (Datenaustauschkonzept 16.1): die Gebäudedatei
@@ -53,10 +58,11 @@ public enum GebaeudeImportWeg
 
 /// <summary>
 /// Ein Eintrag der <b>Quellenwahl</b> des Gebäudeimports: ein stabiler Schlüssel der Datenseite, der Anzeigetext, der
-/// Filter des Dateiwählers in der Schreibweise von <c>IDateiDienst</c> und der Weg, den der Dialog daraus macht.
+/// Filter des Dateiwählers in der Schreibweise von <c>IDateiDienst</c> und der Weg, den der Dialog daraus macht; dazu der
+/// Hinweis zur Exporteinstellung an der Dateiwahl (leer = keiner).
 /// </summary>
 public sealed record GebaeudeImportQuellwahl(string Schluessel, string Text, string Dateifilter,
-                                             GebaeudeImportWeg Weg = GebaeudeImportWeg.Datei);
+                                             GebaeudeImportWeg Weg = GebaeudeImportWeg.Datei, string Exporthinweis = "");
 
 /// <summary>
 /// Die Antwort des Dateiwählers der Hülle — Pfad und Größe, oder die BENANNTE Ablehnung vor
@@ -83,10 +89,11 @@ public sealed record GebaeudeImportMeldung(WarnStufe Stufe, string Stufentext, s
 
 /// <summary>
 /// Der Kopf des Dialogs nach dem Lesen: Datei, Format, Schema, Größe, Zonenregel — Anzeigetexte; dazu der Weg des Laufs,
-/// an dem der Dialog „nur Projektdatei“ erkennt (<see cref="GebaeudeImportWeg.NurProjektdatei"/>).
+/// an dem der Dialog „nur Projektdatei“ erkennt (<see cref="GebaeudeImportWeg.NurProjektdatei"/>), und die Modellansicht
+/// (MVD) der Datei — <c>null</c> = das Format kennt keine, dann zeigt der Kopf keine Zeile.
 /// </summary>
 public sealed record GebaeudeImportKopf(string Dateiname, string Format, string Schema, string Groesse, string Zonenregel,
-                                        GebaeudeImportWeg Weg = GebaeudeImportWeg.Datei);
+                                        GebaeudeImportWeg Weg = GebaeudeImportWeg.Datei, string? Modellansicht = null);
 
 /// <summary>
 /// Was das Lesen ergeben hat. Nicht gelesen: <see cref="Meldungen"/> nennen den Grund (Lesefehler,
@@ -1178,6 +1185,9 @@ public sealed class GebaeudeImportTexte
 
     /// <summary>GIMP_DLG_KOPF_SCHEMA</summary>
     public string KopfSchema { get; set; } = Resource.GIMP_DLG_KOPF_SCHEMA;
+
+    /// <summary>GIMP_DLG_KOPF_MVD</summary>
+    public string KopfModellansicht { get; set; } = Resource.GIMP_DLG_KOPF_MVD;
 
     /// <summary>GIMP_DLG_KOPF_GROESSE</summary>
     public string KopfGroesse { get; set; } = Resource.GIMP_DLG_KOPF_GROESSE;

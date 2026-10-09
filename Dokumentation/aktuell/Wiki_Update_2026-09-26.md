@@ -150,7 +150,7 @@ Beheizungsart; #707: Matrixfelder und Kalender; #709–#712: Gebäudedaten ausge
 #729, #730: Zonenregel, Heizsollwert, Zonenbaum; #727, #784: Dateikörper, Grundriss; #731, #736, #737: Projektdatei
 dazuladen, Zonierungswahl, Flächenfilter; #746, #793, #814: Farbmodi Randbedingung, Aufbau, Befund; #769, #776:
 Nutzungskatalog, Baustoff-Zuordnungen; #792, #825: Aufbauten, Aufbauquelle; #801, #802, #808, #821, #822: Fläche und
-Öffnungen aus Körpern; #813: Nordrichtung; #815, #816: Quelle, nur Projektdatei, Körper aus Flächen; ausstehend).
+Öffnungen aus Körpern; #813: Nordrichtung; #815, #816: Quelle, nur Projektdatei, Körper aus Flächen; #851: Exporteinstellung, Modellansicht; ausstehend).
 
 **Abgleich mit dem Upload vom 28.09.2026 (#611).** Die Technikdokumentation hat am 28.09.2026 die
 Seiten ihrer Welle hochgeladen und dabei Seiten der Hauptlinie im Stand `363096aa` mitgenommen.
@@ -207,6 +207,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Die Datenbank bringt 34 eingebaute Typkennfelder für Kältemaschinen mit (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben; 20 bis 2 000 kW). (#848)
 - Seit 09.10.2026: Ein Gebäude-Katalogsatz trägt seine Zonen mit Bauteilen, Luftströmen und Zonen-Konditionierung; „In DB übernehmen“, „Speichern unter“ und die Übernahme ins Projekt kopieren sie mit. (#849)
 - Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
+- Seit 09.10.2026: Der Strom einer Kältemaschine zählt in Kosten und Emissionen auch dann, wenn sie der einzige Stromverbraucher des Projekts ist. (#852)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
@@ -278,6 +279,7 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Gebäude lassen sich jetzt allein aus der Projektdatei (.sqproj) importieren; die Quelle wählen Sie im Importdialog. (#815; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
 - Die Gebäudeansicht zeigt Gebäude aus Projektdatei und gbXML jetzt mit Raum- und Bauteilkörpern wie bei IFC, mit allen Farbmodi und dem Bauteil-Steckbrief. (#816; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
 - Passen beim Import von IFC und Projektdatei die Aufbauten beider Dateien nicht zusammen, fragt EPOS-Plan, welche gelten sollen. (#825; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Der Gebäudeimport zeigt die Modellansicht (MVD) einer IFC-Datei und nennt an der Dateiwahl die empfohlene Exporteinstellung: IFC4 mit Basismengen und Raumgrenzen 2. Ebene. (#851; Version bestätigt der Anwender beim Upload)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 

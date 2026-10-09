@@ -165,9 +165,10 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Stufenhinweis der Waermepumpe steht im PROFIL und ist unveraendert.
-        /// Neben ihm fuehren allein der Stromspeicher und die Kaeltemaschine einen
-        /// Hinweis; die uebrigen Importarten haben keinen.
+        /// Der Stufenhinweis der Waermepumpe ist mit W13-E-2 ins PROFIL gewandert
+        /// (vorher stand er als Sonderfall im Markup). Er ist unveraendert. Einen
+        /// Hinweis tragen ausser ihm nur der Stromspeicher und die Kaeltemaschine
+        /// (Lizenzsatz der Typkennfelder, KM1).
         /// </summary>
         [Fact]
         public void NurWaermepumpeStromspeicherUndKaeltemaschineFuehrenEinenHinweis()

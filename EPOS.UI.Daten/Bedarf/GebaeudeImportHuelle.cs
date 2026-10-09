@@ -243,7 +243,8 @@ namespace WindowsFormsApplication1
                     _festesProfil.Dateifilter,
                     _festesProfil.MaxBytes > 0 ? GebaeudeZuordnungsModell.GroesseText(_festesProfil.MaxBytes) : "",
                     _festesProfil.Zonierungsregeln.Select(GebaeudeZuordnungsModell.ZonenregelText).ToList(),
-                    _festesProfil.HilfeSchluessel);
+                    _festesProfil.HilfeSchluessel,
+                    Exporthinweis: GebaeudeZuordnungsModell.ExporthinweisText(_festesProfil));
 
             IReadOnlyList<GebaeudeImportProfil> alle = AlleProfile();
             return new GebaeudeImportProfilDaten(
@@ -254,7 +255,9 @@ namespace WindowsFormsApplication1
                                                     GebaeudeZuordnungsModell.GroesseText(p.MaxBytes))),
                 alle.SelectMany(p => p.Zonierungsregeln).Select(GebaeudeZuordnungsModell.ZonenregelText).Distinct().ToList(),
                 GebaeudeImportProfil.HILFE_ZUORDNUNG,
-                Quellen());
+                Quellen(),
+                // Ohne gewählte Quelle der Hinweis des IFC-Profils: IFC ist der Weg, auf dem die Exporteinstellung zählt.
+                GebaeudeZuordnungsModell.ExporthinweisText(alle.OfType<IfcImportProfil>().FirstOrDefault()));
         }
 
         /// <summary>
@@ -281,12 +284,13 @@ namespace WindowsFormsApplication1
             var ifc = new IfcImportProfil();
             var gbxml = new GbxmlImportProfil();
             string ifcText = GebaeudeZuordnungsModell.FormatText(ifc);
+            string ifcHinweis = GebaeudeZuordnungsModell.ExporthinweisText(ifc);
             return new[]
             {
-                new GebaeudeImportQuellwahl(QUELLE_IFC, ifcText, ifc.Dateifilter),
+                new GebaeudeImportQuellwahl(QUELLE_IFC, ifcText, ifc.Dateifilter, Exporthinweis: ifcHinweis),
                 new GebaeudeImportQuellwahl(QUELLE_GBXML, GebaeudeZuordnungsModell.FormatText(gbxml), gbxml.Dateifilter),
                 new GebaeudeImportQuellwahl(QUELLE_IFC_PROJEKTDATEI, Formatieren(MyResource.Resource.GIMP_DLG_QUELLE_MIT_SQPROJ, ifcText),
-                                            ifc.Dateifilter, GebaeudeImportWeg.MitProjektdatei),
+                                            ifc.Dateifilter, GebaeudeImportWeg.MitProjektdatei, ifcHinweis),
                 new GebaeudeImportQuellwahl(QUELLE_PROJEKTDATEI, MyResource.Resource.GIMP_DLG_QUELLE_SQPROJ,
                                             MyResource.Resource.GIMP_DLG_SQ_FILTER, GebaeudeImportWeg.NurProjektdatei),
             };
@@ -480,7 +484,8 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.SchemaText(profil, q.Schemastand),
                 GebaeudeZuordnungsModell.GroesseText(q.Groesse),
                 GebaeudeZuordnungsModell.ZonenregelText(q.Zonenregel),
-                profil.Format == GebaeudeQuelle.FORMAT_SQPROJ ? GebaeudeImportWeg.NurProjektdatei : GebaeudeImportWeg.Datei);
+                profil.Format == GebaeudeQuelle.FORMAT_SQPROJ ? GebaeudeImportWeg.NurProjektdatei : GebaeudeImportWeg.Datei,
+                GebaeudeZuordnungsModell.ModellansichtText(_ablauf.Abbild));
             return new GebaeudeLesestand(true, kopf, _ablauf.Gebaeude.ToList(), meldungen, SchonImportiertText(q));
         }
 

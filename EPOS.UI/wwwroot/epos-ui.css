@@ -9508,6 +9508,17 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 @container epos-katalogliste (max-width: 2319.98px) { .epos-spalte-ab-2320 { display: none; } }
 @container epos-katalogliste (max-width: 2399.98px) { .epos-spalte-ab-2400 { display: none; } }
 
+/* IN EINER SCHMALEN LISTE BRICHT DER KOPF EINER STEHENDEN SPALTE UM (Welle NB1).
+   Die elastische Bezeichnerspalte nimmt alle Breite (width 100 %), die uebrigen
+   Spalten stehen deshalb auf ihrer Mindestbreite - und die setzt ihr Kopf, der
+   nicht umbricht. Bei 400 px Fenster (Liste 366 px innen) waren Kaestchen,
+   Bezeichner (7 rem) und "Jahressumme [MWh]" (213 px) zusammen 369 px breit: die
+   drei Bedarfsverwaltungen rollten 3 px quer (katalogprobe N10b bis N12b). Unter
+   der kleinsten Stufe darf der Kopftext deshalb an einem Leerzeichen umbrechen
+   ("Jahressumme" ueber "[MWh]"); zwei Zeilen passen in die 44 px der Kopfzelle.
+   Der Kopf der Bezeichnerspalte kuerzt weiter (seine Regel wiegt mehr). */
+@container epos-katalogliste (max-width: 479.98px) { .epos-katalogliste th .epos-spaltenkopf-text { white-space: normal; } }
+
 /* ==================================================================== */
 /* DIE ZEILE IST DIE WAHL (Konzept Administrationsdialoge, Stufe 2, V4   */
 /* und V11) - Schalter ZeileIstWahl der Katalogliste, gesetzt von den    */
@@ -10195,6 +10206,21 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     min-width: 0;
 }
 
+/* Das Feld nimmt die Breite seiner Rasterzelle (Welle NB1): Mit seiner
+   Eigenbreite (188 px) ragte es aus der 8,5-rem-Spalte, und die Ueberlagerung
+   rollte 8 px (900 px) bzw. 11 px (368 px) quer - katalogprobe N17a/N17b, sobald
+   ein eigener Gebaeudetyp gewaehlt ist (der Auslieferungssatz zeigt Text). */
+.epos-stundenwerte .epos-feld,
+.epos-stundenwerte .epos-feld-zeile {
+    min-width: 0;
+}
+
+.epos-stundenwerte .epos-eingabe {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+}
+
 .epos-stundenwerte-block,
 .epos-gebaeudetyp-neu {
     display: flex;
@@ -10251,6 +10277,16 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     align-items: center;
     flex: 0 1 auto;
     min-width: 0;
+}
+
+/* MIT WERKZEUG beginnt das Suchfeld schmaler (Welle NB1). Mit seiner Grundbreite
+   22 rem, dem Schalter und der Trefferzahl brauchte die Suchzeile der
+   Waermepumpenverwaltung 674 px in einer 660 px breiten Liste: Die Trefferzahl
+   brach in eine zweite Zeile, die Liste verlor 28 px und zeigte 7 statt 8 ganze
+   Zeilen (katalogprobe N08a, N22a). Das Suchfeld waechst danach wieder in die
+   freie Breite (flex-grow) - wie bei der Lastspitzenkappung. */
+.epos-katalog-suchzeile:has(> .epos-katalog-werkzeug) > .epos-katalog-suchfeld {
+    flex-basis: 16rem;
 }
 
 /* HANDLUNGEN IN DER WERKZEUGLEISTE (Konzept Administrationsdialoge 7.1 c): Knoepfe,
@@ -16220,6 +16256,15 @@ td.epos-vorlage-katalogbeschreibung {
    43 px quer rollen). Den vollen Text zeigt die aufgeklappte Liste. */
 .epos-formularraster .epos-feld-zeile > select.epos-eingabe {
     min-width: 0;
+}
+
+/* Eine LANGE EINHEIT bricht hinter dem kurzen Feld um, statt die Feldspalte
+   aufzuspreizen (Welle NB1): "(Vorgabe 0,9 nach EN 14825)" hinter dem
+   Teillastkoeffizienten liess das Stammblatt der Waermepumpenverwaltung 86 px
+   quer rollen (katalogprobe N22a). Kurze Einheiten (kW, kWh) bleiben in einer
+   Zeile - sie schrumpfen erst unter ihr laengstes Wort nicht. */
+.epos-formularraster .epos-feld-zeile > .epos-einheit {
+    flex-shrink: 1;
 }
 
 /* Ein Schalter ist kein .epos-feld (sein Kaestchen sitzt VOR dem Text).
