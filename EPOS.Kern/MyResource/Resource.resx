@@ -16663,6 +16663,48 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="AUSWAHL_GRP_PFEILE" xml:space="preserve">
     <value>Zwischen Projekt und Datenbank verschieben</value>
   </data>
+  <data name="AUSWAHL_MARKE_PROJEKT" xml:space="preserve">
+    <value>Im Projekt</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOG" xml:space="preserve">
+    <value>Katalog (Datenbank)</value>
+  </data>
+  <data name="AUSWAHL_MARKE_SATZ" xml:space="preserve">
+    <value>Gewählter Satz</value>
+  </data>
+  <data name="AUSWAHL_MARKE_PROJEKTSATZ" xml:space="preserve">
+    <value>Projektsatz</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOGSATZ" xml:space="preserve">
+    <value>Katalogsatz</value>
+  </data>
+  <data name="AUSWAHL_SATZ_DETAILS" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="AUSWAHL_SATZ_LEER" xml:space="preserve">
+    <value>Kein Satz gewählt</value>
+  </data>
+  <data name="AUSWAHL_SATZ_HINWEIS" xml:space="preserve">
+    <value>Daten des gewählten Satzes ein- oder ausblenden</value>
+  </data>
+  <data name="AUSWAHL_TRENNER" xml:space="preserve">
+    <value>Höhe zwischen Projekt und Katalog (ziehen oder Pfeiltasten)</value>
+  </data>
+  <data name="AUSWAHL_TRENNER_HINWEIS" xml:space="preserve">
+    <value>Ziehen: Höhe zwischen Projekt und Katalog; Doppelklick: Vorgabe</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ZAHL" xml:space="preserve">
+    <value>{0} gewählt</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ZAHL_VERBORGEN" xml:space="preserve">
+    <value>{0} gewählt, {1} verborgen</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ALLE" xml:space="preserve">
+    <value>Alle Treffer wählen</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ZEILE" xml:space="preserve">
+    <value>Zeile wählen</value>
+  </data>
   <data name="FEHLERSCHRANKE_TITEL" xml:space="preserve">
     <value>In dieser Ansicht ist ein Fehler aufgetreten</value>
   </data>

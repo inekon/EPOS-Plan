@@ -2519,6 +2519,10 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
      unter #app, und das Hauptfenster haengt dort .epos-hauptfenster an.
    - Nicht in den Katalogdialogen (.epos-katalog-dialog): Sie fuellen ihr
      Fenster mit eigenem Rahmen (Katalograhmen), dort rollt nur die Liste.
+   - Nicht in den Projektdialogen mit Katalogauswahl (Dialog mit dem Baustein
+     .epos-zweispalten als Kind): Auch sie fuellen ihr Fenster, dort rollen nur
+     Projektliste, Katalogliste und die aufgeklappte Detailzeile
+     (Abschnitt "Zweispaltenauswahl - Katalogauswahl V1").
    - Nicht in einer Ueberlagerung und nicht im Blatt: Dort ist der Dialog kein
      Kind von #app, dort gelten die Regeln oben (#572). Die Ueberlagerung
      behaelt ihren eigenen Kopf; ein eingebetteter Dialog bekommt keinen
@@ -2543,7 +2547,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    Ueberlagerung (40/41). Solange eine Ueberlagerung steht, rollt das
    Dokument ohnehin nicht (html:has(.epos-ueberlagerung) oben).
    ========================================================================== */
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child {
     position: sticky;
     top: 0;
     z-index: 2;
@@ -2553,8 +2557,8 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     background: var(--epos-karte-flaeche);
 }
 
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer),
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste:has(> .epos-knopf--primaer),
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss {
     position: sticky;
     bottom: 0;
     z-index: 2;
@@ -2568,8 +2572,8 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    Fluss steht - verborgene Anker und Ueberlagerungen stehen ausserhalb. Die
    Dublettenpruefung zeigt ihr Protokoll UNTER der Schlussleiste; mit dem negativen
    Rand laege deren Flaeche 6 px ueber dessen Beschriftung. */
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste:has(> .epos-knopf--primaer):not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))),
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss:not(:has(~ :not([hidden], .epos-ueberlagerung, .epos-ueberlagerung-hintergrund))) {
     margin-bottom: calc(-1 * var(--epos-karte-rand));
 }
 
@@ -2586,7 +2590,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    im Markup spaeter und deckt das Banner, falls beide sich treffen. Damit es nicht
    dauerhaft Platz nimmt, traegt das haftende Banner das Kreuz zum Ausblenden.
    Gemessen: Bannerprobe (Proben/Rasterprobe/LIESMICH.md). */
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner {
     position: sticky;
     top: var(--epos-fenster-kopf);
     bottom: var(--epos-fenster-fuss);
@@ -2595,7 +2599,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
                 var(--epos-karte-rand) 0 0 var(--epos-karte-flaeche);
 }
 
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner > .epos-warnbanner-schliessen {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner > .epos-warnbanner-schliessen {
     display: inline-flex;
 }
 
@@ -2628,7 +2632,7 @@ html:has(> body > #app > .epos-fenstermarke) {
 /* Haftet ein Banner unter dem Kopf, rechnet das Polster oben seine Hoehe mit: eine
    Textzeile (20 px) + Polster 2 x --epos-rand + Rahmen 2 px. Ein mehrzeiliges Banner
    laesst entsprechend weniger Luft. */
-html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner) {
     --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + 22px + 3 * var(--epos-rand));
 }
 
@@ -2640,10 +2644,10 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
    dagegen nicht). Die Fussleiste ist hier die Leiste, in der ein Geschwister
    VOR dem Primaerknopf oder er selbst den Fokus traegt - ein :has im :has
    gibt es nicht. */
-html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),
-html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > :focus ~ .epos-knopf--primaer),
-html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-leiste > .epos-knopf--primaer:focus),
-html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-fuss :focus) {
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child :focus),
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste > :focus ~ .epos-knopf--primaer),
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste > .epos-knopf--primaer:focus),
+html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss :focus) {
     scroll-padding: 0;
 }
 
@@ -2653,7 +2657,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
    das Warnband, OK und Abbrechen gehoeren dem Wirt. Mit bottom: 0 haftete das
    Band HINTER dessen Schlussleiste und waere verdeckt - es haftet deshalb um
    die Fusshoehe hoeher, und Band und Leiste stehen zusammen im Bild. */
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) .epos-dialog--eingebettet > .epos-dialog-fuss {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) .epos-dialog--eingebettet > .epos-dialog-fuss {
     bottom: var(--epos-fenster-fuss);
 }
 
@@ -3440,76 +3444,291 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 
 /* ==================================================================== */
-/* ZWEISPALTENAUSWAHL - Anwenderentscheid #76 vom 05.09.2026,            */
-/* in seiner ANORDNUNG geaendert durch W14a-E-10-Q2 vom 07.09.2026       */
+/* ZWEISPALTENAUSWAHL - Katalogauswahl V1 "Gerahmt und gestapelt"       */
+/* (Konzept_Projektdialoge_Katalogauswahl, KA-E-1 bis KA-E-11, 4.1-4.8) */
 /*                                                                      */
-/* Der EINE Aufbau aller Projekt/Datenbank-Dialoge. #76 bleibt in        */
-/* seiner Aussage: zwei Listen, Uebernahmeknoepfe dazwischen, der Filter */
-/* ueber der Liste, auf die er wirkt. Geaendert hat sich, WO sie stehen: */
-/* seit Q2 UNTEREINANDER - oben die kurze Projektliste, darunter die     */
-/* Uebernahmeleiste, darunter der Katalog ueber die GANZE Breite.        */
+/* Oben "Im Projekt", darunter die ziehbare Trennlinie (8 px), darunter */
+/* "Katalog (Datenbank)" mit der Resthoehe, unten die Detailzeile       */
+/* "gewaehlter Satz". Jeder Bereich ist gerahmt und hat eine Kopfleiste */
+/* mit Marke; obere Rahmenkante und Marke tragen die Kennfarbe          */
+/* (KA-E-10: Projekt --epos-schema-versorgung, Katalog                  */
+/* --epos-quelle-rahmen, Satz --epos-senke-rahmen). Knoepfe tragen keine*/
+/* Kennfarbe.                                                           */
 /*                                                                      */
-/* "Liste wie zuvor ueber ganze Breite, sonst zu schmale Liste." Gemessen*/
-/* im Mockup (Chromium, Reiter M2, 1 366 px): nebeneinander rollte die   */
-/* Katalogliste schon mit SECHS Parameterspalten um 118 px in sich       */
-/* (offener Punkt O-5), untereinander traegt sie NEUN und rollt um 0 px. */
-/* Die Projektliste fuehrte dabei zwei Zeilen und verschenkte die halbe  */
-/* Breite.                                                               */
+/* KEIN ROLLBEREICH IM ROLLBEREICH. Steht der Dialog im eigenen Fenster */
+/* (#app > .epos-dialog) oder in einer Ueberlagerung, nimmt er deren    */
+/* Hoehe: Kopf, Inhalt und Fuss teilen sie wie                          */
+/* grid-template-rows: auto minmax(0, 1fr) auto - als Flex-Spalte, weil */
+/* die Wirte Kontextzeile und Meldungsbanner als weitere feste Zeilen   */
+/* tragen -, und der Baustein ist der Inhalt. Darin rollen genau die    */
+/* Projektliste, die Katalogliste und die aufgeklappte Detailzeile;     */
+/* Dokument und Dialogkoerper rollen nicht.                             */
 /*                                                                      */
-/* DIE MEDIENABFRAGE BEI 900 px ENTFAELLT - dieselbe Bewegung wie beim   */
-/* Katalograhmen in S1.7: Es gibt nur noch EINE Anordnung, und die ist   */
-/* die schmale. Damit faellt auch die schmale Mittelspalte               */
-/* (--epos-zweispalten-mitte) und das waagerechte Pfeilpaar ◀▶; jeder    */
-/* Knopf traegt nur noch EIN Zeichen. Das Token                          */
-/* --epos-zweispalten-umbruch bleibt - das Formularraster, der           */
-/* Dublettenbaum und die Kennzahlzeile benutzen es weiter.               */
+/* DIE KLEMME STEHT IM RASTER. Die Zeile des Projekts ist               */
+/* minmax(Untergrenze, auto), die des Katalogs minmax(min-content, 1fr):*/
+/* Der freie Platz geht erst an Projekt und Satz bis zu ihrer Wunsch-   */
+/* hoehe (--epos-trenner-hoehe), der Rest an den Katalog - und reicht   */
+/* er nicht, schrumpft die Projektliste bis zu ihrer Untergrenze, ohne  */
+/* dass der Katalog unter Kopfzeile plus zwei Zeilen faellt. So entsteht */
+/* in keiner Fenstergroesse und in keiner Stellung der Trennlinie ein   */
+/* Ueberlauf, der den Dialogkoerper rollen liesse.                      */
 /*                                                                      */
-/* DIE PROJEKTLISTE IST HOEHENBEGRENZT (Konzept 5.6.5): 12 rem = 192 px; */
-/* der Rahmen zaehlt mit (border-box), innen bleiben 190 px. Bei 29,9 px */
-/* Kopfzelle (Spaltenkopf OHNE Trichter) und 53,0 px Zeilenhoehe sind    */
-/* das DREI ganze Zeilen (160,1 / 53 = 3,0) - im Browser gemessen        */
-/* (Chromium, 1 300 x 900, Auftrag #248 vom 13.09.2026). Die             */
-/* Mockup-Zahlen des Konzepts (vier Zeilen) gelten seit Auftrag #240     */
-/* nicht mehr: Eine Rasterzeile mit Wahlspalte ist 53,0 px hoch, genau   */
-/* Raster.ZEILENHOEHE. Ohne die Grenze schoebe eine lange Projektliste   */
-/* den Katalog beliebig weit nach unten - genau der Grund, aus dem die   */
-/* Katalogliste ihre eigene Grenze aus dem Katalograhmen mitbringt.      */
+/* Ohne feste Hoehe (Assistent, eingebettet) bleiben die Rahmen; die    */
+/* Listen behalten dann ihre Hoechsthoehen wie jede Liste des Hauses.   */
 /* ==================================================================== */
 
 .epos-zweispalten {
     display: flex;
     flex-direction: column;
-    gap: var(--epos-rand);
+    gap: 6px;
     margin-top: var(--epos-rand);
+    min-width: 0;
 }
 
-.epos-zweispalten-spalte {
+.epos-zweispalten-bereich {
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;                           /* laesst das Raster waagerecht rollen */
+    min-height: 0;
+    border: 1px solid var(--epos-rahmen);
+    border-top: 3px solid var(--epos-zweispalten-kennfarbe, var(--epos-rahmen));
+    border-radius: var(--epos-ecke);
+    padding: 4px 8px 6px;
+}
+
+.epos-zweispalten-bereich--projekt { --epos-zweispalten-kennfarbe: var(--epos-schema-versorgung); }
+.epos-zweispalten-bereich--katalog { --epos-zweispalten-kennfarbe: var(--epos-quelle-rahmen); }
+.epos-zweispalten-bereich--satz    { --epos-zweispalten-kennfarbe: var(--epos-senke-rahmen); padding: 0; gap: 0; }
+
+/* DIE KOPFLEISTE eines Bereichs: Marke, Ueberschrift, Zaehler, Fueller,
+   Knoepfe - EINE Zeile, sie bricht nicht um (4.8); eine zu lange
+   Ueberschrift kuerzt mit Auslassung. overflow: clip ist kein Rollbereich. */
+.epos-zweispalten-kopfleiste {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+    overflow: clip;
+    flex: 0 0 auto;
+}
+
+.epos-zweispalten-kopfleiste > * {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .epos-zweispalten-titel {
-    margin-top: 0;
+    margin: 0;
+    flex: 0 1 auto !important;
+    min-width: 3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Die PROJEKTliste ist kurz und bleibt es: drei Zeilen (12 rem, gemessen
-   #248), danach rollt sie in sich (Konzept 5.6.5). Der Katalog darunter hat
-   seine eigene Grenze. */
+.epos-zweispalten-kopfleiste > .epos-leiste-fueller {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* DIE MARKE - Kennfarbe als Flaeche, weisse Schrift (KA-E-10). */
+.epos-zweispalten-marke {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--epos-zweispalten-kennfarbe);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.epos-zweispalten-marke--projekt { --epos-zweispalten-kennfarbe: var(--epos-schema-versorgung); }
+.epos-zweispalten-marke--katalog { --epos-zweispalten-kennfarbe: var(--epos-quelle-rahmen); }
+.epos-zweispalten-marke--satz    { --epos-zweispalten-kennfarbe: var(--epos-senke-rahmen); }
+
+.epos-zweispalten-wahlzahl {
+    color: var(--epos-text-leise);
+    font-size: 12px;
+}
+
+/* Der Inhalt eines Bereichs (die Abschnitte des Wirts): eine Spalte, in der
+   nur die Liste waechst. */
+.epos-zweispalten-inhalt {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+.epos-zweispalten-inhalt > * {
+    flex: 0 0 auto;
+}
+
+/* Ohne feste Hoehe: die Projektliste wie bisher hoehenbegrenzt (drei Zeilen). */
 .epos-zweispalten-spalte--oben .epos-raster-huelle {
     flex: 0 1 auto;
     max-height: var(--epos-projektlistenhoehe);
 }
 
-/* DIE UEBERNAHMELEISTE - eine Textzeile, keine Spalte mehr. Sie bricht um
-   wie jede Knopfleiste des Hauses (Befund W12-B-1). */
-.epos-zweispalten-uebernahme {
+/* DIE TRENNLINIE (4.3): 8 px, Griffmarke in der Mitte, fokussierbar. */
+.epos-zweispalten-trenner {
+    flex: 0 0 8px;
+    height: 8px;
+    margin: -3px 0;
+    cursor: row-resize;
+    touch-action: none;
+    border-radius: 4px;
+    background:
+        linear-gradient(var(--epos-rahmen), var(--epos-rahmen)) center / 48px 2px no-repeat;
+    outline: none;
+}
+
+.epos-zweispalten-trenner:hover,
+.epos-zweispalten-trenner:focus-visible,
+.epos-zweispalten--zieht > .epos-zweispalten-trenner {
+    background:
+        linear-gradient(var(--epos-quelle-rahmen), var(--epos-quelle-rahmen)) center / 64px 3px no-repeat,
+        color-mix(in srgb, var(--epos-quelle-rahmen) 12%, transparent);
+}
+
+.epos-zweispalten--zieht { cursor: row-resize; user-select: none; }
+
+/* DIE DETAILZEILE (4.4): zugeklappt eine Zeile; aufgeklappt rollt die
+   Satzflaeche in sich. */
+.epos-zweispalten-satzzeile {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
+    width: 100%;
+    min-height: var(--epos-touchziel);
+    padding: 0 8px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: clip;
+    flex: 0 0 auto;
+}
+
+.epos-zweispalten-satzzeile > * { flex: 0 0 auto; white-space: nowrap; }
+.epos-zweispalten-satzzeile > .epos-leiste-fueller { flex: 1 1 0; min-width: 0; }
+.epos-zweispalten-satzname { font-weight: 600; flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.epos-zweispalten-satzkenndaten { flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--epos-text-leise); }
+.epos-zweispalten-satzdetails { color: var(--epos-text-leise); font-size: 12px; }
+
+.epos-zweispalten-satz {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-height: 0;
+    overflow: auto;
+    padding: 4px 8px 8px;
+    border-top: 1px solid var(--epos-rahmen);
+}
+
+.epos-zweispalten-satz[hidden] { display: none; }
+
+/* Ein Satzblock, den ein Wirt an zwei Orten zeigt (Solarganglinie), steht ohne
+   eigenen Kasten. */
+.epos-zweispalten-satzblock { display: contents; }
+
+/* Das Wahlkaestchen der Mehrfachwahl (4.5) - Kopfhaekchen und Zeile. */
+.epos-wahlkaestchen {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* ---- MIT FESTER HOEHE: eigenes Fenster und Ueberlagerung ------------- */
+
+#app > .epos-dialog:has(> .epos-zweispalten),
+.epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
+    height: calc(90vh - 2 * var(--epos-karte-rand) - 2px);
+}
+
+/* Kopf, Kontextzeile, Banner und Fuss behalten ihre Hoehe; der Baustein ist
+   der Inhalt und nimmt den Rest. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog:has(> .epos-zweispalten) > * {
+    flex: 0 0 auto;
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten {
+    flex: 1 1 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+        minmax(calc(var(--epos-trenner-min) + var(--epos-touchziel) + 16px), auto)
+        8px
+        minmax(min-content, 1fr)
+        minmax(0, auto);
+    row-gap: 6px;
+    overflow: hidden;
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--nurkatalog {
+    grid-template-rows: minmax(min-content, 1fr) minmax(0, auto);
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich {
+    overflow: hidden;
+}
+
+/* Die Projektliste: Wunschhoehe ist die Trennlinie, Untergrenze Kopf + 1 Zeile. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--projekt .epos-raster-huelle {
+    flex: 0 1 var(--epos-trenner-hoehe);
+    height: auto;
+    min-height: var(--epos-trenner-min);
+    max-height: none;
+}
+
+/* Der Katalog: Katalogliste und in ihr die Huelle nehmen den Rest; die Huelle
+   behaelt Kopfzeile plus zwei Zeilen. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--katalog .epos-zweispalten-inhalt > .epos-katalogliste {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--katalog .epos-katalogliste > * {
+    flex: 0 0 auto;
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+    flex: 1 1 0;
+    height: auto;
+    min-height: var(--epos-katalog-min);
+    max-height: none;
+}
+
+/* Die aufgeklappte Detailzeile nimmt den Listen Hoehe ab und rollt in sich. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {
+    flex: 1 1 auto;
 }
 
 /* Zeichen VOR dem Wort, in einer Zeile - untereinander sagt der Pfeil die
