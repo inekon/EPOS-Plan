@@ -51,6 +51,7 @@ Gebäudesimulation“). Alle Entscheide UB-Q1 bis UB-Q11 und die Abweichungen U-
 aber erst auf Auftrag des Anwenders.
 
 - **UB-E1:** (umgesetzt 09.10.2026, #837) zwei Opus-Wellen — E1-a Kernklassen und Rechenproben (Wortlaut in Abschnitt 10), E1-b Abbildung, Dialog, Ressourcen.
+- **UB-E3:** umgesetzt (09.10.2026, #846; Basis R46).
 - **Vor UB-E2:** Schemaschritt `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (203, hängt an `KuehlkurveSchema`) und
   allein diese Zeile sofort pushen (umgesetzt 09.10.2026, #845; Basis R45 eingefroren).
 - **Referenzprojekt 1060** als Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, danach Basis **R45** einfrieren —
