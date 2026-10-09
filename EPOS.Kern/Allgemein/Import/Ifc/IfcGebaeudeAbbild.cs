@@ -1,4 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿using System.Collections.Generic;
+
+namespace WindowsFormsApplication1
 {
     /// <summary>
     /// <b>Das Abbild einer IFC-Datei</b> — das normierte <see cref="GebaeudeAbbild"/> samt dem, was
@@ -24,6 +26,12 @@
 
         /// <summary>Die Art des Inhalts: <c>STEP</c>, <c>XML</c>; <c>null</c> vor dem Erkennen.</summary>
         public string Inhaltsart { get; set; }
+
+        /// <summary>
+        /// Die Modellansichten (MVD) aus <c>FILE_DESCRIPTION</c> des Kopfs (<c>ViewDefinition [CoordinationView_V2.0]</c>)
+        /// in Dateireihenfolge; leer = die Datei gibt keine an (<see cref="IfcModellansicht.AusBeschreibung"/>).
+        /// </summary>
+        public IReadOnlyList<string> Modellansichten { get; set; } = System.Array.Empty<string>();
 
         /// <summary>Name des gelesenen Eintrags im <c>.ifczip</c>-Behälter; <c>null</c> = kein Behälter.</summary>
         public string Behaeltereintrag { get; set; }

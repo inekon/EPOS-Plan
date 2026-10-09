@@ -22,6 +22,21 @@ Eine Datei mit anderer Endung lehnt der Dialog mit „Dateiart nicht unterstütz
 {{Anker|groesse}}
 Die '''Größe''' prüft EPOS-Plan, bevor gelesen wird. Unter Windows sind es höchstens 25 MB für gbXML und 50 MB für IFC, unter iOS höchstens 25 MB bzw. 20 MB; bei ''.ifczip'' zählt die entpackte Größe. Die Grenzen stehen unter der Dateiwahl. Eine größere Datei wird nicht gelesen, der Dialog nennt ihre Größe und die Grenze. Während des Lesens zeigt der Dialog einen Fortschritt; ''Abbrechen'' neben dem Fortschritt oder Esc brechen das Lesen ab, ohne dass etwas übernommen wird.
 
+== Empfohlene Exporteinstellung ==
+{{Anker|exporteinstellung}}
+An der Dateiwahl für IFC steht ein leiser Hinweis: ''Empfohlene Exporteinstellung: IFC4 mit Basismengen und Raumgrenzen 2. Ebene. IFC2x3 (Coordination View 2.0) wird gelesen, dann aber ohne Stoffwerte und ohne Rückgabe der angereicherten Datei.'' Er steht bei der Quelle ''IFC'' und ''IFC + Projektdatei'' sowie ohne Quellenwahl, nicht bei ''gbXML'' und ''Nur Projektdatei (.sqproj)''.
+Der Grund:
+* Raumgrenzen der 2. Ebene und Basismengen machen die Flächen genauer, weil EPOS-Plan sie dann aus der Datei übernimmt. Fehlen sie, gilt der Körperweg: Flächen, Neigung und Ausrichtung kommen aus den Bauteilkörpern ([[#bauteile|Bauteile]]).
+* IFC2x3 liest EPOS-Plan, aber ohne Stoffwerte der Schichten; die Ersatzaufbauten ersetzen dann mehr Schichten, und der U-Wert wird nicht gegen die Schichten geprüft.
+* Die Rückgabe der angereicherten Datei ([[#anreichern|IFC-Datei des Architekten anreichern]]) braucht IFC4.
+Bietet das CAD-Programm keine Exportoption für Basismengen und Raumgrenzen, bleibt der Körperweg der Normalfall; das Ergebnis ist dann nicht falsch, sondern aus den Körpern berechnet.
+
+=== Modellansicht (MVD) ===
+{{Anker|modellansicht}}
+Der Kopf des Dialogs zeigt unter ''Schema'' die Zeile '''Modellansicht (MVD)''': die Modellansicht, die der Kopf der IFC-Datei angibt (<code>ViewDefinition</code>), oder den Vermerk, dass die Datei keine angibt. Die Angabe ändert nichts am Lesen.
+Das Importprotokoll beginnt mit einer Hinweiszeile zur Modellansicht: Sie nennt die Angabe der Datei oder sagt, dass die Datei keine führt.
+Führt die Datei weder Raumgrenzen der 2. Ebene noch Basismengen, folgt eine weitere Hinweiszeile: Flächen kommen aus den Körpern, und sie nennt die empfohlene Exporteinstellung. Bei IFC2x3 nennt sie zusätzlich die nicht gelesenen Stoffwerte und die Rückgabe, die IFC4 braucht.
+
 == Der Zuordnungsdialog ==
 {{Anker|zuordnung}}
 
