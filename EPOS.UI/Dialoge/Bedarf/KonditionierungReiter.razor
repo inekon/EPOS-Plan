@@ -317,10 +317,21 @@
         => Bearbeitung.Bietet(KonditionierungHandlung.Grundangabe) || Bearbeitung.Bietet(KonditionierungHandlung.Standardwoche);
 
     /// <summary>Der Inhalt der aufgeklappten Karte einer Größe.</summary>
-    private RenderFragment Einzelheiten(KonditionierungGroesse g) => @<KalenderkarteInhalt Bearbeitung="@Bearbeitung" Groesse="@g"
-        Texte="@Texte" Rastertexte="@HuelleTexte.Uebergabe.Raster" Lesemodus="@Lesemodus"
-        Geaendert="@InhaltGeaendert" FehlerZustand="FehlerZustand" Verweigert="Verweigert"
-        EntprellungMs="@EntprellungMs" />;
+    private RenderFragment Einzelheiten(KonditionierungGroesse g) => @<text>
+        @if (Bearbeitung.MitKalenderbedienung)
+        {
+            @* Die Kalenderbedienung (Konzept 7.8, E110; Welle K1b): Schnellfelder, Wochenprofile, Zuordnung,
+               Einzeltage und Jahresraster - darunter Grundangabe, Werte je Stunde, Perioden und Jahresvorschau. *@
+            <KalenderbedienungAbschnitt @key="g" Bearbeitung="@Bearbeitung" Groesse="@g" Texte="@Texte"
+                               Tagesnamen="@HuelleTexte.Uebergabe.Raster.Tagesnamen"
+                               Geaendert="@InhaltGeaendert" Verweigert="Verweigert" />
+            <h4 class="epos-kond-abschnitt-titel epos-kalb-werte-titel">@Texte.LabelKalbWerteJeStunde</h4>
+        }
+        <KalenderkarteInhalt Bearbeitung="@Bearbeitung" Groesse="@g"
+            Texte="@Texte" Rastertexte="@HuelleTexte.Uebergabe.Raster" Lesemodus="@Lesemodus"
+            Geaendert="@InhaltGeaendert" FehlerZustand="FehlerZustand" Verweigert="Verweigert"
+            EntprellungMs="@EntprellungMs" />
+    </text>;
 
     /// <summary>Eine Handlung der aufgeklappten Karte: der Reiter zeichnet neu (Zustand, Vorschau), dann der Wirt.</summary>
     private EventCallback InhaltGeaendert => EventCallback.Factory.Create(this, () => Geaendert.InvokeAsync());

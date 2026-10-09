@@ -940,4 +940,219 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_TXT_HINWEIS_VORLAGE_ALLE</c> — der Hinweis (title) der Liste „alle Größen“</summary>
     public string HinweisVorlageAlle { get; set; }
         = "Gleichnamige Vorlage in allen Größen übernehmen: Heizen, Kühlen, Lüftung, Geräte und Personen bekommen die Vorlage dieses Namens, wo es sie gibt.";
+
+    // ------------------------------------------------------------ Kalenderbedienung (Konzept 7.8, E110; Welle K1b)
+
+    /// <summary><c>KOND_LBL_KALB_SCHNELLFELDER</c> — die Überschrift der Schnellfelder</summary>
+    public string LabelKalbSchnellfelder { get; set; } = "Schnellfelder";
+
+    /// <summary><c>KOND_LBL_KALB_WOCHENENDE</c> — das Schnellfeld Wochenende</summary>
+    public string LabelKalbWochenende { get; set; } = "Wochenende";
+
+    /// <summary><c>KOND_TXT_KALB_WOCHENENDE_TAGE</c> — der feste Inhalt des Schnellfelds Wochenende</summary>
+    public string TextKalbWochenendeTage { get; set; } = "Samstag und Sonntag";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_WOCHENENDE</c> — der Hinweis am Wochenende</summary>
+    public string HinweisKalbWochenende { get; set; } = "Nur lesbar; wählbar ab Stufe 2.";
+
+    /// <summary><c>KOND_LBL_KALB_FERIEN</c> — das Schnellfeld Ferien</summary>
+    public string LabelKalbFerien { get; set; } = "Ferien";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_FERIEN</c> — der Hinweis an den Ferien</summary>
+    public string HinweisKalbFerien { get; set; } = "Ferien gelten für Gebäude und Zonen in allen Größen. Ab dem fünften Zeitraum tragen ihn nur angelegte Kalender.";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_FERIEN_ZONE</c> — der Hinweis an den Ferien einer Zone</summary>
+    public string HinweisKalbFerienZone { get; set; } = "Die Ferien gehören dem Gebäude; die Zone erbt sie.";
+
+    /// <summary><c>KOND_BTN_KALB_FERIEN_NEU</c> — fügt einen Ferienzeitraum hinzu</summary>
+    public string KnopfKalbFerienNeu { get; set; } = "+ Ferien";
+
+    /// <summary><c>KOND_LBL_KALB_SAISON</c> — das Schnellfeld Saison der Größe ({0} = Größe)</summary>
+    public string LabelKalbSaison { get; set; } = "Saison {0}";
+
+    /// <summary><c>KOND_BTN_KALB_GANZJAEHRIG</c> — setzt die Saison auf ganzjährig</summary>
+    public string KnopfKalbGanzjaehrig { get; set; } = "ganzjährig";
+
+    /// <summary><c>KOND_LBL_KALB_VON</c> — Beginn eines Datumsbereichs</summary>
+    public string LabelKalbVon { get; set; } = "von";
+
+    /// <summary><c>KOND_LBL_KALB_BIS</c> — Ende eines Datumsbereichs</summary>
+    public string LabelKalbBis { get; set; } = "bis";
+
+    /// <summary><c>KOND_BTN_KALB_VORLAGE_ALLE</c> — übernimmt die gewählte Vorlage in allen Größen</summary>
+    public string KnopfKalbVorlageAlle { get; set; } = "Vorlage übernehmen (alle Größen)";
+
+    /// <summary><c>KOND_LBL_KALB_WOCHENPROFILE</c> — die Überschrift der Wochenprofile</summary>
+    public string LabelKalbWochenprofile { get; set; } = "Wochenprofile";
+
+    /// <summary><c>KOND_LBL_KALB_PINSEL</c> — das Feld des Pinselwerts</summary>
+    public string LabelKalbPinsel { get; set; } = "Pinsel";
+
+    /// <summary><c>KOND_BTN_KALB_PINSEL_AUS</c> — schaltet den Pinsel auf „aus“</summary>
+    public string KnopfKalbPinselAus { get; set; } = "Pinsel „aus“";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_PINSEL</c> — die Anleitung des Pinsels</summary>
+    public string HinweisKalbPinsel { get; set; } = "Erste Zelle wählen, dann die zweite: Der Bereich dazwischen bekommt den Pinselwert. Ziehen mit der Maus geht ebenso; Esc verwirft die erste Zelle.";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_NUR_LESBAR</c> — der Hinweis ohne angelegten Kalender</summary>
+    public string HinweisKalbNurLesbar { get; set; } = "Ohne angelegten Kalender sind die Wochenprofile nur lesbar — „Kalender anlegen“ steht an der Karte.";
+
+    /// <summary><c>KOND_BTN_KALB_MONTAG</c> — kopiert Montag auf Dienstag bis Freitag</summary>
+    public string KnopfKalbMontag { get; set; } = "Montag nach Di–Fr";
+
+    /// <summary><c>KOND_BTN_KALB_SAMSTAG</c> — kopiert Samstag auf Sonntag</summary>
+    public string KnopfKalbSamstag { get; set; } = "Samstag nach Sonntag";
+
+    /// <summary><c>KOND_LBL_KALB_ZIEL</c> — das Zielprofil von „Woche kopieren“ und „Tag kopieren“</summary>
+    public string LabelKalbZiel { get; set; } = "Ziel";
+
+    /// <summary><c>KOND_BTN_KALB_WOCHE_KOPIEREN</c> — kopiert die Woche in das Zielprofil</summary>
+    public string KnopfKalbWocheKopieren { get; set; } = "Woche kopieren…";
+
+    /// <summary><c>KOND_LBL_KALB_QUELLTAG</c> — der Quelltag von „Tag kopieren“</summary>
+    public string LabelKalbQuelltag { get; set; } = "Tag";
+
+    /// <summary><c>KOND_LBL_KALB_ZIELTAG</c> — der Zieltag von „Tag kopieren“</summary>
+    public string LabelKalbZieltag { get; set; } = "nach";
+
+    /// <summary><c>KOND_BTN_KALB_TAG_KOPIEREN</c> — kopiert einen Tag in das Zielprofil</summary>
+    public string KnopfKalbTagKopieren { get; set; } = "Tag kopieren…";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_KOPIEREN</c> — der Hinweis an „Woche kopieren“ und „Tag kopieren“</summary>
+    public string HinweisKalbKopieren { get; set; } = "Ziel ist ein Profil derselben Größe oder einer Größe gleicher Einheit: Heizen und Kühlen, Geräte und Personen.";
+
+    /// <summary><c>KOND_LBL_KALB_ZUORDNUNG</c> — die Überschrift der Zuordnung</summary>
+    public string LabelKalbZuordnung { get; set; } = "Zuordnung im Jahr";
+
+    /// <summary><c>KOND_LBL_KALB_JAHRESBAND</c> — das Jahresband der Zuordnung</summary>
+    public string LabelKalbJahresband { get; set; } = "Jahresband der Zuordnung";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_ZUORDNUNG</c> — der Hinweis an der Zuordnung</summary>
+    public string HinweisKalbZuordnung { get; set; } = "Ohne Zeile gilt die Standardwoche; eine später angelegte Zeile geht vor. „gilt für“ koppelt die Zeile in den gewählten Größen.";
+
+    /// <summary><c>KOND_LBL_KALB_NAME</c> — die Bezeichnung einer Zeile</summary>
+    public string LabelKalbName { get; set; } = "Bezeichnung";
+
+    /// <summary><c>KOND_LBL_KALB_WIRKUNG</c> — die Wirkung einer Zeile</summary>
+    public string LabelKalbWirkung { get; set; } = "Wirkung";
+
+    /// <summary><c>KOND_LBL_KALB_GILT_FUER</c> — die Größen einer Zeile</summary>
+    public string LabelKalbGiltFuer { get; set; } = "gilt für";
+
+    /// <summary><c>KOND_LBL_KALB_WERT</c> — der Wert der Wirkung „Wert“</summary>
+    public string LabelKalbWert { get; set; } = "Wert";
+
+    /// <summary><c>KOND_LBL_KALB_WOCHENTAG</c> — der Wochentag der Wirkung „wie Wochentag“</summary>
+    public string LabelKalbWochentag { get; set; } = "Wochentag";
+
+    /// <summary><c>KOND_LBL_KALB_HANDLUNGEN</c> — der Kopf der Aktionsspalte</summary>
+    public string LabelKalbHandlungen { get; set; } = "Handlungen";
+
+    /// <summary><c>KOND_LBL_KALB_WIRKUNG_PROFIL</c> — Wirkung: Wochenprofil</summary>
+    public string LabelKalbWirkungProfil { get; set; } = "Wochenprofil";
+
+    /// <summary><c>KOND_LBL_KALB_WIRKUNG_WOCHENTAG</c> — Wirkung: wie Wochentag</summary>
+    public string LabelKalbWirkungWochentag { get; set; } = "wie Wochentag";
+
+    /// <summary><c>KOND_LBL_KALB_WIRKUNG_WERT</c> — Wirkung: fester Wert</summary>
+    public string LabelKalbWirkungWert { get; set; } = "Wert";
+
+    /// <summary><c>KOND_TXT_KALB_WIE_TAG</c> — Anzeige „wie Wochentag“ ({0} = Wochentag)</summary>
+    public string TextKalbWieTag { get; set; } = "wie {0}";
+
+    /// <summary><c>KOND_TXT_KALB_EIGENE_WOCHE</c> — Anzeige einer eigenen Woche ({0} = Name)</summary>
+    public string TextKalbEigeneWoche { get; set; } = "Woche „{0}“";
+
+    /// <summary><c>KOND_BTN_KALB_ZEILE_NEU</c> — legt eine Zuordnungszeile an</summary>
+    public string KnopfKalbZeileNeu { get; set; } = "+ Zeitraum";
+
+    /// <summary><c>KOND_BTN_KALB_UEBERNEHMEN</c> — übernimmt die bearbeitete Zeile</summary>
+    public string KnopfKalbUebernehmen { get; set; } = "Zeile übernehmen";
+
+    /// <summary><c>KOND_BTN_KALB_BEARBEITEN</c> — öffnet eine Zeile zum Bearbeiten</summary>
+    public string KnopfKalbBearbeiten { get; set; } = "Bearbeiten";
+
+    /// <summary><c>KOND_BTN_KALB_ENTFERNEN</c> — entfernt eine Zeile</summary>
+    public string KnopfKalbEntfernen { get; set; } = "Entfernen";
+
+    /// <summary><c>KOND_BTN_KALB_ABBRECHEN</c> — verwirft die Eingabe einer Zeile</summary>
+    public string KnopfKalbAbbrechen { get; set; } = "Verwerfen";
+
+    /// <summary><c>KOND_LBL_KALB_MONAT</c> — der Quellmonat von „Monat kopieren“</summary>
+    public string LabelKalbMonat { get; set; } = "Monat";
+
+    /// <summary><c>KOND_LBL_KALB_NACH_MONAT</c> — der Zielmonat von „Monat kopieren“</summary>
+    public string LabelKalbNachMonat { get; set; } = "nach";
+
+    /// <summary><c>KOND_BTN_KALB_MONAT_KOPIEREN</c> — kopiert einen Monat</summary>
+    public string KnopfKalbMonatKopieren { get; set; } = "Monat kopieren…";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_MONAT</c> — der Hinweis an „Monat kopieren“</summary>
+    public string HinweisKalbMonat { get; set; } = "Kopiert Zuordnung und Einzeltage des Quellmonats Tag für Tag in den Zielmonat.";
+
+    /// <summary><c>KOND_LBL_KALB_EINZELTAGE</c> — die Überschrift der Einzeltage</summary>
+    public string LabelKalbEinzeltage { get; set; } = "Einzeltage (Feiertage, Ausnahmen)";
+
+    /// <summary><c>KOND_LBL_KALB_DATUM</c> — das Datum eines Einzeltags</summary>
+    public string LabelKalbDatum { get; set; } = "Datum";
+
+    /// <summary><c>KOND_LBL_KALB_WIE_SONNTAG</c> — Wirkung eines Einzeltags: wie Sonntag</summary>
+    public string LabelKalbWieSonntag { get; set; } = "wie Sonntag";
+
+    /// <summary><c>KOND_BTN_KALB_EINZELTAG_NEU</c> — legt einen Einzeltag an</summary>
+    public string KnopfKalbEinzeltagNeu { get; set; } = "+ Einzeltag";
+
+    /// <summary><c>KOND_BTN_KALB_FEIERTAGE_LADEN</c> — lädt die bundeseinheitlichen Feiertage</summary>
+    public string KnopfKalbFeiertageLaden { get; set; } = "Feiertage laden";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_FEIERTAGE</c> — der Hinweis an „Feiertage laden“</summary>
+    public string HinweisKalbFeiertage { get; set; } = "Lädt die neun bundeseinheitlichen Feiertage als Regel „wie Sonntag“. Die Feiertage der Länder kommen in Stufe 2 als Regeln.";
+
+    /// <summary><c>KOND_LBL_KALB_JAHRESRASTER</c> — die Überschrift des Jahresrasters</summary>
+    public string LabelKalbJahresraster { get; set; } = "Jahresraster";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_JAHRESRASTER</c> — der Hinweis am Jahresraster</summary>
+    public string HinweisKalbJahresraster { get; set; } = "Jeder Tag in der Farbe seiner Quelle; ein Klick wählt die Zeile oder den Einzeltag, der ihn bestimmt.";
+
+    /// <summary><c>KOND_TXT_KALB_ART_GRUNDWOCHE</c> — Tagesart Standardwoche</summary>
+    public string TextKalbArtGrundwoche { get; set; } = "Standardwoche";
+
+    /// <summary><c>KOND_TXT_KALB_ART_WOCHENENDE</c> — Tagesart Wochenende</summary>
+    public string TextKalbArtWochenende { get; set; } = "Wochenende";
+
+    /// <summary><c>KOND_TXT_KALB_ART_ZEITRAUM</c> — Tagesart Zeitraum</summary>
+    public string TextKalbArtZeitraum { get; set; } = "Zeitraum";
+
+    /// <summary><c>KOND_TXT_KALB_ART_EINZELTAG</c> — Tagesart Einzeltag</summary>
+    public string TextKalbArtEinzeltag { get; set; } = "Einzeltag";
+
+    /// <summary><c>KOND_TXT_KALB_ART_FERIEN</c> — Tagesart Ferien</summary>
+    public string TextKalbArtFerien { get; set; } = "Ferien";
+
+    /// <summary><c>KOND_TXT_KALB_ART_FEIERTAG</c> — Tagesart Feiertag</summary>
+    public string TextKalbArtFeiertag { get; set; } = "Feiertag";
+
+    /// <summary><c>KOND_TXT_KALB_ART_SAISON</c> — Tagesart außerhalb der Saison</summary>
+    public string TextKalbArtSaison { get; set; } = "außerhalb der Saison";
+
+    /// <summary><c>KOND_TXT_KALB_RANGWARNUNG</c> — die Warnzeile ({0}, {2} = Zeilen, {1}, {3} = Größen)</summary>
+    public string TextKalbRangwarnung { get; set; } = "Rangfolge weicht ab: „{0}“ steht in {1} über „{2}“, in {3} darunter.";
+
+    /// <summary><c>KOND_TXT_KALB_GRUND_GILT_FUER</c> — Sperrgrund: keine Größe gewählt</summary>
+    public string GrundKalbGiltFuer { get; set; } = "Mindestens eine Größe wählen.";
+
+    /// <summary><c>KOND_TXT_KALB_GRUND_DATUM</c> — Sperrgrund: Datum fehlt</summary>
+    public string GrundKalbDatum { get; set; } = "Das Datum fehlt.";
+
+    /// <summary><c>KOND_TXT_KALB_GRUND_NAME</c> — Sperrgrund: Bezeichnung fehlt</summary>
+    public string GrundKalbName { get; set; } = "Die Bezeichnung fehlt.";
+
+    /// <summary><c>KOND_TXT_KALB_GRUND_WERT</c> — Sperrgrund: Wert fehlt</summary>
+    public string GrundKalbWert { get; set; } = "Der Wert fehlt.";
+
+    /// <summary><c>KOND_TXT_KALB_GRUND_ZIEL</c> — Sperrgrund: kein Zielprofil</summary>
+    public string GrundKalbZiel { get; set; } = "Kein Zielprofil gewählt.";
+
+    /// <summary><c>KOND_LBL_KALB_WERTE_JE_STUNDE</c> — die Überschrift über Grundangabe, Werten je Stunde und Perioden</summary>
+    public string LabelKalbWerteJeStunde { get; set; } = "Grundangabe, Werte je Stunde und Perioden";
 }

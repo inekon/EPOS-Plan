@@ -73785,6 +73785,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwerfen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Einzeltag ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_EINZELTAG_NEU {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_EINZELTAG_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertage laden ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_FEIERTAGE_LADEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_FEIERTAGE_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Ferien ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_FERIEN_NEU {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_FERIEN_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ganzjährig ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_GANZJAEHRIG {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_GANZJAEHRIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat kopieren… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_MONAT_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_MONAT_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Montag nach Di–Fr ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_MONTAG {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_MONTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pinsel „aus“ ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_PINSEL_AUS {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_PINSEL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstag nach Sonntag ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_SAMSTAG {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_SAMSTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag kopieren… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_TAG_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_TAG_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile übernehmen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage übernehmen (alle Größen) ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_VORLAGE_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_VORLAGE_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche kopieren… ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_WOCHE_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_WOCHE_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Zeitraum ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_ZEILE_NEU {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_ZEILE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender anlegen ähnelt.
         /// </summary>
         public static string KOND_BTN_KALENDER_ANLEGEN {
@@ -74420,6 +74564,267 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_INFILTRATION {
             get {
                 return ResourceManager.GetString("KOND_LBL_INFILTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bis ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_BIS {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_DATUM {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzeltage (Feiertage, Ausnahmen) ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_EINZELTAGE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_EINZELTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gilt für ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_GILT_FUER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_GILT_FUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Handlungen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_HANDLUNGEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_HANDLUNGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresband der Zuordnung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_JAHRESBAND {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_JAHRESBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresraster ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_JAHRESRASTER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_JAHRESRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_MONAT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_NACH_MONAT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_NACH_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_NAME {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pinsel ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_PINSEL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_PINSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_QUELLTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_QUELLTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saison {0} ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellfelder ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_SCHNELLFELDER {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_SCHNELLFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_VON {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundangabe, Werte je Stunde und Perioden ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WERTE_JE_STUNDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WERTE_JE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Sonntag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WIE_SONNTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WIE_SONNTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WIRKUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenprofil ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WIRKUNG_PROFIL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WIRKUNG_PROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WIRKUNG_WERT {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WIRKUNG_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie Wochentag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WIRKUNG_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WIRKUNG_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenende ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenprofile ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WOCHENPROFILE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WOCHENPROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentag ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_ZIEL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_ZIELTAG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_ZIELTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung im Jahr ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_ZUORDNUNG", resourceCulture);
             }
         }
         
@@ -76319,6 +76724,240 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_JAHRESMITTEL {
             get {
                 return ResourceManager.GetString("KOND_TXT_JAHRESMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzeltag ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_EINZELTAG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_EINZELTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertag ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_FEIERTAG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_GRUNDWOCHE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_GRUNDWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die außerhalb der Saison ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_SAISON {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_SAISON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenende ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_ART_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_ART_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche „{0}“ ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_EIGENE_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_EIGENE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Datum fehlt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GRUND_DATUM {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GRUND_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Größe wählen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GRUND_GILT_FUER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GRUND_GILT_FUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezeichnung fehlt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GRUND_NAME {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GRUND_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert fehlt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GRUND_WERT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GRUND_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zielprofil gewählt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GRUND_ZIEL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GRUND_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lädt die neun bundeseinheitlichen Feiertage als Regel „wie Sonntag“. Die Feiertage der Länder kommen in Stufe 2 als Regeln. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_FEIERTAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien gelten für Gebäude und Zonen in allen Größen. Ab dem fünften Zeitraum tragen ihn nur angelegte Kalender. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_FERIEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ferien gehören dem Gebäude; die Zone erbt sie. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_FERIEN_ZONE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_FERIEN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Tag in der Farbe seiner Quelle; ein Klick wählt die Zeile oder den Einzeltag, der ihn bestimmt. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_JAHRESRASTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_JAHRESRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel ist ein Profil derselben Größe oder einer Größe gleicher Einheit: Heizen und Kühlen, Geräte und Personen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopiert Zuordnung und Einzeltage des Quellmonats Tag für Tag in den Zielmonat. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_MONAT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne angelegten Kalender sind die Wochenprofile nur lesbar — „Kalender anlegen“ steht an der Karte. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_NUR_LESBAR {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_NUR_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erste Zelle wählen, dann die zweite: Der Bereich dazwischen bekommt den Pinselwert. Ziehen mit der Maus geht ebenso; Esc verwirft die erste Zelle. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_PINSEL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_PINSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar; wählbar ab Stufe 2. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Zeile gilt die Standardwoche; eine später angelegte Zeile geht vor. „gilt für“ koppelt die Zeile in den gewählten Größen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rangfolge weicht ab: „{0}“ steht in {1} über „{2}“, in {3} darunter. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_RANGWARNUNG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_RANGWARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie {0} ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_WIE_TAG {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_WIE_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstag und Sonntag ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_WOCHENENDE_TAGE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_WOCHENENDE_TAGE", resourceCulture);
             }
         }
         
