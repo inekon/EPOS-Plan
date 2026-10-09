@@ -50228,7 +50228,10 @@ Chart</value>
     <value>Abweichung vom Katalog</value>
   </data>
   <data name="KI_DLG_PVG_ABWEICHUNG_ERL" xml:space="preserve">
-    <value>Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht. „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation.</value>
+    <value>Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht; „noch nicht gespeichert“ bei einer neu übernommenen Zeile vor dem OK (sie hat noch keine Projektkopie). „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation.</value>
+  </data>
+  <data name="PVG_ABW_UNGESPEICHERT" xml:space="preserve">
+    <value>noch nicht gespeichert</value>
   </data>
 </root>
 

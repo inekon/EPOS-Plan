@@ -434,6 +434,78 @@ public class PvGanglinieDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// Eine neu aufgenommene Zeile hat vor dem OK noch keine Projektkopie: Detailblock und Assistent sagen
+    /// „noch nicht gespeichert", die Zeile trägt kein Zeichen, der Knopf „Aus dem Katalog erneuern…" fehlt, und der
+    /// Weg „Abweichung" wird für sie nicht gefragt. Nach dem OK (die Hülle meldet die Zeile gespeichert) liest der
+    /// Dialog die Abweichung.
+    /// </summary>
+    [Fact]
+    public void Eine_ungespeicherte_Zeile_meldet_noch_nicht_gespeichert_und_nach_OK_die_Abweichung()
+    {
+        var ungespeichert = new HashSet<int>();
+        var gefragt = new List<string>();
+        var cut = Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Aufnehmen, id => { ungespeichert.Add(100000); return Zeile(100000, "PV Dach West", id); })
+            .Add(x => x.Ungespeichert, z => ungespeichert.Contains(z.Schluessel))
+            .Add(x => x.KatalogAbweichung, n =>
+            {
+                gefragt.Add(n);
+                return n == "PV Dach West" ? "weicht vom Katalog ab: Reihe" : "";
+            })
+            .Add(x => x.AusKatalogErneuern, _ => throw new InvalidOperationException("darf nicht schreiben")));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+
+        Assert.Equal(Resource.PVG_ABW_UNGESPEICHERT, cut.Find(".epos-pvg-ungespeichert").TextContent.Trim());
+        Assert.DoesNotContain("⚠", cut.Find(".epos-pvg-ungespeichert").TextContent);
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichung"));
+        Assert.Empty(cut.FindAll(".epos-pvg-abweichungszeile"));
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+        Assert.DoesNotContain("PV Dach West", gefragt);
+        Assert.Equal("", cut.Instance.ProjektAbweichung);
+        Assert.Equal(Resource.PVG_ABW_UNGESPEICHERT,
+                     KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Lesen());
+
+        // OK: die Hülle hat die Zuordnung geschrieben, die Zeile ist gespeichert — jetzt zählt die Abweichung.
+        ungespeichert.Clear();
+        ProjektzeileWaehlen(cut, 0);
+        ProjektzeileWaehlen(cut, 1);
+        Assert.Contains("PV Dach West", gefragt);
+        Assert.Empty(cut.FindAll(".epos-pvg-ungespeichert"));
+        Assert.Single(cut.FindAll(".epos-pvg-abweichung"));
+        Assert.Contains("weicht vom Katalog ab: Reihe", cut.Find(".epos-pvg-abweichungszeile").TextContent);
+        Assert.Equal(Resource.PVG_BTN_ERNEUERN, cut.Find(".epos-pvg-erneuernknopf").TextContent.Trim());
+        Assert.Equal("weicht vom Katalog ab: Reihe",
+                     KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, "katalogabweichung").Lesen());
+    }
+
+    /// <summary>Ohne Weg der Hülle gilt eine in der Sitzung aufgenommene Zeile als ungespeichert.</summary>
+    [Fact]
+    public void Ohne_Weg_der_Huelle_gilt_eine_aufgenommene_Zeile_als_ungespeichert()
+    {
+        var cut = Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Aufnehmen, id => Zeile(100000, "PV Dach West", id))
+            .Add(x => x.KatalogAbweichung, _ => "keine Projektkopie")
+            .Add(x => x.AusKatalogErneuern, _ => Task.FromResult(new PvGanglinieErneuerung(true, ""))));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+
+        Assert.Equal(Resource.PVG_ABW_UNGESPEICHERT, cut.Find(".epos-pvg-ungespeichert").TextContent.Trim());
+        Assert.Empty(cut.FindAll(".epos-pvg-erneuernknopf"));
+        Assert.Single(cut.FindAll(".epos-pvg-abweichung"));   // nur die gespeicherte Zeile „PV Dach Ost"
+    }
+
+    /// <summary>
     /// „Aus dem Katalog erneuern…" fragt zurück (Name, Abweichung, Hinweis auf die nächste Simulation); Abbrechen
     /// schreibt nichts, ein Fehlschlag hält die Rückfrage mit dem Grund offen, OK erneuert, das Zeichen fällt und die
     /// Bestätigung steht im Dialog.

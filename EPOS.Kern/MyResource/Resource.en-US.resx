@@ -50221,7 +50221,10 @@ chart</value>
     <value>Difference from catalogue</value>
   </data>
   <data name="KI_DLG_PVG_ABWEICHUNG_ERL" xml:space="preserve">
-    <value>How the project copy of the selected project profile differs from the catalogue entry of the same name (rated power, interval, annual total, series); empty if it matches. “Renew from catalogue…” replaces header and series of the project copy after a confirmation — an action of the user; results change only with the next simulation.</value>
+    <value>How the project copy of the selected project profile differs from the catalogue entry of the same name (rated power, interval, annual total, series); empty if it matches; “not saved yet” for a newly added row before OK (it has no project copy yet). “Renew from catalogue…” replaces header and series of the project copy after a confirmation — an action of the user; results change only with the next simulation.</value>
+  </data>
+  <data name="PVG_ABW_UNGESPEICHERT" xml:space="preserve">
+    <value>not saved yet</value>
   </data>
 </root>
 
