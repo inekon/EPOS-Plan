@@ -117,9 +117,17 @@ namespace WindowsFormsApplication1
         /// <summary>Eine einspaltige Reihe ohne Enkel und Verweis — im Paket als bloße Werteliste.</summary>
         public bool Reihe => Geordnet && Fachspalten.Count == 1 && Enkel.Count == 0 && Verweise.Count == 0;
 
-        /// <summary>Die Bedingung „gehört zum Katalog" (leer ohne Projektspalte).</summary>
+        /// <summary>
+        /// Eine Spalte, die bei den Zeilen DIESES Kindes leer ist (Schritt ZK: <c>ID_Zone_Stamm</c> — die
+        /// Konditionierung einer Katalogzone trägt den Katalogbau daneben, gehört aber nicht zu seiner Ebene).
+        /// Führt die Datenbank die Spalte nicht, gilt sie als leer.
+        /// </summary>
+        public string Leerspalte { get; init; }
+
+        /// <summary>Die Bedingung „gehört zum Katalog" (leer ohne Projektspalte und ohne Leerspalte).</summary>
         internal string Katalogbedingung =>
-            Projektspalte == null ? "" : " AND COALESCE(\"" + Projektspalte + "\", 0) = 0";
+            (Projektspalte == null ? "" : " AND COALESCE(\"" + Projektspalte + "\", 0) = 0") +
+            (Leerspalte != null && DataRepository.SpalteVorhanden(Tabelle, Leerspalte) ? " AND \"" + Leerspalte + "\" IS NULL" : "");
     }
 
     /// <summary>Eine Katalogtabelle des Registers.</summary>
@@ -294,18 +302,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Katalogkind[] Konditionierung(string fremdschluessel, string andererEigentuemer)
         {
-            string[] neben = { "ID_Gebaeude", "ID_Zone", andererEigentuemer };
+            // ID_Zone_Stamm (Schritt ZK): die Zeilen einer Katalogzone gehören nicht zur Ebene des Katalogbaus.
+            string[] neben = { "ID_Gebaeude", "ID_Zone", andererEigentuemer, ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM };
             var periode = new Katalogkind("Tab_Konditionierungsperiode", "ID_Kalender",
                 new[] { "Rang", "Art", "Bezeichner", "Beginn", "Ende", "Feiertagsregel", "Wert", "Aus", "Woche", "WieWochentag" });
             return new[]
             {
                 new Katalogkind("Tab_Konditionierungsvorgabe", fremdschluessel,
-                    new[] { "Groesse", "Zeile", "Wert", "Aus", "Von", "Bis", "Bedingt_K" }) { Nebenspalten = neben },
+                    new[] { "Groesse", "Zeile", "Wert", "Aus", "Von", "Bis", "Bedingt_K" })
+                { Nebenspalten = neben, Leerspalte = ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM },
                 // Nutzung (Schemaschritt 176) ist die Kopie der Vorlagen-Nutzung am Projektkalender:
                 // keine Fachspalte des Katalogs (die Nutzung steht am Vorlagenkopf), nur Nebenspalte.
                 new Katalogkind("Tab_Konditionierungskalender", fremdschluessel,
                     new[] { "Groesse", "Wert", "Aus", "Woche", "Nennwert", "Bemerkung" })
-                { Nebenspalten = new[] { "ID_Gebaeude", "ID_Zone", andererEigentuemer, "Nutzung" }, Enkel = new[] { periode } },
+                {
+                    Nebenspalten = new[] { "ID_Gebaeude", "ID_Zone", andererEigentuemer, ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM, "Nutzung" },
+                    Enkel = new[] { periode }, Leerspalte = ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM,
+                },
             };
         }
 
@@ -478,6 +491,14 @@ namespace WindowsFormsApplication1
             "aufeinander (ID_Tagesgangsatz, ID_Vorlage, ID_Nutzungsart, ID_Bedarfstag). Ein zweiter Weg " +
             "daneben ergaebe zwei Wahrheiten ueber denselben Stand.";
 
+        /// <summary>Grund der Ausnahme der Katalogzonen (Schritt ZK).</summary>
+        public const string GRUND_KATALOGZONEN =
+            "Zonen im Gebaeudekatalog (Schritt ZK): Anwenderdaten am Katalogsatz, die gesperrten Auslieferungssaetze tragen " +
+            "keine; Bauteile und Luftstroeme verweisen ueber IDs auf Geschwisterzonen desselben Satzes (ID_Nachbarzone, " +
+            "ID_ZoneA/ID_ZoneB), die der Paketweg (Verweis auf einen Katalogschluessel) nicht abbildet. Pruefsumme und " +
+            "Paket des Gebaeudes bleiben ohne Zonen; die Konditionierung der Katalogzonen faellt ueber die Leerspalte " +
+            "ID_Zone_Stamm aus seinen Kindern.";
+
         private static IReadOnlyDictionary<string, string> AusnahmenBauen()
         {
             var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -491,6 +512,8 @@ namespace WindowsFormsApplication1
                      })
                 d[t] = GRUND_ZAPFPROFIL;
             d[ProzessNutzungSchema.TAB_PROFIL] = GRUND_NUTZUNGSPROFIL;
+            foreach (string t in new[] { ZonenKatalogSchema.TAB_ZONE, ZonenKatalogSchema.TAB_BAUTEIL, ZonenKatalogSchema.TAB_LUFTSTROM })
+                d[t] = GRUND_KATALOGZONEN;
             return d;
         }
 

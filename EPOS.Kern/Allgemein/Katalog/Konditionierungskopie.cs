@@ -82,6 +82,7 @@ namespace WindowsFormsApplication1
                 KonditionierungSchema.SPALTE_ID_ZONE,
                 KonditionierungSchema.SPALTE_ID_GEBAEUDE_STAMM,
                 KonditionierungSchema.SPALTE_ID_VORLAGE,
+                ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM,
             };
 
         /// <summary>Die Spalten der Periodentabelle, die nicht mitreisen — sie hängt am Kalender.</summary>
@@ -163,12 +164,8 @@ namespace WindowsFormsApplication1
             parameter.AddRange(zeilenwerte);
 
             return v.Ausfuehren(
-                "INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE + "\" (\"" +
-                KonditionierungSchema.SPALTE_ID_GEBAEUDE + "\", \"" +
-                KonditionierungSchema.SPALTE_ID_ZONE + "\", \"" +
-                KonditionierungSchema.SPALTE_ID_GEBAEUDE_STAMM + "\", \"" +
-                KonditionierungSchema.SPALTE_ID_VORLAGE + "\", " + liste + ") " +
-                "SELECT ?, ?, ?, ?, " + liste + " FROM \"" + KonditionierungSchema.TAB_VORGABE +
+                "INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE + "\" (" + nach.Eigentuemerspalten + ", " + liste + ") " +
+                "SELECT " + nach.Eigentuemerplatzhalter + ", " + liste + " FROM \"" + KonditionierungSchema.TAB_VORGABE +
                 "\" WHERE " + von.Bedingung() + groessenfilter + zeilenfilter + " ORDER BY \"ID\"",
                 parameter.ToArray());
         }
@@ -209,12 +206,8 @@ namespace WindowsFormsApplication1
                 parameter.Add(new DbParam("@alt", alt));
 
                 v.Ausfuehren(
-                    "INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER + "\" (\"" +
-                    KonditionierungSchema.SPALTE_ID_GEBAEUDE + "\", \"" +
-                    KonditionierungSchema.SPALTE_ID_ZONE + "\", \"" +
-                    KonditionierungSchema.SPALTE_ID_GEBAEUDE_STAMM + "\", \"" +
-                    KonditionierungSchema.SPALTE_ID_VORLAGE + "\", " + liste + ") " +
-                    "SELECT ?, ?, ?, ?, " + auswahlliste + " FROM \"" +
+                    "INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER + "\" (" + nach.Eigentuemerspalten + ", " + liste + ") " +
+                    "SELECT " + nach.Eigentuemerplatzhalter + ", " + auswahlliste + " FROM \"" +
                     KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID\" = ?",
                     parameter.ToArray());
                 kalender++;

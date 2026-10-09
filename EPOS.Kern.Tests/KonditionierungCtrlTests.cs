@@ -104,9 +104,10 @@ namespace EPOS.Kern.Tests
             if (!Bereit()) return;
             foreach (var (tabelle, spalten) in new[]
                      {
-                         (KonditionierungSchema.TAB_KALENDER, KonditionierungNutzungSchema.SPALTENZAHL_KALENDER),
+                         // Schritt ZK: ID_Zone_Stamm an Kalender und Vorgabe (die Periode haengt am Kalender).
+                         (KonditionierungSchema.TAB_KALENDER, KonditionierungNutzungSchema.SPALTENZAHL_KALENDER + 1),
                          (KonditionierungSchema.TAB_PERIODE, KonditionierungSchema.SPALTENZAHL_PERIODE),
-                         (KonditionierungSchema.TAB_VORGABE, KonditionierungSchema.SPALTENZAHL_VORGABE),
+                         (KonditionierungSchema.TAB_VORGABE, KonditionierungSchema.SPALTENZAHL_VORGABE + 1),
                      })
             {
                 long n = Convert.ToInt64(DataRepository.ExecuteScalar(

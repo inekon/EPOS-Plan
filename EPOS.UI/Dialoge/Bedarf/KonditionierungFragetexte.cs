@@ -48,8 +48,8 @@ public sealed class KonditionierungFragetexte
     /// Konditionierung der Zonen; Festlegung 3)
     /// </summary>
     public string SpeichernUnter { get; set; }
-        = "„Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: "
-        + "{0}. Trotzdem anlegen?";
+        = "„Speichern unter“ legt einen Katalogsatz mit der Gebäudeebene an; die Zonen kommen in ihrem gespeicherten "
+        + "Stand mit, darunter: {0}. Anlegen?";
 
     /// <summary><c>KOND_FRAGE_ZONEN</c> — der Zusatz mit den Namen der betroffenen Zonen; „{0}“ die Namen</summary>
     public string Zonen { get; set; } = "Betroffene Zonen: {0}.";

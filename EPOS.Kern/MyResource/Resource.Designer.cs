@@ -32037,7 +32037,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz trägt die Zone „{0}“ mit {1} Bauteilen nicht mit – trotzdem speichern? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz übernimmt die Zone „{0}“ mit {1} Bauteilen in ihrem gespeicherten Stand – speichern? ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_SPEICHERN_UNTER {
             get {
@@ -32046,7 +32046,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz trägt die {0} Zonen mit {1} Bauteilen nicht mit; sie bleiben an der Projektkopie – trotzdem speichern? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz übernimmt die {0} Zonen mit {1} Bauteilen in ihrem gespeicherten Stand – speichern? ähnelt.
         /// </summary>
         public static string GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN {
             get {
@@ -32100,7 +32100,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Katalogsatz trägt keine Zonen; die Zonen ({0}) mit {1} Bauteilen bleiben an der Projektkopie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Katalogsatz übernimmt die Zonen ({0}) mit {1} Bauteilen in ihrem gespeicherten Stand. ähnelt.
         /// </summary>
         public static string GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN {
             get {
@@ -32190,7 +32190,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur für ein Gebäude im Projekt: Ein Katalogsatz trägt keine Zonen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt („In DB übernehmen“, „Speichern unter“); die Übernahme ins Projekt kopiert sie, bearbeitet werden sie dort. ähnelt.
         /// </summary>
         public static string GEBZ_SPERRE_KATALOG {
             get {
@@ -32370,7 +32370,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt („Gebäude im Projekt bearbeiten…“ im Gebäudedialog). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt Zonen; die Übernahme ins Projekt kopiert sie, und das Gebäude im Projekt rechnet dann nach dem Zonenmodell. ähnelt.
         /// </summary>
         public static string GEBZ_ZEILE_KATALOG {
             get {
@@ -33477,7 +33477,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ in die Datenbank übernommen. Seine {1} Zonen mit {2} Bauteilen bleiben im Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude „{0}“ samt seinen {1} Zonen mit {2} Bauteilen in die Datenbank übernommen. ähnelt.
         /// </summary>
         public static string GEB_MSG_IN_DB_ZONEN {
             get {
@@ -33864,7 +33864,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden alle Gebäudewerte und die Konditionierung des Gebäudes. Zonen und Bauteile bleiben im Projekt – die Datenbank führt keine Zonen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernommen werden alle Gebäudewerte, die Konditionierung des Gebäudes und seine Zonen samt Bauteilen, Luftaustausch und Konditionierung der Zonen. ähnelt.
         /// </summary>
         public static string GEB_TEXT_IN_DB_REGEL {
             get {
@@ -74757,7 +74757,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen Katalogsatz nur mit der Gebäudeebene an. Im Projekt bleiben zurück: {0}. Trotzdem anlegen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Speichern unter“ legt einen Katalogsatz mit der Gebäudeebene an; die Zonen kommen in ihrem gespeicherten Stand mit, darunter: {0}. Anlegen? ähnelt.
         /// </summary>
         public static string KOND_FRAGE_SPEICHERN_UNTER {
             get {

@@ -3220,6 +3220,25 @@ namespace Testdatenbankschema
                                   KaeltemaschinenTypkennfelderSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt ZonenKatalogSchema.SCHRITT (ZK): die Katalogzwillinge Tab_Zone_STAMM, Tab_Bauteil_STAMM,
+            //      Tab_Zonenluftstrom_STAMM und die Eigentuemerspalte ID_Zone_Stamm an Kalender und Vorgabe der
+            //      Konditionierung, die Teilindizes des Katalogbaus ohne Katalogzonen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ZonenKatalog bedient. Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile entsteht, der Rechenweg liest die Zwillinge nicht.
+            string nrZk = ZonenKatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZk + " - Zonen im Gebaeudekatalog: " +
+                              (ZonenKatalogSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZk = new List<string>();
+                angelegt += ZonenKatalogSchema.Ausfuehren(berichtZk);
+                foreach (string zeile in berichtZk)
+                    Console.WriteLine("Schritt " + nrZk + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZk + " - vollstaendig: " + ZonenKatalogSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt UebergabegrenzeSchema.SCHRITT (UB, Umsetzungskonzept Uebergabegrenze und Bivalenz, Abschnitt 4):
             //      acht Geraetespalten an Tab_WP und Tab_WP_STAMM, Ruecklauf_Max an Tab_BHKW und Tab_BHKW_STAMM, Einbindung
             //      und Vorwaermbetrieb an Tab_Energieanlagen, Bereiche und Zaehler an Tab_ErgebnisWaermepumpeModul und

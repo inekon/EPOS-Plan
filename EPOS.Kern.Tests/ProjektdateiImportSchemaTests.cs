@@ -130,7 +130,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, ProjektdateiImportSchema.Offen());
             DataTable t = DataRepository.GetDataTable(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND sql LIKE ? ORDER BY name", new DbParam("@m", "%'GBXML'%"));
-            var namen = t.Rows.Cast<DataRow>().Select(r => Convert.ToString(r["name"], CultureInfo.InvariantCulture)).ToList();
+            // Die Katalogzwillinge der Zonen (Schritt ZK) entstehen spaeter schon mit SQPROJ - kein Umbau dieses Schritts.
+            var zwillinge = new[] { ZonenKatalogSchema.TAB_ZONE, ZonenKatalogSchema.TAB_BAUTEIL };
+            foreach (string z in zwillinge) Assert.Equal(1, Vorkommen(Sql(z), "'SQPROJ'"));
+            var namen = t.Rows.Cast<DataRow>().Select(r => Convert.ToString(r["name"], CultureInfo.InvariantCulture))
+                         .Where(n => !zwillinge.Contains(n)).ToList();
             Assert.Equal(ProjektdateiImportSchema.TABELLEN.Select(u => u.Tabelle).OrderBy(x => x, StringComparer.Ordinal),
                          namen.OrderBy(x => x, StringComparer.Ordinal));
             foreach (ProjektdateiImportSchema.Umbau u in ProjektdateiImportSchema.TABELLEN)

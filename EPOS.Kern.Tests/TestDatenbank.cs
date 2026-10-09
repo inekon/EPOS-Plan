@@ -993,6 +993,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltemaschinenTypkennfelderSchema.SCHRITT (KM2): die eingebauten Typkennfelder der
                 // Kaeltemaschinen als gesperrte Katalogsaetze samt Kennlinie, Schluessel und Pruefsumme. Wiederholbar.
                 KaeltemaschinenTypkennfelderSchema.Ausfuehren(null);
+                // Schritt ZonenKatalogSchema.SCHRITT (ZK): die Katalogzwillinge der Zonentabellen und ID_Zone_Stamm an der
+                // Konditionierung, reines DDL. Wiederholbar.
+                ZonenKatalogSchema.Ausfuehren(null);
                 // Schritt UebergabegrenzeSchema.SCHRITT (UB, Abschnitt 4): Grenzen an Waermepumpe und BHKW, Einbindung und
                 // Vorwaermbetrieb an der Anlage, Bereiche und Zaehler im Ergebnis, leer. Wiederholbar.
                 UebergabegrenzeSchema.Ausfuehren(null);

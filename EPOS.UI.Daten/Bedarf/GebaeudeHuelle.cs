@@ -380,9 +380,9 @@ namespace WindowsFormsApplication1
             GebaeudeStammCtrl.ProjektuebernahmeErgebnis e = GebaeudeStammCtrl.AusProjektUebernehmen(z.IdZ, name);
             if (!e.Ok) return new GebaeudeDbUebernahme(false, "", e.Meldung, e.AmNamen);
 
-            string text = e.ZonenImProjekt > 0
+            string text = e.Zonen > 0
                 ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_ZONEN,
-                                e.Name, e.ZonenImProjekt, e.BauteileImProjekt)
+                                e.Name, e.Zonen, e.Bauteile)
                 : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GEB_MSG_IN_DB_UEBERNOMMEN, e.Name);
             return new GebaeudeDbUebernahme(true, e.Name, text);
         }

@@ -136,7 +136,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Konditionierung_reist_mit_Zonen_und_Bauteile_bleiben_im_Projekt()
+        public void Konditionierung_und_Zonen_reisen_mit_die_Projektkopie_behaelt_ihre_Zonen()
         {
             if (!_db.Vorhanden || !KonditionierungSchema.Lesbar()) return;
             int idZ = Zuordnung(1040);
@@ -165,17 +165,20 @@ namespace EPOS.Kern.Tests
             GebaeudeStammCtrl.ProjektuebernahmeErgebnis e =
                 GebaeudeStammCtrl.AusProjektUebernehmen(idZ, "Übernahmeprobe Zonen", STICHTAG);
             Assert.True(e.Ok, e.Meldung);
-            Assert.Equal(1, e.ZonenImProjekt);
-            Assert.Equal(1, e.BauteileImProjekt);
+            Assert.Equal(1, e.Zonen);
+            Assert.Equal(1, e.Bauteile);
             Assert.Equal(1, e.Befund.Vorgaben);
 
             List<Vorgabezeile> imKatalog = new KonditionierungCtrl().Vorgaben(KonditionierungCtrl.Eigner.Katalogbau(e.Id));
             Assert.Single(imKatalog);
             Assert.Equal(0.7, imKatalog[0].Wert.Value, 9);
 
-            // Die Zone bleibt an der Projektkopie.
+            // Die Zone bleibt an der Projektkopie, und der Katalogsatz traegt ihre Kopie (Schritt ZK).
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"Tab_Zone\" WHERE \"ID_Gebaeude\" = " + idGebaeude));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteil\" WHERE \"ID_Zone\" = " + zone));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"Tab_Zone_STAMM\" WHERE \"ID_Gebaeude\" = " + e.Id));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteil_STAMM\" b INNER JOIN \"Tab_Zone_STAMM\" z " +
+                                  "ON z.\"ID\" = b.\"ID_Zone\" WHERE z.\"ID_Gebaeude\" = " + e.Id));
         }
 
         [Fact]

@@ -5317,6 +5317,16 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_KAELTEMASCHINEN_TYPKENNFELDER = KaeltemaschinenTypkennfelderSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="ZonenKatalogSchema.SCHRITT"/> — <b>Zonen im Gebäudekatalog</b> (ZK): die Katalogzwillinge
+        /// <c>Tab_Zone_STAMM</c>, <c>Tab_Bauteil_STAMM</c>, <c>Tab_Zonenluftstrom_STAMM</c> und die Eigentümerspalte
+        /// <c>ID_Zone_Stamm</c> an Kalender und Vorgabe der Konditionierung; die Teilindizes des Katalogbaus schließen
+        /// die Zeilen einer Katalogzone aus.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Reines DDL, der Rechenweg liest die Zwillinge nicht.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_KATALOG = ZonenKatalogSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="UebergabegrenzeSchema.SCHRITT"/> — <b>Übergabegrenze und Bivalenz</b> (Umsetzungskonzept
         /// Übergabegrenze und Bivalenz, Abschnitt 4): acht Gerätespalten an <c>Tab_WP</c> und <c>Tab_WP_STAMM</c>, die
         /// Rücklaufgrenze an <c>Tab_BHKW</c> und <c>Tab_BHKW_STAMM</c>, Einbindung und Vorwärmbetrieb an
@@ -7761,6 +7771,13 @@ namespace WindowsFormsApplication1
                         "Der Katalog der Kaeltemaschinen truege die eingebauten Typkennfelder nicht; sie liessen sich nur ueber " +
                         "den Knopf des Katalogdialogs laden. KEIN Rechenergebnis aendert sich.",
                         Schritt_KaeltemaschinenTypkennfelder),
+            // ZK: Zonen im Gebaeudekatalog. Quelle ist ZonenKatalogSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_KATALOG,
+                        "Tab_Zone_STAMM, Tab_Bauteil_STAMM, Tab_Zonenluftstrom_STAMM; " +
+                        "Tab_Konditionierungskalender/Tab_Konditionierungsvorgabe: ID_Zone_Stamm",
+                        "Ein Katalogsatz koennte keine Zonen tragen; die Uebernahme ins Projekt kopierte keine. " +
+                        "KEIN Rechenergebnis aendert sich.",
+                        Schritt_ZonenKatalog),
             // UB: Grenzen der Uebergabe, Einbindung, Bereiche. Quelle ist UebergabegrenzeSchema, die Nummer steht allein dort.
             new Schritt(SCHRITT_UEBERGABEGRENZE,
                         "Tab_WP, Tab_WP_STAMM: Spreizung_*, Mindestvolumenstrom_Prozent, Ruecklauf_*, Kaeltemittel; " +
@@ -14777,6 +14794,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Typkennfelder der Kaeltemaschinen - " +
                     (ergebnis.Neu == 0 ? "standen bereits." : ergebnis.Neu + " gesaet.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Zonen im Gebäudekatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN_KATALOG"/>, die
+        /// Anweisungen bei <see cref="ZonenKatalogSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenKatalog(Lauf l)
+        {
+            string nr = ZonenKatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenKatalogSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ZonenKatalogSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ZonenKatalogSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Katalogzwillinge der Zonen, ID_Zone_Stamm oder die Teilindizes des Katalogbaus stehen nach " +
+                                  "dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Zonen im Gebaeudekatalog - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n)/Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

@@ -284,6 +284,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string TAB_ZONENLUFTSTROM = "Tab_Zonenluftstrom";
 
+        /// <summary>Die Zonen eines Katalogsatzes (Schritt ZK, <see cref="ZonenKatalogSchema"/>) — Zwilling von <see cref="TAB_ZONE"/>.</summary>
+        public const string TAB_ZONE_STAMM = "Tab_Zone_STAMM";
+
+        /// <summary>Die Bauteile einer Katalogzone (Schritt ZK) — Zwilling von <see cref="TAB_BAUTEIL"/>.</summary>
+        public const string TAB_BAUTEIL_STAMM = "Tab_Bauteil_STAMM";
+
+        /// <summary>Luftaustausch zwischen zwei Katalogzonen (Schritt ZK) — Zwilling von <see cref="TAB_ZONENLUFTSTROM"/>.</summary>
+        public const string TAB_ZONENLUFTSTROM_STAMM = "Tab_Zonenluftstrom_STAMM";
+
         /// <summary>
         /// Das Ergebnis je Zone eines Laufs (Schritt S-G, Anwenderentscheid A6) — nur Skalare, hängt am
         /// Gebäudeergebnis (<c>Tab_ErgebnisGebaeude</c>); Rechenergebnis, reist nur im Transfer.

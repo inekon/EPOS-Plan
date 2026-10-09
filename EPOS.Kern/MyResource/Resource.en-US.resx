@@ -14736,13 +14736,13 @@ Please check all entries!</value>
     <value>Name in the database:</value>
   </data>
   <data name="GEB_TEXT_IN_DB_REGEL" xml:space="preserve">
-    <value>All building values and the building's conditioning are saved. Zones and components remain in the project – the database does not hold zones.</value>
+    <value>All building values, the building's conditioning and its zones with their components, air exchange and zone conditioning are transferred.</value>
   </data>
   <data name="GEB_MSG_IN_DB_UEBERNOMMEN" xml:space="preserve">
     <value>Building “{0}” saved to the database.</value>
   </data>
   <data name="GEB_MSG_IN_DB_ZONEN" xml:space="preserve">
-    <value>Building “{0}” saved to the database. Its {1} zones with {2} components remain in the project.</value>
+    <value>Building “{0}” saved to the database together with its {1} zones and {2} components.</value>
   </data>
   <data name="GEB_MSG_DB_UEBERNAHME_KEIN_GEBAEUDE" xml:space="preserve">
     <value>No saved building is selected in the project.</value>
@@ -34630,7 +34630,7 @@ Do you want to allow this?</value>
     <value>Envelope calculation: component method – {0} zones, {1} building components. The U-value groups are derived from the building components of all zones; the values of the building apply again without a zone.</value>
   </data>
   <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
-    <value>Envelope calculation: class method – U-value groups and construction type. A catalogue record carries no zones; zones and building components belong to a building in the project (“Edit building in the project…” in the building dialog).</value>
+    <value>Envelope calculation: class method – U-value groups and construction type. A catalogue record carries zones; adding it to a project copies them, and the building in the project is then calculated with the zone model.</value>
   </data>
   <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Take over building as one zone</value>
@@ -34639,7 +34639,7 @@ Do you want to allow this?</value>
     <value>Creates one zone with building components from the U-value groups, scaled up to the project area; it is written with OK.</value>
   </data>
   <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
-    <value>Only for a building in the project: a catalogue record carries no zones.</value>
+    <value>The zones of a catalogue record come from a building in the project (transfer to the database, “Save as”); adding the record to a project copies them, and they are edited there.</value>
   </data>
   <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
     <value>The building already has the zone “{0}”.</value>
@@ -34786,13 +34786,13 @@ Do you want to allow this?</value>
     <value>In the project the building keeps the name “{0}”; a different name applies to “Save as” (new catalogue record).</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
-    <value>The catalogue record does not carry the zone “{0}” with {1} building components – save anyway?</value>
+    <value>The catalogue record takes over zone “{0}” with {1} components as last saved – save?</value>
   </data>
   <data name="GEBZ_FRAGE_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
-    <value>The catalogue record does not carry the {0} zones with {1} building components; they remain with the project copy – save anyway?</value>
+    <value>The catalogue record takes over the {0} zones with {1} components as last saved – save?</value>
   </data>
   <data name="GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN" xml:space="preserve">
-    <value>The new catalogue record carries no zones; the zones ({0}) with {1} building components remain with the project copy.</value>
+    <value>The new catalogue record takes over the zones ({0}) with {1} components as last saved.</value>
   </data>
   <data name="GEBZ_ZONEN_ZAHL" xml:space="preserve">
     <value>{0} zones</value>
@@ -41615,7 +41615,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The ventilation of this building is given as a total: air change rate {0} 1/h. A ventilation default needs infiltration and occupant ventilation separately. Split into infiltration {1} 1/h and occupant ventilation {2} 1/h? The total stays the same.</value>
   </data>
   <data name="KOND_FRAGE_SPEICHERN_UNTER" xml:space="preserve">
-    <value>“Save as” creates a catalogue record with the building level only. Left behind in the project: {0}. Create it anyway?</value>
+    <value>“Save as” creates a catalogue record with the building level; the zones come along as last saved, including: {0}. Create it?</value>
   </data>
   <data name="KOND_FRAGE_ZONEN" xml:space="preserve">
     <value>Zones concerned: {0}.</value>

@@ -716,6 +716,16 @@ namespace WindowsFormsApplication1
                         return 0;
                     }
 
+                    // Schritt ZK: die Zonen des Katalogsatzes samt Bauteilen, Luftstroemen und Zonen-Konditionierung -
+                    // die Projektkopie rechnet danach nach dem Zonenmodell wie jedes Gebaeude mit Zonen.
+                    Zonenkopie.Befund zonen = Zonenkopie.Kopieren(vorgang, Zonenebene.Katalog, Convert.ToInt64(r["ID"]),
+                                                                  Zonenebene.Projekt, id, idProjekt);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return 0;
+                    }
+
                     vorgang.Commit();
                     return id;
                 }
@@ -1053,6 +1063,14 @@ namespace WindowsFormsApplication1
                         return new Katalogkopie.Ergebnis(false, 0, "", befund.Meldung);
                     }
 
+                    // Schritt ZK: die Zonen des Satzes werden mit dupliziert.
+                    Zonenkopie.Befund zonen = Zonenkopie.Kopieren(vorgang, Zonenebene.Katalog, id, Zonenebene.Katalog, kopf.Id, 0);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return new Katalogkopie.Ergebnis(false, 0, "", zonen.Meldung);
+                    }
+
                     vorgang.Commit();
                     return kopf;
                 }
@@ -1201,9 +1219,12 @@ namespace WindowsFormsApplication1
         /// Duplizieren), ohne beides nur den Kopf. Scheitert ein Schritt, fällt alles zurück. Das Schloss und
         /// den freien Namen prüft der Aufrufer (die Hülle meldet es mit eigenem Text).
         /// </summary>
+        /// <param name="zonenquelle">Schritt ZK: der Satz, dessen Zonen ein NEUER Satz in ihrem gespeicherten Stand übernimmt
+        /// (Projektgebäude oder Katalogbau, <see cref="Zonenkopie"/>); <c>null</c> ohne Zonen.</param>
         public static Katalogschreibergebnis KatalogSchreiben(GebaeudeModel modell, bool neu, string ursprungsname,
                                                               Konditionierungsstand stand,
-                                                              KonditionierungCtrl.Eigner quelle = null)
+                                                              KonditionierungCtrl.Eigner quelle = null,
+                                                              KonditionierungCtrl.Eigner zonenquelle = null)
         {
             if (modell == null) throw new ArgumentNullException(nameof(modell));
             if (!neu) modell.Gebaeudename = ursprungsname;
@@ -1257,6 +1278,16 @@ namespace WindowsFormsApplication1
                         geschrieben = b.Vorgaben + b.Kalender > 0;
                     }
 
+                    if (neu && id > 0 && (zonenquelle ?? quelle) != null)
+                    {
+                        Zonenkopie.Befund z = ZonenDerQuelle(vorgang, zonenquelle ?? quelle, id);
+                        if (!z.Ok)
+                        {
+                            vorgang.Rollback();
+                            return Katalogschreibergebnis.Fehler(z.Meldung);
+                        }
+                    }
+
                     vorgang.Commit();
                     return new Katalogschreibergebnis(true, id, geschrieben, "");
                 }
@@ -1308,6 +1339,23 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Schritt ZK: die Zonen der <paramref name="quelle"/> — eines Projektgebäudes oder eines Katalogbaus — an den
+        /// neuen Katalogbau <paramref name="idKatalog"/>, im laufenden Vorgang. Ohne Quelle oder bei einer Zone oder
+        /// Vorlage als Quelle nichts.
+        /// </summary>
+        private static Zonenkopie.Befund ZonenDerQuelle(DbVorgang vorgang, KonditionierungCtrl.Eigner quelle, int idKatalog)
+        {
+            if (quelle == null) return Zonenkopie.Befund.Nichts;
+            if (quelle.Art == Kalendereigentuemer.Katalogbau)
+                return Zonenkopie.Kopieren(vorgang, Zonenebene.Katalog, quelle.IdStamm, Zonenebene.Katalog, idKatalog, 0);
+            if (quelle.Art != Kalendereigentuemer.Gebaeude) return Zonenkopie.Befund.Nichts;
+            object projekt = vorgang.Skalar("SELECT COALESCE([ID_Projekt], 0) FROM [" + TABLE_PROJ + "] WHERE [ID] = ?",
+                                            new DbParam("@g", quelle.IdGebaeude));
+            int idProjekt = projekt == null || projekt == DBNull.Value ? 0 : Convert.ToInt32(projekt, System.Globalization.CultureInfo.InvariantCulture);
+            return Zonenkopie.Kopieren(vorgang, Zonenebene.Projekt, quelle.IdGebaeude, Zonenebene.Katalog, idKatalog, idProjekt);
+        }
+
         /// <summary>Was „Speichern unter" ergeben hat: der neue Katalogbau und sein Kopierbefund.</summary>
         public sealed record SpeichernUnterErgebnis(bool Ok, int Id,
                                                     Konditionierungskopie.Befund Befund, string Meldung);
@@ -1316,8 +1364,8 @@ namespace WindowsFormsApplication1
         /// <b>„Speichern unter"</b> (Konzept 5.5, Festlegung 10): Der Satz
         /// <paramref name="modell"/> wird als NEUER Katalogbau angelegt, und die Konditionierung
         /// der <paramref name="quelle"/> — eines Projektgebäudes oder eines Katalogbaus — kommt in
-        /// DERSELBEN Transaktion mit. Es reist nur die <b>Gebäudeebene</b>; die Zonenzeilen bleiben
-        /// zurück und stehen im Befund für die Rückfrage (KP2).
+        /// DERSELBEN Transaktion mit, dazu ihre Zonen samt Bauteilen, Luftströmen und Zonen-Konditionierung
+        /// (Schritt ZK, <see cref="Zonenkopie"/>).
         ///
         /// <para>Im Katalogmodus ist die Quelle der Ursprungs-Katalogbau — dann wirkt „Speichern
         /// unter" wie Duplizieren. <paramref name="quelle"/> <c>null</c> legt nur den Kopf an.</para>
@@ -1349,6 +1397,13 @@ namespace WindowsFormsApplication1
                     {
                         vorgang.Rollback();
                         return new SpeichernUnterErgebnis(false, 0, befund, befund.Meldung);
+                    }
+
+                    Zonenkopie.Befund zonen = ZonenDerQuelle(vorgang, quelle, id);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return new SpeichernUnterErgebnis(false, 0, befund, zonen.Meldung);
                     }
 
                     vorgang.Commit();
@@ -1387,12 +1442,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Was „In DB übernehmen" ergeben hat: die Id und der Name des neuen Katalogsatzes, der
-        /// Kopierbefund der Konditionierung und die Zahl der Zonen und Bauteile, die im Projekt
-        /// bleiben (der Katalog führt keine Zonen) — oder die benannte Absage.
+        /// Kopierbefund der Konditionierung und die Zahl der Zonen und Bauteile, die der Katalogsatz übernommen
+        /// hat (Schritt ZK) — oder die benannte Absage.
         /// </summary>
         public sealed record ProjektuebernahmeErgebnis(bool Ok, int Id, string Name, Projektuebernahmeabsage Absage,
                                                        string Meldung, Konditionierungskopie.Befund Befund,
-                                                       int ZonenImProjekt, int BauteileImProjekt)
+                                                       int Zonen, int Bauteile)
         {
             /// <summary>Steht die Absage am Namensfeld (leer oder vergeben)?</summary>
             public bool AmNamen => Absage == Projektuebernahmeabsage.NameLeer || Absage == Projektuebernahmeabsage.NameVergeben;
@@ -1453,8 +1508,8 @@ namespace WindowsFormsApplication1
         /// (<c>GEB_TEXT_HERKUNFT_PROJEKT</c>).</item>
         /// <item><b>Konditionierung:</b> die Gebäudeebene (Vorgaben, Kalender samt Perioden) über
         /// <see cref="Konditionierungskopie"/> — wie „Speichern unter".</item>
-        /// <item><b>Zonen und Bauteile</b> bleiben im Projekt: Der Katalog führt keine Zonen
-        /// (<c>Tab_Zone.ID_Gebaeude</c> zeigt nur auf Projektkopien). Ihre Zahl steht im Ergebnis.</item>
+        /// <item><b>Zonen</b> samt Bauteilen, Luftströmen und Zonen-Konditionierung reisen mit (Schritt ZK,
+        /// <see cref="Zonenkopie"/>); ihre Zahl steht im Ergebnis.</item>
         /// <item>Die Tagesverteilung hängt im Katalog am Gebäudetyp (<c>Typ</c>), der mitreist.</item>
         /// </list>
         ///
@@ -1481,9 +1536,6 @@ namespace WindowsFormsApplication1
             string beschreibung = Herkunftsbeschreibung(Spaltentext(r, "Beschreibung"),
                                                         Projektname(Ganzzahl(r, "ID_Projekt")),
                                                         stichtag ?? DateTime.Today);
-            int zonen = Anzahl("SELECT COUNT(*) FROM [Tab_Zone] WHERE [ID_Gebaeude] = ?", idGebaeude);
-            int bauteile = Anzahl("SELECT COUNT(*) FROM [Tab_Bauteil] WHERE [ID_Zone] IN " +
-                                  "(SELECT [ID] FROM [Tab_Zone] WHERE [ID_Gebaeude] = ?)", idGebaeude);
 
             using (DbVorgang vorgang = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
@@ -1516,9 +1568,17 @@ namespace WindowsFormsApplication1
                         return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, befund.Meldung);
                     }
 
+                    Zonenkopie.Befund zonen = Zonenkopie.Kopieren(vorgang, Zonenebene.Projekt, idGebaeude, Zonenebene.Katalog, id,
+                                                                  Ganzzahl(r, "ID_Projekt") ?? 0);
+                    if (!zonen.Ok)
+                    {
+                        vorgang.Rollback();
+                        return ProjektuebernahmeErgebnis.Abgelehnt(Projektuebernahmeabsage.Fehler, zonen.Meldung);
+                    }
+
                     vorgang.Commit();
                     return new ProjektuebernahmeErgebnis(true, id, neuerName, Projektuebernahmeabsage.Keine, "",
-                                                         befund, zonen, bauteile);
+                                                         befund, zonen.Zonen, zonen.Bauteile);
                 }
                 catch (Exception ex)
                 {
@@ -1558,13 +1618,6 @@ namespace WindowsFormsApplication1
             object n = DataRepository.ExecuteScalar("SELECT [Projektname] FROM [Tab_Projekt] WHERE [ID] = ?",
                                                     new DbParam("@pid", idProjekt.Value));
             return n == null || n == DBNull.Value ? "" : Convert.ToString(n, System.Globalization.CultureInfo.InvariantCulture);
-        }
-
-        /// <summary>Eine Zählung mit einem Id-Parameter; 0 ohne Ergebnis.</summary>
-        private static int Anzahl(string sql, int id)
-        {
-            object n = DataRepository.ExecuteScalar(sql, new DbParam("@id", id));
-            return n == null || n == DBNull.Value ? 0 : Convert.ToInt32(n, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>
