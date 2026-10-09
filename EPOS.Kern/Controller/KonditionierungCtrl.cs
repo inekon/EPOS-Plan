@@ -56,6 +56,24 @@ namespace WindowsFormsApplication1
         public sealed record Eigner(Kalendereigentuemer Art, long IdGebaeude, long? IdZone, long IdStamm,
                                     long IdVorlage)
         {
+            /// <summary>
+            /// Eine Zone eines Katalogbaus (Schritt ZK); <paramref name="idStamm"/> ist der Katalogbau der Zone
+            /// (Konsistenzregel wie bei <see cref="Zone"/>), <paramref name="idZoneStamm"/> die Katalogzone.
+            /// </summary>
+            public static Eigner Katalogzone(long idStamm, long idZoneStamm)
+                => new Eigner(Kalendereigentuemer.Katalogzone, 0, idZoneStamm, idStamm, 0);
+
+            /// <summary>
+            /// Die Eigentümerspalten für ein <c>INSERT</c> in Kalender oder Vorgabe — die vier gewohnten und, nur für
+            /// eine Katalogzone, <c>ID_Zone_Stamm</c> (Schritt ZK). Gleiche Folge wie <see cref="Spaltenwerte"/>.
+            /// </summary>
+            internal string Eigentuemerspalten
+                => "\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\"" +
+                   (Art == Kalendereigentuemer.Katalogzone ? ", \"" + ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM + "\"" : "");
+
+            /// <summary>Die Platzhalter zu <see cref="Eigentuemerspalten"/>.</summary>
+            internal string Eigentuemerplatzhalter => Art == Kalendereigentuemer.Katalogzone ? "?, ?, ?, ?, ?" : "?, ?, ?, ?";
+
             /// <summary>Ein Projektgebäude ohne Zone.</summary>
             public static Eigner Gebaeude(long id) => new Eigner(Kalendereigentuemer.Gebaeude, id, null, 0, 0);
 
@@ -82,7 +100,12 @@ namespace WindowsFormsApplication1
                     case Kalendereigentuemer.Zone:
                         return "\"ID_Gebaeude\" = ? AND \"ID_Zone\" = ?";
                     case Kalendereigentuemer.Katalogbau:
-                        return "\"ID_Gebaeude_Stamm\" = ?";
+                        // Schritt ZK: die Zeilen einer Katalogzone tragen den Katalogbau daneben.
+                        return ZonenKatalogSchema.Lesbar()
+                            ? "\"ID_Gebaeude_Stamm\" = ? AND \"" + ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM + "\" IS NULL"
+                            : "\"ID_Gebaeude_Stamm\" = ?";
+                    case Kalendereigentuemer.Katalogzone:
+                        return "\"ID_Gebaeude_Stamm\" = ? AND \"" + ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM + "\" = ?";
                     default:
                         return "\"ID_Vorlage\" = ?";
                 }
@@ -99,6 +122,8 @@ namespace WindowsFormsApplication1
                         return new[] { new DbParam("@g", IdGebaeude), new DbParam("@z", IdZone.Value) };
                     case Kalendereigentuemer.Katalogbau:
                         return new[] { new DbParam("@s", IdStamm) };
+                    case Kalendereigentuemer.Katalogzone:
+                        return new[] { new DbParam("@s", IdStamm), new DbParam("@zs", IdZone.Value) };
                     default:
                         return new[] { new DbParam("@v", IdVorlage) };
                 }
@@ -119,6 +144,7 @@ namespace WindowsFormsApplication1
                         case Kalendereigentuemer.Gebaeude: return IdGebaeude;
                         case Kalendereigentuemer.Zone: return IdZone.Value;
                         case Kalendereigentuemer.Katalogbau: return IdStamm;
+                        case Kalendereigentuemer.Katalogzone: return IdZone.Value;
                         default: return IdVorlage;
                     }
                 }
@@ -126,14 +152,19 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die vier Eigentümerspalten als Werte für ein <c>INSERT</c> (NULL, wo sie nicht gilt).</summary>
             internal DbParam[] Spaltenwerte(string praefix)
-                => new[]
+            {
+                var werte = new List<DbParam>
                 {
                     new DbParam(praefix + "g", Art == Kalendereigentuemer.Gebaeude || Art == Kalendereigentuemer.Zone
                         ? (object)IdGebaeude : null),
                     new DbParam(praefix + "z", Art == Kalendereigentuemer.Zone ? (object)IdZone.Value : null),
-                    new DbParam(praefix + "s", Art == Kalendereigentuemer.Katalogbau ? (object)IdStamm : null),
+                    new DbParam(praefix + "s", Art == Kalendereigentuemer.Katalogbau || Art == Kalendereigentuemer.Katalogzone
+                        ? (object)IdStamm : null),
                     new DbParam(praefix + "v", Art == Kalendereigentuemer.Vorlage ? (object)IdVorlage : null),
                 };
+                if (Art == Kalendereigentuemer.Katalogzone) werte.Add(new DbParam(praefix + "zs", IdZone.Value));
+                return werte.ToArray();
+            }
         }
 
         // =================================================================
@@ -466,9 +497,9 @@ namespace WindowsFormsApplication1
             if (wert == null && !zelle.Aus && !zelle.Von.HasValue && !zelle.Bis.HasValue && !zelle.BedingtK.HasValue)
                 return Ergebnis.Gut;
             v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE +
-                         "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
+                         "\" (" + eigner.Eigentuemerspalten + ", " +
                          "\"Groesse\", \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\", \"Bedingt_K\") " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                         "VALUES (" + eigner.Eigentuemerplatzhalter + ", ?, ?, ?, ?, ?, ?, ?)",
                          Mit(eigner.Spaltenwerte("@e"),
                              new DbParam("@gr", gr),
                              new DbParam("@ze", zeile),
@@ -689,9 +720,9 @@ namespace WindowsFormsApplication1
                          Mit(eigner.Parameter(), new DbParam("@gr", groesse)));
 
             v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER +
-                         "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
+                         "\" (" + eigner.Eigentuemerspalten + ", " +
                          "\"Groesse\", \"Wert\", \"Aus\", \"Woche\", \"Nennwert\", \"Bemerkung\") " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                         "VALUES (" + eigner.Eigentuemerplatzhalter + ", ?, ?, ?, ?, ?, ?)",
                          Mit(eigner.Spaltenwerte("@e"),
                              new DbParam("@gr", groesse),
                              new DbParam("@w", (object)zeile.Wert),

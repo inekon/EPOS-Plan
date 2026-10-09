@@ -123,6 +123,7 @@ namespace WindowsFormsApplication1
             {
                 case Kalendereigentuemer.Gebaeude: return TAB_GEBAEUDE;
                 case Kalendereigentuemer.Zone: return TAB_ZONE;
+                case Kalendereigentuemer.Katalogzone: return ZonenKatalogSchema.TAB_ZONE;
                 case Kalendereigentuemer.Katalogbau: return TAB_KATALOGBAU;
                 default: return null;
             }
