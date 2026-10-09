@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using SpeicherEngine;
 
@@ -175,6 +176,10 @@ namespace WindowsFormsApplication1
                     case KatalogImportArt.Stromspeicher:
                         LiesStromspeicher(pfad, quelle);
                         break;
+
+                    case KatalogImportArt.Kaeltemaschine:
+                        LiesKaeltemaschine(pfad);
+                        break;
                 }
             }
             catch (OperationCanceledException)
@@ -192,6 +197,23 @@ namespace WindowsFormsApplication1
                 _saetze.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
 
             return _saetze.Count;
+        }
+
+        /// <summary>
+        /// Kältemaschinen (KM1): Copper-Kurvendatei oder CSV-Kennfeldvorlage, am Inhalt erkannt
+        /// (<see cref="KaeltemaschineImportDatei"/>); übergangene Einträge stehen als Info-Meldung.
+        /// </summary>
+        private void LiesKaeltemaschine(string pfad)
+        {
+            KaeltemaschineImportDatei.Ergebnis e = KaeltemaschineImportDatei.Lesen(pfad);
+            foreach ((KaeltemaschineModel modell, string quelle) in e.Saetze)
+                _saetze.Add(new KaeltemaschineImportSatz(modell, quelle));
+            if (e.Uebergangen.Count > 0)
+                _meldungen.Add(new PruefMeldung(PruefStufe.Info, "KM_IMP_MSG_UEBERGANGEN",
+                    e.Uebergangen.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.Join("; ", e.Uebergangen.Take(10))));
+            if (e.Saetze.Count == 0)
+                _meldungen.Add(new PruefMeldung(PruefStufe.Fehler, "KM_IMP_MSG_LEER"));
         }
 
         /// <summary>

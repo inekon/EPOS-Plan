@@ -45273,6 +45273,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_KAELTELEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_KAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Korrekturfaktor für diffuse Strahlung: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_KDIFF {
@@ -45287,6 +45305,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_FELD_KDIR {
             get {
                 return ResourceManager.GetString("IMP_KAT_FELD_KDIR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeldpunkte: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_KENNFELDPUNKTE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_KENNFELDPUNKTE", resourceCulture);
             }
         }
         
@@ -45327,6 +45354,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestteillast: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_MINDESTTEILLAST {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_MINDESTTEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modell: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_MODELL {
@@ -45345,11 +45381,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenn-EER: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_NENN_EER {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_NENN_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelle: ähnelt.
         /// </summary>
         public static string IMP_KAT_FELD_QUELLE {
             get {
                 return ResourceManager.GetString("IMP_KAT_FELD_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung: ähnelt.
+        /// </summary>
+        public static string IMP_KAT_FELD_RUECKKUEHLART {
+            get {
+                return ResourceManager.GetString("IMP_KAT_FELD_RUECKKUEHLART", resourceCulture);
             }
         }
         
@@ -45539,6 +45593,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_GRP_EIGENSCHAFTEN {
             get {
                 return ResourceManager.GetString("IMP_KAT_GRP_EIGENSCHAFTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte ge [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string IMP_KAT_HINWEIS_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_HINWEIS_KAELTEMASCHINE", resourceCulture);
             }
         }
         
@@ -45759,6 +45822,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_KAELTELEISTUNG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_KAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kW ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_LEISTUNG {
@@ -45809,6 +45881,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_TITEL_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("IMP_KAT_TITEL_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen einlesen ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_KAELTEMASCHINE", resourceCulture);
             }
         }
         
@@ -72340,11 +72421,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder laden… ähnelt.
+        /// </summary>
+        public static string KM_BTN_TYPKENNFELDER {
+            get {
+                return ResourceManager.GetString("KM_BTN_TYPKENNFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ gelöscht werden? ähnelt.
         /// </summary>
         public static string KM_FRAGE_LOESCHEN {
             get {
                 return ResourceManager.GetString("KM_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eingebaute Typkennfelder (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben) in den Katalog laden? Vorhandene Sätze bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string KM_FRAGE_TYPKENNFELDER {
+            get {
+                return ResourceManager.GetString("KM_FRAGE_TYPKENNFELDER", resourceCulture);
             }
         }
         
@@ -72363,6 +72462,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_HILFSSTROM_LEER {
             get {
                 return ResourceManager.GetString("KM_HILFSSTROM_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine lesbare Kältemaschine (erwartet: Copper-Kurvendatei oder CSV-Kennfeldvorlage). ähnelt.
+        /// </summary>
+        public static string KM_IMP_MSG_LEER {
+            get {
+                return ResourceManager.GetString("KM_IMP_MSG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Einträge übergangen: {1} ähnelt.
+        /// </summary>
+        public static string KM_IMP_MSG_UEBERGANGEN {
+            get {
+                return ResourceManager.GetString("KM_IMP_MSG_UEBERGANGEN", resourceCulture);
             }
         }
         
@@ -72583,6 +72700,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Import aus einer Datei steht auf dieser Plattform nicht zur Verfügung. Die eingebauten Typkennfelder lassen sich über „Typkennfelder laden…“ übernehmen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_IMPORT_PLATTFORM {
+            get {
+                return ResourceManager.GetString("KM_MSG_IMPORT_PLATTFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennlinie enthält dieselbe Kombination aus Rückkühl- und Kaltwassertemperatur zweimal. ähnelt.
         /// </summary>
         public static string KM_MSG_KENNLINIE_DOPPELT {
@@ -72651,6 +72777,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_MSG_TEILLAST_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KM_MSG_TEILLAST_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder: {0} neu angelegt, {1} übersprungen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TYPKENNFELDER {
+            get {
+                return ResourceManager.GetString("KM_MSG_TYPKENNFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog der Kältemaschinen ist noch nicht auf dem Stand der Katalogfassung; die Typkennfelder können nicht geladen werden. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TYPKENNFELDER_SCHEMA {
+            get {
+                return ResourceManager.GetString("KM_MSG_TYPKENNFELDER_SCHEMA", resourceCulture);
             }
         }
         

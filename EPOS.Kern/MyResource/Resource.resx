@@ -49075,5 +49075,53 @@ Chart</value>
   <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
     <value>Die Übergabegrenze ist nicht herleitbar: {0}</value>
   </data>
+  <data name="IMP_KAT_TITEL_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschinen einlesen</value>
+  </data>
+  <data name="IMP_KAT_SP_KAELTELEISTUNG" xml:space="preserve">
+    <value>Nennkälteleistung</value>
+  </data>
+  <data name="IMP_KAT_FELD_RUECKKUEHLART" xml:space="preserve">
+    <value>Rückkühlung:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KAELTELEISTUNG" xml:space="preserve">
+    <value>Nennkälteleistung:</value>
+  </data>
+  <data name="IMP_KAT_FELD_NENN_EER" xml:space="preserve">
+    <value>Nenn-EER:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MINDESTTEILLAST" xml:space="preserve">
+    <value>Mindestteillast:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KENNFELDPUNKTE" xml:space="preserve">
+    <value>Kennfeldpunkte:</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_KAELTEMASCHINE" xml:space="preserve">
+    <value>Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte gelten am Eurovent-Punkt (Kaltwasser 7 °C, Außenluft 35 °C bzw. Kühlwasser 30 °C). Luftgekühlte Kurven beziehen sich auf die Außenluft und werden um die Grädigkeit von 5 K auf die Rückkühltemperatur verschoben.</value>
+  </data>
+  <data name="KM_IMP_MSG_UEBERGANGEN" xml:space="preserve">
+    <value>{0} Einträge übergangen: {1}</value>
+  </data>
+  <data name="KM_IMP_MSG_LEER" xml:space="preserve">
+    <value>Die Datei enthält keine lesbare Kältemaschine (erwartet: Copper-Kurvendatei oder CSV-Kennfeldvorlage).</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELDER_SCHEMA" xml:space="preserve">
+    <value>Der Katalog der Kältemaschinen ist noch nicht auf dem Stand der Katalogfassung; die Typkennfelder können nicht geladen werden.</value>
+  </data>
+  <data name="KM_BTN_TYPKENNFELDER" xml:space="preserve">
+    <value>Typkennfelder laden…</value>
+  </data>
+  <data name="KM_FRAGE_TYPKENNFELDER" xml:space="preserve">
+    <value>{0} eingebaute Typkennfelder (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben) in den Katalog laden? Vorhandene Sätze bleiben unverändert.</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELDER" xml:space="preserve">
+    <value>Typkennfelder: {0} neu angelegt, {1} übersprungen.</value>
+  </data>
+  <data name="KM_MSG_IMPORT_PLATTFORM" xml:space="preserve">
+    <value>Der Import aus einer Datei steht auf dieser Plattform nicht zur Verfügung. Die eingebauten Typkennfelder lassen sich über „Typkennfelder laden…“ übernehmen.</value>
+  </data>
 </root>
 
