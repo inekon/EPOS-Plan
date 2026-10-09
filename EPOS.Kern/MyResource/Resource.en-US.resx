@@ -49434,5 +49434,56 @@ chart</value>
   <data name="KI_DLG_BHKK_RUECKLAUF_MAX_ERL" xml:space="preserve">
     <value>Return temperature cut-off limit (40 to 90 °C): if the return to the module is above it, the module delivers nothing in that hour. The design return must lie below it. Empty = no limit; default for new records 70 °C.</value>
   </data>
+  <data name="BER_BILD_BIVALENZ_TITEL" xml:space="preserve">
+    <value>Bivalence diagram</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_ACHSE_X" xml:space="preserve">
+    <value>Outdoor temperature [°C]</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_ACHSE_Y" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_HEIZLAST" xml:space="preserve">
+    <value>Heating load</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_KENNFELD" xml:space="preserve">
+    <value>Performance map at {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_UEBERGABE" xml:space="preserve">
+    <value>Emitter limit at {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_STUNDEN" xml:space="preserve">
+    <value>Heat pump hourly values</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_NUR_KESSEL" xml:space="preserve">
+    <value>boiler only</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_VORWAERMUNG" xml:space="preserve">
+    <value>preheating</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_PARALLEL" xml:space="preserve">
+    <value>parallel</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_WP_ALLEIN" xml:space="preserve">
+    <value>heat pump alone</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_BIV1" xml:space="preserve">
+    <value>θ_biv,1 = {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_BIV2" xml:space="preserve">
+    <value>θ_biv,2 = {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_ABSCHALT" xml:space="preserve">
+    <value>Cut-off point {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_KENNFELD" xml:space="preserve">
+    <value>by performance map {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_PLATZHALTER" xml:space="preserve">
+    <value>no bivalence diagram — coupling off</value>
+  </data>
 </root>
 

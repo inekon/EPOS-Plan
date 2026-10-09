@@ -49441,5 +49441,56 @@ Chart</value>
   <data name="KI_DLG_BHKK_RUECKLAUF_MAX_ERL" xml:space="preserve">
     <value>Abschaltgrenze des Rücklaufs (40 bis 90 °C): Liegt der Rücklauf zum Modul darüber, liefert es in der Stunde nichts. Der Auslegungsrücklauf muss darunter liegen. Leer = keine Grenze; Vorgabe bei Neuanlage 70 °C.</value>
   </data>
+  <data name="BER_BILD_BIVALENZ_TITEL" xml:space="preserve">
+    <value>Bivalenzdiagramm</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_ACHSE_X" xml:space="preserve">
+    <value>Außentemperatur [°C]</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_ACHSE_Y" xml:space="preserve">
+    <value>Leistung [kW]</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_HEIZLAST" xml:space="preserve">
+    <value>Heizlast</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_KENNFELD" xml:space="preserve">
+    <value>Kennfeld bei {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_UEBERGABE" xml:space="preserve">
+    <value>Übergabe bei {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_STUNDEN" xml:space="preserve">
+    <value>Stundenwerte Wärmepumpe</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_NUR_KESSEL" xml:space="preserve">
+    <value>nur Kessel</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_VORWAERMUNG" xml:space="preserve">
+    <value>Vorwärmung</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_PARALLEL" xml:space="preserve">
+    <value>parallel</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_WP_ALLEIN" xml:space="preserve">
+    <value>Wärmepumpe allein</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_BIV1" xml:space="preserve">
+    <value>θ_biv,1 = {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_BIV2" xml:space="preserve">
+    <value>θ_biv,2 = {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_ABSCHALT" xml:space="preserve">
+    <value>Abschaltpunkt {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_KENNFELD" xml:space="preserve">
+    <value>nach Kennfeld {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_PLATZHALTER" xml:space="preserve">
+    <value>kein Bivalenzdiagramm — Kopplung aus</value>
+  </data>
 </root>
 

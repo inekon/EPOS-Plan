@@ -4389,6 +4389,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur [°C] ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_ACHSE_X {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_ACHSE_X", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_ACHSE_Y {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_ACHSE_Y", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizlast ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_HEIZLAST {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_HEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeld bei {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_KENNFELD {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_KENNFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltpunkt {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_ABSCHALT {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_ABSCHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,1 = {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_BIV1 {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_BIV1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,2 = {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_BIV2 {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_BIV2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Kennfeld {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_KENNFELD {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_KENNFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Kessel ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_NUR_KESSEL {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_NUR_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die parallel ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_PARALLEL {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_PARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Bivalenzdiagramm — Kopplung aus ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte Wärmepumpe ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_STUNDEN {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzdiagramm ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_TITEL {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe bei {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_UEBERGABE {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmung ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_VORWAERMUNG {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_VORWAERMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe allein ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_WP_ALLEIN {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_WP_ALLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“, anteilig am Netzbezug ähnelt.
         /// </summary>
         public static string BER_KAELTE_TRAEGER_ANTEILIG {
