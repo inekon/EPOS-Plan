@@ -1142,7 +1142,24 @@ Anzahl 0.
 führt das Projekt keine PV-Anlage, aber eine vollständige Ganglinie ohne diesen Platz, meldet der Lauf
 `SIM_W_PVGANGLINIE_OHNE_STROMPLATZ` (`SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`).
 
-Gehalten von `EPOS.Kern.Tests/PvGanglinieSchemaTests` und `EPOS.Kern.Tests/PvGanglinieRechenwegTests`.
+**Projektkopie und Katalog (E113).** Projektkopie und Katalogsatz sind über den Bezeichner verbunden;
+`ZuordnungenSchreiben` nimmt eine vorhandene Projektkopie unverändert weiter. Eine spätere Änderung des
+Katalogsatzes — die Nennleistung über `NennleistungSetzen`, ein erneuter Import desselben Namens nach dem
+Löschen — erreicht ein Projekt, das die Ganglinie schon führt, deshalb nicht von selbst.
+`PvGanglinieStammCtrl.AbweichungZumKatalog(idProjekt, name)` vergleicht die Projektkopie mit dem
+Katalogsatz gleichen Bezeichners in Nennleistung, Raster, Jahressumme und der Reihe Wert für Wert;
+`AusKatalogErneuern(idProjekt, name)` ersetzt Kopf (Beschreibung, Raster, Nennleistung, Jahresarbeit,
+Spitze) und Reihe der Projektkopie in einer Transaktion durch den Katalogstand. Die ID der Projektkopie und
+die Zuordnung `Z_ProjektPvGanglinie` bleiben, das Projekt gilt danach als geändert
+(`Tab_Projekt.Aenderungsdatum`), ein gespeichertes Ergebnis also als veraltet bis zur nächsten Simulation.
+Benannte Ausgänge: erneuert, kein Katalogsatz, keine Projektkopie, gleich, Fehler. Im Dialog „Photovoltaik
+Ganglinie“ trägt eine abweichende Projektzeile ein Zeichen und markiert den Satz „weicht vom Katalog ab: …“
+mit dem Knopf „Aus dem Katalog erneuern…“ und einer Rückfrage; der Hilfe-Assistent liest die Abweichung
+(`katalogabweichung`) nur. Der Katalogabgleich nach der Schemamigration (`Katalogabgleich`) bleibt davon
+getrennt: Er führt die Auslieferungssätze des Katalogs nach, keine Projektkopien.
+
+Gehalten von `EPOS.Kern.Tests/PvGanglinieSchemaTests`, `EPOS.Kern.Tests/PvGanglinieRechenwegTests` und
+`EPOS.Kern.Tests/PvGanglinieKatalogerneuerungTests`.
 
 ## 15. Prozesswärme: Temperaturniveau und Betriebsweisen
 
