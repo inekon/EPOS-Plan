@@ -364,7 +364,13 @@ namespace WindowsFormsApplication1
             Matrixeingang bestand = BestandLesen(eigner);
             List<Vorgabezeile> vorgaben = Vorgaben(eigner);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> kalender = Kalender(eigner, out meldung);
-            return Konditionierungsstand.Aus(eigner.Art, bestand, vorgaben, kalender, Bemerkungen(eigner));
+            Konditionierungsstand s = Konditionierungsstand.Aus(eigner.Art, bestand, vorgaben, kalender, Bemerkungen(eigner));
+            if (!KonditionierungSchema.Lesbar() || !Kalendergemeinschaft.SchrittSteht()) return s;
+            // DER GEMEINSAME KALENDER (Schemaschritt KalenderbedienungSchema): Die Groessenkalender tragen seine Perioden
+            // schon ausgebreitet (Kalender); der Stand merkt sie sich als EINE Zeile mit Maske, dazu Ferienliste und Wochen.
+            Kalendergemeinschaft.Schluessel schluessel = Kalendergemeinschaft.Schluessel.Von(eigner);
+            Kalendergemeinschaft.GemeinsamLesen(schluessel, out List<Gemeinschaftsperiode> gemeinsam, out List<Ferienzeile> ferien);
+            return s.MitGemeinsamAbgeglichen(gemeinsam).MitFerienliste(ferien).MitWochen(Kalendergemeinschaft.WochenLesen(schluessel));
         }
 
         /// <summary>Die Spalte <c>Bemerkung</c> je Größe — Herkunft und Vermerk (B8).</summary>
@@ -417,6 +423,11 @@ namespace WindowsFormsApplication1
                 b.Wochenendmerker = Zahl(r, "Wochenende") ?? 0.0;
                 b.Luftwechselrate = Endlich(Zahl(r, "Luftwechselrate"));
                 b.Sollwertprofil = Text(r, "Sollwertprofil");
+                if (r.Table.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE))
+                {
+                    b.Wochenendtage = Ganz(r, KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) ?? KalenderbedienungSchema.WOCHENENDE_VORGABE;
+                    b.Feiertagsland = Text(r, KalenderbedienungSchema.SPALTE_FEIERTAGSLAND);
+                }
                 for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME; i++)
                 {
                     string k = (i + 1).ToString(CultureInfo.InvariantCulture);
@@ -461,38 +472,44 @@ namespace WindowsFormsApplication1
                     geschrieben = true;
                 }
 
-            // DER GEMEINSAME KALENDER (Schemaschritt KalenderbedienungSchema): Der Arbeitsstand traegt seine Perioden als
-            // Kopien je Groesse. Aendert sich ein Kalender, werden alle Groessen geschrieben, die Gemeinschaftsperioden
-            // aufgeloest und die Kopien danach wieder zusammengefuehrt - so bleibt eine abgewaehlte oder geloeschte Zeile weg.
+            // DER GEMEINSAME KALENDER (Schemaschritt KalenderbedienungSchema): Der Stand fuehrt ihn nativ - eine Zeile je
+            // Gemeinschaftsperiode mit Maske, die Groessenkalender tragen sie nur ausgebreitet. Geschrieben werden die
+            // EIGENEN Kalender (ohne die Kopien), der gemeinsame Kalender als eine Zeile je Periode und die benannten Wochen;
+            // ein Auseinandernehmen und Wiederzusammenfuehren der Kopien (Stufe 1) entfaellt.
+            bool stufe2 = Kalendergemeinschaft.SchrittSteht();
             Kalendergemeinschaft.Schluessel gemeinsamerEigner = Kalendergemeinschaft.Schluessel.Von(eigner);
-            bool gemeinsam = Kalendergemeinschaft.SchrittSteht() && Kalendergemeinschaft.HatAusgebreitete(v, gemeinsamerEigner);
-            bool kalenderGeaendert = Konditionierungsgroessen.Alle.Any(g =>
-                !(Kalendervergleich.KalenderGleich(alt.Kalender(g), neu.Kalender(g)) &&
-                  (neu.Kalender(g) == null || alt.Herkunft(g).Equals(neu.Herkunft(g)))));
-            bool alleSchreiben = gemeinsam && kalenderGeaendert;
+            var wochenIds = new Dictionary<long, long>();
+            if (stufe2 && Kalendergemeinschaft.WochenSchreiben(v, gemeinsamerEigner, alt.Wochen, neu.Wochen, wochenIds))
+                geschrieben = true;
 
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
-                Konditionierungskalender ka = alt.Kalender(g), kn = neu.Kalender(g);
-                if (!alleSchreiben && Kalendervergleich.KalenderGleich(ka, kn) && (kn == null || alt.Herkunft(g).Equals(neu.Herkunft(g))))
+                Konditionierungskalender ka = alt.EigenerKalender(g), kn = neu.EigenerKalender(g);
+                if (wochenIds.Count == 0 && Kalendervergleich.KalenderGleich(ka, kn) && (kn == null || alt.Herkunft(g).Equals(neu.Herkunft(g))))
                     continue;
                 if (kn == null)
+                {
+                    if (ka == null) continue;
                     v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
                                  eigner.Bedingung() + " AND \"Groesse\" = ?",
                                  Mit(eigner.Parameter(), new DbParam("@gr", Konditionierungsgroessen.Kennwort(g))));
+                }
                 else
                 {
-                    Ergebnis e = KalenderSchreiben(v, eigner, kn, neu.Herkunft(g).Bemerkung());
+                    Ergebnis e = KalenderSchreiben(v, eigner, kn, neu.Herkunft(g).Bemerkung(), wochenIds);
                     if (!e.Ok) return e;
                 }
                 geschrieben = true;
             }
 
-            if (alleSchreiben)
+            if (stufe2 && (wochenIds.Count > 0 || !GemeinsamGleich(alt, neu)))
             {
-                Kalendergemeinschaft.Aufloesen(v, gemeinsamerEigner);
-                Kalendergemeinschaft.Zusammenfuehren(v, gemeinsamerEigner, out _);
+                Kalendergemeinschaft.GemeinsamSchreiben(v, gemeinsamerEigner, neu.Gemeinsam, neu.Ferienliste, wochenIds);
+                geschrieben = true;
             }
+            if (stufe2 && Kalendergemeinschaft.WochenEntfernen(v, alt.Wochen, neu.Wochen)) geschrieben = true;
+            // Zeilen „Ferien n" der Stufe 1 neben der Ferienliste werden die FERIEN-Periode ihres Rangs (Stufe 2, Teil B).
+            if (stufe2 && Kalendergemeinschaft.FerienzeilenBereinigen(v) > 0) geschrieben = true;
 
             if (mitBestand)
             {
@@ -501,6 +518,16 @@ namespace WindowsFormsApplication1
                 geschrieben |= bestand;
             }
             return Ergebnis.Gut;
+        }
+
+        /// <summary>Tragen beide Staende denselben gemeinsamen Kalender samt Ferienliste?</summary>
+        private static bool GemeinsamGleich(Konditionierungsstand a, Konditionierungsstand b)
+        {
+            if (a.Gemeinsam.Count != b.Gemeinsam.Count || !a.Ferienliste.SequenceEqual(b.Ferienliste)) return false;
+            for (int i = 0; i < a.Gemeinsam.Count; i++)
+                if (a.Gemeinsam[i].Maske != b.Gemeinsam[i].Maske || !Kalendervergleich.RegelGleich(a.Gemeinsam[i].Regel, b.Gemeinsam[i].Regel))
+                    return false;
+            return true;
         }
 
         /// <summary>Eine Vorgabezeile ersetzen — ohne Wert, wo die Zelle eine Bestandsspalte hat; eine leere Zelle hat keine Zeile.</summary>
@@ -565,6 +592,13 @@ namespace WindowsFormsApplication1
                 Zahlfeld("Ferien", alt.Ferienmerker, neu.Ferienmerker);
                 Zahlfeld("Wochenende", alt.Wochenendmerker, neu.Wochenendmerker);
                 Zahlfeld("Luftwechselrate", alt.Luftwechselrate, neu.Luftwechselrate);
+                // Wochenende und Feiertagsland (Schemaschritt KalenderbedienungSchema); leer heisst Sa + So bzw. nur bundesweit.
+                if (alt.Wochenendtage != neu.Wochenendtage)
+                    aenderungen.Add(new KeyValuePair<string, object>(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE,
+                        neu.Wochenendtage == KalenderbedienungSchema.WOCHENENDE_VORGABE ? null : (object)neu.Wochenendtage));
+                if (!string.Equals(alt.Feiertagsland, neu.Feiertagsland, StringComparison.Ordinal))
+                    aenderungen.Add(new KeyValuePair<string, object>(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND,
+                        string.IsNullOrEmpty(neu.Feiertagsland) ? null : neu.Feiertagsland));
                 for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME; i++)
                 {
                     string k = (i + 1).ToString(CultureInfo.InvariantCulture);
@@ -693,7 +727,8 @@ namespace WindowsFormsApplication1
         /// Aufrufer <b>vor</b> dem Vorgang — es steht in der Datenbank, nicht im Arbeitsstand.
         /// </summary>
         internal static Ergebnis KalenderSchreiben(DbVorgang v, Eigner eigner,
-                                                   Konditionierungskalender kalender, string bemerkung)
+                                                   Konditionierungskalender kalender, string bemerkung,
+                                                   IReadOnlyDictionary<long, long> wochenIds = null)
         {
             if (v == null) throw new ArgumentNullException(nameof(v));
             if (eigner == null) throw new ArgumentNullException(nameof(eigner));
@@ -757,7 +792,17 @@ namespace WindowsFormsApplication1
                 v.Ausfuehren(KonditionierungNutzungSchema.SQL_SETZEN,
                              new DbParam("@n", nutzung), new DbParam("@id", idKalender));
 
+            bool mitVerweis = perioden.Any(p => p.IdWoche.HasValue) && Kalendergemeinschaft.SchrittSteht();
             foreach (Periodenzeile p in perioden)
+                if (mitVerweis && p.IdWoche.HasValue)
+                    v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE +
+                                 "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", \"Beginn\", \"Ende\", " +
+                                 "\"Feiertagsregel\", \"Aus\", \"ID_Woche\") VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)",
+                                 new DbParam("@k", idKalender), new DbParam("@r", p.Rang), new DbParam("@ar", p.Art),
+                                 new DbParam("@bz", p.Bezeichner), new DbParam("@vo", (object)p.Beginn), new DbParam("@bi", (object)p.Ende),
+                                 new DbParam("@ft", (object)p.Feiertagsregel),
+                                 new DbParam("@iw", (object)Kalendergemeinschaft.WochenId(p.IdWoche, wochenIds)));
+                else
                 v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE +
                              "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", \"Beginn\", \"Ende\", " +
                              "\"Feiertagsregel\", \"Wert\", \"Aus\", \"Woche\", \"WieWochentag\") " +

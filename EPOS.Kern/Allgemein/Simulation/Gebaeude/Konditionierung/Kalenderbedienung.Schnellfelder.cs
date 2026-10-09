@@ -34,6 +34,11 @@ namespace WindowsFormsApplication1
                 if (!Jahrestag(von) || !Jahrestag(bis)) continue;
                 liste.Add(new Ferienzeile(Ferienname(k + 1), (int)von, (int)bis));
             }
+            if (stand.Gebaeude.Ferienliste.Count > 0)
+            {
+                liste.AddRange(stand.Gebaeude.Ferienliste);    // die Ferienliste des gemeinsamen Kalenders (Stufe 2)
+                return liste;
+            }
             var weitere = new SortedDictionary<int, Ferienzeile>();
             foreach (Konditionierungsstand ebene in Ebenen(stand))
                 foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
@@ -54,22 +59,41 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Ferienzeiträume setzen</b> (Konzept 7.8, E110): beliebig viele Datumsbereiche (Beginn nach Ende heißt
         /// über den Jahreswechsel). Die ersten vier gehen in <c>Ferienbeginn/-ende_1…4</c> des Gebäudes (die übrigen
-        /// Spalten werden 0 = „aus") — sie lesen der Generator, der Tagesbilanz-Weg und der Zapfkalender —, danach wird
-        /// der Matrixbereich jedes angelegten Kalenders von Gebäude und Zonen erneuert („Matrix erneut", P12). Ab dem
-        /// fünften wird jeder Zeitraum in jedem angelegten Kalender, der eine Ferienperiode trägt, eine Zeile „Ferien n"
-        /// mit deren Angabe am untersten freien Platz des Eigenbands; alte Ferienzeilen fallen.
+        /// Spalten werden 0 = „aus"), die weiteren in die Ferienliste des gemeinsamen Kalenders ab Rang 204; danach wird
+        /// der Matrixbereich jedes angelegten Kalenders von Gebäude und Zonen erneuert („Matrix erneut", P12).
         /// </summary>
         public static Konditionierungsschritt FerienSetzen(Konditionierungsarbeitsstand stand, IReadOnlyList<(int Beginn, int Ende)> zeitraeume)
+            => FerienlisteSetzen(stand, (zeitraeume ?? Array.Empty<(int, int)>())
+                                        .Select((f, i) => new Ferienzeile(Ferienname(i + 1), f.Beginn, f.Ende)).ToList());
+
+        /// <summary>
+        /// <b>Die Ferienliste</b> (Konzept 7.8, Stufe 2): beliebig viele benannte Ferienzeiträume. Die ersten vier stehen in
+        /// den Gebäudespalten <c>Ferienbeginn/-ende_1…4</c> (ihr Spiegel im gemeinsamen Kalender, Rang 200 … 203, schreibt
+        /// der Trigger), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204
+        /// (<see cref="Konditionierungsstand.Ferienliste"/>). Der Generator liest die ganze Liste und macht aus jedem
+        /// Zeitraum eine FERIEN-Periode auf dessen Rang (200 … 309) mit der Ferienangabe der Größe; der Matrixbereich jedes
+        /// Kalenders folgt („Matrix erneut"). Zeilen „Ferien n" der Stufe 1 im Eigenband fallen dabei.
+        /// </summary>
+        public static Konditionierungsschritt FerienlisteSetzen(Konditionierungsarbeitsstand stand, IReadOnlyList<Ferienzeile> ferien)
         {
             if (stand == null) throw new ArgumentNullException(nameof(stand));
-            var z = zeitraeume ?? Array.Empty<(int, int)>();
+            var liste = (ferien ?? Array.Empty<Ferienzeile>()).ToList();
+            int platz = Matrixeingang.FERIENZEITRAEUME + Kalendergemeinschaft.RANG_FERIENLISTE_LETZTER - Kalendergemeinschaft.RANG_FERIENLISTE + 1;
+            if (liste.Count > platz)
+                return Konditionierungsschritt.Fehler(Text(MyResource.Resource.KOND_MSG_BEDIENUNG_FERIEN_ZU_VIELE, platz));
+            foreach (Ferienzeile f in liste)
+                if (f == null || string.IsNullOrWhiteSpace(f.Name) || f.Name.Trim().Length > KonditionierungSchema.BEZEICHNER_MAX_ZEICHEN)
+                    return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_BEDIENUNG_WOCHE_NAME,
+                        f?.Name ?? "", DbWerte.KOND_ART_FERIEN));
+            var z = liste.Select(f => (Beginn: f.Beginn, Ende: f.Ende)).ToList();
             foreach ((int beginn, int ende) in z)
                 if (beginn < Kalenderregel.TAG_MIN || beginn > Kalenderregel.TAG_MAX
                     || ende < Kalenderregel.TAG_MIN || ende > Kalenderregel.TAG_MAX)
                     return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_PERIODE_TAG,
                         beginn.ToString(CultureInfo.InvariantCulture), ende.ToString(CultureInfo.InvariantCulture)));
 
-            // 1. Die vier Gebäudespalten.
+            // 1. Die vier Gebäudespalten und die Ferienliste dahinter (gemeinsamer Kalender ab Rang 204); die Liste geht
+            //    mit in die Bestandsfelder, aus denen der Generator die FERIEN-Perioden auf Rang 200 … 309 macht.
             Konditionierungsarbeitsstand a = stand.MitGebaeude(stand.Gebaeude.MitBestand(b =>
             {
                 for (int k = 0; k < Matrixeingang.FERIENZEITRAEUME; k++)
@@ -78,18 +102,11 @@ namespace WindowsFormsApplication1
                     b.Ferienende[k] = k < z.Count ? z[k].Ende : 0.0;
                 }
             }));
+            a = a.MitGebaeude(a.Gebaeude.MitFerienliste(liste.Count > Matrixeingang.FERIENZEITRAEUME
+                ? liste.Skip(Matrixeingang.FERIENZEITRAEUME).Select(f => new Ferienzeile(f.Name.Trim(), f.Beginn, f.Ende)).ToList()
+                : new List<Ferienzeile>()));
 
-            // 2. Der Matrixbereich jedes angelegten Kalenders folgt — am Gebäude und an jeder Zone.
-            foreach (long? zone in Ebenenorte(a))
-                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
-                {
-                    if (a.Ebene(zone)?.Kalender(g) == null) continue;
-                    Konditionierungsschritt s = Konditionierungsarbeit.MatrixErneut(a, new Konditionierungsort(g, zone));
-                    if (!s.Ok) return s;
-                    a = s.Stand;
-                }
-
-            // 3. Die Ferienzeilen ab der fünften.
+            // 2. Die Zeilen „Ferien n" der Stufe 1 fallen — der Generator trägt die Ferienliste selbst.
             foreach (long? zone in Ebenenorte(a))
             {
                 Konditionierungsstand ebene = a.Ebene(zone);
@@ -100,31 +117,120 @@ namespace WindowsFormsApplication1
                     var perioden = k.Perioden
                         .Where(r => Konditionierungsarbeit.IstMatrixbereich(r) || !IstFerienzeile(Zuordnungsschluessel.Von(r)))
                         .ToList();
-                    Kalenderregel ferien = k.Perioden.FirstOrDefault(r => string.Equals(r.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal));
-                    if (ferien != null)
-                        for (int i = Matrixeingang.FERIENZEITRAEUME; i < z.Count; i++)
-                        {
-                            int rang = Standardfahrplan.RANG_EIGEN;
-                            while (rang <= Standardfahrplan.RANG_EIGEN_LETZTER && perioden.Any(r => r.Rang == rang)) rang++;
-                            if (rang > Standardfahrplan.RANG_EIGEN_LETZTER)
-                                return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
-                                    MyResource.Resource.KOND_MSG_RANG_BAND_VOLL,
-                                    Standardfahrplan.RANG_EIGEN.ToString(CultureInfo.InvariantCulture),
-                                    Standardfahrplan.RANG_EIGEN_LETZTER.ToString(CultureInfo.InvariantCulture)));
-                            perioden.Add(Kalenderregel.Zeitraum(rang, DbWerte.KOND_ART_ZEITRAUM, Ferienname(i + 1),
-                                                                z[i].Beginn, z[i].Ende, ferien.Angabe));
-                        }
-                    if (perioden.Count > Kalenderregel.PERIODEN_MAX)
-                        return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
-                            MyResource.Resource.KOND_MSG_PERIODEN_ZU_VIELE,
-                            perioden.Count.ToString(CultureInfo.InvariantCulture),
-                            Kalenderregel.PERIODEN_MAX.ToString(CultureInfo.InvariantCulture)));
-                    var neu = new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden);
-                    if (!Kalendervergleich.KalenderGleich(k, neu)) ebene = ebene.MitKalender(g, neu, ebene.Herkunft(g));
+                    if (perioden.Count == k.Perioden.Count) continue;
+                    ebene = ebene.MitKalender(g, new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden),
+                                              ebene.Herkunft(g));
                 }
                 a = a.MitEbene(zone, ebene);
             }
+
+            // 3. Der Matrixbereich jedes angelegten Kalenders folgt — am Gebäude und an jeder Zone.
+            foreach (long? zone in Ebenenorte(a))
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    if (a.Ebene(zone)?.Kalender(g) == null) continue;
+                    Konditionierungsschritt s = Konditionierungsarbeit.MatrixErneut(a, new Konditionierungsort(g, zone));
+                    if (!s.Ok) return s;
+                    a = s.Stand;
+                }
             return Konditionierungsschritt.Gut(a);
+        }
+
+        // =================================================================
+        //  Wochenende und Feiertagsland des Gebäudes
+        // =================================================================
+
+        /// <summary>
+        /// <b>Die Wochenendtage des Gebäudes</b> (0 = Montag) aus der Spalte <c>Wochenendtage</c>; leer heißt Samstag und
+        /// Sonntag (<see cref="WochenendtageVorgabe"/>).
+        /// </summary>
+        public static IReadOnlyList<int> Wochenendtage(Konditionierungsarbeitsstand stand)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            int maske = stand.Gebaeude.Bestand.Wochenendtage;
+            return Enumerable.Range(0, 7).Where(d => KalenderbedienungSchema.IstWochenendtag(maske, d)).ToList();
+        }
+
+        /// <summary>
+        /// <b>Das Schnellfeld „Wochenende"</b>: setzt die Wochenendtage des Gebäudes (0 = Montag … 6 = Sonntag, leer = kein
+        /// Wochenende); der Matrixbereich jedes angelegten Kalenders folgt.
+        /// </summary>
+        public static Konditionierungsschritt WochenendeSetzen(Konditionierungsarbeitsstand stand, IEnumerable<int> tage)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            int maske = 0;
+            foreach (int d in tage ?? Enumerable.Empty<int>())
+            {
+                if (d < 0 || d > 6)
+                    return Konditionierungsschritt.Fehler(Text(MyResource.Resource.KOND_MSG_BEDIENUNG_WOCHENENDE, d));
+                maske |= 1 << d;
+            }
+            Konditionierungsarbeitsstand a = stand.MitGebaeude(stand.Gebaeude.MitBestand(b => b.Wochenendtage = maske));
+            foreach (long? zone in Ebenenorte(a))
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    if (a.Ebene(zone)?.Kalender(g) == null) continue;
+                    Konditionierungsschritt s = Konditionierungsarbeit.MatrixErneut(a, new Konditionierungsort(g, zone));
+                    if (!s.Ok) return s;
+                    a = s.Stand;
+                }
+            return Konditionierungsschritt.Gut(a);
+        }
+
+        /// <summary>Das Feiertagsland des Gebäudes (ISO-Kürzel); <c>null</c> = nur die bundeseinheitlichen Feiertage.</summary>
+        public static string Feiertagsland(Konditionierungsarbeitsstand stand)
+            => (stand ?? throw new ArgumentNullException(nameof(stand))).Gebaeude.Bestand.Feiertagsland;
+
+        /// <summary>Der Rang einer Landesregel im gemeinsamen Kalender: 109 + ihre Stelle in <see cref="DbWerte.KOND_FEIERTAGE_LAENDER"/>.</summary>
+        public static int RangLandesregel(string regel)
+        {
+            for (int i = 0; i < DbWerte.KOND_FEIERTAGE_LAENDER.Count; i++)
+                if (string.Equals(DbWerte.KOND_FEIERTAGE_LAENDER[i], regel, StringComparison.Ordinal)) return Standardfahrplan.RANG_FEIERTAG_LETZTER + 1 + i;
+            return -1;
+        }
+
+        /// <summary>
+        /// Ist die Gemeinschaftsperiode eine Regelperiode des Feiertagslands — Art Feiertag, eine der acht Landesregeln an
+        /// ihrem Rang? Erkannt an Regel, Rang und Eigentümer (der gemeinsame Kalender des Gebäudes), nie am Text.
+        /// </summary>
+        public static bool IstLandesregel(Gemeinschaftsperiode p)
+            => p != null && p.Regel.IstFeiertag && string.Equals(p.Regel.Art, DbWerte.KOND_ART_FEIERTAG, StringComparison.Ordinal)
+               && RangLandesregel(p.Regel.Feiertagsregel) == p.Rang;
+
+        /// <summary>
+        /// <b>Das Schnellfeld „Feiertagsland"</b> (Konzept 7.8): setzt das Land am Gebäude und legt die Regelperioden seiner
+        /// Landesregeln im gemeinsamen Kalender des Gebäudes an — Maske alle, „wie Sonntag", Rang 109 ff. (Rangregel 3.2:
+        /// Feiertagsregeln &lt; Ferien &lt; eigene Zeilen &lt; Saison). Beim Wechsel oder Leeren fallen die Regelperioden des
+        /// alten Landes (nur die, die es angelegt hat: Regel und Rang); die neun bundeseinheitlichen Regeln bleiben unberührt.
+        /// </summary>
+        public static Konditionierungsschritt FeiertagslandSetzen(Konditionierungsarbeitsstand stand, string land)
+        {
+            if (stand == null) throw new ArgumentNullException(nameof(stand));
+            string l = string.IsNullOrWhiteSpace(land) ? null : land.Trim();
+            if (l != null && !Landesfeiertage.Bekannt(l))
+                return Konditionierungsschritt.Fehler(Text(MyResource.Resource.KOND_MSG_BEDIENUNG_LAND, l));
+            Konditionierungsstand g = stand.Gebaeude.MitBestand(b => b.Feiertagsland = l);
+            var liste = g.Gemeinsam.Where(p => !IstLandesregel(p)).ToList();
+            IReadOnlyList<string> namen = Landesfeiertagsnamen();
+            foreach (string regel in Landesfeiertage.Regeln(l))
+            {
+                int rang = RangLandesregel(regel);
+                if (liste.Any(p => p.Rang == rang))
+                    return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_RANG_BELEGT,
+                        rang.ToString(CultureInfo.InvariantCulture), regel));
+                int i = rang - Standardfahrplan.RANG_FEIERTAG_LETZTER - 1;
+                liste.Add(new Gemeinschaftsperiode(Kalenderregel.Feiertag(rang, i < namen.Count ? namen[i] : regel, regel,
+                                                                          Kalenderangabe.AlsWochentag(7)),
+                                                   KalenderbedienungSchema.MASKE_ALLE));
+            }
+            return GemeinsamUebernehmen(stand, null, g.MitGemeinsam(liste));
+        }
+
+        /// <summary>Die acht Namen der Landesregeln in der Reihenfolge von <see cref="DbWerte.KOND_FEIERTAGE_LAENDER"/>.</summary>
+        public static IReadOnlyList<string> Landesfeiertagsnamen()
+        {
+            string t = MyResource.Resource.KOND_TEXT_FEIERTAGE_LAENDER;
+            return string.IsNullOrEmpty(t) ? Array.Empty<string>() : t.Split(';');
         }
 
         // =================================================================
@@ -183,19 +289,8 @@ namespace WindowsFormsApplication1
             List<Konditionierungsgroesse> groessen = giltFuer?.ToList();
             Konditionierungsschritt s = FeiertageLaden(stand, zone, groessen);
             if (!s.Ok) return s;
-            Konditionierungsarbeitsstand a = s.Stand;
-            var bund = new HashSet<int>(Landesfeiertage.Jahrestage(null, a.Referenzjahr));
-            string name = Text(MyResource.Resource.KOND_TEXT_BEDIENUNG_LANDESFEIERTAG, land);
-            foreach (int tag in Landesfeiertage.Jahrestage(land, a.Referenzjahr))
-            {
-                if (bund.Contains(tag)) continue;
-                Zuordnungsschluessel schluessel = Zuordnungsschluessel.Zeitraum(name, tag, tag);
-                if (Zuordnungen(a, zone).Any(z => z.Schluessel == schluessel)) continue;
-                s = ZuordnungSetzen(a, zone, null, schluessel, Zuordnungsangabe.WieSonntag, groessen);
-                if (!s.Ok) return s;
-                a = s.Stand;
-            }
-            return Konditionierungsschritt.Gut(a);
+            // Stufe 2: die Landesfeiertage sind die Regelperioden des Feiertagslands im gemeinsamen Kalender des Gebäudes.
+            return FeiertagslandSetzen(s.Stand, land);
         }
 
         // =================================================================
@@ -240,7 +335,7 @@ namespace WindowsFormsApplication1
             int qa = Feiertage.Gemeinjahrestag(quellmonat, 1), qe = qa + Feiertage.TageJeMonat[quellmonat - 1] - 1;
             int za = Feiertage.Gemeinjahrestag(zielmonat, 1), ze = za + Feiertage.TageJeMonat[zielmonat - 1] - 1;
 
-            var auftraege = new List<(int Rang, Zuordnungsschluessel Neu, IReadOnlyDictionary<Konditionierungsgroesse, Kalenderangabe> Angaben)>();
+            var auftraege = new List<(int Rang, Zuordnungsschluessel Neu, IReadOnlyDictionary<Konditionierungsgroesse, Kalenderangabe> Angaben, Zuordnungszeile Quelle)>();
             foreach (Zuordnungszeile z in Zuordnungen(stand, zone))
             {
                 if (z.Schluessel.IstFeiertag || z.IstFerien) continue;
@@ -255,7 +350,8 @@ namespace WindowsFormsApplication1
                     int nb = lauf - qa + za, ne = Math.Min(d - 1 - qa + za, ze);
                     lauf = -1;
                     if (nb > ze) continue;
-                    auftraege.Add((z.Raenge.Values.Max(), Zuordnungsschluessel.Zeitraum(z.Schluessel.Name, nb, ne), z.Angaben));
+                    auftraege.Add((z.IstGemeinsam ? z.Gemeinsam.Rang : z.Raenge.Values.Max(),
+                                   Zuordnungsschluessel.Zeitraum(z.Schluessel.Name, nb, ne), z.Angaben, z));
                 }
             }
             if (auftraege.Count == 0)
@@ -264,8 +360,10 @@ namespace WindowsFormsApplication1
             Konditionierungsarbeitsstand a = stand;
             foreach (var auftrag in auftraege.OrderBy(x => x.Rang))
             {
-                bool vorhanden = Zuordnungen(a, zone).Any(z => z.Schluessel == auftrag.Neu);
-                Konditionierungsschritt s = Gekoppelt(a, zone, vorhanden ? auftrag.Neu : null, auftrag.Neu, auftrag.Angaben);
+                Zuordnungszeile vorhanden = Zuordnungen(a, zone).FirstOrDefault(z => z.Schluessel == auftrag.Neu);
+                Konditionierungsschritt s = auftrag.Quelle.IstGemeinsam
+                    ? GemeinsamSetzen(a, zone, vorhanden, auftrag.Neu, auftrag.Quelle.Angabe, auftrag.Quelle.Maske)
+                    : Gekoppelt(a, zone, vorhanden != null ? auftrag.Neu : null, auftrag.Neu, auftrag.Angaben);
                 if (!s.Ok) return s;
                 a = s.Stand;
             }

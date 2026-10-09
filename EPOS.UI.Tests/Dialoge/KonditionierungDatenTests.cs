@@ -270,6 +270,13 @@ public sealed class KonditionierungDatenTests
         SaisonSetzen = (s, _, _, _) => Gut(s),
         FeiertageLaden = (s, _, _) => Gut(s),
         MonatKopieren = (s, _, _, _) => Gut(s),
+        // Welle K2-U: Stufe 2 der Kalenderbedienung.
+        WocheAnlegen = (s, _, _, _) => Gut(s),
+        WocheUmbenennen = (s, _, _, _) => Gut(s),
+        WocheLoeschen = (s, _, _) => Gut(s),
+        WochenendeSetzen = (s, _) => Gut(s),
+        FeiertagslandSetzen = (s, _) => Gut(s),
+        FerienlisteSetzen = (s, _) => Gut(s),
         Sperre = sperre
     };
 
@@ -320,6 +327,12 @@ public sealed class KonditionierungDatenTests
         KonditionierungHandlung.SaisonSetzen => new() { SaisonSetzen = (s, _, _, _) => Gut(s) },
         KonditionierungHandlung.FeiertageLaden => new() { FeiertageLaden = (s, _, _) => Gut(s) },
         KonditionierungHandlung.MonatKopieren => new() { MonatKopieren = (s, _, _, _) => Gut(s) },
+        KonditionierungHandlung.WocheAnlegen => new() { WocheAnlegen = (s, _, _, _) => Gut(s) },
+        KonditionierungHandlung.WocheUmbenennen => new() { WocheUmbenennen = (s, _, _, _) => Gut(s) },
+        KonditionierungHandlung.WocheLoeschen => new() { WocheLoeschen = (s, _, _) => Gut(s) },
+        KonditionierungHandlung.WochenendeSetzen => new() { WochenendeSetzen = (s, _) => Gut(s) },
+        KonditionierungHandlung.FeiertagslandSetzen => new() { FeiertagslandSetzen = (s, _) => Gut(s) },
+        KonditionierungHandlung.FerienlisteSetzen => new() { FerienlisteSetzen = (s, _) => Gut(s) },
         _ => throw new ArgumentOutOfRangeException(nameof(h))
     };
 

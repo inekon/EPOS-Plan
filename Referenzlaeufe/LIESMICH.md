@@ -331,7 +331,10 @@ mit ihr die Deckung der Erzeuger, den Speicherzustand, Netzbezug, Kosten und CO�
 > (`Tab_TwwZone`: Bezugsmenge, Niveau, Topologie, Zirkulation, Tagesbedarf-Automatik, gebundene
 > Nutzungsart) eines Referenzprojekts, dazu die Katalogzeilen, die eine solche Zone benutzt
 > (`Tab_TwwNutzungsart_STAMM` samt ihrem Tagesgangsatz `Tab_TwwTagesgang_STAMM`) und die drei
-> Kaltwasser-Parameter der Bilanz (`ZapfParameter.KALTWASSER_*`). Ebenso betroffen ist das
+> Kaltwasser-Parameter der Bilanz (`ZapfParameter.KALTWASSER_*`). Ebenso betroffen sind die
+> Feiertagsregeln des Kerns (`Feiertage`, `Landesfeiertage`) und an den Gebäuden der Referenzprojekte mit
+> Zapfprofilgenerator das Feiertagsland (`Tab_Gebaeude.Feiertagsland`) und die Wochenmaske
+> (`Wochenendtage`) — ein Feiertag zählt im Zapfkalender unter jeder Wochenendmaske als Sonntag —, dazu das
 > Umstellen eines Referenzprojekts auf den Generator oder zurück auf den Bestandsweg.
 >
 > **Rechenwirkung hat allein Projekt 1045 „Prüfprojekt Ost/West Stränge"**: eine Projektzeile mit
@@ -683,7 +686,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-09_R46_Geraetegrenzen`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-09_R47_Zapffeiertage`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -698,11 +701,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve) und die Basis R45 (Übergabegrenze) am 09.10.2026**
-(62 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze) und die Basis R46 (Gerätegrenzen) am 09.10.2026**
+(63 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 62 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 63 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -712,16 +715,17 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-09_R46_Geraetegrenzen/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+**`2026-10-09_R47_Zapffeiertage/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `d19280cef`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **203**; der Übergabeschritt, jetzt 205, gegen origin hinter KM2 und ZK gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 205“, 93 782 016 Byte, LFS-SHA-256
-`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`, mit den Projekten 1053 bis 1062; Nachträge der
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `babd4ba81`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **207**, 93 958 144 Byte, LFS-SHA-256
+`ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`, mit den Projekten 1053 bis 1062; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
-`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag),
 `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
 Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
 Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
@@ -746,41 +750,42 @@ Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsg
 1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
 siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: die Gerätegrenzen der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E3) — allein 1060 ändert sich, die
-> sechsundzwanzig übrigen Projekte sind byte-gleich (841/841 CSV); Dateizahl (879 CSV) und Skalarzahl (6 071) bleiben.**
+> **Anlass: die Feiertage im Zapfkalender (Anwenderentscheid E112, Konzept Konditionierungsprofile 9.10) — allein 1045
+> ändert sich, die sechsundzwanzig übrigen Projekte sind byte-gleich (847/847 CSV); Dateizahl (879 CSV) und Skalarzahl
+> (6 071) bleiben.**
 >
-> **Rücklaufgrenze am gemischten Rücklauf des Überströmventils:** Die Wärmepumpe rechnet im Profilweg mit der Grenze des
-> Geräts am Rücklauf, der sich hinter dem Überströmventil aus Heizkreisstrom und Mindeststrom mischt (ṁ_min 60 % der
-> 35-kW-Wärmepumpe über dem Heizkreisstrom bei 75/60 °C); wo die Grenze überschritten wird, schaltet das Gerät ab und der
-> Kessel deckt allein. Neu im Ergebnis sind `Ruecklauf_Ueberschritten_h` und `Spreizung_Unterschritten_h` (Taktzähler).
-> Die Grenzen wirken nur im Profilweg mit gesetzter `Einbindung` — deshalb rechnen alle Bestandsprojekte byte-gleich.
+> **Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag:** Auch mit der Vorgabe des Gebäudes (leer
+> oder Samstag + Sonntag) vereinigt der Zapfkalender die Kennzeichen „Wochenende oder Feiertag“ der Klimaregion mit den
+> Feiertagen des Kerns für das Bezugsjahr — mit gebundenem Gebäude nach dessen Feiertagsland, ohne Gebäude
+> bundeseinheitlich; ein Feiertag trägt den Sonntagsgang, auch am Samstag. Die Kennzeichen der Klimaregion der
+> Testdatenbank tragen allein das Muster Samstag + Sonntag (104 Tage), deshalb kommen die Feiertage neu hinzu. Es wirkt
+> im Formvektor- und im Typtagweg, im Ensemble und in der Auslegung. Rechenwirkung hat allein der Zapfprofilgenerator,
+> also allein 1045.
 >
-> **1060 „Referenzprojekt Übergabegrenze“** (alt R45 → neu R46):
->
-> | Bereich | Stunden | Wärme (MWh) |
-> |---|---|---|
-> | B1 Wärmepumpe allein | 3 987 → 3 964 | 39,61 → 39,42 |
-> | B2 parallel | 0 → 0 | 0 → 0 |
-> | B3 Vorwärmung | 1 308 → 620 | 13,64 → 10,18 |
-> | B4 nur Kessel (B0 weiterhin 0) | 0 → 711 | 0 → 0 |
->
-> 711 Stunden schalten über die Rücklaufgrenze ab (`Ruecklauf_Ueberschritten_h` 0 → 711), 2 566 Stunden unterschreiten die
-> Spreizung (`Spreizung_Unterschritten_h` 0 → 2 566); Bivalenzpunkt der Anlage 1,82 → 2,34 °C (die Gerätepunkte 1,83 °C
-> und −3,55 °C bleiben). Wärme der Wärmepumpe 53,25 → 49,60 MWh, des Kessels 15,56 → 19,11 MWh (1 308 → 1 331
-> Laufstunden, 1 182 → 1 205 Brennwertstunden, 2 000 → 1 590 Starts); Komfort unverändert 993 Unterschreitungsstunden,
-> 1 484,37 Kh. 1060 trägt 270 Skalare. Gesamt 879 CSV, 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte
-> Lauf (`--stoerung ulp`) ist für R46 nicht gemessen.
+> **1045 „Prüfprojekt Ost/West Stränge“** (alt R46 → neu R47; Gebäude 10651 ohne Feiertagsland und mit der Vorgabe,
+> also die neun bundeseinheitlichen Feiertage): Alle neun fallen im Klimakalender auf einen Werktag (Jahrestage 1, 108,
+> 111, 121, 149, 160, 276, 359, 360) und tragen jetzt die Sonntagsmenge — am 1. Januar 15,14 → 18,84 kWh —; die
+> übrigen 356 Tage verlieren je rund 0,47 %. Die Jahresmenge des Brauchwassers bleibt 5 006,62 kWh (Abweichung
+> 1,6·10⁻⁷ kWh, `ZapfprofilReferenzprojektWacheTests` hält sie unverändert). 16 der 32 CSV ändern sich
+> (`waermebedarf_brauchwasser.csv`, `wp_warmwasserbedarf.csv`, `waermebedarf.csv`, `waermebedarf_dauerlinie.csv`,
+> `wp_produktion.csv`, `wp_strom.csv`, `wp_waermebedarf.csv`, `kessel_leistung.csv`, `kessel_restwaerme.csv`,
+> `kessel_waermebedarf.csv`, die vier `pv_*`-Reihen, `reststrom_viertelstunde.csv`, `aggregate.csv`): Wärmepumpe
+> 61 170,34 → 61 172,05 kWh (5 175,95 → 5 176,10 Vollbenutzungsstunden), Kessel 20 932,37 → 20 930,66 kWh (3 127 →
+> 3 126 Laufstunden, 6 751 → 6 750 Starts), Reststrom 28,409 → 28,405 MWh, Gasspitze 77,95 → 78,08 kW. Gesamt 879 CSV,
+> 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS,
+> 835/879 CSV byte-gleich (1045 ganz byte-gleich).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
->   --ziel Referenzlaeufe/2026-10-09_R46_Geraetegrenzen
+>   --ziel Referenzlaeufe/2026-10-09_R47_Zapffeiertage
 > ```
 >
-> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Dokumentation/ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
-> und im [Fachkonzept](../Dokumentation/ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
+> Die Regel steht im [Konzept Konditionierungsprofile](../Dokumentation/aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
+> Abschnitt 9.10, und im [Umsetzungskonzept Zapfprofilgenerator](../Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md),
+> Abschnitt 4.2.
 
 > **Entwurf der nächsten Basis `2026-10-09_R48_KaeltemaschineTeillast` (wird nach dem Merge mit origin eingefroren; Zahlen
 > von 1063 aus dem Lauf gegen R46).** Anlass: das Referenzprojekt **1063 „Referenzprojekt Kältemaschine Teillast“**
@@ -1127,13 +1132,13 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Ferienspalten bleiben Quelle der Leser; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879
 > CSV byte-gleich.
 
-### Die Vorgängerbasis R45 (Übergabegrenze)
+### Die Vorgängerbasis R46 (Gerätegrenzen)
 
-Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen dieselbe Testdatenbank `cd50d465…`
-(Schemastand 203; der Übergabeschritt, jetzt 205, gegen origin hinter KM2 und ZK gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 205“, mit den Projekten 1053 bis 1062); mit R46 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
-(Übergabegrenze und Bivalenz, Referenzprojekt 1060) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R46 sind die
-Gerätegrenzen (Etappe UB‑E3); die sechsundzwanzig Bestandsprojekte sind byte-gleich, allein 1060 ändert sich.
+Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen die Testdatenbank `cd50d465…`
+(Schemastand 203, mit den Projekten 1053 bis 1062; die Nachträge bis zum Schemastand 207 ließen sie byte-gleich); mit R47
+aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Gerätegrenzen der Wärmepumpe, Etappe UB‑E3) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R47 sind
+die Feiertage im Zapfkalender (E112); die sechsundzwanzig übrigen Projekte sind byte-gleich, allein 1045 ändert sich.
 
 ## Was hier liegt
 
@@ -1578,7 +1583,7 @@ Gerechnet: B1 3 964 Stunden (39,42 MWh), B3 620 Stunden (10,18 MWh), B4 711 Stun
 Bivalenzpunkte des Geräts 1,83 °C und −3,55 °C, der Anlage 2,34 °C, größte Übergabe bei Auslegung 22,00 kW; Wärmepumpe
 49,60 MWh, Kessel 19,11 MWh; 2 566 Stunden mit unterschrittener Spreizung; 993 Komfortstunden. Die Testdatenbank mit 1060 (Schemastand 203; der Übergabeschritt, jetzt 205, gegen origin hinter KM2 und ZK gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 205“, `integrity_check` ok,
 `foreign_key_check` leer): **93 782 016 Byte, LFS-SHA-256
-`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`**. 1060 steht in der Basis R46 und in der
+`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`**. 1060 steht in der aktuellen Basis und in der
 CI-Auswahl; gehalten von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests`; es gelten die Einfrierregeln
 „gesäte Übergabegrenzdaten“, „gesäte Auslegungsdaten der Übergabe“ und „gesäte Kesseldaten“.
 
@@ -1650,7 +1655,8 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R46 (siebenundzwanzig Projekte, Gerätegrenzen): der gestörte Lauf ist für R46 nicht gemessen; der Stand mit R45
+Stand mit R47 (siebenundzwanzig Projekte, Feiertage im Zapfkalender): GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz
+byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45
 (Übergabegrenze, Referenzprojekt 1060) war GESAMT PASS, 835/879 CSV
 byte-gleich, `aggregate.csv` bei 26 Projekten byte-gleich (abweichend allein 1057 innerhalb der Toleranz), 1060 ganz
 byte-gleich; die übrigen 44 Dateien tragen Rechenreste innerhalb der Toleranz — die 28 Dateien von R43 und je sieben bis neun Dateien von

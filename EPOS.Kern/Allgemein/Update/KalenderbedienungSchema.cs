@@ -259,8 +259,24 @@ namespace WindowsFormsApplication1
             string id = q + "\"ID\"";
             var liste = new List<string>();
 
-            // 1. Der gespiegelte Teil der Liste faellt (nur Perioden ohne Angabe auf Rang 200 ... 203).
-            liste.Add("DELETE FROM \"" + per + "\" WHERE \"Rang\" BETWEEN " + RANG_FERIEN_ERSTER.ToString(CultureInfo.InvariantCulture) +
+            // 1. Der gespiegelte Teil der Liste faellt (nur Perioden ohne Angabe auf Rang 200 ... 203). In der Migration
+            //    (Bestandsform) nur, was nicht mehr seinem Ferienpaar gleicht - ein wiederholter Lauf behaelt Zeilen und Ids.
+            if (!trigger)
+            {
+                string zeile = "\"" + per + "\".";
+                var gleich = Enumerable.Range(1, FERIENSPALTEN).Select(k =>
+                {
+                    string nr = k.ToString(CultureInfo.InvariantCulture);
+                    return "(" + zeile + "\"Rang\" = " + (RANG_FERIEN_ERSTER + k - 1).ToString(CultureInfo.InvariantCulture) + " AND " +
+                           Gueltig("g.", k) + " AND " + zeile + "\"Beginn\" = CAST(g.\"Ferienbeginn_" + nr + "\" AS INTEGER) AND " + zeile +
+                           "\"Ende\" = CAST(g.\"Ferienende_" + nr + "\" AS INTEGER) AND " + zeile + "\"Bezeichner\" = 'Ferien " + nr + "')";
+                });
+                liste.Add("DELETE FROM \"" + per + "\" WHERE \"Rang\" BETWEEN " + RANG_FERIEN_ERSTER.ToString(CultureInfo.InvariantCulture) +
+                          " AND " + (RANG_FERIEN_ERSTER + FERIENSPALTEN - 1).ToString(CultureInfo.InvariantCulture) + " AND " + OhneAngabe("") +
+                          " AND \"ID_Kalender\" IN (SELECT k.\"ID\" FROM \"" + kal + "\" k JOIN \"" + tabelle + "\" g ON g.\"ID\" = k.\"" + eigner +
+                          "\" WHERE k.\"" + zone + "\" IS NULL AND k.\"Groesse\" = '" + ALLE + "' AND NOT (" + string.Join(" OR ", gleich) + "))");
+            }
+            else liste.Add("DELETE FROM \"" + per + "\" WHERE \"Rang\" BETWEEN " + RANG_FERIEN_ERSTER.ToString(CultureInfo.InvariantCulture) +
                       " AND " + (RANG_FERIEN_ERSTER + FERIENSPALTEN - 1).ToString(CultureInfo.InvariantCulture) + " AND " + OhneAngabe("") +
                       " AND \"ID_Kalender\" IN (SELECT k.\"ID\" FROM \"" + kal + "\" k" + (trigger ? "" : " JOIN \"" + tabelle +
                       "\" g ON g.\"ID\" = k.\"" + eigner + "\"") + " WHERE " + (trigger ? "k.\"" + eigner + "\" = " + id + " AND " : "") +
@@ -564,8 +580,10 @@ namespace WindowsFormsApplication1
                 }
             }
             int gruppen = Kalendergemeinschaft.AlleZusammenfuehren(v, out int kopien);
+            int doppel = Kalendergemeinschaft.FerienzeilenBereinigen(v);
             return new[]
             {
+                doppel.ToString(CultureInfo.InvariantCulture) + " Zeile(n) \"Ferien n\" der Stufe 1 in die Ferienperiode ihres Rangs ueberfuehrt",
                 ferien.ToString(CultureInfo.InvariantCulture) + " Ferienzeitraum/-raeume als Ferienliste gespiegelt",
                 gruppen.ToString(CultureInfo.InvariantCulture) + " gekoppelte Periode(n) aus " +
                 kopien.ToString(CultureInfo.InvariantCulture) + " Kopien in den gemeinsamen Kalender ueberfuehrt",

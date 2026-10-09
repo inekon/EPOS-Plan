@@ -15314,6 +15314,52 @@ td.epos-vorlage-katalogbeschreibung {
     margin-top: var(--epos-rand);
 }
 
+/* Stufe 2 der Kalenderbedienung (Konzept 7.8, Welle K2-U): die sieben Wochenendtage, die Maske „gilt für" je
+   Zeile, das Kennzeichen der Lesebrücke, die benannten Wochen und das Kennzeichen gemeinsamer Zeilen in
+   Jahresband und Jahresraster (ein Strich am unteren Rand, die Farbe der Tagesart bleibt). */
+.epos-kalb-tageswahl,
+.epos-kalb-maske,
+.epos-kalb-wochen {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.epos-kalb-wochen {
+    margin-top: var(--epos-rand);
+}
+
+.epos-kalb-wochen .epos-kalb-titel {
+    flex-basis: 100%;
+}
+
+.epos-kalb-tageswahl .epos-knopf,
+.epos-kalb-maske .epos-knopf {
+    min-width: var(--epos-touchziel);
+}
+
+.epos-kalb-getrennt {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-style: italic;
+}
+
+.epos-kalb-giltliste {
+    display: block;
+}
+
+.epos-kalb-profil--benannt {
+    border-left-width: 4px;
+}
+
+.epos-kalb-jahrtag--gemeinsam,
+.epos-kalb-bandteil--gemeinsam,
+.epos-kalb-muster--gemeinsam {
+    box-shadow: inset 0 -3px 0 var(--epos-marke);
+}
+
 @media (pointer: fine) {
     .epos-kalb .epos-kalb-woche {
         grid-template-columns: 2.2em repeat(7, minmax(0, 1fr));
@@ -15348,6 +15394,12 @@ td.epos-vorlage-katalogbeschreibung {
     .epos-kalb-bandteil--gewaehlt,
     .epos-kalb-jahrtag--gewaehlt {
         outline-color: Highlight;
+    }
+
+    .epos-kalb-jahrtag--gemeinsam,
+    .epos-kalb-bandteil--gemeinsam,
+    .epos-kalb-muster--gemeinsam {
+        box-shadow: inset 0 -3px 0 CanvasText;
     }
 }
 

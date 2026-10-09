@@ -8,10 +8,11 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Kalenderbedienung, Stufe 1</b> (Konzept Konditionierungsprofile 7.8, E110; Welle K1a): Wochenprofile,
-    /// gekoppelte Zuordnungszeilen, Einzeltage, Ferien mit Spiegelung der vier Gebäudespalten, Feiertage, Monatskopie,
-    /// Jahresraster samt Rangregel und Vorlage für alle Größen — rein über dem Arbeitsstand des Probegebäudes aus
-    /// <see cref="KonditionierungsarbeitTests"/>.
+    /// <b>Die Kalenderbedienung, Stufe 2</b> (Konzept Konditionierungsprofile 7.8, E110; Wellen K1a, K2-S2): Wochenprofile
+    /// und benannte Wochen, Zuordnungszeilen als Gemeinschaftsperioden mit Maske (gekoppelte Kopien als Lesebrücke),
+    /// Einzeltage, Ferienliste mit Spiegelung der vier Gebäudespalten, Wochenende und Feiertagsland des Gebäudes, Feiertage,
+    /// Monatskopie, Jahresraster samt Rangregel und Vorlage für alle Größen — rein über dem Arbeitsstand des Probegebäudes
+    /// aus <see cref="KonditionierungsarbeitTests"/>.
     /// </summary>
     public sealed class KalenderbedienungTests : IDisposable
     {
@@ -97,14 +98,22 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         [Fact]
-        public void Eine_Zeile_fuer_alle_steht_in_jeder_Groesse_und_aendert_und_loescht_gekoppelt()
+        public void Eine_Zeile_fuer_alle_ist_eine_Gemeinschaftsperiode_und_aendert_und_loescht_als_eine()
         {
             Konditionierungsarbeitsstand a = Angelegt();
             var alt = Zuordnungsschluessel.Zeitraum("Betriebsruhe", 100, 110);
             a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, alt, Zuordnungsangabe.Abgeschaltet));
             Zuordnungszeile z = Zeile(a, "Betriebsruhe");
-            Assert.Equal(new[] { H, L }, z.GiltFuer);
+            Assert.True(z.IstGemeinsam);
+            Assert.Equal(KalenderbedienungSchema.MASKE_ALLE, z.Maske);
+            Assert.Equal(Konditionierungsgroessen.Alle, z.GiltFuer);
+            Assert.Equal(new[] { H, L }, z.Raenge.Keys.OrderBy(g => g));                 // wirksam, wo ein Kalender angelegt ist
             Assert.All(z.Angaben.Values, x => Assert.Equal(Angabeart.Aus, x.Art));
+            Gemeinschaftsperiode p = Assert.Single(a.Gebaeude.Gemeinsam);
+            Assert.Equal(z.Raenge[H], p.Rang);
+            Assert.Equal(z.Raenge[L], p.Rang);                                             // EIN Rang in allen Größen
+            Assert.DoesNotContain(a.Gebaeude.EigenerKalender(H).Perioden, r => r.Bezeichner == "Betriebsruhe");
+            Assert.Contains(a.Gebaeude.Kalender(H).Perioden, r => r.Bezeichner == "Betriebsruhe");  // ausgebreitet wie im Lauf
 
             // Doppelt anlegen: benannt abgelehnt.
             Assert.False(Kalenderbedienung.ZuordnungSetzen(a, null, null, alt, Zuordnungsangabe.Abgeschaltet).Ok);
@@ -114,6 +123,7 @@ namespace EPOS.Kern.Tests
             a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, alt, neu, Zuordnungsangabe.AlsWert(15.0), new[] { H }));
             Zuordnungszeile n = Zeile(a, "Betriebsruhe");
             Assert.Equal(new[] { H }, n.GiltFuer);
+            Assert.Equal(Gemeinschaftsperiode.Bit(H), n.Maske);
             Assert.Equal(z.Raenge[H], n.Raenge[H]);
             Assert.Equal(105, n.Schluessel.Beginn);
             Assert.DoesNotContain(a.Gebaeude.Kalender(L).Perioden, r => r.Bezeichner == "Betriebsruhe");
@@ -123,9 +133,33 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Kalenderbedienung.Zuordnungen(a, null));
             Assert.False(Kalenderbedienung.ZuordnungLoeschen(a, null, neu).Ok);
 
-            // Eine Größe ohne angelegten Kalender: benannt abgelehnt.
+            // Eine Größe ohne angelegten Kalender: die Zeile steht in der Maske und wirkt erst mit einem Kalender.
+            a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, alt, Zuordnungsangabe.Abgeschaltet,
+                                                      new[] { Konditionierungsgroesse.Personen }));
+            Assert.Empty(Zeile(a, "Betriebsruhe").Raenge);
             Assert.False(Kalenderbedienung.ZuordnungSetzen(a, null, null, alt, Zuordnungsangabe.Abgeschaltet,
-                                                           new[] { Konditionierungsgroesse.Personen }).Ok);
+                                                           Array.Empty<Konditionierungsgroesse>()).Ok);
+        }
+
+        [Fact]
+        public void Eine_entfernte_Kopie_verlaesst_die_Maske_und_ein_neuer_Kalender_bekommt_die_Zeile()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, Zuordnungsschluessel.Zeitraum("Umbau", 50, 60),
+                                                      Zuordnungsangabe.Abgeschaltet));
+            int rang = Assert.Single(a.Gebaeude.Gemeinsam).Rang;
+
+            // Die Karte löscht die Periode im Lüftungskalender: die Lüftung verlässt die Maske, die Zeile bleibt.
+            Ebenenergebnis e = Konditionierungsarbeit.Werkzeug(a.Gebaeude, L, k => Kalenderwerkzeuge.PeriodeLoeschen(k, rang));
+            Assert.True(e.Ok, e.Meldung);
+            a = a.MitGebaeude(e.Stand);
+            Assert.False(Assert.Single(a.Gebaeude.Gemeinsam).Gilt(L));
+            Assert.True(a.Gebaeude.Gemeinsam[0].Gilt(H));
+
+            // Ein neu angelegter Kalender einer Größe der Maske trägt die Zeile sofort.
+            a = Gut(Konditionierungsarbeit.ZelleSetzen(a, Ort(Konditionierungsgroesse.Geraete), DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(0.5)));
+            a = Gut(Konditionierungsarbeit.Anlegen(a, Ort(Konditionierungsgroesse.Geraete)));
+            Assert.Contains(a.Gebaeude.Kalender(Konditionierungsgroesse.Geraete).Perioden, r => r.Rang == rang);
         }
 
         [Fact]
@@ -186,12 +220,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(6, liste.Count);
             Assert.Equal("Ferien 6", liste[5].Name);
 
-            // Heizen trägt Ferien (Ferienzeile wirksam): 1–4 als Matrixbereich, 5 und 6 als Zeilen mit dem Ferienwert.
+            // Heizen trägt Ferien (Ferienzeile wirksam): alle sechs als Matrixbereich des Generators, 5 und 6 aus der
+            // Ferienliste auf dem Rang ihrer Ferienperiode (204, 205) mit dem Ferienwert — keine Zeilen „Ferien n" im Eigenband.
             Konditionierungskalender h = a.Gebaeude.Kalender(H);
-            Assert.Equal(4, h.Perioden.Count(r => r.Art == DbWerte.KOND_ART_FERIEN));
+            Assert.Equal(6, h.Perioden.Count(r => r.Art == DbWerte.KOND_ART_FERIEN));
             Kalenderregel f6 = h.Perioden.Single(r => r.Bezeichner == "Ferien 6");
             Assert.Equal(16.0, f6.Angabe.Wert);
-            Assert.Equal(Standardfahrplan.RANG_EIGEN + 1, f6.Rang);
+            Assert.Equal(DbWerte.KOND_ART_FERIEN, f6.Art);
+            Assert.Equal(Kalendergemeinschaft.RANG_FERIENLISTE + 1, f6.Rang);
+            Assert.DoesNotContain(h.Perioden, r => r.Rang >= Standardfahrplan.RANG_EIGEN && r.Bezeichner.StartsWith("Ferien", StringComparison.Ordinal));
             Assert.Equal(Rastertagart.Ferien, Kalenderbedienung.Jahresraster(a, Ort(H))[2].Art);    // 3. Januar
             Assert.Equal(Rastertagart.Ferien, Kalenderbedienung.Jahresraster(a, Ort(H))[64].Art);
 
@@ -206,7 +243,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Feiertage_laden_koppelt_die_neun_Regeln_und_ein_Land_bringt_feste_Einzeltage()
+        public void Feiertage_laden_koppelt_die_neun_Regeln_und_ein_Land_bringt_seine_Regelperioden()
         {
             Konditionierungsarbeitsstand a = Angelegt();
             a = Gut(Kalenderbedienung.FeiertageLaden(a, null));
@@ -216,12 +253,12 @@ namespace EPOS.Kern.Tests
             Assert.All(feiertage, z => Assert.InRange(z.Raenge[H], Standardfahrplan.RANG_FEIERTAG, Standardfahrplan.RANG_FEIERTAG_LETZTER));
 
             a = Gut(Kalenderbedienung.LandesfeiertageLaden(a, null, "BY"));
-            List<Zuordnungszeile> land = Kalenderbedienung.Zuordnungen(a, null)
-                .Where(z => z.Schluessel.Name == string.Format(CultureInfo.CurrentCulture, "Landesfeiertag {0}", "BY")).ToList();
+            List<Zuordnungszeile> land = Kalenderbedienung.Zuordnungen(a, null).Where(z => z.IstGemeinsam).ToList();
             Assert.Equal(3, land.Count);                                     // Hl. Drei Könige, Fronleichnam, Allerheiligen
-            Assert.Contains(land, z => z.Schluessel.Beginn == 6);
-            Assert.Contains(land, z => z.Schluessel.Beginn == 305);
-            Assert.Equal(Rastertagart.Einzeltag, Kalenderbedienung.Jahresraster(a, Ort(H))[5].Art);
+            Assert.Equal("BY", Kalenderbedienung.Feiertagsland(a));
+            Assert.Contains(land, z => z.ErsterTag == 6);
+            Assert.Contains(land, z => z.ErsterTag == 305);
+            Assert.Equal(Rastertagart.Feiertag, Kalenderbedienung.Jahresraster(a, Ort(H))[5].Art);
 
             // Wiederholbar: kein zweiter Satz.
             a = Gut(Kalenderbedienung.LandesfeiertageLaden(a, null, "BY"));
@@ -259,7 +296,8 @@ namespace EPOS.Kern.Tests
 
             List<Zuordnungszeile> zeilen = Kalenderbedienung.Zuordnungen(a, null).ToList();
             Zuordnungszeile messe = zeilen.Single(z => z.Schluessel == Zuordnungsschluessel.Zeitraum("Messe", 60, 68));
-            Assert.Equal(new[] { H, L }, messe.GiltFuer);
+            Assert.True(messe.IstGemeinsam);
+            Assert.Equal(KalenderbedienungSchema.MASKE_ALLE, messe.Maske);
             Zuordnungszeile inventur = zeilen.Single(z => z.Schluessel == Zuordnungsschluessel.Zeitraum("Inventur", 60, 63));
             Assert.Equal(new[] { H }, inventur.GiltFuer);
             Assert.Equal(14.0, inventur.Angaben[H].Wert);
@@ -317,11 +355,14 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Warnzeile_meldet_gekoppelte_Zeilen_in_abweichender_Rangfolge()
         {
+            // Eine Gemeinschaftsperiode hat EINEN Rang; abweichen können nur gekoppelte Kopien (Lesebrücke) — hier die
+            // Wirkung „Standardwoche" über zwei Größen, je Größe eine andere Woche.
             Konditionierungsarbeitsstand a = Angelegt();
             a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, Zuordnungsschluessel.Zeitraum("A", 100, 120),
-                                                      Zuordnungsangabe.Abgeschaltet));
+                                                      Zuordnungsangabe.Profilwoche(""), new[] { H, L }));
             a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, Zuordnungsschluessel.Zeitraum("B", 110, 130),
-                                                      Zuordnungsangabe.Abgeschaltet));
+                                                      Zuordnungsangabe.Profilwoche(""), new[] { H, L }));
+            Assert.False(Zeile(a, "A").IstGemeinsam);
             Assert.Empty(Kalenderbedienung.Rangabweichungen(a, null));
 
             // B steht in beiden Größen über A; im Heizkalender eine Stufe tiefer gesetzt, kippt die Folge dort.
@@ -331,6 +372,114 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "A", "B" }, new[] { w.Erste.Name, w.Zweite.Name });
             Assert.Equal(H, w.Oben);
             Assert.Equal(L, w.Unten);
+        }
+        // =============================================================================
+        //  Stufe 2: benannte Wochen, Wochenende, Feiertagsland, Ferienliste
+        // =============================================================================
+
+        [Fact]
+        public void Eine_benannte_Woche_wird_angelegt_verwiesen_folgt_und_laesst_sich_verwiesen_nicht_loeschen()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            a = Gut(Kalenderbedienung.WocheAnlegen(a, Ort(H), "Schichtwoche"));
+            Wochenprofil w = Kalenderbedienung.Wochenprofile(a, Ort(H)).Single(x => x.IstBenannt);
+            Assert.True(w.IdWoche < 0);                                               // vorläufig, die Zeile entsteht im OK-Weg
+            Assert.False(Kalenderbedienung.WocheAnlegen(a, Ort(H), "Schichtwoche").Ok);   // je Größe eindeutig
+            Assert.False(Kalenderbedienung.WocheAnlegen(a, Ort(H), " ").Ok);
+
+            // Eine Zeile verweist auf die Woche: eine Gemeinschaftsperiode mit ID_Woche.
+            var s = Zuordnungsschluessel.Zeitraum("Schicht", 200, 210);
+            a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, s, Zuordnungsangabe.Profilwoche("Schichtwoche"), new[] { H }));
+            Zuordnungszeile z = Zeile(a, "Schicht");
+            Assert.True(z.IstGemeinsam);
+            Assert.Equal(w.IdWoche, z.IdWoche);
+
+            // Der Pinsel auf der benannten Woche: die verweisende Zeile folgt.
+            var p = new Profilort(Ort(H), null, w.IdWoche);
+            a = Gut(Kalenderbedienung.PinselAnwenden(a, p, 0, 0, 0, 24, 18.0));
+            Assert.Equal(18.0, Zeile(a, "Schicht").Angabe.Woche[Kalenderwoche.Stelle(0, 3)]);
+            Assert.Equal(18.0, a.Gebaeude.Kalender(H).Perioden.Single(r => r.Bezeichner == "Schicht").Angabe.Woche[Kalenderwoche.Stelle(0, 3)]);
+
+            // Grenzprüfung der Größe (Konzept 3.6) und Einheitsregel beim Kopieren.
+            Assert.False(Kalenderbedienung.PinselAnwenden(a, p, 0, 0, 0, 24, 1000.0).Ok);
+            Assert.False(Kalenderbedienung.WocheKopieren(a, p, new Profilort(Ort(L))).Ok);
+            a = Gut(Kalenderbedienung.TagKopieren(a, p, 0, new Profilort(Ort(H)), new[] { 6 }));
+            Assert.Equal(18.0, Kalenderbedienung.Profil(a, new Profilort(Ort(H))).Werte[Kalenderwoche.Stelle(6, 3)]);
+
+            // Verwiesen: benannt abgelehnt; ohne Verweis gelöscht; umbenannt behält sie den Verweis.
+            a = Gut(Kalenderbedienung.WocheUmbenennen(a, Ort(H), w.IdWoche.Value, "Früh-Spät"));
+            Assert.Equal(w.IdWoche, Zeile(a, "Schicht").IdWoche);
+            Konditionierungsschritt nein = Kalenderbedienung.WocheLoeschen(a, Ort(H), w.IdWoche.Value);
+            Assert.False(nein.Ok);
+            Assert.Contains("Früh-Spät", nein.Meldung);
+            a = Gut(Kalenderbedienung.ZuordnungLoeschen(a, null, s));
+            a = Gut(Kalenderbedienung.WocheLoeschen(a, Ort(H), w.IdWoche.Value));
+            Assert.DoesNotContain(Kalenderbedienung.Wochenprofile(a, Ort(H)), x => x.IstBenannt);
+        }
+
+        [Fact]
+        public void Das_Wochenende_kommt_aus_der_Spalte_des_Gebaeudes()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            Assert.Equal(new[] { 5, 6 }, Kalenderbedienung.Wochenendtage(a));          // leer heißt Sa + So
+            a = Gut(Kalenderbedienung.WochenendeSetzen(a, new[] { 4, 5 }));
+            Assert.Equal(new[] { 4, 5 }, Kalenderbedienung.Wochenendtage(a));
+            Assert.Equal(48, a.Gebaeude.Bestand.Wochenendtage);
+            Assert.False(Kalenderbedienung.WochenendeSetzen(a, new[] { 7 }).Ok);
+        }
+
+        [Fact]
+        public void Das_Feiertagsland_legt_seine_Regelperioden_an_und_raeumt_sie_beim_Wechsel()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            a = Gut(Kalenderbedienung.FeiertageLaden(a, null));                         // die neun bundeseinheitlichen
+            int bund = Kalenderbedienung.Zuordnungen(a, null).Count;
+
+            a = Gut(Kalenderbedienung.FeiertagslandSetzen(a, "BY"));
+            List<Gemeinschaftsperiode> by = a.Gebaeude.Gemeinsam.Where(Kalenderbedienung.IstLandesregel).ToList();
+            Assert.Equal(new[] { DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE, DbWerte.KOND_FEIERTAG_FRONLEICHNAM,
+                                 DbWerte.KOND_FEIERTAG_ALLERHEILIGEN }.OrderBy(x => x),
+                         by.Select(p => p.Regel.Feiertagsregel).OrderBy(x => x));
+            Assert.All(by, p => Assert.Equal(KalenderbedienungSchema.MASKE_ALLE, p.Maske));
+            Assert.All(by, p => Assert.InRange(p.Rang, Standardfahrplan.RANG_FEIERTAG_LETZTER + 1, Standardfahrplan.RANG_FERIEN - 1));
+            Assert.Equal(Kalenderbedienung.RangLandesregel(DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE),
+                         by.Single(p => p.Regel.Feiertagsregel == DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE).Rang);
+
+            // Eine eigene Zeile bleibt beim Wechsel; die Regeln des alten Landes fallen, die des neuen kommen.
+            a = Gut(Kalenderbedienung.EinzeltagSetzen(a, null, null, 140, "Betriebsfest", aus: true));
+            a = Gut(Kalenderbedienung.FeiertagslandSetzen(a, "BE"));
+            Assert.Equal(DbWerte.KOND_FEIERTAG_FRAUENTAG,
+                         Assert.Single(a.Gebaeude.Gemeinsam.Where(Kalenderbedienung.IstLandesregel)).Regel.Feiertagsregel);
+            Assert.Contains(Kalenderbedienung.Zuordnungen(a, null), z => z.Schluessel.Name == "Betriebsfest");
+
+            a = Gut(Kalenderbedienung.FeiertagslandSetzen(a, null));
+            Assert.Null(Kalenderbedienung.Feiertagsland(a));
+            Assert.DoesNotContain(a.Gebaeude.Gemeinsam, Kalenderbedienung.IstLandesregel);
+            Assert.Equal(bund + 1, Kalenderbedienung.Zuordnungen(a, null).Count);       // die neun bleiben unberührt
+            Assert.False(Kalenderbedienung.FeiertagslandSetzen(a, "XX").Ok);
+        }
+
+        [Fact]
+        public void Die_Ferienliste_fuehrt_benannte_Zeitraeume_und_spiegelt_die_ersten_vier()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            var liste = new[]
+            {
+                new Ferienzeile("Winter", 1, 6), new Ferienzeile("Ostern", 95, 105), new Ferienzeile("Pfingsten", 140, 145),
+                new Ferienzeile("Sommer", 190, 230), new Ferienzeile("Herbst", 280, 290), new Ferienzeile("Weihnachten", 355, 365),
+            };
+            a = Gut(Kalenderbedienung.FerienlisteSetzen(a, liste));
+            Assert.Equal(95.0, a.Gebaeude.Bestand.Ferienbeginn[1]);
+            Assert.Equal(230.0, a.Gebaeude.Bestand.Ferienende[3]);
+            Assert.Equal(new[] { "Herbst", "Weihnachten" }, a.Gebaeude.Ferienliste.Select(f => f.Name));
+            IReadOnlyList<Ferienzeile> gelesen = Kalenderbedienung.Ferienzeitraeume(a);
+            Assert.Equal(6, gelesen.Count);
+            Assert.Equal("Weihnachten", gelesen[5].Name);
+            Assert.Equal(Rastertagart.Ferien, Kalenderbedienung.Jahresraster(a, Ort(H))[284].Art);   // der fünfte wirkt
+
+            a = Gut(Kalenderbedienung.FerienlisteSetzen(a, liste.Take(2).ToList()));
+            Assert.Empty(a.Gebaeude.Ferienliste);
+            Assert.Equal(0.0, a.Gebaeude.Bestand.Ferienbeginn[2]);
         }
     }
 }

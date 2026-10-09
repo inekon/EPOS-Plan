@@ -1925,6 +1925,9 @@ public sealed partial class KonditionierungBearbeitung
         new(d => d.NachtEnde, (d, w) => d.NachtEnde = (int?)w),
         new(d => d.Wochenende, (d, w) => d.Wochenende = (double)w!),
         new(d => d.Ferien, (d, w) => d.Ferien = (double)w!),
+        // Stufe 2 der Kalenderbedienung: Wochenendmaske und Feiertagsland des Gebäudes reisen mit dem Schritt.
+        new(d => d.Wochenendtage, (d, w) => d.Wochenendtage = (int)w!),
+        new(d => d.Feiertagsland, (d, w) => d.Feiertagsland = (string?)w),
     };
 
     /// <summary>Die Felder einer Zone, die ein Schritt ändern kann.</summary>

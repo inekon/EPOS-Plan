@@ -311,6 +311,19 @@ namespace WindowsFormsApplication1
                                                     BEZEICHNER_FERIEN + " " + Z(k + 1),
                                                     (int)von, (int)bis, angabe));
             }
+
+            // Die Ferienliste ab dem fuenften Zeitraum (Konzept 7.8, Stufe 2): dieselbe Angabe auf dem Rang ihrer
+            // Ferienperiode im gemeinsamen Kalender (204 ... 309), aufsteigend; ohne Liste byte-gleich der Bestand.
+            int rang = RANG_FERIEN + Matrixeingang.FERIENZEITRAEUME;
+            foreach (Ferienzeile f in b.WeitereFerien ?? Array.Empty<Ferienzeile>())
+            {
+                if (f == null) continue;
+                if (rang > Kalendergemeinschaft.RANG_FERIENLISTE_LETZTER || !Jahrestag(f.Beginn) || !Jahrestag(f.Ende))
+                    return new Fahrplanlesung(Fahrplanbefund.FerienzeitraumUngueltig, null, groesse, f.Name ?? "");
+                string name = string.IsNullOrWhiteSpace(f.Name) ? BEZEICHNER_FERIEN + " " + Z(rang - RANG_FERIEN + 1) : f.Name.Trim();
+                perioden.Add(Kalenderregel.Zeitraum(rang, DbWerte.KOND_ART_FERIEN, name, f.Beginn, f.Ende, angabe));
+                rang++;
+            }
             return null;
         }
 

@@ -41308,12 +41308,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
     <value>Catalogue record “{0}” created.</value>
   </data>
-  <data name="KOND_MSG_ZAPF_FERIEN_GEKUERZT" xml:space="preserve">
-    <value>The heating calendar of building “{0}” has {1} holiday periods; the draw-off profile takes the {2} highest-ranked.</value>
-  </data>
-  <data name="ZPG_WARN_KALENDERFERIEN_GEKUERZT" xml:space="preserve">
-    <value>Holiday periods truncated</value>
-  </data>
   <data name="KOND_MSG_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
     <value>Time structure {0}: {1} weekly hours = {2}, otherwise {3}</value>
   </data>
@@ -49501,7 +49495,7 @@ chart</value>
     <value>Saturday and Sunday</value>
   </data>
   <data name="KOND_TXT_KALB_HINWEIS_WOCHENENDE" xml:space="preserve">
-    <value>Read only; selectable from stage 2.</value>
+    <value>Applies to all quantities of the building; without a selected day, Saturday and Sunday apply.</value>
   </data>
   <data name="KOND_LBL_KALB_FERIEN" xml:space="preserve">
     <value>Holidays</value>
@@ -50135,6 +50129,81 @@ chart</value>
   </data>
   <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
     <value>Method at the map edges</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
+    <value>The week “{0}” is still used by {1} row(s) and cannot be deleted.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHE_NAME" xml:space="preserve">
+    <value>The name “{0}” is empty, too long or already taken in {1}.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHENENDE" xml:space="preserve">
+    <value>The weekday {0} is not between 0 (Monday) and 6 (Sunday).</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_FERIEN_ZU_VIELE" xml:space="preserve">
+    <value>The holiday list holds at most {0} periods.</value>
+  </data>
+  <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
+    <value>Epiphany;International Women’s Day;Corpus Christi;Assumption Day;World Children’s Day;Reformation Day;All Saints’ Day;Day of Repentance and Prayer</value>
+  </data>
+  <data name="KOND_LBL_KALB_GILT_ALLE" xml:space="preserve">
+    <value>all</value>
+  </data>
+  <data name="KOND_TXT_KALB_GETRENNT" xml:space="preserve">
+    <value>separate per quantity</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_GETRENNT" xml:space="preserve">
+    <value>Separate per quantity: this row exists as its own copy in every quantity. “Applies to” cannot be switched here; With a named week or an effect without a week profile, the editor turns it into one shared row.</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHEN" xml:space="preserve">
+    <value>Named weeks</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHE_NAME" xml:space="preserve">
+    <value>Week name</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_ANLEGEN" xml:space="preserve">
+    <value>Create week</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_UMBENENNEN" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_LOESCHEN" xml:space="preserve">
+    <value>Delete week</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_WOCHEN" xml:space="preserve">
+    <value>A new week takes over the values of the selected week profile. Assignment rows select it as their week profile; a week referenced by a row cannot be deleted.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_WOCHE_WAHL" xml:space="preserve">
+    <value>Select a named week first.</value>
+  </data>
+  <data name="KOND_BTN_KALB_SA_SO" xml:space="preserve">
+    <value>Sat + Sun</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_WOCHENENDE_ZONE" xml:space="preserve">
+    <value>The weekend belongs to the building; the zone inherits it.</value>
+  </data>
+  <data name="KOND_LBL_KALB_FEIERTAGSLAND" xml:space="preserve">
+    <value>Holiday state</value>
+  </data>
+  <data name="KOND_TXT_KALB_LAND_LEER" xml:space="preserve">
+    <value>nationwide only</value>
+  </data>
+  <data name="KOND_TXT_KALB_LAND_REGELN" xml:space="preserve">
+    <value>The state adds: {0}.</value>
+  </data>
+  <data name="KOND_TXT_KALB_LAND_KEINE" xml:space="preserve">
+    <value>The nine nationwide public holidays apply.</value>
+  </data>
+  <data name="KOND_TXT_KALB_BUNDESLAENDER" xml:space="preserve">
+    <value>Baden-Wuerttemberg;Bavaria;Berlin;Brandenburg;Bremen;Hamburg;Hesse;Mecklenburg-Western Pomerania;Lower Saxony;North Rhine-Westphalia;Rhineland-Palatinate;Saarland;Saxony;Saxony-Anhalt;Schleswig-Holstein;Thuringia</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_LAND_ZONE" xml:space="preserve">
+    <value>The holiday state belongs to the building; the zone inherits it.</value>
+  </data>
+  <data name="KOND_LBL_KALB_FERIEN_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KOND_LBL_KALB_LEGENDE_GEMEINSAM" xml:space="preserve">
+    <value>Row for several quantities</value>
   </data>
 </root>
 

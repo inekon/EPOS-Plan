@@ -60,6 +60,7 @@ namespace WindowsFormsApplication1
             long idGebaeude = gebaeude.ID_Gebaeude;
             List<Kalenderzeile> kalenderzeilen = Kalenderzeilen(idGebaeude, null);
             List<Periodenzeile> perioden = Periodenzeilen(idGebaeude, null);
+            List<Ferienzeile> ferienliste = Kalendergemeinschaft.Ferienliste(kalenderzeilen, perioden);   // vor dem Ausbreiten
             Kalendergemeinschaft.Ausbreiten(kalenderzeilen, perioden);
             kalenderzeilen = Kalendergemeinschaft.OhneGemeinsam(kalenderzeilen);
             List<Vorgabezeile> vorgaben = Vorgabezeilen(idGebaeude, null);
@@ -73,7 +74,7 @@ namespace WindowsFormsApplication1
             }
             List<Vorgabezeile> zonenvorgaben = idZone.HasValue ? Vorgabezeilen(idGebaeude, idZone) : null;
             return Satz(gebaeude, kalenderzeilen, perioden, vorgaben, zonenkalender, zonenperioden, zonenvorgaben,
-                        idZone, wochenende, referenzjahr, kopplungWirksam, kuehlungWirksam);
+                        idZone, wochenende, referenzjahr, kopplungWirksam, kuehlungWirksam, ferienliste);
         }
 
         /// <summary>
@@ -86,7 +87,8 @@ namespace WindowsFormsApplication1
                                                   List<Vorgabezeile> vorgaben, List<Kalenderzeile> zonenkalender,
                                                   List<Periodenzeile> zonenperioden, List<Vorgabezeile> zonenvorgaben,
                                                   long? idZone, bool[] wochenende, int referenzjahr,
-                                                  bool kopplungWirksam, bool kuehlungWirksam)
+                                                  bool kopplungWirksam, bool kuehlungWirksam,
+                                                  IReadOnlyList<Ferienzeile> ferienliste = null)
         {
             if (gebaeude == null) throw new ArgumentNullException(nameof(gebaeude));
             kalenderzeilen ??= new List<Kalenderzeile>();
@@ -105,6 +107,8 @@ namespace WindowsFormsApplication1
             if (leer) return null;      // wörtlich der Bestandszweig
 
             Matrixeingang bestand = Konditionierungseingang.Bestand(gebaeude, kopplungWirksam, kuehlungWirksam);
+            // Die Ferienliste ab dem fuenften Zeitraum (gemeinsamer Kalender ab Rang 204) liest der Generator selbst.
+            if (ferienliste != null && ferienliste.Count > 0) bestand.WeitereFerien = new List<Ferienzeile>(ferienliste);
             Zonennennwerte nennwerte = null;
             if (idZone.HasValue) bestand = Zonenbestand(gebaeude, idZone.Value, bestand, zonenvorgaben, out nennwerte);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> gebaeudeangelegt =
@@ -350,10 +354,11 @@ namespace WindowsFormsApplication1
             if (kalenderzeilen.Count == 0 && vorgaben.Count == 0) return null;
 
             List<Periodenzeile> perioden = PeriodenzeilenVon(roh);
+            List<Ferienzeile> ferienliste = Kalendergemeinschaft.Ferienliste(roh, perioden);   // vor dem Ausbreiten
             Kalendergemeinschaft.Ausbreiten(roh, perioden);
-            Vorgabematrix matrix = Vorgabematrix.Bilden(
-                Konditionierungseingang.Bestand(bestand, kopplungWirksam, kuehlungWirksam),
-                vorgaben, eigner.Art);
+            Matrixeingang eingang = Konditionierungseingang.Bestand(bestand, kopplungWirksam, kuehlungWirksam);
+            if (ferienliste.Count > 0) eingang.WeitereFerien = ferienliste;
+            Vorgabematrix matrix = Vorgabematrix.Bilden(eingang, vorgaben, eigner.Art);
             Dictionary<Konditionierungsgroesse, Konditionierungskalender> angelegt =
                 Angelegt(kalenderzeilen, perioden, bestand.Gebaeudename);
 
