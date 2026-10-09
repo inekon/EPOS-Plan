@@ -43,7 +43,7 @@ Beispielanlage A: Mehrfamilienhaus mit 12 Wohnungen, Heizlast 45 kW bei −12 °
 |-
 | Detailansicht || ''Wärmepumpentyp'' || Luft-Wasser || die Quelle ist damit fest die Außenluft der Klimaregion
 |-
-| Detailansicht || ''Vorlauf'' / ''Rücklauf'' || 55 / 45 °C || Heizkörper 55/45 °C; gerechnet wird mit der Kennlinie für 55 °C
+| Detailansicht, ''Auslegung für Verteilung'' || ''Vorlauf'' / ''Rücklauf'' || 55 / 45 °C || Heizkörper 55/45 °C; gerechnet wird mit der Kennlinie für 55 °C. Ein leerer Rücklauf stünde ebenfalls auf 45 °C, vorbelegt mit Vorlauf − 10 K
 |-
 | Konfiguration || ''Heizstab mitrechnen'' || aus || die Spitze soll Kessel 1 decken; ein eingeschalteter Heizstab käme vor ihm zum Zug ([[#zusammenspiel|Zusammenspiel]])
 |-
@@ -89,7 +89,7 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 |-
 | Photovoltaik, Stromspeicher || PV-Strom deckt Wärmepumpe und Heizstab wie jeden Verbrauch; der Stromspeicher entlädt in die Restlast || hebt den Eigenverbrauch || ''PV-optimiert'' lädt zusätzlich höchstens so viel, wie der vorab bestimmte PV-Überschuss (PV-Ertrag minus übriger Strombedarf) mal COP zulässt. Die Ladepriorität ''Bei PV-Überschuss:'' gilt nur in diesem Modus.
 |-
-| Gebäude, Heizkreis || mit ''Heizkreis (AK1)'' bestimmt der gerechnete Vorlauf die Kennlinie der Stunde || ohne Heizkurve fährt das Gebäude den höchsten projektierten Vorlauf der Erzeuger im Heizkanal || zwischen zwei Vorlaufstufen linear interpoliert; unter der untersten die unterste, über der obersten die oberste Kennlinie, bei verbotener Extrapolation dort Abbruch. Gilt für Module mit Heizwärme.
+| Gebäude, Heizkreis || mit ''Heizkreis (AK1)'' bestimmt der gerechnete Vorlauf die Kennlinie der Stunde; in Stunden mit Heizsollwert ''aus'' – etwa außerhalb der Heizperiode, die der Reiter ''Konditionierung'' des Gebäudes festlegt – fordert das Gebäude keine Heizwärme || ohne Heizkurve fährt das Gebäude den höchsten projektierten Vorlauf der Erzeuger im Heizkanal || zwischen zwei Vorlaufstufen linear interpoliert; unter der untersten die unterste, über der obersten die oberste Kennlinie, bei verbotener Extrapolation dort Abbruch; braucht kein gekoppeltes Gebäude Heizwärme, die Kennlinie des ''Vorlaufs'' an der Anlage. Gilt für Module mit Heizwärme.
 |-
 | Kühlung || ein reversibles Gerät kühlt an Tagen, an denen der Kältebedarf den Heizbedarf übersteigt || an diesen Tagen ruht ihr Heizkanal, Warmwasser bleibt || [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]
 |}
@@ -174,7 +174,7 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 * {{Anker|betriebsart}}'''Betriebsart''' – ohne den Haken ''Bivalenter Betrieb'' arbeitet die Wärmepumpe monovalent. Mit dem Haken stehen ''Alternativbetrieb'', ''Parallelbetrieb'' und ''Teilparallelbetrieb'' zur Wahl; drei Erklärkästen beschreiben die Unterschiede, der gewählte ist hervorgehoben.
 * {{Anker|bivalenztemperatur}}'''Bivalenztemperatur''' – die Außentemperatur, bei der die Wärmepumpe abschaltet: im Teilparallelbetrieb bei dieser Temperatur und darunter, im Alternativbetrieb darunter. Das Feld erscheint nur bei diesen beiden Betriebsarten; im Parallelbetrieb hat eine Bivalenztemperatur keine Wirkung.
 * {{Anker|energietraeger}}'''Energieträger''' – die Wahl erfolgt in zwei Stufen: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe. Vorbelegt ist der Stromträger des Projekts; ein Gruppenwechsel wählt die erste Art der Gruppe. Strompreis, Aufschläge und Emissionsfaktor der Wärmepumpe folgen dieser Wahl.
-* '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms; siehe [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
+* '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms. Ohne Kühlkennlinie im Projekt oder mit einem Pufferspeicher als Quelle ist der Schalter gesperrt und steht ohne Haken; der Grund steht darunter. Siehe [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
 
 === Einstellungen der Simulation ===
 

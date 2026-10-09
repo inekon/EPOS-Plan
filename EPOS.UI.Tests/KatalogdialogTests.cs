@@ -119,19 +119,6 @@ public class KatalogdialogTests : EposBunitContext
             .Add(x => x.SpalteWahlText, Resource.KFAK_SP_WAHL));
     }
 
-    private IRenderedComponent<SolarganglinieAdminDialog> Solarganglinienverwaltung() =>
-        Render<SolarganglinieAdminDialog>(p => p
-            .Add(x => x.Katalogzeilen, () => Task.FromResult(
-                (IReadOnlyList<Katalogfilterzeile>)new[]
-                {
-                    new Katalogfilterzeile(1, "Ganglinie A")
-                        .MitText(Katalogfilterprofil.SpBezeichner, "Ganglinie A")
-                        .MitText(Katalogfilterprofil.SpBeschreibung, "Beschreibung")
-                }))
-            .Add(x => x.Katalogprofil,
-                 Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, s => s))
-            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
-
     /// <summary>
     /// Die Stromganglinienverwaltung (A8) steht seit Stufe 1 der Neuordnung
     /// (Konzept Administrationsdialoge) im gemeinsamen Rahmen — vorher stand sie frei
@@ -196,8 +183,8 @@ public class KatalogdialogTests : EposBunitContext
     /// <summary>
     /// <c>epos-katalog-dialog</c> nimmt der Dialogwurzel die Breitenbremse von
     /// 1160 px und gibt ihr die Fensterhöhe; ohne sie rollte die SEITE statt
-    /// der Liste. Acht Dialoge tragen sie — die Liste steht hier, damit ein
-    /// neunter nicht still danebenfällt.
+    /// der Liste. Sieben Dialoge tragen sie — die Liste steht hier, damit ein
+    /// achter nicht still danebenfällt.
     /// </summary>
     [Fact]
     public void Jeder_Katalogdialog_traegt_die_Wurzelklasse()
@@ -206,7 +193,6 @@ public class KatalogdialogTests : EposBunitContext
         {
             Katalogbrowser().Find("div").ClassName,
             Modulkatalog().Find("div").ClassName,
-            Solarganglinienverwaltung().Find("div").ClassName,
             Waermebedarfsverwaltung().Find("div").ClassName,
             Stromganglinienverwaltung().Find("div").ClassName,
             Bedarfsverwaltung().Find("div").ClassName,
@@ -222,15 +208,13 @@ public class KatalogdialogTests : EposBunitContext
     /// <summary>
     /// Die Vorbilder stellten Liste und Eingabe nebeneinander — vier
     /// Katalogbrowser (726 × 383 bis 856 × 517), zwei Modulkataloge
-    /// (607 × 489 / 614 × 367), die Solarganglinienverwaltung (681 × 344) und
-    /// die Klimaregionen (757 × 641).
+    /// (607 × 489 / 614 × 367) und die Klimaregionen (757 × 641).
     /// </summary>
     [Fact]
     public void Liste_und_Eingabe_stehen_im_Katalograhmen()
     {
         RahmenPruefen(Katalogbrowser(), gestapelt: false);
         RahmenPruefen(Modulkatalog(), gestapelt: false);
-        RahmenPruefen(Solarganglinienverwaltung(), gestapelt: false);
         RahmenPruefen(Klimaregionen(), gestapelt: false);
     }
 

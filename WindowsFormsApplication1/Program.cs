@@ -281,6 +281,10 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
+            // Der Import einer Solarthermie-Ganglinie braucht Dateiwahl und Ablageordner
+            // dieser Schale; ohne den Haken lehnt "Import..." benannt ab (iOS).
+            Katalogwege.SolarganglinienDatei = SolarganglinieHuelle.Dateiwege;
+
             // Stufe P2 der Pufferspeicher-Auslegung: Die Uebergabe aus dem Zapfprofil (das selbst in
             // einem Fenster steht) oeffnet die Auslegung in einem eigenen Fenster. Ohne diesen Haken
             // lehnt die Uebergabe benannt ab - genau der Stand auf iOS.

@@ -95,16 +95,22 @@
             break;
 
         case "solar":
-            <SolarganglinieAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
+            @* Projekt und Katalog der Solarthermieganglinien sind EIN Dialog; der
+               Menuepunkt oeffnet ihn ohne Projekt (Katalogbetrieb). *@
+            <EPOS.UI.Dialoge.Solarthermie.SolarganglinieDialog Katalogbetrieb="true"
+                                       Katalogwege="@(new GanglinienKatalogwege
+                                       {
+                                           Katalogzeilen = () => Task.FromResult(ZeitreihenZeilen()),
+                                           HatProjektzuordnung = _ => Task.FromResult(false),
+                                           Loeschen = _ => Task.FromResult(true),
+                                           Schloss = ProbeSchloss,
+                                           Verwendung = Verwendung,
+                                           Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", "")),
+                                           DateiWaehlen = _ => Task.FromResult<string?>(null),
+                                           Ordner = "D:\\VDI-3805-Daten\\Solarthermie"
+                                       })"
                                        Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, Uebersetzt)"
                                        Filterstandvorgabe="@_filterstand"
-                                       HatProjektzuordnung="@(_ => Task.FromResult(false))"
-                                       Loeschen="@(_ => Task.FromResult(true))"
-                                       Schloss="@ProbeSchloss"
-                                       Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
-                                       Einlesen="@((_, _) => Task.FromResult(new EPOS.UI.Dialoge.Solarthermie.SolarganglinieImportErgebnis()))"
-                                       DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
-                                       Ordner="D:\VDI-3805-Daten\Solarthermie"
                                        Geschlossen="@(b => { })" />
             break;
 

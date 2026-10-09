@@ -202,9 +202,7 @@ namespace WindowsFormsApplication1
             // Eintrag mehr.
 
             { "Form_SolarKollektorenAdmin",  B_SOLARTHERMIE },
-            // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
-            // Razor-Komponente SolarganglinieAdminDialog; der Bereich bleibt.
-            { "SolarganglinieAdminDialog",   B_SOLARTHERMIE },
+            // Projekt und Katalog der Solarthermieganglinien sind EIN Dialog.
             { "SolarganglinieDialog",        B_SOLARTHERMIE },
 
             { "Form_AdminStromspeicher",     B_STROMSPEICHER },

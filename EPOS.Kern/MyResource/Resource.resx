@@ -266,6 +266,27 @@
   <data name="KOH_PV_STAMM_FEHLT" xml:space="preserve">
     <value>Variante „{0}“ führt „vom Stammprojekt übernehmen“, hat aber kein Stammprojekt — es gilt keine Vergütungszeile, gerechnet wird der flache Einspeisesatz.</value>
   </data>
+  <data name="SGL_IMP_ANZAHL" xml:space="preserve">
+    <value>Die Datei enthält {0} Werte; erwartet werden 8 760 Stundenwerte oder 35 040 Viertelstundenwerte.</value>
+  </data>
+  <data name="SGL_IMP_KEIN_TRENNZEICHEN" xml:space="preserve">
+    <value>keines (eine Spalte)</value>
+  </data>
+  <data name="SGL_IMP_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Der Import einer Ganglinie ist auf dieser Plattform nicht verfügbar.</value>
+  </data>
+  <data name="SGL_IMP_PROTOKOLL" xml:space="preserve">
+    <value>Format: Trennzeichen {0}, Dezimalzeichen {1}, Kopfzeile {2}, Zeitstempel {3} · {4} Werte, {5} · Jahresarbeit {6} MWh · Spitze {7} kW</value>
+  </data>
+  <data name="SGL_IMP_RASTER_STUNDE" xml:space="preserve">
+    <value>Stundenraster</value>
+  </data>
+  <data name="SGL_IMP_RASTER_VIERTEL" xml:space="preserve">
+    <value>Viertelstundenraster, je Stunde gemittelt</value>
+  </data>
+  <data name="SGL_MSG_IM_PROJEKT" xml:space="preserve">
+    <value>Die Ganglinie „{0}“ ist diesem Projekt zugeordnet und kann nicht gelöscht werden.</value>
+  </data>
   <data name="TRANSFER_PV_BEILAGE" xml:space="preserve">
     <value>Vergütung des Stammprojekts „{0}“ als eigene Werte übernommen.</value>
   </data>
@@ -1538,7 +1559,7 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
     <value>Datei Basis Ordner:</value>
   </data>
   <data name="SGAD_LBL_STUNDENWERTE" xml:space="preserve">
-    <value>Stundenwerte über 1 Jahr als Textdatei</value>
+    <value>Jahresreihe als Text-, CSV- oder Excel-Datei: 8 760 Stundenwerte oder 35 040 Viertelstundenwerte in kW (je Stunde gemittelt), eine Spalte oder mit Trennzeichen (; Tab | ,), wahlweise mit Kopfzeile und Zeitstempelspalte. Der Dateiname wird der Name der Ganglinie, die Kopfzeile ihre Beschreibung.</value>
   </data>
   <data name="SGAD_MSG_SCHREIBFEHLER" xml:space="preserve">
     <value>Fehler beim Speichern der Ganglinie. Die Daten wurden nicht gespeichert.</value>
@@ -14500,7 +14521,10 @@ Alle Eingaben überprüfen!</value>
     <value>Einteilung nach der Deutschen Wohngebäudetypologie des IWU (2015), ab 2016 nach Stein/Loga (2025).</value>
   </data>
   <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
-    <value>Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar.</value>
+    <value>Vorschlag aus dem Baujahr {0}: {1} – abweichende Wahl gilt.</value>
+  </data>
+  <data name="GEB_BAK_OHNE_BAUJAHR" xml:space="preserve">
+    <value>Ohne Baujahr frei wählbar.</value>
   </data>
   <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
     <value>teilsaniert</value>
@@ -33334,6 +33358,15 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GEB_PROT_BAUJAHR_UNGUELTIG" xml:space="preserve">
     <value>Das Baujahr {0} ist keine ganze Jahreszahl von {1} bis {2}.</value>
   </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ART" xml:space="preserve">
+    <value>Verwendung „{0}“ aus der Gebäudeart „{1}“ der Datei.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ZONEN" xml:space="preserve">
+    <value>Verwendung „{0}“ aus den Nutzungen der Zonen: {1} % der {2} m² mit erkannter Nutzung sind Wohnen.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>Verwendung: Die Datei nennt weder Gebäudeart noch eindeutige Nutzungen – es bleibt die Vorgabe „{0}“.</value>
+  </data>
   <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
     <value>Ohne Baualtersklasse gibt es keine Vorgaben für U-Werte, g-Wert und Wärmebrücken.</value>
   </data>
@@ -41712,7 +41745,16 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Eine Standardwoche hat genau {1} Zellen, übergeben sind {0}.</value>
   </data>
   <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
-    <value>Kalender im Einzelnen</value>
+    <value>Kalender bearbeiten…</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN_ZU" xml:space="preserve">
+    <value>Einzelheiten einklappen</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_EINZELHEITEN" xml:space="preserve">
+    <value>Zeigt den Kalender dieser Größe im Einzelnen unter den Karten: Wochenraster (7 × 24 Stunden), Perioden (Ferien, Feiertage, Ausnahmetage) und Jahresvorschau (Teppichbild).</value>
+  </data>
+  <data name="KOND_LBL_EINZELHEITEN_TITEL" xml:space="preserve">
+    <value>Kalender {0} im Einzelnen</value>
   </data>
   <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
     <value>Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.</value>

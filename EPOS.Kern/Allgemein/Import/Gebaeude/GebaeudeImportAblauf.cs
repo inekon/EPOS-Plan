@@ -662,8 +662,29 @@ namespace WindowsFormsApplication1
             GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
                                                                  raumtemperaturAlsSollwert,
                                                                  projektdatei?.ProjektdateiGilt == true ? projektdatei.UWirksam : null);
-            if (satz != null) satz.Projektdatei = projektdatei;
+            if (satz != null)
+            {
+                satz.Projektdatei = projektdatei;
+                satz.Verwendung = Verwendung(gebaeudeIndex);
+            }
             return satz;
+        }
+
+        /// <summary>
+        /// <b>Die Verwendung des Gebäudes aus der Datei</b> (<see cref="Gebaeudeverwendung.Ableiten"/>): die Gebäudeart der
+        /// Datei, sonst die Nutzungen der Zonen der Projektdatei nach Fläche (DIN-V-18599-10-Profile), sonst die Raumtypen der
+        /// beheizten Räume nach Fläche; ohne Anhaltspunkt bleibt die Vorgabe. Schreibt nichts.
+        /// </summary>
+        internal Gebaeudeverwendung.Ergebnis Verwendung(int gebaeudeIndex)
+        {
+            GebaeudePruefen(gebaeudeIndex);
+            AbbildGebaeude g = Abbild.Gebaeude[gebaeudeIndex];
+            SqprojStand p = ProjektdateiFuer(gebaeudeIndex);
+            IReadOnlyList<Gebaeudeverwendung.Zonenanteil> zonen = p != null && !p.Abgelehnt
+                ? SqprojZonen.Verwendungsanteile(p.Abbild, p.Abgleich, p.Gewaehlt)
+                : Array.Empty<Gebaeudeverwendung.Zonenanteil>();
+            if (!zonen.Any(z => z.Wohnen.HasValue && z.FlaecheM2 > 0)) zonen = Gebaeudeverwendung.Raumanteile(g);
+            return Gebaeudeverwendung.Ableiten(g.Art, zonen);
         }
 
         /// <summary>

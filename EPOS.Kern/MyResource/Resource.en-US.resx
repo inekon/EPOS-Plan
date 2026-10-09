@@ -266,6 +266,27 @@
   <data name="KOH_PV_STAMM_FEHLT" xml:space="preserve">
     <value>Variant “{0}” is set to “take from master project” but has no master project — no remuneration row applies, the flat feed-in rate is used.</value>
   </data>
+  <data name="SGL_IMP_ANZAHL" xml:space="preserve">
+    <value>The file contains {0} values; 8,760 hourly or 35,040 quarter-hourly values are expected.</value>
+  </data>
+  <data name="SGL_IMP_KEIN_TRENNZEICHEN" xml:space="preserve">
+    <value>none (one column)</value>
+  </data>
+  <data name="SGL_IMP_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Importing a curve is not available on this platform.</value>
+  </data>
+  <data name="SGL_IMP_PROTOKOLL" xml:space="preserve">
+    <value>Format: separator {0}, decimal mark {1}, header line {2}, time stamps {3} · {4} values, {5} · annual energy {6} MWh · peak {7} kW</value>
+  </data>
+  <data name="SGL_IMP_RASTER_STUNDE" xml:space="preserve">
+    <value>hourly grid</value>
+  </data>
+  <data name="SGL_IMP_RASTER_VIERTEL" xml:space="preserve">
+    <value>quarter-hourly grid, averaged per hour</value>
+  </data>
+  <data name="SGL_MSG_IM_PROJEKT" xml:space="preserve">
+    <value>The curve “{0}” is assigned to this project and cannot be deleted.</value>
+  </data>
   <data name="TRANSFER_PV_BEILAGE" xml:space="preserve">
     <value>Remuneration of master project “{0}” taken over as own values.</value>
   </data>
@@ -1538,7 +1559,7 @@ with a small tank the figure becomes large without any additional ageing.</value
     <value>File base folder:</value>
   </data>
   <data name="SGAD_LBL_STUNDENWERTE" xml:space="preserve">
-    <value>Hourly values over 1 year as a text file</value>
+    <value>Annual series as a text, CSV or Excel file: 8,760 hourly or 35,040 quarter-hourly values in kW (averaged per hour), one column or with a separator (; Tab | ,), optionally with a header line and a time stamp column. The file name becomes the name of the curve, the header line its description.</value>
   </data>
   <data name="SGAD_MSG_SCHREIBFEHLER" xml:space="preserve">
     <value>Error saving the curve. The data was not saved.</value>
@@ -14493,7 +14514,10 @@ Please check all entries!</value>
     <value>Classification according to the German residential building typology of IWU (2015), from 2016 according to Stein/Loga (2025).</value>
   </data>
   <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
-    <value>The class follows from the year of construction {0}; without a year of construction it can be chosen.</value>
+    <value>Suggested by the year of construction {0}: {1} – a different choice applies.</value>
+  </data>
+  <data name="GEB_BAK_OHNE_BAUJAHR" xml:space="preserve">
+    <value>Without a year of construction, freely selectable.</value>
   </data>
   <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
     <value>partially refurbished</value>
@@ -33327,6 +33351,15 @@ Do you want to allow this?</value>
   <data name="IMP_GEB_PROT_BAUJAHR_UNGUELTIG" xml:space="preserve">
     <value>The year of construction {0} is not a whole year from {1} to {2}.</value>
   </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ART" xml:space="preserve">
+    <value>Use “{0}” derived from the building type “{1}” in the file.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ZONEN" xml:space="preserve">
+    <value>Use “{0}” derived from the zone usages: {1} % of the {2} m² with a recognised usage are residential.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>Use: the file names neither a building type nor a clear usage – the default “{0}” remains.</value>
+  </data>
   <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
     <value>Without a building age class there are no default values for U-values, g-value and thermal bridges.</value>
   </data>
@@ -41705,7 +41738,16 @@ This folder holds the standard template, the short report, the detailed template
     <value>A standard week has exactly {1} cells; {0} were passed.</value>
   </data>
   <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
-    <value>Calendar details</value>
+    <value>Edit calendar…</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN_ZU" xml:space="preserve">
+    <value>Collapse details</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_EINZELHEITEN" xml:space="preserve">
+    <value>Shows the calendar of this quantity in detail below the cards: weekly grid (7 × 24 hours), periods (holidays, public holidays, exception days) and year preview (carpet plot).</value>
+  </data>
+  <data name="KOND_LBL_EINZELHEITEN_TITEL" xml:space="preserve">
+    <value>{0} calendar in detail</value>
   </data>
   <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
     <value>Create the calendar first – until then it follows the matrix.</value>

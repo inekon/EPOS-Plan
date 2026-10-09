@@ -24,17 +24,17 @@ Ausgewiesen werden ausserdem die Jahresmengen je Anteil [MWh], der groesste Stun
 |-
 | Wohn-/Nutzflaeche und „Art der Angabe" || m² bzw. l/a, m³/a, MWh/a || Gebäudedialog, Abschnitt „Gebäude: Verbrauch"
 |-
-| Flaechen: Aussenwand, Fenster (N/S/O+W), Dach, Grund, Sonstiges || m² || Gebäudekatalog, Reiter „Flächen und U-Werte"
+| Flaechen: Aussenwand, Fenster (N/S/O+W), Dach, Grund, Sonstiges || m² || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| U-Werte derselben Bauteile || W/(m²·K) || Gebäudekatalog, Reiter „Flächen und U-Werte"
+| U-Werte derselben Bauteile || W/(m²·K) || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| Waermebrueckenverlustkoeffizienten und Anschlusslaengen (Fenster-Wand, Wand-Dach, Aussenwand-Keller) || W/(m·K), m || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+| Waermebrueckenverlustkoeffizienten und Anschlusslaengen (Fenster-Wand, Wand-Dach, Aussenwand-Keller) || W/(m·K), m || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| Raumhoehe und Luftwechselrate || m, 1/h || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+| Raumhoehe und Luftwechselrate || m, 1/h || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| Raumsolltemperaturen Tag, Nacht, Wochenende, Ferien; Maximalraumtemperatur || °C || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+| Raumsolltemperaturen Tag, Nacht, Wochenende, Ferien; Maximalraumtemperatur || °C || Gebäudekatalog, Reiter „Konditionierung": Spalte „Heizen" der Vorgabe-Matrix, darunter die Maximalraumtemperatur
 |-
-| Bis zu vier Ferienzeitraeume || Tag im Jahr || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+| Bis zu vier Ferienzeitraeume || Tag im Jahr || Gebäudekatalog, Reiter „Konditionierung", Gruppen „Ferien Anfang" und „Ferien Ende"
 |-
 | Interne Waermegewinne, Fensterdurchlassgrad, Bauart (Speicherfaehigkeit) || W, —, Wh/K || Gebäudekatalog
 |-
@@ -75,13 +75,13 @@ Was in die Rechnung hereinkommt:
 |-
 | <math>A_{\mathrm{F}}</math> || gesamte Fensterflaeche || m² || Gebäudekatalog, Feld „gesamte Fensterfläche"
 |-
-| <math>A_{\mathrm{W}}, A_{\mathrm{D}}, A_{\mathrm{G}}, A_{\mathrm{S}}</math> || Flaeche von Aussenwand, Dach, Grund und sonstigen Bauteilen || m² || Gebäudekatalog, Reiter „Flächen und U-Werte"
+| <math>A_{\mathrm{W}}, A_{\mathrm{D}}, A_{\mathrm{G}}, A_{\mathrm{S}}</math> || Flaeche von Aussenwand, Dach, Grund und sonstigen Bauteilen || m² || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| <math>U_{\mathrm{W}}, U_{\mathrm{F}}, U_{\mathrm{D}}, U_{\mathrm{G}}, U_{\mathrm{S}}</math> || U-Werte derselben Bauteile || W/(m²·K) || Gebäudekatalog, Reiter „Flächen und U-Werte"
+| <math>U_{\mathrm{W}}, U_{\mathrm{F}}, U_{\mathrm{D}}, U_{\mathrm{G}}, U_{\mathrm{S}}</math> || U-Werte derselben Bauteile || W/(m²·K) || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| <math>\Psi_{1}, \Psi_{2}, \Psi_{3}</math> || Waermebrueckenverlustkoeffizienten Fenster-Wand, Wand-Dach, Aussenwand-Keller || W/(m·K) || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+| <math>\Psi_{1}, \Psi_{2}, \Psi_{3}</math> || Waermebrueckenverlustkoeffizienten Fenster-Wand, Wand-Dach, Aussenwand-Keller || W/(m·K) || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
-| <math>\ell_{1}, \ell_{2}, \ell_{3}</math> || Anschlusslaengen derselben drei Waermebruecken || m || Gebäudekatalog, Reiter „Temperaturen, Ferien, Luftwechsel"
+| <math>\ell_{1}, \ell_{2}, \ell_{3}</math> || Anschlusslaengen derselben drei Waermebruecken || m || Gebäudekatalog, Reiter „Gebäude und Hülle"
 |-
 | <math>A_{\mathrm{Wohn}}</math> || Wohnflaeche des Katalogeintrags || m² || Gebäudekatalog
 |-
@@ -91,9 +91,9 @@ Was in die Rechnung hereinkommt:
 |-
 | <math>n_{\mathrm{L}}</math> || Luftwechselrate || 1/h || Gebäudekatalog
 |-
-| <math>\vartheta_{\mathrm{Tag}}, \vartheta_{\mathrm{Nacht}}, \vartheta_{\mathrm{WE}}, \vartheta_{\mathrm{Fer}}</math> || Raumsolltemperatur am Tag, in der Nacht, am Wochenende, in den Ferien || °C || Gebäudekatalog
+| <math>\vartheta_{\mathrm{Tag}}, \vartheta_{\mathrm{Nacht}}, \vartheta_{\mathrm{WE}}, \vartheta_{\mathrm{Fer}}</math> || Raumsolltemperatur am Tag, in der Nacht, am Wochenende, in den Ferien || °C || Gebäudekatalog, Reiter „Konditionierung", Spalte „Heizen"
 |-
-| <math>\vartheta_{\mathrm{max}}</math> || Maximalraumtemperatur || °C || Gebäudekatalog
+| <math>\vartheta_{\mathrm{max}}</math> || Maximalraumtemperatur || °C || Gebäudekatalog, Reiter „Konditionierung"
 |-
 | <math>P_{\mathrm{int}}</math> || interne Waermegewinne || W || Gebäudekatalog
 |-
@@ -209,6 +209,8 @@ Dieser Wochentag gilt fuer '''alle''' Bedarfsarten, auch fuer den Strombedarf.
 
 === 2. Die Heizlast eines Gebaeudes ===
 
+Dieser Schritt rechnet ein Gebaeude auf dem Rechenweg „Tagesbilanz". Ein Gebaeude auf dem Rechenweg VDI 6007 rechnet das [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] Stunde fuer Stunde. Die Heiz- und Kuehlsollwerte eines solchen Gebaeudes kommen je Stunde aus seinem Reiter „Konditionierung", eine Zone kann eigene Heizsollwerte tragen: aus einem angelegten Kalender, sonst aus der Vorgabe-Matrix; mit wirksamer Anlagenkopplung ersetzt ein gepflegtes Sollwert-Zeitprogramm der Wärmeübergabe dort die Woche der Heizspalte.
+
 Je Gebaeude und Tag werden drei Groessen gebildet.
 
 '''a) Solare Gewinne''' aus den Fensterflaechen und der Einstrahlung; Ost und West gehen gemittelt ein und teilen sich EINE Fensterflaeche:
@@ -262,7 +264,7 @@ Je Gebaeude und Tag werden drei Groessen gebildet.
 | sonst || <math>\vartheta_{\mathrm{Nacht}}</math>
 |}
 
-Die Wochenendabsenkung wirkt an Samstagen und Sonntagen, sofern <math>\vartheta_{\mathrm{WE}} > 5</math> °C ist; die Ferien wirken an den Tagen der Ferienzeitraeume, sofern <math>\vartheta_{\mathrm{Fer}} \ge 1</math> °C ist. Beide Werte sind absolute Solltemperaturen und gelten alle 24 Stunden des Tages; 0 heisst keine Absenkung, der Tag rechnet dann mit Tag- und Nachtwert.
+Die Wochenendabsenkung wirkt an Samstagen und Sonntagen, sofern <math>\vartheta_{\mathrm{WE}} > 5</math> °C ist; die Ferien wirken an den Tagen der Ferienzeitraeume, sofern <math>\vartheta_{\mathrm{Fer}} \ge 1</math> °C ist. Beide Werte sind absolute Solltemperaturen und gelten alle 24 Stunden des Tages; 0 heisst keine Absenkung, der Tag rechnet dann mit Tag- und Nachtwert. Auf diesem Rechenweg gelten allein die vier Sollwerte der Spalte „Heizen" und die Ferienzeitraeume; Nachtfenster, Saison und Kalender des Reiters „Konditionierung" wirken erst unter VDI 6007.
 
 Die solare Entlastung wirkt nur in den sechs Tagesstunden 9 bis 14, dort mit dem Faktor 4:
 

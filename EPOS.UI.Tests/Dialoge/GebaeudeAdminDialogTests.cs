@@ -424,16 +424,19 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Null(Feld(cut, "Baualtersklasse").GetAttribute("disabled"));
         jahr.Input("1965");
         Assert.True(cut.Instance.Geaendert);
-        // E47 (F2): DAS BAUJAHR FÜHRT - die Klappliste zeigt die Klasse aus dem Jahr und ist gesperrt.
-        Assert.NotNull(Feld(cut, "Baualtersklasse").GetAttribute("disabled"));
+        // DAS BAUJAHR SCHLÄGT VOR (Anwenderwunsch 08.10.2026): die Klappliste zeigt den Vorschlag des Jahres und
+        // bleibt aktiv; eine abweichende Wahl gilt und wird gespeichert.
+        Assert.Null(Feld(cut, "Baualtersklasse").GetAttribute("disabled"));
         Assert.Equal("1958 bis 1968", Feld(cut, "Baualtersklasse").QuerySelector("option[selected]")!.TextContent.Trim());
-        Assert.Contains("Die Klasse folgt aus dem Baujahr 1965", cut.Markup);
+        Assert.Contains("Vorschlag aus dem Baujahr 1965: 1958 bis 1968 – abweichende Wahl gilt.", cut.Markup);
+        Feld(cut, "Baualtersklasse").Change("2");
+        Assert.Equal("1919 bis 1948", Feld(cut, "Baualtersklasse").QuerySelector("option[selected]")!.TextContent.Trim());
         Knopf(cut, "Speichern").Click();
 
         var (d, neu, _) = Assert.Single(p.Gespeichert);
         Assert.False(neu);
         Assert.Equal(1965, d.Baujahr);
-        Assert.Equal(4, d.Baualtersklasse);
+        Assert.Equal(2, d.Baualtersklasse);
     }
 
     /// <summary>

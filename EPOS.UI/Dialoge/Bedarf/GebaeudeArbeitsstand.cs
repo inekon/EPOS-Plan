@@ -515,32 +515,30 @@ public sealed class GebaeudeArbeitsstand
     // ---- Baualtersklasse und Energiestandard (Entscheid E47) --------------------------------
 
     /// <summary>
-    /// Die Klasse, die die Klappliste ZEIGT: die aus dem Baujahr, sonst die gewählte (DAS BAUJAHR FÜHRT,
-    /// F2). Gespeichert wird dieselbe (<c>Gebaeudeklassen.IndexWirksam</c> in der Hülle).
+    /// Die Klasse, die die Klappliste ZEIGT und die gespeichert wird: die gewählte. Das Baujahr schlägt sie
+    /// nur vor (<see cref="BaujahrSetzen"/>); die Klappliste ist immer aktiv (Anwenderwunsch 08.10.2026).
     /// </summary>
-    public int KlasseWirksam => Gebaeudeklassen.IndexWirksam(Stand.Baujahr, Stand.Baualtersklasse);
+    public int KlasseWirksam => Stand.Baualtersklasse;
 
-    /// <summary>Folgt die Klasse aus dem Baujahr? Dann ist die Klappliste gesperrt.</summary>
-    public bool KlasseAusBaujahr => Stand.KlasseAusBaujahr;
+    /// <summary>Die Klasse, die das Baujahr vorschlägt; <c>null</c> ohne (gültiges) Baujahr.</summary>
+    public int? KlasseVorschlag => Stand.KlasseVorschlag;
 
-    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam; mit Baujahr bleibt die Klasse aus dem Jahr.</summary>
-    public void KlasseWaehlen(int? index)
-    {
-        if (KlasseAusBaujahr) return;
-        Stand.Baualtersklasse = index ?? 0;
-    }
+    /// <summary>Die Klassenwahl — sie gilt immer, auch wenn sie vom Vorschlag des Baujahrs abweicht.</summary>
+    public void KlasseWaehlen(int? index) => Stand.Baualtersklasse = index ?? 0;
 
-    /// <summary>Das Baujahr — die Klasse folgt ihm, wenn es eine ergibt.</summary>
+    /// <summary>Das Baujahr — ein neues Jahr setzt die Klasse auf seinen Vorschlag.</summary>
     public void BaujahrSetzen(int? jahr) => Stand.BaujahrUebernehmen(jahr);
 
     /// <summary>
-    /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Die Klasse folgt aus dem
-    /// Baujahr …", dann die Quelle der Einteilung (IWU 2015, Stein/Loga 2025).
+    /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Vorschlag aus dem Baujahr 1985:
+    /// 1984 bis 1994 – abweichende Wahl gilt.", ohne „Ohne Baujahr frei wählbar.", dann die Quelle der
+    /// Einteilung (IWU 2015, Stein/Loga 2025).
     /// </summary>
     public string KlassenHerleitung
-        => KlasseAusBaujahr && Stand.Baujahr is int jahr
-            ? Gebaeudeklassen.AusBaujahrText(jahr) + " " + Gebaeudeklassen.Quelle()
-            : Gebaeudeklassen.Quelle();
+        => (KlasseVorschlag is not null && Stand.Baujahr is int jahr
+               ? Gebaeudeklassen.AusBaujahrText(jahr)
+               : Gebaeudeklassen.OhneBaujahrText())
+           + " " + Gebaeudeklassen.Quelle();
 
     /// <summary>
     /// Die Einträge der Klappliste Energiestandard (Id = Platz in <c>Energiestandard.CODES</c>): die
@@ -1721,8 +1719,7 @@ public sealed class GebaeudeArbeitsstand
     {
         if (BauweiseNachfuehren) BauweiseBilden();
 
-        // E47 (F2): DAS BAUJAHR FUEHRT - geschrieben wird die Klasse, die die Klappliste zeigt.
-        Stand.Baualtersklasse = KlasseWirksam;
+        // Die Baualtersklasse ist die gewaehlte (das Baujahr schlaegt nur vor) - hier ist nichts abzuleiten.
 
         Stand.FensterflaecheOstWest = SummeOstWest ?? 0;
 

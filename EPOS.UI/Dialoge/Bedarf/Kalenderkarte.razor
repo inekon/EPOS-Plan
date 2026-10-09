@@ -14,9 +14,17 @@
    Vorlage die Woche, die "Uebernehmen" am Ziel ergaebe (an den Ferienzeitraeumen des Ziels, gerechnet auf
    einer Kopie), sonst die des Kalenders, wie er gilt - sie folgt jeder Aenderung der Matrix. Die Vorschau
    ist ENTPRELLT: beim Oeffnen und nach einer Wahl sofort, nach einer Eingabe erst EntprellungMs nach der
-   letzten (Hausregel "die teure Stufe laeuft entprellt"). Seit Welle U3 klappt "Kalender im
-   Einzelnen" den Inhalt auf, den der Wirt als Einzelheiten reicht (KalenderkarteInhalt): Grundangabe,
-   Wochenraster, Zeitfenster, Periodenliste, Werkzeuge, Teppichbild.
+   letzten (Hausregel "die teure Stufe laeuft entprellt"). "Kalender bearbeiten…" klappt den Inhalt auf,
+   den der Wirt als Einzelheiten reicht (KalenderkarteInhalt): Grundangabe, Wochenraster, Zeitfenster,
+   Periodenliste, Werkzeuge, Teppichbild.
+
+   DIE EINZELHEITEN STEHEN NEBEN DER KARTE, NICHT IN IHR. Die Karte bleibt an ihrem Platz im Raster der
+   Karten - Kopf, Vorlagenwahl, Knoepfe und Vorschau bleiben stehen; die Einzelheiten sind ein eigener
+   Abschnitt (Geschwister der Karte), den das Stilblatt ueber die ganze Zeile UNTER alle Karten ordnet
+   (order). Nahm die aufgeklappte Karte selbst die ganze Zeile, sprang sie im breiten Raster in eine neue
+   Zeile weit unter den Zeiger, und an ihrer Stelle stand eine leere Flaeche (Anwendermeldung 08.10.2026,
+   gemessen mit Proben/Rasterprobe). Beim Aufklappen bekommt die Ueberschrift der Einzelheiten den Fokus
+   und rollt ins Bild.
 
    KEIN DELEGAT, KEIN KNOPF: Ein Knopf steht nur, wenn der Wirt seinen Rueckruf reicht; die Liste nur mit
    Vorlagen (der Wirt reicht sie nur, wenn der Weg "Uebernehmen" bietet). Im Lesemodus (ausgelieferter
@@ -27,7 +35,7 @@
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
-<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "") @(_offen && Einzelheiten is not null && !Lesemodus ? "epos-kond-karte--offen" : "")"
+<section class="epos-kond-karte @(Aktiv ? "epos-kond--aktiv" : "") @(ZeigtEinzelheiten ? "epos-kond-karte--offen" : "")"
          data-groesse="@((int)Groesse)"
          aria-label="@Titel">
     <div class="epos-kond-karte-kopf">
@@ -35,9 +43,10 @@
         <p class="epos-kond-karte-zustand">@Zustand</p>
         @if (!Lesemodus && Einzelheiten is not null)
         {
-            @* Klappt die Karte auf (Teilkonzept 7.5): Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild. *@
+            @* Klappt die Einzelheiten auf (Teilkonzept 7.5): Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild. *@
             <button type="button" class="epos-knopf epos-kond-einzelheiten" aria-expanded="@(_offen ? "true" : "false")"
-                    @onclick="() => _offen = !_offen">@Texte.KnopfEinzelheiten</button>
+                    aria-controls="@EinzelheitenId" title="@Texte.HinweisEinzelheiten"
+                    @onclick="Umschalten">@(_offen ? Texte.KnopfEinzelheitenZu : Texte.KnopfEinzelheiten)</button>
         }
     </div>
     @if (!Lesemodus && Vorlagen is not null)
@@ -149,10 +158,6 @@
             }
         </div>
     }
-    @if (!Lesemodus && _offen && Einzelheiten is not null)
-    {
-        @Einzelheiten
-    }
     @if (!Lesemodus && Vorschau is not null)
     {
         <div class="epos-kond-vorschau">
@@ -176,6 +181,20 @@
         </div>
     }
 </section>
+@if (ZeigtEinzelheiten)
+{
+    @* Die Einzelheiten als Geschwister der Karte: im Raster der Karten ueber die ganze Zeile unter allen
+       Karten (Stilblatt, .epos-kond-karte-einzelheiten); schmal steht nur der Abschnitt der gewaehlten Groesse. *@
+    <section class="epos-kond-karte-einzelheiten @(Aktiv ? "epos-kond--aktiv" : "")" id="@EinzelheitenId"
+             data-groesse="@((int)Groesse)" aria-label="@EinzelheitenTitel">
+        <div class="epos-kond-karte-kopf">
+            <h3 class="epos-kond-karte-titel epos-kond-einzelheiten-titel" tabindex="-1" @ref="_einzelheitenKopf">@EinzelheitenTitel</h3>
+            <button type="button" class="epos-knopf epos-kond-einzelheiten-zu" aria-controls="@EinzelheitenId"
+                    @onclick="Umschalten">@Texte.KnopfEinzelheitenZu</button>
+        </div>
+        @Einzelheiten
+    </section>
+}
 
 @code {
     /// <summary>Die Größe der Karte.</summary>
@@ -232,6 +251,12 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_einzelheitenFokusFaellig && ZeigtEinzelheiten)
+        {
+            _einzelheitenFokusFaellig = false;
+            // Rollen gewollt: Die Einzelheiten stehen unter allen Karten - ohne den Sprung saehe der Anwender nach dem Klick nichts.
+            await _einzelheitenKopf.FocusAsync(preventScroll: false);
+        }
         if (!_fokusFaellig || Lesemodus || Vorlagen is null) return;
         _fokusFaellig = false;
         // Rollen gewollt: gezielter Sprung, der Wirt verlangt die Vorlagenwahl ausdrücklich (ListeZeigen).
@@ -243,7 +268,25 @@
 
     private bool _offen;
 
+    /// <summary>Stehen die Einzelheiten gerade da (aufgeklappt, mit Inhalt, nicht im Lesemodus)?</summary>
+    private bool ZeigtEinzelheiten => _offen && Einzelheiten is not null && !Lesemodus;
+
+    /// <summary>Die Kennung des Abschnitts der Einzelheiten (aria-controls); je Größe eindeutig.</summary>
+    private string EinzelheitenId => "epos-kond-einzelheiten-" + (int)Groesse;
+
+    private string EinzelheitenTitel => string.Format(CultureInfo.CurrentCulture, Texte.LabelEinzelheitenTitel, Titel);
+
+    private ElementReference _einzelheitenKopf;
+    private bool _einzelheitenFokusFaellig;
+
     protected override void OnInitialized() => _offen = Aufgeklappt;
+
+    /// <summary>Klappt die Einzelheiten auf oder zu; beim Aufklappen folgt der Fokus ihrer Überschrift.</summary>
+    private void Umschalten()
+    {
+        _offen = !_offen;
+        _einzelheitenFokusFaellig = _offen;
+    }
 
     // ------------------------------------------------------------ Vorlagen (Welle U2)
 

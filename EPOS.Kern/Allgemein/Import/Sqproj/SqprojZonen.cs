@@ -211,6 +211,30 @@ namespace WindowsFormsApplication1
             return projekt.Gebaeudegruppe?.Profilnummer;
         }
 
+        /// <summary>
+        /// <b>Die Zonen als Anteile für die Verwendung des Gebäudes</b> (<see cref="Gebaeudeverwendung"/>): je Zone der wirksamen
+        /// Zonierung, die abgeglichene Räume trägt (ohne Abgleich jede Zone der Zonierung), die Wohnnutzung ihrer DIN-Nummer
+        /// (<see cref="Gebaeudeverwendung.WohnenAusDinNummer"/> — dieselbe Wahl der Nummer wie beim Anlegen der Zonen) und ihre
+        /// Fläche (Summe der Räume, sonst die der Zone). Leer ohne Projektdatei.
+        /// </summary>
+        internal static IReadOnlyList<Gebaeudeverwendung.Zonenanteil> Verwendungsanteile(SqprojAbbild projekt, SqprojRaumabgleich abgleich,
+                                                                                         SqprojZonierung zonierung = SqprojZonierung.Din18599)
+        {
+            var liste = new List<Gebaeudeverwendung.Zonenanteil>();
+            if (projekt == null || projekt.Abgelehnt) return liste;
+            SqprojZonierung wirksam = Wirksam(projekt, abgleich, zonierung);
+            foreach (SqprojZone z in projekt.Zonen)
+            {
+                if (!Gehoert(z, wirksam)) continue;
+                if (abgleich != null && !z.Raeume.Any(r => abgleich.IfcRaum(r) != null)) continue;
+                int? nummer = (z.Nutzungsprofil ?? GeteiltesProfil(z, projekt))?.Profilnummer
+                              ?? (z.Gruppe ?? GeteilteGruppe(z, projekt))?.Profilnummer;
+                double flaeche = Summe(z.Raeume.Select(r => projekt.Raum(r)?.FlaecheM2)) ?? z.FlaecheM2 ?? 0;
+                liste.Add(new Gebaeudeverwendung.Zonenanteil(z.Name, Gebaeudeverwendung.WohnenAusDinNummer(nummer), flaeche));
+            }
+            return liste;
+        }
+
         /// <summary>Das Nutzungsprofil der Nutzungszone, mit der eine Zone die meisten Räume teilt; <c>null</c> = keine.</summary>
         internal static SqprojNutzungsprofil GeteiltesProfil(SqprojZone zone, SqprojAbbild projekt)
         {

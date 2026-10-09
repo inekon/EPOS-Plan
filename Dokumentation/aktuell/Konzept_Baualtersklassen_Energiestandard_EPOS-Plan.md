@@ -127,10 +127,13 @@ Eine Klasse N „ab 2030" (Nullemissionsgebäude) wird erst angelegt, wenn die A
 Wohn- und Nichtwohngebäude nehmen **dieselbe** Liste — bis 2009 ist das amtlich und typologisch belegt, die
 Grenze K/L folgt der EnEV 2016, die für beide galt.
 
-**Das Baujahr führt.** Ist das Baujahr gesetzt (Spalte `Baujahr`, Schemaschritt 139), folgt die Klasse aus
-ihm — im Editor, in der Gebäudeverwaltung und im Import, für jedes Jahr (die `Baujahrregel` deckt dann A–M
-ab). Ohne Baujahr ist die Klasse wählbar. So bleiben das genaue Jahr für die GModG-Grenze 1996 und die
-Zensusklassen erhalten.
+**Das Baujahr schlägt vor.** Wird das Baujahr gesetzt oder geändert (Spalte `Baujahr`, Schemaschritt 139),
+setzen Editor und Gebäudeverwaltung die Klasse auf die zum Jahr (die `Baujahrregel` deckt jedes Jahr mit A–M
+ab); die Klappliste bleibt aktiv, eine abweichende Wahl gilt und wird gespeichert (Anwenderwunsch vom
+08.10.2026, ändert F2). Die Zeile unter der Klappliste lautet „Vorschlag aus dem Baujahr 1985: 1984 bis 1994 –
+abweichende Wahl gilt.“, ohne Baujahr „Ohne Baujahr frei wählbar.“. Der Import setzt die Klasse der Datei aus
+ihrem Baujahr; im Importdialog ist sie dann gesperrt, danach im Editor änderbar. So bleiben das genaue Jahr
+für die GModG-Grenze 1996 und die Zensusklassen erhalten.
 
 ### 3.2 Der Energiestandard — ein eigenes, freiwilliges Feld
 
@@ -240,7 +243,7 @@ Entschieden am 26.09.2026: **alle Empfehlungen** (E47).
 | Nr. | Frage | Empfehlung = Entscheid |
 |---|---|---|
 | F1 | L 2016–2020 und M ab 2021 (Anschluss an Stein/Loga 2025 und Zensus) — oder L ab 2016 offen wie IWU, bzw. M ab 2023 (GEG 2023, nur Primärenergie)? | **L 2016–2020, M ab 2021** |
-| F2 | Das Baujahr führt, die Klasse folgt aus ihm; wählbar ist sie nur ohne Baujahr? | **ja** |
+| F2 | Das Baujahr führt, die Klasse folgt aus ihm; wählbar ist sie nur ohne Baujahr? | **ja** — **geändert am 08.10.2026** (Anwenderwunsch): Das Baujahr schlägt die Klasse vor, die Wahl bleibt immer frei (Abschnitt 3.1) |
 | F3 | Energiestandard mit den zwölf Einträgen aus 3.2, gefiltert nach Wohn-/Nichtwohngebäude? Denkmal als Standard statt als eigenes Merkmal? | **ja, wie 3.2** |
 | F4 | Klassen und Standards ohne Katalogsatz (A, M, einige Standards): Vorgabe leer lassen (E27) — oder die unter CC BY 4.0 freien Werte von Stein/Loga 2025 mit Quellenangabe nehmen (Änderung von E27)? | **leer lassen**, Katalog später ergänzen — **aufgehoben mit E51** (26.09.2026, Konzept Gebäudesimulation N1.58): **beides** — freie Werte aus Stein/Loga (2025) nur ohne Katalogsatz, mit Herkunft und Beleg, **und** eigene Katalogsätze für M und A; E27 ist damit geändert (Abschnitt 4) |
 | F5 | Umschlüsselung nach Abschnitt 5 (alt A → B, Niedrigenergie/Passivhaus ohne Baujahr → J mit Standard, „Eff. 155" → L ohne Standard)? | **ja** |
