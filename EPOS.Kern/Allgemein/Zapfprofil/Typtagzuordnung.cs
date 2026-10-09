@@ -146,8 +146,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Typtagjahr Zuordnen(Typtaganbindung a, int wochentagJan1, bool[] we, string zone,
                                             IReadOnlyList<Ferienfenster> ferien = null,
-                                            ICollection<ZapfHinweis> hinweise = null)
+                                            ICollection<ZapfHinweis> hinweise = null, int? wochenendmaske = null)
         {
+            // Ein gekennzeichneter Samstag ist ein Werktag, außer er ist unter einer Maske ohne Samstag ein Feiertag
+            // (Zapfkalender.Samstagsgang).
+            bool samstagWerktag = Zapfkalender.Samstagsgang(wochenendmaske);
             if (a == null || a.Daten == null || !a.Daten.Traegt)
                 throw Ablehnen(zone, ZapfSatz.Neu("EINGABE_TYPTAGE_NICHT_VERFUEGBAR"));
             Normformvektorsatz satz = a.Daten;
@@ -190,7 +193,7 @@ namespace WindowsFormsApplication1
                                     : Typtagjahreszeit.Uebergang;
 
                 int wochentag = Zapfkalender.Wochentag(wochentagJan1, d);
-                Typtagart ta = we[d - 1] && wochentag != Zapfkalender.SAMSTAG ? Typtagart.Sonntag : Typtagart.Werktag;
+                Typtagart ta = we[d - 1] && (wochentag != Zapfkalender.SAMSTAG || !samstagWerktag) ? Typtagart.Sonntag : Typtagart.Werktag;
 
                 Typtagbewoelkung bw = Typtagbewoelkung.Ohne;
                 if (nachBewoelkung)

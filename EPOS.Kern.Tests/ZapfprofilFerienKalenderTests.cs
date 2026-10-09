@@ -115,6 +115,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(7 * 3, k.Count(t => t == ZapfTagtyp.Ruhetag));
             Assert.Equal(ZapfTagtyp.Ruhetag, k[300]);          // im siebten Zeitraum
 
+            // Die Feiertage kommen aus den Regeln des Kerns, nicht aus den (hier leeren) Kennzeichen der Klimaregion.
+            Assert.NotNull(z.Feiertage);
+            Assert.Contains(1, z.Feiertage);                   // Neujahr
+            Assert.Contains(276, z.Feiertage);                 // 3. Oktober
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[275]);     // 3. Oktober, ein Mittwoch
+
             ZapfprofilErgebnis r = ZapfprofilRechner.Rechnen(e, ZapfprofilCtrl.Katalog());
             Assert.NotNull(r);
         }
@@ -132,6 +138,45 @@ namespace EPOS.Kern.Tests
             Assert.True(fr[2]);                               // der Feiertag am Werktag bleibt
             Assert.False(fr[5]);
             Assert.False(fr[6]);
+
+            // Auch mit Feiertagen des Kerns bleibt die Vorgabe das Feld der Klimaregion.
+            var feiertage = new[] { 6, 10 };
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, null, feiertage));
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, KalenderbedienungSchema.WOCHENENDE_VORGABE, feiertage));
+            Assert.Equal(Zapfkalender.Bilden(0, we, null), Zapfkalender.Bilden(0, we, null, KalenderbedienungSchema.WOCHENENDE_VORGABE));
+        }
+
+        /// <summary>
+        /// Wochenende Montag + Dienstag: Ein Feiertag des Kerns an einem Samstag trägt den Sonntagsgang, ein gewöhnlicher
+        /// Samstag und der Sonntag sind Werktage, ein Feiertag an einem Mittwoch trägt den Sonntagsgang.
+        /// </summary>
+        [Fact]
+        public void Feiertag_am_Samstag_traegt_unter_Montag_Dienstag_den_Sonntagsgang()
+        {
+            const int montagDienstag = 3;
+            var we = new bool[365];
+            for (int d = 6; d <= 365; d += 7) { we[d - 1] = true; if (d < 365) we[d] = true; }   // Samstag, Sonntag
+            var feiertage = new[] { 6, 10 };                  // Samstag 6. Januar, Mittwoch 10. Januar
+
+            bool[] k = Zapfkalender.Kennzeichen(0, we, montagDienstag, feiertage);
+            ZapfTagtyp[] t = Zapfkalender.Bilden(0, k, null, montagDienstag);
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[0]);        // Montag
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[1]);        // Dienstag
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[5]);        // Feiertag am Samstag
+            Assert.Equal(ZapfTagtyp.Werktag, t[6]);             // Sonntag ohne Maske
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[9]);        // Feiertag am Mittwoch
+            Assert.Equal(ZapfTagtyp.Werktag, t[12]);            // gewöhnlicher Samstag
+            Assert.DoesNotContain(ZapfTagtyp.Samstag, t);
+
+            // Ohne die Feiertage des Kerns ginge der Samstagsfeiertag verloren (die Klimaregion trennt ihn nicht).
+            Assert.Equal(ZapfTagtyp.Werktag, Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, montagDienstag), null, montagDienstag)[5]);
+
+            // Eine Maske mit Samstag: der Samstag trägt den Samstagsgang, auch als Feiertag.
+            const int samstagMontag = (1 << Zapfkalender.SAMSTAG) | 1;
+            ZapfTagtyp[] s = Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, samstagMontag, feiertage), null, samstagMontag);
+            Assert.Equal(ZapfTagtyp.Samstag, s[5]);
+            Assert.Equal(ZapfTagtyp.Samstag, s[12]);
+            Assert.Equal(ZapfTagtyp.Werktag, s[6]);
         }
 
         /// <summary>
