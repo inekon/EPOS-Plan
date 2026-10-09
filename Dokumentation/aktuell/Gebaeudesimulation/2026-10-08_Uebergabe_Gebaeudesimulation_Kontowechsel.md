@@ -50,7 +50,7 @@ Die Sitzung Berichterstellung hat Fach- und Umsetzungskonzept fertig übergeben;
 Gebäudesimulation“). Alle Entscheide UB-Q1 bis UB-Q11 und die Abweichungen U-1 bis U-4 sind eingetragen; der Baubeginn ist frei,
 aber erst auf Auftrag des Anwenders.
 
-- **UB-E1:** zwei Opus-Wellen — E1-a Kernklassen und Rechenproben (Wortlaut in Abschnitt 10), E1-b Abbildung, Dialog, Ressourcen.
+- **UB-E1:** (umgesetzt 09.10.2026, #837) zwei Opus-Wellen — E1-a Kernklassen und Rechenproben (Wortlaut in Abschnitt 10), E1-b Abbildung, Dialog, Ressourcen.
 - **Vor UB-E2:** Schemaschritt `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (203, hängt an `KuehlkurveSchema`) und
   allein diese Zeile sofort pushen.
 - **Referenzprojekt 1060** als Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, danach Basis **R45** einfrieren —
