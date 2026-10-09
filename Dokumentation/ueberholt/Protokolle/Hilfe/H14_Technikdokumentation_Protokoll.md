@@ -268,7 +268,7 @@ bis dahin ergänzten Funktionen in der Beschreibung".
 
 ## 11 Zusammenführung mit dem Arbeitszweig (09.10.2026)
 
-Anwenderauftrag vom 09.10.2026 (Sitzung „IFC / Gebäudeimport“), Statuszeile #842. Der Zweig
+Anwenderauftrag vom 09.10.2026 (Sitzung „IFC / Gebäudeimport“), Statuszeile #843. Der Zweig
 `claude/wiki-help-assistant-docs-jllq1r` (Stand `e738c22d8`, vier Commits seit `4cfbf0171`) wurde in
 `ios_migration_september` (Basis `4ca74b12c`) zusammengeführt.
 
