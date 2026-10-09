@@ -73,7 +73,9 @@ namespace EPOS.Kern.Tests
                                                            // v16 (KP3 Welle O3b): ebenso die Schalter der Gebäudetafel je Stand
                                                            // und der Kennzahlgruppe „Gebäude“.
                                                            && f.Schluessel != "hat.tabelle.gebaeude"
-                                                           && f.Schluessel != "hat.tabelle.vergleich.gebaeude"),
+                                                           && f.Schluessel != "hat.tabelle.vergleich.gebaeude"
+                                                           // v17 (UB-E4): ebenso der Schalter der Bivalenztafel.
+                                                           && f.Schluessel != "hat.tabelle.bivalenz"),
                        f => Assert.Equal(4, f.Seit));
             // Die Fassung 11 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v12: Strom- und Kältebild, Pufferauslegungstafel).
             Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);
