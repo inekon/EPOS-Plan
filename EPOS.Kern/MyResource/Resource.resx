@@ -49999,5 +49999,86 @@ Chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV-Ganglinie</value>
   </data>
+  <data name="AUSWAHL_FUSS_SAETZE" xml:space="preserve">
+    <value>{0} Sätze:</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Gewählte Projektsätze bearbeiten (Projektkopie)</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Gewählte Katalogsätze bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN" xml:space="preserve">
+    <value>Vergleichen…</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN_HINWEIS" xml:space="preserve">
+    <value>Zwei oder mehr Katalogsätze wählen, um sie zu vergleichen</value>
+  </data>
+  <data name="AUSWAHL_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="AUSWAHL_FRAGE_LOESCHEN_N" xml:space="preserve">
+    <value>{0} Katalogeinträge werden für ALLE Projekte gelöscht: {1}. Fortfahren?</value>
+  </data>
+  <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
+    <value>nur lesen</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
+    <value>Projektsatz bearbeiten – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG" xml:space="preserve">
+    <value>Katalogsatz bearbeiten – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT_N" xml:space="preserve">
+    <value>{0} Projektsätze bearbeiten</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG_N" xml:space="preserve">
+    <value>{0} Katalogsätze bearbeiten</value>
+  </data>
+  <data name="SATZBEARB_BLATT" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="SATZBEARB_ZURUECK" xml:space="preserve">
+    <value>Voriger Satz</value>
+  </data>
+  <data name="SATZBEARB_VOR" xml:space="preserve">
+    <value>Nächster Satz</value>
+  </data>
+  <data name="SATZBEARB_FUER_ALLE" xml:space="preserve">
+    <value>für alle gewählten setzen</value>
+  </data>
+  <data name="SATZBEARB_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Übersprungen (gesperrt): {0}</value>
+  </data>
+  <data name="SATZBEARB_NUR_LESEN" xml:space="preserve">
+    <value>Gesperrt – die Felder sind nur lesbar.</value>
+  </data>
+  <data name="SATZBEARB_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="SATZBEARB_GEAENDERT" xml:space="preserve">
+    <value>{0} von {1} Sätzen geändert</value>
+  </data>
+  <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
+    <value>Keine Änderung</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+    <value>Keine Änderung.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+    <value>Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+    <value>„{0}“ ist gesperrt. Es wurde nichts gespeichert.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+    <value>„{0}“: {1} Es wurde nichts gespeichert.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+    <value>{0} Sätze gespeichert.</value>
+  </data>
 </root>
 

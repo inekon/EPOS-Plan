@@ -49992,5 +49992,86 @@ chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV generation profile</value>
   </data>
+  <data name="AUSWAHL_FUSS_SAETZE" xml:space="preserve">
+    <value>{0} records:</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Edit…</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Edit the selected project records (project copy)</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Edit the selected catalogue records</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN" xml:space="preserve">
+    <value>Compare…</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN_HINWEIS" xml:space="preserve">
+    <value>Select two or more catalogue records to compare them</value>
+  </data>
+  <data name="AUSWAHL_BTN_NEU" xml:space="preserve">
+    <value>New…</value>
+  </data>
+  <data name="AUSWAHL_FRAGE_LOESCHEN_N" xml:space="preserve">
+    <value>{0} catalogue entries will be deleted for ALL projects: {1}. Continue?</value>
+  </data>
+  <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
+    <value>read-only</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
+    <value>Edit project record – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG" xml:space="preserve">
+    <value>Edit catalogue record – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT_N" xml:space="preserve">
+    <value>Edit {0} project records</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG_N" xml:space="preserve">
+    <value>Edit {0} catalogue records</value>
+  </data>
+  <data name="SATZBEARB_BLATT" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="SATZBEARB_ZURUECK" xml:space="preserve">
+    <value>Previous record</value>
+  </data>
+  <data name="SATZBEARB_VOR" xml:space="preserve">
+    <value>Next record</value>
+  </data>
+  <data name="SATZBEARB_FUER_ALLE" xml:space="preserve">
+    <value>set for all selected</value>
+  </data>
+  <data name="SATZBEARB_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Skipped (locked): {0}</value>
+  </data>
+  <data name="SATZBEARB_NUR_LESEN" xml:space="preserve">
+    <value>Locked – the fields are read-only.</value>
+  </data>
+  <data name="SATZBEARB_SCHLIESSEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="SATZBEARB_GEAENDERT" xml:space="preserve">
+    <value>{0} of {1} records changed</value>
+  </data>
+  <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
+    <value>No change</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+    <value>No change.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+    <value>The record with number {0} was not found. Nothing was saved.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+    <value>“{0}” is locked. Nothing was saved.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+    <value>“{0}”: {1} Nothing was saved.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+    <value>{0} records saved.</value>
+  </data>
 </root>
 
