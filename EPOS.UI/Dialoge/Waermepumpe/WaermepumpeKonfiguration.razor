@@ -158,6 +158,24 @@
                                     Platzhalter="@(Daten.Vorlauf is int v && v > 0 ? v.ToString(System.Globalization.CultureInfo.CurrentCulture) : "")"
                                     Aktiv="@Aktiv" WertChanged="BeiVorlaufMax" />
                         <Herleitungszeile Text="@VorlaufMaxZeile(Daten, Texte)" />
+                        @* UEBERGABEGRENZE UB-E1 (U-2, Mockup Waermepumpe_Bivalenz_Uebergabe): Klappliste "Kaeltemittel"
+                           und die vier Schnellwahl-Knoepfe - die Wahl fuellt nur ein LEERES Feld "Hoechster Vorlauf";
+                           die Klasse selbst haelt in E1 nur der Dialogzustand (Spalte Kaeltemittel kommt mit E2/E3). *@
+                        @if (Daten.Kaeltemittelliste.Count > 0)
+                        {
+                            <Auswahlfeld Bezeichnung="@Texte.LabelKaeltemittel" Eintraege="@Kaeltemittelwahl"
+                                         Auswahl="@KaeltemittelIndex" Aktiv="@Aktiv"
+                                         AuswahlChanged="BeiKaeltemittel" Platzhalter="@Texte.KaeltemittelLeer" />
+                            <div class="epos-zeilenknoepfe" role="group" aria-label="@Texte.LabelSchnellwahl" data-gruppe="schnellwahl">
+                                @foreach ((string kmCode, string kmText) in Schnellwahlknoepfe(Daten, Texte))
+                                {
+                                    <button type="button" class="epos-knopf" data-kaeltemittel="@kmCode" disabled="@(!Aktiv)"
+                                            aria-pressed="@(string.Equals(Daten.Kaeltemittel, kmCode, StringComparison.OrdinalIgnoreCase) ? "true" : "false")"
+                                            @onclick="() => KaeltemittelWaehlen(kmCode)">@kmText</button>
+                                }
+                            </div>
+                            <Herleitungszeile Text="@SchnellwahlZeile(Daten, Texte)" />
+                        }
                         <Herleitungszeile Text="@Texte.HinweisSperrzeitVorrang" />
                         @if (UeberschneidungSperrzeit(Daten) is int ueber && ueber > 0)
                         {
@@ -185,6 +203,15 @@
                                         Feldname="@Texte.LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
                                         WertChanged="BeiAbschaltpunkt" Aktiv="@Aktiv" />
                         }
+                    }
+
+                    @* UEBERGABEGRENZE UB-E1 (Fachkonzept 6.2): die Herleitungszeile "Uebergabe und Bivalenz" - in E1 unter der
+                       Gruppe "Betrieb"; die Gruppe "Bivalenz und Uebergabe" folgt mit E2. *@
+                    @if (WaermepumpeBivalenzText.Zeile(Daten, Texte) is { Length: > 0 } bivalenzZeile)
+                    {
+                        <div class="epos-wp-bivalenz" data-gruppe="bivalenz-herleitung">
+                            <Herleitungszeile Text="@bivalenzZeile" />
+                        </div>
                     }
                 </KindInhalt>
             </Formulargruppe>
@@ -498,6 +525,87 @@
     }
 
     private Task BeiVorlaufMax(double? wert) { Daten.VorlaufMax = wert; return Melden(); }
+
+    // ---- Schnellwahl des Höchstvorlaufs (Übergabegrenze UB‑E1, U‑2) ---------------
+
+    /// <summary>Die Codes der vier Schnellwahl-Knöpfe in der Reihenfolge des Mockups.</summary>
+    public static readonly IReadOnlyList<string> SCHNELLWAHL_CODES = new[] { "R410A", "R290", "R744", "R1234ze(E)" };
+
+    /// <summary>Die Klappliste: Id = Platz in <see cref="WaermepumpeAnlageDaten.Kaeltemittelliste"/>.</summary>
+    private IReadOnlyList<(int Id, string Text)> Kaeltemittelwahl
+        => Daten.Kaeltemittelliste.Select((e, i) => (i, Texte.KaeltemittelText(e.Code))).ToList();
+
+    private int? KaeltemittelIndex
+    {
+        get
+        {
+            for (int i = 0; i < Daten.Kaeltemittelliste.Count; i++)
+                if (string.Equals(Daten.Kaeltemittelliste[i].Code, Daten.Kaeltemittel, StringComparison.OrdinalIgnoreCase)) return i;
+            return null;
+        }
+    }
+
+    private Task BeiKaeltemittel(int? index)
+        => index is int i && i >= 0 && i < Daten.Kaeltemittelliste.Count
+            ? KaeltemittelWaehlen(Daten.Kaeltemittelliste[i].Code)
+            : KaeltemittelWaehlen(null);
+
+    private Task KaeltemittelWaehlen(string? code)
+    {
+        SchnellwahlAnwenden(Daten, code);
+        return Melden();
+    }
+
+    /// <summary>
+    /// <b>Die Regel der Schnellwahl</b> (U‑2): merkt die Klasse im Dialogzustand und füllt <c>Vorlauf_Max</c> mit dem
+    /// Höchstvorlauf der Klasse — nur, wenn das Feld leer ist; ein gepflegter Wert bleibt stehen. Eine Klasse ohne
+    /// eigenen Höchstvorlauf (allgemeine Vorgabe) füllt nichts.
+    /// </summary>
+    public static void SchnellwahlAnwenden(WaermepumpeAnlageDaten daten, string? code)
+    {
+        if (daten is null) return;
+        daten.Kaeltemittel = string.IsNullOrWhiteSpace(code) ? null : code;
+        if (daten.VorlaufMax is not null || daten.Kaeltemittel is null) return;
+        KaeltemittelEintrag? e = daten.Kaeltemittelliste.FirstOrDefault(
+            k => string.Equals(k.Code, daten.Kaeltemittel, StringComparison.OrdinalIgnoreCase));
+        if (e?.HoechstvorlaufC is double h) daten.VorlaufMax = h;
+    }
+
+    /// <summary>Die vier Knöpfe mit ihrem Wortlaut; ein Code, den die Liste nicht führt, fällt weg.</summary>
+    public static IReadOnlyList<(string Code, string Text)> Schnellwahlknoepfe(WaermepumpeAnlageDaten daten,
+                                                                               WaermepumpeKonfigurationTexte texte)
+    {
+        var k = System.Globalization.CultureInfo.CurrentCulture;
+        var l = new List<(string, string)>();
+        foreach (string code in SCHNELLWAHL_CODES)
+        {
+            KaeltemittelEintrag? e = daten.Kaeltemittelliste.FirstOrDefault(
+                x => string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase));
+            if (e?.HoechstvorlaufC is not double h) continue;
+            string vorlage = code switch
+            {
+                "R290" => texte.KnopfSchnellwahlR290,
+                "R744" => texte.KnopfSchnellwahlR744,
+                "R1234ze(E)" => texte.KnopfSchnellwahlR1234ze,
+                _ => texte.KnopfSchnellwahlR410a,
+            };
+            l.Add((e.Code, string.Format(k, vorlage, h.ToString("0.#", k),
+                                         e.RuecklaufGrenzeC?.ToString("0.#", k) ?? "—",
+                                         e.BezugsruecklaufC?.ToString("0.#", k) ?? "—")));
+        }
+        return l;
+    }
+
+    /// <summary>Die Zeile unter der Schnellwahl: die Regel, bei gepflegtem abweichendem Wert dazu, dass er bleibt.</summary>
+    public static string SchnellwahlZeile(WaermepumpeAnlageDaten daten, WaermepumpeKonfigurationTexte texte)
+    {
+        KaeltemittelEintrag? e = daten.Kaeltemittelliste.FirstOrDefault(
+            k => string.Equals(k.Code, daten.Kaeltemittel, StringComparison.OrdinalIgnoreCase));
+        return daten.VorlaufMax is double v && e?.HoechstvorlaufC is double h && Math.Abs(v - h) > 1e-9
+            ? texte.ZeileSchnellwahl + " " + string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                           texte.ZeileSchnellwahlGefuellt, v)
+            : texte.ZeileSchnellwahl;
+    }
 
     /// <summary>Die 168 Faktoren eines gültigen Programms; <c>null</c> für leer oder ungültig.</summary>
     public static double[]? ZeitprogrammWerte(string? text)

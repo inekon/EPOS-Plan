@@ -126,6 +126,12 @@ public sealed class WaermepumpeAnlageKiSicht
     public string Betriebsart { get => D?.Betriebsart ?? ""; set { if (D is { } d) d.Betriebsart = value ?? ""; } }
     public double? Abschaltpunkt { get => D?.Abschaltpunkt; set { if (D is { } d) d.Abschaltpunkt = value; } }
 
+    /// <summary>
+    /// Die Herleitungszeile „Übergabe und Bivalenz" (Übergabegrenze UB‑E1) — nur lesbar, derselbe Wortlaut wie unter
+    /// der Gruppe „Betrieb"; leer ohne Herleitung.
+    /// </summary>
+    public string BivalenzHerleitung => WaermepumpeBivalenzText.Zeile(D, new WaermepumpeKonfigurationTexte());
+
     // ---- Der Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, E15, E33, E34) -----
     //
     // Die Wege stehen EINMAL, in WaermepumpeKuehlKiWege (und deren Regeln in den statischen

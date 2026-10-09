@@ -371,5 +371,81 @@ namespace EPOS.Kern.Tests
             // grobe Obergrenze, kein Leistungsmaß: 200 000 Aufrufe deutlich unter 5 s
             Assert.True(uhr.Elapsed.TotalSeconds < 5.0, "Laufzeit " + uhr.Elapsed.TotalMilliseconds + " ms");
         }
+
+        // =====================================================================
+        //  UB‑E1-b: Kennfeld bei Höchstvorlauf und Abbildung in die Herleitungszeile
+        // =====================================================================
+
+        [Fact]
+        public void Kennfeld_bei_Hoechstvorlauf_interpoliert_ueber_den_Vorlauf_und_haelt_die_Randstufen()
+        {
+            var satz = new KennlinienSatz(
+                Array.Empty<ChartRenderer.KennlinienReihe>(),
+                new[]
+                {
+                    new ChartRenderer.KennlinienReihe(35, new[] { (-7.0, 9.0), (7.0, 12.0) }),
+                    new ChartRenderer.KennlinienReihe(55, new[] { (-7.0, 7.0), (7.0, 9.0) }),
+                });
+            var mitte = BivalenzQuelle.KennfeldBeiVorlauf(satz, 45.0);
+            Assert.Equal(2, mitte.Count);
+            Assert.Equal(8.0, mitte[0].Leistung, 12);
+            Assert.Equal(10.5, mitte[1].Leistung, 12);
+            Assert.Equal(7.0, BivalenzQuelle.KennfeldBeiVorlauf(satz, 60.0)[0].Leistung, 12);
+            Assert.Equal(12.0, BivalenzQuelle.KennfeldBeiVorlauf(satz, 30.0)[1].Leistung, 12);
+            Assert.Empty(BivalenzQuelle.KennfeldBeiVorlauf(KennlinienSatz.Leer, 55.0));
+        }
+
+        [Fact]
+        public void Abbildung_des_Zahlenbeispiels_ruht_ohne_Einbindung_und_zeigt_die_Werte()
+        {
+            using var kultur = new Kulturvorrichtung("de-DE");
+            var projekt = new BivalenzProjektdaten
+            {
+                KesselleistungKw = 10.0,
+                Gebaeude = new BivalenzGebaeudedaten
+                {
+                    Gebaeude = Heizkoerper(), HeizlastN = 10.0, AuslegungAussenC = -12.0, AuslegungRaumC = 20.0,
+                },
+            };
+            BivalenzGeraetedaten geraet = GeraetBeispiel(null);
+            EPOS.UI.Dialoge.Waermepumpe.WaermepumpeBivalenzWerte w = BivalenzAbbildung.Werte(projekt, geraet);
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.BivalenzKennzeichen.NichtWirksam, w.Kennzeichen);
+            string zeile = EPOS.UI.Dialoge.Waermepumpe.WaermepumpeBivalenzText.Zeile(
+                w, new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfigurationTexte());
+            // Der zweite Punkt rechnet der Kern zu −3,55 °C (Toleranz der Rechenprobe oben); gerundet steht er knapp
+            // unter der Mitte und zeigt −3,5 °C — das Mockup nennt −3,6 °C (benannte Abweichung im Bericht UB‑E1-b).
+            Assert.Equal(-3.55, w.ZweiterC, TOL_PUNKT_K);
+            string zweiter = w.ZweiterC.ToString("+0.0;\u22120.0;0.0", System.Globalization.CultureInfo.CurrentCulture);
+            Assert.Equal("Einbindung nicht gesetzt — Übergabegrenze ruht. Übergabe bei Höchstvorlauf 55 °C: 5,7 kW von "
+                         + "10,0 kW Heizlast (57 %), Rücklauf 46,5 °C, Spreizung 8,5 K · erster Bivalenzpunkt +1,8 °C "
+                         + "(nach Kennfeld allein −3,8 °C) · zweiter Bivalenzpunkt " + zweiter + " °C (Vorwärmbetrieb) · "
+                         + "Wärmepumpe bei −7 °C 70 % der Kesselleistung (§ 43 GModG: mindestens 30 %).", zeile);
+
+            // Ohne Gebäudedaten (Kopplung aus) bleibt es beim Kennzeichen; ohne Kennlinie nur die Übergabe.
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.BivalenzKennzeichen.OhneKopplung,
+                         BivalenzAbbildung.Werte(new BivalenzProjektdaten(), geraet).Kennzeichen);
+            var ohneKennfeld = BivalenzAbbildung.Werte(projekt, new BivalenzGeraetedaten { HoechstvorlaufC = 55.0 });
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.BivalenzKennzeichen.OhneKennfeld, ohneKennfeld.Kennzeichen);
+            Assert.Equal(5.680, ohneKennfeld.UebergabeKw, TOL_KW);
+        }
+
+        [Fact]
+        public void Abbildung_liest_den_Arbeitsstand_und_setzt_nie_eine_Einbindung()
+        {
+            var d = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten
+            {
+                Vorlauf = 50, VorlaufMax = null, BivalenterBetrieb = true,
+                Betriebsart = DbWerte.WP_BETRIEBSART_ALTERNATIV, Abschaltpunkt = -5.0,
+            };
+            BivalenzGeraetedaten g = BivalenzAbbildung.Geraet(d, Array.Empty<Kennfeldpunkt>());
+            Assert.Equal(50.0, g.HoechstvorlaufC);
+            Assert.Equal(Bivalenzbetriebsart.Alternativ, g.Betriebsart);
+            Assert.Equal(-5.0, g.AbschaltpunktC);
+            Assert.Null(g.Einbindung);
+            Assert.False(g.Vorwaermbetrieb);
+            d.VorlaufMax = 55.0;
+            Assert.Equal(55.0, BivalenzAbbildung.Hoechstvorlauf(d));
+            Assert.Equal(11, BivalenzAbbildung.Kaeltemittelliste().Count);
+        }
     }
 }

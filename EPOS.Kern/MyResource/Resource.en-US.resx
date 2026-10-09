@@ -48957,5 +48957,95 @@ chart</value>
   <data name="GIMP_DLG_AQ_NEU_EXPORT_NEIN" xml:space="preserve">
     <value>Back</value>
   </data>
+  <data name="WPA_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant</value>
+  </data>
+  <data name="WPA_LBL_SCHNELLWAHL_KAELTEMITTEL" xml:space="preserve">
+    <value>Quick selection by refrigerant</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_LEER" xml:space="preserve">
+    <value>not selected</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R410A" xml:space="preserve">
+    <value>R410A</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R32" xml:space="preserve">
+    <value>R32</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R290" xml:space="preserve">
+    <value>R290 (propane)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R744" xml:space="preserve">
+    <value>R744 (CO₂)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R134A" xml:space="preserve">
+    <value>R134a</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R1234ZEE" xml:space="preserve">
+    <value>R1234ze(E)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R407C" xml:space="preserve">
+    <value>R407C</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R454C" xml:space="preserve">
+    <value>R454C</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R455A" xml:space="preserve">
+    <value>R455A</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R1233ZDE" xml:space="preserve">
+    <value>R1233zd(E)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_SONSTIGES" xml:space="preserve">
+    <value>other</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R410A_R32" xml:space="preserve">
+    <value>R410A / R32 · {0} °C</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R290" xml:space="preserve">
+    <value>R290 · {0} °C</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R744" xml:space="preserve">
+    <value>R744 · {0} °C, return ≤ {1} °C (derating from {2} °C)</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R1234ZE" xml:space="preserve">
+    <value>R1234ze(E) · {0} °C</value>
+  </data>
+  <data name="WPA_HRL_SCHNELLWAHL" xml:space="preserve">
+    <value>The quick selection only fills an empty “Maximum flow temperature” field; manufacturer data on the operating limit take precedence.</value>
+  </data>
+  <data name="WPA_HRL_SCHNELLWAHL_GEFUELLT" xml:space="preserve">
+    <value>The maximum flow temperature is set ({0} °C) — the quick selection leaves it unchanged.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_UEBERGABE" xml:space="preserve">
+    <value>Emission at maximum flow temperature {0} °C: {1} kW of {2} kW heating load ({3} %), return {4} °C, temperature difference {5} K</value>
+  </data>
+  <data name="WPA_HERLEITUNG_BIVALENZPUNKTE" xml:space="preserve">
+    <value>first bivalence point {0} (from the performance map alone {1}) · second bivalence point {2}{3}</value>
+  </data>
+  <data name="WPA_HERLEITUNG_VORWAERMBETRIEB" xml:space="preserve">
+    <value> (preheating mode)</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KESSELANTEIL" xml:space="preserve">
+    <value>heat pump at −7 °C {0} % of the boiler output (§ 43 GModG: at least {1} %)</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KEIN_PUNKT" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WPA_HERLEITUNG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>The heat emission is not described (coupling off) — the heat pump is calculated without an emission limit.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_NICHT_WIRKSAM" xml:space="preserve">
+    <value>Integration not set — emission limit inactive.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Without a run, the emission limit is only derived for coupled buildings without zones with an area entry and a climate region of the project — here only in the run.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_OHNE_KENNFELD" xml:space="preserve">
+    <value>no heating characteristic of the heat pump — no bivalence points</value>
+  </data>
+  <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
+    <value>The emission limit cannot be derived: {0}</value>
+  </data>
 </root>
 

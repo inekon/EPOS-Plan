@@ -135,6 +135,76 @@ public sealed class WaermepumpeKonfigurationTexte
     /// <summary>WPA_INFO_SPERRZEIT_ZEITPROGRAMM — {0} überschnittene Wochenstunden.</summary>
     public string InfoSperrzeitZeitprogramm { get; set; } = T("WPA_INFO_SPERRZEIT_ZEITPROGRAMM",
         "Sperrzeit und Zeitprogramm überschneiden sich in {0} Wochenstunden mit Faktor über 0; dort gilt die Sperrzeit.");
+    // --- Übergabegrenze und Bivalenz (UB‑E1; Fachkonzept 6.2, Umsetzungskonzept 6.3, 6.5) -----------------
+
+    /// <summary>WPA_LBL_KAELTEMITTEL — Klappliste vor der Schnellwahl.</summary>
+    public string LabelKaeltemittel { get; set; } = T("WPA_LBL_KAELTEMITTEL", "Kältemittel");
+
+    /// <summary>WPA_LBL_SCHNELLWAHL_KAELTEMITTEL — Beschriftung der Knopfgruppe (aria-label).</summary>
+    public string LabelSchnellwahl { get; set; } = T("WPA_LBL_SCHNELLWAHL_KAELTEMITTEL", "Schnellwahl nach Kältemittel");
+
+    /// <summary>WPA_OPT_KAELTEMITTEL_LEER — leere Wahl.</summary>
+    public string KaeltemittelLeer { get; set; } = T("WPA_OPT_KAELTEMITTEL_LEER", "nicht gewählt");
+
+    /// <summary>WPA_BTN_SCHNELLWAHL_R410A_R32 — {0} = Höchstvorlauf der Klasse.</summary>
+    public string KnopfSchnellwahlR410a { get; set; } = T("WPA_BTN_SCHNELLWAHL_R410A_R32", "R410A / R32 · {0} °C");
+
+    /// <summary>WPA_BTN_SCHNELLWAHL_R290 — {0} = Höchstvorlauf der Klasse.</summary>
+    public string KnopfSchnellwahlR290 { get; set; } = T("WPA_BTN_SCHNELLWAHL_R290", "R290 · {0} °C");
+
+    /// <summary>WPA_BTN_SCHNELLWAHL_R744 — {0} Höchstvorlauf, {1} Rücklaufgrenze, {2} Bezugsrücklauf.</summary>
+    public string KnopfSchnellwahlR744 { get; set; } = T("WPA_BTN_SCHNELLWAHL_R744", "R744 · {0} °C, Rücklauf ≤ {1} °C (Abwertung ab {2} °C)");
+
+    /// <summary>WPA_BTN_SCHNELLWAHL_R1234ZE — {0} = Höchstvorlauf der Klasse.</summary>
+    public string KnopfSchnellwahlR1234ze { get; set; } = T("WPA_BTN_SCHNELLWAHL_R1234ZE", "R1234ze(E) · {0} °C");
+
+    /// <summary>WPA_HRL_SCHNELLWAHL</summary>
+    public string ZeileSchnellwahl { get; set; } = T("WPA_HRL_SCHNELLWAHL", "Die Schnellwahl füllt nur ein leeres Feld „Höchster Vorlauf“; Herstellerangaben zur Einsatzgrenze haben Vorrang.");
+
+    /// <summary>WPA_HRL_SCHNELLWAHL_GEFUELLT — {0} = gepflegter Wert.</summary>
+    public string ZeileSchnellwahlGefuellt { get; set; } = T("WPA_HRL_SCHNELLWAHL_GEFUELLT", "Der höchste Vorlauf ist gepflegt ({0} °C) — die Schnellwahl lässt ihn stehen.");
+
+    /// <summary>WPA_HERLEITUNG_UEBERGABE — {0} Höchstvorlauf, {1} Übergabegrenze, {2} Heizlast, {3} Anteil, {4} Rücklauf, {5} Spreizung.</summary>
+    public string HerleitungUebergabe { get; set; } = T("WPA_HERLEITUNG_UEBERGABE", "Übergabe bei Höchstvorlauf {0} °C: {1} kW von {2} kW Heizlast ({3} %), Rücklauf {4} °C, Spreizung {5} K");
+
+    /// <summary>WPA_HERLEITUNG_BIVALENZPUNKTE — {0}–{2} Punkte mit Einheit, {3} Zusatz Vorwärmbetrieb.</summary>
+    public string HerleitungBivalenzpunkte { get; set; } = T("WPA_HERLEITUNG_BIVALENZPUNKTE", "erster Bivalenzpunkt {0} (nach Kennfeld allein {1}) · zweiter Bivalenzpunkt {2}{3}");
+
+    /// <summary>WPA_HERLEITUNG_VORWAERMBETRIEB — Zusatz am zweiten Bivalenzpunkt.</summary>
+    public string HerleitungVorwaermbetrieb { get; set; } = T("WPA_HERLEITUNG_VORWAERMBETRIEB", " (Vorwärmbetrieb)");
+
+    /// <summary>WPA_HERLEITUNG_KESSELANTEIL — {0} Anteil, {1} Mindestanteil.</summary>
+    public string HerleitungKesselanteil { get; set; } = T("WPA_HERLEITUNG_KESSELANTEIL", "Wärmepumpe bei −7 °C {0} % der Kesselleistung (§ 43 GModG: mindestens {1} %)");
+
+    /// <summary>WPA_HERLEITUNG_KEIN_PUNKT — Bivalenzpunkt außerhalb des Auslegungsbereichs.</summary>
+    public string HerleitungKeinPunkt { get; set; } = T("WPA_HERLEITUNG_KEIN_PUNKT", "keiner");
+
+    /// <summary>WPA_HERLEITUNG_OHNE_KOPPLUNG</summary>
+    public string HerleitungOhneKopplung { get; set; } = T("WPA_HERLEITUNG_OHNE_KOPPLUNG", "Die Übergabe ist nicht beschrieben (Kopplung aus) — die Wärmepumpe rechnet ohne Übergabegrenze.");
+
+    /// <summary>WPA_HERLEITUNG_NICHT_WIRKSAM — U-1.</summary>
+    public string HerleitungNichtWirksam { get; set; } = T("WPA_HERLEITUNG_NICHT_WIRKSAM", "Einbindung nicht gesetzt — Übergabegrenze ruht.");
+
+    /// <summary>WPA_HERLEITUNG_UNVOLLSTAENDIG</summary>
+    public string HerleitungUnvollstaendig { get; set; } = T("WPA_HERLEITUNG_UNVOLLSTAENDIG", "Die Übergabegrenze wird ohne Lauf nur für gekoppelte Gebäude ohne Zonen mit Flächenangabe und einer Klimaregion des Projekts hergeleitet — hier erst im Lauf.");
+
+    /// <summary>WPA_HERLEITUNG_OHNE_KENNFELD</summary>
+    public string HerleitungOhneKennfeld { get; set; } = T("WPA_HERLEITUNG_OHNE_KENNFELD", "keine Wärmekennlinie der Wärmepumpe — keine Bivalenzpunkte");
+
+    /// <summary>WPA_HERLEITUNG_BEFUND — {0} = Grund des Eingangsbauers.</summary>
+    public string HerleitungBefund { get; set; } = T("WPA_HERLEITUNG_BEFUND", "Die Übergabegrenze ist nicht herleitbar: {0}");
+
+    /// <summary>
+    /// WPA_OPT_KAELTEMITTEL_&lt;Code&gt; — die Anzeige eines Kältemittelcodes; der Schlüssel trägt den Code in
+    /// Großbuchstaben ohne Satzzeichen (<c>R1234ze(E)</c> → <c>R1234ZEE</c>). Ein unbekannter Code zeigt sich selbst.
+    /// </summary>
+    public string KaeltemittelText(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return KaeltemittelLeer;
+        string s = new string(code.Where(char.IsLetterOrDigit).Select(char.ToUpperInvariant).ToArray());
+        return T("WPA_OPT_KAELTEMITTEL_" + s, code);
+    }
+
     public string HinweisSperrUebertrag { get; set; } = T("WPA_HINWEIS_SPERR_UEBERTRAG",
         "Ein Fenster über Mitternacht läuft in den Folgetag; gesperrt ist jede Stunde, deren Beginn im Fenster liegt.");
     public string EinheitStunden { get; set; } = T("WPA_EINHEIT_STUNDEN", "h");
