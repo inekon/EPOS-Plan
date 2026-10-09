@@ -49443,5 +49443,56 @@ chart</value>
   <data name="KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT" xml:space="preserve">
     <value>Overview only: weekend and holidays are set in the quick fields under “Edit calendar…”.</value>
   </data>
+  <data name="ADM_KATALOG_PVGANGLINIE" xml:space="preserve">
+    <value>PV generation profiles</value>
+  </data>
+  <data name="KABG_KATALOG_PVGANGLINIE" xml:space="preserve">
+    <value>PV generation profiles</value>
+  </data>
+  <data name="PVG_TITEL" xml:space="preserve">
+    <value>Photovoltaics generation profile</value>
+  </data>
+  <data name="PVG_TITEL_KATALOG" xml:space="preserve">
+    <value>PV generation profiles</value>
+  </data>
+  <data name="PVG_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Selected in the project</value>
+  </data>
+  <data name="PVG_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>PV generation profile from the database</value>
+  </data>
+  <data name="PVG_LBL_RASTER" xml:space="preserve">
+    <value>Interval:</value>
+  </data>
+  <data name="PVG_RASTER_STUNDE" xml:space="preserve">
+    <value>Hourly values (8,760)</value>
+  </data>
+  <data name="PVG_RASTER_VIERTEL" xml:space="preserve">
+    <value>Quarter-hourly values (35,040)</value>
+  </data>
+  <data name="PVG_MSG_VORHANDEN" xml:space="preserve">
+    <value>A PV generation profile with this name is already in the catalogue.</value>
+  </data>
+  <data name="PVG_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>The PV generation profile could not be saved.</value>
+  </data>
+  <data name="PVG_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This PV generation profile is part of the delivered catalogue and cannot be deleted.</value>
+  </data>
+  <data name="PVG_IMP_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Importing a PV generation profile is not available on this platform.</value>
+  </data>
+  <data name="PVG_HINWEIS_WEICHE" xml:space="preserve">
+    <value>If a PV generation profile is assigned to the project, it replaces the module calculation: the values are the AC output of the system in kW, per hour or per quarter hour.</value>
+  </data>
+  <data name="SIM_PV_GANGLINIE_MANGEL" xml:space="preserve">
+    <value>The PV generation profile “{0}” is incomplete ({1}); photovoltaics is calculated from the modules.</value>
+  </data>
+  <data name="SIM_W_PVGANGLINIE_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>The PV generation profile “{0}” is assigned to the project, but photovoltaics is not set as power generator — the profile is not calculated. Remedy: simulation configuration → power generator “Photovoltaics”.</value>
+  </data>
+  <data name="MENU_PV_GANGLINIE" xml:space="preserve">
+    <value>PV generation profile</value>
+  </data>
 </root>
 

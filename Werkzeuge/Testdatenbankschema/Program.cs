@@ -3239,6 +3239,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrZk + " - vollstaendig: " + ZonenKatalogSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie
+            //      (Tab_PvGanglinie_STAMM, Tab_PvGanglinieDaten_STAMM, Tab_PvGanglinie, Tab_PvGanglinieDaten,
+            //      Z_ProjektPvGanglinie). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PvGanglinie bedient.
+            //      Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile entsteht, kein Referenzprojekt fuehrt eine PV-Ganglinie.
+            string nrPvg = PvGanglinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPvg + " - PV-Ganglinie: " +
+                              (PvGanglinieSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPvg = new List<string>();
+                tabellen += PvGanglinieSchema.Ausfuehren(berichtPvg);
+                foreach (string zeile in berichtPvg)
+                    Console.WriteLine("Schritt " + nrPvg + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPvg + " - vollstaendig: " + PvGanglinieSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

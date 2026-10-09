@@ -976,7 +976,10 @@ namespace WindowsFormsApplication1
         /// Katalogzwillinge <c>Tab_Zone_STAMM</c>, <c>Tab_Bauteil_STAMM</c>, <c>Tab_Zonenluftstrom_STAMM</c> und die
         /// Eigentümerspalte <c>ID_Zone_Stamm</c> an Kalender und Vorgabe der Konditionierung (<see cref="ZonenKatalogSchema"/>).
         /// <b>Ergebnisneutral:</b> Reines DDL, der Rechenweg liest die Zwillinge nicht.
-        public const int Zielversion = ZonenKatalogSchema.SCHRITT;
+        /// Danach, mit der PV-GANGLINIE (PVG), steht das Ziel auf <see cref="PvGanglinieSchema.SCHRITT"/>: Katalog,
+        /// Projektkopie und Zuordnung einer Photovoltaik-Ganglinie im Raster der Datei (<see cref="PvGanglinieSchema"/>).
+        /// <b>Ergebnisneutral:</b> Reines DDL, kein Referenzprojekt führt eine PV-Ganglinie.
+        public const int Zielversion = PvGanglinieSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

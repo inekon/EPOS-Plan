@@ -1038,6 +1038,18 @@ sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `d39b45540fcce5689c6c5150389196a11f0e9775f007eef4d09da219508a0874`**. **Die Basis `2026-10-08_R44_Kuehlkurve`
 > bleibt** — keine gesäte Gebäude- oder Zonenzeile ändert sich, der Rechenweg liest die Zwillinge nicht; die
 > sechsundzwanzig Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
+>
+> **Nachtrag — Testdatenbank auf 205 (PV-Ganglinie, nur Tabellen, Basis R44 unberührt).**
+> `PvGanglinieSchema` (205 = `ZonenKatalogSchema.SCHRITT + 1`) legt Katalog, Projektkopie und Zuordnung der
+> PV-Ganglinie an — `Tab_PvGanglinie_STAMM`, `Tab_PvGanglinieDaten_STAMM`, `Tab_PvGanglinie`, `Tab_PvGanglinieDaten`
+> und `Z_ProjektPvGanglinie` (STRICT, Raster 60 oder 15 Minuten mit `CHECK`, Beziehungen über IDs) samt sieben Indizes;
+> reines DDL, keine Zeile entsteht. Gehoben aus dem Stand 204 (LFS-SHA-256
+> `d39b45540fcce5689c6c5150389196a11f0e9775f007eef4d09da219508a0874`) mit `Werkzeuge/Testdatenbankschema`; der Hash
+> über alle übrigen Tabellen ist vorher und nachher gleich. Die Testdatenbank steht auf **205** (`integrity_check` ok,
+> `foreign_key_check` leer): **93 081 600 Byte, LFS-SHA-256
+> `b205284111acc1f58cf5f6be391fe7b8be6fc343b409acd60498d18adef63100`**. **Die Basis `2026-10-08_R44_Kuehlkurve`
+> bleibt** — kein Referenzprojekt führt eine PV-Ganglinie, keine Einfrierregel ist berührt; die sechsundzwanzig
+> Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
 
 ### Die Vorgängerbasis R43 (Kälteseite AK3K)
 

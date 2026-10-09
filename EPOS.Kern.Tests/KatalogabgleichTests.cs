@@ -154,7 +154,8 @@ namespace EPOS.Kern.Tests
             Assert.True(SchemaStand.Zielversion >= KatalogfassungStufe2Schema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog,
                          Paketanhebung.Stufen.Single(x => x.Nr == KatalogfassungStufe2Schema.SCHRITT).Wirkung);
-            Assert.Equal(16, Katalogfassung.Stufe2.Count);
+            // PVG (Schemaschritt 205): die PV-Ganglinie dazu - 17.
+            Assert.Equal(17, Katalogfassung.Stufe2.Count);
             Assert.All(Katalogfassung.Stufe2, t => Assert.Equal(2, t.Stufe));
             Assert.Equal(Katalogfassung.Alle.Count, Katalogfassung.Alle.Select(t => t.Kuerzel).Distinct().Count());
             Assert.Equal(Katalogfassung.Alle.Count, Katalogfassung.Alle.Select(t => t.Tabelle).Distinct().Count());
@@ -299,12 +300,14 @@ namespace EPOS.Kern.Tests
             var stamm = dt.Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0])).ToList();
             // KU3-1: Tab_Kaeltemaschine_STAMM und Tab_Kenndaten_Kaeltemaschine_STAMM dazu - 46.
             // ZK: Tab_Zone_STAMM, Tab_Bauteil_STAMM, Tab_Zonenluftstrom_STAMM dazu (benannt ausgenommen) - 49.
-            Assert.Equal(49, stamm.Count);
+            // PVG: Tab_PvGanglinie_STAMM und Tab_PvGanglinieDaten_STAMM dazu (Register "PVG") - 51.
+            Assert.Equal(51, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
             Assert.All(Katalogfassung.Ausgenommen, kv => Assert.True(kv.Value.Length > 40, kv.Key + ": Grund fehlt."));
-            Assert.Equal(12, Katalogfassung.Ausgenommen.Count);
+            // ZK: die drei Katalogzwillinge der Zonentabellen benannt ausgenommen - 15.
+            Assert.Equal(15, Katalogfassung.Ausgenommen.Count);
         }
 
         /// <summary>

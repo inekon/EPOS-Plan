@@ -996,6 +996,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ZonenKatalogSchema.SCHRITT (ZK): die Katalogzwillinge der Zonentabellen und ID_Zone_Stamm an der
                 // Konditionierung, reines DDL. Wiederholbar.
                 ZonenKatalogSchema.Ausfuehren(null);
+                // Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie, reines DDL.
+                // Wiederholbar.
+                PvGanglinieSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
