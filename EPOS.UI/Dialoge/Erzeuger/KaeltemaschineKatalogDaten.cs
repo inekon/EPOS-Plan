@@ -53,6 +53,35 @@ public sealed class KaeltemaschineDaten
     /// <summary>Gerätepreis [€].</summary>
     public double? Modulkosten { get; set; }
 
+    // ------------------------------------------------------------ Teillast und Takten (KM3)
+
+    /// <summary>
+    /// Listenplatz der Teillastrechnung in <c>KaeltemaschineTeillastSchema.TEILLAST_WEGE</c> (0 linear, 1 Kurve);
+    /// <c>null</c> = wie bisher (linear, ohne Taktverlust).
+    /// </summary>
+    public int? TeillastWegIndex { get; set; }
+
+    /// <summary>Beiwert a der Teillastkurve; leer = keine Kurve gepflegt.</summary>
+    public double? KurveA { get; set; }
+
+    /// <summary>Beiwert b der Teillastkurve.</summary>
+    public double? KurveB { get; set; }
+
+    /// <summary>Beiwert c der Teillastkurve.</summary>
+    public double? KurveC { get; set; }
+
+    /// <summary>Lastgrad (0 … 1), ab dem die Kurve gilt; leer = Mindestteillast.</summary>
+    public double? KurveLastgradMin { get; set; }
+
+    /// <summary>Taktverlustfaktor C_d (0 … 1); leer = Vorgabe 0,9.</summary>
+    public double? Cd { get; set; }
+
+    /// <summary>Listenplatz der Verdichterregelung in <c>KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN</c>; <c>null</c> = keine Angabe.</summary>
+    public int? VerdichterregelungIndex { get; set; }
+
+    /// <summary>Listenplatz des Wegs am Kennfeldrand in <c>KaeltemaschineTeillastSchema.RANDWEGE</c>; <c>null</c> = Randwert (Vorgabe).</summary>
+    public int? RandwegIndex { get; set; }
+
     /// <summary>Auslieferungssatz (<c>ReadOnly</c>)? Dann ist das Blatt nur lesbar.</summary>
     public bool Auslieferung { get; set; }
 
@@ -84,6 +113,14 @@ public sealed class KaeltemaschineDaten
         if (Hilfsstrom != anderer.Hilfsstrom) n++;
         if (KaltwasserMin != anderer.KaltwasserMin) n++;
         if (Modulkosten != anderer.Modulkosten) n++;
+        if (TeillastWegIndex != anderer.TeillastWegIndex) n++;
+        if (KurveA != anderer.KurveA) n++;
+        if (KurveB != anderer.KurveB) n++;
+        if (KurveC != anderer.KurveC) n++;
+        if (KurveLastgradMin != anderer.KurveLastgradMin) n++;
+        if (Cd != anderer.Cd) n++;
+        if (VerdichterregelungIndex != anderer.VerdichterregelungIndex) n++;
+        if (RandwegIndex != anderer.RandwegIndex) n++;
         if (Kennlinie.Count != anderer.Kennlinie.Count
             || Kennlinie.Where((p, i) => !p.Gleich(anderer.Kennlinie[i])).Any()) n++;
         return n;
@@ -122,3 +159,26 @@ public sealed record KaeltemaschineSpeicherErgebnis(bool Ok, string Meldung, int
 
 /// <summary>Der Ausgang von „Typkennfelder laden…" (KM1): neu angelegt, übersprungen, bei Fehler der Grund.</summary>
 public sealed record KaeltemaschineTypkennfelderErgebnis(bool Ok, int Neu, int Uebersprungen, string Meldung);
+
+/// <summary>Die Lesezeile der Gruppe „Teillast und Takten": g bei 25, 50 und 75 % Last und ein Hinweis (leer = keiner).</summary>
+public sealed record KaeltemaschineTeillastLesestand(double G25, double G50, double G75, string Hinweis);
+
+/// <summary>
+/// Die Teillastfelder eines Typkennfelds für die Schnellwahl „Kurve aus Typkennfeld" — Listenplätze wie im Feldsatz.
+/// </summary>
+public sealed record KaeltemaschineTypkurve(string Typkennfeld, int? TeillastWegIndex, double? KurveA, double? KurveB,
+                                            double? KurveC, double? KurveLastgradMin, int? VerdichterregelungIndex);
+
+/// <summary>Der Ausgang von „Typkennfeld auf Datenblatt skalieren…": der neue, ungespeicherte Satz oder der Grund.</summary>
+public sealed record KaeltemaschineSkalierErgebnis(KaeltemaschineDaten? Satz, string Meldung);
+
+/// <summary>Ein Eingabepaar der Auskunft „Teillastpunkte prüfen…": Außentemperatur [°C] und Lastgrad [%] der Nennleistung.</summary>
+public sealed record KaeltemaschineAuskunftEingabe(string Name, double? AussenC, double? LastgradProzent);
+
+/// <summary>Eine Ergebniszeile der Auskunft (Leistungen in kW, Lastgrad der Maschine als Anteil).</summary>
+public sealed record KaeltemaschineAuskunftZeile(string Name, double AussenC, double RueckkuehlC, double KaelteKw,
+                                                 double LastgradMaschine, double LeistungsaufnahmeKw, double Eer,
+                                                 bool Takt, bool Randwert);
+
+/// <summary>Der Ausgang der Auskunft: die Zeilen oder der Grund (nichts wird gespeichert).</summary>
+public sealed record KaeltemaschineAuskunftErgebnis(IReadOnlyList<KaeltemaschineAuskunftZeile>? Zeilen, string Meldung);
