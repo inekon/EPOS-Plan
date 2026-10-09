@@ -359,6 +359,12 @@
     <EmbeddedResource Include="..\Referenzlaeufe\Katalogpaket_frei\*.csv" Link="Katalogpaket_frei\%(Filename)%(Extension)" LogicalName="EPOS.Kern.Katalogpaket_frei.%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- KM1: die eingebauten Typkennfelder der Kaeltemaschinen (Auswahl aus PNNL Copper, BSD-2;
+       Lizenz Quellen/LIZENZ_Kaeltemaschinen_Typkennfelder.txt) - KaeltemaschinenTypkennfelder.Lesen. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Allgemein\Katalog\KaeltemaschinenTypkennfelder.json" LogicalName="EPOS.Kern.Katalog.KaeltemaschinenTypkennfelder.json" />
+  </ItemGroup>
+
   <!-- ================================================================== -->
   <!-- Anzeigetexte: derselbe Katalog wie im Hauptprojekt                  -->
   <!--                                                                    -->

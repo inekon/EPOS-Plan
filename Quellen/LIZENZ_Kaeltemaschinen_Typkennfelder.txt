@@ -1,0 +1,49 @@
+EPOS-Plan - Lizenzhinweis der eingebauten Typkennfelder fuer Kaeltemaschinen
+============================================================================
+
+Die eingebauten Typkennfelder der Kaeltemaschinen (EPOS.Kern, Ressource
+KaeltemaschinenTypkennfelder.json) und der Import von Kurvendateien im Format
+chiller_curves.json beruhen auf der offenen Bibliothek
+
+    PNNL Copper - https://github.com/pnnl/copper
+    Datei copper/data/chiller_curves.json, Stand Commit f4bfa7ebf0181c1dc1cfc5dd6a36db91dbc97ac4
+
+Uebernommen sind 34 Kurvensaetze (Referenzleistung, Referenz-COP, Mindestteillast und die
+bi-quadratischen Kurven cap-f-t und eir-f-t mit ihren Gueltigkeitsgrenzen). EPOS-Plan wertet die
+Kurven auf ein Kennfeld von 6 x 4 Punkten aus und skaliert die Kaelteleistung auf eine
+Leistungsklasse. Die Saetze tragen keinen Hersteller und keine Produktbezeichnung; sie heissen
+"Typkennfeld <Rueckkuehlung> <Verdichter> <Klasse> kW" und nennen in der Beschreibung die
+laufende Nummer des Datensatzes in der Quelle.
+
+Ein Teil der Copper-Daten stammt nach Angabe der Quelle aus dem Datensatz von EnergyPlus.
+EnergyPlus-Saetze werden nicht unmittelbar uebernommen; der Name "EnergyPlus" wird fuer die
+Typkennfelder nicht verwendet und steht nicht fuer eine Billigung durch dessen Rechteinhaber.
+
+Lizenztext von PNNL Copper (unveraendert):
+------------------------------------------
+
+BSD 2-Clause License
+
+Copyright (c) 2022, Pacific Northwest National Laboratory
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
