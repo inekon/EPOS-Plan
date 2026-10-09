@@ -115,6 +115,14 @@
         <span class="epos-leiste-fueller epos-status@(_statusFehler ? " epos-status--fehler" : "")" role="status">@_status</span>
         @if (Speichern is not null)
         {
+            @* KM1: "Import..." (Copper-Kurvendatei, CSV-Kennfeldvorlage) und "Typkennfelder laden...".
+               Ohne Importweg (iOS: keine Dateiwahl) lehnt der Knopf benannt ab statt zu fehlen. *@
+            <button type="button" class="epos-knopf epos-importknopf" @onclick="ImportOeffnen">@Texte.KnopfImport</button>
+            @if (TypkennfelderLaden is not null)
+            {
+                <button type="button" class="epos-knopf epos-kaeltemaschine-typkennfelder"
+                        @onclick="TypkennfelderFragen">@Texte.KnopfTypkennfelder</button>
+            }
             <button type="button" class="epos-knopf" @onclick="BeiNeu">@Texte.KnopfNeu</button>
         }
         <button type="button" class="epos-knopf epos-knopf--primaer"
@@ -156,6 +164,13 @@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@Texte.KnopfLoeschen"
                 Frage="@_loeschfrageText"
                 JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiLoeschfrage" />
+
+    @* --- KM1: Rueckfrage vor dem Laden der eingebauten Typkennfelder ------------------- *@
+    <Rueckfrage Offen="@_typfrage" TitelText="@Texte.KnopfTypkennfelder" Frage="@TypfrageText"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiTypfrage" />
+
+    @* --- KM1: "Import..." als Ueberlagerung; Titel und Kreuz traegt der Importdialog selbst *@
+    <EPOS.UI.Dialoge.Import.ImportUeberlagerung KatalogGaben="@_importGaben" Geschlossen="ImportFertig" />
 
     @* --- Rueckfrage vor dem Umschalten des Schlosses (AD-Q15, Vorgabe Nein) *@
     <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
@@ -297,6 +312,10 @@
     public bool Duplizierfrage => _duplizierfrage;
     /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe)</summary>
     public bool Schlossfrage => _schloss.FrageOffen;
+    /// <summary>Steht die Rückfrage „Typkennfelder laden…"? (Prüfhilfe)</summary>
+    public bool Typfrage => _typfrage;
+    /// <summary>Steht der Import als Überlagerung? (Prüfhilfe)</summary>
+    public bool ImportOffen => _importGaben is not null;
 
     private Katalogfilterprofil Profil
         => _profil ??= Katalogprofil
@@ -956,9 +975,74 @@
     // Schluss
     // =====================================================================
 
+    // =====================================================================
+    // KM1: "Import..." und "Typkennfelder laden..."
+    // =====================================================================
+
+    /// <summary>
+    /// Der Parametersatz des Katalogimports der Art Kältemaschine (Windows: <c>KatalogImportHuelle.Gaben</c>);
+    /// <c>null</c> = die Plattform führt keinen Dateiimport — der Knopf lehnt dann benannt ab.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ImportGaben { get; set; }
+
+    /// <summary>Lädt die eingebauten Typkennfelder in den Katalog (<c>KaeltemaschinenTypkennfelder.Einspielen</c>).</summary>
+    [Parameter] public Func<KaeltemaschineTypkennfelderErgebnis>? TypkennfelderLaden { get; set; }
+
+    /// <summary>Die Zahl der eingebauten Typkennfelder — für den Text der Rückfrage.</summary>
+    [Parameter] public int TypkennfelderAnzahl { get; set; }
+
+    private IReadOnlyDictionary<string, object>? _importGaben;
+    private HashSet<string> _vorImport = new(StringComparer.Ordinal);
+    private bool _typfrage;
+
+    private string TypfrageText => string.Format(CultureInfo.CurrentCulture, Texte.FrageTypkennfelder, TypkennfelderAnzahl);
+
+    /// <summary>„Import…" öffnet den Katalogimport; ohne Weg die benannte Ablehnung, geänderte Felder halten an.</summary>
+    private void ImportOeffnen()
+    {
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        IReadOnlyDictionary<string, object>? gaben = ImportGaben?.Invoke();
+        if (gaben is null) { Warnen(Texte.ImportPlattform); return; }
+        _meldung = "";
+        _vorImport = new HashSet<string>(_katalog.Select(z => z.Bezeichner), StringComparer.Ordinal);
+        _importGaben = gaben;
+    }
+
+    /// <summary>Der Import ist zu; hat er geschrieben, liest die Liste neu und die Statuszeile nennt die neuen Sätze.</summary>
+    private void ImportFertig(bool geschrieben)
+    {
+        _importGaben = null;
+        if (!geschrieben) return;
+        ListeLaden();
+        var neu = _katalog.Where(z => !_vorImport.Contains(z.Bezeichner)).ToList();
+        if (neu.Count == 0) return;
+        _status = neu.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, neu[0].Bezeichner)
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_IMPORTIERT, neu.Count);
+    }
+
+    private void TypkennfelderFragen()
+    {
+        if (TypkennfelderLaden is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _typfrage = true;
+    }
+
+    private void BeiTypfrage(bool? ja)
+    {
+        _typfrage = false;
+        if (ja != true || TypkennfelderLaden is null) return;
+        KaeltemaschineTypkennfelderErgebnis e = TypkennfelderLaden();
+        if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+        if (e.Neu > 0) ListeLaden();
+        _status = string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderGeladen, e.Neu, e.Uebersprungen);
+    }
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _duplizierfrage || _schloss.FrageOffen)
+        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _duplizierfrage || _schloss.FrageOffen
+            || _typfrage || _importGaben is not null)
             return Task.CompletedTask;
 
         if (_auswahl.BlattOffen)

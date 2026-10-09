@@ -119,3 +119,6 @@ public sealed class KaeltemaschinePunktDaten
 
 /// <summary>Der Ausgang eines Schreibwegs der Hülle: bei Erfolg die Id, sonst der Grund.</summary>
 public sealed record KaeltemaschineSpeicherErgebnis(bool Ok, string Meldung, int Id);
+
+/// <summary>Der Ausgang von „Typkennfelder laden…" (KM1): neu angelegt, übersprungen, bei Fehler der Grund.</summary>
+public sealed record KaeltemaschineTypkennfelderErgebnis(bool Ok, int Neu, int Uebersprungen, string Meldung);

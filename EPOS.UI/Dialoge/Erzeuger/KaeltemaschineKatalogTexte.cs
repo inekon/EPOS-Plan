@@ -63,6 +63,16 @@ public sealed class KaeltemaschineKatalogTexte
     public string KnopfSpeichern { get; set; } = Resource.ADM_BTN_SPEICHERN;
     public string KnopfVerwerfen { get; set; } = Resource.ADM_BTN_VERWERFEN;
     public string KnopfNeu { get; set; } = Resource.ADM_BTN_NEU;
+    /// <summary>„Import…" (KM1).</summary>
+    public string KnopfImport { get; set; } = Resource.ADM_BTN_IMPORT;
+    /// <summary>„Typkennfelder laden…" (KM1).</summary>
+    public string KnopfTypkennfelder { get; set; } = Resource.KM_BTN_TYPKENNFELDER;
+    /// <summary>Rückfrage vor dem Laden; {0} = Zahl der Typkennfelder.</summary>
+    public string FrageTypkennfelder { get; set; } = Resource.KM_FRAGE_TYPKENNFELDER;
+    /// <summary>Ergebnis des Ladens; {0} = neu, {1} = übersprungen.</summary>
+    public string TypkennfelderGeladen { get; set; } = Resource.KM_MSG_TYPKENNFELDER;
+    /// <summary>Die benannte Ablehnung des Dateiimports ohne Importweg (iOS).</summary>
+    public string ImportPlattform { get; set; } = Resource.KM_MSG_IMPORT_PLATTFORM;
     public string KnopfBeenden { get; set; } = Resource.ADM_BTN_BEENDEN;
     public string KnopfDuplizieren { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
     public string KnopfLoeschen { get; set; } = Resource.BST_BTN_LOESCHEN;
