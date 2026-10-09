@@ -3294,6 +3294,24 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrK2 + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrK2 + " - vollstaendig: " + KalenderbedienungSchema.Vollstaendig() + " (erwartet True).");
             }
+
+            // ---- Schritt KatalogkostenUrsprungSchema.SCHRITT (KA1): ID_KostenVorlage an den acht Katalogen mit Kosten,
+            //      ID_Stamm an den elf Projektkopien ohne Ursprung. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KatalogkostenUrsprung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer, kein Leser der Simulation fragt sie.
+            string nrKa = KatalogkostenUrsprungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKa + " - Katalogkosten und Ursprung: " +
+                              (KatalogkostenUrsprungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKa = new List<string>();
+                angelegt += KatalogkostenUrsprungSchema.Ausfuehren(berichtKa);
+                foreach (string zeile in berichtKa)
+                    Console.WriteLine("Schritt " + nrKa + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKa + " - vollstaendig: " + KatalogkostenUrsprungSchema.Vollstaendig() + " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

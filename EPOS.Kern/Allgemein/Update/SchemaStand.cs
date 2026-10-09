@@ -988,7 +988,11 @@ namespace WindowsFormsApplication1
         /// gemeinsamer Kalender „alle Größen" mit Größenmaske, benannte Wochen, Wochenende und Feiertagsland am Gebäude,
         /// Länderfeiertage als Regeln, Ferienliste als Spiegel der Ferienspalten (<see cref="KalenderbedienungSchema"/>).
         /// <b>Ergebnisneutral:</b> Gekoppelte Kopien werden eine Gemeinschaftsperiode, die beim Lesen genau in ihre Kalender zurückkehrt.
-        public const int Zielversion = KalenderbedienungSchema.SCHRITT;
+        /// Danach, mit KATALOGKOSTEN UND URSPRUNG (Katalogauswahl Stufe 2), steht das Ziel auf
+        /// <see cref="KatalogkostenUrsprungSchema.SCHRITT"/>: <c>ID_KostenVorlage</c> an den acht Katalogen mit Kosten,
+        /// <c>ID_Stamm</c> an den elf Projektkopien ohne Ursprungsverweis (<see cref="KatalogkostenUrsprungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
+        public const int Zielversion = KatalogkostenUrsprungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

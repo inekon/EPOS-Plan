@@ -390,6 +390,10 @@ namespace WindowsFormsApplication1
             // zusammen und spiegelt die Ferienspalten in die Ferienliste - kein Rechenergebnis aendert sich.
             new Stufe(KalenderbedienungSchema.SCHRITT, Art.Ddl,
                       "Kalenderbedienung Stufe 2 (gemeinsamer Kalender, benannte Wochen, Wochenende, Laenderfeiertage, Ferienliste)"),
+            // Ein älteres Paket führt weder Kostenvorlage am Katalogsatz noch Ursprung an den Projektkopien; die Spalten
+            // kommen leer an (Standardvorlage des Gewerks, „Ursprung nicht bekannt").
+            new Stufe(KatalogkostenUrsprungSchema.SCHRITT, Art.Ddl,
+                      "Katalogkosten und Ursprung (Kostenvorlage am Katalogsatz, Ursprungsverweis an den Projektkopien)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
