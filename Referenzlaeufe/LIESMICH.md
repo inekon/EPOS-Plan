@@ -1013,6 +1013,17 @@ sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (`integrity_check` ok, `foreign_key_check` leer): **92 979 200 Byte, LFS-SHA-256
 > `19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`**. **Die Basis `2026-10-07_R43_Kaelteseite_AK3K`
 > bleibt** — die vierundzwanzig Projekte rechnen byte-gleich; 1061 und 1062 kommen mit der Basis R44 (KK5b) ins Netz.
+> 
+> **Nachtrag — Testdatenbank auf 203 (Typkennfelder der Kältemaschinen, Basis R44 unberührt).**
+> `KaeltemaschinenTypkennfelderSchema` (203 = `KuehlkurveSchema.SCHRITT + 1`) spielt die 34 eingebauten Typkennfelder
+> (`KaeltemaschinenTypkennfelder`, eingebettete Ressource) als gesperrte Sätze in `Tab_Kaeltemaschine_STAMM` ein, je
+> 24 gesperrte Kennlinienpunkte in `Tab_Kenndaten_Kaeltemaschine_STAMM`, mit Katalogschlüssel `KM:TYPKENNFELD_*` und
+> Prüfsumme; kein DDL, die drei Beispielgeräte bleiben Zelle für Zelle. Gehoben aus dem Stand 202 (LFS-SHA-256
+> `19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`) mit `Werkzeuge/Testdatenbankschema`, ein zweiter
+> Lauf meldet „steht bereits“. Die Testdatenbank steht auf **203** (`integrity_check` ok, `foreign_key_check` leer):
+> **92 975 104 Byte, LFS-SHA-256 `84e771718f875eafcc77f16387ca1809376317499a28655b110e34f8cf54f063`**. **Die Basis
+> `2026-10-08_R44_Kuehlkurve` bleibt** — kein Referenzprojekt führt ein Typkennfeld, keine Einfrierregel ist berührt; die
+> sechsundzwanzig Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
 
 ### Die Vorgängerbasis R43 (Kälteseite AK3K)
 
