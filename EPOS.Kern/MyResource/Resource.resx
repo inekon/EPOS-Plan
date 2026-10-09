@@ -49195,5 +49195,44 @@ Chart</value>
   <data name="KM_MSG_IMPORT_PLATTFORM" xml:space="preserve">
     <value>Der Import aus einer Datei steht auf dieser Plattform nicht zur Verfügung. Die eingebauten Typkennfelder lassen sich über „Typkennfelder laden…“ übernehmen.</value>
   </data>
+  <data name="KOND_TEXT_BEDIENUNG_STANDARDWOCHE" xml:space="preserve">
+    <value>Standardwoche</value>
+  </data>
+  <data name="KOND_TEXT_BEDIENUNG_LANDESFEIERTAG" xml:space="preserve">
+    <value>Landesfeiertag {0}</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_PROFIL_FEHLT" xml:space="preserve">
+    <value>Das Wochenprofil „{0}“ gibt es im Kalender {1} nicht.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_EINHEIT" xml:space="preserve">
+    <value>Eine Woche aus {0} passt nicht zu {1} — kopiert wird nur zwischen Größen gleicher Einheit (Heizen und Kühlen, Geräte und Personen).</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHE" xml:space="preserve">
+    <value>Ein Wochenprofil hat 168 Zellen, übergeben sind {0}.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_ZELLEN" xml:space="preserve">
+    <value>Die Zellen liegen nicht im Wochenraster: Tage 1 … 7, Stunden 0 … 24, Beginn vor Ende.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_ZEILE_FEHLT" xml:space="preserve">
+    <value>Die Zeile „{0}“ gibt es in keinem Kalender.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_ZEILE_DOPPELT" xml:space="preserve">
+    <value>Die Zeile „{0}“ mit diesen Tagen gibt es schon im Kalender {1}.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_KEINE_GROESSE" xml:space="preserve">
+    <value>Die Zeile „{0}“ gilt für keine Größe — wählen Sie mindestens eine Größe mit angelegtem Kalender.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_MONAT" xml:space="preserve">
+    <value>Ein Monat liegt zwischen 1 und 12; übergeben sind {0} und {1}.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_MONAT_LEER" xml:space="preserve">
+    <value>Im Monat {0} steht keine Zeile und kein Einzeltag, die kopiert werden könnten.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_LAND" xml:space="preserve">
+    <value>„{0}“ ist keine der sechzehn Länderkennungen.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_FERIEN_ZONE" xml:space="preserve">
+    <value>Die Ferienzeiträume gehören dem Gebäude; eine Zone erbt sie.</value>
+  </data>
 </root>
 

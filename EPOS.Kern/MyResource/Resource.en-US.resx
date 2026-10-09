@@ -49188,5 +49188,44 @@ chart</value>
   <data name="KM_MSG_IMPORT_PLATTFORM" xml:space="preserve">
     <value>Importing from a file is not available on this platform. The built-in typical performance maps can be added with "Load typical maps…".</value>
   </data>
+  <data name="KOND_TEXT_BEDIENUNG_STANDARDWOCHE" xml:space="preserve">
+    <value>Standard week</value>
+  </data>
+  <data name="KOND_TEXT_BEDIENUNG_LANDESFEIERTAG" xml:space="preserve">
+    <value>State holiday {0}</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_PROFIL_FEHLT" xml:space="preserve">
+    <value>The week profile “{0}” does not exist in calendar {1}.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_EINHEIT" xml:space="preserve">
+    <value>A week from {0} does not fit {1} — copying is only possible between quantities with the same unit (heating and cooling, appliances and occupancy).</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHE" xml:space="preserve">
+    <value>A week profile has 168 cells, {0} were given.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_ZELLEN" xml:space="preserve">
+    <value>The cells are outside the week grid: days 1 … 7, hours 0 … 24, start before end.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_ZEILE_FEHLT" xml:space="preserve">
+    <value>The row “{0}” does not exist in any calendar.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_ZEILE_DOPPELT" xml:space="preserve">
+    <value>The row “{0}” with these days already exists in calendar {1}.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_KEINE_GROESSE" xml:space="preserve">
+    <value>The row “{0}” applies to no quantity — select at least one quantity with a created calendar.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_MONAT" xml:space="preserve">
+    <value>A month lies between 1 and 12; {0} and {1} were given.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_MONAT_LEER" xml:space="preserve">
+    <value>Month {0} contains no row and no single day that could be copied.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_LAND" xml:space="preserve">
+    <value>“{0}” is not one of the sixteen state codes.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_FERIEN_ZONE" xml:space="preserve">
+    <value>The holiday periods belong to the building; a zone inherits them.</value>
+  </data>
 </root>
 

@@ -75045,6 +75045,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Woche aus {0} passt nicht zu {1} — kopiert wird nur zwischen Größen gleicher Einheit (Heizen und Kühlen, Geräte und Personen). ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_EINHEIT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ferienzeiträume gehören dem Gebäude; eine Zone erbt sie. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_FERIEN_ZONE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_FERIEN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}“ gilt für keine Größe — wählen Sie mindestens eine Größe mit angelegtem Kalender. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_KEINE_GROESSE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_KEINE_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine der sechzehn Länderkennungen. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_LAND {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_LAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Monat liegt zwischen 1 und 12; übergeben sind {0} und {1}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_MONAT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Monat {0} steht keine Zeile und kein Einzeltag, die kopiert werden könnten. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_MONAT_LEER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_MONAT_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenprofil „{0}“ gibt es im Kalender {1} nicht. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_PROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_PROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wochenprofil hat 168 Zellen, übergeben sind {0}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_WOCHE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}“ mit diesen Tagen gibt es schon im Kalender {1}. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_ZEILE_DOPPELT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_ZEILE_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}“ gibt es in keinem Kalender. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_ZEILE_FEHLT {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_ZEILE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zellen liegen nicht im Wochenraster: Tage 1 … 7, Stunden 0 … 24, Beginn vor Ende. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_ZELLEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_ZELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
         /// </summary>
         public static string KOND_MSG_DUPLIKAT_ZUSATZ {
@@ -75806,6 +75905,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_ZONE_UNBEHEIZT {
             get {
                 return ResourceManager.GetString("KOND_MSG_ZONE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Landesfeiertag {0} ähnelt.
+        /// </summary>
+        public static string KOND_TEXT_BEDIENUNG_LANDESFEIERTAG {
+            get {
+                return ResourceManager.GetString("KOND_TEXT_BEDIENUNG_LANDESFEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardwoche ähnelt.
+        /// </summary>
+        public static string KOND_TEXT_BEDIENUNG_STANDARDWOCHE {
+            get {
+                return ResourceManager.GetString("KOND_TEXT_BEDIENUNG_STANDARDWOCHE", resourceCulture);
             }
         }
         
