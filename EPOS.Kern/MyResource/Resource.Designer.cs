@@ -60794,6 +60794,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht. „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_ABWEICHUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_ABWEICHUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung vom Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_ABWEICHUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_ABWEICHUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Raster der markierten Ganglinie: Stundenwerte (8 760) oder Viertelstundenwerte (35 040). Viertelstundenwerte gehen unmittelbar in die Bilanz, Stundenwerte werden nach dem Sonnenstand auf die Viertel verteilt. ähnelt.
         /// </summary>
         public static string KI_DLG_PVG_AUFLOESUNG_ERL {
@@ -92723,6 +92741,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string PVG_ABW_JAHRESSUMME {
+            get {
+                return ResourceManager.GetString("PVG_ABW_JAHRESSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string PVG_ABW_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVG_ABW_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raster ähnelt.
+        /// </summary>
+        public static string PVG_ABW_RASTER {
+            get {
+                return ResourceManager.GetString("PVG_ABW_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe ähnelt.
+        /// </summary>
+        public static string PVG_ABW_REIHE {
+            get {
+                return ResourceManager.GetString("PVG_ABW_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weicht vom Katalog ab: {0} ähnelt.
+        /// </summary>
+        public static string PVG_ABW_TEXT {
+            get {
+                return ResourceManager.GetString("PVG_ABW_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die entfällt (Ganglinie) ähnelt.
         /// </summary>
         public static string PVG_AUSWEIS_ENTFAELLT {
@@ -92786,11 +92849,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Katalog erneuern… ähnelt.
+        /// </summary>
+        public static string PVG_BTN_ERNEUERN {
+            get {
+                return ResourceManager.GetString("PVG_BTN_ERNEUERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung bearbeiten… ähnelt.
         /// </summary>
         public static string PVG_BTN_NENNLEISTUNG {
             get {
                 return ResourceManager.GetString("PVG_BTN_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie „{0}“ wird durch den Katalogsatz gleichen Namens ersetzt: Beschreibung, Raster, Nennleistung, Jahresarbeit und die Reihe. Die Zuordnung zum Projekt bleibt. ähnelt.
+        /// </summary>
+        public static string PVG_ERNEUERN_FRAGE {
+            get {
+                return ResourceManager.GetString("PVG_ERNEUERN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        /// </summary>
+        public static string PVG_ERNEUERN_SIMULATION {
+            get {
+                return ResourceManager.GetString("PVG_ERNEUERN_SIMULATION", resourceCulture);
             }
         }
         
@@ -92885,6 +92975,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie gleicht dem Katalogsatz bereits. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERN_GLEICH {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERN_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt noch keine Kopie dieser Ganglinie; sie entsteht beim OK aus dem Katalog. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERN_KEINE_KOPIE {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERN_KEINE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt keine PV-Ganglinie dieses Namens mehr; die Projektkopie bleibt, wie sie ist. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERN_KEIN_KATALOG {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERN_KEIN_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie „{0}“ trägt jetzt den Stand des Katalogs. Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        /// </summary>
+        public static string PVG_MSG_ERNEUERT {
+            get {
+                return ResourceManager.GetString("PVG_MSG_ERNEUERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung von „{0}“ gespeichert. ähnelt.
         /// </summary>
         public static string PVG_MSG_NENN_GESPEICHERT {
@@ -92966,7 +93092,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung gilt für den Katalogsatz. Projekte, die diese Ganglinie bereits führen, behalten ihre Kopie, bis sie im Projekt über „Aus dem Katalog erneuern…“ erneuert wird. ähnelt.
         /// </summary>
         public static string PVG_NENN_PROJEKTKOPIEN {
             get {
@@ -93007,6 +93133,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVG_TITEL {
             get {
                 return ResourceManager.GetString("PVG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkopie aus dem Katalog erneuern ähnelt.
+        /// </summary>
+        public static string PVG_TITEL_ERNEUERN {
+            get {
+                return ResourceManager.GetString("PVG_TITEL_ERNEUERN", resourceCulture);
             }
         }
         

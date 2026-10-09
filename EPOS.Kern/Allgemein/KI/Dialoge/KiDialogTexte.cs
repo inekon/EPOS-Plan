@@ -2164,6 +2164,8 @@
         internal static string PvgImProjektErl => MyResource.Resource.KI_DLG_PVG_IMPROJEKT_ERL;
         internal static string PvgImportName => MyResource.Resource.KI_DLG_PVG_IMPORT_NAME;
         internal static string PvgImportErl => MyResource.Resource.KI_DLG_PVG_IMPORT_ERL;
+        internal static string PvgAbweichungName => MyResource.Resource.KI_DLG_PVG_ABWEICHUNG_NAME;
+        internal static string PvgAbweichungErl => MyResource.Resource.KI_DLG_PVG_ABWEICHUNG_ERL;
         internal static string PvgKatalogbetriebName => MyResource.Resource.KI_DLG_PVG_KATALOGBETRIEB_NAME;
         internal static string PvgKatalogbetriebErl => MyResource.Resource.KI_DLG_PVG_KATALOGBETRIEB_ERL;
 
