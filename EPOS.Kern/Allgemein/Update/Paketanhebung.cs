@@ -394,6 +394,9 @@ namespace WindowsFormsApplication1
             // kommen leer an (Standardvorlage des Gewerks, „Ursprung nicht bekannt").
             new Stufe(KatalogkostenUrsprungSchema.SCHRITT, Art.Ddl,
                       "Katalogkosten und Ursprung (Kostenvorlage am Katalogsatz, Ursprungsverweis an den Projektkopien)"),
+            // Ein älteres Paket führt keine Investitionsvorlage am Katalogsatz; die Spalte kommt leer an.
+            new Stufe(KatalogkostenInvestitionSchema.SCHRITT, Art.Ddl,
+                      "Katalogkosten Investition (Investitionsvorlage am Katalogsatz)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

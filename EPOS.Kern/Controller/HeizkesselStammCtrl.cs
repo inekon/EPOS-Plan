@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -647,8 +649,49 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
+        }
+
+        /// <summary>Ausgang von <see cref="KatalogsatzLoeschen"/>.</summary>
+        public sealed record KatalogsatzLoeschung(bool Ok, Satzvorlagenabbau Vorlage, string Meldung);
+
+        /// <summary>
+        /// <b>Löscht den Katalogsatz <paramref name="id"/> samt seinen Satzvorlagen</b> (KA‑E‑16, beide Verweise,
+        /// <see cref="Katalogrueckweg.SatzvorlageBeimLoeschen"/>) in einem Vorgang — scheitert eines, bleibt beides. Ein
+        /// gesperrter Satz wird nicht gelöscht. Die Meldung nennt eine Vorlage, die Projektzeilen noch brauchen.
+        /// </summary>
+        public static KatalogsatzLoeschung KatalogsatzLoeschen(int id)
+        {
+            if (IsReadOnlyById(id)) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            string[] verweise = new[] { KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE,
+                                        KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION }
+                .Where(sp => DataRepository.SpalteVorhanden(TABLE, sp)).ToArray();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    DataTable satz = v.Lese("SELECT \"Bezeichner\"" + string.Concat(verweise.Select(sp => ", \"" + sp + "\"")) +
+                                            " FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    if (satz == null || satz.Rows.Count == 0) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    DataRow z = satz.Rows[0];
+                    string name = Convert.ToString(z[0], CultureInfo.InvariantCulture) ?? "";
+                    int? Lies(string sp) => satz.Columns.Contains(sp) && z[sp] != DBNull.Value
+                        ? Convert.ToInt32(z[sp], CultureInfo.InvariantCulture) : (int?)null;
+                    v.Ausfuehren("DELETE FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    Satzvorlagenabbau abbau = Katalogrueckweg.SatzvorlageBeimLoeschen(
+                        v, Lies(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE),
+                        Lies(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION));
+                    v.Commit();
+                    return new KatalogsatzLoeschung(true, abbau, Katalogrueckweg.SatzvorlagenMeldung(abbau, name));
+                }
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurück.
+                return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            }
         }
 
         // --- MAPPING ---

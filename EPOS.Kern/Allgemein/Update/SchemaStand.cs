@@ -992,7 +992,10 @@ namespace WindowsFormsApplication1
         /// <see cref="KatalogkostenUrsprungSchema.SCHRITT"/>: <c>ID_KostenVorlage</c> an den acht Katalogen mit Kosten,
         /// <c>ID_Stamm</c> an den elf Projektkopien ohne Ursprungsverweis (<see cref="KatalogkostenUrsprungSchema"/>).
         /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
-        public const int Zielversion = KatalogkostenUrsprungSchema.SCHRITT;
+        /// Danach, mit KATALOGKOSTEN INVESTITION (KA‑E‑14), steht das Ziel auf
+        /// <see cref="KatalogkostenInvestitionSchema.SCHRITT"/>: <c>ID_KostenVorlageInvestition</c> an den acht
+        /// Katalogen mit Kosten. <b>Ergebnisneutral:</b> Die Spalte entsteht leer.
+        public const int Zielversion = KatalogkostenInvestitionSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

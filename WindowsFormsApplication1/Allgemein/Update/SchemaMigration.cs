@@ -5363,6 +5363,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KATALOGKOSTEN_URSPRUNG = KatalogkostenUrsprungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KatalogkostenInvestitionSchema.SCHRITT"/> — <b>Katalogkosten Investition</b> (KA‑E‑14):
+        /// <c>ID_KostenVorlageInvestition</c> an den acht Katalogen mit Kosten, die Investitionsvorlage des Satzes.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Reines DDL, die Spalte entsteht leer.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGKOSTEN_INVESTITION = KatalogkostenInvestitionSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7833,6 +7841,11 @@ namespace WindowsFormsApplication1
                         "Eine Projektkopie koennte nicht in ihren Katalogsatz zurueckgeschrieben werden, ein Katalogsatz " +
                         "keine eigenen Betriebskosten tragen. KEIN Rechenergebnis aendert sich.",
                         Schritt_KatalogkostenUrsprung),
+            // KA1 (KA-E-14): Katalogkosten Investition. Quelle ist KatalogkostenInvestitionSchema.
+            new Schritt(SCHRITT_KATALOGKOSTEN_INVESTITION,
+                        "Tab_*_STAMM der acht Kataloge mit Kosten: ID_KostenVorlageInvestition",
+                        "Ein Katalogsatz koennte keine eigenen Investitionskosten tragen. KEIN Rechenergebnis aendert sich.",
+                        Schritt_KatalogkostenInvestition),
         };
 
         /// <summary>
@@ -15004,6 +15017,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Katalogkosten und Ursprung - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Katalogkosten Investition" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KATALOGKOSTEN_INVESTITION"/>, die Anweisungen bei <see cref="KatalogkostenInvestitionSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KatalogkostenInvestition(Lauf l)
+        {
+            string nr = KatalogkostenInvestitionSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogkostenInvestitionSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KatalogkostenInvestitionSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KatalogkostenInvestitionSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Investitionsvorlage stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Katalogkosten Investition - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

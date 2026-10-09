@@ -57,7 +57,7 @@ namespace WindowsFormsApplication1
             {
                 "ID", "Bezeichner", "ReadOnly",
                 Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN,
-                KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE
+                KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION
             };
 
         /// <summary>

@@ -1008,6 +1008,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KatalogkostenUrsprungSchema.SCHRITT (KA1): ID_KostenVorlage an den Katalogen mit Kosten,
                 // ID_Stamm an den Projektkopien ohne Ursprung, reines DDL. Wiederholbar.
                 KatalogkostenUrsprungSchema.Ausfuehren(null);
+                // Schritt KatalogkostenInvestitionSchema.SCHRITT (KA1): ID_KostenVorlageInvestition an den Katalogen mit
+                // Kosten, reines DDL. Wiederholbar.
+                KatalogkostenInvestitionSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
