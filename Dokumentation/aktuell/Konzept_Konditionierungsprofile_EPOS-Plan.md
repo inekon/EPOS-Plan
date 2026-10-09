@@ -53,7 +53,7 @@
 > die Tagessumme eines unbegrenzten Probetags; ist keine frei, wird die Zone an dem Tag nicht konditioniert. Kein
 > Schemaschritt, keine Kopierwege. Nachgezogen ist 3.1.
 
-> **Fortgeschrieben am 09.10.2026 — Kalenderbedienung (E110)** ([Befund](Dialoge/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md)
+> **Fortgeschrieben am 09.10.2026 — Kalenderbedienung (E110)** ([Befund](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md)
 > samt Mockup, 7.8): V2 „Wochenprofile" mit dem Jahresraster aus V1; Stufe 1 (K1a, K1b)
 > ohne Schemaschritt, Stufe 2 (K2) mit Schemaschritt 207. Neu sind 7.8 und 9.10, nachgezogen 8 und 10.1.
 
@@ -1270,7 +1270,7 @@ Bemessung.
 
 Mit E110 (9.10) bekommt der Reiter „Konditionierung" eine Kalenderbedienung nach dem angenommenen
 Mockup [`Mockups/Konditionierung_Kalender.html`](Mockups/Konditionierung_Kalender.html): Grundgerüst ist die Variante V2 „Wochenprofile" des
-[Befundpapiers](Dialoge/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md), ergänzt um das Jahresraster aus V1 als
+[Befundpapiers](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md), ergänzt um das Jahresraster aus V1 als
 anklickbare Anzeige. Die Vorgabe-Matrix (7.2) bleibt als Übersicht; ihre Zeilen Wochenende und Ferien werden über die
 Schnellfelder bedient. Die Kalenderkarte (7.5) bleibt der Ort der Einzelbearbeitung einer Größe.
 
@@ -1509,7 +1509,7 @@ und den Schemaweg entschieden (letzte vier Zeilen).
 ### 9.10 Entscheide des Anwenders (E110, 09.10.2026)
 
 Der Anwender hat am 09.10.2026 das Mockup [`Mockups/Konditionierung_Kalender.html`](Mockups/Konditionierung_Kalender.html) angenommen und damit die
-Empfehlungen des [Befundpapiers](Dialoge/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md) (Abschnitt 4)
+Empfehlungen des [Befundpapiers](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md) (Abschnitt 4)
 entschieden. Ausgestaltung in 7.8, Stufen in 8.
 
 | Frage | Entscheid | Folgen |
