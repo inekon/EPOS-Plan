@@ -171,6 +171,10 @@ Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwend
 - Seit 09.10.2026: Schließen, Esc und Hintergrundklick führen aus einem Unterblatt (etwa „Vorlagen der Konditionierung“) zum vorigen Blatt zurück, statt den Dialog zu schließen. (#838)
 - Seit 09.10.2026: „Aus dem Projekt entfernen“ in den Verwaltungen Heizkessel, BHKW und Solarkollektoren wird erst mit OK wirksam; Abbrechen lässt den Erzeuger im Projekt. (#838)
 - Seit 09.10.2026: Die Stromspeicher-Auslegung trennt Investitions- und Betriebskosten in zwei Bereiche mit eigener Herkunftswahl. (#838)
+- Seit 09.10.2026: Die Sperrzeiten der Wärmepumpe werden über ein Kästchen ein- und ausgeschaltet und stehen kompakt (Wochentage in einer Reihe) am Ende des Konfigurationsdialogs. (#840)
+- Seit 09.10.2026: Ein Erzeuger ohne Energieträger bekommt einen zulässigen Träger seiner Anlagenart vorgewählt (Wärmepumpe, Photovoltaik und Stromspeicher den Stromträger des Projekts, Kessel und BHKW den Träger ihres Brennstoffs). (#840)
+- Seit 09.10.2026: Die Erdwärme-Vorschau zeigt nach einem Lauf zusätzlich den gerechneten Verlauf der Quelltemperatur. (#840)
+- Seit 09.10.2026: Der Wärmesenke-Dialog nennt beim Heizkreis die Reihenfolge der direkten Deckung (Kaskadenrang der Konfiguration). (#840)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
