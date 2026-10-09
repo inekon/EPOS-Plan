@@ -510,6 +510,12 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.SaisonSetzen => SaisonSetzen is not null,
             KonditionierungHandlung.FeiertageLaden => FeiertageLaden is not null,
             KonditionierungHandlung.MonatKopieren => MonatKopieren is not null,
+            KonditionierungHandlung.WocheAnlegen => WocheAnlegen is not null,
+            KonditionierungHandlung.WocheUmbenennen => WocheUmbenennen is not null,
+            KonditionierungHandlung.WocheLoeschen => WocheLoeschen is not null,
+            KonditionierungHandlung.WochenendeSetzen => WochenendeSetzen is not null,
+            KonditionierungHandlung.FeiertagslandSetzen => FeiertagslandSetzen is not null,
+            KonditionierungHandlung.FerienlisteSetzen => FerienlisteSetzen is not null,
             _ => false
         };
     }

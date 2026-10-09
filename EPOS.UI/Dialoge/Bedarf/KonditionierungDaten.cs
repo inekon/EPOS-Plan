@@ -240,7 +240,25 @@ public enum KonditionierungHandlung
     FeiertageLaden = 30,
 
     /// <summary>„Monat kopieren…": Zeilen und Einzeltage eines Monats auf einen anderen.</summary>
-    MonatKopieren = 31
+    MonatKopieren = 31,
+
+    /// <summary>Stufe 2: eine benannte Woche anlegen.</summary>
+    WocheAnlegen = 32,
+
+    /// <summary>Stufe 2: eine benannte Woche umbenennen.</summary>
+    WocheUmbenennen = 33,
+
+    /// <summary>Stufe 2: eine benannte Woche löschen (abgelehnt, solange eine Zeile auf sie verweist).</summary>
+    WocheLoeschen = 34,
+
+    /// <summary>Stufe 2: die Wochenendtage des Gebäudes setzen.</summary>
+    WochenendeSetzen = 35,
+
+    /// <summary>Stufe 2: das Feiertagsland des Gebäudes setzen.</summary>
+    FeiertagslandSetzen = 36,
+
+    /// <summary>Stufe 2: die Ferienliste mit Namen setzen.</summary>
+    FerienlisteSetzen = 37
 }
 
 /// <summary>
