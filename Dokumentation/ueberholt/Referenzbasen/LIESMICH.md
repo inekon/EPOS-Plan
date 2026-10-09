@@ -5063,7 +5063,7 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >   --ziel Referenzlaeufe/2026-10-09_R45_Uebergabegrenze
 > ```
 >
-> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../../aktuell/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
-> und im [Fachkonzept](../../aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
+> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
+> und im [Fachkonzept](../Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

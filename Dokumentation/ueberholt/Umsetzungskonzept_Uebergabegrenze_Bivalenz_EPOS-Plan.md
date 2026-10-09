@@ -6,7 +6,7 @@ sowie UB‑Q1–Q11 (nach Empfehlung, UB‑Q3 b) vom 08.10.2026 eingearbeitet** 
 (`origin/ios_migration_september`) · Schemastand 201 (`Ak3KSchema`) · Referenzbasis
 `2026-10-07_R43_Kaelteseite_AK3K` · Fachkonzept
 [`Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) (Fassung 2) ·
-Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html`.
+Mockup [`Mockups/Waermepumpe_Bivalenz_Uebergabe.html`](../aktuell/Mockups/Waermepumpe_Bivalenz_Uebergabe.html).
 
 **Geltung und Abgrenzung.** Das Fachkonzept sagt, *was* gerechnet wird (Rechenweg UB‑a bis UB‑d, Datenmodell,
 Bedienung, Vorgabewerte, Prüfungen, Fragen UB‑Q1 bis UB‑Q11). Dieses Papier sagt, *wie, wo, in welcher Reihenfolge
@@ -171,13 +171,13 @@ UB‑Q1 bis UB‑Q11 (08.10.2026, nach Empfehlung, UB‑Q3 b).
 **4.1 Ein Schritt `UebergabegrenzeSchema`** in `EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`, Bauform
 wie `ErzeugerTeillastSchema` und `AnlagenfahrplanSchema`: Namen nur als Argument, eine Liste `SPALTEN`,
 `Vollstaendig()`, wiederholbar, kein DML. Nummer: **die nächste freie, zuletzt 202** (gebaut als Schritt 205) — vor dem Bau in der Zeile
-„Schemaschritt angemeldet" der [Statusdatei](Status_iOS_Migration.md) anmelden und allein diese Zeile sofort pushen;
-`SCHRITT = <Vorgängerklasse>.SCHRITT + 1` (heute `Ak3KSchema`), [ADR‑001](ADR-001_Schema-Ausrollung.md). Vier
+„Schemaschritt angemeldet" der [Statusdatei](../aktuell/Status_iOS_Migration.md) anmelden und allein diese Zeile sofort pushen;
+`SCHRITT = <Vorgängerklasse>.SCHRITT + 1` (heute `Ak3KSchema`), [ADR‑001](../aktuell/ADR-001_Schema-Ausrollung.md). Vier
 Leser wie im Bestand: `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`,
 `Werkzeuge/Testdatenbankschema`, Testvorrichtung in `EPOS.Kern.Tests`, `Paketanhebung` (Art `Ddl`); dazu
 `SchemaStand.Zielversion`.
 
-**4.2 Spalten** (alle nullbar; Tabellen bleiben `STRICT`; SQL-Regeln [BETRIEB_SQLITE.md](BETRIEB_SQLITE.md)
+**4.2 Spalten** (alle nullbar; Tabellen bleiben `STRICT`; SQL-Regeln [BETRIEB_SQLITE.md](../aktuell/BETRIEB_SQLITE.md)
 Abschnitt 6).
 
 | Tabelle | Spalte | Typ und CHECK | NULL heißt | FK |
@@ -328,7 +328,7 @@ Orchestrierung.
 
 ## 6 Oberfläche
 
-**6.1 Ort und Gruppen** (FK 6.1, Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html`). In
+**6.1 Ort und Gruppen** (FK 6.1, Mockup [`Mockups/Waermepumpe_Bivalenz_Uebergabe.html`](../aktuell/Mockups/Waermepumpe_Bivalenz_Uebergabe.html)). In
 `WaermepumpeKonfiguration.razor` ersetzt die `Formulargruppe` „Bivalenz und Übergabe" die Gruppe „Betrieb"; der
 Höchstvorlauf bleibt in „Betriebszeiten" und bekommt die Schnellwahl. Kopf und Schlussleiste des Dialogs bleiben
 unberührt — keine Fensterprobe nötig; keine Änderung an `Raster` oder `Katalogliste` — keine Rasterprobe nötig.
@@ -486,10 +486,10 @@ Umsetzung widersprachen). Dieselbe Liste steht im [Fachkonzept](Konzept_Uebergab
 
 | Etappe | Statuszeile | Protokoll | gebaut |
 |---|---|---|---|
-| UB‑E1 | #837 | [UB-E1](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E1_Uebergabegrenze.md) | Kernklassen unter `EPOS.Kern/Allgemein/Simulation/Bivalenz/` (`Bivalenzvorgaben`, `Uebergabegrenze`, `Bivalenzrechner`, `Bivalenzherleitung`), Herleitungszeile und Schnellwahl des Höchstvorlaufs; ohne Rechenwirkung |
-| UB‑E2 | #851 | [UB-E2](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E2_Betriebsbereiche.md) | Schemaschritt **205** `UebergabegrenzeSchema` (`EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`), Betriebsbereiche B0–B4 und Vorwärmbetrieb im Rechenweg, Gruppe „Bivalenz und Übergabe", Referenzprojekt 1060, Basis R45 |
-| UB‑E3 | #852 | [UB-E3](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E3_Geraetegrenzen.md) | Gerätegrenzen, Hydraulik- und Rücklaufgrenze, BHKW-Rücklaufgrenze, Stammblätter mit Kältemittel-Schnellwahl, Basis **R46** `2026-10-09_R46_Geraetegrenzen` |
-| UB‑E4 | #853 | [UB-E4](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E4_Bivalenzdiagramm_Bericht.md) | Bivalenzdiagramm im Diagramm-Renderer, Kachelzeile im Wärmepumpen-Reiter, Kennzahlen `wp.bivalenz.*`, Bild und Tafel im Bericht, CSV- und KI-Felder, Vorlagen auf Katalogfassung 17; ohne Rechenwirkung (Basis R46 bleibt) |
+| UB‑E1 | #837 | [UB-E1](Protokolle/Gebaeudesimulation/2026-10-09_UB-E1_Uebergabegrenze.md) | Kernklassen unter `EPOS.Kern/Allgemein/Simulation/Bivalenz/` (`Bivalenzvorgaben`, `Uebergabegrenze`, `Bivalenzrechner`, `Bivalenzherleitung`), Herleitungszeile und Schnellwahl des Höchstvorlaufs; ohne Rechenwirkung |
+| UB‑E2 | #851 | [UB-E2](Protokolle/Gebaeudesimulation/2026-10-09_UB-E2_Betriebsbereiche.md) | Schemaschritt **205** `UebergabegrenzeSchema` (`EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`), Betriebsbereiche B0–B4 und Vorwärmbetrieb im Rechenweg, Gruppe „Bivalenz und Übergabe", Referenzprojekt 1060, Basis R45 |
+| UB‑E3 | #852 | [UB-E3](Protokolle/Gebaeudesimulation/2026-10-09_UB-E3_Geraetegrenzen.md) | Gerätegrenzen, Hydraulik- und Rücklaufgrenze, BHKW-Rücklaufgrenze, Stammblätter mit Kältemittel-Schnellwahl, Basis **R46** `2026-10-09_R46_Geraetegrenzen` |
+| UB‑E4 | #853 | [UB-E4](Protokolle/Gebaeudesimulation/2026-10-09_UB-E4_Bivalenzdiagramm_Bericht.md) | Bivalenzdiagramm im Diagramm-Renderer, Kachelzeile im Wärmepumpen-Reiter, Kennzahlen `wp.bivalenz.*`, Bild und Tafel im Bericht, CSV- und KI-Felder, Vorlagen auf Katalogfassung 17; ohne Rechenwirkung (Basis R46 bleibt) |
 | UB‑E5 | — | — | Dokumentation: Wiki, Logbuch, dieser Abschnitt, Ablage der Konzepte unter `ueberholt/` |
 
 Referenzprojekt **1060** (Kopie von 1056, Einbindung DIREKT, Vorwärmbetrieb mit Kessel in Reihe) steht in der
