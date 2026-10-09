@@ -49054,5 +49054,20 @@ Chart</value>
   <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
     <value>Die Übergabegrenze ist nicht herleitbar: {0}</value>
   </data>
+  <data name="WPA_CHK_SPERRZEITEN" xml:space="preserve">
+    <value>Sperrzeiten vorhanden</value>
+  </data>
+  <data name="WPA_FRAGE_SPERR_ENTFERNEN" xml:space="preserve">
+    <value>Alle {0} Sperrfenster entfernen?</value>
+  </data>
+  <data name="WPA_BTN_SPERR_RUECKFRAGE_JA" xml:space="preserve">
+    <value>Ja, entfernen</value>
+  </data>
+  <data name="WPA_BTN_SPERR_RUECKFRAGE_NEIN" xml:space="preserve">
+    <value>Nein, behalten</value>
+  </data>
+  <data name="WPA_LBL_SPERR_TAGE" xml:space="preserve">
+    <value>Wochentage</value>
+  </data>
 </root>
 

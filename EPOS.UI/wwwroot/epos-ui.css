@@ -15945,3 +15945,85 @@ td.epos-vorlage-katalogbeschreibung {
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+/* ==================================================================== */
+/* SPERRZEITEN DER WAERMEPUMPE - kompakt (Anwenderwunsch 08.10.2026)     */
+/* Ein Kaestchen ueber dem Block, die Vorlagen und "Fenster hinzufuegen" */
+/* in EINER Leiste, je Fenster EINE Zeile: Beginn, Dauer, die Wochentage */
+/* waagerecht als Chipreihe, Heizstab, Entfernen. Die Zeile bricht im    */
+/* schmalen Fenster um, statt quer zu rollen. Die Chips halten 44 px auf */
+/* Beruehrung; mit der Maus (pointer: fine) liegen sie enger.            */
+/* ==================================================================== */
+.epos-sperrfenster {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-sperrfenster-leiste,
+.epos-sperrfenster-zeile,
+.epos-sperrfenster-tage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    min-width: 0;
+}
+
+.epos-sperrfenster-zeile {
+    padding: 4px 0;
+    border-top: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-sperrfenster-tage {
+    gap: 4px;
+}
+
+.epos-formularraster .epos-sperrfenster-zeile .epos-schalter,
+.epos-formularraster .epos-sperrfenster-tage .epos-schalter {
+    padding-left: 0;
+}
+
+/* Beginn und Dauer: Beschriftung, Feld und Einheit dicht beieinander,
+   nicht in der Beschriftungsspalte des Rasters. */
+.epos-formularraster .epos-sperrfenster-zeile .epos-feld {
+    grid-template-columns: auto auto;
+}
+
+.epos-sperrfenster-tage .epos-schalter {
+    gap: 4px;
+    padding: 0 10px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 999px;
+}
+
+.epos-sperrfenster-tage .epos-schalter:has(.epos-schalter-kasten:checked) {
+    border-color: var(--epos-text);
+    font-weight: 700;
+}
+
+.epos-sperrfenster-rueckfrage {
+    padding: 6px 10px;
+    border: 1px solid var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+    color: var(--epos-warn-text);
+}
+
+.epos-sperrfenster-rueckfrage .epos-rueckfrage-text {
+    margin: 0 0 6px 0;
+}
+
+@media (pointer: fine) {
+    .epos-sperrfenster-tage .epos-schalter {
+        min-height: 30px;
+        padding: 0 8px;
+    }
+}
+
+@media (forced-colors: active) {
+    .epos-sperrfenster-tage .epos-schalter,
+    .epos-sperrfenster-rueckfrage {
+        border-color: CanvasText;
+    }
+}

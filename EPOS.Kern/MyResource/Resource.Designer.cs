@@ -125681,6 +125681,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja, entfernen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_RUECKFRAGE_JA {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_RUECKFRAGE_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein, behalten ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_RUECKFRAGE_NEIN {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_RUECKFRAGE_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wochenraster bearbeiten ähnelt.
         /// </summary>
         public static string WPA_BTN_ZEITPROGRAMM {
@@ -125717,6 +125735,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeiten vorhanden ähnelt.
+        /// </summary>
+        public static string WPA_CHK_SPERRZEITEN {
+            get {
+                return ResourceManager.GetString("WPA_CHK_SPERRZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
         /// </summary>
         public static string WPA_EINHEIT_STUNDEN {
@@ -125749,6 +125776,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_ERL_TEILPARALLEL {
             get {
                 return ResourceManager.GetString("WPA_ERL_TEILPARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle {0} Sperrfenster entfernen? ähnelt.
+        /// </summary>
+        public static string WPA_FRAGE_SPERR_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("WPA_FRAGE_SPERR_ENTFERNEN", resourceCulture);
             }
         }
         
@@ -126145,6 +126181,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_SPERR_HEIZSTAB {
             get {
                 return ResourceManager.GetString("WPA_LBL_SPERR_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentage ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_TAGE {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_TAGE", resourceCulture);
             }
         }
         

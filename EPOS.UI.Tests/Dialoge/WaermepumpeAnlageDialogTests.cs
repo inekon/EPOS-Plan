@@ -719,7 +719,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.DoesNotContain("Betriebsart",
                               cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
 
-        Konfiguration(cut).QuerySelectorAll(".epos-schalter input[type=checkbox]")[2]
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelBivalent)
                           .Change(true);                                  // Bivalenter Betrieb
 
         Assert.Contains("Betriebsart", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
@@ -1039,7 +1039,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         // ...die Konfiguration in ihrer Ueberlagerung, und auch sie schreibt in DENSELBEN Satz.
         KonfigurationOeffnen(cut);
-        Konfiguration(cut).QuerySelectorAll("input[type=text]")[0].Input("3");
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelVon).Input("3");
 
         Assert.Equal(3, daten.SperrzeitVon);
     }
@@ -1081,7 +1081,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         KonfigurationOeffnen(cut);
         Assert.True(cut.Instance.KonfigurationOffen);
 
-        Konfiguration(cut).QuerySelectorAll("input[type=text]")[0].Input("7");
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelVon).Input("7");
         Assert.Equal(7, daten.SperrzeitVon);
 
         cut.Find(".epos-ueberlagerung-zu").Click();
@@ -1154,7 +1154,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var cut = Aufbauen(daten);
 
         KonfigurationOeffnen(cut);
-        Konfiguration(cut).QuerySelectorAll("input[type=text]")[1].Input("9");   // Sperrzeit bis
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelBis).Input("9");   // Sperrzeit bis
         Assert.Equal(9, daten.SperrzeitBis);
 
         Ueberlagerungsknopf(cut, "Abbrechen").Click();
@@ -1163,7 +1163,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Equal(0, daten.SperrzeitBis);                                     // verworfen
 
         KonfigurationOeffnen(cut);
-        Konfiguration(cut).QuerySelectorAll("input[type=text]")[1].Input("9");
+        NachBeschriftung(Konfiguration(cut), new WaermepumpeKonfigurationTexte().LabelBis).Input("9");
         Ueberlagerungsknopf(cut, "OK").Click();
 
         Assert.False(cut.Instance.KonfigurationOffen);
@@ -2349,4 +2349,13 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Equal(wurzel, ((Microsoft.AspNetCore.Components.ElementReference)fokus.Arguments[0]!).Id);
         Assert.Equal(true, fokus.Arguments[1]);
     }
+
+    /// <summary>
+    /// Das Eingabe-Element unter einer Beschriftung (Schalter oder Feld) — die Sperrzeiten stehen am Ende
+    /// des Bausteins (Anwenderwunsch 08.10.2026), darum nicht über die Stellung in der Liste.
+    /// </summary>
+    private static AngleSharp.Dom.IElement NachBeschriftung(AngleSharp.Dom.IElement wurzel, string text)
+        => wurzel.QuerySelectorAll("label")
+                 .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text)
+                 .QuerySelector("input")!;
 }
