@@ -782,6 +782,37 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Dokumentation/ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
 > und im [Fachkonzept](../Dokumentation/ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 
+> **Entwurf der nächsten Basis `2026-10-09_R48_KaeltemaschineTeillast` (wird nach dem Merge mit origin eingefroren; Zahlen
+> von 1063 aus dem Lauf gegen R46).** Anlass: das Referenzprojekt **1063 „Referenzprojekt Kältemaschine Teillast“**
+> (Teillast und Takten der Kältemaschine, Welle KM3‑E2) — eine Kopie von 1055, an deren Kältemaschine die Teillastkurve
+> 0,10/0,60/0,30 (gültig ab Lastgrad 0,2), Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9
+> (`Taktverlustfaktor_Cd` leer), Verdichterregelung `STUFEN` und der Randweg `GUETEGRAD` wirken; gesät von
+> `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`, gehalten von
+> `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`. Testdatenbank auf Schemastand **209** (der Schritt
+> der Teillastspalten wird beim Merge an 208 gehängt), 94 810 112 Byte, LFS-SHA-256
+> `5a83ea944394d92f86a95d1cd8615695ddf181e95bf68ba889543b7612032f28`. Die siebenundzwanzig Projekte der Basis R46 rechnen
+> gegen R46 `GESAMT: PASS` und byte-gleich (879/879 CSV) — 1063 ändert nichts am Bestand. 1063 tritt in die CI-Auswahl
+> (kein anderes CI-Projekt rechnet eine Kältemaschine). Mit 1063: **achtundzwanzig Projekte, 911 CSV, 6 336 Skalare**
+> (1063: 32 CSV, 265 Skalare).
+>
+> | Kennzahl | 1055 | 1063 |
+> |---|---|---|
+> | Kälte der Maschine (MWh) | 4,1526 | 4,1526 |
+> | Kältestrom samt Hilfsstrom (MWh) | 1,24647 | 1,24511 |
+> | Hilfsstrom (MWh) | 0,17961 | 0,17955 |
+> | Jahres-EER (Bedarf / Strom) | 3,2496 | 3,2531 |
+> | Taktstunden (unter der Mindestteillast 30 %) | — | 218 |
+> | Starts | — | 717 |
+> | Taktstrom (Mehrstrom, kWh) | — | 17,27 |
+> | Teillaststunden (Lastgrad < 0,95) | — | 202 |
+> | mittlerer Lastgrad (kältegewichtet) | — | 0,702 |
+> | Stunden mit Gütegrad-Extrapolation | — | 1 |
+> | Kältespeicher Ladung / Entladung (MWh) | 2,478 / 2,376 | 2,478 / 2,376 |
+>
+> Der Strom von 1063 liegt um 1,35 kWh (0,11 %) unter 1055: Die Kurve hebt den EER im Teillastbereich (g(0,5) = 1,05,
+> mittlerer Lastgrad 0,70) und spart mehr, als der Taktverlust (17,3 kWh) kostet. Die Rückkühlung des Trockenkühlers
+> liegt nur in einer Kühlstunde unter dem Kennfeld (25 °C), daher eine extrapolierte Stunde.
+
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
 > Tabelle `Tab_Sperrfenster` (STRICT, leer). `ProzessNutzungSchema` (178): Tabellen `Tab_Nutzungsprofil_STAMM` und
