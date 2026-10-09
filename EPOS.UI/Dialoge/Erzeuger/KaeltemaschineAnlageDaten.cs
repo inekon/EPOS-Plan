@@ -62,6 +62,17 @@ public sealed class KaeltemaschineGeraetwerte
     public double? Mindestteillast { get; init; }
     public double? KaltwasserMin { get; init; }
 
+    // KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Lesewerte der Teillastrechnung, fertige Texte.
+    /// <summary>Teillastrechnung samt Herkunft der Kurve (wie bisher · linear · Kurve · Vorgabekurve · verworfen).</summary>
+    public string TeillastWeg { get; init; } = "";
+    /// <summary>Verdichterregelung; „keine Angabe“ ohne Pflege.</summary>
+    public string Verdichterregelung { get; init; } = "";
+    /// <summary>Taktverlustfaktor C_d; ohne Pflege „0,9 (Vorgabe)“.</summary>
+    public string Taktverlustfaktor { get; init; } = "";
+    /// <summary>Weg am Kennfeldrand; ohne Pflege „Randwert (Vorgabe)“.</summary>
+    public string Kennfeldrand { get; init; } = "";
+    /// <summary>Rechnet die Maschine Teillast und Takten (Weg gesetzt)?</summary>
+    public bool TeillastGesetzt { get; init; }
     /// <summary>Die Kaltwassertemperaturen der Kennlinie, aufsteigend und ohne Doppel.</summary>
     public IReadOnlyList<double> Kaltwasserstuetzstellen { get; init; } = Array.Empty<double>();
 }

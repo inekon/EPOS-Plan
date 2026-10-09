@@ -802,6 +802,8 @@
         internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
         internal static string SimWpBereicheName => MyResource.Resource.KI_DLG_SIM_WP_BEREICHE_NAME;
         internal static string SimWpBereicheErl => MyResource.Resource.KI_DLG_SIM_WP_BEREICHE_ERL;
+        internal static string SimKmTeillastName => MyResource.Resource.KI_DLG_SIM_KM_TEILLAST_NAME;
+        internal static string SimKmTeillastErl => MyResource.Resource.KI_DLG_SIM_KM_TEILLAST_ERL;
         internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
         internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
 
@@ -1458,6 +1460,15 @@
         internal static string KmaTraegerErl => MyResource.Resource.KI_DLG_KMA_TRAEGER_ERL;
         internal static string KmaZaehlerName => MyResource.Resource.KI_DLG_KMA_ZAEHLER_NAME;
         internal static string KmaZaehlerErl => MyResource.Resource.KI_DLG_KMA_ZAEHLER_ERL;
+        // KM3-E3-b: die Lesewerte der Teillastrechnung im Anlagendialog.
+        internal static string KmaTeillastWegName => MyResource.Resource.KI_DLG_KMA_TEILLAST_WEG_NAME;
+        internal static string KmaTeillastWegErl => MyResource.Resource.KI_DLG_KMA_TEILLAST_WEG_ERL;
+        internal static string KmaRegelungName => MyResource.Resource.KI_DLG_KMA_REGELUNG_NAME;
+        internal static string KmaRegelungErl => MyResource.Resource.KI_DLG_KMA_REGELUNG_ERL;
+        internal static string KmaCdName => MyResource.Resource.KI_DLG_KMA_CD_NAME;
+        internal static string KmaCdErl => MyResource.Resource.KI_DLG_KMA_CD_ERL;
+        internal static string KmaRandwegName => MyResource.Resource.KI_DLG_KMA_RANDWEG_NAME;
+        internal static string KmaRandwegErl => MyResource.Resource.KI_DLG_KMA_RANDWEG_ERL;
         internal static string KmGeraetErl => MyResource.Resource.KI_DLG_KM_GERAET_ERL;
         internal static string KmBezeichnerName => MyResource.Resource.KM_LBL_BEZEICHNER;
         internal static string KmBezeichnerErl => MyResource.Resource.KI_DLG_KM_BEZEICHNER_ERL;

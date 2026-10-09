@@ -376,6 +376,12 @@ public sealed class KaelteDaten
     /// <summary>Die Kälteerzeugertabelle (#32) — die Wärmeerzeugertabelle bleibt bei drei Kanälen.</summary>
     public IReadOnlyList<KaelteerzeugerAnzeige> Erzeuger = Array.Empty<KaelteerzeugerAnzeige>();
 
+    /// <summary>
+    /// KM3‑E3‑b (Fachkonzept Teillast und Takten 7.2): je Kältemaschine MIT Teillastweg die Kachelzeile des
+    /// Kältereiters; leer ohne solche Maschine — dann keine Kachelzeile.
+    /// </summary>
+    public IReadOnlyList<KaeltemaschineTeillastKachel> Teillast = Array.Empty<KaeltemaschineTeillastKachel>();
+
     /// <summary>Die HTML-Legende des Kälterings — dieselbe Segmentliste wie das Bild.</summary>
     public IReadOnlyList<Ringanteil> Legende = Array.Empty<Ringanteil>();
 
@@ -395,6 +401,14 @@ public sealed class KaelteDaten
     /// <summary>BV-E6: der Hinweis der Marken der Stufe „ähnlich“; sonst leer.</summary>
     public string KennzahlHinweis = "";
 }
+
+/// <summary>
+/// KM3‑E3‑b: die Kachelzeile „Teillast und Takten“ einer Kältemaschine mit Teillastweg — Taktstrom [kWh/a], Starts,
+/// Teillastanteil [%] (Teillaststunden / Verdichterstunden), kältegewichteter mittlerer Lastgrad und Jahres-EER ohne
+/// Hilfsstrom; ein nicht erhobener Wert ist <c>null</c>.
+/// </summary>
+public sealed record KaeltemaschineTeillastKachel(string Anlage, double TaktstromKwh, int? Starts, double? TeillastanteilProzent,
+                                                 double? Lastgrad, double? EerOhneHilfsstrom);
 
 /// <summary>
 /// Eine Zeile der Kälteerzeugertabelle der Übersicht (Stufe KU2 Welle 3; Kühlkonzept 8.4) —

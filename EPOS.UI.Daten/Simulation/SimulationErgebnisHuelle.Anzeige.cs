@@ -109,6 +109,11 @@ namespace WindowsFormsApplication1
                     zeilen.Add(new KaelteerzeugerAnzeige(z.Bezeichner, z.Vorlauf, z.KaelteMwh, z.StromMwh, z.Eer,
                                                          z.NetzbezugMwh, KuehltraegerText(z)));
                 d.Erzeuger = zeilen;
+                // KM3-E3-b: die Kachelzeile je Kaeltemaschine mit Teillastweg - die Formeln des Kerns.
+                d.Teillast = k.Erzeuger.Where(z => z.Teillast != null).Select(z => new KaeltemaschineTeillastKachel(
+                    z.Bezeichner, (z.Teillast.Taktstrom_MWh ?? 0.0) * 1000.0, z.Teillast.Starts,
+                    KaeltemaschineTeillastKennzahlen.TeillastanteilProzent(z.Teillast.Teillaststunden, z.Verdichterstunden),
+                    z.Teillast.Lastgrad_Mittel, KaeltemaschineTeillastKennzahlen.JazVerdichter(z.Teillast))).ToList();
                 d.Legende = Legende(SegmenteKaelte(k));
             }
             return d;

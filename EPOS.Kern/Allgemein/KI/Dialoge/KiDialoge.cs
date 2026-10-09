@@ -5227,7 +5227,16 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kuehltraeger", SICHT + "Kuehltraeger", KiDialogTexte.KmaTraegerName,
                                      KiParameterTyp.Wahl, KiDialogTexte.KmaTraegerErl, leerErlaubt: true),
                     new KiDialogFeld("eigener_zaehler", SICHT + "EigenerZaehler", KiDialogTexte.KmaZaehlerName,
-                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.KmaZaehlerErl)
+                                     KiParameterTyp.Wahrheitswert, KiDialogTexte.KmaZaehlerErl),
+                    // KM3-E3-b (Fachkonzept Teillast und Takten 7.3): die Lesewerte der Projektkopie, Spaltennamen als Schluessel.
+                    new KiDialogFeld("teillast_weg", SICHT + "TeillastWeg", KiDialogTexte.KmaTeillastWegName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmaTeillastWegErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("verdichterregelung", SICHT + "Verdichterregelung", KiDialogTexte.KmaRegelungName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmaRegelungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("taktverlustfaktor_cd", SICHT + "TaktverlustfaktorCd", KiDialogTexte.KmaCdName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmaCdErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("kennfeld_randweg", SICHT + "KennfeldRandweg", KiDialogTexte.KmaRandwegName,
+                                     KiParameterTyp.Text, KiDialogTexte.KmaRandwegErl, leerErlaubt: true, nurLesen: true)
                 },
                 knoepfe: new[]
                 {
@@ -9057,6 +9066,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("wp_betriebsbereiche", "SimulationKiSicht.WpBetriebsbereiche",
                                      KiDialogTexte.SimWpBereicheName, KiParameterTyp.Text,
                                      KiDialogTexte.SimWpBereicheErl, leerErlaubt: true),
+                    // KM3-E3-b (FK Teillast und Takten 5.4): Teillast und Takten der Kaeltemaschinen, Spaltennamen als Schluessel.
+                    new KiDialogFeld("km_teillast", "SimulationKiSicht.KmTeillast",
+                                     KiDialogTexte.SimKmTeillastName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKmTeillastErl, leerErlaubt: true, nurLesen: true),
                     new KiDialogFeld("laufhinweise", "SimulationKiSicht.Laufhinweise",
                                      KiDialogTexte.SimHinweiseName, KiParameterTyp.Text,
                                      KiDialogTexte.SimHinweiseErl, leerErlaubt: true),

@@ -916,7 +916,7 @@
 
     // Der Kaeltegang steht nur, wenn das Projekt Kaelte rechnet: Bedarf.Kaelte ist
     // null, solange der Projektschalter Kuehlbetrieb aus ist (nicht erhoben).
-    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen"
+    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen" Teillast="@_daten.Bedarf?.Kaelte?.Teillast"
         FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />;
 
     /// <summary>Ein Rueckruf aus einem Delegaten; ohne Delegat bleibt der Knopf weg.</summary>
