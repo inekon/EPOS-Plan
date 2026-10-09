@@ -378,8 +378,8 @@ namespace EPOS.Kern.Tests
         // -----------------------------------------------------------------------------
 
         private const double ANKER_1045_ERZEUGUNG = 3.545;      // R32: 3,545 (Erzeugung unverändert)
-        private const double ANKER_1045_EINSPEISUNG = 0.794;     // R33: 0,783 (Erdreich nach ISO 13370)
-        private const double ANKER_1045_RESTBEZUG = 28.409;      // R33: 28,747
+        private const double ANKER_1045_EINSPEISUNG = 0.791;     // Basis R47 (ZF, #866): pv_ueberschuss 0,79074; R33: 0,794 — die Welle GJ (E114, Basis R48) verschiebt den Wert erneut, der Anker wird dort nachgezogen
+        private const double ANKER_1045_RESTBEZUG = 28.405;      // Basis R47 (ZF, #866): Sim.Reststrom 28,40539; R33: 28,409
         private const double ANKER_1046_ERZEUGUNG = 6.014;      // R32: 6,014 (Erzeugung unverändert)
         private const double ANKER_1046_EINSPEISUNG = 0.903;     // R33: 0,900
         private const double ANKER_1046_RESTBEZUG = 63.103;      // R33: 63,901
