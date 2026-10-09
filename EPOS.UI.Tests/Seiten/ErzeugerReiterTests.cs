@@ -1456,6 +1456,36 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains("7,00", text);
     }
 
+    /// <summary>
+    /// PVG: Rechnet die Photovoltaik über eine PV-Ganglinie, nennt der Reiter die Quelle (Name, Raster,
+    /// Nennleistung) und zeigt Einstrahlung, Fläche und Modulanzahl als „entfällt (Ganglinie)"; im
+    /// Modulmodell bleibt alles, wie es war.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_kennzeichnet_die_Ganglinie_als_Quelle()
+    {
+        var ohne = PvZeichnen();
+        Assert.DoesNotContain(Resource.PVG_AUSWEIS_ENTFAELLT, ohne.Markup);
+        Assert.DoesNotContain(Resource.PVG_AUSWEIS_MERKMAL_QUELLE + "<", ohne.Markup);
+
+        var daten = new SimulationErgebnisCtrl.PhotovoltaikErgebnis
+        {
+            StromproduktionMwh = 9.5,
+            MaxEinstrahlungWm2 = 0,
+            Ganglinie = new PvGanglinieAusweis
+            {
+                Bezeichner = "PV Dach Ost", Viertelstunden = true, NennleistungKwp = 9.8, NennleistungGepflegt = true
+            }
+        };
+        daten.Module.Add(new SimulationErgebnisCtrl.PvModulZeile("PV Dach Ost", 0, 0, 9.5));
+        var mit = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell));
+
+        Assert.Contains("Ganglinie ‚PV Dach Ost‘ (Viertelstundenwerte), Nennleistung 9,80 kWp", mit.Markup);
+        Assert.DoesNotContain("W/m²", mit.Markup);
+        var zellen = mit.FindAll("tbody tr").Last().QuerySelectorAll("td").Select(z => z.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "1", "PV Dach Ost", Resource.PVG_AUSWEIS_ENTFAELLT, Resource.PVG_AUSWEIS_ENTFAELLT, "9,50" }, zellen);
+    }
+
     // ---- W11b‑B‑19: EINE Reihenzeile mit ALLEN vier Reihen -----------------
 
     /// <summary>

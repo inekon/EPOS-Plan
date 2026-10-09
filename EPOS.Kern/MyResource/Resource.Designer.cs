@@ -59219,6 +59219,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Ganglinien im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PVG {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PVG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik-Vergütung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PVV {
@@ -60781,6 +60790,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PVA_NENNLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PVA_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Raster der markierten Ganglinie: Stundenwerte (8 760) oder Viertelstundenwerte (35 040). Viertelstundenwerte gehen unmittelbar in die Bilanz, Stundenwerte werden nach dem Sonnenstand auf die Viertel verteilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_AUFLOESUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_AUFLOESUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie der Import steht: geöffnet (samt Meldung), das Ergebnis des letzten Imports mit Protokoll oder „kein Import“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_IMPORT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_IMPORT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Import in dieser Sitzung ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_IMPORT_KEIN {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_IMPORT_KEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zustand des Imports ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_IMPORT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_IMPORT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import geöffnet ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_IMPORT_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_IMPORT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die markierte Ganglinie in der Projektliste? Eine vollständige zugeordnete Ganglinie ersetzt die Modulrechnung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_IMPROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_IMPROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt zugeordnet ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_IMPROJEKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_IMPROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresarbeit der markierten Ganglinie in MWh — die Summe der AC-Leistung über das Jahr. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_JAHRESSUMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_JAHRESSUMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist die Maske ohne Projekt geöffnet (Menüpunkt „PV-Ganglinie“)? Dann gibt es nur die Katalogseite und keine Projektliste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_KATALOGBETRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_KATALOGBETRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogbetrieb ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_KATALOGBETRIEB_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_KATALOGBETRIEB_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die im Katalog markierte PV-Ganglinie; sie ist die, die „In das Projekt übernehmen“ aufnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_KATALOG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_KATALOG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gepflegte Nennleistung der markierten Ganglinie in kWp; ohne sie nimmt der Lauf die Spitze der Reihe als installierte Leistung (Wirtschaftlichkeit, Einspeisegrenze). ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_NENNLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die in der Projektliste markierte PV-Ganglinie; leer, wenn der Katalog markiert ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_PROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_PROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung der markierten Ganglinie — der Kopftext der eingelesenen Datei, also die Herkunft der Messreihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVG_QUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVG_QUELLE_NAME", resourceCulture);
             }
         }
         
@@ -92363,11 +92507,101 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfällt (Ganglinie) ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_MERKMAL_QUELLE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_MERKMAL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulmodell ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_MODULMODELL {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_MODULMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_QUELLE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp (Spitze der Reihe) ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_QUELLE_SPITZE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_QUELLE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_STUNDE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstundenwerte ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_VIERTEL {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ist dem Projekt eine PV-Ganglinie zugeordnet, ersetzt sie die Modulrechnung: Die Werte sind die AC-Leistung der Anlage in kW, je Stunde oder je Viertelstunde. ähnelt.
         /// </summary>
         public static string PVG_HINWEIS_WEICHE {
             get {
                 return ResourceManager.GetString("PVG_HINWEIS_WEICHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spitze der Reihe ({0:N1} kW) liegt über der Nennleistung × 1,1 ({1:N2} kWp). Bitte Nennleistung und Einheit der Datei (kW, nicht W) prüfen. ähnelt.
+        /// </summary>
+        public static string PVG_IMP_HINWEIS_SPITZE {
+            get {
+                return ResourceManager.GetString("PVG_IMP_HINWEIS_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung ist aus dem Dateikopf vorbelegt. ähnelt.
+        /// </summary>
+        public static string PVG_IMP_NENN_AUS_KOPF {
+            get {
+                return ResourceManager.GetString("PVG_IMP_NENN_AUS_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung ist mit der Spitze der Reihe ({0:N2} kW) vorbelegt; bitte die Nennleistung der Anlage eintragen. ähnelt.
+        /// </summary>
+        public static string PVG_IMP_NENN_AUS_SPITZE {
+            get {
+                return ResourceManager.GetString("PVG_IMP_NENN_AUS_SPITZE", resourceCulture);
             }
         }
         
@@ -92381,11 +92615,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeit: ähnelt.
+        /// </summary>
+        public static string PVG_LBL_JAHRESARBEIT {
+            get {
+                return ResourceManager.GetString("PVG_LBL_JAHRESARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PV-Ganglinie aus DB ähnelt.
         /// </summary>
         public static string PVG_LBL_KATALOGLISTE {
             get {
                 return ResourceManager.GetString("PVG_LBL_KATALOGLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung: ähnelt.
+        /// </summary>
+        public static string PVG_LBL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVG_LBL_NENNLEISTUNG", resourceCulture);
             }
         }
         
@@ -92435,6 +92687,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gepflegt – der Lauf nimmt die Spitze der Reihe ähnelt.
+        /// </summary>
+        public static string PVG_NENN_NICHT_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("PVG_NENN_NICHT_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte (8 760) ähnelt.
         /// </summary>
         public static string PVG_RASTER_STUNDE {
@@ -92449,6 +92710,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVG_RASTER_VIERTEL {
             get {
                 return ResourceManager.GetString("PVG_RASTER_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string PVG_SP_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("PVG_SP_NENNLEISTUNG", resourceCulture);
             }
         }
         

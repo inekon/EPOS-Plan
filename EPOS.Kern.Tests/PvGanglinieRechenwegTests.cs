@@ -230,6 +230,13 @@ namespace EPOS.Kern.Tests
             pv.Berechnung(PROJEKT);
             Assert.Equal(s.Werte, pv.Stromproduktion_Theoretisch_viertelstunde);
             Assert.Equal(s.SummeKwh, pv.StromproduktionTheoretischGesamtKwh, 6);
+
+            // Der Ausweis fuer Ergebnisreiter und Bericht haengt an der Modulzeile der Ganglinie.
+            PvGanglinieAusweis ausweis = pv.Modul_Ergebnisse.Single().Ganglinie;
+            Assert.NotNull(ausweis);
+            Assert.Equal("PV Viertel", ausweis.Bezeichner);
+            Assert.True(ausweis.Viertelstunden);
+            Assert.Equal(9.0, ausweis.NennleistungKwp, 12);
         }
 
         [Fact]

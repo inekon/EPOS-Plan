@@ -460,6 +460,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SpSpitzeKw = "SPITZE";
 
+        /// <summary>
+        /// Die gepflegte NENNLEISTUNG einer PV-Ganglinie in kWp (<c>Tab_PvGanglinie_STAMM.Nennleistung_kWp</c>);
+        /// leer, wenn sie nicht gepflegt ist — dann rechnet der Lauf mit der Spitze der Reihe.
+        /// </summary>
+        public const string SpNennleistungKwp = "NENNLEISTUNG_KWP";
+
         // ------------------------------------------------------------------
         // Klimaregionen (Auftrag KL-4) - der neunte Katalog
         //
@@ -958,6 +964,10 @@ namespace WindowsFormsApplication1
                                           Katalogspaltenart.Zahl));
             spalten.Add(new Katalogspalte(SpSpitzeKw, t("KFLT_SP_SPITZE"), "kW",
                                           Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
+
+            if (art == Zeitreihenart.PvGanglinie)
+                spalten.Add(new Katalogspalte(SpNennleistungKwp, t("PVG_SP_NENNLEISTUNG"), "kWp",
+                                              Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
             return new Katalogfilterprofil { Schluessel = "ZEITREIHE_" + art, Spalten = spalten };
         }

@@ -49992,5 +49992,95 @@ chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV generation profile</value>
   </data>
+  <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
+    <value>The peak of the series ({0:N1} kW) exceeds the rated power × 1.1 ({1:N2} kWp). Please check the rated power and the unit of the file (kW, not W).</value>
+  </data>
+  <data name="PVG_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated power:</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_KOPF" xml:space="preserve">
+    <value>The rated power is prefilled from the file header.</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_SPITZE" xml:space="preserve">
+    <value>The rated power is prefilled with the peak of the series ({0:N2} kW); please enter the rated power of the system.</value>
+  </data>
+  <data name="PVG_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated power</value>
+  </data>
+  <data name="PVG_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Annual yield:</value>
+  </data>
+  <data name="PVG_NENN_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>not maintained – the run uses the peak of the series</value>
+  </data>
+  <data name="KI_DLG_MASKE_PVG" xml:space="preserve">
+    <value>PV generation profiles in the project</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOG_ERL" xml:space="preserve">
+    <value>The PV generation profile selected in the catalogue; it is the one that “Add to project” takes over.</value>
+  </data>
+  <data name="KI_DLG_PVG_PROJEKT_ERL" xml:space="preserve">
+    <value>The PV generation profile selected in the project list; empty when the catalogue is selected.</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_NAME" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_ERL" xml:space="preserve">
+    <value>The description of the selected profile — the header text of the imported file, i.e. the origin of the measured series.</value>
+  </data>
+  <data name="KI_DLG_PVG_AUFLOESUNG_ERL" xml:space="preserve">
+    <value>The interval of the selected profile: hourly values (8,760) or quarter-hourly values (35,040). Quarter-hourly values enter the balance directly, hourly values are distributed to the quarters by the position of the sun.</value>
+  </data>
+  <data name="KI_DLG_PVG_JAHRESSUMME_ERL" xml:space="preserve">
+    <value>The annual yield of the selected profile in MWh — the sum of the AC output over the year.</value>
+  </data>
+  <data name="KI_DLG_PVG_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>The maintained rated power of the selected profile in kWp; without it the run uses the peak of the series as installed capacity (economics, feed-in limit).</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_NAME" xml:space="preserve">
+    <value>Assigned to the project</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_ERL" xml:space="preserve">
+    <value>Is the selected profile in the project list? A complete assigned profile replaces the module calculation.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_NAME" xml:space="preserve">
+    <value>Import state</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_ERL" xml:space="preserve">
+    <value>How the import stands: open (with its message), the result of the last import with its log, or “no import”.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_OFFEN" xml:space="preserve">
+    <value>Import open</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_KEIN" xml:space="preserve">
+    <value>no import in this session</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_NAME" xml:space="preserve">
+    <value>Catalogue mode</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_ERL" xml:space="preserve">
+    <value>Is the form open without a project (menu item “PV generation profile”)? Then there is only the catalogue page and no project list.</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE" xml:space="preserve">
+    <value>Generation profile ‘{0}’ ({1}), rated power {2:N2} kWp</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE_SPITZE" xml:space="preserve">
+    <value>Generation profile ‘{0}’ ({1}), rated power {2:N2} kWp (peak of the series)</value>
+  </data>
+  <data name="PVG_AUSWEIS_VIERTEL" xml:space="preserve">
+    <value>quarter-hourly values</value>
+  </data>
+  <data name="PVG_AUSWEIS_STUNDE" xml:space="preserve">
+    <value>hourly values</value>
+  </data>
+  <data name="PVG_AUSWEIS_ENTFAELLT" xml:space="preserve">
+    <value>not applicable (generation profile)</value>
+  </data>
+  <data name="PVG_AUSWEIS_MERKMAL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
+    <value>Module model</value>
+  </data>
 </root>
 
