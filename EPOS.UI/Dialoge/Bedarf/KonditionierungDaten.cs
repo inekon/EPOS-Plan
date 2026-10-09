@@ -343,6 +343,12 @@ public sealed class KonditionierungPeriode
     /// </summary>
     public bool Eigenband { get; set; }
 
+    /// <summary>
+    /// Der Verweis auf eine benannte Woche (<c>Tab_Konditionierungswoche</c>, Stufe 2 der Kalenderbedienung); die Werte
+    /// stehen trotzdem in <see cref="Woche"/>. <c>null</c> = eingebettete oder keine Woche.
+    /// </summary>
+    public long? IdWoche { get; set; }
+
     /// <summary>Eine entkoppelte Kopie samt Woche.</summary>
     public KonditionierungPeriode Kopie()
     {
@@ -522,8 +528,23 @@ public sealed class KonditionierungDaten
     {
         var k = new KonditionierungDaten { Fassung = Fassung };
         for (int i = 0; i < _spalten.Length; i++) k._spalten[i] = _spalten[i].Kopie();
+        k.Gemeinsam = Gemeinsam.Select(p => p with { Periode = p.Periode.Kopie() }).ToList();
+        k.Ferienliste = Ferienliste.ToList();
+        k.Wochen = Wochen.Select(w => w with { Werte = (double[])w.Werte.Clone() }).ToList();
         return k;
     }
+
+    /// <summary>
+    /// Die Perioden des gemeinsamen Kalenders mit Maske (Stufe 2 der Kalenderbedienung) — in den Einheiten des Kerns
+    /// (Anteil, nicht %), durchgereicht für den OK-Weg; die Seite liest sie über die Kalenderansicht.
+    /// </summary>
+    public List<KalenderGemeinschaftsperiode> Gemeinsam { get; set; } = new();
+
+    /// <summary>Die Ferienzeiträume ab dem fünften (Ferienliste des gemeinsamen Kalenders, nur am Gebäude).</summary>
+    public List<KalenderFerienzeile> Ferienliste { get; set; } = new();
+
+    /// <summary>Die benannten Wochen der Ebene — in den Einheiten des Kerns.</summary>
+    public List<KalenderBenannteWoche> Wochen { get; set; } = new();
 
     /// <summary>
     /// <b>Das Feld von <see cref="GebaeudeKatalogDaten"/>, das den Wert einer Bestandszelle trägt</b>

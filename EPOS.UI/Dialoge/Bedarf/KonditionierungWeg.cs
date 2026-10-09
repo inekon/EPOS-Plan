@@ -372,6 +372,24 @@ public sealed class KonditionierungWeg
     /// </summary>
     public Func<KonditionierungStand, int?, int, int, KonditionierungErgebnis>? MonatKopieren { get; init; }
 
+    /// <summary>Stufe 2: eine benannte Woche am Ort anlegen (Name; Quelle der Werte, <c>null</c> = Standardwoche).</summary>
+    public Func<KonditionierungStand, KonditionierungOrt, string, KalenderProfilort?, KonditionierungErgebnis>? WocheAnlegen { get; init; }
+
+    /// <summary>Stufe 2: eine benannte Woche umbenennen.</summary>
+    public Func<KonditionierungStand, KonditionierungOrt, long, string, KonditionierungErgebnis>? WocheUmbenennen { get; init; }
+
+    /// <summary>Stufe 2: eine benannte Woche löschen (abgelehnt, solange eine Zeile auf sie verweist).</summary>
+    public Func<KonditionierungStand, KonditionierungOrt, long, KonditionierungErgebnis>? WocheLoeschen { get; init; }
+
+    /// <summary>Stufe 2: die Wochenendtage des Gebäudes (0 = Montag).</summary>
+    public Func<KonditionierungStand, IReadOnlyList<int>, KonditionierungErgebnis>? WochenendeSetzen { get; init; }
+
+    /// <summary>Stufe 2: das Feiertagsland des Gebäudes (ISO-Kürzel; <c>null</c> = nur bundeseinheitlich).</summary>
+    public Func<KonditionierungStand, string?, KonditionierungErgebnis>? FeiertagslandSetzen { get; init; }
+
+    /// <summary>Stufe 2: die Ferienliste mit Namen (beliebig viele; die ersten vier in den Gebäudespalten).</summary>
+    public Func<KonditionierungStand, IReadOnlyList<KalenderFerienzeile>, KonditionierungErgebnis>? FerienlisteSetzen { get; init; }
+
     // ------------------------------------------------------------------ Befunde, Bilder, Prüfung
 
     /// <summary>
