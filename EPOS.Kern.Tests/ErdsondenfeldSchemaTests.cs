@@ -92,7 +92,9 @@ namespace EPOS.Kern.Tests
             foreach (string s in ErdsondenfeldSchema.Spaltennamen())
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE \"" + s + "\" IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(ErdsondenfeldSchema.TAB_ANLAGEN);
-            Assert.Equal(ErdsondenfeldSchema.Spaltennamen().ToArray(), anlagen.Skip(anlagen.Count - 6).ToArray());
+            // Dahinter stehen allein die zwei Anlagenspalten der Uebergabegrenze (Schritt 203).
+            int ub = UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
+            Assert.Equal(ErdsondenfeldSchema.Spaltennamen().ToArray(), anlagen.Skip(anlagen.Count - ub - 6).Take(6).ToArray());
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",
                                                                        new DbParam("@n", ErdsondenfeldSchema.TAB_ANLAGEN)));
             Assert.Contains("\"WQ_Sondenabstand\" REAL CHECK", ddl, StringComparison.Ordinal);

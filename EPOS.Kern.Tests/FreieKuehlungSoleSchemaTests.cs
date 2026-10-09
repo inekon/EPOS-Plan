@@ -145,14 +145,17 @@ namespace EPOS.Kern.Tests
             foreach (var s in FreieKuehlungSoleSchema.SPALTEN.Where(x => x.Spalte != FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI))
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(FreieKuehlungSoleSchema.TAB_ANLAGEN);
-            // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195).
-            int sonde = ErdsondenfeldSchema.SPALTEN.Count;
+            // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195) und die zwei der
+            // Uebergabegrenze (Schritt 203).
+            int sonde = ErdsondenfeldSchema.SPALTEN.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
             Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ANLAGE.ToArray(), anlagen.Skip(anlagen.Count - sonde - 3).Take(3).ToArray());
             foreach (string t in FreieKuehlungSoleSchema.TABELLEN_ERGEBNIS)
             {
                 List<string> erg = DataRepository.SpaltenVonTabelle(t);
                 // An der Modulzeile stehen dahinter allein die drei Spalten der Vorlaufwahl (Schritt 188).
-                int danach = t == VorlaufwahlSchema.TAB_ERGEBNIS_WP_MODUL ? VorlaufwahlSchema.SPALTEN_ERGEBNIS.Count : 0;
+                // Dahinter die Ergebnisspalten der Uebergabegrenze (Schritt 203) an beiden Tabellen.
+                int danach = (t == VorlaufwahlSchema.TAB_ERGEBNIS_WP_MODUL ? VorlaufwahlSchema.SPALTEN_ERGEBNIS.Count : 0) +
+                             UebergabegrenzeSchema.SPALTEN.Count(x => x.Tabelle == t);
                 Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS.ToArray(), erg.Skip(erg.Count - danach - 2).Take(2).ToArray());
             }
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",

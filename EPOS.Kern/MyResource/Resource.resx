@@ -42515,6 +42515,33 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
     <value>Teillastkoeffizient C_d</value>
   </data>
+  <data name="WPS_LBL_SPREIZUNG_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegungsspreizung</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MAX" xml:space="preserve">
+    <value>Größte Spreizung</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MIN" xml:space="preserve">
+    <value>Kleinste Spreizung</value>
+  </data>
+  <data name="WPS_LBL_MINDESTVOLUMENSTROM" xml:space="preserve">
+    <value>Mindestvolumenstrom</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Größter Rücklauf</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_BEZUG" xml:space="preserve">
+    <value>Bezugsrücklauf</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_ABWERTUNG" xml:space="preserve">
+    <value>Abwertung je Kelvin Rücklauf</value>
+  </data>
+  <data name="WPS_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
+  <data name="BHKWK_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Größter Rücklauf</value>
+  </data>
   <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
     <value>Teillastkoeffizient C_d</value>
   </data>

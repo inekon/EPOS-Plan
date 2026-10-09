@@ -4911,6 +4911,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Rücklauf ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schallschutzhaube: ähnelt.
         /// </summary>
         public static string BHKWK_LBL_SCHALLSCHUTZ {
@@ -127400,6 +127409,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kenndaten Kennlinien: ähnelt.
         /// </summary>
         public static string WPS_LBL_KENNLINIEN {
@@ -127463,6 +127481,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestvolumenstrom ähnelt.
+        /// </summary>
+        public static string WPS_LBL_MINDESTVOLUMENSTROM {
+            get {
+                return ResourceManager.GetString("WPS_LBL_MINDESTVOLUMENSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
         /// </summary>
         public static string WPS_LBL_NAME {
@@ -127486,6 +127513,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_LBL_REGELUNG {
             get {
                 return ResourceManager.GetString("WPS_LBL_REGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abwertung je Kelvin Rücklauf ähnelt.
+        /// </summary>
+        public static string WPS_LBL_RUECKLAUF_ABWERTUNG {
+            get {
+                return ResourceManager.GetString("WPS_LBL_RUECKLAUF_ABWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsrücklauf ähnelt.
+        /// </summary>
+        public static string WPS_LBL_RUECKLAUF_BEZUG {
+            get {
+                return ResourceManager.GetString("WPS_LBL_RUECKLAUF_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Rücklauf ähnelt.
+        /// </summary>
+        public static string WPS_LBL_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("WPS_LBL_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsspreizung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_SPREIZUNG_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("WPS_LBL_SPREIZUNG_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größte Spreizung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_SPREIZUNG_MAX {
+            get {
+                return ResourceManager.GetString("WPS_LBL_SPREIZUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Spreizung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_SPREIZUNG_MIN {
+            get {
+                return ResourceManager.GetString("WPS_LBL_SPREIZUNG_MIN", resourceCulture);
             }
         }
         

@@ -42508,6 +42508,33 @@ This folder holds the standard template, the short report, the detailed template
   <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
     <value>Degradation coefficient C_d</value>
   </data>
+  <data name="WPS_LBL_SPREIZUNG_AUSLEGUNG" xml:space="preserve">
+    <value>Design temperature spread</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MAX" xml:space="preserve">
+    <value>Maximum temperature spread</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MIN" xml:space="preserve">
+    <value>Minimum temperature spread</value>
+  </data>
+  <data name="WPS_LBL_MINDESTVOLUMENSTROM" xml:space="preserve">
+    <value>Minimum flow rate</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Maximum return temperature</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_BEZUG" xml:space="preserve">
+    <value>Reference return temperature</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_ABWERTUNG" xml:space="preserve">
+    <value>Derating per kelvin of return temperature</value>
+  </data>
+  <data name="WPS_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant</value>
+  </data>
+  <data name="BHKWK_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Maximum return temperature</value>
+  </data>
   <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
     <value>degradation coefficient C_d</value>
   </data>
