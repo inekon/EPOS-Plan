@@ -29,7 +29,10 @@ namespace WindowsFormsApplication1
         // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(WaermesenkeDaten daten)
+        /// <param name="kaskadeBelegt">Die belegten Plätze der Kaskade aus der Konfiguration des Wirts
+        /// (<c>Kaskade.Belegt</c>); <c>null</c> = keine Herleitungszeile der direkten Deckung.</param>
+        internal static IReadOnlyDictionary<string, object> Gaben(WaermesenkeDaten daten,
+                                                                   IList<string> kaskadeBelegt = null)
         {
             int idProjekt = daten?.IdProjekt ?? 0;
             int idType = daten?.IdType ?? 0;
@@ -120,6 +123,7 @@ namespace WindowsFormsApplication1
                                                     Ladeordnung.ErzeugerName(idType)),
                 ["PrioPvUnveraendert"] = MyResource.Resource.SIM_PRIO_UNVERAENDERT,
                 ["HinweisBedarf"] = MyResource.Resource.SIM_LBL_BEDARF_HINWEIS,
+                ["HerleitungDirektreihenfolge"] = Direktreihenfolge(idProjekt, daten?.IdAnlage ?? 0, kaskadeBelegt),
                 ["HinweisPuffer"] =
                     Zeilenumbruch.Normalisieren(MyResource.Resource.SIM_LBL_HINWEIS_PUFFER),
                 ["TipEinspeisehoehe"] = MyResource.Resource.SIM_TIP_EINSPEISEHOEHE,
@@ -149,6 +153,25 @@ namespace WindowsFormsApplication1
 
                 ["HilfeSchluessel"] = "Form_Waermesenke.btn_Help"
             };
+        }
+
+        /// <summary>
+        /// Die Herleitungszeile der direkten Deckung (Anwenderwunsch 08.10.2026): Mehrere Erzeuger mit der
+        /// Direktsenke Heizkreis decken in der Reihenfolge ihres Kaskadenrangs — die Ränge kommen aus der
+        /// Konfiguration des Wirts, die Regel aus dem Kern (<c>WaermesenkeClass.ReihenfolgeDirekteDeckung</c>).
+        /// Leer ohne Kaskade oder ohne Erzeuger mit Direktsenke Heizkreis.
+        /// </summary>
+        internal static string Direktreihenfolge(int idProjekt, int idAnlage, IList<string> kaskadeBelegt)
+        {
+            if (kaskadeBelegt == null || idProjekt <= 0) return "";
+            List<WaermesenkeClass.DeckungsRang> liste =
+                WaermesenkeClass.ReihenfolgeDirekteDeckung(idProjekt, kaskadeBelegt, idAnlage);
+            if (liste.Count == 0) return "";
+            var teile = new List<string>();
+            foreach (WaermesenkeClass.DeckungsRang e in liste)
+                teile.Add(e.Rang.ToString(CultureInfo.CurrentCulture) + " " + ErzeugerKatalog.Anzeige(e.DbWert));
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIM_HERLEITUNG_DIREKT_REIHENFOLGE,
+                                 string.Join(", ", teile));
         }
 
         // =============================================================================

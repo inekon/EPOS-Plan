@@ -49081,5 +49081,8 @@ Chart</value>
   <data name="SIMQ_ERDREICH_KENNWERTE_LAUF" xml:space="preserve">
     <value>gerechnet (letzter Lauf): {0}</value>
   </data>
+  <data name="SIM_HERLEITUNG_DIREKT_REIHENFOLGE" xml:space="preserve">
+    <value>Reihenfolge der direkten Deckung = Kaskadenrang der Konfiguration: {0} — ändern über die Pfeile der Erzeugerkarten</value>
+  </data>
 </root>
 

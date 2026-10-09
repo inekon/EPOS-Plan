@@ -104717,6 +104717,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge der direkten Deckung = Kaskadenrang der Konfiguration: {0} — ändern über die Pfeile der Erzeugerkarten ähnelt.
+        /// </summary>
+        public static string SIM_HERLEITUNG_DIREKT_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("SIM_HERLEITUNG_DIREKT_REIHENFOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zur Wahl stehen alle Pufferspeicher des Projekts. Führt das Klassen-Set eines Speichers den Kanal dieses Ziels nicht, wird die Zuordnung gespeichert und als unplausibel gemeldet. ähnelt.
         /// </summary>
         public static string SIM_HERLEITUNG_SPEICHERLISTE {

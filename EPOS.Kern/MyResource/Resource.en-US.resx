@@ -49074,5 +49074,8 @@ chart</value>
   <data name="SIMQ_ERDREICH_KENNWERTE_LAUF" xml:space="preserve">
     <value>calculated (last run): {0}</value>
   </data>
+  <data name="SIM_HERLEITUNG_DIREKT_REIHENFOLGE" xml:space="preserve">
+    <value>Order of direct coverage = cascade rank of the configuration: {0} — change it with the arrows on the generator cards</value>
+  </data>
 </root>
 
