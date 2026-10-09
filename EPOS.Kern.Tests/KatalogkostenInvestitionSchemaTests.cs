@@ -20,7 +20,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_ist_210_und_das_Ziel_und_steht_im_Register()
         {
-            Assert.Equal(210, KatalogkostenInvestitionSchema.SCHRITT);
+            Assert.Equal(209, KatalogkostenInvestitionSchema.SCHRITT);
+            Assert.Equal(KatalogkostenUrsprungSchema.SCHRITT + 1, KatalogkostenInvestitionSchema.SCHRITT);
             Assert.Equal(KatalogkostenInvestitionSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KatalogkostenInvestitionSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             object stand = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation");

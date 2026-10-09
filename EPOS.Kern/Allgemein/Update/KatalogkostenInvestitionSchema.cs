@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     // ERGEBNISNEUTRAL. Die Spalte entsteht leer; keine Katalogpruefsumme aendert sich (Metaspalte der
     // Katalogfassung), im Projektpaket reist sie nicht (Ziel Tab_KostenVorlage ist reiseloser Katalog).
     //
-    // NUMMER. 210, angemeldet; haengt an 209 (KaeltemaschineTeillastSchema). Eingetragen in
+    // NUMMER. 209; haengt an 208 (KatalogkostenUrsprungSchema). Eingetragen in
     // SchemaStand.Zielversion, im Register der Paketanhebung, in der SchemaMigration der Schale, in
     // Werkzeuge/Testdatenbankschema und in EPOS.Kern.Tests/TestDatenbank.
     // ====================================================================================
@@ -32,10 +32,9 @@ namespace WindowsFormsApplication1
     public static class KatalogkostenInvestitionSchema
     {
         /// <summary>
-        /// Die Nummer des Schritts. Vorläufig, bis 209 (<c>KaeltemaschineTeillastSchema</c>) auf origin liegt — die
-        /// Orchestrierung hängt um auf <c>KaeltemaschineTeillastSchema.SCHRITT + 1</c>.
+        /// Die Nummer des Schritts: 209, hängt an 208 (<see cref="KatalogkostenUrsprungSchema"/>).
         /// </summary>
-        public const int SCHRITT = KatalogkostenUrsprungSchema.SCHRITT + 2;
+        public const int SCHRITT = KatalogkostenUrsprungSchema.SCHRITT + 1;
 
         /// <summary>Die Spalte der Investitionsvorlage eines Katalogsatzes.</summary>
         public const string SPALTE_ID_KOSTENVORLAGE_INVESTITION = "ID_KostenVorlageInvestition";
