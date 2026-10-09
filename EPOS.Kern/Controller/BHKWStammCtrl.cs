@@ -250,12 +250,15 @@ namespace WindowsFormsApplication1
                     // Welle M4: die Teillastfelder (eigener Schritt, nur mit den Spalten).
                     ErzeugerTeillastWerte.BhkwSchreiben(TABLE, "Bezeichner", model.m_szBezeichner ?? "",
                                                         ErzeugerTeillastWerte.Bhkw(model));
+                    // UB-E3-b: die Abschaltgrenze des Ruecklaufs (eigener Schritt, nur mit der Spalte).
+                    GeraetegrenzWerte.BhkwSchreiben(TABLE, "Bezeichner", model.m_szBezeichner ?? "", model.m_Ruecklauf_Max);
                     return true;
                 }
 
                 Vorgang.Ausfuehren(sql, werte.ToArray());
                 ErzeugerTeillastWerte.BhkwSchreiben(TABLE, "Bezeichner", model.m_szBezeichner ?? "",
                                                     ErzeugerTeillastWerte.Bhkw(model), Vorgang);
+                GeraetegrenzWerte.BhkwSchreiben(TABLE, "Bezeichner", model.m_szBezeichner ?? "", model.m_Ruecklauf_Max, Vorgang);
 
                 return true;
             }
@@ -323,6 +326,8 @@ namespace WindowsFormsApplication1
             m.m_Ruecklauf = row["Ruecklauf"] != DBNull.Value ? Convert.ToInt32(row["Ruecklauf"]) : 0;
             // Welle M4: die Teillastfelder; eine nicht migrierte Datenbank liefert sie leer.
             ErzeugerTeillastWerte.BhkwAusZeile(m, row);
+            // UB-E3-b: die Abschaltgrenze; ohne Spalte leer.
+            m.m_Ruecklauf_Max = GeraetegrenzWerte.BhkwAusZeile(row);
 
             return m;
         }
@@ -381,6 +386,7 @@ namespace WindowsFormsApplication1
             this.m_Ruecklauf = m.m_Ruecklauf;
             this.m_bReadOnly = m.m_bReadOnly;
             ErzeugerTeillastWerte.BhkwUebertragen(m, this);
+            this.m_Ruecklauf_Max = m.m_Ruecklauf_Max;
         }
 
         #endregion
@@ -617,6 +623,9 @@ namespace WindowsFormsApplication1
             // Welle M4: die Teillastfelder im Band - benannt, bevor etwas geschrieben wird.
             string teillast = ErzeugerTeillastWerte.BhkwVerstoss(ErzeugerTeillastWerte.Bhkw(daten));
             if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
+            // UB-E3-b: die Abschaltgrenze des Ruecklaufs im Bereich des Schemas (40 ... 90 °C).
+            string grenze = GeraetegrenzWerte.BhkwVerstoss(daten.m_Ruecklauf_Max);
+            if (grenze != null) return new SpeicherErgebnis(false, grenze, "");
 
             try
             {
@@ -672,6 +681,9 @@ namespace WindowsFormsApplication1
             // Welle M4: die Teillastfelder im Band - benannt, bevor etwas geschrieben wird.
             string teillast = ErzeugerTeillastWerte.BhkwVerstoss(ErzeugerTeillastWerte.Bhkw(daten));
             if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
+            // UB-E3-b: die Abschaltgrenze des Ruecklaufs im Bereich des Schemas (40 ... 90 °C).
+            string grenze = GeraetegrenzWerte.BhkwVerstoss(daten.m_Ruecklauf_Max);
+            if (grenze != null) return new SpeicherErgebnis(false, grenze, "");
 
             try
             {

@@ -355,6 +355,8 @@ namespace WindowsFormsApplication1
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
                 // Welle M4: Teillastkennlinie und Takten reisen mit - leer bleibt leer.
                 if (ok) ErzeugerTeillastWerte.BhkwKopieren(s, neueId);
+                // UB-E3-b: die Abschaltgrenze des Ruecklaufs reist mit - leer bleibt leer.
+                if (ok) GeraetegrenzWerte.BhkwKopieren(s, neueId);
                 return ok ? neueId : -1;
             }
             catch (Exception ex)

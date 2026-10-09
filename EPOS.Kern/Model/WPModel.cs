@@ -62,6 +62,12 @@
         /// <b><c>null</c> = Vorgabe 0,9.</b>
         /// </summary>
         public double? TaktverlustfaktorCd;
+
+        /// <summary>
+        /// Die acht Gerätespalten der Übergabegrenze (UB‑E3, <see cref="GeraetegrenzWerte"/>), soweit ein Speicherweg sie
+        /// mitbringt. <b><c>null</c> = nicht angefasst</b> — der Speicherweg lässt die Spalten dann stehen.
+        /// </summary>
+        internal Geraetespalten Grenzspalten;
         
         public WPModel()
         {

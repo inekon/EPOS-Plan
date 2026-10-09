@@ -598,6 +598,60 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Geraetegrenzen der Uebergabegrenze (Schritt 203, UB-E3-b)
+        // =============================================================================
+
+        /// <summary>
+        /// Die acht Gerätespalten der Wärmepumpe und die Abschaltgrenze des BHKW reisen mit dem Projektpaket: Ein Paket
+        /// auf Zielstand trägt die gepflegten Werte zurück, ein Paket von vor Schritt 203 (ohne die Spalten) wird
+        /// gehoben und trägt sie leer — leer heißt „Vorgabe", nie 0.
+        /// </summary>
+        [Fact]
+        public void Geraetegrenzen_reisen_mit_dem_Paket_und_ein_altes_Paket_traegt_sie_leer()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int wp = Id(WP), solar = Id(SOLAR);
+            Assert.True(wp > 0 && solar > 0);
+            DataRepository.ExecuteNonQuery("UPDATE Tab_WP SET Spreizung_Min_K = 4, Ruecklauf_Max = 52, Kaeltemittel = 'R290' WHERE ID_Projekt = ?",
+                                           new DbParam("@p", wp));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_BHKW SET Ruecklauf_Max = 75 WHERE ID_Projekt = ?", new DbParam("@p", solar));
+            Assert.True(Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_WP WHERE ID_Projekt = ?",
+                                                                     new DbParam("@p", wp)), CultureInfo.InvariantCulture) > 0);
+
+            var io = new ProjektExportImportCtrl();
+            foreach ((string name, string tabelle, string pruef) in new[]
+            {
+                (WP, "Tab_WP", "SELECT COUNT(*) FROM Tab_WP WHERE ID_Projekt = ? AND Spreizung_Min_K = 4 AND Ruecklauf_Max = 52 AND Kaeltemittel = 'R290'"),
+                (SOLAR, "Tab_BHKW", "SELECT COUNT(*) FROM Tab_BHKW WHERE ID_Projekt = ? AND Ruecklauf_Max = 75"),
+            })
+            {
+                string paket = ordner.Datei(tabelle + "_neu.wpx");
+                Assert.True(io.Exportieren(name, paket));
+                int neu = io.Importieren(paket, "Grenzen " + tabelle, ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                         null, out string fehler);
+                Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+                Assert.True(Convert.ToInt64(DataRepository.ExecuteScalar(pruef, new DbParam("@p", neu)), CultureInfo.InvariantCulture) > 0,
+                            tabelle + ": die gepflegten Grenzen fehlen nach dem Import");
+
+                string alt = ordner.Datei(tabelle + "_alt.wpx");
+                Umbauen(paket, alt, UebergabegrenzeSchema.SCHRITT - 1, (t, zeile) =>
+                {
+                    if (t != tabelle) return;
+                    foreach ((string spalte, string _) in UebergabegrenzeSchema.WP_SPALTEN) zeile.Remove(spalte);
+                });
+                int gehoben = io.Importieren(alt, "Grenzen alt " + tabelle, ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                             null, out fehler);
+                Assert.True(gehoben > 0, "Import fehlgeschlagen: " + fehler);
+                Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM " + tabelle + " WHERE ID_Projekt = ? AND Ruecklauf_Max IS NOT NULL",
+                    new DbParam("@p", gehoben)), CultureInfo.InvariantCulture));
+            }
+        }
+
+        // =============================================================================
         //  Handwerkszeug (Stufe 1)
         // =============================================================================
 
