@@ -481,5 +481,32 @@ namespace EPOS.Kern.Tests
             Assert.Empty(a.Gebaeude.Ferienliste);
             Assert.Equal(0.0, a.Gebaeude.Bestand.Ferienbeginn[2]);
         }
+
+        [Fact]
+        public void Die_ersten_vier_Ferienzeitraeume_tragen_eigene_Namen_ohne_Wirkung_auf_die_Matrix()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            var liste = new[]
+            {
+                new Ferienzeile(" Winterferien ", 1, 6), new Ferienzeile("Ostern", 95, 105),
+                new Ferienzeile("Pfingsten", 140, 145), new Ferienzeile("Sommer", 190, 230),
+            };
+            Konditionierungsarbeitsstand benannt = Gut(Kalenderbedienung.FerienlisteSetzen(a, liste));
+            Konditionierungsarbeitsstand nummeriert = Gut(Kalenderbedienung.FerienSetzen(a, liste.Select(f => (f.Beginn, f.Ende)).ToList()));
+            Assert.Equal(new[] { "Winterferien", "Ostern", "Pfingsten", "Sommer" }, benannt.Gebaeude.Feriennamen);
+            Assert.Equal(new[] { "Winterferien", "Ostern", "Pfingsten", "Sommer" },
+                         Kalenderbedienung.Ferienzeitraeume(benannt).Select(f => f.Name));
+            Assert.Equal(new[] { "Ferien 1", "Ferien 2", "Ferien 3", "Ferien 4" },
+                         Kalenderbedienung.Ferienzeitraeume(nummeriert).Select(f => f.Name));
+            // Die Namen ändern Stand und Vergleich, nicht die Rechnung: dieselben Kalender, derselbe Bestand.
+            Assert.False(benannt.Gebaeude.Gleich(nummeriert.Gebaeude));
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                Assert.True(Kalendervergleich.KalenderGleich(benannt.Gebaeude.Kalender(g), nummeriert.Gebaeude.Kalender(g)));
+            Assert.True(Kalendervergleich.BestandGleich(benannt.Gebaeude.Bestand, nummeriert.Gebaeude.Bestand));
+            // Ein unbekannter Name (null) gleicht jedem; zwei Zeiträume lassen die übrigen Stellen unbekannt.
+            Assert.True(benannt.Gebaeude.MitFeriennamen(null).Gleich(nummeriert.Gebaeude));
+            Konditionierungsarbeitsstand zwei = Gut(Kalenderbedienung.FerienlisteSetzen(benannt, liste.Take(2).ToList()));
+            Assert.Equal(new[] { "Winterferien", "Ostern", null, null }, zwei.Gebaeude.Feriennamen);
+        }
     }
 }
