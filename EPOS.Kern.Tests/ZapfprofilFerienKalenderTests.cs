@@ -9,9 +9,10 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Die Ferien des Zapfprofils aus dem Heizkalender des gebundenen Gebäudes</b> (Entwurf KP2,
     /// Welle K1, Festlegung 10; Teilkonzept Konditionierungsprofile 5.5): Trägt das Gebäude einen
-    /// angelegten Heizkalender, kommen die Ferien einer Zone ohne eigene Ferien aus dessen Perioden der
-    /// Art FERIEN — höchstens vier, die ranghöchsten; mehr nennt ein benannter Hinweis. Sonst wörtlich
-    /// der Bestandszweig (<c>Tab_Gebaeude</c>-Spalten mit Merker, A8 „nur vorbelegen").
+    /// angelegten Heizkalender mit einer Periode der Art FERIEN, kommen die Ferien einer Zone ohne eigene Ferien aus
+    /// allen Ferienperioden des gemeinsamen Kalenders, ohne ihn aus allen FERIEN-Perioden des Heizkalenders. Sonst
+    /// wörtlich der Bestandszweig (<c>Tab_Gebaeude</c>-Spalten mit Merker, A8 „nur vorbelegen"). Das Wochenende kommt aus
+    /// <c>Wochenendtage</c> des Gebäudes.
     ///
     /// <para>Arbeitskopie der Testdatenbank, Projekt 1006 mit dem fiktiven Testkatalog (wie
     /// <c>ZapfprofilSpeichernTests</c>); alle Werte erfunden und rund.</para>
@@ -58,37 +59,124 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Mehr FERIEN-Perioden, als eine Zone Paare führt: Die vier ranghöchsten werden Ferien (die zwei
-        /// eigenen über den vier des Generators), und ein benannter Hinweis nennt Gebäude, Zahl und Grenze —
-        /// der Satz steht unter <c>KOND_MSG_ZAPF_FERIEN_GEKUERZT</c> in beiden Sprachen.
+        /// Mehr FERIEN-Perioden, als die Zone Spalten führt: Ohne gemeinsamen Kalender werden ALLE FERIEN-Perioden des
+        /// Heizkalenders Ferien (die ranghöchsten zuerst), ohne Kürzung und ohne Hinweis.
         /// </summary>
         [Fact]
-        public void Mehr_als_vier_Ferienperioden_nehmen_die_ranghoechsten_und_nennen_es()
+        public void Mehr_als_vier_Ferienperioden_werden_alle_uebernommen()
         {
             if (!Bereit()) return;
             int gebaeude = GebaeudeMitBestandsferien();
-            string name = Convert.ToString(DataRepository.ExecuteScalar(
-                "SELECT Gebaeudename FROM Tab_Gebaeude WHERE ID = ?", new DbParam("@id", gebaeude)));
             Assert.True(new KonditionierungCtrl().Schreiben(KonditionierungCtrl.Eigner.Gebaeude(gebaeude), SechsFerien()).Ok);
 
             Zapfprofileingang e = Eingang(gebaeude);
-            Assert.Equal(new int?[] { 250, 240, 300, 200 }, e.Zonen[0].Ferienbeginn);
-            Assert.Equal(new int?[] { 255, 245, 305, 210 }, e.Zonen[0].Ferienende);
+            Assert.Equal(new int?[] { 250, 240, 300, 200, 80, 350 }, e.Zonen[0].Ferienbeginn);
+            Assert.Equal(new int?[] { 255, 245, 305, 210, 90, 5 }, e.Zonen[0].Ferienende);
+            Assert.Empty(e.Vorhinweise);
+        }
 
-            ZapfHinweis h = Assert.Single(e.Vorhinweise);
-            Assert.Equal(ZapfprofilCtrl.HINWEIS_KALENDERFERIEN_GEKUERZT, h.Code);
-            Assert.Equal("Ferienzone", h.Zone);
-            Assert.Equal(nameof(WindowsFormsApplication1.MyResource.Resource.KOND_MSG_ZAPF_FERIEN_GEKUERZT), h.Satz.Schluessel);
-            Assert.Equal(new object[] { name, 6, 4 }, h.Satz.Werte);
-            Assert.Equal("Der Heizkalender des Gebäudes „" + name + "“ trägt 6 Ferienperioden; das Zapfprofil übernimmt die 4 ranghöchsten.",
-                         h.Text);
-            var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
-            Assert.Equal("The heating calendar of building “" + name + "” has 6 holiday periods; the draw-off profile takes the 4 highest-ranked.",
-                         h.Satz.Text(k => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(k, en), en));
+        /// <summary>
+        /// <b>Die Leser der Stufe 2</b> (Konzept 7.8): Die Ferien kommen aus ALLEN Ferienperioden des gemeinsamen Kalenders
+        /// (hier sieben, Rang 200 … 206) statt aus den vier Spalten oder den FERIEN-Perioden des Heizkalenders, das
+        /// Wochenende aus <c>Wochenendtage</c> (Montag und Dienstag): Montag und Dienstag tragen den Sonntagsgang, der Samstag
+        /// wird Werktag, jeder der sieben Zeiträume Ruhetag.
+        /// </summary>
+        [Fact]
+        public void Ferienliste_und_Wochenende_des_Gebaeudes_wirken_im_Zapfkalender()
+        {
+            if (!Bereit() || !Kalendergemeinschaft.SchrittSteht()) return;
+            int gebaeude = GebaeudeMitBestandsferien();
+            Assert.True(new KonditionierungCtrl().Schreiben(KonditionierungCtrl.Eigner.Gebaeude(gebaeude),
+                Heizkalender(Ferien(Standardfahrplan.RANG_FERIEN, "Ferien 1", 200, 210))).Ok);
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Wochenendtage = 3 WHERE ID = ?", new DbParam("@id", gebaeude)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "INSERT INTO Tab_Konditionierungskalender (ID_Gebaeude, Groesse, Aus) VALUES (?, 'ALLE', 0)", new DbParam("@g", gebaeude)));
+            long kalender = Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Gebaeude = ? AND ID_Zone IS NULL AND Groesse = 'ALLE'",
+                new DbParam("@g", gebaeude)));
+            var ferien = new[] { (20, 22), (40, 42), (60, 62), (80, 82), (100, 102), (120, 122), (300, 302) };
+            for (int i = 0; i < ferien.Length; i++)
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_Konditionierungsperiode (ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Aus, Gilt_Fuer) " +
+                    "VALUES (?, ?, 'FERIEN', ?, ?, ?, 0, 31)", new DbParam("@k", kalender), new DbParam("@r", 200 + i),
+                    new DbParam("@b", "F" + (i + 1)), new DbParam("@v", ferien[i].Item1), new DbParam("@e", ferien[i].Item2)));
 
-            // Der Hinweis erreicht das Ergebnis des Rechenwegs wie jeder Vorhinweis.
+            Zapfprofileingang e = Eingang(gebaeude);
+            ZonenStand z = e.Zonen[0];
+            Assert.Equal(ferien.Select(f => (int?)f.Item1), z.Ferienbeginn);
+            Assert.Equal(ferien.Select(f => (int?)f.Item2), z.Ferienende);
+            Assert.Equal(3, z.Wochenendtage);
+
+            ZapfTagtyp[] k = Zapfkalender.Bilden(0, Zapfkalender.KennzeichenDerZone(0, new bool[365], z), Zapfkalender.FensterDerZone(z));
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[0]);       // Montag, 1. Januar
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[1]);       // Dienstag
+            Assert.Equal(ZapfTagtyp.Werktag, k[2]);
+            Assert.Equal(ZapfTagtyp.Werktag, k[5]);            // Samstag
+            Assert.Equal(7 * 3, k.Count(t => t == ZapfTagtyp.Ruhetag));
+            Assert.Equal(ZapfTagtyp.Ruhetag, k[300]);          // im siebten Zeitraum
+
+            // Die Feiertage kommen aus den Regeln des Kerns, nicht aus den (hier leeren) Kennzeichen der Klimaregion.
+            Assert.NotNull(z.Feiertage);
+            Assert.Contains(1, z.Feiertage);                   // Neujahr
+            Assert.Contains(276, z.Feiertage);                 // 3. Oktober
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, k[275]);     // 3. Oktober, ein Mittwoch
+
             ZapfprofilErgebnis r = ZapfprofilRechner.Rechnen(e, ZapfprofilCtrl.Katalog());
-            Assert.Contains(r.Hinweise, x => x.Code == ZapfprofilCtrl.HINWEIS_KALENDERFERIEN_GEKUERZT);
+            Assert.NotNull(r);
+        }
+
+        /// <summary>Leer und Samstag + Sonntag lassen die Kennzeichen der Klimaregion unverändert (dasselbe Feld).</summary>
+        [Fact]
+        public void Das_Wochenende_der_Vorgabe_laesst_die_Kennzeichen_unveraendert()
+        {
+            var we = new bool[365];
+            we[5] = we[6] = we[2] = true;                     // Samstag, Sonntag und ein Feiertag am Mittwoch
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, null));
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, KalenderbedienungSchema.WOCHENENDE_VORGABE));
+            bool[] fr = Zapfkalender.Kennzeichen(0, we, 1 << 4);    // nur Freitag
+            Assert.True(fr[4]);
+            Assert.True(fr[2]);                               // der Feiertag am Werktag bleibt
+            Assert.False(fr[5]);
+            Assert.False(fr[6]);
+
+            // Auch mit Feiertagen des Kerns bleibt die Vorgabe das Feld der Klimaregion.
+            var feiertage = new[] { 6, 10 };
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, null, feiertage));
+            Assert.Same(we, Zapfkalender.Kennzeichen(0, we, KalenderbedienungSchema.WOCHENENDE_VORGABE, feiertage));
+            Assert.Equal(Zapfkalender.Bilden(0, we, null), Zapfkalender.Bilden(0, we, null, KalenderbedienungSchema.WOCHENENDE_VORGABE));
+        }
+
+        /// <summary>
+        /// Wochenende Montag + Dienstag: Ein Feiertag des Kerns an einem Samstag trägt den Sonntagsgang, ein gewöhnlicher
+        /// Samstag und der Sonntag sind Werktage, ein Feiertag an einem Mittwoch trägt den Sonntagsgang.
+        /// </summary>
+        [Fact]
+        public void Feiertag_am_Samstag_traegt_unter_Montag_Dienstag_den_Sonntagsgang()
+        {
+            const int montagDienstag = 3;
+            var we = new bool[365];
+            for (int d = 6; d <= 365; d += 7) { we[d - 1] = true; if (d < 365) we[d] = true; }   // Samstag, Sonntag
+            var feiertage = new[] { 6, 10 };                  // Samstag 6. Januar, Mittwoch 10. Januar
+
+            bool[] k = Zapfkalender.Kennzeichen(0, we, montagDienstag, feiertage);
+            ZapfTagtyp[] t = Zapfkalender.Bilden(0, k, null, montagDienstag);
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[0]);        // Montag
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[1]);        // Dienstag
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[5]);        // Feiertag am Samstag
+            Assert.Equal(ZapfTagtyp.Werktag, t[6]);             // Sonntag ohne Maske
+            Assert.Equal(ZapfTagtyp.SonnFeiertag, t[9]);        // Feiertag am Mittwoch
+            Assert.Equal(ZapfTagtyp.Werktag, t[12]);            // gewöhnlicher Samstag
+            Assert.DoesNotContain(ZapfTagtyp.Samstag, t);
+
+            // Ohne die Feiertage des Kerns ginge der Samstagsfeiertag verloren (die Klimaregion trennt ihn nicht).
+            Assert.Equal(ZapfTagtyp.Werktag, Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, montagDienstag), null, montagDienstag)[5]);
+
+            // Eine Maske mit Samstag: der Samstag trägt den Samstagsgang, auch als Feiertag.
+            const int samstagMontag = (1 << Zapfkalender.SAMSTAG) | 1;
+            ZapfTagtyp[] s = Zapfkalender.Bilden(0, Zapfkalender.Kennzeichen(0, we, samstagMontag, feiertage), null, samstagMontag);
+            Assert.Equal(ZapfTagtyp.Samstag, s[5]);
+            Assert.Equal(ZapfTagtyp.Samstag, s[12]);
+            Assert.Equal(ZapfTagtyp.Werktag, s[6]);
         }
 
         /// <summary>
@@ -141,30 +229,6 @@ namespace EPOS.Kern.Tests
 
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Ferien = 0.0 WHERE ID = ?", new DbParam("@id", gebaeude)));
             Assert.Equal(new int?[4], Eingang(gebaeude).Zonen[0].Ferienbeginn);
-        }
-
-        /// <summary>
-        /// Der Hinweissatz steht in beiden Sprachen mit denselben Platzhaltern — die Wache der ZPG-Sätze
-        /// sieht ihn nicht, weil er der Konditionierung gehört (<see cref="ZapfSatz.AusRessource"/>).
-        /// </summary>
-        [Fact]
-        public void Der_Hinweissatz_steht_in_beiden_Sprachen_mit_denselben_Platzhaltern()
-        {
-            const string schluessel = nameof(WindowsFormsApplication1.MyResource.Resource.KOND_MSG_ZAPF_FERIEN_GEKUERZT);
-            string de = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
-                schluessel, System.Globalization.CultureInfo.InvariantCulture);
-            string en = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
-                schluessel, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
-            Assert.False(string.IsNullOrWhiteSpace(de));
-            Assert.False(string.IsNullOrWhiteSpace(en));
-            Assert.NotEqual(de, en);
-            string[] P(string t) => System.Text.RegularExpressions.Regex.Matches(t, @"\{\d+\}").Select(m => m.Value).OrderBy(x => x).ToArray();
-            Assert.Equal(new[] { "{0}", "{1}", "{2}" }, P(de));
-            Assert.Equal(P(de), P(en));
-
-            // Gleiche Sätze sind gleich, ein gleich benannter der ZPG-Familie nicht.
-            Assert.Equal(ZapfSatz.AusRessource(schluessel, "A", 6, 4), ZapfSatz.AusRessource(schluessel, "A", 6, 4));
-            Assert.NotEqual(ZapfSatz.AusRessource(schluessel, "A", 6, 4), ZapfSatz.Neu(schluessel, "A", 6, 4));
         }
 
         // =================================================================================

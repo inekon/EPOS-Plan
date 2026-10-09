@@ -179,6 +179,81 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Bestandsform_ist_wiederholbar_und_behaelt_die_Ids_der_gespiegelten_Ferienperioden()
+        {
+            if (!_db.Vorhanden) return;
+            string ids = "SELECT group_concat(p.ID || ':' || p.Rang || ':' || p.Beginn || '-' || p.Ende, ',') FROM (SELECT p.* FROM " +
+                         "Tab_Konditionierungsperiode p JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE " +
+                         "k.ID_Gebaeude = ? AND k.Groesse = 'ALLE' AND p.Art = 'FERIEN' ORDER BY p.Rang) p";
+            string vorher = Text(ids, GEBAEUDE_1051);
+            Assert.Contains(":200:357-6", vorher);
+            for (int lauf = 0; lauf < 2; lauf++)
+            {
+                Bestandsform();
+                Assert.Equal(vorher, Text(ids, GEBAEUDE_1051));
+            }
+
+            // Eine veraltete Spiegelzeile (ohne Trigger verändert) wird erneuert, die übrigen behalten ihre Id.
+            long id200 = Zahl("SELECT p.ID FROM Tab_Konditionierungsperiode p JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender " +
+                              "WHERE k.ID_Gebaeude = ? AND k.Groesse = 'ALLE' AND p.Rang = 200", GEBAEUDE_1051);
+            Gut("UPDATE Tab_Konditionierungsperiode SET Beginn = 1 WHERE ID = (SELECT p.ID FROM Tab_Konditionierungsperiode p JOIN " +
+                "Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE k.ID_Gebaeude = ? AND k.Groesse = 'ALLE' AND p.Rang = 201)",
+                GEBAEUDE_1051);
+            Bestandsform();
+            string nachher = Text(ids, GEBAEUDE_1051);
+            Assert.StartsWith(id200.ToString(CultureInfo.InvariantCulture) + ":200:357-6,", nachher);
+            Assert.EndsWith(":201:213-226", nachher);
+            Assert.NotEqual(vorher, nachher);
+        }
+
+        [Fact]
+        public void Zeilen_Ferien_n_neben_der_Ferienliste_werden_die_Ferienperiode_ihres_Rangs()
+        {
+            if (!_db.Vorhanden) return;
+            long alle = Kalender("ALLE"), lueftung = Kalender("LUEFTUNG"), geraete = Kalender("GERAETE"), personen = Kalender("PERSONEN");
+            // Die Ferienliste ab dem fünften Zeitraum im gemeinsamen Kalender.
+            Gut("INSERT INTO Tab_Konditionierungsperiode (ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Aus, Gilt_Fuer) " +
+                "VALUES (?, 204, 'FERIEN', 'Herbst', 290, 295, 0, 31)", alle);
+            Gut("INSERT INTO Tab_Konditionierungsperiode (ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Aus, Gilt_Fuer) " +
+                "VALUES (?, 205, 'FERIEN', 'Advent', 340, 345, 0, 31)", alle);
+            // Stufe-1-Zeilen mit der Ferienangabe des Kalenders: in der Lüftung ohne FERIEN-Periode auf 204, in den Geräten
+            // neben der FERIEN-Periode auf 205; in den Personen eine Zeile ohne passende Ferienperiode.
+            const string kopie = "INSERT INTO Tab_Konditionierungsperiode (ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Wert, Aus, Woche, " +
+                                 "WieWochentag) SELECT ID_Kalender, ?, ?, ?, ?, ?, Wert, Aus, Woche, WieWochentag FROM Tab_Konditionierungsperiode " +
+                                 "WHERE ID_Kalender = ? AND Rang = 200";
+            Gut(kopie, 850, "ZEITRAUM", "Ferien 5", 290, 295, lueftung);
+            Gut(kopie, 205, "FERIEN", "Advent", 340, 345, geraete);
+            Gut(kopie, 851, "ZEITRAUM", "Ferien 6", 340, 345, geraete);
+            Gut(kopie, 852, "ZEITRAUM", "Ferien 6", 1, 2, personen);
+            long doppel = Zahl("SELECT ID FROM Tab_Konditionierungsperiode WHERE ID_Kalender = ? AND Rang = 850", lueftung);
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                Assert.Equal(2, Kalendergemeinschaft.FerienzeilenBereinigen(v));
+                Assert.Equal(0, Kalendergemeinschaft.FerienzeilenBereinigen(v));
+                v.Commit();
+            }
+            Assert.Equal("204:FERIEN:Herbst:290-295", Text("SELECT Rang || ':' || Art || ':' || Bezeichner || ':' || Beginn || '-' || Ende " +
+                                                         "FROM Tab_Konditionierungsperiode WHERE ID = ?", doppel));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungsperiode WHERE ID_Kalender = ? AND Rang = 851", geraete));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungsperiode WHERE ID_Kalender = ? AND Rang = 205", geraete));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungsperiode WHERE ID_Kalender = ? AND Rang = 852", personen));
+        }
+
+        private static long Kalender(string groesse)
+            => Zahl("SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Gebaeude = ? AND ID_Zone IS NULL AND Groesse = ?",
+                    GEBAEUDE_1051, groesse);
+
+        private static void Bestandsform()
+        {
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                KalenderbedienungSchema.Bestandsform(v);
+                v.Commit();
+            }
+        }
+
+        [Fact]
         public void Die_Laenderregeln_treffen_die_bekannten_Tage_des_Bezugsjahrs()
         {
             // 2026: Ostern am 5. April; Fronleichnam am 4. Juni, Buß- und Bettag am 18. November.

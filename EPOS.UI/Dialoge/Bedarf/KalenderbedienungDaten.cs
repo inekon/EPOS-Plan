@@ -151,6 +151,12 @@ public sealed class KalenderAnsicht
 
     /// <summary>Die wählbaren Länder (ISO-Kürzel).</summary>
     public IReadOnlyList<string> Feiertagslaender { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Die Namen der Feiertagsregeln, die das <see cref="Feiertagsland"/> zu den neun bundeseinheitlichen hinzufügt (Hinweiszeile
+    /// am Schnellfeld); leer ohne Land.
+    /// </summary>
+    public IReadOnlyList<string> Landesregeln { get; init; } = Array.Empty<string>();
 }
 
 /// <summary>Die Tage des Bezugsjahrs (Gemeinjahr, kein Schalttag) — Umrechnung zwischen Jahrestag und Datum für die Anzeige.</summary>

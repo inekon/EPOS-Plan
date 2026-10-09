@@ -953,7 +953,7 @@ public sealed class KonditionierungTexte
     public string TextKalbWochenendeTage { get; set; } = "Samstag und Sonntag";
 
     /// <summary><c>KOND_TXT_KALB_HINWEIS_WOCHENENDE</c> — der Hinweis am Wochenende</summary>
-    public string HinweisKalbWochenende { get; set; } = "Nur lesbar; wählbar ab Stufe 2.";
+    public string HinweisKalbWochenende { get; set; } = "Gilt für alle Größen des Gebäudes; ohne gewählten Tag gelten Samstag und Sonntag.";
 
     /// <summary><c>KOND_LBL_KALB_FERIEN</c> — das Schnellfeld Ferien</summary>
     public string LabelKalbFerien { get; set; } = "Ferien";
@@ -1158,4 +1158,64 @@ public sealed class KonditionierungTexte
 
     /// <summary><c>KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT</c> — der Hinweis an den Zeilen Wochenende und Ferien der Matrix (E110)</summary>
     public string HinweisKalbMatrixUebersicht { get; set; } = "Nur Übersicht: Wochenende und Ferien werden in den Schnellfeldern unter „Kalender bearbeiten…“ gesetzt.";
+
+    /// <summary><c>KOND_LBL_KALB_GILT_ALLE</c> — die Schaltfläche „alle“ der Maske „gilt für“ einer Zuordnungszeile</summary>
+    public string LabelKalbGiltAlle { get; set; } = "alle";
+
+    /// <summary><c>KOND_TXT_KALB_GETRENNT</c> — das Kennzeichen einer Zeile der Lesebrücke (je Größe eine eigene Kopie)</summary>
+    public string TextKalbGetrennt { get; set; } = "je Größe getrennt";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_GETRENNT</c> — der Tooltip am Kennzeichen „je Größe getrennt“</summary>
+    public string HinweisKalbGetrennt { get; set; } = "Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; Mit einer benannten Woche oder einer Wirkung ohne Wochenprofil wird sie im Editor eine gemeinsame Zeile.";
+
+    /// <summary><c>KOND_LBL_KALB_WOCHEN</c> — die Überschrift der benannten Wochen einer Größe</summary>
+    public string LabelKalbWochen { get; set; } = "Benannte Wochen";
+
+    /// <summary><c>KOND_LBL_KALB_WOCHE_NAME</c> — das Namensfeld einer benannten Woche</summary>
+    public string LabelKalbWocheName { get; set; } = "Name der Woche";
+
+    /// <summary><c>KOND_BTN_KALB_WOCHE_ANLEGEN</c> — legt eine benannte Woche aus dem gewählten Wochenprofil an</summary>
+    public string KnopfKalbWocheAnlegen { get; set; } = "Woche anlegen";
+
+    /// <summary><c>KOND_BTN_KALB_WOCHE_UMBENENNEN</c> — benennt die gewählte benannte Woche um</summary>
+    public string KnopfKalbWocheUmbenennen { get; set; } = "Umbenennen";
+
+    /// <summary><c>KOND_BTN_KALB_WOCHE_LOESCHEN</c> — löscht die gewählte benannte Woche</summary>
+    public string KnopfKalbWocheLoeschen { get; set; } = "Woche löschen";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_WOCHEN</c> — der Hinweis unter den benannten Wochen</summary>
+    public string HinweisKalbWochen { get; set; } = "Eine neue Woche übernimmt die Werte des gewählten Wochenprofils. Zuordnungszeilen wählen sie als Wochenprofil; eine Woche, auf die eine Zeile verweist, lässt sich nicht löschen.";
+
+    /// <summary><c>KOND_TXT_KALB_GRUND_WOCHE_WAHL</c> — der Sperrgrund von Umbenennen und Löschen ohne gewählte benannte Woche</summary>
+    public string GrundKalbWocheWahl { get; set; } = "Erst eine benannte Woche wählen.";
+
+    /// <summary><c>KOND_BTN_KALB_SA_SO</c> — setzt das Wochenende auf Samstag und Sonntag</summary>
+    public string KnopfKalbSaSo { get; set; } = "Sa + So";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_WOCHENENDE_ZONE</c> — der Hinweis am Wochenende einer Zone</summary>
+    public string HinweisKalbWochenendeZone { get; set; } = "Das Wochenende gehört dem Gebäude; die Zone erbt es.";
+
+    /// <summary><c>KOND_LBL_KALB_FEIERTAGSLAND</c> — das Schnellfeld Feiertagsland</summary>
+    public string LabelKalbFeiertagsland { get; set; } = "Feiertagsland";
+
+    /// <summary><c>KOND_TXT_KALB_LAND_LEER</c> — der leere Eintrag des Feiertagslands</summary>
+    public string PlatzhalterKalbLand { get; set; } = "nur bundeseinheitlich";
+
+    /// <summary><c>KOND_TXT_KALB_LAND_REGELN</c> — die Hinweiszeile mit den Landesregeln ({0} = Namen)</summary>
+    public string TextKalbLandRegeln { get; set; } = "Das Land fügt hinzu: {0}.";
+
+    /// <summary><c>KOND_TXT_KALB_LAND_KEINE</c> — die Hinweiszeile ohne Land oder ohne Landesregeln</summary>
+    public string TextKalbLandKeine { get; set; } = "Es gelten die neun bundeseinheitlichen Feiertage.";
+
+    /// <summary><c>KOND_TXT_KALB_BUNDESLAENDER</c> — die Namen der sechzehn Länder in der Reihenfolge BW, BY, BE, BB, HB, HH, HE, MV, NI, NW, RP, SL, SN, ST, SH, TH</summary>
+    public string TextKalbBundeslaender { get; set; } = "Baden-Württemberg;Bayern;Berlin;Brandenburg;Bremen;Hamburg;Hessen;Mecklenburg-Vorpommern;Niedersachsen;Nordrhein-Westfalen;Rheinland-Pfalz;Saarland;Sachsen;Sachsen-Anhalt;Schleswig-Holstein;Thüringen";
+
+    /// <summary><c>KOND_TXT_KALB_HINWEIS_LAND_ZONE</c> — der Hinweis am Feiertagsland einer Zone</summary>
+    public string HinweisKalbFeiertagslandZone { get; set; } = "Das Feiertagsland gehört dem Gebäude; die Zone erbt es.";
+
+    /// <summary><c>KOND_LBL_KALB_FERIEN_NAME</c> — die Bezeichnung eines Ferienzeitraums</summary>
+    public string LabelKalbFerienName { get; set; } = "Bezeichnung";
+
+    /// <summary><c>KOND_LBL_KALB_LEGENDE_GEMEINSAM</c> — der Legendeneintrag der Tage einer gemeinsamen Zeile im Jahresraster</summary>
+    public string LabelKalbLegendeGemeinsam { get; set; } = "Zeile für mehrere Größen";
 }

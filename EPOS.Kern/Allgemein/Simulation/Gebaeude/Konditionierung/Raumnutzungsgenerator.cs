@@ -466,6 +466,15 @@ namespace WindowsFormsApplication1
                     if (t == (int)bis) break;
                 }
             }
+            foreach (Ferienzeile f in b.WeitereFerien ?? System.Array.Empty<Ferienzeile>())
+            {
+                if (f == null || !Ferientag(f.Beginn) || !Ferientag(f.Ende)) continue;
+                for (int t = f.Beginn; ; t = t % TAGE_IM_JAHR + 1)
+                {
+                    frei[t] = true;
+                    if (t == f.Ende) break;
+                }
+            }
             return frei;
         }
 

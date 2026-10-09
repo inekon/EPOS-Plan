@@ -114,7 +114,8 @@ namespace WindowsFormsApplication1
                                                              a.Art.Bezug);
                     a.Struktur = Formvektor.Bilden(z, a.Art, satz, e.Parameter, prot, hinweise);
                     a.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(a.Temperaturen, a.Name);
-                    a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, e.We, Zapfkalender.FensterDerZone(z));
+                    a.Kalender = Zapfkalender.Bilden(e.WochentagJan1, Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, z),
+                                                     Zapfkalender.FensterDerZone(z), z.Wochenendtage);
                     a.Messwert = Mengengeruest.MesswertAus(z, a.Temperaturen, prot);
                     a.InZ1 = z.Zirkulation && a.Art.Grenze == ZapfBilanzgrenze.Zapfstelle;
                     a.ZapfungKwh = a.Menge.JahresenergieKwh;
@@ -206,8 +207,9 @@ namespace WindowsFormsApplication1
                     double[] stunden = null;
                     if (e.Typtage != null)
                     {
-                        a.Typtagjahr = Typtagzuordnung.Zuordnen(e.Typtage, e.WochentagJan1, e.We, a.Name,
-                                                               Zapfkalender.FensterDerZone(a.Stand), hinweise);
+                        a.Typtagjahr = Typtagzuordnung.Zuordnen(e.Typtage, e.WochentagJan1,
+                                                               Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, a.Stand), a.Name,
+                                                               Zapfkalender.FensterDerZone(a.Stand), hinweise, a.Stand?.Wochenendtage);
                         tage = Typtagzuordnung.Tagesmengen(a.ZapfungKwh,
                                    Typtagzuordnung.Einheiten(a.Art, a.Menge, a.Name), a.Typtagjahr, a.Name, hinweise);
                         stunden = Typtagzuordnung.Stundenreihe(tage, a.Typtagjahr, e.Typtage.Daten,
@@ -491,7 +493,9 @@ namespace WindowsFormsApplication1
                 Kategorien = Zapfkategoriensatz.Aus(e.Zapfkategorien, a.Art, a.Name),
                 JahresmengeKwh = a.ZapfungKwh, Struktur = a.Struktur, Kalender = a.Kalender, Ferien = ferien,
                 Kaltwasserfaktor = a.Kaltwasserfaktor, SpreizungJeMonatK = spreizung,
-                WochentagJan1 = e.WochentagJan1, We = e.We, Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz,
+                WochentagJan1 = e.WochentagJan1, We = Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, a.Stand),
+                Wochenendtage = a.Stand?.Wochenendtage,
+                Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz,
                 TyptagmengenKwh = a.Typtagjahr != null ? a.Tagesmengen : null,
                 TyptagdichteJeTag = a.Typtagjahr != null
                                     ? Typtagzuordnung.Dichten(a.Typtagjahr, e.Typtage.Daten, e.Typtage.Gebaeudeart) : null
