@@ -111,26 +111,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Import einer Ganglinie aus Texten (invariant geparst) — die Form der
-        /// einspaltigen Textdatei. Liest über <see cref="ImportGanglinie(string, string, IList{double})"/>.
-        /// </summary>
-        public bool ImportGanglinie(string szBezeichner, string szBeschreibung, List<string> roheWerte)
-        {
-            if (roheWerte == null || roheWerte.Count == 0) return false;
-            var werte = new List<double>(roheWerte.Count);
-            foreach (string s in roheWerte)
-            {
-                if (!double.TryParse(s, System.Globalization.NumberStyles.Float,
-                                     System.Globalization.CultureInfo.InvariantCulture, out double w))
-                    return false;
-                werte.Add(w);
-            }
-            return ImportGanglinie(szBezeichner, szBeschreibung, werte);
-        }
-
-        /// <summary>
         /// Import einer neuen Ganglinie in die STAMM-Tabellen (Katalogseite des
-        /// Solarthermie-Ganglinien-Dialogs, „Import…"). Kopf-ID und Daten-IDs explizit
+        /// Solarthermie-Ganglinien-Dialogs, „Import…", über <c>SolarganglinieImportCtrl</c>). Kopf-ID und Daten-IDs explizit
         /// (MAX+1), ReadOnly = false. Alles in einer Transaktion.
         /// </summary>
         public bool ImportGanglinie(string szBezeichner, string szBeschreibung, IList<double> werte)

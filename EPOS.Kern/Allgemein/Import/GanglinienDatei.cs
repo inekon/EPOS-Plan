@@ -150,10 +150,8 @@ namespace WindowsFormsApplication1
     /// <para>
     /// <b>Altweg.</b> Eine <c>.txt</c>-Datei mit einem Wert je Zeile ist der
     /// Sonderfall "kein Trennzeichen, eine Spalte, keine Kopfzeile" und laeuft
-    /// durch dieselbe Kette. Die beiden anderen Ganglinienimporte (Waermebedarf
-    /// seit W13.2, Solarthermie seit W14b.2) lesen ueber
-    /// <see cref="GanglinienTextDatei"/>; die frueher dafuer zustaendige
-    /// <c>ToolsClass.OpenText</c> ist mit Welle 14b geloescht.
+    /// durch dieselbe Kette. Die Solarthermie-Ganglinie liest ueber
+    /// <see cref="StundenganglinieDatei"/>, die auf dieser Klasse aufsetzt.
     /// </para>
     /// </remarks>
     public static class GanglinienDatei
@@ -486,7 +484,7 @@ namespace WindowsFormsApplication1
         /// den Feldern zuletzt steht. Ist das Komma bereits Feldtrennzeichen,
         /// kann es kein Dezimaltrenner sein.
         /// </summary>
-        private static char ErkannterDezimaltrenner(List<string[]> zeilen, char trennzeichen)
+        internal static char ErkannterDezimaltrenner(List<string[]> zeilen, char trennzeichen)
         {
             if (trennzeichen == ',') return '.';
 

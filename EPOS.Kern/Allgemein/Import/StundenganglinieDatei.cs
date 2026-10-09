@@ -114,6 +114,7 @@ namespace WindowsFormsApplication1
             }
             else
             {
+                DezimaltrennerOhneKopfzeile(vorschau, format);
                 ZaehlerspalteUeberspringen(vorschau, format);
             }
             erg.Format = format;
@@ -173,6 +174,19 @@ namespace WindowsFormsApplication1
                 zweiFelder = true;
             }
             return zweiFelder;
+        }
+
+        /// <summary>
+        /// Der Dezimaltrenner aus den DATENzeilen allein: Die Erkennung zählt die Kopfzeile
+        /// mit, und ein Komma im Beschreibungstext („Sued 45 Grad, Leistung") entschiede
+        /// dann gegen Werte wie <c>51.470</c>, deren drei Nachkommastellen für sich nichts
+        /// entscheiden — sie würden als Tausendertrenner gelesen (51 470 statt 51,47).
+        /// </summary>
+        private static void DezimaltrennerOhneKopfzeile(GanglinienVorschau v, GanglinienImportOptionen o)
+        {
+            if (!o.Kopfzeile || v.IstExcel || v.Zeilen.Count < 2) return;
+            o.Dezimaltrenner = GanglinienDatei.ErkannterDezimaltrenner(
+                v.Zeilen.GetRange(1, v.Zeilen.Count - 1), o.Trennzeichen);
         }
 
         /// <summary>
