@@ -57,8 +57,12 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Knopf(Karte(cut, g), "epos-kond-einzelheiten").Click();
     }
 
+    /// <summary>Der Abschnitt der Einzelheiten einer Größe — ein Geschwister der Karte, nicht ihr Kind.</summary>
+    private static IElement? Einzelheiten(IRenderedComponent<KonditionierungReiter> cut, KonditionierungGroesse g)
+        => cut.FindAll($"section.epos-kond-karte-einzelheiten[data-groesse='{(int)g}']").SingleOrDefault();
+
     private static IElement Inhalt(IRenderedComponent<KonditionierungReiter> cut, KonditionierungGroesse g)
-        => Karte(cut, g).QuerySelector(".epos-kond-inhalt") ?? throw new InvalidOperationException("Die Karte ist nicht aufgeklappt.");
+        => Einzelheiten(cut, g)?.QuerySelector(".epos-kond-inhalt") ?? throw new InvalidOperationException("Die Karte ist nicht aufgeklappt.");
 
     private static IElement Rasterzelle(IElement wurzel, string name)
         => wurzel.QuerySelector($".epos-wochenraster label.epos-feld[title='{name}'] input")
@@ -70,24 +74,45 @@ public class KalenderkarteInhaltTests : EposBunitContext
     // Teilschritt 1: Aufklappen, Grundangabe, Wochenraster
     // =================================================================================
 
+    /// <summary>
+    /// Anwendermeldung 08.10.2026 („bei Button anklicken wird Bereich entfernt"): Die aufgeklappte Karte nahm die
+    /// ganze Rasterzeile und sprang aus ihrer Reihe. Jetzt bleibt die Karte samt Kopf, Vorlagenwahl, Knöpfen und
+    /// Vorschau stehen; die Einzelheiten sind ein eigener Abschnitt neben ihr, der Knopf sagt, was er tut.
+    /// </summary>
     [Fact]
-    public void Die_Karte_klappt_ueber_Kalender_im_Einzelnen_auf_und_zu()
+    public void Kalender_bearbeiten_zeigt_die_Einzelheiten_neben_der_stehenden_Karte_und_klappt_sie_wieder_ein()
     {
         IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
         IElement karte = Karte(cut, KonditionierungGroesse.Heizen);
         IElement knopf = Knopf(karte, "epos-kond-einzelheiten");
-        Assert.Equal("Kalender im Einzelnen", knopf.TextContent.Trim());
+        Assert.Equal("Kalender bearbeiten…", knopf.TextContent.Trim());
+        Assert.Contains("Wochenraster", knopf.GetAttribute("title"));
+        Assert.Contains("Perioden", knopf.GetAttribute("title"));
+        Assert.Contains("Jahresvorschau", knopf.GetAttribute("title"));
         Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
-        Assert.Null(karte.QuerySelector(".epos-kond-inhalt"));
+        Assert.Null(Einzelheiten(cut, KonditionierungGroesse.Heizen));
 
         knopf.Click();
         karte = Karte(cut, KonditionierungGroesse.Heizen);
-        Assert.Equal("true", Knopf(karte, "epos-kond-einzelheiten").GetAttribute("aria-expanded"));
-        Assert.NotNull(karte.QuerySelector(".epos-kond-inhalt"));
+        knopf = Knopf(karte, "epos-kond-einzelheiten");
+        Assert.Equal("Einzelheiten einklappen", knopf.TextContent.Trim());
+        Assert.Equal("true", knopf.GetAttribute("aria-expanded"));
         Assert.Contains("epos-kond-karte--offen", karte.ClassList);
+        // Die Karte behält ihre kompakten Bedienelemente und trägt die Einzelheiten nicht in sich.
+        Assert.NotNull(karte.QuerySelector(".epos-kond-karte-zustand"));
+        Assert.NotNull(karte.QuerySelector("button.epos-kond-anlegen"));
+        Assert.Null(karte.QuerySelector(".epos-kond-inhalt"));
+        IElement einzelheiten = Einzelheiten(cut, KonditionierungGroesse.Heizen)!;
+        Assert.NotNull(einzelheiten.QuerySelector(".epos-kond-inhalt"));
+        Assert.Equal(einzelheiten.Id, knopf.GetAttribute("aria-controls"));
+        Assert.Equal("Kalender Heizen im Einzelnen", einzelheiten.QuerySelector("h3")!.TextContent.Trim());
+        Assert.Contains("epos-kond--aktiv", einzelheiten.ClassList);
+        Assert.Same(karte.ParentElement, einzelheiten.ParentElement);
 
-        Knopf(karte, "epos-kond-einzelheiten").Click();
-        Assert.Null(Karte(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-inhalt"));
+        // Der Knopf im Abschnitt klappt ebenso ein.
+        Knopf(einzelheiten, "epos-kond-einzelheiten-zu").Click();
+        Assert.Null(Einzelheiten(cut, KonditionierungGroesse.Heizen));
+        Assert.Equal("Kalender bearbeiten…", Knopf(Karte(cut, KonditionierungGroesse.Heizen), "epos-kond-einzelheiten").TextContent.Trim());
     }
 
     [Fact]
@@ -417,7 +442,7 @@ public class KalenderkarteInhaltTests : EposBunitContext
         // Das Zeitprogramm bleibt stehen (AK1); der Dialog steht im Reiter „Konditionierung", Heizen aufgeklappt.
         Assert.NotNull(cut.Instance.Arbeitsstand.Sollwertprofil);
         Assert.Equal("KONDITIONIERUNG", cut.Instance.AktiverReiter);
-        Assert.NotNull(cut.Find("section.epos-kond-karte[data-groesse='0'] .epos-kond-inhalt"));
+        Assert.NotNull(cut.Find("section.epos-kond-karte-einzelheiten[data-groesse='0'] .epos-kond-inhalt"));
 
         // „Zurücknehmen" nimmt die Übernahme als EINEN Schritt zurück.
         cut.Find("button.epos-kond-zuruecknehmen").Click();

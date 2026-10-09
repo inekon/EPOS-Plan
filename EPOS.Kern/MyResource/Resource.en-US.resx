@@ -41684,7 +41684,16 @@ This folder holds the standard template, the short report, the detailed template
     <value>A standard week has exactly {1} cells; {0} were passed.</value>
   </data>
   <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
-    <value>Calendar details</value>
+    <value>Edit calendar…</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN_ZU" xml:space="preserve">
+    <value>Collapse details</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_EINZELHEITEN" xml:space="preserve">
+    <value>Shows the calendar of this quantity in detail below the cards: weekly grid (7 × 24 hours), periods (holidays, public holidays, exception days) and year preview (carpet plot).</value>
+  </data>
+  <data name="KOND_LBL_EINZELHEITEN_TITEL" xml:space="preserve">
+    <value>{0} calendar in detail</value>
   </data>
   <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
     <value>Create the calendar first – until then it follows the matrix.</value>

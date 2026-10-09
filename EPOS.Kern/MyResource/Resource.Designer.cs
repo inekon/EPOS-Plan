@@ -73443,11 +73443,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender im Einzelnen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender bearbeiten… ähnelt.
         /// </summary>
         public static string KOND_BTN_EINZELHEITEN {
             get {
                 return ResourceManager.GetString("KOND_BTN_EINZELHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelheiten einklappen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_EINZELHEITEN_ZU {
+            get {
+                return ResourceManager.GetString("KOND_BTN_EINZELHEITEN_ZU", resourceCulture);
             }
         }
         
@@ -73943,6 +73952,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_AUS_SCHALTER {
             get {
                 return ResourceManager.GetString("KOND_LBL_AUS_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender {0} im Einzelnen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_EINZELHEITEN_TITEL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_EINZELHEITEN_TITEL", resourceCulture);
             }
         }
         
@@ -75716,6 +75734,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_HINWEIS_AUS {
             get {
                 return ResourceManager.GetString("KOND_TXT_HINWEIS_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt den Kalender dieser Größe im Einzelnen unter den Karten: Wochenraster (7 × 24 Stunden), Perioden (Ferien, Feiertage, Ausnahmetage) und Jahresvorschau (Teppichbild). ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_EINZELHEITEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_EINZELHEITEN", resourceCulture);
             }
         }
         

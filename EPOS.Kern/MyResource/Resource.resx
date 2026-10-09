@@ -41691,7 +41691,16 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Eine Standardwoche hat genau {1} Zellen, übergeben sind {0}.</value>
   </data>
   <data name="KOND_BTN_EINZELHEITEN" xml:space="preserve">
-    <value>Kalender im Einzelnen</value>
+    <value>Kalender bearbeiten…</value>
+  </data>
+  <data name="KOND_BTN_EINZELHEITEN_ZU" xml:space="preserve">
+    <value>Einzelheiten einklappen</value>
+  </data>
+  <data name="KOND_TXT_HINWEIS_EINZELHEITEN" xml:space="preserve">
+    <value>Zeigt den Kalender dieser Größe im Einzelnen unter den Karten: Wochenraster (7 × 24 Stunden), Perioden (Ferien, Feiertage, Ausnahmetage) und Jahresvorschau (Teppichbild).</value>
+  </data>
+  <data name="KOND_LBL_EINZELHEITEN_TITEL" xml:space="preserve">
+    <value>Kalender {0} im Einzelnen</value>
   </data>
   <data name="KOND_TXT_GRUND_NICHT_ANGELEGT" xml:space="preserve">
     <value>Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.</value>

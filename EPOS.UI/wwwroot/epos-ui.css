@@ -14758,7 +14758,8 @@ td.epos-vorlage-katalogbeschreibung {
 /* Schmal (Vorgabe): nur die Spalte und die Karte der gewaehlten Groesse. */
 .epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),
 .epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv),
-.epos-kond-karte:not(.epos-kond--aktiv) {
+.epos-kond-karte:not(.epos-kond--aktiv),
+.epos-kond-karte-einzelheiten:not(.epos-kond--aktiv) {
     display: none;
 }
 
@@ -14916,15 +14917,31 @@ td.epos-vorlage-katalogbeschreibung {
 }
 
 /* DIE KARTE IM EINZELNEN (Stufe KP2, Welle U3; Teilkonzept 7.5): "Kalender
-   im Einzelnen" klappt den Inhalt auf - Grundangabe, Wochenraster,
-   Zeitfenster, Periodenliste, Werkzeuge, Teppichbild. Die aufgeklappte Karte
-   nimmt im breiten Raster die ganze Zeile, sonst drueckte das Wochenraster
-   sie quer (eine Spalte ist rund 200 px breit). */
+   bearbeiten…" klappt die Einzelheiten auf - Grundangabe, Wochenraster,
+   Zeitfenster, Periodenliste, Werkzeuge, Teppichbild. Die KARTE BLEIBT an
+   ihrem Platz im Raster (Kopf, Vorlagenwahl, Knoepfe, Vorschau); die
+   Einzelheiten sind ein eigener Abschnitt, der ueber die ganze Zeile UNTER
+   allen Karten steht (order) - sonst drueckte das Wochenraster die schmale
+   Spalte quer, und eine Karte ueber die ganze Zeile sprang aus ihrer Reihe
+   unter den Zeiger weg. Die aufgeklappte Karte und ihr Abschnitt tragen den
+   Rahmen der Marke, so gehoeren sie sichtbar zusammen. */
 .epos-kond-karte--offen {
-    grid-column: 1 / -1;
+    border-color: var(--epos-marke);
+    box-shadow: inset 0 -3px 0 var(--epos-marke);
 }
 
-.epos-kond-einzelheiten {
+.epos-kond-karte-einzelheiten {
+    grid-column: 1 / -1;
+    order: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--epos-marke);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-kond-einzelheiten,
+.epos-kond-einzelheiten-zu {
     margin-left: auto;
 }
 
@@ -15134,7 +15151,8 @@ td.epos-vorlage-katalogbeschreibung {
         display: table-cell;
     }
 
-    .epos-kond-karte:not(.epos-kond--aktiv) {
+    .epos-kond-karte:not(.epos-kond--aktiv),
+    .epos-kond-karte-einzelheiten:not(.epos-kond--aktiv) {
         display: block;
     }
 
