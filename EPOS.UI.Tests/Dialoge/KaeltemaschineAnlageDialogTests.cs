@@ -152,7 +152,7 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
         Assert.Contains(folge, cut.Markup);
 
         // Eine Maschine: kein Hinweis.
-        Feld(cut, R.KMA_LBL_ANZAHL).Change("1");
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("1");
         Assert.DoesNotContain(folge, cut.Markup);
         Assert.DoesNotContain(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KMA_HINWEIS_FOLGESCHALTUNG, 1), cut.Markup);
 
