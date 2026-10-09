@@ -611,7 +611,10 @@ namespace EPOS.Kern.Tests
         private static bool Verwaltungsspalte(string spalte)
         {
             return string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase)
+                // Schritt 208: der Verweis auf die Kostenvorlage des Satzes - kein Eingabefeld, ihn schreibt der Rueckweg
+                // „In die Datenbank übernehmen…", gepflegt wird die Vorlage in der Kostenverwaltung.
+                || string.Equals(spalte, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

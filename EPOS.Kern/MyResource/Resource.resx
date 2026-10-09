@@ -50290,5 +50290,8 @@ Chart</value>
   <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
     <value>Heilige Drei Könige;Internationaler Frauentag;Fronleichnam;Mariä Himmelfahrt;Weltkindertag;Reformationstag;Allerheiligen;Buß- und Bettag</value>
   </data>
+  <data name="PARV_LBL_KOSTENVORLAGE" xml:space="preserve">
+    <value>Kostenvorlage des Satzes:</value>
+  </data>
 </root>
 

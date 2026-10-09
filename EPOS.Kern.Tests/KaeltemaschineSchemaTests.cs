@@ -126,7 +126,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(KaeltemaschineSchema.Vollstaendig());
-            Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count);
+            Assert.Equal(18, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count); // 17 + ID_KostenVorlage (Schritt 208, KatalogkostenUrsprungSchema)
             Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN_STAMM).Count);
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN).Count);

@@ -50283,5 +50283,8 @@ chart</value>
   <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
     <value>Epiphany;International Women’s Day;Corpus Christi;Assumption Day;World Children’s Day;Reformation Day;All Saints’ Day;Day of Repentance and Prayer</value>
   </data>
+  <data name="PARV_LBL_KOSTENVORLAGE" xml:space="preserve">
+    <value>Record cost template:</value>
+  </data>
 </root>
 

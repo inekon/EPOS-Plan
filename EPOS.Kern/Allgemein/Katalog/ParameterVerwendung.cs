@@ -274,6 +274,18 @@ namespace WindowsFormsApplication1
               "Katalogabgleich (Satz in einer spaeteren Auslieferung entfallen, bleibt stehen)"),
         };
 
+        /// <summary>
+        /// Schemaschritt <see cref="KatalogkostenUrsprungSchema"/> (208): die Kostenvorlage des Katalogsatzes an den acht
+        /// Katalogen mit Kosten, in der Reihenfolge der Tabelle die letzte (ADD COLUMN). Leer = Standardvorlage des Gewerks;
+        /// der Rueckweg „In die Datenbank übernehmen…" schreibt sie, die Uebernahme ins Projekt zieht sie vor.
+        /// </summary>
+        private static IEnumerable<ParameterEintrag> Kostenvorlage(Func<string, string> t) => new[]
+        {
+            E(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, t("PARV_LBL_KOSTENVORLAGE"), "", WIRT,
+              "Katalogrueckweg.KostenvorlageSchreiben (Rueckweg); Katalogrueckweg.SatzvorlageDerAnlage -> " +
+              "KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen (Vorrang vor der Standardvorlage)"),
+        };
+
         private static ParameterEintrag E(string spalte, string anzeige, string einheit,
                                           Verwendung[] verwendung, string fundstelle = "")
         {
@@ -384,7 +396,7 @@ namespace WindowsFormsApplication1
                 E(KesselBereitschaftEinheitSchema.SPALTE, t("HZKK_LBL_BB_EINHEIT"), "", SIM,
                   "KesselBereitschaft.LeistungKw (kW oder % der Nennleistung); HeizkesselKatalogDialog.razor; " +
                   "KatalogBrowserProfil (Heizkessel)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         // =================================================================
@@ -514,7 +526,7 @@ namespace WindowsFormsApplication1
                 E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("BHKWK_LBL_RUECKLAUF_MAX"), "°C", SIM,
                   "SimulationBHKW.RuecklaufgrenzeAnwenden (Ruecklaufgrenze.BhkwAus: Ruecklauf zum BHKW >= Grenze -> keine " +
                   "Lieferung, Grund RUECKLAUF_MAX); Ruecklaufgrenze.BhkwAuslegungHinweis (Pruefregel des Stammblatts)"),
-            }).ToList();
+            }).Concat(Kostenvorlage(t)).ToList();
         }
 
         /// <summary>
@@ -628,7 +640,7 @@ namespace WindowsFormsApplication1
                 E(ErzeugerTeillastSchema.SPALTE_WP_CD, t("WPS_LBL_TAKTVERLUST_CD"), "", SIM,
                   "SimulationWaermepumpe.TaktStundeAbschliessen (Waermepumpentakt.Teillastfaktor, leer = 0,9); " +
                   "Kaeltekaskade; WaermepumpeStammFelder")
-            }.Concat(Katalogspalten(t)).Concat(UebergabegrenzeWp(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(UebergabegrenzeWp(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         // =================================================================
@@ -687,7 +699,7 @@ namespace WindowsFormsApplication1
                 E(SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE, t("SKK_LBL_BEZUGSFLAECHE"), "", SIM,
                   "SimulationSolarthermie.Kollektorfelder_Lesen → Solarkreis.Modulbezugsflaeche " +
                   "(apertur oder brutto); SolarkollektorKatalogDialog.razor; KatalogBrowserProfil (Solarkollektoren)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         // =================================================================
@@ -746,7 +758,7 @@ namespace WindowsFormsApplication1
                   "PhotovoltaikStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Technologie", t("PVM_MODUL_LABEL_TECHNOLOGIE"), "", SIM_BER,
                   "SimulationPV.HuldSatzDerAnlage (Huld-Satz je Zelltechnologie); AbweichungsErmittler.Felder (Tab_PV.Technologie)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         // =================================================================
@@ -809,7 +821,7 @@ namespace WindowsFormsApplication1
                 E(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, t("SP_LABEL_SELBSTENTLADUNG"), "%/Monat", SIM,
                   "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.SelbstentladungProzentMonat); " +
                   "SpeicherEngine/Speichersystem.Selbstentladung; SpeicherFlottenStudieCtrl.EinheitAusKatalogsatz")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         // =================================================================
@@ -850,7 +862,7 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.BasenFuellen (KOSTEN_KOMPONENTE_PUFFERSPEICHER)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "PufferSpStammCtrl.Ueberschreiben (Auslieferungssatz)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         // =================================================================
@@ -929,7 +941,7 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
         }
 
         private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)
