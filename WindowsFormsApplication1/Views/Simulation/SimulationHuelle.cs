@@ -93,6 +93,9 @@ namespace WindowsFormsApplication1
 
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(m, m.ID_WP);
             WaermepumpeAnlageDaten d = WaermepumpeAnlageHuelle.AusModell(m);
+            // Anwenderwunsch 08.10.2026: ohne Traeger die Vorauswahl des Kerns - sie steht im Feldsatz und
+            // wird mit OK gespeichert; der Anwender kann sie aendern.
+            if (d.CarrierId <= 0) d.CarrierId = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_WAERMEPUMPE, 0, idProjekt);
             // Uebergabegrenze UB-E1: Herleitungszeile und Schnellwahl; der Schreibweg schreibt davon in E1 nur
             // Vorlauf_Max (MitBetriebszeiten) - das Kaeltemittel kommt erst mit dem Schemaschritt.
             BivalenzAbbildung.Lesen(m, d);

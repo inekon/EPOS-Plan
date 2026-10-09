@@ -357,6 +357,32 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
         Assert.Equal(58, daten.CarrierId);
     }
 
+    /// <summary>
+    /// Die Vorauswahl des Trägers (Anwenderwunsch 08.10.2026) steht im Feldsatz — die Hülle setzt sie aus
+    /// dem Kern, die Wahl zeigt sie an, ohne dass der Anwender etwas tut, und er kann sie ändern.
+    /// </summary>
+    [Fact]
+    public void Die_Vorauswahl_des_Traegers_steht_in_der_Wahl_und_bleibt_aenderbar()
+    {
+        var daten = Voll();
+        daten.CarrierId = 60;   // die Vorauswahl der Hülle: Standard-Stromträger
+        int gemeldet = 0;
+        var cut = Aufbauen(daten, geaendert: () => gemeldet++, traegerkatalog: new[]
+        {
+            new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
+            new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
+        });
+
+        var selects = cut.Find(".epos-traegerwahl").QuerySelectorAll("select");
+        Assert.Equal("Strom", selects[0].QuerySelector("option[selected]")?.TextContent.Trim());
+        Assert.Equal("60", selects[1].QuerySelector("option[selected]")?.GetAttribute("value"));
+        Assert.Equal(0, gemeldet);
+        Assert.Equal(60, daten.CarrierId);
+
+        selects[1].Change("58");
+        Assert.Equal(58, daten.CarrierId);
+    }
+
     /// <summary>Nur ansehen: Jedes Feld ist gesperrt — kein Klick ändert etwas.</summary>
     [Fact]
     public void Ohne_Aktiv_ist_jedes_Feld_gesperrt()

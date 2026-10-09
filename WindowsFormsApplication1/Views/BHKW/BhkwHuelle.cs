@@ -410,6 +410,11 @@ namespace WindowsFormsApplication1
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
+                // Anwenderwunsch 08.10.2026: ohne Traeger die Vorauswahl des Kerns ins Modell - sie wird mit dem
+                // Projekt gespeichert. Im Assistenten zeigt ID_BHKW auf den Stamm, darum dort ohne Geraet.
+                if (m.ID_Carrier <= 0)
+                    m.ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(
+                        DbWerte.ERZEUGER_BHKW, wizard ? 0 : m.ID_BHKW, projektId);
                 zeilen.Add(ZeileZu(m));
                 zuModell[m.ID] = m;
             }

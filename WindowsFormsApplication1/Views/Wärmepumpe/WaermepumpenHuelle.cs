@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
                 ID_WP = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bezeichner)
             };
             // ET-5 (08.09.2026): Vorgabe der Stromtraeger des Projekts (Anwender: "default Strom").
-            modell.ID_Carrier = ErzeugerTraegerHuelle.Standard(projektId);
+            modell.ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_WAERMEPUMPE, 0, projektId);
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(modell, modell.ID_WP);
 
             // W6-E-4 (06.09.2026): Die Waermepumpe hat keine Katalogtemperaturen - ihr
