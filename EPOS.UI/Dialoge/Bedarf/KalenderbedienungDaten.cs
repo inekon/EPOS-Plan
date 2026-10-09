@@ -44,13 +44,16 @@ public sealed record KalenderWirkungsangabe(KalenderWirkung Wirkung, string? Pro
 }
 
 /// <summary>Wo ein Wochenprofil steht: Ort (Größe, Zone) und Rang der Periode; <c>null</c> = Standardwoche.</summary>
-public sealed record KalenderProfilort(KonditionierungOrt Ort, int? Rang = null);
+public sealed record KalenderProfilort(KonditionierungOrt Ort, int? Rang = null, long? IdWoche = null);
 
 /// <summary>Ein Wochenprofil: die Standardwoche (<see cref="Rang"/> <c>null</c>) oder die Woche einer eigenen Zeile; 168 Werte, NaN = „aus".</summary>
-public sealed record KalenderWochenprofil(int? Rang, string Name, double[] Werte)
+public sealed record KalenderWochenprofil(int? Rang, string Name, double[] Werte, long? IdWoche = null)
 {
     /// <summary>Ist es die Standardwoche?</summary>
-    public bool IstStandardwoche => !Rang.HasValue;
+    public bool IstStandardwoche => !Rang.HasValue && !IdWoche.HasValue;
+
+    /// <summary>Eine benannte Woche (Stufe 2)?</summary>
+    public bool IstBenannt => IdWoche.HasValue;
 }
 
 /// <summary>Ein Pinselstrich: Tage <paramref name="TagVon"/> … <paramref name="TagBis"/> (0 = Montag), Stunden von (eingeschlossen) bis (ausgeschlossen), Wert oder „aus" (<c>null</c>).</summary>
@@ -63,7 +66,7 @@ public sealed record KalenderPinselstrich(int TagVon, int TagBis, int StundeVon,
 public sealed record KalenderZuordnungszeile(KalenderZeilenschluessel Schluessel, int ErsterTag,
                                              IReadOnlyList<KonditionierungGroesse> GiltFuer,
                                              IReadOnlyDictionary<KonditionierungGroesse, int> Raenge,
-                                             KalenderWirkungsangabe Wirkung, bool IstFerien)
+                                             KalenderWirkungsangabe Wirkung, bool IstFerien, int Maske = 31, bool IstGemeinsam = false, long? IdWoche = null)
 {
     /// <summary>Ein Einzeltag?</summary>
     public bool IstEinzeltag => Schluessel.IstEinzeltag;
@@ -104,6 +107,15 @@ public sealed record KalenderBandabschnitt(int Beginn, int Ende, KalenderTagart 
 /// <summary>Ein Ferienzeitraum der Schnellfelder: Name „Ferien n", erster und letzter Tag (Beginn nach Ende = über den Jahreswechsel).</summary>
 public sealed record KalenderFerienzeile(string Name, int Beginn, int Ende);
 
+/// <summary>
+/// Eine Periode des gemeinsamen Kalenders (Stufe 2): die Periode in Kern-Einheiten und die Maske „gilt für"
+/// (Bit k = k-te Größe, Heizen = 1 … Personen = 16, 31 = alle).
+/// </summary>
+public sealed record KalenderGemeinschaftsperiode(KonditionierungPeriode Periode, int Maske);
+
+/// <summary>Eine benannte Woche (Stufe 2): Id (≤ 0 = noch ohne Zeile), Größe, Name und 168 Werte in Kern-Einheiten.</summary>
+public sealed record KalenderBenannteWoche(long Id, KonditionierungGroesse Groesse, string Name, double[] Werte);
+
 /// <summary>Zwei gekoppelte Zeilen, die in zwei Größen in umgekehrter Folge stehen (Warnzeile der Zuordnung).</summary>
 public sealed record KalenderRangwarnung(string Erste, string Zweite, KonditionierungGroesse Oben, KonditionierungGroesse Unten);
 
@@ -130,6 +142,15 @@ public sealed class KalenderAnsicht
 
     /// <summary>Die gekoppelten Zeilen mit abweichender Rangfolge zwischen den Größen.</summary>
     public IReadOnlyList<KalenderRangwarnung> Rangwarnungen { get; init; } = Array.Empty<KalenderRangwarnung>();
+
+    /// <summary>Die Wochenendtage des Gebäudes (0 = Montag); Vorgabe Samstag und Sonntag.</summary>
+    public IReadOnlyList<int> Wochenendtage { get; init; } = new[] { 5, 6 };
+
+    /// <summary>Das Feiertagsland des Gebäudes (ISO-Kürzel); <c>null</c> = nur bundeseinheitlich.</summary>
+    public string? Feiertagsland { get; init; }
+
+    /// <summary>Die wählbaren Länder (ISO-Kürzel).</summary>
+    public IReadOnlyList<string> Feiertagslaender { get; init; } = Array.Empty<string>();
 }
 
 /// <summary>Die Tage des Bezugsjahrs (Gemeinjahr, kein Schalttag) — Umrechnung zwischen Jahrestag und Datum für die Anzeige.</summary>

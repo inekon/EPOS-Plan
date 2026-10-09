@@ -220,25 +220,182 @@ namespace WindowsFormsApplication1
             return zusammen;
         }
 
-        /// <summary>Trägt der gemeinsame Kalender des Eigentümers Perioden mit Angabe (also ausgebreitete)?</summary>
-        public static bool HatAusgebreitete(DbVorgang v, Schluessel eigner)
-            => Convert.ToInt64(v.Skalar(
-                "SELECT COUNT(*) FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" IN (SELECT \"ID\" FROM \"" +
-                KonditionierungSchema.TAB_KALENDER + "\" WHERE " + BEDINGUNG + " AND \"Groesse\" = ?) AND (\"Wert\" IS NOT NULL OR " +
-                "\"Aus\" = 1 OR \"Woche\" IS NOT NULL OR \"ID_Woche\" IS NOT NULL OR \"WieWochentag\" IS NOT NULL)",
-                eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray()), CultureInfo.InvariantCulture) > 0;
+        // =================================================================
+        //  Der Arbeitsstand: gemeinsamer Kalender, Ferienliste, benannte Wochen
+        // =================================================================
+
+        /// <summary>Der erste Rang der Ferienliste jenseits des Spiegels der vier Ferienspalten (204).</summary>
+        public const int RANG_FERIENLISTE = KalenderbedienungSchema.RANG_FERIEN_ERSTER + KalenderbedienungSchema.FERIENSPALTEN;
+
+        /// <summary>Der letzte Rang der Ferienliste (unter dem Eigenband 310).</summary>
+        public const int RANG_FERIENLISTE_LETZTER = Standardfahrplan.RANG_EIGEN - 1;
 
         /// <summary>
-        /// Löst die Perioden mit Angabe des gemeinsamen Kalenders auf — der Schreibweg hat sie als Kopien in jeden
-        /// Größenkalender geschrieben; danach führt <see cref="Zusammenfuehren"/> sie wieder zusammen. Die Ferienliste
-        /// (Perioden ohne Angabe) bleibt.
+        /// <b>Liest den gemeinsamen Kalender eines Eigentümers</b>: die Perioden mit Angabe als
+        /// <see cref="Gemeinschaftsperiode"/> (Angabe gelesen mit dem strengen Leser in der ersten Größe der Maske; eine
+        /// ungültige Periode fehlt) und die Ferienliste ab Rang <see cref="RANG_FERIENLISTE"/>. Ohne Schritt leer.
         /// </summary>
-        public static int Aufloesen(DbVorgang v, Schluessel eigner)
-            => v.Ausfuehren(
-                "DELETE FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" IN (SELECT \"ID\" FROM \"" +
-                KonditionierungSchema.TAB_KALENDER + "\" WHERE " + BEDINGUNG + " AND \"Groesse\" = ?) AND (\"Wert\" IS NOT NULL OR " +
-                "\"Aus\" = 1 OR \"Woche\" IS NOT NULL OR \"ID_Woche\" IS NOT NULL OR \"WieWochentag\" IS NOT NULL)",
-                eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray());
+        public static void GemeinsamLesen(Schluessel eigner, out List<Gemeinschaftsperiode> gemeinsam, out List<Ferienzeile> ferien)
+        {
+            gemeinsam = new List<Gemeinschaftsperiode>();
+            ferien = new List<Ferienzeile>();
+            if (eigner == null || !SchrittSteht()) return;
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT " + Periodenspalten("p.", true) + " FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p JOIN \"" +
+                KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" WHERE k.\"Groesse\" = ? AND k.\"ID_Gebaeude\" IS ? AND " +
+                "k.\"ID_Zone\" IS ? AND k.\"ID_Gebaeude_Stamm\" IS ? AND k.\"ID_Zone_Stamm\" IS ? AND k.\"ID_Vorlage\" IS ? ORDER BY p.\"Rang\" DESC",
+                new[] { new DbParam("@a", ALLE) }.Concat(eigner.Parameter()).ToArray());
+            if (t == null) return;
+            foreach (DataRow r in t.Rows)
+            {
+                var p = new Periodenzeile
+                {
+                    Id = L(r, "ID") ?? 0, IdKalender = L(r, "ID_Kalender") ?? 0, Rang = (int)(L(r, "Rang") ?? 0),
+                    Art = Tx(r, "Art"), Bezeichner = Tx(r, "Bezeichner"), Beginn = I(r, "Beginn"), Ende = I(r, "Ende"),
+                    Feiertagsregel = Tx(r, "Feiertagsregel"), Wert = r["Wert"] == DBNull.Value ? null : Convert.ToDouble(r["Wert"], CultureInfo.InvariantCulture),
+                    Aus = (L(r, "Aus") ?? 0) != 0, Woche = Tx(r, "Woche"), WieWochentag = I(r, "WieWochentag"),
+                    GiltFuer = I(r, "Gilt_Fuer"), IdWoche = L(r, "ID_Woche"),
+                };
+                if (!HatAngabe(p))
+                {
+                    if (p.Rang >= RANG_FERIENLISTE && string.Equals(p.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal)
+                        && p.Beginn.HasValue && p.Ende.HasValue)
+                        ferien.Add(new Ferienzeile(p.Bezeichner, p.Beginn.Value, p.Ende.Value));
+                    continue;
+                }
+                int maske = p.GiltFuer ?? 0;
+                Konditionierungsgroesse g = Gemeinschaftsperiode.Groessen(maske).FirstOrDefault();
+                if (maske == 0) continue;
+                var zeile = new Kalenderzeile { Id = p.IdKalender, Groesse = Konditionierungsgroessen.Kennwort(g), Aus = true };
+                Kalenderlesung l = Kalenderleser.Lesen(zeile, new[] { p });
+                if (l.Befund != Kalenderbefund.Gelesen || l.Kalender.Perioden.Count != 1) continue;
+                gemeinsam.Add(new Gemeinschaftsperiode(l.Kalender.Perioden[0], maske));
+            }
+            ferien.Reverse();
+        }
+
+        /// <summary>Die benannten Wochen eines Eigentümers (nach Größe und Name); ohne Schritt leer.</summary>
+        public static List<BenannteWoche> WochenLesen(Schluessel eigner)
+        {
+            var liste = new List<BenannteWoche>();
+            if (eigner == null || !SchrittSteht()) return liste;
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT \"ID\", \"Groesse\", \"Name\", \"Woche\" FROM \"" + KalenderbedienungSchema.TAB_WOCHE + "\" WHERE " + BEDINGUNG +
+                " ORDER BY \"Groesse\", \"Name\", \"ID\"", eigner.Parameter());
+            if (t == null) return liste;
+            foreach (DataRow r in t.Rows)
+            {
+                if (!Konditionierungsgroessen.AusKennwort(Tx(r, "Groesse"), out Konditionierungsgroesse g)) continue;
+                Wochenlesung wl = Kalenderwoche.Lesen(Tx(r, "Woche"), g);
+                if (wl.Befund != Wochenbefund.Gelesen) continue;
+                liste.Add(new BenannteWoche(L(r, "ID") ?? 0, g, Tx(r, "Name"), wl.Werte.ToArray()));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>Schreibt die benannten Wochen</b>: neue (Id ≤ 0) bekommen eine Zeile — <paramref name="ids"/> ordnet ihre
+        /// vorläufige Id der neuen zu —, geänderte werden ersetzt. Entfernte fallen erst mit <see cref="WochenEntfernen"/>,
+        /// nachdem die Perioden geschrieben sind.
+        /// </summary>
+        public static bool WochenSchreiben(DbVorgang v, Schluessel eigner, IReadOnlyList<BenannteWoche> alt,
+                                           IReadOnlyList<BenannteWoche> neu, Dictionary<long, long> ids)
+        {
+            bool geschrieben = false;
+            foreach (BenannteWoche w in neu ?? Array.Empty<BenannteWoche>())
+            {
+                string text = Kalenderwoche.Schreiben(w.Werte, w.Groesse);
+                if (w.IstNeu)
+                {
+                    v.Ausfuehren("INSERT INTO \"" + KalenderbedienungSchema.TAB_WOCHE + "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", " +
+                                 "\"ID_Zone_Stamm\", \"ID_Vorlage\", \"Groesse\", \"Name\", \"Woche\") VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                                 eigner.Parameter().Concat(new[] { new DbParam("@g", Konditionierungsgroessen.Kennwort(w.Groesse)),
+                                     new DbParam("@n", w.Name), new DbParam("@w", text) }).ToArray());
+                    ids[w.Id] = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+                    geschrieben = true;
+                }
+                else if (!(alt ?? Array.Empty<BenannteWoche>()).Any(a => a.Gleich(w)))
+                {
+                    v.Ausfuehren("UPDATE \"" + KalenderbedienungSchema.TAB_WOCHE + "\" SET \"Name\" = ?, \"Woche\" = ? WHERE \"ID\" = ?",
+                                 new DbParam("@n", w.Name), new DbParam("@w", text), new DbParam("@id", w.Id));
+                    geschrieben = true;
+                }
+            }
+            return geschrieben;
+        }
+
+        /// <summary>Löscht die Wochen, die <paramref name="neu"/> nicht mehr führt (nach dem Schreiben der Perioden).</summary>
+        public static bool WochenEntfernen(DbVorgang v, IReadOnlyList<BenannteWoche> alt, IReadOnlyList<BenannteWoche> neu)
+        {
+            bool geschrieben = false;
+            foreach (BenannteWoche w in alt ?? Array.Empty<BenannteWoche>())
+                if (!w.IstNeu && !(neu ?? Array.Empty<BenannteWoche>()).Any(n => n.Id == w.Id))
+                {
+                    v.Ausfuehren("DELETE FROM \"" + KalenderbedienungSchema.TAB_WOCHE + "\" WHERE \"ID\" = ?", new DbParam("@id", w.Id));
+                    geschrieben = true;
+                }
+            return geschrieben;
+        }
+
+        /// <summary>Die endgültige Id eines Wochenverweises (eine vorläufige über <paramref name="ids"/>).</summary>
+        public static long? WochenId(long? id, IReadOnlyDictionary<long, long> ids)
+            => id.HasValue && id.Value <= 0 && ids != null && ids.TryGetValue(id.Value, out long neu) ? neu : id;
+
+        /// <summary>
+        /// <b>Schreibt den gemeinsamen Kalender eines Eigentümers</b>: Seine Perioden mit Angabe und die Ferienliste ab Rang
+        /// <see cref="RANG_FERIENLISTE"/> werden ersetzt; der Spiegel der vier Ferienspalten (Rang 200 … 203) bleibt dem
+        /// Trigger. Fehlt der Kalender und gibt es etwas zu schreiben, entsteht er.
+        /// </summary>
+        public static void GemeinsamSchreiben(DbVorgang v, Schluessel eigner, IReadOnlyList<Gemeinschaftsperiode> gemeinsam,
+                                              IReadOnlyList<Ferienzeile> ferien, IReadOnlyDictionary<long, long> ids)
+        {
+            gemeinsam ??= Array.Empty<Gemeinschaftsperiode>();
+            ferien ??= Array.Empty<Ferienzeile>();
+            object o = v.Skalar("SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " + BEDINGUNG + " AND \"Groesse\" = ?",
+                                eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray());
+            long? id = o == null || o == DBNull.Value ? null : Convert.ToInt64(o, CultureInfo.InvariantCulture);
+            if (id.HasValue)
+                v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" = ? AND ((\"Wert\" IS NOT NULL OR " +
+                             "\"Aus\" = 1 OR \"Woche\" IS NOT NULL OR \"ID_Woche\" IS NOT NULL OR \"WieWochentag\" IS NOT NULL) OR \"Rang\" >= ?)",
+                             new DbParam("@k", id.Value), new DbParam("@r", RANG_FERIENLISTE));
+            if (gemeinsam.Count == 0 && ferien.Count == 0) return;
+            if (!id.HasValue)
+            {
+                v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER + "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", " +
+                             "\"ID_Zone_Stamm\", \"ID_Vorlage\", \"Groesse\", \"Aus\") VALUES (?, ?, ?, ?, ?, ?, 0)",
+                             eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray());
+                id = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+            }
+            const string EINFUEGEN = "INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE + "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", " +
+                                     "\"Beginn\", \"Ende\", \"Feiertagsregel\", \"Wert\", \"Aus\", \"Woche\", \"WieWochentag\", \"ID_Woche\", \"" +
+                                     KalenderbedienungSchema.SPALTE_GILT_FUER + "\") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            foreach (Gemeinschaftsperiode p in gemeinsam)
+            {
+                Kalenderregel r = p.Regel;
+                Kalenderangabe a = r.Angabe;
+                long? woche = a.Art == Angabeart.Woche ? WochenId(a.IdWoche, ids) : null;
+                string text = a.Art == Angabeart.Woche && !woche.HasValue
+                    ? Kalenderwoche.Schreiben(a.Woche, Gemeinschaftsperiode.Groessen(p.Maske).First()) : null;
+                v.Ausfuehren(EINFUEGEN, new DbParam("@k", id.Value), new DbParam("@r", r.Rang), new DbParam("@ar", r.Art),
+                             new DbParam("@bz", r.Bezeichner), new DbParam("@b", r.IstFeiertag ? null : (object)r.Beginn),
+                             new DbParam("@e", r.IstFeiertag ? null : (object)r.Ende), new DbParam("@ft", (object)r.Feiertagsregel),
+                             new DbParam("@w", a.Art == Angabeart.Wert ? (object)a.Wert : null), new DbParam("@au", a.Art == Angabeart.Aus ? 1 : 0),
+                             new DbParam("@wo", (object)text), new DbParam("@ww", a.Art == Angabeart.WieWochentag ? (object)a.WieWochentag : null),
+                             new DbParam("@iw", (object)woche), new DbParam("@gf", p.Maske));
+            }
+            for (int i = 0; i < ferien.Count; i++)
+                v.Ausfuehren(EINFUEGEN, new DbParam("@k", id.Value), new DbParam("@r", RANG_FERIENLISTE + i),
+                             new DbParam("@ar", DbWerte.KOND_ART_FERIEN), new DbParam("@bz", ferien[i].Name),
+                             new DbParam("@b", ferien[i].Beginn), new DbParam("@e", ferien[i].Ende), new DbParam("@ft", null),
+                             new DbParam("@w", null), new DbParam("@au", (object)0), new DbParam("@wo", null), new DbParam("@ww", null),
+                             new DbParam("@iw", null), new DbParam("@gf", KalenderbedienungSchema.MASKE_ALLE));
+        }
+
+        private static int? I(DataRow r, string spalte)
+            => r[spalte] == DBNull.Value ? (int?)null : Convert.ToInt32(r[spalte], CultureInfo.InvariantCulture);
+
+        private static string Tx(DataRow r, string spalte)
+            => r[spalte] == DBNull.Value ? null : Convert.ToString(r[spalte], CultureInfo.InvariantCulture);
 
         private static long? L(DataRow r, string spalte)
             => r[spalte] == DBNull.Value ? (long?)null : Convert.ToInt64(r[spalte], CultureInfo.InvariantCulture);

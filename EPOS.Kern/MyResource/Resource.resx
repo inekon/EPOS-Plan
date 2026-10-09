@@ -50047,5 +50047,20 @@ Chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Modulmodell</value>
   </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
+    <value>Die Woche „{0}“ wird noch von {1} Zeile(n) verwendet und lässt sich nicht löschen.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHE_NAME" xml:space="preserve">
+    <value>Der Name „{0}“ ist leer, zu lang oder in {1} schon vergeben.</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_WOCHENENDE" xml:space="preserve">
+    <value>Der Wochentag {0} liegt nicht zwischen 0 (Montag) und 6 (Sonntag).</value>
+  </data>
+  <data name="KOND_MSG_BEDIENUNG_FERIEN_ZU_VIELE" xml:space="preserve">
+    <value>Die Ferienliste fasst höchstens {0} Zeiträume.</value>
+  </data>
+  <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
+    <value>Heilige Drei Könige;Internationaler Frauentag;Fronleichnam;Mariä Himmelfahrt;Weltkindertag;Reformationstag;Allerheiligen;Buß- und Bettag</value>
+  </data>
 </root>
 

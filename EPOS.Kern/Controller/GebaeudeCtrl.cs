@@ -100,6 +100,10 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Ferienende_3") && row["Ferienende_3"] != DBNull.Value) item.Ferienende_3 = Convert.ToDouble(row["Ferienende_3"]);
             if (dt.Columns.Contains("Ferienbeginn_4") && row["Ferienbeginn_4"] != DBNull.Value) item.Ferienbeginn_4 = Convert.ToDouble(row["Ferienbeginn_4"]);
             if (dt.Columns.Contains("Ferienende_4") && row["Ferienende_4"] != DBNull.Value) item.Ferienende_4 = Convert.ToDouble(row["Ferienende_4"]);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) && row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                item.Wochenendtage = Convert.ToInt32(row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], System.Globalization.CultureInfo.InvariantCulture);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) && row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                item.Feiertagsland = Convert.ToString(row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], System.Globalization.CultureInfo.InvariantCulture);
             if (dt.Columns.Contains("WW_Bedarf") && row["WW_Bedarf"] != DBNull.Value) item.WW_Bedarf = Convert.ToDouble(row["WW_Bedarf"]);
             if (dt.Columns.Contains("spez_Waermeverbrauch") && row["spez_Waermeverbrauch"] != DBNull.Value) item.spez_Waermeverbrauch = Convert.ToDouble(row["spez_Waermeverbrauch"]);
             if (dt.Columns.Contains("Waermebedarf") && row["Waermebedarf"] != DBNull.Value) item.Waermebedarf = Convert.ToDouble(row["Waermebedarf"]);

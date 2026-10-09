@@ -293,6 +293,10 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Ferienende_3") && row["Ferienende_3"] != DBNull.Value) item.Ferienende_3 = Convert.ToDouble(row["Ferienende_3"]);
             if (dt.Columns.Contains("Ferienbeginn_4") && row["Ferienbeginn_4"] != DBNull.Value) item.Ferienbeginn_4 = Convert.ToDouble(row["Ferienbeginn_4"]);
             if (dt.Columns.Contains("Ferienende_4") && row["Ferienende_4"] != DBNull.Value) item.Ferienende_4 = Convert.ToDouble(row["Ferienende_4"]);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) && row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                item.Wochenendtage = Convert.ToInt32(row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], System.Globalization.CultureInfo.InvariantCulture);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) && row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                item.Feiertagsland = Convert.ToString(row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], System.Globalization.CultureInfo.InvariantCulture);
             if (dt.Columns.Contains("WW_Bedarf") && row["WW_Bedarf"] != DBNull.Value) item.WW_Bedarf = Convert.ToDouble(row["WW_Bedarf"]);
             if (dt.Columns.Contains("spez_Waermeverbrauch") && row["spez_Waermeverbrauch"] != DBNull.Value) item.spez_Waermeverbrauch = Convert.ToDouble(row["spez_Waermeverbrauch"]);
             if (dt.Columns.Contains("Waermebedarf") && row["Waermebedarf"] != DBNull.Value) item.Waermebedarf = Convert.ToDouble(row["Waermebedarf"]);
@@ -466,9 +470,28 @@ namespace WindowsFormsApplication1
             ps.Add(new DbParam("@bid", DbParamTyp.Integer) { Wert = newId });
             ps.AddRange(BuildValueParams(m));
             ps.Add(new DbParam("@bro", DbParamTyp.Boolean) { Wert = false });
-            bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray());
+            bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE, "ID", newId, m);
             if (!ok) neueId = 0;
             return ok;
+        }
+
+        /// <summary>
+        /// Wochenende und Feiertagsland (Schemaschritt <see cref="KalenderbedienungSchema"/>) — eine eigene Anweisung neben der
+        /// langen Spaltenliste; leer heißt Sa + So bzw. nur bundeseinheitlich. Ohne die Spalten (älterer Stand) nichts.
+        /// </summary>
+        internal static bool KalenderspaltenSchreiben(string tabelle, string schluesselspalte, object schluessel, GebaeudeModel m,
+                                                      string zusatz = null, object zusatzwert = null)
+        {
+            if (!DataRepository.SpalteVorhanden(tabelle, KalenderbedienungSchema.SPALTE_WOCHENENDTAGE)) return true;
+            var ps = new List<DbParam>
+            {
+                new DbParam("@w", m.Wochenendtage == KalenderbedienungSchema.WOCHENENDE_VORGABE ? null : (object)m.Wochenendtage),
+                new DbParam("@f", string.IsNullOrWhiteSpace(m.Feiertagsland) ? null : (object)m.Feiertagsland.Trim()),
+                new DbParam("@k", schluessel),
+            };
+            if (zusatz != null) ps.Add(new DbParam("@z", zusatzwert));
+            return DataRepository.ExecuteSQL("UPDATE [" + tabelle + "] SET [Wochenendtage] = ?, [Feiertagsland] = ? WHERE [" + schluesselspalte +
+                                             "] = ?" + (zusatz != null ? " AND [" + zusatz + "] = ?" : ""), ps.ToArray());
         }
 
         // Ueberschreibt einen vorhandenen Stammdatensatz (Schluessel = Bezeichner), sofern nicht schreibgeschuetzt.
@@ -483,7 +506,7 @@ namespace WindowsFormsApplication1
             string sql = "UPDATE [" + TABLE + "] SET " + SET_SPALTEN + " WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+            return DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE, "Bezeichner", m.Gebaeudename ?? "", m);
         }
 
         /// <summary>
@@ -516,7 +539,7 @@ namespace WindowsFormsApplication1
             var ps = new List<DbParam>(new GebaeudeStammCtrl().BuildValueParams(m));
             ps.Add(new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
             ps.Add(new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+            return DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE_PROJ, "ID", idGebaeude, m, "ID_Projekt", idProjekt);
         }
 
         #endregion
