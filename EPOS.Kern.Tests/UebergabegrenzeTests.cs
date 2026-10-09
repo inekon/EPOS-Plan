@@ -430,22 +430,78 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Abbildung_liest_den_Arbeitsstand_und_setzt_nie_eine_Einbindung()
+        public void Abbildung_liest_den_Arbeitsstand_samt_Einbindung_und_Vorwaermbetrieb()
         {
             var d = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten
             {
                 Vorlauf = 50, VorlaufMax = null, BivalenterBetrieb = true,
-                Betriebsart = DbWerte.WP_BETRIEBSART_ALTERNATIV, Abschaltpunkt = -5.0,
+                Betriebsart = DbWerte.WP_BETRIEBSART_ALTERNATIV, Abschaltpunkt = -5.0, Vorwaermbetrieb = true,
             };
             BivalenzGeraetedaten g = BivalenzAbbildung.Geraet(d, Array.Empty<Kennfeldpunkt>());
             Assert.Equal(50.0, g.HoechstvorlaufC);
             Assert.Equal(Bivalenzbetriebsart.Alternativ, g.Betriebsart);
             Assert.Equal(-5.0, g.AbschaltpunktC);
+            // UB-E2: leer bleibt leer (U-1); bei alternativ gilt kein Vorwärmbetrieb.
             Assert.Null(g.Einbindung);
             Assert.False(g.Vorwaermbetrieb);
+            d.Einbindung = "puffer";
+            d.Betriebsart = DbWerte.WP_BETRIEBSART_PARALLEL;
+            g = BivalenzAbbildung.Geraet(d, Array.Empty<Kennfeldpunkt>());
+            Assert.Equal("PUFFER", g.Einbindung);
+            Assert.True(g.Vorwaermbetrieb);
+            d.BivalenterBetrieb = false;
+            Assert.False(BivalenzAbbildung.Geraet(d, Array.Empty<Kennfeldpunkt>()).Vorwaermbetrieb);
             d.VorlaufMax = 55.0;
             Assert.Equal(55.0, BivalenzAbbildung.Hoechstvorlauf(d));
             Assert.Equal(11, BivalenzAbbildung.Kaeltemittelliste().Count);
+        }
+
+        /// <summary>
+        /// UB‑E2: Mit Einbindung wirkt die Grenze; die Herleitung des Abschaltpunkts nennt eingegeben, berechnet und
+        /// maßgebend (−10 °C eingegeben → maßgebend −3,5 °C; +3 °C eingegeben → maßgebend +3 °C); Lesewerte nach Kältemittel.
+        /// </summary>
+        [Fact]
+        public void Abbildung_mit_Einbindung_und_Herleitung_des_Abschaltpunkts()
+        {
+            using var kultur = new Kulturvorrichtung("de-DE");
+            var projekt = new BivalenzProjektdaten
+            {
+                KesselleistungKw = 10.0,
+                Gebaeude = new BivalenzGebaeudedaten
+                {
+                    Gebaeude = Heizkoerper(), HeizlastN = 10.0, AuslegungAussenC = -12.0, AuslegungRaumC = 20.0,
+                },
+                Kaskade = new[] { DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_HEIZKESSEL, "", "" },
+            };
+            var texte = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfigurationTexte();
+            EPOS.UI.Dialoge.Waermepumpe.WaermepumpeBivalenzWerte w = BivalenzAbbildung.Werte(
+                projekt, GeraetBeispiel("DIREKT"), Bivalenzpruefung.Grenzen("R410A", 55.0), false, true);
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.BivalenzKennzeichen.Wirksam, w.Kennzeichen);
+            Assert.Equal(-10.0, w.AbschaltpunktC);
+            Assert.Equal(-3.55, w.MassgebendC, TOL_PUNKT_K);
+            string zeile = EPOS.UI.Dialoge.Waermepumpe.WaermepumpeBivalenzText.AbschaltpunktZeile(w, texte);
+            Assert.StartsWith("eingegeben −10 °C · aus der Übergabe berechnet −3,", zeile);
+            Assert.EndsWith("maßgebend −3,5 °C", zeile);
+
+            BivalenzGeraetedaten warm = GeraetBeispiel("DIREKT");
+            warm = new BivalenzGeraetedaten
+            {
+                HoechstvorlaufC = warm.HoechstvorlaufC, Kennfeld = warm.Kennfeld, SpreizungMinK = warm.SpreizungMinK,
+                Betriebsart = warm.Betriebsart, AbschaltpunktC = 3.0, Vorwaermbetrieb = true, Kesselleistung = 10.0,
+                Einbindung = "DIREKT",
+            };
+            var w3 = BivalenzAbbildung.Werte(projekt, warm, Bivalenzpruefung.Grenzen("R410A", 55.0), false, true);
+            Assert.Equal(3.0, w3.MassgebendC, 9);
+            Assert.EndsWith("maßgebend +3 °C", EPOS.UI.Dialoge.Waermepumpe.WaermepumpeBivalenzText.AbschaltpunktZeile(w3, texte));
+
+            // Lesewerte nach Kältemittel: R410A 5/10/3 K, 60 %, Rücklauf 52 °C abgeleitet.
+            Assert.NotNull(w.Grenzen);
+            Assert.Equal(52.0, w.Grenzen!.RuecklaufMaxC, 9);
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.GrenzwertHerkunft.Abgeleitet, w.Grenzen.RuecklaufHerkunft);
+            Assert.Equal(EPOS.UI.Dialoge.Waermepumpe.GrenzwertHerkunft.VorgabeKaeltemittel, w.Grenzen.SpreizungHerkunft);
+            // Das Zahlenbeispiel: Die Übergabe begrenzt stärker als das Kennfeld (Hinweis), keine Warnung.
+            Assert.Contains(w.Befunde, b => b.Art == EPOS.UI.Dialoge.Waermepumpe.BivalenzBefundArt.UebergabeBegrenzt && b.NurHinweis);
+            Assert.DoesNotContain(w.Befunde, b => !b.NurHinweis && b.Art != EPOS.UI.Dialoge.Waermepumpe.BivalenzBefundArt.RuecklaufNie);
         }
     }
 }
