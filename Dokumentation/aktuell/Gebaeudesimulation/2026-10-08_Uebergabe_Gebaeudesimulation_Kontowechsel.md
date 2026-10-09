@@ -54,6 +54,8 @@ aber erst auf Auftrag des Anwenders.
 - **UB-E3:** umgesetzt (09.10.2026, #854; Basis R46).
 - **UB-E4:** umgesetzt (09.10.2026, #855; Basis R46 unverändert) — Bivalenzdiagramm, Reiter-Kachelzeile, Kennzahlen `wp.bivalenz.*`, Bericht, Export, Vorlagen auf Fassung 17.
 - **UB-E5:** umgesetzt (09.10.2026, #856; kein Code) — Wiki-Quellen und Logbuch-Entwurf (Version offen, Vorschlag 1.2.1), Konzepte „wie gebaut“ nach `ueberholt/`; UB abgeschlossen, offen: Wiki-Upload.
+- **KM3-E1:** umgesetzt (09.10.2026, #870) — Schemaschritt 208 `KaeltemaschineTeillastSchema`, Katalog, Import der Teillastkurve.
+- **KM3-E2:** umgesetzt (09.10.2026, #871; Basis R48) — Rechenweg, Referenzprojekt 1063; offen: E3 (Dialoggruppe, Bericht, Kennzahlen, Vorlagen), E4 (Wiki, Logbuch).
 - **Vor UB-E2:** Schemaschritt `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (205, hängt an 204 `ZonenKatalogSchema`) und
   allein diese Zeile sofort pushen (umgesetzt 09.10.2026, #853; Basis R45 eingefroren).
 - **Referenzprojekt 1060** als Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, danach Basis **R45** einfrieren —
