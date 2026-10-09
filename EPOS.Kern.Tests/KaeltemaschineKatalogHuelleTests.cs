@@ -60,7 +60,8 @@ namespace EPOS.Kern.Tests
             IReadOnlyDictionary<string, object> g = KaeltemaschineKatalogHuelle.Gaben();
 
             var zeilen = ((Func<IReadOnlyList<Katalogfilterzeile>>)g["Katalogzeilen"])();
-            Assert.Equal(3, zeilen.Count);
+            // Drei Beispielgeräte (182) und die eingebauten Typkennfelder (203, KM2), alle ausgeliefert.
+            Assert.Equal(3 + KaeltemaschinenTypkennfelder.Lesen().Count, zeilen.Count);
             Assert.All(zeilen, z => Assert.True(z.Geschuetzt));
             Assert.Contains(zeilen, z => z.Text(Katalogfilterprofil.SpRueckkuehlart) == WindowsFormsApplication1.MyResource.Resource.KM_RUECKKUEHLART_TROCKENKUEHLER);
 
@@ -69,7 +70,8 @@ namespace EPOS.Kern.Tests
             var loeschen = (Func<int, KaeltemaschineSpeicherErgebnis>)g["Loeschen"];
             var duplizieren = (Func<int, string, KaeltemaschineSpeicherErgebnis>)g["Duplizieren"];
 
-            Katalogfilterzeile trocken = zeilen.Single(z => z.Bezeichner.Contains("Trockenkühler", StringComparison.Ordinal));
+            Katalogfilterzeile trocken = zeilen.Single(z => z.Bezeichner.StartsWith("Kältemaschine ", StringComparison.Ordinal) &&
+                                                              z.Bezeichner.Contains("Trockenkühler", StringComparison.Ordinal));
             KaeltemaschineDaten saat = lies(trocken.Id);
             Assert.True(saat.Auslieferung);
             Assert.Equal(6, saat.Kennlinie.Count);

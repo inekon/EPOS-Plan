@@ -88,8 +88,20 @@ die Hilfe des Importdialogs nennt Quelle und Lizenz.
 
 **Einspielen** schreibt die Sätze als Auslieferungssätze (`ReadOnly = 1`, `Katalog_Schluessel` =
 `KM:TYPKENNFELD_…` aus dem Bezeichner, Prüfsumme über `KatalogSchluesselSaat`) und ist idempotent: Ein Satz,
-dessen Schlüssel oder Bezeichner schon steht, zählt als übersprungen. Die Testdatenbank trägt die Sätze noch
-nicht; das übernimmt der Schemaschritt 206 (`KaeltemaschinenTypkennfelderSchema`), der `Einspielen` aufruft.
+dessen Schlüssel oder Bezeichner schon steht, zählt als übersprungen.
+
+### Schemaschritt 203
+
+`KaeltemaschinenTypkennfelderSchema` (`EPOS.Kern/Allgemein/Update/`, 203 = `KuehlkurveSchema.SCHRITT + 1`) bringt die
+Typkennfelder in jede Datenbank: Der Schritt ruft `Einspielen` und prüft danach, dass jedes Typkennfeld unter
+Schlüssel oder Bezeichner steht und jeder gesperrte Satz seine Prüfsumme trägt. Er legt keine Spalte und keine
+Tabelle an, setzt die Tabellen der Kältemaschine (Schritt 182) voraus und bricht ohne sie benannt ab; ein zweiter
+Lauf legt nichts an, ein eigener Satz des Anwenders unter einem Bezeichner bleibt, wie er ist. Eingetragen ist er
+in `SchemaStand.Zielversion`, in der Paketanhebung (Art Katalog), in der `SchemaMigration` der Windows-Schale, in
+`Werkzeuge/Testdatenbankschema` und in der Testkopie von `EPOS.Kern.Tests`. Die Testdatenbank steht auf 203 und
+trägt neben den drei Beispielgeräten die 34 Typkennfelder; kein Referenzprojekt führt eines, die Basis bleibt.
+Der Knopf „Typkennfelder laden…“ bleibt als Reparaturweg. Nachweis:
+`EPOS.Kern.Tests/KaeltemaschinenTypkennfelderSchemaTests`.
 
 ### Oberfläche
 

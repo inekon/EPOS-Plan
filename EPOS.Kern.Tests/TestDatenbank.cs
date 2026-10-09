@@ -990,6 +990,9 @@ namespace EPOS.Kern.Tests
                 // Gebaeudetabellen samt elftem Sichtneubau, die Kennzahlen an Tab_ErgebnisEnergiebedarf, leer.
                 // ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
                 KuehlkurveSchema.Ausfuehren(null);
+                // Schritt KaeltemaschinenTypkennfelderSchema.SCHRITT (KM2): die eingebauten Typkennfelder der
+                // Kaeltemaschinen als gesperrte Katalogsaetze samt Kennlinie, Schluessel und Pruefsumme. Wiederholbar.
+                KaeltemaschinenTypkennfelderSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -5306,6 +5306,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KUEHLKURVE = KuehlkurveSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltemaschinenTypkennfelderSchema.SCHRITT"/> — <b>die eingebauten Typkennfelder der
+        /// Kältemaschinen</b> (KM2): gesperrte Sätze in <c>Tab_Kaeltemaschine_STAMM</c> samt Kennlinie in
+        /// <c>Tab_Kenndaten_Kaeltemaschine_STAMM</c>, mit Katalogschlüssel und Prüfsumme. Nur was unter Schlüssel oder
+        /// Bezeichner fehlt, nie überschreibend.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt ein Typkennfeld.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEMASCHINEN_TYPKENNFELDER = KaeltemaschinenTypkennfelderSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7733,6 +7743,13 @@ namespace WindowsFormsApplication1
                         "Die Kuehlkurve eines Gebaeudes und ihre Kennzahlen liessen sich nicht speichern. " +
                         "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Kuehlkurve),
+            // KM2: die eingebauten Typkennfelder der Kaeltemaschinen. Quelle ist KaeltemaschinenTypkennfelderSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEMASCHINEN_TYPKENNFELDER,
+                        "Tab_Kaeltemaschine_STAMM/Tab_Kenndaten_Kaeltemaschine_STAMM: eingebaute Typkennfelder",
+                        "Der Katalog der Kaeltemaschinen truege die eingebauten Typkennfelder nicht; sie liessen sich nur ueber " +
+                        "den Knopf des Katalogdialogs laden. KEIN Rechenergebnis aendert sich.",
+                        Schritt_KaeltemaschinenTypkennfelder),
         };
 
         /// <summary>
@@ -14686,6 +14703,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Kuehlkurve - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Typkennfelder der Kältemaschinen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KAELTEMASCHINEN_TYPKENNFELDER"/>, die Saat bei <see cref="KaeltemaschinenTypkennfelderSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaeltemaschinenTypkennfelder(Lauf l)
+        {
+            string nr = KaeltemaschinenTypkennfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltemaschinenTypkennfelderSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            KaeltemaschinenTypkennfelder.Einspielergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = KaeltemaschinenTypkennfelderSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltemaschinenTypkennfelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Typkennfelder der Kaeltemaschinen oder ihre Katalogschluessel stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Typkennfelder der Kaeltemaschinen - " +
+                    (ergebnis.Neu == 0 ? "standen bereits." : ergebnis.Neu + " gesaet.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
