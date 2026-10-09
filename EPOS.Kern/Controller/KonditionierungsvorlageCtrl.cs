@@ -356,8 +356,8 @@ namespace WindowsFormsApplication1
                         new[] { new DbParam("@gr", gr), new DbParam("@ze", zeile) }));
                 if (zeilen == 0)
                     v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_VORGABE +
-                                 "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Vorlage\", " +
-                                 "\"Groesse\", \"Zeile\", \"Wert\", \"Aus\") VALUES (?, ?, ?, ?, ?, ?, ?, 0)",
+                                 "\" (" + ziel.Eigentuemerspalten + ", " +
+                                 "\"Groesse\", \"Zeile\", \"Wert\", \"Aus\") VALUES (" + ziel.Eigentuemerplatzhalter + ", ?, ?, ?, 0)",
                                  Mit(ziel.Spaltenwerte("@e"),
                                      new[] { new DbParam("@gr", gr), new DbParam("@ze", zeile),
                                              new DbParam("@we", wert) }));

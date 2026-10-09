@@ -614,6 +614,7 @@ namespace WindowsFormsApplication1
             DataTable t = DataRepository.GetDataTable(
                 "SELECT \"ID_Gebaeude_Stamm\", COUNT(DISTINCT \"Groesse\") AS \"Anzahl\" FROM \"" +
                 KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude_Stamm\" IS NOT NULL " +
+                (ZonenKatalogSchema.Lesbar() ? "AND \"" + ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM + "\" IS NULL " : "") +
                 "GROUP BY \"ID_Gebaeude_Stamm\"");
             if (t == null) return zahl;
             foreach (DataRow r in t.Rows)

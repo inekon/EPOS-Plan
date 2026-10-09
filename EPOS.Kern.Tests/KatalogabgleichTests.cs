@@ -298,7 +298,8 @@ namespace EPOS.Kern.Tests
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND upper(name) LIKE '%\\_STAMM' ESCAPE '\\' ORDER BY name");
             var stamm = dt.Rows.Cast<DataRow>().Select(r => Convert.ToString(r[0])).ToList();
             // KU3-1: Tab_Kaeltemaschine_STAMM und Tab_Kenndaten_Kaeltemaschine_STAMM dazu - 46.
-            Assert.Equal(46, stamm.Count);
+            // ZK: Tab_Zone_STAMM, Tab_Bauteil_STAMM, Tab_Zonenluftstrom_STAMM dazu (benannt ausgenommen) - 49.
+            Assert.Equal(49, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");

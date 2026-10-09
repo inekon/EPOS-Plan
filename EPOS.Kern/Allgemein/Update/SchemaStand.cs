@@ -972,7 +972,11 @@ namespace WindowsFormsApplication1
         /// <see cref="KaeltemaschinenTypkennfelderSchema.SCHRITT"/>: die eingebauten Typkennfelder als gesperrte Sätze in
         /// <c>Tab_Kaeltemaschine_STAMM</c> samt Kennlinie, Katalogschlüssel und Prüfsumme
         /// (<see cref="KaeltemaschinenTypkennfelderSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt ein Typkennfeld.
-        public const int Zielversion = KaeltemaschinenTypkennfelderSchema.SCHRITT;
+        /// Danach, mit den ZONEN IM GEBÄUDEKATALOG (ZK), steht das Ziel auf <see cref="ZonenKatalogSchema.SCHRITT"/>: die
+        /// Katalogzwillinge <c>Tab_Zone_STAMM</c>, <c>Tab_Bauteil_STAMM</c>, <c>Tab_Zonenluftstrom_STAMM</c> und die
+        /// Eigentümerspalte <c>ID_Zone_Stamm</c> an Kalender und Vorgabe der Konditionierung (<see cref="ZonenKatalogSchema"/>).
+        /// <b>Ergebnisneutral:</b> Reines DDL, der Rechenweg liest die Zwillinge nicht.
+        public const int Zielversion = ZonenKatalogSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

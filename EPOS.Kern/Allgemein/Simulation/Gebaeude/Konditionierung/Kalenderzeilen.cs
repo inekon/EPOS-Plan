@@ -20,6 +20,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Vorlage (<c>Tab_Konditionierungsvorlage_STAMM</c>) — die Tabelle entsteht mit KP1b.</summary>
         Vorlage,
+
+        /// <summary>
+        /// Eine Zone eines Katalogbaus (<c>Tab_Zone_STAMM</c>, Schritt ZK); <c>ID_Gebaeude_Stamm</c> ist der Katalogbau
+        /// der Zone.
+        /// </summary>
+        Katalogzone,
     }
 
     /// <summary>

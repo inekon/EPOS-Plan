@@ -374,6 +374,10 @@ namespace WindowsFormsApplication1
             // Projektkopien seiner Kältemaschinen bleiben, wie sie sind.
             new Stufe(KaeltemaschinenTypkennfelderSchema.SCHRITT, Art.Katalog,
                       "Eingebaute Typkennfelder der Kältemaschinen im Katalog"),
+            // Ein Paket führt keinen Gebäudekatalog (die Zonen eines Katalogsatzes bleiben im Ziel); die Konditionierung seiner
+            // Projektgebäude kommt ohne ID_Zone_Stamm an, die Spalte bleibt leer.
+            new Stufe(ZonenKatalogSchema.SCHRITT, Art.Katalog,
+                      "Zonen im Gebäudekatalog (Katalogzwillinge der Zonentabellen, Eigentümerspalte der Konditionierung)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

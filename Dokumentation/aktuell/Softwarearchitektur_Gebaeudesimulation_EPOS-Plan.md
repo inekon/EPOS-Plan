@@ -1462,15 +1462,29 @@ sind der Eingang des **Tagesbilanz-Wegs**, der nach **E20**, **E23** und **E26**
 Testgebäuden vor. Sie werden **nicht erweitert**, und der VDI-Weg liest sie **nicht** (4.1); sie
 bleiben mit ihrem einzigen Leser dauerhaft stehen (2.4; E89).
 
-**Zonen im Katalog gibt es nicht.** `Tab_Zone` hat keine `_STAMM`-Entsprechung — eine Zone ist
-Projektware, wiederverwendbar ist der **Bauteilaufbau**, nicht die Zone. Folge für „Speichern
-unter…" im Katalogeditor: Ein Gebäude, das Zonen und Bauteile trägt, wird als **Katalogsatz ohne
-Zonen** abgelegt, und der Anwender erfährt es **bevor** geschrieben wird — als `Rueckfrage`-Komponente
-im OK-Weg („Der Katalogsatz trägt die n Zonen nicht mit — trotzdem speichern?"), die den Weg zu Ende
-führt (3.3 Punkt 6), danach das gewöhnliche Bestätigungsbanner. **Kein stiller Verlust** — und kein
-Hinweisbanner **nach** dem Schreiben: Ein Banner ist nach der Meldungsstaffel (3.6) das Mittel nach
-dem Versuch, hier aber ist die Frage vor dem Versuch zu stellen. Wer das Gebäude aus dem Katalog
-zurückholt, bekommt ein Gebäude ohne Zonen und rechnet den Klassenweg.
+**Zonen gehören zum Katalogsatz** (Anwenderentscheid vom 08.10.2026, Schemaschritt 204
+`ZonenKatalogSchema`). Der Katalog führt die Zwillinge `Tab_Zone_STAMM`, `Tab_Bauteil_STAMM` und
+`Tab_Zonenluftstrom_STAMM` — dieselben Fachspalten wie die Projekttabellen, die Zone hängt mit Kaskade an
+`Tab_Gebaeude_STAMM`, Nachbarzone und Luftstrom zeigen auf Katalogzonen, der Aufbau in den Aufbaukatalog.
+Die Projekttabellen bleiben, wie sie sind (STRICT, `ID_Gebaeude` NOT NULL); der Rechenweg liest nur
+`Tab_Zone`. Die Konditionierung einer Katalogzone trägt `ID_Gebaeude_Stamm` **und** die neue
+Eigentümerspalte `ID_Zone_Stamm` (Eigentümer `Katalogzone`) — das Gegenstück zu `ID_Gebaeude` und
+`ID_Zone` einer Projektzone; der vorhandene Mechanismus konnte sie nicht tragen, weil `ID_Zone` nur auf
+`Tab_Zone` zeigt und die Prüfklausel ein Projektgebäude daneben verlangt. Die Ebene des Katalogbaus liest
+nur Zeilen ohne `ID_Zone_Stamm` (Teilindizes, Leser, Kindzeilen der Katalogfassung).
+
+Eine Stelle kopiert die Zonen zwischen den Ebenen, `Zonenkopie`: Zonen in Rangfolge, Bauteile mit
+umgeschlüsselter Nachbarzone, Luftströme, die Konditionierung jeder Zone. Die Übernahme ins Projekt
+(`CopyFromStamm`) kopiert die Zonen des Katalogsatzes — das Gebäude im Projekt rechnet danach nach dem
+Zonenmodell; „In DB übernehmen", „Speichern unter…" (aus dem Projekt wie aus dem Katalog) und
+Duplizieren kopieren sie in den Katalog, im **gespeicherten** Stand der Quelle; Löschen räumt über die
+Kaskade ab. Die Rückfrage vor „Speichern unter…" bleibt und nennt, was mitkommt. Prüfsumme und
+Katalogpaket eines Gebäudes führen die Zonen nicht (Ausnahme der Katalogfassung): Die gesperrten
+Auslieferungssätze tragen keine, und Nachbarzone wie Luftstrom verweisen über IDs auf Geschwister
+desselben Satzes, die der Paketweg nicht abbildet.
+
+Bearbeitet werden die Zonen eines Katalogsatzes im Projekt: Der Reiter „Zonen" des Katalogeditors steht
+nur im Projektmodus; sein Kurztext im Katalog nennt den Weg über „In DB übernehmen" und „Speichern unter…".
 
 ---
 

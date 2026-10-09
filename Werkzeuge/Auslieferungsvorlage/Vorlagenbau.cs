@@ -43,7 +43,11 @@ namespace Auslieferungsvorlage
             "Tab_Kenndaten_Kuehlung_STAMM",
             "Tab_Klimadaten_STAMM",
             "Tab_Solar_STAMM",
-            SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM
+            SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
+            // Schritt ZK: die Zonen eines Katalogsatzes haengen an Tab_Gebaeude_STAMM (Kaskade), gesperrt ist der Kopf.
+            SchemaKatalog.TAB_ZONE_STAMM,
+            SchemaKatalog.TAB_BAUTEIL_STAMM,
+            SchemaKatalog.TAB_ZONENLUFTSTROM_STAMM
         };
 
         /// <summary>Steht die Tabelle in <see cref="KindkatalogeOhneReadOnly"/> (ordinal)?</summary>

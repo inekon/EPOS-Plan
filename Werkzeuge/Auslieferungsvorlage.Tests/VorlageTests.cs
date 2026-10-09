@@ -234,7 +234,10 @@ namespace Auslieferungsvorlage.Tests
             // 174 seit dem Schemaschritt 191 (RaumgrundrissSchema, HC-5): Tab_Raumgrundriss, STRICT von ihrer ersten Zeile
             // an und in der Vorlage LEER.
             //
-            Assert.Equal(174, befund.Strict);
+            // 177 seit dem Schemaschritt 204 (ZonenKatalogSchema, ZK): Tab_Zone_STAMM, Tab_Bauteil_STAMM und
+            // Tab_Zonenluftstrom_STAMM, STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(177, befund.Strict);
         }
 
         // =============================================================================
