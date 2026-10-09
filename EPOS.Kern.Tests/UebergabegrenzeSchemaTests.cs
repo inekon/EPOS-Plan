@@ -120,9 +120,15 @@ namespace EPOS.Kern.Tests
             Assert.True(UebergabegrenzeSchema.ErgebnisspaltenVorhanden());
             Assert.True(UebergabegrenzeSchema.AnlagenspaltenVorhanden());
             Assert.True(UebergabegrenzeSchema.GeraetespaltenVorhanden("Tab_WP_STAMM"));
-            // Kein DML: jede Zeile steht leer - Bestandsweg (U-1), Kennzahlen „nicht erhoben".
+            // Kein DML: jede Zeile steht leer - Bestandsweg (U-1), Kennzahlen „nicht erhoben"; allein das
+            // Referenzprojekt Übergabegrenze 1060 setzt an seiner Wärmepumpe Einbindung und Vorwärmbetrieb.
             foreach ((string tabelle, string spalte, string _) in UebergabegrenzeSchema.SPALTEN)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL"));
+            {
+                bool gesaet = tabelle == UebergabegrenzeSchema.TAB_ANLAGEN &&
+                              (spalte == UebergabegrenzeSchema.SPALTE_EINBINDUNG || spalte == UebergabegrenzeSchema.SPALTE_VORWAERMBETRIEB);
+                Assert.Equal(gesaet ? 1L : 0L, Zahl("SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL"));
+            }
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = 1060 AND Einbindung = 'DIREKT' AND Vorwaermbetrieb = 1"));
             // Die Prüfklausel wirkt auch an der Testdatenbank.
             Assert.True(Wirft("UPDATE Tab_Energieanlagen SET Einbindung = 'REIHE'"));
             Assert.True(Wirft("UPDATE Tab_Energieanlagen SET Vorwaermbetrieb = 2"));

@@ -132,12 +132,13 @@ namespace EPOS.Kern.Tests
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= AnlagenfahrplanSchema.SCHRITT);
             Assert.True(AnlagenfahrplanSchema.Vollstaendig());
             // Gesät ist allein der Fahrplan des Referenzprojekts 1056 (AK2-4, referenzprojekt_1056_fahrplan.py) und seine
-            // Kopie im Referenzprojekt AK3 1058 (AK3-W5a): Zeitprogramm an Kessel und BHKW, Vorlauf_Max an der Wärmepumpe.
+            // Kopie im Referenzprojekt AK3 1058 (AK3-W5a): Zeitprogramm an Kessel und BHKW, Vorlauf_Max an der Wärmepumpe; dazu
+            // Vorlauf_Max 55 °C an der Wärmepumpe des Referenzprojekts Übergabegrenze 1060.
             foreach (var s in AnlagenfahrplanSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL" +
-                                      (s.Tabelle == AnlagenfahrplanSchema.TAB_ANLAGEN ? " AND ID_Projekt NOT IN (1056, 1058, 1059, 1061, 1062)" : "")));
+                                      (s.Tabelle == AnlagenfahrplanSchema.TAB_ANLAGEN ? " AND ID_Projekt NOT IN (1056, 1058, 1059, 1060, 1061, 1062)" : "")));
             Assert.Equal(10L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Zeitprogramm IS NOT NULL"));   // 1056, 1058, 1059 (K5a), 1061, 1062 (KK5a)
-            Assert.Equal(5L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));   // + 1061, 1062 (KK5a)
+            Assert.Equal(6L, Zahl("SELECT COUNT(*) FROM \"" + AnlagenfahrplanSchema.TAB_ANLAGEN + "\" WHERE Vorlauf_Max IS NOT NULL"));   // + 1061, 1062 (KK5a), + 1060 (UB-E2-d, 55 °C)
             List<string> anlagen = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ANLAGEN);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ERGEBNIS);
             // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187) und die sechs des

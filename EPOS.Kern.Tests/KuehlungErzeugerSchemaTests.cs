@@ -45,7 +45,7 @@ namespace EPOS.Kern.Tests
         private const int WP_REFERENZ_AK3 = 1672054;
 
         /// <summary>Die Kopien in den Referenzprojekten der Kühlkurve 1061 (Kühlvorlauf 12 °C) und 1062 (KK5a).</summary>
-        private const int WP_REFERENZ_KK = 1672056, WP_REFERENZ_KKZ = 1672057;
+        private const int WP_REFERENZ_KK = 1672056, WP_REFERENZ_KKZ = 1672057, WP_REFERENZ_UG = 1672058;   // UG: Übergabegrenze 1060, Kopie von 1056
 
         /// <summary>Die Kopie von 1058 im Referenzprojekt AK3-K 1059 (AK3-K-K5a): ohne Kühlbetrieb, Kühlfelder wie 1058.</summary>
         private const int WP_REFERENZ_AK3K = 1672055;
@@ -183,7 +183,8 @@ namespace EPOS.Kern.Tests
                           WP_REFERENZ_FAHRPLAN.ToString(CultureInfo.InvariantCulture) + ", " +
                           WP_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture) + ", " +
                           WP_REFERENZ_KK.ToString(CultureInfo.InvariantCulture) + ", " +
-                          WP_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture);
+                          WP_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture) + ", " +
+                          WP_REFERENZ_UG.ToString(CultureInfo.InvariantCulture);
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);

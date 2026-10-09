@@ -92,8 +92,9 @@ namespace EPOS.Kern.Tests
             // Kältemaschine 1055 (referenzprojekt_1055_kaeltemaschine.py, dort ohne Kühlbetrieb) und im Referenzprojekt
             // des Fahrplans 1056 (referenzprojekt_1056_fahrplan.py, Kopie von 1047) und im Referenzprojekt AK3 1058
             // (referenzprojekt_1058_ak3.py, Kopie von 1056) und im Referenzprojekt AK3-K 1059 (referenzprojekt_1059_ak3k.py,
-            // Kopie von 1058, dort ohne Kühlbetrieb) und in den Referenzprojekten der Kühlkurve 1061 und 1062 (KK5a), sonst keine.
-            Assert.Equal(80L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
+            // Kopie von 1058, dort ohne Kühlbetrieb) und in den Referenzprojekten der Kühlkurve 1061 und 1062 (KK5a) und im Referenzprojekt der Übergabegrenze 1060
+            // (referenzprojekt_1060_uebergabegrenze.cs, Kopie von 1056), sonst keine.
+            Assert.Equal(90L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
             Assert.Equal(10L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = " + WP)));
             List<KuehlkennlinienZeile> zeilen = KenndatenKuehlungCtrl.ZeilenProjekt(WP);
             Assert.Equal(10, zeilen.Count);

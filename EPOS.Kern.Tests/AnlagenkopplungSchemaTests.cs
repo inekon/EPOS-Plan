@@ -337,14 +337,16 @@ namespace EPOS.Kern.Tests
             // Zonen mit Heizkreis 1054 (AK1z, referenzprojekt_1054_zonen_heizkreis.cs): je die Stufe AK1
             // und am Gebäude Heizkreis, Radiator und Heizkurve, alles Übrige leer. Dazu die Kopie von 1047 im
             // Referenzprojekt des Fahrplans 1056 (AK2-4, referenzprojekt_1056_fahrplan.py) mit denselben Zellen und deren
-            // Kopie im Referenzprojekt AK3 1058 (AK3-W5a, referenzprojekt_1058_ak3.py), dort mit der Stufe AK3.
+            // Kopie im Referenzprojekt AK3 1058 (AK3-W5a, referenzprojekt_1058_ak3.py), dort mit der Stufe AK3, und die Kopie von 1056 im Referenzprojekt Übergabegrenze 1060 (UB-E2-d) mit
+            // Heizkörpern 75/60 °C.
             const string GEBAEUDE_1054 = "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1054, 1056, 1058, 1059, 1061, 1062))";
             foreach (SchemaSpalte s in AnlagenkopplungSchema.UebergabeSpalten().Concat(AnlagenkopplungSchema.Ergebnisspalten))
             {
                 string ausser = s.Tabelle == "Tab_Gebaeude"
-                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + " AND ID NOT IN " + GEBAEUDE_1054
+                    ? " AND ID <> " + GEBAEUDE_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + " AND ID NOT IN " + GEBAEUDE_1054 +
+                      " AND ID NOT IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = 1060)"
                     : s.Tabelle == "Tab_Einstellungen"
-                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054, 1056, 1058, 1059, 1061, 1062)"
+                        ? " AND ID_Projekt NOT IN (" + PROJEKT_REFERENZ_KOPPLUNG.ToString(CultureInfo.InvariantCulture) + ", 1054, 1056, 1058, 1059, 1060, 1061, 1062)"
                         : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
