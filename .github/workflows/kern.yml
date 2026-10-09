@@ -409,6 +409,9 @@ jobs:
       # R45 (09.10.2026): dazu 1060 (Uebergabegrenze: Heizkoerper 75/60 Grad C,
       # Hoechstvorlauf 55 Grad C, Einbindung direkt, Vorwaermbetrieb); die neun
       # Projekte bleiben byte-gleich.
+      # R46 (09.10.2026): dieselben zehn Projekte; allein 1060 aendert sich
+      # (Geraetegrenzen: Ruecklaufgrenze am gemischten Ruecklauf), die neun
+      # uebrigen bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -421,20 +424,20 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-09_R45_Uebergabegrenze
+      - name: Vergleich mit Referenzbasis 2026-10-09_R46_Geraetegrenzen
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1058 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1060 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060; do
