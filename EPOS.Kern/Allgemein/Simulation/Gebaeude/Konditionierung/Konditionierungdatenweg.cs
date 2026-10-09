@@ -630,9 +630,9 @@ namespace WindowsFormsApplication1
             if (!KonditionierungSchema.Lesbar()) return zahl;
             DataTable t = DataRepository.GetDataTable(
                 "SELECT \"ID_Gebaeude_Stamm\", COUNT(DISTINCT \"Groesse\") AS \"Anzahl\" FROM \"" +
-                KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude_Stamm\" IS NOT NULL " +
+                KonditionierungSchema.TAB_KALENDER + "\" WHERE \"ID_Gebaeude_Stamm\" IS NOT NULL AND \"Groesse\" <> ? " +
                 (ZonenKatalogSchema.Lesbar() ? "AND \"" + ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM + "\" IS NULL " : "") +
-                "GROUP BY \"ID_Gebaeude_Stamm\"");
+                "GROUP BY \"ID_Gebaeude_Stamm\"", new DbParam("@a", DbWerte.KOND_GROESSE_ALLE));
             if (t == null) return zahl;
             foreach (DataRow r in t.Rows)
             {

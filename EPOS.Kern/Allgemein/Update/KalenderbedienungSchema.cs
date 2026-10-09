@@ -24,7 +24,8 @@ namespace WindowsFormsApplication1
     //      So = Bit 6 (die Zaehlung des Wochenrasters, Kalenderwoche.Stelle: Montag = Tag 0), Vorgabe 96 =
     //      Sa + So. Eine Zahl statt Text, weil der Ortszeit-Kalender intern je Tag einen Merker fuehrt und
     //      der Generator den Wochentag als 0 … 6 zaehlt - die Maske ist dann ein Bittest, der CHECK ein
-    //      Bereich.
+    //      Bereich. NULL heisst Vorgabe (wie die WQ_*-Felder): Die Pruefsumme eines Katalogsatzes ueberspringt
+    //      leere Fachwerte und bleibt so unveraendert.
     //   d. LAENDERFEIERTAGE: der CHECK der Feiertagsregel kennt die acht Laenderregeln
     //      (DbWerte.KOND_FEIERTAGE_LAENDER), Tab_Gebaeude(_STAMM).Feiertagsland das Land (ISO-Kuerzel,
     //      NULL = nur bundeseinheitlich). Die neun bundeseinheitlichen Regeln bleiben in Bedeutung und Rang.
@@ -80,13 +81,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Tabelle der benannten Wochen.</summary>
         public const string TAB_WOCHE = "Tab_Konditionierungswoche";
 
+        /// <summary>Spaltenzahl von <c>Tab_Konditionierungsperiode</c> nach dem Schritt (Maske und Wochenverweis dazu).</summary>
+        public const int SPALTENZAHL_PERIODE = KonditionierungSchema.SPALTENZAHL_PERIODE + 2;
+
         /// <summary>Die Größenmaske einer Periode des gemeinsamen Kalenders (1 … 31).</summary>
         public const string SPALTE_GILT_FUER = "Gilt_Fuer";
 
         /// <summary>Der Verweis einer Periode auf eine benannte Woche.</summary>
         public const string SPALTE_ID_WOCHE = "ID_Woche";
 
-        /// <summary>Die Wochenmaske des Wochenendes am Gebäude (Mo = Bit 0 … So = Bit 6).</summary>
+        /// <summary>
+        /// Die Wochenmaske des Wochenendes am Gebäude (Mo = Bit 0 … So = Bit 6); <b>leer heißt Vorgabe</b>
+        /// (<see cref="WOCHENENDE_VORGABE"/>) — so bleiben die Prüfsummen der Katalogsätze unberührt.
+        /// </summary>
         public const string SPALTE_WOCHENENDTAGE = "Wochenendtage";
 
         /// <summary>Das Land der Feiertage am Gebäude (ISO-Kürzel; NULL = nur bundeseinheitlich).</summary>
@@ -152,8 +159,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Spaltendefinition von <see cref="SPALTE_WOCHENENDTAGE"/> für <c>ALTER TABLE … ADD COLUMN</c>.</summary>
         public static readonly string DEFINITION_WOCHENENDTAGE =
-            "INTEGER NOT NULL DEFAULT " + WOCHENENDE_VORGABE.ToString(CultureInfo.InvariantCulture) +
-            " CHECK (\"" + SPALTE_WOCHENENDTAGE + "\" BETWEEN 0 AND 127)";
+            "INTEGER CHECK (\"" + SPALTE_WOCHENENDTAGE + "\" IS NULL OR \"" + SPALTE_WOCHENENDTAGE + "\" BETWEEN 0 AND 127)";
 
         /// <summary>Die Spaltendefinition von <see cref="SPALTE_FEIERTAGSLAND"/> für <c>ALTER TABLE … ADD COLUMN</c>.</summary>
         public static readonly string DEFINITION_FEIERTAGSLAND =
@@ -260,11 +266,13 @@ namespace WindowsFormsApplication1
                       "\" g ON g.\"ID\" = k.\"" + eigner + "\"") + " WHERE " + (trigger ? "k.\"" + eigner + "\" = " + id + " AND " : "") +
                       "k.\"" + zone + "\" IS NULL AND k.\"Groesse\" = '" + ALLE + "')");
 
-            // 2. Der gemeinsame Kalender entsteht, wenn ein Zeitraum gilt und er fehlt.
+            // 2. Der gemeinsame Kalender entsteht, wenn ein Zeitraum gilt, er fehlt und das Gebaeude schon einen
+            //    Groessenkalender fuehrt (ein Gebaeude ohne Kalender rechnet auf dem Bestandszweig aus den Spalten).
             liste.Add("INSERT INTO \"" + kal + "\" (\"" + eigner + "\", \"Groesse\", \"Aus\") SELECT " + id + ", '" + ALLE + "', 0" +
                       quelle + " WHERE " + IrgendeinGueltiges(q) + " AND NOT EXISTS (SELECT 1 FROM \"" + kal + "\" k WHERE k.\"" +
                       eigner + "\" = " + id + " AND k.\"" + zone + "\" IS NULL AND k.\"Groesse\" = '" + ALLE + "')" +
-                      (trigger ? "" : " ORDER BY g.\"ID\""));
+                      " AND EXISTS (SELECT 1 FROM \"" + kal + "\" k WHERE k.\"" + eigner + "\" = " + id + " AND k.\"" + zone +
+                      "\" IS NULL AND k.\"Groesse\" <> '" + ALLE + "')" + (trigger ? "" : " ORDER BY g.\"ID\""));
 
             // 3. Je gueltigem Paar eine Periode „Ferien k" auf Rang 199 + k, Maske alle, ohne Angabe.
             for (int k = 1; k <= FERIENSPALTEN; k++)
@@ -474,21 +482,7 @@ namespace WindowsFormsApplication1
                                SPALTE_FEIERTAGSLAND + " an " + string.Join(", ", Gebaeudetabellen) + " angelegt");
 
                     // ---- 4. Die Migration: Ferienliste aus den Spalten, gekoppelte Kopien in den gemeinsamen Kalender.
-                    int ferien = 0;
-                    foreach (string t in Gebaeudetabellen)
-                    {
-                        // Die ersten beiden Anweisungen loeschen bzw. legen den Kalender an, die uebrigen je eine Periode.
-                        IReadOnlyList<string> anweisungen = Ferienspiegelanweisungen(t, null);
-                        for (int i = 0; i < anweisungen.Count; i++)
-                        {
-                            int n = v.Ausfuehren(anweisungen[i]);
-                            if (i >= 2) ferien += n;
-                        }
-                    }
-                    zeilen.Add(ferien.ToString(CultureInfo.InvariantCulture) + " Ferienzeitraum/-raeume als Ferienliste gespiegelt");
-                    int gruppen = Kalendergemeinschaft.AlleZusammenfuehren(v, out int kopien);
-                    zeilen.Add(gruppen.ToString(CultureInfo.InvariantCulture) + " gekoppelte Periode(n) aus " +
-                               kopien.ToString(CultureInfo.InvariantCulture) + " Kopien in den gemeinsamen Kalender ueberfuehrt");
+                    zeilen.AddRange(Bestandsform(v));
 
                     // ---- 5. Die Trigger zuletzt (die Migration schreibt selbst).
                     foreach (KeyValuePair<string, string> a in Triggeranweisungen) v.Ausfuehren(a.Value);
@@ -507,6 +501,45 @@ namespace WindowsFormsApplication1
             return aenderungen;
         }
 
+        /// <summary>
+        /// <b>Die Migration der Bestandsdaten</b> im laufenden Vorgang: die Ferienliste aus den Ferienspalten jedes
+        /// Gebäudes und Katalogbaus, das einen Größenkalender führt, danach die gekoppelten Kopien aller Eigentümer in
+        /// den gemeinsamen Kalender (<see cref="Kalendergemeinschaft.AlleZusammenfuehren"/>). Deterministisch und
+        /// wiederholbar (ein zweiter Lauf ändert nichts); der Schritt ruft sie einmal, die Wache des Referenzprojekts
+        /// 1051 ruft sie nach dem Nachbau aus dem Bauplan.
+        /// </summary>
+        /// <returns>Die Berichtszeilen.</returns>
+        public static IReadOnlyList<string> Bestandsform(DbVorgang v)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            int ferien = 0;
+            foreach (string t in Gebaeudetabellen)
+            {
+                // Die ersten beiden Anweisungen loeschen bzw. legen den Kalender an, die uebrigen je eine Periode.
+                IReadOnlyList<string> anweisungen = Ferienspiegelanweisungen(t, null);
+                for (int i = 0; i < anweisungen.Count; i++)
+                {
+                    int n = v.Ausfuehren(anweisungen[i]);
+                    if (i >= 2) ferien += n;
+                }
+            }
+            int gruppen = Kalendergemeinschaft.AlleZusammenfuehren(v, out int kopien);
+            return new[]
+            {
+                ferien.ToString(CultureInfo.InvariantCulture) + " Ferienzeitraum/-raeume als Ferienliste gespiegelt",
+                gruppen.ToString(CultureInfo.InvariantCulture) + " gekoppelte Periode(n) aus " +
+                kopien.ToString(CultureInfo.InvariantCulture) + " Kopien in den gemeinsamen Kalender ueberfuehrt",
+            };
+        }
+
+        /// <summary>
+        /// Entfernt die Trigger des Schritts — für Proben, die die Tabellen der Konditionierung auf einen früheren Stand
+        /// zurückbauen (SQLite prüft beim Umbau jeden Trigger gegen das Schema).
+        /// </summary>
+        public static void TriggerEntfernen(DbVorgang v)
+        {
+            foreach (KeyValuePair<string, string> a in Triggeranweisungen) v.Ausfuehren("DROP TRIGGER IF EXISTS \"" + a.Key + "\"");
+        }
         /// <summary>Das Neubau-Rezept aus Schritt 96/151 (siehe <see cref="KonditionierungVorlagenSchema"/>).</summary>
         private static string Neubau(DbVorgang v, string tabelle, string ziel)
         {

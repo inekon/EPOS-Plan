@@ -1050,6 +1050,25 @@ sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `b205284111acc1f58cf5f6be391fe7b8be6fc343b409acd60498d18adef63100`**. **Die Basis `2026-10-08_R44_Kuehlkurve`
 > bleibt** — kein Referenzprojekt führt eine PV-Ganglinie, keine Einfrierregel ist berührt; die sechsundzwanzig
 > Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
+>
+> **Nachtrag — Testdatenbank auf 207 (Kalenderbedienung Stufe 2, Basis R44 unberührt).**
+> `KalenderbedienungSchema` (207 = `PvGanglinieSchema.SCHRITT + 1`; 206 ist die PV-Ganglinie) baut
+> `Tab_Konditionierungskalender` (Größe `ALLE` für den gemeinsamen Kalender „alle Größen", ohne Angabe) und
+> `Tab_Konditionierungsperiode` (acht Länderregeln im `CHECK` der Feiertagsregel, Größenmaske `Gilt_Fuer` 1 … 31,
+> Verweis `ID_Woche`, Ferienperiode ohne Angabe) nach dem Rezept aus Schritt 96/151 neu, legt
+> `Tab_Konditionierungswoche` (STRICT) und an `Tab_Gebaeude(_STAMM)` die Spalten `Wochenendtage` (Wochenmaske Mo = Bit 0,
+> leer = Sa + So) und `Feiertagsland` an, dazu zwei Prüftrigger der Periode und je Gebäudetabelle den Ferienspiegel.
+> Migration: Die Ferienspalten der Gebäude und Katalogbauten mit Größenkalender werden Ferienliste (4 Perioden: 1051
+> und der Referenzbau, je Ferien 1 und 2), die gekoppelten Feiertage von 1051 und dem Referenzbau (je neun Regeln in
+> allen fünf Größen, 90 Kopien) werden 18 Perioden des gemeinsamen Kalenders mit Maske 31; die Ferienzeilen je Größe
+> tragen verschiedene Angaben und bleiben Kopien. Gehoben aus dem Stand 205 (LFS-SHA-256
+> `b205284111acc1f58cf5f6be391fe7b8be6fc343b409acd60498d18adef63100`) mit `Werkzeuge/Testdatenbankschema`; der Stand
+> dieses Zweigs zählt die Nummer noch als 206 und wird beim Umhängen hinter die PV-Ganglinie neu gebaut. Die
+> Testdatenbank steht auf dem Ziel des Schritts (`integrity_check` ok, `foreign_key_check` leer): **93 130 752 Byte,
+> LFS-SHA-256 `c9deeabba5ee8374f1e55a9c11a0383317b85413ee46270799e14b948a759c0e`**. **Die Basis
+> `2026-10-08_R44_Kuehlkurve` bleibt** — die Gemeinschaftsperioden kehren beim Lesen mit Rang und Angabe in genau
+> ihre Größenkalender zurück, die Ferienspalten bleiben Quelle der Leser; die Projekte 1030, 1007, 1017, 1045, 1046,
+> 1047, 1049, 1051, 1052 und 1058 rechnen byte-gleich (331 CSV, `PASS`).
 
 ### Die Vorgängerbasis R43 (Kälteseite AK3K)
 

@@ -240,7 +240,10 @@ namespace Auslieferungsvorlage.Tests
             // 182 seit dem Schemaschritt 205 (PvGanglinieSchema, PVG): Tab_PvGanglinie(_STAMM), Tab_PvGanglinieDaten(_STAMM)
             // und Z_ProjektPvGanglinie, STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
             //
-            Assert.Equal(182, befund.Strict);
+            // 183 seit dem Schemaschritt K2 (KalenderbedienungSchema): Tab_Konditionierungswoche, STRICT von ihrer ersten
+            // Zeile an und in der Vorlage LEER; der Neubau von Kalender und Periode haelt STRICT.
+            //
+            Assert.Equal(183, befund.Strict);
         }
 
         // =============================================================================
