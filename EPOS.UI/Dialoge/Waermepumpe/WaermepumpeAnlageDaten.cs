@@ -87,6 +87,30 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Der höchste Vorlauf der Anlage [°C] (<c>Vorlauf_Max</c>); <c>null</c> = der projektierte <see cref="Vorlauf"/>.</summary>
     public double? VorlaufMax { get; set; }
 
+    /// <summary>
+    /// Die Klappliste „Kältemittel" der Schnellwahl (Übergabegrenze U‑2): die Codes des Kerns mit dem Höchstvorlauf
+    /// ihrer Klasse; gefüllt von der Abbildung, leer = keine Schnellwahl.
+    /// </summary>
+    public IReadOnlyList<KaeltemittelEintrag> Kaeltemittelliste { get; set; } = Array.Empty<KaeltemittelEintrag>();
+
+    /// <summary>
+    /// Die gewählte Kältemittelklasse — in UB‑E1 nur Dialogzustand: Gespeichert wird sie erst mit dem Schemaschritt
+    /// der Spalte <c>Kaeltemittel</c>; <c>null</c> = nicht gewählt.
+    /// </summary>
+    public string? Kaeltemittel { get; set; }
+
+    /// <summary>
+    /// Die Werte der Herleitungszeile „Übergabe und Bivalenz", wie sie die Hülle beim Öffnen gerechnet hat;
+    /// <c>null</c> = keine Herleitung. Der Dialog zeigt den Stand von <see cref="BivalenzRechnen"/>, wenn es ihn gibt.
+    /// </summary>
+    public WaermepumpeBivalenzWerte? Bivalenz { get; set; }
+
+    /// <summary>
+    /// Rechnet die Herleitung zum Arbeitsstand neu (Höchstvorlauf, Betriebsart, Abschaltpunkt) — von der Abbildung
+    /// gesetzt, die Datenbankseite bleibt in der Hülle; <c>null</c> = es gilt <see cref="Bivalenz"/>.
+    /// </summary>
+    public Func<WaermepumpeAnlageDaten, WaermepumpeBivalenzWerte?>? BivalenzRechnen { get; set; }
+
     /// <summary>Bivalenter Betrieb.</summary>
     public bool BivalenterBetrieb { get; set; }
 
@@ -226,6 +250,10 @@ public sealed class WaermepumpeAnlageDaten
         Sperrfenster = Sperrfenster?.Select(z => z.Kopie()).ToList(),
         Zeitprogramm = Zeitprogramm,
         VorlaufMax = VorlaufMax,
+        Kaeltemittelliste = Kaeltemittelliste,
+        Kaeltemittel = Kaeltemittel,
+        Bivalenz = Bivalenz,
+        BivalenzRechnen = BivalenzRechnen,
         BivalenterBetrieb = BivalenterBetrieb,
         CarrierId = CarrierId,
         Betriebsart = Betriebsart,

@@ -502,11 +502,14 @@ public sealed class KiMaskenabdeckungWacheTests
         // KU3-6 (F6): die freie Kühlung über die Wärmequelle — ihr Schalter (ein nacktes input, weich
         // gesperrt über aria-disabled und title) und die Zahlenfelder Grädigkeit und Leistungsgrenze; die
         // Feldkarte führt sie als kuehl_frei, kuehl_frei_graedigkeit, kuehl_frei_leistung (19 -> 22).
-        new("WaermepumpeKonfiguration", 22, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+        // UB-E1 (Übergabegrenze U-2): die Klappliste „Kältemittel“ der Schnellwahl (22 -> 23) — in E1 nur Dialogzustand,
+        // ohne Spalte und ohne Katalogfeld; die Schnellwahl schreibt allein „vorlauf_max“.
+        new("WaermepumpeKonfiguration", 23, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
             "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; das Zeitprogramm der Gruppe „Betriebszeiten“ ist ein " +
             "Wochenraster mit 168 Faktoren und steht nicht in der KI-Sicht, der höchste Vorlauf als „vorlauf_max“; " +
             "die vier Felder je Sperrfenster (Beginn, Dauer, " +
-            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“"),
+            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“; die Klappliste „Kältemittel“ ist bis zum " +
+            "Schemaschritt der Spalte Kaeltemittel Dialogzustand der Schnellwahl, die allein „vorlauf_max“ füllt"),
         new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.

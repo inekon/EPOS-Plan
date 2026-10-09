@@ -125600,6 +125600,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R1234ze(E) · {0} °C ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SCHNELLWAHL_R1234ZE {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SCHNELLWAHL_R1234ZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R290 · {0} °C ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SCHNELLWAHL_R290 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SCHNELLWAHL_R290", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R410A / R32 · {0} °C ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SCHNELLWAHL_R410A_R32 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SCHNELLWAHL_R410A_R32", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R744 · {0} °C, Rücklauf ≤ {1} °C (Abwertung ab {2} °C) ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SCHNELLWAHL_R744 {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SCHNELLWAHL_R744", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 2 × 2 h ähnelt.
         /// </summary>
         public static string WPA_BTN_SPERR_2X2 {
@@ -125762,6 +125798,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabegrenze ist nicht herleitbar: {0} ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_BEFUND {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_BEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erster Bivalenzpunkt {0} (nach Kennfeld allein {1}) · zweiter Bivalenzpunkt {2}{3} ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_BIVALENZPUNKTE {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_BIVALENZPUNKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien. ähnelt.
         /// </summary>
         public static string WPA_HERLEITUNG_KATALOG {
@@ -125771,11 +125825,83 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keiner ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_KEIN_PUNKT {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_KEIN_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe bei −7 °C {0} % der Kesselleistung (§ 43 GModG: mindestens {1} %) ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_KESSELANTEIL {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_KESSELANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt. ähnelt.
         /// </summary>
         public static string WPA_HERLEITUNG_KUEHL_KATALOG {
             get {
                 return ResourceManager.GetString("WPA_HERLEITUNG_KUEHL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einbindung nicht gesetzt — Übergabegrenze ruht. ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_NICHT_WIRKSAM {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_NICHT_WIRKSAM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Wärmekennlinie der Wärmepumpe — keine Bivalenzpunkte ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_OHNE_KENNFELD {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_OHNE_KENNFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabe ist nicht beschrieben (Kopplung aus) — die Wärmepumpe rechnet ohne Übergabegrenze. ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_OHNE_KOPPLUNG {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_OHNE_KOPPLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe bei Höchstvorlauf {0} °C: {1} kW von {2} kW Heizlast ({3} %), Rücklauf {4} °C, Spreizung {5} K ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_UEBERGABE {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übergabegrenze wird ohne Lauf nur für gekoppelte Gebäude ohne Zonen mit Flächenangabe und einer Klimaregion des Projekts hergeleitet — hier erst im Lauf. ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (Vorwärmbetrieb) ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_VORWAERMBETRIEB {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_VORWAERMBETRIEB", resourceCulture);
             }
         }
         
@@ -125848,6 +125974,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_HRL_HEIZSTAB {
             get {
                 return ResourceManager.GetString("WPA_HRL_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schnellwahl füllt nur ein leeres Feld „Höchster Vorlauf“; Herstellerangaben zur Einsatzgrenze haben Vorrang. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("WPA_HRL_SCHNELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der höchste Vorlauf ist gepflegt ({0} °C) — die Schnellwahl lässt ihn stehen. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_SCHNELLWAHL_GEFUELLT {
+            get {
+                return ResourceManager.GetString("WPA_HRL_SCHNELLWAHL_GEFUELLT", resourceCulture);
             }
         }
         
@@ -125942,6 +126086,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
+        /// </summary>
+        public static string WPA_LBL_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("WPA_LBL_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung Heizstab ähnelt.
         /// </summary>
         public static string WPA_LBL_PHEIZSTAB {
@@ -125956,6 +126109,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_RUECKLAUF {
             get {
                 return ResourceManager.GetString("WPA_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellwahl nach Kältemittel ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SCHNELLWAHL_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SCHNELLWAHL_KAELTEMITTEL", resourceCulture);
             }
         }
         
@@ -126109,6 +126271,114 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_MSG_WAERMEPUMPE {
             get {
                 return ResourceManager.GetString("WPA_MSG_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gewählt ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_LEER {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R1233zd(E) ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R1233ZDE {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R1233ZDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R1234ze(E) ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R1234ZEE {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R1234ZEE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R134a ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R134A {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R134A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R290 (Propan) ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R290 {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R290", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R32 ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R32 {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R32", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R407C ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R407C {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R407C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R410A ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R410A {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R410A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R454C ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R454C {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R454C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R455A ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R455A {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R455A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die R744 (CO₂) ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_R744 {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_R744", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sonstiges ähnelt.
+        /// </summary>
+        public static string WPA_OPT_KAELTEMITTEL_SONSTIGES {
+            get {
+                return ResourceManager.GetString("WPA_OPT_KAELTEMITTEL_SONSTIGES", resourceCulture);
             }
         }
         

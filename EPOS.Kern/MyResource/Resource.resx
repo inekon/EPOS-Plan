@@ -48964,5 +48964,95 @@ Chart</value>
   <data name="GIMP_DLG_AQ_NEU_EXPORT_NEIN" xml:space="preserve">
     <value>Zurück</value>
   </data>
+  <data name="WPA_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
+  <data name="WPA_LBL_SCHNELLWAHL_KAELTEMITTEL" xml:space="preserve">
+    <value>Schnellwahl nach Kältemittel</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_LEER" xml:space="preserve">
+    <value>nicht gewählt</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R410A" xml:space="preserve">
+    <value>R410A</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R32" xml:space="preserve">
+    <value>R32</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R290" xml:space="preserve">
+    <value>R290 (Propan)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R744" xml:space="preserve">
+    <value>R744 (CO₂)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R134A" xml:space="preserve">
+    <value>R134a</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R1234ZEE" xml:space="preserve">
+    <value>R1234ze(E)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R407C" xml:space="preserve">
+    <value>R407C</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R454C" xml:space="preserve">
+    <value>R454C</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R455A" xml:space="preserve">
+    <value>R455A</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_R1233ZDE" xml:space="preserve">
+    <value>R1233zd(E)</value>
+  </data>
+  <data name="WPA_OPT_KAELTEMITTEL_SONSTIGES" xml:space="preserve">
+    <value>sonstiges</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R410A_R32" xml:space="preserve">
+    <value>R410A / R32 · {0} °C</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R290" xml:space="preserve">
+    <value>R290 · {0} °C</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R744" xml:space="preserve">
+    <value>R744 · {0} °C, Rücklauf ≤ {1} °C (Abwertung ab {2} °C)</value>
+  </data>
+  <data name="WPA_BTN_SCHNELLWAHL_R1234ZE" xml:space="preserve">
+    <value>R1234ze(E) · {0} °C</value>
+  </data>
+  <data name="WPA_HRL_SCHNELLWAHL" xml:space="preserve">
+    <value>Die Schnellwahl füllt nur ein leeres Feld „Höchster Vorlauf“; Herstellerangaben zur Einsatzgrenze haben Vorrang.</value>
+  </data>
+  <data name="WPA_HRL_SCHNELLWAHL_GEFUELLT" xml:space="preserve">
+    <value>Der höchste Vorlauf ist gepflegt ({0} °C) — die Schnellwahl lässt ihn stehen.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_UEBERGABE" xml:space="preserve">
+    <value>Übergabe bei Höchstvorlauf {0} °C: {1} kW von {2} kW Heizlast ({3} %), Rücklauf {4} °C, Spreizung {5} K</value>
+  </data>
+  <data name="WPA_HERLEITUNG_BIVALENZPUNKTE" xml:space="preserve">
+    <value>erster Bivalenzpunkt {0} (nach Kennfeld allein {1}) · zweiter Bivalenzpunkt {2}{3}</value>
+  </data>
+  <data name="WPA_HERLEITUNG_VORWAERMBETRIEB" xml:space="preserve">
+    <value> (Vorwärmbetrieb)</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KESSELANTEIL" xml:space="preserve">
+    <value>Wärmepumpe bei −7 °C {0} % der Kesselleistung (§ 43 GModG: mindestens {1} %)</value>
+  </data>
+  <data name="WPA_HERLEITUNG_KEIN_PUNKT" xml:space="preserve">
+    <value>keiner</value>
+  </data>
+  <data name="WPA_HERLEITUNG_OHNE_KOPPLUNG" xml:space="preserve">
+    <value>Die Übergabe ist nicht beschrieben (Kopplung aus) — die Wärmepumpe rechnet ohne Übergabegrenze.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_NICHT_WIRKSAM" xml:space="preserve">
+    <value>Einbindung nicht gesetzt — Übergabegrenze ruht.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>Die Übergabegrenze wird ohne Lauf nur für gekoppelte Gebäude ohne Zonen mit Flächenangabe und einer Klimaregion des Projekts hergeleitet — hier erst im Lauf.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_OHNE_KENNFELD" xml:space="preserve">
+    <value>keine Wärmekennlinie der Wärmepumpe — keine Bivalenzpunkte</value>
+  </data>
+  <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
+    <value>Die Übergabegrenze ist nicht herleitbar: {0}</value>
+  </data>
 </root>
 

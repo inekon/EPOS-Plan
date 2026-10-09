@@ -92,7 +92,11 @@ namespace WindowsFormsApplication1
             if (m == null) return null;
 
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(m, m.ID_WP);
-            return WaermepumpeAnlageHuelle.AusModell(m);
+            WaermepumpeAnlageDaten d = WaermepumpeAnlageHuelle.AusModell(m);
+            // Uebergabegrenze UB-E1: Herleitungszeile und Schnellwahl; der Schreibweg schreibt davon in E1 nur
+            // Vorlauf_Max (MitBetriebszeiten) - das Kaeltemittel kommt erst mit dem Schemaschritt.
+            BivalenzAbbildung.Lesen(m, d);
+            return d;
         }
 
         /// <summary>

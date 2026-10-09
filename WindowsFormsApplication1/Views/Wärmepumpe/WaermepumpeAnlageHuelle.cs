@@ -51,6 +51,8 @@ namespace WindowsFormsApplication1
             BlazorDialogForm<WaermepumpeAnlageDialog> dlg = null;
 
             WaermepumpeAnlageDaten daten = AusModell(modell);
+            // Uebergabegrenze UB-E1: Herleitungszeile und Schnellwahl - gelesen erst beim Zeichnen, je Dialog einmal.
+            BivalenzAbbildung.Lesen(modell, daten);
 
             var werte = new Dictionary<string, object>(Gaben(besitzer, daten, modell, projektId))
             {

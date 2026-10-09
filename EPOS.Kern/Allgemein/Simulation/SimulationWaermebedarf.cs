@@ -1092,6 +1092,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Faktor vom Katalogbau auf das wirkliche Gebäude, ohne Lauf</b> (UB‑E1) — derselbe Faktor wie
+        /// in <see cref="AufheizbemessungEinesGebaeudes"/>: mit Flächenangabe Auswahlfläche / Nutzfläche des
+        /// Katalogbaus; mit Verbrauchsangabe entsteht er erst im Lauf (<c>null</c>). Ein Gebäude mit Zonen trägt
+        /// seine echte Hülle (1). Voraussetzung ist <see cref="KlimakalenderLesen"/>. Schreibt nichts.
+        /// </summary>
+        internal double? Flaechenfaktor(ProjektGebaeudeModel item)
+        {
+            if (item == null) return null;
+            if (GebaeudeZonensatz.HatZonen(item)) return 1.0;
+            if (!(item.Nutzflaeche > 0.0)) return null;
+            return GebaeudeVorbereitung.Bilden(_kalender, item).IstFlaeche ? item.Z_AuswahlWohnflaeche / item.Nutzflaeche : (double?)null;
+        }
+
+        /// <summary>
         /// <b>Der Eingang eines kühlgekoppelten Gebäudes, ohne Jahreslauf</b> (E37; Anlagenkopplung
         /// 8.4, A2) — die Auskunft der Kälteseite für den Gebäudedialog: Auslegungstag und seine
         /// Kühllast, Quelle und Höhe des festen Kaltwasser-Vorlaufs, Vorlaufgrenze. Derselbe
