@@ -74,6 +74,9 @@ public sealed class KiMaskenabdeckungWacheTests
         // Die Satzbearbeitung „Bearbeiten…" der Katalogauswahl (Stufe 2) steht als Ueberlagerung im
         // Projektdialog; der Assistent arbeitet ueber „Alle Daten" der Detailzeile desselben Wirts.
         new("Satzbearbeitung",                "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
+        // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;
+        // sie fragt nur (Wahl und Name), der Assistent arbeitet ueber denselben Wirt.
+        new("Rueckwegfrage",                  "HeizkesselDialog",            KiMaskennamen.HEIZKESSEL_PROJEKT),
         new("WaermepumpeStammFelder",         "WaermepumpeStammDialog",      KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeGeraetegrenzenFelder", "WaermepumpeStammDialog",     KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeKonfiguration",       "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
@@ -473,6 +476,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", 6),
         new("SpeicherParameterBlock", 20),
         new("SpeicherZeitreihenDialog", 16),
+        new("Rueckwegfrage", 5, "Wahl „neu“/„überschreiben“ je Satz und für alle sowie der Name des neuen Katalogsatzes — eine Rückfrage vor dem Schreiben in den Katalog, kein Projektwert"),
         new("Satzbearbeitung", 2, "„für alle gewählten setzen“ überträgt einen Wert auf die übrigen Sätze der Auswahl — eine Bearbeitungshilfe, kein eigener Datenwert"),
         new("Startseite", 2, "die Projekt- und Variantenwahl im Kopfband öffnet ein anderes Projekt — Navigation, kein Einstellwert"),
         new("StromganglinieAdminDialog", 1),

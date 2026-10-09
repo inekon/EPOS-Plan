@@ -104,6 +104,13 @@
                         title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
                         disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
             }
+            @if (RueckwegWege is not null)
+            {
+                @* KA-E-9: der Rueckweg in die Datenbank, wirksam auf die Auswahl der Projektliste. *@
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--rueckweg"
+                        title="@Resource.KATRUECK_BTN_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiRueckweg">@Resource.KATRUECK_BTN</button>
+            }
         </Leistenzusatz>
 
         <Links>
@@ -327,6 +334,19 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* --- Ueberlagerung 4: Rueckfrage „In die Datenbank übernehmen…" (5.2, KA-E-9) - immer vor dem Schreiben *@
+    <Ueberlagerung Offen="@(_rueckweg is not null)"
+                   Titel="@(_rueckweg is null ? "" : Rueckwegregel.Titel(_rueckweg))"
+                   Kopfzusatz="@MarkeKatalogsatz" Geschlossen="() => RueckwegFertig(null)">
+        <KindInhalt>
+            @if (_rueckweg is not null && RueckwegWege is not null)
+            {
+                <Rueckwegfrage Zeilen="@_rueckweg" Wege="@RueckwegWege" BleibtText="@RueckwegBleibtText"
+                               Geschlossen="RueckwegFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     @* --- Rueckfrage vor dem Loeschen aus dem KATALOG ------------------------- *@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
                 Frage="@LoeschfrageText" Beantwortet="BeiLoeschfrage" />
@@ -434,6 +454,15 @@
 
     /// <summary>Der Parametersatz des Katalogeditors im Modus „Neu"; <c>null</c> = kein Knopf „Neu…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? NeuGaben { get; set; }
+
+    /// <summary>
+    /// <b>Rückweg „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Rückfrage und Schreibweg
+    /// aus dem Kern. <c>null</c> = kein Knopf (Assistent, Verwaltung).
+    /// </summary>
+    [Parameter] public Rueckwegwege? RueckwegWege { get; set; }
+
+    /// <summary>Was beim Rückweg im Projekt bleibt (je Gewerk, von der Hülle).</summary>
+    [Parameter] public string RueckwegBleibtText { get; set; } = "";
 
     /// <summary>Die Summe der thermischen Leistungen der Projektliste, fertig formatiert; <c>null</c> = keine Summe.</summary>
     [Parameter] public Func<string>? SummePtherm { get; set; }
@@ -726,6 +755,7 @@
     private IReadOnlyList<string> _katalogKaestchen = new List<string>();
     private Katalogliste? _katalogliste;
     private (Satzmarke Art, IReadOnlyList<Bearbeitungssatz> Saetze)? _bearbeitung;
+    private IReadOnlyList<Rueckwegvorschlag>? _rueckweg;
     private string _summeText = "";
     private List<Katalogfilterzeile> _loeschziele = new();
     private List<Katalogfilterzeile> _loeschUebersprungen = new();
@@ -738,6 +768,8 @@
     public (Satzmarke Art, IReadOnlyList<Bearbeitungssatz> Saetze)? Bearbeitung => _bearbeitung;
     /// <summary>Steht der Katalogeditor offen (Bearbeiten… eines Satzes oder Neu…)? (Prüfhilfe.)</summary>
     public bool EditorOffen => _editorGaben is not null;
+    /// <summary>Die offene Rückfrage des Rückwegs (Prüfhilfe).</summary>
+    public IReadOnlyList<Rueckwegvorschlag>? Rueckweg => _rueckweg;
 
     private static string Projektschluessel(ErzeugerZeile z) => z.Schluessel.ToString(CultureInfo.InvariantCulture);
     private IReadOnlyList<string> ProjektSchluessel() => Zeilen.Select(Projektschluessel).ToList();
@@ -1276,6 +1308,29 @@
         SummeNachziehen();
     }
 
+    /// <summary>
+    /// „In die Datenbank übernehmen…" (KA‑E‑9): die Rückfrage für die Projektkopien der gewählten Zeilen (je Gerät
+    /// einmal). Die Oberfläche fragt nur; geschrieben wird im Kern.
+    /// </summary>
+    private void BeiRueckweg()
+    {
+        if (RueckwegWege is null) return;
+        var ids = ProjektZiele().Select(z => z.GeraetId).Where(id => id > 0).Distinct().ToList();
+        if (ids.Count == 0) return;
+        IReadOnlyList<Rueckwegvorschlag> zeilen = RueckwegWege.Vorschau(ids);
+        if (zeilen.Count == 0) return;
+        _rueckweg = zeilen;
+    }
+
+    /// <summary>Die Rückfrage ist zu; nach dem Schreiben Meldung (Zahl und Namen) und Katalog neu.</summary>
+    private void RueckwegFertig(string? meldung)
+    {
+        _rueckweg = null;
+        if (meldung is null) return;
+        Melden(meldung, false);
+        KatalogNeuLaden();
+    }
+
     /// <summary>„Neu…" rechts in der Katalog-Fußleiste: der Katalogeditor im Modus Neu.</summary>
     private void BeiNeu()
     {
@@ -1387,7 +1442,8 @@
     {
         if (e.Key == "Escape" && _katalogschloss?.FrageOffen == true) return Task.CompletedTask;
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_traegerGaben is not null || _editorGaben is not null || _bearbeitung is not null || _loeschfrage)
+        if (_traegerGaben is not null || _editorGaben is not null || _bearbeitung is not null || _rueckweg is not null ||
+            _loeschfrage)
             return Task.CompletedTask;
         return Abbrechen();
     }

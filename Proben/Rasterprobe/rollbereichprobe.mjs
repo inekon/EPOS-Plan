@@ -243,6 +243,18 @@ try {
           if (await seite.locator('.epos-satzbearbeitung').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst "Bearbeiten..." nicht`);
           await mess('nach Bearbeiten');
+          // Stufe 2b: die Rueckfrage „In die Datenbank übernehmen…" als Ueberlagerung - drei Zeilen, kein eigener
+          // Rollbereich; Esc schliesst sie.
+          await seite.locator('.epos-knopf--rueckweg').click();
+          await seite.waitForSelector('.epos-rueckweg', { timeout: 5000 });
+          await ruhe(seite);
+          if (await seite.locator('.epos-rueckweg-zeile').count() !== 3)
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Rueckfrage ohne ihre drei Zeilen`);
+          await mess('Rueckfrage-Ueberlagerung offen');
+          await seite.keyboard.press('Escape');
+          await ruhe(seite);
+          if (await seite.locator('.epos-rueckweg').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
         }
         // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
         if (fall === 'gebaeude') {

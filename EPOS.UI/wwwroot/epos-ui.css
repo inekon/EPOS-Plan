@@ -3638,6 +3638,19 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--epos-rahmen);
 }
 .epos-satzbearbeitung-hinweis { margin: 0 0 8px; color: var(--epos-text-leise); }
+/* DER RUECKWEG „In die Datenbank übernehmen…" (5.2) - Rueckfrage als Ueberlagerung: je Satz eine Zeile mit Wahl
+   und Name; kein eigener Rollbereich (die Ueberlagerung rollt, sonst nichts). */
+.epos-rueckweg-alle { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+.epos-rueckweg-alle-text { font-weight: 600; }
+.epos-rueckweg-tabelle { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.epos-rueckweg-tabelle th, .epos-rueckweg-tabelle td {
+    text-align: left; vertical-align: top; padding: 4px 6px; border-bottom: 1px solid var(--epos-rahmen);
+}
+.epos-rueckweg-wahl label { display: block; white-space: nowrap; }
+.epos-rueckweg-wahl input[disabled] + * , .epos-rueckweg-grund { color: var(--epos-text-leise); }
+.epos-rueckweg-namensfeld { width: 100%; min-width: 10rem; box-sizing: border-box; }
+.epos-rueckweg-namenshinweis { display: block; font-size: 12px; }
+.epos-rueckweg-hinweis { margin: 0 0 8px; color: var(--epos-text-leise); }
 .epos-satzbearbeitung-fueralle {
     display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--epos-text-leise);
     grid-column: 1 / -1; margin-top: -4px;

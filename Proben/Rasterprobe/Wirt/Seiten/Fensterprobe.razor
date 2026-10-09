@@ -51,6 +51,8 @@
                               Katalogfelder="@(_ => Felder())"
                               ProjektsatzWege="@SatzWege"
                               KatalogsatzWege="@SatzWege"
+                              RueckwegWege="@RueckWege"
+                              RueckwegBleibtText="Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage."
                               NeuGaben="@(() => new Dictionary<string, object>())"
                               SummePtherm="@(() => "240")"
                               Geschlossen="@(b => Beendet(b))" />
@@ -156,6 +158,22 @@
     {
         Lesen = _ => Felder(),
         Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
+    };
+
+    // ------------------------------------------------ Heizkessel: Rueckweg „In die Datenbank übernehmen…" (Stufe 2b)
+    // Drei Zeilen mit allen Lagen der Rueckfrage: ueberschreibbar, gesperrt, Ursprung nicht bekannt.
+    private Rueckwegwege? _rueckWege;
+    private Rueckwegwege RueckWege => _rueckWege ??= new Rueckwegwege
+    {
+        Vorschau = _ => new[]
+        {
+            new Rueckwegvorschlag(1, "Kessel 1", "Kessel 1", Rueckwegsperre.Keine, "Kessel 1 (Projekt)"),
+            new Rueckwegvorschlag(2, "Kessel 2", "Kessel 2", Rueckwegsperre.Gesperrt, "Kessel 2 (Projekt)"),
+            new Rueckwegvorschlag(3, "Kessel 3 mit einem langen Namen fuer die Breite", "", Rueckwegsperre.UrsprungUnbekannt,
+                                  "Kessel 3 mit einem langen Namen fuer die Breite"),
+        },
+        NameBelegt = n => n == "Kessel A",
+        Uebernehmen = _ => new KatalogSpeicherErgebnis(true, "3 Sätze in die Datenbank übernommen.", "")
     };
 
     // ------------------------------------------------ Heizkessel und BHKW
