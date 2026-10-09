@@ -48,13 +48,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Spalten, die eine Kopie NICHT vom Original übernimmt — samt den drei Katalogspalten
-        /// (KU1): Eine Kopie ist ein Anwendersatz und trägt weder Schlüssel noch Prüfsumme.
+        /// (KU1): Eine Kopie ist ein Anwendersatz und trägt weder Schlüssel noch Prüfsumme. Auch die
+        /// Kostenvorlage des Satzes (Schritt 208) bleibt beim Original: Die Kopie beginnt mit der Standardvorlage, damit
+        /// ein Rückweg auf einen der beiden Sätze nie die Vorlage des anderen umschreibt.
         /// </summary>
         private static readonly HashSet<string> KOPFSPALTEN =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "ID", "Bezeichner", "ReadOnly",
-                Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN
+                Katalogfassung.SPALTE_SCHLUESSEL, Katalogfassung.SPALTE_PRUEFSUMME, Katalogfassung.SPALTE_AUSGELAUFEN,
+                KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE
             };
 
         /// <summary>

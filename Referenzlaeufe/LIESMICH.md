@@ -1095,6 +1095,24 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt** — die Gemeinschaftsperioden kehren beim Lesen mit Rang und Angabe in genau ihre Größenkalender zurück, die
 > Ferienspalten bleiben Quelle der Leser; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879
 > CSV byte-gleich.
+>
+> **Nachtrag — Testdatenbank auf 208 (Katalogkosten und Ursprung hinter der Kalenderbedienung), Basis R46 unberührt.**
+> `KatalogkostenUrsprungSchema` (208 = `KalenderbedienungSchema.SCHRITT + 1`) legt an den acht Katalogen mit Kosten
+> (`Tab_BHKW_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_Pufferspeicher_STAMM`, `Tab_Stromspeicher_STAMM`, `Tab_PV_STAMM`,
+> `Tab_Solarkollektoren_STAMM`, `Tab_WP_STAMM`, `Tab_Kaeltemaschine_STAMM`) die Spalte `ID_KostenVorlage` (Verweis auf
+> `Tab_KostenVorlage`) und an den elf Projektkopien ohne Ursprungsverweis (`Tab_BHKW`, `Tab_Heizkessel`,
+> `Tab_Stromspeicher`, `Tab_PV`, `Tab_Solarkollektoren`, `Tab_Stromverbraucher`, `Tab_Brauchwasser`, `Tab_Prozesswaerme`,
+> `Tab_Waermebedarf`, `Tab_Stromganglinie`, `Tab_Solarganglinie`) die Spalte `ID_Stamm` (Verweis auf den Katalog) an,
+> beide nullbar mit `ON DELETE SET NULL`, alle neunzehn leer — reines DDL, kein DML an Bestandsdaten. Gehoben aus dem
+> Stand 207 (LFS-SHA-256 `ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`) mit
+> `Werkzeuge/Testdatenbankschema`; die achtzehn Tabellen mit Zeilen unterscheiden sich nur um die leere Zusatzspalte, jede
+> übrige Tabelle ist inhaltsgleich (außer `Tab_Applikation`), die `sqlite_sequence`-Stände, die der wiederholte
+> Werkzeuglauf fortzählt (`Tab_Nutzungsprofil_STAMM`, `Z_Nutzungsprofil`, `Tab_Kenndaten_Kaeltemaschine_STAMM`), sind
+> auf den Stand 207 zurückgesetzt. Die Testdatenbank steht auf **208** (`integrity_check` ok, `foreign_key_check` leer,
+> SQL-Dialektprüfer 0 Fundstellen): **93 958 144 Byte, LFS-SHA-256
+> `45093f6aba2d5d5c695c99b14f18ec864dde8435e7c248e5b0c7af37d4108846`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> bleibt** — keine gesäte Spalte eines Referenzprojekts ändert ihren Wert, keine Einfrierregel ist berührt, kein Leser der
+> Simulation fragt die neuen Spalten.
 
 ### Die Vorgängerbasis R45 (Übergabegrenze)
 

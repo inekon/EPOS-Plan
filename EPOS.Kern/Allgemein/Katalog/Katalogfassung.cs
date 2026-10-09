@@ -204,11 +204,15 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Spalten, die KEIN Fachwert sind: Kennung, Auslieferungskennzeichen und die drei
         /// Katalogspalten. Eine Katalogkopie, die Dublettenprüfung und die Prüfsumme lassen sie aus.
+        /// <para>Dazu die Kostenvorlage des Satzes (<see cref="KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE"/>,
+        /// Schritt 208): ein Verweis auf eine Anwendervorlage, die kein Paket führt — sie verändert weder Prüfsumme noch
+        /// Paket, und eine Katalogkopie beginnt mit der Standardvorlage des Gewerks.</para>
         /// </summary>
         public static readonly IReadOnlyCollection<string> Metaspalten =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "ID", SPALTE_READONLY, SPALTE_SCHLUESSEL, SPALTE_PRUEFSUMME, SPALTE_AUSGELAUFEN
+                "ID", SPALTE_READONLY, SPALTE_SCHLUESSEL, SPALTE_PRUEFSUMME, SPALTE_AUSGELAUFEN,
+                KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE
             };
 
         /// <summary>Ist <paramref name="spalte"/> eine der drei Katalogspalten?</summary>
