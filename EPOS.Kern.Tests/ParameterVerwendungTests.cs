@@ -604,17 +604,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die zwei Spalten, die keine Maske je von Hand setzt: der Primaerschluessel und
-        /// die Auslieferungsmarke. Sie sind vom Vergleich ausgenommen, weil eine
+        /// Die Spalten, die keine Maske je von Hand setzt: der Primaerschluessel,
+        /// die Auslieferungsmarke und die zwei Kostenvorlagen-Verweise. Sie sind vom Vergleich ausgenommen, weil eine
         /// Eingabemoeglichkeit dort ein FEHLER waere.
         /// </summary>
         private static bool Verwaltungsspalte(string spalte)
         {
             return string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase)
-                // Schritt 208: der Verweis auf die Kostenvorlage des Satzes - kein Eingabefeld, ihn schreibt der Rueckweg
-                // „In die Datenbank übernehmen…", gepflegt wird die Vorlage in der Kostenverwaltung.
-                || string.Equals(spalte, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase);
+                // Schritte 208 und 209: die Verweise auf Betriebs- und Investitionsvorlage des Satzes - kein Eingabefeld,
+                // sie schreibt der Rueckweg „In die Datenbank übernehmen…", gepflegt wird die Vorlage in der Kostenverwaltung.
+                || string.Equals(spalte, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(spalte, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

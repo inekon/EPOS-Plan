@@ -83038,6 +83038,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionsvorlage des Satzes: ähnelt.
+        /// </summary>
+        public static string PARV_LBL_KOSTENVORLAGE_INVESTITION {
+            get {
+                return ResourceManager.GetString("PARV_LBL_KOSTENVORLAGE_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die max. therm. Leistung: ähnelt.
         /// </summary>
         public static string PARV_LBL_MAXPTHERM {

@@ -275,14 +275,18 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Schemaschritt <see cref="KatalogkostenUrsprungSchema"/> (208): die Kostenvorlage des Katalogsatzes an den acht
-        /// Katalogen mit Kosten, in der Reihenfolge der Tabelle die letzte (ADD COLUMN). Leer = Standardvorlage des Gewerks;
+        /// Schemaschritte <see cref="KatalogkostenUrsprungSchema"/> (208) und <see cref="KatalogkostenInvestitionSchema"/> (209):
+        /// die Betriebs- und die Investitionsvorlage des Katalogsatzes an den acht
+        /// Katalogen mit Kosten, in der Reihenfolge der Tabelle die letzten (ADD COLUMN). Leer = Standardvorlage des Gewerks;
         /// der Rueckweg „In die Datenbank übernehmen…" schreibt sie, die Uebernahme ins Projekt zieht sie vor.
         /// </summary>
         private static IEnumerable<ParameterEintrag> Kostenvorlage(Func<string, string> t) => new[]
         {
             E(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, t("PARV_LBL_KOSTENVORLAGE"), "", WIRT,
               "Katalogrueckweg.KostenvorlageSchreiben (Rueckweg); Katalogrueckweg.SatzvorlageDerAnlage -> " +
+              "KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen (Vorrang vor der Standardvorlage)"),
+            E(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, t("PARV_LBL_KOSTENVORLAGE_INVESTITION"), "", WIRT,
+              "Katalogrueckweg.KostenvorlageSchreiben (Rueckweg, Kategorie Investition); Katalogrueckweg.SatzvorlagenDerAnlage -> " +
               "KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen (Vorrang vor der Standardvorlage)"),
         };
 

@@ -50287,6 +50287,9 @@ Chart</value>
   <data name="PARV_LBL_KOSTENVORLAGE" xml:space="preserve">
     <value>Kostenvorlage des Satzes:</value>
   </data>
+  <data name="PARV_LBL_KOSTENVORLAGE_INVESTITION" xml:space="preserve">
+    <value>Investitionsvorlage des Satzes:</value>
+  </data>
   <data name="KOND_LBL_KALB_GILT_ALLE" xml:space="preserve">
     <value>alle</value>
   </data>
