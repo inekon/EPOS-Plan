@@ -548,7 +548,10 @@ async function verwaltung(browser, f) {
 async function fall(browser, name, f) {
   const marke = `${name} ${f.breite}×${f.hoehe}`;
   console.log(`\n${marke}`);
-  const kontext = await browser.newContext({ viewport: { width: f.breite, height: f.hoehe }, deviceScaleFactor: 1 });
+  // Fall „karte“ (Welle K1b): mit Berührung (pointer: coarse) - die Kalenderbedienung hält dort 44 px und liegt
+  // nur mit der Maus enger; gemessen wird das Berührungsmaß.
+  const kontext = await browser.newContext({ viewport: { width: f.breite, height: f.hoehe }, deviceScaleFactor: 1,
+                                             hasTouch: name === 'karte' });
   const seite = await kontext.newPage();
   const fehler = [];
   seite.on('pageerror', e => fehler.push(e.message));
@@ -1129,6 +1132,41 @@ async function karte(seite, marke, f) {
   const zeiger = ((await karteLoc.locator('.epos-kond-teppich .epos-diagramm-zeigerzeile').allInnerTexts())[0] || '').trim();
   console.log(`  Teppich am Zeiger: „${zeiger}“`);
   if (!zeiger.includes('·')) melde(marke, 'das Teppichbild nennt am Zeiger keine Quelle');
+
+  // Die Kalenderbedienung (Welle K1b, Konzept 7.8): Schnellfelder, Wochenprofile mit 7 × 24 Zellen, Zuordnung mit
+  // Jahresband, Einzeltage, Jahresraster mit 365 Tagen im eigenen Rollkasten - kein Querrollen außerhalb des Kastens,
+  // Zellen mit Berührungsmaß; breit stehen alle fünf Karten in einer Zeile.
+  const kb = await seite.evaluate(() => {
+    const w = document.querySelector('.epos-ueberlagerung .epos-kond-karte-einzelheiten[data-groesse="0"] .epos-kalb');
+    if (!w) return null;
+    const rolle = w.querySelector('.epos-kalb-rolle');
+    const hoehe = sel => [...w.querySelectorAll(sel)].map(e => e.getBoundingClientRect().height);
+    const karten = [...document.querySelectorAll('.epos-ueberlagerung .epos-kond-karte')]
+      .filter(k => k.getClientRects().length > 0).map(k => Math.round(k.getBoundingClientRect().top));
+    return {
+      zellen: w.querySelectorAll('.epos-kalb-woche button.epos-kalb-zelle').length,
+      tage: w.querySelectorAll('.epos-kalb-jahr button.epos-kalb-jahrtag').length,
+      zelleMin: Math.min(...hoehe('.epos-kalb-zelle')),
+      tagMin: Math.min(...hoehe('.epos-kalb-jahrtag')),
+      kalbQuer: w.scrollWidth - w.clientWidth,
+      rolleRollt: rolle ? getComputedStyle(rolle).overflowX : '',
+      band: w.querySelectorAll('.epos-kalb-band .epos-kalb-bandteil').length,
+      schnell: w.querySelectorAll('.epos-kalb-feldgruppe').length,
+      kartenZeilen: new Set(karten).size, karten: karten.length
+    };
+  });
+  if (!kb) melde(marke, 'die Kalenderbedienung fehlt im Abschnitt „Kalender im Einzelnen“');
+  else {
+    console.log(`  Kalenderbedienung: ${kb.zellen} Zellen (min ${kb.zelleMin.toFixed(1)} px), ${kb.tage} Tage ` +
+                `(min ${kb.tagMin.toFixed(1)} px, Kasten ${kb.rolleRollt}), Band ${kb.band}, Schnellfelder ${kb.schnell}, ` +
+                `quer ${kb.kalbQuer}; ${kb.karten} Karten in ${kb.kartenZeilen} Zeile(n)`);
+    if (kb.zellen !== 168) melde(marke, `Wochenprofil mit ${kb.zellen} statt 168 Zellen`);
+    if (kb.tage !== 365) melde(marke, `Jahresraster mit ${kb.tage} statt 365 Tagen`);
+    if (kb.zelleMin < ZIEL - TOL || kb.tagMin < ZIEL - TOL) melde(marke, 'Kalenderbedienung: Zelle unter 44 px bei Berührung');
+    if (kb.kalbQuer > 0) melde(marke, `die Kalenderbedienung rollt quer (${kb.kalbQuer} px)`);
+    if (kb.rolleRollt !== 'auto') melde(marke, 'das Jahresraster steht nicht im eigenen Rollkasten');
+    if (f.breite >= 1300 && kb.kartenZeilen !== 1) melde(marke, `die Karten stehen in ${kb.kartenZeilen} Zeilen (soll 1)`);
+  }
 
   if (FOTOS) {
     await karteLoc.locator('.epos-kond-inhalt').scrollIntoViewIfNeeded();

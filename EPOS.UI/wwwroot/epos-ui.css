@@ -14822,7 +14822,7 @@ td.epos-vorlage-katalogbeschreibung {
 
 .epos-kalb-woche {
     display: grid;
-    grid-template-columns: 2.6em repeat(7, minmax(0, 1fr));
+    grid-template-columns: 2.2em repeat(7, minmax(var(--epos-touchziel), 1fr));
     gap: 1px;
     margin: 6px 0;
     min-width: 0;
@@ -14877,7 +14877,7 @@ td.epos-vorlage-katalogbeschreibung {
     padding: 0;
 }
 
-button.epos-kalb-bandteil {
+.epos-kalb-bandteil--zeile {
     cursor: pointer;
 }
 
@@ -14897,10 +14897,14 @@ button.epos-kalb-bandteil {
 
 .epos-kalb-tabellenhuelle {
     min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
 }
 
 .epos-kalb-tabelle {
     width: 100%;
+    min-width: 36em;
     table-layout: fixed;
 }
 
@@ -14984,6 +14988,10 @@ button.epos-kalb-bandteil {
 }
 
 @media (pointer: fine) {
+    .epos-kalb .epos-kalb-woche {
+        grid-template-columns: 2.2em repeat(7, minmax(0, 1fr));
+    }
+
     .epos-kalb .epos-kalb-zelle {
         min-height: 22px;
     }

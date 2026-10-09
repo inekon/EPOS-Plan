@@ -137,6 +137,7 @@
                 <p class="epos-leisezeile">@Texte.HinweisKalbPinsel</p>
                 @if (Profil is KalenderWochenprofil woche)
                 {
+                    <div class="epos-kalb-rolle">
                     <div class="epos-kalb-woche" role="group" aria-label="@woche.Name">
                         <span class="epos-kalb-woche-ecke" aria-hidden="true"></span>
                         @for (int t = 0; t < 7; t++)
@@ -158,6 +159,7 @@
                                         @onclick="() => Geklickt(tag, stunde)">@Wert(w)</button>
                             }
                         }
+                    </div>
                     </div>
                 }
                 <div class="epos-zeilenknoepfe">
@@ -195,8 +197,10 @@
                         string stil = "flex-grow: " + (b.Ende - b.Beginn + 1).ToString(CultureInfo.InvariantCulture);
                         @if (abschnitt.Schluessel is KalenderZeilenschluessel s)
                         {
-                            <button type="button" class="epos-kalb-bandteil epos-kalb-art-@((int)b.Art) @(s == _gewaehlt ? "epos-kalb-bandteil--gewaehlt" : "")"
-                                    style="@stil" title="@titel" aria-label="@titel" @onclick="() => ZeileWaehlen(s)"></button>
+                            @* Ein Abschnitt ist oft nur wenige Pixel breit - kein eigenes Bedienziel: Der Klick ist eine
+                               Abkuerzung fuer Maus und Finger; Tastatur und Sprachausgabe nehmen Tabelle und Jahresraster. *@
+                            <span class="epos-kalb-bandteil epos-kalb-bandteil--zeile epos-kalb-art-@((int)b.Art) @(s == _gewaehlt ? "epos-kalb-bandteil--gewaehlt" : "")"
+                                  style="@stil" title="@titel" aria-hidden="true" data-name="@s.Name" @onclick="() => ZeileWaehlen(s)"></span>
                         }
                         else
                         {

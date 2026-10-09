@@ -143,6 +143,11 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         Assert.DoesNotContain(_bearbeitung.Kalender(L)!.Perioden, p => p.Name == "Messe");
         Assert.Equal("Messe", b.Find(".epos-kalb-zeilen tr.epos-kalb-zeile--gewaehlt").GetAttribute("data-name"));
 
+        // Das Jahresband: der Abschnitt der Zeile wählt sie; ihr eigenes Wochenprofil wird gewählt.
+        b.Find(".epos-kalb-bandteil--zeile[data-name='Messe']").Click();
+        Assert.Equal("Messe", b.Instance.GewaehlteZeile!.Name);
+        Assert.Equal(z.Raenge[H], b.Instance.GewaehltesProfil);
+
         // Entfernen wirkt in allen Größen.
         Knopf(b.Find(".epos-kalb-zeilen tr[data-name='Messe']"), "epos-kalb-entfernen").Click();
         Assert.DoesNotContain(b.Instance.Ansicht!.Zuordnungen, x => x.Schluessel.Name == "Messe");
