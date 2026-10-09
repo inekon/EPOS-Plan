@@ -1,6 +1,6 @@
 # Protokoll UB-E4 — Bivalenzdiagramm, Reiter, Kennzahlen, Bericht, Export, Vorlagen (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#853**. Commits E4-a `4036f1164`, `2a2faeac8`, `90926dc67`, `862214236`; E4-b `6f35a6f32`, `eb991487b`,
+**Sitzung:** Gebäudesimulation, Statuszeile **#855**. Commits E4-a `4036f1164`, `2a2faeac8`, `90926dc67`, `862214236`; E4-b `6f35a6f32`, `eb991487b`,
 `c50d9c24a`, `6748bd80a`, `6f830d05b`, `1ab6b3f57`, `b263588f0`, `a07a69d73`; E4-c `f9420562a`; Merge ``5c7bbb89c` (E4 in den Hauptbaum), danach `0e5599923` und `6aa2452b8` (origin ZK und ZK-b), Schemaschritt der Welle 205`. **Entscheid:** E109.
 Konzepte: Fachkonzept Übergabegrenze/Bivalenz (Fassung 2) und Umsetzungskonzept Abschnitt 10.
 

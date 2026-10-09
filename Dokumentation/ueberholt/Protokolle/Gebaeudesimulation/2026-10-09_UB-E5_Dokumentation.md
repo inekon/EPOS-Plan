@@ -1,6 +1,6 @@
 # Protokoll UB-E5 — Wiki-Quellen, Logbuch-Entwurf, Konzepte „wie gebaut“ (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#854**. Commits E5-b `7ef71ecfa`, `61d52c924`; E5-a `7d3d96936`; Merges `fea975d77` (ub-e5b) und
+**Sitzung:** Gebäudesimulation, Statuszeile **#856**. Commits E5-b `7ef71ecfa`, `61d52c924`; E5-a `7d3d96936`; Merges `fea975d77` (ub-e5b) und
 `c641a2682` (ub-e5a) in den Hauptbaum; fachliche Korrektur der Wiki-Quelle `6125d1711`. **Entscheid:** E109.
 Konzepte: [Fachkonzept Übergabegrenze/Bivalenz](../../Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md) und
 [Umsetzungskonzept](../../Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), beide jetzt unter `ueberholt/`.
@@ -14,7 +14,7 @@ Konzepte: [Fachkonzept Übergabegrenze/Bivalenz](../../Konzept_Uebergabegrenze_B
 
 | Welle | Commits | Ergebnis |
 |---|---|---|
-| E5-a | `7d3d96936` | Wiki-Quellen unter `Projekte/Wiki/`: Wärmepumpe (+14 Zeilen: Abschnitt „Gerätegrenzen“ mit sechs Feldern, Einbindung, Vorwärmbetrieb, Betriebsbereiche), BHKW (+1: höchster Rücklauf), Gerätekataloge (+2), Simulationsergebnisse (+3/−1: Kachelzeile Betriebsbereiche, CSV-Kopfzeilen, Absatz Bivalenz), Berichtsvorlagen (+2). `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`: ausstehende Uploads mit #851/#852/#853, Logbuch-Abschnitt „Version offen (Vorschlag 1.2.1) — nicht veröffentlicht“ mit fünf Sätzen (Einbindung und Vorwärmbetrieb; Gerätegrenzen im Katalog; Reiter Betriebsbereiche; Bivalenzdiagramm und -tafel im Bericht; Kennzahlen `wp.bivalenz.*` in den Vorlagen) |
+| E5-a | `7d3d96936` | Wiki-Quellen unter `Projekte/Wiki/`: Wärmepumpe (+14 Zeilen: Abschnitt „Gerätegrenzen“ mit sechs Feldern, Einbindung, Vorwärmbetrieb, Betriebsbereiche), BHKW (+1: höchster Rücklauf), Gerätekataloge (+2), Simulationsergebnisse (+3/−1: Kachelzeile Betriebsbereiche, CSV-Kopfzeilen, Absatz Bivalenz), Berichtsvorlagen (+2). `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`: ausstehende Uploads mit #853/#854/#855, Logbuch-Abschnitt „Version offen (Vorschlag 1.2.1) — nicht veröffentlicht“ mit fünf Sätzen (Einbindung und Vorwärmbetrieb; Gerätegrenzen im Katalog; Reiter Betriebsbereiche; Bivalenzdiagramm und -tafel im Bericht; Kennzahlen `wp.bivalenz.*` in den Vorlagen) |
 | E5-b | `7ef71ecfa`, `61d52c924` | Fachkonzept Abschnitt 10a und Umsetzungskonzept Abschnitt 11 „Umsetzung — wie gebaut“: Etappentafel und Abweichungsliste (17 Zeilen Konzept ↔ gebaut ↔ Grund). Glättungen im Fachkonzept: Abschaltpunkt als Deckel, maßgebend der wärmere Wert aus θ_biv,2 und eingegebenem Abschaltpunkt (UB‑Q4 a); θ_biv,2 = −3,5 °C (gerechnet −3,549 °C, auf 0,1 K gerundet) statt −3,6 °C. Beide Konzepte per `git mv` nach `Dokumentation/ueberholt/`, Indexzeilen in `Dokumentation/LIESMICH.md`, 36 Verweise in 11 Dateien umgestellt |
 | Merge | `fea975d77`, `c641a2682` | ohne Konflikt |
 | Prüfung | `6125d1711` | fachliche Prüfung der Wiki-Sätze am Code, fünf Sätze berichtigt (Abschnitt 4) |

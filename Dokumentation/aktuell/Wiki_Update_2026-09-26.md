@@ -124,10 +124,10 @@ Katalog“ folgt derselben Eignungsbewertung wie „Wechselrichter vorschlagen�
 Berichtsvorlagen (#565: kurze Erfolgszeile mit „Öffnen“, Warnungen sichtbar, übrige Hinweise nach Ständen
 gegliedert in einer aufklappbaren Zeile; #582: „Zum Bericht ›“ der Wirtschaftlichkeit führt hierher,
 mit derselben Vorlage und Prüfung; #698: Platzhalter der Bilder Stromlast-Jahresganglinie des BHKW und
-Kälteproduktion im Absatz „Platzhalter in der App“, ; #853: Kachelzeile „Betriebsbereiche“ im Reiter „Wärmepumpe“, Kopfzeilen im CSV-Export, ; #853: Absatz „Bivalenz“ zu Bivalenzdiagramm, Bivalenztafel und den Kennzahlen `wp.bivalenz.*`, ausstehend),
+Kälteproduktion im Absatz „Platzhalter in der App“, ; #855: Kachelzeile „Betriebsbereiche“ im Reiter „Wärmepumpe“, Kopfzeilen im CSV-Export, ; #855: Absatz „Bivalenz“ zu Bivalenzdiagramm, Bivalenztafel und den Kennzahlen `wp.bivalenz.*`, ausstehend),
 Wirtschaftlichkeit (#582: die Knöpfe „Bericht erzeugen“ heißen „Zum Bericht ›“ und wechseln in den
 Bereich Bericht, erzeugt wird dort mit „Erstellen“; #723: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ausstehend),
-BHKW (#723: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ; #852: Feld „Höchster Rücklauf (Abschaltgrenze)“, ausstehend),
+BHKW (#723: Satz zur Viertelstundenbilanz der BHKW-Einspeisung, ; #854: Feld „Höchster Rücklauf (Abschaltgrenze)“, ausstehend),
 Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungssatz zum geltenden Fahrplan,
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
 `wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
@@ -136,9 +136,9 @@ Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Sollt
 #843: Herkunft der Eingaben aus den Reitern „Gebäude und Hülle“ und „Konditionierung“, ausstehend),
 Heizkessel, Grundlagen/Kessel und Spitzenlast, Berechnung/Heizkessel (hochgeladen 28.09.2026 mit #611; #843: Kesselmodell mit
 Teillast- und Brennwertkennlinie, Takten und Anfahrverlust, Betriebsbereitschaft und Heizgrenze, Ergebnisreiter, ausstehend),
-Gerätekataloge (#852: Gruppe „Gerätegrenzen“ bei den Wärmepumpen, „Höchster Rücklauf (Abschaltgrenze)“ beim BHKW, ausstehend),
+Gerätekataloge (#854: Gruppe „Gerätegrenzen“ bei den Wärmepumpen, „Höchster Rücklauf (Abschaltgrenze)“ beim BHKW, ausstehend),
 Wärmepumpe, Grundlagen/Wärmepumpe, Berechnung/Wärmepumpe (hochgeladen 28.09.2026 mit #611; #843: Vorlaufwahl in der Verwaltung,
-Kennlinie in Stunden ohne Heizbedarf, Fundorte der Eingaben, ; #851/#852: Einbindung, Vorwärmbetrieb und Betriebsbereiche in der Konfiguration, Abschnitt „Gerätegrenzen“, ausstehend),
+Kennlinie in Stunden ohne Heizbedarf, Fundorte der Eingaben, ; #853/#854: Einbindung, Vorwärmbetrieb und Betriebsbereiche in der Konfiguration, Abschnitt „Gerätegrenzen“, ausstehend),
 Grundlagen/Kühlung (hochgeladen 28.09.2026 mit #611; #843: Kühlsollwert über die Konditionierung, ausstehend),
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
 Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
@@ -173,11 +173,11 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
 Version noch beim Anwender zu bestätigen.
 
-- Seit 09.10.2026: Eine Wärmepumpe lässt sich mit Einbindung (direkt, Puffer, Weiche) und Vorwärmbetrieb mit dem Kessel in Reihe rechnen. (#851)
-- Seit 09.10.2026: Wärmepumpen- und BHKW-Katalog führen Gerätegrenzen für Spreizung, Mindestvolumenstrom und Rücklauf. (#852)
-- Seit 09.10.2026: Der Reiter „Wärmepumpe“ der Simulationsergebnisse zeigt die Betriebsbereiche mit Stunden, Wärme und Bivalenzpunkten. (#853)
-- Seit 09.10.2026: Der Bericht enthält ein Bivalenzdiagramm (Word) und eine Bivalenztafel (Word und Excel) mit Prüfhinweisen. (#853)
-- Seit 09.10.2026: Die Berichtsvorlagen kennen die Kennzahlen `wp.bivalenz.*` der Betriebsbereiche. (#853)
+- Seit 09.10.2026: Eine Wärmepumpe lässt sich mit Einbindung (direkt, Puffer, Weiche) und Vorwärmbetrieb mit dem Kessel in Reihe rechnen. (#853)
+- Seit 09.10.2026: Wärmepumpen- und BHKW-Katalog führen Gerätegrenzen für Spreizung, Mindestvolumenstrom und Rücklauf. (#854)
+- Seit 09.10.2026: Der Reiter „Wärmepumpe“ der Simulationsergebnisse zeigt die Betriebsbereiche mit Stunden, Wärme und Bivalenzpunkten. (#855)
+- Seit 09.10.2026: Der Bericht enthält ein Bivalenzdiagramm (Word) und eine Bivalenztafel (Word und Excel) mit Prüfhinweisen. (#855)
+- Seit 09.10.2026: Die Berichtsvorlagen kennen die Kennzahlen `wp.bivalenz.*` der Betriebsbereiche. (#855)
 
 ### Version 1.2.0.9 — nicht veröffentlicht
 

@@ -664,9 +664,9 @@ Abweichungen gelten gleich für das [Umsetzungskonzept](Umsetzungskonzept_Ueberg
 | Etappe | Statuszeile | Protokoll | gebaut |
 |---|---|---|---|
 | UB‑E1 | #837 | [UB-E1](Protokolle/Gebaeudesimulation/2026-10-09_UB-E1_Uebergabegrenze.md) | Kernklassen unter `EPOS.Kern/Allgemein/Simulation/Bivalenz/` (`Bivalenzvorgaben`, `Uebergabegrenze`, `Bivalenzrechner`, `Bivalenzherleitung`), Herleitungszeile und Schnellwahl des Höchstvorlaufs; ohne Rechenwirkung |
-| UB‑E2 | #851 | [UB-E2](Protokolle/Gebaeudesimulation/2026-10-09_UB-E2_Betriebsbereiche.md) | Schemaschritt **205** `UebergabegrenzeSchema` (`EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`), Betriebsbereiche B0–B4 und Vorwärmbetrieb im Rechenweg, Gruppe „Bivalenz und Übergabe", Referenzprojekt 1060, Basis R45 |
-| UB‑E3 | #852 | [UB-E3](Protokolle/Gebaeudesimulation/2026-10-09_UB-E3_Geraetegrenzen.md) | Gerätegrenzen, Hydraulik- und Rücklaufgrenze, BHKW-Rücklaufgrenze, Stammblätter mit Kältemittel-Schnellwahl, Basis **R46** `2026-10-09_R46_Geraetegrenzen` |
-| UB‑E4 | #853 | [UB-E4](Protokolle/Gebaeudesimulation/2026-10-09_UB-E4_Bivalenzdiagramm_Bericht.md) | Bivalenzdiagramm im Diagramm-Renderer, Kachelzeile im Wärmepumpen-Reiter, Kennzahlen `wp.bivalenz.*`, Bild und Tafel im Bericht, CSV- und KI-Felder, Vorlagen auf Katalogfassung 17; ohne Rechenwirkung (Basis R46 bleibt) |
+| UB‑E2 | #853 | [UB-E2](Protokolle/Gebaeudesimulation/2026-10-09_UB-E2_Betriebsbereiche.md) | Schemaschritt **205** `UebergabegrenzeSchema` (`EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`), Betriebsbereiche B0–B4 und Vorwärmbetrieb im Rechenweg, Gruppe „Bivalenz und Übergabe", Referenzprojekt 1060, Basis R45 |
+| UB‑E3 | #854 | [UB-E3](Protokolle/Gebaeudesimulation/2026-10-09_UB-E3_Geraetegrenzen.md) | Gerätegrenzen, Hydraulik- und Rücklaufgrenze, BHKW-Rücklaufgrenze, Stammblätter mit Kältemittel-Schnellwahl, Basis **R46** `2026-10-09_R46_Geraetegrenzen` |
+| UB‑E4 | #855 | [UB-E4](Protokolle/Gebaeudesimulation/2026-10-09_UB-E4_Bivalenzdiagramm_Bericht.md) | Bivalenzdiagramm im Diagramm-Renderer, Kachelzeile im Wärmepumpen-Reiter, Kennzahlen `wp.bivalenz.*`, Bild und Tafel im Bericht, CSV- und KI-Felder, Vorlagen auf Katalogfassung 17; ohne Rechenwirkung (Basis R46 bleibt) |
 | UB‑E5 | — | — | Dokumentation: Wiki, Logbuch, dieser Abschnitt, Ablage der Konzepte unter `ueberholt/` |
 
 Referenzprojekt **1060** (Kopie von 1056, Einbindung DIREKT, Vorwärmbetrieb mit Kessel in Reihe) steht in der
@@ -687,7 +687,7 @@ CI-Auswahl und wird von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTest
 | BHKW-Rücklaufgrenze: Stunde mit Rücklauf ≥ Grenze (Umsetzungskonzept U‑3) | Abschaltung bei Rücklauf größer als die Grenze, wie an der Wärmepumpe | Entscheid der Orchestrierung zu E3; U‑3 angeglichen |
 | Mindestvolumenstrom Vorgabe 60 % (6.3) | Vorgabe 60 % bleibt auch für Referenzprojekt 1060 | Entscheid der Orchestrierung zu E3 (Festlegung E3-c) |
 | Hydraulik: Einbindung DIREKT mit Überströmventil (4.4) | DIREKT heißt immer mit Überströmventil, kein eigenes Feld; Weiche ohne Nennleistung rechnet wie DIREKT; Puffer-Entladeseite benannt nicht gerechnet | Festlegung E3-a |
-| Bild, Tafel und Kacheln in Bericht und Vorlagen, Word- und Excel-Bausteine (7.2, Umsetzungskonzept 5.4) | Bild `stand.bild.wp_bivalenz` nur in Word, Tafel `stand.tabelle.bivalenz` in Word und Excel; Bild ohne Übergabedaten mit Platzhalter statt Fehler | Statuszeile #853, Entscheid der Orchestrierung zu E4 |
+| Bild, Tafel und Kacheln in Bericht und Vorlagen, Word- und Excel-Bausteine (7.2, Umsetzungskonzept 5.4) | Bild `stand.bild.wp_bivalenz` nur in Word, Tafel `stand.tabelle.bivalenz` in Word und Excel; Bild ohne Übergabedaten mit Platzhalter statt Fehler | Statuszeile #855, Entscheid der Orchestrierung zu E4 |
 | Prüfhinweis Mindestrücklauf für NT- oder Biomassekessel (7.3) | Niedertemperaturkessel nach Bauart oder Brennstoff; Elektrokessel ausgenommen | Festlegung E4-b |
 | Prüfhinweis Anfahrgrenze: Rücklauf unter 15 °C bei Außentemperatur unter 10 °C (7.3) | Außenluft-Wärmepumpe mit Auslegungsraumtemperatur unter 15 °C | Festlegung E4-b |
 | Kachelzeile „Betriebsbereiche" im Reiter (7.1) | ohne Vorlagenfeld-Markierung, wie die übrigen Wertzeilen des Reiters | Festlegung E4-b |

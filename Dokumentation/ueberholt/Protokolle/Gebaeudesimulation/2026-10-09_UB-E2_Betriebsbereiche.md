@@ -1,6 +1,6 @@
 # Protokoll UB-E2 — Betriebsbereiche B0–B4, Vorwärmbetrieb, Schemaschritt 205, Referenzprojekt 1060, Basis R45 (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#851** (die Nummer #838 war auf origin bereits an die Welle A der Sitzung Dialoge vergeben).
+**Sitzung:** Gebäudesimulation, Statuszeile **#853** (die Nummer #838 war auf origin bereits an die Welle A der Sitzung Dialoge vergeben).
 Commits E2-a `c1bac61d7` … `8b3bc57f9`, E2-b `368a237c7` … `014279a96`, E2-c `9b76fd0e4` … `f9a30b9d4` (Nachzug `f2e383612`),
 E2-d `3f3b5fe36` … `283d18c94`; Merge `b49d3ab48`; Nachzug der Orchestrierung `b2fd1d4db` (`ParameteruebersichtTests` 12 → 20).
 **Entscheid:** E109. Konzepte: Fachkonzept Übergabegrenze/Bivalenz (Fassung 2) und Umsetzungskonzept Abschnitt 10.
