@@ -410,13 +410,8 @@ namespace WindowsFormsApplication1
                 }
                 ZonenStand neu = z;
                 if (a.FerienAktiv && !FerienGesetzt(z))
-                {
                     neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
-                    if (a.Kalenderferien > FERIENPAARE)
-                        ZapfHinweis.Einmal(hinweise, new ZapfHinweis(z.Name ?? "", HINWEIS_KALENDERFERIEN_GEKUERZT,
-                            ZapfSatz.AusRessource(nameof(MyResource.Resource.KOND_MSG_ZAPF_FERIEN_GEKUERZT),
-                                                  a.Name ?? "", a.Kalenderferien, FERIENPAARE)));
-                }
+                if (a.Wochenendtage.HasValue) neu = neu with { Wochenendtage = a.Wochenendtage };
                 double rest = a.FlaecheM2.HasValue
                     ? a.FlaecheM2.Value - (eigeneFlaechen.TryGetValue(z.IdGebaeude.Value, out double abzug) ? abzug : 0.0)
                     : 0.0;
@@ -445,8 +440,8 @@ namespace WindowsFormsApplication1
             internal int?[] Ferienbeginn = new int?[FERIENPAARE];
             internal int?[] Ferienende = new int?[FERIENPAARE];
 
-            /// <summary>Die Zahl der FERIEN-Perioden des Heizkalenders; 0 im Bestandszweig.</summary>
-            internal int Kalenderferien;
+            /// <summary>Die Wochenmaske des Gebäudes (<c>Wochenendtage</c>, Mo = Bit 0); <c>null</c> = Vorgabe Sa + So.</summary>
+            internal int? Wochenendtage;
         }
 
         /// <summary>
@@ -472,10 +467,13 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Die Ferien aus dem Heizkalender</b> (Entwurf KP2, Festlegung 10; Teilkonzept
         /// Konditionierungsprofile 5.5): Trägt das Gebäude einen angelegten Heizkalender, ruhen die
-        /// Ferienspalten samt Merker für diese Größe — die Ferien kommen aus seinen Perioden der Art
-        /// FERIEN, die ranghöchsten zuerst (die Reihenfolge, in der der Kalender sie entscheidet), höchstens
-        /// <see cref="FERIENPAARE"/>; ein Kalender ohne FERIEN-Periode belegt keine Ferien vor. Ohne
-        /// Heizkalender gilt wörtlich der Bestandszweig.</para>
+        /// Ferienspalten samt Merker für diese Größe: Trägt er eine Periode der Art FERIEN, kommen die Ferien aus
+        /// ALLEN Ferienperioden des gemeinsamen Kalenders des Gebäudes (Rang 200 … 309, Konzept 7.8 Stufe 2; ohne
+        /// gemeinsamen Kalender aus allen FERIEN-Perioden des Heizkalenders); ein Kalender ohne FERIEN-Periode belegt
+        /// keine Ferien vor. Ohne Heizkalender gilt wörtlich der Bestandszweig (die vier Spalten mit Merker).</para>
+        ///
+        /// <para><b>Das Wochenende</b> kommt aus <c>Wochenendtage</c> (leer = Samstag und Sonntag,
+        /// <see cref="Zapfkalender.Kennzeichen"/>).</para>
         /// </summary>
         private static GebaeudeAngaben GebaeudeLesen(int idProjekt, int idGebaeude)
         {
@@ -491,16 +489,29 @@ namespace WindowsFormsApplication1
             if (wohn.HasValue && wohn.Value > 0 && !double.IsInfinity(wohn.Value)) a.FlaecheM2 = wohn.Value;
             else if (nutz.HasValue && nutz.Value > 0 && !double.IsInfinity(nutz.Value)) a.FlaecheM2 = nutz.Value;
 
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) && r[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                a.Wochenendtage = Convert.ToInt32(r[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], CultureInfo.InvariantCulture);
+
             Konditionierungskalender heizkalender = Heizkalender(idGebaeude);
             if (heizkalender != null)
             {
-                var perioden = new List<Kalenderregel>();
+                var perioden = new List<(int Beginn, int Ende)>();
                 foreach (Kalenderregel p in heizkalender.Perioden)        // absteigend nach Rang
                     if (!p.IstFeiertag && string.Equals(p.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal))
-                        perioden.Add(p);
+                        perioden.Add((p.Beginn, p.Ende));
                 a.FerienAktiv = perioden.Count > 0;
-                a.Kalenderferien = perioden.Count;
-                for (int i = 0; i < FERIENPAARE && i < perioden.Count; i++)
+                // Die Ferienliste des Gebäudes (Konzept 7.8, Stufe 2): alle Ferienperioden seines gemeinsamen Kalenders,
+                // Rang 200 … 309 — ohne gemeinsamen Kalender die FERIEN-Perioden des Heizkalenders, alle.
+                List<Ferienzeile> liste = Kalendergemeinschaft.Ferienperioden(
+                    Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude)));
+                if (liste.Count > 0)
+                {
+                    perioden.Clear();
+                    foreach (Ferienzeile f in liste) perioden.Add((f.Beginn, f.Ende));
+                }
+                a.Ferienbeginn = new int?[Math.Max(FERIENPAARE, perioden.Count)];
+                a.Ferienende = new int?[a.Ferienbeginn.Length];
+                for (int i = 0; i < perioden.Count; i++)
                 {
                     a.Ferienbeginn[i] = perioden[i].Beginn;
                     a.Ferienende[i] = perioden[i].Ende;

@@ -117,6 +117,35 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Kennzeichen „Wochenende oder Feiertag" einer Zone</b> (Konzept Konditionierungsprofile 7.8): Mit der
+        /// Vorgabe des Gebäudes (<paramref name="wochenendmaske"/> leer oder Samstag + Sonntag) dieselben Kennzeichen
+        /// <paramref name="we"/> der Klimaregion. Mit anderen Wochenendtagen gilt ein Tag als gekennzeichnet, wenn er ein
+        /// Wochenendtag der Maske ist oder ein Feiertag an einem Werktag (Kennzeichen an Montag … Freitag):
+        /// <code>
+        /// We'(d) = Maske enthält Wochentag(d)  oder  (We(d) und Wochentag(d) ∉ {Samstag, Sonntag})
+        /// </code>
+        /// Ein Samstag der Maske trägt den Samstagsgang, jeder andere Wochenendtag den Sonntagsgang
+        /// (<see cref="Bilden"/>). Prüft wie <see cref="Pruefen"/>.
+        /// </summary>
+        internal static bool[] Kennzeichen(int wochentagJan1, bool[] we, int? wochenendmaske)
+        {
+            if (!wochenendmaske.HasValue || wochenendmaske.Value == KalenderbedienungSchema.WOCHENENDE_VORGABE) return we;
+            Pruefen(wochentagJan1, we);
+            var neu = new bool[TAGE];
+            for (int d = 1; d <= TAGE; d++)
+            {
+                int wt = Wochentag(wochentagJan1, d);
+                bool feiertag = we[d - 1] && wt != SAMSTAG && wt != SONNTAG;
+                neu[d - 1] = KalenderbedienungSchema.IstWochenendtag(wochenendmaske.Value, wt) || feiertag;
+            }
+            return neu;
+        }
+
+        /// <summary>Die Kennzeichen einer Zone (<see cref="Kennzeichen(int, bool[], int?)"/> mit ihrer Wochenmaske).</summary>
+        internal static bool[] KennzeichenDerZone(int wochentagJan1, bool[] we, ZonenStand z)
+            => Kennzeichen(wochentagJan1, we, z?.Wochenendtage);
+
+        /// <summary>
         /// <b>Der Kalender eines Jahres</b>: 365 Tagtypen. Ein Kalender der Klimaregion mit
         /// anderer Länge oder ein Wochentag außerhalb 0 … 6 wird benannt abgelehnt.
         /// </summary>
