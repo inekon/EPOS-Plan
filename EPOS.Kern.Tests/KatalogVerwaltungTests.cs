@@ -341,8 +341,8 @@ namespace EPOS.Kern.Tests
             {
                 // Heizkessel: mit der Einheit des Bereitschaftsverlusts (02.10.2026) 27.
                 [KatalogBrowserArt.Heizkessel] = 27,
-                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) 31.
-                [KatalogBrowserArt.Bhkw] = 31,
+                // BHKW: mit der Gruppe Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 32.
+                [KatalogBrowserArt.Bhkw] = 32,
                 // Solarkollektoren: mit der Bezugsfläche der Kennwerte (Welle M2, ST6) 13.
                 [KatalogBrowserArt.Solarkollektoren] = 13,
                 [KatalogBrowserArt.Pufferspeicher] = 6
@@ -398,9 +398,9 @@ namespace EPOS.Kern.Tests
             // 20.09.2026): 26 / 24 / 11 / 5 - beim Heizkessel mit den fuenf Feldern der
             // Kennlinie (Konzept Kesselkennlinie, Etappe E1) und der Einheit des
             // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026), beim BHKW mit den vier
-            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) 28.
+            // Feldern von Teillast und Takten (Welle M4: BH1, BH2) und der Ruecklaufgrenze (UB-E3) 29.
             Assert.Equal(26, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(28, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(29, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(12, solar.Detailfelder.Count(f => f.Editierbar));   // mit der Bezugsfläche (Welle M2)
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
