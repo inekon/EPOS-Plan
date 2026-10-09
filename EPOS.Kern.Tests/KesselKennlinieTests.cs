@@ -304,6 +304,36 @@ namespace EPOS.Kern.Tests
             Assert.Equal(SimulationControl.KESSEL_RUECKLAUF_RUECKFALL, Kesselkennlinie.RUECKLAUF_RUECKFALL_C);
         }
 
+        /// <summary>
+        /// UB‑E2 (Fachkonzept Übergabegrenze 4.4, UB‑Q11 a): Die Stufe „Vorwärmer" steht vor dem Heizkreis. In B3 rechnet
+        /// der Brennwertkessel am Vorlauf der Wärmepumpe (55 °C) statt am Heizkreisrücklauf (40 °C) — weniger Brennwertnutzen;
+        /// ohne Vorwärmvorlauf (NaN) ist die Kette unverändert.
+        /// </summary>
+        [Fact]
+        public void Die_Stufe_Vorwaermer_geht_dem_Heizkreis_vor()
+        {
+            Assert.Equal(55.0, Kesselkennlinie.Ruecklauf(55.0, 40.0, 35.0, 30.0, out Ruecklaufstufe s0));
+            Assert.Equal(Ruecklaufstufe.Vorwaermer, s0);
+            Assert.Equal(4, (int)Ruecklaufstufe.Vorwaermer);
+            Assert.Equal(5, Enum.GetValues(typeof(Ruecklaufstufe)).Length);
+
+            // ohne Vorwärmbetrieb: dieselbe Kette wie die Überladung ohne vorwaermerC
+            foreach ((double h, double sp, double? p) in new (double, double, double?)[]
+                     { (40.0, 45.0, 35.0), (double.NaN, 45.0, 35.0), (double.NaN, double.NaN, 35.0), (double.NaN, double.NaN, null) })
+            {
+                double alt = Kesselkennlinie.Ruecklauf(h, sp, p, out Ruecklaufstufe sa);
+                double neu = Kesselkennlinie.Ruecklauf(double.NaN, h, sp, p, out Ruecklaufstufe sn);
+                Assert.Equal(alt, neu);
+                Assert.Equal(sa, sn);
+            }
+
+            double vorwaermer = Kesselkennlinie.EtaBrennwert(0.5, 0.97, 1.05,
+                Kesselkennlinie.Ruecklauf(55.0, 40.0, double.NaN, null, out _), BRENNSTOFF_ERDGAS, out _);
+            double heizkreis = Kesselkennlinie.EtaBrennwert(0.5, 0.97, 1.05,
+                Kesselkennlinie.Ruecklauf(double.NaN, 40.0, double.NaN, null, out _), BRENNSTOFF_ERDGAS, out _);
+            Assert.True(vorwaermer < heizkreis, $"η am Vorwärmer {vorwaermer:0.0000} muss unter η am Heizkreis {heizkreis:0.0000} liegen");
+        }
+
         [Fact]
         public void Der_Brennwertbetrieb_entscheidet_am_Taupunkt_mit_dem_Zahlenrand()
         {

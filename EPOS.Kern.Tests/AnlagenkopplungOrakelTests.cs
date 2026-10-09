@@ -20,6 +20,12 @@ namespace EPOS.Kern.Tests
     /// Handrechnung der Kapazität; zwei Läufe byte-gleich.</item>
     /// <item><b>O2</b>: konstante Kapazität ohne H2 — der Probeschritt und ein begrenzter Durchlauf, Bit für Bit wie
     /// „AK2 mit Schranke = P“; mit H2-Testdouble die Bisektionslösung.</item>
+    /// <item><b>θ_R-Abhängigkeit (UB‑E2, Umsetzungskonzept 9):</b> Eine Wärmepumpe mit Bivalenzobjekt im Vorwärmbetrieb
+    /// (B3) bietet über ihrem Höchstvorlauf min(W_H·(θ_WP,max − θ_R), Φ_KF(θ_WP,max)) an; θ_R ist der Kreisrücklauf des
+    /// vorigen Durchlaufs (<see cref="Anlagenkopplung.Kreisruecklauf"/>). Die Kapazität fällt monoton mit θ_R, die
+    /// Abhängigkeit läuft über die Abbruchschwellen des Kreises (Schranke 0,1 W, Vorlauf); geprüft in
+    /// <c>BetriebsbereichTests.Angebot_im_Kreis_rechnet_B3_ueber_dem_Hoechstvorlauf</c>. Ohne Bivalenzobjekt bleibt der Kreis
+    /// Bit für Bit wie O1/O1p/O2.</item>
     /// </list>
     /// Toleranzen nach Entwurf: Vorlauf 0,05 K, Raumluft 0,01 K, Leistung 0,1 W.
     /// </summary>
