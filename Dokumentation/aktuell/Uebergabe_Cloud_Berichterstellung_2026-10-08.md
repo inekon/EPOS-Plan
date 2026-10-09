@@ -17,9 +17,9 @@ ohne Gedächtnis und legt es aus dieser Übergabe neu an. Die Regeln des Reposit
 | **#761** | 06.10. | Konzept Berichtsseite: VALERI-Darstellung und Anordnung ([`Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md`](Konzept_Berichtsseite_VALERI_Anordnung_EPOS-Plan.md)), Fachvorgabe R‑E32, Mockups `Mockups/Berichtsseite_Anordnung_A.html` bis `_C.html` | Push `ae3a48990` |
 | **#762** | 06.10. | Berichtsseite in vier Karten, Anordnung B (`.epos-bericht-raster`, rechte Spalte 420–480 px, `Optionsgruppe.TitelSichtbar`); Protokoll `BN_B_Anordnung_Protokoll.md` | mit #761; Kern-Lauf 37503127843 auf `cc9faeffc`, Nachtrag `b6e15df7f` |
 | **#765** | 06.10. | VALERI-Darstellung des Wirtschaftlichkeitsberichts (`BerichtsKonfiguration.Szenariodarstellung`, Tafel „Kennzahlen je Szenario“, Platzhalter `stand.tabelle.wirtschaft_szenarien`, Katalogfassung 15, Klapplisten-Eintrag `SZENARIO_VALERI`, Messlatte `Bericht_Word_1030_Valeri.txt`); Protokoll `VB_VALERI_Darstellung_Protokoll.md`; Wiki-Quellen Wirtschaftlichkeit und Berichtsvorlagen, Logbuchsätze unter 1.2.0.7 | Push `cf0ec4442`, Kern-Lauf 37503127843; Windows-Nachweis 47/47 am 07.10. (`5e5ca9a1e`) |
-| **#811** | 07.10. | Konzept Übergabegrenze und Bivalenz der Wärmepumpe, Fassung 1 ([`Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)), Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html` | Push `62ba656f3`, Kern-Lauf 37687452447, Nachtrag `8d0454e6e` |
+| **#811** | 07.10. | Konzept Übergabegrenze und Bivalenz der Wärmepumpe, Fassung 1 ([`Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](../ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)), Mockup `Mockups/Waermepumpe_Bivalenz_Uebergabe.html` | Push `62ba656f3`, Kern-Lauf 37687452447, Nachtrag `8d0454e6e` |
 | **#818** | 08.10. | Fassung 2: Rücklaufgrenze für alle Wärmepumpen, R744-Abwertung, Berichtigung Mindestvolumenstrom → Höchstspreizung, Rücklaufgrenzen anderer Erzeuger, Rücklaufstufe „Vorwärmer“, BHKW-Option | Push `02306751f`, Kern-Lauf 37721500910, Nachtrag `b1a34adca` |
-| **#819** | 08.10. | Umsetzungskonzept zur Integration ([`Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)); danach alle Entscheide eingetragen (`e84e478ec`, `b38397388`, `c7543d00a`) | Push `7ad6be220`, Kern-Lauf 37730470762 auf `e84e478ec`; letzter Push `1e20a22e0`, bestätigt durch Kern-Lauf 37738197716 auf `68a957a50` |
+| **#819** | 08.10. | Umsetzungskonzept zur Integration ([`Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`](../ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)); danach alle Entscheide eingetragen (`e84e478ec`, `b38397388`, `c7543d00a`) | Push `7ad6be220`, Kern-Lauf 37730470762 auf `e84e478ec`; letzter Push `1e20a22e0`, bestätigt durch Kern-Lauf 37738197716 auf `68a957a50` |
 
 Protokolle unter [`../ueberholt/Protokolle/Bericht/`](../ueberholt/Protokolle/Bericht/); die Recherchen zur
 Übergabegrenze (Normen, Kältemittel, Datenblätter, Physik und Hydraulik, andere Erzeuger) und die beiden
@@ -130,8 +130,8 @@ Word; Word-Kopien dann mit `pandoc` oder beim Anwender erzeugen.
 
 ## 4 Übergabetext an die Sitzung Gebäudesimulation (vom Anwender weiterzureichen)
 
-> Konzept Übergabegrenze und Bivalenz der Wärmepumpe: Fachkonzept `Dokumentation/aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`
-> (Fassung 2, #818) und Umsetzungskonzept `Dokumentation/aktuell/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`
+> Konzept Übergabegrenze und Bivalenz der Wärmepumpe: Fachkonzept `Dokumentation/ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`
+> (Fassung 2, #818) und Umsetzungskonzept `Dokumentation/ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md`
 > (#819) liegen auf origin; alle Entscheide UB‑Q1 bis UB‑Q11 und U‑1 bis U‑4 sind eingetragen. Baubeginn UB‑E1 ist frei
 > (zwei Opus-Wellen, erste Welle E1‑a in Abschnitt 10 des Umsetzungskonzepts). Vor UB‑E2 den Schemaschritt
 > `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (203 war am 08.10. frei). Referenzprojekt 1060 als Kopie von

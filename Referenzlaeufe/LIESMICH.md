@@ -779,8 +779,8 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >   --ziel Referenzlaeufe/2026-10-09_R46_Geraetegrenzen
 > ```
 >
-> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Dokumentation/aktuell/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
-> und im [Fachkonzept](../Dokumentation/aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
+> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Dokumentation/ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
+> und im [Fachkonzept](../Dokumentation/ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):

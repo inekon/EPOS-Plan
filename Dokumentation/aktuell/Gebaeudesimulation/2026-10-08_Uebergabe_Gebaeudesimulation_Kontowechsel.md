@@ -45,8 +45,8 @@ Alle Zeilen mit grünem Gate gepusht; der CI-Nachweis steht in der jeweiligen Ze
 ## 3. Nächste Arbeit: Übergabegrenze und Bivalenz der Wärmepumpe (UB)
 
 Die Sitzung Berichterstellung hat Fach- und Umsetzungskonzept fertig übergeben; den Rechenweg baut diese Sitzung
-([Fachkonzept](../Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), Fassung 2, #818;
-[Umsetzungskonzept](../Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), #819, Abschnitt 10 „Übergabe an die Sitzung
+([Fachkonzept](../../ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), Fassung 2, #818;
+[Umsetzungskonzept](../../ueberholt/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), #819, Abschnitt 10 „Übergabe an die Sitzung
 Gebäudesimulation“). Alle Entscheide UB-Q1 bis UB-Q11 und die Abweichungen U-1 bis U-4 sind eingetragen; der Baubeginn ist frei,
 aber erst auf Auftrag des Anwenders.
 
