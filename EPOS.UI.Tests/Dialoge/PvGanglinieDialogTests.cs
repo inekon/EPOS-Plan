@@ -60,7 +60,7 @@ public class PvGanglinieDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-knopf--richtung").Count);
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Ausgewählt im Projekt", ueberschriften);
         Assert.Contains("PV-Ganglinie aus DB", ueberschriften);
@@ -82,11 +82,11 @@ public class PvGanglinieDialogTests : EposBunitContext
                            entfernen: z => entfernt.Add(z));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
         Assert.Equal(32, gerufen);
         Assert.Equal(2, zeilen.Count);
 
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
         Assert.Single(zeilen);
         Assert.Equal("PV Dach West", entfernt.Single().Bezeichner);
     }
