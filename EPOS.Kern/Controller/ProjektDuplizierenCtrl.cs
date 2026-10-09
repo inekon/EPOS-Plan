@@ -226,6 +226,9 @@ namespace WindowsFormsApplication1
             {"Tab_WaermebedarfDaten",   new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Waermebedarf"}}},
             {"Tab_StromganglinieDaten", new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Stromganglinie"}}},
             {"Tab_SolarganglinieDaten", new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Solarganglinie"}}},
+            // PVG (Schemaschritt 206): die PV-Ganglinie - Zuordnung und Werte zeigen auf die Projektkopie.
+            {"Z_ProjektPvGanglinie",    new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_PvGanglinie"}}},
+            {"Tab_PvGanglinieDaten",    new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_PvGanglinie"}}},
             // Gebaeudesimulation G3 (S-C): "ID_Zone" meint in FK_MAP die Tww-Zone; am Bauteil
             // ist es die Gebaeudezone. Die deklarierte Beziehung hat ohnehin Vorrang.
             {SchemaKatalog.TAB_BAUTEIL, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
@@ -253,6 +256,7 @@ namespace WindowsFormsApplication1
             {"Tab_WaermebedarfDaten",  "ID_Ganglinie IN (SELECT ID FROM Tab_Waermebedarf WHERE ID_Projekt = {0})"},
             {"Tab_StromganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Stromganglinie WHERE ID_Projekt = {0})"},
             {"Tab_SolarganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})"},
+            {"Tab_PvGanglinieDaten",   "ID_Ganglinie IN (SELECT ID FROM Tab_PvGanglinie WHERE ID_Projekt = {0})"},
             {"Tab_Stromverbrauchertyp","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})"},
 
             // S1 (Migrationsschritt 50): Die Senkenliste und der Parallelverbund
@@ -371,6 +375,10 @@ namespace WindowsFormsApplication1
             // sie gehoeren dem Katalog (P3 b, P11).
             {SchemaKatalog.TAB_KONDITIONIERUNGSKALENDER, "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_KONDITIONIERUNGSVORGABE,  "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+            // Benannte Wochen (Schemaschritt KalenderbedienungSchema) - dieselbe Eigentuemerregel wie der Kalender
+            // (ID_Gebaeude und ID_Zone), deshalb VON HAND und ueber das Gebaeude gefiltert. Der erzwungene Verweis ID_Woche
+            // der Periode setzt sie in der topologischen Sortierung davor und wird auf die Kopie umgeschluesselt.
+            {KalenderbedienungSchema.TAB_WOCHE,          "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
 
             // Die Perioden haengen am Kalender - DREISTUFIG wie die Schicht am Bauteil
             // (Gebaeude -> Kalender -> Periode). Ausdruecklich, damit die Reihenfolge feststeht.

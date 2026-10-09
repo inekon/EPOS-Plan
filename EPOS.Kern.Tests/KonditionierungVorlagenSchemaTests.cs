@@ -580,6 +580,7 @@ namespace EPOS.Kern.Tests
         {
             using (DbVorgang v = DataRepository.VorgangOhneFremdschluessel())
             {
+                KalenderbedienungSchema.TriggerEntfernen(v);
                 v.Ausfuehren("DROP TABLE \"" + PER + "\"");
                 v.Ausfuehren("DROP TABLE \"" + VOR + "\"");
                 v.Ausfuehren("DROP TABLE \"" + KAL + "\"");

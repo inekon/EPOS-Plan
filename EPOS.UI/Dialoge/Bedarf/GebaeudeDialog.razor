@@ -102,7 +102,7 @@
 
     @* Die zwei Listen und die Pfeilspalte: alles im Baustein (Anwenderentscheid
        #76). *@
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+    <Zweispaltenauswahl Dialogname="Gebaeude" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText" UebernehmenHinweis="@BtnHinzuHinweis"
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText" EntfernenHinweis="@BtnEntfernenHinweis"
@@ -231,7 +231,7 @@
             }
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --------------------------------------------- Detailblock ------------ *@
     <Gruppenkopf Titel="@GruppeVerbrauch">
@@ -300,6 +300,9 @@
             </KindInhalt>
         </Gruppenkopf>
     }
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

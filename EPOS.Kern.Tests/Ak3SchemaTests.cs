@@ -56,7 +56,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Heizkurve_Raumeinfluss", GebaeudeSchema.SICHT_AK3[104]);
             Assert.Equal(GebaeudeSchema.SICHT_ERDREICH_VORGABE, GebaeudeSchema.SICHT_AK3.Take(104));
             Assert.Equal(GebaeudeSchema.SICHT_AK3, GebaeudeSchema.SICHT_AKTUELL.Take(105));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLKURVE, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG, GebaeudeSchema.SQL_VIEW_AKTUELL);
             Assert.Contains("Tab_Gebaeude.Heizkurve_Raumeinfluss", GebaeudeSchema.SQL_VIEW_AKTUELL, StringComparison.Ordinal);
         }
 

@@ -235,6 +235,17 @@ namespace WindowsFormsApplication1
             ctrlklima.ReadSingle("SELECT * FROM Tab_Klimaregion WHERE ID = ?", new DbParam("@id", nID_Klimaregion));
             if (ctrlklima.rows > 0) { Lon = ctrlklima.Longitude; Lat = ctrlklima.Latitude; }
 
+            // PVG (Schemaschritt 206): DIE WEICHE MODULE / GANGLINIE. Ist dem Projekt eine vollstaendige
+            // PV-Ganglinie zugeordnet, ersetzt sie die Modulrechnung ganz; eine unvollstaendige meldet ihren
+            // Mangel, und die Module rechnen. Ohne Zuordnung (jedes Referenzprojekt) bleibt der Weg unberuehrt.
+            PvGanglinieWeiche.Stand ganglinie = PvGanglinieWeiche.Lesen(ID_Projekt);
+            if (ganglinie.Zugeordnet && !ganglinie.Vollstaendig)
+                SimulationProtokoll.Aktuell.WarnungEinmal("pv-ganglinie-mangel-" + ID_Projekt,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIM_PV_GANGLINIE_MANGEL,
+                                  ganglinie.Bezeichner, ganglinie.Mangel));
+            if (ganglinie.RechnetGanglinie)
+                return GanglinieRechnen(ID_Projekt, ganglinie, nID_Klimaregion, Lon, Lat);
+
             // PV-POTENTIAL ALLER MODULE SAMMELN
             ctrl.LesenJeTyp(ID_Projekt, WizardItemClass.PV_TYP);
 
@@ -499,8 +510,18 @@ namespace WindowsFormsApplication1
             // SB1 (a): DIE VIERTELGEWICHTE - der Sonnenstand in der Mitte jeder Viertelstunde.
             double[] gewichte = Viertelgewichte(klimaFuerViertel, Lon, Lat);
 
-            // PV3: DIE EINSPEISEGRENZE des Projekts, in kW aufgelöst (Prozent auf die installierte
-            // PV-Leistung). Leer = keine Grenze, der Lauf rechnet wie ohne das Feld.
+            Bilanzieren(gewichte, EinspeisegrenzeAufloesen(ID_Projekt));
+
+            return Stromproduktion_viertelstunde;
+        }
+
+        /// <summary>
+        /// PV3: DIE EINSPEISEGRENZE des Projekts, in kW aufgelöst (Prozent auf die installierte PV-Leistung,
+        /// <see cref="PhotovoltaikCtrl.KwpDesProjekts"/> — bei einer rechnenden PV-Ganglinie deren
+        /// Kennleistung). <c>null</c> = keine Grenze, der Lauf rechnet wie ohne das Feld.
+        /// </summary>
+        private static double? EinspeisegrenzeAufloesen(int ID_Projekt)
+        {
             Einspeisegrenze grenze = KonfigurationCtrl.EinspeisegrenzeLesen(ID_Projekt);
             double? grenzeKw = null;
             if (grenze.Gesetzt)
@@ -512,10 +533,66 @@ namespace WindowsFormsApplication1
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIM_PV_EINSPEISEGRENZE_OHNE_KWP,
                                       grenze.Wert.Value));
             }
+            return grenzeKw;
+        }
 
-            Bilanzieren(gewichte, grenzeKw);
+        /// <summary>
+        /// <b>Der Ganglinienweg</b> (PVG, Schemaschritt 206): Die zugeordnete PV-Ganglinie ersetzt die
+        /// Modulrechnung. Im <b>Stundenraster</b> wird sie zum Stundenertrag
+        /// <see cref="pvPotentialGesamt_stuendlich"/> und nach dem Sonnenstand auf die Viertel verteilt —
+        /// dieselben <see cref="Viertelgewichte"/> wie die Module; im <b>Viertelstundenraster</b> gehen
+        /// ihre Werte unmittelbar in die Bilanz (die Stundenreihe ist das Mittel der vier Viertel). Die
+        /// Einspeisegrenze wirkt wie im Modulweg, ihre Prozentbasis ist die Kennleistung der Ganglinie.
+        /// </summary>
+        private double[] GanglinieRechnen(int idProjekt, PvGanglinieWeiche.Stand g, int idKlimaregion,
+                                          double lon, double lat)
+        {
+            double[] stunden = g.Stundenwerte();
+            Array.Copy(stunden, pvPotentialGesamt_stuendlich, Math.Min(stunden.Length, pvPotentialGesamt_stuendlich.Length));
 
+            Modul_Ergebnisse.Add(new PVModulErgebnis
+            {
+                Name = g.Bezeichner,
+                Flaeche = 0,
+                Anzahl = 0,
+                StromproduktionKwh = g.SummeKwh,
+                Geraete = Leer,
+                Ganglinie = PvGanglinieAusweis.Aus(g)
+            });
+
+            double? grenzeKw = EinspeisegrenzeAufloesen(idProjekt);
+            if (g.Viertelstunden)
+            {
+                BilanzierenKern(null, g.Werte, grenzeKw);
+            }
+            else
+            {
+                var klima = new SolardatenCtrl();
+                klima.ReadOrtszeit(idKlimaregion, idProjekt);
+                BilanzierenKern(Viertelgewichte(klima, lon, lat), null, grenzeKw);
+            }
             return Stromproduktion_viertelstunde;
+        }
+
+        /// <summary>
+        /// <b>Die Bilanz aus einer Viertelstundenreihe</b> (PVG): Die Erzeugung je Viertel ist
+        /// <paramref name="erzeugungViertelKw"/> selbst, der Stundenertrag das Mittel der vier Viertel.
+        /// Datenbankfrei — der Weg einer PV-Ganglinie im Viertelstundenraster, Tests rufen ihn unmittelbar.
+        /// </summary>
+        /// <param name="erzeugungViertelKw">35 040 Viertelstundenwerte der Erzeugung [kW].</param>
+        /// <param name="einspeisegrenzeKw">Die Einspeisegrenze [kW]; <c>null</c> = keine.</param>
+        public void BilanzierenViertel(double[] erzeugungViertelKw, double? einspeisegrenzeKw)
+        {
+            const int VIERTEL = 4;
+            int stunden = pvPotentialGesamt_stuendlich.Length;
+            for (int h = 0; h < stunden; h++)
+            {
+                int q = h * VIERTEL;
+                pvPotentialGesamt_stuendlich[h] = q + 3 < erzeugungViertelKw.Length
+                    ? (erzeugungViertelKw[q] + erzeugungViertelKw[q + 1] + erzeugungViertelKw[q + 2] + erzeugungViertelKw[q + 3]) / 4.0
+                    : 0.0;
+            }
+            BilanzierenKern(null, erzeugungViertelKw, einspeisegrenzeKw);
         }
 
         /// <summary>
@@ -533,6 +610,14 @@ namespace WindowsFormsApplication1
         /// <param name="gewichte">35 040 Viertelgewichte (Summe je Stunde 1) oder <c>null</c> = gleichmäßig.</param>
         /// <param name="einspeisegrenzeKw">Die Einspeisegrenze [kW]; <c>null</c> = keine.</param>
         public void Bilanzieren(double[] gewichte, double? einspeisegrenzeKw)
+            => BilanzierenKern(gewichte, null, einspeisegrenzeKw);
+
+        /// <summary>
+        /// Der Kern der Bilanz: die Erzeugung je Viertel aus <paramref name="viertelKw"/>, wenn gesetzt
+        /// (Ganglinie im Viertelstundenraster), sonst aus Stundenertrag und Gewicht wie in
+        /// <see cref="Bilanzieren"/>.
+        /// </summary>
+        private void BilanzierenKern(double[] gewichte, double[] viertelKw, double? einspeisegrenzeKw)
         {
             const int VIERTEL = 4;
             int stunden = pvPotentialGesamt_stuendlich.Length;
@@ -559,9 +644,11 @@ namespace WindowsFormsApplication1
                     int q = h * VIERTEL + k;
 
                     // Die Erzeugung des Viertels: energieerhaltend nach dem Sonnenstand.
-                    double erzeugung = gewichte != null && !double.IsNaN(gewichte[q])
-                        ? ertrag * VIERTEL * gewichte[q]
-                        : ertrag;
+                    double erzeugung = viertelKw != null
+                        ? (q < viertelKw.Length ? viertelKw[q] : 0.0)
+                        : gewichte != null && !double.IsNaN(gewichte[q])
+                            ? ertrag * VIERTEL * gewichte[q]
+                            : ertrag;
                     Stromproduktion_Theoretisch_viertelstunde[q] = erzeugung;
 
                     double bedarfRoh = q < Strombedarf.Length ? Strombedarf[q] : 0.0;
@@ -1708,6 +1795,12 @@ namespace WindowsFormsApplication1
     public class PVModulErgebnis
     {
         public string Name = "";
+
+        /// <summary>
+        /// Der Ausweis der PV-Ganglinie, wenn diese Zeile die rechnende Ganglinie ist (PVG); <c>null</c> im
+        /// Modulmodell. Ausweis, kein Rechenweg: Ergebnisreiter und Bericht nennen damit die Quelle.
+        /// </summary>
+        public PvGanglinieAusweis Ganglinie;
         public double Flaeche;          // m^2 gesamt
         public bool FlaecheGeschaetzt;  // W11b-B-8: aus P_STC / Wirkungsgrad, Katalog ohne Masse
         public long Anzahl;             // Modulanzahl

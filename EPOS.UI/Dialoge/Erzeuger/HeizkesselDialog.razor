@@ -68,7 +68,7 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="Heizkessel" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
@@ -115,7 +115,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --- Detailblock ------------------------------------------------------- *@
     <Gruppenkopf Titel="@GruppeModul">
@@ -302,6 +302,9 @@
            "Modul", wo der Anwender sie sieht, ohne an den Parametern vorbeizurollen. *@
         </KindInhalt>
     </Gruppenkopf>
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

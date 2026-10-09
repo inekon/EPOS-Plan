@@ -79,7 +79,7 @@ public class KatalogdialogTests : EposBunitContext
             }).ToList(),
             Existiert = _ => false,
             Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
-            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "", n)
+            Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "", n)
         };
 
         return Render<KatalogBrowserDialog>(p => p

@@ -957,4 +957,70 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Empty(block.QuerySelectorAll(".epos-simueb-kaeltetabelle"));
         Assert.DoesNotContain(Resource.SIMUEB_LBL_JAZ_KAELTE, block.TextContent, StringComparison.Ordinal);
     }
+
+    // =====================================================================
+    //  Die Legende neben dem Ring — eine Form für Wärme, Strom und Kälte
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Alle drei Ringe tragen dieselbe Legende:</b> Ringzeile mit Ring und Legendenblock,
+    /// je Eintrag Farbkästchen, Name und EIN Zahlenpaar (Menge, Anteil) — das Paar rückt als
+    /// Ganzes in die zweite Zeile, wenn neben dem Namen kein Platz ist. Breite und Umbruch misst
+    /// <c>Proben/Rasterprobe/legendenprobe.mjs</c>; hier steht die Struktur.
+    /// </summary>
+    [Fact]
+    public void Waerme_Strom_und_Kaelte_tragen_dieselbe_Legendenstruktur()
+    {
+        var seite = ZeichnenMitKaelteerzeuger(_ring);
+
+        var zeilen = seite.FindAll("div.epos-simueb-ringzeile");
+        Assert.Equal(3, zeilen.Count);
+        foreach (var zeile in zeilen)
+        {
+            Assert.Equal(new[] { "epos-simueb-ring", "epos-simueb-legendenblock" },
+                         zeile.Children.Select(c => c.ClassName).ToArray());
+            var listen = zeile.QuerySelectorAll("ul.epos-simueb-legende");
+            Assert.Single(listen);
+            Assert.NotEmpty(listen[0].Children);
+            foreach (var li in listen[0].Children)
+            {
+                Assert.Equal("LI", li.TagName);
+                Assert.Equal(new[] { "epos-simueb-farbe", "epos-simueb-legende-name", "epos-simueb-legende-zahlen" },
+                             li.Children.Select(c => c.ClassName).ToArray());
+                Assert.Equal(new[] { "epos-simueb-legende-wert", "epos-simueb-legende-anteil" },
+                             li.Children[2].Children.Select(c => c.ClassName).ToArray());
+            }
+        }
+
+        // Wärme und Strom schliessen mit der Summenzeile, die Kälte ohne.
+        Assert.Equal(2, seite.FindAll("li.epos-simueb-legende-summe").Count);
+        Assert.Contains("62,5 %", zeilen[0].QuerySelector("li .epos-simueb-legende-anteil")!.TextContent);
+        Assert.Contains("40,0 %", zeilen[2].QuerySelector("li .epos-simueb-legende-anteil")!.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Regel als Regel:</b> Die Ringzeile ist ein Container, unter 520 px Außenbreite
+    /// steht die Legende unter dem Ring, und kein Legendenelement bricht im Wort.
+    /// </summary>
+    [Fact]
+    public void Das_Stilblatt_bricht_die_Legende_nur_an_Wortgrenzen()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+        string css = System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                                   .Replace("\r\n", "\n");
+
+        int a = css.IndexOf(".epos-simueb-ringzeile {", StringComparison.Ordinal);
+        int e = css.IndexOf(".epos-simueb-legende-summe {", a, StringComparison.Ordinal);
+        Assert.True(a > 0 && e > a);
+        string block = css.Substring(a, e - a);
+
+        Assert.Contains("container-type: inline-size;", block, StringComparison.Ordinal);
+        Assert.Contains("@container epos-simueb-ringzeile (max-width: 499.98px)", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("overflow-wrap: anywhere", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("word-break", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
+    }
 }

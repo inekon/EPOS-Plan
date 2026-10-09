@@ -243,7 +243,10 @@ namespace WindowsFormsApplication1
             VariantenDaten stamm = daten?.Varianten?.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return Leer(nameof(R.BV_GRUND_KEIN_STAMM), kultur);
             string tabelle = ProjektDetails.GewerkTabellen.FirstOrDefault(g => g.Key == gewerk).Value;
-            bool vorhanden = daten.Varianten.Any(v => v.Details != null && v.Details.HatGewerk(gewerk));
+            // PVG: rechnet ein Stand seine Photovoltaik ueber eine PV-Ganglinie, steht vorn die Quelle, und die
+            // Merkmale des Modulmodells stehen bei ihm als „entfaellt (Ganglinie)".
+            bool ganglinie = gewerk == "Photovoltaik" && daten.Varianten.Any(v => v.Details?.PvGanglinie != null);
+            bool vorhanden = ganglinie || daten.Varianten.Any(v => v.Details != null && v.Details.HatGewerk(gewerk));
             var merkmale = tabelle == null ? new List<AbweichungsErmittler.Merkmal>()
                                            : AbweichungsErmittler.Felder.Where(f => f.Tabelle == tabelle).ToList();
             if (!vorhanden || merkmale.Count == 0) return Leer(nameof(R.BV_GRUND_NICHT_VERFUEGBAR), kultur);
@@ -254,12 +257,31 @@ namespace WindowsFormsApplication1
             t.MitKopf(new[] { Zellen.Kopf(BerichtTexte.T("Merkmal", englisch), Tabellenausrichtung.Links) }
                 .Concat(spalten.Select(v => Zellen.Kopf(Standkopf(v, englisch)))));
 
+            if (ganglinie)
+            {
+                var quelle = new List<Tabellenzelle> { Zellen.Text(Grund("PVG_AUSWEIS_MERKMAL_QUELLE", kultur)) };
+                foreach (VariantenDaten v in spalten)
+                {
+                    PvGanglinieAusweis a = v.Details?.PvGanglinie;
+                    string wert = a != null ? a.Text(kultur) : Grund("PVG_AUSWEIS_MODULMODELL", kultur);
+                    quelle.Add(Zellen.Text(wert, Tabellenausrichtung.Links,
+                                           Zellen.RolleWenn(v.IstStamm), h: Zellen.StammWenn(v.IstStamm)));
+                }
+                t.Zeile(quelle);
+            }
+
             foreach (AbweichungsErmittler.Merkmal f in merkmale)
             {
                 var zellen = new List<Tabellenzelle> { Zellen.Text(f.Label) };
                 foreach (VariantenDaten v in spalten)
                 {
                     ProjektDetails d = v.Details;
+                    if (ganglinie && d?.PvGanglinie != null)
+                    {
+                        zellen.Add(Zellen.Text(PvGanglinieAusweis.Entfaellt(kultur), Tabellenausrichtung.Mitte,
+                                               Zellen.RolleWenn(v.IstStamm), h: Zellen.StammWenn(v.IstStamm)));
+                        continue;
+                    }
                     DataRow zeile = (d != null && d.Komponenten.ContainsKey(gewerk)) ? d.Komponenten[gewerk] : null;
                     string wert = zeile == null ? Tabellenzelle.STRICH : AbweichungsErmittler.Formatiere(zeile, f);
                     zellen.Add(Zellen.Text(wert, wert == Tabellenzelle.STRICH ? Tabellenausrichtung.Mitte : Tabellenausrichtung.Rechts,

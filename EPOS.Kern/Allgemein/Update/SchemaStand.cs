@@ -981,7 +981,14 @@ namespace WindowsFormsApplication1
         /// Rücklaufgrenze an beiden BHKW-Tabellen, Einbindung und Vorwärmbetrieb an der Anlage, Bereiche und Zähler an Modul-
         /// und Projektergebnis der Wärmepumpe (<see cref="UebergabegrenzeSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten
         /// entstehen leer.
-        public const int Zielversion = UebergabegrenzeSchema.SCHRITT;
+        /// Danach, mit der PV-GANGLINIE (PVG), steht das Ziel auf <see cref="PvGanglinieSchema.SCHRITT"/>: Katalog,
+        /// Projektkopie und Zuordnung einer Photovoltaik-Ganglinie im Raster der Datei (<see cref="PvGanglinieSchema"/>).
+        /// <b>Ergebnisneutral:</b> Reines DDL, kein Referenzprojekt führt eine PV-Ganglinie.
+        /// Danach, mit der KALENDERBEDIENUNG STUFE 2 (K2), steht das Ziel auf <see cref="KalenderbedienungSchema.SCHRITT"/>:
+        /// gemeinsamer Kalender „alle Größen" mit Größenmaske, benannte Wochen, Wochenende und Feiertagsland am Gebäude,
+        /// Länderfeiertage als Regeln, Ferienliste als Spiegel der Ferienspalten (<see cref="KalenderbedienungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gekoppelte Kopien werden eine Gemeinschaftsperiode, die beim Lesen genau in ihre Kalender zurückkehrt.
+        public const int Zielversion = KalenderbedienungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -3257,7 +3257,43 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrUb + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrUb + " - vollstaendig: " + UebergabegrenzeSchema.Vollstaendig() + " (erwartet True).");
             }
+            // ---- Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie
+            //      (Tab_PvGanglinie_STAMM, Tab_PvGanglinieDaten_STAMM, Tab_PvGanglinie, Tab_PvGanglinieDaten,
+            //      Z_ProjektPvGanglinie). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PvGanglinie bedient.
+            //      Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile entsteht, kein Referenzprojekt fuehrt eine PV-Ganglinie.
+            string nrPvg = PvGanglinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPvg + " - PV-Ganglinie: " +
+                              (PvGanglinieSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPvg = new List<string>();
+                tabellen += PvGanglinieSchema.Ausfuehren(berichtPvg);
+                foreach (string zeile in berichtPvg)
+                    Console.WriteLine("Schritt " + nrPvg + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPvg + " - vollstaendig: " + PvGanglinieSchema.Vollstaendig() + " (erwartet True).");
+            }
 
+            // ---- Schritt KalenderbedienungSchema.SCHRITT (K2): gemeinsamer Kalender „alle Groessen", benannte Wochen,
+            //      Wochenende und Feiertagsland am Gebaeude, Laenderfeiertage, Ferienliste. Aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Kalenderbedienung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die gekoppelten Kopien kehren beim Lesen in ihre Kalender zurueck, die
+            //      Ferienspalten bleiben Quelle der Leser.
+            string nrK2 = KalenderbedienungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK2 + " - Kalenderbedienung Stufe 2: " +
+                              (KalenderbedienungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK2 = new List<string>();
+                tabellen += KalenderbedienungSchema.Ausfuehren(berichtK2);
+                foreach (string zeile in berichtK2)
+                    Console.WriteLine("Schritt " + nrK2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK2 + " - vollstaendig: " + KalenderbedienungSchema.Vollstaendig() + " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

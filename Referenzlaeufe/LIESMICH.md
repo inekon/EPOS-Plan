@@ -1060,6 +1060,41 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > LFS-SHA-256 `a47e7163762191b1da36d0f601ac1aa422cf6d293c88b24ba302a2232d6ce99c`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
 > bleibt** — weder die Typkennfelder noch die Zonen des Gebäudekatalogs führt ein Referenzprojekt; die siebenundzwanzig
 > Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879 CSV byte-gleich.
+>
+> **Nachtrag — Testdatenbank auf 206 (PV-Ganglinie hinter der Übergabegrenze, nur Tabellen), Basis R46 unberührt.**
+> `PvGanglinieSchema` (206 = `UebergabegrenzeSchema.SCHRITT + 1`) legt Katalog, Projektkopie und Zuordnung der
+> PV-Ganglinie an — `Tab_PvGanglinie_STAMM`, `Tab_PvGanglinieDaten_STAMM`, `Tab_PvGanglinie`, `Tab_PvGanglinieDaten`
+> und `Z_ProjektPvGanglinie` (STRICT, Raster 60 oder 15 Minuten mit `CHECK`, Beziehungen über IDs) samt sieben Indizes;
+> reines DDL, keine Zeile entsteht. Gehoben aus dem Stand 205 (LFS-SHA-256
+> `a47e7163762191b1da36d0f601ac1aa422cf6d293c88b24ba302a2232d6ce99c`) mit `Werkzeuge/Testdatenbankschema`; der Hash
+> über alle übrigen Tabellen ist vorher und nachher gleich (außer der Schemanummer in `Tab_Applikation`; die
+> `sqlite_sequence`-Stände, die der wiederholte Werkzeuglauf fortzählt, sind auf den Stand 205 zurückgesetzt). Die
+> Testdatenbank steht auf **206** (`integrity_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen):
+> **93 908 992 Byte, LFS-SHA-256 `5280818a0476dbfc0174f15a237b0d29ce9e9bf9251a145c4f7581e141551902`**. **Die Basis
+> `2026-10-09_R46_Geraetegrenzen` bleibt** — kein Referenzprojekt führt eine PV-Ganglinie, keine Einfrierregel ist
+> berührt; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879 CSV byte-gleich.
+>
+> **Nachtrag — Testdatenbank auf 207 (Kalenderbedienung Stufe 2 hinter der PV-Ganglinie), Basis R46 unberührt.**
+> `KalenderbedienungSchema` (207 = `PvGanglinieSchema.SCHRITT + 1`) baut `Tab_Konditionierungskalender` (Größe `ALLE`
+> für den gemeinsamen Kalender „alle Größen", ohne Angabe) und `Tab_Konditionierungsperiode` (acht Länderregeln im
+> `CHECK` der Feiertagsregel, Größenmaske `Gilt_Fuer` 1 … 31, Verweis `ID_Woche`, Ferienperiode ohne Angabe) nach dem
+> Rezept aus Schritt 96/151 neu, legt `Tab_Konditionierungswoche` (STRICT, leer) und an `Tab_Gebaeude(_STAMM)` die
+> Spalten `Wochenendtage` (Wochenmaske Mo = Bit 0, leer = Sa + So) und `Feiertagsland` an, dazu zwei Prüftrigger der
+> Periode und je Gebäudetabelle den Ferienspiegel; die Sicht `Abfrage_Projektgebaeude` trägt beide Spalten hinter der
+> Kühlkurve (zwölfter Sichtneubau, 112 Spalten). Migration: Die Ferienspalten der Gebäude und Katalogbauten mit
+> Größenkalender werden Ferienliste (4 Perioden: 1051 und der Referenzbau, je Ferien 1 und 2), die gekoppelten
+> Feiertage von 1051 und dem Referenzbau (je neun Regeln in allen fünf Größen, 90 Kopien) werden 18 Perioden des
+> gemeinsamen Kalenders mit Maske 31 (zwei neue Kalender `ALLE`; 216 → 148 Perioden); die Ferienzeilen je Größe tragen
+> verschiedene Angaben und bleiben Kopien. Gehoben aus dem Stand 206 (LFS-SHA-256
+> `5280818a0476dbfc0174f15a237b0d29ce9e9bf9251a145c4f7581e141551902`) mit `Werkzeuge/Testdatenbankschema`; außer
+> `Tab_Applikation`, den beiden Gebäudetabellen, Kalender, Periode und der neuen Wochentabelle ist jede Tabelle
+> inhaltsgleich, die `sqlite_sequence`-Stände, die der wiederholte Werkzeuglauf fortzählt, sind auf den Stand 206
+> zurückgesetzt. Die Testdatenbank steht auf **207** (`integrity_check` ok, `foreign_key_check` leer,
+> SQL-Dialektprüfer 0 Fundstellen): **93 958 144 Byte, LFS-SHA-256
+> `ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> bleibt** — die Gemeinschaftsperioden kehren beim Lesen mit Rang und Angabe in genau ihre Größenkalender zurück, die
+> Ferienspalten bleiben Quelle der Leser; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879
+> CSV byte-gleich.
 
 ### Die Vorgängerbasis R45 (Übergabegrenze)
 

@@ -146,7 +146,7 @@ namespace EPOS.Kern.Tests
             // Die GELTENDE Sicht ist die des letzten Durchgangs (der manuellen Aufheizzeit, E59); sie beginnt
             // mit der Sicht von AK-S1 an denselben Stellen.
             Assert.Equal(GebaeudeSchema.SICHT_UEBERGABE, GebaeudeSchema.SICHT_AKTUELL.Take(90));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLKURVE, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG, GebaeudeSchema.SQL_VIEW_AKTUELL);
         }
 
         /// <summary>

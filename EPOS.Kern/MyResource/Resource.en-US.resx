@@ -16674,6 +16674,48 @@ Please go through the project page again so that the data of the selected projec
   <data name="AUSWAHL_GRP_PFEILE" xml:space="preserve">
     <value>Move between project and database</value>
   </data>
+  <data name="AUSWAHL_MARKE_PROJEKT" xml:space="preserve">
+    <value>In project</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOG" xml:space="preserve">
+    <value>Catalogue (database)</value>
+  </data>
+  <data name="AUSWAHL_MARKE_SATZ" xml:space="preserve">
+    <value>Selected record</value>
+  </data>
+  <data name="AUSWAHL_MARKE_PROJEKTSATZ" xml:space="preserve">
+    <value>Project record</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOGSATZ" xml:space="preserve">
+    <value>Catalogue record</value>
+  </data>
+  <data name="AUSWAHL_SATZ_DETAILS" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="AUSWAHL_SATZ_LEER" xml:space="preserve">
+    <value>No record selected</value>
+  </data>
+  <data name="AUSWAHL_SATZ_HINWEIS" xml:space="preserve">
+    <value>Show or hide the data of the selected record</value>
+  </data>
+  <data name="AUSWAHL_TRENNER" xml:space="preserve">
+    <value>Height between project and catalogue (drag or arrow keys)</value>
+  </data>
+  <data name="AUSWAHL_TRENNER_HINWEIS" xml:space="preserve">
+    <value>Drag: height between project and catalogue; double-click: default</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ZAHL" xml:space="preserve">
+    <value>{0} selected</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ZAHL_VERBORGEN" xml:space="preserve">
+    <value>{0} selected, {1} hidden</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ALLE" xml:space="preserve">
+    <value>Select all matches</value>
+  </data>
+  <data name="AUSWAHL_WAHL_ZEILE" xml:space="preserve">
+    <value>Select row</value>
+  </data>
   <data name="FEHLERSCHRANKE_TITEL" xml:space="preserve">
     <value>An error occurred in this view</value>
   </data>
@@ -49898,6 +49940,147 @@ chart</value>
   </data>
   <data name="GIMP_WERT_KEINE_MVD" xml:space="preserve">
     <value>not specified</value>
+  </data>
+  <data name="ADM_KATALOG_PVGANGLINIE" xml:space="preserve">
+    <value>PV generation profiles</value>
+  </data>
+  <data name="KABG_KATALOG_PVGANGLINIE" xml:space="preserve">
+    <value>PV generation profiles</value>
+  </data>
+  <data name="PVG_TITEL" xml:space="preserve">
+    <value>Photovoltaics generation profile</value>
+  </data>
+  <data name="PVG_TITEL_KATALOG" xml:space="preserve">
+    <value>PV generation profiles</value>
+  </data>
+  <data name="PVG_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Selected in the project</value>
+  </data>
+  <data name="PVG_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>PV generation profile from the database</value>
+  </data>
+  <data name="PVG_LBL_RASTER" xml:space="preserve">
+    <value>Interval:</value>
+  </data>
+  <data name="PVG_RASTER_STUNDE" xml:space="preserve">
+    <value>Hourly values (8,760)</value>
+  </data>
+  <data name="PVG_RASTER_VIERTEL" xml:space="preserve">
+    <value>Quarter-hourly values (35,040)</value>
+  </data>
+  <data name="PVG_MSG_VORHANDEN" xml:space="preserve">
+    <value>A PV generation profile with this name is already in the catalogue.</value>
+  </data>
+  <data name="PVG_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>The PV generation profile could not be saved.</value>
+  </data>
+  <data name="PVG_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This PV generation profile is part of the delivered catalogue and cannot be deleted.</value>
+  </data>
+  <data name="PVG_IMP_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Importing a PV generation profile is not available on this platform.</value>
+  </data>
+  <data name="PVG_HINWEIS_WEICHE" xml:space="preserve">
+    <value>If a PV generation profile is assigned to the project, it replaces the module calculation: the values are the AC output of the system in kW, per hour or per quarter hour.</value>
+  </data>
+  <data name="SIM_PV_GANGLINIE_MANGEL" xml:space="preserve">
+    <value>The PV generation profile “{0}” is incomplete ({1}); photovoltaics is calculated from the modules.</value>
+  </data>
+  <data name="SIM_W_PVGANGLINIE_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>The PV generation profile “{0}” is assigned to the project, but photovoltaics is not set as power generator — the profile is not calculated. Remedy: simulation configuration → power generator “Photovoltaics”.</value>
+  </data>
+  <data name="MENU_PV_GANGLINIE" xml:space="preserve">
+    <value>PV generation profile</value>
+  </data>
+  <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
+    <value>The peak of the series ({0:N1} kW) exceeds the rated power × 1.1 ({1:N2} kWp). Please check the rated power and the unit of the file (kW, not W).</value>
+  </data>
+  <data name="PVG_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated power:</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_KOPF" xml:space="preserve">
+    <value>The rated power is prefilled from the file header.</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_SPITZE" xml:space="preserve">
+    <value>The rated power is prefilled with the peak of the series ({0:N2} kW); please enter the rated power of the system.</value>
+  </data>
+  <data name="PVG_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated power</value>
+  </data>
+  <data name="PVG_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Annual yield:</value>
+  </data>
+  <data name="PVG_NENN_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>not maintained – the run uses the peak of the series</value>
+  </data>
+  <data name="KI_DLG_MASKE_PVG" xml:space="preserve">
+    <value>PV generation profiles in the project</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOG_ERL" xml:space="preserve">
+    <value>The PV generation profile selected in the catalogue; it is the one that “Add to project” takes over.</value>
+  </data>
+  <data name="KI_DLG_PVG_PROJEKT_ERL" xml:space="preserve">
+    <value>The PV generation profile selected in the project list; empty when the catalogue is selected.</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_NAME" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_ERL" xml:space="preserve">
+    <value>The description of the selected profile — the header text of the imported file, i.e. the origin of the measured series.</value>
+  </data>
+  <data name="KI_DLG_PVG_AUFLOESUNG_ERL" xml:space="preserve">
+    <value>The interval of the selected profile: hourly values (8,760) or quarter-hourly values (35,040). Quarter-hourly values enter the balance directly, hourly values are distributed to the quarters by the position of the sun.</value>
+  </data>
+  <data name="KI_DLG_PVG_JAHRESSUMME_ERL" xml:space="preserve">
+    <value>The annual yield of the selected profile in MWh — the sum of the AC output over the year.</value>
+  </data>
+  <data name="KI_DLG_PVG_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>The maintained rated power of the selected profile in kWp; without it the run uses the peak of the series as installed capacity (economics, feed-in limit).</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_NAME" xml:space="preserve">
+    <value>Assigned to the project</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_ERL" xml:space="preserve">
+    <value>Is the selected profile in the project list? A complete assigned profile replaces the module calculation.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_NAME" xml:space="preserve">
+    <value>Import state</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_ERL" xml:space="preserve">
+    <value>How the import stands: open (with its message), the result of the last import with its log, or “no import”.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_OFFEN" xml:space="preserve">
+    <value>Import open</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_KEIN" xml:space="preserve">
+    <value>no import in this session</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_NAME" xml:space="preserve">
+    <value>Catalogue mode</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_ERL" xml:space="preserve">
+    <value>Is the form open without a project (menu item “PV generation profile”)? Then there is only the catalogue page and no project list.</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE" xml:space="preserve">
+    <value>Generation profile ‘{0}’ ({1}), rated power {2:N2} kWp</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE_SPITZE" xml:space="preserve">
+    <value>Generation profile ‘{0}’ ({1}), rated power {2:N2} kWp (peak of the series)</value>
+  </data>
+  <data name="PVG_AUSWEIS_VIERTEL" xml:space="preserve">
+    <value>quarter-hourly values</value>
+  </data>
+  <data name="PVG_AUSWEIS_STUNDE" xml:space="preserve">
+    <value>hourly values</value>
+  </data>
+  <data name="PVG_AUSWEIS_ENTFAELLT" xml:space="preserve">
+    <value>not applicable (generation profile)</value>
+  </data>
+  <data name="PVG_AUSWEIS_MERKMAL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
+    <value>Module model</value>
   </data>
 </root>
 

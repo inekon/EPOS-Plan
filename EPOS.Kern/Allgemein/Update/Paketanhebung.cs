@@ -382,6 +382,14 @@ namespace WindowsFormsApplication1
             // leer an (Bestandsweg, „nicht erhoben").
             new Stufe(UebergabegrenzeSchema.SCHRITT, Art.Ddl,
                       "Übergabegrenze und Bivalenz: Grenzen an Wärmepumpe und BHKW, Einbindung, Bereiche im Ergebnis"),
+            // Ein Paket führt keinen Katalog der PV-Ganglinien (der Katalog bleibt im Ziel); seine Projekte rechnen ihre
+            // Photovoltaik über die Module wie bisher, Projektkopie und Zuordnung bleiben leer.
+            new Stufe(PvGanglinieSchema.SCHRITT, Art.Katalog,
+                      "Photovoltaik mit Ganglinie (Katalog, Projektkopie und Zuordnung der PV-Ganglinie)"),
+            // Ein Paket fuehrt die Konditionierung seiner Projektgebaeude; die Anhebung fuehrt deren gekoppelte Kopien
+            // zusammen und spiegelt die Ferienspalten in die Ferienliste - kein Rechenergebnis aendert sich.
+            new Stufe(KalenderbedienungSchema.SCHRITT, Art.Ddl,
+                      "Kalenderbedienung Stufe 2 (gemeinsamer Kalender, benannte Wochen, Wochenende, Laenderfeiertage, Ferienliste)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

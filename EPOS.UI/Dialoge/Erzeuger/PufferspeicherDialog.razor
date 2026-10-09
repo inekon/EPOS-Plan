@@ -52,7 +52,7 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="Pufferspeicher" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
@@ -94,7 +94,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
@@ -203,6 +203,9 @@
                vorbeizurollen. *@
         </KindInhalt>
     </Gruppenkopf>
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

@@ -105,8 +105,23 @@
                             <Dateiwahl Bezeichnung="@Texte.LabelDatei" KnopfText="@Texte.DateiKnopf"
                                        Filter="@Texte.Dateifilter" Pfad="@_pfad" Waehlen="@Wege.DateiWaehlen"
                                        PfadChanged="BeiDatei" Aktiv="@(!_laeuft)" />
+                            @if (Wege.NennleistungVorschlagen is not null)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.LabelNennleistung" Einheit="kWp" Wert="@_nennleistung"
+                                            WertChanged="BeiNennleistung" Min="0" Nachkommastellen="2"
+                                            Feldname="nennleistung" Aktiv="@(!_laeuft)" />
+                            }
                         </KindInhalt>
                     </Formularraster>
+
+                    @if (_nennHerkunft.Length > 0)
+                    {
+                        <Herleitungszeile Text="@_nennHerkunft" />
+                    }
+                    @if (_nennHinweis.Length > 0)
+                    {
+                        <Warnbanner Stufe="@WarnStufe.Hinweis" Text="@_nennHinweis" />
+                    }
 
                     <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
 
@@ -355,8 +370,8 @@
     private async Task BeiDatei(string pfad)
     {
         _importMeldung = "";
-        if (string.IsNullOrEmpty(pfad)) { _pfad = ""; return; }
-        if (Wege.Ablegen is null) { _pfad = pfad; return; }
+        if (string.IsNullOrEmpty(pfad)) { _pfad = ""; NennleistungLeeren(); return; }
+        if (Wege.Ablegen is null) { _pfad = pfad; await NennleistungVorbelegen(); return; }
 
         // Die verlustfreie Originalablage; ein Fehlschlag ist eine Warnung, der
         // Import laeuft dann mit der Originaldatei.
@@ -367,7 +382,55 @@
             _importMeldung = erg.Meldung;
             _importMeldungStufe = WarnStufe.Warnung;
         }
+        await NennleistungVorbelegen();
     }
+
+    // ---------------------------------------------------------------------
+    // Die Nennleistung (nur PV-Ganglinie): Vorbelegung, Pruefung, Eingabe
+    // ---------------------------------------------------------------------
+
+    private double? _nennleistung;
+    private double _spitzeKw;
+    private string _nennHerkunft = "";
+    private string _nennHinweis = "";
+
+    /// <summary>Die abgefragte Nennleistung [kWp] (Prüfhilfe).</summary>
+    public double? Nennleistung => _nennleistung;
+
+    /// <summary>Der Prüfhinweis zur Nennleistung (Prüfhilfe); "" ohne.</summary>
+    public string Nennleistungshinweis => _nennHinweis;
+
+    private void NennleistungLeeren()
+    {
+        _nennleistung = null;
+        _spitzeKw = 0;
+        _nennHerkunft = "";
+        _nennHinweis = "";
+    }
+
+    /// <summary>Nach der Dateiwahl: Vorbelegung aus Dateikopf oder Spitze, dann die Prüfung.</summary>
+    private async Task NennleistungVorbelegen()
+    {
+        NennleistungLeeren();
+        if (Wege.NennleistungVorschlagen is null || _pfad.Length == 0) return;
+        GanglinienNennleistungsvorschlag v = await Wege.NennleistungVorschlagen(_pfad);
+        if (v is null || v.VorschlagKwp is null) return;
+        _nennleistung = v.VorschlagKwp;
+        _spitzeKw = v.SpitzeKw;
+        _nennHerkunft = v.AusDateikopf
+            ? Texte.NennleistungAusKopf
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.NennleistungAusSpitze, v.SpitzeKw);
+        NennleistungPruefen();
+    }
+
+    private void BeiNennleistung(double? wert)
+    {
+        _nennleistung = wert;
+        NennleistungPruefen();
+    }
+
+    private void NennleistungPruefen()
+        => _nennHinweis = Wege.NennleistungPruefen?.Invoke(_spitzeKw, _nennleistung) ?? "";
 
     private async Task BeiAnzeigen()
     {
@@ -401,10 +464,13 @@
                 _ = InvokeAsync(StateHasChanged);
             });
 
-            GanglinienKatalogimport erg = await Wege.Einlesen!(_pfad, melder);
+            GanglinienKatalogimport erg = Wege.EinlesenMitNennleistung is not null && Wege.NennleistungVorschlagen is not null
+                ? await Wege.EinlesenMitNennleistung(_pfad, _nennleistung, melder)
+                : await Wege.Einlesen!(_pfad, melder);
             if (erg.Erfolgreich)
             {
                 _pfad = "";
+                NennleistungLeeren();
                 _importOffen = false;
                 _protokoll = erg.Protokoll ?? "";
                 await Neuladen();

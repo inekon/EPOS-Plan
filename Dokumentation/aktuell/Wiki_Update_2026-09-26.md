@@ -178,6 +178,7 @@ Version noch beim Anwender zu bestätigen.
 - Seit 09.10.2026: Der Reiter „Wärmepumpe“ der Simulationsergebnisse zeigt die Betriebsbereiche mit Stunden, Wärme und Bivalenzpunkten. (#855)
 - Seit 09.10.2026: Der Bericht enthält ein Bivalenzdiagramm (Word) und eine Bivalenztafel (Word und Excel) mit Prüfhinweisen. (#855)
 - Seit 09.10.2026: Die Berichtsvorlagen kennen die Kennzahlen `wp.bivalenz.*` der Betriebsbereiche. (#855)
+- Seit 09.10.2026: Die Projektdialoge mit Katalogauswahl zeigen Projekt und Katalog gerahmt untereinander mit ziehbarer Trennlinie und einer Zeile für den gewählten Satz; nur die Listen rollen. (#861)
 
 ### Version 1.2.0.9 — nicht veröffentlicht
 
@@ -208,6 +209,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Ein Gebäude-Katalogsatz trägt seine Zonen mit Bauteilen, Luftströmen und Zonen-Konditionierung; „In DB übernehmen“, „Speichern unter“ und die Übernahme ins Projekt kopieren sie mit. (#849)
 - Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
 - Seit 09.10.2026: Der Strom einer Kältemaschine zählt in Kosten und Emissionen auch dann, wenn sie der einzige Stromverbraucher des Projekts ist. (#852)
+- Seit 09.10.2026: Die Photovoltaik kann statt des Modulmodells mit einer importierten Ganglinie (Stunden- oder Viertelstundenwerte) rechnen; Ganglinien werden im Katalog gepflegt und dem Projekt zugeordnet. (#857)
+- Seit 09.10.2026: Der Import einer PV-Ganglinie fragt die Nennleistung ab und prüft sie gegen die Reihe; Ergebnisreiter und Bericht nennen bei einer Ganglinie die Quelle statt der Moduldaten. (#858)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 

@@ -109,7 +109,7 @@
         </div>
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+    <Zweispaltenauswahl Dialogname="Bedarfsprofile" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText"
                         UebernehmenGesperrt="@(_katalogzeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
@@ -171,7 +171,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --------------------------------------------- Infoblock -------------- *@
     <Gruppenkopf Titel="@GruppeInfo">
@@ -264,6 +264,9 @@
             <span class="epos-leisezeile epos-zapfprofil-leiste">@ZapfprofilEinstiegTexte.LeisteZapfprofil</span>
         }
     </div>
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

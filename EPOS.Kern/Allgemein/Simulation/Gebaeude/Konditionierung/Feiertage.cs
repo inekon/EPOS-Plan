@@ -28,7 +28,7 @@ namespace WindowsFormsApplication1
         public static bool Bekannt(string regel)
         {
             if (regel == null) return false;
-            foreach (string r in DbWerte.KOND_FEIERTAGE)
+            foreach (string r in DbWerte.KOND_FEIERTAGE_ALLE)
                 if (string.Equals(regel, r, StringComparison.Ordinal)) return true;
             return false;
         }
@@ -52,6 +52,20 @@ namespace WindowsFormsApplication1
                 case DbWerte.KOND_FEIERTAG_EINHEIT: return Gemeinjahrestag(10, 3);
                 case DbWerte.KOND_FEIERTAG_WEIHNACHTEN_1: return Gemeinjahrestag(12, 25);
                 case DbWerte.KOND_FEIERTAG_WEIHNACHTEN_2: return Gemeinjahrestag(12, 26);
+                // Die Regeln der Laender (Schemaschritt KalenderbedienungSchema).
+                case DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE: return Gemeinjahrestag(1, 6);
+                case DbWerte.KOND_FEIERTAG_FRAUENTAG: return Gemeinjahrestag(3, 8);
+                case DbWerte.KOND_FEIERTAG_MARIAE_HIMMELFAHRT: return Gemeinjahrestag(8, 15);
+                case DbWerte.KOND_FEIERTAG_WELTKINDERTAG: return Gemeinjahrestag(9, 20);
+                case DbWerte.KOND_FEIERTAG_REFORMATIONSTAG: return Gemeinjahrestag(10, 31);
+                case DbWerte.KOND_FEIERTAG_ALLERHEILIGEN: return Gemeinjahrestag(11, 1);
+                case DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG:
+                {
+                    // Der Mittwoch vor dem 23. November.
+                    DateTime d = new DateTime(referenzjahr, 11, 22);
+                    while (d.DayOfWeek != DayOfWeek.Wednesday) d = d.AddDays(-1);
+                    return Gemeinjahrestag(d.Month, d.Day);
+                }
             }
 
             DateTime ostern = Ostersonntag(referenzjahr);
@@ -62,6 +76,7 @@ namespace WindowsFormsApplication1
                 case DbWerte.KOND_FEIERTAG_OSTERMONTAG: tag = ostern.AddDays(1); break;
                 case DbWerte.KOND_FEIERTAG_HIMMELFAHRT: tag = ostern.AddDays(39); break;
                 case DbWerte.KOND_FEIERTAG_PFINGSTMONTAG: tag = ostern.AddDays(50); break;
+                case DbWerte.KOND_FEIERTAG_FRONLEICHNAM: tag = ostern.AddDays(60); break;
                 default: return -1;
             }
             return Gemeinjahrestag(tag.Month, tag.Day);

@@ -548,7 +548,7 @@ namespace WindowsFormsApplication1
                 // ihn nur lesbar, bis das Schloss aufgehoben ist.
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
-                        (name, felder) => BhkwAdminHuelle.Wege().Speichern!(name, felder, false)),
+                        (name, felder) => BhkwAdminHuelle.Wege().Speichern!(name, felder)),
 
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
 

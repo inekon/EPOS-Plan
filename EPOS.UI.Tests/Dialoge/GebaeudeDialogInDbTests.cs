@@ -87,7 +87,7 @@ public class GebaeudeDialogInDbTests : EposBunitContext
     }
 
     private static IElement? InDbKnopf(IRenderedComponent<GebaeudeDialog> cut)
-        => cut.FindAll(".epos-zweispalten-uebernahme button.epos-gebaeude-in-db").SingleOrDefault();
+        => cut.FindAll(".epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste button.epos-gebaeude-in-db").SingleOrDefault();
 
     private static void Ok(IRenderedComponent<GebaeudeDialog> cut)
         => cut.FindAll(".epos-gebaeude-in-db-abfrage .epos-leiste button.epos-knopf--primaer").Single().Click();
@@ -97,10 +97,10 @@ public class GebaeudeDialogInDbTests : EposBunitContext
     {
         var ohne = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) }, mitWeg: false);
         Assert.Null(InDbKnopf(ohne));
-        Assert.Equal(2, ohne.FindAll(".epos-zweispalten-uebernahme button").Count);
+        Assert.Equal(2, ohne.FindAll(".epos-zweispalten-knopf--richtung").Count);
 
         var cut = Aufbauen(new List<GebaeudeProjektZeile> { Zeile(1, "Haus A", true) });
-        IReadOnlyList<IElement> leiste = cut.FindAll(".epos-zweispalten-uebernahme button");
+        IReadOnlyList<IElement> leiste = new[] { cut.Find(".epos-zweispalten-knopf--uebernehmen"), cut.Find(".epos-zweispalten-knopf--entfernen"), InDbKnopf(cut)! };
         Assert.Equal(3, leiste.Count);
         Assert.Equal(KNOPF, leiste[2].TextContent.Trim());
         Assert.Equal("Das in der Projektliste markierte Gebäude als neuen Satz in die Datenbank übernehmen",
