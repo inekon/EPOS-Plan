@@ -36,10 +36,11 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         [Fact]
-        public void Die_Nummer_ist_209_das_Ziel_und_die_Paketanhebung_fuehrt_Katalog()
+        public void Die_Nummer_ist_208_das_Ziel_und_die_Paketanhebung_fuehrt_Katalog()
         {
-            // Haengt an 208 KatalogkostenUrsprungSchema (KA1); beim Merge auf dessen SCHRITT + 1 umhaengen.
-            Assert.Equal(209, KaeltemaschineTeillastSchema.SCHRITT);
+            // Haengt ueber KalenderbedienungSchema.SCHRITT + 1 an 207.
+            Assert.Equal(208, KaeltemaschineTeillastSchema.SCHRITT);
+            Assert.Equal(KalenderbedienungSchema.SCHRITT + 1, KaeltemaschineTeillastSchema.SCHRITT);
             Assert.Equal(KaeltemaschineTeillastSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == KaeltemaschineTeillastSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Katalog, s.Wirkung);

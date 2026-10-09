@@ -788,7 +788,7 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > 0,10/0,60/0,30 (gültig ab Lastgrad 0,2), Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9
 > (`Taktverlustfaktor_Cd` leer), Verdichterregelung `STUFEN` und der Randweg `GUETEGRAD` wirken; gesät von
 > `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`, gehalten von
-> `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`. Testdatenbank auf Schemastand **209** (der Schritt
+> `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`. Testdatenbank auf Schemastand **208** (der Schritt
 > der Teillastspalten wird beim Merge an 208 gehängt), 94 810 112 Byte, LFS-SHA-256
 > `5a83ea944394d92f86a95d1cd8615695ddf181e95bf68ba889543b7612032f28`. Die siebenundzwanzig Projekte der Basis R46 rechnen
 > gegen R46 `GESAMT: PASS` und byte-gleich (879/879 CSV) — 1063 ändert nichts am Bestand. 1063 tritt in die CI-Auswahl

@@ -112,7 +112,7 @@ namespace WindowsFormsApplication1
             // KU3-4d (Schritt 184): die Abrechnungsspalten je Kaeltemaschine - ebenso vor der Transaktion gefragt.
             bool kmAbrechnung = System.Linq.Enumerable.All(KaeltestromabrechnungSchema.SPALTEN,
                                     s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
-            // KM3 (Schritt 209): die fünf Ergebnisspalten von Teillast und Takten; vor dem Schritt nicht geschrieben.
+            // KM3 (Schritt 208): die fünf Ergebnisspalten von Teillast und Takten; vor dem Schritt nicht geschrieben.
             bool kmTeillast = System.Linq.Enumerable.All(KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN,
                                     s => DataRepository.SpalteVorhanden(KaeltemaschineTeillastSchema.TAB_ERGEBNIS, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
@@ -390,7 +390,7 @@ namespace WindowsFormsApplication1
                                 pk.Add(new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && km.Kuehl_EigenerZaehler.HasValue ? (object)(km.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value });
                                 pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = km.Stromspitze_kW.HasValue ? (object)R(km.Stromspitze_kW.Value) : DBNull.Value });
                             }
-                            // KM3 (Schritt 209): ohne Teillast_Weg NULL - der Satz bleibt wie ohne KM3.
+                            // KM3 (Schritt 208): ohne Teillast_Weg NULL - der Satz bleibt wie ohne KM3.
                             if (kmTeillast)
                             {
                                 pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = WertOderNull(km.Taktstrom_MWh) });
@@ -1221,7 +1221,7 @@ namespace WindowsFormsApplication1
                             Kuehl_EigenerZaehler = DN(rk, KaeltestromabrechnungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER) is double z
                                 ? (bool?)(z != 0) : null,
                             Stromspitze_kW = DN(rk, KaeltestromabrechnungSchema.SPALTE_STROMSPITZE),
-                            // KM3 (Schritt 209); vor dem Schritt bzw. ohne Teillast_Weg NULL.
+                            // KM3 (Schritt 208); vor dem Schritt bzw. ohne Teillast_Weg NULL.
                             Taktstrom_MWh = DN(rk, KaeltemaschineTeillastSchema.SPALTE_TAKTSTROM),
                             Starts = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STARTS),
                             Teillaststunden = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_TEILLASTSTUNDEN),

@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
                 new DbParam("?", 11), new DbParam("?", DbWerte.KOSTEN_KATEGORIE_INVESTITION),
                 new DbParam("?", KaeltemaschineAnlageSchema.POSITION_AGGREGAT))));
             // Schritt 184 (KU3-4d) haengt seine Abrechnungsspalten an dieselbe Tabelle.
-            // + fuenf Kennzahlspalten von Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 209).
+            // + fuenf Kennzahlspalten von Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 208).
             Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length + KaeltestromabrechnungSchema.SPALTEN.Count +
                          KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN.Count,
                          DataRepository.SpaltenVonTabelle(KaeltemaschineAnlageSchema.TAB_ERGEBNIS).Count);

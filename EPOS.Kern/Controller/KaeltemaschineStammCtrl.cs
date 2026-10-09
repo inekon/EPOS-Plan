@@ -342,7 +342,7 @@ namespace WindowsFormsApplication1
                 Kaltwasser_Vorlauf_Min = Zahl(r[KaeltemaschineSchema.SPALTE_KALTWASSER_VORLAUF_MIN]),
                 Modulkosten = Zahl(r[KaeltemaschineSchema.SPALTE_MODULKOSTEN]),
             };
-            // Schritt 209: Teillast und Takten - vor dem Schritt fehlen die Spalten, dann null.
+            // Schritt 208: Teillast und Takten - vor dem Schritt fehlen die Spalten, dann null.
             if (r.Table.Columns.Contains(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG))
             {
                 m.Teillast_Weg = Text(r[KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG]);

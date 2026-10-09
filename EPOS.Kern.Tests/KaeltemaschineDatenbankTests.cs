@@ -185,7 +185,7 @@ namespace EPOS.Kern.Tests
     
 
         // =============================================================================
-        //  Teillast und Takten (KM3-E1-a, Schritt 209): Lesen und Speichern der acht Felder, ohne Rechenwirkung
+        //  Teillast und Takten (KM3-E1-a, Schritt 208): Lesen und Speichern der acht Felder, ohne Rechenwirkung
         // =============================================================================
 
         private static double? Z(string text)

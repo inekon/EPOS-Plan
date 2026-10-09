@@ -456,7 +456,7 @@ namespace WindowsFormsApplication1
         private static readonly Katalogtabelle[] STUFE3 =
         {
             new Katalogtabelle(KaeltemaschineSchema.TAB_STAMM, "KM",
-                // KaeltemaschineTeillastSchema (Schritt 209): die acht Eingabespalten von Teillast und Takten haengen ueber
+                // KaeltemaschineTeillastSchema (Schritt 208): die acht Eingabespalten von Teillast und Takten haengen ueber
                 // KaeltemaschineSchema.Fachspalten hinten an; leer tragen sie nichts zur Pruefsumme bei.
                 KaeltemaschineSchema.Fachspalten,
                 new Katalogkind(KaeltemaschineSchema.TAB_KENNDATEN_STAMM, KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE,

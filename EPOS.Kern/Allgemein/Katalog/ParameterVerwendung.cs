@@ -933,7 +933,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Teillast und Takten der Kältemaschine</b> (<see cref="KaeltemaschineTeillastSchema"/>, Schritt 209; Welle
+        /// <b>Teillast und Takten der Kältemaschine</b> (<see cref="KaeltemaschineTeillastSchema"/>, Schritt 208; Welle
         /// KM3-E1-a): Die acht Spalten werden gelesen, geprüft, gespeichert und in die Projektkopie mitgenommen, aber noch
         /// nicht gerechnet (Rechenweg KM3-E2) und noch in keinem Dialog gezeigt (KM3-E3).
         /// </summary>
