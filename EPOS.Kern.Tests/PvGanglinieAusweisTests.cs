@@ -137,5 +137,46 @@ namespace EPOS.Kern.Tests
             Assert.Equal(5, ExcelBerichtGenerator.PvKenndatenBlock(ws2, 5, ohne));
             Assert.True(ws2.Cell(5, 1).IsEmpty());
         }
+    
+        /// <summary>
+        /// <b>Der Variantenvergleich kennt die Ganglinie</b>: Modulmodell ↔ Ganglinie, eine andere Ganglinie und eine
+        /// andere Nennleistung stehen als eigene Zeile „Quelle" (Gewerk Photovoltaik, Schlüssel <c>PV_QUELLE</c>) mit
+        /// beiden Werten; gleiche Quelle und reines Modulmodell ergeben keine Zeile.
+        /// </summary>
+        [Fact]
+        public void Der_Variantenvergleich_meldet_eine_andere_PV_Quelle()
+        {
+            CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
+            PvGanglinieAusweis a = PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_VIERTEL, 9.8));
+            PvGanglinieAusweis b = PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_VIERTEL, 12.0));
+
+            Abweichung Quelle(PvGanglinieAusweis s, PvGanglinieAusweis v)
+                => AbweichungsErmittler.Vergleiche(Variante(true, "S", s).Details, Variante(false, "V", v).Details)
+                       .SingleOrDefault(x => x.Schluessel == AbweichungsErmittler.SCHLUESSEL_PV_QUELLE);
+
+            Abweichung modulGegenGanglinie = Quelle(null, a);
+            Assert.NotNull(modulGegenGanglinie);
+            Assert.Equal("Photovoltaik", modulGegenGanglinie.Gewerk);
+            Assert.Equal("Quelle", modulGegenGanglinie.Merkmal);
+            Assert.Equal("Modulmodell", modulGegenGanglinie.WertStamm);
+            Assert.Equal(a.Text(de), modulGegenGanglinie.WertVariante);
+
+            Abweichung andereNennleistung = Quelle(a, b);
+            Assert.NotNull(andereNennleistung);
+            Assert.Contains("9,80", andereNennleistung.WertStamm);
+            Assert.Contains("12,00", andereNennleistung.WertVariante);
+
+            PvGanglinieAusweis andererName = PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_VIERTEL, 9.8));
+            andererName.Bezeichner = "PV Dach Nord";
+            Assert.NotNull(Quelle(a, andererName));
+
+            Assert.Null(Quelle(a, PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_VIERTEL, 9.8))));
+            Assert.Null(Quelle(null, null));
+
+            // Ein Stand ohne Photovoltaik gegen eine Ganglinie: „nicht vorhanden".
+            var ohnePv = new ProjektDetails { IdProjekt = 3 };
+            Abweichung gegenNichts = AbweichungsErmittler.PvQuelleVergleichen(ohnePv, Variante(false, "V", a).Details);
+            Assert.Equal(AbweichungsErmittler.BestandFehlt, gegenNichts.WertStamm);
         }
+    }
 }
