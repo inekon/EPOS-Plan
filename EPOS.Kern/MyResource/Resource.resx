@@ -49957,5 +49957,95 @@ Chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV-Ganglinie</value>
   </data>
+  <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
+    <value>Die Spitze der Reihe ({0:N1} kW) liegt über der Nennleistung × 1,1 ({1:N2} kWp). Bitte Nennleistung und Einheit der Datei (kW, nicht W) prüfen.</value>
+  </data>
+  <data name="PVG_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung:</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_KOPF" xml:space="preserve">
+    <value>Die Nennleistung ist aus dem Dateikopf vorbelegt.</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_SPITZE" xml:space="preserve">
+    <value>Die Nennleistung ist mit der Spitze der Reihe ({0:N2} kW) vorbelegt; bitte die Nennleistung der Anlage eintragen.</value>
+  </data>
+  <data name="PVG_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung</value>
+  </data>
+  <data name="PVG_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Jahresarbeit:</value>
+  </data>
+  <data name="PVG_NENN_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>nicht gepflegt – der Lauf nimmt die Spitze der Reihe</value>
+  </data>
+  <data name="KI_DLG_MASKE_PVG" xml:space="preserve">
+    <value>PV-Ganglinien im Projekt</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOG_ERL" xml:space="preserve">
+    <value>Die im Katalog markierte PV-Ganglinie; sie ist die, die „In das Projekt übernehmen“ aufnimmt.</value>
+  </data>
+  <data name="KI_DLG_PVG_PROJEKT_ERL" xml:space="preserve">
+    <value>Die in der Projektliste markierte PV-Ganglinie; leer, wenn der Katalog markiert ist.</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_NAME" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_ERL" xml:space="preserve">
+    <value>Die Beschreibung der markierten Ganglinie — der Kopftext der eingelesenen Datei, also die Herkunft der Messreihe.</value>
+  </data>
+  <data name="KI_DLG_PVG_AUFLOESUNG_ERL" xml:space="preserve">
+    <value>Das Raster der markierten Ganglinie: Stundenwerte (8 760) oder Viertelstundenwerte (35 040). Viertelstundenwerte gehen unmittelbar in die Bilanz, Stundenwerte werden nach dem Sonnenstand auf die Viertel verteilt.</value>
+  </data>
+  <data name="KI_DLG_PVG_JAHRESSUMME_ERL" xml:space="preserve">
+    <value>Die Jahresarbeit der markierten Ganglinie in MWh — die Summe der AC-Leistung über das Jahr.</value>
+  </data>
+  <data name="KI_DLG_PVG_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Die gepflegte Nennleistung der markierten Ganglinie in kWp; ohne sie nimmt der Lauf die Spitze der Reihe als installierte Leistung (Wirtschaftlichkeit, Einspeisegrenze).</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_NAME" xml:space="preserve">
+    <value>Im Projekt zugeordnet</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_ERL" xml:space="preserve">
+    <value>Steht die markierte Ganglinie in der Projektliste? Eine vollständige zugeordnete Ganglinie ersetzt die Modulrechnung.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_NAME" xml:space="preserve">
+    <value>Zustand des Imports</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_ERL" xml:space="preserve">
+    <value>Wie der Import steht: geöffnet (samt Meldung), das Ergebnis des letzten Imports mit Protokoll oder „kein Import“.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_OFFEN" xml:space="preserve">
+    <value>Import geöffnet</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_KEIN" xml:space="preserve">
+    <value>kein Import in dieser Sitzung</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_NAME" xml:space="preserve">
+    <value>Katalogbetrieb</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_ERL" xml:space="preserve">
+    <value>Ist die Maske ohne Projekt geöffnet (Menüpunkt „PV-Ganglinie“)? Dann gibt es nur die Katalogseite und keine Projektliste.</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE" xml:space="preserve">
+    <value>Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE_SPITZE" xml:space="preserve">
+    <value>Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp (Spitze der Reihe)</value>
+  </data>
+  <data name="PVG_AUSWEIS_VIERTEL" xml:space="preserve">
+    <value>Viertelstundenwerte</value>
+  </data>
+  <data name="PVG_AUSWEIS_STUNDE" xml:space="preserve">
+    <value>Stundenwerte</value>
+  </data>
+  <data name="PVG_AUSWEIS_ENTFAELLT" xml:space="preserve">
+    <value>entfällt (Ganglinie)</value>
+  </data>
+  <data name="PVG_AUSWEIS_MERKMAL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
+    <value>Modulmodell</value>
+  </data>
 </root>
 

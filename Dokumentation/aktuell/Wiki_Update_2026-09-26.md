@@ -209,6 +209,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
 - Seit 09.10.2026: Der Strom einer Kältemaschine zählt in Kosten und Emissionen auch dann, wenn sie der einzige Stromverbraucher des Projekts ist. (#852)
 - Seit 09.10.2026: Die Photovoltaik kann statt des Modulmodells mit einer importierten Ganglinie (Stunden- oder Viertelstundenwerte) rechnen; Ganglinien werden im Katalog gepflegt und dem Projekt zugeordnet. (#857)
+- Seit 09.10.2026: Der Import einer PV-Ganglinie fragt die Nennleistung ab und prüft sie gegen die Reihe; Ergebnisreiter und Bericht nennen bei einer Ganglinie die Quelle statt der Moduldaten. (#858)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 

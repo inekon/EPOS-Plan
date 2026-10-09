@@ -2146,6 +2146,27 @@
         internal static string SglBeschreibungName => MyResource.Resource.SGL_LBL_BESCHREIBUNG;
         internal static string SglBeschreibungErl => MyResource.Resource.KI_DLG_SGL_BESCHREIBUNG_ERL;
 
+        /// <summary>Die PV-Ganglinien eines Projekts (PVG).</summary>
+        internal static string MaskePvGanglinie => MyResource.Resource.KI_DLG_MASKE_PVG;
+        internal static string PvgKatalogName => MyResource.Resource.PVG_LBL_KATALOGLISTE;
+        internal static string PvgKatalogErl => MyResource.Resource.KI_DLG_PVG_KATALOG_ERL;
+        internal static string PvgProjektName => MyResource.Resource.PVG_LBL_PROJEKTLISTE;
+        internal static string PvgProjektErl => MyResource.Resource.KI_DLG_PVG_PROJEKT_ERL;
+        internal static string PvgQuelleName => MyResource.Resource.KI_DLG_PVG_QUELLE_NAME;
+        internal static string PvgQuelleErl => MyResource.Resource.KI_DLG_PVG_QUELLE_ERL;
+        internal static string PvgAufloesungName => MyResource.Resource.PVG_LBL_RASTER;
+        internal static string PvgAufloesungErl => MyResource.Resource.KI_DLG_PVG_AUFLOESUNG_ERL;
+        internal static string PvgJahressummeName => MyResource.Resource.PVG_LBL_JAHRESARBEIT;
+        internal static string PvgJahressummeErl => MyResource.Resource.KI_DLG_PVG_JAHRESSUMME_ERL;
+        internal static string PvgNennleistungName => MyResource.Resource.PVG_LBL_NENNLEISTUNG;
+        internal static string PvgNennleistungErl => MyResource.Resource.KI_DLG_PVG_NENNLEISTUNG_ERL;
+        internal static string PvgImProjektName => MyResource.Resource.KI_DLG_PVG_IMPROJEKT_NAME;
+        internal static string PvgImProjektErl => MyResource.Resource.KI_DLG_PVG_IMPROJEKT_ERL;
+        internal static string PvgImportName => MyResource.Resource.KI_DLG_PVG_IMPORT_NAME;
+        internal static string PvgImportErl => MyResource.Resource.KI_DLG_PVG_IMPORT_ERL;
+        internal static string PvgKatalogbetriebName => MyResource.Resource.KI_DLG_PVG_KATALOGBETRIEB_NAME;
+        internal static string PvgKatalogbetriebErl => MyResource.Resource.KI_DLG_PVG_KATALOGBETRIEB_ERL;
+
         internal static string KlimaQuelleName => MyResource.Resource.KLIMA_QUELLE;
         internal static string KlimaQuelleErl => MyResource.Resource.KI_DLG_KLIMA_QUELLE_ERL;
         internal static string KlimaOrtName => MyResource.Resource.KLIMA_LBL_ORT;

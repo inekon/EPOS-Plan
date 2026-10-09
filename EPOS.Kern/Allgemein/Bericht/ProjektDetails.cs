@@ -79,6 +79,13 @@ namespace WindowsFormsApplication1
         /// <summary>Rechnet das Projekt sein Brauchwasser über den Zapfprofilgenerator? (Dann gilt dessen Zirkulation.)</summary>
         public bool Zapfprofilweg;
 
+        /// <summary>
+        /// Der Ausweis der PV-Ganglinie, wenn das Projekt seine Photovoltaik über eine Ganglinie rechnet
+        /// (PVG); <c>null</c> im Modulmodell. Die Kenndaten der Photovoltaik nennen dann die Quelle statt
+        /// der Modulangaben.
+        /// </summary>
+        public PvGanglinieAusweis PvGanglinie;
+
         /// <summary>Gewerk → erste Komponentenzeile des Projekts (fehlt das Gewerk: kein Eintrag).</summary>
         public Dictionary<string, DataRow> Komponenten = new Dictionary<string, DataRow>();
 
@@ -280,6 +287,10 @@ namespace WindowsFormsApplication1
                 d.KomponentenAnzahl[g.Key] = anzahl;
                 if (anzahl > 0) { d.Komponenten[g.Key] = dt.Rows[0]; d.KomponentenAlle[g.Key] = dt; }
             }
+
+            // PVG: rechnet die Photovoltaik ueber eine PV-Ganglinie, nennt der Bericht deren Quelle.
+            try { d.PvGanglinie = PvGanglinieAusweis.Aus(PvGanglinieWeiche.Lesen(idProjekt)); }
+            catch { d.PvGanglinie = null; }
 
             // Stufe G6a: die Zonen EINMAL je Projekt, samt Aufbauten und Zonenmerkmalen.
             LadeZonen(d);

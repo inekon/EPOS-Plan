@@ -374,6 +374,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Solarganglinien eines Projekts (<c>SolarganglinieDialog</c>).</summary>
         public const string SOLARGANGLINIE = "Form_Solarganglinie";
 
+        /// <summary>Die PV-Ganglinien eines Projekts und ihr Katalog (<c>PvGanglinieDialog</c>).</summary>
+        public const string PV_GANGLINIE = "Form_PvGanglinie";
+
         /// <summary>Die Klimadatenverwaltung (<c>KlimadatenDialog</c>).</summary>
         public const string KLIMADATEN = "Form_Klimadaten";
 
@@ -827,6 +830,7 @@ namespace WindowsFormsApplication1
                 BedarfErgebnis(),
                 WaermebedarfExtern(),
                 Solarganglinie(),
+                PvGanglinie(),
                 Klimadaten(),
                 Energietraeger(),
                 EnergietraegerVariante(),
@@ -3539,6 +3543,63 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WbxGanglinieName, KiParameterTyp.Text,
                                      KiDialogTexte.WbxGanglinieErl,
                                      leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_PvGanglinie  ->  PvGanglinieDialog   (PVG, Schemaschritt 206)
+        // =====================================================================
+
+        /// <summary>
+        /// Die PV-Ganglinien eines Projekts — neun Felder aus
+        /// <c>EPOS.UI.Dialoge.Erzeuger.PvGanglinieKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Dieselbe Bauart wie die Solarganglinie: Das Wahlfeld ist die KATALOGWAHL (sie markiert die
+        /// Ganglinie, die „In das Projekt übernehmen" aufnimmt); alles Übrige liest der Assistent nur —
+        /// Quelle, Raster, Jahresarbeit, Nennleistung der markierten Ganglinie, ob sie dem Projekt
+        /// zugeordnet ist und wie der letzte Import steht. Import, Löschen und Schloss bleiben Handlungen
+        /// des Anwenders, die Zuordnung geht erst mit dem OK an den Wirt.
+        /// </remarks>
+        private static KiDialog PvGanglinie()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PV_GANGLINIE,
+                anzeigename: KiDialogTexte.MaskePvGanglinie,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogganglinie", "PvGanglinieKiSicht.Katalogganglinie",
+                                     KiDialogTexte.PvgKatalogName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvgKatalogErl, leerErlaubt: true),
+                    new KiDialogFeld("projektganglinie", "PvGanglinieKiSicht.Projektganglinie",
+                                     KiDialogTexte.PvgProjektName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgProjektErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("quelle", "PvGanglinieKiSicht.Quelle",
+                                     KiDialogTexte.PvgQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgQuelleErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("aufloesung", "PvGanglinieKiSicht.Aufloesung",
+                                     KiDialogTexte.PvgAufloesungName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgAufloesungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("jahressumme", "PvGanglinieKiSicht.Jahressumme",
+                                     KiDialogTexte.PvgJahressummeName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgJahressummeErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("nennleistung", "PvGanglinieKiSicht.Nennleistung",
+                                     KiDialogTexte.PvgNennleistungName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgNennleistungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("im_projekt", "PvGanglinieKiSicht.ImProjekt",
+                                     KiDialogTexte.PvgImProjektName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvgImProjektErl, nurLesen: true),
+                    new KiDialogFeld("importzustand", "PvGanglinieKiSicht.Importzustand",
+                                     KiDialogTexte.PvgImportName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvgImportErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("katalogbetrieb", "PvGanglinieKiSicht.Katalogbetrieb",
+                                     KiDialogTexte.PvgKatalogbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvgKatalogbetriebErl, nurLesen: true)
                 },
                 knoepfe: new[]
                 {
