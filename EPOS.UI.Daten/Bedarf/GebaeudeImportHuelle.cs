@@ -743,8 +743,10 @@ namespace WindowsFormsApplication1
             if (anfrage == null || _ablauf.Abbild == null) return new GebaeudeImportStand();
 
             IReadOnlyDictionary<string, bool> haken = anfrage.BeheiztUebersteuert ?? new Dictionary<string, bool>();
+            // Die Klasse: eine ausdrückliche Wahl gilt vor der aus dem Baujahr der Datei (Anwenderwunsch 08.10.2026).
+            _klasseUebersteuert = anfrage.KlasseGewaehlt;
             GebaeudeImportSatz satz = _ablauf.Zuordnen(anfrage.Gebaeudeindex, Klasse(anfrage.Baualtersklasse), haken,
-                                                       anfrage.RaumtemperaturAlsSollwert);
+                                                       anfrage.RaumtemperaturAlsSollwert, _klasseUebersteuert);
             foreach (KeyValuePair<string, double?> hand in anfrage.Handwerte ?? new Dictionary<string, double?>())
                 satz.ManuellSetzen(hand.Key, hand.Value);
             satz.FolgevorgabenNachziehen();
@@ -786,6 +788,9 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>Die Klasse der letzten Anfrage ist die ausdrückliche Wahl des Anwenders (gilt vor dem Baujahr der Datei).</summary>
+        private bool _klasseUebersteuert;
+
         /// <summary>
         /// <b>Zonierung, Bauteilvorschlag und Grundriss einer Anfrage</b> (Stufe G6c): die Zonierung nach
         /// der gewählten Regel — eine Regel, die das Gebäude nicht trägt, und <c>null</c> heißen die Vorgabe
@@ -799,7 +804,12 @@ namespace WindowsFormsApplication1
                                      IReadOnlyList<GebaeudePlanschritt> schritte = null,
                                      IReadOnlyDictionary<string, bool> grundhaken = null)
         {
-            _vorschlagWiederholen = () => VorschlagBilden(index, klasse, regel, haken, zuordnungen, umhaengungen, cadSollwert, schritte, grundhaken);
+            bool klasseUebersteuert = _klasseUebersteuert;
+            _vorschlagWiederholen = () =>
+            {
+                _klasseUebersteuert = klasseUebersteuert;
+                VorschlagBilden(index, klasse, regel, haken, zuordnungen, umhaengungen, cadSollwert, schritte, grundhaken);
+            };
             _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
             _plan = null;
             _schritt = (null, false, 0);
@@ -823,7 +833,8 @@ namespace WindowsFormsApplication1
                 }
             }
             _vorschlag = GebaeudeBauteilvorschlag.Bilden(_ablauf, index, klasse, haken, Abgleich(zuordnungen),
-                                                         Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert, _typwahl);
+                                                         Mehrzonig(_zonierung) ? _zonierung : null, cadSollwert, _typwahl,
+                                                         klasseUebersteuert);
             // HC-5: der frisch abgeleitete Grundriss je Raum vor dem Rechteckersatz (dieselben, die der Import speichert).
             _geometrie = GebaeudeGrundriss.BildenMitGrundriss(_ablauf.Abbild, index, _zonierung, out _);
         }
@@ -993,8 +1004,10 @@ namespace WindowsFormsApplication1
         internal GebaeudeImportSatz SatzAusErgebnis(GebaeudeImportErgebnis ergebnis)
         {
             if (ergebnis == null || _ablauf.Abbild == null) return null;
+            _klasseUebersteuert = ergebnis.KlasseGewaehlt;
             GebaeudeImportSatz satz = _ablauf.Zuordnen(ergebnis.Gebaeudeindex, Klasse(ergebnis.Baualtersklasse),
-                                                       ergebnis.BeheiztUebersteuert, ergebnis.RaumtemperaturAlsSollwert);
+                                                       ergebnis.BeheiztUebersteuert, ergebnis.RaumtemperaturAlsSollwert,
+                                                       _klasseUebersteuert);
             foreach (GebaeudeFeldzeileDaten z in ergebnis.Zeilen ?? Array.Empty<GebaeudeFeldzeileDaten>())
             {
                 if (z == null) continue;

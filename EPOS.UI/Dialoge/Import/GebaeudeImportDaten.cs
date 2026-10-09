@@ -137,6 +137,10 @@ public sealed record GebaeudeLesestand(
 /// Die Haken, mit denen der Plan vor dem ersten Schritt gebildet war — damit die Schlüssel der Zonen stehen bleiben,
 /// wenn ein Haken danach wechselt (der Wechsel kommt als Schritt <see cref="GebaeudePlanschrittArt.HAKEN"/>).
 /// </param>
+/// <param name="KlasseGewaehlt">
+/// Die Klasse ist die ausdrückliche Wahl des Anwenders und gilt vor der aus dem Baujahr der Datei; <c>false</c> =
+/// <see cref="Baualtersklasse"/> ist nur die Vorgabe des Dialogs (Anwenderwunsch 08.10.2026, wie im Gebäudeeditor).
+/// </param>
 public sealed record GebaeudeZuordnungsanfrage(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -148,7 +152,8 @@ public sealed record GebaeudeZuordnungsanfrage(
     bool RaumtemperaturAlsSollwert = false,
     IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
     IReadOnlyDictionary<string, bool>? Plangrundhaken = null,
-    IReadOnlyDictionary<string, string>? Typwahl = null)
+    IReadOnlyDictionary<string, string>? Typwahl = null,
+    bool KlasseGewaehlt = false)
 {
     /// <summary>Dieselbe Anfrage mit einem Schritt am Zonenplan hinter den bisherigen (Zonenbaum).</summary>
     /// <param name="schritt">Der Schritt — nur Schlüssel und Kennungen, nie ein Anzeigetext.</param>
@@ -1021,7 +1026,8 @@ public sealed record GebaeudeImportStand
 
     /// <summary>
     /// Die Klasse, die der Import aus dem Baujahr der Datei zog (Index 0 = A … 12 = M); <c>null</c>
-    /// ohne Baujahr oder bei eigener Wahl. Die Klappliste zeigt sie, solange keine eigene Wahl besteht.
+    /// ohne Baujahr oder bei eigener Wahl. Die Klappliste zeigt sie, solange keine eigene Wahl besteht; die
+    /// Wahl bleibt frei (Anwenderwunsch 08.10.2026).
     /// </summary>
     public int? KlasseDerDatei { get; init; }
 
@@ -1081,6 +1087,7 @@ public sealed record GebaeudeImportStand
 /// <param name="RaumtemperaturAlsSollwert">Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen".</param>
 /// <param name="Planschritte">Die Schritte am Zonenplan in ihrer Reihenfolge; <c>null</c> = keine (der Regelvorschlag).</param>
 /// <param name="Plangrundhaken">Die Haken, mit denen der Plan vor dem ersten Schritt gebildet war; <c>null</c> = die heutigen.</param>
+/// <param name="KlasseGewaehlt">Die Klasse ist die ausdrückliche Wahl des Anwenders (siehe <see cref="GebaeudeZuordnungsanfrage"/>).</param>
 public sealed record GebaeudeImportErgebnis(
     int Gebaeudeindex,
     int? Baualtersklasse,
@@ -1094,7 +1101,8 @@ public sealed record GebaeudeImportErgebnis(
     bool RaumtemperaturAlsSollwert = false,
     IReadOnlyList<GebaeudePlanschritt>? Planschritte = null,
     IReadOnlyDictionary<string, bool>? Plangrundhaken = null,
-    IReadOnlyDictionary<string, string>? Typwahl = null)
+    IReadOnlyDictionary<string, string>? Typwahl = null,
+    bool KlasseGewaehlt = false)
 {
     /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
     public GebaeudeFeldzeileDaten? Zeile(string zielfeld)

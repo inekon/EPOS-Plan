@@ -133,9 +133,11 @@
         <KindInhalt>
             @* Ohne eigene Wahl zeigt die Klappliste die Klasse, die der Import aus dem Baujahr der
                Datei zog - der Satz rechnet schon mit ihr; der Hinweis nennt, wie viele Werte sie
-               fuellt (eine Datei mit eigenen U-Werten laesst ihr nur die Waermebruecken). *@
-            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@(_stand?.KlasseDerDatei ?? _klasse)"
-                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt && _stand?.KlasseDerDatei is null)" />
+               fuellt (eine Datei mit eigenen U-Werten laesst ihr nur die Waermebruecken). Die Wahl
+               bleibt frei wie im Gebaeudeeditor (Anwenderwunsch 08.10.2026): Eine eigene Wahl gilt vor
+               dem Baujahr, die Zeile darunter nennt dann den Vorschlag aus dem Baujahr. *@
+            <Auswahlfeld Bezeichnung="@Texte.Baualtersklasse" Eintraege="@Klassenliste" Auswahl="@KlasseAngezeigt"
+                         AuswahlChanged="BeiKlasse" Platzhalter="@Texte.KlasseKeine" Aktiv="@(!Beschaeftigt)" />
             <Herleitungszeile Text="@(_stand is { KlassenHinweis.Length: > 0 } s ? s.KlassenHinweis : Texte.KlasseHinweis)" />
             @if (Quellenliste.Count > 0)
             {
@@ -1084,6 +1086,7 @@
     private bool _ersterAufbau = true;
 
     private int? _klasse;
+    private bool _klasseGewaehlt;
     private string _pfad = "";
     private string _dateianzeige = "";
 
@@ -1451,6 +1454,7 @@
         _stand = null;
         _zeilen = new List<GebaeudeFeldzeileDaten>();
         _gebaeudeIndex = 0;
+        _klasseGewaehlt = false;   // ein neues Baujahr schlägt neu vor (wie im Gebäudeeditor)
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
@@ -1584,7 +1588,8 @@
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
                _regel, null, CadSollwertWirksam,
                _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null,
-               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null);
+               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null,
+               _klasseGewaehlt);
 
     private void StandUebernehmen(GebaeudeImportStand stand)
     {
@@ -2162,9 +2167,16 @@
         return z;
     }
 
+    /// <summary>Die Klasse in der Klappliste: die eigene Wahl, sonst die aus dem Baujahr der Datei, sonst die Vorgabe.</summary>
+    private int? KlasseAngezeigt => _klasseGewaehlt ? _klasse : _stand?.KlasseDerDatei ?? _klasse;
+
+    /// <summary>Hat der Anwender die Klasse ausdrücklich gewählt? Dann gilt sie vor dem Baujahr der Datei.</summary>
+    public bool KlasseGewaehlt => _klasseGewaehlt;
+
     private void BeiKlasse(int? index)
     {
         _klasse = GueltigeKlasse(index);
+        _klasseGewaehlt = _klasse is not null;
         _meldung = "";
         NeuZuordnen();
     }
@@ -2174,6 +2186,7 @@
         if (index is not int i || _lesestand is null || i < 0 || i >= _lesestand.Gebaeude.Count || i == _gebaeudeIndex) return;
         // Ein anderes Gebäude ist ein Kontextwechsel — ohne Übertrag.
         _gebaeudeIndex = i;
+        _klasseGewaehlt = false;
         _uebersteuert.Clear();
         _handwerte.Clear();
         _handhaken.Clear();
@@ -2412,7 +2425,8 @@
                new Dictionary<string, int?>(_baustoffzuordnungen, StringComparer.Ordinal),
                Zonenregel, null, CadSollwertWirksam,
                _planschritte.Count > 0 ? _planschritte.ToList() : null, _planschritte.Count > 0 ? _plangrundhaken : null,
-               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null);
+               _typwahl.Count > 0 ? new Dictionary<string, string>(_typwahl, StringComparer.Ordinal) : null,
+               _klasseGewaehlt);
 
     private async Task BeiLeiste(bool ok)
     {
