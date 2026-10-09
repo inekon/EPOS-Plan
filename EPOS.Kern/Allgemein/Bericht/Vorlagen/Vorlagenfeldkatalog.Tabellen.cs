@@ -239,6 +239,11 @@ namespace WindowsFormsApplication1
             kessel.Seit = FASSUNG_KESSEL;
             yield return kessel;
 
+            // ---------------- je Stand, Katalog v17 (UB-E4): die Tafel „Bivalenz und Uebergabe“, Word und Excel ----------------
+            Tabellenquelle bivalenz = Q(STAND_TABELLE + "bivalenz", S, jeStand((w, v) => Berichtstabellen.Bivalenz(v, w.Kultur)));
+            bivalenz.Seit = FASSUNG_BIVALENZ;
+            yield return bivalenz;
+
             // ---------------- je Stand, Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Gebäudetafel je Stand, ohne Δ ----------------
             // Dieselbe Tafel wie tabelle.gebaeude.ergebnis (Berichtstabellen.Gebaeudeergebnisse) für den laufenden Stand: je Gebäude
             // Rechenweg, Spitzen, Lüftungs- und Aufheizzeilen, Hinweise W1–W5 — keine zweite Quelle. Das Δ trägt die Kennzahlgruppe

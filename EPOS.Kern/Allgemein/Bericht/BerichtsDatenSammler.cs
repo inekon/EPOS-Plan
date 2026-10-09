@@ -634,6 +634,10 @@ namespace WindowsFormsApplication1
             try { v.Details = ProjektDetails.Lade(v.IdProjekt); }
             catch { v.Details = null; }
 
+            // 6b. UB-E4: die Bivalenzwerte (Herleitung aus den Projektdaten) fuer Bild und Tafel „Bivalenz und Uebergabe“.
+            try { v.Bivalenz = BivalenzBerichtsquelle.Lade(v.IdProjekt); }
+            catch { v.Bivalenz = null; }
+
             // 6a. Pufferspeicher-Auslegung (Stufe P3): die gespeicherten Zeilen des Stamms samt
             //     Nachrechnung — nur lesend; ohne Zeile entfällt der Abschnitt der Projektbeschreibung.
             if (v.IstStamm)

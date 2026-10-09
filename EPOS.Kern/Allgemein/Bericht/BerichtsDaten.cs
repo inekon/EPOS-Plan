@@ -179,6 +179,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="PufferAuslegungCtrl.Gespeichert"/>); leer = keine Zeile, der Abschnitt entfällt.</summary>
         public List<PufferAuslegungGespeichert> Pufferauslegungen = new List<PufferAuslegungGespeichert>();
 
+        /// <summary>
+        /// UB‑E4: die Bivalenzwerte des Stands (Herleitung der ersten Wärmepumpe mit Einbindung, Prüfhinweise) für Bild
+        /// und Tafel „Bivalenz und Übergabe“; <c>null</c> = keine Wärmepumpe mit Einbindung oder nicht erhoben.
+        /// </summary>
+        public BivalenzBerichtswerte Bivalenz;
+
         /// <summary>Kennzahlwerte je Katalogschlüssel (null = für dieses Projekt nicht verfügbar).</summary>
         public Dictionary<string, double?> Kennzahlen = new Dictionary<string, double?>();
 

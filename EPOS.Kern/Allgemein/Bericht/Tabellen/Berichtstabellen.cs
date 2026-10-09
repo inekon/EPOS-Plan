@@ -596,6 +596,75 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b><c>stand.tabelle.bivalenz</c></b> (Katalog v17, UB‑E4, Fachkonzept Übergabegrenze 7.3) — die Tafel „Bivalenz
+        /// und Übergabe“: Höchstvorlauf; Übergabegrenze in kW, als Anteil der Heizlast und ihr Rücklauf; Bivalenzpunkte
+        /// berechnet, eingegeben und maßgebend; Stunden und Wärme je Betriebsbereich; Anteil nach § 43 GModG. Darunter
+        /// die Hinweiszeilen ohne Feld: Stundenmodell, und nur wenn sie zutreffen die Prüfhinweise Anfahrgrenze und
+        /// Mindestrücklauf (UB‑Q10).
+        /// </summary>
+        /// <remarks>
+        /// Die Herleitung (Höchstvorlauf, Übergabe, maßgebender und eingegebener Punkt, Hybrid-Anteil) kommt aus den
+        /// Projektdaten (<see cref="VariantenDaten.Bivalenz"/>), die berechneten Bivalenzpunkte und die Bereiche aus dem
+        /// gespeicherten Lauf. Ohne beides bleibt die Tafel mit Grund leer.
+        /// </remarks>
+        public static Berichtstabelle Bivalenz(VariantenDaten v, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(R.BV_GRUND_KEIN_STAND), kultur);
+            BivalenzBerichtswerte b = v.Bivalenz;
+            ErgebnisWaermepumpeModel wp = v.Ergebnis?.Waermepumpe;
+            Bereichskennzahlen bereiche = wp?.Bereiche;
+            Bereichskennzahlen modul = wp?.Module?.Select(m => m?.Bereiche).FirstOrDefault(x => x != null &&
+                (x.Bivalenzpunkt_1.HasValue || x.Bivalenzpunkt_2.HasValue || x.Uebergabe_Max_kW.HasValue));
+            if (b == null && bereiche == null) return Leer(nameof(R.BV_GRUND_KEINE_BIVALENZ), kultur);
+
+            var t = new Berichtstabelle().Feste(6655, 2700);
+            t.MitKopf(new[]
+            {
+                Zellen.Kopf(Grund(nameof(R.BER_BIV_GROESSE), kultur), Tabellenausrichtung.Links),
+                Zellen.Kopf(Grund(nameof(R.BER_BIV_WERT), kultur)),
+            });
+            void Zeile(string text, double? wert, int stellen)
+            {
+                bool da = wert.HasValue && !double.IsNaN(wert.Value) && !double.IsInfinity(wert.Value);
+                string format = "N" + stellen;
+                t.Zeile(new[]
+                {
+                    Zellen.Text(text),
+                    da ? Zellen.Zahl(Tabellenformat.F(wert.Value, stellen, kultur), wert.Value, format)
+                       : Zellen.Zahl(Tabellenzelle.STRICH, null, null),
+                });
+            }
+            Zeile(Grund(nameof(R.BER_BIV_HOECHSTVORLAUF), kultur), b?.HoechstvorlaufC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_UEBERGABE_KW), kultur), b != null && b.MitUebergabe ? b.UebergabeKw : modul?.Uebergabe_Max_kW, 1);
+            Zeile(Grund(nameof(R.BER_BIV_UEBERGABE_ANTEIL), kultur), b?.UebergabeAnteilProzent, 0);
+            Zeile(Grund(nameof(R.BER_BIV_UEBERGABE_RUECKLAUF), kultur), b?.RuecklaufC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT1), kultur), modul?.Bivalenzpunkt_1 ?? b?.ErsterC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT2), kultur), modul?.Bivalenzpunkt_2 ?? b?.ZweiterC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT_EINGEGEBEN), kultur), b?.EingegebenC, 1);
+            Zeile(Grund(nameof(R.BER_BIV_PUNKT_MASSGEBEND), kultur), b?.MassgebendC, 1);
+            string[] namen =
+            {
+                nameof(R.SIM_BEREICH_WP_ALLEIN), nameof(R.SIM_BEREICH_PARALLEL),
+                nameof(R.SIM_BEREICH_VORWAERMUNG), nameof(R.SIM_BEREICH_NUR_KESSEL),
+            };
+            for (int i = 0; i < namen.Length; i++)
+            {
+                string bereich = Grund(namen[i], kultur);
+                Zeile(string.Format(kultur, Grund(nameof(R.BER_BIV_STUNDEN), kultur), bereich),
+                      bereiche?.Stunden[i] is int h ? h : (double?)null, 0);
+                Zeile(string.Format(kultur, Grund(nameof(R.BER_BIV_WAERME), kultur), bereich), bereiche?.Mwh[i], 2);
+            }
+            Zeile(Grund(nameof(R.BER_BIV_HYBRID), kultur), b?.HybridAnteilProzent, 0);
+            Zeile(Grund(nameof(R.BER_BIV_HYBRID_MINDEST), kultur), b?.HybridMindestanteilProzent, 0);
+
+            // FK 7.3: die Hinweiszeilen ohne Feld.
+            t.Hinweis(Grund(nameof(R.BER_HINWEIS_STUNDENMODELL), kultur));
+            if (b != null && b.HinweisAnfahrgrenze) t.Hinweis(Grund(nameof(R.BER_HINWEIS_ANFAHRGRENZE), kultur));
+            if (b != null && b.HinweisMindestruecklauf) t.Hinweis(Grund(nameof(R.BER_HINWEIS_MINDESTRUECKLAUF), kultur));
+            return t;
+        }
+
+        /// <summary>
         /// <b><c>stand.tabelle.brennstoffmengen</c></b> — Erzeuger, Bezeichner und Menge in der Abrechnungseinheit
         /// (<see cref="VariantenDaten.Brennstoffmengen"/>, im Sammler erhoben). <paramref name="mitLeerzeile"/>: ohne
         /// Mengen die Zeile „(keine Brennstoffdaten)“ wie im Kapitel; sonst bleibt die Tabelle leer.
