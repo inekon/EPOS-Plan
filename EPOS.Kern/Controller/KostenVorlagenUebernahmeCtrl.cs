@@ -251,6 +251,27 @@ namespace WindowsFormsApplication1
                 int komponentenId = KomponenteZuTyp(Convert.ToInt32(r["ID_Type"]));
                 if (komponentenId <= 0) continue;
 
+                // Katalogauswahl Stufe 2 (KA-E-9): Die Kostenvorlage des Katalogsatzes, aus dem das Geraet stammt, geht
+                // der Standardvorlage des Gewerks vor (Schemaschritt KatalogkostenUrsprungSchema). An einer Anlage OHNE
+                // Betriebskostenposition legt sie alle ihre Positionen an (die Kosten des Satzes reisen mit), danach wie die
+                // Standardvorlage nur noch die Pflichtpositionen - eine geloeschte Position kehrt nicht zurueck.
+                KostenVorlageKopf satzvorlage = Katalogrueckweg.SatzvorlageDerAnlage(
+                    idAnlage, Convert.ToInt32(r["ID_Type"]), komponentenId);
+                if (satzvorlage != null)
+                {
+                    try
+                    {
+                        object vorhanden = DataRepository.ExecuteScalar(
+                            "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = ? AND ID_Anlage = ? AND KategorieID = ?",
+                            new DbParam("@p", projektId), new DbParam("@a", idAnlage),
+                            new DbParam("@k", DbWerte.KOSTEN_KATEGORIE_BETRIEB));
+                        bool frisch = vorhanden == null || vorhanden == DBNull.Value || Convert.ToInt64(vorhanden) == 0;
+                        angelegt += AusVorlage(projektId, satzvorlage, idAnlage, !frisch).Angelegt;
+                    }
+                    catch { }
+                    continue;
+                }
+
                 KostenVorlageKopf vorlage;
                 if (!vorlageJeKomponente.TryGetValue(komponentenId, out vorlage))
                 {

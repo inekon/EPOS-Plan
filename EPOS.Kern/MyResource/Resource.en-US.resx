@@ -50166,5 +50166,107 @@ chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Module model</value>
   </data>
+  <data name="KATRUECK_NAME_ZUSATZ" xml:space="preserve">
+    <value>{0} (project)</value>
+  </data>
+  <data name="KATRUECK_NAME_ZUSATZ_N" xml:space="preserve">
+    <value>{0} (project {1})</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_KEINE_KOPIE" xml:space="preserve">
+    <value>The project record number {0} was not found. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_NAME_LEER" xml:space="preserve">
+    <value>“{0}”: Please enter a name for the new catalogue record. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_NAME_BELEGT" xml:space="preserve">
+    <value>The name “{0}” is already used in the catalogue. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_GESPERRT" xml:space="preserve">
+    <value>“{0}”: The origin is locked – unlock it first. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_FEHLT" xml:space="preserve">
+    <value>“{0}”: The origin no longer exists. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT" xml:space="preserve">
+    <value>“{0}”: The origin is not known. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_VERSTOSS" xml:space="preserve">
+    <value>“{0}”: {1} Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_FEHLER" xml:space="preserve">
+    <value>Error while copying to the database. Nothing was copied.</value>
+  </data>
+  <data name="KATRUECK_MSG_UEBERNOMMEN_1" xml:space="preserve">
+    <value>“{0}” copied to the database.</value>
+  </data>
+  <data name="KATRUECK_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} records copied to the database: {1}.</value>
+  </data>
+  <data name="KATRUECK_BEMERKUNG_VORLAGE" xml:space="preserve">
+    <value>Operating costs from project “{0}”, {1}</value>
+  </data>
+  <data name="KATRUECK_GRUND_GESPERRT" xml:space="preserve">
+    <value>Unlock first</value>
+  </data>
+  <data name="KATRUECK_GRUND_FEHLT" xml:space="preserve">
+    <value>Origin no longer exists</value>
+  </data>
+  <data name="KATRUECK_GRUND_UNBEKANNT" xml:space="preserve">
+    <value>Origin not known</value>
+  </data>
+  <data name="KATRUECK_BTN" xml:space="preserve">
+    <value>Copy to database…</value>
+  </data>
+  <data name="KATRUECK_BTN_HINWEIS" xml:space="preserve">
+    <value>Copy the selected project records to the database as catalogue records</value>
+  </data>
+  <data name="KATRUECK_TITEL" xml:space="preserve">
+    <value>Copy “{0}” to the database</value>
+  </data>
+  <data name="KATRUECK_TITEL_N" xml:space="preserve">
+    <value>Copy {0} records to the database</value>
+  </data>
+  <data name="KATRUECK_WAHL_ALLE" xml:space="preserve">
+    <value>For all:</value>
+  </data>
+  <data name="KATRUECK_WAHL_NEU" xml:space="preserve">
+    <value>create as new catalogue record</value>
+  </data>
+  <data name="KATRUECK_WAHL_UEBERSCHREIBEN" xml:space="preserve">
+    <value>overwrite origin</value>
+  </data>
+  <data name="KATRUECK_SPALTE_PROJEKTSATZ" xml:space="preserve">
+    <value>Project record</value>
+  </data>
+  <data name="KATRUECK_SPALTE_WAHL" xml:space="preserve">
+    <value>Choice</value>
+  </data>
+  <data name="KATRUECK_SPALTE_NAME" xml:space="preserve">
+    <value>Name in catalogue</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>Name already used in catalogue</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_DOPPELT" xml:space="preserve">
+    <value>Name chosen twice</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_LEER" xml:space="preserve">
+    <value>Name missing</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_RUECKFALL" xml:space="preserve">
+    <value>As a new record because the origin cannot be overwritten: {0}</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_KOSTEN" xml:space="preserve">
+    <value>Technical data, investment and maintenance values and the plant's operating cost items (as the record's cost template) are copied.</value>
+  </data>
+  <data name="KATRUECK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="KATRUECK_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier, temperature pair, sinks and time schedule of the plant.</value>
+  </data>
 </root>
 

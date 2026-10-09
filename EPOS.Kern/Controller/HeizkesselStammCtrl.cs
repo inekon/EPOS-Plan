@@ -1128,6 +1128,45 @@ namespace WindowsFormsApplication1
         public sealed record Satzaenderung(int Id, AnzeigefelderHeizkessel Felder);
 
         /// <summary>
+        /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
+        /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_Kessel</c>, Kostenkomponente 2.
+        /// <b>Keine Kindtabellen</b> — Kennlinie (η₃₀, Brennwertkennlinie, Mindestleistung, Anfahrverlust, Mindestlaufzeit)
+        /// und Bereitschaft stehen als Spalten am Satz und gehen mit der Schnittmenge. Prüfregel wie beim Speichern
+        /// (<see cref="KesselKennlinieWerte.Verstoss"/>, <see cref="BereitschaftVerstoss"/>).
+        /// </summary>
+        public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
+        {
+            Kopietabelle = TABELLE_PROJEKT,
+            Katalogtabelle = TABLE,
+            Anlagenverweis = "ID_Kessel",
+            KomponentenId = KOMPONENTE_KOSTEN,
+            Pruefung = zeile =>
+            {
+                var satz = new HeizkesselStammCtrl();
+                satz.FillModelFromRow(satz, zeile);
+                string grund = KesselKennlinieWerte.Verstoss(satz);
+                return string.IsNullOrEmpty(grund) ? BereitschaftVerstoss(satz) : grund;
+            },
+        };
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> des Heizkessels.</summary>
+        public const int KOMPONENTE_KOSTEN = 2;
+
+        /// <summary>Die Zeilen der Rückfrage zu den Projektkopien <paramref name="idsKopie"/> (<see cref="Katalogrueckweg.Vorschau"/>).</summary>
+        public static IReadOnlyList<Rueckwegzeile> RueckwegVorschau(IReadOnlyList<int> idsKopie)
+            => Katalogrueckweg.Vorschau(Rueckweg(), idsKopie);
+
+        /// <summary>
+        /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>). Die Oberfläche fragt nur.
+        /// </summary>
+        public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
+            => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);
+
+        /// <summary>Ist der Name im Kesselkatalog vergeben?</summary>
+        public static bool RueckwegNameBelegt(string name) => Katalogrueckweg.NameBelegt(Rueckweg(), name);
+
+        /// <summary>
         /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b>
         /// (Konzept Projektdialoge mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt
         /// die Tabelle: die Projektkopien (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.

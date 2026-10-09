@@ -41646,6 +41646,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage. ähnelt.
+        /// </summary>
+        public static string HZK_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("HZK_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die &gt;200 bis 500 kW ähnelt.
         /// </summary>
         public static string HZK_STUFE_200_500 {
@@ -48401,6 +48410,303 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATEIN_LISTE {
             get {
                 return ResourceManager.GetString("KATEIN_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Übernehmen in die Datenbank. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_FEHLER {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Ursprung ist gesperrt – erst Schloss aufheben. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_GESPERRT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektsatz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_KEINE_KOPIE {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_KEINE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist im Katalog schon vergeben. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Bitte einen Namen für den neuen Katalogsatz eingeben. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_NAME_LEER {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Ursprung ist nicht mehr vorhanden. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_URSPRUNG_FEHLT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_URSPRUNG_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Ursprung ist nicht bekannt. Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_ABSAGE_VERSTOSS {
+            get {
+                return ResourceManager.GetString("KATRUECK_ABSAGE_VERSTOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten aus Projekt „{0}“, {1} ähnelt.
+        /// </summary>
+        public static string KATRUECK_BEMERKUNG_VORLAGE {
+            get {
+                return ResourceManager.GetString("KATRUECK_BEMERKUNG_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In die Datenbank übernehmen… ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählte Projektsätze als Katalogsätze in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ursprung nicht mehr vorhanden ähnelt.
+        /// </summary>
+        public static string KATRUECK_GRUND_FEHLT {
+            get {
+                return ResourceManager.GetString("KATRUECK_GRUND_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst Schloss aufheben ähnelt.
+        /// </summary>
+        public static string KATRUECK_GRUND_GESPERRT {
+            get {
+                return ResourceManager.GetString("KATRUECK_GRUND_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ursprung nicht bekannt ähnelt.
+        /// </summary>
+        public static string KATRUECK_GRUND_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KATRUECK_GRUND_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit. ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_KOSTEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name im Katalog vergeben ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name zweimal gewählt ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_NAME_DOPPELT {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_NAME_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name fehlt ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_NAME_LEER {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als neuer Satz, weil der Ursprung nicht überschrieben werden kann: {0} ähnelt.
+        /// </summary>
+        public static string KATRUECK_HINWEIS_RUECKFALL {
+            get {
+                return ResourceManager.GetString("KATRUECK_HINWEIS_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze in die Datenbank übernommen: {1}. ähnelt.
+        /// </summary>
+        public static string KATRUECK_MSG_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ in die Datenbank übernommen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_MSG_UEBERNOMMEN_1 {
+            get {
+                return ResourceManager.GetString("KATRUECK_MSG_UEBERNOMMEN_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projekt) ähnelt.
+        /// </summary>
+        public static string KATRUECK_NAME_ZUSATZ {
+            get {
+                return ResourceManager.GetString("KATRUECK_NAME_ZUSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projekt {1}) ähnelt.
+        /// </summary>
+        public static string KATRUECK_NAME_ZUSATZ_N {
+            get {
+                return ResourceManager.GetString("KATRUECK_NAME_ZUSATZ_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name im Katalog ähnelt.
+        /// </summary>
+        public static string KATRUECK_SPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KATRUECK_SPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektsatz ähnelt.
+        /// </summary>
+        public static string KATRUECK_SPALTE_PROJEKTSATZ {
+            get {
+                return ResourceManager.GetString("KATRUECK_SPALTE_PROJEKTSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahl ähnelt.
+        /// </summary>
+        public static string KATRUECK_SPALTE_WAHL {
+            get {
+                return ResourceManager.GetString("KATRUECK_SPALTE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_TITEL {
+            get {
+                return ResourceManager.GetString("KATRUECK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze in die Datenbank übernehmen ähnelt.
+        /// </summary>
+        public static string KATRUECK_TITEL_N {
+            get {
+                return ResourceManager.GetString("KATRUECK_TITEL_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für alle: ähnelt.
+        /// </summary>
+        public static string KATRUECK_WAHL_ALLE {
+            get {
+                return ResourceManager.GetString("KATRUECK_WAHL_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die als neuen Katalogsatz anlegen ähnelt.
+        /// </summary>
+        public static string KATRUECK_WAHL_NEU {
+            get {
+                return ResourceManager.GetString("KATRUECK_WAHL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ursprung überschreiben ähnelt.
+        /// </summary>
+        public static string KATRUECK_WAHL_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_WAHL_UEBERSCHREIBEN", resourceCulture);
             }
         }
         

@@ -50173,5 +50173,107 @@ Chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Modulmodell</value>
   </data>
+  <data name="KATRUECK_NAME_ZUSATZ" xml:space="preserve">
+    <value>{0} (Projekt)</value>
+  </data>
+  <data name="KATRUECK_NAME_ZUSATZ_N" xml:space="preserve">
+    <value>{0} (Projekt {1})</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_KEINE_KOPIE" xml:space="preserve">
+    <value>Der Projektsatz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_NAME_LEER" xml:space="preserve">
+    <value>„{0}“: Bitte einen Namen für den neuen Katalogsatz eingeben. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_NAME_BELEGT" xml:space="preserve">
+    <value>Der Name „{0}“ ist im Katalog schon vergeben. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_GESPERRT" xml:space="preserve">
+    <value>„{0}“: Der Ursprung ist gesperrt – erst Schloss aufheben. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_FEHLT" xml:space="preserve">
+    <value>„{0}“: Der Ursprung ist nicht mehr vorhanden. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“: Der Ursprung ist nicht bekannt. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_VERSTOSS" xml:space="preserve">
+    <value>„{0}“: {1} Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_FEHLER" xml:space="preserve">
+    <value>Fehler beim Übernehmen in die Datenbank. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_MSG_UEBERNOMMEN_1" xml:space="preserve">
+    <value>„{0}“ in die Datenbank übernommen.</value>
+  </data>
+  <data name="KATRUECK_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} Sätze in die Datenbank übernommen: {1}.</value>
+  </data>
+  <data name="KATRUECK_BEMERKUNG_VORLAGE" xml:space="preserve">
+    <value>Betriebskosten aus Projekt „{0}“, {1}</value>
+  </data>
+  <data name="KATRUECK_GRUND_GESPERRT" xml:space="preserve">
+    <value>Erst Schloss aufheben</value>
+  </data>
+  <data name="KATRUECK_GRUND_FEHLT" xml:space="preserve">
+    <value>Ursprung nicht mehr vorhanden</value>
+  </data>
+  <data name="KATRUECK_GRUND_UNBEKANNT" xml:space="preserve">
+    <value>Ursprung nicht bekannt</value>
+  </data>
+  <data name="KATRUECK_BTN" xml:space="preserve">
+    <value>In die Datenbank übernehmen…</value>
+  </data>
+  <data name="KATRUECK_BTN_HINWEIS" xml:space="preserve">
+    <value>Gewählte Projektsätze als Katalogsätze in die Datenbank übernehmen</value>
+  </data>
+  <data name="KATRUECK_TITEL" xml:space="preserve">
+    <value>„{0}“ in die Datenbank übernehmen</value>
+  </data>
+  <data name="KATRUECK_TITEL_N" xml:space="preserve">
+    <value>{0} Sätze in die Datenbank übernehmen</value>
+  </data>
+  <data name="KATRUECK_WAHL_ALLE" xml:space="preserve">
+    <value>Für alle:</value>
+  </data>
+  <data name="KATRUECK_WAHL_NEU" xml:space="preserve">
+    <value>als neuen Katalogsatz anlegen</value>
+  </data>
+  <data name="KATRUECK_WAHL_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Ursprung überschreiben</value>
+  </data>
+  <data name="KATRUECK_SPALTE_PROJEKTSATZ" xml:space="preserve">
+    <value>Projektsatz</value>
+  </data>
+  <data name="KATRUECK_SPALTE_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
+  <data name="KATRUECK_SPALTE_NAME" xml:space="preserve">
+    <value>Name im Katalog</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>Name im Katalog vergeben</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_DOPPELT" xml:space="preserve">
+    <value>Name zweimal gewählt</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_LEER" xml:space="preserve">
+    <value>Name fehlt</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_RUECKFALL" xml:space="preserve">
+    <value>Als neuer Satz, weil der Ursprung nicht überschrieben werden kann: {0}</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_KOSTEN" xml:space="preserve">
+    <value>Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit.</value>
+  </data>
+  <data name="KATRUECK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KATRUECK_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage.</value>
+  </data>
 </root>
 
