@@ -29,9 +29,10 @@ namespace WindowsFormsApplication1
     // Die Bereiche der Beiwerte (a -1..2, b und c -2..3) sind Eingabegrenzen von Pruefung und Dialog, kein CHECK
     // (Fachkonzept 4.1: massgeblich ist die Plausibilitaet 3.2).
     //
-    // DML allein ueber KaeltemaschinenTypkennfelder.Ergaenzen() an den ausgelieferten Typkennfeldern, nur wo leer; in der
-    // Welle E1-a ist sie ein leerer Rumpf (fuellt nichts). Projektkopien und eigene Saetze bleiben unberuehrt. Alles in
-    // EINEM Vorgang mit abgeschalteten Fremdschluesseln; wiederholbar.
+    // DML allein ueber KaeltemaschinenTypkennfelder.Ergaenzen() an den ausgelieferten Typkennfeldern (ReadOnly = 1,
+    // Schluessel KM:TYPKENNFELD_...): Weg, Kurve, x_u und Verdichterregelung aus dem eingebetteten Copper-Satz, je Feld nur
+    // wo leer, Pruefsumme neu (KatalogSchluesselSaat). Projektkopien und eigene Saetze bleiben unberuehrt. Das DDL in
+    // EINEM Vorgang mit abgeschalteten Fremdschluesseln, die Ergaenzung in einem eigenen; wiederholbar.
     //
     // NUMMER. 209 haengt an 208 KatalogkostenUrsprungSchema (KA1), die zur Bauzeit angemeldet, aber noch nicht gebaut
     // ist; beim Merge auf KatalogkostenUrsprungSchema.SCHRITT + 1 umhaengen.
@@ -243,10 +244,11 @@ namespace WindowsFormsApplication1
                     foreach (string z in zeilen) bericht.Add(z);
             }
 
-            int ergaenzt = KaeltemaschinenTypkennfelder.Ergaenzen();
-            bericht?.Add(ergaenzt.ToString(CultureInfo.InvariantCulture) + " Typkennfeld(er) um die Teillastkurve ergaenzt; " +
-                         "Projektkopien und eigene Saetze unberuehrt, der Referenzlauf bleibt byte-gleich");
-            return new Laufergebnis(angelegt, ergaenzt);
+            KaeltemaschinenTypkennfelder.Ergaenzungsergebnis erg = KaeltemaschinenTypkennfelder.ErgaenzenMitZaehlung();
+            bericht?.Add(erg.Gefuellt.ToString(CultureInfo.InvariantCulture) + " Typkennfeld(er) um die Teillastkurve ergaenzt, " +
+                         erg.Uebersprungen.ToString(CultureInfo.InvariantCulture) + " uebersprungen (nichts leer oder nicht " +
+                         "eingespielt); Projektkopien und eigene Saetze unberuehrt, der Referenzlauf bleibt byte-gleich");
+            return new Laufergebnis(angelegt, erg.Gefuellt);
         }
 
         private static string Nr => SCHRITT.ToString(CultureInfo.InvariantCulture);

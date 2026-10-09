@@ -98,14 +98,78 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Das Ergebnis von <see cref="ErgaenzenMitZaehlung"/>: gefüllte und übersprungene Typkennfelder.</summary>
+        public readonly record struct Ergaenzungsergebnis(int Gefuellt, int Uebersprungen);
+
         /// <summary>
         /// <b>Ergänzt die schon eingespielten Typkennfelder</b> um die Spalten von Teillast und Takten
-        /// (<see cref="KaeltemaschineTeillastSchema"/>): Kurve, untere Gültigkeit, Verdichterregelung und Weg aus dem
-        /// gespeicherten Kurvensatz, nur wo leer, Prüfsumme neu. Projektkopien und eigene Sätze bleiben unberührt;
-        /// wiederholbar. <b>Welle KM3-E1-a: leerer Rumpf</b> — füllt nichts und meldet 0; die Welle E1-b füllt ihn.
+        /// (<see cref="KaeltemaschineTeillastSchema"/>, Fachkonzept 4.3 und 6): Weg, Kurve, untere Gültigkeit und
+        /// Verdichterregelung aus dem eingebetteten Copper-Satz (<see cref="Typkennfeld.Modell"/>), je Feld nur wo leer;
+        /// die Prüfsumme der ergänzten Sätze wird neu gebildet. Nur ausgelieferte Sätze (<c>ReadOnly = 1</c>) mit dem
+        /// Schlüssel des Typkennfelds; Projektkopien und eigene Sätze bleiben unberührt. Wiederholbar: ein zweiter Lauf
+        /// findet nichts zu tun.
         /// </summary>
         /// <returns>Die Zahl der ergänzten Katalogsätze.</returns>
-        public static int Ergaenzen() => 0;
+        public static int Ergaenzen() => ErgaenzenMitZaehlung().Gefuellt;
+
+        /// <summary>
+        /// Wie <see cref="Ergaenzen"/>, mit Zählung: gefüllt = Sätze mit mindestens einem ergänzten Feld; übersprungen =
+        /// Typkennfelder ohne ausgelieferten Satz in der Datenbank oder ohne leeres Feld, das der Copper-Satz füllt.
+        /// Ohne die Spalten des Schritts <see cref="KaeltemaschineTeillastSchema.SCHRITT"/> (0, 0).
+        /// </summary>
+        public static Ergaenzungsergebnis ErgaenzenMitZaehlung()
+        {
+            string tab = KaeltemaschineSchema.TAB_STAMM;
+            if (!DataRepository.TabelleVorhanden(tab) || !Katalogfassung.SpaltenVorhanden(tab) ||
+                !KaeltemaschineTeillastSchema.EingabespaltenVorhanden(tab))
+                return new Ergaenzungsergebnis(0, 0);
+            IReadOnlyList<string> spalten = KaeltemaschineTeillastSchema.EINGABESPALTEN;
+            string liste = string.Join(", ", spalten.Select(s => "\"" + s + "\""));
+            int gefuellt = 0, ueber = 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    foreach (Typkennfeld t in Lesen())
+                    {
+                        DataTable dt = v.Lese("SELECT ID, " + liste + " FROM " + tab + " WHERE " + Katalogfassung.SPALTE_SCHLUESSEL +
+                                              " = ? AND ReadOnly = 1", new DbParam("?", Schluessel(t.Bezeichner)));
+                        if (dt == null || dt.Rows.Count == 0) { ueber++; continue; }
+                        DataRow r = dt.Rows[0];
+                        object[] soll = Felder(t.Modell());
+                        var setzen = new List<string>();
+                        var werte = new List<DbParam>();
+                        for (int i = 0; i < spalten.Count; i++)
+                        {
+                            if (soll[i] == null || r[spalten[i]] != DBNull.Value) continue;
+                            setzen.Add("\"" + spalten[i] + "\" = ?");
+                            werte.Add(new DbParam("?", soll[i]));
+                        }
+                        if (setzen.Count == 0) { ueber++; continue; }
+                        // Die Pruefsumme leeren: KatalogSchluesselSaat bildet sie danach ueber die ergaenzte Zeile neu.
+                        werte.Add(new DbParam("?", Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture)));
+                        v.Ausfuehren("UPDATE " + tab + " SET " + string.Join(", ", setzen) + ", \"" +
+                                     Katalogfassung.SPALTE_PRUEFSUMME + "\" = NULL WHERE ID = ?", werte.ToArray());
+                        gefuellt++;
+                    }
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            if (gefuellt > 0) KatalogSchluesselSaat.Ausfuehren(null, Katalogfassung.Stufe3);
+            return new Ergaenzungsergebnis(gefuellt, ueber);
+        }
+
+        /// <summary>Die acht Felder von Teillast und Takten in der Folge von <see cref="KaeltemaschineTeillastSchema.EINGABESPALTEN"/>.</summary>
+        private static object[] Felder(KaeltemaschineModel m) => new object[]
+        {
+            m.Teillast_Weg, m.Teillastkurve_a, m.Teillastkurve_b, m.Teillastkurve_c, m.Teillastkurve_Lastgrad_Min,
+            m.Taktverlustfaktor_Cd, m.Verdichterregelung, m.Kennfeld_Randweg
+        };
 
         private static Einspielergebnis EinspielenIntern()
         {

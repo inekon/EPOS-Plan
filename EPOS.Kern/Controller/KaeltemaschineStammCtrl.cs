@@ -219,6 +219,27 @@ namespace WindowsFormsApplication1
             return true;
         }
 
+        /// <summary>
+        /// <b>Kontrollwert Nenn-EER</b> (Fachkonzept Teillast und Takten 3.5): Weicht der gepflegte Nenn-EER um mehr als
+        /// <see cref="KaelteFestwerte.NENN_EER_ABWEICHUNG"/> vom EER des eigenen Kennfelds am Eurovent-Nennpunkt ab
+        /// (bilinear wie die Simulation), der Hinweis in der Oberflächensprache — kein Fehler, <see cref="Pruefen"/> lehnt
+        /// deswegen nicht ab. <c>null</c> ohne Nenn-EER, ohne Kennfeld oder innerhalb der Spanne.
+        /// </summary>
+        public static string NennEerHinweis(KaeltemaschineModel m)
+        {
+            if (m?.Nenn_EER == null || !(m.Nenn_EER.Value > 0) || m.Kennlinie == null || m.Kennlinie.Count == 0) return null;
+            var k = new KaeltemaschinenKennlinie(m.Kennlinie.Select(p => (p.Rueckkuehltemperatur, p.Kaltwassertemperatur, p.EER, p.Kaelteleistung_kW)));
+            if (k.Leer) return null;
+            double eerKf = k.Auswerten(KaeltemaschinenKennfeld.Nennrueckkuehltemperatur(m.Rueckkuehlart),
+                                       KaeltemaschinenKennfeld.NENN_KALTWASSER_C).Eer;
+            if (!(eerKf > 0)) return null;
+            double abw = Math.Abs(m.Nenn_EER.Value - eerKf) / eerKf;
+            if (!(abw > KaelteFestwerte.NENN_EER_ABWEICHUNG)) return null;
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KM_MSG_NENN_EER_ABWEICHUNG,
+                m.Nenn_EER.Value.ToString("0.00", CultureInfo.CurrentCulture), eerKf.ToString("0.00", CultureInfo.CurrentCulture),
+                abw.ToString("0 %", CultureInfo.CurrentCulture));
+        }
+
         private static bool Anteil(double? x) => !x.HasValue || (x.Value >= 0 && x.Value <= 1);
 
         private static bool Bereich(double x, double min, double max) => !double.IsNaN(x) && x >= min && x <= max;

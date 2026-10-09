@@ -96,6 +96,7 @@ namespace WindowsFormsApplication1
             KaeltemaschinenKurve cap = Kurve(kurven, "cap-f-t");
             KaeltemaschinenKurve eir = Kurve(kurven, "eir-f-t");
             if (cap == null || eir == null) { grund = "ohne bi-quadratische cap-f-t/eir-f-t"; return null; }
+            TeillastkurveLesen(kurven, out string plrForm, out double[] plrBeiwerte, out double? plrXMin);
             return new KaeltemaschinenKurvensatz
             {
                 Nr = nr ?? "",
@@ -107,8 +108,37 @@ namespace WindowsFormsApplication1
                 MinPlr = Zahl(s, "min_plr"),
                 MinUnloading = Zahl(s, "min_unloading"),
                 CapFT = cap,
-                EirFT = eir
+                EirFT = eir,
+                TeillastForm = plrForm,
+                TeillastBeiwerte = plrBeiwerte,
+                TeillastXMin = plrXMin
             };
+        }
+
+        /// <summary>
+        /// Liest die Teillastkurve <c>eir-f-plr</c> (KM3): <c>quad</c> mit <c>coeff1</c> bis <c>coeff3</c> (ein Wert in
+        /// <c>coeff4</c> gehört nicht zur quadratischen Form und wird nicht gelesen), <c>cubic</c> mit <c>coeff1</c> bis
+        /// <c>coeff4</c>; jede andere Form oder ein fehlender Beiwert = keine Kurve.
+        /// </summary>
+        private static void TeillastkurveLesen(JsonElement kurven, out string form, out double[] beiwerte, out double? xMin)
+        {
+            form = null;
+            beiwerte = null;
+            xMin = null;
+            if (!kurven.TryGetProperty("eir-f-plr", out JsonElement k) || k.ValueKind != JsonValueKind.Object) return;
+            string typ = (Text(k, "type") ?? "").ToLowerInvariant();
+            int n = typ == "quad" ? 3 : typ == "cubic" ? 4 : 0;
+            if (n == 0) return;
+            var w = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                double? c = Zahl(k, "coeff" + (i + 1).ToString(CultureInfo.InvariantCulture));
+                if (!c.HasValue || double.IsNaN(c.Value) || double.IsInfinity(c.Value)) return;
+                w[i] = c.Value;
+            }
+            form = typ;
+            beiwerte = w;
+            xMin = Zahl(k, "x_min");
         }
 
         private static KaeltemaschinenKurve Kurve(JsonElement kurven, string name)
@@ -175,6 +205,9 @@ namespace WindowsFormsApplication1
 
             /// <summary>Das erkannte Trennzeichen.</summary>
             public char Trennzeichen { get; set; }
+
+            /// <summary>Hinweise zu gelesenen Geräten (Teillastkurve), „Bezeichner: Grund“.</summary>
+            public List<string> Hinweise { get; } = new List<string>();
         }
 
         /// <summary>Erkennt das Trennzeichen über die Nicht-Kommentarzeilen.</summary>
@@ -194,6 +227,7 @@ namespace WindowsFormsApplication1
             char trenn = TrennzeichenErkennen(zeilen);
             e.Trennzeichen = trenn;
             KaeltemaschineModel aktuell = null;
+            var teillast = new List<(double Lastgrad, double Verhaeltnis)>();
 
             for (int i = 0; i < zeilen.Length; i++)
             {
@@ -225,11 +259,20 @@ namespace WindowsFormsApplication1
                 switch (schluessel)
                 {
                     case "BEZEICHNER":
-                        if (aktuell != null) Abschliessen(e, aktuell);
+                        if (aktuell != null) Abschliessen(e, aktuell, teillast);
                         aktuell = new KaeltemaschineModel { Bezeichner = wert };
+                        teillast = new List<(double, double)>();
                         break;
                     case "RUECKKUEHLTEMPERATUR":
                         break; // die Spaltenkopfzeile
+                    case "TEILLAST":
+                        // Teillastzeile „Teillast;Lastgrad;EER-Verhaeltnis“ (KM3, Fachkonzept 3.2 b).
+                        double? x = f.Length > 1 ? Zahl(f[1], trenn) : null, g = f.Length > 2 ? Zahl(f[2], trenn) : null;
+                        if (aktuell == null) e.Uebergangen.Add(Zeile(i, "Teillastzeile ohne Bezeichner"));
+                        else if (!x.HasValue || !g.HasValue || !(x.Value > 0) || x.Value > 1 || !(g.Value > 0))
+                            e.Uebergangen.Add(Zeile(i, "Teillastzeile ungültig (Lastgrad 0 bis 1, EER-Verhältnis > 0)"));
+                        else teillast.Add((x.Value, g.Value));
+                        break;
                     default:
                         if (aktuell == null) { e.Uebergangen.Add(Zeile(i, "Kopfzeile vor dem Bezeichner")); break; }
                         if (!KopfSetzen(aktuell, schluessel, wert, trenn))
@@ -237,16 +280,63 @@ namespace WindowsFormsApplication1
                         break;
                 }
             }
-            if (aktuell != null) Abschliessen(e, aktuell);
+            if (aktuell != null) Abschliessen(e, aktuell, teillast);
             return e;
         }
 
-        private static void Abschliessen(Ergebnis e, KaeltemaschineModel m)
+        private static void Abschliessen(Ergebnis e, KaeltemaschineModel m, List<(double Lastgrad, double Verhaeltnis)> teillast)
         {
             if (string.IsNullOrWhiteSpace(m.Bezeichner)) { e.Uebergangen.Add("Gerät ohne Bezeichner"); return; }
             if (string.IsNullOrEmpty(m.Rueckkuehlart)) m.Rueckkuehlart = KaeltemaschineSchema.RUECKKUEHLART_LUFT;
             KaeltemaschinenKennfeld.NennwerteErgaenzen(m);
+            TeillastAnpassen(e, m, teillast);
             e.Geraete.Add(m);
+        }
+
+        /// <summary>
+        /// Die Teillastzeilen eines Geräts (KM3, Fachkonzept 3.2 b und 4.3): ab <see cref="KaeltemaschineTeillastkurve.MIN_ZEILEN"/>
+        /// verschiedenen Lastgraden die Kurve nach kleinsten Quadraten, normiert, x_u = kleinster Lastgrad, Weg <c>KURVE</c>
+        /// (ein Weg aus der Kopfzeile bleibt); weniger Zeilen oder eine unplausible Kurve: keine Kurve, mit Hinweis.
+        /// Gepflegte Beiwerte aus den Kopfzeilen gehen vor. Zum Schluss die Prüfung der acht Felder.
+        /// </summary>
+        private static void TeillastAnpassen(Ergebnis e, KaeltemaschineModel m, List<(double Lastgrad, double Verhaeltnis)> teillast)
+        {
+            bool gepflegt = m.Teillastkurve_a.HasValue || m.Teillastkurve_b.HasValue || m.Teillastkurve_c.HasValue;
+            if (teillast != null && teillast.Count > 0 && !gepflegt)
+            {
+                KaeltemaschineTeillastkurve.Kurve? k = KaeltemaschineTeillastkurve.AusEerVerhaeltnis(teillast);
+                double xu = Math.Round(teillast.Min(z => z.Lastgrad), KaeltemaschineTeillastkurve.NACHKOMMA_LASTGRAD,
+                                       MidpointRounding.AwayFromZero);
+                if (!k.HasValue)
+                    e.Hinweise.Add(m.Bezeichner + ": weniger als " +
+                                   KaeltemaschineTeillastkurve.MIN_ZEILEN.ToString(CultureInfo.InvariantCulture) +
+                                   " Teillastzeilen mit verschiedenem Lastgrad, Teillast ohne Kurve");
+                else if (KaeltemaschineTeillastkurve.IstLinear(k.Value))
+                    m.Teillast_Weg ??= KaeltemaschineTeillastSchema.WEG_LINEAR;
+                else if (!KaeltemaschineTeillastkurve.Bereich(k.Value) ||
+                         !KaeltemaschineStammCtrl.KurvePlausibel(k.Value.A, k.Value.B, k.Value.C, m.Teillastkurve_Lastgrad_Min ?? xu))
+                    e.Hinweise.Add(m.Bezeichner + ": angepasste Teillastkurve nicht plausibel, Teillast ohne Kurve");
+                else
+                {
+                    string weg = m.Teillast_Weg;
+                    KaeltemaschineTeillastkurve.Setzen(m, k.Value, m.Teillastkurve_Lastgrad_Min ?? xu);
+                    if (weg != null) m.Teillast_Weg = weg;
+                }
+            }
+            string grund = KaeltemaschineStammCtrl.TeillastPruefen(m);
+            if (grund != null)
+            {
+                e.Hinweise.Add(m.Bezeichner + ": " + grund);
+                m.Teillast_Weg = null;
+                m.Teillastkurve_a = m.Teillastkurve_b = m.Teillastkurve_c = null;
+                m.Teillastkurve_Lastgrad_Min = null;
+                if (KaeltemaschineStammCtrl.TeillastPruefen(m) != null)
+                {
+                    m.Taktverlustfaktor_Cd = null;
+                    m.Verdichterregelung = null;
+                    m.Kennfeld_Randweg = null;
+                }
+            }
         }
 
         private static bool KopfSetzen(KaeltemaschineModel m, string schluessel, string wert, char trenn)
@@ -271,9 +361,41 @@ namespace WindowsFormsApplication1
                 case "MINDESTTEILLAST": case "MINDESTTEILLAST_PROZENT":
                     m.Mindestteillast_Prozent = Zahl(wert, trenn);
                     return m.Mindestteillast_Prozent.HasValue || wert.Length == 0;
+                // ---- Teillast und Takten (KM3, Fachkonzept 4.1 und 4.3); leer = Vorgabe ----
+                case "TEILLAST_WEG":
+                    return Auswahl(wert, KaeltemaschineTeillastSchema.TEILLAST_WEGE, w => m.Teillast_Weg = w);
+                case "VERDICHTERREGELUNG":
+                    return Auswahl(wert, KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN, w => m.Verdichterregelung = w);
+                case "KENNFELD_RANDWEG": case "RANDWEG":
+                    return Auswahl(wert, KaeltemaschineTeillastSchema.RANDWEGE, w => m.Kennfeld_Randweg = w);
+                case "TAKTVERLUSTFAKTOR_CD": case "TAKTVERLUSTFAKTOR":
+                    m.Taktverlustfaktor_Cd = Zahl(wert, trenn);
+                    return m.Taktverlustfaktor_Cd.HasValue || wert.Length == 0;
+                case "TEILLASTKURVE_LASTGRAD_MIN":
+                    m.Teillastkurve_Lastgrad_Min = Zahl(wert, trenn);
+                    return m.Teillastkurve_Lastgrad_Min.HasValue || wert.Length == 0;
+                case "TEILLASTKURVE_A":
+                    m.Teillastkurve_a = Zahl(wert, trenn);
+                    return m.Teillastkurve_a.HasValue || wert.Length == 0;
+                case "TEILLASTKURVE_B":
+                    m.Teillastkurve_b = Zahl(wert, trenn);
+                    return m.Teillastkurve_b.HasValue || wert.Length == 0;
+                case "TEILLASTKURVE_C":
+                    m.Teillastkurve_c = Zahl(wert, trenn);
+                    return m.Teillastkurve_c.HasValue || wert.Length == 0;
                 default:
                     return false;
             }
+        }
+
+        /// <summary>Ein Persistenzwert aus einer Werteliste (Schlüssel normiert, „/“ als „_“); leer = keine Angabe.</summary>
+        private static bool Auswahl(string wert, IReadOnlyList<string> liste, Action<string> setzen)
+        {
+            if (string.IsNullOrWhiteSpace(wert)) { setzen(null); return true; }
+            string s = Schluessel(wert).Replace('/', '_');
+            if (!liste.Contains(s)) return false;
+            setzen(s);
+            return true;
         }
 
         /// <summary>Der Persistenzwert einer Rückkühlart aus Schlüssel oder deutscher Bezeichnung; <c>null</c> = unbekannt.</summary>
@@ -333,6 +455,9 @@ namespace WindowsFormsApplication1
             /// <summary>Übergangen mit Grund.</summary>
             public List<string> Uebergangen { get; } = new List<string>();
 
+            /// <summary>Hinweise zu übernommenen Sätzen (Teillastkurve: angepasst, nicht plausibel), „Satz: Grund“.</summary>
+            public List<string> Hinweise { get; } = new List<string>();
+
             /// <summary><c>true</c> = Copper-JSON, sonst CSV-Vorlage.</summary>
             public bool Copper { get; set; }
         }
@@ -359,7 +484,7 @@ namespace WindowsFormsApplication1
                     KaeltemaschineModel m = KaeltemaschinenKennfeld.Modell(
                         s, CopperKaltwassersatzLeser.Bezeichner(s), typ: KaeltemaschinenKennfeld.TYP,
                         beschreibung: "Kurvensatz aus offenen US-Kurvendaten (PNNL Copper, BSD-2), Datensatz " + s.Nr +
-                                      "; Nennpunkt Eurovent");
+                                      "; Nennpunkt Eurovent", hinweise: e.Hinweise);
                     e.Saetze.Add((m, QUELLE_COPPER));
                 }
                 e.Uebergangen.AddRange(c.Uebergangen);
@@ -368,6 +493,7 @@ namespace WindowsFormsApplication1
             KaeltemaschineCsvLeser.Ergebnis v = KaeltemaschineCsvLeser.Lesen(text);
             foreach (KaeltemaschineModel m in v.Geraete) e.Saetze.Add((m, QUELLE_CSV));
             e.Uebergangen.AddRange(v.Uebergangen);
+            e.Hinweise.AddRange(v.Hinweise);
             return e;
         }
     }

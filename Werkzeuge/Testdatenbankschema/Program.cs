@@ -3300,7 +3300,9 @@ namespace Testdatenbankschema
             //      dazu die Ergaenzung der Typkennfelder. Aus DERSELBEN Quelle, aus der sich
             //      SchemaMigration.Schritt_KaeltemaschineTeillast bedient. Wiederholbar.
             //
-            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; jede Kaeltemaschine rechnet auf dem heutigen Weg.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; allein die ausgelieferten Typkennfelder des
+            //      Katalogs bekommen Weg, Kurve, x_u und Verdichterregelung. Projektkopien bleiben leer, jede Kaeltemaschine
+            //      der Referenzprojekte rechnet auf dem heutigen Weg.
             string nrKm3 = KaeltemaschineTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
             Console.WriteLine();
             Console.WriteLine("Schritt " + nrKm3 + " - Teillast und Takten der Kaeltemaschine: " +

@@ -50100,6 +50100,12 @@ chart</value>
   <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
     <value>The part-load curve is not plausible: at full load a + b + c must be between 0.9 and 1.1, and the EER ratio must stay between 0.5 and 2.0 within the valid load range.</value>
   </data>
+  <data name="KM_IMP_MSG_TEILLAST_HINWEISE" xml:space="preserve">
+    <value>{0} note(s) on the part-load curve: {1}</value>
+  </data>
+  <data name="KM_MSG_NENN_EER_ABWEICHUNG" xml:space="preserve">
+    <value>Note: The rated EER {0} deviates by {2} from the EER of the performance map at the rating point ({1}). Please check the rated EER and the map.</value>
+  </data>
   <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
     <value>Part-load method</value>
   </data>

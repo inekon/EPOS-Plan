@@ -50107,6 +50107,12 @@ Chart</value>
   <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
     <value>Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,5 und 2,0 bleiben.</value>
   </data>
+  <data name="KM_IMP_MSG_TEILLAST_HINWEISE" xml:space="preserve">
+    <value>{0} Hinweis(e) zur Teillastkurve: {1}</value>
+  </data>
+  <data name="KM_MSG_NENN_EER_ABWEICHUNG" xml:space="preserve">
+    <value>Hinweis: Der Nenn-EER {0} weicht um {2} vom EER des Kennfelds am Nennpunkt ({1}) ab. Bitte Nenn-EER und Kennfeld prüfen.</value>
+  </data>
   <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
     <value>Teillastweg</value>
   </data>

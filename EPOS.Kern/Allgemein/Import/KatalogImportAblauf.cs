@@ -212,6 +212,10 @@ namespace WindowsFormsApplication1
                 _meldungen.Add(new PruefMeldung(PruefStufe.Info, "KM_IMP_MSG_UEBERGANGEN",
                     e.Uebergangen.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     string.Join("; ", e.Uebergangen.Take(10))));
+            if (e.Hinweise.Count > 0)
+                _meldungen.Add(new PruefMeldung(PruefStufe.Info, "KM_IMP_MSG_TEILLAST_HINWEISE",
+                    e.Hinweise.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    string.Join("; ", e.Hinweise.Take(10))));
             if (e.Saetze.Count == 0)
                 _meldungen.Add(new PruefMeldung(PruefStufe.Fehler, "KM_IMP_MSG_LEER"));
         }

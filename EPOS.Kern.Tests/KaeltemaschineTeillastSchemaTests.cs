@@ -11,7 +11,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Der Schemaschritt von Teillast und Takten der Kältemaschine</b> (<see cref="KaeltemaschineTeillastSchema"/>;
     /// Fachkonzept Teillast und Takten, Abschnitte 4.1, 5.3 und 6): acht Eingabespalten an Katalog und Projektkopie, fünf
-    /// Kennzahlspalten am Ergebnis — 21 Spalten, alle leer; die Ergänzung der Typkennfelder ist in E1-a ein leerer Rumpf.
+    /// Kennzahlspalten am Ergebnis — 21 Spalten; gefüllt allein an den ausgelieferten Typkennfeldern über die Ergänzung.
     /// </summary>
     [Collection("Testdatenbank")]
     public class KaeltemaschineTeillastSchemaTests : IDisposable
@@ -107,9 +107,17 @@ namespace EPOS.Kern.Tests
             Assert.True(KaeltemaschineTeillastSchema.ErgebnisspaltenVorhanden());
             Assert.True(KaeltemaschineTeillastSchema.EingabespaltenVorhanden("Tab_Kaeltemaschine_STAMM"));
             Assert.True(KaeltemaschineTeillastSchema.EingabespaltenVorhanden("Tab_Kaeltemaschine"));
-            // Kein DML in E1-a: jede Zeile steht leer - heutiger Weg, Kennzahlen „nicht erhoben".
+            // DML allein an den ausgelieferten Typkennfeldern: Projektkopien, Ergebnis und alle übrigen Katalogsätze leer.
             foreach ((string tabelle, string spalte, string _) in KaeltemaschineTeillastSchema.SPALTEN)
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL"));
+                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL" +
+                                      (tabelle == KaeltemaschineTeillastSchema.TAB_STAMM ? " AND " + NICHT_TYPKENNFELD : "")));
+            // Die 34 Typkennfelder: Verdichterregelung überall, Weg an 27 (24 Kurven, 3 linear), C_d und Randweg leer.
+            Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Verdichterregelung IS NOT NULL"));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));
+            Assert.Equal(24L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg = 'KURVE' AND " +
+                                   "Teillastkurve_a IS NOT NULL AND Teillastkurve_Lastgrad_Min IS NOT NULL"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Taktverlustfaktor_Cd IS NOT NULL OR " +
+                                  "Kennfeld_Randweg IS NOT NULL"));
             Assert.True(Wirft("UPDATE Tab_Kaeltemaschine_STAMM SET Teillast_Weg = 'STUFEN'"));
             Assert.True(Wirft("UPDATE Tab_Kaeltemaschine SET Taktverlustfaktor_Cd = 1.5"));
         }
@@ -128,10 +136,12 @@ namespace EPOS.Kern.Tests
             var bericht = new List<string>();
             KaeltemaschineTeillastSchema.Laufergebnis e = KaeltemaschineTeillastSchema.Ausfuehren(bericht);
             Assert.Equal(21, e.Angelegt);
-            Assert.Equal(0, e.Ergaenzt);
-            Assert.Contains(bericht, z => z.StartsWith("0 Typkennfeld(er)", StringComparison.Ordinal));
+            Assert.Equal(34, e.Ergaenzt);
+            Assert.Contains(bericht, z => z.StartsWith("34 Typkennfeld(er)", StringComparison.Ordinal));
             Assert.True(KaeltemaschineTeillastSchema.Vollstaendig());
+            // Dieselben Werte wie zuvor: auch die neu gebildete Prüfsumme gleicht der gelieferten.
             Assert.Equal(stammVorher, Abzug("Tab_Kaeltemaschine_STAMM"));
+            Assert.Equal(0, KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe3));
             Assert.Equal(projektVorher, Abzug("Tab_Kaeltemaschine"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));
 
@@ -142,13 +152,50 @@ namespace EPOS.Kern.Tests
             Assert.Contains(zweiter, z => z.Contains("nichts anzulegen", StringComparison.Ordinal));
         }
 
+        /// <summary>
+        /// Ergaenzen: auf der gelieferten Datenbank nichts zu tun (34 übersprungen); geleert füllt es die 34 Typkennfelder
+        /// je Feld nur wo leer, bildet die Prüfsumme neu und lässt eigene Sätze, Beispielgeräte und Projektkopien stehen.
+        /// </summary>
         [Fact]
-        public void Ergaenzen_ist_in_E1a_ein_leerer_Rumpf()
+        public void Ergaenzen_fuellt_die_Typkennfelder_nur_wo_leer_und_ist_wiederholbar()
         {
             if (!_db.Vorhanden) return;
-            string vorher = Abzug("Tab_Kaeltemaschine_STAMM");
-            Assert.Equal(0, KaeltemaschinenTypkennfelder.Ergaenzen());
-            Assert.Equal(vorher, Abzug("Tab_Kaeltemaschine_STAMM"));
+            string stammVorher = Abzug("Tab_Kaeltemaschine_STAMM", alle: true);
+            KaeltemaschinenTypkennfelder.Ergaenzungsergebnis nichts = KaeltemaschinenTypkennfelder.ErgaenzenMitZaehlung();
+            Assert.Equal(new KaeltemaschinenTypkennfelder.Ergaenzungsergebnis(0, 34), nichts);
+            Assert.Equal(stammVorher, Abzug("Tab_Kaeltemaschine_STAMM", alle: true));
+
+            // Ein eigener Satz (ReadOnly = 0) und ein Typkennfeld mit gepflegter Regelung.
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Kaeltemaschine_STAMM (Bezeichner, ReadOnly) VALUES ('Eigener Satz', 0)");
+            string projektVorher = Abzug("Tab_Kaeltemaschine", alle: true);
+            string pruefsummen = Pruefsummen();
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine_STAMM SET " +
+                string.Join(", ", KaeltemaschineTeillastSchema.EINGABESPALTEN.Select(s => "\"" + s + "\" = NULL")));
+            const string GEPFLEGT = "KM:TYPKENNFELD_WASSER_SCROLL_100_KW";
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine_STAMM SET Verdichterregelung = 'DREHZAHL' WHERE " +
+                                           "Katalog_Schluessel = ?", new DbParam("?", GEPFLEGT));
+
+            KaeltemaschinenTypkennfelder.Ergaenzungsergebnis e = KaeltemaschinenTypkennfelder.ErgaenzenMitZaehlung();
+            Assert.Equal(new KaeltemaschinenTypkennfelder.Ergaenzungsergebnis(34, 0), e);
+            Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Verdichterregelung IS NOT NULL"));
+            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));
+            Assert.Equal("DREHZAHL", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Verdichterregelung FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = ?", new DbParam("?", GEPFLEGT)),
+                CultureInfo.InvariantCulture));
+            Assert.Equal("KURVE", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Teillast_Weg FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = ?", new DbParam("?", GEPFLEGT)),
+                CultureInfo.InvariantCulture));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE " + NICHT_TYPKENNFELD + " AND " +
+                                  "COALESCE(Teillast_Weg, Teillastkurve_a, Verdichterregelung) IS NOT NULL"));
+            Assert.Equal(projektVorher, Abzug("Tab_Kaeltemaschine", alle: true));
+            Assert.Equal(0, KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe3));
+            // Die Prüfsumme ist neu gebildet: der gepflegte Satz weicht ab, alle übrigen gleichen der gelieferten.
+            Assert.NotEqual(pruefsummen, Pruefsummen());
+            Assert.Equal(Zeilen(pruefsummen).Where(z => !z.StartsWith(GEPFLEGT, StringComparison.Ordinal)),
+                         Zeilen(Pruefsummen()).Where(z => !z.StartsWith(GEPFLEGT, StringComparison.Ordinal)));
+
+            KaeltemaschinenTypkennfelder.Ergaenzungsergebnis zweiter = KaeltemaschinenTypkennfelder.ErgaenzenMitZaehlung();
+            Assert.Equal(new KaeltemaschinenTypkennfelder.Ergaenzungsergebnis(0, 34), zweiter);
         }
 
         /// <summary>Teilstand: Fehlt nur eine Spalte, legt der Schritt genau diese an.</summary>
@@ -166,11 +213,28 @@ namespace EPOS.Kern.Tests
         //  Hilfen
         // =============================================================================
 
-        /// <summary>Alle Zeilen einer Tabelle als Text (ohne die Spalten des Schritts) — zum Vergleich vorher/nachher.</summary>
-        private static string Abzug(string tabelle)
+        /// <summary>Bedingung: ein Katalogsatz, der kein ausgeliefertes Typkennfeld ist.</summary>
+        private const string NICHT_TYPKENNFELD = "(ReadOnly = 0 OR Katalog_Schluessel IS NULL OR Katalog_Schluessel NOT LIKE 'KM:TYPKENNFELD%')";
+
+        /// <summary>Schlüssel und Prüfsumme der ausgelieferten Katalogsätze, je Zeile „Schlüssel|Prüfsumme“.</summary>
+        private static string Pruefsummen()
+        {
+            var dt = DataRepository.GetDataTable("SELECT Katalog_Schluessel, Katalog_Pruefsumme FROM Tab_Kaeltemaschine_STAMM " +
+                                                 "WHERE ReadOnly = 1 ORDER BY Katalog_Schluessel");
+            return string.Join("\n", dt.Rows.Cast<System.Data.DataRow>()
+                .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + "|" + Convert.ToString(r[1], CultureInfo.InvariantCulture)));
+        }
+
+        private static IEnumerable<string> Zeilen(string text) => text.Split('\n');
+
+        /// <summary>
+        /// Alle Zeilen einer Tabelle als Text — ohne die Spalten des Schritts, mit <paramref name="alle"/> samt ihnen — zum
+        /// Vergleich vorher/nachher.
+        /// </summary>
+        private static string Abzug(string tabelle, bool alle = false)
         {
             var spalten = DataRepository.SpaltenVonTabelle(tabelle)
-                .Where(s => !KaeltemaschineTeillastSchema.EINGABESPALTEN.Contains(s)).ToList();
+                .Where(s => alle || !KaeltemaschineTeillastSchema.EINGABESPALTEN.Contains(s)).ToList();
             var dt = DataRepository.GetDataTable("SELECT " + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
                                                  " FROM \"" + tabelle + "\" ORDER BY ID");
             return string.Join("\n", dt.Rows.Cast<System.Data.DataRow>()

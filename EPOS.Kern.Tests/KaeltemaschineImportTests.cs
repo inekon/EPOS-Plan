@@ -214,6 +214,189 @@ namespace EPOS.Kern.Tests
             Assert.All(d.Saetze, s => Assert.Null(KaeltemaschineStammCtrl.Pruefen(s.Modell)));
         }
 
+        // =================================================================
+        //  KM3 - Teillastkurve aus Copper und CSV-Vorlage
+        // =================================================================
+
+        /// <summary>Ein wassergekühlter Copper-Satz mit frei gewählter Teillastkurve (Kurven aus der Probe).</summary>
+        private static string CopperSatz(string plr, string verdichter = "screw", string drehzahl = "constant", string minPlr = "0.25") => @"{
+  ""7"": { ""model"": ""ect_lwt"", ""ref_cap"": 500, ""ref_cap_unit"": ""kW"", ""full_eff"": 5.5, ""full_eff_unit"": ""cop"",
+         ""compressor_type"": """ + verdichter + @""", ""condenser_type"": ""water"", ""compressor_speed"": " +
+            (drehzahl == null ? "null" : "\"" + drehzahl + "\"") + @", ""min_plr"": " + minPlr + @", ""min_unloading"": 0.3,
+         ""set_of_curves"": {
+           ""cap-f-t"": { ""type"": ""bi_quad"", ""units"": ""si"", ""x_min"": 5, ""x_max"": 10, ""y_min"": 15, ""y_max"": 35,
+                        ""coeff1"": 1.1606, ""coeff2"": 0.02, ""coeff3"": 0, ""coeff4"": -0.01, ""coeff5"": 0, ""coeff6"": 0 },
+           ""eir-f-t"": { ""type"": ""bi_quad"", ""units"": ""si"", ""x_min"": 5, ""x_max"": 10, ""y_min"": 15, ""y_max"": 35,
+                        ""coeff1"": 0.5454, ""coeff2"": -0.02, ""coeff3"": 0, ""coeff4"": 0.02, ""coeff5"": 0, ""coeff6"": 0 }" +
+            (plr == null ? "" : @",
+           ""eir-f-plr"": " + plr) + @" } } }";
+
+        private static KaeltemaschineModel CopperModell(string json, out List<string> hinweise)
+        {
+            KaeltemaschineImportDatei.Ergebnis e = KaeltemaschineImportDatei.AusText(json);
+            Assert.True(e.Copper);
+            hinweise = e.Hinweise;
+            return Assert.Single(e.Saetze).Modell;
+        }
+
+        /// <summary>Quadratisch: coeff1 bis coeff3 normiert auf EIRFPLR(1) = 1, coeff4 nicht gelesen, x_u aus x_min.</summary>
+        [Fact]
+        public void Copper_liest_die_Teillastkurve_normiert_und_ohne_coeff4()
+        {
+            KaeltemaschineModel m = CopperModell(CopperSatz(
+                @"{ ""type"": ""quad"", ""x_min"": 0.2, ""x_max"": 1, ""coeff1"": 0.1, ""coeff2"": 0.6, ""coeff3"": 0.32, ""coeff4"": 0.9 }"),
+                out List<string> hinweise);
+            Assert.Empty(hinweise);
+            Assert.Equal(KaeltemaschineTeillastSchema.WEG_KURVE, m.Teillast_Weg);
+            Assert.Equal(Math.Round(0.1 / 1.02, 6), m.Teillastkurve_a);
+            Assert.Equal(Math.Round(0.6 / 1.02, 6), m.Teillastkurve_b);
+            Assert.Equal(Math.Round(0.32 / 1.02, 6), m.Teillastkurve_c);
+            Assert.Equal(1.0, m.Teillastkurve_a.Value + m.Teillastkurve_b.Value + m.Teillastkurve_c.Value, 5);
+            Assert.Equal(0.2, m.Teillastkurve_Lastgrad_Min);
+            Assert.Equal(25.0, m.Mindestteillast_Prozent);
+            Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_STUFEN, m.Verdichterregelung);
+            Assert.Null(m.Taktverlustfaktor_Cd);
+            Assert.Null(m.Kennfeld_Randweg);
+            Assert.Null(KaeltemaschineStammCtrl.Pruefen(m));
+
+            // Ohne x_min gilt min_plr als untere Gültigkeit.
+            KaeltemaschineModel o = CopperModell(CopperSatz(
+                @"{ ""type"": ""quad"", ""coeff1"": 0.1, ""coeff2"": 0.6, ""coeff3"": 0.32 }", minPlr: "0.3"), out _);
+            Assert.Equal(0.3, o.Teillastkurve_Lastgrad_Min);
+        }
+
+        /// <summary>Kubisch: nach kleinsten Quadraten auf [x_u, 1] quadratisch angepasst, benannt im Hinweis.</summary>
+        [Fact]
+        public void Copper_passt_eine_kubische_Kurve_quadratisch_an()
+        {
+            KaeltemaschineModel m = CopperModell(CopperSatz(
+                @"{ ""type"": ""cubic"", ""x_min"": 0.2, ""x_max"": 1, ""coeff1"": 0.05, ""coeff2"": 0.6, ""coeff3"": 0.2, ""coeff4"": 0.15 }"),
+                out List<string> hinweise);
+            Assert.Contains(hinweise, h => h.StartsWith("Kurvensatz 7:", StringComparison.Ordinal) && h.Contains("kubisch"));
+            Assert.Equal(KaeltemaschineTeillastSchema.WEG_KURVE, m.Teillast_Weg);
+            for (double x = 0.2; x <= 1.0001; x += 0.1)
+            {
+                double kubisch = 0.05 + 0.6 * x + 0.2 * x * x + 0.15 * x * x * x;
+                double quad = m.Teillastkurve_a.Value + m.Teillastkurve_b.Value * x + m.Teillastkurve_c.Value * x * x;
+                Assert.InRange(quad - kubisch, -0.01, 0.01);
+            }
+        }
+
+        /// <summary>Die lineare Kurve wird zum Weg LINEAR ohne Beiwerte; eine unplausible bleibt leer mit Hinweis.</summary>
+        [Fact]
+        public void Copper_uebernimmt_linear_und_meldet_unplausible_Kurven()
+        {
+            KaeltemaschineModel lin = CopperModell(CopperSatz(
+                @"{ ""type"": ""quad"", ""x_min"": 0.15, ""coeff1"": 0.0, ""coeff2"": 1.0, ""coeff3"": 0.0 }", "scroll", null), out List<string> h1);
+            Assert.Empty(h1);
+            Assert.Equal(KaeltemaschineTeillastSchema.WEG_LINEAR, lin.Teillast_Weg);
+            Assert.Null(lin.Teillastkurve_a);
+            Assert.Null(lin.Teillastkurve_Lastgrad_Min);
+            Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_EIN_AUS, lin.Verdichterregelung);
+
+            // Die Probe: Satz 0 (g(0,1) < 0,5) ohne Weg mit Hinweis, Satz 1 ohne Teillastkurve und ohne Hinweis.
+            KaeltemaschineImportDatei.Ergebnis e = KaeltemaschineImportDatei.AusText(COPPER_PROBE);
+            Assert.Equal(2, e.Saetze.Count);
+            Assert.Null(e.Saetze[0].Modell.Teillast_Weg);
+            Assert.Null(e.Saetze[0].Modell.Teillastkurve_a);
+            Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_EIN_AUS, e.Saetze[0].Modell.Verdichterregelung);
+            Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL, e.Saetze[1].Modell.Verdichterregelung);
+            Assert.Null(e.Saetze[1].Modell.Teillast_Weg);
+            Assert.Single(e.Hinweise);
+            Assert.StartsWith("Kurvensatz 0:", e.Hinweise[0], StringComparison.Ordinal);
+            Assert.All(e.Saetze, s => Assert.Null(KaeltemaschineStammCtrl.Pruefen(s.Modell)));
+        }
+
+        [Theory]
+        [InlineData("scroll", "constant", KaeltemaschineTeillastSchema.REGELUNG_EIN_AUS)]
+        [InlineData("reciprocating", null, KaeltemaschineTeillastSchema.REGELUNG_EIN_AUS)]
+        [InlineData("screw", "constant", KaeltemaschineTeillastSchema.REGELUNG_STUFEN)]
+        [InlineData("centrifugal", "", KaeltemaschineTeillastSchema.REGELUNG_STUFEN)]
+        [InlineData("scroll", "variable", KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL)]
+        [InlineData("centrifugal", "VARIABLE", KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL)]
+        [InlineData("absorption", "constant", null)]
+        [InlineData(null, null, null)]
+        public void Die_Verdichterregelung_folgt_aus_Drehzahl_und_Verdichterart(string verdichter, string drehzahl, string erwartet)
+            => Assert.Equal(erwartet, KaeltemaschineTeillastkurve.Verdichterregelung(verdichter, drehzahl));
+
+        /// <summary>CSV: Teillastzeilen als EER-Verhältnisse, Anpassung, Normierung, x_u, Kopfzeilen der acht Felder.</summary>
+        [Fact]
+        public void Die_CSV_Vorlage_passt_die_Teillastkurve_aus_den_Teillastzeilen_an()
+        {
+            // Aus E(x) = 0,1 + 0,5·x + 0,4·x² (EIRFPLR(1) = 1): g = x / E(x) an vier Lastgraden.
+            Func<double, double> e = x => 0.1 + 0.5 * x + 0.4 * x * x;
+            string zeilen = string.Join("\n", new[] { 0.25, 0.5, 0.75, 1.0 }.Select(x =>
+                "Teillast;" + x.ToString("0.00", CultureInfo.InvariantCulture).Replace('.', ',') + ";" +
+                (x / e(x)).ToString("0.000000", CultureInfo.InvariantCulture).Replace('.', ',')));
+            string text = "Bezeichner;Probe Teillast\nRückkühlart;WASSER\nVerdichterregelung;Drehzahl\nTaktverlustfaktor_Cd;0,85\n" +
+                          "Kennfeld_Randweg;GUETEGRAD\n" + zeilen + "\n30;7;100;5\n35;7;95;4,5\n" +
+                          "Bezeichner;Zu wenig\nTeillast;0,5;1,1\nTeillast;1;1\n30;7;100;5\n" +
+                          "Bezeichner;Ungueltig\nVerdichterregelung;Kolben\nTeillast;1,5;1\n30;7;100;5\n";
+            KaeltemaschineCsvLeser.Ergebnis r = KaeltemaschineCsvLeser.Lesen(text);
+            Assert.Equal(3, r.Geraete.Count);
+
+            KaeltemaschineModel m = r.Geraete[0];
+            Assert.Equal(KaeltemaschineTeillastSchema.WEG_KURVE, m.Teillast_Weg);
+            Assert.Equal(0.1, m.Teillastkurve_a.Value, 4);
+            Assert.Equal(0.5, m.Teillastkurve_b.Value, 4);
+            Assert.Equal(0.4, m.Teillastkurve_c.Value, 4);
+            Assert.Equal(0.25, m.Teillastkurve_Lastgrad_Min);
+            Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL, m.Verdichterregelung);
+            Assert.Equal(0.85, m.Taktverlustfaktor_Cd);
+            Assert.Equal(KaeltemaschineTeillastSchema.RANDWEG_GUETEGRAD, m.Kennfeld_Randweg);
+            Assert.Equal(2, m.Kennlinie.Count);
+            Assert.Null(KaeltemaschineStammCtrl.Pruefen(m));
+
+            // Zwei Zeilen genügen nicht: keine Kurve, benannter Hinweis.
+            Assert.Null(r.Geraete[1].Teillast_Weg);
+            Assert.Null(r.Geraete[1].Teillastkurve_a);
+            Assert.Contains(r.Hinweise, h => h.StartsWith("Zu wenig:", StringComparison.Ordinal));
+            // Unbekannte Regelung und Lastgrad über 1: zwei übergangene Zeilen.
+            Assert.Null(r.Geraete[2].Verdichterregelung);
+            Assert.Equal(2, r.Uebergangen.Count);
+        }
+
+        /// <summary>Die Vorlage im Repositorium trägt ein Beispiel mit Teillastzeilen, das als Kurve ankommt.</summary>
+        [Fact]
+        public void Die_Vorlage_im_Repo_traegt_eine_plausible_Teillastkurve()
+        {
+            KaeltemaschineImportDatei.Ergebnis d = KaeltemaschineImportDatei.Lesen(
+                Path.Combine(Repowurzel(), "Quellen", "Kaeltemaschine_Kennfeldvorlage.csv"));
+            Assert.Empty(d.Hinweise);
+            KaeltemaschineModel m = d.Saetze[0].Modell;
+            Assert.Equal(KaeltemaschineTeillastSchema.WEG_KURVE, m.Teillast_Weg);
+            Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_STUFEN, m.Verdichterregelung);
+            Assert.Equal(0.25, m.Teillastkurve_Lastgrad_Min);
+            Assert.Null(KaeltemaschineStammCtrl.TeillastPruefen(m));
+            Assert.Null(KaeltemaschineStammCtrl.NennEerHinweis(m));
+        }
+
+        /// <summary>
+        /// Die eingebauten Typkennfelder: jede Kurve normiert, Verdichterregelung überall; Weg KURVE oder LINEAR, wo die
+        /// Kurve plausibel ist — sieben Sätze (Turbo und Schraube mit fester Drehzahl, g(x_u) &lt; 0,5) bleiben ohne Weg.
+        /// </summary>
+        [Fact]
+        public void Die_Typkennfelder_tragen_Verdichterregelung_und_plausible_Teillastkurven()
+        {
+            var hinweise = new List<string>();
+            var modelle = KaeltemaschinenTypkennfelder.Lesen().Select(t => KaeltemaschinenKennfeld.Modell(
+                t.Kurven, t.Bezeichner, t.Rueckkuehlart, t.KlasseKw, hinweise: hinweise)).ToList();
+            Assert.Equal(34, modelle.Count);
+            Assert.All(modelle, m => Assert.NotNull(m.Verdichterregelung));
+            Assert.All(modelle, m => Assert.Null(KaeltemaschineStammCtrl.TeillastPruefen(m)));
+            Assert.Equal(24, modelle.Count(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_KURVE));
+            Assert.Equal(3, modelle.Count(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_LINEAR));
+            Assert.Equal(7, modelle.Count(m => m.Teillast_Weg == null));
+            Assert.Equal(7, hinweise.Count);
+            Assert.All(modelle.Where(m => m.Teillast_Weg == null),
+                       m => Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_STUFEN, m.Verdichterregelung));
+            foreach (KaeltemaschineModel m in modelle.Where(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_KURVE))
+            {
+                Assert.Equal(1.0, m.Teillastkurve_a.Value + m.Teillastkurve_b.Value + m.Teillastkurve_c.Value, 5);
+                Assert.InRange(m.Teillastkurve_Lastgrad_Min.Value, 0.0, 1.0);
+            }
+        }
+
         private static string Repowurzel()
         {
             var d = new DirectoryInfo(AppContext.BaseDirectory);

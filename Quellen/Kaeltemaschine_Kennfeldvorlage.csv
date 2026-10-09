@@ -13,6 +13,17 @@
 #   Mindestteillast     % der Nennleistung, unterhalb taktet die Maschine
 #   Kältemittel         z. B. R290 (nur Angabe)
 #
+# TEILLAST UND TAKTEN (optional; leer = Vorgabe):
+#   Verdichterregelung  EIN_AUS, STUFEN oder DREHZAHL – wählt die Vorgabekurve, wenn keine Kurve angegeben ist
+#   Teillast_Weg        LINEAR oder KURVE; leer = heutiger Weg (linear, ohne Taktverlust)
+#   Taktverlustfaktor_Cd  0 bis 1; leer = 0,9
+#   Teillastkurve_Lastgrad_Min  untere Gültigkeit der Kurve, 0 bis 1; leer = kleinster Lastgrad der Teillastzeilen
+#   Kennfeld_Randweg    RANDWERT oder GUETEGRAD; leer = RANDWERT
+#   Teillastzeilen      je Zeile Teillast; Lastgrad [0…1]; EER-Verhältnis [-] (EER bei Teillast durch EER bei
+#                       Volllast, bei gleichen Temperaturen). Ab drei Zeilen mit verschiedenem Lastgrad passt EPOS die
+#                       Kurve EIRFPLR(x) = a + b·x + c·x² nach kleinsten Quadraten an, normiert sie auf Volllast und
+#                       setzt Teillast_Weg = KURVE; die Kurve muss plausibel sein (EER-Verhältnis 0,5 bis 2,0).
+#
 # KENNFELD: je Zeile Rückkühltemperatur [°C]; Kaltwassertemperatur [°C]; Kälteleistung [kW]; EER [-].
 #   Rückkühltemperatur  Eintritt des Rückkühlmediums am Verflüssiger. Luftgekühlt rechnet EPOS mit
 #                       Außenluft + 5 K: Eine Tabellenzeile für 35 °C Außenluft steht hier bei 40 °C.
@@ -28,6 +39,11 @@ Nennkälteleistung;100
 Nenn-EER;5,0
 Mindestteillast;25
 Kältemittel;R290
+Verdichterregelung;STUFEN
+Teillast;0,25;0,90
+Teillast;0,50;1,05
+Teillast;0,75;1,08
+Teillast;1,00;1,00
 Rueckkuehltemperatur;Kaltwassertemperatur;Kaelteleistung_kW;EER
 20;5;102,0;6,25
 20;7;108,0;6,50

@@ -73519,6 +73519,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweis(e) zur Teillastkurve: {1} ähnelt.
+        /// </summary>
+        public static string KM_IMP_MSG_TEILLAST_HINWEISE {
+            get {
+                return ResourceManager.GetString("KM_IMP_MSG_TEILLAST_HINWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Einträge übergangen: {1} ähnelt.
         /// </summary>
         public static string KM_IMP_MSG_UEBERGANGEN {
@@ -73875,6 +73884,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_MSG_NENNWERT_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KM_MSG_NENNWERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: Der Nenn-EER {0} weicht um {2} vom EER des Kennfelds am Nennpunkt ({1}) ab. Bitte Nenn-EER und Kennfeld prüfen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_NENN_EER_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("KM_MSG_NENN_EER_ABWEICHUNG", resourceCulture);
             }
         }
         
