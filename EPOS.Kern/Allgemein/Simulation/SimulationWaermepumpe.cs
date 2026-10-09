@@ -1421,7 +1421,7 @@ namespace WindowsFormsApplication1
 
                 // UB-E2 (U-1, Umsetzungskonzept 3.2 Schritt 1): das Bivalenzobjekt nur mit gesetzter Einbindung
                 // und aktiver Kopplung - sonst bleibt es null, und das Modul rechnet den Bestandsweg.
-                if (i < MAX_WP && wp_kennlinienwahl[i] != null && !string.IsNullOrWhiteSpace(model.Einbindung))
+                if (i < MAX_WP && Bivalenzmodul.Wirksam(model.Einbindung, wp_kennlinienwahl[i] != null))
                 {
                     bivalenzProjekt ??= BivalenzQuelle.Projekt(model.ID_Projekt);
                     _bivalenz[i] = BivalenzAufbauen(i, model, bivalenzProjekt);

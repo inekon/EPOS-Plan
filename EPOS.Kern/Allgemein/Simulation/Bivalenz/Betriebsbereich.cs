@@ -201,6 +201,13 @@ namespace WindowsFormsApplication1
             VorDemKessel = vorDemKessel;
         }
 
+        /// <summary>
+        /// U‑1 (Opt-in): Ein Bivalenzobjekt entsteht nur mit gesetzter <c>Einbindung</c> und aktiver Kopplung
+        /// (Kennlinienwahl am gerechneten Heizkreisvorlauf); sonst rechnet die Wärmepumpe den Bestandsweg.
+        /// </summary>
+        internal static bool Wirksam(string? einbindung, bool kopplungAktiv)
+            => kopplungAktiv && !string.IsNullOrWhiteSpace(einbindung);
+
         /// <summary>W_H = Σ_z W_H,z [kW/K].</summary>
         internal double WH { get; }
 
