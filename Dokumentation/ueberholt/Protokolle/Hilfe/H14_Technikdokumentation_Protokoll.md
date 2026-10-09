@@ -265,3 +265,38 @@ bis dahin ergänzten Funktionen in der Beschreibung".
 - **Logbuch:** Die Sätze zum Kesselmodell stehen bereits unter Version 1.2.0.6 (Statuszeilen #616–#636).
   Die Wiki-Seiten selbst bekommen keinen Eintrag.
 - **Upload:** mit dem nächsten Wochen-Upload (Regel 13.3). Der Trockenlauf zeigt die geänderten Seiten.
+
+## 11 Zusammenführung mit dem Arbeitszweig (09.10.2026)
+
+Anwenderauftrag vom 09.10.2026 (Sitzung „IFC / Gebäudeimport“), Statuszeile #842. Der Zweig
+`claude/wiki-help-assistant-docs-jllq1r` (Stand `e738c22d8`, vier Commits seit `4cfbf0171`) wurde in
+`ios_migration_september` (Basis `4ca74b12c`) zusammengeführt.
+
+- **Konflikte:** sieben Dateien, 28 Blöcke — Rechenweg Heizkessel 14, Rechenweg Wärmepumpe 2, Programm Dokumentation
+  Heizkessel 4, Kühlung 5, Wärmepumpe 1, Grundlagen Kessel und Spitzenlast 1, Grundlagen Wärmepumpe 1. Ohne Konflikt:
+  Index, Folgeaufträge, Statusdatei, Konzept Technikdokumentation, Rechenweg Wärmebedarf, Grundlagen Kühlung.
+- **Regel:** Wo die Hauptlinie einen neueren Stand beschreibt, gilt sie; die Ergänzungen vom 02.10. bleiben, wo sie
+  Neues sagen und zum Code passen; bei Abweichungen entscheidet `EPOS.Kern`.
+- **Rechenweg Heizkessel:** Die Fassung vom 02.10. (neun Schritte) ist Grundlage, weil sie die kürzere Fassung der
+  Hauptlinie vollständig enthält. Gegen den Code berichtigt: Bereitschaftsverlust in kW oder % der Nennleistung
+  (`KesselBereitschaft.LeistungKw`, Gleichung 7 neu); Ergebnisse in der Reiterfolge der Hauptlinie.
+- **Rechenweg Wärmepumpe:** Interpolation über den Vorlauf (Hauptlinie), dazu der Rückfall auf die Kennlinie der Anlage
+  in Stunden ohne Heizbedarf (`SimulationWaermepumpe.KenndatenDerStunde`); Fundort des Heizstabs nach der Verwaltung
+  auch in der Parametertafel.
+- **Grundlagen Kessel/Wärmepumpe:** Absätze vom 02.10., Menüpfad „Wärme- und Kälteerzeugung“ der Hauptlinie.
+- **Programm Dokumentation Heizkessel:** Menüpfad und Kaskaden-Vorwahl der Hauptlinie, Importhinweis und Heizgrenze vom
+  02.10. (Import nach `KesselkatalogNachpflege`), Einheit des Bereitschaftsverlusts der Hauptlinie, Ergebnisreiter in der
+  Folge von `HeizkesselReiter.razor` mit den Betriebswerten; Maximale Brennstoffleistung Gas nach dem Code über alle
+  Nicht-Heizöl-Kessel.
+- **Programm Dokumentation Kühlung:** Fallstricke der Hauptlinie mit der Prüfregel vom 02.10.; die zwei Abschnitte zum
+  Kühlsollwert in „Kühlspalte, Kühlperiode und Kühlkalender“ zusammengelegt (Anker beider Seiten erhalten); Tagesbetriebsart
+  der Hauptlinie, Kühlsollwert der Stunde, Sommerlüftung und Nachtauskühlung vom 02.10.; Grenze „Kühlwerte je Gebäude“
+  ohne die überholte Aussage zur idealen Zonenkühlung; Kaskaden-Vorwahl im Beispiel berichtigt.
+- **Programm Dokumentation Wärmepumpe:** Interpolation der Hauptlinie mit Heizsollwert „aus“ und Rückfall vom 02.10.
+- **Prüfung:** `EPOS.Kern.Tests` gefiltert 187/187, `EPOS.UI.Tests` gefiltert 751/751; `entfalten.py` ohne Befund;
+  Gegenlese-Muster ohne Treffer; keine Konfliktmarker im Repositorium.
+- **Darstellungsprüfung:** Die sieben Dateien über `action=parse` der Wiki-API gerendert (nichts gespeichert): keine
+  Formelfehler, kein `<pre>`.
+- **Upload:** zurückgestellt (Anwender 09.10.2026); die Seiten stehen im Logbuchpapier als ausstehend.
+- **Außerhalb des Auftrags:** „Programm Dokumentation - Pufferspeicher“ nennt im Beispiel noch die alte Kaskaden-Vorwahl
+  („stellt den Kessel nach vorn“).
