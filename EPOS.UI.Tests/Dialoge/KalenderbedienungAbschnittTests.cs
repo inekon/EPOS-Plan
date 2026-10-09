@@ -288,4 +288,217 @@ public class KalenderbedienungAbschnittTests : EposBunitContext
         IRenderedComponent<KonditionierungReiter> ohne = Aufbauen(KonditionierungWeg.Keiner);
         Assert.Empty(ohne.FindAll(".epos-kond-uebersicht"));
     }
+
+    // ================================================================ Stufe 2 (Welle K2-U)
+
+    /// <summary>Legt über den Editor einen Einzeltag „wie Sonntag" in allen angelegten Größen an.</summary>
+    private static void EinzeltagAnlegen(IRenderedComponent<KalenderbedienungAbschnitt> b, string datum, string name)
+    {
+        Knopf(Wurzel(b), "epos-kalb-einzeltag-neu").Click();
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input[type=date]").Change(datum);
+        b.Find(".epos-kalb-einzeltage .epos-kalb-editor input:not([type=date])").Input(name);
+        Knopf(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
+    }
+
+    [Fact]
+    public void Die_Maske_gilt_fuer_wird_je_Zeile_ueber_fuenf_Kaestchen_und_alle_gesetzt()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
+        EinzeltagAnlegen(b, "2025-06-02", "Betriebsausflug");
+        KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Betriebsausflug");
+        Assert.True(z.IstGemeinsam);
+
+        IElement zeile = b.Find(".epos-kalb-tage tr[data-name='Betriebsausflug']");
+        Assert.Equal(5, zeile.QuerySelectorAll(".epos-kalb-maske button.epos-kalb-maskenbit").Length);
+        Assert.NotNull(zeile.QuerySelector(".epos-kalb-maske button.epos-kalb-maske-alle"));
+        Assert.Empty(zeile.QuerySelectorAll(".epos-kalb-getrennt"));
+
+        // Lüftung abwählen: die Zeile gilt nur noch für Heizen.
+        b.Find($".epos-kalb-tage tr[data-name='Betriebsausflug'] .epos-kalb-maskenbit[data-groesse='{(int)L}']").Click();
+        z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Betriebsausflug");
+        Assert.Equal(1, z.Maske);
+        Assert.Equal(new[] { H }, z.GiltFuer);
+        Assert.Equal("false", b.Find($".epos-kalb-tage tr[data-name='Betriebsausflug'] .epos-kalb-maskenbit[data-groesse='{(int)L}']")
+                                .GetAttribute("aria-pressed"));
+
+        // Auch Heizen abwählen wäre eine leere Maske: benannt abgelehnt, nie still.
+        _meldungen.Clear();
+        b.Find($".epos-kalb-tage tr[data-name='Betriebsausflug'] .epos-kalb-maskenbit[data-groesse='{(int)H}']").Click();
+        Assert.NotEmpty(_meldungen);
+        Assert.Equal(1, b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Betriebsausflug").Maske);
+
+        // „alle" setzt die volle Maske.
+        b.Find(".epos-kalb-tage tr[data-name='Betriebsausflug'] .epos-kalb-maske-alle").Click();
+        z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Betriebsausflug");
+        Assert.Equal(31, z.Maske);
+        Assert.Contains(L, z.GiltFuer);
+    }
+
+    [Fact]
+    public void Eine_Zeile_der_Lesebruecke_ist_kenntlich_und_traegt_keine_Maskenbedienung()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
+        ZeileAnlegen(b, "2025-03-01", "2025-03-10", "Messe");            // Standardwoche über zwei Größen: je Größe eine Kopie
+
+        KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Messe");
+        Assert.False(z.IstGemeinsam);
+        IElement zeile = b.Find(".epos-kalb-zeilen tr[data-name='Messe']");
+        IElement kennzeichen = zeile.QuerySelector(".epos-kalb-getrennt")!;
+        Assert.NotNull(kennzeichen);
+        Assert.Contains("je Größe getrennt", kennzeichen.TextContent);
+        Assert.Contains("Je Größe getrennt", kennzeichen.GetAttribute("title"));
+        Assert.Empty(zeile.QuerySelectorAll(".epos-kalb-maske"));
+        Assert.Contains("Heizen", zeile.QuerySelector(".epos-kalb-giltliste")!.TextContent);
+    }
+
+    [Fact]
+    public void Benannte_Wochen_werden_angelegt_umbenannt_und_erst_ohne_Verweis_geloescht()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+
+        // Umbenennen und Löschen ohne gewählte benannte Woche: weich gesperrt mit Grund.
+        Assert.Equal("true", Knopf(Wurzel(b), "epos-kalb-woche-loeschen").GetAttribute("aria-disabled"));
+
+        b.Find(".epos-kalb-wochen input").Input("Büro");
+        Knopf(Wurzel(b), "epos-kalb-woche-anlegen").Click();
+        KalenderWochenprofil buero = b.Instance.Ansicht!.Profile.Single(p => p.IstBenannt);
+        Assert.Equal("Büro", buero.Name);
+        Assert.Equal(buero.IdWoche, b.Instance.GewaehlteWoche);
+        Assert.Contains("epos-kalb-profil--benannt", b.Find($".epos-kalb-profil[data-woche='{buero.IdWoche}']").ClassList);
+
+        // Ein doppelter Name wird benannt abgelehnt.
+        _meldungen.Clear();
+        Knopf(Wurzel(b), "epos-kalb-woche-anlegen").Click();
+        Assert.NotEmpty(_meldungen);
+        Assert.Single(b.Instance.Ansicht!.Profile, p => p.IstBenannt);
+
+        // Umbenennen.
+        b.Find(".epos-kalb-wochen input").Input("Büro kurz");
+        Knopf(Wurzel(b), "epos-kalb-woche-umbenennen").Click();
+        Assert.Equal("Büro kurz", b.Instance.Ansicht!.Profile.Single(p => p.IstBenannt).Name);
+
+        // Der Pinsel malt in die benannte Woche (über ihren Verweis), nicht in die Standardwoche.
+        double[] standard = b.Instance.Ansicht!.Profile.First(p => p.IstStandardwoche).Werte;
+        b.Find(".epos-kalb-pinsel input").Input("12");
+        b.Find(".epos-kalb-woche button.epos-kalb-zelle[data-tag='0'][data-stunde='3']").Click();
+        b.Find(".epos-kalb-woche button.epos-kalb-zelle[data-tag='0'][data-stunde='3']").Click();
+        Assert.Equal(12.0, b.Instance.Ansicht!.Profile.Single(p => p.IstBenannt).Werte[3]);
+        Assert.Equal(standard[3], b.Instance.Ansicht!.Profile.First(p => p.IstStandardwoche).Werte[3]);
+
+        // Eine Zeile wählt die Woche als Wochenprofil (Verweis IdWoche).
+        Knopf(Wurzel(b), "epos-kalb-zeile-neu").Click();
+        IElement editor = b.Find(".epos-kalb-zuordnung .epos-kalb-editor");
+        editor.QuerySelectorAll("input[type=date]")[0].Change("2025-03-01");
+        b.Find(".epos-kalb-zuordnung .epos-kalb-editor").QuerySelectorAll("input[type=date]")[1].Change("2025-03-10");
+        b.Find(".epos-kalb-zuordnung .epos-kalb-editor input:not([type=date])").Input("Messe");
+        int index = b.Instance.Ansicht!.Profile.ToList().FindIndex(p => p.IstBenannt) + 1;
+        b.FindAll(".epos-kalb-zuordnung .epos-kalb-editor select")[1].Change(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Knopf(b.Find(".epos-kalb-zuordnung .epos-kalb-editor"), "epos-kalb-uebernehmen").Click();
+        KalenderZuordnungszeile z = b.Instance.Ansicht!.Zuordnungen.Single(x => x.Schluessel.Name == "Messe");
+        long id = b.Instance.Ansicht!.Profile.Single(p => p.IstBenannt).IdWoche!.Value;
+        Assert.Equal(id, z.IdWoche);
+        Assert.True(z.IstGemeinsam);
+
+        // Löschen, solange die Zeile verweist: abgelehnt mit Name und Zeilenzahl im Banner des Wirts.
+        b.Find($".epos-kalb-profil[data-woche='{id}']").Click();
+        _meldungen.Clear();
+        Knopf(Wurzel(b), "epos-kalb-woche-loeschen").Click();
+        Assert.Contains(_meldungen, m => m.Contains("Büro kurz"));
+        Assert.Single(b.Instance.Ansicht!.Profile, p => p.IstBenannt);
+
+        // Ohne Verweis geht es.
+        Knopf(b.Find(".epos-kalb-zeilen tr[data-name='Messe']"), "epos-kalb-entfernen").Click();
+        b.Find($".epos-kalb-profil[data-woche='{id}']").Click();
+        Knopf(Wurzel(b), "epos-kalb-woche-loeschen").Click();
+        Assert.DoesNotContain(b.Instance.Ansicht!.Profile, p => p.IstBenannt);
+        Assert.Null(b.Instance.GewaehlteWoche);
+    }
+
+    [Fact]
+    public void Das_Wochenende_wird_ueber_sieben_Tageskaestchen_und_Sa_So_gesetzt()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+        Assert.Equal(7, b.FindAll(".epos-kalb-wochenende button.epos-kalb-wochenendtag").Count);
+        Assert.Equal(new[] { 5, 6 }, b.Instance.Ansicht!.Wochenendtage);
+        Assert.Equal("true", b.Find(".epos-kalb-wochenendtag[data-tag='6']").GetAttribute("aria-pressed"));
+
+        b.Find(".epos-kalb-wochenendtag[data-tag='4']").Click();                  // Freitag dazu
+        Assert.Equal(new[] { 4, 5, 6 }, b.Instance.Ansicht!.Wochenendtage);
+        b.Find(".epos-kalb-wochenendtag[data-tag='5']").Click();                  // Samstag weg
+        Assert.Equal(new[] { 4, 6 }, b.Instance.Ansicht!.Wochenendtage);
+        Assert.Equal("true", b.Find(".epos-kalb-wochenendtag[data-tag='4']").GetAttribute("aria-pressed"));
+
+        Knopf(Wurzel(b), "epos-kalb-sa-so").Click();
+        Assert.Equal(new[] { 5, 6 }, b.Instance.Ansicht!.Wochenendtage);
+    }
+
+    [Fact]
+    public void Das_Feiertagsland_fuegt_seine_Regeln_hinzu_und_nennt_sie_in_der_Hinweiszeile()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+        Assert.Null(b.Instance.Ansicht!.Feiertagsland);
+        Assert.Contains("neun bundeseinheitlichen", b.Find(".epos-kalb-land-hinweis").TextContent);
+        Assert.Contains("Baden-Württemberg", b.Find(".epos-kalb-land select").TextContent);
+        int vorher = b.Instance.Ansicht!.Zuordnungen.Count;
+
+        b.Find(".epos-kalb-land select").Change("1");                                // BW
+        Assert.Equal("BW", b.Instance.Ansicht!.Feiertagsland);
+        Assert.Contains("Heilige Drei Könige", b.Find(".epos-kalb-land-hinweis").TextContent);
+        Assert.Contains("Fronleichnam", b.Find(".epos-kalb-land-hinweis").TextContent);
+        Assert.True(b.Instance.Ansicht!.Zuordnungen.Count > vorher);
+        Assert.Contains(b.Instance.Ansicht!.Raster, t => t.Art == KalenderTagart.Feiertag && t.Quelle == "Fronleichnam");
+
+        b.Find(".epos-kalb-land select").Change("");                                 // nur bundeseinheitlich
+        Assert.Null(b.Instance.Ansicht!.Feiertagsland);
+        Assert.Equal(vorher, b.Instance.Ansicht!.Zuordnungen.Count);
+    }
+
+    [Fact]
+    public void Die_Ferienliste_fuehrt_benannte_Zeitraeume_beliebig_viele()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H);
+        int vorher = b.FindAll(".epos-kalb-ferienzeile").Count;
+        string[] monate = { "02", "03", "04", "05", "06", "07" };
+        for (int k = 0; k < monate.Length; k++)
+        {
+            Knopf(Wurzel(b), "epos-kalb-ferien-neu").Click();
+            int n = vorher + k;
+            b.FindAll(".epos-kalb-ferienzeile")[n].QuerySelectorAll("input[type=date]")[0].Change($"2025-{monate[k]}-10");
+            b.FindAll(".epos-kalb-ferienzeile")[n].QuerySelectorAll("input[type=date]")[1].Change($"2025-{monate[k]}-12");
+        }
+        Assert.Equal(vorher + monate.Length, b.Instance.Ansicht!.Ferien.Count);
+
+        Assert.Equal(vorher + monate.Length, b.FindAll(".epos-kalb-ferienzeile").Count);
+
+        // Die Bezeichnung ist ein eigenes Feld; ab dem fünften Zeitraum reist sie mit der Ferienliste. Die ersten vier stehen
+        // in den Gebäudespalten ohne Namen - ihr Feld ist nur lesbar.
+        int letzte = vorher + monate.Length - 1;
+        Assert.True(letzte >= 4);
+        Assert.True(b.FindAll(".epos-kalb-ferienzeile")[0].QuerySelector("input:not([type=date])")!.HasAttribute("readonly"));
+        b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([type=date])")!.Input("Sommerpause");
+        Assert.Contains(b.Instance.Ansicht!.Ferien, f => f.Name == "Sommerpause" && f.Beginn == Kalendertage.Jahrestag(7, 10));
+        Assert.Equal("Sommerpause", b.FindAll(".epos-kalb-ferienzeile")[letzte].QuerySelector("input:not([type=date])")!.GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Ein_Klick_im_Jahresraster_oeffnet_die_bestimmende_Zeile_und_kennzeichnet_gemeinsame_Zeilen()
+    {
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen();
+        IRenderedComponent<KalenderbedienungAbschnitt> b = Bedienung(cut, H, L);
+        EinzeltagAnlegen(b, "2025-06-02", "Betriebsausflug");
+        Assert.Contains("epos-kalb-jahrtag--gemeinsam", b.Find(".epos-kalb-jahrtag[data-tag='153']").ClassList);
+        Assert.DoesNotContain("epos-kalb-jahrtag--gemeinsam", b.Find(".epos-kalb-jahrtag[data-tag='152']").ClassList);
+        Assert.NotNull(b.Find(".epos-kalb-legende .epos-kalb-muster--gemeinsam"));
+
+        Assert.Empty(b.FindAll(".epos-kalb-einzeltage .epos-kalb-editor"));
+        b.Find(".epos-kalb-jahrtag[data-tag='153']").Click();
+        Assert.Equal("Betriebsausflug", b.Instance.GewaehlteZeile!.Name);
+        Assert.NotNull(b.Find(".epos-kalb-einzeltage .epos-kalb-editor"));
+    }
 }

@@ -43,6 +43,7 @@ namespace WindowsFormsApplication1
                     Wochenendtage = Kalenderbedienung.Wochenendtage(a),
                     Feiertagsland = Kalenderbedienung.Feiertagsland(a),
                     Feiertagslaender = Landesfeiertage.BUNDESLAENDER,
+                    Landesregeln = Landesregelnamen(Kalenderbedienung.Feiertagsland(a)),
                 };
             }
             catch (ArgumentException)
@@ -52,6 +53,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Eine Zuordnungszeile des Kerns an der Oberfläche; die Wirkung ist die der ersten Größe.</summary>
+        /// <summary>Die Anzeigenamen der Landesregeln, die <paramref name="land"/> hinzufügt (leer ohne Land).</summary>
+        private static IReadOnlyList<string> Landesregelnamen(string land)
+        {
+            IReadOnlyList<string> namen = Kalenderbedienung.Landesfeiertagsnamen();
+            var liste = new List<string>();
+            foreach (string regel in Landesfeiertage.Regeln(land))
+            {
+                int i = 0;
+                while (i < DbWerte.KOND_FEIERTAGE_LAENDER.Count && !string.Equals(DbWerte.KOND_FEIERTAGE_LAENDER[i], regel, StringComparison.Ordinal)) i++;
+                liste.Add(i < namen.Count ? namen[i] : regel);
+            }
+            return liste;
+        }
+
         private static KalenderZuordnungszeile Zeile(Zuordnungszeile z, IReadOnlyList<BenannteWoche> wochen)
         {
             IReadOnlyList<Konditionierungsgroesse> gilt = z.GiltFuer;

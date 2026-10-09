@@ -49502,7 +49502,7 @@ Chart</value>
     <value>Samstag und Sonntag</value>
   </data>
   <data name="KOND_TXT_KALB_HINWEIS_WOCHENENDE" xml:space="preserve">
-    <value>Nur lesbar; wählbar ab Stufe 2.</value>
+    <value>Gilt für alle Größen des Gebäudes; ohne gewählten Tag gelten Samstag und Sonntag.</value>
   </data>
   <data name="KOND_LBL_KALB_FERIEN" xml:space="preserve">
     <value>Ferien</value>
@@ -50103,6 +50103,66 @@ Chart</value>
   </data>
   <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
     <value>Heilige Drei Könige;Internationaler Frauentag;Fronleichnam;Mariä Himmelfahrt;Weltkindertag;Reformationstag;Allerheiligen;Buß- und Bettag</value>
+  </data>
+  <data name="KOND_LBL_KALB_GILT_ALLE" xml:space="preserve">
+    <value>alle</value>
+  </data>
+  <data name="KOND_TXT_KALB_GETRENNT" xml:space="preserve">
+    <value>je Größe getrennt</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_GETRENNT" xml:space="preserve">
+    <value>Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; Mit einer benannten Woche oder einer Wirkung ohne Wochenprofil wird sie im Editor eine gemeinsame Zeile.</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHEN" xml:space="preserve">
+    <value>Benannte Wochen</value>
+  </data>
+  <data name="KOND_LBL_KALB_WOCHE_NAME" xml:space="preserve">
+    <value>Name der Woche</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_ANLEGEN" xml:space="preserve">
+    <value>Woche anlegen</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_UMBENENNEN" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="KOND_BTN_KALB_WOCHE_LOESCHEN" xml:space="preserve">
+    <value>Woche löschen</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_WOCHEN" xml:space="preserve">
+    <value>Eine neue Woche übernimmt die Werte des gewählten Wochenprofils. Zuordnungszeilen wählen sie als Wochenprofil; eine Woche, auf die eine Zeile verweist, lässt sich nicht löschen.</value>
+  </data>
+  <data name="KOND_TXT_KALB_GRUND_WOCHE_WAHL" xml:space="preserve">
+    <value>Erst eine benannte Woche wählen.</value>
+  </data>
+  <data name="KOND_BTN_KALB_SA_SO" xml:space="preserve">
+    <value>Sa + So</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_WOCHENENDE_ZONE" xml:space="preserve">
+    <value>Das Wochenende gehört dem Gebäude; die Zone erbt es.</value>
+  </data>
+  <data name="KOND_LBL_KALB_FEIERTAGSLAND" xml:space="preserve">
+    <value>Feiertagsland</value>
+  </data>
+  <data name="KOND_TXT_KALB_LAND_LEER" xml:space="preserve">
+    <value>nur bundeseinheitlich</value>
+  </data>
+  <data name="KOND_TXT_KALB_LAND_REGELN" xml:space="preserve">
+    <value>Das Land fügt hinzu: {0}.</value>
+  </data>
+  <data name="KOND_TXT_KALB_LAND_KEINE" xml:space="preserve">
+    <value>Es gelten die neun bundeseinheitlichen Feiertage.</value>
+  </data>
+  <data name="KOND_TXT_KALB_BUNDESLAENDER" xml:space="preserve">
+    <value>Baden-Württemberg;Bayern;Berlin;Brandenburg;Bremen;Hamburg;Hessen;Mecklenburg-Vorpommern;Niedersachsen;Nordrhein-Westfalen;Rheinland-Pfalz;Saarland;Sachsen;Sachsen-Anhalt;Schleswig-Holstein;Thüringen</value>
+  </data>
+  <data name="KOND_TXT_KALB_HINWEIS_LAND_ZONE" xml:space="preserve">
+    <value>Das Feiertagsland gehört dem Gebäude; die Zone erbt es.</value>
+  </data>
+  <data name="KOND_LBL_KALB_FERIEN_NAME" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="KOND_LBL_KALB_LEGENDE_GEMEINSAM" xml:space="preserve">
+    <value>Zeile für mehrere Größen</value>
   </data>
 </root>
 
