@@ -161,7 +161,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Führt das Projekt einen Niedertemperatur- oder Biomassekessel (UB‑Q10)? Bauart wie
-        /// <see cref="Kesselkennlinie.Bauart"/>; Biomasse nach Brennstoff (Holz und Pellets, 12 und 15).
+        /// <see cref="Kesselkennlinie.Bauart"/>; Biomasse nach Brennstoff (Holz und Pellets, 12 und 15); Elektrokessel zählen nicht.
         /// </summary>
         internal static bool KesselMitMindestruecklauf(int idProjekt)
         {
@@ -175,6 +175,8 @@ namespace WindowsFormsApplication1
                 string beschreibung = r["Beschreibung"] == DBNull.Value ? "" : Convert.ToString(r["Beschreibung"]);
                 int brennstoff = r["Brennstoff"] == DBNull.Value ? 0 : Convert.ToInt32(r["Brennstoff"]);
                 if (brennstoff == 12 || brennstoff == 15) return true;
+                // Ein Elektrokessel kennt keine Taupunktkorrosion - kein Mindestruecklauf.
+                if (brennstoff == SimulationSPK.BRENNSTOFF_STROM) continue;
                 if (Kesselkennlinie.Bauart(brennwert, beschreibung) == KesselBauart.Niedertemperatur) return true;
             }
             return false;

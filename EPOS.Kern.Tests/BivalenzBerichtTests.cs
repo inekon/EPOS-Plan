@@ -164,4 +164,53 @@ namespace EPOS.Kern.Tests
             Assert.Equal(-4.2, k.Waermepumpe.Module[0].Bereiche.Bivalenzpunkt_1);
         }
     }
+
+    /// <summary>
+    /// UB‑E4: die Quelle der Bivalenzwerte an der Testdatenbank — ohne Einbindung keine Werte, mit Einbindung die
+    /// Herleitung des gekoppelten Referenzprojekts 1058; die Prüfhinweise nach Kesselbauart.
+    /// </summary>
+    [Collection("Testdatenbank")]
+    public sealed class BivalenzBerichtsquelleTests : IDisposable
+    {
+        private readonly TestDatenbank _db = new TestDatenbank();
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose()
+        {
+            _kultur.Dispose();
+            _db.Dispose();
+        }
+
+        [Fact]
+        public void Ohne_Einbindung_liefert_die_Quelle_nichts()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.Null(BivalenzBerichtsquelle.Lade(1058));
+            Assert.Null(BivalenzBerichtsquelle.Lade(0));
+        }
+
+        [Fact]
+        public void Brennwert_und_Elektrokessel_tragen_keinen_Mindestruecklauf()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.False(BivalenzBerichtsquelle.KesselMitMindestruecklauf(1018));
+            Assert.False(BivalenzBerichtsquelle.KesselMitMindestruecklauf(1058));
+        }
+
+        [Fact]
+        public void Mit_Einbindung_traegt_1058_die_Herleitung_und_das_Bild()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Energieanlagen SET Einbindung = 'DIREKT' WHERE ID_Projekt = ? AND ID_Type = ?",
+                new DbParam("@p", 1058), new DbParam("@t", WizardItemClass.WP_TYP)));
+            BivalenzBerichtswerte b = BivalenzBerichtsquelle.Lade(1058);
+            Assert.NotNull(b);
+            Assert.True(b.MitUebergabe);
+            Assert.True(b.HoechstvorlaufC > 0.0);
+            Assert.True(b.UebergabeKw > 0.0);
+            Assert.True(b.Diagramm().MitUebergabe);
+            Assert.True(ChartRenderer.Bivalenzdiagramm(b.Diagramm()).Length > 100);
+        }
+    }
 }
