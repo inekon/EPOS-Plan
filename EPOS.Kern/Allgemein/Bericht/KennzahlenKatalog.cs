@@ -753,18 +753,18 @@ namespace WindowsFormsApplication1
             // KM3-E3-b (Fachkonzept Teillast und Takten 5.3, Katalog v18): nur Maschinen mit Teillastweg; ohne sie null.
             {
                 Kennzahl T(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_KM_TEILLAST; return k; }
-                l.Add(T(new Kennzahl(SCHLUESSEL_KM_TAKTSTROM, "Taktstrom Kältemaschinen",
-                    "Chiller cycling electricity", "kWh/a", GR_KAELTE, "N2", true,
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_TAKTSTROM, "Taktstrom Kältemaschinen (sensibel)",
+                    "Chiller cycling electricity (sensible)", "kWh/a", GR_KAELTE, "N2", true,
                     v => KmTeillast(v)?.Sum(x => x.K.Taktstrom_MWh.Value * 1000.0))));
-                l.Add(T(new Kennzahl(SCHLUESSEL_KM_STARTS, "Starts Kältemaschinen",
-                    "Chiller starts", "1/a", GR_KAELTE, "N0", true,
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_STARTS, "Starts Kältemaschinen (sensibel)",
+                    "Chiller starts (sensible)", "1/a", GR_KAELTE, "N0", true,
                     v => KmTeillast(v)?.Sum(x => (double)(x.K.Starts ?? 0)))));
-                l.Add(T(new Kennzahl(SCHLUESSEL_KM_TEILLASTANTEIL, "Teillastanteil Kältemaschinen",
-                    "Chiller part-load share", "%", GR_KAELTE, "N1", true, TeillastanteilKaeltemaschinen)));
-                l.Add(T(new Kennzahl(SCHLUESSEL_KM_LASTGRAD, "Mittlerer Lastgrad Kältemaschinen",
-                    "Chiller mean part-load ratio", "–", GR_KAELTE, "N2", true, LastgradKaeltemaschinen)));
-                l.Add(T(new Kennzahl(SCHLUESSEL_KM_JAZ_VERDICHTER, "Jahres-EER Kältemaschinen ohne Hilfsstrom",
-                    "Chiller seasonal EER without auxiliary power", "–", GR_KAELTE, "N2", true, JazVerdichterKaeltemaschinen)));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_TEILLASTANTEIL, "Teillastanteil Kältemaschinen (sensibel)",
+                    "Chiller part-load share (sensible)", "%", GR_KAELTE, "N1", true, TeillastanteilKaeltemaschinen)));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_LASTGRAD, "Mittlerer Lastgrad Kältemaschinen (sensibel)",
+                    "Chiller mean part-load ratio (sensible)", "–", GR_KAELTE, "N2", true, LastgradKaeltemaschinen)));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_JAZ_VERDICHTER, "Jahres-EER Kältemaschinen ohne Hilfsstrom (sensibel)",
+                    "Chiller seasonal EER without auxiliary power (sensible)", "–", GR_KAELTE, "N2", true, JazVerdichterKaeltemaschinen)));
             }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,

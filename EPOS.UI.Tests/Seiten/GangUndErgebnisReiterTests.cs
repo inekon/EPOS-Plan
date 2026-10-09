@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.Zeichnung;
 using Xunit;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.UI.Tests.Seiten;
 
@@ -850,6 +851,33 @@ public class GangUndErgebnisReiterTests : EposBunitContext
             p.Add(x => x.Modell, Modell);
             p.Add(x => x.Gedaechtnis, _kaelteStand);
         });
+
+    /// <summary>
+    /// KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Kachelzeile „Teillast und Takten“ steht nur mit einer
+    /// Kaeltemaschine mit Teillastweg - je Maschine Taktstrom, Starts, Teillastanteil, Lastgrad, Jahres-EER ohne Hilfsstrom.
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_zeigt_die_Kachelzeile_Teillast_nur_mit_Weg()
+    {
+        var ohne = KaelteZeichnen();
+        Assert.Empty(ohne.FindAll("[data-kachel='km-teillast']"));
+
+        var mit = Render<KaeltegangReiter>(p =>
+        {
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.Gedaechtnis, _kaelteStand);
+            p.Add(x => x.Teillast, new[] { new KaeltemaschineTeillastKachel("KM 1", 17.27, 717, 25.5, 0.70, 3.85) });
+        });
+        var block = mit.Find("[data-kachel='km-teillast'] section[data-anlage='KM 1']");
+        string text = block.TextContent;
+        Assert.Contains(R.SIM_KACHEL_KM_TEILLAST, text);
+        foreach (string label in new[] { R.SIM_LBL_KM_TAKTSTROM, R.SIM_LBL_KM_STARTS, R.SIM_LBL_KM_TEILLASTANTEIL,
+                                         R.SIM_LBL_KM_LASTGRAD, R.SIM_LBL_KM_JAZ_VERDICHTER })
+            Assert.Contains(label, text);
+        Assert.Contains(17.27.ToString("N2", System.Globalization.CultureInfo.CurrentCulture), text);
+        Assert.Contains(717.ToString("N0", System.Globalization.CultureInfo.CurrentCulture), text);
+        Assert.Contains(3.85.ToString("N2", System.Globalization.CultureInfo.CurrentCulture), text);
+    }
 
     /// <summary>
     /// <b>Der Bildauftrag des Kaeltebilds:</b> Bild <c>KAELTEGANG</c>, ohne Reihenwahl,

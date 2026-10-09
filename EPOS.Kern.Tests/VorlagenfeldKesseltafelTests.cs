@@ -75,7 +75,9 @@ namespace EPOS.Kern.Tests
                                                            && f.Schluessel != "hat.tabelle.gebaeude"
                                                            && f.Schluessel != "hat.tabelle.vergleich.gebaeude"
                                                            // v17 (UB-E4): ebenso der Schalter der Bivalenztafel.
-                                                           && f.Schluessel != "hat.tabelle.bivalenz"),
+                                                           && f.Schluessel != "hat.tabelle.bivalenz"
+                                                           // v18 (KM3-E3-b): ebenso der Schalter der Tafel „Teillast und Takten“.
+                                                           && f.Schluessel != "hat.tabelle.km_teillast"),
                        f => Assert.Equal(4, f.Seit));
             // Die Fassung 11 brachte Word-Schlüssel; spätere Fassungen heben die Word-Fassung weiter (v12: Strom- und Kältebild, Pufferauslegungstafel).
             Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 11);
