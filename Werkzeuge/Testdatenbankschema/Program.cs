@@ -3258,6 +3258,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrPvg + " - vollstaendig: " + PvGanglinieSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KalenderbedienungSchema.SCHRITT (K2): gemeinsamer Kalender „alle Groessen", benannte Wochen,
+            //      Wochenende und Feiertagsland am Gebaeude, Laenderfeiertage, Ferienliste. Aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Kalenderbedienung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die gekoppelten Kopien kehren beim Lesen in ihre Kalender zurueck, die
+            //      Ferienspalten bleiben Quelle der Leser.
+            string nrK2 = KalenderbedienungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK2 + " - Kalenderbedienung Stufe 2: " +
+                              (KalenderbedienungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK2 = new List<string>();
+                tabellen += KalenderbedienungSchema.Ausfuehren(berichtK2);
+                foreach (string zeile in berichtK2)
+                    Console.WriteLine("Schritt " + nrK2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK2 + " - vollstaendig: " + KalenderbedienungSchema.Vollstaendig() + " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

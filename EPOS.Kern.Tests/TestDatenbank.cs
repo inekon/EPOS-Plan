@@ -999,6 +999,9 @@ namespace EPOS.Kern.Tests
                 // Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie, reines DDL.
                 // Wiederholbar.
                 PvGanglinieSchema.Ausfuehren(null);
+                // Schritt KalenderbedienungSchema.SCHRITT (K2): gemeinsamer Kalender, Wochen, Wochenende, Laenderregeln,
+                // Ferienliste samt Migration. Wiederholbar.
+                KalenderbedienungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -60,10 +60,17 @@ namespace WindowsFormsApplication1
             long idGebaeude = gebaeude.ID_Gebaeude;
             List<Kalenderzeile> kalenderzeilen = Kalenderzeilen(idGebaeude, null);
             List<Periodenzeile> perioden = Periodenzeilen(idGebaeude, null);
+            Kalendergemeinschaft.Ausbreiten(kalenderzeilen, perioden);
+            kalenderzeilen = Kalendergemeinschaft.OhneGemeinsam(kalenderzeilen);
             List<Vorgabezeile> vorgaben = Vorgabezeilen(idGebaeude, null);
 
             List<Kalenderzeile> zonenkalender = idZone.HasValue ? Kalenderzeilen(idGebaeude, idZone) : null;
             List<Periodenzeile> zonenperioden = idZone.HasValue ? Periodenzeilen(idGebaeude, idZone) : null;
+            if (idZone.HasValue)
+            {
+                Kalendergemeinschaft.Ausbreiten(zonenkalender, zonenperioden);
+                zonenkalender = Kalendergemeinschaft.OhneGemeinsam(zonenkalender);
+            }
             List<Vorgabezeile> zonenvorgaben = idZone.HasValue ? Vorgabezeilen(idGebaeude, idZone) : null;
             return Satz(gebaeude, kalenderzeilen, perioden, vorgaben, zonenkalender, zonenperioden, zonenvorgaben,
                         idZone, wochenende, referenzjahr, kopplungWirksam, kuehlungWirksam);
@@ -337,11 +344,13 @@ namespace WindowsFormsApplication1
             if (bestand == null) throw new ArgumentNullException(nameof(bestand));
             if (!KonditionierungSchema.Lesbar()) return null;
 
-            List<Kalenderzeile> kalenderzeilen = KalenderzeilenVon(eigner);
+            List<Kalenderzeile> roh = KalenderzeilenVon(eigner, true);
+            List<Kalenderzeile> kalenderzeilen = Kalendergemeinschaft.OhneGemeinsam(roh);
             List<Vorgabezeile> vorgaben = VorgabezeilenVon(eigner);
             if (kalenderzeilen.Count == 0 && vorgaben.Count == 0) return null;
 
-            List<Periodenzeile> perioden = PeriodenzeilenVon(kalenderzeilen);
+            List<Periodenzeile> perioden = PeriodenzeilenVon(roh);
+            Kalendergemeinschaft.Ausbreiten(roh, perioden);
             Vorgabematrix matrix = Vorgabematrix.Bilden(
                 Konditionierungseingang.Bestand(bestand, kopplungWirksam, kuehlungWirksam),
                 vorgaben, eigner.Art);
@@ -435,9 +444,9 @@ namespace WindowsFormsApplication1
         public static List<Periodenzeile> Periodenzeilen(long idGebaeude, long? idZone)
         {
             var liste = new List<Periodenzeile>();
+            bool neu = Kalendergemeinschaft.SchrittSteht();
             DataTable t = Lesen(
-                "SELECT p.ID, p.ID_Kalender, p.Rang, p.Art, p.Bezeichner, p.Beginn, p.Ende, p.Feiertagsregel, " +
-                "p.Wert, p.Aus, p.Woche, p.WieWochentag FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p " +
+                "SELECT " + Kalendergemeinschaft.Periodenspalten("p.", neu) + " FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p " +
                 "JOIN \"" + KonditionierungSchema.TAB_KALENDER + "\" k ON k.ID = p.ID_Kalender " +
                 "WHERE k.ID_Gebaeude = ? AND k.ID_Zone IS " +
                 (idZone.HasValue ? "NOT NULL AND k.ID_Zone = ?" : "NULL") +
@@ -458,6 +467,8 @@ namespace WindowsFormsApplication1
                     Aus = (L(r, "Aus") ?? 0) != 0,
                     Woche = S(r, "Woche"),
                     WieWochentag = I(r, "WieWochentag"),
+                        GiltFuer = neu ? I(r, "Gilt_Fuer") : null,
+                        IdWoche = neu ? L(r, "ID_Woche") : null,
                 });
             return liste;
         }
@@ -497,6 +508,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Kalenderzeilen eines Eigentümers — die Bedingung stellt der <c>Eigner</c>.</summary>
         internal static List<Kalenderzeile> KalenderzeilenVon(KonditionierungCtrl.Eigner eigner)
+            => Kalendergemeinschaft.OhneGemeinsam(KalenderzeilenVon(eigner, true));
+
+        /// <summary>Die Kalenderzeilen eines Eigentümers samt dem gemeinsamen Kalender „alle Größen".</summary>
+        internal static List<Kalenderzeile> KalenderzeilenVon(KonditionierungCtrl.Eigner eigner, bool mitGemeinsam)
         {
             var liste = new List<Kalenderzeile>();
             DataTable t = DataRepository.GetDataTable(
@@ -554,11 +569,11 @@ namespace WindowsFormsApplication1
         private static List<Periodenzeile> PeriodenzeilenVon(List<Kalenderzeile> kalender)
         {
             var liste = new List<Periodenzeile>();
+            bool neu = Kalendergemeinschaft.SchrittSteht();
             foreach (Kalenderzeile k in kalender)
             {
                 DataTable t = DataRepository.GetDataTable(
-                    "SELECT ID, ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, " +
-                    "Woche, WieWochentag FROM \"" + KonditionierungSchema.TAB_PERIODE +
+                    "SELECT " + Kalendergemeinschaft.Periodenspalten("", neu) + " FROM \"" + KonditionierungSchema.TAB_PERIODE +
                     "\" WHERE ID_Kalender = ? ORDER BY Rang DESC", new DbParam("@k", k.Id));
                 if (t == null) continue;
                 foreach (DataRow r in t.Rows)
@@ -576,6 +591,8 @@ namespace WindowsFormsApplication1
                         Aus = (L(r, "Aus") ?? 0) != 0,
                         Woche = S(r, "Woche"),
                         WieWochentag = I(r, "WieWochentag"),
+                        GiltFuer = neu ? I(r, "Gilt_Fuer") : null,
+                        IdWoche = neu ? L(r, "ID_Woche") : null,
                     });
             }
             return liste;

@@ -979,7 +979,11 @@ namespace WindowsFormsApplication1
         /// Danach, mit der PV-GANGLINIE (PVG), steht das Ziel auf <see cref="PvGanglinieSchema.SCHRITT"/>: Katalog,
         /// Projektkopie und Zuordnung einer Photovoltaik-Ganglinie im Raster der Datei (<see cref="PvGanglinieSchema"/>).
         /// <b>Ergebnisneutral:</b> Reines DDL, kein Referenzprojekt führt eine PV-Ganglinie.
-        public const int Zielversion = PvGanglinieSchema.SCHRITT;
+        /// Danach, mit der KALENDERBEDIENUNG STUFE 2 (K2), steht das Ziel auf <see cref="KalenderbedienungSchema.SCHRITT"/>:
+        /// gemeinsamer Kalender „alle Größen" mit Größenmaske, benannte Wochen, Wochenende und Feiertagsland am Gebäude,
+        /// Länderfeiertage als Regeln, Ferienliste als Spiegel der Ferienspalten (<see cref="KalenderbedienungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gekoppelte Kopien werden eine Gemeinschaftsperiode, die beim Lesen genau in ihre Kalender zurückkehrt.
+        public const int Zielversion = KalenderbedienungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
