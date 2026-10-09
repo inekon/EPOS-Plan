@@ -9,7 +9,7 @@ namespace WindowsFormsApplication1
     /// <summary>Woher ein Lesewert der Gerätegrenzen stammt (Umsetzungskonzept Übergabegrenze 6.2).</summary>
     internal enum Geraetegrenzherkunft
     {
-        /// <summary>Gepflegter Wert des Geräts (Katalog bzw. Projektkopie; ab UB‑E3).</summary>
+        /// <summary>Gepflegter Wert des Geräts (Projektkopie bzw. Katalog).</summary>
         Katalog = 0,
 
         /// <summary>Vorgabe der Kältemittelklasse aus <see cref="Bivalenzvorgaben"/>.</summary>
@@ -153,24 +153,19 @@ namespace WindowsFormsApplication1
         internal static bool VorwaermbetriebWaehlbar(Bivalenzbetriebsart art) => art != Bivalenzbetriebsart.Alternativ;
 
         /// <summary>
-        /// Die Gerätegrenzen nach Kältemittel (in UB‑E2 allein aus <see cref="Bivalenzvorgaben"/>; Katalogwerte folgen in
-        /// UB‑E3): Herkunft „Vorgabe nach Kältemittel" für eine Klasse der Tafel 6.3, sonst „Vorgabe". Der höchste Rücklauf
-        /// ist bei R744 die Grenze der Klasse, sonst abgeleitet θ_WP,max − σ_min (NaN ohne Höchstvorlauf).
+        /// Die Gerätegrenzen nach Kältemittel ohne gepflegte Gerätespalten (<see cref="Geraetegrenzen"/> mit leeren Spalten):
+        /// Herkunft „Vorgabe nach Kältemittel" für eine Klasse der Tafel 6.3, sonst „Vorgabe". Der höchste Rücklauf ist
+        /// min(Grenze der Klasse, θ_WP,max − σ_min), ohne Grenze der Klasse abgeleitet (NaN ohne Höchstvorlauf).
         /// </summary>
         internal static Geraetegrenzwerte Grenzen(string? kaeltemittel, double hoechstvorlaufC)
-        {
-            Kaeltemittelvorgabe v = Bivalenzvorgaben.Vorgabe(kaeltemittel);
-            Geraetegrenzherkunft herkunft = v.Herkunft == Kaeltemittelherkunft.Kaeltemittelklasse
-                ? Geraetegrenzherkunft.VorgabeKaeltemittel
-                : Geraetegrenzherkunft.Vorgabe;
-            bool r744 = v.RuecklaufGrenzeC.HasValue;
-            double ruecklauf = r744 ? v.RuecklaufGrenzeC!.Value : hoechstvorlaufC - v.SpreizungMinK;
-            return new Geraetegrenzwerte(
-                v.SpreizungAuslegungK, v.SpreizungMaxK, v.SpreizungMinK, herkunft,
-                v.MindestvolumenstromAnteil, herkunft,
-                ruecklauf, r744 ? herkunft : Geraetegrenzherkunft.Abgeleitet,
-                v.BezugsruecklaufC, v.AbwertungProzentJeK, v.RuecklaufGrenzeC);
-        }
+            => Geraetegrenzen.Bilden(Geraetespalten.NurKaeltemittel(kaeltemittel), hoechstvorlaufC).Werte();
+
+        /// <summary>
+        /// Die Gerätegrenzen aus den gepflegten Gerätespalten (UB‑E3): ein gepflegter Wert trägt die Herkunft „Katalog",
+        /// ein leerer die Vorgabe der Kältemittelklasse.
+        /// </summary>
+        internal static Geraetegrenzwerte GrenzenAusSpalten(Geraetespalten? spalten, double hoechstvorlaufC)
+            => Geraetegrenzen.Bilden(spalten, hoechstvorlaufC).Werte();
 
         /// <summary>
         /// Die weichen Sperren (Stufe Warnung) und Hinweise in fester Reihenfolge. Speichern bleibt immer möglich; eine Regel,
