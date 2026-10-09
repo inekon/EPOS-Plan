@@ -72,7 +72,7 @@ Katalogverwaltungen** und **eine Rechenmaske ohne Katalog** (Lastspitzenkappung)
 
 | Kopf | Punkte |
 |---|---|
-| **Wärmebedarf & Heizung** (`MenuItem_WBundHeizung`) | Brauchwasser, Heizkessel, Wärmepumpe, BHKW, Solarkollektoren, ▸ Profile & Lastgänge (Wärmebedarf Lastgang, Prozesswärme, Solarthermieganglinie) |
+| **Wärme- und Kälteerzeugung** (`MenuItem_WBundHeizung`) | Brauchwasser, Heizkessel, Wärmepumpe, BHKW, Solarkollektoren, ▸ Profile & Lastgänge (Wärmebedarf Lastgang, Prozesswärme, Solarthermieganglinie) |
 | **Strombedarf & Speicher** (`MenuItem_StromBedarfundSp`) | Stromverbraucher, Stromganglinie, Stromspeicher, Lastspitzenkappung |
 | **Energiesysteme** (`MenuItem_Energiesysteme`) | ▸ Photovoltaik (PV Module, Wechselrichter), Pufferspeicher |
 

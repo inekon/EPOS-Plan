@@ -55,22 +55,39 @@
         { <button type="button" class="epos-knopf" disabled="@(!Aktiv)" @onclick="PreisprofilOeffnen">@(Auslegung.Strompreisprofil is null ? Texte.PreisprofilAnlegen : Texte.PreisprofilBearbeiten)</button> }
     </div>
 
+    @* KOSTEN IN ZWEI BEREICHEN (Anwenderwunsch 08.10.2026): Investition und Betrieb stehen je unter
+       eigenem Abschnittskopf; die Auswahl sagt, woher die Saetze kommen - „Eingabe in diesem Dialog"
+       (die Felder darunter) oder „Aus dem Kostenmodul des Projekts". Felder und Bindungen wie zuvor. *@
     <Formularraster>
         <KindInhalt>
-            <Formulargruppe Titel="@Texte.Kosten">
+            <Formulargruppe Titel="@Texte.GruppeInvestition">
                 <KindInhalt>
+                    <div class="epos-speicherauslegung-invest">
                     <Auswahlfeld Bezeichnung="@Texte.Investitionsquelle" Eintraege="@KostenQuellen"
                                  Auswahl="@((int)Auslegung.Investitionsquelle)" Aktiv="@Aktiv"
                                  AuswahlChanged="@(v => KostenQuelleSetzen(v, x => Auslegung.Investitionsquelle = x))" />
-                    <Auswahlfeld Bezeichnung="@Texte.Betriebsquelle" Eintraege="@KostenQuellen"
-                                 Auswahl="@((int)Auslegung.Betriebsquelle)" Aktiv="@Aktiv"
-                                 AuswahlChanged="@(v => KostenQuelleSetzen(v, x => Auslegung.Betriebsquelle = x))" />
                     <Zahlenfeld Bezeichnung="@Texte.InvestKw" Einheit="€/kW" Wert="@InvestAnzeige.InvestEurProKw"
                                 Min="0" Aktiv="@(Aktiv && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)"
                                 WertChanged="@(v => InvestitionSetzen(v, x => Auslegung.DirekteKosten.InvestEurProKw = x))" />
                     <Zahlenfeld Bezeichnung="@Texte.InvestKwh" Einheit="€/kWh" Wert="@InvestAnzeige.InvestEurProKwh"
                                 Min="0" Aktiv="@(Aktiv && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)"
                                 WertChanged="@(v => InvestitionSetzen(v, x => Auslegung.DirekteKosten.InvestEurProKwh = x))" />
+                    @if (!InvestAnzeige.InvestVorhanden && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)
+                    { <Schalter Bezeichnung="@Texte.InvestNull" Wert="false" Aktiv="@Aktiv" WertChanged="@(async v => { Auslegung.DirekteKosten.InvestVorhanden = v; await Geaendert(); })" /> }
+                    </div>
+                </KindInhalt>
+            </Formulargruppe>
+        </KindInhalt>
+    </Formularraster>
+
+    <Formularraster>
+        <KindInhalt>
+            <Formulargruppe Titel="@Texte.GruppeBetrieb">
+                <KindInhalt>
+                    <div class="epos-speicherauslegung-betrieb">
+                    <Auswahlfeld Bezeichnung="@Texte.Betriebsquelle" Eintraege="@KostenQuellen"
+                                 Auswahl="@((int)Auslegung.Betriebsquelle)" Aktiv="@Aktiv"
+                                 AuswahlChanged="@(v => KostenQuelleSetzen(v, x => Auslegung.Betriebsquelle = x))" />
                     <Zahlenfeld Bezeichnung="@Texte.BetriebKw" Einheit="€/(kW·a)" Wert="@BetriebAnzeige.BetriebEurProKwJahr"
                                 Min="0" Aktiv="@(Aktiv && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)"
                                 WertChanged="@(v => BetriebSetzen(v, x => Auslegung.DirekteKosten.BetriebEurProKwJahr = x))" />
@@ -80,6 +97,9 @@
                     <Zahlenfeld Bezeichnung="@Texte.BetriebEntladen" Einheit="€/kWh" Wert="@BetriebAnzeige.BetriebEurProKwhEntladen"
                                 Min="0" Aktiv="@(Aktiv && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)"
                                 WertChanged="@(v => BetriebSetzen(v, x => Auslegung.DirekteKosten.BetriebEurProKwhEntladen = x))" />
+                    @if (!BetriebAnzeige.BetriebVorhanden && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)
+                    { <Schalter Bezeichnung="@Texte.BetriebNull" Wert="false" Aktiv="@Aktiv" WertChanged="@(async v => { Auslegung.DirekteKosten.BetriebVorhanden = v; await Geaendert(); })" /> }
+                    </div>
                 </KindInhalt>
             </Formulargruppe>
         </KindInhalt>
@@ -87,11 +107,7 @@
 
     @if (!InvestAnzeige.InvestVorhanden || !BetriebAnzeige.BetriebVorhanden)
     {
-        <p>Fehlende Kostensätze werden nicht als kostenlose Anlage bewertet. Bitte Kostensätze eingeben oder die angezeigten Nullkosten ausdrücklich bestätigen.</p>
-        @if (!InvestAnzeige.InvestVorhanden && Auslegung.Investitionsquelle == SpeicherKostenQuelle.Dialog)
-        { <Schalter Bezeichnung="Investitionskosten mit 0 € ansetzen" Wert="false" Aktiv="@Aktiv" WertChanged="@(async v => { Auslegung.DirekteKosten.InvestVorhanden = v; await Geaendert(); })" /> }
-        @if (!BetriebAnzeige.BetriebVorhanden && Auslegung.Betriebsquelle == SpeicherKostenQuelle.Dialog)
-        { <Schalter Bezeichnung="Betriebskosten mit 0 € ansetzen" Wert="false" Aktiv="@Aktiv" WertChanged="@(async v => { Auslegung.DirekteKosten.BetriebVorhanden = v; await Geaendert(); })" /> }
+        <p class="epos-speicherauslegung-kostenhinweis">@Texte.KostenFehlen</p>
     }
     @if (KostenmodulSichtbar)
     {
@@ -188,7 +204,10 @@
     /// <summary>Die drei Quellen des Bezugspreises.</summary>
     public static readonly IReadOnlyList<(int Id, string Text)> PreisQuellen = new[] { (0,"EPOS: Stromtarif"), (1,"Separate CSV-Datei"), (3,"Editierbares Strompreisprofil") };
     /// <summary>Die zwei Quellen der Kostensaetze.</summary>
-    public static readonly IReadOnlyList<(int Id, string Text)> KostenQuellen = new[] { (0,"Im Dialog"), (1,"Kostenmodul") };
+    // Die Texte sagen, WO der Wert herkommt (Anwenderwunsch 08.10.2026); je Aufruf aus den Ressourcen gelesen,
+    // damit die Sprache der Oberflaeche gilt.
+    public static IReadOnlyList<(int Id, string Text)> KostenQuellen
+        => new[] { (0, Resource.FLOTTE_AUS_QUELLE_DIALOG), (1, Resource.FLOTTE_AUS_QUELLE_KOSTENMODUL) };
     private IReadOnlyList<(int Id,string Text)> Profile => Auslegungsprofile.Select((x,i)=>(i,x.Name)).ToArray();
     private IReadOnlyList<(int Id,string Text)> Preisprofile => Strompreisprofile.Select((x,i)=>(i,x.Bezeichner)).ToArray();
     private int? PreisprofilIndex { get { int i=Strompreisprofile.ToList().FindIndex(x => Auslegung.Strompreisprofil is not null && x.ID == Auslegung.Strompreisprofil.ID); return i < 0 ? null : i; } }
@@ -240,7 +259,7 @@
     public sealed class SpeicherAuslegungTexte {
         public string Zeitreihen{get;set;}=Resource.FLOTTE_AUS_ZEITREIHEN; public string Lastquelle{get;set;}=Resource.FLOTTE_AUS_LASTQUELLE; public string PvQuelle{get;set;}=Resource.FLOTTE_AUS_PVQUELLE; public string Preisquelle{get;set;}=Resource.FLOTTE_AUS_PREISQUELLE; public string Preisprofil{get;set;}=Resource.FLOTTE_AUS_PREISPROFIL; public string LastDatei{get;set;}=Resource.FLOTTE_AUS_LASTDATEI; public string PvDatei{get;set;}=Resource.FLOTTE_AUS_PVDATEI; public string PreisDatei{get;set;}=Resource.FLOTTE_AUS_PREISDATEI; public string PreisprofilBearbeiten{get;set;}=Resource.FLOTTE_AUS_PROFIL_BEARBEITEN; public string PreisprofilAnlegen{get;set;}=Resource.FLOTTE_AUS_PROFIL_ANLEGEN; public string NeuesPreisprofil{get;set;}=Resource.FLOTTE_AUS_PROFIL_NEU;
         public string EposModelljahrZuordnen{get;set;}=Resource.FLOTTE_AUS_MODELLJAHR; public string EposModelljahrHinweis{get;set;}=Resource.FLOTTE_AUS_MODELLJAHR_HINWEIS;
-        public string Kosten{get;set;}=Resource.FLOTTE_AUS_KOSTEN; public string Investitionsquelle{get;set;}=Resource.FLOTTE_AUS_INVESTQUELLE; public string Betriebsquelle{get;set;}=Resource.FLOTTE_AUS_BETRIEBSQUELLE; public string InvestKw{get;set;}=Resource.FLOTTE_AUS_INVEST_KW; public string InvestKwh{get;set;}=Resource.FLOTTE_AUS_INVEST_KWH; public string BetriebKw{get;set;}=Resource.FLOTTE_AUS_BETRIEB_KW; public string BetriebKwh{get;set;}=Resource.FLOTTE_AUS_BETRIEB_KWH; public string BetriebEntladen{get;set;}=Resource.FLOTTE_AUS_BETRIEB_ENTLADEN; public string KostenmodulHerkunft{get;set;}=Resource.FLOTTE_AUS_KOSTENMODUL;
+        public string Kosten{get;set;}=Resource.FLOTTE_AUS_KOSTEN; public string GruppeInvestition{get;set;}=Resource.FLOTTE_AUS_GRUPPE_INVEST; public string GruppeBetrieb{get;set;}=Resource.FLOTTE_AUS_GRUPPE_BETRIEB; public string KostenFehlen{get;set;}=Resource.FLOTTE_AUS_KOSTEN_FEHLEN; public string InvestNull{get;set;}=Resource.FLOTTE_AUS_INVEST_NULL; public string BetriebNull{get;set;}=Resource.FLOTTE_AUS_BETRIEB_NULL; public string Investitionsquelle{get;set;}=Resource.FLOTTE_AUS_INVESTQUELLE; public string Betriebsquelle{get;set;}=Resource.FLOTTE_AUS_BETRIEBSQUELLE; public string InvestKw{get;set;}=Resource.FLOTTE_AUS_INVEST_KW; public string InvestKwh{get;set;}=Resource.FLOTTE_AUS_INVEST_KWH; public string BetriebKw{get;set;}=Resource.FLOTTE_AUS_BETRIEB_KW; public string BetriebKwh{get;set;}=Resource.FLOTTE_AUS_BETRIEB_KWH; public string BetriebEntladen{get;set;}=Resource.FLOTTE_AUS_BETRIEB_ENTLADEN; public string KostenmodulHerkunft{get;set;}=Resource.FLOTTE_AUS_KOSTENMODUL;
         public string Profile{get;set;}=Resource.FLOTTE_AUS_PROFILE; public string ProfilLaden{get;set;}=Resource.FLOTTE_AUS_PROFIL_LADEN; public string ProfilWaehlen{get;set;}=Resource.FLOTTE_AUS_PROFIL_WAEHLEN; public string Profilname{get;set;}=Resource.FLOTTE_AUS_PROFILNAME; public string EinstellungenSpeichern{get;set;}=Resource.FLOTTE_AUS_EINSTELLUNGEN_SPEICHERN; public string ProfilSpeichern{get;set;}=Resource.FLOTTE_AUS_PROFIL_SPEICHERN; public string Duplizieren{get;set;}=Resource.FLOTTE_AUS_DUPLIZIEREN; public string Kopie{get;set;}=Resource.FLOTTE_AUS_KOPIE; public string Gespeichert{get;set;}=Resource.FLOTTE_AUS_GESPEICHERT; public string ProfilGespeichert{get;set;}=Resource.FLOTTE_AUS_PROFIL_GESPEICHERT;
     }
 }

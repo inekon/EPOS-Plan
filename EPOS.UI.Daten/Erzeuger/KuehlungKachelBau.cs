@@ -14,7 +14,8 @@ namespace WindowsFormsApplication1
     /// und Sperrgrund;</item>
     /// <item>die Projekteinstellung <b>„Kühlung rechnen“</b> aus <see cref="KonfigurationCtrl.KuehlbetriebLesen"/>.</item>
     /// </list>
-    /// Der Schalter der Wärmepumpenauswahl schreibt über <see cref="WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten"/>
+    /// Die Schalter „Wärmepumpen im Kühlbetrieb“ stehen im Erzeugerdialog der Kältemaschinen
+    /// (<see cref="KaeltemaschineAnlageHuelle"/>) und schreiben beim OK über <see cref="WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten"/>
     /// — denselben Kernweg wie der Kühlschalter der Wärmepumpen-Konfiguration (<c>Tab_WP.Kuehlbetrieb</c> der
     /// Projektkopie samt Sperrgründen); Vorlauf und Hilfsstromanteil bleiben, wie sie stehen.
     /// </summary>
@@ -30,11 +31,20 @@ namespace WindowsFormsApplication1
                 Kaeltemaschinen = KaeltemaschineAnlageCtrl.ListeStill(idProjekt)
                     .Select(a => new KuehlKaeltemaschine(a.Bezeichner ?? "", Math.Max(1, a.Anzahl)))
                     .ToList(),
-                Waermepumpen = WPCtrl.KuehlfaehigeGeraete(idProjekt)
-                    .Select(g => new KuehlWaermepumpe(g.IdWp, g.Bezeichner ?? "", g.Kuehlbetrieb, g.Sperrgrund))
-                    .ToList()
+                Waermepumpen = Waermepumpen(idProjekt)
             };
         }
+
+        /// <summary>
+        /// Die Wärmepumpen des Projekts mit Kühlfunktion samt Kühlbetrieb und Sperrgrund — die Kachel liest daraus
+        /// ihren Statuspunkt, der Erzeugerdialog der Kältemaschinen seine Schalter „Wärmepumpen im Kühlbetrieb“.
+        /// </summary>
+        internal static IReadOnlyList<KuehlWaermepumpe> Waermepumpen(int idProjekt)
+            => idProjekt <= 0
+                ? Array.Empty<KuehlWaermepumpe>()
+                : WPCtrl.KuehlfaehigeGeraete(idProjekt)
+                    .Select(g => new KuehlWaermepumpe(g.IdWp, g.Bezeichner ?? "", g.Kuehlbetrieb, g.Sperrgrund))
+                    .ToList();
 
         /// <summary>Schreibt den Kühlbetrieb einer Wärmepumpe; <c>null</c> = geschrieben, sonst der Grund.</summary>
         internal static string KuehlbetriebSchreiben(int idProjekt, int idWp, bool an)

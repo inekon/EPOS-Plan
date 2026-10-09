@@ -42,6 +42,8 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   sein Tooltip erschiene nie; die **weiche Sperre** ist `aria-disabled="true"` plus ein Handler,
   der den Versuch MELDET. Beide Bauarten stehen in EINER Stilregel, denn **zwei Zustände müssen
   SICHTBAR verschieden sein**.
+- **Blätter zuerst:** Kreuz, Esc und Hintergrundklick einer `Ueberlagerung` führen erst ein offenes Blatt
+  (`Blattwechsel`, angemeldet im `Blattstapel`) zurück; erst vom Wurzelblatt aus schließt der Dialog.
 - **Tastatur:** Esc schließt überall, wobei jeder Wirt erst seine Überlagerungsschalter prüft;
   **Enter** bestätigt nur in reinen OK-Dialogen — wo ein Knopf sofort schreibt, bleibt es
   unbelegt. **Kein Delegat, kein Knopf.**

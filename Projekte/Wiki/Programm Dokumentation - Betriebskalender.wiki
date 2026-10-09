@@ -3,7 +3,7 @@
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Ein '''Betriebskalender''' legt Feiertage und Betriebsferien auf das Wochenprofil eines Bedarfsprofils. Ohne Kalender gilt dasselbe 168-Stunden-Muster für alle Wochen des Jahres; mit Kalender trägt ein Feiertag den Sonntag des Wochenprofils, und an Ferientagen sinkt der Bedarf auf einen wählbaren Anteil. Ein Kalender gilt für Brauchwasser-, Prozesswärme- und Stromprofile gleichermaßen.
 
-Die Kalender pflegen Sie über das Menü '''Administration''' › ''Wärmebedarf & Heizung'' › ''Profile & Lastgänge'' › ''Betriebskalender''. Gewählt wird ein Kalender je Profilzuordnung im Bedarfsprofil-Dialog des Projekts.
+Die Kalender pflegen Sie über das Menü '''Administration''' › ''Wärme- und Kälteerzeugung'' › ''Profile & Lastgänge'' › ''Betriebskalender''. Gewählt wird ein Kalender je Profilzuordnung im Bedarfsprofil-Dialog des Projekts.
 
 == Einen Kalender anlegen und ändern ==
 {{Anker|verwaltung}}

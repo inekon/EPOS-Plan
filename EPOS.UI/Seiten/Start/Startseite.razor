@@ -253,7 +253,7 @@
                                     KopfText="@ErzeugerKopfText" Text="@ErzeugerText"
                                     TippTitelText="@ErzeugerTippTitelText" TippText="@ErzeugerTippText"
                                     ProfilText="@SolarProfilText" GanglinieText="@SolarGanglinieText"
-                                    Kuehlung="@Kuehlung" KuehlbetriebSchreiben="@KuehlbetriebSchreiben" />
+                                    Kuehlung="@Kuehlung" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -601,12 +601,6 @@
     /// nur durchgereicht. <c>null</c> = die Kachel zeigt ihren Leerhinweis.
     /// </summary>
     [Parameter] public Func<KuehlungKachelDaten?>? Kuehlung { get; set; }
-
-    /// <summary>
-    /// Der Schreibweg des Kühlbetriebs einer Wärmepumpe (Id der Projektkopie, an/aus; Rückgabe <c>null</c> =
-    /// geschrieben, sonst der Grund) — Windows: <c>KuehlungKachelBau.KuehlbetriebSchreiben</c>; nur durchgereicht.
-    /// </summary>
-    [Parameter] public Func<int, bool, string?>? KuehlbetriebSchreiben { get; set; }
 
     [Parameter] public string SimulationKopfText { get; set; } = "Simulation durchführen";
     [Parameter] public string SimulationText { get; set; }

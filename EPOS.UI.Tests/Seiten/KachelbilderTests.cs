@@ -133,7 +133,8 @@ public class KachelbilderTests : EposBunitContext
         Assert.Equal("PWP.jpg", Datei(Kachelschluessel.Waermepumpe));
         Assert.Equal("PHeizkessel.jpg", Datei(Kachelschluessel.Heizkessel));
         Assert.Equal("PProjektSolarthermie.jpg", Datei(Kachelschluessel.Solarthermie));
-        Assert.Equal("PBHKW.jpg", Datei(Kachelschluessel.Bhkw));
+        Assert.Equal("PBHKW_Symbol.svg", Datei(Kachelschluessel.Bhkw));
+        Assert.Equal(Kachelbilder.KLASSE_SYMBOL, Kachelbilder.Klasse(Kachelschluessel.Bhkw));
         Assert.Equal("PProjektPV.jpg", Datei(Kachelschluessel.Photovoltaik));
         Assert.Equal("PSSpeicher.jpg", Datei(Kachelschluessel.Stromspeicher));
         Assert.Equal("PPufferSpeicher.jpg", Datei(Kachelschluessel.Pufferspeicher));
@@ -215,7 +216,7 @@ public class KachelbilderTests : EposBunitContext
 
         var bilder = cut.FindAll(".epos-kachel img");
         // Sieben Ausschnitte der Bestandskacheln, als achtes das eigene Symbol der Kachel
-        // „Kühlung und Kälteanlagen" (sie steht im eigenen Wirt mit Schaltern, ohne Kachelschlüssel).
+        // „Kühlung und Kälteanlagen" (ohne Kachelschlüssel).
         Assert.Equal(8, bilder.Count);
         Assert.Equal(Kachelbilder.KuehlungQuelle, bilder[7].GetAttribute("src"));
         Assert.Contains(Kachelbilder.KLASSE_SYMBOL, bilder[7].ClassName);
@@ -225,6 +226,24 @@ public class KachelbilderTests : EposBunitContext
         Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT_FLACH, bilder[5].ClassName);
         Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT_FLACH, bilder[6].ClassName);
         Assert.Contains(Kachelbilder.KLASSE_AUSSCHNITT, bilder[0].ClassName);
+
+        // Die BHKW-Kachel (vierte Stelle) traegt das eigene Vektorsymbol, keinen Ausschnitt.
+        Assert.Equal("_content/EPOS.UI/bilder/start/PBHKW_Symbol.svg", bilder[3].GetAttribute("src"));
+        Assert.Contains(Kachelbilder.KLASSE_SYMBOL, bilder[3].ClassName);
+        Assert.DoesNotContain(Kachelbilder.KLASSE_AUSSCHNITT, bilder[3].ClassName);
+    }
+
+    [Fact]
+    public void Das_BHKW_Symbol_ist_ein_Vektorbild_von_84_Pixeln()
+    {
+        string pfad = Path.Combine(Bilderordner(), Kachelbilder.BHKW_DATEI);
+        Assert.True(File.Exists(pfad), pfad);
+        var svg = System.Xml.Linq.XDocument.Load(pfad).Root!;
+        Assert.Equal("svg", svg.Name.LocalName);
+        Assert.Equal("84", svg.Attribute("width")?.Value);
+        Assert.Equal("84", svg.Attribute("height")?.Value);
+        // Das alte Blitzbild ist entfernt.
+        Assert.False(File.Exists(Path.Combine(Bilderordner(), "PBHKW.jpg")));
     }
 
     [Fact]

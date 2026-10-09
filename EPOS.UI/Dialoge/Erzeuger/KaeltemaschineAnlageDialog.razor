@@ -13,6 +13,13 @@
    Anlage in einem Vorgang. "Abbrechen", Esc und das Kreuz verwerfen alles. "Loeschen" fragt zurueck und
    merkt die Anlage zum Loeschen vor.
 
+   WAERMEPUMPEN IM KUEHLBETRIEB (Anwenderwunsch 08.10.2026): Unter der Anlagenliste steht je Waermepumpe des
+   Projekts mit Kuehlfunktion ein Schalter - der Kaelteerzeuger an derselben Stelle wie die Kaeltemaschinen
+   (die Startkachel „Kuehlung und Kaelteanlagen" fuehrt keine Bedienelemente mehr). Ein gesperrter Schalter
+   nennt seinen Grund am Element; geschrieben wird der Kuehlbetrieb wie alles andere erst beim OK, ueber
+   denselben Kernweg wie der Kuehlschalter der Waermepumpen-Konfiguration. Ein abgelehnter Schalter meldet im
+   Banner und haelt den Dialog offen.
+
    KEINE DATENBANK (Hausregel EPOS.UI): Die Datenseite liegt in der Huelle (EPOS.UI.Daten,
    KaeltemaschineAnlageHuelle) ueber KaeltemaschineAnlageCtrl. *@
 
@@ -20,6 +27,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using System.Globalization
 @using WindowsFormsApplication1
+@using EPOS.UI.Seiten.Start
 @implements IDisposable
 
 <div class="epos-dialog epos-kaeltemaschine-anlage" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -70,6 +78,33 @@
                 }
             </KindInhalt>
         </Formulargruppe>
+
+        @if (Waermepumpen is not null)
+        {
+            <Formulargruppe Titel="@Texte.GruppeWaermepumpen">
+                <KindInhalt>
+                    <div class="epos-kaeltemaschine-waermepumpen">
+                        @if (_wpGelesen.Count == 0)
+                        {
+                            <p class="epos-leisezeile epos-kaeltemaschine-wp-leer">@Texte.WaermepumpenLeer</p>
+                        }
+                        else
+                        {
+                            @foreach (KuehlWaermepumpe wp in _wpGelesen)
+                            {
+                                KuehlWaermepumpe w = wp;
+                                <div class="epos-kaeltemaschine-wp" @key="w.IdWp">
+                                    <Schalter Bezeichnung="@w.Name" Wert="@WpKuehlbetrieb(w)"
+                                              Aktiv="@WpAktiv(w)" Grund="@WpGrund(w)"
+                                              WertChanged="@(an => BeiWpKuehlbetrieb(w, an))" />
+                                </div>
+                            }
+                            <Herleitungszeile Text="@Texte.WaermepumpenHinweis" />
+                        }
+                    </div>
+                </KindInhalt>
+            </Formulargruppe>
+        }
 
         @if (Aktuell is Zeile a)
         {
@@ -200,6 +235,18 @@
     /// <summary>Löscht eine Anlage samt verwaister Projektkopie.</summary>
     [Parameter] public Action<int>? Loeschen { get; set; }
 
+    /// <summary>
+    /// Die Wärmepumpen des Projekts mit Kühlfunktion samt Kühlbetrieb und Sperrgrund; <c>null</c> = der Block
+    /// „Wärmepumpen im Kühlbetrieb“ entfällt.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<KuehlWaermepumpe>>? Waermepumpen { get; set; }
+
+    /// <summary>
+    /// Schreibt den Kühlbetrieb einer Wärmepumpe (Id der Projektkopie, an/aus) beim OK; Rückgabe <c>null</c> oder
+    /// leer = geschrieben, sonst der Grund. <c>null</c> = die Schalter sind gesperrt.
+    /// </summary>
+    [Parameter] public Func<int, bool, string?>? KuehlbetriebSchreiben { get; set; }
+
     /// <summary>Der Dialog wurde geschlossen: <c>true</c> = mit OK geschrieben, <c>false</c> = verworfen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -242,6 +289,12 @@
     private bool _loeschfrage;
     private string _loeschfrageText = "";
 
+    /// <summary>Die gelesenen Wärmepumpen mit Kühlfunktion.</summary>
+    private IReadOnlyList<KuehlWaermepumpe> _wpGelesen = Array.Empty<KuehlWaermepumpe>();
+
+    /// <summary>Der Arbeitsstand der Schalter: Id der Projektkopie → gewünschter Kühlbetrieb (nur Abweichungen).</summary>
+    private readonly Dictionary<int, bool> _wpArbeit = new();
+
     private List<Zeile> Sichtbare => _zeilen.Where(z => !z.Entfernt).ToList();
     private Zeile? Aktuell => _zeilen.FirstOrDefault(z => !z.Entfernt && z.Schluessel == _gewaehlt);
 
@@ -262,6 +315,8 @@
     public bool KatalogOffen => _katalogOffen;
     /// <summary>Steht die Löschrückfrage? (Prüfhilfe)</summary>
     public bool Loeschfrage => _loeschfrage;
+    /// <summary>Die noch nicht geschriebenen Schalter „Wärmepumpen im Kühlbetrieb“ (Prüfhilfe).</summary>
+    public IReadOnlyDictionary<int, bool> WaermepumpenArbeitsstand => _wpArbeit;
 
     // =====================================================================
     // Aufbau
@@ -272,6 +327,7 @@
         foreach (KaeltemaschineAnlageDaten d in Anlagen?.Invoke() ?? Array.Empty<KaeltemaschineAnlageDaten>())
             _zeilen.Add(new Zeile { Schluessel = NeuerSchluessel(), Gelesen = d, Arbeit = d.Kopie() });
         _gewaehlt = _zeilen.FirstOrDefault()?.Schluessel ?? "";
+        _wpGelesen = Waermepumpen?.Invoke() ?? Array.Empty<KuehlWaermepumpe>();
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_ANLAGE, () => KiSicht(), KiHaken());
     }
 
@@ -330,6 +386,45 @@
 
     private static string Leistung(KaeltemaschineAnlageDaten d)
         => d.Geraet?.Nennkaelteleistung is double kw ? Zahl(kw * Math.Max(1, d.Anzahl ?? 1), 1) : "";
+
+    // =====================================================================
+    // Wärmepumpen im Kühlbetrieb — Arbeitsstand bis OK
+    // =====================================================================
+
+    private bool WpKuehlbetrieb(KuehlWaermepumpe w)
+        => _wpArbeit.TryGetValue(w.IdWp, out bool an) ? an : w.Kuehlbetrieb;
+
+    /// <summary>Bedienbar mit Schreibweg; einschalten nur ohne Sperrgrund, ausschalten immer.</summary>
+    private bool WpAktiv(KuehlWaermepumpe w)
+        => KuehlbetriebSchreiben is not null && (WpKuehlbetrieb(w) || w.Sperrgrund is null);
+
+    /// <summary>Der Grund am gesperrten Schalter.</summary>
+    private string? WpGrund(KuehlWaermepumpe w)
+        => KuehlbetriebSchreiben is null || WpKuehlbetrieb(w) ? null : w.Sperrgrund;
+
+    private Task BeiWpKuehlbetrieb(KuehlWaermepumpe w, bool an)
+    {
+        if (an == w.Kuehlbetrieb) _wpArbeit.Remove(w.IdWp); else _wpArbeit[w.IdWp] = an;
+        _meldung = "";
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Schreibt die geänderten Schalter; ein geschriebener fällt aus dem Arbeitsstand. <c>false</c> = Meldung steht.</summary>
+    private bool WaermepumpenSchreiben()
+    {
+        if (KuehlbetriebSchreiben is null) return true;
+        foreach (KuehlWaermepumpe w in _wpGelesen.Where(w => _wpArbeit.ContainsKey(w.IdWp)).ToList())
+        {
+            bool an = _wpArbeit[w.IdWp];
+            string? grund;
+            try { grund = KuehlbetriebSchreiben(w.IdWp, an); }
+            catch (Exception) { grund = Texte.WaermepumpenFehler; }
+            if (!string.IsNullOrEmpty(grund)) { _meldung = grund; return false; }
+            _wpArbeit.Remove(w.IdWp);
+            _wpGelesen = _wpGelesen.Select(x => x.IdWp == w.IdWp ? x with { Kuehlbetrieb = an } : x).ToList();
+        }
+        return true;
+    }
 
     // =====================================================================
     // Katalogwahl („Hinzufügen…")
@@ -452,7 +547,7 @@
             }
             z.Gelesen = z.Arbeit.Kopie();
         }
-        return true;
+        return WaermepumpenSchreiben();
     }
 
     private Task Verwerfen() => Geschlossen.InvokeAsync(false);

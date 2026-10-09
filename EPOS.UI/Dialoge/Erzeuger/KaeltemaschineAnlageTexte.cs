@@ -40,6 +40,12 @@ public sealed class KaeltemaschineAnlageTexte
     public string LabelKaltwasserMin { get; set; } = Resource.KM_LBL_KALTWASSER_MIN;
 
     public string GruppeBetrieb { get; set; } = Resource.KMA_GRUPPE_BETRIEB;
+
+    /// <summary>Block „Wärmepumpen im Kühlbetrieb“ unter der Anlagenliste.</summary>
+    public string GruppeWaermepumpen { get; set; } = Resource.KMA_GRUPPE_WP;
+    public string WaermepumpenLeer { get; set; } = Resource.KMA_WP_LEER;
+    public string WaermepumpenHinweis { get; set; } = Resource.KMA_WP_HINWEIS;
+    public string WaermepumpenFehler { get; set; } = Resource.KMA_WP_FEHLER;
     public string LabelName { get; set; } = Resource.KMA_LBL_NAME;
     public string LabelAnzahl { get; set; } = Resource.KMA_LBL_ANZAHL;
     public string LabelVorlauf { get; set; } = Resource.KMA_LBL_VORLAUF;

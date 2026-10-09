@@ -155,6 +155,17 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
+### Version 1.2.0.9 — nicht veröffentlicht
+
+Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwenderwünsche vom 08.10.2026.
+
+- Seit 09.10.2026: Das Administrationsmenü „Wärmebedarf & Heizung“ heißt „Wärme- und Kälteerzeugung“. (#838)
+- Seit 09.10.2026: Die BHKW-Kachel der Startseite trägt ein Symbol für Kraft-Wärme-Kopplung. (#838)
+- Seit 09.10.2026: Die Kachel „Kühlung und Kälteanlagen“ sieht aus wie die übrigen Kacheln; die Schalter „Wärmepumpen im Kühlbetrieb“ stehen in der Maske der Kältemaschinen. (#838)
+- Seit 09.10.2026: Schließen, Esc und Hintergrundklick führen aus einem Unterblatt (etwa „Vorlagen der Konditionierung“) zum vorigen Blatt zurück, statt den Dialog zu schließen. (#838)
+- Seit 09.10.2026: „Aus dem Projekt entfernen“ in den Verwaltungen Heizkessel, BHKW und Solarkollektoren wird erst mit OK wirksam; Abbrechen lässt den Erzeuger im Projekt. (#838)
+- Seit 09.10.2026: Die Stromspeicher-Auslegung trennt Investitions- und Betriebskosten in zwei Bereiche mit eigener Herkunftswahl. (#838)
+
 ### Version 1.2.0.8 — nicht veröffentlicht
 
 Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird jeder Satz erst, wenn sein

@@ -149,9 +149,12 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<SolarkollektorenDialog> dlg = null;
+            var vormerkung = new Projektkopievormerkung(
+                name => new SolarkollektorenCtrl().DeleteFromProjekt(name, projektId));
+            const int idType = WizardItemClass.SOLAR_TYP;
 
             var werte = new Dictionary<string, object>(
-                ProjektGaben(projektId, modelle, wizard: false, besitzer: besitzer))
+                ProjektGaben(projektId, modelle, wizard: false, besitzer: besitzer, vormerkung: vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -167,6 +170,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            // Anwenderwunsch 08.10.2026: Entfernte Projektkopien gehen erst mit OK; Abbrechen
+            // (auch Kreuz und Esc) raeumt nur die in dieser Sitzung neu angelegten ab.
+            vormerkung.Abschliessen(ok, id => modelle.Exists(it => it.ID_Type == idType && it.ID_Solar == id));
             return ok;
         }
 
@@ -182,7 +188,7 @@ namespace WindowsFormsApplication1
         /// </param>
         internal static IReadOnlyDictionary<string, object> ProjektGaben(
             int projektId, List<WErzeugerModel> modelle, bool wizard,
-            IWin32Window besitzer = null)
+            IWin32Window besitzer = null, Projektkopievormerkung vormerkung = null)
         {
             var zeilen = new List<ErzeugerZeile>();
             var zuModell = new Dictionary<int, WErzeugerModel>();
@@ -219,10 +225,10 @@ namespace WindowsFormsApplication1
                 ["Modulflaeche"] = new Func<string, double>(ModulflaecheZu),
 
                 ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
-                    stammId => Aufnehmen(projektId, modelle, zuModell, zaehler, stammId, wizard)),
+                    stammId => Aufnehmen(projektId, modelle, zuModell, zaehler, stammId, wizard, vormerkung)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
-                    zeile => Entfernen(projektId, modelle, zuModell, zeile, wizard)),
+                    zeile => Entfernen(projektId, modelle, zuModell, zeile, wizard, vormerkung)),
 
                 ["Uebernehmen"] = new Action<ErzeugerZeile>(
                     zeile =>
@@ -321,7 +327,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static AufnahmeErgebnis Aufnehmen(int projektId, List<WErzeugerModel> modelle,
                                                   Dictionary<int, WErzeugerModel> zuModell,
-                                                  Zaehler zaehler, int stammId, bool wizard)
+                                                  Zaehler zaehler, int stammId, bool wizard,
+                                                  Projektkopievormerkung vormerkung = null)
         {
             SolarkollektorenModel stamm = SolarkollektorenStammCtrl.ReadById(stammId);
             if (stamm == null)
@@ -342,11 +349,15 @@ namespace WindowsFormsApplication1
 
             if (!wizard && projektId > 0)
             {
-                int kopieId = new SolarkollektorenCtrl().CopyFromStamm(stammId, projektId);
+                var projektCtrl = new SolarkollektorenCtrl();
+                bool schonDa = projektCtrl.GetProjektId(stamm.m_szKollektorname, projektId) > 0;
+                int kopieId = projektCtrl.CopyFromStamm(stammId, projektId);
                 if (kopieId <= 0)
                     return new AufnahmeErgebnis(null, Text_("SKV_MSG_KOPIE_FEHLER",
                         "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
                 model.ID_Solar = kopieId;
+                // Eine NEUE Kopie raeumt ein Abbrechen wieder ab (Projektkopievormerkung).
+                if (!schonDa) vormerkung?.Angelegt(stamm.m_szKollektorname, kopieId);
             }
             else
             {
@@ -365,12 +376,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static void Entfernen(int projektId, List<WErzeugerModel> modelle,
                                       Dictionary<int, WErzeugerModel> zuModell,
-                                      ErzeugerZeile zeile, bool wizard)
+                                      ErzeugerZeile zeile, bool wizard,
+                                      Projektkopievormerkung vormerkung = null)
         {
             if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
 
             modelle.Remove(m);
             zuModell.Remove(zeile.Schluessel);
+
+            // Anwenderwunsch 08.10.2026: nur VORMERKEN - geloescht wird beim OK, und nur,
+            // wenn dann keine Zeile mehr auf die Kopie verweist (Projektkopievormerkung).
+            if (!wizard && projektId > 0 && vormerkung != null) { vormerkung.Entfernt(m.Bezeichner, m.ID_Solar); return; }
 
             bool nochReferenziert = false;
             foreach (WErzeugerModel it in modelle)

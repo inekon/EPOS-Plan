@@ -3781,7 +3781,7 @@ Schalen). Der Katalog geht dort über den **Hilfe-Assistenten** auf: KI-Knopf ne
 `dialog_oeffnen` mit `KiMaskenziele` (`BRAUCHWASSER_NUTZUNGSARTEN`, `TWW_NUTZUNGSART_EDITOR`,
 `BRAUCHWASSER_TYPTAGE`, `BRAUCHWASSER_MESSREIHEN` → `Masken.BrauchwasserNutzungsarten`),
 `IosNavigation` → `AppWurzel.OeffneMaske` — derselbe Weg wie für Baustoffe und Bauteilaufbauten.
-Unter Windows bleibt der Menüweg (Administration → Wärmebedarf & Heizung → Brauchwasser). „Beenden"
+Unter Windows bleibt der Menüweg (Administration → Wärme- und Kälteerzeugung → Brauchwasser). „Beenden"
 führt auf dem iPad zur Startansicht (Projektliste), ohne Rückwegstapel — wie bei den Katalogen der
 Gebäudesimulation.
 
