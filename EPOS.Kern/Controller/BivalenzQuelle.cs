@@ -30,6 +30,15 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>ID_Gebaeude</c> je Eintrag von <see cref="BivalenzGebaeudedaten.Zonen"/> (gleiche Reihenfolge) — für die Raumtemperatur der Stunde im Lauf.</summary>
         internal IReadOnlyList<int> GebaeudeIds { get; init; } = Array.Empty<int>();
+
+        /// <summary>Die Kaskade <c>Tool_1</c> … <c>Tool_4</c> des Projekts (Dialogprüfung); <c>null</c> = nicht gelesen.</summary>
+        internal IReadOnlyList<string?>? Kaskade { get; init; }
+
+        /// <summary>Größter Auslegungsvorlauf der gekoppelten Flächenheizungen [°C]; NaN = keine Fläche.</summary>
+        internal double FlaechenVorlaufC { get; init; } = double.NaN;
+
+        /// <summary>Kleinster Auslegungsrücklauf der gekoppelten Übergaben [°C]; NaN = keine.</summary>
+        internal double AuslegungRuecklaufMinC { get; init; } = double.NaN;
     }
 
     /// <summary>
@@ -47,6 +56,34 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Die Gebäude- und Kesselseite des Projekts. Wirft nicht: ein Fehler des Eingangsbauers steht im Befund.</summary>
         internal static BivalenzProjektdaten Projekt(int idProjekt)
+        {
+            BivalenzProjektdaten p = ProjektOhneKaskade(idProjekt);
+            if (idProjekt <= 0) return p;
+            IReadOnlyList<string?>? kaskade;
+            try { kaskade = Kaskade(idProjekt); }
+            catch (Exception) { kaskade = null; }
+            return new BivalenzProjektdaten
+            {
+                Gebaeude = p.Gebaeude,
+                KesselleistungKw = p.KesselleistungKw,
+                Unvollstaendig = p.Unvollstaendig,
+                Befund = p.Befund,
+                GebaeudeIds = p.GebaeudeIds,
+                FlaechenVorlaufC = p.FlaechenVorlaufC,
+                AuslegungRuecklaufMinC = p.AuslegungRuecklaufMinC,
+                Kaskade = kaskade,
+            };
+        }
+
+        /// <summary>Die Kaskade <c>Tool_1</c> … <c>Tool_4</c> aus <c>Tab_Einstellungen</c> (Dialogprüfung der Gruppe „Bivalenz und Übergabe").</summary>
+        internal static IReadOnlyList<string?>? Kaskade(int idProjekt)
+        {
+            var konfig = new KonfigurationCtrl();
+            if (!konfig.ProjektLesen(idProjekt) || konfig.model == null) return null;
+            return new[] { konfig.model.m_Tool_1, konfig.model.m_Tool_2, konfig.model.m_Tool_3, konfig.model.m_Tool_4 };
+        }
+
+        private static BivalenzProjektdaten ProjektOhneKaskade(int idProjekt)
         {
             if (idProjekt <= 0) return new BivalenzProjektdaten();
             double kessel = KesselleistungKw(idProjekt);
@@ -71,6 +108,7 @@ namespace WindowsFormsApplication1
             var zonen = new List<Uebergabezone>();
             var ids = new List<int>();
             double heizlast = 0.0, aussen = double.PositiveInfinity, raum = double.NegativeInfinity;
+            double flaeche = double.NaN, ruecklaufMin = double.NaN;
             foreach (ProjektGebaeudeModel item in gekoppelt)
             {
                 if (GebaeudeZonensatz.HatZonen(item))
@@ -90,6 +128,9 @@ namespace WindowsFormsApplication1
                 Uebergabekennwerte u = e.Uebergabe;
                 double phiNKw = item.Uebergabe_Leistung_Nenn ?? u.PhiNW / 1000.0 * f;
                 zonen.Add(new Uebergabezone(phiNKw, u.AuslegungVorlaufC, u.AuslegungRuecklaufC, u.AuslegungRaumC, u.Exponent));
+                if (item.Uebergabe_Art == DbWerte.UEBERGABE_FLAECHE && !(u.AuslegungVorlaufC <= flaeche))
+                    flaeche = u.AuslegungVorlaufC;
+                if (!(u.AuslegungRuecklaufC >= ruecklaufMin)) ruecklaufMin = u.AuslegungRuecklaufC;
                 ids.Add(item.ID_Gebaeude);
                 heizlast += e.AuslegungsheizlastW / 1000.0 * f;
                 aussen = Math.Min(aussen, e.AuslegungAussentemperaturC);
@@ -100,6 +141,8 @@ namespace WindowsFormsApplication1
             {
                 KesselleistungKw = kessel,
                 GebaeudeIds = ids,
+                FlaechenVorlaufC = flaeche,
+                AuslegungRuecklaufMinC = ruecklaufMin,
                 Gebaeude = new BivalenzGebaeudedaten
                 {
                     Zonen = zonen,
