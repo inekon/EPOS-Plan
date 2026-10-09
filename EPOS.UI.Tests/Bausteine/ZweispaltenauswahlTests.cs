@@ -911,6 +911,26 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
     }
 
+    /// <summary>
+    /// <b>Ein eigenes Zeilenmaß des Katalogs</b> (Kästchenmodus 46 px) setzt die Untergrenze auf Kopf
+    /// und ZWEI Zeilen und markiert den Baustein für die Regel unter 600 px (Konzept 4.8).
+    /// </summary>
+    [Fact]
+    public void Ein_eigenes_Katalogzeilenmass_haelt_zwei_Katalogzeilen()
+    {
+        var cut = Render<Zweispaltenauswahl>(p => p.Add(x => x.Dialogname, "").Add(x => x.KatalogZeile, 46));
+        var wurzel = cut.Find(".epos-zweispalten");
+        Assert.Contains("epos-zweispalten--zeilenmass", wurzel.ClassList);
+        string stil = wurzel.GetAttribute("style") ?? "";
+        Assert.Contains("--epos-katalog-min: 147px", stil);
+        Assert.Contains("--epos-katalog-zeile: 46px", stil);
+
+        var ohne = Render<Zweispaltenauswahl>(p => p.Add(x => x.Dialogname, ""));
+        Assert.DoesNotContain("epos-zweispalten--zeilenmass", ohne.Find(".epos-zweispalten").ClassList);
+        Assert.Contains("--epos-katalog-min: " + Zweispaltenauswahl.KATALOG_MINDESTHOEHE + "px",
+                        ohne.Find(".epos-zweispalten").GetAttribute("style") ?? "");
+    }
+
     [Fact]
     public void Bereichswahl_Setzen_uebernimmt_die_Liste_der_Kaestchen()
     {

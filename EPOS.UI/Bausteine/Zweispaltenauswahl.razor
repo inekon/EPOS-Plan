@@ -198,6 +198,15 @@
     /// </summary>
     [Parameter] public string? KatalogFussName { get; set; }
 
+    /// <summary>
+    /// <b>Höhe einer Katalogzeile in px</b>, wenn der Wirt die Katalogliste mit eigenem
+    /// Zeilenmaß führt (Kästchenmodus: <c>Katalogliste.ZEILENHOEHE_ZEILENWAHL</c>, 46 px). Gesetzt
+    /// hält der Baustein Kopf und ZWEI Katalogzeilen auch in kleinen Fenstern (Konzept 4.8,
+    /// Entscheid zu 1 280 × 720 und 1 024 × 700); 0 = die Regel von Stufe 1 (unter 600 px
+    /// Bausteinhöhe Kopf und eine Zeile).
+    /// </summary>
+    [Parameter] public int KatalogZeile { get; set; }
+
     /// <summary>Name des kaskadierten Orts der Suchzeile (Katalogliste → Katalog-Kopfleiste).</summary>
     public const string KOPFLEISTENORT = "Katalogkopfleiste";
 
@@ -357,14 +366,18 @@
             if (NurRechts) k += " epos-zweispalten--nurkatalog";
             if (Satz is not null) k += " epos-zweispalten--mitsatz";
             if (_satzOffen) k += " epos-zweispalten--satz-offen";
+            if (KatalogZeile > 0) k += " epos-zweispalten--zeilenmass";
             if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
             return k;
         }
     }
 
     private string Wurzelstil
-        => FormattableString.Invariant(
-            $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_MINDESTHOEHE}px");
+        => KatalogZeile > 0
+            ? FormattableString.Invariant(
+                $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_LISTENKOPF + 2 * KatalogZeile + 2}px; --epos-katalog-zeile: {KatalogZeile}px")
+            : FormattableString.Invariant(
+                $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_MINDESTHOEHE}px");
 
     private string ProjektMarke => Resource.AUSWAHL_MARKE_PROJEKT;
     private string KatalogMarke => Resource.AUSWAHL_MARKE_KATALOG;

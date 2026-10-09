@@ -79,6 +79,7 @@
        und Fuss des Dialogs. Beide Listen fuehren eine Mehrfachwahl; die Bereichsaktionen
        wirken auf die gewaehlten Zeilen, sonst auf die zuletzt angeklickte. *@
     <Zweispaltenauswahl Dialogname="Heizkessel" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                        KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(KatalogZiele().Count == 0)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"

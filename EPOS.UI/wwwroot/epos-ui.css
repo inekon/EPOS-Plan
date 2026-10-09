@@ -3795,6 +3795,11 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     .epos-zweispalten-bereich--katalog .epos-raster-huelle {
         --epos-katalog-min: calc(53px + 53px + 2px);
     }
+    /* Ein Wirt mit eigenem Zeilenmass (Kaestchenmodus, Heizkessel ab Stufe 2) behaelt Kopf
+       und ZWEI Zeilen - Suche in der Kopfleiste und Kontext im Dialogkopf geben die Hoehe. */
+    .epos-zweispalten--zeilenmass .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+        --epos-katalog-min: calc(53px + 2 * var(--epos-katalog-zeile, 53px) + 2px);
+    }
 }
 
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--nurkatalog {
