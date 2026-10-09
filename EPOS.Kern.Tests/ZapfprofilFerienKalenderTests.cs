@@ -73,8 +73,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new int?[] { 250, 240, 300, 200, 80, 350 }, e.Zonen[0].Ferienbeginn);
             Assert.Equal(new int?[] { 255, 245, 305, 210, 90, 5 }, e.Zonen[0].Ferienende);
             Assert.Empty(e.Vorhinweise);
-            ZapfprofilErgebnis r = ZapfprofilRechner.Rechnen(e, ZapfprofilCtrl.Katalog());
-            Assert.DoesNotContain(r.Hinweise, x => x.Code == ZapfprofilCtrl.HINWEIS_KALENDERFERIEN_GEKUERZT);
         }
 
         /// <summary>
@@ -186,30 +184,6 @@ namespace EPOS.Kern.Tests
 
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Ferien = 0.0 WHERE ID = ?", new DbParam("@id", gebaeude)));
             Assert.Equal(new int?[4], Eingang(gebaeude).Zonen[0].Ferienbeginn);
-        }
-
-        /// <summary>
-        /// Der Hinweissatz steht in beiden Sprachen mit denselben Platzhaltern — die Wache der ZPG-Sätze
-        /// sieht ihn nicht, weil er der Konditionierung gehört (<see cref="ZapfSatz.AusRessource"/>).
-        /// </summary>
-        [Fact]
-        public void Der_Hinweissatz_steht_in_beiden_Sprachen_mit_denselben_Platzhaltern()
-        {
-            const string schluessel = nameof(WindowsFormsApplication1.MyResource.Resource.KOND_MSG_ZAPF_FERIEN_GEKUERZT);
-            string de = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
-                schluessel, System.Globalization.CultureInfo.InvariantCulture);
-            string en = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
-                schluessel, System.Globalization.CultureInfo.GetCultureInfo("en-US"));
-            Assert.False(string.IsNullOrWhiteSpace(de));
-            Assert.False(string.IsNullOrWhiteSpace(en));
-            Assert.NotEqual(de, en);
-            string[] P(string t) => System.Text.RegularExpressions.Regex.Matches(t, @"\{\d+\}").Select(m => m.Value).OrderBy(x => x).ToArray();
-            Assert.Equal(new[] { "{0}", "{1}", "{2}" }, P(de));
-            Assert.Equal(P(de), P(en));
-
-            // Gleiche Sätze sind gleich, ein gleich benannter der ZPG-Familie nicht.
-            Assert.Equal(ZapfSatz.AusRessource(schluessel, "A", 6, 4), ZapfSatz.AusRessource(schluessel, "A", 6, 4));
-            Assert.NotEqual(ZapfSatz.AusRessource(schluessel, "A", 6, 4), ZapfSatz.Neu(schluessel, "A", 6, 4));
         }
 
         // =================================================================================

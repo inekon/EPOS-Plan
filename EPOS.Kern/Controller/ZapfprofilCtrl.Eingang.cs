@@ -426,12 +426,6 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ferienpaare einer Zone (<see cref="ZonenStand.Ferienbeginn"/>, <c>Tab_TwwZone.Ferienbeginn_1…4</c>).</summary>
         internal const int FERIENPAARE = 4;
 
-        /// <summary>
-        /// Kennung des Hinweises „Der Heizkalender des Gebäudes trägt mehr Ferienperioden, als eine Zone Paare
-        /// führt" (Entwurf KP2, Festlegung 10); der Satz steht unter <c>KOND_MSG_ZAPF_FERIEN_GEKUERZT</c>.
-        /// </summary>
-        internal const string HINWEIS_KALENDERFERIEN_GEKUERZT = "KALENDERFERIEN_GEKUERZT";
-
         private sealed class GebaeudeAngaben
         {
             internal string Name;
