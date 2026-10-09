@@ -8,7 +8,7 @@ Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, 
 
 Alle acht Verwaltungen liegen im Menü '''Administration''':
 
-* '''Wärmebedarf & Heizung''' – Heizkessel, BHKW, Wärmepumpen, Solarkollektoren
+* '''Wärme- und Kälteerzeugung''' – Heizkessel, BHKW, Wärmepumpen, Solarkollektoren
 * '''Strombedarf & Speicher''' – Stromspeicher
 * '''Energiesysteme''' – Photovoltaik (darunter PV Module und Wechselrichter), Pufferspeicher
 

@@ -375,7 +375,7 @@ public static class Seitenschluessel
     public const string BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG";
 
     /// <summary>
-    /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Kältemaschinen" (<c>KaeltemaschineKatalogDialog</c>,
+    /// Menue „Administration -> Wärme- und Kälteerzeugung -> Kältemaschinen" (<c>KaeltemaschineKatalogDialog</c>,
     /// KU3-1) — dieselbe Lage wie <see cref="BaustoffKatalog"/>: eine freie Ansicht der Wurzel auf beiden
     /// Plattformen; der Kern fuehrt dieselbe Zeichenkette als Ziel des Assistenten
     /// (<c>KiMaskenziele.KAELTEMASCHINE_KATALOG</c>).
@@ -391,7 +391,7 @@ public static class Seitenschluessel
     public const string KaeltemaschineAnlage = "KAELTEMASCHINE_ANLAGE";
 
     /// <summary>
-    /// Menue „Administration -> Wärmebedarf &amp; Heizung -> Profile &amp; Lastgänge -> Betriebskalender"
+    /// Menue „Administration -> Wärme- und Kälteerzeugung -> Profile &amp; Lastgänge -> Betriebskalender"
     /// (<c>BetriebskalenderDialog</c>; Entscheidungsvorlage Modellgrenzen PW2, BW2) — eine freie
     /// Ansicht der Wurzel wie die Kataloge der Gebäudesimulation.
     /// </summary>

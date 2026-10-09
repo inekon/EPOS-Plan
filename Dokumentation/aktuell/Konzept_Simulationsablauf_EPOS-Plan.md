@@ -1287,7 +1287,7 @@ ruft die Routine die Kachelung `BhkwPlan.StromWocheToJahr` wie zuvor.
 Der Lauf liest den Kalender je Zuordnungszeile, die Projektvorschau über die ID des Kopfsatzes;
 Zuordnungsdialog, Assistent und Speichern tragen ihn mit (`LiesProjekt`, `WizardCtrl.Add_*`),
 Duplizieren behält die ID, Export und Import finden den Kalender über seinen Bezeichner. Bedient
-wird er in der Verwaltung „Betriebskalender“ (Administration → Wärmebedarf & Heizung → Profile &
+wird er in der Verwaltung „Betriebskalender“ (Administration → Wärme- und Kälteerzeugung → Profile &
 Lastgänge) und je Zuordnung in den Bedarfsprofil-Dialogen von Brauchwasser, Prozesswärme und
 Strom.
 

@@ -78795,7 +78795,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf &amp; Heizung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme- und Kälteerzeugung ähnelt.
         /// </summary>
         public static string MENU_WBUND_HEIZUNG {
             get {
@@ -102353,7 +102353,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///WP-Typ: {0}
         ///
         ///Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-        ///Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen. ähnelt.
+        ///Administration → Wärme- und Kälteerzeugung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen. ähnelt.
         /// </summary>
         public static string SIMQ_MSG_LUFT_WASSER {
             get {

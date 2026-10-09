@@ -58,7 +58,7 @@ Der Kessel passt praktisch überall dort, wo ein Grundlasterzeuger nicht die vol
 == In EPOS-Plan ==
 {{Anker|in-epos-plan|rolle-im-erzeugerverbund}}
 
-In EPOS-Plan wird ein Heizkessel im Reiter „Energieerzeuger“ der Startseite über die Kachel „Heizkessel“ angelegt; sie öffnet den Dialog „Verwaltung Heizkessel". Der Gerätekatalog liegt unter Administration → Wärmebedarf & Heizung → Heizkessel. Wie der Kessel eingebunden, ausgelegt und mit anderen Erzeugern verschaltet wird, zeigen [[Programm Dokumentation/Heizkessel#einbindung|Einbindung]], [[Programm Dokumentation/Heizkessel#beispiel|Beispiel]], [[Programm Dokumentation/Heizkessel#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/Heizkessel#fallstricke|Fallstricke]]; der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].
+In EPOS-Plan wird ein Heizkessel im Reiter „Energieerzeuger“ der Startseite über die Kachel „Heizkessel“ angelegt; sie öffnet den Dialog „Verwaltung Heizkessel". Der Gerätekatalog liegt unter Administration → Wärme- und Kälteerzeugung → Heizkessel. Wie der Kessel eingebunden, ausgelegt und mit anderen Erzeugern verschaltet wird, zeigen [[Programm Dokumentation/Heizkessel#einbindung|Einbindung]], [[Programm Dokumentation/Heizkessel#beispiel|Beispiel]], [[Programm Dokumentation/Heizkessel#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/Heizkessel#fallstricke|Fallstricke]]; der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}

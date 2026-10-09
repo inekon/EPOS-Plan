@@ -3645,7 +3645,7 @@ the run's extraction rate, annual extracted energy and full-load hours.</value>
 HP type: {0}
 
 If this unit is to use a buffer storage as its heat source (booster operation), it must be listed as a brine-to-water or water-to-water heat pump:
-Administration → Heat requirement &amp; heating → Heat pumps → change the “Heat pump type”, then select the heat pump again in the project.</value>
+Administration → Heat and cold generation → Heat pumps → change the “Heat pump type”, then select the heat pump again in the project.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Only the heat pump and the boiler can select a heat source.
@@ -16606,7 +16606,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Heat requirement load profile</value>
   </data>
   <data name="MENU_WBUND_HEIZUNG" xml:space="preserve">
-    <value>Heat requirement &amp; heating</value>
+    <value>Heat and cold generation</value>
   </data>
   <data name="MENU_WP" xml:space="preserve">
     <value>Heat pumps</value>

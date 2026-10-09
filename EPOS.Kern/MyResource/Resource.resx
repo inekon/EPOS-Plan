@@ -3661,7 +3661,7 @@ prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.</val
 WP-Typ: {0}
 
 Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen.</value>
+Administration → Wärme- und Kälteerzeugung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Eine Wärmequelle wählen können nur die Wärmepumpe und der Heizkessel.
@@ -16595,7 +16595,7 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Wärmebedarf Lastgang</value>
   </data>
   <data name="MENU_WBUND_HEIZUNG" xml:space="preserve">
-    <value>Wärmebedarf &amp; Heizung</value>
+    <value>Wärme- und Kälteerzeugung</value>
   </data>
   <data name="MENU_WP" xml:space="preserve">
     <value>Wärmepumpen</value>
