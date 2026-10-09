@@ -132,6 +132,19 @@
             return _gewaehlt.Count(s => !sichtbar.Contains(s));
         }
 
+        /// <summary>
+        /// Übernimmt die Wahl einer Liste, die ihre Kästchen selbst führt (Kästchenmodus der
+        /// <c>Katalogliste</c>): genau diese Schlüssel, in dieser Reihenfolge.
+        /// </summary>
+        public void Setzen(IEnumerable<string> schluessel)
+        {
+            ArgumentNullException.ThrowIfNull(schluessel);
+            _gewaehlt.Clear();
+            foreach (var s in schluessel) Hinzu(s);
+            if (_gewaehlt.Count > 0 && (Zuletzt is null || !_gewaehlt.Contains(Zuletzt)))
+                Zuletzt = _gewaehlt[^1];
+        }
+
         /// <summary>Hebt jede Wahl auf (nach Übernehmen, Entfernen, Löschen).</summary>
         public void Leeren()
         {

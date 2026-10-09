@@ -3568,6 +3568,75 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-size: 12px;
 }
 
+/* SUCHE IN DER KOPFLEISTE (4.2, 4.8): Die Katalogliste reicht ihre Suchzeile in die
+   Kopfleiste des Katalogs. Sie bricht hier nicht um, das Suchfeld traegt nur den
+   Platzhalter (die Beschriftung steht als aria-label am Feld) und gibt als Erstes Breite
+   ab; die Trefferzahl kuerzt mit Auslassung. */
+.epos-zweispalten-kopfleiste > .epos-katalog-suchzeile {
+    flex: 0 1 auto !important;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
+    overflow: clip;
+}
+.epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
+.epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 1 16rem !important; min-width: 7rem; }
+.epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.epos-zweispalten-kopfleiste .epos-katalog-treffer {
+    flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* DIE FUSSLEISTE DES KATALOGS (4.2): Name, Knoepfe der Auswahl, rechts Neu…. Eine Zeile,
+   sie bricht nicht um; der Name kuerzt mit Auslassung. */
+.epos-zweispalten-fussleiste {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+    padding-top: 4px;
+    border-top: 1px solid var(--epos-rahmen-leise, var(--epos-rahmen));
+    overflow: clip;
+    flex: 0 0 auto;
+}
+.epos-zweispalten-fussleiste > * { flex: 0 0 auto; white-space: nowrap; }
+.epos-zweispalten-summe { color: var(--epos-text-leise); }
+.epos-zweispalten-satzleer { margin: 0; color: var(--epos-text-leise); }
+
+/* KONTEXT IM DIALOGKOPF (Katalogauswahl V1, 4.1): leise hinter dem Titel, kuerzt mit
+   Auslassung; der Titel behaelt seine Breite. */
+.epos-dialog-kopf > .epos-dialog-kontext {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--epos-text-leise);
+    font-weight: 600;
+}
+.epos-dialog-kopf:has(> .epos-dialog-kontext) > .epos-dialog-titel { flex: 0 0 auto; }
+.epos-zweispalten-fussleiste > .epos-leiste-fueller { flex: 1 1 0; min-width: 0; }
+.epos-zweispalten-fussname {
+    flex: 0 1 auto !important; min-width: 2rem; overflow: hidden; text-overflow: ellipsis; font-weight: 600;
+}
+
+/* DIE SATZBEARBEITUNG (4.6) - Ueberlagerung „Bearbeiten…": Marke im Kopf, Blaetterleiste,
+   Hinweiszeile, je Feld „fuer alle gewaehlten setzen". */
+.epos-ueberlagerung-kopfzusatz { flex: 0 0 auto; }
+.epos-satzbearbeitung-blaetter {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--epos-rahmen);
+}
+.epos-satzbearbeitung-hinweis { margin: 0 0 8px; color: var(--epos-text-leise); }
+.epos-satzbearbeitung-fueralle {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--epos-text-leise);
+    grid-column: 1 / -1; margin-top: -4px;
+}
+
 /* Der Inhalt eines Bereichs (die Abschnitte des Wirts): eine Spalte, in der
    nur die Liste waechst. */
 .epos-zweispalten-inhalt {

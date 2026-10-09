@@ -855,4 +855,105 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
+
+    // =================================================================================
+    // Stufe 2: Katalog-Fussleiste, Suche in der Kopfleiste, Wahl aus der Katalogliste
+    // =================================================================================
+
+    private static RenderFragment Knopf(string klasse, string text) => b =>
+    {
+        b.OpenElement(0, "button");
+        b.AddAttribute(1, "type", "button");
+        b.AddAttribute(2, "class", "epos-knopf " + klasse);
+        b.AddContent(3, text);
+        b.CloseElement();
+    };
+
+    [Fact]
+    public void Die_Fussleiste_nennt_den_Namen_und_traegt_Neu_rechts()
+    {
+        var cut = Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.Dialogname, "")
+            .Add(x => x.LinksTitel, "Projekt").Add(x => x.RechtsTitel, "Katalog")
+            .Add(x => x.KatalogFuss, Knopf("k-loeschen", "Löschen"))
+            .Add(x => x.KatalogFussRechts, Knopf("k-neu", "Neu…"))
+            .Add(x => x.KatalogFussName, "Kessel A"));
+
+        IElement fuss = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-fussleiste");
+        var kinder = fuss.Children.ToList();
+        Assert.Equal("Kessel A:", kinder[0].TextContent);
+        Assert.Contains("epos-zweispalten-fussname", kinder[0].ClassList);
+        Assert.Contains("k-loeschen", kinder[1].ClassList);
+        Assert.Contains("epos-leiste-fueller", kinder[2].ClassList);
+        Assert.Contains("k-neu", kinder[3].ClassList);
+    }
+
+    [Fact]
+    public void Bei_Mehrfachwahl_nennt_die_Fussleiste_die_Zahl()
+    {
+        var wahl = new Bereichswahl();
+        wahl.Setzen(new[] { "a", "b", "c" });
+        var cut = Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.Dialogname, "")
+            .Add(x => x.KatalogWahl, wahl)
+            .Add(x => x.KatalogSichtbar, new[] { "a", "b", "c" })
+            .Add(x => x.KatalogFuss, Knopf("k-loeschen", "Löschen"))
+            .Add(x => x.KatalogFussName, "Kessel A"));
+
+        Assert.Equal(string.Format(Resource.Culture, Resource.AUSWAHL_FUSS_SAETZE, 3),
+                     cut.Find(".epos-zweispalten-fussname").TextContent);
+    }
+
+    [Fact]
+    public void Ohne_Fussabschnitte_gibt_es_keine_Fussleiste()
+    {
+        var cut = Render<Zweispaltenauswahl>(p => p.Add(x => x.Dialogname, "").Add(x => x.KatalogFussName, "Kessel A"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+    }
+
+    [Fact]
+    public void Bereichswahl_Setzen_uebernimmt_die_Liste_der_Kaestchen()
+    {
+        var wahl = new Bereichswahl();
+        wahl.Setzen(new[] { "x", "y", "x" });
+        Assert.Equal(new[] { "x", "y" }, wahl.Gewaehlte);
+        Assert.Equal("y", wahl.Zuletzt);
+        wahl.Setzen(Array.Empty<string>());
+        Assert.Equal(0, wahl.Anzahl);
+    }
+
+    /// <summary>
+    /// <b>Die Suchzeile steht in der Kopfleiste des Katalogs</b> (Konzept 4.2, 4.8): Die
+    /// Katalogliste im Abschnitt Rechts reicht sie hinauf; Suche und Trefferzahl wirken wie
+    /// zuvor, und über der Liste steht keine zweite Zeile mehr.
+    /// </summary>
+    [Fact]
+    public void Die_Suchzeile_der_Katalogliste_steht_in_der_Katalog_Kopfleiste()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var profil = Katalogfilterprofil.MitVerwendung(Anlagenart.Heizkessel, s => Resource.ResourceManager.GetString(s) ?? s);
+        var zeilen = new[]
+        {
+            new Katalogfilterzeile(1, "Kessel A").MitText(Katalogfilterprofil.SpBezeichner, "Kessel A"),
+            new Katalogfilterzeile(2, "Kessel B").MitText(Katalogfilterprofil.SpBezeichner, "Kessel B"),
+        };
+        var stand = new Katalogfilterstand();
+        RenderFragment liste = b =>
+        {
+            b.OpenComponent<Katalogliste>(0);
+            b.AddAttribute(1, nameof(Katalogliste.Profil), profil);
+            b.AddAttribute(2, nameof(Katalogliste.Zeilen), (IReadOnlyList<Katalogfilterzeile>)zeilen);
+            b.AddAttribute(3, nameof(Katalogliste.Filterstand), stand);
+            b.CloseComponent();
+        };
+        var cut = Render<Zweispaltenauswahl>(p => p.Add(x => x.Dialogname, "").Add(x => x.Rechts, liste));
+
+        IElement kopf = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste");
+        Assert.NotNull(kopf.QuerySelector(".epos-katalog-suchzeile input[type=search]"));
+        Assert.Empty(cut.FindAll(".epos-katalogliste .epos-katalog-suchzeile"));
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
+
+        cut.Find(".epos-zweispalten-kopfleiste input[type=search]").Input("Kessel B");
+        Assert.StartsWith("1", cut.Find(".epos-zweispalten-kopfleiste .epos-katalog-treffer").TextContent);
+    }
 }

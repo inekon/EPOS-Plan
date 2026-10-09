@@ -91,6 +91,7 @@
 @namespace EPOS.UI.Bausteine
 @using System.Globalization
 @using WindowsFormsApplication1
+@using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.JSInterop
 @inject IJSRuntime Js
 @implements IAsyncDisposable
@@ -100,76 +101,17 @@
 <div class="@Wurzelklasse">
 
     @* ---------------- ZONE A - die EINE Suchzeile (5.6.4) ---------------- *@
-    <div class="epos-katalog-suchzeile">
-        <label class="epos-katalog-suchfeld">
-            <span class="epos-katalog-suchbeschriftung">@Texte.Suche</span>
-            <input type="search" class="epos-eingabe" value="@Stand.Suche"
-                   placeholder="@Texte.SuchePlatzhalter" aria-label="@Texte.Suche"
-                   @oninput="BeiSuche" />
-        </label>
-
-        @* EIN SCHALTER DES WIRTS (Konzept Administrationsdialoge 3.1, Zone 2; Stufe 4):
-           "nur mit Kuehlfunktion" der Waermepumpenverwaltung. Er setzt einen Trichter
-           im Filterstand, nie einen zweiten Filterweg - deshalb steht er hier in der
-           Werkzeugleiste und nicht ueber der Liste. *@
-        @if (Werkzeug is not null)
-        {
-            <span class="epos-katalog-werkzeug">@Werkzeug</span>
-        }
-
-        @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
-           ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
-           oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
-           Regel der Wahl bleibt beim Wirt, die Liste meldet nur "alle" und ihre
-           gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
-        @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
-        {
-            @* EINMAL fragen, dreimal benutzen (Befund #212): AlleSichtbarenGewaehlt
-               fragt den Wirt ZEILE FUER ZEILE, und der antwortet je nach Wirt in
-               O(n) - bei 6 654 Saetzen kostete der Stand des Schalters dreimal je
-               Zeichenlauf, was er einmal kosten darf. *@
-            bool alleGewaehlt = AlleSichtbarenGewaehlt;
-            <label class="epos-wahl-alle"
-                   title="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
-                <input type="checkbox" checked="@alleGewaehlt"
-                       aria-label="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
-                       @onchange="BeiAllewahl" />
-                <span>@Texte.AlleWaehlen</span>
-            </label>
-        }
-
-        <span class="epos-leiste-fueller"></span>
-
-        <span class="epos-katalog-treffer">@Trefferzeile</span>
-
-        @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
-           markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
-           sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
-           markiert (Strg-Klick ist unsichtbar).
-
-           UND ER STEHT NUR DA, WO ES ETWAS ZU VERGLEICHEN GIBT (Vergleichbar,
-           Auftraege KL-4 und MN-1): Die Klimaregionen sind keine Geraete mit
-           Kennwerten - ihr "Vergleich" waere der von Bezeichner, Standort und
-           Datum nebeneinander, also die Liste selbst noch einmal; die
-           gesetzlichen Parameter fuehren Jahreszeilen EINES Satzes, und die
-           liest man untereinander. Ein Knopf, der nichts Neues zeigt, ist ein
-           Bedienelement ohne Gewinn (dieselbe Begruendung, aus der eine
-           JaNein-Spalte keinen Trichter traegt). *@
-        @* Mit KAESTCHEN (Stufe 3, V6) vergleicht die Auswahlleiste des Wirts -
-           hier stuende derselbe Knopf ein zweites Mal. *@
-        @if (!Mehrfach && Vergleichbar && !KaestchenAktiv)
-        {
-            <button type="button" class="epos-katalog-vergleichknopf"
-                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
-                    @onclick="BeiVergleichen">@Vergleichtext</button>
-        }
-
-        @if (Stand.Gesetzt)
-        {
-            <button type="button" class="epos-katalog-ruecksetzer"
-                    @onclick="BeiZuruecksetzen">@Texte.Zuruecksetzen</button>
-        }
-    </div>
+    @if (Kopfleistenort is not null)
+    {
+        @* IN DER KATALOGAUSWAHL steht die Suchzeile in der Kopfleiste des Katalogs
+           (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.8) - dieselbe Zeile, ein
+           anderer Ort; Zustand und Handler bleiben hier. *@
+        <SectionContent SectionId="Kopfleistenort">@Suchzeile</SectionContent>
+    }
+    else
+    {
+        @Suchzeile
+    }
 
     @if (_markierhinweis.Length > 0)
     {
@@ -413,6 +355,105 @@
 }
 
 @code {
+    /// <summary>
+    /// Der Ort der Suchzeile, den eine umgebende <c>Zweispaltenauswahl</c> kaskadiert: Dann
+    /// steht die Suchzeile in deren Katalog-Kopfleiste statt über der Liste.
+    /// </summary>
+    [CascadingParameter(Name = Zweispaltenauswahl.KOPFLEISTENORT)] public object? Kopfleistenort { get; set; }
+
+    /// <summary>ZONE A - die EINE Suchzeile (5.6.4).</summary>
+    private RenderFragment Suchzeile => @<text>
+    <div class="epos-katalog-suchzeile">
+        <label class="epos-katalog-suchfeld">
+            <span class="epos-katalog-suchbeschriftung">@Texte.Suche</span>
+            <input type="search" class="epos-eingabe" value="@Stand.Suche"
+                   placeholder="@Texte.SuchePlatzhalter" aria-label="@Texte.Suche"
+                   @oninput="BeiSuche" />
+        </label>
+
+        @* EIN SCHALTER DES WIRTS (Konzept Administrationsdialoge 3.1, Zone 2; Stufe 4):
+           "nur mit Kuehlfunktion" der Waermepumpenverwaltung. Er setzt einen Trichter
+           im Filterstand, nie einen zweiten Filterweg - deshalb steht er hier in der
+           Werkzeugleiste und nicht ueber der Liste. *@
+        @if (Werkzeug is not null)
+        {
+            <span class="epos-katalog-werkzeug">@Werkzeug</span>
+        }
+
+        @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
+           ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
+           oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
+           Regel der Wahl bleibt beim Wirt, die Liste meldet nur "alle" und ihre
+           gefilterten Zeilen. Nicht im Spaltenkopf: Der Kopf ist die Sortierzeile. *@
+        @if (Mehrfach && Allewahl.HasDelegate && _gefiltert.Count > 0)
+        {
+            @* EINMAL fragen, dreimal benutzen (Befund #212): AlleSichtbarenGewaehlt
+               fragt den Wirt ZEILE FUER ZEILE, und der antwortet je nach Wirt in
+               O(n) - bei 6 654 Saetzen kostete der Stand des Schalters dreimal je
+               Zeichenlauf, was er einmal kosten darf. *@
+            bool alleGewaehlt = AlleSichtbarenGewaehlt;
+            <label class="epos-wahl-alle"
+                   title="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)">
+                <input type="checkbox" checked="@alleGewaehlt"
+                       aria-label="@(alleGewaehlt ? Texte.AlleAbwaehlen : Texte.AlleWaehlen)"
+                       @onchange="BeiAllewahl" />
+                <span>@Texte.AlleWaehlen</span>
+            </label>
+        }
+
+        <span class="epos-leiste-fueller"></span>
+
+        <span class="epos-katalog-treffer">@Trefferzeile</span>
+
+        @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
+           markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
+           sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
+           markiert (Strg-Klick ist unsichtbar).
+
+           UND ER STEHT NUR DA, WO ES ETWAS ZU VERGLEICHEN GIBT (Vergleichbar,
+           Auftraege KL-4 und MN-1): Die Klimaregionen sind keine Geraete mit
+           Kennwerten - ihr "Vergleich" waere der von Bezeichner, Standort und
+           Datum nebeneinander, also die Liste selbst noch einmal; die
+           gesetzlichen Parameter fuehren Jahreszeilen EINES Satzes, und die
+           liest man untereinander. Ein Knopf, der nichts Neues zeigt, ist ein
+           Bedienelement ohne Gewinn (dieselbe Begruendung, aus der eine
+           JaNein-Spalte keinen Trichter traegt). *@
+        @* Mit KAESTCHEN (Stufe 3, V6) vergleicht die Auswahlleiste des Wirts -
+           hier stuende derselbe Knopf ein zweites Mal. *@
+        @if (!Mehrfach && Vergleichbar && !KaestchenAktiv)
+        {
+            <button type="button" class="epos-katalog-vergleichknopf"
+                    disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
+                    @onclick="BeiVergleichen">@Vergleichtext</button>
+        }
+
+        @if (Stand.Gesetzt)
+        {
+            <button type="button" class="epos-katalog-ruecksetzer"
+                    @onclick="BeiZuruecksetzen">@Texte.Zuruecksetzen</button>
+        }
+    </div>
+    </text>;
+
+    /// <summary>
+    /// <b>Vergleicht die genannten Zeilen</b> (Schlüssel) in der Vergleichsüberlagerung — für
+    /// einen Wirt, der „Vergleichen…" selbst trägt (Katalog-Fußleiste der Katalogauswahl).
+    /// Weniger als zwei bekannte Zeilen: nichts.
+    /// </summary>
+    public void Vergleichen(IReadOnlyList<string> schluessel)
+    {
+        ArgumentNullException.ThrowIfNull(schluessel);
+        var geraete = new List<Katalogfilterzeile>();
+        foreach (string s in schluessel)
+            foreach (Katalogfilterzeile z in Zeilen)
+                if (z.Schluessel == s) { geraete.Add(z); break; }
+        if (geraete.Count < 2) return;
+        _vergleich = Vergleichsparameter is null ? AusSpalten(geraete) : AusParametern(geraete);
+        _markierhinweis = "";
+        _vergleichOffen = true;
+        StateHasChanged();
+    }
+
     /// <summary>
     /// Die Spalten dieses Katalogs — <c>Katalogfilterprofil.Finde(art, uebersetzer)</c>.
     /// Ohne Profil zeichnet die Komponente nichts.
