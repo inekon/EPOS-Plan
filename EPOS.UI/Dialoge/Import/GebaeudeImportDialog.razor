@@ -154,6 +154,13 @@
             {
                 <Herleitungszeile Text="@GrenzeText" />
             }
+            @if (Exporthinweis.Length > 0)
+            {
+                @* Der Hinweis zur Exporteinstellung des gewaehlten Formats (ohne Wahl der des Profils) - leise, kein Banner. *@
+                <div class="epos-gebimport-exporthinweis">
+                    <Herleitungszeile Text="@Exporthinweis" />
+                </div>
+            }
         </KindInhalt>
     </Formularraster>
 
@@ -175,6 +182,10 @@
                 <dt>@Texte.KopfDatei</dt><dd>@kopf.Dateiname</dd>
                 <dt>@Texte.KopfFormat</dt><dd>@kopf.Format</dd>
                 <dt>@Texte.KopfSchema</dt><dd>@kopf.Schema</dd>
+                @if (kopf.Modellansicht is string mvd)
+                {
+                    <dt>@Texte.KopfModellansicht</dt><dd class="epos-gebimport-mvd">@mvd</dd>
+                }
                 <dt>@Texte.KopfGroesse</dt><dd>@kopf.Groesse</dd>
                 <dt>@Texte.KopfZonenregel</dt><dd>@(stand.Zonierung?.RegelText ?? kopf.Zonenregel)</dd>
             </dl>
@@ -1323,6 +1334,13 @@
 
     private void BeiQuelle(int? id)
         => _quelle = id is int i && i >= 1 && i <= Quellenliste.Count ? Quellenliste[i - 1].Schluessel : null;
+
+    /// <summary>Der Hinweis zur Exporteinstellung an der Dateiwahl: der der gewählten Quelle, sonst der des Profils.</summary>
+    private string Exporthinweis
+        => (_quelle is null
+                ? Profil?.Exporthinweis
+                : Quellenliste.FirstOrDefault(q => string.Equals(q.Schluessel, _quelle, StringComparison.Ordinal))?.Exporthinweis)
+           ?? "";
 
     /// <summary>Der Filter des Dateiwählers: der der gewählten Quelle, sonst der des Profils (alle Formate).</summary>
     private string WirksamerFilter
