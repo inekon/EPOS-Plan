@@ -128,7 +128,19 @@ namespace WindowsFormsApplication1
 
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.CHART_DATEI_WAERMEPUMPE, m_ID_Projekt),
-                sim.simulation_wp.Temperatur, spalten, false);
+                sim.simulation_wp.Temperatur, spalten, false, BereichsKopfzeilen());
+        }
+
+        /// <summary>
+        /// UB‑E4 (Fachkonzept 7.4): die Betriebsbereiche der Wärmepumpe als Kopfzeilen der CSV-Datei — je Wert
+        /// „Spaltenname;Wert“ mit dem Spaltennamen des Ergebnisses als Schlüssel; ohne Bivalenzobjekt keine Zeile.
+        /// </summary>
+        private IReadOnlyList<string>? BereichsKopfzeilen()
+        {
+            Bereichskennzahlen? b = SimulationErgebnisCtrl.BereicheDerWaermepumpe(sim.simulation_wp);
+            if (b == null) return null;
+            var kultur = new System.Globalization.CultureInfo("de-DE");
+            return b.Schluesselwerte().Select(kv => kv.Key + ";" + kv.Value.ToString("0.###", kultur)).ToList();
         }
 
         /// <summary>

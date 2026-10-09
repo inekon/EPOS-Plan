@@ -86,6 +86,38 @@
 
         </div>
 
+        @* UB-E4 (Fachkonzept Uebergabegrenze 7.1): die Kachelzeile „Betriebsbereiche“ - nur, wenn der Lauf
+           Bereichsdaten fuehrt (ein Modul mit Bivalenzobjekt). Je Bereich Stunden und Waerme der Waermepumpe,
+           dazu die zwei berechneten Bivalenzpunkte und die Uebergabegrenze. Die Zaehler der Spreizungs- und
+           Ruecklaufgrenze stehen leise darunter, nur wenn > 0. Die Vorwaermer-Stunden des Kessels bleiben im
+           Protokollhinweis (U-4). *@
+        @if (Daten.Bereiche is { } bereiche)
+        {
+            <div class="epos-simerg-spalten" data-kachel="betriebsbereiche">
+                <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                    <Gruppenkopf Titel="@Resource.SIM_KACHEL_BETRIEBSBEREICHE" />
+                    <dl class="epos-simerg-werte">
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            @Wertzeile(Bereichsname(i), Bereichswert(bereiche, i), MWH, titel: Resource.SIM_TIP_BEREICH_WERT)
+                        }
+                        @Wertzeile(Resource.SIM_LBL_BIVALENZPUNKT_1, Punkt(bereiche.Bivalenzpunkt_1), "°C")
+                        @Wertzeile(Resource.SIM_LBL_BIVALENZPUNKT_2, Punkt(bereiche.Bivalenzpunkt_2), "°C")
+                        @Wertzeile(Resource.SIM_LBL_UEBERGABE_MAX, Punkt(bereiche.Uebergabe_Max_kW), "kW")
+                    </dl>
+                    @if (bereiche.Spreizung_Unterschritten_h > 0)
+                    {
+                        <p class="epos-simerg-hinweis" data-zeile="spreizung">@Resource.SIM_LBL_SPREIZUNG_UNTERSCHRITTEN: @bereiche.Spreizung_Unterschritten_h.Value.ToString("N0", Kultur) h</p>
+                    }
+                    @if (bereiche.Ruecklauf_Ueberschritten_h > 0)
+                    {
+                        <p class="epos-simerg-hinweis" data-zeile="ruecklauf">@Resource.SIM_LBL_RUECKLAUF_UEBERSCHRITTEN: @bereiche.Ruecklauf_Ueberschritten_h.Value.ToString("N0", Kultur) h</p>
+                    }
+                    <p class="epos-simerg-hinweis" data-zeile="stundenmodell">@Resource.BER_HINWEIS_STUNDENMODELL</p>
+                </section>
+            </div>
+        }
+
         @* ---- Die Modultabelle; Doppelklick oeffnet den Waermepumpendialog ---- *@
         @if (Daten.Module.Count > 0)
         {
@@ -469,6 +501,23 @@
     /// Zahl, aber ab vier Stellen ohne Zaehlen lesbar. Die Kultur bleibt.
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
+
+    /// <summary>Der Name eines Betriebsbereichs (Reihenfolge wie <c>Bereichskennzahlen.Stunden</c>).</summary>
+    internal static string Bereichsname(int i) => i switch
+    {
+        0 => Resource.SIM_BEREICH_WP_ALLEIN,
+        1 => Resource.SIM_BEREICH_PARALLEL,
+        2 => Resource.SIM_BEREICH_VORWAERMUNG,
+        _ => Resource.SIM_BEREICH_NUR_KESSEL,
+    };
+
+    /// <summary>Stunden und Waerme eines Bereichs: „1.234 h · 12,35“ (Einheit MWh/a in der Spalte); fehlt ein Wert, ein Strich.</summary>
+    private static string Bereichswert(WindowsFormsApplication1.Bereichskennzahlen b, int i)
+        => (b.Stunden[i] is int h ? h.ToString("N0", Kultur) + " h" : "—") + " · "
+           + (b.Mwh[i] is double m ? Zahl(m) : "—");
+
+    /// <summary>Ein nullbarer Wert mit einer Nachkommastelle; <c>null</c> wird ein Strich.</summary>
+    private static string Punkt(double? wert) => wert.HasValue ? wert.Value.ToString("N1", Kultur) : "—";
 
     /// <summary>
     /// Eine Jahresarbeitszahl aus dem Kern mit zwei Nachkommastellen; <c>null</c> (kein Strom)

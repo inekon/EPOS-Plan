@@ -224,9 +224,10 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>Welle M5 (PV3): dreiundsechzig — die Einspeisegrenze mit Wert und Einheit.</para>
     /// <para>Welle M7 (BW5): achtundsechzig — die thermische Desinfektion mit fünf Feldern.</para>
     /// <para>KP3 O1b: siebzig — der Aufschlag der Aufheizoptimierung in Stunden und Prozent.</para>
+    /// <para>UB‑E4: einundsiebzig — die Betriebsbereiche der Wärmepumpe (nur lesend).</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_siebzig_Felder_an()
+    public void Die_Ansicht_meldet_einundsiebzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -235,8 +236,9 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b).
-        Assert.Equal(70, felder.Count);
+        // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b)
+        // und die Betriebsbereiche der Wärmepumpe (UB-E4).
+        Assert.Equal(71, felder.Count);
     }
 
     /// <summary>
@@ -328,7 +330,35 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.Equal("0", werte["waermebedarf"]);
         Assert.Equal("0", werte["reststrom"]);
         Assert.Equal("", werte["laufhinweise"]);
+        Assert.Equal("", werte["wp_betriebsbereiche"]);
         Assert.Equal("", werte["kaskade"]);
+    }
+
+    /// <summary>UB‑E4: die Betriebsbereiche der Wärmepumpe mit den Spaltennamen des Ergebnisses als Schlüssel.</summary>
+    [Fact]
+    public void Die_Betriebsbereiche_stehen_mit_den_Spaltennamen_in_der_Sicht()
+    {
+        var probe = new Schreibprobe();
+        SimulationErgebnisDaten ergebnis = Ergebnisstand();
+        ergebnis.Waermepumpe = new SimulationErgebnisCtrl.WaermepumpeErgebnis
+        {
+            Bereiche = new Bereichskennzahlen
+            {
+                Stunden = new int?[] { 4200, 1300, 250, 90 },
+                Mwh = new double?[] { 180.5, 95.25, 12.0, 0.0 },
+                Spreizung_Unterschritten_h = 0, Ruecklauf_Ueberschritten_h = 7,
+                Bivalenzpunkt_1 = -4.2, Bivalenzpunkt_2 = -9.8, Uebergabe_Max_kW = 41.5,
+            },
+        };
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => Sicht(probe, ergebnis: ergebnis), new KiMaskenhaken());
+
+        string text = Werte()["wp_betriebsbereiche"];
+        Assert.Contains("Bereich_WpAllein_h=4200", text);
+        Assert.Contains("Bereich_Parallel_MWh=95.25", text);
+        Assert.Contains("Ruecklauf_Ueberschritten_h=7", text);
+        Assert.Contains("Bivalenzpunkt_1=-4.2", text);
+        Assert.Contains("Uebergabe_Max_kW=41.5", text);
     }
 
     // =====================================================================
@@ -377,6 +407,7 @@ public class KiSimulationMaskeTests : IDisposable
     [InlineData("stromdeckung")]
     [InlineData("speicher_entladung")]
     [InlineData("laufhinweise")]
+    [InlineData("wp_betriebsbereiche")]
     public async Task Eine_Kennzahl_des_Laufs_ist_nicht_setzbar(string feld)
     {
         // Sie sind GERECHNET und haben keinen Setzer; die Ablehnung nennt sie beim

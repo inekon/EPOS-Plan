@@ -1166,6 +1166,21 @@ public sealed class SimulationKiSicht
     public string Laufhinweise => _ergebnis()?.Laufmeldungen ?? "";
 
     /// <summary>
+    /// UB‑E4 (Fachkonzept Übergabegrenze 7.4): die Betriebsbereiche der Wärmepumpe des Laufs — je Wert
+    /// „Spaltenname=Wert“ mit den Spaltennamen des Ergebnisses als Schlüssel; leer ohne Bivalenzobjekt.
+    /// </summary>
+    public string WpBetriebsbereiche
+    {
+        get
+        {
+            WindowsFormsApplication1.Bereichskennzahlen? b = _ergebnis()?.Waermepumpe?.Bereiche;
+            if (b is null) return "";
+            return string.Join("; ", b.Schluesselwerte().Select(kv =>
+                kv.Key + "=" + kv.Value.ToString("0.###", CultureInfo.InvariantCulture)));
+        }
+    }
+
+    /// <summary>
     /// Die Speicherkapazität [kWh] der Autarkierechnung auf dem Blatt „Ergebnis"
     /// (Welle KI‑F6).
     /// </summary>

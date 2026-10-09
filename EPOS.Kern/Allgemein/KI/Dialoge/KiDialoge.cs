@@ -8975,6 +8975,10 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("speicher_soc_band", "SimulationKiSicht.SpeicherSocBand",
                                      KiDialogTexte.SimSpeicherSocName, KiParameterTyp.Text,
                                      KiDialogTexte.SimSpeicherSocErl, leerErlaubt: true),
+                    // UB-E4 (FK 7.4): die Betriebsbereiche der Waermepumpe mit den Spaltennamen als Schluessel.
+                    new KiDialogFeld("wp_betriebsbereiche", "SimulationKiSicht.WpBetriebsbereiche",
+                                     KiDialogTexte.SimWpBereicheName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimWpBereicheErl, leerErlaubt: true),
                     new KiDialogFeld("laufhinweise", "SimulationKiSicht.Laufhinweise",
                                      KiDialogTexte.SimHinweiseName, KiParameterTyp.Text,
                                      KiDialogTexte.SimHinweiseErl, leerErlaubt: true),

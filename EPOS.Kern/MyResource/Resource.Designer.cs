@@ -4389,6 +4389,321 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzdiagramm ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur [°C] ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_ACHSE_X {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_ACHSE_X", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung [kW] ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_ACHSE_Y {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_ACHSE_Y", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizlast ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_HEIZLAST {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_HEIZLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeld bei {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_KENNFELD {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_KENNFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltpunkt {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_ABSCHALT {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_ABSCHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,1 = {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_BIV1 {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_BIV1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,2 = {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_BIV2 {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_BIV2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Kennfeld {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_MARKE_KENNFELD {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_MARKE_KENNFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Kessel ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_NUR_KESSEL {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_NUR_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die parallel ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_PARALLEL {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_PARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Bivalenzdiagramm — Kopplung aus ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte Wärmepumpe ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_STUNDEN {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzdiagramm ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_TITEL {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe bei {0} °C ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_UEBERGABE {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmung ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_VORWAERMUNG {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_VORWAERMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe allein ähnelt.
+        /// </summary>
+        public static string BER_BILD_BIVALENZ_WP_ALLEIN {
+            get {
+                return ResourceManager.GetString("BER_BILD_BIVALENZ_WP_ALLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string BER_BIV_GROESSE {
+            get {
+                return ResourceManager.GetString("BER_BIV_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstvorlauf der Wärmepumpe [°C] ähnelt.
+        /// </summary>
+        public static string BER_BIV_HOECHSTVORLAUF {
+            get {
+                return ResourceManager.GetString("BER_BIV_HOECHSTVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil der Wärmepumpe an der Kesselleistung bei −7 °C nach § 43 GModG [%] ähnelt.
+        /// </summary>
+        public static string BER_BIV_HYBRID {
+            get {
+                return ResourceManager.GetString("BER_BIV_HYBRID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestanteil nach § 43 GModG [%] ähnelt.
+        /// </summary>
+        public static string BER_BIV_HYBRID_MINDEST {
+            get {
+                return ResourceManager.GetString("BER_BIV_HYBRID_MINDEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,1 berechnet [°C] ähnelt.
+        /// </summary>
+        public static string BER_BIV_PUNKT1 {
+            get {
+                return ResourceManager.GetString("BER_BIV_PUNKT1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,2 berechnet [°C] ähnelt.
+        /// </summary>
+        public static string BER_BIV_PUNKT2 {
+            get {
+                return ResourceManager.GetString("BER_BIV_PUNKT2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt eingegeben (Abschaltpunkt) [°C] ähnelt.
+        /// </summary>
+        public static string BER_BIV_PUNKT_EINGEGEBEN {
+            get {
+                return ResourceManager.GetString("BER_BIV_PUNKT_EINGEGEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt maßgebend [°C] ähnelt.
+        /// </summary>
+        public static string BER_BIV_PUNKT_MASSGEBEND {
+            get {
+                return ResourceManager.GetString("BER_BIV_PUNKT_MASSGEBEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Stunden [h/a] ähnelt.
+        /// </summary>
+        public static string BER_BIV_STUNDEN {
+            get {
+                return ResourceManager.GetString("BER_BIV_STUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabegrenze, Anteil an der Heizlast [%] ähnelt.
+        /// </summary>
+        public static string BER_BIV_UEBERGABE_ANTEIL {
+            get {
+                return ResourceManager.GetString("BER_BIV_UEBERGABE_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabegrenze [kW] ähnelt.
+        /// </summary>
+        public static string BER_BIV_UEBERGABE_KW {
+            get {
+                return ResourceManager.GetString("BER_BIV_UEBERGABE_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf an der Übergabegrenze [°C] ähnelt.
+        /// </summary>
+        public static string BER_BIV_UEBERGABE_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("BER_BIV_UEBERGABE_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Wärme [MWh/a] ähnelt.
+        /// </summary>
+        public static string BER_BIV_WAERME {
+            get {
+                return ResourceManager.GetString("BER_BIV_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ähnelt.
+        /// </summary>
+        public static string BER_BIV_WERT {
+            get {
+                return ResourceManager.GetString("BER_BIV_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfhinweis Anfahrgrenze: Eine Luft/Wasser-Wärmepumpe holt bei Rücklauf unter 15 °C und Außentemperatur unter 10 °C den zweiten Erzeuger hinzu, bis der Rücklauf 23 °C erreicht; ein Raumsollwert liegt unter 15 °C. ähnelt.
+        /// </summary>
+        public static string BER_HINWEIS_ANFAHRGRENZE {
+            get {
+                return ResourceManager.GetString("BER_HINWEIS_ANFAHRGRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfhinweis Mindestrücklauf: Niedertemperatur- und Biomassekessel verlangen einen Rücklauf von 55–65 °C; die Rechnung setzt eine Rücklaufanhebung voraus. ähnelt.
+        /// </summary>
+        public static string BER_HINWEIS_MINDESTRUECKLAUF {
+            get {
+                return ResourceManager.GetString("BER_HINWEIS_MINDESTRUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenmodell: Speichermasse des Estrichs, Ventil- und Reglerdynamik und die Abtauung sind nicht abgebildet. Herstellerwerte zu Spreizung, Volumenstrom und Einsatzgrenze haben Vorrang vor den Vorgaben. ähnelt.
+        /// </summary>
+        public static string BER_HINWEIS_STUNDENMODELL {
+            get {
+                return ResourceManager.GetString("BER_HINWEIS_STUNDENMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“, anteilig am Netzbezug ähnelt.
         /// </summary>
         public static string BER_KAELTE_TRAEGER_ANTEILIG {
@@ -4511,6 +4826,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BER_PAUS_VORLAGE {
             get {
                 return ResourceManager.GetString("BER_PAUS_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenz und Übergabe ähnelt.
+        /// </summary>
+        public static string BER_TAFEL_BIVALENZ {
+            get {
+                return ResourceManager.GetString("BER_TAFEL_BIVALENZ", resourceCulture);
             }
         }
         
@@ -14982,6 +15306,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_GRUND_IST_STAMM {
             get {
                 return ResourceManager.GetString("BV_GRUND_IST_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Bivalenzdaten (Kopplung aus oder Einbindung der Wärmepumpe nicht gesetzt) ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_BIVALENZ {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_BIVALENZ", resourceCulture);
             }
         }
         
@@ -61694,6 +62027,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesend: Stunden und Wärme der Wärmepumpe je Betriebsbereich, Zähler der Spreizungs- und Rücklaufgrenze, berechnete Bivalenzpunkte und Übergabegrenze des letzten Laufs — je Wert „Spaltenname=Wert“ mit den Spaltennamen des Ergebnisses (Bereich_WpAllein_h, Bereich_WpAllein_MWh, …, Bivalenzpunkt_1, Bivalenzpunkt_2, Uebergabe_Max_kW); leer ohne Bivalenzobjekt (Einbindung nicht gesetzt oder Kopplung aus). ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WP_BEREICHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WP_BEREICHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereiche der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_WP_BEREICHE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_WP_BEREICHE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmemenge, die nach allen Erzeugern der Kaskade ungedeckt bleibt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_WREST_ERL {
@@ -105636,6 +105987,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Kessel ähnelt.
+        /// </summary>
+        public static string SIM_BEREICH_NUR_KESSEL {
+            get {
+                return ResourceManager.GetString("SIM_BEREICH_NUR_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Kessel parallel ähnelt.
+        /// </summary>
+        public static string SIM_BEREICH_PARALLEL {
+            get {
+                return ResourceManager.GetString("SIM_BEREICH_PARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmung ähnelt.
+        /// </summary>
+        public static string SIM_BEREICH_VORWAERMUNG {
+            get {
+                return ResourceManager.GetString("SIM_BEREICH_VORWAERMUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe allein ähnelt.
+        /// </summary>
+        public static string SIM_BEREICH_WP_ALLEIN {
+            get {
+                return ResourceManager.GetString("SIM_BEREICH_WP_ALLEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Einspeisung (Zero-Export) ähnelt.
         /// </summary>
         public static string SIM_BETRIEBSART_OHNE_EINSPEISUNG {
@@ -106180,6 +106567,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_HERLEITUNG_VERBUNDLISTE {
             get {
                 return ResourceManager.GetString("SIM_HERLEITUNG_VERBUNDLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereiche ähnelt.
+        /// </summary>
+        public static string SIM_KACHEL_BETRIEBSBEREICHE {
+            get {
+                return ResourceManager.GetString("SIM_KACHEL_BETRIEBSBEREICHE", resourceCulture);
             }
         }
         
@@ -106961,6 +107357,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,1 (berechnet) ähnelt.
+        /// </summary>
+        public static string SIM_LBL_BIVALENZPUNKT_1 {
+            get {
+                return ResourceManager.GetString("SIM_LBL_BIVALENZPUNKT_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,2 (berechnet) ähnelt.
+        /// </summary>
+        public static string SIM_LBL_BIVALENZPUNKT_2 {
+            get {
+                return ResourceManager.GetString("SIM_LBL_BIVALENZPUNKT_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 0…1  (1 = oben, 0 = unten; ohne Angabe oben) ähnelt.
         /// </summary>
         public static string SIM_LBL_EINSPEISEHOEHE_EINHEIT {
@@ -107011,6 +107425,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_LBL_PV_UEBERSCHUSS {
             get {
                 return ResourceManager.GetString("SIM_LBL_PV_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden über der Rücklaufgrenze ähnelt.
+        /// </summary>
+        public static string SIM_LBL_RUECKLAUF_UEBERSCHRITTEN {
+            get {
+                return ResourceManager.GetString("SIM_LBL_RUECKLAUF_UEBERSCHRITTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden unter der Mindestspreizung ähnelt.
+        /// </summary>
+        public static string SIM_LBL_SPREIZUNG_UNTERSCHRITTEN {
+            get {
+                return ResourceManager.GetString("SIM_LBL_SPREIZUNG_UNTERSCHRITTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabegrenze bei Auslegung ähnelt.
+        /// </summary>
+        public static string SIM_LBL_UEBERGABE_MAX {
+            get {
+                return ResourceManager.GetString("SIM_LBL_UEBERGABE_MAX", resourceCulture);
             }
         }
         
@@ -108402,6 +108843,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_TAB_SPEICHERTEMPERATUR {
             get {
                 return ResourceManager.GetString("SIM_TAB_SPEICHERTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden der Wärmepumpe im Bereich und ihre Wärme ähnelt.
+        /// </summary>
+        public static string SIM_TIP_BEREICH_WERT {
+            get {
+                return ResourceManager.GetString("SIM_TIP_BEREICH_WERT", resourceCulture);
             }
         }
         
@@ -115246,6 +115696,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bivalenzdiagramm (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__WP_BIVALENZ {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__WP_BIVALENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild „Zahlungsstrom je Jahr“ (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__ZAHLUNGSSTROM {
@@ -118351,6 +118810,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Bivalenzdiagramm der Wärmepumpe — Heizlast, Kennfeld und Übergabegrenze bei Höchstvorlauf, Betriebsbereiche, Bivalenzpunkte und die Stundenwerte des Laufs; ohne Übergabedaten der Platzhalter. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__WP_BIVALENZ {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__WP_BIVALENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Zahlungsstrom je Jahr im Szenario „Erwartet“ (gestapelte Jahresbalken, Ersatzjahre markiert). ähnelt.
         /// </summary>
         public static string VF_STAND__BILD__ZAHLUNGSSTROM {
@@ -118563,6 +119031,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__TABELLE__BETRIEBSKOSTEN {
             get {
                 return ResourceManager.GetString("VF_STAND__TABELLE__BETRIEBSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tafel „Bivalenz und Übergabe“ des laufenden Stands: Höchstvorlauf, Übergabegrenze, Bivalenzpunkte, Stunden und Wärme je Betriebsbereich, Anteil nach § 43 GModG; nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__BIVALENZ {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__BIVALENZ", resourceCulture);
             }
         }
         

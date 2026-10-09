@@ -49689,5 +49689,164 @@ chart</value>
   <data name="KI_DLG_BHKK_RUECKLAUF_MAX_ERL" xml:space="preserve">
     <value>Return temperature cut-off limit (40 to 90 °C): if the return to the module is above it, the module delivers nothing in that hour. The design return must lie below it. Empty = no limit; default for new records 70 °C.</value>
   </data>
+  <data name="BER_BILD_BIVALENZ_TITEL" xml:space="preserve">
+    <value>Bivalence diagram</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_ACHSE_X" xml:space="preserve">
+    <value>Outdoor temperature [°C]</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_ACHSE_Y" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_HEIZLAST" xml:space="preserve">
+    <value>Heating load</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_KENNFELD" xml:space="preserve">
+    <value>Performance map at {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_UEBERGABE" xml:space="preserve">
+    <value>Emitter limit at {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_STUNDEN" xml:space="preserve">
+    <value>Heat pump hourly values</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_NUR_KESSEL" xml:space="preserve">
+    <value>boiler only</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_VORWAERMUNG" xml:space="preserve">
+    <value>preheating</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_PARALLEL" xml:space="preserve">
+    <value>parallel</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_WP_ALLEIN" xml:space="preserve">
+    <value>heat pump alone</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_BIV1" xml:space="preserve">
+    <value>θ_biv,1 = {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_BIV2" xml:space="preserve">
+    <value>θ_biv,2 = {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_ABSCHALT" xml:space="preserve">
+    <value>Cut-off point {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_MARKE_KENNFELD" xml:space="preserve">
+    <value>by performance map {0} °C</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ_PLATZHALTER" xml:space="preserve">
+    <value>no bivalence diagram — coupling off</value>
+  </data>
+  <data name="SIM_KACHEL_BETRIEBSBEREICHE" xml:space="preserve">
+    <value>Operating ranges</value>
+  </data>
+  <data name="SIM_BEREICH_WP_ALLEIN" xml:space="preserve">
+    <value>Heat pump alone</value>
+  </data>
+  <data name="SIM_BEREICH_PARALLEL" xml:space="preserve">
+    <value>Parallel with boiler</value>
+  </data>
+  <data name="SIM_BEREICH_VORWAERMUNG" xml:space="preserve">
+    <value>Preheating</value>
+  </data>
+  <data name="SIM_BEREICH_NUR_KESSEL" xml:space="preserve">
+    <value>Boiler only</value>
+  </data>
+  <data name="SIM_LBL_BIVALENZPUNKT_1" xml:space="preserve">
+    <value>Bivalence point θ_biv,1 (calculated)</value>
+  </data>
+  <data name="SIM_LBL_BIVALENZPUNKT_2" xml:space="preserve">
+    <value>Bivalence point θ_biv,2 (calculated)</value>
+  </data>
+  <data name="SIM_LBL_UEBERGABE_MAX" xml:space="preserve">
+    <value>Heat emission limit at design</value>
+  </data>
+  <data name="SIM_LBL_SPREIZUNG_UNTERSCHRITTEN" xml:space="preserve">
+    <value>Hours below the minimum temperature spread</value>
+  </data>
+  <data name="SIM_LBL_RUECKLAUF_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Hours above the return temperature limit</value>
+  </data>
+  <data name="SIM_TIP_BEREICH_WERT" xml:space="preserve">
+    <value>Heat pump hours in the range and its heat</value>
+  </data>
+  <data name="BER_HINWEIS_STUNDENMODELL" xml:space="preserve">
+    <value>Hourly model: the thermal mass of the screed, valve and controller dynamics and defrosting are not modelled. Manufacturer values for temperature spread, flow rate and operating limit take precedence over the defaults.</value>
+  </data>
+  <data name="BER_HINWEIS_ANFAHRGRENZE" xml:space="preserve">
+    <value>Check start-up limit: an air-to-water heat pump calls the second generator at return temperatures below 15 °C and outdoor temperatures below 10 °C until the return reaches 23 °C; a room set point is below 15 °C.</value>
+  </data>
+  <data name="BER_HINWEIS_MINDESTRUECKLAUF" xml:space="preserve">
+    <value>Check minimum return temperature: low-temperature and biomass boilers require a return of 55–65 °C; the calculation assumes a return temperature boost.</value>
+  </data>
+  <data name="BER_TAFEL_BIVALENZ" xml:space="preserve">
+    <value>Bivalence and heat emission</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ" xml:space="preserve">
+    <value>Bivalence diagram</value>
+  </data>
+  <data name="BER_BIV_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="BER_BIV_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="BER_BIV_HOECHSTVORLAUF" xml:space="preserve">
+    <value>Maximum heat pump flow temperature [°C]</value>
+  </data>
+  <data name="BER_BIV_UEBERGABE_KW" xml:space="preserve">
+    <value>Heat emission limit [kW]</value>
+  </data>
+  <data name="BER_BIV_UEBERGABE_ANTEIL" xml:space="preserve">
+    <value>Heat emission limit, share of the heating load [%]</value>
+  </data>
+  <data name="BER_BIV_UEBERGABE_RUECKLAUF" xml:space="preserve">
+    <value>Return temperature at the heat emission limit [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT1" xml:space="preserve">
+    <value>Bivalence point θ_biv,1 calculated [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT2" xml:space="preserve">
+    <value>Bivalence point θ_biv,2 calculated [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT_EINGEGEBEN" xml:space="preserve">
+    <value>Bivalence point entered (switch-off point) [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT_MASSGEBEND" xml:space="preserve">
+    <value>Governing bivalence point [°C]</value>
+  </data>
+  <data name="BER_BIV_STUNDEN" xml:space="preserve">
+    <value>{0}, hours [h/a]</value>
+  </data>
+  <data name="BER_BIV_WAERME" xml:space="preserve">
+    <value>{0}, heat [MWh/a]</value>
+  </data>
+  <data name="BER_BIV_HYBRID" xml:space="preserve">
+    <value>Heat pump share of the boiler output at −7 °C according to § 43 GModG [%]</value>
+  </data>
+  <data name="BER_BIV_HYBRID_MINDEST" xml:space="preserve">
+    <value>Minimum share according to § 43 GModG [%]</value>
+  </data>
+  <data name="BV_GRUND_KEINE_BIVALENZ" xml:space="preserve">
+    <value>no bivalence data (coupling off or heat pump integration not set)</value>
+  </data>
+  <data name="VF_STAND__BILD__WP_BIVALENZ" xml:space="preserve">
+    <value>Image per state: heat pump bivalence diagram — heating load, characteristic map and heat emission limit at maximum flow temperature, operating ranges, bivalence points and the hourly values of the run; without heat emission data the placeholder.</value>
+  </data>
+  <data name="VF_HAT__BILD__WP_BIVALENZ" xml:space="preserve">
+    <value>Image switch: is there a bivalence diagram (state or any state)?</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BIVALENZ" xml:space="preserve">
+    <value>Table “Bivalence and heat emission” of the current state: maximum flow temperature, heat emission limit, bivalence points, hours and heat per operating range, share according to § 43 GModG; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="KI_DLG_SIM_WP_BEREICHE_NAME" xml:space="preserve">
+    <value>Heat pump operating ranges</value>
+  </data>
+  <data name="KI_DLG_SIM_WP_BEREICHE_ERL" xml:space="preserve">
+    <value>Read-only: hours and heat of the heat pump per operating range, counters of the spread and return limits, calculated bivalence points and heat emission limit of the last run — each value as “column=value” with the result column names (Bereich_WpAllein_h, Bereich_WpAllein_MWh, …, Bivalenzpunkt_1, Bivalenzpunkt_2, Uebergabe_Max_kW); empty without bivalence object (integration not set or coupling off).</value>
+  </data>
 </root>
 

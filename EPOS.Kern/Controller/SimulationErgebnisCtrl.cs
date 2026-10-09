@@ -383,6 +383,37 @@ namespace WindowsFormsApplication1
             public List<string> ErdreichHinweise = new List<string>();
             /// <summary>true, wenn mindestens ein Erdreichhinweis eine Warnung ist.</summary>
             public bool ErdreichWarnung;
+
+            /// <summary>
+            /// UB‑E4 (Fachkonzept Übergabegrenze 7.1): die Betriebsbereiche der Wärmepumpen — Stunden und Wärme je Bereich
+            /// als Summe über die Module mit Bivalenzobjekt, die Zähler der Spreizungs- und Rücklaufgrenze und die
+            /// Bivalenzpunkte und die Übergabegrenze des ersten Moduls, das sie trägt. <c>null</c> = kein Modul mit
+            /// Bivalenzobjekt (Einbindung nicht gesetzt oder ohne Kopplung) — dann entfällt die Kachelzeile.
+            /// </summary>
+            public Bereichskennzahlen Bereiche;
+        }
+
+        /// <summary>
+        /// UB‑E4: die Betriebsbereiche des Laufs — Summe der Module (<see cref="Bereichskennzahlen.Summe"/>) mit den
+        /// Bivalenzpunkten und der Übergabegrenze des ersten Moduls, das sie trägt; <c>null</c> ohne Bivalenzobjekt.
+        /// </summary>
+        internal static Bereichskennzahlen BereicheDerWaermepumpe(SimulationWaermepumpe wp)
+        {
+            if (wp == null) return null;
+            var module = new List<Bereichskennzahlen>();
+            for (int i = 0; i < wp.wp_list.Count; i++)
+                module.Add(SimulationRunner.BereicheDesModuls(wp.BivalenzDesModuls(i)));
+            Bereichskennzahlen s = Bereichskennzahlen.Summe(module);
+            if (s == null) return null;
+            Bereichskennzahlen erstes = module.FirstOrDefault(m => m != null &&
+                (m.Bivalenzpunkt_1.HasValue || m.Bivalenzpunkt_2.HasValue || m.Uebergabe_Max_kW.HasValue));
+            if (erstes != null)
+            {
+                s.Bivalenzpunkt_1 = erstes.Bivalenzpunkt_1;
+                s.Bivalenzpunkt_2 = erstes.Bivalenzpunkt_2;
+                s.Uebergabe_Max_kW = erstes.Uebergabe_Max_kW;
+            }
+            return s;
         }
 
         /// <summary>
@@ -425,6 +456,9 @@ namespace WindowsFormsApplication1
             e.StromverbrauchMwh = wp.WpStrombedarfGesamtKwh / 1000.0;
             e.HeizstabStromverbrauchMwh = wp.HeizstabGesamtKwh / 1000.0;
             e.WaermeproduktionMwh = wp.WpWaermeproduktionGesamtKwh / 1000.0;
+
+            // UB-E4 (FK 7.1): die Betriebsbereiche - dieselbe Abbildung wie das gespeicherte Ergebnis (SimulationRunner).
+            e.Bereiche = BereicheDerWaermepumpe(wp);
 
             // W11-B15: Nullprüfung wie im Runner.
             e.Vollbenutzungsstunden = wp.wp_list.Count > 0 ? wp.WP_Laufzeit / wp.wp_list.Count : 0.0;

@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-10-05.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-10-09.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-10-05.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-10-09.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -57,10 +57,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **247 Bilder**; **211** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **254 Bilder**; **222** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-05.sha256` nennt alle 211 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-09.sha256` nennt alle 222 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -596,4 +596,30 @@ in `Program.Anlagenkopplung.cs`: Sollwert 21/17 °C, an den ersten drei Morgen 1
 Das sind eine Maßprobe und eine Gegenprobe — **3 neue Bilder** — und eine SVG-Probe. Kein Bild von vorher ändert sich:
 Die 208 Zeilen der bisherigen Messlatte stehen unverändert in `Messlatte_2026-10-05.sha256`, dazu die drei neuen. Die
 Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: drei Zeilen neu, alle übrigen
+gleich.
+
+## Bivalenzdiagramm der Wärmepumpe (Übergabegrenze UB‑E4)
+
+`ChartRenderer.Bivalenzdiagramm` zeichnet das `BivalenzdiagrammModell` (900 × 540): Leistung über der Außentemperatur mit
+den Bereichsflächen „nur Kessel“ (`WAERME_KESSEL`), „Vorwärmung“ (`UEBERSCHUSS`), „parallel“ (`SERIE_3`) und „Wärmepumpe
+allein“ (`SERIE_2`), der Heizlast (`BEDARF`), dem Kennfeld bei Höchstvorlauf (gestrichelt, `SERIE_3`), der Übergabegrenze
+(gepunktet, `SERIE_8`), der Wärmepumpe als Fläche (`SERIE_2`), wahlweise den Stundenpunkten (`SERIE_5`) und den Marken
+θ_biv,1, θ_biv,2, Abschaltpunkt und „nach Kennfeld“. Ohne Übergabedaten steht der Platzhalter „kein Bivalenzdiagramm —
+Kopplung aus“. Herleitung und Modell rechnet der Kern aus dem Zahlenbeispiel des Fachkonzepts (Heizkörper 75/60/20 °C,
+10 kW; Gebäude 10 kW bei −12 °C; Kennfeld 7 bis 9 kW; σ_min 3 K; teilparallel mit Vorwärmbetrieb, Abschaltpunkt −10 °C);
+die Proben stehen in `Program.Bivalenzdiagramm.cs`:
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `bivalenzdiagramm` | Heizlast, Kennfeld und Übergabegrenze in ihren Rollenfarben, Determinismus |
+| Maßprobe | `bivalenzdiagramm_stunden` | dasselbe mit 400 synthetischen Stundenpunkten in `SERIE_5` |
+| Maßprobe | `bivalenzdiagramm_platzhalter` | der Platzhalter ohne Übergabedaten |
+| Gegenprobe | `bivalenz_kennfeld_wirkt` | ein anderes Kennfeld (6 statt 7 kW bei −7 °C) zeichnet anders |
+| Gegenprobe | `bivalenz_vorwaermung_wirkt` | ohne Vorwärmbetrieb zwei Flächen statt drei |
+| Gegenprobe | `bivalenz_stunden_wirkt` | die Stundenpunkte kommen im Bild an |
+| Gegenprobe | `bivalenz_platzhalter_wirkt` | der Platzhalter ist ein eigenes Bild |
+
+Das sind drei Maß- und vier Gegenproben — **11 neue Bilder**. Kein Bild von vorher ändert sich: Die 211 Zeilen von
+`Messlatte_2026-10-05.sha256` stehen unverändert in `Messlatte_2026-10-09.sha256`, dazu die elf neuen. Die
+Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: elf Zeilen neu, alle übrigen
 gleich.
