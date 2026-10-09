@@ -82,7 +82,7 @@ namespace EPOS.Kern.Tests
         public void Bhkw_ueber_der_Grenze_liefert_nichts_ohne_Feld_unveraendert()
         {
             Assert.True(Ruecklaufgrenze.BhkwAus(70.0, 71.0));
-            Assert.True(Ruecklaufgrenze.BhkwAus(70.0, 70.0));
+            Assert.False(Ruecklaufgrenze.BhkwAus(70.0, 70.0));
             Assert.False(Ruecklaufgrenze.BhkwAus(70.0, 69.9));
             Assert.False(Ruecklaufgrenze.BhkwAus(null, 71.0));
             Assert.False(Ruecklaufgrenze.BhkwAus(70.0, double.NaN));

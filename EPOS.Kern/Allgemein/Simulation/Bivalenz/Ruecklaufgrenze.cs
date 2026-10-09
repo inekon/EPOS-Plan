@@ -53,11 +53,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// BHKW (UB‑Q9, U‑3): liefert das Modul in der Stunde nichts? Wahr, wenn <paramref name="ruecklaufMaxC"/> gepflegt ist
-        /// und der Rücklauf zum BHKW <paramref name="ruecklaufC"/> ihn erreicht; ohne Feld oder ohne Rücklauf nie.
+        /// und der Rücklauf zum BHKW <paramref name="ruecklaufC"/> darüber liegt (wie bei der Wärmepumpe); ohne Feld oder ohne Rücklauf nie.
         /// </summary>
         internal static bool BhkwAus(double? ruecklaufMaxC, double ruecklaufC)
             => ruecklaufMaxC.HasValue && !double.IsNaN(ruecklaufMaxC.Value)
-               && !double.IsNaN(ruecklaufC) && !double.IsInfinity(ruecklaufC) && ruecklaufC >= ruecklaufMaxC.Value;
+               && !double.IsNaN(ruecklaufC) && !double.IsInfinity(ruecklaufC) && ruecklaufC > ruecklaufMaxC.Value;
 
         /// <summary>
         /// Prüfregel des BHKW-Stammblatts (U‑3): der Auslegungsrücklauf <c>Ruecklauf</c> muss unter der Abschaltgrenze
