@@ -1101,36 +1101,24 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Ferienspalten bleiben Quelle der Leser; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879
 > CSV byte-gleich.
 >
-> **Nachtrag — Testdatenbank auf 208 (Katalogkosten und Ursprung hinter der Kalenderbedienung), Basis R46 unberührt.**
+> **Nachtrag — Testdatenbank auf 209 (Katalogkosten und Ursprung 208, Katalogkosten Investition 209), Basis R47 unberührt.**
 > `KatalogkostenUrsprungSchema` (208 = `KalenderbedienungSchema.SCHRITT + 1`) legt an den acht Katalogen mit Kosten
 > (`Tab_BHKW_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_Pufferspeicher_STAMM`, `Tab_Stromspeicher_STAMM`, `Tab_PV_STAMM`,
 > `Tab_Solarkollektoren_STAMM`, `Tab_WP_STAMM`, `Tab_Kaeltemaschine_STAMM`) die Spalte `ID_KostenVorlage` (Verweis auf
 > `Tab_KostenVorlage`) und an den elf Projektkopien ohne Ursprungsverweis (`Tab_BHKW`, `Tab_Heizkessel`,
 > `Tab_Stromspeicher`, `Tab_PV`, `Tab_Solarkollektoren`, `Tab_Stromverbraucher`, `Tab_Brauchwasser`, `Tab_Prozesswaerme`,
-> `Tab_Waermebedarf`, `Tab_Stromganglinie`, `Tab_Solarganglinie`) die Spalte `ID_Stamm` (Verweis auf den Katalog) an,
-> beide nullbar mit `ON DELETE SET NULL`, alle neunzehn leer — reines DDL, kein DML an Bestandsdaten. Gehoben aus dem
-> Stand 207 (LFS-SHA-256 `ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`) mit
-> `Werkzeuge/Testdatenbankschema`; die achtzehn Tabellen mit Zeilen unterscheiden sich nur um die leere Zusatzspalte, jede
-> übrige Tabelle ist inhaltsgleich (außer `Tab_Applikation`), die `sqlite_sequence`-Stände, die der wiederholte
-> Werkzeuglauf fortzählt (`Tab_Nutzungsprofil_STAMM`, `Z_Nutzungsprofil`, `Tab_Kenndaten_Kaeltemaschine_STAMM`), sind
-> auf den Stand 207 zurückgesetzt. Die Testdatenbank steht auf **208** (`integrity_check` ok, `foreign_key_check` leer,
+> `Tab_Waermebedarf`, `Tab_Stromganglinie`, `Tab_Solarganglinie`) die Spalte `ID_Stamm` (Verweis auf den Katalog) an;
+> `KatalogkostenInvestitionSchema` (209 = `KatalogkostenUrsprungSchema.SCHRITT + 1`) legt an denselben acht Katalogen
+> die Spalte `ID_KostenVorlageInvestition` (Verweis auf die Investitionsvorlage in `Tab_KostenVorlage`) an. Alle
+> siebenundzwanzig Spalten sind nullbar mit `ON DELETE SET NULL` und leer — reines DDL, kein DML an Bestandsdaten.
+> Gehoben aus dem Stand 207 (LFS-SHA-256 `ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`) mit
+> `Werkzeuge/Testdatenbankschema`; die neunzehn Tabellen mit neuer Spalte unterscheiden sich nur um die leeren
+> Zusatzspalten, jede übrige Tabelle ist inhaltsgleich (außer `Tab_Applikation`), die `sqlite_sequence`-Stände sind
+> unverändert. Die Testdatenbank steht auf **209** (`integrity_check` ok, `foreign_key_check` leer, `--trocken` 0 offen,
 > SQL-Dialektprüfer 0 Fundstellen): **93 958 144 Byte, LFS-SHA-256
-> `45093f6aba2d5d5c695c99b14f18ec864dde8435e7c248e5b0c7af37d4108846`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> `7b6b2cc8144e581e60304156e7986f8bebc3186c54b9f091eb3a7a156f29ea40`**. **Die Basis `2026-10-09_R47_Zapffeiertage`
 > bleibt** — keine gesäte Spalte eines Referenzprojekts ändert ihren Wert, keine Einfrierregel ist berührt, kein Leser der
 > Simulation fragt die neuen Spalten.
->
-> **Nachtrag — Testdatenbank auf 210 (Katalogkosten Investition), Basis R46 unberührt.**
-> `KatalogkostenInvestitionSchema` (210; vorläufig `KatalogkostenUrsprungSchema.SCHRITT + 2`, bis 209
-> `KaeltemaschineTeillastSchema` auf origin liegt und die Kette auf dessen `SCHRITT + 1` umgehängt wird) legt an den acht
-> Katalogen mit Kosten die Spalte `ID_KostenVorlageInvestition` an (Verweis auf `Tab_KostenVorlage`, nullbar,
-> `ON DELETE SET NULL`), alle acht leer — reines DDL, kein DML an Bestandsdaten. Gehoben aus dem Stand 208 (LFS-SHA-256
-> `45093f6aba2d5d5c695c99b14f18ec864dde8435e7c248e5b0c7af37d4108846`) mit `Werkzeuge/Testdatenbankschema`; nur die acht
-> Kataloge ändern ihr Schema um die leere Spalte, jede Tabelle ist inhaltsgleich (außer `Tab_Applikation`), die
-> `sqlite_sequence`-Stände sind auf den Stand 208 zurückgesetzt. Der Schritt 209 ist in dieser Datenbank nicht
-> enthalten; die Folge-Sitzung, die 209 einbringt, hebt sie nach. Die Testdatenbank steht auf **210** (`integrity_check`
-> ok, `foreign_key_check` leer, `--trocken` 0 offen): **93 958 144 Byte, LFS-SHA-256
-> `482a2269851030e8ea6f7d428ee020ac13e9619f97ac7f30d5362b0df4d9cfa4`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
-> bleibt** — kein Leser der Simulation fragt die neue Spalte.
 
 ### Die Vorgängerbasis R46 (Gerätegrenzen)
 
