@@ -49470,5 +49470,29 @@ chart</value>
   <data name="KOND_TXT_KALB_HINWEIS_MATRIX_UEBERSICHT" xml:space="preserve">
     <value>Overview only: weekend and holidays are set in the quick fields under “Edit calendar…”.</value>
   </data>
+  <data name="IMP_IFC_PROT_DATEI_MVD" xml:space="preserve">
+    <value>File: {0}, model view definition (MVD): {1}</value>
+  </data>
+  <data name="IMP_IFC_PROT_DATEI_OHNE_MVD" xml:space="preserve">
+    <value>File: {0}, no model view definition (MVD) specified</value>
+  </data>
+  <data name="IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN" xml:space="preserve">
+    <value>The file contains no 2nd-level space boundaries and no base quantities; areas and orientation come from the element bodies. The import becomes more accurate when the CAD program exports with base quantities and 2nd-level space boundaries.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3" xml:space="preserve">
+    <value>The file contains no 2nd-level space boundaries and no base quantities; areas and orientation come from the element bodies. The import becomes more accurate when the CAD program exports with base quantities and 2nd-level space boundaries. From IFC2X3, material properties are not read either, and returning the enriched file requires IFC4.</value>
+  </data>
+  <data name="IMP_IFC_PROT_EXPORT_OHNE_GRENZEN_MENGEN_IFC2X3_RUECKGABE" xml:space="preserve">
+    <value>The file contains no 2nd-level space boundaries and no base quantities; areas and orientation come from the element bodies. The import becomes more accurate when the CAD program exports with base quantities and 2nd-level space boundaries. Returning the enriched file requires IFC4.</value>
+  </data>
+  <data name="GIMP_DLG_IFC_EXPORTHINWEIS" xml:space="preserve">
+    <value>Recommended export setting: IFC4 with base quantities and 2nd-level space boundaries. IFC2x3 (Coordination View 2.0) is read, but then without material properties and without returning the enriched file.</value>
+  </data>
+  <data name="GIMP_DLG_KOPF_MVD" xml:space="preserve">
+    <value>Model view (MVD)</value>
+  </data>
+  <data name="GIMP_WERT_KEINE_MVD" xml:space="preserve">
+    <value>not specified</value>
+  </data>
 </root>
 

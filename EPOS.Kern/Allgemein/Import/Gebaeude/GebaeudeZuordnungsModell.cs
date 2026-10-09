@@ -176,6 +176,19 @@ namespace WindowsFormsApplication1
         /// <summary>Der Anzeigetext der Stufe einer Meldung.</summary>
         public static string StufeText(PruefStufe stufe) => GanglinienProtokollText.StufeText(stufe);
 
+        /// <summary>Der Hinweis zur Exporteinstellung an der Dateiwahl; leer = das Format hat keinen.</summary>
+        public static string ExporthinweisText(GebaeudeImportProfil profil)
+            => (profil == null ? null : Ressource(profil.ExporthinweisSchluessel)) ?? "";
+
+        /// <summary>
+        /// Die Modellansicht (MVD) eines IFC-Abbilds für den Dialogkopf („ReferenceView_V1.2“, sonst „keine Angabe“);
+        /// <c>null</c> = kein IFC-Abbild — dann zeigt der Kopf keine Zeile.
+        /// </summary>
+        internal static string ModellansichtText(GebaeudeAbbild abbild)
+            => abbild is IfcGebaeudeAbbild ifc
+                ? IfcModellansicht.Anzeige(ifc.Modellansichten) ?? MyResource.Resource.GIMP_WERT_KEINE_MVD
+                : null;
+
         /// <summary>Die Schemaanzeige des Dialogkopfs, etwa „gbXML-Version 0.37".</summary>
         public static string SchemaText(GebaeudeImportProfil profil, string schemastand)
         {

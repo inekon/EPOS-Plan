@@ -149,6 +149,12 @@ namespace WindowsFormsApplication1
         public virtual bool FlaechenRueckfaelle => false;
 
         /// <summary>
+        /// Ressourcenschlüssel des Hinweises zur Exporteinstellung an der Dateiwahl (IFC: empfohlenes Schema, Basismengen,
+        /// Raumgrenzen 2. Ebene); leer = keiner.
+        /// </summary>
+        public virtual string ExporthinweisSchluessel => "";
+
+        /// <summary>
         /// G5-N (N1/N2): der vom Anwender vorgegebene Nordwinkel [°] für den nächsten Lauf; <c>null</c> = der Dateiwert bzw. die
         /// Annahme Planoberseite = Nord. Der Leser dreht die Azimute damit genau einmal (<see cref="GebaeudeAbbild.NordwinkelVorgabeGrad"/>).
         /// </summary>

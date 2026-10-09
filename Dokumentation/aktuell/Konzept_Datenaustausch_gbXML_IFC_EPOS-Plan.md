@@ -767,6 +767,8 @@ Der IFC-Import steht vollständig im Umsetzungskonzept (Kapitel 3, Stufe G4a) un
 Mehrzonenkonzept (Kapitel 6, Stufe G6c). Hier stehen **vier Ergänzungen**, die erst der
 Datenaustausch braucht — sonst nichts.
 
+**Kopf und Schema (Welle CV, 09.10.2026).** Der Import liest und zeigt die Modellansicht (MVD) aus `FILE_DESCRIPTION` (`IfcModellansicht`; ohne Schemaschritt, im Abbild unter `Modellansichten`, als erste Protokollzeile und im Dialogkopf unter „Schema“). Fehlen Raumgrenzen 2. Ebene und Basismengen, weist der Import auf den Körperweg und die Exporteinstellung hin und empfiehlt IFC4; bei IFC2x3 nennt der Hinweis die nicht gelesenen Stoffwerte und die Rückgabe, die IFC4 braucht. Messbefund eines Prüfplans an Exporten desselben Projekts als IFC4 und als IFC2x3 (Coordination View 2.0) aus demselben CAD-Programm: Beide tragen keine MVD-Angabe und sind in Geometrie, Mengensätzen, Schichten, U-Werten, Öffnungen und Räumen gleich gebaut; im Diagnose-Import unterscheiden sich 5 von 92 Zeilen, allein bei den Stoffwerten (bei IFC2x3 nicht gelesen, mehr Ersatzaufbauten, keine U-Wert-Plausibilisierung gegen die Schichten). Der Halbraumschnitt für Clipping-Körper ist zurückgestellt, bis eine Datei mit Clipping vorliegt; der Export bleibt unverändert (6.2).
+
 | # | Ergänzung | Grund | Stufe |
 |---|---|---|---|
 | **1** | **Persistenz der Zuordnung.** Nach dem OK schreibt der Ablauf eine Zeile in `Tab_Importquelle` und je zugeordnetem Objekt eine in `Tab_Importzuordnung` (Kapitel 7) | Voraussetzung für den Round-Trip G7d (Befund S, 6, Nr. 6) und für die Auskunft „aus welcher Datei stammt diese Zahl" | **G4a** — nicht später, sonst fehlt die Zuordnung für alle vorher importierten Gebäude |
