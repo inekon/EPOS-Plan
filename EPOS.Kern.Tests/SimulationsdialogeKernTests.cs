@@ -202,6 +202,27 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual("", ErdreichAuswertung.ErgebnisZuordnen(mit).HinweisFrost);
         }
 
+        /// <summary>
+        /// Die gerechnete Quelltemperatur des Laufs (Anwenderwunsch 08.10.2026) geht mit dem Ergebnis in den
+        /// Dialog — bei belastbarem und nicht belastbarem Entzug; bei Luft-Wasser nicht, dort rechnet die
+        /// Außenluft.
+        /// </summary>
+        [Fact]
+        public void ErgebnisZuordnen_reicht_die_gerechnete_Quelltemperatur_weiter()
+        {
+            var reihe = new double[8760];
+            for (int i = 0; i < reihe.Length; i++) reihe[i] = 8.0 - 4.0 * Math.Cos(2 * Math.PI * i / 8760.0);
+
+            var belastbar = new ErdreichAuswertung.AnlageErgebnis { MaxEntzugBelastbar = true, QuelltemperaturStuendlich = reihe };
+            var ohne = new ErdreichAuswertung.AnlageErgebnis { MaxEntzugBelastbar = false, QuelltemperaturStuendlich = reihe };
+            var luft = new ErdreichAuswertung.AnlageErgebnis { Unwirksam = true, QuelltemperaturStuendlich = reihe };
+
+            Assert.Same(reihe, ErdreichAuswertung.ErgebnisZuordnen(belastbar).QuelltemperaturStuendlich);
+            Assert.Same(reihe, ErdreichAuswertung.ErgebnisZuordnen(ohne).QuelltemperaturStuendlich);
+            Assert.Null(ErdreichAuswertung.ErgebnisZuordnen(luft).QuelltemperaturStuendlich);
+            Assert.Null(ErdreichAuswertung.ErdreichLaufErgebnis.Keines.QuelltemperaturStuendlich);
+        }
+
         // ====================================================== Monats-/Wochenwerte
 
         [Fact]

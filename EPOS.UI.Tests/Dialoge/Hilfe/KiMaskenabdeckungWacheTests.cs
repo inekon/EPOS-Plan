@@ -503,14 +503,16 @@ public sealed class KiMaskenabdeckungWacheTests
         // gesperrt über aria-disabled und title) und die Zahlenfelder Grädigkeit und Leistungsgrenze; die
         // Feldkarte führt sie als kuehl_frei, kuehl_frei_graedigkeit, kuehl_frei_leistung (19 -> 22).
         // UB-E1 (Übergabegrenze U-2): die Klappliste „Kältemittel“ der Schnellwahl (22 -> 23).
+        // Anwenderwunsch 08.10.2026: das Kästchen „Sperrzeiten vorhanden“ über den Fenstern (23 -> 24).
         // UB-E2: die Gruppe „Bivalenz und Übergabe“ bringt die Klappliste „Einbindung“ und den Schalter „Vorwärmbetrieb“
-        // (23 -> 25); beide stehen in der KI-Sicht („einbindung“, „vorwaermbetrieb“), ebenso jetzt „kaeltemittel“ (Spalte
+        // (24 -> 26); beide stehen in der KI-Sicht („einbindung“, „vorwaermbetrieb“), ebenso jetzt „kaeltemittel“ (Spalte
         // Kaeltemittel des Geräts). Die Lesewerte der Gruppe sind Text und keine Eingabestellen.
-        new("WaermepumpeKonfiguration", 25, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+        new("WaermepumpeKonfiguration", 26, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
             "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; das Zeitprogramm der Gruppe „Betriebszeiten“ ist ein " +
             "Wochenraster mit 168 Faktoren und steht nicht in der KI-Sicht, der höchste Vorlauf als „vorlauf_max“; " +
             "die vier Felder je Sperrfenster (Beginn, Dauer, " +
-            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“; Einbindung, Vorwärmbetrieb und " +
+            "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“; das Kästchen " +
+            "„Sperrzeiten vorhanden“ ist derselbe Wert wie „sperrfenster“ leer oder nicht leer; Einbindung, Vorwärmbetrieb und " +
             "Kältemittel stehen als „einbindung“, „vorwaermbetrieb“ und „kaeltemittel“ in der KI-Sicht"),
         new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
         new("WaermesenkeDialog", 9),

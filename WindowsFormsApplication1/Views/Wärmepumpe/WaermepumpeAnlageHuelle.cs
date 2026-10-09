@@ -90,7 +90,7 @@ namespace WindowsFormsApplication1
             WErzeugerModel modell, int projektId)
         {
             // ET-5: Vorgabe der Stromtraeger des Projekts, solange die Anlage keinen fuehrt.
-            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Standard(projektId);
+            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_WAERMEPUMPE, 0, projektId);
 
             return new Dictionary<string, object>
             {

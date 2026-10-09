@@ -2322,7 +2322,7 @@ namespace WindowsFormsApplication1
                 VerbundMitglieder = WaermesenkeClass.VerbundLesen(idAnlage)
             };
 
-            return WaermesenkeHuelle.Gaben(daten);
+            return WaermesenkeHuelle.Gaben(daten, Kaskade.Belegt(_konfiguration));
         }
 
         /// <summary>

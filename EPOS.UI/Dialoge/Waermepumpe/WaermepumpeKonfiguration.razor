@@ -66,70 +66,6 @@
                 <Herleitungszeile Text="@Texte.HinweisOhneHeizstableistung" />
             }
 
-            @if (Daten.Sperrfenster is { } fensterliste)
-            {
-                @* Welle V14: die Sperrfenster der Anlage (Tab_Sperrfenster). Das aktive Altfenster
-                   steht als erste Zeile darin; beim Speichern überführt die Hülle die Liste. *@
-                <Formulargruppe Titel="@Texte.GruppeSperrzeiten">
-                    <KindInhalt>
-                        <div class="epos-sperrfenster-vorlagen">
-                            <span>@Texte.LabelSperrVorlage</span>
-                            <button type="button" class="epos-knopf" data-vorlage="KEINE" disabled="@(!Aktiv)"
-                                    @onclick='() => BeiSperrVorlage("KEINE")'>@Texte.SperrVorlageKeine</button>
-                            <button type="button" class="epos-knopf" data-vorlage="ZWEI_MAL_ZWEI" disabled="@(!Aktiv)"
-                                    @onclick='() => BeiSperrVorlage("ZWEI_MAL_ZWEI")'>@Texte.SperrVorlage2x2</button>
-                            <button type="button" class="epos-knopf" data-vorlage="DREI_MAL_ZWEI" disabled="@(!Aktiv)"
-                                    @onclick='() => BeiSperrVorlage("DREI_MAL_ZWEI")'>@Texte.SperrVorlage3x2</button>
-                        </div>
-                        @if (fensterliste.Count == 0)
-                        {
-                            <Herleitungszeile Text="@Texte.HinweisSperrLeer" />
-                        }
-                        @for (int i = 0; i < fensterliste.Count; i++)
-                        {
-                            int zeile = i;
-                            SperrfensterZeile f = fensterliste[i];
-                            <div class="epos-sperrfenster-zeile" data-zeile="@zeile">
-                                <Zahlenfeld Bezeichnung="@Texte.LabelSperrVon" Einheit="@Texte.EinheitStunden"
-                                            Min="0" Max="24" Wert="@f.VonH" Aktiv="@Aktiv"
-                                            WertChanged="@(w => BeiSperrVon(zeile, w))" />
-                                <Zahlenfeld Bezeichnung="@Texte.LabelSperrDauer" Einheit="@Texte.EinheitStunden"
-                                            Min="0" Max="24" Wert="@f.DauerH" Aktiv="@Aktiv"
-                                            WertChanged="@(w => BeiSperrDauer(zeile, w))" />
-                                @for (int t = 0; t < 7; t++)
-                                {
-                                    int tag = t;
-                                    <Schalter Bezeichnung="@Texte.Wochentage[tag]" Wert="@f.GiltAm(tag)" Aktiv="@Aktiv"
-                                              WertChanged="@(w => BeiSperrTag(zeile, tag, w))" />
-                                }
-                                <Schalter Bezeichnung="@Texte.LabelSperrHeizstab" Wert="@f.HeizstabGesperrt" Aktiv="@Aktiv"
-                                          WertChanged="@(w => BeiSperrHeizstab(zeile, w))" />
-                                <button type="button" class="epos-knopf" data-aktion="sperrfenster-entfernen" disabled="@(!Aktiv)"
-                                        @onclick="() => BeiSperrEntfernen(zeile)">@Texte.SperrEntfernen</button>
-                            </div>
-                        }
-                        <button type="button" class="epos-knopf" data-aktion="sperrfenster-hinzu" disabled="@(!Aktiv)"
-                                @onclick="BeiSperrHinzu">@Texte.SperrHinzufuegen</button>
-                        <Herleitungszeile Text="@Texte.HinweisSperrUebertrag" />
-                    </KindInhalt>
-                </Formulargruppe>
-            }
-            else
-            {
-                <Formulargruppe Titel="@Texte.GruppeSperrzeit">
-                    <KindInhalt>
-                        <Schalter Bezeichnung="@Texte.LabelSperrzeitSchalter" Wert="@Daten.Sperrung"
-                                  WertChanged="BeiSperrung" Aktiv="@Aktiv" />
-                        <Ganzzahlfeld Bezeichnung="@Texte.LabelVon" Feldname="@Texte.LabelVon"
-                                      Wert="@Daten.SperrzeitVon" WertChanged="BeiSperrzeitVon"
-                                      Aktiv="@Aktiv" />
-                        <Ganzzahlfeld Bezeichnung="@Texte.LabelBis" Feldname="@Texte.LabelBis"
-                                      Einheit="@Texte.EinheitStundeTag" Wert="@Daten.SperrzeitBis"
-                                      WertChanged="BeiSperrzeitBis" Aktiv="@Aktiv" />
-                    </KindInhalt>
-                </Formulargruppe>
-            }
-
             @* ANLAGENKOPPLUNG AK2 (Konzept 9.3): die Gruppe „Betriebszeiten" - Zeitprogramm als Wochenraster
                (leer = immer verfuegbar), hoechster Vorlauf (leer = projektierter Vorlauf) und der Vorrang der
                Sperrzeit. Die Nutzungszeit steht hier nicht: Sie wirkt nicht (Konzept 8.2). *@
@@ -410,6 +346,100 @@
                     </KindInhalt>
                 </Formulargruppe>
             }
+
+            @* SPERRZEITEN (Anwenderwunsch 08.10.2026): EIN Kaestchen sagt, ob es Sperrzeiten gibt -
+               angehakt legt es die Vorlage "2 x 2 h" an und klappt die Fenster aus, abgehakt entfernt es
+               alle Fenster nach einer Rueckfrage. Die Rueckfrage steht IM Block und nicht als
+               Ueberlagerung: Der Baustein steht im Anlagendialog selbst schon in einer Ueberlagerung.
+               Je Fenster EINE Zeile - Beginn, Dauer, die Wochentage waagerecht als Chipreihe,
+               "Heizstab mitgesperrt", "Entfernen"; Vorlagen und "Fenster hinzufuegen" in einer Leiste.
+               Der Block steht am Ende des Dialogs, das Altfenster ohne Liste der Huelle mit ihm. *@
+            @if (Daten.Sperrfenster is { } fensterliste)
+            {
+                @* Welle V14: die Sperrfenster der Anlage (Tab_Sperrfenster). Das aktive Altfenster
+                   steht als erste Zeile darin; beim Speichern überführt die Hülle die Liste. *@
+                <Formulargruppe Titel="@Texte.GruppeSperrzeiten">
+                    <KindInhalt>
+                        <div class="epos-sperrfenster" data-gruppe="sperrzeiten">
+                            <div class="epos-sperrfenster-kaestchen" data-aktion="sperrzeiten-kaestchen">
+                                <Schalter Bezeichnung="@Texte.LabelSperrzeitenVorhanden"
+                                          Wert="@(SperrzeitenOffen && !_sperrRueckfrage)"
+                                          WertChanged="BeiSperrzeitenKaestchen" Aktiv="@Aktiv" />
+                            </div>
+                            @if (_sperrRueckfrage)
+                            {
+                                <div class="epos-sperrfenster-rueckfrage" role="alert" data-gruppe="sperrzeiten-rueckfrage">
+                                    <p class="epos-rueckfrage-text">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.FrageSperrzeitenEntfernen, fensterliste.Count)</p>
+                                    <div class="epos-zeilenknoepfe">
+                                        <button type="button" class="epos-knopf" data-aktion="sperrzeiten-entfernen-ja"
+                                                @onclick="() => BeiSperrRueckfrage(true)">@Texte.SperrRueckfrageJa</button>
+                                        <button type="button" class="epos-knopf" data-aktion="sperrzeiten-entfernen-nein"
+                                                @onclick="() => BeiSperrRueckfrage(false)">@Texte.SperrRueckfrageNein</button>
+                                    </div>
+                                </div>
+                            }
+                            @if (SperrzeitenOffen)
+                            {
+                                <div class="epos-sperrfenster-leiste" role="group" aria-label="@Texte.LabelSperrVorlage">
+                                    <span class="epos-sperrfenster-leiste-text">@Texte.LabelSperrVorlage</span>
+                                    <button type="button" class="epos-knopf" data-vorlage="ZWEI_MAL_ZWEI" disabled="@(!Aktiv)"
+                                            @onclick='() => BeiSperrVorlage("ZWEI_MAL_ZWEI")'>@Texte.SperrVorlage2x2</button>
+                                    <button type="button" class="epos-knopf" data-vorlage="DREI_MAL_ZWEI" disabled="@(!Aktiv)"
+                                            @onclick='() => BeiSperrVorlage("DREI_MAL_ZWEI")'>@Texte.SperrVorlage3x2</button>
+                                    <button type="button" class="epos-knopf" data-aktion="sperrfenster-hinzu" disabled="@(!Aktiv)"
+                                            @onclick="BeiSperrHinzu">@Texte.SperrHinzufuegen</button>
+                                </div>
+                                @if (fensterliste.Count == 0)
+                                {
+                                    <Herleitungszeile Text="@Texte.HinweisSperrLeer" />
+                                }
+                                @for (int i = 0; i < fensterliste.Count; i++)
+                                {
+                                    int zeile = i;
+                                    SperrfensterZeile f = fensterliste[i];
+                                    <div class="epos-sperrfenster-zeile" data-zeile="@zeile">
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelSperrVon" Einheit="@Texte.EinheitStunden"
+                                                    Min="0" Max="24" Wert="@f.VonH" Aktiv="@Aktiv"
+                                                    WertChanged="@(w => BeiSperrVon(zeile, w))" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelSperrDauer" Einheit="@Texte.EinheitStunden"
+                                                    Min="0" Max="24" Wert="@f.DauerH" Aktiv="@Aktiv"
+                                                    WertChanged="@(w => BeiSperrDauer(zeile, w))" />
+                                        <div class="epos-sperrfenster-tage" role="group" aria-label="@Texte.LabelSperrTage">
+                                            @for (int t = 0; t < 7; t++)
+                                            {
+                                                int tag = t;
+                                                <Schalter Bezeichnung="@Texte.Wochentage[tag]" Wert="@f.GiltAm(tag)" Aktiv="@Aktiv"
+                                                          WertChanged="@(w => BeiSperrTag(zeile, tag, w))" />
+                                            }
+                                        </div>
+                                        <Schalter Bezeichnung="@Texte.LabelSperrHeizstab" Wert="@f.HeizstabGesperrt" Aktiv="@Aktiv"
+                                                  WertChanged="@(w => BeiSperrHeizstab(zeile, w))" />
+                                        <button type="button" class="epos-knopf" data-aktion="sperrfenster-entfernen" disabled="@(!Aktiv)"
+                                                @onclick="() => BeiSperrEntfernen(zeile)">@Texte.SperrEntfernen</button>
+                                    </div>
+                                }
+                                <Herleitungszeile Text="@Texte.HinweisSperrUebertrag" />
+                            }
+                        </div>
+                    </KindInhalt>
+                </Formulargruppe>
+            }
+            else
+            {
+                <Formulargruppe Titel="@Texte.GruppeSperrzeit">
+                    <KindInhalt>
+                        <Schalter Bezeichnung="@Texte.LabelSperrzeitSchalter" Wert="@Daten.Sperrung"
+                                  WertChanged="BeiSperrung" Aktiv="@Aktiv" />
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelVon" Feldname="@Texte.LabelVon"
+                                      Wert="@Daten.SperrzeitVon" WertChanged="BeiSperrzeitVon"
+                                      Aktiv="@Aktiv" />
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelBis" Feldname="@Texte.LabelBis"
+                                      Einheit="@Texte.EinheitStundeTag" Wert="@Daten.SperrzeitBis"
+                                      WertChanged="BeiSperrzeitBis" Aktiv="@Aktiv" />
+                    </KindInhalt>
+                </Formulargruppe>
+            }
+
         </KindInhalt>
     </Formularraster>
 
@@ -820,6 +850,46 @@
 
     private SperrfensterZeile? SperrZeile(int i)
         => Daten.Sperrfenster is { } l && i >= 0 && i < l.Count ? l[i] : null;
+
+    /// <summary>Ist der Block der Sperrfenster aufgeklappt? Angehakt, solange Fenster bestehen oder das Kästchen gesetzt wurde.</summary>
+    private bool SperrzeitenOffen => _sperrOffen || Daten.Sperrfenster is { Count: > 0 };
+
+    private bool _sperrOffen;
+
+    /// <summary>Steht die Rückfrage „alle Fenster entfernen?“</summary>
+    private bool _sperrRueckfrage;
+
+    /// <summary>
+    /// Das Kästchen „Sperrzeiten“: Anhaken legt ohne Fenster die Vorlage „2 × 2 h“ an und klappt auf;
+    /// Abhaken fragt bei bestehenden Fenstern zurück, ohne Fenster klappt es nur zu.
+    /// </summary>
+    private Task BeiSperrzeitenKaestchen(bool an)
+    {
+        if (an)
+        {
+            _sperrRueckfrage = false;
+            _sperrOffen = true;
+            if (Daten.Sperrfenster is not { Count: > 0 }) Daten.Sperrfenster = SperrVorlage("ZWEI_MAL_ZWEI");
+            return Melden();
+        }
+        if (Daten.Sperrfenster is { Count: > 0 })
+        {
+            _sperrRueckfrage = true;
+            return Task.CompletedTask;
+        }
+        _sperrOffen = false;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Die Antwort auf „alle Fenster entfernen?“ — Ja leert die Liste und klappt zu, Nein lässt alles stehen.</summary>
+    private Task BeiSperrRueckfrage(bool entfernen)
+    {
+        _sperrRueckfrage = false;
+        if (!entfernen) return Task.CompletedTask;
+        Daten.Sperrfenster = new();
+        _sperrOffen = false;
+        return Melden();
+    }
 
     private Task BeiSperrVorlage(string name)
     {

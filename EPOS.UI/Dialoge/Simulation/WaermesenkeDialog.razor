@@ -130,6 +130,15 @@
                     <Auswahlfeld Bezeichnung="@LabelBedarfsart" Eintraege="@Bedarfsarteintraege"
                                  Auswahl="@_bedarfsartIndex" AuswahlChanged="BedarfsartWaehlen" />
                     <Herleitungszeile Text="@HinweisBedarf" />
+                    @* DIE REIHENFOLGE DER DIREKTEN DECKUNG (Anwenderwunsch 08.10.2026): kein zweites
+                       Prioritaetssystem - es ist der Kaskadenrang der Konfiguration, und die Zeile sagt,
+                       wo er sich aendert. Die Ladeprioritaet gilt nur am Puffer. *@
+                    @if (!string.IsNullOrEmpty(HerleitungDirektreihenfolge))
+                    {
+                        <div data-zeile="direktreihenfolge">
+                            <Herleitungszeile Text="@HerleitungDirektreihenfolge" />
+                        </div>
+                    }
                 }
                     </KindInhalt>
                 </Formularraster>
@@ -321,6 +330,12 @@
     /// <summary>Derselbe Eintrag in der PV-Liste: dort heißt 0 „unverändert".</summary>
     [Parameter] public string PrioPvUnveraendert { get; set; } = "unverändert";
     [Parameter] public string HinweisBedarf { get; set; } = "";
+
+    /// <summary>
+    /// Die Reihenfolge der direkten Deckung bei der Senke Heizkreis — Kaskadenrang der Konfiguration, nur
+    /// Erzeuger mit Direktsenke Heizkreis (<c>SIM_HERLEITUNG_DIREKT_REIHENFOLGE</c>); leer = keine Zeile.
+    /// </summary>
+    [Parameter] public string HerleitungDirektreihenfolge { get; set; } = "";
     [Parameter] public string HinweisPuffer { get; set; } = "";
     [Parameter] public string TipEinspeisehoehe { get; set; } = "";
     [Parameter] public string VerbundSumme { get; set; }

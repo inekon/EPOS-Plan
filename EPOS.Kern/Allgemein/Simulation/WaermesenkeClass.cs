@@ -1784,5 +1784,86 @@ namespace WindowsFormsApplication1
         // Betriebstemperaturen sind einmalig an Tab_Pufferspeicher übernommen, dort führt
         // sie Form_PufferSp_Projekt weiter, und die Senken stehen in Z_AnlageSenke.
         // Die Brücke hätte damit nur noch eine Ablage gepflegt, die niemand liest.
+
+        // =============================================================================
+        // Reihenfolge der direkten Deckung (Anwenderwunsch 08.10.2026)
+        // =============================================================================
+
+        /// <summary>Ein Erzeuger in der Reihenfolge der direkten Deckung: Rang der Kaskade und Kaskadeneintrag.</summary>
+        public sealed class DeckungsRang
+        {
+            /// <summary>Rang in der Kaskade der Konfiguration (1 = vorn) — derselbe wie auf der Erzeugerkarte.</summary>
+            public int Rang;
+
+            /// <summary>Der Kaskadeneintrag (<c>DbWerte.ERZEUGER_*</c>).</summary>
+            public string DbWert = "";
+
+            /// <summary><c>Tab_Energieanlagen.ID_Type</c> des Eintrags.</summary>
+            public int IdType;
+        }
+
+        /// <summary>
+        /// <b>Die Reihenfolge der direkten Deckung</b> des Heizkreises: Mehrere Erzeuger mit der Direktsenke
+        /// Heizkreis decken den Momentanbedarf in der Reihenfolge ihrer KASKADENPOSITION
+        /// (<c>Tab_Einstellungen.Tool_1 … Tool_4</c>, Konzept Simulationsablauf Abschnitt 13) — es gibt dafür
+        /// kein zweites Prioritätssystem; die Ladepriorität <c>WS_Ladeprio</c> gilt nur am Puffer.
+        /// Diese Fassung ist die Regel ohne Datenbank: die belegten Plätze der Kaskade in ihrer Reihenfolge
+        /// (Rang = Stelle in <c>Kaskade.Belegt</c>, wie auf den Erzeugerkarten), davon nur die Typen, die
+        /// <paramref name="mitHeizkreis"/> bejaht.
+        /// </summary>
+        public static List<DeckungsRang> ReihenfolgeDirekteDeckung(IList<string> kaskadeBelegt, Func<int, bool> mitHeizkreis)
+        {
+            var liste = new List<DeckungsRang>();
+            if (kaskadeBelegt == null || mitHeizkreis == null) return liste;
+            for (int i = 0; i < kaskadeBelegt.Count; i++)
+            {
+                string wert = kaskadeBelegt[i] ?? "";
+                int idType = Kaskade.TypZuAnlagentyp(wert);
+                if (idType <= 0 || !mitHeizkreis(idType)) continue;
+                liste.Add(new DeckungsRang { Rang = i + 1, DbWert = wert, IdType = idType });
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Reihenfolge der direkten Deckung eines Projekts: ein Kaskadeneintrag zählt, wenn eine seiner
+        /// Anlagen eine Senke Heizkreis führt (<c>Z_AnlageSenke</c>, gelesen ohne Protokollzeile). Die Anlage
+        /// <paramref name="idAnlageMitHeizkreis"/> zählt immer — der Senkendialog fragt, während er für sie
+        /// gerade die Senke Heizkreis zeigt, auch wenn das noch nicht gespeichert ist.
+        /// </summary>
+        /// <param name="idProjekt">Projekt; 0 = nur die Regel.</param>
+        /// <param name="kaskadeBelegt">Die belegten Plätze der Kaskade (<c>Kaskade.Belegt</c>) — aus der
+        /// Konfiguration, die der Wirt gerade führt.</param>
+        /// <param name="idAnlageMitHeizkreis">Die Anlage des Dialogs; 0 = keine.</param>
+        public static List<DeckungsRang> ReihenfolgeDirekteDeckung(int idProjekt, IList<string> kaskadeBelegt,
+                                                                    int idAnlageMitHeizkreis)
+        {
+            var typen = new HashSet<int>();
+            if (idProjekt > 0 && kaskadeBelegt != null)
+            {
+                var mitHeizkreis = new HashSet<int>();
+                if (idAnlageMitHeizkreis > 0) mitHeizkreis.Add(idAnlageMitHeizkreis);
+                try
+                {
+                    foreach (Senkenliste l in SenkenlistenLadenStill(idProjekt))
+                        foreach (Senkenzeile z in l.Zeilen)
+                            if (z.Ziel == Senke.Heizkreis) { mitHeizkreis.Add(l.AnlagenID); break; }
+                }
+                catch { }
+
+                foreach (string wert in kaskadeBelegt)
+                {
+                    int idType = Kaskade.TypZuAnlagentyp(wert ?? "");
+                    if (idType <= 0) continue;
+                    try
+                    {
+                        foreach (AnlagenInfo a in WErzeugerCtrl.AnlagenMitWp(idProjekt, idType))
+                            if (mitHeizkreis.Contains(a.ID)) { typen.Add(idType); break; }
+                    }
+                    catch { }
+                }
+            }
+            return ReihenfolgeDirekteDeckung(kaskadeBelegt, typen.Contains);
+        }
     }
 }

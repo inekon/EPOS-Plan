@@ -84,6 +84,17 @@ public sealed class WaermepumpeKonfigurationTexte
     public string LabelSperrHeizstab { get; set; } = T("WPA_LBL_SPERR_HEIZSTAB", "Heizstab mitgesperrt");
     public string SperrHinzufuegen { get; set; } = T("WPA_BTN_SPERR_HINZU", "Fenster hinzufügen");
     public string SperrEntfernen { get; set; } = T("WPA_BTN_SPERR_ENTFERNEN", "Entfernen");
+    /// <summary>WPA_CHK_SPERRZEITEN — das Kästchen über den Fenstern (angehakt = Sperrzeiten vorhanden).</summary>
+    public string LabelSperrzeitenVorhanden { get; set; } = T("WPA_CHK_SPERRZEITEN", "Sperrzeiten vorhanden");
+    /// <summary>WPA_FRAGE_SPERR_ENTFERNEN — Rückfrage beim Abhaken; {0} = Zahl der Fenster.</summary>
+    public string FrageSperrzeitenEntfernen { get; set; } = T("WPA_FRAGE_SPERR_ENTFERNEN",
+        "Alle {0} Sperrfenster entfernen?");
+    /// <summary>WPA_BTN_SPERR_RUECKFRAGE_JA</summary>
+    public string SperrRueckfrageJa { get; set; } = T("WPA_BTN_SPERR_RUECKFRAGE_JA", "Ja, entfernen");
+    /// <summary>WPA_BTN_SPERR_RUECKFRAGE_NEIN</summary>
+    public string SperrRueckfrageNein { get; set; } = T("WPA_BTN_SPERR_RUECKFRAGE_NEIN", "Nein, behalten");
+    /// <summary>WPA_LBL_SPERR_TAGE — Name der Chipreihe der Wochentage (Sprachausgabe).</summary>
+    public string LabelSperrTage { get; set; } = T("WPA_LBL_SPERR_TAGE", "Wochentage");
     public string HinweisSperrLeer { get; set; } = T("WPA_HINWEIS_SPERR_LEER", "Keine Sperrzeiten — die Wärmepumpe darf jederzeit laufen.");
 
     // --- Betriebszeiten (Anlagenkopplung 9.3) ----------------------------------------

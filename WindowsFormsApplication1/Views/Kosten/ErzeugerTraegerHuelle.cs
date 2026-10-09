@@ -40,10 +40,14 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Die Vorgabe einer elektrischen Anlage: der Stromträger des Projekts, sonst der des Katalogs.</summary>
-        internal static int Standard(int projektId)
+        /// <summary>
+        /// Die Vorauswahl eines Erzeugers ohne Träger (Anwenderwunsch 08.10.2026) — die Regel steht einmal
+        /// im Kern (<c>EnergietraegerZulaessigkeit.Vorauswahl</c>): bei Strom der Stromträger des Projekts,
+        /// sonst der Träger zum Brennstoff des Geräts, sonst der erste zulässige; 0 = keine Vorauswahl.
+        /// </summary>
+        internal static int Vorauswahl(string erzeugerart, int geraeteId, int projektId)
         {
-            try { return ProjektEnergietraegerCtrl.StandardStromTraeger(projektId); }
+            try { return EnergietraegerZulaessigkeit.Vorauswahl(erzeugerart, geraeteId, projektId); }
             catch { return 0; }
         }
 

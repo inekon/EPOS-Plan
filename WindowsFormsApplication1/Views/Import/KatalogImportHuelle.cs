@@ -160,6 +160,7 @@ namespace WindowsFormsApplication1
                 case KatalogImportArt.Solarkollektoren: return MyResource.Resource.IMP_KAT_TITEL_SOLAR;
                 case KatalogImportArt.Waermepumpe: return MyResource.Resource.IMP_KAT_TITEL_WP;
                 case KatalogImportArt.Stromspeicher: return MyResource.Resource.IMP_KAT_TITEL_STROMSPEICHER;
+                case KatalogImportArt.Kaeltemaschine: return MyResource.Resource.IMP_KAT_TITEL_KAELTEMASCHINE;
                 default: return MyResource.Resource.IMP_KAT_TITEL_HEIZKESSEL;
             }
         }

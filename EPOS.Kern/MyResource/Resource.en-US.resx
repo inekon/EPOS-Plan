@@ -3462,7 +3462,7 @@ Select file now?</value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>The preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance. In the simulation the brine temperature drops with the heat extracted from the borefield; its course is shown in the result.</value>
+    <value>Before a simulation run the preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance — a constant. In the simulation the brine temperature drops with the heat extracted from the borefield; after the run its calculated course at the source inlet is shown next to it (“calculated (last run)”).</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -49247,6 +49247,84 @@ chart</value>
   </data>
   <data name="KI_DLG_WPA_BEFUNDE_ERL" xml:space="preserve">
     <value>Read only: the soft locks and notes of the group; saving remains possible.</value>
+  </data>
+  <data name="WPA_CHK_SPERRZEITEN" xml:space="preserve">
+    <value>Lock-out times present</value>
+  </data>
+  <data name="WPA_FRAGE_SPERR_ENTFERNEN" xml:space="preserve">
+    <value>Remove all {0} lock-out windows?</value>
+  </data>
+  <data name="WPA_BTN_SPERR_RUECKFRAGE_JA" xml:space="preserve">
+    <value>Yes, remove</value>
+  </data>
+  <data name="WPA_BTN_SPERR_RUECKFRAGE_NEIN" xml:space="preserve">
+    <value>No, keep</value>
+  </data>
+  <data name="WPA_LBL_SPERR_TAGE" xml:space="preserve">
+    <value>Weekdays</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT" xml:space="preserve">
+    <value>Source temperature, undisturbed</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR_GERECHNET" xml:space="preserve">
+    <value>Source temperature, calculated (last run)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF" xml:space="preserve">
+    <value>Before a simulation run the preview shows the undisturbed ground temperature at laying depth; after the run the calculated brine temperature at the source inlet is shown next to it (“calculated (last run)”).</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KENNWERTE_LAUF" xml:space="preserve">
+    <value>calculated (last run): {0}</value>
+  </data>
+  <data name="SIM_HERLEITUNG_DIREKT_REIHENFOLGE" xml:space="preserve">
+    <value>Order of direct coverage = cascade rank of the configuration: {0} — change it with the arrows on the generator cards</value>
+  </data>
+  <data name="IMP_KAT_TITEL_KAELTEMASCHINE" xml:space="preserve">
+    <value>Import chillers</value>
+  </data>
+  <data name="IMP_KAT_SP_KAELTELEISTUNG" xml:space="preserve">
+    <value>Rated cooling capacity</value>
+  </data>
+  <data name="IMP_KAT_FELD_RUECKKUEHLART" xml:space="preserve">
+    <value>Heat rejection:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KAELTELEISTUNG" xml:space="preserve">
+    <value>Rated cooling capacity:</value>
+  </data>
+  <data name="IMP_KAT_FELD_NENN_EER" xml:space="preserve">
+    <value>Rated EER:</value>
+  </data>
+  <data name="IMP_KAT_FELD_MINDESTTEILLAST" xml:space="preserve">
+    <value>Minimum part load:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant:</value>
+  </data>
+  <data name="IMP_KAT_FELD_KENNFELDPUNKTE" xml:space="preserve">
+    <value>Performance map points:</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_KAELTEMASCHINE" xml:space="preserve">
+    <value>Accepted are the curve file chiller_curves.json of the open library PNNL Copper (BSD-2 licence, copyright Pacific Northwest National Laboratory) and the CSV map template Kaeltemaschine_Kennfeldvorlage.csv: header lines with name, heat rejection (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), rated cooling capacity, rated EER, minimum part load and refrigerant, then one line per point: heat rejection temperature; chilled water temperature; cooling capacity in kW; EER. The curves are turned into a map of 6 × 4 points; rated values refer to the Eurovent point (chilled water 7 °C, outdoor air 35 °C or cooling water 30 °C). Air-cooled curves refer to the outdoor air and are shifted by the approach of 5 K to the heat rejection temperature.</value>
+  </data>
+  <data name="KM_IMP_MSG_UEBERGANGEN" xml:space="preserve">
+    <value>{0} entries skipped: {1}</value>
+  </data>
+  <data name="KM_IMP_MSG_LEER" xml:space="preserve">
+    <value>The file contains no readable chiller (expected: Copper curve file or CSV map template).</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELDER_SCHEMA" xml:space="preserve">
+    <value>The chiller catalogue is not yet at the catalogue version; the typical performance maps cannot be loaded.</value>
+  </data>
+  <data name="KM_BTN_TYPKENNFELDER" xml:space="preserve">
+    <value>Load typical maps…</value>
+  </data>
+  <data name="KM_FRAGE_TYPKENNFELDER" xml:space="preserve">
+    <value>Load {0} built-in typical performance maps (air, dry cooler, wet cooler, water; scroll, screw, centrifugal, reciprocating) into the catalogue? Existing records remain unchanged.</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELDER" xml:space="preserve">
+    <value>Typical maps: {0} added, {1} skipped.</value>
+  </data>
+  <data name="KM_MSG_IMPORT_PLATTFORM" xml:space="preserve">
+    <value>Importing from a file is not available on this platform. The built-in typical performance maps can be added with "Load typical maps…".</value>
   </data>
 </root>
 

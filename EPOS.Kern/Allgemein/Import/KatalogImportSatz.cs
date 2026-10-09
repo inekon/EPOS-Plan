@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -727,6 +728,106 @@ namespace WindowsFormsApplication1
             return stamm.UpdateImport(bestandsId)
                 ? VdiUebernahmeErgebnis.Ueberschrieben
                 : VdiUebernahmeErgebnis.Fehler;
+        }
+    }
+    // ==================================================================
+    // Kaeltemaschine — Copper-Kurvendatei oder CSV-Kennfeldvorlage (KM1)
+    // ==================================================================
+
+    /// <summary>
+    /// <b>Ein Kältemaschinensatz des Imports</b> (KM1): der fertige Katalogsatz samt Kennfeld aus
+    /// <see cref="KaeltemaschineImportDatei"/>. Geschrieben wird über <see cref="KaeltemaschineStammCtrl.Speichern"/>
+    /// — Kopf und Kennlinie in EINEM Vorgang, dieselben Prüfregeln wie im Katalogdialog. Ein ausgelieferter
+    /// (gesperrter) Satz wird nie überschrieben.
+    /// </summary>
+    public sealed class KaeltemaschineImportSatz : KatalogImportSatz
+    {
+        private readonly KaeltemaschineModel _satz;
+        private readonly string _quelle;
+
+        /// <summary>Legt den Satz aus einem gelesenen Modell und seiner Quellkennung an.</summary>
+        public KaeltemaschineImportSatz(KaeltemaschineModel satz, string quelle)
+        {
+            _satz = satz ?? throw new ArgumentNullException(nameof(satz));
+            _quelle = quelle ?? "";
+        }
+
+        public override string Name => _satz.Bezeichner;
+        public override string Firma => _satz.Firma ?? "";
+        public override double Filterwert => _satz.Nennkaelteleistung_kW ?? 0.0;
+
+        public override IDictionary<string, string> Detailwerte => new Dictionary<string, string>
+        {
+            { KatalogImportProfil.FeldName,  _satz.Bezeichner },
+            { KatalogImportProfil.FeldFirma, _satz.Firma ?? "" },
+            { "TYP",             _satz.Typ ?? "" },
+            { "RUECKKUEHLART",   KaeltemaschineStammCtrl.RueckkuehlartText(_satz.Rueckkuehlart) },
+            { "KAELTELEISTUNG",  _satz.Nennkaelteleistung_kW.HasValue ? Text(_satz.Nennkaelteleistung_kW.Value) : "" },
+            { "EER",             _satz.Nenn_EER.HasValue ? Text(_satz.Nenn_EER.Value) : "" },
+            { "MINDESTTEILLAST", _satz.Mindestteillast_Prozent.HasValue ? Text(_satz.Mindestteillast_Prozent.Value) : "" },
+            { "KAELTEMITTEL",    _satz.Kaeltemittel ?? "" },
+            { "PUNKTE",          (_satz.Kennlinie?.Count ?? 0).ToString(CultureInfo.InvariantCulture) },
+            { "BESCHREIBUNG",    _satz.Beschreibung ?? "" },
+            { KatalogImportProfil.FeldQuelle, _quelle }
+        };
+
+        /// <summary>Eine Kopie des Satzes unter <paramref name="bezeichner"/>, als neuer Satz (ID 0).</summary>
+        public KaeltemaschineModel NachModell(string bezeichner)
+        {
+            return new KaeltemaschineModel
+            {
+                Bezeichner = string.IsNullOrWhiteSpace(bezeichner) ? _satz.Bezeichner : bezeichner.Trim(),
+                Firma = _satz.Firma,
+                Typ = _satz.Typ,
+                Beschreibung = _satz.Beschreibung,
+                Nennkaelteleistung_kW = _satz.Nennkaelteleistung_kW,
+                Nenn_EER = _satz.Nenn_EER,
+                Kaeltemittel = _satz.Kaeltemittel,
+                Rueckkuehlart = _satz.Rueckkuehlart,
+                Mindestteillast_Prozent = _satz.Mindestteillast_Prozent,
+                Hilfsstrom_Rueckkuehlung_kW = _satz.Hilfsstrom_Rueckkuehlung_kW,
+                Kaltwasser_Vorlauf_Min = _satz.Kaltwasser_Vorlauf_Min,
+                Kennlinie = (_satz.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
+                    .Select(k => new KaeltemaschineKenndatenModel
+                    {
+                        Rueckkuehltemperatur = k.Rueckkuehltemperatur, Kaltwassertemperatur = k.Kaltwassertemperatur,
+                        EER = k.EER, Kaelteleistung_kW = k.Kaelteleistung_kW
+                    }).ToList()
+            };
+        }
+
+        public override IDictionary<string, object> Vergleichswerte(string bezeichner)
+        {
+            KaeltemaschineModel m = NachModell(bezeichner);
+            return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Firma", m.Firma },
+                { "Typ", m.Typ },
+                { KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG, m.Nennkaelteleistung_kW },
+                { KaeltemaschineSchema.SPALTE_NENN_EER, m.Nenn_EER },
+                { KaeltemaschineSchema.SPALTE_KAELTEMITTEL, m.Kaeltemittel },
+                { KaeltemaschineSchema.SPALTE_RUECKKUEHLART, m.Rueckkuehlart },
+                { KaeltemaschineSchema.SPALTE_MINDESTTEILLAST, m.Mindestteillast_Prozent }
+            };
+        }
+
+        public override VdiUebernahmeErgebnis Anlegen(string bezeichner)
+        {
+            KaeltemaschineModel m = NachModell(bezeichner);
+            if (KaeltemaschineStammCtrl.NameBelegt(m.Bezeichner, 0)) return VdiUebernahmeErgebnis.Duplikat;
+            return KaeltemaschineStammCtrl.Speichern(m).Ok ? VdiUebernahmeErgebnis.Gespeichert : VdiUebernahmeErgebnis.Fehler;
+        }
+
+        /// <summary>
+        /// Überschreibt einen Anwendersatz. Ein ausgelieferter Satz (<c>ReadOnly = 1</c>) wird NIE überschrieben —
+        /// er zählt als übersprungen (Duplikat); geändert wird er über „Duplizieren…“ (AD-Q11).
+        /// </summary>
+        public override VdiUebernahmeErgebnis Ueberschreiben(int bestandsId)
+        {
+            if (KaeltemaschineStammCtrl.Gesperrt(bestandsId)) return VdiUebernahmeErgebnis.Duplikat;
+            KaeltemaschineModel m = NachModell(Name);
+            m.Id = bestandsId;
+            return KaeltemaschineStammCtrl.Speichern(m).Ok ? VdiUebernahmeErgebnis.Ueberschrieben : VdiUebernahmeErgebnis.Fehler;
         }
     }
 }
