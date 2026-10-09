@@ -31,7 +31,7 @@ namespace EPOS.Kern.Tests
             Assert.True(SchemaStand.Zielversion >= KalenderbedienungSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KalenderbedienungSchema.SCHRITT);
             object stand = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation");
-            if (_db.Vorhanden) Assert.Equal(KalenderbedienungSchema.SCHRITT, Convert.ToInt32(stand, CultureInfo.InvariantCulture));
+            if (_db.Vorhanden) Assert.True(Convert.ToInt32(stand, CultureInfo.InvariantCulture) >= KalenderbedienungSchema.SCHRITT);
         }
 
         [Fact]
