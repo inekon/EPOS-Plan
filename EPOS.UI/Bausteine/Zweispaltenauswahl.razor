@@ -17,7 +17,7 @@
 
    TRENNLINIE (4.3). Ziehen (Skript epos-zweispalten.js), Pfeil hoch/runter um eine
    Zeile, Pos1/Ende an die Grenzen, Doppelklick stellt die Vorgabe her. Die Hoehe der
-   Projektliste wird je Dialog ueber Dienste.Einstellungen gemerkt
+   Projektliste wird je Dialog ueber WindowsFormsApplication1.Dienste.Einstellungen gemerkt
    (Katalogauswahl.Trenner.<Dialogname>); ohne Ablage gilt die Vorgabe.
 
    DETAILZEILE (4.4). Zugeklappt beim Oeffnen; aufgeklappt rollt sie in sich und nimmt
@@ -211,9 +211,6 @@
     /// </summary>
     [Parameter] public RenderFragment? Leistenzusatz { get; set; }
 
-    /// <summary>Name der Knopfgruppe für die Sprachausgabe — <c>AUSWAHL_GRP_PFEILE</c>.</summary>
-    [Parameter] public string MitteTitel { get; set; } = Resource.AUSWAHL_GRP_PFEILE;
-
     // =====================================================================
     // Die Detailzeile „gewaehlter Satz" (4.4)
     // =====================================================================
@@ -222,7 +219,7 @@
     [Parameter] public RenderFragment? Satz { get; set; }
 
     /// <summary>Welcher Satz gezeigt wird — die Marke sagt „Projektsatz" oder „Katalogsatz".</summary>
-    [Parameter] public Satzart SatzArt { get; set; }
+    [Parameter] public Satzmarke SatzArt { get; set; }
 
     /// <summary>Name des gewählten Satzes in der zugeklappten Zeile.</summary>
     [Parameter] public string? SatzName { get; set; }
@@ -317,8 +314,8 @@
     private string KatalogMarke => Resource.AUSWAHL_MARKE_KATALOG;
     private string SatzMarke => SatzArt switch
     {
-        Satzart.Projektsatz => Resource.AUSWAHL_MARKE_PROJEKTSATZ,
-        Satzart.Katalogsatz => Resource.AUSWAHL_MARKE_KATALOGSATZ,
+        Satzmarke.Projektsatz => Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+        Satzmarke.Katalogsatz => Resource.AUSWAHL_MARKE_KATALOGSATZ,
         _ => Resource.AUSWAHL_MARKE_SATZ
     };
 
@@ -328,7 +325,7 @@
         if (string.IsNullOrEmpty(Dialogname)) return;
         try
         {
-            int gemerkt = Dienste.Einstellungen?.LiesZahl(Schluessel, 0) ?? 0;
+            int gemerkt = WindowsFormsApplication1.Dienste.Einstellungen?.LiesZahl(Schluessel, 0) ?? 0;
             if (gemerkt > 0) _hoehe = Math.Clamp(gemerkt, MINDESTHOEHE, OBERGRENZE_OHNE_MASS);
         }
         catch (Exception)
@@ -397,7 +394,7 @@
     {
         _hoehe = VORGABEHOEHE;
         if (string.IsNullOrEmpty(Dialogname)) return;
-        try { Dienste.Einstellungen?.Loesche(Schluessel); }
+        try { WindowsFormsApplication1.Dienste.Einstellungen?.Loesche(Schluessel); }
         catch (Exception) { /* ohne Ablage */ }
     }
 
@@ -414,7 +411,7 @@
     {
         _hoehe = hoehe;
         if (string.IsNullOrEmpty(Dialogname)) return;
-        try { Dienste.Einstellungen?.SchreibZahl(Schluessel, hoehe); }
+        try { WindowsFormsApplication1.Dienste.Einstellungen?.SchreibZahl(Schluessel, hoehe); }
         catch (Exception) { /* ohne Ablage bleibt die Hoehe fuer diese Sitzung */ }
     }
 

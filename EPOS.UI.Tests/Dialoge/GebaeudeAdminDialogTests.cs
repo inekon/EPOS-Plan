@@ -278,7 +278,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Assert.Equal("Verwaltung Gebäude", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("epos-katalog-dialog", cut.Find(".epos-dialog").ClassName);
         Assert.Single(cut.FindAll(".epos-katalograhmen"));
-        Assert.Empty(cut.FindAll(".epos-zweispalten-uebernahme"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-knopf--richtung"));
         Assert.Empty(cut.FindAll("input[type=radio]"));
         Assert.DoesNotContain("ausgewählte Gebäude im Projekt:", cut.Markup);
 

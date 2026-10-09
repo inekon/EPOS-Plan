@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests;
 /// Selektor wie <c>body::after</c>, den der BlazorWebView selbst belegt. Das Hausblatt lässt dann, und nur dann, das erste Kind der
 /// Dialogwurzel (<c>.epos-dialog-kopf</c>) oben und die Leiste mit dem Primärknopf unten
 /// haften (<c>epos-ui.css</c>, Abschnitt „Dialog im eigenen Fenster"). Die Katalogdialoge
-/// (<c>.epos-katalog-dialog</c>) bleiben ausgenommen, Überlagerung und Blatt behalten ihre
+/// (<c>.epos-katalog-dialog</c>) und die Projektdialoge mit Katalogauswahl (<c>.epos-zweispalten</c>) bleiben ausgenommen, Überlagerung und Blatt behalten ihre
 /// eigenen Regeln.</para>
 ///
 /// <para><b>Was hier gehalten wird</b> — bunit misst keine Lage, das tut die Fensterprobe
@@ -43,7 +43,7 @@ namespace EPOS.UI.Tests;
 public sealed class FensterrahmenTests : EposBunitContext
 {
     /// <summary>Der Wurzelanker der Regeln im Hausblatt.</summary>
-    private const string ANKER = "#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog)";
+    private const string ANKER = "#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten))";
 
     // =====================================================================
     //  1 - Die Marke
@@ -266,7 +266,7 @@ public sealed class FensterrahmenTests : EposBunitContext
         Assert.Contains("scroll-padding-top: var(--epos-fenster-polster-oben);", polster);
         Assert.Contains("scroll-padding-bottom: var(--epos-fenster-polster-unten);", polster);
         Assert.Contains("scroll-padding: 0;", Regelblock(
-            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),"));
+            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child :focus),"));
 
         // Kein anderer Ort im Blatt laesst den Dialogkopf haften.
         string css = Hausblatt();
@@ -296,7 +296,7 @@ public sealed class FensterrahmenTests : EposBunitContext
             Regelblock(ANKER + " > .epos-warnbanner > .epos-warnbanner-schliessen {"));
         Assert.Contains("display: none;", Regelblock(".epos-warnbanner-schliessen {"));
         Assert.Contains("--epos-fenster-polster-oben:", Regelblock(
-            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {"));
+            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner) {"));
 
         string css = Hausblatt();
         foreach (Match m in Regex.Matches(css, @"(?<sel>[^{}]*\.epos-warnbanner[^{}]*)\{(?<rumpf>[^}]*)\}"))

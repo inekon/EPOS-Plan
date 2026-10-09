@@ -15,7 +15,7 @@
     }
 
     /// <summary>Was die Detailzeile „gewählter Satz“ zeigt — die Marke im Kopf sagt, was gespeichert wird.</summary>
-    public enum Satzart
+    public enum Satzmarke
     {
         /// <summary>Kein Satz gewählt oder der Wirt sagt es nicht: Marke „Gewählter Satz“.</summary>
         Keiner,

@@ -82,7 +82,7 @@ public class SolarganglinieDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-knopf--richtung").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Ausgewählt im Projekt", ueberschriften);
@@ -158,7 +158,7 @@ public class SolarganglinieDialogTests : EposBunitContext
     public void Der_linke_Pfeil_ist_ohne_Katalogwahl_gesperrt()
     {
         var cut = Aufbauen();
-        Assert.True(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.True(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class SolarganglinieDialogTests : EposBunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(22, gerufen);
         Assert.Equal(2, zeilen.Count);
@@ -194,7 +194,7 @@ public class SolarganglinieDialogTests : EposBunitContext
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1]
            .QuerySelector("button")!.Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Same(a, zeilen[0]);
@@ -562,7 +562,7 @@ public class SolarganglinieDialogTests : EposBunitContext
         bool? ergebnis = null;
         var cut = Aufbauen(katalogbetrieb: true, geschlossen: b => ergebnis = b, wege: Wege(PFLEGE));
 
-        Assert.Empty(cut.FindAll(".epos-zweispalten-uebernahme"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-knopf--richtung"));
         Assert.Single(cut.FindAll(".epos-raster"));
         var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Beenden", knoepfe);
