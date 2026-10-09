@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
@@ -62,6 +63,14 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>Ferienende_1…4</c> als Jahrestag; Beginn nach Ende heißt über den Jahreswechsel.</summary>
         public double[] Ferienende { get; } = new double[FERIENZEITRAEUME];
+
+        /// <summary>
+        /// <b>Die Ferienliste ab dem fünften Zeitraum</b> (Konzept 7.8, Stufe 2): die Ferienperioden des gemeinsamen
+        /// Kalenders ab Rang 204 (<see cref="Kalendergemeinschaft.RANG_FERIENLISTE"/>), aufsteigend nach Rang. Der
+        /// Generator macht aus ihnen FERIEN-Perioden auf denselben Rängen, wie aus den vier Spalten auf 200 … 203.
+        /// Leer im Bestand.
+        /// </summary>
+        public IReadOnlyList<Ferienzeile> WeitereFerien { get; set; } = Array.Empty<Ferienzeile>();
 
         /// <summary><c>Sollwertprofil</c> — das 168-Werte-Zeitprogramm der Anlagenkopplung (AK1), sonst <c>null</c>.</summary>
         public string Sollwertprofil { get; set; }
@@ -136,6 +145,7 @@ namespace WindowsFormsApplication1
             };
             Array.Copy(Ferienbeginn, k.Ferienbeginn, FERIENZEITRAEUME);
             Array.Copy(Ferienende, k.Ferienende, FERIENZEITRAEUME);
+            k.WeitereFerien = WeitereFerien;
             return k;
         }
 
@@ -174,6 +184,7 @@ namespace WindowsFormsApplication1
             };
             Array.Copy(gebaeude.Ferienbeginn, e.Ferienbeginn, FERIENZEITRAEUME);
             Array.Copy(gebaeude.Ferienende, e.Ferienende, FERIENZEITRAEUME);
+            e.WeitereFerien = gebaeude.WeitereFerien;
             return e;
         }
     }

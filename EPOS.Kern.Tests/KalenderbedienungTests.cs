@@ -220,12 +220,15 @@ namespace EPOS.Kern.Tests
             Assert.Equal(6, liste.Count);
             Assert.Equal("Ferien 6", liste[5].Name);
 
-            // Heizen trägt Ferien (Ferienzeile wirksam): 1–4 als Matrixbereich, 5 und 6 als Zeilen mit dem Ferienwert.
+            // Heizen trägt Ferien (Ferienzeile wirksam): alle sechs als Matrixbereich des Generators, 5 und 6 aus der
+            // Ferienliste auf dem Rang ihrer Ferienperiode (204, 205) mit dem Ferienwert — keine Zeilen „Ferien n" im Eigenband.
             Konditionierungskalender h = a.Gebaeude.Kalender(H);
-            Assert.Equal(4, h.Perioden.Count(r => r.Art == DbWerte.KOND_ART_FERIEN));
+            Assert.Equal(6, h.Perioden.Count(r => r.Art == DbWerte.KOND_ART_FERIEN));
             Kalenderregel f6 = h.Perioden.Single(r => r.Bezeichner == "Ferien 6");
             Assert.Equal(16.0, f6.Angabe.Wert);
-            Assert.Equal(Standardfahrplan.RANG_EIGEN + 1, f6.Rang);
+            Assert.Equal(DbWerte.KOND_ART_FERIEN, f6.Art);
+            Assert.Equal(Kalendergemeinschaft.RANG_FERIENLISTE + 1, f6.Rang);
+            Assert.DoesNotContain(h.Perioden, r => r.Rang >= Standardfahrplan.RANG_EIGEN && r.Bezeichner.StartsWith("Ferien", StringComparison.Ordinal));
             Assert.Equal(Rastertagart.Ferien, Kalenderbedienung.Jahresraster(a, Ort(H))[2].Art);    // 3. Januar
             Assert.Equal(Rastertagart.Ferien, Kalenderbedienung.Jahresraster(a, Ort(H))[64].Art);
 

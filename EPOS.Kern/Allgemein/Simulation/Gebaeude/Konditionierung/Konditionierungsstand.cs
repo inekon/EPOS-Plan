@@ -195,6 +195,12 @@ namespace WindowsFormsApplication1
             _gemeinsam = gemeinsam ?? Array.Empty<Gemeinschaftsperiode>();
             _ferien = ferien ?? Array.Empty<Ferienzeile>();
             _wochen = wochen ?? Array.Empty<BenannteWoche>();
+            // Die Ferienliste der Ebene geht mit in die Bestandsfelder, die der Generator liest (Matrixeingang.WeitereFerien).
+            if (_ferien.Length > 0 && !ReferenceEquals(_bestand.WeitereFerien, _ferien))
+            {
+                _bestand = _bestand.Kopie();
+                _bestand.WeitereFerien = _ferien;
+            }
         }
 
         /// <summary>Wem die Ebene gehört — Gebäude, Zone, Katalogbau oder Vorlage.</summary>
@@ -449,10 +455,21 @@ namespace WindowsFormsApplication1
                                              neu.OrderByDescending(p => p.Rang).ToArray(), _ferien, _wochen);
         }
 
-        /// <summary>Derselbe Stand mit einer anderen Ferienliste (ab dem fünften Zeitraum).</summary>
+        /// <summary>
+        /// Derselbe Stand mit einer anderen Ferienliste (ab dem fünften Zeitraum). Die Bestandsfelder tragen sie mit
+        /// (<see cref="Matrixeingang.WeitereFerien"/>) — so liest der Generator („Matrix erneut") dieselbe Liste wie der Lauf.
+        /// </summary>
         public Konditionierungsstand MitFerienliste(IEnumerable<Ferienzeile> ferien)
-            => new Konditionierungsstand(Art, _bestand, _zellen, _kalender, _herkunft, _gemeinsam,
-                                         (ferien ?? Enumerable.Empty<Ferienzeile>()).ToArray(), _wochen);
+        {
+            Ferienzeile[] liste = (ferien ?? Enumerable.Empty<Ferienzeile>()).ToArray();
+            Matrixeingang bestand = _bestand;
+            if (liste.Length == 0 && _bestand.WeitereFerien.Count > 0)
+            {
+                bestand = _bestand.Kopie();
+                bestand.WeitereFerien = liste;
+            }
+            return new Konditionierungsstand(Art, bestand, _zellen, _kalender, _herkunft, _gemeinsam, liste, _wochen);
+        }
 
         /// <summary>Derselbe Stand mit anderen benannten Wochen.</summary>
         public Konditionierungsstand MitWochen(IEnumerable<BenannteWoche> wochen)

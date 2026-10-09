@@ -95,6 +95,13 @@ namespace WindowsFormsApplication1
         public int? IdTagesgangsatz { get; init; }
 
         public int? IdGebaeude { get; init; }
+
+        /// <summary>
+        /// Die Wochenmaske des Wochenendes (Mo = Bit 0 … So = Bit 6) des gebundenen Gebäudes
+        /// (<c>Tab_Gebaeude.Wochenendtage</c>); <c>null</c> = Samstag und Sonntag aus den Kennzeichen der Klimaregion.
+        /// Nur vorbelegt im Eingang, nie gespeichert.
+        /// </summary>
+        public int? Wochenendtage { get; init; }
         public int Reihenfolge { get; init; }
         public string Name { get; init; } = "";
 
