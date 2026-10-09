@@ -28,14 +28,23 @@ public sealed class GebaeudeZonenTexte
     /// <summary><c>GEBZ_ZEILE_KATALOG</c></summary>
     public string ZeileKatalog { get; set; } = Resource.GEBZ_ZEILE_KATALOG;
 
+    /// <summary><c>GEBZ_ZEILE_KATALOG_ZONEN</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile (Welle ZK-b).</summary>
+    public string ZeileKatalogZonen { get; set; } = Resource.GEBZ_ZEILE_KATALOG_ZONEN;
+
     /// <summary><c>GEBZ_BTN_UEBERNEHMEN</c></summary>
     public string KnopfUebernehmen { get; set; } = Resource.GEBZ_BTN_UEBERNEHMEN;
 
     /// <summary><c>GEBZ_HINWEIS_UEBERNEHMEN</c> — die leise Erklärzeile unter dem Knopf.</summary>
     public string HinweisUebernehmen { get; set; } = Resource.GEBZ_HINWEIS_UEBERNEHMEN;
 
-    /// <summary><c>GEBZ_SPERRE_KATALOG</c></summary>
-    public string SperreKatalog { get; set; } = Resource.GEBZ_SPERRE_KATALOG;
+    /// <summary><c>GEBZ_SPERRE_OHNE_WEG</c> — kein Zonenweg (ohne Gaben).</summary>
+    public string SperreOhneWeg { get; set; } = Resource.GEBZ_SPERRE_OHNE_WEG;
+
+    /// <summary><c>GEBZ_SPERRE_UEBERNAHME_KATALOG</c> — die Übernahme „als eine Zone" im Katalogsatz (Welle ZK-b).</summary>
+    public string SperreUebernahmeKatalog { get; set; } = Resource.GEBZ_SPERRE_UEBERNAHME_KATALOG;
+
+    /// <summary><c>GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG</c> — {0} Zahl der Zonen, {1} Zahl der Bauteile (Welle ZK-b).</summary>
+    public string HinweisSpeichernUnterKatalog { get; set; } = Resource.GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG;
 
     /// <summary><c>GEBZ_SPERRE_ZONE</c> — {0} Zone.</summary>
     public string SperreZone { get; set; } = Resource.GEBZ_SPERRE_ZONE;

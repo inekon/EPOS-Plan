@@ -34570,6 +34570,12 @@ Möchten Sie das zulassen?</value>
   <data name="ZONE_MSG_OHNE_KOPPLUNG" xml:space="preserve">
     <value>Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts.</value>
   </data>
+  <data name="ZONE_MSG_KATALOG_OHNE_SCHRITT" xml:space="preserve">
+    <value>Diese Datenbank kennt die Zonen eines Katalogsatzes noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts.</value>
+  </data>
+  <data name="ZONE_MSG_KATALOG_GESPERRT" xml:space="preserve">
+    <value>Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar; seine Zonen bleiben, wie sie sind – gespeichert ist nichts.</value>
+  </data>
   <data name="ZONE_MSG_LUFTSTROM_FREMD" xml:space="preserve">
     <value>Luftaustausch: Die Kennung {0} gehört nicht zu diesem Gebäude.</value>
   </data>
@@ -34637,16 +34643,37 @@ Möchten Sie das zulassen?</value>
     <value>Rechenweg der Hülle: Bauteilweg – {0} Zonen, {1} Bauteile. Die U-Wert-Gruppen sind aus den Bauteilen aller Zonen abgeleitet; die Werte des Gebäudes gelten wieder ohne Zone.</value>
   </data>
   <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
-    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt Zonen; die Übernahme ins Projekt kopiert sie, und das Gebäude im Projekt rechnet dann nach dem Zonenmodell.</value>
+    <value>Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Der Katalogsatz trägt keine Zone; legt der Reiter „Zonen“ welche an, kopiert die Übernahme ins Projekt sie, und das Gebäude rechnet dort nach dem Zonenmodell.</value>
+  </data>
+  <data name="GEBZ_ZEILE_KATALOG_ZONEN" xml:space="preserve">
+    <value>Der Katalogsatz trägt Zonen ({0}) mit {1} Bauteilen; die Übernahme ins Projekt kopiert sie, und das Gebäude rechnet dort nach dem Zonenmodell.</value>
+  </data>
+  <data name="GEBA_BTN_ZONEN" xml:space="preserve">
+    <value>Zonen bearbeiten …</value>
+  </data>
+  <data name="GEBA_SB_ZONE_WERT" xml:space="preserve">
+    <value>{0} m², {1} Bauteile</value>
+  </data>
+  <data name="GEBA_SB_ZONE_WERT_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} Bauteile</value>
+  </data>
+  <data name="GEBZ_SPERRE_OHNE_WEG" xml:space="preserve">
+    <value>Die Zonen dieses Gebäudes sind hier nicht bearbeitbar.</value>
+  </data>
+  <data name="GEBZ_SPERRE_OHNE_KATALOGZONEN" xml:space="preserve">
+    <value>Diese Datenbank kennt die Zonen eines Katalogsatzes noch nicht (Schemaschritt {0} fehlt).</value>
+  </data>
+  <data name="GEBZ_SPERRE_UEBERNAHME_KATALOG" xml:space="preserve">
+    <value>„Gebäude als eine Zone übernehmen“ rechnet mit dem Klima eines Projekts und steht im Projekt bereit; im Katalogsatz entsteht eine Zone mit „+ Neue Zone …“.</value>
+  </data>
+  <data name="GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG" xml:space="preserve">
+    <value>Der neue Katalogsatz übernimmt die Zonen ({0}) mit {1} Bauteilen, wie sie hier stehen.</value>
   </data>
   <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Gebäude als eine Zone übernehmen</value>
   </data>
   <data name="GEBZ_HINWEIS_UEBERNEHMEN" xml:space="preserve">
     <value>Legt aus den U-Wert-Gruppen eine Zone mit Bauteilen an, auf die Projektfläche hochgerechnet; geschrieben wird mit OK.</value>
-  </data>
-  <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
-    <value>Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt („In DB übernehmen“, „Speichern unter“); die Übernahme ins Projekt kopiert sie, bearbeitet werden sie dort.</value>
   </data>
   <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
     <value>Das Gebäude führt schon die Zone „{0}“.</value>

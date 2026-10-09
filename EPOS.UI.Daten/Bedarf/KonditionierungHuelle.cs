@@ -417,9 +417,13 @@ namespace WindowsFormsApplication1
             var zonen = new List<Konditionierungszone>();
             foreach (ZoneDaten z in s.Zonen ?? Array.Empty<ZoneDaten>())
                 zonen.Add(new Konditionierungszone(z.Id, z.Bezeichner ?? "", z.Nutzflaeche, z.IstBeheizt,
-                                                   Ebene(z.Konditionierung, Kalendereigentuemer.Zone, Bestand(z))));
+                                                   Ebene(z.Konditionierung, Zonenart(art), Bestand(z))));
             return new Konditionierungsarbeitsstand(gebaeude, zonen, g.WohnflaecheGesamt, bezug.Referenzjahr);
         }
+
+        /// <summary>Die Art der Zonen zu einer Gebäudeebene: am Katalogbau die Katalogzone (Welle ZK-b), sonst die Zone.</summary>
+        internal static Kalendereigentuemer Zonenart(Kalendereigentuemer gebaeudeart)
+            => gebaeudeart == Kalendereigentuemer.Katalogbau ? Kalendereigentuemer.Katalogzone : Kalendereigentuemer.Zone;
 
         /// <summary>
         /// <b>Der neue Stand der Oberfläche</b> nach einem Schritt: eine Kopie des alten, in der jede

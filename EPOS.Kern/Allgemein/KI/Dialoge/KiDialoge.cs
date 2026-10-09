@@ -6327,7 +6327,7 @@ namespace WindowsFormsApplication1
                 //      Blatts, die Zuordnungszeilen als Raster zum Lesen. Nur der Katalogeditor trägt das Blatt.
                 felder.AddRange(KiNutzungsprofilfelder.Dialogfelder());
 
-                // ---- Zonen eines Gebaeudes im Projekt (Stufe G6a): ein RASTER zum LESEN, Kennzeichen
+                // ---- Zonen eines Gebaeudes im Projekt oder eines Katalogsatzes (Stufe G6a, Welle ZK-b): ein RASTER zum LESEN, Kennzeichen
                 //      die Nummer ab 1. Anlegen, Oeffnen, Duplizieren, Umordnen und Entfernen bleiben
                 //      Klicks des Anwenders; die Werte einer Zone setzt der Assistent im Zonendialog.
                 const string ZONE = "GebaeudeKatalogKiSicht.Zonen[].";

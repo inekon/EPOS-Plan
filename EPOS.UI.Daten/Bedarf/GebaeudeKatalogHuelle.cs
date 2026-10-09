@@ -63,6 +63,21 @@ namespace WindowsFormsApplication1
                 : Laden(bezeichner) ?? new GebaeudeModel();
             IReadOnlyDictionary<string, object> gaben = Grundgaben(geladen, modus);
 
+            // Welle ZK-b: die Zonen des Katalogsatzes, bearbeitbar wie im Projekt. Der Zonenweg findet den Satz
+            // über seinen Namen; der Schreibweg des Kopfs führt ihn nach (Modus Neu legt ihn erst an, „Speichern
+            // unter" arbeitet am neuen Satz weiter).
+            var ziel = new Katalogziel { Name = modus == GebaeudeKatalogModus.Neu ? "" : geladen.Gebaeudename ?? "" };
+            gaben = new Dictionary<string, object>(gaben)
+            {
+                ["Zonen"] = KatalogZonenweg(ziel),
+                ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>((d, istNeu, bez) =>
+                {
+                    GebaeudeKatalogErgebnis e = Schreiben(d, istNeu, bez);
+                    if (e.Erfolg && istNeu) ziel.Name = d.Name ?? "";
+                    return e;
+                })
+            };
+
             // DAS SCHLOSS ERREICHT DEN EDITOR (Stufe KP2, Befund B11): Ein ausgelieferter Satz
             // (ReadOnly) steht im Modus Bearbeiten gesperrt da - OK weich gesperrt mit Grund,
             // „Speichern unter" frei -, statt dass Schreiben ihn erst nach dem OK ablehnt. Die
@@ -191,19 +206,69 @@ namespace WindowsFormsApplication1
         /// Spalten von seiner Vorlage — ohne deren Herkunft, Quellkennung und Importpaarung.</para>
         /// </summary>
         internal static GebaeudeZonenweg Zonenweg(int idProjekt, int idZ, int idGebaeude)
+            => Zonenweg(Zonenebene.Projekt, idProjekt, idZ, () => idGebaeude);
+
+        /// <summary>
+        /// <b>Der Zonenweg eines Katalogsatzes</b> (Welle ZK-b, Anwenderwunsch 08.10.2026): dieselben Wege wie im
+        /// Projekt, auf den Katalogzwillingen (<see cref="Zonenebene.Katalog"/>). Der Satz wird über seinen Namen
+        /// gefunden (<paramref name="ziel"/>) — im Modus Neu entsteht er erst im ersten Schritt des OK-Wegs, nach
+        /// „Speichern unter" arbeitet der Editor am neuen Satz weiter. Die Bauteile wählen ihren Aufbau aus dem
+        /// Aufbaukatalog (kein Übernahmeschritt); die Übernahme „Gebäude als eine Zone" rechnet mit dem Klima eines
+        /// Projekts und fehlt hier. Ohne Schritt ZK steht der Weg benannt gesperrt da (<see cref="GebaeudeZonenweg.Sperre"/>).
+        /// </summary>
+        internal static GebaeudeZonenweg KatalogZonenweg(Katalogziel ziel)
         {
+            if (!ZonenKatalogSchema.Lesbar())
+                return new GebaeudeZonenweg
+                {
+                    Sperre = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                           MyResource.Resource.GEBZ_SPERRE_OHNE_KATALOGZONEN, ZonenKatalogSchema.SCHRITT)
+                };
+            return Zonenweg(Zonenebene.Katalog, 0, 0, () => ziel.Id());
+        }
+
+        /// <summary>
+        /// Der Katalogsatz, an dem der Zonenweg im Katalog schreibt — über seinen Namen, den der Schreibweg des
+        /// Kopfs nach einem gelungenen Anlegen nachführt.
+        /// </summary>
+        internal sealed class Katalogziel
+        {
+            /// <summary>Der Name des Satzes (<c>Tab_Gebaeude_STAMM.Bezeichner</c>); leer, solange er nicht angelegt ist.</summary>
+            internal string Name { get; set; } = "";
+
+            /// <summary>Die Id des Satzes; 0, solange es ihn nicht gibt.</summary>
+            internal int Id() => string.IsNullOrEmpty(Name) ? 0 : new GebaeudeStammCtrl().Lies(Name)?.ID ?? 0;
+        }
+
+        private static GebaeudeZonenweg Zonenweg(Zonenebene ebene, int idProjekt, int idZ, Func<int> gebaeudeId)
+        {
+            bool katalog = ebene == Zonenebene.Katalog;
+            int idGebaeude = gebaeudeId();
             var zonenCtrl = new GebaeudeZonenCtrl();
             var aufbauCtrl = new BauteilaufbauCtrl();
             var gelesen = new Dictionary<int, ZoneModel>();
             // Stufe KP2: die Ebene des Gebaeudes - die Zonen zeigen „vom Gebaeude", wo es einen Kalender angelegt hat.
-            Konditionierungsstand gebaeudeebene = KonditionierungSchema.Lesbar()
-                ? new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), out _)
+            Konditionierungsstand gebaeudeebene = KonditionierungSchema.Lesbar() && idGebaeude > 0
+                ? new KonditionierungCtrl().StandLesen(katalog
+                    ? KonditionierungCtrl.Eigner.Katalogbau(idGebaeude)
+                    : KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), out _)
                 : null;
-            foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(idGebaeude)) gelesen[z.ID] = z;
+            if (idGebaeude > 0)
+                foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(idGebaeude, ebene)) gelesen[z.ID] = z;
 
-            var projektaufbauten = aufbauCtrl.LesenJeProjekt(idProjekt).Where(a => a != null).ToDictionary(a => a.ID);
-            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, false)).ToList();
-            List<AufbauWahl> katalogwahl = aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+            // Im Katalog zeigen die Bauteile in den Aufbaukatalog: Er ist die Liste „des Satzes", ein Übernahmeschritt
+            // entfällt (ZK-b).
+            var projektaufbauten = (katalog ? aufbauCtrl.LesenKatalog() : aufbauCtrl.LesenJeProjekt(idProjekt))
+                .Where(a => a != null).ToDictionary(a => a.ID);
+            List<AufbauWahl> projektwahl = projektaufbauten.Values.Select(a => Wahl(a, katalog)).ToList();
+            List<AufbauWahl> katalogwahl = katalog
+                ? new List<AufbauWahl>()
+                : aufbauCtrl.LesenKatalog().Where(a => a != null).Select(a => Wahl(a, true)).ToList();
+
+            // Die Konditionierung einer gelesenen Zone der Ebene.
+            KonditionierungCtrl.Eigner Zoneneigner(int idZone)
+                => katalog ? KonditionierungCtrl.Eigner.Katalogzone(gebaeudeId(), idZone)
+                           : KonditionierungCtrl.Eigner.Zone(gebaeudeId(), idZone);
 
             ZoneDaten AlsDaten(ZoneModel z) => new ZoneDaten
             {
@@ -243,9 +308,10 @@ namespace WindowsFormsApplication1
                 KuehlUebergabeLeistungNennKw = z.Kuehl_Uebergabe_Leistung_Nenn,
                 // NP3b (Q41, NP-F14): das zuletzt übernommene Nutzungsprofil; die Kalendernutzung nur zur Anzeige.
                 Nutzungsprofil = z.Nutzungsprofil,
-                Kalendernutzung = z.ID > 0 && RaumnutzungCtrl.Lesbar() ? RaumnutzungCtrl.Kalendernutzung(idGebaeude, z.ID) : null,
+                // Die Kalendernutzung liest der Kern nur an Projektzonen; im Katalog bleibt sie leer.
+                Kalendernutzung = !katalog && z.ID > 0 && RaumnutzungCtrl.Lesbar() ? RaumnutzungCtrl.Kalendernutzung(idGebaeude, z.ID) : null,
                 Konditionierung = z.ID > 0
-                    ? KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, z.ID), gebaeudeebene)
+                    ? KonditionierungHuelle.Lesen(Zoneneigner(z.ID), gebaeudeebene)
                     : KonditionierungHuelle.Leer(),
                 Bauteile = (z.Bauteile ?? new List<BauteilModel>()).Where(b => b != null).Select(b =>
                 {
@@ -392,15 +458,40 @@ namespace WindowsFormsApplication1
             // Ids, die der Dialog in seinen Arbeitsstand uebernimmt.
             Func<ZonenstandDaten, ZonenSchreibergebnis> speichern = stand =>
             {
+                int ziel = gebaeudeId();
+                if (ziel <= 0) return ZonenSchreibergebnis.Fehler(MyResource.Resource.GEBZ_MSG_GEBAEUDE);
                 List<ZoneModel> zeilen = Zeilen(stand?.Zonen);
-                GebaeudeZonenCtrl.Schreibergebnis e = zonenCtrl.Schreiben(idGebaeude, zeilen, Luft(stand?.Luftstroeme),
-                                                                          Zonenkonditionierung(stand?.Zonen));
+                GebaeudeZonenCtrl.Schreibergebnis e = zonenCtrl.Schreiben(ziel, zeilen, Luft(stand?.Luftstroeme),
+                                                                          Zonenkonditionierung(stand?.Zonen), ebene);
                 if (!e.Ok)
                     return ZonenSchreibergebnis.Fehler(string.IsNullOrEmpty(e.Meldung) ? MyResource.Resource.GEBZ_MSG_GEBAEUDE : e.Meldung);
                 gelesen.Clear();
                 foreach (ZoneModel z in zeilen) gelesen[z.ID] = z;
-                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
+                if (!katalog) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
                 return new ZonenSchreibergebnis("", e.Zonen, e.Bauteile, e.Luftstroeme);
+            };
+
+            // Welle ZK-b: die Zonen des Satzes neu lesen - nach „Speichern unter" im Katalog am neuen Satz (der Kern
+            // hat die gespeicherten Zonen dorthin kopiert); die gemerkten Zeilen folgen.
+            List<ZonenluftstromDaten> LuftLesen(int id)
+                => id <= 0
+                    ? new List<ZonenluftstromDaten>()
+                    : zonenCtrl.LuftstroemeJeGebaeude(id, ebene).Select(l => new ZonenluftstromDaten
+                    {
+                        Id = l.ID, IdZoneA = l.ID_ZoneA, IdZoneB = l.ID_ZoneB, Volumenstrom = l.Volumenstrom
+                    }).ToList();
+            Func<ZonenNeulesung> neulesen = () =>
+            {
+                int id = gebaeudeId();
+                gelesen.Clear();
+                if (id > 0)
+                    foreach (ZoneModel z in zonenCtrl.LesenJeGebaeude(id, ebene)) gelesen[z.ID] = z;
+                gebaeudeebene = KonditionierungSchema.Lesbar() && id > 0
+                    ? new KonditionierungCtrl().StandLesen(katalog
+                        ? KonditionierungCtrl.Eigner.Katalogbau(id)
+                        : KonditionierungCtrl.Eigner.Gebaeude(id), out _)
+                    : null;
+                return new ZonenNeulesung(gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(), LuftLesen(id));
             };
 
             // Die Konditionierung der Zonen fuer den Schreibweg (Stufe KP2): nur die mit geaenderter Fassung.
@@ -428,13 +519,13 @@ namespace WindowsFormsApplication1
             return new GebaeudeZonenweg
             {
                 Zonen = gelesen.Values.OrderBy(z => z.Rang).Select(AlsDaten).ToList(),
-                Luftstroeme = zonenCtrl.LuftstroemeJeGebaeude(idGebaeude).Select(l => new ZonenluftstromDaten
-                {
-                    Id = l.ID, IdZoneA = l.ID_ZoneA, IdZoneB = l.ID_ZoneB, Volumenstrom = l.Volumenstrom
-                }).ToList(),
-                Uebernehmen = uebernehmen,
-                AufbauUebernehmen = aufbauUebernehmen,
+                Luftstroeme = LuftLesen(idGebaeude),
+                // Die Hochrechnung braucht das Klima eines Projekts, der Katalogaufbau steht im Katalog schon zur Wahl.
+                Uebernehmen = katalog ? null : uebernehmen,
+                AufbauUebernehmen = katalog ? null : aufbauUebernehmen,
                 Speichern = speichern,
+                Neulesen = neulesen,
+                Katalog = katalog,
                 Pruefen = pruefen,
                 Hinweise = hinweise,
                 Projektaufbauten = projektwahl,
