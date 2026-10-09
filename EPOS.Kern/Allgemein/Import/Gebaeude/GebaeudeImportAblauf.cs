@@ -653,15 +653,19 @@ namespace WindowsFormsApplication1
         /// Der Schalter „Raumtemperatur der Datei als Heizsollwert übernehmen" (<see cref="GebaeudeCadSollwert"/>);
         /// Vorgabe aus — dann gilt die Normtemperatur.
         /// </param>
+        /// <param name="klasseUebersteuert">Die Klasse ist ausdrücklich gewählt und gilt vor der aus dem Baujahr der Datei
+        /// (<see cref="GebaeudeAggregation"/>); <c>false</c> = sie ist nur die Vorgabe.</param>
         public GebaeudeImportSatz Zuordnen(int gebaeudeIndex, char? baualtersklasse,
                                            IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
-                                           bool raumtemperaturAlsSollwert = false)
+                                           bool raumtemperaturAlsSollwert = false,
+                                           bool klasseUebersteuert = false)
         {
             GebaeudePruefen(gebaeudeIndex);
             SqprojStand projektdatei = ProjektdateiFuer(gebaeudeIndex);
             GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(Abbild, gebaeudeIndex, baualtersklasse, Quelle, Profil, beheiztUebersteuert,
                                                                  raumtemperaturAlsSollwert,
-                                                                 projektdatei?.ProjektdateiGilt == true ? projektdatei.UWirksam : null);
+                                                                 projektdatei?.ProjektdateiGilt == true ? projektdatei.UWirksam : null,
+                                                                 klasseUebersteuert);
             if (satz != null)
             {
                 satz.Projektdatei = projektdatei;

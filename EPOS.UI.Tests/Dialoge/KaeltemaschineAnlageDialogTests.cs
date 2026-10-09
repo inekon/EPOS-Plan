@@ -154,6 +154,34 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
     }
 
     [Fact]
+    public void Eine_neue_Anlage_traegt_die_Vorauswahl_des_Kuehltraegers()
+    {
+        var p = new Projekt();
+        var cut = Render<KaeltemaschineAnlageDialog>(b => b
+            .Add(x => x.Anlagen, () => p.Gespeicherte.Select(a => a.Kopie()).ToList())
+            .Add(x => x.Katalogzeilen, p.Katalog)
+            .Add(x => x.Katalogwerte, p.Werte)
+            .Add(x => x.Stromtraeger, new[] { (STROM, "Strom"), (OEKOSTROM, "Ökostrom") })
+            .Add(x => x.ProjektStromtraeger, STROM)
+            .Add(x => x.KuehltraegerVorauswahl, STROM)
+            .Add(x => x.Anlegen, p.Anlegen)
+            .Add(x => x.Speichern, p.Speichern));
+
+        cut.InvokeAsync(() => cut.Instance.KatalogUebernehmen(12, "Kältemaschine 200 kW"));
+
+        Assert.Equal(STROM, cut.Instance.Arbeitsstand!.KuehlCarrierId);
+    }
+
+    [Fact]
+    public void Ohne_Vorauswahl_bleibt_der_Kuehltraeger_einer_neuen_Anlage_leer()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+        cut.InvokeAsync(() => cut.Instance.KatalogUebernehmen(12, "Kältemaschine 200 kW"));
+        Assert.Null(cut.Instance.Arbeitsstand!.KuehlCarrierId);
+    }
+
+    [Fact]
     public void Ein_fehlender_Katalogsatz_wird_beim_OK_gemeldet()
     {
         var p = new Projekt();

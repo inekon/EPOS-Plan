@@ -130,9 +130,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN_STAMM).Count);
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN).Count);
-            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));
-            Assert.Equal(18L, Zahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));
-            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel LIKE 'KM:%' AND length(Katalog_Pruefsumme) = 64"));
+            // Drei Beispielgeräte (182) und die eingebauten Typkennfelder mit je 24 Kennlinienpunkten (203, KM2).
+            Assert.Equal(3L + TYPKENNFELDER, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));
+            Assert.Equal(18L + 24L * TYPKENNFELDER, Zahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));
+            Assert.Equal(3L + TYPKENNFELDER, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel LIKE 'KM:%' AND length(Katalog_Pruefsumme) = 64"));
             // Projektkopien tragen allein die Referenzprojekte 1055 (KU3-4b) und 1059 (AK3-K-K5a, Ak3KReferenzprojektWacheTests).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt NOT IN (1055, 1059)"));
             Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine"));
@@ -173,7 +174,7 @@ namespace EPOS.Kern.Tests
         public void Der_Katalog_schreibt_prueft_sperrt_und_dupliziert_samt_Kennlinie()
         {
             if (!_db.Vorhanden) return;
-            var liste = KaeltemaschineStammCtrl.Liste();
+            var liste = Beispiele();
             Assert.Equal(3, liste.Count);
             Assert.All(liste, z => Assert.True(z.ReadOnly));
             int saat = liste.Single(z => z.Rueckkuehlart == "TROCKENKUEHLER").Id;
@@ -216,7 +217,7 @@ namespace EPOS.Kern.Tests
         public void Katalog_Projektkopie_Abgleich_Duplizieren_und_Paket_tragen_die_Kaeltemaschine()
         {
             if (!_db.Vorhanden) return;
-            int stamm = KaeltemaschineStammCtrl.Liste().Single(z => z.Rueckkuehlart == "NASSKUEHLER").Id;
+            int stamm = Beispiele().Single(z => z.Rueckkuehlart == "NASSKUEHLER").Id;
 
             // Katalog -> Projekt: Spalte für Spalte samt Kennlinie und Zuordnung über ID_Stamm.
             int kopie = KaeltemaschineCtrl.AusKatalogUebernehmen(stamm, PROJEKT);
@@ -236,11 +237,11 @@ namespace EPOS.Kern.Tests
 
             // Katalogabgleich: ein gelöschter Auslieferungssatz kommt aus dem Paket der Fassung zurück, samt Kennlinie.
             Katalogpaket paket = Katalogpaket.AusDatenbank(Katalogabgleich.FassungDerDatenbank() ?? 1);
-            int anderer = KaeltemaschineStammCtrl.Liste().Single(z => z.Rueckkuehlart == "LUFT").Id;
+            int anderer = Beispiele().Single(z => z.Rueckkuehlart == "LUFT").Id;
             DataRepository.ExecuteNonQuery("DELETE FROM Tab_Kaeltemaschine_STAMM WHERE ID = ?", new DbParam("?", anderer));
             KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, false, true);
             Assert.True(e.Ausgefuehrt);
-            KaeltemaschineStammCtrl.Listenzeile zurueck = KaeltemaschineStammCtrl.Liste().Single(z => z.Rueckkuehlart == "LUFT");
+            KaeltemaschineStammCtrl.Listenzeile zurueck = Beispiele().Single(z => z.Rueckkuehlart == "LUFT");
             Assert.Equal(6, KaeltemaschineStammCtrl.Laden(zurueck.Id).Kennlinie.Count);
             Assert.True(zurueck.ReadOnly);
 
@@ -298,5 +299,12 @@ namespace EPOS.Kern.Tests
             try { Ausfuehren(c, sql); return false; }
             catch (SqliteException) { return true; }
         }
+
+        /// <summary>Die Zahl der eingebauten Typkennfelder (Schritt 203), die die Testdatenbank trägt.</summary>
+        private static long TYPKENNFELDER => KaeltemaschinenTypkennfelder.Lesen().Count;
+
+        /// <summary>Die Katalogzeilen ohne die eingebauten Typkennfelder (Schritt 203) — die Beispielgeräte und eigene Sätze.</summary>
+        private static List<KaeltemaschineStammCtrl.Listenzeile> Beispiele() =>
+            KaeltemaschineStammCtrl.Liste().Where(z => z.Typ != KaeltemaschinenTypkennfelder.TYP).ToList();
     }
 }

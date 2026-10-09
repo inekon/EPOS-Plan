@@ -264,12 +264,22 @@ jeden gerollten Dialog als Verstoß.
 | K3 | Klimadaten **vor** dem Import (Platzhalter statt Bildern) |
 | B1 / B2 | Stromverbraucher Verwaltung, dieselben zwei Größen |
 | M1 / M2 | Photovoltaik-Module, dieselben zwei Größen |
-| W1, S1, C1, P1 | Wärmebedarf, Solarganglinie, BHKW-Katalog, Wärmepumpen-Stamm (je 1 180 × 780) |
+| W1, C1, P1 | Wärmebedarf, BHKW-Katalog, Wärmepumpen-Stamm (je 1 180 × 780) |
 | K4 | der **Katalograhmen mit Eingabeblock** (Seite `maske=rahmen`: Liste, darunter zwei Bilder in Reitern und acht Felder, darunter die Fußleiste) — die Anordnung, die seit Stufe 4 keine Verwaltung mehr trägt, der Baustein aber weiterführt |
 | G1 | **Gegenprobe**: derselbe Rahmen (`maske=rahmen`) mit dem Maß von vor KL-5 samt dem Raster von damals. Sie MUSS den Befund zeigen |
-| N01a … N15b | **Neuordnung Stufe 1**: jede Verwaltung im Katalograhmen (vier Katalogbrowser, drei Modulkataloge, Wärmepumpe, Klimadaten, drei Bedarfe, drei Zeitreihen) mit vollen Zeilen, je 1 088 × 624 (`a`) und 400 × 624 (`b`) — Messung und Sollwerte im Abschnitt zu Stufe 1 unten |
+| N01a … N15b | **Neuordnung Stufe 1**: jede Verwaltung im Katalograhmen (vier Katalogbrowser, drei Modulkataloge, Wärmepumpe, Klimadaten, drei Bedarfe, zwei Zeitreihen) mit vollen Zeilen, je 1 088 × 624 (`a`) und 400 × 624 (`b`) — Messung und Sollwerte im Abschnitt zu Stufe 1 unten; N14 entfällt (siehe unten) |
 | G2 | **Gegenprobe zu Stufe 1**: Heizkessel mit den Regeln von vor Stufe 1. Sie MUSS Rollbereich-in-Rollbereich und Querüberlauf zeigen |
 | P2a / P2b | Nachbar: der Heizkessel-**Projektdialog** (erbt die Katalogliste); die Liste darf nicht zusammenfallen, bei 1 088 px nicht quer rollen |
+
+**S1 und N14 (Solarthermieganglinie) sind gestrichen** (Welle N, 09.10.2026): Seit D1 ist die
+Solarthermieganglinie keine Verwaltung im `Katalograhmen` mehr — der Menüpunkt öffnet den vereinten
+`SolarganglinieDialog` im Katalogbetrieb, ein Fensterdialog mit der Katalogseite
+`GanglinieKatalogseite` (Katalogliste und Katalogpflege in einer Leiste), ohne Rahmen, Eingabeblock
+und Stammblatt. Beide Fälle warteten auf `.epos-katalog-dialog` und brachen ab (Rückgabe 2); was sie
+maßen — Listenhülle gegen Eingabeblock (KL-5), Stammblatt mit Bild „Ganglinie" und Einlese-Überlagerung
+(Stufen 3 und 4) —, gibt es an dieser Maske nicht mehr. Die Katalogliste darin ist derselbe Baustein,
+den `rasterprobe.mjs` misst; Wärmebedarf (W1, N13) und Stromganglinie (N15) bleiben als Zeitreihen
+im Rahmen gemessen.
 
 ### Ergebnis vom 19.09.2026 (Auftrag KL-5)
 
@@ -996,6 +1006,13 @@ Wort einer sichtbaren Zelle steht auf einer Zeile, gemessen über `Range.getClie
 am Zeitfenster; den Vermerk des letzten Werkzeugs; das Teppichbild mit 1 bis 2 000 Elementen, das Bezugsjahr
 in der Zeile darunter und Zeitraum, Wert und Quelle am Zeiger. Je Breite EIN Foto der aufgeklappten Karte
 (`karte_<breite>_einzelheiten.png`), die Fotos je Reiter entfallen in diesem Fall.
+
+**Welle K1b — die Kalenderbedienung.** Derselbe Fall `karte` läuft mit Berührung (`hasTouch`, `pointer: coarse`) und
+misst zusätzlich die Kalenderbedienung über den Einzelheiten: 168 Zellen des Wochenprofils und 365 Tage des
+Jahresrasters je ≥ 44 px, kein Querrollen der Kalenderbedienung (Wochenprofil, Tabellen und Jahresraster rollen im
+eigenen Kasten), das Jahresraster in einem Kasten mit `overflow-x: auto`, und ab 1 300 px alle fünf Karten in einer
+Zeile. Ergebnis vom 09.10.2026 bei 390, 820, 1 180 und 1 300 px: kein Verstoß im Fall `karte`; der volle Lauf meldet
+acht Verstöße im Zonenblatt (ein Kästchen 217,6 × 15 px), die die Kalenderbedienung nicht berührt.
 
 **Ergebnis vom 30.09.2026** (Welle U3 auf dem Stand mit U4 und der vorgebbaren Reiterfolge; Wirt Release auf
 Port 5299, Chromium headless über das globale Playwright, `kultur=de-DE`): **vorher ein Befund, nachher kein

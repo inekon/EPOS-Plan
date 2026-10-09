@@ -1013,16 +1013,27 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (`integrity_check` ok, `foreign_key_check` leer): **92 979 200 Byte, LFS-SHA-256
 > `19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`**. **Die Basis `2026-10-07_R43_Kaelteseite_AK3K`
 > bleibt** — die vierundzwanzig Projekte rechnen byte-gleich; 1061 und 1062 kommen mit der Basis R44 (KK5b) ins Netz.
+> 
+> **Nachtrag — Testdatenbank auf 203 (Typkennfelder der Kältemaschinen, Basis R44 unberührt).**
+> `KaeltemaschinenTypkennfelderSchema` (203 = `KuehlkurveSchema.SCHRITT + 1`) spielt die 34 eingebauten Typkennfelder
+> (`KaeltemaschinenTypkennfelder`, eingebettete Ressource) als gesperrte Sätze in `Tab_Kaeltemaschine_STAMM` ein, je
+> 24 gesperrte Kennlinienpunkte in `Tab_Kenndaten_Kaeltemaschine_STAMM`, mit Katalogschlüssel `KM:TYPKENNFELD_*` und
+> Prüfsumme; kein DDL, die drei Beispielgeräte bleiben Zelle für Zelle. Gehoben aus dem Stand 202 (LFS-SHA-256
+> `19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`) mit `Werkzeuge/Testdatenbankschema`, ein zweiter
+> Lauf meldet „steht bereits“. Die Testdatenbank steht auf **203** (`integrity_check` ok, `foreign_key_check` leer):
+> **92 975 104 Byte, LFS-SHA-256 `84e771718f875eafcc77f16387ca1809376317499a28655b110e34f8cf54f063`**. **Die Basis
+> `2026-10-08_R44_Kuehlkurve` bleibt** — kein Referenzprojekt führt ein Typkennfeld, keine Einfrierregel ist berührt; die
+> sechsundzwanzig Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
 >
-> **Nachtrag — Schemaschritt 203 (Übergabegrenze und Bivalenz), Basis unverändert.** `UebergabegrenzeSchema`
-> (203 = `KuehlkurveSchema.SCHRITT + 1`) legt 43 nullbare Spalten an: je acht an `Tab_WP` und `Tab_WP_STAMM`
+> **Nachtrag — Schemaschritt 204 (Übergabegrenze und Bivalenz; zuerst als 203 gezählt, gegen origin hinter KM2 umgehängt), Basis unverändert.** `UebergabegrenzeSchema`
+> (204 = `KaeltemaschinenTypkennfelderSchema.SCHRITT + 1`) legt 43 nullbare Spalten an: je acht an `Tab_WP` und `Tab_WP_STAMM`
 > (`Spreizung_Auslegung_K` 3–8, `Spreizung_Max_K` 5–40, `Spreizung_Min_K` 0–8, `Mindestvolumenstrom_Prozent` 20–100,
 > `Ruecklauf_Max` 20–70, `Ruecklauf_Bezug` 20–40, `Ruecklauf_Abwertung_ProzentJeK` 0–5, `Kaeltemittel` ohne Werteliste),
 > `Ruecklauf_Max` 40–90 an `Tab_BHKW` und `Tab_BHKW_STAMM`, `Einbindung` (`DIREKT`/`PUFFER`/`WEICHE`) und
 > `Vorwaermbetrieb` 0/1 an `Tab_Energieanlagen`, dreizehn Bereichs-, Zähler- und Bivalenzspalten an
 > `Tab_ErgebnisWaermepumpeModul` und zehn an `Tab_ErgebnisWaermepumpe`; alle Spalten entstehen leer, kein DML an
 > Bestandsdaten. Gehoben aus dem Stand 202 (LFS-SHA-256 `19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`)
-> mit `Werkzeuge/Testdatenbankschema`. Die Testdatenbank steht auf **203** (`integrity_check` ok, `foreign_key_check`
+> mit `Werkzeuge/Testdatenbankschema`. Die Testdatenbank stand danach — noch ohne KM2, Schritt als 203 gezählt — auf (`integrity_check` ok, `foreign_key_check`
 > leer): **92 921 856 Byte, LFS-SHA-256 `65cfef15bcfaf61684778a13d6f9c5ca020272140b43c9c10ab8569f80dfe7fb`**. **Die Basis
 > `2026-10-08_R44_Kuehlkurve` bleibt** — leere Spalten heißen Bestandsweg (Umsetzungskonzept Übergabegrenze, U‑1), keine
 > Einfrierregel berührt.

@@ -102,5 +102,31 @@ namespace EPOS.Kern.Tests
             Assert.Null(KaeltemaschineCtrl.LadenStill(neu.GeraetId.Value));
             Assert.Equal(R.KM_ANLAGE_FEHLT, speichern(neu));
         }
+
+        /// <summary>
+        /// Nachzug zu B2: Ohne Kühlträger steht die Vorauswahl des Kerns (Stromträger des Projekts) in der Wahl; ein
+        /// Speichern mit dieser Wahl schreibt keine Abweichung — die Spalte bleibt leer und folgt dem Projekt.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kuehltraeger_steht_die_Vorauswahl_und_wird_nicht_als_Abweichung_geschrieben()
+        {
+            if (!_db.Vorhanden || !KaeltemaschineSchema.Vollstaendig()) return;
+            const int MIT_KM = 1055;
+            int vor = KaeltemaschineAnlageHuelle.Vorauswahl(MIT_KM);
+            Assert.True(vor > 0);
+            Assert.Equal((int?)vor, KaeltemaschineAnlageHuelle.Gaben(MIT_KM)["KuehltraegerVorauswahl"]);
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Energieanlagen SET Kuehl_ID_Carrier = NULL WHERE ID_Projekt = ? AND ID_Kaeltemaschine > 0",
+                new DbParam("@p", MIT_KM));
+            KaeltemaschineAnlageDaten d = KaeltemaschineAnlageHuelle.Liste(MIT_KM).First();
+            Assert.Equal(vor, d.KuehlCarrierId);
+
+            if (vor == Kaeltestromabrechnung.Projekttraeger(MIT_KM))
+            {
+                Assert.Null(KaeltemaschineAnlageHuelle.Speichern(d));
+                Assert.Null(KaeltemaschineAnlageCtrl.Laden(d.AnlagenId).KuehlIdCarrier);
+            }
+        }
     }
 }

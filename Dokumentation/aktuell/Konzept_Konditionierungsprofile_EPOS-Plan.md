@@ -53,6 +53,10 @@
 > die Tagessumme eines unbegrenzten Probetags; ist keine frei, wird die Zone an dem Tag nicht konditioniert. Kein
 > Schemaschritt, keine Kopierwege. Nachgezogen ist 3.1.
 
+> **Fortgeschrieben am 09.10.2026 — Kalenderbedienung (E110)** ([Befund](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md)
+> samt Mockup, 7.8): V2 „Wochenprofile" mit dem Jahresraster aus V1; Stufe 1 (K1a, K1b)
+> ohne Schemaschritt, Stufe 2 (K2) mit Schemaschritt 207. Neu sind 7.8 und 9.10, nachgezogen 8 und 10.1.
+
 **Stand:** 06.10.2026. **Fassung:** Rev. 3 mit E54 bis E60 — P1–P8 entschieden (E52), P9–P13 und die Heizperiode
 entschieden (E53), zwei Fragen des KP1b-Entwurfs entschieden (E54), die Nutzungszeit der Auslegung bestätigt (E55), fünf
 Fragen des KP2-Entwurfs entschieden (E56), die Abkürzung „gleichnamige Vorlage in allen Größen übernehmen" aufgenommen
@@ -1262,6 +1266,67 @@ Bemessung.
   Katalogmodi, dazu `StilblattTests`, `SchliesskreuzWacheTests`, `UeberlagerungstitelTests`. `Proben/Rasterprobe` nur,
   wenn `Raster`, `Katalogliste` oder die `.epos-raster*`-Regeln berührt werden.
 
+### 7.8 Kalenderbedienung (Fassung 2)
+
+Mit E110 (9.10) bekommt der Reiter „Konditionierung" eine Kalenderbedienung nach dem angenommenen
+Mockup [`Mockups/Konditionierung_Kalender.html`](Mockups/Konditionierung_Kalender.html): Grundgerüst ist die Variante V2 „Wochenprofile" des
+[Befundpapiers](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md), ergänzt um das Jahresraster aus V1 als
+anklickbare Anzeige. Die Vorgabe-Matrix (7.2) bleibt als Übersicht; ihre Zeilen Wochenende und Ferien werden über die
+Schnellfelder bedient. Die Kalenderkarte (7.5) bleibt der Ort der Einzelbearbeitung einer Größe.
+
+**Aufbau.**
+
+- **Wochenprofile** je Größe: die Standardwoche und die Wochen der Zuordnungszeilen, jedes ein 7 × 24-Raster mit
+  Pinsel (Wert oder „aus" auf einen Zellbereich), „Montag nach Di–Fr", „Samstag nach Sonntag", „Tag kopieren" (eine
+  Tagesspalte auf andere Wochentage, auch in ein anderes Profil) und „Woche kopieren" in ein anderes Profil derselben
+  Größe oder einer Größe gleicher Einheit — Heizen ↔ Kühlen (°C), Geräte ↔ Personen (Anteil), die Lüftung (1/h) nur zu
+  sich; der Zielwert wird gegen die Grenzen der Zielgröße geprüft (3.6).
+- **Zuordnung** als Tabelle „von–bis (Datum des Bezugsjahrs) → Wochenprofil, gilt für": „alle" heißt alle Größen mit
+  angelegtem Kalender, eine Auswahl ist je Zeile abwählbar. Die Wirkung einer Zeile ist ein Wochenprofil, „aus", „wie
+  Wochentag X" oder ein Wert.
+- **Jahresband** über der Zuordnung: die Zeiträume der gewählten Größe als farbige Abschnitte; ein Klick wählt Zeile
+  und Profil.
+- **Einzeltage** als Liste (Datum, Bezeichnung, Wirkung „wie Sonntag" oder „aus", gilt für) mit „Feiertage laden".
+- **Schnellfelder:** Wochenende (Sa + So), Ferien als Liste benannter Datumsbereiche (beliebig viele), Saison von–bis
+  je Größe, Feiertage.
+- **Jahresraster** (12 × 31) als Anzeige: jeder Tag in der Farbe seiner Quelle (Wochenprofil, Zeitraum, Einzeltag,
+  Ferien, Feiertag, Saison „aus"); ein Klick öffnet die Zeile bzw. den Einzeltag, der den Tag bestimmt.
+- **Kopieren:** Tag und Woche (oben), **Monat** — alle Zeilen und Einzeltage, die einen Monat berühren, werden auf
+  einen anderen Monat übertragen (auf den Quellmonat beschnitten, um den Abstand der Monatsersten verschoben, auf den
+  Zielmonat beschnitten); die Kopien bekommen in derselben Folge Ränge über allen vorhandenen Zeilen.
+- **„Vorlage übernehmen"** für alle Größen in einem Schritt (Vorlagen je Größe, 7.4, E57).
+
+**Abbildung auf das heutige Modell (Stufe 1, ohne Schemaschritt).** Die Schicht liegt im Kern
+(`Kalenderbedienung`, neben `Konditionierungsarbeit`) und arbeitet wie die übrigen Schritte rein über dem Arbeitsstand
+(`Konditionierungsarbeitsstand`); geschrieben wird allein im OK-Weg des Editors über die vorhandenen Controller und
+Tabellen — keine neue SQL-Anweisung.
+
+| Bedienung | Modell heute |
+|---|---|
+| Wochenprofil | Standardwoche des Kalenders bzw. die Woche (`Angabe = Woche`) einer eigenen Periode; Name = Bezeichner der Periode |
+| Zuordnungszeile | Periode der Art `ZEITRAUM` im Eigenband 310 … 899, je Größe eine Kopie |
+| Einzeltag | Periode mit Beginn = Ende (`ZEITRAUM`) oder Feiertagsregel (`FEIERTAG`); „wie Sonntag" = `WieWochentag 7`, „aus" = `aus` |
+| „gilt für alle" bzw. Auswahl | synchron gehaltene Kopien in den Kalendern der gewählten Größen, **gekoppelt über Name + Beginn + Ende** (bei Feiertagen Name + Regel); Ändern und Löschen einer gekoppelten Zeile wirkt auf alle Kopien, eine abgewählte Größe verliert ihre Kopie |
+| Ferien 1 bis 4 | die Spalten `Ferienbeginn/-ende_1…4` des Gebäudes — sie lesen der Generator (Perioden `FERIEN`, Rang 200 + k), der Tagesbilanz-Weg und der Zapfkalender; nach jeder Änderung wird der Matrixbereich der angelegten Kalender von Gebäude und Zonen erneuert („Matrix erneut", P12) |
+| Ferien ab 5 | Perioden `ZEITRAUM` mit dem Bezeichner „Ferien n" am unteren Ende des Eigenbands, mit der Angabe der Ferienperiode des Kalenders — nur in angelegten Kalendern, deren Ferienzeile wirkt; ein abgeleiteter Kalender kennt nur die vier Spalten |
+| Wochenende | fest Sa + So (Wochenendzeile der Matrix) — nur lesbar |
+| Saison | die Zeile `SAISON` der Matrix je Größe (Periode `BETRIEBSPAUSE`, Rang 900) |
+| Feiertage | die neun bundeseinheitlichen Regeln (Rang 100 … 108, unter den Ferien); die Feiertage eines Landes als feste Einzeltage des Bezugsjahrs |
+
+**Rangregel** (unverändert, 3.2): Der höhere Rang gewinnt — Feiertagsregeln 100 … 108 < Ferien 1–4 200 … 203 <
+eigene Zeilen 310 … 899 < Saison 900. Eine neue Zeile kommt über die ranghöchste eigene, Ferien ab 5 an den untersten
+freien Platz des Eigenbands; damit schlägt die zuletzt angelegte Zeile die ältere, und eine Zeile, die die Schicht in
+mehreren Größen anlegt, steht in jeder Größe über denselben Zeilen. Ein Einzeltag „wie Sonntag" liegt im Eigenband
+über den Ferien — anders als die Feiertagsregel.
+
+**Die zwei Stufen.** **Stufe 1** (K1a Datenschicht, K1b Oberfläche) läuft auf dem heutigen Modell wie oben. **Stufe 2**
+(Welle K2, Schemaschritt 207 `KalenderbedienungSchema`) bringt den gemeinsamen Eigentümer „Gebäude, alle Größen" mit
+einer Spalte „gilt für" statt der Kopien, benannte wiederverwendbare Wochen (eine Tabelle der Wochen, die Periode
+verweist auf sie), das wählbare Wochenende am Gebäude, die Feiertage der sechzehn Länder als Regeln (Prüfregel der
+`Feiertagsregel` erweitert, Wahl am Gebäude) und beliebig viele Ferienzeiträume als Perioden des Gebäudes; die vier
+Ferienspalten werden dann aus den ersten vier Ferienperioden gespiegelt, solange ein Leser sie braucht. Die Kopplung
+über Name + Beginn + Ende wird dabei in den gemeinsamen Eigentümer überführt.
+
 ## 8. Stufen und Aufwand
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
@@ -1271,6 +1336,9 @@ Bemessung.
 | **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) — abgeschlossen 02.10.2026 in elf Wellen samt der Abkürzung „alle Größen" (E57; [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept N1.66) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich — erfüllt bis auf die Sichtabnahme SA1, die beim Anwender aussteht (Referenzlauf byte-gleich gegen R29) | nein | 14–18; Entwurf: 19–22 (E56) |
 | **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), 9.8, 9.9). **Teilweise:** gebaut sind der Rechenweg (R1–R5 samt Aufschlag und manueller Aufheizzeit, Schritt 174), die Daten (D1, D2: Schritte 160, 161, Kennzahlen, Export, Auskunft), die Projekteinstellung (O1), das Referenzprojekt 1051 mit Wache und ρ-Messung (RP1) und die Basis R34 mit dem Erdreich nach DIN EN ISO 13370 (RP2); E64 mit EV1 (Reserve leer = 20 % mit Laufhinweis); offen sind O1b, O2, O3 und die Welle A ([Protokoll KP3](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md), Festlegungen im Leitkonzept N1.69) | KP2 | N-AH1–N-AH12; alle übrigen Projekte byte-gleich; A/B-Protokoll — erfüllt für die gebauten Wellen | **ja** (R34) | 6–9; Entwurf mit E58: 14–18,25; mit E59/E60: 16,75–21,75 |
 | **KP4** | Papiere nachziehen (Rechenschritte mit den Schritten K „Aufheizrampe" und L „Nachtauskühlung", Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf — **Papiere, Wiki-Quellen (10.4) und Logbuch-Entwurf (10.5) nachgezogen 04.10.2026**; Wiki-Upload gebündelt, Version beim Anwender | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
+| **K1a** | Kalenderbedienung Stufe 1 (E110, 7.8): Konzept 7.8 und 9.10, plattformfreie Datenschicht `Kalenderbedienung` im Kern (Wochenprofile, gekoppelte Zuordnung, Einzeltage, Schnellfelder, Monat- und Tageskopie, Jahresraster und Jahresband, Vorlage für alle Größen) | KP2 | Kern-Tests der Schicht; Referenzlauf 1051 und 1052 byte-gleich | nein | 1–2 |
+| **K1b** | Kalenderbedienung Stufe 1, Oberfläche: Wochenprofile, Zuordnung mit Jahresband, Einzeltage, Schnellfelder, Jahresraster im Reiter „Konditionierung", Hülle und Texte | K1a | bunit, Sichtabnahme; byte-gleich | nein | 2–3 |
+| **K2** | Kalenderbedienung Stufe 2: Schemaschritt 207 `KalenderbedienungSchema` (gemeinsamer Eigentümer, benannte Wochen, Wochenende am Gebäude, Länderfeiertage als Regeln, Ferienperioden), Kopierwege, Umstellung der Schicht | K1b | Schemaproben, Kopierwege; Referenzlauf byte-gleich | nein | 3–5 |
 | **Summe** | | | | | **35–49** (mit den Entwürfen KP2 und KP3: 50,75–65,75) |
 | KP3b *(optional)* | AK1-Gebäude über die Vorausrechnung mit Ankunftskriterium; Vorkühlen mit KU3 | KP3; KU3 für die Kälte | wie KP3 | je nach Projekt | 3–5 |
 
@@ -1438,6 +1506,20 @@ und den Schemaweg entschieden (letzte vier Zeilen).
 | P15 Woher kommt die Vorschlagsspanne der manuellen Aufheizzeit? (03.10.2026) | **(b)**: aus τ₂ des Gebäudes (langsame Zeitkonstante des Zweikapazitätenmodells), keine feste Bauart-Tabelle; dazu die bemessene Zeit aus der Herleitungszeile | 7.6; Festlegung 40 mit der Regel [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] |
 | Schemaweg des Schritts KP-S4 (03.10.2026) | Neue Ergebnisspalte `Aufheiz_Art` an Gebäude und Zone per `ADD COLUMN`, `Aufheiz_Bemessung` behält die Variante, kein Neubau von `Tab_ErgebnisGebaeude`; `GEKOPPELT` an der Zone als kleiner Neubau von `Tab_ErgebnisZone` im selben Schritt; Export `Geb[n].Aufheizart`, Abweichungsmerkmal „Art" | 4.8, 5.3, 5.4; Festlegungen 39, 43 |
 
+### 9.10 Entscheide des Anwenders (E110, 09.10.2026)
+
+Der Anwender hat am 09.10.2026 das Mockup [`Mockups/Konditionierung_Kalender.html`](Mockups/Konditionierung_Kalender.html) angenommen und damit die
+Empfehlungen des [Befundpapiers](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md) (Abschnitt 4)
+entschieden. Ausgestaltung in 7.8, Stufen in 8.
+
+| Frage | Entscheid | Folgen |
+|---|---|---|
+| Welche Variante? | **V2 „Wochenprofile" als Grundgerüst, ergänzt um das Jahresraster aus V1 als anklickbare Anzeige** | 7.8; Stufe 1 ohne Schemaschritt |
+| Gelten Wochenende, Ferien, Feiertage und Ausnahmetage für alle Größen? | **gemeinsam für alle fünf Größen, je Zeile „gilt für" abwählbar** | 7.8; Stufe 1 als gekoppelte Kopien, Stufe 2 gemeinsamer Eigentümer |
+| Bleibt die Vorgabe-Matrix? | **als Übersicht**; ihre Zeilen Wochenende und Ferien werden über die Schnellfelder bedient | 7.2, 7.8 |
+| Wie viele Ferienzeiträume? | **beliebig viele, als Perioden** | 7.8; die ersten vier spiegeln die Gebäudespalten |
+| Feiertage je Bundesland? | **alle 16 Länder als Regeln, Wahl am Gebäude** | Stufe 2 (Schemaschritt 207); in Stufe 1 bundeseinheitlich plus feste Datumsbereiche |
+
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
 ### 10.1 Nachweise je Stufe
@@ -1454,6 +1536,12 @@ und den Schemaweg entschieden (letzte vier Zeilen).
 nach RP1, E58 F6); Oberfläche und Bericht werden danach byte-gleich gegen die neue Basis abgenommen. Das A/B-Protokoll
 trägt ρ_min aller 17 VDI-Gebäude (E58 F7, 4.4). **iOS:** Die Hülle bleibt unverändert, keine
   `Dienste.*`-Schnittstelle wird berührt; der grüne Kern-Lauf ist der Nachweis, ein iOS-Lauf nur auf Zuruf.
+
+- **K1a/K1b/K2 (Kalenderbedienung, E110):** K1a mit Kern-Tests der Schicht `Kalenderbedienung` auf einem Arbeitsstand
+  (Wochenprofile, gekoppelte Kopien, Einzeltage, Ferien mit Spiegelung der vier Gebäudespalten, Feiertage, Monatskopie,
+  Jahresraster, Vorlage für alle Größen) und dem Lesen von Referenzprojekt 1051 ohne Schreibzugriff; K1b mit bunit und
+  Sichtabnahme; K2 mit Schemaproben und Kopierwegen. Jede Welle: Referenzlauf 1051 und 1052 byte-gleich — die
+  Einfrierregel 10.3 bleibt unberührt, weil keine gesäte Zeile geändert wird.
 
 ### 10.2 Das neue Referenzprojekt
 

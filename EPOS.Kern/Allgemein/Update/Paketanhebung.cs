@@ -370,6 +370,10 @@ namespace WindowsFormsApplication1
             // Vorlauf, „nicht erhoben").
             new Stufe(KuehlkurveSchema.SCHRITT, Art.Ddl,
                       "Kühlkurve am Gebäude (Schalter, Fußpunkt, Raumeinfluss, Auslegungsweg), Kennzahlen im Ergebnis"),
+            // Ein Paket führt keinen Katalog der Kältemaschinen (das Ziel führt die Typkennfelder samt Saat); die
+            // Projektkopien seiner Kältemaschinen bleiben, wie sie sind.
+            new Stufe(KaeltemaschinenTypkennfelderSchema.SCHRITT, Art.Katalog,
+                      "Eingebaute Typkennfelder der Kältemaschinen im Katalog"),
             // Ein älteres Paket führt keine Übergabegrenzen, keine Einbindung und keine Betriebsbereiche; die Spalten kommen
             // leer an (Bestandsweg, „nicht erhoben").
             new Stufe(UebergabegrenzeSchema.SCHRITT, Art.Ddl,

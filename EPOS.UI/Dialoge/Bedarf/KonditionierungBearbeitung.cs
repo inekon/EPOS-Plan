@@ -44,7 +44,7 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// EIN Schritt. Kein Satzbegriff (P11 bleibt): Die Vorlagen bleiben je Größe, der Weg je Karte bleibt, wie er
 /// ist.</para>
 /// </remarks>
-public sealed class KonditionierungBearbeitung
+public sealed partial class KonditionierungBearbeitung
 {
     private readonly GebaeudeArbeitsstand _arbeit;
     private readonly ZoneDaten? _zone;

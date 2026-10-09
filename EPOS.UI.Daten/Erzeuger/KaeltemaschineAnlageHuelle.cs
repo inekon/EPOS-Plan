@@ -32,6 +32,7 @@ namespace WindowsFormsApplication1
                 ["Katalogwerte"] = new Func<int, KaeltemaschineGeraetwerte>(id => Werte(KaeltemaschineStammCtrl.Laden(id))),
                 ["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)traeger,
                 ["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId),
+                ["KuehltraegerVorauswahl"] = (int?)Vorauswahl(projektId),
                 ["Pruefen"] = new Func<KaeltemaschineAnlageDaten, string>(Pruefen),
                 ["Anlegen"] = new Func<int, string, int>((stammId, name) => KaeltemaschineAnlageCtrl.Anlegen(projektId, stammId, name)),
                 ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(Speichern),
@@ -47,7 +48,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Anlagen des Projekts samt Kennwerten ihrer Projektkopie.</summary>
         internal static IReadOnlyList<KaeltemaschineAnlageDaten> Liste(int projektId)
-            => KaeltemaschineAnlageCtrl.Liste(projektId).Select(AlsDaten).ToList();
+        {
+            List<KaeltemaschineAnlageDaten> liste = KaeltemaschineAnlageCtrl.Liste(projektId).Select(AlsDaten).ToList();
+            // Vorauswahl wie bei den übrigen Anlagen (EnergietraegerZulaessigkeit.Vorauswahl): Ohne Kühlträger steht
+            // der Stromträger des Projekts in der Wahl. Gespeichert wird er nicht als Abweichung (AlsModell).
+            int vor = 0;
+            foreach (KaeltemaschineAnlageDaten d in liste)
+            {
+                if (d.KuehlCarrierId is int id && id > 0) continue;
+                if (vor == 0) vor = Vorauswahl(projektId);
+                if (vor > 0) d.KuehlCarrierId = vor;
+            }
+            return liste;
+        }
+
+        /// <summary>Die Vorauswahl des Kühlträgers; 0 = keine.</summary>
+        internal static int Vorauswahl(int projektId)
+        {
+            try { return EnergietraegerZulaessigkeit.Vorauswahl(DbWerte.ERZEUGER_KAELTEMASCHINE, 0, projektId); }
+            catch { return 0; }
+        }
 
         /// <summary>Die Prüfregeln des Kerns (<see cref="KaeltemaschineAnlageCtrl.Pruefen"/>).</summary>
         internal static string Pruefen(KaeltemaschineAnlageDaten d)
@@ -94,9 +114,23 @@ namespace WindowsFormsApplication1
                 Anzahl = d.Anzahl ?? 0,
                 KuehlVorlauf = d.KuehlVorlauf,
                 KuehlHilfsstromanteil = d.KuehlHilfsstromanteil,
-                KuehlIdCarrier = d.KuehlCarrierId,
+                KuehlIdCarrier = Kuehltraeger(d, gelesen),
                 KuehlEigenerZaehler = d.KuehlEigenerZaehler ? true : (bool?)null
             };
+        }
+
+        /// <summary>
+        /// Der zu schreibende Kühlträger: Stand vorher keiner und ist die Wahl der Stromträger des Projekts (die
+        /// Vorauswahl), bleibt die Spalte leer — leer heißt „wie Heizbetrieb“ und folgt dem Projekt
+        /// (<see cref="Kaeltestromabrechnung.Abweichend"/>). Jede andere Wahl wird geschrieben.
+        /// </summary>
+        private static int? Kuehltraeger(KaeltemaschineAnlageDaten d, KaeltemaschineAnlageModel gelesen)
+        {
+            if (gelesen != null && !(gelesen.KuehlIdCarrier is int alt && alt > 0)
+                && d.KuehlCarrierId is int neu && gelesen.IdProjekt > 0
+                && neu == Kaeltestromabrechnung.Projekttraeger(gelesen.IdProjekt))
+                return gelesen.KuehlIdCarrier;
+            return d.KuehlCarrierId;
         }
 
         /// <summary>Die Kennwerte eines Geräts für die Anzeige; <c>null</c> bleibt <c>null</c>.</summary>

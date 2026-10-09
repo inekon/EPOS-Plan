@@ -1,16 +1,19 @@
 # Befund: Kalenderbedienung im Reiter Konditionierung (09.10.2026)
 
+> **Überholt:** Entschieden mit E110 (Konzept Konditionierungsprofile 9.10) und umgesetzt in Stufe 1 (Wellen K1a und
+> K1b, Konzept 7.8); dieses Papier ist nur noch Geschichte.
+
 Anlass ist der Anwenderwunsch vom 08.10.2026 (Welle E, Punkt E2): ein einfach bedienbarer Kalender, in dem man
 (1) fertige Profile verwendet, (2) feste Zeiten und Einstellungen — Wochenende, Ferien, Saison — schnell festlegt,
 und zwar als **Datumsbereiche** statt als Zeilen einer Matrix, (3) **einzelne Tage** konfiguriert und (4) Wochen-
 und Monatsprofile **kopiert**; dazu die Frage, ob es eine **grafische** Bearbeitung gibt. Dieses Papier hält den
 heutigen Stand dagegen, beschreibt zwei Varianten und stellt die Fragen an den Anwender. Es legt nichts fest und
 enthält keinen Umsetzungscode. Das spielbare Mockup zu beiden Varianten liegt unter
-[`../Mockups/Konditionierung_Kalender.html`](../Mockups/Konditionierung_Kalender.html).
+[`../aktuell/Mockups/Konditionierung_Kalender.html`](../aktuell/Mockups/Konditionierung_Kalender.html).
 
 ## 1 Heutiger Stand
 
-Grundlage ist das [Konzept Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md):
+Grundlage ist das [Konzept Konditionierungsprofile](../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md):
 
 - **Kalendermodell (3.2):** je Größe ein Kalender aus drei Ebenen — Grundangabe, Standardwoche (168 Zellen, Zahl
   oder „aus") und Perioden. Eine Periode gilt ganze Tage von Beginn bis Ende (Tag 1…365 im Gemeinjahr, über den

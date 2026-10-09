@@ -226,6 +226,13 @@
     /// <summary>Die Prüfung des Kerns (<c>KaeltemaschineAnlageCtrl.Pruefen</c>) — <c>null</c> oder leer = gültig.</summary>
     [Parameter] public Func<KaeltemaschineAnlageDaten, string?>? Pruefen { get; set; }
 
+    /// <summary>
+    /// Die Vorauswahl des Kühlträgers einer NEUEN Anlage (Kern: <c>EnergietraegerZulaessigkeit.Vorauswahl</c>, bei der
+    /// Kältemaschine der Stromträger des Projekts); 0 oder <c>null</c> = keine. Bestehende Anlagen ohne Kühlträger
+    /// bekommt der Dialog schon mit derselben Vorauswahl aus <see cref="Anlagen"/>.
+    /// </summary>
+    [Parameter] public int? KuehltraegerVorauswahl { get; set; }
+
     /// <summary>Legt eine Anlage an (Projektkopie und Anlagenzeile); liefert die Anlagen-Id, ≤ 0 = Katalogsatz fehlt.</summary>
     [Parameter] public Func<int, string, int>? Anlegen { get; set; }
 
@@ -458,6 +465,7 @@
             StammId = stammId,
             Bezeichner = string.IsNullOrWhiteSpace(bezeichner) ? werte?.Bezeichner ?? "" : bezeichner,
             Anzahl = 1,
+            KuehlCarrierId = KuehltraegerVorauswahl is int vor && vor > 0 ? vor : null,
             Geraet = werte
         };
         var zeile = new Zeile { Schluessel = NeuerSchluessel(), Arbeit = neu };

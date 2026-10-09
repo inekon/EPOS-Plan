@@ -43,7 +43,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   der den Versuch MELDET. Beide Bauarten stehen in EINER Stilregel, denn **zwei Zustände müssen
   SICHTBAR verschieden sein**.
 - **Blätter zuerst:** Kreuz, Esc und Hintergrundklick einer `Ueberlagerung` führen erst ein offenes Blatt
-  (`Blattwechsel`, angemeldet im `Blattstapel`) zurück; erst vom Wurzelblatt aus schließt der Dialog.
+  (`Blattwechsel`, angemeldet im `Blattstapel`) zurück; erst vom Wurzelblatt aus schließt der Dialog; Fensterkreuz und Alt+F4 eines Dialogs im eigenen Fenster tun über den `Fensterschliessweg` dasselbe.
 - **Tastatur:** Esc schließt überall, wobei jeder Wirt erst seine Überlagerungsschalter prüft;
   **Enter** bestätigt nur in reinen OK-Dialogen — wo ein Knopf sofort schreibt, bleibt es
   unbelegt. **Kein Delegat, kein Knopf.**

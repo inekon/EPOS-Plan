@@ -1061,7 +1061,8 @@ const FAELLE = [
   { name: 'M1_modul_1180x780',        maske: 'modul',        zeilen: 35, breite: 1180, hoehe: 780 },
   { name: 'M2_modul_1600x1000',       maske: 'modul',        zeilen: 35, breite: 1600, hoehe: 1000 },
   { name: 'W1_waermebedarf_1180x780', maske: 'waermebedarf', zeilen: 35, breite: 1180, hoehe: 780 },
-  { name: 'S1_solar_1180x780',        maske: 'solar',        zeilen: 35, breite: 1180, hoehe: 780 },
+  // S1 (Solarthermieganglinie) entfaellt: Die Maske ist seit D1 kein Katalograhmen mehr, sondern der
+  // vereinte SolarganglinieDialog im Katalogbetrieb (Begruendung in LIESMICH.md, Abschnitt "Die Faelle").
   { name: 'C1_browser_1180x780',      maske: 'browser',      zeilen: 35, breite: 1180, hoehe: 780 },
   { name: 'P1_waermepumpe_1180x780',  maske: 'waermepumpe',  zeilen: 35, breite: 1180, hoehe: 780 },
   // DER RAHMEN MIT EINGABEBLOCK (seit Stufe 4): Klimadaten und Zeitreihen tragen
@@ -1095,7 +1096,7 @@ const STUFE1_MASKEN = [
   ['N11', 'prozesswaerme',    'bedarf',       'prozesswaerme',    32],
   ['N12', 'stromverbraucher', 'bedarf',       'stromverbraucher', 41],
   ['N13', 'waermebedarf',     'waermebedarf', '',                 4],
-  ['N14', 'solarganglinie',   'solar',        '',                 1],
+  // N14 (Solarthermieganglinie) entfaellt wie S1 - kein Katalograhmen, kein Stammblatt mehr (D1).
   ['N15', 'stromganglinie',   'stromganglinie', '',               3]
 ];
 // DIE GEGENPROBE ZU STUFE 1: derselbe Heizkessel mit den Regeln von VOR Stufe 1
@@ -1134,8 +1135,8 @@ FAELLE.push({ name: 'P2b_projekt_heizkessel_400x624', maske: 'projekt-heizkessel
 // Stammblatt - sie kommen zur Menge der Stufe 3 und bekommen dazu die Messung des
 // Bildes in der Gruppe und der Ueberlagerung des Einlesens.
 const STUFE3 = new Set(['N01', 'N02', 'N03', 'N04', 'N05', 'N06', 'N07', 'N08',
-                        'N09', 'N10', 'N11', 'N12', 'N13', 'N14', 'N15']);
-const STUFE4 = new Set(['N09', 'N13', 'N14', 'N15']);
+                        'N09', 'N10', 'N11', 'N12', 'N13', 'N15']);
+const STUFE4 = new Set(['N09', 'N13', 'N15']);
 for (const [nr, name, maske, art, zeilen] of STUFE1_MASKEN) {
   const s3 = STUFE3.has(nr);
   const s4 = STUFE4.has(nr);

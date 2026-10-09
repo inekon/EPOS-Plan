@@ -982,6 +982,32 @@ public sealed class StilblattTests
     /// Liste darf schrumpfen. Und der Kopf eines Blatts brach nicht um: Bei 390 px ragte der Titel der
     /// Vorlagenverwaltung neben „‹ {Wirtstitel}" 57 px aus dem Blatt, die Überlagerung rollte quer.
     /// </summary>
+    /// <summary>
+    /// K1b (Konzept 7.8, E110): Die Kalenderbedienung hält das Berührungsmaß an Zellen und Tagen, rollt Wochenprofil,
+    /// Tabellen und Jahresraster im eigenen Kasten statt der Seite, liegt nur mit der Maus enger, färbt die Tagesarten
+    /// über Tokens und sichert Warnung und Wahl für erzwungene Farben. Ihr Block steht VOR dem Reiterblock, damit
+    /// zwischen .epos-kond und dem Formularraster keine Medienabfrage steht.
+    /// </summary>
+    [Fact]
+    public void K1b_Die_Kalenderbedienung_haelt_das_Beruehrungsmass_und_rollt_im_eigenen_Kasten()
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-kalb-zelle {"), StringComparison.Ordinal);
+        Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-kalb-jahrtag {"), StringComparison.Ordinal);
+        Assert.Contains("repeat(7, minmax(var(--epos-touchziel), 1fr))", Regelblock(".epos-kalb-woche {"), StringComparison.Ordinal);
+        Assert.Contains("overflow-x: auto", Regelblock(".epos-kalb-rolle {"), StringComparison.Ordinal);
+        Assert.Contains("overflow-x: auto", Regelblock(".epos-kalb-tabellenhuelle {"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-kalb-ferien)", css, StringComparison.Ordinal);
+        Assert.True(css.IndexOf("    --epos-kalb-ferien:", StringComparison.Ordinal) < css.IndexOf("\n.epos-kalb {", StringComparison.Ordinal));
+
+        int block = css.IndexOf("\n.epos-kalb {", StringComparison.Ordinal);
+        int reiter = css.IndexOf("\n.epos-kond {", StringComparison.Ordinal);
+        Assert.True(block > 0 && block < reiter, "Der Block der Kalenderbedienung steht nicht vor dem Reiterblock");
+        string eigen = css.Substring(block, reiter - block);
+        Assert.Contains("@media (pointer: fine) {\n    .epos-kalb .epos-kalb-woche {", eigen, StringComparison.Ordinal);
+        Assert.Contains("@media (forced-colors: active) {\n    .epos-kalb-warnung,", eigen, StringComparison.Ordinal);
+    }
+
     [Fact]
     public void KP2_U2_Vorlagenwahl_und_Blattkopf_brechen_um_statt_zu_ueberdecken()
     {

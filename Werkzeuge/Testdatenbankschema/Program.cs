@@ -3200,6 +3200,26 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrKk + " - vollstaendig: " + KuehlkurveSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt KaeltemaschinenTypkennfelderSchema.SCHRITT (KM2): die eingebauten Typkennfelder der
+            //      Kaeltemaschinen als gesperrte Saetze in Tab_Kaeltemaschine_STAMM samt Kennlinie, Katalogschluessel und
+            //      Pruefsumme. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KaeltemaschinenTypkennfelder
+            //      bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt ein Typkennfeld.
+            string nrKm = KaeltemaschinenTypkennfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKm + " - Typkennfelder der Kaeltemaschinen: " +
+                              (KaeltemaschinenTypkennfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKm = new List<string>();
+                KaeltemaschinenTypkennfelderSchema.Ausfuehren(berichtKm);
+                foreach (string zeile in berichtKm)
+                    Console.WriteLine("Schritt " + nrKm + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKm + " - vollstaendig: " +
+                                  KaeltemaschinenTypkennfelderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             // ---- Schritt UebergabegrenzeSchema.SCHRITT (UB, Umsetzungskonzept Uebergabegrenze und Bivalenz, Abschnitt 4):
             //      acht Geraetespalten an Tab_WP und Tab_WP_STAMM, Ruecklauf_Max an Tab_BHKW und Tab_BHKW_STAMM, Einbindung
             //      und Vorwaermbetrieb an Tab_Energieanlagen, Bereiche und Zaehler an Tab_ErgebnisWaermepumpeModul und

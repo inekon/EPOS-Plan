@@ -303,6 +303,75 @@ public sealed class KonditionierungWeg
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, KonditionierungZeitstruktur, KonditionierungErgebnis>? Zeitstruktur { get; init; }
 
+    // ------------------------------------------------------------------ Kalenderbedienung (Konzept 7.8, E110; Welle K1b)
+
+    /// <summary>
+    /// <b>Die Ansicht der Kalenderbedienung</b> einer Größe am Ort: Wochenprofile, Zuordnungszeilen und Einzeltage, Ferien,
+    /// Saison, Jahresraster, Jahresband und die Warnungen der Rangfolge — ein Lesen, kein Schritt; <c>null</c> bei einem
+    /// ungültigen Stand.
+    /// <para>Kern: <c>Kalenderbedienung.Wochenprofile</c>, <c>Zuordnungen</c>, <c>Ferienzeitraeume</c>, <c>Jahresraster</c>,
+    /// <c>Jahresband</c>, <c>Rangabweichungen</c>, getragen von <c>KonditionierungHuelle.Weg</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, KalenderAnsicht?>? Kalenderansicht { get; init; }
+
+    /// <summary>
+    /// <b>Der Pinsel</b>: ein Zellbereich des Wochenprofils (Standardwoche bei Rang <c>null</c>) bekommt einen Wert oder „aus".
+    /// <para>Kern: <c>Kalenderbedienung.PinselAnwenden</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, KalenderProfilort, KalenderPinselstrich, KonditionierungErgebnis>? ProfilPinsel { get; init; }
+
+    /// <summary>
+    /// <b>„Tag kopieren"</b>: die Tagesspalte des Quelltags (0 = Montag) auf die Zieltage des Zielprofils — dasselbe
+    /// Profil oder eines einer Größe gleicher Einheit; „Montag nach Di–Fr" und „Samstag nach Sonntag" sind Sonderfälle.
+    /// <para>Kern: <c>Kalenderbedienung.TagKopieren</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, KalenderProfilort, int, KalenderProfilort, IReadOnlyList<int>, KonditionierungErgebnis>? TagKopieren { get; init; }
+
+    /// <summary>
+    /// <b>„Woche kopieren"</b> in ein anderes Profil derselben Größe oder einer Größe gleicher Einheit.
+    /// <para>Kern: <c>Kalenderbedienung.WocheKopieren</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, KalenderProfilort, KalenderProfilort, KonditionierungErgebnis>? WocheKopieren { get; init; }
+
+    /// <summary>
+    /// <b>Eine Zuordnungszeile oder einen Einzeltag setzen</b> (Zone, alter Schlüssel oder <c>null</c> = neu, neuer
+    /// Schlüssel, Wirkung, „gilt für" oder <c>null</c> = alle Größen mit angelegtem Kalender) — gekoppelt.
+    /// <para>Kern: <c>Kalenderbedienung.ZuordnungSetzen</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, int?, KalenderZeilenschluessel?, KalenderZeilenschluessel, KalenderWirkungsangabe,
+                IReadOnlyList<KonditionierungGroesse>?, KonditionierungErgebnis>? ZuordnungSetzen { get; init; }
+
+    /// <summary>
+    /// <b>Eine gekoppelte Zeile löschen</b> — in allen Größen.
+    /// <para>Kern: <c>Kalenderbedienung.ZuordnungLoeschen</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, int?, KalenderZeilenschluessel, KonditionierungErgebnis>? ZuordnungLoeschen { get; init; }
+
+    /// <summary>
+    /// <b>Die Ferienzeiträume</b> der Schnellfelder: beliebig viele; die ersten vier in den Gebäudespalten, die weiteren
+    /// als Zeilen „Ferien n" in den angelegten Kalendern mit Ferienperiode.
+    /// <para>Kern: <c>Kalenderbedienung.FerienSetzen</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, IReadOnlyList<KalenderFerienzeile>, KonditionierungErgebnis>? FerienSetzen { get; init; }
+
+    /// <summary>
+    /// <b>Die Saison von–bis</b> einer Größe; beide <c>null</c> = ganzjährig.
+    /// <para>Kern: <c>Kalenderbedienung.SaisonSetzen</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, KonditionierungOrt, int?, int?, KonditionierungErgebnis>? SaisonSetzen { get; init; }
+
+    /// <summary>
+    /// <b>„Feiertage laden"</b> (bundeseinheitlich, Stufe 1) in den gewählten Größen; <c>null</c> = alle mit angelegtem Kalender.
+    /// <para>Kern: <c>Kalenderbedienung.FeiertageLaden</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, int?, IReadOnlyList<KonditionierungGroesse>?, KonditionierungErgebnis>? FeiertageLaden { get; init; }
+
+    /// <summary>
+    /// <b>„Monat kopieren"</b>: Zeilen und Einzeltage des Quellmonats (1 … 12) auf den Zielmonat.
+    /// <para>Kern: <c>Kalenderbedienung.MonatKopieren</c>.</para>
+    /// </summary>
+    public Func<KonditionierungStand, int?, int, int, KonditionierungErgebnis>? MonatKopieren { get; init; }
+
     // ------------------------------------------------------------------ Befunde, Bilder, Prüfung
 
     /// <summary>
@@ -414,6 +483,15 @@ public sealed class KonditionierungWeg
             KonditionierungHandlung.PeriodeLoeschen => PeriodeLoeschen is not null,
             KonditionierungHandlung.SollwertprofilUebernehmen => SollwertprofilUebernehmen is not null,
             KonditionierungHandlung.VorlageKopieren => VorlageKopieren is not null && Kopierziele is not null,
+            KonditionierungHandlung.ProfilPinsel => ProfilPinsel is not null,
+            KonditionierungHandlung.TagKopieren => TagKopieren is not null,
+            KonditionierungHandlung.WocheKopieren => WocheKopieren is not null,
+            KonditionierungHandlung.ZuordnungSetzen => ZuordnungSetzen is not null,
+            KonditionierungHandlung.ZuordnungLoeschen => ZuordnungLoeschen is not null,
+            KonditionierungHandlung.FerienSetzen => FerienSetzen is not null,
+            KonditionierungHandlung.SaisonSetzen => SaisonSetzen is not null,
+            KonditionierungHandlung.FeiertageLaden => FeiertageLaden is not null,
+            KonditionierungHandlung.MonatKopieren => MonatKopieren is not null,
             _ => false
         };
     }

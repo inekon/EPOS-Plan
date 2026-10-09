@@ -26,7 +26,7 @@ namespace WindowsFormsApplication1
     /// um eins erhöht; der OK-Weg schreibt nur eine Ebene mit geänderter Fassung, und dort nur, was sich
     /// gegen die Datenbank geändert hat.</para>
     /// </remarks>
-    internal static class KonditionierungHuelle
+    internal static partial class KonditionierungHuelle
     {
         // =================================================================================
         // Größen, Zeilen, Prozent
@@ -713,6 +713,24 @@ namespace WindowsFormsApplication1
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),
                 Freigabeband = s => Freigabe(s, art, bezug),
                 Pruefen = s => Pruefen(s, art, bezug),
+
+                // Welle K1b (Konzept 7.8, E110): die Kalenderbedienung über der Kern-Schicht Kalenderbedienung.
+                Kalenderansicht = (s, o) => Kalenderansicht(s, art, bezug, o),
+                ProfilPinsel = (s, p, z) => Schritt(s, art, bezug, a => Kalenderbedienung.PinselAnwenden(
+                    a, Profilort(p), z.TagVon, z.TagBis, z.StundeVon, z.StundeBis,
+                    z.Wert.HasValue ? Skaliert(z.Wert.Value, Konditionierungsgroessen.HatNennwert(Kern(p.Ort.Groesse)), false) : (double?)null)),
+                TagKopieren = (s, q, tag, z, tage) => Schritt(s, art, bezug, a => Kalenderbedienung.TagKopieren(
+                    a, Profilort(q), tag, Profilort(z), tage)),
+                WocheKopieren = (s, q, z) => Schritt(s, art, bezug, a => Kalenderbedienung.WocheKopieren(a, Profilort(q), Profilort(z))),
+                ZuordnungSetzen = (s, zone, alt, neu, w, gilt) => Schritt(s, art, bezug, a => Kalenderbedienung.ZuordnungSetzen(
+                    a, zone, Schluessel(alt), Schluessel(neu), Wirkung(w, gilt), gilt?.Select(Kern).ToList())),
+                ZuordnungLoeschen = (s, zone, sch) => Schritt(s, art, bezug, a => Kalenderbedienung.ZuordnungLoeschen(a, zone, Schluessel(sch))),
+                FerienSetzen = (s, f) => Schritt(s, art, bezug, a => Kalenderbedienung.FerienSetzen(
+                    a, (f ?? Array.Empty<KalenderFerienzeile>()).Select(x => (x.Beginn, x.Ende)).ToList())),
+                SaisonSetzen = (s, o, von, bis) => Schritt(s, art, bezug, a => Kalenderbedienung.SaisonSetzen(a, Ort(o), von, bis)),
+                FeiertageLaden = (s, zone, gilt) => Schritt(s, art, bezug, a => Kalenderbedienung.FeiertageLaden(
+                    a, zone, gilt?.Select(Kern).ToList())),
+                MonatKopieren = (s, zone, q, z) => Schritt(s, art, bezug, a => Kalenderbedienung.MonatKopieren(a, zone, q, z)),
             };
         }
 
