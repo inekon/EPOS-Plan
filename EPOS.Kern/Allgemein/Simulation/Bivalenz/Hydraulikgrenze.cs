@@ -124,7 +124,7 @@ namespace WindowsFormsApplication1
         {
             if (stromHk > stromWp)
                 return ((stromWp * vorlaufWpC + (stromHk - stromWp) * ruecklaufHkC) / stromHk, ruecklaufHkC);
-            if (!(stromWp > 0.0)) return (vorlaufWpC, ruecklaufHkC);
+            if (!(stromWp > stromHk)) return (vorlaufWpC, ruecklaufHkC);   // ṁ_WP = ṁ_HK: ungemischt
             return (vorlaufWpC, (stromHk * ruecklaufHkC + (stromWp - stromHk) * vorlaufWpC) / stromWp);
         }
 

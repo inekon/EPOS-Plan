@@ -647,7 +647,15 @@ namespace EPOS.Kern.Tests
                 }
             }
 
-            Assert.Equal(new[] { "Waermepumpe.Modulkosten" }, luecken);
+            // UB-E3-a: die Ruecklaufgrenze des BHKW und die acht Geraetespalten der Uebergabegrenze liest die Simulation;
+            // ihre Eingabe im Stammblatt folgt mit UB-E3-b (Stammblaetter, Katalogfassung) - bis dahin stehen sie hier.
+            Assert.Equal(new[]
+            {
+                "Bhkw.Ruecklauf_Max", "Waermepumpe.Modulkosten",
+                "Waermepumpe.Spreizung_Auslegung_K", "Waermepumpe.Spreizung_Max_K", "Waermepumpe.Spreizung_Min_K",
+                "Waermepumpe.Mindestvolumenstrom_Prozent", "Waermepumpe.Ruecklauf_Max", "Waermepumpe.Ruecklauf_Bezug",
+                "Waermepumpe.Ruecklauf_Abwertung_ProzentJeK", "Waermepumpe.Kaeltemittel",
+            }, luecken);
         }
 
         /// <summary>
