@@ -683,7 +683,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-08_R44_Kuehlkurve`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-09_R45_Uebergabegrenze`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -698,11 +698,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026**
-(60 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve) am 09.10.2026**
+(61 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 60 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 61 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -712,13 +712,13 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-08_R44_Kuehlkurve/`** — **sechsundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1061, 1062), **841 CSV**, **5 801 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 08.10.2026, Stand `70f4fea3f`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **202**, 92 979 200 Byte, LFS-SHA-256
-`19e38bc279c04b524dc15b636fbd5185a3ac0b38b4a087692ba73fa12a3be68a`, mit den Projekten 1053 bis 1062; Nachträge der
+**`2026-10-09_R45_Uebergabegrenze/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `3f3b5fe36`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **203**, 93 782 016 Byte, LFS-SHA-256
+`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`, mit den Projekten 1053 bis 1062; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058) jeden Push und rechnet dieselben Projekte
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045,
@@ -740,47 +740,49 @@ Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichqu
 Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
 und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
 von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
-`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062. 1050, 1052, 1054,
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060. 1050, 1052, 1054,
 1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
-sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: die Kühlkurve (Entwurf KK) mit den zwei neuen Referenzprojekten 1061 (RP-KK) und 1062 (RP-KKZ) — die
-> vierundzwanzig Projekte von R43 sind byte-gleich (759/759 CSV), 1061 und 1062 sind neu (je 41 CSV).**
+> **Anlass: die Übergabegrenze und Bivalenz der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E2) mit dem
+> neuen Referenzprojekt 1060 — allein 1060 kommt hinzu (38 CSV), die sechsundzwanzig Projekte von R44 sind byte-gleich
+> (841/841 CSV).**
 >
-> **Kühlkurve:** Der Kühlvorlauf eines gekoppelten Gebäudes folgt einer Kühlkurve über der Außentemperatur mit
-> Raumeinfluss, statt fest zu stehen; leere Eingabespalten heißen fester Kühlvorlauf wie bisher — deshalb rechnen alle
-> Bestandsprojekte byte-gleich. Neu im Ergebnis sind `Kuehlkurve_Vorlauf_Mittel_C`, `Kuehlkurve_Absenkung_Kh` und
-> `Kuehlkurve_Vorlaufgrenze_Stunden`. Mit der Basis tragen die äußeren Stützstellen der Vorlaufwahl der Wärmepumpe den
-> Zahlenrand (`SimulationWaermepumpe.VorlaufAuswerten`): Ein Vorlauf, den die Heizkurve auf die oberste Stützstelle
-> begrenzt, zählt nicht mehr am letzten Bit als „darüber“ — der gestörte Lauf von 1062 kippte sonst 2 von 10 Stunden.
-> Kein Projekt von R43 ändert sich dadurch.
+> **Übergabegrenze:** Mit gesetzter `Einbindung` rechnet die Wärmepumpe im Profilweg je Stunde einen Betriebsbereich
+> (B0 nicht verfügbar, B1 allein, B2 parallel, B3 Vorwärmung mit dem Kessel in Reihe, B4 nur Kessel) und schreibt
+> Bereichsstunden und -wärme, die Bivalenzpunkte und die größte Übergabe bei Auslegung; der Kessel führt die
+> Rücklaufstufe „Vorwärmer“. Leere `Einbindung` heißt Bestandsweg (U‑1) — deshalb rechnen alle Bestandsprojekte
+> byte-gleich. Mit der Basis liest die Herleitung der Bivalenzpunkte im Lauf die Kennlinien am Gerät (`ID_WP`) statt an
+> der Anlagenzeile; die Punkte sind ein Ausweis, kein Bestandsprojekt rechnet sie.
 >
-> **RP-KK (1061):** die Kopie von 1058 mit Kühlkurve am Gebäude (`Kuehlkurve_Aktiv` 1, Raumeinfluss 3 K/K,
-> Auslegungsweg `tagesmittel`, Fußpunkt leer = Auslegungsrücklauf) und dem Kühlvorlauf der Wärmepumpe auf 12 °C, damit
-> der Erzeuger an milden Tagen mit der Kurve wärmer gleitet. **RP-KKZ (1062):** die Kopie von 1061 mit zwei Zonen („Süd
-> und West“, „Nord und Ost“, Trennwand) und Kühlübergabe je Zone (die Zone Nord/Ost mit Gebläsekonvektor). Beide auf
-> Stufe AK3, nicht in der CI-Auswahl (Nachtrag „Projekte 1061 und 1062 angelegt“ unten):
+> **1060 „Referenzprojekt Übergabegrenze“** (Herleitung unten): Heizkörper 75/60 °C, Höchstvorlauf der Wärmepumpe
+> 55 °C, Einbindung direkt, Parallelbetrieb mit Vorwärmbetrieb, Brennwertkessel in Reihe; Stufe AK1, in der CI-Auswahl:
 >
-> | Projekt | Kältebedarf (MWh) | Kühlstunden | Kältedeckung (%) | Kältestrom (MWh) | Kälteschranke (h) | Kühlvorlauf Mittel (°C) | Absenkung (Kh) | Vorlaufgrenze (h) | Kühlseite Überschreitung (h / Kh) |
-> |---|---|---|---|---|---|---|---|---|---|
-> | 1058 (Vergleich) | 3,81 | 590 | 100 | 0,727 | 37 | — | — | — | 34 / 45,88 |
-> | 1061 | 3,83 | 588 | 100 | 0,753 | 115 | 17,66 | 684,28 | 83 | 32 / 45,06 |
-> | 1062 | 3,91 | 741 | 100 | 0,772 | 96 | 17,47 | 1 379,33 | 157 | 98 / 90,38 |
+> | Bereich | Stunden | Wärme (MWh) |
+> |---|---|---|
+> | B1 Wärmepumpe allein | 3 987 | 39,61 |
+> | B2 parallel | 0 | 0 |
+> | B3 Vorwärmung | 1 308 | 13,64 |
+> | B0 und B4 nur Kessel | 0 | 0 |
 >
-> 1061 weist 63 Stunden Kälterest aus (0 MWh), 1062 keine; die Wärmepumpe von 1062 wählt ihre Kennlinie
-> 35:1506, 45:2017, 55:151 Stunden (0 darüber). 1061 trägt 288, 1062 317 Skalare. Gesamt 841 CSV, 5 801 Skalare. Zwei
-> Läufe sind byte-gleich (841/841 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 797/841 CSV byte-gleich.
+> Bivalenzpunkte 1,83 °C und −3,55 °C, größte Übergabe bei Auslegung 22,00 kW (Heizlast 38,73 kW); Wärme der
+> Wärmepumpe 53,25 MWh, des Kessels 15,56 MWh (1 308 Laufstunden, davon 952 Stunden mit dem Rücklauf aus dem Vorlauf
+> der vorwärmenden Wärmepumpe, 1 182 Brennwertstunden); Komfort 993 Unterschreitungsstunden, 1 484,37 Kh. 1060 trägt
+> 270 Skalare. Gesamt 879 CSV, 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf
+> (`--stoerung ulp`) ist GESAMT PASS, 835/879 CSV byte-gleich, 1060 byte-gleich (38/38).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1061,1062 \
->   --ziel Referenzlaeufe/2026-10-08_R44_Kuehlkurve
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
+>   --ziel Referenzlaeufe/2026-10-09_R45_Uebergabegrenze
 > ```
 >
-> Die Regeln stehen im [Entwurf KK](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md)
-> und im [Konzept Anlagenkopplung](../Dokumentation/aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
+> Die Regeln stehen im [Umsetzungskonzept Übergabegrenze](../Dokumentation/aktuell/Umsetzungskonzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
+> und im [Fachkonzept](../Dokumentation/aktuell/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
@@ -1027,13 +1029,13 @@ sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `2026-10-08_R44_Kuehlkurve` bleibt** — leere Spalten heißen Bestandsweg (Umsetzungskonzept Übergabegrenze, U‑1), keine
 > Einfrierregel berührt.
 
-### Die Vorgängerbasis R43 (Kälteseite AK3K)
+### Die Vorgängerbasis R44 (Kühlkurve)
 
-Vierundzwanzig Projekte, 759 CSV, 5 196 Skalare, auf Linux eingefroren gegen die Testdatenbank `82a1b8c7…` (Schemastand
-199 = 201, mit den Projekten 1053 bis 1059); mit R44 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Zonensperre je
-Zone, Kälteseite im Kreis auf Stufe AK3, Referenzprojekt 1059) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R44 ist
-die Kühlkurve mit den Referenzprojekten 1061 und 1062; die vierundzwanzig Projekte von R43 sind byte-gleich.
+Sechsundzwanzig Projekte, 841 CSV, 5 801 Skalare, auf Linux eingefroren gegen die Testdatenbank `19e38bc2…`
+(Schemastand 202, mit den Projekten 1053 bis 1062); mit R45 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
+(Kühlkurve, Referenzprojekte 1061 und 1062) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R45 ist
+die Übergabegrenze mit dem Referenzprojekt 1060; die sechsundzwanzig Projekte von R44 sind byte-gleich.
 
 ## Was hier liegt
 
@@ -1452,6 +1454,36 @@ Einfrierregeln „gesäte Kältemaschinendaten“ und „gesäte Auslegungsdaten
 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058 und 1059. **CI-Auswahl:** 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051 und 1058 (1050, 1052, 1054, 1055,
 1056, 1057 und 1059 stehen nicht in der CI-Auswahl).
 
+### Das Referenzprojekt 1060 „Referenzprojekt Übergabegrenze“
+
+1060 „Referenzprojekt Übergabegrenze“ ist eine Kopie von 1056 auf dem Kopierweg des Programms
+(`ProjektDuplizierenCtrl.Duplizieren`), danach von der nächsten freien Projekt-ID auf die vorgemerkte 1060 umnummeriert
+(jede Spalte `ID_Projekt`, `ProjektID`, `ID_ProjektRef` und `ID_Referenzprojekt` der Kopie, `foreign_key_check` leer).
+Es rechnet allein die Übergabegrenze der Wärmepumpe (UB‑Q7): Am Gebäude Heizkörper mit dem Auslegungspunkt 75/60 °C und
+dem Exponenten 1,3 (Auslegungsraum- und -außentemperatur, Nennleistung und Heizkurve wie 1056, leer = Vorgabe); an der
+Wärmepumpe `Vorlauf_Max` 55 °C, `Einbindung` `DIREKT`, `Vorwaermbetrieb` 1, bivalenter Betrieb mit Betriebsart
+Parallelbetrieb ohne Abschaltpunkt; die acht Gerätespalten der Projektkopie und `Ruecklauf_Max` am BHKW bleiben leer
+(Vorgabe). Nachtsperre und Zeitprogramme von 1056 sind zurückgesetzt (keine Sperrzeit, kein Sperrfenster, Zeitprogramm
+leer an Wärmepumpe, Kessel und BHKW, `Vorlauf_Max` der übrigen Erzeuger leer). Die Kaskade stellt die Wärmepumpe vor den
+Kessel (`Tool_1` Wärmepumpe, `Tool_2` Heizkessel, `Tool_3` BHKW; Stromspeicher, Kopplungsstufe AK1 und Kühlbetrieb wie
+1056). Der Kessel der Kopie ist ein neutraler Gas-Brennwertkessel „Brennwertkessel 28 kW“ (Ptherm 28 kW wie 1056, Erdgas E,
+η 0,97, Brennwert und Brennwertkennlinie ein, die Kennlinienspalten leer = Normvorgabe): Nur ein Kessel mit
+Brennwertkennlinie führt die Rücklaufstufe „Vorwärmer“, der Elektrokessel von 1056 führte keine. Angelegt von
+[`Skripte/referenzprojekt_1060_uebergabegrenze.cs`](Skripte/referenzprojekt_1060_uebergabegrenze.cs) (wiederholbar,
+Arbeitsdatei mit `integrity_check` und `foreign_key_check`; nach einer Neufassung der Testdatenbank nach 1056 zu ziehen).
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1060_uebergabegrenze.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Gerechnet: B1 3 987 Stunden (39,61 MWh), B3 1 308 Stunden (13,64 MWh), B2, B0 und B4 keine; Bivalenzpunkte 1,83 °C und
+−3,55 °C, größte Übergabe bei Auslegung 22,00 kW; Wärmepumpe 53,25 MWh, Kessel 15,56 MWh mit 952 Stunden auf der
+Rücklaufstufe „Vorwärmer“; 993 Komfortstunden. Die Testdatenbank mit 1060 (Schemastand 203, `integrity_check` ok,
+`foreign_key_check` leer): **93 782 016 Byte, LFS-SHA-256
+`cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`**. 1060 steht in der Basis R45 und in der
+CI-Auswahl; gehalten von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests`; es gelten die Einfrierregeln
+„gesäte Übergabegrenzdaten“, „gesäte Auslegungsdaten der Übergabe“ und „gesäte Kesseldaten“.
+
 ## Die wichtigste Regel
 
 **Die produktive `Kenndaten.accdb` wird nie beschrieben.**
@@ -1520,9 +1552,9 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R44 (sechsundzwanzig Projekte, Kühlkurve, Referenzprojekte 1061 und 1062): GESAMT PASS, 797/841 CSV
-byte-gleich, `aggregate.csv` bei 25 Projekten byte-gleich (abweichend allein 1057 innerhalb der Toleranz); die übrigen
-44 Dateien tragen Rechenreste innerhalb der Toleranz — die 28 Dateien von R43 und je sieben bis neun Dateien von
+Stand mit R45 (siebenundzwanzig Projekte, Übergabegrenze, Referenzprojekt 1060): GESAMT PASS, 835/879 CSV
+byte-gleich, `aggregate.csv` bei 26 Projekten byte-gleich (abweichend allein 1057 innerhalb der Toleranz), 1060 ganz
+byte-gleich; die übrigen 44 Dateien tragen Rechenreste innerhalb der Toleranz — die 28 Dateien von R43 und je sieben bis neun Dateien von
 1061 und 1062 (Wärmebedarf, Pufferentladung und Erzeugerreihen des Kreises, an 1062 dazu Kühlbedarf).
 
 ## Bedienung
