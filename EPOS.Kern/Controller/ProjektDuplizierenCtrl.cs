@@ -375,6 +375,10 @@ namespace WindowsFormsApplication1
             // sie gehoeren dem Katalog (P3 b, P11).
             {SchemaKatalog.TAB_KONDITIONIERUNGSKALENDER, "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_KONDITIONIERUNGSVORGABE,  "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+            // Benannte Wochen (Schemaschritt KalenderbedienungSchema) - dieselbe Eigentuemerregel wie der Kalender
+            // (ID_Gebaeude und ID_Zone), deshalb VON HAND und ueber das Gebaeude gefiltert. Der erzwungene Verweis ID_Woche
+            // der Periode setzt sie in der topologischen Sortierung davor und wird auf die Kopie umgeschluesselt.
+            {KalenderbedienungSchema.TAB_WOCHE,          "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
 
             // Die Perioden haengen am Kalender - DREISTUFIG wie die Schicht am Bauteil
             // (Gebaeude -> Kalender -> Periode). Ausdruecklich, damit die Reihenfolge feststeht.
