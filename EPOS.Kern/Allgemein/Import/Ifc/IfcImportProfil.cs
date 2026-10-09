@@ -85,5 +85,8 @@
 
         /// <inheritdoc />
         public override bool FlaechenRueckfaelle => true;
+
+        /// <inheritdoc />
+        public override string ExporthinweisSchluessel => nameof(MyResource.Resource.GIMP_DLG_IFC_EXPORTHINWEIS);
     }
 }
