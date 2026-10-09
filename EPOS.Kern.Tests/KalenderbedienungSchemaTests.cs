@@ -28,7 +28,7 @@ namespace EPOS.Kern.Tests
         public void Die_Nummer_haengt_ueber_die_Klasse_an_der_PV_Ganglinie_und_ist_das_Ziel()
         {
             Assert.Equal(PvGanglinieSchema.SCHRITT + 1, KalenderbedienungSchema.SCHRITT);
-            Assert.Equal(KalenderbedienungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KalenderbedienungSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KalenderbedienungSchema.SCHRITT);
             object stand = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation");
             if (_db.Vorhanden) Assert.Equal(KalenderbedienungSchema.SCHRITT, Convert.ToInt32(stand, CultureInfo.InvariantCulture));

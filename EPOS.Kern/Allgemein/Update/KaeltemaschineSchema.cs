@@ -122,13 +122,27 @@ namespace WindowsFormsApplication1
         /// Projektkopie, Schreibwege und Katalogfassung hängen (ohne <c>ID</c>, <c>ID_Projekt</c>,
         /// <c>ID_Stamm</c>, <c>ReadOnly</c> und die Katalogspalten).
         /// </summary>
-        public static readonly string[] Fachspalten =
+        public static readonly string[] Fachspalten;
+
+        /// <summary>
+        /// Die zwölf Grundspalten des Kopfs, die seit diesem Schritt stehen — der Kopf, den die Schreibwege in EINER
+        /// Anweisung schreiben. Die acht Spalten von Teillast und Takten (<see cref="KaeltemaschineTeillastSchema"/>,
+        /// Schritt 209) schreiben sie in einem eigenen Schritt, nur wenn die Spalten stehen.
+        /// </summary>
+        public static readonly string[] Grundspalten =
         {
             "Bezeichner", "Firma", "Typ", "Beschreibung",
             SPALTE_NENNKAELTELEISTUNG, SPALTE_NENN_EER, SPALTE_KAELTEMITTEL, SPALTE_RUECKKUEHLART,
             SPALTE_MINDESTTEILLAST, SPALTE_HILFSSTROM_RUECKKUEHLUNG, SPALTE_KALTWASSER_VORLAUF_MIN,
             SPALTE_MODULKOSTEN
         };
+
+        static KaeltemaschineSchema()
+        {
+            // KaeltemaschineTeillastSchema (Schritt 209): die acht Eingabespalten haengen hinten an; leer tragen sie nichts
+            // zur Pruefsumme bei, eine Datenbank vor dem Schritt fuehrt sie nicht (Katalogfassung.VorhandeneFachspalten).
+            Fachspalten = Grundspalten.Concat(KaeltemaschineTeillastSchema.EINGABESPALTEN).ToArray();
+        }
 
         /// <summary>Die Fachspalten der Kennlinie (ohne <c>ID</c>, Fremdschlüssel, <c>ID_Projekt</c>, <c>ReadOnly</c>).</summary>
         public static readonly string[] KennlinienSpalten =

@@ -126,8 +126,9 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(KaeltemaschineSchema.Vollstaendig());
-            Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count);
-            Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
+            // Je + acht Spalten von Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 209).
+            Assert.Equal(25, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count);
+            Assert.Equal(25, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN_STAMM).Count);
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN).Count);
             // Drei Beispielgeräte (182) und die eingebauten Typkennfelder mit je 24 Kennlinienpunkten (203, KM2).

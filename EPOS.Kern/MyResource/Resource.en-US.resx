@@ -50082,5 +50082,47 @@ chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Module model</value>
   </data>
+  <data name="KM_MSG_TEILLASTWEG_UNGUELTIG" xml:space="preserve">
+    <value>The part-load method must be “linear”, “curve” or empty.</value>
+  </data>
+  <data name="KM_MSG_VERDICHTERREGELUNG_UNGUELTIG" xml:space="preserve">
+    <value>The compressor control must be “on/off”, “staged”, “variable speed” or empty.</value>
+  </data>
+  <data name="KM_MSG_RANDWEG_UNGUELTIG" xml:space="preserve">
+    <value>The method at the edges of the performance map must be “edge value”, “efficiency grade” or empty.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTANTEIL_UNGUELTIG" xml:space="preserve">
+    <value>The minimum load ratio of the part-load curve and the cycling loss factor C_d must be between 0 and 1.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_BEIWERTE" xml:space="preserve">
+    <value>The part-load curve needs all three coefficients: a between −1 and 2, b and c between −2 and 3.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
+    <value>The part-load curve is not plausible: at full load a + b + c must be between 0.9 and 1.1, and the EER ratio must stay between 0.5 and 2.0 within the valid load range.</value>
+  </data>
+  <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
+    <value>Part-load method</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
+    <value>Part-load curve a</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_B" xml:space="preserve">
+    <value>Part-load curve b</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_C" xml:space="preserve">
+    <value>Part-load curve c</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
+    <value>Minimum load ratio of the curve</value>
+  </data>
+  <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Cycling loss factor C_d</value>
+  </data>
+  <data name="KM_LBL_VERDICHTERREGELUNG" xml:space="preserve">
+    <value>Compressor control</value>
+  </data>
+  <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
+    <value>Method at the map edges</value>
+  </data>
 </root>
 

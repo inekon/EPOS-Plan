@@ -50089,5 +50089,47 @@ Chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Modulmodell</value>
   </data>
+  <data name="KM_MSG_TEILLASTWEG_UNGUELTIG" xml:space="preserve">
+    <value>Der Teillastweg muss „linear“, „Kurve“ oder leer sein.</value>
+  </data>
+  <data name="KM_MSG_VERDICHTERREGELUNG_UNGUELTIG" xml:space="preserve">
+    <value>Die Verdichterregelung muss „Ein/Aus“, „Stufen“, „Drehzahl“ oder leer sein.</value>
+  </data>
+  <data name="KM_MSG_RANDWEG_UNGUELTIG" xml:space="preserve">
+    <value>Der Weg an den Rändern des Kennfelds muss „Randwert“, „Gütegrad“ oder leer sein.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTANTEIL_UNGUELTIG" xml:space="preserve">
+    <value>Der kleinste Lastgrad der Teillastkurve und der Taktverlustfaktor C_d müssen zwischen 0 und 1 liegen.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_BEIWERTE" xml:space="preserve">
+    <value>Die Teillastkurve braucht alle drei Beiwerte: a zwischen −1 und 2, b und c zwischen −2 und 3.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
+    <value>Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,5 und 2,0 bleiben.</value>
+  </data>
+  <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
+    <value>Teillastweg</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
+    <value>Teillastkurve a</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_B" xml:space="preserve">
+    <value>Teillastkurve b</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_C" xml:space="preserve">
+    <value>Teillastkurve c</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
+    <value>Kleinster Lastgrad der Kurve</value>
+  </data>
+  <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Taktverlustfaktor C_d</value>
+  </data>
+  <data name="KM_LBL_VERDICHTERREGELUNG" xml:space="preserve">
+    <value>Verdichterregelung</value>
+  </data>
+  <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
+    <value>Weg an den Kennfeldrändern</value>
+  </data>
 </root>
 

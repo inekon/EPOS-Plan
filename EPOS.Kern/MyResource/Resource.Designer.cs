@@ -73645,6 +73645,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg an den Kennfeldrändern ähnelt.
+        /// </summary>
+        public static string KM_LBL_KENNFELD_RANDWEG {
+            get {
+                return ResourceManager.GetString("KM_LBL_KENNFELD_RANDWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Mindestteillast ähnelt.
         /// </summary>
         public static string KM_LBL_MINDESTTEILLAST {
@@ -73690,11 +73699,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktverlustfaktor C_d ähnelt.
+        /// </summary>
+        public static string KM_LBL_TAKTVERLUST_CD {
+            get {
+                return ResourceManager.GetString("KM_LBL_TAKTVERLUST_CD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkurve a ähnelt.
+        /// </summary>
+        public static string KM_LBL_TEILLASTKURVE_A {
+            get {
+                return ResourceManager.GetString("KM_LBL_TEILLASTKURVE_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkurve b ähnelt.
+        /// </summary>
+        public static string KM_LBL_TEILLASTKURVE_B {
+            get {
+                return ResourceManager.GetString("KM_LBL_TEILLASTKURVE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkurve c ähnelt.
+        /// </summary>
+        public static string KM_LBL_TEILLASTKURVE_C {
+            get {
+                return ResourceManager.GetString("KM_LBL_TEILLASTKURVE_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster Lastgrad der Kurve ähnelt.
+        /// </summary>
+        public static string KM_LBL_TEILLASTKURVE_LASTGRAD_MIN {
+            get {
+                return ResourceManager.GetString("KM_LBL_TEILLASTKURVE_LASTGRAD_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastweg ähnelt.
+        /// </summary>
+        public static string KM_LBL_TEILLAST_WEG {
+            get {
+                return ResourceManager.GetString("KM_LBL_TEILLAST_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typ ähnelt.
         /// </summary>
         public static string KM_LBL_TYP {
             get {
                 return ResourceManager.GetString("KM_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verdichterregelung ähnelt.
+        /// </summary>
+        public static string KM_LBL_VERDICHTERREGELUNG {
+            get {
+                return ResourceManager.GetString("KM_LBL_VERDICHTERREGELUNG", resourceCulture);
             }
         }
         
@@ -73807,11 +73879,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Weg an den Rändern des Kennfelds muss „Randwert“, „Gütegrad“ oder leer sein. ähnelt.
+        /// </summary>
+        public static string KM_MSG_RANDWEG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_RANDWEG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Rückkühlart ist unbekannt. ähnelt.
         /// </summary>
         public static string KM_MSG_RUECKKUEHLART_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KM_MSG_RUECKKUEHLART_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der kleinste Lastgrad der Teillastkurve und der Taktverlustfaktor C_d müssen zwischen 0 und 1 liegen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TEILLASTANTEIL_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_TEILLASTANTEIL_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Teillastkurve braucht alle drei Beiwerte: a zwischen −1 und 2, b und c zwischen −2 und 3. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TEILLASTKURVE_BEIWERTE {
+            get {
+                return ResourceManager.GetString("KM_MSG_TEILLASTKURVE_BEIWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,5 und 2,0 bleiben. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TEILLASTKURVE_UNPLAUSIBEL {
+            get {
+                return ResourceManager.GetString("KM_MSG_TEILLASTKURVE_UNPLAUSIBEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teillastweg muss „linear“, „Kurve“ oder leer sein. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TEILLASTWEG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_TEILLASTWEG_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -73839,6 +73956,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_MSG_TYPKENNFELDER_SCHEMA {
             get {
                 return ResourceManager.GetString("KM_MSG_TYPKENNFELDER_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verdichterregelung muss „Ein/Aus“, „Stufen“, „Drehzahl“ oder leer sein. ähnelt.
+        /// </summary>
+        public static string KM_MSG_VERDICHTERREGELUNG_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_VERDICHTERREGELUNG_UNGUELTIG", resourceCulture);
             }
         }
         

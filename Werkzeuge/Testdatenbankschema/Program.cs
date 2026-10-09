@@ -3294,6 +3294,25 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrK2 + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrK2 + " - vollstaendig: " + KalenderbedienungSchema.Vollstaendig() + " (erwartet True).");
             }
+
+            // ---- Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): acht Eingabespalten von Teillast und Takten an
+            //      Tab_Kaeltemaschine_STAMM und Tab_Kaeltemaschine, fuenf Kennzahlspalten an Tab_ErgebnisKaeltemaschine,
+            //      dazu die Ergaenzung der Typkennfelder. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KaeltemaschineTeillast bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; jede Kaeltemaschine rechnet auf dem heutigen Weg.
+            string nrKm3 = KaeltemaschineTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKm3 + " - Teillast und Takten der Kaeltemaschine: " +
+                              (KaeltemaschineTeillastSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKm3 = new List<string>();
+                angelegt += KaeltemaschineTeillastSchema.Ausfuehren(berichtKm3).Angelegt;
+                foreach (string zeile in berichtKm3)
+                    Console.WriteLine("Schritt " + nrKm3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKm3 + " - vollstaendig: " + KaeltemaschineTeillastSchema.Vollstaendig() + " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

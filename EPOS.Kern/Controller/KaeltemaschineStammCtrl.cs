@@ -141,8 +141,87 @@ namespace WindowsFormsApplication1
                 if (!punkte.Add((k.Rueckkuehltemperatur, k.Kaltwassertemperatur)))
                     return MyResource.Resource.KM_MSG_KENNLINIE_DOPPELT;
             }
-            return null;
+            return TeillastPruefen(m);
         }
+
+        /// <summary>
+        /// Prüft die acht Felder von Teillast und Takten (<see cref="KaeltemaschineTeillastSchema"/>) — ohne Datenbank.
+        /// Persistenzwerte aus den Wertelisten, x_u und C_d in 0…1, die Beiwerte nur zu dritt und in ihren Eingabegrenzen,
+        /// die Kurve plausibel nach Fachkonzept 3.2: E(x) &gt; 0 und 0,5 ≤ g(x) ≤ 2,0 auf [x_u, 1], 0,9 ≤ EIRFPLR(1) ≤ 1,1.
+        /// <c>null</c>, wenn alles passt, sonst der Grund in der Oberflächensprache.
+        /// </summary>
+        public static string TeillastPruefen(KaeltemaschineModel m)
+        {
+            if (m == null) return null;
+            if (m.Teillast_Weg != null && !KaeltemaschineTeillastSchema.TEILLAST_WEGE.Contains(m.Teillast_Weg))
+                return MyResource.Resource.KM_MSG_TEILLASTWEG_UNGUELTIG;
+            if (m.Verdichterregelung != null && !KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN.Contains(m.Verdichterregelung))
+                return MyResource.Resource.KM_MSG_VERDICHTERREGELUNG_UNGUELTIG;
+            if (m.Kennfeld_Randweg != null && !KaeltemaschineTeillastSchema.RANDWEGE.Contains(m.Kennfeld_Randweg))
+                return MyResource.Resource.KM_MSG_RANDWEG_UNGUELTIG;
+            if (!Anteil(m.Teillastkurve_Lastgrad_Min) || !Anteil(m.Taktverlustfaktor_Cd))
+                return MyResource.Resource.KM_MSG_TEILLASTANTEIL_UNGUELTIG;
+
+            int gepflegt = (m.Teillastkurve_a.HasValue ? 1 : 0) + (m.Teillastkurve_b.HasValue ? 1 : 0) +
+                           (m.Teillastkurve_c.HasValue ? 1 : 0);
+            if (gepflegt == 0) return null;
+            double a = m.Teillastkurve_a ?? double.NaN, bw = m.Teillastkurve_b ?? double.NaN, c = m.Teillastkurve_c ?? double.NaN;
+            if (gepflegt < 3 ||
+                !Bereich(a, KaeltemaschineTeillastSchema.KURVE_A_MIN, KaeltemaschineTeillastSchema.KURVE_A_MAX) ||
+                !Bereich(bw, KaeltemaschineTeillastSchema.KURVE_BC_MIN, KaeltemaschineTeillastSchema.KURVE_BC_MAX) ||
+                !Bereich(c, KaeltemaschineTeillastSchema.KURVE_BC_MIN, KaeltemaschineTeillastSchema.KURVE_BC_MAX))
+                return MyResource.Resource.KM_MSG_TEILLASTKURVE_BEIWERTE;
+            return KurvePlausibel(a, bw, c, UntereGueltigkeit(m)) ? null : MyResource.Resource.KM_MSG_TEILLASTKURVE_UNPLAUSIBEL;
+        }
+
+        /// <summary>
+        /// Die untere Gültigkeit der Kurve: x_u, sonst die Mindestteillast als Anteil, sonst 0 (Fachkonzept 4.1).
+        /// </summary>
+        public static double UntereGueltigkeit(KaeltemaschineModel m)
+            => m?.Teillastkurve_Lastgrad_Min ?? (m?.Mindestteillast_Prozent.HasValue == true ? m.Mindestteillast_Prozent.Value / 100.0 : 0.0);
+
+        /// <summary>
+        /// Die Plausibilität einer Kurve nach Fachkonzept 3.2 — geprüft an <see cref="KaeltemaschineTeillastSchema.PRUEF_STELLEN"/>
+        /// gleichmäßigen Stellen auf [max(x_u, <see cref="KaeltemaschineTeillastSchema.PRUEF_LASTGRAD_UNTEN"/>), 1].
+        /// </summary>
+        public static bool KurvePlausibel(double a, double b, double c, double xu)
+        {
+            double e1 = a + b + c;
+            if (double.IsNaN(e1) || e1 < KaeltemaschineTeillastSchema.EIRFPLR1_MIN || e1 > KaeltemaschineTeillastSchema.EIRFPLR1_MAX)
+                return false;
+            double von = Math.Max(xu, KaeltemaschineTeillastSchema.PRUEF_LASTGRAD_UNTEN);
+            if (von > 1) von = 1;
+            int n = KaeltemaschineTeillastSchema.PRUEF_STELLEN;
+            for (int i = 0; i <= n; i++)
+            {
+                double x = von + (1 - von) * i / n;
+                double e = (a + b * x + c * x * x) / e1;
+                if (!(e > 0)) return false;
+                double g = x / e;
+                if (g < KaeltemaschineTeillastSchema.G_MIN || g > KaeltemaschineTeillastSchema.G_MAX) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Liest eine Eingabezahl der Teillastfelder: Komma oder Punkt als Dezimalzeichen, leer = <c>null</c>.
+        /// <c>false</c>, wenn der Text keine endliche Zahl ist.
+        /// </summary>
+        public static bool ZahlLesen(string text, out double? wert)
+        {
+            wert = null;
+            if (string.IsNullOrWhiteSpace(text)) return true;
+            string s = text.Trim().Replace(',', '.');
+            if (!double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out double d) || double.IsNaN(d) ||
+                double.IsInfinity(d))
+                return false;
+            wert = d;
+            return true;
+        }
+
+        private static bool Anteil(double? x) => !x.HasValue || (x.Value >= 0 && x.Value <= 1);
+
+        private static bool Bereich(double x, double min, double max) => !double.IsNaN(x) && x >= min && x <= max;
 
         // =================================================================
         //  Schreiben
@@ -242,6 +321,18 @@ namespace WindowsFormsApplication1
                 Kaltwasser_Vorlauf_Min = Zahl(r[KaeltemaschineSchema.SPALTE_KALTWASSER_VORLAUF_MIN]),
                 Modulkosten = Zahl(r[KaeltemaschineSchema.SPALTE_MODULKOSTEN]),
             };
+            // Schritt 209: Teillast und Takten - vor dem Schritt fehlen die Spalten, dann null.
+            if (r.Table.Columns.Contains(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG))
+            {
+                m.Teillast_Weg = Text(r[KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG]);
+                m.Teillastkurve_a = Zahl(r[KaeltemaschineTeillastSchema.SPALTE_KURVE_A]);
+                m.Teillastkurve_b = Zahl(r[KaeltemaschineTeillastSchema.SPALTE_KURVE_B]);
+                m.Teillastkurve_c = Zahl(r[KaeltemaschineTeillastSchema.SPALTE_KURVE_C]);
+                m.Teillastkurve_Lastgrad_Min = Zahl(r[KaeltemaschineTeillastSchema.SPALTE_KURVE_LASTGRAD_MIN]);
+                m.Taktverlustfaktor_Cd = Zahl(r[KaeltemaschineTeillastSchema.SPALTE_CD]);
+                m.Verdichterregelung = Text(r[KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG]);
+                m.Kennfeld_Randweg = Text(r[KaeltemaschineTeillastSchema.SPALTE_RANDWEG]);
+            }
             if (katalog) m.ReadOnly = Ganz(r["ReadOnly"]) == 1;
             else
             {
@@ -284,11 +375,11 @@ namespace WindowsFormsApplication1
         /// <summary>Schreibt den Kopf; <paramref name="projekt"/> ≠ <c>null</c> schreibt eine Projektkopie (ID_Projekt, ID_Stamm).</summary>
         internal static int KopfSchreiben(DbVorgang v, string tabelle, KaeltemaschineModel m, bool neu, int? projekt)
         {
-            string spalten = string.Join(", ", KaeltemaschineSchema.Fachspalten.Select(s => "\"" + s + "\""));
+            string spalten = string.Join(", ", KaeltemaschineSchema.Grundspalten.Select(s => "\"" + s + "\""));
             if (neu)
             {
                 string zusatz = projekt.HasValue ? ", \"ID_Projekt\", \"" + KaeltemaschineSchema.SPALTE_ID_STAMM + "\"" : "";
-                string marken = string.Join(", ", KaeltemaschineSchema.Fachspalten.Select(_ => "?")) + (projekt.HasValue ? ", ?, ?" : "");
+                string marken = string.Join(", ", KaeltemaschineSchema.Grundspalten.Select(_ => "?")) + (projekt.HasValue ? ", ?, ?" : "");
                 var p = Kopfwerte(m).ToList();
                 if (projekt.HasValue)
                 {
@@ -296,13 +387,39 @@ namespace WindowsFormsApplication1
                     p.Add(new DbParam("?", Wert(m.IdStamm)));
                 }
                 v.Ausfuehren("INSERT INTO " + tabelle + " (" + spalten + zusatz + ") VALUES (" + marken + ")", p.ToArray());
-                return Convert.ToInt32(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+                int neueId = Convert.ToInt32(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
+                TeillastSchreiben(v, tabelle, neueId, m);
+                return neueId;
             }
-            string setzen = string.Join(", ", KaeltemaschineSchema.Fachspalten.Select(s => "\"" + s + "\" = ?"));
+            string setzen = string.Join(", ", KaeltemaschineSchema.Grundspalten.Select(s => "\"" + s + "\" = ?"));
             var q = Kopfwerte(m).ToList();
             q.Add(new DbParam("?", m.Id));
             v.Ausfuehren("UPDATE " + tabelle + " SET " + setzen + " WHERE ID = ?", q.ToArray());
+            TeillastSchreiben(v, tabelle, m.Id, m);
             return m.Id;
+        }
+
+        /// <summary>
+        /// Schreibt die acht Felder von Teillast und Takten an den Satz <paramref name="id"/> — in einem eigenen Schritt
+        /// im Vorgang <paramref name="v"/> und nur, wenn die Spalten stehen (Schritt <see cref="KaeltemaschineTeillastSchema.SCHRITT"/>).
+        /// Eine ältere Datenbank speichert damit alles Übrige wie zuvor; leer bleibt NULL, nie 0.
+        /// </summary>
+        internal static void TeillastSchreiben(DbVorgang v, string tabelle, int id, KaeltemaschineModel m)
+        {
+            // Die Auskunft auf der Verbindung des Vorgangs: Sie sieht das Schema, in dem geschrieben wird.
+            object da = v.Skalar("SELECT COUNT(*) FROM pragma_table_info(?) WHERE name IN (?, ?, ?, ?, ?, ?, ?, ?)",
+                new[] { new DbParam("?", tabelle) }
+                    .Concat(KaeltemaschineTeillastSchema.EINGABESPALTEN.Select(s => new DbParam("?", s))).ToArray());
+            if (da == null || da == DBNull.Value ||
+                Convert.ToInt32(da, CultureInfo.InvariantCulture) < KaeltemaschineTeillastSchema.EINGABESPALTEN.Count)
+                return;
+            string setzen = string.Join(", ", KaeltemaschineTeillastSchema.EINGABESPALTEN.Select(s => "\"" + s + "\" = ?"));
+            v.Ausfuehren("UPDATE " + tabelle + " SET " + setzen + " WHERE ID = ?",
+                new DbParam("?", Wert(m.Teillast_Weg)), new DbParam("?", Wert(m.Teillastkurve_a)),
+                new DbParam("?", Wert(m.Teillastkurve_b)), new DbParam("?", Wert(m.Teillastkurve_c)),
+                new DbParam("?", Wert(m.Teillastkurve_Lastgrad_Min)), new DbParam("?", Wert(m.Taktverlustfaktor_Cd)),
+                new DbParam("?", Wert(m.Verdichterregelung)), new DbParam("?", Wert(m.Kennfeld_Randweg)),
+                new DbParam("?", id));
         }
 
         /// <summary>Ersetzt die Kennlinie eines Geräts; <paramref name="projekt"/> ≠ <c>null</c> schreibt <c>ID_Projekt</c> mit.</summary>
@@ -386,7 +503,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Kopiert den Katalogsatz <paramref name="stammId"/> samt Kennlinie in das Projekt
-        /// <paramref name="projektId"/> — Spalte für Spalte nach <see cref="KaeltemaschineSchema.Fachspalten"/>,
+        /// <paramref name="projektId"/> — Spalte für Spalte nach <see cref="KaeltemaschineSchema.Fachspalten"/> (die acht
+        /// Spalten von Teillast und Takten, wenn sie stehen),
         /// mit <c>ID_Stamm</c> als Zuordnung. Führt das Projekt schon eine Kopie dieses Katalogsatzes, bleibt
         /// sie und ihre ID kommt zurück. <c>-1</c>, wenn es den Katalogsatz nicht gibt.
         /// </summary>

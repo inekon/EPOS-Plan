@@ -98,6 +98,15 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Ergänzt die schon eingespielten Typkennfelder</b> um die Spalten von Teillast und Takten
+        /// (<see cref="KaeltemaschineTeillastSchema"/>): Kurve, untere Gültigkeit, Verdichterregelung und Weg aus dem
+        /// gespeicherten Kurvensatz, nur wo leer, Prüfsumme neu. Projektkopien und eigene Sätze bleiben unberührt;
+        /// wiederholbar. <b>Welle KM3-E1-a: leerer Rumpf</b> — füllt nichts und meldet 0; die Welle E1-b füllt ihn.
+        /// </summary>
+        /// <returns>Die Zahl der ergänzten Katalogsätze.</returns>
+        public static int Ergaenzen() => 0;
+
         private static Einspielergebnis EinspielenIntern()
         {
             string tab = KaeltemaschineSchema.TAB_STAMM;

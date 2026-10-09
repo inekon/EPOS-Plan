@@ -929,7 +929,28 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(KaeltemaschineTeillast(t)).ToList();
+        }
+
+        /// <summary>
+        /// <b>Teillast und Takten der Kältemaschine</b> (<see cref="KaeltemaschineTeillastSchema"/>, Schritt 209; Welle
+        /// KM3-E1-a): Die acht Spalten werden gelesen, geprüft, gespeichert und in die Projektkopie mitgenommen, aber noch
+        /// nicht gerechnet (Rechenweg KM3-E2) und noch in keinem Dialog gezeigt (KM3-E3).
+        /// </summary>
+        private static IReadOnlyList<ParameterEintrag> KaeltemaschineTeillast(Func<string, string> t)
+        {
+            const string WEG = "KaeltemaschineStammCtrl.Lesen/KopfSchreiben/TeillastPruefen (noch ohne Rechenwirkung, KM3-E2)";
+            return new[]
+            {
+                E(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG, t("KM_LBL_TEILLAST_WEG"), "", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_A, t("KM_LBL_TEILLASTKURVE_A"), "-", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_B, t("KM_LBL_TEILLASTKURVE_B"), "-", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_C, t("KM_LBL_TEILLASTKURVE_C"), "-", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_LASTGRAD_MIN, t("KM_LBL_TEILLASTKURVE_LASTGRAD_MIN"), "-", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_CD, t("KM_LBL_TAKTVERLUST_CD"), "-", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG, t("KM_LBL_VERDICHTERREGELUNG"), "", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_RANDWEG, t("KM_LBL_KENNFELD_RANDWEG"), "", NIX, WEG),
+            };
         }
 
         private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)

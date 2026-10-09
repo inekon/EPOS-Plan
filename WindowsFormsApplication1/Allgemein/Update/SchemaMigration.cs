@@ -5354,6 +5354,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KALENDERBEDIENUNG = KalenderbedienungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaeltemaschineTeillastSchema.SCHRITT"/> — <b>Teillast und Takten der Kältemaschine</b> (KM3):
+        /// Teillastkurve, untere Gültigkeit, Taktverlustfaktor C_d, Verdichterregelung und Randweg an Katalog und
+        /// Projektkopie, Taktstrom, Starts, Teillaststunden, mittlerer Lastgrad und extrapolierte Stunden im Ergebnis.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer, jede Kältemaschine rechnet auf dem
+        /// heutigen Weg; die Ergänzung berührt allein die ausgelieferten Typkennfelder.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEMASCHINE_TEILLAST = KaeltemaschineTeillastSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7817,6 +7827,14 @@ namespace WindowsFormsApplication1
                         "Ein Kalender koennte keine Zeile fuer alle Groessen, keine benannte Woche, kein anderes Wochenende " +
                         "und keine Laenderfeiertage tragen. KEIN Rechenergebnis aendert sich.",
                         Schritt_Kalenderbedienung),
+            // KM3: Teillast und Takten der Kaeltemaschine. Quelle ist KaeltemaschineTeillastSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEMASCHINE_TEILLAST,
+                        "Tab_Kaeltemaschine_STAMM, Tab_Kaeltemaschine: Teillast_Weg, Teillastkurve_*, Taktverlustfaktor_Cd, " +
+                        "Verdichterregelung, Kennfeld_Randweg; Tab_ErgebnisKaeltemaschine: Taktstrom_MWh, Starts, " +
+                        "Teillaststunden, Lastgrad_Mittel, Stunden_Extrapoliert",
+                        "Eine Kaeltemaschine koennte keine Teillastkurve, keinen Taktverlust und keine Verdichterregelung tragen. " +
+                        "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_KaeltemaschineTeillast),
         };
 
         /// <summary>
@@ -14987,6 +15005,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kalenderbedienung - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Aenderung(en) am Schema.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Teillast und Takten der Kältemaschine" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KAELTEMASCHINE_TEILLAST"/>, die Anweisungen bei <see cref="KaeltemaschineTeillastSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaeltemaschineTeillast(Lauf l)
+        {
+            string nr = KaeltemaschineTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltemaschineTeillastSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            KaeltemaschineTeillastSchema.Laufergebnis e;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    e = KaeltemaschineTeillastSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltemaschineTeillastSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten von Teillast und Takten der Kaeltemaschine stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Teillast und Takten der Kaeltemaschine - " +
+                    (e.Angelegt == 0 ? "stand bereits." : e.Angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

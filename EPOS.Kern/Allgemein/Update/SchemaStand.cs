@@ -988,7 +988,11 @@ namespace WindowsFormsApplication1
         /// gemeinsamer Kalender „alle Größen" mit Größenmaske, benannte Wochen, Wochenende und Feiertagsland am Gebäude,
         /// Länderfeiertage als Regeln, Ferienliste als Spiegel der Ferienspalten (<see cref="KalenderbedienungSchema"/>).
         /// <b>Ergebnisneutral:</b> Gekoppelte Kopien werden eine Gemeinschaftsperiode, die beim Lesen genau in ihre Kalender zurückkehrt.
-        public const int Zielversion = KalenderbedienungSchema.SCHRITT;
+        /// Danach, mit TEILLAST UND TAKTEN DER KÄLTEMASCHINE (KM3), steht das Ziel auf <see cref="KaeltemaschineTeillastSchema.SCHRITT"/>:
+        /// acht Eingabespalten an Katalog und Projektkopie der Kältemaschine, fünf Kennzahlspalten an ihrem Ergebnis
+        /// (<see cref="KaeltemaschineTeillastSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer, jede Maschine
+        /// rechnet auf dem heutigen Weg.
+        public const int Zielversion = KaeltemaschineTeillastSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -390,6 +390,10 @@ namespace WindowsFormsApplication1
             // zusammen und spiegelt die Ferienspalten in die Ferienliste - kein Rechenergebnis aendert sich.
             new Stufe(KalenderbedienungSchema.SCHRITT, Art.Ddl,
                       "Kalenderbedienung Stufe 2 (gemeinsamer Kalender, benannte Wochen, Wochenende, Laenderfeiertage, Ferienliste)"),
+            // Ein Paket fuehrt keinen Katalog der Kaeltemaschinen (das Ziel fuehrt die Typkennfelder samt Ergaenzung); die
+            // Projektkopien seiner Kaeltemaschinen und ihre Ergebnisse bekommen die Spalten leer (heutiger Weg).
+            new Stufe(KaeltemaschineTeillastSchema.SCHRITT, Art.Katalog,
+                      "Teillast und Takten der Kältemaschine (Teillastkurve, C_d, Verdichterregelung, Randweg, Kennzahlen)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

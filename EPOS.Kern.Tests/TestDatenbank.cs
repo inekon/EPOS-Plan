@@ -1005,6 +1005,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KalenderbedienungSchema.SCHRITT (K2): gemeinsamer Kalender, Wochen, Wochenende, Laenderregeln,
                 // Ferienliste samt Migration. Wiederholbar.
                 KalenderbedienungSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): Teillast und Takten an Katalog, Projektkopie und Ergebnis
+                // der Kaeltemaschine, leer; Ergaenzung der Typkennfelder. Wiederholbar.
+                KaeltemaschineTeillastSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

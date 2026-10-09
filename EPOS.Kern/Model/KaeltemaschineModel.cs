@@ -63,6 +63,32 @@ namespace WindowsFormsApplication1
         /// <summary>Hilfsstromanteil des Kältekreises [0…1) (<c>Kuehl_Hilfsstromanteil</c>, Schritt 183); <c>null</c> = kein Zuschlag.</summary>
         public double? Kuehl_Hilfsstromanteil { get; set; }
 
+        // ---- Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 209); leer = Vorgabe, nie 0 ----
+
+        /// <summary>Weg der Teillast (<c>LINEAR</c>, <c>KURVE</c>); <c>null</c> = heutiger Weg.</summary>
+        public string Teillast_Weg { get; set; }
+
+        /// <summary>Beiwert a der Teillastkurve EIRFPLR(x) = a + b·x + c·x².</summary>
+        public double? Teillastkurve_a { get; set; }
+
+        /// <summary>Beiwert b der Teillastkurve.</summary>
+        public double? Teillastkurve_b { get; set; }
+
+        /// <summary>Beiwert c der Teillastkurve.</summary>
+        public double? Teillastkurve_c { get; set; }
+
+        /// <summary>Untere Gültigkeit x_u der Kurve [0…1]; <c>null</c> = Mindestteillast, sonst 0.</summary>
+        public double? Teillastkurve_Lastgrad_Min { get; set; }
+
+        /// <summary>Taktverlustfaktor C_d [0…1]; <c>null</c> = Vorgabe 0,9.</summary>
+        public double? Taktverlustfaktor_Cd { get; set; }
+
+        /// <summary>Verdichterregelung (<c>EIN_AUS</c>, <c>STUFEN</c>, <c>DREHZAHL</c>); <c>null</c> = keine Angabe.</summary>
+        public string Verdichterregelung { get; set; }
+
+        /// <summary>Weg an den Rändern des Kennfelds (<c>RANDWERT</c>, <c>GUETEGRAD</c>); <c>null</c> = <c>RANDWERT</c>.</summary>
+        public string Kennfeld_Randweg { get; set; }
+
         /// <summary>Die Kennlinie des Geräts.</summary>
         public List<KaeltemaschineKenndatenModel> Kennlinie { get; set; } = new List<KaeltemaschineKenndatenModel>();
     }
