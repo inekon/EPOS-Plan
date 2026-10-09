@@ -1,0 +1,429 @@
+﻿@* DIE KATALOGSEITE EINES GANGLINIEN-PROJEKTDIALOGS.
+
+   WOZU. Die Katalogpflege einer Zeitreihe bleibt im Projektdialog (Konzept
+   Projektdialoge mit Katalogauswahl): Liste mit Beschreibung, Jahresarbeit und
+   Spitze, Vergleichen (der Knopf der Suchzeile, Strg-Klick markiert), Schloss
+   setzen/aufheben, Loeschen und Import... - EIN Baustein, damit dieselbe Seite
+   jede Zeitreihenart traegt. Der Wirt reicht die Wege seiner Art herein
+   (GanglinienKatalogwege); die Fachlogik bleibt in deren Controllern.
+
+   DIE WAHL GEHOERT DEM WIRT: Er setzt Gewaehlt (die Markierung haengt am NAMEN)
+   und hoert ZeileGewaehlt; nach jeder Aenderung des Katalogs (Import, Loeschen,
+   Schloss) meldet die Seite Geaendert.
+
+   LOESCHEN ist WEICH gesperrt (aria-disabled, Grund im title, der Klick meldet
+   ihn): Auslieferungssatz, ein anderes Projekt fuehrt die Ganglinie (die Namen
+   stehen im Grund) oder das offene Projekt fuehrt sie (ImProjekt). Die letzte
+   Pruefung vor der Rueckfrage fragt die Datenbank (HatProjektzuordnung).
+
+   IMPORT... oeffnet eine Ueberlagerung mit Hinweis, Ordner, Dateiwahl,
+   Fortschritt und "Einlesen". Gelingt er, ist sie zu, der neue Satz gewaehlt,
+   die Statuszeile nennt ihn und die Protokollzeile Format, Anzahl Werte,
+   Raster, Jahresarbeit und Spitze. Ohne Einleseweg steht der Knopf nur, wenn
+   die Plattform den Grund nennt (ImportAbgelehnt) - weich gesperrt. *@
+
+@namespace EPOS.UI.Bausteine
+@using EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+
+<div class="epos-ganglinie-katalogseite">
+
+    <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+                  Filterstand="@Filterstand" Texte="@Filtertexte"
+                  Gewaehlt="@Gewaehlt" GewaehltChanged="BeiZeile" />
+
+    <div class="epos-leiste">
+        @if (Wege.Einlesen is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" disabled="@_laeuft"
+                    @onclick="ImportOeffnen">@Texte.ImportKnopf</button>
+        }
+        else if (Wege.ImportAbgelehnt.Length > 0)
+        {
+            <button type="button" class="epos-knopf epos-importknopf" aria-disabled="true"
+                    title="@Wege.ImportAbgelehnt"
+                    @onclick="() => Warnen(Wege.ImportAbgelehnt)">@Texte.ImportKnopf</button>
+        }
+        <Katalogschloss @ref="_katalogschloss" Weg="@Wege.Schloss" Zeile="@_zeile"
+                        NurLesen="@_laeuft" JaText="@Texte.Ja" NeinText="@Texte.Nein"
+                        Geschaltet="BeiSchlossGeschaltet" Abgelehnt="Warnen" />
+        @if (Wege.Loeschen is not null)
+        {
+            string grund = LoeschGrund;
+            if (grund.Length > 0)
+            {
+                <button type="button" class="epos-knopf epos-katalog-loeschen" aria-disabled="true"
+                        title="@grund" @onclick="() => Warnen(grund)">@Texte.LoeschenKnopf</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-katalog-loeschen"
+                        disabled="@(_zeile is null || _laeuft)"
+                        @onclick="BeiLoeschen">@Texte.LoeschenKnopf</button>
+            }
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <div class="epos-katalogmeldung">
+            <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+        </div>
+    }
+    @if (_status.Length > 0)
+    {
+        <div class="epos-status" role="status">@_status</div>
+    }
+    @if (_protokoll.Length > 0)
+    {
+        <Herleitungszeile Text="@_protokoll" />
+    }
+
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@Texte.LoeschenTitel"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* DER IMPORT ALS UEBERLAGERUNG. Das Kreuz steht beim Titel; waehrend der Kette
+       schliessen weder Kreuz noch Esc noch Abbrechen. *@
+    <Ueberlagerung Offen="@_importOffen" Titel="@Texte.ImportTitel" Geschlossen="ImportSchliessen">
+        <KindInhalt>
+            @if (_importOffen)
+            {
+                <div class="epos-einlesen">
+                    @if (_importMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="@_importMeldungStufe" Text="@_importMeldung" />
+                    }
+
+                    <Herleitungszeile Text="@Texte.ImportHinweis" />
+
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            @if (Wege.Ordner.Length > 0)
+                            {
+                                <Textfeld Bezeichnung="@Texte.LabelOrdner" Wert="@Wege.Ordner" NurLesen="true" />
+                            }
+                            <Dateiwahl Bezeichnung="@Texte.LabelDatei" KnopfText="@Texte.DateiKnopf"
+                                       Filter="@Texte.Dateifilter" Pfad="@_pfad" Waehlen="@Wege.DateiWaehlen"
+                                       PfadChanged="BeiDatei" Aktiv="@(!_laeuft)" />
+                        </KindInhalt>
+                    </Formularraster>
+
+                    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+
+                    <div class="epos-leiste">
+                        @if (Wege.MitSystemOeffnen is not null)
+                        {
+                            <button type="button" class="epos-knopf" disabled="@(!AnzeigenErlaubt)"
+                                    @onclick="BeiAnzeigen">@Texte.AnzeigenKnopf</button>
+                        }
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="ImportSchliessen">@Texte.AbbrechenKnopf</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!EinlesenErlaubt)"
+                                @onclick="BeiEinlesen">@Texte.EinlesenKnopf</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</div>
+
+@code {
+    /// <summary>Die Wege der Zeitreihenart (Katalog, Verwendung, Löschen, Schloss, Import).</summary>
+    [Parameter] public GanglinienKatalogwege Wege { get; set; } = new();
+
+    /// <summary>Die Spalten der Liste — mit Beschreibung, Jahresarbeit und Spitze.</summary>
+    [Parameter] public Katalogfilterprofil? Profil { get; set; }
+
+    /// <summary>Der Filterstand der Liste — er gehört dem Wirt.</summary>
+    [Parameter] public Katalogfilterstand? Filterstand { get; set; }
+
+    /// <summary>Die Beschriftungen der Liste.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Die Beschriftungen der Seite.</summary>
+    [Parameter] public GanglinienKatalogtexte Texte { get; set; } = new();
+
+    /// <summary>Der Bezeichner der gewählten Zeile — die Markierung hängt am NAMEN.</summary>
+    [Parameter] public string Gewaehlt { get; set; } = "";
+
+    /// <summary>Eine Zeile wurde gewählt (<c>null</c>: die Wahl steht nicht mehr in der Liste).</summary>
+    [Parameter] public EventCallback<Katalogfilterzeile?> ZeileGewaehlt { get; set; }
+
+    /// <summary>
+    /// Die Ganglinien des offenen Projekts (Bezeichner) — sie stempeln die Spalte „im
+    /// Projekt verwendet" und sperren das Löschen. Ohne Projekt <c>null</c>.
+    /// </summary>
+    [Parameter] public Func<IEnumerable<string>>? ImProjekt { get; set; }
+
+    /// <summary>Der Katalog hat sich geändert (Import, Löschen, Schloss).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private IReadOnlyDictionary<string, IReadOnlyList<string>>? _verwendung;
+    private Katalogfilterzeile? _zeile;
+    private Katalogschloss? _katalogschloss;
+
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private string _status = "";
+    private string _protokoll = "";
+
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
+    private string _loeschziel = "";
+
+    private bool _importOffen;
+    private bool _laeuft;
+    private double? _anteil;
+    private string _fortschrittText = "";
+    private string _pfad = "";
+    private string _importMeldung = "";
+    private WarnStufe _importMeldungStufe = WarnStufe.Hinweis;
+
+    // ---- Prüfhilfen ------------------------------------------------------
+
+    /// <summary>Die Zeilen des Katalogs (Prüfhilfe).</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
+
+    /// <summary>Die gewählte Katalogzeile (Prüfhilfe).</summary>
+    public Katalogfilterzeile? Zeile => _zeile;
+
+    /// <summary>Das Warnband der Seite (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
+
+    /// <summary>Die Statuszeile (Prüfhilfe).</summary>
+    public string Status => _status;
+
+    /// <summary>Die Protokollzeile des letzten Imports (Prüfhilfe).</summary>
+    public string Protokoll => _protokoll;
+
+    /// <summary>Das Warnband der Import-Überlagerung (Prüfhilfe).</summary>
+    public string Importmeldung => _importMeldung;
+
+    /// <summary>Steht die Import-Überlagerung? (Prüfhilfe.)</summary>
+    public bool ImportOffen => _importOffen;
+
+    /// <summary>Steht die Rückfrage vor dem Löschen? (Prüfhilfe.)</summary>
+    public bool Loeschfrage => _loeschfrageOffen;
+
+    /// <summary>Steht die Rückfrage „Schloss setzen/aufheben"? (Prüfhilfe.)</summary>
+    public bool Schlossfrage => _katalogschloss?.FrageOffen == true;
+
+    /// <summary>
+    /// Hält die Seite Esc bei sich? Solange eine Rückfrage oder der Import offen ist,
+    /// schließt der Wirt nicht.
+    /// </summary>
+    public bool HaeltEsc => _loeschfrageOffen || _importOffen || Schlossfrage;
+
+    private bool AnzeigenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.MitSystemOeffnen is not null;
+    private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Wege.Einlesen is not null;
+
+    protected override async Task OnInitializedAsync() => await Neuladen();
+
+    protected override void OnParametersSet()
+    {
+        if ((_zeile?.Bezeichner ?? "") != Gewaehlt)
+            _zeile = Gewaehlt.Length == 0 ? null : _katalog.FirstOrDefault(z => z.Bezeichner == Gewaehlt);
+    }
+
+    /// <summary>
+    /// Liest Katalog und Verwendung neu und stempelt die Spalte „im Projekt verwendet".
+    /// Steht die Wahl nicht mehr in der Liste, erfährt es der Wirt.
+    /// </summary>
+    public async Task Neuladen()
+    {
+        _katalog = Wege.Katalogzeilen is null
+            ? Array.Empty<Katalogfilterzeile>()
+            : await Wege.Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
+        _verwendung = Wege.Verwendung is null ? null : await Wege.Verwendung();
+        if (ImProjekt is not null)
+            Katalogverwendung.Stempeln(_katalog, ImProjekt());
+
+        Katalogfilterzeile? vorher = _zeile;
+        _zeile = Gewaehlt.Length == 0 ? null : _katalog.FirstOrDefault(z => z.Bezeichner == Gewaehlt);
+        if (vorher is not null && _zeile is null) await ZeileGewaehlt.InvokeAsync(null);
+    }
+
+    /// <summary>Wählt eine Zeile über ihren Bezeichner — der Weg der Liste und des Assistenten.</summary>
+    public async Task Waehlen(string bezeichner)
+    {
+        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is null) return;
+        _zeile = zeile;
+        _meldung = "";
+        await ZeileGewaehlt.InvokeAsync(zeile);
+    }
+
+    private Task BeiZeile(string bezeichner) => Waehlen(bezeichner ?? "");
+
+    private void Warnen(string text)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = WarnStufe.Warnung;
+    }
+
+    // =====================================================================
+    // Schloss setzen / aufheben
+    // =====================================================================
+
+    private async Task BeiSchlossGeschaltet(string status)
+    {
+        await Neuladen();
+        _meldung = "";
+        _status = status ?? "";
+        await Geaendert.InvokeAsync();
+    }
+
+    // =====================================================================
+    // Löschen
+    // =====================================================================
+
+    /// <summary>Warum die gewählte Zeile nicht gelöscht werden darf; leer = frei.</summary>
+    private string LoeschGrund
+    {
+        get
+        {
+            if (_zeile is null) return "";
+            string name = _zeile.Bezeichner;
+            if (ImProjekt is not null && ImProjekt().Contains(name, StringComparer.Ordinal))
+                return string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.ImProjekt, name);
+            if (_zeile.Geschuetzt) return Texte.Schreibgeschuetzt;
+            IReadOnlyList<string> projekte = Ganglinienblatt.Projekte(_verwendung, name);
+            return projekte.Count == 0
+                ? ""
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.ADM_AW_LOESCHEN_VERWENDET,
+                                Ganglinienblatt.Projektliste(projekte));
+        }
+    }
+
+    private async Task BeiLoeschen()
+    {
+        if (_laeuft || _zeile is null || Wege.Loeschen is null) return;
+
+        string grund = LoeschGrund;
+        if (grund.Length > 0) { Warnen(grund); return; }
+
+        string name = _zeile.Bezeichner;
+        if (Wege.HatProjektzuordnung is not null && await Wege.HatProjektzuordnung(name))
+        {
+            Warnen(Texte.Projektzuordnung);
+            return;
+        }
+
+        _meldung = "";
+        _loeschziel = name;
+        _loeschfrage = string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Loeschfrage, name);
+        _loeschfrageOffen = true;
+    }
+
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        string name = _loeschziel;
+        _loeschziel = "";
+        if (antwort != true || Wege.Loeschen is null || name.Length == 0) return;
+
+        bool ok = await Wege.Loeschen(name);
+        await Neuladen();
+        if (!ok) { Warnen(Texte.Schreibgeschuetzt); return; }
+
+        _status = string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.Geloescht, name);
+        await Geaendert.InvokeAsync();
+    }
+
+    // =====================================================================
+    // Import
+    // =====================================================================
+
+    private void ImportOeffnen()
+    {
+        if (Wege.Einlesen is null || _laeuft) return;
+        _meldung = "";
+        _importMeldung = "";
+        _importOffen = true;
+    }
+
+    /// <summary>Kreuz, Esc und „Abbrechen" — nicht, solange die Kette läuft.</summary>
+    private void ImportSchliessen()
+    {
+        if (_laeuft) return;
+        _importOffen = false;
+        _importMeldung = "";
+    }
+
+    private async Task BeiDatei(string pfad)
+    {
+        _importMeldung = "";
+        if (string.IsNullOrEmpty(pfad)) { _pfad = ""; return; }
+        if (Wege.Ablegen is null) { _pfad = pfad; return; }
+
+        // Die verlustfreie Originalablage; ein Fehlschlag ist eine Warnung, der
+        // Import laeuft dann mit der Originaldatei.
+        AblageErgebnis erg = await Wege.Ablegen(pfad);
+        _pfad = erg.Pfad.Length > 0 ? erg.Pfad : pfad;
+        if (erg.Meldung.Length > 0)
+        {
+            _importMeldung = erg.Meldung;
+            _importMeldungStufe = WarnStufe.Warnung;
+        }
+    }
+
+    private async Task BeiAnzeigen()
+    {
+        if (!AnzeigenErlaubt) return;
+        await Wege.MitSystemOeffnen!(_pfad);
+    }
+
+    /// <summary>
+    /// „Einlesen": Gelingt es, schließt die Überlagerung, der neue Satz ist gewählt, die
+    /// Statuszeile nennt ihn, die Protokollzeile das Format. Scheitert es, bleibt sie offen
+    /// und meldet den Grund — samt Protokoll, wenn die Datei gelesen wurde.
+    /// </summary>
+    private async Task BeiEinlesen()
+    {
+        if (!EinlesenErlaubt) return;
+
+        _laeuft = true;
+        _anteil = null;
+        _fortschrittText = "";
+        _importMeldung = "";
+        _status = "";
+        _protokoll = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var melder = new Progress<ImportFortschritt>(f =>
+            {
+                _anteil = f.Anteil;
+                _fortschrittText = f.Schluessel;
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            GanglinienKatalogimport erg = await Wege.Einlesen!(_pfad, melder);
+            if (erg.Erfolgreich)
+            {
+                _pfad = "";
+                _importOffen = false;
+                _protokoll = erg.Protokoll ?? "";
+                await Neuladen();
+                await Waehlen(erg.Bezeichner ?? "");
+                _status = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                        Resource.ADM_MSG_EINGELESEN, erg.Bezeichner);
+                await Geaendert.InvokeAsync();
+            }
+            else
+            {
+                _importMeldung = erg.Protokoll.Length > 0 ? erg.Meldung + " " + erg.Protokoll : erg.Meldung;
+                _importMeldungStufe = erg.IstFehler ? WarnStufe.Fehler : WarnStufe.Warnung;
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+            _anteil = null;
+            _fortschrittText = "";
+        }
+    }
+}

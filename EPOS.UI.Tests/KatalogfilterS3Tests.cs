@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
@@ -210,23 +211,27 @@ public class KatalogfilterS3Tests : EposBunitContext
 
     /// <summary>
     /// <b>S3.2:</b> Die Solarganglinie führt als einzige die BESCHREIBUNG — sie steht
-    /// in ihrer Kopftabelle, in den beiden anderen nicht.
+    /// in ihrer Kopftabelle, in den beiden anderen nicht. Der Katalog steht im Dialog
+    /// „Solarthermie Ganglinie" ohne Projekt (Katalogbetrieb).
     /// </summary>
     [Fact]
-    public void Die_Solarganglinienverwaltung_fuehrt_die_Beschreibung()
+    public void Der_Solarganglinienkatalog_fuehrt_die_Beschreibung()
     {
-        var cut = Render<SolarganglinieAdminDialog>(p => p
-            .Add(x => x.Katalogzeilen, () => Task.FromResult(
-                (IReadOnlyList<Katalogfilterzeile>)new[]
-                {
-                    Zeitreihenproben.Zeile(1, "Tsol1", beschreibung: "Leistung Solarsystem [W]",
-                                           jahresarbeitMwh: 3.9, spitzeKw: 5.4)
-                }))
+        var cut = Render<SolarganglinieDialog>(p => p
+            .Add(x => x.Katalogbetrieb, true)
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege
+            {
+                Katalogzeilen = () => Task.FromResult(
+                    (IReadOnlyList<Katalogfilterzeile>)new[]
+                    {
+                        Zeitreihenproben.Zeile(1, "Tsol1", beschreibung: "Leistung Solarsystem [W]",
+                                               jahresarbeitMwh: 3.9, spitzeKw: 5.4)
+                    })
+            })
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        // Kaestchen + Bezeichner + Beschreibung + Jahresarbeit + Spitze - die Zeile ist
-        // die Wahl (V4), das Kaestchen waehlt mehrere (Stufe 4, V6).
+        // Wahl + Bezeichner + Beschreibung + Jahresarbeit + Spitze.
         Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);
         Assert.Contains("Leistung Solarsystem [W]", cut.Markup);
     }
@@ -251,10 +256,13 @@ public class KatalogfilterS3Tests : EposBunitContext
 
         var solar = Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile>())
-            .Add(x => x.Katalogzeilen, () => (IReadOnlyList<Katalogfilterzeile>)new[]
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege
             {
-                Zeitreihenproben.Zeile(21, "Ganglinie Nord", beschreibung: "Messreihe",
-                                       jahresarbeitMwh: 3.9, spitzeKw: 5.4)
+                Katalogzeilen = () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)new[]
+                {
+                    Zeitreihenproben.Zeile(21, "Ganglinie Nord", beschreibung: "Messreihe",
+                                           jahresarbeitMwh: 3.9, spitzeKw: 5.4)
+                })
             })
             .Add(x => x.Katalogprofil,
                  Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))

@@ -236,7 +236,7 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 |-
 | Solarthermie-Ganglinie zuordnen || <code>Form_Solarganglinie.btn_Help</code> || [[Programm Dokumentation/Solarthermie|Solarthermie]]
 |-
-| Katalog der Solar-Ganglinien (Administration) || <code>Form_Solarganglinie_Admin.btn_Help</code> || [[Programm Dokumentation/Solarthermie|Solarthermie]]
+| Katalog der Solar-Ganglinien (Administration) || <code>Form_Solarganglinie_Admin.btn_Help</code> || [[Programm Dokumentation/Solarthermie#ganglinie-dialog|Solarthermie]]
 |-
 | Dialog ''Stromspeicher'' || <code>Form_Stromspeicher.btn_Help</code> || [[Programm Dokumentation/Stromspeicher|Stromspeicher]]
 |-

@@ -28,5 +28,34 @@ namespace WindowsFormsApplication1
         /// Schale zeigt den Katalog nicht an.
         /// </summary>
         internal static Func<IReadOnlyDictionary<string, object>> PufferKatalogGaben;
+
+        /// <summary>
+        /// Die Dateiwege des Ganglinienimports der Solarthermie (Katalogseite des Dialogs
+        /// „Solarthermie Ganglinie"): Dateiwahl mit dem Ganglinienordner als Start,
+        /// verlustfreie Ablage, Anzeigen mit der Systemanwendung. Unter Windows
+        /// <c>SolarganglinieHuelle.Dateiwege()</c>; <c>null</c> = diese Schale importiert
+        /// nicht, und der Knopf „Import…" nennt den Grund
+        /// (<c>SGL_IMP_NICHT_VERFUEGBAR</c>).
+        /// </summary>
+        internal static Func<GanglinienDateiwege> SolarganglinienDatei;
+    }
+
+    /// <summary>
+    /// Was eine Schale zum Import einer Ganglinien-DATEI beisteuert — die Kette selbst
+    /// (Lesen, Prüfen, Schreiben) liegt im Kern.
+    /// </summary>
+    internal sealed class GanglinienDateiwege
+    {
+        /// <summary>Der Dateiwähler (Filter → Pfad, <c>null</c> = abgebrochen).</summary>
+        internal Func<string, System.Threading.Tasks.Task<string>> DateiWaehlen;
+
+        /// <summary>Die verlustfreie Originalablage im Ganglinienordner (optional).</summary>
+        internal Func<string, System.Threading.Tasks.Task<EPOS.UI.Dialoge.Bedarf.AblageErgebnis>> Ablegen;
+
+        /// <summary>Öffnet eine Datei mit der Systemanwendung (optional).</summary>
+        internal Func<string, System.Threading.Tasks.Task<bool>> MitSystemOeffnen;
+
+        /// <summary>Der Ganglinienordner als Anzeigetext.</summary>
+        internal string Ordner = "";
     }
 }

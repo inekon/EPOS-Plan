@@ -96461,7 +96461,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte über 1 Jahr als Textdatei ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihe als Text-, CSV- oder Excel-Datei: 8 760 Stundenwerte oder 35 040 Viertelstundenwerte in kW (je Stunde gemittelt), eine Spalte oder mit Trennzeichen (; Tab | ,), wahlweise mit Kopfzeile und Zeitstempelspalte. Der Dateiname wird der Name der Ganglinie, die Kopfzeile ihre Beschreibung. ähnelt.
         /// </summary>
         public static string SGAD_LBL_STUNDENWERTE {
             get {
@@ -96506,6 +96506,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält {0} Werte; erwartet werden 8 760 Stundenwerte oder 35 040 Viertelstundenwerte. ähnelt.
+        /// </summary>
+        public static string SGL_IMP_ANZAHL {
+            get {
+                return ResourceManager.GetString("SGL_IMP_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keines (eine Spalte) ähnelt.
+        /// </summary>
+        public static string SGL_IMP_KEIN_TRENNZEICHEN {
+            get {
+                return ResourceManager.GetString("SGL_IMP_KEIN_TRENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Import einer Ganglinie ist auf dieser Plattform nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string SGL_IMP_NICHT_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("SGL_IMP_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format: Trennzeichen {0}, Dezimalzeichen {1}, Kopfzeile {2}, Zeitstempel {3} · {4} Werte, {5} · Jahresarbeit {6} MWh · Spitze {7} kW ähnelt.
+        /// </summary>
+        public static string SGL_IMP_PROTOKOLL {
+            get {
+                return ResourceManager.GetString("SGL_IMP_PROTOKOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenraster ähnelt.
+        /// </summary>
+        public static string SGL_IMP_RASTER_STUNDE {
+            get {
+                return ResourceManager.GetString("SGL_IMP_RASTER_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstundenraster, je Stunde gemittelt ähnelt.
+        /// </summary>
+        public static string SGL_IMP_RASTER_VIERTEL {
+            get {
+                return ResourceManager.GetString("SGL_IMP_RASTER_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung: ähnelt.
         /// </summary>
         public static string SGL_LBL_BESCHREIBUNG {
@@ -96529,6 +96583,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SGL_LBL_PROJEKTLISTE {
             get {
                 return ResourceManager.GetString("SGL_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ganglinie „{0}“ ist diesem Projekt zugeordnet und kann nicht gelöscht werden. ähnelt.
+        /// </summary>
+        public static string SGL_MSG_IM_PROJEKT {
+            get {
+                return ResourceManager.GetString("SGL_MSG_IM_PROJEKT", resourceCulture);
             }
         }
         
