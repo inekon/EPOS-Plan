@@ -56,6 +56,7 @@ namespace EPOS.Kern.Tests
         [InlineData(DbWerte.ERZEUGER_WAERMEPUMPE)]
         [InlineData(DbWerte.ERZEUGER_PHOTOVOLTAIK)]
         [InlineData(DbWerte.ERZEUGER_STROMSPEICHER)]
+        [InlineData(DbWerte.ERZEUGER_KAELTEMASCHINE)]
         [InlineData(EnergietraegerZulaessigkeit.ERZEUGER_HEIZSTAB)]
         public void Die_elektrische_Welt_bekommt_genau_die_Stromgruppe(string erzeugerart)
         {
@@ -374,6 +375,69 @@ namespace EPOS.Kern.Tests
             // Solarthermie bezieht keine Energie — sie trägt nichts bei, und ein Projekt
             // ohne Anlage MIT Träger wird nicht eingeengt.
             Assert.Null(EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_OHNE_ANLAGEN));
+        }
+
+        // =================================================================
+        // Die Kältemaschine im Projekt (Nachzug zu B2)
+        // =================================================================
+
+        /// <summary>Projekt 1055: Kessel, BHKW, Wärmepumpe und eine Kältemaschine.</summary>
+        private const int PROJEKT_KAELTEMASCHINE = 1055;
+
+        [Fact]
+        public void Die_Kaeltemaschine_aendert_die_Vereinigung_eines_Projekts_mit_Strom_nicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyList<string> mit = EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_KAELTEMASCHINE);
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Energieanlagen SET ID_Kaeltemaschine = NULL WHERE ID_Projekt = ?",
+                new DbParam("@p", PROJEKT_KAELTEMASCHINE));
+            IReadOnlyList<string> ohne = EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_KAELTEMASCHINE);
+
+            // Kein Stromträger verloren, kein Gasträger gewonnen: dieselbe Vereinigung.
+            Assert.Equal(ohne == null ? null : new List<string>(ohne), mit == null ? null : new List<string>(mit));
+        }
+
+        [Fact]
+        public void Eine_Kaeltemaschine_neben_einem_Brenner_bringt_genau_die_Stromgruppe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Nur Brenner (Kessel) und Kältemaschine: Wärmepumpe, BHKW, PV, Speicher und Hilfsenergie weg.
+            DataRepository.ExecuteNonQuery(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND (ID_WP > 0 OR ID_BHKW > 0 OR ID_PV > 0 OR ID_SP > 0)",
+                new DbParam("@p", PROJEKT_KAELTEMASCHINE));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET Heizstab = 0 WHERE ID_Projekt = ?",
+                new DbParam("@p", PROJEKT_KAELTEMASCHINE));
+            object kessel = DataRepository.ExecuteScalar(
+                "SELECT MIN(ID_Kessel) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Kessel > 0",
+                new DbParam("@p", PROJEKT_KAELTEMASCHINE));
+            int kesselId = Convert.ToInt32(kessel);
+
+            IReadOnlyList<string> gruppen = EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_KAELTEMASCHINE);
+            IReadOnlyList<string> brenner = EnergietraegerZulaessigkeit.ZulaessigeGruppen(DbWerte.ERZEUGER_HEIZKESSEL, kesselId);
+
+            Assert.NotNull(gruppen);
+            Assert.NotNull(brenner);
+            Assert.Contains(GruppeDesTraegers(TRAEGER_STROM), gruppen);
+            foreach (string g in brenner) Assert.Contains(g, gruppen);
+            var erwartet = new HashSet<string>(brenner) { GruppeDesTraegers(TRAEGER_STROM) };
+            Assert.Equal(erwartet.Count, gruppen.Count);
+            Assert.DoesNotContain(GruppeDesTraegers(TRAEGER_FERNWAERME), gruppen);
+        }
+
+        [Fact]
+        public void Die_Kaeltemaschine_waehlt_den_Stromtraeger_des_Projekts_vor()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int vor = EnergietraegerZulaessigkeit.Vorauswahl(DbWerte.ERZEUGER_KAELTEMASCHINE, 0, PROJEKT_KAELTEMASCHINE);
+            Assert.Equal(ProjektEnergietraegerCtrl.StandardStromTraeger(PROJEKT_KAELTEMASCHINE), vor);
+            Assert.Equal(EnergietraegerZulaessigkeit.CODE_STROM, PricingModelDesTraegers(vor));
         }
 
         // =================================================================
