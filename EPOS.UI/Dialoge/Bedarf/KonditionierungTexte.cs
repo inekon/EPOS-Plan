@@ -767,8 +767,19 @@ public sealed class KonditionierungTexte
 
     // ------------------------------------------------------------ Die Karte im Einzelnen (Welle U3)
 
-    /// <summary><c>KOND_BTN_EINZELHEITEN</c> — klappt die Karte auf: Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild</summary>
-    public string KnopfEinzelheiten { get; set; } = "Kalender im Einzelnen";
+    /// <summary><c>KOND_BTN_EINZELHEITEN</c> — klappt die Einzelheiten der Karte auf: Grundangabe, Woche, Perioden, Werkzeuge, Teppichbild</summary>
+    public string KnopfEinzelheiten { get; set; } = "Kalender bearbeiten…";
+
+    /// <summary><c>KOND_BTN_EINZELHEITEN_ZU</c> — derselbe Knopf an der aufgeklappten Karte</summary>
+    public string KnopfEinzelheitenZu { get; set; } = "Einzelheiten einklappen";
+
+    /// <summary><c>KOND_TXT_HINWEIS_EINZELHEITEN</c> — der Tooltip des Knopfs: was die Einzelheiten zeigen</summary>
+    public string HinweisEinzelheiten { get; set; } =
+        "Zeigt den Kalender dieser Größe im Einzelnen unter den Karten: Wochenraster (7 × 24 Stunden), Perioden " +
+        "(Ferien, Feiertage, Ausnahmetage) und Jahresvorschau (Teppichbild).";
+
+    /// <summary><c>KOND_LBL_EINZELHEITEN_TITEL</c> — die Überschrift der Einzelheiten; {0} = Name der Größe</summary>
+    public string LabelEinzelheitenTitel { get; set; } = "Kalender {0} im Einzelnen";
 
     /// <summary><c>KOND_TXT_GRUND_NICHT_ANGELEGT</c> — der Grund der weich gesperrten Handlungen der aufgeklappten Karte</summary>
     public string GrundNichtAngelegt { get; set; } = "Erst „Kalender anlegen“ – bis dahin folgt der Kalender der Matrix.";

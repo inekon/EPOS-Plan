@@ -58,7 +58,7 @@
 //      Vorlage zuletzt in der Liste) und die Verwaltung als BLATT: Liste der
 //      Größe samt der eigenen, Vorschau per Klick, Umschalter, Bedienziele,
 //      Überdeckung und Querrollen im Blatt; Esc führt zurück in den Editor.
-//    - die KARTE IM EINZELNEN (Welle U3, Fall karte): „Kalender im Einzelnen“ an
+//    - die KARTE IM EINZELNEN (Welle U3, Fall karte): „Kalender bearbeiten…“ an
 //      der Karte „Heizen“ (angelegt, Sommerferien, neun Feiertage, Zeitfenster,
 //      eine eigene Periode) — gemessen wie ein Reiterblatt (kein Querrollen,
 //      Ziele ≥ 44 px, keine Überdeckung, nichts ragt heraus), dazu die Anordnung
@@ -1040,8 +1040,10 @@ async function vorlageAlle(seite, marke, f) {
 // Die Karte „Heizen“ aufgeklappt: Grundangabe, Zeitfenster, Wochenraster, Periodenliste, Werkzeuge,
 // Teppichbild — ihre Kästen, die Anordnung des Rasters am Behälter und das Teppichbild.
 const EINZELN = () => {
-  const k = document.querySelector('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"]');
-  if (!k) return null;
+  // Die Einzelheiten stehen als eigener Abschnitt unter allen Karten; die Karte bleibt an ihrem Platz.
+  const karteEl = document.querySelector('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"]');
+  const k = document.querySelector('.epos-ueberlagerung .epos-kond-karte-einzelheiten[data-groesse="0"]');
+  if (!karteEl || !k) return { offen: false, klasse: false, karte: 0, raster: 0, brueche: [], tage: 0, vermerk: '', teppichZeile: '' };
   const raster = k.querySelector('.epos-wochenraster--umbrechend');
   const montag = raster ? raster.querySelector('tbody tr') : null;
   const oben = montag ? new Set([...montag.querySelectorAll('td')].map(td => Math.round(td.getBoundingClientRect().top))) : new Set();
@@ -1066,7 +1068,9 @@ const EINZELN = () => {
   const zeitraum = tab ? tab.querySelector('th.epos-kond-periode-zeitraum') : null;
   return {
     offen: !!k.querySelector('.epos-kond-inhalt'),
-    klasse: k.classList.contains('epos-kond-karte--offen'),
+    klasse: karteEl.classList.contains('epos-kond-karte--offen')
+            && !!karteEl.querySelector('.epos-kond-karte-knoepfe, .epos-kond-vorlagewahl')
+            && Math.abs(k.getBoundingClientRect().width - k.parentElement.getBoundingClientRect().width) < 1,
     karte: Math.round(k.getBoundingClientRect().width),
     raster: raster ? raster.clientWidth : 0,
     rasterQuer: raster ? raster.scrollWidth - raster.clientWidth : null,
@@ -1087,8 +1091,9 @@ const EINZELN = () => {
 
 async function karte(seite, marke, f) {
   await seite.locator('.epos-ueberlagerung [role=tab]').nth(1).click(); await schlaf(500);
-  const karteLoc = seite.locator('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"]');
-  await karteLoc.locator('button.epos-kond-einzelheiten').click(); await schlaf(900);
+  await seite.locator('.epos-ueberlagerung .epos-kond-karte[data-groesse="0"] button.epos-kond-einzelheiten').click();
+  await schlaf(900);
+  const karteLoc = seite.locator('.epos-ueberlagerung .epos-kond-karte-einzelheiten[data-groesse="0"]');
 
   const m = await seite.evaluate(MESSEN, [ZIEL, TOL]);
   if (m.fehler) { melde(marke, m.fehler); return; }
@@ -1107,7 +1112,7 @@ async function karte(seite, marke, f) {
               `Spalten „Art“ ${e.art ? 'sichtbar' : 'aus'}, „Von–Bis“ ${e.zeitraum ? 'sichtbar' : 'aus'}, ` +
               `quer ${e.periodenQuer}, Wortbrüche ${e.brueche.length}; Tagesknöpfe ${e.tage}; ` +
               `Vermerk „${e.vermerk.slice(0, 60)}“; Teppich ${e.teppichElemente} Elemente, ${e.teppichWerte} mit Wert; „${e.teppichZeile}“`);
-  if (!e.offen || !e.klasse) melde(marke, '„Kalender im Einzelnen“ klappt die Karte nicht über die ganze Zeile auf');
+  if (!e.offen || !e.klasse) melde(marke, '„Kalender bearbeiten…“ zeigt die Einzelheiten nicht über die ganze Zeile neben der stehenden Karte');
   if (e.zeilenJeTag !== soll) melde(marke, `das Wochenraster steht in ${e.zeilenJeTag} Zeilen je Tag (soll ${soll} bei ${e.raster} px)`);
   if (e.rasterQuer > 0) melde(marke, `das Wochenraster rollt quer (${e.rasterQuer} px)`);
   if (e.perioden !== 11 || e.matrixbereich !== 1) melde(marke, `Periodenliste: ${e.perioden} Zeilen, ${e.matrixbereich} des Matrixbereichs (soll 11, 1)`);

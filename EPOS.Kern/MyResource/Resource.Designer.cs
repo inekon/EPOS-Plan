@@ -32460,7 +32460,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus dem Baujahr {0}: {1} – abweichende Wahl gilt. ähnelt.
         /// </summary>
         public static string GEB_BAK_AUS_BAUJAHR {
             get {
@@ -32573,6 +32573,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_BAK_M {
             get {
                 return ResourceManager.GetString("GEB_BAK_M", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Baujahr frei wählbar. ähnelt.
+        /// </summary>
+        public static string GEB_BAK_OHNE_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEB_BAK_OHNE_BAUJAHR", resourceCulture);
             }
         }
         
@@ -43505,6 +43514,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_GEB_PROT_U_UNVOLLSTAENDIG {
             get {
                 return ResourceManager.GetString("IMP_GEB_PROT_U_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung „{0}“ aus der Gebäudeart „{1}“ der Datei. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_ART {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung: Die Datei nennt weder Gebäudeart noch eindeutige Nutzungen – es bleibt die Vorgabe „{0}“. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_KEINE {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung „{0}“ aus den Nutzungen der Zonen: {1} % der {2} m² mit erkannter Nutzung sind Wohnen. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_ZONEN", resourceCulture);
             }
         }
         
@@ -73704,11 +73740,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender im Einzelnen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender bearbeiten… ähnelt.
         /// </summary>
         public static string KOND_BTN_EINZELHEITEN {
             get {
                 return ResourceManager.GetString("KOND_BTN_EINZELHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelheiten einklappen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_EINZELHEITEN_ZU {
+            get {
+                return ResourceManager.GetString("KOND_BTN_EINZELHEITEN_ZU", resourceCulture);
             }
         }
         
@@ -74204,6 +74249,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_AUS_SCHALTER {
             get {
                 return ResourceManager.GetString("KOND_LBL_AUS_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender {0} im Einzelnen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_EINZELHEITEN_TITEL {
+            get {
+                return ResourceManager.GetString("KOND_LBL_EINZELHEITEN_TITEL", resourceCulture);
             }
         }
         
@@ -75977,6 +76031,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_HINWEIS_AUS {
             get {
                 return ResourceManager.GetString("KOND_TXT_HINWEIS_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt den Kalender dieser Größe im Einzelnen unter den Karten: Wochenraster (7 × 24 Stunden), Perioden (Ferien, Feiertage, Ausnahmetage) und Jahresvorschau (Teppichbild). ähnelt.
+        /// </summary>
+        public static string KOND_TXT_HINWEIS_EINZELHEITEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_HINWEIS_EINZELHEITEN", resourceCulture);
             }
         }
         

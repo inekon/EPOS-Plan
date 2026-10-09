@@ -1077,33 +1077,43 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// DAS BAUJAHR FÜHRT (E47, F2): Mit Baujahr zeigt die Klappliste die Klasse aus dem Jahr, ist
-    /// gesperrt, die Herleitungszeile sagt es — und gespeichert wird diese Klasse. Ohne Baujahr ist sie
-    /// wieder wählbar.
+    /// DAS BAUJAHR SCHLÄGT VOR (Anwenderwunsch 08.10.2026, ändert E47 F2): Die Klappliste ist immer aktiv; ein
+    /// gespeicherter Satz zeigt seine gespeicherte Klasse, auch wenn das Baujahr eine andere vorschlüge. Ein
+    /// neues Baujahr setzt die Klasse auf den Vorschlag, eine abweichende Wahl danach gilt und wird gespeichert.
     /// </summary>
     [Fact]
-    public void Das_Baujahr_fuehrt_die_Baualtersklasse()
+    public void Das_Baujahr_schlaegt_die_Baualtersklasse_vor_und_die_Wahl_bleibt_frei()
     {
         GebaeudeKatalogDaten daten = Satz();
-        daten.Baualtersklasse = 0;       // gespeichert A - das Baujahr sagt E
+        daten.Baualtersklasse = 0;       // gespeichert A - das Baujahr schlüge E vor
         daten.Baujahr = 1965;
         GebaeudeKatalogDaten geschrieben = null!;
         var cut = Aufbauen(daten, speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
 
         IElement klasse = Klappliste(cut, "Baualtersklasse :");
-        Assert.NotNull(klasse.GetAttribute("disabled"));
-        Assert.Equal("1958 bis 1968", klasse.QuerySelector("option[selected]")!.TextContent.Trim());
-        Assert.Contains("Die Klasse folgt aus dem Baujahr 1965", cut.Markup);
+        Assert.Null(klasse.GetAttribute("disabled"));
+        Assert.Equal("bis 1859", klasse.QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("Vorschlag aus dem Baujahr 1965: 1958 bis 1968 – abweichende Wahl gilt.", cut.Markup);
         Ok(cut);
-        Assert.Equal(4, geschrieben.Baualtersklasse);
+        Assert.Equal(0, geschrieben.Baualtersklasse);
+        Assert.Equal(1965, geschrieben.Baujahr);
 
-        // Ein neues Baujahr zieht die Klasse nach; ohne Baujahr ist sie wieder wählbar.
+        // Ein neues Baujahr setzt den Vorschlag; eine andere Wahl gilt und wird gespeichert.
         cut = Aufbauen(Satz(), speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
         Eingabe(cut, "Baujahr :").Input("2018");
         Assert.Equal("2016 bis 2020", Klappliste(cut, "Baualtersklasse :").QuerySelector("option[selected]")!.TextContent.Trim());
-        Assert.NotNull(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
-        Eingabe(cut, "Baujahr :").Input("");
         Assert.Null(Klappliste(cut, "Baualtersklasse :").GetAttribute("disabled"));
+        Klappliste(cut, "Baualtersklasse :").Change("9");
+        Assert.Equal("2002 bis 2009", Klappliste(cut, "Baualtersklasse :").QuerySelector("option[selected]")!.TextContent.Trim());
+        Assert.Contains("Vorschlag aus dem Baujahr 2018: 2016 bis 2020 – abweichende Wahl gilt.", cut.Markup);
+        Ok(cut);
+        Assert.Equal(2018, geschrieben.Baujahr);
+        Assert.Equal(9, geschrieben.Baualtersklasse);
+
+        // Ohne Baujahr ist die Klasse frei wählbar, die Zeile sagt es.
+        cut = Aufbauen(Satz(), speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Eingabe(cut, "Baujahr :").Input("");
+        Assert.Contains("Ohne Baujahr frei wählbar.", cut.Markup);
         Klappliste(cut, "Baualtersklasse :").Change("2");
         Ok(cut);
         Assert.Null(geschrieben.Baujahr);

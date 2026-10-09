@@ -38,6 +38,7 @@ und `README.md`.
 | [`aktuell/ADR-006_Trennung_Altweg_VDI6007.md`](aktuell/ADR-006_Trennung_Altweg_VDI6007.md) | ADR-006: Ablösung des Tagesbilanz-Wegs — Weiche am Eingang, getrennte Module `Altweg/` und `Gebaeude/`, Dialoge in VDI-6007-Struktur, Altweg als getrenntes, eingefrorenes Modul für die Dauer des Übergangs (E20, E23) bis zur Ablösung durch die Stufe GA, deren Zeitpunkt offen ist (E26); jede Stufe mit einem Altweg-Sonderfall trägt ihn in die Löschliste ein; angenommen 16.09.2026, Ergänzungsvermerk 17.09.2026 | 2026-09-17 |
 | [`aktuell/Bericht/2026-09-30_Uebergabe_Berichterstellung.md`](aktuell/Bericht/2026-09-30_Uebergabe_Berichterstellung.md) | Berichterstellung, Übergabe 30.09.2026 auf ein anderes Konto: Stand (#590–#622), geltende Entscheide, offene Windows-Proben und Wiki-Uploads, Arbeitsweise (Gate, CI-Nachweis, Wiki-Upload), Einstieg | 2026-09-30 |
 | [`aktuell/Dialoge/2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](aktuell/Dialoge/2026-10-08_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md) | Dialoge und Korrekturen, Übergabe 08.10.2026 auf ein anderes Konto: Stand (#797–#834, Basis R44), geltende Entscheide (Erdwärme, Komponentenübernahme, Schloss, Katalogauswahl V1), Regeln der Sitzung, offene Punkte, Einstiegs-Prompt | 2026-10-08 |
+| [`aktuell/Dialoge/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md`](aktuell/Dialoge/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md) | Kalenderbedienung im Reiter Konditionierung (Anwenderwunsch 08.10.2026, Welle E2): heutiger Stand gegen die vier Wünsche (fertige Profile, Wochenende/Ferien/Saison als Datumsbereiche für alle Größen, einzelne Tage, Wochen- und Monatskopie) und die Frage nach grafischer Bearbeitung, zwei Varianten V1 Jahreskalender und V2 Wochenprofile mit Empfehlung, fünf Fragen an den Anwender, Befund zum Datenmodell (Mockup `aktuell/Mockups/Konditionierung_Kalender.html`) | 2026-10-09 |
 | [`aktuell/BETRIEB_SQLITE.md`](aktuell/BETRIEB_SQLITE.md) | Betrieb der SQLite-Datenbank: Ablage, Sicherung, Migration, SQL-Dialektregeln (§ 6) | 2026-09-11 |
 | [`aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md) | Mehrspeicher: Konzept, Umsetzung und Prüfumfang — der implementierte Flottenstand | 2026-09-12 |
 | [`aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md`](aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md) | Modul, Strang und Wechselrichter — Regeln, Meldungen, Auslegung | 2026-09-09 |
@@ -200,7 +201,9 @@ Anordnung; die zugehörigen Bilder liegen beim Anwender, nicht im Repository —
 Projekt mit Kundennamen) sowie `Waermepumpe_Bivalenz_Uebergabe.html` (Konzept Übergabegrenze und Bivalenz:
 Gruppe „Bivalenz und Übergabe“ der Wärmepumpen-Konfiguration mit Herleitungszeile, Bivalenzdiagramm und Kacheln
 des Ergebnisreiters) sowie `Projektdialog_Katalogauswahl_V1.html` bis `_V5.html` samt gleichnamigen PNG in
-1 280 × 800 und `…_klein.png` in 1 280 × 720 (Konzept Projektdialoge Katalogauswahl).
+1 280 × 800 und `…_klein.png` in 1 280 × 720 (Konzept Projektdialoge Katalogauswahl) sowie
+`Konditionierung_Kalender.html` (Befund Kalenderbedienung Konditionierung: V1 Jahreskalender und V2 Wochenprofile,
+umschaltbar, auf denselben Daten).
 
 ---
 

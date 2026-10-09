@@ -52,15 +52,15 @@ public sealed class GebaeudeKatalogDaten
     public string Verwendung { get; set; } = "Wohngebaeude";
 
     /// <summary>
-    /// Index der Baualtersklasse (0 = 'A' … 12 = 'M', Entscheid E47). Ist <see cref="Baujahr"/>
-    /// gesetzt, FOLGT sie ihm (<see cref="BaujahrUebernehmen"/>, <see cref="KlasseAusBaujahr"/>).
+    /// Index der Baualtersklasse (0 = 'A' … 12 = 'M', Entscheid E47). Das Baujahr SCHLÄGT sie VOR
+    /// (<see cref="BaujahrUebernehmen"/>, <see cref="KlasseVorschlag"/>); gespeichert wird immer diese Wahl.
     /// </summary>
     public int Baualtersklasse { get; set; }
 
     /// <summary>
     /// Das Baujahr (<c>Baujahr</c>, Schemaschritt <c>BaujahrSchema.SCHRITT</c>) — eine Jahreszahl
-    /// 1500 … 2100; <c>null</c> = unbekannt. Ist es gesetzt, FÜHRT es: Die Baualtersklasse folgt aus
-    /// ihm (Entscheid E47, F2). Die Rechnung ändert es nicht.
+    /// 1500 … 2100; <c>null</c> = unbekannt. Ein neues Baujahr schlägt die Baualtersklasse vor und setzt
+    /// sie; eine abweichende Wahl danach gilt. Die Rechnung ändert es nicht.
     /// </summary>
     public int? Baujahr { get; set; }
 
@@ -78,18 +78,20 @@ public sealed class GebaeudeKatalogDaten
     public double? ErdreichUWirksam { get; set; }
 
     /// <summary>
-    /// Setzt das Baujahr — und mit ihm die Baualtersklasse, wenn das Jahr eine ergibt (DAS BAUJAHR
-    /// FÜHRT, <c>Gebaeudeklassen.IndexAusBaujahr</c>). Ein leeres oder ungültiges Jahr lässt die
-    /// gewählte Klasse stehen. Hand, Stammblatt und Assistent gehen diesen Weg.
+    /// Setzt das Baujahr — und, wenn es sich ÄNDERT und eine Klasse ergibt, die Baualtersklasse auf den
+    /// Vorschlag des Jahres (<c>Gebaeudeklassen.IndexAusBaujahr</c>). Ein leeres oder ungültiges Jahr und
+    /// dasselbe Jahr noch einmal lassen die gewählte Klasse stehen. Hand, Stammblatt und Assistent gehen
+    /// diesen Weg; eine Wahl der Klasse danach gilt.
     /// </summary>
     public void BaujahrUebernehmen(int? jahr)
     {
+        bool neu = jahr != Baujahr;
         Baujahr = jahr;
-        if (WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(jahr) is int klasse) Baualtersklasse = klasse;
+        if (neu && WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(jahr) is int klasse) Baualtersklasse = klasse;
     }
 
-    /// <summary>Folgt die Klasse aus dem Baujahr (dann ist die Klappliste gesperrt)?</summary>
-    public bool KlasseAusBaujahr => WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(Baujahr).HasValue;
+    /// <summary>Die Klasse, die das Baujahr vorschlägt; <c>null</c> ohne (gültiges) Baujahr.</summary>
+    public int? KlasseVorschlag => WindowsFormsApplication1.Gebaeudeklassen.IndexAusBaujahr(Baujahr);
 
     /// <summary>Index der Bauart (0 = leicht, 1 = schwer, 2 = sehr schwer).</summary>
     public int Bauart { get; set; } = 1;

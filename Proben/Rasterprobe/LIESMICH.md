@@ -988,8 +988,8 @@ Rollbehälter die Hülle, 0 Platzhalter nach dem Rollen, Sichtbarkeitsmelder 3 /
 Verwaltung (`node katalogprobe.mjs --nur N16`) läuft in beiden Fenstern ohne Überlagerung durch.
 
 **Welle U3 — die Karte im Einzelnen.** Der Fall `karte` wählt den Reiter „Konditionierung“ (das zweite Blatt
-der Reiterfolge), klappt an „Heizen“ „Kalender im Einzelnen“ auf und misst die Karte wie ein Reiterblatt
-(Querrollen, Bedienziele ≥ 44 px, Überdeckung, Herausragen), dazu: die Karte über die ganze Zeile; das
+der Reiterfolge), klappt an „Heizen“ „Kalender bearbeiten…“ auf (die Einzelheiten stehen unter allen Karten, die Karte bleibt an ihrem Platz) und misst die Karte wie ein Reiterblatt
+(Querrollen, Bedienziele ≥ 44 px, Überdeckung, Herausragen), dazu: die Einzelheiten über die ganze Zeile neben der stehenden Karte; das
 Wochenraster am Behälter (unter 600 px vier Zeilen je Tag, ab 600 px zwei, ab 1 150 px eine) ohne Querrollen;
 die Periodenliste mit elf Zeilen, davon eine des Matrixbereichs, ohne Querrollen und **ohne Wortbruch** (jedes
 Wort einer sichtbaren Zelle steht auf einer Zeile, gemessen über `Range.getClientRects`); sieben Tagesknöpfe
