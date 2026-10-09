@@ -1080,7 +1080,8 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `CHECK` der Feiertagsregel, Größenmaske `Gilt_Fuer` 1 … 31, Verweis `ID_Woche`, Ferienperiode ohne Angabe) nach dem
 > Rezept aus Schritt 96/151 neu, legt `Tab_Konditionierungswoche` (STRICT, leer) und an `Tab_Gebaeude(_STAMM)` die
 > Spalten `Wochenendtage` (Wochenmaske Mo = Bit 0, leer = Sa + So) und `Feiertagsland` an, dazu zwei Prüftrigger der
-> Periode und je Gebäudetabelle den Ferienspiegel. Migration: Die Ferienspalten der Gebäude und Katalogbauten mit
+> Periode und je Gebäudetabelle den Ferienspiegel; die Sicht `Abfrage_Projektgebaeude` trägt beide Spalten hinter der
+> Kühlkurve (zwölfter Sichtneubau, 112 Spalten). Migration: Die Ferienspalten der Gebäude und Katalogbauten mit
 > Größenkalender werden Ferienliste (4 Perioden: 1051 und der Referenzbau, je Ferien 1 und 2), die gekoppelten
 > Feiertage von 1051 und dem Referenzbau (je neun Regeln in allen fünf Größen, 90 Kopien) werden 18 Perioden des
 > gemeinsamen Kalenders mit Maske 31 (zwei neue Kalender `ALLE`; 216 → 148 Perioden); die Ferienzeilen je Größe tragen
@@ -1090,7 +1091,7 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > inhaltsgleich, die `sqlite_sequence`-Stände, die der wiederholte Werkzeuglauf fortzählt, sind auf den Stand 206
 > zurückgesetzt. Die Testdatenbank steht auf **207** (`integrity_check` ok, `foreign_key_check` leer,
 > SQL-Dialektprüfer 0 Fundstellen): **93 958 144 Byte, LFS-SHA-256
-> `0bc9825a6bed41f736efa82f656539ff2bd29f618488ed7130cd960b6eb2be35`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> `ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
 > bleibt** — die Gemeinschaftsperioden kehren beim Lesen mit Rang und Angabe in genau ihre Größenkalender zurück, die
 > Ferienspalten bleiben Quelle der Leser; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879
 > CSV byte-gleich.
