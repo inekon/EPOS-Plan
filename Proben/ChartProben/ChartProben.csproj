@@ -108,6 +108,9 @@
 
     <!-- Die Stromlast des BHKW: das zweite Bild des BHKW-Reiters - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.BhkwStrom.cs" />
+
+    <!-- UB-E4-a: das Bivalenzdiagramm der Waermepumpe - Mass- und Gegenproben. -->
+    <Compile Include="Program.Bivalenzdiagramm.cs" />
   </ItemGroup>
 
   <ItemGroup>

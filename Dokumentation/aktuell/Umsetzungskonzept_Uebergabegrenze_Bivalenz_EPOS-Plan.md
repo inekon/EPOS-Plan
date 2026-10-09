@@ -388,7 +388,7 @@ Kopplung aus"; Tafel und Hinweiszeilen nach FK 7.3; Prüfhinweise UB‑Q10 als B
 **7.2 Diagramm.** `ChartRenderer.Bivalenzdiagramm(BivalenzdiagrammModell)`: Linien und Marken nach FK 7.2, Farben
 aus der Diagrammfarbtafel, keine neue Farbe; deterministische Achsenwahl. ChartProben: neue Probe mit
 synthetischem Zahlenbeispiel (FK 4.5) und einer Gegenprobe; die Hash-Zeilen gehen in die jüngste
-`Messlatte_*.sha256` (heute `Messlatte_2026-10-05.sha256`) — der Kern-Lauf vergleicht auf ubuntu.
+`Messlatte_*.sha256` (heute `Messlatte_2026-10-09.sha256`) — der Kern-Lauf vergleicht auf ubuntu.
 
 **7.3 Export und KI.** Ergebnisspalten mit ihren Spaltennamen als Schlüssel in CSV-Export und KI-Sicht des
 Reiters; Herleitungszeile und Felder in `WaermepumpeAnlageKiSicht`; die Abdeckungswache

@@ -1327,6 +1327,10 @@ namespace ChartProben
             // Mass-, Gegen- und SVG-Proben in Program.BhkwStrom.cs.
             BhkwStromProben(ziel);
 
+            // UB-E4-a - das Bivalenzdiagramm der Waermepumpe (Leistung ueber der Aussentemperatur mit
+            // Bereichsflaechen und Marken): Mass- und Gegenproben in Program.Bivalenzdiagramm.cs.
+            BivalenzdiagrammProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell
