@@ -1,6 +1,6 @@
 # Protokoll CV — Modellansicht (MVD) beim IFC-Import, Exporthinweis, Prüfplan IFC2x3 gegen IFC4 (09.10.2026)
 
-**Sitzung:** „IFC / Gebäudeimport“, Statuszeile **#850**, Zweig `cv-mvd-hinweis`. Kein Schemaschritt, Basis unverändert.
+**Sitzung:** „IFC / Gebäudeimport“, Statuszeile **#851**, Zweig `cv-mvd-hinweis`. Kein Schemaschritt, Basis unverändert.
 
 ## 1 Auftrag und Entscheide
 
