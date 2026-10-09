@@ -20,7 +20,7 @@ namespace WindowsFormsApplication1
     // (2) Tab_PufferAuslegungParameter_STAMM (STRICT): die Vorgabewerte (Schluessel UNIQUE,
     //     Wert, Einheit, Quelle, Herkunftsart, ReadOnly).
     //
-    // (3) Die Saat: INSERT OR IGNORE aller Zeilen aus PufferAuslegungVorgaben.EINTRAEGE - der
+    // (3) Die Saat: INSERT ... WHERE NOT EXISTS aller Zeilen aus PufferAuslegungVorgaben.EINTRAEGE - der
     //     EINEN Quelle der Zahlen, aus der auch der Rueckfall von PufferAuslegungParameter
     //     liest. Eine gepflegte Zeile bleibt, wie sie ist.
     //
@@ -147,10 +147,15 @@ namespace WindowsFormsApplication1
                    ") STRICT";
         }
 
-        /// <summary>Die Saatanweisung — je Vorgabe einmal, mit Parametern; eine stehende Zeile bleibt.</summary>
+        /// <summary>
+        /// Die Saatanweisung — je Vorgabe einmal, mit Parametern; eine stehende Zeile bleibt. Sechs Parameter:
+        /// Schlüssel, Wert, Einheit, Quelle, Herkunftsart, dann noch einmal der Schlüssel für die Bedingung.
+        /// </summary>
+        // Ohne INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand auch bei ignoriertem Einfügen hoch;
+        // NOT EXISTS über den UNIQUE-Schlüssel (Schluessel) lässt ihn stehen.
         public const string SQL_SAAT =
-            "INSERT OR IGNORE INTO " + TAB_PARAMETER + " (Schluessel, Wert, Einheit, Quelle, Herkunftsart, ReadOnly) " +
-            "VALUES (?, ?, ?, ?, ?, 1)";
+            "INSERT INTO " + TAB_PARAMETER + " (Schluessel, Wert, Einheit, Quelle, Herkunftsart, ReadOnly) " +
+            "SELECT ?, ?, ?, ?, ?, 1 WHERE NOT EXISTS (SELECT 1 FROM " + TAB_PARAMETER + " WHERE Schluessel = ?)";
 
         /// <summary>Die Schlüssel der Vorgabetabelle.</summary>
         public const string SQL_SCHLUESSEL = "SELECT Schluessel FROM " + TAB_PARAMETER;
@@ -198,7 +203,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Führt den Schritt aus: fehlende Tabellen anlegen, dann die Saat (INSERT OR IGNORE) in
+        /// Führt den Schritt aus: fehlende Tabellen anlegen, dann die Saat (INSERT … WHERE NOT EXISTS) in
         /// EINEM Vorgang. Für <c>SchemaMigration</c>, <c>Werkzeuge/Testdatenbankschema</c> und
         /// <c>EPOS.Kern.Tests</c>.
         /// </summary>
@@ -230,7 +235,8 @@ namespace WindowsFormsApplication1
                         new DbParam("@w", p.Wert),
                         new DbParam("@e", (object)p.Einheit ?? DBNull.Value),
                         new DbParam("@q", p.Quelle),
-                        new DbParam("@h", p.Herkunftsart));
+                        new DbParam("@h", p.Herkunftsart),
+                        new DbParam("@s2", p.Schluessel));
                 v.Commit();
             }
             if (eingefuegt > 0)

@@ -189,12 +189,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Eine Zeile der Zuordnung auf ein ausgeliefertes EPOS-Muster — nur, wenn für (Art, Schlüssel) noch keine Zeile steht
-        /// (eindeutiger Index ohne Unterschied der Schreibung) und das Muster besteht.
+        /// (eindeutiger Index ohne Unterschied der Schreibung) und das Muster besteht. Sechs Parameter: Art, Schlüssel,
+        /// Katalogart, Muster, Art, Schlüssel. NOT EXISTS statt INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand
+        /// auch bei ignoriertem Einfügen hoch.
         /// </summary>
         internal const string SQL_SAAT_ZUORDNUNG =
-            "INSERT OR IGNORE INTO \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" (\"Art\", \"Schluessel\", \"ID_Profil\", \"ReadOnly\") " +
+            "INSERT INTO \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" (\"Art\", \"Schluessel\", \"ID_Profil\", \"ReadOnly\") " +
             "SELECT ?, ?, p.\"ID\", 1 FROM " + P + " p JOIN " + K + " k ON k.\"ID\" = p.\"ID_Katalog\" " +
-            "WHERE k.\"ReadOnly\" = 1 AND k.\"Art\" = ? AND p.\"ReadOnly\" = 1 AND p.\"Bezeichner\" = ? COLLATE NOCASE";
+            "WHERE k.\"ReadOnly\" = 1 AND k.\"Art\" = ? AND p.\"ReadOnly\" = 1 AND p.\"Bezeichner\" = ? COLLATE NOCASE " +
+            "AND NOT EXISTS (SELECT 1 FROM \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" z WHERE z.\"Art\" = ? " +
+            "AND z.\"Schluessel\" = ? COLLATE NOCASE)";
 
         private const string Z = "\"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\"";
 
@@ -453,7 +457,8 @@ namespace WindowsFormsApplication1
             foreach (RaumnutzungSaatzuordnung z in Zuordnungen)
             {
                 neu += v.Ausfuehren(SQL_SAAT_ZUORDNUNG, new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel),
-                                    new DbParam("@k", RaumnutzungSchema.ART_EPOS_MUSTER), new DbParam("@p", z.Profil));
+                                    new DbParam("@k", RaumnutzungSchema.ART_EPOS_MUSTER), new DbParam("@p", z.Profil),
+                                    new DbParam("@a2", z.Art), new DbParam("@s2", z.Schluessel));
                 if (Zahl(v.Skalar(RaumnutzungSchema.SQL_ZAHL_ZUORDNUNG_GESAAT, new DbParam("@a", z.Art),
                                   new DbParam("@s", z.Schluessel))) == 0)
                     throw new InvalidOperationException("Schemaschritt " + Nr + ": Das ausgelieferte Muster \"" + z.Profil +

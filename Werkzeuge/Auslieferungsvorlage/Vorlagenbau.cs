@@ -270,7 +270,8 @@ namespace Auslieferungsvorlage
             long nachgesaet = 0;
             foreach (RaumnutzungSaatzuordnung z in RaumnutzungSaat.Zuordnungen)
                 nachgesaet += DataRepository.ExecuteNonQuery(RaumnutzungSchema.SQL_SAAT_ZUORDNUNG,
-                    new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel), new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil));
+                    new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel), new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil),
+                    new DbParam("@a2", z.Art), new DbParam("@s2", z.Schluessel));
             _bericht.Zeile("    entfernt: " + zuordnungen + " eigene Zuordnung(en), " + profile + " eigene(s) Profil(e), " +
                            kategorien + " eigene Kategorie(n); " + zurueck + " ausgelieferte Zuordnung(en) auf ihr Saatprofil zurueckgestellt, " +
                            nachgesaet + " nachgesaet");
