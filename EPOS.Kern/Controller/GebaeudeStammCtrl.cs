@@ -506,7 +506,14 @@ namespace WindowsFormsApplication1
             string sql = "UPDATE [" + TABLE + "] SET " + SET_SPALTEN + " WHERE Bezeichner = ?";
             var ps = new List<DbParam>(BuildValueParams(m));
             ps.Add(new DbParam("@bkey", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE, "Bezeichner", m.Gebaeudename ?? "", m);
+            // Die Namen der Ferienzeitraeume 1 bis 4 ueberstehen das Schreiben der Ferienspalten (Spiegel-Trigger).
+            object id = DataRepository.ExecuteScalar("SELECT [ID] FROM [" + TABLE + "] WHERE [Bezeichner] = ? ORDER BY [ID] LIMIT 1",
+                                                     new DbParam("@bname", DbParamTyp.VarWChar) { Wert = (object)(m.Gebaeudename ?? "") });
+            var schluessel = id == null || id == DBNull.Value ? null
+                : Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Katalogbau(
+                      Convert.ToInt64(id, System.Globalization.CultureInfo.InvariantCulture)));
+            return Kalendergemeinschaft.MitFeriennamen(schluessel, () =>
+                DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE, "Bezeichner", m.Gebaeudename ?? "", m));
         }
 
         /// <summary>
@@ -539,7 +546,11 @@ namespace WindowsFormsApplication1
             var ps = new List<DbParam>(new GebaeudeStammCtrl().BuildValueParams(m));
             ps.Add(new DbParam("@gid", DbParamTyp.Integer) { Wert = idGebaeude });
             ps.Add(new DbParam("@pid", DbParamTyp.Integer) { Wert = idProjekt });
-            return DataRepository.ExecuteSQL(sql, ps.ToArray()) && KalenderspaltenSchreiben(TABLE_PROJ, "ID", idGebaeude, m, "ID_Projekt", idProjekt);
+            // Die Namen der Ferienzeitraeume 1 bis 4 ueberstehen das Schreiben der Ferienspalten (Spiegel-Trigger).
+            return Kalendergemeinschaft.MitFeriennamen(
+                Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude)),
+                () => DataRepository.ExecuteSQL(sql, ps.ToArray()) &&
+                      KalenderspaltenSchreiben(TABLE_PROJ, "ID", idGebaeude, m, "ID_Projekt", idProjekt));
         }
 
         #endregion
@@ -1278,17 +1289,13 @@ namespace WindowsFormsApplication1
                     }
                     else
                     {
-                        // Die Namen der Ferienzeitraeume 1 bis 4 ueberstehen das Schreiben der Ferienspalten (Spiegel-Trigger).
-                        var schluessel = modell.ID > 0
-                            ? Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Katalogbau(modell.ID)) : null;
-                        string[] feriennamen = Kalendergemeinschaft.FeriennamenLesen(schluessel);
+                        // Overwrite bewahrt die Namen der Ferienzeitraeume 1 bis 4 (Kalendergemeinschaft.MitFeriennamen).
                         if (!ctrl.Overwrite(modell))
                         {
                             vorgang.Rollback();
                             return Katalogschreibergebnis.Fehler("");
                         }
                         id = ctrl.Lies(modell.Gebaeudename)?.ID ?? 0;
-                        if (schluessel != null && id == modell.ID) Kalendergemeinschaft.FeriennamenSchreiben(vorgang, schluessel, feriennamen);
                     }
 
                     bool geschrieben = false;
@@ -1349,16 +1356,12 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    // Die Namen der Ferienzeitraeume 1 bis 4 vor dem Schreiben der Ferienspalten merken - der Spiegel-Trigger
-                    // legt ihre Perioden bei einer Datumsaenderung neu als „Ferien k" an.
-                    var schluessel = Kalendergemeinschaft.Schluessel.Von(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
-                    string[] feriennamen = Kalendergemeinschaft.FeriennamenLesen(schluessel);
+                    // ProjektkopieUeberschreiben bewahrt die Namen der Ferienzeitraeume 1 bis 4 (Kalendergemeinschaft.MitFeriennamen).
                     if (!ProjektkopieUeberschreiben(idGebaeude, idProjekt, modell))
                     {
                         vorgang.Rollback();
                         return KonditionierungCtrl.Ergebnis.Fehler(MyResource.Resource.GEBZ_MSG_GEBAEUDE);
                     }
-                    Kalendergemeinschaft.FeriennamenSchreiben(vorgang, schluessel, feriennamen);
                     if (stand != null)
                     {
                         KonditionierungCtrl.Ergebnis e = new KonditionierungCtrl().StandSchreiben(
