@@ -1021,7 +1021,7 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     public Func<IReadOnlyList<GebaeudeZoneKiZeile>>? ZonenLesen { get; init; }
 
     /// <summary>
-    /// Die Zonen eines Gebäudes im Projekt als RASTER zum LESEN (Stufe G6a) — Name, Nutzfläche,
+    /// Die Zonen eines Gebäudes im Projekt oder eines Katalogsatzes (Welle ZK-b) als RASTER zum LESEN (Stufe G6a) — Name, Nutzfläche,
     /// H_T und Zahl der Bauteile aus der EINEN Formel des Kerns (<c>Zonenkennwerte</c>).
     /// Anlegen, Öffnen, Duplizieren, Umordnen und Entfernen bleiben Klicks des Anwenders.
     /// </summary>
