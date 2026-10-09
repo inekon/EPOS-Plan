@@ -253,11 +253,14 @@
     // Masse der Trennlinie (4.3)
     // =====================================================================
 
-    /// <summary>Höhe des Listenkopfs der Projektliste in px.</summary>
-    public const int LISTENKOPF = 37;
+    /// <summary>Höhe des Listenkopfs der Projektliste in px (Spaltenkopf ohne Trichter, gemessen 29,9 px).</summary>
+    public const int LISTENKOPF = 30;
 
-    /// <summary>Höhe einer Projektzeile in px — ein Pfeilschritt der Trennlinie.</summary>
-    public const int ZEILE = 46;
+    /// <summary>Höhe des Listenkopfs der Katalogliste in px (Spaltenkopf mit Sortierpfeil und Trichter, gemessen 53 px).</summary>
+    public const int KATALOG_LISTENKOPF = 53;
+
+    /// <summary>Höhe einer Listenzeile in px (<c>Raster.ZEILENHOEHE</c>) — ein Pfeilschritt der Trennlinie.</summary>
+    public const int ZEILE = 53;
 
     /// <summary>Untergrenze der Projektliste: Kopfzeile und eine Zeile.</summary>
     public const int MINDESTHOEHE = LISTENKOPF + ZEILE + 2;
@@ -266,7 +269,7 @@
     public const int VORGABEHOEHE = LISTENKOPF + 2 * ZEILE + 2;
 
     /// <summary>Mindesthöhe der Katalogliste: Kopfzeile und zwei Zeilen.</summary>
-    public const int KATALOG_MINDESTHOEHE = LISTENKOPF + 2 * ZEILE + 2;
+    public const int KATALOG_MINDESTHOEHE = KATALOG_LISTENKOPF + 2 * ZEILE + 2;
 
     /// <summary>Obergrenze, solange nicht gemessen werden kann (ohne Skript); das Raster klemmt ohnehin.</summary>
     public const int OBERGRENZE_OHNE_MASS = 2000;

@@ -266,7 +266,7 @@ public sealed class FensterrahmenTests : EposBunitContext
         Assert.Contains("scroll-padding-top: var(--epos-fenster-polster-oben);", polster);
         Assert.Contains("scroll-padding-bottom: var(--epos-fenster-polster-unten);", polster);
         Assert.Contains("scroll-padding: 0;", Regelblock(
-            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child :focus),"));
+            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-dialog-kopf:first-child :focus),"));
 
         // Kein anderer Ort im Blatt laesst den Dialogkopf haften.
         string css = Hausblatt();
@@ -296,7 +296,7 @@ public sealed class FensterrahmenTests : EposBunitContext
             Regelblock(ANKER + " > .epos-warnbanner > .epos-warnbanner-schliessen {"));
         Assert.Contains("display: none;", Regelblock(".epos-warnbanner-schliessen {"));
         Assert.Contains("--epos-fenster-polster-oben:", Regelblock(
-            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner) {"));
+            "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {"));
 
         string css = Hausblatt();
         foreach (Match m in Regex.Matches(css, @"(?<sel>[^{}]*\.epos-warnbanner[^{}]*)\{(?<rumpf>[^}]*)\}"))

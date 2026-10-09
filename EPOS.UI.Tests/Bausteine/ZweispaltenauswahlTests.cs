@@ -8,6 +8,7 @@ using System.Threading;
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using WindowsFormsApplication1;
@@ -217,7 +218,8 @@ public class ZweispaltenauswahlTests : EposBunitContext
     {
         Assert.Equal(Zweispaltenauswahl.LISTENKOPF + Zweispaltenauswahl.ZEILE + 2, Zweispaltenauswahl.MINDESTHOEHE);
         Assert.Equal(Zweispaltenauswahl.MINDESTHOEHE + Zweispaltenauswahl.ZEILE, Zweispaltenauswahl.VORGABEHOEHE);
-        Assert.True(Zweispaltenauswahl.KATALOG_MINDESTHOEHE >= Zweispaltenauswahl.LISTENKOPF + 2 * Zweispaltenauswahl.ZEILE);
+        Assert.Equal(Zweispaltenauswahl.KATALOG_LISTENKOPF + 2 * Zweispaltenauswahl.ZEILE + 2, Zweispaltenauswahl.KATALOG_MINDESTHOEHE);
+        Assert.Equal((int)Raster<object>.ZEILENHOEHE, Zweispaltenauswahl.ZEILE);
     }
 
     /// <summary>Pfeil hoch/runter um eine Zeile, Pos1 an die Untergrenze; gemerkt je Dialog.</summary>
@@ -261,7 +263,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
         var modul = JSInterop.SetupModule(Zweispaltenauswahl.MODUL);
         modul.SetupVoid("anmelden", _ => true);
         modul.Setup<Zweispaltenauswahl.Trennermasse?>("masse", _ => true)
-             .SetResult(new Zweispaltenauswahl.Trennermasse(139, 86, 300));
+             .SetResult(new Zweispaltenauswahl.Trennermasse(139, 85, 300));
 
         var cut = Aufbauen();
         cut.Find(".epos-zweispalten-trenner").KeyDown(new KeyboardEventArgs { Key = "End" });
@@ -594,8 +596,11 @@ public class ZweispaltenauswahlTests : EposBunitContext
     public void Die_Haftregel_nimmt_die_Katalogauswahl_aus()
     {
         string css = Stilblatt();
-        Assert.DoesNotContain("> .epos-dialog:not(.epos-katalog-dialog) >", css);
-        Assert.Contains("> .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child", css);
+        Assert.DoesNotContain("#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) >", css);
+        Assert.Contains("#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child", css);
+        // In html:has(...) darf die Ausnahme nicht stehen: :has in :has verwirft Chromium samt Regel
+        // (dort setzt sie nur das scroll-padding, das ein nicht rollendes Dokument nicht braucht).
+        Assert.DoesNotContain("html:has(> body > #app > .epos-dialog:not(.epos-katalog-dialog, :has(", css);
     }
 
     [Fact]
