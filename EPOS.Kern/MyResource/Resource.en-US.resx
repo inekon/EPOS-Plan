@@ -50019,5 +50019,26 @@ chart</value>
   <data name="KI_DLG_PVG_KATALOGBETRIEB_ERL" xml:space="preserve">
     <value>Is the form open without a project (menu item “PV generation profile”)? Then there is only the catalogue page and no project list.</value>
   </data>
+  <data name="PVG_AUSWEIS_QUELLE" xml:space="preserve">
+    <value>Generation profile ‘{0}’ ({1}), rated power {2:N2} kWp</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE_SPITZE" xml:space="preserve">
+    <value>Generation profile ‘{0}’ ({1}), rated power {2:N2} kWp (peak of the series)</value>
+  </data>
+  <data name="PVG_AUSWEIS_VIERTEL" xml:space="preserve">
+    <value>quarter-hourly values</value>
+  </data>
+  <data name="PVG_AUSWEIS_STUNDE" xml:space="preserve">
+    <value>hourly values</value>
+  </data>
+  <data name="PVG_AUSWEIS_ENTFAELLT" xml:space="preserve">
+    <value>not applicable (generation profile)</value>
+  </data>
+  <data name="PVG_AUSWEIS_MERKMAL_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
+    <value>Module model</value>
+  </data>
 </root>
 

@@ -1364,6 +1364,12 @@ namespace WindowsFormsApplication1
             public List<PvModulZeile> Module = new List<PvModulZeile>();
 
             /// <summary>
+            /// Rechnet die Photovoltaik über eine PV-Ganglinie, deren Ausweis (Quelle, Raster, Nennleistung);
+            /// <c>null</c> im Modulmodell. Der Reiter zeigt dann die Quelle statt der Modulangaben.
+            /// </summary>
+            public PvGanglinieAusweis Ganglinie;
+
+            /// <summary>
             /// Die Wechselrichter der Anlagen, die auf der Strangebene gerechnet haben —
             /// leer ohne Strangzuordnung (Stufe S3, Vorrangregel des Konzepts 3.5/7.1).
             /// </summary>
@@ -1430,6 +1436,7 @@ namespace WindowsFormsApplication1
             if (pv.Modul_Ergebnisse != null)
                 foreach (var m in pv.Modul_Ergebnisse)
                 {
+                    if (m.Ganglinie != null && e.Ganglinie == null) e.Ganglinie = m.Ganglinie;
                     e.Module.Add(new PvModulZeile(m.Name, m.Flaeche, m.Anzahl,
                                                   m.StromproduktionKwh / 1000.0,
                                                   m.FlaecheGeschaetzt));

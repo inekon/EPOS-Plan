@@ -92381,6 +92381,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die entfällt (Ganglinie) ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_ENTFAELLT {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_ENTFAELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_MERKMAL_QUELLE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_MERKMAL_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modulmodell ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_MODULMODELL {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_MODULMODELL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_QUELLE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp (Spitze der Reihe) ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_QUELLE_SPITZE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_QUELLE_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenwerte ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_STUNDE {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstundenwerte ähnelt.
+        /// </summary>
+        public static string PVG_AUSWEIS_VIERTEL {
+            get {
+                return ResourceManager.GetString("PVG_AUSWEIS_VIERTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ist dem Projekt eine PV-Ganglinie zugeordnet, ersetzt sie die Modulrechnung: Die Werte sind die AC-Leistung der Anlage in kW, je Stunde oder je Viertelstunde. ähnelt.
         /// </summary>
         public static string PVG_HINWEIS_WEICHE {

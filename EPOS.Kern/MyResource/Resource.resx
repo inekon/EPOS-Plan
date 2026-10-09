@@ -50026,5 +50026,26 @@ Chart</value>
   <data name="KI_DLG_PVG_KATALOGBETRIEB_ERL" xml:space="preserve">
     <value>Ist die Maske ohne Projekt geöffnet (Menüpunkt „PV-Ganglinie“)? Dann gibt es nur die Katalogseite und keine Projektliste.</value>
   </data>
+  <data name="PVG_AUSWEIS_QUELLE" xml:space="preserve">
+    <value>Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp</value>
+  </data>
+  <data name="PVG_AUSWEIS_QUELLE_SPITZE" xml:space="preserve">
+    <value>Ganglinie ‚{0}‘ ({1}), Nennleistung {2:N2} kWp (Spitze der Reihe)</value>
+  </data>
+  <data name="PVG_AUSWEIS_VIERTEL" xml:space="preserve">
+    <value>Viertelstundenwerte</value>
+  </data>
+  <data name="PVG_AUSWEIS_STUNDE" xml:space="preserve">
+    <value>Stundenwerte</value>
+  </data>
+  <data name="PVG_AUSWEIS_ENTFAELLT" xml:space="preserve">
+    <value>entfällt (Ganglinie)</value>
+  </data>
+  <data name="PVG_AUSWEIS_MERKMAL_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
+    <value>Modulmodell</value>
+  </data>
 </root>
 

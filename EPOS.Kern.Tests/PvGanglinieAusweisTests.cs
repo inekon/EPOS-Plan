@@ -1,0 +1,104 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
+using System.Linq;
+using WindowsFormsApplication1;
+using Xunit;
+
+namespace EPOS.Kern.Tests
+{
+    /// <summary>
+    /// <b>Die Kennzeichnung der PV-Ganglinie</b> in Ergebnisreiter und Bericht (<see cref="PvGanglinieAusweis"/>):
+    /// der Quelltext in beiden Sprachen, die Rückfallnennung ohne gepflegte Nennleistung und die Kenndaten der
+    /// Photovoltaik im Bericht — Quelle vorn, die Merkmale des Modulmodells als „entfällt (Ganglinie)".
+    /// </summary>
+    public sealed class PvGanglinieAusweisTests : IDisposable
+    {
+        private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+        public void Dispose() => _kultur.Dispose();
+
+        private static PvGanglinieWeiche.Stand Stand(int raster, double? nenn)
+        {
+            int n = PvGanglinieWeiche.Erwartet(raster);
+            var werte = new double?[n];
+            for (int i = 0; i < n; i++) werte[i] = i % 24 == 12 ? 7.5 : 0.0;
+            return PvGanglinieWeiche.Pruefen(4711, "PV Dach Süd", raster, nenn, werte);
+        }
+
+        [Fact]
+        public void Der_Ausweis_nennt_Name_Raster_und_Nennleistung()
+        {
+            PvGanglinieAusweis a = PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_VIERTEL, 9.8));
+            Assert.NotNull(a);
+            Assert.Equal("Ganglinie ‚PV Dach Süd‘ (Viertelstundenwerte), Nennleistung 9,80 kWp",
+                         a.Text(CultureInfo.GetCultureInfo("de-DE")));
+            Assert.Equal("Generation profile ‘PV Dach Süd’ (quarter-hourly values), rated power 9.80 kWp",
+                         a.Text(CultureInfo.GetCultureInfo("en-US")));
+            Assert.Equal("entfällt (Ganglinie)", PvGanglinieAusweis.Entfaellt(CultureInfo.GetCultureInfo("de-DE")));
+        }
+
+        [Fact]
+        public void Ohne_gepflegte_Nennleistung_nennt_er_die_Spitze_der_Reihe()
+        {
+            PvGanglinieAusweis a = PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_STUNDE, null));
+            Assert.False(a.NennleistungGepflegt);
+            Assert.Equal(7.5, a.NennleistungKwp);
+            Assert.Equal("Ganglinie ‚PV Dach Süd‘ (Stundenwerte), Nennleistung 7,50 kWp (Spitze der Reihe)",
+                         a.Text(CultureInfo.GetCultureInfo("de-DE")));
+        }
+
+        [Fact]
+        public void Ohne_rechnende_Ganglinie_gibt_es_keinen_Ausweis()
+        {
+            Assert.Null(PvGanglinieAusweis.Aus(PvGanglinieWeiche.Keine()));
+            Assert.Null(PvGanglinieAusweis.Aus(null));
+        }
+
+        /// <summary>Ein Stand mit einer PV-Komponentenzeile (Tab_PV) und wahlweise einer Ganglinie.</summary>
+        private static VariantenDaten Variante(bool stamm, string name, PvGanglinieAusweis ganglinie)
+        {
+            var pv = new DataTable();
+            foreach (string s in new[] { "Bezeichner", "Firma", "Technologie" }) pv.Columns.Add(s, typeof(string));
+            foreach (string s in new[] { "Leistung", "Wirkungsgrad" }) pv.Columns.Add(s, typeof(double));
+            pv.Rows.Add("Modul 400", "Hersteller", "mono", 400.0, 21.0);
+            var d = new ProjektDetails { IdProjekt = stamm ? 1 : 2, PvGanglinie = ganglinie };
+            d.KomponentenAnzahl["Photovoltaik"] = 1;
+            d.Komponenten["Photovoltaik"] = pv.Rows[0];
+            d.KomponentenAlle["Photovoltaik"] = pv;
+            return new VariantenDaten { IstStamm = stamm, Projektname = name, Details = d };
+        }
+
+        [Fact]
+        public void Die_Kenndaten_im_Bericht_nennen_die_Quelle_und_lassen_das_Modulmodell_entfallen()
+        {
+            PvGanglinieAusweis a = PvGanglinieAusweis.Aus(Stand(PvGanglinieWeiche.RASTER_VIERTEL, 9.8));
+            var daten = new BerichtsDaten { Stammprojektname = "Probe" };
+            daten.Varianten.Add(Variante(true, "Probe", null));
+            daten.Varianten.Add(Variante(false, "Mit Ganglinie", a));
+
+            CultureInfo de = CultureInfo.GetCultureInfo("de-DE");
+            Berichtstabelle t = Berichtstabellen.Kenndaten(daten, "Photovoltaik", false, de);
+            Assert.False(t.IstLeer);
+
+            List<string> quelle = t.Zeilen[0].Zellen.Select(z => z.Text).ToList();
+            Assert.Equal("Quelle", quelle[0]);
+            Assert.Equal("Modulmodell", quelle[1]);
+            Assert.Equal(a.Text(de), quelle[2]);
+
+            foreach (Tabellenzeile z in t.Zeilen.Skip(1))
+            {
+                Assert.NotEqual("entfällt (Ganglinie)", z.Zellen[1].Text);
+                Assert.Equal("entfällt (Ganglinie)", z.Zellen[2].Text);
+            }
+
+            // Ohne Ganglinie bleibt die Tafel, wie sie war: keine Quellzeile.
+            var ohne = new BerichtsDaten { Stammprojektname = "Probe" };
+            ohne.Varianten.Add(Variante(true, "Probe", null));
+            Berichtstabelle t2 = Berichtstabellen.Kenndaten(ohne, "Photovoltaik", false, de);
+            Assert.Equal(t.Zeilen.Count - 1, t2.Zeilen.Count);
+            Assert.DoesNotContain(t2.Zeilen, z => z.Zellen[0].Text == "Quelle");
+        }
+    }
+}

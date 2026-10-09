@@ -556,7 +556,8 @@ namespace WindowsFormsApplication1
                 Flaeche = 0,
                 Anzahl = 0,
                 StromproduktionKwh = g.SummeKwh,
-                Geraete = Leer
+                Geraete = Leer,
+                Ganglinie = PvGanglinieAusweis.Aus(g)
             });
 
             double? grenzeKw = EinspeisegrenzeAufloesen(idProjekt);
@@ -1794,6 +1795,12 @@ namespace WindowsFormsApplication1
     public class PVModulErgebnis
     {
         public string Name = "";
+
+        /// <summary>
+        /// Der Ausweis der PV-Ganglinie, wenn diese Zeile die rechnende Ganglinie ist (PVG); <c>null</c> im
+        /// Modulmodell. Ausweis, kein Rechenweg: Ergebnisreiter und Bericht nennen damit die Quelle.
+        /// </summary>
+        public PvGanglinieAusweis Ganglinie;
         public double Flaeche;          // m^2 gesamt
         public bool FlaecheGeschaetzt;  // W11b-B-8: aus P_STC / Wirkungsgrad, Katalog ohne Masse
         public long Anzahl;             // Modulanzahl
