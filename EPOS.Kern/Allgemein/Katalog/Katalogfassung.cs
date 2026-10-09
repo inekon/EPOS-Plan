@@ -305,7 +305,11 @@ namespace WindowsFormsApplication1
             // ID_Zone_Stamm (Schritt ZK): die Zeilen einer Katalogzone gehören nicht zur Ebene des Katalogbaus.
             string[] neben = { "ID_Gebaeude", "ID_Zone", andererEigentuemer, ZonenKatalogSchema.SPALTE_ID_ZONE_STAMM };
             var periode = new Katalogkind("Tab_Konditionierungsperiode", "ID_Kalender",
-                new[] { "Rang", "Art", "Bezeichner", "Beginn", "Ende", "Feiertagsregel", "Wert", "Aus", "Woche", "WieWochentag" });
+                new[] { "Rang", "Art", "Bezeichner", "Beginn", "Ende", "Feiertagsregel", "Wert", "Aus", "Woche", "WieWochentag", "Gilt_Fuer" })
+            {
+                // Schritt K2: der Verweis auf eine benannte Woche ist ein Schluessel des Ziels, kein Fachwert.
+                Nebenspalten = new[] { KalenderbedienungSchema.SPALTE_ID_WOCHE },
+            };
             return new[]
             {
                 new Katalogkind("Tab_Konditionierungsvorgabe", fremdschluessel,
@@ -382,7 +386,7 @@ namespace WindowsFormsApplication1
                     "Kuehl_Auslegung_Ruecklauf", "Kuehl_Auslegung_Raumtemperatur", "Kuehl_Vorlaufgrenze",
                     "Baujahr", "Nachtabsenkung_Beginn", "Nachtabsenkung_Ende", "Energiestandard", "Erdreich_U_Wirksam",
                     "Heizkurve_Raumeinfluss", "Kuehlkurve_Aktiv", "Kuehlkurve_Fusspunkt", "Kuehlkurve_Raumeinfluss",
-                    "Kuehlkurve_Auslegung_Weg", "Kuehlkurve_Auslegung_Aussen"
+                    "Kuehlkurve_Auslegung_Weg", "Kuehlkurve_Auslegung_Aussen", "Wochenendtage", "Feiertagsland"
                 },
                 Konditionierung("ID_Gebaeude_Stamm", "ID_Vorlage"))
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_GEBAEUDE" },

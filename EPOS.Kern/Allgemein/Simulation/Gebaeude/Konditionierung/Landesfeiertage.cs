@@ -62,6 +62,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Landesfeiertage allein — ohne die neun bundeseinheitlichen.</summary>
+        /// <summary>
+        /// <b>Die Feiertagsregeln eines Landes</b> (über die bundeseinheitlichen hinaus) in der Reihenfolge von
+        /// <see cref="DbWerte.KOND_FEIERTAGE_LAENDER"/>; leer für ein unbekanntes Land oder <c>null</c>.
+        /// </summary>
+        public static IReadOnlyList<string> Regeln(string bundesland)
+        {
+            var liste = new List<string>();
+            if (!Bekannt(bundesland)) return liste;
+            foreach (string regel in DbWerte.KOND_FEIERTAGE_LAENDER)
+                if (Fuehrt(bundesland, regel)) liste.Add(regel);
+            return liste;
+        }
+
+        /// <summary>Führt das Land die Regel? (Die Zuordnung der acht Länderregeln.)</summary>
+        public static bool Fuehrt(string bl, string regel)
+        {
+            switch (regel)
+            {
+                case DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE: return bl == "BW" || bl == "BY" || bl == "ST";
+                case DbWerte.KOND_FEIERTAG_FRAUENTAG: return bl == "BE" || bl == "MV";
+                case DbWerte.KOND_FEIERTAG_FRONLEICHNAM:
+                    return bl == "BW" || bl == "BY" || bl == "HE" || bl == "NW" || bl == "RP" || bl == "SL";
+                case DbWerte.KOND_FEIERTAG_MARIAE_HIMMELFAHRT: return bl == "SL";
+                case DbWerte.KOND_FEIERTAG_WELTKINDERTAG: return bl == "TH";
+                case DbWerte.KOND_FEIERTAG_REFORMATIONSTAG:
+                    return bl == "BB" || bl == "HB" || bl == "HH" || bl == "MV" || bl == "NI" ||
+                           bl == "SN" || bl == "ST" || bl == "SH" || bl == "TH";
+                case DbWerte.KOND_FEIERTAG_ALLERHEILIGEN: return bl == "BW" || bl == "BY" || bl == "NW" || bl == "RP" || bl == "SL";
+                case DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG: return bl == "SN";
+                default: return false;
+            }
+        }
         private static IEnumerable<int> Landestage(string bl, int jahr)
         {
             DateTime ostern = Feiertage.Ostersonntag(jahr);

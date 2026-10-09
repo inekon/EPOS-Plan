@@ -80,6 +80,12 @@
             <section class="epos-simerg-block">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_ERZEUGUNG" />
                 <dl class="epos-simerg-werte">
+                    @* PVG: rechnet die Photovoltaik ueber eine PV-Ganglinie, steht ihre Quelle vorn - Name,
+                       Raster und Nennleistung statt der Modul- und Wechselrichterangaben. *@
+                    @if (Daten.Ganglinie is not null)
+                    {
+                        @Wertzeile(Resource.PVG_AUSWEIS_MERKMAL_QUELLE, Daten.Ganglinie.Text(UiKultur), "")
+                    }
                     @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
@@ -117,7 +123,14 @@
             <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_EINSTRAHLUNG" />
                 <dl class="epos-simerg-werte">
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
+                    @if (Daten.Ganglinie is not null)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Entfaellt, "")
+                    }
+                    else
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
+                    }
                 </dl>
             </section>
 
@@ -218,7 +231,13 @@
                         <tr>
                             <td class="epos-simerg-zahl">@(i + 1)</td>
                             <td>@m.Name</td>
-                            @if (m.FlaecheGeschaetzt)
+                            @if (Daten.Ganglinie is not null)
+                            {
+                                @* Flaeche und Modulanzahl gelten bei einer Ganglinie nicht. *@
+                                <td class="epos-simerg-zahl">@Entfaellt</td>
+                                <td class="epos-simerg-zahl">@Entfaellt</td>
+                            }
+                            else if (m.FlaecheGeschaetzt)
                             {
                                 <td class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_FLAECHE_GESCHAETZT">≈ @Zahl(m.FlaecheM2)</td>
                             }
@@ -226,7 +245,10 @@
                             {
                                 <td class="epos-simerg-zahl">@Zahl(m.FlaecheM2)</td>
                             }
-                            <td class="epos-simerg-zahl">@m.Anzahl</td>
+                            @if (Daten.Ganglinie is null)
+                            {
+                                <td class="epos-simerg-zahl">@m.Anzahl</td>
+                            }
                             <td class="epos-simerg-zahl">@Zahl(m.StromproduktionMwh)</td>
                         </tr>
                     }
@@ -242,6 +264,13 @@
 
     private static System.Globalization.CultureInfo Kultur
         => System.Globalization.CultureInfo.CurrentCulture;
+
+    /// <summary>Die Sprache der Texte (der Ausweis der PV-Ganglinie liest seine Ressourcen darüber).</summary>
+    private static System.Globalization.CultureInfo UiKultur
+        => System.Globalization.CultureInfo.CurrentUICulture;
+
+    /// <summary>„entfällt (Ganglinie)" — ein Feld des Modulmodells, das bei einer PV-Ganglinie nicht gilt.</summary>
+    private static string Entfaellt => WindowsFormsApplication1.PvGanglinieAusweis.Entfaellt(UiKultur);
 
     /// <summary>Die Zahlen aus dem Kern.</summary>
     [Parameter]

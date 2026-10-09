@@ -75,7 +75,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Aufheizzeit_Manuell_H", GebaeudeSchema.SICHT_AUFHEIZ_MANUELL[102]);
             Assert.Equal(GebaeudeSchema.SICHT_ENERGIESTANDARD, GebaeudeSchema.SICHT_AUFHEIZ_MANUELL.Take(102));
             Assert.Equal(GebaeudeSchema.SICHT_AUFHEIZ_MANUELL, GebaeudeSchema.SICHT_AKTUELL.Take(103));
-            Assert.Equal(GebaeudeSchema.SQL_VIEW_KUEHLKURVE, GebaeudeSchema.SQL_VIEW_AKTUELL);
+            Assert.Equal(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG, GebaeudeSchema.SQL_VIEW_AKTUELL);
             Assert.Contains("Tab_Gebaeude.Aufheizzeit_Manuell_H", GebaeudeSchema.SQL_VIEW_AKTUELL, StringComparison.Ordinal);
 
             Assert.Equal("CHECK (\"Aufheiz_Zustand\" IN ('BEMESSEN','UNERREICHBAR','UNBEHEIZT'))", AufheizManuellSchema.CHECK_ZUSTAND_ALT);

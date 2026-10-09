@@ -445,6 +445,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "„Sperrprofil an die Wärmepumpe schreiben“ und „Katalogsatz als Herkunft merken“) und " +
             "Expertenfelder sind kein Katalogfeld; die dreizehn Grundeingaben führt Form_PufferAuslegung"),
         new("PufferSpProjektDialog", 25),
+        new("PvGanglinieDialog", 0),
         new("PvModellFelder", 4),
         new("QuelleErdreichDialog", 15),
         new("QuellePufferspeicherDialog", 8),

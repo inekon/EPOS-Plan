@@ -1,5 +1,7 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -34,8 +36,27 @@ namespace WindowsFormsApplication1
         /// <summary>Die Protokollzeile (Format, Anzahl, Raster, Jahresarbeit, Spitze).</summary>
         public string Protokoll = "";
 
+        /// <summary>
+        /// Der Prüfhinweis zur Nennleistung (<see cref="PvGanglinieImportCtrl.Pruefhinweis"/>); "" ohne.
+        /// Er hält den Import nicht auf und steht zusätzlich am Ende der <see cref="Protokoll"/>zeile.
+        /// </summary>
+        public string Hinweis = "";
         /// <summary>Die gelesene Reihe samt Format und Kennzahlen.</summary>
         public StundenganglinieLesung Lesung = new StundenganglinieLesung();
+    }
+
+    /// <summary>
+    /// Die Vorbelegung der Nennleistung vor dem Import einer PV-Ganglinie
+    /// (<see cref="PvGanglinieImportCtrl.Vorschlagen"/>).
+    /// </summary>
+    public sealed class PvGanglinieVorschlag
+    {
+        /// <summary>Die vorgeschlagene Nennleistung [kWp]; <c>null</c> ohne lesbare Datei.</summary>
+        public double? VorschlagKwp;
+        /// <summary>true = aus dem Dateikopf, false = der Höchstwert der Reihe.</summary>
+        public bool AusDateikopf;
+        /// <summary>Der Höchstwert der Reihe im Raster der Datei [kW]; 0 ohne lesbare Datei.</summary>
+        public double SpitzeKw;
     }
 
     /// <summary>
@@ -92,9 +113,75 @@ namespace WindowsFormsApplication1
                                                                bericht.RasterMinuten, nennleistungKwp,
                                                                lesung.WerteImDateirasterKw);
             bericht.Erfolgreich = bericht.IdStamm > 0;
+            bericht.Hinweis = Pruefhinweis(lesung.SpitzeKw, nennleistungKwp);
+            if (bericht.Hinweis.Length > 0) bericht.Protokoll = (bericht.Protokoll + " " + bericht.Hinweis).Trim();
             bericht.IstFehler = !bericht.Erfolgreich;
             if (!bericht.Erfolgreich) bericht.Meldung = MyResource.Resource.PVG_MSG_SCHREIBFEHLER;
             return bericht;
+        }
+    
+        /// <summary>
+        /// Die Toleranz der Nennleistungsprüfung: Der Spitzenwert der Reihe darf die Nennleistung um
+        /// 10 % übersteigen (Wechselrichter mit DC/AC-Reserve, kalte klare Tage), erst darüber gibt es
+        /// einen Hinweis.
+        /// </summary>
+        public const double NENNLEISTUNG_TOLERANZ = 1.1;
+
+        /// <summary>
+        /// <b>Der Prüfhinweis zur Nennleistung</b>: Liegt die Spitze der Reihe über Nennleistung × 1,1,
+        /// passt entweder die Nennleistung oder die Einheit der Datei (W statt kW) nicht. "" ohne
+        /// Nennleistung oder ohne Auffälligkeit. Der Hinweis hält den Import nicht auf.
+        /// </summary>
+        public static string Pruefhinweis(double spitzeKw, double? nennleistungKwp)
+        {
+            if (!nennleistungKwp.HasValue || nennleistungKwp.Value <= 0) return "";
+            if (!(spitzeKw > nennleistungKwp.Value * NENNLEISTUNG_TOLERANZ)) return "";
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.PVG_IMP_HINWEIS_SPITZE,
+                                 spitzeKw, nennleistungKwp.Value);
+        }
+
+        /// <summary>
+        /// <b>Die Vorbelegung der Nennleistung</b> vor dem Import: nennt der Dateikopf eine Leistung in kWp
+        /// („… 9,8 kWp …"), gilt sie, sonst der Höchstwert der Reihe im Raster der Datei. Liest die Datei
+        /// einmal; wirft nicht. Ohne lesbare Datei ist <see cref="PvGanglinieVorschlag.VorschlagKwp"/> <c>null</c>.
+        /// </summary>
+        public static PvGanglinieVorschlag Vorschlagen(string pfad)
+        {
+            var v = new PvGanglinieVorschlag();
+            if (string.IsNullOrWhiteSpace(pfad)) return v;
+            StundenganglinieLesung lesung;
+            try { lesung = StundenganglinieDatei.Lies(pfad); }
+            catch { return v; }
+            if (lesung == null || !lesung.Erfolgreich) return v;
+
+            v.SpitzeKw = lesung.SpitzeKw;
+            double? kopf = NennleistungAusKopf(lesung.Kopftext);
+            if (kopf.HasValue)
+            {
+                v.VorschlagKwp = kopf.Value;
+                v.AusDateikopf = true;
+            }
+            else if (lesung.SpitzeKw > 0)
+            {
+                v.VorschlagKwp = Math.Round(lesung.SpitzeKw, 2);
+            }
+            return v;
+        }
+
+        /// <summary>
+        /// Die Nennleistung aus einem Kopftext: die erste Zahl unmittelbar vor „kWp" (Komma oder Punkt als
+        /// Dezimalzeichen, ohne Tausendertrennzeichen); <c>null</c>, wenn keine dasteht oder sie nicht
+        /// positiv ist.
+        /// </summary>
+        public static double? NennleistungAusKopf(string kopftext)
+        {
+            if (string.IsNullOrEmpty(kopftext)) return null;
+            Match m = Regex.Match(kopftext, @"(\d+(?:[.,]\d+)?)\s*kWp", RegexOptions.IgnoreCase);
+            if (!m.Success) return null;
+            double wert;
+            if (!double.TryParse(m.Groups[1].Value.Replace(',', '.'), NumberStyles.Float,
+                                 CultureInfo.InvariantCulture, out wert)) return null;
+            return wert > 0 ? wert : (double?)null;
         }
     }
 }

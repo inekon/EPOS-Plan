@@ -109,6 +109,9 @@ namespace WindowsFormsApplication1
             // wird sie als Verlust benannt (Getragen). Projektpaket und Katalogpaket tragen die Spalten.
             ["Kuehlkurve_Aktiv"] = V, ["Kuehlkurve_Fusspunkt"] = V, ["Kuehlkurve_Raumeinfluss"] = V,
             ["Kuehlkurve_Auslegung_Weg"] = V, ["Kuehlkurve_Auslegung_Aussen"] = V,
+            // K2 (KalenderbedienungSchema.SCHRITT): Wochenende und Feiertagsland - die Datei traegt sie nicht, der Import
+            // schreibt NULL (Vorgabe Sa + So, nur bundeseinheitliche Feiertage); gesetzt werden sie als Verlust benannt.
+            ["Wochenendtage"] = V, ["Feiertagsland"] = V,
             ["Ferienbeginn_1"] = V, ["Ferienende_1"] = V, ["Ferienbeginn_2"] = V, ["Ferienende_2"] = V,
             ["Ferienbeginn_3"] = V, ["Ferienende_3"] = V, ["Ferienbeginn_4"] = V, ["Ferienende_4"] = V,
             ["Gebaeude_Modell"] = N, ["WW_Bedarf"] = N, ["spez_Waermeverbrauch"] = N, ["Waermebedarf"] = N,
@@ -157,6 +160,8 @@ namespace WindowsFormsApplication1
                 if (g.Kuehlkurve_Raumeinfluss.HasValue) namen.Add("Kuehlkurve_Raumeinfluss");
                 if (!string.IsNullOrWhiteSpace(g.Kuehlkurve_Auslegung_Weg)) namen.Add("Kuehlkurve_Auslegung_Weg");
                 if (g.Kuehlkurve_Auslegung_Aussen.HasValue) namen.Add("Kuehlkurve_Auslegung_Aussen");
+                if (g.Wochenendtage != KalenderbedienungSchema.WOCHENENDE_VORGABE) namen.Add("Wochenendtage");
+                if (!string.IsNullOrWhiteSpace(g.Feiertagsland)) namen.Add("Feiertagsland");
             }
             foreach (ZoneModel z in zonen ?? new List<ZoneModel>())
             {

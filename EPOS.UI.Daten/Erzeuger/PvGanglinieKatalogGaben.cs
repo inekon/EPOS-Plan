@@ -37,6 +37,11 @@ namespace WindowsFormsApplication1
                 MitSystemOeffnen = datei?.MitSystemOeffnen,
                 Ordner = datei?.Ordner ?? "",
                 Einlesen = datei is null ? null : Einlesen,
+                // Die Nennleistung wird beim Import abgefragt (Vorbelegung aus Dateikopf oder Spitze),
+                // gegen die Reihe geprueft und am Katalogsatz gehalten (Nennleistung_kWp).
+                NennleistungVorschlagen = datei is null ? null : Vorschlagen,
+                NennleistungPruefen = PvGanglinieImportCtrl.Pruefhinweis,
+                EinlesenMitNennleistung = datei is null ? null : EinlesenMitNennleistung,
                 ImportAbgelehnt = datei is null ? MyResource.Resource.PVG_IMP_NICHT_VERFUEGBAR : ""
             };
         }
@@ -142,10 +147,22 @@ namespace WindowsFormsApplication1
         /// Die Importkette im Hintergrund (Kulturweitergabe): lesen mit Formaterkennung, Namen prüfen, schreiben
         /// in einer Transaktion — alles im Kern; das Raster der Datei bleibt.
         /// </summary>
-        internal static async Task<GanglinienKatalogimport> Einlesen(string pfad, IProgress<ImportFortschritt> melder)
+        internal static Task<GanglinienKatalogimport> Einlesen(string pfad, IProgress<ImportFortschritt> melder)
+            => EinlesenMitNennleistung(pfad, null, melder);
+
+        /// <summary>Die Vorbelegung der Nennleistung aus der gewählten Datei (Kern: <c>PvGanglinieImportCtrl.Vorschlagen</c>).</summary>
+        internal static async Task<GanglinienNennleistungsvorschlag> Vorschlagen(string pfad)
+        {
+            PvGanglinieVorschlag v = await Kulturweitergabe.Starten(() => PvGanglinieImportCtrl.Vorschlagen(pfad));
+            return new GanglinienNennleistungsvorschlag(v.VorschlagKwp, v.AusDateikopf, v.SpitzeKw);
+        }
+
+        /// <summary>Der Import samt abgefragter Nennleistung [kWp]; <c>null</c> = nicht bekannt.</summary>
+        internal static async Task<GanglinienKatalogimport> EinlesenMitNennleistung(string pfad, double? nennleistungKwp,
+                                                                                    IProgress<ImportFortschritt> melder)
         {
             melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
-            PvGanglinieImportBericht b = await Kulturweitergabe.Starten(() => PvGanglinieImportCtrl.Einlesen(pfad));
+            PvGanglinieImportBericht b = await Kulturweitergabe.Starten(() => PvGanglinieImportCtrl.Einlesen(pfad, nennleistungKwp));
             return new GanglinienKatalogimport(b.Erfolgreich, b.IstFehler, b.Bezeichner ?? "",
                                                b.Meldung ?? "", b.Protokoll ?? "");
         }
