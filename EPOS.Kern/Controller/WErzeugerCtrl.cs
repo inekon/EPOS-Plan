@@ -154,6 +154,11 @@ namespace WindowsFormsApplication1
         /// <param name="KuehlFrei">Der Schalter <c>Kuehl_Frei</c> (geschrieben als 0/1).</param>
         /// <param name="KuehlFreiGraedigkeitK">Die Grädigkeit [K], 0 … 20; NULL = Festwert.</param>
         /// <param name="KuehlFreiLeistungKw">Die Leistungsgrenze [kW], &gt; 0; NULL = Kälteleistung der Kennlinie.</param>
+        /// <param name="Uebergabe">Fuehrt der Wirt die Gruppe „Bivalenz und Uebergabe" (Schemaschritt
+        /// <see cref="UebergabegrenzeSchema"/>, UB-E2)? Nur dann werden <paramref name="Einbindung"/> und
+        /// <paramref name="Vorwaermbetrieb"/> geschrieben; eine unbekannte Einbindung faellt zu NULL (U-1).</param>
+        /// <param name="Einbindung">DIREKT, PUFFER, WEICHE; NULL = nicht gewaehlt.</param>
+        /// <param name="Vorwaermbetrieb">Der Schalter <c>Vorwaermbetrieb</c> (geschrieben als 0/1).</param>
         public sealed record KonfigurationFelder(bool? Heizstab = null,
                                                  bool? Sperrung = null,
                                                  int? SperrzeitVon = null,
@@ -170,7 +175,10 @@ namespace WindowsFormsApplication1
                                                  bool FreieKuehlung = false,
                                                  bool KuehlFrei = false,
                                                  double? KuehlFreiGraedigkeitK = null,
-                                                 double? KuehlFreiLeistungKw = null);
+                                                 double? KuehlFreiLeistungKw = null,
+                                                 bool Uebergabe = false,
+                                                 string Einbindung = null,
+                                                 bool Vorwaermbetrieb = false);
 
         /// <summary>
         /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
@@ -280,6 +288,24 @@ namespace WindowsFormsApplication1
                         new DbParam("@id", idAnlage),
                         new DbParam("@proj", idProjekt));
                     if (!okZeiten)
+                        return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                            "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
+                            bezeichner);
+                }
+
+                // UB-E2 (Umsetzungskonzept Uebergabegrenze 6.2): Einbindung und Vorwaermbetrieb - nur wenn der Wirt
+                // die Gruppe fuehrt und die Datenbank die Spalten traegt. NULL bleibt NULL (Bestandsweg, U-1).
+                if (felder.Uebergabe && UebergabegrenzeSchema.AnlagenspaltenVorhanden())
+                {
+                    bool okUebergabe = DataRepository.ExecuteSQL(
+                        "UPDATE Tab_Energieanlagen SET " + UebergabegrenzeSchema.SPALTE_EINBINDUNG + " = ?, " +
+                        UebergabegrenzeSchema.SPALTE_VORWAERMBETRIEB + " = ? WHERE ID = ? AND ID_Projekt = ?",
+                        ProjektPuffer.Par("@einbindung", DbParamTyp.VarWChar,
+                            Bivalenzpruefung.EinbindungNormiert(felder.Einbindung)),
+                        ProjektPuffer.Par("@vorwaerm", DbParamTyp.Integer, felder.Vorwaermbetrieb ? 1 : 0),
+                        new DbParam("@id", idAnlage),
+                        new DbParam("@proj", idProjekt));
+                    if (!okUebergabe)
                         return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
                             "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
                             bezeichner);

@@ -66,7 +66,7 @@ namespace EPOS.Kern.Tests
             "PV_Wechselrichterweg", "Kuehl_ID_Carrier", "Kuehl_EigenerZaehler", "Albedo", "Pumpenleistung_W",
             "Solarkreisverluste_Prozent", "Uebertrager_Graedigkeit_K", "Kollektor_Spreizung_K",
             "Arbeitstemperatur_Weg", "Zeitprogramm", "Vorlauf_Max", "Kuehl_Frei", "Kuehl_Frei_Graedigkeit_K",
-            "Kuehl_Frei_Leistung_kW"
+            "Kuehl_Frei_Leistung_kW", "Einbindung", "Vorwaermbetrieb"
         };
 
         /// <summary>Was eine Kopie nie überträgt: der eigene Bezeichner.</summary>

@@ -77,7 +77,8 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("Zeitprogramm", ohne, StringComparison.Ordinal);
             int platzhalter = mit.Count(c => c == '?');
             Assert.Equal(platzhalter - 2, ohne.Count(c => c == '?'));
-            int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count;
+            // Hinter dem Fahrplan stehen die freie Kuehlung und die Uebergabegrenze (UB-E2).
+            int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
             DbParam[] p = AnlagenSql.AnlagenParameter(1, new WErzeugerModel { Zeitprogramm = "x", Vorlauf_Max = 55.0 });
             Assert.Equal(platzhalter + frei, p.Length);
             Assert.Equal("x", p[p.Length - frei - 2].Wert);

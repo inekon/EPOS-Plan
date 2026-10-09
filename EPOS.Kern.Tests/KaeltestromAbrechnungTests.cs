@@ -80,8 +80,9 @@ namespace EPOS.Kern.Tests
             int platzhalter = AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?');
             // 72: 66 + die fuenf Felder des Kollektorfelds (Welle M2) + die Bodenalbedo der Anlage
             // (AlbedoSchema.SCHRITT); 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema.SCHRITT);
-            // 77 mit Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und Kuehl_Frei_Leistung_kW (FreieKuehlungSoleSchema.SCHRITT).
-            Assert.Equal(77, platzhalter);
+            // 77 mit Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und Kuehl_Frei_Leistung_kW (FreieKuehlungSoleSchema.SCHRITT);
+            // 79 mit Einbindung und Vorwaermbetrieb (UebergabegrenzeSchema, UB-E2).
+            Assert.Equal(79, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
 
             Assert.Null(AnlagenSql.EigenerZaehlerOderNull(null));

@@ -149,8 +149,9 @@ namespace EPOS.Kern.Tests
             // 66 seit Schemaschritt 119: die Abrechnungsart des Kältestroms (E34) steht daneben;
             // 67 mit der Bodenalbedo (AlbedoSchema), 72 mit den fünf Feldern des Kollektorfelds
             // (SolarthermieFelderSchema), 74 mit Zeitprogramm und Vorlauf_Max (AnlagenfahrplanSchema),
-            // 77 mit den drei Feldern der freien Kühlung über die Wärmequelle (FreieKuehlungSoleSchema).
-            Assert.Equal(77, platzhalter);
+            // 77 mit den drei Feldern der freien Kühlung über die Wärmequelle (FreieKuehlungSoleSchema),
+            // 79 mit Einbindung und Vorwärmbetrieb (UebergabegrenzeSchema, UB-E2).
+            Assert.Equal(79, platzhalter);
             Assert.Equal(platzhalter, AnlagenSql.AnlagenParameter(1, new WErzeugerModel()).Length);
         }
 
