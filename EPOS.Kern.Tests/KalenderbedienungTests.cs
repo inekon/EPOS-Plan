@@ -313,5 +313,24 @@ namespace EPOS.Kern.Tests
                 leer.MitVorgabe(L, DbWerte.KOND_ZEILE_TAG, Matrixzelle.AusWert(99.0))) };
             Assert.False(Kalenderbedienung.VorlageAlleUebernehmen(KonditionierungsarbeitTests.Stand(), null, falsch).Ok);
         }
+
+        [Fact]
+        public void Die_Warnzeile_meldet_gekoppelte_Zeilen_in_abweichender_Rangfolge()
+        {
+            Konditionierungsarbeitsstand a = Angelegt();
+            a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, Zuordnungsschluessel.Zeitraum("A", 100, 120),
+                                                      Zuordnungsangabe.Abgeschaltet));
+            a = Gut(Kalenderbedienung.ZuordnungSetzen(a, null, null, Zuordnungsschluessel.Zeitraum("B", 110, 130),
+                                                      Zuordnungsangabe.Abgeschaltet));
+            Assert.Empty(Kalenderbedienung.Rangabweichungen(a, null));
+
+            // B steht in beiden Größen über A; im Heizkalender eine Stufe tiefer gesetzt, kippt die Folge dort.
+            int rangB = Zeile(a, "B").Raenge[H];
+            a = Gut(Konditionierungsarbeit.RangVerschieben(a, Ort(H), rangB, false));
+            Rangabweichung w = Assert.Single(Kalenderbedienung.Rangabweichungen(a, null));
+            Assert.Equal(new[] { "A", "B" }, new[] { w.Erste.Name, w.Zweite.Name });
+            Assert.Equal(H, w.Oben);
+            Assert.Equal(L, w.Unten);
+        }
     }
 }

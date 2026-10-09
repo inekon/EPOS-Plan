@@ -211,7 +211,36 @@ public enum KonditionierungHandlung
     /// „Nutzungsprofil übernehmen…" (Konzept Nutzungsprofile 6.2, NP-F17, NP-F18; Stufe NP3b): ein Profil des Katalogs
     /// in allen belegten Größen an Gebäude, Katalogbau oder Zone — in den Arbeitsstand, geschrieben mit dem OK des Editors.
     /// </summary>
-    ProfilUebernehmen = 22
+    ProfilUebernehmen = 22,
+
+    // ------------------------------------------------------------ Kalenderbedienung (Konzept 7.8, E110; Welle K1b)
+
+    /// <summary>Der Pinsel im Wochenprofil: ein Zellbereich bekommt einen Wert oder „aus".</summary>
+    ProfilPinsel = 23,
+
+    /// <summary>„Tag kopieren…", „Montag nach Di–Fr", „Samstag nach Sonntag" — eine Tagesspalte auf andere Wochentage.</summary>
+    TagKopieren = 24,
+
+    /// <summary>„Woche kopieren…" in ein anderes Profil derselben Größe oder einer Größe gleicher Einheit.</summary>
+    WocheKopieren = 25,
+
+    /// <summary>Eine Zuordnungszeile oder einen Einzeltag anlegen oder ändern — gekoppelt in den Größen von „gilt für".</summary>
+    ZuordnungSetzen = 26,
+
+    /// <summary>Eine Zuordnungszeile oder einen Einzeltag in allen Größen löschen.</summary>
+    ZuordnungLoeschen = 27,
+
+    /// <summary>Die Ferienzeiträume der Schnellfelder setzen (beliebig viele; die ersten vier in den Gebäudespalten).</summary>
+    FerienSetzen = 28,
+
+    /// <summary>Die Saison von–bis einer Größe (Zeile SAISON der Matrix).</summary>
+    SaisonSetzen = 29,
+
+    /// <summary>„Feiertage laden" (bundeseinheitlich) in den gewählten Größen.</summary>
+    FeiertageLaden = 30,
+
+    /// <summary>„Monat kopieren…": Zeilen und Einzeltage eines Monats auf einen anderen.</summary>
+    MonatKopieren = 31
 }
 
 /// <summary>
