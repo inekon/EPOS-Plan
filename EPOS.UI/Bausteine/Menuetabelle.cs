@@ -289,6 +289,8 @@ public static class Menuetabelle
                     new Menuepunkt("MenuItem_WaermebedarfExtern", "MENU_WAERMEBEDARF_EXTERN", Seitenschluessel.WaermebedarfExternAdmin),
                     new Menuepunkt("MenuItem_Prozesswaerme", "MENU_PROZESSWAERME", Seitenschluessel.ProzesswaermeAdmin),
                     new Menuepunkt("MenuItem_SolThermGanglinie", "MENU_SOL_THERM_GANGLINIE", Seitenschluessel.SolarganglinieAdmin),
+                    // PVG (Schemaschritt 205): der Katalog der PV-Ganglinien - derselbe Dialog wie an der Kachel, ohne Projekt.
+                    new Menuepunkt("MenuItem_PvGanglinie", "MENU_PV_GANGLINIE", Seitenschluessel.PvGanglinieAdmin),
                     // Entscheidungsvorlage Modellgrenzen PW2/BW2: die Betriebskalender der
                     // Bedarfsprofile (Feiertage, Betriebsferien) - sie gelten fuer Brauchwasser,
                     // Prozesswaerme und Strom und stehen deshalb bei den Profilen.

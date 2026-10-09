@@ -38,6 +38,13 @@ namespace WindowsFormsApplication1
         /// (<c>SGL_IMP_NICHT_VERFUEGBAR</c>).
         /// </summary>
         internal static Func<GanglinienDateiwege> SolarganglinienDatei;
+
+        /// <summary>
+        /// Die Dateiwege des Imports der PV-Ganglinien (Dialog „Photovoltaik Ganglinie", PVG): dieselbe Form wie
+        /// <see cref="SolarganglinienDatei"/>. Unter Windows <c>PvGanglinieHuelle.Dateiwege()</c>; <c>null</c> = diese
+        /// Schale importiert nicht (iOS), und der Knopf „Import…" nennt den Grund (<c>PVG_IMP_NICHT_VERFUEGBAR</c>).
+        /// </summary>
+        internal static Func<GanglinienDateiwege> PvGanglinienDatei;
     }
 
     /// <summary>

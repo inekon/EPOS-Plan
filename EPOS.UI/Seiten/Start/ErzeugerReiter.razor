@@ -24,7 +24,11 @@
    ganzen Reiter. Jetzt bekommt NUR die Solarthermie den Wirt, und der
    traegt den Kartenrahmen; die Kachel darin gibt ihren eigenen ab (Stilblatt),
    beides zusammen ist EINE Karte. Ueber das Markup ginge es nicht: Eine Kachel
-   IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten. *@
+   IST ein <button>, und ein <button> darf keine Auswahlknoepfe enthalten.
+
+   DIE PHOTOVOLTAIK TRAEGT DIESELBE WEICHE (PVG, Schemaschritt 205, Anwenderwunsch 08.10.2026):
+   "Profil" oeffnet die Verwaltung der Module, "Ganglinie" den Dialog "Photovoltaik Ganglinie".
+   Gleiche Bauform, eigener Zustand (PvGanglinie), eigener Rueckruf. *@
 
 @namespace EPOS.UI.Seiten.Start
 
@@ -45,8 +49,9 @@
             {
                 StartKachel k = kachel;
 
-                @if (k.Schluessel == Kachelschluessel.Solarthermie)
+                @if (k.Schluessel == Kachelschluessel.Solarthermie || k.Schluessel == Kachelschluessel.Photovoltaik)
                 {
+                    bool pv = k.Schluessel == Kachelschluessel.Photovoltaik;
                     @* DIE EINZIGE Kachel mit einer Weiche. Der Kartenrahmen liegt
                        hier am WIRT, nicht an der Kachel: Eine Kachel ist ein
                        <button> und darf keine Auswahlknoepfe enthalten (ein Klick
@@ -68,8 +73,8 @@
                            auf der Kachel darueber (Stilblatt). *@
                         <div class="epos-startkachel-wahl">
                             <Optionsgruppe Bezeichnung="@k.Titel" Eintraege="@Solararten"
-                                           Auswahl="@(Ganglinie ? GANGLINIE : PROFIL)"
-                                           AuswahlChanged="@(id => ArtWaehlen(id == GANGLINIE))" />
+                                           Auswahl="@((pv ? PvGanglinie : Ganglinie) ? GANGLINIE : PROFIL)"
+                                           AuswahlChanged="@(id => pv ? PvArtWaehlen(id == GANGLINIE) : ArtWaehlen(id == GANGLINIE))" />
                         </div>
                     </div>
                 }
@@ -118,6 +123,15 @@
 
     /// <summary>Meldet den Wechsel der Weiche — für <c>@@bind-Ganglinie</c>.</summary>
     [Parameter] public EventCallback<bool> GanglinieChanged { get; set; }
+
+    /// <summary>
+    /// Die Weiche der Photovoltaikkachel (PVG): <c>false</c> = Profil (die Module, Vorbelegung),
+    /// <c>true</c> = Ganglinie.
+    /// </summary>
+    [Parameter] public bool PvGanglinie { get; set; }
+
+    /// <summary>Meldet den Wechsel der Photovoltaik-Weiche — für <c>@@bind-PvGanglinie</c>.</summary>
+    [Parameter] public EventCallback<bool> PvGanglinieChanged { get; set; }
 
     /// <summary>Überschrift (<c>label29</c>).</summary>
     [Parameter] public string KopfText { get; set; } = "Energieerzeuger auswählen";
@@ -181,5 +195,12 @@
         if (Ganglinie == ganglinie) return Task.CompletedTask;
         Ganglinie = ganglinie;
         return GanglinieChanged.InvokeAsync(ganglinie);
+    }
+
+    private Task PvArtWaehlen(bool ganglinie)
+    {
+        if (PvGanglinie == ganglinie) return Task.CompletedTask;
+        PvGanglinie = ganglinie;
+        return PvGanglinieChanged.InvokeAsync(ganglinie);
     }
 }
