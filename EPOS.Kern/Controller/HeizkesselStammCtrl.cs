@@ -468,7 +468,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die UPDATE-Anweisung selbst, ohne Pruefungen.</summary>
         private bool Schreiben()
         {
-            string sql = @"UPDATE [" + TABLE + @"] SET
+            (string sql, DbParam[] ps) = Aktualisierung(TABLE);
+            return DataRepository.ExecuteSQL(sql, ps);
+        }
+
+        /// <summary>Die UPDATE-Anweisung samt Parametern für <paramref name="tabelle"/> (Katalog oder Projektkopie).</summary>
+        private (string Sql, DbParam[] Parameter) Aktualisierung(string tabelle)
+        {
+            string sql = @"UPDATE [" + tabelle + @"] SET
                             Bezeichner = ?, Beschreibung = ?, Firma = ?, Ptherm = ?, Brennstoff = ?,
                             Wirkungsgrad_Gas = ?, Wirkungsgrad_Öl = ?, Investitionskosten = ?,
                             Raumbedarf = ?, Wartungskosten = ?, Wartungskosten_Einheit = ?, Nutzungsdauer = ?,
@@ -505,7 +512,7 @@ namespace WindowsFormsApplication1
             ps.AddRange(KesselKennlinieWerte.Parameter(this));
             ps.Add(new DbParam("@id", this.ID));
 
-            return DataRepository.ExecuteSQL(sql, ps.ToArray());
+            return (sql, ps.ToArray());
         }
 
         /// <summary>
@@ -1100,6 +1107,97 @@ namespace WindowsFormsApplication1
         /// die Technik seiner Zeilen in der Nutzungsdauertabelle.</summary>
         private const int KOSTENKOMPONENTE_HEIZKESSEL = 2;
 
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 2: Mehrfach-Bearbeiten in EINER Transaktion (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die sechs Grundfelder und der volle Feldbestand auf einen geladenen Satz.</summary>
+        private static string Anwenden(HeizkesselStammCtrl satz, AnzeigefelderHeizkessel felder)
+        {
+            satz.Beschreibung = felder.Beschreibung ?? "";
+            satz.Ptherm = felder.Ptherm;
+            satz.Investitionskosten = felder.Investitionskosten;
+            satz.Brennwert = felder.Brennwert;
+            satz.Vorlauf = felder.Vorlauf;
+            satz.Ruecklauf = felder.Ruecklauf;
+            // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+            return FelderUebernehmen(satz, felder);
+        }
+
+        /// <summary>Die geänderten Felder eines Satzes, benannt über seine ID.</summary>
+        public sealed record Satzaenderung(int Id, AnzeigefelderHeizkessel Felder);
+
+        /// <summary>
+        /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b>
+        /// (Konzept Projektdialoge mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt
+        /// die Tabelle: die Projektkopien (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchläuft dieselbe Prüfung wie <see cref="AnzeigefelderSchreiben"/>
+        /// (Zahlenbereiche, Nachschlagewerte, Kennlinie, Bereitschaftsverlust). Ein gesperrter
+        /// Katalogsatz, eine fehlende ID oder ein Verstoß rollt die ganze Transaktion zurück und
+        /// nennt den Satz — kein Teilstand. Die Oberfläche lässt gesperrte Sätze schon vorher aus;
+        /// die Prüfung hier ist die zweite Verteidigungslinie.
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreibenAlle(bool projektkopie,
+                                                                  IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("HZK_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            // Die Nachschlagelisten (Brennstoffe) VOR der Transaktion lesen.
+            var satz = new HeizkesselStammCtrl();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Felder == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?",
+                                              new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("HZK_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        satz.FillModelFromRow(satz, dt.Rows[0]);
+                        string name = satz.Name ?? "";
+                        if (!projektkopie && satz.m_bReadOnly)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("HZK_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."),
+                                name), name);
+                        }
+                        string grund = Anwenden(satz, s.Felder);
+                        if (string.IsNullOrEmpty(grund)) grund = KesselKennlinieWerte.Verstoss(satz);
+                        if (string.IsNullOrEmpty(grund)) grund = BereitschaftVerstoss(satz);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("HZK_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."),
+                                name, grund), name);
+                        }
+                        (string sql, DbParam[] ps) = satz.Aktualisierung(tabelle);
+                        v.Ausfuehren(sql, ps);
+                    }
+                    v.Commit();
+                }
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("HZK_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
         /// <summary>
         /// Die drei Ablehnungsgruende von <see cref="Update"/> als RUECKGABE statt als
         /// Meldung. <see cref="Update"/> ruft die Methode und zeigt den Grund selbst -
@@ -1256,8 +1354,32 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@nam", name ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
 
-            DataRow r = dt.Rows[0];
+        /// <summary>
+        /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 2,
+        /// „Bearbeiten…" je Bereich, KA‑E‑8): <paramref name="projektkopie"/> = <c>true</c> liest
+        /// die Projektkopie aus <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben
+        /// Schlüssel wie <see cref="KatalogsatzAnzeige"/>; <c>null</c>, wenn es die ID nicht gibt.
+        /// </summary>
+        public IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
+
+        /// <summary>Die Projektkopien der Heizkessel (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
+        public const string TABELLE_PROJEKT = "Tab_Heizkessel";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>Die Anzeigefelder einer Zeile aus Katalog oder Projektkopie (gleiche Spalten).</summary>
+        private IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r)
+        {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
             werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
@@ -1438,15 +1560,7 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
                         "Fehler beim Überschreiben des Datensatzes!"), "");
 
-                schreiber.Beschreibung = felder.Beschreibung ?? "";
-                schreiber.Ptherm = felder.Ptherm;
-                schreiber.Investitionskosten = felder.Investitionskosten;
-                schreiber.Brennwert = felder.Brennwert;
-                schreiber.Vorlauf = felder.Vorlauf;
-                schreiber.Ruecklauf = felder.Ruecklauf;
-
-                // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
-                string verstoss = FelderUebernehmen(schreiber, felder);
+                string verstoss = Anwenden(schreiber, felder);
                 if (!string.IsNullOrEmpty(verstoss))
                     return new SpeicherErgebnis(false, verstoss, "");
 
