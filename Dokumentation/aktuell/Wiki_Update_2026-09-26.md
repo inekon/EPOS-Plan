@@ -192,6 +192,7 @@ Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwend
 - Seit 09.10.2026: Die Kältemaschine zählt bei den zulässigen Energieträgern als Stromverbraucher und bekommt den Stromträger des Projekts vorgewählt. (#846)
 - Seit 09.10.2026: Beim Gebäudeimport ist die Baualtersklasse auch dann wählbar, wenn die Datei ein Baujahr trägt. (#846)
 - Seit 09.10.2026: Ganglinien-Importe erkennen das Dezimalzeichen nur aus den Datenzeilen; ein Komma in der Kopfzeile verfälscht die Werte nicht mehr. (#846)
+- Seit 09.10.2026: Der Reiter „Konditionierung“ hat eine Kalenderbedienung mit Wochenprofilen, Zuordnung von Zeiträumen im Jahr (gemeinsam für alle Größen), Einzeltagen mit Feiertagen, Schnellfeldern für Wochenende, Ferien und Saison und einem anklickbaren Jahresraster; die Matrix dient nur noch als Übersicht. (#847)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
