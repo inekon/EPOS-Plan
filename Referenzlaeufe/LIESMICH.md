@@ -718,8 +718,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-09_R48_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `f8cba5ad9`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **208**, 94 777 344 Byte, LFS-SHA-256
-`c229a3252ecf7f6dc70bfe5d05211baf75142128523e1f32eddf5c0a49c41b08`, mit den Projekten 1053 bis 1063; Nachträge der
+gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
+`32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
@@ -753,17 +753,18 @@ Kältemaschine von Projekt 1063. 1050, 1052, 1054,
 achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
 > **Anlass: das Referenzprojekt 1063 „Referenzprojekt Kältemaschine Teillast“ (Teillast und Takten der Kältemaschine,
-> Etappe KM3‑E2, Schemaschritt 208) — die siebenundzwanzig Projekte der Basis R47 rechnen gegen R47 `GESAMT: PASS` und
+> Etappe KM3‑E2, Schemaschritt 210) — die siebenundzwanzig Projekte der Basis R47 rechnen gegen R47 `GESAMT: PASS` und
 > byte-gleich (879/879 CSV); hinzu kommen 1063 mit 32 CSV und 265 Skalaren.**
 >
 > **1063** ist eine Kopie von 1055, an deren Kältemaschine die Teillastkurve 0,10/0,60/0,30 (gültig ab Lastgrad 0,2),
 > Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9 (`Taktverlustfaktor_Cd` leer),
 > Verdichterregelung `STUFEN` und der Randweg `GUETEGRAD` wirken; gesät von
-> `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`. Die Testdatenbank ist aus der Fassung `ec23b962…`
-> (Schemastand 207) mit `Werkzeuge/Testdatenbankschema` auf **208** gezogen (acht Eingabespalten an Katalog und
+> `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`. Die Testdatenbank ist aus der Fassung `7b6b2cc8…`
+> (Schemastand 209, Katalogkosten 208 und 209) mit `Werkzeuge/Testdatenbankschema` auf **210** gezogen (acht Eingabespalten an Katalog und
 > Projektkopie, fünf Kennzahlspalten am Ergebnis, die 34 Typkennfelder des Katalogs um Teillastkurve und
 > Verdichterregelung ergänzt, die Beispielgeräte und Projektkopien leer), danach 1063 gesät und `VACUUM`;
-> `integrity_check` ok. 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
+> `integrity_check` ok; gegen diese Fassung rechnen alle achtundzwanzig Projekte gegen R48 `GESAMT: PASS` und byte-gleich
+> (911/911 CSV). 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
 > Taktstunden der Kältemaschine stehen in einem Zähler: `Kaelte[0].Taktstunden` und `Takt.Kaelte[0].Taktstunden`
 > zeigen beide 218.
 >
