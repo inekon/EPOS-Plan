@@ -3312,6 +3312,22 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrKa + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrKa + " - vollstaendig: " + KatalogkostenUrsprungSchema.Vollstaendig() + " (erwartet True).");
             }
+
+            // ---- Schritt KatalogkostenInvestitionSchema.SCHRITT (KA1, KA-E-14): ID_KostenVorlageInvestition an den acht
+            //      Katalogen mit Kosten. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenInvestition.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: Die Spalte entsteht leer.
+            string nrKi = KatalogkostenInvestitionSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKi + " - Katalogkosten Investition: " +
+                              (KatalogkostenInvestitionSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKi = new List<string>();
+                angelegt += KatalogkostenInvestitionSchema.Ausfuehren(berichtKi);
+                foreach (string zeile in berichtKi)
+                    Console.WriteLine("Schritt " + nrKi + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKi + " - vollstaendig: " + KatalogkostenInvestitionSchema.Vollstaendig() + " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

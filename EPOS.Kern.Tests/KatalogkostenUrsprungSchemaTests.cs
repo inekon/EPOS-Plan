@@ -18,14 +18,15 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         [Fact]
-        public void Die_Nummer_haengt_ueber_die_Klasse_an_der_Kalenderbedienung_und_ist_das_Ziel()
+        public void Die_Nummer_haengt_ueber_die_Klasse_an_der_Kalenderbedienung_und_steht_im_Register()
         {
             Assert.Equal(KalenderbedienungSchema.SCHRITT + 1, KatalogkostenUrsprungSchema.SCHRITT);
             Assert.Equal(208, KatalogkostenUrsprungSchema.SCHRITT);
-            Assert.Equal(KatalogkostenUrsprungSchema.SCHRITT, SchemaStand.Zielversion);
+            // Das Ziel ist mit den Folgeschritten weitergerueckt; die Testdatenbank steht mindestens auf diesem Schritt.
+            Assert.True(SchemaStand.Zielversion >= KatalogkostenUrsprungSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KatalogkostenUrsprungSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             object stand = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation");
-            if (_db.Vorhanden) Assert.Equal(KatalogkostenUrsprungSchema.SCHRITT, Convert.ToInt32(stand, CultureInfo.InvariantCulture));
+            if (_db.Vorhanden) Assert.True(Convert.ToInt32(stand, CultureInfo.InvariantCulture) >= KatalogkostenUrsprungSchema.SCHRITT);
         }
 
         [Fact]

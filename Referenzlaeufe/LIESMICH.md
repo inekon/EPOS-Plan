@@ -1113,6 +1113,19 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `45093f6aba2d5d5c695c99b14f18ec864dde8435e7c248e5b0c7af37d4108846`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
 > bleibt** — keine gesäte Spalte eines Referenzprojekts ändert ihren Wert, keine Einfrierregel ist berührt, kein Leser der
 > Simulation fragt die neuen Spalten.
+>
+> **Nachtrag — Testdatenbank auf 210 (Katalogkosten Investition), Basis R46 unberührt.**
+> `KatalogkostenInvestitionSchema` (210; vorläufig `KatalogkostenUrsprungSchema.SCHRITT + 2`, bis 209
+> `KaeltemaschineTeillastSchema` auf origin liegt und die Kette auf dessen `SCHRITT + 1` umgehängt wird) legt an den acht
+> Katalogen mit Kosten die Spalte `ID_KostenVorlageInvestition` an (Verweis auf `Tab_KostenVorlage`, nullbar,
+> `ON DELETE SET NULL`), alle acht leer — reines DDL, kein DML an Bestandsdaten. Gehoben aus dem Stand 208 (LFS-SHA-256
+> `45093f6aba2d5d5c695c99b14f18ec864dde8435e7c248e5b0c7af37d4108846`) mit `Werkzeuge/Testdatenbankschema`; nur die acht
+> Kataloge ändern ihr Schema um die leere Spalte, jede Tabelle ist inhaltsgleich (außer `Tab_Applikation`), die
+> `sqlite_sequence`-Stände sind auf den Stand 208 zurückgesetzt. Der Schritt 209 ist in dieser Datenbank nicht
+> enthalten; die Folge-Sitzung, die 209 einbringt, hebt sie nach. Die Testdatenbank steht auf **210** (`integrity_check`
+> ok, `foreign_key_check` leer, `--trocken` 0 offen): **93 958 144 Byte, LFS-SHA-256
+> `482a2269851030e8ea6f7d428ee020ac13e9619f97ac7f30d5362b0df4d9cfa4`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> bleibt** — kein Leser der Simulation fragt die neue Spalte.
 
 ### Die Vorgängerbasis R45 (Übergabegrenze)
 
