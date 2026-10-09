@@ -21164,7 +21164,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Betriebskosten: ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_BETRIEBSQUELLE {
             get {
@@ -21200,6 +21200,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten mit 0 € ansetzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BETRIEB_NULL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BETRIEB_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_DUPLIZIEREN {
@@ -21227,7 +21236,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_GRUPPE_BETRIEB {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_GRUPPE_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_GRUPPE_INVEST {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_GRUPPE_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Investitionskosten: ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_INVESTQUELLE {
             get {
@@ -21250,6 +21277,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_AUS_INVEST_KWH {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_INVEST_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten mit 0 € ansetzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_INVEST_NULL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_INVEST_NULL", resourceCulture);
             }
         }
         
@@ -21277,6 +21313,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_AUS_KOSTENMODUL {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_KOSTENMODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehlende Kostensätze werden nicht als kostenlose Anlage bewertet. Bitte Kostensätze eingeben oder die angezeigten Nullkosten ausdrücklich bestätigen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_KOSTEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_KOSTEN_FEHLEN", resourceCulture);
             }
         }
         
@@ -21439,6 +21484,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_AUS_PVQUELLE {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_PVQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe in diesem Dialog ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_QUELLE_DIALOG {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_QUELLE_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Kostenmodul des Projekts ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_QUELLE_KOSTENMODUL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_QUELLE_KOSTENMODUL", resourceCulture);
             }
         }
         

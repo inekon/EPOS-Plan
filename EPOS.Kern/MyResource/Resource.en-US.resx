@@ -19074,14 +19074,35 @@ Please go through the project page again so that the data of the selected projec
   <data name="FLOTTE_AUS_MODELLJAHR_HINWEIS" xml:space="preserve">
     <value>For CSV series combined with EPOS or price-profile values this mapping has to be confirmed explicitly. The CSV time axis is kept in full: for 29 February the EPOS value of 28 February is reused; duplicate local hours at the clock change get the same EPOS model value.</value>
   </data>
+  <data name="FLOTTE_AUS_GRUPPE_INVEST" xml:space="preserve">
+    <value>Investment cost</value>
+  </data>
+  <data name="FLOTTE_AUS_GRUPPE_BETRIEB" xml:space="preserve">
+    <value>Operating cost</value>
+  </data>
+  <data name="FLOTTE_AUS_QUELLE_DIALOG" xml:space="preserve">
+    <value>Input in this dialog</value>
+  </data>
+  <data name="FLOTTE_AUS_QUELLE_KOSTENMODUL" xml:space="preserve">
+    <value>From the project's cost module</value>
+  </data>
+  <data name="FLOTTE_AUS_KOSTEN_FEHLEN" xml:space="preserve">
+    <value>Missing cost rates are not treated as a free system. Please enter cost rates or explicitly confirm the zero costs shown.</value>
+  </data>
+  <data name="FLOTTE_AUS_INVEST_NULL" xml:space="preserve">
+    <value>Set investment cost to 0 €</value>
+  </data>
+  <data name="FLOTTE_AUS_BETRIEB_NULL" xml:space="preserve">
+    <value>Set operating cost to 0 €</value>
+  </data>
   <data name="FLOTTE_AUS_KOSTEN" xml:space="preserve">
     <value>Costs</value>
   </data>
   <data name="FLOTTE_AUS_INVESTQUELLE" xml:space="preserve">
-    <value>Investment cost:</value>
+    <value>Source of investment cost:</value>
   </data>
   <data name="FLOTTE_AUS_BETRIEBSQUELLE" xml:space="preserve">
-    <value>Operating cost:</value>
+    <value>Source of operating cost:</value>
   </data>
   <data name="FLOTTE_AUS_INVEST_KW" xml:space="preserve">
     <value>Investment, power:</value>

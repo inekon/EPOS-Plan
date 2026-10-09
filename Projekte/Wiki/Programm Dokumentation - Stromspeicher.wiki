@@ -323,7 +323,7 @@ Hier steht, '''woher die Zahlen kommen''' – die Zeitreihen, die Kostensätze, 
 ==== Investition und Betrieb ====
 {{Anker|auslegung-kosten}}
 
-Für '''Investition''' und '''Betrieb''' wird die Quelle unabhängig gewählt: ''Kostenmodul'' übernimmt die geeigneten spezifischen Sätze der aktiven Speicheranlage; ''Im Dialog'' verwendet die direkt eingegebenen Werte.
+Die Kosten stehen in zwei Bereichen, '''Investitionskosten''' und '''Betriebskosten'''; in jedem wird die Herkunft unabhängig gewählt: ''Aus dem Kostenmodul des Projekts'' übernimmt die geeigneten spezifischen Sätze der aktiven Speicheranlage; ''Eingabe in diesem Dialog'' verwendet die Werte, die in den Feldern darunter eingegeben sind.
 
 {| class="wikitable"
 ! Eingabe !! Einheit !! Berechnung
