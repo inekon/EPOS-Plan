@@ -297,7 +297,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Vorlagenfelder_lesen_beide_Werte_seit_Fassung_16()
         {
-            Assert.Equal(16, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            // Die Aufheizfelder kamen mit Fassung 16; spaetere Fassungen fuegen nur hinzu.
+            Assert.True(Vorlagenfeldkatalog.KATALOGFASSUNG >= 16);
             foreach (string s in new[] { "gebaeude.ergebnis.aufschlag_verwendet", "gebaeude.ergebnis.aufheizzeit_bemessen" })
                 Assert.Equal(16, Vorlagenfeldkatalog.Finde(s).Seit);
 
