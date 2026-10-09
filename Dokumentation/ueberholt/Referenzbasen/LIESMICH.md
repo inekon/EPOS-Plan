@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-09_R47_Zapffeiertage`](../../../Referenzlaeufe/2026-10-09_R47_Zapffeiertage/);
+> [`Referenzlaeufe/2026-10-09_R48_KaeltemaschineTeillast`](../../../Referenzlaeufe/2026-10-09_R48_KaeltemaschineTeillast/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
