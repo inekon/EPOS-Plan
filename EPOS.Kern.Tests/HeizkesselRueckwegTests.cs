@@ -270,7 +270,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             IReadOnlyList<string> spalten = Katalogrueckweg.Spalten(HeizkesselStammCtrl.Rueckweg());
-            foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "Bezeichner",
+            foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "ID_KostenVorlageInvestition", "Bezeichner",
                                            "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen" })
                 Assert.DoesNotContain(aus, spalten);
             foreach (string mit in new[] { "Ptherm", "Investitionskosten", "Wartungskosten", "Wartungskosten_Einheit",
@@ -341,15 +341,15 @@ namespace EPOS.Kern.Tests
         }
 
         private static int Vorlage(int satz) => Anzahl("SELECT ID_KostenVorlage FROM Tab_Heizkessel_STAMM WHERE ID = ?", satz);
-        private static int VorlageDerKategorie(string name, int kategorie)
+        private static int Invest(int satz)
         {
-            object o = Wert("SELECT ID FROM Tab_KostenVorlage WHERE KomponentenID = 2 AND KategorieID = ? AND Name = ?", kategorie, name);
+            object o = Wert("SELECT ID_KostenVorlageInvestition FROM Tab_Heizkessel_STAMM WHERE ID = ?", satz);
             return Leer(o) ? 0 : I(o);
         }
         private static int Positionenzahl(int vorlage) => Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlagePosition WHERE VorlageID = ?", vorlage);
 
         [Fact]
-        public void Investitionspositionen_reisen_als_Partnervorlage_mit_neu_und_beim_Ueberschreiben()
+        public void Investitionspositionen_reisen_als_eigene_Vorlage_mit_neu_und_beim_Ueberschreiben()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
@@ -359,15 +359,14 @@ namespace EPOS.Kern.Tests
             Assert.True(e.Ok, e.Meldung);
             int satz = e.Saetze[0].IdKatalog;
             Assert.Equal(3, e.Saetze[0].Kostenpositionen);
-            int betrieb = VorlageDerKategorie("Rueckweg Invest", BETRIEB);
-            int invest = VorlageDerKategorie("Rueckweg Invest", INVEST);
+            int betrieb = Vorlage(satz);
+            int invest = Invest(satz);
             Assert.True(betrieb > 0 && invest > 0);
-            Assert.Equal(betrieb, Vorlage(satz));                     // Anker ist die Betriebsvorlage
+            Assert.Equal(INVEST, Anzahl("SELECT KategorieID FROM Tab_KostenVorlage WHERE ID = ?", invest));
+            Assert.Equal(BETRIEB, Anzahl("SELECT KategorieID FROM Tab_KostenVorlage WHERE ID = ?", betrieb));
             Assert.Equal(1, Positionenzahl(betrieb));
             Assert.Equal(2, Positionenzahl(invest));
             Assert.Equal(0, Anzahl("SELECT IstStandard FROM Tab_KostenVorlage WHERE ID = ?", invest));
-            Assert.Equal(Wert("SELECT Bemerkung FROM Tab_KostenVorlage WHERE ID = ?", betrieb),
-                         Wert("SELECT Bemerkung FROM Tab_KostenVorlage WHERE ID = ?", invest));
             Assert.Equal(2, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlagePosition WHERE VorlageID = ? AND Kostenart IN (?, ?)",
                                    invest, DbWerte.KOSTENART_KAPITALGEBUNDEN, DbWerte.KOSTENART_ZUSCHUSS));
             Assert.Equal(200.0, Convert.ToDouble(Wert("SELECT MIN(Satz) FROM Tab_KostenVorlagePosition WHERE VorlageID = ?", invest),
@@ -377,7 +376,7 @@ namespace EPOS.Kern.Tests
             Positionen(k, 1, 3);
             Assert.True(Ueberschreiben(k.Id).Ok);
             Assert.Equal(betrieb, Vorlage(satz));
-            Assert.Equal(invest, VorlageDerKategorie("Rueckweg Invest", INVEST));
+            Assert.Equal(invest, Invest(satz));
             Assert.Equal(1, Positionenzahl(betrieb));
             Assert.Equal(3, Positionenzahl(invest));
         }
@@ -390,24 +389,25 @@ namespace EPOS.Kern.Tests
             Positionen(k, 2, 1);
             int satz = Neu(k.Id, "Rueckweg Ersatz").Saetze[0].IdKatalog;
             int betrieb = Vorlage(satz);
-            int invest = VorlageDerKategorie("Rueckweg Ersatz", INVEST);
+            int invest = Invest(satz);
 
-            // Nur noch Investition: die Betriebsvorlage geht, der Verweis wandert auf die Investitionsvorlage.
+            // Nur noch Investition: die Betriebsvorlage geht, ihr Verweis wird leer, die Investition bleibt.
             Positionen(k, 0, 2);
             Rueckwegergebnis e = Ueberschreiben(k.Id);
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal(2, e.Saetze[0].Kostenpositionen);
             Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID = ?", betrieb));
             Assert.Equal(0, Positionenzahl(betrieb));
-            Assert.Equal(invest, Vorlage(satz));
+            Assert.True(Leer(Wert("SELECT ID_KostenVorlage FROM Tab_Heizkessel_STAMM WHERE ID = ?", satz)));
+            Assert.Equal(invest, Invest(satz));
             Assert.Equal(2, Positionenzahl(invest));
 
-            // Wieder mit Betrieb: eine neue Betriebsvorlage gleichen Namens wird Anker, die Investition bleibt Partnerin.
+            // Wieder mit Betrieb: eine neue Betriebsvorlage, die Investitionsvorlage bleibt dieselbe.
             Positionen(k, 1, 1);
             Assert.True(Ueberschreiben(k.Id).Ok);
-            int betriebNeu = VorlageDerKategorie("Rueckweg Ersatz", BETRIEB);
+            int betriebNeu = Vorlage(satz);
             Assert.True(betriebNeu > 0);
-            Assert.Equal(betriebNeu, Vorlage(satz));
+            Assert.Equal(invest, Invest(satz));
             Assert.Equal(1, Positionenzahl(betriebNeu));
             Assert.Equal(1, Positionenzahl(invest));
             Assert.Equal(2, Katalogrueckweg.SatzvorlagenDerAnlage(k.Anlage, WizardItemClass.KESSEL_TYP, HeizkesselStammCtrl.KOMPONENTE_KOSTEN).Count);
@@ -420,7 +420,7 @@ namespace EPOS.Kern.Tests
             var k = Kopie();
             Positionen(k, 1, 2);
             int satz = Neu(k.Id, "Rueckweg Vorrang").Saetze[0].IdKatalog;
-            int invest = VorlageDerKategorie("Rueckweg Vorrang", INVEST);
+            int invest = Invest(satz);
             IReadOnlyList<KostenVorlageKopf> koepfe =
                 Katalogrueckweg.SatzvorlagenDerAnlage(k.Anlage, WizardItemClass.KESSEL_TYP, HeizkesselStammCtrl.KOMPONENTE_KOSTEN);
             Assert.Equal(new[] { BETRIEB, INVEST }, koepfe.Select(x => x.KategorieId).ToArray());
@@ -442,14 +442,14 @@ namespace EPOS.Kern.Tests
         // ------------------------------------------------ KA-E-16: Löschen mit Satzvorlage ---
 
         [Fact]
-        public void Loeschen_entfernt_das_Vorlagenpaar_ohne_weiteren_Verweis()
+        public void Loeschen_entfernt_beide_Vorlagen_ohne_weiteren_Verweis()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
             Positionen(k, 1, 1);
             int satz = Neu(k.Id, "Rueckweg Weg").Saetze[0].IdKatalog;
             int betrieb = Vorlage(satz);
-            int invest = VorlageDerKategorie("Rueckweg Weg", INVEST);
+            int invest = Invest(satz);
 
             HeizkesselStammCtrl.KatalogsatzLoeschung l = HeizkesselStammCtrl.KatalogsatzLoeschen(satz);
             Assert.True(l.Ok);
@@ -468,20 +468,22 @@ namespace EPOS.Kern.Tests
             Positionen(k, 1, 1);
             int satz = Neu(k.Id, "Rueckweg Bleibt").Saetze[0].IdKatalog;
             int betrieb = Vorlage(satz);
-            int invest = VorlageDerKategorie("Rueckweg Bleibt", INVEST);
+            int invest = Invest(satz);
 
             // Ein anderer Satz (anderer Katalog) verweist auf die Investitionsvorlage.
             int bhkw = Anzahl("SELECT MIN(ID) FROM Tab_BHKW_STAMM");
             Sql("UPDATE Tab_BHKW_STAMM SET ID_KostenVorlage = ? WHERE ID = ?", invest, bhkw);
             int zweiter = Neu(k.Id, "Rueckweg Bleibt 2").Saetze[0].IdKatalog;
-            Sql("UPDATE Tab_Heizkessel_STAMM SET ID_KostenVorlage = ? WHERE ID = ?", betrieb, zweiter);
+            Sql("UPDATE Tab_Heizkessel_STAMM SET ID_KostenVorlage = ?, ID_KostenVorlageInvestition = ? WHERE ID = ?",
+                betrieb, invest, zweiter);
             Sql("UPDATE Tab_Heizkessel_STAMM SET ID_KostenVorlage = ? WHERE ID = ?", betrieb, satz);
             HeizkesselStammCtrl.KatalogsatzLoeschung l = HeizkesselStammCtrl.KatalogsatzLoeschen(satz);
             Assert.True(l.Ok);
             Assert.Equal(Satzvorlagenabbau.BleibtAndererSatz, l.Vorlage);
             Assert.Equal(2, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID IN (?, ?)", betrieb, invest));
 
-            // Projektzeilen tragen die Herkunft: der zweite Satz geht, die Vorlage bleibt, die Meldung nennt es.
+            // Projektzeilen tragen die Herkunft der Investitionsvorlage: der zweite Satz geht, sie bleibt, die Meldung nennt es;
+            // die Betriebsvorlage ohne weiteren Verweis geht mit.
             Sql("UPDATE Tab_BHKW_STAMM SET ID_KostenVorlage = NULL WHERE ID = ?", bhkw);
             Sql("UPDATE Tab_ProjektWerte SET VorlageID = ? WHERE ID = (SELECT MIN(ID) FROM Tab_ProjektWerte WHERE ID_Anlage = ?)",
                 invest, k.Anlage);
@@ -490,7 +492,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Satzvorlagenabbau.BleibtProjektzeilen, l.Vorlage);
             Assert.Contains("Rueckweg Bleibt 2", l.Meldung);
             Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM Tab_Heizkessel_STAMM WHERE ID = ?", zweiter));
-            Assert.Equal(2, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID IN (?, ?)", betrieb, invest));
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID = ?", invest));
+            Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID = ?", betrieb));
         }
 
         [Fact]

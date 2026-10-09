@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
         BleibtAndererSatz,
         /// <summary>Projektzeilen tragen sie als Herkunft — sie bleibt.</summary>
         BleibtProjektzeilen,
-        /// <summary>Mitgelöscht (beide Vorlagen des Paars).</summary>
+        /// <summary>Mitgelöscht.</summary>
         Geloescht,
     }
 
@@ -99,9 +99,11 @@ namespace WindowsFormsApplication1
     /// <remarks>
     /// <list type="bullet">
     /// <item><b>Was mitgeht:</b> die Schnittmenge der Spalten von Kopie und Katalog ohne <c>ID</c>, <c>ID_Projekt</c>,
-    /// <c>ID_Stamm</c>, <c>ReadOnly</c>, <c>ID_KostenVorlage</c> und <c>Katalog_*</c> (der Name gesondert); die Kindtabellen
-    /// des Gewerks; die Planwertspalten als Teil der Schnittmenge; die Betriebskostenpositionen der ersten Anlage, die auf
-    /// die Kopie zeigt, als Kostenvorlage des Satzes (<see cref="KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE"/>).</item>
+    /// <c>ID_Stamm</c>, <c>ReadOnly</c>, <c>ID_KostenVorlage</c>, <c>ID_KostenVorlageInvestition</c> und <c>Katalog_*</c>
+    /// (der Name gesondert); die Kindtabellen des Gewerks; die Planwertspalten als Teil der Schnittmenge; die Betriebs- und
+    /// Investitionspositionen der ersten Anlage, die auf die Kopie zeigt, als Kostenvorlagen des Satzes
+    /// (<see cref="KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE"/>,
+    /// <see cref="KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION"/>).</item>
     /// <item><b>Katalogpaket:</b> Beim Überschreiben bleiben <c>Katalog_Schluessel</c>, <c>Katalog_Pruefsumme</c> und
     /// <c>Katalog_Ausgelaufen</c> stehen — die Katalogaktualisierung erkennt den Satz an der abweichenden Prüfsumme als vom
     /// Anwender geändert.</item>
@@ -114,7 +116,7 @@ namespace WindowsFormsApplication1
         public static readonly IReadOnlyList<string> NIE_MIT = new[]
         {
             "ID", "ID_Projekt", KatalogkostenUrsprungSchema.SPALTE_ID_STAMM, "ReadOnly",
-            KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, "Bezeichner",
+            KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, "Bezeichner",
         };
 
         /// <summary>Höchstlänge eines Vorlagennamens (<c>Tab_KostenVorlage.Name</c>).</summary>
@@ -251,7 +253,6 @@ namespace WindowsFormsApplication1
                         string nameKopie = Text(r, "Bezeichner");
                         int idKatalog;
                         string name;
-                        int? alteVorlage = null;
                         if (a.Art == Rueckwegart.Ueberschreiben)
                         {
                             (Rueckwegabsage sperre, int? idU, string nameU) = Ursprung(g, r, v);
@@ -265,12 +266,6 @@ namespace WindowsFormsApplication1
                             }
                             idKatalog = idU.Value;
                             name = nameU;
-                            if (vorlageSpalte)
-                            {
-                                object o = v.Skalar("SELECT \"" + KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE + "\" FROM \"" +
-                                                    g.Katalogtabelle + "\" WHERE \"ID\" = ?", new DbParam("@id", idKatalog));
-                                if (o != null && o != DBNull.Value) alteVorlage = Convert.ToInt32(o, CultureInfo.InvariantCulture);
-                            }
                             var ps = spalten.Select((s, i) => new DbParam("@s" + i, Wert(r, s))).ToList();
                             ps.Add(new DbParam("@id", idKatalog));
                             v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET " +
@@ -301,7 +296,7 @@ namespace WindowsFormsApplication1
 
                         int kinder = KinderKopieren(v, g, a.IdKopie, idKatalog, a.Art == Rueckwegart.Ueberschreiben);
                         int positionen = vorlageSpalte
-                            ? KostenvorlageSchreiben(v, g, r, idKatalog, name, alteVorlage, heute)
+                            ? KostenvorlageSchreiben(v, g, r, idKatalog, name, heute)
                             : 0;
                         saetze.Add(new Rueckwegsatz(a.IdKopie, idKatalog, name, a.Art == Rueckwegart.Neu, positionen, kinder));
                     }
@@ -345,17 +340,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Kostenpositionen der Anlage als Satzvorlage</b> (KA‑E‑9, KA‑E‑14): die Betriebs- <b>und</b>
-        /// Investitionspositionen der ersten Anlage, die auf die Kopie zeigt. Eine Kostenvorlage führt genau eine
-        /// Kategorie; die Satzvorlage ist deshalb ein <b>Paar</b> gleichen Namens und gleicher Bemerkung (Gewerk =
-        /// <see cref="Rueckweggewerk.KomponentenId"/>, nicht Standard) — je Kategorie mit Positionen eine Vorlage. Der Satz
-        /// verweist über <c>ID_KostenVorlage</c> auf die Betriebsvorlage, ohne Betriebspositionen auf die
-        /// Investitionsvorlage (<see cref="Satzvorlagen(DbVorgang, int, int)"/> findet die Partnerin). Ein zweiter Rückweg
-        /// ersetzt die eigenen, ungesperrten Vorlagen vollständig: Positionen neu, eine Kategorie ohne Positionen verliert
-        /// ihre Vorlage. Hat die Anlage gar keine Position, bleibt der Verweis, wie er ist. Der Planwert reist als Spalte.
+        /// <b>Die Kostenpositionen der Anlage als Satzvorlagen</b> (KA‑E‑9, KA‑E‑14): die Betriebs- <b>und</b>
+        /// Investitionspositionen der ersten Anlage, die auf die Kopie zeigt. Eine Kostenvorlage führt genau eine Kategorie;
+        /// der Satz verweist deshalb mit zwei IDs auf zwei eigenständige Vorlagen (Gewerk =
+        /// <see cref="Rueckweggewerk.KomponentenId"/>, Name = Satzname, nicht Standard): <c>ID_KostenVorlage</c> auf die
+        /// Betriebs-, <c>ID_KostenVorlageInvestition</c> auf die Investitionsvorlage. Ein zweiter Rückweg ersetzt die
+        /// Positionen der jeweils verwiesenen eigenen, ungesperrten Vorlage; eine Kategorie ohne Positionen setzt ihren
+        /// Verweis auf NULL und räumt die Vorlage ab (<see cref="Abraeumen"/>). Hat die Anlage gar keine Position, bleiben
+        /// die Verweise, wie sie sind. Der Planwert reist als Spalte.
         /// </summary>
         private static int KostenvorlageSchreiben(DbVorgang v, Rueckweggewerk g, DataRow kopie, int idKatalog, string name,
-                                                 int? alteVorlage, string heute)
+                                                 string heute)
         {
             int idProjekt = Convert.ToInt32(kopie["ID_Projekt"], CultureInfo.InvariantCulture);
             object anlage = v.Skalar("SELECT MIN(\"ID\") FROM \"Tab_Energieanlagen\" WHERE \"ID_Projekt\" = ? AND \"" +
@@ -365,46 +360,47 @@ namespace WindowsFormsApplication1
             int idAnlage = Convert.ToInt32(anlage, CultureInfo.InvariantCulture);
             var positionen = new Dictionary<int, DataTable>();
             foreach (int kategorie in KATEGORIEN)
-                positionen[kategorie] = v.Lese(
-                    "SELECT w.*, f.\"Bezeichnung\" AS \"Lexikon\" FROM \"" + SchemaKatalog.TAB_PROJEKTWERTE + "\" w " +
-                    "LEFT JOIN \"Tab_Kostenfaktor\" f ON f.\"StammID\" = w.\"StammID\" " +
-                    "WHERE w.\"ProjektID\" = ? AND w.\"ID_Anlage\" = ? AND w.\"KomponentenID\" = ? AND w.\"KategorieID\" = ? " +
-                    "ORDER BY w.\"ID\"",
-                    new DbParam("@p", idProjekt), new DbParam("@a", idAnlage),
-                    new DbParam("@c", g.KomponentenId), new DbParam("@k", kategorie));
+                positionen[kategorie] = VerweisLesbar(g.Katalogtabelle, kategorie)
+                    ? v.Lese(
+                        "SELECT w.*, f.\"Bezeichnung\" AS \"Lexikon\" FROM \"" + SchemaKatalog.TAB_PROJEKTWERTE + "\" w " +
+                        "LEFT JOIN \"Tab_Kostenfaktor\" f ON f.\"StammID\" = w.\"StammID\" " +
+                        "WHERE w.\"ProjektID\" = ? AND w.\"ID_Anlage\" = ? AND w.\"KomponentenID\" = ? AND w.\"KategorieID\" = ? " +
+                        "ORDER BY w.\"ID\"",
+                        new DbParam("@p", idProjekt), new DbParam("@a", idAnlage),
+                        new DbParam("@c", g.KomponentenId), new DbParam("@k", kategorie))
+                    : null;
             int gesamt = positionen.Values.Sum(t => t?.Rows.Count ?? 0);
             if (gesamt == 0) return 0;
 
-            // Die eigenen, ungesperrten Vorlagen des Satzes (beim Überschreiben) werden ersetzt.
-            List<Satzvorlage> paar = alteVorlage.HasValue
-                ? Satzvorlagen(v, alteVorlage.Value, g.KomponentenId).Where(s => s.Ersetzbar).ToList()
-                : new List<Satzvorlage>();
-            Dictionary<int, int> eigene = paar.ToDictionary(s => s.Kategorie, s => s.Id);
             string bemerkung = F(MyResource.Resource.KATRUECK_BEMERKUNG_VORLAGE, Projektname(v, idProjekt), heute);
-            string vorlagenname = paar.Count > 0 ? paar[0].Name : FreierVorlagenname(v, g.KomponentenId, name);
-
+            string vorlagenname = name.Length > NAME_VORLAGE_MAX ? name.Substring(0, NAME_VORLAGE_MAX) : name;
             var zielspalten = new HashSet<string>(DataRepository.SpaltenVonTabelle("Tab_KostenVorlagePosition"),
                                                   StringComparer.OrdinalIgnoreCase);
-            var neueVorlagen = new Dictionary<int, int>();
             foreach (int kategorie in KATEGORIEN)
             {
+                if (!VerweisLesbar(g.Katalogtabelle, kategorie)) continue;
+                string spalte = Verweisspalte(kategorie);
                 DataTable pos = positionen[kategorie];
                 bool hatPositionen = pos != null && pos.Rows.Count > 0;
-                eigene.TryGetValue(kategorie, out int idVorlage);
+                int? alt = Verweis(v, g.Katalogtabelle, spalte, idKatalog);
+                int idVorlage = alt.HasValue && Ersetzbar(v, alt.Value, g.KomponentenId, kategorie) ? alt.Value : 0;
+
+                if (!hatPositionen)
+                {
+                    if (!alt.HasValue) continue;
+                    v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = NULL WHERE \"ID\" = ?",
+                                 new DbParam("@id", idKatalog));
+                    if (idVorlage > 0) Abraeumen(v, idVorlage);
+                    continue;
+                }
                 if (idVorlage > 0)
                 {
                     v.Ausfuehren("DELETE FROM \"Tab_KostenVorlagePosition\" WHERE \"VorlageID\" = ?", new DbParam("@id", idVorlage));
-                    if (!hatPositionen)
-                    {
-                        v.Ausfuehren("DELETE FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" WHERE \"ID\" = ?",
-                                     new DbParam("@id", idVorlage));
-                        continue;
-                    }
                     v.Ausfuehren("UPDATE \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" SET \"Name\" = ?, \"Bemerkung\" = ?, " +
                                  "\"GeaendertAm\" = ? WHERE \"ID\" = ?", new DbParam("@n", vorlagenname),
                                  new DbParam("@b", bemerkung), new DbParam("@g", heute), new DbParam("@id", idVorlage));
                 }
-                else if (hatPositionen)
+                else
                     idVorlage = v.EinfuegenUndId(
                         "INSERT INTO \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" (\"KomponentenID\", \"KategorieID\", \"Name\", " +
                         "\"IstStandard\", \"ReadOnly\", \"Bemerkung\", \"GeaendertAm\") VALUES (?, ?, ?, 0, 0, ?, ?)",
@@ -413,19 +409,39 @@ namespace WindowsFormsApplication1
                             new DbParam("@c", g.KomponentenId), new DbParam("@k", kategorie),
                             new DbParam("@n", vorlagenname), new DbParam("@b", bemerkung), new DbParam("@g", heute),
                         });
-                else continue;
-                neueVorlagen[kategorie] = idVorlage;
                 PositionenSchreiben(v, idVorlage, pos, zielspalten);
+                v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = ? WHERE \"ID\" = ?",
+                             new DbParam("@v", idVorlage), new DbParam("@id", idKatalog));
             }
-            int anker = neueVorlagen.TryGetValue(DbWerte.KOSTEN_KATEGORIE_BETRIEB, out int b)
-                ? b : neueVorlagen[DbWerte.KOSTEN_KATEGORIE_INVESTITION];
-            v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE +
-                         "\" = ? WHERE \"ID\" = ?", new DbParam("@v", anker), new DbParam("@id", idKatalog));
             return gesamt;
         }
 
-        /// <summary>Die Kategorien der Satzvorlage — Betrieb zuerst, er ist der Anker des Verweises.</summary>
+        /// <summary>Die Kategorien der Satzvorlagen: Betrieb, Investition.</summary>
         private static readonly int[] KATEGORIEN = { DbWerte.KOSTEN_KATEGORIE_BETRIEB, DbWerte.KOSTEN_KATEGORIE_INVESTITION };
+
+        /// <summary>Die Verweisspalte des Katalogs je Kategorie.</summary>
+        public static string Verweisspalte(int kategorie)
+            => kategorie == DbWerte.KOSTEN_KATEGORIE_INVESTITION
+                ? KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION
+                : KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE;
+
+        private static bool VerweisLesbar(string katalog, int kategorie)
+            => DataRepository.SpalteVorhanden(katalog, Verweisspalte(kategorie));
+
+        private static int? Verweis(DbVorgang v, string katalog, string spalte, int idKatalog)
+        {
+            object o = v.Skalar("SELECT \"" + spalte + "\" FROM \"" + katalog + "\" WHERE \"ID\" = ?", new DbParam("@id", idKatalog));
+            return o == null || o == DBNull.Value ? (int?)null : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Ist die Vorlage eine eigene des Gewerks und der Kategorie, nicht Standard und nicht gesperrt?</summary>
+        private static bool Ersetzbar(DbVorgang v, int idVorlage, int komponentenId, int kategorie)
+        {
+            object n = v.Skalar("SELECT COUNT(*) FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" WHERE \"ID\" = ? AND " +
+                                "\"KomponentenID\" = ? AND \"KategorieID\" = ? AND \"IstStandard\" = 0 AND \"ReadOnly\" = 0",
+                                new DbParam("@id", idVorlage), new DbParam("@c", komponentenId), new DbParam("@k", kategorie));
+            return Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0;
+        }
 
         private static void PositionenSchreiben(DbVorgang v, int idVorlage, DataTable pos, HashSet<string> zielspalten)
         {
@@ -459,104 +475,58 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static string Kuerzen(string name) => name.Length > NAME_VORLAGE_MAX ? name.Substring(0, NAME_VORLAGE_MAX) : name;
-
-        /// <summary>
-        /// Ein Vorlagenname, der in <b>beiden</b> Kategorien des Gewerks frei ist — die Vorlagen eines Paars tragen denselben
-        /// Namen, und Namen sind je Kategorie eindeutig. Belegt (etwa durch das Paar eines gelöschten Satzes, das Projektzeilen
-        /// noch brauchen): Zusatz „(2)", „(3)" ….
-        /// </summary>
-        private static string FreierVorlagenname(DbVorgang v, int komponentenId, string name)
-        {
-            string basis = Kuerzen(name);
-            for (int n = 1; ; n++)
-            {
-                string zusatz = n == 1 ? "" : " (" + n.ToString(CultureInfo.InvariantCulture) + ")";
-                string kandidat = basis.Length + zusatz.Length > NAME_VORLAGE_MAX
-                    ? basis.Substring(0, NAME_VORLAGE_MAX - zusatz.Length) + zusatz : basis + zusatz;
-                object belegt = v.Skalar("SELECT COUNT(*) FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" WHERE \"KomponentenID\" = ? " +
-                                         "AND \"Name\" = ?", new DbParam("@c", komponentenId), new DbParam("@n", kandidat));
-                if (Convert.ToInt64(belegt, CultureInfo.InvariantCulture) == 0) return kandidat;
-            }
-        }
-
-        /// <summary>Eine Vorlage des Satzvorlagenpaars.</summary>
-        private sealed record Satzvorlage(int Id, int Kategorie, string Name, bool Ersetzbar);
-
-        /// <summary>
-        /// Das Paar zum Verweis <paramref name="idAnker"/>: die Ankervorlage selbst und ihre Partnerin — gleiches Gewerk, die
-        /// andere Kategorie, gleicher Name, gleiche Bemerkung, nicht Standard. Eine Standardvorlage hat keine Partnerin.
-        /// <c>Ersetzbar</c> heißt: nicht Standard und nicht gesperrt.
-        /// </summary>
-        private static List<Satzvorlage> Satzvorlagen(DbVorgang v, int idAnker, int komponentenId)
-            => Satzvorlagen(v.Lese, idAnker, komponentenId);
-
-        private static List<Satzvorlage> Satzvorlagen(Func<string, DbParam[], DataTable> lese, int idAnker, int komponentenId)
-        {
-            var liste = new List<Satzvorlage>();
-            DataTable a = lese("SELECT \"ID\", \"KategorieID\", \"Name\", \"IstStandard\", \"ReadOnly\", \"Bemerkung\" FROM \"" +
-                               SchemaKatalog.TAB_KOSTENVORLAGE + "\" WHERE \"ID\" = ? AND \"KomponentenID\" = ?",
-                               new[] { new DbParam("@id", idAnker), new DbParam("@c", komponentenId) });
-            if (a == null || a.Rows.Count != 1) return liste;
-            DataRow r = a.Rows[0];
-            bool standard = Convert.ToInt64(r["IstStandard"], CultureInfo.InvariantCulture) != 0;
-            int kategorie = r["KategorieID"] == DBNull.Value ? 0 : Convert.ToInt32(r["KategorieID"], CultureInfo.InvariantCulture);
-            string name = Text(r, "Name");
-            liste.Add(new Satzvorlage(idAnker, kategorie, name,
-                                      !standard && Convert.ToInt64(r["ReadOnly"], CultureInfo.InvariantCulture) == 0));
-            if (standard) return liste;
-            DataTable p = lese("SELECT \"ID\", \"KategorieID\", \"ReadOnly\" FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" " +
-                               "WHERE \"KomponentenID\" = ? AND \"KategorieID\" IN (?, ?) AND \"KategorieID\" <> ? AND \"Name\" = ? " +
-                               "AND \"IstStandard\" = 0 AND \"Bemerkung\" IS ? AND \"ID\" <> ? ORDER BY \"ID\" LIMIT 1",
-                               new[]
-                               {
-                                   new DbParam("@c", komponentenId), new DbParam("@k1", DbWerte.KOSTEN_KATEGORIE_BETRIEB),
-                                   new DbParam("@k2", DbWerte.KOSTEN_KATEGORIE_INVESTITION), new DbParam("@k", kategorie),
-                                   new DbParam("@n", name), new DbParam("@b", r["Bemerkung"]), new DbParam("@id", idAnker),
-                               });
-            if (p != null && p.Rows.Count == 1)
-                liste.Add(new Satzvorlage(Convert.ToInt32(p.Rows[0][0], CultureInfo.InvariantCulture),
-                                          Convert.ToInt32(p.Rows[0][1], CultureInfo.InvariantCulture), name,
-                                          Convert.ToInt64(p.Rows[0][2], CultureInfo.InvariantCulture) == 0));
-            return liste;
-        }
-
         // ------------------------------------------------- Löschen eines Satzes ---
 
         /// <summary>
-        /// <b>Die Satzvorlage beim Löschen eines Katalogsatzes</b> (KA‑E‑16): Zeigte der gelöschte Satz auf eine nicht als
-        /// Standard markierte, ungesperrte Vorlage, wird das Paar mitgelöscht — es sei denn, ein anderer Katalogsatz (in einem
-        /// der acht Kataloge mit <c>ID_KostenVorlage</c>) verweist auf eine seiner Vorlagen oder Projektzeilen
-        /// (<c>Tab_ProjektWerte.VorlageID</c>) tragen ihre Herkunft. Läuft im Vorgang des Löschens, nach dem
-        /// <c>DELETE</c> des Satzes.
+        /// <b>Die Satzvorlagen beim Löschen eines Katalogsatzes</b> (KA‑E‑16): Beide Verweise des gelöschten Satzes
+        /// (<c>ID_KostenVorlage</c>, <c>ID_KostenVorlageInvestition</c>, vor dem Löschen gelesen) werden abgeräumt
+        /// (<see cref="Abraeumen"/>). Läuft im Vorgang des Löschens, nach dem <c>DELETE</c> des Satzes. Das Ergebnis ist
+        /// der gewichtigste Ausgang beider Vorlagen (Projektzeilen vor anderem Satz vor Standard vor gelöscht).
         /// </summary>
-        /// <param name="idVorlage">Der Verweis des gelöschten Satzes, vor dem Löschen gelesen; <c>null</c> = keiner.</param>
-        public static Satzvorlagenabbau SatzvorlageBeimLoeschen(DbVorgang v, int? idVorlage, int komponentenId)
+        public static Satzvorlagenabbau SatzvorlageBeimLoeschen(DbVorgang v, int? idBetrieb, int? idInvestition)
         {
-            if (!idVorlage.HasValue) return Satzvorlagenabbau.KeineVorlage;
-            List<Satzvorlage> paar = Satzvorlagen(v, idVorlage.Value, komponentenId);
-            if (paar.Count == 0) return Satzvorlagenabbau.KeineVorlage;
-            if (!paar[0].Ersetzbar) return Satzvorlagenabbau.Standardvorlage;
+            Satzvorlagenabbau ergebnis = Satzvorlagenabbau.KeineVorlage;
+            foreach (int? id in new[] { idBetrieb, idInvestition })
+            {
+                if (!id.HasValue) continue;
+                Satzvorlagenabbau a = Abraeumen(v, id.Value);
+                if (Gewicht(a) > Gewicht(ergebnis)) ergebnis = a;
+            }
+            return ergebnis;
+        }
 
-            foreach (Satzvorlage s in paar)
-                foreach (string katalog in KatalogkostenUrsprungSchema.KATALOGE_MIT_KOSTEN)
+        private static int Gewicht(Satzvorlagenabbau a)
+            => a == Satzvorlagenabbau.BleibtProjektzeilen ? 4 : a == Satzvorlagenabbau.BleibtAndererSatz ? 3
+             : a == Satzvorlagenabbau.Standardvorlage ? 2 : a == Satzvorlagenabbau.Geloescht ? 1 : 0;
+
+        /// <summary>
+        /// Räumt eine Vorlage ab, auf die kein Satz mehr zeigen soll: gelöscht wird sie nur, wenn sie nicht Standard und
+        /// nicht gesperrt ist, kein Katalogsatz (in einem der acht Kataloge, beide Verweisspalten) mehr auf sie verweist und
+        /// keine Projektzeile (<c>Tab_ProjektWerte.VorlageID</c>) sie als Herkunft trägt.
+        /// </summary>
+        private static Satzvorlagenabbau Abraeumen(DbVorgang v, int idVorlage)
+        {
+            DataTable kopf = v.Lese("SELECT \"IstStandard\", \"ReadOnly\" FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE +
+                                    "\" WHERE \"ID\" = ?", new DbParam("@id", idVorlage));
+            if (kopf == null || kopf.Rows.Count == 0) return Satzvorlagenabbau.KeineVorlage;
+            if (Convert.ToInt64(kopf.Rows[0][0], CultureInfo.InvariantCulture) != 0 ||
+                Convert.ToInt64(kopf.Rows[0][1], CultureInfo.InvariantCulture) != 0)
+                return Satzvorlagenabbau.Standardvorlage;
+
+            foreach (string katalog in KatalogkostenUrsprungSchema.KATALOGE_MIT_KOSTEN)
+                foreach (int kategorie in KATEGORIEN)
                 {
-                    if (!KatalogkostenUrsprungSchema.KostenvorlageLesbar(katalog)) continue;
-                    object n = v.Skalar("SELECT COUNT(*) FROM \"" + katalog + "\" WHERE \"" +
-                                        KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE + "\" = ?", new DbParam("@v", s.Id));
+                    if (!VerweisLesbar(katalog, kategorie)) continue;
+                    object n = v.Skalar("SELECT COUNT(*) FROM \"" + katalog + "\" WHERE \"" + Verweisspalte(kategorie) + "\" = ?",
+                                        new DbParam("@v", idVorlage));
                     if (Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0) return Satzvorlagenabbau.BleibtAndererSatz;
                 }
-            foreach (Satzvorlage s in paar)
-            {
-                object n = v.Skalar("SELECT COUNT(*) FROM \"" + SchemaKatalog.TAB_PROJEKTWERTE + "\" WHERE \"VorlageID\" = ?",
-                                    new DbParam("@v", s.Id));
-                if (Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0) return Satzvorlagenabbau.BleibtProjektzeilen;
-            }
-            foreach (Satzvorlage s in paar.Where(s => s.Ersetzbar))
-            {
-                v.Ausfuehren("DELETE FROM \"Tab_KostenVorlagePosition\" WHERE \"VorlageID\" = ?", new DbParam("@id", s.Id));
-                v.Ausfuehren("DELETE FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" WHERE \"ID\" = ?", new DbParam("@id", s.Id));
-            }
+            object p = v.Skalar("SELECT COUNT(*) FROM \"" + SchemaKatalog.TAB_PROJEKTWERTE + "\" WHERE \"VorlageID\" = ?",
+                                new DbParam("@v", idVorlage));
+            if (Convert.ToInt64(p, CultureInfo.InvariantCulture) > 0) return Satzvorlagenabbau.BleibtProjektzeilen;
+
+            v.Ausfuehren("DELETE FROM \"Tab_KostenVorlagePosition\" WHERE \"VorlageID\" = ?", new DbParam("@id", idVorlage));
+            v.Ausfuehren("DELETE FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" WHERE \"ID\" = ?", new DbParam("@id", idVorlage));
             return Satzvorlagenabbau.Geloescht;
         }
 
@@ -584,37 +554,43 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Satzvorlagen des Katalogsatzes, aus dem das Gerät der Anlage <paramref name="idAnlage"/> stammt — je Kategorie
-        /// (Betrieb, Investition) höchstens eine; sie gehen bei der Übernahme Katalog → Projekt der Standardvorlage des
-        /// Gewerks vor (KA‑E‑14). Leer, wenn die Anlage keinen Ursprung kennt, der Satz keine eigene Vorlage führt oder eine
-        /// Spalte fehlt.
+        /// über ihren Verweis (<c>ID_KostenVorlage</c> Betrieb, <c>ID_KostenVorlageInvestition</c> Investition), Betrieb
+        /// zuerst. Sie gehen bei der Übernahme Katalog → Projekt der Standardvorlage des Gewerks vor (KA‑E‑14). Leer, wenn
+        /// die Anlage keinen Ursprung kennt, der Satz keine eigene Vorlage führt oder eine Spalte fehlt; ein Verweis auf eine
+        /// Vorlage eines anderen Gewerks oder einer anderen Kategorie zählt nicht.
         /// </summary>
         public static IReadOnlyList<KostenVorlageKopf> SatzvorlagenDerAnlage(int idAnlage, int idType, int komponentenId)
         {
-            if (!ANLAGEN.TryGetValue(idType, out var a)) return Array.Empty<KostenVorlageKopf>();
-            if (!KatalogkostenUrsprungSchema.UrsprungLesbar(a.Kopietabelle) || !KatalogkostenUrsprungSchema.KostenvorlageLesbar(a.Katalogtabelle))
-                return Array.Empty<KostenVorlageKopf>();
-            object anker = DataRepository.ExecuteScalar(
-                "SELECT s.\"ID_KostenVorlage\" FROM \"Tab_Energieanlagen\" e " +
-                "JOIN \"" + a.Kopietabelle + "\" k ON k.\"ID\" = e.\"" + a.Verweis + "\" " +
-                "JOIN \"" + a.Katalogtabelle + "\" s ON s.\"ID\" = k.\"ID_Stamm\" WHERE e.\"ID\" = ?",
-                new DbParam("@a", idAnlage));
-            if (anker == null || anker == DBNull.Value) return Array.Empty<KostenVorlageKopf>();
-            return Satzvorlagen((sql, p) => DataRepository.GetDataTable(sql, p), Convert.ToInt32(anker, CultureInfo.InvariantCulture),
-                                komponentenId)
-                .Select(s => new KostenVorlageKopf
+            var liste = new List<KostenVorlageKopf>();
+            if (!ANLAGEN.TryGetValue(idType, out var a)) return liste;
+            if (!KatalogkostenUrsprungSchema.UrsprungLesbar(a.Kopietabelle)) return liste;
+            foreach (int kategorie in KATEGORIEN)
+            {
+                if (!VerweisLesbar(a.Katalogtabelle, kategorie)) continue;
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT v.\"ID\", v.\"Name\" FROM \"Tab_Energieanlagen\" e " +
+                    "JOIN \"" + a.Kopietabelle + "\" k ON k.\"ID\" = e.\"" + a.Verweis + "\" " +
+                    "JOIN \"" + a.Katalogtabelle + "\" s ON s.\"ID\" = k.\"ID_Stamm\" " +
+                    "JOIN \"" + SchemaKatalog.TAB_KOSTENVORLAGE + "\" v ON v.\"ID\" = s.\"" + Verweisspalte(kategorie) + "\" " +
+                    "WHERE e.\"ID\" = ? AND v.\"KomponentenID\" = ? AND v.\"KategorieID\" = ?",
+                    new DbParam("@a", idAnlage), new DbParam("@c", komponentenId), new DbParam("@k", kategorie));
+                if (dt == null || dt.Rows.Count == 0) continue;
+                liste.Add(new KostenVorlageKopf
                 {
-                    Id = s.Id,
-                    Name = s.Name,
+                    Id = Convert.ToInt32(dt.Rows[0][0], CultureInfo.InvariantCulture),
+                    Name = Convert.ToString(dt.Rows[0][1], CultureInfo.InvariantCulture),
                     KomponentenId = komponentenId,
-                    KategorieId = s.Kategorie == 0 ? DbWerte.KOSTEN_KATEGORIE_BETRIEB : s.Kategorie,
+                    KategorieId = kategorie,
                     IstStandard = false,
-                })
-                .ToList();
+                });
+            }
+            return liste;
         }
 
-        /// <summary>Die Ankervorlage des Satzes (<see cref="SatzvorlagenDerAnlage"/>, erste Zeile); <c>null</c> = keine.</summary>
+        /// <summary>Die Betriebs-Satzvorlage (sonst die Investitions-Satzvorlage) der Anlage; <c>null</c> = keine.</summary>
         public static KostenVorlageKopf SatzvorlageDerAnlage(int idAnlage, int idType, int komponentenId)
             => SatzvorlagenDerAnlage(idAnlage, idType, komponentenId).FirstOrDefault();
+
         // ---------------------------------------------------------------- Hilfen ---
 
         private static DataRow Zeile(string tabelle, int id)
