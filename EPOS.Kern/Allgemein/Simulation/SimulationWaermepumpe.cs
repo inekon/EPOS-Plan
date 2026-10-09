@@ -1457,7 +1457,8 @@ namespace WindowsFormsApplication1
             try
             {
                 double? abschalt = art == Bivalenzbetriebsart.Parallel ? null : (double?)model.Abschaltpunkt;
-                var kennfeld = BivalenzQuelle.Kennfeld(wp_list[index], hoechstvorlauf);
+                // Die Kennlinien haengen am Geraet (ID_WP), nicht an der Anlagenzeile (wp_list).
+                var kennfeld = BivalenzQuelle.Kennfeld(model.ID_WP, hoechstvorlauf);
                 if (kennfeld.Count > 0 && g.AuslegungRaumC > g.AuslegungAussenC)
                 {
                     Uebergabezone kurve = g.Zonen.OrderByDescending(z => z.AuslegungVorlaufC).First();
