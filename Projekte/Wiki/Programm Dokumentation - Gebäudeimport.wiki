@@ -34,6 +34,8 @@ Das erste Feld ist die '''Baualtersklasse''' – ein Bauzeitraum von ''bis 1859'
 
 '''Das Baujahr führt.''' Nennt die Datei ein Baujahr, bestimmt EPOS-Plan die Klasse daraus; sie steht in der Klappliste, die Klappliste ist gesperrt, und der Beleg der Zeile nennt das Baujahr. Ohne Baujahr wählen Sie die Klasse, am besten vor der Datei. Ein späterer Wechsel ordnet neu zu; Werte, die Sie von Hand eingetragen haben, und gesetzte oder entfernte Haken bleiben dabei stehen.
 
+'''Wohngebäude oder Nichtwohngebäude.''' Die Verwendung des neuen Gebäudes leitet EPOS-Plan aus der Datei ab: zuerst aus der Gebäudeart, die die Datei nennt (etwa ''Office'' oder ''SingleFamily''), sonst aus den Nutzungen der Zonen und Räume – die Mehrheit der Fläche mit erkannter Nutzung entscheidet. Ohne Anhaltspunkt bleibt es beim Wohngebäude. Die Meldungen nennen das Ergebnis und woraus es folgt; im Gebäudeeditor können Sie die Verwendung ändern.
+
 Der Hinweis unter der Klappliste nennt, wie viele der Werte, die eine Klasse vorgibt, die Klasse für diese Datei tatsächlich füllt und wie viele die Datei selbst trägt. Liefert die Datei alle U-Werte und den g-Wert, bleiben der Klasse nur die Wärmebrückenkoeffizienten; ein Wechsel der Klasse ändert dann wenig.
 
 === Quelle ===

@@ -33309,6 +33309,15 @@ Do you want to allow this?</value>
   <data name="IMP_GEB_PROT_BAUJAHR_UNGUELTIG" xml:space="preserve">
     <value>The year of construction {0} is not a whole year from {1} to {2}.</value>
   </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ART" xml:space="preserve">
+    <value>Use “{0}” derived from the building type “{1}” in the file.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ZONEN" xml:space="preserve">
+    <value>Use “{0}” derived from the zone usages: {1} % of the {2} m² with a recognised usage are residential.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>Use: the file names neither a building type nor a clear usage – the default “{0}” remains.</value>
+  </data>
   <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
     <value>Without a building age class there are no default values for U-values, g-value and thermal bridges.</value>
   </data>

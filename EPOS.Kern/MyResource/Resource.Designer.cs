@@ -43437,6 +43437,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung „{0}“ aus der Gebäudeart „{1}“ der Datei. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_ART {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung: Die Datei nennt weder Gebäudeart noch eindeutige Nutzungen – es bleibt die Vorgabe „{0}“. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_KEINE {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung „{0}“ aus den Nutzungen der Zonen: {1} % der {2} m² mit erkannter Nutzung sind Wohnen. ähnelt.
+        /// </summary>
+        public static string IMP_GEB_PROT_VERWENDUNG_ZONEN {
+            get {
+                return ResourceManager.GetString("IMP_GEB_PROT_VERWENDUNG_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Volumen {0} m³ weicht um mehr als 20 % von Nutzfläche × Raumhöhe ({1} m³) ab. ähnelt.
         /// </summary>
         public static string IMP_GEB_PROT_VOLUMEN_ABWEICHUNG {

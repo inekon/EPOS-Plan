@@ -33316,6 +33316,15 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_GEB_PROT_BAUJAHR_UNGUELTIG" xml:space="preserve">
     <value>Das Baujahr {0} ist keine ganze Jahreszahl von {1} bis {2}.</value>
   </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ART" xml:space="preserve">
+    <value>Verwendung „{0}“ aus der Gebäudeart „{1}“ der Datei.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_ZONEN" xml:space="preserve">
+    <value>Verwendung „{0}“ aus den Nutzungen der Zonen: {1} % der {2} m² mit erkannter Nutzung sind Wohnen.</value>
+  </data>
+  <data name="IMP_GEB_PROT_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>Verwendung: Die Datei nennt weder Gebäudeart noch eindeutige Nutzungen – es bleibt die Vorgabe „{0}“.</value>
+  </data>
   <data name="IMP_GEB_PROT_KEINE_BAUALTERSKLASSE" xml:space="preserve">
     <value>Ohne Baualtersklasse gibt es keine Vorgaben für U-Werte, g-Wert und Wärmebrücken.</value>
   </data>
