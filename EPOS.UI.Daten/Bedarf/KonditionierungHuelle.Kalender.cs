@@ -28,9 +28,9 @@ namespace WindowsFormsApplication1
                 return new KalenderAnsicht
                 {
                     Profile = Kalenderbedienung.Wochenprofile(a, ort)
-                        .Select(w => new KalenderWochenprofil(w.Rang, w.Name ?? "", w.Werte.Select(v => Skaliert(v, anteil, true)).ToArray()))
+                        .Select(w => new KalenderWochenprofil(w.Rang, w.Name ?? "", w.Werte.Select(v => Skaliert(v, anteil, true)).ToArray(), w.IdWoche))
                         .ToList(),
-                    Zuordnungen = Kalenderbedienung.Zuordnungen(a, ort.Zone).Select(Zeile).ToList(),
+                    Zuordnungen = Kalenderbedienung.Zuordnungen(a, ort.Zone).Select(z => Zeile(z, a.Ebene(ort.Zone)?.Wochen)).ToList(),
                     Ferien = Kalenderbedienung.Ferienzeitraeume(a).Select(f => new KalenderFerienzeile(f.Name, f.Beginn, f.Ende)).ToList(),
                     Raster = raster.Select(t => new KalenderRastertag(t.Tag, t.Monat, t.TagImMonat, t.Wochentag, (KalenderTagart)(int)t.Art,
                                                                        t.Quelle, Schluessel(t.Schluessel))).ToList(),
@@ -40,6 +40,9 @@ namespace WindowsFormsApplication1
                     Rangwarnungen = Kalenderbedienung.Rangabweichungen(a, ort.Zone)
                         .Select(w => new KalenderRangwarnung(w.Erste.Name, w.Zweite.Name, Oberflaeche(w.Oben), Oberflaeche(w.Unten)))
                         .ToList(),
+                    Wochenendtage = Kalenderbedienung.Wochenendtage(a),
+                    Feiertagsland = Kalenderbedienung.Feiertagsland(a),
+                    Feiertagslaender = Landesfeiertage.BUNDESLAENDER,
                 };
             }
             catch (ArgumentException)
@@ -49,7 +52,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Eine Zuordnungszeile des Kerns an der Oberfläche; die Wirkung ist die der ersten Größe.</summary>
-        private static KalenderZuordnungszeile Zeile(Zuordnungszeile z)
+        private static KalenderZuordnungszeile Zeile(Zuordnungszeile z, IReadOnlyList<BenannteWoche> wochen)
         {
             IReadOnlyList<Konditionierungsgroesse> gilt = z.GiltFuer;
             KalenderWirkungsangabe wirkung = KalenderWirkungsangabe.Abgeschaltet;
@@ -58,14 +61,15 @@ namespace WindowsFormsApplication1
                 bool anteil = Konditionierungsgroessen.HatNennwert(gilt[0]);
                 wirkung = a.Art switch
                 {
-                    Angabeart.Woche => new KalenderWirkungsangabe(KalenderWirkung.Wochenprofil, z.Schluessel.Name),
+                    Angabeart.Woche => new KalenderWirkungsangabe(KalenderWirkung.Wochenprofil, wochen?.FirstOrDefault(w => w.Id == z.IdWoche)?.Name ?? z.Schluessel.Name),
                     Angabeart.Aus => KalenderWirkungsangabe.Abgeschaltet,
                     Angabeart.Wert => new KalenderWirkungsangabe(KalenderWirkung.Wert, null, 7, Skaliert(a.Wert, anteil, true)),
                     _ => new KalenderWirkungsangabe(KalenderWirkung.WieWochentag, null, a.WieWochentag),
                 };
             }
             return new KalenderZuordnungszeile(Schluessel(z.Schluessel), z.ErsterTag, gilt.Select(Oberflaeche).ToList(),
-                                               z.Raenge.ToDictionary(x => Oberflaeche(x.Key), x => x.Value), wirkung, z.IstFerien);
+                                               z.Raenge.ToDictionary(x => Oberflaeche(x.Key), x => x.Value), wirkung, z.IstFerien,
+                                               z.Maske, z.IstGemeinsam, z.IdWoche);
         }
 
         /// <summary>Der Schlüssel des Kerns an der Oberfläche; <c>null</c> bleibt <c>null</c>.</summary>
@@ -79,7 +83,7 @@ namespace WindowsFormsApplication1
                : Zuordnungsschluessel.Zeitraum(s.Name, s.Beginn, s.Ende);
 
         /// <summary>Der Profilort der Oberfläche im Kern.</summary>
-        private static Profilort Profilort(KalenderProfilort p) => new Profilort(Ort(p.Ort), p.Rang);
+        private static Profilort Profilort(KalenderProfilort p) => new Profilort(Ort(p.Ort), p.Rang, p.IdWoche);
 
         /// <summary>
         /// Die Wirkung der Oberfläche im Kern. Ein Wert kommt in der Anzeigeeinheit herein und wird als Anteil

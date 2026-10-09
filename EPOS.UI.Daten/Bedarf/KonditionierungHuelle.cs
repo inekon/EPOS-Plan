@@ -140,6 +140,7 @@ namespace WindowsFormsApplication1
                 WieWochentag = tag,
                 Matrixbereich = Konditionierungsarbeit.IstMatrixbereich(r),
                 Eigenband = Kalenderwerkzeuge.ImEigenband(r.Rang),
+                IdWoche = r.Angabe.IdWoche,
             };
         }
 
@@ -195,14 +196,19 @@ namespace WindowsFormsApplication1
             Kalenderangabe grund = Angabe(d.Angabe, d.Wert, d.Woche, null, anteil);
             var perioden = new List<Kalenderregel>();
             foreach (KonditionierungPeriode p in d.Perioden ?? new List<KonditionierungPeriode>())
-            {
-                Kalenderangabe a = Angabe(p.Angabe, p.Wert, p.Woche, p.WieWochentag, anteil);
-                string art = DbWerte.KOND_ARTEN[(int)p.Art];
-                perioden.Add(!string.IsNullOrEmpty(p.Feiertagsregel)
-                    ? Kalenderregel.Feiertag(p.Rang, p.Name ?? "", p.Feiertagsregel, a)
-                    : Kalenderregel.Zeitraum(p.Rang, art, p.Name ?? "", p.Von ?? 0, p.Bis ?? 0, a));
-            }
+                perioden.Add(Regel(p, anteil));
             return new Konditionierungskalender(g, grund, d.Nennwert, perioden);
+        }
+
+        /// <summary>Eine Periode der Oberfläche im Kern (mit Verweis auf die benannte Woche).</summary>
+        private static Kalenderregel Regel(KonditionierungPeriode p, bool anteil)
+        {
+            Kalenderangabe a = Angabe(p.Angabe, p.Wert, p.Woche, p.WieWochentag, anteil);
+            if (p.IdWoche.HasValue && a.Art == Angabeart.Woche) a = Kalenderangabe.AusBenannterWoche(p.IdWoche.Value, a.Woche);
+            string art = DbWerte.KOND_ARTEN[(int)p.Art];
+            return !string.IsNullOrEmpty(p.Feiertagsregel)
+                ? Kalenderregel.Feiertag(p.Rang, p.Name ?? "", p.Feiertagsregel, a)
+                : Kalenderregel.Zeitraum(p.Rang, art, p.Name ?? "", p.Von ?? 0, p.Bis ?? 0, a);
         }
 
         // =================================================================================
@@ -232,6 +238,10 @@ namespace WindowsFormsApplication1
                             : KonditionierungZustand.Abgeleitet
                     };
             }
+            // Stufe 2: gemeinsamer Kalender, Ferienliste und benannte Wochen reisen in Kern-Einheiten mit.
+            d.Gemeinsam = e.Gemeinsam.Select(p => new KalenderGemeinschaftsperiode(Periode(p.Regel, false), p.Maske)).ToList();
+            d.Ferienliste = e.Ferienliste.Select(f => new KalenderFerienzeile(f.Name, f.Beginn, f.Ende)).ToList();
+            d.Wochen = e.Wochen.Select(w => new KalenderBenannteWoche(w.Id, Oberflaeche(w.Groesse), w.Name, w.Werte.ToArray())).ToList();
             return d;
         }
 
@@ -262,7 +272,27 @@ namespace WindowsFormsApplication1
                     e = e.MitKalender(g, Kalender(s.Kalender, g), new Kalenderherkunft(s.Kalender.Vorlage, s.Kalender.Vermerk,
                                                                                          s.Kalender.HerkunftProfil));
             }
-            return e;
+            // Stufe 2: die Gemeinschaftsperioden in Kern-Einheiten. Die Kopien in den Kalendern einer Anteilsgröße sind über %
+            // gegangen; wo sie in der Darstellung der Seite gleich sind, tritt die Periode des Kerns bitgleich an ihre Stelle.
+            var gemeinsam = (d.Gemeinsam ?? new List<KalenderGemeinschaftsperiode>())
+                .Select(x => new Gemeinschaftsperiode(Regel(x.Periode, false), x.Maske)).ToList();
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+            {
+                Konditionierungskalender k = e.Kalender(g);
+                if (k == null || !Konditionierungsgroessen.HatNennwert(g)) continue;
+                bool getauscht = false;
+                var perioden = k.Perioden.Select(r =>
+                {
+                    Gemeinschaftsperiode p = gemeinsam.FirstOrDefault(x => x.Rang == r.Rang && x.Gilt(g));
+                    if (p == null || !Kalendervergleich.RegelGleich(Regel(Periode(p.Regel, true), true), r)) return r;
+                    getauscht = true;
+                    return p.Regel;
+                }).ToList();
+                if (getauscht) e = e.MitKalender(g, new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden), e.Herkunft(g));
+            }
+            return e.MitGemeinsamAbgeglichen(gemeinsam)
+                    .MitFerienliste((d.Ferienliste ?? new List<KalenderFerienzeile>()).Select(f => new Ferienzeile(f.Name, f.Beginn, f.Ende)))
+                    .MitWochen((d.Wochen ?? new List<KalenderBenannteWoche>()).Select(w => new BenannteWoche(w.Id, Kern(w.Groesse), w.Name, w.Werte.ToArray())));
         }
 
         // =================================================================================
@@ -285,6 +315,8 @@ namespace WindowsFormsApplication1
                 NachtEnde = g.NachtEnde,
                 Ferienmerker = g.Ferien,
                 Wochenendmerker = g.Wochenende,
+                Wochenendtage = g.Wochenendtage,
+                Feiertagsland = g.Feiertagsland,
                 Sollwertprofil = g.Sollwertprofil,
                 KopplungWirksam = kopplungWirksam,
                 KuehlSollwert = g.KuehlSollwert,
@@ -344,6 +376,8 @@ namespace WindowsFormsApplication1
             if (alt.NachtEnde != neu.NachtEnde) g.NachtEnde = neu.NachtEnde;
             if (Anders(alt.Ferienmerker, neu.Ferienmerker)) g.Ferien = neu.Ferienmerker;
             if (Anders(alt.Wochenendmerker, neu.Wochenendmerker)) g.Wochenende = neu.Wochenendmerker;
+            if (alt.Wochenendtage != neu.Wochenendtage) g.Wochenendtage = neu.Wochenendtage;
+            if (!string.Equals(alt.Feiertagsland, neu.Feiertagsland, StringComparison.Ordinal)) g.Feiertagsland = neu.Feiertagsland;
             for (int i = 0; i < Matrixeingang.FERIENZEITRAEUME && g.Ferienbeginn != null && g.Ferienende != null
                             && i < g.Ferienbeginn.Length && i < g.Ferienende.Length; i++)
             {
@@ -735,6 +769,16 @@ namespace WindowsFormsApplication1
                 FeiertageLaden = (s, zone, gilt) => Schritt(s, art, bezug, a => Kalenderbedienung.FeiertageLaden(
                     a, zone, gilt?.Select(Kern).ToList())),
                 MonatKopieren = (s, zone, q, z) => Schritt(s, art, bezug, a => Kalenderbedienung.MonatKopieren(a, zone, q, z)),
+
+                // Welle K2-S2 (Stufe 2): benannte Wochen, Wochenende, Feiertagsland und Ferienliste.
+                WocheAnlegen = (s, o, name, quelle) => Schritt(s, art, bezug, a => Kalenderbedienung.WocheAnlegen(a, Ort(o), name,
+                    quelle == null ? null : Kalenderbedienung.Profil(a, Profilort(quelle))?.Werte)),
+                WocheUmbenennen = (s, o, id, name) => Schritt(s, art, bezug, a => Kalenderbedienung.WocheUmbenennen(a, Ort(o), id, name)),
+                WocheLoeschen = (s, o, id) => Schritt(s, art, bezug, a => Kalenderbedienung.WocheLoeschen(a, Ort(o), id)),
+                WochenendeSetzen = (s, tage) => Schritt(s, art, bezug, a => Kalenderbedienung.WochenendeSetzen(a, tage)),
+                FeiertagslandSetzen = (s, land) => Schritt(s, art, bezug, a => Kalenderbedienung.FeiertagslandSetzen(a, land)),
+                FerienlisteSetzen = (s, f) => Schritt(s, art, bezug, a => Kalenderbedienung.FerienlisteSetzen(
+                    a, (f ?? Array.Empty<KalenderFerienzeile>()).Select(x => new Ferienzeile(x.Name, x.Beginn, x.Ende)).ToList())),
             };
         }
 

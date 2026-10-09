@@ -50,12 +50,13 @@ namespace WindowsFormsApplication1
             if (ort == null) throw new ArgumentNullException(nameof(ort));
             Konditionierungskalender k = stand.Ansichtskalender(ort.Groesse, ort.Zone);
             var tage = new Rastertag[Kalenderregel.TAG_MAX];
+            IReadOnlyList<int> wochenende = Wochenendtage(stand);
             for (int d = 0; d < tage.Length; d++)
             {
                 Feiertage.Datum(d + 1, out int monat, out int tagImMonat);
                 int w = (stand.W0 + d) % 7;
                 Kalenderregel r = Quelle(k, d, stand.Referenzjahr);
-                Rastertagart art = Art(r, w);
+                Rastertagart art = Art(r, w, wochenende);
                 Zuordnungsschluessel s = r != null && !Konditionierungsarbeit.IstMatrixbereich(r) ? Zuordnungsschluessel.Von(r) : null;
                 tage[d] = new Rastertag(d + 1, monat, tagImMonat, w, art, r?.Bezeichner, r?.Rang, s);
             }
@@ -105,9 +106,9 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        private static Rastertagart Art(Kalenderregel r, int wochentag)
+        private static Rastertagart Art(Kalenderregel r, int wochentag, IReadOnlyList<int> wochenende)
         {
-            if (r == null) return Wochenendtage.Contains(wochentag) ? Rastertagart.Wochenende : Rastertagart.Grundwoche;
+            if (r == null) return wochenende.Contains(wochentag) ? Rastertagart.Wochenende : Rastertagart.Grundwoche;
             if (string.Equals(r.Art, DbWerte.KOND_ART_BETRIEBSPAUSE, StringComparison.Ordinal)) return Rastertagart.Saison;
             if (string.Equals(r.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal)) return Rastertagart.Ferien;
             if (r.IstFeiertag) return Rastertagart.Feiertag;

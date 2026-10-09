@@ -1313,8 +1313,22 @@ Tabellen — keine neue SQL-Anweisung.
 | Saison | die Zeile `SAISON` der Matrix je Größe (Periode `BETRIEBSPAUSE`, Rang 900) |
 | Feiertage | die neun bundeseinheitlichen Regeln (Rang 100 … 108, unter den Ferien); die Feiertage eines Landes als feste Einzeltage des Bezugsjahrs |
 
-**Rangregel** (unverändert, 3.2): Der höhere Rang gewinnt — Feiertagsregeln 100 … 108 < Ferien 1–4 200 … 203 <
-eigene Zeilen 310 … 899 < Saison 900. Eine neue Zeile kommt über die ranghöchste eigene, Ferien ab 5 an den untersten
+**Abbildung auf das Modell der Stufe 2 (Schemaschritt 207).** Die Schicht hält den gemeinsamen Kalender im Arbeitsstand
+nativ (`Konditionierungsstand.Gemeinsam`, `Ferienliste`, `Wochen`); die Größenkalender tragen seine Perioden
+ausgebreitet, wie der Lauf sie liest, damit die Werkzeuge der Karte jede Größe gegen ihre Grenzen prüfen (3.6). Der OK-Weg
+schreibt die eigenen Kalender ohne die Kopien, den gemeinsamen Kalender als eine Zeile je Periode und die benannten Wochen.
+
+| Bedienung | Modell Stufe 2 |
+|---|---|
+| Wochenprofil | Standardwoche des Größenkalenders oder eine benannte Woche (`Tab_Konditionierungswoche`: Name je Größe eindeutig, 168 Werte); „Woche kopieren" in ein Profil derselben Größe oder einer Größe gleicher Einheit (Heizen ↔ Kühlen, Geräte ↔ Personen, Lüftung nur zu sich) mit der Grenzprüfung der Zielgröße; „Tag kopieren" auch in ein anderes Profil; eine Woche, auf die eine Zeile verweist, lässt sich nicht löschen (benannte Ablehnung) |
+| Zuordnungszeile | EINE Periode des gemeinsamen Kalenders (`Groesse = ALLE`) mit `Gilt_Fuer` (31 = alle, Auswahl = Teilmaske); ein Wochenprofil als Verweis `ID_Woche`; Ändern und Löschen wirken auf die eine Zeile, eine abgewählte Größe verlässt die Maske; eine Größe ohne angelegten Kalender steht in der Maske und wirkt, sobald ihr Kalender angelegt ist |
+| Lesebrücke | gekoppelte Kopien je Größe bleiben für Altbestand, den die Migration nicht zusammengeführt hat (Rang belegt), und für die Wirkung „Standardwoche" über mehrere Größen (je Größe eine andere Woche); sie werden wie in Stufe 1 bedient |
+| Wochenende | Spalte `Wochenendtage` am Gebäude (Wochenmaske, leer = Sa + So); das Schnellfeld erneuert den Matrixbereich der angelegten Kalender |
+| Feiertagsland | Spalte `Feiertagsland` am Gebäude; das Schnellfeld legt die Regelperioden seiner Landesregeln im gemeinsamen Kalender des Gebäudes an (Maske 31, „wie Sonntag", Rang 109 + Stelle der Regel, also 109 … 116) und entfernt beim Wechsel oder Leeren nur diese (erkannt an Regel und Rang, nie am Text); die neun bundeseinheitlichen Regeln bleiben |
+| Ferien | beliebig viele benannte Zeiträume: die ersten vier in `Ferienbeginn/-ende_1…4` (der Trigger spiegelt sie auf Rang 200 … 203), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204 ohne Angabe; solange die Leser des Laufs die vier Spalten lesen, wirken die weiteren wie in Stufe 1 als Zeilen „Ferien n" im Eigenband |
+
+**Rangregel** (unverändert, 3.2): Der höhere Rang gewinnt — Feiertagsregeln 100 … 108 und Landesregeln 109 … 116 <
+Ferien 200 … 203 und Ferienliste 204 … 309 < eigene Zeilen 310 … 899 < Saison 900. Eine neue Zeile kommt über die ranghöchste eigene, Ferien ab 5 an den untersten
 freien Platz des Eigenbands; damit schlägt die zuletzt angelegte Zeile die ältere, und eine Zeile, die die Schicht in
 mehreren Größen anlegt, steht in jeder Größe über denselben Zeilen. Ein Einzeltag „wie Sonntag" liegt im Eigenband
 über den Ferien — anders als die Feiertagsregel.

@@ -182,6 +182,12 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Die vier Ferienenden als Jahrestag.</summary>
     public int[] Ferienende { get; set; } = new int[4];
 
+    /// <summary>Die Wochenendtage als Wochenmaske (Mo = Bit 0 … So = Bit 6); Vorgabe Sa + So (96).</summary>
+    public int Wochenendtage { get; set; } = 96;
+
+    /// <summary>Das Feiertagsland (ISO-Kürzel); <c>null</c> = nur die bundeseinheitlichen Feiertage.</summary>
+    public string? Feiertagsland { get; set; }
+
     // ------------------------------------------- abgeleitet, aus dem Bestand
 
     /// <summary>

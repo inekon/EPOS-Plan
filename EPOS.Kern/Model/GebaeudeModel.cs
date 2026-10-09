@@ -54,6 +54,12 @@ namespace WindowsFormsApplication1
         public double Ferienende_3;
         public double Ferienbeginn_4;
         public double Ferienende_4;
+
+        /// <summary>Die Wochenendtage als Wochenmaske (Mo = Bit 0 … So = Bit 6), Vorgabe Sa + So (Schemaschritt K2).</summary>
+        public int Wochenendtage = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+
+        /// <summary>Das Feiertagsland (ISO-Kürzel); <c>null</c> = nur die bundeseinheitlichen Feiertage (Schemaschritt K2).</summary>
+        public string Feiertagsland;
         public double WW_Bedarf;
         public double spez_Waermeverbrauch;
         public double Waermebedarf;
@@ -213,6 +219,8 @@ namespace WindowsFormsApplication1
             Ferienende_3 = 0;
             Ferienbeginn_4 = 0;
             Ferienende_4 = 0;
+            Wochenendtage = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+            Feiertagsland = null;
             WW_Bedarf = 0;
             spez_Waermeverbrauch = 0;
             Waermebedarf = 0;

@@ -1318,6 +1318,8 @@ namespace WindowsFormsApplication1
                 (int)m.Ferienende_1, (int)m.Ferienende_2,
                 (int)m.Ferienende_3, (int)m.Ferienende_4
             };
+            d.Wochenendtage = m.Wochenendtage;
+            d.Feiertagsland = m.Feiertagsland;
             return d;
         }
 
@@ -1409,6 +1411,8 @@ namespace WindowsFormsApplication1
             m.Ferienende_2 = d.Ferienende[1];
             m.Ferienende_3 = d.Ferienende[2];
             m.Ferienende_4 = d.Ferienende[3];
+            m.Wochenendtage = d.Wochenendtage;
+            m.Feiertagsland = d.Feiertagsland;
 
             m.Luftwechselrate = d.Luftwechselrate ?? 0;
             m.WW_Bedarf = d.WwBedarf;

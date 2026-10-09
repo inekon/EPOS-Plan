@@ -50,6 +50,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int Wochenendtage { get; set; } = KalenderbedienungSchema.WOCHENENDE_VORGABE;
 
+        /// <summary>
+        /// Das Feiertagsland des Gebäudes (ISO-Kürzel, Spalte <c>Feiertagsland</c>, Schemaschritt <see cref="KalenderbedienungSchema"/>);
+        /// <c>null</c> = nur die bundeseinheitlichen Feiertage. Der Lauf liest es nicht — es steuert die Regelperioden, die die
+        /// Kalenderbedienung im gemeinsamen Kalender anlegt.
+        /// </summary>
+        public string Feiertagsland { get; set; }
+
         /// <summary><c>Ferienbeginn_1…4</c> als Jahrestag; 0 oder 366 an einer Grenze heißt „aus".</summary>
         public double[] Ferienbeginn { get; } = new double[FERIENZEITRAEUME];
 
@@ -119,7 +126,7 @@ namespace WindowsFormsApplication1
             {
                 SollTag = SollTag, SollNacht = SollNacht, SollWochenende = SollWochenende, SollFerien = SollFerien,
                 NachtBeginn = NachtBeginn, NachtEnde = NachtEnde, Ferienmerker = Ferienmerker,
-                Wochenendmerker = Wochenendmerker, Wochenendtage = Wochenendtage, Sollwertprofil = Sollwertprofil,
+                Wochenendmerker = Wochenendmerker, Wochenendtage = Wochenendtage, Feiertagsland = Feiertagsland, Sollwertprofil = Sollwertprofil,
                 KopplungWirksam = KopplungWirksam,
                 KuehlSollwert = KuehlSollwert, KuehlSollwertNacht = KuehlSollwertNacht, KuehlungWirksam = KuehlungWirksam,
                 LuftwechselInfiltration = LuftwechselInfiltration, LuftwechselNutzer = LuftwechselNutzer,
@@ -151,6 +158,7 @@ namespace WindowsFormsApplication1
                 Ferienmerker = gebaeude.Ferienmerker,
                 Wochenendmerker = gebaeude.Wochenendmerker,
                 Wochenendtage = gebaeude.Wochenendtage,
+                Feiertagsland = gebaeude.Feiertagsland,
                 Sollwertprofil = Sollwertprofil ?? gebaeude.Sollwertprofil,
                 KopplungWirksam = gebaeude.KopplungWirksam,
                 KuehlSollwert = KuehlSollwert ?? gebaeude.KuehlSollwert,

@@ -76899,6 +76899,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ferienliste fasst höchstens {0} Zeiträume. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_FERIEN_ZU_VIELE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_FERIEN_ZU_VIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}“ gilt für keine Größe — wählen Sie mindestens eine Größe mit angelegtem Kalender. ähnelt.
         /// </summary>
         public static string KOND_MSG_BEDIENUNG_KEINE_GROESSE {
@@ -76949,6 +76958,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_MSG_BEDIENUNG_WOCHE {
             get {
                 return ResourceManager.GetString("KOND_MSG_BEDIENUNG_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag {0} liegt nicht zwischen 0 (Montag) und 6 (Sonntag). ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_WOCHENENDE {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist leer, zu lang oder in {1} schon vergeben. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_WOCHE_NAME {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_WOCHE_NAME", resourceCulture);
             }
         }
         
@@ -77768,6 +77795,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TEXT_FEIERTAGE {
             get {
                 return ResourceManager.GetString("KOND_TEXT_FEIERTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heilige Drei Könige;Internationaler Frauentag;Fronleichnam;Mariä Himmelfahrt;Weltkindertag;Reformationstag;Allerheiligen;Buß- und Bettag ähnelt.
+        /// </summary>
+        public static string KOND_TEXT_FEIERTAGE_LAENDER {
+            get {
+                return ResourceManager.GetString("KOND_TEXT_FEIERTAGE_LAENDER", resourceCulture);
             }
         }
         

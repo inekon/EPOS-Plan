@@ -1588,7 +1588,7 @@ namespace WindowsFormsApplication1
         public static bool AngabeGleich(Kalenderangabe a, Kalenderangabe b)
         {
             if (a == null || b == null) return a == b;
-            if (a.Art != b.Art || a.WieWochentag != b.WieWochentag) return false;
+            if (a.Art != b.Art || a.WieWochentag != b.WieWochentag || a.IdWoche != b.IdWoche) return false;
             if (a.Art == Angabeart.Wert && !Gleich(a.Wert, b.Wert)) return false;
             if (a.Art == Angabeart.Woche)
             {
@@ -1652,6 +1652,7 @@ namespace WindowsFormsApplication1
                           && Gleich(a.SollWochenende, b.SollWochenende) && Gleich(a.SollFerien, b.SollFerien)
                           && a.NachtBeginn == b.NachtBeginn && a.NachtEnde == b.NachtEnde
                           && Gleich(a.Ferienmerker, b.Ferienmerker) && Gleich(a.Wochenendmerker, b.Wochenendmerker)
+                          && a.Wochenendtage == b.Wochenendtage && string.Equals(a.Feiertagsland, b.Feiertagsland, StringComparison.Ordinal)
                           && string.Equals(a.Sollwertprofil, b.Sollwertprofil, StringComparison.Ordinal)
                           && a.KopplungWirksam == b.KopplungWirksam
                           && Gleich(a.KuehlSollwert, b.KuehlSollwert) && Gleich(a.KuehlSollwertNacht, b.KuehlSollwertNacht)
