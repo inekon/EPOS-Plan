@@ -93029,6 +93029,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kenndaten Photovoltaik ähnelt.
+        /// </summary>
+        public static string PVG_XLS_KENNDATEN {
+            get {
+                return ResourceManager.GetString("PVG_XLS_KENNDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (alle) ähnelt.
         /// </summary>
         public static string PVIMP_ALLE {

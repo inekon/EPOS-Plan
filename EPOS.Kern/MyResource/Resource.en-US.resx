@@ -50175,5 +50175,8 @@ chart</value>
   <data name="PVG_MSG_NENN_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>This PV profile is a delivery entry; its rated power can only be edited after the lock has been removed.</value>
   </data>
+  <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
+    <value>Photovoltaics characteristics</value>
+  </data>
 </root>
 

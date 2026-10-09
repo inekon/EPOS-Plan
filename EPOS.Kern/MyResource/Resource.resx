@@ -50182,5 +50182,8 @@ Chart</value>
   <data name="PVG_MSG_NENN_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>Diese PV-Ganglinie ist ein Auslieferungssatz; ihre Nennleistung kann erst nach dem Aufheben des Schlosses bearbeitet werden.</value>
   </data>
+  <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
+    <value>Kenndaten Photovoltaik</value>
+  </data>
 </root>
 
