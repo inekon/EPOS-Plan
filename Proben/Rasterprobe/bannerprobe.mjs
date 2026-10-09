@@ -58,9 +58,9 @@ const TOL = 1;
 const FENSTER = [{ breite: 1088, hoehe: 624 }, { breite: 520, hoehe: 624 }];
 // Je Fall: was vor dem Rollen gewaehlt wird, und der Knopf, der die Meldung ausloest.
 const FAELLE = {
-  heizkessel: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-anlagenwahl', ausloeser: '.epos-zweispalten-uebernahme > button:first-child' },
-  bhkw: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-anlagenwahl', ausloeser: '.epos-zweispalten-uebernahme > button:first-child' },
-  gebaeude: { wahl: '', ausloeser: '.epos-gebaeude-in-db' },
+  heizkessel: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-anlagenwahl', ausloeser: '.epos-zweispalten-knopf--uebernehmen', fuellt: true },
+  bhkw: { wahl: '.epos-zweispalten-spalte--unten tbody tr .epos-anlagenwahl', ausloeser: '.epos-zweispalten-knopf--uebernehmen', fuellt: true },
+  gebaeude: { wahl: '', ausloeser: '.epos-gebaeude-in-db', fuellt: true },
 };
 const BANNER = 'body > #app > .epos-dialog > .epos-warnbanner';
 
@@ -127,12 +127,12 @@ async function ausloesen(seite, fall) {
 }
 
 /** Das Sichtkriterium; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
-function sichtbar(name, l, vor, melden) {
+function sichtbar(name, l, vor, melden, fuellt = false) {
   let n = 0;
   const v = t => { n++; if (melden) melde(name, t); };
   const b = l.banner;
   if (!b) { v('kein Banner'); return n; }
-  if (vor.y < 1) v(`Dialog rollt nicht (Rollweg ${zahl(vor.y)} px) - die Probe misst nichts`);
+  if (vor.y < 1 && !fuellt) v(`Dialog rollt nicht (Rollweg ${zahl(vor.y)} px) - die Probe misst nichts`);
   if (b.top < -TOL || b.bottom > l.innen + TOL) v(`Banner ${zahl(b.top)}..${zahl(b.bottom)} px ausserhalb des Fensters (0..${l.innen})`);
   if (l.kopf && b.top < l.kopf.bottom - TOL) v(`Banner oben ${zahl(b.top)} px unter dem Kopf (bis ${zahl(l.kopf.bottom)} px)`);
   if (l.fuss && b.bottom > l.fuss.top + TOL) v(`Banner unten ${zahl(b.bottom)} px hinter der Schlussleiste (ab ${zahl(l.fuss.top)} px)`);
@@ -155,13 +155,22 @@ try {
     console.log(`- ${name}`);
     const seite = await oeffnen(browser, fall, f);
     const { vor, nach } = await ausloesen(seite, fall);
-    sichtbar(name, nach, vor, true);
+    sichtbar(name, nach, vor, true, !!FAELLE[fall].fuellt);
     // Waechst der Inhalt oben um das Banner, haelt Chromium den Inhalt im Bild fest (Scroll-
     // Anker): der Rollstand waechst um die Bannerhoehe, der Knopf unter der Maus bleibt stehen.
+    // Katalogauswahl (Zweispaltenauswahl): der Dialog fuellt das Fenster und rollt nicht - Kopf und
+    // Schlussleiste stehen ohnehin im Bild; das Banner nimmt den Listen Hoehe, der Knopf ruckt um sie.
+    if (FAELLE[fall].fuellt) {
+      if (nach.y > TOL || nach.dokument > nach.innen + TOL) melde(name, `das Dokument rollt (${zahl(nach.y)} / ${nach.dokument} px)`);
+      if (!nach.kopf || nach.kopf.top < -TOL || !nach.fuss || nach.fuss.bottom > nach.innen + TOL) melde(name, 'Kopf oder Schlussleiste ausserhalb des Fensters');
+      if (!nach.knopf || nach.knopf.top - vor.knopf.top > nach.banner.bottom - nach.banner.top + 12 + TOL)
+        melde(name, `der ausloesende Knopf sprang um mehr als das Banner (${zahl(vor.knopf.top)} -> ${zahl(nach.knopf && nach.knopf.top)} px)`);
+    } else {
     if (!vor.knopf || !nach.knopf || Math.abs(nach.knopf.top - vor.knopf.top) > TOL)
       melde(name, `der ausloesende Knopf sprang ${vor.knopf && zahl(vor.knopf.top)} -> ${nach.knopf && zahl(nach.knopf.top)} px`);
     if (!nach.kopf || Math.abs(nach.kopf.top) > TOL) melde(name, `Kopf haftet nicht (top ${nach.kopf && zahl(nach.kopf.top)})`);
     if (!nach.fuss || Math.abs(nach.fuss.bottom - nach.innen) > TOL) melde(name, `Schlussleiste haftet nicht (bottom ${nach.fuss && zahl(nach.fuss.bottom)})`);
+    }
     if (nach.kreuz !== 'inline-flex' && nach.kreuz !== 'flex') melde(name, `Kreuz nicht sichtbar (display ${nach.kreuz})`);
     console.log(`    Rollstand ${zahl(vor.y)} -> ${zahl(nach.y)} px, Knopf ${zahl(vor.knopf.top)} -> ${zahl(nach.knopf.top)} px, Kopf ..${zahl(nach.kopf.bottom)}, Banner ${zahl(nach.banner.top)}..${zahl(nach.banner.bottom)}, `
       + `Fuss ${zahl(nach.fuss.top)}.. px, ${nach.pos}, unverdeckt ${nach.unverdeckt}, Kreuz ${nach.kreuz}`);

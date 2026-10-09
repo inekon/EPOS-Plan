@@ -1,0 +1,156 @@
+﻿@page "/rollbereichprobe"
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Strom
+@inject NavigationManager Navigation
+
+@*  DIE ROLLBEREICHPROBE (Konzept Projektdialoge mit Katalogauswahl, Abschnitt 8,
+    Probenpflicht) - Pruefstand, nicht Auslieferung.
+
+    Sie stellt die Projektdialoge mit Katalogauswahl, die die Fensterprobe nicht schon
+    traegt, so in den Browser, wie BlazorDialogForm sie zeigt: als Wurzel in #app,
+    dahinter die Fenstermarke - ohne Datenbank. Heizkessel, BHKW, Waermepumpen und
+    Gebaeude nimmt rollbereichprobe.mjs von /fensterprobe. Gemessen wird, ob ein
+    Rollbereich in einem anderen liegt, ob Dokument oder Dialogkoerper rollen.
+
+    Gaben ueber die Adresse:
+      ?fall=pufferspeicher|stromspeicher|photovoltaik|solarkollektoren|
+            bedarfsprofile|waermebedarf|stromganglinie|solarganglinie|kaeltemaschine
+      ?zeilen=40   Katalogzeilen
+      ?projekt=2   Projektzeilen *@
+
+<div id="app">
+    @switch (_fall)
+    {
+        case "pufferspeicher":
+            <PufferspeicherDialog Zeilen="@Erzeuger("Puffer")" Katalogprofil="@Profil(Anlagenart.Pufferspeicher)"
+                                  Katalogzeilen="@(() => Katalog(Anlagenart.Pufferspeicher))"
+                                  Filterstandvorgabe="@_filterstand"
+                                  KatalogDetail="@(n => Detail("Puffer " + n))" ProjektDetail="@(n => Detail("Puffer " + n))"
+                                  Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "stromspeicher":
+            <StromspeicherDialog Zeilen="@Erzeuger("Batterie")" Katalogprofil="@Profil(Anlagenart.Stromspeicher)"
+                                 Katalogzeilen="@(() => Katalog(Anlagenart.Stromspeicher))"
+                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                 Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "photovoltaik":
+            <PhotovoltaikDialog Zeilen="@Erzeuger("Modul")" Katalogprofil="@Profil(Anlagenart.Photovoltaik)"
+                                Katalogzeilen="@(() => Katalog(Anlagenart.Photovoltaik))"
+                                Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                Gesamtleistung="@(() => "12,0")" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "solarkollektoren":
+            <SolarkollektorenDialog Zeilen="@Erzeuger("Kollektor")" Katalogprofil="@Profil(Anlagenart.Solarkollektoren)"
+                                    Katalogzeilen="@(() => Katalog(Anlagenart.Solarkollektoren))"
+                                    Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                    Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "bedarfsprofile":
+            <BedarfsProfileDialog Art="BedarfsArt.Stromverbraucher" TitelText="Strombedarf"
+                                  Zeilen="@BedarfZeilen" Katalogprofil="@BedarfProfil"
+                                  Katalogzeilen="@(() => BedarfKatalog)" Filterstandvorgabe="@_filterstand"
+                                  Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "waermebedarf":
+            <WaermebedarfExternDialog Zeilen="@WaermeZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Waermebedarf)"
+                                      Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Waermebedarf)))"
+                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "stromganglinie":
+            <StromganglinieDialog Zeilen="@StromZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Stromganglinie)"
+                                  Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Stromganglinie)))"
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "solarganglinie":
+            <SolarganglinieDialog Zeilen="@Erzeuger("Solar")" Katalogprofil="@Zeitreihe(Zeitreihenart.Solarganglinie)"
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "kaeltemaschine":
+            <KaeltemaschineKatalogDialog Katalogprofil="@Profil(Anlagenart.Kaeltemaschine)"
+                                         Katalogzeilen="@(() => Katalog(Anlagenart.Kaeltemaschine))"
+                                         Filterstandvorgabe="@_filterstand" TitelText="Kältemaschinen"
+                                         Geschlossen="@(b => Beendet(b))" />
+            break;
+        default:
+            <p>unbekannter Fall: @_fall</p>
+            break;
+    }
+    <Fenstermarke />
+</div>
+<p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
+
+@code {
+    private string _fall = "pufferspeicher";
+    private int _anzahl = 40;
+    private int _projekt = 2;
+    private string _ausgang = "";
+    private readonly Katalogfilterstand _filterstand = new();
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("projekt", out var p) && int.TryParse(p, out int m)) _projekt = m;
+    }
+
+    private void Beendet(bool ok) => _ausgang = ok ? "ok" : "abbrechen";
+
+    private static string Uebersetzt(string schluessel)
+        => Resource.ResourceManager.GetString(schluessel) ?? schluessel;
+
+    private readonly Dictionary<Anlagenart, Katalogfilterprofil> _profile = new();
+    private readonly Dictionary<Anlagenart, IReadOnlyList<Katalogfilterzeile>> _kataloge = new();
+
+    private Katalogfilterprofil Profil(Anlagenart art)
+        => _profile.TryGetValue(art, out var p) ? p : _profile[art] = Katalogfilterprofil.MitVerwendung(art, Uebersetzt);
+
+    private IReadOnlyList<Katalogfilterzeile> Katalog(Anlagenart art)
+        => _kataloge.TryGetValue(art, out var k) ? k : _kataloge[art] = Zeilenbau.Voll(Profil(art), _anzahl);
+
+    private List<ErzeugerZeile>? _erzeuger;
+    private List<ErzeugerZeile> Erzeuger(string praefix) => _erzeuger ??= Enumerable.Range(1, _projekt)
+        .Select(i => new ErzeugerZeile { Schluessel = i, Bezeichner = praefix + " " + i, GeraetId = 100 + i, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 })
+        .ToList();
+
+    private static ErzeugerDetail Detail(string name) => new(
+        name, "Beschreibung des Satzes " + name,
+        new[] { ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") }, ("Schalter", true));
+
+    private static List<BrowserFeldwert> Felder() => new()
+    {
+        new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
+                              Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Musterwerk" },
+    };
+
+    // ------------------------------------------------------- Bedarf
+    private Katalogfilterprofil? _bedarfProfil;
+    private Katalogfilterprofil BedarfProfil
+        => _bedarfProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, Uebersetzt);
+    private IReadOnlyList<Katalogfilterzeile>? _bedarfKatalog;
+    private IReadOnlyList<Katalogfilterzeile> BedarfKatalog => _bedarfKatalog ??= Zeilenbau.Voll(BedarfProfil, _anzahl);
+    private List<BedarfsProfilZeile>? _bedarfZeilen;
+    private List<BedarfsProfilZeile> BedarfZeilen => _bedarfZeilen ??= Enumerable.Range(1, _projekt)
+        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 100 + i, Name = "Verbraucher " + i, Summe = 1000 * i })
+        .ToList();
+
+    // ------------------------------------------------------- Zeitreihen
+    private readonly Dictionary<Zeitreihenart, Katalogfilterprofil> _zeitreihen = new();
+    private Katalogfilterprofil Zeitreihe(Zeitreihenart art)
+        => _zeitreihen.TryGetValue(art, out var p) ? p : _zeitreihen[art] = Katalogfilterprofil.FuerZeitreihe(art, Uebersetzt).MitVerwendungsspalte(s => s);
+    private IReadOnlyList<Katalogfilterzeile> Zeitreihenkatalog(Zeitreihenart art) => Zeilenbau.Voll(Zeitreihe(art), _anzahl);
+
+    private List<WaermebedarfExternZeile>? _waerme;
+    private List<WaermebedarfExternZeile> WaermeZeilen => _waerme ??= Enumerable.Range(1, _projekt)
+        .Select(i => new WaermebedarfExternZeile { IdZ = i, IdGanglinie = 100 + i, Bezeichner = "Ganglinie " + i })
+        .ToList();
+
+    private List<GanglinienProjektZeile>? _strom;
+    private List<GanglinienProjektZeile> StromZeilen => _strom ??= Enumerable.Range(1, _projekt)
+        .Select(i => new GanglinienProjektZeile(i, 100 + i, "Ganglinie " + i))
+        .ToList();
+}
