@@ -175,18 +175,7 @@
                                              Bezeichnung="@Resource.SIMUEB_RING_KAELTE_TITEL" />
                             </div>
                             <div class="epos-simueb-legendenblock">
-                                <ul class="epos-simueb-legende">
-                                    @foreach (Ringanteil a in kaelte.Legende)
-                                    {
-                                        <li class="@(a.IstRest ? "epos-simueb-legende-rest" : null)">
-                                            <span class="epos-simueb-farbe" style="@("background:" + a.Farbe)"
-                                                  aria-hidden="true"></span>
-                                            <span class="epos-simueb-legende-name">@a.Name</span>
-                                            <span class="epos-simueb-legende-wert">@Zahl(a.Mwh, "N2") MWh</span>
-                                            <span class="epos-simueb-legende-anteil">@Zahl(a.Prozent, "N1") %</span>
-                                        </li>
-                                    }
-                                </ul>
+                                @Legende(kaelte.Legende, null, 0.0)
                             </div>
                         </div>
                     }
@@ -452,28 +441,9 @@
                 </div>
 
                 <div class="epos-simueb-legendenblock">
-                    <ul class="epos-simueb-legende">
-                        @foreach (Ringanteil a in waerme ? D.WaermeLegende : D.StromLegende)
-                        {
-                            <li class="@(a.IstRest ? "epos-simueb-legende-rest" : null)">
-                                <span class="epos-simueb-farbe" style="@("background:" + a.Farbe)"
-                                      aria-hidden="true"></span>
-                                <span class="epos-simueb-legende-name">@a.Name</span>
-                                <span class="epos-simueb-legende-wert">@Zahl(a.Mwh, "N2") MWh</span>
-                                <span class="epos-simueb-legende-anteil">@Zahl(a.Prozent, "N1") %</span>
-                            </li>
-                        }
-                        <li class="epos-simueb-legende-summe">
-                            <span class="epos-simueb-farbe" aria-hidden="true"></span>
-                            <span class="epos-simueb-legende-name">
-                                @(waerme ? Resource.SIMUEB_LBL_WAERMEBEDARF : Resource.SIMUEB_LBL_STROMBEDARF)
-                            </span>
-                            <span class="epos-simueb-legende-wert">
-                                @Zahl(waerme ? D.WaermebedarfMwh : D.StrombedarfMwh, "N2") MWh
-                            </span>
-                            <span class="epos-simueb-legende-anteil">@Zahl(100.0, "N1") %</span>
-                        </li>
-                    </ul>
+                    @Legende(waerme ? D.WaermeLegende : D.StromLegende,
+                             waerme ? Resource.SIMUEB_LBL_WAERMEBEDARF : Resource.SIMUEB_LBL_STROMBEDARF,
+                             waerme ? D.WaermebedarfMwh : D.StrombedarfMwh)
 
                     @* DER WEG AUS DER NULL. Ohne Stromerzeuger sagt der graue
                        Vollring „alles Netz" - und dieser Satz sagt, was dagegen zu
@@ -534,6 +504,36 @@
     /// ist der Platzhalter, der genau diese Zahl erzeugt — die Hülle setzt ihn nach Stamm oder
     /// Variante; leer = keine Marke. Jeder Aufruf nennt ihn ausdrücklich (Abdeckungswache).
     /// </summary>
+    /* DIE LEGENDE NEBEN DEM RING - EINE Form fuer Waerme, Strom und Kaelte. Je Eintrag
+       Farbkaestchen, Name und ein Zahlenpaar (MWh, Anteil); das Zahlenpaar ist EIN Element,
+       damit es als Ganzes in die zweite Zeile ruecken kann, wenn neben dem Namen kein Platz
+       ist (epos-ui.css, „Ring und Legende"). Der Name bricht nur an Wortgrenzen. Mit
+       summenname schliesst die Summenzeile (Bedarf, 100 %) die Liste ab. */
+    private RenderFragment Legende(IReadOnlyList<Ringanteil> anteile, string? summenname, double summeMwh) =>
+        @<ul class="epos-simueb-legende">
+            @foreach (Ringanteil a in anteile)
+            {
+                @Legendeneintrag(a.IstRest ? "epos-simueb-legende-rest" : null, "background:" + a.Farbe,
+                                 a.Name, Zahl(a.Mwh, "N2") + " MWh", Zahl(a.Prozent, "N1") + " %")
+            }
+            @if (summenname is not null)
+            {
+                @Legendeneintrag("epos-simueb-legende-summe", null, summenname,
+                                 Zahl(summeMwh, "N2") + " MWh", Zahl(100.0, "N1") + " %")
+            }
+        </ul>;
+
+    private static RenderFragment Legendeneintrag(string? klasse, string? farbstil, string name,
+                                                  string wert, string anteil) =>
+        @<li class="@klasse">
+            <span class="epos-simueb-farbe" style="@farbstil" aria-hidden="true"></span>
+            <span class="epos-simueb-legende-name">@name</span>
+            <span class="epos-simueb-legende-zahlen">
+                <span class="epos-simueb-legende-wert">@wert</span>
+                <span class="epos-simueb-legende-anteil">@anteil</span>
+            </span>
+        </li>;
+
     private RenderFragment Kennzahl(string text, string wert, string einheit, bool betont, string vorlagenfeld,
                                     Vorlagenfeldstufe stufe = Vorlagenfeldstufe.Entspricht, string hinweis = "") => @<div
         class="@(betont ? "epos-simueb-kennzahl epos-simueb-kennzahl--betont" : "epos-simueb-kennzahl")">

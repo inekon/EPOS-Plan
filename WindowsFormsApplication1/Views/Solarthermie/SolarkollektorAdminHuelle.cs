@@ -63,7 +63,7 @@ namespace WindowsFormsApplication1
                     profil, SolarkollektorenStammCtrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new SolarkollektorenStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder),
+                Speichern = Schreiben,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
                 Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(SolarkollektorenStammCtrl.Duplizieren(id, name)),

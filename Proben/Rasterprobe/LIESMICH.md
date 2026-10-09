@@ -1217,3 +1217,40 @@ Bild, auch mit aufgeklappter Detailzeile und über den ganzen Tabulatorweg; Gege
 Dialogkörper wird rot); die Haft-Kriterien gelten nur noch für die Dublettenprüfung. Die **Bannerprobe**
 misst in diesen drei Fällen, dass das Banner unter dem Kopf im Bild steht, sein Kreuz trägt und das
 Dokument nicht rollt.
+## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
+
+**Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer
+Ringzeile, die ein Container ist (`epos-ui.css`, „Ring und Legende"; Markup einmal in
+`UebersichtReiter.Legende`): Ist die Ringzeile schmaler als 520 px, steht die Legende unter dem Ring;
+ein Eintrag ist eine umbrechende Flexzeile, deren Zahlenpaar (Menge, Anteil) als Ganzes in die zweite
+Zeile rückt, wenn neben dem Namen kein Platz ist; der Name bricht nur an Wortgrenzen. Die Seite stellt
+den echten `UebersichtReiter` mit synthetischen Ringdaten für Wärme, Strom und Kälte und langen Namen
+wie im Betrieb („Wärmepumpe Luft/Wasser Kaskade 1", „Fernwärmeübergabestation"); die Probe setzt die
+Breite des Rahmens `#legendenprobe-rahmen` per Skript. bunit hält die Struktur
+(`EPOS.UI.Tests/Seiten/UebersichtReiterTests`, alle drei Ringe dieselben Klassen, die Regel als Regel).
+
+```bash
+node legendenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--ohne-gegenprobe]
+```
+
+**Fälle** (Fenster × Rahmen, Höhe 900 px): 1 280 voll, 1 280 mit Rahmen 1 100 px, 1 280 mit Rahmen
+760 px (zwei schmale Spalten), 480 voll, 360 voll. Je Ringzeile: unter 520 px steht die Legende unter dem
+Ring, sonst daneben; kein Eintrag ist höher als zwei Zeilenhöhen (Zeilenhöhe als Blockkopie in der
+Schrift des Namens gemessen, die Summenzeile mit ihrem Rand von 5 px); kein Wort ist gebrochen (Breite
+jedes Namenselements ≥ Breite seines längsten Worts, per Range an einer ungebrochenen Kopie gemessen,
+und jedes Wort liegt auf einer Zeile, `Range.getClientRects`); das Zahlenpaar steht im Eintrag.
+
+**Gegenprobe** (läuft mit): dieselben Fälle mit der alten Regel (Raster neben dem Ring bis 620 px
+Fensterbreite, `overflow-wrap: anywhere` am Namen) müssen Verstöße liefern. Rückgabe `0` = kein Verstoß
+**und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 09.10.2026** (Wirt Release, Chromium headless, `kultur=de-DE`): **0 Verstöße, Gegenprobe
+rot mit 103 Verstößen** (Rückgabe 0).
+
+| Fall | Ringzeilen Wärme / Strom / Kälte | Lage | höchster Eintrag | Gegenprobe |
+|---|---|---|---|---|
+| 1 280 voll | 630 / 630 / 1 278 px | neben | 2,00 Zeilen | 13 Verstöße |
+| 1 280, Rahmen 1 100 | 540 / 540 / 1 098 px | neben | 2,27 Zeilen (Summenzeile mit Rand) | 17 |
+| 1 280, Rahmen 760 | 370 / 370 / 758 px | unter, unter, neben | 2,00 Zeilen | 45 |
+| 480 voll | 478 / 478 / 478 px | unter | 1,27 Zeilen | 13 |
+| 360 voll | 358 / 358 / 358 px | unter | 2,00 Zeilen | 15 |

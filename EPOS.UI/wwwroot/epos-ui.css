@@ -12822,35 +12822,48 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 
 /* --- Ring und Legende ---------------------------------------------------- */
 
+/* Die Ringzeile ist ein CONTAINER: Ob die Legende neben oder unter dem Ring steht,
+   entscheidet die Breite der Zeile selbst, nicht die des Fensters - die Zeile steht
+   in einer von zwei Spalten oder im Kaelteblock ueber die ganze Breite. Ist sie
+   schmaler als 520 px (Inhalt 500 px bei 2 x 10 px Rand), steht die Legende unter
+   dem Ring. Dieselbe Regel fuer Waerme, Strom und Kaelte (UebersichtReiter.Legende);
+   gemessen mit Proben/Rasterprobe/legendenprobe.mjs. */
 .epos-simueb-ringzeile {
-    display: grid;
-    grid-template-columns: minmax(0, 200px) minmax(0, 1fr);
+    container-type: inline-size;
+    container-name: epos-simueb-ringzeile;
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--epos-rand);
     align-items: center;
     padding: var(--epos-rand);
     border-bottom: 1px solid var(--epos-rahmen-leise);
 }
 
-@media (max-width: 620px) {
-    .epos-simueb-ringzeile {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
 .epos-simueb-ring {
+    flex: 0 1 200px;
     min-width: 0;
 }
 
 /* Der Ring ist seit #222 quadratisch (420 x 420) und traegt seine Legende
    nicht mehr im Bild; 200 px reichen fuer die Mittelzahl samt Unterzeile. In
-   der einspaltigen Anordnung unter 900 px ist diese Regel das einzige, was ihn
-   noch begrenzt. */
+   der Anordnung untereinander ist diese Regel das einzige, was ihn noch
+   begrenzt. */
 .epos-simueb-ring .epos-diagramm-svg {
     max-width: 200px;
 }
 
+/* min-width: 0 - die Legende nimmt die Restbreite der Zeile; ohne die Regel
+   bestimmte das laengste Wort ihre Mindestbreite. */
 .epos-simueb-legendenblock {
+    flex: 1 1 0;
     min-width: 0;
+}
+
+@container epos-simueb-ringzeile (max-width: 499.98px) {
+    .epos-simueb-ring,
+    .epos-simueb-legendenblock {
+        flex-basis: 100%;
+    }
 }
 
 .epos-simueb-legende {
@@ -12861,23 +12874,35 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     gap: 4px;
 }
 
+/* Ein Eintrag ist eine umbrechende Flexzeile: Kaestchen, Name, Zahlenpaar. Passt
+   das Zahlenpaar nicht mehr neben den Namen, rueckt es ALS GANZES in die zweite
+   Zeile, rechtsbuendig. Der Name bricht nur an Wortgrenzen, keine Umbruchregel im
+   Wort: Er bekommt die Breite, nicht seine Buchstaben den Umbruch. */
 .epos-simueb-legende li {
-    display: grid;
-    grid-template-columns: 14px minmax(0, 1fr) auto auto;
-    column-gap: 10px;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    column-gap: 10px;
     font-variant-numeric: tabular-nums;
 }
 
 .epos-simueb-farbe {
+    flex: 0 0 14px;
     width: 14px;
     height: 14px;
     border-radius: 3px;
 }
 
 .epos-simueb-legende-name {
+    flex: 1 1 auto;
     min-width: 0;
-    overflow-wrap: anywhere;
+}
+
+.epos-simueb-legende-zahlen {
+    display: flex;
+    column-gap: 10px;
+    margin-left: auto;
+    min-width: 0;
 }
 
 .epos-simueb-legende-wert,
@@ -12886,9 +12911,11 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     white-space: nowrap;
 }
 
+/* Feste Breite des Anteils ("100,0 %"), damit die Mengen untereinander buendig
+   stehen - jeder Eintrag endet am rechten Rand der Legende. */
 .epos-simueb-legende-anteil {
     color: var(--epos-text-leise);
-    min-width: 5ch;
+    min-width: 7ch;
 }
 
 /* Die SUMME schliesst die Legende ab - der Bedarf, auf den sich alle Anteile

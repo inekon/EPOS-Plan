@@ -130,8 +130,7 @@ namespace WindowsFormsApplication1
         /// pflegbar.</para>
         /// </remarks>
         private static KatalogSpeicherErgebnis Schreiben(string name,
-                                                         IReadOnlyList<BrowserFeldwert> felder,
-                                                         bool schutzUebergehen)
+                                                         IReadOnlyList<BrowserFeldwert> felder)
         {
             var werte = new BHKWStammCtrl.AnzeigefelderBhkw(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),

@@ -181,7 +181,7 @@ namespace WindowsFormsApplication1
                     name => PufferSpAdminHuelle.Wege().Detail!(name)!),
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
-                        (name, felder) => PufferSpAdminHuelle.Wege().Speichern!(name, felder, false)),
+                        (name, felder) => PufferSpAdminHuelle.Wege().Speichern!(name, felder)),
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,

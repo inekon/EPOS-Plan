@@ -626,7 +626,7 @@
         Detail = BrowserFelder,
         Existiert = _ => false,
         Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
-        Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
+        Speichern = (n, _) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
         Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n),
         Schloss = ProbeSchloss,
         // Block 4 (Konzept 7.1 d): "Import..." wie im Verwaltungsfenster der

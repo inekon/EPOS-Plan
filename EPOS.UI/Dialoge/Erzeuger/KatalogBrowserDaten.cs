@@ -90,10 +90,10 @@ public sealed class KatalogBrowserWege
     public Func<string, KatalogSpeicherErgebnis>? Loeschen { get; init; }
 
     /// <summary>
-    /// Schreibt die editierbaren Felder zurück — nur bei Heizkessel und BHKW belegt.
-    /// Zweiter Parameter: Darf der Schreibschutz übergangen werden (BHKW-Rückfrage)?
+    /// Schreibt die editierbaren Felder zurück. Ein Auslieferungssatz wird nie
+    /// überschrieben; den Schreibschutz prüft der Kern.
     /// </summary>
-    public Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>? Speichern { get; init; }
+    public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? Speichern { get; init; }
 
     /// <summary>
     /// <b>„Duplizieren…"</b> (Konzept Administrationsdialoge, Entscheid AD-Q11): kopiert

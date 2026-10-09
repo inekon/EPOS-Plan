@@ -292,7 +292,7 @@ namespace WindowsFormsApplication1
                     name => SolarkollektorAdminHuelle.Wege().Detail!(name)!),
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
-                        (name, felder) => SolarkollektorAdminHuelle.Wege().Speichern!(name, felder, false)),
+                        (name, felder) => SolarkollektorAdminHuelle.Wege().Speichern!(name, felder)),
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
 
                 // DIE KOSTENKNOEPFE IM MODULBEREICH - derselbe Weg, den Heizkessel und
