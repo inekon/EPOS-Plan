@@ -50203,7 +50203,7 @@ chart</value>
     <value>{0} records copied to the database: {1}.</value>
   </data>
   <data name="KATRUECK_BEMERKUNG_VORLAGE" xml:space="preserve">
-    <value>Operating costs from project “{0}”, {1}</value>
+    <value>Investment and operating costs from project “{0}”, {1}</value>
   </data>
   <data name="KATRUECK_GRUND_GESPERRT" xml:space="preserve">
     <value>Unlock first</value>
@@ -50257,7 +50257,7 @@ chart</value>
     <value>As a new record because the origin cannot be overwritten: {0}</value>
   </data>
   <data name="KATRUECK_HINWEIS_KOSTEN" xml:space="preserve">
-    <value>Technical data, investment and maintenance values and the plant's operating cost items (as the record's cost template) are copied.</value>
+    <value>Technical data, investment and maintenance values and the plant's investment and operating cost items (as the record's cost template) are copied.</value>
   </data>
   <data name="KATRUECK_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Copy</value>
@@ -50267,6 +50267,12 @@ chart</value>
   </data>
   <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
     <value>Remaining in the project: energy carrier, temperature pair, sinks and time schedule of the plant.</value>
+  </data>
+  <data name="KATRUECK_LOESCHEN_VORLAGE_PROJEKT" xml:space="preserve">
+    <value>The catalogue record “{0}” has been deleted. Its cost template is kept because cost items in projects originate from it.</value>
+  </data>
+  <data name="KATRUECK_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Catalogue record deleted</value>
   </data>
 </root>
 

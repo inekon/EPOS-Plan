@@ -48486,7 +48486,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten aus Projekt „{0}“, {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitions- und Betriebskosten aus Projekt „{0}“, {1} ähnelt.
         /// </summary>
         public static string KATRUECK_BEMERKUNG_VORLAGE {
             get {
@@ -48558,7 +48558,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Investitions- und Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit. ähnelt.
         /// </summary>
         public static string KATRUECK_HINWEIS_KOSTEN {
             get {
@@ -48599,6 +48599,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATRUECK_HINWEIS_RUECKFALL {
             get {
                 return ResourceManager.GetString("KATRUECK_HINWEIS_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz „{0}“ ist gelöscht. Seine Kostenvorlage bleibt erhalten, weil Kostenpositionen in Projekten aus ihr stammen. ähnelt.
+        /// </summary>
+        public static string KATRUECK_LOESCHEN_VORLAGE_PROJEKT {
+            get {
+                return ResourceManager.GetString("KATRUECK_LOESCHEN_VORLAGE_PROJEKT", resourceCulture);
             }
         }
         
@@ -48671,6 +48680,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATRUECK_TITEL {
             get {
                 return ResourceManager.GetString("KATRUECK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz gelöscht ähnelt.
+        /// </summary>
+        public static string KATRUECK_TITEL_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KATRUECK_TITEL_LOESCHEN", resourceCulture);
             }
         }
         

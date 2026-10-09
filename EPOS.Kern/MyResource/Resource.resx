@@ -50210,7 +50210,7 @@ Chart</value>
     <value>{0} Sätze in die Datenbank übernommen: {1}.</value>
   </data>
   <data name="KATRUECK_BEMERKUNG_VORLAGE" xml:space="preserve">
-    <value>Betriebskosten aus Projekt „{0}“, {1}</value>
+    <value>Investitions- und Betriebskosten aus Projekt „{0}“, {1}</value>
   </data>
   <data name="KATRUECK_GRUND_GESPERRT" xml:space="preserve">
     <value>Erst Schloss aufheben</value>
@@ -50264,7 +50264,7 @@ Chart</value>
     <value>Als neuer Satz, weil der Ursprung nicht überschrieben werden kann: {0}</value>
   </data>
   <data name="KATRUECK_HINWEIS_KOSTEN" xml:space="preserve">
-    <value>Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit.</value>
+    <value>Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Investitions- und Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit.</value>
   </data>
   <data name="KATRUECK_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
@@ -50274,6 +50274,12 @@ Chart</value>
   </data>
   <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
     <value>Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage.</value>
+  </data>
+  <data name="KATRUECK_LOESCHEN_VORLAGE_PROJEKT" xml:space="preserve">
+    <value>Der Katalogsatz „{0}“ ist gelöscht. Seine Kostenvorlage bleibt erhalten, weil Kostenpositionen in Projekten aus ihr stammen.</value>
+  </data>
+  <data name="KATRUECK_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Katalogsatz gelöscht</value>
   </data>
 </root>
 
