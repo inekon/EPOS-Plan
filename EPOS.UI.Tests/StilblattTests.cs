@@ -936,14 +936,22 @@ public sealed class StilblattTests
         // Schmal: die übrigen Spalten und Karten sind aus; kein display:flex an einer Zelle.
         int schmal = css.IndexOf("\n.epos-kond-matrix th[scope=col]:not(.epos-kond--aktiv),\n" +
                                  ".epos-kond-matrix td.epos-kond-zelle:not(.epos-kond--aktiv),\n" +
-                                 ".epos-kond-karte:not(.epos-kond--aktiv) {\n    display: none;", StringComparison.Ordinal);
+                                 ".epos-kond-karte:not(.epos-kond--aktiv),\n" +
+                                 ".epos-kond-karte-einzelheiten:not(.epos-kond--aktiv) {\n    display: none;", StringComparison.Ordinal);
         Assert.True(schmal > 0, "Die schmale Anordnung (nur die gewählte Spalte) fehlt");
         Assert.DoesNotContain("display: flex", Regelblock(".epos-kond-zelle {"), StringComparison.Ordinal);
 
         string breit = Abfrageblock(css, "@container epos-kond (min-width: 900px) {");
         Assert.Contains(".epos-kond-groessen {\n        display: none;", breit, StringComparison.Ordinal);
         Assert.Contains("display: table-cell;", breit, StringComparison.Ordinal);
-        Assert.Contains(".epos-kond-karte:not(.epos-kond--aktiv) {\n        display: block;", breit, StringComparison.Ordinal);
+        Assert.Contains(".epos-kond-karte:not(.epos-kond--aktiv),\n    .epos-kond-karte-einzelheiten:not(.epos-kond--aktiv) {\n        display: block;", breit, StringComparison.Ordinal);
+
+        // Die Einzelheiten einer Karte (Anwendermeldung 08.10.2026): ein eigener Abschnitt über die ganze Zeile UNTER
+        // allen Karten; die aufgeklappte Karte selbst nimmt keine ganze Zeile mehr - sonst spränge sie aus ihrer Reihe.
+        string einzelheiten = Regelblock(".epos-kond-karte-einzelheiten {");
+        Assert.Contains("grid-column: 1 / -1", einzelheiten, StringComparison.Ordinal);
+        Assert.Contains("order: 1", einzelheiten, StringComparison.Ordinal);
+        Assert.DoesNotContain("grid-column", Regelblock(".epos-kond-karte--offen {"), StringComparison.Ordinal);
         Assert.DoesNotContain("@media", css.Substring(css.IndexOf("\n.epos-kond {", StringComparison.Ordinal),
                                                      css.IndexOf("/* FORMULARRASTER (Anwenderwunsch", StringComparison.Ordinal)
                                                      - css.IndexOf("\n.epos-kond {", StringComparison.Ordinal)),

@@ -154,6 +154,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Stand der dazugeladenen HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
         internal SqprojStand Projektdatei { get; set; }
 
+        /// <summary>
+        /// Die Verwendung, die die Datei hergibt (<see cref="Gebaeudeverwendung"/>), samt Herleitung; <c>null</c> = nicht
+        /// gebildet. Gesetzt von <see cref="GebaeudeImportAblauf.Zuordnen"/>.
+        /// </summary>
+        internal Gebaeudeverwendung.Ergebnis Verwendung { get; set; }
+
         /// <summary>Die Zeile zu einem Zielfeld; <c>null</c>, wenn es sie nicht gibt.</summary>
         public GebaeudeFeldzeile Zeile(string zielfeld)
         {

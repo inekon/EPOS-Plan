@@ -1102,8 +1102,8 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
-                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); ist es gesetzt,
-                // fuehrt es die Klasse (E47, der Arbeitsstand zeigt KlasseWirksam).
+                // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); die gespeicherte
+                // Klasse gilt, das Baujahr schlaegt beim Aendern nur vor.
                 Baujahr = m.Baujahr,
                 // E47: der Energiestandard als Code - NULL bleibt null (keiner).
                 Energiestandard = string.IsNullOrEmpty(m.Energiestandard) ? null : m.Energiestandard,
@@ -1278,10 +1278,8 @@ namespace WindowsFormsApplication1
             m.Nutzflaeche = wfl;
             m.Raumhoehe = d.Raumhoehe ?? 0;
 
-            // E47 (F2): DAS BAUJAHR FUEHRT - gespeichert wird die Klasse aus dem Baujahr, ohne Baujahr
-            // die gewaehlte.
-            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(
-                Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse)).ToString();
+            // Gespeichert wird die gewaehlte Klasse - das Baujahr schlaegt sie nur vor (Anwenderwunsch 08.10.2026).
+            m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(d.Baualtersklasse).ToString();
             // G4a: das Baujahr NULL-erhaltend - leer bleibt NULL ("unbekannt"), nie 0.
             m.Baujahr = d.Baujahr;
             // E47: der Energiestandard als Code - leer bleibt NULL ("keiner").

@@ -767,7 +767,9 @@ namespace WindowsFormsApplication1
                 Vorschlagsname = GebaeudeZuordnungsModell.Vorschlagsname(satz),
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
-                Meldungen = satz.Meldungen.Select(MeldungDaten).ToList(),
+                // Die Verwendung, die die Datei hergibt, mit Herleitung (Anwenderwunsch 08.10.2026) - als letzte Meldung.
+                Meldungen = satz.Meldungen.Concat(satz.Verwendung?.Herleitung is PruefMeldung vm ? new[] { vm } : Array.Empty<PruefMeldung>())
+                                .Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
                 Baustoffe = BaustoffeDaten(_vorschlag, anfrage.Baustoffzuordnungen),
@@ -1417,8 +1419,27 @@ namespace WindowsFormsApplication1
             // Die Folgevorgaben (innere Gewinne, Nachtsollwert) nach den Handänderungen des Dialogs.
             ergebnis = Nachgezogen(ergebnis);
             string vorgaben = Vorgabentext(ergebnis);
-            return new GebaeudeVorbelegung(NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis),
-                                           vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben);
+            GebaeudeKatalogDaten daten = NachKatalogdaten(GebaeudeKatalogHuelle.AusModell(new GebaeudeModel()), ergebnis);
+            Gebaeudeverwendung.Ergebnis verwendung = SatzAusErgebnis(ergebnis)?.Verwendung;
+            VerwendungSetzen(daten, verwendung);
+            string text = vorgaben.Length == 0 ? Vorbelegungstext : Vorbelegungstext + " " + vorgaben;
+            if (verwendung?.Herleitung is PruefMeldung m) text = (text + " " + GebaeudeZuordnungsModell.MeldungText(m)).Trim();
+            return new GebaeudeVorbelegung(daten, text);
+        }
+
+        /// <summary>
+        /// <b>Die Verwendung aus der Datei in den vorbelegten Satz</b> (<see cref="Gebaeudeverwendung"/>): Gibt die Datei sie her,
+        /// gilt sie; ohne Anhaltspunkt bleibt die Vorgabe des neuen Satzes. Widerspricht die Gebäudeart des Satzes (die Vorgabe
+        /// eines neuen Satzes ist ein Einfamilienhaus) einem Nichtwohngebäude, wird sie „Sonstige“ — sonst stünde ein
+        /// Verwaltungsbau als Einfamilienhaus da.
+        /// </summary>
+        internal static void VerwendungSetzen(GebaeudeKatalogDaten d, Gebaeudeverwendung.Ergebnis verwendung)
+        {
+            if (d == null || verwendung?.Verwendung is not string wert) return;
+            d.Verwendung = wert;
+            if (string.Equals(wert, GebaeudeStammCtrl.FILTERWERT_SONSTIGE, StringComparison.Ordinal)
+                && Gebaeudeverwendung.WohnenAusGebaeudeart(d.Gebaeudeart) == true)
+                d.Gebaeudeart = GEBAEUDEART_SONSTIGE;
         }
 
         /// <summary>
@@ -1441,6 +1462,9 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Der Weg „als Katalogsatz ablegen" — Abbildung auf den Gebäudeeditor
         // =================================================================================
+
+        /// <summary>Die Gebäudeart eines Nichtwohngebäudes ohne nähere Angabe (ein Wert des Katalogs, nie übersetzt).</summary>
+        internal const string GEBAEUDEART_SONSTIGE = "Sonstige";
 
         /// <summary>
         /// <b>Bildet ein Ergebnis auf die Felder des Gebäudeeditors ab</b> — der Weg „als

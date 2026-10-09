@@ -225,6 +225,9 @@ namespace WindowsFormsApplication1
 
             // Die Karte im Einzelnen (Welle U3)
             t.KnopfEinzelheiten = Text_("KOND_BTN_EINZELHEITEN", t.KnopfEinzelheiten);
+            t.KnopfEinzelheitenZu = Text_("KOND_BTN_EINZELHEITEN_ZU", t.KnopfEinzelheitenZu);
+            t.HinweisEinzelheiten = Text_("KOND_TXT_HINWEIS_EINZELHEITEN", t.HinweisEinzelheiten);
+            t.LabelEinzelheitenTitel = Text_("KOND_LBL_EINZELHEITEN_TITEL", t.LabelEinzelheitenTitel);
             t.GrundNichtAngelegt = Text_("KOND_TXT_GRUND_NICHT_ANGELEGT", t.GrundNichtAngelegt);
             t.HinweisGrundangabe = Text_("KOND_TXT_HINWEIS_GRUNDANGABE", t.HinweisGrundangabe);
             t.TextGrundangabeWoche = Text_("KOND_TXT_GRUNDANGABE_WOCHE", t.TextGrundangabeWoche);

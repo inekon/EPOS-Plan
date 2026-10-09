@@ -214,7 +214,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Vorbelegt aus dem Import: Datei gbxml_haus_si.xml, Format gbXML. Vorgaben, nicht aus der Datei: "
                          + "Interne Wärmegewinne 600 W; ψ Anschluss Fenster–Wand 0,09 W/(mK); ψ Anschluss Wand–Dach 0,3 W/(mK); "
                          + "ψ Anschluss Außenwand–Keller 0,6 W/(mK); Luftwechselrate 0,7 1/h; Heizsollwert in der Nacht 18 °C; "
-                         + "Nachtabsenkung von 22 h; Nachtabsenkung bis 6 h.", v.Herleitung);
+                         + "Nachtabsenkung von 22 h; Nachtabsenkung bis 6 h. "
+                         // Dahinter die Verwendung, die die Datei hergibt (Anwenderwunsch 08.10.2026).
+                         + "Verwendung „Wohngebäude“ aus der Gebäudeart „SingleFamily“ der Datei.", v.Herleitung);
+            Assert.Equal(GebaeudeStammCtrl.FILTERWERT_WOHN, v.Daten.Verwendung);
             Assert.Equal("Neubau A", v.Daten.Name);
             Assert.Equal(120.0, v.Daten.WohnflaecheGesamt);
             // Was nicht aus der Datei kommt, steht wie im Modus Neu des Editors.

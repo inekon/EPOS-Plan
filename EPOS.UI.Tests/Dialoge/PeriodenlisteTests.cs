@@ -221,17 +221,17 @@ public class PeriodenlisteTests : EposBunitContext
         KonditionierungKalender k = bearbeitung.Kalender(KonditionierungGroesse.Heizen)!;
         KonditionierungPeriode ferien = Assert.Single(k.Perioden);
         Assert.True(ferien.Matrixbereich);
-        IElement karte = cut.Find("section.epos-kond-karte[data-groesse='0']");
+        IElement karte = cut.Find("section.epos-kond-karte-einzelheiten[data-groesse='0']");
         Assert.Contains("aus der Matrix", karte.QuerySelector($"tr[data-rang='{ferien.Rang}']")!.TextContent);
 
         karte.QuerySelector("button.epos-kond-periode-neu")!.Click();
-        IElement form = cut.Find("section.epos-kond-karte[data-groesse='0'] .epos-kond-periode-form");
+        IElement form = cut.Find("section.epos-kond-karte-einzelheiten[data-groesse='0'] .epos-kond-periode-form");
         form.QuerySelectorAll("label.epos-feld").Single(l => l.QuerySelector(".epos-feld-text")!.TextContent.Trim() == "Name")
             .QuerySelector("input")!.Input("Betriebsruhe");
         Formfeld(cut, "Von").Input("27.12.");
         Formfeld(cut, "Bis").Input("31.12.");
         Formfeld(cut, "Wert").Input("12");
-        cut.Find("section.epos-kond-karte[data-groesse='0'] button.epos-kond-periode-uebernehmen").Click();
+        cut.Find("section.epos-kond-karte-einzelheiten[data-groesse='0'] button.epos-kond-periode-uebernehmen").Click();
 
         k = bearbeitung.Kalender(KonditionierungGroesse.Heizen)!;
         KonditionierungPeriode neu = k.Perioden.Single(p => p.Name == "Betriebsruhe");
@@ -245,7 +245,7 @@ public class PeriodenlisteTests : EposBunitContext
     }
 
     private static IElement Formfeld(IRenderedComponent<KonditionierungReiter> cut, string beschriftung)
-        => cut.FindAll("section.epos-kond-karte[data-groesse='0'] .epos-kond-periode-form label.epos-feld")
+        => cut.FindAll("section.epos-kond-karte-einzelheiten[data-groesse='0'] .epos-kond-periode-form label.epos-feld")
               .Single(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
               .QuerySelector("input")!;
 }
