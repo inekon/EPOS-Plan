@@ -183,7 +183,7 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         var cut = Aufbauen();
         Zeilenklick.Zeile(cut, 1);                                    // 200 kW, Trockenkühler
 
-        Assert.Equal(new[] { R.ADM_SB_KENNDATEN, R.KM_GRUPPE_KENNLINIE },
+        Assert.Equal(new[] { R.ADM_SB_KENNDATEN, R.BHKWK_GRP_TEILLAST, R.KM_GRUPPE_KENNLINIE },
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
         string blatt = Stammblatt(cut).TextContent;
         Assert.Contains("R513A", blatt);
@@ -399,7 +399,8 @@ public sealed class KaeltemaschineKatalogDialogEnglischTests : EposBunitContext
             }));
 
         Assert.Equal("Chillers", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Equal("Performance curve", cut.FindAll(".epos-stammblattgruppe-titel")[1].TextContent);
+        Assert.Equal("Part load and cycling", cut.FindAll(".epos-stammblattgruppe-titel")[1].TextContent);
+        Assert.Equal("Performance curve", cut.FindAll(".epos-stammblattgruppe-titel")[2].TextContent);
         Assert.Contains("Air-cooled", cut.Find(".epos-katalogliste tbody").TextContent);
         Assert.Contains("Rated cooling capacity", cut.Find(".epos-stammblatt").TextContent);
 
