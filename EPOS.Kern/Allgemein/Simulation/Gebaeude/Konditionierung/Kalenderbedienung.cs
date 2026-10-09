@@ -513,14 +513,14 @@ namespace WindowsFormsApplication1
                 foreach (Konditionierungsgroesse g in Gemeinschaftsperiode.Groessen(p.Maske))
                     if (ebene.Kalender(g) != null) { raenge[g] = p.Rang; angaben[g] = p.Regel.Angabe; }
                 Zuordnungsschluessel s = Zuordnungsschluessel.Von(p.Regel);
-                liste.Add(new Zuordnungszeile(s, ErsterTag(s, stand.Referenzjahr), raenge, angaben, p));
+                liste.Add(new Zuordnungszeile(s, ErsterTag(s, stand.Kalender), raenge, angaben, p));
             }
-            liste.AddRange(GekoppelteZuordnungen(ebene, stand.Referenzjahr));
+            liste.AddRange(GekoppelteZuordnungen(ebene, stand.Kalender));
             return liste.OrderBy(z => z.ErsterTag).ThenBy(z => z.Schluessel.Name, StringComparer.Ordinal).ToList();
         }
 
         /// <summary>Die gekoppelten Kopien eigener Perioden (Stufe 1, Altbestand) als Zuordnungszeilen.</summary>
-        private static IEnumerable<Zuordnungszeile> GekoppelteZuordnungen(Konditionierungsstand ebene, int referenzjahr)
+        private static IEnumerable<Zuordnungszeile> GekoppelteZuordnungen(Konditionierungsstand ebene, Gemeinjahrkalender kalender)
         {
             var raenge = new Dictionary<Zuordnungsschluessel, Dictionary<Konditionierungsgroesse, int>>();
             var angaben = new Dictionary<Zuordnungsschluessel, Dictionary<Konditionierungsgroesse, Kalenderangabe>>();
@@ -544,7 +544,7 @@ namespace WindowsFormsApplication1
                     angaben[s][g] = r.Angabe;
                 }
             }
-            return folge.Select(s => new Zuordnungszeile(s, ErsterTag(s, referenzjahr), raenge[s], angaben[s]));
+            return folge.Select(s => new Zuordnungszeile(s, ErsterTag(s, kalender), raenge[s], angaben[s]));
         }
 
         /// <summary>
@@ -839,9 +839,9 @@ namespace WindowsFormsApplication1
                 ? Konditionierungsgroessen.Alle.Where(g => ebene.Kalender(g) != null).ToList()
                 : Konditionierungsgroessen.Alle.Where(g => giltFuer.Contains(g)).ToList();
 
-        /// <summary>Der erste Tag einer Zeile im Bezugsjahr.</summary>
-        internal static int ErsterTag(Zuordnungsschluessel s, int referenzjahr)
-            => s.IstFeiertag ? Feiertage.Jahrestag(s.Feiertagsregel, referenzjahr) : s.Beginn;
+        /// <summary>Der erste Tag einer Zeile im Gemeinjahr (Feiertage nach der Konvention, E114).</summary>
+        internal static int ErsterTag(Zuordnungsschluessel s, Gemeinjahrkalender kalender)
+            => s.IstFeiertag ? Feiertage.Jahrestag(s.Feiertagsregel, kalender) : s.Beginn;
 
         internal static Konditionierungsschritt KeinKalender(Konditionierungsgroesse g)
             => Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_KEIN_KALENDER,

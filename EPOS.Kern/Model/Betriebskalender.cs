@@ -67,14 +67,15 @@ namespace WindowsFormsApplication1
         public const byte TAG_FERIEN = 2;
 
         /// <summary>
-        /// Die Tagesart jedes der 365 Tage (Index 0 = 1. Januar) im <paramref name="referenzjahr"/>:
-        /// Ferien vor Feiertag, Feiertage nur mit <see cref="FeiertagWieSonntag"/>.
+        /// Die Tagesart jedes der 365 Tage (Index 0 = 1. Januar) im Gemeinjahr: Ferien vor Feiertag,
+        /// Feiertage nur mit <see cref="FeiertagWieSonntag"/>, gelegt nach der Konvention
+        /// <paramref name="kalender"/> (Wochentagsraster des Laufs und Jahr der Preisreihe, E114).
         /// </summary>
-        public byte[] Tagesarten(int referenzjahr)
+        public byte[] Tagesarten(Gemeinjahrkalender kalender)
         {
             var arten = new byte[365];
             if (FeiertagWieSonntag)
-                foreach (int t in Landesfeiertage.Jahrestage(Bundesland, referenzjahr))
+                foreach (int t in Landesfeiertage.Jahrestage(Bundesland, kalender))
                     if (t >= 1 && t <= 365) arten[t - 1] = TAG_FEIERTAG;
 
             if (Ferien != null)

@@ -1010,6 +1010,7 @@ namespace WindowsFormsApplication1
             gemeinsam.Laengengrad = laengengrad;
             gemeinsam.Breitengrad = breitengrad;
             gemeinsam.Referenzjahr = SolardatenCtrl.Referenzjahr(m_ID_Projekt);
+            gemeinsam.Feiertagsjahr = SolardatenCtrl.Preisreihenjahr(m_ID_Projekt) ?? 0;
             gemeinsam.WochenendeOrtszeit = KlimakalenderGemeinsam.WochenendmaskeBilden(gemeinsam.Referenzjahr);
             gemeinsam.WochenendProbeAbweichungen = KlimakalenderGemeinsam.Abweichungen(gemeinsam.WochenendeOrtszeit, WE);
             GebaeudeErgebnisse.Leeren();

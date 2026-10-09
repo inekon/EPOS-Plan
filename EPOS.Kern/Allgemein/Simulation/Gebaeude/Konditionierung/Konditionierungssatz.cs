@@ -16,9 +16,9 @@ namespace WindowsFormsApplication1
     /// „Bauvorschrift der Byte-Gleichheit"). Deshalb <b>legt der Datenweg einen Satz nur an, wenn
     /// wirklich ein Kalender gilt</b>.</para>
     ///
-    /// <para>Unveränderlich, ohne Datenbank. Das <b>Referenzjahr</b> ist Pflicht: Ohne es ließe sich
-    /// eine Feiertagsregel nicht auflösen, und eine stille Auslassung wäre eine erfundene
-    /// Betriebszeit (F11).</para>
+    /// <para>Unveränderlich, ohne Datenbank. Die Feiertagsregeln liegen nach der Konvention
+    /// <see cref="Feiertagskalender"/> (E114): im Regelfall ohne Jahr nach dem Wochentagsraster w₀, mit einer
+    /// Preisreihe nach deren Jahr.</para>
     /// </summary>
     public sealed class Konditionierungssatz
     {
@@ -28,28 +28,31 @@ namespace WindowsFormsApplication1
         /// Baut den Satz.
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀ aus der Wochenendmaske des Ortszeit-Kalenders (U7), 0 = Montag.</param>
-        /// <param name="referenzjahr">Das Jahr, gegen das die Feiertagsregeln aufgelöst werden.</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr (E114).</param>
         /// <exception cref="ArgumentOutOfRangeException">w₀ außerhalb 0 … 6 oder ein unmögliches Jahr.</exception>
         public Konditionierungssatz(int wochentagDesErstenTags, int referenzjahr)
         {
             if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
                 throw new ArgumentOutOfRangeException(nameof(wochentagDesErstenTags),
                     "w₀ liegt zwischen 0 (Montag) und 6 (Sonntag).");
-            if (referenzjahr < 1583 || referenzjahr > 9999)
+            if (referenzjahr != 0 && (referenzjahr < 1583 || referenzjahr > 9999))
                 throw new ArgumentOutOfRangeException(nameof(referenzjahr),
-                    "Das Referenzjahr liegt zwischen 1583 und 9999 (das Osterdatum ist gregorianisch).");
+                    "Das Referenzjahr ist 0 (kein Jahr) oder liegt zwischen 1583 und 9999 (das Osterdatum ist gregorianisch).");
             WochentagDesErstenTags = wochentagDesErstenTags;
             Referenzjahr = referenzjahr;
         }
 
         /// <summary>Der leere Satz — kein Kalender, der Bestandszweig gilt.</summary>
-        public static Konditionierungssatz Leer { get; } = new Konditionierungssatz(0, 2025);
+        public static Konditionierungssatz Leer { get; } = new Konditionierungssatz(0, 0);
 
         /// <summary>w₀: 0 = Montag … 6 = Sonntag für den 1. Januar.</summary>
         public int WochentagDesErstenTags { get; }
 
-        /// <summary>Das Referenzjahr des Laufs — es löst die Feiertagsregeln auf (F11).</summary>
+        /// <summary>Das Jahr der Preisreihe des Laufs; 0 = Regelfall ohne Jahr (E114).</summary>
         public int Referenzjahr { get; }
+
+        /// <summary>Die Konvention der Feiertagslage: Raster w₀ und Jahr (<see cref="Gemeinjahrkalender"/>).</summary>
+        public Gemeinjahrkalender Feiertagskalender => new Gemeinjahrkalender(WochentagDesErstenTags, Referenzjahr);
 
         /// <summary>Trägt der Satz überhaupt einen Kalender? <c>false</c> heißt: wörtlich der Bestandszweig.</summary>
         public bool Wirksam { get; private set; }
@@ -121,7 +124,7 @@ namespace WindowsFormsApplication1
             bool[] aussen = null;
             for (int tag = 0; tag < 365; tag++)
             {
-                Kalenderregel r = k.Quellperiode(tag, Referenzjahr);
+                Kalenderregel r = k.Quellperiode(tag, Feiertagskalender);
                 // Außerhalb heißt: die Saisonperiode (Rang 900) trägt den Tag — eine eigene
                 // Betriebspause des Anwenders ist gewolltes „aus", keine Grenze der Heizperiode.
                 if (r == null || r.Rang != Standardfahrplan.RANG_SAISON
@@ -161,7 +164,7 @@ namespace WindowsFormsApplication1
         /// Deterministisch: dieselbe Reihe bei denselben Eingaben.
         /// </summary>
         public double[] Reihe(Konditionierungsgroesse g)
-            => _kalender[(int)g]?.Auswerten(WochentagDesErstenTags, Referenzjahr);
+            => _kalender[(int)g]?.Auswerten(Feiertagskalender);
 
         /// <summary>
         /// <b>Die Lastreihe einer Anteilsgröße</b> [W]: Anteil × Nennwert. Der Nennwert kommt aus dem
@@ -177,7 +180,7 @@ namespace WindowsFormsApplication1
                 throw new ArgumentException("Die Größe " + Konditionierungsgroessen.Kennwort(g) +
                                            " führt keine Anteile.", nameof(g));
             double nennwert = k.Nennwert ?? nennwertRueckfall;
-            double[] anteil = k.Auswerten(WochentagDesErstenTags, Referenzjahr);
+            double[] anteil = k.Auswerten(Feiertagskalender);
             var last = new double[anteil.Length];
             for (int h = 0; h < anteil.Length; h++) last[h] = anteil[h] * nennwert;
             return last;

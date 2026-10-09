@@ -583,6 +583,19 @@ Kalenderfreigabe (Entwurf AK3-K Abschnitt 3). Was die Freigabe setzt, entscheide
 > die Heiz- und die Kühlperiode und der Schalter `Kuehlbetrieb` samt `Kuehlung_Aktiv`. Rechenwirkung haben 1017, 1047,
 > 1055, 1056, 1058 und 1059; für sie gelten daneben die Regeln „gesäte Kältedaten“ und „gesäte Konditionierungsdaten“.
 
+## Die Einfrierregel „Gemeinjahr-Konvention“ (E114)
+
+Die Feiertage der Kalender und des Zapfkalenders liegen ohne Preisreihe nach dem Wochentagsraster des Laufs
+(`Gemeinjahrkalender`, Konzept Konditionierungsprofile 3.2).
+
+> **Wer die Konvention ändert, friert im selben Schritt die Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind die Osterregel (Sonntag am nächsten zum Jahrestag 98, Abstände der beweglichen Feiertage), die Regel
+> des Buß- und Bettags (letzter Mittwoch vor dem Jahrestag 327), das Wochentagsraster der Klimaregion der
+> Referenzprojekte (Kennzeichen `Tab_Klimadaten.WE`, Rasterjahr der Solardaten) und eine Preisreihe mit Jahr an der
+> aktiven Variante eines Referenzprojekts. Rechenwirkung haben 1045 (Zapfkalender), 1051, 1052 und 1054 (Kalender mit
+> Feiertagsregeln).
+
 ## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheide ZU19, ZU20 und ZU23)
 
 Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
@@ -686,7 +699,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-09_R47_Zapffeiertage`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-09_R48_Gemeinjahr`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -701,11 +714,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze) und die Basis R46 (Gerätegrenzen) am 09.10.2026**
-(63 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026**
+(64 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 63 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 64 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -715,9 +728,9 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-09_R47_Zapffeiertage/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+**`2026-10-09_R48_Gemeinjahr/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `babd4ba81`)
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `0a395e3e4`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **207**, 93 958 144 Byte, LFS-SHA-256
 `ec23b962272bafdff68a1406752c8d8c86cd2fb98ec91119473aa205fd5bb1f3`, mit den Projekten 1053 bis 1062; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
@@ -725,7 +738,7 @@ Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten un
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
-Zapfkalender als Sonntag),
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
 `EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
 Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
 Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
@@ -750,42 +763,50 @@ Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsg
 1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
 siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: die Feiertage im Zapfkalender (Anwenderentscheid E112, Konzept Konditionierungsprofile 9.10) — allein 1045
-> ändert sich, die sechsundzwanzig übrigen Projekte sind byte-gleich (847/847 CSV); Dateizahl (879 CSV) und Skalarzahl
-> (6 071) bleiben.**
+> **Anlass: Gemeinjahr ohne Jahresdatum (Anwenderentscheid E114 vom 09.10.2026, „Im Regelfall ist kein Jahresdatum
+> relevant“, Konzept Konditionierungsprofile 3.2 und 9.10) — vier Projekte ändern sich (1045, 1051, 1052, 1054), die
+> dreiundzwanzig übrigen sind byte-gleich; 806/879 CSV byte-gleich, Dateizahl (879 CSV) und Skalarzahl (6 071) bleiben.**
 >
-> **Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag:** Auch mit der Vorgabe des Gebäudes (leer
-> oder Samstag + Sonntag) vereinigt der Zapfkalender die Kennzeichen „Wochenende oder Feiertag“ der Klimaregion mit den
-> Feiertagen des Kerns für das Bezugsjahr — mit gebundenem Gebäude nach dessen Feiertagsland, ohne Gebäude
-> bundeseinheitlich; ein Feiertag trägt den Sonntagsgang, auch am Samstag. Die Kennzeichen der Klimaregion der
-> Testdatenbank tragen allein das Muster Samstag + Sonntag (104 Tage), deshalb kommen die Feiertage neu hinzu. Es wirkt
-> im Formvektor- und im Typtagweg, im Ensemble und in der Auslegung. Rechenwirkung hat allein der Zapfprofilgenerator,
-> also allein 1045.
+> **Die Konvention:** Trägt ein Projekt keine Preisreihe mit Jahr — kein Referenzprojekt trägt eine —, liegen die
+> beweglichen Feiertage nach dem Wochentagsraster des Laufs (`Gemeinjahrkalender`): Ostersonntag ist der Sonntag des
+> Rasters am nächsten zum Jahrestag 98 (8. April; ein Gleichstand kann in einer Woche von sieben Tagen nicht eintreten),
+> Karfreitag −2, Ostermontag +1, Himmelfahrt +39, Pfingstmontag +50, Fronleichnam +60; Buß- und Bettag ist der letzte
+> Mittwoch des Rasters vor dem Jahrestag 327 (23. November). Feste Feiertage bleiben auf Tag und Monat. Mit Preisreihe
+> gelten die echten Daten ihres Jahres. Das Raster ist das, das der Leser ohnehin führt: im Gebäudelauf die
+> Wochenendmaske des Ortszeit-Kalenders (Rasterjahr der Solardaten, Vorgabe 2025: Jahrestag 1 = Mittwoch), im
+> Zapfkalender die Kennzeichen der Klimaregion (Testdatenbank: Jahrestag 1 = Donnerstag).
 >
-> **1045 „Prüfprojekt Ost/West Stränge“** (alt R46 → neu R47; Gebäude 10651 ohne Feiertagsland und mit der Vorgabe,
-> also die neun bundeseinheitlichen Feiertage): Alle neun fallen im Klimakalender auf einen Werktag (Jahrestage 1, 108,
-> 111, 121, 149, 160, 276, 359, 360) und tragen jetzt die Sonntagsmenge — am 1. Januar 15,14 → 18,84 kWh —; die
-> übrigen 356 Tage verlieren je rund 0,47 %. Die Jahresmenge des Brauchwassers bleibt 5 006,62 kWh (Abweichung
-> 1,6·10⁻⁷ kWh, `ZapfprofilReferenzprojektWacheTests` hält sie unverändert). 16 der 32 CSV ändern sich
-> (`waermebedarf_brauchwasser.csv`, `wp_warmwasserbedarf.csv`, `waermebedarf.csv`, `waermebedarf_dauerlinie.csv`,
-> `wp_produktion.csv`, `wp_strom.csv`, `wp_waermebedarf.csv`, `kessel_leistung.csv`, `kessel_restwaerme.csv`,
-> `kessel_waermebedarf.csv`, die vier `pv_*`-Reihen, `reststrom_viertelstunde.csv`, `aggregate.csv`): Wärmepumpe
-> 61 170,34 → 61 172,05 kWh (5 175,95 → 5 176,10 Vollbenutzungsstunden), Kessel 20 932,37 → 20 930,66 kWh (3 127 →
-> 3 126 Laufstunden, 6 751 → 6 750 Starts), Reststrom 28,409 → 28,405 MWh, Gasspitze 77,95 → 78,08 kW. Gesamt 879 CSV,
-> 6 071 Skalare. Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS,
-> 835/879 CSV byte-gleich (1045 ganz byte-gleich).
+> **Was wandert** (bisher die Daten des Vorgabejahrs 2025: Karfreitag 108, Ostermontag 111, Himmelfahrt 149,
+> Pfingstmontag 160):
+>
+> - **Gebäude 1051, 1052, 1054** (Mittwochsraster, Ostern 96): Karfreitag 108 → 94, Ostermontag 111 → 97, Himmelfahrt
+>   149 → 135, Pfingstmontag 160 → 146; Buß- und Bettag bliebe 323. Die Kalender mit Feiertagsregeln: der gemeinsame
+>   Kalender von Gebäude 10657 (1051, Referenzbau Konditionierung), der Heizsollwert der Zone 2 von 10658 (1052) und der
+>   Zone 5 von 10660 (1054). Die Feiertage fallen in kältere Tage: Jahresheizwärme 1051 24,328 → 24,281 MWh
+>   (−0,19 %), 1052 53,996 → 53,958 MWh (−0,07 %), 1054 47,576 → 47,557 MWh (−0,04 %); BHKW-Strom 1052 18 150,6 →
+>   18 124,3 kWh, 1054 13 832,9 → 13 818,0 kWh; Reststrom 1051 34,721 → 34,692 MWh. Geändert 23/36 (1051), 16/25 (1052),
+>   18/28 (1054) CSV.
+> - **1045** (Zapfkalender, Donnerstagsraster, Ostern 95, Gebäude 10651 ohne Feiertagsland): Karfreitag 108 → 93,
+>   Ostermontag 111 → 96, Himmelfahrt 149 → 134, Pfingstmontag 160 → 145 tragen die Sonntagsmenge; die Jahresmenge des
+>   Brauchwassers bleibt. Wärmepumpe 61 172,05 → 61 177,72 kWh, Kessel 20 930,66 → 20 924,99 kWh, Reststrom 28,405 →
+>   28,409 MWh, PV-Einspeisung 0,791 → 0,792 MWh (Anker `StromViertelstundenTests` nachgezogen); 16/32 CSV geändert.
+> - **Unberührt** sind 1056 und 1058 bis 1062: Ihre Gebäude tragen keinen Kalender mit Feiertagsregel; die übrigen
+>   Projekte rechnen weder Konditionierungskalender mit Feiertagen noch den Zapfprofilgenerator.
+>
+> Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 835/879 CSV
+> byte-gleich. **Die nächste Basis wird R49** — die Sitzung Gebäudesimulation plant sie für ihre Kältemaschinen-Welle
+> (Projekt 1063).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
->   --ziel Referenzlaeufe/2026-10-09_R47_Zapffeiertage
+>   --ziel Referenzlaeufe/2026-10-09_R48_Gemeinjahr
 > ```
 >
 > Die Regel steht im [Konzept Konditionierungsprofile](../Dokumentation/aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
-> Abschnitt 9.10, und im [Umsetzungskonzept Zapfprofilgenerator](../Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md),
-> Abschnitt 4.2.
+> Abschnitte 3.2 und 9.10 (E114).
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
@@ -1101,13 +1122,13 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > Ferienspalten bleiben Quelle der Leser; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879
 > CSV byte-gleich.
 
-### Die Vorgängerbasis R46 (Gerätegrenzen)
+### Die Vorgängerbasis R47 (Zapffeiertage)
 
-Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen die Testdatenbank `cd50d465…`
-(Schemastand 203, mit den Projekten 1053 bis 1062; die Nachträge bis zum Schemastand 207 ließen sie byte-gleich); mit R47
-aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Gerätegrenzen der Wärmepumpe, Etappe UB‑E3) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R47 sind
-die Feiertage im Zapfkalender (E112); die sechsundzwanzig übrigen Projekte sind byte-gleich, allein 1045 ändert sich.
+Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen die Testdatenbank `ec23b962…`
+(Schemastand 207); mit R48 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Feiertage im Zapfkalender, E112) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R48 ist
+die Konvention des Gemeinjahrs (E114); 1045, 1051, 1052 und 1054 ändern sich, die dreiundzwanzig übrigen Projekte sind
+byte-gleich.
 
 ## Was hier liegt
 
@@ -1624,8 +1645,8 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R47 (siebenundzwanzig Projekte, Feiertage im Zapfkalender): GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz
-byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45
+Stand mit R48 (siebenundzwanzig Projekte, Gemeinjahr-Konvention): GESAMT PASS, 835/879 CSV byte-gleich; der Stand mit
+R47 (Feiertage im Zapfkalender) war GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45
 (Übergabegrenze, Referenzprojekt 1060) war GESAMT PASS, 835/879 CSV
 byte-gleich, `aggregate.csv` bei 26 Projekten byte-gleich (abweichend allein 1057 innerhalb der Toleranz), 1060 ganz
 byte-gleich; die übrigen 44 Dateien tragen Rechenreste innerhalb der Toleranz — die 28 Dateien von R43 und je sieben bis neun Dateien von

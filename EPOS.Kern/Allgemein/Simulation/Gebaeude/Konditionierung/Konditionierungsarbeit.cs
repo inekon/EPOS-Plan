@@ -873,8 +873,8 @@ namespace WindowsFormsApplication1
             double? iwg = (z == null ? vor.Gebaeude.Bestand : vor.AufgeloesterBestand(z)).InterneWaermegewinne;
             if (!iwg.HasValue) return nach;
             double neu = kNach != null
-                ? GeraeteNennwertNachPersonen(iwg.Value, kNach, nach.W0, nach.Referenzjahr)
-                : iwg.Value + PersonenJahresmittelW(kVor, vor.W0, vor.Referenzjahr);
+                ? GeraeteNennwertNachPersonen(iwg.Value, kNach, nach.Kalender)
+                : iwg.Value + PersonenJahresmittelW(kVor, vor.Kalender);
             neu = Math.Round(neu, 4, MidpointRounding.AwayFromZero);
             return nach.MitEbene(ort.Zone, nach.Ebene(ort.Zone).MitBestand(b => b.InterneWaermegewinne = neu));
         }
@@ -1413,18 +1413,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double GeraeteNennwertNachPersonen(double interneWaermegewinneW, Konditionierungskalender personen,
                                                         int w0, int referenzjahr)
+            => GeraeteNennwertNachPersonen(interneWaermegewinneW, personen, new Gemeinjahrkalender(w0, referenzjahr));
+
+        /// <summary>Der Geräte-Nennwert nach der Konvention <paramref name="kalender"/> (E114).</summary>
+        public static double GeraeteNennwertNachPersonen(double interneWaermegewinneW, Konditionierungskalender personen,
+                                                        Gemeinjahrkalender kalender)
         {
             if (personen == null) return interneWaermegewinneW;
-            double rest = interneWaermegewinneW - PersonenJahresmittelW(personen, w0, referenzjahr);
+            double rest = interneWaermegewinneW - PersonenJahresmittelW(personen, kalender);
             return rest > 0.0 ? rest : 0.0;
         }
 
         /// <summary>Das Jahresmittel der Personenwärme [W] — Anteil × Nennwert über 8 760 Stunden.</summary>
         public static double PersonenJahresmittelW(Konditionierungskalender personen, int w0, int referenzjahr)
+            => PersonenJahresmittelW(personen, new Gemeinjahrkalender(w0, referenzjahr));
+
+        /// <summary>Das Jahresmittel der Personenwärme [W] nach der Konvention <paramref name="kalender"/> (E114).</summary>
+        public static double PersonenJahresmittelW(Konditionierungskalender personen, Gemeinjahrkalender kalender)
         {
             if (personen == null) return 0.0;
             double nennwert = personen.Nennwert ?? 0.0;
-            double[] anteil = personen.Auswerten(w0, referenzjahr);
+            double[] anteil = personen.Auswerten(kalender);
             double summe = 0.0;
             foreach (double a in anteil) summe += a;
             return summe * nennwert / anteil.Length;

@@ -10,10 +10,9 @@ namespace WindowsFormsApplication1
     /// (Konzept Simulationsablauf, Abschnitt 17); die Konditionierungsprofile führen
     /// Länderfeiertage weiter als gewöhnliche Perioden (Konzept Konditionierungsprofile 3.2).
     ///
-    /// <para><b>Dieselbe Rechenvorschrift wie <see cref="Feiertage"/>:</b> Das Osterdatum kommt aus
-    /// <see cref="Feiertage.Ostersonntag"/>, Tag und Monat werden über
-    /// <see cref="Feiertage.Gemeinjahrestag"/> auf den Jahrestag des Gemeinjahres abgebildet. Kein
-    /// zweites Kalendermodell: Es gibt weder Perioden noch Ränge, nur eine Menge von Tagen.</para>
+    /// <para><b>Dieselbe Rechenvorschrift wie <see cref="Feiertage"/>:</b> Jede Regel liegt über
+    /// <see cref="Feiertage.Jahrestag"/> nach der Konvention <see cref="Gemeinjahrkalender"/> (E114).
+    /// Kein zweites Kalendermodell: Es gibt weder Perioden noch Ränge, nur eine Menge von Tagen.</para>
     ///
     /// <para><b>Nicht enthalten</b> sind Feiertage, die nur in Teilen eines Landes gelten
     /// (Fronleichnam in Teilen Sachsens und Thüringens, Mariä Himmelfahrt in Teilen Bayerns,
@@ -39,29 +38,32 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Feiertage eines Jahres als Jahrestage</b> (1 … 365, aufsteigend, ohne Doppel):
+        /// <b>Die Feiertage des Gemeinjahrs als Jahrestage</b> (1 … 365, aufsteigend, ohne Doppel) nach der
+        /// Konvention <paramref name="kalender"/>:
         /// die neun bundeseinheitlichen und, mit einer bekannten Länderkennung, die
         /// Landesfeiertage. <c>null</c> oder eine leere Kennung liefert allein die neun.
         /// Eine unbekannte Kennung liefert ebenfalls allein die neun — die Prüfklausel der
         /// Spalte lässt sie nicht zu.
         /// </summary>
-        public static IReadOnlyList<int> Jahrestage(string bundesland, int referenzjahr)
+        public static IReadOnlyList<int> Jahrestage(string bundesland, Gemeinjahrkalender kalender)
         {
             var tage = new SortedSet<int>();
             foreach (string regel in Feiertage.Regeln)
             {
-                int t = Feiertage.Jahrestag(regel, referenzjahr);
+                int t = Feiertage.Jahrestag(regel, kalender);
                 if (t > 0) tage.Add(t);
             }
 
             if (Bekannt(bundesland))
-                foreach (int t in Landestage(bundesland, referenzjahr))
+                foreach (string regel in Regeln(bundesland))
+                {
+                    int t = Feiertage.Jahrestag(regel, kalender);
                     if (t > 0) tage.Add(t);
+                }
 
             return new List<int>(tage);
         }
 
-        /// <summary>Die Landesfeiertage allein — ohne die neun bundeseinheitlichen.</summary>
         /// <summary>
         /// <b>Die Feiertagsregeln eines Landes</b> (über die bundeseinheitlichen hinaus) in der Reihenfolge von
         /// <see cref="DbWerte.KOND_FEIERTAGE_LAENDER"/>; leer für ein unbekanntes Land oder <c>null</c>.
@@ -92,46 +94,6 @@ namespace WindowsFormsApplication1
                 case DbWerte.KOND_FEIERTAG_ALLERHEILIGEN: return bl == "BW" || bl == "BY" || bl == "NW" || bl == "RP" || bl == "SL";
                 case DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG: return bl == "SN";
                 default: return false;
-            }
-        }
-        private static IEnumerable<int> Landestage(string bl, int jahr)
-        {
-            DateTime ostern = Feiertage.Ostersonntag(jahr);
-
-            // Heilige Drei Könige, 6. Januar
-            if (bl == "BW" || bl == "BY" || bl == "ST") yield return Feiertage.Gemeinjahrestag(1, 6);
-
-            // Internationaler Frauentag, 8. März
-            if (bl == "BE" || bl == "MV") yield return Feiertage.Gemeinjahrestag(3, 8);
-
-            // Fronleichnam, Ostersonntag + 60 Tage
-            if (bl == "BW" || bl == "BY" || bl == "HE" || bl == "NW" || bl == "RP" || bl == "SL")
-            {
-                DateTime f = ostern.AddDays(60);
-                yield return Feiertage.Gemeinjahrestag(f.Month, f.Day);
-            }
-
-            // Mariä Himmelfahrt, 15. August (landesweit nur im Saarland)
-            if (bl == "SL") yield return Feiertage.Gemeinjahrestag(8, 15);
-
-            // Weltkindertag, 20. September
-            if (bl == "TH") yield return Feiertage.Gemeinjahrestag(9, 20);
-
-            // Reformationstag, 31. Oktober
-            if (bl == "BB" || bl == "HB" || bl == "HH" || bl == "MV" || bl == "NI" ||
-                bl == "SN" || bl == "ST" || bl == "SH" || bl == "TH")
-                yield return Feiertage.Gemeinjahrestag(10, 31);
-
-            // Allerheiligen, 1. November
-            if (bl == "BW" || bl == "BY" || bl == "NW" || bl == "RP" || bl == "SL")
-                yield return Feiertage.Gemeinjahrestag(11, 1);
-
-            // Buß- und Bettag: der Mittwoch vor dem 23. November
-            if (bl == "SN")
-            {
-                DateTime d = new DateTime(jahr, 11, 22);
-                while (d.DayOfWeek != DayOfWeek.Wednesday) d = d.AddDays(-1);
-                yield return Feiertage.Gemeinjahrestag(d.Month, d.Day);
             }
         }
     }

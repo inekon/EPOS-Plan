@@ -64,7 +64,8 @@ namespace WindowsFormsApplication1
             katalog ??= Katalog();
 
             var vorhinweise = new List<ZapfHinweis>();
-            IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog, vorhinweise);
+            IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog, vorhinweise,
+                                                         wochentagJan1);
             // Die Anzeige (4.0, 4.6): Laufangabe des Dialogs, sonst die Einstellung, sonst die Vorgabe des
             // Parametersatzes; eine ungültige Einstellung nennt ein Hinweis, dann gilt die Vorgabe. Ob der
             // Wert taugt (θ_Anzeige über θ̄_KW, Schwelle nicht negativ), prüft der Rechenweg.
@@ -382,7 +383,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static IReadOnlyList<ZonenStand> MitGebaeude(int idProjekt, IReadOnlyList<ZonenStand> zonen,
                                                              IReadOnlyList<Nutzungsart> katalog,
-                                                             ICollection<ZapfHinweis> hinweise)
+                                                             ICollection<ZapfHinweis> hinweise, int wochentagJan1)
         {
             var gebaeude = new Dictionary<int, GebaeudeAngaben>();
             var flaechenteiler = new Dictionary<int, int>();
@@ -399,9 +400,10 @@ namespace WindowsFormsApplication1
                     flaechenteiler[g] = (flaechenteiler.TryGetValue(g, out int n) ? n : 0) + 1;
             }
             // Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag (E112): Jede Zone bekommt die
-            // Feiertage des Kerns für das Bezugsjahr — mit gebundenem Gebäude nach dessen Feiertagsland, sonst die
+            // Feiertage des Kerns nach der Konvention des Gemeinjahrs (E114) — Wochentagsraster der Klimaregion und,
+            // nur mit Preisreihe, deren Jahr —, mit gebundenem Gebäude nach dessen Feiertagsland, sonst die
             // bundeseinheitlichen.
-            int bezugsjahr = Konditionierungdatenweg.Bezugsjahr(idProjekt);
+            Gemeinjahrkalender bezugsjahr = Gemeinjahrkalender.Aus(wochentagJan1, Konditionierungdatenweg.Bezugsjahr(idProjekt));
             IReadOnlyList<int> bund = null;
             var ergebnis = new List<ZonenStand>(zonen.Count);
             foreach (ZonenStand z in zonen)
@@ -417,7 +419,7 @@ namespace WindowsFormsApplication1
                 if (a.FerienAktiv && !FerienGesetzt(z))
                     neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
                 if (a.Wochenendtage.HasValue) neu = neu with { Wochenendtage = a.Wochenendtage };
-                // Die Feiertage aus den Regeln des Kerns für das Bezugsjahr, bundeseinheitlich und nach dem Feiertagsland
+                // Die Feiertage aus den Regeln des Kerns nach der Konvention, bundeseinheitlich und nach dem Feiertagsland
                 // des Gebäudes — unter jeder Wochenendmaske (Zapfkalender.Kennzeichen).
                 neu = neu with { Feiertage = Landesfeiertage.Jahrestage(a.Feiertagsland, bezugsjahr) };
                 double rest = a.FlaecheM2.HasValue
