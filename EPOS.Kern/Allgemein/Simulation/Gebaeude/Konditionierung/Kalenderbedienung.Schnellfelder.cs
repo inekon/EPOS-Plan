@@ -59,10 +59,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Ferienzeiträume setzen</b> (Konzept 7.8, E110): beliebig viele Datumsbereiche (Beginn nach Ende heißt
         /// über den Jahreswechsel). Die ersten vier gehen in <c>Ferienbeginn/-ende_1…4</c> des Gebäudes (die übrigen
-        /// Spalten werden 0 = „aus") — sie lesen der Generator, der Tagesbilanz-Weg und der Zapfkalender —, danach wird
-        /// der Matrixbereich jedes angelegten Kalenders von Gebäude und Zonen erneuert („Matrix erneut", P12). Ab dem
-        /// fünften wird jeder Zeitraum in jedem angelegten Kalender, der eine Ferienperiode trägt, eine Zeile „Ferien n"
-        /// mit deren Angabe am untersten freien Platz des Eigenbands; alte Ferienzeilen fallen.
+        /// Spalten werden 0 = „aus"), die weiteren in die Ferienliste des gemeinsamen Kalenders ab Rang 204; danach wird
+        /// der Matrixbereich jedes angelegten Kalenders von Gebäude und Zonen erneuert („Matrix erneut", P12).
         /// </summary>
         public static Konditionierungsschritt FerienSetzen(Konditionierungsarbeitsstand stand, IReadOnlyList<(int Beginn, int Ende)> zeitraeume)
             => FerienlisteSetzen(stand, (zeitraeume ?? Array.Empty<(int, int)>())
@@ -72,9 +70,9 @@ namespace WindowsFormsApplication1
         /// <b>Die Ferienliste</b> (Konzept 7.8, Stufe 2): beliebig viele benannte Ferienzeiträume. Die ersten vier stehen in
         /// den Gebäudespalten <c>Ferienbeginn/-ende_1…4</c> (ihr Spiegel im gemeinsamen Kalender, Rang 200 … 203, schreibt
         /// der Trigger), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204
-        /// (<see cref="Konditionierungsstand.Ferienliste"/>). Solange die Leser des Laufs die Ferien aus den vier Spalten
-        /// lesen, wirken die weiteren wie in Stufe 1 als Zeilen „Ferien n" mit der Ferienangabe je Größe; der Matrixbereich
-        /// jedes Kalenders folgt („Matrix erneut").
+        /// (<see cref="Konditionierungsstand.Ferienliste"/>). Der Generator liest die ganze Liste und macht aus jedem
+        /// Zeitraum eine FERIEN-Periode auf dessen Rang (200 … 309) mit der Ferienangabe der Größe; der Matrixbereich jedes
+        /// Kalenders folgt („Matrix erneut"). Zeilen „Ferien n" der Stufe 1 im Eigenband fallen dabei.
         /// </summary>
         public static Konditionierungsschritt FerienlisteSetzen(Konditionierungsarbeitsstand stand, IReadOnlyList<Ferienzeile> ferien)
         {
@@ -94,7 +92,8 @@ namespace WindowsFormsApplication1
                     return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KOND_MSG_PERIODE_TAG,
                         beginn.ToString(CultureInfo.InvariantCulture), ende.ToString(CultureInfo.InvariantCulture)));
 
-            // 1. Die vier Gebäudespalten.
+            // 1. Die vier Gebäudespalten und die Ferienliste dahinter (gemeinsamer Kalender ab Rang 204); die Liste geht
+            //    mit in die Bestandsfelder, aus denen der Generator die FERIEN-Perioden auf Rang 200 … 309 macht.
             Konditionierungsarbeitsstand a = stand.MitGebaeude(stand.Gebaeude.MitBestand(b =>
             {
                 for (int k = 0; k < Matrixeingang.FERIENZEITRAEUME; k++)
@@ -103,18 +102,11 @@ namespace WindowsFormsApplication1
                     b.Ferienende[k] = k < z.Count ? z[k].Ende : 0.0;
                 }
             }));
+            a = a.MitGebaeude(a.Gebaeude.MitFerienliste(liste.Count > Matrixeingang.FERIENZEITRAEUME
+                ? liste.Skip(Matrixeingang.FERIENZEITRAEUME).Select(f => new Ferienzeile(f.Name.Trim(), f.Beginn, f.Ende)).ToList()
+                : new List<Ferienzeile>()));
 
-            // 2. Der Matrixbereich jedes angelegten Kalenders folgt — am Gebäude und an jeder Zone.
-            foreach (long? zone in Ebenenorte(a))
-                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
-                {
-                    if (a.Ebene(zone)?.Kalender(g) == null) continue;
-                    Konditionierungsschritt s = Konditionierungsarbeit.MatrixErneut(a, new Konditionierungsort(g, zone));
-                    if (!s.Ok) return s;
-                    a = s.Stand;
-                }
-
-            // 3. Die Ferienzeilen ab der fünften.
+            // 2. Die Zeilen „Ferien n" der Stufe 1 fallen — der Generator trägt die Ferienliste selbst.
             foreach (long? zone in Ebenenorte(a))
             {
                 Konditionierungsstand ebene = a.Ebene(zone);
@@ -125,33 +117,22 @@ namespace WindowsFormsApplication1
                     var perioden = k.Perioden
                         .Where(r => Konditionierungsarbeit.IstMatrixbereich(r) || !IstFerienzeile(Zuordnungsschluessel.Von(r)))
                         .ToList();
-                    Kalenderregel ferienregel = k.Perioden.FirstOrDefault(r => string.Equals(r.Art, DbWerte.KOND_ART_FERIEN, StringComparison.Ordinal));
-                    if (ferienregel != null)
-                        for (int i = Matrixeingang.FERIENZEITRAEUME; i < z.Count; i++)
-                        {
-                            int rang = Standardfahrplan.RANG_EIGEN;
-                            while (rang <= Standardfahrplan.RANG_EIGEN_LETZTER && perioden.Any(r => r.Rang == rang)) rang++;
-                            if (rang > Standardfahrplan.RANG_EIGEN_LETZTER)
-                                return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
-                                    MyResource.Resource.KOND_MSG_RANG_BAND_VOLL,
-                                    Standardfahrplan.RANG_EIGEN.ToString(CultureInfo.InvariantCulture),
-                                    Standardfahrplan.RANG_EIGEN_LETZTER.ToString(CultureInfo.InvariantCulture)));
-                            perioden.Add(Kalenderregel.Zeitraum(rang, DbWerte.KOND_ART_ZEITRAUM, Ferienname(i + 1),
-                                                                z[i].Beginn, z[i].Ende, ferienregel.Angabe));
-                        }
-                    if (perioden.Count > Kalenderregel.PERIODEN_MAX)
-                        return Konditionierungsschritt.Fehler(string.Format(CultureInfo.CurrentCulture,
-                            MyResource.Resource.KOND_MSG_PERIODEN_ZU_VIELE,
-                            perioden.Count.ToString(CultureInfo.InvariantCulture),
-                            Kalenderregel.PERIODEN_MAX.ToString(CultureInfo.InvariantCulture)));
-                    var neu = new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden);
-                    if (!Kalendervergleich.KalenderGleich(k, neu)) ebene = ebene.MitKalender(g, neu, ebene.Herkunft(g));
+                    if (perioden.Count == k.Perioden.Count) continue;
+                    ebene = ebene.MitKalender(g, new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden),
+                                              ebene.Herkunft(g));
                 }
                 a = a.MitEbene(zone, ebene);
             }
-            a = a.MitGebaeude(a.Gebaeude.MitFerienliste(liste.Count > Matrixeingang.FERIENZEITRAEUME
-                ? liste.Skip(Matrixeingang.FERIENZEITRAEUME).Select(f => new Ferienzeile(f.Name.Trim(), f.Beginn, f.Ende)).ToList()
-                : new List<Ferienzeile>()));
+
+            // 3. Der Matrixbereich jedes angelegten Kalenders folgt — am Gebäude und an jeder Zone.
+            foreach (long? zone in Ebenenorte(a))
+                foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                {
+                    if (a.Ebene(zone)?.Kalender(g) == null) continue;
+                    Konditionierungsschritt s = Konditionierungsarbeit.MatrixErneut(a, new Konditionierungsort(g, zone));
+                    if (!s.Ok) return s;
+                    a = s.Stand;
+                }
             return Konditionierungsschritt.Gut(a);
         }
 

@@ -508,6 +508,8 @@ namespace WindowsFormsApplication1
                 geschrieben = true;
             }
             if (stufe2 && Kalendergemeinschaft.WochenEntfernen(v, alt.Wochen, neu.Wochen)) geschrieben = true;
+            // Zeilen „Ferien n" der Stufe 1 neben der Ferienliste werden die FERIEN-Periode ihres Rangs (Stufe 2, Teil B).
+            if (stufe2 && Kalendergemeinschaft.FerienzeilenBereinigen(v) > 0) geschrieben = true;
 
             if (mitBestand)
             {

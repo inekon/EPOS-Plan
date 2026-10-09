@@ -96,6 +96,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(w.Id, b.Gebaeude.Gemeinsam.Single(p => p.Regel.Bezeichner == "Schicht").Regel.Angabe.IdWoche);
             Assert.Equal(3, b.Gebaeude.Gemeinsam.Count(Kalenderbedienung.IstLandesregel));
             Assert.Equal("Herbst", Assert.Single(b.Gebaeude.Ferienliste).Name);
+            // Der Generator trägt den fünften Zeitraum selbst (FERIEN auf Rang 204 mit der Ferienangabe der Größe) — keine
+            // Zeilen „Ferien n" im Eigenband, weder im Arbeitsstand noch in der Datenbank.
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Konditionierungsperiode p JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender " +
+                                 "WHERE k.ID_Gebaeude = ? AND p.Rang >= 310 AND p.Bezeichner LIKE 'Ferien %'", gebaeude));
+            foreach (Konditionierungsgroesse x in Konditionierungsgroessen.Alle)
+            {
+                Konditionierungskalender kal = b.Gebaeude.Kalender(x);
+                if (kal == null || !kal.Perioden.Any(r => r.Art == DbWerte.KOND_ART_FERIEN && r.Rang == Standardfahrplan.RANG_FERIEN)) continue;
+                Kalenderregel f5 = kal.Perioden.Single(r => r.Rang == Kalendergemeinschaft.RANG_FERIENLISTE);
+                Assert.Equal(DbWerte.KOND_ART_FERIEN, f5.Art);
+                Assert.Equal((290, 295), (f5.Beginn, f5.Ende));
+                Assert.Equal(Rastertagart.Ferien, Kalenderbedienung.Jahresraster(b, new Konditionierungsort(x))[291].Art);
+            }
             Assert.Equal(48, b.Gebaeude.Bestand.Wochenendtage);
             Assert.Equal("BY", b.Gebaeude.Bestand.Feiertagsland);
             Assert.Equal(Kalenderbedienung.Zuordnungen(a, null).Count, Kalenderbedienung.Zuordnungen(b, null).Count);
