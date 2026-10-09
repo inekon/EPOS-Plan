@@ -96938,6 +96938,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW „{0}“: {1} h ohne Betrieb, der Rücklauf lag an oder über der Rücklaufgrenze {2} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Booster: Die Anlage {0} bezieht ihre Quellwärme aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C, {5} Schicht(en){6}) statt mit einem Jahresprofil zu rechnen. Unterschreitet sie die unterste Kennlinien-Stützstelle, gilt diese Stützstelle (Kappung, keine Extrapolation). ähnelt.
         /// </summary>
         public static string SIMENG_BOOSTER_KOPPLUNG {
@@ -99089,6 +99098,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung unter der Mindestspreizung (taktet) {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_GRUND_SPREIZUNG_TAKT {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_GRUND_SPREIZUNG_TAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höchstvorlauf der Wärmepumpe {0} h ähnelt.
         /// </summary>
         public static string SIMENG_WP_GRUND_UEBERGABE {
@@ -99130,6 +99148,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_KENNLINIEN_FEHLEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_KENNLINIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Einbindung über einen Puffer — gerechnet wird die Ladeseite mit der größten Spreizung; die Mischung an der Entladeseite wird nicht gerechnet (Näherung). ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_PUFFER_ENTLADESEITE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_PUFFER_ENTLADESEITE", resourceCulture);
             }
         }
         

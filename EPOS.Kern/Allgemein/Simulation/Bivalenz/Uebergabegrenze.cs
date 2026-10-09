@@ -171,6 +171,31 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Übergabegrenze am gemischten Vorlauf</b> (Weiche mit ṁ_WP &lt; ṁ_HK, Fachkonzept 4.4 und 2.8): die
+        /// Wärmepumpe fährt θ_WP,max, der Heizkreisvorlauf ist die Mischung θ_V,HK = θ_R + (θ_WP,max − θ_R)/r mit
+        /// r = ṁ_HK/ṁ_WP &gt; 1 (je Zone derselbe Anteil des Stroms der Wärmepumpe). Mit Φ = ṁ_WP·(θ_WP,max − θ_R) wird
+        /// die mittlere Heizflächentemperatur θ_WP,max − Φ·(r − ½)/W_H — die zweite Gleichung
+        /// <code>
+        /// f(Φ) = Φ_N·((θ_WP,max − Φ·(r − ½)/W_H − θ_i)/Δθ_m,N)^n − Φ = 0
+        /// </code>
+        /// mit derselben Nullstellenroutine; f fällt streng, die Nullstelle ist eindeutig. r ≤ 1 rechnet wie
+        /// <see cref="Zone(Uebergabezone, double, double, double)"/> (ungemischt).
+        /// </summary>
+        internal static Zonengrenze ZoneGemischt(Uebergabezone z, double hoechstvorlaufC, double raumC, double r,
+                                                 double startwert = double.NaN)
+        {
+            if (z == null) throw new ArgumentNullException(nameof(z));
+            if (!(r > 1.0)) return Zone(z, hoechstvorlaufC, raumC, startwert);
+            bool begrenzt = hoechstvorlaufC < z.AuslegungVorlaufC;
+            double a = hoechstvorlaufC - raumC;
+            if (!(a > 0.0)) return new Zonengrenze(0.0, hoechstvorlaufC, 0.0, begrenzt, 0, false);
+            double phi = Nullstelle(z.PhiN, z.Exponent, a, (r - 0.5) / z.WH, z.DeltaThetaMN, startwert,
+                                    out int schritte, out bool bisektion);
+            double ruecklauf = hoechstvorlaufC - phi * r / z.WH;
+            return new Zonengrenze(phi, ruecklauf, hoechstvorlaufC - ruecklauf, begrenzt, schritte, bisektion);
+        }
+
+        /// <summary>
         /// Die Grenze eines Gebäudes: Summe der Zonengrenzen; ohne Zonen rechnet
         /// <paramref name="gebaeude"/> als eine Zone.
         /// </summary>

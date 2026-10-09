@@ -49093,6 +49093,15 @@ Chart</value>
   <data name="SIMENG_WP_GRUND_RUECKLAUF_MAX" xml:space="preserve">
     <value>Rücklaufgrenze {0} h</value>
   </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_TAKT" xml:space="preserve">
+    <value>Spreizung unter der Mindestspreizung (taktet) {0} h</value>
+  </data>
+  <data name="SIMENG_WP_PUFFER_ENTLADESEITE" xml:space="preserve">
+    <value>„{0}“: Einbindung über einen Puffer — gerechnet wird die Ladeseite mit der größten Spreizung; die Mischung an der Entladeseite wird nicht gerechnet (Näherung).</value>
+  </data>
+  <data name="SIMENG_BHKW_RUECKLAUF_MAX" xml:space="preserve">
+    <value>BHKW „{0}“: {1} h ohne Betrieb, der Rücklauf lag an oder über der Rücklaufgrenze {2} °C.</value>
+  </data>
   <data name="SIMENG_WP_BETRIEBSBEREICHE" xml:space="preserve">
     <value>Betriebsbereiche „{0}“: Wärmepumpe allein {1} h, parallel {2} h, Vorwärmung {3} h, nur Kessel {4} h; begrenzt durch {5}.</value>
   </data>

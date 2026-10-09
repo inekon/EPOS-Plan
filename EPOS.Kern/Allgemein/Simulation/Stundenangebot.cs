@@ -116,6 +116,12 @@ namespace WindowsFormsApplication1
             return false;
         }
 
+        /// <summary>
+        /// Die Kapazität am Vorlauf bis zum Vorlaufangebot nach den Grenzen des Erzeugers (UB‑E3: Hydraulik- und
+        /// Rücklaufgrenze der Wärmepumpe mit Bivalenzobjekt); Vorgabe: unverändert.
+        /// </summary>
+        protected virtual double KapazitaetBegrenzen(int stunde, double vorlaufC, double kapazitaet) => kapazitaet;
+
         public Erzeugerangebot Abfragen(int stunde, double vorlaufC)
         {
             double faktor = Verfuegbarkeit(Fahrplan, stunde, out Verfuegbarkeitsgrund grund, out double zeitprogrammAnteil);
@@ -143,6 +149,7 @@ namespace WindowsFormsApplication1
             {
                 kapazitaet = KapazitaetBei(stunde, vorlaufC, out nichtErreicht);
                 if (!(kapazitaet > 0.0) || double.IsInfinity(kapazitaet)) kapazitaet = 0.0;
+                if (kapazitaet > 0.0) kapazitaet = KapazitaetBegrenzen(stunde, vorlaufC, kapazitaet);
             }
             return new Erzeugerangebot(kapazitaet, faktor * kapazitaet, grund, faktor > 0.0, angebot, nichtErreicht,
                                        zeitprogrammAnteil * kapazitaet);
@@ -302,6 +309,34 @@ namespace WindowsFormsApplication1
         /// Kreises, Umsetzungskonzept 9).
         /// </summary>
         internal Bivalenzmodul Bivalenz { get; set; }
+
+        /// <summary>
+        /// UB‑E3 (Umsetzungskonzept 9, Prüforakel des Kreises): unter θ_WP,max begrenzen in <c>Angebot(h, V)</c> die
+        /// <b>Hydraulikgrenze</b> (Φ_Hydraulik je Einbindung, <see cref="Hydraulikgrenze"/>) und die <b>Rücklaufgrenze</b>
+        /// (0 über θ_R,grenz, R744-Faktor f auf die Leistung, <see cref="Ruecklaufgrenze"/>) — beide hängen am
+        /// Kreisrücklauf des letzten Durchlaufs (<see cref="Bivalenzmodul.KreisruecklaufC"/>, Rückfall die Vorstunde) und
+        /// laufen so über die Abbruchschwellen des Kreises. Benannt nicht gerechnet: der R744-Faktor auf den COP im Kreis
+        /// (die Stromseite rechnet die Kaskadenstunde) und die unterste Pufferzone (am Puffer ruht die Rücklaufgrenze im
+        /// Angebot). Ohne Bivalenzobjekt unverändert (Bestandsweg).
+        /// </summary>
+        protected override double KapazitaetBegrenzen(int stunde, double vorlaufC, double kapazitaet)
+        {
+            Bivalenzmodul b = Bivalenz;
+            if (b == null || b.Grenzen == null) return kapazitaet;
+            return b.KapazitaetUnterHoechstvorlauf(stunde, vorlaufC, Kreisruecklauf(b, stunde), kapazitaet);
+        }
+
+        private static double Kreisruecklauf(Bivalenzmodul b, int stunde)
+        {
+            double[] r = b.KreisruecklaufC;
+            double ruecklauf = double.NaN;
+            if (r != null && stunde >= 0 && stunde < r.Length)
+            {
+                ruecklauf = r[stunde];
+                if (double.IsNaN(ruecklauf) && stunde > 0) ruecklauf = r[stunde - 1];
+            }
+            return ruecklauf;
+        }
 
         protected override bool KapazitaetUeberAngebot(int stunde, double vorlaufC, out double kapazitaet)
         {

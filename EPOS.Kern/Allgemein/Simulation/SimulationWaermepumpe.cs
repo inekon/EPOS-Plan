@@ -1452,8 +1452,19 @@ namespace WindowsFormsApplication1
             IReadOnlyList<int> ids = projekt.GebaeudeIds;
             Func<int, int, double> raum = BivalenzRaumtemperatur;
             Func<int, int, double> jeZone = raum == null || ids == null ? null : (z, h) => z < ids.Count ? raum(ids[z], h) : double.NaN;
-            var modul = new Bivalenzmodul(g.Zonen, jeZone, hoechstvorlauf, Bivalenzvorgaben.SPREIZUNG_MIN_K,
-                                          model.Vorwaermbetrieb, art, zweiter, VorDemKessel || !KesselInKaskade);
+            // UB-E3 (Umsetzungskonzept 3.2 Schritt 1): die Geraetegrenzen aus der Projektkopie Tab_WP (wie die Taktwerte),
+            // leere Spalten nach der Kaeltemittelklasse; Nennleistung fuer den Nennstrom der Hydraulikgrenze.
+            Geraetespalten spalten = null;
+            try { spalten = WaermepumpeGeraeteCtrl.GeraetespaltenLesen(model.ID_WP, false); }
+            catch (Exception) { spalten = null; }
+            Geraetegrenzen grenzen = Geraetegrenzen.Bilden(spalten, hoechstvorlauf);
+            double nennleistung = model.Grenzleistung > 0 ? model.Grenzleistung : double.NaN;
+            var modul = new Bivalenzmodul(g.Zonen, jeZone, hoechstvorlauf, grenzen.SpreizungMinK,
+                                          model.Vorwaermbetrieb, art, zweiter, VorDemKessel || !KesselInKaskade,
+                                          grenzen, model.Einbindung, nennleistung);
+            if (modul.Einbindung == Einbindungsart.Puffer)
+                SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                    MyResource.Resource.SIMENG_WP_PUFFER_ENTLADESEITE, model.Bezeichner ?? ""));
             try
             {
                 double? abschalt = art == Bivalenzbetriebsart.Parallel ? null : (double?)model.Abschaltpunkt;
@@ -1464,7 +1475,7 @@ namespace WindowsFormsApplication1
                     Uebergabezone kurve = g.Zonen.OrderByDescending(z => z.AuslegungVorlaufC).First();
                     modul.Punkte = Bivalenzrechner.Punkte(g.HeizlastN, g.AuslegungAussenC, g.AuslegungRaumC,
                         modul.UebergabeMaxAuslegungKw, new Kennfeldgerade(kennfeld), kurve, hoechstvorlauf,
-                        Bivalenzvorgaben.SPREIZUNG_MIN_K, model.Vorwaermbetrieb, art, abschalt);
+                        grenzen.SpreizungMinK, model.Vorwaermbetrieb, art, abschalt);
                 }
             }
             catch (ArgumentException)
@@ -1756,6 +1767,8 @@ namespace WindowsFormsApplication1
                 Grund(Verfuegbarkeitsgrund.SpreizungMax, MyResource.Resource.SIMENG_WP_GRUND_SPREIZUNG_MAX);
                 Grund(Verfuegbarkeitsgrund.SpreizungMin, MyResource.Resource.SIMENG_WP_GRUND_SPREIZUNG_MIN);
                 Grund(Verfuegbarkeitsgrund.RuecklaufMax, MyResource.Resource.SIMENG_WP_GRUND_RUECKLAUF_MAX);
+                if (b.SpreizungUnterschrittenStunden > 0)
+                    gruende.Add(string.Format(k, MyResource.Resource.SIMENG_WP_GRUND_SPREIZUNG_TAKT, b.SpreizungUnterschrittenStunden));
                 SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(k,
                     MyResource.Resource.SIMENG_WP_BETRIEBSBEREICHE,
                     wp_model[i].Bezeichner ?? "",
@@ -2343,8 +2356,17 @@ namespace WindowsFormsApplication1
                             : heizkanalGesperrt ? Verfuegbarkeitsgrund.Umschaltung : Verfuegbarkeitsgrund.KeineBegrenzung;
                         double ruecklaufStunde = Heizkreisruecklauf != null && stunde < Heizkreisruecklauf.Length
                             ? Heizkreisruecklauf[stunde] : double.NaN;
+                        // UB-E3: am Puffer der Ruecklauf der Waermepumpe aus der untersten Pufferzone (Stundenbeginn), wie der
+                        // Kollektoreintritt der Solarthermie.
+                        double pufferUnten = double.NaN;
+                        if (bivalenz.Einbindung == Einbindungsart.Puffer)
+                        {
+                            SimulationPufferspeicher sp = ErsterAuftrag(auftraege[index])?.Speicher;
+                            if (sp != null) pufferUnten = sp.T_unten;
+                        }
                         Bereichsergebnis b = bivalenz.Bereich(stunde, nichtGrund == Verfuegbarkeitsgrund.KeineBegrenzung, nichtGrund,
-                                                              Heizkreisvorlauf[stunde], ruecklaufStunde, rest[Kanal.HEIZUNG], kennfeldKw);
+                                                              Heizkreisvorlauf[stunde], ruecklaufStunde, rest[Kanal.HEIZUNG], kennfeldKw,
+                                                              pufferUnten);
                         if (b.Bereich == Betriebsbereich.NichtVerfuegbar || b.Bereich == Betriebsbereich.NurKessel)
                         {
                             result[PTHERM] = 0;
@@ -2352,8 +2374,26 @@ namespace WindowsFormsApplication1
                         }
                         else if (b.AmHoechstvorlauf)
                         {
+                            // UB-E3: R744-Faktor auf den COP (die Leistung traegt ihn schon), Strom = Leistung/COP.
+                            if (b.RuecklaufFaktor < 1.0) result[COP] *= b.RuecklaufFaktor;
                             result[PTHERM] = b.LeistungKw;
                             result[PEL] = b.LeistungKw > 0 && result[COP] > 0 ? b.LeistungKw / result[COP] : 0;
+                        }
+                        else
+                        {
+                            // UB-E3 (FK 4.4): unter dem Hoechstvorlauf der R744-Faktor auf Leistung und COP bei
+                            // unveraenderter Stromaufnahme, danach die Hydraulikgrenze (Strom = Leistung/COP). Ohne
+                            // Abwertung und ohne bindende Hydraulik bleibt die Kennfeldkapazitaet unberuehrt (Bestand).
+                            if (b.RuecklaufFaktor < 1.0)
+                            {
+                                result[PTHERM] *= b.RuecklaufFaktor;
+                                result[COP] *= b.RuecklaufFaktor;
+                            }
+                            if (b.LeistungKw < result[PTHERM])
+                            {
+                                result[PTHERM] = b.LeistungKw > 0 ? b.LeistungKw : 0;
+                                result[PEL] = result[PTHERM] > 0 && result[COP] > 0 ? result[PTHERM] / result[COP] : 0;
+                            }
                         }
                         if (!double.IsNaN(b.VorwaermvorlaufC)
                             && (double.IsNaN(Vorwaermvorlauf[stunde]) || b.VorwaermvorlaufC > Vorwaermvorlauf[stunde]))

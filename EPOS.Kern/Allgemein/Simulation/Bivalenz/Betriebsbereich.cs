@@ -54,8 +54,14 @@ namespace WindowsFormsApplication1
         /// <summary>Φ_UE,max — die Übergabegrenze bei θ_WP,max und der Raumtemperatur der Stunde; NaN = ohne.</summary>
         internal double UebergabeMaxKw { get; init; }
 
-        /// <summary>Φ_Hydraulik — in UB‑E2 unbegrenzt (+∞); die Grenze kommt mit UB‑E3.</summary>
+        /// <summary>Φ_Hydraulik (<see cref="Hydraulikgrenze"/>); +∞ oder NaN = unbegrenzt (ohne Hydraulikdaten).</summary>
         internal double HydraulikKw { get; init; }
+
+        /// <summary>
+        /// Der Grund, wenn Φ_Hydraulik bindet (<c>SPREIZUNG_MAX</c>, an der Weiche auch <c>UEBERGABE_HOECHSTVORLAUF</c>);
+        /// <see cref="Verfuegbarkeitsgrund.KeineBegrenzung"/> heißt <c>SPREIZUNG_MAX</c>.
+        /// </summary>
+        internal Verfuegbarkeitsgrund HydraulikGrund { get; init; }
 
         /// <summary>W_H = Σ Φ_N/(θ_V,N − θ_R,N) der gekoppelten Übergabe [Leistung je K].</summary>
         internal double WH { get; init; }
@@ -89,7 +95,17 @@ namespace WindowsFormsApplication1
     /// <param name="KaskadeVerletzt">Vorwärmbetrieb verlangt, die Wärmepumpe steht aber hinter dem Kessel (Stunde als B4).</param>
     internal readonly record struct Bereichsergebnis(Betriebsbereich Bereich, double LeistungKw, double Anteil,
                                                      Verfuegbarkeitsgrund Grund, double VorwaermvorlaufC,
-                                                     bool AmHoechstvorlauf, bool KaskadeVerletzt);
+                                                     bool AmHoechstvorlauf, bool KaskadeVerletzt)
+    {
+        /// <summary>R744-Faktor f auf Leistung und COP (UB‑E3, <see cref="Ruecklaufgrenze"/>); 1 ohne Abwertung.</summary>
+        internal double RuecklaufFaktor { get; init; } = 1.0;
+
+        /// <summary>σ_WP &lt; σ_min in einer Stunde mit laufender Wärmepumpe (B1/B2): die Stunde taktet (Zähler).</summary>
+        internal bool Taktet { get; init; }
+
+        /// <summary>θ_R,WP — der Rücklauf zur Wärmepumpe der Stunde (NaN = unbekannt).</summary>
+        internal double RuecklaufWpC { get; init; } = double.NaN;
+    }
 
     internal static partial class Bivalenzrechner
     {
@@ -113,6 +129,8 @@ namespace WindowsFormsApplication1
         internal static Bereichsergebnis Bereich(in Bereichseingang e)
         {
             double hydraulik = double.IsNaN(e.HydraulikKw) ? double.PositiveInfinity : e.HydraulikKw;
+            Verfuegbarkeitsgrund hg = e.HydraulikGrund == Verfuegbarkeitsgrund.KeineBegrenzung
+                ? Verfuegbarkeitsgrund.SpreizungMax : e.HydraulikGrund;
             if (!e.Verfuegbar)
                 return new Bereichsergebnis(Betriebsbereich.NichtVerfuegbar, 0.0, 0.0, e.GrundNichtVerfuegbar,
                                             double.NaN, false, false);
@@ -120,7 +138,7 @@ namespace WindowsFormsApplication1
             if (!(e.VorlaufSollC > e.HoechstvorlaufC))
             {
                 double grenz = Math.Min(e.KennfeldKw, hydraulik);
-                Verfuegbarkeitsgrund g = hydraulik < e.KennfeldKw ? Verfuegbarkeitsgrund.SpreizungMax : Verfuegbarkeitsgrund.KeineBegrenzung;
+                Verfuegbarkeitsgrund g = hydraulik < e.KennfeldKw ? hg : Verfuegbarkeitsgrund.KeineBegrenzung;
                 if (!(e.BedarfKw > grenz))
                     return new Bereichsergebnis(Betriebsbereich.WpAllein, grenz, 1.0, g, double.NaN, false, false);
                 if (e.Betriebsart == Bivalenzbetriebsart.Alternativ && e.ZweiterErzeuger)
@@ -154,7 +172,7 @@ namespace WindowsFormsApplication1
             if (!(leistung > 0.0)) leistung = 0.0;
             double nenner = e.VorlaufSollC - e.RuecklaufC;
             double anteil = nenner > 0.0 ? spreizung / nenner : 0.0;
-            Verfuegbarkeitsgrund grund = hydraulik < Math.Min(wasser, e.KennfeldKw) ? Verfuegbarkeitsgrund.SpreizungMax
+            Verfuegbarkeitsgrund grund = hydraulik < Math.Min(wasser, e.KennfeldKw) ? hg
                                        : Verfuegbarkeitsgrund.UebergabeHoechstvorlauf;
             return new Bereichsergebnis(Betriebsbereich.Vorwaermung, leistung, anteil, grund,
                                         leistung > 0.0 ? e.HoechstvorlaufC : double.NaN, true, false);
@@ -177,9 +195,13 @@ namespace WindowsFormsApplication1
 
         /// <param name="zonen">Die kalibrierte Übergabe je gekoppeltem Gebäude bzw. Zone [kW].</param>
         /// <param name="raumtemperatur">θ_i der Stunde je Zone (Index der Zone, Stunde); NaN oder null → Auslegungsraumtemperatur der Zone.</param>
+        /// <param name="grenzen">Die Gerätegrenzen (UB‑E3); <c>null</c> = ohne Hydraulik- und Rücklaufgrenze (Φ_Hydraulik unbegrenzt).</param>
+        /// <param name="einbindung">Die Einbindung der Anlage (<c>DIREKT</c>/<c>PUFFER</c>/<c>WEICHE</c>).</param>
+        /// <param name="nennleistungKw">Φ_WP,N [kW] für ṁ_N·c_p = Φ_WP,N/σ_A; NaN = unbekannt.</param>
         internal Bivalenzmodul(IReadOnlyList<Uebergabezone> zonen, Func<int, int, double>? raumtemperatur,
                                double hoechstvorlaufC, double spreizungMinK, bool vorwaermbetrieb,
-                               Bivalenzbetriebsart betriebsart, bool zweiterErzeuger, bool vorDemKessel)
+                               Bivalenzbetriebsart betriebsart, bool zweiterErzeuger, bool vorDemKessel,
+                               Geraetegrenzen? grenzen = null, string? einbindung = null, double nennleistungKw = double.NaN)
         {
             if (zonen == null) throw new ArgumentNullException(nameof(zonen));
             _zonen = new Uebergabezone[zonen.Count];
@@ -199,7 +221,25 @@ namespace WindowsFormsApplication1
             Betriebsart = betriebsart;
             ZweiterErzeuger = zweiterErzeuger;
             VorDemKessel = vorDemKessel;
+            Grenzen = grenzen;
+            Einbindung = Hydraulikgrenze.Art(einbindung);
+            NennleistungKw = nennleistungKw;
+            double nenn = grenzen != null ? Hydraulikgrenze.Nennstrom(nennleistungKw, grenzen.SpreizungAuslegungK) : double.NaN;
+            // Weiche mit ṁ_WP < ṁ_HK: r = ṁ_HK/ṁ_WP > 1 — die Übergabegrenze am gemischten Vorlauf (FK 4.4).
+            MischungR = Einbindung == Einbindungsart.Weiche && nenn > 0.0 && wh > nenn ? wh / nenn : 1.0;
         }
+
+        /// <summary>Die Gerätegrenzen (UB‑E3); <c>null</c> = ohne Hydraulik- und Rücklaufgrenze.</summary>
+        internal Geraetegrenzen? Grenzen { get; }
+
+        /// <summary>Die Einbindung der Anlage.</summary>
+        internal Einbindungsart Einbindung { get; }
+
+        /// <summary>Φ_WP,N [kW]; NaN = unbekannt.</summary>
+        internal double NennleistungKw { get; }
+
+        /// <summary>r = ṁ_HK/ṁ_WP an der Weiche, wenn größer als 1; sonst 1 (ungemischte Übergabegrenze).</summary>
+        internal double MischungR { get; }
 
         /// <summary>
         /// U‑1 (Opt-in): Ein Bivalenzobjekt entsteht nur mit gesetzter <c>Einbindung</c> und aktiver Kopplung
@@ -214,7 +254,7 @@ namespace WindowsFormsApplication1
         /// <summary>θ_WP,max [°C].</summary>
         internal double HoechstvorlaufC { get; }
 
-        /// <summary>σ_min [K] (in UB‑E2 die Vorgabe <see cref="Bivalenzvorgaben.SPREIZUNG_MIN_K"/>).</summary>
+        /// <summary>σ_min [K] aus den Gerätegrenzen (leer: Vorgabe <see cref="Bivalenzvorgaben.SPREIZUNG_MIN_K"/>).</summary>
         internal double SpreizungMinK { get; }
 
         /// <summary>Vorwärmbetrieb der Anlage.</summary>
@@ -247,7 +287,7 @@ namespace WindowsFormsApplication1
             get
             {
                 double s = 0.0;
-                foreach (Uebergabezone z in _zonen) s += Uebergabegrenze.Zone(z, HoechstvorlaufC, z.AuslegungRaumC).PhiUeMax;
+                foreach (Uebergabezone z in _zonen) s += ZoneRechnen(z, z.AuslegungRaumC, double.NaN).PhiUeMax;
                 return s;
             }
         }
@@ -264,7 +304,7 @@ namespace WindowsFormsApplication1
             {
                 double raum = _raumtemperatur != null ? _raumtemperatur(z, stunde) : double.NaN;
                 if (double.IsNaN(raum) || double.IsInfinity(raum)) raum = _zonen[z].AuslegungRaumC;
-                Zonengrenze g = Uebergabegrenze.Zone(_zonen[z], HoechstvorlaufC, raum, _start[z]);
+                Zonengrenze g = ZoneRechnen(_zonen[z], raum, _start[z]);
                 _start[z] = g.PhiUeMax;
                 s += g.PhiUeMax;
             }
@@ -273,21 +313,66 @@ namespace WindowsFormsApplication1
             return s;
         }
 
-        /// <summary>Die Bereichsregel mit den Werten dieser Anlage.</summary>
-        internal Bereichsergebnis Bereich(int stunde, bool verfuegbar, Verfuegbarkeitsgrund grund, double vorlaufSollC,
-                                          double ruecklaufC, double bedarfKw, double kennfeldKw)
+        private Zonengrenze ZoneRechnen(Uebergabezone z, double raumC, double start)
+            => MischungR > 1.0 ? Uebergabegrenze.ZoneGemischt(z, HoechstvorlaufC, raumC, MischungR, start)
+                               : Uebergabegrenze.Zone(z, HoechstvorlaufC, raumC, start);
+
+        /// <summary>
+        /// Φ_Hydraulik der Stunde (<see cref="Hydraulikgrenze"/>) am Vorlauf min(θ_V,soll, θ_WP,max); ohne
+        /// <see cref="Grenzen"/> unbegrenzt, der Rücklauf der Wärmepumpe dann der Heizkreisrücklauf.
+        /// </summary>
+        internal Hydraulikergebnis Hydraulik(double vorlaufSollC, double ruecklaufC, double kennfeldKw, double pufferUntenC)
         {
+            Geraetegrenzen? g = Grenzen;
+            if (g == null) return Hydraulikergebnis.Unbegrenzt with { RuecklaufWpC = ruecklaufC };
+            return Hydraulikgrenze.Rechnen(new Hydraulikeingang
+            {
+                Einbindung = Einbindung,
+                WH = WH,
+                VorlaufWpC = Math.Min(vorlaufSollC, HoechstvorlaufC),
+                RuecklaufHeizkreisC = ruecklaufC,
+                PufferUntenC = pufferUntenC,
+                HoechstvorlaufC = HoechstvorlaufC,
+                NennleistungKw = NennleistungKw,
+                KennfeldKw = kennfeldKw,
+                SpreizungAuslegungK = g.SpreizungAuslegungK,
+                SpreizungMaxK = g.SpreizungMaxK,
+                SpreizungMinK = g.SpreizungMinK,
+                MindestvolumenstromAnteil = g.MindestvolumenstromAnteil,
+            });
+        }
+
+        /// <summary>
+        /// Die Bereichsregel mit den Werten dieser Anlage (Umsetzungskonzept 3.2 Schritte 3 bis 5): nach der Verfügbarkeit
+        /// die Rücklaufgrenze am Rücklauf der Wärmepumpe (B0, Grund <c>RUECKLAUF_MAX</c>), danach Φ_WP,grenz =
+        /// min(Φ_KF(min(θ_V,soll, θ_WP,max))·f, Φ_Hydraulik) mit dem R744-Faktor f.
+        /// <paramref name="pufferUntenC"/>: unterste Pufferzone (Einbindung <c>PUFFER</c>); NaN = ohne.
+        /// </summary>
+        internal Bereichsergebnis Bereich(int stunde, bool verfuegbar, Verfuegbarkeitsgrund grund, double vorlaufSollC,
+                                          double ruecklaufC, double bedarfKw, double kennfeldKw, double pufferUntenC = double.NaN)
+        {
+            Hydraulikergebnis hy = Hydraulik(vorlaufSollC, ruecklaufC, kennfeldKw, pufferUntenC);
+            double faktor = 1.0;
+            if (verfuegbar && Grenzen != null)
+            {
+                Ruecklaufpruefung rp = Ruecklaufgrenze.Pruefen(Grenzen, hy.RuecklaufWpC);
+                if (rp.Aus)
+                    return new Bereichsergebnis(Betriebsbereich.NichtVerfuegbar, 0.0, 0.0, Verfuegbarkeitsgrund.RuecklaufMax,
+                                                double.NaN, false, false) { RuecklaufFaktor = 0.0, RuecklaufWpC = hy.RuecklaufWpC };
+                faktor = rp.Faktor;
+            }
             bool ueber = vorlaufSollC > HoechstvorlaufC;
-            return Bivalenzrechner.Bereich(new Bereichseingang
+            Bereichsergebnis e = Bivalenzrechner.Bereich(new Bereichseingang
             {
                 Verfuegbar = verfuegbar,
                 GrundNichtVerfuegbar = grund,
                 VorlaufSollC = vorlaufSollC,
                 RuecklaufC = ruecklaufC,
                 BedarfKw = bedarfKw,
-                KennfeldKw = kennfeldKw,
+                KennfeldKw = faktor < 1.0 ? kennfeldKw * faktor : kennfeldKw,
                 UebergabeMaxKw = ueber && !ZweiterErzeuger ? UebergabeMaxKw(stunde) : double.NaN,
-                HydraulikKw = double.PositiveInfinity,
+                HydraulikKw = hy.LeistungKw,
+                HydraulikGrund = hy.Grund,
                 WH = WH,
                 HoechstvorlaufC = HoechstvorlaufC,
                 SpreizungMinK = SpreizungMinK,
@@ -296,6 +381,21 @@ namespace WindowsFormsApplication1
                 ZweiterErzeuger = ZweiterErzeuger,
                 VorDemKessel = VorDemKessel,
             });
+            bool laeuft = (e.Bereich == Betriebsbereich.WpAllein || e.Bereich == Betriebsbereich.Parallel)
+                          && !e.AmHoechstvorlauf && e.LeistungKw > 0.0;
+            return e with { RuecklaufFaktor = faktor, Taktet = hy.Taktet && laeuft, RuecklaufWpC = hy.RuecklaufWpC };
+        }
+
+        /// <summary>
+        /// Die Kapazität am Vorlauf ≤ θ_WP,max im AK3-Kreis (<see cref="WaermepumpeKapazitaet"/>): min(Φ_KF·f, Φ_Hydraulik),
+        /// 0 über der Rücklaufgrenze. Ohne <see cref="Grenzen"/> unverändert.
+        /// </summary>
+        internal double KapazitaetUnterHoechstvorlauf(int stunde, double vorlaufC, double ruecklaufC, double kennfeldKw)
+        {
+            if (Grenzen == null) return kennfeldKw;
+            Bereichsergebnis e = Bereich(stunde, true, Verfuegbarkeitsgrund.KeineBegrenzung, vorlaufC, ruecklaufC, 0.0, kennfeldKw);
+            if (e.Bereich == Betriebsbereich.NichtVerfuegbar || e.Bereich == Betriebsbereich.NurKessel) return 0.0;
+            return Math.Min(kennfeldKw, e.LeistungKw);
         }
 
         // ---- Zähler (Umsetzungskonzept 3.2 Schritt 9) ----
@@ -311,7 +411,15 @@ namespace WindowsFormsApplication1
             if (waermeKwh > 0.0) _waermeKwh[(int)b.Bereich] += waermeKwh;
             _grundStunden[(int)b.Grund]++;
             if (b.KaskadeVerletzt) KaskadeVerletztStunden++;
+            if (b.Taktet) SpreizungUnterschrittenStunden++;
+            if (b.Grund == Verfuegbarkeitsgrund.RuecklaufMax) RuecklaufUeberschrittenStunden++;
         }
+
+        /// <summary>Ergebnisspalte <c>Spreizung_Unterschritten_h</c>: Stunden mit σ_WP &lt; σ_min (die Stunde taktet).</summary>
+        internal int SpreizungUnterschrittenStunden { get; private set; }
+
+        /// <summary>Ergebnisspalte <c>Ruecklauf_Ueberschritten_h</c>: Stunden über der Rücklaufgrenze (B0, <c>RUECKLAUF_MAX</c>).</summary>
+        internal int RuecklaufUeberschrittenStunden { get; private set; }
 
         /// <summary>Wärme der Wärmepumpe nachtragen (zur zuletzt gezählten Stunde in Bereich <paramref name="bereich"/>).</summary>
         internal void WaermeNachtragen(Betriebsbereich bereich, double waermeKwh)
