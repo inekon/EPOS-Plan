@@ -70,7 +70,17 @@ namespace WindowsFormsApplication1
     /// <param name="Heizlast">Lastlineare Heizlast Φ(θ_a).</param>
     /// <param name="Kennfeld">Kennfeldleistung bei θ_WP,max.</param>
     /// <param name="Uebergabegrenze">Übergabegrenze Φ_UE,max (konstant über θ_a); NaN ohne Kopplung.</param>
-    internal readonly record struct Diagrammpunkt(double AussenC, double Heizlast, double Kennfeld, double Uebergabegrenze);
+    internal readonly record struct Diagrammpunkt(double AussenC, double Heizlast, double Kennfeld, double Uebergabegrenze)
+    {
+        /// <summary>Leistung der Wärmepumpe nach Betriebsbereich (<see cref="Bivalenzherleitung.Betrieb"/>).</summary>
+        internal double Waermepumpe { get; init; }
+
+        /// <summary>Betriebsbereich an der Stelle (<see cref="Bivalenzherleitung.Betrieb"/>).</summary>
+        internal Betriebsbereich Bereich { get; init; }
+    }
+
+    /// <summary>Betrieb an einer Außentemperatur im Diagramm: Bereich und Leistung der Wärmepumpe.</summary>
+    internal readonly record struct Diagrammbetrieb(Betriebsbereich Bereich, double Waermepumpe);
 
     /// <summary>Art einer Marke im Bivalenzdiagramm.</summary>
     internal enum Diagrammmarkenart
@@ -118,6 +128,13 @@ namespace WindowsFormsApplication1
 
         private Bivalenzherleitung() { }
 
+        // Die Eingänge des Diagrammbetriebs (Betrieb): nur innerhalb der Klasse gelesen.
+        private BivalenzGebaeudedaten _gebaeude = new BivalenzGebaeudedaten();
+        private BivalenzGeraetedaten _geraet = new BivalenzGeraetedaten();
+        private Kennfeldgerade? _kennfeld;
+        private Heizkurve? _heizkurve;
+        private double _wh = double.NaN;
+
         /// <summary>Zustand: wirksam, nicht wirksam (Einbindung leer) oder ohne Kopplung.</summary>
         internal Herleitungszustand Zustand { get; private init; }
 
@@ -155,7 +172,7 @@ namespace WindowsFormsApplication1
         internal double HybridMindestanteil { get; private init; }
 
         /// <summary>Das Zeichenmodell des Bivalenzdiagramms.</summary>
-        internal Bivalenzdiagramm Diagramm { get; private init; } = new Bivalenzdiagramm(Array.Empty<Diagrammpunkt>(), Array.Empty<Diagrammmarke>());
+        internal Bivalenzdiagramm Diagramm { get; private set; } = new Bivalenzdiagramm(Array.Empty<Diagrammpunkt>(), Array.Empty<Diagrammmarke>());
 
         /// <summary>Rechnet die Herleitung aus Gebäude- und Gerätedaten.</summary>
         internal static Bivalenzherleitung Rechnen(BivalenzGebaeudedaten gebaeude, BivalenzGeraetedaten geraet)
@@ -184,8 +201,14 @@ namespace WindowsFormsApplication1
             double kessel = geraet.Kesselleistung;
             double hybridAnteil = kessel > 0.0 ? wpVergleich / kessel : double.NaN;
 
-            return new Bivalenzherleitung
+            Heizkurve? heizkurve = Bivalenzrechner.HeizkurveAus(HeizkurvenZone(gebaeude), gebaeude.AuslegungAussenC);
+            var h = new Bivalenzherleitung
             {
+                _gebaeude = gebaeude,
+                _geraet = geraet,
+                _kennfeld = kennfeld,
+                _heizkurve = heizkurve,
+                _wh = Uebergabeleitwert(gebaeude),
                 Zustand = zustand,
                 Grenze = grenze,
                 PhiUeMax = phiUe,
@@ -200,8 +223,62 @@ namespace WindowsFormsApplication1
                 HybridMindestanteil = geraet.Betriebsart == Bivalenzbetriebsart.Alternativ
                     ? Bivalenzvorgaben.HYBRID_MINDESTANTEIL_ALTERNATIV
                     : Bivalenzvorgaben.HYBRID_MINDESTANTEIL_PARALLEL,
-                Diagramm = Diagrammmodell(gebaeude, kennfeld, phiUe, punkte),
             };
+            h.Diagramm = h.Diagrammmodell();
+            return h;
+        }
+
+        /// <summary>
+        /// <b>Der Betrieb an einer Außentemperatur</b> für das Bivalenzdiagramm (Fachkonzept 4.5, 7.2) — statisch bei
+        /// Auslegungsraumtemperatur, ohne Hydraulik- und Rücklaufgrenze, nach derselben Bereichsregel wie die Stunde
+        /// (<see cref="Bivalenzrechner.Bereich"/>): unter dem eingegebenen Abschaltpunkt (nicht parallel) nur der
+        /// Kessel; deckt min(Φ_UE,max, Φ_KF) die Heizlast, die Wärmepumpe allein; übersteigt die Heizlast die
+        /// Übergabegrenze, mit Vorwärmbetrieb die Vorwärmung min(W_H·(θ_WP,max − θ_R), Φ_KF), solange
+        /// θ_WP,max − θ_R ≥ σ_min, sonst nur der Kessel; begrenzt allein das Kennfeld, parallel Φ_KF (alternativ
+        /// nur der Kessel). Ohne Kessel deckt die Wärmepumpe allein bis min(Φ_UE,max, Φ_KF). θ_R ist der
+        /// Rücklauf der Heizkurve (siehe Klassenkopf).
+        /// </summary>
+        internal Diagrammbetrieb Betrieb(double aussenC)
+        {
+            BivalenzGebaeudedaten g = _gebaeude;
+            BivalenzGeraetedaten d = _geraet;
+            double last = Last(g, aussenC);
+            double kf = _kennfeld != null ? _kennfeld.Leistung(aussenC) : 0.0;
+            double ue = double.IsNaN(PhiUeMax) ? double.PositiveInfinity : PhiUeMax;
+            bool kessel = d.Kesselleistung > 0.0;
+
+            if (kessel && Punkte.AbschaltpunktC is double ab && aussenC < ab)
+                return new Diagrammbetrieb(Betriebsbereich.NichtVerfuegbar, 0.0);
+            if (!(last > Math.Min(ue, kf)))
+                return new Diagrammbetrieb(Betriebsbereich.WpAllein, last);
+            if (!kessel)
+                return new Diagrammbetrieb(Betriebsbereich.WpAllein, Math.Max(0.0, Math.Min(ue, kf)));
+            if (last > ue)
+            {
+                bool vorwaermen = d.Vorwaermbetrieb && d.Betriebsart != Bivalenzbetriebsart.Alternativ;
+                if (!vorwaermen || _heizkurve == null)
+                    return new Diagrammbetrieb(Betriebsbereich.NurKessel, 0.0);
+                double spreizung = HoechstvorlaufC - _heizkurve.RuecklaufSollC(g.AuslegungRaumC, aussenC);
+                if (double.IsNaN(spreizung) || spreizung < d.SpreizungMinK)
+                    return new Diagrammbetrieb(Betriebsbereich.NurKessel, 0.0);
+                double leistung = Math.Min(_wh * spreizung, kf);
+                return new Diagrammbetrieb(Betriebsbereich.Vorwaermung, leistung > 0.0 ? leistung : 0.0);
+            }
+            return d.Betriebsart == Bivalenzbetriebsart.Alternativ
+                ? new Diagrammbetrieb(Betriebsbereich.NurKessel, 0.0)
+                : new Diagrammbetrieb(Betriebsbereich.Parallel, kf);
+        }
+
+        /// <summary>W_H = Σ Φ_N/(θ_V,N − θ_R,N) der Zonen, ohne Zonen der Übergabe des Gebäudes; NaN ohne Übergabe.</summary>
+        private static double Uebergabeleitwert(BivalenzGebaeudedaten g)
+        {
+            if (g.Zonen != null && g.Zonen.Count > 0)
+            {
+                double summe = 0.0;
+                foreach (Uebergabezone z in g.Zonen) summe += z.WH;
+                return summe;
+            }
+            return g.Gebaeude?.WH ?? double.NaN;
         }
 
         /// <summary>Die Übergabe, aus deren Auslegungspunkt die Heizkurve folgt (Abl., siehe Klassenkopf).</summary>
@@ -215,9 +292,12 @@ namespace WindowsFormsApplication1
             return beste;
         }
 
-        private static Bivalenzdiagramm Diagrammmodell(BivalenzGebaeudedaten g, Kennfeldgerade kennfeld,
-                                                       double phiUe, Bivalenzpunkte p)
+        private Bivalenzdiagramm Diagrammmodell()
         {
+            BivalenzGebaeudedaten g = _gebaeude;
+            Kennfeldgerade kennfeld = _kennfeld!;
+            double phiUe = PhiUeMax;
+            Bivalenzpunkte p = Punkte;
             double unten = g.AuslegungAussenC;
             if (p.AbschaltpunktC is double ab && ab < unten) unten = ab;
             unten = Math.Floor(unten);
@@ -227,7 +307,12 @@ namespace WindowsFormsApplication1
             for (int i = 0; i <= n; i++)
             {
                 double ta = unten + i * DIAGRAMM_SCHRITT_K;
-                reihen[i] = new Diagrammpunkt(ta, Last(g, ta), kennfeld.Leistung(ta), phiUe);
+                Diagrammbetrieb b = Betrieb(ta);
+                reihen[i] = new Diagrammpunkt(ta, Last(g, ta), kennfeld.Leistung(ta), phiUe)
+                {
+                    Waermepumpe = b.Waermepumpe,
+                    Bereich = b.Bereich,
+                };
             }
 
             var marken = new List<Diagrammmarke>();

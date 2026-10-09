@@ -141,9 +141,7 @@ namespace WindowsFormsApplication1
             double zweiter = erster;
             if (vorwaermen && heizkurve != null)
             {
-                var kurve = new Heizkurve(new Uebergabekennwerte(heizkurve.PhiN, heizkurve.Exponent,
-                    heizkurve.AuslegungVorlaufC, heizkurve.AuslegungRuecklaufC, heizkurve.AuslegungRaumC),
-                    auslegungAussenC, 0.0, 1.0);
+                Heizkurve kurve = HeizkurveAus(heizkurve, auslegungAussenC)!;
                 double schwelle = hoechstvorlaufC - spreizungMinK;
                 zweiter = HoechsteAussentemperatur(ta => kurve.RuecklaufSollC(raumC, ta) >= schwelle,
                                                    auslegungAussenC, raumC);
@@ -155,6 +153,13 @@ namespace WindowsFormsApplication1
             return new Bivalenzpunkte(erster, kennfeldAllein, zweiter, uebergabeBegrenzt, deckel,
                                       Massgebend(deckel, zweiter));
         }
+
+        /// <summary>Die Heizkurve aus dem Auslegungspunkt einer Übergabe (Niveau 0, Steilheit 1); null ohne Übergabe.</summary>
+        internal static Heizkurve? HeizkurveAus(Uebergabezone? zone, double auslegungAussenC)
+            => zone == null ? null
+             : new Heizkurve(new Uebergabekennwerte(zone.PhiN, zone.Exponent, zone.AuslegungVorlaufC,
+                                                    zone.AuslegungRuecklaufC, zone.AuslegungRaumC),
+                             auslegungAussenC, 0.0, 1.0);
 
         /// <summary>
         /// Der maßgebende Abschaltpunkt nach <see cref="REGEL"/> (UB‑Q4 a): Der eingegebene Punkt
