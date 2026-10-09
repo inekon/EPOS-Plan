@@ -61,6 +61,15 @@
                         EntfernenText="@LabelEntfernen"
                         EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
 
+        <ProjektKopf>
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@LabelSumme" Wert="@_summeText" NurLesen="true"
+                              Kurz="true" />
+                </KindInhalt>
+            </Formularraster>
+        </ProjektKopf>
+
         <Links>
             <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()">
                 <KindInhalt>
@@ -77,12 +86,6 @@
                links. Kompakt wird sie durch dasselbe Mittel wie der
                Komponentenblock: Beschriftung neben dem Feld, der Wert kurz
                (iU8-E-2, Paket P1). *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Textfeld Bezeichnung="@LabelSumme" Wert="@_summeText" NurLesen="true"
-                              Kurz="true" />
-                </KindInhalt>
-            </Formularraster>
         </Links>
 
         <Rechts>

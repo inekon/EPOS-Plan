@@ -2590,7 +2590,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    im Markup spaeter und deckt das Banner, falls beide sich treffen. Damit es nicht
    dauerhaft Platz nimmt, traegt das haftende Banner das Kreuz zum Ausblenden.
    Gemessen: Bannerprobe (Proben/Rasterprobe/LIESMICH.md). */
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner {
     position: sticky;
     top: var(--epos-fenster-kopf);
     bottom: var(--epos-fenster-fuss);
@@ -2599,7 +2599,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
                 var(--epos-karte-rand) 0 0 var(--epos-karte-flaeche);
 }
 
-#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-warnbanner > .epos-warnbanner-schliessen {
+#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner > .epos-warnbanner-schliessen {
     display: inline-flex;
 }
 
@@ -3478,6 +3478,9 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* ==================================================================== */
 
 .epos-zweispalten {
+    /* Untergrenze der Detailzeile: zugeklappt die Zeile samt Rahmen, aufgeklappt dazu
+       Rand und Polster der Satzflaeche (die Rasterzeile schnitte sie sonst an). */
+    --epos-satz-min: calc(var(--epos-touchziel) + 4px);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -3553,6 +3556,13 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 .epos-zweispalten-marke--katalog { --epos-zweispalten-kennfarbe: var(--epos-quelle-rahmen); }
 .epos-zweispalten-marke--satz    { --epos-zweispalten-kennfarbe: var(--epos-senke-rahmen); }
 
+/* Ein Feld des Wirts in der Kopfleiste (Summe, Kanal): Beschriftung neben dem Feld, eine Zeile. */
+.epos-zweispalten-kopfleiste > :is(.epos-formularraster) {
+    flex: 0 1 auto;
+    min-width: 0;
+    margin: 0;
+}
+
 .epos-zweispalten-wahlzahl {
     color: var(--epos-text-leise);
     font-size: 12px;
@@ -3601,6 +3611,8 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 
 .epos-zweispalten--zieht { cursor: row-resize; user-select: none; }
+
+.epos-zweispalten--satz-offen { --epos-satz-min: calc(var(--epos-touchziel) + 20px); }
 
 /* DIE DETAILZEILE (4.4): zugeklappt eine Zeile; aufgeklappt rollt die
    Satzflaeche in sich. */
@@ -3698,13 +3710,26 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
         minmax(calc(var(--epos-trenner-min) + var(--epos-touchziel) + 18px), auto)
         8px
         minmax(min-content, 1fr)
-        minmax(0, auto);
+        minmax(var(--epos-satz-min), auto);
     row-gap: 6px;
     overflow: hidden;
+    margin-top: 0;
+    container: katalogauswahl / size;
+}
+
+/* KLEINE FENSTER (4.8): Reicht die Hoehe des Bausteins nicht fuer Projektliste,
+   Katalog mit Kopf und zwei Zeilen, Fussleiste und Detailzeile (unter 600 px -
+   1 280 x 720 und 1 024 x 700 mit Kontextzeile, Suchzeile und Katalog-Fussleiste),
+   behaelt die Katalogliste Kopf und EINE Zeile; sonst schnitte das Raster die
+   Detailzeile ab. Gemessen mit Proben/Rasterprobe/rollbereichprobe.mjs. */
+@container katalogauswahl (max-height: 599px) {
+    .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+        --epos-katalog-min: calc(53px + 53px + 2px);
+    }
 }
 
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--nurkatalog {
-    grid-template-rows: minmax(min-content, 1fr) minmax(0, auto);
+    grid-template-rows: minmax(min-content, 1fr) minmax(var(--epos-satz-min), auto);
 }
 
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich {

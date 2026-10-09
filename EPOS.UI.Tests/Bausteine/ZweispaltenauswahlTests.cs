@@ -596,7 +596,9 @@ public class ZweispaltenauswahlTests : EposBunitContext
     public void Die_Haftregel_nimmt_die_Katalogauswahl_aus()
     {
         string css = Stilblatt();
-        Assert.DoesNotContain("#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) >", css);
+        Assert.Contains("#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss {", css);
+        // Das Banner behaelt seine Regel samt Kreuz: im nicht rollenden Dialog steht es ohnehin unter dem Kopf.
+        Assert.Contains("#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner {", css);
         Assert.Contains("#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child", css);
         // In html:has(...) darf die Ausnahme nicht stehen: :has in :has verwirft Chromium samt Regel
         // (dort setzt sie nur das scroll-padding, das ein nicht rollendes Dokument nicht braucht).

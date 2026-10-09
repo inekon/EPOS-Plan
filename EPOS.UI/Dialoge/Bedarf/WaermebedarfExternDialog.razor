@@ -132,6 +132,16 @@
                         EntfernenText="@BtnEntfernenText"
                         EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiEntfernen">
 
+        <ProjektKopf>
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
+                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
+                                 Aktiv="@(_gewaehlt is not null)" />
+                </KindInhalt>
+            </Formularraster>
+        </ProjektKopf>
+
         <Links>
             <div class="epos-raster-huelle">
                 <table class="epos-raster">
@@ -160,13 +170,6 @@
             @* W9-E-3: Der Kanal ist ein Parameterfeld und steht deshalb im
                Formularraster (Hausregel iU8-E-2) - Beschriftung NEBEN dem Feld,
                nicht darueber. Einspaltig, weil die linke Spalte schmal ist. *@
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Auswahlfeld Bezeichnung="@KanalBezeichnung" Eintraege="@Kanaleintraege"
-                                 Auswahl="@Kanalindex" AuswahlChanged="KanalWaehlen"
-                                 Aktiv="@(_gewaehlt is not null)" />
-                </KindInhalt>
-            </Formularraster>
             @* Stufe KU1 (Kuehlkonzept 4.3 #6, K3): Ein Lastgang im Kanal Kuehlung ist KAELTE -
                er geht nicht in einen Waermekanal, und er wirkt nur mit der Projekteinstellung
                „Kuehlung rechnen". Das sagt die Zeile unter der Wahl, nicht erst der Lauf. *@
