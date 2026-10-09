@@ -136,7 +136,13 @@ Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenr
 Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
 nur ein Paket eines neueren Programmstands wird abgelehnt; #587: die Anhebung reicht jetzt bis Schemastand 61
-zurück, mit allen Umrechnungen der Register 62–92).
+zurück, mit allen Umrechnungen der Register 62–92),
+Gebäudeimport (seit Revision 726: #672: Bauteilsuche; #680, #682, #684, #691, #692: Baujahr, Namensvorschlag, Trenndecken,
+Beheizungsart; #707: Matrixfelder und Kalender; #709–#712: Gebäudedaten ausgeben, Reiter Körper, IFC anreichern; #726,
+#729, #730: Zonenregel, Heizsollwert, Zonenbaum; #727, #784: Dateikörper, Grundriss; #731, #736, #737: Projektdatei
+dazuladen, Zonierungswahl, Flächenfilter; #746, #793, #814: Farbmodi Randbedingung, Aufbau, Befund; #769, #776:
+Nutzungskatalog, Baustoff-Zuordnungen; #792, #825: Aufbauten, Aufbauquelle; #801, #802, #808, #821, #822: Fläche und
+Öffnungen aus Körpern; #813: Nordrichtung; #815, #816: Quelle, nur Projektdatei, Körper aus Flächen; ausstehend).
 
 **Abgleich mit dem Upload vom 28.09.2026 (#611).** Die Technikdokumentation hat am 28.09.2026 die
 Seiten ihrer Welle hochgeladen und dabei Seiten der Hauptlinie im Stand `363096aa` mitgenommen.
@@ -218,17 +224,24 @@ Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. E
 - Der Dialog Wärmequelle Erdreich prüft die Auslegung nach VDI 4640 Blatt 2 schon vor dem ersten Simulationslauf als Vorprüfung aus Heizleistung und COP der Wärmepumpe. (#759; Version bestätigt der Anwender beim Upload)
 - Ein ohne Schloss ausgelieferter Katalogsatz, den eine neue Programmfassung gesperrt mitbringt, wird beim Katalogabgleich an Ihren gleichnamigen Satz angebunden, übernimmt den Auslieferungsstand und wird künftig nachgeführt. (#763; Version bestätigt der Anwender beim Upload)
 - Im Gebäudedialog erscheinen Hinweise zu ‚Gebäude in DB löschen‘ und ‚Gebäude in DB ändern…‘ direkt unter den Katalogknöpfen; ein gesperrtes Gebäude nennt den Grund schon am Knopf. (#771; Version bestätigt der Anwender beim Upload)
-Meldungen in langen Dialogen bleiben beim Rollen unter der Kopfzeile sichtbar und lassen sich mit einem Kreuz ausblenden. (#775; Version bestätigt der Anwender beim Upload)
-Ein Gebäude lässt sich aus der Datenbank löschen, auch wenn Projekte eine Kopie davon führen; die Projekte behalten ihre Kopie. (#776; Version bestätigt der Anwender beim Upload)
-Im Gebäudedialog speichern Löschen, ‚Gebäude im Projekt bearbeiten…‘, ‚Exportieren…‘, ‚In DB übernehmen‘ und ‚Simulation…‘ eine eben übernommene Zeile vorher selbst; im Assistenten lässt sich ein Katalogsatz, aus dem eine noch nicht gespeicherte Zeile stammt, erst nach Abschluss löschen; ‚Baustoff-Zuordnungen…‘ steht neben ‚Importieren (gbXML, IFC)…‘, und die Flächenangabe heißt Nutzfläche. (#776; Version bestätigt der Anwender beim Upload)
-Im Projektassistenten nutzt die Projektliste die volle Fensterhöhe, und über den Kacheln stehen die Daten des gewählten Projekts. (#778; Version bestätigt der Anwender beim Upload)
-Die Erdwärmesonde rechnet ihre Soletemperatur stündlich aus dem Entzug im zehnten Betriebsjahr, mit Rückspeisung der Kühlwärme. (#797; Version bestätigt der Anwender beim Upload)
-Im Dialog Wärmequelle Erdreich lassen sich Abstand, Anordnung, Bohrlochdurchmesser, Bohrlochwiderstand, Kopfüberdeckung und Betrachtungsjahr des Sondenfelds je Anlage eingeben. (#797; Version bestätigt der Anwender beim Upload)
+- Meldungen in langen Dialogen bleiben beim Rollen unter der Kopfzeile sichtbar und lassen sich mit einem Kreuz ausblenden. (#775; Version bestätigt der Anwender beim Upload)
+- Ein Gebäude lässt sich aus der Datenbank löschen, auch wenn Projekte eine Kopie davon führen; die Projekte behalten ihre Kopie. (#776; Version bestätigt der Anwender beim Upload)
+- Im Gebäudedialog speichern Löschen, ‚Gebäude im Projekt bearbeiten…‘, ‚Exportieren…‘, ‚In DB übernehmen‘ und ‚Simulation…‘ eine eben übernommene Zeile vorher selbst; im Assistenten lässt sich ein Katalogsatz, aus dem eine noch nicht gespeicherte Zeile stammt, erst nach Abschluss löschen; ‚Baustoff-Zuordnungen…‘ steht neben ‚Importieren (gbXML, IFC)…‘, und die Flächenangabe heißt Nutzfläche. (#776; Version bestätigt der Anwender beim Upload)
+- Im Projektassistenten nutzt die Projektliste die volle Fensterhöhe, und über den Kacheln stehen die Daten des gewählten Projekts. (#778; Version bestätigt der Anwender beim Upload)
+- Die Erdwärmesonde rechnet ihre Soletemperatur stündlich aus dem Entzug im zehnten Betriebsjahr, mit Rückspeisung der Kühlwärme. (#797; Version bestätigt der Anwender beim Upload)
+- Im Dialog Wärmequelle Erdreich lassen sich Abstand, Anordnung, Bohrlochdurchmesser, Bohrlochwiderstand, Kopfüberdeckung und Betrachtungsjahr des Sondenfelds je Anlage eingeben. (#797; Version bestätigt der Anwender beim Upload)
 - Bei Komponentenübernahme und Flottenstudie bleiben alle Anlageneinstellungen der Quellanlage erhalten; ein fehlendes Quellprofil oder eine fehlende Kältemaschine wird mitübernommen, und weitere Speicherstücke erhalten Betriebsführung, Senken, Stränge, Sperrfenster und die nach Kapazität angepassten Kosten der vertretenen Anlage. (#803)
 - Die Auslegungsprüfung Erdreich rechnet je Anlage mit Erdreichquelle, auch wenn daneben eine Luft-Wasser-Wärmepumpe arbeitet. (#806)
 - Die Übernahme einer Komponente aus einem anderen Projekt bringt Betriebsführung, Wärmesenken, Pufferverbund, Stränge samt Modulen und Wechselrichtern sowie Sperrzeiten der Anlage mit und meldet Bezüge, die es im Zielprojekt nicht gibt.
 - Bei der Übernahme von Komponenten aus einem anderen Projekt bleiben die Kostenpositionen der ersetzten Anlagen erhalten und hängen an den neuen Anlagen; Positionen ohne Gegenstück erscheinen als ‚ohne Anlagenzuordnung‘.
 - In den Projektdialogen der Anlagen, Gebäude und Bedarfsprofile sowie in der Vorlagenverwaltung der Konditionierung lässt sich das Schloss eines Katalogsatzes direkt setzen und aufheben; gesperrte Sätze werden nie überschrieben. (#829)
+- Beim Gebäudeimport lassen sich IFC-Datei und Projektdatei (.sqproj) zusammen einlesen; enthält die Projektdatei beide Zonierungen, wählen Sie im Feld „DIN-V-18599-Zonen | Simulationszonen“, welche gilt. (#731, #736; Entwurf, Version bestätigt der Anwender beim Upload)
+- Beim IFC-Import ermittelt EPOS-Plan Bauteilflächen und Ausrichtung auch aus den Bauteilkörpern und zieht Fenster, Türen und Durchbrüche von der Wand- und Dachfläche ab. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Nennt eine IFC- oder gbXML-Datei keine Nordrichtung, fragt der Gebäudeimport danach; die Ausrichtung eines importierten Gebäudes lässt sich im Gebäudedialog nachträglich ändern. (#813; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Die Gebäudeansicht zeigt im Farbmodus „Befund“, welche Bauteile beim Import auffällig sind. (#814; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt; Bedienbegriff vor dem Upload klären, siehe Abschnitt 3)
+- Gebäude lassen sich jetzt allein aus der Projektdatei (.sqproj) importieren; die Quelle wählen Sie im Importdialog. (#815; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Die Gebäudeansicht zeigt Gebäude aus Projektdatei und gbXML jetzt mit Raum- und Bauteilkörpern wie bei IFC, mit allen Farbmodi und dem Bauteil-Steckbrief. (#816; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
+- Passen beim Import von IFC und Projektdatei die Aufbauten beider Dateien nicht zusammen, fragt EPOS-Plan, welche gelten sollen. (#825; Version 1.2.0.6 vom Anwender am 09.10.2026 bestätigt)
 
 ### Version 1.2.6 — veröffentlicht 29.09.2026 (Revision 723)
 
@@ -956,6 +969,12 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   von Prüfliste, Platzhalterkatalog und Einstellungen › Bericht ins Leere. Mit BV-E2 (#520) wächst die Seite um Kapitel,
   Häkchen und Logo (neue Anker `kapitel`, `haekchen`, `logo`; die Anker der Hilfeschlüssel bleiben). Die Logbuch-Sätze
   beider Etappen stehen in Abschnitt 2 unter 1.2.0.5 (Anwenderentscheid 27.09.2026).
+- Die Repo-Quelle der Seite Gebäudeimport nennt den Bedienbegriff „Befund“ (Spalte „Befund“, Farbmodus „Befund“,
+  Filter „Nur Flächen mit Befund“ und „Nur Bauteile mit Befund“), ebenso ein Logbuchsatz unter 1.2.0.6 (Farbmodus der
+  Gebäudeansicht). Das Gegenlese-Muster der Wiki-Regel in `CLAUDE.md` trifft das Wort; die Spalte war schon mit #707
+  als Bestandstreffer vermerkt. Vor dem Upload entscheidet der Anwender: den Bedienbegriff in Oberfläche und Wiki
+  umbenennen (wie die Ampelmeldungen der Seite Photovoltaik mit E12) oder ihn als Bedienbegriff zulassen.
+  Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt.
 
 ## 4 Ablauf des Uploads
 
