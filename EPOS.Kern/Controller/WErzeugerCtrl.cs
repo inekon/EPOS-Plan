@@ -727,6 +727,11 @@ namespace WindowsFormsApplication1
             item.Zeitprogramm = Text(dt, row, AnlagenfahrplanSchema.SPALTE_ZEITPROGRAMM);
             item.Vorlauf_Max = Kommazahl(dt, row, AnlagenfahrplanSchema.SPALTE_VORLAUF_MAX);
 
+            // --- Einbindung und Vorwaermbetrieb (Schemaschritt UebergabegrenzeSchema.SCHRITT, UB-E2) ----------------
+            // NULL bzw. fehlende Spalte heisst Bestandsweg (U-1): ohne Einbindung ruht die Uebergabegrenze.
+            item.Einbindung = Text(dt, row, UebergabegrenzeSchema.SPALTE_EINBINDUNG);
+            item.Vorwaermbetrieb = Zahl(dt, row, UebergabegrenzeSchema.SPALTE_VORWAERMBETRIEB) == 1;
+
             // --- Freie Kuehlung ueber die Waermequelle (Schemaschritt FreieKuehlungSoleSchema.SCHRITT, KU3-6a) --
             // Der Schalter: 1 = an, sonst aus; eine fehlende Spalte gilt wie 0. Graedigkeit und Leistungsgrenze
             // ausdruecklich mit null - NULL heisst Festwert bzw. Kaelteleistung der Kennlinie.

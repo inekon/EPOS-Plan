@@ -27,6 +27,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der benannte Grund des Eingangsbauers, der ein gekoppeltes Gebäude ablehnt; leer ohne Fehler.</summary>
         internal string Befund { get; init; } = "";
+
+        /// <summary><c>ID_Gebaeude</c> je Eintrag von <see cref="BivalenzGebaeudedaten.Zonen"/> (gleiche Reihenfolge) — für die Raumtemperatur der Stunde im Lauf.</summary>
+        internal IReadOnlyList<int> GebaeudeIds { get; init; } = Array.Empty<int>();
     }
 
     /// <summary>
@@ -66,6 +69,7 @@ namespace WindowsFormsApplication1
             sim.KlimakalenderLesen(projekt.m_ID_Klimaregion);
 
             var zonen = new List<Uebergabezone>();
+            var ids = new List<int>();
             double heizlast = 0.0, aussen = double.PositiveInfinity, raum = double.NegativeInfinity;
             foreach (ProjektGebaeudeModel item in gekoppelt)
             {
@@ -86,6 +90,7 @@ namespace WindowsFormsApplication1
                 Uebergabekennwerte u = e.Uebergabe;
                 double phiNKw = item.Uebergabe_Leistung_Nenn ?? u.PhiNW / 1000.0 * f;
                 zonen.Add(new Uebergabezone(phiNKw, u.AuslegungVorlaufC, u.AuslegungRuecklaufC, u.AuslegungRaumC, u.Exponent));
+                ids.Add(item.ID_Gebaeude);
                 heizlast += e.AuslegungsheizlastW / 1000.0 * f;
                 aussen = Math.Min(aussen, e.AuslegungAussentemperaturC);
                 raum = Math.Max(raum, u.AuslegungRaumC);
@@ -94,6 +99,7 @@ namespace WindowsFormsApplication1
             return new BivalenzProjektdaten
             {
                 KesselleistungKw = kessel,
+                GebaeudeIds = ids,
                 Gebaeude = new BivalenzGebaeudedaten
                 {
                     Zonen = zonen,

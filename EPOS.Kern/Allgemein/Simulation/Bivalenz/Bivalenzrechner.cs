@@ -94,7 +94,7 @@ namespace WindowsFormsApplication1
     /// Niveau 0, Steilheit 1). Gesucht wird zwischen Auslegungs-Außentemperatur und
     /// Raumtemperatur: Abtastung von oben in festen Schritten, dann Bisektion — deterministisch.
     /// </summary>
-    internal static class Bivalenzrechner
+    internal static partial class Bivalenzrechner
     {
         /// <summary>Die Regel gegen den eingegebenen Abschaltpunkt (UB‑Q4 a, entschieden 08.10.2026).</summary>
         internal const AbschaltpunktRegel REGEL = AbschaltpunktRegel.Deckel;

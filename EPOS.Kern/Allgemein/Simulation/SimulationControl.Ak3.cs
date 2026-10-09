@@ -146,6 +146,19 @@ namespace WindowsFormsApplication1
             // einem Gebäude mit wirksamer Kühlkurve (Stufe AK3); sonst null und der Kreis bleibt am festen Vorlauf.
             if (kreis.Kaelteschranke != null)
                 kreis.KuehlRaumeinfluss = KuehlRaumeinfluss.AusSteppern(gebaeude.Select(g => g.Stepper).ToList());
+            // UB-E2: der Kreisrücklauf je Durchlauf für Wärmepumpen mit Bivalenzobjekt (B3 im Angebot); ohne bleibt er null.
+            double[] kreisruecklauf = null;
+            foreach (WaermepumpeKapazitaet w in erzeuger.OfType<WaermepumpeKapazitaet>())
+            {
+                if (w.Bivalenz == null) continue;
+                if (kreisruecklauf == null)
+                {
+                    kreisruecklauf = new double[8760];
+                    for (int h = 0; h < kreisruecklauf.Length; h++) kreisruecklauf[h] = double.NaN;
+                }
+                w.Bivalenz.KreisruecklaufC = kreisruecklauf;
+            }
+            kreis.Kreisruecklauf = kreisruecklauf;
             // Fallwechsel (2.4): die Stützstelle der ersten Wärmepumpe am Vorlauf jedes Durchlaufs.
             WaermepumpeKapazitaet erste = erzeuger.OfType<WaermepumpeKapazitaet>().FirstOrDefault();
             if (erste != null)

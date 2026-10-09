@@ -276,6 +276,16 @@
         /// </summary>
         public double? Vorlauf_Max;
 
+        /// <summary>
+        /// <c>Einbindung</c> - hydraulische Einbindung der Wärmepumpe (<c>DIREKT</c>, <c>PUFFER</c>, <c>WEICHE</c>;
+        /// Schemaschritt <see cref="UebergabegrenzeSchema"/>). <b>NULL = Bestandsweg</b>: ohne Einbindung entsteht
+        /// kein Bivalenzobjekt, die Übergabegrenze ruht (Umsetzungskonzept U‑1). Gelesen, noch nicht geschrieben (UB‑E2‑c).
+        /// </summary>
+        public string Einbindung;
+
+        /// <summary><c>Vorwaermbetrieb</c> - Kessel in Reihe über dem Höchstvorlauf der Wärmepumpe (B3); NULL = aus.</summary>
+        public bool Vorwaermbetrieb;
+
         // =============================================================================
         // Freie Kühlung über die Wärmequelle (Schemaschritt FreieKuehlungSoleSchema.SCHRITT, KU3-6a)
         // =============================================================================

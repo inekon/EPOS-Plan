@@ -245,6 +245,12 @@ namespace WindowsFormsApplication1
         internal Func<double, int> Stuetzstelle { get; set; }
 
         /// <summary>
+        /// UB‑E2: der Kreisrücklauf je Stunde [°C], geschrieben je Durchlauf vor der Angebotsabfrage — gelesen von einer
+        /// Wärmepumpe mit Bivalenzobjekt im Vorwärmbetrieb (B3). <c>null</c> = keine solche Wärmepumpe (Bestand).
+        /// </summary>
+        internal double[] Kreisruecklauf { get; set; }
+
+        /// <summary>
         /// Hält die Stützstelle des ersten Durchlaufs fest, wenn sie pendelt (Vorgabe <c>true</c>). Mit der
         /// Interpolation über den Vorlauf (I-1) ist die Kapazität stetig; dann wird nur gezählt (Entwurf 3, O3 entfällt).
         /// </summary>
@@ -558,7 +564,10 @@ namespace WindowsFormsApplication1
                     k2Besucht.Add(bits);
                 }
 
-                (double vNeu, _) = Kreis(jetzt, Faktoren());
+                (double vNeu, double rNeu) = Kreis(jetzt, Faktoren());
+                // UB-E2: der Kreisrücklauf dieses Durchlaufs für das Angebot einer Wärmepumpe im Vorwärmbetrieb (B3) —
+                // die Abhängigkeit von θ_R wirkt über die Schranke und läuft mit den Abbruchschwellen; ohne Bivalenz null.
+                if (Kreisruecklauf != null && !double.IsNaN(rNeu)) Kreisruecklauf[h] = rNeu;
                 if (double.IsNaN(vNeu)) vNeu = v;
                 if (Vorlaufkorrektur != null) vNeu = Vorlaufkorrektur(h, vNeu, jetzt);
                 // H2 (Q-AK3-2): die Anhebung aus der Lösung DIESER Stunde. Der Projektvorlauf des Angebots ist der der

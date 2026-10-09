@@ -106,6 +106,16 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kapazität beim Vorlauf ohne Fahrplan [kW]; 0, wenn der Erzeuger den Vorlauf nicht stellt.</summary>
         protected abstract double KapazitaetBei(int stunde, double vorlaufC, out bool vorlaufNichtErreicht);
 
+        /// <summary>
+        /// Die Kapazität bei einem verlangten Vorlauf ÜBER dem Vorlaufangebot (UB‑E2): <c>true</c>, wenn der Erzeuger
+        /// dort dennoch beiträgt (Wärmepumpe im Vorwärmbetrieb, B3); Vorgabe <c>false</c> — er liefert nichts.
+        /// </summary>
+        protected virtual bool KapazitaetUeberAngebot(int stunde, double vorlaufC, out double kapazitaet)
+        {
+            kapazitaet = 0.0;
+            return false;
+        }
+
         public Erzeugerangebot Abfragen(int stunde, double vorlaufC)
         {
             double faktor = Verfuegbarkeit(Fahrplan, stunde, out Verfuegbarkeitsgrund grund, out double zeitprogrammAnteil);
@@ -123,6 +133,11 @@ namespace WindowsFormsApplication1
             {
                 kapazitaet = 0.0;
                 nichtErreicht = true;
+                if (KapazitaetUeberAngebot(stunde, vorlaufC, out double ueber))
+                {
+                    kapazitaet = ueber > 0.0 && !double.IsInfinity(ueber) ? ueber : 0.0;
+                    nichtErreicht = false;
+                }
             }
             else
             {
@@ -276,6 +291,38 @@ namespace WindowsFormsApplication1
         internal Func<int, bool> Kuehltag { get; set; }
 
         protected override bool Umgeschaltet(int stunde) => Kuehltag != null && Kuehltag(stunde);
+
+        /// <summary>
+        /// <b>Das Bivalenzobjekt</b> (UB‑E2, optional): <c>null</c> = Bestandsweg. Mit ihm gilt in
+        /// <c>Angebot(h, V)</c> dieselbe Bereichsregel wie in der Kaskadenstunde (<see cref="Bivalenzrechner.Bereich"/>):
+        /// unter θ_WP,max die Kennfeldkapazität wie bisher, darüber im Vorwärmbetrieb (B3) min(W_H·(θ_WP,max − θ_R),
+        /// Φ_KF(θ_WP,max)), sonst nichts (B4). θ_R ist der Kreisrücklauf des letzten Durchlaufs der Stunde
+        /// (<see cref="Bivalenzmodul.KreisruecklaufC"/>, Rückfall: die Vorstunde) — die Abhängigkeit von θ_R läuft so
+        /// über die Abbruchschwellen des Kreises (<see cref="Anlagenkopplung.ABBRUCH_SCHRANKE_W"/>; Prüforakel des
+        /// Kreises, Umsetzungskonzept 9).
+        /// </summary>
+        internal Bivalenzmodul Bivalenz { get; set; }
+
+        protected override bool KapazitaetUeberAngebot(int stunde, double vorlaufC, out double kapazitaet)
+        {
+            kapazitaet = 0.0;
+            Bivalenzmodul b = Bivalenz;
+            if (b == null || !(vorlaufC > b.HoechstvorlaufC)) return false;
+            double[] r = b.KreisruecklaufC;
+            double ruecklauf = double.NaN;
+            if (r != null && stunde >= 0 && stunde < r.Length)
+            {
+                ruecklauf = r[stunde];
+                if (double.IsNaN(ruecklauf) && stunde > 0) ruecklauf = r[stunde - 1];
+            }
+            double kennfeld = KapazitaetBei(stunde, Math.Min(b.HoechstvorlaufC, VorlaufAngebotC), out bool nicht);
+            if (nicht) kennfeld = 0.0;
+            Bereichsergebnis e = b.Bereich(stunde, true, Verfuegbarkeitsgrund.KeineBegrenzung, vorlaufC, ruecklauf,
+                                           double.PositiveInfinity, kennfeld);
+            if (e.Bereich != Betriebsbereich.Vorwaermung) return false;
+            kapazitaet = e.LeistungKw;
+            return true;
+        }
 
         /// <summary>Die Quelle der Stunde (Jahresprofil oder Feldzustand der Erdsonde); für Proben.</summary>
         internal IQuellzustand Quelle => _quelle;
