@@ -165,6 +165,7 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 * '''Brennstoff Variante''' – nur bei einer Zeile des Projekts: wechselt die Variante des Energieträgers.
 * '''Untere Grenzleistung des ausgewählten Moduls''' – in Prozent, an der Anlage des Projekts gespeichert; bei 0 nennt die Zeile darunter die Projektvorgabe. Welche Grenze die Simulation verwendet, steht unter [[#fallstricke|Fallstricke]].
 * '''Vorlauf''' und '''Rücklauf''' – in °C, aus dem Katalog vorbelegt und je Anlage änderbar. Die Rechnung des BHKW verwendet sie nicht; sie dienen der Prüfung gegen den Zielspeicher und bei Anlagenkopplung dem Vorlauf gekoppelter Gebäude ohne Heizkurve.
+* {{Anker|bhkw-ruecklauf-max}}'''Höchster Rücklauf (Abschaltgrenze)''' – in °C; liegt der Rücklauf des Heizkreises darüber, liefert das Modul in dieser Stunde nicht. Leer heißt keine Grenze. Das Feld steht im Katalog und in der Verwaltung des Projekts.
 * '''Senken: …''' – die Wärmesenken der Anlage; gepflegt werden sie in der ''Simulation Konfiguration''.
 * '''Investitionskosten…''', '''Betriebskosten…''', '''Energiekosten…''' – die Kosten des Moduls für die Wirtschaftlichkeit; '''Bearbeiten...''' öffnet ''BHKW Eigenschaften'' für den markierten Katalogsatz.
 

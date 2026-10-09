@@ -34,6 +34,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 * '''Betriebsbereitschaftsverluste''' – die Bereitschaftsleistung in Kilowatt oder in Prozent der thermischen Leistung, je nach ''Einheit Bereitschaftsverlust''; die Simulation rechnet sie in kW in jeder Stunde, in der der Kessel stillsteht und betriebsbereit ist, als Brennstoffeinsatz (siehe [[Programm Dokumentation/Simulation#kesselbereitschaft|Simulation: Betriebsbereitschaft des Heizkessels]]).
 * '''Brennwertkessel''' – ein Schalter.
 * '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
+* '''Höchster Rücklauf (Abschaltgrenze)''' – in °C; leer = keine Grenze ([[Programm Dokumentation/BHKW#bhkw-ruecklauf-max|BHKW]]).
 * Gruppe '''Kennlinie''' – die Daten einer Teillast- und Brennwertkennlinie. Ein leeres Feld heißt „Vorgabe“, nicht 0; der Platzhalter im Feld sagt es.
 ** '''Wirkungsgrad bei 30 % Last''' – heizwertbezogen als Faktor (z. B. 1,05); ein Wert über 1,5 gilt als Prozentangabe.
 ** '''Brennwertkennlinie''' – ein Schalter; nur bei einem Brennwertkessel bedienbar. Das Kennzeichen '''Brennwertkessel''' allein beschreibt und filtert den Katalog.
@@ -104,6 +105,7 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 * '''Name''', '''Hersteller''', '''Beschreibung'''.
 * '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
 * '''Nennleistung''', '''Heizstab''', '''Kühlleistung'''.
+* '''Gerätegrenzen''' – eine eigene Gruppe mit Auslegungs-, größter und kleinster Spreizung, Mindestvolumenstrom, größtem Rücklauf, Bezugsrücklauf, Abwertung je Kelvin Rücklauf und Kältemittel; Bedeutung unter [[Programm Dokumentation/Wärmepumpe#geraetegrenzen|Wärmepumpe: Gerätegrenzen]].
 * {{Anker|wp-mindestleistung}}'''Mindestleistung''' – in kW, die kleinste Leistung, auf die das Gerät herunterregelt; leer = es moduliert bis null. Unter ihr taktet das Gerät, und die Simulation rechnet den Taktverlust ([[Programm Dokumentation/Wärmepumpe#takten|Wärmepumpe: Takten]]).
 * '''Teillastkoeffizient C_d''' – Faktor zwischen 0 und 1 für den Taktverlust nach EN 14825; leer gilt die Vorgabe 0,9 der Norm. In den Projektdialogen stehen beide Werte nur lesend.
 * '''Modulkosten''' – in einer eigenen Gruppe ''Kosten'', nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.

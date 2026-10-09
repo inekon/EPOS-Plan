@@ -166,6 +166,17 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 * {{Anker|auslegung-verteilung|vorlauftemperatur}}'''Auslegung für Verteilung: Vorlauf und Rücklauf''' – ''Vorlauf'' ist eine der Vorlaufstufen, für die das Gerät Kennlinien führt; mit dieser Kennlinie rechnet die Wärmepumpe, solange keine Anlagenkopplung den Vorlauf je Stunde vorgibt. Er bestimmt damit unmittelbar Leistung und Leistungszahl. Den ''Rücklauf'' tragen Sie in °C ein; steht dort 0 oder nichts, ist er mit dem Vorlauf abzüglich 10 K vorbelegt, und eine Zeile nennt die Herleitung – solange Sie ihn nicht ändern, folgt er einem anderen Vorlauf. Die Zeile darunter nennt übliche Werte; in die Kennlinienwahl geht der Rücklauf nicht ein. Eine weitere Zeile nennt die Wärmesenken der Anlage; gepflegt werden sie in der Simulation.
 * {{Anker|nutzungsdauer}}'''Nutzungsdauer''' – steht nicht in diesem Dialog, sondern an den Investitionspositionen der Wärmepumpe: ''Investitionskosten…'' in der Knopfzeile der Kenndaten öffnet sie. Mit diesen Nutzungsdauern rechnet die Wirtschaftlichkeit Ersatzbeschaffung und Restwert ([[Programm Dokumentation/Kosten#nutzungsdauern|Kosten: Nutzungsdauern]]).
 
+=== Gerätegrenzen ===
+{{Anker|geraetegrenzen}}
+
+Die Gruppe ''Gerätegrenzen'' der Wärmepumpe (Katalog und Projektkopie) beschreibt, wie weit das Gerät hydraulisch belastbar ist. Alle Felder dürfen leer bleiben; dann entfällt die jeweilige Grenze.
+
+* '''Auslegungsspreizung''', '''Größte Spreizung''' und '''Kleinste Spreizung''' – in K, die Temperaturdifferenz zwischen Vorlauf und Rücklauf im Auslegungspunkt sowie ihre Ober- und Untergrenze.
+* '''Mindestvolumenstrom''' – in Prozent des Auslegungsvolumenstroms; er begrenzt die Spreizung nach oben.
+* '''Größter Rücklauf''' – in °C, die Abschaltgrenze für den Rücklauf.
+* '''Bezugsrücklauf''' und '''Abwertung je Kelvin Rücklauf''' – ab welchem Rücklauf in °C die Leistungszahl je Kelvin um den angegebenen Prozentsatz abgewertet wird; leer gilt die Vorgabe des Kältemittels, 0 schaltet die Abwertung ab.
+* '''Kältemittel''' – Auswahl; die Schnellwahl füllt die Felder mit den Vorgaben des Kältemittels, wo es welche gibt, und lässt sich überschreiben.
+
 === Konfiguration ===
 
 * {{Anker|spitzenlast}}'''Konfiguration…''' – der Knopf der Kenndaten öffnet den Block, der den Betrieb dieser Wärmepumpe regelt: Heizstab, ''Wärmepumpenleistung / maximale Betriebszeit'' mit der Sperrzeit, ''Außentemperaturgesteuerter Betrieb'' mit der Bivalenz, Energieträger und Kühlbetrieb. Derselbe Block steht in der Simulation hinter ''Konfiguration…'' an der Karte der Wärmepumpe. Die beiden Überschriften nennen zugleich die Gründe für einen Spitzenlasterzeuger: zu wenig Wärmepumpenleistung in der verfügbaren Betriebszeit und die Abschaltung bei tiefer Außentemperatur.
@@ -173,6 +184,9 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 * {{Anker|sperrzeiten}}'''Sperrzeit durch Energieversorger''' – mit ''Sperrzeit von'' und ''Sperrzeit bis'' (Stunde des Tages) steht die Wärmepumpe täglich in diesem Fenster still.
 * {{Anker|betriebsart}}'''Betriebsart''' – ohne den Haken ''Bivalenter Betrieb'' arbeitet die Wärmepumpe monovalent. Mit dem Haken stehen ''Alternativbetrieb'', ''Parallelbetrieb'' und ''Teilparallelbetrieb'' zur Wahl; drei Erklärkästen beschreiben die Unterschiede, der gewählte ist hervorgehoben.
 * {{Anker|bivalenztemperatur}}'''Bivalenztemperatur''' – die Außentemperatur, bei der die Wärmepumpe abschaltet: im Teilparallelbetrieb bei dieser Temperatur und darunter, im Alternativbetrieb darunter. Das Feld erscheint nur bei diesen beiden Betriebsarten; im Parallelbetrieb hat eine Bivalenztemperatur keine Wirkung.
+* {{Anker|einbindung}}'''Einbindung''' – wie die Wärmepumpe an den Heizkreis angeschlossen ist: ''direkt (ohne Puffer)'', ''Puffer'' oder ''Weiche''; die Wahl ist freiwillig, ohne sie rechnet die Anlage ohne Übergabegrenze. Mit einer Einbindung begrenzen Höchstvorlauf, Rücklauf und Spreizung der Wärmepumpe, was sie an den Heizkreis liefert; die Zeile darunter nennt die gerechneten Werte. Beim Puffer rechnet die Übergabe mit der Entladeseite als Näherung.
+* {{Anker|vorwaermbetrieb}}'''Vorwärmbetrieb (Kessel in Reihe)''' – die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf. Der Haken wirkt nur mit einer Einbindung und einem Kessel in der Kaskade; im Alternativbetrieb nennt eine Zeile den Grund.
+* {{Anker|betriebsbereiche}}'''Betriebsbereiche''' – mit einer Einbindung teilt EPOS-Plan jede Stunde einem von vier Bereichen zu: Wärmepumpe allein, parallel mit dem zweiten Erzeuger, Vorwärmung oder nur Kessel. Die Stunden und die Wärme je Bereich stehen im Reiter ''Wärmepumpe'' der [[Programm Dokumentation/Simulationsergebnisse#betriebsbereiche|Simulationsergebnisse]].
 * {{Anker|energietraeger}}'''Energieträger''' – die Wahl erfolgt in zwei Stufen: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe. Vorbelegt ist der Stromträger des Projekts; ein Gruppenwechsel wählt die erste Art der Gruppe. Strompreis, Aufschläge und Emissionsfaktor der Wärmepumpe folgen dieser Wahl.
 * '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms. Ohne Kühlkennlinie im Projekt oder mit einem Pufferspeicher als Quelle ist der Schalter gesperrt und steht ohne Haken; der Grund steht darunter. Siehe [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
 
