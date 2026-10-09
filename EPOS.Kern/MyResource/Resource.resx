@@ -14500,7 +14500,10 @@ Alle Eingaben überprüfen!</value>
     <value>Einteilung nach der Deutschen Wohngebäudetypologie des IWU (2015), ab 2016 nach Stein/Loga (2025).</value>
   </data>
   <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
-    <value>Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar.</value>
+    <value>Vorschlag aus dem Baujahr {0}: {1} – abweichende Wahl gilt.</value>
+  </data>
+  <data name="GEB_BAK_OHNE_BAUJAHR" xml:space="preserve">
+    <value>Ohne Baujahr frei wählbar.</value>
   </data>
   <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
     <value>teilsaniert</value>

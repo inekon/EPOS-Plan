@@ -32379,7 +32379,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse folgt aus dem Baujahr {0}; ohne Baujahr ist sie wählbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag aus dem Baujahr {0}: {1} – abweichende Wahl gilt. ähnelt.
         /// </summary>
         public static string GEB_BAK_AUS_BAUJAHR {
             get {
@@ -32492,6 +32492,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_BAK_M {
             get {
                 return ResourceManager.GetString("GEB_BAK_M", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Baujahr frei wählbar. ähnelt.
+        /// </summary>
+        public static string GEB_BAK_OHNE_BAUJAHR {
+            get {
+                return ResourceManager.GetString("GEB_BAK_OHNE_BAUJAHR", resourceCulture);
             }
         }
         

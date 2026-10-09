@@ -14493,7 +14493,10 @@ Please check all entries!</value>
     <value>Classification according to the German residential building typology of IWU (2015), from 2016 according to Stein/Loga (2025).</value>
   </data>
   <data name="GEB_BAK_AUS_BAUJAHR" xml:space="preserve">
-    <value>The class follows from the year of construction {0}; without a year of construction it can be chosen.</value>
+    <value>Suggested by the year of construction {0}: {1} – a different choice applies.</value>
+  </data>
+  <data name="GEB_BAK_OHNE_BAUJAHR" xml:space="preserve">
+    <value>Without a year of construction, freely selectable.</value>
   </data>
   <data name="GEB_ES_TEILSANIERT" xml:space="preserve">
     <value>partially refurbished</value>

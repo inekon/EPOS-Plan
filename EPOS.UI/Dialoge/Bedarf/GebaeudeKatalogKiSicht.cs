@@ -227,19 +227,19 @@ public sealed class GebaeudeKatalogKiSicht : IKiFeldtafel
     }
 
     /// <summary>
-    /// Die Baualtersklasse als Platz in der Klappliste — mit Baujahr die Klasse aus dem Jahr; eine Wahl
-    /// wirkt nur ohne Baujahr (DAS BAUJAHR FÜHRT, E47).
+    /// Die Baualtersklasse als Platz in der Klappliste — die gewählte; das Baujahr schlägt sie nur vor, eine
+    /// Wahl gilt immer.
     /// </summary>
     public int Baualtersklasse
     {
-        get => Daten is GebaeudeKatalogDaten d ? WindowsFormsApplication1.Gebaeudeklassen.IndexWirksam(d.Baujahr, d.Baualtersklasse) : 0;
-        set { if (Daten is GebaeudeKatalogDaten d && !d.KlasseAusBaujahr) d.Baualtersklasse = value; }
+        get => Daten is GebaeudeKatalogDaten d ? d.Baualtersklasse : 0;
+        set { if (Daten is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
     }
 
     /// <summary>Setzt das Baujahr samt Klasse (Weg des Arbeitsstands); ohne Weg der Feldsatz selbst.</summary>
     public Action<int?>? BaujahrSetzen { get; init; }
 
-    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt. Ist es gesetzt, folgt die Klasse ihm.</summary>
+    /// <summary>Das Baujahr als Jahreszahl (1500 … 2100); leer = unbekannt. Ein neues Jahr setzt die Klasse auf seinen Vorschlag.</summary>
     public int? Baujahr
     {
         get => Daten?.Baujahr;

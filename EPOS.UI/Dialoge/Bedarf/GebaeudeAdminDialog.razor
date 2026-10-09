@@ -133,7 +133,7 @@
                                     <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                                  Auswahl="@Index(_arten, _arbeit.Stand.Gebaeudeart)" AuswahlChanged="BeiArt" />
                                     <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
-                                                 Auswahl="@_arbeit.KlasseWirksam" Aktiv="@(!_arbeit.KlasseAusBaujahr)"
+                                                 Auswahl="@_arbeit.KlasseWirksam"
                                                  AuswahlChanged="BeiKlasse" />
                                     <Herleitungszeile Text="@_arbeit.KlassenHerleitung" />
                                     <Ganzzahlfeld Bezeichnung="@LabelBaujahr"
@@ -943,7 +943,7 @@
         Nachziehen();
     }
 
-    /// <summary>Die Klassenwahl — nur ohne Baujahr wirksam (E47: das Baujahr führt).</summary>
+    /// <summary>Die Klassenwahl — sie gilt immer; das Baujahr schlägt die Klasse nur vor.</summary>
     private void BeiKlasse(int? index)
     {
         if (_auslieferung) return;

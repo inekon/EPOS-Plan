@@ -93,16 +93,38 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeStammCtrl.Klassentext("E"), Gebaeudeklassen.Text("E"));
         }
 
-        /// <summary>DAS BAUJAHR FÜHRT (E47, F2): die Klasse aus dem Jahr, sonst die gewählte.</summary>
+        /// <summary>
+        /// DAS BAUJAHR SCHLÄGT VOR (Anwenderwunsch 08.10.2026, ändert E47 F2): der Vorschlag aus dem Jahr, ohne
+        /// gültiges Jahr keiner — und die Zeile unter der Klappliste nennt Jahr und Bauzeitraum oder „frei wählbar".
+        /// </summary>
         [Theory]
-        [InlineData(1965, 0, 4)]
-        [InlineData(null, 7, 7)]
-        [InlineData(1499, 7, 7)]      // ausserhalb des Bereichs: die Wahl bleibt
-        [InlineData(2030, 2, 12)]
-        public void Die_wirksame_Klasse_folgt_dem_Baujahr(int? baujahr, int gewaehlt, int erwartet)
+        [InlineData(1965, 4)]
+        [InlineData(null, null)]
+        [InlineData(1499, null)]      // ausserhalb des Bereichs: kein Vorschlag
+        [InlineData(2030, 12)]
+        public void Das_Baujahr_schlaegt_die_Klasse_vor(int? baujahr, int? erwartet)
         {
-            Assert.Equal(erwartet, Gebaeudeklassen.IndexWirksam(baujahr, gewaehlt));
-            Assert.Equal(baujahr is int j && j >= 1500 ? erwartet : (int?)null, Gebaeudeklassen.IndexAusBaujahr(baujahr));
+            using var kultur = new Kulturvorrichtung();
+            Assert.Equal(erwartet, Gebaeudeklassen.IndexAusBaujahr(baujahr));
+            if (baujahr is int j)
+            {
+                string zeile = Gebaeudeklassen.AusBaujahrText(j);
+                if (erwartet is int k)
+                {
+                    Assert.Contains(j.ToString(System.Globalization.CultureInfo.InvariantCulture), zeile);
+                    Assert.Contains(Gebaeudeklassen.TEXTE_DE[k], zeile);
+                    Assert.Contains("abweichende Wahl gilt", zeile);
+                }
+                else Assert.Equal(Gebaeudeklassen.OhneBaujahrText(), zeile);
+            }
+        }
+
+        [Fact]
+        public void Die_Zeilen_unter_der_Klappliste_lauten_wie_gewuenscht()
+        {
+            using var kultur = new Kulturvorrichtung();
+            Assert.Equal("Vorschlag aus dem Baujahr 1985: 1984 bis 1994 – abweichende Wahl gilt.", Gebaeudeklassen.AusBaujahrText(1985));
+            Assert.Equal("Ohne Baujahr frei wählbar.", Gebaeudeklassen.OhneBaujahrText());
         }
 
         // ============================================================ Bauart

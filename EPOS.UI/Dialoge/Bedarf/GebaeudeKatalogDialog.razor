@@ -133,11 +133,11 @@
                                       Mehrzeilig="true" Zeilen="3" />
                             <Auswahlfeld Bezeichnung="@LabelGebaeudeart" Eintraege="@Arteintraege"
                                          Auswahl="@Artindex" AuswahlChanged="ArtWaehlen" />
-                            @* Die Baualtersklasse (E47): ein Bauzeitraum A bis M. DAS BAUJAHR FUEHRT - ist es
-                               gesetzt, zeigt die Klappliste die Klasse aus dem Jahr und ist gesperrt; die
-                               Herleitungszeile sagt es und nennt die Quelle der Einteilung. *@
+                            @* Die Baualtersklasse (E47): ein Bauzeitraum A bis M. DAS BAUJAHR SCHLAEGT VOR - ein
+                               neues Baujahr setzt die Klasse, die Klappliste bleibt aktiv und eine abweichende Wahl
+                               gilt; die Herleitungszeile sagt es und nennt die Quelle der Einteilung. *@
                             <Auswahlfeld Bezeichnung="@LabelBaualtersklasse" Eintraege="@Klasseneintraege"
-                                         Auswahl="@_arbeit.KlasseWirksam" Aktiv="@(!_arbeit.KlasseAusBaujahr)"
+                                         Auswahl="@_arbeit.KlasseWirksam"
                                          AuswahlChanged="_arbeit.KlasseWaehlen" />
                             <Herleitungszeile Text="@_arbeit.KlassenHerleitung" />
                             @* Das Baujahr (G4a): ganzzahlig, optional, 1500 bis 2100 - eine
