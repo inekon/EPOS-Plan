@@ -47,11 +47,13 @@ namespace EPOS.Kern.Tests
             "Ruecklauf_Max", "Ruecklauf_Bezug", "Ruecklauf_Abwertung_ProzentJeK", "Kaeltemittel",
         };
 
-        // Sollwerte des ersten Laufs (Basis R45); NurKessel zählt B0 und B4 gemeinsam - ohne Sperrzeit, Zeitprogramm und
-        // Abschaltpunkt gibt es kein B0, 0 Stunden heißt damit auch B4 = 0.
-        private const int SOLL_B1_H = 3987, SOLL_B2_H = 0, SOLL_B3_H = 1308, SOLL_NURKESSEL_H = 0;
+        // Sollwerte mit den Gerätegrenzen (UB-E3-a, vor dem Einfrieren der nächsten Basis); NurKessel zählt B0 und B4
+        // gemeinsam - ohne Sperrzeit, Zeitprogramm und Abschaltpunkt ist jede B0-Stunde eine Stunde über der abgeleiteten
+        // Rücklaufgrenze 52 °C (55 − 3) am gemischten Rücklauf des Überströmventils (ṁ_min 4,2 kW/K > W_H).
+        private const int SOLL_B1_H = 3964, SOLL_B2_H = 0, SOLL_B3_H = 620, SOLL_NURKESSEL_H = 711;
+        private const int SOLL_SPREIZUNG_UNTERSCHRITTEN_H = 2566, SOLL_RUECKLAUF_UEBERSCHRITTEN_H = 711;
         private const double SOLL_BIVALENZPUNKT_1 = 1.825241, SOLL_BIVALENZPUNKT_2 = -3.549464, SOLL_UEBERGABE_MAX_KW = 21.99587;
-        private const int SOLL_VORWAERMER_H = 952;
+        private const int SOLL_VORWAERMER_H = 620;
 
         private static long Zahl(string sql, params object[] werte)
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql, werte.Select((w, i) => new DbParam("@p" + i, w)).ToArray()),
@@ -184,7 +186,8 @@ namespace EPOS.Kern.Tests
                            Convert.ToString(bm.Uebergabe_Max_kW, CultureInfo.InvariantCulture) + " kW; Vorwärmer " + vorwaermer +
                            " h; WP " + m.Waermepumpe.Waermeproduktion_WP.ToString("R", CultureInfo.InvariantCulture) +
                            " MWh, Kessel " + m.Heizkessel?.Waermeproduktion.ToString("R", CultureInfo.InvariantCulture) +
-                           " MWh; Komfort " + m.Energiebedarf.KomfortUnterschreitungsstundenH + " h");
+                           " MWh; Komfort " + m.Energiebedarf.KomfortUnterschreitungsstundenH + " h; Spreizung unterschritten " +
+                           bm.Spreizung_Unterschritten_h + " h, Rücklauf überschritten " + bm.Ruecklauf_Ueberschritten_h + " h");
 
             Assert.True(b.Stunden[0] > 0, "B1 ohne Stunden");
             Assert.True(b.Stunden[2] > 0, "B3 ohne Stunden");
@@ -193,6 +196,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(SOLL_B3_H, b.Stunden[2]);
             Assert.Equal(SOLL_NURKESSEL_H, b.Stunden[3]);
             for (int i = 0; i < 4; i++) Assert.Equal(b.Stunden[i], bm.Stunden[i]);
+            Assert.Equal(SOLL_SPREIZUNG_UNTERSCHRITTEN_H, bm.Spreizung_Unterschritten_h);
+            Assert.Equal(SOLL_RUECKLAUF_UEBERSCHRITTEN_H, bm.Ruecklauf_Ueberschritten_h);
             Assert.True(bm.Bivalenzpunkt_1.HasValue && bm.Bivalenzpunkt_2.HasValue, "Bivalenzpunkte nicht gesetzt");
             Nahe(SOLL_BIVALENZPUNKT_1, bm.Bivalenzpunkt_1.Value, "Bivalenzpunkt_1");
             Nahe(SOLL_BIVALENZPUNKT_2, bm.Bivalenzpunkt_2.Value, "Bivalenzpunkt_2");

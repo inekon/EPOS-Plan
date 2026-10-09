@@ -42561,7 +42561,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Kältemittel</value>
   </data>
   <data name="BHKWK_LBL_RUECKLAUF_MAX" xml:space="preserve">
-    <value>Größter Rücklauf</value>
+    <value>Höchster Rücklauf (Abschaltgrenze)</value>
   </data>
   <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
     <value>Teillastkoeffizient C_d</value>
@@ -49114,6 +49114,15 @@ Chart</value>
   <data name="SIMENG_WP_GRUND_RUECKLAUF_MAX" xml:space="preserve">
     <value>Rücklaufgrenze {0} h</value>
   </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_TAKT" xml:space="preserve">
+    <value>Spreizung unter der Mindestspreizung (taktet) {0} h</value>
+  </data>
+  <data name="SIMENG_WP_PUFFER_ENTLADESEITE" xml:space="preserve">
+    <value>„{0}“: Einbindung über einen Puffer — gerechnet wird die Ladeseite mit der größten Spreizung; die Mischung an der Entladeseite wird nicht gerechnet (Näherung).</value>
+  </data>
+  <data name="SIMENG_BHKW_RUECKLAUF_MAX" xml:space="preserve">
+    <value>BHKW „{0}“: {1} h ohne Betrieb, der Rücklauf lag an oder über der Rücklaufgrenze {2} °C.</value>
+  </data>
   <data name="SIMENG_WP_BETRIEBSBEREICHE" xml:space="preserve">
     <value>Betriebsbereiche „{0}“: Wärmepumpe allein {1} h, parallel {2} h, Vorwärmung {3} h, nur Kessel {4} h; begrenzt durch {5}.</value>
   </data>
@@ -49332,6 +49341,63 @@ Chart</value>
   </data>
   <data name="KM_MSG_IMPORT_PLATTFORM" xml:space="preserve">
     <value>Der Import aus einer Datei steht auf dieser Plattform nicht zur Verfügung. Die eingebauten Typkennfelder lassen sich über „Typkennfelder laden…“ übernehmen.</value>
+  </data>
+  <data name="WPS_GRP_GERAETEGRENZEN" xml:space="preserve">
+    <value>Gerätegrenzen</value>
+  </data>
+  <data name="WPS_HINT_KAELTEMITTEL_SCHNELLWAHL" xml:space="preserve">
+    <value>Die Wahl des Kältemittels füllt nur leere Gerätefelder mit der Vorgabe nach Kältemittel; gepflegte Werte bleiben stehen.</value>
+  </data>
+  <data name="WPS_HINT_SCHNELLWAHL_GEFUELLT" xml:space="preserve">
+    <value>{0} leere Felder mit der Vorgabe nach Kältemittel gefüllt.</value>
+  </data>
+  <data name="WPS_HINT_NUR_R744" xml:space="preserve">
+    <value>Bezugsrücklauf und Abwertung wirken nur bei R744.</value>
+  </data>
+  <data name="WPS_HINT_GRENZE_BEREICH" xml:space="preserve">
+    <value>„{0}“ liegt außerhalb von {1} bis {2} — so lässt sich der Satz nicht speichern.</value>
+  </data>
+  <data name="WPS_PLATZHALTER_VORGABE" xml:space="preserve">
+    <value>leer = Vorgabe</value>
+  </data>
+  <data name="WPS_HERLEITUNG_GERAETEGRENZEN" xml:space="preserve">
+    <value>Leere Felder rechnen mit der Vorgabe nach Kältemittel bzw. der allgemeinen Vorgabe; gepflegte Werte tragen in der Konfiguration die Herkunft „Katalog“.</value>
+  </data>
+  <data name="BHKWK_FELD_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Höchster Rücklauf</value>
+  </data>
+  <data name="BHKWK_HINT_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Der Auslegungsrücklauf ({0} °C) erreicht die Abschaltgrenze ({1} °C): Bei diesem Rücklauf liefert das Modul nichts.</value>
+  </data>
+  <data name="BHKWK_PLATZHALTER_RUECKLAUF_MAX" xml:space="preserve">
+    <value>leer = keine Grenze</value>
+  </data>
+  <data name="KI_DLG_WP_KAELTEMITTEL_ERL" xml:space="preserve">
+    <value>Das Kältemittel des Geräts (Code wie R410A, R290, R744). Im Stammblatt füllt die Wahl nur leere Gerätefelder mit der Vorgabe nach Kältemittel.</value>
+  </data>
+  <data name="KI_DLG_WP_SPREIZUNG_AUSLEGUNG_ERL" xml:space="preserve">
+    <value>Spreizung zwischen Vor- und Rücklauf am Auslegungspunkt (3 bis 8 K). Leer = Vorgabe nach Kältemittel.</value>
+  </data>
+  <data name="KI_DLG_WP_SPREIZUNG_MAX_ERL" xml:space="preserve">
+    <value>Größte zulässige Spreizung am Verflüssiger (5 bis 40 K). Leer = Vorgabe nach Kältemittel.</value>
+  </data>
+  <data name="KI_DLG_WP_SPREIZUNG_MIN_ERL" xml:space="preserve">
+    <value>Kleinste Spreizung am Verflüssiger (0 bis 8 K); sie bestimmt mit dem Höchstvorlauf die Rücklaufgrenze. Leer = Vorgabe nach Kältemittel.</value>
+  </data>
+  <data name="KI_DLG_WP_MINDESTVOLUMENSTROM_ERL" xml:space="preserve">
+    <value>Kleinster Volumenstrom in Prozent des Nennvolumenstroms (20 bis 100 %). Leer = Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_WP_RUECKLAUF_MAX_ERL" xml:space="preserve">
+    <value>Größter Rücklauf, bei dem das Gerät noch Wärme liefert (20 bis 70 °C); darüber schaltet es ab. Leer = abgeleitet aus Höchstvorlauf und kleinster Spreizung.</value>
+  </data>
+  <data name="KI_DLG_WP_RUECKLAUF_BEZUG_ERL" xml:space="preserve">
+    <value>Bezugsrücklauf der Abwertung (20 bis 40 °C) — wirkt nur bei R744. Leer = Vorgabe nach Kältemittel.</value>
+  </data>
+  <data name="KI_DLG_WP_RUECKLAUF_ABWERTUNG_ERL" xml:space="preserve">
+    <value>Abwertung der Leistung je Kelvin Rücklauf über dem Bezugsrücklauf (0 bis 5 %/K) — wirkt nur bei R744. Leer = Vorgabe nach Kältemittel.</value>
+  </data>
+  <data name="KI_DLG_BHKK_RUECKLAUF_MAX_ERL" xml:space="preserve">
+    <value>Abschaltgrenze des Rücklaufs (40 bis 90 °C): Liegt der Rücklauf zum Modul darüber, liefert es in der Stunde nichts. Der Auslegungsrücklauf muss darunter liegen. Leer = keine Grenze; Vorgabe bei Neuanlage 70 °C.</value>
   </data>
 </root>
 

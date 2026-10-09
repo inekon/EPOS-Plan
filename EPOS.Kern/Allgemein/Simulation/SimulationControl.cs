@@ -1731,6 +1731,7 @@ namespace WindowsFormsApplication1
                 simulation_bhkw.strombedarf = (double[])stromStufeneingang.Clone();
                 simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
                 simulation_bhkw.modeBHKW = modeBHKW;
+                simulation_bhkw.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC; // UB-E3: Ruecklaufgrenze
                 // Der skalare Pendelspeicher ist im zweikanaligen Weg abgelöst - die
                 // Kapazität kommt aus dem zugeordneten SimulationPufferspeicher
                 // (Konzept 6.5, zweiter Punkt). Der Wert bleibt auf 0, damit ein
@@ -2141,6 +2142,7 @@ namespace WindowsFormsApplication1
             simulation_bhkw.strombedarf = Strombedarf;
             simulation_bhkw.bhkwGrenzleistungAllgemein = GrenzleistungBHKW;
             simulation_bhkw.modeBHKW = modeBHKW;
+            simulation_bhkw.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC; // UB-E3: Ruecklaufgrenze
             simulation_bhkw.kapazitaetPendelspeicher = 0.0;
 
             if (!simulation_bhkw.Berechnung_Zweikanalig(m_ID_Projekt, kanaele, senkenzuordnungen) &&

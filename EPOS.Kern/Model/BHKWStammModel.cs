@@ -73,6 +73,12 @@
         /// <summary>Mindestlaufzeit je Start [min] (BH2); <c>null</c> = nicht gepflegt.</summary>
         public int? m_Mindestlaufzeit_min;
 
+        /// <summary>
+        /// <c>Ruecklauf_Max</c> [°C] — die Abschaltgrenze des Rücklaufs (UB‑E3, U‑3): darüber liefert das Modul nichts.
+        /// <c>null</c> = keine Grenze.
+        /// </summary>
+        public double? m_Ruecklauf_Max;
+
         public BHKWStammModel()
         {
             m_ID = 0;

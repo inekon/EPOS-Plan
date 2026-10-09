@@ -104,4 +104,83 @@ public sealed class WaermepumpeStammFelderTexte
     /// Sprachen gleich und braucht deshalb keinen Ressourcenschlüssel.
     /// </summary>
     public string EinheitEuro { get; set; } = "€";
+
+    // ---------------------------------------------------------------------------------
+    //  Gruppe „Gerätegrenzen" (UB‑E3‑b, WaermepumpeGeraetegrenzenFelder)
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>WPS_GRP_GERAETEGRENZEN — Titel der Gruppe.</summary>
+    public string GruppeGeraetegrenzen { get; set; } = T("WPS_GRP_GERAETEGRENZEN", "Gerätegrenzen");
+
+    /// <summary>WPS_LBL_KAELTEMITTEL</summary>
+    public string LabelKaeltemittel { get; set; } = T("WPS_LBL_KAELTEMITTEL", "Kältemittel");
+
+    /// <summary>WPA_OPT_KAELTEMITTEL_LEER — der Eintrag ohne Wahl (derselbe wie in der Konfiguration).</summary>
+    public string KaeltemittelLeer { get; set; } = T("WPA_OPT_KAELTEMITTEL_LEER", "nicht gewählt");
+
+    /// <summary>WPS_LBL_SPREIZUNG_AUSLEGUNG</summary>
+    public string LabelSpreizungAuslegung { get; set; } = T("WPS_LBL_SPREIZUNG_AUSLEGUNG", "Auslegungsspreizung");
+
+    /// <summary>WPS_LBL_SPREIZUNG_MAX</summary>
+    public string LabelSpreizungMax { get; set; } = T("WPS_LBL_SPREIZUNG_MAX", "Größte Spreizung");
+
+    /// <summary>WPS_LBL_SPREIZUNG_MIN</summary>
+    public string LabelSpreizungMin { get; set; } = T("WPS_LBL_SPREIZUNG_MIN", "Kleinste Spreizung");
+
+    /// <summary>WPS_LBL_MINDESTVOLUMENSTROM</summary>
+    public string LabelMindestvolumenstrom { get; set; } = T("WPS_LBL_MINDESTVOLUMENSTROM", "Mindestvolumenstrom");
+
+    /// <summary>WPS_LBL_RUECKLAUF_MAX</summary>
+    public string LabelRuecklaufMax { get; set; } = T("WPS_LBL_RUECKLAUF_MAX", "Größter Rücklauf");
+
+    /// <summary>WPS_LBL_RUECKLAUF_BEZUG</summary>
+    public string LabelRuecklaufBezug { get; set; } = T("WPS_LBL_RUECKLAUF_BEZUG", "Bezugsrücklauf");
+
+    /// <summary>WPS_LBL_RUECKLAUF_ABWERTUNG</summary>
+    public string LabelRuecklaufAbwertung { get; set; } = T("WPS_LBL_RUECKLAUF_ABWERTUNG", "Abwertung je Kelvin Rücklauf");
+
+    /// <summary>WPS_HINT_KAELTEMITTEL_SCHNELLWAHL — was die Wahl des Kältemittels tut.</summary>
+    public string HinweisSchnellwahl { get; set; } = T("WPS_HINT_KAELTEMITTEL_SCHNELLWAHL",
+        "Die Wahl des Kältemittels füllt nur leere Gerätefelder mit der Vorgabe nach Kältemittel; gepflegte Werte bleiben stehen.");
+
+    /// <summary>WPS_HINT_SCHNELLWAHL_GEFUELLT — {0} = Zahl der gefüllten Felder.</summary>
+    public string HinweisSchnellwahlGefuellt { get; set; } = T("WPS_HINT_SCHNELLWAHL_GEFUELLT",
+        "{0} leere Felder mit der Vorgabe nach Kältemittel gefüllt.");
+
+    /// <summary>WPS_HINT_NUR_R744 — Bezugsrücklauf und Abwertung wirken nur bei R744.</summary>
+    public string HinweisNurR744 { get; set; } = T("WPS_HINT_NUR_R744", "Bezugsrücklauf und Abwertung wirken nur bei R744.");
+
+    /// <summary>WPS_HINT_GRENZE_BEREICH — {0} Feld, {1} von, {2} bis.</summary>
+    public string HinweisBereich { get; set; } = T("WPS_HINT_GRENZE_BEREICH",
+        "„{0}“ liegt außerhalb von {1} bis {2} — so lässt sich der Satz nicht speichern.");
+
+    /// <summary>WPS_PLATZHALTER_VORGABE — leeres Feld: der Kern nimmt die Vorgabe.</summary>
+    public string PlatzhalterVorgabe { get; set; } = T("WPS_PLATZHALTER_VORGABE", "leer = Vorgabe");
+
+    /// <summary>WPS_HERLEITUNG_GERAETEGRENZEN — Herleitungszeile der Gruppe.</summary>
+    public string HerleitungGeraetegrenzen { get; set; } = T("WPS_HERLEITUNG_GERAETEGRENZEN",
+        "Leere Felder rechnen mit der Vorgabe nach Kältemittel bzw. der allgemeinen Vorgabe; gepflegte Werte tragen in der Konfiguration die Herkunft „Katalog“.");
+
+    /// <summary>
+    /// WPA_OPT_KAELTEMITTEL_&lt;Code&gt; — die Anzeige eines Kältemittelcodes, dieselbe Regel wie
+    /// <see cref="WaermepumpeKonfigurationTexte.KaeltemittelText"/>; ein unbekannter Code zeigt sich selbst.
+    /// </summary>
+    public string KaeltemittelText(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return KaeltemittelLeer;
+        string s = new string(code.Where(char.IsLetterOrDigit).Select(char.ToUpperInvariant).ToArray());
+        return T("WPA_OPT_KAELTEMITTEL_" + s, code);
+    }
+
+    /// <summary>Einheiten der Gerätegrenzen; in beiden Sprachen gleich.</summary>
+    public string EinheitKelvin { get; set; } = "K";
+
+    /// <summary>Prozent des Nennvolumenstroms.</summary>
+    public string EinheitProzent { get; set; } = "%";
+
+    /// <summary>Grad Celsius.</summary>
+    public string EinheitGrad { get; set; } = "°C";
+
+    /// <summary>Prozent je Kelvin.</summary>
+    public string EinheitProzentJeK { get; set; } = "%/K";
 }

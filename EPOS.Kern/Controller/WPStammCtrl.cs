@@ -395,6 +395,10 @@ namespace WindowsFormsApplication1
                                                                daten.Nennleistung);
             if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
 
+            // UB-E3-b: die Geraetegrenzen im Bereich des Schemas - benannt, bevor die Datenbank sie abweist.
+            string grenzen = GeraetegrenzWerte.WpVerstoss(daten.Grenzspalten);
+            if (grenzen != null) return new SpeicherErgebnis(false, grenzen, "");
+
             // Der Controller IST das Modell (er erbt WPModel) - Update und Insert lesen
             // ihre Werte von sich selbst.
             ID = daten.ID;
@@ -424,6 +428,12 @@ namespace WindowsFormsApplication1
                     ErzeugerTeillastWerte.WpSchreiben(TABLE, id, daten.MindestleistungKw, daten.TaktverlustfaktorCd);
                     MindestleistungKw = daten.MindestleistungKw;
                     TaktverlustfaktorCd = daten.TaktverlustfaktorCd;
+                    // UB-E3-b: die acht Geraetespalten, nur wenn der Speicherweg sie mitbringt.
+                    if (daten.Grenzspalten != null)
+                    {
+                        GeraetegrenzWerte.WpSchreiben(TABLE, id, daten.Grenzspalten);
+                        Grenzspalten = daten.Grenzspalten;
+                    }
                 }
             }
             catch (Exception ex)
@@ -1162,6 +1172,8 @@ namespace WindowsFormsApplication1
                         ErzeugerTeillastWerte.WpAusZeile(teillast, tz.Rows[0]);
                         ErzeugerTeillastWerte.WpSchreiben(TABLE, katalogId, teillast.MindestleistungKw,
                                                           teillast.TaktverlustfaktorCd);
+                        // UB-E3-b: die acht Geraetespalten reisen ebenso in den Katalogsatz.
+                        GeraetegrenzWerte.WpKopieren(tz.Rows[0], TABLE, katalogId);
                     }
                 }
 

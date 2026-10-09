@@ -202,6 +202,40 @@ public sealed class WaermepumpeStammDaten
     /// <summary>Teillastkoeffizient C_d nach EN 14825 (Welle M4, WP1); <c>null</c> = Vorgabe 0,9.</summary>
     public double? TaktverlustfaktorCd { get; set; }
 
+    // ---------------------------------------------------------------------------------
+    //  Gerätegrenzen der Übergabegrenze (UB‑E3‑b) — nullbar, leer = Vorgabe des Kerns
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>Kältemittelcode (<c>Kaeltemittel</c>); leer = nicht gewählt.</summary>
+    public string Kaeltemittel { get; set; } = "";
+
+    /// <summary>Auslegungsspreizung [K] (<c>Spreizung_Auslegung_K</c>, Bereich 3 … 8).</summary>
+    public double? SpreizungAuslegungK { get; set; }
+
+    /// <summary>Größte Spreizung [K] (<c>Spreizung_Max_K</c>, Bereich 5 … 40).</summary>
+    public double? SpreizungMaxK { get; set; }
+
+    /// <summary>Kleinste Spreizung [K] (<c>Spreizung_Min_K</c>, Bereich 0 … 8).</summary>
+    public double? SpreizungMinK { get; set; }
+
+    /// <summary>Mindestvolumenstrom [% des Nennvolumenstroms] (<c>Mindestvolumenstrom_Prozent</c>, Bereich 20 … 100).</summary>
+    public double? MindestvolumenstromProzent { get; set; }
+
+    /// <summary>Größter Rücklauf [°C] (<c>Ruecklauf_Max</c>, Bereich 20 … 70).</summary>
+    public double? RuecklaufMaxC { get; set; }
+
+    /// <summary>Bezugsrücklauf der Abwertung [°C] (<c>Ruecklauf_Bezug</c>, Bereich 20 … 40) — wirkt nur bei R744.</summary>
+    public double? RuecklaufBezugC { get; set; }
+
+    /// <summary>Abwertung je Kelvin Rücklauf [%/K] (<c>Ruecklauf_Abwertung_ProzentJeK</c>, Bereich 0 … 5) — nur bei R744.</summary>
+    public double? RuecklaufAbwertungProzentJeK { get; set; }
+
+    /// <summary>
+    /// Die Klappliste der Kältemittel samt Vorgaben der Klasse — von der Hülle aus dem Kern gesetzt (die Oberfläche
+    /// sieht die Vorgabentafel nicht); leer = keine Klappliste.
+    /// </summary>
+    public IReadOnlyList<KaeltemittelEintrag> Kaeltemittelliste { get; set; } = Array.Empty<KaeltemittelEintrag>();
+
     /// <summary>Auslieferungssatz? Dann sind Speichern und Löschen gesperrt.</summary>
     public bool NurLesen { get; set; }
 
@@ -224,6 +258,15 @@ public sealed class WaermepumpeStammDaten
         Bauart = Bauart,
         MindestleistungKw = MindestleistungKw,
         TaktverlustfaktorCd = TaktverlustfaktorCd,
+        Kaeltemittel = Kaeltemittel,
+        SpreizungAuslegungK = SpreizungAuslegungK,
+        SpreizungMaxK = SpreizungMaxK,
+        SpreizungMinK = SpreizungMinK,
+        MindestvolumenstromProzent = MindestvolumenstromProzent,
+        RuecklaufMaxC = RuecklaufMaxC,
+        RuecklaufBezugC = RuecklaufBezugC,
+        RuecklaufAbwertungProzentJeK = RuecklaufAbwertungProzentJeK,
+        Kaeltemittelliste = Kaeltemittelliste,
         NurLesen = NurLesen
     };
 }

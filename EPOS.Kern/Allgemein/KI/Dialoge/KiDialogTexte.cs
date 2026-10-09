@@ -368,6 +368,26 @@
         internal static string WpTaktverlustCdName => MyResource.Resource.WPS_LBL_TAKTVERLUST_CD;
         internal static string WpTaktverlustCdErl => MyResource.Resource.KI_DLG_WP_TAKTVERLUST_CD_ERL;
 
+        // ---- UB-E3-b: die Gerätegrenzen im Stammblatt der Wärmepumpe und die Abschaltgrenze des BHKW
+        internal static string WpKaeltemittelName => MyResource.Resource.WPS_LBL_KAELTEMITTEL;
+        internal static string WpKaeltemittelErl => MyResource.Resource.KI_DLG_WP_KAELTEMITTEL_ERL;
+        internal static string WpSpreizungAuslegungName => MyResource.Resource.WPS_LBL_SPREIZUNG_AUSLEGUNG;
+        internal static string WpSpreizungAuslegungErl => MyResource.Resource.KI_DLG_WP_SPREIZUNG_AUSLEGUNG_ERL;
+        internal static string WpSpreizungMaxName => MyResource.Resource.WPS_LBL_SPREIZUNG_MAX;
+        internal static string WpSpreizungMaxErl => MyResource.Resource.KI_DLG_WP_SPREIZUNG_MAX_ERL;
+        internal static string WpSpreizungMinName => MyResource.Resource.WPS_LBL_SPREIZUNG_MIN;
+        internal static string WpSpreizungMinErl => MyResource.Resource.KI_DLG_WP_SPREIZUNG_MIN_ERL;
+        internal static string WpMindestvolumenstromName => MyResource.Resource.WPS_LBL_MINDESTVOLUMENSTROM;
+        internal static string WpMindestvolumenstromErl => MyResource.Resource.KI_DLG_WP_MINDESTVOLUMENSTROM_ERL;
+        internal static string WpRuecklaufMaxName => MyResource.Resource.WPS_LBL_RUECKLAUF_MAX;
+        internal static string WpRuecklaufMaxErl => MyResource.Resource.KI_DLG_WP_RUECKLAUF_MAX_ERL;
+        internal static string WpRuecklaufBezugName => MyResource.Resource.WPS_LBL_RUECKLAUF_BEZUG;
+        internal static string WpRuecklaufBezugErl => MyResource.Resource.KI_DLG_WP_RUECKLAUF_BEZUG_ERL;
+        internal static string WpRuecklaufAbwertungName => MyResource.Resource.WPS_LBL_RUECKLAUF_ABWERTUNG;
+        internal static string WpRuecklaufAbwertungErl => MyResource.Resource.KI_DLG_WP_RUECKLAUF_ABWERTUNG_ERL;
+        internal static string BhkkRuecklaufMaxName => MyResource.Resource.BHKWK_LBL_RUECKLAUF_MAX;
+        internal static string BhkkRuecklaufMaxErl => MyResource.Resource.KI_DLG_BHKK_RUECKLAUF_MAX_ERL;
+
         // ========================================= Welle KI-F1: Erzeuger im Projekt
         //
         // DIE ANZEIGENAMEN SIND DIE BESCHRIFTUNGEN DER MASKE, nicht eigene KI-Texte:

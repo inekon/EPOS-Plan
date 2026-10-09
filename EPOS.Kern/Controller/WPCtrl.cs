@@ -961,6 +961,8 @@ namespace WindowsFormsApplication1
                         // Welle M4 (WP1): Mindestleistung und C_d des Katalogsatzes reisen mit - NULL
                         // bleibt NULL; ohne die Spalten (nicht migrierte Datenbank) nichts.
                         ErzeugerTeillastWerte.WpKopieren(sHead, neueId);
+                        // UB-E3-b: die acht Geraetespalten der Uebergabegrenze ebenso - leer bleibt leer.
+                        GeraetegrenzWerte.WpKopieren(sHead, "Tab_WP", neueId);
                         return neueId;
                     }
                     catch (Exception ex)

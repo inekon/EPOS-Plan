@@ -510,35 +510,36 @@ namespace WindowsFormsApplication1
             }.Concat(Katalogspalten(t)).Concat(new[]
             {
                 // Schemaschritt UebergabegrenzeSchema.SCHRITT, hinter den Katalogspalten (Spaltenfolge der Tabelle):
-                // die Ruecklaufgrenze des BHKW - leer = keine Grenze. Den Rechenweg baut UB-E3.
-                E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("BHKWK_LBL_RUECKLAUF_MAX"), "°C", NIX,
-                  "UebergabegrenzeSchema (Ruecklaufgrenze des BHKW, Umsetzungskonzept Uebergabegrenze 4.2); noch ohne Leser"),
+                // die Ruecklaufgrenze des BHKW - leer = keine Grenze.
+                E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("BHKWK_LBL_RUECKLAUF_MAX"), "°C", SIM,
+                  "SimulationBHKW.RuecklaufgrenzeAnwenden (Ruecklaufgrenze.BhkwAus: Ruecklauf zum BHKW >= Grenze -> keine " +
+                  "Lieferung, Grund RUECKLAUF_MAX); Ruecklaufgrenze.BhkwAuslegungHinweis (Pruefregel des Stammblatts)"),
             }).ToList();
         }
 
         /// <summary>
         /// Die acht Gerätespalten der Übergabegrenze an <c>Tab_WP_STAMM</c> (Schemaschritt
         /// <see cref="UebergabegrenzeSchema.SCHRITT"/>), hinter den Katalogspalten in der Spaltenfolge der Tabelle. Leer
-        /// rechnet die Wärmepumpe mit den Vorgaben des Kerns; die Leser bauen UB-E2 und UB-E3.
+        /// rechnet die Wärmepumpe mit den Vorgaben des Kerns (<see cref="Geraetegrenzen"/>).
         /// </summary>
         private static IEnumerable<ParameterEintrag> UebergabegrenzeWp(Func<string, string> t) => new[]
         {
-            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_AUSLEGUNG, t("WPS_LBL_SPREIZUNG_AUSLEGUNG"), "K", NIX,
-              "UebergabegrenzeSchema (leer = 5 K); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_MAX, t("WPS_LBL_SPREIZUNG_MAX"), "K", NIX,
-              "UebergabegrenzeSchema (leer = 10 K); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_MIN, t("WPS_LBL_SPREIZUNG_MIN"), "K", NIX,
-              "UebergabegrenzeSchema (leer = 3 K); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_MINDESTVOLUMENSTROM, t("WPS_LBL_MINDESTVOLUMENSTROM"), "%", NIX,
-              "UebergabegrenzeSchema (leer = 60 %); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("WPS_LBL_RUECKLAUF_MAX"), "°C", NIX,
-              "UebergabegrenzeSchema (leer = abgeleitet aus dem groessten Vorlauf); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_BEZUG, t("WPS_LBL_RUECKLAUF_BEZUG"), "°C", NIX,
-              "UebergabegrenzeSchema (leer = 30 °C, wenn abgewertet); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_ABWERTUNG, t("WPS_LBL_RUECKLAUF_ABWERTUNG"), "%/K", NIX,
-              "UebergabegrenzeSchema (leer = keine Abwertung); noch ohne Leser"),
-            E(UebergabegrenzeSchema.SPALTE_KAELTEMITTEL, t("WPS_LBL_KAELTEMITTEL"), "", NIX,
-              "UebergabegrenzeSchema (Werteliste im Kern, U-2; leer = allgemeine Vorgaben); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_AUSLEGUNG, t("WPS_LBL_SPREIZUNG_AUSLEGUNG"), "K", SIM,
+              "Geraetegrenzen.Bilden (leer = Vorgabe nach Kaeltemittel, 5 K); Hydraulikgrenze (Nennstrom Phi_N/sigma_A)"),
+            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_MAX, t("WPS_LBL_SPREIZUNG_MAX"), "K", SIM,
+              "Geraetegrenzen.Bilden (leer = Vorgabe nach Kaeltemittel); Hydraulikgrenze (SPREIZUNG_MAX)"),
+            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_MIN, t("WPS_LBL_SPREIZUNG_MIN"), "K", SIM,
+              "Geraetegrenzen.Bilden (leer = 3 K); Hydraulikgrenze (Takten), abgeleitete Ruecklaufgrenze, Bereich B3"),
+            E(UebergabegrenzeSchema.SPALTE_MINDESTVOLUMENSTROM, t("WPS_LBL_MINDESTVOLUMENSTROM"), "%", SIM,
+              "Geraetegrenzen.Bilden (leer = 60 %); Hydraulikgrenze (sigma_max,eff, Ueberstroemventil)"),
+            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("WPS_LBL_RUECKLAUF_MAX"), "°C", SIM,
+              "Geraetegrenzen.Bilden (min(Feld, Hoechstvorlauf - sigma_min)); Ruecklaufgrenze.Pruefen (RUECKLAUF_MAX)"),
+            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_BEZUG, t("WPS_LBL_RUECKLAUF_BEZUG"), "°C", SIM,
+              "Geraetegrenzen.Bilden (leer = 30 °C, wenn abgewertet); Ruecklaufgrenze.Faktor (R744)"),
+            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_ABWERTUNG, t("WPS_LBL_RUECKLAUF_ABWERTUNG"), "%/K", SIM,
+              "Geraetegrenzen.Bilden (leer = Vorgabe nach Kaeltemittel, sonst keine); Ruecklaufgrenze.Faktor auf Leistung und COP"),
+            E(UebergabegrenzeSchema.SPALTE_KAELTEMITTEL, t("WPS_LBL_KAELTEMITTEL"), "", SIM,
+              "Geraetegrenzen.Bilden (Vorgaben der Kaeltemittelklasse, U-2; leer = allgemeine Vorgaben); Dialog Bivalenz und Uebergabe"),
         };
 
         // =================================================================

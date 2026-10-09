@@ -30,7 +30,10 @@ namespace WindowsFormsApplication1
             => Bivalenzvorgaben.Kaeltemittelcodes.Select(code =>
             {
                 Kaeltemittelvorgabe v = Bivalenzvorgaben.Vorgabe(code);
-                return new KaeltemittelEintrag(code, v.HoechstvorlaufC, v.RuecklaufGrenzeC, v.BezugsruecklaufC);
+                return new KaeltemittelEintrag(code, v.HoechstvorlaufC, v.RuecklaufGrenzeC, v.BezugsruecklaufC,
+                    v.Herkunft == Kaeltemittelherkunft.Kaeltemittelklasse,
+                    v.SpreizungAuslegungK, v.SpreizungMaxK, v.SpreizungMinK, v.MindestvolumenstromAnteil * 100.0,
+                    v.AbwertungProzentJeK);
             }).ToList();
 
         /// <summary>
@@ -52,6 +55,12 @@ namespace WindowsFormsApplication1
                 catch (Exception ex) { return new BivalenzProjektdaten { Befund = ex.Message }; }
             });
             var kennfelder = new Dictionary<double, IReadOnlyList<Kennfeldpunkt>>();
+            // UB-E3: die gepflegten Geraetespalten (Projektkopie vor Stammkatalog); das Kaeltemittel kommt aus der Wahl des Dialogs.
+            var spalten = new Lazy<Geraetespalten?>(() =>
+            {
+                try { return WaermepumpeGeraeteCtrl.GeraetespaltenLesen(idWp > 0 ? idWp : d.IdWp, true); }
+                catch (Exception) { return null; }
+            });
             d.BivalenzRechnen = daten =>
             {
                 BivalenzProjektdaten p = projekt.Value;
@@ -64,7 +73,9 @@ namespace WindowsFormsApplication1
                 }
                 try
                 {
-                    return Werte(p, Geraet(daten, kennfeld), Bivalenzpruefung.Grenzen(daten.Kaeltemittel, vorlauf),
+                    Geraetegrenzwerte grenzen = Bivalenzpruefung.GrenzenAusSpalten(
+                        (spalten.Value ?? Geraetespalten.Leer) with { Kaeltemittel = daten.Kaeltemittel }, vorlauf);
+                    return Werte(p, Geraet(daten, kennfeld, grenzen), grenzen,
                                  daten.Heizstab, daten.BivalenterBetrieb);
                 }
                 catch (ArgumentException ex) { return new WaermepumpeBivalenzWerte { Kennzeichen = BivalenzKennzeichen.Befund, Befund = ex.Message }; }
@@ -81,7 +92,8 @@ namespace WindowsFormsApplication1
         /// Die Geräteseite aus dem Arbeitsstand: Einbindung (normiert, leer = nicht gewählt), Vorwärmbetrieb nur bivalent
         /// und nicht alternativ, Mindestspreizung nach Kältemittel.
         /// </summary>
-        internal static BivalenzGeraetedaten Geraet(WaermepumpeAnlageDaten d, IReadOnlyList<Kennfeldpunkt> kennfeld)
+        internal static BivalenzGeraetedaten Geraet(WaermepumpeAnlageDaten d, IReadOnlyList<Kennfeldpunkt> kennfeld,
+                                                    Geraetegrenzwerte? grenzen = null)
         {
             Bivalenzbetriebsart art = Betriebsart(d);
             double vorlauf = Hoechstvorlauf(d);
@@ -89,7 +101,7 @@ namespace WindowsFormsApplication1
             {
                 HoechstvorlaufC = vorlauf,
                 Kennfeld = kennfeld,
-                SpreizungMinK = Bivalenzpruefung.Grenzen(d.Kaeltemittel, vorlauf).SpreizungMinK,
+                SpreizungMinK = (grenzen ?? Bivalenzpruefung.Grenzen(d.Kaeltemittel, vorlauf)).SpreizungMinK,
                 Betriebsart = art,
                 AbschaltpunktC = d.BivalenterBetrieb ? d.Abschaltpunkt : null,
                 Vorwaermbetrieb = d.BivalenterBetrieb && d.Vorwaermbetrieb && Bivalenzpruefung.VorwaermbetriebWaehlbar(art),

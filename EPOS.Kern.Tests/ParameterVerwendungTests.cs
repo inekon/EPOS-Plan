@@ -536,7 +536,9 @@ namespace EPOS.Kern.Tests
                                    // Welle M4 (BH1, BH2): die Gruppe „Teillast und Takten" des
                                    // Katalogeditors (BHKWStammCtrl.Update).
                                    "Wirkungsgrad_el_Teillast50", "Wirkungsgrad_th_Teillast50",
-                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min" };
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min",
+                                   // UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs (GeraetegrenzWerte.BhkwSchreiben).
+                                   "Ruecklauf_Max" };
 
                 case Anlagenart.Waermepumpe:
                     // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
@@ -549,7 +551,12 @@ namespace EPOS.Kern.Tests
                                    "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart",
                                    // Welle M4 (WP1): Mindestleistung und C_d schreibt die
                                    // Katalogpflege zurueck (WPStammCtrl.Speichern).
-                                   "Mindestleistung_kW", "Taktverlustfaktor_Cd" };
+                                   "Mindestleistung_kW", "Taktverlustfaktor_Cd",
+                                   // UB-E3-b: die Gruppe „Geraetegrenzen" des Stammblatts
+                                   // (WPStammCtrl.Speichern -> GeraetegrenzWerte.WpSchreiben).
+                                   "Kaeltemittel", "Spreizung_Auslegung_K", "Spreizung_Max_K", "Spreizung_Min_K",
+                                   "Mindestvolumenstrom_Prozent", "Ruecklauf_Max", "Ruecklauf_Bezug",
+                                   "Ruecklauf_Abwertung_ProzentJeK" };
 
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",

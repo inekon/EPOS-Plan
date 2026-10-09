@@ -1049,7 +1049,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         var titel = cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToList();
         // Stufe 4: die eigene Gruppe Kosten (die Modulkosten, aus den Kenndaten heraus).
-        Assert.Equal(new[] { "Kennlinie", "Kenndaten", "Kosten" }, titel);
+        Assert.Equal(new[] { "Kennlinie", "Gerätegrenzen", "Kenndaten", "Kosten" }, titel);
         var kennlinie = cut.FindAll(".epos-stammblattgruppe")[0];
         Assert.NotNull(kennlinie.QuerySelector(".epos-reiter"));
         Assert.Contains("Kennliniendaten...", kennlinie.QuerySelector(".epos-stammblattgruppe-kopf")!.TextContent);

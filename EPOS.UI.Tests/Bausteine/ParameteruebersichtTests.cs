@@ -168,10 +168,9 @@ public class ParameteruebersichtTests : EposBunitContext
 
         Assert.Contains(T("PARV_VERW_KEINE"), k.Markup);
         // 9 Fachspalten ohne Verwendung, dazu die drei Katalogspalten des Katalogabgleichs (KU1 Stufe 1):
-        // Schluessel, Pruefsumme und Auslaufkennzeichen sind keine Rechengroessen; dazu die acht
-        // Geraetespalten der Uebergabegrenze (Schemaschritt 203: Spreizungen, Mindestvolumenstrom,
-        // Ruecklaufgrenzen, Kaeltemittel), die bis zur Etappe UB-E3 kein Rechenweg liest.
-        Assert.Equal(20, k.FindAll("span.epos-verwendung--keine").Count);
+        // Schluessel, Pruefsumme und Auslaufkennzeichen sind keine Rechengroessen. Die acht
+        // Geraetespalten der Uebergabegrenze liest die Simulation (Geraetegrenzen).
+        Assert.Equal(12, k.FindAll("span.epos-verwendung--keine").Count);
     }
 
     /// <summary>

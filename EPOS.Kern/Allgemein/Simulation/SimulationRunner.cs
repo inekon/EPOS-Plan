@@ -1390,7 +1390,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <summary>
         /// UB‑E2 (Umsetzungskonzept 3.3): die Betriebsbereiche eines Moduls aus seinem Bivalenzobjekt — Stunden und Wärme
-        /// je Bereich (B0 und B4 als „nur Kessel"), die Zähler der Spreizungs- und Rücklaufgrenze (in UB‑E2 0), die
+        /// je Bereich (B0 und B4 als „nur Kessel"), die Zähler der Spreizungs- und Rücklaufgrenze (UB‑E3), die
         /// Bivalenzpunkte und Φ_UE,max bei Auslegung. <c>null</c> ohne Bivalenzobjekt.
         /// </summary>
         internal static Bereichskennzahlen BereicheDesModuls(Bivalenzmodul b)
@@ -1410,8 +1410,8 @@ namespace WindowsFormsApplication1
                     b.WaermeKwh(Betriebsbereich.WpAllein) / 1000.0, b.WaermeKwh(Betriebsbereich.Parallel) / 1000.0,
                     b.WaermeKwh(Betriebsbereich.Vorwaermung) / 1000.0, b.NurKesselKwh / 1000.0,
                 },
-                Spreizung_Unterschritten_h = 0,
-                Ruecklauf_Ueberschritten_h = 0,
+                Spreizung_Unterschritten_h = b.SpreizungUnterschrittenStunden,
+                Ruecklauf_Ueberschritten_h = b.RuecklaufUeberschrittenStunden,
                 Bivalenzpunkt_1 = p.HasValue ? Punkt(p.Value.ErsterC) : null,
                 Bivalenzpunkt_2 = p.HasValue ? Punkt(p.Value.ZweiterC) : null,
                 Uebergabe_Max_kW = Punkt(b.UebergabeMaxAuslegungKw),

@@ -123,8 +123,17 @@
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@FeldRuecklauf"
                               Wert="@Daten.Ruecklauf" WertChanged="w => Daten.Ruecklauf = w"
                               FehlerZustand="BeiFehlerZustand" />
+                @* UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs neben dem Auslegungsruecklauf; leer = keine Grenze. *@
+                <Zahlenfeld Bezeichnung="@LabelRuecklaufMax" Einheit="°C" Feldname="@FeldRuecklaufMax"
+                            Wert="@Daten.RuecklaufMax" WertChanged="w => Daten.RuecklaufMax = w"
+                            Platzhalter="@PlatzhalterRuecklaufMax" />
                 </KindInhalt>
             </Formularraster>
+            @* Die Pruefregel steht im Kern (Ruecklaufgrenze.BhkwAuslegungHinweis): ein Hinweis, keine Sperre. *@
+            @if (RuecklaufHinweisAktiv)
+            {
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@RuecklaufHinweisText" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -294,6 +303,21 @@
     [Parameter] public string FeldVorlauf { get; set; } = "Vorlauftemperatur";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
     [Parameter] public string FeldRuecklauf { get; set; } = "Rücklauftemperatur";
+    [Parameter] public string LabelRuecklaufMax { get; set; } = "Höchster Rücklauf (Abschaltgrenze)";
+    [Parameter] public string FeldRuecklaufMax { get; set; } = "Höchster Rücklauf";
+    [Parameter] public string PlatzhalterRuecklaufMax { get; set; } = "leer = keine Grenze";
+    [Parameter] public string HinweisRuecklaufMax { get; set; } =
+        "Der Auslegungsrücklauf ({0} °C) erreicht die Abschaltgrenze ({1} °C): Bei diesem Rücklauf liefert das Modul nichts.";
+
+    /// <summary>
+    /// Steht der Hinweis der Abschaltgrenze? (U‑3) Der Auslegungsrücklauf muss unter der Grenze liegen — die Regel
+    /// steht im Kern (<see cref="GeraetegrenzWerte.BhkwAuslegungHinweis"/>). Öffentlich als Prüfhilfe für Tests.
+    /// </summary>
+    public bool RuecklaufHinweisAktiv => GeraetegrenzWerte.BhkwAuslegungHinweis(Daten.Ruecklauf, Daten.RuecklaufMax);
+
+    private string RuecklaufHinweisText => string.Format(CultureInfo.CurrentCulture, HinweisRuecklaufMax,
+        Daten.Ruecklauf?.ToString(CultureInfo.CurrentCulture) ?? "",
+        Daten.RuecklaufMax?.ToString(CultureInfo.CurrentCulture) ?? "");
 
     // --- Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ---------------------
 
@@ -486,7 +510,7 @@
             return false;
         }
 
-        return WirkungsgradPruefen() && TeillastPruefen();
+        return WirkungsgradPruefen() && TeillastPruefen() && RuecklaufMaxPruefen();
     }
 
     /// <summary>
@@ -497,6 +521,20 @@
     {
         string grund = ErzeugerTeillastWerte.BhkwVerstoss(new ErzeugerTeillastWerte.BhkwFelder(
             Daten.WirkungsgradEl50, Daten.WirkungsgradTh50, Daten.AnfahrverlustKwh, Daten.MindestlaufzeitMin));
+        if (string.IsNullOrEmpty(grund)) return true;
+
+        _meldung = grund;
+        _meldungStufe = WarnStufe.Warnung;
+        return false;
+    }
+
+    /// <summary>
+    /// Die Abschaltgrenze im Bereich des Schemas (40 … 90 °C, UB‑E3‑b) — die Regel steht im Kern
+    /// (<see cref="GeraetegrenzWerte.BhkwVerstoss"/>); sonst wiese die Datenbank den Wert ab.
+    /// </summary>
+    private bool RuecklaufMaxPruefen()
+    {
+        string? grund = GeraetegrenzWerte.BhkwVerstoss(Daten.RuecklaufMax);
         if (string.IsNullOrEmpty(grund)) return true;
 
         _meldung = grund;

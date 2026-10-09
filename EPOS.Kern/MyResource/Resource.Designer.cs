@@ -4632,6 +4632,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Rücklauf ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur ähnelt.
         /// </summary>
         public static string BHKWK_FELD_VORLAUF {
@@ -4700,6 +4709,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_HINT_ETA_TH50 {
             get {
                 return ResourceManager.GetString("BHKWK_HINT_ETA_TH50", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auslegungsrücklauf ({0} °C) erreicht die Abschaltgrenze ({1} °C): Bei diesem Rücklauf liefert das Modul nichts. ähnelt.
+        /// </summary>
+        public static string BHKWK_HINT_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("BHKWK_HINT_RUECKLAUF_MAX", resourceCulture);
             }
         }
         
@@ -4911,7 +4929,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Rücklauf ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Rücklauf (Abschaltgrenze) ähnelt.
         /// </summary>
         public static string BHKWK_LBL_RUECKLAUF_MAX {
             get {
@@ -5042,6 +5060,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_PLATZHALTER_OHNE_TAKTEN {
             get {
                 return ResourceManager.GetString("BHKWK_PLATZHALTER_OHNE_TAKTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = keine Grenze ähnelt.
+        /// </summary>
+        public static string BHKWK_PLATZHALTER_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("BHKWK_PLATZHALTER_RUECKLAUF_MAX", resourceCulture);
             }
         }
         
@@ -53297,6 +53324,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschaltgrenze des Rücklaufs (40 bis 90 °C): Liegt der Rücklauf zum Modul darüber, liefert es in der Stunde nichts. Der Auslegungsrücklauf muss darunter liegen. Leer = keine Grenze; Vorgabe bei Neuanlage 70 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_RUECKLAUF_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_RUECKLAUF_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger, mit dem das Modul betrieben wird; er bestimmt Brennstoffpreis und Emissionsfaktor. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKK_TRAEGER_ERL {
@@ -64304,6 +64340,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kältemittel des Geräts (Code wie R410A, R290, R744). Im Stammblatt füllt die Wahl nur leere Gerätefelder mit der Vorgabe nach Kältemittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_KAELTEMITTEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_KAELTEMITTEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlleistung des Katalogsatzes; in der Katalogpflege eine Anzeige, änderbar ist sie an der Anlage. ähnelt.
         /// </summary>
         public static string KI_DLG_WP_KUEHLLEISTUNG_ERL {
@@ -64318,6 +64363,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WP_MINDESTLEISTUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WP_MINDESTLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster Volumenstrom in Prozent des Nennvolumenstroms (20 bis 100 %). Leer = Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_MINDESTVOLUMENSTROM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_MINDESTVOLUMENSTROM_ERL", resourceCulture);
             }
         }
         
@@ -64345,6 +64399,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WP_NAME_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WP_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abwertung der Leistung je Kelvin Rücklauf über dem Bezugsrücklauf (0 bis 5 %/K) — wirkt nur bei R744. Leer = Vorgabe nach Kältemittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_RUECKLAUF_ABWERTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_RUECKLAUF_ABWERTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsrücklauf der Abwertung (20 bis 40 °C) — wirkt nur bei R744. Leer = Vorgabe nach Kältemittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_RUECKLAUF_BEZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_RUECKLAUF_BEZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größter Rücklauf, bei dem das Gerät noch Wärme liefert (20 bis 70 °C); darüber schaltet es ab. Leer = abgeleitet aus Höchstvorlauf und kleinster Spreizung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_RUECKLAUF_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_RUECKLAUF_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung zwischen Vor- und Rücklauf am Auslegungspunkt (3 bis 8 K). Leer = Vorgabe nach Kältemittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_SPREIZUNG_AUSLEGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_SPREIZUNG_AUSLEGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größte zulässige Spreizung am Verflüssiger (5 bis 40 K). Leer = Vorgabe nach Kältemittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_SPREIZUNG_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_SPREIZUNG_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Spreizung am Verflüssiger (0 bis 8 K); sie bestimmt mit dem Höchstvorlauf die Rücklaufgrenze. Leer = Vorgabe nach Kältemittel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WP_SPREIZUNG_MIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WP_SPREIZUNG_MIN_ERL", resourceCulture);
             }
         }
         
@@ -97199,6 +97307,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW „{0}“: {1} h ohne Betrieb, der Rücklauf lag an oder über der Rücklaufgrenze {2} °C. ähnelt.
+        /// </summary>
+        public static string SIMENG_BHKW_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("SIMENG_BHKW_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Booster: Die Anlage {0} bezieht ihre Quellwärme aus Puffer {1} ({2}), einem GETEILTEN Puffer. Die Quelltemperatur folgt dem Speicherzustand und wird je Stunde neu gebildet ({3} … {4} °C, {5} Schicht(en){6}) statt mit einem Jahresprofil zu rechnen. Unterschreitet sie die unterste Kennlinien-Stützstelle, gilt diese Stützstelle (Kappung, keine Extrapolation). ähnelt.
         /// </summary>
         public static string SIMENG_BOOSTER_KOPPLUNG {
@@ -99350,6 +99467,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung unter der Mindestspreizung (taktet) {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_GRUND_SPREIZUNG_TAKT {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_GRUND_SPREIZUNG_TAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höchstvorlauf der Wärmepumpe {0} h ähnelt.
         /// </summary>
         public static string SIMENG_WP_GRUND_UEBERGABE {
@@ -99391,6 +99517,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_KENNLINIEN_FEHLEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_KENNLINIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Einbindung über einen Puffer — gerechnet wird die Ladeseite mit der größten Spreizung; die Mischung an der Entladeseite wird nicht gerechnet (Näherung). ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_PUFFER_ENTLADESEITE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_PUFFER_ENTLADESEITE", resourceCulture);
             }
         }
         
@@ -128075,6 +128210,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätegrenzen ähnelt.
+        /// </summary>
+        public static string WPS_GRP_GERAETEGRENZEN {
+            get {
+                return ResourceManager.GetString("WPS_GRP_GERAETEGRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
         /// </summary>
         public static string WPS_GRP_STAMM {
@@ -128084,11 +128228,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leere Felder rechnen mit der Vorgabe nach Kältemittel bzw. der allgemeinen Vorgabe; gepflegte Werte tragen in der Konfiguration die Herkunft „Katalog“. ähnelt.
+        /// </summary>
+        public static string WPS_HERLEITUNG_GERAETEGRENZEN {
+            get {
+                return ResourceManager.GetString("WPS_HERLEITUNG_GERAETEGRENZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt ähnelt.
         /// </summary>
         public static string WPS_HERL_MODULKOSTEN {
             get {
                 return ResourceManager.GetString("WPS_HERL_MODULKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ liegt außerhalb von {1} bis {2} — so lässt sich der Satz nicht speichern. ähnelt.
+        /// </summary>
+        public static string WPS_HINT_GRENZE_BEREICH {
+            get {
+                return ResourceManager.GetString("WPS_HINT_GRENZE_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wahl des Kältemittels füllt nur leere Gerätefelder mit der Vorgabe nach Kältemittel; gepflegte Werte bleiben stehen. ähnelt.
+        /// </summary>
+        public static string WPS_HINT_KAELTEMITTEL_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("WPS_HINT_KAELTEMITTEL_SCHNELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsrücklauf und Abwertung wirken nur bei R744. ähnelt.
+        /// </summary>
+        public static string WPS_HINT_NUR_R744 {
+            get {
+                return ResourceManager.GetString("WPS_HINT_NUR_R744", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} leere Felder mit der Vorgabe nach Kältemittel gefüllt. ähnelt.
+        /// </summary>
+        public static string WPS_HINT_SCHNELLWAHL_GEFUELLT {
+            get {
+                return ResourceManager.GetString("WPS_HINT_SCHNELLWAHL_GEFUELLT", resourceCulture);
             }
         }
         
@@ -128458,6 +128647,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_PLATZHALTER_OHNE_TAKT {
             get {
                 return ResourceManager.GetString("WPS_PLATZHALTER_OHNE_TAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorgabe ähnelt.
+        /// </summary>
+        public static string WPS_PLATZHALTER_VORGABE {
+            get {
+                return ResourceManager.GetString("WPS_PLATZHALTER_VORGABE", resourceCulture);
             }
         }
         

@@ -542,6 +542,64 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Festschreiben (Werkzeug Auslieferungsvorlage): Prüfsummen auf den heutigen Stand, Fassung gesetzt.</summary>
+        /// <summary>
+        /// UB-E3-b (Umsetzungskonzept 4.3): Die neun Gerätespalten der Übergabegrenze stehen in Stufe 1 — leer ändern sie
+        /// keine Prüfsumme (die ausgelieferten Sätze bleiben gleich), ein gepflegter Wert ändert sie.
+        /// </summary>
+        [Fact]
+        public void Leere_Geraetegrenzen_aendern_keine_Pruefsumme_ein_gepflegter_Wert_schon()
+        {
+            Katalogtabelle wp = Katalogfassung.Tabelle("Tab_WP_STAMM");
+            Katalogtabelle bhkw = Katalogfassung.Tabelle("Tab_BHKW_STAMM");
+            foreach ((string spalte, string _) in UebergabegrenzeSchema.WP_SPALTEN)
+                Assert.Contains(spalte, wp.Fachspalten);
+            Assert.Contains(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, bhkw.Fachspalten);
+
+            var ohne = new Dictionary<string, object> { ["Bezeichner"] = "WP A", ["Nennleistung"] = 10L };
+            var leer = new Dictionary<string, object>(ohne);
+            foreach ((string spalte, string _) in UebergabegrenzeSchema.WP_SPALTEN) leer[spalte] = null;
+            Assert.Equal(Katalogfassung.Pruefsumme(wp, ohne), Katalogfassung.Pruefsumme(wp, leer));
+            Assert.NotEqual(Katalogfassung.Pruefsumme(wp, ohne),
+                            Katalogfassung.Pruefsumme(wp, new Dictionary<string, object>(leer) { ["Spreizung_Min_K"] = 4.0 }));
+            Assert.NotEqual(Katalogfassung.Pruefsumme(wp, ohne),
+                            Katalogfassung.Pruefsumme(wp, new Dictionary<string, object>(leer) { ["Kaeltemittel"] = "R744" }));
+
+            var b = new Dictionary<string, object> { ["Bezeichner"] = "BHKW A" };
+            Assert.Equal(Katalogfassung.Pruefsumme(bhkw, b),
+                         Katalogfassung.Pruefsumme(bhkw, new Dictionary<string, object>(b) { ["Ruecklauf_Max"] = null }));
+            Assert.NotEqual(Katalogfassung.Pruefsumme(bhkw, b),
+                            Katalogfassung.Pruefsumme(bhkw, new Dictionary<string, object>(b) { ["Ruecklauf_Max"] = 70.0 }));
+        }
+
+        /// <summary>
+        /// UB-E3-b: Ein gepflegter Gerätewert hebt die Katalogfassung über den gewohnten Weg — das festgeschriebene
+        /// Paket der nächsten Fassung trägt den Wert, die Prüfsumme des Satzes wechselt, alle übrigen Sätze bleiben.
+        /// Das ist zugleich der Weg der Auslieferungsvorlage (<c>Katalogpaket.json</c> aus <see cref="Katalogpaket.Festschreiben"/>).
+        /// </summary>
+        [Fact]
+        public void Ein_gepflegter_Geraetewert_hebt_die_Katalogfassung()
+        {
+            if (!_db.Vorhanden) return;
+
+            Katalogpaket vorher = Katalogpaket.Festschreiben(7);
+            Katalogpakettabelle tv = vorher.Tabellen.Single(t => t.Tabelle == "Tab_WP_STAMM");
+            Katalogpaketsatz sv = tv.Saetze.First();
+            Assert.False(sv.Werte.TryGetValue("Spreizung_Min_K", out object leerWert) && leerWert != null);
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_WP_STAMM SET Spreizung_Min_K = 4, Kaeltemittel = 'R290' WHERE Katalog_Schluessel = ?",
+                                           new DbParam("@s", sv.Schluessel));
+            Katalogpaket nachher = Katalogpaket.Festschreiben(8);
+            Assert.Equal(8, Katalogabgleich.FassungDerDatenbank());
+            Katalogpaketsatz sn = nachher.Tabellen.Single(t => t.Tabelle == "Tab_WP_STAMM").Saetze.Single(s => s.Schluessel == sv.Schluessel);
+            Assert.NotEqual(sv.Pruefsumme, sn.Pruefsumme);
+            Assert.Equal(4.0, Convert.ToDouble(sn.Werte["Spreizung_Min_K"], CultureInfo.InvariantCulture));
+            Assert.Equal("R290", Convert.ToString(sn.Werte["Kaeltemittel"], CultureInfo.InvariantCulture));
+
+            int gleich = tv.Saetze.Count(s => nachher.Tabellen.Single(t => t.Tabelle == "Tab_WP_STAMM").Saetze
+                                                     .Any(n => n.Schluessel == s.Schluessel && n.Pruefsumme == s.Pruefsumme));
+            Assert.Equal(tv.Saetze.Count - 1, gleich);
+        }
+
         [Fact]
         public void Festschreiben_setzt_Pruefsummen_und_Fassung()
         {

@@ -356,7 +356,7 @@ public class KiDialogkatalogTests : IDisposable
         KiMaskennamen.HEIZKESSEL           => new[] { "energietraeger" },
         KiMaskennamen.PUFFERSPEICHER       => new[] { "speichertyp" },
         KiMaskennamen.WAERMEPUMPE          => new[] { "typ", "leistungsstufen",
-                                                      "aufstellung", "baujahr" },
+                                                      "aufstellung", "baujahr", "kaeltemittel" },
         KiMaskennamen.HEIZKESSEL_PROJEKT   => new[] { "energietraeger" },
         KiMaskennamen.BHKW_PROJEKT         => new[] { "energietraeger" },
         KiMaskennamen.STROMSPEICHER_PROJEKT => new[] { "energietraeger" },
@@ -684,8 +684,9 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
-        // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1): 13.
-        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
+        // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1) und die acht
+        // Geraetegrenzen der Uebergabegrenze (UB-E3-b): 21.
+        Assert.Equal(21, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
         // Die Ueberlagerung „Anlagenwerte" fuehrt die VIER Kennwerte des
         // Wechselrichters - Nennleistung und die drei Punkte der Teillastkennlinie.
@@ -771,8 +772,9 @@ public class KiDialogkatalogTests : IDisposable
     [Fact]
     public void Die_fuenf_Erzeugerkataloge_fuehren_17_12_15_15_und_26_Felder()
     {
-        // BHKW-Editor: dreizehn plus die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2).
-        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
+        // BHKW-Editor: dreizehn plus die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) plus die
+        // Abschaltgrenze des Ruecklaufs (UB-E3-b).
+        Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
         // Kollektoreditor: elf plus die Bezugsfläche der Kennwerte (Welle M2, ST6).
         Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
@@ -1585,7 +1587,8 @@ public class KiDialogkatalogTests : IDisposable
 
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
         { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
-                                          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
+                                          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor;" +
+                                          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeGeraetegrenzenFelder.razor" },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS.
         { KiMaskennamen.HEIZKESSEL_PROJEKT,     "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },

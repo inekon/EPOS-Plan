@@ -449,6 +449,11 @@ namespace WindowsFormsApplication1
             // Welle M4: die Teillastwerte gehören zum Laufzustand.
             _teillastIrgendein = false;
             Array.Clear(_teillast, 0, MAX_BHKW);
+            // UB-E3: die Ruecklaufgrenze gehoert ebenso zum Laufzustand.
+            _ruecklaufIrgendein = false;
+            Array.Clear(_ruecklaufMax, 0, MAX_BHKW);
+            Array.Clear(_ruecklaufAusStunden, 0, MAX_BHKW);
+            Array.Clear(_ruecklaufGezaehlt, 0, MAX_BHKW);
 
             BHKWCtrl ctrl = new BHKWCtrl();
             for (int i = 0; i < anzahl; i++)
@@ -477,6 +482,13 @@ namespace WindowsFormsApplication1
                 bhkwGrenzL[i] = Grenzfaktor(i < bhkw_list_Namen.Count ? bhkw_list_Namen[i] : "",
                                             anlageProzent, (double)ctrl.m_Grenzleistung,
                                             bhkwGrenzleistungAllgemein);
+
+                // UB-E3 (UB-Q9, U-3): die Ruecklaufgrenze der Projektkopie; leer = keine Grenze.
+                if (i < MAX_BHKW)
+                {
+                    _ruecklaufMax[i] = BHKWCtrl.RuecklaufMaxLesen(bhkw_list[i]);
+                    if (_ruecklaufMax[i].HasValue) _ruecklaufIrgendein = true;
+                }
 
                 // Welle M4 (BH1, BH2): Teillastkennlinie und Takten aus der Projektkopie. Ohne
                 // gepflegte Felder bleibt der Eintrag leer, und das Modul rechnet wie zuvor.
@@ -2072,6 +2084,12 @@ namespace WindowsFormsApplication1
             double restWaerme = (double)bedarf;
             double kapazitaet = (double)speicherraum;
 
+            // UB-E3 (UB-Q9): ein Modul ueber seiner Ruecklaufgrenze liefert in der Stunde nichts (Grund RUECKLAUF_MAX).
+            // Ohne gepflegte Grenze bleiben die Leistungsfelder dieselben Felder - der Lauf rechnet wie zuvor.
+            double[] bhkwWaermeLeistung = this.bhkwWaermeLeistung;
+            double[] bhkwStromLeistung = this.bhkwStromLeistung;
+            if (_ruecklaufIrgendein) RuecklaufgrenzeAnwenden(stunde, ref bhkwWaermeLeistung, ref bhkwStromLeistung);
+
             // Welle M4 (BH1, BH2): Stand der Modulsummen vor dem Lauf - die Differenz danach ist
             // Wärme und Strom des Moduls in dieser Stunde.
             if (_teillastIrgendein)
@@ -2129,6 +2147,96 @@ namespace WindowsFormsApplication1
             if (geladen < 0) geladen = 0;
         }
 
+        // =====================================================================
+        //  UB-E3 (UB-Q9, U-3): die Ruecklaufgrenze des BHKW
+        // =====================================================================
+
+        /// <summary>
+        /// Der gerechnete Heizkreisrücklauf je Stunde (Anlagenkopplung); <c>null</c> ohne Kopplung. Rücklauf zum BHKW für
+        /// die Rücklaufgrenze, Rückfall die unterste Zone seines Puffers.
+        /// </summary>
+        public double[] Heizkreisruecklauf;
+
+        /// <summary>Je Modul <c>Tab_BHKW.Ruecklauf_Max</c> der Projektkopie [°C]; <c>null</c> = keine Grenze.</summary>
+        private readonly double?[] _ruecklaufMax = new double?[MAX_BHKW];
+
+        /// <summary>Je Modul die Stunden ohne Betrieb über der Rücklaufgrenze.</summary>
+        private readonly int[] _ruecklaufAusStunden = new int[MAX_BHKW];
+
+        /// <summary>Je Modul die zuletzt gezählte Stunde + 1 (die Fahrweise kann je Stunde zweimal laufen).</summary>
+        private readonly int[] _ruecklaufGezaehlt = new int[MAX_BHKW];
+
+        /// <summary>Hat irgendein Modul eine gepflegte Rücklaufgrenze?</summary>
+        private bool _ruecklaufIrgendein;
+
+        private double[] _waermeLeistungGrenze;
+        private double[] _stromLeistungGrenze;
+
+        /// <summary>Stunden des Moduls ohne Betrieb über der Rücklaufgrenze (Grund <c>RUECKLAUF_MAX</c>).</summary>
+        public int RuecklaufAusStunden(int modul) => modul >= 0 && modul < MAX_BHKW ? _ruecklaufAusStunden[modul] : 0;
+
+        /// <summary>
+        /// Der Rücklauf zum BHKW in der Stunde: bei Kopplung der Heizkreisrücklauf, sonst die unterste Zone des Puffers
+        /// seines ersten Ladeauftrags (Stundenbeginn); ohne beides NaN — dann ruht die Grenze.
+        /// </summary>
+        private double RuecklaufZumBhkw(int stunde)
+        {
+            if (Heizkreisruecklauf != null && stunde >= 0 && stunde < Heizkreisruecklauf.Length)
+            {
+                double r = Heizkreisruecklauf[stunde];
+                if (!double.IsNaN(r) && !double.IsInfinity(r)) return r;
+            }
+            SimulationPufferspeicher sp = Auftraege.Count > 0 ? Auftraege[0].Speicher : null;
+            return sp != null ? sp.T_unten : double.NaN;
+        }
+
+        /// <summary>
+        /// Setzt für die Stunde die Leistungsfelder der Module, deren Rücklauf die Grenze erreicht, auf eine Kopie mit 0
+        /// (<see cref="Ruecklaufgrenze.BhkwAus"/>) und zählt die Stunde je Modul einmal.
+        /// </summary>
+        private void RuecklaufgrenzeAnwenden(int stunde, ref double[] waerme, ref double[] strom)
+        {
+            double ruecklauf = RuecklaufZumBhkw(stunde);
+            if (double.IsNaN(ruecklauf)) return;
+            bool kopiert = false;
+            int n = Math.Min(_anzahlZweikanalig, MAX_BHKW);
+            for (int m = 0; m < n; m++)
+            {
+                if (!Ruecklaufgrenze.BhkwAus(_ruecklaufMax[m], ruecklauf)) continue;
+                if (!kopiert)
+                {
+                    _waermeLeistungGrenze ??= new double[waerme.Length];
+                    _stromLeistungGrenze ??= new double[strom.Length];
+                    Array.Copy(waerme, _waermeLeistungGrenze, waerme.Length);
+                    Array.Copy(strom, _stromLeistungGrenze, strom.Length);
+                    waerme = _waermeLeistungGrenze;
+                    strom = _stromLeistungGrenze;
+                    kopiert = true;
+                }
+                waerme[m] = 0.0;
+                strom[m] = 0.0;
+                if (_ruecklaufGezaehlt[m] != stunde + 1)
+                {
+                    _ruecklaufGezaehlt[m] = stunde + 1;
+                    _ruecklaufAusStunden[m]++;
+                }
+            }
+        }
+
+        /// <summary>Protokollzeile je Modul mit Stunden über der Rücklaufgrenze (Ausweis wie bei der Wärmepumpe).</summary>
+        private void RuecklaufgrenzeMelden()
+        {
+            if (!_ruecklaufIrgendein) return;
+            var k = System.Globalization.CultureInfo.CurrentCulture;
+            for (int m = 0; m < Math.Min(_anzahlZweikanalig, MAX_BHKW); m++)
+            {
+                if (_ruecklaufAusStunden[m] <= 0 || !_ruecklaufMax[m].HasValue) continue;
+                SimulationProtokoll.Aktuell.Hinweis(string.Format(k, MyResource.Resource.SIMENG_BHKW_RUECKLAUF_MAX,
+                    m < bhkw_list_Namen.Count ? bhkw_list_Namen[m] : "", _ruecklaufAusStunden[m],
+                    _ruecklaufMax[m].Value.ToString("0.#", k)));
+            }
+        }
+
         /// <summary>
         /// Jahressummen, Laufzeiten, Verbrauch und Emissionen des zweikanaligen Wegs —
         /// und die ENERGIEPROBE des Moduls.
@@ -2157,6 +2265,7 @@ namespace WindowsFormsApplication1
 
             Auswertung(_anzahlZweikanalig);
             Energieprobe();
+            RuecklaufgrenzeMelden();
         }
 
         /// <summary>
