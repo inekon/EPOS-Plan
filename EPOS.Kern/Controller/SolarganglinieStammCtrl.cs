@@ -110,11 +110,32 @@ namespace WindowsFormsApplication1
                 new DbParam("@id", id));
         }
 
-        // Import einer neuen Ganglinie in die STAMM-Tabellen (Admin-Dialog "Einlesen").
-        // Kopf-ID und Daten-IDs explizit (MAX+1), ReadOnly = false. Alles in einer Transaktion.
+        /// <summary>
+        /// Import einer Ganglinie aus Texten (invariant geparst) — die Form der
+        /// einspaltigen Textdatei. Liest über <see cref="ImportGanglinie(string, string, IList{double})"/>.
+        /// </summary>
         public bool ImportGanglinie(string szBezeichner, string szBeschreibung, List<string> roheWerte)
         {
             if (roheWerte == null || roheWerte.Count == 0) return false;
+            var werte = new List<double>(roheWerte.Count);
+            foreach (string s in roheWerte)
+            {
+                if (!double.TryParse(s, System.Globalization.NumberStyles.Float,
+                                     System.Globalization.CultureInfo.InvariantCulture, out double w))
+                    return false;
+                werte.Add(w);
+            }
+            return ImportGanglinie(szBezeichner, szBeschreibung, werte);
+        }
+
+        /// <summary>
+        /// Import einer neuen Ganglinie in die STAMM-Tabellen (Katalogseite des
+        /// Solarthermie-Ganglinien-Dialogs, „Import…"). Kopf-ID und Daten-IDs explizit
+        /// (MAX+1), ReadOnly = false. Alles in einer Transaktion.
+        /// </summary>
+        public bool ImportGanglinie(string szBezeichner, string szBeschreibung, IList<double> werte)
+        {
+            if (werte == null || werte.Count == 0) return false;
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -141,14 +162,13 @@ namespace WindowsFormsApplication1
                         datenId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                     }
 
-                    foreach (string s in roheWerte)
+                    foreach (double w in werte)
                     {
                         v.Ausfuehren(
                             "INSERT INTO " + DATA_STAMM + " (ID, ID_Ganglinie, Wert, ReadOnly) VALUES (?, ?, ?, ?)",
                             new DbParam("@id", DbParamTyp.Integer) { Wert = datenId++ },
                             new DbParam("@g", DbParamTyp.Integer) { Wert = neueId },
-                            new DbParam("@w", DbParamTyp.Double)
-                            { Wert = double.Parse(s, System.Globalization.CultureInfo.InvariantCulture) },
+                            new DbParam("@w", DbParamTyp.Double) { Wert = w },
                             new DbParam("@r", DbParamTyp.Boolean) { Wert = false });
                     }
 
