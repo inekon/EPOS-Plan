@@ -50151,5 +50151,32 @@ chart</value>
   <data name="KOND_LBL_KALB_LEGENDE_GEMEINSAM" xml:space="preserve">
     <value>Row for several quantities</value>
   </data>
+  <data name="PVG_BTN_NENNLEISTUNG" xml:space="preserve">
+    <value>Edit rated power…</value>
+  </data>
+  <data name="PVG_TITEL_NENNLEISTUNG" xml:space="preserve">
+    <value>Edit rated power</value>
+  </data>
+  <data name="PVG_NENN_LEER_HINWEIS" xml:space="preserve">
+    <value>Empty = not maintained; the run then uses the peak of the series.</value>
+  </data>
+  <data name="PVG_NENN_PROJEKTKOPIEN" xml:space="preserve">
+    <value>The change applies to the catalogue entry. Projects that already use this profile keep their copy.</value>
+  </data>
+  <data name="PVG_MSG_NENN_GESPEICHERT" xml:space="preserve">
+    <value>Rated power of “{0}” saved.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNGUELTIG" xml:space="preserve">
+    <value>The rated power must be greater than 0; empty means “not maintained”.</value>
+  </data>
+  <data name="PVG_MSG_NENN_UNBEKANNT" xml:space="preserve">
+    <value>This PV profile is no longer in the catalogue.</value>
+  </data>
+  <data name="PVG_MSG_NENN_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>This PV profile is a delivery entry; its rated power can only be edited after the lock has been removed.</value>
+  </data>
+  <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
+    <value>Photovoltaics characteristics</value>
+  </data>
 </root>
 

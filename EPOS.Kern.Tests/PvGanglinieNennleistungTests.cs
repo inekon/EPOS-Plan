@@ -107,5 +107,45 @@ namespace EPOS.Kern.Tests
             Assert.Contains(Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.PvGanglinie).Spalten,
                             s => s.Schluessel == Katalogfilterprofil.SpNennleistungKwp);
         }
+            [Fact]
+        public void Die_Nennleistung_eines_Katalogsatzes_wird_nachtraeglich_gesetzt_die_Projektkopie_bleibt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            PvGanglinieImportBericht b = PvGanglinieImportCtrl.Einlesen(Datei("PV Nachtrag.csv", "P_AC [kW]", 8.0), 9.0);
+            Assert.True(b.Erfolgreich, b.Meldung);
+            Assert.True(PvGanglinieStammCtrl.ZuordnungenSchreiben(1030, new[] { "PV Nachtrag" }));
+
+            double? Katalogwert() => Wert("SELECT Nennleistung_kWp FROM Tab_PvGanglinie_STAMM WHERE Bezeichner = ?");
+            double? Kopiewert() => Wert("SELECT Nennleistung_kWp FROM Tab_PvGanglinie WHERE Bezeichner = ? AND ID_Projekt = 1030");
+
+            Assert.Equal("", PvGanglinieStammCtrl.Pruefhinweis("PV Nachtrag", 9.0));
+            Assert.NotEqual("", PvGanglinieStammCtrl.Pruefhinweis("PV Nachtrag", 5.0));
+
+            Assert.Equal(PvNennleistungSchreibergebnis.Geschrieben, PvGanglinieStammCtrl.NennleistungSetzen("PV Nachtrag", 5.0));
+            Assert.Equal(5.0, Katalogwert());
+            Assert.Equal(9.0, Kopiewert());
+            Assert.Equal(5.0, ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.PvGanglinie)
+                .First(z => z.Bezeichner == "PV Nachtrag").Zahl(Katalogfilterprofil.SpNennleistungKwp));
+
+            Assert.Equal(PvNennleistungSchreibergebnis.Geschrieben, PvGanglinieStammCtrl.NennleistungSetzen("PV Nachtrag", null));
+            Assert.Null(Katalogwert());
+
+            Assert.Equal(PvNennleistungSchreibergebnis.Ungueltig, PvGanglinieStammCtrl.NennleistungSetzen("PV Nachtrag", 0.0));
+            Assert.Equal(PvNennleistungSchreibergebnis.Ungueltig, PvGanglinieStammCtrl.NennleistungSetzen("PV Nachtrag", double.NaN));
+            Assert.Equal(PvNennleistungSchreibergebnis.Unbekannt, PvGanglinieStammCtrl.NennleistungSetzen("PV gibt es nicht", 5.0));
+
+            DataRepository.ExecuteNonQuery("UPDATE Tab_PvGanglinie_STAMM SET ReadOnly = 1 WHERE Bezeichner = ?",
+                                           new DbParam("@b", "PV Nachtrag"));
+            Assert.Equal(PvNennleistungSchreibergebnis.Schreibgeschuetzt, PvGanglinieStammCtrl.NennleistungSetzen("PV Nachtrag", 7.0));
+            Assert.Null(Katalogwert());
+        }
+
+        private static double? Wert(string sql)
+        {
+            object v = DataRepository.ExecuteScalar(sql, new DbParam("@b", "PV Nachtrag"));
+            return v == null || v == DBNull.Value ? (double?)null : Convert.ToDouble(v, CultureInfo.InvariantCulture);
+        }
     }
 }

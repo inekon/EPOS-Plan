@@ -193,6 +193,103 @@ public class PvGanglinieDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Nennleistung eines Katalogsatzes nachträglich bearbeiten</b>: „Nennleistung bearbeiten…" öffnet eine
+    /// Überlagerung mit dem gepflegten Wert, der Prüfhinweis des Imports (Spitze über Nennleistung × 1,1) steht als
+    /// Banner, OK schreibt über den Weg der Hülle, die Seite liest neu, der Detailblock zeigt den neuen Wert und der
+    /// Hinweis bleibt als Banner stehen; ein Fehlschlag hält die Überlagerung mit dem Grund offen.
+    /// </summary>
+    [Fact]
+    public void Die_Nennleistung_eines_Katalogsatzes_wird_bearbeitet_und_geprueft()
+    {
+        double? gepflegt = 12.0;
+        string? geschriebenFuer = null;
+        bool scheitern = true;
+        IReadOnlyList<Katalogfilterzeile> Katalogstand() => new[]
+        {
+            gepflegt.HasValue
+                ? Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 60, jahresarbeitMwh: 9.5, spitzeKw: 10.0)
+                    .MitZahl(Katalogfilterprofil.SpNennleistungKwp, gepflegt.Value, 2)
+                : Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 60, jahresarbeitMwh: 9.5, spitzeKw: 10.0),
+            Zeitreihenproben.Zeile(32, "PV Dach West", geschuetzt: true, zeitintervall: 60, jahresarbeitMwh: 8.8, spitzeKw: 9.0)
+        };
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(Katalogstand()),
+            NennleistungPruefenFuer = (_, kwp) => PvGanglinieImportCtrl.Pruefhinweis(10.0, kwp),
+            NennleistungSchreiben = (name, kwp) =>
+            {
+                if (scheitern) return Task.FromResult(new GanglinienNennleistungsschrieb(false, "Schreibfehler", ""));
+                geschriebenFuer = name;
+                gepflegt = kwp;
+                return Task.FromResult(new GanglinienNennleistungsschrieb(true, "gespeichert",
+                    PvGanglinieImportCtrl.Pruefhinweis(10.0, kwp)));
+            }
+        });
+
+        // Ohne Wahl ist der Knopf gesperrt.
+        Assert.True(cut.Find("button.epos-nennleistungknopf").HasAttribute("disabled"));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        cut.Find("button.epos-nennleistungknopf").Click();
+        Assert.True(cut.Instance.Katalogseite!.NennleistungOffen);
+        Assert.True(cut.Instance.Katalogseite.HaeltEsc);
+        Assert.Equal("", cut.Instance.Katalogseite.NennleistungBearbeitenHinweis);
+        Assert.Contains(Resource.PVG_NENN_PROJEKTKOPIEN, cut.Markup);
+
+        cut.Find(".epos-nennleistung-bearbeiten input[inputmode=decimal]").Input("5");
+        string hinweis = cut.Instance.Katalogseite.NennleistungBearbeitenHinweis;
+        Assert.NotEqual("", hinweis);
+        Assert.Contains(hinweis, cut.Find(".epos-nennleistung-bearbeiten").TextContent);
+
+        // Ein Fehlschlag hält die Überlagerung mit dem Grund offen.
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.True(cut.Instance.Katalogseite.NennleistungOffen);
+        Assert.Contains("Schreibfehler", cut.Markup);
+
+        scheitern = false;
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.Equal("PV Dach Ost", geschriebenFuer);
+        Assert.Equal(5.0, gepflegt);
+        Assert.False(cut.Instance.Katalogseite.NennleistungOffen);
+        Assert.Equal(hinweis, cut.Instance.Katalogseite.Meldung);
+        Assert.Equal("gespeichert", cut.Instance.Katalogseite.Status);
+        var werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
+        Assert.Contains("5,00 kWp", werte);
+
+        // Abbrechen schreibt nicht.
+        cut.Find("button.epos-nennleistungknopf").Click();
+        cut.Find(".epos-nennleistung-bearbeiten input[inputmode=decimal]").Input("");
+        cut.Find(".epos-nennleistung-bearbeiten").QuerySelectorAll("button")
+           .First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(cut.Instance.Katalogseite.NennleistungOffen);
+        Assert.Equal(5.0, gepflegt);
+    }
+
+    /// <summary>Ein Auslieferungssatz: der Knopf ist weich gesperrt und nennt den Grund, statt zu öffnen.</summary>
+    [Fact]
+    public void Am_Auslieferungssatz_ist_die_Nennleistung_weich_gesperrt()
+    {
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[]
+            {
+                Zeitreihenproben.Zeile(32, "PV Dach West", geschuetzt: true, zeitintervall: 60, jahresarbeitMwh: 8.8, spitzeKw: 9.0)
+            }),
+            NennleistungSchreiben = (_, _) => throw new InvalidOperationException("darf nicht schreiben")
+        });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        var knopf = cut.Find("button.epos-nennleistungknopf");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT, knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.False(cut.Instance.Katalogseite!.NennleistungOffen);
+        Assert.Equal(Resource.PVG_MSG_NENN_SCHREIBGESCHUETZT, cut.Instance.Katalogseite.Meldung);
+    }
+
+    /// <summary>
     /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die Sichtklasse
     /// <c>PvGanglinieKiSicht</c>: Die Katalogwahl ist ein WAHLFELD, ein Setzen zieht den Detailblock nach
     /// (Quelle, Raster, Jahresarbeit, Nennleistung); Zuordnung und Importstand liest der Assistent nur.
