@@ -71,6 +71,8 @@ namespace WindowsFormsApplication1
                 ["GbPruefung"] = MyResource.Resource.SIMQ_ERDREICH_GB_PRUEFUNG,
                 ["VorpruefungKopf"] = MyResource.Resource.SIMQ_ERDREICH_VORPRUEFUNG_KOPF,
                 ["HinweisSondeKonstant"] = MyResource.Resource.SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT,
+                ["HinweisKollektorLauf"] = MyResource.Resource.SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF,
+                ["KennwerteLaufZeile"] = MyResource.Resource.SIMQ_ERDREICH_KENNWERTE_LAUF,
                 ["RbKollektor"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR,
                 ["RbSonde"] = MyResource.Resource.SIMQ_ERDREICH_RB_SONDE,
                 ["RbKollektorWahl"] = MyResource.Resource.SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL,
@@ -188,7 +190,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Delegat <c>Jahresgangmodell</c>: zwei Stundenreihen hinein, ein
+        /// Der Delegat <c>Jahresgangmodell</c>: zwei Stundenreihen (dazu nach einem Lauf die gerechnete) hinein, ein
         /// ZEICHENMODELL heraus. Die Außentemperatur darf fehlen — dann zeichnet der
         /// Renderer eine Reihe.
         ///
@@ -205,16 +207,25 @@ namespace WindowsFormsApplication1
         /// Bedingung des Bausteins: Er baut seinen Knotenbaum nur neu, wenn die
         /// REFERENZ des Modells wechselt.</para>
         /// </summary>
-        private static Func<double[], double[], Task<Zeichenmodell>> Modellzeichner()
+        private static Func<double[], double[], double[], Task<Zeichenmodell>> Modellzeichner()
         {
-            return (quelle, aussen) => SpeicherEngine.Kulturweitergabe.Starten(() =>
+            return (quelle, aussen, gerechnet) => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
+                // Nach einem Lauf (Anwenderwunsch 08.10.2026) heisst die Auslegungsreihe „ungestört",
+                // daneben steht die gerechnete Soletemperatur des letzten Laufs. Ohne Lauf bleibt das
+                // Bild, wie es war.
+                bool mitLauf = gerechnet != null && gerechnet.Length > 1;
                 var reihen = new List<ChartRenderer.Reihe>
                 {
                     new ChartRenderer.Reihe(
-                        MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, quelle,
+                        mitLauf ? MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT
+                                : MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, quelle,
                         Farbrolle.QUELLTEMPERATUR)
                 };
+                if (mitLauf)
+                    reihen.Add(new ChartRenderer.Reihe(
+                        MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR_GERECHNET, gerechnet,
+                        Farbrolle.SERIE_2));
                 if (aussen != null && aussen.Length > 1)
                     reihen.Add(new ChartRenderer.Reihe(
                         MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR, aussen,

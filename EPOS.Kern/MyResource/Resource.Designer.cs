@@ -18671,6 +18671,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur gerechnet (letzter Lauf) ähnelt.
+        /// </summary>
+        public static string CHART_SERIE_QUELLTEMPERATUR_GERECHNET {
+            get {
+                return ResourceManager.GetString("CHART_SERIE_QUELLTEMPERATUR_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur ungestört ähnelt.
+        /// </summary>
+        public static string CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT {
+            get {
+                return ResourceManager.GetString("CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Deckung {0} — Jahresganglinie ähnelt.
         /// </summary>
         public static string CHART_TITEL_DECKUNG_JE_BEDARFSART {
@@ -101780,7 +101798,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; ihren Verlauf zeigt das Ergebnis. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur in Verlegetiefe; nach dem Lauf steht daneben die gerechnete Soletemperatur am Quelleintritt („gerechnet (letzter Lauf)“). ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag — eine Konstante. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; nach dem Lauf steht ihr gerechneter Verlauf am Quelleintritt daneben („gerechnet (letzter Lauf)“). ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT {
             get {
@@ -101806,6 +101833,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_KEINE_PRUEFUNG {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_KEINE_PRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet (letzter Lauf): {0} ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_KENNWERTE_LAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_KENNWERTE_LAUF", resourceCulture);
             }
         }
         

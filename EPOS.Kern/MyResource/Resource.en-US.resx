@@ -3462,7 +3462,7 @@ Select file now?</value>
   Note: Rock is mapped to the highest soil type of Table A1 — for orientation only.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>The preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance. In the simulation the brine temperature drops with the heat extracted from the borefield; its course is shown in the result.</value>
+    <value>Before a simulation run the preview shows the undisturbed ground temperature of the borehole, made up of the mean ground temperature and a depth allowance — a constant. In the simulation the brine temperature drops with the heat extracted from the borefield; after the run its calculated course at the source inlet is shown next to it (“calculated (last run)”).</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -49061,6 +49061,18 @@ chart</value>
   </data>
   <data name="WPA_LBL_SPERR_TAGE" xml:space="preserve">
     <value>Weekdays</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT" xml:space="preserve">
+    <value>Source temperature, undisturbed</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR_GERECHNET" xml:space="preserve">
+    <value>Source temperature, calculated (last run)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF" xml:space="preserve">
+    <value>Before a simulation run the preview shows the undisturbed ground temperature at laying depth; after the run the calculated brine temperature at the source inlet is shown next to it (“calculated (last run)”).</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KENNWERTE_LAUF" xml:space="preserve">
+    <value>calculated (last run): {0}</value>
   </data>
 </root>
 

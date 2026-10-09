@@ -68,7 +68,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
         ErdreichAuswertung.ErdreichLaufErgebnis? lauf = null,
         Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
         bool titelAnzeigen = true,
-        Func<double[], double[]?, Task<Zeichenmodell?>>? modell = null)
+        Func<double[], double[]?, double[]?, Task<Zeichenmodell?>>? modell = null)
     {
         return Render<QuelleErdreichDialog>(p =>
         {
@@ -1035,7 +1035,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     [Fact]
     public void Die_Vorschau_steht_als_DiagrammSvg()
     {
-        var cut = Zeige(Kollektor(), modell: (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+        var cut = Zeige(Kollektor(), modell: (_, _, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
 
         // Das Bild entsteht NACH dem ersten Zeichenlauf (OnAfterRenderAsync) - der
         // Zeichner laeuft auf einem eigenen Faden. Also auf den Stand warten, statt
@@ -1057,7 +1057,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     [Fact]
     public void Ohne_Farbdelegat_bietet_die_Vorschau_keinen_Waehler()
     {
-        var ohne = Zeige(Kollektor(), modell: (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+        var ohne = Zeige(Kollektor(), modell: (_, _, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
         Assert.False(ohne.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
 
         var mit = Render<QuelleErdreichDialog>(p =>
@@ -1065,11 +1065,52 @@ public class QuelleErdreichDialogTests : EposBunitContext
             p.Add(x => x.Daten, Kollektor());
             p.Add(x => x.Lauf, ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
             p.Add(x => x.Jahresgangmodell,
-                  (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+                  (_, _, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
             p.Add(x => x.FarbeSetzen, (_, _) => Task.CompletedTask);
         });
 
         Assert.True(mit.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
+    }
+
+    /// <summary>
+    /// Nach einem Lauf (Anwenderwunsch 08.10.2026) bekommt die Vorschau die gerechnete Quelltemperatur als
+    /// dritte Reihe, und eine eigene Kennwertzeile nennt min/max/Mittel; ohne Lauf bleibt beides aus.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Lauf_zeigt_die_Vorschau_die_gerechnete_Quelltemperatur()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++) reihe[i] = i < 4380 ? 2.0 : 6.0;
+        var lauf = MitLauf() with { QuelltemperaturStuendlich = reihe };
+
+        double[]? erhalten = null;
+        int aufrufe = 0;
+        var cut = Zeige(Sonde(), lauf: lauf, modell: (_, _, gerechnet) =>
+        {
+            aufrufe++;
+            erhalten = gerechnet;
+            return Task.FromResult<Zeichenmodell?>(_vorschau);
+        });
+
+        cut.WaitForAssertion(() => Assert.True(aufrufe > 0));
+        Assert.NotNull(erhalten);
+        Assert.Equal(reihe, erhalten);
+        Assert.Contains("gerechnet (letzter Lauf)", cut.Instance.KennwertzeileLauf, StringComparison.Ordinal);
+        Assert.Contains("6", cut.Instance.KennwertzeileLauf, StringComparison.Ordinal);
+        Assert.NotEmpty(cut.FindAll("[data-zeile=kennwerte-lauf]"));
+
+        double[]? ohneLauf = new double[1];
+        int aufrufeOhne = 0;
+        var ohne = Zeige(Sonde(), modell: (_, _, gerechnet) =>
+        {
+            aufrufeOhne++;
+            ohneLauf = gerechnet;
+            return Task.FromResult<Zeichenmodell?>(_vorschau);
+        });
+        ohne.WaitForAssertion(() => Assert.True(aufrufeOhne > 0));
+        Assert.Null(ohneLauf);
+        Assert.Equal("", ohne.Instance.KennwertzeileLauf);
+        Assert.Empty(ohne.FindAll("[data-zeile=kennwerte-lauf]"));
     }
 
     // =====================================================================

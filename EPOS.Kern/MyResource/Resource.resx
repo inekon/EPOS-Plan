@@ -3478,7 +3478,7 @@ Jetzt Datei auswählen?</value>
   Hinweis: Festgestein wird auf die höchste Bodenart der Tabelle A1 abgebildet — nur Orientierung.</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT" xml:space="preserve">
-    <value>Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; ihren Verlauf zeigt das Ergebnis.</value>
+    <value>Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag — eine Konstante. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; nach dem Lauf steht ihr gerechneter Verlauf am Quelleintritt daneben („gerechnet (letzter Lauf)“).</value>
   </data>
   <data name="SIMQ_ERDREICH_HINWEIS_VORBEHALT" xml:space="preserve">
     <value>
@@ -49068,6 +49068,18 @@ Chart</value>
   </data>
   <data name="WPA_LBL_SPERR_TAGE" xml:space="preserve">
     <value>Wochentage</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT" xml:space="preserve">
+    <value>Quelltemperatur ungestört</value>
+  </data>
+  <data name="CHART_SERIE_QUELLTEMPERATUR_GERECHNET" xml:space="preserve">
+    <value>Quelltemperatur gerechnet (letzter Lauf)</value>
+  </data>
+  <data name="SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF" xml:space="preserve">
+    <value>Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur in Verlegetiefe; nach dem Lauf steht daneben die gerechnete Soletemperatur am Quelleintritt („gerechnet (letzter Lauf)“).</value>
+  </data>
+  <data name="SIMQ_ERDREICH_KENNWERTE_LAUF" xml:space="preserve">
+    <value>gerechnet (letzter Lauf): {0}</value>
   </data>
 </root>
 

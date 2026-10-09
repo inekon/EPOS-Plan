@@ -314,6 +314,22 @@ namespace EPOS.Kern.Tests
                 Assert.True(feld.EntzugKwh > 0);
             }
 
+            // Anwenderwunsch 08.10.2026: Das Ergebnis je Anlage traegt die gerechnete Quelltemperatur - eine
+            // Kopie der Reihe des ersten Moduls der Anlage, dieselbe wie wp_quellentemperatur.csv.
+            foreach (ErdreichAuswertung.AnlageErgebnis e in ErdreichAuswertung.FuerProjekt(1029))
+            {
+                if (e.Unwirksam) { Assert.Null(e.QuelltemperaturStuendlich); continue; }
+                int modul = wp.wp_list.IndexOf(e.ID_Anlage);
+                Assert.True(modul >= 0);
+                Assert.NotNull(e.QuelltemperaturStuendlich);
+                Assert.Equal(8760, e.QuelltemperaturStuendlich.Length);
+                Assert.NotSame(wp.Quelltemperaturen[modul], e.QuelltemperaturStuendlich);
+                Assert.Equal(wp.Quelltemperaturen[modul].Take(8760), e.QuelltemperaturStuendlich);
+                Assert.True(e.QuelltemperaturStuendlich.Max() - e.QuelltemperaturStuendlich.Min() > 0.5);
+                Assert.Same(e.QuelltemperaturStuendlich,
+                            ErdreichAuswertung.ErgebnisZuordnen(e).QuelltemperaturStuendlich);
+            }
+
             foreach (ErdreichAuswertung.AnlageErgebnis e in ErdreichAuswertung.FuerProjekt(1029))
                 aus.WriteLine($"VDI 4640 Anlage {e.ID_Anlage}: Entzug {e.JahresentzugKWh:0} kWh/a, max {e.MaxEntzugW:0} W, " +
                               $"{e.VolllastStunden:0} h/a, Frost {e.FrostStunden}/{e.BetriebsStunden} h, {e.Pruefung.Anzeigetext()}");

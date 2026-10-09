@@ -234,11 +234,26 @@
                          FarbeGewaehlt="FarbeUebernehmen"
                          FarbeZurueckgesetzt="FarbeVerwerfen" />
             <Herleitungszeile Text="@_kennwertzeile" />
-            @* Die Erdsonde rechnet ohne Jahresgang und ohne Rueckwirkung des Entzugs -
-               das sagt die Vorschau, sonst liest man die waagrechte Linie als Fehler. *@
+            @* NACH EINEM LAUF (Anwenderwunsch 08.10.2026): die gerechnete Soletemperatur am
+               Quelleintritt als zweite Reihe "gerechnet (letzter Lauf)" neben der ungestoerten,
+               ihre Kennwerte in einer eigenen Zeile. Gezeigt, nicht gerechnet - die Reihe kommt
+               mit dem Laufergebnis aus dem Kern. *@
+            @if (_kennwertzeileLauf.Length > 0)
+            {
+                <div data-zeile="kennwerte-lauf">
+                    <Herleitungszeile Text="@_kennwertzeileLauf" />
+                </div>
+            }
+            @* Die Erdsonde rechnet ihre ungestoerte Temperatur ohne Jahresgang - das sagt die
+               Vorschau, sonst liest man die waagrechte Linie als Fehler; beide Hinweise nennen
+               auch die gerechnete Reihe nach dem Lauf. *@
             @if (_sonde && !string.IsNullOrEmpty(HinweisSondeKonstant))
             {
                 <Herleitungszeile Text="@HinweisSondeKonstant" />
+            }
+            else if (!_sonde && !string.IsNullOrEmpty(HinweisKollektorLauf))
+            {
+                <Herleitungszeile Text="@HinweisKollektorLauf" />
             }
         </KindInhalt>
     </Gruppenkopf>
@@ -341,8 +356,12 @@
     /// <c>_modell</c> — der Baustein baut seinen Knotenbaum nur neu, wenn die REFERENZ
     /// wechselt, und ein Modell je Zeichenlauf verwürfe mit dem Baum auch Zoom und
     /// abgewählte Reihe.</para>
+    ///
+    /// <para>Die DRITTE Reihe ist der gerechnete Verlauf der Quelltemperatur des letzten Laufs
+    /// (<see cref="ErdreichAuswertung.ErdreichLaufErgebnis.QuelltemperaturStuendlich"/>); <c>null</c> ohne
+    /// Lauf — dann zeichnet die Vorschau wie zuvor die ungestörte Reihe allein.</para>
     /// </summary>
-    [Parameter] public Func<double[], double[]?, Task<Zeichenmodell?>>? Jahresgangmodell { get; set; }
+    [Parameter] public Func<double[], double[]?, double[]?, Task<Zeichenmodell?>>? Jahresgangmodell { get; set; }
 
     /// <summary>Das Ergebnis: der geänderte Satz, <c>null</c> bei Abbruch oder Esc.</summary>
     [Parameter] public EventCallback<QuelleErdreichDaten?> Geschlossen { get; set; }
@@ -371,9 +390,18 @@
 
     /// <summary>Hinweis unter der Vorschau bei der Erdsonde (<c>SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT</c>).</summary>
     [Parameter] public string HinweisSondeKonstant { get; set; }
-        = "Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur " +
-          "und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; " +
-          "ihren Verlauf zeigt das Ergebnis.";
+        = "Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur der Sonde aus mittlerer " +
+          "Erdreichtemperatur und Tiefenzuschlag — eine Konstante. In der Simulation sinkt die Soletemperatur mit dem " +
+          "Entzug des Sondenfelds; nach dem Lauf steht ihr gerechneter Verlauf am Quelleintritt daneben " +
+          "(„gerechnet (letzter Lauf)“).";
+    /// <summary>Hinweis unter der Vorschau beim Erdkollektor (<c>SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF</c>).</summary>
+    [Parameter] public string HinweisKollektorLauf { get; set; }
+        = "Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur in Verlegetiefe; " +
+          "nach dem Lauf steht daneben die gerechnete Soletemperatur am Quelleintritt („gerechnet (letzter Lauf)“).";
+
+    /// <summary>Kennwertzeile der gerechneten Reihe; {0} = min/max/Mittel (<c>SIMQ_ERDREICH_KENNWERTE_LAUF</c>).</summary>
+    [Parameter] public string KennwerteLaufZeile { get; set; } = "gerechnet (letzter Lauf): {0}";
+
     /// <summary>Titel der ersten Rubrik — zugleich der Name des Quellsystems.</summary>
     [Parameter] public string RbKollektor { get; set; } = "Erdkollektor";
 
@@ -548,6 +576,9 @@
 
     private string _bodenkennwerte = "";
     private string _kennwertzeile = "";
+
+    /// <summary>Die Kennwerte der gerechneten Reihe des letzten Laufs; leer ohne Reihe.</summary>
+    private string _kennwertzeileLauf = "";
     private string _pruefung = "";
     private bool _pruefungWarnt;
     private bool _vorpruefung;
@@ -595,6 +626,9 @@
 
     /// <summary>Die Kennwertzeile unter der Vorschau.</summary>
     public string Kennwertzeile => _kennwertzeile;
+
+    /// <summary>Die Kennwertzeile der gerechneten Reihe des letzten Laufs; leer ohne Reihe.</summary>
+    public string KennwertzeileLauf => _kennwertzeileLauf;
 
     /// <summary>Die Bodenkennwerte-Zeile.</summary>
     public string Bodenkennwerte => _bodenkennwerte;
@@ -912,9 +946,22 @@
             ErdreichTemperatur.AnalysiereJahresgang(Daten.Aussentemperatur);
         _kennwertzeile = kw.Zeile() + (jg.AusKlimadaten ? "" : OhneKlimadaten);
 
+        double[]? gerechnet = GerechneteReihe();
+        _kennwertzeileLauf = gerechnet is null
+            ? ""
+            : string.Format(ci, KennwerteLaufZeile, ErdreichTemperatur.ProfilKennwerte(gerechnet).Zeile());
+
         PruefungAktualisieren(boden);
         AenderungshinweisAktualisieren();
     }
+
+    /// <summary>
+    /// Der gerechnete Verlauf der Quelltemperatur des letzten Laufs (Soletemperatur am Quelleintritt);
+    /// <c>null</c> ohne Lauf, ohne Reihe oder mit einer Reihe, die kein Jahr deckt.
+    /// </summary>
+    private double[]? GerechneteReihe()
+        => _lauf.Vorhanden && _lauf.QuelltemperaturStuendlich is { } r && r.Length >= ErdreichTemperatur.STUNDEN_JAHR
+            ? r : null;
 
     /// <summary>Das Quelltemperaturprofil des gewählten Zweigs.</summary>
     private double[] Profil()
@@ -1038,7 +1085,14 @@
             for (int i = 0; i < aussen.Length; i++) aussen[i] = a[i];
         }
 
-        _modell = await Jahresgangmodell(quelle, aussen);
+        double[]? gerechnet = null;
+        if (GerechneteReihe() is { } g)
+        {
+            gerechnet = new double[ErdreichTemperatur.STUNDEN_JAHR];
+            for (int i = 0; i < gerechnet.Length; i++) gerechnet[i] = g[i];
+        }
+
+        _modell = await Jahresgangmodell(quelle, aussen, gerechnet);
         StateHasChanged();
     }
 
