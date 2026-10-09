@@ -96,7 +96,12 @@ public static class Kachelbilder
             [Kachelschluessel.Waermepumpe] = ("PWP.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Heizkessel] = ("PHeizkessel.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Solarthermie] = ("PProjektSolarthermie.jpg", KLASSE_AUSSCHNITT),
-            [Kachelschluessel.Bhkw] = ("PBHKW.jpg", KLASSE_AUSSCHNITT),
+            // ABWEICHUNG 3: Das BHKW trug im Bestand nur einen Blitz (PBHKW.jpg). Es
+            // traegt jetzt ein eigenes Vektorsymbol fuer Kraft-Waerme-Kopplung -
+            // Maschinenblock mit Generator, Flamme und Blitz - im Rahmen und
+            // Verlauf der uebrigen Sinnbilder (Anwenderwunsch 08.10.2026). Es ist
+            // bereits 84 x 84 gross und nimmt deshalb das Symbol, keinen Ausschnitt.
+            [Kachelschluessel.Bhkw] = (BHKW_DATEI, KLASSE_SYMBOL),
             [Kachelschluessel.Photovoltaik] = ("PProjektPV.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Stromspeicher] = ("PSSpeicher.jpg", KLASSE_AUSSCHNITT_FLACH),
             [Kachelschluessel.Pufferspeicher] = ("PPufferSpeicher.jpg", KLASSE_AUSSCHNITT_FLACH),
@@ -122,6 +127,9 @@ public static class Kachelbilder
 
     /// <summary>Die Web-Adresse des Kühlungssinnbilds.</summary>
     public const string KuehlungQuelle = ORDNER + KUEHLUNG_DATEI;
+
+    /// <summary>Das Vektorsinnbild der BHKW-Kachel (84 × 84, Maschinenblock mit Flamme und Blitz).</summary>
+    public const string BHKW_DATEI = "PBHKW_Symbol.svg";
 
     /// <summary>Alle Zuordnungen — der Prüfstand liest sie und legt die Dateien nach.</summary>
     public static IReadOnlyDictionary<string, (string Datei, string Klasse)> Alle => _tabelle;
