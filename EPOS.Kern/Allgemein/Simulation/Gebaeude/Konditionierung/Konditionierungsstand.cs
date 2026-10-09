@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace WindowsFormsApplication1
@@ -178,15 +179,22 @@ namespace WindowsFormsApplication1
         private readonly Matrixzelle[] _zellen;
         private readonly Konditionierungskalender[] _kalender;
         private readonly Kalenderherkunft[] _herkunft;
+        private readonly Gemeinschaftsperiode[] _gemeinsam;
+        private readonly Ferienzeile[] _ferien;
+        private readonly BenannteWoche[] _wochen;
 
         private Konditionierungsstand(Kalendereigentuemer art, Matrixeingang bestand, Matrixzelle[] zellen,
-                                      Konditionierungskalender[] kalender, Kalenderherkunft[] herkunft)
+                                      Konditionierungskalender[] kalender, Kalenderherkunft[] herkunft,
+                                      Gemeinschaftsperiode[] gemeinsam, Ferienzeile[] ferien, BenannteWoche[] wochen)
         {
             Art = art;
             _bestand = bestand ?? new Matrixeingang();
             _zellen = zellen;
             _kalender = kalender;
             _herkunft = herkunft;
+            _gemeinsam = gemeinsam ?? Array.Empty<Gemeinschaftsperiode>();
+            _ferien = ferien ?? Array.Empty<Ferienzeile>();
+            _wochen = wochen ?? Array.Empty<BenannteWoche>();
         }
 
         /// <summary>Wem die Ebene gehört — Gebäude, Zone, Katalogbau oder Vorlage.</summary>
@@ -203,7 +211,7 @@ namespace WindowsFormsApplication1
             var herkunft = new Kalenderherkunft[5];
             for (int i = 0; i < herkunft.Length; i++) herkunft[i] = Kalenderherkunft.Keine;
             return new Konditionierungsstand(art, (bestand ?? new Matrixeingang()).Kopie(), zellen,
-                                             new Konditionierungskalender[5], herkunft);
+                                             new Konditionierungskalender[5], herkunft, null, null, null);
         }
 
         /// <summary>
@@ -241,7 +249,7 @@ namespace WindowsFormsApplication1
                     if (bemerkungen != null) bemerkungen.TryGetValue(p.Key, out b);
                     h[(int)p.Key] = Kalenderherkunft.AusBemerkung(b);
                 }
-            return new Konditionierungsstand(art, s._bestand, zellen, k, h);
+            return new Konditionierungsstand(art, s._bestand, zellen, k, h, null, null, null);
         }
 
         // -----------------------------------------------------------------------------
@@ -334,12 +342,12 @@ namespace WindowsFormsApplication1
         {
             Matrixeingang b = _bestand.Kopie();
             aendern?.Invoke(b);
-            return new Konditionierungsstand(Art, b, _zellen, _kalender, _herkunft);
+            return new Konditionierungsstand(Art, b, _zellen, _kalender, _herkunft, _gemeinsam, _ferien, _wochen);
         }
 
         /// <summary>Derselbe Stand mit einem neuen Bestand (kopiert).</summary>
         public Konditionierungsstand MitBestand(Matrixeingang bestand)
-            => new Konditionierungsstand(Art, (bestand ?? new Matrixeingang()).Kopie(), _zellen, _kalender, _herkunft);
+            => new Konditionierungsstand(Art, (bestand ?? new Matrixeingang()).Kopie(), _zellen, _kalender, _herkunft, _gemeinsam, _ferien, _wochen);
 
         /// <summary>Derselbe Stand mit einer anderen Vorgabezelle; <c>null</c> heißt leer.</summary>
         public Konditionierungsstand MitVorgabe(Konditionierungsgroesse g, string zeile, Matrixzelle zelle)
@@ -348,7 +356,7 @@ namespace WindowsFormsApplication1
             if (z < 0) throw new ArgumentException("Die Zeile „" + (zeile ?? "leer") + "“ ist keine der sechs.", nameof(zeile));
             var zellen = (Matrixzelle[])_zellen.Clone();
             zellen[Index(g, z)] = zelle == null || !Traegt(zelle) ? Matrixzelle.Leer : zelle;
-            return new Konditionierungsstand(Art, _bestand, zellen, _kalender, _herkunft);
+            return new Konditionierungsstand(Art, _bestand, zellen, _kalender, _herkunft, _gemeinsam, _ferien, _wochen);
         }
 
         /// <summary>Derselbe Stand mit einem anderen Kalender der Größe (<c>null</c> = verworfen) samt Herkunft.</summary>
@@ -361,14 +369,112 @@ namespace WindowsFormsApplication1
                                             ", abgelegt wird " + Konditionierungsgroessen.Kennwort(g) + ".", nameof(kalender));
             var k = (Konditionierungskalender[])_kalender.Clone();
             var h = (Kalenderherkunft[])_herkunft.Clone();
+            Gemeinschaftsperiode[] gemeinsam = _gemeinsam;
+            if (kalender != null && _gemeinsam.Length > 0)
+            {
+                if (_kalender[(int)g] == null)
+                    kalender = Ausgebreitet(kalender, kalender, _gemeinsam);       // neu angelegt: die Gemeinschaft wirkt
+                else
+                    gemeinsam = _gemeinsam                                          // eine entfernte Kopie verlässt die Maske
+                        .Select(p => !p.Gilt(g) || kalender.Perioden.Any(r => r.Rang == p.Rang) ? p : p.MitMaske(p.Maske & ~Gemeinschaftsperiode.Bit(g)))
+                        .Where(p => p.Maske != 0).ToArray();
+            }
             k[(int)g] = kalender;
             h[(int)g] = kalender == null ? Kalenderherkunft.Keine : herkunft ?? Kalenderherkunft.Keine;
-            return new Konditionierungsstand(Art, _bestand, _zellen, k, h);
+            return new Konditionierungsstand(Art, _bestand, _zellen, k, h, gemeinsam, _ferien, _wochen);
+        }
+
+        // -----------------------------------------------------------------------------
+        //  Der gemeinsame Kalender, die Ferienliste und die benannten Wochen (Schemaschritt KalenderbedienungSchema)
+        // -----------------------------------------------------------------------------
+
+        /// <summary>
+        /// Die Perioden des gemeinsamen Kalenders mit Angabe. Die Größenkalender (<see cref="Kalender"/>) tragen sie
+        /// AUSGEBREITET — je Größe der Maske mit angelegtem Kalender als Periode am selben Rang, wie der Leser des Laufs
+        /// (<see cref="Kalendergemeinschaft.Ausbreiten"/>); <see cref="EigenerKalender"/> zieht sie wieder ab.
+        /// </summary>
+        public IReadOnlyList<Gemeinschaftsperiode> Gemeinsam => _gemeinsam;
+
+        /// <summary>Die Ferienzeiträume ab dem fünften (Ferienperioden des gemeinsamen Kalenders ab Rang 204, ohne Angabe).</summary>
+        public IReadOnlyList<Ferienzeile> Ferienliste => _ferien;
+
+        /// <summary>Die benannten Wochen des Eigentümers.</summary>
+        public IReadOnlyList<BenannteWoche> Wochen => _wochen;
+
+        /// <summary>
+        /// <b>Der eigene Kalender einer Größe</b> — der angelegte ohne die ausgebreiteten Gemeinschaftsperioden (eine
+        /// eigene Periode am Rang einer Gemeinschaftsperiode, die von ihr abweicht, bleibt: sie geht im Lauf vor).
+        /// </summary>
+        public Konditionierungskalender EigenerKalender(Konditionierungsgroesse g)
+        {
+            Konditionierungskalender k = _kalender[(int)g];
+            if (k == null || _gemeinsam.Length == 0) return k;
+            var eigene = k.Perioden.Where(r => !_gemeinsam.Any(p => p.Gilt(g) && p.Rang == r.Rang && Kalendervergleich.RegelGleich(p.Regel, r)))
+                          .ToList();
+            return eigene.Count == k.Perioden.Count ? k : new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, eigene);
+        }
+
+        /// <summary>
+        /// <b>Derselbe Stand mit einem anderen gemeinsamen Kalender</b>: Jeder angelegte Größenkalender verliert die
+        /// Kopien der bisherigen Gemeinschaftsperioden und bekommt die der neuen (wo der Rang frei ist).
+        /// </summary>
+        public Konditionierungsstand MitGemeinsam(IEnumerable<Gemeinschaftsperiode> gemeinsam)
+        {
+            Gemeinschaftsperiode[] neu = (gemeinsam ?? Enumerable.Empty<Gemeinschaftsperiode>()).Where(p => p != null && p.Maske != 0)
+                                         .OrderByDescending(p => p.Rang).ToArray();
+            var k = (Konditionierungskalender[])_kalender.Clone();
+            foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
+                if (k[(int)g] != null) k[(int)g] = Ausgebreitet(EigenerKalender(g), k[(int)g], neu);
+            return new Konditionierungsstand(Art, _bestand, _zellen, k, _herkunft, neu, _ferien, _wochen);
+        }
+
+        /// <summary>
+        /// <b>Derselbe Stand mit gelesenen Gemeinschaftsperioden</b> (Datenbank, Oberfläche): Die Größenkalender tragen sie
+        /// schon ausgebreitet und bleiben unberührt; eine Größe der Maske, deren angelegter Kalender am Rang der Periode
+        /// nichts trägt, verlässt die Maske (dort ist die Kopie entfernt worden).
+        /// </summary>
+        public Konditionierungsstand MitGemeinsamAbgeglichen(IEnumerable<Gemeinschaftsperiode> gemeinsam)
+        {
+            var neu = new List<Gemeinschaftsperiode>();
+            foreach (Gemeinschaftsperiode p in gemeinsam ?? Enumerable.Empty<Gemeinschaftsperiode>())
+            {
+                if (p == null) continue;
+                int maske = p.Maske;
+                foreach (Konditionierungsgroesse g in Gemeinschaftsperiode.Groessen(p.Maske))
+                    if (_kalender[(int)g] != null && !_kalender[(int)g].Perioden.Any(r => r.Rang == p.Rang))
+                        maske &= ~Gemeinschaftsperiode.Bit(g);
+                if (maske != 0) neu.Add(p.MitMaske(maske));
+            }
+            return new Konditionierungsstand(Art, _bestand, _zellen, _kalender, _herkunft,
+                                             neu.OrderByDescending(p => p.Rang).ToArray(), _ferien, _wochen);
+        }
+
+        /// <summary>Derselbe Stand mit einer anderen Ferienliste (ab dem fünften Zeitraum).</summary>
+        public Konditionierungsstand MitFerienliste(IEnumerable<Ferienzeile> ferien)
+            => new Konditionierungsstand(Art, _bestand, _zellen, _kalender, _herkunft, _gemeinsam,
+                                         (ferien ?? Enumerable.Empty<Ferienzeile>()).ToArray(), _wochen);
+
+        /// <summary>Derselbe Stand mit anderen benannten Wochen.</summary>
+        public Konditionierungsstand MitWochen(IEnumerable<BenannteWoche> wochen)
+            => new Konditionierungsstand(Art, _bestand, _zellen, _kalender, _herkunft, _gemeinsam, _ferien,
+                                         (wochen ?? Enumerable.Empty<BenannteWoche>()).ToArray());
+
+        /// <summary>Der eigene Kalender <paramref name="eigen"/> samt den Kopien der Gemeinschaftsperioden seiner Größe.</summary>
+        private static Konditionierungskalender Ausgebreitet(Konditionierungskalender eigen, Konditionierungskalender form,
+                                                             IReadOnlyList<Gemeinschaftsperiode> gemeinsam)
+        {
+            var perioden = eigen.Perioden.ToList();
+            bool zu = false;
+            foreach (Gemeinschaftsperiode p in gemeinsam)
+                if (p.Gilt(form.Groesse) && !perioden.Any(r => r.Rang == p.Rang)) { perioden.Add(p.Regel); zu = true; }
+            if (!zu && ReferenceEquals(eigen, form)) return form;
+            return new Konditionierungskalender(form.Groesse, form.Grundangabe, form.Nennwert,
+                                                perioden.OrderByDescending(r => r.Rang).ToList());
         }
 
         /// <summary>Derselbe Inhalt mit anderer Eigentümerart (etwa ein Katalogbau als Gebäudeebene).</summary>
         public Konditionierungsstand AlsArt(Kalendereigentuemer art)
-            => new Konditionierungsstand(art, _bestand, _zellen, _kalender, _herkunft);
+            => new Konditionierungsstand(art, _bestand, _zellen, _kalender, _herkunft, _gemeinsam, _ferien, _wochen);
 
         // -----------------------------------------------------------------------------
         //  Vergleich
@@ -388,6 +494,15 @@ namespace WindowsFormsApplication1
                 if (!Kalendervergleich.KalenderGleich(_kalender[g], andere._kalender[g])) return false;
                 if (_kalender[g] != null && !_herkunft[g].Equals(andere._herkunft[g])) return false;
             }
+            if (_gemeinsam.Length != andere._gemeinsam.Length || _ferien.Length != andere._ferien.Length
+                || _wochen.Length != andere._wochen.Length) return false;
+            for (int i = 0; i < _gemeinsam.Length; i++)
+                if (_gemeinsam[i].Maske != andere._gemeinsam[i].Maske
+                    || !Kalendervergleich.RegelGleich(_gemeinsam[i].Regel, andere._gemeinsam[i].Regel)) return false;
+            for (int i = 0; i < _ferien.Length; i++)
+                if (_ferien[i] != andere._ferien[i]) return false;
+            for (int i = 0; i < _wochen.Length; i++)
+                if (!_wochen[i].Gleich(andere._wochen[i])) return false;
             return !mitBestand || Kalendervergleich.BestandGleich(_bestand, andere._bestand);
         }
 

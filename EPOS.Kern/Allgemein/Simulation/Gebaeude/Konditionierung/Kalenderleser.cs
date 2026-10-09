@@ -190,7 +190,9 @@ namespace WindowsFormsApplication1
                         if (pwl.Befund != Wochenbefund.Gelesen)
                             return new Kalenderlesung(Kalenderbefund.WocheUngueltig, null, zeile.Groesse,
                                                       p.Rang, p.Bezeichner, pwl.Befund, pwl.Stelle);
-                        angabe = Kalenderangabe.AusWoche(pwl.Werte);
+                        angabe = p.IdWoche.HasValue
+                            ? Kalenderangabe.AusBenannterWoche(p.IdWoche.Value, pwl.Werte)
+                            : Kalenderangabe.AusWoche(pwl.Werte);
                     }
 
                     // Entweder Datum ODER Feiertagsregel (Konzept 5.1).
@@ -259,6 +261,7 @@ namespace WindowsFormsApplication1
                 };
                 Angabeschreiben(r.Angabe, kalender.Groesse,
                                 w => p.Wert = w, () => p.Aus = true, t => p.Woche = t, x => p.WieWochentag = x);
+                p.IdWoche = r.Angabe.IdWoche;
                 perioden.Add(p);
             }
         }

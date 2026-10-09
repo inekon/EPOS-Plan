@@ -30,12 +30,27 @@ namespace WindowsFormsApplication1
     {
         private readonly double[] _woche;
 
-        private Kalenderangabe(Angabeart art, double wert, double[] woche, int wieWochentag)
+        private Kalenderangabe(Angabeart art, double wert, double[] woche, int wieWochentag, long? idWoche = null)
         {
             Art = art;
             Wert = wert;
             _woche = woche;
             WieWochentag = wieWochentag;
+            IdWoche = idWoche;
+        }
+
+        /// <summary>
+        /// Der Verweis auf eine benannte Woche (<c>Tab_Konditionierungswoche.ID</c>, Schemaschritt
+        /// <see cref="KalenderbedienungSchema"/>; ≤ 0 = im Arbeitsstand angelegt, noch ohne Zeile); <c>null</c> = eine
+        /// eingebettete Woche oder keine Woche. Die Werte stehen trotzdem in <see cref="Woche"/> — der Rechenweg liest nur sie.
+        /// </summary>
+        public long? IdWoche { get; }
+
+        /// <summary>Dieselbe Woche als Verweis auf die benannte Woche <paramref name="idWoche"/>.</summary>
+        public static Kalenderangabe AusBenannterWoche(long idWoche, IReadOnlyList<double> woche)
+        {
+            Kalenderangabe a = AusWoche(woche);
+            return new Kalenderangabe(Angabeart.Woche, double.NaN, a._woche, 0, idWoche);
         }
 
         /// <summary>Die Art der Angabe.</summary>
