@@ -35,6 +35,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int FASSUNG_BIVALENZ = 17;
 
+        /// <summary>
+        /// Die Fassung „Teillast und Takten der Kältemaschinen“ (Katalog v18, KM3‑E3‑b): die Tafel
+        /// <c>stand.tabelle.km_teillast</c> und die Kennzahlen <c>kaelte.km.taktstrom</c>, <c>.starts</c>,
+        /// <c>.teillastanteil</c>, <c>.lastgrad</c>, <c>.jaz_verdichter</c>.
+        /// </summary>
+        internal const int FASSUNG_KM_TEILLAST = 18;
+
         /// <summary>Vorsilbe der Bildschalter.</summary>
         public const string PRAEFIX_BILDSCHALTER = "hat.bild.";
 

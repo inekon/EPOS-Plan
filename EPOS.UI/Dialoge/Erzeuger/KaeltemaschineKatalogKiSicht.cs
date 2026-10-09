@@ -30,6 +30,15 @@ public sealed class KaeltemaschineKatalogKiSicht
     /// <summary>Die Anzeigetexte der Rückkühlarten in der Reihenfolge der Listenplätze.</summary>
     public Func<IReadOnlyList<string>>? Rueckkuehlarten { get; init; }
 
+    /// <summary>Die Anzeigetexte der Teillastwege in der Folge der Listenplätze (KM3-E3-a).</summary>
+    public Func<IReadOnlyList<string>>? TeillastWege { get; init; }
+
+    /// <summary>Die Anzeigetexte der Verdichterregelungen in der Folge der Listenplätze (KM3-E3-a).</summary>
+    public Func<IReadOnlyList<string>>? Verdichterregelungen { get; init; }
+
+    /// <summary>Die Anzeigetexte der Wege am Kennfeldrand in der Folge der Listenplätze (KM3-E3-a).</summary>
+    public Func<IReadOnlyList<string>>? Randwege { get; init; }
+
     /// <summary>Der Arbeitsstand des Stammblatts; <c>null</c> ohne Satz.</summary>
     public Func<KaeltemaschineDaten?>? ArbeitLesen { get; init; }
 
@@ -95,6 +104,61 @@ public sealed class KaeltemaschineKatalogKiSicht
     public double? KaltwasserMin { get => ArbeitLesen?.Invoke()?.KaltwasserMin; set => Setzen(d => d.KaltwasserMin = value); }
 
     public double? Modulkosten { get => ArbeitLesen?.Invoke()?.Modulkosten; set => Setzen(d => d.Modulkosten = value); }
+
+    // =====================================================================
+    //  Teillast und Takten (KM3-E3-a) — die acht Felder der Gruppe
+    // =====================================================================
+
+    /// <summary>Teillastrechnung als Listenplatz (Text); leer = wie bisher.</summary>
+    public string TeillastWeg { get => PlatzLesen(d => d.TeillastWegIndex); set => Setzen(d => d.TeillastWegIndex = Platz(value, TeillastWege)); }
+
+    /// <summary>Die Einträge der Teillastrechnung.</summary>
+    public IReadOnlyList<KiWahleintrag> TeillastWegWahl => Wahl(TeillastWege);
+
+    /// <summary>Beiwert a der Teillastkurve.</summary>
+    public double? KurveA { get => ArbeitLesen?.Invoke()?.KurveA; set => Setzen(d => d.KurveA = value); }
+
+    /// <summary>Beiwert b der Teillastkurve.</summary>
+    public double? KurveB { get => ArbeitLesen?.Invoke()?.KurveB; set => Setzen(d => d.KurveB = value); }
+
+    /// <summary>Beiwert c der Teillastkurve.</summary>
+    public double? KurveC { get => ArbeitLesen?.Invoke()?.KurveC; set => Setzen(d => d.KurveC = value); }
+
+    /// <summary>Lastgrad, ab dem die Kurve gilt (0 … 1).</summary>
+    public double? KurveLastgradMin { get => ArbeitLesen?.Invoke()?.KurveLastgradMin; set => Setzen(d => d.KurveLastgradMin = value); }
+
+    /// <summary>Taktverlustfaktor C_d (0 … 1); leer = 0,9.</summary>
+    public double? Cd { get => ArbeitLesen?.Invoke()?.Cd; set => Setzen(d => d.Cd = value); }
+
+    /// <summary>Verdichterregelung als Listenplatz (Text); leer = keine Angabe.</summary>
+    public string Verdichterregelung
+    {
+        get => PlatzLesen(d => d.VerdichterregelungIndex);
+        set => Setzen(d => d.VerdichterregelungIndex = Platz(value, Verdichterregelungen));
+    }
+
+    /// <summary>Die Einträge der Verdichterregelung.</summary>
+    public IReadOnlyList<KiWahleintrag> VerdichterregelungWahl => Wahl(Verdichterregelungen);
+
+    /// <summary>Weg am Kennfeldrand als Listenplatz (Text); leer = Randwert.</summary>
+    public string Kennfeldrand { get => PlatzLesen(d => d.RandwegIndex); set => Setzen(d => d.RandwegIndex = Platz(value, Randwege)); }
+
+    /// <summary>Die Einträge des Kennfeldrands.</summary>
+    public IReadOnlyList<KiWahleintrag> KennfeldrandWahl => Wahl(Randwege);
+
+    private string PlatzLesen(Func<KaeltemaschineDaten, int?> wert)
+        => ArbeitLesen?.Invoke() is KaeltemaschineDaten d ? wert(d)?.ToString(CultureInfo.InvariantCulture) ?? "" : "";
+
+    private static int? Platz(string? text, Func<IReadOnlyList<string>>? liste)
+    {
+        int anzahl = liste?.Invoke()?.Count ?? 0;
+        return int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n) && n >= 0 && n < anzahl ? n : null;
+    }
+
+    private static IReadOnlyList<KiWahleintrag> Wahl(Func<IReadOnlyList<string>>? liste)
+        => (liste?.Invoke() ?? Array.Empty<string>())
+           .Select((t, i) => new KiWahleintrag(i.ToString(CultureInfo.InvariantCulture), t))
+           .ToList();
 
     // =====================================================================
     //  Kennlinie

@@ -35,7 +35,16 @@ namespace WindowsFormsApplication1
                 ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
                 // KM1: die eingebauten Typkennfelder - auf beiden Plattformen (keine Dateiwahl noetig).
                 ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(TypkennfelderLaden),
-                ["TypkennfelderAnzahl"] = TypkennfelderAnzahl()
+                ["TypkennfelderAnzahl"] = TypkennfelderAnzahl(),
+                // KM3-E3-a: Teillast und Takten - Lesezeile, Kurve, Schnellwahlen und Auskunft aus dem Kern.
+                ["Typkennfeldnamen"] = KaeltemaschineTeillastDialogrechnung.Typkennfeldnamen(),
+                ["KurveAusTypkennfeld"] = new Func<string, KaeltemaschineTypkurve>(KurveAusTypkennfeld),
+                ["Skalieren"] = new Func<string, double?, double?, KaeltemaschineSkalierErgebnis>(Skalieren),
+                ["Auskunft"] = new Func<KaeltemaschineDaten, IReadOnlyList<KaeltemaschineAuskunftEingabe>, KaeltemaschineAuskunftErgebnis>(Auskunft),
+                ["Lesezeile"] = new Func<KaeltemaschineDaten, KaeltemaschineTeillastLesestand>(Lesezeile),
+                ["NennEerHinweis"] = new Func<KaeltemaschineDaten, string>(d => KaeltemaschineStammCtrl.NennEerHinweis(AlsModell(d))),
+                ["Teillastbild"] = new Func<KaeltemaschineDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
+                    d => KaeltemaschineTeillastbild.Modell(AlsModell(d)))
             };
         }
 
@@ -97,6 +106,57 @@ namespace WindowsFormsApplication1
                 : new KaeltemaschineSpeicherErgebnis(e.Ok, e.Meldung ?? "", e.Id);
         }
 
+        // =====================================================================
+        //  Teillast und Takten (KM3-E3-a)
+        // =====================================================================
+
+        /// <summary>Die Lesezeile des Arbeitsstands (<see cref="KaeltemaschineTeillastDialogrechnung.Lesezeile"/>).</summary>
+        internal static KaeltemaschineTeillastLesestand Lesezeile(KaeltemaschineDaten d)
+        {
+            KaeltemaschineTeillastDialogrechnung.Lesestand l = KaeltemaschineTeillastDialogrechnung.Lesezeile(AlsModell(d));
+            return new KaeltemaschineTeillastLesestand(l.G25, l.G50, l.G75, l.Hinweis ?? "");
+        }
+
+        /// <summary>Die Teillastfelder eines Typkennfelds als Listenplätze; <c>null</c> bei unbekanntem Namen.</summary>
+        internal static KaeltemaschineTypkurve KurveAusTypkennfeld(string name)
+        {
+            KaeltemaschineTeillastDialogrechnung.Typkurve k = KaeltemaschineTeillastDialogrechnung.KurveAusTypkennfeld(name);
+            if (k == null) return null;
+            return new KaeltemaschineTypkurve(k.Bezeichner, Platz(KaeltemaschineTeillastSchema.TEILLAST_WEGE, k.TeillastWeg),
+                                              k.A, k.B, k.C, k.LastgradMin,
+                                              Platz(KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN, k.Verdichterregelung));
+        }
+
+        /// <summary>„Typkennfeld auf Datenblatt skalieren…": der neue Satz als Feldsatz (Id 0, nicht gespeichert) oder der Grund.</summary>
+        internal static KaeltemaschineSkalierErgebnis Skalieren(string name, double? nennleistungKw, double? nennEer)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return new KaeltemaschineSkalierErgebnis(null, MyResource.Resource.KM_MSG_TYPKENNFELD_WAEHLEN);
+            KaeltemaschineTeillastDialogrechnung.Skalierergebnis e = KaeltemaschineTeillastDialogrechnung.AufDatenblattSkalieren(
+                name, nennleistungKw ?? double.NaN, nennEer ?? double.NaN);
+            return e.Ok ? new KaeltemaschineSkalierErgebnis(AlsDaten(e.Satz), "")
+                        : new KaeltemaschineSkalierErgebnis(null, e.Meldung ?? "");
+        }
+
+        /// <summary>
+        /// „Teillastpunkte prüfen…": die Paare mit beiden Werten (Lastgrad in %), gerechnet am Arbeitsstand; ohne
+        /// vollständiges Paar die benannte Ablehnung des Kerns. Nichts wird gespeichert.
+        /// </summary>
+        internal static KaeltemaschineAuskunftErgebnis Auskunft(KaeltemaschineDaten d, IReadOnlyList<KaeltemaschineAuskunftEingabe> eingaben)
+        {
+            var punkte = (eingaben ?? Array.Empty<KaeltemaschineAuskunftEingabe>())
+                .Where(e => e != null && (e.AussenC.HasValue || e.LastgradProzent.HasValue))
+                .Select(e => new KaeltemaschineTeillastDialogrechnung.Auskunftspunkt(e.Name ?? "", e.AussenC ?? double.NaN,
+                                                                                    (e.LastgradProzent ?? double.NaN) / 100.0))
+                .ToList();
+            KaeltemaschineTeillastDialogrechnung.Auskunftsergebnis r =
+                KaeltemaschineTeillastDialogrechnung.TeillastpunkteAuskunft(AlsModell(d), punkte);
+            if (!r.Ok) return new KaeltemaschineAuskunftErgebnis(null, r.Meldung ?? "");
+            return new KaeltemaschineAuskunftErgebnis(r.Zeilen.Select(z => new KaeltemaschineAuskunftZeile(
+                z.Name, z.AussenC, z.RueckkuehlC, z.KaelteKw, z.LastgradMaschine, z.LeistungsaufnahmeKw, z.Eer, z.Takt,
+                z.Randwert)).ToList(), "");
+        }
+
         /// <summary>Modell → Feldsatz; <c>null</c> bleibt <c>null</c>.</summary>
         internal static KaeltemaschineDaten AlsDaten(KaeltemaschineModel m)
         {
@@ -117,6 +177,14 @@ namespace WindowsFormsApplication1
                 Hilfsstrom = m.Hilfsstrom_Rueckkuehlung_kW,
                 KaltwasserMin = m.Kaltwasser_Vorlauf_Min,
                 Modulkosten = m.Modulkosten,
+                TeillastWegIndex = Platz(KaeltemaschineTeillastSchema.TEILLAST_WEGE, m.Teillast_Weg),
+                KurveA = m.Teillastkurve_a,
+                KurveB = m.Teillastkurve_b,
+                KurveC = m.Teillastkurve_c,
+                KurveLastgradMin = m.Teillastkurve_Lastgrad_Min,
+                Cd = m.Taktverlustfaktor_Cd,
+                VerdichterregelungIndex = Platz(KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN, m.Verdichterregelung),
+                RandwegIndex = Platz(KaeltemaschineTeillastSchema.RANDWEGE, m.Kennfeld_Randweg),
                 Auslieferung = m.ReadOnly,
                 Kennlinie = (m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
                     .Select(k => new KaeltemaschinePunktDaten
@@ -153,6 +221,14 @@ namespace WindowsFormsApplication1
                 Hilfsstrom_Rueckkuehlung_kW = d.Hilfsstrom,
                 Kaltwasser_Vorlauf_Min = d.KaltwasserMin,
                 Modulkosten = d.Modulkosten,
+                Teillast_Weg = Wert(KaeltemaschineTeillastSchema.TEILLAST_WEGE, d.TeillastWegIndex),
+                Teillastkurve_a = d.KurveA,
+                Teillastkurve_b = d.KurveB,
+                Teillastkurve_c = d.KurveC,
+                Teillastkurve_Lastgrad_Min = d.KurveLastgradMin,
+                Taktverlustfaktor_Cd = d.Cd,
+                Verdichterregelung = Wert(KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN, d.VerdichterregelungIndex),
+                Kennfeld_Randweg = Wert(KaeltemaschineTeillastSchema.RANDWEGE, d.RandwegIndex),
                 ReadOnly = d.Auslieferung,
                 Kennlinie = d.Kennlinie
                     .Where(p => p.Rueckkuehltemperatur.HasValue && p.Kaltwassertemperatur.HasValue)
@@ -165,6 +241,19 @@ namespace WindowsFormsApplication1
                     }).ToList()
             };
         }
+
+        /// <summary>Persistenzwert → Listenplatz; leer oder unbekannt = <c>null</c>.</summary>
+        internal static int? Platz(IReadOnlyList<string> liste, string wert)
+        {
+            if (string.IsNullOrWhiteSpace(wert)) return null;
+            for (int i = 0; i < liste.Count; i++)
+                if (string.Equals(liste[i], wert.Trim(), StringComparison.OrdinalIgnoreCase)) return i;
+            return null;
+        }
+
+        /// <summary>Listenplatz → Persistenzwert; <c>null</c> oder außerhalb der Liste = <c>null</c>.</summary>
+        internal static string Wert(IReadOnlyList<string> liste, int? platz)
+            => platz is int p && p >= 0 && p < liste.Count ? liste[p] : null;
 
         private static int IndexVon(string persistenzwert)
         {

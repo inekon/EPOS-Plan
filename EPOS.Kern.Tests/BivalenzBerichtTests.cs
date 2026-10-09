@@ -84,7 +84,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Bild_und_Tafel_stehen_in_Katalog_17()
         {
-            Assert.Equal(17, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.True(Vorlagenfeldkatalog.KATALOGFASSUNG >= 17);
             Vorlagenfeld bild = Vorlagenfeldkatalog.Finde("stand.bild.wp_bivalenz");
             Assert.NotNull(bild);
             Assert.Equal(Vorlagenfeldart.Bild, bild.Art);

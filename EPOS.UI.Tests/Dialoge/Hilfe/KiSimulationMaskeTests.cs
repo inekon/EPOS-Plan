@@ -225,9 +225,10 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>Welle M7 (BW5): achtundsechzig — die thermische Desinfektion mit fünf Feldern.</para>
     /// <para>KP3 O1b: siebzig — der Aufschlag der Aufheizoptimierung in Stunden und Prozent.</para>
     /// <para>UB‑E4: einundsiebzig — die Betriebsbereiche der Wärmepumpe (nur lesend).</para>
+    /// <para>KM3‑E3‑b: zweiundsiebzig — Teillast und Takten der Kältemaschinen (nur lesend).</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_einundsiebzig_Felder_an()
+    public void Die_Ansicht_meldet_zweiundsiebzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -237,8 +238,8 @@ public class KiSimulationMaskeTests : IDisposable
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
         // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b)
-        // und die Betriebsbereiche der Wärmepumpe (UB-E4).
-        Assert.Equal(71, felder.Count);
+        // und die Betriebsbereiche der Wärmepumpe (UB-E4), dazu Teillast und Takten der Kältemaschinen (KM3-E3-b).
+        Assert.Equal(72, felder.Count);
     }
 
     /// <summary>

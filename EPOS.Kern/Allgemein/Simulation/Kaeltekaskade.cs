@@ -232,6 +232,12 @@ namespace WindowsFormsApplication1
         /// <summary>KM3: Stunden mit Gütegrad-Extrapolation über den Kennfeldrand.</summary>
         public int StundenExtrapoliert;
 
+        /// <summary>
+        /// KM3: Verdichterstunden der Maschine mit Weg (Stunden mit Kälte über den Verdichter, ohne freie Kühlung) — der
+        /// Nenner des Teillastanteils (Fachkonzept 5.3, <c>kaelte.km.teillastanteil</c>); nicht gespeichert.
+        /// </summary>
+        public int StundenVerdichter;
+
         /// <summary>KM3: Σ Kälte · Lastgrad der Verdichterstunden [kWh] — Zähler des kältegewichteten Lastgrads.</summary>
         public double LastgradGewichtKwh;
 
@@ -253,6 +259,7 @@ namespace WindowsFormsApplication1
             LetzteKuehlstunde = -2;
             StundenTeillast = 0;
             StundenExtrapoliert = 0;
+            StundenVerdichter = 0;
             LastgradGewichtKwh = 0;
             LastgradKaelteKwh = 0;
             LaufendVorstunde = 0;
@@ -861,6 +868,7 @@ namespace WindowsFormsApplication1
         private static void TeillastBuchen(Kaelteerzeuger e, int h, KaeltemaschinenStunde s)
         {
             if (s.FreieKuehlung || !(s.KaelteKwh > 0)) return;
+            e.StundenVerdichter++;
             if (s.MehrstromKwh > 0)
             {
                 e.TaktstromKwh += s.MehrstromKwh;

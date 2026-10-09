@@ -84,7 +84,26 @@ namespace WindowsFormsApplication1
                 _waermebedarf.Stundentemperatur,
                 new List<CsvSpalte> { new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST, k.KaeltebedarfKwh) },
                 false,
-                new[] { SimulationKaeltebedarf.GrenzeFeuchte });
+                KaelteKopfzeilen(k));
+        }
+
+        /// <summary>
+        /// Die Kopfzeilen des Kälte-Exports: die Grenze der Kältezahl (K5) und — KM3‑E3‑b (Fachkonzept Teillast und
+        /// Takten 5.4) — je Kältemaschine mit Teillastweg die Zeile „Kaeltemaschine;Bezeichner“ und darunter ihre
+        /// Kennzahlen als „Spaltenname;Wert“; ohne solche Maschine allein die Grenze (Bestand).
+        /// </summary>
+        internal static IReadOnlyList<string> KaelteKopfzeilen(SimulationErgebnisCtrl.KaelteErgebnis k)
+        {
+            var zeilen = new List<string> { SimulationKaeltebedarf.GrenzeFeuchte };
+            var kultur = new System.Globalization.CultureInfo("de-DE");
+            foreach (SimulationErgebnisCtrl.KaelteerzeugerZeile z in k.Erzeuger)
+            {
+                IReadOnlyList<KeyValuePair<string, double>> werte = z.TeillastSchluesselwerte();
+                if (werte.Count == 0) continue;
+                zeilen.Add("Kaeltemaschine;" + z.Bezeichner);
+                zeilen.AddRange(werte.Select(kv => kv.Key + ";" + kv.Value.ToString("0.###", kultur)));
+            }
+            return zeilen;
         }
 
         /// <summary>

@@ -244,6 +244,13 @@ namespace WindowsFormsApplication1
             bivalenz.Seit = FASSUNG_BIVALENZ;
             yield return bivalenz;
 
+            // ---------------- je Stand, Katalog v18 (KM3-E3-b): die Tafel „Teillast und Takten der Kaeltemaschinen“ ----------------
+            // Der Teillastanteil braucht die Verdichterstunden des Laufs (Zeitreihensatz), darum Vorlagenbedarf.Zeitreihen.
+            Tabellenquelle kmTeillast = Q(STAND_TABELLE + "km_teillast", S, jeStand((w, v) => Berichtstabellen.KaeltemaschineTeillast(v, w.Kultur)),
+                                          Vorlagenbedarf.Zeitreihen);
+            kmTeillast.Seit = FASSUNG_KM_TEILLAST;
+            yield return kmTeillast;
+
             // ---------------- je Stand, Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Gebäudetafel je Stand, ohne Δ ----------------
             // Dieselbe Tafel wie tabelle.gebaeude.ergebnis (Berichtstabellen.Gebaeudeergebnisse) für den laufenden Stand: je Gebäude
             // Rechenweg, Spitzen, Lüftungs- und Aufheizzeilen, Hinweise W1–W5 — keine zweite Quelle. Das Δ trägt die Kennzahlgruppe
