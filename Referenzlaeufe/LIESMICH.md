@@ -715,7 +715,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-09_R46_Geraetegrenzen/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `d19280cef`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **203**, 93 782 016 Byte, LFS-SHA-256
+gegen `Kenndaten_Test.sqlite` (Schemastand **203**; der Übergabeschritt, gegen origin als 204 hinter KM2 gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 204“, 93 782 016 Byte, LFS-SHA-256
 `cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`, mit den Projekten 1053 bis 1062; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
@@ -1037,11 +1037,20 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > leer): **92 921 856 Byte, LFS-SHA-256 `65cfef15bcfaf61684778a13d6f9c5ca020272140b43c9c10ab8569f80dfe7fb`**. **Die Basis
 > `2026-10-08_R44_Kuehlkurve` bleibt** — leere Spalten heißen Bestandsweg (Umsetzungskonzept Übergabegrenze, U‑1), keine
 > Einfrierregel berührt.
+>
+> **Nachtrag — Testdatenbank auf 204 (KM2 203 + Übergabegrenze 204), Basis R46 unberührt.** Auf die Datenbank mit
+> Schemastand 203 `KaeltemaschinenTypkennfelderSchema` (LFS-SHA-256 `84e771718f875eafcc77f16387ca1809376317499a28655b110e34f8cf54f063`)
+> ist mit `Werkzeuge/Testdatenbankschema` der Schritt 204 `UebergabegrenzeSchema` gefahren, danach
+> `Skripte/referenzprojekt_1060_uebergabegrenze.cs` (legt 1060 an) und `VACUUM`. Die Testdatenbank steht auf **204**
+> (`integrity_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen): **93 802 496 Byte, LFS-SHA-256
+> `39aea4657e4f8dfc104af52386841388283efdb5b58d43d96f5f28a70fb6e08c`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> bleibt** — die Typkennfelder führt kein Referenzprojekt; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`,
+> 879 von 879 CSV byte-gleich.
 
 ### Die Vorgängerbasis R45 (Übergabegrenze)
 
 Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen dieselbe Testdatenbank `cd50d465…`
-(Schemastand 203, mit den Projekten 1053 bis 1062); mit R46 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
+(Schemastand 203; der Übergabeschritt, gegen origin als 204 hinter KM2 gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 204“, mit den Projekten 1053 bis 1062); mit R46 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
 (Übergabegrenze und Bivalenz, Referenzprojekt 1060) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R46 sind die
 Gerätegrenzen (Etappe UB‑E3); die sechsundzwanzig Bestandsprojekte sind byte-gleich, allein 1060 ändert sich.
@@ -1487,7 +1496,7 @@ dotnet run Referenzlaeufe/Skripte/referenzprojekt_1060_uebergabegrenze.cs -- Ref
 
 Gerechnet: B1 3 964 Stunden (39,42 MWh), B3 620 Stunden (10,18 MWh), B4 711 Stunden (Rücklaufgrenze), B2 und B0 keine;
 Bivalenzpunkte des Geräts 1,83 °C und −3,55 °C, der Anlage 2,34 °C, größte Übergabe bei Auslegung 22,00 kW; Wärmepumpe
-49,60 MWh, Kessel 19,11 MWh; 2 566 Stunden mit unterschrittener Spreizung; 993 Komfortstunden. Die Testdatenbank mit 1060 (Schemastand 203, `integrity_check` ok,
+49,60 MWh, Kessel 19,11 MWh; 2 566 Stunden mit unterschrittener Spreizung; 993 Komfortstunden. Die Testdatenbank mit 1060 (Schemastand 203; der Übergabeschritt, gegen origin als 204 hinter KM2 gezählt — Fortschreibung im Nachtrag „Testdatenbank auf 204“, `integrity_check` ok,
 `foreign_key_check` leer): **93 782 016 Byte, LFS-SHA-256
 `cd50d465aab7215cb13b99e7af0e7f506c410cc3edb6eef0ebd07ef5bec142ee`**. 1060 steht in der Basis R46 und in der
 CI-Auswahl; gehalten von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests`; es gelten die Einfrierregeln
