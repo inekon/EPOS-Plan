@@ -147,7 +147,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-knopf--richtung").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("Auswahl in Projekt:", ueberschriften);
@@ -325,7 +325,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
     public void Der_linke_Pfeil_ist_ohne_Katalogwahl_gesperrt()
     {
         var cut = Aufbauen();
-        var pfeile = cut.FindAll(".epos-zweispalten-uebernahme button");
+        var pfeile = new[] { cut.Find(".epos-zweispalten-knopf--uebernehmen"), cut.Find(".epos-zweispalten-knopf--entfernen") };
 
         Assert.True(pfeile[0].HasAttribute("disabled"));    // ◀ ohne Katalogwahl
         Assert.False(pfeile[1].HasAttribute("disabled"));   // ▶ mit Projektzeile
@@ -343,7 +343,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1].Click();  // Katalogzeile 2
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(12, gerufen);
         Assert.Equal(2, zeilen.Count);
@@ -358,7 +358,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
             new AufnahmeErgebnis(null, "Der Datensatz konnte nicht in das Projekt übernommen werden.", true));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Contains("nicht in das Projekt", cut.Find(".epos-warnbanner").TextContent);
@@ -376,7 +376,7 @@ public class SolarkollektorenDialogTests : EposBunitContext
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[1]
            .QuerySelector("button")!.Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Same(a, zeilen[0]);
@@ -703,14 +703,14 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
-        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
 
         // Ein Filter, der GENAU diese Zeile ausblendet.
         _filterstand.Setzen(Katalogfilterprofil.SpKollektortyp, "Röhre");
         cut.Render();
 
         Assert.Single(Katalogzeilen(cut));
-        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
     }
 
     /// <summary>

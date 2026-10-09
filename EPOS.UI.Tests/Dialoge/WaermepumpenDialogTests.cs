@@ -95,7 +95,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[index];
 
     private static IElement Pfeil(IRenderedComponent<WaermepumpenDialog> cut, int index)
-        => cut.FindAll(".epos-zweispalten-uebernahme button")[index];
+        => cut.Find(index == 0 ? ".epos-zweispalten-knopf--uebernehmen" : ".epos-zweispalten-knopf--entfernen");
 
     // =================================================================================
     // Feldbestand
@@ -118,7 +118,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        var pfeile = cut.FindAll(".epos-zweispalten-uebernahme button").Select(b => b.TextContent.Trim()).ToList();
+        var pfeile = cut.FindAll(".epos-zweispalten-knopf--richtung").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(2, pfeile.Count);
         Assert.Contains(pfeile, t => t.Contains("In das Projekt übernehmen"));
         Assert.Contains(pfeile, t => t.Contains("Aus dem Projekt entfernen"));

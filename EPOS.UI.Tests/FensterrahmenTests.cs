@@ -20,7 +20,7 @@ namespace EPOS.UI.Tests;
 /// Selektor wie <c>body::after</c>, den der BlazorWebView selbst belegt. Das Hausblatt lässt dann, und nur dann, das erste Kind der
 /// Dialogwurzel (<c>.epos-dialog-kopf</c>) oben und die Leiste mit dem Primärknopf unten
 /// haften (<c>epos-ui.css</c>, Abschnitt „Dialog im eigenen Fenster"). Die Katalogdialoge
-/// (<c>.epos-katalog-dialog</c>) bleiben ausgenommen, Überlagerung und Blatt behalten ihre
+/// (<c>.epos-katalog-dialog</c>) und die Projektdialoge mit Katalogauswahl (<c>.epos-zweispalten</c>) bleiben ausgenommen, Überlagerung und Blatt behalten ihre
 /// eigenen Regeln.</para>
 ///
 /// <para><b>Was hier gehalten wird</b> — bunit misst keine Lage, das tut die Fensterprobe
@@ -43,7 +43,13 @@ namespace EPOS.UI.Tests;
 public sealed class FensterrahmenTests : EposBunitContext
 {
     /// <summary>Der Wurzelanker der Regeln im Hausblatt.</summary>
-    private const string ANKER = "#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog)";
+    private const string ANKER = "#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten))";
+
+    /// <summary>
+    /// Der Anker des Meldungsbanners: ohne die Ausnahme der Katalogauswahl — dort rollt das Dokument
+    /// nicht, das Banner steht ohnehin unter dem Kopf und behält sein Kreuz.
+    /// </summary>
+    private const string BANNERANKER = "#app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog)";
 
     // =====================================================================
     //  1 - Die Marke
@@ -286,14 +292,14 @@ public sealed class FensterrahmenTests : EposBunitContext
     [Fact]
     public void Ein_Banner_der_Fensterwurzel_haftet_unter_dem_Kopf()
     {
-        string banner = Regelblock(ANKER + " > .epos-warnbanner {");
+        string banner = Regelblock(BANNERANKER + " > .epos-warnbanner {");
         Assert.Contains("position: sticky;", banner);
         Assert.Contains("top: var(--epos-fenster-kopf);", banner);
         Assert.Contains("bottom: var(--epos-fenster-fuss);", banner);
         Assert.InRange(ZIndex(banner), 1, 39);
 
         Assert.Contains("display: inline-flex;",
-            Regelblock(ANKER + " > .epos-warnbanner > .epos-warnbanner-schliessen {"));
+            Regelblock(BANNERANKER + " > .epos-warnbanner > .epos-warnbanner-schliessen {"));
         Assert.Contains("display: none;", Regelblock(".epos-warnbanner-schliessen {"));
         Assert.Contains("--epos-fenster-polster-oben:", Regelblock(
             "html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner) {"));
@@ -304,10 +310,10 @@ public sealed class FensterrahmenTests : EposBunitContext
             string rumpf = m.Groups["rumpf"].Value;
             string sel = m.Groups["sel"].Value.Trim().Split('\n').Last().Trim();
             if (rumpf.Contains("sticky", StringComparison.Ordinal))
-                Assert.StartsWith(ANKER, sel);
+                Assert.StartsWith(BANNERANKER, sel);
             if (sel.Contains("epos-warnbanner-schliessen", StringComparison.Ordinal)
                 && Regex.IsMatch(rumpf, @"display:\s*(inline-)?(flex|block)"))
-                Assert.StartsWith(ANKER, sel);
+                Assert.StartsWith(BANNERANKER, sel);
         }
     }
 

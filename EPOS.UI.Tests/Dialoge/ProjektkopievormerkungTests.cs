@@ -64,7 +64,7 @@ public class ProjektkopievormerkungTests : EposBunitContext
             .Add(x => x.Geschlossen, h.Geschlossen));
 
     private static void Entfernen(IRenderedComponent<HeizkesselDialog> cut)
-        => cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        => cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
     private static void Abschluss(IRenderedComponent<HeizkesselDialog> cut, string text)
         => cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == text).Click();

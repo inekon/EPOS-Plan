@@ -2967,6 +2967,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog (Datenbank) ähnelt.
+        /// </summary>
+        public static string AUSWAHL_MARKE_KATALOG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_MARKE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz ähnelt.
+        /// </summary>
+        public static string AUSWAHL_MARKE_KATALOGSATZ {
+            get {
+                return ResourceManager.GetString("AUSWAHL_MARKE_KATALOGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_MARKE_PROJEKT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_MARKE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektsatz ähnelt.
+        /// </summary>
+        public static string AUSWAHL_MARKE_PROJEKTSATZ {
+            get {
+                return ResourceManager.GetString("AUSWAHL_MARKE_PROJEKTSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählter Satz ähnelt.
+        /// </summary>
+        public static string AUSWAHL_MARKE_SATZ {
+            get {
+                return ResourceManager.GetString("AUSWAHL_MARKE_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Details ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_DETAILS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_DETAILS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Daten des gewählten Satzes ein- oder ausblenden ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Satz gewählt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_LEER {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe zwischen Projekt und Katalog (ziehen oder Pfeiltasten) ähnelt.
+        /// </summary>
+        public static string AUSWAHL_TRENNER {
+            get {
+                return ResourceManager.GetString("AUSWAHL_TRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziehen: Höhe zwischen Projekt und Katalog; Doppelklick: Vorgabe ähnelt.
+        /// </summary>
+        public static string AUSWAHL_TRENNER_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_TRENNER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Treffer wählen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_WAHL_ALLE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_WAHL_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gewählt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_WAHL_ZAHL {
+            get {
+                return ResourceManager.GetString("AUSWAHL_WAHL_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gewählt, {1} verborgen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_WAHL_ZAHL_VERBORGEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_WAHL_ZAHL_VERBORGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile wählen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_WAHL_ZEILE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_WAHL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_AENDERN_BRAUCHWASSER {

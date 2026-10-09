@@ -76,7 +76,7 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="Photovoltaik" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
@@ -121,7 +121,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* Eigenschaften der PV-ANLAGE - nur bei gewaehlter Projektzeile (panel1.Visible). *@
     @if (_projektZeile is not null)
@@ -333,6 +333,9 @@
                vorbeizurollen. *@
         </KindInhalt>
     </Gruppenkopf>
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

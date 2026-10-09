@@ -1164,6 +1164,59 @@ In Ruhe steht das Banner bei 109–151 px (520 px: 109–168 px), mit und ohne H
 **Grenzen.** Stehen zwei Banner zugleich als Kinder der Wurzel, haften sie an derselben Stelle übereinander. Das
 Polster oben rechnet eine Bannerzeile; ein mehrzeiliges Banner lässt dem angesprungenen Feld weniger Luft.
 
+## Rollbereichprobe „kein Rollbereich im Rollbereich" — Seiten `/rollbereichprobe`, `/fensterprobe`
+
+**Zweck.** Die Projektdialoge mit Katalogauswahl (Baustein `Zweispaltenauswahl`, Variante V1 „Gerahmt und
+gestapelt", [Konzept](../../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
+Abschnitt 4 und 8) füllen ihr Fenster; es rollen allein Projektliste, Katalogliste und die aufgeklappte
+Detailzeile, keine in der anderen. bunit sieht weder Lage noch Rollbereich — die Probe misst es im echten
+Chromium. Die Seite `/rollbereichprobe?fall=…` trägt ohne Datenbank Pufferspeicher, Stromspeicher,
+Photovoltaik, Solarkollektoren, Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie und die
+Kältemaschinenauswahl (`KaeltemaschineKatalogDialog`); Heizkessel, BHKW, Wärmepumpen und Gebäude nimmt die
+Probe von `/fensterprobe`.
+
+```bash
+node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe]
+```
+
+**Fälle.** Dreizehn Dialoge × drei Fenster (1 280 × 800, 1 280 × 720, 1 024 × 700) × die Zustände Vorgabe,
+Trennlinie oben (Pos1), Trennlinie unten (Ende), Detailzeile auf bei beiden Grenzen, Detailzeile wieder zu,
+mit der Maus gezogen, neu geladen (die Höhe kommt über `Dienste.Einstellungen` wieder) und beim Gebäude die
+offene Überlagerung „Simulation…". Je Zustand: kein sichtbares Element mit `overflow: auto|scroll` in einem
+anderen; Dokument und Dialogkörper rollen nicht; kein Bereich und kein Bereichsinhalt läuft über; die
+Katalogliste behält Kopf und zwei Zeilen (unter 600 px Bausteinhöhe Kopf und eine Zeile, Stilblatt
+`@container katalogauswahl`); die Kopfleisten brechen nicht um und schneiden keinen Knopf ab; die Konsole
+bleibt ohne Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhalt des Katalogbereichs muss als
+verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
+Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 09.10.2026** (Wirt Release, Chromium headless über das globale Playwright): **294 Zustände,
+0 Verstöße, Gegenprobe rot** (verschachtelt 1 Paar, Dialogkörper rollt) — Rückgabe 0. Vorgabe der
+Trennlinie (Höhe des Bausteins / Projektliste / Katalogliste in px, Kopf der Katalogliste 53 px, Zeile 53 px):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 |
+|---|---|---|---|
+| Heizkessel, BHKW, Gebäude, Pufferspeicher, Photovoltaik, Solarkollektoren, Bedarfsprofile, Wärmebedarf extern | 620 / 138 / 178 | 540 / 128 / 108 | 520 / 108 / 108 |
+| Wärmepumpen | 620 / 138 / 182 | 540 / 132 / 108 | 520 / 112 / 108 |
+| Stromspeicher | 620 / 138 / 222 | 540 / 138 / 142 | 520 / 138 / 122 |
+| Stromganglinie | 648 / 138 / 264 | 568 / 138 / 184 | 548 / 138 / 164 |
+| Solarganglinie | 648 / 138 / 161 | 568 / 138 / 108 | 548 / 138 / 108 |
+
+Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
+Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
+Wirt des Bausteins; die Überlagerung „Simulation…" des Gebäudes rollt als Ganzes um zwei Listen. Beide je
+drei Fenster.
+
+**Grenzen.** Bei 720 und 700 px Fensterhöhe bleiben dem Katalog Kopf und gut eine Zeile: Kontextzeile,
+Suchzeile der Katalogliste, Fußleiste des Katalogs und die Kopfleisten (Berührungsmaß 44 px) belegen die
+Höhe, die das Mockup dem Katalog gab. Die Probe misst Chromium, nicht die WebView2 selbst.
+
+Die **Fensterprobe** misst für Heizkessel, BHKW, Wärmepumpen und Gebäude „nichts rollt außer den
+Listen und der Detailzeile" (Dokument und Dialogkörper rollen nicht, Kopf und Schlussleiste statisch im
+Bild, auch mit aufgeklappter Detailzeile und über den ganzen Tabulatorweg; Gegenprobe: ein rollender
+Dialogkörper wird rot); die Haft-Kriterien gelten nur noch für die Dublettenprüfung. Die **Bannerprobe**
+misst in diesen drei Fällen, dass das Banner unter dem Kopf im Bild steht, sein Kreuz trägt und das
+Dokument nicht rollt.
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer

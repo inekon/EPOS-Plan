@@ -111,10 +111,15 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Eine LISTE steht in einem festen Rahmen mit Rollbalken:** `.epos-raster-huelle` trägt
   `max-height: var(--epos-listenhoehe)`, `overflow: auto` und einen stehenden Spaltenkopf — eine
   Höchsthöhe, Rückweg `Begrenzt="false"`; im `Katalograhmen` (siehe unten) fällt die Höchsthöhe.
-- **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`:** Projektliste oben mit Höhengrenze,
-  darunter die Übernahmeleiste (je ein Zeichen ▲/▼ als `aria-hidden`-Element, nie im
-  Ressourcentext), darunter die Katalogliste über die ganze Breite; Filter darüber, Detailblöcke
-  darunter.
+- **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`** (Katalogauswahl V1 „Gerahmt und
+  gestapelt", [Konzept](../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
+  drei gerahmte Bereiche mit Kopfleiste und Kennfarbe — „Im Projekt" (mit „▼ Aus dem Projekt
+  entfernen"), darunter die ziehbare Trennlinie (Höhe je Dialog über `Dienste.Einstellungen`,
+  Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (Datenbank)" (mit „▲ In das Projekt
+  übernehmen", Enter und Doppelklick übernehmen) und die zugeklappte Detailzeile „gewählter Satz".
+  Der Wirt nennt `Dialogname` und reicht Projektliste (`Links`), Katalogliste samt Fußleiste
+  (`Rechts`) und seinen Detailblock (`Satz`) hinein; die Zeichen ▲/▼ stehen als
+  `aria-hidden`-Element, nie im Ressourcentext.
 - **Ein KATALOGDIALOG nutzt die Höhe:** Wurzel `epos-katalog-dialog`, Baustein `Katalograhmen` mit
   zwei Anordnungen. Ohne Stammblatt: `Liste` und `Eingabe` (`Gestapelt`, wo sie untereinander
   gehören), Umbruch bei **900 CSS-Pixeln**; die Liste hat keine Maximalhöhe mehr und nimmt die
@@ -192,6 +197,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Anmeldung beendet den Prozess wortlos). Dann haften das erste Kind der Dialogwurzel (`.epos-dialog-kopf`)
   oben und die Leiste mit dem Primärknopf als eigenem Kind unten, nur der Inhalt rollt
   (`epos-ui.css`, „Dialog im eigenen Fenster"; nicht in Katalogdialogen, Überlagerung und Blatt).
+  **Die Projektdialoge mit Katalogauswahl** (Baustein `Zweispaltenauswahl`) sind ebenfalls
+  ausgenommen: Sie füllen ihr Fenster, und es rollen allein Projektliste, Katalogliste und die
+  aufgeklappte Detailzeile, keine in der anderen — Detailblock des Wirts als Abschnitt `Satz` in
+  den Baustein, nichts darunter; gemessen mit `Proben/Rasterprobe/rollbereichprobe.mjs`.
   Deshalb steht der Kopf zuerst, und **eine Knopfzeile mitten im Inhalt trägt keinen
   Primärknopf** — Wache `FensterrahmenTests`, gemessen mit `Proben/Rasterprobe/fensterprobe.mjs`.
 - **Eine Meldung im Fensterdialog ist der `Warnbanner` als unmittelbares Kind der Dialogwurzel:**

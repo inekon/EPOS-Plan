@@ -65,7 +65,11 @@ const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
 const TOL = 1;   // px - Rollstaende sind gebrochen (Unterpixel)
 
 const FENSTER = [{ breite: 1088, hoehe: 624 }, { breite: 520, hoehe: 624 }];
-const FENSTERDIALOGE = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'dubletten'];
+const FENSTERDIALOGE = ['dubletten'];
+// Projektdialoge mit Katalogauswahl (Baustein Zweispaltenauswahl, Konzept Projektdialoge mit
+// Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
+// Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
+const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude'];
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
@@ -329,6 +333,50 @@ async function katalog(browser, f, marke) {
   return m;
 }
 
+/** Katalogauswahl: welche Elemente rollen, ob Dokument oder Dialog rollen, wo Kopf und Fuss stehen. */
+function rollstand() {
+  const d = document.querySelector('body > #app > .epos-dialog');
+  const sichtbar = e => { const s = getComputedStyle(e); const b = e.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && b.width > 0 && b.height > 0; };
+  const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY);
+  const erlaubt = e => e.matches('.epos-zweispalten-bereich .epos-raster-huelle, .epos-zweispalten-satz');
+  const fremd = [...document.querySelectorAll('body *')].filter(e => sichtbar(e) && rollt(e) && !erlaubt(e) && !e.closest('.epos-ueberlagerung'))
+    .map(e => e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
+  const kopf = d.querySelector(':scope > .epos-dialog-kopf');
+  const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer') || e.matches('.epos-dialog-fuss'));
+  const dok = document.scrollingElement;
+  return {
+    fremd, listen: [...d.querySelectorAll('*')].filter(e => sichtbar(e) && rollt(e) && erlaubt(e)).length,
+    dokument: dok.scrollHeight, innen: innerHeight, dialogRollt: d.scrollHeight > d.clientHeight + 1,
+    kopf: kopf.getBoundingClientRect().top, kopfPos: getComputedStyle(kopf).position,
+    fussBoden: fuss ? fuss.getBoundingClientRect().bottom : -1, fussPos: fuss ? getComputedStyle(fuss).position : '',
+    y: scrollY,
+  };
+}
+
+/** Prueft eine Katalogauswahl; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
+async function nichtsRollt(seite, name, melden) {
+  let n = 0;
+  const m = melden ? (t => { n++; melde(name, t); }) : (() => n++);
+  const pruefe = async stand => {
+    const r = await seite.evaluate(rollstand);
+    if (r.fremd.length) m(`${stand}: es rollt ausser Listen und Detailzeile: ${r.fremd.join(', ')}`);
+    if (r.dokument > r.innen + TOL) m(`${stand}: das Dokument rollt (${r.dokument} px)`);
+    if (r.dialogRollt) m(`${stand}: der Dialogkoerper rollt`);
+    if (r.kopf < -TOL || r.kopfPos !== 'static') m(`${stand}: Kopf bei ${zahl(r.kopf)} px, ${r.kopfPos}`);
+    if (r.fussBoden > r.innen + TOL || r.fussPos !== 'static') m(`${stand}: Schlussleiste endet bei ${zahl(r.fussBoden)} px, ${r.fussPos}`);
+    return r;
+  };
+  const a = await pruefe('zu');
+  const z = seite.locator('.epos-zweispalten-satzzeile');
+  if (await z.count()) { await z.evaluate(e => e.click()); await seite.waitForTimeout(150); await pruefe('Detailzeile auf'); await z.evaluate(e => e.click()); await seite.waitForTimeout(150); }
+  // Der Tabulator durch den ganzen Dialog rollt das Dokument nie.
+  let gerollt = 0;
+  await seite.evaluate(() => document.querySelector('body > #app > .epos-dialog').focus());
+  for (let i = 0; i < 80; i++) { await seite.keyboard.press('Tab'); if (await seite.evaluate(() => scrollY) > 0) gerollt++; }
+  if (gerollt) m(`Tabulator rollt das Dokument (${gerollt} Schritte)`);
+  return { n, listen: a.listen, kopf: a.kopf, fuss: a.fussBoden, dokument: a.dokument };
+}
+
 // ---------------------------------------------------------------------------
 //  Lauf
 // ---------------------------------------------------------------------------
@@ -340,6 +388,15 @@ try {
 
   for (const f of FENSTER) {
     const kennung = `${f.breite}x${f.hoehe}`;
+    for (const fall of KATALOGAUSWAHL) {
+      if (NUR && NUR !== fall) continue;
+      const name = `${fall} ${kennung}`;
+      console.log(`- ${name} (Katalogauswahl)`);
+      const seite = await oeffnen(browser, fall, f);
+      const r = await nichtsRollt(seite, name, true);
+      console.log(`    rollend nur ${r.listen} Listen, Kopf ab ${zahl(r.kopf)} px, Schlussleiste bis ${zahl(r.fuss)} px, Dokument ${r.dokument} px`);
+      await seite.close();
+    }
     for (const fall of FENSTERDIALOGE) {
       if (NUR && NUR !== fall) continue;
       const name = `${fall} ${kennung}`;
@@ -441,8 +498,26 @@ try {
         await s3.close();
       }
     }
+    for (const f of FENSTER) for (const fall of KATALOGAUSWAHL) {
+      if (NUR && NUR !== fall) continue;
+      const s5 = await oeffnen(browser, fall, f);
+      await s5.evaluate(() => {
+        const d = document.querySelector('body > #app > .epos-dialog');
+        d.style.setProperty('overflow', 'auto', 'important');
+        const klotz = document.createElement('div');
+        klotz.style.cssText = 'height: 2000px; flex: 0 0 auto';
+        d.insertBefore(klotz, d.querySelector('.epos-zweispalten'));
+      });
+      const r5 = await nichtsRollt(s5, '', false);
+      console.log(`    rollender Dialogkoerper ${fall} ${f.breite}x${f.hoehe}: ${r5.n} Verstoesse`);
+      if (r5.n === 0) gegenGruen++;
+      await s5.close();
+    }
     if (gegenGruen) console.log(`  GEGENPROBE GRUEN in ${gegenGruen} Faellen - die Probe misst die Regel nicht`);
-    if (fokusRot === 0) { gegenGruen++; console.log('  GEGENPROBE GRUEN: ohne scroll-padding kein verdecktes Feld'); }
+    // Die Projektdialoge mit Katalogauswahl rollen nicht mehr; der einzige lange Fensterdialog des
+    // Wirts (Dublettenpruefung) hat zu wenige Felder, um ohne scroll-padding eines zu verdecken. Die
+    // Gegenprobe des scroll-padding ist deshalb nur noch Auskunft.
+    if (fokusRot === 0) console.log('  Auskunft: ohne scroll-padding kein verdecktes Feld (kein langer Formulardialog im Wirt)');
   }
 
   console.log(verstoesse.length === 0 && gegenGruen === 0

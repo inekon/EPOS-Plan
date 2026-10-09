@@ -158,7 +158,7 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-knopf--richtung").Count);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("ausgewählte Stromspeicher:", ueberschriften);
@@ -240,9 +240,9 @@ public class StromspeicherDialogTests : EposBunitContext
             new AufnahmeErgebnis(Zeile(naechster++, "Speicher 10", id)));
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Equal(2, zeilen.Count);
         Assert.NotEqual(zeilen[0].Schluessel, zeilen[1].Schluessel);
@@ -257,7 +257,7 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z));
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].Schluessel);
@@ -271,7 +271,7 @@ public class StromspeicherDialogTests : EposBunitContext
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Speicher 10", 41) };
         var cut = Aufbauen(zeilen);
 
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Empty(zeilen);
         Assert.Null(cut.Instance.Projektzeile);
@@ -527,14 +527,14 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
-        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
 
         // Ein Filter, der GENAU diese Zeile ausblendet.
         _filterstand.Setzen(Katalogfilterprofil.SpHersteller, "VARTA");
         cut.Render();
 
         Assert.Single(Katalogzeilen(cut));
-        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
     }
 
     /// <summary>

@@ -1,184 +1,537 @@
-﻿@* Die EINE Projekt/Datenbank-Auswahl des Hauses - Anwenderentscheid #76 vom
-   05.09.2026, in seiner ANORDNUNG geaendert durch W14a-E-10-Q2 vom 07.09.2026.
+﻿@* DIE EINE PROJEKT/DATENBANK-AUSWAHL DES HAUSES in der Variante V1 „Gerahmt und
+   gestapelt" (Konzept_Projektdialoge_Katalogauswahl, Entscheide KA-E-1 bis KA-E-11,
+   Zielbild 4.1 bis 4.8). Ein Baustein fuer alle Projektdialoge mit Katalogauswahl.
 
-   DER ENTSCHEID #76. "Alle Dialoge, in denen links 'im Projekt ausgewaehlt' und
-   rechts 'aus der Datenbank/Katalog' mit Pfeilknoepfen dazwischen stehen,
-   folgen dem alten BHKW-PLAN-Schema." Zwei Listen, Uebernahmeknoepfe
-   dazwischen, der Filter ueber der Liste, auf die er wirkt - das gilt
-   unveraendert.
+   AUFBAU (4.1). Oben der Bereich „Im Projekt", darunter die ziehbare Trennlinie,
+   darunter „Katalog (Datenbank)", unten die Detailzeile „gewaehlter Satz". Jeder
+   Bereich ist gerahmt und hat eine Kopfleiste mit Marke und seinen Knoepfen; die
+   obere Rahmenkante und die Marke tragen die Kennfarbe (KA-E-10), die Knoepfe nicht -
+   ihr Ort sagt, worauf sie wirken: „Aus dem Projekt entfernen" in der Kopfleiste des
+   Projekts, „In das Projekt uebernehmen" in der des Katalogs.
 
-   WAS Q2 GEAENDERT HAT: die ANORDNUNG, nicht die Aussage. Die zwei Listen
-   stehen seit dem 07.09.2026 UNTEREINANDER - oben die kurze Projektliste, dann
-   die UEBERNAHMELEISTE mit den zwei Knoepfen als Textzeile, darunter die
-   Katalogliste ueber die GANZE Breite. Der Anwender hat es begruendet: "Liste
-   wie zuvor ueber ganze Breite, sonst zu schmale Liste."
+   KEIN ROLLBEREICH IM ROLLBEREICH. Steht der Dialog im eigenen Fenster oder in einer
+   Ueberlagerung, nimmt er deren Hoehe, und der Baustein teilt den Rest als Raster
+   (epos-ui.css, Abschnitt „Katalogauswahl V1"): Es rollen genau die Projektliste, die
+   Katalogliste und die aufgeklappte Detailzeile, keiner im anderen; Dokument und
+   Dialogkoerper rollen nicht.
 
-   DREI GRUENDE, ALLE GEMESSEN (Konzept_Katalogfilter 8.2, Mockup-Reiter M2 bei
-   1 366 px):
-     1. Die KATALOGLISTE braucht die Breite. Nebeneinander rollte sie schon mit
-        SECHS Parameterspalten um 118 px in sich (offener Punkt O-5);
-        untereinander traegt sie NEUN und rollt um 0 px.
-     2. Die PROJEKTLISTE ist kurz - im Pruefprojekt zwei Zeilen. Nebeneinander
-        verschenkte sie die halbe Breite.
-     3. Die SUCHZEILE steht damit UNMITTELBAR ueber der Liste, auf die sie
-        wirkt - Hausregel #76 woertlich statt im Klartext.
-   Der Preis ist die Hoehe (offener Punkt O-7): gemessen 1 228 px bei 1 366 px
-   Breite. Deshalb ist die PROJEKTLISTE hoehenbegrenzt (12 rem = drei Zeilen,
-   im Browser gemessen - #248); die Katalogliste bringt ihre eigene Grenze
-   aus dem Katalograhmen mit.
+   TRENNLINIE (4.3). Ziehen (Skript epos-zweispalten.js), Pfeil hoch/runter um eine
+   Zeile, Pos1/Ende an die Grenzen, Doppelklick stellt die Vorgabe her. Die Hoehe der
+   Projektliste wird je Dialog ueber WindowsFormsApplication1.Dienste.Einstellungen gemerkt
+   (Katalogauswahl.Trenner.<Dialogname>); ohne Ablage gilt die Vorgabe.
 
-   DER BAUSTEIN IST DABEI KLEINER GEWORDEN. Die Umbruchregel bei 900 px, die
-   ihn bis hierher auf schmalem Schirm senkrecht stellte, ist die EINZIGE
-   Anordnung geworden - dieselbe Bewegung, die S1.7 am Katalograhmen gemacht
-   hat. Damit faellt die Medienabfrage, es faellt die schmale Mittelspalte
-   (--epos-zweispalten-mitte) und es faellt das WAAGERECHTE Pfeilpaar: Jeder
-   Knopf trug bis hierher BEIDE Zeichen im Markup (◀▶ nebeneinander, ▲▼
-   untereinander), weil eine Komponente nicht weiss, wie breit sie gezeichnet
-   wird. Bei EINER Anordnung braucht es nur noch EIN Zeichen je Knopf.
+   DETAILZEILE (4.4). Zugeklappt beim Oeffnen; aufgeklappt rollt sie in sich und nimmt
+   den Listen Hoehe ab. Ihr Inhalt (Abschnitt Satz) bleibt im Baum, auch zugeklappt -
+   er traegt Zustand des Wirts (Felder, eingebettete Ansichten), und ein Ab- und
+   Aufbau bei jedem Klappen verloere ihn.
 
-   BESCHRIFTUNG UND KURZTEXT (Befund W9-B-3). Der Vorlaeufer stellte blanke
-   Zeichen hin, und der Anwender meldete: "nicht so recht klar, auf was sich
-   die oberen 2 Buttons beziehen." Jeder Knopf traegt seither seine Aufgabe
-   im Klartext UND als Kurztext; das Zeichen sagt nur noch die Richtung.
-   Es steht deshalb als aria-hidden daneben - eine Sprachausgabe liest den
-   Satz, nicht das Dreieck. Die Texte sind Ressourcenschluessel beider
-   Sprachen (AUSWAHL_BTN_UEBERNEHMEN / _ENTFERNEN und ihre _HINWEIS-Zwillinge).
+   MEHRFACHWAHL (4.5). Reicht der Wirt je Bereich eine Bereichswahl und die
+   Schluessel der gefilterten Liste, nennt die Kopfleiste „n gewaehlt, m verborgen",
+   und Wahlkaestchen in der Liste (Zeile und Kopfhaekchen) rechnen ueber den Baustein.
 
-   NUR UNTEN. Der Gebaeudedialog kennt eine Verwaltungsbetriebsart, in der
-   es keine Projektliste gibt (Form_Gebaeude_Load:608-620). Dann faellt der
-   obere Block MIT der Uebernahmeleiste weg, und der Katalog steht allein.
-
-   TASTATURWEG. Die drei Bereiche stehen in der Reihenfolge oben - Leiste -
-   unten im Markup; der Tabulator laeuft damit von der Projektliste ueber die
-   zwei Knoepfe in den Katalog. Jeder Block traegt seine Ueberschrift als
-   aria-label, damit eine Sprachausgabe beim Wechsel sagt, wo man ist. *@
+   TASTATUR (4.7). Enter in der Katalogliste und Doppelklick auf eine Katalogzeile
+   uebernehmen; Enter in der Projektliste klappt die Detailzeile auf; Entf in der
+   Projektliste entfernt; Strg+A waehlt die gefilterte Liste; Esc klappt zuerst die
+   Detailzeile zu, dann gilt das Esc des Dialogs. *@
 
 @namespace EPOS.UI.Bausteine
+@using Microsoft.JSInterop
+@using WindowsFormsApplication1
+@inject IJSRuntime Js
+@implements IAsyncDisposable
 
-<div class="epos-zweispalten @Zusatzklasse">
+<CascadingValue Value="this" IsFixed="true">
+<div class="@Wurzelklasse" style="@Wurzelstil" @ref="_wurzel">
 
     @if (!NurRechts)
     {
         @* ------------------------------------------ oben: das Projekt ----- *@
-        <div class="epos-zweispalten-spalte epos-zweispalten-spalte--oben"
-             role="group" aria-label="@LinksTitel">
-            <h2 class="epos-untergruppe epos-zweispalten-titel">@LinksTitel</h2>
-            @Links
-        </div>
+        <section class="epos-zweispalten-bereich epos-zweispalten-bereich--projekt epos-zweispalten-spalte epos-zweispalten-spalte--oben"
+                 role="group" aria-label="@LinksTitel" data-mehrfach="@(ProjektWahl is null ? null : "1")">
+            <div class="epos-zweispalten-kopfleiste">
+                <span class="epos-zweispalten-marke epos-zweispalten-marke--projekt">@ProjektMarke</span>
+                <h2 class="epos-untergruppe epos-zweispalten-titel" title="@LinksTitel">@LinksTitel</h2>
+                @if (Wahltext(ProjektWahl, ProjektSichtbar) is string pz)
+                {
+                    <span class="epos-zweispalten-wahlzahl" role="status">@pz</span>
+                }
+                @ProjektKopf
+                <span class="epos-leiste-fueller"></span>
+                @* Ein Wirt kann weitere Knoepfe anhaengen, die auf die Auswahl der
+                   Projektliste wirken (Gebaeudedialog: „In DB uebernehmen"). *@
+                @Leistenzusatz
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-knopf--richtung epos-zweispalten-knopf--entfernen"
+                        title="@EntfernenHinweis" disabled="@EntfernenGesperrt"
+                        @onclick="Entfernen">
+                    <span class="epos-zweispalten-pfeil" aria-hidden="true">▼</span>
+                    <span class="epos-zweispalten-knopftext">@EntfernenText</span>
+                </button>
+            </div>
+            <div class="epos-zweispalten-inhalt">
+                @Links
+            </div>
+        </section>
 
-        @* ------------------------------------------ die Uebernahmeleiste -- *@
-        <div class="epos-zweispalten-uebernahme" role="group" aria-label="@MitteTitel">
-            <button type="button" class="epos-knopf epos-zweispalten-knopf"
-                    title="@UebernehmenHinweis" disabled="@UebernehmenGesperrt"
-                    @onclick="Uebernehmen">
-                <span class="epos-zweispalten-pfeil" aria-hidden="true">▲</span>
-                <span class="epos-zweispalten-knopftext">@UebernehmenText</span>
-            </button>
-
-            <button type="button" class="epos-knopf epos-zweispalten-knopf"
-                    title="@EntfernenHinweis" disabled="@EntfernenGesperrt"
-                    @onclick="Entfernen">
-                <span class="epos-zweispalten-pfeil" aria-hidden="true">▼</span>
-                <span class="epos-zweispalten-knopftext">@EntfernenText</span>
-            </button>
-
-            @* Ein Wirt kann der Leiste weitere Knoepfe anhaengen, die auf dieselbe
-               Auswahl wirken (Gebaeudedialog: "In DB uebernehmen"). *@
-            @Leistenzusatz
-        </div>
+        @* ------------------------------------------ die Trennlinie -------- *@
+        <div class="epos-zweispalten-trenner" role="separator" aria-orientation="horizontal"
+             tabindex="0" aria-label="@Resource.AUSWAHL_TRENNER" title="@Resource.AUSWAHL_TRENNER_HINWEIS"
+             aria-valuenow="@_hoehe" aria-valuemin="@MINDESTHOEHE"
+             @onkeydown="BeiTrennerTaste" @ondblclick="BeiTrennerDoppelklick"></div>
     }
 
-    @* ---------------------------------------------- unten: der Katalog ---- *@
-    <div class="epos-zweispalten-spalte epos-zweispalten-spalte--unten"
-         role="group" aria-label="@RechtsTitel">
-        <h2 class="epos-untergruppe epos-zweispalten-titel">@RechtsTitel</h2>
-        @Rechts
-    </div>
+    @* ---------------------------------------------- der Katalog ----------- *@
+    <section class="epos-zweispalten-bereich epos-zweispalten-bereich--katalog epos-zweispalten-spalte epos-zweispalten-spalte--unten"
+             role="group" aria-label="@RechtsTitel" data-mehrfach="@(KatalogWahl is null ? null : "1")">
+        <div class="epos-zweispalten-kopfleiste">
+            <span class="epos-zweispalten-marke epos-zweispalten-marke--katalog">@KatalogMarke</span>
+            <h2 class="epos-untergruppe epos-zweispalten-titel" title="@RechtsTitel">@RechtsTitel</h2>
+            @if (Wahltext(KatalogWahl, KatalogSichtbar) is string kz)
+            {
+                <span class="epos-zweispalten-wahlzahl" role="status">@kz</span>
+            }
+            @KatalogKopf
+            <span class="epos-leiste-fueller"></span>
+            @if (!NurRechts)
+            {
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-knopf--richtung epos-zweispalten-knopf--uebernehmen"
+                        title="@UebernehmenHinweis" disabled="@UebernehmenGesperrt"
+                        @onclick="Uebernehmen">
+                    <span class="epos-zweispalten-pfeil" aria-hidden="true">▲</span>
+                    <span class="epos-zweispalten-knopftext">@UebernehmenText</span>
+                </button>
+            }
+        </div>
+        <div class="epos-zweispalten-inhalt">
+            @Rechts
+        </div>
+    </section>
+
+    @* ---------------------------------------------- der gewaehlte Satz --- *@
+    @if (Satz is not null)
+    {
+        <section class="epos-zweispalten-bereich epos-zweispalten-bereich--satz"
+                 role="group" aria-label="@Resource.AUSWAHL_MARKE_SATZ">
+            <button type="button" class="epos-zweispalten-satzzeile" aria-expanded="@(_satzOffen ? "true" : "false")"
+                    title="@Resource.AUSWAHL_SATZ_HINWEIS" @onclick="SatzUmschalten" @ref="_satzzeile">
+                <span class="epos-zweispalten-satzpfeil" aria-hidden="true">@(_satzOffen ? "▾" : "▸")</span>
+                <span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@SatzMarke</span>
+                <span class="epos-zweispalten-satzname">@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)</span>
+                @if (!string.IsNullOrEmpty(SatzKenndaten))
+                {
+                    <span class="epos-zweispalten-satzkenndaten">@SatzKenndaten</span>
+                }
+                <span class="epos-leiste-fueller"></span>
+                <span class="epos-zweispalten-satzdetails">@Resource.AUSWAHL_SATZ_DETAILS</span>
+            </button>
+            <div class="epos-zweispalten-satz" hidden="@(!_satzOffen)">
+                @Satz
+            </div>
+        </section>
+    }
 
 </div>
+</CascadingValue>
 
 @code {
     // =====================================================================
-    // Die zwei Bloecke
+    // Die Bereiche
     // =====================================================================
 
-    /// <summary>Überschrift des OBEREN Blocks („ausgewählt im Projekt").</summary>
+    /// <summary>Überschrift des Projektbereichs („ausgewählt im Projekt").</summary>
     [Parameter] public string LinksTitel { get; set; } = "";
 
     /// <summary>
-    /// Inhalt des OBEREN Blocks: die Projektliste und, was unmittelbar zu ihr
-    /// gehört (Summenzeile, Kanalwahl). Filter und Katalogknöpfe gehören
-    /// NACH UNTEN — dort steht die Liste, auf die sie wirken.
+    /// Inhalt des Projektbereichs: die Projektliste und, was unmittelbar zu ihr gehört.
+    /// Der Name bleibt <c>Links</c> — die Rolle (Projektbereich) hat sich nicht geändert.
     /// </summary>
-    /// <remarks>
-    /// <b>Der Name bleibt <c>Links</c>.</b> Q2 hat die Anordnung geändert, nicht
-    /// die Rolle: Es ist weiter der PROJEKT-Block, und die elf Wirte benennen
-    /// ihn seit #76 so. Ein Umbenennen wäre eine Änderung an elf Dateien ohne
-    /// einen Gewinn — der Baustein heißt aus demselben Grund weiter
-    /// <c>Zweispaltenauswahl</c>.
-    /// </remarks>
     [Parameter] public RenderFragment? Links { get; set; }
 
-    /// <summary>Überschrift des UNTEREN Blocks („aus der Datenbank").</summary>
+    /// <summary>Überschrift des Katalogbereichs („aus der Datenbank").</summary>
     [Parameter] public string RechtsTitel { get; set; } = "";
 
     /// <summary>
-    /// Inhalt des UNTEREN Blocks: die Suchzeile ÜBER der Katalogliste, die
-    /// Liste selbst und darunter die Katalogknöpfe („neu", „ändern",
-    /// „löschen") — so wie im Vorbild.
+    /// Inhalt des Katalogbereichs: die Katalogliste samt Suchzeile und darunter die
+    /// Fußleiste mit den Katalogknöpfen.
     /// </summary>
     [Parameter] public RenderFragment? Rechts { get; set; }
 
+    /// <summary>Weitere Inhalte der Projekt-Kopfleiste links vom Füller (Summe, Modulzahl).</summary>
+    [Parameter] public RenderFragment? ProjektKopf { get; set; }
+
+    /// <summary>Weitere Inhalte der Katalog-Kopfleiste links vom Füller.</summary>
+    [Parameter] public RenderFragment? KatalogKopf { get; set; }
+
     /// <summary>
-    /// Verwaltungsbetriebsart: Nur der Katalog. Der obere Block und die
-    /// Übernahmeleiste entfallen.
+    /// Verwaltungsbetriebsart: nur der Katalog. Projektbereich und Trennlinie entfallen,
+    /// der Katalog erbt die Höhe.
     /// </summary>
     [Parameter] public bool NurRechts { get; set; }
 
     /// <summary>Zusätzliche Klasse am Wirt, falls ein Dialog nachstellen muss.</summary>
     [Parameter] public string? Zusatzklasse { get; set; }
 
+    /// <summary>
+    /// <b>Name des Wirts</b> für die gemerkte Höhe der Trennlinie
+    /// (<c>Katalogauswahl.Trenner.&lt;Dialogname&gt;</c>, Konzept 7 Nr. 4). Leer: nichts
+    /// wird gemerkt, es gilt die Vorgabe.
+    /// </summary>
+    [Parameter, EditorRequired] public string Dialogname { get; set; } = "";
+
     // =====================================================================
     // Die zwei Richtungsknoepfe
     // =====================================================================
 
-    /// <summary>
-    /// Beschriftung des Uebernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN</c>.
-    /// OHNE Zeichen: das steht als eigener, sprachausgabe-blinder Span daneben.
-    /// </summary>
+    /// <summary>Beschriftung des Übernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN</c>.</summary>
     [Parameter] public string UebernehmenText { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN;
 
-    /// <summary>Kurztext des Uebernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
-    [Parameter] public string UebernehmenHinweis { get; set; } =
-        Resource.AUSWAHL_BTN_UEBERNEHMEN_HINWEIS;
+    /// <summary>Kurztext des Übernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
+    [Parameter] public string UebernehmenHinweis { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN_HINWEIS;
 
     /// <summary>Gesperrt, solange im Katalog keine Zeile markiert ist.</summary>
     [Parameter] public bool UebernehmenGesperrt { get; set; }
 
-    /// <summary>Der Klick auf „in das Projekt uebernehmen".</summary>
+    /// <summary>Der Klick auf „in das Projekt übernehmen" — auch Enter und Doppelklick im Katalog.</summary>
     [Parameter] public EventCallback Uebernehmen { get; set; }
 
     /// <summary>Beschriftung des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN</c>.</summary>
     [Parameter] public string EntfernenText { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN;
 
     /// <summary>Kurztext des Entfernenknopfes — <c>AUSWAHL_BTN_ENTFERNEN_HINWEIS</c>.</summary>
-    [Parameter] public string EntfernenHinweis { get; set; } =
-        Resource.AUSWAHL_BTN_ENTFERNEN_HINWEIS;
+    [Parameter] public string EntfernenHinweis { get; set; } = Resource.AUSWAHL_BTN_ENTFERNEN_HINWEIS;
 
     /// <summary>Gesperrt, solange in der Projektliste keine Zeile markiert ist.</summary>
     [Parameter] public bool EntfernenGesperrt { get; set; }
 
-    /// <summary>Der Klick auf „aus dem Projekt entfernen".</summary>
+    /// <summary>Der Klick auf „aus dem Projekt entfernen" — auch Entf in der Projektliste.</summary>
     [Parameter] public EventCallback Entfernen { get; set; }
 
     /// <summary>
-    /// Weitere Knöpfe der Übernahmeleiste, hinter den zwei Richtungsknöpfen — etwa
-    /// „In DB übernehmen" des Gebäudedialogs. Ohne Inhalt bleibt die Leiste, wie sie ist.
+    /// Weitere Knöpfe der Projekt-Kopfleiste vor „Entfernen" — etwa „In DB übernehmen" des
+    /// Gebäudedialogs. Sie wirken auf die Auswahl der Projektliste.
     /// </summary>
     [Parameter] public RenderFragment? Leistenzusatz { get; set; }
 
+    // =====================================================================
+    // Die Detailzeile „gewaehlter Satz" (4.4)
+    // =====================================================================
+
+    /// <summary>Inhalt der aufgeklappten Detailzeile („Alle Daten", Kosten, Felder). Ohne ihn fehlt die Zeile.</summary>
+    [Parameter] public RenderFragment? Satz { get; set; }
+
+    /// <summary>Welcher Satz gezeigt wird — die Marke sagt „Projektsatz" oder „Katalogsatz".</summary>
+    [Parameter] public Satzmarke SatzArt { get; set; }
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Zeile.</summary>
+    [Parameter] public string? SatzName { get; set; }
+
+    /// <summary>Die wichtigsten Kenndaten des Satzes in einer Zeile.</summary>
+    [Parameter] public string? SatzKenndaten { get; set; }
+
+    /// <summary>Die Detailzeile wurde auf- oder zugeklappt.</summary>
+    [Parameter] public EventCallback<bool> SatzGeklappt { get; set; }
+
+    // =====================================================================
+    // Die Mehrfachwahl (4.5)
+    // =====================================================================
+
+    /// <summary>Die Wahl der Projektliste; ohne sie gibt es dort keine Mehrfachwahl.</summary>
+    [Parameter] public Bereichswahl? ProjektWahl { get; set; }
+
+    /// <summary>Schlüssel der sichtbaren (gefilterten) Projektzeilen in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<string>? ProjektSichtbar { get; set; }
+
+    /// <summary>Die Wahl der Katalogliste; ohne sie gibt es dort keine Mehrfachwahl.</summary>
+    [Parameter] public Bereichswahl? KatalogWahl { get; set; }
+
+    /// <summary>Schlüssel der sichtbaren (gefilterten) Katalogzeilen in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<string>? KatalogSichtbar { get; set; }
+
+    /// <summary>Eine Wahl hat sich geändert (Kästchen, Kopfhäkchen, Strg+A).</summary>
+    [Parameter] public EventCallback<Auswahlbereich> WahlGeaendert { get; set; }
+
+    // =====================================================================
+    // Masse der Trennlinie (4.3)
+    // =====================================================================
+
+    /// <summary>Höhe des Listenkopfs der Projektliste in px (Spaltenkopf ohne Trichter, gemessen 29,9 px).</summary>
+    public const int LISTENKOPF = 30;
+
+    /// <summary>Höhe des Listenkopfs der Katalogliste in px (Spaltenkopf mit Sortierpfeil und Trichter, gemessen 53 px).</summary>
+    public const int KATALOG_LISTENKOPF = 53;
+
+    /// <summary>Höhe einer Listenzeile in px (<c>Raster.ZEILENHOEHE</c>) — ein Pfeilschritt der Trennlinie.</summary>
+    public const int ZEILE = 53;
+
+    /// <summary>Untergrenze der Projektliste: Kopfzeile und eine Zeile.</summary>
+    public const int MINDESTHOEHE = LISTENKOPF + ZEILE + 2;
+
+    /// <summary>Vorgabe der Projektliste: Kopfzeile und zwei Zeilen.</summary>
+    public const int VORGABEHOEHE = LISTENKOPF + 2 * ZEILE + 2;
+
+    /// <summary>Mindesthöhe der Katalogliste: Kopfzeile und zwei Zeilen.</summary>
+    public const int KATALOG_MINDESTHOEHE = KATALOG_LISTENKOPF + 2 * ZEILE + 2;
+
+    /// <summary>Obergrenze, solange nicht gemessen werden kann (ohne Skript); das Raster klemmt ohnehin.</summary>
+    public const int OBERGRENZE_OHNE_MASS = 2000;
+
+    /// <summary>Präfix des Einstellungsschlüssels; dahinter steht der <see cref="Dialogname"/>.</summary>
+    public const string SCHLUESSEL_PRAEFIX = "Katalogauswahl.Trenner.";
+
+    /// <summary>Der Ort des Skripts — statische Web-Assets der Bibliothek.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-zweispalten.js";
+
+    /// <summary>Die Höhe der Projektliste in px, wie sie das Stilblatt bekommt.</summary>
+    public int Trennerhoehe => _hoehe;
+
+    /// <summary>Ist die Detailzeile aufgeklappt?</summary>
+    public bool SatzOffen => _satzOffen;
+
+    private int _hoehe = VORGABEHOEHE;
+    private bool _satzOffen;
+    private ElementReference _wurzel;
+    private ElementReference _satzzeile;
+    private IJSObjectReference? _modul;
+    private DotNetObjectReference<Zweispaltenauswahl>? _selbst;
+    private bool _angemeldet;
+
+    private string Schluessel => SCHLUESSEL_PRAEFIX + Dialogname;
+
+    private string Wurzelklasse
+    {
+        get
+        {
+            string k = "epos-zweispalten";
+            if (NurRechts) k += " epos-zweispalten--nurkatalog";
+            if (Satz is not null) k += " epos-zweispalten--mitsatz";
+            if (_satzOffen) k += " epos-zweispalten--satz-offen";
+            if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
+            return k;
+        }
+    }
+
+    private string Wurzelstil
+        => FormattableString.Invariant(
+            $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_MINDESTHOEHE}px");
+
+    private string ProjektMarke => Resource.AUSWAHL_MARKE_PROJEKT;
+    private string KatalogMarke => Resource.AUSWAHL_MARKE_KATALOG;
+    private string SatzMarke => SatzArt switch
+    {
+        Satzmarke.Projektsatz => Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+        Satzmarke.Katalogsatz => Resource.AUSWAHL_MARKE_KATALOGSATZ,
+        _ => Resource.AUSWAHL_MARKE_SATZ
+    };
+
+    /// <inheritdoc/>
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(Dialogname)) return;
+        try
+        {
+            int gemerkt = WindowsFormsApplication1.Dienste.Einstellungen?.LiesZahl(Schluessel, 0) ?? 0;
+            if (gemerkt > 0) _hoehe = Math.Clamp(gemerkt, MINDESTHOEHE, OBERGRENZE_OHNE_MASS);
+        }
+        catch (Exception)
+        {
+            // Ohne lesbare Ablage gilt die Vorgabe.
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_angemeldet) return;
+        _angemeldet = true;
+        try
+        {
+            _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            _selbst = DotNetObjectReference.Create(this);
+            if (_modul is not null) await _modul.InvokeVoidAsync("anmelden", _wurzel, _selbst);
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul (bunit, eine Huelle ohne Skripte) bleibt die Tastatur der
+            // Trennlinie; das Raster klemmt die Hoehe im Stilblatt.
+        }
+    }
+
+    // =====================================================================
+    // Trennlinie
+    // =====================================================================
+
+    /// <summary>Die Masse aus dem Skript: Höhe der Projektliste, Unter- und Obergrenze.</summary>
+    public sealed record Trennermasse(int Hoehe, int Min, int Max);
+
+    private async Task<Trennermasse> MasseAsync()
+    {
+        try
+        {
+            if (_modul is not null)
+            {
+                var m = await _modul.InvokeAsync<Trennermasse?>("masse", _wurzel);
+                if (m is not null && m.Max > 0) return m with { Min = Math.Max(m.Min, MINDESTHOEHE) };
+            }
+        }
+        catch (Exception)
+        {
+            // ohne Messung: der eigene Stand
+        }
+        return new Trennermasse(_hoehe, MINDESTHOEHE, OBERGRENZE_OHNE_MASS);
+    }
+
+    private async Task BeiTrennerTaste(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowUp" or "ArrowDown" or "Home" or "End")) return;
+        var m = await MasseAsync();
+        int neu = e.Key switch
+        {
+            "ArrowUp" => m.Hoehe - ZEILE,
+            "ArrowDown" => m.Hoehe + ZEILE,
+            "Home" => m.Min,
+            _ => m.Max
+        };
+        Setzen(Math.Clamp(neu, m.Min, Math.Max(m.Min, m.Max)));
+    }
+
+    private void BeiTrennerDoppelklick(MouseEventArgs e)
+    {
+        _hoehe = VORGABEHOEHE;
+        if (string.IsNullOrEmpty(Dialogname)) return;
+        try { WindowsFormsApplication1.Dienste.Einstellungen?.Loesche(Schluessel); }
+        catch (Exception) { /* ohne Ablage */ }
+    }
+
+    /// <summary>Das Skript meldet die Höhe nach dem Loslassen der Trennlinie.</summary>
+    [JSInvokable]
+    public Task TrennerGezogen(int hoehe)
+    {
+        Setzen(Math.Clamp(hoehe, MINDESTHOEHE, OBERGRENZE_OHNE_MASS));
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private void Setzen(int hoehe)
+    {
+        _hoehe = hoehe;
+        if (string.IsNullOrEmpty(Dialogname)) return;
+        try { WindowsFormsApplication1.Dienste.Einstellungen?.SchreibZahl(Schluessel, hoehe); }
+        catch (Exception) { /* ohne Ablage bleibt die Hoehe fuer diese Sitzung */ }
+    }
+
+    // =====================================================================
+    // Detailzeile
+    // =====================================================================
+
+    private async Task SatzUmschalten()
+    {
+        _satzOffen = !_satzOffen;
+        if (SatzGeklappt.HasDelegate) await SatzGeklappt.InvokeAsync(_satzOffen);
+    }
+
+    /// <summary>Esc bei aufgeklappter Detailzeile: zuklappen, der Fokus geht auf die Zeile.</summary>
+    [JSInvokable]
+    public async Task SatzSchliessen()
+    {
+        if (!_satzOffen) return;
+        await SatzUmschalten();
+        StateHasChanged();
+        try { await _satzzeile.FocusAsync(preventScroll: true); }
+        catch (Exception) { /* ohne Wurzel im Browser */ }
+    }
+
+    // =====================================================================
+    // Tastatur und Doppelklick in den Listen (4.7)
+    // =====================================================================
+
     /// <summary>
-    /// Name der Knopfgruppe fuer die Sprachausgabe — <c>AUSWAHL_GRP_PFEILE</c>.
+    /// Eine Taste auf einer Listenzeile (aus dem Skript): <c>Enter</c> im Katalog übernimmt
+    /// (auch Doppelklick), in der Projektliste klappt es die Detailzeile auf; <c>Entf</c>
+    /// entfernt; <c>Alle</c> (Strg+A) wählt die gefilterte Liste.
     /// </summary>
-    [Parameter] public string MitteTitel { get; set; } = Resource.AUSWAHL_GRP_PFEILE;
+    [JSInvokable]
+    public async Task ListenTaste(string bereich, string taste)
+    {
+        bool katalog = bereich == nameof(Auswahlbereich.Katalog);
+        switch (taste)
+        {
+            case "Enter" when katalog:
+                if (!NurRechts && !UebernehmenGesperrt && Uebernehmen.HasDelegate) await Uebernehmen.InvokeAsync();
+                break;
+            case "Enter":
+                if (Satz is not null && !_satzOffen) await SatzUmschalten();
+                break;
+            case "Entf" when !katalog:
+                if (!EntfernenGesperrt && Entfernen.HasDelegate) await Entfernen.InvokeAsync();
+                break;
+            case "Alle":
+                await AlleWaehlenAsync(katalog ? Auswahlbereich.Katalog : Auswahlbereich.Projekt, true);
+                break;
+        }
+        StateHasChanged();
+    }
+
+    // =====================================================================
+    // Mehrfachwahl
+    // =====================================================================
+
+    /// <summary>Die Wahl eines Bereichs (für die Wahlkästchen).</summary>
+    public Bereichswahl? WahlVon(Auswahlbereich bereich)
+        => bereich == Auswahlbereich.Projekt ? ProjektWahl : KatalogWahl;
+
+    /// <summary>Die gefilterte Liste eines Bereichs.</summary>
+    public IReadOnlyList<string> SichtbarVon(Auswahlbereich bereich)
+        => (bereich == Auswahlbereich.Projekt ? ProjektSichtbar : KatalogSichtbar) ?? Array.Empty<string>();
+
+    /// <summary>Klick auf ein Zeilenkästchen — das Kästchen schaltet, Umschalt wählt den Bereich.</summary>
+    public async Task KaestchenAsync(Auswahlbereich bereich, string schluessel, bool umschalt)
+    {
+        var wahl = WahlVon(bereich);
+        if (wahl is null) return;
+        if (umschalt) wahl.Klick(schluessel, strg: false, umschalt: true, SichtbarVon(bereich));
+        else wahl.Umschalten(schluessel);
+        await GeaendertAsync(bereich);
+    }
+
+    /// <summary>Kopfhäkchen und Strg+A: alle Zeilen der gefilterten Liste wählen oder abwählen.</summary>
+    public async Task AlleWaehlenAsync(Auswahlbereich bereich, bool waehlen)
+    {
+        var wahl = WahlVon(bereich);
+        if (wahl is null) return;
+        wahl.Alle(waehlen, SichtbarVon(bereich));
+        await GeaendertAsync(bereich);
+    }
+
+    /// <summary>Eine Wahl hat sich geändert — die Wahlkästchen zeichnen sich neu.</summary>
+    public event Action? Wahlgewechselt;
+
+    private async Task GeaendertAsync(Auswahlbereich bereich)
+    {
+        if (WahlGeaendert.HasDelegate) await WahlGeaendert.InvokeAsync(bereich);
+        Wahlgewechselt?.Invoke();
+        StateHasChanged();
+    }
+
+    private static string? Wahltext(Bereichswahl? wahl, IReadOnlyList<string>? sichtbar)
+    {
+        if (wahl is null || wahl.Anzahl == 0) return null;
+        int verborgen = wahl.Verborgen(sichtbar ?? Array.Empty<string>());
+        return verborgen > 0
+            ? string.Format(Resource.Culture, Resource.AUSWAHL_WAHL_ZAHL_VERBORGEN, wahl.Anzahl, verborgen)
+            : string.Format(Resource.Culture, Resource.AUSWAHL_WAHL_ZAHL, wahl.Anzahl);
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is not null)
+        {
+            try
+            {
+                await _modul.InvokeVoidAsync("abmelden", _wurzel);
+                await _modul.DisposeAsync();
+            }
+            catch (Exception) { /* Die WebView ist schon weg. */ }
+        }
+        _selbst?.Dispose();
+    }
 }

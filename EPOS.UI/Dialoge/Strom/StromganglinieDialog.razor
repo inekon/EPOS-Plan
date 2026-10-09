@@ -139,7 +139,7 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="Stromganglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
@@ -220,7 +220,7 @@
             }
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --- Die Grafik der gewaehlten Ganglinie (W12-E-2) ------------------ *@
     @if (_kennzahlen is not null)
@@ -236,6 +236,9 @@
                           FarbeSetzen="@FarbeSetzen"
                           FarbeZuruecksetzen="@FarbeZuruecksetzen" />
     }
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {
