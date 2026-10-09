@@ -1166,7 +1166,7 @@ public sealed class KonditionierungTexte
     public string TextKalbGetrennt { get; set; } = "je Größe getrennt";
 
     /// <summary><c>KOND_TXT_KALB_HINWEIS_GETRENNT</c> — der Tooltip am Kennzeichen „je Größe getrennt“</summary>
-    public string HinweisKalbGetrennt { get; set; } = "Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; „Bearbeiten“ legt sie als eine gemeinsame Zeile neu an.";
+    public string HinweisKalbGetrennt { get; set; } = "Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; Mit einer benannten Woche oder einer Wirkung ohne Wochenprofil wird sie im Editor eine gemeinsame Zeile.";
 
     /// <summary><c>KOND_LBL_KALB_WOCHEN</c> — die Überschrift der benannten Wochen einer Größe</summary>
     public string LabelKalbWochen { get; set; } = "Benannte Wochen";

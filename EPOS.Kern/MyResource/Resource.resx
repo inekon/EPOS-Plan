@@ -49979,7 +49979,7 @@ Chart</value>
     <value>je Größe getrennt</value>
   </data>
   <data name="KOND_TXT_KALB_HINWEIS_GETRENNT" xml:space="preserve">
-    <value>Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; „Bearbeiten“ legt sie als eine gemeinsame Zeile neu an.</value>
+    <value>Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; Mit einer benannten Woche oder einer Wirkung ohne Wochenprofil wird sie im Editor eine gemeinsame Zeile.</value>
   </data>
   <data name="KOND_LBL_KALB_WOCHEN" xml:space="preserve">
     <value>Benannte Wochen</value>

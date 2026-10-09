@@ -49972,7 +49972,7 @@ chart</value>
     <value>separate per quantity</value>
   </data>
   <data name="KOND_TXT_KALB_HINWEIS_GETRENNT" xml:space="preserve">
-    <value>Separate per quantity: this row exists as its own copy in every quantity. “Applies to” cannot be switched here; “Edit” recreates it as one shared row.</value>
+    <value>Separate per quantity: this row exists as its own copy in every quantity. “Applies to” cannot be switched here; With a named week or an effect without a week profile, the editor turns it into one shared row.</value>
   </data>
   <data name="KOND_LBL_KALB_WOCHEN" xml:space="preserve">
     <value>Named weeks</value>
