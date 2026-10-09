@@ -16,6 +16,7 @@
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -231,7 +232,67 @@
         // Der Filterstand je Katalog, fuer die Sitzung (Frage Q2).
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
             Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.PvGanglinie));
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PV_GANGLINIE, () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die markierte Ganglinie (Muster Solarganglinie)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private PvGanglinieKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Katalogwahl und der Detailblock, der ihr folgt.</summary>
+    private PvGanglinieKiSicht KiSicht()
+    {
+        return _kiSicht ??= new PvGanglinieKiSicht
+        {
+            KatalogLesen = () => _katalogGewaehlt,
+            KatalogSetzen = KatalogZeileWaehlen,
+            KatalogEintraege = () => KiMaskenanmeldung.Eintraege(
+                Katalog, z => z.Bezeichner, z => z.Bezeichner),
+
+            ProjektganglinieLesen = () => _projektZeile?.Bezeichner ?? "",
+            QuelleLesen = () => _beschreibung,
+            AufloesungLesen = () => _raster,
+            JahressummeLesen = () => _jahresarbeit,
+            NennleistungLesen = () => _nennleistung,
+            ImProjektLesen = () => _name.Length > 0
+                && Zeilen.Any(z => string.Equals(z.Bezeichner, _name, StringComparison.Ordinal)),
+            ImportzustandLesen = Importzustand,
+            KatalogbetriebLesen = () => Katalogbetrieb
+        };
+    }
+
+    /// <summary>
+    /// Der Stand des Imports in einem Satz: offen (samt Meldung), das Ergebnis des letzten Imports samt
+    /// Protokoll, sonst „kein Import".
+    /// </summary>
+    private string Importzustand()
+    {
+        if (_seite is null) return "";
+        if (_seite.ImportOffen)
+            return _seite.Importmeldung.Length > 0
+                ? Resource.KI_DLG_PVG_IMPORT_OFFEN + ": " + _seite.Importmeldung
+                : Resource.KI_DLG_PVG_IMPORT_OFFEN;
+        if (_seite.Status.Length > 0)
+            return _seite.Protokoll.Length > 0 ? _seite.Status + " " + _seite.Protokoll : _seite.Status;
+        return Resource.KI_DLG_PVG_IMPORT_KEIN;
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: nur auffrischen. Kein Speicherweg — die
+    /// Zuordnungsliste gehört dem Wirt und geht erst mit dem OK an ihn; Import, Löschen und Schloss bleiben
+    /// Handlungen des Anwenders.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

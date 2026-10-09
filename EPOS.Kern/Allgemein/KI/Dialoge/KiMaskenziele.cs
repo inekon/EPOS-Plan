@@ -469,6 +469,8 @@ namespace WindowsFormsApplication1
                 // Knopf „Bearbeiten…" IN diesen Masken.
                 { KiMaskennamen.WAERMEBEDARF_EXTERN, STARTSEITE },
                 { KiMaskennamen.SOLARGANGLINIE,      STARTSEITE },
+                // Die PV-GANGLINIEN gehen ebenso aus der Kachel „Photovoltaik" der Startseite auf.
+                { KiMaskennamen.PV_GANGLINIE,        STARTSEITE },
 
                 // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
                 // siehe KLIMADATEN.
@@ -659,6 +661,8 @@ namespace WindowsFormsApplication1
                 // steht ebenfalls auf dem Erzeugerreiter, und welche der zwei
                 // Masken aufgeht, entscheidet die Weiche der Kachel.
                 { KiMaskennamen.SOLARGANGLINIE,           REITER_ERZEUGER },
+                // Die PV-GANGLINIEN haengen an der Kachel „Photovoltaik" des Erzeugerreiters.
+                { KiMaskennamen.PV_GANGLINIE,             REITER_ERZEUGER },
 
                 // Gebaeudedaten, Wohnflaeche und der gerechnete Bedarf gehen aus der
                 // Kachel „Gebaeudedaten eingeben" auf, die externen Ganglinien aus

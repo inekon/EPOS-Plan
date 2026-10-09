@@ -49971,5 +49971,53 @@ chart</value>
   <data name="PVG_NENN_NICHT_GEPFLEGT" xml:space="preserve">
     <value>not maintained – the run uses the peak of the series</value>
   </data>
+  <data name="KI_DLG_MASKE_PVG" xml:space="preserve">
+    <value>PV generation profiles in the project</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOG_ERL" xml:space="preserve">
+    <value>The PV generation profile selected in the catalogue; it is the one that “Add to project” takes over.</value>
+  </data>
+  <data name="KI_DLG_PVG_PROJEKT_ERL" xml:space="preserve">
+    <value>The PV generation profile selected in the project list; empty when the catalogue is selected.</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_NAME" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KI_DLG_PVG_QUELLE_ERL" xml:space="preserve">
+    <value>The description of the selected profile — the header text of the imported file, i.e. the origin of the measured series.</value>
+  </data>
+  <data name="KI_DLG_PVG_AUFLOESUNG_ERL" xml:space="preserve">
+    <value>The interval of the selected profile: hourly values (8,760) or quarter-hourly values (35,040). Quarter-hourly values enter the balance directly, hourly values are distributed to the quarters by the position of the sun.</value>
+  </data>
+  <data name="KI_DLG_PVG_JAHRESSUMME_ERL" xml:space="preserve">
+    <value>The annual yield of the selected profile in MWh — the sum of the AC output over the year.</value>
+  </data>
+  <data name="KI_DLG_PVG_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>The maintained rated power of the selected profile in kWp; without it the run uses the peak of the series as installed capacity (economics, feed-in limit).</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_NAME" xml:space="preserve">
+    <value>Assigned to the project</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPROJEKT_ERL" xml:space="preserve">
+    <value>Is the selected profile in the project list? A complete assigned profile replaces the module calculation.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_NAME" xml:space="preserve">
+    <value>Import state</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_ERL" xml:space="preserve">
+    <value>How the import stands: open (with its message), the result of the last import with its log, or “no import”.</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_OFFEN" xml:space="preserve">
+    <value>Import open</value>
+  </data>
+  <data name="KI_DLG_PVG_IMPORT_KEIN" xml:space="preserve">
+    <value>no import in this session</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_NAME" xml:space="preserve">
+    <value>Catalogue mode</value>
+  </data>
+  <data name="KI_DLG_PVG_KATALOGBETRIEB_ERL" xml:space="preserve">
+    <value>Is the form open without a project (menu item “PV generation profile”)? Then there is only the catalogue page and no project list.</value>
+  </data>
 </root>
 

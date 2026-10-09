@@ -192,6 +192,60 @@ public class PvGanglinieDialogTests : EposBunitContext
         Assert.False(cut.Instance.Katalogseite.ImportOffen);
     }
 
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die Sichtklasse
+    /// <c>PvGanglinieKiSicht</c>: Die Katalogwahl ist ein WAHLFELD, ein Setzen zieht den Detailblock nach
+    /// (Quelle, Raster, Jahresarbeit, Nennleistung); Zuordnung und Importstand liest der Assistent nur.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_liest_die_Ganglinie()
+    {
+        var katalog = new[]
+        {
+            Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 15, beschreibung: "Messung 2025",
+                                   jahresarbeitMwh: 9.5, spitzeKw: 10.0)
+                .MitZahl(Katalogfilterprofil.SpNennleistungKwp, 12.0, 2),
+            Zeitreihenproben.Zeile(32, "PV Dach West", zeitintervall: 60, beschreibung: "Simulation",
+                                   jahresarbeitMwh: 8.8, spitzeKw: 9.0)
+        };
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(katalog),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", ""))
+        });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PV_GANGLINIE));
+        WindowsFormsApplication1.KiFeldzugang Feld(string id)
+            => KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_GANGLINIE, id);
+
+        Assert.False(Feld("projektganglinie").Setzbar);
+        Assert.False(Feld("nennleistung").Setzbar);
+        WindowsFormsApplication1.KiFeldzugang wahl = Feld("katalogganglinie");
+        Assert.True(wahl.Setzbar);
+        Assert.Equal(Resource.KI_DLG_PVG_IMPORT_KEIN, Feld("importzustand").Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(wahl, "PV Dach Ost");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        wahl.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal("PV Dach Ost", cut.Instance.Katalogzeile?.Bezeichner);
+        Assert.Equal("Messung 2025", Feld("quelle").Lesen());
+        Assert.Equal(Resource.PVG_RASTER_VIERTEL, Feld("aufloesung").Lesen());
+        Assert.Equal("9,5 MWh", Feld("jahressumme").Lesen());
+        Assert.Equal("12,00 kWp", Feld("nennleistung").Lesen());
+        Assert.Equal(true, Feld("im_projekt").Lesen());
+        Assert.Equal(false, Feld("katalogbetrieb").Lesen());
+
+        wahl.Setzen(KiFeldwandler.Wandle(wahl, "PV Dach West").Wert);
+        cut.Render();
+        Assert.Equal(false, Feld("im_projekt").Lesen());
+        Assert.Equal(Resource.PVG_NENN_NICHT_GEPFLEGT, Feld("nennleistung").Lesen());
+
+        cut.Find("button.epos-importknopf").Click();
+        Assert.Equal(Resource.KI_DLG_PVG_IMPORT_OFFEN, Feld("importzustand").Lesen());
+    }
+
     [Fact]
     public void Ohne_Gaben_zeichnet_der_Dialog()
     {

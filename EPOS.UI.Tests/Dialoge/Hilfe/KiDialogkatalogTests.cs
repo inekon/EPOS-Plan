@@ -272,6 +272,8 @@ public class KiDialogkatalogTests : IDisposable
 
         { KiMaskennamen.SOLARGANGLINIE,
           typeof(EPOS.UI.Dialoge.Solarthermie.SolarganglinieKiSicht) },
+        { KiMaskennamen.PV_GANGLINIE,
+          typeof(EPOS.UI.Dialoge.Erzeuger.PvGanglinieKiSicht) },
         { KiMaskennamen.KLIMADATEN,
           typeof(EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht) },
 
@@ -476,7 +478,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(92, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt
+        Assert.Equal(93, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1771,6 +1773,10 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.SOLARGANGLINIE] =
             "bindet über die Sichtklasse SolarganglinieKiSicht auf Katalogwahl und " +
             "Detailblock; Zeuge ist SolarganglinieDialogTests",
+        [KiMaskennamen.PV_GANGLINIE] =
+            "bindet über die Sichtklasse PvGanglinieKiSicht auf Katalogwahl, Detailblock " +
+            "(Quelle, Raster, Jahresarbeit, Nennleistung), Zuordnung und Importstand; " +
+            "Zeuge ist PvGanglinieDialogTests",
         [KiMaskennamen.KLIMADATEN] =
             "bindet über die Sichtklasse KlimadatenKiSicht auf die lebenden Felder " +
             "von Quelle und Standort; Zeuge ist KlimadatenDialogTests",
