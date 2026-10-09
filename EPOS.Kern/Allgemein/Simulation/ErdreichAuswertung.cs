@@ -151,6 +151,15 @@ namespace WindowsFormsApplication1
             /// <summary>Stunden mit Quelltemperatur − Spreizung &lt; 0 °C.</summary>
             public int FrostStunden;
 
+            /// <summary>
+            /// Der gerechnete Verlauf der Quelltemperatur [°C, 8760 Stunden] — die Soletemperatur am
+            /// Quelleintritt der Wärmepumpe, wie die Kaskade sie gerechnet hat
+            /// (<see cref="SimulationWaermepumpe.Quelltemperaturen"/> des ersten Moduls der Anlage;
+            /// dieselbe Reihe wie der Referenzexport <c>wp_quellentemperatur.csv</c>). Eine eigene Kopie;
+            /// <c>null</c> ohne Reihe und bei Luft-Wasser (dort rechnet die Außenluft).
+            /// </summary>
+            public double[] QuelltemperaturStuendlich;
+
             /// <summary>true, wenn die Frostgrenze dauerhaft unterschritten wird (13.1).</summary>
             public bool FrostWarnung;
 
@@ -270,6 +279,14 @@ namespace WindowsFormsApplication1
             /// </summary>
             public string Laufstempel { get; init; } = "";
 
+            /// <summary>
+            /// Der gerechnete Verlauf der Quelltemperatur des Laufs [°C, 8760 Stunden] — die
+            /// Soletemperatur am Quelleintritt (<see cref="AnlageErgebnis.QuelltemperaturStuendlich"/>).
+            /// <c>null</c> ohne Lauf dieser Sitzung, bei einem gespeicherten Ergebnis und bei
+            /// Luft-Wasser; die Vorschau des Dialogs zeigt sie als zweite Reihe neben der ungestörten.
+            /// </summary>
+            public double[] QuelltemperaturStuendlich { get; init; }
+
             /// <summary>„Es gab keinen Lauf" — der Zustand beim Öffnen ohne Ergebnis.</summary>
             public static readonly ErdreichLaufErgebnis Keines =
                 new ErdreichLaufErgebnis(false, false, 0, 0, 0, "", "", "");
@@ -315,7 +332,8 @@ namespace WindowsFormsApplication1
                     string.Format(CultureInfo.CurrentCulture,
                         Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_KEINE_PRUEFUNG),
                         erg.Grenze),
-                    "", "");
+                    "", "")
+                { QuelltemperaturStuendlich = erg.QuelltemperaturStuendlich };
             }
 
             string vorbehalt = erg.MaxEntzugGeschaetzt ? erg.Grenze : "";
@@ -325,7 +343,8 @@ namespace WindowsFormsApplication1
 
             return new ErdreichLaufErgebnis(
                 true, true, erg.MaxEntzugW, erg.JahresentzugKWh, erg.VolllastStunden,
-                "", vorbehalt, erg.FrostWarnung ? erg.Frosttext() : "");
+                "", vorbehalt, erg.FrostWarnung ? erg.Frosttext() : "")
+            { QuelltemperaturStuendlich = erg.QuelltemperaturStuendlich };
         }
 
         /// <summary>
@@ -486,6 +505,7 @@ namespace WindowsFormsApplication1
 
                 a.Pruefung = Pruefen(a, klimazone);
                 FrostPruefen(a, wp, i, laeuft, betriebsStunden);
+                a.QuelltemperaturStuendlich = QuelltemperaturDesModuls(wp, i);
                 liste.Add(a);
             }
 
@@ -551,6 +571,7 @@ namespace WindowsFormsApplication1
 
                 a.Pruefung = Pruefen(a, klimazone);
                 FrostPruefen(a, wp, i, laeuft, betriebsStunden);
+                a.QuelltemperaturStuendlich = QuelltemperaturDesModuls(wp, i);
                 liste.Add(a);
             }
             return liste;
@@ -662,6 +683,22 @@ namespace WindowsFormsApplication1
 
             a.FrostStunden = unterNull;
             a.FrostWarnung = unterNull > FROST_ANTEIL_MAX * betriebsStunden;
+        }
+
+        /// <summary>
+        /// Eine Kopie der gerechneten Quelltemperatur des Moduls <paramref name="index"/> (höchstens
+        /// 8760 Stunden); <c>null</c>, wenn der Lauf keine Reihe führt. Gelesen, nicht gerechnet —
+        /// der Rechenweg bleibt unberührt.
+        /// </summary>
+        private static double[] QuelltemperaturDesModuls(SimulationWaermepumpe wp, int index)
+        {
+            var profile = wp.Quelltemperaturen;
+            if (profile == null || index < 0 || index >= profile.Count) return null;
+            double[] reihe = profile[index];
+            if (reihe == null || reihe.Length == 0) return null;
+            var kopie = new double[Math.Min(reihe.Length, 8760)];
+            Array.Copy(reihe, kopie, kopie.Length);
+            return kopie;
         }
 
         /// <summary>Klimazone (DIN 4710) der Klimaregion des Projekts; 0 = nicht zugeordnet.</summary>

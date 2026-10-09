@@ -55,7 +55,7 @@ public class WaermepumpeSperrzeitenTests : EposBunitContext
     public void Vorlagen_Hinzufuegen_und_Entfernen()
     {
         int gemeldet = 0;
-        var d = Daten(new());
+        var d = Daten(new() { new() { VonH = 14, DauerH = 3 } });
         var c = Aufbauen(d, () => gemeldet++);
         c.Find("[data-vorlage=ZWEI_MAL_ZWEI]").Click();
         Assert.Equal(new double?[] { 11, 17 }, d.Sperrfenster!.Select(z => z.VonH));
@@ -68,9 +68,70 @@ public class WaermepumpeSperrzeitenTests : EposBunitContext
         Assert.Equal(4, c.FindAll(".epos-sperrfenster-zeile").Count);
         c.FindAll("[data-aktion=sperrfenster-entfernen]")[0].Click();
         Assert.Equal(new double?[] { 11, 17, 12 }, d.Sperrfenster!.Select(z => z.VonH));
-        c.Find("[data-vorlage=KEINE]").Click();
+        // Die Vorlage „keine“ ersetzt das Kästchen.
+        Assert.Empty(c.FindAll("[data-vorlage=KEINE]"));
+        Assert.True(gemeldet >= 4);
+    }
+
+    private static AngleSharp.Dom.IElement Kaestchen(IRenderedComponent<WaermepumpeKonfiguration> c)
+        => c.Find("[data-aktion=sperrzeiten-kaestchen] input[type=checkbox]");
+
+    [Fact]
+    public void Ohne_Fenster_ist_das_Kaestchen_leer_und_der_Block_zugeklappt()
+    {
+        var c = Aufbauen(Daten(new()));
+        Assert.False(Kaestchen(c).HasAttribute("checked"));
+        Assert.Empty(c.FindAll("[data-vorlage]"));
+        Assert.Empty(c.FindAll(".epos-sperrfenster-zeile"));
+    }
+
+    [Fact]
+    public void Anhaken_legt_die_Vorlage_zwei_mal_zwei_an_und_klappt_aus()
+    {
+        int gemeldet = 0;
+        var d = Daten(new());
+        var c = Aufbauen(d, () => gemeldet++);
+        Kaestchen(c).Change(true);
+        Assert.Equal(new double?[] { 11, 17 }, d.Sperrfenster!.Select(z => z.VonH));
+        Assert.Equal(2, c.FindAll(".epos-sperrfenster-zeile").Count);
+        Assert.True(Kaestchen(c).HasAttribute("checked"));
+        Assert.NotEmpty(c.FindAll("[data-vorlage=ZWEI_MAL_ZWEI]"));
+        Assert.Equal(1, gemeldet);
+    }
+
+    [Fact]
+    public void Abhaken_fragt_zurueck_Nein_behaelt_Ja_entfernt_alle_Fenster()
+    {
+        var d = Daten(new() { new() { VonH = 11, DauerH = 2 }, new() { VonH = 17, DauerH = 2 } });
+        var c = Aufbauen(d);
+        Assert.True(Kaestchen(c).HasAttribute("checked"));
+
+        Kaestchen(c).Change(false);
+        Assert.Contains("2", c.Find("[data-gruppe=sperrzeiten-rueckfrage]").TextContent);
+        Assert.Equal(2, d.Sperrfenster!.Count);
+        c.Find("[data-aktion=sperrzeiten-entfernen-nein]").Click();
+        Assert.Empty(c.FindAll("[data-gruppe=sperrzeiten-rueckfrage]"));
+        Assert.Equal(2, d.Sperrfenster!.Count);
+        Assert.True(Kaestchen(c).HasAttribute("checked"));
+
+        Kaestchen(c).Change(false);
+        c.Find("[data-aktion=sperrzeiten-entfernen-ja]").Click();
         Assert.Empty(d.Sperrfenster!);
-        Assert.True(gemeldet >= 5);
+        Assert.Empty(c.FindAll(".epos-sperrfenster-zeile"));
+        Assert.False(Kaestchen(c).HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Die_Wochentage_stehen_waagerecht_in_einer_Chipreihe_und_der_Block_steht_unten()
+    {
+        var c = Aufbauen(Daten(new() { new() { VonH = 11, DauerH = 2 } }));
+        var tage = c.Find(".epos-sperrfenster-zeile .epos-sperrfenster-tage");
+        Assert.Equal(7, tage.QuerySelectorAll("input[type=checkbox]").Length);
+        Assert.Equal("group", tage.GetAttribute("role"));
+        // Der Block steht nach den Betriebszeiten (Ende des Dialogs).
+        string html = c.Markup;
+        Assert.True(html.IndexOf("data-gruppe=\"sperrzeiten\"", StringComparison.Ordinal)
+                    > html.IndexOf("data-gruppe=\"betriebszeiten\"", StringComparison.Ordinal));
     }
 
     [Fact]

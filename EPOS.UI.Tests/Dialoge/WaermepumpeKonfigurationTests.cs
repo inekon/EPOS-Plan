@@ -230,17 +230,17 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
         var daten = Voll();
         var cut = Aufbauen(daten, geaendert: () => gemeldet++);
 
-        IElement Haken(int i) => cut.FindAll(".epos-schalter input[type=checkbox]")[i];
-        IElement Feld(int i) => cut.FindAll("input[type=text]")[i];
+        var t = new WaermepumpeKonfigurationTexte();
+        IElement Wurzel() => cut.Find(".epos-wp-konfiguration");
 
-        Haken(0).Change(false);                 // Heizstab
+        NachBeschriftung(Wurzel(), t.LabelHeizstab).Change(false);           // Heizstab
         Assert.False(daten.Heizstab);
 
-        Haken(1).Change(true);                  // Sperrzeit
+        NachBeschriftung(Wurzel(), t.LabelSperrzeitSchalter).Change(true);   // Sperrzeit
         Assert.True(daten.Sperrung);
 
-        Feld(0).Input("3");
-        Feld(1).Input("18");
+        NachBeschriftung(Wurzel(), t.LabelVon).Input("3");
+        NachBeschriftung(Wurzel(), t.LabelBis).Input("18");
         Assert.Equal(3, daten.SperrzeitVon);
         Assert.Equal(18, daten.SperrzeitBis);
 
@@ -283,7 +283,7 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
         var cut = Aufbauen();
         Assert.DoesNotContain("Betriebsart", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
 
-        cut.FindAll(".epos-schalter input[type=checkbox]")[2].Change(true);
+        NachBeschriftung(cut.Find(".epos-wp-konfiguration"), new WaermepumpeKonfigurationTexte().LabelBivalent).Change(true);
 
         Assert.Contains("Betriebsart", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
     }
@@ -357,6 +357,32 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
         Assert.Equal(58, daten.CarrierId);
     }
 
+    /// <summary>
+    /// Die Vorauswahl des Trägers (Anwenderwunsch 08.10.2026) steht im Feldsatz — die Hülle setzt sie aus
+    /// dem Kern, die Wahl zeigt sie an, ohne dass der Anwender etwas tut, und er kann sie ändern.
+    /// </summary>
+    [Fact]
+    public void Die_Vorauswahl_des_Traegers_steht_in_der_Wahl_und_bleibt_aenderbar()
+    {
+        var daten = Voll();
+        daten.CarrierId = 60;   // die Vorauswahl der Hülle: Standard-Stromträger
+        int gemeldet = 0;
+        var cut = Aufbauen(daten, geaendert: () => gemeldet++, traegerkatalog: new[]
+        {
+            new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
+            new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
+        });
+
+        var selects = cut.Find(".epos-traegerwahl").QuerySelectorAll("select");
+        Assert.Equal("Strom", selects[0].QuerySelector("option[selected]")?.TextContent.Trim());
+        Assert.Equal("60", selects[1].QuerySelector("option[selected]")?.GetAttribute("value"));
+        Assert.Equal(0, gemeldet);
+        Assert.Equal(60, daten.CarrierId);
+
+        selects[1].Change("58");
+        Assert.Equal(58, daten.CarrierId);
+    }
+
     /// <summary>Nur ansehen: Jedes Feld ist gesperrt — kein Klick ändert etwas.</summary>
     [Fact]
     public void Ohne_Aktiv_ist_jedes_Feld_gesperrt()
@@ -368,4 +394,13 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
         Assert.All(cut.FindAll("input[type=text]"),
                    f => Assert.True(f.HasAttribute("disabled") || f.HasAttribute("readonly")));
     }
+
+    /// <summary>
+    /// Das Eingabe-Element unter einer Beschriftung (Schalter oder Feld) — die Sperrzeiten stehen am Ende
+    /// des Bausteins (Anwenderwunsch 08.10.2026), darum nicht über die Stellung in der Liste.
+    /// </summary>
+    private static AngleSharp.Dom.IElement NachBeschriftung(AngleSharp.Dom.IElement wurzel, string text)
+        => wurzel.QuerySelectorAll("label")
+                 .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text)
+                 .QuerySelector("input")!;
 }

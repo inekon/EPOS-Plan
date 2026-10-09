@@ -18671,6 +18671,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur gerechnet (letzter Lauf) ähnelt.
+        /// </summary>
+        public static string CHART_SERIE_QUELLTEMPERATUR_GERECHNET {
+            get {
+                return ResourceManager.GetString("CHART_SERIE_QUELLTEMPERATUR_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur ungestört ähnelt.
+        /// </summary>
+        public static string CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT {
+            get {
+                return ResourceManager.GetString("CHART_SERIE_QUELLTEMPERATUR_UNGESTOERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Deckung {0} — Jahresganglinie ähnelt.
         /// </summary>
         public static string CHART_TITEL_DECKUNG_JE_BEDARFSART {
@@ -101879,7 +101897,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau zeigt die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; ihren Verlauf zeigt das Ergebnis. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur in Verlegetiefe; nach dem Lauf steht daneben die gerechnete Soletemperatur am Quelleintritt („gerechnet (letzter Lauf)“). ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_HINWEIS_KOLLEKTOR_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vor einem Simulationslauf zeigt die Vorschau die ungestörte Erdreichtemperatur der Sonde aus mittlerer Erdreichtemperatur und Tiefenzuschlag — eine Konstante. In der Simulation sinkt die Soletemperatur mit dem Entzug des Sondenfelds; nach dem Lauf steht ihr gerechneter Verlauf am Quelleintritt daneben („gerechnet (letzter Lauf)“). ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_HINWEIS_SONDE_KONSTANT {
             get {
@@ -101905,6 +101932,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_KEINE_PRUEFUNG {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_KEINE_PRUEFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet (letzter Lauf): {0} ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_KENNWERTE_LAUF {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_KENNWERTE_LAUF", resourceCulture);
             }
         }
         
@@ -104776,6 +104812,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_HEIZKREIS_NUR_WARMWASSER {
             get {
                 return ResourceManager.GetString("SIM_HEIZKREIS_NUR_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge der direkten Deckung = Kaskadenrang der Konfiguration: {0} — ändern über die Pfeile der Erzeugerkarten ähnelt.
+        /// </summary>
+        public static string SIM_HERLEITUNG_DIREKT_REIHENFOLGE {
+            get {
+                return ResourceManager.GetString("SIM_HERLEITUNG_DIREKT_REIHENFOLGE", resourceCulture);
             }
         }
         
@@ -125744,6 +125789,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja, entfernen ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_RUECKFRAGE_JA {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_RUECKFRAGE_JA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nein, behalten ähnelt.
+        /// </summary>
+        public static string WPA_BTN_SPERR_RUECKFRAGE_NEIN {
+            get {
+                return ResourceManager.GetString("WPA_BTN_SPERR_RUECKFRAGE_NEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wochenraster bearbeiten ähnelt.
         /// </summary>
         public static string WPA_BTN_ZEITPROGRAMM {
@@ -125780,6 +125843,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeiten vorhanden ähnelt.
+        /// </summary>
+        public static string WPA_CHK_SPERRZEITEN {
+            get {
+                return ResourceManager.GetString("WPA_CHK_SPERRZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
         /// </summary>
         public static string WPA_EINHEIT_STUNDEN {
@@ -125812,6 +125884,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_ERL_TEILPARALLEL {
             get {
                 return ResourceManager.GetString("WPA_ERL_TEILPARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle {0} Sperrfenster entfernen? ähnelt.
+        /// </summary>
+        public static string WPA_FRAGE_SPERR_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("WPA_FRAGE_SPERR_ENTFERNEN", resourceCulture);
             }
         }
         
@@ -126208,6 +126289,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_SPERR_HEIZSTAB {
             get {
                 return ResourceManager.GetString("WPA_LBL_SPERR_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentage ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPERR_TAGE {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPERR_TAGE", resourceCulture);
             }
         }
         

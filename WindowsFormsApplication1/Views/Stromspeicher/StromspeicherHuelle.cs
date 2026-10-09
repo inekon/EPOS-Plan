@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
             var zuModell = new Dictionary<int, WErzeugerModel>();
             // ET-5 (08.09.2026): Die Zeile zeigt den Traeger der Anlage - gespeichert oder,
             // solange keiner gespeichert ist, den Stromtraeger des Projekts (die Vorgabe).
-            int stromVorgabe = ErzeugerTraegerHuelle.Standard(projektId);
+            int stromVorgabe = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_STROMSPEICHER, 0, projektId);
             foreach (WErzeugerModel m in modelle)
             {
                 if (m.ID_Type != idType) continue;
@@ -226,7 +226,7 @@ namespace WindowsFormsApplication1
                 ID_Type = idType,
                 Bezeichner = satz.m_szBezeichner,
                 // ET-5: Vorgabe der Stromtraeger des Projekts.
-                ID_Carrier = ErzeugerTraegerHuelle.Standard(projektId)
+                ID_Carrier = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_STROMSPEICHER, 0, projektId)
             };
 
             modelle.Add(model);
