@@ -34563,6 +34563,12 @@ Do you want to allow this?</value>
   <data name="ZONE_MSG_OHNE_KOPPLUNG" xml:space="preserve">
     <value>This database does not yet know partitions towards adjacent zones or the air exchange between zones (schema step {0} missing) – nothing was saved.</value>
   </data>
+  <data name="ZONE_MSG_KATALOG_OHNE_SCHRITT" xml:space="preserve">
+    <value>This database does not yet know the zones of a catalogue record (schema step {0} missing) – nothing was saved.</value>
+  </data>
+  <data name="ZONE_MSG_KATALOG_GESPERRT" xml:space="preserve">
+    <value>This catalogue record is part of the delivery and read-only; its zones stay as they are – nothing was saved.</value>
+  </data>
   <data name="ZONE_MSG_LUFTSTROM_FREMD" xml:space="preserve">
     <value>Air exchange: The ID {0} does not belong to this building.</value>
   </data>
@@ -34630,16 +34636,37 @@ Do you want to allow this?</value>
     <value>Envelope calculation: component method – {0} zones, {1} building components. The U-value groups are derived from the building components of all zones; the values of the building apply again without a zone.</value>
   </data>
   <data name="GEBZ_ZEILE_KATALOG" xml:space="preserve">
-    <value>Envelope calculation: class method – U-value groups and construction type. A catalogue record carries zones; adding it to a project copies them, and the building in the project is then calculated with the zone model.</value>
+    <value>Envelope calculation: class method – U-value groups and construction type. The catalogue record carries no zone; if the “Zones” tab adds some, adding the record to a project copies them, and the building there is calculated with the zone model.</value>
+  </data>
+  <data name="GEBZ_ZEILE_KATALOG_ZONEN" xml:space="preserve">
+    <value>The catalogue record carries zones ({0}) with {1} components; adding it to a project copies them, and the building there is calculated with the zone model.</value>
+  </data>
+  <data name="GEBA_BTN_ZONEN" xml:space="preserve">
+    <value>Edit zones …</value>
+  </data>
+  <data name="GEBA_SB_ZONE_WERT" xml:space="preserve">
+    <value>{0} m², {1} components</value>
+  </data>
+  <data name="GEBA_SB_ZONE_WERT_OHNE_FLAECHE" xml:space="preserve">
+    <value>{0} components</value>
+  </data>
+  <data name="GEBZ_SPERRE_OHNE_WEG" xml:space="preserve">
+    <value>The zones of this building cannot be edited here.</value>
+  </data>
+  <data name="GEBZ_SPERRE_OHNE_KATALOGZONEN" xml:space="preserve">
+    <value>This database does not yet know the zones of a catalogue record (schema step {0} missing).</value>
+  </data>
+  <data name="GEBZ_SPERRE_UEBERNAHME_KATALOG" xml:space="preserve">
+    <value>“Use building as one zone” calculates with the climate of a project and is available in the project; in the catalogue record a zone is created with “+ New zone …”.</value>
+  </data>
+  <data name="GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG" xml:space="preserve">
+    <value>The new catalogue record takes over the zones ({0}) with {1} components as they stand here.</value>
   </data>
   <data name="GEBZ_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Take over building as one zone</value>
   </data>
   <data name="GEBZ_HINWEIS_UEBERNEHMEN" xml:space="preserve">
     <value>Creates one zone with building components from the U-value groups, scaled up to the project area; it is written with OK.</value>
-  </data>
-  <data name="GEBZ_SPERRE_KATALOG" xml:space="preserve">
-    <value>The zones of a catalogue record come from a building in the project (transfer to the database, “Save as”); adding the record to a project copies them, and they are edited there.</value>
   </data>
   <data name="GEBZ_SPERRE_ZONE" xml:space="preserve">
     <value>The building already has the zone “{0}”.</value>

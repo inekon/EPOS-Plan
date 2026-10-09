@@ -160,7 +160,8 @@ public class GebaeudeZonenTests : EposBunitContext
         var cut = Aufbauen(weg, GebaeudeKatalogModus.Bearbeiten);
 
         Assert.StartsWith("Rechenweg der Hülle: Klassenweg", cut.Instance.Huellwegzeile);
-        Assert.Contains("Ein Katalogsatz trägt Zonen; die Übernahme ins Projekt kopiert sie", cut.Instance.Huellwegzeile);
+        Assert.Contains("Der Katalogsatz trägt keine Zone; legt der Reiter „Zonen“ welche an, kopiert die Übernahme ins Projekt sie",
+                        cut.Instance.Huellwegzeile);
         Assert.Contains(cut.FindAll(".epos-herleitung"), z => z.TextContent == cut.Instance.Huellwegzeile);
 
         IElement knopf = Knoepfe(cut, KNOPF).Single();
@@ -168,7 +169,7 @@ public class GebaeudeZonenTests : EposBunitContext
         Assert.Contains("Katalogsatz", knopf.GetAttribute("title"));
 
         knopf.Click();
-        Assert.Contains("Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt", cut.Instance.Meldung);
+        Assert.Contains("„Gebäude als eine Zone übernehmen“ rechnet mit dem Klima eines Projekts", cut.Instance.Meldung);
         Assert.Empty(weg.Probestaende);
         Assert.False(cut.Instance.UebernahmefrageOffen);
     }

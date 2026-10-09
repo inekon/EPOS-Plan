@@ -55,6 +55,14 @@
    ein Schritt, bleibt der Dialog offen, und ein zweites OK wiederholt Geschriebenes nicht.
    "Speichern unter" eines Gebaeudes mit Zone fragt VOR dem Schreiben (Softwarearchitektur 2.9).
 
+   ZONEN IM KATALOG (Welle ZK-b, Anwenderwunsch 08.10.2026). In den Betriebsarten NEU und BEARBEITEN
+   bearbeitet der Reiter "Zonen" die Zonen des Katalogsatzes wie im Projekt (ein GebaeudeZonenweg mit
+   Katalog = true); geschrieben wird im OK-Weg in zwei Schritten: der Satz, dann seine Zonen. Die Bauteile
+   waehlen ihren Aufbau aus dem Aufbaukatalog, "Gebaeude als eine Zone uebernehmen" bleibt dem Projekt
+   (Klima). Ein ausgelieferter Satz (Schloss) zeigt seine Zonen nur: Neu, Duplizieren, Entfernen,
+   Umordnen und Luftaustausch sind weich gesperrt mit dem Grund des Schlosses. "Speichern unter" laesst
+   den neuen Satz die Zonen tragen, wie sie hier stehen, und arbeitet an ihm weiter.
+
    KOPPLUNG DER ZONEN (Stufe G6b, Welle W2): Die Zonenliste nennt Volumen und "beheizt"; ab zwei
    Zonen oeffnet "Luftaustausch ..." die Ueberlagerung der Luftstroeme (ohne Schemaschritt S-G weich
    gesperrt). Der Zonendialog bekommt die Vorgaben des Gebaeudes, die uebrigen Zonen als Nachbarn
@@ -652,7 +660,8 @@
                                                             <button type="button" class="epos-knopf" @onclick="() => ZoneOeffnen(id)">@ZonenTexte.KnopfOeffnen</button>
                                                             <button type="button" class="epos-knopf" aria-disabled="@(NeueZoneSperre is null ? null : "true")"
                                                                     title="@NeueZoneSperre" @onclick="() => BeiDuplizieren(id)">@ZonenTexte.KnopfDuplizieren</button>
-                                                            <button type="button" class="epos-knopf" @onclick="() => _entfernId = id">@ZonenTexte.KnopfEntfernen</button>
+                                                            <button type="button" class="epos-knopf" aria-disabled="@(Zonensperre is null ? null : "true")"
+                                                                    title="@Zonensperre" @onclick="() => BeiEntfernen(id)">@ZonenTexte.KnopfEntfernen</button>
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -737,6 +746,10 @@
         {
             <Herleitungszeile Text="@SpeichernUnterZonenzeile" />
         }
+        else if (Zonen?.Katalog == true && _arbeit.Zonen.Count > 0)
+        {
+            <Herleitungszeile Text="@SpeichernUnterKatalogzeile" />
+        }
     }
 
     <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis"
@@ -810,7 +823,8 @@
     /// <summary>Die Schlüssel der Reiterblätter.</summary>
     private const string REITER_HUELLE = "HUELLE";
     private const string REITER_KONDITIONIERUNG = "KONDITIONIERUNG";
-    private const string REITER_ZONEN = "ZONEN";
+    /// <summary>Der Schlüssel des Reiters „Zonen" — auch für <see cref="StartReiter"/>.</summary>
+    public const string REITER_ZONEN = "ZONEN";
 
     /// <summary>
     /// Der hereingereichte Satz. Er bleibt UNBERÜHRT — der Dialog arbeitet auf einer
@@ -899,11 +913,17 @@
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
     /// <summary>
-    /// Der Zonenweg eines Gebäudes im Projekt (Stufe G3, Welle D2) — nur in der Betriebsart
-    /// <see cref="GebaeudeKatalogModus.Projekt"/>; <c>null</c> (Katalogsatz, Verwaltung, ohne Gaben) =
-    /// der Zonenreiter nennt seinen Grund, und der Übernahmeknopf ist weich gesperrt.
+    /// Der Zonenweg des Gebäudes (Stufe G3, Welle D2) — im Projekt der Projektkopie, im Katalog (Welle ZK-b,
+    /// <see cref="GebaeudeZonenweg.Katalog"/>) des Katalogsatzes; <c>null</c> (ohne Gaben) = der Zonenreiter nennt
+    /// seinen Grund, und die Knöpfe sind weich gesperrt.
     /// </summary>
     [Parameter] public GebaeudeZonenweg? Zonen { get; set; }
+
+    /// <summary>
+    /// Der Reiter, mit dem der Editor aufgeht (etwa <see cref="REITER_ZONEN"/> aus „Zonen bearbeiten …" der
+    /// Gebäudeverwaltung, Welle ZK-b); leer = der erste.
+    /// </summary>
+    [Parameter] public string StartReiter { get; set; } = "";
 
     /// <summary>
     /// Der Weg der Konditionierung (Stufe KP2, Welle K2): die Handlungen des Reiters „Konditionierung"
@@ -1285,7 +1305,8 @@
     {
         get
         {
-            if (Modus != GebaeudeKatalogModus.Projekt || Zonen?.Uebernehmen is null) return ZonenTexte.SperreKatalog;
+            if (Modus != GebaeudeKatalogModus.Projekt) return ZonenTexte.SperreUebernahmeKatalog;
+            if (Zonen?.Uebernehmen is null) return Zonensperre ?? ZonenTexte.SperreOhneWeg;
             if (_arbeit.Zonen.Count == 1) return string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreZone, _arbeit.Zonen[0].Bezeichner);
             if (_arbeit.Zonen.Count > 1) return string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreZonen, _arbeit.Zonen.Count);
             if (!_arbeit.IstVdi6007) return ZonenTexte.SperreTagesbilanz;
@@ -1295,21 +1316,29 @@
     }
 
     /// <summary>
-    /// Warum „+ Neue Zone …" und „Duplizieren" gesperrt sind; <c>null</c> = frei (G6a). Dieselben Gründe
-    /// wie bei der Übernahme — Katalogsatz, Tagesbilanz-Weg —, aber nicht „Zone schon da"; dazu die
-    /// Höchstzahl der Regelklasse. Prüfhilfe für die Tests.
+    /// Warum „+ Neue Zone …" und „Duplizieren" gesperrt sind; <c>null</c> = frei (G6a). Die Sperre der
+    /// Zonenliste (<see cref="Zonensperre"/>: kein Zonenweg, der Weg gesperrt, das Schloss), der Tagesbilanz-Weg,
+    /// aber nicht „Zone schon da"; dazu die Höchstzahl der Regelklasse. Prüfhilfe für die Tests.
     /// </summary>
     public string? NeueZoneSperre
     {
         get
         {
-            if (Modus != GebaeudeKatalogModus.Projekt || Zonen is null) return ZonenTexte.SperreKatalog;
+            if (Zonensperre is string sperre) return sperre;
             if (!_arbeit.IstVdi6007) return ZonenTexte.SperreTagesbilanz;
             int grenze = GebaeudeZonenregeln.Hoechstzahl();
             return _arbeit.Zonen.Count < grenze ? null
                 : string.Format(CultureInfo.CurrentCulture, ZonenTexte.SperreHoechstzahl, grenze);
         }
     }
+
+    /// <summary>
+    /// <b>Warum die Zonenliste nicht geändert werden darf</b>; <c>null</c> = frei: kein Zonenweg (ohne Gaben), ein
+    /// gesperrter Weg (die Datenbank kennt die Katalogzonen nicht) oder das Schloss eines ausgelieferten
+    /// Katalogsatzes (Welle ZK-b, Regel B11) — weich: Der Versuch meldet den Grund. Prüfhilfe für die Tests.
+    /// </summary>
+    public string? Zonensperre
+        => Zonen is null ? ZonenTexte.SperreOhneWeg : Zonen.Sperre ?? (IstGesperrt ? SperrGrund : null);
 
     /// <summary>Steht die Rückfrage vor der ersten bzw. zweiten Zone? Prüfhilfe für die Tests.</summary>
     public bool NachfrageOffen => _nachFrage is not null;
@@ -1336,13 +1365,13 @@
             {
                 @* Stufe G6b: der Luftaustausch zwischen den Zonen - ab zwei Zonen; ohne Schemaschritt
                    S-G weich gesperrt, der Versuch nennt den Grund. *@
-                string? luftSperre = Zonen?.KopplungSperre;
+                string? luftSperre = Zonen?.KopplungSperre ?? Zonensperre;
                 <button type="button" class="epos-knopf epos-zonen-luft-knopf"
                         aria-disabled="@(luftSperre is null ? null : "true")" title="@luftSperre"
                         @onclick="BeiLuftaustausch">@ZonenTexte.KnopfLuftaustausch</button>
             }
         </div>
-        @if (sperre is not null && Modus == GebaeudeKatalogModus.Projekt && Zonen is not null)
+        @if (sperre is not null && Zonen is not null)
         {
             <p class="epos-leisezeile">@sperre</p>
         }
@@ -1355,6 +1384,12 @@
     /// <summary>Die Zeile unter „Speichern unter" mit Zonen: Der Katalogsatz übernimmt sie im gespeicherten Stand.</summary>
     private string SpeichernUnterZonenzeile
         => string.Format(CultureInfo.CurrentCulture, ZonenTexte.HinweisSpeichernUnterZonen,
+                         _arbeit.Zonen.Count.ToString(CultureInfo.CurrentCulture),
+                         _arbeit.Zonen.Sum(z => z.Bauteile.Count).ToString(CultureInfo.CurrentCulture));
+
+    /// <summary>Die Zeile unter „Speichern unter" im Katalog (Welle ZK-b): Der neue Satz übernimmt die Zonen, wie sie hier stehen.</summary>
+    private string SpeichernUnterKatalogzeile
+        => string.Format(CultureInfo.CurrentCulture, ZonenTexte.HinweisSpeichernUnterKatalog,
                          _arbeit.Zonen.Count.ToString(CultureInfo.CurrentCulture),
                          _arbeit.Zonen.Sum(z => z.Bauteile.Count).ToString(CultureInfo.CurrentCulture));
 
@@ -1512,6 +1547,8 @@
         _zoneOffen = null;
         _fokusNachBlatt = true;   // der Wirt fokussiert beim Rueckweg seine Wurzel (Baustein Blattwechsel)
         if (ergebnis is null) return;
+        // Welle ZK-b: Am gesperrten Katalogsatz zeigt der Zonendialog nur - sein OK nimmt nichts in den Arbeitsstand.
+        if (Zonensperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
         if (!_arbeit.ZoneErsetzen(ergebnis)) _arbeit.ZoneAnlegen(ergebnis);
         _meldung = "";
     }
@@ -1566,7 +1603,15 @@
     /// <summary>▲▼: die Zone einen Platz nach oben bzw. unten; der Rang folgt beim Schreiben der Liste.</summary>
     private void ZoneVerschieben(int id, int richtung)
     {
+        if (Zonensperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
         if (_arbeit.ZoneVerschieben(id, richtung)) _meldung = "";
+    }
+
+    /// <summary>„Entfernen": die Rückfrage; weich gesperrt meldet der Knopf den Grund (Welle ZK-b: das Schloss).</summary>
+    private void BeiEntfernen(int id)
+    {
+        if (Zonensperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        _entfernId = id;
     }
 
     private void Fragen(string titel, string text, Action nachJa)
@@ -1599,7 +1644,7 @@
     /// <summary>„Luftaustausch …" (Stufe G6b): öffnet die Überlagerung; ohne Schemaschritt S-G meldet der weich gesperrte Knopf den Grund.</summary>
     private void BeiLuftaustausch()
     {
-        if (Zonen?.KopplungSperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        if ((Zonen?.KopplungSperre ?? Zonensperre) is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
         _meldung = "";
         _luftOffen = true;
     }
@@ -1670,8 +1715,10 @@
 
         StandSetzen(Daten ?? new GebaeudeKatalogDaten());
 
-        // Stufe G3: die Zonen eines Gebaeudes im Projekt - ein Katalogsatz traegt keine.
-        _arbeit.ZonenLaden(Zonen?.Zonen, Modus == GebaeudeKatalogModus.Projekt && Zonen is not null, Zonen?.Luftstroeme);
+        if (!string.IsNullOrEmpty(StartReiter)) _reiter = StartReiter;
+
+        // Stufe G3: die Zonen eines Gebaeudes im Projekt; Welle ZK-b: auch die eines Katalogsatzes.
+        _arbeit.ZonenLaden(Zonen?.Zonen, Zonen is not null, Zonen?.Luftstroeme, katalog: Modus != GebaeudeKatalogModus.Projekt);
         _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_KATALOG,
@@ -2026,9 +2073,68 @@
             return;
         }
 
-        bool istNeu = Modus == GebaeudeKatalogModus.Neu;
+        // Der Katalogsatz (Welle ZK-b) in zwei benannten Schritten: der Satz, dann seine Zonen. Ein Satz, den ein
+        // frueheres OK schon angelegt hat, wird ueberschrieben, nicht noch einmal angelegt.
+        bool istNeu = Modus == GebaeudeKatalogModus.Neu && !_neuAngelegt;
+        if (!ZonenVorpruefen()) return;
         if (!Schreiben(istNeu, istNeu ? _stand.Name : _ursprungsname)) return;
+        if (istNeu) _neuAngelegt = true;
+        if (!ZonenSchreiben()) return;
         await Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>Hat ein OK im Modus Neu den Satz schon angelegt (Welle ZK-b)? Dann überschreibt das nächste ihn.</summary>
+    private bool _neuAngelegt;
+
+    /// <summary>
+    /// Die Prüfregeln des Kerns über die ganze Zonenliste (G6a) — VOR dem ersten Schritt des OK-Wegs, damit eine
+    /// verletzte Regel nichts halb schreibt. <c>false</c> = verletzt, die Meldung steht.
+    /// </summary>
+    private bool ZonenVorpruefen()
+    {
+        if (_arbeit.ZonenGeaendert && Zonen?.Pruefen?.Invoke(_arbeit.Zonenstand(false)) is { Length: > 0 } zonenfehler)
+        {
+            Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, zonenfehler), WarnStufe.Warnung);
+            return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Der Schritt „Zonen" des OK-Wegs — nur wenn sie sich geändert haben; samt der Zuordnung ihrer vorläufigen Ids
+    /// (Stufe KP2, Befund B10): Danach trägt der Arbeitsstand die endgültigen, und ein zweites OK legt nichts noch
+    /// einmal an. <paramref name="alleLuft"/>: die Luftströme auch ungeändert mitschreiben. <c>false</c> = gescheitert.
+    /// </summary>
+    private bool ZonenSchreiben(bool alleLuft = false)
+    {
+        if (!_arbeit.ZonenGeaendert || Zonen?.Speichern is null) return true;
+        ZonenSchreibergebnis erg = Zonen.Speichern(_arbeit.Zonenstand(!alleLuft)) ?? ZonenSchreibergebnis.Gut;
+        if (!erg.Ok)
+        {
+            Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, erg.Meldung), WarnStufe.Warnung);
+            return false;
+        }
+        _arbeit.IdsUebernehmen(erg);
+        _arbeit.ZonenGeschrieben();
+        _geschrieben = true;
+        return true;
+    }
+
+    /// <summary>
+    /// <b>Die Zonen nach „Speichern unter" im Katalog</b> (Welle ZK-b): Der Kern hat die gespeicherten Zonen an den neuen
+    /// Satz kopiert. Weicht der Arbeitsstand nicht ab, liest der Dialog sie dort neu (ihre neuen Ids); sonst schreibt
+    /// er die Zonen, wie sie hier stehen, als neue an den neuen Satz — die kopierten fallen dabei.
+    /// </summary>
+    private bool KatalogzonenNachSpeichernUnter()
+    {
+        if (!_arbeit.ZonenGeaendert && Zonen?.Neulesen is not null)
+        {
+            ZonenNeulesung n = Zonen.Neulesen();
+            _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: true);
+            return true;
+        }
+        _arbeit.ZonenAlsNeu();
+        return ZonenSchreiben(alleLuft: true);
     }
 
     /// <summary>
@@ -2050,13 +2156,9 @@
         if (!Pruefen(false)) return false;
         if (Speichern is null) return true;
 
-        // G6a: die Pruefregeln des Kerns ueber die ganze Zonenliste - VOR dem ersten Schritt, damit
-        // eine verletzte Regel (Nutzflaeche ab zwei Zonen, Hoechstzahl, doppelte Id) nichts halb schreibt.
-        if (_arbeit.ZonenGeaendert && Zonen?.Pruefen?.Invoke(_arbeit.Zonenstand(false)) is { Length: > 0 } zonenfehler)
-        {
-            Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, zonenfehler), WarnStufe.Warnung);
-            return false;
-        }
+        // G6a: die Pruefregeln des Kerns ueber die ganze Zonenliste - VOR dem ersten Schritt, damit eine
+        // verletzte Regel (Nutzflaeche ab zwei Zonen, Hoechstzahl, doppelte Id) nichts halb schreibt.
+        if (!ZonenVorpruefen()) return false;
 
         // Schritt 1: die Gebaeudedaten der Projektkopie.
         Ableiten();
@@ -2101,18 +2203,7 @@
 
         // Schritt 3: die Zonen - samt der Zuordnung ihrer vorlaeufigen Ids (Stufe KP2, Befund B10):
         // Danach traegt der Arbeitsstand die endgueltigen, und ein zweites OK legt nichts noch einmal an.
-        if (_arbeit.ZonenGeaendert && Zonen?.Speichern is not null)
-        {
-            ZonenSchreibergebnis erg = Zonen.Speichern(_arbeit.Zonenstand(true)) ?? ZonenSchreibergebnis.Gut;
-            if (!erg.Ok)
-            {
-                Melden(string.Format(CultureInfo.CurrentCulture, ZonenTexte.MeldungZonen, erg.Meldung), WarnStufe.Warnung);
-                return false;
-            }
-            _arbeit.IdsUebernehmen(erg);
-            _arbeit.ZonenGeschrieben();
-            _geschrieben = true;
-        }
+        if (!ZonenSchreiben()) return false;
         _meldung = "";
         return true;
     }
@@ -2129,7 +2220,7 @@
         // Im Projekt fragt der Weg der Konditionierung: EINE Frage nennt Zonen, Bauteile und die
         // Konditionierung der Zonen, die zurueckbleiben (Entwurf KP2 Festlegung 3).
         _speichernUnterText = Modus == GebaeudeKatalogModus.Projekt ? _kond.SpeichernUnterFrage() : null;
-        if (_speichernUnterText is not null || _arbeit.Zonen.Count > 0)
+        if (_speichernUnterText is not null || (Modus == GebaeudeKatalogModus.Projekt && _arbeit.Zonen.Count > 0))
         {
             _speichernUnterFrage = true;
             return;
@@ -2180,6 +2271,8 @@
             _ursprungsname = neu;
             _entsperrt = true;   // der Dialog arbeitet am neuen, eigenen Satz - ihm gilt das Schloss nicht (B11)
             _arbeit.Geschrieben();
+            // Welle ZK-b: Der neue Satz traegt die Zonen, wie sie hier stehen.
+            if (Zonen?.Katalog == true && !KatalogzonenNachSpeichernUnter()) return;
         }
         // Gruen mit Haken wie jedes „angelegt" des Hauses (WarnStufe.Erfolg); es steht, bis die
         // naechste Handlung es ersetzt.

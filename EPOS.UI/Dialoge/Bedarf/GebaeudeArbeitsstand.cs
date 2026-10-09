@@ -127,8 +127,11 @@ public sealed class GebaeudeArbeitsstand
     /// </summary>
     private int _kleinsteId = -1;
 
-    /// <summary>Führt der Arbeitsstand ein Gebäude im Projekt (mit Zonenweg)? Ein Katalogsatz nicht.</summary>
+    /// <summary>Führt der Arbeitsstand einen Zonenweg (im Projekt oder, Welle ZK-b, im Katalog)?</summary>
     public bool MitZonenweg { get; private set; }
+
+    /// <summary>Führt der Arbeitsstand einen Katalogsatz (Welle ZK-b)? Dann rechnet er nicht selbst — die Zeile nennt die Übernahme.</summary>
+    public bool ImKatalog { get; private set; }
 
     /// <summary>
     /// Die Luftströme zwischen den Zonen im Arbeitsstand (Stufe G6b) — sie gehören zum Arbeitsstand wie
@@ -139,10 +142,15 @@ public sealed class GebaeudeArbeitsstand
     /// <summary>Die Luftströme beim Laden bzw. nach dem letzten Schreiben — Vergleich für <see cref="LuftGeaendert"/>.</summary>
     private List<ZonenluftstromDaten> _luftGeschrieben = new();
 
-    /// <summary>Übernimmt die Zonen eines Projektgebäudes — beim Öffnen des Editors in der Betriebsart Projekt.</summary>
-    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg, IReadOnlyList<ZonenluftstromDaten>? luftstroeme = null)
+    /// <summary>
+    /// Übernimmt die Zonen eines Gebäudes — beim Öffnen des Editors und nach dem Neulesen;
+    /// <paramref name="katalog"/>: die Zonen eines Katalogsatzes (Welle ZK-b).
+    /// </summary>
+    public void ZonenLaden(IReadOnlyList<ZoneDaten>? zonen, bool mitZonenweg, IReadOnlyList<ZonenluftstromDaten>? luftstroeme = null,
+                           bool katalog = false)
     {
         MitZonenweg = mitZonenweg;
+        ImKatalog = katalog;
         Zonen = (zonen ?? Array.Empty<ZoneDaten>()).Select(z => z.Kopie()).ToList();
         Luftstroeme = (luftstroeme ?? Array.Empty<ZonenluftstromDaten>()).Select(l => l.Kopie()).ToList();
         _kleinsteId = Math.Min(-1, Zonen.Count == 0 ? -1 : Zonen.Min(z => z.Id));
@@ -349,17 +357,53 @@ public sealed class GebaeudeArbeitsstand
     }
 
     /// <summary>
+    /// <b>Alle Zonen werden zu neuen</b> (Welle ZK-b) — nach „Speichern unter" im Katalog, wenn der Arbeitsstand vom
+    /// gespeicherten Stand abweicht: Der neue Satz soll die Zonen tragen, wie sie hier stehen. Jede Zone mit
+    /// gespeicherter Id bekommt eine vorläufige (ihre Vorlage bleibt die alte Zeile, deren übrige Spalten die Hülle
+    /// übernimmt), jedes gespeicherte Bauteil eine vorläufige, jeder Luftstrom gilt als neu; Nachbarzonen und die
+    /// Zonen der Luftströme folgen. Die Konditionierung jeder Zone zählt als geändert — der OK-Weg schreibt sie ganz.
+    /// Danach weicht der Arbeitsstand vom Vergleichsstand ab, das Schreiben ersetzt die Zonen des Ziels.
+    /// </summary>
+    public void ZonenAlsNeu()
+    {
+        var neu = new Dictionary<int, int>();
+        foreach (ZoneDaten z in Zonen.Where(z => z.Id > 0)) neu[z.Id] = NeueId();
+        int Zone(int id) => neu.TryGetValue(id, out int n) ? n : id;
+        foreach (ZoneDaten z in Zonen)
+        {
+            if (z.Id > 0) z.VorlageId ??= z.Id;
+            z.Id = Zone(z.Id);
+            int bauteilId = 0;
+            foreach (BauteilDaten b in z.Bauteile) bauteilId = Math.Min(bauteilId, b.Id);
+            foreach (BauteilDaten b in z.Bauteile)
+            {
+                if (b.Id > 0) b.Id = --bauteilId;
+                if (b.IdNachbarzone is int nachbar) b.IdNachbarzone = Zone(nachbar);
+            }
+            if (z.Konditionierung is not null) z.Konditionierung.Fassung++;
+        }
+        foreach (ZonenluftstromDaten l in Luftstroeme)
+        {
+            l.Id = 0;
+            if (l.IdZoneA is int a) l.IdZoneA = Zone(a);
+            if (l.IdZoneB is int b) l.IdZoneB = Zone(b);
+        }
+    }
+
+    /// <summary>
     /// Die Herleitungszeile „Rechenweg der Hülle" — in BEIDEN Stellungen (Softwarearchitektur 3.2
     /// Regel 3): Klassenweg über die U-Wert-Gruppen und die Bauweise, oder Bauteilweg mit der Zone
-    /// (bzw. der Zahl der Zonen) und der Zahl der Bauteile; für einen Katalogsatz der Klassenweg samt
-    /// dem Satz, dass die Übernahme ins Projekt seine Zonen kopiert.
+    /// (bzw. der Zahl der Zonen) und der Zahl der Bauteile; für einen Katalogsatz ohne Zone der Klassenweg samt
+    /// dem Satz, dass die Übernahme ins Projekt Zonen kopiert, mit Zonen deren Zahl und dass das Gebäude im
+    /// Projekt nach dem Zonenmodell rechnet (Welle ZK-b).
     /// </summary>
     public string Huellwegzeile(GebaeudeZonenTexte t)
     {
-        if (!MitZonenweg) return t.ZeileKatalog;
-        if (Zonen.Count == 0) return t.ZeileKlassenweg;
         CultureInfo c = CultureInfo.CurrentCulture;
         string bauteile = Zonen.Sum(z => z.Bauteile.Count).ToString(c);
+        if (ImKatalog || !MitZonenweg)
+            return Zonen.Count == 0 ? t.ZeileKatalog : string.Format(c, t.ZeileKatalogZonen, Zonen.Count.ToString(c), bauteile);
+        if (Zonen.Count == 0) return t.ZeileKlassenweg;
         return Zonen.Count == 1
             ? string.Format(c, t.ZeileBauteilweg, Zonen[0].Bezeichner, bauteile)
             : string.Format(c, t.ZeileBauteilwegZonen, Zonen.Count.ToString(c), bauteile);
