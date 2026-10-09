@@ -196,6 +196,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Die Datenbank bringt 34 eingebaute Typkennfelder für Kältemaschinen mit (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben; 20 bis 2 000 kW). (#848)
 - Seit 09.10.2026: Ein Gebäude-Katalogsatz trägt seine Zonen mit Bauteilen, Luftströmen und Zonen-Konditionierung; „In DB übernehmen“, „Speichern unter“ und die Übernahme ins Projekt kopieren sie mit. (#849)
 - Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
+- Seit 09.10.2026: Der Strom einer Kältemaschine zählt in Kosten und Emissionen auch dann, wenn sie der einzige Stromverbraucher des Projekts ist. (#851)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
