@@ -490,7 +490,7 @@ Umsetzung widersprachen). Dieselbe Liste steht im [Fachkonzept](Konzept_Uebergab
 | UB‑E2 | #851 | [UB-E2](Protokolle/Gebaeudesimulation/2026-10-09_UB-E2_Betriebsbereiche.md) | Schemaschritt **205** `UebergabegrenzeSchema` (`EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`), Betriebsbereiche B0–B4 und Vorwärmbetrieb im Rechenweg, Gruppe „Bivalenz und Übergabe", Referenzprojekt 1060, Basis R45 |
 | UB‑E3 | #852 | [UB-E3](Protokolle/Gebaeudesimulation/2026-10-09_UB-E3_Geraetegrenzen.md) | Gerätegrenzen, Hydraulik- und Rücklaufgrenze, BHKW-Rücklaufgrenze, Stammblätter mit Kältemittel-Schnellwahl, Basis **R46** `2026-10-09_R46_Geraetegrenzen` |
 | UB‑E4 | #853 | [UB-E4](Protokolle/Gebaeudesimulation/2026-10-09_UB-E4_Bivalenzdiagramm_Bericht.md) | Bivalenzdiagramm im Diagramm-Renderer, Kachelzeile im Wärmepumpen-Reiter, Kennzahlen `wp.bivalenz.*`, Bild und Tafel im Bericht, CSV- und KI-Felder, Vorlagen auf Katalogfassung 17; ohne Rechenwirkung (Basis R46 bleibt) |
-| UB‑E5 | — | — | Dokumentation: Wiki, Logbuch, dieser Abschnitt, Ablage der Konzepte unter `ueberholt/` |
+| UB‑E5 | #854 | [UB-E5](Protokolle/Gebaeudesimulation/2026-10-09_UB-E5_Dokumentation.md) | Dokumentation: Wiki, Logbuch, dieser Abschnitt, Ablage der Konzepte unter `ueberholt/` |
 
 Referenzprojekt **1060** (Kopie von 1056, Einbindung DIREKT, Vorwärmbetrieb mit Kessel in Reihe) steht in der
 CI-Auswahl und wird von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` gehalten; Einfrierregel

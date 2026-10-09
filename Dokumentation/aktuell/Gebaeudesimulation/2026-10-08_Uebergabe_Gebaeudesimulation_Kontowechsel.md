@@ -52,7 +52,8 @@ aber erst auf Auftrag des Anwenders.
 
 - **UB-E1:** (umgesetzt 09.10.2026, #837) zwei Opus-Wellen — E1-a Kernklassen und Rechenproben (Wortlaut in Abschnitt 10), E1-b Abbildung, Dialog, Ressourcen.
 - **UB-E3:** umgesetzt (09.10.2026, #852; Basis R46).
-- **UB-E4:** umgesetzt (09.10.2026, #853; Basis R46 unverändert) — Bivalenzdiagramm, Reiter-Kachelzeile, Kennzahlen `wp.bivalenz.*`, Bericht, Export, Vorlagen auf Fassung 17; offen: UB-E5 (Wiki und Logbuch).
+- **UB-E4:** umgesetzt (09.10.2026, #853; Basis R46 unverändert) — Bivalenzdiagramm, Reiter-Kachelzeile, Kennzahlen `wp.bivalenz.*`, Bericht, Export, Vorlagen auf Fassung 17.
+- **UB-E5:** umgesetzt (09.10.2026, #854; kein Code) — Wiki-Quellen und Logbuch-Entwurf (Version offen, Vorschlag 1.2.1), Konzepte „wie gebaut“ nach `ueberholt/`; UB abgeschlossen, offen: Wiki-Upload.
 - **Vor UB-E2:** Schemaschritt `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (205, hängt an 204 `ZonenKatalogSchema`) und
   allein diese Zeile sofort pushen (umgesetzt 09.10.2026, #851; Basis R45 eingefroren).
 - **Referenzprojekt 1060** als Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, danach Basis **R45** einfrieren —
