@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             // KK (KuehlkurveSchema, Festlegung 12): die Kennzahlen der Kuehlkurve - dieselbe Regel, sie stehen erst in
             // aggregate.csv, wenn ein Lauf sie erhebt (Kernschalter bis KK5 aus).
             foreach (string s in KuehlkurveSchema.SPALTEN_ERGEBNIS) namen.Add(s);
-            // UB-E2 (UebergabegrenzeSchema, Schritt 203): Betriebsbereiche, Bivalenzpunkte und Uebergabegrenze an beiden
+            // UB-E2 (UebergabegrenzeSchema, Schritt 205): Betriebsbereiche, Bivalenzpunkte und Uebergabegrenze an beiden
             // Ergebnistabellen der Waermepumpe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn ein Modul mit
             // gesetzter Einbindung rechnet (U-1); die Bestandsprojekte behalten ihre Schluessel.
             foreach (string s in UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL) namen.Add(s);

@@ -234,7 +234,7 @@ namespace WindowsFormsApplication1
                     "maxPtherm", "Heizung", "Regelung", "Modulkosten", "Laenge", "Breite", "Hoehe", "Gewicht",
                     "Raum", "Kuehlleistung", "Bauart", "Kuehlbetrieb", "Kuehl_Vorlauf", "Kuehl_Hilfsstromanteil",
                     "Mindestleistung_kW", "Taktverlustfaktor_Cd",
-                    // UebergabegrenzeSchema (Schritt 203): die acht Geraetespalten; leer tragen sie nichts zur Pruefsumme bei.
+                    // UebergabegrenzeSchema (Schritt 205): die acht Geraetespalten; leer tragen sie nichts zur Pruefsumme bei.
                     "Spreizung_Auslegung_K", "Spreizung_Max_K", "Spreizung_Min_K", "Mindestvolumenstrom_Prozent",
                     "Ruecklauf_Max", "Ruecklauf_Bezug", "Ruecklauf_Abwertung_ProzentJeK", "Kaeltemittel"
                 },
@@ -261,7 +261,7 @@ namespace WindowsFormsApplication1
                     "Kosten_Lieferung", "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung", "Vorlauf",
                     "Ruecklauf", "Wirkungsgrad_el", "Wirkungsgrad_th", "Wirkungsgrad_el_Teillast50",
                     "Wirkungsgrad_th_Teillast50", "Anfahrverlust_kWh", "Mindestlaufzeit_min",
-                    // UebergabegrenzeSchema (Schritt 203): die Ruecklaufgrenze; leer traegt sie nichts zur Pruefsumme bei.
+                    // UebergabegrenzeSchema (Schritt 205): die Ruecklaufgrenze; leer traegt sie nichts zur Pruefsumme bei.
                     "Ruecklauf_Max"
                 })
             { Anzeigeschluessel = "KABG_KATALOG_BHKW" },

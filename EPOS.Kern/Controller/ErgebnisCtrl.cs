@@ -129,7 +129,7 @@ namespace WindowsFormsApplication1
             // VW1a (Schritt 188): der Ausweis der Vorlaufwahl an der Modulzeile der Waermepumpe - ebenso vor der
             // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
             bool vorlaufwahlWp = VorlaufwahlSchema.ErgebnisspaltenVorhanden();
-            // UB-E2 (Schritt 203): die Betriebsbereiche an beiden Ergebnistabellen der Waermepumpe - ebenso vor der
+            // UB-E2 (Schritt 205): die Betriebsbereiche an beiden Ergebnistabellen der Waermepumpe - ebenso vor der
             // Transaktion gefragt; ohne Bivalenzobjekt bleiben die Spalten NULL.
             bool bereicheWp = UebergabegrenzeSchema.ErgebnisspaltenVorhanden();
             bool kuehlkreisSpalten = heizkreisSpalten &&
@@ -1238,7 +1238,7 @@ namespace WindowsFormsApplication1
                 // Schritt 187 (KU3-6a): die freie Kuehlung - NULL bleibt null; eine fehlende Spalte gilt wie NULL.
                 w.FreieKuehlung_MWh = DN(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
                 w.FreieKuehlung_Stunden = GanzOderNull(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
-                // UB-E2 (Schritt 203): die Betriebsbereiche - nur nach dem Schritt, NULL bleibt null.
+                // UB-E2 (Schritt 205): die Betriebsbereiche - nur nach dem Schritt, NULL bleibt null.
                 bool bereicheLesen = UebergabegrenzeSchema.ErgebnisspaltenVorhanden();
                 if (bereicheLesen) w.Bereiche = BereicheLesen(rw, false);
 

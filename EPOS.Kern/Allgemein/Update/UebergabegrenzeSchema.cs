@@ -7,7 +7,7 @@ namespace WindowsFormsApplication1
 {
     // ====================================================================================
     // UB - UEBERGABEGRENZE UND BIVALENZ DER WAERMEPUMPE (Umsetzungskonzept Uebergabegrenze und Bivalenz,
-    // Abschnitt 4.1/4.2; Etappe UB-E2, Welle E2-a; Schemaschritt 204, haengt an 203 KaeltemaschinenTypkennfelderSchema).
+    // Abschnitt 4.1/4.2; Etappe UB-E2, Welle E2-a; Schemaschritt 205, haengt an 204 ZonenKatalogSchema).
     //
     // WOZU. Die Waermepumpe bekommt hydraulische Grenzen (Spreizung, Mindestvolumenstrom, Ruecklauf),
     // das BHKW eine Ruecklaufgrenze, die Anlage ihre Einbindung und den Vorwaermbetrieb; das Ergebnis
@@ -47,10 +47,10 @@ namespace WindowsFormsApplication1
     public static class UebergabegrenzeSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> (Schritt 204) — die EINE Stelle, an der sie steht: der Schritt hinter der
-        /// zuletzt gebauten Klasse <see cref="KaeltemaschinenTypkennfelderSchema"/> (Schritt 203).
+        /// <b>Die Nummer des Schemaschritts</b> (Schritt 205) — die EINE Stelle, an der sie steht: der Schritt hinter der
+        /// zuletzt gebauten Klasse <see cref="ZonenKatalogSchema"/> (Schritt 204).
         /// </summary>
-        public const int SCHRITT = KaeltemaschinenTypkennfelderSchema.SCHRITT + 1;
+        public const int SCHRITT = ZonenKatalogSchema.SCHRITT + 1;
 
         /// <summary>Die Wärmepumpe im Projekt.</summary>
         public const string TAB_WP = ErzeugerTeillastSchema.TAB_WP;

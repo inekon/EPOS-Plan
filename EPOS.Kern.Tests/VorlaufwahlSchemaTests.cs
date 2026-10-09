@@ -98,7 +98,7 @@ namespace EPOS.Kern.Tests
             foreach (var s in VorlaufwahlSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
             List<string> erg = DataRepository.SpaltenVonTabelle(VorlaufwahlSchema.TAB_ERGEBNIS_WP_MODUL);
-            // Dahinter stehen allein die dreizehn Modulspalten der Uebergabegrenze (Schritt 203).
+            // Dahinter stehen allein die dreizehn Modulspalten der Uebergabegrenze (Schritt 205).
             int ub = UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL.Count;
             Assert.Equal(VorlaufwahlSchema.SPALTEN_ERGEBNIS.ToArray(), erg.Skip(erg.Count - ub - 3).Take(3).ToArray());
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",

@@ -297,7 +297,7 @@ namespace WindowsFormsApplication1
         public const string FeldBrennwert = "BRENNWERT";
         public const string FeldVorlauf = "VORLAUF";
         public const string FeldRuecklauf = "RUECKLAUF";
-        // Die Abschaltgrenze des Ruecklaufs am BHKW (Spalte Ruecklauf_Max, Schemaschritt 204).
+        // Die Abschaltgrenze des Ruecklaufs am BHKW (Spalte Ruecklauf_Max, Schemaschritt 205).
         // Leer heisst „keine Grenze gepflegt".
         public const string FeldRuecklaufMax = "RUECKLAUF_MAX";
         public const string FeldKollektortyp = "KOLLEKTORTYP";

@@ -738,7 +738,7 @@ namespace WindowsFormsApplication1
                         mo.Vorlauf_Darueber_Stunden = vw.Darueber;
                         mo.Vorlauf_Darunter_Stunden = vw.Darunter;
                     }
-                    // UB-E2 (Schemaschritt 203): die Betriebsbereiche - nur fuer ein Modul mit Bivalenzobjekt
+                    // UB-E2 (Schemaschritt 205): die Betriebsbereiche - nur fuer ein Modul mit Bivalenzobjekt
                     // (Einbindung gesetzt, U-1); sonst bleibt das Feld null und die Spalten NULL.
                     mo.Bereiche = BereicheDesModuls(wp.BivalenzDesModuls(i));
                     w.Module.Add(mo);

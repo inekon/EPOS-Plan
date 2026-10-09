@@ -51,9 +51,9 @@ Gebäudesimulation“). Alle Entscheide UB-Q1 bis UB-Q11 und die Abweichungen U-
 aber erst auf Auftrag des Anwenders.
 
 - **UB-E1:** (umgesetzt 09.10.2026, #837) zwei Opus-Wellen — E1-a Kernklassen und Rechenproben (Wortlaut in Abschnitt 10), E1-b Abbildung, Dialog, Ressourcen.
-- **UB-E3:** umgesetzt (09.10.2026, #850; Basis R46).
-- **Vor UB-E2:** Schemaschritt `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (204, hängt an 203 `KaeltemaschinenTypkennfelderSchema`) und
-  allein diese Zeile sofort pushen (umgesetzt 09.10.2026, #849; Basis R45 eingefroren).
+- **UB-E3:** umgesetzt (09.10.2026, #851; Basis R46).
+- **Vor UB-E2:** Schemaschritt `UebergabegrenzeSchema` im Kopf der Statusdatei anmelden (205, hängt an 204 `ZonenKatalogSchema`) und
+  allein diese Zeile sofort pushen (umgesetzt 09.10.2026, #850; Basis R45 eingefroren).
 - **Referenzprojekt 1060** als Kopie von 1056 (Fahrplan zurückgesetzt), in die CI-Auswahl, danach Basis **R45** einfrieren —
   der Übergabetext der Sitzung Berichterstellung nennt noch „R44“ und „Bestand R43“; beides ist durch die Kühlkurve überholt.
   Mit der Basis kommt eine neue Einfrierregel in die Wurzel-`CLAUDE.md`.

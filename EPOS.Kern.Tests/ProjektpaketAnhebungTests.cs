@@ -598,7 +598,7 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
-        //  Geraetegrenzen der Uebergabegrenze (Schritt 203, UB-E3-b)
+        //  Geraetegrenzen der Uebergabegrenze (Schritt 205, UB-E3-b)
         // =============================================================================
 
         /// <summary>
