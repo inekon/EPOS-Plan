@@ -406,10 +406,10 @@ public sealed record ZonenSchreibergebnis(string Meldung, IReadOnlyDictionary<in
 }
 
 /// <summary>
-/// <b>Der Zonenweg eines Projektgebäudes</b> — alles, was der Gebäudedialog für Zonen und Bauteile
-/// braucht, als EIN Parameter (Stufe G3, Welle D2). Die Hülle baut ihn nur für ein gespeichertes
-/// Projektgebäude; ohne ihn (Katalogsatz, Verwaltung, ohne Gaben) steht der Zonenreiter mit seinem
-/// Grund da, und der Übernahmeknopf ist weich gesperrt.
+/// <b>Der Zonenweg eines Gebäudes</b> — alles, was der Gebäudedialog für Zonen und Bauteile braucht, als EIN
+/// Parameter (Stufe G3, Welle D2): für ein gespeichertes Projektgebäude und (Welle ZK-b, <see cref="Katalog"/>)
+/// für einen Katalogsatz. Ohne ihn (ohne Gaben) steht der Zonenreiter mit seinem Grund da, und die Knöpfe
+/// sind weich gesperrt.
 /// </summary>
 /// <remarks>
 /// <para><b>Geschrieben wird im OK-Weg, in benannten Schritten</b> (Softwarearchitektur 3.3):
@@ -483,4 +483,26 @@ public sealed class GebaeudeZonenweg
     /// Ohne Stufe zeigt der Abschnitt „Übergabe" den Hinweis „ohne Wirkung".
     /// </summary>
     public bool? ProjektKoppelt { get; init; }
+
+    /// <summary>
+    /// Führt der Weg die Zonen eines KATALOGSATZES (Welle ZK-b)? Dann schreibt der OK-Weg des Editors sie in die
+    /// Katalogzwillinge, die Bauteile wählen ihren Aufbau aus dem Aufbaukatalog, und „Gebäude als eine Zone
+    /// übernehmen" fehlt.
+    /// </summary>
+    public bool Katalog { get; init; }
+
+    /// <summary>
+    /// Warum die Zonen hier nicht bearbeitbar sind (etwa: die Datenbank kennt die Katalogzonen nicht);
+    /// <c>null</c> = bearbeitbar. Dann sind „+ Neue Zone …" und die Zeilenhandlungen weich gesperrt.
+    /// </summary>
+    public string? Sperre { get; init; }
+
+    /// <summary>
+    /// Liest die Zonen des Gebäudes neu — nach „Speichern unter" im Katalog am neuen Satz, dessen Zonen der Kern
+    /// im gespeicherten Stand kopiert hat. <c>null</c> = kein Neulesen.
+    /// </summary>
+    public Func<ZonenNeulesung>? Neulesen { get; init; }
 }
+
+/// <summary>Die neu gelesenen Zonen samt Luftströmen (<see cref="GebaeudeZonenweg.Neulesen"/>).</summary>
+public sealed record ZonenNeulesung(IReadOnlyList<ZoneDaten> Zonen, IReadOnlyList<ZonenluftstromDaten> Luftstroeme);

@@ -177,6 +177,20 @@
                         </Stammblattgruppe>
                     }
 
+                    @* ZONEN (Welle ZK-b): die Zonen des Katalogsatzes als Text; der Knopf im Kopf oeffnet den
+                       Katalogeditor am Satz auf dem Reiter "Zonen" - dort werden sie bearbeitet und mit OK
+                       geschrieben (wie im Projekt). *@
+                    @if (_satz is not null && ZonenGaben is not null)
+                    {
+                        <Stammblattgruppe Titel="@TitelZonenText" Lesemodus="true"
+                                          Werte="@(_satz.Zonen.Count > 0 ? _satz.Zonen : KeineZoneWerte)">
+                            <Kopf>
+                                <button type="button" class="epos-textknopf epos-gebaeude-zonenknopf"
+                                        @onclick="BeiZonen">@BtnZonenText</button>
+                            </Kopf>
+                        </Stammblattgruppe>
+                    }
+
                     @* HUELLE, FENSTER, KENNGROESSEN, ALLE DATEN - der Baustein schreibt in
                        denselben Arbeitsstand; im Lesemodus stehen Huelle und "Alle Daten"
                        als Text, wie der Kern sie formatiert. *@
@@ -280,7 +294,7 @@
     @* --- Der Katalogeditor (W9.1) - nur noch "Neu..." (AD-Q6, #465) --------- *@
     @* In der BREITEN Ueberlagerung wie im Gebaeudedialog (Stufe KP2, Entwurf Festlegung 7). *@
     <Ueberlagerung Offen="@(_katalogGaben is not null)"
-                   Titel="@BtnNeuText" Zusatzklasse="epos-ueberlagerung--breit"
+                   Titel="@_katalogTitel" Zusatzklasse="epos-ueberlagerung--breit"
                    Geschlossen="KatalogeditorFertig">
         <KindInhalt>
             @if (_katalogGaben is not null)
@@ -415,6 +429,18 @@
     /// — „Neu…" legt einen Satz an; bearbeitet wird im Stammblatt (#465). Ohne ihn kein „Neu…".
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
+
+    /// <summary>
+    /// Der Parametersatz des Katalogeditors hinter „Zonen bearbeiten …" am gewählten Satz (Welle ZK-b,
+    /// <c>GebaeudeAdminHuelle.ZonenGaben</c>); <c>null</c> = keine Gruppe „Zonen".
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? ZonenGaben { get; set; }
+
+    /// <summary>Titel der Gruppe „Zonen" im Stammblatt (<c>GEBZ_REITER</c>).</summary>
+    [Parameter] public string TitelZonenText { get; set; } = Resource.GEBZ_REITER;
+
+    /// <summary>Der Knopf im Kopf der Gruppe „Zonen" (<c>GEBA_BTN_ZONEN</c>).</summary>
+    [Parameter] public string BtnZonenText { get; set; } = Resource.GEBA_BTN_ZONEN;
 
     /// <summary>Der Parametersatz der Gebäudetypen-Verwaltung — ohne ihn kein „Gebäudetypen…".</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GebaeudetypGaben { get; set; }
@@ -1475,8 +1501,29 @@
         if (Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
         _meldung = "";
         _vorNeu = new HashSet<string>(_katalog.Select(z => z.Schluessel), StringComparer.Ordinal);
+        _katalogTitel = BtnNeuText;
         _katalogGaben = KatalogGaben();
     }
+
+    /// <summary>
+    /// „Zonen bearbeiten …" (Welle ZK-b) — der Katalogeditor am gewählten Satz auf dem Reiter „Zonen"; geänderte
+    /// Felder des Stammblatts halten an wie bei „Neu…". Ein Satz, den „Speichern unter" dort anlegt, ist danach gewählt.
+    /// </summary>
+    private void BeiZonen()
+    {
+        if (ZonenGaben is null || string.IsNullOrEmpty(_gewaehlt)) return;
+        if (Geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _vorNeu = new HashSet<string>(_katalog.Select(z => z.Schluessel), StringComparer.Ordinal);
+        _katalogTitel = BtnZonenText;
+        _katalogGaben = ZonenGaben(_gewaehlt);
+    }
+
+    /// <summary>Der Titel der Überlagerung des Katalogeditors: „Neu…" oder „Zonen bearbeiten …".</summary>
+    private string _katalogTitel = "";
+
+    /// <summary>Die Gruppe „Zonen" ohne Zone: eine Zeile mit dem Leertext.</summary>
+    private static readonly IReadOnlyList<Stammblattwert> KeineZoneWerte = new[] { new Stammblattwert("", Resource.GEBZ_LEER) };
 
     /// <summary>Der Editor ist zu: Liste und Stammblatt lesen neu; ein neuer Satz wird gewählt.</summary>
     private void KatalogeditorFertig()

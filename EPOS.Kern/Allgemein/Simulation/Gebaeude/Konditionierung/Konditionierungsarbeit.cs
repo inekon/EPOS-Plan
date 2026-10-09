@@ -144,7 +144,7 @@ namespace WindowsFormsApplication1
                         Bestandswert(b, groesse, zeile, zelle.Wert);
                         Merker(b, ebene.Art, groesse, zeile);
                     });
-                else if (!zelle.Belegt && e.Art == Kalendereigentuemer.Zone)
+                else if (!zelle.Belegt && Zonenart(e.Art))
                     e = e.MitBestand(b => Bestandswert(b, groesse, zeile, null));
 
                 int? von = zelle.Von, bis = zelle.Bis;
@@ -165,6 +165,14 @@ namespace WindowsFormsApplication1
             }
             return Ebenenergebnis.Gut(e.MitVorgabe(groesse, zeile, vorgabe));
         }
+
+        /// <summary>
+        /// <b>Ist der Eigentümer eine Zone?</b> Die Projektzone (<see cref="Kalendereigentuemer.Zone"/>) und die Zone
+        /// eines Katalogsatzes (<see cref="Kalendereigentuemer.Katalogzone"/>, Welle ZK-b) folgen denselben Regeln: Eine
+        /// geleerte Bestandszelle heißt „wie das Gebäude", die Nachtzeiten erbt sie vom Gebäude.
+        /// </summary>
+        public static bool Zonenart(Kalendereigentuemer art)
+            => art == Kalendereigentuemer.Zone || art == Kalendereigentuemer.Katalogzone;
 
         /// <summary>
         /// Stehen die Zeiten dieser Zeile in den Bestandsspalten <c>Nachtabsenkung_Beginn</c>/<c>_Ende</c>?
@@ -1298,7 +1306,7 @@ namespace WindowsFormsApplication1
             Matrixeingang b = z.Stand.Bestand;
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
                 foreach (string zeile in DbWerte.KOND_ZEILEN)
-                    if (Matrixzellenort.HatBestandsspalte(Kalendereigentuemer.Zone, g, zeile) && Bestandswert(b, g, zeile).HasValue)
+                    if (Matrixzellenort.HatBestandsspalte(z.Stand.Art, g, zeile) && Bestandswert(b, g, zeile).HasValue)
                         return true;
             return false;
         }
