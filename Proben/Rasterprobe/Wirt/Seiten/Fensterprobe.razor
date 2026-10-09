@@ -49,6 +49,10 @@
                               KostenOeffnen="@((_, _) => Task.CompletedTask)"
                               EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
                               Katalogfelder="@(_ => Felder())"
+                              ProjektsatzWege="@SatzWege"
+                              KatalogsatzWege="@SatzWege"
+                              NeuGaben="@(() => new Dictionary<string, object>())"
+                              SummePtherm="@(() => "240")"
                               Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -145,6 +149,14 @@
     /// <summary>Die Beschriftungen aus der Ressource - sonst stuenden die Schluessel im Kopf.</summary>
     private static string Uebersetzt(string schluessel)
         => Resource.ResourceManager.GetString(schluessel) ?? schluessel;
+
+    // ------------------------------------------------ Heizkessel: Bearbeiten je Bereich (Katalogauswahl Stufe 2)
+    private Satzbearbeitungswege? _satzWege;
+    private Satzbearbeitungswege SatzWege => _satzWege ??= new Satzbearbeitungswege
+    {
+        Lesen = _ => Felder(),
+        Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
+    };
 
     // ------------------------------------------------ Heizkessel und BHKW
     private Katalogfilterprofil? _heizkesselProfil, _bhkwProfil;

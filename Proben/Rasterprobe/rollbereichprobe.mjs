@@ -32,7 +32,7 @@ const arg = (name, vorgabe) => {
 const WURZEL = arg('url', 'http://127.0.0.1:5299');
 const NUR = arg('nur', '');
 const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
-const ZEILE = 53, KOPF_MIN = 2 * ZEILE;   // Katalog: Kopf + zwei Zeilen (Kopf gemessen dazu)
+const ZEILE = 53;   // Zeilenhoehe, falls die Liste keine Zeile zeigt; sonst gemessen
 
 const FENSTER = [{ breite: 1280, hoehe: 800 }, { breite: 1280, hoehe: 720 }, { breite: 1024, hoehe: 700 }];
 const FAELLE = [
@@ -95,7 +95,9 @@ function messen() {
     roller: roller.length, verschachtelt,
     dokumentRollt: dok.scrollHeight > innerHeight + 1 || dok.scrollWidth > innerWidth + 1,
     dialogRollt: d ? d.scrollHeight > d.clientHeight + 1 : false,
-    dialogHoehe: h(d), projekt: h(projekt), katalog: h(katalog), katalogKopf: h(kopfzeile), katalogMin, zweispalten: h(d && d.querySelector('.epos-zweispalten')),
+    dialogHoehe: h(d), projekt: h(projekt), katalog: h(katalog), katalogKopf: h(kopfzeile), katalogMin,
+    katalogZeile: h(katalog && katalog.querySelector('tbody tr')),
+    ueberlagerung: !!document.querySelector('.epos-ueberlagerung'), zweispalten: h(d && d.querySelector('.epos-zweispalten')),
     satzOffen: !!(d && d.querySelector('.epos-zweispalten--satz-offen')), ueberlauf,
     leistenfehler,
   };
@@ -134,9 +136,19 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt) {
   if (m.dialogRollt) fehler.push('Dialogkoerper rollt');
   if (istWirt) {
     // Kopf + zwei Zeilen; unter 600 px Bausteinhoehe Kopf + eine Zeile (Stilblatt, @container katalogauswahl).
-    const soll = (m.zweispalten !== null && m.zweispalten < 600) ? ZEILE : KOPF_MIN;
+    // Gemessen mit der echten Zeilenhoehe der Katalogliste (Kaestchenmodus 46 px, sonst 53 px).
+    const zeile = m.katalogZeile || ZEILE;
+    const soll = ((m.zweispalten !== null && m.zweispalten < 600) ? 1 : 2) * zeile;
     if (m.katalog !== null && m.katalogKopf !== null && m.katalog + 2 < m.katalogKopf + soll)
-      fehler.push(`Katalogliste ${m.katalog} px < Kopf ${m.katalogKopf} + ${soll / ZEILE} Zeile(n)`);
+      fehler.push(`Katalogliste ${m.katalog} px < Kopf ${m.katalogKopf} + ${soll / zeile} Zeile(n) a ${zeile} px`);
+    // Heizkessel (Stufe 2, Entscheid der Orchestrierung zu Konzept 4.8): in JEDEM Fenster Kopf und
+    // mindestens zwei Katalogzeilen - erreicht durch Suche in der Kopfleiste und Kontext im
+    // Dialogkopf, nicht durch eine Zeile als Untergrenze. Gemessen mit der echten Zeilenhoehe.
+    if (fall === 'heizkessel' && m.katalog !== null && m.katalogKopf !== null) {
+      const zeile = m.katalogZeile || ZEILE;
+      if (m.katalog + 2 < m.katalogKopf + 2 * zeile)
+        fehler.push(`Heizkessel: Katalogliste ${m.katalog} px < Kopf ${m.katalogKopf} + 2 Zeilen a ${zeile} px`);
+    }
     fehler.push(...m.leistenfehler);
     if (m.ueberlauf.length) fehler.push('Ueberlauf: ' + m.ueberlauf.join('; '));
   }
@@ -200,6 +212,37 @@ try {
           await taste(seite, 'Home');               // Ausgang fuer den naechsten Fall
           await t.dblclick();                        // Vorgabe und Ablage geloescht
           await ruhe(seite);
+        }
+        // Heizkessel (Stufe 2): Detailzeile auf mit Kosten, Ueberlagerung "Bearbeiten..." fuer die
+        // Projektkopie und fuer zwei angekreuzte Katalogsaetze (Blaetterleiste).
+        if (fall === 'heizkessel') {
+          await satz(seite, true);
+          if (await seite.locator('.epos-zweispalten-satz .epos-kostenleiste button').count() === 0)
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Kostenknoepfe`);
+          await mess('Detailzeile auf mit Kosten');
+          await satz(seite, false);
+          await seite.locator('.epos-knopf--bearbeiten-projekt').click();
+          await seite.waitForSelector('.epos-satzbearbeitung', { timeout: 5000 });
+          await ruhe(seite);
+          await mess('Bearbeiten Projektsatz offen');
+          await seite.keyboard.press('Escape');
+          await ruhe(seite);
+          const k = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
+          await k.nth(0).check();
+          await k.nth(1).check();
+          await ruhe(seite);
+          await seite.locator('.epos-knopf--bearbeiten-katalog').click();
+          await seite.waitForSelector('.epos-satzbearbeitung', { timeout: 5000 });
+          await ruhe(seite);
+          // Zwei ungesperrte Saetze: Blaetterleiste; ein gesperrter darunter: Hinweiszeile.
+          if (await seite.locator('.epos-satzbearbeitung-blaetter, .epos-satzbearbeitung-hinweis--uebersprungen').count() === 0)
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Mehrfach-Bearbeiten ohne Blaetterleiste und ohne Hinweis`);
+          await mess('Bearbeiten mehrfach offen');
+          await seite.keyboard.press('Escape');
+          await ruhe(seite);
+          if (await seite.locator('.epos-satzbearbeitung').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst "Bearbeiten..." nicht`);
+          await mess('nach Bearbeiten');
         }
         // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
         if (fall === 'gebaeude') {
