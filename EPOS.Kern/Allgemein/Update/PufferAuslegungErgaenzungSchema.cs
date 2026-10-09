@@ -14,7 +14,7 @@ namespace WindowsFormsApplication1
     // (2) Tab_Pufferspeicher.ID_Stamm: der Katalogsatz, aus dem die Pufferauslegung den Puffer
     //     uebernommen hat (Tab_Pufferspeicher_STAMM, ON DELETE SET NULL).
     // (3) Die Saat der Vorgaben des Aufheizkriteriums K12 (Welle P4d) in
-    //     Tab_PufferAuslegungParameter_STAMM: INSERT OR IGNORE jeder Zeile aus
+    //     Tab_PufferAuslegungParameter_STAMM: INSERT ... WHERE NOT EXISTS jeder Zeile aus
     //     PufferAuslegungVorgaben.EINTRAEGE, die noch fehlt - dieselbe Quelle wie Schritt 169.
     //
     // KEIN VERWEIS AM GEBAEUDE (Anwenderentscheid 03.10.2026): Die Pufferauslegung liest die Nutzung
@@ -118,7 +118,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Führt den Schritt in EINEM Vorgang aus: fehlende Spalten anlegen, dann die fehlenden Vorgaben
-        /// säen (INSERT OR IGNORE) — für <c>SchemaMigration</c>, <c>Werkzeuge/Testdatenbankschema</c> und
+        /// säen (INSERT … WHERE NOT EXISTS) — für <c>SchemaMigration</c>, <c>Werkzeuge/Testdatenbankschema</c> und
         /// <c>EPOS.Kern.Tests</c>. <b>Wiederholbar.</b>
         /// </summary>
         /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
@@ -152,7 +152,8 @@ namespace WindowsFormsApplication1
                         new DbParam("@w", p.Wert),
                         new DbParam("@e", (object)p.Einheit ?? DBNull.Value),
                         new DbParam("@q", p.Quelle),
-                        new DbParam("@h", p.Herkunftsart));
+                        new DbParam("@h", p.Herkunftsart),
+                        new DbParam("@s2", p.Schluessel));
                 v.Commit();
             }
             if (eingefuegt > 0)

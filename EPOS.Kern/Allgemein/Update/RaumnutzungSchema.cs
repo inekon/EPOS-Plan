@@ -388,16 +388,25 @@ namespace WindowsFormsApplication1
             "(SELECT p.\"ID\" FROM \"" + TAB_PROFIL + "\" p JOIN \"" + TAB_KATALOG + "\" k ON k.\"ID\" = p.\"ID_Katalog\" " +
             "WHERE k.\"Bezeichner\" = ? COLLATE NOCASE AND p.\"Bezeichner\" = ? COLLATE NOCASE)";
 
+        // Ohne INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand auch bei ignoriertem Einfügen hoch; die Saaten
+        // der Zeilen, der Zuordnung und der Pufferzuordnung fügen deshalb nur über NOT EXISTS auf ihren UNIQUE-Schlüssel
+        // ein — Zeile: (Profil, Größe, Zeile); Zuordnung: (Art, Schlüssel ohne Unterschied der Schreibung);
+        // Pufferzuordnung in Z_Nutzungsprofil: (Quelle, Schlüssel).
+
+        /// <summary>Die Saat einer Zeile; vierzehn Parameter: Kategorie, Profil, sechs Werte, Kategorie, Profil
+        /// (Profil besteht), Kategorie, Profil, Größe, Zeile (Zeile fehlt).</summary>
         internal const string SQL_SAAT_ZEILE =
-            "INSERT OR IGNORE INTO \"" + TAB_ZEILE + "\" (\"ID_Profil\", \"Groesse\", \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\") " +
-            "SELECT " + SQL_PROFIL_ID + ", ?, ?, ?, ?, ?, ? WHERE " + SQL_PROFIL_ID + " IS NOT NULL";
+            "INSERT INTO \"" + TAB_ZEILE + "\" (\"ID_Profil\", \"Groesse\", \"Zeile\", \"Wert\", \"Aus\", \"Von\", \"Bis\") " +
+            "SELECT " + SQL_PROFIL_ID + ", ?, ?, ?, ?, ?, ? WHERE " + SQL_PROFIL_ID + " IS NOT NULL " +
+            "AND NOT EXISTS (SELECT 1 FROM \"" + TAB_ZEILE + "\" WHERE \"ID_Profil\" = " + SQL_PROFIL_ID +
+            " AND \"Groesse\" = ? AND \"Zeile\" = ?)";
 
+        /// <summary>Die Saat einer Zuordnung; sechs Parameter: Art, Schlüssel, Kategorie, Profil, Art, Schlüssel.</summary>
         internal const string SQL_SAAT_ZUORDNUNG =
-            "INSERT OR IGNORE INTO \"" + TAB_ZUORDNUNG + "\" (\"Art\", \"Schluessel\", \"ID_Profil\", \"ReadOnly\") " +
-            "SELECT ?, ?, " + SQL_PROFIL_ID + ", 1";
+            "INSERT INTO \"" + TAB_ZUORDNUNG + "\" (\"Art\", \"Schluessel\", \"ID_Profil\", \"ReadOnly\") " +
+            "SELECT ?, ?, " + SQL_PROFIL_ID + ", 1 WHERE NOT EXISTS (SELECT 1 FROM \"" + TAB_ZUORDNUNG +
+            "\" WHERE \"Art\" = ? AND \"Schluessel\" = ? COLLATE NOCASE)";
 
-        // Ohne INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand von Z_Nutzungsprofil auch bei ignoriertem
-        // Einfügen hoch; NOT EXISTS über den UNIQUE-Schlüssel (Quelle, Schluessel) lässt ihn stehen.
         internal const string SQL_SAAT_PUFFER =
             "INSERT INTO \"" + ProzessNutzungSchema.TAB_ZUORDNUNG + "\" (\"ID_Nutzungsprofil\", \"Quelle\", \"Schluessel\") " +
             "SELECT \"ID\", ?, ? FROM \"" + ProzessNutzungSchema.TAB_PROFIL + "\" WHERE \"Kennung\" = ? " +
@@ -636,13 +645,16 @@ namespace WindowsFormsApplication1
                         new DbParam("@k", p.Kategorie), new DbParam("@p", p.Bezeichner),
                         new DbParam("@g", z.Groesse), new DbParam("@z", z.Zeile), new DbParam("@w", z.Wert),
                         new DbParam("@a", z.Aus ? 1 : 0), new DbParam("@v", z.Von), new DbParam("@bis", z.Bis),
-                        new DbParam("@k2", p.Kategorie), new DbParam("@p2", p.Bezeichner));
+                        new DbParam("@k2", p.Kategorie), new DbParam("@p2", p.Bezeichner),
+                        new DbParam("@k3", p.Kategorie), new DbParam("@p3", p.Bezeichner),
+                        new DbParam("@g2", z.Groesse), new DbParam("@z2", z.Zeile));
             }
 
             foreach (RaumnutzungSaatzuordnung z in RaumnutzungSaat.Zuordnungen)
                 zuordnungen += v.Ausfuehren(SQL_SAAT_ZUORDNUNG,
                     new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel),
-                    new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil));
+                    new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil),
+                    new DbParam("@a2", z.Art), new DbParam("@s2", z.Schluessel));
 
             foreach ((string Schluessel, PufferNutzungsprofil Profil) z in RaumnutzungSaat.Pufferzuordnungen)
                 puffer += v.Ausfuehren(SQL_SAAT_PUFFER,
