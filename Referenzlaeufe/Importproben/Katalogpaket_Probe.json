@@ -1679,7 +1679,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -1691,7 +1692,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -1703,7 +1705,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -1715,7 +1718,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -1727,7 +1731,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -1739,7 +1744,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -1751,7 +1757,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -1763,7 +1770,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -1775,7 +1783,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -1851,7 +1860,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -1863,7 +1873,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -1875,7 +1886,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -1887,7 +1899,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -1899,7 +1912,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -1911,7 +1925,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -1923,7 +1938,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -1935,7 +1951,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -1947,7 +1964,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -2047,7 +2065,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -2059,7 +2078,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -2071,7 +2091,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -2083,7 +2104,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -2095,7 +2117,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -2107,7 +2130,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -2119,7 +2143,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -2131,7 +2156,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -2143,7 +2169,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -2219,7 +2246,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -2231,7 +2259,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -2243,7 +2272,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -2255,7 +2285,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -2267,7 +2298,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -2279,7 +2311,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -2291,7 +2324,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -2303,7 +2337,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -2315,7 +2350,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -2424,7 +2460,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -2436,7 +2473,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -2448,7 +2486,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -2460,7 +2499,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -2472,7 +2512,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -2484,7 +2525,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -2496,7 +2538,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -2508,7 +2551,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -2520,7 +2564,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -2596,7 +2641,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -2608,7 +2654,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -2620,7 +2667,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -2632,7 +2680,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -2644,7 +2693,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -2656,7 +2706,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -2668,7 +2719,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -2680,7 +2732,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -2692,7 +2745,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -2792,7 +2846,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -2804,7 +2859,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -2816,7 +2872,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -2828,7 +2885,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -2840,7 +2898,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -2852,7 +2911,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -2864,7 +2924,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -2876,7 +2937,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -2888,7 +2950,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -2955,7 +3018,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -2967,7 +3031,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -2979,7 +3044,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -2991,7 +3057,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -3003,7 +3070,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -3015,7 +3083,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -3027,7 +3096,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -3039,7 +3109,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -3051,7 +3122,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -3127,7 +3199,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -3139,7 +3212,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -3151,7 +3225,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -3163,7 +3238,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -3175,7 +3251,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -3187,7 +3264,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -3199,7 +3277,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -3211,7 +3290,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -3223,7 +3303,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
@@ -3299,7 +3380,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 101,
@@ -3311,7 +3393,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 102,
@@ -3323,7 +3406,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 103,
@@ -3335,7 +3419,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 104,
@@ -3347,7 +3432,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 105,
@@ -3359,7 +3445,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 106,
@@ -3371,7 +3458,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 107,
@@ -3383,7 +3471,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     },
                     {
                       "Rang": 108,
@@ -3395,7 +3484,8 @@
                       "Wert": null,
                       "Aus": 0,
                       "Woche": null,
-                      "WieWochentag": 7
+                      "WieWochentag": 7,
+                      "Gilt_Fuer": null
                     }
                   ]
                 }
