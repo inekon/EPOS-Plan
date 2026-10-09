@@ -3200,6 +3200,25 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrKk + " - vollstaendig: " + KuehlkurveSchema.Vollstaendig() + " (erwartet True).");
             }
 
+            // ---- Schritt UebergabegrenzeSchema.SCHRITT (UB, Umsetzungskonzept Uebergabegrenze und Bivalenz, Abschnitt 4):
+            //      acht Geraetespalten an Tab_WP und Tab_WP_STAMM, Ruecklauf_Max an Tab_BHKW und Tab_BHKW_STAMM, Einbindung
+            //      und Vorwaermbetrieb an Tab_Energieanlagen, Bereiche und Zaehler an Tab_ErgebnisWaermepumpeModul und
+            //      Tab_ErgebnisWaermepumpe. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Uebergabegrenze bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; jede Anlage rechnet auf dem Bestandsweg (U-1).
+            string nrUb = UebergabegrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrUb + " - Uebergabegrenze (Geraete, Anlage, Ergebnis): " +
+                              (UebergabegrenzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtUb = new List<string>();
+                angelegt += UebergabegrenzeSchema.Ausfuehren(berichtUb);
+                foreach (string zeile in berichtUb)
+                    Console.WriteLine("Schritt " + nrUb + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrUb + " - vollstaendig: " + UebergabegrenzeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

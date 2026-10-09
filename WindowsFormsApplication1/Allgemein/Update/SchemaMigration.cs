@@ -5306,6 +5306,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KUEHLKURVE = KuehlkurveSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="UebergabegrenzeSchema.SCHRITT"/> — <b>Übergabegrenze und Bivalenz</b> (Umsetzungskonzept
+        /// Übergabegrenze und Bivalenz, Abschnitt 4): acht Gerätespalten an <c>Tab_WP</c> und <c>Tab_WP_STAMM</c>, die
+        /// Rücklaufgrenze an <c>Tab_BHKW</c> und <c>Tab_BHKW_STAMM</c>, Einbindung und Vorwärmbetrieb an
+        /// <c>Tab_Energieanlagen</c>, Betriebsbereiche und Zähler an <c>Tab_ErgebnisWaermepumpeModul</c> und
+        /// <c>Tab_ErgebnisWaermepumpe</c>.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Alle Spalten entstehen leer (Bestandsweg, „nicht erhoben").</para>
+        /// </summary>
+        public const int SCHRITT_UEBERGABEGRENZE = UebergabegrenzeSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7733,6 +7744,14 @@ namespace WindowsFormsApplication1
                         "Die Kuehlkurve eines Gebaeudes und ihre Kennzahlen liessen sich nicht speichern. " +
                         "KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
                         Schritt_Kuehlkurve),
+            // UB: Grenzen der Uebergabe, Einbindung, Bereiche. Quelle ist UebergabegrenzeSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_UEBERGABEGRENZE,
+                        "Tab_WP, Tab_WP_STAMM: Spreizung_*, Mindestvolumenstrom_Prozent, Ruecklauf_*, Kaeltemittel; " +
+                        "Tab_BHKW, Tab_BHKW_STAMM: Ruecklauf_Max; Tab_Energieanlagen: Einbindung, Vorwaermbetrieb; " +
+                        "Tab_ErgebnisWaermepumpeModul, Tab_ErgebnisWaermepumpe: Bereich_*, Zaehler, Bivalenzpunkte",
+                        "Die Grenzen der Uebergabe, Einbindung und Vorwaermbetrieb und die Betriebsbereiche liessen sich nicht " +
+                        "speichern. KEIN Rechenergebnis aendert sich - die Spalten entstehen leer.",
+                        Schritt_Uebergabegrenze),
         };
 
         /// <summary>
@@ -14685,6 +14704,60 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Kuehlkurve - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Übergabegrenze" — Anlass und Wirkung stehen bei <see cref="SCHRITT_UEBERGABEGRENZE"/>, die Anweisungen bei
+        /// <see cref="UebergabegrenzeSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Uebergabegrenze(Lauf l)
+        {
+            string nr = UebergabegrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in UebergabegrenzeSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = UebergabegrenzeSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!UebergabegrenzeSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Spalten der Uebergabegrenze stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Uebergabegrenze - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;

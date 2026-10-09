@@ -370,6 +370,10 @@ namespace WindowsFormsApplication1
             // Vorlauf, „nicht erhoben").
             new Stufe(KuehlkurveSchema.SCHRITT, Art.Ddl,
                       "Kühlkurve am Gebäude (Schalter, Fußpunkt, Raumeinfluss, Auslegungsweg), Kennzahlen im Ergebnis"),
+            // Ein älteres Paket führt keine Übergabegrenzen, keine Einbindung und keine Betriebsbereiche; die Spalten kommen
+            // leer an (Bestandsweg, „nicht erhoben").
+            new Stufe(UebergabegrenzeSchema.SCHRITT, Art.Ddl,
+                      "Übergabegrenze und Bivalenz: Grenzen an Wärmepumpe und BHKW, Einbindung, Bereiche im Ergebnis"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
