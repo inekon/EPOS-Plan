@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// <b>Das Jahresraster einer Größe</b> (Konzept 7.8): je Tag 1 … 365 des Bezugsjahrs die wirksame Quelle nach
-        /// der Rangregel (<see cref="Konditionierungskalender.Quellperiode"/>) im Kalender, der am Ort angezeigt wird
+        /// der Rangregel (die ranghöchste Periode, die den Tag enthält) im Kalender, der am Ort angezeigt wird
         /// (<see cref="Konditionierungsarbeitsstand.Ansichtskalender"/>). Ohne Kalender: 365 Tage der Grundwoche.
         /// </summary>
         public static IReadOnlyList<Rastertag> Jahresraster(Konditionierungsarbeitsstand stand, Konditionierungsort ort)
@@ -54,7 +54,7 @@ namespace WindowsFormsApplication1
             {
                 Feiertage.Datum(d + 1, out int monat, out int tagImMonat);
                 int w = (stand.W0 + d) % 7;
-                Kalenderregel r = k?.Quellperiode(d, stand.Referenzjahr);
+                Kalenderregel r = Quelle(k, d, stand.Referenzjahr);
                 Rastertagart art = Art(r, w);
                 Zuordnungsschluessel s = r != null && !Konditionierungsarbeit.IstMatrixbereich(r) ? Zuordnungsschluessel.Von(r) : null;
                 tage[d] = new Rastertag(d + 1, monat, tagImMonat, w, art, r?.Bezeichner, r?.Rang, s);
@@ -87,6 +87,22 @@ namespace WindowsFormsApplication1
         {
             if (tag < Kalenderregel.TAG_MIN || tag > Kalenderregel.TAG_MAX) return null;
             return Jahresraster(stand, ort)[tag - 1].Schluessel;
+        }
+
+        /// <summary>
+        /// Die ranghöchste Periode, die den Tag enthält — wie <see cref="Konditionierungskalender.Quellperiode"/>, aber
+        /// auch dann, wenn „wie Wochentag X" ohne Standardwoche nicht greift: Der Tag rechnet dann mit der
+        /// Grundangabe, die Anzeige nennt aber die Zeile, die der Anwender gesetzt hat.
+        /// </summary>
+        private static Kalenderregel Quelle(Konditionierungskalender k, int tag0, int referenzjahr)
+        {
+            if (k == null) return null;
+            foreach (Kalenderregel r in k.Perioden)
+            {
+                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, referenzjahr) - 1 : -1;
+                if (r.Enthaelt(tag0, f0)) return r;
+            }
+            return null;
         }
 
         private static Rastertagart Art(Kalenderregel r, int wochentag)
