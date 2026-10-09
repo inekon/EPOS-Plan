@@ -44292,6 +44292,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0}, Modellansicht (MVD): {1} ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_DATEI_MVD {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_DATEI_MVD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0}, keine Modellansicht (MVD) angegeben ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_DATEI_OHNE_MVD {
