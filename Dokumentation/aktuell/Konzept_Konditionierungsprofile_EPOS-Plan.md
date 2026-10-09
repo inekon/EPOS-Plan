@@ -1323,13 +1323,13 @@ schreibt die eigenen Kalender ohne die Kopien, den gemeinsamen Kalender als eine
 | Wochenprofil | Standardwoche des Größenkalenders oder eine benannte Woche (`Tab_Konditionierungswoche`: Name je Größe eindeutig, 168 Werte); „Woche kopieren" in ein Profil derselben Größe oder einer Größe gleicher Einheit (Heizen ↔ Kühlen, Geräte ↔ Personen, Lüftung nur zu sich) mit der Grenzprüfung der Zielgröße; „Tag kopieren" auch in ein anderes Profil; eine Woche, auf die eine Zeile verweist, lässt sich nicht löschen (benannte Ablehnung) |
 | Zuordnungszeile | EINE Periode des gemeinsamen Kalenders (`Groesse = ALLE`) mit `Gilt_Fuer` (31 = alle, Auswahl = Teilmaske); ein Wochenprofil als Verweis `ID_Woche`; Ändern und Löschen wirken auf die eine Zeile, eine abgewählte Größe verlässt die Maske; eine Größe ohne angelegten Kalender steht in der Maske und wirkt, sobald ihr Kalender angelegt ist |
 | Lesebrücke | gekoppelte Kopien je Größe bleiben für Altbestand, den die Migration nicht zusammengeführt hat (Rang belegt), und für die Wirkung „Standardwoche" über mehrere Größen (je Größe eine andere Woche); sie werden wie in Stufe 1 bedient |
-| Wochenende | Spalte `Wochenendtage` am Gebäude (Wochenmaske, leer = Sa + So); das Schnellfeld erneuert den Matrixbereich der angelegten Kalender |
+| Wochenende | Spalte `Wochenendtage` am Gebäude (Wochenmaske, leer = Sa + So); das Schnellfeld erneuert den Matrixbereich der angelegten Kalender. Es lesen der Generator und der Zapfkalender (ein Tag der Maske oder ein Feiertag an einem Werktag ist gekennzeichnet; ein Samstag der Maske trägt den Samstags-, jeder andere Wochenendtag den Sonntagsgang); **der Tagesbilanz-Weg bleibt bei Samstag und Sonntag (E111)** |
 | Feiertagsland | Spalte `Feiertagsland` am Gebäude; das Schnellfeld legt die Regelperioden seiner Landesregeln im gemeinsamen Kalender des Gebäudes an (Maske 31, „wie Sonntag", Rang 109 + Stelle der Regel, also 109 … 116) und entfernt beim Wechsel oder Leeren nur diese (erkannt an Regel und Rang, nie am Text); die neun bundeseinheitlichen Regeln bleiben |
-| Ferien | beliebig viele benannte Zeiträume: die ersten vier in `Ferienbeginn/-ende_1…4` (der Trigger spiegelt sie auf Rang 200 … 203), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204 ohne Angabe; solange die Leser des Laufs die vier Spalten lesen, wirken die weiteren wie in Stufe 1 als Zeilen „Ferien n" im Eigenband |
+| Ferien | beliebig viele benannte Zeiträume: die ersten vier in `Ferienbeginn/-ende_1…4` (der Trigger spiegelt sie auf Rang 200 … 203), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204 ohne Angabe. Der Generator liest die ganze Liste und macht aus jedem Zeitraum eine Periode `FERIEN` auf dessen Rang (200 … 309) mit der Ferienangabe der Größe; der Zapfkalender liest bei angelegtem Heizkalender alle Ferienperioden des gemeinsamen Kalenders, sonst die vier Spalten; **der Tagesbilanz-Weg liest nur die vier Spalten (E111)**. Zeilen „Ferien n" der Stufe 1 im Eigenband werden beim OK-Weg und in der Bestandsform die Periode `FERIEN` ihres Rangs (gleicher Zeitraum, gleiche Angabe) |
 
 **Rangregel** (unverändert, 3.2): Der höhere Rang gewinnt — Feiertagsregeln 100 … 108 und Landesregeln 109 … 116 <
-Ferien 200 … 203 und Ferienliste 204 … 309 < eigene Zeilen 310 … 899 < Saison 900. Eine neue Zeile kommt über die ranghöchste eigene, Ferien ab 5 an den untersten
-freien Platz des Eigenbands; damit schlägt die zuletzt angelegte Zeile die ältere, und eine Zeile, die die Schicht in
+Ferien 200 … 203 und Ferienliste 204 … 309 < eigene Zeilen 310 … 899 < Saison 900. Eine neue Zeile kommt über die ranghöchste eigene, Ferien ab 5 auf den
+Rang ihrer Ferienperiode (204 … 309); damit schlägt die zuletzt angelegte Zeile die ältere, und eine Zeile, die die Schicht in
 mehreren Größen anlegt, steht in jeder Größe über denselben Zeilen. Ein Einzeltag „wie Sonntag" liegt im Eigenband
 über den Ferien — anders als die Feiertagsregel.
 
@@ -1352,7 +1352,7 @@ Ferienspalten werden dann aus den ersten vier Ferienperioden gespiegelt, solange
 | **KP4** | Papiere nachziehen (Rechenschritte mit den Schritten K „Aufheizrampe" und L „Nachtauskühlung", Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf — **Papiere, Wiki-Quellen (10.4) und Logbuch-Entwurf (10.5) nachgezogen 04.10.2026**; Wiki-Upload gebündelt, Version beim Anwender | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
 | **K1a** | Kalenderbedienung Stufe 1 (E110, 7.8): Konzept 7.8 und 9.10, plattformfreie Datenschicht `Kalenderbedienung` im Kern (Wochenprofile, gekoppelte Zuordnung, Einzeltage, Schnellfelder, Monat- und Tageskopie, Jahresraster und Jahresband, Vorlage für alle Größen) | KP2 | Kern-Tests der Schicht; Referenzlauf 1051 und 1052 byte-gleich | nein | 1–2 |
 | **K1b** | Kalenderbedienung Stufe 1, Oberfläche: Wochenprofile, Zuordnung mit Jahresband, Einzeltage, Schnellfelder, Jahresraster im Reiter „Konditionierung", Hülle und Texte | K1a | bunit, Sichtabnahme; byte-gleich | nein | 2–3 |
-| **K2** | Kalenderbedienung Stufe 2: Schemaschritt 207 `KalenderbedienungSchema` (gemeinsamer Eigentümer, benannte Wochen, Wochenende am Gebäude, Länderfeiertage als Regeln, Ferienperioden), Kopierwege, Umstellung der Schicht | K1b | Schemaproben, Kopierwege; Referenzlauf byte-gleich | nein | 3–5 |
+| **K2** | Kalenderbedienung Stufe 2: Schemaschritt 207 `KalenderbedienungSchema` (gemeinsamer Eigentümer, benannte Wochen, Wochenende am Gebäude, Länderfeiertage als Regeln, Ferienperioden), Kopierwege, Umstellung der Schicht; S2b: die Leser (Generator mit der Ferienliste ab Rang 204, Zapfkalender mit Wochenende und Ferienliste, wiederholbare Bestandsform) | K1b | Schemaproben, Kopierwege; Referenzlauf byte-gleich | nein | 3–5 |
 | **Summe** | | | | | **35–49** (mit den Entwürfen KP2 und KP3: 50,75–65,75) |
 | KP3b *(optional)* | AK1-Gebäude über die Vorausrechnung mit Ankunftskriterium; Vorkühlen mit KU3 | KP3; KU3 für die Kälte | wie KP3 | je nach Projekt | 3–5 |
 
@@ -1520,7 +1520,7 @@ und den Schemaweg entschieden (letzte vier Zeilen).
 | P15 Woher kommt die Vorschlagsspanne der manuellen Aufheizzeit? (03.10.2026) | **(b)**: aus τ₂ des Gebäudes (langsame Zeitkonstante des Zweikapazitätenmodells), keine feste Bauart-Tabelle; dazu die bemessene Zeit aus der Herleitungszeile | 7.6; Festlegung 40 mit der Regel [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] |
 | Schemaweg des Schritts KP-S4 (03.10.2026) | Neue Ergebnisspalte `Aufheiz_Art` an Gebäude und Zone per `ADD COLUMN`, `Aufheiz_Bemessung` behält die Variante, kein Neubau von `Tab_ErgebnisGebaeude`; `GEKOPPELT` an der Zone als kleiner Neubau von `Tab_ErgebnisZone` im selben Schritt; Export `Geb[n].Aufheizart`, Abweichungsmerkmal „Art" | 4.8, 5.3, 5.4; Festlegungen 39, 43 |
 
-### 9.10 Entscheide des Anwenders (E110, 09.10.2026)
+### 9.10 Entscheide des Anwenders (E110, E111, 09.10.2026)
 
 Der Anwender hat am 09.10.2026 das Mockup [`Mockups/Konditionierung_Kalender.html`](Mockups/Konditionierung_Kalender.html) angenommen und damit die
 Empfehlungen des [Befundpapiers](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md) (Abschnitt 4)
@@ -1533,6 +1533,7 @@ entschieden. Ausgestaltung in 7.8, Stufen in 8.
 | Bleibt die Vorgabe-Matrix? | **als Übersicht**; ihre Zeilen Wochenende und Ferien werden über die Schnellfelder bedient | 7.2, 7.8 |
 | Wie viele Ferienzeiträume? | **beliebig viele, als Perioden** | 7.8; die ersten vier spiegeln die Gebäudespalten |
 | Feiertage je Bundesland? | **alle 16 Länder als Regeln, Wahl am Gebäude** | Stufe 2 (Schemaschritt 207); in Stufe 1 bundeseinheitlich plus feste Datumsbereiche |
+| Liest der Tagesbilanz-Weg das Wochenende des Gebäudes und die Ferienliste? (E111) | **nein** — er bleibt bei Samstag und Sonntag und den vier Ferienspalten `Ferienbeginn/-ende_1…4` | 7.8; der Tagesbilanz-Weg ist eingefroren (`Altweg/`), die Einschränkung ist benannt; Generator und Zapfkalender lesen Wochenende und Ferienliste |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
