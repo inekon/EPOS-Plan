@@ -106,16 +106,33 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstim
      Bauteilkörpern wie bei IFC, mit allen Farbmodi und dem Bauteil-Steckbrief.“
    - „Passen beim Import von IFC und Projektdatei die Aufbauten beider Dateien nicht zusammen,
      fragt EPOS-Plan, welche gelten sollen.“
+
+   **Stand 09.10.2026:** Version 1.2.0.6 bestätigt; die sechs Sätze stehen im
+   [Logbuchpapier](../Wiki_Update_2026-09-26.md) (Abschnitt 2, Version 1.2.0.6), dazu ein Entwurf
+   zum gemeinsamen Import von IFC- und Projektdatei, dessen Version der Anwender beim Upload
+   bestätigt.
 2. **Wiki-Upload** der Seite „Programm Dokumentation – Gebäudeimport“ (Repo-Quelle fortgeschrieben,
    gebündelt mit dem Logbuch); der WordPress-Connector des alten Kontos verband sich nicht.
+
+   **Stand 09.10.2026:** Upload vom Anwender zurückgestellt; vor dem Upload ist der Bedienbegriff
+   „Befund“ zu klären ([Logbuchpapier](../Wiki_Update_2026-09-26.md), Abschnitt 3).
 3. **Sichtabnahme unter Windows** nach den „Nach“-Blöcken von #813 bis #816, #821 bis #825 —
    besonders die Rückfrage „Welche Aufbauten gelten?“ (Länge, drei Knöpfe, Tabellen bei schmalem
    Fenster), die Quellenwahl im Importdialog und ob sich bei „IFC + Projektdatei“ der zweite
    Dateidialog von selbst öffnen soll.
+
+   **Stand 09.10.2026:** Über den zweiten Dateidialog bei „IFC + Projektdatei“ entscheidet der
+   Anwender bei der Sichtabnahme. Aus dem Übergabepapier HottCAD-Verbund (Abschnitt 5, #736/#737)
+   ist die offene Sichtabnahme in diese Liste übernommen: das Wahlfeld „DIN-V-18599-Zonen |
+   Simulationszonen“, die Herkunft je Zone und die Filtertexte der Flächenliste.
 4. **Anwenderdatei Sportheim** (optional, im CAD): Kellerwänden am Erdreich ihren
    Bestandsaufbau zuweisen, gezeichnete Dicken auf den Bestand setzen, Baujahr auf 1970; danach
    IFC **und** Projektdatei neu exportieren. Die Projektdatei muss der neuen Sitzung direkt
    übergeben werden (nicht versioniert).
+
+   **Stand 09.10.2026:** Die Projektdatei kommt per Link aus Google Drive (Anwenderentscheid
+   09.10.2026); in der Cloud-Umgebung muss der Host `drive.usercontent.google.com` freigegeben
+   sein. Die Datei liegt danach unversioniert unter `Quellen/`.
 
 **Technisch, ohne Entscheid** (Verfeinerungen, keine Fehler):
 
@@ -124,9 +141,12 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstim
   Bauteilkörper mit angenommener Bezugsebene.
 - `KERBE_NICHT_EINFACH` (Öffnungen, die sich nur in einem Punkt berühren): an keiner Datei
   aufgetreten, bleibt als benannte Meldung.
-- Aufräumen: Das Übergabepapier [HottCAD-Verbund](2026-10-05_Uebergabe_HottCAD_Verbund.md) ist
-  erledigt (HC-1 #740, HC-2 #746, HC-4 #754) und kann nach `Dokumentation/ueberholt/` (relative
-  Verweise beim Verschieben nachziehen, Indexzeile entfernen).
+- iOS-Grenze 100 MB messen wie G4-8 (Größengrenze der Projektdatei auf iOS, #736; aus dem Übergabepapier
+  HottCAD-Verbund übernommen).
+- Aufräumen: Das Übergabepapier
+  [HottCAD-Verbund](../../ueberholt/2026-10-05_Uebergabe_HottCAD_Verbund.md) ist erledigt (HC-1 #740,
+  HC-2 #746, HC-4 #754) und mit diesem Auftrag (Stand 09.10.2026) nach `Dokumentation/ueberholt/`
+  verschoben; Verweise und Indexzeile sind nachgezogen.
 
 ## 5. Einstiegs-Prompt für die neue Sitzung
 
