@@ -273,6 +273,30 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden über der obersten Kennlinienstützstelle [h/a] (VW1b, E88); null ohne Kennlinienwahl.</summary>
         public const string SCHLUESSEL_WP_VORLAUF_DARUEBER = "wp.vorlauf.darueber_stunden";
 
+        /// <summary>
+        /// UB‑E4 (Fachkonzept Übergabegrenze 7.1): die Kennzahlen der Betriebsbereiche der Wärmepumpe —
+        /// <c>wp.bivalenz.&lt;bereich&gt;_stunden</c>/<c>_mwh</c> je Bereich, die berechneten Bivalenzpunkte, die
+        /// Übergabegrenze und die Zähler der Spreizungs- und Rücklaufgrenze; null ohne Bereichsdaten.
+        /// </summary>
+        public const string PRAEFIX_WP_BIVALENZ = "wp.bivalenz.";
+
+        /// <summary>Die Bereichsnamen der Schlüssel <c>wp.bivalenz.*</c>, Reihenfolge wie <see cref="Bereichskennzahlen.Stunden"/>.</summary>
+        public static readonly IReadOnlyList<string> BIVALENZ_BEREICHE = new[] { "wp_allein", "parallel", "vorwaermung", "nur_kessel" };
+
+        /// <summary>Die Schlüssel <c>wp.bivalenz.*</c> in Katalogfolge.</summary>
+        public static IReadOnlyList<string> BivalenzSchluessel => Alle()
+            .Where(k => k.Schluessel.StartsWith(PRAEFIX_WP_BIVALENZ, StringComparison.Ordinal)).Select(k => k.Schluessel).ToList();
+
+        /// <summary>Die Betriebsbereiche des Laufs (Summe); null ohne Bereichsdaten.</summary>
+        private static Bereichskennzahlen Bereiche(VariantenDaten v) { return WP(v)?.Bereiche; }
+
+        /// <summary>Das erste Modul mit Bivalenzpunkten oder Übergabegrenze; null ohne.</summary>
+        private static Bereichskennzahlen Bereichsmodul(VariantenDaten v)
+        {
+            return WP(v)?.Module?.Select(m => m?.Bereiche).FirstOrDefault(b => b != null &&
+                (b.Bivalenzpunkt_1.HasValue || b.Bivalenzpunkt_2.HasValue || b.Uebergabe_Max_kW.HasValue));
+        }
+
         /// <summary>Taktstunden unter der Mindestteillast [h/a] (Summe über die Maschinen).</summary>
         public const string SCHLUESSEL_KM_TAKT = "kaelte.km.takt";
 
@@ -562,6 +586,34 @@ namespace WindowsFormsApplication1
             l.Add(new Kennzahl(SCHLUESSEL_WP_VORLAUF_DARUEBER, "Stunden über der obersten Kennlinienstützstelle",
                 "Hours above the highest characteristic curve point", "h/a", GR_EFFIZIENZ, "N0", true,
                 v => VorlaufStunden(v, m => m.Vorlauf_Darueber_Stunden)));
+            // UB-E4 (FK 7.1): die Betriebsbereiche der Waermepumpe - nur mit Bereichsdaten, sonst null (Katalog v17).
+            {
+                string[] deB = { "Wärmepumpe allein", "Wärmepumpe mit Kessel parallel", "Vorwärmung", "nur Kessel" };
+                string[] enB = { "Heat pump alone", "Heat pump parallel with boiler", "Preheating", "Boiler only" };
+                Kennzahl B(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_BIVALENZ; return k; }
+                for (int i = 0; i < 4; i++)
+                {
+                    int j = i;
+                    l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + BIVALENZ_BEREICHE[j] + "_stunden", "Betriebsbereich " + deB[j] + ", Stunden",
+                        "Operating range " + enB[j] + ", hours", "h/a", GR_EFFIZIENZ, "N0", true,
+                        v => Bereiche(v)?.Stunden[j] is int h ? h : (double?)null)));
+                    l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + BIVALENZ_BEREICHE[j] + "_mwh", "Betriebsbereich " + deB[j] + ", Wärme",
+                        "Operating range " + enB[j] + ", heat", "MWh/a", GR_EFFIZIENZ, "N2", true,
+                        v => Bereiche(v)?.Mwh[j])));
+                }
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_1", "Bivalenzpunkt θ_biv,1 (berechnet)",
+                    "Bivalence point θ_biv,1 (calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_1)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_2", "Bivalenzpunkt θ_biv,2 (berechnet)",
+                    "Bivalence point θ_biv,2 (calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_2)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "uebergabe_max", "Übergabegrenze bei Auslegung",
+                    "Heat emission limit at design", "kW", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Uebergabe_Max_kW)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "spreizung_unterschritten", "Stunden unter der Mindestspreizung",
+                    "Hours below the minimum temperature spread", "h/a", GR_EFFIZIENZ, "N0", true,
+                    v => Bereiche(v)?.Spreizung_Unterschritten_h is int h ? h : (double?)null)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "ruecklauf_ueberschritten", "Stunden über der Rücklaufgrenze",
+                    "Hours above the return temperature limit", "h/a", GR_EFFIZIENZ, "N0", true,
+                    v => Bereiche(v)?.Ruecklauf_Ueberschritten_h is int h ? h : (double?)null)));
+            }
             // ETAPPE E2 — die Zeile hieß bis dahin „Betriebsstunden BHKW" und zeigte
             // Betriebsstunden_Gesamt. Der WERT ist unverändert, die BESCHRIFTUNG sagt jetzt,
             // was er ist: die Summe THERMISCHER Vollbenutzungsstunden über alle Module. Sie
