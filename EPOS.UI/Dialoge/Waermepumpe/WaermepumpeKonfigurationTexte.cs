@@ -159,7 +159,7 @@ public sealed class WaermepumpeKonfigurationTexte
     public string KnopfSchnellwahlR1234ze { get; set; } = T("WPA_BTN_SCHNELLWAHL_R1234ZE", "R1234ze(E) · {0} °C");
 
     /// <summary>WPA_HRL_SCHNELLWAHL</summary>
-    public string ZeileSchnellwahl { get; set; } = T("WPA_HRL_SCHNELLWAHL", "Die Schnellwahl füllt nur ein leeres Feld „Höchster Vorlauf“; Herstellerangaben zur Einsatzgrenze haben Vorrang.");
+    public string ZeileSchnellwahl { get; set; } = T("WPA_HRL_SCHNELLWAHL", "Die Schnellwahl speichert das Kältemittel und füllt nur leere Felder; Herstellerangaben zur Einsatzgrenze haben Vorrang.");
 
     /// <summary>WPA_HRL_SCHNELLWAHL_GEFUELLT — {0} = gepflegter Wert.</summary>
     public string ZeileSchnellwahlGefuellt { get; set; } = T("WPA_HRL_SCHNELLWAHL_GEFUELLT", "Der höchste Vorlauf ist gepflegt ({0} °C) — die Schnellwahl lässt ihn stehen.");
@@ -193,6 +193,107 @@ public sealed class WaermepumpeKonfigurationTexte
 
     /// <summary>WPA_HERLEITUNG_BEFUND — {0} = Grund des Eingangsbauers.</summary>
     public string HerleitungBefund { get; set; } = T("WPA_HERLEITUNG_BEFUND", "Die Übergabegrenze ist nicht herleitbar: {0}");
+
+    // --- Gruppe „Bivalenz und Übergabe" (Übergabegrenze UB‑E2, Umsetzungskonzept 6.2/6.5) -----------------
+
+    /// <summary>WPA_GRP_BIVALENZ_UEBERGABE — Titel der Gruppe</summary>
+    public string GruppeBivalenzUebergabe { get; set; } = T("WPA_GRP_BIVALENZ_UEBERGABE", "Bivalenz und Übergabe");
+
+    /// <summary>WPA_LBL_EINBINDUNG</summary>
+    public string LabelEinbindung { get; set; } = T("WPA_LBL_EINBINDUNG", "Einbindung");
+
+    /// <summary>WPA_OPT_EINBINDUNG_DIREKT</summary>
+    public string EinbindungDirekt { get; set; } = T("WPA_OPT_EINBINDUNG_DIREKT", "direkt (ohne Puffer)");
+
+    /// <summary>WPA_OPT_EINBINDUNG_PUFFER</summary>
+    public string EinbindungPuffer { get; set; } = T("WPA_OPT_EINBINDUNG_PUFFER", "Puffer");
+
+    /// <summary>WPA_OPT_EINBINDUNG_WEICHE</summary>
+    public string EinbindungWeiche { get; set; } = T("WPA_OPT_EINBINDUNG_WEICHE", "Weiche");
+
+    /// <summary>WPA_OPT_EINBINDUNG_LEER</summary>
+    public string EinbindungLeer { get; set; } = T("WPA_OPT_EINBINDUNG_LEER", "nicht gewählt");
+
+    /// <summary>WPA_HINWEIS_EINBINDUNG_PUFFER</summary>
+    public string HinweisEinbindungPuffer { get; set; } = T("WPA_HINWEIS_EINBINDUNG_PUFFER", "Puffer: Die Übergabe rechnet mit der Entladeseite als Näherung.");
+
+    /// <summary>WPA_CHK_VORWAERMBETRIEB</summary>
+    public string LabelVorwaermbetrieb { get; set; } = T("WPA_CHK_VORWAERMBETRIEB", "Vorwärmbetrieb (Kessel in Reihe)");
+
+    /// <summary>WPA_HINWEIS_VORWAERMBETRIEB</summary>
+    public string HinweisVorwaermbetrieb { get; set; } = T("WPA_HINWEIS_VORWAERMBETRIEB", "Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf.");
+
+    /// <summary>WPA_HINWEIS_VORWAERMBETRIEB_ALTERNATIV</summary>
+    public string HinweisVorwaermbetriebAlternativ { get; set; } = T("WPA_HINWEIS_VORWAERMBETRIEB_ALTERNATIV", "Vorwärmbetrieb ist bei alternativ nicht wählbar.");
+
+    /// <summary>WPA_LBL_HOECHSTVORLAUF_LESEN</summary>
+    public string LabelHoechstvorlaufLesen { get; set; } = T("WPA_LBL_HOECHSTVORLAUF_LESEN", "Höchster Vorlauf");
+
+    /// <summary>WPA_LBL_SPREIZUNG_AUSLEGUNG</summary>
+    public string LabelSpreizungAuslegung { get; set; } = T("WPA_LBL_SPREIZUNG_AUSLEGUNG", "Spreizung Auslegung");
+
+    /// <summary>WPA_LBL_SPREIZUNG_MAX</summary>
+    public string LabelSpreizungMax { get; set; } = T("WPA_LBL_SPREIZUNG_MAX", "max.");
+
+    /// <summary>WPA_LBL_SPREIZUNG_MIN</summary>
+    public string LabelSpreizungMin { get; set; } = T("WPA_LBL_SPREIZUNG_MIN", "min.");
+
+    /// <summary>WPA_LBL_MINDESTVOLUMENSTROM</summary>
+    public string LabelMindestvolumenstrom { get; set; } = T("WPA_LBL_MINDESTVOLUMENSTROM", "Mindestvolumenstrom");
+
+    /// <summary>WPA_LBL_RUECKLAUF_MAX</summary>
+    public string LabelRuecklaufMax { get; set; } = T("WPA_LBL_RUECKLAUF_MAX", "Höchster Rücklauf");
+
+    /// <summary>WPA_LBL_RUECKLAUF_R744</summary>
+    public string LabelRuecklaufR744 { get; set; } = T("WPA_LBL_RUECKLAUF_R744", "Rücklauf R744: Bezug / Abwertung / Grenze");
+
+    /// <summary>WPA_HERKUNFT_KATALOG</summary>
+    public string HerkunftKatalog { get; set; } = T("WPA_HERKUNFT_KATALOG", "Katalog");
+
+    /// <summary>WPA_HERKUNFT_VORGABE_KAELTEMITTEL</summary>
+    public string HerkunftVorgabeKaeltemittel { get; set; } = T("WPA_HERKUNFT_VORGABE_KAELTEMITTEL", "Vorgabe nach Kältemittel");
+
+    /// <summary>WPA_HERKUNFT_VORGABE</summary>
+    public string HerkunftVorgabe { get; set; } = T("WPA_HERKUNFT_VORGABE", "Vorgabe");
+
+    /// <summary>WPA_HERKUNFT_ABGELEITET</summary>
+    public string HerkunftAbgeleitet { get; set; } = T("WPA_HERKUNFT_ABGELEITET", "abgeleitet");
+
+    /// <summary>WPA_HERKUNFT_NUR_R744</summary>
+    public string HerkunftNurR744 { get; set; } = T("WPA_HERKUNFT_NUR_R744", "nur R744");
+
+    /// <summary>WPA_HERLEITUNG_RUECKLAUF_ABGELEITET — {0} Grenze, {1} Höchstvorlauf, {2} Mindestspreizung</summary>
+    public string HerleitungRuecklaufAbgeleitet { get; set; } = T("WPA_HERLEITUNG_RUECKLAUF_ABGELEITET", "abgeleitet: {0} °C = {1} − {2} (Höchstvorlauf − Mindestspreizung) · ein kleinerer Katalogwert gilt vor · darüber liefert die Wärmepumpe in der Stunde nichts");
+
+    /// <summary>WPA_HERLEITUNG_R744 — {0} Bezug, {1} Abwertung, {2} Grenze</summary>
+    public string HerleitungR744 { get; set; } = T("WPA_HERLEITUNG_R744", "bei R744: Bezugsrücklauf {0} °C · Abwertung {1} %/K · Grenze {2} °C — Leistung und COP sinken je K über {0} °C um {1} %");
+
+    /// <summary>WPA_HINWEIS_GERAETEGRENZEN</summary>
+    public string HinweisGeraetegrenzen { get; set; } = T("WPA_HINWEIS_GERAETEGRENZEN", "Gerätegrenzen werden im Katalog gepflegt; leere Felder rechnen mit der Vorgabe.");
+
+    /// <summary>WPA_HERLEITUNG_ABSCHALTPUNKT — {0}–{2} Punkte mit Einheit</summary>
+    public string HerleitungAbschaltpunkt { get; set; } = T("WPA_HERLEITUNG_ABSCHALTPUNKT", "eingegeben {0} · aus der Übergabe berechnet {1} · maßgebend {2}");
+
+    /// <summary>WPA_WARN_SPREIZUNG</summary>
+    public string WarnSpreizung { get; set; } = T("WPA_WARN_SPREIZUNG", "Die Mindestspreizung ({0} K) ist nicht kleiner als die Höchstspreizung ({1} K) — die Wärmepumpe findet keinen Betriebspunkt.");
+
+    /// <summary>WPA_WARN_HOECHSTVORLAUF</summary>
+    public string WarnHoechstvorlauf { get; set; } = T("WPA_WARN_HOECHSTVORLAUF", "Der höchste Vorlauf ({0} °C) liegt unter dem Auslegungsvorlauf der Flächenheizung ({1} °C).");
+
+    /// <summary>WPA_WARN_RUECKLAUF_NIE</summary>
+    public string WarnRuecklaufNie { get; set; } = T("WPA_WARN_RUECKLAUF_NIE", "Die Rücklaufgrenze ({0} °C) liegt unter dem Auslegungsrücklauf aller Zonen ({1} °C). Die Wärmepumpe liefert bei diesem Rücklauf nie.");
+
+    /// <summary>WPA_WARN_VORWAERM_OHNE_KESSEL</summary>
+    public string WarnVorwaermOhneKessel { get; set; } = T("WPA_WARN_VORWAERM_OHNE_KESSEL", "Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade — niemand hebt auf den Sollvorlauf.");
+
+    /// <summary>WPA_WARN_KASKADE</summary>
+    public string WarnKaskade { get; set; } = T("WPA_WARN_KASKADE", "Die Wärmepumpe steht in der Kaskade hinter dem Kessel (Platz {0} nach Platz {1}) — im Vorwärmbetrieb gehört sie davor.");
+
+    /// <summary>WPA_WARN_GMODG</summary>
+    public string WarnGmodg { get; set; } = T("WPA_WARN_GMODG", "Die Wärmepumpe erreicht bei −7 °C {0} % der Kesselleistung; § 43 GModG verlangt mindestens {1} %.");
+
+    /// <summary>WPA_WARN_UEBERGABE_BEGRENZT</summary>
+    public string WarnUebergabeBegrenzt { get; set; } = T("WPA_WARN_UEBERGABE_BEGRENZT", "Die Heizflächen begrenzen die Wärmepumpe stärker als ihr Kennfeld: Unter {0} reicht der Höchstvorlauf nicht mehr für die Heizlast.");
 
     /// <summary>
     /// WPA_OPT_KAELTEMITTEL_&lt;Code&gt; — die Anzeige eines Kältemittelcodes; der Schlüssel trägt den Code in

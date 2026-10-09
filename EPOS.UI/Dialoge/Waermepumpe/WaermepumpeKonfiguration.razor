@@ -160,7 +160,7 @@
                         <Herleitungszeile Text="@VorlaufMaxZeile(Daten, Texte)" />
                         @* UEBERGABEGRENZE UB-E1 (U-2, Mockup Waermepumpe_Bivalenz_Uebergabe): Klappliste "Kaeltemittel"
                            und die vier Schnellwahl-Knoepfe - die Wahl fuellt nur ein LEERES Feld "Hoechster Vorlauf";
-                           die Klasse selbst haelt in E1 nur der Dialogzustand (Spalte Kaeltemittel kommt mit E2/E3). *@
+                           die Klasse speichert die Abbildung beim Speichern in Kaeltemittel des Geraets (UB-E2). *@
                         @if (Daten.Kaeltemittelliste.Count > 0)
                         {
                             <Auswahlfeld Bezeichnung="@Texte.LabelKaeltemittel" Eintraege="@Kaeltemittelwahl"
@@ -186,7 +186,10 @@
                 </KindInhalt>
             </Formulargruppe>
 
-            <Formulargruppe Titel="@Texte.GruppeBetrieb">
+            @* UEBERGABEGRENZE UB-E2 (Fachkonzept 6.2, Umsetzungskonzept 6.2, Mockup Waermepumpe_Bivalenz_Uebergabe):
+               die Gruppe "Bivalenz und Uebergabe" an Stelle der Gruppe "Betrieb". Lesewerte, Herleitungen und weiche
+               Sperren rechnet der Kern (Bivalenzpruefung, Bivalenzherleitung); hier wird nur gezeigt. *@
+            <Formulargruppe Titel="@Texte.GruppeBivalenzUebergabe">
                 <KindInhalt>
                     <Schalter Bezeichnung="@Texte.LabelBivalent" Wert="@Daten.BivalenterBetrieb"
                               WertChanged="BeiBivalent" Aktiv="@Aktiv" />
@@ -202,15 +205,58 @@
                             <Zahlenfeld Bezeichnung="@Texte.LabelAbschalttemp" Einheit="@Texte.EinheitGrad"
                                         Feldname="@Texte.LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
                                         WertChanged="BeiAbschaltpunkt" Aktiv="@Aktiv" />
+                            @if (WaermepumpeBivalenzText.AbschaltpunktZeile(BivalenzWerte, Texte) is { Length: > 0 } abschaltZeile)
+                            {
+                                <div data-gruppe="bivalenz-abschaltpunkt">
+                                    <Herleitungszeile Text="@abschaltZeile" />
+                                </div>
+                            }
                         }
                     }
 
-                    @* UEBERGABEGRENZE UB-E1 (Fachkonzept 6.2): die Herleitungszeile "Uebergabe und Bivalenz" - in E1 unter der
-                       Gruppe "Betrieb"; die Gruppe "Bivalenz und Uebergabe" folgt mit E2. *@
-                    @if (WaermepumpeBivalenzText.Zeile(Daten, Texte) is { Length: > 0 } bivalenzZeile)
+                    <div data-gruppe="bivalenz-einbindung">
+                        <Auswahlfeld Bezeichnung="@Texte.LabelEinbindung" Eintraege="@Einbindungswahl"
+                                     Auswahl="@EinbindungIndex" Aktiv="@Aktiv"
+                                     AuswahlChanged="BeiEinbindung" Platzhalter="@Texte.EinbindungLeer" />
+                        @if (string.Equals(Daten.Einbindung, EINBINDUNG_PUFFER, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <Herleitungszeile Text="@Texte.HinweisEinbindungPuffer" />
+                        }
+                    </div>
+
+                    @if (Daten.BivalenterBetrieb)
+                    {
+                        <div data-gruppe="bivalenz-vorwaermbetrieb">
+                            <Schalter Bezeichnung="@Texte.LabelVorwaermbetrieb" Wert="@(Daten.Vorwaermbetrieb && VorwaermbetriebWaehlbar)"
+                                      WertChanged="BeiVorwaermbetrieb" Aktiv="@(Aktiv && VorwaermbetriebWaehlbar)"
+                                      Grund="@(VorwaermbetriebWaehlbar ? null : Texte.HinweisVorwaermbetriebAlternativ)" />
+                            <Herleitungszeile Text="@(VorwaermbetriebWaehlbar ? Texte.HinweisVorwaermbetrieb : Texte.HinweisVorwaermbetriebAlternativ)" />
+                        </div>
+                    }
+
+                    <div class="epos-wp-bivalenz-lesewerte" data-gruppe="bivalenz-lesewerte">
+                        @foreach (string lesewert in Lesewertzeilen(Daten, BivalenzWerte, Texte))
+                        {
+                            <Herleitungszeile Text="@lesewert" />
+                        }
+                    </div>
+
+                    @* UEBERGABEGRENZE UB-E1 (Fachkonzept 6.2): die Herleitungszeile "Uebergabe und Bivalenz". *@
+                    @if (WaermepumpeBivalenzText.Zeile(BivalenzWerte, Texte) is { Length: > 0 } bivalenzZeile)
                     {
                         <div class="epos-wp-bivalenz" data-gruppe="bivalenz-herleitung">
                             <Herleitungszeile Text="@bivalenzZeile" />
+                        </div>
+                    }
+
+                    @if (BivalenzWerte?.Befunde is { Count: > 0 } befunde)
+                    {
+                        <div data-gruppe="bivalenz-befunde">
+                            @foreach (WaermepumpeBivalenzBefund befund in befunde)
+                            {
+                                <Warnbanner Stufe="@(befund.NurHinweis ? WarnStufe.Hinweis : WarnStufe.Warnung)"
+                                            Text="@WaermepumpeBivalenzText.Befundtext(befund, Texte)" />
+                            }
                         </div>
                     }
                 </KindInhalt>
@@ -463,6 +509,79 @@
            (Daten.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ||
             Daten.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV);
 
+    // ---- Gruppe „Bivalenz und Übergabe" (Übergabegrenze UB‑E2) ------------------------------------------
+
+    /// <summary>Die drei Werte der Spalte <c>Einbindung</c> — Steuerwerte wie im Kern (<c>Bivalenzpruefung</c>).</summary>
+    public const string EINBINDUNG_DIREKT = "DIREKT";
+
+    /// <summary>Einbindung über einen Heizungspuffer.</summary>
+    public const string EINBINDUNG_PUFFER = "PUFFER";
+
+    /// <summary>Einbindung über eine hydraulische Weiche.</summary>
+    public const string EINBINDUNG_WEICHE = "WEICHE";
+
+    /// <summary>Die Einträge der Klappliste „Einbindung" in dieser Reihenfolge; leer zeigt „nicht gewählt".</summary>
+    public static readonly string[] EINBINDUNGEN = { EINBINDUNG_DIREKT, EINBINDUNG_PUFFER, EINBINDUNG_WEICHE };
+
+    private IReadOnlyList<(int Id, string Text)> Einbindungswahl => new List<(int, string)>
+    {
+        (0, Texte.EinbindungDirekt), (1, Texte.EinbindungPuffer), (2, Texte.EinbindungWeiche),
+    };
+
+    private int? EinbindungIndex
+    {
+        get
+        {
+            for (int i = 0; i < EINBINDUNGEN.Length; i++)
+                if (string.Equals(EINBINDUNGEN[i], Daten.Einbindung, StringComparison.OrdinalIgnoreCase)) return i;
+            return null;
+        }
+    }
+
+    private Task BeiEinbindung(int? index)
+    {
+        Daten.Einbindung = index is int i && i >= 0 && i < EINBINDUNGEN.Length ? EINBINDUNGEN[i] : null;
+        return Melden();
+    }
+
+    /// <summary>Vorwärmbetrieb ist bei parallel und teilparallel wählbar, bei alternativ gesperrt (Fachkonzept 6.2).</summary>
+    public bool VorwaermbetriebWaehlbar => Daten.Betriebsart != DbWerte.WP_BETRIEBSART_ALTERNATIV;
+
+    private Task BeiVorwaermbetrieb(bool wert) { Daten.Vorwaermbetrieb = wert; return Melden(); }
+
+    /// <summary>Die Werte der Herleitungen zum Arbeitsstand (neu gerechnet, sonst gelesen).</summary>
+    private WaermepumpeBivalenzWerte? BivalenzWerte => WaermepumpeBivalenzText.Werte(Daten);
+
+    /// <summary>
+    /// Die Lesewerte der Gruppe als Zeilen (Mockup): höchster Vorlauf mit Verweis auf „Betriebszeiten", Spreizungen,
+    /// Mindestvolumenstrom, höchster Rücklauf je mit Herkunft und Herleitung, die R744-Zeile und der Pflegehinweis.
+    /// </summary>
+    public static IReadOnlyList<string> Lesewertzeilen(WaermepumpeAnlageDaten daten, WaermepumpeBivalenzWerte? werte,
+                                                       WaermepumpeKonfigurationTexte texte)
+    {
+        var k = System.Globalization.CultureInfo.CurrentCulture;
+        var zeilen = new List<string>();
+        double vorlauf = daten.VorlaufMax is double v ? v : daten.Vorlauf is int p && p > 0 ? p : double.NaN;
+        zeilen.Add(texte.LabelHoechstvorlaufLesen + ": " + (double.IsNaN(vorlauf) ? "—" : vorlauf.ToString("0.#", k) + " °C")
+                   + " · " + texte.GruppeBetriebszeiten);
+        if (werte?.Grenzen is not WaermepumpeGrenzwerte g) return zeilen;
+        zeilen.Add(texte.LabelSpreizungAuslegung + " / " + texte.LabelSpreizungMax + " / " + texte.LabelSpreizungMin + ": "
+                   + WaermepumpeBivalenzText.Spreizungen(g) + " K · " + WaermepumpeBivalenzText.Herkunft(g.SpreizungHerkunft, texte));
+        zeilen.Add(texte.LabelMindestvolumenstrom + ": " + (g.MindestvolumenstromAnteil * 100.0).ToString("0", k) + " % · "
+                   + WaermepumpeBivalenzText.Herkunft(g.MindestvolumenstromHerkunft, texte));
+        zeilen.Add(texte.LabelRuecklaufMax + ": " + (double.IsNaN(g.RuecklaufMaxC) ? "—" : g.RuecklaufMaxC.ToString("0.#", k) + " °C")
+                   + " · " + WaermepumpeBivalenzText.Herkunft(g.RuecklaufHerkunft, texte));
+        if (WaermepumpeBivalenzText.RuecklaufZeile(g, texte) is { Length: > 0 } herleitung
+            && g.RuecklaufHerkunft == GrenzwertHerkunft.Abgeleitet)
+            zeilen.Add(herleitung);
+        zeilen.Add(texte.LabelRuecklaufR744 + ": " + WaermepumpeBivalenzText.R744Werte(g) + " °C · %/K · °C"
+                   + (g.RuecklaufGrenzeR744C is null ? " · " + texte.HerkunftNurR744 : " · " + WaermepumpeBivalenzText.Herkunft(g.RuecklaufHerkunft, texte)));
+        if (g.RuecklaufGrenzeR744C is not null && WaermepumpeBivalenzText.RuecklaufZeile(g, texte) is { Length: > 0 } r744)
+            zeilen.Add(r744);
+        zeilen.Add(texte.HinweisGeraetegrenzen);
+        return zeilen;
+    }
+
     /// <summary>
     /// Führt die PROJEKTKOPIE dieser Wärmepumpe eine Heizstableistung?
     /// (<c>Tab_WP.Heizung</c>, im Feldsatz <see cref="WaermepumpeAnlageDaten.HeizstabLeistung"/>.)
@@ -557,7 +676,8 @@
     }
 
     /// <summary>
-    /// <b>Die Regel der Schnellwahl</b> (U‑2): merkt die Klasse im Dialogzustand und füllt <c>Vorlauf_Max</c> mit dem
+    /// <b>Die Regel der Schnellwahl</b> (U‑2): merkt die Klasse im Feldsatz (gespeichert in <c>Kaeltemittel</c> des Geräts
+    /// über <c>BivalenzAbbildung.GeraetSchreiben</c>) und füllt <c>Vorlauf_Max</c> mit dem
     /// Höchstvorlauf der Klasse — nur, wenn das Feld leer ist; ein gepflegter Wert bleibt stehen. Eine Klasse ohne
     /// eigenen Höchstvorlauf (allgemeine Vorgabe) füllt nichts.
     /// </summary>

@@ -100,6 +100,15 @@ public sealed class WaermepumpeAnlageDaten
     public string? Kaeltemittel { get; set; }
 
     /// <summary>
+    /// Hydraulische Einbindung (<c>Tab_Energieanlagen.Einbindung</c>: <c>DIREKT</c>, <c>PUFFER</c>, <c>WEICHE</c>);
+    /// <c>null</c> = nicht gewählt — die Übergabegrenze ruht (U‑1).
+    /// </summary>
+    public string? Einbindung { get; set; }
+
+    /// <summary>Vorwärmbetrieb, Kessel in Reihe (<c>Tab_Energieanlagen.Vorwaermbetrieb</c>); wirksam bei parallel und teilparallel.</summary>
+    public bool Vorwaermbetrieb { get; set; }
+
+    /// <summary>
     /// Die Werte der Herleitungszeile „Übergabe und Bivalenz", wie sie die Hülle beim Öffnen gerechnet hat;
     /// <c>null</c> = keine Herleitung. Der Dialog zeigt den Stand von <see cref="BivalenzRechnen"/>, wenn es ihn gibt.
     /// </summary>
@@ -252,6 +261,8 @@ public sealed class WaermepumpeAnlageDaten
         VorlaufMax = VorlaufMax,
         Kaeltemittelliste = Kaeltemittelliste,
         Kaeltemittel = Kaeltemittel,
+        Einbindung = Einbindung,
+        Vorwaermbetrieb = Vorwaermbetrieb,
         Bivalenz = Bivalenz,
         BivalenzRechnen = BivalenzRechnen,
         BivalenterBetrieb = BivalenterBetrieb,

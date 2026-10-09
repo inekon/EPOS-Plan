@@ -234,6 +234,8 @@ namespace WindowsFormsApplication1
             // bleibt leer (fuer ihn gibt es keine eindeutige Regel, siehe
             // AnlagenTemperaturen.VorlaufAusKennlinien).
             AnlagenTemperaturen.VorlaufAusKennlinien(modell);
+            // Uebergabegrenze UB-E2: eine NEUE Anlage bekommt die Einbindung vorbelegt (Puffer bzw. direkt).
+            BivalenzAbbildung.Vorbelegen(modell);
 
             WaermepumpeAnlageDaten daten = WaermepumpeAnlageHuelle.AusModell(modell);
             zuModell[daten] = modell;

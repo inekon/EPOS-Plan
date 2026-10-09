@@ -1,4 +1,5 @@
-﻿using KiKern;
+﻿using EPOS.UI.Dienste;
+using KiKern;
 
 namespace EPOS.UI.Dialoge.Waermepumpe;
 
@@ -128,9 +129,83 @@ public sealed class WaermepumpeAnlageKiSicht
 
     /// <summary>
     /// Die Herleitungszeile „Übergabe und Bivalenz" (Übergabegrenze UB‑E1) — nur lesbar, derselbe Wortlaut wie unter
-    /// der Gruppe „Betrieb"; leer ohne Herleitung.
+    /// in der Gruppe „Bivalenz und Übergabe"; leer ohne Herleitung.
     /// </summary>
     public string BivalenzHerleitung => WaermepumpeBivalenzText.Zeile(D, new WaermepumpeKonfigurationTexte());
+
+    // ---- Gruppe „Bivalenz und Übergabe" (Übergabegrenze UB‑E2) --------------------------------------
+
+    /// <summary>Die Einbindung als Steuerwert (DIREKT, PUFFER, WEICHE); leer = nicht gewählt. Ein anderer Wert wird abgelehnt.</summary>
+    public string Einbindung
+    {
+        get => D?.Einbindung ?? "";
+        set
+        {
+            if (D is not { } d) return;
+            if (string.IsNullOrWhiteSpace(value)) { d.Einbindung = null; return; }
+            string? wert = WaermepumpeKonfiguration.EINBINDUNGEN.FirstOrDefault(
+                e => string.Equals(e, value.Trim(), StringComparison.OrdinalIgnoreCase));
+            d.Einbindung = wert ?? throw new ArgumentException(value);
+        }
+    }
+
+    /// <summary>Die drei Einbindungen der Klappliste — Schlüssel ist der Steuerwert, Text die Anzeige der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> EinbindungWahl
+    {
+        get
+        {
+            var t = new WaermepumpeKonfigurationTexte();
+            string[] anzeige = { t.EinbindungDirekt, t.EinbindungPuffer, t.EinbindungWeiche };
+            return KiMaskenanmeldung.Eintraege(WaermepumpeKonfiguration.EINBINDUNGEN.Select((e, i) => (e, anzeige[i])),
+                                               x => x.e, x => x.Item2);
+        }
+    }
+
+    /// <summary>Vorwärmbetrieb; bei alternativ gesperrt — die Setzung „ein" wird dann benannt abgelehnt.</summary>
+    public bool Vorwaermbetrieb
+    {
+        get => D?.Vorwaermbetrieb ?? false;
+        set
+        {
+            if (D is not { } d) return;
+            if (value && d.Betriebsart == WindowsFormsApplication1.DbWerte.WP_BETRIEBSART_ALTERNATIV)
+                throw new InvalidOperationException(new WaermepumpeKonfigurationTexte().HinweisVorwaermbetriebAlternativ);
+            d.Vorwaermbetrieb = value;
+        }
+    }
+
+    /// <summary>Das Kältemittel — die Setzung wirkt wie die Schnellwahl (füllt nur ein leeres „Höchster Vorlauf").</summary>
+    public string Kaeltemittel
+    {
+        get => D?.Kaeltemittel ?? "";
+        set { if (D is { } d) WaermepumpeKonfiguration.SchnellwahlAnwenden(d, value); }
+    }
+
+    /// <summary>Die Codes der Klappliste „Kältemittel" (leer ohne Abbildung).</summary>
+    public IReadOnlyList<KiWahleintrag> KaeltemittelWahl
+        => KiMaskenanmeldung.Eintraege(D?.Kaeltemittelliste ?? Array.Empty<KaeltemittelEintrag>(), e => e.Code,
+                                       e => new WaermepumpeKonfigurationTexte().KaeltemittelText(e.Code));
+
+    /// <summary>Die Lesewerte der Gruppe (Gerätegrenzen mit Herkunft), Zeilen mit „ | " getrennt — nur lesbar.</summary>
+    public string Lesewerte => D is { } d
+        ? string.Join(" | ", WaermepumpeKonfiguration.Lesewertzeilen(d, WaermepumpeBivalenzText.Werte(d), new WaermepumpeKonfigurationTexte()))
+        : "";
+
+    /// <summary>Die Herleitung des Abschaltpunkts (eingegeben · berechnet · maßgebend) — nur lesbar; leer ohne.</summary>
+    public string AbschaltpunktHerleitung
+        => WaermepumpeBivalenzText.AbschaltpunktZeile(WaermepumpeBivalenzText.Werte(D), new WaermepumpeKonfigurationTexte());
+
+    /// <summary>Die weichen Sperren und Hinweise der Gruppe, mit „ | " getrennt — nur lesbar; leer ohne.</summary>
+    public string BivalenzBefunde
+    {
+        get
+        {
+            var texte = new WaermepumpeKonfigurationTexte();
+            return WaermepumpeBivalenzText.Werte(D)?.Befunde is { Count: > 0 } b
+                ? string.Join(" | ", b.Select(x => WaermepumpeBivalenzText.Befundtext(x, texte)))
+                : "";
+        }
+    }
 
     // ---- Der Kühlbetrieb (Stufe KU2 Welle 3; Kühlkonzept 8.2, E15, E33, E34) -----
     //

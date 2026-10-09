@@ -72,7 +72,82 @@ public sealed record WaermepumpeBivalenzWerte
 
     /// <summary>Der benannte Grund bei <see cref="BivalenzKennzeichen.Befund"/>; sonst leer.</summary>
     public string Befund { get; init; } = "";
+
+    /// <summary>Der eingegebene Abschaltpunkt [°C], sofern er nach der Betriebsart gilt; sonst <c>null</c>.</summary>
+    public double? AbschaltpunktC { get; init; }
+
+    /// <summary>Der maßgebende Abschaltpunkt [°C] (UB‑Q4 a: der wärmere aus eingegeben und berechnet); NaN = keiner.</summary>
+    public double MassgebendC { get; init; } = double.NaN;
+
+    /// <summary>Die Lesewerte der Gerätegrenzen; <c>null</c> = keine (ohne Abbildung).</summary>
+    public WaermepumpeGrenzwerte? Grenzen { get; init; }
+
+    /// <summary>Die weichen Sperren und Hinweise der Dialogprüfung des Kerns, in fester Reihenfolge.</summary>
+    public IReadOnlyList<WaermepumpeBivalenzBefund> Befunde { get; init; } = Array.Empty<WaermepumpeBivalenzBefund>();
 }
+
+/// <summary>Woher ein Lesewert der Gerätegrenzen stammt (Umsetzungskonzept Übergabegrenze 6.2).</summary>
+public enum GrenzwertHerkunft
+{
+    /// <summary>Gepflegter Wert des Geräts („Katalog").</summary>
+    Katalog = 0,
+
+    /// <summary>„Vorgabe nach Kältemittel".</summary>
+    VorgabeKaeltemittel = 1,
+
+    /// <summary>„Vorgabe" (allgemein, unterkritisch).</summary>
+    Vorgabe = 2,
+
+    /// <summary>„abgeleitet" (Höchstvorlauf − Mindestspreizung).</summary>
+    Abgeleitet = 3,
+}
+
+/// <summary>
+/// Die Lesewerte der Gruppe „Bivalenz und Übergabe": Spreizungen [K], Mindestvolumenstrom [–], höchster Rücklauf [°C]
+/// je mit Herkunft, Höchstvorlauf [°C] (NaN = keiner) und bei R744 Bezugsrücklauf, Abwertung [%/K] und Grenze.
+/// </summary>
+public sealed record WaermepumpeGrenzwerte(
+    double SpreizungAuslegungK,
+    double SpreizungMaxK,
+    double SpreizungMinK,
+    GrenzwertHerkunft SpreizungHerkunft,
+    double MindestvolumenstromAnteil,
+    GrenzwertHerkunft MindestvolumenstromHerkunft,
+    double RuecklaufMaxC,
+    GrenzwertHerkunft RuecklaufHerkunft,
+    double HoechstvorlaufC,
+    double? BezugsruecklaufC = null,
+    double? AbwertungProzentJeK = null,
+    double? RuecklaufGrenzeR744C = null);
+
+/// <summary>Die Art eines Befunds der Dialogprüfung (Abbild von <c>Pruefbefundart</c> des Kerns).</summary>
+public enum BivalenzBefundArt
+{
+    /// <summary>σ_min ≥ σ_max.</summary>
+    Spreizung = 0,
+
+    /// <summary>Höchstvorlauf unter dem Auslegungsvorlauf einer Flächenheizung.</summary>
+    Hoechstvorlauf = 1,
+
+    /// <summary>Rücklaufgrenze unter dem Auslegungsrücklauf aller Zonen.</summary>
+    RuecklaufNie = 2,
+
+    /// <summary>Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade.</summary>
+    VorwaermOhneKessel = 3,
+
+    /// <summary>Wärmepumpe hinter dem Kessel bei Vorwärmbetrieb.</summary>
+    Kaskade = 4,
+
+    /// <summary>Hinweis: Hybrid-Mindestanteil nach § 43 GModG unterschritten.</summary>
+    Gmodg = 5,
+
+    /// <summary>Hinweis: Die Heizflächen begrenzen stärker als das Kennfeld.</summary>
+    UebergabeBegrenzt = 6,
+}
+
+/// <summary>Ein Befund mit Zahlen für den Wortlaut; <see cref="NurHinweis"/> = Stufe Hinweis, sonst Warnung. Speichern bleibt möglich.</summary>
+public sealed record WaermepumpeBivalenzBefund(BivalenzBefundArt Art, bool NurHinweis, double Wert1 = double.NaN,
+                                               double Wert2 = double.NaN);
 
 /// <summary>
 /// Ein Eintrag der Klappliste „Kältemittel" (Tafel 6.3 des Fachkonzepts): Code, Höchstvorlauf der Klasse [°C]
@@ -88,6 +163,9 @@ public sealed record KaeltemittelEintrag(string Code, double? HoechstvorlaufC,
 public static class WaermepumpeBivalenzText
 {
     private const string FORMAT_PUNKT = "+0.0;−0.0;0.0";
+
+    /// <summary>Eingegebener und maßgebender Abschaltpunkt: höchstens eine Stelle, mit Vorzeichen.</summary>
+    private const string FORMAT_EINGABE = "+0.#;−0.#;0";
 
     /// <summary>Die Werte zum Arbeitsstand: neu gerechnet über <see cref="WaermepumpeAnlageDaten.BivalenzRechnen"/>, sonst die gelesenen.</summary>
     public static WaermepumpeBivalenzWerte? Werte(WaermepumpeAnlageDaten? d)
@@ -132,6 +210,80 @@ public static class WaermepumpeBivalenzText
         return w.Kennzeichen == BivalenzKennzeichen.NichtWirksam
             ? texte.HerleitungNichtWirksam + " " + zeile
             : zeile;
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile des Abschaltpunkts (<c>WPA_HERLEITUNG_ABSCHALTPUNKT</c>): eingegeben · aus der Übergabe
+    /// berechnet · maßgebend. Leer ohne eingegebenen Abschaltpunkt oder ohne gerechnete Bivalenzpunkte.
+    /// </summary>
+    public static string AbschaltpunktZeile(WaermepumpeBivalenzWerte? w, WaermepumpeKonfigurationTexte texte)
+    {
+        if (w?.AbschaltpunktC is not double eingegeben) return "";
+        if (w.Kennzeichen is not (BivalenzKennzeichen.Wirksam or BivalenzKennzeichen.NichtWirksam)) return "";
+        texte ??= new WaermepumpeKonfigurationTexte();
+        CultureInfo k = CultureInfo.CurrentCulture;
+        // Eingegeben und maßgebend ohne überflüssige Null (−10 °C, +3 °C), berechnet mit einer Stelle (Mockup).
+        string Eingabe(double c) => double.IsNaN(c) ? texte.HerleitungKeinPunkt : c.ToString(FORMAT_EINGABE, k) + " °C";
+        return string.Format(k, texte.HerleitungAbschaltpunkt, Eingabe(eingegeben), Punkt(w.ZweiterC, texte, k),
+                             Eingabe(w.MassgebendC));
+    }
+
+    /// <summary>Der Wortlaut eines Befunds der Dialogprüfung.</summary>
+    public static string Befundtext(WaermepumpeBivalenzBefund b, WaermepumpeKonfigurationTexte texte)
+    {
+        texte ??= new WaermepumpeKonfigurationTexte();
+        CultureInfo k = CultureInfo.CurrentCulture;
+        string Zahl(double v) => v.ToString("0.#", k);
+        return b.Art switch
+        {
+            BivalenzBefundArt.Spreizung => string.Format(k, texte.WarnSpreizung, Zahl(b.Wert1), Zahl(b.Wert2)),
+            BivalenzBefundArt.Hoechstvorlauf => string.Format(k, texte.WarnHoechstvorlauf, Zahl(b.Wert1), Zahl(b.Wert2)),
+            BivalenzBefundArt.RuecklaufNie => string.Format(k, texte.WarnRuecklaufNie, Zahl(b.Wert1), Zahl(b.Wert2)),
+            BivalenzBefundArt.VorwaermOhneKessel => texte.WarnVorwaermOhneKessel,
+            BivalenzBefundArt.Kaskade => string.Format(k, texte.WarnKaskade, Zahl(b.Wert1), Zahl(b.Wert2)),
+            BivalenzBefundArt.Gmodg => string.Format(k, texte.WarnGmodg, (b.Wert1 * 100.0).ToString("0", k),
+                                                     (b.Wert2 * 100.0).ToString("0", k)),
+            BivalenzBefundArt.UebergabeBegrenzt => string.Format(k, texte.WarnUebergabeBegrenzt, Punkt(b.Wert1, texte, k)),
+            _ => "",
+        };
+    }
+
+    /// <summary>Der Wortlaut einer Herkunft.</summary>
+    public static string Herkunft(GrenzwertHerkunft h, WaermepumpeKonfigurationTexte texte) => h switch
+    {
+        GrenzwertHerkunft.Katalog => texte.HerkunftKatalog,
+        GrenzwertHerkunft.VorgabeKaeltemittel => texte.HerkunftVorgabeKaeltemittel,
+        GrenzwertHerkunft.Abgeleitet => texte.HerkunftAbgeleitet,
+        _ => texte.HerkunftVorgabe,
+    };
+
+    /// <summary>„5 / 10 / 3" — Spreizung Auslegung / max. / min. ohne Einheit.</summary>
+    public static string Spreizungen(WaermepumpeGrenzwerte g)
+    {
+        CultureInfo k = CultureInfo.CurrentCulture;
+        return string.Join(" / ", new[] { g.SpreizungAuslegungK, g.SpreizungMaxK, g.SpreizungMinK }.Select(v => v.ToString("0.#", k)));
+    }
+
+    /// <summary>„30 / 2,5 / 40" bei R744, sonst „— / — / —".</summary>
+    public static string R744Werte(WaermepumpeGrenzwerte g)
+    {
+        CultureInfo k = CultureInfo.CurrentCulture;
+        string W(double? v) => v is double x ? x.ToString("0.#", k) : "—";
+        return W(g.BezugsruecklaufC) + " / " + W(g.AbwertungProzentJeK) + " / " + W(g.RuecklaufGrenzeR744C);
+    }
+
+    /// <summary>Die Herleitung des höchsten Rücklaufs: abgeleitet mit Rechnung, bei R744 Bezug/Abwertung/Grenze; sonst leer.</summary>
+    public static string RuecklaufZeile(WaermepumpeGrenzwerte? g, WaermepumpeKonfigurationTexte texte)
+    {
+        if (g is null) return "";
+        texte ??= new WaermepumpeKonfigurationTexte();
+        CultureInfo k = CultureInfo.CurrentCulture;
+        if (g.RuecklaufGrenzeR744C is double grenze && g.BezugsruecklaufC is double bezug && g.AbwertungProzentJeK is double ab)
+            return string.Format(k, texte.HerleitungR744, bezug.ToString("0.#", k), ab.ToString("0.#", k), grenze.ToString("0.#", k));
+        if (g.RuecklaufHerkunft == GrenzwertHerkunft.Abgeleitet && !double.IsNaN(g.RuecklaufMaxC))
+            return string.Format(k, texte.HerleitungRuecklaufAbgeleitet, g.RuecklaufMaxC.ToString("0.#", k),
+                                 g.HoechstvorlaufC.ToString("0.#", k), g.SpreizungMinK.ToString("0.#", k));
+        return "";
     }
 
     /// <summary>Ein Bivalenzpunkt mit Vorzeichen und Einheit; „keiner" außerhalb des Auslegungsbereichs.</summary>

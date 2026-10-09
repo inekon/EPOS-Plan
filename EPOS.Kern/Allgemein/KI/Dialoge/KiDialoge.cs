@@ -7123,6 +7123,32 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.WpaAbschaltpunktErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
 
+                    // ---- Die Gruppe „Bivalenz und Uebergabe" (Uebergabegrenze UB-E2) ----------
+                    // Einbindung und Kaeltemittel sind Wahlfelder (Eintraege aus der Anmeldung des
+                    // Dialogs); der Vorwaermbetrieb ist bei alternativ weich gesperrt, die Sichtklasse
+                    // lehnt dieselbe Setzung benannt ab. Lesewerte, Herleitungen und Befunde sind nur lesbar.
+                    new KiDialogFeld("einbindung", "WaermepumpeAnlageKiSicht.Einbindung",
+                                     KiDialogTexte.WpaEinbindungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaEinbindungErl, leerErlaubt: true),
+                    new KiDialogFeld("vorwaermbetrieb", "WaermepumpeAnlageKiSicht.Vorwaermbetrieb",
+                                     KiDialogTexte.WpaVorwaermbetriebName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaVorwaermbetriebErl),
+                    new KiDialogFeld("kaeltemittel", "WaermepumpeAnlageKiSicht.Kaeltemittel",
+                                     KiDialogTexte.WpaKaeltemittelName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaKaeltemittelErl, leerErlaubt: true),
+                    new KiDialogFeld("geraetegrenzen", "WaermepumpeAnlageKiSicht.Lesewerte",
+                                     KiDialogTexte.WpaLesewerteName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaLesewerteErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("abschaltpunkt_herleitung", "WaermepumpeAnlageKiSicht.AbschaltpunktHerleitung",
+                                     KiDialogTexte.WpaAbschaltHerleitungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaAbschaltHerleitungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bivalenz_herleitung", "WaermepumpeAnlageKiSicht.BivalenzHerleitung",
+                                     KiDialogTexte.WpaHerleitungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaHerleitungErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bivalenz_hinweise", "WaermepumpeAnlageKiSicht.BivalenzBefunde",
+                                     KiDialogTexte.WpaBefundeName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaBefundeErl, leerErlaubt: true, nurLesen: true),
+
                     // ---- Die Gruppe „Kuehlbetrieb" der Konfiguration (Stufe KU2 Welle 3;
                     //      Kuehlkonzept 8.2, E15, E33, E34) ----------------------------
                     //
