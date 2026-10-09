@@ -5344,6 +5344,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_PV_GANGLINIE = PvGanglinieSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KalenderbedienungSchema.SCHRITT"/> — <b>Kalenderbedienung Stufe 2</b> (K2): gemeinsamer
+        /// Kalender „alle Größen" mit Größenmaske, benannte Wochen (<c>Tab_Konditionierungswoche</c>), Wochenende und
+        /// Feiertagsland am Gebäude, Länderfeiertage als Regeln, Ferienliste als Spiegel der Ferienspalten.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Gekoppelte Kopien werden eine Gemeinschaftsperiode, die beim Lesen
+        /// in genau ihre Kalender zurückkehrt; die Ferienspalten bleiben Quelle der Leser.</para>
+        /// </summary>
+        public const int SCHRITT_KALENDERBEDIENUNG = KalenderbedienungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7800,6 +7810,13 @@ namespace WindowsFormsApplication1
                         "Eine Photovoltaikanlage koennte nicht ueber eine eingelesene Ganglinie rechnen. " +
                         "KEIN Rechenergebnis aendert sich.",
                         Schritt_PvGanglinie),
+            // K2: Kalenderbedienung Stufe 2. Quelle ist KalenderbedienungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KALENDERBEDIENUNG,
+                        "Tab_Konditionierungskalender, Tab_Konditionierungsperiode (Neubau), Tab_Konditionierungswoche, " +
+                        "Tab_Gebaeude(_STAMM): Wochenendtage, Feiertagsland",
+                        "Ein Kalender koennte keine Zeile fuer alle Groessen, keine benannte Woche, kein anderes Wochenende " +
+                        "und keine Laenderfeiertage tragen. KEIN Rechenergebnis aendert sich.",
+                        Schritt_Kalenderbedienung),
         };
 
         /// <summary>
@@ -14917,6 +14934,59 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Uebergabegrenze - " +
                     (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kalenderbedienung Stufe 2" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KALENDERBEDIENUNG"/>,
+        /// die Anweisungen bei <see cref="KalenderbedienungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kalenderbedienung(Lauf l)
+        {
+            string nr = KalenderbedienungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KalenderbedienungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KalenderbedienungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KalenderbedienungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tabellen, Spalten, Indizes oder Trigger der Kalenderbedienung stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kalenderbedienung - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Aenderung(en) am Schema.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

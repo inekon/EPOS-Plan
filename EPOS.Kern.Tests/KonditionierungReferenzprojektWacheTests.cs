@@ -105,7 +105,7 @@ namespace EPOS.Kern.Tests
                 "WHERE k.ID_Zone IS NULL ORDER BY 1"));
             Assert.Equal(new long[] { GEBAEUDE }, Liste(
                 "SELECT ID_Gebaeude FROM Tab_Konditionierungskalender WHERE ID_Gebaeude IS NOT NULL AND ID_Zone IS NULL " +
-                "GROUP BY ID_Gebaeude HAVING COUNT(DISTINCT Groesse) = 5 ORDER BY 1"));
+                "AND Groesse <> 'ALLE' GROUP BY ID_Gebaeude HAVING COUNT(DISTINCT Groesse) = 5 ORDER BY 1"));
             Assert.Equal(new long[] { KATALOGBAU }, Liste(
                 "SELECT DISTINCT ID_Gebaeude_Stamm FROM Tab_Konditionierungskalender WHERE ID_Gebaeude_Stamm IS NOT NULL ORDER BY 1"));
             Assert.Equal(new long[] { KATALOGBAU }, Liste(
@@ -184,11 +184,15 @@ namespace EPOS.Kern.Tests
             Assert.True(abw.Count == 0, string.Join("\n", abw));
 
             const string VORGABE = "SELECT Groesse, Zeile, Wert, Aus, Von, Bis, Bedingt_K FROM Tab_Konditionierungsvorgabe WHERE {0} = ? ORDER BY ID";
-            const string KALENDER = "SELECT Groesse, Wert, Aus, Woche, Nennwert, Bemerkung FROM Tab_Konditionierungskalender WHERE {0} = ? ORDER BY ID";
+            // Schritt K2: Die fünf Größenkalender tragen Saison und Ferienzeilen, der gemeinsame Kalender (ALLE) die neun
+            // Feiertage mit der Maske aller Größen und die Ferienliste (Ferien 1 und 2 ohne Angabe).
+            const string KALENDER = "SELECT Groesse, Wert, Aus, Woche, Nennwert, Bemerkung FROM Tab_Konditionierungskalender WHERE {0} = ? AND Groesse <> 'ALLE' ORDER BY ID";
             const string PERIODE = "SELECT k.Groesse, p.Rang, p.Art, p.Bezeichner, p.Beginn, p.Ende, p.Wert, p.Aus FROM Tab_Konditionierungsperiode p " +
-                                   "JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE k.{0} = ? AND p.Art <> 'FEIERTAG' ORDER BY k.ID, p.Rang";
-            const string FEIERTAG = "SELECT k.Groesse, p.Rang, p.Feiertagsregel, p.Beginn, p.Ende, p.Wert, p.Aus, p.WieWochentag FROM Tab_Konditionierungsperiode p " +
+                                   "JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE k.{0} = ? AND p.Art <> 'FEIERTAG' AND k.Groesse <> 'ALLE' ORDER BY k.ID, p.Rang";
+            const string FEIERTAG = "SELECT k.Groesse, p.Rang, p.Feiertagsregel, p.Beginn, p.Ende, p.Wert, p.Aus, p.WieWochentag, p.Gilt_Fuer FROM Tab_Konditionierungsperiode p " +
                                     "JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE k.{0} = ? AND p.Art = 'FEIERTAG' ORDER BY k.ID, p.Rang";
+            const string FERIENLISTE = "SELECT p.Rang, p.Bezeichner, p.Beginn, p.Ende, p.Gilt_Fuer FROM Tab_Konditionierungsperiode p " +
+                                       "JOIN Tab_Konditionierungskalender k ON k.ID = p.ID_Kalender WHERE k.{0} = ? AND k.Groesse = 'ALLE' AND p.Art = 'FERIEN' ORDER BY p.Rang";
             string[] regeln = { "NEUJAHR", "KARFREITAG", "OSTERMONTAG", "ERSTER_MAI", "HIMMELFAHRT", "PFINGSTMONTAG", "EINHEIT", "WEIHNACHTEN_1", "WEIHNACHTEN_2" };
             string[] groessen = { "HEIZSOLL", "KUEHLSOLL", "LUEFTUNG", "GERAETE", "PERSONEN" };
 
@@ -201,8 +205,11 @@ namespace EPOS.Kern.Tests
                 Assert.All(kal, k => Assert.StartsWith(k.Split('|')[0] + "|∅|0|", k, StringComparison.Ordinal));  // Wochenform
                 Assert.Equal("3232", kal[3].Split('|')[4]);                                                      // Geräte: Nennwert = Interne_Waermegewinne
                 Assert.Equal(Perioden(), Zeilen(string.Format(CultureInfo.InvariantCulture, PERIODE, spalte), id).ToArray());
-                Assert.Equal(groessen.SelectMany(g => regeln.Select((r, i) => g + "|" + (100 + i) + "|" + r + "|∅|∅|∅|0|7")).ToArray(),
+                Assert.Equal(regeln.Select((r, i) => "ALLE|" + (100 + i) + "|" + r + "|∅|∅|∅|0|7|31").ToArray(),
                              Zeilen(string.Format(CultureInfo.InvariantCulture, FEIERTAG, spalte), id).ToArray());
+                var fl = Konditionierungsprojekt1051.FERIEN;
+                Assert.Equal(fl.Select((f, i) => (200 + i) + "|Ferien " + (i + 1) + "|" + f.Beginn + "|" + f.Ende + "|31").ToArray(),
+                             Zeilen(string.Format(CultureInfo.InvariantCulture, FERIENLISTE, spalte), id).ToArray());
             }
             // Gebäude und Referenzbau tragen dieselben Kalender (der Kopierweg Katalog → Projekt).
             Assert.Equal(Zeilen(string.Format(CultureInfo.InvariantCulture, KALENDER, "ID_Gebaeude_Stamm"), KATALOGBAU),
@@ -298,6 +305,12 @@ namespace EPOS.Kern.Tests
             Assert.True(kb > KATALOGBAU, "Der Nachbau des Katalogbaus fiel auf " + kb);
             fehler = Konditionierungsprojekt1051.Bauen(id, kb);
             Assert.True(fehler == null, fehler);
+            // Die Testdatenbank ist der Bauplan samt Schemaschritt K2: dieselbe Bestandsform auf dem Nachbau.
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                KalenderbedienungSchema.Bestandsform(v);
+                v.Commit();
+            }
 
             string NamenZurueck(string s) => s.Replace(NACHBAU_BAU, Konditionierungsprojekt1051.REFERENZBAU)
                                               .Replace(NACHBAU, Konditionierungsprojekt1051.NAME);

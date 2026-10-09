@@ -793,13 +793,44 @@ namespace WindowsFormsApplication1
                                  .Concat(KUEHLKURVE_SPALTEN));
 
         /// <summary>
-        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Kühlkurve, KK).
+        /// Die zwei Spalten der Kalenderbedienung Stufe 2 (<see cref="KalenderbedienungSchema"/>): Wochenende und
+        /// Feiertagsland des Gebäudes, in Sicht- und Anlegereihenfolge.
+        /// </summary>
+        public static readonly string[] KALENDER_SPALTEN =
+        {
+            KalenderbedienungSchema.SPALTE_WOCHENENDTAGE, KalenderbedienungSchema.SPALTE_FEIERTAGSLAND,
+        };
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab dem Schritt der Kalenderbedienung (<see cref="KalenderbedienungSchema.SCHRITT"/>, der
+        /// zwölfte Durchgang): die 110 aus <see cref="SICHT_KUEHLKURVE"/>, dahinter Wochenende und Feiertagsland - an den
+        /// Stellen 110 und 111.
+        /// </summary>
+        public static readonly string[] SICHT_KALENDERBEDIENUNG = SICHT_KUEHLKURVE.Concat(KALENDER_SPALTEN).ToArray();
+
+        /// <summary>Die Sichtdefinition der Kalenderbedienung: alle elf Durchgänge davor und dahinter die zwei Kalenderspalten.</summary>
+        public static readonly string SQL_VIEW_KALENDERBEDIENUNG =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key)
+                                 .Concat(KUEHL_SPALTEN.Select(s => s.Key))
+                                 .Concat(UEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(KUEHLUEBERGABE_SPALTEN.Select(s => s.Key))
+                                 .Concat(new[] { SPALTE_BAUJAHR })
+                                 .Concat(NACHTZEIT_SPALTEN)
+                                 .Concat(new[] { SPALTE_ENERGIESTANDARD })
+                                 .Concat(new[] { SPALTE_AUFHEIZZEIT_MANUELL })
+                                 .Concat(new[] { SPALTE_ERDREICH_U_WIRKSAM })
+                                 .Concat(new[] { SPALTE_HEIZKURVE_RAUMEINFLUSS })
+                                 .Concat(KUEHLKURVE_SPALTEN)
+                                 .Concat(KALENDER_SPALTEN));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit der der Kalenderbedienung, K2).
         /// Wer die Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
         /// </summary>
-        public static string[] SICHT_AKTUELL => SICHT_KUEHLKURVE;
+        public static string[] SICHT_AKTUELL => SICHT_KALENDERBEDIENUNG;
 
-        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Kühlkurve, KK).</summary>
-        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KUEHLKURVE;
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit der der Kalenderbedienung, K2).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KALENDERBEDIENUNG;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)

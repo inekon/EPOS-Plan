@@ -111,6 +111,7 @@ namespace WindowsFormsApplication1
                 return Befund.Fehler(MyResource.Resource.KOND_MSG_KOPIE_GLEICHER_EIGNER);
 
             string groessenfilter = Groessenfilter(auswahl, out DbParam[] groessen);
+            bool k2 = Kalendergemeinschaft.SchrittSteht();
 
             // DIE ZONENZEILEN BLEIBEN - eine andere Ebene (Konzept 5.5). Gezaehlt wird die Seite,
             // die ein Gebaeude ist: bei "Speichern unter" die QUELLE (ihre Zonen reisen nicht mit),
@@ -129,11 +130,18 @@ namespace WindowsFormsApplication1
                 v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
                              nach.Bedingung() + groessenfilter,
                              Mit(nach.Parameter(), groessen));
+                // Die benannten Wochen des Ziels (Schemaschritt K2) - ihre Perioden sind mit den Kalendern gefallen.
+                if (k2)
+                    v.Ausfuehren("DELETE FROM \"" + KalenderbedienungSchema.TAB_WOCHE + "\" WHERE " +
+                                 nach.Bedingung() + groessenfilter,
+                                 Mit(nach.Parameter(), groessen));
             }
 
             int vorgaben = VorgabenKopieren(v, von, nach, auswahl, groessenfilter, groessen);
             int perioden = 0;
-            int kalender = KalenderKopieren(v, von, nach, auswahl, groessenfilter, groessen, ref perioden);
+            Dictionary<long, long> wochen = k2 ? WochenKopieren(v, von, nach, groessenfilter, groessen)
+                                               : new Dictionary<long, long>();
+            int kalender = KalenderKopieren(v, von, nach, auswahl, groessenfilter, groessen, ref perioden, k2, wochen);
 
             return new Befund(true, vorgaben, kalender, perioden, zonenZurueck, "");
         }
@@ -177,13 +185,13 @@ namespace WindowsFormsApplication1
         private static int KalenderKopieren(DbVorgang v, KonditionierungCtrl.Eigner von,
                                             KonditionierungCtrl.Eigner nach, Auswahl auswahl,
                                             string groessenfilter, DbParam[] groessen,
-                                            ref int perioden)
+                                            ref int perioden, bool k2, Dictionary<long, long> wochen)
         {
             List<string> spalten = Spalten(v, KonditionierungSchema.TAB_KALENDER, EIGENTUEMERSPALTEN);
             if (spalten.Count == 0) return 0;
 
             DataTable quellen = v.Lese(
-                "SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
+                "SELECT \"ID\", \"Groesse\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
                 von.Bedingung() + groessenfilter + " ORDER BY \"ID\"",
                 Mit(von.Parameter(), groessen));
             if (quellen == null || quellen.Rows.Count == 0) return 0;
@@ -204,6 +212,12 @@ namespace WindowsFormsApplication1
                 var parameter = new List<DbParam>();
                 parameter.AddRange(nach.Spaltenwerte("@n"));
                 parameter.Add(new DbParam("@alt", alt));
+                string groesse = Convert.ToString(r["Groesse"], CultureInfo.InvariantCulture);
+
+                // Der gemeinsame Kalender des Ziels (etwa vom Ferienspiegel angelegt) weicht dem der Quelle.
+                if (k2 && string.Equals(groesse, DbWerte.KOND_GROESSE_ALLE, StringComparison.Ordinal))
+                    v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " + nach.Bedingung() +
+                                 " AND \"Groesse\" = ?", Mit(nach.Parameter(), new[] { new DbParam("@a", DbWerte.KOND_GROESSE_ALLE) }));
 
                 v.Ausfuehren(
                     "INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER + "\" (" + nach.Eigentuemerspalten + ", " + liste + ") " +
@@ -219,8 +233,80 @@ namespace WindowsFormsApplication1
 
                 if (periodenspalten.Count == 0) continue;
                 perioden += PeriodenKopieren(v, auswahl, periodenliste, alt, neu);
+                if (!k2) continue;
+
+                // Die Wochenverweise zeigen auf die Kopien der Wochen im Ziel.
+                foreach (KeyValuePair<long, long> w in wochen)
+                    v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_PERIODE + "\" SET \"" + KalenderbedienungSchema.SPALTE_ID_WOCHE +
+                                 "\" = ? WHERE \"ID_Kalender\" = ? AND \"" + KalenderbedienungSchema.SPALTE_ID_WOCHE + "\" = ?",
+                                 new DbParam("@n", w.Value), new DbParam("@k", neu), new DbParam("@a", w.Key));
+
+                // Reist der gemeinsame Kalender nicht mit (Auswahl einzelner Groessen), kommen seine Perioden dieser
+                // Groesse als eigene Perioden an - mit aufgeloester Woche, unter den eigenen Raengen.
+                int bit = KalenderbedienungSchema.Maskenbit(groesse);
+                if (groessenfilter.Length > 0 && bit != 0)
+                    perioden += GemeinsameAusbreiten(v, von, auswahl, bit, neu);
             }
             return kalender;
+        }
+
+        /// <summary>Die Perioden mit Angabe des gemeinsamen Kalenders der Quelle, deren Maske die Größe trägt, als eigene.</summary>
+        private static int GemeinsameAusbreiten(DbVorgang v, KonditionierungCtrl.Eigner von, Auswahl auswahl, int bit, long neu)
+        {
+            string filter = auswahl.Vorlagenfilter ? " AND p.\"Art\" NOT IN (?, ?) AND p.\"Rang\" <> ?" : "";
+            var parameter = new List<DbParam> { new DbParam("@k", neu) };
+            parameter.AddRange(von.Parameter());
+            parameter.Add(new DbParam("@g", DbWerte.KOND_GROESSE_ALLE));
+            parameter.Add(new DbParam("@b", bit));
+            parameter.Add(new DbParam("@k2", neu));
+            if (auswahl.Vorlagenfilter)
+            {
+                parameter.Add(new DbParam("@a1", DbWerte.KOND_ART_FERIEN));
+                parameter.Add(new DbParam("@a2", DbWerte.KOND_ART_BETRIEBSPAUSE));
+                parameter.Add(new DbParam("@rs", Standardfahrplan.RANG_SAISON));
+            }
+            return v.Ausfuehren(
+                "INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE + "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", \"Beginn\", " +
+                "\"Ende\", \"Feiertagsregel\", \"Wert\", \"Aus\", \"Woche\", \"WieWochentag\") SELECT ?, p.\"Rang\", p.\"Art\", p.\"Bezeichner\", " +
+                "p.\"Beginn\", p.\"Ende\", p.\"Feiertagsregel\", p.\"Wert\", p.\"Aus\", COALESCE((SELECT w.\"Woche\" FROM \"" +
+                KalenderbedienungSchema.TAB_WOCHE + "\" w WHERE w.\"ID\" = p.\"ID_Woche\"), p.\"Woche\"), p.\"WieWochentag\" FROM \"" +
+                KonditionierungSchema.TAB_PERIODE + "\" p WHERE p.\"ID_Kalender\" IN (SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                "\" WHERE " + von.Bedingung() + " AND \"Groesse\" = ?) AND (p.\"Gilt_Fuer\" / ?) % 2 = 1 AND (p.\"Wert\" IS NOT NULL OR " +
+                "p.\"Aus\" = 1 OR p.\"Woche\" IS NOT NULL OR p.\"ID_Woche\" IS NOT NULL OR p.\"WieWochentag\" IS NOT NULL) AND NOT EXISTS " +
+                "(SELECT 1 FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" q WHERE q.\"ID_Kalender\" = ? AND q.\"Rang\" = p.\"Rang\")" +
+                filter + " ORDER BY p.\"Rang\"",
+                parameter.ToArray());
+        }
+
+        /// <summary>
+        /// Die benannten Wochen der Quelle ins Ziel (Schemaschritt K2); eine gleichnamige Woche des Ziels bleibt und wird
+        /// genommen. Liefert die Zuordnung alt → neu für die Verweise der kopierten Perioden.
+        /// </summary>
+        private static Dictionary<long, long> WochenKopieren(DbVorgang v, KonditionierungCtrl.Eigner von,
+                                                             KonditionierungCtrl.Eigner nach, string groessenfilter,
+                                                             DbParam[] groessen)
+        {
+            var zuordnung = new Dictionary<long, long>();
+            DataTable quellen = v.Lese("SELECT \"ID\", \"Groesse\", \"Name\" FROM \"" + KalenderbedienungSchema.TAB_WOCHE + "\" WHERE " +
+                                       von.Bedingung() + groessenfilter + " ORDER BY \"ID\"", Mit(von.Parameter(), groessen));
+            if (quellen == null) return zuordnung;
+            foreach (DataRow r in quellen.Rows)
+            {
+                long alt = Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture);
+                var gleich = new List<DbParam>(nach.Parameter()) { new DbParam("@gr", r["Groesse"]), new DbParam("@na", r["Name"]) };
+                object da = v.Skalar("SELECT \"ID\" FROM \"" + KalenderbedienungSchema.TAB_WOCHE + "\" WHERE " + nach.Bedingung() +
+                                     " AND \"Groesse\" = ? AND \"Name\" = ?", gleich.ToArray());
+                if (da == null || da == DBNull.Value)
+                {
+                    var parameter = new List<DbParam>(nach.Spaltenwerte("@n")) { new DbParam("@alt", alt) };
+                    v.Ausfuehren("INSERT INTO \"" + KalenderbedienungSchema.TAB_WOCHE + "\" (" + nach.Eigentuemerspalten +
+                                 ", \"Groesse\", \"Name\", \"Woche\") SELECT " + nach.Eigentuemerplatzhalter + ", \"Groesse\", \"Name\", " +
+                                 "\"Woche\" FROM \"" + KalenderbedienungSchema.TAB_WOCHE + "\" WHERE \"ID\" = ?", parameter.ToArray());
+                    da = v.Skalar("SELECT last_insert_rowid()");
+                }
+                zuordnung[alt] = Convert.ToInt64(da, CultureInfo.InvariantCulture);
+            }
+            return zuordnung;
         }
 
         private static int PeriodenKopieren(DbVorgang v, Auswahl auswahl, string periodenliste,

@@ -51,6 +51,13 @@ namespace WindowsFormsApplication1
         public double Abmessung_Anschluß_Außenwand_Kellerdecke;
         public double Luftwechselrate;
         public double Wochenende;
+
+        /// <summary>Die Wochenendtage als Wochenmaske (Mo = Bit 0 … So = Bit 6), Vorgabe Sa + So (Schemaschritt K2).</summary>
+        public int Wochenendtage = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+
+        /// <summary>Das Land der Feiertage (ISO-Kürzel); <c>null</c> = nur bundeseinheitlich (Schemaschritt K2).</summary>
+        public string Feiertagsland;
+
         public double Ferien;
         public double Ferienbeginn_1;
         public double Ferienende_1;
@@ -349,6 +356,8 @@ namespace WindowsFormsApplication1
             Abmessung_Anschluß_Außenwand_Kellerdecke = 0;
             Luftwechselrate = 0;
             Wochenende = 0;
+            Wochenendtage = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+            Feiertagsland = null;
             Ferien = 0;
             Ferienbeginn_1 = 0;
             Ferienende_1 = 0;

@@ -291,6 +291,8 @@ namespace WindowsFormsApplication1
                 });
 
             List<Periodenzeile> perioden = Perioden(zeilen);
+            Kalendergemeinschaft.Ausbreiten(zeilen, perioden);
+            zeilen = Kalendergemeinschaft.OhneGemeinsam(zeilen);
             foreach (Kalenderzeile z in zeilen)
             {
                 Kalenderlesung l = Kalenderleser.Lesen(z, perioden);
@@ -309,11 +311,11 @@ namespace WindowsFormsApplication1
         private static List<Periodenzeile> Perioden(IEnumerable<Kalenderzeile> zeilen)
         {
             var liste = new List<Periodenzeile>();
+            bool neu = Kalendergemeinschaft.SchrittSteht();
             foreach (Kalenderzeile z in zeilen)
             {
                 DataTable t = DataRepository.GetDataTable(
-                    "SELECT ID, ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, " +
-                    "Woche, WieWochentag FROM \"" + KonditionierungSchema.TAB_PERIODE +
+                    "SELECT " + Kalendergemeinschaft.Periodenspalten("", neu) + " FROM \"" + KonditionierungSchema.TAB_PERIODE +
                     "\" WHERE ID_Kalender = ? ORDER BY Rang DESC", new DbParam("@k", z.Id));
                 if (t == null) continue;
                 foreach (DataRow r in t.Rows)
@@ -331,6 +333,8 @@ namespace WindowsFormsApplication1
                         Aus = (Lang(r, "Aus") ?? 0) != 0,
                         Woche = Text(r, "Woche"),
                         WieWochentag = Ganz(r, "WieWochentag"),
+                        GiltFuer = neu ? Ganz(r, "Gilt_Fuer") : null,
+                        IdWoche = neu ? Lang(r, "ID_Woche") : null,
                     });
             }
             return liste;
@@ -457,10 +461,20 @@ namespace WindowsFormsApplication1
                     geschrieben = true;
                 }
 
+            // DER GEMEINSAME KALENDER (Schemaschritt KalenderbedienungSchema): Der Arbeitsstand traegt seine Perioden als
+            // Kopien je Groesse. Aendert sich ein Kalender, werden alle Groessen geschrieben, die Gemeinschaftsperioden
+            // aufgeloest und die Kopien danach wieder zusammengefuehrt - so bleibt eine abgewaehlte oder geloeschte Zeile weg.
+            Kalendergemeinschaft.Schluessel gemeinsamerEigner = Kalendergemeinschaft.Schluessel.Von(eigner);
+            bool gemeinsam = Kalendergemeinschaft.SchrittSteht() && Kalendergemeinschaft.HatAusgebreitete(v, gemeinsamerEigner);
+            bool kalenderGeaendert = Konditionierungsgroessen.Alle.Any(g =>
+                !(Kalendervergleich.KalenderGleich(alt.Kalender(g), neu.Kalender(g)) &&
+                  (neu.Kalender(g) == null || alt.Herkunft(g).Equals(neu.Herkunft(g)))));
+            bool alleSchreiben = gemeinsam && kalenderGeaendert;
+
             foreach (Konditionierungsgroesse g in Konditionierungsgroessen.Alle)
             {
                 Konditionierungskalender ka = alt.Kalender(g), kn = neu.Kalender(g);
-                if (Kalendervergleich.KalenderGleich(ka, kn) && (kn == null || alt.Herkunft(g).Equals(neu.Herkunft(g))))
+                if (!alleSchreiben && Kalendervergleich.KalenderGleich(ka, kn) && (kn == null || alt.Herkunft(g).Equals(neu.Herkunft(g))))
                     continue;
                 if (kn == null)
                     v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
@@ -472,6 +486,12 @@ namespace WindowsFormsApplication1
                     if (!e.Ok) return e;
                 }
                 geschrieben = true;
+            }
+
+            if (alleSchreiben)
+            {
+                Kalendergemeinschaft.Aufloesen(v, gemeinsamerEigner);
+                Kalendergemeinschaft.Zusammenfuehren(v, gemeinsamerEigner, out _);
             }
 
             if (mitBestand)

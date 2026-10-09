@@ -44,6 +44,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Merker <c>Wochenende</c>; die Rechnung liest ihn nicht, nur den Wert (Konzept 3.3).</summary>
         public double Wochenendmerker { get; set; }
 
+        /// <summary>
+        /// Die Wochenendtage des Gebäudes als Wochenmaske (Mo = Bit 0 … So = Bit 6; Spalte <c>Wochenendtage</c>, Schemaschritt
+        /// <see cref="KalenderbedienungSchema"/>); Vorgabe Sa + So. Die Wochenendzeile der Matrix gilt an diesen Tagen.
+        /// </summary>
+        public int Wochenendtage { get; set; } = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+
         /// <summary><c>Ferienbeginn_1…4</c> als Jahrestag; 0 oder 366 an einer Grenze heißt „aus".</summary>
         public double[] Ferienbeginn { get; } = new double[FERIENZEITRAEUME];
 
@@ -113,7 +119,8 @@ namespace WindowsFormsApplication1
             {
                 SollTag = SollTag, SollNacht = SollNacht, SollWochenende = SollWochenende, SollFerien = SollFerien,
                 NachtBeginn = NachtBeginn, NachtEnde = NachtEnde, Ferienmerker = Ferienmerker,
-                Wochenendmerker = Wochenendmerker, Sollwertprofil = Sollwertprofil, KopplungWirksam = KopplungWirksam,
+                Wochenendmerker = Wochenendmerker, Wochenendtage = Wochenendtage, Sollwertprofil = Sollwertprofil,
+                KopplungWirksam = KopplungWirksam,
                 KuehlSollwert = KuehlSollwert, KuehlSollwertNacht = KuehlSollwertNacht, KuehlungWirksam = KuehlungWirksam,
                 LuftwechselInfiltration = LuftwechselInfiltration, LuftwechselNutzer = LuftwechselNutzer,
                 Luftwechselrate = Luftwechselrate, LuftwechselAusGesamtangabe = LuftwechselAusGesamtangabe,
@@ -143,6 +150,7 @@ namespace WindowsFormsApplication1
                 NachtEnde = NachtEnde ?? gebaeude.NachtEnde,
                 Ferienmerker = gebaeude.Ferienmerker,
                 Wochenendmerker = gebaeude.Wochenendmerker,
+                Wochenendtage = gebaeude.Wochenendtage,
                 Sollwertprofil = Sollwertprofil ?? gebaeude.Sollwertprofil,
                 KopplungWirksam = gebaeude.KopplungWirksam,
                 KuehlSollwert = KuehlSollwert ?? gebaeude.KuehlSollwert,

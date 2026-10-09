@@ -49,6 +49,7 @@ namespace WindowsFormsApplication1
                 NachtEnde = g.Nachtabsenkung_Ende,
                 Ferienmerker = g.Ferien,
                 Wochenendmerker = g.Wochenende,
+                Wochenendtage = g.Wochenendtage,
                 Sollwertprofil = g.Sollwertprofil,
                 KopplungWirksam = kopplungWirksam,
                 KuehlSollwert = g.Kuehl_Sollwert,
