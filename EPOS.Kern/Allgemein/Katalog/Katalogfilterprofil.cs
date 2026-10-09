@@ -22,7 +22,13 @@ namespace WindowsFormsApplication1
         Stromganglinie,
 
         /// <summary>Solarthermieganglinie — <c>Tab_Solarganglinie_STAMM</c> (1 Satz), MIT Beschreibung.</summary>
-        Solarganglinie
+        Solarganglinie,
+
+        /// <summary>
+        /// PV-Ganglinie — <c>Tab_PvGanglinie_STAMM</c> (Schemaschritt 205), MIT Beschreibung und Raster
+        /// (Spalte Zeitintervall, 60 oder 15 Minuten).
+        /// </summary>
+        PvGanglinie
     }
 
     /// <summary>
@@ -940,11 +946,11 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(SpBezeichner, t("KFLT_SP_BEZEICHNER"))
             };
 
-            if (art == Zeitreihenart.Stromganglinie)
+            if (art == Zeitreihenart.Stromganglinie || art == Zeitreihenart.PvGanglinie)
                 spalten.Add(new Katalogspalte(SpZeitintervall, t("KFLT_SP_ZEITINTERVALL"), "",
                                               Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz));
 
-            if (art == Zeitreihenart.Solarganglinie)
+            if (art == Zeitreihenart.Solarganglinie || art == Zeitreihenart.PvGanglinie)
                 spalten.Add(new Katalogspalte(SpBeschreibung, t("KFLT_SP_BESCHREIBUNG"),
                                               rang: Katalogspaltenrang.BeiPlatz));
 

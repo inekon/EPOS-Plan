@@ -249,6 +249,10 @@ namespace WindowsFormsApplication1
             // Statuspunkt nicht - der Lauf rechnet dann das Kollektorfeld. Die Ganglinie
             // steht nur im Vorhanden-Merkmal, nicht in der Namensliste.
             if (SolarganglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[SOLAR].Vorhanden = true;
+
+            // PV (PVG, Schemaschritt 205): dieselbe Regel - eine vollstaendige PV-Ganglinie rechnet anstelle der
+            // Module und faerbt den Statuspunkt der Kachel auch ohne Anlagenzeile.
+            if (PvGanglinieWeiche.Lesen(idProjekt).Vollstaendig) _eintraege[PV].Vorhanden = true;
         }
 
         /// <summary>Namen der zugeordneten Gebäude (Verbund wie in <c>WizardParent.LoadZGeb</c>).</summary>
