@@ -315,8 +315,16 @@ und endet um 24:00 des Endtags. Leer heißt ganzjährig; ein Zeitraum über das 
 
 **Feiertage als Regel (F11).** Die neun bundeseinheitlichen Feiertage (Neujahr, Karfreitag, Ostermontag, 1. Mai,
 Christi Himmelfahrt, Pfingstmontag, 3. Oktober, 1. und 2. Weihnachtstag) stehen als Regelkennung in der Periode, nicht
-als Jahrestag. Der Lauf löst sie gegen das Referenzjahr auf — das Osterdatum als Rechenvorschrift — und bildet Tag und
-Monat im Gemeinjahr ab; Länderfeiertage sind gewöhnliche Perioden. **Ring:** Für Rampe und Vorlauf ist das Jahr ein
+als Jahrestag; die acht Landesregeln ebenso (Feiertagsland am Gebäude). **Die Konvention des Gemeinjahrs (E114):** Im
+Regelfall ist kein Jahresdatum relevant. Ohne Preisreihe mit Jahr liegen die Regeln im Wochentagsraster des Laufs
+(`Gemeinjahrkalender`: im Gebäudelauf die Wochenendmaske des Ortszeit-Kalenders, im Zapfkalender die Kennzeichen der
+Klimaregion): Ostersonntag ist der Sonntag des Rasters am nächsten zum Jahrestag 98 (8. April) — ein Gleichstand kann in
+einer Woche von sieben Tagen nicht eintreten, sonst gälte der frühere —, Karfreitag liegt 2 Tage davor, Ostermontag 1,
+Himmelfahrt 39, Pfingstmontag 50 und Fronleichnam 60 Tage danach; Buß- und Bettag ist der letzte Mittwoch des Rasters vor
+dem Jahrestag 327 (23. November). So fallen die beweglichen Feiertage auf ihren Wochentag in derselben Woche, die
+Wochenprofile, Standardlastprofile und Zapfkalender lesen. Feste Feiertage stehen auf Tag und Monat. Nur wenn die aktive
+Variante eine Preisreihe mit Jahr trägt, liegen Ostern und Buß- und Bettag auf den echten Daten dieses Jahres (Tag und
+Monat im Gemeinjahr); das Raster bleibt das des Laufs. **Ring:** Für Rampe und Vorlauf ist das Jahr ein
 Ring; ein Sprung am 1. Januar greift in die Dezemberstunden wie der Vorlauf (Leitkonzept 4.6).
 
 ### 3.3 Vorgabe-Matrix und Standardfahrplan — abgeleitet bis angelegt, bitgleich
@@ -1520,7 +1528,7 @@ und den Schemaweg entschieden (letzte vier Zeilen).
 | P15 Woher kommt die Vorschlagsspanne der manuellen Aufheizzeit? (03.10.2026) | **(b)**: aus τ₂ des Gebäudes (langsame Zeitkonstante des Zweikapazitätenmodells), keine feste Bauart-Tabelle; dazu die bemessene Zeit aus der Herleitungszeile | 7.6; Festlegung 40 mit der Regel [max(1, t_auf,max); min(47, ⌈τ₂ · ln 10⌉)] |
 | Schemaweg des Schritts KP-S4 (03.10.2026) | Neue Ergebnisspalte `Aufheiz_Art` an Gebäude und Zone per `ADD COLUMN`, `Aufheiz_Bemessung` behält die Variante, kein Neubau von `Tab_ErgebnisGebaeude`; `GEKOPPELT` an der Zone als kleiner Neubau von `Tab_ErgebnisZone` im selben Schritt; Export `Geb[n].Aufheizart`, Abweichungsmerkmal „Art" | 4.8, 5.3, 5.4; Festlegungen 39, 43 |
 
-### 9.10 Entscheide des Anwenders (E110, E111, E112, 09.10.2026)
+### 9.10 Entscheide des Anwenders (E110, E111, E112, E114, 09.10.2026)
 
 Der Anwender hat am 09.10.2026 das Mockup [`Mockups/Konditionierung_Kalender.html`](Mockups/Konditionierung_Kalender.html) angenommen und damit die
 Empfehlungen des [Befundpapiers](../ueberholt/2026-10-09_Befund_Kalenderbedienung_Konditionierung.md) (Abschnitt 4)
@@ -1535,6 +1543,7 @@ entschieden. Ausgestaltung in 7.8, Stufen in 8.
 | Feiertage je Bundesland? | **alle 16 Länder als Regeln, Wahl am Gebäude** | Stufe 2 (Schemaschritt 207); in Stufe 1 bundeseinheitlich plus feste Datumsbereiche |
 | Liest der Tagesbilanz-Weg das Wochenende des Gebäudes und die Ferienliste? (E111) | **nein** — er bleibt bei Samstag und Sonntag und den vier Ferienspalten `Ferienbeginn/-ende_1…4` | 7.8; der Tagesbilanz-Weg ist eingefroren (`Altweg/`), die Einschränkung ist benannt; Generator und Zapfkalender lesen Wochenende und Ferienliste |
 | Zählen Feiertage im Zapfkalender auch mit der Vorgabe Samstag + Sonntag als Sonntag? (E112) | **ja** — Feiertage zählen im Zapfkalender unabhängig von der Wochenendmaske als Sonntag, auch am Samstag | 7.8; die Feiertage kommen aus den Regeln des Kerns (Feiertagsland des gebundenen Gebäudes, ohne Gebäude bundeseinheitlich); Basis R47 |
+| Hängt die Lage der beweglichen Feiertage an einem Jahr? (E114) | **nein, im Regelfall ist kein Jahresdatum relevant** — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November; nur eine Preisreihe mit Jahr setzt die echten Daten | 3.2; `Gemeinjahrkalender`, `Feiertage.Jahrestag`, `Landesfeiertage.Jahrestage`; Konditionierung, Jahresraster, Teppich, Betriebskalender und Zapfkalender lesen dieselbe Konvention; Basis R48 |
 
 ## 10. Nachweise, Abnahme, Einfrierregel, Wiki
 
