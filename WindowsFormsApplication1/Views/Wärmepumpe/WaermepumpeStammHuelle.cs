@@ -85,7 +85,7 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
             // UB-E3-b: die Klappliste der Kaeltemittel samt Vorgaben der Klasse (Schnellwahl im Stammblatt).
-            var daten = new WaermepumpeStammDaten { Kaeltemittelliste = EPOS.UI.Daten.Erzeuger.BivalenzAbbildung.Kaeltemittelliste() };
+            var daten = new WaermepumpeStammDaten { Kaeltemittelliste = BivalenzAbbildung.Kaeltemittelliste() };
 
             return new Dictionary<string, object>
             {
@@ -240,7 +240,7 @@ namespace WindowsFormsApplication1
                 RuecklaufMaxC = g.RuecklaufMaxC,
                 RuecklaufBezugC = g.RuecklaufBezugC,
                 RuecklaufAbwertungProzentJeK = g.RuecklaufAbwertungProzentJeK,
-                Kaeltemittelliste = EPOS.UI.Daten.Erzeuger.BivalenzAbbildung.Kaeltemittelliste(),
+                Kaeltemittelliste = BivalenzAbbildung.Kaeltemittelliste(),
                 NurLesen = m.m_bReadOnly
             };
         }
