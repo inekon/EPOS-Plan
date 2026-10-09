@@ -50080,5 +50080,8 @@ Chart</value>
   <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} Sätze gespeichert.</value>
   </data>
+  <data name="HZK_LBL_SUMME" xml:space="preserve">
+    <value>Summe [kWth]:</value>
+  </data>
 </root>
 

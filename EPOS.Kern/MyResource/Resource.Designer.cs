@@ -41556,6 +41556,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe [kWth]: ähnelt.
+        /// </summary>
+        public static string HZK_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("HZK_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff Variante: ähnelt.
         /// </summary>
         public static string HZK_LBL_TRAEGER {

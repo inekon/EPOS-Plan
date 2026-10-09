@@ -545,6 +545,24 @@ namespace WindowsFormsApplication1
                     TraegerGaben),
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+                // KATALOGAUSWAHL V1, STUFE 2 (KA-E-8): Bearbeiten je Bereich und Mehrfach-
+                // Bearbeiten. Die Projektkopie gibt es nur ausserhalb des Assistenten - dort
+                // zeigt ID_Kessel auf den Katalog. Geschrieben wird ueber den Kernweg in EINER
+                // Transaktion (HeizkesselStammCtrl.AnzeigefelderSchreibenAlle).
+                ["ProjektsatzWege"] = wizard ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(HeizkesselAdminHuelle.Profil(), stamm.SatzAnzeige(true, id)),
+                    Speichern = saetze => HeizkesselAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(HeizkesselAdminHuelle.Profil(), stamm.SatzAnzeige(false, id)),
+                    Speichern = saetze => HeizkesselAdminHuelle.SammelSchreiben(false, saetze)
+                },
+                ["NeuGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => OhneTitel(Gaben("", "", neu: true))),
+                ["SummePtherm"] = new Func<string>(() => SummeLeistung(idType, wizard, modelle)),
+                ["LabelSumme"] = Text_("HZK_LBL_SUMME", "Summe [kWth]:"),
 
                 // OHNE "VerwaltungGaben" seit dem 15.09.2026: Der Knopf
                 // "Administration..." und die Ueberlagerung dahinter sind entfallen -
@@ -619,6 +637,28 @@ namespace WindowsFormsApplication1
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
                 ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")
             };
+        }
+
+        /// <summary>
+        /// Die Summe der thermischen Leistungen der Projektliste: die Projektkopien, im
+        /// Assistenten die Katalogsaetze (dort zeigt <c>ID_Kessel</c> auf den Katalog).
+        /// </summary>
+        private static string SummeLeistung(int idType, bool wizard, List<WErzeugerModel> modelle)
+        {
+            double summe = 0;
+            var projekt = new HeizkesselCtrl();
+            var stamm = new HeizkesselStammCtrl();
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+                if (!wizard) summe += projekt.ProjektDetail(m.ID_Kessel)?.Ptherm ?? 0;
+                else
+                {
+                    stamm.ReadById(m.ID_Kessel);
+                    if (stamm.rows > 0) summe += stamm.Ptherm;
+                }
+            }
+            return summe.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
         }
 
         // =================================================================================
