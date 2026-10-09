@@ -44292,15 +44292,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0}, Modellansicht (MVD): {1} ähnelt.
-        /// </summary>
-        public static string IMP_IFC_PROT_DATEI_MVD {
-            get {
-                return ResourceManager.GetString("IMP_IFC_PROT_DATEI_MVD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei: {0}, keine Modellansicht (MVD) angegeben ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_DATEI_OHNE_MVD {
@@ -128102,7 +128093,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer: Die Übergabe rechnet mit der Entladeseite als Näherung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer: Die Übergabe rechnet die Ladeseite mit dem Rücklauf aus der untersten Pufferzone; die Entladeseite wird nicht gerechnet. ähnelt.
         /// </summary>
         public static string WPA_HINWEIS_EINBINDUNG_PUFFER {
             get {

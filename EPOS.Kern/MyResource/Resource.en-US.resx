@@ -49213,7 +49213,7 @@ chart</value>
     <value>not selected</value>
   </data>
   <data name="WPA_HINWEIS_EINBINDUNG_PUFFER" xml:space="preserve">
-    <value>Buffer: the heat emission is calculated with the discharge side as an approximation.</value>
+    <value>Buffer: the heat emission is calculated on the charging side with the return from the lowest buffer zone; the discharge side is not calculated.</value>
   </data>
   <data name="WPA_CHK_VORWAERMBETRIEB" xml:space="preserve">
     <value>Preheating mode (boiler in series)</value>

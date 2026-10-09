@@ -49220,7 +49220,7 @@ Chart</value>
     <value>nicht gewählt</value>
   </data>
   <data name="WPA_HINWEIS_EINBINDUNG_PUFFER" xml:space="preserve">
-    <value>Puffer: Die Übergabe rechnet mit der Entladeseite als Näherung.</value>
+    <value>Puffer: Die Übergabe rechnet die Ladeseite mit dem Rücklauf aus der untersten Pufferzone; die Entladeseite wird nicht gerechnet.</value>
   </data>
   <data name="WPA_CHK_VORWAERMBETRIEB" xml:space="preserve">
     <value>Vorwärmbetrieb (Kessel in Reihe)</value>
