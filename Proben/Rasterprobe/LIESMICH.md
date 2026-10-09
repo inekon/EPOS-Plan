@@ -1215,6 +1215,14 @@ Heizkessel bei Trennlinie unten, Detailzeile auf und „Detailzeile auf mit Kost
 (Kopf + 2 × 46 px), Projektliste 250 / 170 / 150 bzw. 160 / 120 / 110 px; Überlagerung „Bearbeiten…"
 offen: Liste unverändert, drei Rollbereiche (Projekt, Katalog, Überlagerung), keiner im anderen.
 
+**Heizkessel (Stufe 2b).** Nach „Bearbeiten…" öffnet die Probe je Fenster die Rückfrage „In die Datenbank
+übernehmen…" (Wirt: drei Zeilen — überschreibbar, gesperrt, Ursprung nicht bekannt, ein langer Name), misst den
+Zustand „Rückfrage-Überlagerung offen" und schließt sie mit Esc; rot, wenn die drei Zeilen fehlen oder Esc nicht
+schließt. **Ergebnis vom 09.10.2026, Stufe 2b:** **309 Zustände, 0 Verstöße, Gegenprobe rot** (verschachtelt 1 Paar,
+Dialogkörper rollt) — Rückgabe 0; Liste unverändert (648 / 138 / 259, 568 / 138 / 179, 548 / 138 / 159), drei
+Rollbereiche (Projekt, Katalog, Überlagerung), keiner im anderen — die Rückfrage hat keinen eigenen. Am selben Stand
+`fensterprobe.mjs`, `bannerprobe.mjs` und `katalogprobe.mjs` grün; `rasterprobe.mjs` wie vor (Z6 verfehlt, fremd).
+
 Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
 Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
 Wirt des Bausteins; die Überlagerung „Simulation…" des Gebäudes rollt als Ganzes um zwei Listen. Beide je
