@@ -39,7 +39,7 @@ namespace EPOS.Kern.Tests
                         ""out_min"": 0, ""out_max"": null, ""coeff1"": 1.21, ""coeff2"": 0.02, ""coeff3"": 0, ""coeff4"": -0.01, ""coeff5"": 0, ""coeff6"": 0 },
            ""eir-f-t"": { ""type"": ""bi_quad"", ""units"": ""si"", ""x_min"": 4, ""x_max"": 16, ""y_min"": 10, ""y_max"": 40,
                         ""out_min"": 0, ""out_max"": null, ""coeff1"": 0.44, ""coeff2"": -0.02, ""coeff3"": 0, ""coeff4"": 0.02, ""coeff5"": 0, ""coeff6"": 0 },
-           ""eir-f-plr"": { ""type"": ""quad"", ""units"": ""si"", ""x_min"": 0, ""x_max"": 1, ""coeff1"": 0.2, ""coeff2"": 0.3, ""coeff3"": 0.5 } } },
+           ""eir-f-plr"": { ""type"": ""quad"", ""units"": ""si"", ""x_min"": 0, ""x_max"": 1, ""coeff1"": 0.4, ""coeff2"": 0.1, ""coeff3"": 0.5 } } },
   ""1"": { ""eqp_type"": ""Chiller"", ""model"": ""ect_lwt"", ""ref_cap"": 500, ""ref_cap_unit"": ""kW"",
          ""full_eff"": 5.5, ""full_eff_unit"": ""cop"", ""compressor_type"": ""centrifugal"", ""condenser_type"": ""water"",
          ""compressor_speed"": ""variable"", ""min_plr"": null, ""min_unloading"": 0.15,
@@ -294,7 +294,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(lin.Teillastkurve_Lastgrad_Min);
             Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_EIN_AUS, lin.Verdichterregelung);
 
-            // Die Probe: Satz 0 (g(0,1) < 0,5) ohne Weg mit Hinweis, Satz 1 ohne Teillastkurve und ohne Hinweis.
+            // Die Probe: Satz 0 (g(0,1) < 0,3) ohne Weg mit Hinweis, Satz 1 ohne Teillastkurve und ohne Hinweis.
             KaeltemaschineImportDatei.Ergebnis e = KaeltemaschineImportDatei.AusText(COPPER_PROBE);
             Assert.Equal(2, e.Saetze.Count);
             Assert.Null(e.Saetze[0].Modell.Teillast_Weg);
@@ -373,7 +373,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die eingebauten Typkennfelder: jede Kurve normiert, Verdichterregelung überall; Weg KURVE oder LINEAR, wo die
-        /// Kurve plausibel ist — sieben Sätze (Turbo und Schraube mit fester Drehzahl, g(x_u) &lt; 0,5) bleiben ohne Weg.
+        /// Kurve plausibel ist — alle 34, auch die sieben Sätze mit starker Teillastabwertung (Turbo und Schraube mit fester
+        /// Drehzahl, g(x_u) zwischen 0,3 und 0,5).
         /// </summary>
         [Fact]
         public void Die_Typkennfelder_tragen_Verdichterregelung_und_plausible_Teillastkurven()
@@ -384,12 +385,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(34, modelle.Count);
             Assert.All(modelle, m => Assert.NotNull(m.Verdichterregelung));
             Assert.All(modelle, m => Assert.Null(KaeltemaschineStammCtrl.TeillastPruefen(m)));
-            Assert.Equal(24, modelle.Count(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_KURVE));
+            Assert.Equal(31, modelle.Count(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_KURVE));
             Assert.Equal(3, modelle.Count(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_LINEAR));
-            Assert.Equal(7, modelle.Count(m => m.Teillast_Weg == null));
-            Assert.Equal(7, hinweise.Count);
-            Assert.All(modelle.Where(m => m.Teillast_Weg == null),
-                       m => Assert.Equal(KaeltemaschineTeillastSchema.REGELUNG_STUFEN, m.Verdichterregelung));
+            Assert.Equal(0, modelle.Count(m => m.Teillast_Weg == null));
+            Assert.Empty(hinweise);
             foreach (KaeltemaschineModel m in modelle.Where(m => m.Teillast_Weg == KaeltemaschineTeillastSchema.WEG_KURVE))
             {
                 Assert.Equal(1.0, m.Teillastkurve_a.Value + m.Teillastkurve_b.Value + m.Teillastkurve_c.Value, 5);

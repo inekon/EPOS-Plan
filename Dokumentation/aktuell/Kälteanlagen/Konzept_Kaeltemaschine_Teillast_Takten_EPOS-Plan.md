@@ -149,8 +149,10 @@ Zeilen, sonst nur linear), x_u = kleinster Lastgrad der Zeilen. (c) Eingabe im K
 (d) Vorgabekurve je Verdichterregelung, wenn `Teillast_Weg = KURVE` ohne Beiwerte gewählt ist (KM3‑Q3).
 
 **Plausibilität (Prüfregel, Vorgabe).** Eine Kurve gilt, wenn `E(x) > 0` auf [x_u, 1], `0,9 ≤ EIRFPLR(1) ≤ 1,1` und
-`0,5 ≤ g(x) ≤ 2,0` auf [x_u, 1]; sonst lehnt `KaeltemaschineStammCtrl.Pruefen` sie benannt ab. Im Lauf rechnet eine
-ungültige Kurve (etwa aus einem Altbestand) linear und meldet das einmal je Maschine im Protokoll.
+`0,3 ≤ g(x) ≤ 2,0` auf [max(x_u, 0,1), 1]; sonst lehnt `KaeltemaschineStammCtrl.Pruefen` sie benannt ab. Die untere
+Grenze 0,3 fängt Unsinn ab, lässt aber die starke Teillastabwertung von Turbo- und Schraubenverdichtern mit fester
+Drehzahl (g ≈ 0,35 bis 0,5) als reale Kurve zu. Dieselbe Grenze gilt für Import, Katalogprüfung und Vorgabekurven. Im
+Lauf rechnet eine ungültige Kurve (etwa aus einem Altbestand) linear und meldet das einmal je Maschine im Protokoll.
 
 **Zahlenbeispiel (nachgerechnet).** EER_KF = 4,0, Q_av = 20 kW, Kurve a = 0,10, b = 0,60, c = 0,30 (EIRFPLR(1) = 1,0),
 x_u = 0,2. Last 10 kWh, PLR 0,5: E(0,5) = 0,475; P_el = 20/4 · 0,475 = **2,375 kWh**, EER 4,21 (linear: 2,500 kWh).

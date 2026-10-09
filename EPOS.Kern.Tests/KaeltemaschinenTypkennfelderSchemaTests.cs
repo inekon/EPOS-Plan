@@ -111,8 +111,8 @@ namespace EPOS.Kern.Tests
             if (KaeltemaschineTeillastSchema.EingabespaltenVorhanden(TAB))
             {
                 Assert.Equal((long)Anzahl, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE ReadOnly = 1 AND Verdichterregelung IS NOT NULL"));
-                Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE Teillast_Weg IS NOT NULL"));
-                Assert.Equal(24L, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE Teillast_Weg = 'KURVE' AND Teillastkurve_c IS NOT NULL"));
+                Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE Teillast_Weg IS NOT NULL"));
+                Assert.Equal(31L, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE Teillast_Weg = 'KURVE' AND Teillastkurve_c IS NOT NULL"));
                 Assert.Equal(0, KaeltemaschinenTypkennfelder.Ergaenzen());
             }
 

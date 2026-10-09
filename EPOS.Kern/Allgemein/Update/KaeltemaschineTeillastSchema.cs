@@ -116,8 +116,11 @@ namespace WindowsFormsApplication1
         /// <summary>Bereich von EIRFPLR(1), in dem eine Kurve gilt (Fachkonzept 3.2).</summary>
         public const double EIRFPLR1_MIN = 0.9, EIRFPLR1_MAX = 1.1;
 
-        /// <summary>Bereich des EER-Verhältnisses g(x) = x / E(x) auf [x_u, 1] (Fachkonzept 3.2).</summary>
-        public const double G_MIN = 0.5, G_MAX = 2.0;
+        /// <summary>
+        /// Bereich des EER-Verhältnisses g(x) = x / E(x) auf [x_u, 1] (Fachkonzept 3.2). Die untere Grenze 0,3 fängt
+        /// Unsinn ab, lässt aber die starke Teillastabwertung von Verdichtern mit fester Drehzahl (g ≈ 0,35 bis 0,5) zu.
+        /// </summary>
+        public const double G_MIN = 0.3, G_MAX = 2.0;
 
         /// <summary>
         /// Unterer Lastgrad, ab dem die Prüfung g(x) hält, wenn x_u und die Mindestteillast fehlen oder darunter liegen

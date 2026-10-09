@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Prüft die acht Felder von Teillast und Takten (<see cref="KaeltemaschineTeillastSchema"/>) — ohne Datenbank.
         /// Persistenzwerte aus den Wertelisten, x_u und C_d in 0…1, die Beiwerte nur zu dritt und in ihren Eingabegrenzen,
-        /// die Kurve plausibel nach Fachkonzept 3.2: E(x) &gt; 0 und 0,5 ≤ g(x) ≤ 2,0 auf [x_u, 1], 0,9 ≤ EIRFPLR(1) ≤ 1,1.
+        /// die Kurve plausibel nach Fachkonzept 3.2: E(x) &gt; 0 und 0,3 ≤ g(x) ≤ 2,0 auf [x_u, 1], 0,9 ≤ EIRFPLR(1) ≤ 1,1.
         /// <c>null</c>, wenn alles passt, sonst der Grund in der Oberflächensprache.
         /// </summary>
         public static string TeillastPruefen(KaeltemaschineModel m)

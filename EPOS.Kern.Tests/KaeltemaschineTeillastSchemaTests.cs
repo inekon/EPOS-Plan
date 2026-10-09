@@ -111,10 +111,10 @@ namespace EPOS.Kern.Tests
             foreach ((string tabelle, string spalte, string _) in KaeltemaschineTeillastSchema.SPALTEN)
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" IS NOT NULL" +
                                       (tabelle == KaeltemaschineTeillastSchema.TAB_STAMM ? " AND " + NICHT_TYPKENNFELD : "")));
-            // Die 34 Typkennfelder: Verdichterregelung überall, Weg an 27 (24 Kurven, 3 linear), C_d und Randweg leer.
+            // Die 34 Typkennfelder: Verdichterregelung überall, Weg an allen 34 (31 Kurven, 3 linear), C_d und Randweg leer.
             Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Verdichterregelung IS NOT NULL"));
-            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));
-            Assert.Equal(24L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg = 'KURVE' AND " +
+            Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));
+            Assert.Equal(31L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg = 'KURVE' AND " +
                                    "Teillastkurve_a IS NOT NULL AND Teillastkurve_Lastgrad_Min IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Taktverlustfaktor_Cd IS NOT NULL OR " +
                                   "Kennfeld_Randweg IS NOT NULL"));
@@ -178,7 +178,7 @@ namespace EPOS.Kern.Tests
             KaeltemaschinenTypkennfelder.Ergaenzungsergebnis e = KaeltemaschinenTypkennfelder.ErgaenzenMitZaehlung();
             Assert.Equal(new KaeltemaschinenTypkennfelder.Ergaenzungsergebnis(34, 0), e);
             Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Verdichterregelung IS NOT NULL"));
-            Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));
+            Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Teillast_Weg IS NOT NULL"));
             Assert.Equal("DREHZAHL", Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT Verdichterregelung FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel = ?", new DbParam("?", GEPFLEGT)),
                 CultureInfo.InvariantCulture));

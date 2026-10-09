@@ -66,14 +66,14 @@
         /// <summary>Vorgabekurve EIN_AUS, Beiwert c.</summary>
         public const double VORGABEKURVE_EIN_AUS_C = 0.049334;
 
-        /// <summary>Vorgabekurve STUFEN, Beiwert a — Copper-Datensatz 173 (g(0,5) = 1,007).</summary>
-        public const double VORGABEKURVE_STUFEN_A = 0.087564;
+        /// <summary>Vorgabekurve STUFEN, Beiwert a — Copper-Datensatz 146 (g(0,5) = 0,985).</summary>
+        public const double VORGABEKURVE_STUFEN_A = 0.251864;
 
         /// <summary>Vorgabekurve STUFEN, Beiwert b.</summary>
-        public const double VORGABEKURVE_STUFEN_B = 0.722753;
+        public const double VORGABEKURVE_STUFEN_B = 0.275640;
 
         /// <summary>Vorgabekurve STUFEN, Beiwert c.</summary>
-        public const double VORGABEKURVE_STUFEN_C = 0.189684;
+        public const double VORGABEKURVE_STUFEN_C = 0.472495;
 
         /// <summary>Vorgabekurve DREHZAHL, Beiwert a — Copper-Datensatz 49 (g(0,5) = 1,306).</summary>
         public const double VORGABEKURVE_DREHZAHL_A = 0.087861;

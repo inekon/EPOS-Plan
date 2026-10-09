@@ -292,6 +292,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.KM_MSG_TEILLASTKURVE_UNPLAUSIBEL, KaeltemaschineStammCtrl.Pruefen(w));
             // Das Zahlenbeispiel des Fachkonzepts 3.2 besteht (x_u 0,2).
             Assert.True(KaeltemaschineStammCtrl.KurvePlausibel(0.10, 0.60, 0.30, 0.2));
+            // Starke Teillastabwertung: g(0,1) = 0,425 liegt zwischen 0,3 und 0,5 und ist plausibel; g(0,1) = 0,24 nicht.
+            Assert.True(KaeltemaschineStammCtrl.KurvePlausibel(0.20, 0.30, 0.50, 0.1));
+            Assert.False(KaeltemaschineStammCtrl.KurvePlausibel(0.40, 0.10, 0.50, 0.1));
         }
 
         [Fact]
