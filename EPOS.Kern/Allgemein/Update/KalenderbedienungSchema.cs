@@ -390,8 +390,22 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>Steht der Schritt? <see cref="Lesbar"/>, beide Neubauten, alle Indizes und Trigger.</summary>
-        public static bool Vollstaendig()
+        /// <summary>
+        /// Beginnt die Spaltenfolge der Sicht <c>Abfrage_Projektgebaeude</c> mit
+        /// <see cref="GebaeudeSchema.SICHT_KALENDERBEDIENUNG"/> (der zwoelfte Sichtneubau)?
+        /// </summary>
+        public static bool SichtSteht()
+        {
+            List<string> ist = GebaeudeSchema.SichtSpalten();
+            string[] soll = GebaeudeSchema.SICHT_KALENDERBEDIENUNG;
+            return ist.Count >= soll.Length && ist.Take(soll.Length).SequenceEqual(soll, StringComparer.Ordinal);
+        }
+
+        /// <summary>Steht der Schritt? <see cref="Lesbar"/>, die Sicht, beide Neubauten, alle Indizes und Trigger.</summary>
+        public static bool Vollstaendig() => SichtSteht() && TabellenStehen();
+
+        /// <summary>Stehen Tabellen, Spalten, Neubauten, Indizes und Trigger (alles außer der Sicht)?</summary>
+        private static bool TabellenStehen()
         {
             if (!Lesbar()) return false;
             string kal = Convert.ToString(DataRepository.ExecuteScalar(
@@ -434,9 +448,24 @@ namespace WindowsFormsApplication1
                 bericht?.Add("steht bereits - nichts zu tun");
                 return 0;
             }
+            if (TabellenStehen())
+            {
+                // Nur die Sicht fehlt (ein frueherer Sichtneubau hat sie in seiner Form gebaut): die Migration der
+                // Bestandsdaten laeuft NICHT ein zweites Mal - der Ferienspiegel vergaebe sonst neue Ids.
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    v.Ausfuehren(GebaeudeSchema.SQL_VIEW_DROP);
+                    v.Ausfuehren(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG);
+                    v.Commit();
+                }
+                bericht?.Add("Sicht " + GebaeudeSchema.VIEW + " neu gebaut (" +
+                             GebaeudeSchema.SICHT_KALENDERBEDIENUNG.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                return 1;
+            }
 
             int aenderungen = 0;
             var zeilen = new List<string>();
+            bool sicht = !SichtSteht();
             using (DbVorgang v = DataRepository.VorgangOhneFremdschluessel())
             {
                 try
@@ -480,6 +509,17 @@ namespace WindowsFormsApplication1
                     aenderungen += spalten;
                     zeilen.Add(spalten.ToString(CultureInfo.InvariantCulture) + " von 4 Spalte(n) " + SPALTE_WOCHENENDTAGE + "/" +
                                SPALTE_FEIERTAGSLAND + " an " + string.Join(", ", Gebaeudetabellen) + " angelegt");
+
+                    // ---- 3a. Der zwoelfte Sichtneubau: Der Lauf liest das Gebaeude ueber Abfrage_Projektgebaeude; die
+                    //          beiden Spalten stehen dort hinter der Kuehlkurve (GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG).
+                    if (sicht)
+                    {
+                        v.Ausfuehren(GebaeudeSchema.SQL_VIEW_DROP);
+                        v.Ausfuehren(GebaeudeSchema.SQL_VIEW_KALENDERBEDIENUNG);
+                        aenderungen++;
+                        zeilen.Add("Sicht " + GebaeudeSchema.VIEW + " neu gebaut (" +
+                                   GebaeudeSchema.SICHT_KALENDERBEDIENUNG.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    }
 
                     // ---- 4. Die Migration: Ferienliste aus den Spalten, gekoppelte Kopien in den gemeinsamen Kalender.
                     zeilen.AddRange(Bestandsform(v));

@@ -236,6 +236,30 @@ namespace EPOS.Kern.Tests
                         vorrichtung.IndexOf("PvGanglinieSchema.Ausfuehren(null)", StringComparison.Ordinal));
         }
 
+        [Fact]
+        public void Die_Sicht_traegt_Wochenende_und_Feiertagsland_bis_ins_Projektmodell()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(KalenderbedienungSchema.SichtSteht());
+            Assert.Equal(GebaeudeSchema.SICHT_AKTUELL, GebaeudeSchema.SichtSpalten());
+            Assert.Equal(GebaeudeSchema.KALENDER_SPALTEN, GebaeudeSchema.SichtSpalten().Skip(110));
+
+            long projekt = Zahl("SELECT ID_Projekt FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1051);
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll((int)projekt);
+            ProjektGebaeudeModel vorher = Assert.Single(ctrl.items, g => g.ID_Gebaeude == GEBAEUDE_1051);
+            Assert.Equal(KalenderbedienungSchema.WOCHENENDE_VORGABE, vorher.Wochenendtage);
+            Assert.Null(vorher.Feiertagsland);
+
+            // Freitag + Samstag (Bit 4 und 5), Land Bayern.
+            Gut("UPDATE Tab_Gebaeude SET Wochenendtage = 48, Feiertagsland = 'BY' WHERE ID = ?", GEBAEUDE_1051);
+            ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll((int)projekt);
+            ProjektGebaeudeModel nachher = Assert.Single(ctrl.items, g => g.ID_Gebaeude == GEBAEUDE_1051);
+            Assert.Equal(48, nachher.Wochenendtage);
+            Assert.Equal("BY", nachher.Feiertagsland);
+        }
+
         // =================================================================
         //  Helfer
         // =================================================================
