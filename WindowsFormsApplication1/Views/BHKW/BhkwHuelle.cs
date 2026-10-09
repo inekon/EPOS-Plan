@@ -366,7 +366,10 @@ namespace WindowsFormsApplication1
             bool ok = false;
             BlazorDialogForm<BhkwDialog> dlg = null;
             var vormerkung = new Projektkopievormerkung(
-                name => new BHKWCtrl().DeleteFromProjekt(name, projektId));
+                name => new BHKWCtrl().DeleteFromProjekt(name, projektId),
+                // Nachzug zu A5: eine beim Uebernehmen neu angelegte Traegervariante geht mit Abbrechen.
+                (carrier, zuordnungNeu, katalogNeu) =>
+                    EnergietraegerVarianteCtrl.AnlageZuruecknehmen(projektId, carrier, zuordnungNeu, katalogNeu));
 
             var werte = new Dictionary<string, object>(
                 Gaben(besitzer, projektId, idType, modelle, wizard: false, vormerkung: vormerkung))
@@ -639,6 +642,10 @@ namespace WindowsFormsApplication1
 
             if (traeger.CarrierId <= 0)
                 return new AufnahmeErgebnis(null, traeger.Meldung, true);
+
+            // Was der Aufruf neu schrieb, nimmt ein Abbrechen wieder zurueck (Projektkopievormerkung).
+            vormerkung?.TraegerAngelegt(traeger.CarrierId,
+                traeger.Ausgang == EnergietraegerVarianteCtrl.VariantenAnlage.Angelegt, traeger.KatalogNeu);
 
             var model = new WErzeugerModel
             {

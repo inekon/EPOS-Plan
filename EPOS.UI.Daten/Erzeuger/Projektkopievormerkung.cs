@@ -22,6 +22,13 @@ namespace WindowsFormsApplication1
     /// sie verweist. Eine schon vorhandene Kopie, die die Übernahme nur wiederverwendet (der Kern kopiert
     /// idempotent über den Namen), bleibt beim Abbrechen stehen.</para>
     ///
+    /// <para><b>Auch die Trägervariante</b> (Nachzug zu A5): „In das Projekt übernehmen“ legt bei Kessel und BHKW
+    /// vor der Kopie die Energieträgervariante an (<c>EnergietraegerVarianteCtrl.Anlegen</c>: Katalogträger,
+    /// Preis und Projektzuordnung). Was davon in dieser Sitzung NEU entstand, merkt <see cref="TraegerAngelegt"/>;
+    /// Abbrechen nimmt es über den zweiten Delegaten zurück (<c>EnergietraegerVarianteCtrl.AnlageZuruecknehmen</c>,
+    /// der nur löscht, worauf keine Anlagenzeile und keine Preis-, Emissions- oder Ergebniszeile verweist).
+    /// OK lässt die Träger stehen — sie sind dann Teil des Projekts.</para>
+    ///
     /// <para>Plattformfrei und ohne Datenbank: Gelöscht wird über den Delegaten der Hülle
     /// (<c>…Ctrl.DeleteFromProjekt(bezeichner, projekt)</c>).</para>
     /// </summary>
@@ -30,11 +37,30 @@ namespace WindowsFormsApplication1
         private readonly Action<string> _loeschen;
         private readonly List<(string Bezeichner, int KopieId)> _entfernt = new List<(string, int)>();
         private readonly List<(string Bezeichner, int KopieId)> _angelegt = new List<(string, int)>();
+        private readonly Action<int, bool, bool> _traegerZuruecknehmen;
+        private readonly List<(int CarrierId, bool ZuordnungNeu, bool KatalogNeu)> _traeger =
+            new List<(int, bool, bool)>();
 
         /// <param name="loeschen">Löscht die Projektkopie mit diesem Bezeichner (im Projekt der Hülle).</param>
-        internal Projektkopievormerkung(Action<string> loeschen)
+        /// <param name="traegerZuruecknehmen">Nimmt eine neu angelegte Trägervariante zurück (Träger-Id, Zuordnung
+        /// neu, Katalogträger neu); <c>null</c> = der Dialog legt keine Träger an.</param>
+        internal Projektkopievormerkung(Action<string> loeschen, Action<int, bool, bool> traegerZuruecknehmen = null)
         {
             _loeschen = loeschen ?? throw new ArgumentNullException(nameof(loeschen));
+            _traegerZuruecknehmen = traegerZuruecknehmen;
+        }
+
+        /// <summary>Die in dieser Sitzung neu angelegten Trägervarianten (Prüfhilfe).</summary>
+        internal IReadOnlyList<(int CarrierId, bool ZuordnungNeu, bool KatalogNeu)> AngelegteTraeger => _traeger;
+
+        /// <summary>
+        /// „In das Projekt übernehmen“ hat eine Trägervariante angelegt: <paramref name="zuordnungNeu"/> = Preis und
+        /// Projektzuordnung sind neu, <paramref name="katalogNeu"/> = auch der Katalogträger. Ist beides
+        /// <c>false</c> (Träger war schon zugeordnet), bleibt nichts vorzumerken.
+        /// </summary>
+        internal void TraegerAngelegt(int carrierId, bool zuordnungNeu, bool katalogNeu)
+        {
+            if (carrierId > 0 && (zuordnungNeu || katalogNeu)) _traeger.Add((carrierId, zuordnungNeu, katalogNeu));
         }
 
         /// <summary>Die vorgemerkten Entfernungen (Prüfhilfe).</summary>
@@ -57,7 +83,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Dialog ist zu: <paramref name="ok"/> = mit OK — dann jede vorgemerkte und jede neu angelegte Kopie
-        /// löschen, auf die keine Zeile mehr verweist; sonst nur die neu angelegten. Danach ist die Vormerkung leer.
+        /// löschen, auf die keine Zeile mehr verweist; sonst nur die neu angelegten Kopien und danach die neu
+        /// angelegten Trägervarianten. Danach ist die Vormerkung leer.
         /// </summary>
         /// <param name="nochReferenziert">Verweist eine Zeile der Anlagenliste noch auf diese Kopie-Id?</param>
         internal void Abschliessen(bool ok, Func<int, bool> nochReferenziert)
@@ -69,8 +96,17 @@ namespace WindowsFormsApplication1
             foreach (var e in kandidaten.GroupBy(e => e.KopieId).Select(g => g.First()).ToList())
                 _loeschen(e.Bezeichner);
 
+            // Abbrechen: die neu angelegten Trägervarianten zurücknehmen — NACH den Kopien, in umgekehrter
+            // Reihenfolge; je Träger einmal, mit allem, was in der Sitzung an ihm neu war.
+            if (!ok && _traegerZuruecknehmen != null)
+            {
+                foreach (var g in _traeger.GroupBy(t => t.CarrierId).Reverse().ToList())
+                    _traegerZuruecknehmen(g.Key, g.Any(t => t.ZuordnungNeu), g.Any(t => t.KatalogNeu));
+            }
+
             _entfernt.Clear();
             _angelegt.Clear();
+            _traeger.Clear();
         }
     }
 }
