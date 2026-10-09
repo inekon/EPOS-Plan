@@ -1052,14 +1052,14 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `2026-10-08_R44_Kuehlkurve` bleibt** — leere Spalten heißen Bestandsweg (Umsetzungskonzept Übergabegrenze, U‑1), keine
 > Einfrierregel berührt.
 >
-> **Nachtrag — Testdatenbank auf 204 (KM2 203 + Übergabegrenze 204), Basis R46 unberührt.** Auf die Datenbank mit
-> Schemastand 203 `KaeltemaschinenTypkennfelderSchema` (LFS-SHA-256 `84e771718f875eafcc77f16387ca1809376317499a28655b110e34f8cf54f063`)
-> ist mit `Werkzeuge/Testdatenbankschema` der Schritt 204 `UebergabegrenzeSchema` gefahren, danach
-> `Skripte/referenzprojekt_1060_uebergabegrenze.cs` (legt 1060 an) und `VACUUM`. Die Testdatenbank steht auf **204**
-> (`integrity_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen): **93 802 496 Byte, LFS-SHA-256
-> `39aea4657e4f8dfc104af52386841388283efdb5b58d43d96f5f28a70fb6e08c`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
-> bleibt** — die Typkennfelder führt kein Referenzprojekt; die siebenundzwanzig Projekte rechnen gegen R46 `GESAMT: PASS`,
-> 879 von 879 CSV byte-gleich.
+> **Nachtrag — Testdatenbank auf 205 (KM2 203 + ZK 204 + Übergabegrenze 205), Basis R46 unberührt.** Auf die Datenbank mit
+> Schemastand 204 `ZonenKatalogSchema` (LFS-SHA-256 `d39b45540fcce5689c6c5150389196a11f0e9775f007eef4d09da219508a0874`)
+> ist mit `Werkzeuge/Testdatenbankschema` der Schritt 205 `UebergabegrenzeSchema` gefahren (43 Spalten, leer), danach
+> `Skripte/referenzprojekt_1060_uebergabegrenze.cs` (legt 1060 an) und `VACUUM`. Die Testdatenbank steht auf **205**
+> (`integrity_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen, Projekte 1053 bis 1062): **93 855 744 Byte,
+> LFS-SHA-256 `a47e7163762191b1da36d0f601ac1aa422cf6d293c88b24ba302a2232d6ce99c`**. **Die Basis `2026-10-09_R46_Geraetegrenzen`
+> bleibt** — weder die Typkennfelder noch die Zonen des Gebäudekatalogs führt ein Referenzprojekt; die siebenundzwanzig
+> Projekte rechnen gegen R46 `GESAMT: PASS`, 879 von 879 CSV byte-gleich.
 
 ### Die Vorgängerbasis R45 (Übergabegrenze)
 
