@@ -28350,6 +28350,12 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_KURVE_VERWORFEN" xml:space="preserve">
+    <value>Chiller "{0}": the part-load curve is incomplete or not plausible — calculated linearly with cycling loss.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_EXTRAPOLIERT" xml:space="preserve">
+    <value>Chiller "{0}": in {1} hours the EER was continued beyond the edge of the performance map using the efficiency grade.</value>
+  </data>
   <data name="SIMENG_KAELTE_KM_BETRIEB" xml:space="preserve">
     <value>Chiller "{0}" (chilled water {1} °C): {2} MWh cooling, of which {3} MWh in {4} hours of free cooling, {5} MWh electricity; cycling below minimum part load in {6} hours.</value>
   </data>

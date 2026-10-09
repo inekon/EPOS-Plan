@@ -83,5 +83,11 @@
 
         /// <summary>Vorgabekurve DREHZAHL, Beiwert c.</summary>
         public const double VORGABEKURVE_DREHZAHL_C = 0.644329;
+
+        /// <summary>
+        /// Obere Grenze der Teillaststunden (KM3, Fachkonzept Teillast und Takten 5.3, Vorgabe): eine Verdichterstunde mit
+        /// PLR_min ≤ PLR &lt; 0,95 zählt als Teillaststunde.
+        /// </summary>
+        public const double TEILLASTSTUNDEN_LASTGRAD_GRENZE = 0.95;
     }
 }

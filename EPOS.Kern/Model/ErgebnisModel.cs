@@ -636,6 +636,19 @@ namespace WindowsFormsApplication1
         public bool? Kuehl_EigenerZaehler;
         /// <summary>Die Spitze ihres Kältestroms je Stunde [kW] — der Leistungspreis eines eigenen Zählers.</summary>
         public double? Stromspitze_kW;
+
+        // KM3 (Schemaschritt 209; Fachkonzept Teillast und Takten 5.3): nur für eine Maschine mit Teillast_Weg belegt
+        // (Stunden_Extrapoliert mit Kennfeld_Randweg GUETEGRAD); sonst null = NULL, der Satz bleibt wie ohne KM3.
+        /// <summary>Mehrstrom aus dem Taktverlust [MWh/a] — Teil von <see cref="Stromverbrauch_MWh"/>.</summary>
+        public double? Taktstrom_MWh;
+        /// <summary>Starts im Jahr.</summary>
+        public int? Starts;
+        /// <summary>Verdichterstunden mit PLR_min ≤ PLR &lt; 0,95.</summary>
+        public int? Teillaststunden;
+        /// <summary>Kältegewichteter mittlerer Lastgrad der Verdichterstunden [0…1].</summary>
+        public double? Lastgrad_Mittel;
+        /// <summary>Stunden mit Gütegrad-Extrapolation über den Kennfeldrand.</summary>
+        public int? Stunden_Extrapoliert;
     }
 
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.

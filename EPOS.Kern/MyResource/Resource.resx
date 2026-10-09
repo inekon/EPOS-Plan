@@ -28357,6 +28357,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Kältemaschine „{0}": In {1} Stunden lag der Betriebspunkt außerhalb der Kennlinie (Rückkühlung {2} bis {3} °C, Kaltwasser {4} °C) — gerechnet wurde mit dem Randwert.</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_KURVE_VERWORFEN" xml:space="preserve">
+    <value>Kältemaschine „{0}": Die Teillastkurve ist unvollständig oder nicht plausibel — gerechnet wird linear mit Taktverlust.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_EXTRAPOLIERT" xml:space="preserve">
+    <value>Kältemaschine „{0}": In {1} Stunden wurde der EER mit dem Gütegrad über den Rand des Kennfelds fortgesetzt.</value>
+  </data>
   <data name="SIMENG_KAELTE_KM_BETRIEB" xml:space="preserve">
     <value>Kältemaschine „{0}" (Kaltwasser {1} °C): {2} MWh Kälte, davon {3} MWh in {4} Stunden freier Kühlung, {5} MWh Strom; in {6} Stunden unter der Mindestteillast getaktet.</value>
   </data>

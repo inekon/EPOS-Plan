@@ -773,6 +773,12 @@ namespace WindowsFormsApplication1
                                 Kuehl_CarrierId = e.Kuehltraeger > 0 ? (int?)e.Kuehltraeger : null,
                                 Kuehl_EigenerZaehler = e.Kuehltraeger > 0 ? (bool?)e.EigenerZaehler : null,
                                 Stromspitze_kW = Kaeltestromabrechnung.Stundenspitze(e.Strom_stuendlich),
+                                // KM3 (Schritt 209): nur mit Teillast_Weg bzw. Randweg GUETEGRAD belegt, sonst NULL.
+                                Taktstrom_MWh = e.Maschine.TeillastWirksam ? (double?)(e.TaktstromKwh / 1000.0) : null,
+                                Starts = e.Maschine.TeillastWirksam ? (int?)e.Starts : null,
+                                Teillaststunden = e.Maschine.TeillastWirksam ? (int?)e.StundenTeillast : null,
+                                Lastgrad_Mittel = e.Maschine.TeillastWirksam ? (double?)e.LastgradMittel : null,
+                                Stunden_Extrapoliert = e.Maschine.GuetegradWirksam ? (int?)e.StundenExtrapoliert : null,
                             });
             }
 

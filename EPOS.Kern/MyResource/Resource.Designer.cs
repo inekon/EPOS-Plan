@@ -100133,6 +100133,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: In {1} Stunden wurde der EER mit dem Gütegrad über den Rand des Kennfelds fortgesetzt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_EXTRAPOLIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_EXTRAPOLIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG {
@@ -100165,6 +100174,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}&quot;: Die Teillastkurve ist unvollständig oder nicht plausibel — gerechnet wird linear mit Taktverlust. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KM_KURVE_VERWORFEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KM_KURVE_VERWORFEN", resourceCulture);
             }
         }
         
