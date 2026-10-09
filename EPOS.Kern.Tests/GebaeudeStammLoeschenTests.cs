@@ -348,8 +348,8 @@ namespace EPOS.Kern.Tests
                     "SELECT ?, Groesse, Wert, Aus, Woche, Nennwert, Bemerkung, Nutzung FROM Tab_Konditionierungskalender WHERE ID = ?",
                     nach, alt);
                 long neu = Zahl("SELECT MAX(ID) FROM Tab_Konditionierungskalender");
-                Sql("INSERT INTO Tab_Konditionierungsperiode (ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, Woche, WieWochentag) " +
-                    "SELECT ?, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, Woche, WieWochentag " +
+                Sql("INSERT INTO Tab_Konditionierungsperiode (ID_Kalender, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, Woche, WieWochentag, Gilt_Fuer) " +
+                    "SELECT ?, Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel, Wert, Aus, Woche, WieWochentag, Gilt_Fuer " +
                     "FROM Tab_Konditionierungsperiode WHERE ID_Kalender = ?",
                     neu, alt);
             }

@@ -13,7 +13,7 @@ namespace EPOS.Kern.Tests
     /// Anwendersatz im Katalog (<see cref="GebaeudeStammCtrl.AusProjektUebernehmen"/>) — der Spiegel von
     /// <c>CopyFromStamm</c>.
     ///
-    /// <para><b>Geprüft wird:</b> alle 101 Fachspalten wörtlich wie in der Projektkopie, neue Id,
+    /// <para><b>Geprüft wird:</b> alle 103 Fachspalten wörtlich wie in der Projektkopie, neue Id,
     /// <c>ReadOnly = 0</c>, die Herkunft in der Beschreibung, das Projekt unberührt; die benannten
     /// Absagen (kein Gebäude, Name leer, Name vergeben — ohne Schreiben); der Namensvorschlag mit
     /// Zähler; die Konditionierung der Gebäudeebene reist mit, Zonen und Bauteile bleiben im Projekt
@@ -60,7 +60,7 @@ namespace EPOS.Kern.Tests
 
             // Alle Fachspalten wörtlich - NULL bleibt NULL, Schalter bleiben 0/1.
             string[] spalten = Kopfspalten();
-            Assert.Equal(101, spalten.Length);
+            Assert.Equal(103, spalten.Length);     // Schritt K2: Wochenendtage und Feiertagsland
             foreach (string s in spalten)
                 Assert.True(Equals(vorher[s], neu[s]) || (vorher[s] is DBNull && neu[s] is DBNull),
                             "Spalte " + s + ": Projekt " + vorher[s] + ", Katalog " + neu[s]);
