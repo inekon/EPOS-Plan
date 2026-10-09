@@ -300,6 +300,58 @@ namespace WindowsFormsApplication1
         /// <summary>Taktstunden unter der Mindestteillast [h/a] (Summe über die Maschinen).</summary>
         public const string SCHLUESSEL_KM_TAKT = "kaelte.km.takt";
 
+        /// <summary>Mehrstrom aus Taktverlust der Kältemaschinen mit Teillastweg [kWh/a] (KM3, Katalog v18).</summary>
+        public const string SCHLUESSEL_KM_TAKTSTROM = "kaelte.km.taktstrom";
+
+        /// <summary>Starts der Kältemaschinen mit Teillastweg [1/a] (KM3, Katalog v18).</summary>
+        public const string SCHLUESSEL_KM_STARTS = "kaelte.km.starts";
+
+        /// <summary>Teillastanteil = Teillaststunden / Verdichterstunden [%] (KM3, Katalog v18).</summary>
+        public const string SCHLUESSEL_KM_TEILLASTANTEIL = "kaelte.km.teillastanteil";
+
+        /// <summary>Kältegewichteter mittlerer Lastgrad der Verdichterstunden [—] (KM3, Katalog v18).</summary>
+        public const string SCHLUESSEL_KM_LASTGRAD = "kaelte.km.lastgrad";
+
+        /// <summary>Jahres-EER ohne Hilfsstrom = Verdichterkälte / Verdichterstrom [—] (KM3, Katalog v18).</summary>
+        public const string SCHLUESSEL_KM_JAZ_VERDICHTER = "kaelte.km.jaz_verdichter";
+
+        /// <summary>Die Kältemaschinen mit Teillastweg samt Platz in der Ergebnisliste; <c>null</c> ohne solche.</summary>
+        private static List<(int Platz, ErgebnisKaeltemaschineModel K)> KmTeillast(VariantenDaten v)
+        {
+            List<ErgebnisKaeltemaschineModel> l = KM(v);
+            if (l == null) return null;
+            var m = l.Select((k, i) => (i, k)).Where(x => KaeltemaschineTeillastKennzahlen.MitWeg(x.k)).ToList();
+            return m.Count > 0 ? m : null;
+        }
+
+        /// <summary>Teillastanteil aller Maschinen mit Weg [%]; <c>null</c> ohne Verdichterstunden des Laufs.</summary>
+        public static double? TeillastanteilKaeltemaschinen(VariantenDaten v)
+        {
+            var m = KmTeillast(v);
+            Dictionary<int, int> vs = v?.Zeitreihen?.KaeltemaschineVerdichterstunden;
+            if (m == null || vs == null || !m.All(x => vs.ContainsKey(x.Platz))) return null;
+            return KaeltemaschineTeillastKennzahlen.TeillastanteilProzent(m.Sum(x => x.K.Teillaststunden ?? 0), m.Sum(x => vs[x.Platz]));
+        }
+
+        /// <summary>Kältegewichteter mittlerer Lastgrad aller Maschinen mit Weg [—]; <c>null</c> ohne Verdichterkälte.</summary>
+        public static double? LastgradKaeltemaschinen(VariantenDaten v)
+        {
+            var m = KmTeillast(v)?.Where(x => x.K.Lastgrad_Mittel.HasValue).ToList();
+            if (m == null || m.Count == 0) return null;
+            double gewicht = m.Sum(x => KaeltemaschineTeillastKennzahlen.VerdichterkaelteMwh(x.K));
+            return gewicht > 0 ? m.Sum(x => x.K.Lastgrad_Mittel.Value * KaeltemaschineTeillastKennzahlen.VerdichterkaelteMwh(x.K)) / gewicht
+                               : (double?)null;
+        }
+
+        /// <summary>Jahres-EER ohne Hilfsstrom aller Maschinen mit Weg [—]; <c>null</c> ohne Verdichterstrom.</summary>
+        public static double? JazVerdichterKaeltemaschinen(VariantenDaten v)
+        {
+            var m = KmTeillast(v);
+            if (m == null) return null;
+            double strom = m.Sum(x => KaeltemaschineTeillastKennzahlen.VerdichterstromMwh(x.K));
+            return strom > 0 ? m.Sum(x => KaeltemaschineTeillastKennzahlen.VerdichterkaelteMwh(x.K)) / strom : (double?)null;
+        }
+
         /// <summary>Kältemaschinen des Laufs; leer = keine gerechnet.</summary>
         private static List<ErgebnisKaeltemaschineModel> KM(VariantenDaten v)
         {
@@ -698,6 +750,22 @@ namespace WindowsFormsApplication1
             l.Add(new Kennzahl(SCHLUESSEL_KM_TAKT, "Taktstunden Kältemaschinen (sensibel)",
                 "Chiller cycling hours (sensible)", "h/a", GR_KAELTE, "N0", true,
                 v => KmSumme(v, k => k.Taktstunden)));
+            // KM3-E3-b (Fachkonzept Teillast und Takten 5.3, Katalog v18): nur Maschinen mit Teillastweg; ohne sie null.
+            {
+                Kennzahl T(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_KM_TEILLAST; return k; }
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_TAKTSTROM, "Taktstrom Kältemaschinen",
+                    "Chiller cycling electricity", "kWh/a", GR_KAELTE, "N2", true,
+                    v => KmTeillast(v)?.Sum(x => x.K.Taktstrom_MWh.Value * 1000.0))));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_STARTS, "Starts Kältemaschinen",
+                    "Chiller starts", "1/a", GR_KAELTE, "N0", true,
+                    v => KmTeillast(v)?.Sum(x => (double)(x.K.Starts ?? 0)))));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_TEILLASTANTEIL, "Teillastanteil Kältemaschinen",
+                    "Chiller part-load share", "%", GR_KAELTE, "N1", true, TeillastanteilKaeltemaschinen)));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_LASTGRAD, "Mittlerer Lastgrad Kältemaschinen",
+                    "Chiller mean part-load ratio", "–", GR_KAELTE, "N2", true, LastgradKaeltemaschinen)));
+                l.Add(T(new Kennzahl(SCHLUESSEL_KM_JAZ_VERDICHTER, "Jahres-EER Kältemaschinen ohne Hilfsstrom",
+                    "Chiller seasonal EER without auxiliary power", "–", GR_KAELTE, "N2", true, JazVerdichterKaeltemaschinen)));
+            }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,
                 v => MitKaelteerzeugung(v) ? E(v)?.Kaelterestbedarf : null));

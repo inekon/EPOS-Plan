@@ -638,6 +638,9 @@ namespace WindowsFormsApplication1
             try { v.Bivalenz = BivalenzBerichtsquelle.Lade(v.IdProjekt); }
             catch { v.Bivalenz = null; }
 
+            // 6c. KM3-E3-b: die Lesewerte der Teillastrechnung der Kaeltemaschinen (Projektkopien) fuer die Tafel.
+            v.KaeltemaschineTeillast = KaeltemaschineTeillastBerichtsquelle.Lade(v.IdProjekt);
+
             // 6a. Pufferspeicher-Auslegung (Stufe P3): die gespeicherten Zeilen des Stamms samt
             //     Nachrechnung — nur lesend; ohne Zeile entfällt der Abschnitt der Projektbeschreibung.
             if (v.IstStamm)

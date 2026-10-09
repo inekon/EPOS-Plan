@@ -50105,7 +50105,7 @@ Chart</value>
     <value>Die Teillastkurve braucht alle drei Beiwerte: a zwischen −1 und 2, b und c zwischen −2 und 3.</value>
   </data>
   <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
-    <value>Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,5 und 2,0 bleiben.</value>
+    <value>Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,3 und 2,0 bleiben.</value>
   </data>
   <data name="KM_IMP_MSG_TEILLAST_HINWEISE" xml:space="preserve">
     <value>{0} Hinweis(e) zur Teillastkurve: {1}</value>
@@ -50400,6 +50400,105 @@ Chart</value>
   </data>
   <data name="KI_DLG_KM_KENNFELD_RANDWEG_ERL" xml:space="preserve">
     <value>Weg außerhalb des Kennfelds: Randwert (Vorgabe) oder Gütegrad.</value>
+  </data>
+  <data name="KM_TT_WEG_VORGABEKURVE" xml:space="preserve">
+    <value>Kurve (Vorgabekurve)</value>
+  </data>
+  <data name="KM_TT_WEG_VERWORFEN" xml:space="preserve">
+    <value>linear (Kurve verworfen)</value>
+  </data>
+  <data name="KMA_HINWEIS_FOLGESCHALTUNG" xml:space="preserve">
+    <value>Folgeschaltung von {0} Maschinen: Die Last geht in jeder Stunde auf so wenige Maschinen wie nötig; die Teillastrechnung gilt je laufende Maschine.</value>
+  </data>
+  <data name="SIM_KACHEL_KM_TEILLAST" xml:space="preserve">
+    <value>Teillast und Takten der Kältemaschinen</value>
+  </data>
+  <data name="BER_TAFEL_KM_TEILLAST" xml:space="preserve">
+    <value>Teillast und Takten der Kältemaschinen</value>
+  </data>
+  <data name="BV_GRUND_KEINE_KM_TEILLAST" xml:space="preserve">
+    <value>keine Kältemaschine mit Teillastrechnung (Teillastrechnung „wie bisher“)</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KM_TEILLAST" xml:space="preserve">
+    <value>Tafel „Teillast und Takten der Kältemaschinen“ des laufenden Stands: je Kältemaschine mit Teillastrechnung Weg, Verdichterregelung, C_d, Taktstunden, Starts, Taktstrom, Teillaststunden und Teillastanteil, mittlerer Lastgrad, extrapolierte Stunden, Jahres-EER ohne Hilfsstrom; nur im Block {{#je stand}}.</value>
+  </data>
+  <data name="BER_KMT_WEG" xml:space="preserve">
+    <value>Teillastrechnung (Herkunft)</value>
+  </data>
+  <data name="BER_KMT_REGELUNG" xml:space="preserve">
+    <value>Verdichterregelung</value>
+  </data>
+  <data name="BER_KMT_CD" xml:space="preserve">
+    <value>Taktverlustfaktor C_d</value>
+  </data>
+  <data name="BER_KMT_TAKTSTUNDEN" xml:space="preserve">
+    <value>Taktstunden unter der Mindestteillast [h/a]</value>
+  </data>
+  <data name="BER_KMT_STARTS" xml:space="preserve">
+    <value>Starts [1/a]</value>
+  </data>
+  <data name="BER_KMT_TAKTSTROM" xml:space="preserve">
+    <value>Taktstrom [kWh/a]</value>
+  </data>
+  <data name="BER_KMT_TEILLASTSTUNDEN" xml:space="preserve">
+    <value>Teillaststunden [h/a]</value>
+  </data>
+  <data name="BER_KMT_TEILLASTANTEIL" xml:space="preserve">
+    <value>Teillastanteil der Verdichterstunden [%]</value>
+  </data>
+  <data name="BER_KMT_LASTGRAD" xml:space="preserve">
+    <value>Mittlerer Lastgrad, kältegewichtet [–]</value>
+  </data>
+  <data name="BER_KMT_EXTRAPOLIERT" xml:space="preserve">
+    <value>Stunden über den Kennfeldrand (Gütegrad) [h/a]</value>
+  </data>
+  <data name="BER_KMT_JAZ" xml:space="preserve">
+    <value>Jahres-EER ohne Hilfsstrom [–]</value>
+  </data>
+  <data name="SIM_LBL_KM_TAKTSTROM" xml:space="preserve">
+    <value>Taktstrom</value>
+  </data>
+  <data name="SIM_LBL_KM_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIM_LBL_KM_TEILLASTANTEIL" xml:space="preserve">
+    <value>Teillastanteil</value>
+  </data>
+  <data name="SIM_LBL_KM_LASTGRAD" xml:space="preserve">
+    <value>Mittlerer Lastgrad</value>
+  </data>
+  <data name="SIM_LBL_KM_JAZ_VERDICHTER" xml:space="preserve">
+    <value>Jahres-EER ohne Hilfsstrom</value>
+  </data>
+  <data name="KI_DLG_KMA_TEILLAST_WEG_NAME" xml:space="preserve">
+    <value>Teillastrechnung (gelesen)</value>
+  </data>
+  <data name="KI_DLG_KMA_TEILLAST_WEG_ERL" xml:space="preserve">
+    <value>Teillastrechnung der Projektkopie samt Herkunft der Kurve (wie bisher, linear, Kurve, Vorgabekurve, verworfen) — nur zu lesen, gepflegt in der Verwaltung „Kältemaschinen“.</value>
+  </data>
+  <data name="KI_DLG_KMA_REGELUNG_NAME" xml:space="preserve">
+    <value>Verdichterregelung (gelesen)</value>
+  </data>
+  <data name="KI_DLG_KMA_REGELUNG_ERL" xml:space="preserve">
+    <value>Verdichterregelung der Projektkopie — nur zu lesen.</value>
+  </data>
+  <data name="KI_DLG_KMA_CD_NAME" xml:space="preserve">
+    <value>Taktverlustfaktor C_d (gelesen)</value>
+  </data>
+  <data name="KI_DLG_KMA_CD_ERL" xml:space="preserve">
+    <value>Taktverlustfaktor C_d der Projektkopie; ohne Pflege steht „(Vorgabe)“ dabei — nur zu lesen.</value>
+  </data>
+  <data name="KI_DLG_KMA_RANDWEG_NAME" xml:space="preserve">
+    <value>Kennfeldrand (gelesen)</value>
+  </data>
+  <data name="KI_DLG_KMA_RANDWEG_ERL" xml:space="preserve">
+    <value>Weg der Kennlinie über ihren Rand hinaus (Randwert oder Gütegrad) — nur zu lesen.</value>
+  </data>
+  <data name="KI_DLG_SIM_KM_TEILLAST_NAME" xml:space="preserve">
+    <value>Teillast und Takten der Kältemaschinen</value>
+  </data>
+  <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
+    <value>Je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom als „Spaltenname=Wert“; leer ohne solche Maschine.</value>
   </data>
 </root>
 

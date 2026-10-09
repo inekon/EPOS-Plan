@@ -169,6 +169,7 @@ namespace WindowsFormsApplication1
                     foreach (Kaelteerzeuger e in kaskade.Erzeuger)
                     {
                         if (e == null) continue;
+                        if (e.Maschine != null && e.Maschine.TeillastWirksam) z.KaeltemaschineVerdichterstunden[km] = e.StundenVerdichter;
                         int schluessel = e.Maschine != null ? Kaeltestromabrechnung.SchluesselKaeltemaschine(km++) : e.Modulindex;
                         if (!e.NebenDerStufenrechnung || (e.Maschine == null && e.Modulindex < 0)) continue;
                         Netzbezugsspitze s = Netzbezugsspitze.AusReihe(e.Strom_stuendlich);

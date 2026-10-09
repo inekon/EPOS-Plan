@@ -4866,6 +4866,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktverlustfaktor C_d ähnelt.
+        /// </summary>
+        public static string BER_KMT_CD {
+            get {
+                return ResourceManager.GetString("BER_KMT_CD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden über den Kennfeldrand (Gütegrad) [h/a] ähnelt.
+        /// </summary>
+        public static string BER_KMT_EXTRAPOLIERT {
+            get {
+                return ResourceManager.GetString("BER_KMT_EXTRAPOLIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahres-EER ohne Hilfsstrom [–] ähnelt.
+        /// </summary>
+        public static string BER_KMT_JAZ {
+            get {
+                return ResourceManager.GetString("BER_KMT_JAZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Lastgrad, kältegewichtet [–] ähnelt.
+        /// </summary>
+        public static string BER_KMT_LASTGRAD {
+            get {
+                return ResourceManager.GetString("BER_KMT_LASTGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verdichterregelung ähnelt.
+        /// </summary>
+        public static string BER_KMT_REGELUNG {
+            get {
+                return ResourceManager.GetString("BER_KMT_REGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts [1/a] ähnelt.
+        /// </summary>
+        public static string BER_KMT_STARTS {
+            get {
+                return ResourceManager.GetString("BER_KMT_STARTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktstrom [kWh/a] ähnelt.
+        /// </summary>
+        public static string BER_KMT_TAKTSTROM {
+            get {
+                return ResourceManager.GetString("BER_KMT_TAKTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktstunden unter der Mindestteillast [h/a] ähnelt.
+        /// </summary>
+        public static string BER_KMT_TAKTSTUNDEN {
+            get {
+                return ResourceManager.GetString("BER_KMT_TAKTSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastanteil der Verdichterstunden [%] ähnelt.
+        /// </summary>
+        public static string BER_KMT_TEILLASTANTEIL {
+            get {
+                return ResourceManager.GetString("BER_KMT_TEILLASTANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillaststunden [h/a] ähnelt.
+        /// </summary>
+        public static string BER_KMT_TEILLASTSTUNDEN {
+            get {
+                return ResourceManager.GetString("BER_KMT_TEILLASTSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung (Herkunft) ähnelt.
+        /// </summary>
+        public static string BER_KMT_WEG {
+            get {
+                return ResourceManager.GetString("BER_KMT_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bemessendes Kriterium ähnelt.
         /// </summary>
         public static string BER_PAUS_BEMESSEND {
@@ -4970,6 +5069,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BER_TAFEL_BIVALENZ {
             get {
                 return ResourceManager.GetString("BER_TAFEL_BIVALENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillast und Takten der Kältemaschinen ähnelt.
+        /// </summary>
+        public static string BER_TAFEL_KM_TEILLAST {
+            get {
+                return ResourceManager.GetString("BER_TAFEL_KM_TEILLAST", resourceCulture);
             }
         }
         
@@ -15450,6 +15558,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_GRUND_KEINE_BIVALENZ {
             get {
                 return ResourceManager.GetString("BV_GRUND_KEINE_BIVALENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Kältemaschine mit Teillastrechnung (Teillastrechnung „wie bisher“) ähnelt.
+        /// </summary>
+        public static string BV_GRUND_KEINE_KM_TEILLAST {
+            get {
+                return ResourceManager.GetString("BV_GRUND_KEINE_KM_TEILLAST", resourceCulture);
             }
         }
         
@@ -58067,6 +58184,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktverlustfaktor C_d der Projektkopie; ohne Pflege steht „(Vorgabe)“ dabei — nur zu lesen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_CD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_CD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktverlustfaktor C_d (gelesen) ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_CD_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_CD_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil in Prozent, 0 bis unter 100; leer = 0. ähnelt.
         /// </summary>
         public static string KI_DLG_KMA_HILFSSTROM_ERL {
@@ -58099,6 +58234,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KMA_NAME_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_KMA_NAME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg der Kennlinie über ihren Rand hinaus (Randwert oder Gütegrad) — nur zu lesen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_RANDWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_RANDWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeldrand (gelesen) ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_RANDWEG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_RANDWEG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verdichterregelung der Projektkopie — nur zu lesen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_REGELUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_REGELUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verdichterregelung (gelesen) ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_REGELUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_REGELUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung der Projektkopie samt Herkunft der Kurve (wie bisher, linear, Kurve, Vorgabekurve, verworfen) — nur zu lesen, gepflegt in der Verwaltung „Kältemaschinen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_TEILLAST_WEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_TEILLAST_WEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung (gelesen) ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_TEILLAST_WEG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_TEILLAST_WEG_NAME", resourceCulture);
             }
         }
         
@@ -62023,6 +62212,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_KASKADE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_KASKADE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom als „Spaltenname=Wert“; leer ohne solche Maschine. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KM_TEILLAST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KM_TEILLAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillast und Takten der Kältemaschinen ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KM_TEILLAST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KM_TEILLAST_NAME", resourceCulture);
             }
         }
         
@@ -73249,6 +73456,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Folgeschaltung von {0} Maschinen: Die Last geht in jeder Stunde auf so wenige Maschinen wie nötig; die Teillastrechnung gilt je laufende Maschine. ähnelt.
+        /// </summary>
+        public static string KMA_HINWEIS_FOLGESCHALTUNG {
+            get {
+                return ResourceManager.GetString("KMA_HINWEIS_FOLGESCHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag auf den Strom der Maschine für Pumpen und Regelung; leer = 0 %. ähnelt.
         /// </summary>
         public static string KMA_HINWEIS_HILFSSTROM {
@@ -74203,7 +74419,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,5 und 2,0 bleiben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Teillastkurve ist nicht plausibel: Bei Volllast muss a + b + c zwischen 0,9 und 1,1 liegen, und das EER-Verhältnis muss im gültigen Lastbereich zwischen 0,3 und 2,0 bleiben. ähnelt.
         /// </summary>
         public static string KM_MSG_TEILLASTKURVE_UNPLAUSIBEL {
             get {
@@ -74559,6 +74775,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_TT_VERWEIS_MINDESTTEILLAST {
             get {
                 return ResourceManager.GetString("KM_TT_VERWEIS_MINDESTTEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear (Kurve verworfen) ähnelt.
+        /// </summary>
+        public static string KM_TT_WEG_VERWORFEN {
+            get {
+                return ResourceManager.GetString("KM_TT_WEG_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurve (Vorgabekurve) ähnelt.
+        /// </summary>
+        public static string KM_TT_WEG_VORGABEKURVE {
+            get {
+                return ResourceManager.GetString("KM_TT_WEG_VORGABEKURVE", resourceCulture);
             }
         }
         
@@ -108191,6 +108425,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillast und Takten der Kältemaschinen ähnelt.
+        /// </summary>
+        public static string SIM_KACHEL_KM_TEILLAST {
+            get {
+                return ResourceManager.GetString("SIM_KACHEL_KM_TEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Reststrombedarf ähnelt.
         /// </summary>
         public static string SIM_KACHEL_RESTSTROMBEDARF {
@@ -109009,6 +109252,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_LBL_HINWEIS_PUFFER {
             get {
                 return ResourceManager.GetString("SIM_LBL_HINWEIS_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahres-EER ohne Hilfsstrom ähnelt.
+        /// </summary>
+        public static string SIM_LBL_KM_JAZ_VERDICHTER {
+            get {
+                return ResourceManager.GetString("SIM_LBL_KM_JAZ_VERDICHTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mittlerer Lastgrad ähnelt.
+        /// </summary>
+        public static string SIM_LBL_KM_LASTGRAD {
+            get {
+                return ResourceManager.GetString("SIM_LBL_KM_LASTGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Starts ähnelt.
+        /// </summary>
+        public static string SIM_LBL_KM_STARTS {
+            get {
+                return ResourceManager.GetString("SIM_LBL_KM_STARTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktstrom ähnelt.
+        /// </summary>
+        public static string SIM_LBL_KM_TAKTSTROM {
+            get {
+                return ResourceManager.GetString("SIM_LBL_KM_TAKTSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastanteil ähnelt.
+        /// </summary>
+        public static string SIM_LBL_KM_TEILLASTANTEIL {
+            get {
+                return ResourceManager.GetString("SIM_LBL_KM_TEILLASTANTEIL", resourceCulture);
             }
         }
         
@@ -120732,6 +121020,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__TABELLE__KENNZAHLEN__LISTE {
             get {
                 return ResourceManager.GetString("VF_STAND__TABELLE__KENNZAHLEN__LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tafel „Teillast und Takten der Kältemaschinen“ des laufenden Stands: je Kältemaschine mit Teillastrechnung Weg, Verdichterregelung, C_d, Taktstunden, Starts, Taktstrom, Teillaststunden und Teillastanteil, mittlerer Lastgrad, extrapolierte Stunden, Jahres-EER ohne Hilfsstrom; nur im Block {{#je stand}}. ähnelt.
+        /// </summary>
+        public static string VF_STAND__TABELLE__KM_TEILLAST {
+            get {
+                return ResourceManager.GetString("VF_STAND__TABELLE__KM_TEILLAST", resourceCulture);
             }
         }
         
