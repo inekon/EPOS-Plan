@@ -41357,7 +41357,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>bottom layer, read every hour</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_BETRIEB" xml:space="preserve">
-    <value>Condensing curve “{0}”: return temperature of the operating hours from the heating circuit {1} h, from the sink storage {2} h, from the maintained pair {3} h, fallback {4} h; mean return {5} °C; condensing operation in {6} of {7} operating hours.</value>
+    <value>Condensing curve “{0}”: return temperature of the operating hours from the heating circuit {1} h, from the sink storage {2} h, from the maintained pair {3} h, fallback {4} h{8}; mean return {5} °C; condensing operation in {6} of {7} operating hours.</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
     <value>Condensing boiler “{0}”: the return temperature is above the dew point ({2} °C) in {1} % of the operating hours — the boiler does not use the condensing effect then. A lower return temperature (heating circuit, storage) raises the efficiency.</value>
@@ -49073,6 +49073,27 @@ chart</value>
   </data>
   <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
     <value>The emission limit cannot be derived: {0}</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_UEBERGABE" xml:space="preserve">
+    <value>maximum flow temperature of the heat pump {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MAX" xml:space="preserve">
+    <value>maximum temperature spread {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MIN" xml:space="preserve">
+    <value>minimum temperature spread {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_RUECKLAUF_MAX" xml:space="preserve">
+    <value>return temperature limit {0} h</value>
+  </data>
+  <data name="SIMENG_WP_BETRIEBSBEREICHE" xml:space="preserve">
+    <value>Operating ranges “{0}”: heat pump alone {1} h, parallel {2} h, preheating {3} h, boiler only {4} h; limited by {5}.</value>
+  </data>
+  <data name="SIMENG_WP_VORWAERMUNG_KASKADE" xml:space="preserve">
+    <value>“{0}”: Preheating mode requires the heat pump ahead of the boiler in the cascade; it is placed behind it. Hours above its maximum flow temperature are calculated without the heat pump (boiler only).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERT_VORWAERMER" xml:space="preserve">
+    <value>, from the flow of the preheating heat pump {0} h</value>
   </data>
 </root>
 

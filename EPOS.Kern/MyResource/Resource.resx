@@ -41364,7 +41364,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>unterste Schicht, je Stunde gelesen</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_BETRIEB" xml:space="preserve">
-    <value>Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden.</value>
+    <value>Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h{8}; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden.</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
     <value>Brennwertkessel „{0}“: Der Rücklauf liegt in {1} % der Betriebsstunden über dem Taupunkt ({2} °C) — der Kessel nutzt den Brennwert dann nicht. Ein niedrigerer Rücklauf (Heizkreis, Speicher) hebt den Wirkungsgrad.</value>
@@ -49080,6 +49080,27 @@ Chart</value>
   </data>
   <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
     <value>Die Übergabegrenze ist nicht herleitbar: {0}</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_UEBERGABE" xml:space="preserve">
+    <value>Höchstvorlauf der Wärmepumpe {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MAX" xml:space="preserve">
+    <value>größte Spreizung {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MIN" xml:space="preserve">
+    <value>Mindestspreizung {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Rücklaufgrenze {0} h</value>
+  </data>
+  <data name="SIMENG_WP_BETRIEBSBEREICHE" xml:space="preserve">
+    <value>Betriebsbereiche „{0}“: Wärmepumpe allein {1} h, parallel {2} h, Vorwärmung {3} h, nur Kessel {4} h; begrenzt durch {5}.</value>
+  </data>
+  <data name="SIMENG_WP_VORWAERMUNG_KASKADE" xml:space="preserve">
+    <value>„{0}“: Der Vorwärmbetrieb verlangt die Wärmepumpe in der Kaskade vor dem Heizkessel; sie steht dahinter. Stunden über ihrem Höchstvorlauf rechnen ohne Wärmepumpe (nur Kessel).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERT_VORWAERMER" xml:space="preserve">
+    <value>, aus dem Vorlauf der vorwärmenden Wärmepumpe {0} h</value>
   </data>
 </root>
 

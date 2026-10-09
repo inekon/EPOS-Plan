@@ -97973,7 +97973,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h{8}; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden. ähnelt.
         /// </summary>
         public static string SIMENG_KESSEL_BRENNWERT_BETRIEB {
             get {
@@ -97987,6 +97987,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT {
             get {
                 return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die , aus dem Vorlauf der vorwärmenden Wärmepumpe {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_KESSEL_BRENNWERT_VORWAERMER {
+            get {
+                return ResourceManager.GetString("SIMENG_KESSEL_BRENNWERT_VORWAERMER", resourceCulture);
             }
         }
         
@@ -98918,6 +98927,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereiche „{0}“: Wärmepumpe allein {1} h, parallel {2} h, Vorwärmung {3} h, nur Kessel {4} h; begrenzt durch {5}. ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_BETRIEBSBEREICHE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_BETRIEBSBEREICHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage '{0}' rechnet bivalent-alternativ mit einer Bivalenztemperatur von 0 °C — dem Vorbelegungswert des Eingabefelds. Unterhalb von 0 °C bleibt die Wärmepumpe aus und der zweite Wärmeerzeuger übernimmt allein. Ist das nicht beabsichtigt, die Bivalenztemperatur der Anlage pflegen. ähnelt.
         /// </summary>
         public static string SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG {
@@ -98941,6 +98959,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_EXTRAPOLATION_VERBOTEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_EXTRAPOLATION_VERBOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklaufgrenze {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_GRUND_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_GRUND_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größte Spreizung {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_GRUND_SPREIZUNG_MAX {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_GRUND_SPREIZUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestspreizung {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_GRUND_SPREIZUNG_MIN {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_GRUND_SPREIZUNG_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstvorlauf der Wärmepumpe {0} h ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_GRUND_UEBERGABE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_GRUND_UEBERGABE", resourceCulture);
             }
         }
         
@@ -99022,6 +99076,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN {
             get {
                 return ResourceManager.GetString("SIMENG_WP_VORLAUF_UNTER_STUETZSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: Der Vorwärmbetrieb verlangt die Wärmepumpe in der Kaskade vor dem Heizkessel; sie steht dahinter. Stunden über ihrem Höchstvorlauf rechnen ohne Wärmepumpe (nur Kessel). ähnelt.
+        /// </summary>
+        public static string SIMENG_WP_VORWAERMUNG_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMENG_WP_VORWAERMUNG_KASKADE", resourceCulture);
             }
         }
         
