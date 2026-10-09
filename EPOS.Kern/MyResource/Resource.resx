@@ -49492,5 +49492,107 @@ Chart</value>
   <data name="BER_BILD_BIVALENZ_PLATZHALTER" xml:space="preserve">
     <value>kein Bivalenzdiagramm — Kopplung aus</value>
   </data>
+  <data name="SIM_KACHEL_BETRIEBSBEREICHE" xml:space="preserve">
+    <value>Betriebsbereiche</value>
+  </data>
+  <data name="SIM_BEREICH_WP_ALLEIN" xml:space="preserve">
+    <value>Wärmepumpe allein</value>
+  </data>
+  <data name="SIM_BEREICH_PARALLEL" xml:space="preserve">
+    <value>mit Kessel parallel</value>
+  </data>
+  <data name="SIM_BEREICH_VORWAERMUNG" xml:space="preserve">
+    <value>Vorwärmung</value>
+  </data>
+  <data name="SIM_BEREICH_NUR_KESSEL" xml:space="preserve">
+    <value>nur Kessel</value>
+  </data>
+  <data name="SIM_LBL_BIVALENZPUNKT_1" xml:space="preserve">
+    <value>Bivalenzpunkt θ_biv,1 (berechnet)</value>
+  </data>
+  <data name="SIM_LBL_BIVALENZPUNKT_2" xml:space="preserve">
+    <value>Bivalenzpunkt θ_biv,2 (berechnet)</value>
+  </data>
+  <data name="SIM_LBL_UEBERGABE_MAX" xml:space="preserve">
+    <value>Übergabegrenze bei Auslegung</value>
+  </data>
+  <data name="SIM_LBL_SPREIZUNG_UNTERSCHRITTEN" xml:space="preserve">
+    <value>Stunden unter der Mindestspreizung</value>
+  </data>
+  <data name="SIM_LBL_RUECKLAUF_UEBERSCHRITTEN" xml:space="preserve">
+    <value>Stunden über der Rücklaufgrenze</value>
+  </data>
+  <data name="SIM_TIP_BEREICH_WERT" xml:space="preserve">
+    <value>Stunden der Wärmepumpe im Bereich und ihre Wärme</value>
+  </data>
+  <data name="BER_HINWEIS_STUNDENMODELL" xml:space="preserve">
+    <value>Stundenmodell: Speichermasse des Estrichs, Ventil- und Reglerdynamik und die Abtauung sind nicht abgebildet. Herstellerwerte zu Spreizung, Volumenstrom und Einsatzgrenze haben Vorrang vor den Vorgaben.</value>
+  </data>
+  <data name="BER_HINWEIS_ANFAHRGRENZE" xml:space="preserve">
+    <value>Prüfhinweis Anfahrgrenze: Eine Luft/Wasser-Wärmepumpe holt bei Rücklauf unter 15 °C und Außentemperatur unter 10 °C den zweiten Erzeuger hinzu, bis der Rücklauf 23 °C erreicht; ein Raumsollwert liegt unter 15 °C.</value>
+  </data>
+  <data name="BER_HINWEIS_MINDESTRUECKLAUF" xml:space="preserve">
+    <value>Prüfhinweis Mindestrücklauf: Niedertemperatur- und Biomassekessel verlangen einen Rücklauf von 55–65 °C; die Rechnung setzt eine Rücklaufanhebung voraus.</value>
+  </data>
+  <data name="BER_TAFEL_BIVALENZ" xml:space="preserve">
+    <value>Bivalenz und Übergabe</value>
+  </data>
+  <data name="BER_BILD_BIVALENZ" xml:space="preserve">
+    <value>Bivalenzdiagramm</value>
+  </data>
+  <data name="BER_BIV_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="BER_BIV_WERT" xml:space="preserve">
+    <value>Wert</value>
+  </data>
+  <data name="BER_BIV_HOECHSTVORLAUF" xml:space="preserve">
+    <value>Höchstvorlauf der Wärmepumpe [°C]</value>
+  </data>
+  <data name="BER_BIV_UEBERGABE_KW" xml:space="preserve">
+    <value>Übergabegrenze [kW]</value>
+  </data>
+  <data name="BER_BIV_UEBERGABE_ANTEIL" xml:space="preserve">
+    <value>Übergabegrenze, Anteil an der Heizlast [%]</value>
+  </data>
+  <data name="BER_BIV_UEBERGABE_RUECKLAUF" xml:space="preserve">
+    <value>Rücklauf an der Übergabegrenze [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT1" xml:space="preserve">
+    <value>Bivalenzpunkt θ_biv,1 berechnet [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT2" xml:space="preserve">
+    <value>Bivalenzpunkt θ_biv,2 berechnet [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT_EINGEGEBEN" xml:space="preserve">
+    <value>Bivalenzpunkt eingegeben (Abschaltpunkt) [°C]</value>
+  </data>
+  <data name="BER_BIV_PUNKT_MASSGEBEND" xml:space="preserve">
+    <value>Bivalenzpunkt maßgebend [°C]</value>
+  </data>
+  <data name="BER_BIV_STUNDEN" xml:space="preserve">
+    <value>{0}, Stunden [h/a]</value>
+  </data>
+  <data name="BER_BIV_WAERME" xml:space="preserve">
+    <value>{0}, Wärme [MWh/a]</value>
+  </data>
+  <data name="BER_BIV_HYBRID" xml:space="preserve">
+    <value>Anteil der Wärmepumpe an der Kesselleistung bei −7 °C nach § 43 GModG [%]</value>
+  </data>
+  <data name="BER_BIV_HYBRID_MINDEST" xml:space="preserve">
+    <value>Mindestanteil nach § 43 GModG [%]</value>
+  </data>
+  <data name="BV_GRUND_KEINE_BIVALENZ" xml:space="preserve">
+    <value>keine Bivalenzdaten (Kopplung aus oder Einbindung der Wärmepumpe nicht gesetzt)</value>
+  </data>
+  <data name="VF_STAND__BILD__WP_BIVALENZ" xml:space="preserve">
+    <value>Bild je Stand: Bivalenzdiagramm der Wärmepumpe — Heizlast, Kennfeld und Übergabegrenze bei Höchstvorlauf, Betriebsbereiche, Bivalenzpunkte und die Stundenwerte des Laufs; ohne Übergabedaten der Platzhalter.</value>
+  </data>
+  <data name="VF_HAT__BILD__WP_BIVALENZ" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Bivalenzdiagramm (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="VF_STAND__TABELLE__BIVALENZ" xml:space="preserve">
+    <value>Tafel „Bivalenz und Übergabe“ des laufenden Stands: Höchstvorlauf, Übergabegrenze, Bivalenzpunkte, Stunden und Wärme je Betriebsbereich, Anteil nach § 43 GModG; nur im Block {{#je stand}}.</value>
+  </data>
 </root>
 
