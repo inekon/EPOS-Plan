@@ -226,3 +226,77 @@ Seiten und korrigiere". Beigelegt war ein Bildschirmbild der Rechenwegseite Sola
 - In der Leseansicht setzt der Browser MathML in seiner Mathematikschrift, sichtbar kleiner als der
   Fließtext. Das Stilblatt `MediaWiki:Common.css` hat dafür keine Regel; der Vorschlag dazu geht an
   den Anwender.
+
+## 10. Fortsetzung 02.10.2026 (Routine)
+
+Auftrag des Anwenders vom 27.09.2026: „starte am Freitag 2. Oktober um 2:00 Uhr. Aktualisiere dann auch die
+bis dahin ergänzten Funktionen in der Beschreibung".
+
+- **Merge:** `origin/ios_migration_september` enthielt den Zweig bis `852fac0c` bereits; der Zweig ist
+  ohne Konflikt auf `4cfbf017` vorgezogen. Die Statuszeile dieser Welle trägt in der Hauptlinie die Nummer #611.
+- **Neue Funktionen seit dem 28.09.** (Statuszeilen #589–#640), soweit sie die Technikseiten berühren:
+  - **Heizkessel** (ein Opus-Agent):
+    - Rechenwegseite neu: 9 Schritte, 38 Gleichungen. Inhalt: Kesseldaten, Heiztage nach der
+      Heizgrenze (#595), Teillastkennlinie η(β) mit η₃₀ nach Bauart, Brennwertkennlinie über die
+      Rücklaufkette, Takten mit Anfahrverlust, Bereitschaft nur an Heiztagen plus 24 h, Gasspitze,
+      Zahlenrand.
+    - Anwendungsseite: Beispiel A auf die heutigen Felder, neue Fallstricke zu Rücklauf und
+      Brennwertnutzung, Abschnitt „Betriebsbereitschaft“. Die neuen Abschnitte der Kessel-Sitzungen
+      stehen in LaTeX und rechnen einheitlich mit 50 kW.
+    - Grundlagenseite angeglichen.
+  - **Wärmepumpe und Kühlung** (ein Opus-Agent):
+    - Auf dem Rechenweg VDI 6007 nimmt die Simulation Heiz- und Kühlsollwerte aus den
+      Konditionierungsprofilen (`Vdi6007Rechenweg.cs`, `GebaeudeModellEingang.cs`).
+    - Kühlung beschreibt den Kühlsollwert im Reiter „Konditionierung“ mit Kühlkalender und
+      Nachtauskühlung; dazu die Variante „D mit Bürozeiten“.
+    - Wärmepumpe: „Auslegung für Verteilung“ (#636), gesperrter Kühlschalter ohne Haken (#631).
+    - Rechenwege Wärmebedarf (Herkunft der Sollwerte) und Wärmepumpe (Kennlinie ohne gekoppelten
+      Bedarf, Zahlenrand des Quellpuffers #599).
+  - **Reiterfolge (#628):** keine Aussage betroffen.
+- **Prüfung:**
+  - Parser-Gegenprobe je Datei: 0 TeX-Fehler, keine `<pre>`, Anker erhalten.
+  - Die Kernaussage zu den Kühlsollwerten ist am Code nachgeprüft.
+  - Kern-Build und Hilfe-Tests: siehe Commit.
+- **Folgeaufträge:**
+  - Nr. 8 ist erledigt (#592).
+  - Neu: Nr. 11 (Kessel-Hinweistexte, Stromganglinie des Elektrokessels) und Nr. 12
+    (Parameterverwendung der Kühlspalten).
+  - Als Punkt ohne Auftrag: die Gebäudeseiten, die die Welle KP3 nachzieht.
+- **Logbuch:** Die Sätze zum Kesselmodell stehen bereits unter Version 1.2.0.6 (Statuszeilen #616–#636).
+  Die Wiki-Seiten selbst bekommen keinen Eintrag.
+- **Upload:** mit dem nächsten Wochen-Upload (Regel 13.3). Der Trockenlauf zeigt die geänderten Seiten.
+
+## 11 Zusammenführung mit dem Arbeitszweig (09.10.2026)
+
+Anwenderauftrag vom 09.10.2026 (Sitzung „IFC / Gebäudeimport“), Statuszeile #843. Der Zweig
+`claude/wiki-help-assistant-docs-jllq1r` (Stand `e738c22d8`, vier Commits seit `4cfbf0171`) wurde in
+`ios_migration_september` (Basis `4ca74b12c`) zusammengeführt.
+
+- **Konflikte:** sieben Dateien, 28 Blöcke — Rechenweg Heizkessel 14, Rechenweg Wärmepumpe 2, Programm Dokumentation
+  Heizkessel 4, Kühlung 5, Wärmepumpe 1, Grundlagen Kessel und Spitzenlast 1, Grundlagen Wärmepumpe 1. Ohne Konflikt:
+  Index, Folgeaufträge, Statusdatei, Konzept Technikdokumentation, Rechenweg Wärmebedarf, Grundlagen Kühlung.
+- **Regel:** Wo die Hauptlinie einen neueren Stand beschreibt, gilt sie; die Ergänzungen vom 02.10. bleiben, wo sie
+  Neues sagen und zum Code passen; bei Abweichungen entscheidet `EPOS.Kern`.
+- **Rechenweg Heizkessel:** Die Fassung vom 02.10. (neun Schritte) ist Grundlage, weil sie die kürzere Fassung der
+  Hauptlinie vollständig enthält. Gegen den Code berichtigt: Bereitschaftsverlust in kW oder % der Nennleistung
+  (`KesselBereitschaft.LeistungKw`, Gleichung 7 neu); Ergebnisse in der Reiterfolge der Hauptlinie.
+- **Rechenweg Wärmepumpe:** Interpolation über den Vorlauf (Hauptlinie), dazu der Rückfall auf die Kennlinie der Anlage
+  in Stunden ohne Heizbedarf (`SimulationWaermepumpe.KenndatenDerStunde`); Fundort des Heizstabs nach der Verwaltung
+  auch in der Parametertafel.
+- **Grundlagen Kessel/Wärmepumpe:** Absätze vom 02.10., Menüpfad „Wärme- und Kälteerzeugung“ der Hauptlinie.
+- **Programm Dokumentation Heizkessel:** Menüpfad und Kaskaden-Vorwahl der Hauptlinie, Importhinweis und Heizgrenze vom
+  02.10. (Import nach `KesselkatalogNachpflege`), Einheit des Bereitschaftsverlusts der Hauptlinie, Ergebnisreiter in der
+  Folge von `HeizkesselReiter.razor` mit den Betriebswerten; Maximale Brennstoffleistung Gas nach dem Code über alle
+  Nicht-Heizöl-Kessel.
+- **Programm Dokumentation Kühlung:** Fallstricke der Hauptlinie mit der Prüfregel vom 02.10.; die zwei Abschnitte zum
+  Kühlsollwert in „Kühlspalte, Kühlperiode und Kühlkalender“ zusammengelegt (Anker beider Seiten erhalten); Tagesbetriebsart
+  der Hauptlinie, Kühlsollwert der Stunde, Sommerlüftung und Nachtauskühlung vom 02.10.; Grenze „Kühlwerte je Gebäude“
+  ohne die überholte Aussage zur idealen Zonenkühlung; Kaskaden-Vorwahl im Beispiel berichtigt.
+- **Programm Dokumentation Wärmepumpe:** Interpolation der Hauptlinie mit Heizsollwert „aus“ und Rückfall vom 02.10.
+- **Prüfung:** `EPOS.Kern.Tests` gefiltert 187/187, `EPOS.UI.Tests` gefiltert 751/751; `entfalten.py` ohne Befund;
+  Gegenlese-Muster ohne Treffer; keine Konfliktmarker im Repositorium.
+- **Darstellungsprüfung:** Die sieben Dateien über `action=parse` der Wiki-API gerendert (nichts gespeichert): keine
+  Formelfehler, kein `<pre>`.
+- **Upload:** zurückgestellt (Anwender 09.10.2026); die Seiten stehen im Logbuchpapier als ausstehend.
+- **Außerhalb des Auftrags:** „Programm Dokumentation - Pufferspeicher“ nennt im Beispiel noch die alte Kaskaden-Vorwahl
+  („stellt den Kessel nach vorn“).

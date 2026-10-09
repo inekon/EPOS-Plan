@@ -106,7 +106,8 @@ Kurzschlussstrom des Wechselrichters, womit dann gerechnet wird; Stand `363096aa
 Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung und Speichernutzen;
 #563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611;
-#699: Satz zum Platzhalter des Kältebilds im Punkt „Bericht“, ausstehend),
+#699: Satz zum Platzhalter des Kältebilds im Punkt „Bericht“, ausstehend;
+#843: Kühlsollwert über die Konditionierung — Spalte „Kühlen“, Kühlperiode, Kühlkalender —, Kühlsollwert der Stunde, Nachtauskühlung, ausstehend),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
@@ -131,7 +132,13 @@ Gebäude (#571: Reiter „Temperaturen und Ferien“ neu gefasst — Herleitungs
 Wochenend- und Feriensollwert als absolute, ganztägige Solltemperatur, Anker `temperaturen-und-ferien`,
 `wochenendabsenkung`, `ferienabsenkung`; #577: „Simulation…“ rechnet auch für ein eben übernommenes,
 noch nicht gespeichertes Gebäude aus dem Arbeitsstand),
-Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt; hochgeladen 28.09.2026 mit #611),
+Berechnung/Wärmebedarf (#571: die Wochenend- und Ferienregel als absolute Solltemperatur ergänzt; hochgeladen 28.09.2026 mit #611;
+#843: Herkunft der Eingaben aus den Reitern „Gebäude und Hülle“ und „Konditionierung“, ausstehend),
+Heizkessel, Grundlagen/Kessel und Spitzenlast, Berechnung/Heizkessel (hochgeladen 28.09.2026 mit #611; #843: Kesselmodell mit
+Teillast- und Brennwertkennlinie, Takten und Anfahrverlust, Betriebsbereitschaft und Heizgrenze, Ergebnisreiter, ausstehend),
+Wärmepumpe, Grundlagen/Wärmepumpe, Berechnung/Wärmepumpe (hochgeladen 28.09.2026 mit #611; #843: Vorlaufwahl in der Verwaltung,
+Kennlinie in Stunden ohne Heizbedarf, Fundorte der Eingaben, ausstehend),
+Grundlagen/Kühlung (hochgeladen 28.09.2026 mit #611; #843: Kühlsollwert über die Konditionierung, ausstehend),
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
 Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,

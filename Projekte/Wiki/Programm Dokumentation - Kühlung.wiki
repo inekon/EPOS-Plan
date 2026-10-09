@@ -12,7 +12,7 @@ Was Kühllast, Kälteerzeugung und die Leistungszahl EER bedeuten, erklärt [[Gr
 
 Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''Kälteerzeuger''', eine Wärmepumpe im Kühlbetrieb. In der Reihenfolge der Bedienung:
 
-# '''Gebäude''' – Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'': ''Gebäude wird gekühlt'', ''Kühlsollwert'', bei Bedarf ''Kühlleistungsgrenze'' ([[#eingaben|Eingaben]]). Kältebedarf entsteht nur auf dem Rechenweg nach VDI 6007 oder aus einem Lastgang im Kanal ''Kühlung''.
+# '''Gebäude''' – Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'': ''Gebäude wird gekühlt'', bei Bedarf ''Kühlleistungsgrenze''; den ''Kühlsollwert'' trägt der Reiter ''Konditionierung'' in der Spalte ''Kühlen'', Zeile ''Tag'' ([[#eingaben|Eingaben]]). Kältebedarf entsteht nur auf dem Rechenweg nach VDI 6007 oder aus einem Lastgang im Kanal ''Kühlung''.
 # '''Gerät''' – Kälte deckt nur eine Wärmepumpe mit '''Kühlkennlinie''': Kälteleistung und EER je Kühl-Vorlauf über der Außen- bzw. Quellentemperatur. Sie kommt mit dem Herstellerdaten-Import nach VDI 3805 in den Katalog und mit dem Gerät ins Projekt. Im ''Wärmepumpen-Katalog'' zeigt ''nur mit Kühlfunktion'' die Geräte mit Kühlleistung.
 # '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
 # '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Block ''Weitere Einstellungen'' ''Kühlung rechnen'' einschalten.
@@ -57,11 +57,11 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 {| class="wikitable"
 ! Dialog !! Feld !! Wert !! Warum
 |-
-| rowspan="3" | Gebäudedialog, Gruppe ''Kühlung'' || Gebäude wird gekühlt || an || sonst läuft das Büro frei
-|-
-| Kühlsollwert || 26 °C || mehr als 1 K über dem Heizsollwert
+| rowspan="2" | Gebäudedialog, Gruppe ''Kühlung'' || Gebäude wird gekühlt || an || sonst läuft das Büro frei, und die Spalte ''Kühlen'' der Konditionierung bleibt gesperrt
 |-
 | Kühlleistungsgrenze || 80 kW || die Kühllast
+|-
+| Gebäudedialog, Reiter ''Konditionierung'' || Spalte ''Kühlen'', Zeile ''Tag'' || 26 °C || der Kühlsollwert, mehr als 1 K über dem höchsten Heizsollwert; ohne weitere Zeile der Spalte und ohne Kühlkalender gilt er in jeder Stunde
 |-
 | rowspan="3" | Gebäudedialog, Abschnitt ''Kühlübergabe'' || Kühlübergabe rechnen (statt idealer Kühlung) || an || Kühldecken statt idealer Kühlung
 |-
@@ -77,7 +77,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 |-
 | Hilfsstromanteil || 5 % || Pumpen und Ventilatoren des Kältekreises
 |-
-| rowspan="3" | Simulation Konfiguration || Komponenten der Simulation || Wärmepumpe A vor Kessel 1 || nur in der Kaskade kühlt sie; die Vorwahl einer neuen Kaskade stellt den Kessel nach vorn
+| rowspan="3" | Simulation Konfiguration || Komponenten der Simulation || Wärmepumpe A vor Kessel 1 || nur in der Kaskade kühlt sie; die Vorwahl einer neuen Kaskade stellt die Wärmepumpe schon vor den Kessel
 |-
 | Kühlung rechnen || an || projektweiter Schalter
 |-
@@ -89,6 +89,8 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 
 '''Variante C – Einfamilienhaus mit Fußbodenkühlung:''' Sole-Wasser-Wärmepumpe A mit 6 kW an einer Erdwärmesonde, Fußbodenheizung 35/28 °C, 3 kW Kühlung. Anders als in D: ''Kühlleistungsgrenze'' und ''Nennleistung der Kühlübergabe'' je 3 kW, ''Kühlübergabeart'' ''Flächenkühlung''. Ohne zweiten Wärmeerzeuger bleibt ein Heizbedarf an Kühltagen offen. Die Sonde hat im Modell eine feste Quelltemperatur, die das Kühlen nicht anhebt; gerechnet wird Kühlen mit Verdichter und dem EER der Kennlinie.
 
+'''Variante D mit Bürozeiten:''' In der Karte ''Kühlen'' unter der Matrix die Vorlage ''Büro'' wählen und ''Übernehmen''. Sie setzt Tag 26 °C und ''aus'' für die Nacht von 18 bis 7 Uhr, für Wochenende und Ferien, bringt die bundeseinheitlichen Feiertage wie Sonntag mit und legt den Kühlkalender an. Gekühlt wird dann werktags von 7 bis 18 Uhr außerhalb der Ferienzeiträume und Feiertage; in den übrigen Stunden läuft das Büro nach oben frei und hat keinen Kältebedarf.
+
 == Zusammenspiel mit anderen Technologien ==
 {{Anker|zusammenspiel}}
 
@@ -97,7 +99,7 @@ Kälte deckt allein die Wärmepumpe im Kühlbetrieb, doch die Kühlung wirkt auf
 {| class="wikitable"
 ! Technik !! Wirkung der Kühlung !! Wirkung auf die Kühlung !! So rechnet EPOS-Plan
 |-
-| Gebäude || hält den Kühlsollwert, soweit die Leistung reicht || Hülle, Gewinne und Sommerlüftung bestimmen die Kühllast || Kühllast je Stunde nach VDI 6007; die Sommerlüftung öffnet 3 K unter dem Kühlsollwert
+| Gebäude || hält den Kühlsollwert der Stunde, soweit die Leistung reicht || Hülle, Gewinne, Sommerlüftung und Nachtauskühlung bestimmen die Kühllast || Kühllast je Stunde nach VDI 6007; Sommerlüftung und Nachtauskühlung öffnen 3 K unter dem Kühlsollwert der Stunde, in Stunden ohne Kühlung ab 23 °C
 |-
 | Wärmepumpe (Heizen) || am Kühltag Heizkanal gesperrt, Heizstab nur für Brauchwasser || am Heiztag keine Kälte; Brauchwasser und Sperrzeit kürzen die Stunde || Kühltag, wenn der Kältebedarf des Tages im Projekt den Heizbedarf übersteigt; Kälte in eigenen Reihen, die Jahresarbeitszahl der Wärme bleibt ohne sie
 |-
@@ -137,12 +139,12 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 {{Anker|fallstricke}}
 
 * '''Kühlleistung ist keine Kühlkennlinie.''' Ohne Kühlkennlinie im Projekt ist ''Maschine auch zum Kühlen benutzen'' gesperrt („Zu diesem Gerät liegen keine Kühlkenndaten vor"); eine Kühlleistung allein genügt nicht. Abhilfe: ein Gerät mit Kühlkennlinie wählen.
-* '''Ein Glied fehlt.''' Ohne ''Kühlung rechnen'', Haken und Kühlsollwert am Gebäude, ''Maschine auch zum Kühlen benutzen'' und Kaskadenplatz bleibt die Kälte aus oder ungedeckt; das Laufprotokoll nennt, was fehlt.
+* '''Ein Glied fehlt.''' Ohne ''Kühlung rechnen'', Haken am Gebäude, Kühlsollwert in der Spalte ''Kühlen'', ''Maschine auch zum Kühlen benutzen'' und Kaskadenplatz bleibt die Kälte aus oder ungedeckt; das Laufprotokoll nennt, was fehlt.
 * '''Übergangszeit.''' Die Betriebsart gilt je Tag für das Projekt und alle Wärmepumpen im Kühlbetrieb: Kälte an einem Heiztag bleibt ungedeckt, auch mit einer zweiten Wärmepumpe; Heizbedarf am Kühltag braucht einen weiteren Wärmeerzeuger. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen.
-* '''Kühlsollwert und Zeitprogramm.''' Der Dialog prüft den Kühlsollwert gegen die vier Heizsollwerte, ein Sollwert-Zeitprogramm erst der Lauf: Liegt eine Stunde darin weniger als 1 K unter dem Kühlsollwert, bricht er ab.
+* '''Kühlsollwert und Zeitprogramm.''' Der Dialog prüft die Zeilen der Spalte ''Kühlen'' gegen die Heizsollwerte der Spalte ''Heizen''. Einen Kühl- oder Heizkalender und ein Sollwert-Zeitprogramm der Wärmeübergabe prüft erst der Lauf: Liegt in einer Stunde, in der weder Heizen noch Kühlen ''aus'' ist, der Kühlsollwert nicht mindestens 1 K über dem Heizsollwert, bricht er ab.
 * '''Kühl-Vorlauf.''' Zur Wahl stehen die Stützstellen der Kühlkennlinie, leer die kälteste. Ein Kühl-Vorlauf zwischen zwei Stützstellen rechnet Kälteleistung und Leistungszahl linear zwischen beiden, ein Wert außerhalb mit der nächsten Stützstelle; das Laufprotokoll nennt das je Gerät. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
 * '''Rand der Kennlinie.''' Auf der Achse der Außen- bzw. Quellentemperatur wird über der obersten Stützstelle mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Den Kühl-Vorlauf betrifft der Schalter nicht. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
-* '''Mehrere Zonen.''' Jede gekühlte Zone rechnet ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]); eine Zone ohne wirksame Kühlübergabe kühlt ideal, der Lauf sagt es.
+* '''Mehrere Zonen.''' Jede gekühlte Zone rechnet ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]); eine Zone ohne wirksame Kühlübergabe kühlt ideal, der Lauf sagt es. Kühlsollwert, Kühlperiode und Kühlkalender kommen vom Gebäude; im Zonendialog ist die Spalte ''Kühlen'' gesperrt.
 * '''Kühlkurve.''' Sie wirkt nur auf der Stufe ''geschlossener Kreis (AK3)''. Ihr Gewinn hängt an der Kühlkennlinie: Zwischen zwei Stützstellen rechnet die Wärmepumpe linear, über der obersten mit deren Wert. Liegt der feste Kühl-Vorlauf schon an der obersten Stützstelle, gewinnt die Kurve dort kaum an Leistungszahl.
 * '''Regeneration der Sonde.''' Kühlt eine Wärmepumpe mit Erdwärmesonde, geht ihre Kühlwärme in das Sondenfeld zurück und hebt die Soletemperatur ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]).
 * '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe); weitere [[#grenzen|Grenzen]]. Die freie Kühlung über die Sonde ist abgebildet ([[#freie-kuehlung-waermequelle|Freie Kühlung über die Wärmequelle]]).
@@ -153,39 +155,39 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 Gerechnet wird die Kälte, wenn zwei Schalter stehen:
 
 # '''Projekt''' – In der ''Simulation Konfiguration'' steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
-# '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt''' und tragen einen '''Kühlsollwert''' ein.
+# '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt'''; den '''Kühlsollwert''' tragen Sie im Reiter ''Konditionierung'' in die Spalte ''Kühlen'', Zeile ''Tag'' ein.
 
 Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''' fest, ob ein neu angelegtes Projekt mit eingeschaltetem Projektschalter beginnt; die Vorgabe ist aus. Vorhandene Projekte schaltet diese Einstellung nicht um, und ein kopiertes Projekt übernimmt den Schalter seiner Vorlage.
 
 == Eingaben im Gebäudedialog ==
 {{Anker|eingaben}}
 
-Die Gruppe ''Kühlung'' im Reiter ''Gebäude und Hülle'' steht unter dem Rechenweg und ist immer sichtbar und bearbeitbar. Die Kühlleistungsgrenze erscheint mit dem Haken; der Kühlsollwert steht in der Spalte ''Kühlen'' der Matrix im Reiter ''Konditionierung'' (siehe [[#kuehlspalte|Kühlspalte, Kühlperiode und Kühlkalender]]). Ein leeres Feld zeigt seine Vorgabe als grauen Text; gespeichert wird dann kein Wert, sondern „leer".
+Die Kühlung eines Gebäudes steht an zwei Stellen des Gebäudedialogs: Haken und Leistungsgrenze in der Gruppe ''Kühlung'' des Reiters ''Gebäude und Hülle'', der Kühlsollwert in der Spalte ''Kühlen'' der Vorgabe-Matrix im Reiter ''Konditionierung'' ([[#kuehlspalte|Kühlspalte, Kühlperiode und Kühlkalender]]). In der Verwaltung Gebäude steht die Gruppe ''Kühlung'' im Stammblatt unter ''Alle Daten'', die Matrix im Blatt, das ''Konditionierung…'' öffnet.
+
+Die Gruppe ''Kühlung'' steht am Ende des Reiters, unter der ''Wärmeübergabe'', und ist immer sichtbar und bearbeitbar; die Kühlleistungsgrenze erscheint mit dem Haken. Ein leeres Feld zeigt seine Vorgabe als grauen Text; gespeichert wird dann kein Wert, sondern „leer".
 
 {| class="wikitable"
 ! Feld !! Vorgabe !! Bedeutung
 |-
-| Gebäude wird gekühlt || aus || schaltet die Kühlung dieses Gebäudes ein; ohne den Projektschalter wirkt der Haken nicht
-|-
-| Kühlsollwert (Matrix, Zelle ''Tag'') || Kühlung aus || Raumlufttemperatur, über die das Modell den Raum nicht steigen lässt, solange die Kühlleistung reicht; zwischen 15 und 35 °C und mindestens 1 K über dem höchsten Heizsollwert (Tag, Nacht, Wochenende und Ferien). Ohne Kühlsollwert bleibt die Kühlung aus, auch mit Haken
+| Gebäude wird gekühlt || aus || schaltet die Kühlung dieses Gebäudes ein; ohne den Projektschalter wirkt der Haken nicht. Ohne Haken ist die Spalte ''Kühlen'' im Reiter ''Konditionierung'' gesperrt
 |-
 | Kühlleistungsgrenze || unbegrenzt || größte Kühlleistung in kW; reicht sie nicht, steigt die Raumtemperatur über den Kühlsollwert
 |}
 
 Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höchstem Heizsollwert, ohne Haken, dass das Gebäude frei läuft und die Überhitzung an der Maximalraumtemperatur gezählt wird. Einen Kühlsollwert, der nicht mindestens 1 K über dem höchsten Heizsollwert liegt, nimmt der Dialog nicht an – Heizung und Kühlung arbeiteten sonst gegeneinander.
 
-Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet.
+Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet. Im Reiter ''Konditionierung'' zeigt die Matrix auf diesem Weg nur die Felder, die er liest – in der Spalte ''Kühlen'' keines.
 
 Mit dem Haken steht darunter der Abschnitt '''Kühlübergabe''': Mit ihm rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor statt ideal – in Projekten mit Anlagenkopplung; auf der Stufe ''geschlossener Kreis (AK3)'' wahlweise mit Kühlkurve; siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]].
 
 === Kühlspalte, Kühlperiode und Kühlkalender ===
-{{Anker|kuehlspalte|kuehlperiode}}
+{{Anker|kuehlspalte|kuehlperiode|kuehlsollwert|kuehlkalender}}
 
 Die Matrix des Reiters ''Konditionierung'' (siehe [[Programm Dokumentation/Gebäude#konditionierung|Gebäude]]) trägt neben der Heizspalte die Spalte ''Kühlen °C'':
 
-* '''Tag und Nacht''' – ''Tag'' ist der Kühlsollwert, ''Nacht'' der Absenksollwert des Nachtfensters (Wert oder ''aus''; leer gilt das Nachtfenster der Heizspalte). ''Wochenende'' und ''Ferien'' nehmen einen eigenen Wert, ''aus'' oder bleiben leer; leer heißt ''Vorgabe'', also der Wert von Tag bzw. Werktag.
+* '''Tag und Nacht''' – ''Tag'' ist der Kühlsollwert: die Raumlufttemperatur, über die das Modell den Raum nicht steigen lässt, solange die Kühlleistung reicht; ohne ihn bleibt die Kühlung aus, auch mit Haken. ''Nacht'' der Absenksollwert des Nachtfensters (Wert oder ''aus''; leer gilt das Nachtfenster der Heizspalte). ''Wochenende'' und ''Ferien'' nehmen einen eigenen Wert, ''aus'' oder bleiben leer; leer heißt ''Vorgabe'', also der Wert von Tag bzw. Werktag.
 * '''Kühlperiode''' – die Zelle ''Saison'' der Kühlspalte: Start und Ende als Datum. Innerhalb wird gekühlt, außerhalb steht die Kühlung auf ''aus''; leer heißt ganzjährig, Start und Ende gibt es nur zusammen.
-* '''Kühlkalender''' – die Kalenderkarte ''Kühlen'' hält dasselbe als Stundenkalender: Wochenraster, Zeitfenster, Perioden, Feiertage und Teppichbild, dazu Vorlagen. ''Kalender anlegen'' erzeugt ihn aus den Zellen.
+* '''Kühlkalender''' – die Kalenderkarte ''Kühlen'' hält dasselbe als Stundenkalender: Wochenraster, Zeitfenster, Perioden, Feiertage und Teppichbild, dazu Vorlagen. ''Kalender anlegen'' erzeugt ihn aus den Zellen, die Auswahlliste der Karte übernimmt eine Vorlage. Ein angelegter Kalender geht der Matrix vor. Trägt nur die Zeile ''Tag'' einen Wert und ist kein Kühlkalender angelegt, gilt der Kühlsollwert in jeder Stunde.
 * '''Prüfung''' – Der Kühlsollwert liegt in jeder Stunde, in der beide wirken, mindestens 1 K über dem Heizsollwert; die Matrix prüft das je Zeile, zulässig sind 15 bis 35 °C. Die Sommerlüftung rechnet je Stunde mit der Schwelle 3 K unter dem Kühlsollwert; steht die Kühlung auf ''aus'', gilt die feste Schwelle 23 °C.
 * '''Sperre''' – Die Spalte wirkt nur mit dem Projektschalter ''Kühlung rechnen'' und dem Haken ''Gebäude wird gekühlt''; sonst ist sie gesperrt, der Grund steht am Element. An einer Zone ist sie gesperrt: Kühlsollwert, Kühlperiode und Kühlkalender kommen vom Gebäude (siehe [[Programm Dokumentation/Mehrzonenmodell#konditionierung|Mehrzonenmodell]]).
 
@@ -196,8 +198,10 @@ Die Nachtauskühlung ([[Programm Dokumentation/Gebäudemodell VDI 6007#nachtausk
 
 * '''Totband''' – Zwischen Heiz- und Kühlsollwert schwingt die Raumtemperatur frei; geheizt wird unterhalb des Heizsollwerts, gekühlt oberhalb des Kühlsollwerts. Eine Stunde, in der das Modell von Heizen auf Kühlen umschaltet, trägt beides; solche Stunden zählt EPOS-Plan als '''Stunden mit Heizen und Kühlen''' und verrechnet sie nicht.
 * {{Anker|tagesbetriebsart}}'''Heizen oder Kühlen je Tag und Zone''' – Eine Zone wird an einem Tag entweder geheizt oder gekühlt, nie beides. Die Tagesbetriebsart wählt EPOS-Plan je Zone innerhalb der [[Programm Dokumentation/Gebäude#freigabe|Freigabe]] des Heiz- und Kühlkalenders: Ist nur eine Seite frei, gilt sie; sind beide frei, entscheiden die Tagessummen von Heiz- und Kühlbedarf; ist keine frei, wird die Zone an dem Tag nicht konditioniert. An einem Kühltag der Zone ist ihre Raumheizung gesperrt, an einem Heiztag ihre Raumkühlung. Verschiedene Zonen dürfen am selben Tag verschieden arbeiten; Prozesswärme, Prozesskälte und Brauchwasser sind frei.
-* '''Sommerlüftung''' – Ist bei einem gekühlten Gebäude die [[Programm Dokumentation/Gebäudemodell VDI 6007#sommerlueftung|Sommerlüftung]] eingeschaltet, öffnen die Nutzer die Fenster ab 3 K unter dem Kühlsollwert; die Lüftung senkt die Kühllast, bevor gekühlt wird.
-* '''Ohne Kühlung''' – Ein Gebäude ohne Haken, ohne Kühlsollwert oder in einem Projekt ohne den Schalter ''Kühlung rechnen'' wird nicht gekühlt. Es läuft frei: Seine Raumtemperatur darf über die Maximalraumtemperatur steigen, und es hat keinen Kühlbedarf. Die '''Überhitzungsstunden''' zählen die Stunden der Nutzungszeit, in denen die operative Temperatur über der Maximalraumtemperatur liegt – sie zeigen, was ohne Kühlanlage geschieht.
+* '''Kühlsollwert der Stunde''' – Ohne weitere Angabe gilt der Kühlsollwert der Zeile ''Tag'' in jeder Stunde, sonst der Wert, den Kühlkalender oder Matrix für die Stunde ergeben. In Stunden mit ''aus'' – auch außerhalb der Kühlperiode – kühlt das Modell nicht: Die Raumluft darf dort frei steigen, und die Stunde hat keinen Kältebedarf.
+* '''Sommerlüftung''' – Ist bei einem gekühlten Gebäude die [[Programm Dokumentation/Gebäudemodell VDI 6007#sommerlueftung|Sommerlüftung]] eingeschaltet (Reiter ''Konditionierung''), öffnen die Nutzer die Fenster ab 3 K unter dem Kühlsollwert der Stunde, in Stunden ohne Kühlung ab 23 °C; die Lüftung senkt die Kühllast, bevor gekühlt wird.
+* '''Nachtauskühlung''' – Trägt die Spalte ''Lüftung'' im Reiter ''Konditionierung'' in der Zeile ''Nacht'' einen höheren Luftwechsel als am Tag, wirkt der Mehrbetrag im Nachtfenster nur bedingt: wenn die Raumluft über derselben Schwelle liegt wie bei der Sommerlüftung und die Außenluft mindestens um ''ΔT Außenluft'' kühler ist, Vorgabe 2 K. Das kühlt das Gebäude nachts aus und kann die Kühllast des Folgetags senken; ''Wärmebedarf Gebäude'' zählt die ''Stunden mit Nachtauskühlung''.
+* '''Ohne Kühlung''' – Ein Gebäude ohne Haken, ohne Kühlsollwert oder in einem Projekt ohne den Schalter ''Kühlung rechnen'' wird nicht gekühlt. Es läuft frei: Seine Raumtemperatur darf über die Maximalraumtemperatur steigen, und es hat keinen Kühlbedarf. Die '''Überhitzungsstunden''' zählen die Stunden der Nutzungszeit – mit einem Personenkalender die Stunden mit Anwesenheit, sonst die Stunden außerhalb der Nachtzeit –, in denen die operative Temperatur über der Maximalraumtemperatur liegt; sie zeigen, was ohne Kühlanlage geschieht.
 * '''Lastgänge''' – Im Dialog ''Wärmebedarf Extern'' können Sie einer eingelesenen Ganglinie den Kanal ''Kühlung'' geben. Sie ist dann Kältebedarf ohne Gebäudemodell, geht in keinen Wärmekanal und wirkt nur mit dem Projektschalter.
 * '''Rechenweg Tagesbilanz''' – Ein Gebäude auf diesem Rechenweg hat keinen Kältebedarf; der Lauf trägt 0 ein und nennt den Grund im Protokoll.
 
@@ -233,7 +237,7 @@ Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' 
 | Leistungsgrenze || Kälteleistung der Kennlinie || erscheint mit dem Schalter; höchste Kälteleistung der freien Kühlung in kW, größer als 0
 |}
 
-Der Schalter ist gesperrt, wenn die Wärmepumpe im Projekt keine Kühlkennlinie führt oder ihre Wärme aus einem Quellspeicher bezieht; der Grund steht am Schalter. Führt ein Gerät eine Kühlleistung, aber keine Kühlkennlinie, sagt der Dialog, dass diese Maschine nur Wärme rechnet. Einen weiteren Stromträger ordnen Sie dem Projekt unter ''Berichte & Kosten › Energieträger'' zu.
+Der Schalter ist gesperrt, wenn die Wärmepumpe im Projekt keine Kühlkennlinie führt oder ihre Wärme aus einem Quellspeicher bezieht: Er steht dann ohne Haken, und der Grund steht darunter. Ein schon eingeschalteter Kühlbetrieb lässt sich auch dann ausschalten. Führt ein Gerät eine Kühlleistung, aber keine Kühlkennlinie, sagt der Dialog, dass diese Maschine nur Wärme rechnet. Einen weiteren Stromträger ordnen Sie dem Projekt unter ''Berichte & Kosten › Energieträger'' zu.
 
 Die Wärmepumpe schaltet '''je Tag''' zwischen Heizen und Kühlen um: Übersteigt der Kältebedarf eines Tages seinen Heizbedarf, kühlt sie an diesem Tag; maßgeblich sind die Bedarfe nach der Tagesbetriebsart der Zonen. Brauchwasser bleibt auch an einem Kühltag bedienbar.
 
@@ -327,7 +331,7 @@ Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekt
 * '''Kälteerzeuger''': Kälte decken die Wärmepumpe im Kühlbetrieb und die Kältemaschine; freie Kühlung gibt es an der Kältemaschine mit Trocken- oder Nasskühler und an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe über ihre Wärmequelle.
 * '''Rückwirkung nur an der Sonde''': Die Kühlwärme einer Wärmepumpe mit Erdwärmesonde regeneriert das Sondenfeld ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]); bei Erdkollektor, Konstant, Profil und CSV verändert sie die Quellentemperatur nicht. Kältemaschinen kühlen gegen die Umgebung und speisen nicht ins Erdreich.
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
-* '''Ein Kühlsollwert''' je Gebäude für alle Stunden; ein Zeitprogramm für den Kühlsollwert hat kein Bedienelement. Mehrere Zonen teilen einen Kaltwasserkreis mit einem Vorlauf und einer Kühlkurve ([[#fallstricke|Fallstricke]]).
+* '''Kühlwerte je Gebäude''': Kühlsollwert, Kühlperiode und Kühlkalender gelten in jeder Zone eines Gebäudes; eigene Kühlwerte je Zone gibt es nicht. Mehrere Zonen teilen einen Kaltwasserkreis mit einem Vorlauf und einer Kühlkurve ([[#fallstricke|Fallstricke]]).
 * Verluste eines Kältenetzes werden nicht gerechnet.
 
 [[Kategorie:Programm Dokumentation]]
