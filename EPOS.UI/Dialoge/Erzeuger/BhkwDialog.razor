@@ -55,7 +55,7 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="BHKW" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
@@ -112,7 +112,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
@@ -283,6 +283,9 @@
            ja/nein", WELCHE Zeile gemeint ist, weiss allein dieser Dialog. *@
         </KindInhalt>
     </Gruppenkopf>
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

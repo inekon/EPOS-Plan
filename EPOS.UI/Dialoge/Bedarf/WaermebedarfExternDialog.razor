@@ -126,7 +126,7 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
+    <Zweispaltenauswahl Dialogname="WaermebedarfExtern" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalog"
                         UebernehmenText="@BtnHinzuText"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@BtnEntfernenText"
@@ -222,7 +222,7 @@
             }
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --- Die Grafik der gewaehlten Ganglinie (W9-E-3) -------------------- *@
     @if (_kennzahlen is not null)
@@ -238,6 +238,9 @@
                           FarbeSetzen="@FarbeSetzen"
                           FarbeZuruecksetzen="@FarbeZuruecksetzen" />
     }
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

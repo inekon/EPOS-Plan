@@ -55,7 +55,7 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
     }
 
-    <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+    <Zweispaltenauswahl Dialogname="Waermepumpe" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
@@ -119,7 +119,7 @@
             </div>
         </Rechts>
 
-    </Zweispaltenauswahl>
+        <Satz>
 
     @* --- Die Detailansicht der markierten Anlage, EINGEBETTET (W7-B-3) ----------
        @key: Jede Zeile bekommt ihre eigene Instanz - die Ansicht liest Stammliste,
@@ -141,6 +141,9 @@
     {
         <Herleitungszeile Text="@LeerText" />
     }
+
+        </Satz>
+    </Zweispaltenauswahl>
 
     @if (!Wizard)
     {

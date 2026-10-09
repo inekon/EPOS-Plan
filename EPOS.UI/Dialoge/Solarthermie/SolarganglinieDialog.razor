@@ -35,16 +35,36 @@
         <Schliesskreuz Geschlossen="BeiKreuz" />
     </div>
 
+    @{
+        // Die Daten des gewaehlten Satzes - im Projektbetrieb die Detailzeile der
+        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
+        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
+        @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
+           entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
+        <div class="epos-berechnungshilfe">
+            <InfoKnopf Schluessel="Form_Solarganglinie.Grundlagen"
+                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+            <InfoKnopf Schluessel="Form_Solarganglinie.Berechnung"
+                       StandardKurztext="Berechnungsweg Solarthermie" MitAssistent="false" />
+        </div>
+
+        <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+        <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                  Mehrzeilig="true" Zeilen="3" />
+        </div>;
+    }
+
     @if (Katalogbetrieb)
     {
         <GanglinieKatalogseite @ref="_seite" Wege="@Katalogwege" Profil="@Katalogprofil"
                                Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
                                ZeileGewaehlt="BeiKatalogzeile" />
+        @satzinhalt
     }
     else
     {
-        <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+        <Zweispaltenauswahl Dialogname="Solarganglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                             UebernehmenText="@LabelHinzu"
                             UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                             EntfernenText="@LabelEntfernen"
@@ -87,21 +107,10 @@
                                        ImProjekt="@ProjektBezeichner" />
             </Rechts>
 
+            <Satz>@satzinhalt</Satz>
+
         </Zweispaltenauswahl>
     }
-
-    @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
-       entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
-    <div class="epos-berechnungshilfe">
-        <InfoKnopf Schluessel="Form_Solarganglinie.Grundlagen"
-                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
-        <InfoKnopf Schluessel="Form_Solarganglinie.Berechnung"
-                   StandardKurztext="Berechnungsweg Solarthermie" MitAssistent="false" />
-    </div>
-
-    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
-    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-              Mehrzeilig="true" Zeilen="3" />
 
     @if (Katalogbetrieb)
     {
