@@ -357,6 +357,13 @@ namespace WindowsFormsApplication1
         public double[] Heizkreisruecklauf;
 
         /// <summary>
+        /// Der VORLAUF DER VORWÄRMENDEN WÄRMEPUMPE [°C je Stunde] (Übergabegrenze UB‑E2,
+        /// <c>SimulationWaermepumpe.Vorwaermvorlauf</c>): θ_WP,max in Stunden mit Vorwärmbetrieb und laufender
+        /// Wärmepumpe (B3), sonst NaN — Stufe „Vorwärmer" vor dem Heizkreis. <c>null</c> ohne Wärmepumpe.
+        /// </summary>
+        public double[] Vorwaermvorlauf;
+
+        /// <summary>
         /// Liest das GEPFLEGTE Paar einer Anlage (<c>Tab_Energieanlagen.ID</c>) und liefert seinen
         /// Rücklauf [°C], <c>null</c> ohne Paar — Stufe (c) der Rücklaufkette. Eingang, gesetzt von
         /// <c>SimulationControl</c> (dieselbe Kette Anlage → Heizkessel wie der Kessel-Hub);
@@ -1581,7 +1588,7 @@ namespace WindowsFormsApplication1
                 {
                     _ruecklaufPaar[i] = (RuecklaufPaarLesen != null && idAnlage > 0) ? RuecklaufPaarLesen(idAnlage) : null;
                     _ruecklaufStunde[i] = new double[8760];
-                    _ruecklaufStufen[i] = new int[4];
+                    _ruecklaufStufen[i] = new int[5];
                     BrennwertkennlinieMelden(i);
                 }
             }
@@ -2021,7 +2028,9 @@ namespace WindowsFormsApplication1
         {
             double heizkreis = (Heizkreisruecklauf != null && stunde >= 0 && stunde < Heizkreisruecklauf.Length)
                 ? Heizkreisruecklauf[stunde] : double.NaN;
-            return Kesselkennlinie.Ruecklauf(heizkreis, _speicherRuecklauf[i], _ruecklaufPaar[i], out stufe);
+            double vorwaermer = (Vorwaermvorlauf != null && stunde >= 0 && stunde < Vorwaermvorlauf.Length)
+                ? Vorwaermvorlauf[stunde] : double.NaN;
+            return Kesselkennlinie.Ruecklauf(vorwaermer, heizkreis, _speicherRuecklauf[i], _ruecklaufPaar[i], out stufe);
         }
 
         /// <summary>
@@ -2100,7 +2109,12 @@ namespace WindowsFormsApplication1
                     RuecklaufStufenstunden(i, Ruecklaufstufe.Paar),
                     RuecklaufStufenstunden(i, Ruecklaufstufe.Rueckfall),
                     RuecklaufMittel(i).ToString("0.0", k),
-                    Brennwertstunden_Spk[i], Laufstunden_Spk[i]));
+                    Brennwertstunden_Spk[i], Laufstunden_Spk[i],
+                    // UB-E2 (U-4): die Stufe „Vorwärmer" nur mit Stunden - sonst bleibt der Hinweis wie im Bestand.
+                    RuecklaufStufenstunden(i, Ruecklaufstufe.Vorwaermer) > 0
+                        ? string.Format(k, MyResource.Resource.SIMENG_KESSEL_BRENNWERT_VORWAERMER,
+                                        RuecklaufStufenstunden(i, Ruecklaufstufe.Vorwaermer))
+                        : ""));
 
             // Ganzzahlig verglichen (Stunden über dem Taupunkt ≥ die Hälfte der Laufstunden) - die
             // Kohärenzzeile kippt so nicht an der Rundung eines Quotienten.
