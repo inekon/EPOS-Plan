@@ -58256,6 +58256,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg außerhalb des Kennfelds: Randwert (Vorgabe) oder Gütegrad. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_KENNFELD_RANDWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_KENNFELD_RANDWEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Teillast in Prozent der Nennkälteleistung (0 bis 100). ähnelt.
         /// </summary>
         public static string KI_DLG_KM_MINDESTTEILLAST_ERL {
@@ -58310,11 +58319,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taktverlustfaktor C_d (0 bis 1) unter der Mindestteillast; leer = 0,9. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TAKTVERLUST_CD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TAKTVERLUST_CD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beiwert a der Teillastkurve a + b·x + c·x² (Leistungsaufnahme über dem Lastgrad); alle drei oder keiner. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TEILLASTKURVE_A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TEILLASTKURVE_A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beiwert b der Teillastkurve; alle drei oder keiner. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TEILLASTKURVE_B_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TEILLASTKURVE_B_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beiwert c der Teillastkurve; alle drei oder keiner. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TEILLASTKURVE_C_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TEILLASTKURVE_C_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgrad (0 bis 1), ab dem die Kurve gilt; leer = Mindestteillast. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TEILLASTKURVE_LASTGRAD_MIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TEILLASTKURVE_LASTGRAD_MIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung der Maschine: leer = wie bisher (linear, ohne Taktverlust), linear oder Kurve. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_TEILLAST_WEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_TEILLAST_WEG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typbezeichnung als Freitext. ähnelt.
         /// </summary>
         public static string KI_DLG_KM_TYP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_KM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verdichterregelung; wählt die Vorgabekurve, wenn keine Beiwerte gepflegt sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KM_VERDICHTERREGELUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KM_VERDICHTERREGELUNG_ERL", resourceCulture);
             }
         }
         
@@ -73465,6 +73537,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
+        /// </summary>
+        public static string KM_AUSK_AUSSEN {
+            get {
+                return ResourceManager.GetString("KM_AUSK_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Auskunft rechnet aus dem eigenen Kennfeld bei Kaltwasser 7 °C; der Lastgrad bezieht sich auf die Nennkälteleistung. Nichts wird gespeichert. ähnelt.
+        /// </summary>
+        public static string KM_AUSK_HINWEIS {
+            get {
+                return ResourceManager.GetString("KM_AUSK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgrad ähnelt.
+        /// </summary>
+        public static string KM_AUSK_LASTGRAD {
+            get {
+                return ResourceManager.GetString("KM_AUSK_LASTGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt {0} ähnelt.
+        /// </summary>
+        public static string KM_AUSK_PUNKT {
+            get {
+                return ResourceManager.GetString("KM_AUSK_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeldrand ähnelt.
+        /// </summary>
+        public static string KM_AUSK_RAND {
+            get {
+                return ResourceManager.GetString("KM_AUSK_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnen ähnelt.
+        /// </summary>
+        public static string KM_AUSK_RECHNEN {
+            get {
+                return ResourceManager.GetString("KM_AUSK_RECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        /// </summary>
+        public static string KM_AUSK_SP_KAELTE {
+            get {
+                return ResourceManager.GetString("KM_AUSK_SP_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgrad der Maschine ähnelt.
+        /// </summary>
+        public static string KM_AUSK_SP_LASTGRAD_MASCHINE {
+            get {
+                return ResourceManager.GetString("KM_AUSK_SP_LASTGRAD_MASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungsaufnahme ähnelt.
+        /// </summary>
+        public static string KM_AUSK_SP_LEISTUNGSAUFNAHME {
+            get {
+                return ResourceManager.GetString("KM_AUSK_SP_LEISTUNGSAUFNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung ähnelt.
+        /// </summary>
+        public static string KM_AUSK_SP_RUECKKUEHL {
+            get {
+                return ResourceManager.GetString("KM_AUSK_SP_RUECKKUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die taktet ähnelt.
+        /// </summary>
+        public static string KM_AUSK_TAKT {
+            get {
+                return ResourceManager.GetString("KM_AUSK_TAKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Verhältnis g ähnelt.
+        /// </summary>
+        public static string KM_BILD_ACHSE_G {
+            get {
+                return ResourceManager.GetString("KM_BILD_ACHSE_G", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastgrad [%] ähnelt.
+        /// </summary>
+        public static string KM_BILD_ACHSE_LASTGRAD {
+            get {
+                return ResourceManager.GetString("KM_BILD_ACHSE_LASTGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Verhältnis über dem Lastgrad ähnelt.
+        /// </summary>
+        public static string KM_BILD_TEILLAST {
+            get {
+                return ResourceManager.GetString("KM_BILD_TEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurve aus Typkennfeld… ähnelt.
+        /// </summary>
+        public static string KM_BTN_KURVE_TYPKENNFELD {
+            get {
+                return ResourceManager.GetString("KM_BTN_KURVE_TYPKENNFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfeld auf Datenblatt skalieren… ähnelt.
+        /// </summary>
+        public static string KM_BTN_SKALIEREN {
+            get {
+                return ResourceManager.GetString("KM_BTN_SKALIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastpunkte prüfen… ähnelt.
+        /// </summary>
+        public static string KM_BTN_TEILLASTPUNKTE {
+            get {
+                return ResourceManager.GetString("KM_BTN_TEILLASTPUNKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder laden… ähnelt.
         /// </summary>
         public static string KM_BTN_TYPKENNFELDER {
@@ -73654,7 +73879,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Weg an den Kennfeldrändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeldrand ähnelt.
         /// </summary>
         public static string KM_LBL_KENNFELD_RANDWEG {
             get {
@@ -73744,7 +73969,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinster Lastgrad der Kurve ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurve gültig ab Lastgrad ähnelt.
         /// </summary>
         public static string KM_LBL_TEILLASTKURVE_LASTGRAD_MIN {
             get {
@@ -73753,7 +73978,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastweg ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung ähnelt.
         /// </summary>
         public static string KM_LBL_TEILLAST_WEG {
             get {
@@ -73767,6 +73992,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_LBL_TYP {
             get {
                 return ResourceManager.GetString("KM_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfeld ähnelt.
+        /// </summary>
+        public static string KM_LBL_TYPKENNFELD {
+            get {
+                return ResourceManager.GetString("KM_LBL_TYPKENNFELD", resourceCulture);
             }
         }
         
@@ -73803,6 +74037,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_MSG_AUSGELIEFERT {
             get {
                 return ResourceManager.GetString("KM_MSG_AUSGELIEFERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Punkt braucht es eine Außentemperatur und einen Lastgrad über 0 % bis 100 %; höchstens vier Punkte. ähnelt.
+        /// </summary>
+        public static string KM_MSG_AUSKUNFT_EINGABE {
+            get {
+                return ResourceManager.GetString("KM_MSG_AUSKUNFT_EINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rechnung braucht ein Kennfeld mit EER und Kälteleistung am Nennpunkt. ähnelt.
+        /// </summary>
+        public static string KM_MSG_AUSKUNFT_KEIN_KENNFELD {
+            get {
+                return ResourceManager.GetString("KM_MSG_AUSKUNFT_KEIN_KENNFELD", resourceCulture);
             }
         }
         
@@ -73861,6 +74113,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teillastkurve aus „{0}“ übernommen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_KURVE_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("KM_MSG_KURVE_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Namen führt der Katalog bereits. ähnelt.
         /// </summary>
         public static string KM_MSG_NAME_BELEGT {
@@ -73911,6 +74172,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_MSG_RUECKKUEHLART_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KM_MSG_RUECKKUEHLART_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Skalieren braucht es ein Typkennfeld, eine Nennkälteleistung über 0 kW und einen Nenn-EER über 0. ähnelt.
+        /// </summary>
+        public static string KM_MSG_SKALIEREN_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KM_MSG_SKALIEREN_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -73978,11 +74248,110 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Typkennfeld „{0}“ ist nicht bekannt. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TYPKENNFELD_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KM_MSG_TYPKENNFELD_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte ein Typkennfeld wählen. ähnelt.
+        /// </summary>
+        public static string KM_MSG_TYPKENNFELD_WAEHLEN {
+            get {
+                return ResourceManager.GetString("KM_MSG_TYPKENNFELD_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Verdichterregelung muss „Ein/Aus“, „Stufen“, „Drehzahl“ oder leer sein. ähnelt.
         /// </summary>
         public static string KM_MSG_VERDICHTERREGELUNG_UNGUELTIG {
             get {
                 return ResourceManager.GetString("KM_MSG_VERDICHTERREGELUNG_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 0,9 (Vorgabe) ähnelt.
+        /// </summary>
+        public static string KM_PH_CD_VORGABE {
+            get {
+                return ResourceManager.GetString("KM_PH_CD_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randwert (Vorgabe) ähnelt.
+        /// </summary>
+        public static string KM_PH_RANDWEG_VORGABE {
+            get {
+                return ResourceManager.GetString("KM_PH_RANDWEG_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string KM_PH_VORGABE {
+            get {
+                return ResourceManager.GetString("KM_PH_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gütegrad ähnelt.
+        /// </summary>
+        public static string KM_RANDWEG_GUETEGRAD {
+            get {
+                return ResourceManager.GetString("KM_RANDWEG_GUETEGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Randwert ähnelt.
+        /// </summary>
+        public static string KM_RANDWEG_RANDWERT {
+            get {
+                return ResourceManager.GetString("KM_RANDWEG_RANDWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die drehzahlgeregelt ähnelt.
+        /// </summary>
+        public static string KM_REGELUNG_DREHZAHL {
+            get {
+                return ResourceManager.GetString("KM_REGELUNG_DREHZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein/Aus ähnelt.
+        /// </summary>
+        public static string KM_REGELUNG_EIN_AUS {
+            get {
+                return ResourceManager.GetString("KM_REGELUNG_EIN_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe ähnelt.
+        /// </summary>
+        public static string KM_REGELUNG_KEINE {
+            get {
+                return ResourceManager.GetString("KM_REGELUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gestuft ähnelt.
+        /// </summary>
+        public static string KM_REGELUNG_STUFEN {
+            get {
+                return ResourceManager.GetString("KM_REGELUNG_STUFEN", resourceCulture);
             }
         }
         
@@ -74032,6 +74401,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es entsteht ein eigener Satz: Kennfeld und Nennwerte werden so skaliert, dass der Nennpunkt (Kaltwasser 7 °C; Luft 35 °C, Kühlwasser 30 °C) dem Datenblatt entspricht. ähnelt.
+        /// </summary>
+        public static string KM_SKAL_HINWEIS {
+            get {
+                return ResourceManager.GetString("KM_SKAL_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
         /// </summary>
         public static string KM_SP_EER {
@@ -74068,6 +74446,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wie bisher ähnelt.
+        /// </summary>
+        public static string KM_TEILLAST_WEG_BESTAND {
+            get {
+                return ResourceManager.GetString("KM_TEILLAST_WEG_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurve ähnelt.
+        /// </summary>
+        public static string KM_TEILLAST_WEG_KURVE {
+            get {
+                return ResourceManager.GetString("KM_TEILLAST_WEG_KURVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear ähnelt.
+        /// </summary>
+        public static string KM_TEILLAST_WEG_LINEAR {
+            get {
+                return ResourceManager.GetString("KM_TEILLAST_WEG_LINEAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
         /// </summary>
         public static string KM_TITEL {
@@ -74082,6 +74487,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_TITEL_NEU {
             get {
                 return ResourceManager.GetString("KM_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Teillastrechnung rechnet die Maschine wie bisher: linear und ohne Taktverlust. ähnelt.
+        /// </summary>
+        public static string KM_TT_HINWEIS_BESTAND {
+            get {
+                return ResourceManager.GetString("KM_TT_HINWEIS_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Linear: Der EER bleibt bei Teillast gleich; unter der Mindestteillast taktet die Maschine mit Taktverlust. ähnelt.
+        /// </summary>
+        public static string KM_TT_HINWEIS_LINEAR {
+            get {
+                return ResourceManager.GetString("KM_TT_HINWEIS_LINEAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kurve ist unvollständig oder nicht plausibel — gerechnet wird linear mit Taktverlust. ähnelt.
+        /// </summary>
+        public static string KM_TT_HINWEIS_VERWORFEN {
+            get {
+                return ResourceManager.GetString("KM_TT_HINWEIS_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Beiwerte gilt die Vorgabekurve der Verdichterregelung. ähnelt.
+        /// </summary>
+        public static string KM_TT_HINWEIS_VORGABEKURVE {
+            get {
+                return ResourceManager.GetString("KM_TT_HINWEIS_VORGABEKURVE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die g(0,25) = {0} · g(0,5) = {1} · g(0,75) = {2} ähnelt.
+        /// </summary>
+        public static string KM_TT_LESEZEILE {
+            get {
+                return ResourceManager.GetString("KM_TT_LESEZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Skaliert aus dem Typkennfeld „{0}“ auf {1} kW und EER {2} am Nennpunkt. ähnelt.
+        /// </summary>
+        public static string KM_TT_SKALIERT_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KM_TT_SKALIERT_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (skaliert) ähnelt.
+        /// </summary>
+        public static string KM_TT_SKALIERT_NAME {
+            get {
+                return ResourceManager.GetString("KM_TT_SKALIERT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mindestteillast steht in den Kenndaten; darunter taktet die Maschine. g ist das Verhältnis EER bei Teillast zu EER bei Volllast. ähnelt.
+        /// </summary>
+        public static string KM_TT_VERWEIS_MINDESTTEILLAST {
+            get {
+                return ResourceManager.GetString("KM_TT_VERWEIS_MINDESTTEILLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bitte wählen ähnelt.
+        /// </summary>
+        public static string KM_TYPKENNFELD_WAEHLEN {
+            get {
+                return ResourceManager.GetString("KM_TYPKENNFELD_WAEHLEN", resourceCulture);
             }
         }
         

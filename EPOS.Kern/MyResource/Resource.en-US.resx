@@ -50107,7 +50107,7 @@ chart</value>
     <value>Note: The rated EER {0} deviates by {2} from the EER of the performance map at the rating point ({1}). Please check the rated EER and the map.</value>
   </data>
   <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
-    <value>Part-load method</value>
+    <value>Part-load calculation</value>
   </data>
   <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
     <value>Part-load curve a</value>
@@ -50119,7 +50119,7 @@ chart</value>
     <value>Part-load curve c</value>
   </data>
   <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
-    <value>Minimum load ratio of the curve</value>
+    <value>Curve valid from load ratio</value>
   </data>
   <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
     <value>Cycling loss factor C_d</value>
@@ -50128,7 +50128,7 @@ chart</value>
     <value>Compressor control</value>
   </data>
   <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
-    <value>Method at the map edges</value>
+    <value>Map edge</value>
   </data>
   <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
     <value>The week “{0}” is still used by {1} row(s) and cannot be deleted.</value>
@@ -50231,6 +50231,168 @@ chart</value>
   </data>
   <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
     <value>Photovoltaics characteristics</value>
+  </data>
+  <data name="KM_TT_HINWEIS_BESTAND" xml:space="preserve">
+    <value>Without a part-load method the machine calculates as before: linear and without cycling loss.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_LINEAR" xml:space="preserve">
+    <value>Linear: the EER stays the same at part load; below the minimum part load the machine cycles with cycling loss.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_VORGABEKURVE" xml:space="preserve">
+    <value>Without coefficients the default curve of the compressor control applies.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_VERWORFEN" xml:space="preserve">
+    <value>The curve is incomplete or not plausible — the calculation is linear with cycling loss.</value>
+  </data>
+  <data name="KM_TT_SKALIERT_NAME" xml:space="preserve">
+    <value>{0} (scaled)</value>
+  </data>
+  <data name="KM_TT_SKALIERT_BESCHREIBUNG" xml:space="preserve">
+    <value>Scaled from the type map "{0}" to {1} kW and EER {2} at the rating point.</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELD_UNBEKANNT" xml:space="preserve">
+    <value>The type map "{0}" is unknown.</value>
+  </data>
+  <data name="KM_MSG_SKALIEREN_UNGUELTIG" xml:space="preserve">
+    <value>Scaling needs a type map, a rated cooling capacity above 0 kW and a rated EER above 0.</value>
+  </data>
+  <data name="KM_MSG_AUSKUNFT_KEIN_KENNFELD" xml:space="preserve">
+    <value>The calculation needs a map with EER and cooling capacity at the rating point.</value>
+  </data>
+  <data name="KM_MSG_AUSKUNFT_EINGABE" xml:space="preserve">
+    <value>Each point needs an outdoor temperature and a load ratio above 0 % up to 100 %; at most four points.</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_BESTAND" xml:space="preserve">
+    <value>as before</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_LINEAR" xml:space="preserve">
+    <value>linear</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_KURVE" xml:space="preserve">
+    <value>curve</value>
+  </data>
+  <data name="KM_REGELUNG_KEINE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="KM_REGELUNG_EIN_AUS" xml:space="preserve">
+    <value>on/off</value>
+  </data>
+  <data name="KM_REGELUNG_STUFEN" xml:space="preserve">
+    <value>staged</value>
+  </data>
+  <data name="KM_REGELUNG_DREHZAHL" xml:space="preserve">
+    <value>variable speed</value>
+  </data>
+  <data name="KM_RANDWEG_RANDWERT" xml:space="preserve">
+    <value>edge value</value>
+  </data>
+  <data name="KM_RANDWEG_GUETEGRAD" xml:space="preserve">
+    <value>efficiency grade</value>
+  </data>
+  <data name="KM_PH_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="KM_PH_CD_VORGABE" xml:space="preserve">
+    <value>0.9 (default)</value>
+  </data>
+  <data name="KM_PH_RANDWEG_VORGABE" xml:space="preserve">
+    <value>edge value (default)</value>
+  </data>
+  <data name="KM_TT_LESEZEILE" xml:space="preserve">
+    <value>g(0.25) = {0} · g(0.5) = {1} · g(0.75) = {2}</value>
+  </data>
+  <data name="KM_TT_VERWEIS_MINDESTTEILLAST" xml:space="preserve">
+    <value>The minimum part load is in the key data; below it the machine cycles. g is the ratio of the EER at part load to the EER at full load.</value>
+  </data>
+  <data name="KM_BILD_TEILLAST" xml:space="preserve">
+    <value>EER ratio over load ratio</value>
+  </data>
+  <data name="KM_BILD_ACHSE_LASTGRAD" xml:space="preserve">
+    <value>Load ratio [%]</value>
+  </data>
+  <data name="KM_BILD_ACHSE_G" xml:space="preserve">
+    <value>EER ratio g</value>
+  </data>
+  <data name="KM_BTN_KURVE_TYPKENNFELD" xml:space="preserve">
+    <value>Curve from type map…</value>
+  </data>
+  <data name="KM_BTN_SKALIEREN" xml:space="preserve">
+    <value>Scale type map to data sheet…</value>
+  </data>
+  <data name="KM_BTN_TEILLASTPUNKTE" xml:space="preserve">
+    <value>Check part-load points…</value>
+  </data>
+  <data name="KM_LBL_TYPKENNFELD" xml:space="preserve">
+    <value>Type map</value>
+  </data>
+  <data name="KM_TYPKENNFELD_WAEHLEN" xml:space="preserve">
+    <value>please select</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELD_WAEHLEN" xml:space="preserve">
+    <value>Please select a type map.</value>
+  </data>
+  <data name="KM_MSG_KURVE_UEBERNOMMEN" xml:space="preserve">
+    <value>Part-load curve taken from "{0}".</value>
+  </data>
+  <data name="KM_SKAL_HINWEIS" xml:space="preserve">
+    <value>A separate record is created: map and rated values are scaled so that the rating point (chilled water 7 °C; air 35 °C, cooling water 30 °C) matches the data sheet.</value>
+  </data>
+  <data name="KM_AUSK_HINWEIS" xml:space="preserve">
+    <value>The check calculates from the own map at chilled water 7 °C; the load ratio refers to the rated cooling capacity. Nothing is saved.</value>
+  </data>
+  <data name="KM_AUSK_PUNKT" xml:space="preserve">
+    <value>Point {0}</value>
+  </data>
+  <data name="KM_AUSK_AUSSEN" xml:space="preserve">
+    <value>Outdoor temperature</value>
+  </data>
+  <data name="KM_AUSK_LASTGRAD" xml:space="preserve">
+    <value>Load ratio</value>
+  </data>
+  <data name="KM_AUSK_RECHNEN" xml:space="preserve">
+    <value>Calculate</value>
+  </data>
+  <data name="KM_AUSK_SP_RUECKKUEHL" xml:space="preserve">
+    <value>Heat rejection</value>
+  </data>
+  <data name="KM_AUSK_SP_KAELTE" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KM_AUSK_SP_LASTGRAD_MASCHINE" xml:space="preserve">
+    <value>Machine load ratio</value>
+  </data>
+  <data name="KM_AUSK_SP_LEISTUNGSAUFNAHME" xml:space="preserve">
+    <value>Power input</value>
+  </data>
+  <data name="KM_AUSK_TAKT" xml:space="preserve">
+    <value>cycling</value>
+  </data>
+  <data name="KM_AUSK_RAND" xml:space="preserve">
+    <value>map edge</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLAST_WEG_ERL" xml:space="preserve">
+    <value>Part-load method of the machine: empty = as before (linear, without cycling loss), linear or curve.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_A_ERL" xml:space="preserve">
+    <value>Coefficient a of the part-load curve a + b·x + c·x² (power input over load ratio); all three or none.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_B_ERL" xml:space="preserve">
+    <value>Coefficient b of the part-load curve; all three or none.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_C_ERL" xml:space="preserve">
+    <value>Coefficient c of the part-load curve; all three or none.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_LASTGRAD_MIN_ERL" xml:space="preserve">
+    <value>Load ratio (0 to 1) from which the curve applies; empty = minimum part load.</value>
+  </data>
+  <data name="KI_DLG_KM_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Cycling loss factor C_d (0 to 1) below the minimum part load; empty = 0.9.</value>
+  </data>
+  <data name="KI_DLG_KM_VERDICHTERREGELUNG_ERL" xml:space="preserve">
+    <value>Compressor control; selects the default curve when no coefficients are maintained.</value>
+  </data>
+  <data name="KI_DLG_KM_KENNFELD_RANDWEG_ERL" xml:space="preserve">
+    <value>Method outside the map: edge value (default) or efficiency grade.</value>
   </data>
 </root>
 

@@ -934,22 +934,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Teillast und Takten der Kältemaschine</b> (<see cref="KaeltemaschineTeillastSchema"/>, Schritt 208; Welle
-        /// KM3-E1-a): Die acht Spalten werden gelesen, geprüft, gespeichert und in die Projektkopie mitgenommen, aber noch
-        /// nicht gerechnet (Rechenweg KM3-E2) und noch in keinem Dialog gezeigt (KM3-E3).
+        /// KM3): Die acht Spalten stehen im Katalogdialog (Gruppe „Teillast und Takten") und gehen über
+        /// <c>Kaeltemaschinenteillast.AusModell</c> in die Stunde der Kältemaschine (Lastachse, Takten, Kennfeldrand).
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> KaeltemaschineTeillast(Func<string, string> t)
         {
-            const string WEG = "KaeltemaschineStammCtrl.Lesen/KopfSchreiben/TeillastPruefen (noch ohne Rechenwirkung, KM3-E2)";
+            const string WEG = "Kaeltemaschinenteillast.AusModell; Kaeltemaschine.Stunde (Lastachse, Takten, Kennfeldrand)";
             return new[]
             {
-                E(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG, t("KM_LBL_TEILLAST_WEG"), "", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_A, t("KM_LBL_TEILLASTKURVE_A"), "-", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_B, t("KM_LBL_TEILLASTKURVE_B"), "-", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_C, t("KM_LBL_TEILLASTKURVE_C"), "-", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_LASTGRAD_MIN, t("KM_LBL_TEILLASTKURVE_LASTGRAD_MIN"), "-", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_CD, t("KM_LBL_TAKTVERLUST_CD"), "-", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG, t("KM_LBL_VERDICHTERREGELUNG"), "", NIX, WEG),
-                E(KaeltemaschineTeillastSchema.SPALTE_RANDWEG, t("KM_LBL_KENNFELD_RANDWEG"), "", NIX, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG, t("KM_LBL_TEILLAST_WEG"), "", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_A, t("KM_LBL_TEILLASTKURVE_A"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_B, t("KM_LBL_TEILLASTKURVE_B"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_C, t("KM_LBL_TEILLASTKURVE_C"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_LASTGRAD_MIN, t("KM_LBL_TEILLASTKURVE_LASTGRAD_MIN"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_CD, t("KM_LBL_TAKTVERLUST_CD"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG, t("KM_LBL_VERDICHTERREGELUNG"), "", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_RANDWEG, t("KM_LBL_KENNFELD_RANDWEG"), "", SIM, WEG),
             };
         }
 

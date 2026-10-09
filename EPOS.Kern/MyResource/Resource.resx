@@ -50114,7 +50114,7 @@ Chart</value>
     <value>Hinweis: Der Nenn-EER {0} weicht um {2} vom EER des Kennfelds am Nennpunkt ({1}) ab. Bitte Nenn-EER und Kennfeld prüfen.</value>
   </data>
   <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
-    <value>Teillastweg</value>
+    <value>Teillastrechnung</value>
   </data>
   <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
     <value>Teillastkurve a</value>
@@ -50126,7 +50126,7 @@ Chart</value>
     <value>Teillastkurve c</value>
   </data>
   <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
-    <value>Kleinster Lastgrad der Kurve</value>
+    <value>Kurve gültig ab Lastgrad</value>
   </data>
   <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
     <value>Taktverlustfaktor C_d</value>
@@ -50135,7 +50135,7 @@ Chart</value>
     <value>Verdichterregelung</value>
   </data>
   <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
-    <value>Weg an den Kennfeldrändern</value>
+    <value>Kennfeldrand</value>
   </data>
   <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
     <value>Die Woche „{0}“ wird noch von {1} Zeile(n) verwendet und lässt sich nicht löschen.</value>
@@ -50238,6 +50238,168 @@ Chart</value>
   </data>
   <data name="PVG_XLS_KENNDATEN" xml:space="preserve">
     <value>Kenndaten Photovoltaik</value>
+  </data>
+  <data name="KM_TT_HINWEIS_BESTAND" xml:space="preserve">
+    <value>Ohne Teillastrechnung rechnet die Maschine wie bisher: linear und ohne Taktverlust.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_LINEAR" xml:space="preserve">
+    <value>Linear: Der EER bleibt bei Teillast gleich; unter der Mindestteillast taktet die Maschine mit Taktverlust.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_VORGABEKURVE" xml:space="preserve">
+    <value>Ohne Beiwerte gilt die Vorgabekurve der Verdichterregelung.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_VERWORFEN" xml:space="preserve">
+    <value>Die Kurve ist unvollständig oder nicht plausibel — gerechnet wird linear mit Taktverlust.</value>
+  </data>
+  <data name="KM_TT_SKALIERT_NAME" xml:space="preserve">
+    <value>{0} (skaliert)</value>
+  </data>
+  <data name="KM_TT_SKALIERT_BESCHREIBUNG" xml:space="preserve">
+    <value>Skaliert aus dem Typkennfeld „{0}“ auf {1} kW und EER {2} am Nennpunkt.</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELD_UNBEKANNT" xml:space="preserve">
+    <value>Das Typkennfeld „{0}“ ist nicht bekannt.</value>
+  </data>
+  <data name="KM_MSG_SKALIEREN_UNGUELTIG" xml:space="preserve">
+    <value>Zum Skalieren braucht es ein Typkennfeld, eine Nennkälteleistung über 0 kW und einen Nenn-EER über 0.</value>
+  </data>
+  <data name="KM_MSG_AUSKUNFT_KEIN_KENNFELD" xml:space="preserve">
+    <value>Die Rechnung braucht ein Kennfeld mit EER und Kälteleistung am Nennpunkt.</value>
+  </data>
+  <data name="KM_MSG_AUSKUNFT_EINGABE" xml:space="preserve">
+    <value>Je Punkt braucht es eine Außentemperatur und einen Lastgrad über 0 % bis 100 %; höchstens vier Punkte.</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_BESTAND" xml:space="preserve">
+    <value>wie bisher</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_LINEAR" xml:space="preserve">
+    <value>linear</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_KURVE" xml:space="preserve">
+    <value>Kurve</value>
+  </data>
+  <data name="KM_REGELUNG_KEINE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="KM_REGELUNG_EIN_AUS" xml:space="preserve">
+    <value>Ein/Aus</value>
+  </data>
+  <data name="KM_REGELUNG_STUFEN" xml:space="preserve">
+    <value>gestuft</value>
+  </data>
+  <data name="KM_REGELUNG_DREHZAHL" xml:space="preserve">
+    <value>drehzahlgeregelt</value>
+  </data>
+  <data name="KM_RANDWEG_RANDWERT" xml:space="preserve">
+    <value>Randwert</value>
+  </data>
+  <data name="KM_RANDWEG_GUETEGRAD" xml:space="preserve">
+    <value>Gütegrad</value>
+  </data>
+  <data name="KM_PH_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="KM_PH_CD_VORGABE" xml:space="preserve">
+    <value>0,9 (Vorgabe)</value>
+  </data>
+  <data name="KM_PH_RANDWEG_VORGABE" xml:space="preserve">
+    <value>Randwert (Vorgabe)</value>
+  </data>
+  <data name="KM_TT_LESEZEILE" xml:space="preserve">
+    <value>g(0,25) = {0} · g(0,5) = {1} · g(0,75) = {2}</value>
+  </data>
+  <data name="KM_TT_VERWEIS_MINDESTTEILLAST" xml:space="preserve">
+    <value>Die Mindestteillast steht in den Kenndaten; darunter taktet die Maschine. g ist das Verhältnis EER bei Teillast zu EER bei Volllast.</value>
+  </data>
+  <data name="KM_BILD_TEILLAST" xml:space="preserve">
+    <value>EER-Verhältnis über dem Lastgrad</value>
+  </data>
+  <data name="KM_BILD_ACHSE_LASTGRAD" xml:space="preserve">
+    <value>Lastgrad [%]</value>
+  </data>
+  <data name="KM_BILD_ACHSE_G" xml:space="preserve">
+    <value>EER-Verhältnis g</value>
+  </data>
+  <data name="KM_BTN_KURVE_TYPKENNFELD" xml:space="preserve">
+    <value>Kurve aus Typkennfeld…</value>
+  </data>
+  <data name="KM_BTN_SKALIEREN" xml:space="preserve">
+    <value>Typkennfeld auf Datenblatt skalieren…</value>
+  </data>
+  <data name="KM_BTN_TEILLASTPUNKTE" xml:space="preserve">
+    <value>Teillastpunkte prüfen…</value>
+  </data>
+  <data name="KM_LBL_TYPKENNFELD" xml:space="preserve">
+    <value>Typkennfeld</value>
+  </data>
+  <data name="KM_TYPKENNFELD_WAEHLEN" xml:space="preserve">
+    <value>bitte wählen</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELD_WAEHLEN" xml:space="preserve">
+    <value>Bitte ein Typkennfeld wählen.</value>
+  </data>
+  <data name="KM_MSG_KURVE_UEBERNOMMEN" xml:space="preserve">
+    <value>Teillastkurve aus „{0}“ übernommen.</value>
+  </data>
+  <data name="KM_SKAL_HINWEIS" xml:space="preserve">
+    <value>Es entsteht ein eigener Satz: Kennfeld und Nennwerte werden so skaliert, dass der Nennpunkt (Kaltwasser 7 °C; Luft 35 °C, Kühlwasser 30 °C) dem Datenblatt entspricht.</value>
+  </data>
+  <data name="KM_AUSK_HINWEIS" xml:space="preserve">
+    <value>Die Auskunft rechnet aus dem eigenen Kennfeld bei Kaltwasser 7 °C; der Lastgrad bezieht sich auf die Nennkälteleistung. Nichts wird gespeichert.</value>
+  </data>
+  <data name="KM_AUSK_PUNKT" xml:space="preserve">
+    <value>Punkt {0}</value>
+  </data>
+  <data name="KM_AUSK_AUSSEN" xml:space="preserve">
+    <value>Außentemperatur</value>
+  </data>
+  <data name="KM_AUSK_LASTGRAD" xml:space="preserve">
+    <value>Lastgrad</value>
+  </data>
+  <data name="KM_AUSK_RECHNEN" xml:space="preserve">
+    <value>Rechnen</value>
+  </data>
+  <data name="KM_AUSK_SP_RUECKKUEHL" xml:space="preserve">
+    <value>Rückkühlung</value>
+  </data>
+  <data name="KM_AUSK_SP_KAELTE" xml:space="preserve">
+    <value>Kälteleistung</value>
+  </data>
+  <data name="KM_AUSK_SP_LASTGRAD_MASCHINE" xml:space="preserve">
+    <value>Lastgrad der Maschine</value>
+  </data>
+  <data name="KM_AUSK_SP_LEISTUNGSAUFNAHME" xml:space="preserve">
+    <value>Leistungsaufnahme</value>
+  </data>
+  <data name="KM_AUSK_TAKT" xml:space="preserve">
+    <value>taktet</value>
+  </data>
+  <data name="KM_AUSK_RAND" xml:space="preserve">
+    <value>Kennfeldrand</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLAST_WEG_ERL" xml:space="preserve">
+    <value>Teillastrechnung der Maschine: leer = wie bisher (linear, ohne Taktverlust), linear oder Kurve.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_A_ERL" xml:space="preserve">
+    <value>Beiwert a der Teillastkurve a + b·x + c·x² (Leistungsaufnahme über dem Lastgrad); alle drei oder keiner.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_B_ERL" xml:space="preserve">
+    <value>Beiwert b der Teillastkurve; alle drei oder keiner.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_C_ERL" xml:space="preserve">
+    <value>Beiwert c der Teillastkurve; alle drei oder keiner.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_LASTGRAD_MIN_ERL" xml:space="preserve">
+    <value>Lastgrad (0 bis 1), ab dem die Kurve gilt; leer = Mindestteillast.</value>
+  </data>
+  <data name="KI_DLG_KM_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Taktverlustfaktor C_d (0 bis 1) unter der Mindestteillast; leer = 0,9.</value>
+  </data>
+  <data name="KI_DLG_KM_VERDICHTERREGELUNG_ERL" xml:space="preserve">
+    <value>Verdichterregelung; wählt die Vorgabekurve, wenn keine Beiwerte gepflegt sind.</value>
+  </data>
+  <data name="KI_DLG_KM_KENNFELD_RANDWEG_ERL" xml:space="preserve">
+    <value>Weg außerhalb des Kennfelds: Randwert (Vorgabe) oder Gütegrad.</value>
   </data>
 </root>
 
