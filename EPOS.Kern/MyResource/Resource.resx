@@ -49957,5 +49957,26 @@ Chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV-Ganglinie</value>
   </data>
+  <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
+    <value>Die Spitze der Reihe ({0:N1} kW) liegt über der Nennleistung × 1,1 ({1:N2} kWp). Bitte Nennleistung und Einheit der Datei (kW, nicht W) prüfen.</value>
+  </data>
+  <data name="PVG_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung:</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_KOPF" xml:space="preserve">
+    <value>Die Nennleistung ist aus dem Dateikopf vorbelegt.</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_SPITZE" xml:space="preserve">
+    <value>Die Nennleistung ist mit der Spitze der Reihe ({0:N2} kW) vorbelegt; bitte die Nennleistung der Anlage eintragen.</value>
+  </data>
+  <data name="PVG_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung</value>
+  </data>
+  <data name="PVG_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Jahresarbeit:</value>
+  </data>
+  <data name="PVG_NENN_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>nicht gepflegt – der Lauf nimmt die Spitze der Reihe</value>
+  </data>
 </root>
 

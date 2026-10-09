@@ -49950,5 +49950,26 @@ chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV generation profile</value>
   </data>
+  <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
+    <value>The peak of the series ({0:N1} kW) exceeds the rated power × 1.1 ({1:N2} kWp). Please check the rated power and the unit of the file (kW, not W).</value>
+  </data>
+  <data name="PVG_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated power:</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_KOPF" xml:space="preserve">
+    <value>The rated power is prefilled from the file header.</value>
+  </data>
+  <data name="PVG_IMP_NENN_AUS_SPITZE" xml:space="preserve">
+    <value>The rated power is prefilled with the peak of the series ({0:N2} kW); please enter the rated power of the system.</value>
+  </data>
+  <data name="PVG_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated power</value>
+  </data>
+  <data name="PVG_LBL_JAHRESARBEIT" xml:space="preserve">
+    <value>Annual yield:</value>
+  </data>
+  <data name="PVG_NENN_NICHT_GEPFLEGT" xml:space="preserve">
+    <value>not maintained – the run uses the peak of the series</value>
+  </data>
 </root>
 

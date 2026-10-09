@@ -124,6 +124,74 @@ public class PvGanglinieDialogTests : EposBunitContext
         Assert.Contains("Import…", knoepfe);
     }
 
+    /// <summary>
+    /// Der Detailblock zeigt zur markierten Ganglinie Raster, Jahresarbeit und die gepflegte Nennleistung; eine
+    /// nicht gepflegte sagt, dass der Lauf die Spitze der Reihe nimmt.
+    /// </summary>
+    [Fact]
+    public void Der_Detailblock_zeigt_Raster_Jahresarbeit_und_Nennleistung()
+    {
+        var katalog = new[]
+        {
+            Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 15, beschreibung: "Messung 2025",
+                                   jahresarbeitMwh: 9.5, spitzeKw: 10.0)
+                .MitZahl(Katalogfilterprofil.SpNennleistungKwp, 12.0, 2),
+            Zeitreihenproben.Zeile(32, "PV Dach West", zeitintervall: 60, jahresarbeitMwh: 8.8, spitzeKw: 9.0)
+        };
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(katalog)
+        });
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].QuerySelector("button")!.Click();
+        var werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
+        Assert.Contains(Resource.PVG_RASTER_VIERTEL, werte);
+        Assert.Contains("9,5 MWh", werte);
+        Assert.Contains("12,00 kWp", werte);
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1].QuerySelector("button")!.Click();
+        werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
+        Assert.Contains(Resource.PVG_RASTER_STUNDE, werte);
+        Assert.Contains(Resource.PVG_NENN_NICHT_GEPFLEGT, werte);
+    }
+
+    /// <summary>
+    /// Der Import fragt die Nennleistung ab: vorbelegt aus dem Vorschlag der Hülle, geprüft über den Weg des Kerns
+    /// (Hinweis über Nennleistung × 1,1), und das Einlesen bekommt den eingetragenen Wert.
+    /// </summary>
+    [Fact]
+    public void Der_Import_fragt_die_Nennleistung_ab_prueft_sie_und_reicht_sie_weiter()
+    {
+        double? gelesen = -1;
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(Katalog),
+            DateiWaehlen = _ => Task.FromResult<string?>("D:/Daten/PV Sued.csv"),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, true, "", "falscher Weg", "")),
+            NennleistungVorschlagen = _ => Task.FromResult(new GanglinienNennleistungsvorschlag(8.0, false, 8.0)),
+            NennleistungPruefen = PvGanglinieImportCtrl.Pruefhinweis,
+            EinlesenMitNennleistung = (_, nenn, _) =>
+            {
+                gelesen = nenn;
+                return Task.FromResult(new GanglinienKatalogimport(true, false, "PV Dach Ost", "", "Protokoll"));
+            }
+        });
+
+        cut.Find("button.epos-importknopf").Click();
+        Knopf(cut, "Datei Auswählen...").Click();
+        Assert.Equal(8.0, cut.Instance.Katalogseite!.Nennleistung);
+        Assert.Equal("", cut.Instance.Katalogseite.Nennleistungshinweis);
+        Assert.Contains("Spitze der Reihe", cut.Markup);
+
+        cut.Find(".epos-einlesen input[inputmode=decimal]").Input("5");
+        Assert.NotEqual("", cut.Instance.Katalogseite.Nennleistungshinweis);
+        Assert.Contains(cut.Instance.Katalogseite.Nennleistungshinweis, cut.Markup);
+
+        Knopf(cut, "Datei Einlesen...").Click();
+        Assert.Equal(5.0, gelesen);
+        Assert.False(cut.Instance.Katalogseite.ImportOffen);
+    }
+
     [Fact]
     public void Ohne_Gaben_zeichnet_der_Dialog()
     {
@@ -154,6 +222,9 @@ public class PvGanglinieDialogTests : EposBunitContext
             Assert.Equal(true, gaben["Katalogbetrieb"]);
             var wege = (GanglinienKatalogwege)gaben["Katalogwege"];
             Assert.Null(wege.Einlesen);
+            Assert.Null(wege.NennleistungVorschlagen);
+            Assert.Null(wege.EinlesenMitNennleistung);
+            Assert.NotNull(wege.NennleistungPruefen);
             Assert.Equal(Resource.PVG_IMP_NICHT_VERFUEGBAR, wege.ImportAbgelehnt);
 
             IReadOnlyDictionary<string, object> projekt = PvGanglinieKatalogGaben.ProjektGaben(0, new List<PvGanglinieZuordnung>());

@@ -49,6 +49,25 @@ public sealed class GanglinienKatalogwege
     /// </summary>
     public Func<string, IProgress<ImportFortschritt>, Task<GanglinienKatalogimport>>? Einlesen { get; init; }
 
+    /// <summary>
+    /// <b>Die Nennleistung beim Import</b> (nur die PV-Ganglinie): Ist der Weg gesetzt, fragt die
+    /// Überlagerung die Nennleistung [kWp] ab und belegt sie nach der Dateiwahl hiermit vor
+    /// (Dateikopf, sonst die Spitze der Reihe). <c>null</c> = keine Abfrage.
+    /// </summary>
+    public Func<string, Task<GanglinienNennleistungsvorschlag>>? NennleistungVorschlagen { get; init; }
+
+    /// <summary>
+    /// Die Prüfung der Nennleistung gegen die Reihe (Spitze [kW], Nennleistung [kWp]) — der Satz des
+    /// Kerns, "" ohne Hinweis. Die Regel steht im Kern, nicht hier.
+    /// </summary>
+    public Func<double, double?, string>? NennleistungPruefen { get; init; }
+
+    /// <summary>
+    /// Das Einlesen MIT der abgefragten Nennleistung [kWp]; gesetzt, wenn
+    /// <see cref="NennleistungVorschlagen"/> gesetzt ist — sonst gilt <see cref="Einlesen"/>.
+    /// </summary>
+    public Func<string, double?, IProgress<ImportFortschritt>, Task<GanglinienKatalogimport>>? EinlesenMitNennleistung { get; init; }
+
     /// <summary>Der Ganglinienordner als Anzeigetext; leer = keine Zeile.</summary>
     public string Ordner { get; init; } = "";
 
@@ -58,6 +77,13 @@ public sealed class GanglinienKatalogwege
     /// </summary>
     public string ImportAbgelehnt { get; init; } = "";
 }
+
+/// <summary>
+/// Die Vorbelegung der Nennleistung vor dem Import (<see cref="GanglinienKatalogwege.NennleistungVorschlagen"/>):
+/// <paramref name="VorschlagKwp"/> <c>null</c> = keine lesbare Datei; <paramref name="AusDateikopf"/> sagt, ob der
+/// Wert im Dateikopf stand oder die Spitze <paramref name="SpitzeKw"/> der Reihe ist.
+/// </summary>
+public sealed record GanglinienNennleistungsvorschlag(double? VorschlagKwp, bool AusDateikopf, double SpitzeKw);
 
 /// <summary>Wie ein Import auf der Katalogseite ausgegangen ist.</summary>
 /// <param name="Erfolgreich">Steht der neue Satz im Katalog?</param>
@@ -130,4 +156,13 @@ public sealed class GanglinienKatalogtexte
 
     /// <summary>„Nein" — <c>ALLG_BTN_NEIN</c>.</summary>
     public string Nein { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    /// <summary>Die Abfrage der Nennleistung im Import — <c>PVG_LBL_NENNLEISTUNG</c>.</summary>
+    public string LabelNennleistung { get; set; } = Resource.PVG_LBL_NENNLEISTUNG;
+
+    /// <summary>Herkunft der Vorbelegung: Dateikopf — <c>PVG_IMP_NENN_AUS_KOPF</c>.</summary>
+    public string NennleistungAusKopf { get; set; } = Resource.PVG_IMP_NENN_AUS_KOPF;
+
+    /// <summary>Herkunft der Vorbelegung: Spitze der Reihe, {0} = kW — <c>PVG_IMP_NENN_AUS_SPITZE</c>.</summary>
+    public string NennleistungAusSpitze { get; set; } = Resource.PVG_IMP_NENN_AUS_SPITZE;
 }

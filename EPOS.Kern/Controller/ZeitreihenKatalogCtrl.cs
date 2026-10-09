@@ -74,8 +74,14 @@ namespace WindowsFormsApplication1
                                   Katalogfeld.Zahl(r, "Zeitinterval"), 0);
 
                 if (art == Zeitreihenart.PvGanglinie)
+                {
                     zeile.MitZahl(Katalogfilterprofil.SpZeitintervall,
                                   Katalogfeld.Zahl(r, "Raster_Minuten"), 0);
+                    // Die gepflegte Nennleistung (Tab_PvGanglinie_STAMM.Nennleistung_kWp); leer = nicht gepflegt.
+                    object nenn = r.Table.Columns.Contains("Nennleistung_kWp") ? r["Nennleistung_kWp"] : null;
+                    zeile.MitZahl(Katalogfilterprofil.SpNennleistungKwp,
+                                  nenn == null || nenn == DBNull.Value ? (double?)null : Convert.ToDouble(nenn), 2);
+                }
                 if (art == Zeitreihenart.Solarganglinie || art == Zeitreihenart.PvGanglinie)
                     zeile.MitText(Katalogfilterprofil.SpBeschreibung,
                                   Katalogfeld.Text(r, "Beschreibung"));
