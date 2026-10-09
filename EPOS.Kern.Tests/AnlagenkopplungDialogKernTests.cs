@@ -124,9 +124,6 @@ namespace EPOS.Kern.Tests
                 "items", "ID_Projekt", "ID_Gebaeude", "Z_AuswahlWohnflaeche", "Einheit", "Jahresnutzungsgrad", "DezentralWarmwasser",
                 // E59 (Festlegung 38): die manuelle Aufheizzeit gehört allein dem Projektgebäude, der Katalog führt sie nicht.
                 "Aufheizzeit_Manuell_H",
-                // K2 (KalenderbedienungSchema): Wochenende und Feiertagsland bestimmen keine Uebergabe; die Uebernahme aus dem
-                // Katalog traegt sie per SQL (GebaeudeStammCtrl), das Katalogmodell fuehrt sie mit der Bedienung (K2-S2).
-                "Wochenendtage", "Feiertagsland",
             };
             IReadOnlyList<string> uebertragen = UebergabeHerleitungsquelle.Uebertragen();
             foreach (FieldInfo f in typeof(ProjektGebaeudeModel).GetFields(BindingFlags.Public | BindingFlags.Instance))
