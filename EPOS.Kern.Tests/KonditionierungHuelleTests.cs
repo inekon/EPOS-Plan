@@ -272,10 +272,12 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(k.Woche);
             Assert.Equal(woche, k.Woche);
 
-            // Der Bezug selbst: Stufe und Referenzjahr aus dem Projekt, im Katalog keiner.
+            // Der Bezug selbst: Stufe und Feiertagsjahr aus dem Projekt (E114: ohne Preisreihe keines), im Katalog keiner;
+            // das Raster des Arbeitsstands ist das Rasterjahr des Laufs.
             KonditionierungHuelle.Bezug projekt = KonditionierungHuelle.Projektbezug(AK1);
             Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, projekt.Stufe);
-            Assert.Equal(SolardatenCtrl.Referenzjahr(AK1), projekt.Referenzjahr);
+            Assert.Equal(SolardatenCtrl.Preisreihenjahr(AK1), projekt.Referenzjahr);
+            Assert.Null(projekt.Referenzjahr);
             Assert.Equal(SolardatenCtrl.Referenzjahr(AK1),
                          KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude, projekt).Referenzjahr);
             Assert.Equal(2024, KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude,

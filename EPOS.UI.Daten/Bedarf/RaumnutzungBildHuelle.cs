@@ -59,7 +59,7 @@ namespace WindowsFormsApplication1
                                                        string.IsNullOrEmpty(v.Meldung) ? hinweis : v.Meldung, bezug);
                 double f = Kalenderteppich.Anzeigefaktor(k);
                 double[] woche = v.Woche?.Select(w => double.IsNaN(w) ? w : Math.Round(w * f, 4, MidpointRounding.AwayFromZero)).ToArray();
-                var teppich = ChartRenderer.KalenderteppichModell(Kalenderteppich.Bilden(v.Kalender, v.Referenzjahr), null,
+                var teppich = ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(v.Kalender, v.Referenzjahr, v.Feiertagsjahr), null,
                                                                   ChartRenderer.KalenderteppichTexte.AusRessourcen());
                 return new RaumnutzungBildvorschau(true, Weg(v.Weg), woche, teppich, hinweis, bezug);
             }

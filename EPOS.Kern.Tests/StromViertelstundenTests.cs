@@ -378,7 +378,7 @@ namespace EPOS.Kern.Tests
         // -----------------------------------------------------------------------------
 
         private const double ANKER_1045_ERZEUGUNG = 3.545;      // R32: 3,545 (Erzeugung unverändert)
-        private const double ANKER_1045_EINSPEISUNG = 0.794;     // R33: 0,783 (Erdreich nach ISO 13370)
+        private const double ANKER_1045_EINSPEISUNG = 0.792;     // Basis R48 (Gemeinjahr, E114); R33: 0,783 (Erdreich nach ISO 13370)
         private const double ANKER_1045_RESTBEZUG = 28.409;      // R33: 28,747
         private const double ANKER_1046_ERZEUGUNG = 6.014;      // R32: 6,014 (Erzeugung unverändert)
         private const double ANKER_1046_EINSPEISUNG = 0.903;     // R33: 0,900

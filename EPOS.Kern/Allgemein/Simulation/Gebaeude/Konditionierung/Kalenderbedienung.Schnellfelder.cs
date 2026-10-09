@@ -281,9 +281,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Die Feiertage eines Landes</b> (Stufe 1): die neun Regeln und dazu jeder Landesfeiertag des Bezugsjahrs
-        /// als fester Einzeltag „Landesfeiertag XX" mit „wie Sonntag" — als Regel erst mit Stufe 2 (Schemaschritt 207).
-        /// Ein schon vorhandener Einzeltag bleibt.
+        /// <b>Die Feiertage eines Landes</b>: die neun Regeln und dazu die Regelperioden der Landesfeiertage im
+        /// gemeinsamen Kalender des Gebäudes (<see cref="FeiertagslandSetzen"/>) — nur Regeln, kein datierter Einzeltag;
+        /// ihre Lage folgt der Konvention des Gemeinjahrs (<see cref="Gemeinjahrkalender"/>, E114).
         /// </summary>
         public static Konditionierungsschritt LandesfeiertageLaden(Konditionierungsarbeitsstand stand, long? zone, string land,
                                                                    IEnumerable<Konditionierungsgroesse> giltFuer = null)

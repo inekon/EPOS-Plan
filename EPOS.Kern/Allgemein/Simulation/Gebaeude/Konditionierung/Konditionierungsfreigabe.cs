@@ -23,14 +23,14 @@ namespace WindowsFormsApplication1
                 z = a.Zone(zone.Value) ?? throw new ArgumentException("Die Zone steht nicht im Arbeitsstand.", nameof(zone));
             Matrixeingang bestand = z == null ? a.Gebaeude.Bestand : a.AufgeloesterBestand(z);
 
-            double[] heiz = a.GeltenderKalender(Konditionierungsgroesse.Heizsoll, zone)?.Auswerten(a.W0, a.Referenzjahr);
+            double[] heiz = a.GeltenderKalender(Konditionierungsgroesse.Heizsoll, zone)?.Auswerten(a.Kalender);
             if (z != null && !z.IstBeheizt)
             {
                 heiz = new double[8760];
                 Array.Fill(heiz, double.NaN);
             }
             double[] kuehl = bestand.KuehlungWirksam
-                ? a.GeltenderKalender(Konditionierungsgroesse.Kuehlsoll, zone)?.Auswerten(a.W0, a.Referenzjahr)
+                ? a.GeltenderKalender(Konditionierungsgroesse.Kuehlsoll, zone)?.Auswerten(a.Kalender)
                 : null;
             return Zonenfreigabe.Jahr(heiz, kuehl, bestand.KuehlungWirksam);
         }

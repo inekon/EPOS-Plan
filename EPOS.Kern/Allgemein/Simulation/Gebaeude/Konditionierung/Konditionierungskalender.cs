@@ -118,19 +118,25 @@ namespace WindowsFormsApplication1
         /// keine Kultur.</para>
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀: 0 = Montag … 6 = Sonntag für den 1. Januar.</param>
-        /// <param name="referenzjahr">Das Jahr, gegen das die Feiertagsregeln aufgelöst werden.</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe, nach dem die beweglichen Feiertage liegen;
+        /// 0 = Regelfall ohne Jahr (<see cref="Gemeinjahrkalender"/>, E114).</param>
         /// <exception cref="ArgumentOutOfRangeException">w₀ liegt außerhalb 0 … 6.</exception>
         public double[] Auswerten(int wochentagDesErstenTags, int referenzjahr)
+            => Auswerten(new Gemeinjahrkalender(wochentagDesErstenTags, referenzjahr));
+
+        /// <summary>
+        /// Die 8760-Reihe nach der Konvention <paramref name="kalender"/> — Wochentagsraster und, wenn
+        /// vorhanden, das Jahr der Preisreihe (E114). Dieselbe Rechnung wie <see cref="Auswerten(int, int)"/>.
+        /// </summary>
+        public double[] Auswerten(Gemeinjahrkalender kalender)
         {
-            if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
-                throw new ArgumentOutOfRangeException(nameof(wochentagDesErstenTags),
-                    "w₀ liegt zwischen 0 (Montag) und 6 (Sonntag).");
+            int wochentagDesErstenTags = kalender.W0;
 
             // Die Feiertagsregeln EINMAL je Lauf aufloesen, nicht je Tag.
             var feiertag0 = new int[_perioden.Length];
             for (int p = 0; p < _perioden.Length; p++)
                 feiertag0[p] = _perioden[p].IstFeiertag
-                    ? Feiertage.Jahrestag(_perioden[p].Feiertagsregel, referenzjahr) - 1
+                    ? Feiertage.Jahrestag(_perioden[p].Feiertagsregel, kalender) - 1
                     : -1;
 
             double ausWert = Konditionierungsgroessen.AusWert(Groesse);
@@ -168,6 +174,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Quelle(int tag0, int referenzjahr) => Quellperiode(tag0, referenzjahr)?.Bezeichner;
 
+        /// <summary>Die Quelle eines Tags nach der Konvention <paramref name="kalender"/> (E114).</summary>
+        public string Quelle(int tag0, Gemeinjahrkalender kalender) => Quellperiode(tag0, kalender)?.Bezeichner;
+
         /// <summary>
         /// <b>Die Periode, die einen Tag bestimmt</b> — die ranghöchste, die ihn enthält und greift,
         /// oder <c>null</c> für Standardwoche bzw. Grundangabe; dieselbe Entscheidung wie in
@@ -177,11 +186,15 @@ namespace WindowsFormsApplication1
         /// finden (E53).
         /// </summary>
         public Kalenderregel Quellperiode(int tag0, int referenzjahr)
+            => Quellperiode(tag0, new Gemeinjahrkalender(0, referenzjahr));
+
+        /// <summary>Die Periode eines Tags nach der Konvention <paramref name="kalender"/> (E114).</summary>
+        public Kalenderregel Quellperiode(int tag0, Gemeinjahrkalender kalender)
         {
             for (int p = 0; p < _perioden.Length; p++)
             {
                 Kalenderregel r = _perioden[p];
-                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, referenzjahr) - 1 : -1;
+                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, kalender) - 1 : -1;
                 if (r.Enthaelt(tag0, f0) && r.Angabe.Greift(_woche)) return r;
             }
             return null;

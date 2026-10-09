@@ -620,7 +620,7 @@ namespace WindowsFormsApplication1
             // gegen das Referenzjahr des Projekts aufgelöst. Ohne Kalender bleibt beides leer.
             var kalender = new Dictionary<int, Betriebskalender>();
             var tagesarten = new Dictionary<int, byte[]>();
-            int referenzjahr = 0;
+            int? feiertagsjahr = null;   // Jahr der Preisreihe, 0 = Regelfall ohne Jahr (E114); einmal je Lauf gelesen
 
             for (int k = 0; k < liste.Count; k++)
             {
@@ -755,8 +755,8 @@ namespace WindowsFormsApplication1
                 {
                     if (!tagesarten.TryGetValue(kal.ID, out byte[] arten))
                     {
-                        if (referenzjahr == 0) referenzjahr = SolardatenCtrl.Referenzjahr(idProjekt);
-                        arten = kal.Tagesarten(referenzjahr);
+                        feiertagsjahr ??= SolardatenCtrl.Preisreihenjahr(idProjekt) ?? 0;
+                        arten = kal.Tagesarten(new Gemeinjahrkalender(wochentagJan1, feiertagsjahr.Value));
                         tagesarten[kal.ID] = arten;
                     }
                     if (!Betriebskalenderschicht.WocheZuJahr(wochenwerte, monatswerte, jahreswerte,

@@ -316,7 +316,7 @@ namespace WindowsFormsApplication1
         internal GebaeudeModellEingang EingangBauen(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
         {
             Konditionierungssatz konditionierung = Konditionierungdatenweg.Satz(
-                gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Referenzjahr,
+                gebaeude, gemeinsam.WochenendeOrtszeit, gemeinsam.Feiertagsjahr,
                 Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung),
                 Kuehlbetrieb && gebaeude.Kuehlung_Aktiv && gebaeude.Kuehl_Sollwert.HasValue);
 
@@ -357,7 +357,7 @@ namespace WindowsFormsApplication1
             bool kondKopplung = Waermeuebergabe.KopplungWirksamFuer(gebaeude, Anlagenkopplung);
             // KU3-3: die Kühlung wirkt je Zone (Schalter und Sollwert der Zone, sonst des Gebäudes).
             return idZone => Konditionierungdatenweg.Satz(gebaeude, gemeinsam.WochenendeOrtszeit,
-                                                          gemeinsam.Referenzjahr, kondKopplung,
+                                                          gemeinsam.Feiertagsjahr, kondKopplung,
                                                           KuehlungWirksamFuer(gebaeude, idZone, Kuehlbetrieb), idZone);
         }
 

@@ -194,7 +194,20 @@ namespace WindowsFormsApplication1
         /// <exception cref="ArgumentOutOfRangeException">w₀ liegt außerhalb 0 … 6.</exception>
         public static Kalenderteppich Bilden(Konditionierungskalender kalender, int wochentagDesErstenTags,
                                              int bezugsjahr)
+            => Bilden(kalender, new Gemeinjahrkalender(wochentagDesErstenTags, bezugsjahr), bezugsjahr);
+
+        /// <summary>
+        /// <b>Der Teppich im Gemeinjahr</b> (E114): w₀ aus dem <paramref name="rasterjahr"/> — dieselbe
+        /// Wochenendmaske wie der Lauf —, die Feiertage nach dem Jahr der Preisreihe
+        /// <paramref name="feiertagsjahr"/>, ohne es (<c>null</c>) nach der Konvention <see cref="Gemeinjahrkalender"/>.
+        /// </summary>
+        public static Kalenderteppich ImGemeinjahr(Konditionierungskalender kalender, int rasterjahr, int? feiertagsjahr)
+            => Bilden(kalender, Gemeinjahrkalender.Aus(WochentagDesErstenTagsIm(rasterjahr), feiertagsjahr), rasterjahr);
+
+        private static Kalenderteppich Bilden(Konditionierungskalender kalender, Gemeinjahrkalender konvention,
+                                              int bezugsjahr)
         {
+            int wochentagDesErstenTags = konvention.W0;
             if (kalender == null) throw new ArgumentNullException(nameof(kalender));
             if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
                 throw new ArgumentOutOfRangeException(nameof(wochentagDesErstenTags),
@@ -213,7 +226,7 @@ namespace WindowsFormsApplication1
 
                 // DIESELBE Entscheidung wie Auswerten: die ranghoechste Periode, die den Tag
                 // enthaelt und greift, sonst die Grundangabe bzw. Standardwoche.
-                Kalenderregel periode = kalender.Quellperiode(d, bezugsjahr);
+                Kalenderregel periode = kalender.Quellperiode(d, konvention);
                 Kalenderangabe angabe = periode != null ? periode.Angabe : kalender.Grundangabe;
                 quellen[d] = periode != null ? Teppichquelle.AusPeriode(periode) : ohnePeriode;
 

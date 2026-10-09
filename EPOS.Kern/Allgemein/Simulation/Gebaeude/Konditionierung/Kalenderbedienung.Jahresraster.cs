@@ -55,7 +55,7 @@ namespace WindowsFormsApplication1
             {
                 Feiertage.Datum(d + 1, out int monat, out int tagImMonat);
                 int w = (stand.W0 + d) % 7;
-                Kalenderregel r = Quelle(k, d, stand.Referenzjahr);
+                Kalenderregel r = Quelle(k, d, stand.Kalender);
                 Rastertagart art = Art(r, w, wochenende);
                 Zuordnungsschluessel s = r != null && !Konditionierungsarbeit.IstMatrixbereich(r) ? Zuordnungsschluessel.Von(r) : null;
                 tage[d] = new Rastertag(d + 1, monat, tagImMonat, w, art, r?.Bezeichner, r?.Rang, s);
@@ -95,12 +95,12 @@ namespace WindowsFormsApplication1
         /// auch dann, wenn „wie Wochentag X" ohne Standardwoche nicht greift: Der Tag rechnet dann mit der
         /// Grundangabe, die Anzeige nennt aber die Zeile, die der Anwender gesetzt hat.
         /// </summary>
-        private static Kalenderregel Quelle(Konditionierungskalender k, int tag0, int referenzjahr)
+        private static Kalenderregel Quelle(Konditionierungskalender k, int tag0, Gemeinjahrkalender kalender)
         {
             if (k == null) return null;
             foreach (Kalenderregel r in k.Perioden)
             {
-                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, referenzjahr) - 1 : -1;
+                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, kalender) - 1 : -1;
                 if (r.Enthaelt(tag0, f0)) return r;
             }
             return null;
