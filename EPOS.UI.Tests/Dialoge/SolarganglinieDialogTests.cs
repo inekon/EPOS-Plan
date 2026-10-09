@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Seiten;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
@@ -8,14 +10,17 @@ using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Solarthermieganglinien (iU9-W7.8). Soll ist die Feldkarte von
-/// <c>Form_Solarganglinie</c>: neun Zeilen — zwei Listen, die beiden Pfeile, Name
-/// und Beschreibung als Anzeige, „Bearbeiten…", OK und Abbrechen.
+/// Solarthermieganglinien — EIN Dialog für Projekt und Katalog: zwei Listen, die
+/// Übernahmeleiste, Name und Beschreibung als Anzeige, OK und Abbrechen; an der
+/// Katalogseite Vergleichen, Schloss, Löschen und Import (Baustein
+/// <c>GanglinieKatalogseite</c>). Ohne Projekt (Katalogbetrieb) nur die Katalogseite und
+/// „Beenden".
 /// </summary>
 public class SolarganglinieDialogTests : EposBunitContext
 {
@@ -43,30 +48,26 @@ public class SolarganglinieDialogTests : EposBunitContext
     private static ErzeugerZeile Zeile(int schluessel, string name, int ganglinieId)
         => new() { Schluessel = schluessel, Bezeichner = name, GeraetId = ganglinieId };
 
-    /// <summary>
-    /// Ein leerer Parametersatz der Ganglinienverwaltung (iU9-W14b.2): Er genügt für
-    /// den Knopf „Bearbeiten…"; die Verwaltung selbst prüft
-    /// <c>SolarganglinieAdminDialogTests</c>.
-    /// </summary>
-    private static readonly IReadOnlyDictionary<string, object> LEERER_SATZ =
-        new Dictionary<string, object>();
-
     private IRenderedComponent<SolarganglinieDialog> Aufbauen(
         List<ErzeugerZeile>? zeilen = null,
         Func<int, ErzeugerZeile?>? aufnehmen = null,
         Action<ErzeugerZeile>? entfernen = null,
-        IReadOnlyDictionary<string, object>? verwaltungGaben = null,
-        Func<IReadOnlyList<Katalogfilterzeile>>? katalog = null,
-        Action<bool>? geschlossen = null)
+        GanglinienKatalogwege? wege = null,
+        Action<bool>? geschlossen = null,
+        bool katalogbetrieb = false)
         => Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Ganglinie Nord", 21) })
-            .Add(x => x.Katalogzeilen, katalog ?? (() => Katalog))
+            .Add(x => x.Katalogbetrieb, katalogbetrieb)
+            .Add(x => x.Katalogwege, wege ?? Wege())
             .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Aufnehmen, aufnehmen ?? (id => Zeile(100000, "Ganglinie Süd", id)))
             .Add(x => x.Entfernen, entfernen)
-            .Add(x => x.VerwaltungGaben, verwaltungGaben)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    /// <summary>Die Wege der Katalogseite mit dem Probekatalog — ohne Import.</summary>
+    private static GanglinienKatalogwege Wege(IReadOnlyList<Katalogfilterzeile>? katalog = null)
+        => new() { Katalogzeilen = () => Task.FromResult(katalog ?? Katalog) };
 
     private static IElement Knopf(IRenderedComponent<SolarganglinieDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
@@ -78,7 +79,7 @@ public class SolarganglinieDialogTests : EposBunitContext
     [Fact]
     public void Der_Feldbestand_der_Karte_steht()
     {
-        var cut = Aufbauen(verwaltungGaben: LEERER_SATZ);
+        var cut = Aufbauen();
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
@@ -92,7 +93,7 @@ public class SolarganglinieDialogTests : EposBunitContext
         Assert.Contains("Beschreibung:", texte);
 
         var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Contains("Bearbeiten...", knoepfe);
+        Assert.DoesNotContain("Bearbeiten...", knoepfe);
         Assert.Contains("OK", knoepfe);
         Assert.Contains("Abbrechen", knoepfe);
     }
@@ -111,7 +112,7 @@ public class SolarganglinieDialogTests : EposBunitContext
     {
         var cut = Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile>())
-            .Add(x => x.Katalogzeilen, () => Katalog)
+            .Add(x => x.Katalogwege, Wege())
             .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.TitelText, "Solar thermal energy curves")
@@ -122,21 +123,6 @@ public class SolarganglinieDialogTests : EposBunitContext
         Assert.Contains("Selected in the project",
                         cut.FindAll(".epos-untergruppe").Select(e => e.TextContent));
         Assert.Contains("Description:", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
-    }
-
-    /// <summary>
-    /// Ohne Parametersatz der Verwaltung bleibt „Bearbeiten…" weg — seit iU9-W14b.2
-    /// hängt der Knopf an <c>VerwaltungGaben</c> statt am Sprung-Delegaten.
-    /// </summary>
-    [Fact]
-    public void Der_Bearbeiten_Knopf_erscheint_nur_mit_Verwaltung()
-    {
-        var ohne = Aufbauen();
-        Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent.Trim()),
-                              t => t == "Bearbeiten...");
-
-        var mit = Aufbauen(verwaltungGaben: LEERER_SATZ);
-        Assert.Contains("Bearbeiten...", mit.FindAll("button").Select(b => b.TextContent.Trim()));
     }
 
     // =================================================================================
@@ -216,23 +202,8 @@ public class SolarganglinieDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Sprung, Abschluss, Tastatur
+    // Abschluss, Tastatur
     // =================================================================================
-
-    /// <summary>
-    /// „Bearbeiten…" öffnet die Verwaltung als ÜBERLAGERUNG (iU9-W14b.2) — bis dahin
-    /// war es ein Sprung in ein WinForms-Fenster über
-    /// <c>Sprungziel.SolarganglinieAdmin</c>, den es nicht mehr gibt.
-    /// </summary>
-    [Fact]
-    public void Bearbeiten_oeffnet_die_Verwaltung_als_Ueberlagerung()
-    {
-        var cut = Aufbauen(verwaltungGaben: LEERER_SATZ);
-
-        Assert.False(cut.Instance.VerwaltungOffen);
-        Knopf(cut, "Bearbeiten...").Click();
-        Assert.True(cut.Instance.VerwaltungOffen);
-    }
 
     [Fact]
     public void OK_und_Abbrechen_melden_das_Ergebnis()
@@ -306,5 +277,337 @@ public class SolarganglinieDialogTests : EposBunitContext
         WindowsFormsApplication1.KiFeldzugang beschreibung =
             KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARGANGLINIE, "beschreibung");
         Assert.Equal("Messreihe 2024, Standort Süd", beschreibung.Lesen());
+    }
+
+    // =====================================================================
+    //  Die Katalogseite: Vergleichen, Schloss, Löschen, Import
+    // =====================================================================
+
+    private static IReadOnlyList<Katalogfilterzeile> PFLEGE => new[]
+    {
+        Zeitreihenproben.Zeile(21, "Ganglinie Nord", beschreibung: "Nord",
+                               jahresarbeitMwh: 3.9, spitzeKw: 5.4),
+        Zeitreihenproben.Zeile(22, "Ganglinie Süd", beschreibung: "Süd",
+                               jahresarbeitMwh: 4.2, spitzeKw: 6.0),
+        Zeitreihenproben.Zeile(23, "Auslieferung Ost", geschuetzt: true, beschreibung: "Ost",
+                               jahresarbeitMwh: 2.0, spitzeKw: 3.0),
+        Zeitreihenproben.Zeile(24, "Messreihe West", beschreibung: "West",
+                               jahresarbeitMwh: 1.0, spitzeKw: 2.0)
+    };
+
+    /// <summary>Wählt die Katalogzeile <paramref name="index"/> über ihre Wahlspalte.</summary>
+    private static void Katalogwahl(IRenderedComponent<SolarganglinieDialog> cut, int index, bool katalogbetrieb = false)
+        => cut.FindAll(".epos-raster")[katalogbetrieb ? 0 : 1].QuerySelectorAll("tbody tr")[index]
+              .QuerySelector("button")!.Click();
+
+    private static IElement Loeschknopf(IRenderedComponent<SolarganglinieDialog> cut)
+        => cut.Find("button.epos-katalog-loeschen");
+
+    [Fact]
+    public void Die_Katalogseite_traegt_Kennzahlen_Vergleichen_Schloss_Loeschen_und_Import()
+    {
+        var schloss = new Schlosspruefung();
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            Loeschen = _ => Task.FromResult(true),
+            Schloss = schloss.Weg(),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", ""))
+        });
+
+        var koepfe = cut.FindAll(".epos-raster")[1].QuerySelectorAll("thead th").Select(t => t.TextContent).ToList();
+        Assert.Contains(koepfe, k => k.Contains("BESCHREIBUNG"));
+        Assert.Contains(koepfe, k => k.Contains("JAHRESARBEIT"));
+        Assert.Contains(koepfe, k => k.Contains("SPITZE"));
+
+        var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Contains(knoepfe, k => k.StartsWith("Vergleichen"));
+        Assert.Contains("Import…", knoepfe);
+        Assert.Contains("Ganglinie Löschen", knoepfe);
+        Assert.Single(cut.FindAll("button.epos-katalogschloss"));
+        Assert.DoesNotContain("Bearbeiten...", knoepfe);
+    }
+
+    [Fact]
+    public void Vergleichen_stellt_zwei_markierte_Ganglinien_nebeneinander()
+    {
+        var cut = Aufbauen(wege: Wege(PFLEGE));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[0]
+           .Click(new MouseEventArgs { CtrlKey = true });
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[1]
+           .Click(new MouseEventArgs { CtrlKey = true });
+        cut.FindAll("button").First(b => b.TextContent.Trim().StartsWith("Vergleichen")).Click();
+
+        var liste = cut.FindComponent<Katalogliste>();
+        Assert.True(liste.Instance.VergleichOffen);
+        Assert.NotEmpty(liste.Instance.Vergleich);
+    }
+
+    [Fact]
+    public void Ohne_Delegat_kein_Loeschknopf_und_ohne_Wahl_gesperrt()
+    {
+        var cut = Aufbauen(wege: Wege(PFLEGE));
+        Assert.Empty(cut.FindAll("button.epos-katalog-loeschen"));
+
+        var mit = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            Loeschen = _ => Task.FromResult(true)
+        });
+        Assert.True(Loeschknopf(mit).HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Loeschen_ist_gesperrt_fuer_Auslieferung_Projektverwendung_und_offenes_Projekt()
+    {
+        var verwendung = new Dictionary<string, IReadOnlyList<string>>
+        {
+            ["Ganglinie Süd"] = new[] { "Projekt Alpha" }
+        };
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            Verwendung = () => Task.FromResult<IReadOnlyDictionary<string, IReadOnlyList<string>>>(verwendung),
+            Loeschen = _ => throw new InvalidOperationException("darf nicht loeschen")
+        });
+
+        // Im offenen Projekt: "Ganglinie Nord" steht links.
+        Katalogwahl(cut, 0);
+        Assert.Equal("true", Loeschknopf(cut).GetAttribute("aria-disabled"));
+        Assert.Contains("diesem Projekt zugeordnet", Loeschknopf(cut).GetAttribute("title"));
+        Loeschknopf(cut).Click();
+        Assert.Contains("Ganglinie Nord", cut.Instance.Katalogseite!.Meldung);
+
+        // In einem anderen Projekt: der Name steht im Grund.
+        Katalogwahl(cut, 1);
+        Assert.Contains("Projekt Alpha", Loeschknopf(cut).GetAttribute("title"));
+
+        // Auslieferungssatz.
+        Katalogwahl(cut, 2);
+        Assert.Equal("true", Loeschknopf(cut).GetAttribute("aria-disabled"));
+        Assert.Equal(Resource.SGAD_MSG_SCHREIBGESCHUETZT, Loeschknopf(cut).GetAttribute("title"));
+    }
+
+    [Fact]
+    public void Loeschen_einer_freien_Ganglinie_fragt_loescht_und_meldet()
+    {
+        var liste = new List<Katalogfilterzeile>(PFLEGE);
+        var geloescht = new List<string>();
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(liste.ToList()),
+            HatProjektzuordnung = _ => Task.FromResult(false),
+            Loeschen = n =>
+            {
+                geloescht.Add(n);
+                liste.RemoveAll(z => z.Bezeichner == n);
+                return Task.FromResult(true);
+            }
+        });
+
+        Katalogwahl(cut, 3);                                  // "Messreihe West"
+        Assert.Null(Loeschknopf(cut).GetAttribute("aria-disabled"));
+        Loeschknopf(cut).Click();
+        Assert.True(cut.Instance.Katalogseite!.Loeschfrage);
+        Assert.Contains("Messreihe West", cut.Find(".epos-rueckfrage").TextContent);
+
+        Knopf(cut, "Ja").Click();
+
+        Assert.Equal(new[] { "Messreihe West" }, geloescht);
+        Assert.Equal(3, cut.Instance.Katalog.Count);
+        Assert.Null(cut.Instance.Katalogzeile);
+        Assert.Contains("Messreihe West", cut.Instance.Katalogseite.Status);
+    }
+
+    [Fact]
+    public void Eine_Zuordnung_aus_der_Datenbank_haelt_das_Loeschen_auf()
+    {
+        bool geloescht = false;
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            HatProjektzuordnung = _ => Task.FromResult(true),
+            Loeschen = _ => { geloescht = true; return Task.FromResult(true); }
+        });
+
+        Katalogwahl(cut, 3);
+        Loeschknopf(cut).Click();
+
+        Assert.False(cut.Instance.Katalogseite!.Loeschfrage);
+        Assert.Equal(Resource.WBAD_MSG_PROJEKTZUORDNUNG, cut.Instance.Katalogseite.Meldung);
+        Assert.False(geloescht);
+    }
+
+    [Fact]
+    public void Schloss_aufheben_gibt_das_Loeschen_frei()
+    {
+        IReadOnlyList<Katalogfilterzeile> zeilen = PFLEGE;
+        var schloss = new Schlosspruefung(23);
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(zeilen),
+            Loeschen = _ => Task.FromResult(true),
+            Schloss = schloss.Weg(zeilen: zeilen)
+        });
+
+        Katalogwahl(cut, 2);                                  // "Auslieferung Ost"
+        Assert.Equal("true", Loeschknopf(cut).GetAttribute("aria-disabled"));
+
+        cut.Find("button.epos-katalogschloss").Click();
+        Assert.True(cut.Instance.Katalogseite!.Schlossfrage);
+        Schlosspruefung.Ja(cut);
+
+        cut.WaitForAssertion(() => Assert.Null(Loeschknopf(cut).GetAttribute("aria-disabled")),
+                             TimeSpan.FromSeconds(10));
+        Assert.Single(schloss.Aufrufe);
+        Assert.Equal("Schloss von „Auslieferung Ost“ aufgehoben.", cut.Instance.Katalogseite.Status);
+    }
+
+    [Fact]
+    public void Import_liest_ueber_den_Rueckruf_waehlt_den_neuen_Satz_und_zeigt_das_Protokoll()
+    {
+        var liste = new List<Katalogfilterzeile>(PFLEGE);
+        string? gelesen = null;
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(liste.ToList()),
+            DateiWaehlen = _ => Task.FromResult<string?>("D:/Daten/Sued 2025.csv"),
+            Einlesen = (pfad, _) =>
+            {
+                gelesen = pfad;
+                liste.Add(Zeitreihenproben.Zeile(30, "Sued 2025", beschreibung: "Leistung [kW]",
+                                                 jahresarbeitMwh: 5.0, spitzeKw: 7.0));
+                return Task.FromResult(new GanglinienKatalogimport(true, false, "Sued 2025", "",
+                    "Format: Trennzeichen ;, Dezimalzeichen , · 35.040 Werte"));
+            }
+        });
+
+        cut.Find("button.epos-importknopf").Click();
+        Assert.True(cut.Instance.Katalogseite!.ImportOffen);
+        Knopf(cut, "Datei Auswählen...").Click();
+        Knopf(cut, "Datei Einlesen...").Click();
+
+        Assert.Equal("D:/Daten/Sued 2025.csv", gelesen);
+        Assert.False(cut.Instance.Katalogseite.ImportOffen);
+        Assert.Equal("Sued 2025", cut.Instance.Katalogzeile?.Bezeichner);
+        Assert.Equal("Leistung [kW]", cut.Find("textarea[readonly]").TextContent);
+        Assert.Contains("35.040 Werte", cut.Instance.Katalogseite.Protokoll);
+        Assert.Contains("35.040 Werte", cut.Markup);
+        Assert.Contains("Sued 2025", cut.Instance.Katalogseite.Status);
+    }
+
+    [Fact]
+    public void Ein_gescheiterter_Import_bleibt_offen_und_meldet()
+    {
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            DateiWaehlen = _ => Task.FromResult<string?>("x.csv"),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "x",
+                Resource.SGAD_MSG_VORHANDEN, ""))
+        });
+
+        cut.Find("button.epos-importknopf").Click();
+        Knopf(cut, "Datei Auswählen...").Click();
+        Knopf(cut, "Datei Einlesen...").Click();
+
+        Assert.True(cut.Instance.Katalogseite!.ImportOffen);
+        Assert.Equal(Resource.SGAD_MSG_VORHANDEN, cut.Instance.Katalogseite.Importmeldung);
+        Assert.Equal(4, cut.Instance.Katalog.Count);
+    }
+
+    [Fact]
+    public void Ohne_Einleseweg_lehnt_Import_benannt_ab()
+    {
+        var cut = Aufbauen(wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            ImportAbgelehnt = Resource.SGL_IMP_NICHT_VERFUEGBAR
+        });
+
+        IElement knopf = cut.Find("button.epos-importknopf");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(Resource.SGL_IMP_NICHT_VERFUEGBAR, knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.False(cut.Instance.Katalogseite!.ImportOffen);
+        Assert.Equal(Resource.SGL_IMP_NICHT_VERFUEGBAR, cut.Instance.Katalogseite.Meldung);
+
+        var ohne = Aufbauen(wege: Wege(PFLEGE));
+        Assert.Empty(ohne.FindAll("button.epos-importknopf"));
+    }
+
+    [Fact]
+    public void Esc_schliesst_nicht_solange_der_Import_offen_ist()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b, wege: new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(PFLEGE),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", ""))
+        });
+
+        cut.Find("button.epos-importknopf").Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Null(ergebnis);
+    }
+
+    // =====================================================================
+    //  Katalogbetrieb — der Weg des Administrationsmenüs
+    // =====================================================================
+
+    [Fact]
+    public void Ohne_Projekt_steht_nur_die_Katalogseite_mit_Beenden()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(katalogbetrieb: true, geschlossen: b => ergebnis = b, wege: Wege(PFLEGE));
+
+        Assert.Empty(cut.FindAll(".epos-zweispalten-uebernahme"));
+        Assert.Single(cut.FindAll(".epos-raster"));
+        var knoepfe = cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Contains("Beenden", knoepfe);
+        Assert.DoesNotContain("OK", knoepfe);
+
+        Katalogwahl(cut, 1, katalogbetrieb: true);
+        Assert.Equal("Süd", cut.Find("textarea[readonly]").TextContent);
+
+        Knopf(cut, "Beenden").Click();
+        Assert.True(ergebnis);
+
+        ergebnis = null;
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// Der Menüpunkt „Solarthermie-Ganglinie" öffnet DENSELBEN Dialog ohne Projekt: Der
+    /// Parametersatz der Datenseite trifft nur Parameter von <see cref="SolarganglinieDialog"/>,
+    /// setzt den Katalogbetrieb und lehnt den Import ohne Dateiwege der Schale benannt ab.
+    /// </summary>
+    [Fact]
+    public void Der_Menuepunkt_oeffnet_den_vereinten_Dialog_ohne_Projekt()
+    {
+        Menuepunkt punkt = Menuetabelle.Alle.Single(x => x.Name == "MenuItem_SolThermGanglinie");
+        Assert.Equal(Seitenschluessel.SolarganglinieAdmin, punkt.Ziel);
+
+        var vorher = Katalogwege.SolarganglinienDatei;
+        Katalogwege.SolarganglinienDatei = null;
+        try
+        {
+            IReadOnlyDictionary<string, object> gaben = SolarganglinieKatalogGaben.KatalogGaben();
+            var parameter = typeof(SolarganglinieDialog).GetProperties()
+                .Where(pi => pi.GetCustomAttributes(typeof(Microsoft.AspNetCore.Components.ParameterAttribute), true).Length > 0)
+                .Select(pi => pi.Name).ToHashSet();
+            Assert.All(gaben.Keys, k => Assert.Contains(k, parameter));
+            Assert.Equal(true, gaben["Katalogbetrieb"]);
+
+            var wege = (GanglinienKatalogwege)gaben["Katalogwege"];
+            Assert.Null(wege.Einlesen);
+            Assert.Equal(Resource.SGL_IMP_NICHT_VERFUEGBAR, wege.ImportAbgelehnt);
+        }
+        finally
+        {
+            Katalogwege.SolarganglinienDatei = vorher;
+        }
     }
 }
