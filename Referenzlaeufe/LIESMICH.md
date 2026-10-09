@@ -1024,6 +1024,20 @@ sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **92 975 104 Byte, LFS-SHA-256 `84e771718f875eafcc77f16387ca1809376317499a28655b110e34f8cf54f063`**. **Die Basis
 > `2026-10-08_R44_Kuehlkurve` bleibt** — kein Referenzprojekt führt ein Typkennfeld, keine Einfrierregel ist berührt; die
 > sechsundzwanzig Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
+>
+> **Nachtrag — Testdatenbank auf 204 (Zonen im Gebäudekatalog, nur Tabellen, Basis R44 unberührt).**
+> `ZonenKatalogSchema` (204 = `KaeltemaschinenTypkennfelderSchema.SCHRITT + 1`) legt die Katalogzwillinge
+> `Tab_Zone_STAMM`, `Tab_Bauteil_STAMM` und `Tab_Zonenluftstrom_STAMM` an (STRICT, Kaskade am Katalogsatz), dazu die
+> Eigentümerspalte `ID_Zone_Stamm` an `Tab_Konditionierungskalender` und `Tab_Konditionierungsvorgabe` samt vier Indizes
+> und den beiden Teilindizes des Katalogbaus in neuer Bedingung (`… AND "ID_Zone_Stamm" IS NULL`); reines DDL, keine
+> Zeile entsteht. Gehoben aus dem Stand 203 (LFS-SHA-256 `84e771718f875eafcc77f16387ca1809376317499a28655b110e34f8cf54f063`)
+> mit `Werkzeuge/Testdatenbankschema`, ein zweiter Lauf meldet „steht bereits“; die Zeilen von `Tab_Gebaeude`,
+> `Tab_Gebaeude_STAMM`, `Tab_Zone`, `Tab_Bauteil`, `Tab_Zonenluftstrom`, der drei Konditionierungstabellen und der
+> Bauteilaufbauten sind vorher und nachher gleich (Hash je Tabelle). Die Testdatenbank steht auf **204**
+> (`integrity_check` ok, `foreign_key_check` leer): **93 028 352 Byte, LFS-SHA-256
+> `d39b45540fcce5689c6c5150389196a11f0e9775f007eef4d09da219508a0874`**. **Die Basis `2026-10-08_R44_Kuehlkurve`
+> bleibt** — keine gesäte Gebäude- oder Zonenzeile ändert sich, der Rechenweg liest die Zwillinge nicht; die
+> sechsundzwanzig Projekte rechnen byte-gleich (841 CSV, `GESAMT: PASS`).
 
 ### Die Vorgängerbasis R43 (Kälteseite AK3K)
 
