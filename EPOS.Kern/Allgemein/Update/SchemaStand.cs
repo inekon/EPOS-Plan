@@ -968,7 +968,11 @@ namespace WindowsFormsApplication1
         /// <see cref="KuehlkurveSchema.SCHRITT"/>: fünf Eingabespalten der Kühlkurve an beiden Gebäudetabellen samt elftem
         /// Sichtneubau, drei Kennzahlen an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="KuehlkurveSchema"/>).
         /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
-        public const int Zielversion = KuehlkurveSchema.SCHRITT;
+        /// Danach, mit den TYPKENNFELDERN DER KÄLTEMASCHINEN (KM2), steht das Ziel auf
+        /// <see cref="KaeltemaschinenTypkennfelderSchema.SCHRITT"/>: die eingebauten Typkennfelder als gesperrte Sätze in
+        /// <c>Tab_Kaeltemaschine_STAMM</c> samt Kennlinie, Katalogschlüssel und Prüfsumme
+        /// (<see cref="KaeltemaschinenTypkennfelderSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt führt ein Typkennfeld.
+        public const int Zielversion = KaeltemaschinenTypkennfelderSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
