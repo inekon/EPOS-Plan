@@ -243,6 +243,9 @@ public static class Seitenschluessel
     /// <summary>Stammdaten Solarganglinien (Razor seit W14b.2).</summary>
     public const string SolarganglinieAdmin = WindowsFormsApplication1.Masken.SolarganglinieAdmin;
 
+    /// <summary>Stammdaten PV-Ganglinien (PVG, Schemaschritt 206) — der Dialog „Photovoltaik Ganglinie" ohne Projekt.</summary>
+    public const string PvGanglinieAdmin = WindowsFormsApplication1.Masken.PvGanglinieAdmin;
+
     /// <summary>Herstellerdaten Waermepumpen einlesen (Razor seit W13.1).</summary>
     public const string WpImport = WindowsFormsApplication1.Masken.WpImport;
 
@@ -478,7 +481,7 @@ public static class Seitenschluessel
         Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
-        StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin,
+        StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
         WpImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
         BrauchwasserNutzungsarten,

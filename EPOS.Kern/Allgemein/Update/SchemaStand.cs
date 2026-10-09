@@ -981,7 +981,10 @@ namespace WindowsFormsApplication1
         /// Rücklaufgrenze an beiden BHKW-Tabellen, Einbindung und Vorwärmbetrieb an der Anlage, Bereiche und Zähler an Modul-
         /// und Projektergebnis der Wärmepumpe (<see cref="UebergabegrenzeSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten
         /// entstehen leer.
-        public const int Zielversion = UebergabegrenzeSchema.SCHRITT;
+        /// Danach, mit der PV-GANGLINIE (PVG), steht das Ziel auf <see cref="PvGanglinieSchema.SCHRITT"/>: Katalog,
+        /// Projektkopie und Zuordnung einer Photovoltaik-Ganglinie im Raster der Datei (<see cref="PvGanglinieSchema"/>).
+        /// <b>Ergebnisneutral:</b> Reines DDL, kein Referenzprojekt führt eine PV-Ganglinie.
+        public const int Zielversion = PvGanglinieSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

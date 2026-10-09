@@ -49948,5 +49948,56 @@ Chart</value>
   <data name="GIMP_WERT_KEINE_MVD" xml:space="preserve">
     <value>keine Angabe</value>
   </data>
+  <data name="ADM_KATALOG_PVGANGLINIE" xml:space="preserve">
+    <value>PV-Ganglinien</value>
+  </data>
+  <data name="KABG_KATALOG_PVGANGLINIE" xml:space="preserve">
+    <value>PV-Ganglinien</value>
+  </data>
+  <data name="PVG_TITEL" xml:space="preserve">
+    <value>Photovoltaik Ganglinie</value>
+  </data>
+  <data name="PVG_TITEL_KATALOG" xml:space="preserve">
+    <value>PV-Ganglinien</value>
+  </data>
+  <data name="PVG_LBL_PROJEKTLISTE" xml:space="preserve">
+    <value>Ausgewählt im Projekt</value>
+  </data>
+  <data name="PVG_LBL_KATALOGLISTE" xml:space="preserve">
+    <value>PV-Ganglinie aus DB</value>
+  </data>
+  <data name="PVG_LBL_RASTER" xml:space="preserve">
+    <value>Raster:</value>
+  </data>
+  <data name="PVG_RASTER_STUNDE" xml:space="preserve">
+    <value>Stundenwerte (8 760)</value>
+  </data>
+  <data name="PVG_RASTER_VIERTEL" xml:space="preserve">
+    <value>Viertelstundenwerte (35 040)</value>
+  </data>
+  <data name="PVG_MSG_VORHANDEN" xml:space="preserve">
+    <value>Eine PV-Ganglinie mit diesem Namen steht bereits im Katalog.</value>
+  </data>
+  <data name="PVG_MSG_SCHREIBFEHLER" xml:space="preserve">
+    <value>Die PV-Ganglinie konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="PVG_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
+    <value>Diese PV-Ganglinie ist ein Auslieferungssatz und kann nicht gelöscht werden.</value>
+  </data>
+  <data name="PVG_IMP_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>Der Import einer PV-Ganglinie ist auf dieser Plattform nicht verfügbar.</value>
+  </data>
+  <data name="PVG_HINWEIS_WEICHE" xml:space="preserve">
+    <value>Ist dem Projekt eine PV-Ganglinie zugeordnet, ersetzt sie die Modulrechnung: Die Werte sind die AC-Leistung der Anlage in kW, je Stunde oder je Viertelstunde.</value>
+  </data>
+  <data name="SIM_PV_GANGLINIE_MANGEL" xml:space="preserve">
+    <value>Die PV-Ganglinie „{0}“ ist unvollständig ({1}); die Photovoltaik rechnet über die Module.</value>
+  </data>
+  <data name="SIM_W_PVGANGLINIE_OHNE_STROMPLATZ" xml:space="preserve">
+    <value>Dem Projekt ist die PV-Ganglinie „{0}“ zugeordnet, aber die Photovoltaik steht nicht auf dem Platz des Stromerzeugers — die Ganglinie rechnet nicht. Abhilfe: Simulationskonfiguration → Stromerzeuger „Photovoltaik“.</value>
+  </data>
+  <data name="MENU_PV_GANGLINIE" xml:space="preserve">
+    <value>PV-Ganglinie</value>
+  </data>
 </root>
 

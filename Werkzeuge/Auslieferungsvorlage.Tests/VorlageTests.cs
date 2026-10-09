@@ -237,7 +237,10 @@ namespace Auslieferungsvorlage.Tests
             // 177 seit dem Schemaschritt 204 (ZonenKatalogSchema, ZK): Tab_Zone_STAMM, Tab_Bauteil_STAMM und
             // Tab_Zonenluftstrom_STAMM, STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
             //
-            Assert.Equal(177, befund.Strict);
+            // 182 seit dem Schemaschritt 206 (PvGanglinieSchema, PVG): Tab_PvGanglinie(_STAMM), Tab_PvGanglinieDaten(_STAMM)
+            // und Z_ProjektPvGanglinie, STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(182, befund.Strict);
         }
 
         // =============================================================================

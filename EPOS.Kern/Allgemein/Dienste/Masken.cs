@@ -40,6 +40,8 @@
         public const string StromganglinieAdmin = "Form_Stromganglinie_Admin";
         /// <summary>Stammdaten Solarganglinien.</summary>
         public const string SolarganglinieAdmin = "Form_Solarganglinie_Admin";
+        /// <summary>Stammdaten PV-Ganglinien (PVG, Schemaschritt 206).</summary>
+        public const string PvGanglinieAdmin = "Form_PvGanglinie_Admin";
         /// <summary>Herstellerdaten Wärmepumpen einlesen.</summary>
         public const string WpImport = "Form_WP_einlesen";
         /// <summary>Stammdaten Heizkessel.</summary>

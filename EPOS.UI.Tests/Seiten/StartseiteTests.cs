@@ -940,14 +940,50 @@ public class StartseiteTests : EposBunitContext
 
         cut.FindAll("[role='tab']")[3].Click();
 
-        var knoepfe = cut.FindAll(".epos-startkachel-wahl input");
+        var knoepfe = WahlVon(cut, "Solarthermie");
         Assert.Equal(2, knoepfe.Count);
 
         knoepfe[1].Change(true);
         Assert.Equal(new[] { true }, gemeldet);
 
-        cut.FindAll(".epos-startkachel-wahl input")[0].Change(true);
+        WahlVon(cut, "Solarthermie")[0].Change(true);
         Assert.Equal(new[] { true, false }, gemeldet);
+    }
+
+    /// <summary>Die Auswahlknöpfe der Karte, deren Kachel <paramref name="titel"/> trägt.</summary>
+    private static List<AngleSharp.Dom.IElement> WahlVon(IRenderedComponent<Startseite> cut, string titel)
+        => cut.FindAll(".epos-startkachel-mit-wahl")
+              .Single(k => k.QuerySelector(".epos-kachel")!.TextContent.Contains(titel))
+              .QuerySelectorAll(".epos-startkachel-wahl input").ToList();
+
+    /// <summary>
+    /// Die Photovoltaikkachel trägt dieselbe Weiche (PVG, Schemaschritt 206): „Profil" öffnet die Module,
+    /// „Ganglinie" den Dialog „Photovoltaik Ganglinie" — gemeldet über einen eigenen Rückruf, unabhängig von
+    /// der Solarthermie.
+    /// </summary>
+    [Fact]
+    public void Die_PV_Weiche_meldet_ihre_Stellung_unabhaengig_von_der_Solarthermie()
+    {
+        var pv = new List<bool>();
+        var solar = new List<bool>();
+
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.SolarartGewaehlt, an => solar.Add(an))
+            .Add(x => x.PvartGewaehlt, an => pv.Add(an)));
+
+        cut.FindAll("[role='tab']")[3].Click();
+
+        var knoepfe = WahlVon(cut, "Photovoltaik");
+        Assert.Equal(2, knoepfe.Count);
+        knoepfe[1].Change(true);
+        Assert.Equal(new[] { true }, pv);
+        Assert.Empty(solar);
+
+        WahlVon(cut, "Photovoltaik")[0].Change(true);
+        Assert.Equal(new[] { true, false }, pv);
+        Assert.Empty(solar);
     }
 
     // =====================================================================
@@ -1223,7 +1259,11 @@ public class StartseiteTests : EposBunitContext
 
         // Genau eine Karte fuehrt die Weiche, und die Weiche steht IN ihr. Die Kachel
         // „Kühlung“ ist eine gewoehnliche Kachel ohne Wirt (eigene Probe: ErzeugerReiterKuehlungTests).
-        var karten = cut.FindAll(".epos-startkachel-mit-wahl");
+        // PVG (Schemaschritt 206): die Photovoltaikkachel traegt dieselbe Weiche - zwei Karten; geprueft wird hier
+        // die der Solarthermie.
+        var alle = cut.FindAll(".epos-startkachel-mit-wahl");
+        Assert.Equal(2, alle.Count);
+        var karten = alle.Where(k => k.QuerySelector(".epos-kachel")!.TextContent.Contains("Solarthermie")).ToList();
         Assert.Single(karten);
         Assert.NotNull(karten[0].QuerySelector(".epos-kachel"));
         Assert.NotNull(karten[0].QuerySelector(".epos-startkachel-wahl"));

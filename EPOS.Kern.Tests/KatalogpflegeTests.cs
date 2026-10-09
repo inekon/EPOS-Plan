@@ -66,7 +66,8 @@ namespace EPOS.Kern.Tests
             // Gebaeudesimulation G3 (Welle B, W21): Baustoff und Bauteilaufbau dazu - 25.
             // KU3-1: die Kaeltemaschine dazu - 26.
             // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
-            Assert.Equal(27, KatalogRegistry.Alle.Count);
+            // PVG (Schemaschritt 206): die PV-Ganglinie dazu - 28.
+            Assert.Equal(28, KatalogRegistry.Alle.Count);
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -89,7 +90,7 @@ namespace EPOS.Kern.Tests
                 // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
                 "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                 "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
-                "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP",
+                "STROMGANGLINIE", "SOLARGANGLINIE", "PVGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP",
                 // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen (Schloss der Vorlagenverwaltung).
                 "KONDITIONIERUNGSVORLAGE"
             };
@@ -252,6 +253,7 @@ namespace EPOS.Kern.Tests
         [InlineData("PROZESSTYP", 28, 0, 2)]      // 20 + acht Wochenprofile (PW5)
         [InlineData("STROMGANGLINIE", 3, 0, 0)]
         [InlineData("SOLARGANGLINIE", 1, 0, 0)]
+        [InlineData("PVGANGLINIE", 0, 0, 0)]
         [InlineData("WAERMEBEDARF", 4, 0, 1)]
         [InlineData("GEBAEUDETYP", 12, 0, 0)]
         public void DerScanMeldetDieEingefrorenenZahlen(string schluessel, int saetze,
