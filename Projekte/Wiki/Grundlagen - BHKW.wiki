@@ -49,7 +49,7 @@ Ein BHKW passt, wo Wärme- und Strombedarf über weite Teile des Jahres gleichze
 == In EPOS-Plan ==
 {{Anker|in-epos-plan|abbildung-in-epos-plan}}
 
-In EPOS-Plan wird ein BHKW-Modul im Reiter „Energieerzeuger“ der Startseite über die Kachel „BHKW“ angelegt; sie öffnet den Dialog „Verwaltung BHKW". Der Gerätekatalog liegt unter Administration → Wärmebedarf & Heizung → BHKW. Wie das Modul eingebunden, ausgelegt und mit anderen Erzeugern verschaltet wird, zeigen [[Programm Dokumentation/BHKW#einbindung|Einbindung]], [[Programm Dokumentation/BHKW#beispiel|Beispiel]], [[Programm Dokumentation/BHKW#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/BHKW#fallstricke|Fallstricke]]; der Rechenweg steht unter [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]].
+In EPOS-Plan wird ein BHKW-Modul im Reiter „Energieerzeuger“ der Startseite über die Kachel „BHKW“ angelegt; sie öffnet den Dialog „Verwaltung BHKW". Der Gerätekatalog liegt unter Administration → Wärme- und Kälteerzeugung → BHKW. Wie das Modul eingebunden, ausgelegt und mit anderen Erzeugern verschaltet wird, zeigen [[Programm Dokumentation/BHKW#einbindung|Einbindung]], [[Programm Dokumentation/BHKW#beispiel|Beispiel]], [[Programm Dokumentation/BHKW#zusammenspiel|Zusammenspiel]] und [[Programm Dokumentation/BHKW#fallstricke|Fallstricke]]; der Rechenweg steht unter [[Programm Dokumentation/Berechnung/BHKW|Berechnung: BHKW]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}

@@ -267,6 +267,7 @@ public static class Menuetabelle
             new Menuepunkt("MenuItem_Klimadaten", "MENU_KLIMADATEN", Seitenschluessel.Klimadaten, bild: "Menu4"),
             // MN-1: Ort | Anlagen
             Menuepunkt.Trennstrich("MenuItem_TrennerAdminOrt"),
+            // Rubrik „Wärme- und Kälteerzeugung“ (Schlüssel MENU_WBUND_HEIZUNG, Name historisch).
             new Menuepunkt("MenuItem_WBundHeizung", "MENU_WBUND_HEIZUNG", "", bild: "Menu1")
             {
                 // Zapfprofilgenerator 5.4: aus dem Punkt wird ein Untermenue mit

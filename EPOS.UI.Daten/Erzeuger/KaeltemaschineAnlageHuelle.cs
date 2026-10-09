@@ -35,7 +35,13 @@ namespace WindowsFormsApplication1
                 ["Pruefen"] = new Func<KaeltemaschineAnlageDaten, string>(Pruefen),
                 ["Anlegen"] = new Func<int, string, int>((stammId, name) => KaeltemaschineAnlageCtrl.Anlegen(projektId, stammId, name)),
                 ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(Speichern),
-                ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen)
+                ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen),
+                // Block „Wärmepumpen im Kühlbetrieb“: Bestand und Schreibweg wie der Kühlschalter der
+                // Wärmepumpen-Konfiguration (WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten), geschrieben beim OK.
+                ["Waermepumpen"] = new Func<IReadOnlyList<EPOS.UI.Seiten.Start.KuehlWaermepumpe>>(
+                    () => KuehlungKachelBau.Waermepumpen(projektId)),
+                ["KuehlbetriebSchreiben"] = new Func<int, bool, string>(
+                    (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(projektId, idWp, an))
             };
         }
 

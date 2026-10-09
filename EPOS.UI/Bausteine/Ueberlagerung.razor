@@ -36,6 +36,12 @@
      Ueberlagerung braucht einen Grund und steht in der Ausnahmeliste der
      Wache SchliesskreuzWacheTests.
 
+   OFFENE BLAETTER (Anwenderwunsch 08.10.2026). Steht im Inhalt ein Blatt (Baustein
+   Blattwechsel), fuehren Kreuz, Esc und Hintergrund nur zum vorigen Blatt zurueck - erst vom
+   Wurzelblatt aus schliesst der Bereich. Dafuer reicht er seinen Blattstapel als
+   CascadingValue an den Inhalt; jeder Blattwechsel meldet sich mit seinem Rueckweg an, solange
+   sein Blatt steht. Das gilt fuer jeden Wirt, ohne dass er etwas davon wissen muss.
+
    WAS DER BAUSTEIN NICHT TUT. Er schliesst sich nicht selbst und er kennt kein
    Ergebnis: Offen gehoert dem Wirt, Geschlossen ist die Bitte, es auf false zu
    setzen. So bleibt genau eine Wahrheit darueber, welcher Bereich offen ist. *@
@@ -63,7 +69,9 @@
         }
 
         <div class="epos-ueberlagerung-inhalt">
-            @KindInhalt
+            <CascadingValue Value="@_blaetter" IsFixed="true">
+                @KindInhalt
+            </CascadingValue>
         </div>
 
         <span class="epos-fokusfalle" tabindex="0" @onfocus="ZurWurzel"></span>
@@ -115,6 +123,12 @@
 
     private ElementReference _wurzel;
     private bool _warOffen;
+
+    /// <summary>Die Blätter, die im Inhalt stehen (Baustein <c>Blattwechsel</c> meldet sich an).</summary>
+    private readonly Blattstapel _blaetter = new();
+
+    /// <summary>Steht im Inhalt ein Blatt? Prüfhilfe für die Tests.</summary>
+    public bool BlattOffen => _blaetter.BlattOffen;
     private bool _fokusNoetig;
 
     protected override void OnParametersSet()
@@ -142,6 +156,8 @@
 
     private async Task BeiSchliessen()
     {
+        // Ein offenes Blatt geht zuerst zurueck; geschlossen wird erst vom Wurzelblatt aus.
+        if (await _blaetter.ZurueckZumVorigen()) return;
         if (OffenChanged.HasDelegate) await OffenChanged.InvokeAsync(false);
         await Geschlossen.InvokeAsync();
     }

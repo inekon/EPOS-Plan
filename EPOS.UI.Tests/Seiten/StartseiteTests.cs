@@ -1222,8 +1222,8 @@ public class StartseiteTests : EposBunitContext
         cut.FindAll("[role='tab']")[3].Click();
 
         // Genau eine Karte fuehrt die Weiche, und die Weiche steht IN ihr. Die Kachel
-        // „Kühlung“ trägt denselben Wirt für ihre Auswahl (eigene Probe: ErzeugerReiterKuehlungTests).
-        var karten = cut.FindAll(".epos-startkachel-mit-wahl:not(.epos-startkachel-kuehlung)");
+        // „Kühlung“ ist eine gewoehnliche Kachel ohne Wirt (eigene Probe: ErzeugerReiterKuehlungTests).
+        var karten = cut.FindAll(".epos-startkachel-mit-wahl");
         Assert.Single(karten);
         Assert.NotNull(karten[0].QuerySelector(".epos-kachel"));
         Assert.NotNull(karten[0].QuerySelector(".epos-startkachel-wahl"));

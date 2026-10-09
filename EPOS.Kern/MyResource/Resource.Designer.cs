@@ -21164,7 +21164,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Betriebskosten: ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_BETRIEBSQUELLE {
             get {
@@ -21200,6 +21200,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten mit 0 € ansetzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_BETRIEB_NULL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_BETRIEB_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_DUPLIZIEREN {
@@ -21227,7 +21236,25 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_GRUPPE_BETRIEB {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_GRUPPE_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_GRUPPE_INVEST {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_GRUPPE_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Investitionskosten: ähnelt.
         /// </summary>
         public static string FLOTTE_AUS_INVESTQUELLE {
             get {
@@ -21250,6 +21277,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_AUS_INVEST_KWH {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_INVEST_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionskosten mit 0 € ansetzen ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_INVEST_NULL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_INVEST_NULL", resourceCulture);
             }
         }
         
@@ -21277,6 +21313,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_AUS_KOSTENMODUL {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_KOSTENMODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehlende Kostensätze werden nicht als kostenlose Anlage bewertet. Bitte Kostensätze eingeben oder die angezeigten Nullkosten ausdrücklich bestätigen. ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_KOSTEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_KOSTEN_FEHLEN", resourceCulture);
             }
         }
         
@@ -21439,6 +21484,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_AUS_PVQUELLE {
             get {
                 return ResourceManager.GetString("FLOTTE_AUS_PVQUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe in diesem Dialog ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_QUELLE_DIALOG {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_QUELLE_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Kostenmodul des Projekts ähnelt.
+        /// </summary>
+        public static string FLOTTE_AUS_QUELLE_KOSTENMODUL {
+            get {
+                return ResourceManager.GetString("FLOTTE_AUS_QUELLE_KOSTENMODUL", resourceCulture);
             }
         }
         
@@ -71980,6 +72043,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string KMA_GRUPPE_WP {
+            get {
+                return ResourceManager.GetString("KMA_GRUPPE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag auf den Strom der Maschine für Pumpen und Regelung; leer = 0 %. ähnelt.
         /// </summary>
         public static string KMA_HINWEIS_HILFSSTROM {
@@ -72192,6 +72264,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_TITEL_KATALOG {
             get {
                 return ResourceManager.GetString("KMA_TITEL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string KMA_WP_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_WP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpen wird mit OK gespeichert. ähnelt.
+        /// </summary>
+        public static string KMA_WP_HINWEIS {
+            get {
+                return ResourceManager.GetString("KMA_WP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wärmepumpe des Projekts hat eine Kühlfunktion. ähnelt.
+        /// </summary>
+        public static string KMA_WP_LEER {
+            get {
+                return ResourceManager.GetString("KMA_WP_LEER", resourceCulture);
             }
         }
         
@@ -78795,7 +78894,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf &amp; Heizung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme- und Kälteerzeugung ähnelt.
         /// </summary>
         public static string MENU_WBUND_HEIZUNG {
             get {
@@ -102353,7 +102452,7 @@ namespace WindowsFormsApplication1.MyResource {
         ///WP-Typ: {0}
         ///
         ///Soll dieses Gerät einen Pufferspeicher als Wärmequelle nutzen (Booster-Betrieb), muss es als Sole-Wasser- oder Wasser-Wasser-Wärmepumpe geführt sein:
-        ///Administration → Wärmebedarf &amp; Heizung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen. ähnelt.
+        ///Administration → Wärme- und Kälteerzeugung → Wärmepumpen → „Wärmepumpentyp“ ändern, dann die WP im Projekt neu auswählen. ähnelt.
         /// </summary>
         public static string SIMQ_MSG_LUFT_WASSER {
             get {
@@ -109629,33 +109728,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_KM {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_KM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1} ×) ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_KM_ANZAHL {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_KM_ANZAHL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_MSG_FEHLER {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_MSG_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung mit Kältemaschinen und Wärmepumpen ähnelt.
         /// </summary>
         public static string START_E_KUEHL_TEXT {
@@ -109670,15 +109742,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_E_KUEHL_TITEL {
             get {
                 return ResourceManager.GetString("START_E_KUEHL_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen im Kühlbetrieb ähnelt.
-        /// </summary>
-        public static string START_E_KUEHL_WP {
-            get {
-                return ResourceManager.GetString("START_E_KUEHL_WP", resourceCulture);
             }
         }
         

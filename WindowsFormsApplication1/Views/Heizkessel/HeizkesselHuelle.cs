@@ -403,9 +403,11 @@ namespace WindowsFormsApplication1
         {
             bool ok = false;
             BlazorDialogForm<HeizkesselDialog> dlg = null;
+            var vormerkung = new Projektkopievormerkung(
+                name => new HeizkesselCtrl().DeleteFromProjekt(name, projektId));
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, idType, modelle, wizard: false))
+                Gaben(besitzer, projektId, idType, modelle, wizard: false, vormerkung: vormerkung))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -421,6 +423,9 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+            // Anwenderwunsch 08.10.2026: Entfernte Projektkopien gehen erst mit OK; Abbrechen
+            // (auch Kreuz und Esc) raeumt nur die in dieser Sitzung neu angelegten ab.
+            vormerkung.Abschliessen(ok, id => modelle.Exists(it => it.ID_Type == idType && it.ID_Kessel == id));
             return ok;
         }
 
@@ -438,7 +443,7 @@ namespace WindowsFormsApplication1
         /// </remarks>
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, int projektId, int idType,
-            List<WErzeugerModel> modelle, bool wizard)
+            List<WErzeugerModel> modelle, bool wizard, Projektkopievormerkung vormerkung = null)
         {
             var stamm = new HeizkesselStammCtrl();
             var projekt = new HeizkesselCtrl();
@@ -500,10 +505,10 @@ namespace WindowsFormsApplication1
 
                 ["Aufnehmen"] = new Func<int, EnergietraegerVarianteErgebnis, AufnahmeErgebnis>(
                     (stammId, ergebnis) => Aufnehmen(stamm, projektId, idType, wizard, modelle,
-                                                     zuModell, zaehler, stammId, ergebnis)),
+                                                     zuModell, zaehler, stammId, ergebnis, vormerkung)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
-                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile)),
+                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile, vormerkung)),
 
                 ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
                     (zeile, neu) =>
@@ -641,7 +646,8 @@ namespace WindowsFormsApplication1
         private static AufnahmeErgebnis Aufnehmen(
             HeizkesselStammCtrl stamm, int projektId, int idType, bool wizard,
             List<WErzeugerModel> modelle, Dictionary<int, WErzeugerModel> zuModell,
-            Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis)
+            Zaehler zaehler, int stammId, EnergietraegerVarianteErgebnis ergebnis,
+            Projektkopievormerkung vormerkung = null)
         {
             stamm.ReadById(stammId);
             if (stamm.rows == 0)
@@ -672,12 +678,17 @@ namespace WindowsFormsApplication1
             // Stamm-Id als Platzhalter - die Kopie macht WizardCtrl beim Speichern.
             if (!wizard && projektId > 0)
             {
-                int projektKopie = new HeizkesselCtrl().CopyFromStamm(stammId, projektId);
+                var projektCtrl = new HeizkesselCtrl();
+                bool schonDa = projektCtrl.GetProjektId(stamm.Name, projektId) > 0;
+                int projektKopie = projektCtrl.CopyFromStamm(stammId, projektId);
                 if (projektKopie <= 0)
                     return new AufnahmeErgebnis(null,
                         Text_("HZK_MSG_KOPIE_FEHLER",
                               "Der Datensatz konnte nicht in das Projekt übernommen werden."), true);
                 model.ID_Kessel = projektKopie;
+                // Die Kopie entsteht sofort (Detailblock und „Alle Daten" lesen sie); eine NEUE
+                // raeumt ein Abbrechen wieder ab (Projektkopievormerkung).
+                if (!schonDa) vormerkung?.Angelegt(stamm.Name, projektKopie);
             }
             else
             {
@@ -707,18 +718,24 @@ namespace WindowsFormsApplication1
         private static void Entfernen(int projektId, int idType, bool wizard,
                                       List<WErzeugerModel> modelle,
                                       Dictionary<int, WErzeugerModel> zuModell,
-                                      ErzeugerZeile zeile)
+                                      ErzeugerZeile zeile, Projektkopievormerkung vormerkung = null)
         {
             if (!zuModell.TryGetValue(zeile.Schluessel, out WErzeugerModel m)) return;
 
             modelle.Remove(m);
             zuModell.Remove(zeile.Schluessel);
 
+            if (wizard || projektId <= 0) return;
+
+            // Anwenderwunsch 08.10.2026: nur VORMERKEN - geloescht wird beim OK, und nur,
+            // wenn dann keine Zeile mehr auf die Kopie verweist (Projektkopievormerkung).
+            if (vormerkung != null) { vormerkung.Entfernt(m.Bezeichner, m.ID_Kessel); return; }
+
             bool nochReferenziert = false;
             foreach (WErzeugerModel it in modelle)
                 if (it.ID_Type == idType && it.ID_Kessel == m.ID_Kessel) { nochReferenziert = true; break; }
 
-            if (!wizard && projektId > 0 && !nochReferenziert)
+            if (!nochReferenziert)
                 new HeizkesselCtrl().DeleteFromProjekt(m.Bezeichner, projektId);
         }
 

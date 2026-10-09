@@ -31,7 +31,12 @@
    solange das Blatt zu ist. Fokus: beim OEFFNEN geht er auf die KOPFZEILE des Blattes,
    nicht auf die ganze (oft laengere als der Rollbereich hohe) Wurzel, und ohne zu rollen;
    beim RUECKWEG fokussiert der WIRT seine Wurzel neu. Ohne das Modul bleibt das Blatt ohne
-   Rollnachfuehrung - ein Schoenheitsfehler, kein Fehlschlag. *@
+   Rollnachfuehrung - ein Schoenheitsfehler, kein Fehlschlag.
+
+   IN EINER UEBERLAGERUNG meldet sich das Blatt, solange es steht, mit seinem Rueckweg beim
+   Blattstapel der Ueberlagerung an (CascadingParameter): Deren Kreuz, Esc und Hintergrund
+   fuehren dann hierher zurueck statt den ganzen Dialog zu schliessen (Anwenderwunsch
+   08.10.2026). *@
 
 @namespace EPOS.UI.Bausteine
 @using Microsoft.JSInterop
@@ -98,6 +103,12 @@
     [Parameter] public string ZurueckText { get; set; } =
         Text("BLATT_ZURUECK", "‹ {0}");
 
+    /// <summary>
+    /// Der Blattstapel der tragenden <c>Ueberlagerung</c>; <c>null</c> = das Blatt steht nicht in einer
+    /// (Seite, eigenes Fenster).
+    /// </summary>
+    [CascadingParameter] public Blattstapel? Stapel { get; set; }
+
     /// <summary>Das Modul mit dem Rollstand; ein Pfad wie bei <c>Gespraechsverlauf</c>.</summary>
     public const string MODUL = "./_content/EPOS.UI/epos-blatt.js";
 
@@ -129,6 +140,9 @@
             _rueckwegNoetig = true;
         }
         _warOffen = Offen;
+
+        if (Offen) Stapel?.Anmelden(this, () => Zurueck.InvokeAsync());
+        else Stapel?.Abmelden(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -187,6 +201,7 @@
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
+        Stapel?.Abmelden(this);
         if (_modul is null) return;
         try { await _modul.DisposeAsync(); }
         catch (Exception) { /* Die WebView ist schon weg - dann gibt es nichts zu loesen. */ }

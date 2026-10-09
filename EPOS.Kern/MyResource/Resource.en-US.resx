@@ -3645,7 +3645,7 @@ the run's extraction rate, annual extracted energy and full-load hours.</value>
 HP type: {0}
 
 If this unit is to use a buffer storage as its heat source (booster operation), it must be listed as a brine-to-water or water-to-water heat pump:
-Administration → Heat requirement &amp; heating → Heat pumps → change the “Heat pump type”, then select the heat pump again in the project.</value>
+Administration → Heat and cold generation → Heat pumps → change the “Heat pump type”, then select the heat pump again in the project.</value>
   </data>
   <data name="SIMQ_MSG_QUELLE_ART" xml:space="preserve">
     <value>Only the heat pump and the boiler can select a heat source.
@@ -16606,7 +16606,7 @@ Please go through the project page again so that the data of the selected projec
     <value>Heat requirement load profile</value>
   </data>
   <data name="MENU_WBUND_HEIZUNG" xml:space="preserve">
-    <value>Heat requirement &amp; heating</value>
+    <value>Heat and cold generation</value>
   </data>
   <data name="MENU_WP" xml:space="preserve">
     <value>Heat pumps</value>
@@ -19074,14 +19074,35 @@ Please go through the project page again so that the data of the selected projec
   <data name="FLOTTE_AUS_MODELLJAHR_HINWEIS" xml:space="preserve">
     <value>For CSV series combined with EPOS or price-profile values this mapping has to be confirmed explicitly. The CSV time axis is kept in full: for 29 February the EPOS value of 28 February is reused; duplicate local hours at the clock change get the same EPOS model value.</value>
   </data>
+  <data name="FLOTTE_AUS_GRUPPE_INVEST" xml:space="preserve">
+    <value>Investment cost</value>
+  </data>
+  <data name="FLOTTE_AUS_GRUPPE_BETRIEB" xml:space="preserve">
+    <value>Operating cost</value>
+  </data>
+  <data name="FLOTTE_AUS_QUELLE_DIALOG" xml:space="preserve">
+    <value>Input in this dialog</value>
+  </data>
+  <data name="FLOTTE_AUS_QUELLE_KOSTENMODUL" xml:space="preserve">
+    <value>From the project's cost module</value>
+  </data>
+  <data name="FLOTTE_AUS_KOSTEN_FEHLEN" xml:space="preserve">
+    <value>Missing cost rates are not treated as a free system. Please enter cost rates or explicitly confirm the zero costs shown.</value>
+  </data>
+  <data name="FLOTTE_AUS_INVEST_NULL" xml:space="preserve">
+    <value>Set investment cost to 0 €</value>
+  </data>
+  <data name="FLOTTE_AUS_BETRIEB_NULL" xml:space="preserve">
+    <value>Set operating cost to 0 €</value>
+  </data>
   <data name="FLOTTE_AUS_KOSTEN" xml:space="preserve">
     <value>Costs</value>
   </data>
   <data name="FLOTTE_AUS_INVESTQUELLE" xml:space="preserve">
-    <value>Investment cost:</value>
+    <value>Source of investment cost:</value>
   </data>
   <data name="FLOTTE_AUS_BETRIEBSQUELLE" xml:space="preserve">
-    <value>Operating cost:</value>
+    <value>Source of operating cost:</value>
   </data>
   <data name="FLOTTE_AUS_INVEST_KW" xml:space="preserve">
     <value>Investment, power:</value>
@@ -45565,6 +45586,12 @@ chart</value>
   <data name="KMA_MSG_ANLEGEN_FEHLT" xml:space="preserve">
     <value>The chiller “{0}” no longer exists in the catalogue.</value>
   </data>
+  <data name="KMA_WP_LEER" xml:space="preserve">
+    <value>No heat pump of the project has a cooling function.</value>
+  </data>
+  <data name="KMA_WP_HINWEIS" xml:space="preserve">
+    <value>The cooling mode of the heat pumps is saved with OK.</value>
+  </data>
   <data name="KMA_KEINE_ANSICHT" xml:space="preserve">
     <value>The project chillers cannot be opened — is a project open?</value>
   </data>
@@ -45574,16 +45601,10 @@ chart</value>
   <data name="START_E_KUEHL_TEXT" xml:space="preserve">
     <value>Cooling with chillers and heat pumps</value>
   </data>
-  <data name="START_E_KUEHL_KM" xml:space="preserve">
-    <value>Chillers</value>
-  </data>
-  <data name="START_E_KUEHL_WP" xml:space="preserve">
+  <data name="KMA_GRUPPE_WP" xml:space="preserve">
     <value>Heat pumps in cooling mode</value>
   </data>
-  <data name="START_E_KUEHL_KM_ANZAHL" xml:space="preserve">
-    <value>{0} ({1} ×)</value>
-  </data>
-  <data name="START_E_KUEHL_MSG_FEHLER" xml:space="preserve">
+  <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>The cooling mode of the heat pump could not be saved.</value>
   </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
