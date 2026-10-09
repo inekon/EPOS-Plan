@@ -43,7 +43,7 @@ namespace WindowsFormsApplication1
         private const string BEDINGUNG =
             "\"ID_Gebaeude\" IS ? AND \"ID_Zone\" IS ? AND \"ID_Gebaeude_Stamm\" IS ? AND \"ID_Zone_Stamm\" IS ? AND \"ID_Vorlage\" IS ?";
 
-        private const string ALLE = DbWerte.KOND_GROESSE_ALLE;
+        private const string GROESSE_ALLE = DbWerte.KOND_GROESSE_ALLE;   // nicht „ALLE“: der Name ist als int-Null belegt (Vergleichssicht.ALLE), DbParamNullkonstanteWacheTests
 
         // =================================================================
         //  Lesen
@@ -70,7 +70,7 @@ namespace WindowsFormsApplication1
                DataRepository.TabelleVorhanden(KalenderbedienungSchema.TAB_WOCHE);
 
         /// <summary>Ist die Zeile der gemeinsame Kalender?</summary>
-        public static bool IstGemeinsam(Kalenderzeile z) => z != null && string.Equals(z.Groesse, ALLE, StringComparison.Ordinal);
+        public static bool IstGemeinsam(Kalenderzeile z) => z != null && string.Equals(z.Groesse, GROESSE_ALLE, StringComparison.Ordinal);
 
         /// <summary>Die Kalenderzeilen ohne den gemeinsamen Kalender (dieselbe Liste, wenn keiner dabei ist).</summary>
         public static List<Kalenderzeile> OhneGemeinsam(List<Kalenderzeile> zeilen)
@@ -132,7 +132,7 @@ namespace WindowsFormsApplication1
             int gruppen = 0;
             DataTable eigner = v.Lese(
                 "SELECT DISTINCT \"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", \"ID_Zone_Stamm\", \"ID_Vorlage\" FROM \"" +
-                KonditionierungSchema.TAB_KALENDER + "\" WHERE \"Groesse\" <> ? ORDER BY 1, 2, 3, 4, 5", new DbParam("@a", ALLE));
+                KonditionierungSchema.TAB_KALENDER + "\" WHERE \"Groesse\" <> ? ORDER BY 1, 2, 3, 4, 5", new DbParam("@a", GROESSE_ALLE));
             foreach (DataRow r in eigner.Rows)
             {
                 gruppen += Zusammenfuehren(v, new Schluessel(L(r, "ID_Gebaeude"), L(r, "ID_Zone"), L(r, "ID_Gebaeude_Stamm"),
@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
             {
                 long id = L(r, "ID") ?? 0;
                 string g = Convert.ToString(r["Groesse"], CultureInfo.InvariantCulture);
-                if (string.Equals(g, ALLE, StringComparison.Ordinal)) gemeinsam = id; else groesse[id] = g;
+                if (string.Equals(g, GROESSE_ALLE, StringComparison.Ordinal)) gemeinsam = id; else groesse[id] = g;
             }
             if (groesse.Count < 2) return 0;
 
@@ -192,7 +192,7 @@ namespace WindowsFormsApplication1
                 {
                     v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER + "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", " +
                                  "\"ID_Zone_Stamm\", \"ID_Vorlage\", \"Groesse\", \"Aus\") VALUES (?, ?, ?, ?, ?, ?, 0)",
-                                 eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray());
+                                 eigner.Parameter().Concat(new[] { new DbParam("@a", GROESSE_ALLE) }).ToArray());
                     gemeinsam = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
                     neu = true;
                 }
@@ -244,7 +244,7 @@ namespace WindowsFormsApplication1
                 "SELECT " + Periodenspalten("p.", true) + " FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" p JOIN \"" +
                 KonditionierungSchema.TAB_KALENDER + "\" k ON k.\"ID\" = p.\"ID_Kalender\" WHERE k.\"Groesse\" = ? AND k.\"ID_Gebaeude\" IS ? AND " +
                 "k.\"ID_Zone\" IS ? AND k.\"ID_Gebaeude_Stamm\" IS ? AND k.\"ID_Zone_Stamm\" IS ? AND k.\"ID_Vorlage\" IS ? ORDER BY p.\"Rang\" DESC",
-                new[] { new DbParam("@a", ALLE) }.Concat(eigner.Parameter()).ToArray());
+                new[] { new DbParam("@a", GROESSE_ALLE) }.Concat(eigner.Parameter()).ToArray());
             if (t == null) return;
             foreach (DataRow r in t.Rows)
             {
@@ -352,7 +352,7 @@ namespace WindowsFormsApplication1
             gemeinsam ??= Array.Empty<Gemeinschaftsperiode>();
             ferien ??= Array.Empty<Ferienzeile>();
             object o = v.Skalar("SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " + BEDINGUNG + " AND \"Groesse\" = ?",
-                                eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray());
+                                eigner.Parameter().Concat(new[] { new DbParam("@a", GROESSE_ALLE) }).ToArray());
             long? id = o == null || o == DBNull.Value ? null : Convert.ToInt64(o, CultureInfo.InvariantCulture);
             if (id.HasValue)
                 v.Ausfuehren("DELETE FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE \"ID_Kalender\" = ? AND ((\"Wert\" IS NOT NULL OR " +
@@ -363,7 +363,7 @@ namespace WindowsFormsApplication1
             {
                 v.Ausfuehren("INSERT INTO \"" + KonditionierungSchema.TAB_KALENDER + "\" (\"ID_Gebaeude\", \"ID_Zone\", \"ID_Gebaeude_Stamm\", " +
                              "\"ID_Zone_Stamm\", \"ID_Vorlage\", \"Groesse\", \"Aus\") VALUES (?, ?, ?, ?, ?, ?, 0)",
-                             eigner.Parameter().Concat(new[] { new DbParam("@a", ALLE) }).ToArray());
+                             eigner.Parameter().Concat(new[] { new DbParam("@a", GROESSE_ALLE) }).ToArray());
                 id = Convert.ToInt64(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
             }
             const string EINFUEGEN = "INSERT INTO \"" + KonditionierungSchema.TAB_PERIODE + "\" (\"ID_Kalender\", \"Rang\", \"Art\", \"Bezeichner\", " +
@@ -434,7 +434,7 @@ namespace WindowsFormsApplication1
                 "k.\"ID_Zone\" IS ? AND k.\"ID_Gebaeude_Stamm\" IS ? AND k.\"ID_Zone_Stamm\" IS ? AND k.\"ID_Vorlage\" IS ? AND p.\"Art\" = ? AND " +
                 "p.\"Wert\" IS NULL AND p.\"Aus\" = 0 AND p.\"Woche\" IS NULL AND p.\"ID_Woche\" IS NULL AND p.\"WieWochentag\" IS NULL AND " +
                 "p.\"Beginn\" IS NOT NULL AND p.\"Ende\" IS NOT NULL AND p.\"Rang\" BETWEEN ? AND ? ORDER BY p.\"Rang\"",
-                new[] { new DbParam("@a", ALLE) }.Concat(eigner.Parameter())
+                new[] { new DbParam("@a", GROESSE_ALLE) }.Concat(eigner.Parameter())
                     .Concat(new[] { new DbParam("@art", DbWerte.KOND_ART_FERIEN), new DbParam("@von", KalenderbedienungSchema.RANG_FERIEN_ERSTER),
                                     new DbParam("@bis", RANG_FERIENLISTE_LETZTER) }).ToArray());
             if (t == null) return liste;
@@ -496,7 +496,7 @@ namespace WindowsFormsApplication1
 
         private static DbParam[] SpiegelParameter(Schluessel eigner, int k)
             => new[] { new DbParam("@r", KalenderbedienungSchema.RANG_FERIEN_ERSTER + k), new DbParam("@art", DbWerte.KOND_ART_FERIEN) }
-               .Concat(eigner.Parameter()).Concat(new[] { new DbParam("@a", ALLE) }).ToArray();
+               .Concat(eigner.Parameter()).Concat(new[] { new DbParam("@a", GROESSE_ALLE) }).ToArray();
 
         /// <summary>
         /// <b>Bereinigt die Doppelzeilen der Ferienliste</b> (Stufe 2, Teil B): Solange der Generator die Ferienliste ab
@@ -537,7 +537,7 @@ namespace WindowsFormsApplication1
                 };
                 DbParam[] pf() => new[]
                 {
-                    new DbParam("@a", ALLE), new DbParam("@a2", ALLE), new DbParam("@art", DbWerte.KOND_ART_FERIEN),
+                    new DbParam("@a", GROESSE_ALLE), new DbParam("@a2", GROESSE_ALLE), new DbParam("@art", DbWerte.KOND_ART_FERIEN),
                     new DbParam("@von", RANG_FERIENLISTE), new DbParam("@bis", RANG_FERIENLISTE_LETZTER),
                     new DbParam("@off", KalenderbedienungSchema.RANG_FERIEN_ERSTER - 1),
                 };
