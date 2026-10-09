@@ -396,9 +396,12 @@ namespace WindowsFormsApplication1
             "INSERT OR IGNORE INTO \"" + TAB_ZUORDNUNG + "\" (\"Art\", \"Schluessel\", \"ID_Profil\", \"ReadOnly\") " +
             "SELECT ?, ?, " + SQL_PROFIL_ID + ", 1";
 
+        // Ohne INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand von Z_Nutzungsprofil auch bei ignoriertem
+        // Einfügen hoch; NOT EXISTS über den UNIQUE-Schlüssel (Quelle, Schluessel) lässt ihn stehen.
         internal const string SQL_SAAT_PUFFER =
-            "INSERT OR IGNORE INTO \"" + ProzessNutzungSchema.TAB_ZUORDNUNG + "\" (\"ID_Nutzungsprofil\", \"Quelle\", \"Schluessel\") " +
-            "SELECT \"ID\", ?, ? FROM \"" + ProzessNutzungSchema.TAB_PROFIL + "\" WHERE \"Kennung\" = ?";
+            "INSERT INTO \"" + ProzessNutzungSchema.TAB_ZUORDNUNG + "\" (\"ID_Nutzungsprofil\", \"Quelle\", \"Schluessel\") " +
+            "SELECT \"ID\", ?, ? FROM \"" + ProzessNutzungSchema.TAB_PROFIL + "\" WHERE \"Kennung\" = ? " +
+            "AND NOT EXISTS (SELECT 1 FROM \"" + ProzessNutzungSchema.TAB_ZUORDNUNG + "\" WHERE \"Quelle\" = ? AND \"Schluessel\" = ?)";
 
         /// <summary>Die Zahl der ausgelieferten Kategorien, die stehen.</summary>
         internal const string SQL_ZAHL_KATALOG_GESAAT =
@@ -644,7 +647,8 @@ namespace WindowsFormsApplication1
             foreach ((string Schluessel, PufferNutzungsprofil Profil) z in RaumnutzungSaat.Pufferzuordnungen)
                 puffer += v.Ausfuehren(SQL_SAAT_PUFFER,
                     new DbParam("@q", NutzungsprofilQuelle.KONDITIONIERUNG), new DbParam("@s", z.Schluessel),
-                    new DbParam("@k", z.Profil.ToString()));
+                    new DbParam("@k", z.Profil.ToString()),
+                    new DbParam("@q2", NutzungsprofilQuelle.KONDITIONIERUNG), new DbParam("@s2", z.Schluessel));
 
             return new List<string>
             {

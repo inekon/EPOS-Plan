@@ -19,7 +19,8 @@ namespace WindowsFormsApplication1
             => s != null && !s.IstFeiertag && Feriennummer(s.Name) > Matrixeingang.FERIENZEITRAEUME;
 
         /// <summary>
-        /// <b>Die Ferienzeiträume des Gebäudes</b>: die ersten vier aus <c>Ferienbeginn/-ende_1…4</c> (eine Grenze 0
+        /// <b>Die Ferienzeiträume des Gebäudes</b>: die ersten vier aus <c>Ferienbeginn/-ende_1…4</c> mit ihrem Namen
+        /// (<see cref="Konditionierungsstand.Feriennamen"/>, ohne Namen „Ferien n"; eine Grenze 0
         /// oder 366 heißt „aus" und fällt weg), dann die Ferienzeilen „Ferien 5" … der angelegten Kalender von Gebäude
         /// und Zonen, nach Nummer.
         /// </summary>
@@ -32,7 +33,8 @@ namespace WindowsFormsApplication1
             {
                 double von = b.Ferienbeginn[k], bis = b.Ferienende[k];
                 if (!Jahrestag(von) || !Jahrestag(bis)) continue;
-                liste.Add(new Ferienzeile(Ferienname(k + 1), (int)von, (int)bis));
+                string name = k < stand.Gebaeude.Feriennamen.Count ? stand.Gebaeude.Feriennamen[k] : null;
+                liste.Add(new Ferienzeile(string.IsNullOrWhiteSpace(name) ? Ferienname(k + 1) : name, (int)von, (int)bis));
             }
             if (stand.Gebaeude.Ferienliste.Count > 0)
             {
@@ -69,7 +71,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Ferienliste</b> (Konzept 7.8, Stufe 2): beliebig viele benannte Ferienzeiträume. Die ersten vier stehen in
         /// den Gebäudespalten <c>Ferienbeginn/-ende_1…4</c> (ihr Spiegel im gemeinsamen Kalender, Rang 200 … 203, schreibt
-        /// der Trigger), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204
+        /// der Trigger; ihre Namen trägt <see cref="Konditionierungsstand.Feriennamen"/>, der Schreibweg setzt sie danach in
+        /// den Bezeichner der Spiegelperiode), die weiteren als Ferienperioden des gemeinsamen Kalenders ab Rang 204
         /// (<see cref="Konditionierungsstand.Ferienliste"/>). Der Generator liest die ganze Liste und macht aus jedem
         /// Zeitraum eine FERIEN-Periode auf dessen Rang (200 … 309) mit der Ferienangabe der Größe; der Matrixbereich jedes
         /// Kalenders folgt („Matrix erneut"). Zeilen „Ferien n" der Stufe 1 im Eigenband fallen dabei.
@@ -105,6 +108,8 @@ namespace WindowsFormsApplication1
             a = a.MitGebaeude(a.Gebaeude.MitFerienliste(liste.Count > Matrixeingang.FERIENZEITRAEUME
                 ? liste.Skip(Matrixeingang.FERIENZEITRAEUME).Select(f => new Ferienzeile(f.Name.Trim(), f.Beginn, f.Ende)).ToList()
                 : new List<Ferienzeile>()));
+            // Die Namen der ersten vier: der Schreibweg setzt sie in den Bezeichner der Spiegelperiode (Rang 200 … 203).
+            a = a.MitGebaeude(a.Gebaeude.MitFeriennamen(liste.Take(Matrixeingang.FERIENZEITRAEUME).Select(f => f.Name.Trim())));
 
             // 2. Die Zeilen „Ferien n" der Stufe 1 fallen — der Generator trägt die Ferienliste selbst.
             foreach (long? zone in Ebenenorte(a))

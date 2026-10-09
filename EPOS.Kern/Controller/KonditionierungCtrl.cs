@@ -370,7 +370,8 @@ namespace WindowsFormsApplication1
             // schon ausgebreitet (Kalender); der Stand merkt sie sich als EINE Zeile mit Maske, dazu Ferienliste und Wochen.
             Kalendergemeinschaft.Schluessel schluessel = Kalendergemeinschaft.Schluessel.Von(eigner);
             Kalendergemeinschaft.GemeinsamLesen(schluessel, out List<Gemeinschaftsperiode> gemeinsam, out List<Ferienzeile> ferien);
-            return s.MitGemeinsamAbgeglichen(gemeinsam).MitFerienliste(ferien).MitWochen(Kalendergemeinschaft.WochenLesen(schluessel));
+            return s.MitGemeinsamAbgeglichen(gemeinsam).MitFerienliste(ferien).MitWochen(Kalendergemeinschaft.WochenLesen(schluessel))
+                    .MitFeriennamen(Kalendergemeinschaft.FeriennamenLesen(schluessel));
         }
 
         /// <summary>Die Spalte <c>Bemerkung</c> je Größe — Herkunft und Vermerk (B8).</summary>
@@ -517,6 +518,13 @@ namespace WindowsFormsApplication1
                 if (!e.Ok) return e;
                 geschrieben |= bestand;
             }
+            // Die Namen der Ferienzeitraeume 1 bis 4 stehen im Bezeichner ihrer Spiegelperiode. Der Spiegel-Trigger legt sie
+            // bei jeder Datumsaenderung neu als „Ferien k" an - darum ZULETZT, nach den Ferienspalten (hier oder vorher im
+            // selben Vorgang geschrieben).
+            if (stufe2 && (eigner.Art == Kalendereigentuemer.Gebaeude || eigner.Art == Kalendereigentuemer.Katalogbau)
+                && Kalendergemeinschaft.FeriennamenSchreiben(v, gemeinsamerEigner,
+                       neu.Feriennamen.Select((n, k) => n ?? (k < alt.Feriennamen.Count ? alt.Feriennamen[k] : null)).ToList()) > 0)
+                geschrieben = true;
             return Ergebnis.Gut;
         }
 

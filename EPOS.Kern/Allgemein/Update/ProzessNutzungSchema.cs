@@ -16,7 +16,7 @@ namespace WindowsFormsApplication1
     //       Profils; eindeutig je (Quelle, Schluessel). Die Pufferauslegung leitet ihr Profil darüber ab
     //       (NutzungsprofilZuordnung.Lesen), nicht mehr über Teiltexte.
     //
-    // DIE SAAT (INSERT OR IGNORE, wiederholbar): die Profile und die Zuordnung aus
+    // DIE SAAT (INSERT … WHERE NOT EXISTS, wiederholbar): die Profile und die Zuordnung aus
     // NutzungsprofilZuordnung.VORGABE - der EINEN Quelle im Code -, dazu die drei Zapf-Nutzungsarten
     // Büro, Schule, Gewerbe des freien Paketteils in einen Katalog, der schon eine Katalogversion führt
     // (TwwPaketteilCtrl.NutzungsartenNachtragen; das Nachladen lädt nur ohne Katalogversion). Eine
@@ -105,14 +105,18 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // Ohne INSERT OR IGNORE: SQLite zählt den AUTOINCREMENT-Stand auch bei ignoriertem Einfügen hoch;
+        // NOT EXISTS über den UNIQUE-Schlüssel lässt ihn bei einem Wiederholungslauf stehen.
         internal const string SQL_PROFIL_SAAT =
-            "INSERT OR IGNORE INTO " + TAB_PROFIL + " (Kennung, ReadOnly) VALUES (?, 1)";
+            "INSERT INTO " + TAB_PROFIL + " (Kennung, ReadOnly) SELECT ?, 1 " +
+            "WHERE NOT EXISTS (SELECT 1 FROM " + TAB_PROFIL + " WHERE Kennung = ?)";
         internal const string SQL_ZUORDNUNG_SAAT =
-            "INSERT OR IGNORE INTO " + TAB_ZUORDNUNG + " (ID_Nutzungsprofil, Quelle, Schluessel) " +
-            "SELECT ID, ?, ? FROM " + TAB_PROFIL + " WHERE Kennung = ?";
+            "INSERT INTO " + TAB_ZUORDNUNG + " (ID_Nutzungsprofil, Quelle, Schluessel) " +
+            "SELECT ID, ?, ? FROM " + TAB_PROFIL + " WHERE Kennung = ? " +
+            "AND NOT EXISTS (SELECT 1 FROM " + TAB_ZUORDNUNG + " WHERE Quelle = ? AND Schluessel = ?)";
 
         /// <summary>
-        /// Die Saat: Profile und Zuordnung (INSERT OR IGNORE), dann die Nutzungsarten Büro, Schule, Gewerbe in
+        /// Die Saat: Profile und Zuordnung (INSERT … WHERE NOT EXISTS), dann die Nutzungsarten Büro, Schule, Gewerbe in
         /// einen versionierten Zapfkatalog. Wiederholbar.
         /// </summary>
         /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
@@ -123,12 +127,14 @@ namespace WindowsFormsApplication1
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 foreach (string k in System.Enum.GetNames(typeof(PufferNutzungsprofil)))
-                    p += v.Ausfuehren(SQL_PROFIL_SAAT, new DbParam("?", k));
+                    p += v.Ausfuehren(SQL_PROFIL_SAAT, new DbParam("?", k), new DbParam("?", k));
                 foreach (var e in NutzungsprofilZuordnung.VORGABE)
                     z += v.Ausfuehren(SQL_ZUORDNUNG_SAAT,
                                       new DbParam("?", e.Quelle),
                                       new DbParam("?", e.Schluessel),
-                                      new DbParam("?", e.Profil.ToString()));
+                                      new DbParam("?", e.Profil.ToString()),
+                                      new DbParam("?", e.Quelle),
+                                      new DbParam("?", e.Schluessel));
                 v.Commit();
             }
             bericht?.Add(TAB_PROFIL + ": " + p.ToString(CultureInfo.InvariantCulture) + " Profil(e) angelegt");

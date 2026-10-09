@@ -443,6 +443,61 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        // =================================================================
+        //  Die Namen der Ferienzeiträume 1 bis 4 (Bezeichner der Spiegelperioden)
+        // =================================================================
+
+        /// <summary>Die Spiegelperiode k (Rang 199 + k) im gemeinsamen Kalender eines Eigentümers (Art FERIEN, ohne Angabe).</summary>
+        private const string SPIEGELPERIODE =
+            "\"Rang\" = ? AND \"Art\" = ? AND \"Wert\" IS NULL AND \"Aus\" = 0 AND \"Woche\" IS NULL AND \"ID_Woche\" IS NULL AND " +
+            "\"WieWochentag\" IS NULL AND \"ID_Kalender\" IN (SELECT \"ID\" FROM \"" + KonditionierungSchema.TAB_KALENDER + "\" WHERE " +
+            BEDINGUNG + " AND \"Groesse\" = ?)";
+
+        /// <summary>
+        /// <b>Die Namen der Ferienzeiträume 1 bis 4</b>: je Ferienspalte der Bezeichner ihrer Spiegelperiode im gemeinsamen
+        /// Kalender (Rang 200 … 203); <c>null</c>, wo keine steht. Ohne Schritt vier Mal <c>null</c>.
+        /// </summary>
+        public static string[] FeriennamenLesen(Schluessel eigner)
+        {
+            var namen = new string[KalenderbedienungSchema.FERIENSPALTEN];
+            if (eigner == null || !SchrittSteht()) return namen;
+            for (int k = 0; k < namen.Length; k++)
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT \"Bezeichner\" FROM \"" + KonditionierungSchema.TAB_PERIODE + "\" WHERE " + SPIEGELPERIODE + " LIMIT 1",
+                    SpiegelParameter(eigner, k));
+                namen[k] = o == null || o == DBNull.Value ? null : Convert.ToString(o, CultureInfo.InvariantCulture);
+            }
+            return namen;
+        }
+
+        /// <summary>
+        /// <b>Schreibt die Namen der Ferienzeiträume 1 bis 4</b> in die Bezeichner ihrer Spiegelperioden. Der Spiegel-Trigger
+        /// (<see cref="KalenderbedienungSchema"/>) legt die Perioden bei jeder Datumsänderung einer Ferienspalte neu als
+        /// „Ferien k" an; deshalb läuft dieser Schritt NACH dem Schreiben der Spalten im selben Vorgang. Ein Name
+        /// <c>null</c> lässt den Bezeichner stehen, eine fehlende Spiegelperiode (Zeitraum „aus") bleibt ohne Zeile.
+        /// </summary>
+        /// <returns>Die Zahl der umbenannten Perioden.</returns>
+        public static int FeriennamenSchreiben(DbVorgang v, Schluessel eigner, IReadOnlyList<string> namen)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (eigner == null || namen == null || !SchrittSteht()) return 0;
+            int n = 0;
+            for (int k = 0; k < KalenderbedienungSchema.FERIENSPALTEN && k < namen.Count; k++)
+            {
+                string name = string.IsNullOrWhiteSpace(namen[k]) ? null : namen[k].Trim();
+                if (name == null || name.Length > KonditionierungSchema.BEZEICHNER_MAX_ZEICHEN) continue;
+                n += v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_PERIODE + "\" SET \"Bezeichner\" = ? WHERE \"Bezeichner\" IS NOT ? AND " +
+                                  SPIEGELPERIODE,
+                                  new[] { new DbParam("@n", name), new DbParam("@n2", name) }.Concat(SpiegelParameter(eigner, k)).ToArray());
+            }
+            return n;
+        }
+
+        private static DbParam[] SpiegelParameter(Schluessel eigner, int k)
+            => new[] { new DbParam("@r", KalenderbedienungSchema.RANG_FERIEN_ERSTER + k), new DbParam("@art", DbWerte.KOND_ART_FERIEN) }
+               .Concat(eigner.Parameter()).Concat(new[] { new DbParam("@a", ALLE) }).ToArray();
+
         /// <summary>
         /// <b>Bereinigt die Doppelzeilen der Ferienliste</b> (Stufe 2, Teil B): Solange der Generator die Ferienliste ab
         /// Rang 204 nicht las, legte die Kalenderbedienung je weiterem Zeitraum in jedem angelegten Größenkalender von
