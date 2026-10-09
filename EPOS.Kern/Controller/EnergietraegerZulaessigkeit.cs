@@ -176,8 +176,8 @@ namespace WindowsFormsApplication1
         /// Anlagenzeile engt die Energieträgerverwaltung nicht auf eine Komponente ein,
         /// wohl aber auf das, was die Anlagen des Projekts überhaupt beziehen können).
         /// Anlagenquelle ist <see cref="ProjektEnergietraegerCtrl.AnlagenMitTraeger"/>
-        /// (Komponente und Gerätezeile je Anlagenzeile); der Heizstab ist dort kein
-        /// eigener Eintrag und kommt über
+        /// (Komponente und Gerätezeile je Anlagenzeile); der Heizstab und die
+        /// Kältemaschine sind dort kein eigener Eintrag und kommen über
         /// <see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/> hinzu — dieselbe
         /// Bedingung, die auch die Stromträger-Automatik stellt.
         ///
@@ -227,22 +227,13 @@ namespace WindowsFormsApplication1
             }
 
             // Der Heizstab ist ein Merkmal der Anlagenzeile, kein Eintrag der
-            // Anlagenliste — er hebt sein Projekt aber in die elektrische Welt.
+            // Anlagenliste, und die Kältemaschine führt die Kostenseite eigens — beide
+            // heben ihr Projekt aber in die elektrische Welt (und nur dorthin).
             try
             {
                 if (ProjektEnergietraegerCtrl.BrauchtStromTraeger(projektId)
                  && !codes.Contains(CODE_STROM))
                     codes.Add(CODE_STROM);
-            }
-            catch { }
-
-            // Die Kältemaschine steht nicht in der Anlagenliste (die Kostenseite führt sie eigens),
-            // bezieht aber Strom: Sie hebt ihr Projekt in die elektrische Welt — und nur dorthin.
-            try
-            {
-                if (!codes.Contains(CODE_STROM) && MitKaeltemaschine(projektId))
-                    foreach (string code in Kategoriecodes(DbWerte.ERZEUGER_KAELTEMASCHINE, 0))
-                        if (!codes.Contains(code)) codes.Add(code);
             }
             catch { }
 
@@ -440,15 +431,6 @@ namespace WindowsFormsApplication1
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
             }
             catch { return 0; }
-        }
-
-        /// <summary>Führt das Projekt eine Kältemaschine (<c>Tab_Energieanlagen.ID_Kaeltemaschine</c>)?</summary>
-        private static bool MitKaeltemaschine(int projektId)
-        {
-            object o = DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Kaeltemaschine > 0",
-                new DbParam("@p", projektId));
-            return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
         }
 
         /// <summary>Die Gruppennamen, die der Katalog unter diesen Kategoriecodes führt.</summary>
