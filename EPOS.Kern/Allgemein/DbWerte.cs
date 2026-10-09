@@ -3578,6 +3578,52 @@ namespace WindowsFormsApplication1
             KOND_FEIERTAG_EINHEIT, KOND_FEIERTAG_WEIHNACHTEN_1, KOND_FEIERTAG_WEIHNACHTEN_2
         };
 
+        /// <summary>Feiertagsregel eines Landes: Heilige Drei Könige (6. Januar; BW, BY, ST).</summary>
+        public const string KOND_FEIERTAG_HEILIGE_DREI_KOENIGE = "HEILIGE_DREI_KOENIGE";
+
+        /// <summary>Feiertagsregel eines Landes: Internationaler Frauentag (8. März; BE, MV).</summary>
+        public const string KOND_FEIERTAG_FRAUENTAG = "FRAUENTAG";
+
+        /// <summary>Feiertagsregel eines Landes: Fronleichnam (Ostersonntag + 60; BW, BY, HE, NW, RP, SL).</summary>
+        public const string KOND_FEIERTAG_FRONLEICHNAM = "FRONLEICHNAM";
+
+        /// <summary>Feiertagsregel eines Landes: Mariä Himmelfahrt (15. August; landesweit nur SL).</summary>
+        public const string KOND_FEIERTAG_MARIAE_HIMMELFAHRT = "MARIAE_HIMMELFAHRT";
+
+        /// <summary>Feiertagsregel eines Landes: Weltkindertag (20. September; TH).</summary>
+        public const string KOND_FEIERTAG_WELTKINDERTAG = "WELTKINDERTAG";
+
+        /// <summary>Feiertagsregel eines Landes: Reformationstag (31. Oktober; BB, HB, HH, MV, NI, SN, ST, SH, TH).</summary>
+        public const string KOND_FEIERTAG_REFORMATIONSTAG = "REFORMATIONSTAG";
+
+        /// <summary>Feiertagsregel eines Landes: Allerheiligen (1. November; BW, BY, NW, RP, SL).</summary>
+        public const string KOND_FEIERTAG_ALLERHEILIGEN = "ALLERHEILIGEN";
+
+        /// <summary>Feiertagsregel eines Landes: Buß- und Bettag (Mittwoch vor dem 23. November; SN).</summary>
+        public const string KOND_FEIERTAG_BUSS_UND_BETTAG = "BUSS_UND_BETTAG";
+
+        /// <summary>
+        /// Die acht Feiertagsregeln der Länder (Schemaschritt <c>KalenderbedienungSchema</c>); welches Land welche
+        /// Regel führt, steht in <see cref="Landesfeiertage.Regeln"/>. Die neun bundeseinheitlichen Regeln
+        /// (<see cref="KOND_FEIERTAGE"/>) bleiben in Bedeutung und Rang unverändert.
+        /// </summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_FEIERTAGE_LAENDER = new[]
+        {
+            KOND_FEIERTAG_HEILIGE_DREI_KOENIGE, KOND_FEIERTAG_FRAUENTAG, KOND_FEIERTAG_FRONLEICHNAM,
+            KOND_FEIERTAG_MARIAE_HIMMELFAHRT, KOND_FEIERTAG_WELTKINDERTAG, KOND_FEIERTAG_REFORMATIONSTAG,
+            KOND_FEIERTAG_ALLERHEILIGEN, KOND_FEIERTAG_BUSS_UND_BETTAG
+        };
+
+        /// <summary>Alle siebzehn Feiertagsregeln — Quelle des erweiterten <c>CHECK</c> der Periode.</summary>
+        public static readonly System.Collections.Generic.IReadOnlyList<string> KOND_FEIERTAGE_ALLE =
+            System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(KOND_FEIERTAGE, KOND_FEIERTAGE_LAENDER));
+
+        /// <summary>
+        /// Pseudogröße des gemeinsamen Kalenders „alle Größen" eines Eigentümers (Schemaschritt
+        /// <c>KalenderbedienungSchema</c>); seine Perioden tragen die Größenmaske <c>Gilt_Fuer</c>.
+        /// </summary>
+        public const string KOND_GROESSE_ALLE = "ALLE";
+
         /// <summary>Zeile der Vorgabe-Matrix: der Nennwert [W] bzw. die Infiltration (Konzept 3.3).</summary>
         public const string KOND_ZEILE_NENNWERT = "NENNWERT";
 

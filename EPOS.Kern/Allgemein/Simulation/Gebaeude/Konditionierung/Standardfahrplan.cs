@@ -273,7 +273,7 @@ namespace WindowsFormsApplication1
             for (int w = 0; w < 7; w++)
                 for (int st = 0; st < Kalenderwoche.TAGESSTUNDEN; st++)
                     woche[Kalenderwoche.Stelle(w, st)] =
-                        w >= 5 && weWirksam ? wochenende
+                        weWirksam && KalenderbedienungSchema.IstWochenendtag(b.Wochenendtage, w) ? wochenende
                         : nacht.IstNacht(st) ? nachtwert
                         : tag;
             return null;

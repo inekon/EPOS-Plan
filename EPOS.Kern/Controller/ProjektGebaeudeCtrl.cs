@@ -105,6 +105,12 @@ namespace WindowsFormsApplication1
             if (row["Abmessung_Anschluß_Außenwand_Kellerdecke"] != DBNull.Value) item.Abmessung_Anschluß_Außenwand_Kellerdecke = Convert.ToDouble(row["Abmessung_Anschluß_Außenwand_Kellerdecke"]);
             if (row["Luftwechselrate"] != DBNull.Value) item.Luftwechselrate = Convert.ToDouble(row["Luftwechselrate"]);
             if (row["Wochenende"] != DBNull.Value) item.Wochenende = Convert.ToDouble(row["Wochenende"]);
+            if (row.Table.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) &&
+                row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
+                item.Wochenendtage = Convert.ToInt32(row[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], System.Globalization.CultureInfo.InvariantCulture);
+            if (row.Table.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) &&
+                row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                item.Feiertagsland = Convert.ToString(row[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], System.Globalization.CultureInfo.InvariantCulture);
             if (row["Ferien"] != DBNull.Value) item.Ferien = Convert.ToDouble(row["Ferien"]);
             if (row["Ferienbeginn_1"] != DBNull.Value) item.Ferienbeginn_1 = Convert.ToDouble(row["Ferienbeginn_1"]);
             if (row["Ferienende_1"] != DBNull.Value) item.Ferienende_1 = Convert.ToDouble(row["Ferienende_1"]);

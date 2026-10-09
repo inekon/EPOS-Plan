@@ -118,6 +118,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>„wie Wochentag X“ (1 … 7), sonst <c>null</c>.</summary>
         public int? WieWochentag { get; set; }
+
+        /// <summary>
+        /// Die Größenmaske einer Periode des gemeinsamen Kalenders (<c>Gilt_Fuer</c>, Bit k = k-te Größe in
+        /// <see cref="DbWerte.KOND_GROESSEN"/>); <c>null</c> in einem Größenkalender.
+        /// </summary>
+        public int? GiltFuer { get; set; }
+
+        /// <summary>Der Verweis auf eine benannte Woche (<c>ID_Woche</c>); die gelesene <see cref="Woche"/> ist dann deren Text.</summary>
+        public long? IdWoche { get; set; }
     }
 
     /// <summary>

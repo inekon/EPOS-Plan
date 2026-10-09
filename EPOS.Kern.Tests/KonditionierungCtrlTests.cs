@@ -106,7 +106,8 @@ namespace EPOS.Kern.Tests
                      {
                          // Schritt ZK: ID_Zone_Stamm an Kalender und Vorgabe (die Periode haengt am Kalender).
                          (KonditionierungSchema.TAB_KALENDER, KonditionierungNutzungSchema.SPALTENZAHL_KALENDER + 1),
-                         (KonditionierungSchema.TAB_PERIODE, KonditionierungSchema.SPALTENZAHL_PERIODE),
+                         // Schritt K2: Gilt_Fuer und ID_Woche an der Periode.
+                         (KonditionierungSchema.TAB_PERIODE, KalenderbedienungSchema.SPALTENZAHL_PERIODE),
                          (KonditionierungSchema.TAB_VORGABE, KonditionierungSchema.SPALTENZAHL_VORGABE + 1),
                      })
             {
