@@ -50267,6 +50267,7 @@ chart</value>
   </data>
   <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
     <value>Remaining in the project: energy carrier, temperature pair, sinks and time schedule of the plant.</value>
+  </data>
   <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
     <value>The week “{0}” is still used by {1} row(s) and cannot be deleted.</value>
   </data>

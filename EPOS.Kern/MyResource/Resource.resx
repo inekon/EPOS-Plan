@@ -50274,6 +50274,7 @@ Chart</value>
   </data>
   <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
     <value>Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage.</value>
+  </data>
   <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
     <value>Die Woche „{0}“ wird noch von {1} Zeile(n) verwendet und lässt sich nicht löschen.</value>
   </data>

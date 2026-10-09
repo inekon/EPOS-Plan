@@ -76980,6 +76980,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Woche „{0}“ wird noch von {1} Zeile(n) verwendet und lässt sich nicht löschen. ähnelt.
+        /// </summary>
+        public static string KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN {
+            get {
+                return ResourceManager.GetString("KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile „{0}“ mit diesen Tagen gibt es schon im Kalender {1}. ähnelt.
         /// </summary>
         public static string KOND_MSG_BEDIENUNG_ZEILE_DOPPELT {
