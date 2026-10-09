@@ -120,45 +120,70 @@ namespace WindowsFormsApplication1
         /// <b>Die Kennzeichen „Wochenende oder Feiertag" einer Zone</b> (Konzept Konditionierungsprofile 7.8): Mit der
         /// Vorgabe des Gebäudes (<paramref name="wochenendmaske"/> leer oder Samstag + Sonntag) dieselben Kennzeichen
         /// <paramref name="we"/> der Klimaregion. Mit anderen Wochenendtagen gilt ein Tag als gekennzeichnet, wenn er ein
-        /// Wochenendtag der Maske ist oder ein Feiertag an einem Werktag (Kennzeichen an Montag … Freitag):
+        /// Wochenendtag der Maske ist oder ein Feiertag — an jedem Wochentag. Die Feiertage kommen aus zwei Quellen, weil
+        /// die Kennzeichen der Klimaregion Wochenende und Feiertag nicht trennen: aus den Feiertagsregeln des Kerns
+        /// (<paramref name="feiertage"/>, Jahrestage 1 … 365 des Bezugsjahrs, <see cref="Landesfeiertage.Jahrestage"/>)
+        /// und, vereinigt damit, aus den Kennzeichen der Klimaregion an Montag … Freitag:
         /// <code>
-        /// We'(d) = Maske enthält Wochentag(d)  oder  (We(d) und Wochentag(d) ∉ {Samstag, Sonntag})
+        /// We'(d) = Maske enthält Wochentag(d)  oder  d ∈ Feiertage  oder  (We(d) und Wochentag(d) ∉ {Samstag, Sonntag})
         /// </code>
-        /// Ein Samstag der Maske trägt den Samstagsgang, jeder andere Wochenendtag den Sonntagsgang
-        /// (<see cref="Bilden"/>). Prüft wie <see cref="Pruefen"/>.
+        /// Ein Samstag der Maske trägt den Samstagsgang, jeder andere gekennzeichnete Tag den Sonntagsgang — auch ein
+        /// Feiertag an einem Samstag, der nicht zur Maske gehört (<see cref="Bilden"/> mit der Maske,
+        /// <see cref="Samstagsgang"/>). Prüft wie <see cref="Pruefen"/>.
         /// </summary>
-        internal static bool[] Kennzeichen(int wochentagJan1, bool[] we, int? wochenendmaske)
+        internal static bool[] Kennzeichen(int wochentagJan1, bool[] we, int? wochenendmaske,
+                                           IReadOnlyCollection<int> feiertage = null)
         {
-            if (!wochenendmaske.HasValue || wochenendmaske.Value == KalenderbedienungSchema.WOCHENENDE_VORGABE) return we;
+            if (IstVorgabe(wochenendmaske)) return we;
             Pruefen(wochentagJan1, we);
+            var regel = new bool[TAGE];
+            if (feiertage != null)
+                foreach (int t in feiertage)
+                    if (t >= 1 && t <= TAGE) regel[t - 1] = true;
             var neu = new bool[TAGE];
             for (int d = 1; d <= TAGE; d++)
             {
                 int wt = Wochentag(wochentagJan1, d);
-                bool feiertag = we[d - 1] && wt != SAMSTAG && wt != SONNTAG;
+                bool feiertag = (we[d - 1] && wt != SAMSTAG && wt != SONNTAG) || regel[d - 1];
                 neu[d - 1] = KalenderbedienungSchema.IstWochenendtag(wochenendmaske.Value, wt) || feiertag;
             }
             return neu;
         }
 
-        /// <summary>Die Kennzeichen einer Zone (<see cref="Kennzeichen(int, bool[], int?)"/> mit ihrer Wochenmaske).</summary>
+        /// <summary>Die Kennzeichen einer Zone (<see cref="Kennzeichen"/> mit ihrer Wochenmaske und ihren Feiertagen).</summary>
         internal static bool[] KennzeichenDerZone(int wochentagJan1, bool[] we, ZonenStand z)
-            => Kennzeichen(wochentagJan1, we, z?.Wochenendtage);
+            => Kennzeichen(wochentagJan1, we, z?.Wochenendtage, z?.Feiertage);
+
+        /// <summary>Ist die Wochenmaske die Vorgabe (leer oder Samstag + Sonntag)? Dann gelten die Kennzeichen der Klimaregion unverändert.</summary>
+        internal static bool IstVorgabe(int? wochenendmaske)
+            => !wochenendmaske.HasValue || wochenendmaske.Value == KalenderbedienungSchema.WOCHENENDE_VORGABE;
+
+        /// <summary>
+        /// Trägt ein gekennzeichneter Samstag den Samstagsgang? Mit der Vorgabe ja (ein Feiertag am Samstag bleibt Samstag,
+        /// Konzept 4.2); mit einer anderen Maske nur, wenn sie den Samstag enthält — sonst ist der gekennzeichnete Samstag ein
+        /// Feiertag und trägt den Sonntagsgang.
+        /// </summary>
+        internal static bool Samstagsgang(int? wochenendmaske)
+            => IstVorgabe(wochenendmaske) || KalenderbedienungSchema.IstWochenendtag(wochenendmaske.Value, SAMSTAG);
 
         /// <summary>
         /// <b>Der Kalender eines Jahres</b>: 365 Tagtypen. Ein Kalender der Klimaregion mit
-        /// anderer Länge oder ein Wochentag außerhalb 0 … 6 wird benannt abgelehnt.
+        /// anderer Länge oder ein Wochentag außerhalb 0 … 6 wird benannt abgelehnt. <paramref name="wochenendmaske"/> ist die
+        /// Maske, mit der die Kennzeichen gebildet sind (<see cref="Kennzeichen"/>); sie entscheidet allein, ob ein
+        /// gekennzeichneter Samstag den Samstagsgang trägt (<see cref="Samstagsgang"/>).
         /// </summary>
-        internal static ZapfTagtyp[] Bilden(int wochentagJan1, bool[] we, IReadOnlyList<Ferienfenster> ferien)
+        internal static ZapfTagtyp[] Bilden(int wochentagJan1, bool[] we, IReadOnlyList<Ferienfenster> ferien,
+                                            int? wochenendmaske = null)
         {
             Pruefen(wochentagJan1, we);
+            bool samstagsgang = Samstagsgang(wochenendmaske);
             var kalender = new ZapfTagtyp[TAGE];
             for (int d = 1; d <= TAGE; d++)
             {
                 int wt = Wochentag(wochentagJan1, d);
                 ZapfTagtyp typ;
                 if (InFerien(ferien, d)) typ = ZapfTagtyp.Ruhetag;
-                else if (we[d - 1] && wt == SAMSTAG) typ = ZapfTagtyp.Samstag;
+                else if (we[d - 1] && wt == SAMSTAG && samstagsgang) typ = ZapfTagtyp.Samstag;
                 else if (we[d - 1]) typ = ZapfTagtyp.SonnFeiertag;
                 else typ = ZapfTagtyp.Werktag;
                 kalender[d - 1] = typ;

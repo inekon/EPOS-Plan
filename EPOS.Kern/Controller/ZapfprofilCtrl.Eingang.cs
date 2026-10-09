@@ -412,6 +412,10 @@ namespace WindowsFormsApplication1
                 if (a.FerienAktiv && !FerienGesetzt(z))
                     neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
                 if (a.Wochenendtage.HasValue) neu = neu with { Wochenendtage = a.Wochenendtage };
+                // Mit einer Maske außer der Vorgabe trennt der Kalender Wochenende und Feiertag: die Feiertage aus den
+                // Regeln des Kerns für das Bezugsjahr, bundeseinheitlich und nach dem Feiertagsland des Gebäudes.
+                if (!Zapfkalender.IstVorgabe(a.Wochenendtage))
+                    neu = neu with { Feiertage = Landesfeiertage.Jahrestage(a.Feiertagsland, Konditionierungdatenweg.Bezugsjahr(idProjekt)) };
                 double rest = a.FlaecheM2.HasValue
                     ? a.FlaecheM2.Value - (eigeneFlaechen.TryGetValue(z.IdGebaeude.Value, out double abzug) ? abzug : 0.0)
                     : 0.0;
@@ -426,12 +430,6 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ferienpaare einer Zone (<see cref="ZonenStand.Ferienbeginn"/>, <c>Tab_TwwZone.Ferienbeginn_1…4</c>).</summary>
         internal const int FERIENPAARE = 4;
 
-        /// <summary>
-        /// Kennung des Hinweises „Der Heizkalender des Gebäudes trägt mehr Ferienperioden, als eine Zone Paare
-        /// führt" (Entwurf KP2, Festlegung 10); der Satz steht unter <c>KOND_MSG_ZAPF_FERIEN_GEKUERZT</c>.
-        /// </summary>
-        internal const string HINWEIS_KALENDERFERIEN_GEKUERZT = "KALENDERFERIEN_GEKUERZT";
-
         private sealed class GebaeudeAngaben
         {
             internal string Name;
@@ -442,6 +440,9 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die Wochenmaske des Gebäudes (<c>Wochenendtage</c>, Mo = Bit 0); <c>null</c> = Vorgabe Sa + So.</summary>
             internal int? Wochenendtage;
+
+            /// <summary>Das Feiertagsland des Gebäudes (ISO-Kürzel); <c>null</c> = nur die bundeseinheitlichen Feiertage.</summary>
+            internal string Feiertagsland;
         }
 
         /// <summary>
@@ -491,6 +492,8 @@ namespace WindowsFormsApplication1
 
             if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_WOCHENENDTAGE) && r[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE] != DBNull.Value)
                 a.Wochenendtage = Convert.ToInt32(r[KalenderbedienungSchema.SPALTE_WOCHENENDTAGE], CultureInfo.InvariantCulture);
+            if (dt.Columns.Contains(KalenderbedienungSchema.SPALTE_FEIERTAGSLAND) && r[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND] != DBNull.Value)
+                a.Feiertagsland = Convert.ToString(r[KalenderbedienungSchema.SPALTE_FEIERTAGSLAND], CultureInfo.InvariantCulture);
 
             Konditionierungskalender heizkalender = Heizkalender(idGebaeude);
             if (heizkalender != null)

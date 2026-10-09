@@ -41309,12 +41309,6 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
     <value>Katalogsatz „{0}“ angelegt.</value>
   </data>
-  <data name="KOND_MSG_ZAPF_FERIEN_GEKUERZT" xml:space="preserve">
-    <value>Der Heizkalender des Gebäudes „{0}“ trägt {1} Ferienperioden; das Zapfprofil übernimmt die {2} ranghöchsten.</value>
-  </data>
-  <data name="ZPG_WARN_KALENDERFERIEN_GEKUERZT" xml:space="preserve">
-    <value>Ferienperioden gekürzt</value>
-  </data>
   <data name="KOND_MSG_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
     <value>Zeitstruktur {0}: {1} Wochenstunden = {2}, sonst {3}</value>
   </data>

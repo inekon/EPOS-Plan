@@ -41302,12 +41302,6 @@ This folder holds the standard template, the short report, the detailed template
   <data name="GEBK_MSG_SPEICHERN_UNTER_ANGELEGT" xml:space="preserve">
     <value>Catalogue record “{0}” created.</value>
   </data>
-  <data name="KOND_MSG_ZAPF_FERIEN_GEKUERZT" xml:space="preserve">
-    <value>The heating calendar of building “{0}” has {1} holiday periods; the draw-off profile takes the {2} highest-ranked.</value>
-  </data>
-  <data name="ZPG_WARN_KALENDERFERIEN_GEKUERZT" xml:space="preserve">
-    <value>Holiday periods truncated</value>
-  </data>
   <data name="KOND_MSG_WERKZEUG_ZEITSTRUKTUR" xml:space="preserve">
     <value>Time structure {0}: {1} weekly hours = {2}, otherwise {3}</value>
   </data>

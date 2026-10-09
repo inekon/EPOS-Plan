@@ -142,7 +142,7 @@ namespace WindowsFormsApplication1
                     w.Struktur = Formvektor.Bilden(z, w.Art, satz, ps, prot, zapfHinweise);
                     w.Kaltwasserfaktor = Kaltwassergang.Monatsfaktoren(w.Temperaturen, w.Name);
                     w.Kalender = Zapfkalender.Bilden(e.WochentagJan1, Zapfkalender.KennzeichenDerZone(e.WochentagJan1, e.We, z),
-                                                     Zapfkalender.FensterDerZone(z));
+                                                     Zapfkalender.FensterDerZone(z), z.Wochenendtage);
                     w.Messwert = Mengengeruest.MesswertAus(z, w.Temperaturen, prot);
                     w.InZ1 = z.Zirkulation && w.Art.Grenze == ZapfBilanzgrenze.Zapfstelle;
                     w.ZapfungKwh = w.Menge.JahresenergieKwh;
