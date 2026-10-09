@@ -63449,6 +63449,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar: eingegebener, aus der Übergabe berechneter und maßgebender Abschaltpunkt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung des Abschaltpunkts ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der gewählten Wärmepumpe — Anzeige aus der Geräteliste; umbenannt wird in der Wärmepumpen-Verwaltung. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_ANLAGE_ERL {
@@ -63472,6 +63490,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_BAUJAHR_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar: die weichen Sperren und Hinweise der Gruppe; Speichern bleibt möglich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BEFUNDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BEFUNDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise zu Bivalenz und Übergabe ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BEFUNDE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BEFUNDE_NAME", resourceCulture);
             }
         }
         
@@ -63530,6 +63566,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die hydraulische Einbindung der Wärmepumpe: DIREKT (ohne Puffer), PUFFER oder WEICHE; leer = nicht gewählt, dann ruht die Übergabegrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_EINBINDUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_EINBINDUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisevergütung für PV-Strom. Sie gilt für die ganze Anwendung: Sie bewertet den eingespeisten Strom UND stellt den Verkaufspreis der Speicherwelt. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_EINSP_ERL {
@@ -63575,6 +63620,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar: Übergabegrenze beim Höchstvorlauf, Bivalenzpunkte und Anteil an der Kesselleistung, wie im Dialog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_HERLEITUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_HERLEITUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung Übergabe und Bivalenz ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_HERLEITUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_HERLEITUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 und weniger als 100, leer heißt „kein Zuschlag“. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_HILFSSTROM_ERL {
@@ -63589,6 +63652,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_JAHRE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_JAHRE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kältemittel des Geräts (Code wie R410A, R290, R744); die Wahl füllt nur ein leeres Feld „Höchster Vorlauf“ und wird am Gerät gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KAELTEMITTEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KAELTEMITTEL_ERL", resourceCulture);
             }
         }
         
@@ -63661,6 +63733,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_KUEHL_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_KUEHL_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar: höchster Vorlauf, Spreizungen, Mindestvolumenstrom und höchster Rücklauf je mit Herkunft; gepflegt werden sie im Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_LESEWERTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_LESEWERTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätegrenzen der Übergabe ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_LESEWERTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_LESEWERTE_NAME", resourceCulture);
             }
         }
         
@@ -63940,6 +64030,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_VORLAUF_MAX_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_VORLAUF_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmbetrieb, Kessel in Reihe: Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf; nur bei bivalent-parallel und -teilparallel wählbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_VORWAERMBETRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_VORWAERMBETRIEB_ERL", resourceCulture);
             }
         }
         
@@ -125789,6 +125888,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmbetrieb (Kessel in Reihe) ähnelt.
+        /// </summary>
+        public static string WPA_CHK_VORWAERMBETRIEB {
+            get {
+                return ResourceManager.GetString("WPA_CHK_VORWAERMBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
         /// </summary>
         public static string WPA_EINHEIT_STUNDEN {
@@ -125843,6 +125951,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenz und Übergabe ähnelt.
+        /// </summary>
+        public static string WPA_GRP_BIVALENZ_UEBERGABE {
+            get {
+                return ResourceManager.GetString("WPA_GRP_BIVALENZ_UEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Kenndaten ähnelt.
         /// </summary>
         public static string WPA_GRP_KENNDATEN {
@@ -125866,6 +125983,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_GRP_SPERRZEITEN {
             get {
                 return ResourceManager.GetString("WPA_GRP_SPERRZEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeleitet ähnelt.
+        /// </summary>
+        public static string WPA_HERKUNFT_ABGELEITET {
+            get {
+                return ResourceManager.GetString("WPA_HERKUNFT_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string WPA_HERKUNFT_KATALOG {
+            get {
+                return ResourceManager.GetString("WPA_HERKUNFT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur R744 ähnelt.
+        /// </summary>
+        public static string WPA_HERKUNFT_NUR_R744 {
+            get {
+                return ResourceManager.GetString("WPA_HERKUNFT_NUR_R744", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string WPA_HERKUNFT_VORGABE {
+            get {
+                return ResourceManager.GetString("WPA_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe nach Kältemittel ähnelt.
+        /// </summary>
+        public static string WPA_HERKUNFT_VORGABE_KAELTEMITTEL {
+            get {
+                return ResourceManager.GetString("WPA_HERKUNFT_VORGABE_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingegeben {0} · aus der Übergabe berechnet {1} · maßgebend {2} ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_ABSCHALTPUNKT {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_ABSCHALTPUNKT", resourceCulture);
             }
         }
         
@@ -125951,6 +126122,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bei R744: Bezugsrücklauf {0} °C · Abwertung {1} %/K · Grenze {2} °C — Leistung und COP sinken je K über {0} °C um {1} % ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_R744 {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_R744", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeleitet: {0} °C = {1} − {2} (Höchstvorlauf − Mindestspreizung) · ein kleinerer Katalogwert gilt vor · darüber liefert die Wärmepumpe in der Stunde nichts ähnelt.
+        /// </summary>
+        public static string WPA_HERLEITUNG_RUECKLAUF_ABGELEITET {
+            get {
+                return ResourceManager.GetString("WPA_HERLEITUNG_RUECKLAUF_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übergabe bei Höchstvorlauf {0} °C: {1} kW von {2} kW Heizlast ({3} %), Rücklauf {4} °C, Spreizung {5} K ähnelt.
         /// </summary>
         public static string WPA_HERLEITUNG_UEBERGABE {
@@ -125987,11 +126176,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer: Die Übergabe rechnet mit der Entladeseite als Näherung. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_EINBINDUNG_PUFFER {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_EINBINDUNG_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung — gilt für alle Wärmepumpen des Projekts und wird sofort gespeichert. ähnelt.
         /// </summary>
         public static string WPA_HINWEIS_EXTRAPOLATION {
             get {
                 return ResourceManager.GetString("WPA_HINWEIS_EXTRAPOLATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätegrenzen werden im Katalog gepflegt; leere Felder rechnen mit der Vorgabe. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_GERAETEGRENZEN {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_GERAETEGRENZEN", resourceCulture);
             }
         }
         
@@ -126032,6 +126239,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_VORWAERMBETRIEB {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_VORWAERMBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmbetrieb ist bei alternativ nicht wählbar. ähnelt.
+        /// </summary>
+        public static string WPA_HINWEIS_VORWAERMBETRIEB_ALTERNATIV {
+            get {
+                return ResourceManager.GetString("WPA_HINWEIS_VORWAERMBETRIEB_ALTERNATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeitprogramm und höchster Vorlauf wirken mit der Anlagenkopplung auf die gekoppelten Gebäude des Projekts. ähnelt.
         /// </summary>
         public static string WPA_HRL_BETRIEBSZEITEN_WIRKUNG {
@@ -126050,7 +126275,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schnellwahl füllt nur ein leeres Feld „Höchster Vorlauf“; Herstellerangaben zur Einsatzgrenze haben Vorrang. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schnellwahl speichert das Kältemittel und füllt nur leere Felder; Herstellerangaben zur Einsatzgrenze haben Vorrang. ähnelt.
         /// </summary>
         public static string WPA_HRL_SCHNELLWAHL {
             get {
@@ -126158,11 +126383,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einbindung ähnelt.
+        /// </summary>
+        public static string WPA_LBL_EINBINDUNG {
+            get {
+                return ResourceManager.GetString("WPA_LBL_EINBINDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Vorlauf ähnelt.
+        /// </summary>
+        public static string WPA_LBL_HOECHSTVORLAUF_LESEN {
+            get {
+                return ResourceManager.GetString("WPA_LBL_HOECHSTVORLAUF_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältemittel ähnelt.
         /// </summary>
         public static string WPA_LBL_KAELTEMITTEL {
             get {
                 return ResourceManager.GetString("WPA_LBL_KAELTEMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestvolumenstrom ähnelt.
+        /// </summary>
+        public static string WPA_LBL_MINDESTVOLUMENSTROM {
+            get {
+                return ResourceManager.GetString("WPA_LBL_MINDESTVOLUMENSTROM", resourceCulture);
             }
         }
         
@@ -126181,6 +126433,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_RUECKLAUF {
             get {
                 return ResourceManager.GetString("WPA_LBL_RUECKLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchster Rücklauf ähnelt.
+        /// </summary>
+        public static string WPA_LBL_RUECKLAUF_MAX {
+            get {
+                return ResourceManager.GetString("WPA_LBL_RUECKLAUF_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauf R744: Bezug / Abwertung / Grenze ähnelt.
+        /// </summary>
+        public static string WPA_LBL_RUECKLAUF_R744 {
+            get {
+                return ResourceManager.GetString("WPA_LBL_RUECKLAUF_R744", resourceCulture);
             }
         }
         
@@ -126235,6 +126505,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_SPERR_VORLAGE {
             get {
                 return ResourceManager.GetString("WPA_LBL_SPERR_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung Auslegung ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPREIZUNG_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPREIZUNG_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPREIZUNG_MAX {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPREIZUNG_MAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die min. ähnelt.
+        /// </summary>
+        public static string WPA_LBL_SPREIZUNG_MIN {
+            get {
+                return ResourceManager.GetString("WPA_LBL_SPREIZUNG_MIN", resourceCulture);
             }
         }
         
@@ -126343,6 +126640,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_MSG_WAERMEPUMPE {
             get {
                 return ResourceManager.GetString("WPA_MSG_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die direkt (ohne Puffer) ähnelt.
+        /// </summary>
+        public static string WPA_OPT_EINBINDUNG_DIREKT {
+            get {
+                return ResourceManager.GetString("WPA_OPT_EINBINDUNG_DIREKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gewählt ähnelt.
+        /// </summary>
+        public static string WPA_OPT_EINBINDUNG_LEER {
+            get {
+                return ResourceManager.GetString("WPA_OPT_EINBINDUNG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer ähnelt.
+        /// </summary>
+        public static string WPA_OPT_EINBINDUNG_PUFFER {
+            get {
+                return ResourceManager.GetString("WPA_OPT_EINBINDUNG_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weiche ähnelt.
+        /// </summary>
+        public static string WPA_OPT_EINBINDUNG_WEICHE {
+            get {
+                return ResourceManager.GetString("WPA_OPT_EINBINDUNG_WEICHE", resourceCulture);
             }
         }
         
@@ -126523,6 +126856,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_UEB_TITEL {
             get {
                 return ResourceManager.GetString("WPA_UEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe erreicht bei −7 °C {0} % der Kesselleistung; § 43 GModG verlangt mindestens {1} %. ähnelt.
+        /// </summary>
+        public static string WPA_WARN_GMODG {
+            get {
+                return ResourceManager.GetString("WPA_WARN_GMODG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der höchste Vorlauf ({0} °C) liegt unter dem Auslegungsvorlauf der Flächenheizung ({1} °C). ähnelt.
+        /// </summary>
+        public static string WPA_WARN_HOECHSTVORLAUF {
+            get {
+                return ResourceManager.GetString("WPA_WARN_HOECHSTVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe steht in der Kaskade hinter dem Kessel (Platz {0} nach Platz {1}) — im Vorwärmbetrieb gehört sie davor. ähnelt.
+        /// </summary>
+        public static string WPA_WARN_KASKADE {
+            get {
+                return ResourceManager.GetString("WPA_WARN_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklaufgrenze ({0} °C) liegt unter dem Auslegungsrücklauf aller Zonen ({1} °C). Die Wärmepumpe liefert bei diesem Rücklauf nie. ähnelt.
+        /// </summary>
+        public static string WPA_WARN_RUECKLAUF_NIE {
+            get {
+                return ResourceManager.GetString("WPA_WARN_RUECKLAUF_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mindestspreizung ({0} K) ist nicht kleiner als die Höchstspreizung ({1} K) — die Wärmepumpe findet keinen Betriebspunkt. ähnelt.
+        /// </summary>
+        public static string WPA_WARN_SPREIZUNG {
+            get {
+                return ResourceManager.GetString("WPA_WARN_SPREIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizflächen begrenzen die Wärmepumpe stärker als ihr Kennfeld: Unter {0} reicht der Höchstvorlauf nicht mehr für die Heizlast. ähnelt.
+        /// </summary>
+        public static string WPA_WARN_UEBERGABE_BEGRENZT {
+            get {
+                return ResourceManager.GetString("WPA_WARN_UEBERGABE_BEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade — niemand hebt auf den Sollvorlauf. ähnelt.
+        /// </summary>
+        public static string WPA_WARN_VORWAERM_OHNE_KESSEL {
+            get {
+                return ResourceManager.GetString("WPA_WARN_VORWAERM_OHNE_KESSEL", resourceCulture);
             }
         }
         
