@@ -27,7 +27,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_haengt_an_der_Vorgaengerklasse_und_die_Paketanhebung_fuehrt_DDL()
         {
-            Assert.Equal(KuehlkurveSchema.SCHRITT + 1, UebergabegrenzeSchema.SCHRITT);
+            Assert.Equal(KaeltemaschinenTypkennfelderSchema.SCHRITT + 1, UebergabegrenzeSchema.SCHRITT);
             Assert.Equal(204, UebergabegrenzeSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= UebergabegrenzeSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == UebergabegrenzeSchema.SCHRITT);
