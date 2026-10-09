@@ -75,7 +75,7 @@ UB‑Q1 bis UB‑Q11 (08.10.2026, nach Empfehlung, UB‑Q3 b).
   (Auslegungspaar des Moduls, 8 von 15 Zeilen belegt) — eine eigene, vom Rücklaufgrenzfeld getrennte Größe:
   höchster Rücklauf ist beim BHKW anlagenbedingt eine Abschaltung, die Auslegungsrücklauftemperatur muss nur
   darunter liegen, ist aber eine andere Vorgabe. `Ruecklauf_Max` bleibt der Name — gleicher Name und gleiche
-  Bedeutung „anlagenbedingte Abschaltgrenze des Motorkühlkreises" wie an der Wärmepumpe (Stunde mit Rücklauf ≥
+  Bedeutung „anlagenbedingte Abschaltgrenze des Motorkühlkreises" wie an der Wärmepumpe (Stunde mit Rücklauf >
   Grenze: das BHKW liefert nichts, Grund `RUECKLAUF_MAX`); Abgrenzung zum Auslegungspaar `Vorlauf`/`Ruecklauf` über
   die Dialogbeschriftung „Höchster Rücklauf (Abschaltgrenze)" gegenüber „Rücklauf (Auslegung)", die Prüfregel
   Auslegungsrücklauf `Ruecklauf` unter der Abschaltgrenze `Ruecklauf_Max` (sonst Hinweis, kein Abbruch) und die
@@ -170,7 +170,7 @@ UB‑Q1 bis UB‑Q11 (08.10.2026, nach Empfehlung, UB‑Q3 b).
 
 **4.1 Ein Schritt `UebergabegrenzeSchema`** in `EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`, Bauform
 wie `ErzeugerTeillastSchema` und `AnlagenfahrplanSchema`: Namen nur als Argument, eine Liste `SPALTEN`,
-`Vollstaendig()`, wiederholbar, kein DML. Nummer: **die nächste freie, zuletzt 202** — vor dem Bau in der Zeile
+`Vollstaendig()`, wiederholbar, kein DML. Nummer: **die nächste freie, zuletzt 202** (gebaut als Schritt 205) — vor dem Bau in der Zeile
 „Schemaschritt angemeldet" der [Statusdatei](Status_iOS_Migration.md) anmelden und allein diese Zeile sofort pushen;
 `SCHRITT = <Vorgängerklasse>.SCHRITT + 1` (heute `Ak3KSchema`), [ADR‑001](ADR-001_Schema-Ausrollung.md). Vier
 Leser wie im Bestand: `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`,
@@ -476,3 +476,49 @@ zum Zahlenbeispiel.
 **Pflichten jeder Welle.** Schemaschritt vor dem Bau anmelden (E2‑a); `AGENT_LAEUFT` nur bei Arbeit im
 Hauptbaum; Commits sofort mit genauen Pfaden; kein Push und kein CI-Lauf durch Agenten; Bericht mit Zahlen, ohne
 Dateiabzüge.
+
+## 11 Umsetzung — wie gebaut
+
+Die Etappen UB‑E1 bis UB‑E5 sind gebaut; der Hauptteil bleibt der Plan (einzelne Korrekturen an Stellen, die der
+Umsetzung widersprachen). Dieselbe Liste steht im [Fachkonzept](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md), Abschnitt 10a.
+
+**Stand je Etappe.**
+
+| Etappe | Statuszeile | Protokoll | gebaut |
+|---|---|---|---|
+| UB‑E1 | #837 | [UB-E1](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E1_Uebergabegrenze.md) | Kernklassen unter `EPOS.Kern/Allgemein/Simulation/Bivalenz/` (`Bivalenzvorgaben`, `Uebergabegrenze`, `Bivalenzrechner`, `Bivalenzherleitung`), Herleitungszeile und Schnellwahl des Höchstvorlaufs; ohne Rechenwirkung |
+| UB‑E2 | #851 | [UB-E2](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E2_Betriebsbereiche.md) | Schemaschritt **205** `UebergabegrenzeSchema` (`EPOS.Kern/Allgemein/Update/UebergabegrenzeSchema.cs`), Betriebsbereiche B0–B4 und Vorwärmbetrieb im Rechenweg, Gruppe „Bivalenz und Übergabe", Referenzprojekt 1060, Basis R45 |
+| UB‑E3 | #852 | [UB-E3](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E3_Geraetegrenzen.md) | Gerätegrenzen, Hydraulik- und Rücklaufgrenze, BHKW-Rücklaufgrenze, Stammblätter mit Kältemittel-Schnellwahl, Basis **R46** `2026-10-09_R46_Geraetegrenzen` |
+| UB‑E4 | #853 | [UB-E4](../Protokolle/Gebaeudesimulation/2026-10-09_UB-E4_Bivalenzdiagramm_Bericht.md) | Bivalenzdiagramm im Diagramm-Renderer, Kachelzeile im Wärmepumpen-Reiter, Kennzahlen `wp.bivalenz.*`, Bild und Tafel im Bericht, CSV- und KI-Felder, Vorlagen auf Katalogfassung 17; ohne Rechenwirkung (Basis R46 bleibt) |
+| UB‑E5 | — | — | Dokumentation: Wiki, Logbuch, dieser Abschnitt, Ablage der Konzepte unter `ueberholt/` |
+
+Referenzprojekt **1060** (Kopie von 1056, Einbindung DIREKT, Vorwärmbetrieb mit Kessel in Reihe) steht in der
+CI-Auswahl und wird von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` gehalten; Einfrierregel
+„gesäte Übergabegrenzdaten" in [`CLAUDE.md`](../../CLAUDE.md). Gültige Basis nach der Umsetzung: **R46**.
+
+**Abweichungen und Festlegungen der Umsetzung** (aus den Abschnitten „Entscheidlage" und „Festlegungen" der Protokolle; Abschnittsnummern ohne Zusatz in der Spalte „Konzept" sind die des Fachkonzepts):
+
+| Konzept | gebaut | Grund |
+|---|---|---|
+| θ_biv,2 „höchstens der eingegebene Abschaltpunkt" (4.5) | eingegebener Abschaltpunkt als Deckel, maßgebend der wärmere Wert (`Bivalenzrechner.Massgebend`, Regel UB‑Q4 a); der berechnete θ_biv,2 bleibt unverändert und wird daneben ausgewiesen | Entscheid der Orchestrierung zu E1-a; Satz in 4.5 geglättet |
+| Zahlenbeispiel θ_biv,2 = −3,6 °C (4.5, 6.2), Tafel 8.1 −3,55 °C | Rechenweg −3,549 °C, Anzeige auf 0,1 K gerundet −3,5 °C; Probe mit Toleranz 0,05 K | Rundung der Darstellung; Papier auf −3,5 °C gebracht, das Mockup nennt weiter −3,6 °C |
+| Weiche Sperre „Die Wärmepumpe liefert bei diesem Rücklauf nie": Rücklaufgrenze unter dem Auslegungsrücklauf aller Zonen (6.2) | Vergleich mit dem Rücklauf an der Übergabegrenze θ_R,UE | Entscheid der Orchestrierung zu E2 |
+| Bereichswert ersetzt die Kennfeldkapazität in der Kaskadenstunde (4.5) | Die Bereichsregel wirkt in der Bedarfsphase auf das ganze Modul; Ladephasen bleiben unberührt | Festlegung E2-b |
+| Anteil nach § 43 GModG „Wärmepumpe bei −7 °C … der Kesselleistung" (6.2) | Hybrid-Anteil = Kennfeldleistung bei −7 °C bezogen auf die Kesselleistung (Teillastpunkt A), nicht die übergabebegrenzte Leistung | Entscheid der Orchestrierung zu E1-a |
+| Hybrid-Mindestanteil 30 % parallel, 40 % alternativ (6.3) | teilparallel ebenfalls 30 % (wie parallel, 2.10) | Entscheid der Orchestrierung zu E1-a |
+| Vorgaben je Kältemittelklasse über `Kaeltemittel` (6.3, U‑2) | Kältemittel ohne eigene Tafelwerte (R134a, R407C, R454C, R455A, R1233zd(E)) rechnen mit der allgemeinen Vorgabe; die Schnellwahl füllt nur bei R410A, R32, R290, R1234ze(E), R744 | keine eigenen Werte ohne Quelle (Entscheid zu E1-a, Festlegung E3-b) |
+| BHKW-Rücklaufgrenze: Stunde mit Rücklauf ≥ Grenze (Umsetzungskonzept U‑3) | Abschaltung bei Rücklauf größer als die Grenze, wie an der Wärmepumpe | Entscheid der Orchestrierung zu E3; U‑3 angeglichen |
+| Mindestvolumenstrom Vorgabe 60 % (6.3) | Vorgabe 60 % bleibt auch für Referenzprojekt 1060 | Entscheid der Orchestrierung zu E3 (Festlegung E3-c) |
+| Hydraulik: Einbindung DIREKT mit Überströmventil (4.4) | DIREKT heißt immer mit Überströmventil, kein eigenes Feld; Weiche ohne Nennleistung rechnet wie DIREKT; Puffer-Entladeseite benannt nicht gerechnet | Festlegung E3-a |
+| Bild, Tafel und Kacheln in Bericht und Vorlagen, Word- und Excel-Bausteine (7.2, Umsetzungskonzept 5.4) | Bild `stand.bild.wp_bivalenz` nur in Word, Tafel `stand.tabelle.bivalenz` in Word und Excel; Bild ohne Übergabedaten mit Platzhalter statt Fehler | Statuszeile #853, Entscheid der Orchestrierung zu E4 |
+| Prüfhinweis Mindestrücklauf für NT- oder Biomassekessel (7.3) | Niedertemperaturkessel nach Bauart oder Brennstoff; Elektrokessel ausgenommen | Festlegung E4-b |
+| Prüfhinweis Anfahrgrenze: Rücklauf unter 15 °C bei Außentemperatur unter 10 °C (7.3) | Außenluft-Wärmepumpe mit Auslegungsraumtemperatur unter 15 °C | Festlegung E4-b |
+| Kachelzeile „Betriebsbereiche" im Reiter (7.1) | ohne Vorlagenfeld-Markierung, wie die übrigen Wertzeilen des Reiters | Festlegung E4-b |
+| Referenzprojekt 1060 als Kopie von 1056 mit Kessel in Reihe (5.3) | Brennwertkessel statt des Elektrokessels, damit die Rücklaufstufe „Vorwärmer" zählt | Festlegung E2-d |
+| Schemaschritt „nächste freie Nummer" (5.2; Umsetzungskonzept 4.1: zuletzt 202) | Schritt 205 `UebergabegrenzeSchema` (angemeldet als 203, gegen origin umgehängt) | 203 und 204 vergaben parallele Wellen (KM2, ZK) |
+| Basen R44 (E2) und R45 (E3) (Umsetzungskonzept 4.4, 5.2, 5.3) | Basis R45 `2026-10-09_R45_Uebergabegrenze` mit E2, R46 `2026-10-09_R46_Geraetegrenzen` mit E3 | R44 war mit der Kühlkurve vergeben |
+
+**Offen nach der Umsetzung** (aus den Protokollen): Komfortstunden von 1060 (993 h) gegen Kessel 28 kW bei Heizlast
+38,7 kW einordnen; `BHKWCtrl.Update` schreibt `Ruecklauf_Max` am Projekt-BHKW nicht; kein Referenzprojekt außer
+1060 hat eine gesetzte `Einbindung` — Bild und Tafel bleiben in den übrigen Referenzberichten leer; Quelltemperatur
+des Kennfelds bei Sole-Wärmepumpen ist eine Näherung (Außentemperatur).
