@@ -162,31 +162,31 @@
         </KatalogFussRechts>
 
         <Satz>
+        @* DIE KNOPFZEILE DER SATZFLAECHE: beim Projektsatz die Kostenknoepfe (4.2, nur
+           Projektsatz), rechts der Weg in die Wikirubriken Grundlagen und Berechnung.
+           „Bearbeiten…" steht seit Stufe 2 in den Kopf- bzw. Fussleisten der Bereiche. *@
+        <div class="epos-leiste">
+            @if (!Wizard && _projektZeile is not null)
+            {
+                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                     EnergieText="@KostenEnergieText" />
+            }
+            <span class="epos-leiste-fueller"></span>
+            <span class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_Heizkessel.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                <InfoKnopf Schluessel="Form_Heizkessel.Berechnung"
+                           StandardKurztext="Berechnungsweg Heizkessel" MitAssistent="false" />
+            </span>
+        </div>
+
         @if (_projektZeile is null && _katalogZeile is null)
         {
             <p class="epos-zweispalten-satzleer">@Resource.AUSWAHL_SATZ_LEER</p>
         }
         else
         {
-            @* DIE KNOPFZEILE DER SATZFLAECHE: beim Projektsatz die Kostenknoepfe (4.2, nur
-               Projektsatz), rechts der Weg in die Wikirubriken Grundlagen und Berechnung.
-               „Bearbeiten…" steht seit Stufe 2 in den Kopf- bzw. Fussleisten der Bereiche. *@
-            <div class="epos-leiste">
-                @if (!Wizard && _projektZeile is not null)
-                {
-                    <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                                         EnergieText="@KostenEnergieText" />
-                }
-                <span class="epos-leiste-fueller"></span>
-                <span class="epos-berechnungshilfe">
-                    <InfoKnopf Schluessel="Form_Heizkessel.Grundlagen"
-                               StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
-                    <InfoKnopf Schluessel="Form_Heizkessel.Berechnung"
-                               StandardKurztext="Berechnungsweg Heizkessel" MitAssistent="false" />
-                </span>
-            </div>
-
             <Formularraster>
                 <KindInhalt>
                 <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />

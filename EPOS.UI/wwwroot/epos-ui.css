@@ -2598,6 +2598,12 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     box-shadow: calc(-1 * var(--epos-karte-rand)) 0 0 var(--epos-karte-flaeche),
                 var(--epos-karte-rand) 0 0 var(--epos-karte-flaeche);
 }
+/* In der Katalogauswahl rollt der Dialogkoerper nicht (Konzept 4.1); das Banner steht
+   schon unter dem Kopf. Die geschaetzte Kopfhoehe darf es dort nicht verschieben - der
+   Heizkessel traegt seine Kontextzeile im Kopf, der Kopf ist niedriger als die Schaetzung. */
+#app:has(> .epos-fenstermarke) > .epos-dialog:has(> .epos-zweispalten) > .epos-warnbanner {
+    top: 0;
+}
 
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner > .epos-warnbanner-schliessen {
     display: inline-flex;
