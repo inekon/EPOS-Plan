@@ -18,6 +18,21 @@ namespace WindowsFormsApplication1
         public string Bezeichner = "";
     }
 
+    /// <summary>Ausgang von <see cref="PvGanglinieStammCtrl.NennleistungSetzen"/>.</summary>
+    internal enum PvNennleistungSchreibergebnis
+    {
+        /// <summary>Der Katalogsatz trägt den neuen Wert.</summary>
+        Geschrieben,
+        /// <summary>Auslieferungssatz (<c>ReadOnly = 1</c>) — nicht geschrieben.</summary>
+        Schreibgeschuetzt,
+        /// <summary>Der Katalog kennt den Namen nicht.</summary>
+        Unbekannt,
+        /// <summary>Der Wert ist nicht größer als 0 oder nicht endlich.</summary>
+        Ungueltig,
+        /// <summary>Die Datenbank hat den Wert nicht angenommen.</summary>
+        Fehler
+    }
+
     /// <summary>
     /// <b>Katalog, Projektkopie und Zuordnung der PV-Ganglinie</b> (PVG, Schemaschritt 206;
     /// Tabellen in <see cref="PvGanglinieSchema"/>). Muster: <see cref="SolarganglinieStammCtrl"/> —
@@ -107,6 +122,58 @@ namespace WindowsFormsApplication1
                     Meldung.Zeigen(MyResource.Resource.PVG_MSG_SCHREIBFEHLER + " " + ex.Message);
                     return false;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Die Spitze der Reihe im Raster der Datei [kW] (<c>Tab_PvGanglinie_STAMM.Spitze_kW</c>, beim Import
+        /// gerechnet); <c>null</c>, wenn der Katalog den Namen nicht kennt.
+        /// </summary>
+        internal static double? SpitzeKw(string bezeichner)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Spitze_kW FROM Tab_PvGanglinie_STAMM WHERE Bezeichner = ?",
+                new DbParam("@bez", bezeichner ?? ""));
+            return v != null && v != DBNull.Value ? Convert.ToDouble(v, CultureInfo.InvariantCulture) : (double?)null;
+        }
+
+        /// <summary>
+        /// Der Prüfhinweis zu einer Nennleistung [kWp] für einen Katalogsatz — derselbe Satz wie beim Import
+        /// (<see cref="PvGanglinieImportCtrl.Pruefhinweis"/>: Spitze über Nennleistung × 1,1); "" ohne.
+        /// </summary>
+        internal static string Pruefhinweis(string bezeichner, double? nennleistungKwp)
+        {
+            double? spitze = SpitzeKw(bezeichner);
+            return spitze.HasValue ? PvGanglinieImportCtrl.Pruefhinweis(spitze.Value, nennleistungKwp) : "";
+        }
+
+        /// <summary>
+        /// <b>Die Nennleistung eines Katalogsatzes nachträglich setzen</b> (<c>Tab_PvGanglinie_STAMM.Nennleistung_kWp</c>):
+        /// <c>null</c> = nicht gepflegt (der Lauf nimmt dann die Spitze der Reihe), sonst ein Wert über 0. Ein
+        /// Auslieferungssatz (<c>ReadOnly = 1</c>) bleibt gesperrt. Geschrieben wird nur der Katalogsatz —
+        /// Projektkopien (<c>Tab_PvGanglinie</c>) behalten ihren Wert, wie bei jeder Katalogänderung
+        /// (<see cref="ZuordnungenSchreiben"/> findet die vorhandene Kopie über den Bezeichner). Meldet nicht
+        /// selbst; den Text wählt der Aufrufer.
+        /// </summary>
+        internal static PvNennleistungSchreibergebnis NennleistungSetzen(string bezeichner, double? nennleistungKwp)
+        {
+            if (nennleistungKwp.HasValue && (double.IsNaN(nennleistungKwp.Value) || double.IsInfinity(nennleistungKwp.Value)
+                                             || nennleistungKwp.Value <= 0))
+                return PvNennleistungSchreibergebnis.Ungueltig;
+            int id = StammId(bezeichner);
+            if (id <= 0) return PvNennleistungSchreibergebnis.Unbekannt;
+            if (IstSchreibgeschuetzt(bezeichner)) return PvNennleistungSchreibergebnis.Schreibgeschuetzt;
+            try
+            {
+                int n = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_PvGanglinie_STAMM SET Nennleistung_kWp = ? WHERE ID = ? AND ReadOnly = 0",
+                    new DbParam("@nenn", DbParamTyp.Double) { Wert = nennleistungKwp.HasValue ? (object)nennleistungKwp.Value : DBNull.Value },
+                    new DbParam("@id", DbParamTyp.Integer) { Wert = id });
+                return n == 1 ? PvNennleistungSchreibergebnis.Geschrieben : PvNennleistungSchreibergebnis.Fehler;
+            }
+            catch (Exception)
+            {
+                return PvNennleistungSchreibergebnis.Fehler;
             }
         }
 
