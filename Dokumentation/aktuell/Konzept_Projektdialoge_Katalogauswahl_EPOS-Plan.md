@@ -257,6 +257,15 @@ Fenster verkleinert, Detailzeile auf) liegt ein Rollbereich in einem anderen; da
 über die Spaltenregel der `Katalogliste`; die Kopfleisten dürfen nicht umbrechen — das hält die neue
 Probe (Abschnitt 8).
 
+**Präzisiert in Stufe 2 (Heizkessel, gemessen 09.10.2026, Rollbereichprobe):** Die Suchzeile der
+Katalogliste steht in der Kopfleiste des Katalogs (im Baustein, für alle Wirte), die Kontextzeile im
+Dialogkopf (Heizkessel; übrige Wirte mit Stufe 3 und 4). Die Katalogliste des Heizkessels führt den
+Kästchenmodus mit 46 px je Zeile; der Wirt gibt dem Baustein dieses Zeilenmaß (`KatalogZeile`), und der
+Baustein hält dann Kopf und **zwei** Zeilen (53 + 2 × 46 + 2 = 147 px) auch unter 600 px Bausteinhöhe —
+nicht eine Zeile als Untergrenze. Vorgabe der Trennlinie: Katalogliste 259 / 179 / 159 px in
+1 280 × 800 / 1 280 × 720 / 1 024 × 700 (vorher 178 / 108 / 108); Trennlinie unten und Detailzeile auf
+klemmen auf 147 px. Projektliste unverändert: Zeile 53 px, Untergrenze 85 px, Vorgabe 138 px.
+
 ### 4.9 Zuschnitt je Dialog (Randnotiz)
 
 | Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |
@@ -397,13 +406,14 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 | 4 | **Speicherort der Trennlinienhöhe** | `Dienste.Einstellungen` mit `LiesZahl`/`SchreibZahl`, ein Schlüssel je Dialog (`Katalogauswahl.Trenner.<Dialog>`), Wert in Pixeln der Projektliste, je Anwender, nicht je Projekt; ohne Ablage die Vorgabe. Kein Schemaschritt — die Höhe ist Bedienzustand, keine Projektdatum. **Umgesetzt in Stufe 1.** |
 | 5 | **Rückweg bei Kindzeilen** — Kennlinien (`Tab_Kenndaten`, `Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), Zeitreihen (`…Daten`), Typsätze der Bedarfsprofile, PV-Stränge, Gebäudezonen | Technische Kindzeilen gehen **vollständig** mit: bei „neu“ als Kopie am neuen Satz, bei „überschreiben“ als Ersatz der Kindzeilen des Ursprungs in derselben Transaktion. Anlagenbezogene Kindzeilen bleiben im Projekt: PV-Stränge und Wechselrichterzuordnung (`Z_AnlageStrang`), Senken; Gebäudezonen und Bauteile wie heute. Die Rückfrage nennt, was im Projekt bleibt. |
 | 6 | **Katalogpaket** — ein ungesperrter Satz aus der Auslieferung (`Katalog_Schluessel` gesetzt) wird überschrieben | Schlüssel stehen lassen, die Prüfsumme nicht nachführen, damit die Katalogaktualisierung den Satz als vom Anwender geändert erkennt; beim Bau gegen die Regeln des Katalogpakets prüfen. |
+| 7 | **Überlagerung „Simulation…" des Gebäudes** rollt als Ganzes um zwei Listen (Befund der Rollbereichprobe, außerhalb des Bausteins) | Stufe 4 (Überlagerungen nach KA‑E‑11). |
 
 ## 8 Stufenplan
 
 | Stufe | Inhalt | Nachweis |
 |---|---|---|
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile folgt) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
-| **2 Heizkessel** | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
+| **2 Heizkessel** (Teil a umgesetzt 09.10.2026; Rückweg und Schemaschritt folgen) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
 | **3 Erzeuger** | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
 | **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
