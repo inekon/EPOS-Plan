@@ -98,6 +98,24 @@ namespace WindowsFormsApplication1
             ReadAll("ID_Projekt = " + idProjekt);
         }
 
+        /// <summary>
+        /// UB-E3 (UB-Q9, U-3): die Rücklaufgrenze <c>Ruecklauf_Max</c> der Projektkopie <c>Tab_BHKW</c> [°C]; <c>null</c> =
+        /// leer, kein Modul oder Spalte fehlt (keine Grenze).
+        /// </summary>
+        internal static double? RuecklaufMaxLesen(int id)
+        {
+            if (id <= 0 || !DataRepository.SpalteVorhanden(UebergabegrenzeSchema.TAB_BHKW, UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX))
+                return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX + " FROM " + UebergabegrenzeSchema.TAB_BHKW + " WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            object w = dt.Rows[0][0];
+            if (w == null || w == DBNull.Value) return null;
+            double d = Convert.ToDouble(w, System.Globalization.CultureInfo.InvariantCulture);
+            return double.IsNaN(d) ? (double?)null : d;
+        }
+
         public void ReadSingle(int ID)
         {
             string sql = "SELECT * FROM Tab_BHKW WHERE ID = ?";
