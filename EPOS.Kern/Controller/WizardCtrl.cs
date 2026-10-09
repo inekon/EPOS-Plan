@@ -1891,6 +1891,24 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Ordnet jeden distinkten <c>ID_Carrier</c> der Anlagenliste dem Projekt zu (Satzpaar aus
+        /// <c>energy_price</c> und <c>energy_project_settings</c> über <see cref="TraegerSatzAnlegen"/>); ein
+        /// schon zugeordneter Träger bleibt unberührt. Liefert die Zahl der neu angelegten Paare.
+        /// </summary>
+        internal int TraegerDerListeZuordnen(int projektID, List<WErzeugerModel> list)
+        {
+            if (projektID <= 0 || list == null) return 0;
+            int neuAngelegt = 0;
+            var erledigt = new HashSet<int>();
+            foreach (WErzeugerModel item in list)
+            {
+                if (item == null || item.ID_Carrier <= 0 || !erledigt.Add(item.ID_Carrier)) continue;
+                if (TraegerSatzAnlegen(projektID, item.ID_Carrier, out bool neu) && neu) neuAngelegt++;
+            }
+            return neuAngelegt;
+        }
+
         public bool Add_WP_Waermeerzeuger(int projektID, List<WErzeugerModel> list, DbVorgang vorgang = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
@@ -2338,6 +2356,18 @@ namespace WindowsFormsApplication1
                 // angelegt hat - ebenfalls VOR dem Aufraeumlauf (Block ueber
                 // FachspaltenSichern).
                 FachspaltenWiederherstellen(projektID, angelegt);
+
+                // TRAEGERZUORDNUNG (Nachzug zu B2, Anwenderwunsch 08.10.2026): Die Erzeugerdialoge waehlen
+                // einem Brenner ohne Traeger den Gas- bzw. Oeltraeger seines Geraets vor
+                // (EnergietraegerZulaessigkeit.Vorauswahl), und dieser Weg schreibt ihn als ID_Carrier.
+                // Ohne Projektzuordnung (energy_project_settings) faende die Wirtschaftlichkeit dafuer weder
+                // Preis noch Emission - deshalb hier je distinktem Traeger das Satzpaar, wie es der Assistent
+                // beim Speichern anlegt (TraegerSatzAnlegen, idempotent). BEST EFFORT wie die Nachbarn.
+                try { TraegerDerListeZuordnen(projektID, list); }
+                catch (Exception exTraeger)
+                {
+                    Console.WriteLine("Traegerzuordnung der Anlagen nicht nachgezogen: " + exTraeger.Message);
+                }
 
                 // ETAPPE H3 (H1-3): Pflichtpositionen der Standardvorlagen an jeder
                 // Anlagenzeile sicherstellen - NACH ZuordnungReparieren/AnkerNachziehen
