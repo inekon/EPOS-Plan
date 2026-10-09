@@ -252,6 +252,11 @@ namespace WindowsFormsApplication1
                 ps.AddRange(KesselKennlinieWerte.Parameter(kennlinie));
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps.ToArray());
+                // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Der Rueckweg „In die Datenbank
+                // uebernehmen…" kann ihn dann ueberschreiben, und die Kostenvorlage des Satzes geht der Standardvorlage vor.
+                if (ok && KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_Heizkessel"))
+                    DataRepository.ExecuteSQL("UPDATE [Tab_Heizkessel] SET [ID_Stamm] = ? WHERE [ID] = ?",
+                                              new DbParam("@st", stammId), new DbParam("@id", neueId));
                 return ok ? neueId : -1;
             }
             catch (Exception ex)

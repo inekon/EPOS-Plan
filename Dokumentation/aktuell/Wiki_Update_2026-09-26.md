@@ -179,6 +179,7 @@ Version noch beim Anwender zu bestätigen.
 - Seit 09.10.2026: Der Bericht enthält ein Bivalenzdiagramm (Word) und eine Bivalenztafel (Word und Excel) mit Prüfhinweisen. (#855)
 - Seit 09.10.2026: Die Berichtsvorlagen kennen die Kennzahlen `wp.bivalenz.*` der Betriebsbereiche. (#855)
 - Seit 09.10.2026: Die Projektdialoge mit Katalogauswahl zeigen Projekt und Katalog gerahmt untereinander mit ziehbarer Trennlinie und einer Zeile für den gewählten Satz; nur die Listen rollen. (#861)
+- Seit 09.10.2026: Der Heizkessel-Dialog arbeitet auf der neuen Katalogauswahl: Bearbeiten je Bereich, Mehrfachbearbeitung mit „für alle gewählten setzen“ und „In die Datenbank übernehmen…“ als neuer Katalogsatz oder als Überschreiben des Ursprungs; Investitions- und Betriebskosten gehen als Vorlage des Katalogsatzes mit. (#873)
 
 ### Version 1.2.0.9 — nicht veröffentlicht
 

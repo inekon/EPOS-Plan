@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -312,6 +313,34 @@ namespace WindowsFormsApplication1
             return m;
         }
 
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => HeizkesselStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = HeizkesselStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = HeizkesselStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
+
         private static KatalogSpeicherErgebnis Uebersetzen(HeizkesselStammCtrl.SpeicherErgebnis e)
         {
             return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
@@ -545,6 +574,30 @@ namespace WindowsFormsApplication1
                     TraegerGaben),
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+                // KATALOGAUSWAHL V1, STUFE 2 (KA-E-8): Bearbeiten je Bereich und Mehrfach-
+                // Bearbeiten. Die Projektkopie gibt es nur ausserhalb des Assistenten - dort
+                // zeigt ID_Kessel auf den Katalog. Geschrieben wird ueber den Kernweg in EINER
+                // Transaktion (HeizkesselStammCtrl.AnzeigefelderSchreibenAlle).
+                ["ProjektsatzWege"] = wizard ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(HeizkesselAdminHuelle.Profil(), stamm.SatzAnzeige(true, id)),
+                    Speichern = saetze => HeizkesselAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                // KATALOGAUSWAHL V1, STUFE 2 (KA-E-9): der Rueckweg „In die Datenbank übernehmen…" - nur
+                // ausserhalb des Assistenten (dort gibt es keine Projektkopie). Rueckfrage und Schreibweg kommen aus
+                // dem Kern (HeizkesselStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = wizard ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("HZK_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage."),
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(HeizkesselAdminHuelle.Profil(), stamm.SatzAnzeige(false, id)),
+                    Speichern = saetze => HeizkesselAdminHuelle.SammelSchreiben(false, saetze)
+                },
+                ["NeuGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                    () => OhneTitel(Gaben("", "", neu: true))),
+                ["SummePtherm"] = new Func<string>(() => SummeLeistung(idType, wizard, modelle)),
+                ["LabelSumme"] = Text_("HZK_LBL_SUMME", "Summe [kWth]:"),
 
                 // OHNE "VerwaltungGaben" seit dem 15.09.2026: Der Knopf
                 // "Administration..." und die Ueberlagerung dahinter sind entfallen -
@@ -619,6 +672,28 @@ namespace WindowsFormsApplication1
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
                 ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")
             };
+        }
+
+        /// <summary>
+        /// Die Summe der thermischen Leistungen der Projektliste: die Projektkopien, im
+        /// Assistenten die Katalogsaetze (dort zeigt <c>ID_Kessel</c> auf den Katalog).
+        /// </summary>
+        private static string SummeLeistung(int idType, bool wizard, List<WErzeugerModel> modelle)
+        {
+            double summe = 0;
+            var projekt = new HeizkesselCtrl();
+            var stamm = new HeizkesselStammCtrl();
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+                if (!wizard) summe += projekt.ProjektDetail(m.ID_Kessel)?.Ptherm ?? 0;
+                else
+                {
+                    stamm.ReadById(m.ID_Kessel);
+                    if (stamm.rows > 0) summe += stamm.Ptherm;
+                }
+            }
+            return summe.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture);
         }
 
         // =================================================================================

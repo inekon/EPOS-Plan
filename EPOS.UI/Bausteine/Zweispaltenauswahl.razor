@@ -35,6 +35,7 @@
    Detailzeile zu, dann gilt das Esc des Dialogs. *@
 
 @namespace EPOS.UI.Bausteine
+@using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.JSInterop
 @using WindowsFormsApplication1
 @inject IJSRuntime Js
@@ -89,6 +90,10 @@
             {
                 <span class="epos-zweispalten-wahlzahl" role="status">@kz</span>
             }
+            @* SUCHE, TREFFERZAHL, FILTER ZURUECKSETZEN (4.2, Ort K-Kopf links): Die
+               Katalogliste im Abschnitt Rechts reicht ihre Suchzeile hierher - eine Zeile
+               Hoehe weniger fuer jeden Wirt (Konzept 4.8). *@
+            <SectionOutlet SectionId="Suchort" />
             @KatalogKopf
             <span class="epos-leiste-fueller"></span>
             @if (!NurRechts)
@@ -102,8 +107,25 @@
             }
         </div>
         <div class="epos-zweispalten-inhalt">
-            @Rechts
+            <CascadingValue Name="@KOPFLEISTENORT" Value="Suchort" IsFixed="true">
+                @Rechts
+            </CascadingValue>
         </div>
+        @if (KatalogFuss is not null || KatalogFussRechts is not null)
+        {
+            @* DIE FUSSLEISTE DES KATALOGS (4.2, Ort K-Fuss): der gewaehlte Name, dann die
+               Knoepfe, die auf die Auswahl des Katalogs wirken; rechts Neu…. Bei
+               Mehrfachauswahl steht statt des Namens die Zahl („3 Saetze:"). *@
+            <div class="epos-zweispalten-fussleiste" role="group" aria-label="@RechtsTitel">
+                @if (Fussname is string fn)
+                {
+                    <span class="epos-zweispalten-fussname" title="@fn">@fn</span>
+                }
+                @KatalogFuss
+                <span class="epos-leiste-fueller"></span>
+                @KatalogFussRechts
+            </div>
+        }
     </section>
 
     @* ---------------------------------------------- der gewaehlte Satz --- *@
@@ -160,6 +182,46 @@
 
     /// <summary>Weitere Inhalte der Katalog-Kopfleiste links vom Füller.</summary>
     [Parameter] public RenderFragment? KatalogKopf { get; set; }
+
+    /// <summary>
+    /// Knöpfe der Katalog-Fußleiste nach dem gewählten Namen (Vergleichen…, Schloss…,
+    /// Löschen, Bearbeiten…) — sie wirken auf die Auswahl des Katalogs (4.2).
+    /// </summary>
+    [Parameter] public RenderFragment? KatalogFuss { get; set; }
+
+    /// <summary>Knöpfe rechts in der Katalog-Fußleiste (Neu…, Import…, Speichern unter…).</summary>
+    [Parameter] public RenderFragment? KatalogFussRechts { get; set; }
+
+    /// <summary>
+    /// Name des gewählten Katalogsatzes am Anfang der Fußleiste; bei mehr als einer gewählten
+    /// Zeile nennt die Leiste stattdessen die Zahl.
+    /// </summary>
+    [Parameter] public string? KatalogFussName { get; set; }
+
+    /// <summary>
+    /// <b>Höhe einer Katalogzeile in px</b>, wenn der Wirt die Katalogliste mit eigenem
+    /// Zeilenmaß führt (Kästchenmodus: <c>Katalogliste.ZEILENHOEHE_ZEILENWAHL</c>, 46 px). Gesetzt
+    /// hält der Baustein Kopf und ZWEI Katalogzeilen auch in kleinen Fenstern (Konzept 4.8,
+    /// Entscheid zu 1 280 × 720 und 1 024 × 700); 0 = die Regel von Stufe 1 (unter 600 px
+    /// Bausteinhöhe Kopf und eine Zeile).
+    /// </summary>
+    [Parameter] public int KatalogZeile { get; set; }
+
+    /// <summary>Name des kaskadierten Orts der Suchzeile (Katalogliste → Katalog-Kopfleiste).</summary>
+    public const string KOPFLEISTENORT = "Katalogkopfleiste";
+
+    /// <summary>Der Ort, an den die Katalogliste ihre Suchzeile reicht (je Baustein eindeutig).</summary>
+    public object Suchort { get; } = new();
+
+    private string? Fussname
+    {
+        get
+        {
+            if (KatalogWahl is { Anzahl: > 1 } w)
+                return string.Format(Resource.Culture, Resource.AUSWAHL_FUSS_SAETZE, w.Anzahl);
+            return string.IsNullOrEmpty(KatalogFussName) ? null : KatalogFussName + ":";
+        }
+    }
 
     /// <summary>
     /// Verwaltungsbetriebsart: nur der Katalog. Projektbereich und Trennlinie entfallen,
@@ -304,14 +366,18 @@
             if (NurRechts) k += " epos-zweispalten--nurkatalog";
             if (Satz is not null) k += " epos-zweispalten--mitsatz";
             if (_satzOffen) k += " epos-zweispalten--satz-offen";
+            if (KatalogZeile > 0) k += " epos-zweispalten--zeilenmass";
             if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
             return k;
         }
     }
 
     private string Wurzelstil
-        => FormattableString.Invariant(
-            $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_MINDESTHOEHE}px");
+        => KatalogZeile > 0
+            ? FormattableString.Invariant(
+                $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_LISTENKOPF + 2 * KatalogZeile + 2}px; --epos-katalog-zeile: {KatalogZeile}px")
+            : FormattableString.Invariant(
+                $"--epos-trenner-hoehe: {_hoehe}px; --epos-trenner-min: {MINDESTHOEHE}px; --epos-katalog-min: {KATALOG_MINDESTHOEHE}px");
 
     private string ProjektMarke => Resource.AUSWAHL_MARKE_PROJEKT;
     private string KatalogMarke => Resource.AUSWAHL_MARKE_KATALOG;

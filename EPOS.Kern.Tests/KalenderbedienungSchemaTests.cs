@@ -25,13 +25,15 @@ namespace EPOS.Kern.Tests
         private const long GEBAEUDE_1051 = 10657;
 
         [Fact]
-        public void Die_Nummer_haengt_ueber_die_Klasse_an_der_PV_Ganglinie_und_ist_das_Ziel()
+        public void Die_Nummer_haengt_ueber_die_Klasse_an_der_PV_Ganglinie_und_steht_im_Register()
         {
+            // Das Ziel ist seit dem Folgeschritt KatalogkostenUrsprungSchema (208) weitergerueckt; die Testdatenbank steht
+            // mindestens auf diesem Schritt.
             Assert.Equal(PvGanglinieSchema.SCHRITT + 1, KalenderbedienungSchema.SCHRITT);
-            Assert.Equal(KalenderbedienungSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KalenderbedienungSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KalenderbedienungSchema.SCHRITT);
             object stand = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation");
-            if (_db.Vorhanden) Assert.Equal(KalenderbedienungSchema.SCHRITT, Convert.ToInt32(stand, CultureInfo.InvariantCulture));
+            if (_db.Vorhanden) Assert.True(Convert.ToInt32(stand, CultureInfo.InvariantCulture) >= KalenderbedienungSchema.SCHRITT);
         }
 
         [Fact]

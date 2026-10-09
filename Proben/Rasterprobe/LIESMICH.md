@@ -1213,26 +1213,47 @@ bleibt ohne Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhal
 verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
 Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
-**Ergebnis vom 09.10.2026** (Wirt Release, Chromium headless über das globale Playwright): **294 Zustände,
-0 Verstöße, Gegenprobe rot** (verschachtelt 1 Paar, Dialogkörper rollt) — Rückgabe 0. Vorgabe der
-Trennlinie (Höhe des Bausteins / Projektliste / Katalogliste in px, Kopf der Katalogliste 53 px, Zeile 53 px):
+**Heizkessel (Stufe 2a).** Zusätzlich je Fenster: Detailzeile auf mit Kosten (die Satzfläche muss die
+Kostenknöpfe tragen), Überlagerung „Bearbeiten…" für die Projektkopie und für zwei angekreuzte Katalogsätze
+(Blätterleiste oder Hinweiszeile „übersprungen"), danach geschlossen mit Esc. Für den Heizkessel gilt in
+jedem Zustand und jedem Fenster Kopf **und zwei** Katalogzeilen; die Zeilenhöhe misst die Probe an der Liste
+(Kästchenmodus 46 px, sonst 53 px).
+
+**Ergebnis vom 09.10.2026, Stufe 2a** (Wirt Release, Chromium headless, Playwright aus
+`/opt/node-tools/node_modules`): **306 Zustände, 0 Verstöße, Gegenprobe rot** (verschachtelt 1 Paar,
+Dialogkörper rollt) — Rückgabe 0. Stufe 1 maß 294 Zustände; dazu kommen zwölf des Heizkessels. Vorgabe der
+Trennlinie (Höhe des Bausteins / Projektliste / Katalogliste in px, Kopf der Katalogliste 53 px); die Suche
+steht seit Stufe 2 in der Kopfleiste des Katalogs, deshalb gewinnen alle Wirte eine Zeilenhöhe:
 
 | Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 |
 |---|---|---|---|
-| Heizkessel, BHKW, Gebäude, Pufferspeicher, Photovoltaik, Solarkollektoren, Bedarfsprofile, Wärmebedarf extern | 620 / 138 / 178 | 540 / 128 / 108 | 520 / 108 / 108 |
-| Wärmepumpen | 620 / 138 / 182 | 540 / 132 / 108 | 520 / 112 / 108 |
-| Stromspeicher | 620 / 138 / 222 | 540 / 138 / 142 | 520 / 138 / 122 |
-| Stromganglinie | 648 / 138 / 264 | 568 / 138 / 184 | 548 / 138 / 164 |
+| Heizkessel (Kontext im Dialogkopf, Zeile 46 px) | 648 / 138 / 259 | 568 / 138 / 179 | 548 / 138 / 159 |
+| BHKW, Gebäude, Pufferspeicher, Photovoltaik, Solarkollektoren, Bedarfsprofile, Wärmebedarf extern | 620 / 138 / 226 | 540 / 138 / 146 | 520 / 138 / 126 |
+| Wärmepumpen | 620 / 138 / 230 | 540 / 138 / 150 | 520 / 138 / 130 |
+| Stromspeicher | 620 / 138 / 270 | 540 / 138 / 190 | 520 / 138 / 170 |
+| Stromganglinie | 648 / 138 / 312 | 568 / 138 / 232 | 548 / 138 / 212 |
 | Solarganglinie | 648 / 138 / 161 | 568 / 138 / 108 | 548 / 138 / 108 |
+
+Heizkessel bei Trennlinie unten, Detailzeile auf und „Detailzeile auf mit Kosten": Katalogliste 147 px
+(Kopf + 2 × 46 px), Projektliste 250 / 170 / 150 bzw. 160 / 120 / 110 px; Überlagerung „Bearbeiten…"
+offen: Liste unverändert, drei Rollbereiche (Projekt, Katalog, Überlagerung), keiner im anderen.
+
+**Heizkessel (Stufe 2b).** Nach „Bearbeiten…" öffnet die Probe je Fenster die Rückfrage „In die Datenbank
+übernehmen…" (Wirt: drei Zeilen — überschreibbar, gesperrt, Ursprung nicht bekannt, ein langer Name), misst den
+Zustand „Rückfrage-Überlagerung offen" und schließt sie mit Esc; rot, wenn die drei Zeilen fehlen oder Esc nicht
+schließt. **Ergebnis vom 09.10.2026, Stufe 2b:** **309 Zustände, 0 Verstöße, Gegenprobe rot** (verschachtelt 1 Paar,
+Dialogkörper rollt) — Rückgabe 0; Liste unverändert (648 / 138 / 259, 568 / 138 / 179, 548 / 138 / 159), drei
+Rollbereiche (Projekt, Katalog, Überlagerung), keiner im anderen — die Rückfrage hat keinen eigenen. Am selben Stand
+`fensterprobe.mjs`, `bannerprobe.mjs` und `katalogprobe.mjs` grün; `rasterprobe.mjs` wie vor (Z6 verfehlt, fremd).
 
 Außerhalb des Bausteins meldet die Probe als **Befund, nicht gezählt**: die Kältemaschinenauswahl ist ein
 Katalogdialog (`.epos-katalog-dialog` mit `overflow: auto` als Notnagel um Liste und Stammblatt) und kein
 Wirt des Bausteins; die Überlagerung „Simulation…" des Gebäudes rollt als Ganzes um zwei Listen. Beide je
 drei Fenster.
 
-**Grenzen.** Bei 720 und 700 px Fensterhöhe bleiben dem Katalog Kopf und gut eine Zeile: Kontextzeile,
-Suchzeile der Katalogliste, Fußleiste des Katalogs und die Kopfleisten (Berührungsmaß 44 px) belegen die
-Höhe, die das Mockup dem Katalog gab. Die Probe misst Chromium, nicht die WebView2 selbst.
+**Grenzen.** Bei 720 und 700 px Fensterhöhe behält der Heizkessel Kopf und zwei Katalogzeilen; die
+Wirte ohne eigenes Zeilenmaß (Stufe 3 und 4: Kontextzeile noch unter dem Kopf) klemmen dort weiter auf
+Kopf und eine Zeile (`@container katalogauswahl`). Die Probe misst Chromium, nicht die WebView2 selbst.
 
 Die **Fensterprobe** misst für Heizkessel, BHKW, Wärmepumpen und Gebäude „nichts rollt außer den
 Listen und der Detailzeile" (Dokument und Dialogkörper rollen nicht, Kopf und Schlussleiste statisch im
@@ -1240,6 +1261,13 @@ Bild, auch mit aufgeklappter Detailzeile und über den ganzen Tabulatorweg; Gege
 Dialogkörper wird rot); die Haft-Kriterien gelten nur noch für die Dublettenprüfung. Die **Bannerprobe**
 misst in diesen drei Fällen, dass das Banner unter dem Kopf im Bild steht, sein Kreuz trägt und das
 Dokument nicht rollt.
+
+**Stufe 2a, 09.10.2026:** Der Heizkessel trägt seine Kontextzeile im Dialogkopf; das Banner steht damit
+unmittelbar unter einem Kopf, der niedriger ist als die geschätzte Kopfhöhe `--epos-fenster-kopf`, und die
+Haftregel schob es in Ruhe um 15 px nach unten (Bannerprobe: „in Ruhe 87 px, ohne Haftregel 72 px"). In der
+Katalogauswahl rollt der Dialogkörper nicht; dort haftet das Banner deshalb mit `top: 0`. Danach:
+Bannerprobe erfüllt (Gegenprobe rot), Fensterprobe erfüllt (Gegenprobe rot), Katalogprobe 59 Fälle ohne
+Überlagerung, Rasterprobe 28 von 29 (Z6 `kategorien_ueberlagerung`, quer 47 px, war vorher schon rot).
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer

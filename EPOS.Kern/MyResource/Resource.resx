@@ -49993,6 +49993,90 @@ Chart</value>
   <data name="MENU_PV_GANGLINIE" xml:space="preserve">
     <value>PV-Ganglinie</value>
   </data>
+  <data name="AUSWAHL_FUSS_SAETZE" xml:space="preserve">
+    <value>{0} Sätze:</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS" xml:space="preserve">
+    <value>Gewählte Projektsätze bearbeiten (Projektkopie)</value>
+  </data>
+  <data name="AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Gewählte Katalogsätze bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN" xml:space="preserve">
+    <value>Vergleichen…</value>
+  </data>
+  <data name="AUSWAHL_BTN_VERGLEICHEN_HINWEIS" xml:space="preserve">
+    <value>Zwei oder mehr Katalogsätze wählen, um sie zu vergleichen</value>
+  </data>
+  <data name="AUSWAHL_BTN_NEU" xml:space="preserve">
+    <value>Neu…</value>
+  </data>
+  <data name="AUSWAHL_FRAGE_LOESCHEN_N" xml:space="preserve">
+    <value>{0} Katalogeinträge werden für ALLE Projekte gelöscht: {1}. Fortfahren?</value>
+  </data>
+  <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
+    <value>nur lesen</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
+    <value>Projektsatz bearbeiten – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG" xml:space="preserve">
+    <value>Katalogsatz bearbeiten – {0}</value>
+  </data>
+  <data name="SATZBEARB_TITEL_PROJEKT_N" xml:space="preserve">
+    <value>{0} Projektsätze bearbeiten</value>
+  </data>
+  <data name="SATZBEARB_TITEL_KATALOG_N" xml:space="preserve">
+    <value>{0} Katalogsätze bearbeiten</value>
+  </data>
+  <data name="SATZBEARB_BLATT" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="SATZBEARB_ZURUECK" xml:space="preserve">
+    <value>Voriger Satz</value>
+  </data>
+  <data name="SATZBEARB_VOR" xml:space="preserve">
+    <value>Nächster Satz</value>
+  </data>
+  <data name="SATZBEARB_FUER_ALLE" xml:space="preserve">
+    <value>für alle gewählten setzen</value>
+  </data>
+  <data name="SATZBEARB_UEBERSPRUNGEN" xml:space="preserve">
+    <value>Übersprungen (gesperrt): {0}</value>
+  </data>
+  <data name="SATZBEARB_NUR_LESEN" xml:space="preserve">
+    <value>Gesperrt – die Felder sind nur lesbar.</value>
+  </data>
+  <data name="SATZBEARB_SCHLIESSEN" xml:space="preserve">
+    <value>Schließen</value>
+  </data>
+  <data name="SATZBEARB_GEAENDERT" xml:space="preserve">
+    <value>{0} von {1} Sätzen geändert</value>
+  </data>
+  <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
+    <value>Keine Änderung</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+    <value>Keine Änderung.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+    <value>Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+    <value>„{0}“ ist gesperrt. Es wurde nichts gespeichert.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+    <value>„{0}“: {1} Es wurde nichts gespeichert.</value>
+  </data>
+  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+    <value>{0} Sätze gespeichert.</value>
+  </data>
+  <data name="HZK_LBL_SUMME" xml:space="preserve">
+    <value>Summe [kWth]:</value>
+  </data>
   <data name="PVG_IMP_HINWEIS_SPITZE" xml:space="preserve">
     <value>Die Spitze der Reihe ({0:N1} kW) liegt über der Nennleistung × 1,1 ({1:N2} kWp). Bitte Nennleistung und Einheit der Datei (kW, nicht W) prüfen.</value>
   </data>
@@ -50083,6 +50167,108 @@ Chart</value>
   <data name="PVG_AUSWEIS_MODULMODELL" xml:space="preserve">
     <value>Modulmodell</value>
   </data>
+  <data name="KATRUECK_NAME_ZUSATZ" xml:space="preserve">
+    <value>{0} (Projekt)</value>
+  </data>
+  <data name="KATRUECK_NAME_ZUSATZ_N" xml:space="preserve">
+    <value>{0} (Projekt {1})</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_KEINE_KOPIE" xml:space="preserve">
+    <value>Der Projektsatz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_NAME_LEER" xml:space="preserve">
+    <value>„{0}“: Bitte einen Namen für den neuen Katalogsatz eingeben. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_NAME_BELEGT" xml:space="preserve">
+    <value>Der Name „{0}“ ist im Katalog schon vergeben. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_GESPERRT" xml:space="preserve">
+    <value>„{0}“: Der Ursprung ist gesperrt – erst Schloss aufheben. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_FEHLT" xml:space="preserve">
+    <value>„{0}“: Der Ursprung ist nicht mehr vorhanden. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_URSPRUNG_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“: Der Ursprung ist nicht bekannt. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_VERSTOSS" xml:space="preserve">
+    <value>„{0}“: {1} Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_ABSAGE_FEHLER" xml:space="preserve">
+    <value>Fehler beim Übernehmen in die Datenbank. Es wurde nichts übernommen.</value>
+  </data>
+  <data name="KATRUECK_MSG_UEBERNOMMEN_1" xml:space="preserve">
+    <value>„{0}“ in die Datenbank übernommen.</value>
+  </data>
+  <data name="KATRUECK_MSG_UEBERNOMMEN" xml:space="preserve">
+    <value>{0} Sätze in die Datenbank übernommen: {1}.</value>
+  </data>
+  <data name="KATRUECK_BEMERKUNG_VORLAGE" xml:space="preserve">
+    <value>Investitions- und Betriebskosten aus Projekt „{0}“, {1}</value>
+  </data>
+  <data name="KATRUECK_GRUND_GESPERRT" xml:space="preserve">
+    <value>Erst Schloss aufheben</value>
+  </data>
+  <data name="KATRUECK_GRUND_FEHLT" xml:space="preserve">
+    <value>Ursprung nicht mehr vorhanden</value>
+  </data>
+  <data name="KATRUECK_GRUND_UNBEKANNT" xml:space="preserve">
+    <value>Ursprung nicht bekannt</value>
+  </data>
+  <data name="KATRUECK_BTN" xml:space="preserve">
+    <value>In die Datenbank übernehmen…</value>
+  </data>
+  <data name="KATRUECK_BTN_HINWEIS" xml:space="preserve">
+    <value>Gewählte Projektsätze als Katalogsätze in die Datenbank übernehmen</value>
+  </data>
+  <data name="KATRUECK_TITEL" xml:space="preserve">
+    <value>„{0}“ in die Datenbank übernehmen</value>
+  </data>
+  <data name="KATRUECK_TITEL_N" xml:space="preserve">
+    <value>{0} Sätze in die Datenbank übernehmen</value>
+  </data>
+  <data name="KATRUECK_WAHL_ALLE" xml:space="preserve">
+    <value>Für alle:</value>
+  </data>
+  <data name="KATRUECK_WAHL_NEU" xml:space="preserve">
+    <value>als neuen Katalogsatz anlegen</value>
+  </data>
+  <data name="KATRUECK_WAHL_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Ursprung überschreiben</value>
+  </data>
+  <data name="KATRUECK_SPALTE_PROJEKTSATZ" xml:space="preserve">
+    <value>Projektsatz</value>
+  </data>
+  <data name="KATRUECK_SPALTE_WAHL" xml:space="preserve">
+    <value>Wahl</value>
+  </data>
+  <data name="KATRUECK_SPALTE_NAME" xml:space="preserve">
+    <value>Name im Katalog</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_BELEGT" xml:space="preserve">
+    <value>Name im Katalog vergeben</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_DOPPELT" xml:space="preserve">
+    <value>Name zweimal gewählt</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_NAME_LEER" xml:space="preserve">
+    <value>Name fehlt</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_RUECKFALL" xml:space="preserve">
+    <value>Als neuer Satz, weil der Ursprung nicht überschrieben werden kann: {0}</value>
+  </data>
+  <data name="KATRUECK_HINWEIS_KOSTEN" xml:space="preserve">
+    <value>Es gehen die technischen Daten, die Investitions- und Wartungswerte und die Investitions- und Betriebskostenpositionen der Anlage (als Kostenvorlage des Satzes) mit.</value>
+  </data>
+  <data name="KATRUECK_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="KATRUECK_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="HZK_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage.</value>
+  </data>
   <data name="KOND_MSG_BEDIENUNG_WOCHE_VERWIESEN" xml:space="preserve">
     <value>Die Woche „{0}“ wird noch von {1} Zeile(n) verwendet und lässt sich nicht löschen.</value>
   </data>
@@ -50097,6 +50283,12 @@ Chart</value>
   </data>
   <data name="KOND_TEXT_FEIERTAGE_LAENDER" xml:space="preserve">
     <value>Heilige Drei Könige;Internationaler Frauentag;Fronleichnam;Mariä Himmelfahrt;Weltkindertag;Reformationstag;Allerheiligen;Buß- und Bettag</value>
+  </data>
+  <data name="PARV_LBL_KOSTENVORLAGE" xml:space="preserve">
+    <value>Kostenvorlage des Satzes:</value>
+  </data>
+  <data name="PARV_LBL_KOSTENVORLAGE_INVESTITION" xml:space="preserve">
+    <value>Investitionsvorlage des Satzes:</value>
   </data>
   <data name="KOND_LBL_KALB_GILT_ALLE" xml:space="preserve">
     <value>alle</value>
@@ -50232,6 +50424,12 @@ Chart</value>
   </data>
   <data name="PVG_ABW_UNGESPEICHERT" xml:space="preserve">
     <value>noch nicht gespeichert</value>
+  </data>
+  <data name="KATRUECK_LOESCHEN_VORLAGE_PROJEKT" xml:space="preserve">
+    <value>Der Katalogsatz „{0}“ ist gelöscht. Seine Kostenvorlage bleibt erhalten, weil Kostenpositionen in Projekten aus ihr stammen.</value>
+  </data>
+  <data name="KATRUECK_TITEL_LOESCHEN" xml:space="preserve">
+    <value>Katalogsatz gelöscht</value>
   </data>
 </root>
 

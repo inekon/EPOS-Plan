@@ -2598,6 +2598,12 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
     box-shadow: calc(-1 * var(--epos-karte-rand)) 0 0 var(--epos-karte-flaeche),
                 var(--epos-karte-rand) 0 0 var(--epos-karte-flaeche);
 }
+/* In der Katalogauswahl rollt der Dialogkoerper nicht (Konzept 4.1); das Banner steht
+   schon unter dem Kopf. Die geschaetzte Kopfhoehe darf es dort nicht verschieben - der
+   Heizkessel traegt seine Kontextzeile im Kopf, der Kopf ist niedriger als die Schaetzung. */
+#app:has(> .epos-fenstermarke) > .epos-dialog:has(> .epos-zweispalten) > .epos-warnbanner {
+    top: 0;
+}
 
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner > .epos-warnbanner-schliessen {
     display: inline-flex;
@@ -3568,6 +3574,88 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-size: 12px;
 }
 
+/* SUCHE IN DER KOPFLEISTE (4.2, 4.8): Die Katalogliste reicht ihre Suchzeile in die
+   Kopfleiste des Katalogs. Sie bricht hier nicht um, das Suchfeld traegt nur den
+   Platzhalter (die Beschriftung steht als aria-label am Feld) und gibt als Erstes Breite
+   ab; die Trefferzahl kuerzt mit Auslassung. */
+.epos-zweispalten-kopfleiste > .epos-katalog-suchzeile {
+    flex: 0 1 auto !important;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
+    overflow: clip;
+}
+.epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
+.epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 1 16rem !important; min-width: 7rem; }
+.epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.epos-zweispalten-kopfleiste .epos-katalog-treffer {
+    flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* DIE FUSSLEISTE DES KATALOGS (4.2): Name, Knoepfe der Auswahl, rechts Neu…. Eine Zeile,
+   sie bricht nicht um; der Name kuerzt mit Auslassung. */
+.epos-zweispalten-fussleiste {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+    padding-top: 4px;
+    border-top: 1px solid var(--epos-rahmen-leise, var(--epos-rahmen));
+    overflow: clip;
+    flex: 0 0 auto;
+}
+.epos-zweispalten-fussleiste > * { flex: 0 0 auto; white-space: nowrap; }
+.epos-zweispalten-summe { color: var(--epos-text-leise); }
+.epos-zweispalten-satzleer { margin: 0; color: var(--epos-text-leise); }
+
+/* KONTEXT IM DIALOGKOPF (Katalogauswahl V1, 4.1): leise hinter dem Titel, kuerzt mit
+   Auslassung; der Titel behaelt seine Breite. */
+.epos-dialog-kopf > .epos-dialog-kontext {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--epos-text-leise);
+    font-weight: 600;
+}
+.epos-dialog-kopf:has(> .epos-dialog-kontext) > .epos-dialog-titel { flex: 0 0 auto; }
+.epos-zweispalten-fussleiste > .epos-leiste-fueller { flex: 1 1 0; min-width: 0; }
+.epos-zweispalten-fussname {
+    flex: 0 1 auto !important; min-width: 2rem; overflow: hidden; text-overflow: ellipsis; font-weight: 600;
+}
+
+/* DIE SATZBEARBEITUNG (4.6) - Ueberlagerung „Bearbeiten…": Marke im Kopf, Blaetterleiste,
+   Hinweiszeile, je Feld „fuer alle gewaehlten setzen". */
+.epos-ueberlagerung-kopfzusatz { flex: 0 0 auto; }
+.epos-satzbearbeitung-blaetter {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--epos-rahmen);
+}
+.epos-satzbearbeitung-hinweis { margin: 0 0 8px; color: var(--epos-text-leise); }
+/* DER RUECKWEG „In die Datenbank übernehmen…" (5.2) - Rueckfrage als Ueberlagerung: je Satz eine Zeile mit Wahl
+   und Name; kein eigener Rollbereich (die Ueberlagerung rollt, sonst nichts). */
+.epos-rueckweg-alle { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+.epos-rueckweg-alle-text { font-weight: 600; }
+.epos-rueckweg-tabelle { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+.epos-rueckweg-tabelle th, .epos-rueckweg-tabelle td {
+    text-align: left; vertical-align: top; padding: 4px 6px; border-bottom: 1px solid var(--epos-rahmen);
+}
+.epos-rueckweg-wahl label { display: block; white-space: nowrap; }
+.epos-rueckweg-wahl input[disabled] + * , .epos-rueckweg-grund { color: var(--epos-text-leise); }
+.epos-rueckweg-namensfeld { width: 100%; min-width: 10rem; box-sizing: border-box; }
+.epos-rueckweg-namenshinweis { display: block; font-size: 12px; }
+.epos-rueckweg-hinweis { margin: 0 0 8px; color: var(--epos-text-leise); }
+.epos-satzbearbeitung-fueralle {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--epos-text-leise);
+    grid-column: 1 / -1; margin-top: -4px;
+}
+
 /* Der Inhalt eines Bereichs (die Abschnitte des Wirts): eine Spalte, in der
    nur die Liste waechst. */
 .epos-zweispalten-inhalt {
@@ -3725,6 +3813,11 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 @container katalogauswahl (max-height: 599px) {
     .epos-zweispalten-bereich--katalog .epos-raster-huelle {
         --epos-katalog-min: calc(53px + 53px + 2px);
+    }
+    /* Ein Wirt mit eigenem Zeilenmass (Kaestchenmodus, Heizkessel ab Stufe 2) behaelt Kopf
+       und ZWEI Zeilen - Suche in der Kopfleiste und Kontext im Dialogkopf geben die Hoehe. */
+    .epos-zweispalten--zeilenmass .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+        --epos-katalog-min: calc(53px + 2 * var(--epos-katalog-zeile, 53px) + 2px);
     }
 }
 

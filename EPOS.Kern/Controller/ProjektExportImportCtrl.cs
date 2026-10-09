@@ -1284,8 +1284,13 @@ namespace WindowsFormsApplication1
         /// Ist das ein Katalog, dessen Verweis nicht reist (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c)?
         /// Der Verweis kommt am Ziel leer an.
         /// </summary>
+        /// <para>Ebenso die Kataloge der Ursprungsverweise und der Kostenvorlage aus Schritt
+        /// <see cref="KatalogkostenUrsprungSchema.SCHRITT"/>: Unter der Original-Id zeigte ein Verweis am Ziel auf einen
+        /// fremden Satz, und „Ursprung überschreiben" träfe ihn. <see cref="VerweiseNachtragen"/> leert die Ursprünge.</para>
         private static bool IstReiseloserKatalog(string tabelle) =>
-            string.Equals(tabelle, PufferAuslegungErgaenzungSchema.TAB_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase);
+            string.Equals(tabelle, PufferAuslegungErgaenzungSchema.TAB_PUFFER_STAMM, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(tabelle, KatalogkostenUrsprungSchema.TAB_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase) ||
+            KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG.Any(k => string.Equals(tabelle, k.Katalog, StringComparison.OrdinalIgnoreCase));
 
         /// <summary>Ist das der Wärmepumpenkatalog, auf den <c>Tab_WP.ID_Stamm</c> zeigt?</summary>
         private static bool IstWaermepumpenkatalog(string tabelle) =>
@@ -1315,6 +1320,17 @@ namespace WindowsFormsApplication1
             if (km != null && km.ContainsKey(KaeltemaschineSchema.SPALTE_ID_STAMM))
                 foreach (int id in ids)
                     v.Ausfuehren(KaeltemaschineSchema.SqlNachtragProjekt(), new DbParam("@projekt", id));
+
+            // Die Ursprungsverweise aus Schritt KatalogkostenUrsprungSchema.SCHRITT reisen nicht: Am Ziel kommt die Kopie
+            // ohne Ursprung an („Ursprung nicht bekannt"), damit ein Rückweg nie einen fremden Satz überschreibt.
+            foreach ((string Kopie, string Katalog) k in KatalogkostenUrsprungSchema.KOPIEN_OHNE_URSPRUNG)
+            {
+                Dictionary<string, Type> sp = ZielTypen(k.Kopie);
+                if (sp == null || !sp.ContainsKey(KatalogkostenUrsprungSchema.SPALTE_ID_STAMM)) continue;
+                foreach (int id in ids)
+                    v.Ausfuehren("UPDATE \"" + k.Kopie + "\" SET \"" + KatalogkostenUrsprungSchema.SPALTE_ID_STAMM +
+                                 "\" = NULL WHERE \"ID_Projekt\" = ?", new DbParam("@projekt", id));
+            }
         }
 
         // ---- Umschlüsselung ----------------------------------------------------------------
