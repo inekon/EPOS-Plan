@@ -383,28 +383,28 @@ Wärmepumpe, Pufferspeicher).
   getestet.
 - **Kosten (KA‑E‑14):** Die Planwertspalten (`Investitionskosten`, `Wartungskosten`, `Wartungskosten_Einheit`,
   `Nutzungsdauer`) gehen mit der Schnittmenge. Die **Betriebs- und Investitionspositionen** der ersten Anlage, die
-  auf die Kopie zeigt, werden Satzvorlage. Weil eine Kostenvorlage genau eine Kategorie führt, ist die Satzvorlage
-  ein **Paar** gleichen Namens und gleicher Bemerkung (je Kategorie mit Positionen eine Vorlage, Gewerk =
-  `KomponentenID`, nicht Standard): `ID_KostenVorlage` zeigt auf die Betriebsvorlage, ohne Betriebspositionen auf
-  die Investitionsvorlage; die Partnerin findet der Kernweg über Gewerk, Name und Bemerkung. Der Name ist in beiden
-  Kategorien frei (sonst Zusatz „(2)“ …). Ein zweiter Rückweg ersetzt die Positionen der eigenen, ungesperrten
-  Vorlagen vollständig; eine Kategorie ohne Positionen verliert ihre Vorlage. Hat die Anlage gar keine Position,
-  bleibt der Verweis, wie er ist.
+  auf die Kopie zeigt, werden Satzvorlagen. Weil eine Kostenvorlage genau eine Kategorie führt, verweist der Satz mit
+  **zwei IDs** auf zwei eigenständige Vorlagen (Gewerk = `KomponentenID`, Name = Satzname, nicht Standard):
+  `ID_KostenVorlage` auf die Betriebs-, `ID_KostenVorlageInvestition` (Schritt 210) auf die Investitionsvorlage. Ein
+  zweiter Rückweg ersetzt die Positionen der jeweils verwiesenen eigenen, ungesperrten Vorlage; eine Kategorie ohne
+  Positionen setzt ihren Verweis auf leer und räumt die Vorlage ab (wie beim Löschen: sie bleibt, wenn ein anderer Satz
+  oder Projektzeilen sie brauchen). Hat die Anlage gar keine Position, bleiben die Verweise, wie sie sind. Die
+  Bemerkung der Vorlage ist reiner Text.
 - **Vorrang bei der Übernahme:** `KostenVorlagenUebernahmeCtrl.PflichtpositionenSicherstellen` fragt je Anlage
   zuerst die Satzvorlagen (`Katalogrueckweg.SatzvorlagenDerAnlage`: Anlage → Kopie → `ID_Stamm` →
-  `ID_KostenVorlage` und Partnerin), je Kategorie: An einer Anlage ohne Position dieser Kategorie legt die
+  `ID_KostenVorlage` bzw. `ID_KostenVorlageInvestition`), je Kategorie: An einer Anlage ohne Position dieser Kategorie legt die
   Satzvorlage alle Positionen an, danach wie die Standardvorlage nur die Pflichtpositionen — eine gelöschte Position
   kehrt nicht zurück. Ohne Betriebs-Satzvorlage gelten die Pflichtpositionen der Standardvorlage.
 - **Löschen eines Katalogsatzes (KA‑E‑16):** `Katalogrueckweg.SatzvorlageBeimLoeschen` läuft im Vorgang des
   Löschens (beim Heizkessel `HeizkesselStammCtrl.KatalogsatzLoeschen`, Stufe 3 verdrahtet die übrigen Gewerke) und
-  löscht das Paar mit — außer die Vorlage ist Standard oder gesperrt, ein anderer Satz in einem der acht Kataloge
-  mit `ID_KostenVorlage` verweist auf sie, oder Projektzeilen tragen sie als Herkunft (`Tab_ProjektWerte.VorlageID`);
+  räumt beide Verweise ab: jede Vorlage geht mit — außer die Vorlage ist Standard oder gesperrt, ein anderer Satz in einem der acht Kataloge
+  verweist mit `ID_KostenVorlage` oder `ID_KostenVorlageInvestition` auf sie, oder Projektzeilen tragen sie als Herkunft (`Tab_ProjektWerte.VorlageID`);
   im letzten Fall nennt die Meldung, dass die Vorlage bleibt. Scheitert das Mitlöschen, bleibt auch der Satz.
 - **Ursprung:** `HeizkesselCtrl.CopyFromStamm` trägt `ID_Stamm` ein. Bestandskopien bleiben leer („Ursprung nicht
   bekannt“), kein Namensabgleich. Ein gelöschter Katalogsatz leert den Verweis (`ON DELETE SET NULL`); „Ursprung
   nicht mehr vorhanden“ entsteht damit nur bei einem Verweis ohne Fremdschlüsselprüfung. Im Projektpaket reisen die
   neuen Ursprungsverweise nicht (am Ziel leer), damit ein Rückweg nie einen fremden Satz überschreibt.
-- **Katalogkopie und Prüfsumme:** `ID_KostenVorlage` ist Metaspalte der Katalogfassung (keine Prüfsumme, kein
+- **Katalogkopie und Prüfsumme:** `ID_KostenVorlage` und `ID_KostenVorlageInvestition` sind Metaspalten der Katalogfassung (keine Prüfsumme, kein
   Paket); „Duplizieren“ übernimmt sie nicht — die Kopie beginnt mit der Standardvorlage.
 - **Name der Projektkopie:** bleibt nach „neu“ unverändert, auch wenn der Katalogsatz einen anderen Namen bekommt
   (KA‑E‑15).
@@ -455,7 +455,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 |---|---|---|
 | 1 | **Umsetzung beauftragen** | Auf Zuruf des Anwenders; als eigene Welle mit dem Stufenplan aus Abschnitt 8, Stufe 1 und 2 zuerst. **Beauftragt 09.10.2026 (Welle KA1).** |
 | 2 | **Erster Dialog** | **Heizkessel** — Katalogpflege vollständig, Kosten mit Planwert und Wartungseinheit, Senken und Temperaturpaar, keine Überlagerung; danach BHKW (gleiches Muster plus Nebenposten). |
-| 3 | **Ort der Katalogkosten** — die Planwerte haben Spalten am Katalog, die Kostenpositionen (Betriebskosten, Nutzungsdauer, Ersatz) nicht; Ursprungsverweis fehlt bei fünf Geräten und den Bedarfs- und Zeitreihenkopien (Abschnitt 5.1) | **Ein Schemaschritt** „Katalogkosten und Ursprung“: an jedem Katalog mit Kosten (`Tab_BHKW_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_Pufferspeicher_STAMM`, `Tab_Stromspeicher_STAMM`, `Tab_PV_STAMM`, `Tab_Solarkollektoren_STAMM`, `Tab_WP_STAMM`, `Tab_Kaeltemaschine_STAMM`) eine Spalte `ID_KostenVorlage` (Verweis auf `Tab_KostenVorlage.ID`, leer = Standardvorlage des Gewerks), an den Kopien ohne Verweis `ID_Stamm`. Der Rückweg schreibt die Planwerte in die vorhandenen Spalten und die übrigen Positionen der Anlage als Kostenvorlage des Satzes (Gewerk = `KomponentenID`, Name = Satzname, nicht Standard); die Übernahme Katalog → Projekt zieht diese Vorlage vor der Standardvorlage. Ohne Schemaschritt gingen nur die Planwerte mit, und „Ursprung überschreiben“ bliebe dort mit „Ursprung nicht bekannt“ ausgegraut — ein Namensabgleich als Ersatz wird nicht empfohlen (Umbenennung trifft den falschen Satz). Die Nummer meldet die Umsetzungssitzung vor dem Bau an. **Umgesetzt (Schritt 208, `KatalogkostenUrsprungSchema`):** `ID_KostenVorlage` an den acht Katalogen, `ID_Stamm` an elf Kopien (fünf Geräte, sechs Bedarfs- und Zeitreihenkopien), je nullbar mit Fremdschlüssel `ON DELETE SET NULL`; wie gebaut in 5.3. |
+| 3 | **Ort der Katalogkosten** — die Planwerte haben Spalten am Katalog, die Kostenpositionen (Betriebskosten, Nutzungsdauer, Ersatz) nicht; Ursprungsverweis fehlt bei fünf Geräten und den Bedarfs- und Zeitreihenkopien (Abschnitt 5.1) | **Ein Schemaschritt** „Katalogkosten und Ursprung“: an jedem Katalog mit Kosten (`Tab_BHKW_STAMM`, `Tab_Heizkessel_STAMM`, `Tab_Pufferspeicher_STAMM`, `Tab_Stromspeicher_STAMM`, `Tab_PV_STAMM`, `Tab_Solarkollektoren_STAMM`, `Tab_WP_STAMM`, `Tab_Kaeltemaschine_STAMM`) eine Spalte `ID_KostenVorlage` (Verweis auf `Tab_KostenVorlage.ID`, leer = Standardvorlage des Gewerks), an den Kopien ohne Verweis `ID_Stamm`. Der Rückweg schreibt die Planwerte in die vorhandenen Spalten und die übrigen Positionen der Anlage als Kostenvorlage des Satzes (Gewerk = `KomponentenID`, Name = Satzname, nicht Standard); die Übernahme Katalog → Projekt zieht diese Vorlage vor der Standardvorlage. Ohne Schemaschritt gingen nur die Planwerte mit, und „Ursprung überschreiben“ bliebe dort mit „Ursprung nicht bekannt“ ausgegraut — ein Namensabgleich als Ersatz wird nicht empfohlen (Umbenennung trifft den falschen Satz). Die Nummer meldet die Umsetzungssitzung vor dem Bau an. **Umgesetzt (Schritt 208, `KatalogkostenUrsprungSchema`):** `ID_KostenVorlage` an den acht Katalogen, `ID_Stamm` an elf Kopien (fünf Geräte, sechs Bedarfs- und Zeitreihenkopien), je nullbar mit Fremdschlüssel `ON DELETE SET NULL`; dazu (Schritt 210, `KatalogkostenInvestitionSchema`, KA‑E‑14) `ID_KostenVorlageInvestition` an denselben acht Katalogen für die Investitionsvorlage des Satzes, ebenso nullbar mit `ON DELETE SET NULL`; wie gebaut in 5.3. |
 | 4 | **Speicherort der Trennlinienhöhe** | `Dienste.Einstellungen` mit `LiesZahl`/`SchreibZahl`, ein Schlüssel je Dialog (`Katalogauswahl.Trenner.<Dialog>`), Wert in Pixeln der Projektliste, je Anwender, nicht je Projekt; ohne Ablage die Vorgabe. Kein Schemaschritt — die Höhe ist Bedienzustand, keine Projektdatum. **Umgesetzt in Stufe 1.** |
 | 5 | **Rückweg bei Kindzeilen** — Kennlinien (`Tab_Kenndaten`, `Tab_Kenndaten_Kuehlung`, `Tab_Kenndaten_Kaeltemaschine`), Zeitreihen (`…Daten`), Typsätze der Bedarfsprofile, PV-Stränge, Gebäudezonen | Technische Kindzeilen gehen **vollständig** mit: bei „neu“ als Kopie am neuen Satz, bei „überschreiben“ als Ersatz der Kindzeilen des Ursprungs in derselben Transaktion. Anlagenbezogene Kindzeilen bleiben im Projekt: PV-Stränge und Wechselrichterzuordnung (`Z_AnlageStrang`), Senken; Gebäudezonen und Bauteile wie heute. Die Rückfrage nennt, was im Projekt bleibt. **Umgesetzt in Stufe 2** (Mechanismus im Kernweg; der Heizkessel hat keine Kindtabellen, 5.3). |
 | 6 | **Katalogpaket** — ein ungesperrter Satz aus der Auslieferung (`Katalog_Schluessel` gesetzt) wird überschrieben | Schlüssel stehen lassen, die Prüfsumme nicht nachführen, damit die Katalogaktualisierung den Satz als vom Anwender geändert erkennt; beim Bau gegen die Regeln des Katalogpakets prüfen. **Umgesetzt in Stufe 2:** Der Rückweg schreibt `Katalog_*` nie; der Katalogabgleich vergleicht die gespeicherte mit der berechneten Prüfsumme der benannten Fachspalten und erkennt so die Änderung. `ID_KostenVorlage` ist Metaspalte und ändert keine Prüfsumme; die Auslieferungsvorlage bleibt unberührt (`Auslieferungsvorlage.Tests` grün, Tabellenzahl gleich). |
