@@ -226,3 +226,42 @@ Seiten und korrigiere". Beigelegt war ein Bildschirmbild der Rechenwegseite Sola
 - In der Leseansicht setzt der Browser MathML in seiner Mathematikschrift, sichtbar kleiner als der
   Fließtext. Das Stilblatt `MediaWiki:Common.css` hat dafür keine Regel; der Vorschlag dazu geht an
   den Anwender.
+
+## 10. Fortsetzung 02.10.2026 (Routine)
+
+Auftrag des Anwenders vom 27.09.2026: „starte am Freitag 2. Oktober um 2:00 Uhr. Aktualisiere dann auch die
+bis dahin ergänzten Funktionen in der Beschreibung".
+
+- **Merge:** `origin/ios_migration_september` enthielt den Zweig bis `852fac0c` bereits; der Zweig ist
+  ohne Konflikt auf `4cfbf017` vorgezogen. Die Statuszeile dieser Welle trägt in der Hauptlinie die Nummer #611.
+- **Neue Funktionen seit dem 28.09.** (Statuszeilen #589–#640), soweit sie die Technikseiten berühren:
+  - **Heizkessel** (ein Opus-Agent):
+    - Rechenwegseite neu: 9 Schritte, 38 Gleichungen. Inhalt: Kesseldaten, Heiztage nach der
+      Heizgrenze (#595), Teillastkennlinie η(β) mit η₃₀ nach Bauart, Brennwertkennlinie über die
+      Rücklaufkette, Takten mit Anfahrverlust, Bereitschaft nur an Heiztagen plus 24 h, Gasspitze,
+      Zahlenrand.
+    - Anwendungsseite: Beispiel A auf die heutigen Felder, neue Fallstricke zu Rücklauf und
+      Brennwertnutzung, Abschnitt „Betriebsbereitschaft“. Die neuen Abschnitte der Kessel-Sitzungen
+      stehen in LaTeX und rechnen einheitlich mit 50 kW.
+    - Grundlagenseite angeglichen.
+  - **Wärmepumpe und Kühlung** (ein Opus-Agent):
+    - Auf dem Rechenweg VDI 6007 nimmt die Simulation Heiz- und Kühlsollwerte aus den
+      Konditionierungsprofilen (`Vdi6007Rechenweg.cs`, `GebaeudeModellEingang.cs`).
+    - Kühlung beschreibt den Kühlsollwert im Reiter „Konditionierung“ mit Kühlkalender und
+      Nachtauskühlung; dazu die Variante „D mit Bürozeiten“.
+    - Wärmepumpe: „Auslegung für Verteilung“ (#636), gesperrter Kühlschalter ohne Haken (#631).
+    - Rechenwege Wärmebedarf (Herkunft der Sollwerte) und Wärmepumpe (Kennlinie ohne gekoppelten
+      Bedarf, Zahlenrand des Quellpuffers #599).
+  - **Reiterfolge (#628):** keine Aussage betroffen.
+- **Prüfung:**
+  - Parser-Gegenprobe je Datei: 0 TeX-Fehler, keine `<pre>`, Anker erhalten.
+  - Die Kernaussage zu den Kühlsollwerten ist am Code nachgeprüft.
+  - Kern-Build und Hilfe-Tests: siehe Commit.
+- **Folgeaufträge:**
+  - Nr. 8 ist erledigt (#592).
+  - Neu: Nr. 11 (Kessel-Hinweistexte, Stromganglinie des Elektrokessels) und Nr. 12
+    (Parameterverwendung der Kühlspalten).
+  - Als Punkt ohne Auftrag: die Gebäudeseiten, die die Welle KP3 nachzieht.
+- **Logbuch:** Die Sätze zum Kesselmodell stehen bereits unter Version 1.2.0.6 (Statuszeilen #616–#636).
+  Die Wiki-Seiten selbst bekommen keinen Eintrag.
+- **Upload:** mit dem nächsten Wochen-Upload (Regel 13.3). Der Trockenlauf zeigt die geänderten Seiten.
