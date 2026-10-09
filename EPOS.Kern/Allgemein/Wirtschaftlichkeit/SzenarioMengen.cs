@@ -129,7 +129,9 @@ namespace WindowsFormsApplication1
                     // KU3-6: freie Kühlung über die Wärmequelle wie bei der Kältemaschine - die Kälte skaliert,
                     // die Stunden bleiben; null bleibt null.
                     FreieKuehlung_MWh = Mal(w.FreieKuehlung_MWh, f),
-                    FreieKuehlung_Stunden = w.FreieKuehlung_Stunden
+                    FreieKuehlung_Stunden = w.FreieKuehlung_Stunden,
+                    // UB-E4: die Betriebsbereiche sind ein Ausweis des Laufs - sie bleiben wie die Vorlaufstunden.
+                    Bereiche = w.Bereiche
                 };
                 if (w.Module != null)
                     foreach (ErgebnisWaermepumpeModulModel mo in w.Module)
@@ -151,7 +153,8 @@ namespace WindowsFormsApplication1
                             Vorlauf_Darueber_Stunden = mo.Vorlauf_Darueber_Stunden,
                             Vorlauf_Darunter_Stunden = mo.Vorlauf_Darunter_Stunden,
                             Kuehl_CarrierId = mo.Kuehl_CarrierId,
-                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler
+                            Kuehl_EigenerZaehler = mo.Kuehl_EigenerZaehler,
+                            Bereiche = mo.Bereiche
                         });
                 k.Waermepumpe = wk;
             }
