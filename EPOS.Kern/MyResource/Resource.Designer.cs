@@ -74604,6 +74604,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sa + So ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_SA_SO {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_SA_SO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tag kopieren… ähnelt.
         /// </summary>
         public static string KOND_BTN_KALB_TAG_KOPIEREN {
@@ -74631,11 +74640,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche anlegen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_WOCHE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_WOCHE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Woche kopieren… ähnelt.
         /// </summary>
         public static string KOND_BTN_KALB_WOCHE_KOPIEREN {
             get {
                 return ResourceManager.GetString("KOND_BTN_KALB_WOCHE_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche löschen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_WOCHE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_WOCHE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umbenennen ähnelt.
+        /// </summary>
+        public static string KOND_BTN_KALB_WOCHE_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("KOND_BTN_KALB_WOCHE_UMBENENNEN", resourceCulture);
             }
         }
         
@@ -75315,11 +75351,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertagsland ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_FEIERTAGSLAND {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_FEIERTAGSLAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
         /// </summary>
         public static string KOND_LBL_KALB_FERIEN {
             get {
                 return ResourceManager.GetString("KOND_LBL_KALB_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_FERIEN_NAME {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_FERIEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_GILT_ALLE {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_GILT_ALLE", resourceCulture);
             }
         }
         
@@ -75356,6 +75419,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_KALB_JAHRESRASTER {
             get {
                 return ResourceManager.GetString("KOND_LBL_KALB_JAHRESRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile für mehrere Größen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_LEGENDE_GEMEINSAM {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_LEGENDE_GEMEINSAM", resourceCulture);
             }
         }
         
@@ -75495,6 +75567,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Benannte Wochen ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WOCHEN {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WOCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wochenende ähnelt.
         /// </summary>
         public static string KOND_LBL_KALB_WOCHENENDE {
@@ -75518,6 +75599,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_LBL_KALB_WOCHENTAG {
             get {
                 return ResourceManager.GetString("KOND_LBL_KALB_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Woche ähnelt.
+        /// </summary>
+        public static string KOND_LBL_KALB_WOCHE_NAME {
+            get {
+                return ResourceManager.GetString("KOND_LBL_KALB_WOCHE_NAME", resourceCulture);
             }
         }
         
@@ -77556,11 +77646,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baden-Württemberg;Bayern;Berlin;Brandenburg;Bremen;Hamburg;Hessen;Mecklenburg-Vorpommern;Niedersachsen;Nordrhein-Westfalen;Rheinland-Pfalz;Saarland;Sachsen;Sachsen-Anhalt;Schleswig-Holstein;Thüringen ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_BUNDESLAENDER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_BUNDESLAENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Woche „{0}“ ähnelt.
         /// </summary>
         public static string KOND_TXT_KALB_EIGENE_WOCHE {
             get {
                 return ResourceManager.GetString("KOND_TXT_KALB_EIGENE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Größe getrennt ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GETRENNT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GETRENNT", resourceCulture);
             }
         }
         
@@ -77601,6 +77709,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst eine benannte Woche wählen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_GRUND_WOCHE_WAHL {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_GRUND_WOCHE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zielprofil gewählt. ähnelt.
         /// </summary>
         public static string KOND_TXT_KALB_GRUND_ZIEL {
@@ -77637,6 +77754,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Größe getrennt: Diese Zeile steht in jeder Größe als eigene Kopie. „gilt für“ ist hier nicht schaltbar; „Bearbeiten“ legt sie als eine gemeinsame Zeile neu an. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_GETRENNT {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_GETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Tag in der Farbe seiner Quelle; ein Klick wählt die Zeile oder den Einzeltag, der ihn bestimmt. ähnelt.
         /// </summary>
         public static string KOND_TXT_KALB_HINWEIS_JAHRESRASTER {
@@ -77651,6 +77777,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_KALB_HINWEIS_KOPIEREN {
             get {
                 return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feiertagsland gehört dem Gebäude; die Zone erbt es. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_LAND_ZONE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_LAND_ZONE", resourceCulture);
             }
         }
         
@@ -77691,11 +77826,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar; wählbar ab Stufe 2. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine neue Woche übernimmt die Werte des gewählten Wochenprofils. Zuordnungszeilen wählen sie als Wochenprofil; eine Woche, auf die eine Zeile verweist, lässt sich nicht löschen. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_WOCHEN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_WOCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für alle Größen des Gebäudes; ohne gewählten Tag gelten Samstag und Sonntag. ähnelt.
         /// </summary>
         public static string KOND_TXT_KALB_HINWEIS_WOCHENENDE {
             get {
                 return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_WOCHENENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenende gehört dem Gebäude; die Zone erbt es. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_HINWEIS_WOCHENENDE_ZONE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_WOCHENENDE_ZONE", resourceCulture);
             }
         }
         
@@ -77705,6 +77858,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_KALB_HINWEIS_ZUORDNUNG {
             get {
                 return ResourceManager.GetString("KOND_TXT_KALB_HINWEIS_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gelten die neun bundeseinheitlichen Feiertage. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_LAND_KEINE {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_LAND_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur bundeseinheitlich ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_LAND_LEER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_LAND_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Land fügt hinzu: {0}. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_KALB_LAND_REGELN {
+            get {
+                return ResourceManager.GetString("KOND_TXT_KALB_LAND_REGELN", resourceCulture);
             }
         }
         
