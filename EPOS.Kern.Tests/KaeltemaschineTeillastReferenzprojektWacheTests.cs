@@ -195,8 +195,9 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(e.Maschine);
             Assert.True(e.Maschine.TeillastWirksam, "Teillastweg nicht wirksam");
             Assert.True(e.Maschine.GuetegradWirksam, "Gütegradweg nicht wirksam");
-            Assert.True(e.StundenTakt > 0, "keine Taktstunden");
+            Assert.True(e.Taktstunden > 0, "keine Taktstunden");
             Assert.True(e.Starts > 0, "keine Starts");
+            Assert.True(e.Starts >= e.Taktstunden, "weniger Starts als Taktstunden");
             Assert.True(e.TaktstromKwh > 0.0, "kein Taktstrom");
             Assert.True(e.StundenTeillast > 0, "keine Teillaststunden");
             Assert.InRange(e.LastgradMittel, 0.2, 1.0);
@@ -217,8 +218,8 @@ namespace EPOS.Kern.Tests
 
             _aus.WriteLine("1063: Kälte {0:F1} kWh, Strom {1:F1} kWh, EER {2:F4}, Takt {3} h, Starts {4}, Taktstrom {5:F2} kWh, Teillast {6} h, " +
                            "Lastgrad {7:F3}, extrapoliert {8} h; 1055: Kälte {9:F1} kWh, Strom {10:F1} kWh, EER {11:F4}, Takt {12} h",
-                           e.KaelteGesamtKwh, e.StromGesamtKwh, eer, e.StundenTakt, e.Starts, e.TaktstromKwh, e.StundenTeillast,
-                           e.LastgradMittel, e.StundenExtrapoliert, eV.KaelteGesamtKwh, eV.StromGesamtKwh, eerV, eV.StundenTakt);
+                           e.KaelteGesamtKwh, e.StromGesamtKwh, eer, e.Taktstunden, e.Starts, e.TaktstromKwh, e.StundenTeillast,
+                           e.LastgradMittel, e.StundenExtrapoliert, eV.KaelteGesamtKwh, eV.StromGesamtKwh, eerV, eV.Taktstunden);
         }
     }
 }

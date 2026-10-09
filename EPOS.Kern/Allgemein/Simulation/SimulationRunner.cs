@@ -765,7 +765,7 @@ namespace WindowsFormsApplication1
                                 Hilfsstrom_MWh = e.HilfsstromGesamtKwh / 1000.0,
                                 FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0,
                                 FreieKuehlung_Stunden = e.StundenFreieKuehlung,
-                                Taktstunden = e.StundenTakt,
+                                Taktstunden = e.Taktstunden,
                                 Unterdeckung_MWh = e.OffenAnLeistungsgrenzeKwh / 1000.0,
                                 Stunden_Leistungsgrenze = e.StundenLeistungsgrenze,
                                 // KU3-4d (Schritt 184): die Abrechnung des Kaeltestroms wie an der Modulzeile der WP.

@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine("1055: Bedarf {0:F1} kWh, Deckung {1:F1} kWh, Rest {2:F3} kWh, Kälte Maschine {3:F1} kWh, Strom {4:F1} kWh, Netzbezug {5:F1} kWh, " +
                            "freie Kühlung {6} h, Takt {7} h, Speicher Ladung {8:F1} kWh, Entladung {9:F1} kWh",
                            kaskade.BedarfGesamtKwh, kaskade.DeckungGesamtKwh, kaskade.RestGesamtKwh, e.KaelteGesamtKwh, e.StromGesamtKwh,
-                           e.NetzbezugKwh, e.StundenFreieKuehlung, e.StundenTakt, kaskade.SpeicherladungKwh, kaskade.SpeicherentladungKwh);
+                           e.NetzbezugKwh, e.StundenFreieKuehlung, e.Taktstunden, kaskade.SpeicherladungKwh, kaskade.SpeicherentladungKwh);
         }
     }
 }

@@ -364,7 +364,7 @@ namespace EPOS.Kern.Tests
                     Assert.Equal(BitConverter.DoubleToInt64Bits(alt.Strom_stuendlich[h]), BitConverter.DoubleToInt64Bits(e.Strom_stuendlich[h]));
                     Assert.Equal(BitConverter.DoubleToInt64Bits(alt.Kaelte_stuendlich[h]), BitConverter.DoubleToInt64Bits(e.Kaelte_stuendlich[h]));
                 }
-                Assert.Equal(alt.StundenTakt, e.StundenTakt);
+                Assert.Equal(alt.Taktstunden, e.Taktstunden);
                 Assert.Equal(alt.StundenRandwert, e.StundenRandwert);
                 Assert.Equal(0, e.Starts);
                 Assert.Equal(0.0, e.TaktstromKwh);
@@ -390,7 +390,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(takt.MehrstromKwh, e.Taktstrom_stuendlich[5], 12);
             Assert.Equal(takt.MehrstromKwh, e.TaktstromKwh, 12);
             Assert.Equal(2 + takt.Starts, e.Starts);
-            Assert.Equal(1, e.StundenTakt);
+            Assert.Equal(1, e.Taktstunden);
             Assert.Equal(3, e.StundenTeillast);   // 0,6 in Stunde 0, 1, 4; Volllast in Stunde 2 zählt nicht
             double gewichtet = (30.0 * 0.6 * 3 + 50.0 * 1.0 + 5.0 * 0.1) / 145.0;
             Assert.Equal(gewichtet, e.LastgradMittel, 12);
@@ -419,7 +419,7 @@ namespace EPOS.Kern.Tests
                 kaskade.Rechnen(bedarf, false);
                 Assert.Equal(0.0, kaskade.RestGesamtKwh, 9);
                 taktstrom = e.TaktstromKwh;
-                return e.StundenTakt;
+                return e.Taktstunden;
             }
             int ohne = Taktstunden(false, out double stromOhne);
             int mit = Taktstunden(true, out double stromMit);

@@ -94,6 +94,9 @@ namespace EPOS.Kern.Tests
             Assert.InRange(m.Taktstrom_MWh.Value, e.TaktstromKwh / 1000.0 - 0.006, e.TaktstromKwh / 1000.0 + 0.006);
             Assert.True(m.Stromverbrauch_MWh >= m.Taktstrom_MWh.Value);
             Assert.Equal(e.Starts, m.Starts);
+            // Ein Begriff, ein Zähler: die Ergebnisspalte liest denselben Zähler wie der alte Taktweg.
+            Assert.True(e.Taktstunden > 0);
+            Assert.Equal(e.Taktstunden, m.Taktstunden);
             Assert.Equal(e.StundenTeillast, m.Teillaststunden);
             Assert.NotNull(m.Lastgrad_Mittel);
             Assert.InRange(m.Lastgrad_Mittel.Value, 0.0, 1.0);

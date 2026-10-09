@@ -107,14 +107,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(LUFTGEKUEHLT, ek.Bezeichner);
             Assert.InRange(ek.Kaelteproduktion_MWh, km.KaelteGesamtKwh / 1000.0 - 0.006, km.KaelteGesamtKwh / 1000.0 + 0.006);
             Assert.InRange(ek.Stromverbrauch_MWh, km.StromGesamtKwh / 1000.0 - 0.006, km.StromGesamtKwh / 1000.0 + 0.006);
-            Assert.Equal(km.StundenTakt, ek.Taktstunden);
+            Assert.Equal(km.Taktstunden, ek.Taktstunden);
 
             _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                 "1017 + {0}: Kältebedarf {1:F3} MWh/a; WP {2:F3}, Kältemaschine {3:F3} MWh/a; Kältestrom {4:F3} -> {5:F3} MWh/a; " +
                 "Rest {6:F3} -> {7:F3} MWh/a; Takt {8} h, Randwert {9} h",
                 LUFTGEKUEHLT, mit.BedarfGesamtKwh / 1000.0, wp.KaelteGesamtKwh / 1000.0, km.KaelteGesamtKwh / 1000.0,
                 ohne.StromGesamtKwh / 1000.0, mit.StromGesamtKwh / 1000.0, ohne.RestGesamtKwh / 1000.0,
-                mit.RestGesamtKwh / 1000.0, km.StundenTakt, km.StundenRandwert));
+                mit.RestGesamtKwh / 1000.0, km.Taktstunden, km.StundenRandwert));
         }
 
         [Fact]

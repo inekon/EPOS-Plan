@@ -931,7 +931,7 @@ namespace WindowsFormsApplication1
                     (e.KaelteFreiKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     e.StundenFreieKuehlung,
                     (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    e.StundenTakt));
+                    e.Taktstunden));
             if (e.StundenRandwert > 0)
                 Protokoll.HinweisEinmal("kuehl-km-randwert-" + e.AnlagenID,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_RANDWERT,

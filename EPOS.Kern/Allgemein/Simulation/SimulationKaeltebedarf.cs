@@ -755,7 +755,7 @@ namespace WindowsFormsApplication1
                     {
                         s.Add(new KeyValuePair<string, double>(p + "TaktstromMwh", e.TaktstromKwh / 1000.0));
                         s.Add(new KeyValuePair<string, double>(p + "Starts", e.Starts));
-                        s.Add(new KeyValuePair<string, double>(p + "Taktstunden", e.StundenTakt));
+                        s.Add(new KeyValuePair<string, double>(p + "Taktstunden", e.Taktstunden));
                         s.Add(new KeyValuePair<string, double>(p + "Teillaststunden", e.StundenTeillast));
                         s.Add(new KeyValuePair<string, double>(p + "LastgradMittel", e.LastgradMittel));
                     }

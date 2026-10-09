@@ -114,9 +114,6 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden mit Kennlinie am Rand (nur Kältemaschine).</summary>
         public int StundenRandwert;
 
-        /// <summary>Stunden unter der Mindestteillast — die Maschine taktet (nur Kältemaschine).</summary>
-        public int StundenTakt;
-
         /// <summary>Stunden, in denen die Kennlinienleistung die Last nicht trug (nur Kältemaschine).</summary>
         public int StundenLeistungsgrenze;
 
@@ -213,7 +210,10 @@ namespace WindowsFormsApplication1
         /// <summary>Starts im Kühlbetrieb [1/a] — nur mit <see cref="Mindestanteil"/> &gt; 0.</summary>
         public int Starts;
 
-        /// <summary>Taktstunden im Kühlbetrieb [h/a]: Kühlstunden unter der Mindestleistung.</summary>
+        /// <summary>
+        /// Taktstunden im Kühlbetrieb [h/a]: Kühlstunden unter der Mindestleistung (Wärmepumpe) bzw. unter der
+        /// Mindestteillast (Kältemaschine) — ein Zähler für beide Wege (Fachkonzept Teillast und Takten 5.3).
+        /// </summary>
         public int Taktstunden;
 
         /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [kWh/a] — Teil von <see cref="StromGesamtKwh"/>.</summary>
@@ -271,7 +271,6 @@ namespace WindowsFormsApplication1
             StundenFreieKuehlung = 0;
             KaelteFreiKwh = 0;
             StundenRandwert = 0;
-            StundenTakt = 0;
             StundenLeistungsgrenze = 0;
             OffenAnLeistungsgrenzeKwh = 0;
         }
@@ -832,7 +831,7 @@ namespace WindowsFormsApplication1
             e.HilfsstromGesamtKwh += hilfs;
             e.StundenMitKaelte++;
             if (s.FreieKuehlung) { e.StundenFreieKuehlung++; e.KaelteFreiKwh += s.KaelteKwh; }
-            if (s.Takt) e.StundenTakt++;
+            if (s.Takt) e.Taktstunden++;
             if (e.Maschine.TeillastWirksam) TeillastBuchen(e, h, s);
 
             Deckung_stuendlich[h] += raum;
