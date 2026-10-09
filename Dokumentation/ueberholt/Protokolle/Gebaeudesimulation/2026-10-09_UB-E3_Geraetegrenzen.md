@@ -1,6 +1,6 @@
 # Protokoll UB-E3 — Gerätegrenzen, Hydraulik- und Rücklaufgrenze, Stammblätter, Basis R46 (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#851**. Commits E3-a `7b80d047c`, `2aa6b4b51`, `594a6316e`, `2a4ae9bd2`; E3-b `35647a763`, `11d50500d`,
+**Sitzung:** Gebäudesimulation, Statuszeile **#852**. Commits E3-a `7b80d047c`, `2aa6b4b51`, `594a6316e`, `2a4ae9bd2`; E3-b `35647a763`, `11d50500d`,
 `74f58fb8a`, `d19280cef`; E3-c `0c2ef0680`, `2e58321fc`; Merges `b09015337`, `6472043e7` (origin #842–#844, Schemaschritt 207); Umnummerierung
 `4acd13c25`; Nachzug `731483e36`. **Entscheid:** E109. Konzepte: Fachkonzept Übergabegrenze/Bivalenz (Fassung 2) und Umsetzungskonzept Abschnitt 10.
 
@@ -17,7 +17,7 @@
 | E3-a | `7b80d047c`, `2aa6b4b51`, `594a6316e`, `2a4ae9bd2` | `Bivalenz/Geraetegrenzen.cs`: acht Gerätespalten der Projektkopie `Tab_WP`, NULL → Vorgabe der Kältemittelklasse, Herkunft Katalog / Vorgabe nach Kältemittel / Vorgabe / abgeleitet, θ_R,grenz = min(`Ruecklauf_Max`, θ_WP,max − σ_min). `Hydraulikgrenze.cs`: DIREKT mit Überströmventil ṁ_WP = max(ṁ_HK, ṁ_min), σ_max und Takten unter σ_min mit Zähler `Spreizung_Unterschritten_h`; PUFFER Ladeseite ṁ_WP·c_p·σ_max, nie über θ_WP,max, Entladeseite benannt nicht gerechnet; WEICHE Mischungsbilanz mit Übergabegrenze am gemischten Vorlauf (`Uebergabegrenze.ZoneGemischt`). `Ruecklaufgrenze.cs`: Rücklauf zur Wärmepumpe direkt / gemischt / unterste Pufferzone, über θ_R,grenz → 0 mit Grund `RUECKLAUF_MAX` und Zähler `Ruecklauf_Ueberschritten_h`; R744-Faktor auf Leistung und COP, Strom unverändert. BHKW-Rücklaufgrenze in `SimulationBHKW` (`Ruecklauf_Max` der Projektkopie, Grund `RUECKLAUF_MAX`). AK3-Angebot mit `KapazitaetBegrenzen`. `ParameterVerwendung`: neun Spalten auf „Simulation“. Proben `GeraetegrenzenTests`, `HydraulikgrenzeTests`, `RuecklaufgrenzeTests` |
 | E3-b | `35647a763`, `11d50500d`, `74f58fb8a`, `d19280cef` | BHKW-Grenze wirkt über der Grenze. `EPOS.Kern/Controller/GeraetegrenzWerte.cs`: Lesen, Schreiben, Kopieren der neun Katalogspalten mit Bereichsprüfung (`WPStammCtrl`, `WPCtrl.CopyFromStamm`, `BHKWStammCtrl`, `BHKWCtrl`). Stammblatt Wärmepumpe: Gruppe „Gerätegrenzen“ (`WaermepumpeGeraetegrenzenFelder.razor`) mit Klappliste Kältemittel und sieben Zahlenfeldern, Schnellwahl füllt nur leere Felder. BHKW-Stammblatt „Höchster Rücklauf (Abschaltgrenze)“ mit Vorgabe 70 °C und Hinweis gegen den Auslegungsrücklauf. KI-Feldkarten 21/18 Felder; 19 Ressourcenschlüssel je Sprache; `KatalogabgleichTests` Prüfsummenprobe, `ProjektpaketAnhebungTests`, Lückenprobe wieder nur `Modulkosten` |
 | E3-c | `0c2ef0680`, `2e58321fc` | Referenzlauf 27/27 gegen R45: 26 Bestandsprojekte byte-gleich, 1060 ändert sich. Basis **R46** `2026-10-09_R46_Geraetegrenzen` (27 Projekte, 879 CSV, 6 071 Skalare), R45 nach `ueberholt/Referenzbasen`, `CLAUDE.md`, `kern.yml`, `ios.yml` nachgezogen |
-| Merges | `b09015337`, `6472043e7` | origin #842–#844 (Schemaschritt 207); Umnummerierung `4acd13c25` (#842/#843 → #850/#851) |
+| Merges | `b09015337`, `6472043e7` | origin #842–#844 (Schemaschritt 207); Umnummerierung `4acd13c25` (#842/#843 → #851/#852) |
 | Nachzug | `731483e36` | fremder Zähltest `StromspeicherUebernahmeTests` (KM1): auch die Kältemaschine führt einen Katalogimport-Hinweis |
 
 ## 3 Dateien
