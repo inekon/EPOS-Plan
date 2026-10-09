@@ -125,7 +125,7 @@ namespace EPOS.Kern.Tests
             Assert.True(KesselKennlinieSchema.Vollstaendig());
             Assert.Empty(KesselKennlinieSchema.Anweisungen);
             Assert.True(Zahl("SELECT COUNT(*) FROM Tab_Heizkessel") > 0);
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt <> 1050" +
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt NOT IN (1050, 1060)" +
                                   " AND (Wirkungsgrad_Teillast30 IS NOT NULL " +
                                   "OR Kennlinie_Brennwert <> 0 OR Mindestleistung IS NOT NULL " +
                                   "OR Anfahrverlust_kWh IS NOT NULL OR Mindestlaufzeit_min IS NOT NULL)"));
@@ -270,7 +270,8 @@ namespace EPOS.Kern.Tests
                                                   "name = 'Kennlinie_Brennwert' AND type = 'INTEGER' AND " +
                                                   "\"notnull\" = 1 AND dflt_value = '0'"));
             }
-            Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt <> 1050" +
+            // 1060 (Übergabegrenze, Kopie von 1056): Brennwertkessel mit Brennwertkennlinie, Kennlinienspalten leer.
+            Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE ID_Projekt NOT IN (1050, 1060)" +
                                               " AND (Wirkungsgrad_Teillast30 IS NOT NULL " +
                                               "OR Kennlinie_Brennwert <> 0 OR Mindestleistung IS NOT NULL " +
                                               "OR Anfahrverlust_kWh IS NOT NULL OR Mindestlaufzeit_min IS NOT NULL)"));

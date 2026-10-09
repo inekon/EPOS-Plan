@@ -233,7 +233,10 @@ namespace WindowsFormsApplication1
                     "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr", "Aufstellung", "Nennleistung",
                     "maxPtherm", "Heizung", "Regelung", "Modulkosten", "Laenge", "Breite", "Hoehe", "Gewicht",
                     "Raum", "Kuehlleistung", "Bauart", "Kuehlbetrieb", "Kuehl_Vorlauf", "Kuehl_Hilfsstromanteil",
-                    "Mindestleistung_kW", "Taktverlustfaktor_Cd"
+                    "Mindestleistung_kW", "Taktverlustfaktor_Cd",
+                    // UebergabegrenzeSchema (Schritt 203): die acht Geraetespalten; leer tragen sie nichts zur Pruefsumme bei.
+                    "Spreizung_Auslegung_K", "Spreizung_Max_K", "Spreizung_Min_K", "Mindestvolumenstrom_Prozent",
+                    "Ruecklauf_Max", "Ruecklauf_Bezug", "Ruecklauf_Abwertung_ProzentJeK", "Kaeltemittel"
                 },
                 new Katalogkind("Tab_Kenndaten_STAMM", "ID_WP", new[] { "Vorlauf", "Temperatur", "COP", "Ptherm" }),
                 new Katalogkind("Tab_Kenndaten_Kuehlung_STAMM", "ID_WP",
@@ -257,7 +260,9 @@ namespace WindowsFormsApplication1
                     "CO2", "Staub", "Motortyp", "Grenzleistung", "Kosten_Modul", "Kosten_Montage",
                     "Kosten_Lieferung", "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung", "Vorlauf",
                     "Ruecklauf", "Wirkungsgrad_el", "Wirkungsgrad_th", "Wirkungsgrad_el_Teillast50",
-                    "Wirkungsgrad_th_Teillast50", "Anfahrverlust_kWh", "Mindestlaufzeit_min"
+                    "Wirkungsgrad_th_Teillast50", "Anfahrverlust_kWh", "Mindestlaufzeit_min",
+                    // UebergabegrenzeSchema (Schritt 203): die Ruecklaufgrenze; leer traegt sie nichts zur Pruefsumme bei.
+                    "Ruecklauf_Max"
                 })
             { Anzeigeschluessel = "KABG_KATALOG_BHKW" },
             new Katalogtabelle("Tab_PV_STAMM", "PV",

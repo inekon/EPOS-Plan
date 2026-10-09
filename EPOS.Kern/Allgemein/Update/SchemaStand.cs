@@ -968,7 +968,12 @@ namespace WindowsFormsApplication1
         /// <see cref="KuehlkurveSchema.SCHRITT"/>: fünf Eingabespalten der Kühlkurve an beiden Gebäudetabellen samt elftem
         /// Sichtneubau, drei Kennzahlen an <c>Tab_ErgebnisEnergiebedarf</c> (<see cref="KuehlkurveSchema"/>).
         /// <b>Ergebnisneutral:</b> Alle Spalten entstehen leer.
-        public const int Zielversion = KuehlkurveSchema.SCHRITT;
+        /// Danach, mit ÜBERGABEGRENZE UND BIVALENZ (Umsetzungskonzept Übergabegrenze und Bivalenz, Abschnitt 4), steht das
+        /// Ziel auf <see cref="UebergabegrenzeSchema.SCHRITT"/>: acht Gerätespalten an beiden Wärmepumpentabellen, die
+        /// Rücklaufgrenze an beiden BHKW-Tabellen, Einbindung und Vorwärmbetrieb an der Anlage, Bereiche und Zähler an Modul-
+        /// und Projektergebnis der Wärmepumpe (<see cref="UebergabegrenzeSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten
+        /// entstehen leer.
+        public const int Zielversion = UebergabegrenzeSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

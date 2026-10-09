@@ -1358,6 +1358,20 @@ namespace WindowsFormsApplication1
             return wp >= 0 && kessel > wp;
         }
 
+        /// <summary>
+        /// UB‑E2: die Raumtemperatur der Stunde eines gekoppelten Gebäudes (<c>ID_Gebaeude</c>) aus dem Gebäudemodell;
+        /// NaN, solange sie nicht vorliegt (dann rechnet die Übergabegrenze mit der Auslegungsraumtemperatur).
+        /// </summary>
+        private double BivalenzRaumtemperatur(int idGebaeude, int stunde)
+        {
+            var alle = simulation_Waermebedarf?.GebaeudeErgebnisse?.Alle;
+            if (alle == null) return double.NaN;
+            foreach (GebaeudeModellErgebnis e in alle)
+                if (e != null && e.ID_Gebaeude == idGebaeude && e.Raumtemperatur != null && stunde >= 0 && stunde < e.Raumtemperatur.Length)
+                    return e.Raumtemperatur[stunde];
+            return double.NaN;
+        }
+
         /// <summary>true, wenn <c>Tool_1..4</c> den Erzeuger enthält.</summary>
         private bool KaskadeEnthaelt(string erzeuger)
         {
@@ -1634,6 +1648,12 @@ namespace WindowsFormsApplication1
                 // ANLAGENKOPPLUNG (AK1, 6.1): der gerechnete Vorlauf des Heizkreises für die
                 // Kennlinienwahl - null ohne gekoppeltes Gebäude, dann wie im Bestand.
                 simulation_wp.Heizkreisvorlauf = simulation_Waermebedarf?.Heizkreis?.VorlaufC;
+                // UB-E2 (Umsetzungskonzept 3.2 Schritte 1, 2, 6): Rücklauf des Heizkreises, Kaskadenfolge und Raumtemperatur
+                // der gekoppelten Gebäude - wirksam nur für ein Modul mit Bivalenzobjekt (Einbindung gesetzt, U-1).
+                simulation_wp.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
+                simulation_wp.KesselInKaskade = KaskadeEnthaelt(DbWerte.ERZEUGER_HEIZKESSEL);
+                simulation_wp.VorDemKessel = KesselHinterWaermepumpe();
+                simulation_wp.BivalenzRaumtemperatur = BivalenzRaumtemperatur;
                 // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - null ohne Prozess mit
                 // Temperaturpaar, dann wie im Bestand.
                 simulation_wp.Prozesstemperatur = simulation_Waermebedarf?.ProzessTemperatur;
@@ -4584,6 +4604,8 @@ namespace WindowsFormsApplication1
         private void KesselRuecklaufEingaengeSetzen()
         {
             simulation_spk.Heizkreisruecklauf = simulation_Waermebedarf?.Heizkreis?.RuecklaufC;
+            // UB-E2: Stufe „Vorwärmer" der Rücklaufkette - NaN ohne Bivalenzobjekt, dann wie im Bestand.
+            simulation_spk.Vorwaermvorlauf = _wpInSchleife ? simulation_wp?.Vorwaermvorlauf : null;
             simulation_spk.RuecklaufPaarLesen = KesselRuecklaufGepflegt;
             // PW1 Stufe 1: das Temperaturniveau des Prozesskanals und der gepflegte Vorlauf des
             // Kessels (dieselbe Kette Anlage -> Heizkessel) - gefragt nur mit Temperaturniveau.

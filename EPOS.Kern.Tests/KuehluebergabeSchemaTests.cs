@@ -205,7 +205,7 @@ namespace EPOS.Kern.Tests
         private const int GEBAEUDE_REFERENZ_AK3K = 10665;
 
         /// <summary>Die Gebäude der Referenzprojekte der Kühlkurve 1061 und 1062 (KK5a): dieselbe Kühlübergabe.</summary>
-        private const int GEBAEUDE_REFERENZ_KK = 10666, GEBAEUDE_REFERENZ_KKZ = 10667;
+        private const int GEBAEUDE_REFERENZ_KK = 10666, GEBAEUDE_REFERENZ_KKZ = 10667, GEBAEUDE_REFERENZ_UG = 10668;   // UG: Übergabegrenze 1060, Kopie von 1056
 
         /// <summary>
         /// Alle Strukturen stehen, die Sicht ist die geltende, alle neuen Spalten sind leer (der
@@ -243,7 +243,8 @@ namespace EPOS.Kern.Tests
                       GEBAEUDE_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture) + ", " +
                       GEBAEUDE_REFERENZ_AK3K.ToString(CultureInfo.InvariantCulture) + ", " +
                       GEBAEUDE_REFERENZ_KK.ToString(CultureInfo.InvariantCulture) + ", " +
-                      GEBAEUDE_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture) + ")" : "";
+                      GEBAEUDE_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture) + ", " +
+                      GEBAEUDE_REFERENZ_UG.ToString(CultureInfo.InvariantCulture) + ")" : "";
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
                                       s.Name + "] <> 0" + ausser));
                 if (!GebaeudeSchema.KUEHLUEBERGABE_SCHALTER.Contains(s.Name))

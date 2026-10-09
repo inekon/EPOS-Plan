@@ -129,6 +129,9 @@ namespace WindowsFormsApplication1
             // VW1a (Schritt 188): der Ausweis der Vorlaufwahl an der Modulzeile der Waermepumpe - ebenso vor der
             // Transaktion gefragt; auf einer Datenbank davor bleibt die Zeile, wie sie war.
             bool vorlaufwahlWp = VorlaufwahlSchema.ErgebnisspaltenVorhanden();
+            // UB-E2 (Schritt 203): die Betriebsbereiche an beiden Ergebnistabellen der Waermepumpe - ebenso vor der
+            // Transaktion gefragt; ohne Bivalenzobjekt bleiben die Spalten NULL.
+            bool bereicheWp = UebergabegrenzeSchema.ErgebnisspaltenVorhanden();
             bool kuehlkreisSpalten = heizkreisSpalten &&
                                      System.Linq.Enumerable.All(KuehluebergabeSchema.SpaltenKuehlkreis,
                                          s => DataRepository.SpalteVorhanden(ErgebnisGebaeudeSchema.TAB, s.Key));
@@ -401,8 +404,10 @@ namespace WindowsFormsApplication1
                             KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ", " +
                             KuehlungSchema.SPALTE_KAELTEPRODUKTION_WP + ", " +
                             KuehlungSchema.SPALTE_STROMVERBRAUCH_KUEHLUNG +
-                            (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?" + (freieKuehlungWp ? ", ?,?" : "") + ")";
+                            (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") +
+                            (bereicheWp ? ", " + string.Join(", ", UebergabegrenzeSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?, ?,?,?, ?,?,?, ?, ?,?" + (freieKuehlungWp ? ", ?,?" : "") +
+                            (bereicheWp ? Platzhalter(UebergabegrenzeSchema.SPALTEN_ERGEBNIS.Count) : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = wpId });
@@ -427,6 +432,7 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.FreieKuehlung_MWh) });
                                 p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Waermepumpe.FreieKuehlung_Stunden) });
                             }
+                            if (bereicheWp) BereichsParameter(p, m.Waermepumpe.Bereiche, false);
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -444,9 +450,11 @@ namespace WindowsFormsApplication1
                                 KuehlungSchema.SPALTE_MODUL_KUEHL_CARRIER + ", " +
                                 KuehlungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER +
                                 (freieKuehlungWp ? ", " + string.Join(", ", FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) : "") +
-                                (vorlaufwahlWp ? ", " + string.Join(", ", VorlaufwahlSchema.SPALTEN_ERGEBNIS) : "") + ") " +
+                                (vorlaufwahlWp ? ", " + string.Join(", ", VorlaufwahlSchema.SPALTEN_ERGEBNIS) : "") +
+                                (bereicheWp ? ", " + string.Join(", ", UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL) : "") + ") " +
                                 "VALUES (?,?,?,?,?,?,?,?, ?,?,?,?,?" + (freieKuehlungWp ? ", ?,?" : "") +
-                                (vorlaufwahlWp ? ", ?,?,?" : "") + ")";
+                                (vorlaufwahlWp ? ", ?,?,?" : "") +
+                                (bereicheWp ? Platzhalter(UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL.Count) : "") + ")";
                             foreach (ErgebnisWaermepumpeModulModel mo in m.Waermepumpe.Module)
                             {
                                 {
@@ -480,6 +488,7 @@ namespace WindowsFormsApplication1
                                         p.Add(new DbParam("@v2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.Vorlauf_Darueber_Stunden) });
                                         p.Add(new DbParam("@v3", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.Vorlauf_Darunter_Stunden) });
                                     }
+                                    if (bereicheWp) BereichsParameter(p, mo.Bereiche, true);
                                     v.Ausfuehren(sqlM, p.ToArray());
                                 }
                             }
@@ -1229,6 +1238,9 @@ namespace WindowsFormsApplication1
                 // Schritt 187 (KU3-6a): die freie Kuehlung - NULL bleibt null; eine fehlende Spalte gilt wie NULL.
                 w.FreieKuehlung_MWh = DN(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_MWH);
                 w.FreieKuehlung_Stunden = GanzOderNull(rw, FreieKuehlungSoleSchema.SPALTE_FREIE_KUEHLUNG_STUNDEN);
+                // UB-E2 (Schritt 203): die Betriebsbereiche - nur nach dem Schritt, NULL bleibt null.
+                bool bereicheLesen = UebergabegrenzeSchema.ErgebnisspaltenVorhanden();
+                if (bereicheLesen) w.Bereiche = BereicheLesen(rw, false);
 
                 DataTable dmod = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_WP_MODUL + " WHERE ID_ErgebnisWaermepumpe = ? ORDER BY ID",
@@ -1256,6 +1268,7 @@ namespace WindowsFormsApplication1
                         mo.Vorlaufwahl_Stunden = TextOderNull(rm, VorlaufwahlSchema.SPALTE_VORLAUFWAHL_STUNDEN);
                         mo.Vorlauf_Darueber_Stunden = GanzOderNull(rm, VorlaufwahlSchema.SPALTE_DARUEBER_STUNDEN);
                         mo.Vorlauf_Darunter_Stunden = GanzOderNull(rm, VorlaufwahlSchema.SPALTE_DARUNTER_STUNDEN);
+                        if (bereicheLesen) mo.Bereiche = BereicheLesen(rm, true);
                         w.Module.Add(mo);
                     }
 
@@ -2294,6 +2307,51 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Ein nullbarer Ergebniswert: gerundet, oder NULL fuer "nicht erhoben".</summary>
+        /// <summary>
+        /// UB‑E2: die Parameter der Betriebsbereiche in der Reihenfolge von <see cref="UebergabegrenzeSchema.SPALTEN_ERGEBNIS"/>
+        /// (bzw. <c>_MODUL</c>); ohne Bereiche (<c>null</c>) jede Spalte NULL, nicht 0.
+        /// </summary>
+        private static void BereichsParameter(List<DbParam> p, Bereichskennzahlen b, bool modul)
+        {
+            IReadOnlyList<string> spalten = modul ? UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL : UebergabegrenzeSchema.SPALTEN_ERGEBNIS;
+            object[] werte = b?.Werte(modul);
+            for (int i = 0; i < spalten.Count; i++)
+            {
+                object w = werte != null && i < werte.Length ? werte[i] : null;
+                bool ganz = spalten[i].EndsWith("_h", StringComparison.Ordinal);
+                p.Add(new DbParam("@ub" + i, ganz ? DbParamTyp.Integer : DbParamTyp.Double)
+                    { Wert = w == null ? DBNull.Value : ganz ? (object)Convert.ToInt32(w) : Convert.ToDouble(w) });
+            }
+        }
+
+        /// <summary>UB‑E2: die Betriebsbereiche einer Ergebniszeile; <c>null</c>, wenn alle Spalten NULL sind oder fehlen.</summary>
+        private static Bereichskennzahlen BereicheLesen(DataRow r, bool modul)
+        {
+            var b = new Bereichskennzahlen();
+            bool belegt = false;
+            string[] h = { UebergabegrenzeSchema.SPALTE_BEREICH_WPALLEIN_H, UebergabegrenzeSchema.SPALTE_BEREICH_PARALLEL_H,
+                           UebergabegrenzeSchema.SPALTE_BEREICH_VORWAERMUNG_H, UebergabegrenzeSchema.SPALTE_BEREICH_NURKESSEL_H };
+            string[] m = { UebergabegrenzeSchema.SPALTE_BEREICH_WPALLEIN_MWH, UebergabegrenzeSchema.SPALTE_BEREICH_PARALLEL_MWH,
+                           UebergabegrenzeSchema.SPALTE_BEREICH_VORWAERMUNG_MWH, UebergabegrenzeSchema.SPALTE_BEREICH_NURKESSEL_MWH };
+            for (int i = 0; i < 4; i++)
+            {
+                b.Stunden[i] = GanzOderNull(r, h[i]);
+                b.Mwh[i] = DN(r, m[i]);
+                belegt |= b.Stunden[i].HasValue || b.Mwh[i].HasValue;
+            }
+            b.Spreizung_Unterschritten_h = GanzOderNull(r, UebergabegrenzeSchema.SPALTE_SPREIZUNG_UNTERSCHRITTEN_H);
+            b.Ruecklauf_Ueberschritten_h = GanzOderNull(r, UebergabegrenzeSchema.SPALTE_RUECKLAUF_UEBERSCHRITTEN_H);
+            if (modul)
+            {
+                b.Bivalenzpunkt_1 = DN(r, UebergabegrenzeSchema.SPALTE_BIVALENZPUNKT_1);
+                b.Bivalenzpunkt_2 = DN(r, UebergabegrenzeSchema.SPALTE_BIVALENZPUNKT_2);
+                b.Uebergabe_Max_kW = DN(r, UebergabegrenzeSchema.SPALTE_UEBERGABE_MAX);
+                belegt |= b.Bivalenzpunkt_1.HasValue || b.Bivalenzpunkt_2.HasValue || b.Uebergabe_Max_kW.HasValue;
+            }
+            belegt |= b.Spreizung_Unterschritten_h.HasValue || b.Ruecklauf_Ueberschritten_h.HasValue;
+            return belegt ? b : null;
+        }
+
         private static object WertOderNull(double? wert)
         {
             return wert.HasValue ? (object)R(wert.Value) : DBNull.Value;

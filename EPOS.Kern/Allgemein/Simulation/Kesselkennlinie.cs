@@ -343,7 +343,16 @@ namespace WindowsFormsApplication1
         /// endlichen Wert fällt durch.
         /// </summary>
         public static double Ruecklauf(double heizkreisC, double speicherC, double? paarC, out Ruecklaufstufe stufe)
+            => Ruecklauf(double.NaN, heizkreisC, speicherC, paarC, out stufe);
+
+        /// <summary>
+        /// Die Rücklaufkette mit der Stufe <b>Vorwärmer</b> vorn (Fachkonzept Übergabegrenze 4.4, UB‑Q11 a): In einer
+        /// Stunde mit Vorwärmbetrieb und laufender Wärmepumpe (B3) ist der Kesselrücklauf der Vorlauf der Wärmepumpe
+        /// θ_WP,max (<paramref name="vorwaermerC"/>); NaN fällt durch auf die Kette Heizkreis → Speicher → Paar → Rückfall.
+        /// </summary>
+        public static double Ruecklauf(double vorwaermerC, double heizkreisC, double speicherC, double? paarC, out Ruecklaufstufe stufe)
         {
+            if (Endlich(vorwaermerC)) { stufe = Ruecklaufstufe.Vorwaermer; return vorwaermerC; }
             if (Endlich(heizkreisC)) { stufe = Ruecklaufstufe.Heizkreis; return heizkreisC; }
             if (Endlich(speicherC)) { stufe = Ruecklaufstufe.Speicher; return speicherC; }
             if (paarC.HasValue && Endlich(paarC.Value)) { stufe = Ruecklaufstufe.Paar; return paarC.Value; }
@@ -523,6 +532,12 @@ namespace WindowsFormsApplication1
         Paar = 2,
 
         /// <summary>(d) Der Rückfall 50 °C.</summary>
-        Rueckfall = 3
+        Rueckfall = 3,
+
+        /// <summary>
+        /// Der Vorlauf der vorwärmenden Wärmepumpe (B3, Übergabegrenze UB‑E2) — im Rang vor <see cref="Heizkreis"/>;
+        /// der Wert ist hinten angefügt, damit gezählte Stufen stabil bleiben.
+        /// </summary>
+        Vorwaermer = 4
     }
 }

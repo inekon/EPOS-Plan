@@ -34,6 +34,21 @@ namespace WindowsFormsApplication1
 
         /// <summary><c>KEIN_ERZEUGER</c>: Das Projekt hat keinen Wärmeerzeuger in der Kaskade.</summary>
         KeinErzeuger,
+
+        /// <summary>
+        /// <c>UEBERGABE_HOECHSTVORLAUF</c>: Der verlangte Vorlauf liegt über dem Höchstvorlauf der Wärmepumpe
+        /// (Fachkonzept Übergabegrenze 4.5, B3/B4) bzw. die Übergabe beim Höchstvorlauf begrenzt.
+        /// </summary>
+        UebergabeHoechstvorlauf,
+
+        /// <summary><c>SPREIZUNG_MAX</c>: Die Hydraulik begrenzt die Wärmepumpe auf W_H·σ_max (UB‑E3).</summary>
+        SpreizungMax,
+
+        /// <summary><c>SPREIZUNG_MIN</c>: Im Vorwärmbetrieb ist θ_WP,max − θ_R kleiner als σ_min — die Wärmepumpe steht.</summary>
+        SpreizungMin,
+
+        /// <summary><c>RUECKLAUF_MAX</c>: Der Rücklauf zur Wärmepumpe liegt über ihrer Rücklaufgrenze (UB‑E3).</summary>
+        RuecklaufMax,
     }
 
     /// <summary>

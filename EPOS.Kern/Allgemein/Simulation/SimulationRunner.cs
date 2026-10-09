@@ -738,8 +738,12 @@ namespace WindowsFormsApplication1
                         mo.Vorlauf_Darueber_Stunden = vw.Darueber;
                         mo.Vorlauf_Darunter_Stunden = vw.Darunter;
                     }
+                    // UB-E2 (Schemaschritt 203): die Betriebsbereiche - nur fuer ein Modul mit Bivalenzobjekt
+                    // (Einbindung gesetzt, U-1); sonst bleibt das Feld null und die Spalten NULL.
+                    mo.Bereiche = BereicheDesModuls(wp.BivalenzDesModuls(i));
                     w.Module.Add(mo);
                 }
+                w.Bereiche = Bereichskennzahlen.Summe(w.Module.Select(x => x.Bereiche));
 
                 m.Waermepumpe = w;
             }
@@ -1384,6 +1388,36 @@ namespace WindowsFormsApplication1
         /// ein abweichender Kühlträger samt Abrechnungsart. Ein Modul, das nicht kühlt, trägt 0 — die
         /// Kältekaskade hat gerechnet, dieses Gerät nur nicht gekühlt. Werte in MWh.
         /// </summary>
+        /// <summary>
+        /// UB‑E2 (Umsetzungskonzept 3.3): die Betriebsbereiche eines Moduls aus seinem Bivalenzobjekt — Stunden und Wärme
+        /// je Bereich (B0 und B4 als „nur Kessel"), die Zähler der Spreizungs- und Rücklaufgrenze (in UB‑E2 0), die
+        /// Bivalenzpunkte und Φ_UE,max bei Auslegung. <c>null</c> ohne Bivalenzobjekt.
+        /// </summary>
+        internal static Bereichskennzahlen BereicheDesModuls(Bivalenzmodul b)
+        {
+            if (b == null) return null;
+            double? Punkt(double v) => double.IsNaN(v) || double.IsInfinity(v) ? (double?)null : v;
+            Bivalenzpunkte? p = b.Punkte;
+            return new Bereichskennzahlen
+            {
+                Stunden = new int?[]
+                {
+                    b.Stunden(Betriebsbereich.WpAllein), b.Stunden(Betriebsbereich.Parallel),
+                    b.Stunden(Betriebsbereich.Vorwaermung), b.NurKesselStunden,
+                },
+                Mwh = new double?[]
+                {
+                    b.WaermeKwh(Betriebsbereich.WpAllein) / 1000.0, b.WaermeKwh(Betriebsbereich.Parallel) / 1000.0,
+                    b.WaermeKwh(Betriebsbereich.Vorwaermung) / 1000.0, b.NurKesselKwh / 1000.0,
+                },
+                Spreizung_Unterschritten_h = 0,
+                Ruecklauf_Ueberschritten_h = 0,
+                Bivalenzpunkt_1 = p.HasValue ? Punkt(p.Value.ErsterC) : null,
+                Bivalenzpunkt_2 = p.HasValue ? Punkt(p.Value.ZweiterC) : null,
+                Uebergabe_Max_kW = Punkt(b.UebergabeMaxAuslegungKw),
+            };
+        }
+
         internal static void KaelteseiteDesModuls(ErgebnisWaermepumpeModulModel mo, Kaeltekaskade kaskade,
                                                   int modulindex)
         {

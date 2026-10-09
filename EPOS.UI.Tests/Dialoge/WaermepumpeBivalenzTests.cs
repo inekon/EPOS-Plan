@@ -113,6 +113,28 @@ public class WaermepumpeBivalenzTests : EposBunitContext
     }
 
     [Fact]
+    public void Die_Sperre_Ruecklauf_nie_erscheint_bei_R744_und_nicht_bei_R410A()
+    {
+        // Zahlenbeispiel: θ_R,UE 46,48 °C bei θ_WP,max 55 °C — R410A (Grenze 52 °C) frei, R744 (Grenze 40 °C) gesperrt.
+        const string SPERRE = "Höchster Rücklauf 40 °C liegt unter dem Rücklauf an der Übergabegrenze (46,5 °C) — "
+                              + "die Wärmepumpe liefert bei diesem Rücklauf nie.";
+        var d = Daten(vorlaufMax: 55.0);
+        d.Kaeltemittel = "R410A";
+        d.BivalenzRechnen = x => Beispiel(BivalenzKennzeichen.Wirksam) with
+        {
+            Grenzen = x.Kaeltemittel == "R744" ? R744() : R410a(),
+            Befunde = x.Kaeltemittel == "R744"
+                ? new[] { new WaermepumpeBivalenzBefund(BivalenzBefundArt.RuecklaufNie, false, 40.0, 46.48) }
+                : Array.Empty<WaermepumpeBivalenzBefund>(),
+        };
+        var c = Aufbauen(d);
+        Assert.DoesNotContain("liefert bei diesem Rücklauf nie", c.Markup);
+        c.Find("[data-kaeltemittel='R744']").Click();
+        Assert.Contains(SPERRE, c.Find("[data-gruppe=bivalenz-befunde]").TextContent);
+        Assert.Single(c.FindAll("[data-gruppe=bivalenz-befunde] .epos-warnbanner--warnung"));
+    }
+
+    [Fact]
     public void Die_Schnellwahl_zeigt_vier_Knoepfe_und_die_Regel()
     {
         var t = new WaermepumpeKonfigurationTexte();
@@ -172,5 +194,170 @@ public class WaermepumpeBivalenzTests : EposBunitContext
         Assert.Contains("5.7 kW of 10.0 kW", zeile);
         Assert.Contains("+1.8 °C", zeile);
         Assert.Contains("−3.6 °C", zeile);
+    }
+
+    // =================================================================================================
+    // UB‑E2: Gruppe „Bivalenz und Übergabe"
+    // =================================================================================================
+
+    private static WaermepumpeGrenzwerte R410a() => new(5.0, 10.0, 3.0, GrenzwertHerkunft.VorgabeKaeltemittel,
+        0.60, GrenzwertHerkunft.VorgabeKaeltemittel, 52.0, GrenzwertHerkunft.Abgeleitet, 55.0);
+
+    private static WaermepumpeGrenzwerte R744() => new(5.0, 30.0, 3.0, GrenzwertHerkunft.VorgabeKaeltemittel,
+        0.60, GrenzwertHerkunft.VorgabeKaeltemittel, 40.0, GrenzwertHerkunft.VorgabeKaeltemittel, 80.0, 30.0, 2.5, 40.0);
+
+    private static WaermepumpeAnlageDaten Bivalent(string betriebsart, WaermepumpeBivalenzWerte? werte = null)
+    {
+        WaermepumpeAnlageDaten d = Daten(werte);
+        d.BivalenterBetrieb = true;
+        d.Betriebsart = betriebsart;
+        return d;
+    }
+
+    private static string Lesewerte(IRenderedComponent<WaermepumpeKonfiguration> c)
+        => c.Find("[data-gruppe=bivalenz-lesewerte]").TextContent;
+
+    [Fact]
+    public void Die_Gruppe_traegt_den_neuen_Titel_und_zieht_die_Felder_um()
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        var c = Aufbauen(Bivalent(DbWerte.WP_BETRIEBSART_TEILPARALLEL));
+        var gruppen = c.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()).ToList();
+        Assert.Contains("Bivalenz und Übergabe", gruppen);
+        Assert.DoesNotContain(t.GruppeBetrieb, gruppen);
+        Assert.Single(c.FindAll("[data-gruppe=bivalenz-einbindung]"));
+        Assert.Single(c.FindAll("[data-gruppe=bivalenz-vorwaermbetrieb]"));
+    }
+
+    [Theory]
+    [InlineData(DbWerte.WP_BETRIEBSART_PARALLEL, true)]
+    [InlineData(DbWerte.WP_BETRIEBSART_TEILPARALLEL, true)]
+    [InlineData(DbWerte.WP_BETRIEBSART_ALTERNATIV, false)]
+    public void Vorwaermbetrieb_je_Betriebsart(string art, bool waehlbar)
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        var d = Bivalent(art);
+        d.Vorwaermbetrieb = true;
+        var c = Aufbauen(d);
+        var gruppe = c.Find("[data-gruppe=bivalenz-vorwaermbetrieb]");
+        var kaestchen = gruppe.QuerySelector("input")!;
+        bool gesperrt = kaestchen.HasAttribute("disabled") || kaestchen.GetAttribute("aria-disabled") == "true";
+        Assert.Equal(!waehlbar, gesperrt);
+        Assert.Contains(waehlbar ? t.HinweisVorwaermbetrieb : t.HinweisVorwaermbetriebAlternativ, gruppe.TextContent);
+        Assert.Equal(waehlbar, kaestchen.HasAttribute("checked"));
+    }
+
+    [Fact]
+    public void Ohne_bivalenten_Betrieb_kein_Vorwaermbetrieb()
+    {
+        var c = Aufbauen(Daten());
+        Assert.Empty(c.FindAll("[data-gruppe=bivalenz-vorwaermbetrieb]"));
+        Assert.Single(c.FindAll("[data-gruppe=bivalenz-einbindung]"));
+    }
+
+    [Fact]
+    public void Einbindung_leer_zeigt_nicht_gewaehlt_und_die_Wahl_schreibt_den_Steuerwert()
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        var d = Daten(Beispiel(BivalenzKennzeichen.NichtWirksam));
+        var c = Aufbauen(d);
+        var wahl = c.Find("[data-gruppe=bivalenz-einbindung] select");
+        Assert.Equal(4, wahl.QuerySelectorAll("option").Length);   // drei Werte und „nicht gewählt"
+        Assert.Contains(t.EinbindungLeer, wahl.TextContent);
+        Assert.StartsWith(t.HerleitungNichtWirksam, Herleitung(c));
+        wahl.Change("1");
+        Assert.Equal("PUFFER", d.Einbindung);
+        Assert.Contains(t.HinweisEinbindungPuffer, c.Find("[data-gruppe=bivalenz-einbindung]").TextContent);
+        c.Find("[data-gruppe=bivalenz-einbindung] select").Change("0");
+        Assert.Equal("DIREKT", d.Einbindung);
+        // Die Kopie trägt Einbindung und Vorwärmbetrieb mit.
+        d.Vorwaermbetrieb = true;
+        var k = d.Kopie();
+        Assert.Equal("DIREKT", k.Einbindung);
+        Assert.True(k.Vorwaermbetrieb);
+    }
+
+    [Fact]
+    public void Herleitung_des_Abschaltpunkts_eingegeben_berechnet_massgebend()
+    {
+        var w = Beispiel(BivalenzKennzeichen.Wirksam) with { AbschaltpunktC = -10.0, ZweiterC = -3.5, MassgebendC = -3.5 };
+        var c = Aufbauen(Bivalent(DbWerte.WP_BETRIEBSART_TEILPARALLEL, w));
+        Assert.Equal("eingegeben −10 °C · aus der Übergabe berechnet −3,5 °C · maßgebend −3,5 °C",
+                     c.Find("[data-gruppe=bivalenz-abschaltpunkt]").TextContent.Trim());
+
+        var waermer = w with { AbschaltpunktC = 3.0, MassgebendC = 3.0 };
+        Assert.Equal("eingegeben +3 °C · aus der Übergabe berechnet −3,5 °C · maßgebend +3 °C",
+                     WaermepumpeBivalenzText.AbschaltpunktZeile(waermer, new WaermepumpeKonfigurationTexte()));
+        // Im Parallelbetrieb gilt kein Abschaltpunkt — keine Zeile.
+        var p = Aufbauen(Bivalent(DbWerte.WP_BETRIEBSART_PARALLEL, w));
+        Assert.Empty(p.FindAll("[data-gruppe=bivalenz-abschaltpunkt]"));
+    }
+
+    [Fact]
+    public void Lesewerte_R410A_mit_Herkunft_und_abgeleitetem_Ruecklauf()
+    {
+        var c = Aufbauen(Daten(Beispiel(BivalenzKennzeichen.Wirksam) with { Grenzen = R410a() }, vorlaufMax: 55.0));
+        string l = Lesewerte(c);
+        Assert.Contains("Höchster Vorlauf: 55 °C · Betriebszeiten", l);
+        Assert.Contains("Spreizung Auslegung / max. / min.: 5 / 10 / 3 K · Vorgabe nach Kältemittel", l);
+        Assert.Contains("Mindestvolumenstrom: 60 % · Vorgabe nach Kältemittel", l);
+        Assert.Contains("Höchster Rücklauf: 52 °C · abgeleitet", l);
+        Assert.Contains("abgeleitet: 52 °C = 55 − 3 (Höchstvorlauf − Mindestspreizung)", l);
+        Assert.Contains("Rücklauf R744: Bezug / Abwertung / Grenze: — / — / — °C · %/K · °C · nur R744", l);
+        Assert.Contains("Gerätegrenzen werden im Katalog gepflegt", l);
+    }
+
+    [Fact]
+    public void Lesewerte_R744_mit_Bezug_Abwertung_und_Grenze()
+    {
+        var c = Aufbauen(Daten(Beispiel(BivalenzKennzeichen.Wirksam) with { Grenzen = R744() }, vorlaufMax: 80.0));
+        string l = Lesewerte(c);
+        Assert.Contains("Spreizung Auslegung / max. / min.: 5 / 30 / 3 K", l);
+        Assert.Contains("Höchster Rücklauf: 40 °C · Vorgabe nach Kältemittel", l);
+        Assert.Contains("Rücklauf R744: Bezug / Abwertung / Grenze: 30 / 2,5 / 40 °C · %/K · °C", l);
+        Assert.Contains("bei R744: Bezugsrücklauf 30 °C · Abwertung 2,5 %/K · Grenze 40 °C", l);
+        Assert.DoesNotContain("abgeleitet:", l);
+    }
+
+    [Fact]
+    public void Jede_weiche_Sperre_steht_als_Banner_und_Speichern_bleibt_moeglich()
+    {
+        var befunde = new[]
+        {
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.Spreizung, false, 10, 8),
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.Hoechstvorlauf, false, 30, 35),
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.RuecklaufNie, false, 40, 45),
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.VorwaermOhneKessel, false),
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.Kaskade, false, 2, 1),
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.Gmodg, true, 0.25, 0.30),
+            new WaermepumpeBivalenzBefund(BivalenzBefundArt.UebergabeBegrenzt, true, 1.83),
+        };
+        var c = Aufbauen(Daten(Beispiel(BivalenzKennzeichen.Wirksam) with { Befunde = befunde }));
+        var banner = c.FindAll("[data-gruppe=bivalenz-befunde] .epos-warnbanner");
+        Assert.Equal(7, banner.Count);
+        Assert.Equal(5, banner.Count(b => b.ClassList.Contains("epos-warnbanner--warnung")));
+        string text = c.Find("[data-gruppe=bivalenz-befunde]").TextContent;
+        Assert.Contains("Mindestspreizung (10 K) ist nicht kleiner als die Höchstspreizung (8 K)", text);
+        Assert.Contains("höchste Vorlauf (30 °C) liegt unter dem Auslegungsvorlauf der Flächenheizung (35 °C)", text);
+        Assert.Contains("Höchster Rücklauf 40 °C liegt unter dem Rücklauf an der Übergabegrenze (45 °C) — die Wärmepumpe liefert bei diesem Rücklauf nie.", text);
+        Assert.Contains("ohne Kessel oder Heizstab in der Kaskade", text);
+        Assert.Contains("hinter dem Kessel (Platz 2 nach Platz 1)", text);
+        Assert.Contains("25 % der Kesselleistung; § 43 GModG verlangt mindestens 30 %", text);
+        Assert.Contains("Unter +1,8 °C reicht der Höchstvorlauf nicht mehr", text);
+    }
+
+    [Fact]
+    public void Die_Schnellwahl_nennt_das_Speichern_des_Kaeltemittels()
+    {
+        var t = new WaermepumpeKonfigurationTexte();
+        Assert.Equal("Die Schnellwahl speichert das Kältemittel und füllt nur leere Felder; Herstellerangaben zur "
+                     + "Einsatzgrenze haben Vorrang.", t.ZeileSchnellwahl);
+        // Die Klappliste zeigt das gespeicherte Kältemittel des Geräts.
+        var d = Daten(vorlaufMax: 60.0);
+        d.Kaeltemittel = "R290";
+        var c = Aufbauen(d);
+        int r290 = d.Kaeltemittelliste.ToList().FindIndex(e => e.Code == "R290");
+        Assert.Equal(r290.ToString(), c.Find("[data-gruppe=betriebszeiten] select").GetAttribute("value")
+                                      ?? c.Find("[data-gruppe=betriebszeiten] select option[selected]").GetAttribute("value"));
     }
 }

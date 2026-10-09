@@ -470,6 +470,22 @@
         internal static string WpaAbschaltpunktName => MyResource.Resource.WPA_LBL_ABSCHALTTEMP;
         internal static string WpaAbschaltpunktErl => MyResource.Resource.KI_DLG_WPA_ABSCHALTPUNKT_ERL;
 
+        // Uebergabegrenze UB-E2: die Gruppe „Bivalenz und Uebergabe".
+        internal static string WpaEinbindungName => MyResource.Resource.WPA_LBL_EINBINDUNG;
+        internal static string WpaEinbindungErl => MyResource.Resource.KI_DLG_WPA_EINBINDUNG_ERL;
+        internal static string WpaVorwaermbetriebName => MyResource.Resource.WPA_CHK_VORWAERMBETRIEB;
+        internal static string WpaVorwaermbetriebErl => MyResource.Resource.KI_DLG_WPA_VORWAERMBETRIEB_ERL;
+        internal static string WpaKaeltemittelName => MyResource.Resource.WPA_LBL_KAELTEMITTEL;
+        internal static string WpaKaeltemittelErl => MyResource.Resource.KI_DLG_WPA_KAELTEMITTEL_ERL;
+        internal static string WpaLesewerteName => MyResource.Resource.KI_DLG_WPA_LESEWERTE_NAME;
+        internal static string WpaLesewerteErl => MyResource.Resource.KI_DLG_WPA_LESEWERTE_ERL;
+        internal static string WpaHerleitungName => MyResource.Resource.KI_DLG_WPA_HERLEITUNG_NAME;
+        internal static string WpaHerleitungErl => MyResource.Resource.KI_DLG_WPA_HERLEITUNG_ERL;
+        internal static string WpaAbschaltHerleitungName => MyResource.Resource.KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_NAME;
+        internal static string WpaAbschaltHerleitungErl => MyResource.Resource.KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_ERL;
+        internal static string WpaBefundeName => MyResource.Resource.KI_DLG_WPA_BEFUNDE_NAME;
+        internal static string WpaBefundeErl => MyResource.Resource.KI_DLG_WPA_BEFUNDE_ERL;
+
         internal static string WpaFirmaName => MyResource.Resource.WPS_LBL_HERSTELLER;
         internal static string WpaFirmaErl => MyResource.Resource.KI_DLG_WPA_FIRMA_ERL;
         internal static string WpaBeschreibungName => MyResource.Resource.WPS_LBL_BESCHREIBUNG;

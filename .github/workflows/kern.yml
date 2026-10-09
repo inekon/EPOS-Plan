@@ -406,38 +406,42 @@ jobs:
       # R44 (08.10.2026): dieselben neun Projekte, alle byte-gleich; neu sind
       # RP-KK 1061 (Kuehlkurve) und RP-KKZ 1062 (Kuehlkurve, zwei Zonen),
       # beide nicht in der CI-Auswahl.
-      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058
+      # R45 (09.10.2026): dazu 1060 (Uebergabegrenze: Heizkoerper 75/60 Grad C,
+      # Hoechstvorlauf 55 Grad C, Einbindung direkt, Vorwaermbetrieb); die neun
+      # Projekte bleiben byte-gleich.
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-08_R44_Kuehlkurve
+      - name: Vergleich mit Referenzbasis 2026-10-09_R45_Uebergabegrenze
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-08_R44_Kuehlkurve/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R45_Uebergabegrenze/Projekt_1060 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058; do
+          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
-      # Plattformnachweis (Befund PB-1, Basis R34): dieselben acht Projekte noch
+      # Plattformnachweis (Befund PB-1, Basis R34): dieselben Projekte noch
       # einmal mit --stoerung ulp. Exp, Sin, Cos, Asin und Acos der Naht
       # Plattformrundung (Gebaeudematrix, Sonnenstand, Erdreich, Kollektor,
       # Tagesbilanz) runden dann wie eine andere C-Bibliothek: etwa jedes
@@ -447,7 +451,7 @@ jobs:
       - name: Plattformnachweis - gestoerter Lauf gegen ungestoerten
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
-          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/${{ matrix.os }}_kern artifacts/reflauf/${{ matrix.os }}_stoerung
 
       - name: Ergebnis-CSV als Artefakt

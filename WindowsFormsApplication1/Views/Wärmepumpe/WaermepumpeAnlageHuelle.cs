@@ -63,6 +63,8 @@ namespace WindowsFormsApplication1
                     {
                         NachModell(daten, modell);
                         ErzeugerTraegerHuelle.Zuordnen(projektId, false, modell.ID_Carrier);
+                        // Uebergabegrenze UB-E2 (U-2): die Kaeltemittelwahl gehoert dem Geraet (Projektkopie).
+                        BivalenzAbbildung.GeraetSchreiben(daten);
                     }
                     if (dlg != null) dlg.Schliessen(b);
                 })
@@ -625,6 +627,8 @@ namespace WindowsFormsApplication1
             // kommt er erst mit dem OK (NachModell).
             // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
             BetriebszeitenAbbildung.Lesen(m, d);
+            // Uebergabegrenze UB-E2: Einbindung und Vorwaermbetrieb, leer bleibt leer (U-1).
+            BivalenzAbbildung.AnlageLesen(m, d);
             TemperaturVorbelegung.Waermepumpe(d);
             return d;
         }
@@ -646,6 +650,8 @@ namespace WindowsFormsApplication1
             SperrfensterAbbildung.NachModell(d, m);
             // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
             BetriebszeitenAbbildung.Schreiben(d, m);
+            // Uebergabegrenze UB-E2: Einbindung und Vorwaermbetrieb reisen als Modellspalten (AnlagenSql).
+            BivalenzAbbildung.AnlageSchreiben(d, m);
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;

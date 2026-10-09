@@ -111,7 +111,8 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
 
         var gruppen = cut.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()).ToList();
         Assert.Contains("Wärmepumpenleistung / maximale Betriebszeit:", gruppen);
-        Assert.Contains("Außentemperaturgesteuerter Betrieb:", gruppen);
+        // Übergabegrenze UB‑E2: Die Gruppe „Bivalenz und Übergabe" ersetzt „Außentemperaturgesteuerter Betrieb:".
+        Assert.Contains("Bivalenz und Übergabe", gruppen);
 
         Assert.Equal(3, cut.FindAll(".epos-wp-erklaerung").Count);
 

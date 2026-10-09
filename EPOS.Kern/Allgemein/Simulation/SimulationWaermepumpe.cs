@@ -49,6 +49,47 @@ namespace WindowsFormsApplication1
         internal double[] Heizkreisvorlauf { get; set; }
 
         /// <summary>
+        /// <b>Der Rücklauf des Heizkreises je Stunde</b> [°C] (Übergabegrenze UB‑E2, Umsetzungskonzept 3.2 Schritt 2):
+        /// aus <c>Anlagenkopplung.Kreis</c> bzw. dem Projektheizkreis, NaN in Stunden ohne gekoppelten Bedarf;
+        /// <c>null</c> ohne Kopplung. Gelesen nur von einem Modul mit Bivalenzobjekt (B3).
+        /// </summary>
+        internal double[] Heizkreisruecklauf { get; set; }
+
+        /// <summary>
+        /// <b>Der Vorwärmvorlauf je Stunde</b> [°C] (UB‑E2, Umsetzungskonzept 3.2 Schritt 6): θ_WP,max in einer Stunde
+        /// mit Vorwärmbetrieb und laufender Wärmepumpe (B3), sonst NaN — der Rücklauf des Kessels in Reihe
+        /// (Rücklaufstufe <see cref="Ruecklaufstufe.Vorwaermer"/>). Ohne Bivalenzobjekt bleibt er NaN.
+        /// </summary>
+        public readonly double[] Vorwaermvorlauf = NaNReihe();
+
+        private static double[] NaNReihe()
+        {
+            var r = new double[8760];
+            for (int h = 0; h < r.Length; h++) r[h] = double.NaN;
+            return r;
+        }
+
+        /// <summary>Steht ein Heizkessel in der Kaskade (<c>Tool_1..4</c>)? Gesetzt von <c>SimulationControl</c>.</summary>
+        internal bool KesselInKaskade { get; set; }
+
+        /// <summary>Steht die Wärmepumpe in der Kaskade vor dem Heizkessel? Gesetzt von <c>SimulationControl</c>.</summary>
+        internal bool VorDemKessel { get; set; } = true;
+
+        /// <summary>
+        /// Die Raumtemperatur der Stunde je gekoppeltem Gebäude (<c>ID_Gebaeude</c>, Stunde) [°C]; NaN = unbekannt
+        /// (dann die Auslegungsraumtemperatur). <c>null</c> = immer die Auslegungsraumtemperatur.
+        /// </summary>
+        internal Func<int, int, double> BivalenzRaumtemperatur { get; set; }
+
+        /// <summary>Das Bivalenzobjekt je Modul (UB‑E2); <c>null</c> = Bestandsweg (U‑1: ohne <c>Einbindung</c> oder ohne Kopplung).</summary>
+        private readonly Bivalenzmodul[] _bivalenz = new Bivalenzmodul[MAX_WP];
+        private readonly int[] _bivalenzStunde = new int[MAX_WP];
+        private readonly Bereichsergebnis[] _bereichStunde = new Bereichsergebnis[MAX_WP];
+
+        /// <summary>Das Bivalenzobjekt des Moduls <paramref name="index"/>; <c>null</c> = Bestandsweg.</summary>
+        internal Bivalenzmodul BivalenzDesModuls(int index) => index >= 0 && index < MAX_WP ? _bivalenz[index] : null;
+
+        /// <summary>
         /// Die Kennlinienwahl eines Moduls am gerechneten Vorlauf (6.1): alle Kennlinien des
         /// Geräts aufsteigend nach Vorlauf, die Stunden je Stützstelle und die Stunden außerhalb.
         /// </summary>
@@ -1215,6 +1256,8 @@ namespace WindowsFormsApplication1
             wp_kenndaten.Clear();
             wp_kennlinienwahl.Clear();
             wp_prozesswahl.Clear();
+            Array.Clear(_bivalenz, 0, MAX_WP);
+            BivalenzProjektdaten bivalenzProjekt = null;
             Array.Clear(_prozessKennlinieStunden, 0, MAX_WP);
             Array.Clear(_prozessKennlinieMax, 0, MAX_WP);
             Array.Clear(_prozessGesperrtStunden, 0, MAX_WP);
@@ -1375,9 +1418,64 @@ namespace WindowsFormsApplication1
                 wp_prozesswahl.Add(Prozesstemperatur != null
                     ? (wp_kennlinienwahl[i] ?? KennlinienwahlLaden(model.ID_WP, item))
                     : null);
+
+                // UB-E2 (U-1, Umsetzungskonzept 3.2 Schritt 1): das Bivalenzobjekt nur mit gesetzter Einbindung
+                // und aktiver Kopplung - sonst bleibt es null, und das Modul rechnet den Bestandsweg.
+                if (i < MAX_WP && Bivalenzmodul.Wirksam(model.Einbindung, wp_kennlinienwahl[i] != null))
+                {
+                    bivalenzProjekt ??= BivalenzQuelle.Projekt(model.ID_Projekt);
+                    _bivalenz[i] = BivalenzAufbauen(i, model, bivalenzProjekt);
+                }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Baut das Bivalenzobjekt eines Moduls (UB‑E2): kalibrierte Übergabe der gekoppelten Gebäude, θ_WP,max =
+        /// <c>Vorlauf_Max</c> (Rückfall <c>Vorlauf</c>), σ_min nach <see cref="Bivalenzvorgaben"/>, Betriebsart,
+        /// zweiter Erzeuger (Kessel in der Kaskade oder Heizstab) und Kaskadenfolge; dazu die Bivalenzpunkte bei
+        /// Auslegungsraumtemperatur. <c>null</c>, wenn die Gebäudeseite fehlt (ohne Kopplung, Zonen, unvollständig).
+        /// </summary>
+        private Bivalenzmodul BivalenzAufbauen(int index, WErzeugerModel model, BivalenzProjektdaten projekt)
+        {
+            BivalenzGebaeudedaten g = projekt?.Gebaeude;
+            if (g == null || g.Zonen == null || g.Zonen.Count == 0) return null;
+            double hoechstvorlauf = model.Vorlauf_Max ?? model.Vorlauf;
+            if (!(hoechstvorlauf > 0.0)) return null;
+            Bivalenzbetriebsart art = !model.Bivalenter_Betrieb ? Bivalenzbetriebsart.Parallel
+                : model.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ? Bivalenzbetriebsart.Teilparallel
+                : model.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV ? Bivalenzbetriebsart.Alternativ
+                : Bivalenzbetriebsart.Parallel;
+            bool heizstab = WP_MitHeizstab[index] && WP_Heizung[index] > 0;
+            bool zweiter = KesselInKaskade || heizstab;
+            IReadOnlyList<int> ids = projekt.GebaeudeIds;
+            Func<int, int, double> raum = BivalenzRaumtemperatur;
+            Func<int, int, double> jeZone = raum == null || ids == null ? null : (z, h) => z < ids.Count ? raum(ids[z], h) : double.NaN;
+            var modul = new Bivalenzmodul(g.Zonen, jeZone, hoechstvorlauf, Bivalenzvorgaben.SPREIZUNG_MIN_K,
+                                          model.Vorwaermbetrieb, art, zweiter, VorDemKessel || !KesselInKaskade);
+            try
+            {
+                double? abschalt = art == Bivalenzbetriebsart.Parallel ? null : (double?)model.Abschaltpunkt;
+                // Die Kennlinien haengen am Geraet (ID_WP), nicht an der Anlagenzeile (wp_list).
+                var kennfeld = BivalenzQuelle.Kennfeld(model.ID_WP, hoechstvorlauf);
+                if (kennfeld.Count > 0 && g.AuslegungRaumC > g.AuslegungAussenC)
+                {
+                    Uebergabezone kurve = g.Zonen.OrderByDescending(z => z.AuslegungVorlaufC).First();
+                    modul.Punkte = Bivalenzrechner.Punkte(g.HeizlastN, g.AuslegungAussenC, g.AuslegungRaumC,
+                        modul.UebergabeMaxAuslegungKw, new Kennfeldgerade(kennfeld), kurve, hoechstvorlauf,
+                        Bivalenzvorgaben.SPREIZUNG_MIN_K, model.Vorwaermbetrieb, art, abschalt);
+                }
+            }
+            catch (ArgumentException)
+            {
+                // Die Punkte sind ein Ausweis; fehlen Kennlinie oder Auslegung, bleiben sie leer (NULL).
+                modul.Punkte = null;
+            }
+            if (modul.KaskadeVerletzt)
+                SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(
+                    MyResource.Resource.SIMENG_WP_VORWAERMUNG_KASKADE, model.Bezeichner ?? ""));
+            return modul;
         }
 
         /// <summary>Liefert die Senke eines Moduls Heizwärme (Beides oder Heizung)?</summary>
@@ -1420,6 +1518,8 @@ namespace WindowsFormsApplication1
                     int modul = i;
                     kapazitaet.Kuehltag = h => HeizkanalGesperrt(modul, h);
                 }
+                // UB-E2 (Umsetzungskonzept 3.2 Schritt 5): das Bivalenzobjekt des Moduls; null = Bestandsweg.
+                kapazitaet.Bivalenz = i < MAX_WP ? _bivalenz[i] : null;
                 return kapazitaet;
             }
             return null;
@@ -1508,7 +1608,7 @@ namespace WindowsFormsApplication1
         /// Kopplung mit verbotener Extrapolation unbenutzbar.</para>
         /// </summary>
         private _Kenndaten KenndatenDerStunde(int index, int stunde, out _Kenndaten oben, out double gewicht,
-                                              out double vorlaufStunde)
+                                              out double vorlaufStunde, double vorlaufDeckelC = double.PositiveInfinity)
         {
             oben = null;
             gewicht = 0.0;
@@ -1518,6 +1618,8 @@ namespace WindowsFormsApplication1
             if (wahl == null || Heizkreisvorlauf == null || stunde < 0 || stunde >= Heizkreisvorlauf.Length) return fest;
             double v = Heizkreisvorlauf[stunde];
             if (double.IsNaN(v) || double.IsInfinity(v)) return fest;
+            // UB-E2 (FK 4.4): mit Bivalenzobjekt das Kennfeld bei min(θ_V,soll, θ_WP,max); ohne bleibt v.
+            if (v > vorlaufDeckelC) v = vorlaufDeckelC;
 
             // AK3-W2: abfragen, nicht zählen - gezählt wird einmal je Stunde in Zweikanalig_StundeEnde.
             // AK3-I (I-1): mit Schalter ein und Vorlauf streng zwischen zwei Stützstellen dazu der Partner.
@@ -1633,6 +1735,36 @@ namespace WindowsFormsApplication1
         /// Stunden je Stützstelle und, falls es sie gab, die Stunden außerhalb der Stützstellen
         /// (F-A8, 9.5: einmal je Gerät). Ohne Kopplung meldet sie nichts.
         /// </summary>
+        /// <summary>
+        /// UB‑E2: je Modul mit Bivalenzobjekt die Bereichsstunden und die Stunden je neuem Grund im Laufprotokoll
+        /// (Ausweis wie der Abschaltpunkt). Ohne Bivalenzobjekt keine Zeile.
+        /// </summary>
+        private void BivalenzMelden()
+        {
+            var k = CultureInfo.CurrentCulture;
+            for (int i = 0; i < wp_model.Count && i < MAX_WP; i++)
+            {
+                Bivalenzmodul b = _bivalenz[i];
+                if (b == null) continue;
+                var gruende = new List<string>();
+                void Grund(Verfuegbarkeitsgrund g, string text)
+                {
+                    int n = b.GrundStunden(g);
+                    if (n > 0) gruende.Add(string.Format(k, text, n));
+                }
+                Grund(Verfuegbarkeitsgrund.UebergabeHoechstvorlauf, MyResource.Resource.SIMENG_WP_GRUND_UEBERGABE);
+                Grund(Verfuegbarkeitsgrund.SpreizungMax, MyResource.Resource.SIMENG_WP_GRUND_SPREIZUNG_MAX);
+                Grund(Verfuegbarkeitsgrund.SpreizungMin, MyResource.Resource.SIMENG_WP_GRUND_SPREIZUNG_MIN);
+                Grund(Verfuegbarkeitsgrund.RuecklaufMax, MyResource.Resource.SIMENG_WP_GRUND_RUECKLAUF_MAX);
+                SimulationProtokoll.Aktuell.Hinweis(MyResource.Resource.SIMENG_PRAEFIX_WAERMEPUMPE + string.Format(k,
+                    MyResource.Resource.SIMENG_WP_BETRIEBSBEREICHE,
+                    wp_model[i].Bezeichner ?? "",
+                    b.Stunden(Betriebsbereich.WpAllein), b.Stunden(Betriebsbereich.Parallel),
+                    b.Stunden(Betriebsbereich.Vorwaermung), b.NurKesselStunden,
+                    gruende.Count > 0 ? string.Join(", ", gruende) : "-"));
+            }
+        }
+
         private void VorlaufwahlMelden()
         {
             for (int i = 0; i < wp_kennlinienwahl.Count && i < wp_model.Count; i++)
@@ -1931,6 +2063,10 @@ namespace WindowsFormsApplication1
             Waermebedarf_stuendlich = kanaele.Summe();
             Warmwasserbedarf_stuendlich = (double[])kanaele.Brauchwasser.Clone();
 
+            // UB-E2: der Vorwärmvorlauf gilt je Lauf; ohne Bivalenzobjekt bleibt er NaN.
+            for (int h = 0; h < Vorwaermvorlauf.Length; h++) Vorwaermvorlauf[h] = double.NaN;
+            Array.Clear(_bivalenzStunde, 0, MAX_WP);
+
             WpStrombedarfGesamtKwh = 0;
             WpWaermeproduktionGesamtKwh = 0;
             HeizstabGesamtKwh = 0;
@@ -2066,8 +2202,11 @@ namespace WindowsFormsApplication1
                     // projektierten Vorlaufs, wie bisher.
                     // AK3-I (I-1): mit Schalter ein zwischen zwei Stützstellen die untere Kennlinie,
                     // ihr Partner und der Anteil der oberen; sonst kenndatenOben = null (Bestand).
+                    // UB-E2 (FK 4.4): mit Bivalenzobjekt die Kennlinie bei min(θ_V,soll, θ_WP,max); ohne +∞ (Bestand).
+                    Bivalenzmodul bivalenz = index < MAX_WP ? _bivalenz[index] : null;
                     _Kenndaten kenndaten = KenndatenDerStunde(index, stunde, out _Kenndaten kenndatenOben,
-                                                              out double gewichtOben, out double vorlaufStunde);
+                                                              out double gewichtOben, out double vorlaufStunde,
+                                                              bivalenz != null ? bivalenz.HoechstvorlaufC : double.PositiveInfinity);
                     if (kenndaten == null)
                     {
                         AbbruchAufraeumen();
@@ -2141,6 +2280,9 @@ namespace WindowsFormsApplication1
                         AbbruchAufraeumen();
                         return false;
                     }
+                    // UB-E2: die Kennfeldkapazität der Stunde vor Betriebsart und Sperre (Eingang der Bereichsregel).
+                    double kennfeldKw = result[PTHERM];
+                    bool abgeschaltet = false, gesperrtStunde = false;
 
                     // KANALGERECHTE BEZUGSGRÖSSE (Konzept 6.3): der offene Bedarf der
                     // eigenen DIREKTSENKEN-KETTE bzw. — bei einer reinen Ladeanlage — der
@@ -2156,6 +2298,7 @@ namespace WindowsFormsApplication1
                         {
                             result[PTHERM] = 0;
                             result[PEL] = 0;
+                            abgeschaltet = true;
                         }
                     }
                     else if (model.Bivalenter_Betrieb && model.Betriebsart == DbWerte.WP_BETRIEBSART_PARALLEL)
@@ -2171,6 +2314,7 @@ namespace WindowsFormsApplication1
                         {
                             result[PTHERM] = 0;
                             result[PEL] = 0;
+                            abgeschaltet = true;
                         }
                     }
 
@@ -2183,6 +2327,45 @@ namespace WindowsFormsApplication1
                     {
                         result[PTHERM] = 0;
                         result[PEL] = 0;
+                        gesperrtStunde = true;
+                    }
+
+                    // UB-E2 (FK 4.5, Umsetzungskonzept 3.2 Schritt 5): der Betriebsbereich der Stunde - nur mit
+                    // Bivalenzobjekt und in einer Stunde mit Heizkreisvorlauf. B1/B2 unter dem Höchstvorlauf lassen
+                    // die Kennfeldkapazität unberührt (Bestand); B3 und die Wärmepumpe ohne zweiten Erzeuger rechnen
+                    // am Kennfeld bei θ_WP,max, B0/B4 liefern nichts.
+                    bool bereichGezaehlt = false;
+                    if (bivalenz != null && Heizkreisvorlauf != null && stunde < Heizkreisvorlauf.Length
+                        && !double.IsNaN(Heizkreisvorlauf[stunde]) && !double.IsInfinity(Heizkreisvorlauf[stunde]))
+                    {
+                        Verfuegbarkeitsgrund nichtGrund = gesperrtStunde ? Verfuegbarkeitsgrund.Sperrzeit
+                            : abgeschaltet ? Verfuegbarkeitsgrund.Abschaltpunkt
+                            : heizkanalGesperrt ? Verfuegbarkeitsgrund.Umschaltung : Verfuegbarkeitsgrund.KeineBegrenzung;
+                        double ruecklaufStunde = Heizkreisruecklauf != null && stunde < Heizkreisruecklauf.Length
+                            ? Heizkreisruecklauf[stunde] : double.NaN;
+                        Bereichsergebnis b = bivalenz.Bereich(stunde, nichtGrund == Verfuegbarkeitsgrund.KeineBegrenzung, nichtGrund,
+                                                              Heizkreisvorlauf[stunde], ruecklaufStunde, rest[Kanal.HEIZUNG], kennfeldKw);
+                        if (b.Bereich == Betriebsbereich.NichtVerfuegbar || b.Bereich == Betriebsbereich.NurKessel)
+                        {
+                            result[PTHERM] = 0;
+                            result[PEL] = 0;
+                        }
+                        else if (b.AmHoechstvorlauf)
+                        {
+                            result[PTHERM] = b.LeistungKw;
+                            result[PEL] = b.LeistungKw > 0 && result[COP] > 0 ? b.LeistungKw / result[COP] : 0;
+                        }
+                        if (!double.IsNaN(b.VorwaermvorlaufC)
+                            && (double.IsNaN(Vorwaermvorlauf[stunde]) || b.VorwaermvorlaufC > Vorwaermvorlauf[stunde]))
+                            Vorwaermvorlauf[stunde] = b.VorwaermvorlaufC;
+                        if (_bivalenzStunde[index] != stunde + 1)
+                        {
+                            // Einmal je Stunde und Modul gezählt (Stunde + 1, damit 0 „nie" heißt).
+                            _bivalenzStunde[index] = stunde + 1;
+                            _bereichStunde[index] = b;
+                            bivalenz.Zaehlen(b, 0.0);
+                            bereichGezaehlt = true;
+                        }
                     }
 
                     // Wärmequelle Pufferspeicher: die Verdampferwärme muss aus dem
@@ -2275,6 +2458,8 @@ namespace WindowsFormsApplication1
                     // steht NICHT hier, sondern zentral in Phase G.
                     double erzeugt = WP_Waermeproduktion_stuendlich[stunde] - vorherTherm;
                     double strom = WP_Strombedarf_stuendlich[stunde] - vorherEl;
+                    // UB-E2: die Wärme der Wärmepumpe im Bereich der Stunde (Bedarfsdeckung; Ladephasen nicht).
+                    if (bereichGezaehlt) bivalenz.WaermeNachtragen(_bereichStunde[index].Bereich, erzeugt);
                     if (_taktIrgendein && _takt[index])
                     {
                         _taktWaermeStunde[index] += erzeugt;
@@ -2431,6 +2616,7 @@ namespace WindowsFormsApplication1
             // noch vorgemerkte Wahl zuvor festschreiben (ohne Stundenende ist sie sonst verloren).
             KennlinienwahlFestschreiben();
             VorlaufwahlMelden();
+            BivalenzMelden();
 
             // PW1 Stufe 1: die Kennlinie am Prozessvorlauf und die Stunden ohne Prozessdeckung.
             ProzesswahlMelden();

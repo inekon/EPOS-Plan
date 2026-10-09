@@ -110,8 +110,21 @@ namespace WindowsFormsApplication1
         /// </para>
         /// </summary>
         public const string SQL_ANLAGE_INSERT = "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ", " +
+                        SPALTEN_FAHRPLAN + ", " + SPALTEN_FREIE_KUEHLUNG + ", " + SPALTEN_UEBERGABE +
+                        ") VALUES (" + WERTE_BESTAND + ", ?,?, ?,?,?, ?,?)";
+
+        /// <summary>
+        /// Dieselbe Anweisung OHNE die zwei Spalten der Uebergabegrenze (Einbindung, Vorwaermbetrieb; Schemaschritt
+        /// <see cref="UebergabegrenzeSchema"/>) - fuer eine Datenbank auf dem Stand der freien Kuehlung. Gewaehlt wird
+        /// allein in <see cref="Einfuegen"/>.
+        /// </summary>
+        public const string SQL_ANLAGE_INSERT_OHNE_UEBERGABE = "INSERT INTO Tab_Energieanlagen (" + SPALTEN_BESTAND + ", " +
                         SPALTEN_FAHRPLAN + ", " + SPALTEN_FREIE_KUEHLUNG +
                         ") VALUES (" + WERTE_BESTAND + ", ?,?, ?,?,?)";
+
+        /// <summary>Die zwei Spalten der Uebergabegrenze an der Anlage (<see cref="UebergabegrenzeSchema.SPALTEN_ANLAGE"/>).</summary>
+        private const string SPALTEN_UEBERGABE =
+            UebergabegrenzeSchema.SPALTE_EINBINDUNG + ", " + UebergabegrenzeSchema.SPALTE_VORWAERMBETRIEB;
 
         /// <summary>
         /// Dieselbe Anweisung OHNE die drei Spalten der freien Kuehlung ueber die Waermequelle (Schemaschritt
@@ -186,13 +199,21 @@ namespace WindowsFormsApplication1
         public static (string Sql, DbParam[] Werte) Einfuegen(int projektID, WErzeugerModel item,
                                                                Dictionary<int, bool> pufferCache = null,
                                                                bool? mitFahrplan = null,
-                                                               bool? mitFreierKuehlung = null)
+                                                               bool? mitFreierKuehlung = null,
+                                                               bool? mitUebergabe = null)
         {
             DbParam[] werte = AnlagenParameter(projektID, item, pufferCache);
             bool fahrplan = mitFahrplan ?? AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
             bool frei = fahrplan && (mitFreierKuehlung ?? FreieKuehlungSoleSchema.AnlagenspaltenVorhanden());
-            if (frei) return (SQL_ANLAGE_INSERT, werte);
-            int weg = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count +
+            bool uebergabe = frei && (mitUebergabe ?? UebergabegrenzeSchema.AnlagenspaltenVorhanden());
+            if (uebergabe) return (SQL_ANLAGE_INSERT, werte);
+            if (frei)
+            {
+                var ohneUebergabe = new DbParam[werte.Length - UebergabegrenzeSchema.SPALTEN_ANLAGE.Count];
+                Array.Copy(werte, ohneUebergabe, ohneUebergabe.Length);
+                return (SQL_ANLAGE_INSERT_OHNE_UEBERGABE, ohneUebergabe);
+            }
+            int weg = UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count +
                       (fahrplan ? 0 : AnlagenfahrplanSchema.SPALTEN_ANLAGE.Count);
             var ohne = new DbParam[werte.Length - weg];
             Array.Copy(werte, ohne, ohne.Length);
@@ -362,7 +383,12 @@ namespace WindowsFormsApplication1
                         ProjektPuffer.Par("@kuehlfreigraed", DbParamTyp.Double,
                             FreieKuehlungGraedigkeitZulaessig(item.Kuehl_Frei_Graedigkeit_K) ? Wert(item.Kuehl_Frei_Graedigkeit_K) : null),
                         ProjektPuffer.Par("@kuehlfreileist", DbParamTyp.Double,
-                            FreieKuehlungLeistungZulaessig(item.Kuehl_Frei_Leistung_kW) ? Wert(item.Kuehl_Frei_Leistung_kW) : null)
+                            FreieKuehlungLeistungZulaessig(item.Kuehl_Frei_Leistung_kW) ? Wert(item.Kuehl_Frei_Leistung_kW) : null),
+                        // --- Einbindung und Vorwaermbetrieb (Schemaschritt UebergabegrenzeSchema, UB-E2) - die LETZTEN
+                        // zwei Parameter: Einfuegen schneidet sie auf einer Datenbank vor dem Schritt ab. NULL = Bestandsweg
+                        // (U-1); eine unbekannte Einbindung faellt zu NULL, statt das INSERT nach dem DELETE scheitern zu lassen.
+                        ProjektPuffer.Par("@einbindung", DbParamTyp.VarWChar, Bivalenzpruefung.EinbindungNormiert(item.Einbindung)),
+                        ProjektPuffer.Par("@vorwaerm",   DbParamTyp.Integer, item.Vorwaermbetrieb ? 1 : 0)
                     };
         }
 

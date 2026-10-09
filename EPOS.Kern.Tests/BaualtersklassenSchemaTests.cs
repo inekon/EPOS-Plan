@@ -201,7 +201,8 @@ namespace EPOS.Kern.Tests
                 .Select(r => Convert.ToString(r[0], CultureInfo.InvariantCulture) + Convert.ToString(r[1], CultureInfo.InvariantCulture));
             // E6: dazu die Gebäudekopie des Referenzprojekts AK3-K 1059 (Vorlage 1058, AK3-K-K5a).
             // E8: dazu die Gebäudekopien der Referenzprojekte der Kühlkurve 1061 und 1062 (Vorlage 1058, KK5a).
-            Assert.Equal(new[] { "B19", "E8", "G5", "H6", "I2", "J1" }, kopien);
+            // E9: dazu die Gebäudekopie des Referenzprojekts Übergabegrenze 1060 (Vorlage 1056, UB-E2-d).
+            Assert.Equal(new[] { "B19", "E9", "G5", "H6", "I2", "J1" }, kopien);
         }
 
         /// <summary>

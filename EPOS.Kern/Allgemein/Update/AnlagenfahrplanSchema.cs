@@ -85,9 +85,9 @@ namespace WindowsFormsApplication1
             SPALTE_FAHRPLAN_BEGRENZT, SPALTE_UEBERSCHREITUNGSSTUNDEN, SPALTE_KELVINSTUNDEN_KUEHLUNG,
         };
 
-        private static string Stunden(string s) => "INTEGER CHECK (\"" + s + "\" IS NULL OR \"" + s + "\" BETWEEN 0 AND 8760)";
+        internal static string Stunden(string s) => "INTEGER CHECK (\"" + s + "\" IS NULL OR \"" + s + "\" BETWEEN 0 AND 8760)";
 
-        private static string NichtNegativ(string s) => "REAL CHECK (\"" + s + "\" IS NULL OR \"" + s + "\" >= 0)";
+        internal static string NichtNegativ(string s) => "REAL CHECK (\"" + s + "\" IS NULL OR \"" + s + "\" >= 0)";
 
         /// <summary>Die Spalten des Schritts in Anlagereihenfolge: Tabelle, Spalte, Typ samt Klausel.</summary>
         public static readonly IReadOnlyList<(string Tabelle, string Spalte, string Typ)> SPALTEN = new[]

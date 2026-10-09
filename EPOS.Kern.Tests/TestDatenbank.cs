@@ -990,6 +990,9 @@ namespace EPOS.Kern.Tests
                 // Gebaeudetabellen samt elftem Sichtneubau, die Kennzahlen an Tab_ErgebnisEnergiebedarf, leer.
                 // ZULETZT, weil er die Sicht in seiner Form baut. Wiederholbar.
                 KuehlkurveSchema.Ausfuehren(null);
+                // Schritt UebergabegrenzeSchema.SCHRITT (UB, Abschnitt 4): Grenzen an Waermepumpe und BHKW, Einbindung und
+                // Vorwaermbetrieb an der Anlage, Bereiche und Zaehler im Ergebnis, leer. Wiederholbar.
+                UebergabegrenzeSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

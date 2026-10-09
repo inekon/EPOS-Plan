@@ -93,8 +93,8 @@ namespace WindowsFormsApplication1
 
             WaermepumpeGeraeteCtrl.GeraetedatenFuellen(m, m.ID_WP);
             WaermepumpeAnlageDaten d = WaermepumpeAnlageHuelle.AusModell(m);
-            // Uebergabegrenze UB-E1: Herleitungszeile und Schnellwahl; der Schreibweg schreibt davon in E1 nur
-            // Vorlauf_Max (MitBetriebszeiten) - das Kaeltemittel kommt erst mit dem Schemaschritt.
+            // Uebergabegrenze UB-E1/E2: Herleitungszeile, Schnellwahl und Kaeltemittel des Geraets; geschrieben werden
+            // Vorlauf_Max (MitBetriebszeiten), Einbindung und Vorwaermbetrieb (MitUebergabe) und das Kaeltemittel.
             BivalenzAbbildung.Lesen(m, d);
             return d;
         }
@@ -136,7 +136,7 @@ namespace WindowsFormsApplication1
 
             WErzeugerCtrl.SpeicherErgebnis e = WErzeugerCtrl.KonfigurationSchreiben(
                 idAnlage, idProjekt,
-                BetriebszeitenAbbildung.MitBetriebszeiten(new WErzeugerCtrl.KonfigurationFelder(
+                BivalenzAbbildung.MitUebergabe(BetriebszeitenAbbildung.MitBetriebszeiten(new WErzeugerCtrl.KonfigurationFelder(
                     Heizstab: daten.Heizstab,
                     // V14: Mit Fensterliste ist das Altfenster in die Liste ueberfuehrt.
                     Sperrung: daten.Sperrfenster is null && daten.Sperrung,
@@ -159,11 +159,14 @@ namespace WindowsFormsApplication1
                     FreieKuehlung: true,
                     KuehlFrei: daten.KuehlFrei,
                     KuehlFreiGraedigkeitK: daten.KuehlFreiGraedigkeitK,
-                    KuehlFreiLeistungKw: daten.KuehlFreiLeistungKw), daten));
+                    KuehlFreiLeistungKw: daten.KuehlFreiLeistungKw), daten), daten));
 
             // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet. Idempotent;
             // er steht auch dann an, wenn der Satz sonst unveraendert blieb.
             if (e.Ok) ErzeugerTraegerHuelle.Zuordnen(idProjekt, false, daten.CarrierId);
+
+            // Uebergabegrenze UB-E2 (U-2): die Kaeltemittelwahl gehoert dem Geraet (Projektkopie).
+            if (e.Ok) BivalenzAbbildung.GeraetSchreiben(daten);
 
             // V14: die Sperrfenster der Anlage - die Liste ersetzt den Bestand.
             if (e.Ok && daten.Sperrfenster is not null &&

@@ -733,7 +733,9 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var cut = Aufbauen(daten);
         KonfigurationOeffnen(cut);
 
-        var werte = Konfiguration(cut).QuerySelectorAll("select option")
+        // UB-E2: Die Gruppe „Bivalenz und Übergabe“ führt dahinter die Klappliste „Einbindung“ - gezählt wird
+        // die erste Klappliste, die der Betriebsart.
+        var werte = Konfiguration(cut).QuerySelector("select")!.QuerySelectorAll("option")
                                       .Select(o => o.TextContent).ToList();
 
         // Der leere erste Eintrag ist der Platzhalter - er entspricht der leeren

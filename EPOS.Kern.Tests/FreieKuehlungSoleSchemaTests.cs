@@ -57,28 +57,33 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Anlagenanweisung_fuehrt_die_drei_Spalten_zuletzt()
         {
-            string mit = AnlagenSql.SQL_ANLAGE_INSERT;
+            // UB-E2: Hinter den drei Spalten stehen Einbindung und Vorwaermbetrieb - die Anweisung ohne Uebergabegrenze
+            // fuehrt die drei zuletzt.
+            string mit = AnlagenSql.SQL_ANLAGE_INSERT_OHNE_UEBERGABE;
             string ohne = AnlagenSql.SQL_ANLAGE_INSERT_OHNE_FREIE_KUEHLUNG;
+            int ueb = UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
             Assert.Contains("Vorlauf_Max, Kuehl_Frei, Kuehl_Frei_Graedigkeit_K, Kuehl_Frei_Leistung_kW)", mit, StringComparison.Ordinal);
             Assert.DoesNotContain("Kuehl_Frei", ohne, StringComparison.Ordinal);
             int platzhalter = mit.Count(c => c == '?');
+            Assert.Equal(platzhalter + ueb, AnlagenSql.SQL_ANLAGE_INSERT.Count(c => c == '?'));
             Assert.Equal(platzhalter - 3, ohne.Count(c => c == '?'));
             Assert.Equal(platzhalter - 5, AnlagenSql.SQL_ANLAGE_INSERT_OHNE_FAHRPLAN.Count(c => c == '?'));
 
             DbParam[] p = AnlagenSql.AnlagenParameter(1, new WErzeugerModel
                 { Kuehl_Frei = true, Kuehl_Frei_Graedigkeit_K = 2.5, Kuehl_Frei_Leistung_kW = 40.0 });
-            Assert.Equal(platzhalter, p.Length);
-            Assert.Equal(1, p[p.Length - 3].Wert);
-            Assert.Equal(2.5, p[p.Length - 2].Wert);
-            Assert.Equal(40.0, p[p.Length - 1].Wert);
+            Assert.Equal(platzhalter + ueb, p.Length);
+            Assert.Equal(1, p[p.Length - ueb - 3].Wert);
+            Assert.Equal(2.5, p[p.Length - ueb - 2].Wert);
+            Assert.Equal(40.0, p[p.Length - ueb - 1].Wert);
 
             DbParam[] leer = AnlagenSql.AnlagenParameter(1, new WErzeugerModel
                 { Kuehl_Frei_Graedigkeit_K = 20.5, Kuehl_Frei_Leistung_kW = 0.0 });
-            Assert.Equal(0, leer[leer.Length - 3].Wert);
-            Assert.True(leer[leer.Length - 2].Wert == null || leer[leer.Length - 2].Wert == DBNull.Value);
-            Assert.True(leer[leer.Length - 1].Wert == null || leer[leer.Length - 1].Wert == DBNull.Value);
+            Assert.Equal(0, leer[leer.Length - ueb - 3].Wert);
+            Assert.True(leer[leer.Length - ueb - 2].Wert == null || leer[leer.Length - ueb - 2].Wert == DBNull.Value);
+            Assert.True(leer[leer.Length - ueb - 1].Wert == null || leer[leer.Length - ueb - 1].Wert == DBNull.Value);
 
-            Assert.Equal(mit, AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, true, true).Sql);
+            Assert.Equal(mit, AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, true, true, false).Sql);
+            Assert.Equal(AnlagenSql.SQL_ANLAGE_INSERT, AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, true, true, true).Sql);
             (string sql, DbParam[] werte) = AnlagenSql.Einfuegen(1, new WErzeugerModel(), null, true, false);
             Assert.Equal(ohne, sql);
             Assert.Equal(platzhalter - 3, werte.Length);
@@ -145,14 +150,17 @@ namespace EPOS.Kern.Tests
             foreach (var s in FreieKuehlungSoleSchema.SPALTEN.Where(x => x.Spalte != FreieKuehlungSoleSchema.SPALTE_KUEHL_FREI))
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + s.Tabelle + "\" WHERE \"" + s.Spalte + "\" IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(FreieKuehlungSoleSchema.TAB_ANLAGEN);
-            // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195).
-            int sonde = ErdsondenfeldSchema.SPALTEN.Count;
+            // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195) und die zwei der
+            // Uebergabegrenze (Schritt 203).
+            int sonde = ErdsondenfeldSchema.SPALTEN.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
             Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ANLAGE.ToArray(), anlagen.Skip(anlagen.Count - sonde - 3).Take(3).ToArray());
             foreach (string t in FreieKuehlungSoleSchema.TABELLEN_ERGEBNIS)
             {
                 List<string> erg = DataRepository.SpaltenVonTabelle(t);
                 // An der Modulzeile stehen dahinter allein die drei Spalten der Vorlaufwahl (Schritt 188).
-                int danach = t == VorlaufwahlSchema.TAB_ERGEBNIS_WP_MODUL ? VorlaufwahlSchema.SPALTEN_ERGEBNIS.Count : 0;
+                // Dahinter die Ergebnisspalten der Uebergabegrenze (Schritt 203) an beiden Tabellen.
+                int danach = (t == VorlaufwahlSchema.TAB_ERGEBNIS_WP_MODUL ? VorlaufwahlSchema.SPALTEN_ERGEBNIS.Count : 0) +
+                             UebergabegrenzeSchema.SPALTEN.Count(x => x.Tabelle == t);
                 Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS.ToArray(), erg.Skip(erg.Count - danach - 2).Take(2).ToArray());
             }
             string ddl = Convert.ToString(DataRepository.ExecuteScalar("SELECT sql FROM sqlite_master WHERE name = ?",

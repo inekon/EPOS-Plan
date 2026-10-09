@@ -41357,7 +41357,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>bottom layer, read every hour</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_BETRIEB" xml:space="preserve">
-    <value>Condensing curve “{0}”: return temperature of the operating hours from the heating circuit {1} h, from the sink storage {2} h, from the maintained pair {3} h, fallback {4} h; mean return {5} °C; condensing operation in {6} of {7} operating hours.</value>
+    <value>Condensing curve “{0}”: return temperature of the operating hours from the heating circuit {1} h, from the sink storage {2} h, from the maintained pair {3} h, fallback {4} h{8}; mean return {5} °C; condensing operation in {6} of {7} operating hours.</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
     <value>Condensing boiler “{0}”: the return temperature is above the dew point ({2} °C) in {1} % of the operating hours — the boiler does not use the condensing effect then. A lower return temperature (heating circuit, storage) raises the efficiency.</value>
@@ -42507,6 +42507,33 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
     <value>Degradation coefficient C_d</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_AUSLEGUNG" xml:space="preserve">
+    <value>Design temperature spread</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MAX" xml:space="preserve">
+    <value>Maximum temperature spread</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MIN" xml:space="preserve">
+    <value>Minimum temperature spread</value>
+  </data>
+  <data name="WPS_LBL_MINDESTVOLUMENSTROM" xml:space="preserve">
+    <value>Minimum flow rate</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Maximum return temperature</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_BEZUG" xml:space="preserve">
+    <value>Reference return temperature</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_ABWERTUNG" xml:space="preserve">
+    <value>Derating per kelvin of return temperature</value>
+  </data>
+  <data name="WPS_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Refrigerant</value>
+  </data>
+  <data name="BHKWK_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Maximum return temperature</value>
   </data>
   <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
     <value>degradation coefficient C_d</value>
@@ -49012,7 +49039,7 @@ chart</value>
     <value>R1234ze(E) · {0} °C</value>
   </data>
   <data name="WPA_HRL_SCHNELLWAHL" xml:space="preserve">
-    <value>The quick selection only fills an empty “Maximum flow temperature” field; manufacturer data on the operating limit take precedence.</value>
+    <value>The quick selection saves the refrigerant and only fills empty fields; manufacturer data on the operating limit take precedence.</value>
   </data>
   <data name="WPA_HRL_SCHNELLWAHL_GEFUELLT" xml:space="preserve">
     <value>The maximum flow temperature is set ({0} °C) — the quick selection leaves it unchanged.</value>
@@ -49046,6 +49073,159 @@ chart</value>
   </data>
   <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
     <value>The emission limit cannot be derived: {0}</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_UEBERGABE" xml:space="preserve">
+    <value>maximum flow temperature of the heat pump {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MAX" xml:space="preserve">
+    <value>maximum temperature spread {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MIN" xml:space="preserve">
+    <value>minimum temperature spread {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_RUECKLAUF_MAX" xml:space="preserve">
+    <value>return temperature limit {0} h</value>
+  </data>
+  <data name="SIMENG_WP_BETRIEBSBEREICHE" xml:space="preserve">
+    <value>Operating ranges “{0}”: heat pump alone {1} h, parallel {2} h, preheating {3} h, boiler only {4} h; limited by {5}.</value>
+  </data>
+  <data name="SIMENG_WP_VORWAERMUNG_KASKADE" xml:space="preserve">
+    <value>“{0}”: Preheating mode requires the heat pump ahead of the boiler in the cascade; it is placed behind it. Hours above its maximum flow temperature are calculated without the heat pump (boiler only).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERT_VORWAERMER" xml:space="preserve">
+    <value>, from the flow of the preheating heat pump {0} h</value>
+  </data>
+  <data name="WPA_GRP_BIVALENZ_UEBERGABE" xml:space="preserve">
+    <value>Bivalence and heat emission</value>
+  </data>
+  <data name="WPA_LBL_EINBINDUNG" xml:space="preserve">
+    <value>Hydraulic integration</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_DIREKT" xml:space="preserve">
+    <value>direct (without buffer)</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_PUFFER" xml:space="preserve">
+    <value>buffer tank</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_WEICHE" xml:space="preserve">
+    <value>hydraulic separator</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_LEER" xml:space="preserve">
+    <value>not selected</value>
+  </data>
+  <data name="WPA_HINWEIS_EINBINDUNG_PUFFER" xml:space="preserve">
+    <value>Buffer: the heat emission is calculated with the discharge side as an approximation.</value>
+  </data>
+  <data name="WPA_CHK_VORWAERMBETRIEB" xml:space="preserve">
+    <value>Preheating mode (boiler in series)</value>
+  </data>
+  <data name="WPA_HINWEIS_VORWAERMBETRIEB" xml:space="preserve">
+    <value>The heat pump preheats the return up to its maximum flow temperature; the boiler raises it to the set flow temperature.</value>
+  </data>
+  <data name="WPA_HINWEIS_VORWAERMBETRIEB_ALTERNATIV" xml:space="preserve">
+    <value>Preheating mode is not available in alternative operation.</value>
+  </data>
+  <data name="WPA_LBL_HOECHSTVORLAUF_LESEN" xml:space="preserve">
+    <value>Maximum flow temperature</value>
+  </data>
+  <data name="WPA_LBL_SPREIZUNG_AUSLEGUNG" xml:space="preserve">
+    <value>Temperature spread design</value>
+  </data>
+  <data name="WPA_LBL_SPREIZUNG_MAX" xml:space="preserve">
+    <value>max.</value>
+  </data>
+  <data name="WPA_LBL_SPREIZUNG_MIN" xml:space="preserve">
+    <value>min.</value>
+  </data>
+  <data name="WPA_LBL_MINDESTVOLUMENSTROM" xml:space="preserve">
+    <value>Minimum flow rate</value>
+  </data>
+  <data name="WPA_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Maximum return temperature</value>
+  </data>
+  <data name="WPA_LBL_RUECKLAUF_R744" xml:space="preserve">
+    <value>Return R744: reference / derating / limit</value>
+  </data>
+  <data name="WPA_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>catalogue</value>
+  </data>
+  <data name="WPA_HERKUNFT_VORGABE_KAELTEMITTEL" xml:space="preserve">
+    <value>default by refrigerant</value>
+  </data>
+  <data name="WPA_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="WPA_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>derived</value>
+  </data>
+  <data name="WPA_HERKUNFT_NUR_R744" xml:space="preserve">
+    <value>R744 only</value>
+  </data>
+  <data name="WPA_HERLEITUNG_RUECKLAUF_ABGELEITET" xml:space="preserve">
+    <value>derived: {0} °C = {1} − {2} (maximum flow temperature − minimum spread) · a smaller catalogue value takes precedence · above it the heat pump delivers nothing in that hour</value>
+  </data>
+  <data name="WPA_HERLEITUNG_R744" xml:space="preserve">
+    <value>for R744: reference return {0} °C · derating {1} %/K · limit {2} °C — output and COP drop by {1} % per K above {0} °C</value>
+  </data>
+  <data name="WPA_HINWEIS_GERAETEGRENZEN" xml:space="preserve">
+    <value>Device limits are maintained in the catalogue; empty fields use the default.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_ABSCHALTPUNKT" xml:space="preserve">
+    <value>entered {0} · calculated from the heat emission {1} · decisive {2}</value>
+  </data>
+  <data name="WPA_WARN_SPREIZUNG" xml:space="preserve">
+    <value>The minimum spread ({0} K) is not smaller than the maximum spread ({1} K) — the heat pump finds no operating point.</value>
+  </data>
+  <data name="WPA_WARN_HOECHSTVORLAUF" xml:space="preserve">
+    <value>The maximum flow temperature ({0} °C) is below the design flow temperature of the surface heating ({1} °C).</value>
+  </data>
+  <data name="WPA_WARN_RUECKLAUF_NIE" xml:space="preserve">
+    <value>Highest return temperature {0} °C is below the return temperature at the transfer limit ({1} °C) — the heat pump never delivers at this return temperature.</value>
+  </data>
+  <data name="WPA_WARN_VORWAERM_OHNE_KESSEL" xml:space="preserve">
+    <value>Preheating mode without a boiler or heating rod in the cascade — nothing raises the flow to the set temperature.</value>
+  </data>
+  <data name="WPA_WARN_KASKADE" xml:space="preserve">
+    <value>The heat pump is behind the boiler in the cascade (position {0} after position {1}) — in preheating mode it belongs in front of it.</value>
+  </data>
+  <data name="WPA_WARN_GMODG" xml:space="preserve">
+    <value>At −7 °C the heat pump reaches {0} % of the boiler output; § 43 GModG requires at least {1} %.</value>
+  </data>
+  <data name="WPA_WARN_UEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>The heating surfaces limit the heat pump more than its performance map: below {0} the maximum flow temperature no longer covers the heating load.</value>
+  </data>
+  <data name="KI_DLG_WPA_EINBINDUNG_ERL" xml:space="preserve">
+    <value>The hydraulic integration of the heat pump: DIREKT (without buffer), PUFFER (buffer tank) or WEICHE (hydraulic separator); empty = not selected, the heat emission limit then stays inactive.</value>
+  </data>
+  <data name="KI_DLG_WPA_VORWAERMBETRIEB_ERL" xml:space="preserve">
+    <value>Preheating mode, boiler in series: the heat pump preheats the return up to its maximum flow temperature, the boiler raises it to the set flow temperature; only available in bivalent parallel and partly parallel operation.</value>
+  </data>
+  <data name="KI_DLG_WPA_KAELTEMITTEL_ERL" xml:space="preserve">
+    <value>The refrigerant of the device (code such as R410A, R290, R744); the choice only fills an empty “Maximum flow temperature” field and is saved with the device.</value>
+  </data>
+  <data name="KI_DLG_WPA_LESEWERTE_NAME" xml:space="preserve">
+    <value>Device limits of the heat emission</value>
+  </data>
+  <data name="KI_DLG_WPA_LESEWERTE_ERL" xml:space="preserve">
+    <value>Read only: maximum flow temperature, spreads, minimum flow rate and maximum return temperature, each with its origin; they are maintained in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_WPA_HERLEITUNG_NAME" xml:space="preserve">
+    <value>Derivation of heat emission and bivalence</value>
+  </data>
+  <data name="KI_DLG_WPA_HERLEITUNG_ERL" xml:space="preserve">
+    <value>Read only: heat emission limit at the maximum flow temperature, bivalence points and share of the boiler output, as in the dialogue.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_NAME" xml:space="preserve">
+    <value>Derivation of the cut-off point</value>
+  </data>
+  <data name="KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_ERL" xml:space="preserve">
+    <value>Read only: entered, calculated from the heat emission and decisive cut-off point.</value>
+  </data>
+  <data name="KI_DLG_WPA_BEFUNDE_NAME" xml:space="preserve">
+    <value>Notes on bivalence and heat emission</value>
+  </data>
+  <data name="KI_DLG_WPA_BEFUNDE_ERL" xml:space="preserve">
+    <value>Read only: the soft locks and notes of the group; saving remains possible.</value>
   </data>
 </root>
 

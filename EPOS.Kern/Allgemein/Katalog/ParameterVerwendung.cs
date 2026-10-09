@@ -507,8 +507,39 @@ namespace WindowsFormsApplication1
                 E(ErzeugerTeillastSchema.SPALTE_BHKW_MINDESTLAUFZEIT, t("BHKWK_LBL_MINDESTLAUFZEIT"), "min", SIM,
                   "SimulationBHKW.TeillastStundeAbschliessen (BhkwTeillast.StartsImTakt, Kesselregel; mit " +
                   "Anfahrverlust Schalter des Taktens); BhkwKatalogDialog (Gruppe Teillast und Takten)")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(new[]
+            {
+                // Schemaschritt UebergabegrenzeSchema.SCHRITT, hinter den Katalogspalten (Spaltenfolge der Tabelle):
+                // die Ruecklaufgrenze des BHKW - leer = keine Grenze. Den Rechenweg baut UB-E3.
+                E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("BHKWK_LBL_RUECKLAUF_MAX"), "°C", NIX,
+                  "UebergabegrenzeSchema (Ruecklaufgrenze des BHKW, Umsetzungskonzept Uebergabegrenze 4.2); noch ohne Leser"),
+            }).ToList();
         }
+
+        /// <summary>
+        /// Die acht Gerätespalten der Übergabegrenze an <c>Tab_WP_STAMM</c> (Schemaschritt
+        /// <see cref="UebergabegrenzeSchema.SCHRITT"/>), hinter den Katalogspalten in der Spaltenfolge der Tabelle. Leer
+        /// rechnet die Wärmepumpe mit den Vorgaben des Kerns; die Leser bauen UB-E2 und UB-E3.
+        /// </summary>
+        private static IEnumerable<ParameterEintrag> UebergabegrenzeWp(Func<string, string> t) => new[]
+        {
+            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_AUSLEGUNG, t("WPS_LBL_SPREIZUNG_AUSLEGUNG"), "K", NIX,
+              "UebergabegrenzeSchema (leer = 5 K); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_MAX, t("WPS_LBL_SPREIZUNG_MAX"), "K", NIX,
+              "UebergabegrenzeSchema (leer = 10 K); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_SPREIZUNG_MIN, t("WPS_LBL_SPREIZUNG_MIN"), "K", NIX,
+              "UebergabegrenzeSchema (leer = 3 K); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_MINDESTVOLUMENSTROM, t("WPS_LBL_MINDESTVOLUMENSTROM"), "%", NIX,
+              "UebergabegrenzeSchema (leer = 60 %); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX, t("WPS_LBL_RUECKLAUF_MAX"), "°C", NIX,
+              "UebergabegrenzeSchema (leer = abgeleitet aus dem groessten Vorlauf); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_BEZUG, t("WPS_LBL_RUECKLAUF_BEZUG"), "°C", NIX,
+              "UebergabegrenzeSchema (leer = 30 °C, wenn abgewertet); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_RUECKLAUF_ABWERTUNG, t("WPS_LBL_RUECKLAUF_ABWERTUNG"), "%/K", NIX,
+              "UebergabegrenzeSchema (leer = keine Abwertung); noch ohne Leser"),
+            E(UebergabegrenzeSchema.SPALTE_KAELTEMITTEL, t("WPS_LBL_KAELTEMITTEL"), "", NIX,
+              "UebergabegrenzeSchema (Werteliste im Kern, U-2; leer = allgemeine Vorgaben); noch ohne Leser"),
+        };
 
         // =================================================================
         // 3. Waermepumpe — Tab_WP_STAMM (25 Spalten)
@@ -596,7 +627,7 @@ namespace WindowsFormsApplication1
                 E(ErzeugerTeillastSchema.SPALTE_WP_CD, t("WPS_LBL_TAKTVERLUST_CD"), "", SIM,
                   "SimulationWaermepumpe.TaktStundeAbschliessen (Waermepumpentakt.Teillastfaktor, leer = 0,9); " +
                   "Kaeltekaskade; WaermepumpeStammFelder")
-            }.Concat(Katalogspalten(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(UebergabegrenzeWp(t)).ToList();
         }
 
         // =================================================================

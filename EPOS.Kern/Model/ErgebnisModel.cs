@@ -702,6 +702,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? FreieKuehlung_Stunden;
 
+        /// <summary>UB‑E2: die Summe der Betriebsbereiche der Module; <c>null</c> = kein Modul mit Bivalenzobjekt (Spalten NULL).</summary>
+        public Bereichskennzahlen Bereiche;
+
         public List<ErgebnisWaermepumpeModulModel> Module = new List<ErgebnisWaermepumpeModulModel>();
     }
 
@@ -757,6 +760,81 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Stunden mit Vorlauf unter der untersten Stützstelle [h]. <c>null</c> = keine Kennlinienwahl.</summary>
         public int? Vorlauf_Darunter_Stunden;
+
+        /// <summary>UB‑E2 (Schemaschritt <see cref="UebergabegrenzeSchema.SCHRITT"/>): Betriebsbereiche des Moduls; <c>null</c> = ohne Bivalenzobjekt (Spalten NULL).</summary>
+        public Bereichskennzahlen Bereiche;
+    }
+
+    /// <summary>
+    /// <b>Die Betriebsbereiche einer Wärmepumpe</b> (Übergabegrenze UB‑E2, Umsetzungskonzept 3.3): Stunden und Wärme der
+    /// Wärmepumpe je Bereich, die Zähler der Spreizungs- und Rücklaufgrenze und — nur am Modul — die Bivalenzpunkte und
+    /// die Übergabegrenze bei Auslegung. Jeder Wert nullbar; <c>null</c> heißt „nicht erhoben".
+    /// </summary>
+    public sealed class Bereichskennzahlen
+    {
+        /// <summary>Stunden je Bereich [h]: WP allein, parallel, Vorwärmung, nur Kessel (B0 und B4).</summary>
+        public int?[] Stunden = new int?[4];
+
+        /// <summary>Wärme der Wärmepumpe je Bereich [MWh], Reihenfolge wie <see cref="Stunden"/>.</summary>
+        public double?[] Mwh = new double?[4];
+
+        /// <summary>Stunden mit unterschrittener Mindestspreizung (taktend) [h]; in UB‑E2 0.</summary>
+        public int? Spreizung_Unterschritten_h;
+
+        /// <summary>Stunden über der Rücklaufgrenze [h]; in UB‑E2 0.</summary>
+        public int? Ruecklauf_Ueberschritten_h;
+
+        /// <summary>θ_biv,1 [°C] (nur Modul).</summary>
+        public double? Bivalenzpunkt_1;
+
+        /// <summary>θ_biv,2 [°C] (nur Modul).</summary>
+        public double? Bivalenzpunkt_2;
+
+        /// <summary>Φ_UE,max bei Auslegungsraumtemperatur [kW] (nur Modul).</summary>
+        public double? Uebergabe_Max_kW;
+
+        /// <summary>Die Werte in der Reihenfolge von <see cref="UebergabegrenzeSchema.SPALTEN_ERGEBNIS"/> bzw. <c>_MODUL</c>.</summary>
+        public object[] Werte(bool modul)
+        {
+            var w = new List<object>();
+            foreach (int? h in Stunden) w.Add(h);
+            foreach (double? m in Mwh) w.Add(m);
+            w.Add(Spreizung_Unterschritten_h);
+            w.Add(Ruecklauf_Ueberschritten_h);
+            if (modul)
+            {
+                w.Add(Bivalenzpunkt_1);
+                w.Add(Bivalenzpunkt_2);
+                w.Add(Uebergabe_Max_kW);
+            }
+            return w.ToArray();
+        }
+
+        /// <summary>Die Summe der Module (Stunden und Wärme je Bereich, Zähler); <c>null</c> ohne Modul mit Bereichen.</summary>
+        public static Bereichskennzahlen Summe(IEnumerable<Bereichskennzahlen> module)
+        {
+            Bereichskennzahlen s = null;
+            foreach (Bereichskennzahlen m in module)
+            {
+                if (m == null) continue;
+                if (s == null)
+                    s = new Bereichskennzahlen
+                    {
+                        Stunden = new int?[] { 0, 0, 0, 0 },
+                        Mwh = new double?[] { 0.0, 0.0, 0.0, 0.0 },
+                        Spreizung_Unterschritten_h = 0,
+                        Ruecklauf_Ueberschritten_h = 0,
+                    };
+                for (int i = 0; i < 4; i++)
+                {
+                    s.Stunden[i] += m.Stunden[i] ?? 0;
+                    s.Mwh[i] += m.Mwh[i] ?? 0.0;
+                }
+                s.Spreizung_Unterschritten_h += m.Spreizung_Unterschritten_h ?? 0;
+                s.Ruecklauf_Ueberschritten_h += m.Ruecklauf_Ueberschritten_h ?? 0;
+            }
+            return s;
+        }
     }
 
     // Detail: BHKW-Aggregat (Tab_ErgebnisBHKW) + Modulliste.

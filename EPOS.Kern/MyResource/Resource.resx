@@ -41364,7 +41364,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>unterste Schicht, je Stunde gelesen</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_BETRIEB" xml:space="preserve">
-    <value>Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden.</value>
+    <value>Brennwertkennlinie „{0}“: Rücklauf der Laufstunden aus dem Heizkreis {1} h, aus dem Senkenspeicher {2} h, aus dem gepflegten Paar {3} h, Rückfall {4} h{8}; mittlerer Rücklauf {5} °C; Brennwertbetrieb in {6} von {7} Laufstunden.</value>
   </data>
   <data name="SIMENG_KESSEL_BRENNWERT_UEBER_TAUPUNKT" xml:space="preserve">
     <value>Brennwertkessel „{0}“: Der Rücklauf liegt in {1} % der Betriebsstunden über dem Taupunkt ({2} °C) — der Kessel nutzt den Brennwert dann nicht. Ein niedrigerer Rücklauf (Heizkreis, Speicher) hebt den Wirkungsgrad.</value>
@@ -42514,6 +42514,33 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="WPS_LBL_TAKTVERLUST_CD" xml:space="preserve">
     <value>Teillastkoeffizient C_d</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegungsspreizung</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MAX" xml:space="preserve">
+    <value>Größte Spreizung</value>
+  </data>
+  <data name="WPS_LBL_SPREIZUNG_MIN" xml:space="preserve">
+    <value>Kleinste Spreizung</value>
+  </data>
+  <data name="WPS_LBL_MINDESTVOLUMENSTROM" xml:space="preserve">
+    <value>Mindestvolumenstrom</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Größter Rücklauf</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_BEZUG" xml:space="preserve">
+    <value>Bezugsrücklauf</value>
+  </data>
+  <data name="WPS_LBL_RUECKLAUF_ABWERTUNG" xml:space="preserve">
+    <value>Abwertung je Kelvin Rücklauf</value>
+  </data>
+  <data name="WPS_LBL_KAELTEMITTEL" xml:space="preserve">
+    <value>Kältemittel</value>
+  </data>
+  <data name="BHKWK_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Größter Rücklauf</value>
   </data>
   <data name="WPS_FELD_TAKTVERLUST_CD" xml:space="preserve">
     <value>Teillastkoeffizient C_d</value>
@@ -49019,7 +49046,7 @@ Chart</value>
     <value>R1234ze(E) · {0} °C</value>
   </data>
   <data name="WPA_HRL_SCHNELLWAHL" xml:space="preserve">
-    <value>Die Schnellwahl füllt nur ein leeres Feld „Höchster Vorlauf“; Herstellerangaben zur Einsatzgrenze haben Vorrang.</value>
+    <value>Die Schnellwahl speichert das Kältemittel und füllt nur leere Felder; Herstellerangaben zur Einsatzgrenze haben Vorrang.</value>
   </data>
   <data name="WPA_HRL_SCHNELLWAHL_GEFUELLT" xml:space="preserve">
     <value>Der höchste Vorlauf ist gepflegt ({0} °C) — die Schnellwahl lässt ihn stehen.</value>
@@ -49053,6 +49080,159 @@ Chart</value>
   </data>
   <data name="WPA_HERLEITUNG_BEFUND" xml:space="preserve">
     <value>Die Übergabegrenze ist nicht herleitbar: {0}</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_UEBERGABE" xml:space="preserve">
+    <value>Höchstvorlauf der Wärmepumpe {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MAX" xml:space="preserve">
+    <value>größte Spreizung {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_SPREIZUNG_MIN" xml:space="preserve">
+    <value>Mindestspreizung {0} h</value>
+  </data>
+  <data name="SIMENG_WP_GRUND_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Rücklaufgrenze {0} h</value>
+  </data>
+  <data name="SIMENG_WP_BETRIEBSBEREICHE" xml:space="preserve">
+    <value>Betriebsbereiche „{0}“: Wärmepumpe allein {1} h, parallel {2} h, Vorwärmung {3} h, nur Kessel {4} h; begrenzt durch {5}.</value>
+  </data>
+  <data name="SIMENG_WP_VORWAERMUNG_KASKADE" xml:space="preserve">
+    <value>„{0}“: Der Vorwärmbetrieb verlangt die Wärmepumpe in der Kaskade vor dem Heizkessel; sie steht dahinter. Stunden über ihrem Höchstvorlauf rechnen ohne Wärmepumpe (nur Kessel).</value>
+  </data>
+  <data name="SIMENG_KESSEL_BRENNWERT_VORWAERMER" xml:space="preserve">
+    <value>, aus dem Vorlauf der vorwärmenden Wärmepumpe {0} h</value>
+  </data>
+  <data name="WPA_GRP_BIVALENZ_UEBERGABE" xml:space="preserve">
+    <value>Bivalenz und Übergabe</value>
+  </data>
+  <data name="WPA_LBL_EINBINDUNG" xml:space="preserve">
+    <value>Einbindung</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_DIREKT" xml:space="preserve">
+    <value>direkt (ohne Puffer)</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_PUFFER" xml:space="preserve">
+    <value>Puffer</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_WEICHE" xml:space="preserve">
+    <value>Weiche</value>
+  </data>
+  <data name="WPA_OPT_EINBINDUNG_LEER" xml:space="preserve">
+    <value>nicht gewählt</value>
+  </data>
+  <data name="WPA_HINWEIS_EINBINDUNG_PUFFER" xml:space="preserve">
+    <value>Puffer: Die Übergabe rechnet mit der Entladeseite als Näherung.</value>
+  </data>
+  <data name="WPA_CHK_VORWAERMBETRIEB" xml:space="preserve">
+    <value>Vorwärmbetrieb (Kessel in Reihe)</value>
+  </data>
+  <data name="WPA_HINWEIS_VORWAERMBETRIEB" xml:space="preserve">
+    <value>Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf.</value>
+  </data>
+  <data name="WPA_HINWEIS_VORWAERMBETRIEB_ALTERNATIV" xml:space="preserve">
+    <value>Vorwärmbetrieb ist bei alternativ nicht wählbar.</value>
+  </data>
+  <data name="WPA_LBL_HOECHSTVORLAUF_LESEN" xml:space="preserve">
+    <value>Höchster Vorlauf</value>
+  </data>
+  <data name="WPA_LBL_SPREIZUNG_AUSLEGUNG" xml:space="preserve">
+    <value>Spreizung Auslegung</value>
+  </data>
+  <data name="WPA_LBL_SPREIZUNG_MAX" xml:space="preserve">
+    <value>max.</value>
+  </data>
+  <data name="WPA_LBL_SPREIZUNG_MIN" xml:space="preserve">
+    <value>min.</value>
+  </data>
+  <data name="WPA_LBL_MINDESTVOLUMENSTROM" xml:space="preserve">
+    <value>Mindestvolumenstrom</value>
+  </data>
+  <data name="WPA_LBL_RUECKLAUF_MAX" xml:space="preserve">
+    <value>Höchster Rücklauf</value>
+  </data>
+  <data name="WPA_LBL_RUECKLAUF_R744" xml:space="preserve">
+    <value>Rücklauf R744: Bezug / Abwertung / Grenze</value>
+  </data>
+  <data name="WPA_HERKUNFT_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="WPA_HERKUNFT_VORGABE_KAELTEMITTEL" xml:space="preserve">
+    <value>Vorgabe nach Kältemittel</value>
+  </data>
+  <data name="WPA_HERKUNFT_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="WPA_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>abgeleitet</value>
+  </data>
+  <data name="WPA_HERKUNFT_NUR_R744" xml:space="preserve">
+    <value>nur R744</value>
+  </data>
+  <data name="WPA_HERLEITUNG_RUECKLAUF_ABGELEITET" xml:space="preserve">
+    <value>abgeleitet: {0} °C = {1} − {2} (Höchstvorlauf − Mindestspreizung) · ein kleinerer Katalogwert gilt vor · darüber liefert die Wärmepumpe in der Stunde nichts</value>
+  </data>
+  <data name="WPA_HERLEITUNG_R744" xml:space="preserve">
+    <value>bei R744: Bezugsrücklauf {0} °C · Abwertung {1} %/K · Grenze {2} °C — Leistung und COP sinken je K über {0} °C um {1} %</value>
+  </data>
+  <data name="WPA_HINWEIS_GERAETEGRENZEN" xml:space="preserve">
+    <value>Gerätegrenzen werden im Katalog gepflegt; leere Felder rechnen mit der Vorgabe.</value>
+  </data>
+  <data name="WPA_HERLEITUNG_ABSCHALTPUNKT" xml:space="preserve">
+    <value>eingegeben {0} · aus der Übergabe berechnet {1} · maßgebend {2}</value>
+  </data>
+  <data name="WPA_WARN_SPREIZUNG" xml:space="preserve">
+    <value>Die Mindestspreizung ({0} K) ist nicht kleiner als die Höchstspreizung ({1} K) — die Wärmepumpe findet keinen Betriebspunkt.</value>
+  </data>
+  <data name="WPA_WARN_HOECHSTVORLAUF" xml:space="preserve">
+    <value>Der höchste Vorlauf ({0} °C) liegt unter dem Auslegungsvorlauf der Flächenheizung ({1} °C).</value>
+  </data>
+  <data name="WPA_WARN_RUECKLAUF_NIE" xml:space="preserve">
+    <value>Höchster Rücklauf {0} °C liegt unter dem Rücklauf an der Übergabegrenze ({1} °C) — die Wärmepumpe liefert bei diesem Rücklauf nie.</value>
+  </data>
+  <data name="WPA_WARN_VORWAERM_OHNE_KESSEL" xml:space="preserve">
+    <value>Vorwärmbetrieb ohne Kessel oder Heizstab in der Kaskade — niemand hebt auf den Sollvorlauf.</value>
+  </data>
+  <data name="WPA_WARN_KASKADE" xml:space="preserve">
+    <value>Die Wärmepumpe steht in der Kaskade hinter dem Kessel (Platz {0} nach Platz {1}) — im Vorwärmbetrieb gehört sie davor.</value>
+  </data>
+  <data name="WPA_WARN_GMODG" xml:space="preserve">
+    <value>Die Wärmepumpe erreicht bei −7 °C {0} % der Kesselleistung; § 43 GModG verlangt mindestens {1} %.</value>
+  </data>
+  <data name="WPA_WARN_UEBERGABE_BEGRENZT" xml:space="preserve">
+    <value>Die Heizflächen begrenzen die Wärmepumpe stärker als ihr Kennfeld: Unter {0} reicht der Höchstvorlauf nicht mehr für die Heizlast.</value>
+  </data>
+  <data name="KI_DLG_WPA_EINBINDUNG_ERL" xml:space="preserve">
+    <value>Die hydraulische Einbindung der Wärmepumpe: DIREKT (ohne Puffer), PUFFER oder WEICHE; leer = nicht gewählt, dann ruht die Übergabegrenze.</value>
+  </data>
+  <data name="KI_DLG_WPA_VORWAERMBETRIEB_ERL" xml:space="preserve">
+    <value>Vorwärmbetrieb, Kessel in Reihe: Die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf; nur bei bivalent-parallel und -teilparallel wählbar.</value>
+  </data>
+  <data name="KI_DLG_WPA_KAELTEMITTEL_ERL" xml:space="preserve">
+    <value>Das Kältemittel des Geräts (Code wie R410A, R290, R744); die Wahl füllt nur ein leeres Feld „Höchster Vorlauf“ und wird am Gerät gespeichert.</value>
+  </data>
+  <data name="KI_DLG_WPA_LESEWERTE_NAME" xml:space="preserve">
+    <value>Gerätegrenzen der Übergabe</value>
+  </data>
+  <data name="KI_DLG_WPA_LESEWERTE_ERL" xml:space="preserve">
+    <value>Nur lesbar: höchster Vorlauf, Spreizungen, Mindestvolumenstrom und höchster Rücklauf je mit Herkunft; gepflegt werden sie im Katalog.</value>
+  </data>
+  <data name="KI_DLG_WPA_HERLEITUNG_NAME" xml:space="preserve">
+    <value>Herleitung Übergabe und Bivalenz</value>
+  </data>
+  <data name="KI_DLG_WPA_HERLEITUNG_ERL" xml:space="preserve">
+    <value>Nur lesbar: Übergabegrenze beim Höchstvorlauf, Bivalenzpunkte und Anteil an der Kesselleistung, wie im Dialog.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_NAME" xml:space="preserve">
+    <value>Herleitung des Abschaltpunkts</value>
+  </data>
+  <data name="KI_DLG_WPA_ABSCHALTPUNKT_HERLEITUNG_ERL" xml:space="preserve">
+    <value>Nur lesbar: eingegebener, aus der Übergabe berechneter und maßgebender Abschaltpunkt.</value>
+  </data>
+  <data name="KI_DLG_WPA_BEFUNDE_NAME" xml:space="preserve">
+    <value>Hinweise zu Bivalenz und Übergabe</value>
+  </data>
+  <data name="KI_DLG_WPA_BEFUNDE_ERL" xml:space="preserve">
+    <value>Nur lesbar: die weichen Sperren und Hinweise der Gruppe; Speichern bleibt möglich.</value>
   </data>
 </root>
 
