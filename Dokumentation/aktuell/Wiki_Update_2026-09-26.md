@@ -215,6 +215,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Der Zapfprofilgenerator rechnet mit dem gewählten Wochenende und allen Ferienzeiträumen des Gebäudes; der Tagesbilanz-Weg rechnet weiter mit Samstag und Sonntag und den ersten vier Ferienzeiträumen. (#864)
 - Seit 09.10.2026: Feiertage zählen im Brauchwasser-Zapfprofil immer als Sonntag; die Landesfeiertage richten sich nach dem Feiertagsland des Gebäudes. (#866)
 - Seit 09.10.2026: Die Nennleistung einer PV-Ganglinie lässt sich im Katalog nachträglich bearbeiten; Excel-Bericht und Variantenvergleich nennen die Quelle der Photovoltaik (Modulmodell oder Ganglinie). (#867)
+- Seit 09.10.2026: In der Kalenderbedienung lassen sich alle Ferienzeiträume benennen, auch die ersten vier. (#868)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
