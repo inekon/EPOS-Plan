@@ -789,6 +789,8 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldGrenzleistung] = Feld(r, "Grenzleistung");
             werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
             werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
+            // Abschaltgrenze des Ruecklaufs (UB-E3): roh, leer bleibt leer (= keine Grenze).
+            werte[KatalogBrowserProfil.FeldRuecklaufMax] = Feld(r, UebergabegrenzeSchema.SPALTE_RUECKLAUF_MAX);
 
             // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
             //
@@ -939,7 +941,8 @@ namespace WindowsFormsApplication1
                                                string WirkungsgradEl50 = null,
                                                string WirkungsgradTh50 = null,
                                                string AnfahrverlustKwh = null,
-                                               string MindestlaufzeitMin = null);
+                                               string MindestlaufzeitMin = null,
+                                               string RuecklaufMaxC = null);
 
         /// <summary>
         /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
@@ -1067,6 +1070,15 @@ namespace WindowsFormsApplication1
             grund = ErzeugerTeillastWerte.BhkwVerstoss(teillast);
             if (!string.IsNullOrEmpty(grund)) return grund;
 
+            // 1c. DIE ABSCHALTGRENZE DES RUECKLAUFS (UB-E3): dieselbe Leerstellenregel wie
+            //     Teillast und Takten - "" heisst „keine Grenze" (NULL), null laesst sie stehen;
+            //     der Bereich wie im Katalogeditor (GeraetegrenzWerte.BhkwVerstoss).
+            grund = Leerbar(KatalogBrowserProfil.FeldRuecklaufMax, f.RuecklaufMaxC, false, out var ruecklaufMax);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+            double? ruecklaufMaxNeu = ruecklaufMax.Gesetzt ? ruecklaufMax.Wert : satz.m_Ruecklauf_Max;
+            grund = GeraetegrenzWerte.BhkwVerstoss(ruecklaufMaxNeu);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
             // 2. Der Nachschlagewert.
             string brennstoff;
             grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBrennstoff,
@@ -1098,6 +1110,7 @@ namespace WindowsFormsApplication1
             satz.m_Wirkungsgrad_el = wirkEl;
             satz.m_Wirkungsgrad_th = wirkTh;
             ErzeugerTeillastWerte.Setzen(satz, teillast);
+            satz.m_Ruecklauf_Max = ruecklaufMaxNeu;
 
             // 4. Die abgeleitete Spalte nachziehen.
             satz.m_Investition_KWel = BHKWKosten.JeKWel(

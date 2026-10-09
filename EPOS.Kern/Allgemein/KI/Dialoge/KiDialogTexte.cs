@@ -3380,6 +3380,7 @@
                         case KatalogBrowserProfil.FeldGrenzleistung: return BhkkGrenzleistungErl;
                         case KatalogBrowserProfil.FeldVorlauf: return BhkkVorlaufErl;
                         case KatalogBrowserProfil.FeldRuecklauf: return BhkkRuecklaufErl;
+                        case KatalogBrowserProfil.FeldRuecklaufMax: return BhkkRuecklaufMaxErl;
                         case KatalogBrowserProfil.FeldBrennstoff: return BhkkTraegerErl;
                         case KatalogBrowserProfil.FeldWirkungsgradEl: return BhkkWgElErl;
                         case KatalogBrowserProfil.FeldWirkungsgradTh: return BhkkWgThErl;

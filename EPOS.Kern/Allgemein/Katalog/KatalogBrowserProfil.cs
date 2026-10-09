@@ -297,6 +297,9 @@ namespace WindowsFormsApplication1
         public const string FeldBrennwert = "BRENNWERT";
         public const string FeldVorlauf = "VORLAUF";
         public const string FeldRuecklauf = "RUECKLAUF";
+        // Die Abschaltgrenze des Ruecklaufs am BHKW (Spalte Ruecklauf_Max, Schemaschritt 204).
+        // Leer heisst „keine Grenze gepflegt".
+        public const string FeldRuecklaufMax = "RUECKLAUF_MAX";
         public const string FeldKollektortyp = "KOLLEKTORTYP";
         public const string FeldModulflaeche = "MODULFLAECHE";
         public const string FeldAperturflaeche = "APERTURFLAECHE";
@@ -557,6 +560,8 @@ namespace WindowsFormsApplication1
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
                             new BrowserDetailfeld(FeldRuecklauf,    t("KBROW_LBL_RUECKLAUF"), "°C",
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldRuecklaufMax, t("BHKWK_LBL_RUECKLAUF_MAX"), "°C",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
 
                             // Der volle Satz (15.09.2026): Technik, Kosten, Emissionen.
                             new BrowserDetailfeld(FeldBrennstoff,   t("BHKWK_LBL_ENERGIETRAEGER"), "",

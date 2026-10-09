@@ -172,7 +172,9 @@ namespace WindowsFormsApplication1
                 WirkungsgradEl50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastEl50),
                 WirkungsgradTh50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastTh50),
                 AnfahrverlustKwh: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
-                MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit));
+                MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
+                // Abschaltgrenze des Ruecklaufs (UB-E3): als Text, leer heißt „keine Grenze".
+                RuecklaufMaxC: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldRuecklaufMax));
 
             BHKWStammCtrl.SpeicherErgebnis e =
                 BHKWStammCtrl.AnzeigefelderSchreiben(name, werte);

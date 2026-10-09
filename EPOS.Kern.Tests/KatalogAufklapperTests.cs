@@ -88,6 +88,8 @@ namespace EPOS.Kern.Tests
                 {
                     "BEZEICHNER", "FIRMA", "BESCHREIBUNG", "PTHERM", "PEL", "GRENZLEISTUNG",
                     "VORLAUF", "RUECKLAUF",
+                    // Abschaltgrenze des Ruecklaufs (UB-E3, Schemaschritt 204).
+                    "RUECKLAUF_MAX",
                     "BRENNSTOFF", "WIRKUNGSGRAD_EL", "WIRKUNGSGRAD_TH", "WIRKUNGSGRAD",
                     // Teillast und Takten (Welle M4: BH1, BH2).
                     "WIRKUNGSGRAD_EL_TEILLAST50", "WIRKUNGSGRAD_TH_TEILLAST50",
