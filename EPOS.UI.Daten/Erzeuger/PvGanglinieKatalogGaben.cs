@@ -1,0 +1,153 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Erzeuger;
+using SpeicherEngine;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// <b>Die Datenseite des Dialogs „Photovoltaik Ganglinie"</b> (PVG, Schemaschritt 206) — plattformfrei:
+    /// Katalog samt Kennzahlen (<see cref="ZeitreihenKatalogCtrl"/>, Ausprägung <see cref="Zeitreihenart.PvGanglinie"/>),
+    /// Verwendung in Projekten, Löschen mit Projektzuordnungssperre, Schloss und Import
+    /// (<see cref="PvGanglinieImportCtrl"/>); dazu der Projektbetrieb: Zuordnungen lesen, aufnehmen, entfernen und
+    /// beim OK schreiben (<see cref="PvGanglinieStammCtrl.ZuordnungenSchreiben"/>).
+    ///
+    /// <para><b>Was die Schale beisteuert</b>, kommt über die Naht <see cref="Katalogwege.PvGanglinienDatei"/>
+    /// (Dateiwahl, Ablage, Anzeigen); ohne sie lehnt „Import…" benannt ab (<c>PVG_IMP_NICHT_VERFUEGBAR</c>).</para>
+    /// </summary>
+    internal static class PvGanglinieKatalogGaben
+    {
+        /// <summary>Die Wege der Katalogseite.</summary>
+        internal static GanglinienKatalogwege Wege()
+        {
+            GanglinienDateiwege datei = Katalogwege.PvGanglinienDatei?.Invoke();
+            return new GanglinienKatalogwege
+            {
+                Katalogzeilen = () => Task.FromResult(
+                    ZeitreihenKatalogCtrl.Katalogfilterzeilen(Zeitreihenart.PvGanglinie)),
+                Verwendung = () => ZeitreihenAdminWege.Verwendung(Zeitreihenart.PvGanglinie),
+                HatProjektzuordnung = n => Task.FromResult(PvGanglinieStammCtrl.HatProjektzuordnung(n)),
+                Loeschen = n => Task.FromResult(PvGanglinieStammCtrl.Loeschen(n)),
+                Schloss = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.PvGanglinie, ids, gesperrt)),
+                DateiWaehlen = datei?.DateiWaehlen,
+                Ablegen = datei?.Ablegen,
+                MitSystemOeffnen = datei?.MitSystemOeffnen,
+                Ordner = datei?.Ordner ?? "",
+                Einlesen = datei is null ? null : Einlesen,
+                ImportAbgelehnt = datei is null ? MyResource.Resource.PVG_IMP_NICHT_VERFUEGBAR : ""
+            };
+        }
+
+        /// <summary>Die Spalten der Liste — mit oder ohne „im Projekt verwendet".</summary>
+        internal static Katalogfilterprofil Profil(bool mitVerwendung)
+        {
+            Katalogfilterprofil p = Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.PvGanglinie, Katalogtexte.Fuer);
+            return mitVerwendung ? p.MitVerwendungsspalte(Katalogtexte.Fuer) : p;
+        }
+
+        /// <summary>Die gemeinsamen Texte beider Betriebsarten.</summary>
+        private static void Texte(IDictionary<string, object> g)
+        {
+            g["LabelName"] = Katalogtexte.Fuer("HZK_LBL_NAME");
+            g["LabelBeschreibung"] = Katalogtexte.Fuer("SGL_LBL_BESCHREIBUNG");
+            g["SpalteWahl"] = MyResource.Resource.KFAK_SP_WAHL;
+            g["HinweisText"] = MyResource.Resource.PVG_HINWEIS_WEICHE;
+        }
+
+        /// <summary>
+        /// Der Parametersatz des Dialogs OHNE Projekt — der Weg des Administrationsmenüs
+        /// („Profile &amp; Lastgänge → PV-Ganglinie").
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> KatalogGaben()
+        {
+            var g = new Dictionary<string, object>
+            {
+                ["Katalogbetrieb"] = true,
+                ["Katalogwege"] = Wege(),
+                ["Katalogprofil"] = Profil(false),
+                ["TitelText"] = MyResource.Resource.PVG_TITEL_KATALOG,
+                ["HilfeSchluessel"] = "Form_PvGanglinie_Admin.btn_Help"
+            };
+            Texte(g);
+            return g;
+        }
+
+        /// <summary>
+        /// Der Parametersatz des Dialogs MIT Projekt: die Zuordnungen als geteilte Liste <paramref name="liste"/>
+        /// (sie gehört dem Aufrufer und wird erst beim OK über <see cref="Speichern"/> geschrieben), Aufnehmen und
+        /// Entfernen arbeiten nur an ihr.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> ProjektGaben(int projektId, List<PvGanglinieZuordnung> liste)
+        {
+            var zeilen = new List<ErzeugerZeile>();
+            var zuModell = new Dictionary<int, PvGanglinieZuordnung>();
+            int naechster = 100000;   // vorläufige Schlüssel neuer Zeilen; die echte ID entsteht beim Schreiben
+            foreach (PvGanglinieZuordnung z in liste)
+            {
+                int schluessel = z.Id > 0 ? z.Id : naechster++;
+                if (schluessel >= naechster) naechster = schluessel + 1;
+                zuModell[schluessel] = z;
+                zeilen.Add(new ErzeugerZeile { Schluessel = schluessel, Bezeichner = z.Bezeichner, GeraetId = z.IdGanglinie });
+            }
+
+            var g = new Dictionary<string, object>
+            {
+                ["Zeilen"] = zeilen,
+                ["Katalogwege"] = Wege(),
+                ["Katalogprofil"] = Profil(true),
+                ["Aufnehmen"] = new Func<int, ErzeugerZeile>(stammId =>
+                {
+                    string bez = PvGanglinieStammCtrl.BezeichnerZu(stammId);
+                    if (string.IsNullOrEmpty(bez)) return null;
+                    var z = new PvGanglinieZuordnung { Id = 0, IdGanglinie = stammId, Bezeichner = bez };
+                    int schluessel = naechster++;
+                    liste.Add(z);
+                    zuModell[schluessel] = z;
+                    return new ErzeugerZeile { Schluessel = schluessel, Bezeichner = bez, GeraetId = stammId };
+                }),
+                ["Entfernen"] = new Action<ErzeugerZeile>(zeile =>
+                {
+                    if (!zuModell.TryGetValue(zeile.Schluessel, out PvGanglinieZuordnung z)) return;
+                    liste.Remove(z);
+                    zuModell.Remove(zeile.Schluessel);
+                }),
+                ["TitelText"] = MyResource.Resource.PVG_TITEL,
+                ["LabelProjektliste"] = MyResource.Resource.PVG_LBL_PROJEKTLISTE,
+                ["LabelKatalogliste"] = MyResource.Resource.PVG_LBL_KATALOGLISTE,
+                ["SpalteName"] = Katalogtexte.Fuer("BHKWV_SP_NAME"),
+                ["LabelHinzu"] = Katalogtexte.Fuer("HZK_TIP_HINZU"),
+                ["LabelEntfernen"] = Katalogtexte.Fuer("HZK_TIP_ENTFERNEN"),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
+            };
+            Texte(g);
+            return g;
+        }
+
+        /// <summary>Die Zuordnungen eines Projekts — der Arbeitsstand, den <see cref="ProjektGaben"/> teilt.</summary>
+        internal static List<PvGanglinieZuordnung> Lesen(int projektId) => PvGanglinieStammCtrl.Zuordnungen(projektId);
+
+        /// <summary>Der OK-Weg: schreibt die Zuordnungen des Projekts in EINER Transaktion.</summary>
+        internal static bool Speichern(int projektId, IEnumerable<PvGanglinieZuordnung> liste)
+        {
+            var namen = new List<string>();
+            foreach (PvGanglinieZuordnung z in liste) namen.Add(z.Bezeichner);
+            return PvGanglinieStammCtrl.ZuordnungenSchreiben(projektId, namen);
+        }
+
+        /// <summary>
+        /// Die Importkette im Hintergrund (Kulturweitergabe): lesen mit Formaterkennung, Namen prüfen, schreiben
+        /// in einer Transaktion — alles im Kern; das Raster der Datei bleibt.
+        /// </summary>
+        internal static async Task<GanglinienKatalogimport> Einlesen(string pfad, IProgress<ImportFortschritt> melder)
+        {
+            melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
+            PvGanglinieImportBericht b = await Kulturweitergabe.Starten(() => PvGanglinieImportCtrl.Einlesen(pfad));
+            return new GanglinienKatalogimport(b.Erfolgreich, b.IstFehler, b.Bezeichner ?? "",
+                                               b.Meldung ?? "", b.Protokoll ?? "");
+        }
+    }
+}

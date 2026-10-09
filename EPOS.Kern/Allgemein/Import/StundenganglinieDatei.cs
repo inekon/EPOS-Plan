@@ -20,6 +20,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die 8 760 Stundenwerte [kW]; leer bei einem Fehlschlag.</summary>
         public double[] StundenwerteKw = Array.Empty<double>();
 
+        /// <summary>
+        /// Die Werte im Raster der DATEI [kW] — 8 760 Stunden- oder 35 040 Viertelstundenwerte, ungemittelt;
+        /// leer bei einem Fehlschlag. Wer das Viertelstundenraster behalten will (PV-Ganglinie), nimmt diese
+        /// Reihe statt <see cref="StundenwerteKw"/>.
+        /// </summary>
+        public double[] WerteImDateirasterKw = Array.Empty<double>();
+
         /// <summary>Wie viele Werte die Datei trug (8 760 oder 35 040 bei Erfolg).</summary>
         public int AnzahlWerte;
 
@@ -125,10 +132,11 @@ namespace WindowsFormsApplication1
             if (!roh.Erfolgreich) return erg;
 
             erg.AnzahlWerte = roh.Werte.Length;
+            erg.WerteImDateirasterKw = roh.Werte;
             if (roh.Werte.Length == STUNDEN)
             {
                 erg.Raster = GanglinienRaster.Stunde;
-                erg.StundenwerteKw = roh.Werte;
+                erg.StundenwerteKw = (double[])roh.Werte.Clone();
             }
             else if (roh.Werte.Length == VIERTELSTUNDEN)
             {

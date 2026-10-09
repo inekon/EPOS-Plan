@@ -85,6 +85,11 @@ namespace WindowsFormsApplication1
                 case Masken.SolarganglinieAdmin:
                     return SolarganglinieHuelle.OeffnenKatalog(null);
 
+                // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien - der Dialog "Photovoltaik
+                // Ganglinie" ohne Projekt.
+                case Masken.PvGanglinieAdmin:
+                    return PvGanglinieHuelle.OeffnenKatalog(null);
+
                 case Masken.BrauchwasserAdmin:
                     return BedarfAdminHuelle.Oeffnen(null, BedarfsArt.Brauchwasser);
 

@@ -284,6 +284,7 @@ namespace WindowsFormsApplication1
             // Der Import einer Solarthermie-Ganglinie braucht Dateiwahl und Ablageordner
             // dieser Schale; ohne den Haken lehnt "Import..." benannt ab (iOS).
             Katalogwege.SolarganglinienDatei = SolarganglinieHuelle.Dateiwege;
+            Katalogwege.PvGanglinienDatei = PvGanglinieHuelle.Dateiwege;
 
             // Stufe P2 der Pufferspeicher-Auslegung: Die Uebergabe aus dem Zapfprofil (das selbst in
             // einem Fenster steht) oeffnet die Auslegung in einem eigenen Fenster. Ohne diesen Haken

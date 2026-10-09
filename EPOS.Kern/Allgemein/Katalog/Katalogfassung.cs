@@ -407,6 +407,10 @@ namespace WindowsFormsApplication1
                 new[] { "Bezeichner", "Beschreibung" },
                 Reihe("Tab_SolarganglinieDaten_STAMM", "ID_Ganglinie", "Wert"))
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_SOLARGANGLINIE" },
+            new Katalogtabelle("Tab_PvGanglinie_STAMM", "PVG",
+                new[] { "Bezeichner", "Beschreibung", "Raster_Minuten", "Nennleistung_kWp", "Jahresarbeit_kWh", "Spitze_kW" },
+                Reihe("Tab_PvGanglinieDaten_STAMM", "ID_Ganglinie", "Wert"))
+            { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_PVGANGLINIE" },
             new Katalogtabelle("Tab_Stromspeicher_STAMM", "SSP",
                 new[]
                 {
