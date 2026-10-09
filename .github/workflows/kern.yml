@@ -412,12 +412,12 @@ jobs:
       # R46 (09.10.2026): dieselben zehn Projekte; allein 1060 aendert sich
       # (Geraetegrenzen: Ruecklaufgrenze am gemischten Ruecklauf), die neun
       # uebrigen bleiben byte-gleich.
-      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
@@ -438,9 +438,10 @@ jobs:
           cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1051 artifacts/reflauf/ref/
           cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1058 artifacts/reflauf/ref/
           cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-09_R46_Geraetegrenzen/Projekt_1063 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060; do
+          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
@@ -454,7 +455,7 @@ jobs:
       - name: Plattformnachweis - gestoerter Lauf gegen ungestoerten
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
-          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/${{ matrix.os }}_kern artifacts/reflauf/${{ matrix.os }}_stoerung
 
       - name: Ergebnis-CSV als Artefakt
