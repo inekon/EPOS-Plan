@@ -11,7 +11,12 @@
 
    GESCHRIEBEN wird im OK-Weg der Huelle (PvGanglinieKatalogGaben.Speichern); bis dahin arbeiten
    Aufnehmen und Entfernen an der geteilten Liste. Esc schliesst, aber erst, wenn Rueckfrage und
-   Import zu sind. Enter ist nicht belegt. *@
+   Import zu sind. Enter ist nicht belegt.
+
+   PROJEKTKOPIE UND KATALOG (E113): Weicht die Projektkopie einer Projektzeile vom Katalogsatz
+   gleichen Namens ab, traegt die Zeile das Zeichen und der Detailblock den Satz "weicht vom Katalog
+   ab: ..." samt Knopf "Aus dem Katalog erneuern...". Die Rueckfrage ist eine eigene Ueberlagerung
+   mit OK/Abbrechen; ihr OK schreibt sofort (Kopf und Reihe der Kopie, Zuordnung und ID bleiben). *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
@@ -59,7 +64,15 @@
                                         <Zeilenwahl Gewaehlt="@(z == _projektZeile)" Kurztext="@SpalteWahl"
                                                     Gewaehltwerden="() => ProjektZeileWaehlen(z)" />
                                     </td>
-                                    <td>@z.Bezeichner</td>
+                                    <td>
+                                        @z.Bezeichner
+                                        @{ string abw = AbweichungZu(z.Bezeichner); }
+                                        @if (abw.Length > 0)
+                                        {
+                                            <span class="epos-pvg-abweichung" role="img" title="@abw"
+                                                  aria-label="@abw">⚠</span>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -75,7 +88,8 @@
                                        Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                        Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
                                        ZeileGewaehlt="BeiKatalogzeile"
-                                       ImProjekt="@ProjektBezeichner" />
+                                       ImProjekt="@ProjektBezeichner"
+                                       Geaendert="BeiKatalogGeaendert" />
             </Rechts>
 
         </Zweispaltenauswahl>
@@ -101,6 +115,44 @@
     <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" />
     <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
     <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
+
+    @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. *@
+    @if (_projektZeile is not null && ProjektAbweichung.Length > 0)
+    {
+        <p class="epos-leisezeile epos-pvg-abweichungszeile" role="status">⚠ @ProjektAbweichung</p>
+        @if (AusKatalogErneuern is not null)
+        {
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf epos-pvg-erneuernknopf"
+                        @onclick="ErneuernOeffnen">@ErneuernKnopf</button>
+            </div>
+        }
+    }
+    @if (_erneuernStatus.Length > 0)
+    {
+        <p class="epos-leisezeile epos-pvg-erneuernstatus" role="status">@_erneuernStatus</p>
+    }
+
+    @* DIE RUECKFRAGE als kurze Ueberlagerung: OK erneuert sofort die Projektkopie, Abbrechen, Kreuz und
+       Esc verwerfen; scheitert es, bleibt sie mit dem Grund offen. *@
+    <Ueberlagerung Offen="@_erneuernOffen" Titel="@ErneuernTitel" Geschlossen="ErneuernSchliessen">
+        <KindInhalt>
+            @if (_erneuernOffen)
+            {
+                <div class="epos-pvg-erneuern">
+                    @if (_erneuernFehler.Length > 0)
+                    {
+                        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_erneuernFehler" />
+                    }
+                    <p>@string.Format(System.Globalization.CultureInfo.CurrentCulture, ErneuernFrage, _erneuernZiel)</p>
+                    <p class="epos-leisezeile">⚠ @_erneuernAbweichung</p>
+                    <p class="epos-leisezeile">@ErneuernSimulation</p>
+                    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                                     Ergebnis="BeiErneuernErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @if (Katalogbetrieb)
     {
@@ -188,6 +240,30 @@
     /// <summary>Der Satz zur Weiche unter den Listen — <c>PVG_HINWEIS_WEICHE</c>; leer = keiner.</summary>
     [Parameter] public string HinweisText { get; set; } = "";
 
+    /// <summary>
+    /// <b>Worin die Projektkopie eines Namens vom Katalogsatz abweicht</b> (E113) — der fertige Satz
+    /// „weicht vom Katalog ab: …", leer bei Gleichheit oder ohne Projektkopie. Ohne Weg kein Zeichen.
+    /// </summary>
+    [Parameter] public Func<string, string>? KatalogAbweichung { get; set; }
+
+    /// <summary>
+    /// <b>Erneuert die Projektkopie eines Namens aus dem Katalog</b> (E113): Kopf und Reihe, Zuordnung und ID
+    /// bleiben. Ohne Weg kein Knopf.
+    /// </summary>
+    [Parameter] public Func<string, Task<PvGanglinieErneuerung>>? AusKatalogErneuern { get; set; }
+
+    /// <summary>Der Knopf — <c>PVG_BTN_ERNEUERN</c>.</summary>
+    [Parameter] public string ErneuernKnopf { get; set; } = Resource.PVG_BTN_ERNEUERN;
+
+    /// <summary>Der Titel der Rückfrage — <c>PVG_TITEL_ERNEUERN</c>.</summary>
+    [Parameter] public string ErneuernTitel { get; set; } = Resource.PVG_TITEL_ERNEUERN;
+
+    /// <summary>Die Rückfrage, <c>{0}</c> = Name — <c>PVG_ERNEUERN_FRAGE</c>.</summary>
+    [Parameter] public string ErneuernFrage { get; set; } = Resource.PVG_ERNEUERN_FRAGE;
+
+    /// <summary>Der Hinweis zur Simulation — <c>PVG_ERNEUERN_SIMULATION</c>.</summary>
+    [Parameter] public string ErneuernSimulation { get; set; } = Resource.PVG_ERNEUERN_SIMULATION;
+
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private GanglinieKatalogseite? _seite;
@@ -220,6 +296,76 @@
     public GanglinieKatalogseite? Katalogseite => _seite;
 
     private IEnumerable<string> ProjektBezeichner() => Zeilen.Select(z => z.Bezeichner);
+
+    // =================================================================================
+    // Projektkopie und Katalog (E113)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Abweichung je Name, einmal gefragt (die Hülle fragt die Datenbank) und erst nach einer Katalogänderung
+    /// oder einer Erneuerung neu.
+    /// </summary>
+    private readonly Dictionary<string, string> _abweichung = new(StringComparer.Ordinal);
+
+    private bool _erneuernOffen;
+    private string _erneuernZiel = "";
+    private string _erneuernAbweichung = "";
+    private string _erneuernFehler = "";
+    private string _erneuernStatus = "";
+
+    /// <summary>Steht die Rückfrage „Aus dem Katalog erneuern"? (Prüfhilfe.)</summary>
+    public bool ErneuernOffen => _erneuernOffen;
+
+    /// <summary>Die Abweichung der markierten Projektzeile; leer ohne. (Prüfhilfe und KI-Sicht.)</summary>
+    public string ProjektAbweichung => _projektZeile is null ? "" : AbweichungZu(_projektZeile.Bezeichner);
+
+    private string AbweichungZu(string bezeichner)
+    {
+        if (KatalogAbweichung is null || string.IsNullOrEmpty(bezeichner)) return "";
+        if (!_abweichung.TryGetValue(bezeichner, out string? text))
+        {
+            text = KatalogAbweichung(bezeichner) ?? "";
+            _abweichung[bezeichner] = text;
+        }
+        return text;
+    }
+
+    /// <summary>Der Katalog hat sich geändert (Nennleistung, Import, Löschen): die Abweichungen neu fragen.</summary>
+    private void BeiKatalogGeaendert() => _abweichung.Clear();
+
+    private void ErneuernOeffnen()
+    {
+        if (_projektZeile is null || AusKatalogErneuern is null) return;
+        _erneuernZiel = _projektZeile.Bezeichner;
+        _erneuernAbweichung = ProjektAbweichung;
+        _erneuernFehler = "";
+        _erneuernStatus = "";
+        _erneuernOffen = true;
+    }
+
+    private void ErneuernSchliessen()
+    {
+        _erneuernOffen = false;
+        _erneuernFehler = "";
+    }
+
+    /// <summary>
+    /// OK erneuert — scheitert es, bleibt die Rückfrage mit dem Grund offen; sonst fragt der Dialog die Abweichung
+    /// neu und nennt das Ergebnis samt Hinweis auf die nächste Simulation.
+    /// </summary>
+    private async Task BeiErneuernErgebnis(bool ok)
+    {
+        if (!ok || AusKatalogErneuern is null) { ErneuernSchliessen(); return; }
+        PvGanglinieErneuerung erg = await AusKatalogErneuern(_erneuernZiel);
+        if (!erg.Erfolgreich)
+        {
+            _erneuernFehler = erg.Meldung;
+            return;
+        }
+        _abweichung.Remove(_erneuernZiel);
+        ErneuernSchliessen();
+        _erneuernStatus = erg.Meldung;
+    }
 
     protected override void OnParametersSet()
     {
@@ -260,6 +406,7 @@
             NennleistungLesen = () => _nennleistung,
             ImProjektLesen = () => _name.Length > 0
                 && Zeilen.Any(z => string.Equals(z.Bezeichner, _name, StringComparison.Ordinal)),
+            KatalogAbweichungLesen = () => ProjektAbweichung,
             ImportzustandLesen = Importzustand,
             KatalogbetriebLesen = () => Katalogbetrieb
         };
@@ -307,6 +454,7 @@
     private void ProjektZeileWaehlen(ErzeugerZeile zeile)
     {
         _projektZeile = zeile;
+        _erneuernStatus = "";
         _katalogZeile = null;
         _katalogGewaehlt = "";
         _name = zeile.Bezeichner;
@@ -411,7 +559,7 @@
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape" || _seite?.HaeltEsc == true) return Task.CompletedTask;
+        if (e.Key != "Escape" || _seite?.HaeltEsc == true || _erneuernOffen) return Task.CompletedTask;
         return BeiKreuz();
     }
 }
