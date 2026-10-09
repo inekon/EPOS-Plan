@@ -193,6 +193,7 @@ Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwend
 - Seit 09.10.2026: Beim Gebäudeimport ist die Baualtersklasse auch dann wählbar, wenn die Datei ein Baujahr trägt. (#846)
 - Seit 09.10.2026: Ganglinien-Importe erkennen das Dezimalzeichen nur aus den Datenzeilen; ein Komma in der Kopfzeile verfälscht die Werte nicht mehr. (#846)
 - Seit 09.10.2026: Der Reiter „Konditionierung“ hat eine Kalenderbedienung mit Wochenprofilen, Zuordnung von Zeiträumen im Jahr (gemeinsam für alle Größen), Einzeltagen mit Feiertagen, Schnellfeldern für Wochenende, Ferien und Saison und einem anklickbaren Jahresraster; die Matrix dient nur noch als Übersicht. (#847)
+- Seit 09.10.2026: Die Datenbank bringt 34 eingebaute Typkennfelder für Kältemaschinen mit (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben; 20 bis 2 000 kW). (#848)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
