@@ -50014,7 +50014,7 @@ chart</value>
     <value>The nine nationwide public holidays apply.</value>
   </data>
   <data name="KOND_TXT_KALB_BUNDESLAENDER" xml:space="preserve">
-    <value>Baden-Württemberg;Bavaria;Berlin;Brandenburg;Bremen;Hamburg;Hesse;Mecklenburg-Western Pomerania;Lower Saxony;North Rhine-Westphalia;Rhineland-Palatinate;Saarland;Saxony;Saxony-Anhalt;Schleswig-Holstein;Thuringia</value>
+    <value>Baden-Wuerttemberg;Bavaria;Berlin;Brandenburg;Bremen;Hamburg;Hesse;Mecklenburg-Western Pomerania;Lower Saxony;North Rhine-Westphalia;Rhineland-Palatinate;Saarland;Saxony;Saxony-Anhalt;Schleswig-Holstein;Thuringia</value>
   </data>
   <data name="KOND_TXT_KALB_HINWEIS_LAND_ZONE" xml:space="preserve">
     <value>The holiday state belongs to the building; the zone inherits it.</value>
