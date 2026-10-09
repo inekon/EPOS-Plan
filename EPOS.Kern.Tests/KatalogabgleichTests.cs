@@ -304,7 +304,8 @@ namespace EPOS.Kern.Tests
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
             Assert.All(Katalogfassung.Ausgenommen, kv => Assert.True(kv.Value.Length > 40, kv.Key + ": Grund fehlt."));
-            Assert.Equal(12, Katalogfassung.Ausgenommen.Count);
+            // ZK: die drei Katalogzwillinge der Zonen sind benannt ausgenommen (Kindkataloge am Kopf) - 15.
+            Assert.Equal(15, Katalogfassung.Ausgenommen.Count);
         }
 
         /// <summary>
