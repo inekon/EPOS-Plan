@@ -122,6 +122,7 @@ namespace WindowsFormsApplication1
             if (Gleich(erzeugerart, DbWerte.ERZEUGER_WAERMEPUMPE)
              || Gleich(erzeugerart, DbWerte.ERZEUGER_PHOTOVOLTAIK)
              || Gleich(erzeugerart, DbWerte.ERZEUGER_STROMSPEICHER)
+             || Gleich(erzeugerart, DbWerte.ERZEUGER_KAELTEMASCHINE)
              || Gleich(erzeugerart, ERZEUGER_HEIZSTAB))
                 return NUR_STROM;
 
@@ -232,6 +233,16 @@ namespace WindowsFormsApplication1
                 if (ProjektEnergietraegerCtrl.BrauchtStromTraeger(projektId)
                  && !codes.Contains(CODE_STROM))
                     codes.Add(CODE_STROM);
+            }
+            catch { }
+
+            // Die Kältemaschine steht nicht in der Anlagenliste (die Kostenseite führt sie eigens),
+            // bezieht aber Strom: Sie hebt ihr Projekt in die elektrische Welt — und nur dorthin.
+            try
+            {
+                if (!codes.Contains(CODE_STROM) && MitKaeltemaschine(projektId))
+                    foreach (string code in Kategoriecodes(DbWerte.ERZEUGER_KAELTEMASCHINE, 0))
+                        if (!codes.Contains(code)) codes.Add(code);
             }
             catch { }
 
@@ -429,6 +440,15 @@ namespace WindowsFormsApplication1
                 return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
             }
             catch { return 0; }
+        }
+
+        /// <summary>Führt das Projekt eine Kältemaschine (<c>Tab_Energieanlagen.ID_Kaeltemaschine</c>)?</summary>
+        private static bool MitKaeltemaschine(int projektId)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Kaeltemaschine > 0",
+                new DbParam("@p", projektId));
+            return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
         }
 
         /// <summary>Die Gruppennamen, die der Katalog unter diesen Kategoriecodes führt.</summary>

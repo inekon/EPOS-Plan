@@ -33,7 +33,7 @@ namespace EPOS.Kern.Tests
         /// <summary>Klasse F im Index der Klappliste (1969 bis 1978) — eine andere Wahl als die der Datei.</summary>
         private const int KLASSE_F = 5;
 
-        private static async Task<GebaeudeImportStand> Stand(string probe, int? klasse)
+        private static async Task<GebaeudeImportStand> Stand(string probe, int? klasse, bool gewaehlt = false)
         {
             var h = new GebaeudeImportHuelle();
             IReadOnlyDictionary<string, object> gaben = h.Gaben();
@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
             GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(probe), null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
-            return zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine));
+            return zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine, KlasseGewaehlt: gewaehlt));
         }
 
         /// <summary>Zählt die Klassenfelder des Stands nach Herkunft — Datei bzw. Vorgabe der Klasse.</summary>
@@ -75,9 +75,29 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public async Task Eine_ausdrueckliche_Wahl_gilt_vor_dem_Baujahr_der_Datei_und_nennt_den_Vorschlag()
+        {
+            // Anwenderwunsch 08.10.2026 (Nachzug zu E3): wie im Gebäudeeditor ist die Klasse immer wählbar —
+            // die Wahl gilt, die Zeile darunter nennt den Vorschlag aus dem Baujahr.
+            GebaeudeImportStand gewaehlt = await Stand("ifc4_haus.ifc", KLASSE_F, gewaehlt: true);
+            GebaeudeImportStand vorschlag = await Stand("ifc4_haus.ifc", null);
+
+            Assert.Null(gewaehlt.KlasseDerDatei);
+            GebaeudeFeldzeileDaten bak = gewaehlt.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.BAUALTERSKLASSE);
+            Assert.Equal(GebaeudeHerkunftSchluessel.Manuell, bak.HerkunftSchluessel);
+            (int ausDatei, int ausKlasse) = Zaehlen(gewaehlt);
+            Assert.Equal(Gebaeudeklassen.AusBaujahrText(1965) + " " + Wirkung(ausKlasse, ausDatei), gewaehlt.KlassenHinweis);
+
+            // Die Vorgabewerte der Klasse folgen der Wahl: mindestens ein Klassenfeld weicht ab, wenn die Klasse etwas füllt.
+            if (ausKlasse > 0)
+                Assert.NotEqual(vorschlag.Zeilen.Select(z => (z.Zielfeld, z.Wert)),
+                                gewaehlt.Zeilen.Select(z => (z.Zielfeld, z.Wert)));
+        }
+
+        [Fact]
         public async Task Das_Baujahr_der_Datei_fuehrt_auch_gegen_eine_gewaehlte_Klasse()
         {
-            // E47 (F2): Eine gewählte Klasse ersetzt die Klasse aus dem Baujahr der Datei nicht.
+            // E47 (F2): Eine VORGEGEBENE Klasse (nicht ausdrücklich gewählt) ersetzt die Klasse aus dem Baujahr der Datei nicht.
             GebaeudeImportStand gewaehlt = await Stand("ifc4_haus.ifc", KLASSE_F);
             GebaeudeImportStand ohne = await Stand("ifc4_haus.ifc", null);
 

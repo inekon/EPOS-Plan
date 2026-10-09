@@ -55,6 +55,12 @@ namespace WindowsFormsApplication1
         private readonly BlazorWebView _web;
 
         /// <summary>
+        /// Der Schliessweg dieses Fensters: Steht im Dialog ein Blatt, fuehren Kreuz und Alt+F4 erst
+        /// dieses zurueck (<see cref="EPOS.UI.Bausteine.Fensterschliessweg"/>, plattformfrei).
+        /// </summary>
+        private readonly EPOS.UI.Bausteine.Fensterschliessweg _schliessweg = new();
+
+        /// <summary>
         /// Baut die Huelle. Die WebView2 wird hier nur zusammengestellt; sie startet
         /// erst mit der Handle-Erzeugung, also beim <c>ShowDialog</c>.
         /// </summary>
@@ -151,6 +157,13 @@ namespace WindowsFormsApplication1
             // Der Parametersatz geht UNVERAENDERT durch (Wurzel.Gaben faengt ihn
             // mit CaptureUnmatchedValues), und die Parametersatzwache oben prueft
             // weiterhin gegen T - nicht gegen die Verpackung.
+            // BLAETTER ZUERST (Anwenderwunsch "Gleiches Verhalten mit anderen Dialogen"): Der
+            // Schliessweg geht als eigener Parameter der Fensterwurzel mit - NACH der Wache, denn er
+            // gehoert nicht zum Parametersatz der Komponente. OnFormClosing fragt ihn.
+            parameter = new Dictionary<string, object>(parameter)
+            {
+                [nameof(EPOS.UI.Bausteine.Fensterwurzel<TKomponente>.Schliessweg)] = _schliessweg
+            };
             _web.RootComponents.Add<EPOS.UI.Bausteine.Fensterwurzel<TKomponente>>("#app", parameter);
 
             // DIE FENSTERMARKE (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest"): Die
@@ -287,6 +300,27 @@ namespace WindowsFormsApplication1
                 return;
             }
             base.OnFormClosing(e);
+        }
+
+        private const int WM_SYSCOMMAND = 0x0112;
+        private const int SC_CLOSE = 0xF060;
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// <b>Blaetter zuerst</b> (Anwenderwunsch "Gleiches Verhalten mit anderen Dialogen"): Fensterkreuz
+        /// und Alt+F4 kommen als <c>WM_SYSCOMMAND</c>/<c>SC_CLOSE</c>. Steht im Dialog ein Blatt, fuehrt
+        /// der Schliessweg es zurueck und die Nachricht endet hier; vom Wurzelblatt aus schliesst das
+        /// Fenster wie bisher. Bewusst hier und nicht in <see cref="OnFormClosing"/>: Dort traegt auch ein
+        /// <c>Close()</c> aus dem Programm (OK, Abbrechen, ein Besitzer) <c>UserClosing</c>, und das darf
+        /// kein Blatt aufhalten. Die Entscheidung steht plattformfrei in
+        /// <see cref="EPOS.UI.Bausteine.Fensterschliessweg"/>; die Huelle ruft nur.
+        /// </remarks>
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_SYSCOMMAND && (m.WParam.ToInt64() & 0xFFF0) == SC_CLOSE
+                && !_schliessenGesperrt && _schliessweg.SchliessenAbfangen())
+                return;
+            base.WndProc(ref m);
         }
 
         /// <summary>

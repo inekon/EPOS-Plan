@@ -243,8 +243,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Klasse, die der Satz aus dem Baujahr der Datei zog, als Index der Klappliste (0 = A …
-        /// 12 = M); <c>null</c>, wenn die Datei kein Baujahr trägt. Das Baujahr führt (E47): Der Dialog
-        /// zeigt diese Klasse in der Klappliste und sperrt die Wahl; die Aggregation rechnet mit ihr.
+        /// 12 = M); <c>null</c>, wenn die Datei kein Baujahr trägt oder der Anwender ausdrücklich gewählt hat.
+        /// Das Baujahr SCHLÄGT VOR (Anwenderwunsch 08.10.2026, wie im Gebäudeeditor): Ohne eigene Wahl zeigt der
+        /// Dialog diese Klasse in der Klappliste, und die Aggregation rechnet mit ihr; die Wahl bleibt frei.
         /// </summary>
         public static int? KlasseDerDatei(GebaeudeImportSatz satz)
         {
@@ -276,9 +277,20 @@ namespace WindowsFormsApplication1
             CultureInfo k = CultureInfo.CurrentCulture;
             string wirkung = Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_WIRKUNG, ausKlasse.ToString(k),
                                          GebaeudeVorgaben.Klassenfelder.Count.ToString(k), ausDatei.ToString(k));
-            if (!KlasseDerDatei(satz).HasValue) return wirkung;
-            return Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_AUS_BAUJAHR, satz.Baujahr?.ToString(k) ?? "") + " " + wirkung;
+            if (KlasseDerDatei(satz).HasValue)
+                return Formatieren(MyResource.Resource.GIMP_DLG_KLASSE_AUS_BAUJAHR, satz.Baujahr?.ToString(k) ?? "") + " " + wirkung;
+            // Eigene Wahl trotz Baujahr: dieselbe Vorschlagszeile wie im Gebäudeeditor („Vorschlag aus dem Baujahr
+            // 1985: 1984 bis 1994 – abweichende Wahl gilt.").
+            if (KlasseVorschlag(satz).HasValue && satz.Baujahr is int jahr)
+                return Gebaeudeklassen.AusBaujahrText(jahr) + " " + wirkung;
+            return wirkung;
         }
+
+        /// <summary>
+        /// Die Klasse, die das Baujahr der Datei VORSCHLÄGT (Index 0 = A … 12 = M), gleich ob sie gilt oder der
+        /// Anwender abweichend gewählt hat; <c>null</c> ohne (gültiges) Baujahr.
+        /// </summary>
+        public static int? KlasseVorschlag(GebaeudeImportSatz satz) => Gebaeudeklassen.IndexAusBaujahr(satz?.Baujahr);
 
         /// <summary>Die Plausibilität am OK-Weg — dieselbe Prüfung wie <see cref="GebaeudeImportAblauf.Pruefen"/>.</summary>
         public static IReadOnlyList<PruefMeldung> Pruefe(GebaeudeImportSatz satz, string katalogname = null)

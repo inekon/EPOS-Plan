@@ -214,5 +214,82 @@ namespace EPOS.Kern.Tests
 
             Assert.True(EnergietraegerVarianteCtrl.TraegerUmhaengen(PROJEKT, 999998, 999999));
         }
+
+        // =================================================================================
+        // AnlageZuruecknehmen - Abbrechen eines Erzeugerdialogs (Nachzug zu A5)
+        // =================================================================================
+
+        private static int Anzahl(string sql, params DbParam[] p)
+            => Convert.ToInt32(DataRepository.ExecuteScalar(sql, p));
+
+        [Fact]
+        public void Eine_neue_Variante_ohne_Verweis_geht_ganz()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var e = EnergietraegerVarianteCtrl.Anlegen(PROJEKT, false, ERDGAS_E, "Erdgas E", Name());
+            Assert.True(e.KatalogNeu);
+
+            var r = EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu);
+
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.TraegerEntfernt, r);
+            Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM energy_carrier WHERE id = ?", new DbParam("@c", e.CarrierId)));
+            Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM energy_price WHERE carrier_id = ?", new DbParam("@c", e.CarrierId)));
+            Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Energieträger = ?",
+                new DbParam("@c", e.CarrierId)));
+        }
+
+        [Fact]
+        public void Ein_wiederverwendeter_Katalogtraeger_bleibt_nur_die_Zuordnung_geht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Der Katalogträger entsteht ohne Projekt (vorgemerkt) und wird dann im Projekt wiederverwendet.
+            string name = Name();
+            var katalog = EnergietraegerVarianteCtrl.Anlegen(0, false, ERDGAS_E, "Erdgas E", name);
+            var e = EnergietraegerVarianteCtrl.Anlegen(PROJEKT, false, ERDGAS_E, "Erdgas E", name);
+            Assert.Equal(EnergietraegerVarianteCtrl.VariantenAnlage.Angelegt, e.Ausgang);
+            Assert.False(e.KatalogNeu);
+            Assert.Equal(katalog.CarrierId, e.CarrierId);
+
+            var r = EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu);
+
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.ZuordnungEntfernt, r);
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_carrier WHERE id = ?", new DbParam("@c", e.CarrierId)));
+            Assert.Equal(0, Anzahl("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                new DbParam("@p", PROJEKT), new DbParam("@c", e.CarrierId)));
+        }
+
+        [Fact]
+        public void Eine_von_einer_Anlagenzeile_verwiesene_Variante_bleibt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var e = EnergietraegerVarianteCtrl.Anlegen(PROJEKT, false, ERDGAS_E, "Erdgas E", Name());
+            int zeile = Anzahl("SELECT MIN(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = ?", new DbParam("@p", PROJEKT));
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID = ?",
+                new DbParam("@c", e.CarrierId), new DbParam("@id", zeile));
+
+            var r = EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, e.CarrierId, true, e.KatalogNeu);
+
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Verwiesen, r);
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_carrier WHERE id = ?", new DbParam("@c", e.CarrierId)));
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_Project_settings WHERE ID_Projekt = ? AND ID_Energieträger = ?",
+                new DbParam("@p", PROJEKT), new DbParam("@c", e.CarrierId)));
+        }
+
+        [Fact]
+        public void Ein_schon_zugeordneter_Traeger_wird_nicht_angetastet()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.Equal(EnergietraegerVarianteCtrl.Ruecknahme.Nichts,
+                EnergietraegerVarianteCtrl.AnlageZuruecknehmen(PROJEKT, TRAEGER_1017, false, false));
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM energy_carrier WHERE id = ?", new DbParam("@c", TRAEGER_1017)));
+        }
     }
 }

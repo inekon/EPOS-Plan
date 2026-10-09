@@ -290,6 +290,11 @@ namespace WindowsFormsApplication1
                 o.Trennzeichen = trenn;
                 o.Dezimaltrenner = ErkannterDezimaltrenner(zeilen, o.Trennzeichen);
                 o.Kopfzeile = IstKopfzeile(zeilen[0], o.Dezimaltrenner);
+                // Nach der Kopfzeilenwahl zählen nur die DATENzeilen: Ein Komma im Beschreibungstext der
+                // Kopfzeile („Sued 45 Grad, Leistung") entschiede sonst gegen Werte wie 51.470, deren drei
+                // Nachkommastellen für sich nichts entscheiden - aus 51,47 würde 51 470 (Strom- und Wärmeimport).
+                if (o.Kopfzeile && zeilen.Count > 1)
+                    o.Dezimaltrenner = ErkannterDezimaltrenner(zeilen.GetRange(1, zeilen.Count - 1), o.Trennzeichen);
                 SpaltenWaehlen(zeilen, o);
 
                 for (int i = 0; i < zeilen.Count && i < VorschauZeilen; i++) v.Zeilen.Add(zeilen[i]);

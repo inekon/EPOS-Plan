@@ -265,10 +265,12 @@
         <KindInhalt>
             @if (_stand.Bauteile.Count > 0)
             {
-                <label class="epos-zonen-aufbaufilter">
-                    <input type="checkbox" checked="@_nurUnvollstaendig" @onchange="e => _nurUnvollstaendig = e.Value is true" />
-                    @Texte.FilterUnvollstaendig
-                </label>
+                @* Der Baustein Schalter statt eines nackten Kaestchens: die ganze Zeile ist das Beruehrungsziel
+                   (44 px, Hausregel; Befund konditionierungsprobe, Zonenblatt). *@
+                <div class="epos-zonen-aufbaufilter">
+                    <Schalter Bezeichnung="@Texte.FilterUnvollstaendig" Wert="@_nurUnvollstaendig"
+                              WertChanged="w => _nurUnvollstaendig = w" />
+                </div>
             }
             <Zeilenraster Bezeichnung="@Texte.GruppeBauteile" Spalten="@Spalten" Spaltenmass="@SPALTENMASS"
                           Summen="@Summen">

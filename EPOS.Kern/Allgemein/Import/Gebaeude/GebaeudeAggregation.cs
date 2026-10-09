@@ -46,8 +46,10 @@ namespace WindowsFormsApplication1
     /// <item><b>Fensterabzug (U14):</b> A_Wand = Brutto − Σ Fenster − Σ Außentüren derselben Fläche;
     /// negativ → die Nettofläche der Datei, wenn sie eine angibt (IFC: <c>NetSideArea</c>), sonst 0 und
     /// Zeile Fehler. Der Bruttowert wird mitgeführt.</item>
-    /// <item><b>Baualtersklasse:</b> die gewählte; ohne sie die aus dem Baujahr der Datei
-    /// (<see cref="Baujahrregel"/>, A…M für jedes Jahr), Herkunft der Datei.</item>
+    /// <item><b>Baualtersklasse:</b> trägt die Datei ein Baujahr, die Klasse daraus (<see cref="Baujahrregel"/>,
+    /// A…M für jedes Jahr, Herkunft der Datei) — sie ist der VORSCHLAG; eine ausdrücklich gewählte Klasse
+    /// (<c>klasseUebersteuert</c>) gilt vor ihm (Anwenderwunsch 08.10.2026, wie im Gebäudeeditor). Ohne Baujahr
+    /// die gewählte bzw. vorgegebene.</item>
     /// <item><b>Luftwechsel:</b> gelesen nur auf die Infiltration (D12); liest die Datei für keinen
     /// beheizten Raum einen, gelten die Vorgaben des Stundenmodells (0,3 und 0,4 1/h).</item>
     /// <item><b>U-Werte:</b> flächengewichtet je Gruppe, U = Σ(U·A)/ΣA; fehlt der U-Wert bei mehr
@@ -123,21 +125,25 @@ namespace WindowsFormsApplication1
         /// (<see cref="GebaeudeCadSollwert"/>); wirkt nur, wenn <see cref="GebaeudeImportSatz.CadSollwertMoeglich"/>.</param>
         /// <param name="uWirksam">Das U eines Bauteils aus einer anderen Quelle, das dem eingetragenen vorgeht (Aufbauquelle
         /// „Projektdatei“, <see cref="SqprojStand.UWirksam"/>); <c>null</c> bzw. Rückgabe <c>null</c> = das U der Datei.</param>
+        /// <param name="klasseUebersteuert">Der Anwender hat <paramref name="klasse"/> ausdrücklich gewählt: Sie gilt vor der
+        /// Klasse aus dem Baujahr der Datei. <c>false</c> = <paramref name="klasse"/> ist nur die Vorgabe des Dialogs.</param>
         internal static GebaeudeImportSatz Bilden(GebaeudeAbbild abbild, int index, char? klasse,
                                                   GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                   IReadOnlyDictionary<string, bool> uebersteuert = null,
                                                   bool raumtemperaturAlsSollwert = false,
-                                                  Func<AbbildBauteil, double?> uWirksam = null)
+                                                  Func<AbbildBauteil, double?> uWirksam = null,
+                                                  bool klasseUebersteuert = false)
         {
             AbbildGebaeude g = abbild.Gebaeude[index];
             // Die Herkunft der gelesenen Zahlen je Format — die Projektdatei trägt ihre eigene (SQPROJ), die Herkunft bleibt wahr.
             Importherkunft datei = ImportherkunftWerte.AusFormat(abbild.Format);
-            // Die Klasse (Entscheid E47, F2): Das Baujahr führt — trägt die Datei eines, gilt die
-            // Klasse daraus (A…M für jedes Jahr); nur ohne Baujahr die gewählte.
-            char? k = null;
+            // Die Klasse (Entscheid E47, F2): Das Baujahr schlägt vor — trägt die Datei eines, gilt die
+            // Klasse daraus (A…M für jedes Jahr), es sei denn, der Anwender hat ausdrücklich gewählt
+            // (Anwenderwunsch 08.10.2026: die Klasse ist immer wählbar); ohne Baujahr die gewählte.
+            char? k = klasseUebersteuert ? Klasse(klasse) : null;
             Func<AbbildRaum, bool> istBeheizt = r => GebaeudeRaumzeile.BeheiztWirksam(r, uebersteuert);
             bool klasseAusBaujahr = false;
-            if (g.Baujahr is int jahr)
+            if (!k.HasValue && g.Baujahr is int jahr)
             {
                 k = Baujahrregel.Klasse(jahr);
                 klasseAusBaujahr = k.HasValue;

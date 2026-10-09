@@ -321,27 +321,36 @@ public class GebaeudeImportDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Das Baujahr der Datei führt</b> (E47, F2): Trägt die Datei ein Baujahr, zeigt die Klappliste
-    /// die Klasse daraus, ist gesperrt und nennt darunter den Hinweis der Datenseite; ohne Baujahr ist
-    /// die Klasse wählbar und geht in die Anfrage.
+    /// <b>Das Baujahr der Datei schlägt vor</b> (Anwenderwunsch 08.10.2026, wie im Gebäudeeditor): Trägt die
+    /// Datei ein Baujahr, zeigt die Klappliste die Klasse daraus und nennt darunter den Hinweis der Datenseite —
+    /// sie bleibt wählbar. Eine eigene Wahl geht als „gewählt“ in die Anfrage, die Klappliste zeigt sie, und die
+    /// Zeile darunter nennt den Vorschlag aus dem Baujahr; ohne Baujahr ist die Klasse ebenso wählbar.
     /// </summary>
     [Fact]
-    public void Mit_Baujahr_zeigt_die_Klappliste_die_Klasse_der_Datei_und_ist_gesperrt()
+    public void Mit_Baujahr_zeigt_die_Klappliste_den_Vorschlag_und_bleibt_waehlbar()
     {
         var p = new Protokoll();
         GebaeudeImportStand MitBaujahr(GebaeudeZuordnungsanfrage a) => Stand(a) with
         {
-            KlasseDerDatei = 4,
-            KlassenHinweis = "Hinweis aus dem Baujahr",
+            KlasseDerDatei = a.KlasseGewaehlt ? null : 4,
+            KlassenHinweis = a.KlasseGewaehlt ? "Vorschlag aus dem Baujahr – abweichende Wahl gilt" : "Hinweis aus dem Baujahr",
         };
         var cut = Bauen(p, zuordnen: MitBaujahr);
         Einlesen(cut);
 
         IElement klasse = cut.FindAll(".epos-feld")[0].QuerySelector("select")!;
         Assert.Equal("4", klasse.GetAttribute("value"));
-        Assert.True(klasse.HasAttribute("disabled"));
+        Assert.False(klasse.HasAttribute("disabled"));
         Assert.Contains("Hinweis aus dem Baujahr", cut.Markup);
         Assert.Null(p.Anfragen.Last().Baualtersklasse);
+        Assert.False(p.Anfragen.Last().KlasseGewaehlt);
+
+        klasse.Change("5");   // Klasse F gegen den Vorschlag E
+        cut.WaitForAssertion(() => Assert.True(p.Anfragen.Last().KlasseGewaehlt));
+        Assert.Equal(5, p.Anfragen.Last().Baualtersklasse);
+        Assert.Equal("5", cut.FindAll(".epos-feld")[0].QuerySelector("select")!.GetAttribute("value"));
+        Assert.Contains("abweichende Wahl gilt", cut.Markup);
+        Assert.True(cut.Instance.KlasseGewaehlt);
     }
 
     [Fact]

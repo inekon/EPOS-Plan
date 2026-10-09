@@ -167,4 +167,66 @@ public class ProjektkopievormerkungTests : EposBunitContext
         Assert.Empty(geloescht);
         Assert.Empty(v.Entfernte);
     }
+
+    // =====================================================================
+    //  Trägervarianten (Nachzug zu A5)
+    // =====================================================================
+
+    [Fact]
+    public void Abbrechen_nimmt_eine_neu_angelegte_Traegervariante_zurueck()
+    {
+        var geloescht = new List<string>();
+        var zurueck = new List<(int, bool, bool)>();
+        var v = new Projektkopievormerkung(geloescht.Add, (c, z, k) => zurueck.Add((c, z, k)));
+        v.Angelegt("Kessel A", 100);
+        v.TraegerAngelegt(77, zuordnungNeu: true, katalogNeu: true);
+
+        v.Abschliessen(false, _ => false);
+
+        Assert.Equal(new[] { "Kessel A" }, geloescht);
+        Assert.Equal(new[] { (77, true, true) }, zurueck);
+        Assert.Empty(v.AngelegteTraeger);
+    }
+
+    [Fact]
+    public void OK_laesst_die_neu_angelegte_Traegervariante_stehen()
+    {
+        var zurueck = new List<(int, bool, bool)>();
+        var v = new Projektkopievormerkung(_ => { }, (c, z, k) => zurueck.Add((c, z, k)));
+        v.TraegerAngelegt(77, zuordnungNeu: true, katalogNeu: true);
+
+        v.Abschliessen(true, _ => true);
+
+        Assert.Empty(zurueck);
+        Assert.Empty(v.AngelegteTraeger);
+    }
+
+    [Fact]
+    public void Ein_schon_zugeordneter_Traeger_wird_nicht_vorgemerkt_und_ein_doppelter_einmal_zurueckgenommen()
+    {
+        var zurueck = new List<(int, bool, bool)>();
+        var v = new Projektkopievormerkung(_ => { }, (c, z, k) => zurueck.Add((c, z, k)));
+        v.TraegerAngelegt(5, zuordnungNeu: false, katalogNeu: false);   // „bereits zugeordnet“
+        v.TraegerAngelegt(77, zuordnungNeu: true, katalogNeu: true);
+        v.TraegerAngelegt(77, zuordnungNeu: false, katalogNeu: false);  // zweiter Kessel, selbe Variante
+        v.TraegerAngelegt(80, zuordnungNeu: true, katalogNeu: false);   // vorhandener Katalogträger, neue Zuordnung
+
+        Assert.Equal(2, v.AngelegteTraeger.Count);
+        v.Abschliessen(false, _ => false);
+
+        Assert.Equal(new[] { (80, true, false), (77, true, true) }, zurueck);
+    }
+
+    [Fact]
+    public void Ohne_Traegerweg_bleibt_Abbrechen_bei_den_Kopien()
+    {
+        var geloescht = new List<string>();
+        var v = new Projektkopievormerkung(geloescht.Add);
+        v.TraegerAngelegt(77, true, true);
+        v.Angelegt("Kollektor A", 9);
+
+        v.Abschliessen(false, _ => false);
+
+        Assert.Equal(new[] { "Kollektor A" }, geloescht);
+    }
 }

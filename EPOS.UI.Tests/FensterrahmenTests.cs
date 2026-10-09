@@ -111,6 +111,106 @@ public sealed class FensterrahmenTests : EposBunitContext
     }
 
     // =====================================================================
+    //  1b - Das Fensterkreuz führt erst offene Blätter zurück
+    // =====================================================================
+
+    /// <summary>
+    /// Fensterkreuz und Alt+F4 eines Dialogs im eigenen Fenster führen erst ein offenes Blatt zurück
+    /// (Anwenderwunsch „Gleiches Verhalten mit anderen Dialogen“): Die Fensterwurzel reicht den Stapel
+    /// ihres Schließwegs an den Dialog, ein Blatt darin meldet sich an, und der Schließweg fängt das
+    /// Schließen ab, bis kein Blatt mehr steht — Blatt im Blatt zuerst.
+    /// </summary>
+    [Fact]
+    public void Das_Fensterkreuz_fuehrt_erst_offene_Blaetter_zurueck()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var weg = new Fensterschliessweg();
+        var cut = Render<Fensterwurzel<Blattprobedialog>>(p => p.Add(w => w.Schliessweg, weg));
+        var dialog = cut.FindComponent<Blattprobedialog>().Instance;
+
+        // Wurzelblatt: nichts abzufangen, das Fenster schließt.
+        Assert.False(weg.SchliessenAbfangen());
+
+        cut.InvokeAsync(() => dialog.Oeffne(a: true, b: true));
+        Assert.Equal(2, weg.Stapel.Anzahl);
+
+        // Erstes Kreuz: das innere Blatt geht zurück, das Fenster bleibt.
+        Assert.True(weg.SchliessenAbfangen());
+        weg.LetzterRueckweg.GetAwaiter().GetResult();
+        cut.WaitForAssertion(() => Assert.False(dialog.BlattB));
+        Assert.True(dialog.BlattA);
+        Assert.Equal(1, weg.Stapel.Anzahl);
+
+        // Zweites Kreuz: das äußere Blatt.
+        Assert.True(weg.SchliessenAbfangen());
+        weg.LetzterRueckweg.GetAwaiter().GetResult();
+        cut.WaitForAssertion(() => Assert.False(dialog.BlattA));
+        Assert.Equal(0, weg.Stapel.Anzahl);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".wurzelblatt")));
+
+        // Drittes Kreuz: Wurzelblatt — das Fenster schließt.
+        Assert.False(weg.SchliessenAbfangen());
+    }
+
+    /// <summary>Ohne Schließweg der Hülle legt die Wurzel einen eigenen an; der Dialog zeichnet wie bisher.</summary>
+    [Fact]
+    public void Ohne_Schliessweg_zeichnet_die_Wurzel_wie_bisher()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        var cut = Render<Fensterwurzel<Blattprobedialog>>();
+        cut.InvokeAsync(() => cut.FindComponent<Blattprobedialog>().Instance.Oeffne(a: true, b: false));
+        Assert.Single(cut.FindAll(".epos-blatt"));
+    }
+
+    /// <summary>
+    /// Die Windows-Hülle fragt den Schließweg beim Systembefehl „Schließen“ (Kreuz, Alt+F4) und reicht ihn
+    /// der Fensterwurzel als eigenen Parameter herein — nach der Parametersatzwache.
+    /// </summary>
+    [Fact]
+    public void Die_Fensterhuelle_fragt_den_Schliessweg_beim_Fensterkreuz()
+    {
+        string form = Code(Lies("WindowsFormsApplication1", "Allgemein", "Blazor", "BlazorDialogForm.cs"));
+        Assert.Contains("_schliessweg.SchliessenAbfangen()", form);
+        Assert.Contains("SC_CLOSE", form);
+        Assert.Contains("Fensterwurzel<TKomponente>.Schliessweg", form);
+        Assert.True(form.IndexOf("Parametersatzwache.Pruefen", StringComparison.Ordinal)
+                    < form.IndexOf("Fensterwurzel<TKomponente>.Schliessweg", StringComparison.Ordinal));
+    }
+
+    /// <summary>Ein Fensterdialog mit Blatt A und darin Blatt B, Zustand beim Wirt wie im echten Dialog.</summary>
+    private sealed class Blattprobedialog : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        public bool BlattA;
+        public bool BlattB;
+
+        public void Oeffne(bool a, bool b) { BlattA = a; BlattB = b; StateHasChanged(); }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder b)
+        {
+            b.OpenElement(0, "div");
+            b.AddAttribute(1, "class", "epos-dialog");
+            if (!BlattA) b.AddMarkupContent(2, "<p class=\"wurzelblatt\">Dialog</p>");
+            b.OpenComponent<Blattwechsel>(3);
+            b.AddAttribute(4, nameof(Blattwechsel.Offen), BlattA);
+            b.AddAttribute(5, nameof(Blattwechsel.Titel), "Blatt A");
+            b.AddAttribute(6, nameof(Blattwechsel.Zurueck),
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => { BlattA = false; }));
+            b.AddAttribute(7, nameof(Blattwechsel.KindInhalt), (Microsoft.AspNetCore.Components.RenderFragment)(a =>
+            {
+                if (!BlattA) return;
+                a.OpenComponent<Blattwechsel>(0);
+                a.AddAttribute(1, nameof(Blattwechsel.Offen), BlattB);
+                a.AddAttribute(2, nameof(Blattwechsel.Titel), "Blatt B");
+                a.AddAttribute(3, nameof(Blattwechsel.Zurueck),
+                    Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => { BlattB = false; }));
+                a.CloseComponent();
+            }));
+            b.CloseComponent();
+            b.CloseElement();
+        }
+    }
+
+    // =====================================================================
     //  2 - Wer sie setzt
     // =====================================================================
 

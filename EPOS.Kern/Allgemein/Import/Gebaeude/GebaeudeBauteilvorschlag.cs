@@ -754,9 +754,10 @@ namespace WindowsFormsApplication1
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                         Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
                                                         bool raumtemperaturAlsSollwert = false,
-                                                        IReadOnlyDictionary<string, string> typwahl = null)
+                                                        IReadOnlyDictionary<string, string> typwahl = null,
+                                                        bool klasseUebersteuert = false)
             => Bilden(ablauf?.Abbild, gebaeudeIndex, baualtersklasse, ablauf?.Quelle, ablauf?.Profil, beheiztUebersteuert, abgleich, zonierung,
-                      raumtemperaturAlsSollwert, ablauf?.ProjektdateiFuer(gebaeudeIndex), typwahl);
+                      raumtemperaturAlsSollwert, ablauf?.ProjektdateiFuer(gebaeudeIndex), typwahl, klasseUebersteuert);
 
         /// <summary>
         /// <b>Der Vorschlag mehrerer Zonen</b> (Stufe G6c) aus dem gelesenen Ablauf: die Zonierung nach
@@ -791,12 +792,14 @@ namespace WindowsFormsApplication1
         /// <param name="projektdatei">Die gelesene HottCAD-Projektdatei mit Bauteiltabellen (BA-4b, Rangfolge E98); <c>null</c> = ohne.</param>
         /// <param name="typwahl">Die Typwahl des Anwenders je Ersatzaufbau (<see cref="GebaeudeAufbauzeile.Ersatzschluessel"/> →
         /// Code des Typaufbaus, E95-4); <c>null</c> = die Vorgabe nach Bauart und Klasse.</param>
+        /// <param name="klasseUebersteuert">Die Klasse ist ausdrücklich gewählt und gilt vor der aus dem Baujahr der Datei.</param>
         internal static GebaeudeBauteilvorschlag Bilden(GebaeudeAbbild abbild, int gebaeudeIndex, char? baualtersklasse,
                                                         GebaeudeQuelle quelle, GebaeudeImportProfil profil,
                                                         IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                         Baustoffabgleich abgleich = null, GebaeudeZonierung zonierung = null,
                                                         bool raumtemperaturAlsSollwert = false, SqprojStand projektdatei = null,
-                                                        IReadOnlyDictionary<string, string> typwahl = null)
+                                                        IReadOnlyDictionary<string, string> typwahl = null,
+                                                        bool klasseUebersteuert = false)
         {
             var v = new GebaeudeBauteilvorschlag { AbgleichAktiv = abgleich != null };
             if (abbild == null || profil == null || gebaeudeIndex < 0 || gebaeudeIndex >= abbild.Gebaeude.Count)
@@ -811,6 +814,7 @@ namespace WindowsFormsApplication1
                 CadSollwert = raumtemperaturAlsSollwert,
                 Projektdatei = projektdatei != null && !projektdatei.Abgelehnt && projektdatei.Abbild?.BauteileGelesen == true ? projektdatei : null,
                 Typwahl = typwahl,
+                KlasseUebersteuert = klasseUebersteuert,
             }.Bauen();
             return v;
         }
@@ -825,6 +829,9 @@ namespace WindowsFormsApplication1
             private readonly GebaeudeAbbild _abbild;
             private readonly int _index;
             private readonly char? _klasseGewaehlt;
+
+            /// <summary>Die gewählte Klasse gilt vor der aus dem Baujahr der Datei.</summary>
+            internal bool KlasseUebersteuert { get; init; }
             private readonly GebaeudeQuelle _quelle;
             private readonly GebaeudeImportProfil _profil;
             private readonly IReadOnlyDictionary<string, bool> _uebersteuert;
@@ -938,7 +945,8 @@ namespace WindowsFormsApplication1
 
                 // Die Zuordnung des Einzonenwegs — Kenngrößen der Zone, Vorgaben, Summenprobe.
                 GebaeudeImportSatz satz = GebaeudeAggregation.Bilden(_abbild, _index, _klasseGewaehlt, _quelle, _profil, _uebersteuert,
-                                                                     CadSollwert, Projektdatei?.ProjektdateiGilt == true ? UDatei : null);
+                                                                     CadSollwert, Projektdatei?.ProjektdateiGilt == true ? UDatei : null,
+                                                                     KlasseUebersteuert);
                 _v.Satz = satz;
                 _klasse = satz.Baualtersklasse;
                 _v.Baualtersklasse = _klasse;
