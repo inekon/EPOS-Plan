@@ -149,6 +149,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         internal List<Haus> Katalog = KATALOG.ToList();
         /// <summary>Passt den Feldsatz jedes gelesenen Satzes an (Stufe KP2, Welle U4: Nachtzeit, Konditionierung).</summary>
         internal Action<GebaeudeKatalogDaten>? Anpassen;
+        internal IReadOnlyList<Stammblattwert>? Zonen;
     }
 
     private IRenderedComponent<GebaeudeAdminDialog> Aufbauen(
@@ -158,11 +159,13 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         bool mitEditor = true,
         bool mitTypen = true,
         EPOS.UI.Bausteine.Schlossweg? schloss = null,
-        KonditionierungWeg? konditionierung = null)
+        KonditionierungWeg? konditionierung = null,
+        Func<string, IReadOnlyDictionary<string, object>>? zonenGaben = null)
     {
         Protokoll pr = p ?? new Protokoll();
         return Render<GebaeudeAdminDialog>(b => b
             .Add(x => x.Katalogzeilen, () => Zeilen(pr.Katalog))
+            .Add(x => x.ZonenGaben, zonenGaben)
             .Add(x => x.Schloss, schloss)
             .Add(x => x.Konditionierung, konditionierung)
             // Die Vorschau der Kalenderkarten sofort: Eine entprellte Vorschau rechnet nach 400 ms auf dem
@@ -176,6 +179,7 @@ public class GebaeudeAdminDialogTests : EposBunitContext
                 if (i < 0) return null;
                 GebaeudeStammblattDaten s = Satz(pr.Katalog[i], i + 1);
                 pr.Anpassen?.Invoke(s.Feldsatz!);
+                if (pr.Zonen is not null) s.Zonen = pr.Zonen;
                 return s;
             })
             .Add(x => x.Gebaeudetypen, () =>
@@ -836,6 +840,45 @@ public class GebaeudeAdminDialogTests : EposBunitContext
     /// <b>„Neu…" ist der einzige Weg in den Katalogeditor</b> (AD-Q6) — bearbeitet wird im
     /// Stammblatt; ein neuer Satz ist danach gewählt.
     /// </summary>
+    [Fact]
+    public void Die_Gruppe_Zonen_zeigt_die_Katalogzonen_und_oeffnet_den_Editor_auf_dem_Reiter_Zonen()
+    {
+        var p = new Protokoll { Zonen = new[] { new Stammblattwert("Erdgeschoss", "90 m², 2 Bauteile") } };
+        var aufrufe = new List<string>();
+        var cut = Aufbauen(p, zonenGaben: name =>
+        {
+            aufrufe.Add(name);
+            return new Dictionary<string, object> { ["StartReiter"] = GebaeudeKatalogDialog.REITER_ZONEN };
+        });
+
+        IElement gruppe = cut.FindAll(".epos-stammblattgruppe").First(g => g.QuerySelector("button.epos-gebaeude-zonenknopf") is not null);
+        Assert.Contains("epos-stammblattgruppe--lesen", gruppe.ClassName);
+        Assert.Equal(new[] { "Erdgeschoss" }, gruppe.QuerySelectorAll(".epos-stammblattwert dt").Select(e => e.TextContent.Trim()));
+        Assert.Equal("90 m², 2 Bauteile", gruppe.QuerySelector(".epos-stammblattwert dd")!.TextContent.Trim());
+
+        gruppe.QuerySelector("button.epos-gebaeude-zonenknopf")!.Click();
+
+        Assert.Equal(new[] { cut.Instance.Gewaehlt }, aufrufe);
+        Assert.True(cut.Instance.KatalogeditorOffen);
+        Assert.Equal("Zonen bearbeiten …", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.Equal("Zonen", cut.Find(".epos-ueberlagerung button[role=tab][aria-selected=true]").TextContent.Trim());
+    }
+
+    /// <summary>Ohne Zone nennt die Gruppe den Leertext; geänderte Felder des Stammblatts halten „Zonen bearbeiten …" an.</summary>
+    [Fact]
+    public void Die_Gruppe_Zonen_ohne_Zone_nennt_den_Leertext_und_haelt_bei_Aenderung_an()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p, zonenGaben: _ => new Dictionary<string, object>());
+
+        IElement gruppe = cut.FindAll(".epos-stammblattgruppe").First(g => g.QuerySelector("button.epos-gebaeude-zonenknopf") is not null);
+        Assert.Contains("Noch keine Zone", gruppe.TextContent);
+
+        cut.FindAll(".epos-stammblatt textarea").First().Input("geändert");
+        cut.Find("button.epos-gebaeude-zonenknopf").Click();
+        Assert.False(cut.Instance.KatalogeditorOffen);
+    }
+
     [Fact]
     public void Neu_oeffnet_den_Editor_und_waehlt_den_neuen_Satz()
     {

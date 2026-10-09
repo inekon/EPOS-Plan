@@ -170,7 +170,7 @@ ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
 ### Version 1.2.0.9 — nicht veröffentlicht
 
-Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwenderwünsche vom 08.10.2026.
+Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 
 - Seit 09.10.2026: Das Administrationsmenü „Wärmebedarf & Heizung“ heißt „Wärme- und Kälteerzeugung“. (#838)
 - Seit 09.10.2026: Die BHKW-Kachel der Startseite trägt ein Symbol für Kraft-Wärme-Kopplung. (#838)
@@ -195,6 +195,7 @@ Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.8); Anwend
 - Seit 09.10.2026: Der Reiter „Konditionierung“ hat eine Kalenderbedienung mit Wochenprofilen, Zuordnung von Zeiträumen im Jahr (gemeinsam für alle Größen), Einzeltagen mit Feiertagen, Schnellfeldern für Wochenende, Ferien und Saison und einem anklickbaren Jahresraster; die Matrix dient nur noch als Übersicht. (#847)
 - Seit 09.10.2026: Die Datenbank bringt 34 eingebaute Typkennfelder für Kältemaschinen mit (Luft, Trockenkühler, Nasskühler, Wasser; Scroll, Schraube, Turbo, Hubkolben; 20 bis 2 000 kW). (#848)
 - Seit 09.10.2026: Ein Gebäude-Katalogsatz trägt seine Zonen mit Bauteilen, Luftströmen und Zonen-Konditionierung; „In DB übernehmen“, „Speichern unter“ und die Übernahme ins Projekt kopieren sie mit. (#849)
+- Seit 09.10.2026: Die Zonen eines Gebäudes im Katalog lassen sich im Katalogeditor und über „Zonen bearbeiten …“ in der Gebäudeverwaltung bearbeiten; die Übernahme ins Projekt kopiert sie. (#850)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 

@@ -52,7 +52,7 @@ Die Fußleiste trägt ''Fläche und Verbrauch…'', ''Gebäude im Projekt bearbe
 == Der Katalogeditor ==
 {{Anker|katalogeditor}}
 
-Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an; der Editor bleibt offen und arbeitet danach am neuen Satz weiter – ein weiteres ''OK'' speichert in ihm, nicht im Ausgangssatz. Ein Satz der Auslieferung lässt sich nicht überschreiben. Über ''Hülle und Zonen…'' bearbeitet derselbe Editor die Kopie eines Gebäudes im Projekt; was dort gilt, beschreibt [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]].
+Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er erscheint als Überlagerung – in der Verwaltung für ''Neu…'', im Projektdialog für ''Gebäude in DB neu…'' und ''Gebäude in DB ändern…'' und nach einem [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]], dort vorbelegt aus der Datei. Seine Felder stehen auf zwei Reitern; ''OK'' prüft, speichert und schließt, ''Abbrechen'', das Kreuz und Esc schließen ohne zu speichern. Beim Bearbeiten legt ''Speichern unter'' einen neuen Satz unter dem eingegebenen Namen an; der Editor bleibt offen und arbeitet danach am neuen Satz weiter – ein weiteres ''OK'' speichert in ihm, nicht im Ausgangssatz. Ein Satz der Auslieferung lässt sich nicht überschreiben. Im Reiter ''Zonen'' bearbeitet der Editor die Zonen des Katalogsatzes (siehe [[#katalogzonen|Zonen im Katalog]]). Über ''Hülle und Zonen…'' bearbeitet derselbe Editor die Kopie eines Gebäudes im Projekt; was dort gilt, beschreibt [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]].
 
 === Reiter „Gebäude und Hülle" ===
 {{Anker|gebaeude-und-huelle}}
@@ -63,7 +63,7 @@ Der Katalogeditor legt einen Katalogsatz an oder bearbeitet ihn im Ganzen. Er er
 * '''Wärmeleitwerte''' – die gerechneten Leitwerte ''<math>H_{\mathrm{T}}</math>'' (Transmission), ''<math>H_{\mathrm{ve}}</math>'' (Lüftung) und ''<math>H_{\mathrm{ges}}</math>''.
 * '''Fenster nach Orientierung''' – die Fensterflächen Nord, Süd, Ost und West in m²; Ost und West tragen Sie beide ein oder lassen beide leer.
 * '''Modellparameter (VDI 6007)''', '''Rechenweg''' und '''Kühlung''' – beschrieben auf den Seiten [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] und [[Programm Dokumentation/Kühlung|Kühlung]]. Ein leeres Modellfeld rechnet mit seiner Vorgabe. Auf dem Rechenweg ''Tagesbilanz'' erscheint zusätzlich der Abschnitt ''Tagesbilanz (Bestandsweg)'' mit dem [[#gebaeudetypen|Gebäudetyp]].
-* '''Rechenweg der Hülle''' – eine Zeile unter dem Rechenweg: ''Klassenweg – U-Wert-Gruppen und Bauweise'' oder ''Bauteilweg – Zone „…", n Bauteile''. Ein Katalogsatz rechnet im Katalog den Klassenweg; trägt er Zonen, kopiert die Übernahme ins Projekt sie, und das Gebäude im Projekt rechnet nach dem Zonenmodell. Der Knopf ''Gebäude als eine Zone übernehmen'' bei dieser Zeile ist im Katalog gesperrt. Zonen führt nur ein Gebäude im Projekt (siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
+* '''Rechenweg der Hülle''' – eine Zeile unter dem Rechenweg: ''Klassenweg – U-Wert-Gruppen und Bauweise'' oder ''Bauteilweg – Zone „…", n Bauteile''. Ein Katalogsatz ohne Zone nennt den Klassenweg. Trägt er Zonen, nennt die Zeile ihre Zahl und die Zahl ihrer Bauteile: Die Übernahme ins Projekt kopiert sie, und das Gebäude rechnet dort nach dem Zonenmodell (siehe [[#katalogzonen|Zonen im Katalog]]). Der Knopf ''Gebäude als eine Zone übernehmen'' bei dieser Zeile ist im Katalog gesperrt.
 
 === {{Anker|baualtersklasse|energiestandard}}Baualtersklasse und Energiestandard ===
 
@@ -154,7 +154,7 @@ Die gespeicherten Werte des Gebäudes bleiben dabei stehen und gelten wieder, so
 
 Der Knopf '''Gebäude als eine Zone übernehmen''' steht im Reiter ''Gebäude und Hülle'' bei der Zeile ''Rechenweg der Hülle'' und im leeren Reiter ''Zonen''. Er legt aus den U-Wert-Gruppen des Gebäudes eine Zone mit Bauteilen an. Frei ist er nur für ein Gebäude im Projekt ohne Zone auf dem Rechenweg VDI 6007; sonst ist er gesperrt, und sein Kurztext nennt den Grund:
 
-* im Katalog: Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt (''In DB übernehmen'', ''Speichern unter'') und werden dort bearbeitet;
+* im Katalog: Die Hochrechnung rechnet mit dem Klima eines Projekts; im Katalogsatz entsteht eine Zone mit ''+ Neue Zone …'';
 * das Gebäude führt schon Zonen;
 * der Rechenweg ''Tagesbilanz'' rechnet keine Zonen – zuerst den Rechenweg auf VDI 6007 stellen.
 
@@ -189,7 +189,7 @@ Der Reiter '''Zonen''' listet die Zonen des Gebäudes in ihrer Reihenfolge mit '
 * '''Duplizieren''' – legt eine Kopie der Zone samt Bauteilen an. Trägt die Zone Trennflächen, fragt der Editor nach: Die Kopie grenzt an dieselben Nachbarn.
 * '''Zone entfernen''' – nach einer Rückfrage. Zeigen Trennflächen anderer Zonen auf die Zone, nennt die Rückfrage sie – sie grenzen danach an einen unbeheizten Raum –, ebenso ihre Luftströme, die entfallen. Ohne Zone rechnet das Gebäude wieder den Klassenweg über seine U-Wert-Gruppen.
 
-Unter der Liste stehen '''+ Neue Zone …''' und, ab zwei Zonen, '''Luftaustausch …'''. ''+ Neue Zone …'' legt eine Zone an und öffnet sie im Zonendialog; vor der ersten und vor der zweiten Zone fragt der Editor nach. Gesperrt ist der Knopf in einem Katalogsatz, auf dem Rechenweg ''Tagesbilanz'' und bei 50 Zonen; sein Kurztext nennt den Grund. ''Luftaustausch …'' öffnet die Luftströme zwischen den Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#luftaustausch|Mehrzonenmodell]]); eine Zeile nennt ihre Zahl. Geschrieben wird alles mit ''OK'' des Editors.
+Unter der Liste stehen '''+ Neue Zone …''' und, ab zwei Zonen, '''Luftaustausch …'''. ''+ Neue Zone …'' legt eine Zone an und öffnet sie im Zonendialog; vor der ersten und vor der zweiten Zone fragt der Editor nach. Gesperrt ist der Knopf in einem Satz der Auslieferung, auf dem Rechenweg ''Tagesbilanz'' und bei 50 Zonen; sein Kurztext nennt den Grund. ''Luftaustausch …'' öffnet die Luftströme zwischen den Zonen (siehe [[Programm Dokumentation/Mehrzonenmodell#luftaustausch|Mehrzonenmodell]]); eine Zeile nennt ihre Zahl. Geschrieben wird alles mit ''OK'' des Editors.
 
 Ohne Zone steht im Reiter die Zeile „Noch keine Zone …" und der Knopf [[#zone-uebernehmen|Gebäude als eine Zone übernehmen]].
 
@@ -247,11 +247,24 @@ Der neue Satz übernimmt alle Werte des Gebäudes im Projekt – Bauweise, U-Wer
 === Zone, Katalog und Projekt ===
 {{Anker|zone-katalog}}
 
-* '''Speichern unter''' im Editor eines Gebäudes mit Zonen fragt vor dem Schreiben: „Der Katalogsatz übernimmt die Zone „…" mit n Bauteilen in ihrem gespeicherten Stand – speichern?", mit mehreren Zonen entsprechend für alle Zonen. Der neue Katalogsatz trägt die Zonen, wie sie zuletzt mit ''OK'' gespeichert wurden; der Editor bleibt danach offen, die Projektkopie schreibt erst ''OK''.
+* '''Speichern unter''' im Editor eines Gebäudes im Projekt mit Zonen fragt vor dem Schreiben: „Der Katalogsatz übernimmt die Zone „…" mit n Bauteilen in ihrem gespeicherten Stand – speichern?", mit mehreren Zonen entsprechend für alle Zonen. Der neue Katalogsatz trägt die Zonen, wie sie zuletzt mit ''OK'' gespeichert wurden; der Editor bleibt danach offen, die Projektkopie schreibt erst ''OK''.
 * '''Übernahme ins Projekt''': Ein Katalogsatz mit Zonen kommt mit seinen Zonen, Bauteilen, Trennflächen, Luftströmen und der Konditionierung der Zonen ins Projekt; das Gebäude rechnet dann nach dem Zonenmodell. ''Duplizieren'' im Katalog nimmt die Zonen mit, ''Löschen'' entfernt sie mit dem Satz.
 * '''Ändern''' im Projektdialog: Mit Zonen gilt die Flächen- oder Verbrauchsangabe des Projekts nicht, und Bedarfsart, Wert und Jahresnutzungsgrad sind gesperrt (siehe [[#verbrauch|Gebäude: Verbrauch]]).
 * '''Projekt duplizieren''' und der [[Programm Dokumentation/Projekttransfer|Projekttransfer]] nehmen Zonen, Bauteile, Trennflächen, Luftströme und Aufbauten mit.
 * Wird das Gebäude aus dem Projekt entfernt, gehen seine Zonen mit.
+
+=== Zonen im Katalog ===
+{{Anker|katalogzonen}}
+
+Der [[#katalogeditor|Katalogeditor]] bearbeitet im Reiter ''Zonen'' die Zonen eines Katalogsatzes so wie die eines Gebäudes im Projekt: die Liste mit ''▲ ▼'', ''Öffnen…'', ''Duplizieren'' und ''Zone entfernen'', ''+ Neue Zone …'', den Zonendialog mit seinen Bauteilen und Trennflächen, ''Luftaustausch …'' und die Konditionierung der Zonen. Die Bauteile wählen ihren Aufbau aus dem Katalog der Bauteilaufbauten. ''Gebäude als eine Zone übernehmen'' bleibt dem Gebäude im Projekt vorbehalten, denn die Hochrechnung braucht das Klima eines Projekts.
+
+* '''OK''' schreibt zuerst den Satz, dann seine Zonen; scheitert der zweite Schritt, nennt eine Meldung den Grund, und der Editor bleibt offen. '''Abbrechen''' verwirft beides.
+* Ein '''Satz der Auslieferung''' zeigt seine Zonen nur: ''+ Neue Zone …'', ''Duplizieren'', ''Zone entfernen'', ''▲ ▼'' und ''Luftaustausch …'' sind gesperrt und nennen den Grund; der Zonendialog lässt sich öffnen, übernimmt aber nichts. Eine bearbeitbare Kopie entsteht über ''Speichern unter'' oder ''Duplizieren…''.
+* '''Speichern unter''' legt den neuen Satz mit den Zonen an, wie sie im Editor stehen; eine Zeile unter dem Knopf nennt ihre Zahl. Der Editor arbeitet danach am neuen Satz weiter.
+* Im Katalog rechnet der Satz nicht. Die '''Übernahme ins Projekt''' kopiert seine Zonen, und das Gebäude rechnet dort nach dem Zonenmodell; die Zeile ''Rechenweg der Hülle'' sagt es.
+* In der [[#verwaltung|Verwaltung]] zeigt die Gruppe ''Zonen'' des Stammblatts die Zonen des gewählten Satzes; ''Zonen bearbeiten …'' öffnet den Katalogeditor auf dem Reiter ''Zonen''.
+
+Ein Beispiel: Im Katalogsatz ''Gebäude 1'' legen Sie die Zonen ''Erdgeschoss'' mit 90 m² und ''Obergeschoss'' mit 60 m² an, jede mit ihren Bauteilen, und speichern mit ''OK''. Nach der Übernahme in ein Projekt rechnet ''Gebäude 1'' dort mit beiden Zonen.
 
 === Ausrichtung ===
 {{Anker|ausrichtung}}
@@ -290,7 +303,8 @@ Der Kopf des Stammblatts nennt den Namen des Satzes und darunter Gebäudeart, Ve
 Alle Felder des Stammblatts sind direkt bearbeitbar:
 
 * {{Anker|kenndaten}}'''Kenndaten''' – Name (nur lesbar), Gebäudetyp, Gebäudeart, Baualtersklasse, Baujahr, Verwendung, Energiestandard, Wohn-/Nutzfläche, Bauart und Beschreibung. Wohn-/Nutzfläche und Bauart bestimmen die Speicherfähigkeit des Gebäudes mit; das Baujahr ist wie im Katalogeditor eine Jahreszahl von 1500 bis 2100 oder leer, und ist es gesetzt, folgt die Baualtersklasse ihm. Klassen, Quelle und Energiestandards beschreibt der Abschnitt [[#baualtersklasse|Baualtersklasse und Energiestandard]]. Der Knopf ''Gebäudetypen…'' im Kopf der Gruppe öffnet die [[#gebaeudetypen|Gebäudetypen]].
-* {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''<math>U</math> bzw. <math>\psi</math>'' und Größe ''<math>A</math> bzw. <math>L</math>''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten. Eine weitere Zeile nennt den Rechenweg der Hülle: Ein Katalogsatz rechnet den Klassenweg und trägt keine Zonen; Zonen und Bauteile führt ein Gebäude im Projekt über ''Hülle und Zonen…'' im Gebäudedialog (siehe [[#huelle-und-zonen|Gebäude im Projekt: Hülle und Zonen]]).
+* {{Anker|huelle}}'''Hülle''' – die acht Bauteile als Tabelle aus ''Bauteil'', Kennwert ''<math>U</math> bzw. <math>\psi</math>'' und Größe ''<math>A</math> bzw. <math>L</math>''; die Größe der Fensterzeile ist gerechnet, nämlich die Summe der vier Himmelsrichtungen. Darunter die Randbedingung der Bodenplatte, beim Keller mit der Kellertemperatur, und eine Zeile mit den Wärmeleitwerten. Eine weitere Zeile nennt den Rechenweg der Hülle wie im Katalogeditor.
+* {{Anker|zonen-stammblatt}}'''Zonen''' – je Zone des Satzes ihr Name, ihre Nutzfläche und die Zahl ihrer Bauteile, nur lesbar; ohne Zone die Zeile „Noch keine Zone …". Der Knopf ''Zonen bearbeiten …'' im Kopf der Gruppe öffnet den [[#katalogeditor|Katalogeditor]] für den gewählten Satz auf dem Reiter ''Zonen'' (siehe [[#katalogzonen|Zonen im Katalog]]); weichen Felder des Stammblatts vom gespeicherten Satz ab, hält er an wie ''Neu…''.
 * {{Anker|fenster}}'''Fenster nach Orientierung''' – Nord, Süd, Ost und West in m²; Summe Ost + West und gesamte Fensterfläche sind gerechnet.
 * '''Kenngrößen''' – Fläche je Nutzer, interne Wärmegewinne, Raumhöhe, Fensterdurchlassgrad (etwa 0,4) und Luftwechselrate.
 * {{Anker|alle-daten}}'''Alle Daten''' – aufklappbar: die Konditionierung (Matrix und Kalenderkarten, siehe [[#konditionierung|Reiter „Konditionierung"]]), die Modellparameter (VDI 6007) samt Rechenweg und die Kühlung. Die Felder sind dieselben wie im [[#katalogeditor|Katalogeditor]].
@@ -340,7 +354,7 @@ Ein Satz der Auslieferung bleibt auch für den Assistenten unverändert; er nenn
 * Die Verwaltung zeigt '''keinen Wärmebedarf'''. Er hängt an der Klimaregion, am Kalender und an den Angaben des Projekts – Nutzfläche oder Verbrauch, Jahresnutzungsgrad, Kühlung – und steht im Projektdialog unter [[#waermebedarf|Simulation…]].
 * Der '''Name''' eines Satzes lässt sich im Stammblatt nicht ändern; ein Satz unter anderem Namen entsteht über ''Duplizieren…''.
 * Ein Projekt rechnet mit seiner eigenen Kopie. Eine spätere Änderung am Katalogsatz erreicht eine Zeile, die in der Projektliste bleibt, nicht; dafür wird die Zeile entfernt und der Katalogsatz neu übernommen (siehe [[#uebernahme|Übernahme ins Projekt]]). Die Kopie im Projekt selbst bearbeiten Sie über [[#huelle-und-zonen|Hülle und Zonen…]].
-* Ein Katalogsatz trägt '''Zonen''' samt Bauteilen, wenn er aus einem Gebäude mit Zonen entstanden ist; bearbeitet werden Zonen und Bauteile an einem Gebäude im Projekt, die Übernahme ins Projekt kopiert sie.
+* Ein Katalogsatz trägt '''Zonen''' samt Bauteilen, bearbeitet im Katalogeditor; im Katalog rechnet er nicht, erst die Übernahme ins Projekt kopiert die Zonen.
 
 == Gebäudetypen ==
 {{Anker|gebaeudetypen}}

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -86,6 +87,8 @@ namespace WindowsFormsApplication1
                 ["Exists"] = new Func<string, bool>(n => new GebaeudeStammCtrl().Lies(n) != null),
                 // Der Katalogeditor nur noch fuer "Neu..." (AD-Q6, #465) - bearbeitet wird im Stammblatt.
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KatalogGaben),
+                // Welle ZK-b: „Zonen bearbeiten …" - der Katalogeditor am gewaehlten Satz, auf dem Reiter „Zonen".
+                ["ZonenGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(ZonenGaben),
                 ["TitelText"] = Titel(),
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
@@ -117,6 +120,34 @@ namespace WindowsFormsApplication1
             };
 
         /// <summary>
+        /// <b>Der Parametersatz hinter „Zonen bearbeiten …"</b> (Welle ZK-b): der Katalogeditor in der Betriebsart
+        /// <see cref="GebaeudeKatalogModus.Bearbeiten"/> am Satz <paramref name="name"/>, aufgeschlagen auf dem Reiter
+        /// „Zonen"; das Schloss eines ausgelieferten Satzes gilt dort wie im Stammblatt. Der Weg zur
+        /// Brauchwasser-Profilliste ohne Zapfprofil-Behälter wie bei „Neu…".
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> ZonenGaben(string name)
+            => new Dictionary<string, object>(GebaeudeKatalogHuelle.Gaben(name ?? "", GebaeudeKatalogModus.Bearbeiten))
+            {
+                ["BrauchwasserGaben"] = GebaeudeKatalogHuelle.Brauchwasserweg(mitZapfprofil: false),
+                ["StartReiter"] = GebaeudeKatalogDialog.REITER_ZONEN
+            };
+
+        /// <summary>Die Gruppe „Zonen" des Stammblatts (Welle ZK-b): je Katalogzone Nutzfläche und Bauteile; leer ohne Zone.</summary>
+        internal static IReadOnlyList<Stammblattwert> Zonenwerte(int idStamm)
+        {
+            if (idStamm <= 0 || !ZonenKatalogSchema.Lesbar()) return Stammblattwert.Keine;
+            var c = System.Globalization.CultureInfo.CurrentCulture;
+            return new GebaeudeZonenCtrl().LesenJeGebaeude(idStamm, Zonenebene.Katalog).Select(z =>
+            {
+                string bauteile = (z.Bauteile?.Count ?? 0).ToString(c);
+                string wert = z.Nutzflaeche is double f
+                    ? string.Format(c, MyResource.Resource.GEBA_SB_ZONE_WERT, f.ToString("0.##", c), bauteile)
+                    : string.Format(c, MyResource.Resource.GEBA_SB_ZONE_WERT_OHNE_FLAECHE, bauteile);
+                return new Stammblattwert(z.Bezeichner ?? "", wert);
+            }).ToList();
+        }
+
+        /// <summary>
         /// Ein Satz fürs Stammblatt: Kenndaten, Kennzahlen, die Hülle der vier Bauteile und
         /// „Alle Daten". <c>null</c>, wenn es den Satz nicht (mehr) gibt.
         /// </summary>
@@ -141,6 +172,7 @@ namespace WindowsFormsApplication1
                 Auslieferung = new GebaeudeStammCtrl().IsReadOnly(name),
                 Huelle = Huelle(m),
                 AlleDaten = AlleDaten(m),
+                Zonen = Zonenwerte(m.ID),
                 // #465: der Feldsatz des Katalogeditors - der Arbeitsstand des Stammblatts.
                 Feldsatz = MitKonditionierung(GebaeudeKatalogHuelle.AusModell(m), m.ID)
             };

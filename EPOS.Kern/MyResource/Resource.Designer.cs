@@ -27437,6 +27437,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen bearbeiten … ähnelt.
+        /// </summary>
+        public static string GEBA_BTN_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBA_BTN_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} m² · U {1} W/(m²K) ähnelt.
         /// </summary>
         public static string GEBA_HUELLE_WERT {
@@ -27586,6 +27595,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBA_SB_HUELLE_HINWEIS {
             get {
                 return ResourceManager.GetString("GEBA_SB_HUELLE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} m², {1} Bauteile ähnelt.
+        /// </summary>
+        public static string GEBA_SB_ZONE_WERT {
+            get {
+                return ResourceManager.GetString("GEBA_SB_ZONE_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bauteile ähnelt.
+        /// </summary>
+        public static string GEBA_SB_ZONE_WERT_OHNE_FLAECHE {
+            get {
+                return ResourceManager.GetString("GEBA_SB_ZONE_WERT_OHNE_FLAECHE", resourceCulture);
             }
         }
         
@@ -31731,6 +31758,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Katalogsatz übernimmt die Zonen ({0}) mit {1} Bauteilen, wie sie hier stehen. ähnelt.
+        /// </summary>
+        public static string GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG {
+            get {
+                return ResourceManager.GetString("GEBZ_HINWEIS_SPEICHERN_UNTER_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Katalogsatz übernimmt die Zonen ({0}) mit {1} Bauteilen in ihrem gespeicherten Stand. ähnelt.
         /// </summary>
         public static string GEBZ_HINWEIS_SPEICHERN_UNTER_ZONEN {
@@ -31821,15 +31857,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen eines Katalogsatzes kommen aus einem Gebäude im Projekt („In DB übernehmen“, „Speichern unter“); die Übernahme ins Projekt kopiert sie, bearbeitet werden sie dort. ähnelt.
-        /// </summary>
-        public static string GEBZ_SPERRE_KATALOG {
-            get {
-                return ResourceManager.GetString("GEBZ_SPERRE_KATALOG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt Trennflächen zu Nachbarzonen und den Luftaustausch zwischen Zonen noch nicht (Schemaschritt {0} fehlt). ähnelt.
         /// </summary>
         public static string GEBZ_SPERRE_KOPPLUNG {
@@ -31848,6 +31875,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt die Zonen eines Katalogsatzes noch nicht (Schemaschritt {0} fehlt). ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_OHNE_KATALOGZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_OHNE_KATALOGZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen dieses Gebäudes sind hier nicht bearbeitbar. ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_OHNE_WEG {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_OHNE_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann. ähnelt.
         /// </summary>
         public static string GEBZ_SPERRE_PROJEKT_ASSISTENT {
@@ -31862,6 +31907,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBZ_SPERRE_TAGESBILANZ {
             get {
                 return ResourceManager.GetString("GEBZ_SPERRE_TAGESBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Gebäude als eine Zone übernehmen“ rechnet mit dem Klima eines Projekts und steht im Projekt bereit; im Katalogsatz entsteht eine Zone mit „+ Neue Zone …“. ähnelt.
+        /// </summary>
+        public static string GEBZ_SPERRE_UEBERNAHME_KATALOG {
+            get {
+                return ResourceManager.GetString("GEBZ_SPERRE_UEBERNAHME_KATALOG", resourceCulture);
             }
         }
         
@@ -32001,11 +32055,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Ein Katalogsatz trägt Zonen; die Übernahme ins Projekt kopiert sie, und das Gebäude im Projekt rechnet dann nach dem Zonenmodell. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenweg der Hülle: Klassenweg – U-Wert-Gruppen und Bauweise. Der Katalogsatz trägt keine Zone; legt der Reiter „Zonen“ welche an, kopiert die Übernahme ins Projekt sie, und das Gebäude rechnet dort nach dem Zonenmodell. ähnelt.
         /// </summary>
         public static string GEBZ_ZEILE_KATALOG {
             get {
                 return ResourceManager.GetString("GEBZ_ZEILE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz trägt Zonen ({0}) mit {1} Bauteilen; die Übernahme ins Projekt kopiert sie, und das Gebäude rechnet dort nach dem Zonenmodell. ähnelt.
+        /// </summary>
+        public static string GEBZ_ZEILE_KATALOG_ZONEN {
+            get {
+                return ResourceManager.GetString("GEBZ_ZEILE_KATALOG_ZONEN", resourceCulture);
             }
         }
         
@@ -131230,6 +131293,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZONE_MSG_ID_DOPPELT {
             get {
                 return ResourceManager.GetString("ZONE_MSG_ID_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Katalogsatz gehört zur Auslieferung und ist nur lesbar; seine Zonen bleiben, wie sie sind – gespeichert ist nichts. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_KATALOG_GESPERRT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_KATALOG_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Datenbank kennt die Zonen eines Katalogsatzes noch nicht (Schemaschritt {0} fehlt) – gespeichert ist nichts. ähnelt.
+        /// </summary>
+        public static string ZONE_MSG_KATALOG_OHNE_SCHRITT {
+            get {
+                return ResourceManager.GetString("ZONE_MSG_KATALOG_OHNE_SCHRITT", resourceCulture);
             }
         }
         
