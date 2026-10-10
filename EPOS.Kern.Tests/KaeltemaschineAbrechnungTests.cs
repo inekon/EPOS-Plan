@@ -342,24 +342,34 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Zwei_Anlagen_desselben_Katalogsatzes_teilen_eine_Projektkopie()
+        public void Zwei_Anlagen_desselben_Katalogsatzes_bekommen_je_eine_eigene_Projektkopie()
         {
             if (!_db.Vorhanden) return;
+            // Festlegung KB-1 (Entwurf Kältebereich 2.2): jede neue Anlage ihre eigene Kopie - Vorlauf und Hilfsstrom je Anlage.
             int stamm = Stamm(LUFTGEKUEHLT);
             int erste = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, stamm, "KM Nord");
             int zweite = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, stamm, "KM Süd");
             KaeltemaschineAnlageModel a = KaeltemaschineAnlageCtrl.Laden(erste), b = KaeltemaschineAnlageCtrl.Laden(zweite);
             Assert.NotEqual(erste, zweite);
-            Assert.Equal(a.IdKaeltemaschine, b.IdKaeltemaschine);
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM " + KaeltemaschineSchema.TAB_PROJEKT + " WHERE ID_Projekt = ?", PROJEKT));
+            Assert.NotEqual(a.IdKaeltemaschine, b.IdKaeltemaschine);
+            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM " + KaeltemaschineSchema.TAB_PROJEKT + " WHERE ID_Projekt = ?", PROJEKT));
+            // Beide Kopien tragen den Katalogsatz und seine Kennlinie.
+            KaeltemaschineModel ka = KaeltemaschineCtrl.Laden(a.IdKaeltemaschine.Value), kb = KaeltemaschineCtrl.Laden(b.IdKaeltemaschine.Value);
+            Assert.Equal(stamm, ka.IdStamm);
+            Assert.Equal(stamm, kb.IdStamm);
+            Assert.Equal(ka.Kennlinie.Count, kb.Kennlinie.Count);
+            Assert.NotEmpty(kb.Kennlinie);
 
-            // Vorlauf und Hilfsstrom gelten je Gerät (an der Kopie), die Anzahl je Anlagenzeile.
+            // Vorlauf und Hilfsstrom getrennt je Anlage, die Anzahl je Anlagenzeile.
             a.Anzahl = 2;
             a.KuehlVorlauf = 12;
+            a.KuehlHilfsstromanteil = 0.05;
             Assert.Null(KaeltemaschineAnlageCtrl.Speichern(a));
             KaeltemaschineAnlageModel b2 = KaeltemaschineAnlageCtrl.Laden(zweite);
-            Assert.Equal(12.0, b2.KuehlVorlauf);
+            Assert.Null(b2.KuehlVorlauf);
+            Assert.Null(b2.KuehlHilfsstromanteil);
             Assert.Equal(1, b2.Anzahl);
+            Assert.Equal(12.0, KaeltemaschineAnlageCtrl.Laden(erste).KuehlVorlauf);
 
             SimulationRunner lauf = new SimulationRunner();
             Assert.True(lauf.SimuliereUndSpeichere(PROJEKT, out string fehler) > 0, fehler);
@@ -367,11 +377,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "KM Nord", "KM Süd" }, erg.Select(e => e.Bezeichner));
             Assert.Equal(new[] { 2, 1 }, erg.Select(e => e.Anzahl));
 
-            // Löschen: die Kopie bleibt, solange eine Anlage sie führt.
+            // Löschen: jede Anlage nimmt ihre eigene Kopie mit, die andere bleibt; keine verwaiste Kopie.
             KaeltemaschineAnlageCtrl.Loeschen(erste);
+            Assert.Null(KaeltemaschineCtrl.Laden(a.IdKaeltemaschine.Value));
             Assert.NotNull(KaeltemaschineCtrl.Laden(b.IdKaeltemaschine.Value));
             KaeltemaschineAnlageCtrl.Loeschen(zweite);
             Assert.Null(KaeltemaschineCtrl.Laden(b.IdKaeltemaschine.Value));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM " + KaeltemaschineSchema.TAB_PROJEKT + " WHERE ID_Projekt = ?", PROJEKT));
+        }
+
+        [Fact]
+        public void Eine_vorhandene_geteilte_Kopie_bleibt_und_Projekt_duplizieren_haelt_die_eigenen_Kopien()
+        {
+            if (!_db.Vorhanden) return;
+            int stamm = Stamm(LUFTGEKUEHLT);
+            // Bestand vor KB-1: eine Kopie, zwei Anlagenzeilen - AusKatalogUebernehmen nimmt sie weiter, nichts wird umgebaut.
+            int geteilt = KaeltemaschineCtrl.AusKatalogUebernehmen(stamm, PROJEKT);
+            Assert.Equal(geteilt, KaeltemaschineCtrl.AusKatalogUebernehmen(stamm, PROJEKT));
+            foreach (string alt in new[] { "KM Alt 1", "KM Alt 2" })
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO Tab_Energieanlagen (ID_Projekt, Bezeichner, ID_Type, ID_Kaeltemaschine, Kaeltemaschine_Anzahl) VALUES (?, ?, ?, ?, 1)",
+                    new DbParam("?", PROJEKT), new DbParam("?", alt),
+                    new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE), new DbParam("?", geteilt));
+            // Eine neue Anlage desselben Satzes bekommt trotzdem ihre eigene Kopie.
+            int neu = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, stamm, "KM Neu");
+            Assert.NotEqual(geteilt, KaeltemaschineAnlageCtrl.Laden(neu).IdKaeltemaschine);
+            Assert.Equal(2, KaeltemaschineAnlageCtrl.Liste(PROJEKT).Count(x => x.IdKaeltemaschine == geteilt));
+            // Der Leser des Kältebereichs nennt die geteilte Kopie.
+            Assert.Equal(new[] { 2, 2, 1 }, Kaeltefolge.Lesen(PROJEKT).Erzeuger
+                .Where(e => e.Art == KaeltefolgeStufe.Kaeltemaschine).Select(e => e.AnlagenJeKopie));
+
+            // Projekt duplizieren: dieselbe Zuordnung im neuen Projekt - zwei Kopien, die geteilte bleibt geteilt.
+            string name = Convert.ToString(DataRepository.ExecuteScalar("SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
+                new DbParam("?", PROJEKT)), CultureInfo.InvariantCulture);
+            int dup = new ProjektDuplizierenCtrl().Duplizieren(name, name + " KB1");
+            Assert.True(dup > 0);
+            List<int?> kopien = KaeltemaschineAnlageCtrl.Liste(dup).Select(x => x.IdKaeltemaschine).ToList();
+            Assert.Equal(3, kopien.Count);
+            Assert.Equal(2, kopien.Distinct().Count());
+            Assert.All(kopien, k => Assert.Equal((long)dup, Zahl("SELECT ID_Projekt FROM " + KaeltemaschineSchema.TAB_PROJEKT + " WHERE ID = ?", k.Value)));
         }
 
         [Fact]

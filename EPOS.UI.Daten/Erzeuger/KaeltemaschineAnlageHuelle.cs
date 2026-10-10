@@ -12,8 +12,8 @@ namespace WindowsFormsApplication1
     /// <see cref="KaeltemaschineAnlageDaten"/> ab. Plattformfrei: Unter Windows reicht die Hauptfensterhülle den
     /// Satz an die <c>AppWurzel</c> (Seitenschlüssel <c>KAELTEMASCHINE_ANLAGE</c>), auf iOS die Projektquelle.
     ///
-    /// <para><b>Anlegen</b> nimmt den Weg des Kerns (<see cref="KaeltemaschineAnlageCtrl.Anlegen"/>: Projektkopie
-    /// über <c>AusKatalogUebernehmen</c> und Anlagenzeile Typ 13); <b>Speichern</b> liest die Anlage neu, setzt die
+    /// <para><b>Anlegen</b> nimmt den Weg des Kerns (<see cref="KaeltemaschineAnlageCtrl.Anlegen"/>: eigene
+    /// Projektkopie je Anlage über <c>EigeneKopieAnlegen</c>, Festlegung KB-1, und Anlagenzeile Typ 13); <b>Speichern</b> liest die Anlage neu, setzt die
     /// Eingaben und schreibt Anlagenzeile und Kühleingaben der Kopie in einem Vorgang.</para>
     /// </summary>
     internal static class KaeltemaschineAnlageHuelle

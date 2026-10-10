@@ -42,8 +42,8 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Die Kältemaschine als Anlage</b> (KU3-4; Kühlkonzept 5.3, 5.5, 7.3): Lesen, Anlegen, Speichern und
-    /// Löschen der Anlagenzeilen. Die Projektkopie entsteht über
-    /// <see cref="KaeltemaschineCtrl.AusKatalogUebernehmen"/>; ihre Kühleingaben stehen an der Kopie, Anzahl,
+    /// Löschen der Anlagenzeilen. Die Projektkopie entsteht je Anlage über
+    /// <see cref="KaeltemaschineCtrl.EigeneKopieAnlegen"/> (KB-1); ihre Kühleingaben stehen an der Kopie, Anzahl,
     /// Kühlträger und Abrechnungsart an der Anlagenzeile.
     /// </summary>
     public static class KaeltemaschineAnlageCtrl
@@ -90,13 +90,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Legt eine Anlage an: Projektkopie des Katalogsatzes <paramref name="stammId"/> (eine vorhandene Kopie
-        /// desselben Satzes wird genommen) und die Anlagenzeile mit Typ 13 und Anzahl 1. Liefert die Anlagen-ID,
+        /// Legt eine Anlage an: eine <b>eigene</b> Projektkopie des Katalogsatzes <paramref name="stammId"/>
+        /// (Festlegung KB-1: keine vorhandene Kopie wird wiederverwendet, damit Kaltwasservorlauf und
+        /// Hilfsstromanteil je Anlage gelten) und die Anlagenzeile mit Typ 13 und Anzahl 1. Liefert die Anlagen-ID,
         /// <c>-1</c>, wenn es den Katalogsatz nicht gibt.
         /// </summary>
         public static int Anlegen(int projektId, int stammId, string bezeichner)
         {
-            int kopie = KaeltemaschineCtrl.AusKatalogUebernehmen(stammId, projektId);
+            int kopie = KaeltemaschineCtrl.EigeneKopieAnlegen(stammId, projektId);
             if (kopie <= 0) return -1;
             if (string.IsNullOrWhiteSpace(bezeichner))
                 bezeichner = KaeltemaschineCtrl.Laden(kopie)?.Bezeichner ?? DbWerte.ERZEUGER_KAELTEMASCHINE;
