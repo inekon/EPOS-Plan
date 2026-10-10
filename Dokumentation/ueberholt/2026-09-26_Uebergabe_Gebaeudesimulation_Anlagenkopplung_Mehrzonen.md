@@ -2,9 +2,9 @@
 
 Übergabe der Sitzung „Gebäudesimulation EPOS-Plan“ beim Wochenkontingent von über 80 %. Sie sagt, was
 fertig ist, was offen ist und wie es weitergeht. Maßgeblich für den Stand bleiben die
-[Statusdatei](../Status_Gebaeudesimulation_VDI6007.md), das [Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+[Statusdatei](../aktuell/Status_Gebaeudesimulation_VDI6007.md), das [Register](../aktuell/Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
 und `git log origin/ios_migration_september`; die Parallelübergabe zu G6c und Klasse M/A steht in
-[`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](2026-09-26_Uebergabe_G6c_Katalog_M_A.md).
+[`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md).
 
 ## 1. Fertig und gepusht
 
@@ -27,12 +27,12 @@ freie Schritt ist 151 — Nummern immer unmittelbar vor dem Eintrag gegen origin
 ## 2. Offen beim Anwender
 
 1. **Windows-Sichtabnahmen:** G6a und G6b (Punkte im Block „Nach #538“ der
-   [iOS-Statusdatei](../Status_iOS_Migration.md)), G7a („Nach #529“), E47 Baualtersklassen und
+   [iOS-Statusdatei](../aktuell/Status_iOS_Migration.md)), G7a („Nach #529“), E47 Baualtersklassen und
    Energiestandard — vor E47 die Datenbank sichern, Schritt 148 benennt Auslieferungssätze um —, dazu
    aus der Sitzung G3: G4b mit Namensabgleich und Nacharbeiten, E51 und der G6c-Importdialog. Der
    Import legt jetzt je Geschoss eine Zone an, auch bei gbXML-/IFC-Häusern, die bisher eine Zone ergaben.
 2. **Wiki:** Der Sammel-Upload 1.2.0.4 ist am 26.09.2026 durchgeführt (Revisionen 593–611, Statuszeile
-   #556, siehe [Update-Papier](../Wiki_Update_2026-09-26.md)). **Nicht darin** und nachzuladen: die neue
+   #556, siehe [Update-Papier](../aktuell/Wiki_Update_2026-09-26.md)). **Nicht darin** und nachzuladen: die neue
    Seite „Mehrzonenmodell“ (`Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki`), die G6b-Nachzüge in
    „Gebäude“ und „Gebäudemodell VDI 6007“ (je Seite gegen den Live-Stand abgleichen) und der Logbuch-Satz
    „Gebäude im Projekt rechnen mit bis zu 50 Zonen – jede Zone nach VDI 6007 Blatt 1, gekoppelt über
@@ -48,7 +48,7 @@ freie Schritt ist 151 — Nummern immer unmittelbar vor dem Eintrag gegen origin
 
 | Stufe | Inhalt | Voraussetzung |
 |---|---|---|
-| G6c Rest | Welle D Zonengeometrie-Modell und 2D-Grundriss (E11), Welle E Wiki; offen außerdem Trenndecke ohne Raumgrenzen (heute Zonenregel Z4 nur mit Warnung, Vorgabe Z5), Zonen von Hand zusammenlegen oder trennen (Kern-Erweiterung), Messdateien M10 (Proben 13–16 und 18); Register: M11 offen | Wellenplan und Stand in [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.1 |
+| G6c Rest | Welle D Zonengeometrie-Modell und 2D-Grundriss (E11), Welle E Wiki; offen außerdem Trenndecke ohne Raumgrenzen (heute Zonenregel Z4 nur mit Warnung, Vorgabe Z5), Zonen von Hand zusammenlegen oder trennen (Kern-Erweiterung), Messdateien M10 (Proben 13–16 und 18); Register: M11 offen | Wellenplan und Stand in [`2026-09-26_Uebergabe_G6c_Katalog_M_A.md`](../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.1 |
 | G6d | Referenzprojekt mit Zonen, Einfrierregel „gesäte Zonendaten“, neue Basis (2–3 PT). Befund aus G6c: Ein unbeheizter Betonkeller ohne Dämmung gegen Erdreich ergibt nach Gl. (28) R_Rest < 0 und wird abgelehnt — vermutlich fehlt eine Erdreichschicht im Rechenweg | G6b fertig |
 | G7b | gbXML-Geometrie, Einstieg im Bedarfsdialog; danach Auslieferung von G7a | Probe 20 braucht einen macOS-Lauf, nur nach Rückfrage |
 | KU3, AK2, AK3 | Kältemaschine und freie Kühlung; Erzeugerfahrplan; geschlossener Kreis | nach der Feldphase (E27) |

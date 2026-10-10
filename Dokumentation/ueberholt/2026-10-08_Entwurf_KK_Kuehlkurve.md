@@ -10,12 +10,12 @@ Stichproben auf `76c32d5f0`, der Mehrzonenweg auf `3cd7e01e7` (Basis R43 `2026-1
 Projekte; Testdatenbank Schemastand 201). **Nummern:** Schemaschritt **202** ist angemeldet (origin `41c237274`, Kopfzeile der
 Statusdatei: „Eingabespalten am Gebäude und, wo der Mehrzonenweg sie braucht, an der Zone, dazu Ergebnisspalten“); hier heißt er
 weiter **S1**. Die Projektnummern der beiden Referenzprojekte **RP-KK** und **RP-KKZ** und die Basis **R44** werden beim Bau
-angemeldet; die Projektnummer 1060 ist vom [Konzept Übergabegrenze](../../ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
+angemeldet; die Projektnummer 1060 ist vom [Konzept Übergabegrenze](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md)
 vorgemerkt. **Verfahren:** zwei Leser (L1: Code mit `Datei:Zeile`; L2: Papiere, Widersprüche, Fragen, Folgen), Stichproben am
 Code, Synthese hier; wo die Leser sich widersprachen, gilt der Code; der Mehrzonenweg (1.4) ist nach E106 eigens gelesen.
-**Grundlage:** [Anlagenkopplung](../Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 7.1, 7.2, 7.4 Nr. 5 und Nr. 10;
-[Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) K21; [Entwurf AK3](2026-10-07_Entwurf_AK3.md) H2,
-Festlegungen 23 und 24; [Entwurf AK3-K](2026-10-07_Entwurf_AK3-K.md) 4.2, 4.3, Q-AK3K-3; [Register](../Status_Gebaeudesimulation_VDI6007.md)
+**Grundlage:** [Anlagenkopplung](../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 7.1, 7.2, 7.4 Nr. 5 und Nr. 10;
+[Kühlkonzept](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) K21; [Entwurf AK3](2026-10-07_Entwurf_AK3.md) H2,
+Festlegungen 23 und 24; [Entwurf AK3-K](2026-10-07_Entwurf_AK3-K.md) 4.2, 4.3, Q-AK3K-3; [Register](../aktuell/Status_Gebaeudesimulation_VDI6007.md)
 E37, E102, E104, E105, E106. Die Berichtigung der Konzepte (1.3, WK1–WK3) ist mit KK0 nachgezogen.
 
 ## 0. Das Ergebnis in Punkten
@@ -449,7 +449,7 @@ Wärmepumpe je Stunde, Kältenetz und Pumpen, Kühlung im Tagesbilanz-Weg, Ände
 ## 10. Logbuch-Entwürfe
 
 Je ein Satz, veröffentlicht mit dem gebündelten Wiki-Upload (Regel:
-[Konzept Hilfesystem](../Konzept_Hilfesystem_Wikidokumentation.md) 13.3 und 13.4); Datum und Versionsnummer setzt der Anwender.
+[Konzept Hilfesystem](../aktuell/Konzept_Hilfesystem_Wikidokumentation.md) 13.3 und 13.4); Datum und Versionsnummer setzt der Anwender.
 
 - (a) Auf der Kopplungsstufe AK3 kann das Gebäude eine raumgeführte Kühlkurve fahren; der Auslegungspunkt der Kurve ist wählbar.
 - (b) Im Mehrzonenmodell rechnet die Kühlübergabe je Zone; der Zonendialog zeigt ihre Felder.

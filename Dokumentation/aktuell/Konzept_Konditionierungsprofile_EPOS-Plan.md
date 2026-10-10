@@ -34,7 +34,7 @@
 > nachgezogen sind 8, 10.5 und 12.
 
 > **Fortgeschrieben am 02.10.2026 mit E58** (Leitkonzept N1.67, 9.8): Für KP3 liegt der
-> [Entwurf](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) vor; entschieden sind die Kappung bei Quelle
+> [Entwurf](../ueberholt/2026-10-02_Entwurf_KP3.md) vor; entschieden sind die Kappung bei Quelle
 > `Heizleistung_Max` (4.3), der Ausgangswert der Rampe nach gestufter Absenkung (4.1, 4.5), Variantenvergleich und
 > Kurzbericht (7.6), Zuschnitt des Referenzprojekts 1051 samt Nachtlüftung (10.2) und der Zeitpunkt des Einfrierens
 > (10.1); die Aufheizreserve ρ entscheidet der Anwender nach der Messung in RP1 (4.4). Der Entwurf veranschlagt KP3 mit
@@ -47,7 +47,7 @@
 > 4.6, 5.4 und 8.
 
 > **Nachgezogen 08.10.2026 — AK3-K (E103, E104) gebaut (Basis R43)** ([Register](Status_Gebaeudesimulation_VDI6007.md),
-> [Entwurf AK3-K](Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)): Das „aus“ der Heiz- und Kühlsollwertkalender samt
+> [Entwurf AK3-K](../ueberholt/2026-10-07_Entwurf_AK3-K.md)): Das „aus“ der Heiz- und Kühlsollwertkalender samt
 > Heiz- und Kühlperiode ist die **Freigabe** der Raumheizung und Raumkühlung je Zone und Tag; die Karte zeigt sie als
 > Jahresband im Reiter Konditionierung. Ist nur eine Seite frei, gilt sie; sind beide frei, wählt
 > die Tagessumme eines unbegrenzten Probetags; ist keine frei, wird die Zone an dem Tag nicht konditioniert. Kein
@@ -602,7 +602,7 @@ Die **letzte Stufe fällt in die Sprungstunde**: Der Zielwert steht zu Beginn de
 einen „sukzessiven Anstieg" verlangt und die Treppe als „+ x K je Stunde" lesbar und geschlossen bemessbar ist.
 
 **Ausgangswert θ_N (E58 F2).** θ_N ist der **kleinste endliche Sollwert im Fenster der Rampe** — den letzten
-min(D, t_auf,max + 1) Stunden vor h_s ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), Festlegung 9). Bei einfacher Nachtabsenkung ist das s(h_s − 1). Liegt
+min(D, t_auf,max + 1) Stunden vor h_s ([Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md), Festlegung 9). Bei einfacher Nachtabsenkung ist das s(h_s − 1). Liegt
 ein Wochenend- oder Ferienwert unter dem Nachtwert, entstehen zwei Anstiege (Mo 0 Uhr 16 → 18 °C, 6 Uhr 18 → 20 °C);
 die Massen kommen dann aus dem tieferen Wert, und die Rampe beginnt bei ihm — mit s(h_s − 1) läge die Spitze über
 P_auf (Prüfsatz +1,7 %, mit dem kleinsten Sollwert des Fensters n = 10 statt 2).
@@ -656,7 +656,7 @@ bemisst deshalb die **Augenblicksform** — die Leistung am Beginn der Sprungstu
 ```
 
 z ist die Ausgangszeile, Φ und Γ sind die Matrixfunktionen des geregelten Falls (über `Uebergangsrechner.Bei`), v =
-A⁻¹·ΔB ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), Abschnitt 2). Am Prüfsatz hält die Grenze 35,3 kW mit n = 7 statt 5; die Sprungstunde kappt bei festen
+A⁻¹·ΔB ([Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md), Abschnitt 2). Am Prüfsatz hält die Grenze 35,3 kW mit n = 7 statt 5; die Sprungstunde kappt bei festen
 Randwerten nicht.
 
 **Ablauf (F7):**
@@ -1070,7 +1070,7 @@ Grenzen, Inhalt nur in der eigenen Größe.
 **Einbau in `GebaeudeModellEingang`.** `ThetaSoll` = Heizkalender; nur mit Schalter formt die `Aufheizoptimierung` die
 fertige Heizreihe **nach dem Bauen** — im Einzonenweg in `Vdi6007Rechenweg.Rechnen` über `ZonenEingang.Einzeln`, im
 Mehrzonenweg am Ende von `ZonenEingang.Bauen` in beiden Aufbauten, denn erst dort stehen die Reihen der Nachbarn;
-`Bauen` selbst bleibt ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), Festlegung 1). `ThetaMax` = Kühlkalender, „aus" = +∞,
+`Bauen` selbst bleibt ([Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md), Festlegung 1). `ThetaMax` = Kühlkalender, „aus" = +∞,
 `GebaeudeModellErgebnis.KuehlSollwert` wird zur Reihe;
 `PhiConv` und `PhiRad*` bekommen je Stunde Q_G(h) + Q_P(h) statt der Konstante (`:810-811`). Der Luftwechsel geht mit
 seinem **Jahresminimum** in die Ersatzparameter, der Überschuss (n(h) − n_min) · V · ρc läuft je Stunde als
@@ -1366,7 +1366,7 @@ Ferienspalten werden dann aus den ersten vier Ferienperioden gespiegelt, solange
 | **KP0** | Dieses Konzept, die Entscheide E52 (N1.59) und E53 (N1.60), der Nachzug der Schwesterpapiere (2.3), die P_auf-Probe (4.4) und das Glossar (13) — abgeschlossen 27.09.2026 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün | nein | 1–2 |
 | **KP1** | KP-S1 (Kalender, Perioden, Vorgaben, Vorlagen), Vorgabematrix mit Kaskade, Generator mit fünf Spalten, Kalendermodell, Feiertage, Heiz- und Kühlperiode samt Folgen (Kopplung, Hinweis), Vererbung, fünf Reihen, Nachtauskühlung, stündliche Kühlprüfung, Controller für Matrix und Vorlagen je Größe, Kopierwege Katalog ↔ Projekt, KINDER, Auslieferungsvorlage samt Prüfbericht, Werkzeuge | KP0; Schemawellen von G6c gemergt | Kern-Gate, Proben und Datenbankfälle (6), Vorlagenlauf; Referenzlauf **byte-gleich** gegen R22 | nein | 13–18 |
 | **KP2** | Reiter „Konditionierung" in allen Modi: Matrix mit schmaler Anordnung, Zonenmatrix, Kalenderkarten mit Zeitfenster, „aus", Periodenliste, Werkzeugen und Teppichbild, Auswahlliste und „Als Vorlage speichern" je Karte, Vorlagenverwaltung mit fünf Listen, Saat der 14 ausgelieferten Vorlagen (KP-S1b), Katalogauswahl, Assistent, Ressourcen; Ferienumrechnung im Gemeinjahr (B13) — abgeschlossen 02.10.2026 in elf Wellen samt der Abkürzung „alle Größen" (E57; [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md), Festlegungen im Leitkonzept N1.66) | KP1 | bunit, ChartProben, Sichtabnahme Windows; byte-gleich — erfüllt bis auf die Sichtabnahme SA1, die beim Anwender aussteht (Referenzlauf byte-gleich gegen R29) | nein | 14–18; Entwurf: 19–22 (E56) |
-| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI ([Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), 9.8, 9.9). **Teilweise:** gebaut sind der Rechenweg (R1–R5 samt Aufschlag und manueller Aufheizzeit, Schritt 174), die Daten (D1, D2: Schritte 160, 161, Kennzahlen, Export, Auskunft), die Projekteinstellung (O1), das Referenzprojekt 1051 mit Wache und ρ-Messung (RP1) und die Basis R34 mit dem Erdreich nach DIN EN ISO 13370 (RP2); E64 mit EV1 (Reserve leer = 20 % mit Laufhinweis); offen sind O1b, O2, O3 und die Welle A ([Protokoll KP3](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md), Festlegungen im Leitkonzept N1.69) | KP2 | N-AH1–N-AH12; alle übrigen Projekte byte-gleich; A/B-Protokoll — erfüllt für die gebauten Wellen | **ja** (R34) | 6–9; Entwurf mit E58: 14–18,25; mit E59/E60: 16,75–21,75 |
+| **KP3** | Stufenformel, Nachweisband, Aufheizleistung, Bemessung, KP-S2, KP-S3, Ergebnis, Hinweise, Bericht, Export — samt Nachtauskühl- und Sommerlüftungsstunden (E54); neues Referenzprojekt über die Vorlagen- und Katalogübernahme, Einfrierregel, neue Basis, CI ([Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md), 9.8, 9.9). **Teilweise:** gebaut sind der Rechenweg (R1–R5 samt Aufschlag und manueller Aufheizzeit, Schritt 174), die Daten (D1, D2: Schritte 160, 161, Kennzahlen, Export, Auskunft), die Projekteinstellung (O1), das Referenzprojekt 1051 mit Wache und ρ-Messung (RP1) und die Basis R34 mit dem Erdreich nach DIN EN ISO 13370 (RP2); E64 mit EV1 (Reserve leer = 20 % mit Laufhinweis); offen sind O1b, O2, O3 und die Welle A ([Protokoll KP3](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md), Festlegungen im Leitkonzept N1.69) | KP2 | N-AH1–N-AH12; alle übrigen Projekte byte-gleich; A/B-Protokoll — erfüllt für die gebauten Wellen | **ja** (R34) | 6–9; Entwurf mit E58: 14–18,25; mit E59/E60: 16,75–21,75 |
 | **KP4** | Papiere nachziehen (Rechenschritte mit den Schritten K „Aufheizrampe" und L „Nachtauskühlung", Leitkonzept 4.4, 4.5 und N1.69, Softwarearchitektur, Status, Protokoll), Wiki-Quellen, Logbuch-Entwurf — **Papiere, Wiki-Quellen (10.4) und Logbuch-Entwurf (10.5) nachgezogen 04.10.2026**; Wiki-Upload gebündelt, Version beim Anwender | KP3 | Wiki-Suchmuster aus `CLAUDE.md` leer, Link-Wache grün | nein | 1–2 |
 | **K1a** | Kalenderbedienung Stufe 1 (E110, 7.8): Konzept 7.8 und 9.10, plattformfreie Datenschicht `Kalenderbedienung` im Kern (Wochenprofile, gekoppelte Zuordnung, Einzeltage, Schnellfelder, Monat- und Tageskopie, Jahresraster und Jahresband, Vorlage für alle Größen) | KP2 | Kern-Tests der Schicht; Referenzlauf 1051 und 1052 byte-gleich | nein | 1–2 |
 | **K1b** | Kalenderbedienung Stufe 1, Oberfläche: Wochenprofile, Zuordnung mit Jahresband, Einzeltage, Schnellfelder, Jahresraster im Reiter „Konditionierung", Hülle und Texte | K1a | bunit, Sichtabnahme; byte-gleich | nein | 2–3 |
@@ -1499,7 +1499,7 @@ entschieden. Der Entscheid und die Festlegungen seiner Umsetzung stehen im Nacht
 
 ### 9.8 Entscheide des Anwenders (E58, 02.10.2026)
 
-Acht Fragen aus dem [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) (Abschnitt 6), per Auswahl entschieden: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und
+Acht Fragen aus dem [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) (Abschnitt 6), per Auswahl entschieden: F1, F2, F5, F6 und F8 nach Empfehlung, **F3, F4 und
 F7 abweichend**. Der Entscheid steht als Nachtrag N1.67 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md);
 die Festlegungen der Umsetzung (Entwurf Abschnitt 5) folgen mit der Umsetzung als N1.69.
 
@@ -1519,7 +1519,7 @@ die Festlegungen der Umsetzung (Entwurf Abschnitt 5) folgen mit der Umsetzung al
 **E59** antwortet auf eine Vorgabe des Anwenders, nicht auf eine Frage des Papiers: „Die Rampe soll jeweils individuell
 für ein Gebäude ermittelt werden und nicht pauschal. Ein Aufschlag auf diesen Wert könnte sinnvoll sein
 (Benutzervorgabe). Außerdem soll es einen manuellen Wert als Eingabe geben — mit plausiblen Vorschlägen." Drei Rückfragen
-hat der Anwender beantwortet; im [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) steht die Vorgabe als F9
+hat der Anwender beantwortet; im [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) steht die Vorgabe als F9
 (Abschnitt 6), ihre Ausgestaltung als Festlegungen 34–40, 42 und 43 (Abschnitt 5). **E60** entscheidet Vorschlag 1 des
 [Konzepts Heizlastspitzen](Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md) (Abschnitt 5), im
 Entwurf Festlegung 41. Beide stehen als Nachtrag N1.68 im [Leitkonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md).
@@ -1592,7 +1592,7 @@ Vorlage „Büro" senkt die Lüftung nachts auf 0,1 1/h; das Skript übernimmt s
 danach die Nachtzeile der Lüftung mit der Nachtauskühlung — 2,0 1/h von 18 bis 7 Uhr, bedingt —, Wochenende und Ferien
 bleiben bei 0,1 1/h, die ausgelieferte Vorlage bleibt unverändert. Weil die Rampe mit der Vorgabe nur in gut
 gedämmten Bauten oder mit knapper `Heizleistung_Max` wirkt (4.5) und der Bau von 1007 sie nur an einem Morgen trägt,
-wird der Bau **per Probe mit dem echten Kern** gewählt (Strahlungsanteil 0,3; [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), Festlegung 31), so dass die Rampe
+wird der Bau **per Probe mit dem echten Kern** gewählt (Strahlungsanteil 0,3; [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md), Festlegung 31), so dass die Rampe
 an kalten Tagen greift. Die Nummer 1051 ist die nächste freie nach 1050 und wird beim Einfrieren gegen die
 Testdatenbank geprüft; das Skript liegt unter `Referenzlaeufe/Skripte/`, die CI rechnet das Projekt als achtes. Zonenkalender deckt das Projekt nur, wenn der Einfrierschritt
 mit G6d zusammenfällt (R8).
@@ -1698,7 +1698,7 @@ N1.55, N1.56, N1.59–N1.67); [Register](Offene_Entscheide_Gebaeudesimulation_EP
 [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md);
 [Protokoll G6b](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6b_Mehrzonenrechnung.md);
 [Entwurf KP2](../ueberholt/2026-09-29_Entwurf_KP2.md); [Protokoll KP2](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-30_KP2_Konditionierung_Oberflaeche.md);
-[Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md);
+[Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md);
 [Statusdatei der Migration](Status_iOS_Migration.md) #571 (Beleg der Sitzung „Dialoge und Korrekturen" zur
 Semantik der Sollwerte, Feldnamen und Wiki-Anker).
 

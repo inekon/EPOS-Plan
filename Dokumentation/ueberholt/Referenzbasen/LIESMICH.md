@@ -4052,7 +4052,7 @@ alle sechzehn. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **Nachtrag — Schemaschritte 160 und 161 (Aufheizoptimierung, Stufe KP3), Basis unverändert.** Reines DDL aus
 > `AufheizvorgabeSchema` (KP-S2, Nummer `KostenStempelSchema.SCHRITT + 1`) und `AufheizErgebnisSchema` (KP-S3,
 > Nummer `AufheizvorgabeSchema.SCHRITT + 1`), Spezifikation im
-> [Entwurf KP3](../../aktuell/Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), Abschnitt 4: an
+> [Entwurf KP3](../2026-10-02_Entwurf_KP3.md), Abschnitt 4: an
 > `Tab_Einstellungen` der Schalter `Aufheizoptimierung` (0/1, Vorgabe 0) und die nullbaren `Aufheiz_Bemessung`,
 > `Aufheiz_Abzug_K`, `Aufheiz_Reserve`, `Aufheiz_Art` (32 → 37 Spalten); an `Tab_ErgebnisGebaeude` (26 → 40) und
 > `Tab_ErgebnisZone` (15 → 29) je vierzehn nullbare Ergebnisspalten, alle mit ihren Prüfklauseln. Die Testdatenbank
@@ -4812,7 +4812,7 @@ Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R42 beschrieben �
 > Heizleistung und Leistungszahl je für sich, die elektrische Leistung folgt als Quotient (I-1); auf einer Stützstelle
 > rechnet deren Kennlinie, außerhalb gilt die Randregel (I-2); die Kälteseite interpoliert ebenso zwischen den
 > Kühl-Vorläufen (I-3). Das ist eine **EPOS-Lesart** in Anlehnung an VDI 4650 Blatt 1 (Ausgabe 2024) Abschnitt 5 und
-> DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6 ([Entwurf AK3](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md)
+> DIN EN 14825:2023-10 Abschnitte 5.6 und 7.6 ([Entwurf AK3](../2026-10-07_Entwurf_AK3.md)
 > Abschnitt 3); das Halten der obersten Kennlinie über der höchsten Stützstelle benennt der Lauf je Gerät im Hinweis.
 > Wirkung haben nur die gekoppelten Projekte mit Wärmepumpe: Ihr Vorlauf folgt der Heizkurve und liegt meist zwischen
 > zwei Stützstellen; alle ungekoppelten Vorläufe liegen auf einer Stützstelle, der Kühl-Vorlauf 18 °C ist eine.
@@ -4841,7 +4841,7 @@ Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R42 beschrieben �
 >   --ziel Referenzlaeufe/2026-10-07_R42_Vorlaufinterpolation_AK3
 > ```
 >
-> Die Regeln stehen im [Entwurf AK3](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md) Abschnitt 3
+> Die Regeln stehen im [Entwurf AK3](../2026-10-07_Entwurf_AK3.md) Abschnitt 3
 > und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 6.3.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
@@ -4902,7 +4902,7 @@ Der Abschnitt „Aktuelle Basis“ hat am 07.10.2026 die Basis R43 beschrieben �
 >   --ziel Referenzlaeufe/2026-10-07_R43_Kaelteseite_AK3K
 > ```
 >
-> Die Regeln stehen im [Entwurf AK3-K](../../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3-K.md)
+> Die Regeln stehen im [Entwurf AK3-K](../2026-10-07_Entwurf_AK3-K.md)
 > Abschnitte 3 und 4 und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
 >
 > **Schemastand:** Die Kennzahlen der Zonensperre und der Kälteseite legt der Schritt **201** `Ak3KSchema` an (Nachtrag
@@ -4985,7 +4985,7 @@ sechsundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >   --ziel Referenzlaeufe/2026-10-08_R44_Kuehlkurve
 > ```
 >
-> Die Regeln stehen im [Entwurf KK](../../aktuell/Gebaeudesimulation/2026-10-08_Entwurf_KK_Kuehlkurve.md)
+> Die Regeln stehen im [Entwurf KK](../2026-10-08_Entwurf_KK_Kuehlkurve.md)
 > und im [Konzept Anlagenkopplung](../../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md).
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

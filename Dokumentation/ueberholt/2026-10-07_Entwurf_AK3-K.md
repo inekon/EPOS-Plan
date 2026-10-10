@@ -13,11 +13,11 @@ Schemaschritt heißt hier **S1** (Ergebnisspalten, Welle K4; gebaut als Schritt 
 Bau. **Verfahren:** zwei Leser (L1: Laufordnung der Kälte, Nähte, Zustand, Rechenzeit mit Messung, Fehler im gebauten AK3;
 L2: Papiere, Widersprüche, Fragen, Basis, Tests, Wellen), Stichproben ihrer Aussagen am Code, an `kern.yml` und an der
 Basis R42, Synthese in diesem Papier; wo die Leser sich widersprachen, gilt der Code (1058 steht in der CI-Auswahl).
-**Grundlage:** [Anlagenkopplung](../Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 5.3, 7.1–7.4, 8.1, 10.5;
-[Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.5, 5.1–5.5, 12.2;
-[Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.1, 3.2, 5.1;
-[ADR-005](../ADR-005_Zonenkopplung_Mehrzonenmodell.md); [Entwurf AK3](2026-10-07_Entwurf_AK3.md) Festlegungen 4, 10, 18;
-[Register](../Status_Gebaeudesimulation_VDI6007.md) E37, E53, E102, E103, E104. **Die Konzepte werden mit diesem Papier
+**Grundlage:** [Anlagenkopplung](../aktuell/Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 5.3, 7.1–7.4, 8.1, 10.5;
+[Kühlkonzept](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.5, 5.1–5.5, 12.2;
+[Konditionierungsprofile](../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md) 3.1, 3.2, 5.1;
+[ADR-005](../aktuell/ADR-005_Zonenkopplung_Mehrzonenmodell.md); [Entwurf AK3](2026-10-07_Entwurf_AK3.md) Festlegungen 4, 10, 18;
+[Register](../aktuell/Status_Gebaeudesimulation_VDI6007.md) E37, E53, E102, E103, E104. **Die Konzepte werden mit diesem Papier
 nicht geändert;** ihre Berichtigungen (Abschnitt 1.3) zieht die Welle K0 nach.
 
 ## 0. Das Ergebnis in Punkten
@@ -434,7 +434,7 @@ Kälte-Rückwirkung auf AK1/AK2, Kühlung im Tagesbilanz-Weg.
 ## 11. Logbuch-Entwürfe
 
 Je ein Satz, veröffentlicht mit dem gebündelten Wiki-Upload (Regel:
-[Konzept Hilfesystem](../Konzept_Hilfesystem_Wikidokumentation.md) 13.3); Datum und Versionsnummer setzt der Anwender.
+[Konzept Hilfesystem](../aktuell/Konzept_Hilfesystem_Wikidokumentation.md) 13.3); Datum und Versionsnummer setzt der Anwender.
 
 - (a) Eine Zone wird an einem Tag entweder geheizt oder gekühlt, nie beides; der Kalender schaltet Heizen und Kühlen
   frei, das Jahresband der Freigabe steht im Reiter Konditionierung.
