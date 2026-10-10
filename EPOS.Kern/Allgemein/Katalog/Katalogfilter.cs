@@ -161,7 +161,8 @@ namespace WindowsFormsApplication1
         /// Suchmuster; der Anwender tippt gerade.</para>
         /// <para><b>Text- und Kennzeichenspalte:</b> Teilzeichenkette ueber
         /// <see cref="VdiAuswahlFilter.Passt"/>; mit <c>*</c> oder <c>?</c> geht der
-        /// Ausdruck durch <see cref="Suchmuster"/>.</para>
+        /// Ausdruck durch <see cref="Suchmuster"/>; ein vorangestelltes
+        /// <see cref="Katalogfilterprofil.AUSDRUCK_NICHT"/> verneint ihn.</para>
         /// <para><b>Jede Spalte:</b> <see cref="Katalogfilterprofil.AUSDRUCK_LEER"/> (<c>=</c>
         /// allein) trifft genau die Zellen ohne Wert — die Zahl fehlt bzw. der Text ist leer oder
         /// der Leerwert (Halbgeviertstrich).</para>
@@ -182,6 +183,14 @@ namespace WindowsFormsApplication1
                 Zahlenbedingung bedingung = Zahlenausdruck.Lesen(a);
                 if (bedingung == null) return true;          // unverstanden = kein Filter
                 return bedingung.Trifft(wert.Zahl);
+            }
+
+            // Die VERNEINUNG einer Textspalte: „!Typkennfeld" trifft jede Zelle, die der
+            // Rest NICHT trifft. Ein „!" allein ist kein Filter - der Anwender tippt gerade.
+            if (a.StartsWith(Katalogfilterprofil.AUSDRUCK_NICHT, StringComparison.Ordinal))
+            {
+                string rest = a.Substring(Katalogfilterprofil.AUSDRUCK_NICHT.Length).Trim();
+                return rest.Length == 0 || !TextTrifft(rest, wert.Text);
             }
 
             return TextTrifft(a, wert.Text);

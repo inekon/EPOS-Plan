@@ -45425,6 +45425,18 @@ Chart</value>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(keine Angabe)</value>
   </data>
+  <data name="KM_HERKUNFT_TYPKENNFELD" xml:space="preserve">
+    <value>Typkennfeld</value>
+  </data>
+  <data name="KM_HERKUNFT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferung</value>
+  </data>
+  <data name="KM_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>eigen</value>
+  </data>
+  <data name="KM_CHK_OHNE_TYPKENNFELDER" xml:space="preserve">
+    <value>Typkennfelder ausblenden</value>
+  </data>
   <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
     <value>Luftgekühlt</value>
   </data>

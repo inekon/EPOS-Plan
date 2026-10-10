@@ -54,7 +54,16 @@
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
-                          GewaehlteChanged="BeiKaestchen" />
+                          GewaehlteChanged="BeiKaestchen">
+                <Werkzeug>
+                    @* "TYPKENNFELDER AUSBLENDEN" nach dem Muster "nur mit Kuehlfunktion" der
+                       Waermepumpenverwaltung: kein eigener Zustand, der Schalter setzt den
+                       verneinten Trichter auf die Spalte Herkunft (KaeltemaschineStammCtrl.
+                       AusdruckOhneTypkennfelder) - "Filter zuruecksetzen" nimmt ihn mit. *@
+                    <Schalter Bezeichnung="@Texte.SchalterOhneTypkennfelder" Wert="@OhneTypkennfelder"
+                              WertChanged="OhneTypkennfelderGesetzt" />
+                </Werkzeug>
+            </Katalogliste>
         </Liste>
 
         <Auswahl>
@@ -387,6 +396,19 @@
     private Katalogfilterprofil? _profil;
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private Katalogfilterstand _filterstand = new();
+
+    /// <summary>
+    /// Steht „Typkennfelder ausblenden"? <b>Der Schalter führt keinen eigenen Zustand</b> — er LIEST den
+    /// Filterstand (Muster <c>WaermepumpeStammDialog.NurMitKuehlung</c>): „Filter zurücksetzen" und der Trichter
+    /// der Spalte Herkunft ändern denselben Stand.
+    /// </summary>
+    public bool OhneTypkennfelder
+        => _filterstand.Ausdruck(Katalogfilterprofil.SpHerkunft) == KaeltemaschineStammCtrl.AusdruckOhneTypkennfelder;
+
+    /// <summary>Setzt bzw. nimmt den verneinten Ausdruck „!Typkennfeld" auf der Spalte Herkunft.</summary>
+    private void OhneTypkennfelderGesetzt(bool wert)
+        => _filterstand.Setzen(Katalogfilterprofil.SpHerkunft,
+                               wert ? KaeltemaschineStammCtrl.AusdruckOhneTypkennfelder : "");
     private string _gewaehlt = "";
     private bool _auslieferung;
 

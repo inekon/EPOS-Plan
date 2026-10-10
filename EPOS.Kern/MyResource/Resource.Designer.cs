@@ -74392,6 +74392,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder ausblenden ähnelt.
+        /// </summary>
+        public static string KM_CHK_OHNE_TYPKENNFELDER {
+            get {
+                return ResourceManager.GetString("KM_CHK_OHNE_TYPKENNFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ gelöscht werden? ähnelt.
         /// </summary>
         public static string KM_FRAGE_LOESCHEN {
@@ -74415,6 +74424,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_GRUPPE_KENNLINIE {
             get {
                 return ResourceManager.GetString("KM_GRUPPE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferung ähnelt.
+        /// </summary>
+        public static string KM_HERKUNFT_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("KM_HERKUNFT_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigen ähnelt.
+        /// </summary>
+        public static string KM_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("KM_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfeld ähnelt.
+        /// </summary>
+        public static string KM_HERKUNFT_TYPKENNFELD {
+            get {
+                return ResourceManager.GetString("KM_HERKUNFT_TYPKENNFELD", resourceCulture);
             }
         }
         

@@ -39,7 +39,9 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         internal bool? Geschlossen;
         private int _naechste = 100;
 
-        internal Katalog()
+        /// <param name="mitTypkennfeldern">Dazu die 34 eingebauten Typkennfelder als Auslieferungssätze — der Stand
+        /// der Testdatenbank (37 Sätze).</param>
+        internal Katalog(bool mitTypkennfeldern = false)
         {
             Saetze = KaeltemaschineSchema.SAAT.Select((g, i) => KaeltemaschineKatalogHuelle.AlsDaten(new KaeltemaschineModel
             {
@@ -59,6 +61,14 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
                     EER = p.Eer, Kaelteleistung_kW = p.Leistung
                 }).ToList()
             })).ToList();
+            if (!mitTypkennfeldern) return;
+            foreach (KaeltemaschinenTypkennfelder.Typkennfeld tk in KaeltemaschinenTypkennfelder.Lesen())
+            {
+                KaeltemaschineModel m = tk.Modell();
+                m.Id = Saetze.Count + 1;
+                m.ReadOnly = true;
+                Saetze.Add(KaeltemaschineKatalogHuelle.AlsDaten(m));
+            }
         }
 
         internal IReadOnlyList<Katalogfilterzeile> Zeilen()
@@ -75,7 +85,9 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
                         .MitText(Katalogfilterprofil.SpTyp, s.Typ)
                         .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, s.Nennkaelteleistung, 1)
                         .MitZahl(Katalogfilterprofil.SpEer, s.NennEer, 2)
-                        .MitText(Katalogfilterprofil.SpRueckkuehlart, KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart));
+                        .MitText(Katalogfilterprofil.SpRueckkuehlart, KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart))
+                        // Der Stub kennt keinen Katalogschlüssel; ausgeliefert ist hier, was das Schloss trägt.
+                        .MitText(Katalogfilterprofil.SpHerkunft, KaeltemaschineStammCtrl.HerkunftText(s.Typ, s.Auslieferung));
                 })
                 .ToList();
 
@@ -160,6 +172,88 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
     // =================================================================================
     // Liste und Gerüst
     // =================================================================================
+
+    /// <summary>
+    /// KD-1: die Spalten in der Folge der Wärmepumpe — Hersteller vor dem Bezeichner, dahinter Kälteleistung,
+    /// EER, Rückkühlung, Herkunft, Typ —, das Schloss am Bezeichner und die Herkunft je Satzart.
+    /// </summary>
+    [Fact]
+    public void Die_Liste_fuehrt_die_Spalten_der_Waermepumpe_und_die_Herkunft()
+    {
+        var cut = Aufbauen(new Katalog(mitTypkennfeldern: true));
+
+        List<string> koepfe = cut.FindAll(".epos-katalogliste thead th").Select(th => th.TextContent).ToList();
+        int Platz(string titel) => koepfe.FindIndex(k => k.Contains(titel, StringComparison.Ordinal));
+        Assert.True(Platz(R.KFLT_SP_HERSTELLER) < Platz(R.KFLT_SP_BEZEICHNER));
+        Assert.True(Platz(R.KFLT_SP_BEZEICHNER) < Platz(R.KFLT_SP_NENNKAELTELEISTUNG));
+        Assert.True(Platz(R.KFLT_SP_NENNKAELTELEISTUNG) < Platz(R.KFLT_SP_EER));
+        Assert.True(Platz(R.KFLT_SP_EER) < Platz(R.KFLT_SP_RUECKKUEHLART));
+        Assert.True(Platz(R.KFLT_SP_RUECKKUEHLART) < Platz(R.KFLT_SP_HERKUNFT));
+        Assert.True(Platz(R.KFLT_SP_HERKUNFT) < Platz(R.KFLT_SP_TYP));
+
+        string koerper = cut.Find(".epos-katalogliste tbody").TextContent;
+        Assert.Contains(R.KM_HERKUNFT_TYPKENNFELD, koerper);
+        Assert.Contains(R.KM_HERKUNFT_AUSLIEFERUNG, koerper);
+    }
+
+    /// <summary>
+    /// KD-1: „Typkennfelder ausblenden" steht in der Werkzeugleiste der Liste — Muster „nur mit Kühlfunktion" der
+    /// Wärmepumpe. Er setzt den verneinten Trichter auf die Spalte Herkunft, der Zähler folgt (3 von 37 — der
+    /// Stand der Testdatenbank), und „Filter zurücksetzen" nimmt ihn mit.
+    /// </summary>
+    [Fact]
+    public void Der_Typkennfeldschalter_setzt_den_Trichter_der_Herkunft()
+    {
+        var stand = new Katalogfilterstand();
+        var k = new Katalog(mitTypkennfeldern: true);
+        var cut = Render<KaeltemaschineKatalogDialog>(b => b
+            .Add(x => x.Katalogzeilen, k.Zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine,
+                s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, stand)
+            .Add(x => x.Rueckkuehlarten, KaeltemaschineKatalogHuelle.Rueckkuehlarten())
+            .Add(x => x.Lies, id => k.Saetze.First(s => s.Id == id).Kopie())
+            .Add(x => x.Pruefen, KaeltemaschineKatalogHuelle.Pruefen));
+        Assert.Equal("37 von 37 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+
+        Assert.Contains(R.KM_CHK_OHNE_TYPKENNFELDER, cut.Find(".epos-katalog-werkzeug").TextContent);
+        Assert.False(cut.Instance.OhneTypkennfelder);
+
+        cut.Find(".epos-katalog-suchzeile .epos-katalog-werkzeug input[type=checkbox]").Change(true);
+
+        Assert.True(cut.Instance.OhneTypkennfelder);
+        Assert.Equal("!Typkennfeld", stand.Ausdruck(Katalogfilterprofil.SpHerkunft));
+        Assert.Equal("3 von 37 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        string koerper = cut.Find(".epos-katalogliste tbody").TextContent;
+        Assert.DoesNotContain(R.KM_HERKUNFT_TYPKENNFELD, koerper);
+        Assert.All(KaeltemaschineSchema.SAAT, g => Assert.Contains(g.Bezeichner, koerper));
+
+        cut.Find(".epos-katalog-ruecksetzer").Click();
+        Assert.False(cut.Instance.OhneTypkennfelder);
+        Assert.Equal("37 von 37 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+    }
+
+    /// <summary>
+    /// KD-1: ab welcher Listenbreite die weichenden Spalten stehen (<see cref="Spaltenraenge"/>, mit Kästchenspalte,
+    /// über die 37 Sätze der Testdatenbank). Bezeichner und Kälteleistung stehen immer; Hersteller, EER, Rückkühlung
+    /// und Herkunft kommen in dieser Folge dazu, der Typ zuletzt.
+    /// </summary>
+    [Fact]
+    public void Die_Spaltenstufen_folgen_dem_Rang_des_Profils()
+    {
+        Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, s => R.ResourceManager.GetString(s) ?? s);
+        IReadOnlyList<Katalogfilterzeile> zeilen = new Katalog(mitTypkennfeldern: true).Zeilen();
+
+        Dictionary<string, int> stufen = Spaltenraenge.Stufen(profil, Spaltenraenge.Laengen(profil, zeilen), _ => false);
+
+        Assert.Equal(0, stufen[Katalogfilterprofil.SpBezeichner]);
+        Assert.Equal(0, stufen[Katalogfilterprofil.SpNennkaelteleistung]);
+        Assert.Equal(640, stufen[Katalogfilterprofil.SpHersteller]);
+        Assert.Equal(720, stufen[Katalogfilterprofil.SpEer]);
+        Assert.Equal(800, stufen[Katalogfilterprofil.SpRueckkuehlart]);
+        Assert.Equal(960, stufen[Katalogfilterprofil.SpHerkunft]);
+        Assert.Equal(1040, stufen[Katalogfilterprofil.SpTyp]);
+    }
 
     [Fact]
     public void Die_Liste_zeigt_die_drei_gesaeten_Geraete_mit_den_Spalten_des_Kerns()
