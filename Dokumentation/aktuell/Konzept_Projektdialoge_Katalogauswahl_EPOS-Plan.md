@@ -509,7 +509,8 @@ Die Wärmepumpe folgt dem BHKW (5.4); hier steht nur, was abweicht.
   sie ins Modell, Abbrechen setzt sie auf den Stand beim Öffnen zurück. Eine einzeln übernommene Zeile öffnet ihre Anlage
   sofort (Betriebsart, Temperaturen, Sperrzeit, Heizstab); das OK des Dialogs hält bei einer neuen, noch nicht bestätigten
   Zeile an und öffnet deren Anlage. Die Detailzeile zeigt die Kenndaten des Satzes und die Kennlinie (COP, Leistung) wie
-  das Stammblatt, beim Projektsatz dazu die Kostenknöpfe und „Anlage…“.
+  das Stammblatt, beim Projektsatz dazu die Kostenknöpfe und „Anlage…“. Die Überlagerung zeigt die Kostenknöpfe nicht noch einmal
+  (`KostenleisteAnzeigen="false"`); nur das eigene Fenster der Anlagenseite behält ihre Kostenleiste.
 - **Knöpfe:** Projekt-Kopfleiste „Umstellen“ (genau eine Projektzeile auf genau einen Katalogsatz; Gerät, Gerätefelder und
   Kennlinien wechseln, Betriebsdaten und Kosten der Anlage bleiben), „Bearbeiten…“, „In die Datenbank übernehmen…“,
   Entfernen. Katalogfuß Schloss, Löschen, Bearbeiten — ohne Vergleichen und ohne Neu (beides trägt der Katalogeditor).

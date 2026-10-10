@@ -83,12 +83,13 @@ public class WaermepumpenDialogTests : EposBunitContext
         Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null,
         Func<int, string>? katalogLoeschen = null,
         Rueckwegwege? rueckweg = null,
-        Func<WaermepumpeAnlageDaten, bool, Task>? kosten = null)
+        Func<WaermepumpeAnlageDaten, bool, Task>? kosten = null,
+        Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>? anlageGaben = null)
         => Render<WaermepumpenDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
             .Add(x => x.Katalog, () => katalog ?? Katalog)
             .Add(x => x.Katalogprofil, Katalogprofil)
-            .Add(x => x.AnlageGaben, d => AnlageGaben(d, mangel))
+            .Add(x => x.AnlageGaben, anlageGaben ?? (d => AnlageGaben(d, mangel)))
             .Add(x => x.Anlegen, anlegen ?? (n => Zeile(n, 20)))
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.Entfernen, entfernen)
@@ -323,6 +324,31 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-wp-anlage-ueberlagerung .epos-wp-anlage"));
         Assert.Contains("WP Alpha", cut.Find(".epos-wp-anlage-ueberlagerung .epos-dialog-titel").TextContent);
         Assert.Contains("Konfiguration…", cut.FindAll(".epos-wp-anlage-ueberlagerung button").Select(b => b.TextContent.Trim()));
+    }
+
+    /// <summary>
+    /// Eine Handlung, ein Ort: Die Kostenknöpfe des Projektsatzes stehen in der
+    /// Detailzeile; die Überlagerung „Anlage…“ zeigt sie nicht noch einmal — auch dann
+    /// nicht, wenn die Hülle ihr die Kostenwege mitgibt.
+    /// </summary>
+    [Fact]
+    public void Anlage_Ueberlagerung_zeigt_keine_Kostenknoepfe_die_Detailzeile_traegt_sie()
+    {
+        var cut = Aufbauen(
+            kosten: (_, _) => Task.CompletedTask,
+            anlageGaben: d => new Dictionary<string, object>(AnlageGaben(d))
+            {
+                ["KostenBereit"] = new Func<bool>(() => true),
+                ["KostenOeffnen"] = new Func<bool, Task>(_ => Task.CompletedTask)
+            });
+        Assert.NotEmpty(cut.FindAll(".epos-kostenleiste button.epos-knopf"));
+
+        Knopf(cut, "Anlage…").Click();
+
+        Assert.True(cut.Instance.DetailOffen);
+        Assert.Empty(cut.FindAll(".epos-wp-anlage-ueberlagerung .epos-kostenleiste button.epos-knopf"));
+        Assert.NotEmpty(cut.FindAll(".epos-kostenleiste button.epos-knopf")
+            .Where(k => k.Closest(".epos-wp-anlage-ueberlagerung") is null));
     }
 
     [Fact]
