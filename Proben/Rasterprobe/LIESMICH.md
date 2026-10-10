@@ -1331,3 +1331,31 @@ Linie und Zeile nach einem Rundlauf selbst, und die Linie steht nicht im Bild de
 **Ergebnis vom 10.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): Stufe ×12, 41 Schritte,
 größter Abstand **0,50 px**, Zeile mit Datum **41/41**, 3 Pfade, **0 Mutationen** — Rückgabe 0. Gegenprobe:
 13 von 41 Schritten über 1 px (verfehlt, richtig).
+
+---
+
+## Tabellenprobe (Ergebnistabellen der Simulation, Auftrag TA) — Seite `/tabellenprobe`
+
+**Wozu.** In den Ergebnistabellen der Simulationsreiter standen die Köpfe links über breiten Spalten, die Werte
+rechts am Zellenrand — Kopf und Wert lagen nicht übereinander. Die Regel: Eine Zahlenspalte trägt
+`.epos-simerg-zahl` an Kopf **und** Zellen (rechtsbündig), eine Textspalte an keinem (linksbündig); die Tabelle
+(`table.epos-simerg-tabelle`) nimmt die Breite ihres Inhalts, jede ihre eigene. bunit prüft die Klassen
+(`EPOS.UI.Tests/Seiten/Tabellenausrichtung.cs`), nicht die Lage; die Probe misst sie im Chromium. Die Seite stellt
+den echten `WaermepumpeReiter` mit einem Modul und zwei Speichern.
+
+```bash
+node tabellenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--ohne-gegenprobe]
+```
+
+**Sollwerte.** Fälle 1280 px, 1280 px mit Rahmen 760 px, 480 px. Je Tabelle (Modul, Speicher) und Zahlenspalte:
+**|rechter Rand des Kopftexts − rechter Rand des Werts| ≤ 2 px** in jeder Datenzeile; je Textspalte dasselbe für
+die linken Ränder. Passt der Inhalt in den Behälter, ist die Tabelle **nicht breiter als ihr Inhalt**
+(`width: max-content` + 1 px) — der Flex-Block `.epos-simerg-block` dehnte sie sonst auf volle Breite.
+`TABELLENPROBE_JSON=1` hängt die Rohwerte an. Rückgabe `0`/`1`/`2` wie oben.
+
+**Gegenprobe** (läuft mit): dieselbe Seite mit der alten Regel (Zahlenköpfe links, Tabelle 100 % breit) — sie muss
+verfehlen.
+
+**Ergebnis vom 10.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): 6 + 6 Zahlenspalten, größter
+Abstand **0,00 px** in allen drei Fällen, Breiten 948 / 1037 px statt 1280 px — Rückgabe 0. Gegenprobe:
+12 Verstöße, größter Abstand 61,84 px (verfehlt, richtig).

@@ -143,18 +143,18 @@
 
         @if (Daten.Module.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
-                        <th scope="col">@Resource.SIM_SPALTE_SOLARKOLLEKTOR</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_SOLARKOLLEKTOR</th>
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
-                        <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
-                        <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_FLAECHE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_ANZAHL</th>
                         @* Je Kollektorfeld dieselbe Gliederung wie die Tafel oben:
                            brutto = genutzt + Ueberschuss (Summe der ANGEZEIGTEN Teile). *@
-                        <th scope="col">@Resource.SIM_SPALTE_SOLAR_BRUTTO</th>
-                        <th scope="col">@Resource.SIM_SPALTE_SOLAR_GENUTZT</th>
-                        <th scope="col">@Resource.SIM_SPALTE_UEBERSCHUSS</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_SOLAR_BRUTTO</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_SOLAR_GENUTZT</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_UEBERSCHUSS</th>
                     </tr>
                 </thead>
                 <tbody>

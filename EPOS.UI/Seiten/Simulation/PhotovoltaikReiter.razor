@@ -179,18 +179,18 @@
            und der Reiter sieht aus wie bisher. *@
         @if (Daten.Wechselrichter.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
                         <th scope="col">@Resource.SIMERG_TITEL_PV_WR</th>
                         <th scope="col">@Resource.SIMERG_SPALTE_WR_GERAET</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_DCAC</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_ERTRAG</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING_PROZENT</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_VOLLLAST</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NUTZUNGSGRAD</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NACHT</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_DCAC</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_ERTRAG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_CLIPPING</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_CLIPPING_PROZENT</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_VOLLLAST</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_NUTZUNGSGRAD</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_NACHT</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -214,14 +214,14 @@
 
         @if (Daten.Module.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
-                        <th scope="col">@Resource.SIM_PHOTOVOLTAIK</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_PHOTOVOLTAIK</th>
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
-                        <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
-                        <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
-                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_FLAECHE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_ANZAHL</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
                     </tr>
                 </thead>
                 <tbody>

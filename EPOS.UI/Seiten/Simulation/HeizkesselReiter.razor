@@ -204,25 +204,25 @@
                 <Vorlagenfeldknopf Vorlagenfeld="stand.tabelle.heizkessel" Stufe="Vorlagenfeldstufe.Aehnlich"
                                    StufenHinweis="@Resource.VF_ORT_KESSELTAFEL" />
             </div>
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
-                        <th scope="col">@Resource.SIM_ERZEUGERNAME_HEIZKESSEL</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_ERZEUGERNAME_HEIZKESSEL</th>
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
-                        <th scope="col">@Resource.SIM_SPALTE_BRENNSTOFFE</th>
-                        <th scope="col">@Resource.SIM_SPALTE_OEL</th>
-                        <th scope="col">@Resource.SIM_SPALTE_JAHRESNUTZUNGSGRAD</th>
-                        <th scope="col" title="@BetriebHinweis">@Resource.SIM_SPALTE_STARTS</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_BRENNSTOFFE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_OEL</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_JAHRESNUTZUNGSGRAD</th>
+                        <th scope="col" class="epos-simerg-zahl" title="@BetriebHinweis">@Resource.SIM_SPALTE_STARTS</th>
                         @if (Daten.MitKennlinie)
                         {
-                            <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_ETA30</th>
-                            <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_WIRKUNGSGRAD_BETRIEB</th>
-                            <th scope="col" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_LASTSTUFE</th>
+                            <th scope="col" class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_ETA30</th>
+                            <th scope="col" class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_WIRKUNGSGRAD_BETRIEB</th>
+                            <th scope="col" class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_KENNLINIE_SPK">@Resource.SIM_SPALTE_LASTSTUFE</th>
                         }
                         @if (Daten.MitBrennwertkennlinie)
                         {
-                            <th scope="col" title="@Resource.SIMERG_TIP_BRENNWERT_SPK">@Resource.SIM_SPALTE_RUECKLAUF_MITTEL</th>
-                            <th scope="col" title="@Resource.SIMERG_TIP_BRENNWERT_SPK">@Resource.SIM_SPALTE_BRENNWERTANTEIL</th>
+                            <th scope="col" class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_BRENNWERT_SPK">@Resource.SIM_SPALTE_RUECKLAUF_MITTEL</th>
+                            <th scope="col" class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_BRENNWERT_SPK">@Resource.SIM_SPALTE_BRENNWERTANTEIL</th>
                         }
                     </tr>
                 </thead>

@@ -1023,4 +1023,34 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.DoesNotContain("word-break", block, StringComparison.Ordinal);
         Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
     }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Die Übersicht folgt derselben Regel mit eigener Sprache: Ihre Köpfe
+    /// stehen rechts, nur Namens- und Textspalten links — Kopf und Zelle tragen
+    /// dieselbe Klasse (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Uebersichtstabellen_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var tabellen = Zeichnen(Daten()).FindAll("table.epos-simueb-tabelle");
+        Assert.NotEmpty(tabellen);
+        foreach (var tabelle in tabellen)
+        {
+            var koepfe = tabelle.QuerySelectorAll("thead tr").Last().Children
+                .Where(c => c.LocalName == "th").ToArray();
+            static string Seite(AngleSharp.Dom.IElement z)
+                => z.ClassList.Contains("epos-simueb-name") || z.ClassList.Contains("epos-simueb-text")
+                    ? "links" : "rechts";
+            Assert.Equal("links", Seite(koepfe[0]));
+            foreach (var zeile in tabelle.QuerySelectorAll("tbody tr"))
+            {
+                var zellen = zeile.Children.ToArray();
+                if (zellen.Length != koepfe.Length || zellen.Any(z => z.HasAttribute("colspan"))) continue;
+                for (int i = 0; i < koepfe.Length; i++)
+                    Assert.Equal(Seite(koepfe[i]), Seite(zellen[i]));
+            }
+        }
+    }
 }
