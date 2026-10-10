@@ -251,7 +251,7 @@ public sealed class FensterrahmenTests : EposBunitContext
     {
         string kopf = Regelblock(ANKER + " > .epos-dialog-kopf:first-child {");
         Assert.Contains("position: sticky;", kopf);
-        Assert.Contains("top: 0;", kopf);
+        Assert.Contains("top: var(--epos-sicher-oben);", kopf);   // unter Windows 0
         Assert.Contains("background: var(--epos-karte-flaeche);", kopf);
         Assert.Contains("border-bottom: 1px solid var(--epos-rahmen-leise);", kopf);
         Assert.InRange(ZIndex(kopf), 1, 39);
@@ -261,7 +261,7 @@ public sealed class FensterrahmenTests : EposBunitContext
         string fuss = Regelblock(ANKER + " > .epos-leiste:has(> .epos-knopf--primaer),\n"
                                  + ANKER + " > .epos-dialog-fuss {");
         Assert.Contains("position: sticky;", fuss);
-        Assert.Contains("bottom: 0;", fuss);
+        Assert.Contains("bottom: var(--epos-sicher-unten);", fuss);   // unter Windows 0
         Assert.Contains("background: var(--epos-karte-flaeche);", fuss);
         Assert.Contains("border-top: 1px solid var(--epos-rahmen-leise);", fuss);
         Assert.InRange(ZIndex(fuss), 1, 39);

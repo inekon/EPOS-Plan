@@ -23,6 +23,15 @@
 // (Rollbalken): ein 400 px hoher Klotz im Dialog muss den Dialogkoerper rollen lassen und die
 // Schlussleiste erreichbar halten; derselbe Klotz mit overflow: hidden muss rot werden.
 //
+// IPAD 11 ZOLL: vier weitere Fenster - 1 180 x 820 (iPad Air 11"), 1 194 x 834 (iPad Pro 11"),
+// 1 210 x 834 (iPad Pro 11" M4) quer und 834 x 1 194 hochkant, jeweils MIT den sicheren Abstaenden des
+// iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px). Die Probe setzt dafuer die zwei Token des
+// Themas (:root{--epos-sicher-oben:24px;--epos-sicher-unten:20px}), nicht env(). Dort gilt zusaetzlich:
+// der Dialog steht ganz zwischen den Abstaenden, eine offene Ueberlagerung ebenso, und jeder Knopf der
+// Schlussleiste liegt ueber der Home-Anzeige. Die AppWurzel zeigt auf iOS keine Kopfleiste (sie ist dort
+// leer); ein weiterer oberer Abzug entfaellt. Dritte Gegenprobe (sichere Abstaende): dasselbe Fenster
+// 1 194 x 834 OHNE die Token - der Dialog reicht unter Statusleiste und Home-Anzeige und muss rot werden.
+//
 // Aufruf: node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe] [--fotos <ordner>]
 // Rueckgabe 0 = kein Verstoss und Gegenprobe rot, 1 = Verstoss oder Gegenprobe gruen, 2 = Aufbaufehler.
 
@@ -44,12 +53,18 @@ const WURZEL = arg('url', 'http://127.0.0.1:5299');
 const NUR = arg('nur', '');
 const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
 const FOTOS = arg('fotos', '');
-const KOMPAKT = '(max-width: 1199.98px), (max-height: 799.98px)';   // Medienabfrage der Kompaktstufe (epos-ui.css)
+const KOMPAKT = '(max-width: 1279.98px), (max-height: 799.98px)';   // Medienabfrage der Kompaktstufe (epos-ui.css)
 const ZEILE = 53;   // Zeilenhoehe, falls die Liste keine Zeile zeigt; sonst gemessen
 const ZEILE_KOMPAKT = 46;   // dieselbe in der Kompaktstufe
 
 const FENSTER = [{ breite: 1280, hoehe: 800 }, { breite: 1280, hoehe: 720 }, { breite: 1024, hoehe: 700 },
-  { breite: 1024, hoehe: 768, neu: true }, { breite: 768, hoehe: 1024, neu: true }, { breite: 1093, hoehe: 614, neu: true }];
+  { breite: 1024, hoehe: 768, neu: true }, { breite: 768, hoehe: 1024, neu: true }, { breite: 1093, hoehe: 614, neu: true },
+  { breite: 1180, hoehe: 820, neu: true, ipad: true }, { breite: 1194, hoehe: 834, neu: true, ipad: true },
+  { breite: 1210, hoehe: 834, neu: true, ipad: true }, { breite: 834, hoehe: 1194, neu: true, ipad: true }];
+// Sichere Abstaende des iPads (Punkte = CSS-Pixel), in beiden Lagen gleich; links und rechts 0.
+const SICHER = { oben: 24, unten: 20 };
+const SICHER_TOKEN = `:root { --epos-sicher-oben: ${SICHER.oben}px; --epos-sicher-unten: ${SICHER.unten}px; }`;
+const rand = fenster => fenster.ipad ? SICHER : { oben: 0, unten: 0 };
 const FAELLE = [
   ['heizkessel', '/fensterprobe?fall=heizkessel'],
   ['bhkw', '/fensterprobe?fall=bhkw'],
@@ -116,6 +131,8 @@ function messen(KOMPAKT_ABFRAGE) {
     dialogRollt: d ? d.scrollHeight > d.clientHeight + 1 : false,
     dialogHoehe: h(d), projekt: h(projekt), katalog: h(katalog), katalogKopf: h(kopfzeile), katalogMin,
     katalogZeile: h(katalog && katalog.querySelector('tbody tr')),
+    dialogOben: d ? d.getBoundingClientRect().top : null, dialogUnten: d ? d.getBoundingClientRect().bottom : null,
+    ueberlagerungRahmen: (u => u ? [u.getBoundingClientRect().top, u.getBoundingClientRect().bottom] : null)(document.querySelector('.epos-ueberlagerung')),
     ueberlagerung: !!document.querySelector('.epos-ueberlagerung'), zweispalten: h(d && d.querySelector('.epos-zweispalten')),
     satzOffen: !!(d && d.querySelector('.epos-zweispalten--satz-offen')), ueberlauf,
     leistenfehler,
@@ -123,7 +140,7 @@ function messen(KOMPAKT_ABFRAGE) {
 }
 
 /** Alle Knoepfe der Schlussleiste nach dem Rollen des Dialogkoerpers ans Ende sichtbar und treffbar? */
-function erreichbar() {
+function erreichbar(rand = { oben: 0, unten: 0 }) {
   const d = document.querySelector('body > #app > .epos-dialog');
   if (!d) return { ok: false, fehlt: ['kein Dialog'] };
   const vorher = d.scrollTop;
@@ -135,7 +152,7 @@ function erreichbar() {
   const knoepfe = [...fuss.querySelectorAll('button')].filter(k => k.getBoundingClientRect().width > 0);
   const fehlt = knoepfe.filter(k => {
     const r = k.getBoundingClientRect();
-    if (r.top < -1 || r.bottom > innerHeight + 1 || r.left < -1 || r.right > innerWidth + 1) return true;
+    if (r.top < rand.oben - 1 || r.bottom > innerHeight - rand.unten + 1 || r.left < -1 || r.right > innerWidth + 1) return true;
     const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
     return !(e && (e === k || k.contains(e)));
   }).map(k => k.textContent.trim());
@@ -182,6 +199,14 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
   }
   if (istWirt && m.projekt !== null && m.projekt + 1 < m.projektMin) fehler.push(`Projektliste ${m.projekt} px unter ihrer Untergrenze ${Math.round(m.projektMin)} px`);
   if (frei && !frei.ok && !m.ueberlagerung) fehler.push('Schlussleiste nicht erreichbar: ' + frei.fehlt.join(', '));
+  // iPad: der Dialog (und eine offene Ueberlagerung) steht ganz zwischen Statusleiste und Home-Anzeige.
+  if (fenster.ipad) {
+    const r = rand(fenster), unten = fenster.hoehe - r.unten;
+    if (m.dialogOben !== null && (m.dialogOben < r.oben - 1 || m.dialogUnten > unten + 1))
+      fehler.push(`Dialog ${Math.round(m.dialogOben)}..${Math.round(m.dialogUnten)} px nicht zwischen den sicheren Abstaenden (${r.oben}..${unten})`);
+    if (m.ueberlagerungRahmen && (m.ueberlagerungRahmen[0] < r.oben - 1 || m.ueberlagerungRahmen[1] > unten + 1))
+      fehler.push(`Ueberlagerung ${Math.round(m.ueberlagerungRahmen[0])}..${Math.round(m.ueberlagerungRahmen[1])} px nicht zwischen den sicheren Abstaenden`);
+  }
   // Unter der Mindesthoehe rollt der Dialogkoerper (nur in den neuen Fenstern erlaubt, dort Befund).
   if (m.eng && fenster.neu) { befunde.push(kennung + ': Dialogkoerper rollt (unter der Mindesthoehe)'); m = { ...m, dialogRollt: false }; }
   const aussen = p => fall === 'kaeltemaschine' || / in div\.epos-ueberlagerung/.test(p);
@@ -231,16 +256,17 @@ try {
       seite.on('pageerror', e => konsole.push(String(e).slice(0, 160)));
       const laden = async () => {
         await seite.goto(WURZEL + pfad + (pfad.includes('?') ? '&' : '?') + 'zeilen=40', { waitUntil: 'networkidle' });
+        if (fenster.ipad) await seite.addStyleTag({ content: SICHER_TOKEN });
         await seite.waitForSelector('body > #app > .epos-dialog', { timeout: 15000 });
         await ruhe(seite);
       };
       await laden();
       const istWirt = await seite.locator('.epos-zweispalten').count() > 0;
       const mess = async zustand => pruefen(fall, fenster, zustand, await seite.evaluate(messen, KOMPAKT), konsole.splice(0), istWirt,
-        await seite.evaluate(erreichbar));
+        await seite.evaluate(erreichbar, rand(fenster)));
 
       await mess('Vorgabe');
-      if (FOTOS && fenster.neu && (fall === 'heizkessel' || fall === 'gebaeude'))
+      if (FOTOS && fenster.neu && (fall === 'heizkessel' || fall === 'gebaeude' || (fenster.ipad && fall === 'kaeltemaschine')))
         await seite.screenshot({ path: `${FOTOS}/${fall}_${fenster.breite}x${fenster.hoehe}.png` });
       if (istWirt) {
         if (await taste(seite, 'Home')) await mess('Trennlinie oben');
@@ -380,6 +406,27 @@ try {
       if (!ohne && !gruen) { verstoesse.push('Rollbalken: Klotz 400 px - ' + JSON.stringify({ eng: m.eng, frei, projekt: m.projekt, katalog: m.katalog, kon })); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
       if (ohne && frei.ok) { console.log('  GEGENPROBE GRUEN - ohne Rollbalken bleibt die Schlussleiste erreichbar, die Probe sieht nichts'); rueckgabe = 1; }
       await k2.close();
+    }
+
+    // Sichere Abstaende (iPad): Heizkessel bei 1 194 x 834 mit dem Mass der Abstaende, aber OHNE die Token -
+    // der Dialog reicht unter Statusleiste und Home-Anzeige, die Probe muss es sehen.
+    {
+      const ipad = FENSTER.find(f => f.ipad && f.breite === 1194);
+      const k3 = await browser.newContext({ viewport: { width: ipad.breite, height: ipad.hoehe } });
+      const s3 = await k3.newPage();
+      await s3.goto(WURZEL + '/fensterprobe?fall=heizkessel&zeilen=40', { waitUntil: 'networkidle' });
+      await s3.waitForSelector('.epos-zweispalten');
+      await ruhe(s3);
+      const m = await s3.evaluate(messen, KOMPAKT);
+      const frei = await s3.evaluate(erreichbar, SICHER);
+      const vorher = verstoesse.length, vorherB = befunde.length;
+      pruefen('gegenprobe-heizkessel', ipad, 'ohne Token', m, [], true, frei);
+      const rot = verstoesse.length - vorher;
+      verstoesse.splice(vorher); befunde.splice(vorherB); zeilen.pop();
+      console.log(`Gegenprobe sichere Abstaende (ohne Token): Dialog ${Math.round(m.dialogOben)}..${Math.round(m.dialogUnten)} px, `
+        + `Schlussleiste ueber der Home-Anzeige ${frei.ok}, ${rot} Verstoss(e)`);
+      if (rot === 0) { console.log('  GEGENPROBE GRUEN - ohne Token steht der Dialog zwischen den Abstaenden, die Probe sieht nichts'); rueckgabe = 1; }
+      await k3.close();
     }
   }
 
