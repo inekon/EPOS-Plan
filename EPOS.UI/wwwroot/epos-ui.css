@@ -12864,20 +12864,53 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 
 /* --- Das Kennzahlenband: Bedarf | Deckung | Rest ------------------------- */
 
+/* Das Kennzahlenband ist ein CONTAINER nach dem Muster der Ringzeile: Ob die Kacheln
+   nebeneinander oder untereinander stehen, entscheidet die Breite des Bandes selbst.
+   Nebeneinander teilen sie die Breite, aber keine Kachel wird schmaler als ihr Inhalt
+   (Mindestbreite = Zahl samt Einheit bzw. laengstes Wort der Beschriftung); reicht die
+   Zeile dafuer nicht, rueckt die Kachel in die naechste Zeile, statt in die
+   Nachbarkachel zu ragen. Unter 480 px stehen die Kacheln untereinander, je Kachel
+   Beschriftung links und Zahl rechts. Dieselbe Regel fuer Waerme, Strom und Kaelte
+   (UebersichtReiter.Kennzahl); gemessen mit Proben/Rasterprobe/kennzahlenprobe.mjs. */
 .epos-simueb-kennzahlen {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    container-type: inline-size;
+    container-name: epos-simueb-kennzahlen;
+    display: flex;
+    flex-wrap: wrap;
     border-bottom: 1px solid var(--epos-rahmen-leise);
 }
 
 .epos-simueb-kennzahl {
+    flex: 1 1 0;
     padding: 10px var(--epos-rand);
     border-right: 1px solid var(--epos-rahmen-leise);
-    min-width: 0;
 }
 
 .epos-simueb-kennzahl:last-child {
     border-right: 0;
+}
+
+@container epos-simueb-kennzahlen (max-width: 479.98px) {
+    .epos-simueb-kennzahl {
+        flex-basis: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        column-gap: 12px;
+        padding-top: 6px;
+        padding-bottom: 6px;
+        border-right: 0;
+        border-bottom: 1px solid var(--epos-rahmen-leise);
+    }
+
+    .epos-simueb-kennzahl:last-child {
+        border-bottom: 0;
+    }
+
+    .epos-simueb-kennzahl-wert {
+        margin-left: auto;
+    }
 }
 
 .epos-simueb-kennzahl-text {
@@ -12885,8 +12918,10 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     color: var(--epos-text-leise);
 }
 
+/* Zahl und Einheit bleiben zusammen: kein Umbruch zwischen ihnen. */
 .epos-simueb-kennzahl-wert {
     display: block;
+    white-space: nowrap;
     font-size: 20px;
     font-weight: 600;
     color: var(--epos-quelle-text);
@@ -13030,10 +13065,9 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* --- Der LEERZUSTAND der Uebersicht (Auftrag #236) ----------------------- */
 
 /* OHNE LAUF STEHT NUR DER BEDARF. Die Kennzahlenreihe traegt dann EINE Zahl je
-   Spalte statt drei; ohne diese Regel stuende sie im Drittelraster links und
-   liesse zwei Drittel leer. */
-.epos-simueb-kennzahlen--allein {
-    grid-template-columns: minmax(0, 1fr);
+   Spalte statt drei; sie nimmt die ganze Breite des Bandes. */
+.epos-simueb-kennzahlen--allein > .epos-simueb-kennzahl {
+    flex-basis: 100%;
 }
 
 /* Die ruhige Karte mit dem Grund - dieselbe Bauform wie der Leerzustand des
