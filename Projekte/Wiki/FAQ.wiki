@@ -18,7 +18,7 @@ Windows 10 oder 11 (64 Bit) und die Microsoft Edge WebView2 Runtime; fehlt sie, 
 === Läuft EPOS-Plan auch auf dem iPad? ===
 {{Anker|laeuft-epos-plan-auch-auf-dem-ipad}}
 
-Ja. Die iOS-App rechnet mit demselben Rechenkern wie die Windows-Anwendung und führt dieselbe Datenbank. Was ein iPad nicht leisten kann – etwa der Dateiimport von Herstellerdaten –, lehnt das Programm ausdrücklich ab. Projekte wechseln als ''.wpx''-Paket zwischen den Geräten ([[Programm Dokumentation/Projekttransfer|Projekttransfer]]).
+Eine App für das iPad gibt es, sie ist aber noch nicht allgemein verfügbar. Die App rechnet mit demselben Rechenkern wie die Windows-Anwendung und führt dieselbe Datenbank. Was ein iPad nicht leisten kann – etwa der Dateiimport von Herstellerdaten –, lehnt das Programm ausdrücklich ab. Projekte wechseln als ''.wpx''-Paket zwischen den Geräten ([[Programm Dokumentation/Projekttransfer|Projekttransfer]]).
 
 === Wie sichere ich meine Daten? ===
 {{Anker|wie-sichere-ich-meine-daten}}
