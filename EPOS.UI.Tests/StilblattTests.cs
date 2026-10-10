@@ -483,6 +483,26 @@ public sealed class StilblattTests
         Assert.Contains(".epos-raster th.epos-simerg-zahl", css, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// <b>Kopf und Wert stehen übereinander</b> (Auftrag TA, 10.10.2026). Die
+    /// Ergebnistabellen der Simulationsreiter nehmen die Breite ihres Inhalts
+    /// (<c>table.epos-simerg-tabelle</c> schlägt <c>width: 100%</c> von
+    /// <c>.epos-raster</c>), und ein Zahlenkopf steht auch in Kennzahlentabelle
+    /// und Variantenvergleich rechts, deren Hausregel links setzt.
+    /// </summary>
+    [Fact]
+    public void TA_Ergebnistabellen_nehmen_die_Inhaltsbreite_und_Zahlenkoepfe_stehen_rechts()
+    {
+        string breite = Regelblock("table.epos-simerg-tabelle");
+        Assert.Contains("width: auto", breite, StringComparison.Ordinal);
+
+        string koepfe = Regelblock(".epos-simerg-kennzahlen th.epos-simerg-zahl");
+        Assert.Contains("text-align: right", koepfe, StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        Assert.Contains(".epos-simerg-vergleich th.epos-simerg-zahl", css, StringComparison.Ordinal);
+    }
+
     // ---------------------------------------------------------------------
     //  #186: Gruppenkopf-Balken und Kopfzelle des Zeilenrasters
     // ---------------------------------------------------------------------

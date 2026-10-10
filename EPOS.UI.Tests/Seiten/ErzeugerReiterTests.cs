@@ -1808,4 +1808,52 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.False(Naht().Passt(bild));
         Assert.False(Naht().Passt(null));
     }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Kesseltabelle: Zahlenköpfe rechts wie ihre Werte, Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kesseltabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = KesselZeichnen(Kessel()).Find("table.epos-raster");
+        Assert.True(Tabellenausrichtung.Pruefe(tabelle) >= 5);
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+    }
+
+    /// <summary>BHKW-Tabelle: Zahlenköpfe rechts wie ihre Werte, Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Bhkw_Tabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = BhkwZeichnen(Bhkw()).Find("table.epos-raster");
+        Assert.True(Tabellenausrichtung.Pruefe(tabelle) >= 3);
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+    }
+
+    /// <summary>Kollektortabelle: Zahlenköpfe rechts wie ihre Werte, Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kollektortabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = SolarZeichnen().Find("table.epos-raster");
+        Assert.Equal(6, Tabellenausrichtung.Pruefe(tabelle));
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+    }
+
+    /// <summary>Wechselrichter- und Modultabelle der Photovoltaik: Zahlenköpfe rechts
+    /// wie ihre Werte, Anlage, Gerät und Name links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Photovoltaiktabellen_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var daten = Pv();
+        daten.Wechselrichter.Add(new SimulationErgebnisCtrl.PvWechselrichterZeile(
+            "Anlage 1", "Wechselrichter 1", 1.2, 10.0, 50.0, 0.5, 1000.0, 0.95, 3.0));
+        var raster = Render<PhotovoltaikReiter>(p => p.Add(x => x.Daten, daten).Add(x => x.Modell, Modell))
+            .FindAll("table.epos-raster");
+
+        Assert.Equal(new[] { 7, 4 }, Tabellenausrichtung.PruefeAlle(raster));
+        Tabellenausrichtung.TextkopfLinks(raster[0], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[0], 1);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 1);
+    }
 }

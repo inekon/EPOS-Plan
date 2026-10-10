@@ -717,4 +717,21 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Equal(0, naht);
         Assert.Empty(seite.FindAll("button.epos-simerg-knopf[title]"));
     }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Modul- und Speichertabelle: Zahlenköpfe rechts wie ihre Werte,
+    /// Modul, Speicher und Rolle links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Modul_und_Speichertabelle_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var raster = Zeichnen(Erg()).FindAll("table.epos-raster");
+
+        Assert.Equal(new[] { 6, 6 }, Tabellenausrichtung.PruefeAlle(raster));
+        Tabellenausrichtung.TextkopfLinks(raster[0], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 1);
+    }
 }

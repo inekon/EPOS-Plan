@@ -821,4 +821,19 @@ public class StromspeicherReiterTests : EposBunitContext
 
         Assert.Empty(Zeichnen(Daten()).FindAll("p.epos-simerg-peakherkunft"));
     }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Kennzahlentabelle: der Wertkopf (und der Vergleichskopf) rechts wie
+    /// die Werte, Kennzahl und Einheit links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kennzahlentabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabellen = Zeichnen(Daten(vergleich: true)).FindAll("table.epos-simerg-kennzahlen");
+        Assert.NotEmpty(tabellen);
+        Assert.All(Tabellenausrichtung.PruefeAlle(tabellen), n => Assert.Equal(2, n));
+        Tabellenausrichtung.TextkopfLinks(tabellen[0], 0);
+    }
 }
