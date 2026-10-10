@@ -278,7 +278,18 @@ namespace WindowsFormsApplication1
                     ? schritt.Kurzfassung
                     : schritt.Aktion;
 
-                if (schritt.Ausgefuehrt)
+                if (schritt.Ausgefuehrt && schritt.Ergebnis != null && schritt.Ergebnis.Unveraendert)
+                {
+                    // Nichts zu aendern: kein Fehlschlag, aber auch nichts, was gruen als
+                    // „ausgefuehrt" gefeiert werden muesste - neutral, mit dem Stand
+                    // (Anwendermeldung 10.10.2026: die rote Absage las sich als Fehler).
+                    zeilen.Add(new KiVerlaufszeile(
+                        KiVerlaufsrolle.Assistent,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KI_AKT_UNVERAENDERT,
+                                      bezeichnung, schritt.Ergebnis.Text)));
+                }
+                else if (schritt.Ausgefuehrt)
                 {
                     zeilen.Add(new KiVerlaufszeile(
                         KiVerlaufsrolle.Erfolg,

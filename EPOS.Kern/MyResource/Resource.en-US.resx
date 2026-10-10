@@ -9525,7 +9525,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>The field “{0}” is named more than once.</value>
   </data>
   <data name="KI_DLG_OHNE_AENDERUNG" xml:space="preserve">
-    <value>In “{0}” all named fields already carry the value; there is nothing to change.</value>
+    <value>In “{0}” the fields already hold the requested values: {1}. No change needed.</value>
   </data>
   <data name="KI_DLG_GELESEN" xml:space="preserve">
     <value>“{0}”: {1} controllable fields, {2} releasable buttons.</value>
@@ -9543,7 +9543,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>“{0}”: {1} of {2} values set ({3} to {4}).</value>
   </data>
   <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
-    <value>“{0}” already carries these values; there is nothing to change.</value>
+    <value>In “{1}”, “{0}” already holds these values. No change needed.</value>
   </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>The button “{0}” in “{1}” has been released.</value>
@@ -51377,6 +51377,15 @@ chart</value>
   </data>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
+  </data>
+  <data name="KI_DLG_FELD_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In “{0}”, “{1}” already holds the value {2}. No change needed.</value>
+  </data>
+  <data name="KI_DLG_FELDER_BEREITS" xml:space="preserve">
+    <value>Already held the value: {0}.</value>
+  </data>
+  <data name="KI_AKT_UNVERAENDERT" xml:space="preserve">
+    <value>Unchanged: {0} — {1}</value>
   </data>
 </root>
 
