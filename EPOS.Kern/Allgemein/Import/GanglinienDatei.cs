@@ -203,6 +203,9 @@ namespace WindowsFormsApplication1
         /// <summary>Anzahl gelesener Werte. {0} = Werte, {1} = Zeitstempel.</summary>
         public const string SchluesselGelesen = "IMPORT_PROT_GELESEN";
 
+        /// <summary>Meldung: Die Datei ist keine Textdatei (Binärinhalt); {0} = Dateiname.</summary>
+        public const string SchluesselKeinText = "IMPORT_PROT_KEIN_TEXT";
+
         // --- Zeitformate -----------------------------------------------------
 
         /// <summary>Zeitformate ohne Zonenangabe; deutsche Schreibweise und ISO 8601.</summary>
@@ -271,6 +274,11 @@ namespace WindowsFormsApplication1
             try
             {
                 v.IstExcel = IstExcelDatei(pfad);
+                if (!v.IstExcel && IstBinaer(pfad))
+                {
+                    v.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselKeinText, Path.GetFileName(pfad)));
+                    return v;
+                }
                 char trenn = v.IstExcel ? '\0' : ErkanntesTrennzeichen(pfad);
                 List<string[]> zeilen = v.IstExcel
                     ? ExcelZeilen(pfad, "", ErkennungsZeilen, v)
@@ -341,6 +349,11 @@ namespace WindowsFormsApplication1
             try
             {
                 v.IstExcel = IstExcelDatei(pfad);
+                if (!v.IstExcel && IstBinaer(pfad))
+                {
+                    v.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselKeinText, Path.GetFileName(pfad)));
+                    return v;
+                }
                 List<string[]> zeilen = v.IstExcel
                     ? ExcelZeilen(pfad, v.Vorschlag.Blattname, ErkennungsZeilen, v)
                     : TextZeilen(pfad, v.Vorschlag.Trennzeichen, ErkennungsZeilen);
@@ -379,6 +392,8 @@ namespace WindowsFormsApplication1
             try
             {
                 if (IstExcelDatei(pfad)) LiesExcel(pfad, optionen, r);
+                else if (IstBinaer(pfad))
+                    r.Meldungen.Add(new PruefMeldung(PruefStufe.Fehler, SchluesselKeinText, Path.GetFileName(pfad)));
                 else LiesText(pfad, optionen, r);
             }
             catch (Exception ex)
@@ -419,8 +434,14 @@ namespace WindowsFormsApplication1
             }
             if (sb.Length == 0) return false;
 
-            return double.TryParse(sb.ToString(), NumberStyles.Float,
-                                   CultureInfo.InvariantCulture, out wert);
+            // „NaN“, „Infinity“ und Überläufe wie 1e400 liest TryParse als Zahl - für eine
+            // Ganglinie sind sie keine: Sie gälten sonst als gelesen und brächen erst beim
+            // Schreiben (REAL ohne NaN) oder in der Rechnung.
+            if (!double.TryParse(sb.ToString(), NumberStyles.Float,
+                                 CultureInfo.InvariantCulture, out wert)) return false;
+            if (double.IsFinite(wert)) return true;
+            wert = 0.0;
+            return false;
         }
 
         /// <summary>
@@ -716,7 +737,7 @@ namespace WindowsFormsApplication1
             if (!VersucheZahl(felder[o.WertSpalte], o.Dezimaltrenner, out w))
             {
                 Fehler(r, ref fehler, SchluesselZahlUnlesbar,
-                       zeilennummer.ToString(CultureInfo.InvariantCulture), felder[o.WertSpalte]);
+                       zeilennummer.ToString(CultureInfo.InvariantCulture), Feldtext(felder[o.WertSpalte]));
                 return;
             }
 
@@ -726,7 +747,7 @@ namespace WindowsFormsApplication1
                 if (!VersucheZeit(felder[o.ZeitSpalte], out t))
                 {
                     Fehler(r, ref fehler, SchluesselZeitUnlesbar,
-                           zeilennummer.ToString(CultureInfo.InvariantCulture), felder[o.ZeitSpalte]);
+                           zeilennummer.ToString(CultureInfo.InvariantCulture), Feldtext(felder[o.ZeitSpalte]));
                     return;
                 }
                 zeiten.Add(t);
@@ -737,18 +758,51 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Oeffnet den Leser mit Kodierungserkennung (BOM schlaegt die Vorgabe).
         /// Vorgabe ist Windows-1252 - deutsche Zaehlerexporte sind fast nie UTF-8,
-        /// und Umlaute stehen ohnehin nur in der Kopfzeile. Unter .NET 8 ist die
-        /// Codepage 1252 nur nach Registrierung des
-        /// <c>CodePagesEncodingProvider</c> verfuegbar; der Rueckfall ist deshalb
-        /// <see cref="Encoding.Latin1"/>, das fuer alle deutschen Umlaute
-        /// byteidentisch ist.
+        /// und Umlaute stehen ohnehin nur in der Kopfzeile. Die Codepage kommt aus
+        /// <see cref="AnsiEncoding"/>, das den <c>CodePagesEncodingProvider</c> einmal
+        /// registriert (keine Ausnahme je Lesevorgang mehr); dessen Rueckfall ist
+        /// Latin-1, fuer alle deutschen Umlaute byteidentisch.
         /// </summary>
         private static StreamReader LeserOeffnen(string pfad)
+            => new StreamReader(pfad, AnsiEncoding.Get(), true);
+
+        /// <summary>
+        /// Ist die Datei offensichtlich keine Textdatei? Gesehen werden die ersten
+        /// 4 096 Byte: Ein Nullbyte (ohne UTF-16/32-BOM) oder mehr als ein Zehntel
+        /// Steuerzeichen außer Tabulator, Zeilenvorschub und Wagenrücklauf heißt
+        /// Binärinhalt — eine Excel-, ZIP- oder Bilddatei mit falscher Endung.
+        /// </summary>
+        internal static bool IstBinaer(string pfad)
         {
-            Encoding vorgabe;
-            try { vorgabe = Encoding.GetEncoding(1252); }
-            catch (Exception) { vorgabe = Encoding.Latin1; }
-            return new StreamReader(pfad, vorgabe, true);
+            byte[] puffer = new byte[4096];
+            int n;
+            using (FileStream fs = new FileStream(pfad, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                n = fs.Read(puffer, 0, puffer.Length);
+            if (n == 0) return false;
+            if (n >= 2 && ((puffer[0] == 0xFF && puffer[1] == 0xFE) || (puffer[0] == 0xFE && puffer[1] == 0xFF)))
+                return false;   // UTF-16/32 mit BOM: Nullbytes gehören dazu
+            int steuer = 0;
+            for (int i = 0; i < n; i++)
+            {
+                byte b = puffer[i];
+                if (b == 0) return true;
+                if (b < 0x20 && b != 0x09 && b != 0x0A && b != 0x0D && b != 0x0C) steuer++;
+            }
+            return steuer * 10 > n;
+        }
+
+        /// <summary>
+        /// Ein Feldinhalt für eine Meldung: Steuerzeichen werden zu „·“, mehr als
+        /// 40 Zeichen werden mit „…“ gekürzt — ein Binärfeld soll das Banner nicht füllen.
+        /// </summary>
+        internal static string Feldtext(string feld)
+        {
+            if (string.IsNullOrEmpty(feld)) return "";
+            StringBuilder sb = new StringBuilder(Math.Min(feld.Length, 41));
+            for (int i = 0; i < feld.Length && sb.Length < 40; i++)
+                sb.Append(char.IsControl(feld[i]) ? '\u00B7' : feld[i]);
+            if (feld.Length > 40) sb.Append('\u2026');
+            return sb.ToString();
         }
 
         // =====================================================================

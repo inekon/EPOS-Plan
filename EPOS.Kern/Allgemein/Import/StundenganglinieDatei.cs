@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
@@ -160,6 +161,23 @@ namespace WindowsFormsApplication1
             erg.SpitzeKw = spitze;
             erg.Erfolgreich = true;
             return erg;
+        }
+
+        /// <summary>
+        /// <b>Der benannte Grund einer gescheiterten Lesung</b> für Banner und Protokoll:
+        /// „Datei „x.csv“: Zeile 12: „abc“ ist keine Zahl.“ — Dateiname und erster Fehler
+        /// (mit Zeilennummer, wo es eine gibt). Ohne Fehlermeldung der Grund „keine
+        /// auswertbare Zeile“; nie leer.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei.</param>
+        /// <param name="lesung">Die gescheiterte Lesung.</param>
+        public static string Ablehnungstext(string pfad, StundenganglinieLesung lesung)
+        {
+            string grund = GanglinienProtokollText.Text(lesung?.ErsterFehler);
+            if (string.IsNullOrWhiteSpace(grund))
+                grund = GanglinienProtokollText.Text(new PruefMeldung(PruefStufe.Fehler, GanglinienDatei.SchluesselDateiLeer));
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.IMP_MSG_DATEI_GRUND,
+                                 Path.GetFileName(pfad ?? ""), grund);
         }
 
         /// <summary>

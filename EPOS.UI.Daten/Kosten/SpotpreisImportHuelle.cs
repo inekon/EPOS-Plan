@@ -58,14 +58,14 @@ namespace WindowsFormsApplication1
                                                     filter, null)),
 
                 ["Pruefen"] = new Func<string, Task<SpotpreisPruefung>>(
-                    pfad => Kulturweitergabe.Starten(() =>
+                    pfad => Importfang.Starten(pfad, () =>
                 {
                     lauf = ctrl.Pruefe(pfad);
                     return new SpotpreisPruefung(
                         lauf.Erfolgreich,
                         (lauf.Protokoll ?? "").Replace("\n", Environment.NewLine),
                         lauf.Jahr);
-                })),
+                }, a => { lauf = null; return new SpotpreisPruefung(false, a.Text, 0); })),
 
                 ["Speichern"] = new Func<string, bool, Action<int>, Task<SpotpreisSpeicherung>>(
                     (bezeichner, stamm, fortschritt) => Kulturweitergabe.Starten(() =>
