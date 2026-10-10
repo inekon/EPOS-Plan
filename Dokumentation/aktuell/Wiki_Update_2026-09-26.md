@@ -182,7 +182,7 @@ Version noch beim Anwender zu bestätigen.
 - Seit 09.10.2026: Die Projektdialoge mit Katalogauswahl zeigen Projekt und Katalog gerahmt untereinander mit ziehbarer Trennlinie und einer Zeile für den gewählten Satz; nur die Listen rollen. (#861)
 - Seit 09.10.2026: Der Heizkessel-Dialog arbeitet auf der neuen Katalogauswahl: Bearbeiten je Bereich, Mehrfachbearbeitung mit „für alle gewählten setzen“ und „In die Datenbank übernehmen…“ als neuer Katalogsatz oder als Überschreiben des Ursprungs; Investitions- und Betriebskosten gehen als Vorlage des Katalogsatzes mit. (#873)
 - Seit 10.10.2026: Die Kältemaschine rechnet auf Wunsch ihr Teillastverhalten und das Takten bei kleiner Last; Katalogdialog und Anlagendialog führen die zugehörigen Felder. (#879)
-- Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt Taktstrom, Starts, Teillaststunden und Lastgrad der Kältemaschine, der Bericht eine Tafel dazu; die Berichtsvorlagen kennen die Kennzahlen `kaelte.km.*`. (#879)
+- Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt die Kachel „Teillast und Takten der Kältemaschinen“ mit Taktstrom, Starts, Teillastanteil, mittlerem Lastgrad und Jahres-EER ohne Hilfsstrom, der Bericht eine Tafel dazu. (#879)
 
 ### Version 1.2.0.9 — nicht veröffentlicht
 

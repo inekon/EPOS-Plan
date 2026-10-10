@@ -56,13 +56,13 @@ Die '''Kühllast''' ist der Wärmestrom, den ein Raum bei Auslegungsbedingungen 
 == Teillast und Takten der Kältemaschine ==
 {{Anker|teillast-takten}}
 
-Eine Kältemaschine liefert ihre Nennleistung nur bei Volllast; im Betrieb läuft sie meist darunter. EPOS-Plan rechnet das Teillastverhalten auf Wunsch je Gerät, über den Teillastweg ''linear'' oder ''Kurve''.
+Eine Kältemaschine liefert ihre Nennleistung nur bei Volllast; im Betrieb läuft sie meist darunter. EPOS-Plan rechnet das Teillastverhalten auf Wunsch je Gerät, mit der Teillastrechnung ''linear'' oder ''Kurve''.
 
-'''Teillastkurve.''' Die Kurve setzt den Strombedarf bei Teillast ins Verhältnis zur Volllast: E(x) = (a + b·x + c·x²) / (a + b + c) mit dem Lastgrad x (Last durch verfügbare Kälteleistung). Bei x = 1 ist E = 1. Der Verlauf gilt als plausibel, wenn das Verhältnis x / E(x) zwischen 0,3 und 2,0 liegt, geprüft ab der Taktgrenze, mindestens ab x = 0,1. Vorgabekurven je Verdichterregelung (Ein/Aus, Stufen, Drehzahl) liegen im Programm.
+'''Teillastkurve.''' Die Kurve setzt den Strombedarf bei Teillast ins Verhältnis zur Volllast: E(x) = (a + b·x + c·x²) / (a + b + c) mit dem Lastgrad x (Last durch verfügbare Kälteleistung). Bei x = 1 ist E = 1. Der Verlauf gilt als plausibel, wenn das Verhältnis x / E(x) zwischen 0,3 und 2,0 liegt. Geprüft wird ab der Grenze ''Kurve gültig ab Lastgrad'' x_u, mindestens ab x = 0,1; ist x_u leer, gilt die Mindestteillast. Vorgabekurven je Verdichterregelung (Ein/Aus, Stufen, Drehzahl) liegen im Programm.
 
-'''Taktgrenze und Taktverlust.''' Unterhalb der Taktgrenze x_u kann die Maschine nicht weiter modulieren; sie läuft im Takt. Der Taktverlustfaktor C_d (Vorgabe 0,9) senkt den Wirkungsgrad im Takt, jeder Anlauf zählt als Start, und der Strom des Taktens erscheint als eigener Taktstrom.
+'''Mindestteillast und Taktverlust.''' Unterhalb der Mindestteillast (Nennleistung mal Mindestteillast) kann die Maschine nicht weiter modulieren; sie taktet. Der Taktverlustfaktor C_d (Vorgabe 0,9) bestimmt den Mehrstrom des Taktens, jeder Anlauf zählt als Start, und der Mehrstrom erscheint als eigener Taktstrom.
 
-'''Randweg der Kennlinie.''' Liegen Kaltwasser- oder Rückkühltemperatur außerhalb der Stützpunkte, hält ''Randwert halten'' den Wert am Rand. ''Gütegrad'' bestimmt den Gütegrad der Maschine im Randpunkt als Verhältnis zum Carnot-Wert und führt ihn bis höchstens 10 K über den Rand fort; der EER bleibt gedeckelt bei 15.
+'''Kennfeldrand.''' Liegen Kaltwasser- oder Rückkühltemperatur außerhalb der Stützpunkte, hält ''Randwert'' den Wert am Rand. ''Gütegrad'' bestimmt den Gütegrad der Maschine im Randpunkt als Verhältnis zum Carnot-Wert und führt ihn bis höchstens 10 K über den Rand fort; der EER bleibt bei 15 gedeckelt.
 
 '''Folgeschaltung.''' Stehen mehrere gleiche Maschinen bereit, laufen n = ⌈Last / Q_av⌉ Maschinen, mit Q_av als verfügbarer Kälteleistung einer Maschine. Die Last teilen sie gleichmäßig; so bleibt der Lastgrad jeder laufenden Maschine hoch.
 

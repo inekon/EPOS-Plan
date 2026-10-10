@@ -14,7 +14,7 @@ Etappe E4 des Umsetzungskonzepts: die gebaute Funktion in den Repo-Quellen des W
 ## 3 Änderungen je Datei
 
 - `Projekte/Wiki/Programm Dokumentation - Kühlung.wiki`: Abschnitt „Teillast und Takten der Kältemaschine“ (Katalogdialog, Anlagendialog, Ergebnisgrößen, Beispiel).
-- `Projekte/Wiki/Grundlagen - Kühlung.wiki`: Abschnitt „Teillast und Takten der Kältemaschine“ (Teillastkurve, Taktgrenze und Taktverlust, Randweg, Folgeschaltung).
+- `Projekte/Wiki/Grundlagen - Kühlung.wiki`: Abschnitt „Teillast und Takten der Kältemaschine“ (Teillastkurve, Mindestteillast und Taktverlust, Kennfeldrand, Folgeschaltung).
 - `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`: zwei Sätze unter „Version offen (Vorschlag 1.2.1)“, beide Kühlungsseiten im Verzeichnis der ausstehenden Uploads.
 - Beide Konzepte: Abschnitt „Umsetzung — wie gebaut“, `git mv` nach `Dokumentation/ueberholt/`; Index, Protokollverweise und `Referenzlaeufe/LIESMICH.md` nachgezogen.
 - `Status_iOS_Migration.md` (#879), `Status_Gebaeudesimulation_VDI6007.md` (Stufenzeile KM3).
@@ -22,6 +22,8 @@ Etappe E4 des Umsetzungskonzepts: die gebaute Funktion in den Repo-Quellen des W
 ## 4 Abnahme
 
 `EPOS.Kern.Tests` (Filter `DokumentationLinkWache|WikiProduktdatenWache|RepositoryOrdnungWache|Wiki`) 52/52, Build 0 Fehler; Konfliktmarker keine; Gegenlesemuster der Wiki-Regel auf beide Seiten: keine Treffer in den neuen Absätzen.
+
+- Nachtrag E4-b: Begriffe wie im Dialog (Teillastrechnung, Kennfeldrand, Kachel „Teillast und Takten der Kältemaschinen“); das Takten löst die Mindestteillast aus, „Kurve gültig ab Lastgrad“ begrenzt nur die Kurve.
 
 ## 5 Offen
 
