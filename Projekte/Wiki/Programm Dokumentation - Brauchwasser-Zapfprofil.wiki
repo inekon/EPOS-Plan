@@ -331,7 +331,7 @@ Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen''
 * [[Programm Dokumentation/Brauchwasser|Brauchwasser]] – die Bestandsprofile und der Jahresverbrauch
 * [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] – der Rechenweg der Bestandsprofile
 * [[Grundlagen/Brauchwasser]] – Bedarf, Speicherung und Einbindung des Trinkwarmwassers
-* [[Grundlagen/Zapfprofile|Grundlagen: Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
+* [[Grundlagen/Brauchwasser-Zapfprofile|Grundlagen: Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
 * [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] – das Volumen des Brauchwasser- oder Kombispeichers
 
 [[Kategorie:Programm Dokumentation]]

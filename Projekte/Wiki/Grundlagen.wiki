@@ -13,6 +13,8 @@ Am Anfang stehen Standort und Bedarf. Sie bestimmen alle nachfolgenden Ergebniss
 * [[Grundlagen/Klimadaten|'''Klimadaten''']] – Stündliche Temperatur- und Strahlungsdaten, Höhenlage, Auslegungstemperatur und Heizgrenze.
 * [[Grundlagen/Wärmebedarfsrechnung|'''Wärmebedarfsrechnung''']] – Heizwärme, Warmwasser, Prozesswärme und Netzverluste – aus Kennwerten oder aus Verbrauchsdaten.
 * [[Grundlagen/Strombedarf und Lastprofile|'''Strombedarf und Lastprofile''']] – Lastgänge für Wohnen, Gewerbe und Industrie, Lastspitzen und zusätzliche Verbraucher aus der Wärmeseite.
+* [[Grundlagen/Brauchwasser|'''Brauchwasser''']] – Bedarf, Zirkulation, Speicher und Frischwasserstation, Einbindung als Wärmesenke.
+* [[Grundlagen/Prozesswärme|'''Prozesswärme''']] – Schichtbetrieb, Temperaturniveau und Einbindung über Direktsenke oder Prozesspuffer.
 * [[Grundlagen/Gebäudemodell VDI 6007|'''Gebäudemodell VDI 6007''']] – Stundenmodell mit Speichermassen, Zonen, Heizen oder Kühlen je Tag, Sollwerte und Aufheizoptimierung.
 * [[Grundlagen/Bauteile am Erdreich|'''Bauteile am Erdreich''']] – Bodenplatte und Kellerwand mit Erdreichwiderstand nach DIN EN ISO 13370, charakteristisches Maß B′.
 * [[Grundlagen/Brauchwasser-Zapfprofile|'''Brauchwasser-Zapfprofile''']] – Warmwasserbedarf aus Nutzungszonen nach VDI 6002, Tagesgang, Zufallsweg mit Seed.

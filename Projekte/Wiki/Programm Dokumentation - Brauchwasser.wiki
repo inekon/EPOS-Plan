@@ -92,7 +92,7 @@ Ein Mehrfamilienhaus mit 20 Wohnungen braucht im Jahr rund 40&nbsp;MWh Wärme f�
 * [[Wärmebedarf erfassen]] – Warmwasser als einer der vier Anteile des Wärmebedarfs
 * [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren hinter dem Jahresgang
 * [[Grundlagen/Brauchwasser]] – Bedarf, Speicherung und Einbindung des Trinkwarmwassers
-* [[Grundlagen/Zapfprofile|Grundlagen: Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
+* [[Grundlagen/Brauchwasser-Zapfprofile|Grundlagen: Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
 * [[Grundlagen/Hydraulikschemata]] – Prinzipschemata mit Booster, Frischwasserstation und Zirkulation
 * [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] – Nutzung, Schichtung, Entnahmehöhe und Frischwassermodul
 * [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] – der Zapfprofilgenerator mit Nutzungszonen und Speicherauslegung

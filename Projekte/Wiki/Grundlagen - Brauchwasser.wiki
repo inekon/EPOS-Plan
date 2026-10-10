@@ -23,7 +23,7 @@ Weil die Zapfung in Spitzen kommt, die Erzeuger aber gleichmäßig arbeiten soll
 EPOS-Plan führt das Brauchwasser als eigenen Wärmekanal neben Heizung und Prozesswärme, Stunde für Stunde über ein Jahr. Den Bedarf liefert einer von zwei Wegen:
 
 * '''Bestandsprofile''' – ein Profil aus dem Katalog mit zwölf Monatswerten und einem Wochengang aus 168 Stundenwerten, skaliert auf den Jahresverbrauch. Das ergibt geglättete Stundenmittel.
-* '''Zapfprofil''' – Nutzungszonen mit Nutzungsart und Bezugsgröße, etwa Wohnungen, Hotelzimmer oder Beschäftigte. Der Generator bildet daraus Tagesbedarf, Tagesgang und Jahresgang, auf Wunsch aus gezogenen Zapfereignissen, und rechnet die Zirkulation als eigene Teilreihe ([[Grundlagen/Zapfprofile|Zapfprofile nach VDI 6002]]).
+* '''Zapfprofil''' – Nutzungszonen mit Nutzungsart und Bezugsgröße, etwa Wohnungen, Hotelzimmer oder Beschäftigte. Der Generator bildet daraus Tagesbedarf, Tagesgang und Jahresgang, auf Wunsch aus gezogenen Zapfereignissen, und rechnet die Zirkulation als eigene Teilreihe ([[Grundlagen/Brauchwasser-Zapfprofile|Zapfprofile nach VDI 6002]]).
 
 Auf beiden Wegen liegt der Wochengang auf dem Wochentagsraster der Klimaregion; Feiertage zählen im Zapfprofil wie ein Sonntag, ein Betriebskalender legt Feiertage und Ferien auf die Bestandsprofile. Die '''Zirkulation''' kommt als eigene Teilreihe hinzu, die '''thermische Desinfektion''' als eigener Posten.
 
@@ -63,7 +63,7 @@ Gedeckt wird der Kanal von den Erzeugern, deren Wärmesenke ihn bedient – dire
 
 * [[Programm Dokumentation/Brauchwasser|Brauchwasser]] – Bedienung: Profile, Jahresverbrauch und Einbindung in die Anlage
 * [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] – Nutzungszonen, Auslegung und Katalog der Nutzungsarten
-* [[Grundlagen/Zapfprofile|Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
+* [[Grundlagen/Brauchwasser-Zapfprofile|Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
 * [[Grundlagen/Pufferspeicher|Pufferspeicher]] – Schichtung, Kapazität und Schaltschwellen
 * [[Grundlagen/Hydraulikschemata#brauchwasser-und-prozesswaerme|Hydraulikschemata]] – Brauchwasser und Prozesswärme als Wärmesenken
 * [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] – der Rechenweg der Bestandsprofile
