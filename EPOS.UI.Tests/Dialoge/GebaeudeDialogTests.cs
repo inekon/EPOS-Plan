@@ -135,6 +135,44 @@ public class GebaeudeDialogTests : EposBunitContext
         => Katalogzeilen(cut).Select(tr => tr.QuerySelectorAll("td")[1].TextContent.Trim()).ToArray();
 
     // =================================================================================
+    // KB1: die Satzfläche ohne gewählten Satz
+    // =================================================================================
+
+    /// <summary>
+    /// Ohne gewählten Satz (leere Projektliste, nichts im Katalog gewählt) bleibt die Satzfläche
+    /// leer: kein Detailblock, kein Knopf „Ausrichtung ändern…“; die Detailzeile sagt
+    /// „Kein Satz gewählt“ (Anwenderbefund 10.10.2026).
+    /// </summary>
+    [Fact]
+    public void Ohne_gewaehlten_Satz_bleibt_die_Satzflaeche_leer()
+    {
+        IRenderedComponent<GebaeudeDialog> cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile>());
+
+        IElement satz = cut.Find(".epos-zweispalten-satz");
+        Assert.Empty(satz.Children);
+        Assert.Empty(satz.QuerySelectorAll("button, input, textarea"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Mit gewählter Projektzeile nennt die Detailzeile ihren Namen und die Marke „Projektsatz“, und
+    /// die Satzfläche trägt den Detailblock; ein gewählter Katalogsatz ebenso mit „Katalogsatz“.
+    /// </summary>
+    [Fact]
+    public void Die_Detailzeile_nennt_den_gewaehlten_Satz()
+    {
+        IRenderedComponent<GebaeudeDialog> cut = Aufbauen();
+
+        Assert.Equal("Haus 1990", cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_MARKE_PROJEKTSATZ, cut.Find(".epos-zweispalten-marke--satz").TextContent.Trim());
+        Assert.NotEmpty(cut.Find(".epos-zweispalten-satz").Children);
+
+        KatalogWaehlen(cut, Katalognamen(cut)[0]);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_MARKE_KATALOGSATZ, cut.Find(".epos-zweispalten-marke--satz").TextContent.Trim());
+        Assert.NotEmpty(cut.Find(".epos-zweispalten-satz").Children);
+    }
+
+    // =================================================================================
     // Feldbestand je Betriebsart
     // =================================================================================
 
@@ -583,6 +621,56 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Null(cut.Find("button.epos-gebaeude-simulation").GetAttribute("aria-disabled"));
         cut.Find("button.epos-gebaeude-flaeche").Click();
         Assert.True(cut.Instance.WohnflaecheOffen);
+    }
+
+    /// <summary>
+    /// <b>Bearbeiten je Bereich</b> (Konzept Katalogauswahl 4.2, Anwenderentscheid 10.10.2026): Der Knopf
+    /// „Bearbeiten…" des Projektgebäudes steht in der Kopfleiste „Im Projekt" neben „In DB übernehmen…",
+    /// wie bei Heizkessel und BHKW — die Schlussleiste trägt ihn nicht. Ohne Wahl in der Projektliste ist
+    /// er weich gesperrt, der Kurztext nennt den Grund; mit Wahl öffnet er den Editor der Projektkopie.
+    /// </summary>
+    [Fact]
+    public void Bearbeiten_steht_in_der_Kopfleiste_des_Projektbereichs_nicht_in_der_Schlussleiste()
+    {
+        int geoeffnet = 0;
+        GebaeudeProjektZeile gespeichert = Zeile(1);
+        gespeichert.HatProjektkopie = true;
+        var cut = Render<GebaeudeDialog>(p => p
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile> { gespeichert })
+            .Add(x => x.Katalogzeilen, () => Katalog())
+            .Add(x => x.Katalogprofil, Profil())
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.StammDetail, n => new GebaeudeStammDetail(n, "Einfamilienhaus", "Katalogtext", "150,00"))
+            .Add(x => x.StammSatz, n => Zeile(100000, n))
+            .Add(x => x.WohnflaecheGaben, _ => new Dictionary<string, object>())
+            .Add(x => x.ProjektGaben, _ => { geoeffnet++; return null; }));
+
+        var kopf = cut.Find("section.epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste");
+        var knopf = kopf.QuerySelectorAll("button.epos-gebaeude-projekt").Single();
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_BTN_BEARBEITEN, knopf.TextContent.Trim());
+        Assert.Single(cut.FindAll("button.epos-gebaeude-projekt"));
+
+        var schlussleiste = cut.Find("button.epos-gebaeude-flaeche").Closest(".epos-leiste")!;
+        Assert.Empty(schlussleiste.QuerySelectorAll("button.epos-gebaeude-projekt"));
+
+        // Ohne Wahl: weich gesperrt mit Grund, der Versuch meldet ihn und oeffnet nichts.
+        KatalogWaehlen(cut, "Hotel Sonne");
+        Assert.Null(cut.Instance.Gewaehlt);
+        knopf = cut.Find("section.epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste button.epos-gebaeude-projekt");
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_PROJEKT, knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_SPERRE_WAHL_PROJEKT, cut.Instance.Meldung);
+        Assert.Equal(0, geoeffnet);
+
+        // Mit Wahl: frei, der Kurztext ist der Hinweis, der Klick holt den Weg.
+        cut.FindAll("button.epos-anlagenwahl").First().Click();
+        knopf = cut.Find("button.epos-gebaeude-projekt");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBZ_BTN_PROJEKT_HINWEIS, knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.Equal(1, geoeffnet);
     }
 
     /// <summary>

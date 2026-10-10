@@ -132,7 +132,29 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new BHKWStammCtrl.AnzeigefelderBhkw(
+            BHKWStammCtrl.SpeicherErgebnis e =
+                BHKWStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER Transaktion — die
+        /// Projektkopien oder die Katalogsätze, alle oder keiner (<c>BHKWStammCtrl.AnzeigefelderSchreibenAlle</c>).
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<BHKWStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new BHKWStammCtrl.Satzaenderung(id, Werte(felder)));
+            BHKWStammCtrl.SpeicherErgebnis e = BHKWStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static BHKWStammCtrl.AnzeigefelderBhkw Werte(IReadOnlyList<BrowserFeldwert> felder)
+        {
+            return new BHKWStammCtrl.AnzeigefelderBhkw(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPtherm),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPel),
@@ -174,10 +196,6 @@ namespace WindowsFormsApplication1
                 MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
                 // Abschaltgrenze des Ruecklaufs (UB-E3): als Text, leer heißt „keine Grenze".
                 RuecklaufMaxC: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldRuecklaufMax));
-
-            BHKWStammCtrl.SpeicherErgebnis e =
-                BHKWStammCtrl.AnzeigefelderSchreiben(name, werte);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 
         private static IReadOnlyDictionary<string, object> EditorGaben(string name, bool neu,

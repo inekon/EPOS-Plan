@@ -145,7 +145,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // Stromverbraucher keine; der Unterschied war Bestand, keine Fachaussage.
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
 
         foreach (string t in new[] { "Prozess in DB ändern", "Prozess in DB neu",
@@ -183,7 +183,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Contains("Summe aller ausgewählten Strombedarfe:", cut.Markup);
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Stromverbraucher ändern..."));
     }
@@ -201,7 +201,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Contains("Summe Brauchwasserprofile:", cut.Markup);
         // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Profil in DB ändern"));
     }

@@ -102,8 +102,10 @@ namespace WindowsFormsApplication1
                              Katalogspaltenart art = Katalogspaltenart.Text,
                              bool sortierbar = true, bool filterbar = true,
                              Katalogspaltenrang rang = Katalogspaltenrang.Immer,
+                             bool standardAus = false,
                              string langtext = "")
         {
+            StandardAus = standardAus;
             Schluessel = schluessel;
             Titel = titel;
             Einheit = einheit ?? "";
@@ -131,6 +133,14 @@ namespace WindowsFormsApplication1
         /// weicht nie (V7) — das entscheidet die Liste, nicht das Profil.
         /// </summary>
         public Katalogspaltenrang Rang { get; }
+
+        /// <summary>
+        /// <b>Steht die Spalte ohne gemerkte Spaltenwahl nicht da?</b> (Konzept
+        /// Projektdialoge 4.10.) Die Spalte bleibt waehlbar — ueber „Spalten…“ in der
+        /// Kopfleiste des Katalogs —, in der Standardanzeige fehlt sie. So die Spalte
+        /// „im Projekt verwendet“: Die Verwendung zeigt die Marke am Bezeichner.
+        /// </summary>
+        public bool StandardAus { get; }
 
         /// <summary>Sprachneutraler ASCII-Schluessel — zugleich der Zugriff auf den Wert.</summary>
         public string Schluessel { get; }
@@ -283,6 +293,15 @@ namespace WindowsFormsApplication1
         /// Waermepumpen-Stammliste ebenso.
         /// </summary>
         public bool Geschuetzt { get; set; }
+
+        /// <summary>
+        /// <b>Ist der Satz im Projekt verwendet?</b> (Konzept Projektdialoge 4.10,
+        /// Anwenderentscheid 10.10.2026.) Die Katalogliste zeichnet daran die
+        /// Verwendungsmarke am Bezeichner und toent die Zeile; gesetzt wird es von
+        /// <see cref="Katalogverwendung.Stempeln"/> zusammen mit dem Wert der Spalte
+        /// <see cref="Katalogfilterprofil.SpVerwendet"/>.
+        /// </summary>
+        public bool ImProjekt { get; set; }
 
         /// <summary>Setzt einen Wert und liefert die Zeile zurueck (Baukasten).</summary>
         public Katalogfilterzeile Mit(string schluessel, Katalogwert wert)
@@ -1293,7 +1312,7 @@ namespace WindowsFormsApplication1
             var spalten = new List<Katalogspalte>(Spalten)
             {
                 new Katalogspalte(SpVerwendet, t("KFLT_SP_VERWENDET"), "",
-                                  Katalogspaltenart.JaNein)
+                                  Katalogspaltenart.JaNein, standardAus: true)
             };
 
             return new Katalogfilterprofil

@@ -1147,3 +1147,112 @@ Die alten Revisionen stammen aus der Bereinigung vom 13.09.2026 (Abschnitt oben)
 Gebäude, die vor diesem Upload keine Repo-Quelle hatten, ist keine Revision vermerkt. Nicht hochgeladen sind die
 Logbuch-Sätze der Berichtsvorlagen (Version offen) und die Repo-Quellen Mehrzonenmodell und Projekttransfer; die Tafel
 der Repo-Quellen oben führt die neuen Seiten noch mit „noch nicht hochgeladen“. Offene Punkte: Statusdatei, Nach #556.
+
+## Sammel-Upload 10.10.2026 (Versionen 1.2.0.7 bis 1.2.0.10, Auftrag #889)
+
+Dritter gebündelter Upload nach Regel 13.3: 99 Seiten der Rubrik „Programm Dokumentation“ (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen) und das Update-Logbuch mit den Versionen 1.2.0.10, 1.2.0.9, 1.2.0.8 und 1.2.0.7 (70 Sätze). Hochgeladen am 10.10.2026 durch die Orchestrierung (Benutzer Epos), je Seite als vollständiger Ersatz aus der Repo-Quelle unter `Projekte/Wiki/`; die Zugangsdaten standen nur als Umgebungsvariablen des Laufs. Vorher wurden alle Seiten geprüft (Aktualität, Abgleich mit den Logbuch-Änderungen, Parse-Prüfung) und 47 Live-Seiten ohne Repo-Quelle als Quelle übernommen. Rücklese aller Seiten byte-gleich, 0 Parse-Warnungen; Dateien und 19 Weiterleitungen unverändert. Die Seite Programm Dokumentation/Gebäudeimport bleibt zurückgehalten, bis der Anwender den Bedienbegriff „Befund“ entschieden hat. Seitenliste und Logbuch-Sätze: [`Wiki_Update_2026-09-26.md`](Wiki_Update_2026-09-26.md); Ablauf: [`Wiki-Upload_2026-10-10_Protokoll.md`](../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md).
+
+Die Versionsnummern folgen dem Anwenderentscheid 10.10.2026 („letzte Stelle um eins erhöhen“): 1.2.0.10 (29 Sätze), 1.2.0.9 (1), 1.2.0.8 (4), 1.2.0.7 (36). Die alten Revisionen sind die letzten Stände vor diesem Upload.
+
+| Seite | alte Revision | neue Revision | Art |
+|---|---|---|---|
+| Programm Dokumentation/Klimadaten | 676 | 728 | ersetzt |
+| Programm Dokumentation/Simulationsergebnisse | 711 | 729 | ersetzt |
+| Programm Dokumentation/Stromspeicher | 677 | 730 | ersetzt |
+| Programm Dokumentation/Hilfe-Assistent | 712 | 731 | ersetzt |
+| Programm Dokumentation/Wirtschaftlichkeit | 713 | 732 | ersetzt |
+| Programm Dokumentation/Kosten | 714 | 733 | ersetzt |
+| Programm Dokumentation/Pufferspeicher | 679 | 734 | ersetzt |
+| Programm Dokumentation/Gebäudemodell VDI 6007 | 680 | 735 | ersetzt |
+| Programm Dokumentation/Kühlung | 681 | 736 | ersetzt |
+| Programm Dokumentation/Gerätekataloge | 724 | 737 | ersetzt |
+| Programm Dokumentation/Simulation | 716 | 738 | ersetzt |
+| Programm Dokumentation/Photovoltaik | 684 | 739 | ersetzt |
+| Programm Dokumentation/Varianten | 717 | 740 | ersetzt |
+| Programm Dokumentation/Gebäude | 725 | 741 | ersetzt |
+| Programm Dokumentation/Baustoffe und Bauteilaufbauten | 685 | 742 | ersetzt |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | 727 | 743 | ersetzt |
+| Programm Dokumentation/Berichtsvorlagen | 720 | 744 | ersetzt |
+| Programm Dokumentation/Mehrzonenmodell | 721 | 745 | ersetzt |
+| Programm Dokumentation/Projekttransfer | 722 | 746 | ersetzt |
+| Grundlagen/Wärmepumpe | 637 | 747 | ersetzt |
+| Grundlagen/Wärmequelle Erdreich | 638 | 748 | ersetzt |
+| Grundlagen/Kessel und Spitzenlast | 639 | 749 | ersetzt |
+| Grundlagen/BHKW | 687 | 750 | ersetzt |
+| Grundlagen/Solarkollektoren | 688 | 751 | ersetzt |
+| Grundlagen/Pufferspeicher | 642 | 752 | ersetzt |
+| Grundlagen/Photovoltaik | 643 | 753 | ersetzt |
+| Grundlagen/Kühlung | 646 | 754 | ersetzt |
+| Programm Dokumentation/Wärmepumpe | 689 | 755 | ersetzt |
+| Programm Dokumentation/Wärmequelle Erdreich | 690 | 756 | ersetzt |
+| Programm Dokumentation/Heizkessel | 691 | 757 | ersetzt |
+| Programm Dokumentation/BHKW | 692 | 758 | ersetzt |
+| Programm Dokumentation/Solarthermie | 693 | 759 | ersetzt |
+| Programm Dokumentation/Energieerzeuger | 695 | 760 | ersetzt |
+| Programm Dokumentation | 654 | 761 | ersetzt |
+| Programm Dokumentation/Berechnung | 696 | 762 | ersetzt |
+| Programm Dokumentation/Berechnung/BHKW | 697 | 763 | ersetzt |
+| Programm Dokumentation/Berechnung/Brauchwasser | 698 | 764 | ersetzt |
+| Programm Dokumentation/Berechnung/Heizkessel | 699 | 765 | ersetzt |
+| Programm Dokumentation/Berechnung/Photovoltaik | 700 | 766 | ersetzt |
+| Programm Dokumentation/Berechnung/Prozesswärme | 701 | 767 | ersetzt |
+| Programm Dokumentation/Berechnung/Pufferspeicher | 702 | 768 | ersetzt |
+| Programm Dokumentation/Berechnung/Simulationsablauf | 703 | 769 | ersetzt |
+| Programm Dokumentation/Berechnung/Solarthermie | 704 | 770 | ersetzt |
+| Programm Dokumentation/Berechnung/Strombedarf | 705 | 771 | ersetzt |
+| Programm Dokumentation/Berechnung/Stromspeicher | 706 | 772 | ersetzt |
+| Programm Dokumentation/Berechnung/Wärmebedarf | 707 | 773 | ersetzt |
+| Programm Dokumentation/Berechnung/Wärmepumpe | 708 | 774 | ersetzt |
+| Programm Dokumentation/Berechnung/Wärmequelle Erdreich | 709 | 775 | ersetzt |
+| Programm Dokumentation/Betriebskalender | – | 776 | neu |
+| Programm Dokumentation/Nutzungsprofile | – | 777 | neu |
+| Programm Dokumentation/Pufferspeicher auslegen | – | 778 | neu |
+| Beispiele | 141 | 779 | ersetzt |
+| Datenexport | 89 | 780 | ersetzt |
+| Einstellungen, Hilfe und Sprache | 159 | 781 | ersetzt |
+| Ergebnisdarstellung | 88 | 782 | ersetzt |
+| Ergebnisse auswerten und Kosten hinterlegen | 129 | 783 | ersetzt |
+| Erste Schritte | 390 | 784 | ersetzt |
+| Erzeuger und Speicher auswählen | 97 | 785 | ersetzt |
+| FAQ | 527 | 786 | ersetzt |
+| Gebäude und Gebäudetypen | 79 | 787 | ersetzt |
+| Grundlagen/Erlösrechnung | 147 | 788 | ersetzt |
+| Grundlagen/Hydraulikschemata | 139 | 789 | ersetzt |
+| Grundlagen/Klimadaten | 222 | 790 | ersetzt |
+| Grundlagen/Kostenrechnung | 75 | 791 | ersetzt |
+| Grundlagen/Strombedarf und Lastprofile | 122 | 792 | ersetzt |
+| Grundlagen/Vergleich Energiebilanz | 74 | 793 | ersetzt |
+| Grundlagen/Wirtschaftlichkeitsrechnung | 515 | 794 | ersetzt |
+| Grundlagen/Wärmebedarfsrechnung | 64 | 795 | ersetzt |
+| Hilfe-Assistent | 168 | 796 | ersetzt |
+| Industrie und Gewerbe | 142 | 797 | ersetzt |
+| Installation und Update | 530 | 798 | ersetzt |
+| Klimadaten festlegen | 94 | 799 | ersetzt |
+| Kosten und Energiepreise | 90 | 800 | ersetzt |
+| Programm Dokumentation/Bericht | 320 | 801 | ersetzt |
+| Programm Dokumentation/Berichte und Kosten | 497 | 802 | ersetzt |
+| Programm Dokumentation/Brauchwasser | 427 | 803 | ersetzt |
+| Programm Dokumentation/Einstellungen | 326 | 804 | ersetzt |
+| Programm Dokumentation/Gesetzesparameter | 334 | 805 | ersetzt |
+| Programm Dokumentation/Katalogpflege | 340 | 806 | ersetzt |
+| Programm Dokumentation/Kurzanleitung | 406 | 807 | ersetzt |
+| Programm Dokumentation/Lizenz | 348 | 808 | ersetzt |
+| Programm Dokumentation/Programmablauf | 352 | 809 | ersetzt |
+| Programm Dokumentation/Projektverwaltung | 410 | 810 | ersetzt |
+| Programm Dokumentation/Prozesswärme | 428 | 811 | ersetzt |
+| Programm Dokumentation/Strombedarf | 430 | 812 | ersetzt |
+| Programm Dokumentation/Stromverbraucher | 429 | 813 | ersetzt |
+| Programm Dokumentation/Wärmebedarf | 425 | 814 | ersetzt |
+| Programmfunktionen | 157 | 815 | ersetzt |
+| Projekt anlegen | 408 | 816 | ersetzt |
+| Projektverwaltung | 404 | 817 | ersetzt |
+| Simulation konfigurieren und starten | 98 | 818 | ersetzt |
+| Simulation | 87 | 819 | ersetzt |
+| Stammdaten und Datenimport | 91 | 820 | ersetzt |
+| Strombedarf erfassen | 96 | 821 | ersetzt |
+| Varianten und Bericht | 151 | 822 | ersetzt |
+| Wirtschaftlichkeit | 514 | 823 | ersetzt |
+| Wärmebedarf erfassen | 149 | 824 | ersetzt |
+| Über EPOS-Plan | 138 | 825 | ersetzt |
+| Programmablauf | 111 | 826 | ersetzt |
+| Update-Logbuch | 723 | 827 | ersetzt |
