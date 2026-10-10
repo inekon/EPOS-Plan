@@ -115,6 +115,39 @@
            Bearbeiten und Exportieren, Anwenderentscheid 06.10.2026); nur ohne diesen Weg
            (Assistent) weich gesperrt, der Versuch nennt den Grund. Kein Delegat, kein Knopf. *@
         <Leistenzusatz>
+            @* "Bearbeiten..." je Bereich (Konzept Katalogauswahl 4.2): die Projektkopie des markierten
+               Projektgebaeudes samt Zonen und Bauteilen, wie Heizkessel und BHKW in der Kopfleiste
+               "Im Projekt". Eine noch nicht gespeicherte Zeile hat keine Projektkopie: Der Klick
+               speichert die Projektliste zuerst still (ListeSpeichern, wie OK ohne Schliessen) und
+               oeffnet dann den Editor; nur ohne diesen Weg (Assistent) weich gesperrt. Ohne Wahl
+               weich gesperrt, der Versuch nennt den Grund. Kein Delegat, kein Knopf; im Assistenten
+               wie die Schlussleiste nicht. *@
+            @if (ProjektGaben is not null && !Wizard)
+            {
+                @if (_gewaehlt is null)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
+                            aria-disabled="true" title="@SperreWahlProjekt"
+                            @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+                else if (!_gewaehlt.HatProjektkopie && ListeSpeichern is null)
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
+                            aria-disabled="true" title="@SperreNeueZeile"
+                            @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-gebaeude-projekt"
+                            title="@BtnProjektHinweis" @onclick="BeiProjekt">
+                        <span class="epos-zweispalten-knopftext">@BtnProjektText</span>
+                    </button>
+                }
+            }
             @if (InDbUebernehmen is not null)
             {
                 @if (_gewaehlt is not null && !_gewaehlt.HatProjektkopie && ListeSpeichern is null)
@@ -331,29 +364,6 @@
                 {
                     <button type="button" class="epos-knopf epos-gebaeude-flaeche"
                             @onclick="BeiAendern">@BtnAendernText</button>
-                }
-
-                @* Stufe G3 (Welle D2): die Projektkopie samt Zonen und Bauteilen. Eine noch nicht
-                   gespeicherte Zeile hat keine Projektkopie: Der Klick speichert die Projektliste
-                   zuerst still (ListeSpeichern, wie OK ohne Schliessen) und oeffnet dann den Editor;
-                   nur ohne diesen Weg (Assistent) weich gesperrt. Kein Delegat, kein Knopf. *@
-                @if (ProjektGaben is not null)
-                {
-                    @if (_gewaehlt is null)
-                    {
-                        <button type="button" class="epos-knopf epos-gebaeude-projekt" aria-disabled="true" title="@SperreWahlProjekt"
-                                @onclick="() => Melden(SperreWahlProjekt, WarnStufe.Hinweis)">@BtnProjektText</button>
-                    }
-                    else if (!_gewaehlt.HatProjektkopie && ListeSpeichern is null)
-                    {
-                        <button type="button" class="epos-knopf epos-gebaeude-projekt" aria-disabled="true" title="@SperreNeueZeile"
-                                @onclick="() => Melden(SperreNeueZeile, WarnStufe.Hinweis)">@BtnProjektText</button>
-                    }
-                    else
-                    {
-                        <button type="button" class="epos-knopf epos-gebaeude-projekt"
-                                title="@BtnProjektHinweis" @onclick="BeiProjekt">@BtnProjektText</button>
-                    }
                 }
 
                 @* Stufe G7a (Welle W3): der Gebaeudeexport im Format gbXML - aus der Projektkopie. Eine
@@ -845,8 +855,9 @@
 
     // --- Texte -----------------------------------------------------------------
 
-    /// <summary><c>GEBZ_BTN_PROJEKT</c> — der Knopf „Gebäude im Projekt bearbeiten…".</summary>
-    [Parameter] public string BtnProjektText { get; set; } = Resource.GEBZ_BTN_PROJEKT;
+    /// <summary><c>AUSWAHL_BTN_BEARBEITEN</c> — der Knopf „Bearbeiten…" in der Kopfleiste „Im Projekt"
+    /// (wie Heizkessel und BHKW); er öffnet den Editor der Projektkopie.</summary>
+    [Parameter] public string BtnProjektText { get; set; } = Resource.AUSWAHL_BTN_BEARBEITEN;
 
     /// <summary><c>GEBZ_BTN_PROJEKT_HINWEIS</c> — sein Kurztext.</summary>
     [Parameter] public string BtnProjektHinweis { get; set; } = Resource.GEBZ_BTN_PROJEKT_HINWEIS;
