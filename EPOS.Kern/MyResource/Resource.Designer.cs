@@ -134177,6 +134177,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste „{0}“ konnte nicht gelesen werden: {1} ähnelt.
+        /// </summary>
+        public static string WURZEL_LISTE_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_LISTE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Oberfläche führt die Ansicht nicht. ähnelt.
         /// </summary>
         public static string WURZEL_NICHT_GEFUEHRT {

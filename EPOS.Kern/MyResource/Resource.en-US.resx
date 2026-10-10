@@ -45793,6 +45793,9 @@ chart</value>
   <data name="KMA_KATALOG_LADEN_FEHLER" xml:space="preserve">
     <value>The chiller catalogue could not be read: {0}</value>
   </data>
+  <data name="WURZEL_LISTE_FEHLER" xml:space="preserve">
+    <value>The list “{0}” could not be read: {1}</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Chillers in the project</value>
   </data>
