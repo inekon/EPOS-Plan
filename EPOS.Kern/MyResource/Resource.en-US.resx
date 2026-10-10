@@ -42473,7 +42473,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Off: the monthly amount stays and is spread over the remaining days. On: the monthly amount decreases in proportion to the holiday hours.</value>
   </data>
   <data name="BKAL_HRL_JAHR" xml:space="preserve">
-    <value>In {0}: {1} holidays like Sunday, {2} holiday days. The run uses the reference year of the project.</value>
+    <value>In a common year with 1 January = {0}: {1} holidays like Sunday, {2} holiday days. The run uses the weekday grid of the project's climate region.</value>
   </data>
   <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
     <value>Operating calendar saved.</value>

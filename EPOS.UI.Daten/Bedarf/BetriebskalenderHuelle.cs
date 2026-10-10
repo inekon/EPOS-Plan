@@ -63,18 +63,19 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Auskunftszeile: Feiertage und Ferientage im Gemeinjahr, im Raster der Vorgabe
-        /// (<see cref="DbWerte.SOLAR_REFERENZJAHR_STANDARD"/>) und ohne Jahr nach der Konvention
-        /// <see cref="Gemeinjahrkalender"/> (E114); im Lauf gelten Raster und Preisreihe des Projekts.
+        /// Die Auskunftszeile: Feiertage und Ferientage im Gemeinjahr, im Rückfallraster des Katalogs
+        /// (<see cref="Konditionierungdatenweg.Rueckfallraster"/>, E115) und ohne Jahr nach der Konvention
+        /// <see cref="Gemeinjahrkalender"/>; im Lauf gelten das Raster der Klimaregion und die Preisreihe des Projekts.
         /// </summary>
         internal static string Herleitung(BetriebskalenderDaten d)
         {
             if (d == null) return "";
-            int jahr = DbWerte.SOLAR_REFERENZJAHR_STANDARD;
-            byte[] arten = AlsModell(d).Tagesarten(new Gemeinjahrkalender(Konditionierungsarbeitsstand.WochentagDesErstenJanuar(jahr)));
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Rueckfallraster;
+            byte[] arten = AlsModell(d).Tagesarten(raster);
             int feiertage = arten.Count(a => a == Betriebskalender.TAG_FEIERTAG);
             int ferien = arten.Count(a => a == Betriebskalender.TAG_FERIEN);
-            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKAL_HRL_JAHR, jahr, feiertage, ferien);
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKAL_HRL_JAHR,
+                                 Kalendertage.Wochentagname(raster.W0), feiertage, ferien);
         }
 
         /// <summary>Die sechzehn Länder mit Namen in der Oberflächensprache.</summary>

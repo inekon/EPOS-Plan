@@ -42480,7 +42480,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.</value>
   </data>
   <data name="BKAL_HRL_JAHR" xml:space="preserve">
-    <value>Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts.</value>
+    <value>Im Gemeinjahr mit 1. Januar = {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Wochentagsraster der Klimaregion des Projekts.</value>
   </data>
   <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
     <value>Betriebskalender gespeichert.</value>

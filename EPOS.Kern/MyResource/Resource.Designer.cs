@@ -7998,7 +7998,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Gemeinjahr mit 1. Januar = {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Wochentagsraster der Klimaregion des Projekts. ähnelt.
         /// </summary>
         public static string BKAL_HRL_JAHR {
             get {
