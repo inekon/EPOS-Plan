@@ -2589,12 +2589,14 @@ public class KiDialogkatalogTests : IDisposable
         var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
                                              () => Array.Empty<FlottenHinweis>());
 
-        sicht.Leistungspreis = 137.5;
-        Assert.Equal(137.5, eingaben.LeistungspreisEurProKwA);
-        Assert.Equal(137.5, eingaben.Auslegung!.Flotte!.Tarif.LeistungspreisEuroProKw);
+        // Den Leistungspreis setzt der Assistent nicht — die Maske speichert ihn von Hand
+        // sofort projektweit; der Setzer lehnt benannt ab.
+        double leistungspreis = eingaben.LeistungspreisEurProKwA;
+        Assert.Throws<InvalidOperationException>(() => sicht.Leistungspreis = 137.5);
+        Assert.Equal(leistungspreis, eingaben.LeistungspreisEurProKwA);
 
         sicht.KalkulationszinsProzent = 4.5;
-        Assert.Equal(0.045, eingaben.Auslegung.Flotte.Wirtschaftlichkeit.Kalkulationszins, 9);
+        Assert.Equal(0.045, eingaben.Auslegung!.Flotte!.Wirtschaftlichkeit.Kalkulationszins, 9);
 
         sicht.InvestitionProKWh = 350.0;
         Assert.Equal(350.0, eingaben.Auslegung.DirekteKosten.InvestEurProKwh);

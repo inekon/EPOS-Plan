@@ -82,6 +82,35 @@ public sealed class StromspeicherKiSetzenTests : EposBunitContext, IDisposable
         Assert.True(cut.Instance.Ungespeichert);
     }
 
+    [Fact]
+    public async Task Der_Leistungspreis_wird_vor_der_Bestaetigung_abgelehnt()
+    {
+        FlottenStudieKonfiguration flotte = Flotte(FlottenBetriebsziel.PeakShaving);
+        int geschrieben = 0;
+        var cut = Ansicht(new StromspeicherAuslegungDienste
+        {
+            Vorgaben = () => Vorgaben(flotte),
+            LeistungspreisSchreiben = _ => geschrieben++
+        });
+
+        double vorher = cut.Instance.Eingaben.LeistungspreisEurProKwA;
+        var schicht = new KiAusfuehrung { Schreibrecht = () => true };
+        var werte = new Dictionary<string, object?>
+        {
+            ["maske"] = KiMaskennamen.STROMSPEICHER_AUSLEGUNG, ["feld"] = "leistungspreis", ["wert"] = "99"
+        };
+        KiPruefErgebnis geprueft = KiPruefung.Pruefe(schicht.Register, "feld_setzen", werte);
+        Assert.True(geprueft.Gueltig, geprueft.FehlerText());
+
+        KiVorbereitung vorbereitung = await cut.InvokeAsync(
+            () => schicht.VorbereitenAsync(geprueft.Aufruf, CancellationToken.None));
+
+        Assert.Null(vorbereitung.Freigabe);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KI_STROM_LEISTUNGSPREIS_VON_HAND, vorbereitung.Ablehnung.Text);
+        Assert.Equal(vorher, cut.Instance.Eingaben.LeistungspreisEurProKwA);
+        Assert.Equal(0, geschrieben);
+    }
+
     // =====================================================================
     //  Hilfen
     // =====================================================================

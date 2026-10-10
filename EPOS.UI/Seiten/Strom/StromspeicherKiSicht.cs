@@ -91,9 +91,19 @@ public sealed class StromspeicherKiSicht
     /// Ohne Arbeitsstand mit Flotte gibt es nichts, wohin ein Wert gehört: Jede Setzung wird
     /// VOR der Bestätigung abgelehnt. Die Setzer lehnen denselben Fall als zweite Sicherung
     /// benannt ab, statt den Wert still zu verwerfen.
+    /// <para>Den Leistungspreis setzt der Assistent nie: Sein Handweg
+    /// (<c>LeistungspreisGesetzt</c>) speichert ihn über <c>LeistungspreisSchreiben</c>
+    /// sofort projektweit in die Datenbank.</para>
     /// </remarks>
     public string? Sperrgrund(string feld)
-        => string.IsNullOrWhiteSpace(feld) || Flotte is not null ? null : OhneFlotte;
+    {
+        if (string.IsNullOrWhiteSpace(feld)) return null;
+        if (string.Equals(feld, FELD_LEISTUNGSPREIS, StringComparison.Ordinal)) return LeistungspreisVonHand;
+        return Flotte is not null ? null : OhneFlotte;
+    }
+
+    /// <summary>Der Katalogschlüssel des Leistungspreises (gesperrt, siehe <see cref="Sperrgrund"/>).</summary>
+    public const string FELD_LEISTUNGSPREIS = "leistungspreis";
 
     // =====================================================================
     //  Wo der Anwender steht (Auftrag #224)
@@ -585,17 +595,14 @@ public sealed class StromspeicherKiSicht
     /// Optimierungsstand und im Tarif der Flotte; genau so tut es der Wirt, wenn der
     /// Anwender das Feld verlässt. Ein Setzer, der nur einen Ort träfe, ließe die
     /// Wirtschaftlichkeit mit der alten Zahl rechnen.
+    /// <para><b>Der Assistent setzt ihn nicht</b>: Von Hand schreibt die Maske ihn sofort
+    /// projektweit in die Datenbank (<c>LeistungspreisSchreiben</c>). Der Setzer lehnt
+    /// benannt ab — die zweite Sicherung hinter dem <see cref="Sperrgrund"/>.</para>
     /// </remarks>
     public double Leistungspreis
     {
         get => _eingaben()?.LeistungspreisEurProKwA ?? 0.0;
-        set
-        {
-            FlottenStudieKonfiguration f = FlotteZumSetzen;
-            _eingaben()!.LeistungspreisEurProKwA = value;
-            (f.Tarif ??= new FlottenTarif()).LeistungspreisEuroProKw = value;
-            Gemeldet?.Invoke();
-        }
+        set => throw new InvalidOperationException(LeistungspreisVonHand);
     }
 
     /// <summary>Energie-Ausgleichswert [€/kWh gespeichert]; <c>null</c> = keiner.</summary>
@@ -888,6 +895,8 @@ public sealed class StromspeicherKiSicht
     }
 
     private static string OhneFlotte => WindowsFormsApplication1.MyResource.Resource.KI_STROM_KEINE_FLOTTE;
+
+    private static string LeistungspreisVonHand => WindowsFormsApplication1.MyResource.Resource.KI_STROM_LEISTUNGSPREIS_VON_HAND;
 
     /// <summary>Die Flotte, in die eine Setzung schreibt; ohne sie eine benannte Absage.</summary>
     private FlottenStudieKonfiguration FlotteZumSetzen

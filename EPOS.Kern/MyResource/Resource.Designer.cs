@@ -63683,7 +63683,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte. Der Assistent setzt ihn nicht, weil die Maske ihn sofort projektweit speichert. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA2_LEISTUNGSPREIS_ERL {
             get {
@@ -72955,6 +72955,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_STROM_KEINE_FLOTTE {
             get {
                 return ResourceManager.GetString("KI_STROM_KEINE_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Leistungspreis setzen Sie in der Maske von Hand; er wird sofort projektweit gespeichert, deshalb setzt der Assistent ihn nicht. ähnelt.
+        /// </summary>
+        public static string KI_STROM_LEISTUNGSPREIS_VON_HAND {
+            get {
+                return ResourceManager.GetString("KI_STROM_LEISTUNGSPREIS_VON_HAND", resourceCulture);
             }
         }
         

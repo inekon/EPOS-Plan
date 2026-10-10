@@ -20574,6 +20574,9 @@ Do you want to allow this?</value>
   <data name="KI_STROM_KEINE_FLOTTE" xml:space="preserve">
     <value>The storage design has no working state with a fleet yet that the value belongs to – please open the view with a project first.</value>
   </data>
+  <data name="KI_STROM_LEISTUNGSPREIS_VON_HAND" xml:space="preserve">
+    <value>Set the demand charge by hand in the form; it is saved for the whole project at once, so the assistant does not set it.</value>
+  </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>The form reports on this: {0}</value>
   </data>
@@ -25372,7 +25375,7 @@ Do you want to allow this?</value>
     <value>The operating cost per discharged kilowatt-hour.</value>
   </data>
   <data name="KI_DLG_SPA2_LEISTUNGSPREIS_ERL" xml:space="preserve">
-    <value>The demand charge of the grid connection; it is also held in the fleet tariff.</value>
+    <value>The demand charge of the grid connection; it is also held in the fleet tariff. The assistant does not set it because the form saves it for the whole project at once.</value>
   </data>
   <data name="KI_DLG_SPA2_AUSGLEICH_ERL" xml:space="preserve">
     <value>The value used to settle a changed storage level at the end of the year.</value>
