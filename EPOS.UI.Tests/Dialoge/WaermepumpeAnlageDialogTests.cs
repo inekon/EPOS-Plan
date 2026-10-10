@@ -2375,4 +2375,51 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         => wurzel.QuerySelectorAll("label")
                  .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == text)
                  .QuerySelector("input")!;
+
+    // =================================================================================
+    // Assistent: die Maske beim Anzeigenamen genannt (Anwendermeldung 10.10.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Der Assistent nennt die Maske so, wie sie im Feldblock des Prompts steht — beim
+    /// ANZEIGENAMEN „Wärmepumpe im Projekt", nicht beim Schlüssel <c>Form_WP_Anlage</c>.
+    /// <c>formular_ausfuellen</c> muss dann genauso setzen wie mit dem Schlüssel; der
+    /// Vorlauf 50 liegt außerhalb der Kennlinienstufen und wird der Klappliste vorangestellt.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_fuellt_die_Maske_beim_Anzeigenamen_aus()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var daten = Voll();
+            var cut = Aufbauen(daten);
+
+            KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Ausfuehren(
+                "formular_ausfuellen",
+                new Dictionary<string, object?>
+                {
+                    ["maske"] = "Wärmepumpe im Projekt",
+                    ["werte"] = "vorlauf=50; ruecklauf=45"
+                }));
+
+            Assert.True(ergebnis.Status == KiKern.KiStatus.Ausgefuehrt, ergebnis.Text);
+            Assert.Equal(50, daten.Vorlauf);
+            Assert.Equal(45, daten.Ruecklauf);
+
+            cut.WaitForAssertion(() =>
+            {
+                var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                                .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
+                Assert.Equal(new[] { "50", "35", "45", "55" }, stufen);
+                Assert.Equal("45", cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                                      .QuerySelectorAll("input")[0].GetAttribute("value"));
+            });
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
 }

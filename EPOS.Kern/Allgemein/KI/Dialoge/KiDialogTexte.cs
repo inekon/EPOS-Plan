@@ -605,6 +605,18 @@
         /// </summary>
         internal static string MaskeMehrdeutig => MyResource.Resource.KI_DLG_MASKE_MEHRDEUTIG;
 
+        /// <summary>
+        /// Der genannte Maskenname trifft mehrere Masken. {0} = genannter Name,
+        /// {1} = Kandidaten als „Anzeigename (Schluessel)".
+        /// </summary>
+        internal static string MaskeNameMehrdeutig => MyResource.Resource.KI_DLG_MASKE_NAME_MEHRDEUTIG;
+
+        /// <summary>
+        /// Zusatz zur Absage <see cref="MaskeNichtOffen"/>, wenn eine ANDERE Maske offen
+        /// ist. {0} = Anzeigename, {1} = Schluessel der offenen Maske.
+        /// </summary>
+        internal static string OffeneMaske => MyResource.Resource.KI_DLG_OFFENE_MASKE;
+
         /// <summary>{0} = die offenen Masken.</summary>
         internal static string MehrereOffen => MyResource.Resource.KI_DLG_MEHRERE_OFFEN;
 
