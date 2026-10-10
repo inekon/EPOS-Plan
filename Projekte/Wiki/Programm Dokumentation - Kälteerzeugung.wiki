@@ -15,8 +15,7 @@ In der Reihenfolge der Bedienung:
 # '''Kältestrom''' (wahlweise) – ein eigener Stromträger und ein eigener Zähler für den Kältestrom ([[#abrechnung|Stromträger und Abrechnung]]).
 
 [[Datei:Kaelteanlage_Kaeltemaschine.svg|mini|600px|Prinzipbild: Kältemaschine mit Trocken-Rückkühler, Kältespeicher und Kühlübergabe im Gebäude; der Kältestrom läuft über einen eigenen Zähler.]]
-<!-- Bild: Kältemaschine im Projekt -->
-<!-- Bild: Anlagenschema mit Kältebahn -->
+[[Datei:Bildschirmfoto_Kaeltemaschine.png|mini|zentriert|800px|Kältemaschinen im Projekt – Bildschirmfoto mit Beispieldaten.]]
 
 == Deckung und Reihenfolge ==
 {{Anker|deckung|reihenfolge|kaskade}}

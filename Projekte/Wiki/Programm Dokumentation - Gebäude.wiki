@@ -97,7 +97,7 @@ Baualtersklasse und Energiestandard gehen in keine Rechnung ein. Die Klasse best
 
 === Reiter „Konditionierung" ===
 {{Anker|konditionierung|temperaturen-und-ferien}}
-<!-- Bild: Reiter Konditionierung mit Vorgabe-Matrix und Kalenderbedienung (Wochenprofil, Jahresband, Jahresraster) -->
+[[Datei:Bildschirmfoto_Konditionierung.png|mini|zentriert|800px|Reiter Konditionierung – Bildschirmfoto mit Beispieldaten.]]
 
 Der Reiter führt, wann und worauf das Gebäude geheizt, gekühlt und gelüftet wird und wann Geräte und Personen Wärme abgeben. Er steht in der Eingabe des Gebäudes im Projekt, im Katalogeditor und im Stammblatt der Verwaltung. Oben steht die '''Vorgabe-Matrix''', darunter je Größe eine '''Kalenderkarte'''. Alle Temperaturen sind '''absolute Raumsolltemperaturen''' in °C, keine Differenzen zum Soll am Tag. Welcher Wert zu welcher Stunde gilt, entscheidet diese Reihenfolge: Ferien vor Wochenende vor Nacht und Tag. Unter VDI 6007 ist die Matrix die Vorgabe, ein angelegter Kalender geht ihr vor; der Rechenweg Tagesbilanz nutzt nur die Felder der Heizspalte.
 
@@ -182,7 +182,7 @@ Ein Beispiel: ''Gebäude 1'' hat 100 m² Nutzfläche, das Projekt gibt 250 m² a
 
 === Reiter „Zonen" ===
 {{Anker|zonen}}
-<!-- Bild: Reiter Zonen mit Zonenliste und Summenzeile -->
+[[Datei:Bildschirmfoto_Zonen.png|mini|zentriert|800px|Reiter Zonen – Bildschirmfoto mit Beispieldaten.]]
 
 Der Reiter '''Zonen''' listet die Zonen des Gebäudes in ihrer Reihenfolge mit ''Zone'', ''Nutzfläche'', ''Volumen'', ''beheizt'', ''<math>H_{\mathrm{T}} = \sum U \cdot A + \sum \psi \cdot L</math>'' in W/K und der Zahl der ''Bauteile'', darunter die Summenzeile. Je Zeile stehen die Knöpfe:
 

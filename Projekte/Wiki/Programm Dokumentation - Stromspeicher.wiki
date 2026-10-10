@@ -135,7 +135,7 @@ Der Speicher rechnet nach Wärmeseite und Photovoltaik, je Viertelstunde, gegen 
 == Eingaben ==
 
 Der Dialog ''Stromspeicher'' des Projekts hat die Bereiche ''Im Projekt'', ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Die Summe in der Kopfleiste ''Im Projekt'' ist die Kapazität in kWh. Der Katalogfuß führt ''Löschen'' (gesperrte Sätze werden übersprungen), aber kein ''Neu…''; ''Bearbeiten…'' eines einzelnen ungesperrten Katalogsatzes öffnet den Modulkatalog mit diesem Satz, dort stehen ''Neu…'' und ''Duplizieren…''. Mehrere Einheiten desselben Speichers teilen sich die Projektkopie. ''In die Datenbank übernehmen…'' nimmt Kapazität, Leistung, Wirkungsgrad, Zyklen, Standby, Selbstentladung und Kostenwerte in den Katalog; die Betriebsführung der Anlage und der Energieträger bleiben im Projekt.
-<!-- Bild: Stromspeicher im Projektdialog mit Katalogauswahl -->
+[[Datei:Bildschirmfoto_Stromspeicher.png|mini|zentriert|800px|Stromspeicher – Bildschirmfoto mit Beispieldaten.]]
 
 * '''Auswahl aus der Datenbank''' – ''In das Projekt übernehmen'' legt die Kopie des gewählten Speichers sofort im Projekt an; die Liste ''Im Projekt'' zeigt die Zuordnung.
 * '''Name und Typ''' – Bezeichnung und Bauart des Speichers.

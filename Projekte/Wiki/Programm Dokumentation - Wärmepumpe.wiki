@@ -149,7 +149,7 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 === Auswahl: Projekt und Katalog ===
 
 Der Dialog ''Wärmepumpen Verwaltung'' ordnet sich wie die übrigen Erzeugerdialoge in ''Im Projekt'', ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Die Wärmepumpe hat zwei Besonderheiten: Es gibt kein ''Vergleichen…'' und kein ''Neu…'' im Dialog (beides liegt im Katalogeditor, den ''Bearbeiten…'' eines einzelnen ungesperrten Katalogsatzes öffnet), und die Kopfleiste ''Im Projekt'' führt zusätzlich ''Umstellen''.
-<!-- Bild: Wärmepumpen Verwaltung mit Projektliste und Katalog -->
+[[Datei:Bildschirmfoto_Waermepumpe.png|mini|zentriert|800px|Wärmepumpen Verwaltung – Bildschirmfoto mit Beispieldaten.]]
 
 
 * {{Anker|auswahl}}'''ausgewählte Wärmepumpen''' und '''Wärmepumpen aus Datenbank''' – oben stehen die Wärmepumpen des Projekts mit Hersteller, Typ, Leistung, Vorlauf, Rücklauf und Betriebsart, darunter der Katalog mit Filterzeile und der Verwendungsmarke ''im Projekt''; über ''Spalten…'' lassen sich die angezeigten Katalogspalten wählen.

@@ -13,7 +13,6 @@ Das Blatt hat keinen Menüpunkt. Es öffnet sich über
 
 Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu. Der Katalog gilt für alle Projekte. Das Blatt hat keine Schlussleiste: Anlegen, Umbenennen, Duplizieren und Löschen schreiben sofort, den Entwurf eines Profils schreibt ''Speichern'' im Profileditor.
 
-<!-- Bild: Blatt Nutzungsprofile mit Katalogbaum, Profileditor und Vorschau -->
 
 == Bereiche ==
 

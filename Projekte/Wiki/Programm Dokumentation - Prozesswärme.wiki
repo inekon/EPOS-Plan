@@ -16,7 +16,7 @@ Jeder Prozess ist im Projekt eine eigene Zuordnung mit gepflegter Jahressumme, d
 
 Hintergrund zu Lastgang, Temperaturniveau und Einbindung unter [[Grundlagen/Prozesswärme|Grundlagen: Prozesswärme]].
 
-<!-- Bild: Prozesswärme -->
+[[Datei:Bildschirmfoto_Prozesswaerme.png|mini|zentriert|800px|Prozesswärme – Bildschirmfoto mit Beispieldaten.]]
 
 == Eingaben ==
 

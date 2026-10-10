@@ -16,7 +16,7 @@ Jede Zuordnung eines Profils zum Projekt ist eine eigene Zeile mit gepflegter Ja
 
 Welcher Weg passt, hängt von der Frage ab: Für die Energiebilanz eines Jahres genügt das Bestandsprofil mit seinem geglätteten Stundengang. Wer Spitzen, Speichergröße und Zirkulation aus Leitungsdaten braucht oder mehrere Nutzungen in einem Gebäude hat, nimmt das Zapfprofil. Hintergrund unter [[Grundlagen/Brauchwasser|Grundlagen: Brauchwasser]].
 
-<!-- Bild: Brauchwasserwärme -->
+[[Datei:Bildschirmfoto_Brauchwasser.png|mini|zentriert|800px|Brauchwasserwärme – Bildschirmfoto mit Beispieldaten.]]
 
 == Eingaben ==
 

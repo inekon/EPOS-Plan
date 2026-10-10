@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Simulationsergebnisse
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Das '''Ergebnis der Simulation''' steht in Schritt ''③ Ergebnis'' der Ansicht ''Simulation'' und ebenso rechts neben dem Lauf im Reiter ''Simulation'' der Startseite ([[Programm Dokumentation/Simulation#ablauf|Simulation durchführen]]). Es gliedert sich in Reiter: ''Übersicht'', ''Wärme-/Strombedarf'', je gerechnetem Erzeuger ein Reiter – ''Wärmepumpe'', ''Heizkessel'', ''Solarthermie'', ''BHKW'', ''Photovoltaik'', ''Stromspeicher'' – und zuletzt ''Ergebnis'' mit den Blättern ''Wärmeproduktion'', ''Stromproduktion'', bei Kälte ''Kälteproduktion'', und ''Autarkie-Analyse''. Das Ergebnis macht mit der ''Übersicht'' auf; solange nicht gerechnet ist, steht der Schritt nicht offen und sagt, warum. <!-- Bild: Ergebnis mit Reiterleiste und Übersicht Wärme | Strom -->
+Das '''Ergebnis der Simulation''' steht in Schritt ''③ Ergebnis'' der Ansicht ''Simulation'' und ebenso rechts neben dem Lauf im Reiter ''Simulation'' der Startseite ([[Programm Dokumentation/Simulation#ablauf|Simulation durchführen]]). Es gliedert sich in Reiter: ''Übersicht'', ''Wärme-/Strombedarf'', je gerechnetem Erzeuger ein Reiter – ''Wärmepumpe'', ''Heizkessel'', ''Solarthermie'', ''BHKW'', ''Photovoltaik'', ''Stromspeicher'' – und zuletzt ''Ergebnis'' mit den Blättern ''Wärmeproduktion'', ''Stromproduktion'', bei Kälte ''Kälteproduktion'', und ''Autarkie-Analyse''. Das Ergebnis macht mit der ''Übersicht'' auf; solange nicht gerechnet ist, steht der Schritt nicht offen und sagt, warum.
 
 == Eingaben ==
 
@@ -107,8 +107,6 @@ Rechnet das Projekt mit einer [[Programm Dokumentation/Simulation#anlagenkopplun
 * '''Kälteseite im Kreis''' – auf Stufe AK3 mit Kühlung: ''Tage mit Sperre der Gegenseite'', ''Gesperrte Energie (Heizen / Kühlen)'', ''Stunden an der Kälteschranke'' und ''Umschaltstunden''; rechnet ein Gebäude mit Kühlkurve, folgen deren drei Kennzahlen ([[Programm Dokumentation/Kälteerzeugung#kaelteschranke|Kühlung: Kälteschranke]]).
 
 Die Kennzahlen gehören zum letzten Projektlauf. Die Auskunft des Bedarfsdialogs selbst rechnet ohne geschlossenen Kreis und sagt das.
-
-<!-- Bild: Bedarfsdialog eines gekoppelten Gebäudes mit Komfortkacheln und Kennzahlen des Kreises -->
 
 == Siehe auch ==
 
