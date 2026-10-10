@@ -48,7 +48,9 @@ namespace EPOS.Kern.Tests
             // DREIZEHN seit der Stufe Z4b: "TyptagGaben" bringt den Dialog der eingespielten
             // VDI-4655-Typtage als Ueberlagerung des Katalogdialogs herein. VIERZEHN mit ZU26:
             // "OrdnerwahlVerfuegbar" sagt, ob die Plattform einen Paketordner waehlen laesst.
-            Assert.Equal(14, gaben.Count);
+            // FUENFZEHN mit CSV-3: "CsvSpeichern" schreibt die Zapfprofil-Zeitreihe ueber die
+            // Diagrammexportnaht als CSV-Datei (Knopf "CSV..." am Bild).
+            Assert.Equal(15, gaben.Count);
             Assert.Equal(ZapfprofilHuelle.HILFE_KATALOG, gaben["HilfeSchluessel"]);
         }
 
