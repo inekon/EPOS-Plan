@@ -124381,6 +124381,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise anzeigen ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ausblenden ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Meldung ausblenden ähnelt.
         /// </summary>
         public static string WARNBANNER_SCHLIESSEN_TOOLTIP {
