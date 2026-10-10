@@ -1861,10 +1861,10 @@ Ohne Quellpuffer steht hier 0,00.</value>
     <value>Doppelklick öffnet die Pufferverwaltung.</value>
   </data>
   <data name="SIM_SCHEMA_DK_KAELTEMASCHINE" xml:space="preserve">
-    <value>Doppelklick öffnet die Kältemaschinen des Projekts.</value>
+    <value>Doppelklick öffnet die Konfiguration der Kältemaschine.</value>
   </data>
   <data name="SIM_SCHEMA_DK_RUECKKUEHLUNG" xml:space="preserve">
-    <value>Doppelklick öffnet die Kältemaschinen des Projekts; dort steht die Rückkühlart.</value>
+    <value>Doppelklick öffnet die Konfiguration der Kältemaschine; ihre Gerätedaten nennen die Rückkühlart.</value>
   </data>
   <data name="SIM_SCHEMA_LEER" xml:space="preserve">
     <value>Für dieses Projekt ist noch keine Hydraulik konfiguriert.</value>
@@ -51297,6 +51297,84 @@ Chart</value>
   </data>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
+  </data>
+  <data name="SIMKONF_GRP_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="SIMKONF_KAELTE_ERZEUGER" xml:space="preserve">
+    <value>Kälteerzeuger (Rechenfolge)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_SPEICHER" xml:space="preserve">
+    <value>Kältespeicher</value>
+  </data>
+  <data name="SIMKONF_KAELTE_SPEICHER_LEER" xml:space="preserve">
+    <value>Kein Kältespeicher im Projekt. Einen Kältespeicher legt die Pufferverwaltung als Speicher mit Nutzung Kälte an.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FOLGE" xml:space="preserve">
+    <value>Rechenfolge je Kältestunde: {0}. Die Nummern an den Kacheln zeigen sie; die Folge ist fest.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_FREI" xml:space="preserve">
+    <value>freie Kühlung</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_SPEICHER" xml:space="preserve">
+    <value>Kältespeicher</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_WP" xml:space="preserve">
+    <value>Wärmepumpen in der Folge der Wärmekaskade</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_KM" xml:space="preserve">
+    <value>Kältemaschinen in Anlagenfolge</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AUS" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte. Angelegt: {0} Kältemaschinen, {1} Wärmepumpen mit Kühlfunktion, {2} Kältespeicher — sie bleiben gespeichert und wirken nicht.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AUS_LEER" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_LEER" xml:space="preserve">
+    <value>Keine Kälteerzeuger im Projekt. Kältemaschinen legt die Kachel „Kühlung und Kälteanlagen“ an; eine Wärmepumpe mit Kühlfunktion kühlt mit eingeschaltetem Kühlbetrieb.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI" xml:space="preserve">
+    <value>Freie Kühlung: {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI_VORN" xml:space="preserve">
+    <value>{0} (vor allen Erzeugern)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI_PLATZ" xml:space="preserve">
+    <value>{0} (an ihrem Platz)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_NICHT_KASKADE" xml:space="preserve">
+    <value>Steht nicht in der Wärmekaskade — ohne Platz dort kühlt die Wärmepumpe nicht. Aufnehmen unter „Wärmeerzeuger“.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_GILT_FUER" xml:space="preserve">
+    <value>Vorlauf und Hilfsstrom gelten für {0} Anlagen mit derselben Projektkopie.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AN" xml:space="preserve">
+    <value>+ Kühlbetrieb</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_AN" xml:space="preserve">
+    <value>Kühlbetrieb der Wärmepumpe einschalten</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_AUS" xml:space="preserve">
+    <value>Kühlbetrieb der Wärmepumpe ausschalten</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_KONFIG" xml:space="preserve">
+    <value>Konfiguration öffnen</value>
+  </data>
+  <data name="SIMKONF_KAELTE_KM_TITEL" xml:space="preserve">
+    <value>Kältemaschine konfigurieren — {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_WP_TITEL" xml:space="preserve">
+    <value>Kühlbetrieb — {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_KM_FEHLT" xml:space="preserve">
+    <value>Die Kältemaschine steht nicht (mehr) im Projekt.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_WP_FEHLER" xml:space="preserve">
+    <value>Der Kühlbetrieb der Wärmepumpe wurde nicht geschrieben: {0}</value>
+  </data>
+  <data name="KMK_GERAET_ZEILE" xml:space="preserve">
+    <value>Gerät: {0}</value>
   </data>
 </root>
 

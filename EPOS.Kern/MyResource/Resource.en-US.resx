@@ -1861,10 +1861,10 @@ Without a source buffer this reads 0.00.</value>
     <value>Double-click opens the buffer storage management.</value>
   </data>
   <data name="SIM_SCHEMA_DK_KAELTEMASCHINE" xml:space="preserve">
-    <value>Double-click opens the project's chillers.</value>
+    <value>Double-click opens the chiller's configuration.</value>
   </data>
   <data name="SIM_SCHEMA_DK_RUECKKUEHLUNG" xml:space="preserve">
-    <value>Double-click opens the project's chillers, which show the heat rejection type.</value>
+    <value>Double-click opens the chiller's configuration; its unit data show the heat rejection type.</value>
   </data>
   <data name="SIM_SCHEMA_LEER" xml:space="preserve">
     <value>No hydraulic configuration has been set up for this project yet.</value>
@@ -51290,6 +51290,84 @@ chart</value>
   </data>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
+  </data>
+  <data name="SIMKONF_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMKONF_KAELTE_ERZEUGER" xml:space="preserve">
+    <value>Cooling generators (calculation order)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_SPEICHER" xml:space="preserve">
+    <value>Cold storage</value>
+  </data>
+  <data name="SIMKONF_KAELTE_SPEICHER_LEER" xml:space="preserve">
+    <value>No cold storage in the project. The buffer management creates one as a storage with use “cooling”.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FOLGE" xml:space="preserve">
+    <value>Calculation order in each cooling hour: {0}. The numbers on the tiles show it; the order is fixed.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_FREI" xml:space="preserve">
+    <value>free cooling</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_SPEICHER" xml:space="preserve">
+    <value>cold storage</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_WP" xml:space="preserve">
+    <value>heat pumps in the order of the heat cascade</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_KM" xml:space="preserve">
+    <value>chillers in plant order</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AUS" xml:space="preserve">
+    <value>The project does not calculate cooling. Present: {0} chillers, {1} heat pumps with cooling function, {2} cold storages — they remain saved and have no effect.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AUS_LEER" xml:space="preserve">
+    <value>The project does not calculate cooling.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_LEER" xml:space="preserve">
+    <value>No cooling generators in the project. Chillers are added with the tile “Cooling and chillers”; a heat pump with cooling function cools once its cooling mode is switched on.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI" xml:space="preserve">
+    <value>Free cooling: {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI_VORN" xml:space="preserve">
+    <value>{0} (ahead of all generators)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI_PLATZ" xml:space="preserve">
+    <value>{0} (at its position)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_NICHT_KASKADE" xml:space="preserve">
+    <value>Not in the heat cascade — without a position there the heat pump does not cool. Add it under “Heat generators”.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_GILT_FUER" xml:space="preserve">
+    <value>Supply temperature and auxiliary power apply to {0} plants sharing the same project copy.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AN" xml:space="preserve">
+    <value>+ cooling mode</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_AN" xml:space="preserve">
+    <value>Switch on the heat pump's cooling mode</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_AUS" xml:space="preserve">
+    <value>Switch off the heat pump's cooling mode</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_KONFIG" xml:space="preserve">
+    <value>Open configuration</value>
+  </data>
+  <data name="SIMKONF_KAELTE_KM_TITEL" xml:space="preserve">
+    <value>Configure chiller — {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_WP_TITEL" xml:space="preserve">
+    <value>Cooling mode — {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_KM_FEHLT" xml:space="preserve">
+    <value>The chiller is no longer in the project.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_WP_FEHLER" xml:space="preserve">
+    <value>The heat pump's cooling mode was not written: {0}</value>
+  </data>
+  <data name="KMK_GERAET_ZEILE" xml:space="preserve">
+    <value>Unit: {0}</value>
   </data>
 </root>
 
