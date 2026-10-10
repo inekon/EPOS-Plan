@@ -161,7 +161,20 @@ namespace WindowsFormsApplication1
         /// <see cref="Vermerk"/> in das eingeschaltete Protokoll des Prozesses; ohne
         /// eingeschaltetes Protokoll (Tests, Referenzlauf) geschieht nichts.
         /// </summary>
-        public static void Vermerken(string zeile) => _eingeschaltet?.Vermerk(zeile);
+        public static void Vermerken(string zeile)
+        {
+            _eingeschaltet?.Vermerk(zeile);
+            if (string.IsNullOrEmpty(zeile)) return;
+            try { Vermerkt?.Invoke(zeile); }
+            catch { /* ein Protokoll darf nie der Grund eines Fehlers sein */ }
+        }
+
+        /// <summary>
+        /// Meldet jeden Vermerk aus <see cref="Vermerken"/> — auch ohne eingeschaltetes Protokoll.
+        /// Damit belegen Prüfungen, dass ein Weg seinen Fehler protokolliert, ohne die Datei
+        /// des Prozesses einzuschalten.
+        /// </summary>
+        public static event Action<string> Vermerkt;
 
         /// <summary>Der Text eines Eintrags — ohne Zeitstempel-Kopf der Drosselung.</summary>
         internal string Text(string art, Exception ausnahme, string stapel)

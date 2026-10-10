@@ -121,8 +121,8 @@
                    aria-label="@knoten.Titel"
                    aria-pressed="@(gewaehlt ? "true" : "false")"
                    @ref="_kaesten[knoten.Schluessel]"
+                   @attributes="Doppelklick(knoten.Schluessel)"
                    @onclick="() => Waehlen(knoten.Schluessel)"
-                   @ondblclick="() => Bearbeiten(knoten.Schluessel)"
                    @onkeydown="e => BeiTaste(e, knoten.Schluessel)">
 
                     <title>@Kurzhinweis(knoten)</title>
@@ -220,8 +220,8 @@
 
                     <g class="@Bandklasse(glied)" tabindex="0" role="button"
                        aria-label="@glied.Text"
+                       @attributes="Doppelklick(glied.Schluessel)"
                        @onclick="() => Waehlen(glied.Schluessel)"
-                       @ondblclick="() => Bearbeiten(glied.Schluessel)"
                        @onkeydown="e => BeiTaste(e, glied.Schluessel)">
                         <rect class="epos-schema-pille" x="@glied.X" y="@glied.Y"
                               width="@glied.Breite" height="@glied.Hoehe"
@@ -325,6 +325,15 @@
     [Parameter] public EventCallback<string> BearbeitenGewuenscht { get; set; }
 
     /// <summary>
+    /// Auftrag KS-2: WELCHES Element einen Editor hat und was sein Tooltipp dazu sagt. Je
+    /// Schluessel <c>null</c> = kein Editor — das Element traegt dann keinen Doppelklick, und
+    /// die Eingabetaste waehlt nur; <c>""</c> = Editor ohne Zusatzzeile; sonst die Zeile
+    /// („Doppelklick öffnet …"), die unter Titel und Hinweis in den Tooltipp kommt. Ohne
+    /// Delegat (<c>null</c>) hat jedes Element den Doppelklick, wie vor KS-2.
+    /// </summary>
+    [Parameter] public Func<string, string?>? Editorhinweis { get; set; }
+
+    /// <summary>
     /// Holt den gewaehlten Kasten in den Sichtbereich (ueber den Fokus).
     /// <c>false</c> in Pruefprogrammen und ueberall dort, wo der Fokus woanders
     /// gebraucht wird.
@@ -395,6 +404,25 @@
     private Task Bearbeiten(string schluessel)
         => BearbeitenGewuenscht.InvokeAsync(schluessel);
 
+    /// <summary>Hat das Element einen Editor? Ohne <see cref="Editorhinweis"/> jedes.</summary>
+    private bool HatEditor(string schluessel)
+        => Editorhinweis is null || Editorhinweis(schluessel) is not null;
+
+    private static readonly IReadOnlyDictionary<string, object> OhneDoppelklick
+        = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Der Doppelklick als Attributsatz — nur fuer ein Element MIT Editor. Ein Element ohne
+    /// Editor bekommt keinen <c>ondblclick</c>, statt einen Handler zu tragen, der nichts tut.
+    /// </summary>
+    private IReadOnlyDictionary<string, object> Doppelklick(string schluessel)
+        => HatEditor(schluessel)
+            ? new Dictionary<string, object>
+            {
+                ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => Bearbeiten(schluessel))
+            }
+            : OhneDoppelklick;
+
     /// <summary>
     /// Eingabe und Leertaste waehlen; Eingabe auf einem BEREITS gewaehlten Element
     /// oeffnet den Editor — der Tastaturweg zum Doppelklick.
@@ -404,7 +432,8 @@
         if (e.Key == " " || e.Key == "Spacebar") return Waehlen(schluessel);
         if (e.Key != "Enter") return Task.CompletedTask;
 
-        return schluessel == Gewaehlt ? Bearbeiten(schluessel) : Waehlen(schluessel);
+        if (schluessel != Gewaehlt) return Waehlen(schluessel);
+        return HatEditor(schluessel) ? Bearbeiten(schluessel) : Task.CompletedTask;
     }
 
     // =====================================================================
@@ -498,11 +527,15 @@
     /// Der Kurzhinweis eines Kastens — Titel, Hinweis und (bei Warnung) der Warntext,
     /// woertlich wie <c>SchemaAnsicht.OnMouseMove</c>:381-389.
     /// </summary>
-    private static string Kurzhinweis(SchemaKnoten n)
+    private string Kurzhinweis(SchemaKnoten n)
     {
         string text = n.Titel;
         if (!string.IsNullOrEmpty(n.Hinweis)) text += "\n" + n.Hinweis;
         if (n.Warnung && !string.IsNullOrEmpty(n.Warntext)) text += "\n" + n.Warntext;
+
+        // KS-2: der Weg des Doppelklicks als letzte Zeile, wo der Wirt ihn nennt.
+        string? editor = Editorhinweis?.Invoke(n.Schluessel);
+        if (!string.IsNullOrEmpty(editor)) text += "\n" + editor;
         return text;
     }
 }
