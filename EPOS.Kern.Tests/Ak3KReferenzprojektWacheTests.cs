@@ -162,8 +162,8 @@ namespace EPOS.Kern.Tests
             // 1055 unverändert: Kältemaschine 20 kW, ein Kaltwasserspeicher.
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt = ? AND Nennkaelteleistung_kW = 20", KAELTEVORLAGE));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ? AND Verwendung = 'Kaelte'", KAELTEVORLAGE));
-            // Nach 1059 nur die Referenzprojekte der Übergabegrenze (1060), der Kühlkurve (1061 RP-KK, 1062 RP-KKZ) und der Kältemaschinen-Teillast (1063, KM3).
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID > ? AND ID NOT IN (1060, 1061, 1062, 1063)", PROJEKT));
+            // Nach 1059 nur die Referenzprojekte der Übergabegrenze (1060), der Kühlkurve (1061 RP-KK, 1062 RP-KKZ) und der Kältemaschinen-Teillast (1063, KM3) und der freien Kühlung (1064, FK).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID > ? AND ID NOT IN (1060, 1061, 1062, 1063, 1064)", PROJEKT));
         }
 
         [Fact]
