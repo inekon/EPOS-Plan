@@ -8,6 +8,7 @@ Der '''Strombedarf''' entsteht auf demselben Weg wie der Wärmebedarf: aus Verbr
 * '''Betriebskalender''' – je Zuordnung eines Standardlastprofils wählt die Gruppe ''Betriebskalender'' einen Kalender mit Feiertagen und Betriebsferien, der das Wochenprofil tageweise ersetzt ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
 * '''Zeitraster''' – EPOS-Plan rechnet die Stromseite intern in 35.040 Viertelstundenwerten, weil Eigenverbrauch und Speicherbewirtschaftung in Stundenmittelwerten zu günstig ausfallen.
 * '''Ergebnis''' – maximaler Leistungsbedarf, Jahresverbrauch, Monatswerte und die geordnete Jahresdauerlinie.
+* '''Grafik''' – der Reiter ''Grafik'' im Dialog Wärme-/Strombedarf zeigt den Strombedarf als Jahresganglinie mit Zoomleiste. Die Knopfgruppe ''Jahr'', ''Monat'', ''Woche'', ''Tag'' wählt das Zeitraster; Monat, Woche und Tag zeigen die Summen als gestapelte Säulen. ''CSV…'' am Bild speichert die gewählte Ansicht als CSV-Datei, siehe [[Datenexport]].
 
 == Berechnung ==
 
