@@ -50,8 +50,8 @@ const BILDER = [
   ['kaeltemaschine', 'Kaeltemaschine'],
   // Die Reiter des Gebaeudeeditors kommen aus der Konditionierungsprobe: deren Satz ist
   // ohne Datenbank und traegt neutrale Namen ("Büro OG", "Außenwand EG"). Aufgenommen
-  // wird die Ueberlagerung in einem hohen Fenster, damit Matrix und Kalender darin stehen.
-  ['konditionierung', 'Konditionierung', { seite: '/konditionierungsprobe?fall=vorlagen', reiter: 'Konditionierung', hoehe: 1800 }],
+  // wird die Ueberlagerung in einem hohen Fenster (2600 px), damit Matrix, Kalenderkarten und Ferienfelder ganz darin stehen.
+  ['konditionierung', 'Konditionierung', { seite: '/konditionierungsprobe?fall=vorlagen', reiter: 'Konditionierung', hoehe: 2600 }],
   ['zonen', 'Zonen', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', hoehe: 1000 }],
   ['zonendialog', 'Zonendialog', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', klick: 'Öffnen…', hoehe: 3000 }],
 ];
