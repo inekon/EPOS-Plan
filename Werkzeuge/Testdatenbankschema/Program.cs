@@ -3386,6 +3386,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrRang + " - vollstaendig: " + KaelteRangSchema.Vollstaendig() +
                                   ", Zeilen mit Rang: " + KaelteRangSchema.ZeilenMitRang() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
+            //      Deckungsspalten an Z_ProjektWaermebedarf, Ergebnisspalten, Saat. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltebedarf.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt ordnet einen Kaeltebedarf zu, jeder Lastgang steht auf 'zentral'.
+            string nrKb = KaeltebedarfSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb + " - Kaeltebedarf: " +
+                              (KaeltebedarfSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb = new List<string>();
+                angelegt += KaeltebedarfSchema.Ausfuehren(berichtKb);
+                foreach (string zeile in berichtKb)
+                    Console.WriteLine("Schritt " + nrKb + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb + " - vollstaendig: " + KaeltebedarfSchema.Vollstaendig() + " (erwartet True).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

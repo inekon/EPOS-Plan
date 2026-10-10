@@ -43267,6 +43267,12 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KABG_KATALOG_PWT" xml:space="preserve">
     <value>Process-heat weekly profiles</value>
   </data>
+  <data name="KABG_KATALOG_KB" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="KABG_KATALOG_KBT" xml:space="preserve">
+    <value>Cooling demand weekly profiles</value>
+  </data>
   <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
     <value>Building materials</value>
   </data>

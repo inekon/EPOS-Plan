@@ -43274,6 +43274,12 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KABG_KATALOG_PWT" xml:space="preserve">
     <value>Prozesswärme-Wochenprofile</value>
   </data>
+  <data name="KABG_KATALOG_KB" xml:space="preserve">
+    <value>Kältebedarfsprofile</value>
+  </data>
+  <data name="KABG_KATALOG_KBT" xml:space="preserve">
+    <value>Kältebedarf-Wochenprofile</value>
+  </data>
   <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
     <value>Baustoffe</value>
   </data>

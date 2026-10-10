@@ -48441,6 +48441,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KB {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KBT {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KESSEL {
