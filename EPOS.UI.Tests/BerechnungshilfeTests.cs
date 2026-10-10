@@ -795,12 +795,20 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     };
 
     /// <summary>
-    /// UeS2: Ein Wirt mit Zusammenfassung (Heizkessel) zeichnet sein Satzfragment samt
+    /// UeS2: Wirte mit Zusammenfassung, deren Infoknöpfe NUR im Satzfragment stehen — es steht
+    /// ausschließlich in der Satz-Überlagerung. Heizkessel, BHKW, Puffer- und Stromspeicher legen
+    /// ihre Infoknöpfe seit UeS2b zusätzlich in den Kopf der Detailzeile (<c>SatzKopfKnoepfe</c>)
+    /// und stehen deshalb NICHT hier: ihre Knöpfe sind ohne Überlagerung erreichbar.
+    /// </summary>
+    internal static readonly HashSet<string> NurInDerUeberlagerung = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// UeS2: Ein Wirt aus <see cref="NurInDerUeberlagerung"/> zeichnet sein Satzfragment samt
     /// Infoknöpfen nur in der Satz-Überlagerung — sie wird dafür geöffnet.
     /// </summary>
     internal static void SatzUeberlagerungOeffnen(IRenderedComponent<DynamicComponent> gezeichnet, string komponente)
     {
-        if (komponente != "HeizkesselDialog") return;
+        if (!NurInDerUeberlagerung.Contains(komponente)) return;
         var baustein = gezeichnet.FindComponent<EPOS.UI.Bausteine.Zweispaltenauswahl>();
         gezeichnet.InvokeAsync(() => baustein.Instance.SatzUeberlagerungOeffnen()).GetAwaiter().GetResult();
     }

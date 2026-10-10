@@ -163,6 +163,13 @@
                         <span class="epos-zweispalten-satzdetails">@Resource.AUSWAHL_SATZ_DETAILS</span>
                     }
                 </button>
+                @if (SatzKopfKnoepfe is not null && !_satzGross)
+                {
+                    @* KOPFKNOEPFE DES WIRTS (UeS2b): seine Infoknoepfe „Grundlagen" und „Berechnung" -
+                       ohne Ueberlagerung erreichbar. Steht die Satz-Ueberlagerung offen, traegt sie
+                       ihr Fragment samt Knoepfen; dann fehlen sie hier (eine Stelle je Ansicht). *@
+                    <span class="epos-zweispalten-satzkopfknoepfe">@SatzKopfKnoepfe</span>
+                }
                 @if (SatzZusammenfassung is not null)
                 {
                     @* BEARBEITEN (UeS2): ersetzt „Details" und „Vergroessern" - derselbe Weg in die
@@ -428,6 +435,15 @@
     /// „kein Satz gewählt".
     /// </summary>
     [Parameter] public IReadOnlyList<Satzangabe>? SatzZusammenfassung { get; set; }
+
+    /// <summary>
+    /// <b>Knöpfe des Wirts im Kopf der Detailzeile</b> (UeS2b), rechts vor „Bearbeiten" bzw.
+    /// „Vergrößern": die Infoknöpfe „Grundlagen" und „Berechnung", die sonst nur im Fragment
+    /// <see cref="Satz"/> stünden — mit Zusammenfassung also nur in der Überlagerung. Solange die
+    /// Satz-Überlagerung offen ist, zeichnet der Baustein sie nicht (das Fragment trägt dann
+    /// seine eigenen); so steht jeder Knopf je Ansicht an genau einer Stelle.
+    /// </summary>
+    [Parameter] public RenderFragment? SatzKopfKnoepfe { get; set; }
 
     /// <summary>Die Detailzeile wurde auf- oder zugeklappt.</summary>
     [Parameter] public EventCallback<bool> SatzGeklappt { get; set; }

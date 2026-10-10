@@ -4166,6 +4166,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-satzzusammenfassung-angabe > dt { color: var(--epos-text-leise); flex: 0 0 auto; }
 .epos-satzzusammenfassung-angabe > dd { margin: 0; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten { flex: 0 0 auto; margin-right: 4px; gap: 6px; }
+/* Die Kopfknoepfe des Wirts (UeS2b): seine Infoknoepfe rechts vor „Bearbeiten", Sinnbilder in jeder Stufe. */
+.epos-zweispalten-satzkopf > .epos-zweispalten-satzkopfknoepfe { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; }
 
 /* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,

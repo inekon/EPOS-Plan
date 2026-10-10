@@ -1442,4 +1442,40 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("flex: 0 0 auto;", Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz--zusammenfassung {"));
         Assert.Contains(".epos-zweispalten-bearbeiten .epos-zweispalten-knopftext { display: none; }", css);
     }
+    /// <summary>
+    /// UeS2b: Die Kopfknöpfe des Wirts stehen rechts im Kopf der Detailzeile vor „Bearbeiten" —
+    /// ohne Überlagerung erreichbar; offen trägt die Überlagerung ihr Fragment, der Kopf nicht mehr.
+    /// </summary>
+    [Fact]
+    public void UeS2b_Die_Kopfknoepfe_stehen_vor_Bearbeiten_und_nur_ohne_Ueberlagerung()
+    {
+        var cut = Aufbauen(mehr: p => p
+            .Add(x => x.SatzArt, Satzmarke.Projektsatz)
+            .Add(x => x.SatzName, "Kessel 30 kW")
+            .Add(x => x.SatzZusammenfassung, new[] { new Satzangabe("Leistung", "30,00 kWth") })
+            .Add(x => x.SatzKopfKnoepfe, (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "button");
+                b.AddAttribute(1, "class", "kopfknopf-probe");
+                b.CloseElement();
+            })));
+
+        var kopf = cut.Find(".epos-zweispalten-satzkopf").Children.ToList();
+        int knoepfe = kopf.FindIndex(k => k.ClassList.Contains("epos-zweispalten-satzkopfknoepfe"));
+        int bearbeiten = kopf.FindIndex(k => k.ClassList.Contains("epos-zweispalten-bearbeiten"));
+        Assert.True(0 < knoepfe && knoepfe < bearbeiten);
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopf .kopfknopf-probe"));
+
+        cut.InvokeAsync(() => cut.Instance.SatzUeberlagerungOeffnen());
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".kopfknopf-probe"));
+
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopf .kopfknopf-probe"));
+    }
+
+    /// <summary>Ohne Kopfknöpfe gibt es im Kopf der Detailzeile keinen leeren Behälter.</summary>
+    [Fact]
+    public void UeS2b_Ohne_Kopfknoepfe_kein_Behaelter()
+        => Assert.Empty(MitZusammenfassung(new Rufe()).FindAll(".epos-zweispalten-satzkopfknoepfe"));
 }

@@ -198,6 +198,17 @@
             }
         </KatalogFussRechts>
 
+        <SatzKopfKnoepfe>
+            @* DIE INFOKNOEPFE IM KOPF DER DETAILZEILE (UeS2b): ohne Ueberlagerung erreichbar; in ihr
+               stehen sie in der Knopfzeile des Fragments (der Baustein zeigt je Ansicht eine Stelle). *@
+            <span class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_Heizkessel.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                <InfoKnopf Schluessel="Form_Heizkessel.Berechnung"
+                           StandardKurztext="Berechnungsweg Heizkessel" MitAssistent="false" />
+            </span>
+        </SatzKopfKnoepfe>
+
         <Satz>
         @* DIE KNOPFZEILE DER SATZFLAECHE: beim Projektsatz die Kostenknoepfe (4.2, nur
            Projektsatz), rechts der Weg in die Wikirubriken Grundlagen und Berechnung.
@@ -304,16 +315,7 @@
                         <Katalogfelder Felder="@_felder" NurLesen="@(!FelderSpeicherbar)"
                                        Geaendert="FeldGeaendert"
                                        FehlerZustand="BeiFeldFehler" />
-
-                        @* In der Satz-Ueberlagerung speichert ihr OK - kein zweiter Knopf. *@
-                        @if (FelderSpeicherbar && !_satzGross)
-                        {
-                            <div class="epos-leiste">
-                                <Speichervermerk @ref="_felderVermerk" Text="@BtnFelderSpeichernText"
-                                                 Geaendert="@_felderGeaendert" Gesperrt="@_feldFehler"
-                                                 Satz="@SatzName" Speichern="FelderSpeichern" />
-                            </div>
-                        }
+                        @* Gespeichert wird ueber das OK der Satz-Ueberlagerung - das Fragment steht nur dort (UeS2). *@
                     }
                 </div>
             }
@@ -573,8 +575,6 @@
     /// </remarks>
     [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? KatalogfelderSpeichern { get; set; }
 
-    /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
-    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
     [Parameter] public string LabelName { get; set; } = "Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
 
@@ -668,8 +668,6 @@
     /// <summary>Hat der Anwender im Aufklapper etwas geändert?</summary>
     private bool _felderGeaendert;
 
-    /// <summary>Knopf „Speichern" des Aufklappers samt Rückmeldung daneben.</summary>
-    private Speichervermerk? _felderVermerk;
 
     /// <summary>Meldung des Katalogs zum letzten gelungenen Speichern — für den Assistenten, nicht als Band.</summary>
     private string _felderErfolg = "";
@@ -730,7 +728,6 @@
     private void FeldGeaendert()
     {
         _felderGeaendert = true;
-        _felderVermerk?.Leeren();
     }
 
     /// <summary>
@@ -766,7 +763,6 @@
         {
             // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
             Melden(ergebnis.Meldung, true);
-            _felderVermerk?.Fehler(ergebnis.Meldung);
             _letzterSpeicherfehler = ergebnis.Meldung;
             return;
         }
@@ -775,7 +771,6 @@
         _felderGeaendert = false;
         _meldung = "";
         _felderErfolg = ergebnis.Meldung;
-        _felderVermerk?.Gespeichert();
         if (_projektZeile is not null) ProjektNeuLesen();
         else KatalogNeuLaden();
     }
@@ -806,7 +801,6 @@
     {
         _satzGross = true;
         _satzUeberlagerungFehler = null;
-        _felderVermerk = null;   // der Knopf der Satzflaeche steht in der Ueberlagerung nicht
         // Traeger, Vorlauf und Ruecklauf gehen schon bei der Eingabe in die Anlage - Abbrechen stellt sie wieder her.
         _anlagenmerker = _projektZeile is not null ? Anlagenmerker.Von(_projektZeile) : null;
         if (AlleDatenDa && (!_parameterOffen || _felder is null))

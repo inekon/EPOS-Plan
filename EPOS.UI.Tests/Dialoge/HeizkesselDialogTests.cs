@@ -2269,4 +2269,24 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.True(cut.Instance.EditorOffen);
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
     }
+    /// <summary>
+    /// UeS2b: „Grundlagen" und „Berechnung" stehen im Kopf der Detailzeile — ohne Überlagerung
+    /// erreichbar; offen trägt die Überlagerung sie in ihrer Knopfzeile. Je Ansicht genau einmal.
+    /// </summary>
+    [Fact]
+    public void UeS2b_Die_Infoknoepfe_stehen_im_Kopf_der_Detailzeile_und_nie_doppelt()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        string[] schluessel = { "Form_Heizkessel.Grundlagen", "Form_Heizkessel.Berechnung" };
+
+        foreach (string s in schluessel)
+            Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-hilfepille").Count);
+
+        Satz(cut);
+        foreach (string s in schluessel)
+            Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
+        Assert.Equal(2, cut.FindAll(".epos-satzueberlagerung-koerper .epos-berechnungshilfe .epos-hilfepille").Count);
+    }
 }
