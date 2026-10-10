@@ -5,18 +5,18 @@ Die '''Kühlung''' rechnet den Kältebedarf gekühlter Gebäude Stunde für Stun
 
 '''Der Kältebedarf ist sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.''' Dieser Satz steht in EPOS-Plan neben jeder Kältezahl, im Bericht und im Export.
 
-Was Kühllast, Kälteerzeugung und die Leistungszahl EER bedeuten, erklärt [[Grundlagen/Kühlung]]; hier steht, wie EPOS-Plan die Kühlung einbindet und rechnet.
+Was Kühllast, Kälteerzeugung und die Leistungszahl EER bedeuten, erklärt [[Grundlagen/Kühlung]]; hier steht, wie EPOS-Plan den Kältebedarf einbindet und rechnet. Wärmepumpe im Kühlbetrieb, Kältemaschine und Kältespeicher beschreibt die Seite [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]].
 
 == Einbindung in EPOS-Plan ==
 {{Anker|einbindung}}
 
-Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''Kälteerzeuger''', eine Wärmepumpe im Kühlbetrieb oder eine [[#kaeltemaschine|Kältemaschine]]. In der Reihenfolge der Bedienung (hier für die Wärmepumpe):
+Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''Kälteerzeuger''', eine Wärmepumpe im Kühlbetrieb oder eine [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine|Kältemaschine]]. In der Reihenfolge der Bedienung (hier für die Wärmepumpe):
 
 # '''Gebäude''' – Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'': ''Gebäude wird gekühlt'', bei Bedarf ''Kühlleistungsgrenze''; den ''Kühlsollwert'' trägt der Reiter ''Konditionierung'' in der Spalte ''Kühlen'', Zeile ''Tag'' ([[#eingaben|Eingaben]]). Kältebedarf entsteht nur auf dem Rechenweg nach VDI 6007 oder aus einem Lastgang im Kanal ''Kühlung''.
 # '''Gerät''' – Eine Wärmepumpe deckt Kälte nur mit '''Kühlkennlinie''': Kälteleistung und EER je Kühl-Vorlauf über der Außen- bzw. Quellentemperatur. Sie kommt mit dem Herstellerdaten-Import nach VDI 3805 in den Katalog und mit dem Gerät ins Projekt. Im ''Wärmepumpen-Katalog'' zeigt ''nur mit Kühlfunktion'' die Geräte mit Kühlleistung.
-# '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
+# '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
 # '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Bereich ''Kälte'' unter den Komponenten ''Kühlung rechnen'' einschalten.
-# '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf, mit mehreren Zonen je Zone ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell]]); auf der Stufe ''geschlossener Kreis (AK3)'' gleitet der Vorlauf wahlweise mit der [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Kühlkurve]].
+# '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf, mit mehreren Zonen je Zone ([[#kuehluebergabe|Kühlübergabe]]); auf der Stufe ''geschlossener Kreis (AK3)'' gleitet der Vorlauf wahlweise mit der [[#kuehlkurve|Kühlkurve]].
 
 {{Diagramm-Anfang|titel=Ein Tag mit Kühlung in EPOS-Plan}}
 '''Heiztag''' – der Heizbedarf des Tages überwiegt:
@@ -94,7 +94,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 == Zusammenspiel mit anderen Technologien ==
 {{Anker|zusammenspiel}}
 
-Kälte deckt allein die Wärmepumpe im Kühlbetrieb, doch die Kühlung wirkt auf Wärme- und Stromseite.
+Kälte decken die Wärmepumpe im Kühlbetrieb und die Kältemaschine ([[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]]); die Kühlung wirkt zudem auf Wärme- und Stromseite.
 
 {| class="wikitable"
 ! Technik !! Wirkung der Kühlung !! Wirkung auf die Kühlung !! So rechnet EPOS-Plan
@@ -105,7 +105,7 @@ Kälte deckt allein die Wärmepumpe im Kühlbetrieb, doch die Kühlung wirkt auf
 |-
 | Kessel || deckt den Heizbedarf der Kühltage || deckt keine Kälte || das Laufprotokoll nennt den Heizbedarf der Kühltage und seinen offenen Rest
 |-
-| Pufferspeicher || lädt die Wärmepumpe am Kühltag nicht, wenn er den Heizkanal bedient || als Wärmequelle sperrt er den Kühlbetrieb || mit der Nutzung ''Kälte'' ein [[#kaeltespeicher|Kältespeicher]]
+| Pufferspeicher || lädt die Wärmepumpe am Kühltag nicht, wenn er den Heizkanal bedient || als Wärmequelle sperrt er den Kühlbetrieb || mit der Nutzung ''Kälte'' ein [[Programm Dokumentation/Kälteerzeugung#kaeltespeicher|Kältespeicher]]
 |-
 | Photovoltaik, Stromspeicher || mehr Eigenverbrauch im Sommer || Eigenstrom deckt Kältestrom mit || <math>\text{Kältestrom} = \text{Kälte} / \mathrm{EER} \cdot (1 + \text{Hilfsstromanteil})</math>; mit eigenem Zähler ohne Eigenstrom
 |-
@@ -138,16 +138,13 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 == Fallstricke ==
 {{Anker|fallstricke}}
 
-* '''Kühlleistung ist keine Kühlkennlinie.''' Ohne Kühlkennlinie im Projekt ist ''Maschine auch zum Kühlen benutzen'' gesperrt („Zu diesem Gerät liegen keine Kühlkenndaten vor"); eine Kühlleistung allein genügt nicht. Abhilfe: ein Gerät mit Kühlkennlinie wählen.
 * '''Ein Glied fehlt.''' Ohne ''Kühlung rechnen'', Haken am Gebäude, Kühlsollwert in der Spalte ''Kühlen'', ''Maschine auch zum Kühlen benutzen'' und Kaskadenplatz bleibt die Kälte aus oder ungedeckt; das Laufprotokoll nennt, was fehlt.
-* '''Übergangszeit.''' Die Betriebsart gilt je Tag für das Projekt und alle Wärmepumpen im Kühlbetrieb: Kälte an einem Heiztag bleibt ungedeckt, auch mit einer zweiten Wärmepumpe; Heizbedarf am Kühltag braucht einen weiteren Wärmeerzeuger. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen.
+* '''Übergangszeit.''' Die Betriebsart gilt je Tag für das Projekt und alle Wärmepumpen im Kühlbetrieb: Kälte an einem Heiztag deckt keine Wärmepumpe, auch keine zweite – eine [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine|Kältemaschine]] ist nicht an die Kühltage gebunden; Heizbedarf am Kühltag braucht einen weiteren Wärmeerzeuger. Die Sperrzeit des Energieversorgers sperrt auch das Kühlen.
 * '''Kühlsollwert und Zeitprogramm.''' Der Dialog prüft die Zeilen der Spalte ''Kühlen'' gegen die Heizsollwerte der Spalte ''Heizen''. Einen Kühl- oder Heizkalender und ein Sollwert-Zeitprogramm der Wärmeübergabe prüft erst der Lauf: Liegt in einer Stunde, in der weder Heizen noch Kühlen ''aus'' ist, der Kühlsollwert nicht mindestens 1 K über dem Heizsollwert, bricht er ab.
-* '''Kühl-Vorlauf.''' Zur Wahl stehen die Stützstellen der Kühlkennlinie, leer die kälteste. Ein Kühl-Vorlauf zwischen zwei Stützstellen rechnet Kälteleistung und Leistungszahl linear zwischen beiden, ein Wert außerhalb mit der nächsten Stützstelle; das Laufprotokoll nennt das je Gerät. Kälter als die Vorlaufgrenze mischt das Gebäude hoch, die Wärmepumpe rechnet aber mit der Leistungszahl ihres Vorlaufs; wärmer als die Auslegung erreicht die Kühlübergabe ihre Nennleistung nicht.
-* '''Rand der Kennlinie.''' Auf der Achse der Außen- bzw. Quellentemperatur wird über der obersten Stützstelle mit ''Extrapolation der WP-Kennlinie erlauben'' verlängert, sonst gilt ihr Wert, unter der untersten deren Wert; das Laufprotokoll zählt die Stunden. Den Kühl-Vorlauf betrifft der Schalter nicht. Ein Kühlblock in Heizlage oder mit vertauschten Achsen steht unter ''Kühl-Vorlauf'' gesperrt.
-* '''Mehrere Zonen.''' Jede gekühlte Zone rechnet ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]); eine Zone ohne wirksame Kühlübergabe kühlt ideal, der Lauf sagt es. Kühlsollwert, Kühlperiode und Kühlkalender kommen vom Gebäude; im Zonendialog ist die Spalte ''Kühlen'' gesperrt.
+* '''Mehrere Zonen.''' Jede gekühlte Zone rechnet ihre eigene Kühlübergabe am gemeinsamen Kaltwasser-Vorlauf ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]); eine Zone ohne wirksame Kühlübergabe kühlt ideal, der Lauf sagt es. Ob eine Zone gekühlt wird, ihre Kühlleistungsgrenze und ihre Kühlsollwerte stellt der Zonendialog ein; leere Felder gelten wie am Gebäude ([[#zonen|Kühlung je Zone]]).
 * '''Kühlkurve.''' Sie wirkt nur auf der Stufe ''geschlossener Kreis (AK3)''. Ihr Gewinn hängt an der Kühlkennlinie: Zwischen zwei Stützstellen rechnet die Wärmepumpe linear, über der obersten mit deren Wert. Liegt der feste Kühl-Vorlauf schon an der obersten Stützstelle, gewinnt die Kurve dort kaum an Leistungszahl.
-* '''Regeneration der Sonde.''' Kühlt eine Wärmepumpe mit Erdwärmesonde, geht ihre Kühlwärme in das Sondenfeld zurück und hebt die Soletemperatur ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]).
-* '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe); weitere [[#grenzen|Grenzen]]. Die freie Kühlung über die Sonde ist abgebildet ([[#freie-kuehlung-waermequelle|Freie Kühlung über die Wärmequelle]]).
+* '''Kälteerzeuger.''' Kühlkennlinie, Kühl-Vorlauf, Rand der Kennlinie, Kältemaschine und Kältespeicher haben eigene Fallstricke ([[Programm Dokumentation/Kälteerzeugung#fallstricke|Kälteerzeugung: Fallstricke]]).
+* '''Nicht abgebildet:''' Entfeuchtung und Taupunkt (die Vorlaufgrenze ist eine Vorgabe); weitere [[#grenzen|Grenzen]]. Die freie Kühlung über die Sonde ist abgebildet ([[Programm Dokumentation/Kälteerzeugung#freie-kuehlung-waermequelle|Freie Kühlung über die Wärmequelle]]).
 
 == Kühlung einschalten ==
 {{Anker|einschalten}}
@@ -178,7 +175,7 @@ Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höch
 
 Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet. Im Reiter ''Konditionierung'' zeigt die Matrix auf diesem Weg nur die Felder, die er liest – in der Spalte ''Kühlen'' keines.
 
-Mit dem Haken steht darunter der Abschnitt '''Kühlübergabe''': Mit ihm rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor statt ideal – in Projekten mit Anlagenkopplung; auf der Stufe ''geschlossener Kreis (AK3)'' wahlweise mit Kühlkurve; siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]].
+Mit dem Haken steht darunter der Abschnitt '''[[#kuehluebergabe|Kühlübergabe]]'''.
 
 === Kühlspalte, Kühlperiode und Kühlkalender ===
 {{Anker|kuehlspalte|kuehlperiode|kuehlsollwert|kuehlkalender}}
@@ -189,9 +186,33 @@ Die Matrix des Reiters ''Konditionierung'' (siehe [[Programm Dokumentation/Gebä
 * '''Kühlperiode''' – die Zelle ''Saison'' der Kühlspalte: Start und Ende als Datum. Innerhalb wird gekühlt, außerhalb steht die Kühlung auf ''aus''; leer heißt ganzjährig, Start und Ende gibt es nur zusammen.
 * '''Kühlkalender''' – die Kalenderkarte ''Kühlen'' hält dasselbe als Stundenkalender: Wochenraster, Zeitfenster, Perioden, Feiertage und Teppichbild, dazu Vorlagen. ''Kalender anlegen'' erzeugt ihn aus den Zellen, die Auswahlliste der Karte übernimmt eine Vorlage. Ein angelegter Kalender geht der Matrix vor. Trägt nur die Zeile ''Tag'' einen Wert und ist kein Kühlkalender angelegt, gilt der Kühlsollwert in jeder Stunde.
 * '''Prüfung''' – Der Kühlsollwert liegt in jeder Stunde, in der beide wirken, mindestens 1 K über dem Heizsollwert; die Matrix prüft das je Zeile, zulässig sind 15 bis 35 °C. Die Sommerlüftung rechnet je Stunde mit der Schwelle 3 K unter dem Kühlsollwert; steht die Kühlung auf ''aus'', gilt die feste Schwelle 23 °C.
-* '''Sperre''' – Die Spalte wirkt nur mit dem Projektschalter ''Kühlung rechnen'' und dem Haken ''Gebäude wird gekühlt''; sonst ist sie gesperrt, der Grund steht am Element. An einer Zone ist sie gesperrt: Kühlsollwert, Kühlperiode und Kühlkalender kommen vom Gebäude (siehe [[Programm Dokumentation/Mehrzonenmodell#konditionierung|Mehrzonenmodell]]).
+* '''Sperre''' – Die Spalte wirkt nur mit dem Projektschalter ''Kühlung rechnen'' und dem Haken ''Gebäude wird gekühlt''; sonst ist sie gesperrt, der Grund steht am Element. An einer Zone gilt dasselbe mit dem Schalter der Zone ([[#zonen|Kühlung je Zone]]).
 
 Die Nachtauskühlung ([[Programm Dokumentation/Gebäudemodell VDI 6007#nachtauskuehlung|Gebäudemodell VDI 6007]]) senkt die Raumluft am Morgen und damit die Kühlenergie des Folgetags.
+
+=== Kühlung je Zone ===
+{{Anker|zonen|kuehlung-zone}}
+
+Rechnet ein Gebäude mit mehreren Zonen, führt der Zonendialog die Gruppe '''Kühlung der Zone''':
+
+* '''Zone wird gekühlt''' – ''wie Gebäude'' (Vorgabe, der Eintrag nennt den Haken des Gebäudes), ''Ja'' oder ''Nein''. So kann eine Zone gekühlt werden, eine andere desselben Gebäudes nicht.
+* '''Kühlleistungsgrenze''' – erscheint, wenn die Zone gekühlt wird; leer gilt die Grenze des Gebäudes nach dem Flächenanteil der Zone.
+* '''Kühlübergabe der Zone''' – Art, Exponent und Nennleistung der Kühlfläche der Zone; leere Felder gelten wie am Gebäude ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]).
+* '''Kühlsollwerte''' – Tag und Nacht stehen in der Spalte ''Kühlen'' der Matrix der Zone; ein leeres Feld gilt wie beim Gebäude. Den Kühlkalender übernimmt die Zone vom Gebäude oder führt einen eigenen.
+
+Die Spalte ''Kühlen'' der Zone ist nur gesperrt, wenn die Zone nicht gekühlt wird, und an einer unbeheizten Zone, die frei schwingt. Gekühlt wird eine Zone nur, wenn das Projekt ''Kühlung rechnen'' eingeschaltet hat.
+
+=== Kühlübergabe ===
+{{Anker|kuehluebergabe}}
+
+Mit dem Haken ''Gebäude wird gekühlt'' steht im Gebäudedialog der Abschnitt '''Kühlübergabe'''. Mit ''Kühlübergabe rechnen (statt idealer Kühlung)'' rechnet das Gebäude die Kühlung über Kühldecke, Flächenkühlung oder Gebläsekonvektor statt ideal – in Projekten mit Anlagenkopplung ''Heizkreis (AK1)'' oder ''geschlossener Kreis (AK3)''. Ohne [[#kuehlkurve|Kühlkurve]] ist der Kaltwasser-Vorlauf fest: der kälteste Kühl-Vorlauf der Wärmepumpen im Kühlbetrieb des Projekts, ohne solche Anlage der Auslegungsvorlauf; unter der Vorlaufgrenze mischt das Gebäude hoch. Reicht die Leistung der Kühlfläche nicht, wird der Raum wärmer. Felder, Vorgaben und Rechenweg beschreibt [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell: Kühlübergabe]]; mit mehreren Zonen rechnet jede gekühlte Zone ihre eigene Kühlübergabe am gemeinsamen Vorlauf ([[Programm Dokumentation/Mehrzonenmodell#kuehluebergabe|Mehrzonenmodell]]).
+
+=== Kühlkurve ===
+{{Anker|kuehlkurve}}
+
+Auf der Stufe ''geschlossener Kreis (AK3)'' kann ein Gebäude mit Kühlübergabe seinen Kaltwasser-Vorlauf gleiten lassen: Mit dem Haken '''Kühlkurve (gleitender Kühlvorlauf)''' im Abschnitt ''Kühlübergabe'' folgt der Vorlauf der Außen- und der Raumtemperatur. Solange die Außenluft nicht über dem Kühlsollwert liegt, gilt der ''Fußpunkt''; ab der ''Auslegungs-Außentemperatur'' gilt der Auslegungsvorlauf der Kühlübergabe; dazwischen fällt der Vorlauf linear. Der ''Raumeinfluss'' (beim Einschalten 3 K/K) senkt den Vorlauf zusätzlich, wenn der Raum über dem Kühlsollwert liegt. Der Vorlauf bleibt mindestens 2,5 K unter dem Kühlsollwert und nie kälter als die untere Vorlaufgrenze.
+
+An milden Tagen bleibt das Kaltwasser so wärmer, und Wärmepumpe im Kühlbetrieb und Kältemaschine rechnen am Vorlauf der Kurve mit besserer Leistungszahl ([[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]]). Der Gewinn hängt an der Kühlkennlinie: Liegt der feste Kühl-Vorlauf schon an ihrer obersten Stützstelle, gewinnt die Kurve kaum. Mehrere Zonen teilen einen Kaltwasserkreis mit einer Kurve. Eingaben und Kennzahlen beschreibt [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Gebäudemodell: Kühlkurve]].
 
 == Wie gerechnet wird ==
 {{Anker|rechenweg}}
@@ -205,137 +226,14 @@ Die Nachtauskühlung ([[Programm Dokumentation/Gebäudemodell VDI 6007#nachtausk
 * '''Lastgänge''' – Im Dialog ''Wärmebedarf Extern'' können Sie einer eingelesenen Ganglinie den Kanal ''Kühlung'' geben. Sie ist dann Kältebedarf ohne Gebäudemodell, geht in keinen Wärmekanal und wirkt nur mit dem Projektschalter.
 * '''Rechenweg Tagesbilanz''' – Ein Gebäude auf diesem Rechenweg hat keinen Kältebedarf; der Lauf trägt 0 ein und nennt den Grund im Protokoll.
 
-== Deckung ==
-{{Anker|deckung}}
-
-Wärmeerzeuger decken keine Kälte. Kälte deckt eine '''Wärmepumpe im Kühlbetrieb''': eine Wärmepumpe mit Kühlkennlinie, deren Kühlbetrieb im Projekt eingeschaltet ist. Mehrere solche Wärmepumpen decken den Kältebedarf in der Reihenfolge der Kaskade. Was keine deckt, bleibt ungedeckt; das Laufprotokoll nennt Menge und Spitze. Ohne Wärmepumpe im Kühlbetrieb bleibt der ganze Kältebedarf ungedeckt. Die Kühlung steht in der Knappheitsreihenfolge immer an letzter Stelle; ein Bedienelement für ihren Rang gibt es nicht.
-
-{{Anker|kaelteschranke}}'''Kälteschranke auf Stufe AK3.''' Rechnet das Projekt mit der Anlagenkopplung ''geschlossener Kreis (AK3)'', wirkt die Kälteanlage auf das Gebäude zurück: In jeder Stunde begrenzt die '''Kälteschranke''' die Raumkühlung – die Leistung der Kälteerzeuger am Kühlvorlauf samt freier Kühlung und der entnehmbare Inhalt der Kältespeicher, nach Abzug der Prozesskälte. Greift sie, wird der Raum wärmer; das zeigt sich in den Überhitzungsstunden. Eine reversible Wärmepumpe fehlt an ihrem Kühltag der Heizseite und an ihrem Heiztag der Kälteseite. Auf den Stufen ''aus'' und ''Heizkreis (AK1)'' begrenzt die Kälteanlage das Gebäude nicht; ungedeckte Kälte steht dort als Rest im Laufprotokoll.
-
-=== Kühlbetrieb der Wärmepumpe ===
-{{Anker|kuehlbetrieb}}
-
-Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe oder an ihrer Kachel im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] – dort schaltet ''+ Kühlbetrieb'' bzw. × den Kühlbetrieb auch direkt und sofort –, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''. Schneller geht es im Dialog ''Kältemaschinen im Projekt'' (Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite): Der Block ''Wärmepumpen im Kühlbetrieb'' unter der Anlagenliste führt alle Wärmepumpen des Projekts mit Kühlkennlinie mit je einem Schalter für denselben Wert, gespeichert mit ''OK''; Kühl-Vorlauf und Hilfsstromanteil bleiben dabei, wie sie sind. Ein gesperrter Schalter nennt seinen Grund, wenn der Zeiger darauf ruht.
-
-{| class="wikitable"
-! Feld !! Vorgabe !! Bedeutung
-|-
-| Maschine auch zum Kühlen benutzen || aus || schaltet den Kühlbetrieb dieser Wärmepumpe ein; ohne den Projektschalter ''Kühlung rechnen'' wirkt er nicht
-|-
-| Kühl-Vorlauf || kleinster Stützwert || Vorlauftemperatur des Kaltwassers; zur Wahl stehen die Vorlauftemperaturen, für die die Kühlkennlinie Werte führt. zwischen zwei Stützstellen wird linear interpoliert, außerhalb gilt die nächste
-|-
-| Hilfsstromanteil || kein Zuschlag || Strom für Pumpen und Ventilatoren des Kältekreises in Prozent der Verdichterarbeit; mindestens 0 % und weniger als 100 %
-|-
-| Stromträger des Kältestroms || wie Heizbetrieb || ein anderer Stromträger des Projekts für den Kältestrom dieser Wärmepumpe
-|-
-| Abrechnung des Kältestroms || anteilig am Netzbezug || erscheint nur, wenn der gewählte Stromträger nicht der des Projekts ist; siehe [[#abrechnung|Stromträger und Abrechnung]]
-|-
-| Freie Kühlung über die Wärmequelle || aus || deckt Kälte direkt aus der Wärmequelle, bevor der Verdichter läuft; siehe [[#freie-kuehlung-waermequelle|Freie Kühlung über die Wärmequelle]]
-|-
-| Grädigkeit des Wärmetauschers || 3,0 K || erscheint mit dem Schalter; Temperaturabstand zwischen Quelle und Kaltwasser am Wärmetauscher, 0 bis 20 K
-|-
-| Leistungsgrenze || Kälteleistung der Kennlinie || erscheint mit dem Schalter; höchste Kälteleistung der freien Kühlung in kW, größer als 0
-|}
-
-Der Schalter ist gesperrt, wenn die Wärmepumpe im Projekt keine Kühlkennlinie führt oder ihre Wärme aus einem Quellspeicher bezieht: Er steht dann ohne Haken, und der Grund steht darunter. Ein schon eingeschalteter Kühlbetrieb lässt sich auch dann ausschalten. Führt ein Gerät eine Kühlleistung, aber keine Kühlkennlinie, sagt der Dialog, dass diese Maschine nur Wärme rechnet. Einen weiteren Stromträger ordnen Sie dem Projekt unter ''Berichte & Kosten › Energieträger'' zu.
-
-Die Wärmepumpe schaltet '''je Tag''' zwischen Heizen und Kühlen um: Übersteigt der Kältebedarf eines Tages seinen Heizbedarf, kühlt sie an diesem Tag; maßgeblich sind die Bedarfe nach der Tagesbetriebsart der Zonen. Brauchwasser bleibt auch an einem Kühltag bedienbar.
-
-=== Wie die Wärmepumpe kühlt ===
-{{Anker|kaelteerzeugung}}
-
-Die Kälteleistung einer Stunde liest EPOS-Plan aus der Kühlkennlinie beim gewählten Kühl-Vorlauf und der Temperatur der Wärmequelle; die Rückkühlung ist in der Kennlinie enthalten. Der '''Kältestrom''' ist die gedeckte Kälte geteilt durch die Leistungszahl des Kühlbetriebs (EER), dazu der Hilfsstromanteil. Er gehört zum Strombedarf des Projekts wie der Strom der Wärmepumpe im Heizbetrieb: Photovoltaik, BHKW und Stromspeicher decken ihn mit, den Rest liefert das Netz.
-
-Die '''Jahresarbeitszahl Kälte''' ist die gedeckte Kälte eines Jahres geteilt durch den Kältestrom desselben Jahres.
-
-{{Anker|freie-kuehlung-waermequelle}}
-'''Freie Kühlung über die Wärmequelle.''' Eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe kann Kälte direkt aus ihrer Wärmequelle decken, ohne dass der Verdichter läuft. Sie schalten das an der Anlage mit ''Freie Kühlung über die Wärmequelle'' ein und geben dazu die ''Grädigkeit des Wärmetauschers'' (leer = 3,0 K) und eine ''Leistungsgrenze'' (leer = Kälteleistung der Kennlinie in der Stunde) an. In jeder Stunde mit Kühlbetrieb prüft EPOS-Plan, ob die Temperatur der Wärmequelle plus Grädigkeit höchstens den Kühl-Vorlauf erreicht. Dann deckt die Quelle die Kälte der Stunde bis zur Leistungsgrenze '''vor dem Verdichter'''; den Rest der Stunde deckt der Verdichter nach der Kühlkennlinie. Der Strom der freien Kühlung ist der Strom der Pumpen: die frei gedeckte Kälte geteilt durch die Leistungszahl 15, dazu der Hilfsstromanteil. Die freie Kühlung wirkt nur bei einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe mit gepflegter Wärmequelle (Erdreich, Konstant, Profil oder CSV); bei einer Luft-Wasser-Wärmepumpe, ohne Angabe der Quelle oder mit Pufferspeicher als Quelle ist der Schalter gesperrt, und der Lauf nennt den Grund. Bei einer Erdwärmesonde geht die Wärme, die die Kühlung in die Quelle bringt – frei gedeckte Kälte samt Pumpenarbeit, Verdichterkälte samt Verdichterarbeit –, in das Sondenfeld zurück und hebt die Soletemperatur; bei Erdkollektor, Konstant, Profil und CSV verändert sie die Quellentemperatur nicht ([[#grenzen|Grenzen]]).
-
-=== Kältemaschine ===
-{{Anker|kaeltemaschine}}
-
-Die '''Kältemaschine''' ist ein eigener Kälteerzeuger neben der Wärmepumpe im Kühlbetrieb. Sie hat einen Katalog und einen Anlagendialog.
-
-{{Anker|kaeltemaschine-katalog}}
-'''Katalog.''' Die Verwaltung ''Kältemaschinen'' führt je Gerät Bezeichner, Firma, Typ, ''Nennkälteleistung'', ''Nenn-EER'', ''Rückkühlart'' (luftgekühlt, wassergekühlt mit Trockenkühler, wassergekühlt mit Nasskühler), ''Mindestteillast'' und den kleinsten Kaltwasservorlauf. Die '''Kennlinie''' trägt Kälteleistung und EER je Stützpunkt aus Kaltwasser- und Rückkühltemperatur; EPOS-Plan interpoliert zwischen den Stützpunkten und hält außerhalb den Randwert, das Laufprotokoll zählt solche Stunden. Ein Gerät ohne Kennlinienpunkte rechnet nicht, der Lauf warnt. Liste, Spalte ''Herkunft'', eingebaute Typkennfelder, Kennliniendiagramm, Vergleich und Import der Verwaltung beschreibt die Seite [[Programm Dokumentation/Gerätekataloge#kaeltemaschinen|Gerätekataloge]].
-
-{{Anker|kaeltemaschine-anlage}}
-'''Anlage.''' Ein Klick auf die Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite öffnet den Dialog ''Kältemaschinen im Projekt''. Links stehen die Anlagen des Projekts mit Name, Anzahl und Nennkälteleistung, darunter der Block ''Wärmepumpen im Kühlbetrieb''; ''Hinzufügen…'' wählt ein Gerät aus dem Katalog; unter der Liste lädt ''Typkennfelder laden…'' die eingebauten Typkennfelder in den Katalog, und ''Katalogverwaltung…'' öffnet die Verwaltung ''Kältemaschinen''. ''Löschen'' fragt zurück. Rechts zeigt die Gruppe ''Gerät'' die Kennwerte der Projektkopie nur lesend, die Gruppe ''Betrieb'' trägt die Eingaben der Anlage. Geschrieben wird erst mit ''OK'', nach Prüfung jeder Anlage.
-
-{| class="wikitable"
-! Feld !! Vorgabe !! Bedeutung
-|-
-| Name der Anlage || – || Bezeichnung der Anlage im Projekt
-|-
-| Anzahl || 1 || Zahl gleicher Maschinen; sie teilen die Last gleichmäßig, Leistung und Strom sind ein Vielfaches
-|-
-| Kaltwasservorlauf || kleinster Stützwert der Kennlinie || Vorlauftemperatur des Kaltwassers; der Platzhalter nennt den Wert, der gilt
-|-
-| Hilfsstromanteil || kein Zuschlag || Strom für Pumpen und Ventilatoren der Rückkühlung in Prozent der Verdichterarbeit; ungültige Werte verwirft der Lauf mit Meldung
-|-
-| Kühlträger || Stromträger des Projekts || Stromträger des Kältestroms der Anlage
-|-
-| eigener Zähler || aus || wirkt nur bei einem Kühlträger, der vom Stromträger des Projekts abweicht; siehe [[#abrechnung|Stromträger und Abrechnung]]
-|}
-
-'''Konfiguration in der Simulation.''' Dieselben Felder öffnet ''Konfiguration…'' an der Kachel der Kältemaschine im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] der ''Simulation Konfiguration''; ebenso ein Doppelklick auf die Kältemaschine oder ihre Rückkühlung im Anlagenschema. ''OK'' prüft und schreibt, ''Abbrechen'' verwirft. Teilen sich mehrere Anlagen dieselbe Projektkopie, sagt ein Hinweis, dass Kaltwasservorlauf und Hilfsstrom für alle gelten.
-
-'''Reihenfolge.''' Die Kälte deckt zuerst die freie Kühlung, dann die Kältespeicher, dann die Wärmepumpen im Kühlbetrieb in der Folge der Wärmekaskade, dann die Kältemaschinen in der Reihenfolge der Anlagen – das ist die Vorgabefolge. Die Folge der Erzeuger lässt sich im Bereich ''Kälte'' mit den Pfeilen an den Kacheln ändern, etwa eine Kältemaschine vor die Wärmepumpe; freie Kühlung und Kältespeicher bleiben vorn. ''Vorgabefolge'' stellt die Vorgabe wieder her. Die Kaskade der Wärmeerzeuger ordnet die Kältemaschinen nicht. Eine Kältemaschine im Projektkatalog ohne Anlage rechnet nicht, der Lauf weist darauf hin.
-
-'''Freie Kühlung.''' Sie ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Bei Trocken- und Nasskühler gilt sie, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit einem festen Ersatz-EER von 15 plus Hilfsstrom, der Verdichter steht. Stunden und Kälte der freien Kühlung zählt der Lauf. Bei der luftgekühlten Maschine gibt es keine freie Kühlung.
-
-=== Teillast und Takten der Kältemaschine ===
-{{Anker|kaeltemaschine-teillast}}
-
-Im Katalogdialog der Kältemaschine steuert die Gruppe '''Teillast und Takten''' das Teillastverhalten des Geräts. Das Feld '''Teillastrechnung''' kennt drei Werte: ''wie bisher'' rechnet mit der Kennlinie bei Volllast, ''linear'' nimmt den Strom proportional zur Last, ''Kurve'' rechnet mit einer Teillastkurve. Bei ''Kurve'' tragen Sie die '''Teillastkurve a/b/c''', die Grenze '''Kurve gültig ab Lastgrad''' (leer heißt: die ''Mindestteillast'' des Geräts) und den '''Taktverlustfaktor C_d''' ein. Unterhalb der ''Mindestteillast'' aus den Kenndaten der Kältemaschine taktet die Maschine. Die '''Verdichterregelung''' (Ein/Aus, Stufen, Drehzahl) wählt den Vorschlag der Kurve; ''Kurve aus Typkennfeld…'' füllt die Felder aus einem Typkennfeld je Verdichterregelung, ''Typkennfelder laden…'' liest die Typkennfelder ein. Der '''Kennfeldrand''' bestimmt, was außerhalb der Stützpunkte der Kennlinie gilt: ''Randwert'' (Vorgabe) oder ''Gütegrad'' (Carnot-Gütegrad, begrenzt auf wenige Kelvin über den Rand hinaus). ''Teillastpunkte prüfen…'' beurteilt die Kurve; ein Bild zeigt das EER-Verhältnis über dem Lastgrad. Das Projektgerät trägt dieselben Felder als Kopie. Eine unplausible Kurve weist der Dialog ab und nennt den Grund.
-
-Im Anlagendialog ''Kältemaschinen im Projekt'' zeigt die Gruppe ''Gerät'' diese Werte nur lesend. Bei mehreren Maschinen steht dort ein Hinweis auf die Folgeschaltung: Es laufen nur so viele Maschinen, wie die Last braucht.
-
-Die Ergebnisse je Kältemaschine:
-
-* '''Taktstrom''' – Mehrstrom des Taktens unter der Mindestteillast.
-* '''Starts''' – Zahl der Anläufe im Jahr.
-* '''Teillaststunden''' – Stunden unter Volllast.
-* '''Lastgrad (Mittel)''' – mittlerer Lastgrad der Betriebsstunden.
-* '''Stunden extrapoliert''' – Stunden außerhalb der Stützpunkte der Kennlinie.
-
-Im Reiter ''Kältegang'' des Simulationsergebnisses zeigt die Kachel '''Teillast und Takten der Kältemaschinen''' die Werte ''Taktstrom'', ''Starts'', ''Teillastanteil'', ''Mittlerer Lastgrad'' und ''Jahres-EER ohne Hilfsstrom''; der Bericht führt sie in der Tafel ''Teillast und Takten der Kältemaschinen''. Ohne Teillastrechnung entfallen Kachel und Tafel. Der Taktstrom geht wie der übrige Kältestrom in die Energiekosten ein. Das Rechenverfahren erklärt die Seite [[Grundlagen/Kühlung#teillast-takten|Grundlagen Kühlung]].
-
-'''Beispiel.''' Kältemaschine 1, 100 kW, Mindestteillast 20 %, Teillastrechnung ''Kurve'': Bei 60 % Last gilt der Strom der Kurve; fällt die Last unter 20 %, taktet die Maschine, und der Lauf zählt Starts und Taktstrom. Zwei solche Maschinen decken eine Last von 150 kW beide mit 75 %; bei 90 kW läuft nur eine.
-
-Die Kältemaschine ist Kostenkomponente der Wirtschaftlichkeit: Investition aus Nennkälteleistung mal Anzahl, wählbare Standardvorlagen für Investition und Betrieb; ihr Kältestrom geht zum Strompreis des Projekts beziehungsweise des Kühlträgers in die Energiekosten ein.
-
-=== Kältespeicher ===
-{{Anker|kaeltespeicher}}
-
-Ein Pufferspeicher wird zum '''Kältespeicher''', wenn seine ''Nutzung'' auf ''Kälte'' steht (Dialog ''Pufferspeicher'', Feld ''Nutzung''). In der ''Simulation Konfiguration'' steht er im Bereich ''Kälte'', nicht in der Spalte der Pufferspeicher. ''Kälte'' steht allein, ohne Heizung, Brauchwasser und Prozesswärme; eine Senke braucht der Speicher nicht. Das Temperaturpaar heißt hier ''Kaltwasser-Vorlauf'' und ''Kaltwasser-Rücklauf'' (üblich 6 und 12 °C). Die Kapazität folgt aus Volumen und Spreizung: Volumen mal 1,16 Wh/(l·K) mal (Rücklauf minus Vorlauf).
-
-* '''Laden''' – alle Kälteerzeuger laden ihn, aber nur an Kühltagen und in der Ladephase: Sie beginnt an der Einschaltschwelle und endet an der Abschaltschwelle, der Lauf beginnt leer. Der Raum hat Vorrang; geladen wird nur, was die Erzeuger über den Raumbedarf hinaus liefern, begrenzt durch die Ladeleistung.
-* '''Entladen''' – in jeder Stunde mit Vorrat, nach der freien Kühlung und vor der Wärmepumpe und der Kältemaschine.
-* '''Verluste''' – der Bereitschaftsverlust eines Kältespeichers ist Wärmeeintrag von außen und zehrt den Vorrat füllstandsanteilig.
-* '''Warnungen''' – ein Kältespeicher ohne Kälteerzeuger oder in einem Projekt ohne Kühlung nennt der Lauf.
-
-Im Bericht zeigt die Tafel ''Kältespeicher'' je Speicher Kapazität in kWh, Ladung, Entladung und Wärmeeintrag in MWh/a und die Vollzyklen; ohne Kältespeicher bleibt sie leer.
-
-=== Stromträger und Abrechnung ===
-{{Anker|abrechnung}}
-
-Ohne eigene Wahl trägt der Kältestrom Tarif und Emissionsfaktor des Stromträgers des Projekts. Wählen Sie für eine Wärmepumpe oder eine Kältemaschine (Feld ''Kühlträger'') einen anderen Stromträger, bestimmt die Abrechnungsart, wie ihr Kältestrom in Kosten und Emissionen eingeht:
-
-* '''anteilig am Netzbezug''' (Vorgabe) – ein Netzanschluss: Der Netzbezug jeder Viertelstunde wird nach dem Anteil des Kältestroms am Stromverbrauch geteilt. Dieser Anteil trägt Arbeitspreis und Emissionsfaktor des gewählten Stromträgers, der Rest die des Stromträgers des Projekts. Eigenstrom aus Photovoltaik, BHKW und Stromspeicher bleibt gemeinsam; Grund- und Leistungspreis bleiben beim Stromträger des Projekts.
-* '''eigener Zähler''' – Der Kältestrom dieser Wärmepumpe oder Kältemaschine wird getrennt gezählt: Er wird nicht aus Photovoltaik, BHKW oder Stromspeicher gedeckt und trägt ganz Arbeitspreis und Emissionsfaktor des gewählten Stromträgers. Dazu kommen der Grundpreis dieses Stromträgers und, wenn er einen führt, sein Leistungspreis – bemessen an der höchsten Leistung des Kältestroms dieser Wärmepumpe, nach derselben Regel wie beim Netzbezug des Projekts (Staffel, Monats- oder Jahressatz). Jede Wärmepumpe mit eigenem Zähler hat ihren eigenen Zähler, auch wenn zwei denselben Stromträger wählen: Jede trägt einen Grundpreis und ihre eigene Spitze.
-
-Fehlt dem gewählten Stromträger der Arbeitspreis, bleiben die Energiekosten aus, und der Grund nennt den Stromträger. Das Laufprotokoll nennt je Wärmepumpe den Stromträger, die Abrechnungsart und die Menge, die er trägt.
-
 == Ergebnisse ==
 {{Anker|ergebnisse}}
 
 * '''Wärmebedarf Gebäude''' (Knopf ''Simulation…'' im Gebäudedialog) – der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite: Kühlbedarf, höchste Kältelast, Vollbenutzungsstunden, dazu Stunden mit Kühlbedarf, Überhitzungsstunden und Stunden mit Heizen und Kühlen; ein eigenes Bild der Kältelast (mit ''sortiert'' als Dauerlinie) und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''. Die Zeilen darunter sagen, wie der Kältebedarf entsteht, und nennen die Grenze der Zahl. Bei einem Gebäude ohne Kühlung stehen statt der Kältezahlen Striche, dazu die Überhitzungsstunden; es gibt dann kein Bild der Kältelast und keine Spalte ''Kühlung''. Auf dem Rechenweg ''Tagesbilanz'' steht der Abschnitt mit 0 und dem Grund.
 * {{Anker|kennzahlen}}'''Zonensperre und Kälteseite im Kreis''' – Der Wärmebedarf des Gebäudes zeigt nach einem Projektlauf die Gruppe ''Zonensperre, Projekt, letzter Lauf'' mit den Kacheln ''Tage mit Sperre der Gegenseite'' und ''Gesperrte Energie (Heizen / Kühlen)'', auf Stufe AK3 dazu die Gruppe ''Kälteseite im Kreis (AK3), Projekt, letzter Lauf'' mit ''Stunden an der Kälteschranke'', ''Umschaltstunden'' und ''Kälte-Restbedarf''. Kacheln ohne Wert entfallen. Der Bericht führt dieselben Zahlen in der Tafel ''Kälteseite im Kreis''.
 * '''Simulationsergebnis, Reiter Wärme-/Strombedarf''' – der Block '''Kälte''': Kältebedarf, höchste Kältelast, Stunden mit Kühlbedarf, Vollbenutzungsstunden, die Kanalzeile ''Kühlung'', ein eigenes Bild der Kältelast und der Knopf ''CSV Export''.
-* '''Simulationsergebnis, Übersicht''' – unter den Spalten ''Wärme'' und ''Strom'' der Block '''Kältedeckung''' mit Kältebedarf, höchster Kältelast und dem ungedeckten Kältebedarf. Kühlt eine Wärmepumpe, stehen darunter Deckungsgrad, Kältestrom und Jahresarbeitszahl Kälte, der Kältestrom aus dem Netz, der Ring ''Kältedeckung'' mit seiner Legende und die Tabelle der Kälteerzeuger mit Kühl-Vorlauf, Kälte, Kältestrom, EER, Strom aus dem Netz und Stromträger. Der Block steht nur, wenn ein Kältebedarf besteht.
-* '''Bericht''' – in der Projektbeschreibung der Abschnitt ''Kältebedarf und -deckung'' mit Summe, Kanalzeile, Spitze, Stunden und ungedecktem Rest. Kühlt eine Wärmepumpe oder Kältemaschine, stehen dort außerdem Deckungsgrad, Kälteerzeugung, Kältestrom, Jahresarbeitszahl Kälte sowie Netzbezug, Kosten und CO₂ des Kältestroms, die Tabelle ''Kälteerzeuger'', bei einem Kältespeicher die Tafel ''Kältespeicher'' und der Satz, dass Kältemittelverluste nicht enthalten sind. Kühlt eine Wärmepumpe frei über ihre Wärmequelle, stehen bei ihr die Kälte und die Stunden der freien Kühlung. Im Variantenvergleich stehen ''Kältebedarf gesamt'', ''Kältelast max.'', ''Stunden mit Kühlbedarf'' und ''Deckungsgrad Kühlung'' bei den Bedarfskennzahlen, die Zahlen der Wärmepumpen im Kühlbetrieb in der eigenen Gruppe ''Kälte'' – jede mit dem Zusatz ''(sensibel)''. Je Gebäude steht die Kühlenergie. Das Bild der Kälteproduktion (Simulationsergebnis, Reiter ''Ergebnis'') steht als Platzhalter <code><nowiki>{{stand.bild.kaelte_produktion}}</nowiki></code> in den [[Programm Dokumentation/Berichtsvorlagen#kennzeichnung|Berichtsvorlagen]].
-* '''Wirtschaftlichkeit''' – der Kältestrom ist Teil der Energiekosten und der Emissionen. Trägt eine Wärmepumpe für den Kältestrom einen eigenen Stromträger, steht er in den Energiekosten je Anlage als eigene Zeile ''Kältestrom …''; bei eigenem Zähler stehen darunter ''Grundpreis Kältestromzähler …'' und ''Leistungspreis Kältestromzähler …''. Den Leistungspreis rechnet EPOS-Plan aus einem frischen Lauf, wie beim Netzbezug des Projekts.
+* '''Bericht''' – in der Projektbeschreibung der Abschnitt ''Kältebedarf und -deckung'' mit Summe, Kanalzeile, Spitze, Stunden und ungedecktem Rest; je Gebäude die Kühlenergie. Im Variantenvergleich stehen ''Kältebedarf gesamt'', ''Kältelast max.'', ''Stunden mit Kühlbedarf'' und ''Deckungsgrad Kühlung'' bei den Bedarfskennzahlen, jede mit dem Zusatz ''(sensibel)''.
+* '''Kältedeckung''' – Block ''Kältedeckung'' der Übersicht, Blatt ''Kälteproduktion'' im Reiter ''Ergebnis'', Kälteerzeuger und Kältespeicher im Bericht und der Kältestrom in der Wirtschaftlichkeit: siehe [[Programm Dokumentation/Kälteerzeugung#ergebnisse|Kälteerzeugung: Ergebnisse]].
 
 Ein Projekt ohne Kühlung zeigt im Simulationsergebnis und im Bericht keine Kältegruppe und keine Nullen. Der Wärmebedarf eines Gebäudes zeigt den Abschnitt ''Kältebedarf'' dagegen immer – ohne Kühlung mit Strichen statt Kältezahlen, mit den Überhitzungsstunden und mit der Zeile, dass das Gebäude frei läuft.
 
@@ -348,11 +246,25 @@ Der Knopf ''CSV…'' in der Leiste des Diagramms ''Kältelast Jahresganglinie'' 
 {{Anker|grenzen}}
 
 * Die Kälte ist '''sensibel''': Feuchte, Entfeuchtung und latente Last sind nicht enthalten.
-* '''Keine Kältemittelemissionen''': Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; die Wirkung eines Kältemittelverlusts auf das Klima rechnet EPOS-Plan nicht.
-* '''Kälteerzeuger''': Kälte decken die Wärmepumpe im Kühlbetrieb und die Kältemaschine; freie Kühlung gibt es an der Kältemaschine mit Trocken- oder Nasskühler und an einer Sole-Wasser- oder Wasser-Wasser-Wärmepumpe über ihre Wärmequelle.
-* '''Rückwirkung nur an der Sonde''': Die Kühlwärme einer Wärmepumpe mit Erdwärmesonde regeneriert das Sondenfeld ([[Programm Dokumentation/Wärmequelle Erdreich#zusammenspiel|Wärmequelle Erdreich]]); bei Erdkollektor, Konstant, Profil und CSV verändert sie die Quellentemperatur nicht. Kältemaschinen kühlen gegen die Umgebung und speisen nicht ins Erdreich.
 * '''Keine Bauteilaktivierung''': Kühldecke und Betonkernaktivierung sind keine eigene Funktion; das Modell kühlt die Raumluft.
-* '''Kühlwerte je Gebäude''': Kühlsollwert, Kühlperiode und Kühlkalender gelten in jeder Zone eines Gebäudes; eigene Kühlwerte je Zone gibt es nicht. Mehrere Zonen teilen einen Kaltwasserkreis mit einem Vorlauf und einer Kühlkurve ([[#fallstricke|Fallstricke]]).
-* Verluste eines Kältenetzes werden nicht gerechnet.
+* '''Ein Kaltwasserkreis je Gebäude''': Mehrere Zonen teilen einen Kaltwasserkreis mit einem Vorlauf und einer Kühlkurve; Auslegungspunkt und Vorlaufgrenze der Kühlübergabe stehen allein am Gebäude ([[#fallstricke|Fallstricke]]).
+* '''Kälteerzeuger''': Kältemittelverluste, Rückwirkung auf die Wärmequelle und Kältenetz: siehe [[Programm Dokumentation/Kälteerzeugung#grenzen|Kälteerzeugung: Grenzen]].
+
+== Kälteerzeugung ==
+{{Anker|kaelteerzeugung-erzeuger}}
+
+Den Kältebedarf decken Wärmepumpen im Kühlbetrieb und Kältemaschinen, wahlweise mit Kältespeicher. Ihre Einstellung, die Reihenfolge der Deckung und ihre Ergebnisse beschreibt die Seite [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]]:
+
+* {{Anker|deckung}}'''Deckung und Reihenfolge''' – siehe [[Programm Dokumentation/Kälteerzeugung#deckung|Kälteerzeugung: Deckung und Reihenfolge]].
+* {{Anker|kaelteschranke}}'''Kälteschranke auf Stufe AK3''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaelteschranke|Kälteerzeugung: Kälteschranke auf Stufe AK3]].
+* {{Anker|kuehlbetrieb}}'''Kühlbetrieb der Wärmepumpe''' – siehe [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kälteerzeugung: Kühlbetrieb der Wärmepumpe]].
+* {{Anker|kaelteerzeugung}}'''Wie die Wärmepumpe kühlt''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaelteerzeugung|Kälteerzeugung: Wie die Wärmepumpe kühlt]].
+* {{Anker|freie-kuehlung-waermequelle}}'''Freie Kühlung über die Wärmequelle''' – siehe [[Programm Dokumentation/Kälteerzeugung#freie-kuehlung-waermequelle|Kälteerzeugung: Freie Kühlung über die Wärmequelle]].
+* {{Anker|kaeltemaschine}}'''Kältemaschine''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine|Kälteerzeugung: Kältemaschine]].
+* {{Anker|kaeltemaschine-katalog}}'''Katalog der Kältemaschinen''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-katalog|Kälteerzeugung: Katalog der Kältemaschinen]].
+* {{Anker|kaeltemaschine-anlage}}'''Kältemaschinen im Projekt''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-anlage|Kälteerzeugung: Kältemaschinen im Projekt]].
+* {{Anker|kaeltemaschine-teillast}}'''Teillast und Takten''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-teillast|Kälteerzeugung: Teillast und Takten]].
+* {{Anker|kaeltespeicher}}'''Kältespeicher''' – siehe [[Programm Dokumentation/Kälteerzeugung#kaeltespeicher|Kälteerzeugung: Kältespeicher]].
+* {{Anker|abrechnung}}'''Stromträger und Abrechnung''' – siehe [[Programm Dokumentation/Kälteerzeugung#abrechnung|Kälteerzeugung: Stromträger und Abrechnung]].
 
 [[Kategorie:Programm Dokumentation]]

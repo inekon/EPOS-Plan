@@ -15,6 +15,11 @@ Nein. EPOS-Plan ist eine eigenständige Windows-Anwendung mit eigener Datenhaltu
 
 Windows 10 oder 11 (64 Bit) und die Microsoft Edge WebView2 Runtime; fehlt sie, installiert das Setup sie mit. Die Programmlaufzeit bringt EPOS-Plan selbst mit, und für die Datenhaltung ist kein zusätzlicher Fremdtreiber nötig – die Kenndaten-Datenbank ist eine SQLite-Datei. Einzelheiten stehen unter [[Systemvoraussetzungen]], Hinweise zur Fehlersuche unter [[Installation und Update]].
 
+=== Läuft EPOS-Plan auch auf dem iPad? ===
+{{Anker|laeuft-epos-plan-auch-auf-dem-ipad}}
+
+Eine App für das iPad gibt es, sie ist aber noch nicht allgemein verfügbar. Die App rechnet mit demselben Rechenkern wie die Windows-Anwendung und führt dieselbe Datenbank. Was ein iPad nicht leisten kann – etwa der Dateiimport von Herstellerdaten –, lehnt das Programm ausdrücklich ab. Projekte wechseln als ''.wpx''-Paket zwischen den Geräten ([[Programm Dokumentation/Projekttransfer|Projekttransfer]]).
+
 === Wie sichere ich meine Daten? ===
 {{Anker|wie-sichere-ich-meine-daten}}
 

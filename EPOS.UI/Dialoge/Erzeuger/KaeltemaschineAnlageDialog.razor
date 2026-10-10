@@ -133,6 +133,14 @@
                         </KindInhalt>
                     </Formularraster>
                     <Herleitungszeile Text="@Texte.HinweisKatalog" />
+                    @* Der Weg in die Wikirubrik "Berechnung": Er sitzt in der Gruppe Geraet, weil sie die
+                       Kennwerte fuehrt, die der Rechenweg liest. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_Kaeltemaschine.Grundlagen"
+                                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                        <InfoKnopf Schluessel="Form_Kaeltemaschine.Berechnung"
+                                   StandardKurztext="Berechnung: Kühlung" MitAssistent="false" />
+                    </div>
                     @if (d.AnlagenId <= 0)
                     {
                         <Herleitungszeile Text="@Texte.HinweisNeu" />

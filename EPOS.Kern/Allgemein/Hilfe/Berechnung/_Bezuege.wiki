@@ -105,6 +105,22 @@ Linien wird unveraendert in die genannte Wikiseite kopiert.
  [[Programm Dokumentation/Berechnung/Wärmepumpe|Berechnung: Wärmepumpe]].
 
 ----
+'''Programm Dokumentation/Kälteerzeugung'''
+
+ == Berechnung ==
+ Kaeltefolge, Rueckkuehlung und freie Kuehlung, Teillast und Takten der Kaeltemaschine,
+ der Kuehlbetrieb der Waermepumpe und die Kaelteschranke stehen unter
+ [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]].
+
+----
+'''Programm Dokumentation/Kühlung'''
+
+ == Berechnung ==
+ Wie aus der Kuehlreihe der Gebaeude der Kaeltebedarf entsteht und wie die Kaelteerzeuger
+ ihn decken, steht unter
+ [[Programm Dokumentation/Berechnung/Kühlung|Berechnung: Kühlung]].
+
+----
 '''Programm Dokumentation/Pufferspeicher'''
 
  == Berechnung ==

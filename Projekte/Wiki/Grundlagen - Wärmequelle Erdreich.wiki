@@ -62,6 +62,7 @@ EPOS-Plan öffnet die Erdreich-Auslegung aus der Simulationskonfiguration (Menü
 {{Anker|siehe-auch}}
 
 * [[Grundlagen/Wärmepumpe]] – Wärmequellen, Kennfeld und Jahresarbeitszahl
+* [[Grundlagen/Bauteile am Erdreich]] – das Erdreich als Widerstand unter dem Gebäude
 * [[Programm Dokumentation/Klimadaten]] – Herkunft der Außentemperaturreihe
 
 {{Navigation Grundlagen}}

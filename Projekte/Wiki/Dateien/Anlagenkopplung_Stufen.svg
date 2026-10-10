@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Stufen der Anlagenkopplung (Prinzipbild)
+
+Inhalt: Drei Zeilen für die rechnenden Stufen. "aus": Das Gebäude meldet seinen Bedarf,
+die Erzeuger decken ihn, der Raum hält den Sollwert ideal. "Heizkreis (AK1)": Zwischen
+Gebäude und Erzeuger liegt der Heizkreis mit Vorlauf, Rücklauf und der Grenze der
+Heizfläche; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf; der Anlagenfahrplan
+(Sperrzeiten, Zeitprogramm, Höchstvorlauf) wirkt ab dieser Stufe. "Geschlossener Kreis
+(AK3)": Die Leistung von Erzeugern und Heizungspuffer wirkt in jeder Stunde auf den Raum
+zurück; auf der Kälteseite begrenzt die Kälteschranke die Raumkühlung.
+
+Darstellung: Farben nach Vorlage:Diagrammfarbe (waerme, kaelte, speicher, strom, netz).
+Prinzipbild ohne Zahlenwerte, keinem Produkt zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <marker id="p-waerme" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#c56a1a"/></marker>
+  <marker id="p-netz" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#7a828c"/></marker>
+  <marker id="p-kaelte" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#1f9bb0"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="538" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Anlagenkopplung: wie eng Gebäude und Anlage verbunden sind</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Projekteinstellung der Simulation – je höher die Stufe, desto mehr wird zwischen Raum und Erzeuger gerechnet</text>
+
+  <!-- Zeile aus -->
+  <rect x="20" y="82" width="860" height="110" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="36" y="110" font-size="16" fill="#1f2328" font-weight="600">aus</text>
+  <text x="36" y="130" font-size="12" fill="#57606a">ideale Regelung</text>
+  <rect x="180" y="100" width="170" height="74" rx="8" fill="#f9f0e8" stroke="#57606a" stroke-width="1.5"/>
+  <text x="196" y="128" font-size="14" fill="#1f2328" font-weight="600">Gebäude</text>
+  <text x="196" y="148" font-size="12" fill="#57606a">hält den Sollwert,</text>
+  <text x="196" y="163" font-size="12" fill="#57606a">meldet den Bedarf</text>
+  <line x1="352" y1="137" x2="600" y2="137" stroke="#7a828c" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#p-netz)"/>
+  <text x="400" y="128" font-size="12" fill="#57606a">Bedarf je Stunde</text>
+  <rect x="610" y="100" width="170" height="74" rx="8" fill="#ffffff" stroke="#c56a1a" stroke-width="1.5"/>
+  <text x="626" y="128" font-size="14" fill="#1f2328" font-weight="600">Erzeuger</text>
+  <text x="626" y="148" font-size="12" fill="#57606a">decken, was sie können;</text>
+  <text x="626" y="163" font-size="12" fill="#57606a">Rest bleibt ungedeckt</text>
+
+  <!-- Zeile AK1 -->
+  <rect x="20" y="204" width="860" height="140" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="36" y="232" font-size="16" fill="#1f2328" font-weight="600">AK1</text>
+  <text x="36" y="252" font-size="12" fill="#57606a">Heizkreis,</text>
+  <text x="36" y="267" font-size="12" fill="#57606a">Einbahnstraße</text>
+  <rect x="180" y="222" width="170" height="74" rx="8" fill="#f9f0e8" stroke="#57606a" stroke-width="1.5"/>
+  <text x="196" y="250" font-size="14" fill="#1f2328" font-weight="600">Gebäude</text>
+  <text x="196" y="270" font-size="12" fill="#57606a">Heizfläche, Regler,</text>
+  <text x="196" y="285" font-size="12" fill="#57606a">Heizkurve</text>
+  <line x1="352" y1="259" x2="393" y2="259" stroke="#c56a1a" stroke-width="2.5" marker-end="url(#p-waerme)"/>
+  <rect x="400" y="222" width="160" height="74" rx="8" fill="#ffffff" stroke="#c56a1a" stroke-width="2"/>
+  <text x="414" y="250" font-size="14" fill="#c56a1a" font-weight="600">Heizkreis</text>
+  <text x="414" y="270" font-size="12" fill="#57606a">Vorlauf, Rücklauf,</text>
+  <text x="414" y="285" font-size="12" fill="#57606a">Grenze der Übergabe</text>
+  <line x1="562" y1="259" x2="603" y2="259" stroke="#c56a1a" stroke-width="2.5" marker-end="url(#p-waerme)"/>
+  <rect x="610" y="222" width="170" height="74" rx="8" fill="#ffffff" stroke="#c56a1a" stroke-width="1.5"/>
+  <text x="626" y="250" font-size="14" fill="#1f2328" font-weight="600">Wärmepumpe</text>
+  <text x="626" y="270" font-size="12" fill="#57606a">Kennlinie am</text>
+  <text x="626" y="285" font-size="12" fill="#57606a">gerechneten Vorlauf</text>
+  <rect x="520" y="304" width="350" height="32" rx="6" fill="#eef1f4" stroke="#7a828c"/>
+  <text x="532" y="325" font-size="12" fill="#1f2328">Fahrplan: Sperrzeit · Zeitprogramm · Höchstvorlauf</text>
+  <text x="180" y="326" font-size="12" fill="#57606a">ab AK1 auch Kälteseite mit festem Kaltwasser-Vorlauf</text>
+
+  <!-- Zeile AK3 -->
+  <rect x="20" y="356" width="860" height="168" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="36" y="384" font-size="16" fill="#1f2328" font-weight="600">AK3</text>
+  <text x="36" y="404" font-size="12" fill="#57606a">geschlossener</text>
+  <text x="36" y="419" font-size="12" fill="#57606a">Kreis</text>
+  <rect x="180" y="374" width="170" height="74" rx="8" fill="#f9f0e8" stroke="#57606a" stroke-width="1.5"/>
+  <text x="196" y="402" font-size="14" fill="#1f2328" font-weight="600">Gebäude</text>
+  <text x="196" y="422" font-size="12" fill="#57606a">Raumtemperatur folgt</text>
+  <text x="196" y="437" font-size="12" fill="#57606a">der verfügbaren Leistung</text>
+  <line x1="352" y1="398" x2="393" y2="398" stroke="#c56a1a" stroke-width="2.5" marker-end="url(#p-waerme)"/>
+  <rect x="400" y="374" width="160" height="74" rx="8" fill="#ffffff" stroke="#c56a1a" stroke-width="2"/>
+  <text x="414" y="402" font-size="14" fill="#c56a1a" font-weight="600">Heizkreis</text>
+  <text x="414" y="422" font-size="12" fill="#57606a">Vorlauf mit</text>
+  <text x="414" y="437" font-size="12" fill="#57606a">Raumeinfluss</text>
+  <line x1="562" y1="398" x2="603" y2="398" stroke="#c56a1a" stroke-width="2.5" marker-end="url(#p-waerme)"/>
+  <rect x="610" y="374" width="170" height="74" rx="8" fill="#ffffff" stroke="#c56a1a" stroke-width="1.5"/>
+  <text x="626" y="402" font-size="14" fill="#1f2328" font-weight="600">Erzeuger</text>
+  <text x="626" y="422" font-size="12" fill="#7b4fa3">+ Heizungspuffer</text>
+  <text x="626" y="437" font-size="12" fill="#57606a">verfügbare Leistung</text>
+  <path d="M695,450 L695,470 L265,470 L265,456" fill="none" stroke="#c56a1a" stroke-width="2.5" marker-end="url(#p-waerme)"/>
+  <text x="300" y="464" font-size="12" fill="#c56a1a">Rückwirkung je Stunde: fehlt Leistung, wird der Raum kühler</text>
+  <rect x="180" y="482" width="420" height="32" rx="6" fill="#e8f5f7" stroke="#1f9bb0"/>
+  <text x="192" y="503" font-size="12" fill="#1f9bb0">Kälteseite: Kälteschranke aus Kälteerzeugern und Kältespeichern</text>
+  <rect x="612" y="482" width="258" height="32" rx="6" fill="#eef1f4" stroke="#7a828c"/>
+  <text x="622" y="503" font-size="12" fill="#1f2328">Komfortstunden zählen Unterschreitungen</text>
+</svg>

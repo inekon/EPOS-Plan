@@ -585,6 +585,9 @@ Nachtauskühlung gesetzt ist. Bericht, CSV-Export, KI-Sicht und Variantenverglei
 
 ## 4. Aufheizoptimierung
 
+Die Abschnitte 4.1 bis 4.9 beschreiben das Verfahren **Sollwertrampe** (Bestand). Daneben stehen die Verfahren
+„Vorheizzeit vorgeben“ und „Vorheizzeit berechnen“ mit Deckel (4.10).
+
 ### 4.1 Sprung und Rampe als lineare Treppe
 
 Die Optimierung formt die **fertige** Heizsollwertreihe einer Zone. Ein **Sprung** liegt in der Stunde h_s, wenn
@@ -722,6 +725,9 @@ Referenzprojekt 1051 rechnet mit leerer Reserve (10.2).
 
 ### 4.5 Bemessung (a) und (b)
 
+Bemessung (a)/(b) mit ΔT_K gilt nur für das Verfahren Sollwertrampe; in den Verfahren mit Deckel (4.10) ersetzt die
+Jahresbetrachtung den Bemessungsfall.
+
 | Variante | T_a,B | Rolle |
 |---|---|---|
 | **(a) kälteste Stunde** *(Vorgabe)* | Minimum der Außenluft über die Stunden mit Heizsollwert — ohne Heizperiode alle 8 760 Stunden der Zeitbasis des Laufs (4.7) | Auftrag a) |
@@ -755,6 +761,9 @@ Stunde die ganze Nacht, in (b) reicht die Nacht nicht — die Absenkung ist dort
 sagt es.
 
 ### 4.6 Täglich, Deckel und Begrenzung
+
+Die Arten „täglich“ und „fest“, der Deckel n ≤ 48 und der Aufschlag gelten nur für das Verfahren Sollwertrampe; der
+Leistungsdeckel P_K der Verfahren mit Deckel ist ein anderer Begriff (4.10).
 
 - **„täglich"** *(P6, Vorgabe)*: je Sprung n nach 4.3 mit der kleinsten Außenlufttemperatur im Fenster, ohne ΔT_K,
   begrenzt auf min(t_auf,max + 1, D + 1); an milden Tagen ist n = 1, keine Rampe, keine Mehrwärme. **„fest"** *(P6,
@@ -858,7 +867,7 @@ seiner Grenzen keine Zahl statt eines Fehlers. Ergebniszeile, Auskunft und Ergeb
 | **W2** durch die Absenkdauer begrenzt — „Absenkung weitgehend wirkungslos" | t_auf,max ≥ kürzeste regelmäßige Absenkdauer, dazu die Tage mit n − 1 = D und größerem Bedarf; nur aus der Stufenformel |
 | **W3** Nachweisband | im Fenster [h_s − n + 1, h_s + 2] bei Quelle Grenze Kappungsanteil > 0, bei Zielleistung Leistung > 1,01 · P_auf (Tageszahl; E58 F1) |
 | **W4** Übergang aus „aus" ohne Rampe | Zahl der Sprünge aus NaN, darunter der Beginn der Heizperiode (4.7) |
-| **W5** gekoppeltes Gebäude nicht optimiert | wirksame AK1 im Einzonenweg, bis KP3b |
+| **W5** gekoppeltes Gebäude nicht optimiert | wirksame AK1 im Einzonenweg, bis KP3b; gilt nur für das Verfahren Sollwertrampe — die Verfahren mit Deckel beziehen AK1-Einzonengebäude ein (4.10) |
 
 **Schalter (F9):** Projekteinstellung `Aufheizoptimierung`, **Vorgabe aus** — keine Rampe, keine neue Rechenoperation,
 keine neue Kennzahl. Grenzfallprobe (Muster Anlagenkopplung 3.7): Schalter an, P_auf = +∞ — überall n = 1, byte-gleich
@@ -882,6 +891,38 @@ Die Kürzel heißen N-AH, weil N-A1 bis N-A9 im Anlagenkopplungskonzept vergeben
 | N-AH10 Ränder | Sprung am 1. Januar, D < n, Übergang aus „aus", Beginn der Heizperiode, Bemessung innerhalb der Heizperiode, Deckel 48, Kühlkappung an θ_K − 1 K, AK1-Gebäude | benannte Ergebnisse W1–W5 |
 | N-AH11 Aufschlag | n' nach 4.6 je Rampe mit n > 1 in täglich und fest, Sprünge mit n = 1 ohne Aufschlag, Deckel 48, W2 mit n', t_auf,max unverändert | ohne Ausnahme; Aufschlag 0/0 und Schalter aus byte-gleich |
 | N-AH12 manuell | jeder Sprung n = t_m + 1, Zonen erben, kein Aufschlag, Bemessung unverändert, `Aufheiz_Art` = `MANUELL`, Export nur gesetzt | ohne Ausnahme; Schalter aus byte-gleich |
+
+### 4.10 Vorheizen mit Deckel (Fassung 2, E122/E124)
+
+Die Gruppe „Aufheizen vor Nutzungsbeginn“ bietet bei eingeschalteter Optimierung drei **Verfahren** (E122 F1):
+
+- **Sollwertrampe** — der Bestand nach 4.1 bis 4.9, bitgleich.
+- **Vorheizzeit vorgeben** (Option 1) — t_V in Stunden je Projekt, Gebäude oder Zone; der Lauf prüft je Sprung die Ankunft
+  und nennt die Tage, an denen t_V nicht reicht, mit der nötigen Zeit.
+- **Vorheizzeit berechnen** (Option 2) — t_V ist das Jahresmaximum des Bedarfs t_nötig über alle Kalendersprünge und gilt
+  **fest an jedem Sprung** (E124 F13 (a): in der Realität wird die Vorheizzeit fest gesetzt). Ist t_V länger als die
+  Absenkung einer Nacht, wird sie durchgeheizt (1051: t_V ≈ 15 h aus dem Sprung nach dem Wochenende über der
+  Werktagsabsenkung von 13 h, ≈ +10 % Heizwärme); der Lauf zählt die Nächte ohne Absenkung und weist die Mehrwärme aus.
+  Eine Anwendung „täglich“ wird nicht gebaut.
+
+**Fenster.** In den t_V Stunden vor dem Kalendersprung h_s steht der Sollwert schon auf dem Zielwert θ_T (Kühlkappe an
+θ_K − 1 K wie in 4.7); ein Übergang aus „aus“ bekommt kein Fenster (W4).
+
+**Deckel.** Φ_K,max ist das Jahresmaximum der Heizlast ohne Aufheizanteil Φ_ref(h_s) an den Kalendersprüngen (E124
+F11 (a)), bestimmt in einem **Vorlauf** ohne Vorheizen. Der Deckel P_K = (1 + x)·Φ_K,max oder Φ_K,max + Δ (Toleranz in %
+oder kW, Vorgabe 20 % als Kern-Konstante, Vorbelegung neuer Projekte über `Dienste.Einstellungen`, E124 F14 (a)) gilt
+**stündlich** ab h_s bis zum Ende des Sollwertblocks (E122 F8 (a)), nie unter der Heizlast der Stunde: Grenze
+max(P_K, Φ_ref(h)), die Floor-Stunden werden gezählt (E124 F12 (a)). Im Fenster gilt P_V = min(P_K, P_verf), mit P_verf
+wie P_auf in 4.4. Option 2 bestimmt t_nötig je Sprung mit einer **Vorausschau** auf dem Zustand des Vorlaufs.
+
+**Ankunft.** Die Luft am Beginn von h_s (Augenblick) liegt bei θ_T − ε oder darüber; ε ist die Regelgenauigkeit, Vorgabe
+1 K, das Stundenmittel von h_s ist Kennzahl (E124 F15 (a)).
+
+**Geltung und Kopplung.** t_V gilt je Gebäude oder je Zone (E122 F6). AK1-Einzonengebäude werden einbezogen; ein Schalter
+je Projekt (`Aufheiz_Heizkreis_Einbeziehen`) nimmt sie aus (E122 F10, E124 F16 (a)). Bemessung (a)/(b), die Arten
+„täglich“/„fest“ der Rampe und der Aufschlag gelten in diesen Verfahren nicht.
+
+Einzelheiten — Begriffe, Physik, Zahlen an 1051, Texte, Schema, Wellen V0–V8: [Entwurf Vorheizrampe](Gebaeudesimulation/2026-10-10_Entwurf_Vorheizrampe.md).
 
 ## 5. Datenmodell und Schema
 
