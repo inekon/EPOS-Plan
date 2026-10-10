@@ -257,6 +257,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#895)
 - Seit 10.10.2026: Der Knopf „CSV…“ am Bild exportiert jede Zeitreihe der Anwendung: Bedarfs-, Klimadaten-, Kostenprofil-, Profil- und Zapfprofilbilder, Ganglinienverwaltungen, Speicherflotte, Lastspitzenkappung, Kapitalwertverlauf und Zahlungsstrom. (#896)
 - Seit 10.10.2026: Auf dem iPad halten die Dialoge und Überlagerungen Statusleiste und Home-Anzeige frei; die Kompaktstufe der Projektdialoge gilt unter 1 280 × 800 Punkten und damit auch auf dem iPad 11 Zoll. (#897)
+- Seit 10.10.2026: Die Dialoge Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe und Photovoltaik folgen dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“; die Wärmepumpe öffnet ihre Anlage als Überlagerung „Anlage…“, die Photovoltaik ihre Stränge als „Stränge und Wechselrichter…“. (#902–#906)
+- Seit 10.10.2026: Die Detailzeile „Gewählter Satz“ nimmt aufgeklappt den Platz unter den Listen; die Dialoge Wärmebedarf extern, Strom-, Solarthermie- und PV-Ganglinie zeigen dort den Lastgang mit Kennzahlen in voller Breite. (#907)
+- Seit 10.10.2026: Nach „In das Projekt übernehmen“ ist nur noch die übernommene Zeile gewählt; „Aus dem Projekt entfernen“ trifft sie. (#907)
 - Seit 10.10.2026: Die Simulation im Dialog Wärmequelle Erdreich rechnet mit den angezeigten Eingaben und zeigt Ergebnis, Verlauf und Kennwerte der Soletemperatur — Jahresmittel, Tiefst- und Höchstwert mit Zeitpunkt — sofort an. (#898)
 - Seit 10.10.2026: Der Kalenderteppich der Konditionierung und der Raumnutzung lässt sich über „CSV…“ als Tabelle mit 365 Tageszeilen (Datum, Wochentag) und 24 Stundenspalten speichern; Zahlungsstrom und Kapitalwertverlauf zählen in der CSV-Datei wie in der Tafel ab Jahr 0. (#900)
 
