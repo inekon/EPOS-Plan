@@ -598,6 +598,11 @@ namespace EPOS.Kern.Tests
                     // Gruppe „Teillast und Takten" (KM3-E3-a), dazu die fuenf Katalogfelder in den Kenndaten (K-A).
                     return KaeltemaschineSchema.Fachspalten;
 
+                case Anlagenart.Rueckkuehlwerk:
+                    // K-F1: der Schreibweg des Katalogs (RueckkuehlwerkStammCtrl.Speichern/KopfSchreiben) setzt jede Fachspalte;
+                    // der Katalogdialog folgt mit der Oberflaeche (K-F5) und haelt dieselbe Liste.
+                    return RueckkuehlwerkSchema.Fachspalten;
+
                 default:
                     return new[] { "Bezeichner", "Hersteller", "Speichertyp",
                                    "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" };

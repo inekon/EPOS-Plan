@@ -154,7 +154,9 @@ namespace EPOS.Kern.Tests
             List<string> anlagen = DataRepository.SpaltenVonTabelle(FreieKuehlungSoleSchema.TAB_ANLAGEN);
             // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195) und die zwei der
             // Uebergabegrenze (Schritt 205) und der Rang der Kaeltefolge (Schritt 212).
-            int sonde = ErdsondenfeldSchema.SPALTEN.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count;
+            // Dahinter noch Verweis und Wasserpreis des Rueckkuehlwerks (K-F1).
+            int sonde = ErdsondenfeldSchema.SPALTEN.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count +
+                        RueckkuehlwerkSchema.SPALTEN_ANLAGE.Count;
             Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ANLAGE.ToArray(), anlagen.Skip(anlagen.Count - sonde - 3).Take(3).ToArray());
             foreach (string t in FreieKuehlungSoleSchema.TABELLEN_ERGEBNIS)
             {

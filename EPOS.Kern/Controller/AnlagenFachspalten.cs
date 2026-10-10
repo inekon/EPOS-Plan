@@ -53,7 +53,9 @@ namespace WindowsFormsApplication1
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "WQ_ID_Quellprofil", "Tab_Quellprofil" },
-                { KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE, KaeltemaschineSchema.TAB_PROJEKT }
+                { KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE, KaeltemaschineSchema.TAB_PROJEKT },
+                // K-F1: das Rueckkuehlwerk der Kaeltemaschine (Projektkopie, kein Kindsatz).
+                { RueckkuehlwerkSchema.SPALTE_ID_RUECKKUEHLWERK, RueckkuehlwerkSchema.TAB_PROJEKT }
             };
 
         /// <summary>Die Spalten, die <see cref="AnlagenSql.SQL_ANLAGE_INSERT"/> nennt - einmal aus der Anweisung gelesen.</summary>

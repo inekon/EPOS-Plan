@@ -470,7 +470,16 @@ namespace WindowsFormsApplication1
             { Stufe = 3, Anzeigeschluessel = "KABG_KATALOG_KAELTEMASCHINE" },
         };
 
-        private static readonly Katalogtabelle[] ALLE = STUFE1.Concat(STUFE2).Concat(STUFE3).ToArray();
+        // Stufe 4: das Rueckkuehlwerk (RueckkuehlwerkSchema, K-F1). Eigene Stufe, weil der Schritt der Kaeltemaschine
+        // (KaeltemaschineSchema) seine Stufe 3 als vollstaendig pruefen muss, solange das Rueckkuehlwerk noch fehlt. Keine
+        // Kindtabelle, kein Verweis auf einen anderen Katalog; der Katalog ist leer (keine Saat in K-F1).
+        private static readonly Katalogtabelle[] STUFE4 =
+        {
+            new Katalogtabelle(RueckkuehlwerkSchema.TAB_STAMM, "RKW", RueckkuehlwerkSchema.Fachspalten)
+            { Stufe = 4, Anzeigeschluessel = "KABG_KATALOG_RUECKKUEHLWERK" },
+        };
+
+        private static readonly Katalogtabelle[] ALLE = STUFE1.Concat(STUFE2).Concat(STUFE3).Concat(STUFE4).ToArray();
 
         /// <summary>Die Katalogtabellen der Stufe 1 in fester Folge.</summary>
         public static IReadOnlyList<Katalogtabelle> Stufe1 => STUFE1;
@@ -481,7 +490,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Katalogtabellen der Stufe 3 — eigener Schemaschritt nach der Katalogfassung.</summary>
         public static IReadOnlyList<Katalogtabelle> Stufe3 => STUFE3;
 
-        /// <summary>Das ganze Register: Stufe 1, dann Stufe 2, dann Stufe 3.</summary>
+        /// <summary>Die Katalogtabellen der Stufe 4 — das Rückkühlwerk (Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/>).</summary>
+        public static IReadOnlyList<Katalogtabelle> Stufe4 => STUFE4;
+
+        /// <summary>Das ganze Register: Stufe 1, dann Stufe 2, dann Stufe 3, dann Stufe 4.</summary>
         public static IReadOnlyList<Katalogtabelle> Alle => ALLE;
 
         /// <summary>

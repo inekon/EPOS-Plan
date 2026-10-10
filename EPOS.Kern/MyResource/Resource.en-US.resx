@@ -51708,5 +51708,80 @@ chart</value>
   <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
     <value>The default sequence already applies. The arrows on the tiles maintain the sequence of the cooling generators.</value>
   </data>
+  <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
+    <value>Heat rejection units</value>
+  </data>
+  <data name="RKW_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="RKW_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="RKW_LBL_BAUART" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="RKW_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated capacity (heat rejected)</value>
+  </data>
+  <data name="RKW_LBL_ANNAEHERUNG_NENN" xml:space="preserve">
+    <value>Approach at rated point</value>
+  </data>
+  <data name="RKW_LBL_ANNAEHERUNG_WEG" xml:space="preserve">
+    <value>Approach method</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_NENN" xml:space="preserve">
+    <value>Fan power</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_REGELUNG" xml:space="preserve">
+    <value>Fan control</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_STUFEN" xml:space="preserve">
+    <value>Fan stages</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_DREHZAHL_MIN" xml:space="preserve">
+    <value>Minimum fan speed (fraction)</value>
+  </data>
+  <data name="RKW_LBL_BEFEUCHTUNG_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Humidification efficiency</value>
+  </data>
+  <data name="RKW_LBL_BEFEUCHTUNG_AB" xml:space="preserve">
+    <value>Humidification above outdoor temperature</value>
+  </data>
+  <data name="RKW_LBL_VERDUNSTUNG_FAKTOR" xml:space="preserve">
+    <value>Evaporation factor</value>
+  </data>
+  <data name="RKW_LBL_EINDICKUNG" xml:space="preserve">
+    <value>Cycles of concentration</value>
+  </data>
+  <data name="RKW_LBL_DRIFT_ANTEIL" xml:space="preserve">
+    <value>Drift loss (fraction)</value>
+  </data>
+  <data name="RKW_LBL_FREIKUEHLUNG_SCHALTUNG" xml:space="preserve">
+    <value>Free cooling arrangement</value>
+  </data>
+  <data name="RKW_LBL_MODULKOSTEN" xml:space="preserve">
+    <value>Unit price</value>
+  </data>
+  <data name="RKW_MSG_BAUART_UNGUELTIG" xml:space="preserve">
+    <value>The design of the heat rejection unit is unknown.</value>
+  </data>
+  <data name="RKW_MSG_AUSWAHL_UNGUELTIG" xml:space="preserve">
+    <value>A selection of the heat rejection unit (approach, fan control or free cooling arrangement) is unknown.</value>
+  </data>
+  <data name="RKW_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>A value of the heat rejection unit is out of range.</value>
+  </data>
+  <data name="RKW_MSG_AUSGELIEFERT" xml:space="preserve">
+    <value>This heat rejection unit belongs to the delivered catalogue and is not overwritten. Create a copy.</value>
+  </data>
+  <data name="RKW_MSG_LUFT_UNVERTRAEGLICH" xml:space="preserve">
+    <value>An air-cooled chiller (heat rejection by air) carries its own condenser and cannot be given a heat rejection unit.</value>
+  </data>
+  <data name="RKW_MSG_SATZ_FEHLT" xml:space="preserve">
+    <value>The selected heat rejection unit is not in the catalogue.</value>
+  </data>
+  <data name="RKW_MSG_SCHEMA_FEHLT" xml:space="preserve">
+    <value>The database does not know the heat rejection unit yet (schema step {0} is missing).</value>
+  </data>
 </root>
 

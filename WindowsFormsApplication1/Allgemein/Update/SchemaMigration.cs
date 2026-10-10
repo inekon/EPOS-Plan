@@ -5398,6 +5398,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTE_RANG = KaelteRangSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/> — <b>Rückkühlwerk als eigenes Glied</b> (K-F1, Entscheid E120):
+        /// Katalog und Projektkopie des Rückkühlwerks, Verweis (<c>ID_Rueckkuehlwerk</c>) und Wasserpreis an der Anlagenzeile
+        /// der Kältemaschine, sechs Kennzahlen der Rückkühlung an ihrem Ergebnis.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Katalog entsteht leer, jede Spalte steht auf NULL, kein Rechenweg
+        /// liest sie.</para>
+        /// </summary>
+        public const int SCHRITT_RUECKKUEHLWERK = RueckkuehlwerkSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7894,6 +7904,14 @@ namespace WindowsFormsApplication1
                         "Die Folge der Kaelteerzeuger liesse sich nicht pflegen. KEIN Rechenergebnis aendert sich - " +
                         "jede Zeile steht auf NULL, und NULL ist die Vorgabefolge.",
                         Schritt_KaelteRang),
+            // K-F1: Rueckkuehlwerk als eigenes Glied. Quelle ist RueckkuehlwerkSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RUECKKUEHLWERK,
+                        "Tab_Rueckkuehlwerk_STAMM, Tab_Rueckkuehlwerk (neu, leer); Tab_Energieanlagen: ID_Rueckkuehlwerk, " +
+                        "Wasserpreis_EUR_m3; Tab_ErgebnisKaeltemaschine: Ventilatorstrom_MWh, Wasser_m3, Stunden_Nass, " +
+                        "TeilFreikuehlung_MWh, TeilFreikuehlung_Stunden, Rueckkuehltemperatur_Mittel",
+                        "Eine Kaeltemaschine koennte kein Rueckkuehlwerk aus einem Katalog waehlen. KEIN Rechenergebnis aendert " +
+                        "sich - der Katalog entsteht leer, jede Spalte steht auf NULL.",
+                        Schritt_Rueckkuehlwerk),
         };
 
         /// <summary>
@@ -15229,6 +15247,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Teillast und Takten der Kaeltemaschine - " +
                     (e.Angelegt == 0 ? "stand bereits." : e.Angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Rückkühlwerk als eigenes Glied" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RUECKKUEHLWERK"/>,
+        /// die Anweisungen bei <see cref="RueckkuehlwerkSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Rueckkuehlwerk(Lauf l)
+        {
+            string nr = RueckkuehlwerkSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RueckkuehlwerkSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RueckkuehlwerkSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RueckkuehlwerkSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Das Rueckkuehlwerk (Tabellen, Anlagen- und Ergebnisspalten, Katalogindex) steht nach dem Schritt nicht.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Rueckkuehlwerk als eigenes Glied - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

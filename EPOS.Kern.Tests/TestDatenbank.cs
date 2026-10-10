@@ -1020,6 +1020,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaelteRangSchema.SCHRITT (KB-D): Kaelte_Rang an Tab_Energieanlagen, leer = Vorgabefolge, reines DDL.
                 // Wiederholbar.
                 KaelteRangSchema.Ausfuehren(null);
+                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis und
+                // Wasserpreis an der Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
+                RueckkuehlwerkSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

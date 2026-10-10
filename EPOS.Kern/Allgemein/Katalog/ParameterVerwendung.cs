@@ -51,7 +51,13 @@ namespace WindowsFormsApplication1
         /// <see cref="ParameterVerwendung.AlleArten">Verwendungskatalog</see> steht er erst, wenn der
         /// Rechenweg ihn liest — ohne gerechnete Spalte waere die Einstufung eine Behauptung.
         /// </summary>
-        Kaeltemaschine
+        Kaeltemaschine,
+
+        /// <summary>
+        /// <c>Tab_Rueckkuehlwerk_STAMM</c> — der ZEHNTE Katalog (K-F1, <see cref="RueckkuehlwerkSchema"/>): das Rückkühlwerk
+        /// als eigenes Glied einer Kältemaschine. Verwaltung und Filterprofil folgen mit der Oberfläche (K-F5).
+        /// </summary>
+        Rueckkuehlwerk
     }
 
     /// <summary>
@@ -195,6 +201,7 @@ namespace WindowsFormsApplication1
                 case Anlagenart.Pufferspeicher: return PufferSpStammCtrl.TABLE;
                 case Anlagenart.Wechselrichter: return WechselrichterStammCtrl.TABLE;
                 case Anlagenart.Kaeltemaschine: return KaeltemaschineStammCtrl.TABLE;
+                case Anlagenart.Rueckkuehlwerk: return RueckkuehlwerkStammCtrl.TABLE;
             }
             throw new ArgumentOutOfRangeException(nameof(art));
         }
@@ -213,6 +220,7 @@ namespace WindowsFormsApplication1
                 yield return Anlagenart.Pufferspeicher;
                 yield return Anlagenart.Wechselrichter;
                 yield return Anlagenart.Kaeltemaschine;
+                yield return Anlagenart.Rueckkuehlwerk;
             }
         }
 
@@ -242,6 +250,7 @@ namespace WindowsFormsApplication1
                 case Anlagenart.Pufferspeicher: return Pufferspeicher(t);
                 case Anlagenart.Wechselrichter: return Wechselrichter(t);
                 case Anlagenart.Kaeltemaschine: return Kaeltemaschine(t);
+                case Anlagenart.Rueckkuehlwerk: return Rueckkuehlwerk(t);
             }
             throw new ArgumentOutOfRangeException(nameof(art));
         }
@@ -985,6 +994,49 @@ namespace WindowsFormsApplication1
                 E(KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG, t("KM_LBL_VERDICHTERREGELUNG"), "", SIM, WEG),
                 E(KaeltemaschineTeillastSchema.SPALTE_RANDWEG, t("KM_LBL_KENNFELD_RANDWEG"), "", SIM, WEG),
             };
+        }
+
+        /// <summary>
+        /// <b>Das Rückkühlwerk</b> (<see cref="RueckkuehlwerkSchema"/>, K-F1): Die Rechnung liest die Projektkopie
+        /// (<c>Tab_Rueckkuehlwerk</c>) über <c>Rueckkuehlwerk.AusModell</c> (Welle K-F1-b) — Bauart, Nennleistung, Annäherung
+        /// samt Weg, Ventilator und Schaltung der freien Kühlung. Die Felder der nassen Bauarten (Befeuchtung, Verdunstung,
+        /// Eindickung, Drift) liest erst K-F2; bis dahin stehen sie als Dialogfelder. Modulkosten und Kostenvorlagen sind
+        /// Katalogangaben, die die Wirtschaftlichkeit erst mit dem Bericht (K-F5) liest.
+        /// </summary>
+        private static IReadOnlyList<ParameterEintrag> Rueckkuehlwerk(Func<string, string> t)
+        {
+            const string RECHNUNG = "Rueckkuehlwerk.AusModell (Welle K-F1-b); RueckkuehlwerkStammCtrl.Pruefen";
+            const string NASS = "RueckkuehlwerkStammCtrl.Pruefen; gerechnet erst ab Welle K-F2 (Wasserbilanz, Befeuchtung)";
+            const string KATALOG = "RueckkuehlwerkStammCtrl.Speichern; RueckkuehlwerkCtrl.AusKatalogUebernehmen";
+            return new[]
+            {
+                E("ID", "ID:", "", DLG, "RueckkuehlwerkCtrl.AusKatalogUebernehmen (Quelle der Projektkopie, ID_Stamm)"),
+                E(RueckkuehlwerkSchema.SPALTE_BEZEICHNER, t("RKW_LBL_BEZEICHNER"), "", DLG, KATALOG),
+                E(RueckkuehlwerkSchema.SPALTE_BESCHREIBUNG, t("RKW_LBL_BESCHREIBUNG"), "", DLG, KATALOG),
+                E(RueckkuehlwerkSchema.SPALTE_BAUART, t("RKW_LBL_BAUART"), "", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_NENNLEISTUNG, t("RKW_LBL_NENNLEISTUNG"), "kW", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_NENN, t("RKW_LBL_ANNAEHERUNG_NENN"), "K", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_WEG, t("RKW_LBL_ANNAEHERUNG_WEG"), "", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_NENN, t("RKW_LBL_VENTILATOR_NENN"), "kW", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_REGELUNG, t("RKW_LBL_VENTILATOR_REGELUNG"), "", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_STUFEN, t("RKW_LBL_VENTILATOR_STUFEN"), "-", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_DREHZAHL_MIN, t("RKW_LBL_VENTILATOR_DREHZAHL_MIN"), "-", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_BEFEUCHTUNG_WIRKUNGSGRAD, t("RKW_LBL_BEFEUCHTUNG_WIRKUNGSGRAD"), "-", DLG, NASS),
+                E(RueckkuehlwerkSchema.SPALTE_BEFEUCHTUNG_AB, t("RKW_LBL_BEFEUCHTUNG_AB"), "°C", DLG, NASS),
+                E(RueckkuehlwerkSchema.SPALTE_VERDUNSTUNG_FAKTOR, t("RKW_LBL_VERDUNSTUNG_FAKTOR"), "-", DLG, NASS),
+                E(RueckkuehlwerkSchema.SPALTE_EINDICKUNG, t("RKW_LBL_EINDICKUNG"), "-", DLG, NASS),
+                E(RueckkuehlwerkSchema.SPALTE_DRIFT_ANTEIL, t("RKW_LBL_DRIFT_ANTEIL"), "-", DLG, NASS),
+                E(RueckkuehlwerkSchema.SPALTE_FREIKUEHLUNG_SCHALTUNG, t("RKW_LBL_FREIKUEHLUNG_SCHALTUNG"), "", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_MODULKOSTEN, t("RKW_LBL_MODULKOSTEN"), "€", DLG,
+                  "RueckkuehlwerkStammCtrl.Speichern (Katalogangabe; die Wirtschaftlichkeit liest sie ab Welle K-F5)"),
+                E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG, "RueckkuehlwerkStammCtrl.Speichern (Auslieferungssatz)"),
+            }.Concat(Katalogspalten(t)).Concat(new[]
+            {
+                E(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, t("PARV_LBL_KOSTENVORLAGE"), "", DLG,
+                  "Katalogvorlage des Satzes; der Kostenweg liest sie ab Welle K-F5"),
+                E(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, t("PARV_LBL_KOSTENVORLAGE_INVESTITION"), "", DLG,
+                  "Katalogvorlage des Satzes (Investition); der Kostenweg liest sie ab Welle K-F5"),
+            }).ToList();
         }
 
         private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)

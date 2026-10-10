@@ -51715,5 +51715,80 @@ Chart</value>
   <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
     <value>Die Vorgabefolge gilt bereits. Die Pfeile an den Kacheln pflegen die Folge der Kälteerzeuger.</value>
   </data>
+  <data name="KABG_KATALOG_RUECKKUEHLWERK" xml:space="preserve">
+    <value>Rückkühlwerke</value>
+  </data>
+  <data name="RKW_LBL_BEZEICHNER" xml:space="preserve">
+    <value>Bezeichnung</value>
+  </data>
+  <data name="RKW_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="RKW_LBL_BAUART" xml:space="preserve">
+    <value>Bauart</value>
+  </data>
+  <data name="RKW_LBL_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung (abzuführende Wärme)</value>
+  </data>
+  <data name="RKW_LBL_ANNAEHERUNG_NENN" xml:space="preserve">
+    <value>Annäherung im Nennpunkt</value>
+  </data>
+  <data name="RKW_LBL_ANNAEHERUNG_WEG" xml:space="preserve">
+    <value>Weg der Annäherung</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_NENN" xml:space="preserve">
+    <value>Ventilatorleistung</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_REGELUNG" xml:space="preserve">
+    <value>Ventilatorregelung</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_STUFEN" xml:space="preserve">
+    <value>Ventilatorstufen</value>
+  </data>
+  <data name="RKW_LBL_VENTILATOR_DREHZAHL_MIN" xml:space="preserve">
+    <value>Kleinste Drehzahl (Anteil)</value>
+  </data>
+  <data name="RKW_LBL_BEFEUCHTUNG_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Befeuchtungswirkungsgrad</value>
+  </data>
+  <data name="RKW_LBL_BEFEUCHTUNG_AB" xml:space="preserve">
+    <value>Befeuchtung ab Außentemperatur</value>
+  </data>
+  <data name="RKW_LBL_VERDUNSTUNG_FAKTOR" xml:space="preserve">
+    <value>Verdunstungsfaktor</value>
+  </data>
+  <data name="RKW_LBL_EINDICKUNG" xml:space="preserve">
+    <value>Eindickung</value>
+  </data>
+  <data name="RKW_LBL_DRIFT_ANTEIL" xml:space="preserve">
+    <value>Driftverlust (Anteil)</value>
+  </data>
+  <data name="RKW_LBL_FREIKUEHLUNG_SCHALTUNG" xml:space="preserve">
+    <value>Schaltung der freien Kühlung</value>
+  </data>
+  <data name="RKW_LBL_MODULKOSTEN" xml:space="preserve">
+    <value>Gerätepreis</value>
+  </data>
+  <data name="RKW_MSG_BAUART_UNGUELTIG" xml:space="preserve">
+    <value>Die Bauart des Rückkühlwerks ist unbekannt.</value>
+  </data>
+  <data name="RKW_MSG_AUSWAHL_UNGUELTIG" xml:space="preserve">
+    <value>Eine Auswahl des Rückkühlwerks (Annäherung, Ventilatorregelung oder Schaltung der freien Kühlung) ist unbekannt.</value>
+  </data>
+  <data name="RKW_MSG_WERT_UNGUELTIG" xml:space="preserve">
+    <value>Ein Wert des Rückkühlwerks liegt außerhalb seines Bereichs.</value>
+  </data>
+  <data name="RKW_MSG_AUSGELIEFERT" xml:space="preserve">
+    <value>Dieses Rückkühlwerk gehört zur Auslieferung und wird nicht überschrieben. Legen Sie eine Kopie an.</value>
+  </data>
+  <data name="RKW_MSG_LUFT_UNVERTRAEGLICH" xml:space="preserve">
+    <value>Eine luftgekühlte Kältemaschine (Rückkühlart Luft) trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk.</value>
+  </data>
+  <data name="RKW_MSG_SATZ_FEHLT" xml:space="preserve">
+    <value>Das gewählte Rückkühlwerk steht nicht im Katalog.</value>
+  </data>
+  <data name="RKW_MSG_SCHEMA_FEHLT" xml:space="preserve">
+    <value>Die Datenbank kennt das Rückkühlwerk noch nicht (Schemaschritt {0} fehlt).</value>
+  </data>
 </root>
 

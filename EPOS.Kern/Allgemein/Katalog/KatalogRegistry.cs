@@ -269,6 +269,15 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
+                // K-F1: das Rueckkuehlwerk. "Modulkosten" ist ein Anwenderfeld wie bei der Kaeltemaschine.
+                Schluessel = "RUECKKUEHLWERK",
+                Tabelle = RueckkuehlwerkSchema.TAB_STAMM,
+                AusschlussSpalten = new[] { RueckkuehlwerkSchema.SPALTE_MODULKOSTEN }
+                // VerwendungsPruefungen: LEER - Kopiersemantik. Die Anlagenzeile verweist auf die Projektkopie
+                // Tab_Rueckkuehlwerk (RueckkuehlwerkCtrl.AusKatalogUebernehmen), nie auf den Katalog.
+            },
+            new KatalogDefinition
+            {
                 Schluessel = "BHKW",
                 Tabelle = "Tab_BHKW_STAMM",
                 AusschlussSpalten = new[] { "Investition_kwel", "Wartungskosten_kwhel",
