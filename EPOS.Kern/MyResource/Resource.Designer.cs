@@ -3084,6 +3084,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den gewählten Satz über dem Dialog ansehen (nur lesen) ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_ANSEHEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_ANSEHEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den gewählten Satz über dem Dialog bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_BEARBEITEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_BEARBEITEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Details ähnelt.
         /// </summary>
         public static string AUSWAHL_SATZ_DETAILS {
@@ -3138,6 +3165,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kurzangaben des gewählten Satzes ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_ZUSAMMENFASSUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_ZUSAMMENFASSUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe zwischen Projekt und Katalog (ziehen oder Pfeiltasten) ähnelt.
         /// </summary>
         public static string AUSWAHL_TRENNER {
@@ -3188,6 +3224,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_WAHL_ZEILE {
             get {
                 return ResourceManager.GetString("AUSWAHL_WAHL_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZEILE_BEARBEITEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZEILE_BEARBEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BETRIEB {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennwert ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BRENNWERT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:N0} € ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_EURO {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_EURO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:N0} €/a ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_EURO_JAHR {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_EURO_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Invest ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_INVEST {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_LEISTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senken ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SENKEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SENKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Träger ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_TRAEGER {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf/Rücklauf ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_VORLAUF_RUECKLAUF {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_VORLAUF_RUECKLAUF", resourceCulture);
             }
         }
         

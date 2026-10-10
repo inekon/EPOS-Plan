@@ -50124,6 +50124,51 @@ chart</value>
   <data name="AUSWAHL_SATZ_VERGROESSERN_HINWEIS" xml:space="preserve">
     <value>Open the selected record at full height over the dialog</value>
   </data>
+  <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
+    <value>Edit the selected record over the dialog</value>
+  </data>
+  <data name="AUSWAHL_SATZ_ANSEHEN_HINWEIS" xml:space="preserve">
+    <value>View the selected record over the dialog (read only)</value>
+  </data>
+  <data name="AUSWAHL_SATZ_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>Key data of the selected record</value>
+  </data>
+  <data name="AUSWAHL_ZEILE_BEARBEITEN" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="AUSWAHL_ZF_LEISTUNG" xml:space="preserve">
+    <value>Output</value>
+  </data>
+  <data name="AUSWAHL_ZF_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="AUSWAHL_ZF_TRAEGER" xml:space="preserve">
+    <value>Carrier</value>
+  </data>
+  <data name="AUSWAHL_ZF_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Flow/return</value>
+  </data>
+  <data name="AUSWAHL_ZF_BRENNWERT" xml:space="preserve">
+    <value>Condensing</value>
+  </data>
+  <data name="AUSWAHL_ZF_INVEST" xml:space="preserve">
+    <value>Investment</value>
+  </data>
+  <data name="AUSWAHL_ZF_BETRIEB" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="AUSWAHL_ZF_SENKEN" xml:space="preserve">
+    <value>Sinks</value>
+  </data>
+  <data name="AUSWAHL_ZF_EURO" xml:space="preserve">
+    <value>€{0:N0}</value>
+  </data>
+  <data name="AUSWAHL_ZF_EURO_JAHR" xml:space="preserve">
+    <value>€{0:N0}/a</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Edit project record – {0}</value>
   </data>

@@ -10761,6 +10761,53 @@ table.epos-simerg-tabelle {
     }
 }
 
+/* --- Der Stift je Zeile (UeS2): Baustein Zeilenstift ------------------- */
+/* Eine schmale Spalte am Ende der Zeile; der Knopf ist ein Beruehrungsziel
+   (--epos-touchziel, in der Kompaktstufe 37 px) und bleibt unter dem Zeilenmass
+   (46 bzw. 53 px mal Zeilenskala) - die Zeile waechst nicht. Immer sichtbar,
+   nie nur bei :hover (Hausregel Aktionsknoepfe). */
+.epos-raster-huelle table.epos-raster th.epos-spalte-stift,
+.epos-raster-huelle table.epos-raster td.epos-spalte-stift {
+    width: calc(var(--epos-touchziel) + 4px);
+    padding: 0 2px;
+    text-align: center;
+}
+
+.epos-zeilenstift {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: var(--epos-touchziel);
+    height: var(--epos-touchziel);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--epos-marke);
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.epos-zeilenstift:hover { border-color: var(--epos-rahmen); }
+.epos-zeilenstift:focus-visible { outline: 2px solid var(--epos-marke); outline-offset: -2px; }
+
+@media (forced-colors: active) {
+    .epos-zeilenstift { color: ButtonText; border-color: ButtonText; }
+}
+
+/* Der Kopf der Stiftspalte: Beschriftung nur fuer die Sprachausgabe. */
+.epos-zeilenstift-kopf {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
 /* --- Zone 3: die Kaestchenspalte der Mehrfachwahl (V6) --------------- */
 /* Die Zelle ist ein label ueber die ganze Hoehe der Zeile: 45 px wie die
    Klickflaeche daneben, damit das Zeilenmass (46 px) steht. */
