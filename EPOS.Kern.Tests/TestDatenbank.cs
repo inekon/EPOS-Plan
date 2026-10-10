@@ -1017,6 +1017,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaelteKatalogfelderSchema.SCHRITT (K-A): Geraeteart, GWP, Fuellmenge, saisonale Kennzahl an Katalog und
                 // Projektkopie, die Geraeteart nach der Rueckkuehlart rueckgefuellt. Wiederholbar.
                 KaelteKatalogfelderSchema.Ausfuehren(null);
+                // Schritt KaelteRangSchema.SCHRITT (KB-D): Kaelte_Rang an Tab_Energieanlagen, leer = Vorgabefolge, reines DDL.
+                // Wiederholbar.
+                KaelteRangSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -51537,5 +51537,47 @@ chart</value>
   <data name="KI_DLG_KM_SAISONKENNZAHL_ERL" xml:space="preserve">
     <value>Value of the seasonal efficiency: SEER 1 to 20 or ηs,c 50 to 800 %.</value>
   </data>
+  <data name="KAELTEFOLGE_FEHLER_SCHEMA" xml:space="preserve">
+    <value>The database does not yet hold the order of the cooling generators (schema step {0}).</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project selected.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER" xml:space="preserve">
+    <value>Unit {0} is not a cooling generator of this project.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_DOPPELT" xml:space="preserve">
+    <value>“{0}” appears twice in the order of the cooling generators.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>“{0}” is missing from the order of the cooling generators; the order names every cooling generator exactly once.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_RAND" xml:space="preserve">
+    <value>The cooling generator is already at the end of the order.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_SCHREIBEN" xml:space="preserve">
+    <value>The order of the cooling generators could not be saved: {0}</value>
+  </data>
+  <data name="KAELTEFOLGE_HINWEIS_VORGABE" xml:space="preserve">
+    <value>Default order: free cooling, cold storage, heat pumps, chillers.</value>
+  </data>
+  <data name="KAELTEFOLGE_HINWEIS_GEPFLEGT" xml:space="preserve">
+    <value>Custom order: free cooling, cold storage, then the generators in the order shown.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_NAME" xml:space="preserve">
+    <value>Order of the cooling generators</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_ERL" xml:space="preserve">
+    <value>The cooling generators in the order in which they cover the cooling demand, after free cooling and cold storage. Read-only; the order is changed in the Cooling section.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME" xml:space="preserve">
+    <value>Custom cooling order</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL" xml:space="preserve">
+    <value>On = the order of the cooling generators is customised. Off restores the default order (heat pumps, then chillers); written immediately. On can only be set with the arrows in the Cooling section.</value>
+  </data>
+  <data name="KI_SIM_KAELTEFOLGE_NUR_VORGABE" xml:space="preserve">
+    <value>The order of the cooling generators is customised with the arrows in the Cooling section; here it can only be reset to the default order.</value>
+  </data>
 </root>
 

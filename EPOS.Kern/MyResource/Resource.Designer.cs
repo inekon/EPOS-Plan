@@ -48828,6 +48828,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht zweimal in der Folge der Kälteerzeuger. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_DOPPELT {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage {0} ist kein Kälteerzeuger dieses Projekts. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt gewählt. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kälteerzeuger steht bereits am Rand der Folge. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_RAND {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank führt die Folge der Kälteerzeuger noch nicht (Schemaschritt {0}). ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_SCHEMA {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Folge der Kälteerzeuger ließ sich nicht speichern: {0} ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_SCHREIBEN {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_SCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ fehlt in der Folge der Kälteerzeuger; die Folge nennt jeden Kälteerzeuger genau einmal. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegte Folge: freie Kühlung, Kältespeicher, dann die Erzeuger in der gezeigten Reihenfolge. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_HINWEIS_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_HINWEIS_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabefolge: freie Kühlung, Kältespeicher, Wärmepumpen, Kältemaschinen. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_HINWEIS_VORGABE {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_HINWEIS_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber. ähnelt.
         /// </summary>
         public static string KAELTE_GRENZE_FEUCHTE {
@@ -63836,6 +63917,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kälteerzeuger in der Reihenfolge, in der sie den Kältebedarf decken, nach freier Kühlung und Kältespeicher. Nur lesbar; umgeordnet wird im Bereich Kälte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Folge der Kälteerzeuger ist gepflegt. Aus stellt die Vorgabefolge her (Wärmepumpen, dann Kältemaschinen); schreibt sofort. An lässt sich nur über die Pfeile im Bereich Kälte setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältefolge gepflegt ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Folge der Kälteerzeuger ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die aufgenommenen Erzeuger in der Reihenfolge, in der die Simulation sie einsetzt — je Gruppe eine Aufzählung. Der Rang entscheidet, welcher Erzeuger den Bedarf zuerst deckt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_KASKADE_ERL {
@@ -74179,6 +74296,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_SIM_DESINF_ZIEL_ERL {
             get {
                 return ResourceManager.GetString("KI_SIM_DESINF_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Folge der Kälteerzeuger wird über die Pfeile im Bereich Kälte gepflegt; hier lässt sie sich nur auf die Vorgabefolge zurücksetzen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_KAELTEFOLGE_NUR_VORGABE {
+            get {
+                return ResourceManager.GetString("KI_SIM_KAELTEFOLGE_NUR_VORGABE", resourceCulture);
             }
         }
         

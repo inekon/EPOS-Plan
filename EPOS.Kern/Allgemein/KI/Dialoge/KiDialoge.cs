@@ -9309,6 +9309,18 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimKuehlbetriebName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimKuehlbetriebErl),
 
+                    // ---- Die Folge der Kaelteerzeuger (Welle KB-D, Entscheid E117 F1) --------
+                    //
+                    // Lesbar die Folge, in der die Erzeuger decken; "gepflegt" laesst sich nur
+                    // AUS setzen - das stellt die Vorgabefolge her, ueber denselben Delegaten
+                    // wie der Knopf (KaelteVorgabefolge), sofort.
+                    new KiDialogFeld("kaeltefolge", "SimulationKiSicht.Kaeltefolge",
+                                     KiDialogTexte.SimKaeltefolgeName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKaeltefolgeErl, leerErlaubt: true),
+                    new KiDialogFeld("kaeltefolge_gepflegt", "SimulationKiSicht.KaeltefolgeGepflegt",
+                                     KiDialogTexte.SimKaeltefolgeGepflegtName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimKaeltefolgeGepflegtErl),
+
                     // ---- Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4) ----
                     //
                     // Unter den Netzverlusten und wie sie SOFORT geschrieben - ueber EINEN Delegaten

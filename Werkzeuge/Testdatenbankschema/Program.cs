@@ -3368,6 +3368,24 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt " + nrKkf + " - vollstaendig: " + KaelteKatalogfelderSchema.Vollstaendig() +
                                   ", ohne Geraeteart: " + KaelteKatalogfelderSchema.ZeilenOhneGeraeteart() + " (erwartet True, 0).");
             }
+
+            // ---- Schritt KaelteRangSchema.SCHRITT (KB-D): Kaelte_Rang an Tab_Energieanlagen, leer = Vorgabefolge.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KaelteRang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile steht auf NULL, und NULL ist die Vorgabefolge.
+            string nrRang = KaelteRangSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRang + " - pflegbare Kaeltefolge: " +
+                              (KaelteRangSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRang = new List<string>();
+                angelegt += KaelteRangSchema.Ausfuehren(berichtRang);
+                foreach (string zeile in berichtRang)
+                    Console.WriteLine("Schritt " + nrRang + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRang + " - vollstaendig: " + KaelteRangSchema.Vollstaendig() +
+                                  ", Zeilen mit Rang: " + KaelteRangSchema.ZeilenMitRang() + " (erwartet True, 0).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

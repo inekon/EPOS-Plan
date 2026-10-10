@@ -371,6 +371,10 @@ namespace WindowsFormsApplication1
 
                 // KB-A: der Kühlbetrieb einer Wärmepumpe im Bereich „Kälte“ - der Kernweg des Kühlschalters.
                 KuehlbetriebWpSchreiben = (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(m_ID_Projekt, idWp, an),
+                // KB-D: die pflegbare Folge der Kälteerzeuger - Pfeile und „Vorgabefolge“ schreiben sofort über den Kernweg.
+                KaelteVerschieben = (idAnlage, richtung) => KaeltefolgeCtrl.Verschieben(m_ID_Projekt, idAnlage,
+                    richtung < 0 ? KaeltefolgeCtrl.NACH_VORN : KaeltefolgeCtrl.NACH_HINTEN),
+                KaelteVorgabefolge = () => KaeltefolgeCtrl.VorgabeSetzen(m_ID_Projekt),
 
                 // DIE DREI HANDGRIFFE AN DER KASKADE - und nur sie - machen die Kaskade
                 // zu einer GEPFLEGTEN (Anwenderentscheid 16.09.2026, Schemaschritt 82).

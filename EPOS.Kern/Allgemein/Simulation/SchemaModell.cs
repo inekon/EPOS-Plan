@@ -706,92 +706,105 @@ namespace WindowsFormsApplication1
             bool projektKaelte = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
             List<string> erzeuger = new List<string>();
 
-            // 1. Wärmepumpen im Kühlbetrieb - in der Folge ihrer Module (KB-A: die Regel der Kaeltefolge).
+            // Die Erzeuger der Kältebahn: je Anlage ein Bauschritt, geordnet nach der Kaeltefolge (KB-A) - Wärmepumpen
+            // im Kühlbetrieb in der Folge ihrer Module, Kältemaschinen in der Folge ihrer Anlagenzeilen; gepflegte Ränge
+            // (KB-D) vorn. Ohne Rang die Vorgabefolge, Knoten für Knoten wie zuvor.
+            var bauschritte = new List<(KaeltefolgeStufe Stufe, int Platz, int Id, Action Bauen)>();
+
+            // 1. Wärmepumpen im Kühlbetrieb.
             List<int> module = SimulationControl.WaermepumpenanlagenLesen(idProjekt) ?? new List<int>();
-            List<Hydraulikbild.AnlagenEintrag> wpKaelte = Kaeltefolge.ErzeugerOrdnen(
-                anlagen.Where(a => a != null && _kaelteerzeuger.Contains(a.ID)),
-                a => KaeltefolgeStufe.Waermepumpe,
-                a => module.IndexOf(a.ID) >= 0 ? module.IndexOf(a.ID) : int.MaxValue);
-            foreach (Hydraulikbild.AnlagenEintrag a in wpKaelte)
+            foreach (Hydraulikbild.AnlagenEintrag wp in anlagen.Where(a => a != null && _kaelteerzeuger.Contains(a.ID)))
             {
-
-                Knoten k = new Knoten
+                Hydraulikbild.AnlagenEintrag a = wp;
+                bauschritte.Add((KaeltefolgeStufe.Waermepumpe, module.IndexOf(a.ID) >= 0 ? module.IndexOf(a.ID) : int.MaxValue, a.ID, () =>
                 {
-                    Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.ID,
-                    Art = Knotenart.Erzeuger,
-                    Bahn = Bahn.Kaelte,
-                    ID = a.ID,
-                    ID_Type = a.ID_Type,
-                    Titel = a.Bezeichner.Length > 0 ? a.Bezeichner : Ladeordnung.ErzeugerName(a.ID_Type)
-                };
-                k.Zeilen.Add(MyResource.Resource.KONF_KS_WP_KUEHLBETRIEB);
-                double? vorlauf = WpKuehlVorlauf(a.ID);
-                if (vorlauf.HasValue)
-                    k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KUEHLVORLAUF, vorlauf.Value));
-                k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
-                Knotenliste.Add(k);
-                erzeuger.Add(k.Schluessel);
-                KaelteKette.Add(k.Titel);
-
-                // Die Quelle der Wärmepumpe nimmt im Kühlbetrieb die Abwärme auf.
-                string quelle = Quelltext(a);
-                if (quelle.Length > 0)
-                    Knotenliste.Add(new Knoten
+                    Knoten k = new Knoten
                     {
-                        Schluessel = PRAEFIX_KAELTE_QUELLE + a.ID,
-                        Art = Knotenart.Quelle,
+                        Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.ID,
+                        Art = Knotenart.Erzeuger,
                         Bahn = Bahn.Kaelte,
                         ID = a.ID,
                         ID_Type = a.ID_Type,
-                        Titel = quelle,
-                        Hinweis = string.Format(MyResource.Resource.KONF_KS_ABWAERME, quelle)
-                    });
+                        Titel = a.Bezeichner.Length > 0 ? a.Bezeichner : Ladeordnung.ErzeugerName(a.ID_Type)
+                    };
+                    k.Zeilen.Add(MyResource.Resource.KONF_KS_WP_KUEHLBETRIEB);
+                    double? vorlauf = WpKuehlVorlauf(a.ID);
+                    if (vorlauf.HasValue)
+                        k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KUEHLVORLAUF, vorlauf.Value));
+                    k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                    Knotenliste.Add(k);
+                    erzeuger.Add(k.Schluessel);
+                    KaelteKette.Add(k.Titel);
+
+                    // Die Quelle der Wärmepumpe nimmt im Kühlbetrieb die Abwärme auf.
+                    string quelle = Quelltext(a);
+                    if (quelle.Length > 0)
+                        Knotenliste.Add(new Knoten
+                        {
+                            Schluessel = PRAEFIX_KAELTE_QUELLE + a.ID,
+                            Art = Knotenart.Quelle,
+                            Bahn = Bahn.Kaelte,
+                            ID = a.ID,
+                            ID_Type = a.ID_Type,
+                            Titel = quelle,
+                            Hinweis = string.Format(MyResource.Resource.KONF_KS_ABWAERME, quelle)
+                        });
+                }));
             }
 
-            // 2. Kältemaschinen - in der Folge ihrer Anlagenzeilen.
-            foreach (KaeltemaschineAnlageModel a in Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(idProjekt)))
+            // 2. Kältemaschinen.
+            int kmPlatz = 0;
+            foreach (KaeltemaschineAnlageModel km in Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(idProjekt)))
             {
-                if (a == null || a.AnlagenId <= 0) continue;
-
-                KaeltemaschineModel m = a.IdKaeltemaschine.HasValue
-                    ? KaeltemaschineCtrl.LadenStill(a.IdKaeltemaschine.Value) : null;
-
-                Knoten k = new Knoten
+                if (km == null || km.AnlagenId <= 0) continue;
+                KaeltemaschineAnlageModel a = km;
+                bauschritte.Add((KaeltefolgeStufe.Kaeltemaschine, kmPlatz++, a.AnlagenId, () =>
                 {
-                    Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.AnlagenId,
-                    Art = Knotenart.Erzeuger,
-                    Bahn = Bahn.Kaelte,
-                    ID = a.AnlagenId,
-                    ID_Type = WizardItemClass.KM_TYP,
-                    Titel = !string.IsNullOrWhiteSpace(a.Bezeichner) ? a.Bezeichner
-                          : m != null && !string.IsNullOrWhiteSpace(m.Bezeichner) ? m.Bezeichner
-                          : MyResource.Resource.KONF_KS_KAELTEMASCHINE
-                };
-                k.Zeilen.Add(MyResource.Resource.KONF_KS_KAELTEMASCHINE);
-                if (m != null && m.Nennkaelteleistung_kW.HasValue && m.Nennkaelteleistung_kW.Value > 0)
-                    k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_ANZAHL_LEISTUNG,
-                                               Math.Max(1, a.Anzahl), m.Nennkaelteleistung_kW.Value));
-                double vorlauf = m != null ? Kaltwasservorlauf(m) : double.NaN;
-                if (!double.IsNaN(vorlauf))
-                    k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KALTWASSERVORLAUF, vorlauf));
-                k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
-                Knotenliste.Add(k);
-                erzeuger.Add(k.Schluessel);
-                KaelteKette.Add(k.Titel);
+                    KaeltemaschineModel m = a.IdKaeltemaschine.HasValue
+                        ? KaeltemaschineCtrl.LadenStill(a.IdKaeltemaschine.Value) : null;
 
-                string rueckkuehlung = m != null ? KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart) : "";
-                if (string.IsNullOrEmpty(rueckkuehlung)) rueckkuehlung = MyResource.Resource.KM_RUECKKUEHLART_KEINE;
-                Knotenliste.Add(new Knoten
-                {
-                    Schluessel = PRAEFIX_KAELTE_QUELLE + a.AnlagenId,
-                    Art = Knotenart.Quelle,
-                    Bahn = Bahn.Kaelte,
-                    ID = a.AnlagenId,
-                    ID_Type = WizardItemClass.KM_TYP,
-                    Titel = rueckkuehlung,
-                    Hinweis = string.Format(MyResource.Resource.KONF_KS_RUECKKUEHLUNG, rueckkuehlung)
-                });
+                    Knoten k = new Knoten
+                    {
+                        Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.AnlagenId,
+                        Art = Knotenart.Erzeuger,
+                        Bahn = Bahn.Kaelte,
+                        ID = a.AnlagenId,
+                        ID_Type = WizardItemClass.KM_TYP,
+                        Titel = !string.IsNullOrWhiteSpace(a.Bezeichner) ? a.Bezeichner
+                              : m != null && !string.IsNullOrWhiteSpace(m.Bezeichner) ? m.Bezeichner
+                              : MyResource.Resource.KONF_KS_KAELTEMASCHINE
+                    };
+                    k.Zeilen.Add(MyResource.Resource.KONF_KS_KAELTEMASCHINE);
+                    if (m != null && m.Nennkaelteleistung_kW.HasValue && m.Nennkaelteleistung_kW.Value > 0)
+                        k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_ANZAHL_LEISTUNG,
+                                                   Math.Max(1, a.Anzahl), m.Nennkaelteleistung_kW.Value));
+                    double vorlauf = m != null ? Kaltwasservorlauf(m) : double.NaN;
+                    if (!double.IsNaN(vorlauf))
+                        k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KALTWASSERVORLAUF, vorlauf));
+                    k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                    Knotenliste.Add(k);
+                    erzeuger.Add(k.Schluessel);
+                    KaelteKette.Add(k.Titel);
+
+                    string rueckkuehlung = m != null ? KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart) : "";
+                    if (string.IsNullOrEmpty(rueckkuehlung)) rueckkuehlung = MyResource.Resource.KM_RUECKKUEHLART_KEINE;
+                    Knotenliste.Add(new Knoten
+                    {
+                        Schluessel = PRAEFIX_KAELTE_QUELLE + a.AnlagenId,
+                        Art = Knotenart.Quelle,
+                        Bahn = Bahn.Kaelte,
+                        ID = a.AnlagenId,
+                        ID_Type = WizardItemClass.KM_TYP,
+                        Titel = rueckkuehlung,
+                        Hinweis = string.Format(MyResource.Resource.KONF_KS_RUECKKUEHLUNG, rueckkuehlung)
+                    });
+                }));
             }
+
+            Dictionary<int, int> raenge = Kaeltefolge.RaengeLesen(idProjekt);
+            foreach (var schritt in Kaeltefolge.ErzeugerOrdnen(bauschritte, b => b.Stufe, b => b.Platz,
+                         b => raenge.TryGetValue(b.Id, out int r) ? r : (int?)null))
+                schritt.Bauen();
 
             // 3. Kältespeicher - in der Reihenfolge des Laufs (Entladepriorität, 0 hinten).
             List<WaermesenkeClass.PufferInfo> speicher = Kaeltefolge.KaeltespeicherOrdnen(

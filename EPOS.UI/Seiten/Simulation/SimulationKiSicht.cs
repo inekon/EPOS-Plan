@@ -369,6 +369,35 @@ public sealed class SimulationKiSicht
     }
 
     /// <summary>
+    /// Die Folge der Kälteerzeuger (Welle KB-D): die Namen in der Folge, in der sie decken — nach freier Kühlung und
+    /// Kältespeicher. Abgeleitet, ohne Setzer: umgeordnet wird über die Pfeile des Bereichs „Kälte“.
+    /// </summary>
+    public string Kaeltefolge
+        => string.Join(" → ", (_konfiguration()?.Kaeltebereich?.Erzeuger ?? new List<KaelteerzeugerZeile>())
+                                  .Select(z => z.Bezeichner));
+
+    /// <summary>
+    /// Ist die Folge der Kälteerzeuger gepflegt (Welle KB-D)? <c>false</c> setzen stellt die Vorgabefolge her — über
+    /// denselben Delegaten wie der Knopf (<see cref="SimulationKonfigDienste.KaelteVorgabefolge"/>), sofort; <c>true</c>
+    /// lehnt die Sicht benannt ab (gepflegt wird über die Pfeile).
+    /// </summary>
+    public bool KaeltefolgeGepflegt
+    {
+        get => _konfiguration()?.Kaeltebereich?.FolgeGepflegt ?? false;
+        set
+        {
+            if (value) throw new InvalidOperationException(Resource.KI_SIM_KAELTEFOLGE_NUR_VORGABE);
+            SimulationKonfigDaten? d = _konfiguration();
+            Func<string?>? vorgabe = _konfigwege?.Invoke()?.KaelteVorgabefolge;
+            if (d is null || vorgabe is null)
+                throw new InvalidOperationException(Resource.KI_SIM_KEIN_SCHREIBWEG);
+            string? grund = vorgabe();
+            if (grund is not null) throw new InvalidOperationException(grund);
+            d.Kaeltebereich.FolgeGepflegt = false;
+        }
+    }
+
+    /// <summary>
     /// Die Projekteinstellung „Anlagenkopplung" (Konzept Anlagenkopplung 9.4) als Steuerwert
     /// (<c>DbWerte.ANLAGENKOPPLUNG_*</c>) — geschrieben über denselben Delegaten wie die Wahl
     /// (<c>AnlagenkopplungSchreiben</c>), sofort. Eine Stufe, deren Rechenweg nicht gebaut ist,

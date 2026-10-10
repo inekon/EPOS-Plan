@@ -51544,5 +51544,47 @@ Chart</value>
   <data name="KI_DLG_KM_SAISONKENNZAHL_ERL" xml:space="preserve">
     <value>Wert der saisonalen Kennzahl: SEER 1 bis 20 oder ηs,c 50 bis 800 %.</value>
   </data>
+  <data name="KAELTEFOLGE_FEHLER_SCHEMA" xml:space="preserve">
+    <value>Die Datenbank führt die Folge der Kälteerzeuger noch nicht (Schemaschritt {0}).</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_KEIN_PROJEKT" xml:space="preserve">
+    <value>Kein Projekt gewählt.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER" xml:space="preserve">
+    <value>Die Anlage {0} ist kein Kälteerzeuger dieses Projekts.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_DOPPELT" xml:space="preserve">
+    <value>„{0}“ steht zweimal in der Folge der Kälteerzeuger.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>„{0}“ fehlt in der Folge der Kälteerzeuger; die Folge nennt jeden Kälteerzeuger genau einmal.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_RAND" xml:space="preserve">
+    <value>Der Kälteerzeuger steht bereits am Rand der Folge.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_SCHREIBEN" xml:space="preserve">
+    <value>Die Folge der Kälteerzeuger ließ sich nicht speichern: {0}</value>
+  </data>
+  <data name="KAELTEFOLGE_HINWEIS_VORGABE" xml:space="preserve">
+    <value>Vorgabefolge: freie Kühlung, Kältespeicher, Wärmepumpen, Kältemaschinen.</value>
+  </data>
+  <data name="KAELTEFOLGE_HINWEIS_GEPFLEGT" xml:space="preserve">
+    <value>Gepflegte Folge: freie Kühlung, Kältespeicher, dann die Erzeuger in der gezeigten Reihenfolge.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_NAME" xml:space="preserve">
+    <value>Folge der Kälteerzeuger</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_ERL" xml:space="preserve">
+    <value>Die Kälteerzeuger in der Reihenfolge, in der sie den Kältebedarf decken, nach freier Kühlung und Kältespeicher. Nur lesbar; umgeordnet wird im Bereich Kälte.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME" xml:space="preserve">
+    <value>Kältefolge gepflegt</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL" xml:space="preserve">
+    <value>An = die Folge der Kälteerzeuger ist gepflegt. Aus stellt die Vorgabefolge her (Wärmepumpen, dann Kältemaschinen); schreibt sofort. An lässt sich nur über die Pfeile im Bereich Kälte setzen.</value>
+  </data>
+  <data name="KI_SIM_KAELTEFOLGE_NUR_VORGABE" xml:space="preserve">
+    <value>Die Folge der Kälteerzeuger wird über die Pfeile im Bereich Kälte gepflegt; hier lässt sie sich nur auf die Vorgabefolge zurücksetzen.</value>
+  </data>
 </root>
 
