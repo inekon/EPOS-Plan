@@ -1,0 +1,70 @@
+Jede Berechnung in EPOS-Plan beginnt beim Wetter. Aus dem '''Klimadatensatz''' des Standorts ergeben sich der zeitliche Verlauf des Heizwärmebedarfs, die Leistungszahl der Wärmepumpe, der Ertrag von Solarkollektoren und Photovoltaik sowie die Gleichzeitigkeit von Erzeugung und Bedarf. Ein sorgfältig gewählter Klimadatensatz ist damit die wichtigste Randbedingung einer Simulation.
+
+== Klimadaten ==
+{{Anker|klimadaten|tmy}}
+
+Jede Jahressimulation beginnt beim Wetter. EPOS-Plan arbeitet mit stündlich aufgelösten Klimadatensätzen, die für jede der 8.760 Jahresstunden die Außentemperatur sowie die Global-, Direkt- und Diffusstrahlung enthalten. Grundlage sind typische meteorologische Jahre (TMY), die aus langjährigen Messreihen so zusammengesetzt werden, dass jeder Monat einem statistisch repräsentativen Monat des Betrachtungszeitraums entspricht. Ein TMY bildet damit kein tatsächlich aufgetretenes Jahr ab, sondern ein für den Standort typisches – genau das, was für Auslegung und Ertragsprognose gebraucht wird.
+
+Der Datensatz wird über die Ortseingabe automatisch bezogen: Aus dem Ortsnamen werden die geografischen Koordinaten ermittelt, anschließend lädt das Programm die Stundenwerte und rechnet die Strahlung auf die vier Hauptausrichtungen Süd, Ost, West und Nord um. Diese richtungsabhängige Aufbereitung ist die Voraussetzung dafür, dass solare Gewinne über Fenster, Kollektorerträge und Photovoltaikerträge getrennt und lagerichtig berechnet werden können. Ergänzend wird für jede Stunde der Sonnenstand aus Deklination, Zeitgleichung und Stundenwinkel bestimmt; daraus ergibt sich der Einfallswinkel auf jede geneigte Fläche.
+
+Aus den Stundenwerten leitet EPOS-Plan zusätzlich Tagesmittelwerte und eine Tagtypklassifizierung ab – nach Jahreszeit, Wochentag und Bewölkungsgrad, erkennbar am Anteil der Diffusstrahlung. Diese Tagtypen steuern, welche Tagesverteilungskurve für die Umlage des Tageswärmebedarfs auf Stundenwerte verwendet wird. Der Klimadatensatz beeinflusst das Ergebnis erheblich: Zwischen einem Standort in der Oberrheinebene und einem auf der Schwäbischen Alb liegen bei sonst gleichem Gebäude schnell zwanzig Prozent Unterschied im Heizwärmebedarf und mehrere Grad beim Bivalenzpunkt einer Wärmepumpe. Wählen Sie deshalb die Klimaregion standortnah und nicht pauschal.
+
+== Zeitliche Auflösung ==
+{{Anker|zeitliche-aufloesung}}
+
+EPOS-Plan rechnet mit Stundenwerten über ein volles Kalenderjahr, also 8.760 Zeitschritten. Diese Auflösung ist fein genug, um Speicherbewirtschaftung, Eigenverbrauch von PV-Strom und den Wechsel zwischen Erzeugern realistisch abzubilden, und grob genug, um vollständige Jahressimulationen in Sekunden zu rechnen. Kürzere Zeitschritte bringen bei der Auslegung ganzer Versorgungskonzepte kaum zusätzliche Aussagekraft, erhöhen aber den Datenbedarf erheblich.
+
+== Standortwahl ==
+{{Anker|standortwahl}}
+
+Der Standort wird über Ort, Postleitzahl oder Koordinaten festgelegt. EPOS-Plan ordnet ihm den nächstgelegenen Referenzdatensatz zu und berücksichtigt die Höhenlage. Zwischen einem Standort im Rheintal und einer Lage auf 700 Metern liegen im Jahresmittel mehrere Kelvin Außentemperatur; das verschiebt sowohl den Heizwärmebedarf als auch die Jahresarbeitszahl einer Wärmepumpe spürbar. Bei Projekten in ausgeprägter Kessel- oder Kammlage lohnt sich deshalb der Blick auf die tatsächliche Höhe statt auf den Ortsmittelpunkt.
+
+== Auslegungstemperatur und Heizgrenze ==
+{{Anker|auslegungstemperatur-und-heizgrenze|heizgrenze}}
+
+Aus dem Klimadatensatz leitet EPOS-Plan die Norm-Außentemperatur für die Auslegung der Heizleistung sowie die Heizgradstunden ab. Die Heizgrenztemperatur trennt Tage mit Raumheizung von Tagen, an denen nur noch Warmwasser oder Prozesswärme benötigt wird. Sie hängt vom Dämmstandard ab: gut gedämmte Gebäude erreichen die Heizgrenze bereits bei 12 bis 14 °C, wenig gedämmte Bestandsgebäude erst bei 16 bis 18 °C.
+
+== Strahlungsdaten ==
+{{Anker|strahlungsdaten}}
+
+Für Solarthermie und Photovoltaik werden Global- und Diffusstrahlung auf die horizontale Fläche vorgehalten und auf die geneigte, ausgerichtete Fläche umgerechnet. Ergänzend greift EPOS-Plan auf PVGIS zurück, wenn für einen Standort belastbarere Strahlungsdaten benötigt werden. Damit lassen sich auch Ost-West-Anlagen, Fassadenmodule und aufgeständerte Freiflächen realistisch bewerten.
+
+== Normjahr, Extremjahr und Klimawandel ==
+{{Anker|normjahr-extremjahr-und-klimawandel}}
+
+Ein Testreferenzjahr beschreibt einen typischen, keinen extremen Verlauf. Für die Auslegung der Spitzenlast ist deshalb zusätzlich ein kaltes Jahr zu betrachten, für die Bewertung von Kühlung und Überhitzung ein warmes. Klimaprojektionen verschieben beide Ränder: Der Heizwärmebedarf sinkt, der Kühlbedarf und die sommerlichen Temperaturen steigen. Wer eine Anlage über zwanzig Jahre bewertet, sollte den Vergleich zwischen einem heutigen und einem zukünftigen Klimadatensatz zumindest als Sensitivität rechnen.
+
+== Praxishinweise ==
+{{Anker|praxishinweise}}
+
+Der Klimadatensatz sollte vor allen weiteren Eingaben festgelegt werden, weil sich sonst Bedarfswerte und Auslegungsergebnisse nachträglich verschieben. Liegen gemessene Verbrauchsdaten vor, ist zu prüfen, aus welchem Jahr sie stammen: ein mildes Verbrauchsjahr führt zu einer systematischen Unterschätzung des Bedarfs, wenn es ungeprüft auf ein Normjahr übertragen wird. EPOS-Plan bietet dafür Referenz-Klimadaten (TMY) an.
+
+Ein '''TMY-Datensatz''' (Typical Meteorological Year, zu Deutsch: ''typisches meteorologisches Jahr'') ist eine Sammlung von stündlichen Wetter- und Klimadaten für einen bestimmten Standort, die ein "durchschnittliches" oder repräsentatives Jahr abbildet.
+
+Diese Datensätze sind der Standard für Simulationsberechnungen.
+
+=== Wie ein TMY-Datensatz entsteht ===
+Ein TMY ist kein reales, historisches Jahr, das genau so stattgefunden hat. Es ist vielmehr ein künstlich zusammengesetztes Jahr :
+
+# Es wird eine langjährige historische Wetterdatenbank (meist 10 bis 30 Jahre) für einen Standort analysiert.
+# Für jeden der 12 Kalendermonate wird derjenige spezifische historische Monat ausgewählt, dessen Wetterverlauf dem langjährigen Durchschnitt am nächsten kommt.
+# Diese 12 repräsentativen Monate werden aneinandergereiht. Ein TMY könnte also aus dem Januar 2015, dem Februar 2008, dem März 2021 usw. bestehen. Die Übergänge zwischen den Monaten werden dabei oft mathematisch geglättet, um unrealistische Sprünge zu vermeiden.
+
+=== Typische enthaltene Parameter ===
+Ein TMY-Datensatz enthält in der Regel für jede der 8.760 Stunden eines Jahres detaillierte Werte:
+
+* '''Sonneneinstrahlung:''' Globalstrahlung, direkte Normalstrahlung (DNI) und diffuse Strahlung.
+* '''Temperatur:''' Trockenkugeltemperatur (die normale Lufttemperatur) und Feuchtkugeltemperatur.
+* '''Wind:''' Windgeschwindigkeit und Windrichtung.
+* '''Feuchtigkeit:''' Relative Luftfeuchtigkeit oder Taupunkt.
+* '''Luftdruck und Bewölkung.'''
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Klimadaten festlegen]] – Standort und Klimadatensatz im Programmablauf
+* [[Stammdaten und Datenimport]] – Klimadatensätze, Kataloge und Datenimport
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

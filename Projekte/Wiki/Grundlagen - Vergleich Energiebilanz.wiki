@@ -1,0 +1,41 @@
+Eine Variante ist erst dann besser als eine andere, wenn klar ist, was genau verglichen wird. EPOS-Plan liefert dafür die vollständige '''Energiebilanz''' eines Jahres – nicht nur Jahressummen, sondern den zeitlichen Verlauf, aus dem sich Deckungsanteile, Reste und Überschüsse ableiten.
+
+== Bilanzgrenze und Bezugsgrößen ==
+{{Anker|bilanzgrenze-und-bezugsgroessen|bilanzgrenze}}
+
+Grundlage jedes Vergleichs ist eine eindeutige Bilanzgrenze. Auf der Wärmeseite steht der Nutzwärmebedarf aus Heizung, Warmwasser und Prozesswärme, ergänzt um Netz- und Speicherverluste. Auf der Stromseite steht der gesamte Strombedarf des Objekts einschließlich der Verbräuche der Wärmeerzeuger – Wärmepumpen, Heizstäbe, Hilfsantriebe. Wichtig ist die Unterscheidung der Ebenen: Nutzenergie ist die tatsächlich benötigte Wärme, Endenergie der eingesetzte Brennstoff beziehungsweise Strom, und erst über Primärenergiefaktoren und Emissionsfaktoren wird daraus eine Aussage zur Umweltwirkung.
+
+== Was verglichen wird ==
+{{Anker|was-verglichen-wird}}
+
+Für jede Variante weist die Simulation aus, welcher Erzeuger welchen Anteil des Bedarfs deckt, wie viel Brennstoff dafür eingesetzt wird, wie viele Betriebsstunden anfallen und welcher Rest ungedeckt bleibt. Auf der Stromseite kommen Eigenverbrauch, Einspeisung, Netzbezug und die Nutzung des Speichers hinzu. Aussagekräftig sind vor allem vier Vergleichsgrößen: der Deckungsanteil je Erzeuger, der End- beziehungsweise Brennstoffeinsatz, die Emissionen und der Restbedarf, der die Grenzen der Auslegung sichtbar macht.
+
+Weil alle Varianten auf denselben Bedarfsdaten und demselben Klimadatensatz beruhen, sind sie unmittelbar vergleichbar. Sinnvoll ist es, jeweils nur eine Größe zu ändern – Vorlauftemperatur, Maschinengröße, Speichervolumen, Betriebsmodus oder Erzeugerreihenfolge – und die Wirkung isoliert zu betrachten.
+
+== Referenzvariante ==
+{{Anker|referenzvariante}}
+
+Ein Vergleich braucht einen Bezugspunkt. Bewährt hat sich eine einfache Referenz, etwa die reine Kesselversorgung oder der Bestand vor der Sanierung. Gegen diese Referenz lassen sich Einsparungen an Endenergie, Netzbezug und Emissionen quantifizieren – und später auch die Mehrinvestition ins Verhältnis setzen.
+
+== Emissionen ==
+{{Anker|emissionen}}
+
+Die Brennstoffverbräuche werden je Energieträger mit den hinterlegten Emissionsfaktoren bewertet; ausgewiesen werden CO₂, SO₂, NO<sub>x</sub>, CO und Staub. Auf der Stromseite ergibt sich die Einsparung aus dem vermiedenen Netzbezug. Da sich Emissionsfaktoren und Strommix im Zeitverlauf ändern, sind sie in den Stammdaten pflegbar und sollten für belastbare Aussagen aktuell gehalten werden.
+
+== Darstellung ==
+{{Anker|darstellung}}
+
+Die Ergebnisseite zeigt Wärme- und Strombedarfsdeckung als Ringdiagramm mit den Anteilen aller beteiligten Erzeuger, den verbleibenden Rest als Kennzahl und die Jahresarbeit je Erzeuger in einer Tabelle. Die Autarkieanalyse stellt monatsweise gegenüber, welcher Anteil des Strombedarfs direkt, aus dem Speicher oder aus dem Netz gedeckt wird, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und CO₂-Einsparung aus. Für eigene Auswertungen und für den Variantenvergleich in Tabellenform lassen sich sämtliche Zeitreihen als CSV-Datei mit Zeitstempel und Außentemperatur exportieren.
+
+Die wirtschaftliche Bewertung baut auf diesen Mengengerüsten auf; wie sie erfasst und bewertet werden, beschreiben [[Grundlagen/Kostenrechnung|Kostenrechnung]], [[Grundlagen/Erlösrechnung|Erlösrechnung]] und [[Grundlagen/Wirtschaftlichkeitsrechnung|Wirtschaftlichkeitsrechnung]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Ergebnisdarstellung]] – Ringdiagramme, Autarkieanalyse und Kennzahlen im Programm
+* [[Datenexport]] – CSV-Export sämtlicher Zeitreihen
+* [[Stammdaten und Datenimport]] – Emissionsfaktoren und Energieträger pflegen
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

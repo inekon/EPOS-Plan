@@ -1,0 +1,40 @@
+Unter '''Kosten und Energiepreise''' werden Investitions-, Betriebs- und Energiekosten je Komponente erfasst. Sie bilden die Eingangsgrößen der wirtschaftlichen Bewertung und beruhen damit auf demselben Datenstand wie die technische Simulation.
+
+== Aufbau des Kostenmoduls ==
+{{Anker|aufbau-des-kostenmoduls|kostenmodul}}
+
+Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert.
+
+{{Hinweis|Erst wenn die Technik steht, lohnt die Kostenerfassung, denn dann liegen die Mengen fest.}}
+
+== Kostenpositionen je Komponente ==
+{{Anker|kostenpositionen-je-komponente|nutzungsdauer|bandbreite}}
+
+Zu jeder im Projekt vorhandenen Komponente lassen sich Kostenpositionen mit Betrag, Einheit, Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall erfassen.
+
+== Übernahme aus dem Technikmodul ==
+{{Anker|uebernahme-aus-dem-technikmodul|planwert|anlagenkosten}}
+
+Die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden.
+
+== Summen ==
+{{Anker|summen|gesamtprojekt}}
+
+Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
+
+== Energiepreise ==
+{{Anker|energiepreise|arbeitspreis|emissionsfaktoren}}
+
+Bei den Energiepreisen werden je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren gepflegt, jeweils mit Gültigkeitsdatum, sodass sich Preisentwicklungen nachvollziehbar hinterlegen lassen.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Kostenrechnung|Grundlagen: Kostenrechnung]] – Bewertung des Mengengerüsts
+* [[Grundlagen/Wirtschaftlichkeitsrechnung|Grundlagen: Wirtschaftlichkeitsrechnung]] – die fachlichen Hintergründe
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
+* [[Stammdaten und Datenimport]] – Katalog der Energieträger und Kostenkennwerte
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

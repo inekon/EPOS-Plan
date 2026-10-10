@@ -1,0 +1,38 @@
+Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus. Jede Datei beginnt mit einem Zeitstempel und der Außentemperatur, sodass sich die Werte unmittelbar weiterverarbeiten lassen.
+
+== Export von Zeitreihen ==
+{{Anker|export-von-zeitreihen|csv-export|zeitreihen}}
+
+Zeitreihen lassen sich an mehreren Stellen als CSV-Datei ausgeben. Der Export im Bereich Energiebedarf enthält Wärmelast und Strombedarf, der Export im Bereich Wärmepumpe zusätzlich Wärmebedarf, Heizstab, Wärmeproduktion und Stromverbrauch.
+
+== Grafikexport ==
+{{Anker|grafikexport|grafik}}
+
+Außerdem lässt sich die jeweils angezeigte Grafik mit allen aktiven Kurven exportieren.
+
+== Aufbau der Exportdateien ==
+{{Anker|aufbau-der-exportdateien|zeitstempel|aussentemperatur}}
+
+Jede Datei beginnt mit einem Zeitstempel und der Außentemperatur, sodass die Werte in Excel unmittelbar weiterverwendet werden können.
+
+== Speicherort ==
+{{Anker|speicherort|verzeichnis}}
+
+Der zuletzt verwendete Speicherort wird gemerkt. Die Voreinstellung für Import- und Exportverzeichnisse legen Sie unter {{Menü|Administration|Einstellungen}} fest.
+
+== Datenaustausch in der Gegenrichtung ==
+{{Anker|datenaustausch-in-der-gegenrichtung|import}}
+
+{{Hinweis|Herstellerdaten für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren können nach VDI 3805 eingelesen werden, Klimadaten werden online bezogen, Lastgänge für Wärme und Strom importiert. Diese Wege beschreibt die Seite [[Stammdaten und Datenimport]].}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
+* [[Ergebnisdarstellung]] – die Bereiche, aus denen exportiert wird
+* [[Stammdaten und Datenimport]] – Import von Hersteller- und Messdaten
+* [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse für Import und Export
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

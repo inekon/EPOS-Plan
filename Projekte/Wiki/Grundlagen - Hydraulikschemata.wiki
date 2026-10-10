@@ -1,0 +1,369 @@
+Die '''Hydraulik''' entscheidet darüber, ob ein rechnerisch gutes Konzept auch in der Anlage funktioniert. Ein Kombispeicher am falschen Anschluss, ein zu hoher Rücklauf oder eine ungünstig gesetzte Umschaltung kosten mehr Jahresarbeitszahl als jede Feinauslegung der Erzeugerleistung einbringt. Die folgenden Schemata zeigen die in EPOS-Plan abbildbaren Grundvarianten mit ihren Vor- und Nachteilen, jeweils mit Hinweisen zur Einbindung von Speicher, Warmwasserbereitung und Spitzenlast.
+
+{{Hinweis|Die Darstellungen sind bewusst als Prinzipschemata gehalten. Sicherheitstechnische Ausrüstung, Absperrungen und Regelungsdetails sind nicht vollständig dargestellt und ersetzen keine Ausführungsplanung.}}
+
+Die hydraulische Einbindung entscheidet darüber, ob eine rechnerisch gute Auslegung im Betrieb auch funktioniert. Die folgenden Prinzipschemata zeigen die gebräuchlichen Varianten für Wärmepumpen und für Blockheizkraftwerke mit Spitzenlastkessel und ordnen sie den Einstellungen zu, mit denen sie sich in EPOS-Plan abbilden lassen. Es handelt sich um Schemadarstellungen, nicht um Ausführungsplanung.
+
+== Wärmepumpe ohne Booster ==
+{{Anker|waermepumpe-ohne-booster|gl-waermepumpe-ohne-booster}}
+
+Die zentrale Wärmepumpe übernimmt Heizung und Warmwasserbereitung selbst. Sie muss dafür zeitweise oder dauerhaft auf hohem Temperaturniveau von 55 bis 60 Grad arbeiten, was die Jahresarbeitszahl bei hohem Warmwasserbedarf gegenüber dem Booster-Konzept senkt. Dafür entfallen zweiter Kältekreis, Investition und Wartung der Booster-Wärmepumpe.
+
+=== Variante 1 – Warmwasser über Umschaltventil ===
+{{Anker|variante-1-warmwasser-ueber-umschaltventil|gl-variante-1-warmwasser-ueber-umschaltventil}}
+
+Ein motorisches Drei-Wege-Ventil hinter der Wärmepumpe bedient wechselweise den Heizungspuffer mit 35 bis 45 Grad und den Warmwasserspeicher mit innenliegendem Register, der mit 55 bis 60 Grad geladen wird. Warmwasser hat Vorrang. Die Lösung ist einfach und bewährt und kommt mit einer Umwälzpumpe im Erzeugerkreis aus; nachteilig sind die Pause im Heizbetrieb während der Speicherladung, das Takten im Sommer und die notwendige großzügige Registerauslegung. Da Trinkwasser bevorratet wird, ist ein Legionellenprogramm einzuplanen. Typischer Einsatz: Ein- und Zweifamilienhaus, kleine Mehrfamilienhäuser.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_ohne_Booster_WW_Umschaltventil.png|Hydraulikschema Wärmepumpe ohne Booster, Warmwasser über Umschaltventil|breite=720}}
+
+'''Vorteile:''' einfachste und günstigste Lösung mit nur einem Erzeuger, geringer Platzbedarf, wenig Regelaufwand.<br>'''Nachteile:''' Die Warmwasserladung unterbricht die Heizung und zwingt die Wärmepumpe auf hohe Vorlauftemperatur – das kostet Jahresarbeitszahl; das Umschaltventil ist ein Verschleißteil.
+
+=== Variante 2 – Kombispeicher mit Frischwasserstation ===
+{{Anker|variante-2-kombispeicher-mit-frischwasserstation|gl-variante-2-kombispeicher-mit-frischwasserstation}}
+
+Die Wärmepumpe lädt einen Kombi- oder Schichtspeicher, dessen oberer Bereitschaftsteil auf etwa 60 Grad gehalten wird; die Frischwasserstation erwärmt das Trinkwasser im Durchflussprinzip, die Heizkreise werden aus der Speichermitte versorgt. Das Trinkwasser wird nicht bevorratet, das Legionellenrisiko im Speicher entfällt konstruktiv. Der Preis dafür ist der dauerhafte Hochtemperaturbetrieb der Wärmepumpe mit entsprechend reduzierter Jahresarbeitszahl; gegebenenfalls ist eine Hochtemperatur- oder Propan-Wärmepumpe erforderlich. Die Schichtung im Speicher ist entscheidend, eine Zirkulation erhöht den Primärrücklauf der Station.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_ohne_Booster_Kombispeicher_FriWa.png|Hydraulikschema Wärmepumpe ohne Booster, Kombispeicher mit Frischwasserstation|breite=720}}
+
+'''Vorteile:''' hygienisch günstig, weil kein großes Trinkwasservolumen bevorratet wird; ein Speicher für Heizung und Warmwasser; die Schichtung lässt sich gezielt nutzen.<br>'''Nachteile:''' Die Schichtung muss geschützt werden; bei hoher Zapfleistung braucht die Frischwasserstation eine hohe Primärtemperatur, was die Arbeitszahl drückt; größeres Speichervolumen erforderlich.
+
+=== Variante 3 – Puffer nur für die Spitzenlast im Nebenschluss ===
+{{Anker|variante-3-puffer-nur-fuer-die-spitzenlast-im-nebenschluss|gl-variante-3-puffer-nur-fuer-die-spitzenlast-im-nebenschluss}}
+
+Die Wärmepumpe versorgt die Heizkreise direkt; der Pufferspeicher liegt im Nebenschluss und dient ausschließlich der Spitzenlastabdeckung. Bei Schwachlast lädt eine Ladepumpe den Speicher, bei Spitzenlast, während EVU-Sperrzeiten oder zur Abtauunterstützung speist eine Entladepumpe die gespeicherte Wärme zusätzlich in den Vorlauf; Rückschlagklappen trennen die Zweige. Der Vorteil ist die direkte, verlustarme Wärmeübergabe ohne Speicherträgheit.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_ohne_Booster_Puffer_Spitzenlast.png|Hydraulikschema Wärmepumpe ohne Booster, Puffer im Nebenschluss für Spitzenlast|breite=720}}
+
+'''Vorteile:''' Die Wärmepumpe arbeitet direkt auf die Heizkreise mit der niedrigsten möglichen Vorlauftemperatur, kaum Speicherverluste, hohe Jahresarbeitszahl.<br>'''Nachteile:''' Anspruchsvollere Regelung, weil zwei Wärmequellen auf denselben Kreis wirken; der Puffer steht nur begrenzt zur Verfügung; Mindestumlaufmenge sicherstellen.
+
+== Wärmepumpe mit Booster ==
+{{Anker|waermepumpe-mit-booster|gl-waermepumpe-mit-booster}}
+
+Beim Booster-Konzept liefert die zentrale Wärmepumpe Wärme auf niedrigem Niveau mit 35 bis 45 Grad Vorlauf in einen Pufferspeicher und bleibt damit im effizienten Betriebsbereich. Eine kleine Booster-Wärmepumpe nutzt diesen Puffer als Quelle mit 30 bis 40 Grad und hebt die Temperatur auf 60 bis 65 Grad an, um einen Warmwasserpuffer zu laden; eine Frischwasserstation erwärmt das Trinkwasser im Durchfluss. Das Ergebnis sind eine hohe Jahresarbeitszahl der Hauptmaschine, hygienische Trinkwassererwärmung und eine klare hydraulische Trennung von Heizung und Warmwasser. In EPOS-Plan bilden Sie die Aufteilung über zwei Wärmepumpen mit unterschiedlichen Wärmesenken ab – eine mit der Senke Heizung, eine mit der Senke Warmwasser – und vergeben eigene Vorlauftemperaturen und Prioritäten.
+
+=== Variante 1 – Standard mit Heizkreisen ===
+{{Anker|variante-1-standard-mit-heizkreisen|gl-variante-1-standard-mit-heizkreisen}}
+
+Der Pufferspeicher versorgt sowohl die Heizkreise – Fußbodenheizung mit 35/28 Grad über Mischer, Heizkörperkreis mit 45/35 Grad – als auch die Booster-Wärmepumpe quellseitig. Standardfall für Wohn- und Mehrfamilienhäuser.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_mit_Booster_WP_mit_Heizkreisen.png|Hydraulikschema Wärmepumpe mit Booster und Heizkreisen|breite=720}}
+
+'''Vorteile:''' Referenzlösung des Booster-Konzepts: Die Grundmaschine bleibt auf niedriger Vorlauftemperatur, der Booster hebt nur für Warmwasser an – in den meisten Projekten die beste Jahresarbeitszahl.<br>'''Nachteile:''' Zwei Maschinen bedeuten höhere Investition und mehr Regelaufwand; die Quelle des Boosters muss eindeutig definiert sein.
+
+=== Variante 2 – reiner Warmwasserpfad ===
+{{Anker|variante-2-reiner-warmwasserpfad|gl-variante-2-reiner-warmwasserpfad}}
+
+Reduzierte Darstellung ohne Heizkreise: Wärmepumpe, Pufferspeicher, Booster-Wärmepumpe, Warmwasserpuffer, Frischwasserstation. Geeignet als Prinzipdarstellung, etwa für Erläuterungen und Angebote, oder wenn die Heizverteilung separat geplant wird.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_mit_Booster_WP_nur_Warmwasser.png|Hydraulikschema Warmwasserpfad mit Booster-Wärmepumpe|breite=720}}
+
+'''Vorteile:''' Ideal bei hohem und gleichmäßigem Warmwasserbedarf wie in Hotels oder Pflegeheimen; der Heizkreis bleibt vom Warmwasserbetrieb unbeeinflusst.<br>'''Nachteile:''' Lohnt sich nur bei entsprechendem Bedarf – sonst steht der Booster überwiegend still und die spezifischen Kosten je Kilowattstunde steigen deutlich.
+
+=== Variante 3 – mit Zirkulation ===
+{{Anker|variante-3-mit-zirkulation|gl-variante-3-mit-zirkulation}}
+
+Wie Variante 1, ergänzt um Zirkulationsleitung und Zirkulationspumpe zurück zur Frischwasserstation. Erforderlich in größeren Gebäuden mit langen Leitungswegen. Die Zirkulation erhöht die Rücklauftemperatur im Primärkreis der Station und ist bei der Auslegung von Warmwasserpuffer und Booster zu berücksichtigen; im Rechenmodell schlägt sie sich im Jahresverbrauch des Warmwassers nieder.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_mit_Booster_WP_mit_Zirkulation.png|Hydraulikschema Wärmepumpe mit Booster und Zirkulation|breite=720}}
+
+'''Vorteile:''' Warmwasser steht an jeder Zapfstelle sofort zur Verfügung, hoher Komfort und kurze Ausstoßzeiten.<br>'''Nachteile:''' Die Zirkulationsverluste erreichen in kleinen Gebäuden leicht die Größenordnung des Nutzwarmwassers und müssen explizit gerechnet werden; der Booster läuft dadurch häufiger.
+
+=== Variante 4 – mit Solarthermie ===
+{{Anker|variante-4-mit-solarthermie|gl-variante-4-mit-solarthermie}}
+
+Ein Kollektorfeld speist zusätzlich in den Pufferspeicher und übernimmt im Sommer einen Teil der Vorwärmung; der Booster hebt nur noch die Differenz auf Zieltemperatur an.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_mit_Booster_WP_mit_Solarthermie.png|Hydraulikschema Wärmepumpe mit Booster und Solarthermie|breite=720}}
+
+'''Vorteile:''' Hohe sommerliche Deckung, die Laufzeiten des Boosters gehen deutlich zurück.<br>'''Nachteile:''' Zusätzlicher Kreis mit Stagnationsverhalten und eigener Ausdehnung; im Winter bleibt der Beitrag gering; ohne Vorrangregelung heizen die übrigen Erzeuger die Solarzone weg.
+
+=== Variante 5 – Booster-Wärmepumpe am Pufferspeicher ===
+{{Anker|variante-5-booster-waermepumpe-am-pufferspeicher|gl-variante-5-mit-puffer-und-spitzenlasterzeuger}}
+
+Die Hauptwärmepumpe arbeitet direkt auf die Heizkreise, der Pufferspeicher übernimmt zwei Aufgaben zugleich: Er hält Wärme für Spitzenlast bereit und dient der Booster-Wärmepumpe als Wärmequelle. Der Booster entnimmt sein Quellwasser der mittleren Speicherzone mit rund 35 °C und gibt es unten mit etwa 25 °C zurück. Die Auskühlung der unteren Zone senkt damit zugleich den Rücklauf der Hauptwärmepumpe und verbessert deren Arbeitszahl – der Speicher arbeitet also in beide Richtungen. In die Heizkreise entladen wird er nur bei Spitzenlast, während einer EVU-Sperrzeit oder beim Abtauen. In der Simulationskonfiguration entspricht das der Reihenfolge Wärmepumpe vor Booster bei gemeinsamer Speicherzuordnung, wobei dem Booster der Pufferspeicher als Wärmequelle zugewiesen wird.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_mit_Booster_WP_am_Pufferspeicher.png|Hydraulikschema Wärmepumpe mit Booster-Wärmepumpe am Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Der Speicher wirkt in beide Richtungen: Spitzenlastreserve und Wärmequelle des Boosters; die Auskühlung der unteren Zone senkt zugleich den Rücklauf der Hauptwärmepumpe.<br>'''Nachteile:''' Drei Wärmequellen an einem Speicher ergeben die anspruchsvollste Regelung; die Mindest-Quellentemperatur des Boosters muss jederzeit gesichert sein.
+
+=== Variante 6 – Kaskade mit Booster und Quelleneintritt 25 °C ===
+{{Anker|variante-6-kaskade-mit-booster-und-quelleneintritt-25-c|gl-variante-6-kaskade-mit-booster}}
+
+Für größere Objekte arbeiten mehrere Luft/Wasser-Wärmepumpen als Kaskade auf einen gemeinsamen Pufferspeicher und decken die Heizung mit einer Auslegung von 50/25 °C. Das Trinkwarmwasser übernimmt eine eigene Booster-Wärmepumpe, deren Wärmequelle der Heizungsrücklauf ist: Sie tritt mit 25 °C ein und verlässt den Kreis mit 20 °C. Der Booster kühlt den Rücklauf der Kaskade damit zusätzlich ab, was deren Arbeitszahl anhebt – Volumenstrom und Mindestrücklauf der Kaskade sind dabei zu prüfen, und bei stehender Kaskade muss die Mindest-Quellentemperatur des Boosters sichergestellt sein. Das Warmwasser wird in zwei nach Tichelmann verschalteten Puffern bevorratet und über eine Frischwasserstation bereitet; die Zirkulation wird kalt in die Station eingebunden, die Legionellenschaltung ist zu beachten. Getrennte Wärmemengenzähler für Heizung, Warmwasser und Booster erlauben Abrechnung und Monitoring.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/Schema_WP_Kaskade_mit_Booster_WP_Quelle_25C.png|Hydraulikschema Wärmepumpen-Kaskade mit Booster-Wärmepumpe und Frischwasserstation|breite=720}}
+
+'''Vorteile:''' Skalierbar für größere Objekte, der Booster liefert durch die Rücklaufkühlung auf 20 °C Zusatzertrag für die Kaskade, getrennte Zählung für Abrechnung und Monitoring.<br>'''Nachteile:''' Volumenstrom und Mindestrücklauf der Kaskade sind zu prüfen; bei stehender Kaskade muss die Quellentemperatur des Boosters gesichert sein; drei Speicher brauchen entsprechend Platz.
+
+== Hybrid-Wärmepumpe ==
+{{Anker|hybrid-waermepumpe|gl-hybrid-waermepumpe}}
+
+Eine Hybrid-Wärmepumpe kombiniert Wärmepumpe und Brennwertkessel in einer Anlage. Die Wärmepumpe deckt die Grundlast bei moderaten Vorlauftemperaturen, der Kessel übernimmt Spitzenlast, sehr kalte Tage oder hohe Vorlauftemperaturen im Bestand. Das macht die Kombination besonders für Sanierungen interessant, in denen die Heizflächen zunächst bleiben und der Wärmepumpenanteil mit jeder weiteren Dämmmaßnahme wächst. Entscheidend sind der Bivalenz- beziehungsweise Umschaltpunkt und die Frage, ob beide Erzeuger parallel, alternativ oder in Reihe arbeiten.
+
+=== Variante 1 – bivalent parallel mit Pufferspeicher ===
+{{Anker|variante-1-bivalent-parallel-mit-pufferspeicher|gl-hybrid-v1-bivalent-parallel}}
+
+Beide Erzeuger laden denselben Schichtspeicher auf unterschiedlichen Höhen: die Wärmepumpe die mittlere Zone mit 45 bis 50 °C, der Kessel den Kopf mit 65 bis 70 °C. Unterhalb des Bivalenzpunktes laufen sie parallel. Das ergibt eine einfache Hydraulik und Regelung, gute Laufzeiten für die Wärmepumpe und Trinkwarmwasser über eine Frischwasserstation ohne Legionellenschaltung im Speicher. Zu beachten sind die saubere Parametrierung von Bivalenzpunkt und Freigabetemperaturen – sonst greift der Kessel zu früh ein und bricht die Laufzeiten der Wärmepumpe – sowie die Entnahme des Kesselrücklaufs aus der untersten Speicherzone, damit die Brennwertnutzung erhalten bleibt. Eine hydraulische Weiche wird bewusst nicht eingesetzt; entkoppelt wird über den Puffer.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/H1_Hybrid_bivalent_parallel.png|Hydraulikschema Hybrid-Wärmepumpe bivalent parallel mit Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Ein Speicher für beide Erzeuger, einfache Hydraulik und Regelung, gute Laufzeiten für die Wärmepumpe, Trinkwarmwasser über Frischwasserstation ohne Legionellenschaltung im Speicher.<br>'''Nachteile:''' Bivalenzpunkt und Freigabetemperaturen müssen sauber parametriert sein, sonst läuft der Kessel zu früh mit; der Kesselrücklauf ist aus der untersten Zone zu entnehmen, sonst geht die Brennwertnutzung verloren; die Schichtung muss gesichert werden.
+
+=== Variante 2 – bivalent alternativ (Umschaltbetrieb) ===
+{{Anker|variante-2-bivalent-alternativ-umschaltbetrieb|gl-hybrid-v2-bivalent-alternativ}}
+
+Unterhalb des Umschaltpunktes übernimmt der Kessel allein; ein Umschaltventil im Vorlauf und Rückschlagklappen in den Rückläufen trennen die Erzeuger. Die Anlage kommt ohne Pufferspeicher aus, braucht wenig Platz und ist die günstige Nachrüstlösung, wenn ein vorhandener Kessel weiterverwendet wird – er bleibt zugleich volle Redundanz für Ausfall und Revision. Ohne Puffer fehlt allerdings Speichervolumen: Mindestumlaufmenge und Taktung sind zu prüfen, gegebenenfalls ist ein Reihenpuffer im Rücklauf zu ergänzen. Die Rückschlagklappen sind zwingend, sonst zirkuliert Wasser über den stehenden Erzeuger. Der gewählte Umschaltpunkt bestimmt den Gasanteil und damit auch die Förderfähigkeit, und für den Abtaubetrieb der Wärmepumpe muss die Freigabe des Kessels geregelt sein.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/H2_Hybrid_bivalent_alternativ.png|Hydraulikschema Hybrid-Wärmepumpe bivalent alternativ im Umschaltbetrieb|breite=720}}
+
+'''Vorteile:''' Sehr einfache Hydraulik ohne Pufferspeicher, geringer Platzbedarf, günstige Nachrüstung bei vorhandenem Kessel, der zugleich als volle Redundanz erhalten bleibt.<br>'''Nachteile:''' Ohne Puffer fehlt Speichervolumen – Mindestumlaufmenge und Taktung prüfen; Rückschlagklappen sind zwingend; der Umschaltpunkt bestimmt den Gasanteil und damit die Förderfähigkeit; für den Abtaubetrieb muss die Kesselfreigabe geregelt sein.
+
+=== Variante 3 – Reihenschaltung mit Rücklaufanhebung ===
+{{Anker|variante-3-reihenschaltung-mit-ruecklaufanhebung|gl-hybrid-v3-reihenschaltung}}
+
+Die Wärmepumpe hebt den Heizungsrücklauf an, der Brennwertkessel heizt auf die Solltemperatur nach. Damit bleibt die Wärmepumpe dauerhaft auf niedriger Kondensationstemperatur und erreicht eine hohe Arbeitszahl – auch in Bestandsgebäuden mit 70 °C Auslegungsvorlauf, ohne die Heizflächen zu tauschen. Sinkt der Bedarf durch weitere Sanierungsschritte, wächst der Wärmepumpenanteil von selbst. Zu beachten ist, dass eine Reihenschaltung denselben Massenstrom durch beide Erzeuger bedeutet: Volumenströme und Spreizungen müssen zusammenpassen, die Druckverluste addieren sich. Der Kesselrücklauf steigt an, was die Brennwertnutzung mindert; ein Bypass ist für Sommerbetrieb, Revision und Ausfall zwingend, und oberhalb von etwa 55 °C Rücklauftemperatur schaltet die Wärmepumpe ab.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/H3_Hybrid_Reihenschaltung_Ruecklaufanhebung.png|Hydraulikschema Hybrid-Wärmepumpe in Reihenschaltung mit Rücklaufanhebung|breite=720}}
+
+'''Vorteile:''' Die Wärmepumpe arbeitet dauerhaft auf niedriger Kondensationstemperatur und erreicht eine hohe Arbeitszahl, auch bei 70 °C Auslegungsvorlauf im Bestand ohne Heizflächentausch; die schrittweise Sanierung erhöht den Wärmepumpenanteil von selbst.<br>'''Nachteile:''' Gleicher Massenstrom durch beide Erzeuger, die Druckverluste addieren sich; der Kesselrücklauf steigt und mindert die Brennwertnutzung; ein Bypass ist zwingend; oberhalb von rund 55 °C Rücklauf schaltet die Wärmepumpe ab.
+
+=== Variante 4 – Hybrid mit Solarthermie am Schichtspeicher ===
+{{Anker|variante-4-hybrid-mit-solarthermie-am-schichtspeicher|gl-hybrid-v4-mit-solarthermie}}
+
+Drei Erzeuger arbeiten auf einen Speicher, sauber nach Temperaturniveaus geschichtet: Die Solarthermie lädt die untere Zone, die Wärmepumpe die Mitte, der Brennwertkessel den Kopf; das Trinkwarmwasser kommt aus einer Frischwasserstation. Die Kollektoren arbeiten damit im kältesten Bereich und erreichen ihren höchsten Wirkungsgrad, und der solare Ertrag senkt zugleich den Rücklauf für Wärmepumpe und Kessel. Im Sommer deckt die Solaranlage das Trinkwarmwasser weitgehend allein. Das Speichervolumen ist an das Kollektorfeld zu koppeln – Richtwert 50 bis 70 Liter je Quadratmeter Aperturfläche –, Stagnationsverhalten und Ausdehnungsgefäß des Solarkreises sind getrennt auszulegen. In der Regelung muss der Solarvorrang vor Wärmepumpe und Kessel hinterlegt sein, sonst heizen die Erzeuger genau die Zone weg, die die Kollektoren brauchen: Jede Nachladung von unten kostet Solarertrag.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/H4_Hybrid_mit_Solarthermie.png|Hydraulikschema Hybrid-Wärmepumpe mit Solarthermie am Schichtspeicher|breite=720}}
+
+'''Vorteile:''' Drei Erzeuger sauber nach Temperaturniveaus geschichtet, die Kollektoren arbeiten im kältesten Bereich mit höchstem Wirkungsgrad, der solare Ertrag senkt zugleich den Rücklauf für Wärmepumpe und Kessel.<br>'''Nachteile:''' Das Speichervolumen muss an das Kollektorfeld gekoppelt werden (50 bis 70 Liter je Quadratmeter Apertur); Stagnation und Ausdehnungsgefäß des Solarkreises sind getrennt auszulegen; ohne hinterlegten Solarvorrang heizen die übrigen Erzeuger die untere Zone weg.
+
+== Wärmepumpe mit BHKW ==
+{{Anker|waermepumpe-mit-bhkw|gl-wp-mit-bhkw}}
+
+Wärmepumpe und Blockheizkraftwerk ergänzen sich gut, stellen an die Hydraulik aber gegensätzliche Anforderungen. Das BHKW liefert hohe Vorlauftemperaturen und braucht einen möglichst niedrigen Rücklauf, damit die Motorwärme vollständig ausgekoppelt wird; die Wärmepumpe arbeitet umgekehrt umso wirtschaftlicher, je niedriger das geforderte Temperaturniveau bleibt. Die vier folgenden Grundvarianten unterscheiden sich vor allem darin, wie sie diese beiden Temperaturwelten voneinander trennen. Hinzu kommt die elektrische Seite: Der im BHKW erzeugte Strom kann einen Teil des Wärmepumpen-Strombedarfs decken, was den Eigenverbrauch erhöht und die Bezugskosten senkt.
+
+=== Variante 1 – parallel auf gemeinsamem Pufferspeicher ===
+{{Anker|variante-1-parallel-auf-gemeinsamem-pufferspeicher|gl-v1-bhkw-wp-parallel-pufferspeicher}}
+
+Beide Erzeuger arbeiten auf denselben Pufferspeicher, jedoch auf unterschiedliche Zonen: Das BHKW lädt oben mit 75 bis 80 °C, die Wärmepumpe speist die mittlere Zone mit 50 bis 55 °C, der gemeinsame Rücklauf wird unten entnommen. Die Entkopplung erfolgt bewusst über den Speicher und nicht über eine hydraulische Weiche – eine Weiche überströmt und hebt dadurch den BHKW-Rücklauf an, was die Wärmeauskopplung aus dem Motor verschlechtert. Die elektrische Kopplung vom BHKW zur Wärmepumpe ist im Schema gestrichelt eingezeichnet.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/V1_BHKW_WP_parallel_Pufferspeicher.png|Hydraulikschema BHKW und Wärmepumpe parallel am gemeinsamen Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Ein Speicher für beide Erzeuger, geringster Anlagen- und Regelaufwand, lange BHKW-Laufzeiten, und der BHKW-Strom kann die Wärmepumpe direkt versorgen.<br>'''Nachteile:''' Die Schichtung ist das Kernstück – Einbindehöhen, Beruhigungsrohre und ruhige Einströmung entscheiden über den Erfolg; keine hydraulische Weiche einsetzen; der BHKW-Rücklauf ist so niedrig wie möglich zu halten; Vorrangschaltung eindeutig definieren.
+
+=== Variante 2 – serielle Reihenschaltung ===
+{{Anker|variante-2-serielle-reihenschaltung|gl-v2-bhkw-wp-reihenschaltung}}
+
+Die Wärmepumpe arbeitet als Vorwärmstufe von 40 auf 55 °C, das BHKW hebt anschließend auf 80 °C nach. Das ergibt die beste Jahresarbeitszahl, weil die Wärmepumpe durchgehend im günstigen Temperaturbereich bleibt. Der Preis dafür sind der gemeinsame Massenstrom durch beide Erzeuger und ein mit der Vorwärmung steigender BHKW-Rücklauf. Ein Bypass mit Drei-Wege-Ventil ist vorgesehen, damit Sommerbetrieb und Revision eines Erzeugers ohne Abschaltung der gesamten Anlage möglich sind.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/V2_BHKW_WP_seriell_Reihenschaltung.png|Hydraulikschema BHKW und Wärmepumpe in serieller Reihenschaltung|breite=720}}
+
+'''Vorteile:''' Die Wärmepumpe arbeitet auf 55 statt 75 °C und erreicht dadurch eine deutlich höhere Jahresarbeitszahl.<br>'''Nachteile:''' Beide Erzeuger werden vom selben Massenstrom durchflossen; der BHKW-Rücklauf steigt mit der Vorwärmung und mindert die Wärmeauskopplung; ein Bypass für Sommerbetrieb und Revision ist erforderlich.
+
+=== Variante 3 – Temperaturtrennung mit zwei Speichern ===
+{{Anker|variante-3-temperaturtrennung-mit-zwei-speichern|gl-v3-bhkw-wp-temperaturtrennung}}
+
+Statt eines gemeinsamen Speichers arbeiten die Erzeuger auf getrennte Kreise: Das BHKW versorgt den Hochtemperaturpuffer für Heizkörper und Frischwasserstation, die Wärmepumpe den Niedertemperaturpuffer für die Fußbodenheizung. Die Rückläufe bleiben getrennt, sodass jeder Erzeuger sein eigenes Temperaturniveau behält. Hydraulisch ist das die sauberste Lösung, wenn unterschiedliche Heizflächen oder Alt- und Neubauteile zusammenkommen. Eine Verbindungsleitung zwischen beiden Puffern ist ausschließlich als abgesperrte Redundanz vorgesehen.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/V3_BHKW_WP_Temperaturtrennung.png|Hydraulikschema BHKW und Wärmepumpe mit Temperaturtrennung und zwei Speichern|breite=720}}
+
+'''Vorteile:''' Jeder Erzeuger arbeitet in seinem optimalen Temperaturfenster, die Wärmepumpe sieht nie 70 °C – dauerhaft hohe Jahresarbeitszahl.<br>'''Nachteile:''' Zwei Speicher und zwei Netze bedeuten mehr Platz, Investition und Regelaufwand; die Rückläufe müssen konsequent getrennt bleiben, sonst geht der Vorteil verloren.
+
+=== Variante 4 – Abgaswärme des BHKW als Wärmequelle ===
+{{Anker|variante-4-abgaswaerme-des-bhkw-als-waermequelle|gl-v4-bhkw-abgaswaerme-als-wp-quelle}}
+
+Ein Abgas-Wärmetauscher kühlt die Abgase bis auf etwa 35 °C aus; ein Zwischenkreis speist damit den Verdampfer der Wärmepumpe. Das ergibt die höchste Brennstoffausnutzung, weil auch die Kondensationswärme des Abgases genutzt wird. Zwei Randbedingungen sind zu beachten: Die Wärmepumpe hängt am Betrieb des BHKW – ohne Motorlauf steht keine Quelle zur Verfügung – und der Kamin muss kondensatfest ausgeführt sein.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/V4_BHKW_Abgaswaerme_als_WP_Quelle.png|Hydraulikschema Abgaswärme des BHKW als Wärmequelle der Wärmepumpe|breite=720}}
+
+'''Vorteile:''' Das Abgas wird weit unter den Taupunkt ausgekühlt – spürbarer Brennwertgewinn und eine sehr warme, konstante Quelle für die Wärmepumpe mit Arbeitszahlen von 5 bis 7.<br>'''Nachteile:''' Die Wärmepumpe hängt am Betrieb des BHKW – ohne Motorlauf steht keine Quelle zur Verfügung; der Kamin muss kondensatfest sein; Abgaswärmetauscher und Kondensatableitung kommen hinzu.
+
+== Solarthermie mit Wärmepumpe ==
+{{Anker|solarthermie-mit-waermepumpe|gl-solarthermie-mit-waermepumpe}}
+
+Solarthermie und Wärmepumpe passen gut zusammen, konkurrieren hydraulisch aber leicht um denselben Speicherbereich. Die Wärmepumpe arbeitet umso effizienter, je kleiner der Abstand zwischen Quellen- und Zieltemperatur bleibt; deshalb wird die Vorlauftemperatur über große Wärmetauscherflächen so niedrig wie möglich gehalten. Die Solaranlage liefert ihre Wärme dagegen dann, wenn die Sonne scheint, und mit einer Temperatur, die sich nicht frei wählen lässt. Kommt eine EVU-Sperrzeit hinzu, muss ein Pufferspeicher beides leisten: die Sperrzeit überbrücken und die Solarwärme aufnehmen. Die vier folgenden Varianten zeigen, wie sich das ordnen lässt.
+
+=== Variante 1 – Trinkwassererwärmung mit Wärmepumpenspeicher ===
+{{Anker|variante-1-trinkwassererwaermung-mit-waermepumpenspeicher|gl-solar-v1-trinkwasser}}
+
+Für den bivalenten Betrieb wird ein Speicher mit einem sehr großen internen Wärmetauscher eingesetzt, der ausschließlich der Wärmepumpe zur Verfügung steht – nur so bleibt die geforderte Vorlauftemperatur und damit die Arbeitszahl niedrig. Die Solaranlage lädt denselben Speicher über einen externen Wärmetauscher, weil ein zweiter interner Register die nutzbare Fläche und die Schichtung stören würde. Die Kollektoren decken im Sommer den Trinkwarmwasserbedarf weitgehend allein, die Wärmepumpe läuft dann nur noch selten nach. Zu beachten sind die Anforderungen an die Trinkwasserhygiene sowie eine ausreichend große Übertragungsfläche im externen Wärmetauscher.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/S1_Solar_WP_Trinkwasser.png|Hydraulikschema Solarthermie mit Wärmepumpe – Trinkwassererwärmung mit Wärmepumpenspeicher|breite=720}}
+
+'''Vorteile:''' Die Solaranlage deckt im Sommer den Warmwasserbedarf weitgehend allein, die Wärmepumpe bleibt auf niedriger Vorlauftemperatur und damit auf hoher Arbeitszahl.<br>'''Nachteile:''' Der interne Wärmetauscher bleibt der Wärmepumpe vorbehalten, die Solaranlage braucht deshalb einen externen Wärmetauscher mit eigener Pumpe; die Anforderungen an die Trinkwasserhygiene sind einzuhalten.
+
+=== Variante 2 – Heizungsunterstützung am gemeinsamen Pufferspeicher ===
+{{Anker|variante-2-heizungsunterstuetzung-am-gemeinsamen-pufferspeicher|gl-solar-v2-heizungsunterstuetzung}}
+
+Wärmepumpen unterliegen häufig Sperrzeiten des Netzbetreibers und benötigen dafür ohnehin einen Heizwasser-Pufferspeicher. Dieser Speicher bietet sich zugleich für die solare Beladung an, was den Installationsaufwand gering hält. Der Haken liegt im Zeitplan: Die Sperrzeiten liegen in aller Regel tagsüber, also genau dann, wenn auch die Solaranlage liefert – um die davor liegenden Ladezeiten entsteht eine Konkurrenz, die sich regeltechnisch entschärfen, aber nicht vollständig vermeiden lässt. Die Solaranlage lädt deshalb die mittlere Zone über einen externen Wärmetauscher, während die Wärmepumpe den oberen Bereich belegt.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/S2_Solar_WP_Heizungsunterstuetzung.png|Hydraulikschema Solarthermie mit Wärmepumpe – Heizungsunterstützung am gemeinsamen Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Ein Speicher erfüllt beide Aufgaben – Sperrzeitüberbrückung und Solarbeladung –, der Installationsaufwand bleibt gering.<br>'''Nachteile:''' Die Sperrzeiten liegen meist tagsüber, sodass Solarertrag und Sperrzeitladung um dieselbe Speicherzone konkurrieren; regeltechnisch lässt sich das entschärfen, aber nicht vermeiden – die erreichbare solare Deckung bleibt begrenzt.
+
+=== Variante 3 – getrennte Zonen für Sperrzeit und Solarwärme ===
+{{Anker|variante-3-getrennte-zonen-fuer-sperrzeit-und-solarwaerme|gl-solar-v3-getrennte-zonen}}
+
+Soll eine höhere solare Deckung erreicht werden, wird der Pufferspeicher vergrößert. Dann muss aber der Anteil, der zur Überbrückung der Sperrzeit nötig ist, der Wärmepumpe hydraulisch und regeltechnisch getrennt zur Verfügung stehen – sonst steht im entscheidenden Moment keine Reserve bereit. Praktisch führt das auf zwei Speicher oder auf einen Speicher mit klar getrennten Bereichen: oben die Sperrzeitreserve der Wärmepumpe, darunter der solar beladene Teil, der den Rücklauf der Heizkreise anhebt. Eine Verbindung zwischen beiden Bereichen ist nur als abgesperrte Redundanz sinnvoll. Ist für den Betrieb der Wärmepumpe gar kein Pufferspeicher zwingend erforderlich, wird der Solarspeicher genauso ausgelegt wie bei einer Kombination mit einem Kessel.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/S3_Solar_WP_getrennte_Zonen.png|Hydraulikschema Solarthermie mit Wärmepumpe – getrennte Zonen für Sperrzeit und Solarwärme|breite=720}}
+
+'''Vorteile:''' Keine Konkurrenz um die Ladezeiten, die Sperrzeitreserve steht jederzeit zur Verfügung, und die solare Deckung lässt sich über das zusätzliche Volumen deutlich steigern.<br>'''Nachteile:''' Zwei Speicher beziehungsweise klar getrennte Bereiche bedeuten mehr Platz, Investition und Regelaufwand; die Vorwärmung darf nur freigegeben werden, wenn die Solartemperatur über dem Heizkreisrücklauf liegt.
+
+=== Variante 4 – Solarwärme als Quelle und Regeneration des Erdreichs ===
+{{Anker|variante-4-solarwaerme-als-quelle-und-regeneration-des-erdreichs|gl-solar-v4-quelle-regeneration}}
+
+Statt in den Speicher kann die Solarwärme auch auf die Quellenseite geführt werden. Bei niedriger Kollektortemperatur – etwa mit unverglasten Kollektoren oder PVT-Modulen – hebt sie die Soleeintrittstemperatur an und verbessert unmittelbar die Leistungszahl; im Sommer lädt der Überschuss das Sondenfeld wieder auf und wirkt dessen langfristiger Auskühlung entgegen. Eine Umschaltung entscheidet nach Kollektortemperatur, ob die Wärme in den Speicher oder in den Solekreis geht. Zu beachten sind der Frostschutz im Kollektorkreis, ein Wärmetauscher zwischen Solar- und Solekreis sowie die Abstimmung mit der wasserrechtlichen Genehmigung des Sondenfeldes.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/S4_Solar_als_WP_Quelle.png|Hydraulikschema Solarthermie mit Wärmepumpe – Solarwärme als Quelle und Regeneration des Erdreichs|breite=720}}
+
+'''Vorteile:''' Solarwärme ist auch bei niedriger Kollektortemperatur nutzbar, sie hebt die Quellentemperatur an und regeneriert im Sommer das Sondenfeld – die Jahresarbeitszahl steigt spürbar.<br>'''Nachteile:''' Frostschutz im Kollektorkreis und ein Wärmetauscher zum Solekreis sind erforderlich, die Regeneration ist mit der Genehmigung des Sondenfeldes abzustimmen, und es entsteht kein direkter Beitrag zur Speicherladung.
+
+== Kombinationsvarianten mit besonderen Eigenschaften ==
+{{Anker|kombinationsvarianten-mit-besonderen-eigenschaften|gl-kombinationsvarianten}}
+
+Die bisherigen Rubriken zeigen die klassischen Erzeugerkombinationen. Die vier folgenden Schemata gehen darüber hinaus: Jedes von ihnen erschließt eine Eigenschaft, die sich mit den Standardlösungen nicht erreichen lässt – die elektrische Seite als Teil der Wärmeplanung, eine Wärmequelle ohne Bohrung, ein Netz das Wärme und Kälte zugleich transportiert, und die Nutzung vorhandener Abwärme. Sie sind in EPOS-Plan abbildbar und lohnen dort besonders, wo die üblichen Konzepte an eine Grenze stoßen.
+
+=== K1 – Wärmepumpe mit Photovoltaik, Stromspeicher und Power-to-Heat ===
+{{Anker|k1-waermepumpe-mit-photovoltaik-stromspeicher-und-power-to-heat|gl-komb-k1}}
+
+''Besonderer Vorteil: Die elektrische Seite wird mitgeplant.'' Die Wärmepumpe läuft im PV-optimierten Betriebsmodus und erhöht ihre Leistung genau dann, wenn Überschuss vorhanden ist; der Pufferspeicher wird dabei gezielt über die Solltemperatur hinaus geladen und trägt die Abendstunden ohne Netzbezug. Ein Heizstab nimmt Spitzenüberschüsse auf, die weder Batterie noch Wärmepumpe verwerten können. So entsteht aus PV-Anlage, Batterie und Wärmeerzeuger ein System statt dreier Einzelgewerke – mit deutlich höherem Eigenverbrauch und gekappten Bezugsspitzen.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/K1_WP_PV_Stromspeicher.png|Kombinationsschema Wärmepumpe mit Photovoltaik, Stromspeicher und Power-to-Heat|breite=720}}
+
+'''Vorteile:''' Eigenverbrauch und Autarkie steigen deutlich, die Lastspitze im Netzbezug sinkt, und der Speicher wird ohne Zusatzinvestition zum thermischen Stromspeicher.<br>'''Nachteile:''' Die Überhöhung des Puffers kostet Arbeitszahl und Speicherverluste – sie darf nur bei echtem Überschuss freigegeben werden; die Batterie ist dem Heizstab vorzuziehen, und die Regelung braucht eine belastbare Überschussprognose.
+
+=== K2 – Eisspeicher mit Solar-Luft-Absorber als Wärmequelle ===
+{{Anker|k2-eisspeicher-mit-solar-luft-absorber-als-waermequelle|gl-komb-k2}}
+
+''Besonderer Vorteil: eine Wärmequelle ohne Bohrung und ohne wasserrechtliche Genehmigung.'' Ein unverglaster Absorber auf dem Dach nutzt Strahlung und Umgebungsluft und lädt eine Zisterne im Erdreich. Kühlt diese bis auf null Grad aus, liefert der Phasenwechsel rund 93 Wattstunden je Liter – also genau dann viel Leistung, wenn es draußen kalt ist und eine Luftwärmepumpe schwächelt. Im Sommer steht der vereiste Speicher für passive Kühlung zur Verfügung und regeneriert sich dabei selbst.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/K2_Eisspeicher_Solarabsorber.png|Kombinationsschema Eisspeicher mit Solar-Luft-Absorber als Wärmequelle|breite=720}}
+
+'''Vorteile:''' Genehmigungsfrei und auch dort einsetzbar, wo Erdsonden ausscheiden; die Quellentemperatur bleibt im Winter stabil, und passive Kühlung ist ohne Zusatzaggregat möglich.<br>'''Nachteile:''' Speichervolumen und Absorberfläche müssen aufeinander abgestimmt sein, die Regeneration über das Jahr ist nachzuweisen, und Erdarbeiten, Statik und Platzbedarf der Zisterne sind erheblich.
+
+=== K3 – Kalte Nahwärme mit dezentralen Wärmepumpen ===
+{{Anker|k3-kalte-nahwaerme-mit-dezentralen-waermepumpen|gl-komb-k3}}
+
+''Besonderer Vorteil: ein Netz für Wärme und Kälte zugleich.'' Statt heißes Wasser zu verteilen, führt ein Anergienetz mit 5 bis 20 °C die Quelle zu den Gebäuden; jedes Haus hebt mit einer eigenen Wärmepumpe auf sein Temperaturniveau an. Weil das Netz kaum wärmer ist als das Erdreich, entfallen Dämmung und Netzverluste nahezu vollständig, und jedes Gebäude bestimmt Vorlauftemperatur und Warmwasserbereitung selbst. Kühlt ein Gebäude im Sommer, speist es seine Abwärme ins Netz zurück – die Kühlung des einen wird zur Quelle des anderen.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/K3_Kalte_Nahwaerme.png|Kombinationsschema kalte Nahwärme mit dezentralen Wärmepumpen|breite=720}}
+
+'''Vorteile:''' Praktisch keine Netzverluste, kein Legionellenthema im Netz, unterschiedliche Gebäudestandards lassen sich mischen, und die sommerliche Kühlung regeneriert die Quelle.<br>'''Nachteile:''' Höhere Investition in Netz und Übergabestationen, der Strombedarf verlagert sich zum Anschlussnehmer, die Auslegung muss Gleichzeitigkeit und Frostschutz berücksichtigen, und die Abrechnung wird aufwendiger.
+
+=== K4 – Abwärme aus Kälteanlage oder Prozess als Wärmequelle ===
+{{Anker|k4-abwaerme-aus-kaelteanlage-oder-prozess-als-waermequelle|gl-komb-k4}}
+
+''Besonderer Vorteil: gleichzeitig kühlen und heizen.'' Wo ohnehin gekühlt wird – Serverraum, Kühlhaus, Druckluft, Spritzguss, Molkerei –, fällt Kondensatorabwärme mit 25 bis 35 °C an, die üblicherweise über ein Rückkühlwerk vernichtet wird. Als Quelle einer Wasser/Wasser-Wärmepumpe ist sie warm, konstant und kostenlos; Arbeitszahlen von 5 bis 7 sind erreichbar. Die Kälteanlage arbeitet zugleich mit besserer Verflüssigungstemperatur, das Rückkühlwerk bleibt nur noch als Notkühlung in Betrieb.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/K4_Abwaerme_Kaelteanlage.png|Kombinationsschema Abwärme aus Kälteanlage oder Prozess als Wärmequelle der Wärmepumpe|breite=720}}
+
+'''Vorteile:''' Sehr hohe Arbeitszahl bei kostenloser, ganzjährig verfügbarer Quelle; die Kälteanlage spart Rückkühlenergie, und beide Seiten amortisieren die Maßnahme gemeinsam.<br>'''Nachteile:''' Wärme- und Kältebedarf müssen zeitlich zusammenpassen – sonst bleibt die Quelle ungenutzt oder fehlt; eine Notkühlung ist vorzuhalten, und Kälte- und Heizkreis sind wegen Glykol und Betriebssicherheit hydraulisch zu trennen.
+
+== BHKW mit Spitzenlastkessel ==
+{{Anker|bhkw-mit-spitzenlastkessel|gl-bhkw-mit-spitzenlastkessel}}
+
+Für Blockheizkraftwerke gelten einige Auslegungsgrundsätze unabhängig vom gewählten Schema. Das BHKW deckt die Grundlast und wird bewusst kleiner als die Gebäudeheizlast dimensioniert – häufig auf 10 bis 30 Prozent der Heizlast, womit es rund 50 bis 70 Prozent der Jahreswärmearbeit erbringt. Ziel sind 5.000 bis 7.000 Vollbenutzungsstunden im Jahr, mindestens jedoch 4.000. Der Spitzenlastkessel übernimmt die Lastspitzen und dient als Redundanz; Brennwertkessel werden immer parallel eingebunden, nie in Reihe hinter dem BHKW, weil sonst der Brennwerteffekt verloren geht. Für den Pufferspeicher gilt als Faustwert 60 bis 100 Liter je Kilowatt thermischer BHKW-Leistung, und er sollte möglichst nicht vom Kessel geladen werden; Schema 1 weicht davon bewusst ab. Der BHKW-Rücklauf sollte unter etwa 70 Grad liegen, damit die Motorwärme vollständig ausgekoppelt werden kann. Die Schemata 5 bis 9 folgen der ASUE-Broschüre zur Einbindung kleiner und mittlerer KWK-Anlagen.
+
+=== Schema 1 – Parallelschaltung über den Pufferspeicher ===
+{{Anker|schema-1-parallelschaltung-ueber-den-pufferspeicher|gl-schema-1-parallelschaltung-ueber-den-pufferspeicher}}
+
+BHKW und Kessel laden beide den Puffer, alle Verbraucher werden aus dem Puffer versorgt. Einfachste Regelung über die Speichersolltemperatur, robuste Hydraulik, gut erweiterbar. Nachteilig sind höhere Speicherverluste und die mögliche Zerstörung der Schichtung bei Spitzenlast, weil auch der Kesselvolumenstrom durch den Speicher läuft. Typisch für kleinere Anlagen.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S1_Parallelschaltung_Puffer.png|BHKW Schema 1 Parallelschaltung über Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Robusteste und häufigste Anordnung: Das BHKW läuft lang und gleichmäßig, der Kessel deckt die Spitzen, die Regelung bleibt überschaubar.<br>'''Nachteile:''' Der Speicher braucht Platz, und Einbindehöhen sowie Schichtung entscheiden über die tatsächlichen Laufzeiten.
+
+=== Schema 2 – BHKW mit Puffer, Kessel direkt eingebunden ===
+{{Anker|schema-2-bhkw-mit-puffer-kessel-direkt-eingebunden|gl-schema-2-bhkw-mit-puffer-kessel-direkt-eingebunden}}
+
+Das BHKW arbeitet auf den Puffer, der Kessel speist über Rückschlagventile direkt in den Netzvorlauf; Kesselwasser durchströmt den Speicher nicht. Der Puffer bleibt dem BHKW vorbehalten, die Schichtung bleibt sauber, die Laufzeiten werden maximal. Dafür ist die Regelung aufwendiger und die Wärmeübergabe träger. Häufigste Praxislösung in mittleren und größeren Heizzentralen.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S2_Kessel_direkt_parallel.png|BHKW Schema 2 Kessel direkt parallel eingebunden|breite=720}}
+
+'''Vorteile:''' Der Kessel reagiert unmittelbar auf plötzlichen Bedarf, ohne den Speicher auszukühlen.<br>'''Nachteile:''' Zwei Einspeisepunkte erhöhen den Regelaufwand; der Kessel kann den gemeinsamen Rücklauf anheben und damit die Wärmeauskopplung des BHKW verschlechtern.
+
+=== Schema 3 – Reihenschaltung mit dem Kessel als Nachheizstufe ===
+{{Anker|schema-3-reihenschaltung-mit-dem-kessel-als-nachheizstufe|gl-schema-3-reihenschaltung-mit-dem-kessel-als-nachheizstufe}}
+
+Der Netzvorlauf wird aus dem Puffer entnommen und durchströmt anschließend den Kessel, der bei Bedarf nachheizt; ein Drei-Wege-Ventil führt bei ausreichender Puffertemperatur am Kessel vorbei. Die BHKW-Wärme wird systembedingt immer vollständig genutzt, der Kessel arbeitet nur als Booster – ideal bei hohen Netzvorlauftemperaturen, etwa in Prozesswärmenetzen, Altbaunetzen oder Krankenhäusern. Für Brennwert- und Niedertemperaturkessel ist die Reihenschaltung nicht geeignet.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S3_Reihenschaltung_Nachheizung.png|BHKW Schema 3 Reihenschaltung mit Kessel als Nachheizstufe|breite=720}}
+
+'''Vorteile:''' Der Rücklauf zum BHKW bleibt niedrig, was der Wärmeauskopplung entgegenkommt.<br>'''Nachteile:''' Der Kessel arbeitet häufig in Teillast; beide Erzeuger führen denselben Massenstrom, die Druckverluste addieren sich.
+
+=== Schema 4 – Einbindung über eine hydraulische Weiche ===
+{{Anker|schema-4-einbindung-ueber-eine-hydraulische-weiche|gl-schema-4-einbindung-ueber-eine-hydraulische-weiche}}
+
+BHKW mit Puffer und Kessel speisen auf eine gemeinsame Weiche, dahinter versorgen Sekundärpumpen die Heizkreise. Erzeuger- und Verbraucherseite sind vollständig entkoppelt, was bei vielen oder wechselnden Heizkreisen die robuste Lösung ist. Bei schlechtem Abgleich droht allerdings eine Anhebung der Rücklauftemperatur, die der Wärmeauskopplung des BHKW und der Speicherschichtung schadet.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S4_Hydraulische_Weiche.png|BHKW Schema 4 Einbindung über hydraulische Weiche|breite=720}}
+
+'''Vorteile:''' Erzeuger- und Verteilkreise sind hydraulisch sauber entkoppelt, die Inbetriebnahme ist einfach und unempfindlich gegen Volumenstromfehler.<br>'''Nachteile:''' Die Mischung in der Weiche hebt den Rücklauf an und kostet Wärmeauskopplung – bei BHKW-Anlagen der wesentliche Nachteil dieser Lösung.
+
+=== Schema 5 – Reihenschaltung ohne Pufferspeicher ===
+{{Anker|schema-5-reihenschaltung-ohne-pufferspeicher|gl-schema-5-reihenschaltung-ohne-pufferspeicher}}
+
+Das BHKW liegt im Rücklauf vor dem Kessel und hebt die Rücklauftemperatur an, der Kessel heizt in Reihe nach. Minimaler hydraulischer Aufwand und geringe Investition, aber ohne Speicher kein zeitlicher Ausgleich zwischen Strom- und Wärmebedarf und damit geringere Laufzeiten; für Brennwert- und Niedertemperaturkessel ungeeignet.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S5_Reihenschaltung_ohne_Puffer.png|BHKW Schema 5 Reihenschaltung ohne Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Minimaler Platzbedarf, geringste Investition, keine Speicherverluste.<br>'''Nachteile:''' Das BHKW folgt unmittelbar dem Bedarf und taktet; nur mit modulierender Anlage und stabiler Grundlast vertretbar.
+
+=== Schema 6 – Parallelschaltung ohne Pufferspeicher ===
+{{Anker|schema-6-parallelschaltung-ohne-pufferspeicher|gl-schema-6-parallelschaltung-ohne-pufferspeicher}}
+
+BHKW und Brennwert- oder Niedertemperaturkessel speisen parallel direkt in den Netzvorlauf und saugen aus dem gemeinsamen Rücklauf. Brennwerttauglich und einfach im Aufbau, ohne Speicherverluste – wirtschaftlich aber nur bei gleichzeitigem Strom- und Wärmebedarf, etwa in Gewerbebetrieben mit Prozesswärme oder in Schwimmbädern.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S6_Parallelschaltung_ohne_Puffer.png|BHKW Schema 6 Parallelschaltung ohne Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Einfachste Hydraulik, beide Erzeuger speisen direkt in den Verteilkreis.<br>'''Nachteile:''' Weder BHKW noch Kessel sind gegen kurze Laufzeiten geschützt; die Vollbenutzungsstunden bleiben regelmäßig hinter der Auslegung zurück.
+
+=== Schema 7 – Umschaltung über Ventile ===
+{{Anker|schema-7-umschaltung-ueber-ventile|gl-schema-7-umschaltung-ueber-ventile}}
+
+Die Wärmeströme werden über motorische Ventile statt über Einzelpumpen geführt: Ein Umschaltventil hinter dem BHKW speist entweder direkt ins Netz oder lädt den Puffer, wenn Strom, aber keine Wärme gebraucht wird; die Entladung erfolgt über ein Motorabsperrventil. Es genügt eine zentrale BHKW-Pumpe, was Pumpenstrom spart und stromgeführten Betrieb erlaubt; Ventile können jedoch festsitzen, und die umgelenkten Massenströme müssen etwa gleich groß sein.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S7_Umschaltung_Ventile_Puffer.png|BHKW Schema 7 Umschaltung über Ventile mit Pufferspeicher|breite=720}}
+
+'''Vorteile:''' Klar definierte Betriebszustände und eindeutige Zuordnung der Erzeuger.<br>'''Nachteile:''' Die Regelungslogik muss die Übergänge sauber beherrschen, sonst entstehen Druckstöße; die Ventile sind Verschleißteile und im Wartungsplan zu führen.
+
+=== Schema 8 – Puffer im Nebenschluss mit eigenen Pumpen ===
+{{Anker|schema-8-puffer-im-nebenschluss-mit-eigenen-pumpen|gl-schema-8-puffer-im-nebenschluss-mit-eigenen-pumpen}}
+
+Das BHKW speist direkt ins Netz, der Puffer liegt im Nebenschluss und wird über eine Ladepumpe geladen, wenn Strom, aber keine Wärme benötigt wird, und über eine Entladepumpe entladen, bevor der Kessel startet. Schnelle Wärmeübergabe ohne Speicherträgheit und brennwerttauglich, dafür mehr Pumpen und Regelaufwand. Für Brennwertanlagen mit Puffer die Standardempfehlung der ASUE.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S8_Puffer_Nebenschluss_Pumpen.png|BHKW Schema 8 Pufferspeicher im Nebenschluss mit Lade- und Entladepumpe|breite=720}}
+
+'''Vorteile:''' Laden und Entladen sind vollständig entkoppelt, die Schichtung lässt sich gezielt bewirtschaften.<br>'''Nachteile:''' Zwei zusätzliche Pumpen bedeuten mehr Hilfsenergie, mehr Regelaufwand und zusätzliche Fehlerquellen.
+
+=== Schema 9 – Praxisbeispiel einer Bestandsanlage ===
+{{Anker|schema-9-praxisbeispiel-einer-bestandsanlage|gl-schema-9-praxisbeispiel-einer-bestandsanlage}}
+
+Nachrüstung eines BHKW mit 520 Kilowatt thermischer und 350 Kilowatt elektrischer Leistung samt zwei Speichern zu je 15 Kubikmetern in eine Anlage mit zwei Kesseln zu je 1.750 Kilowatt. Die Gruppe aus BHKW und Speichern wird über einen Einbauverteiler in Reihe in den Gesamtrücklauf eingebunden und wirkt als Vorwärmstufe; im Sommer versorgt sie die Verbraucher über einen Bypass direkt, die Kessel bleiben gesperrt. Die Regelung startet das BHKW, wenn der Speicher oben unter 70 Grad fällt, und schaltet es ab, wenn unten 90 Grad erreicht sind. Vorbild für Contracting und Nachrüstung in größeren Bestandszentralen.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S9_Praxisbeispiel_Bestandsanlage.png|BHKW Schema 9 Praxisbeispiel Nachrüstung in einer Bestandsanlage|breite=720}}
+
+'''Vorteile:''' Nutzt die vorhandene Hydraulik, geringe Investition und schnelle Umsetzbarkeit im laufenden Betrieb.<br>'''Nachteile:''' Kompromisse bei Rücklauftemperatur und Laufzeit sind unvermeidlich; das Ergebnis hängt stark vom vorgefundenen Bestand ab und sollte vorab gerechnet werden.
+
+=== Schema 10 – Erweiterung um Solarthermie ===
+{{Anker|schema-10-erweiterung-um-solarthermie|gl-schema-10-erweiterung-um-solarthermie}}
+
+Das Kollektorfeld lädt über einen internen Wärmetauscher die untere, kalte Pufferzone, in der der Ertrag am höchsten ist; das BHKW lädt die obere Zone, der Kessel speist parallel ins Netz. Der Solarertrag senkt im Sommer die Laufzeiten des BHKW – Solarthermie und BHKW konkurrieren um denselben Speicher, weshalb eine klare Regelstrategie nötig ist. Genau dieser Zielkonflikt lässt sich in der Simulation quantifizieren, indem Sie die Reihenfolge der Erzeuger und die Speicherschwellen variieren.
+
+{{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S10_Erweiterung_Solarthermie.png|BHKW Schema 10 Erweiterung um Solarthermie am Pufferspeicher|breite=720}}
+
+Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge im Konfigurationsdialog gibt die Vorrangschaltung wieder, die Zuordnung des Pufferspeichers zum jeweiligen Erzeuger bildet die hydraulische Anbindung ab, und die Ein- und Abschaltschwellen entsprechen der Regelstrategie.
+
+'''Vorteile:''' Zusätzlicher regenerativer Anteil, der den Kessel im Sommer entlastet und die Brennstoffkosten senkt.<br>'''Nachteile:''' Der Sommerbetrieb des BHKW wird verdrängt – die Vollbenutzungsstunden sind zu prüfen; ohne Vorrangregelung konkurrieren Solaranlage und BHKW um dieselbe Speicherzone.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Simulation]] – Erzeugerreihenfolge, Speicherzuordnung und Schaltschwellen konfigurieren
+* [[Pufferspeicher]] – Programmfunktion: Volumen, Schaltschwellen und Zuordnung
+* [[Wärmepumpe]] – Programmfunktion: Kennfeld, Wärmequelle und Wärmesenke
+* [[Blockheizkraftwerk]] – Programmfunktion: Modulauswahl, Pendelspeicher und Betriebsart
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
