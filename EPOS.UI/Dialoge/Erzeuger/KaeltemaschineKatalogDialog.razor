@@ -472,6 +472,9 @@
 
     /// <summary>KD-3: der gewählte Reiter der Kennlinienbilder (Prüfhilfe für Tests).</summary>
     public string Kennlinienreiter => _kennlinienreiter;
+
+    /// <summary>Die Zeilen des Vergleichs im Stammblatt (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
     private IReadOnlyList<string>? _vergleichskoepfe;
     private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
 
