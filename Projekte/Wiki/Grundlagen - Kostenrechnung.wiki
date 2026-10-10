@@ -8,12 +8,12 @@ Die technische Simulation liefert das Mengengerüst – Wärme- und Strommengen,
 == Erfassung in EPOS-Plan ==
 {{Anker|erfassung-in-epos-plan}}
 
-Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert. Zu jeder im Projekt vorhandenen Komponente – Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik, Puffer- und Stromspeicher – lassen sich beliebig viele Positionen erfassen, jeweils mit Betrag, Einheit, Nutzungsdauer in Jahren und einer Bandbreite zwischen günstigem und ungünstigem Fall. Die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden, sodass Auslegung und Kalkulation nicht auseinanderlaufen. Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
+Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert. Zu jeder im Projekt vorhandenen Komponente – Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik, Puffer- und Stromspeicher – lassen sich beliebig viele Positionen erfassen, jeweils mit Betrag, Einheit, Nutzungsdauer in Jahren und einer Bandbreite zwischen günstigem und ungünstigem Fall. Die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden, sodass Auslegung und Kalkulation nicht auseinanderlaufen; ''Aus Vorlage übernehmen…'' holt Positionen aus dem Kostenkatalog. Kosten, die zu keinem Gerät gehören, sammeln die Erfassungsgruppen Wärmezentrale, Bauliche Anlagen und Stromeinspeisung. Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen; die Bedienung beschreibt [[Programm Dokumentation/Kosten]].
 
 == Bandbreiten statt Scheingenauigkeit ==
 {{Anker|bandbreiten-statt-scheingenauigkeit}}
 
-Kostenangaben sind in frühen Projektphasen unsicher. Die Erfassung eines günstigen und eines ungünstigen Werts je Position ist deshalb kein Umweg, sondern der ehrlichere Weg: Sie zeigt, wie robust eine Entscheidung ist. Kippt die Rangfolge zweier Varianten schon innerhalb der Bandbreite, ist die Entscheidung nicht durch die Rechnung, sondern durch andere Kriterien zu treffen.
+Kostenangaben sind in frühen Projektphasen unsicher. Die Erfassung eines günstigen und eines ungünstigen Werts je Position ist deshalb kein Umweg, sondern der ehrlichere Weg: Sie zeigt, wie robust eine Entscheidung ist. In der Wirtschaftlichkeit hat ein so gepflegter Wert Vorrang vor dem pauschalen Ausschlag der Szenarien Günstig und Ungünstig. Kippt die Rangfolge zweier Varianten schon innerhalb der Bandbreite, ist die Entscheidung nicht durch die Rechnung, sondern durch andere Kriterien zu treffen.
 
 == Energiepreise ==
 {{Anker|energiepreise}}
@@ -23,7 +23,7 @@ Für jeden Energieträger werden Arbeitspreis, Grundpreis und – wo zutreffend 
 == Nutzungsdauern ==
 {{Anker|nutzungsdauern}}
 
-Die Nutzungsdauer bestimmt, wie stark eine Investition die Jahreskosten belastet. Übliche Ansätze liegen bei Kesseln und Wärmepumpen im Bereich von 15 bis 20 Jahren, bei BHKW-Motoren deutlich darunter und für Hydraulik, Speicher und Verteilnetze darüber. Weil Komponenten mit kurzer Lebensdauer innerhalb des Betrachtungszeitraums ersetzt werden müssen, gehören Ersatzinvestitionen in die Betrachtung.
+Die Nutzungsdauer bestimmt, wie stark eine Investition die Jahreskosten belastet. Übliche Ansätze liegen bei Kesseln und Wärmepumpen im Bereich von 15 bis 20 Jahren, bei BHKW-Motoren deutlich darunter und für Hydraulik, Speicher und Verteilnetze darüber. Weil Komponenten mit kurzer Lebensdauer innerhalb des Betrachtungszeitraums ersetzt werden müssen, gehören Ersatzinvestitionen in die Betrachtung. EPOS-Plan weist je Position die Ersatzjahre innerhalb des Betrachtungszeitraums und den Restwert am Ende aus, mit denselben Formeln wie die Wirtschaftlichkeitsrechnung.
 
 Wie aus Kosten und Erlösen eine Kennzahl wird, beschreibt die [[Grundlagen/Wirtschaftlichkeitsrechnung|Wirtschaftlichkeitsrechnung]]; die Ertragsseite behandelt die [[Grundlagen/Erlösrechnung|Erlösrechnung]].
 
@@ -31,6 +31,7 @@ Wie aus Kosten und Erlösen eine Kennzahl wird, beschreibt die [[Grundlagen/Wirt
 {{Anker|siehe-auch}}
 
 * [[Kosten und Energiepreise]] – Programmfunktion: Investitions-, Betriebs- und Energiekosten erfassen
+* [[Programm Dokumentation/Kosten]] – Kostenseite mit Positionen, Vorlagen, Ersatz und Restwert
 * [[Ergebnisse auswerten und Kosten hinterlegen]] – Kostenerfassung im Programmablauf
 
 {{Navigation Grundlagen}}

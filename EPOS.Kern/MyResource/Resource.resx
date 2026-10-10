@@ -962,6 +962,27 @@
   <data name="KFLT_SP_VERWENDET" xml:space="preserve">
     <value>im Projekt verwendet</value>
   </data>
+  <data name="KFLT_VERWENDET_HINWEIS" xml:space="preserve">
+    <value>Im Projekt verwendet</value>
+  </data>
+  <data name="KFLT_VERWENDET_LEGENDE" xml:space="preserve">
+    <value>im Projekt</value>
+  </data>
+  <data name="KFLT_SPALTEN" xml:space="preserve">
+    <value>Spalten…</value>
+  </data>
+  <data name="KFLT_SPALTEN_HINWEIS" xml:space="preserve">
+    <value>Angezeigte Spalten wählen</value>
+  </data>
+  <data name="KFLT_SPALTEN_TITEL" xml:space="preserve">
+    <value>Angezeigte Spalten</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD_HINWEIS" xml:space="preserve">
+    <value>Spaltenwahl auf die Standardanzeige zurücksetzen</value>
+  </data>
   <data name="KFLT_SP_VLMAX" xml:space="preserve">
     <value>VL max</value>
   </data>
@@ -12747,7 +12768,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Rücklauf</value>
   </data>
   <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
-    <value>Wollen Sie wirklich das BHKW löschen?</value>
+    <value>Der Katalogeintrag "{0}" wird für ALLE Projekte gelöscht. Fortfahren?</value>
   </data>
   <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
@@ -50122,19 +50143,19 @@ Chart</value>
   <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
     <value>Keine Änderung</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_KEINE" xml:space="preserve">
     <value>Keine Änderung.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_FEHLT" xml:space="preserve">
     <value>Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPERRT" xml:space="preserve">
     <value>„{0}“ ist gesperrt. Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
     <value>„{0}“: {1} Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} Sätze gespeichert.</value>
   </data>
   <data name="HZK_LBL_SUMME" xml:space="preserve">
@@ -50844,6 +50865,9 @@ Chart</value>
   </data>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom als „Spaltenname=Wert“; leer ohne solche Maschine.</value>
+  </data>
+  <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit.</value>
   </data>
   <data name="CHART_DATEI_GANGLINIE" xml:space="preserve">
     <value>{0}_Projekt_{1}.csv</value>

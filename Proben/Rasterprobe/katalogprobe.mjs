@@ -1236,6 +1236,176 @@ try {
   process.exit(2);
 }
 
+// ------------------------------------------------------------------
+// SPALTENWAHL UND VERWENDUNGSMARKE (KS1, Konzept Projektdialoge 4.10)
+// ------------------------------------------------------------------
+// Der echte Heizkessel- und BHKW-Dialog der Fensterprobe (?verwendet=1: die erste
+// Projektzeile heisst wie die zweite Katalogzeile) in 1 280 x 800 und 768 x 1 024.
+// Gemessen: Die Spalte "im Projekt verwendet" steht nicht da, Marke und Legende sind
+// sichtbar, die Summe der Projekt-Kopfleiste ist nicht gekuerzt und die Kopfleiste
+// einzeilig; die Auswahl "Spalten..." oeffnet ohne eigenen Rollbereich und ganz im
+// Bild, Abwaehlen und Waehlen wirken, die Wahl ueberlebt das Neuladen (Einstellungen
+// des Wirts), "Standard" setzt zurueck, Esc schliesst die Auswahl und nicht den Dialog.
+// Die GEGENPROBE gibt der Auswahl eine Rollhoehe und versteckt die Marke - sie MUSS rot sein.
+const KS_GEGEN_STIL = `.epos-spaltenwahl-auswahl { max-height: 60px !important; overflow-y: auto !important; }
+.epos-verwendet-marke { display: none !important; }`;
+
+async function spaltenwahlfall(browser, f) {
+  const kontext = await browser.newContext({ viewport: { width: f.breite, height: f.hoehe }, deviceScaleFactor: 1 });
+  const seite = await kontext.newPage();
+  const adresse = `${WURZEL}/fensterprobe?fall=${f.fall}&verwendet=1&zeilen=40&summe=${encodeURIComponent('1.240,5')}`;
+  const m = [];
+  const laden = async () => {
+    await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
+    await seite.waitForSelector('.epos-zweispalten-bereich--katalog .epos-katalogliste tbody tr', { timeout: 30000 });
+    if (f.gegen) await seite.addStyleTag({ content: KS_GEGEN_STIL });
+    await schlaf(700);
+  };
+  const kopf = () => seite.evaluate(() =>
+    [...document.querySelectorAll('.epos-zweispalten-bereich--katalog thead th')]
+      .filter(th => getComputedStyle(th).display !== 'none')
+      .map(th => th.textContent.trim()));
+  const oeffnen = async () => {
+    await seite.click('.epos-zweispalten-bereich--katalog button.epos-katalog-spaltenknopf');
+    await seite.waitForSelector('.epos-spaltenwahl-auswahl', { timeout: 5000 });
+    await schlaf(200);
+  };
+  const eintrag = s => `.epos-spaltenwahl-eintrag[data-spalte="${s}"] input`;
+  const VERWENDET = /im Projekt verwendet|used in project/;
+
+  await laden();
+  // Ein Rest aus einem frueheren Lauf: zuerst auf Standard.
+  await oeffnen();
+  if (await seite.isEnabled('.epos-spaltenwahl-standard')) await seite.click('.epos-spaltenwahl-standard');
+  else await seite.click('.epos-spaltenwahl-hintergrund', { position: { x: 5, y: 5 } });
+  await schlaf(300);
+
+  // 1. Standardanzeige: keine Verwendungsspalte, Marke und Legende sichtbar, Summe ganz.
+  const a = await seite.evaluate(() => {
+    const r = e => e ? e.getBoundingClientRect() : null;
+    const sichtbar = e => { const b = r(e); return !!b && b.width > 0 && b.height > 0 && b.left >= 0 && b.right <= innerWidth + 0.5; };
+    const marke = document.querySelector('.epos-zweispalten-bereich--katalog tbody .epos-verwendet-marke');
+    const zeile = marke ? marke.closest('tr') : null;
+    const legende = document.querySelector('.epos-zweispalten-bereich--katalog .epos-katalog-verwendetlegende');
+    const knopf = document.querySelector('.epos-zweispalten-bereich--katalog button.epos-katalog-spaltenknopf');
+    const kl = document.querySelector('.epos-zweispalten-bereich--katalog .epos-zweispalten-kopfleiste');
+    const summe = document.querySelector('.epos-zweispalten-bereich--projekt .epos-zweispalten-summe');
+    const pl = document.querySelector('.epos-zweispalten-bereich--projekt .epos-zweispalten-kopfleiste');
+    const kids = pl ? [...pl.children].filter(e => r(e).width > 1 && r(e).height > 1) : [];
+    const oben = kids.map(e => r(e).top), unten = kids.map(e => r(e).bottom);
+    return {
+      marke: sichtbar(marke), markeFarbe: marke ? getComputedStyle(marke).backgroundColor : '',
+      getoent: zeile ? zeile.classList.contains('epos-zeile--verwendet') : false,
+      legende: sichtbar(legende),
+      knopf: sichtbar(knopf) && !!kl && r(knopf).right <= r(kl).right + 0.5,
+      knopfText: knopf ? getComputedStyle(knopf.querySelector('.epos-katalog-spaltenknopftext')).display : '',
+      summe: summe ? summe.textContent.trim() : '',
+      summeGanz: summe ? summe.scrollWidth <= summe.clientWidth + 0.5 && sichtbar(summe) : false,
+      einzeilig: kids.length ? Math.max(...oben) < Math.min(...unten) : false
+    };
+  });
+  const k0 = await kopf();
+  if (k0.some(t => VERWENDET.test(t))) m.push('Spalte "im Projekt verwendet" steht in der Standardanzeige');
+  if (!a.marke) m.push('Verwendungsmarke nicht sichtbar');
+  if (a.markeFarbe !== 'rgb(29, 158, 117)') m.push('Marke nicht in der Projektfarbe (' + a.markeFarbe + ')');
+  if (!a.getoent) m.push('verwendete Zeile nicht getoent');
+  if (!a.legende) m.push('Legende nicht sichtbar');
+  if (!a.knopf) m.push('Knopf "Spalten..." nicht ganz in der Kopfleiste');
+  if (!a.summeGanz) m.push('Summe gekuerzt: "' + a.summe + '"');
+  if (!a.einzeilig) m.push('Projekt-Kopfleiste nicht einzeilig');
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${f.name}_verwendet.png` });
+
+  // 2. Auswahl offen: ganz im Bild, kein eigener Rollbereich, das Dokument rollt nicht.
+  await oeffnen();
+  const b = await seite.evaluate(() => {
+    const w = document.querySelector('.epos-spaltenwahl-auswahl');
+    const r = w.getBoundingClientRect();
+    const st = getComputedStyle(w);
+    const doc = document.scrollingElement;
+    return {
+      imBild: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 0.5 && r.bottom <= innerHeight + 0.5,
+      rollt: w.scrollHeight > w.clientHeight + 1 || /auto|scroll/.test(st.overflowY),
+      docRollt: doc.scrollHeight > innerHeight + 1,
+      eintraege: w.querySelectorAll('.epos-spaltenwahl-eintrag').length,
+      zwei: !!w.querySelector('.epos-spaltenwahl-liste--zwei')
+    };
+  });
+  if (!b.imBild) m.push('Auswahl nicht ganz im Bild');
+  if (b.rollt) m.push('Auswahl rollt in sich (Rollbereich im Rollbereich)');
+  if (b.docRollt) m.push('Dokument rollt mit offener Auswahl');
+  if (b.eintraege < 2) m.push('Auswahl ohne Kaestchen');
+  if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${f.name}_spaltenwahl.png` });
+
+  // 3. Hersteller ab, Verwendung an.
+  const herstellerText = (await seite.textContent('.epos-spaltenwahl-eintrag[data-spalte="HERSTELLER"]')).trim();
+  await seite.click(eintrag('HERSTELLER')); await schlaf(300);
+  await seite.click(eintrag('VERWENDET')); await schlaf(300);
+  const k1 = await kopf();
+  if (k1.includes(herstellerText)) m.push('abgewaehlte Spalte steht noch da');
+  if (!k1.some(t => VERWENDET.test(t))) m.push('gewaehlte Verwendungsspalte fehlt');
+
+  // 4. Esc schliesst die Auswahl, nicht den Dialog.
+  await seite.focus(eintrag('PTHERM'));
+  await seite.keyboard.press('Escape'); await schlaf(300);
+  const c = await seite.evaluate(() => ({
+    zu: !document.querySelector('.epos-spaltenwahl-auswahl'),
+    dialog: !!document.querySelector('.epos-zweispalten'),
+    ausgang: document.getElementById('probe-ausgang')?.dataset.ausgang || ''
+  }));
+  if (!c.zu) m.push('Esc schliesst die Auswahl nicht');
+  if (!c.dialog || c.ausgang) m.push('Esc hat den Dialog geschlossen');
+
+  // 5. Neuladen: die Wahl gilt weiter.
+  await laden();
+  const k2 = await kopf();
+  if (k2.includes(herstellerText) || !k2.some(t => VERWENDET.test(t))) m.push('Wahl ueberlebt das Neuladen nicht');
+  const quer = await seite.evaluate(() => {
+    const h = document.querySelector('.epos-zweispalten-bereich--katalog .epos-raster-huelle');
+    const ber = document.querySelector('.epos-zweispalten-bereich--katalog');
+    return { bereich: ber.scrollWidth - ber.clientWidth };
+  });
+  if (quer.bereich > 1) m.push('Katalogbereich rollt quer (' + quer.bereich + ' px)');
+
+  // 6. Standard setzt zurueck, auch nach dem Neuladen.
+  await oeffnen();
+  await seite.click('.epos-spaltenwahl-standard'); await schlaf(300);
+  if (await seite.$('.epos-spaltenwahl-auswahl')) m.push('"Standard" schliesst die Auswahl nicht');
+  await laden();
+  const k3 = await kopf();
+  if (k3.some(t => VERWENDET.test(t))) m.push('"Standard" setzt nicht zurueck');
+
+  await kontext.close();
+  return m;
+}
+
+const KS_FAELLE = [];
+for (const fall of ['heizkessel', 'bhkw'])
+  for (const [breite, hoehe] of [[1280, 800], [768, 1024]])
+    KS_FAELLE.push({ name: `KS1_${fall}_${breite}x${hoehe}`, fall, breite, hoehe });
+KS_FAELLE.push({ name: 'KS1_gegenprobe_heizkessel_768x1024', fall: 'heizkessel', breite: 768, hoehe: 1024, gegen: true });
+
+try {
+  for (const f of KS_FAELLE) {
+    if (NUR && !f.name.startsWith(NUR)) continue;
+    gezaehlt++;
+    console.log('');
+    console.log(`${f.name}`);
+    const m = await spaltenwahlfall(browser, f);
+    if (f.gegen) {
+      if (m.length) console.log('  Gegenprobe zeigt den Befund wie erwartet: ' + m.join('; '));
+      else { schlecht++; console.log('  GEGENPROBE OHNE WIRKUNG'); }
+      continue;
+    }
+    if (m.length) { schlecht++; console.log('  VERSTOSS: ' + m.join('; ')); }
+    else console.log('  Spaltenwahl, Marke, Legende und Summe wie verlangt');
+  }
+} catch (fehler) {
+  console.log('');
+  console.log('ABBRUCH (KS1): ' + fehler.message);
+  await browser.close();
+  process.exit(2);
+}
+
 await browser.close();
 
 console.log('');

@@ -12,7 +12,7 @@ Die Liste der Regionen hat Suche, Filter und Sortierung und nennt je Region Quel
 == Klimaregion dem Projekt zuordnen ==
 {{Anker|klimaregion-dem-projekt-zuordnen|zuordnung}}
 
-Auf der Startseite wählen Sie die Region im Reiter ''Projekt'' aus der durchsuchbaren Liste und speichern sie mit dem Knopf daneben; die Rückmeldung steht neben dem Knopf, und eine Zeile darunter nennt Quelle, Bezugsjahr, Szenario und Importdatum der verwendeten Klimadaten. Im Projektassistenten steht dieselbe Liste.
+Auf der Startseite wählen Sie die Region im Kopf der Maske aus der durchsuchbaren Liste und speichern sie mit dem Knopf daneben; damit legt das Programm eine projekteigene Kopie an. Die Rückmeldung steht neben dem Knopf, und eine Zeile darunter nennt Quelle, Bezeichnung, Standort und Importdatum der verwendeten Klimadaten. Im Projektassistenten steht dieselbe Liste.
 
 {{Achtung|Ein Wechsel der Klimaregion verändert Bedarf und Erträge erheblich und macht eine erneute Simulation erforderlich.}}
 

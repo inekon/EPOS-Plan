@@ -19,12 +19,12 @@ Auswahl nach Brennstoffart und Leistungsklasse; hinterlegt sind Nennleistung, de
 == Blockheizkraftwerk ==
 {{Anker|blockheizkraftwerk|bhkw}}
 
-Auswahl nach Brennstoff und thermischer Leistungsklasse mit thermischer und elektrischer Leistung, elektrischem und thermischem Wirkungsgrad, Teillastkennlinie und unterer Modulationsgrenze. Die Betriebsart – wärmegeführt, stromgeführt oder ohne Einspeisung – und die untere Leistungsgrenze stellen Sie in der Simulationskonfiguration hinter ''Konfiguration…'' an der Karte des BHKW ein.
+Auswahl nach Brennstoff und thermischer Leistungsklasse mit thermischer und elektrischer Leistung, elektrischem und thermischem Wirkungsgrad und unterer Modulationsgrenze. Die Betriebsart – wärmegeführt, stromgeführt oder ohne Einspeisung – und die untere Leistungsgrenze stellen Sie in der Simulationskonfiguration hinter ''Konfiguration…'' an der Karte des BHKW ein.
 
 == Solarthermie ==
 {{Anker|solarthermie|kollektor}}
 
-Kollektortyp, Modulanzahl, Apertur- und Modulfläche sowie Neigung und Azimut; dazu die Bodenreflexion (Albedo) und die Angaben des Solarkreises – Arbeitstemperatur aus dem Speicherzustand, Übertrager-Grädigkeit, Solarkreisverluste und Pumpenleistung. Die Ertragsberechnung nutzt die Kollektorkennwerte nach EN 12975 samt Einfallswinkelkorrektur. Statt des Kollektorfelds lässt sich dem Projekt eine fertige Solarthermieganglinie zuordnen.
+Kollektortyp, Modulanzahl, Apertur- und Modulfläche sowie Neigung und Azimut; dazu die Bodenreflexion (Albedo) und die Angaben des Solarkreises – Arbeitstemperatur fest oder aus dem Speicher, Übertrager-Grädigkeit, Solarkreisverluste und Pumpenleistung. Die Ertragsberechnung nutzt die Kollektorkennwerte nach EN 12975 samt Einfallswinkelkorrektur. Statt des Kollektorfelds lässt sich dem Projekt eine fertige Solarthermieganglinie zuordnen.
 
 == Photovoltaik ==
 {{Anker|photovoltaik|pv}}

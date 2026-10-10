@@ -25,7 +25,7 @@ Eine einzige Wahl bestimmt, welche Versionen der Gruppe auf den Seiten ''Übersi
 
 Wird eine Anlage getauscht oder gelöscht, können Kostenpositionen zurückbleiben, die zu keiner Anlage mehr gehören. Sie erscheinen auf der Kostenseite als gelb hinterlegte Zeile ''ohne Anlagenzuordnung''.
 
-* '''Löschen''' – ein Doppelklick auf eine solche Zeile löscht sie nach Rückfrage, auch eine verwaiste Pflichtposition; bis dahin rechnet sie in der Wirtschaftlichkeit mit. Positionen lebender Anlagen bleiben unberührt; der Pflichtschutz gilt weiterhin für sie. Einzelheiten unter [[Programm Dokumentation/Kosten#ohne-anlagenzuordnung|Kosten: Ohne Anlagenzuordnung]].
+* '''Löschen''' – der Papierkorb in einer solchen Zeile oder ein Doppelklick auf sie löscht sie nach Rückfrage, auch eine verwaiste Pflichtposition; bis dahin rechnet sie in der Wirtschaftlichkeit mit. Positionen lebender Anlagen bleiben unberührt; der Pflichtschutz gilt weiterhin für sie. Einzelheiten unter [[Programm Dokumentation/Kosten#ohne-anlagenzuordnung|Kosten: Ohne Anlagenzuordnung]].
 
 == Siehe auch ==
 

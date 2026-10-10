@@ -42,6 +42,8 @@ ausstehend.
 (Statuszeile #622): Gerätekataloge (724), Gebäude (725), Gebäudeimport (726, Abschnitt „Mehrere Zonen“ aus #620),
 Brauchwasser-Zapfprofil (727). Rücklese byte-gleich, 0 Parse-Warnungen. Das Update-Logbuch blieb unberührt.
 
+**Dritter Sammel-Upload 10.10.2026 (#889), Revisionen 728–827** — durch die Orchestrierung (Benutzer Epos): 99 Seiten (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen; Revisionen 728–826) und das Update-Logbuch (Revision 827); Rücklese byte-gleich, 0 Parse-Warnungen, Dateien und 19 Weiterleitungen unverändert. Vorher waren alle Seiten gegen die Wiki-Regeln geprüft, 47 Live-Seiten ohne Quelle als Repo-Quelle übernommen. **Damit sind alle in Abschnitt 1 als „ausstehend“ vermerkten Punkte veröffentlicht — mit Ausnahme der Seite Programm Dokumentation/Gebäudeimport**, die zurückgehalten bleibt (Abschnitt 3, Punkt „Befund“). Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 10.10.2026“), Protokoll unter `ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md`, Statuszeile #889.
+
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
 seit dem vorliegenden Auftrag vorgezogen), das Analysepapier nannte zuvor durchgehend den
@@ -56,6 +58,8 @@ entschieden 24.09.2026 nach Empfehlung: a; Regel: Konzept Hilfesystem 13.3), mit
 vom 24.09.2026 bestätigt.
 
 ## 1 Seiten für den Sammel-Upload
+
+*Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #889 (Revisionen 728–827) veröffentlicht; ausgenommen ist die Seite Gebäudeimport. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
 
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
@@ -163,14 +167,16 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
-Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Ein neuer Satz gehört in einen
+Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
 neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version offen (Vorschlag 1.2.1) — nicht veröffentlicht
+### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Version noch beim Anwender zu bestätigen.
 
@@ -183,9 +189,10 @@ Version noch beim Anwender zu bestätigen.
 - Seit 09.10.2026: Der Heizkessel-Dialog arbeitet auf der neuen Katalogauswahl: Bearbeiten je Bereich, Mehrfachbearbeitung mit „für alle gewählten setzen“ und „In die Datenbank übernehmen…“ als neuer Katalogsatz oder als Überschreiben des Ursprungs; Investitions- und Betriebskosten gehen als Vorlage des Katalogsatzes mit. (#873)
 - Seit 10.10.2026: Die Kältemaschine rechnet auf Wunsch ihr Teillastverhalten und das Takten bei kleiner Last; Katalogdialog und Anlagendialog führen die zugehörigen Felder. (#879)
 - Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt die Kachel „Teillast und Takten der Kältemaschinen“ mit Taktstrom, Starts, Teillastanteil, mittlerem Lastgrad und Jahres-EER ohne Hilfsstrom, der Bericht eine Tafel dazu. (#879)
-- Seit 10.10.2026: Der Hilfe-Assistent trägt Werte in den Erzeugermasken des Projekts (Heizkessel, BHKW, Photovoltaik, Solarkollektoren, Wärmepumpe) so ein, dass sie beim Speichern erhalten bleiben, und sagt, wenn keine Anlage gewählt ist. (#885)
 
-### Version 1.2.0.9 — nicht veröffentlicht
+### Version 1.2.0.9 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 
@@ -231,7 +238,17 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
 
-### Version 1.2.0.8 — nicht veröffentlicht
+*Die folgenden fünf Sätze (#886 bis #888 und #890) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
+
+- Seit 10.10.2026: Die Projektdialoge mit Katalogauswahl passen sich kleinen Bildschirmen an — kompaktere Darstellung unter 1 200 × 800 px und ein Rollbalken, wenn die Höhe nicht reicht. (#886)
+- Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
+- Seit 10.10.2026: In der Katalogliste der Projektdialoge sind die Spalten wählbar („Spalten…“); im Projekt verwendete Sätze sind farblich gekennzeichnet statt in einer eigenen Spalte. (#888)
+- Seit 10.10.2026: Im Gebäudedialog steht „Bearbeiten…“ in der Kopfleiste der Projektliste. (#888)
+- Seit 10.10.2026: Der Hilfe-Assistent trägt Werte in den Erzeugermasken des Projekts (Heizkessel, BHKW, Photovoltaik, Solarkollektoren, Wärmepumpe) so ein, dass sie beim Speichern erhalten bleiben, und sagt, wenn keine Anlage gewählt ist. (#890)
+
+### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird jeder Satz erst, wenn sein
 Schemaschritt der Standardlastprofile ausgeliefert ist (H25/G25/L25: 193; P25/S25: 196).
@@ -239,14 +256,18 @@ Schemaschritt der Standardlastprofile ausgeliefert ist (H25/G25/L25: 193; P25/S2
 - Seit 07.10.2026: Der Katalog „Datenbank Strombedarf“ enthält zusätzlich die BDEW-Profile P25 und S25 für den Netzbezug von Haushalten mit PV-Anlage bzw. mit PV-Anlage und Batteriespeicher (Netzbezugsprofile, keine Verbrauchsprofile). (SLP25b)
 - Seit 06.10.2026: Der Katalog „Datenbank Strombedarf“ enthält die BDEW-Standardlastprofile Strom 2025 für Haushalt (H25), Gewerbe (G25) und Landwirtschaft (L25), normiert auf 1.000 MWh im Jahr. (SLP25)
 
-### Version 1.2.0.7 — nicht veröffentlicht
+### Version 1.2.0.7 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Version vom Anwender zu bestätigen (Regel 13.4: ein Satz je Auftrag).
 
 - Seit 06.10.2026: Die Berichtsseite ordnet Varianten und Inhalt links, Vorlage und Ausgabe rechts in vier Karten an. (#762)
 - Seit 06.10.2026: Der Wirtschaftlichkeitsbericht lässt sich mit allen drei Szenarien nebeneinander erstellen (VALERI-Darstellung). (#765)
 
-### Version 1.2.0.6 — nicht veröffentlicht
+### Version 1.2.0.6 — veröffentlicht 10.10.2026 (Revision 827)
+
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
 
@@ -1034,7 +1055,9 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   Gebäudeansicht). Das Gegenlese-Muster der Wiki-Regel in `CLAUDE.md` trifft das Wort; die Spalte war schon mit #707
   als Bestandstreffer vermerkt. Vor dem Upload entscheidet der Anwender: den Bedienbegriff in Oberfläche und Wiki
   umbenennen (wie die Ampelmeldungen der Seite Photovoltaik mit E12) oder ihn als Bedienbegriff zulassen.
-  Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt.
+  Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt. Die Zurückstellung ist mit dem Auftrag vom 10.10.2026 (#889) aufgehoben;
+  die Seite Gebäudeimport bleibt zurückgehalten, bis der Anwender den Begriff entschieden hat (seine Antwort war unklar).
+  Alle übrigen Seiten sind hochgeladen.
 
 ## 4 Ablauf des Uploads
 

@@ -1,0 +1,40 @@
+Der '''Programmablauf''' beschreibt den vollständigen Arbeitsablauf in EPOS-Plan, von der Projektanlage bis zur Auswertung. Ein Projekt durchläuft dabei sieben Stufen.
+
+Die Reihenfolge ist nicht zwingend, hat sich in der Praxis aber bewährt, weil jede Stufe auf den Ergebnissen der vorhergehenden aufbaut. Sie können jederzeit zwischen den Bereichen wechseln – Rückwärtsarbeiten bedeutet allerdings meist Nacharbeit.
+
+== Die sieben Stufen ==
+{{Anker|die-sieben-stufen|stufen}}
+
+# [[Projekt anlegen]] – Projektname, Bearbeiter, Kunde und Klimaregion eintragen; die Komponenten fügen Sie danach über die Reiter der Startseite hinzu.
+# [[Klimadaten festlegen]] – Klimaregion auswählen oder für den Standort neu importieren.
+# [[Wärmebedarf erfassen]] – Gebäude mit Heizen und Kühlen, Warmwasser, Prozesswärme, externer Lastgang und Netzverluste.
+# [[Strombedarf erfassen]] – Verbrauchertypen mit Wochenprofilen oder gemessener Lastgang, intern in Viertelstundenwerten.
+# [[Erzeuger und Speicher auswählen]] – Wärmepumpe, Kältemaschine, Heizkessel, BHKW, Solarthermie, Photovoltaik, Puffer- und Stromspeicher aus den Katalogen.
+# [[Simulation konfigurieren und starten]] – Erzeuger, Reihenfolge und Speicherbewirtschaftung festlegen, Jahressimulation rechnen.
+# [[Ergebnisse auswerten und Kosten hinterlegen]] – Deckungsanteile, Kennzahlen und Ganglinien lesen, Zeitreihen exportieren, Kosten erfassen.
+
+== Programmfunktionen im Einzelnen ==
+{{Anker|programmfunktionen-im-einzelnen|programmfunktionen}}
+
+Die sieben Stufen beschreiben den Weg durch ein Projekt. Die einzelnen Module – von der [[Projektverwaltung]] über die Erzeuger bis zur [[Ergebnisdarstellung]] – sind unter [[Programmfunktionen]] ausführlich beschrieben.
+
+== Hinweise für die Praxis ==
+{{Anker|hinweise-fuer-die-praxis|praxis}}
+
+Prüfen Sie den Bedarf gegen bekannte Verbrauchsdaten, bevor Sie Technik hinzufügen – ein um zwanzig Prozent falscher Bedarf entwertet jede nachfolgende Auslegung.
+
+Rechnen Sie eine einfache Referenzvariante, etwa nur Kessel, um eine Vergleichsbasis zu haben, und fügen Sie danach Komponenten einzeln hinzu, damit nachvollziehbar bleibt, welcher Baustein welchen Beitrag leistet.
+
+Ausgearbeitete Fälle finden Sie unter [[Beispiele]], die fachlichen Hintergründe unter [[Grundlagen]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Erste Schritte]] – der kürzeste Weg zu einem belastbaren Ergebnis
+* [[Programmfunktionen]] – jeder Dialog und jede Eingabe im Einzelnen
+* [[Grundlagen]] – die Rechenverfahren hinter der Simulation
+* [[Beispiele]] – durchgerechnete Projekte zum Nachvollziehen
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

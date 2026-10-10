@@ -221,7 +221,7 @@ Statt in den Speicher kann die Solarwärme auch auf die Quellenseite geführt we
 == Kombinationsvarianten mit besonderen Eigenschaften ==
 {{Anker|kombinationsvarianten-mit-besonderen-eigenschaften|gl-kombinationsvarianten}}
 
-Die bisherigen Rubriken zeigen die klassischen Erzeugerkombinationen. Die vier folgenden Schemata gehen darüber hinaus: Jedes von ihnen erschließt eine Eigenschaft, die sich mit den Standardlösungen nicht erreichen lässt – die elektrische Seite als Teil der Wärmeplanung, eine Wärmequelle ohne Bohrung, ein Netz das Wärme und Kälte zugleich transportiert, und die Nutzung vorhandener Abwärme. Sie sind in EPOS-Plan abbildbar und lohnen dort besonders, wo die üblichen Konzepte an eine Grenze stoßen.
+Die vorstehenden Rubriken zeigen die klassischen Erzeugerkombinationen. Die vier folgenden Schemata gehen darüber hinaus: Jedes von ihnen erschließt eine Eigenschaft, die sich mit den Standardlösungen nicht erreichen lässt – die elektrische Seite als Teil der Wärmeplanung, eine Wärmequelle ohne Bohrung, ein Netz das Wärme und Kälte zugleich transportiert, und die Nutzung vorhandener Abwärme. Sie lohnen besonders dort, wo die üblichen Konzepte an eine Grenze stoßen. In EPOS-Plan rechnen Sie bei K2 bis K4 die Wärmepumpe mit der Temperatur ihrer Quelle, als Quellprofil oder als CSV-Reihe; den Eisspeicher, das Anergienetz und die Kälteanlage selbst bildet das Programm dabei nicht nach.
 
 === K1 – Wärmepumpe mit Photovoltaik, Stromspeicher und Power-to-Heat ===
 {{Anker|k1-waermepumpe-mit-photovoltaik-stromspeicher-und-power-to-heat|gl-komb-k1}}
@@ -352,9 +352,12 @@ Das Kollektorfeld lädt über einen internen Wärmetauscher die untere, kalte Pu
 
 {{Bild|https://epos-plan.de/wp-content/uploads/2026/07/BHKW_S10_Erweiterung_Solarthermie.png|BHKW Schema 10 Erweiterung um Solarthermie am Pufferspeicher|breite=720}}
 
-Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge im Konfigurationsdialog gibt die Vorrangschaltung wieder, die Zuordnung des Pufferspeichers zum jeweiligen Erzeuger bildet die hydraulische Anbindung ab, und die Ein- und Abschaltschwellen entsprechen der Regelstrategie.
-
 '''Vorteile:''' Zusätzlicher regenerativer Anteil, der den Kessel im Sommer entlastet und die Brennstoffkosten senkt.<br>'''Nachteile:''' Der Sommerbetrieb des BHKW wird verdrängt – die Vollbenutzungsstunden sind zu prüfen; ohne Vorrangregelung konkurrieren Solaranlage und BHKW um dieselbe Speicherzone.
+
+== Übersetzung in die Simulation ==
+{{Anker|uebersetzung-in-die-simulation}}
+
+Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge im Konfigurationsdialog gibt die Vorrangschaltung wieder, die Zuordnung des Pufferspeichers zum jeweiligen Erzeuger bildet die hydraulische Anbindung ab, und die Ein- und Abschaltschwellen entsprechen der Regelstrategie.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -363,6 +366,7 @@ Für die Simulation gilt in allen Fällen dieselbe Übersetzung: Die Reihenfolge
 * [[Pufferspeicher]] – Programmfunktion: Volumen, Schaltschwellen und Zuordnung
 * [[Wärmepumpe]] – Programmfunktion: Kennfeld, Wärmequelle und Wärmesenke
 * [[Blockheizkraftwerk]] – Programmfunktion: Modulauswahl, Pendelspeicher und Betriebsart
+* [[Programm Dokumentation/Berechnung/Pufferspeicher]] – Rechenweg der Speicherbewirtschaftung
 
 {{Navigation Grundlagen}}
 

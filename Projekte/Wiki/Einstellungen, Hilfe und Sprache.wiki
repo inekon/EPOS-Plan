@@ -3,16 +3,16 @@ Unter '''Einstellungen, Hilfe und Sprache''' sind die programmweiten Grundeinste
 == Einstellungen ==
 {{Anker|einstellungen|verzeichnisse|schnittstellen}}
 
-In den Einstellungen legen Sie die Verzeichnisse für Import und Export, den Pfad der VDI-3805-Daten, die Adresse dieser Online-Dokumentation sowie die Schnittstellen für Klimadaten und Geokodierung fest; alle Werte lassen sich auf die Voreinstellung zurücksetzen.
+In den Einstellungen legen Sie den Pfad der VDI-3805-Daten, Ordner und Namen der Datenbankdatei samt den Ordnern für Sicherungen und Importe, die Adresse dieser Online-Dokumentation, die Schnittstellen für Klimadaten und Geokodierung, die Farben der Diagramme und die Vorgaben des Berichts fest. Unter ''Anwendung'' lässt sich der Hilfe-Assistent vollständig abschalten; ''Standardwerte wiederherstellen'' setzt alle Werte auf die Voreinstellung zurück. Die Rubriken im Einzelnen beschreibt [[Programm Dokumentation/Einstellungen|Programm-Dokumentation: Einstellungen]].
 
 {{Tipp|Vor dem ersten Projekt lohnt ein Blick in {{Menü|Administration|Einstellungen}}.}}
 
 == Sprache ==
 {{Anker|sprache|deutsch-englisch}}
 
-Die Bedienoberfläche steht in Deutsch und Englisch zur Verfügung, umschaltbar über das Hauptmenü.
+Die Bedienoberfläche steht in Deutsch und Englisch zur Verfügung, umschaltbar über das Menü ''Sprache'' rechts in der Menüleiste.
 
-{{Hinweis|Ein Wechsel startet das Programm neu, damit alle Beschriftungen übernommen werden.}}
+{{Hinweis|Ein Wechsel startet das Programm neu, damit alle Beschriftungen übernommen werden. Liegen ungespeicherte Eingaben vor, fragt das Programm vorher nach.}}
 
 == Hilfesystem ==
 {{Anker|hilfesystem|hilfe}}
@@ -27,31 +27,32 @@ Beim Überfahren eines Eingabefelds erscheint ein Kurzhinweis mit Verweis auf da
 === Online-Dokumentation ===
 {{Anker|online-dokumentation|dokumentation}}
 
-Der Menüpunkt {{Menü|Dokumentation}} öffnet diese Seite im Browser.
+Der Menüpunkt {{Menü|Hilfe|Dokumentation}} öffnet diese Online-Dokumentation im Browser. Das ''i'' oben rechts in jeder Maske führt auf die Hilfeseite dieses Dialogs.
 
 === Hilfe-Assistent ===
 {{Anker|hilfe-assistent|assistent|chat}}
 
 Der Hilfe-Assistent beantwortet Fragen in einem Chatfenster; er erkennt, in welchem Programmbereich Sie gerade arbeiten, und durchsucht zunächst die integrierten Hilfetexte.
 
-Sie öffnen ihn über {{Menü|Hilfe|Hilfe-Assistent (KI)}} oder mit '''F1'''. Die lokale Suche ist jederzeit kostenfrei nutzbar und überträgt nichts; für frei formulierte Antworten hinterlegen Sie einen eigenen Zugangsschlüssel. Der Assistent ist ein Zusatzangebot und lässt sich vollständig abschalten — Einzelheiten unter [[Hilfe-Assistent]].
+Sie öffnen ihn über {{Menü|Hilfe|Hilfe-Assistent (KI)…}}, mit '''F1''' oder über die EPOS-Marke rechts neben dem ''i'' oben rechts in jeder Maske. Die lokale Suche ist jederzeit kostenfrei nutzbar und überträgt nichts; für frei formulierte Antworten hinterlegen Sie einen eigenen Zugangsschlüssel. Der Assistent ist ein Zusatzangebot und lässt sich vollständig abschalten — Einzelheiten unter [[Hilfe-Assistent]].
 
 {{Hinweis|titel=Datenschutz|Übertragen werden ausschließlich Hilfetexte, die Frage und der Bereichsname – keine Projekt- oder Kundendaten.}}
 
 == Lizenz ==
 {{Anker|lizenz|lizenzvereinbarung|agb}}
 
-Unter {{Menü|Lizenz}} finden Sie die vollständige Lizenzvereinbarung mit den Allgemeinen Geschäftsbedingungen zum Nachlesen, Drucken und Speichern.
+Unter {{Menü|Hilfe|Lizenz}} finden Sie die vollständige Lizenzvereinbarung mit den Allgemeinen Geschäftsbedingungen zum Nachlesen, Drucken und Speichern.
 
 == Programmstart und Hauptfenster ==
 {{Anker|programmstart-und-hauptfenster|hauptfenster|menueleiste}}
 
-Nach dem Start meldet sich EPOS-Plan mit dem Hauptfenster. In der Kopfzeile stehen Programmname und Version, darunter die Menüleiste mit den Bereichen Projekte, Administration und Hilfe sowie der Sprachumschaltung.
+Nach dem Start meldet sich EPOS-Plan mit dem Hauptfenster. In der Kopfzeile stehen Programmname und Version, darunter die Menüleiste mit den Bereichen Projekt, Administration und Hilfe sowie rechts der Sprachumschaltung.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
 
 * [[Hilfe-Assistent]] – die dritte Ebene des Hilfesystems im Einzelnen
+* [[Programm Dokumentation/Einstellungen|Programm-Dokumentation: Einstellungen]] – die Rubriken des Dialogs im Einzelnen
 * [[Projekt anlegen]] – der zugehörige Schritt im Programmablauf
 * [[Stammdaten und Datenimport]] – Kataloge im Menü Administration und VDI-3805-Import
 * [[Systemvoraussetzungen]] – Windows-Versionen und Internetverbindung

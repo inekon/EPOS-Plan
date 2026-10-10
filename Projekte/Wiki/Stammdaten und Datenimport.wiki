@@ -5,18 +5,15 @@ Die '''Stammdaten''' von EPOS-Plan sind umfangreiche Kataloge, die Ihnen den gr�
 
 Sämtliche Kataloge werden über das Menü {{Menü|Administration}} gepflegt:
 
-* Gebäudetypen und Tagesverteilungen
-* Brauchwasser- und Prozesswärmetypen
-* Stromverbrauchertypen und Stromganglinien
-* Wärmepumpen mit Kennfeldern
-* Heizkessel
-* Pufferspeicher
-* BHKW-Module
-* Solarkollektoren und Kollektorganglinien
-* PV-Module
-* Stromspeicher
-* Klimaregionen
-* Energieträger und Kostenkennwerte
+* {{Menü|Gebäude}} – Gebäude, Gebäudetypen, Baustoffe und Bauteilaufbauten
+* {{Menü|Klimadaten}} – die Klimaregionen
+* {{Menü|Wärme- und Kälteerzeugung}} – Brauchwasserprofile und Brauchwasser-Nutzungsarten; unter ''Profile & Lastgänge'' Wärmebedarf-Lastgang, Prozesswärme, Solarthermie- und PV-Ganglinie und die [[Programm Dokumentation/Betriebskalender|Betriebskalender]]; Heizkessel, BHKW, Wärmepumpen, Kältemaschinen und Solarkollektoren
+* {{Menü|Strombedarf & Speicher}} – Stromverbraucher, Stromganglinie, Stromspeicher und Lastspitzenkappung
+* {{Menü|Energiesysteme}} – PV-Module, Wechselrichter und Pufferspeicher
+* {{Menü|Kosten}} – Kostenverwaltung, Energieträger, Brennstoffe des Projekts, Nutzungsdauern und gesetzliche Parameter ([[Kosten und Energiepreise]])
+* {{Menü|Daten & Import}} – die Importe der Herstellerdaten, dazu ''Katalog-Dubletten prüfen…'' und ''Katalog aktualisieren…''
+
+Die Gerätekataloge im Einzelnen beschreibt [[Programm Dokumentation/Gerätekataloge|Programm-Dokumentation: Gerätekataloge]].
 
 == Schreibschutz werksseitiger Datensätze ==
 {{Anker|schreibschutz-werksseitiger-datensaetze|schreibschutz}}
@@ -31,24 +28,24 @@ Was Sie im Projekt ändern, wirkt sich nie auf den Katalog aus, denn beim Zuordn
 == Profile bearbeiten ==
 {{Anker|profile-bearbeiten|wochenprofil|profileditor}}
 
-Die Wochenprofile mit 168 Stundenwerten lassen sich in einem eigenen Editor tageweise bearbeiten, kopieren und auf alle Tage übertragen; eine Grafik zeigt das Ergebnis unmittelbar. Auch die Tagesverteilungskurven der Gebäudetypen sind als Stundenprofile hinterlegt und können bearbeitet werden.
+Die Wochenprofile mit 168 Stundenwerten lassen sich in einem eigenen Editor tageweise bearbeiten, kopieren und auf alle Tage übertragen; eine Grafik zeigt das Ergebnis unmittelbar. Ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] legt Feiertage und Betriebsferien auf das Wochenprofil eines Bedarfsprofils. Auch die Tagesverteilungskurven der Gebäudetypen sind als Stundenprofile hinterlegt und können bearbeitet werden.
 
 == Import nach VDI 3805 ==
 {{Anker|import-nach-vdi-3805|vdi-3805|herstellerdaten}}
 
-Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Import von Herstellerdatensätzen nach VDI 3805 zur Verfügung, dem Standard für den Austausch von Produktdaten in der technischen Gebäudeausrüstung.
+Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Import von Herstellerdatensätzen nach VDI 3805 zur Verfügung, dem Standard für den Austausch von Produktdaten in der technischen Gebäudeausrüstung. PV-Module lesen Sie aus der CEC-Liste oder aus PVsyst-Dateien (<code>.PAN</code>), Wechselrichter aus der CEC-Liste oder aus <code>.OND</code>-Dateien und Stromspeicher aus der CEC-Liste oder der bslib ein – alle Importe stehen unter {{Menü|Administration|Daten & Import}}.
 
 {{Tipp|Den Pfad zu den VDI-3805-Herstellerdaten legen Sie unter {{Menü|Administration|Einstellungen}} fest.}}
 
 == Klimadaten beziehen ==
 {{Anker|klimadaten-beziehen|klimadaten|ortsliste}}
 
-Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter. Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.
+Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter – weltweit über PVGIS, für Deutschland auch als Testreferenzjahr des DWD ([[Programm Dokumentation/Klimadaten|Programm-Dokumentation: Klimadaten]]). Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.
 
 == Lastgänge einlesen ==
 {{Anker|lastgaenge-einlesen|lastgang|messdaten}}
 
-Ein bereits vorliegender Wärmelastgang kann als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden. Gemessene Stromlastgänge lassen sich importieren und werden je nach Zeitraster – Stunden- oder Viertelstundenwerte – automatisch eingepasst und dem berechneten Profil überlagert.
+Ein bereits vorliegender Wärmelastgang kann als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden. Gemessene Stromlastgänge lassen sich als Text-, CSV- oder Excel-Datei importieren und werden je nach Zeitraster – Stunden- oder Viertelstundenwerte – automatisch eingepasst und dem berechneten Profil überlagert.
 
 Für Wärmepumpen kann außerdem ein Quellentemperaturprofil als CSV-Datei mit Stundenwerten über ein Jahr eingelesen werden.
 
@@ -59,6 +56,7 @@ Für Wärmepumpen kann außerdem ein Quellentemperaturprofil als CSV-Datei mit S
 * [[Klimadaten festlegen]] – der zugehörige Schritt im Programmablauf
 * [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse und Schnittstellen
 * [[Datenexport]] – Ausgabe von Zeitreihen als CSV-Datei
+* [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] – Gebäude aus gbXML- und IFC-Dateien einlesen
 
 {{Navigation Programmfunktionen}}
 

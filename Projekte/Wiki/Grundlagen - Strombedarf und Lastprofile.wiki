@@ -1,21 +1,21 @@
-Neben dem Wärmebedarf ist der zeitliche Verlauf des '''Strombedarfs''' die zweite tragende Randbedingung. Er entscheidet darüber, wie viel Photovoltaikstrom selbst genutzt wird, wie hoch die Stromkennzahl eines BHKW ausfällt und welche Netzbezugsleistung abgesichert werden muss. EPOS-Plan arbeitet dafür mit stündlichen Lastprofilen.
+Neben dem Wärmebedarf ist der zeitliche Verlauf des '''Strombedarfs''' die zweite tragende Randbedingung. Er entscheidet darüber, wie viel Photovoltaikstrom selbst genutzt wird, wie hoch die Stromkennzahl eines BHKW ausfällt und welche Netzbezugsleistung abgesichert werden muss. EPOS-Plan führt ihn als Reihe von 35.040 Viertelstundenwerten.
 
 == Wärme- und Strombedarf ==
 {{Anker|waerme-und-strombedarf}}
 
-Der Wärmebedarf wird nicht als Jahreswert, sondern als Zeitreihe ermittelt. Für jeden Tag des Jahres berechnet EPOS-Plan aus Klimadaten und Gebäudekenngrößen die Tagesheizlast: solare Gewinne über die Fensterflächen, Transmissionsverluste über Wand, Dach, Boden und Fenster, Wärmebrücken, Lüftungsverluste sowie interne Gewinne, jeweils unter Berücksichtigung der Speicherfähigkeit des Baukörpers und der eingestellten Absenkzeiten. Jeder Tageswert wird anschließend über eine dem Gebäudetyp zugeordnete 24-Stunden-Kurve auf Stundenwerte verteilt. Details dazu enthält die Unterseite [[Grundlagen/Wärmebedarfsrechnung|Wärmebedarfsrechnung]].
+Der Wärmebedarf entsteht als Stundenreihe über das ganze Jahr, für Gebäude nach dem Gebäudemodell VDI 6007; Einzelheiten enthält die Unterseite [[Grundlagen/Wärmebedarfsrechnung|Wärmebedarfsrechnung]].
 
-Warmwasser und Prozesswärme werden getrennt geführt, jeweils über Monatsanteile und ein Wochenprofil mit 168 Stundenwerten. Diese Trennung ist wichtig, weil der Warmwasserbedarf den Sommerbetrieb allein bestimmt und für die Auslegung von Wärmepumpe und Speicher oft entscheidender ist als die Heizlast. Der Strombedarf entsteht auf demselben Weg, wird aber intern auf Viertelstunden verfeinert, da Eigenverbrauch und Speicherbewirtschaftung in Stundenmittelwerten systematisch zu günstig ausfallen würden. Gemessene Lastgänge können an beiden Stellen eingelesen werden und ersetzen dann die Profilbildung.
+Warmwasser, Prozesswärme und Strombedarf entstehen aus derselben Profilroutine: zwölf Monatswerte und ein Wochenprofil mit 168 Stundenwerten, gekachelt im Wochentagsraster der Klimaregion. Der Strombedarf wird dabei in ein Viertelstundenraster übertragen, denn Photovoltaik und Stromspeicher bilanzieren Viertelstunde für Viertelstunde; Eigenverbrauch und Speicherbewirtschaftung fielen in Stundenmittelwerten systematisch zu günstig aus. Ein Profil setzt die vier Viertel einer Stunde gleich hoch; echte Viertelstundenspitzen bringt erst ein gemessener Lastgang. Gemessene Lastgänge werden zu den Profilen addiert.
 
 == Profilarten ==
 {{Anker|profilarten}}
 
-Für Wohngebäude genügen in der Regel Standardlastprofile, die nach Jahresverbrauch und Personenzahl skaliert werden. Für Gewerbe, Verwaltung und Industrie sind sie zu grob: Dort prägen Betriebszeiten, Schichtmodelle, Lüftung und Kälteerzeugung den Verlauf weit stärker als das Wetter. EPOS-Plan erlaubt deshalb wahlweise ein hinterlegtes Profil, ein aus Tagesgängen und Wochenprofilen zusammengesetztes Profil oder den direkten Import gemessener Lastgänge.
+Für Wohngebäude genügen in der Regel Standardlastprofile. Der Katalog führt die Standardlastprofile Strom 2025 des BDEW für Haushalt (H25), Gewerbe allgemein (G25) und Landwirtschaft (L25); sie werden auf den Jahresverbrauch der Zuordnung skaliert. Die BDEW-Profile P25 und S25 beschreiben dagegen den Netzbezug eines Haushalts mit PV-Anlage bzw. mit PV-Anlage und Batteriespeicher, nicht seinen Verbrauch. Für Gewerbe, Verwaltung und Industrie sind sie zu grob: Dort prägen Betriebszeiten, Schichtmodelle, Lüftung und Kälteerzeugung den Verlauf weit stärker als das Wetter. EPOS-Plan erlaubt deshalb wahlweise ein hinterlegtes Profil, ein eigenes Profil aus Monatswerten und Wochenprofil oder den Import gemessener Lastgänge. Feiertage und Betriebsferien legt ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] auf das Wochenprofil.
 
 == Gemessene Lastgänge ==
 {{Anker|gemessene-lastgaenge}}
 
-Liegen Viertelstundenwerte des Netzbetreibers vor, sind sie jedem synthetischen Profil vorzuziehen. Auf der Stromseite werden sie im Viertelstundenraster übernommen, für die Wärmeseite auf Stundenwerte verdichtet; in beiden Fällen prüft EPOS-Plan sie auf Lücken, Zeitzonenversatz und Sommerzeitsprünge. Schon ein einzelnes vollständiges Messjahr macht die Bewertung von Eigenverbrauch und Speicher deutlich belastbarer, weil gerade die Mittagsstunden über Erfolg oder Misserfolg einer PV-Anlage entscheiden.
+Liegen Viertelstundenwerte des Netzbetreibers vor, sind sie jedem synthetischen Profil vorzuziehen. Auf der Stromseite werden sie im Viertelstundenraster übernommen, für die Wärmeseite auf Stundenwerte verdichtet; beim Einlesen gleicht EPOS-Plan Schaltjahr, Sommerzeitsprünge und die Zeitstempelkonvention aus und meldet Lücken, negative Werte und Ausreißer. Schon ein einzelnes vollständiges Messjahr macht die Bewertung von Eigenverbrauch und Speicher deutlich belastbarer, weil gerade die Mittagsstunden über Erfolg oder Misserfolg einer PV-Anlage entscheiden.
 
 == Aufteilung in Teilbedarfe ==
 {{Anker|aufteilung-in-teilbedarfe}}
@@ -25,12 +25,12 @@ Sinnvoll ist die Trennung in Grundlast, betriebszeitabhängige Last und temperat
 == Zusätzliche Verbraucher aus der Wärmeseite ==
 {{Anker|zusaetzliche-verbraucher-aus-der-waermeseite}}
 
-Wärmepumpen, Heizstäbe, Umwälzpumpen und Ladeinfrastruktur erzeugen zusätzlichen Strombedarf, der nicht im gemessenen Lastgang enthalten sein muss, wenn die Anlage erst geplant wird. EPOS-Plan bildet diesen Bedarf aus der Simulation heraus und addiert ihn stundenscharf auf das Grundprofil. Erst diese Summe ist die Grundlage für Netzbezug, Lastspitzen und Eigenverbrauchsquote.
+Wärmepumpen, Heizstäbe, Umwälzpumpen und Ladeinfrastruktur erzeugen zusätzlichen Strombedarf, der nicht im gemessenen Lastgang enthalten sein muss, wenn die Anlage erst geplant wird. EPOS-Plan bildet diesen Bedarf in der Simulation: Der Strom der Wärmeerzeuger kommt während der Erzeugerkaskade zum Strombedarf hinzu. Erst diese Summe ist die Grundlage für Netzbezug, Lastspitzen und Eigenverbrauchsquote.
 
 == Lastspitzen und Leistungspreis ==
 {{Anker|lastspitzen-und-leistungspreis}}
 
-Bei Sondervertragskunden bestimmt die höchste Viertelstundenleistung des Jahres den Leistungspreis. Wärmepumpen und Ladepunkte können diese Spitze anheben, Speicher und eine vorausschauende Bewirtschaftung können sie senken. EPOS-Plan weist die Jahreshöchstlast und ihren zeitlichen Auftritt aus, sodass sich Maßnahmen zur Spitzenlastbegrenzung wirtschaftlich bewerten lassen.
+Bei Sondervertragskunden bestimmt die höchste Viertelstundenleistung des Jahres den Leistungspreis. Wärmepumpen und Ladepunkte können diese Spitze anheben, Speicher und eine vorausschauende Bewirtschaftung können sie senken. EPOS-Plan weist die höchste Viertelstundenleistung des Strombedarfs aus; die Auswertung „Lastspitzenkappung (Peak-Shaving)“ sucht zu einem Lastgang und einem Speicher die kleinste erreichbare Netzbezugsspitze, sodass sich Maßnahmen zur Spitzenlastbegrenzung wirtschaftlich bewerten lassen.
 
 == Praxishinweise ==
 {{Anker|praxishinweise}}
@@ -42,6 +42,8 @@ Der Jahresstromverbrauch aus der Abrechnung sollte immer mit der Summe des verwe
 
 * [[Strombedarf erfassen]] – Lastprofile und Stromverbrauch im Programmablauf
 * [[Stammdaten und Datenimport]] – Lastprofilkataloge und Import gemessener Lastgänge
+* [[Programm Dokumentation/Strombedarf]] und [[Programm Dokumentation/Stromverbraucher]] – Dialoge für Stromprofile und Stromverbraucher
+* [[Programm Dokumentation/Berechnung/Strombedarf]] – Rechenweg mit Gleichungen
 
 {{Navigation Grundlagen}}
 

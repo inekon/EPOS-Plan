@@ -962,6 +962,27 @@
   <data name="KFLT_SP_VERWENDET" xml:space="preserve">
     <value>used in project</value>
   </data>
+  <data name="KFLT_VERWENDET_HINWEIS" xml:space="preserve">
+    <value>Used in project</value>
+  </data>
+  <data name="KFLT_VERWENDET_LEGENDE" xml:space="preserve">
+    <value>in project</value>
+  </data>
+  <data name="KFLT_SPALTEN" xml:space="preserve">
+    <value>Columns…</value>
+  </data>
+  <data name="KFLT_SPALTEN_HINWEIS" xml:space="preserve">
+    <value>Choose displayed columns</value>
+  </data>
+  <data name="KFLT_SPALTEN_TITEL" xml:space="preserve">
+    <value>Displayed columns</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD_HINWEIS" xml:space="preserve">
+    <value>Reset column choice to the default display</value>
+  </data>
   <data name="KFLT_SP_VLMAX" xml:space="preserve">
     <value>Flow max</value>
   </data>
@@ -12740,7 +12761,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Return</value>
   </data>
   <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
-    <value>Do you really want to delete this CHP?</value>
+    <value>The catalogue entry "{0}" is deleted for ALL projects. Continue?</value>
   </data>
   <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>This master record is write-protected (ReadOnly) and cannot be deleted.</value>
@@ -50115,19 +50136,19 @@ chart</value>
   <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
     <value>No change</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_KEINE" xml:space="preserve">
     <value>No change.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_FEHLT" xml:space="preserve">
     <value>The record with number {0} was not found. Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPERRT" xml:space="preserve">
     <value>“{0}” is locked. Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
     <value>“{0}”: {1} Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} records saved.</value>
   </data>
   <data name="HZK_LBL_SUMME" xml:space="preserve">
@@ -50837,6 +50858,9 @@ chart</value>
   </data>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Per chiller with part-load calculation the cycling electricity, starts, part-load share, mean part-load ratio and seasonal EER without auxiliary power as “column name=value”; empty without such a chiller.</value>
+  </data>
+  <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier, minimum load and temperature pair of the plant, sinks and time schedule. The minimum load of the module is taken along.</value>
   </data>
   <data name="CHART_DATEI_GANGLINIE" xml:space="preserve">
     <value>{0}_Project_{1}.csv</value>

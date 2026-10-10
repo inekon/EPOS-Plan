@@ -572,10 +572,10 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("overflow: hidden", raster);
 
         string projekt = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--projekt .epos-raster-huelle {");
-        Assert.Contains("flex: 0 1 var(--epos-trenner-hoehe)", projekt);
-        Assert.Contains("min-height: var(--epos-trenner-min)", projekt);
+        Assert.Contains("flex: 0 1 calc(var(--epos-trenner-hoehe) * var(--epos-zeilenskala, 1))", projekt);
+        Assert.Contains("min-height: calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1))", projekt);
         string katalog = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--katalog .epos-raster-huelle {");
-        Assert.Contains("min-height: var(--epos-katalog-min)", katalog);
+        Assert.Contains("min-height: calc(var(--epos-katalog-min) * var(--epos-zeilenskala, 1))", katalog);
         Assert.Contains("max-height: none", katalog);
 
         Assert.Contains("overflow: auto", Stilblock(".epos-zweispalten-satz {"));
@@ -975,5 +975,86 @@ public class ZweispaltenauswahlTests : EposBunitContext
 
         cut.Find(".epos-zweispalten-kopfleiste input[type=search]").Input("Kessel B");
         Assert.StartsWith("1", cut.Find(".epos-zweispalten-kopfleiste .epos-katalog-treffer").TextContent);
+    }
+
+    // =====================================================================
+    // Kompaktstufe und Rollbalken (KB1, Konzept 4.8)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Kompaktstufe ist EINE Skalenebene: Unter 1 200 px Breite oder 800 px Höhe setzt die
+    /// Medienabfrage die Token des Hauses am Dialog mit dem Baustein (und an der
+    /// Kältemaschinenauswahl) neu — Schrift 12 px, Kartentitel 14 px, Berührungsziel 37 px,
+    /// Zeilenskala 46/53 —, keine zweite Kopie der Regeln.
+    /// </summary>
+    [Fact]
+    public void Die_Kompaktstufe_setzt_die_Token_unter_1200_mal_800_px()
+    {
+        string css = Stilblatt();
+        const string abfrage = "@media (max-width: 1199.98px), (max-height: 799.98px) {";
+        int a = css.IndexOf(abfrage, StringComparison.Ordinal);
+        Assert.True(a >= 0, "Die Medienabfrage der Kompaktstufe fehlt");
+        string token = Block(css.Substring(a), ".epos-dialog:has(> .epos-zweispalten),\n    .epos-dialog.epos-kaeltemaschine-admin {");
+        Assert.Contains("--epos-schriftgroesse: 12px", token);
+        Assert.Contains("--epos-schriftgroesse-kartentitel: 14px", token);
+        Assert.Contains("--epos-touchziel: 37px", token);
+        Assert.Contains("--epos-zeilenskala: 0.8679", token);
+        Assert.Contains("font-size: var(--epos-schriftgroesse)", token);
+        // 53 px × Skala = 46 px (Projektzeile), 46 px × Skala = 40 px (Katalogzeile mit Zeilenmaß).
+        Assert.Equal(46, (int)Math.Round(53 * 0.8679));
+        Assert.Equal(40, (int)Math.Round(46 * 0.8679));
+    }
+
+    /// <summary>
+    /// Die Zeilenmaße durchlaufen die Skala: das gesetzte Maß der virtualisierten Liste, der Kasten
+    /// der Zeilenwahl und des Wahlkästchens, die Grenzen der Trennlinie und die Untergrenze des
+    /// Katalogs, die der Wirt über <c>KatalogZeile</c> gibt — die Zahl im Programm bleibt in der
+    /// Normalstufe, das Stilblatt rechnet um.
+    /// </summary>
+    [Fact]
+    public void Die_Zeilenmasse_durchlaufen_die_Zeilenskala()
+    {
+        string css = Stilblatt();
+        Assert.Contains("height: calc(var(--epos-rasterzeile, 53px) * var(--epos-zeilenskala, 1));", css);
+        Assert.Contains("height: calc(46px * var(--epos-zeilenskala, 1) - 1px);", Stilblock(".epos-zeilenzelle {"));
+        Assert.Contains("height: calc(46px * var(--epos-zeilenskala, 1) - 1px);", Stilblock(".epos-kaestchenzelle {"));
+        string raster = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten {");
+        Assert.Contains("calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1) + var(--epos-touchziel) + 18px)", raster);
+
+        // Der Wirt gibt sein Zeilenmaß als Zahl der Normalstufe; die Untergrenze skaliert im Stilblatt.
+        IRenderedComponent<Zweispaltenauswahl> cut = Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.KatalogZeile, 46)
+            .Add(x => x.Rechts, (RenderFragment)(b => b.AddMarkupContent(0, "<p>K</p>"))));
+        Assert.Contains("--epos-katalog-min: 147px", Stil(cut));
+        Assert.Contains("min-height: calc(var(--epos-katalog-min) * var(--epos-zeilenskala, 1))",
+            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--katalog .epos-raster-huelle {"));
+    }
+
+    /// <summary>
+    /// Der Rollbalken gilt nur unter der Mindesthöhe: Der Baustein steht im eigenen Fenster auf der
+    /// gemessenen Summe seiner Untergrenzen (--epos-zweispalten-min), und allein der Dialog mit
+    /// <c>data-zweispalten-eng</c> rollt senkrecht. Die Klemme auf eine Katalogzeile gilt nur in
+    /// der Normalstufe, die aufgeklappte Detailzeile hat eine Obergrenze.
+    /// </summary>
+    [Fact]
+    public void Der_Dialogkoerper_rollt_nur_unter_der_Mindesthoehe()
+    {
+        string css = Stilblatt();
+        Assert.Contains("min-height: var(--epos-zweispalten-min, 0px)", Block(css, "#app > .epos-dialog > .epos-zweispalten {"));
+        string eng = Block(css, "#app > .epos-dialog[data-zweispalten-eng]:has(> .epos-zweispalten) {");
+        Assert.Contains("overflow-y: auto", eng);
+        Assert.Contains("overflow-x: hidden", eng);
+        Assert.Contains("@media (min-width: 1200px) and (min-height: 800px) {\n    @container katalogauswahl (max-height: 599px)", css);
+        Assert.Contains("max-height: var(--epos-satz-max, 45vh)",
+            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {"));
+
+        // Das Skript misst und schaltet; es traegt keine Pixelzahl der Zeilen.
+        string js = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-zweispalten.js"));
+        Assert.Contains("export function mindesthoehe(wurzel)", js);
+        Assert.Contains("\"--epos-zweispalten-min\"", js);
+        Assert.Contains("\"data-zweispalten-eng\"", js);
+        Assert.Contains("--epos-zeilenskala", js);
+        Assert.DoesNotContain("53", js);
+        Assert.DoesNotContain("46", js);
     }
 }

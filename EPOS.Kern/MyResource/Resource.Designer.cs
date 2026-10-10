@@ -5748,7 +5748,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das BHKW löschen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag &quot;{0}&quot; wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
         /// </summary>
         public static string BHKWV_FRAGE_LOESCHEN {
             get {
@@ -6032,6 +6032,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKW_INVEST_JEKW_FELD {
             get {
                 return ResourceManager.GetString("BHKW_INVEST_JEKW_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit. ähnelt.
+        /// </summary>
+        public static string BHKW_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("BHKW_RUECK_BLEIBT", resourceCulture);
             }
         }
         
@@ -41745,51 +41754,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_FEHLT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_GESPEICHERT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPEICHERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_GESPERRT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPERRT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_KEINE {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_KEINE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_VERSTOSS {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_VERSTOSS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage. ähnelt.
         /// </summary>
         public static string HZK_RUECK_BLEIBT {
@@ -48873,6 +48837,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_FEHLT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_KEINE {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_VERSTOSS {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_VERSTOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger: ähnelt.
         /// </summary>
         public static string KAUSW_LBL_ENERGIETRAEGER {
@@ -51754,6 +51763,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalten… ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angezeigte Spalten wählen ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_STANDARD {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spaltenwahl auf die Standardanzeige zurücksetzen ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_STANDARD_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_STANDARD_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angezeigte Spalten ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_TITEL {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die A_ap ähnelt.
         /// </summary>
         public static string KFLT_SP_APERTUR {
@@ -52542,6 +52596,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_VERGLEICH_TITEL {
             get {
                 return ResourceManager.GetString("KFLT_VERGLEICH_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt verwendet ähnelt.
+        /// </summary>
+        public static string KFLT_VERWENDET_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_VERWENDET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Projekt ähnelt.
+        /// </summary>
+        public static string KFLT_VERWENDET_LEGENDE {
+            get {
+                return ResourceManager.GetString("KFLT_VERWENDET_LEGENDE", resourceCulture);
             }
         }
         

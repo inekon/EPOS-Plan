@@ -1,6 +1,6 @@
 # KIF9 — Setzer der Erzeugermasken im Hilfe-Assistenten (Protokoll, 10.10.2026)
 
-Statuszeile #885 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzepte
+Statuszeile #890 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzepte
 [`Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](../../../aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)
 (Abschnitt 3.4) und [`Konzept_KI-Assistent_Aufgabensteuerung.md`](../../../aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md)
 (Abschnitte 4.5 und 5.2); Vorgänger [`KIF1_Erzeugermasken_Protokoll.md`](KIF1_Erzeugermasken_Protokoll.md) und
@@ -56,7 +56,7 @@ Hilfe-Assistenten nichts geschehen.
 `Erzeugerzeile_ohne_Zeile_lehnt_benannt_ab` (2) sowie `Photovoltaik_Setzen_uebernimmt_und_ohne_Zeile_lehnt_es_ab`,
 `Solarkollektoren_ohne_Zeile_lehnt_benannt_ab`, `Ohne_Daten_Objekt_lehnt_das_Setzen_benannt_ab`.
 Build Kern-Filter 0 Fehler; KI-Tests 1 651 grün (EPOS.UI.Tests 626, EPOS.Kern.Tests 475, KiKern.Tests 549,
-SpeicherEngine.Tests 1), Dialogtests der betroffenen Masken 549 grün. Gate 885: ⟨Zahlen folgen⟩.
+SpeicherEngine.Tests 1), Dialogtests der betroffenen Masken 549 grün. Gate 890 auf `fe566191` grün: Kern-Build 0 Fehler, ChartProben alle grün (222 Hashes gleich der Messlatte 2026-10-09), Tests 21 947 grün, 0 rot (EPOS.Kern.Tests 12 883 + 7 übersprungen, EPOS.UI.Tests 8 091, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen), Dokumentationswachen 35 grün, Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz, CSV byte-gleich 911 von 911), Plattformnachweis PASS.
 
 ## Offen
 
@@ -76,5 +76,5 @@ SpeicherEngine.Tests 1), Dialogtests der betroffenen Masken 549 grün. Gate 885:
 
 ## Verweise
 
-Statuszeile #885 und Nach #885; Konzepte Dialogintegration 3.4 und Aufgabensteuerung 4.5/5.2 (siehe oben); Wiki-Quelle
+Statuszeile #890 und Nach #890; Konzepte Dialogintegration 3.4 und Aufgabensteuerung 4.5/5.2 (siehe oben); Wiki-Quelle
 `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` (Upload mit dem nächsten Sammel-Upload).

@@ -145,7 +145,7 @@ public class KatalogfilterS3Tests : EposBunitContext
 
         // Wahl + vier Profilspalten + "im Projekt verwendet"; die "Auslieferung" ist
         // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
-        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
 
         Katalogfilterzeile verwendet =
             cut.Instance.Katalog.First(z => z.Bezeichner == "Haushalt-3");
@@ -156,6 +156,11 @@ public class KatalogfilterS3Tests : EposBunitContext
             cut.Instance.Katalog.First(z => z.Bezeichner != "Haushalt-3");
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_NEIN,
                      frei.Text(Katalogfilterprofil.SpVerwendet));
+
+        // Die Marke (4.10) liest das Kennzeichen der Zeile.
+        Assert.True(verwendet.ImProjekt);
+        Assert.False(frei.ImProjekt);
+        Assert.Single(cut.FindAll(".epos-katalogliste tbody .epos-verwendet-marke"));
     }
 
     // =====================================================================
@@ -252,7 +257,7 @@ public class KatalogfilterS3Tests : EposBunitContext
                  Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        Assert.Equal(6, strom.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, strom.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
 
         var solar = Render<SolarganglinieDialog>(p => p
             .Add(x => x.Zeilen, new List<ErzeugerZeile>())
@@ -268,6 +273,6 @@ public class KatalogfilterS3Tests : EposBunitContext
                  Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        Assert.Equal(6, solar.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Equal(5, solar.FindAll(".epos-katalogliste thead th").Count);   // „im Projekt verwendet“ standardmaessig aus (4.10)
     }
 }
