@@ -693,4 +693,28 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.DoesNotContain(leer.Schalter, s => s.Name == NAME);
         Assert.DoesNotContain(NAME, ohne.Markup);
     }
+
+    /// <summary>
+    /// CSV am Diagramm: Das Produktionsbild führt den benannten Export der Wärmepumpe in seiner
+    /// Zoomleiste (Vorrang vor der Naht); die Streuwolke (x = Temperatur) bekommt keinen Knopf, und
+    /// am Seitenende steht keiner mehr.
+    /// </summary>
+    [Fact]
+    public void Der_Waermepumpenexport_steht_am_Produktionsbild()
+    {
+        int gerufen = 0, naht = 0;
+        var seite = Render<WaermepumpeReiter>(p => p
+            .Add(x => x.Daten, Erg())
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Csv, EventCallback.Factory.Create(this, () => gerufen++))
+            .AddCascadingValue(new Ganglinienexport((m, t) => { naht++; return Task.CompletedTask; })));
+
+        var knoepfe = seite.FindAll("button.epos-diagramm-csv");
+        Assert.Single(knoepfe);
+        knoepfe[0].Click();
+
+        Assert.Equal(1, gerufen);
+        Assert.Equal(0, naht);
+        Assert.Empty(seite.FindAll("button.epos-simerg-knopf[title]"));
+    }
 }

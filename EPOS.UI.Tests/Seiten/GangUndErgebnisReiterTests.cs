@@ -980,4 +980,28 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.True(gefunden >= 3, $"nur {gefunden} Mehrfachauswahl gefunden");
         Assert.Empty(ohne);
     }
+
+    /// <summary>
+    /// CSV am Diagramm: Der Kältegang trägt „CSV…“ über die Naht der Kaskade; der Klick gibt das
+    /// gezeigte Modell samt Titel weiter, der Schreiber macht daraus Kopf plus je Stützstelle eine Zeile.
+    /// </summary>
+    [Fact]
+    public void Kaeltegang_traegt_CSV_am_Diagramm()
+    {
+        var exporte = new List<(Zeichenmodell Modell, string Titel)>();
+        var naht = new Ganglinienexport((m, t) => { exporte.Add((m, t)); return Task.CompletedTask; });
+        var seite = Render<KaeltegangReiter>(p => p
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Gedaechtnis, _kaelteStand)
+            .AddCascadingValue(naht));
+
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        Assert.Single(exporte);
+        IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(exporte[0].Modell);
+        Assert.NotEmpty(spalten);
+        string[] zeilen = ZeitreihenCsv.Text(ZeitreihenCsv.RasterAus(spalten), spalten)
+                                       .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(spalten.Max(s => s.Werte.Length) + 1, zeilen.Length);
+    }
 }
