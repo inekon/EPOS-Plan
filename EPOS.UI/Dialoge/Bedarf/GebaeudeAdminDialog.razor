@@ -86,6 +86,12 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+
     <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
@@ -547,6 +553,9 @@
     private GebaeudeKatalogDaten? _geladen;
 
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
     /// <summary>
     /// Die Statuszeile der Fußleiste. Jede Zuweisung ist eine Erfolgs- oder neutrale
@@ -817,7 +826,7 @@
     /// <summary>Lädt die Liste neu; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
     public void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         _sperren.Clear();
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
@@ -1545,7 +1554,8 @@
     {
         _katalogGaben = null;
 
-        IReadOnlyList<Katalogfilterzeile> zeilen = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        // Wirft die Liste, nennt KatalogLaden den Grund gleich darauf; hier genügt die leere Liste.
+        IReadOnlyList<Katalogfilterzeile> zeilen = Katalogladung.Lesen(Katalogzeilen, TitelText, out _);
         Katalogfilterzeile? angelegt = zeilen.FirstOrDefault(z => !_vorNeu.Contains(z.Schluessel));
         if (angelegt is not null) _gewaehlt = angelegt.Schluessel;
         KatalogLaden();

@@ -95,6 +95,12 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+
     @if (MitRechenweg)
     {
         @* ZU4: die Weiche des Brauchwasserkanals, sichtbar und umschaltbar. *@
@@ -705,6 +711,9 @@
     private IReadOnlyDictionary<string, object>? _ergebnisGaben;
     private IReadOnlyDictionary<string, object>? _typStammGaben;
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
     private IReadOnlyDictionary<string, object>? _zapfprofilGaben;
     private ZapfprofilWeg _rechenweg = ZapfprofilWeg.Bestand;
@@ -928,7 +937,7 @@
 
     private void KatalogLaden()
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
         VerwendungStempeln();
 
         if (_katalogzeile is null) return;

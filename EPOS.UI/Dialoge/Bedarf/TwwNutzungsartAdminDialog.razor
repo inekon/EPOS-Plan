@@ -53,6 +53,12 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" Kennung="@_kennung" />
     }
 
+    @* KT-4: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+
     <Katalograhmen BlattOffen="@_blattOffen" Gestapelt="true">
         <Liste>
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog" Filterstand="@_filterstand" Texte="@Filtertexte"
@@ -418,6 +424,9 @@
     private TwwNutzungsartDetailDaten? _detail;
     private bool _blattOffen;
     private string _meldung = "";
+
+    /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
+    private string _listeFehler = "";
     private string _kennung = "";
     private string _status = "";
 
@@ -512,7 +521,7 @@
     /// </summary>
     private void KatalogLaden(int ziel)
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, Texte.Titel, out _listeFehler);
         string schluessel = ziel > 0 ? ziel.ToString(CultureInfo.InvariantCulture) : _gewaehlt;
         if (_katalog.All(z => z.Schluessel != schluessel)) schluessel = _katalog.Count > 0 ? _katalog[0].Schluessel : "";
         Waehlen(schluessel);
