@@ -1454,11 +1454,127 @@ public class SolarkollektorenDialogTests : EposBunitContext
     public void S3a_Esc_schliesst_nicht_bei_offener_Satzbearbeitung()
     {
         bool? ergebnis = null;
-        var cut = Aufbauen(projektsatzWege: Wege(), geschlossen: b => ergebnis = b);
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "A", 100), Zeile(2, "B", 101) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(), geschlossen: b => ergebnis = b);
+        ProjektAnkreuzen(cut, 0, 1);
         cut.Find(".epos-knopf--bearbeiten-projekt").Click();
         Assert.NotNull(cut.Instance.Bearbeitung);
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(ergebnis);
+    }
+
+    // =================================================================================
+    // UeS1: Satz-Ueberlagerung in voller Hoehe
+    // =================================================================================
+
+    private const string FeldImKoerper = ".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])";
+
+    /// <summary>UeS1: „Bearbeiten…" EINER Projektkopie öffnet die Satz-Überlagerung, keine Satzbearbeitung.</summary>
+    [Fact]
+    public void UeS1_Bearbeiten_einer_Projektkopie_oeffnet_die_Satzueberlagerung()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("Vitosol 200", cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-titel").TextContent);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke").TextContent);
+        Assert.Single(cut.FindAll(".epos-modulparameter"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-modulparameter"));
+        // OK der Ueberlagerung speichert und uebernimmt - keine zweiten Knoepfe im Koerper.
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-speichervermerk"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-knopf--uebernehmen-anlage"));
+    }
+
+    /// <summary>UeS1: OK schreibt die Projektkopie und übernimmt die geänderten Anlagenfelder.</summary>
+    [Fact]
+    public void UeS1_OK_schreibt_die_Projektkopie_und_uebernimmt_die_Anlage()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var uebernommen = new List<ErzeugerZeile>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Vitosol 200", 100) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(gespeichert), uebernehmen: uebernommen.Add);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(FeldImKoerper).Input("Röhre");
+        cut.Find(".epos-satzueberlagerung-koerper .epos-gruppenkopf-koerper").QuerySelectorAll("input")[0].Input("6");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        var satz = Assert.Single(gespeichert);
+        Assert.Equal(100, satz.Id);
+        Assert.Equal("Röhre", satz.Felder.First(f => f.Schluessel == KatalogBrowserProfil.FeldKollektortyp).Wert);
+        Assert.Single(uebernommen);
+        Assert.Equal(6, zeilen[0].AnzahlModule);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-modulparameter"));
+    }
+
+    /// <summary>UeS1: Wirft der Speicherweg, bleibt die Überlagerung mit dem Grund offen; die Anlage bleibt unberührt.</summary>
+    [Fact]
+    public void UeS1_Ein_werfender_Speicherweg_haelt_die_Satzueberlagerung_offen()
+    {
+        var uebernommen = new List<ErzeugerZeile>();
+        var wege = new Satzbearbeitungswege
+        {
+            Lesen = _ => Katalogfelder("Satz"),
+            Speichern = _ => throw new InvalidOperationException("Datenbank gesperrt")
+        };
+        var cut = Aufbauen(projektsatzWege: wege, uebernehmen: uebernommen.Add);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(FeldImKoerper).Input("Röhre");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.False(string.IsNullOrWhiteSpace(cut.Find(".epos-satzueberlagerung-fuss [role=alert]").TextContent));
+        Assert.Equal("Röhre", cut.Find(FeldImKoerper).GetAttribute("value"));
+        Assert.Empty(uebernommen);
+    }
+
+    /// <summary>UeS1: Abbrechen verwirft die Feldänderung und stellt die Anlagenfelder wie beim Öffnen her.</summary>
+    [Fact]
+    public void UeS1_Abbrechen_verwirft_Feld_und_stellt_die_Anlagenfelder_her()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var uebernommen = new List<ErzeugerZeile>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Vitosol 200", 100) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(gespeichert), uebernehmen: uebernommen.Add);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(FeldImKoerper).Input("Röhre");
+        cut.Find(".epos-satzueberlagerung-koerper .epos-gruppenkopf-koerper").QuerySelectorAll("input")[0].Input("6");
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+
+        Assert.Empty(gespeichert);
+        Assert.Empty(uebernommen);
+        Assert.Equal(4, zeilen[0].AnzahlModule);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("4", cut.Find(".epos-zweispalten-satz .epos-gruppenkopf-koerper").QuerySelectorAll("input")[0].GetAttribute("value"));
+        Assert.Equal("Flach", cut.Find(".epos-zweispalten-satz .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
+    }
+
+    /// <summary>UeS1: Ein gesperrter Katalogsatz allein öffnet die Satz-Überlagerung nur lesend.</summary>
+    [Fact]
+    public void UeS1_Ein_gesperrter_Katalogsatz_oeffnet_die_Ueberlagerung_nur_lesend()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(), katalog: () => MitSchloss(11),
+                           katalogfelder: Katalogfelder, felderSpeichern: (_, _) => new KatalogSpeicherErgebnis(true, "ok", ""),
+                           editorGaben: (n, b) => new Dictionary<string, object>());
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        Assert.False(cut.Instance.EditorOffen);
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper input[type=text]:not([readonly])"));
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
     }
 }
