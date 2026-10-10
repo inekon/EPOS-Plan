@@ -1,0 +1,42 @@
+﻿@page "/tabellenprobe"
+@using EPOS.UI.Seiten.Simulation
+
+@*  DIE PRUEFSEITE DER ERGEBNISTABELLEN (Auftrag TA, Reiter Waermepumpe).
+
+    WOZU. Die Koepfe der Modul- und der Speichertabelle standen links ueber
+    breiten Spalten, die Werte rechts am Zellenrand - Kopf und Wert lagen nicht
+    uebereinander. bunit hat kein Layout; diese Seite stellt den echten
+    WaermepumpeReiter mit einem Modul und zwei Speichern in den Groessen des
+    Anwenderbilds, damit tabellenprobe.mjs je Zahlenspalte den rechten Rand des
+    Kopftexts gegen den des Werts messen kann. Die Breite des Rahmens setzt die
+    Probe per Skript (#tabellenprobe-rahmen). *@
+
+<div id="tabellenprobe-rahmen" style="width: 100%; box-sizing: border-box;">
+    <WaermepumpeReiter Daten="@_daten" />
+</div>
+
+@code {
+    private readonly SimulationErgebnisCtrl.WaermepumpeErgebnis _daten = Bauen();
+
+    private static SimulationErgebnisCtrl.WaermepumpeErgebnis Bauen()
+    {
+        var e = new SimulationErgebnisCtrl.WaermepumpeErgebnis
+        {
+            DeckungProzent = 98.5,
+            StufeneingangMwh = 70.9,
+            RestwaermeMwh = 1.03,
+            StromverbrauchMwh = 17.14,
+            HeizstabStromverbrauchMwh = 0.72,
+            WaermeproduktionMwh = 69.87,
+            Vollbenutzungsstunden = 1979.09,
+            MinSpkLeistungKw = 12.5,
+            PufferVolumenKwh = 23.2
+        };
+        e.Module.Add(new SimulationErgebnisCtrl.WpModulZeile("Wärmepumpe 1", 35.0, 69.87, 17.14, 0.72, 1979.09));
+        e.Puffer.Add(new SimulationErgebnisCtrl.PufferZeile(
+            "Pufferspeicher 1", "Heizung", 23.2, 1520.0, 1490.0, 30.0, 64.2, 41.5, false));
+        e.Puffer.Add(new SimulationErgebnisCtrl.PufferZeile(
+            "Pufferspeicher 2", "Trinkwasser", 11.6, 845.0, 830.0, 15.0, 71.6, 63.0, false));
+        return e;
+    }
+}

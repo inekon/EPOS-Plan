@@ -98,8 +98,6 @@ public sealed class KiMaskenabdeckungWacheTests
         // SimulationSeite; die Tafel kennt einen Wirt je Kind, hier steht der Hauptwirt.
         new("SpeicherFlottenGroessenAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("SpeicherFlottenErgebnisAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
-        // Die Zeitstufe des Grafikreiters ist das Feld „zeitstufe" des Ergebnisdialogs.
-        new("BedarfGangGrafik",               "BedarfErgebnisDialog",        KiMaskennamen.BEDARF_ERGEBNIS),
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
@@ -297,8 +295,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),
-        new("BedarfErgebnisDialog", 4),
-        new("BedarfGangGrafik", 1, "die Zeitstufe ist das Feld „zeitstufe“ des Wirts; der Navigator bleibt ein Knopf"),
+        new("BedarfErgebnisDialog", 2, "die Knopfgruppen Bedarfsart und Zeitraster des Grafikreiters sind Schaltknöpfe; der Assistent setzt sie über „grafiksicht“, „jahresverlauf“ und „zeitstufe“"),
         new("BedarfReiter", 3),
         // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
         new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),

@@ -1229,4 +1229,37 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.StartsWith("11 ", wert.Text);
         Assert.Equal("11", wert.Schluessel);
     }
+
+    /// <summary>
+    /// <b>„CSV…“ am Jahresgang</b> (CSV-3): Mit dem Delegat der Hülle trägt die Vorschau den
+    /// Knopf; der Klick gibt das gezeigte Modell an die Naht — 8 760 Stundenwerte, Raster Stunde.
+    /// Ohne Delegat kein Knopf.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresgang_schreibt_CSV_ueber_die_Naht()
+    {
+        Func<double[], double[]?, double[]?, Task<Zeichenmodell?>> zeichner = (quelle, _, _) =>
+            Task.FromResult<Zeichenmodell?>(ChartRenderer.JahresgangModell("Jahresgang",
+                new[] { new ChartRenderer.Reihe("Quelltemperatur", quelle, ChartRenderer.C_QUELLTEMPERATUR) },
+                "Monat", "Quelltemperatur [°C]"));
+
+        var ohne = Zeige(Kollektor(), modell: zeichner);
+        ohne.WaitForAssertion(() => Assert.NotNull(ohne.FindComponent<DiagrammSvg>().Instance.Modell));
+        Assert.Empty(ohne.FindAll("button.epos-diagramm-csv"));
+
+        var exporte = new List<(Zeichenmodell M, string T, Zeitraster R)>();
+        var cut = Render<QuelleErdreichDialog>(p =>
+        {
+            p.Add(x => x.Daten, Kollektor());
+            p.Add(x => x.Lauf, ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
+            p.Add(x => x.Jahresgangmodell, zeichner);
+            p.Add(x => x.CsvSpeichern, (m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        });
+        cut.WaitForAssertion(() => Assert.NotNull(cut.FindComponent<DiagrammSvg>().Instance.Modell));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, _, r) = Assert.Single(exporte);
+        Assert.Equal(8760, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+        Assert.Equal(Zeitraster.Stunde, r);
+    }
 }

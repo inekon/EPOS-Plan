@@ -1,4 +1,4 @@
-@* DIE GROESSEN-SICHT DER SPEICHERFLOTTE (Auftrag #193, Paket P4 des Konzepts
+﻿@* DIE GROESSEN-SICHT DER SPEICHERFLOTTE (Auftrag #193, Paket P4 des Konzepts
    „Stromspeicher-Dialoge", Abschnitt 2.5).
 
    DER BEFUND, DER SIE VERLANGT (Konzept 1.5/1.6): Die Rastersuche gibt es seit
@@ -131,14 +131,14 @@
             @if (_stueckmodell is not null)
             {
                 <section class="epos-simerg-block">
-                    <DiagrammSvg Modell="@_stueckmodell" Kennung="flotte-stueckzahl"
+                    <DiagrammSvg Modell="@_stueckmodell" Kennung="flotte-stueckzahl" CsvExport="@CsvVergleich"
                                  Bezeichnung="@Resource.FLOTTE_STUECK_BILD_ALT" />
                 </section>
             }
             else if (_stueckrastermodell is not null)
             {
                 <section class="epos-simerg-block">
-                    <DiagrammSvg Modell="@_stueckrastermodell" Kennung="flotte-stueckraster"
+                    <DiagrammSvg Modell="@_stueckrastermodell" Kennung="flotte-stueckraster" CsvExport="@CsvVergleich"
                                  Bezeichnung="@Resource.FLOTTE_STUECK_RASTER_ALT" />
                 </section>
             }
@@ -178,6 +178,7 @@
                            wo sie gesperrt ist (DG-E3-10). Die Kennung traegt die
                            gewaehlte Einheit: Deren Karte ist eine andere. *@
                         <DiagrammSvg Modell="@_rastermodell" Kennung="@("flotte-raster-" + Einheitenkennung)"
+                                     CsvExport="@CsvVergleich"
                                      Bezeichnung="@Rasterbeschreibung" />
                     </section>
 
@@ -380,9 +381,11 @@
             <p class="epos-katalog-leer">@Resource.FLOTTE_GROESSEN_KEIN_TREFFER</p>
         }
 
-        @if (Csv.HasDelegate)
+        @if (Csv.HasDelegate && !VergleichAmBild)
         {
-            @* Der CSV-Export fuehrt ALLE Kandidaten, nicht die gefilterten: Der Filter
+            @* "CSV..." STEHT AM BILD (Stueckzahl, Stueckraster, Rasterkarte); allein ohne Bild
+               (kein Raster) bleibt dieser Knopf, sonst ginge der Export verloren.
+               Der CSV-Export fuehrt ALLE Kandidaten, nicht die gefilterten: Der Filter
                ist eine Lesehilfe fuer die Tabelle, die Datei eine Ausleitung des Laufs.
                Den TEXT baut der Wirt (SpeicherFlottenAnzeigeCtrl.VergleichCsv braucht
                den ganzen Flottenlauf, nicht nur das Rasterergebnis) — hier steht nur
@@ -427,6 +430,15 @@
     /// Wirt, weil er den ganzen Flottenlauf kennt und nicht nur das Rasterergebnis.
     /// </summary>
     [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>„CSV…“ am Bild der Suche: derselbe Variantenvergleich wie der Knopf darunter.</summary>
+    private EventCallback CsvVergleich => Csv.HasDelegate
+        ? EventCallback.Factory.Create(this, () => Csv.InvokeAsync()) : default;
+
+    /// <summary>Trägt ein Bild der Suche den Export? Dann entfällt der Knopf unter der Tabelle.</summary>
+    private bool VergleichAmBild => Methode == FlottenSuchmethode.Stueckzahl
+        ? _stueckmodell is not null || _stueckrastermodell is not null
+        : _raster is not null && !_raster.IstLeer;
 
     // --- Prüfhilfen der Tests -------------------------------------------------
 

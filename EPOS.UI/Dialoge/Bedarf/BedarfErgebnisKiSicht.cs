@@ -48,13 +48,13 @@ public sealed class BedarfErgebnisKiSicht
     public Action<int?>? ZeitstufeSetzen { get; init; }
     public Func<IReadOnlyList<KiWahleintrag>>? ZeitstufeEintraege { get; init; }
 
-    /// <summary>Die Wahl des Feldes <c>Zeitstufe</c>: Jahr, Woche, Tag.</summary>
+    /// <summary>Die Wahl des Feldes <c>Zeitstufe</c>: das Zeitraster Jahr, Monat, Woche, Tag.</summary>
     public IReadOnlyList<KiWahleintrag> ZeitstufeWahl
         => ZeitstufeEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     /// <summary>
-    /// Die Zeitstufe der GRAFIK (Jahr, Woche, Tag) — ein Schalter des Kindes
-    /// <c>BedarfGangGrafik</c>; <c>null</c>, solange der Grafikreiter keine Reihe zeichnet.
+    /// Das Zeitraster der GRAFIK (Jahr, Monat, Woche, Tag) — die zweite Knopfgruppe des
+    /// Grafikreiters; <c>null</c>, solange der Grafikreiter keine Reihe zeichnet.
     /// </summary>
     public int? Zeitstufe
     {

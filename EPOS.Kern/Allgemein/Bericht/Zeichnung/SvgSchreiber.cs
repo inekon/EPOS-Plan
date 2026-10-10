@@ -995,6 +995,39 @@ namespace WindowsFormsApplication1.Zeichnung
             return ab + stunden[s];
         }
 
+        /// <summary>
+        /// <b>Alle Stufen des Ausschnitts auf einmal</b> (Auftrag GX): je Stufe ihre linke
+        /// Grenze auf der x-Achse und der Index der Spitzenstunde in <c>reihe.Werte</c> —
+        /// dieselbe Rechnung wie <see cref="Stufenstunde(Datenreihe, Zeichenflaeche, double, double, double)"/>,
+        /// nur nicht je Zeigerstelle. Die Oberfläche gibt die Tafel einmal je Zeichnen an ihr
+        /// Zeigermodul, das die Stufe unter dem Zeiger dann ohne Rundlauf findet.
+        /// <c>null</c>, wenn die Reihe im Ausschnitt nicht in Stufen steht.
+        /// </summary>
+        public static IReadOnlyList<(double Links, int Index)> Stufentafel(Datenreihe reihe, Zeichenflaeche flaeche,
+                                                                          double von, double bis)
+        {
+            if (!Stufenlage(reihe, flaeche, von, bis, out Datenfenster rf, out int ab, out int biss,
+                            out int laenge, out int spalten))
+                return null;
+            double schritt = (rf.XBis - rf.XVon) / (reihe.Werte.Length - 1);
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(reihe.Werte.Length, ab, laenge, spalten);
+            if (stufen.Count == 0) return null;
+            int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(reihe), ab, laenge), stufen);
+            double x0 = XStelle(reihe, rf, schritt, ab);
+            double breite = XStelle(reihe, rf, schritt, biss) - x0;
+            var tafel = new List<(double Links, int Index)>(stufen.Count);
+            for (int s = 0; s < stufen.Count; s++)
+                tafel.Add((x0 + stufen[s].Links * breite, ab + stunden[s]));
+            return tafel;
+        }
+
+        /// <summary>Die Stufentafel des Vollpfads der Reihe.</summary>
+        public static IReadOnlyList<(double Links, int Index)> Stufentafel(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? null : Stufentafel(reihe, flaeche, rf.XVon, rf.XBis);
+        }
+
         /// <summary>Dasselbe für den Vollpfad der Reihe.</summary>
         public static int Stufenstunde(Datenreihe reihe, Zeichenflaeche flaeche, double x)
         {

@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using EPOS.UI.Seiten.Simulation;
@@ -200,6 +201,33 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
     /// Fällt eine angehakte Variante aus der Vergleichsgruppe, bleibt die verbliebene
     /// angehakt und das Bild zeichnet sie.
     /// </summary>
+    /// <summary>
+    /// CSV am Bild (CSV-2): Mit der Jahresnaht der Wirtschaftlichkeitsseite (Raster „Jahr“) trägt
+    /// der Kapitalwertverlauf „CSV…“; der Export bekommt das gezeigte Modell, je Reihe
+    /// Betrachtungsjahr 0 bis 20 (21 Zeilen), und schreibt die erste Spalte „Jahr“.
+    /// </summary>
+    [Fact]
+    public void Der_Verlauf_traegt_CSV_mit_dem_Raster_Jahr()
+    {
+        var huelle = new Huellenattrappe();
+        huelle.Gruppe.AddRange(new[] { (WP, "mit PV"), (BHKW, "mit Stromspeicher") });
+        var exporte = new List<(Zeichenmodell M, Zeitraster R)>();
+        var naht = new Ganglinienexport((m, t, r) => { exporte.Add((m, r)); return Task.CompletedTask; },
+                                        Zeitraster.Jahr);
+        var cut = Render<KapitalwertVerlaufAbschnitt>(p => p
+            .Add(x => x.Dienste, huelle.Dienste())
+            .AddCascadingValue(naht));
+
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, r) = Assert.Single(exporte);
+        Assert.Equal(Zeitraster.Jahr, r);
+        var spalten = ZeitreihenCsv.AusModell(m);
+        Assert.NotEmpty(spalten);
+        Assert.Equal(21, spalten.Max(s => s.Werte.Length));
+        Assert.StartsWith("Jahr;", ZeitreihenCsv.Text(r, spalten), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void Faellt_eine_Variante_aus_der_Gruppe_bleibt_die_verbliebene_angehakt()
     {

@@ -37,14 +37,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-10-09.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-10-10.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-10-09.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-10-10.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -60,7 +60,7 @@ gegen diese Datei.
 - **Umfang.** Ein Lauf prüft **254 Bilder**; **222** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-09.sha256` nennt alle 222 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-10.sha256` nennt alle 222 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -623,3 +623,17 @@ Das sind drei Maß- und vier Gegenproben — **11 neue Bilder**. Kein Bild von v
 `Messlatte_2026-10-05.sha256` stehen unverändert in `Messlatte_2026-10-09.sha256`, dazu die elf neuen. Die
 Windows-Messliste des Gates (`Werkzeuge/Gate/LIESMICH.md`) ist auf Windows nachzuziehen: elf Zeilen neu, alle übrigen
 gleich.
+
+## Stundenachse mit Datum (Auftrag GX)
+
+Jede Stundenachse eines Zeitreihenbildes nennt unter der Jahresstunde das **Datum des Gemeinjahres** (365 Tage, kein
+Jahr; Stunde 0 = 1. Januar, 00:00), in der Oberflächensprache aus dem Ressourcenkatalog (`CHART_ACHSE_MONATSKUERZEL`,
+`CHART_ACHSE_DATUM_MUSTER`: de „8. Sep.“, en „Sep 8“), bei einem Ausschnitt unter einem Tag dazu die Uhrzeit. Die Regel
+steht einmal in `Zeitachse` (Kern); `ChartRenderer.XAchse`, `XAchseFenster` und die Achsenteilung der Oberfläche
+(`ChartRenderer.Datumszeile`) gehen darüber. Die Datumszeile steht in 13 pt bei `rc.Bottom + 26`, Achsentitel
+(„Jahresstunden [h] · Datum“) und Stufenhinweis rücken um 18 Bildpunkte tiefer. Die Dauerlinie (sortiert) und die
+Monatsachse der Vollansicht bleiben ohne Datum, ebenso Wochen- und Tagesprofile und Kennlinien.
+
+Keine Probe kommt hinzu; **29 Bilder ändern sich bewusst** — alle mit Stundenachse oder Ausschnitt einer
+Jahresreihe: `erzeugerstapel_fenster`, `erzeugerstapel_fenster_a`, `erzeugerstapel_fenster_b`, `erzeugerstapel_solar_zwei_linien`, `ganglinie_normiert_fenster`, `ganglinie_normiert_fenster_a`, `ganglinie_normiert_fenster_b`, `jahresgang_fenster_b`, `jahresverlauf_tag`, `jahresverlauf_tag_fenster_a`, `jahresverlauf_tag_fenster_b`, `jahresverlauf_woche`, `jahresverlauf_woche_fenster_b`, `klimadaten_temperatur_fenster`, `kuehlvorlauf_auslegung_wirkt_a`, `kuehlvorlauf_auslegung_wirkt_b`, `kuehlvorlauf_luecke_wirkt_a`, `kuehlvorlauf_luecke_wirkt_b`, `kuehlvorlauf_ruecklauf_gebaeude`, `raumtemperatur_gebaeude`, `raumtemperatur_sollband_wirkt_a`, `raumtemperatur_sollband_wirkt_b`, `temperaturverlauf_ein_speicher`, `temperaturverlauf_zwei_speicher`, `vorlauf_auslegung_wirkt_a`, `vorlauf_auslegung_wirkt_b`, `vorlauf_luecke_wirkt_a`, `vorlauf_luecke_wirkt_b`, `vorlauf_ruecklauf_gebaeude`. Die übrigen 193 Zeilen von `Messlatte_2026-10-09.sha256` stehen unverändert in
+`Messlatte_2026-10-10.sha256`. Die Windows-Messliste des Gates ist auf Windows neu zu ziehen: genau diese Zeilen ändern sich.

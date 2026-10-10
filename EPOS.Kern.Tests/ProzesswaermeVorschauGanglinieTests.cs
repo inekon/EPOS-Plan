@@ -109,29 +109,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Sicht „Prozesse" trägt Jahresverlauf und Quelle für Woche und Tag — 52 Wochen,
-        /// 365 Tage, und jedes Fenster ist ein Bild.
+        /// Der Grafikreiter bekommt die Stundenreihen beider Sichten: die Jahresganglinie als Bild und
+        /// die Summen je Monat, Woche und Tag als CSV-Spalten — die Monatssummen gleich den Zahlen der
+        /// Monatstabelle.
         /// </summary>
         [Fact]
-        public void Die_Prozesssicht_traegt_Jahresverlauf_Woche_und_Tag()
+        public void Der_Grafikreiter_traegt_Ganglinie_und_Summen_der_Prozesssicht()
         {
             if (!_db.Vorhanden) return;
 
             BedarfsVorschau v = Vorschau(new[] { NEU }, new Dictionary<string, double> { [NEU] = 150.0 });
             var daten = (BedarfErgebnisDaten)BedarfErgebnisHuelle.Gaben(v.Waerme, false, 1, "")["Daten"];
-            Monatssicht prozesse = daten.Sichten[0];
+            Bedarfsgrafikquelle grafik = daten.Grafik;
+            Assert.NotNull(grafik);
+            Assert.Equal(new[] { 0, 1 }, grafik.MitReihe);
 
-            Assert.NotNull(prozesse.Jahresverlauf);
-            Assert.NotNull(prozesse.Ganglinie);
-            Assert.Equal(52, prozesse.Ganglinie.Wochen);
-            Assert.Equal(365, prozesse.Ganglinie.Tage);
-            Assert.NotNull(prozesse.Ganglinie.Modell(Gangstufe.Woche, 0));
-            Assert.NotNull(prozesse.Ganglinie.Modell(Gangstufe.Tag, 364));
-            Assert.Null(prozesse.Ganglinie.Modell(Gangstufe.Tag, 365));
+            int[] prozess = { 0 };
+            Assert.NotNull(grafik.Modell(prozess, Bedarfsraster.Jahr, Energieeinheit.MWh));
+            Assert.NotNull(grafik.Modell(new[] { 0, 1 }, Bedarfsraster.Woche, Energieeinheit.MWh));
+            Assert.Equal(8760, grafik.Spalten(prozess, Bedarfsraster.Jahr, Energieeinheit.MWh)[0].Werte.Length);
+            Assert.Equal(52, grafik.Spalten(prozess, Bedarfsraster.Woche, Energieeinheit.MWh)[0].Werte.Length);
+            Assert.Equal(365, grafik.Spalten(prozess, Bedarfsraster.Tag, Energieeinheit.MWh)[0].Werte.Length);
 
-            // Die Gebäudesicht bekommt ihre Reihe ebenso; der Strom bleibt beim gemeinsamen Weg.
-            Assert.NotNull(daten.Sichten[1].Ganglinie);
-            Assert.Null(daten.Ganglinie);
+            double[] monate = grafik.Spalten(prozess, Bedarfsraster.Monat, Energieeinheit.MWh)[0].Werte;
+            for (int m = 0; m < 12; m++)
+                Assert.Equal(daten.Sichten[0].Zahlen[m], monate[m], 9);
         }
     }
 }

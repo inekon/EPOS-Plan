@@ -2058,6 +2058,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     pointer-events: none;
 }
 
+/* Der Zeigerbalken des Moduls (Auftrag GX): ein HTML-Element ueber der Datenflaeche,
+   das epos-diagramm.js im pointermove setzt (left, top, height) - ohne Rundlauf nach
+   .NET und ohne Neuzeichnen des Bildes. 1 px breit wie die Zeigerlinie. */
+.epos-diagramm-zeigerbalken {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    border-left: 1px solid var(--epos-text);
+    pointer-events: none;
+    will-change: left;
+}
+
 /* Die Werte am Mauszeiger. Ziffern in fester Breite, damit die Zeile beim
    Wandern des Zeigers nicht springt; sie steht auch leer da und haelt so die
    Hoehe des Bildes ruhig. */
@@ -4906,7 +4919,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 
 .epos-schema-titel,
-.epos-schema-bandkopf {
+.epos-schema-bandkopf,
+.epos-schema-bahnkopf {
     font-size: 13px;
     font-weight: 600;
     fill: var(--epos-text);
@@ -4973,6 +4987,15 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 /* ---- Badges und Warnzeile im Kasten --------------------------------- */
 
 .epos-schema-badge { fill: var(--epos-badge-flaeche); }
+
+/* Auftrag KS: die Kaeltebahn — eine gestrichelte Trennlinie ueber ihrem Kopf. Keine
+   neue Farbe: Kanten und Kaesten der Kaeltebahn tragen dieselbe Farbsprache wie die
+   Waerme, erkennbar wird sie an Titel, Spaltenkoepfen und der Marke „Kaelte". */
+.epos-schema-bahntrenner {
+    stroke: var(--epos-rahmen-leise);
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+}
 .epos-schema-badgetext { font-size: 11px; fill: var(--epos-badge-text); }
 
 .epos-schema-warnflaeche { fill: var(--epos-warn-flaeche); }
@@ -5061,6 +5084,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
     .epos-schema-kante,
     .epos-schema-legendelinie,
+    .epos-schema-bahntrenner,
     .epos-schema-bandpfeil { stroke: CanvasText; }
 
     /* Die Pfeilspitze ist eine Flaeche und braucht deshalb die Textfarbe als FUELLUNG. */
@@ -5855,6 +5879,40 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-raster th.epos-simerg-zahl {
     text-align: right;
     font-variant-numeric: tabular-nums;
+}
+
+/* KOPF UND WERT STEHEN UEBEREINANDER (Auftrag TA, 10.10.2026).
+
+   Die Ergebnistabellen der Simulationsreiter (Waermepumpe Modul und Speicher,
+   Heizkessel, BHKW, Solarthermie, Photovoltaik samt Wechselrichtern) setzten
+   .epos-simerg-zahl nur an die WERTzellen. Die Koepfe erbten text-align: left
+   der Hausregel .epos-raster th, und die Tabelle spannte mit width: 100 % ihre
+   Spalten ueber die volle Breite: Der Kopf stand am linken, der Wert am
+   rechten Rand einer breiten Spalte - "0,72" (Heizstab) lag unter "JAZ".
+
+   Die Regel: Eine Zahlenspalte traegt .epos-simerg-zahl an Kopf UND Zellen
+   (rechtsbuendig ueber die Regel darueber), eine Textspalte keine (links);
+   Kopf- und Datenzellen haben dieselbe Polsterung der Hausregel. Die Tabelle
+   nimmt nur die Breite ihres Inhalts - jede Tabelle ihre eigene, auch zwei
+   untereinander (Modul und Speicher). Waehler mit Typ (0,1,1), damit er die
+   Breite von .epos-raster (0,1,0) unabhaengig von der Reihenfolge schlaegt;
+   .epos-raster selbst bleibt unberuehrt (Rasterprobe). Der Block der Reiter
+   (.epos-simerg-block) ist ein Flex-Behaelter in Spaltenrichtung und dehnt
+   seine Kinder sonst auf die volle Breite (align-items: normal = stretch) -
+   align-self: flex-start haelt die Tabelle auf ihrer Inhaltsbreite
+   (tabellenprobe.mjs). */
+table.epos-simerg-tabelle {
+    width: auto;
+    max-width: 100%;
+    align-self: flex-start;
+}
+
+/* Dieselbe Regel fuer die Kennzahlentabelle des Stromspeichers und den
+   Variantenvergleich: Deren Koepfe stehen per Hausregel links, ein Zahlenkopf
+   folgt seinen Werten nach rechts. */
+.epos-simerg-kennzahlen th.epos-simerg-zahl,
+.epos-simerg-vergleich th.epos-simerg-zahl {
+    text-align: right;
 }
 
 .epos-simerg-kennzahlen tr.epos-stufe-ok { background: rgb(215, 245, 215); }
@@ -11133,6 +11191,29 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     min-width: 10rem;
     text-align: center;
     font-variant-numeric: tabular-nums;
+}
+
+/* --- Grafikreiter Waerme-/Strombedarf ------------------------------------
+   Bedarfsart und Zeitraster als zwei Knopfgruppen in EINER Zeile ueber dem
+   Bild (Schaltknoepfe .epos-knopf mit aria-pressed); auf schmalem Schirm
+   bricht die zweite Gruppe darunter. */
+.epos-bedarfgrafik {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-bedarfgrafik-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+}
+
+.epos-bedarfgrafik-gruppe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 
 /* Projektdialoge (Nutzerauftrag 02.09.2026, Merge 5): Haekchen der Mehrfachauswahl,

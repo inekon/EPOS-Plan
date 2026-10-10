@@ -193,6 +193,8 @@ namespace WindowsFormsApplication1
             var gaben = new Dictionary<string, object>
             {
                 ["Laden"] = new Func<WirtschaftlichkeitStand>(Laden),
+                ["CsvSpeichern"] = new Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, Zeitraster, Task>(
+                    (m, t, r) => CsvExportClass.ExportDiagramm(m, t, Dienste.Projekt.Id, r)),
 
                 // ETAPPE E5 (U2, V‑1/K8): der Umschalter "Kennzahlen / ValERI-Bewertung"
                 // als Sitzungswahl - dieselbe geteilte Instanz wie Haekchen und Sicht.

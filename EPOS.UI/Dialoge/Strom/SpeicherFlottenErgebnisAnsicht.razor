@@ -224,7 +224,10 @@
                    zwei Projektjahren liegt nichts, worauf ein Zoom zeigen koennte.
                    Der Baustein schaltet ihn deshalb von selbst ab und zeigt statt
                    dessen den Wert der Saeule unter dem Zeiger (DG-E3-10). *@
+                @* "CSV..." der Jahreskonten steht in der Leiste dieses Bildes (Inhalt und
+                   Datei wie zuvor: SpeicherFlottenAnzeigeCtrl.JahreskontenCsv). *@
                 <DiagrammSvg Modell="@_projektion" Kennung="flotte-projektion"
+                             CsvExport="@CsvJahreskonten"
                              Bezeichnung="@Resource.FLOTTE_ALT_PROJEKTION"
                              FarbwahlErlaubt="@Farbwahl"
                              FarbeGewaehlt="FarbeUebernehmen"
@@ -260,12 +263,6 @@
                 </table>
             </details>
 
-            <div class="epos-simerg-schalter">
-                <button type="button" class="epos-simerg-knopf" disabled="@(!Csv.HasDelegate)"
-                        @onclick="@(() => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.JahreskontenCsv(Ergebnis)))">
-                    @Resource.FLOTTE_BTN_CSV_JAHRESKONTEN
-                </button>
-            </div>
         }
         else
         {
@@ -374,7 +371,10 @@
 
                DIE ZWEITE ACHSE traegt den Ladezustand in kWh; welche Reihe dort
                steht, sagt das Modell (Datenreihe.Achsenseite, DG-E3-12). *@
+            @* "CSV..." der Zeitreihen steht an beiden Bildern (Inhalt und Datei wie zuvor:
+               SpeicherFlottenAnzeigeCtrl.ZeitreihenCsv). *@
             <DiagrammSvg Modell="@_netz" Kennung="@Netzkennung"
+                         CsvExport="@CsvZeitreihen"
                          Bezeichnung="@Resource.FLOTTE_ALT_NETZ"
                          Einheit="kW" EinheitRechts="kWh"
                          FarbwahlErlaubt="@Farbwahl"
@@ -384,18 +384,12 @@
             @if (_zweitesBild && _soc is not null)
             {
                 <DiagrammSvg Modell="@_soc" Kennung="@Sockennung"
+                             CsvExport="@CsvZeitreihen"
                              Bezeichnung="@Resource.FLOTTE_ALT_SOC" Einheit="kWh"
                              FarbwahlErlaubt="@Farbwahl"
                              FarbeGewaehlt="FarbeUebernehmen"
                              FarbeZurueckgesetzt="FarbeVerwerfen" />
             }
-
-            <div class="epos-simerg-schalter">
-                <button type="button" class="epos-simerg-knopf" disabled="@(!Csv.HasDelegate)"
-                        @onclick="@(() => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.ZeitreihenCsv(Ergebnis)))">
-                    @Resource.FLOTTE_BTN_CSV_ZEITREIHEN
-                </button>
-            </div>
         </section>
     }
 </div>
@@ -408,8 +402,18 @@
     /// <summary>Die Eingaben wurden nach dem Lauf geändert.</summary>
     [Parameter] public bool Veraltet { get; set; }
 
-    /// <summary>Der CSV-Export; ohne Delegat bleiben die Knöpfe gesperrt.</summary>
+    /// <summary>Der CSV-Export; ohne Delegat steht an den Bildern kein „CSV…“.</summary>
     [Parameter] public EventCallback<string> Csv { get; set; }
+
+    /// <summary>„CSV…“ an der Jahresprojektion: die Jahreskonten als Text an den Wirt.</summary>
+    private EventCallback CsvJahreskonten => Csv.HasDelegate
+        ? EventCallback.Factory.Create(this, () => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.JahreskontenCsv(Ergebnis)))
+        : default;
+
+    /// <summary>„CSV…“ an Netz- und Ladezustandsbild: die Zeitreihen als Text an den Wirt.</summary>
+    private EventCallback CsvZeitreihen => Csv.HasDelegate
+        ? EventCallback.Factory.Create(this, () => Csv.InvokeAsync(SpeicherFlottenAnzeigeCtrl.ZeitreihenCsv(Ergebnis)))
+        : default;
 
     /// <summary>
     /// Das zuletzt BESTIMMTE Peak-Ziel M* [kW] — „mit Vorausschau erreichbar";

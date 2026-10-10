@@ -240,6 +240,12 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
     Achsenseite aus `Datenreihe.Achsenseite`. **Ein Bild ohne Zeichenfläche hat keinen Zoom** und
     zeigt statt dessen den `data-wert` des Elements unter dem Zeiger; bei Ring und Kuchen ist die
     Legende zusätzlich nicht schaltbar (`LegendeSchaltbar="false"`).
+  - **„CSV…“ am Bild für jede Zeitreihe:** Ein Wirt führt `[Parameter] CsvSpeichern`
+    (Modell, Titel, Raster), legt `Ganglinienexport` als Kaskade um sein Markup und bekommt den
+    Delegat von seiner Hülle über `Diagrammexportnaht.Fuer(kennung)`; jedes Bild darunter, das
+    Reihen führt, trägt den Knopf, das Raster folgt der Länge (8 760, 35 040, 365, 168, 52, 24,
+    12) oder steht ausdrücklich (Jahr). Kennlinien und Punktwolken (x = Wert) nicht. Wache
+    `CsvAmBildWacheTests`.
   - **Die Farbwahl am Bild steht einmal** in `Bausteine/Farbwahlwirt.cs`: Ein Wirt schreibt
     `@inherits Farbwahlwirt` und reicht `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt`
     samt `Palette` durch. **Kein Delegat, kein Wähler.**
@@ -263,7 +269,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   Layout schiebt.
 - **Ausgabe und Übernahme eines Ergebnisses stehen im Schlitz WERKZEUG, nicht in der Fußleiste:**
   Knöpfe, die auf das gerechnete Ergebnis einer Verwaltung wirken (Lastspitzenkappung:
-  „CSV-Export“, „In Variante übernehmen“), stehen nach der Suche in `.epos-werkzeughandlungen`,
+  „In Variante übernehmen“; die CSV trägt der Knopf „CSV…“ am Lastgangbild), stehen nach der Suche in `.epos-werkzeughandlungen`,
   beieinander und ohne Textumbruch; im schmalen Fenster, wo das Stammblatt die Werkzeugleiste
   verdeckt, reicht der Wirt dasselbe Fragment zusätzlich als `Stammblatt.Kopfhandlungen` (nur
   schmal sichtbar, in der Zeile von „‹ Liste“). Die Fußleiste bleibt dem Gerüst vorbehalten

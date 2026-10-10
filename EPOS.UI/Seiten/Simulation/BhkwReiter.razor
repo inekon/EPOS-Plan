@@ -159,24 +159,24 @@
 
         @if (Daten.Module.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
-                        <th scope="col">@Resource.SIM_ERZEUGERNAME_BHKW</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_ERZEUGERNAME_BHKW</th>
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
-                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
-                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
                         @* Welle M4 (BH1, BH2): Mehrbrennstoff der Teillastkennlinie, Starts und
                            Anfahrverlust - nur, wenn ein Modul sie rechnet; sonst bleibt die
                            Tabelle, wie sie war. *@
                         @if (MitKennlinie)
                         {
-                            <th scope="col">@Resource.SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_TEILLAST_MEHRBRENNSTOFF</th>
                         }
                         @if (MitTakten)
                         {
-                            <th scope="col">@Resource.SIM_SPALTE_STARTS</th>
-                            <th scope="col">@Resource.SIM_SPALTE_ANFAHRVERLUST</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STARTS</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_ANFAHRVERLUST</th>
                         }
                     </tr>
                 </thead>

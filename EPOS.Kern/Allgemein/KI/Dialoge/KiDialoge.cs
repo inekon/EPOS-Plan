@@ -5161,8 +5161,7 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Die KENNZAHLEN selbst bleiben draussen</b>: Sie sind eine Liste von
         /// Zeilen mit eigenen Bezeichnern und wechseln mit der Auspraegung; ein
-        /// Katalogfeld traegt EINEN Wert. Ebenso die zwoelf Monatswerte und die drei
-        /// Zeitstufen des Ganglinienbausteins — ein Bild mit eigenem Navigator.
+        /// Katalogfeld traegt EINEN Wert. Ebenso die zwoelf Monatswerte.
         /// </para>
         /// <para>
         /// <b>Der REITER steht nicht im Katalog:</b> Er wechselt nur das Blatt, nicht
@@ -5190,8 +5189,8 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.BergJahresverlaufName,
                                      KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.BergJahresverlaufErl),
-                    // Freigabe der Masken, Teil C: die Zeitstufe des Grafikreiters (Kind
-                    // BedarfGangGrafik); der Navigator bleibt ein Knopf.
+                    // Freigabe der Masken, Teil C: das Zeitraster des Grafikreiters (Jahr,
+                    // Monat, Woche, Tag) - die zweite Knopfgruppe.
                     new KiDialogFeld("zeitstufe", "BedarfErgebnisKiSicht.Zeitstufe",
                                      KiDialogTexte.BergZeitstufeName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BergZeitstufeErl, leerErlaubt: true)

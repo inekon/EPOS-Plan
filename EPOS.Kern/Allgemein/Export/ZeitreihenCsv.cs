@@ -25,7 +25,16 @@ namespace WindowsFormsApplication1
         Jahr = 4,
 
         /// <summary>Eine Folge ohne Zeitbezug — die erste Spalte zählt die Stützstellen.</summary>
-        Index = 5
+        Index = 5,
+
+        /// <summary>52 Wochenwerte des Gemeinjahrs; die 52. Woche trägt den 365. Tag mit (<see cref="Zeitsummen"/>).</summary>
+        Woche = 6,
+
+        /// <summary>24 Stunden eines Tagesprofils — erste Spalte „Stunde“ 1…24.</summary>
+        Tagesstunde = 7,
+
+        /// <summary>168 Stunden eines Wochenprofils — erste Spalte „Wochenstunde“ 1…168.</summary>
+        Wochenstunde = 8
     }
 
     /// <summary>Eine Spalte des Zeitreihenexports: Reihenname, Einheit (darf leer sein) und Werte.</summary>
@@ -51,7 +60,10 @@ namespace WindowsFormsApplication1
             8760 => Zeitraster.Stunde,
             35040 => Zeitraster.Viertelstunde,
             365 => Zeitraster.Tag,
+            52 => Zeitraster.Woche,
             12 => Zeitraster.Monat,
+            168 => Zeitraster.Wochenstunde,
+            24 => Zeitraster.Tagesstunde,
             _ => Zeitraster.Index
         };
 
@@ -61,8 +73,11 @@ namespace WindowsFormsApplication1
             Zeitraster.Stunde => "Stunde",
             Zeitraster.Viertelstunde => "Viertelstunde",
             Zeitraster.Tag => "Tag",
+            Zeitraster.Woche => "Woche",
             Zeitraster.Monat => "Monat",
             Zeitraster.Jahr => "Jahr",
+            Zeitraster.Tagesstunde => "Stunde",
+            Zeitraster.Wochenstunde => "Wochenstunde",
             _ => "Nr."
         };
 

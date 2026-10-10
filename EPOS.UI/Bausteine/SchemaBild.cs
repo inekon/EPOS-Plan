@@ -65,7 +65,14 @@ public sealed record SchemaKnoten(
     bool Warnung,
     string Warntext,
     bool Kaskade,
-    bool IstWaermepumpe);
+    bool IstWaermepumpe)
+{
+    /// <summary>
+    /// Auftrag KS: true, wenn der Kasten in der KAELTEBAHN steht (Kaelteerzeuger,
+    /// Rueckkuehlung, Kaeltespeicher, Kaeltekreis). Nur Kennzeichen — die Lage traegt X/Y.
+    /// </summary>
+    public bool Kaelte { get; init; }
+}
 
 /// <summary>
 /// Eine Leitung samt fertigem Streckenzug.
@@ -98,7 +105,17 @@ public sealed record SchemaBandglied(
 public sealed record SchemaLegendeeintrag(
     string Text,
     SchemaKantenart Art,
-    bool Gestrichelt);
+    bool Gestrichelt)
+{
+    /// <summary>
+    /// Auftrag KS: Der Eintrag zeigt statt einer Musterlinie die MARKE (<see cref="MarkeText"/>)
+    /// — so erklaert die Legende die Kaeltebahn, ohne eine neue Kantenfarbe einzufuehren.
+    /// </summary>
+    public bool Marke { get; init; }
+
+    /// <summary>Text der Marke (z. B. „Kaelte"); nur mit <see cref="Marke"/>.</summary>
+    public string MarkeText { get; init; } = "";
+}
 
 /// <summary>
 /// Das vollstaendig ANGEORDNETE Hydraulikschema — alles, was der Baustein
@@ -140,6 +157,26 @@ public sealed record SchemaBild(
     bool HatKaskade,
     bool IstLeer)
 {
+    // --- Auftrag KS: die Kaeltebahn (init-Eigenschaften; ohne Kaelte bleiben sie leer) ---
+
+    /// <summary>Oberkante der Kaeltebahn (Trennlinie) [px]; -1 = das Projekt rechnet keine Kaelte.</summary>
+    public int KaelteOben { get; init; } = -1;
+
+    /// <summary>true, wenn eine Kaeltebahn gezeichnet wird.</summary>
+    public bool HatKaelte => KaelteOben >= 0;
+
+    /// <summary>Titel der Kaeltebahn (KONF_KS_KAELTE).</summary>
+    public string KaelteTitel { get; init; } = "";
+
+    /// <summary>Die vier Spaltenkoepfe der Kaeltebahn.</summary>
+    public IReadOnlyList<string> KaelteSpaltenkoepfe { get; init; } = new List<string>();
+
+    /// <summary>Oberkante des Satzes der Kaelte-Kaskade [px]; -1 = keiner.</summary>
+    public int KaelteKetteOben { get; init; } = -1;
+
+    /// <summary>Der Satz der Kaelte-Kaskade (KONF_KS_KETTE bzw. KONF_KS_KEINE_KETTE).</summary>
+    public string KaelteKetteText { get; init; } = "";
+
     /// <summary>Ein leeres Bild — der Zustand „noch keine Hydraulik konfiguriert".</summary>
     public static SchemaBild Leer { get; } = new SchemaBild(
         new List<SchemaKnoten>(), new List<SchemaKante>(), new List<SchemaBandglied>(),
