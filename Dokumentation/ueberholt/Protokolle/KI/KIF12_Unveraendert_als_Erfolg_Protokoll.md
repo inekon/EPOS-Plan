@@ -51,7 +51,7 @@ gewinnt; jeder andere unbekannte Name bleibt benannt abgelehnt.
 - `KiKern.Tests/KiPruefungTests` (4): `Ausweichname_greift_fuer_mask_und_values`, `Unbekannter_Name_bleibt_benannt_abgelehnt`,
   `Zielname_gewinnt_gegen_den_Ausweichnamen`, `Ausweichname_ohne_Zielparameter_bleibt_unbekannt`; angepasst
   `KiReiheSetzenTests.Ohne_Aenderung_gibt_es_nichts_zu_bestaetigen`.
-- Filterlauf: KiKern 553, EPOS.UI 1 035, EPOS.Kern 724, SpeicherEngine 1, 0 rot; Build 0 Fehler. Gate ⟨Zahlen folgen⟩.
+- Filterlauf: KiKern 553, EPOS.UI 1 035, EPOS.Kern 724, SpeicherEngine 1, 0 rot; Build 0 Fehler. Gate 924 auf `63b08a17` grün: Kern-Build 0 Fehler; ChartProben alle grün, 222 Hashes gleich der Messlatte 2026-10-10; Tests 22 512 grün, 0 rot (EPOS.Kern.Tests 13 124 + 7 übersprungen, EPOS.UI.Tests 8 411, KiKern.Tests 553, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen); Dokumentationswachen 35 grün; Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz); Plattformnachweis (gestörter Lauf) PASS.
 
 ## Offen
 
