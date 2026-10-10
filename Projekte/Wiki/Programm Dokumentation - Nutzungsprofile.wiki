@@ -11,7 +11,7 @@ Das Blatt hat keinen Menüpunkt. Es öffnet sich über
 * ''Nutzungsprofile verwalten…'' im Reiter ''Konditionierung'' des Katalogeditors und des Gebäudeeditors im Projekt (siehe [[Programm Dokumentation/Gebäude#nutzungsprofil|Gebäude]]),
 * ''Nutzungsprofile…'' im Zonenbaum des [[Programm Dokumentation/Gebäudeimport|Gebäudeimports]].
 
-Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu. Der Katalog gilt für alle Projekte. Das Blatt hat keine Schlussleiste: Anlegen, Umbenennen, Duplizieren und Löschen schreiben sofort, ein geändertes Profil schreibt ''Speichern'' im Profileditor.
+Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu. Der Katalog gilt für alle Projekte. Das Blatt hat keine Schlussleiste: Anlegen, Umbenennen, Duplizieren und Löschen schreiben sofort, den Entwurf eines Profils schreibt ''Speichern'' im Profileditor.
 
 <!-- Bild: Blatt Nutzungsprofile mit Katalogbaum, Profileditor und Vorschau -->
 
@@ -39,7 +39,7 @@ Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Que
 * '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels.
 * '''Personen, Geräte und Beleuchtung''' – ''Fläche je Person'', ''Wärme je Person'', ''Gerätelast'', je der Anteil ''im Betrieb'' und ''außerhalb'', dazu ''Beleuchtung'' und ''Gleichzeitigkeit der Beleuchtung''. Die Beleuchtung zählt zu den Geräten: Deren Nennwert am Ziel ist Gerätelast plus Beleuchtung mal Gleichzeitigkeit, mal Fläche.
 
-''Speichern'' schreibt das geänderte Profil in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
+''Speichern'' schreibt den Entwurf des Profils in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
 
 * '''Je Größe ein Umschalter''' ''aus Kennwerten | Zeilenbild | Stundenprofil'' – er bestimmt, woraus die Größe (Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen) ihren Verlauf bekommt.
 * '''Zeilenbild''' – die vier Zeilen ''Tag'', ''Nacht'' (mit Zeitfenster), ''Wochenende'' und ''Ferien'', je mit Wert oder ''aus''.
