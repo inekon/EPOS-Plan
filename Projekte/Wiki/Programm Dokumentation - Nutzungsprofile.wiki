@@ -8,12 +8,16 @@ Das Programm liefert nur die Struktur aus: die Kategorien, dazu Profile mit Numm
 == Aufruf ==
 
 Das Blatt hat keinen Menüpunkt. Es öffnet sich über
-* ''Nutzungsprofile verwalten…'' im Reiter ''Konditionierung'' des Gebäudeeditors,
+* ''Nutzungsprofile verwalten…'' im Reiter ''Konditionierung'' des Katalogeditors und des Gebäudeeditors im Projekt (siehe [[Programm Dokumentation/Gebäude#nutzungsprofil|Gebäude]]),
 * ''Nutzungsprofile…'' im Zonenbaum des [[Programm Dokumentation/Gebäudeimport|Gebäudeimports]].
 
-Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu.
+Nach dem Schließen liest die aufrufende Maske Katalog und Zuordnung neu. Der Katalog gilt für alle Projekte. Das Blatt hat keine Schlussleiste: Anlegen, Umbenennen, Duplizieren und Löschen schreiben sofort, ein geändertes Profil schreibt ''Speichern'' im Profileditor.
+
+<!-- Bild: Blatt Nutzungsprofile mit Katalogbaum, Profileditor und Vorschau -->
 
 == Bereiche ==
+
+Das Blatt trägt zwei Reiter: ''Profile'' mit Katalogbaum und Profileditor und ''Zuordnung''.
 
 === Katalogbaum ===
 
@@ -24,11 +28,18 @@ Links stehen die Kategorien mit ihren Profilen, nach Nummer und Name sortiert. D
 * '''SIA 2024''' und '''VDI 2078''' – ausgelieferte, zunächst leere Kategorien.
 * '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar.
 
-Unter dem Baum stehen ''Neue Kategorie'', ''Neues Profil'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren.
+Unter dem Baum stehen ''Neue Kategorie…'', ''Neues Profil…'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren.
 
 === Profileditor ===
 
-Rechts steht das gewählte Profil: Kategorie, Nummer, Name und Beschreibung, darunter die Kennwerte mit Einheit und Grenzen.
+Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Quellenhinweis, darunter die Kennwerte mit Einheit und Grenzen in vier Gruppen:
+
+* '''Nutzungszeit und Woche''' – ''Nutzung von'' und ''bis'', ''Betrieb von'' und ''bis'', die ''Nutzungstage der Woche'' und ''Feiertage wie Sonntag''.
+* '''Sollwerte Heizen und Kühlen''' – ''Heizen im Betrieb'' und ''Heizen außerhalb'' (oder ''Heizen außerhalb aus''), ebenso für das Kühlen.
+* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels.
+* '''Personen, Geräte und Beleuchtung''' – ''Fläche je Person'', ''Wärme je Person'', ''Gerätelast'', je der Anteil ''im Betrieb'' und ''außerhalb'', dazu ''Beleuchtung'' und ''Gleichzeitigkeit der Beleuchtung''. Die Beleuchtung zählt zu den Geräten: Deren Nennwert am Ziel ist Gerätelast plus Beleuchtung mal Gleichzeitigkeit, mal Fläche.
+
+''Speichern'' schreibt das geänderte Profil in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
 
 * '''Je Größe ein Umschalter''' ''aus Kennwerten | Zeilenbild | Stundenprofil'' – er bestimmt, woraus die Größe (Heizsollwert, Kühlsollwert, Lüftung, Geräte, Personen) ihren Verlauf bekommt.
 * '''Zeilenbild''' – die vier Zeilen ''Tag'', ''Nacht'' (mit Zeitfenster), ''Wochenende'' und ''Ferien'', je mit Wert oder ''aus''.
@@ -38,7 +49,7 @@ Rechts steht das gewählte Profil: Kategorie, Nummer, Name und Beschreibung, dar
 
 === Reiter Zuordnung ===
 
-Die Tabelle ordnet einem Schlüssel ein Profil zu: Art (DIN-Nummer, IFC-Klasse oder HottCAD-Raumtyp), Schlüssel und Profil. Die Auswahl des Profils ist nach Kategorien gegliedert und kennt ''keine''. Ausgelieferte Zeilen tragen ein Schloss und lassen sich mit ''Zurücksetzen'' wiederherstellen; neue Zeilen sind frei. Der Gebäudeimport nutzt diese Tabelle, um Zonen ein Profil vorzuschlagen.
+Die Tabelle ordnet einem Schlüssel ein Profil zu: Art (DIN-Nummer, IFC-Klasse oder HottCAD-Raumtyp), Schlüssel und Profil. Die Auswahl des Profils ist nach Kategorien gegliedert und kennt ''keine''; sie wirkt sofort, auch in ausgelieferten Zeilen. Ausgelieferte Zeilen tragen ein Schloss und lassen sich nicht löschen; eigene Zeilen entfernt ''Löschen'' nach einer Rückfrage. Eine neue Zeile entsteht unter der Tabelle aus ''Art'' und ''Schlüssel'' mit ''Zeile anlegen''. Der Gebäudeimport nutzt diese Tabelle, um Zonen ein Profil vorzuschlagen.
 
 == Bedienung ==
 
@@ -56,7 +67,7 @@ Die Nutzung einer Vorlage ist ein freier Text; beim Eintippen bietet das Program
 
 === CSV importieren und exportieren ===
 
-Im Kopf des Blatts öffnet ''CSV…'' den Austausch. Beim Import wählen Sie die Datei und eine eigene Zielkategorie; eine Vorschau zeigt je Zeile, was übernommen wird und was nicht, und geschrieben wird erst mit ''Übernehmen''. Der Export schreibt dasselbe Format; die Datei lässt sich wieder einlesen.
+Im Kopf des Blatts stehen ''CSV importieren…'' und ''CSV exportieren…''. Beim Import wählen Sie die Datei und eine eigene Zielkategorie; eine Vorschau zeigt je Zeile, was übernommen wird und was nicht, und geschrieben wird erst mit ''Übernehmen''. Der Export schreibt dasselbe Format; die Datei lässt sich wieder einlesen.
 
 === Aus Projektdatei ===
 
