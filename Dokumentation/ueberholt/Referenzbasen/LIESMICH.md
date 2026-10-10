@@ -1,6 +1,6 @@
-# Die Protokolle der 52 entfernten Referenzbasen
+# Die Protokolle der 53 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **52 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **53 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
 16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast`](../../../Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/);
+> [`Referenzlaeufe/2026-10-10_R50_Wochentagsraster`](../../../Referenzlaeufe/2026-10-10_R50_Wochentagsraster/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -94,6 +94,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-09_R46_Geraetegrenzen` | 09.10.2026 | Basis mit den Gerätegrenzen der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E3: Rücklaufgrenze am gemischten Rücklauf, Spreizungsgrenze), auf Linux eingefroren; Testdatenbank `cd50d465…` (Schemastand 203); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R47 am 09.10.2026 | [`2026-10-09_R46_Geraetegrenzen/protokoll.txt`](2026-10-09_R46_Geraetegrenzen/protokoll.txt) |
 | `2026-10-09_R47_Zapffeiertage` | 09.10.2026 | Basis mit den Feiertagen im Zapfkalender (Anwenderentscheid E112: Feiertage zählen unter jeder Wochenendmaske als Sonntag), auf Linux eingefroren; Testdatenbank `ec23b962…` (Schemastand 207); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R48 am 09.10.2026 | [`2026-10-09_R47_Zapffeiertage/protokoll.txt`](2026-10-09_R47_Zapffeiertage/protokoll.txt) |
 | `2026-10-09_R48_Gemeinjahr` | 09.10.2026 | Basis mit dem Gemeinjahr ohne Jahresdatum (Anwenderentscheid E114 der Statusdatei: die beweglichen Feiertage liegen ohne Preisreihe nach dem Wochentagsraster), auf Linux eingefroren; Testdatenbank `ec23b962…` (Schemastand 207), gehoben auf Schemastand 209 (`7b6b2cc8…`); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R49 am 10.10.2026 | [`2026-10-09_R48_Gemeinjahr/protokoll.txt`](2026-10-09_R48_Gemeinjahr/protokoll.txt) |
+| `2026-10-09_R49_KaeltemaschineTeillast` | 10.10.2026 | Basis mit dem Referenzprojekt 1063 (Teillast und Takten der Kältemaschine, Etappe KM3‑E2) auf dem Rechenstand des Gemeinjahrs, auf Linux eingefroren; Testdatenbank `32af2d32…` (Schemastand 210); achtundzwanzig Projekte, 911 CSV, 6 336 Skalare — abgelöst durch R50 am 10.10.2026 | [`2026-10-09_R49_KaeltemaschineTeillast/protokoll.txt`](2026-10-09_R49_KaeltemaschineTeillast/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -5320,5 +5321,103 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >
 > Die Regel steht im [Konzept Konditionierungsprofile](../../aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
 > Abschnitte 3.2 und 9.10 (E114).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R49 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 10.10.2026 die Basis R49 beschrieben — den Anlass (Referenzprojekt 1063, Teillast und Takten der Kältemaschine) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R49 durch `2026-10-10_R50_Wochentagsraster`** (Wochentagsraster der Klimaregion für alle Leser, Anwenderentscheid E115): 1051, 1052 und 1054 ändern sich, die übrigen fünfundzwanzig Projekte sind byte-gleich (911 CSV, 6 336 Skalare).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-09_R49_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `9c7fe32af`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
+`32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
+Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063. 1050, 1052, 1054,
+1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
+achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: das Referenzprojekt 1063 „Referenzprojekt Kältemaschine Teillast“ (Teillast und Takten der Kältemaschine,
+> Etappe KM3‑E2, Schemaschritt 210) auf dem Rechenstand des Gemeinjahrs — die siebenundzwanzig Projekte der Basis R48
+> (Gemeinjahr) rechnen gegen R48 `GESAMT: PASS` und byte-gleich (879/879 CSV); hinzu kommen 1063 mit 32 CSV und
+> 265 Skalaren. Der Rechenweg der Teillast greift nur bei gesetztem `Teillast_Weg`; 1063 trägt keinen Kalender mit
+> Feiertagsregel und ist mit dem Gemeinjahr byte-gleich zu seiner ersten Einfrierung.**
+>
+> **1063** ist eine Kopie von 1055, an deren Kältemaschine die Teillastkurve 0,10/0,60/0,30 (gültig ab Lastgrad 0,2),
+> Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9 (`Taktverlustfaktor_Cd` leer),
+> Verdichterregelung `STUFEN` und der Randweg `GUETEGRAD` wirken; gesät von
+> `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`. Die Testdatenbank ist aus der Fassung `7b6b2cc8…`
+> (Schemastand 209, Katalogkosten 208 und 209) mit `Werkzeuge/Testdatenbankschema` auf **210** gezogen (acht Eingabespalten an Katalog und
+> Projektkopie, fünf Kennzahlspalten am Ergebnis, die 34 Typkennfelder des Katalogs um Teillastkurve und
+> Verdichterregelung ergänzt, die Beispielgeräte und Projektkopien leer), danach 1063 gesät und `VACUUM`;
+> `integrity_check` ok; der Neubau auf dem zusammengeführten Stand ergibt byte-gleich dieselbe Datei; gegen diese Fassung
+> rechnen alle achtundzwanzig Projekte gegen R49 `GESAMT: PASS` und byte-gleich
+> (911/911 CSV). 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
+> Taktstunden der Kältemaschine stehen in einem Zähler: `Kaelte[0].Taktstunden` und `Takt.Kaelte[0].Taktstunden`
+> zeigen beide 218.
+>
+> | Kennzahl | 1055 | 1063 |
+> |---|---|---|
+> | Kälte der Maschine (MWh) | 4,1526 | 4,1526 |
+> | Kältestrom samt Hilfsstrom (MWh) | 1,24647 | 1,24511 |
+> | Hilfsstrom (MWh) | 0,17961 | 0,17955 |
+> | Jahres-EER (Bedarf / Strom) | 3,2496 | 3,2531 |
+> | Taktstunden (unter der Mindestteillast 30 %) | — | 218 |
+> | Starts | — | 717 |
+> | Taktstrom (Mehrstrom, kWh) | — | 17,27 |
+> | Teillaststunden (Lastgrad < 0,95) | — | 202 |
+> | mittlerer Lastgrad (kältegewichtet) | — | 0,702 |
+> | Stunden mit Gütegrad-Extrapolation | — | 1 |
+> | Kältespeicher Ladung / Entladung (MWh) | 2,478 / 2,376 | 2,478 / 2,376 |
+>
+> Der Strom von 1063 liegt um 1,35 kWh (0,11 %) unter 1055: Die Kurve hebt den EER im Teillastbereich (g(0,5) = 1,05,
+> mittlerer Lastgrad 0,70) und spart mehr, als der Taktverlust (17,3 kWh) kostet. Die Rückkühlung des Trockenkühlers
+> liegt nur in einer Kühlstunde unter dem Kennfeld (25 °C), daher eine extrapolierte Stunde.
+>
+> Zwei Läufe sind byte-gleich (911/911 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 867/911 CSV
+> byte-gleich (1063 ganz byte-gleich).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063 \
+>   --ziel Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
+> ```
+>
+> Die Regeln stehen im [Fachkonzept Teillast und Takten der Kältemaschine](../Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md),
+> Abschnitte 5.3 und 8.2.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
