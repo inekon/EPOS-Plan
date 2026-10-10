@@ -274,7 +274,7 @@ namespace EPOS.Kern.Tests
             Assert.True(a.Ok, a.Meldung);
             Konditionierungskalender personen = a.Stand.GeltenderKalender(Konditionierungsgroesse.Personen, zone);
             Assert.NotNull(personen);
-            double erwartet = Math.Round(KonditionierungCtrl.GeraeteNennwertNachPersonen(vorher, personen, a.Stand.W0, a.Stand.Referenzjahr),
+            double erwartet = Math.Round(KonditionierungCtrl.GeraeteNennwertNachPersonen(vorher, personen, a.Stand.W0, a.Stand.Kalender.Jahr),
                                          4, MidpointRounding.AwayFromZero);
             double nachher = a.Stand.AufgeloesterBestand(a.Stand.Zone(zone)).InterneWaermegewinne.Value;
             Assert.Equal(erwartet, nachher);

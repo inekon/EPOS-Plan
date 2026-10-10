@@ -248,16 +248,17 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Im Katalog gibt es kein Feiertagsjahr (E114), das Rasterjahr ist das des Laufs ohne Projekt (2025), w₀ kommt
-        /// aus derselben Wochenendmaske wie im Lauf — keine Uhr.
+        /// Im Katalog gibt es kein Feiertagsjahr, das Raster ist das Rückfallraster ohne Projekt (E115: 1. Januar =
+        /// Sonntag, <see cref="ProfilBedarf.WOCHENTAG_ALTKONVENTION"/>) — keine Uhr, keine Datenbank.
         /// </summary>
         [Fact]
-        public void Das_Bezugsjahr_im_Katalog_ist_das_des_Laufs_ohne_Projekt()
+        public void Das_Raster_im_Katalog_ist_das_Rueckfallraster()
         {
             Assert.Null(Konditionierungdatenweg.Bezugsjahr(0));
             Assert.Null(Konditionierungdatenweg.Bezugsjahr(-1));
-            Assert.Equal(DbWerte.SOLAR_REFERENZJAHR_STANDARD, Konditionierungdatenweg.Rasterjahr(0));
-            Assert.Equal(SolardatenCtrl.Referenzjahr(0), Konditionierungdatenweg.Rasterjahr(-1));
+            Assert.Equal(new Gemeinjahrkalender(ProfilBedarf.WOCHENTAG_ALTKONVENTION), Konditionierungdatenweg.Raster(0));
+            Assert.Equal(Konditionierungdatenweg.Rueckfallraster, Konditionierungdatenweg.Raster(-1));
+            Assert.False(Konditionierungdatenweg.Raster(0).MitJahr);
             Assert.Equal(2, Kalenderteppich.WochentagDesErstenTagsIm(2025));
             Assert.Equal(0, Kalenderteppich.WochentagDesErstenTagsIm(2024));
             Assert.Equal(GebaeudeModellEingang.WochentagDesErstenTags(KlimakalenderGemeinsam.WochenendmaskeBilden(2031)),

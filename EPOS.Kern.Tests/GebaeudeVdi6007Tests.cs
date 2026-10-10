@@ -388,11 +388,11 @@ namespace EPOS.Kern.Tests
                 _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "U6 {0}: Ost {1:F1} → {2:F1} kWh/m²a ({3:+0.0;-0.0} %), West {4:F1} → {5:F1} kWh/m²a ({6:+0.0;-0.0} %), " +
                     "Süd {7:+0.0;-0.0} %, Fenstersolar {8:+0.0;-0.0} %, Heizwärme Katalogbau {9:F0} → {10:F0} kWh ({11:+0.00;-0.00} %); " +
-                    "Wochenendprobe Referenzjahr {12}: {13} Tage verschieden",
+                    "Wochenendprobe Raster {12}: {13} Tage verschieden",
                     projekt, a.Strahlung.Ost.Sum() / 1000, m.Strahlung.Ost.Sum() / 1000, Prozent(a.Strahlung.Ost, m.Strahlung.Ost),
                     a.Strahlung.West.Sum() / 1000, m.Strahlung.West.Sum() / 1000, Prozent(a.Strahlung.West, m.Strahlung.West),
                     Prozent(a.Strahlung.Sued, m.Strahlung.Sued), Prozent(a.PhiSolar, m.PhiSolar),
-                    qa, qm, 100.0 * (qm / qa - 1.0), k.Referenzjahr, k.WochenendProbeAbweichungen));
+                    qa, qm, 100.0 * (qm / qa - 1.0), k.Raster, k.WochenendProbeAbweichungen));
                 Assert.True(qa > 0.0 && qm > 0.0);
             }
         }

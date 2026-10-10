@@ -153,7 +153,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// E93: Die Nutzungstage im Jahr sind abgeleitet — Kurzform der Kennwertliste („· 252 d"), Lesezeile des Blatts
-        /// über den Weg, Vorschau und die Zeile am Ziel mit seinen Ferien („…, abzüglich 22 Ferientage = 230").
+        /// über den Weg, Vorschau und die Zeile am Ziel mit seinen Ferien („…, abzüglich 20 Ferientage = 232").
         /// </summary>
         [Fact]
         public void Die_Nutzungstage_sind_abgeleitet_in_Kurzform_Weg_Vorschau_und_am_Ziel()
@@ -171,9 +171,9 @@ namespace EPOS.Kern.Tests
                          RaumnutzungHuelle.Vorschau(RaumnutzungHuelle.Profil(p), null, null).Nutzungstage);
 
             var ziel = new Matrixeingang();
-            ziel.Ferienbeginn[0] = 182;   // 1. bis 30. Juli 2025: 22 Werktage
+            ziel.Ferienbeginn[0] = 182;   // 1. bis 30. Juli im Rückfallraster (1. Januar Sonntag, E115): 20 Werktage
             ziel.Ferienende[0] = 211;
-            Assert.Equal("Nutzungstage im Jahr: 252 (aus Wochenmuster und Feiertagen), abzüglich 22 Ferientage = 230",
+            Assert.Equal("Nutzungstage im Jahr: 252 (aus Wochenmuster und Feiertagen), abzüglich 20 Ferientage = 232",
                          RaumnutzungHuelle.Nutzungstagezeile(p, ziel, t));
         }
 

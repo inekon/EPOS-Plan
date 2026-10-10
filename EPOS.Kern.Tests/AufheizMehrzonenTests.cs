@@ -293,7 +293,7 @@ namespace EPOS.Kern.Tests
             g.Interne_Waermegewinne = 0.0;
             GebaeudeKlima klima = Klima(AUSSEN_1052);
             Func<long?, Konditionierungssatz> kond = z => Konditionierungdatenweg.Satz(
-                g, klima.Wochenende, Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE, false, false, z);
+                g, klima.Wochenende, Konditionierungdatenweg.Raster(PROJEKT).Jahr, false, false, z);   // wie der Lauf (E115)
             Aufheizvorgabe vorgabe = KonfigurationCtrl.AufheizvorgabeLesen(PROJEKT);
             Assert.True(vorgabe.An);
             Mehrzonenergebnis ohne = Zonenrechnung.Rechnen(g, klima, false, null, 0, g.ID_Gebaeude, kond);
