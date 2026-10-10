@@ -237,6 +237,19 @@ Wirte. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster): Körper 633 px i
 559 px in 1 024 × 700, 649 px in 1 194 × 834 und 1 009 px in 834 × 1 194, Fußleiste in jedem Fenster sichtbar und über
 der Home-Anzeige.
 
+**Präzisiert in ÜS2 (Anwenderentscheid 10.10.2026, Wortlaut: „Füge jeweils in die Auswahl (DB und Projekt) ein Bearbeiten Symbol ein. Im Bereich ‚Projektsatz‘ kurze Angaben der Anlagendaten und einen Bearbeiten Button anstelle Details. Das gilt für alle Dialoge, die geändert wurden.“):** Reicht der Wirt
+Kurzangaben (`SatzZusammenfassung`, Liste von `Satzangabe(Beschriftung, Wert)`), zeigt die aufgeklappte Detailzeile
+**nur diese Angaben** als kompaktes Raster — Beschriftung vor Wert, mehrere je Zeile, umbrechend, höchstens drei Zeilen
+hoch, ohne Rollbereich (jede Angabe nennt sich im Tooltipp ganz). Sie hat **keinen Vorrang** (DZ1 gilt nicht): Die Listen
+behalten ihre Aufteilung über die Trennlinie, die Detailzeile ist so hoch wie ihr Inhalt. Der Kopf trägt statt des Textes
+„Details“ und des Knopfes „Vergrößern“ den Knopf **„Bearbeiten“** (Stift und Text, in der Kompaktstufe nur der Stift); er
+öffnet die Satz-Überlagerung, beim gesperrten Katalogsatz nur lesend. Der volle Inhalt (Felder, „Alle Daten“,
+Kostenknöpfe, Infoknöpfe) steht dann **ausschließlich in der Überlagerung**. Ohne Kurzangaben (die Ganglinien-Wirte)
+bleibt die Detailzeile wie oben. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster, 130 Zustände ohne Verstoß):
+die Zusammenfassung eine Zeile hoch (29 px in 1 280 × 800); die Projektliste folgt der Trennlinie (138 px wie
+zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt nur die Höhe der Detailzeile ab
+(259 → 223 px).
+
 ### 4.5 Mehrfachauswahl
 
 - Beide Listen tragen eine Kästchenspalte; Klick wählt eine Zeile, Strg+Klick schaltet, Umschalt+Klick
@@ -276,6 +289,14 @@ Ein gesperrter Katalogsatz öffnet nur lesend: Die Fußleiste trägt allein „S
 aufheben“. Mehrere gewählte Sätze öffnen weiter die Satzbearbeitung mit Blätterleiste, ein einzelner ungesperrter
 Katalogsatz weiter den vollen Katalogeditor (KA‑E‑13). Gebaut ist es am Heizkessel; die übrigen Wirte schließen nur
 ihre Knöpfe und die zwei Rückrufe an.
+
+**Präzisiert in ÜS2 (Anwenderentscheid 10.10.2026, Wortlaut in 4.4):** Jede Zeile beider Listen trägt am Ende einen
+**Stift** (Baustein `Zeilenstift`; in der `Katalogliste` über den Parameter `Bearbeiten`, in der Projektliste als eigene
+Spalte des Wirts). Er ist ein Berührungsziel wie die übrigen Zeilenknöpfe, ändert die Zeilenhöhe nicht, zählt nicht zur
+Spaltenwahl und berührt die Kästchen der Mehrfachwahl nicht. Sein Klick wählt die Zeile und öffnet ihren Satz: eine
+Projektzeile ihre Projektkopie in der Satz-Überlagerung (nur, wo der Wirt den Weg der Projektkopie hat), eine gesperrte
+Katalogzeile die Satz-Überlagerung nur lesend, eine ungesperrte den Katalogeditor (KA‑E‑13). „Bearbeiten…“ in den
+Bereichsleisten bleibt der Weg für mehrere gewählte Sätze.
 
 ### 4.7 Tastatur
 
@@ -405,6 +426,13 @@ Detailzeile auf (Kurve Breite × Höhe, Überhang des rollenden Dialogkörpers):
 
 Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700: 982 px, 1 093 × 614: 1 051 px, je
 154 px hoch, der Dialogkörper rollt dort nach KB1).
+
+**Präzisiert in ÜS2 (Zusammenfassung der Detailzeile, 4.4):** Heizkessel — Projektsatz: Leistung (kWth), Brennstoff,
+Träger, Vorlauf/Rücklauf (°C), Brennwert, Invest (€), Betrieb (€/a), Senken; Katalogsatz: die Spalten des
+Katalogprofils (Hersteller, Brennstoff, Leistung, η, Brennwert). Die Kostensummen liest die Hülle je Anlage
+(`KostenSummenCtrl.AnlagenSumme`); im Assistenten und ohne Projekt fehlen sie. BHKW, Pufferspeicher, Stromspeicher,
+Photovoltaik, Solarkollektoren und Wärmepumpe: folgt in ÜS2b. Die Ganglinien-Dialoge behalten die Ganglinie in der
+Detailzeile.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 
