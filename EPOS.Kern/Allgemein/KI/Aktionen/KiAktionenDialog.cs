@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
                     string grund = ZielGrund(a.Text("maske"));
                     if (grund != null) return KiErgebnis.Abgelehnt(grund);
 
-                    KiDialog eintrag = KiDialoge.Katalog.Finde(a.Text("maske").Trim());
+                    KiDialog eintrag = KiDialoge.Katalog.Aufloesen(a.Text("maske"), out _);
                     string ziel = KiMaskenziele.Ziel(eintrag.Maskenname);
 
                     // DAS ARGUMENT (Anwenderentscheid KI-D-Q8): Der Reiter der
@@ -889,13 +889,41 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Maskenschluessel eines Aufrufs: der genannte, sonst die zuletzt
+        /// Der Maskenschluessel eines Aufrufs: der genannte - beim Schluessel oder beim
+        /// Anzeigenamen (<see cref="KiDialogKatalog.Aufloesen"/>) -, sonst die zuletzt
         /// angemeldete Maske.
         /// </summary>
+        /// <remarks>
+        /// Alle Folgeschritte (Bruecke, Ziele, Protokoll) bekommen den aufgeloesten
+        /// SCHLUESSEL. Laesst sich der Name nicht aufloesen, bleibt er stehen; die Absage
+        /// dazu liefert <see cref="BrueckenGrund"/> bzw. <see cref="ZielGrund"/>.
+        /// </remarks>
         private static string Maskenschluessel(string genannt)
         {
             string gesucht = (genannt ?? "").Trim();
-            return gesucht.Length > 0 ? gesucht : KiMaskenbruecke.AktiveMaske();
+            if (gesucht.Length == 0) return KiMaskenbruecke.AktiveMaske();
+
+            KiDialog d = KiDialoge.Katalog.Aufloesen(gesucht, out _);
+            return d != null ? d.Maskenname : gesucht;
+        }
+
+        /// <summary>
+        /// Die genannte Maske aus dem Katalog - beim Schluessel oder beim Anzeigenamen;
+        /// <c>null</c> mit benannter Absage in <paramref name="grund"/>, wenn der Name
+        /// keine oder mehrere Masken trifft.
+        /// </summary>
+        private static KiDialog AufgeloesteMaske(string gesucht, out string grund)
+        {
+            grund = null;
+            KiDialog d = KiDialoge.Katalog.Aufloesen(gesucht, out IReadOnlyList<string> kandidaten);
+            if (d != null) return d;
+
+            grund = kandidaten.Count > 1
+                ? string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeNameMehrdeutig,
+                                gesucht, Aufzaehlen(kandidaten))
+                : string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
+                                gesucht, Aufzaehlen(Freigegeben()));
+            return null;
         }
 
         /// <summary>
@@ -927,9 +955,12 @@ namespace WindowsFormsApplication1
         {
             string gesucht = (genannt ?? "").Trim();
 
-            if (gesucht.Length > 0 && !KiDialoge.Katalog.Kennt(gesucht))
-                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
-                                     gesucht, Aufzaehlen(Anzeigenamen()));
+            if (gesucht.Length > 0)
+            {
+                KiDialog genannteMaske = AufgeloesteMaske(gesucht, out string unbekannt);
+                if (genannteMaske == null) return unbekannt;
+                gesucht = genannteMaske.Maskenname;
+            }
 
             string maske = Maskenschluessel(gesucht);
 
@@ -947,6 +978,20 @@ namespace WindowsFormsApplication1
                                         Aufzaehlen(Beschriftungen(kandidaten)))
                         : null;
 
+                // Ist eine ANDERE Maske offen, nennt die Absage auch sie - mit Anzeigename
+                // und Schluessel: Vielleicht meinte der Aufruf genau die.
+                if (gemeint != null)
+                {
+                    string offen = KiMaskenbruecke.AktiveMaske();
+                    if (offen.Length > 0 &&
+                        !string.Equals(offen, gemeint.Maskenname, StringComparison.OrdinalIgnoreCase))
+                    {
+                        KiDialog offenEintrag = KiDialoge.Katalog.Finde(offen);
+                        weg += " " + string.Format(CultureInfo.CurrentCulture, KiDialogTexte.OffeneMaske,
+                                                   offenEintrag?.Anzeigename ?? offen, offen);
+                    }
+                }
+
                 // Welle #458: Kam der Aufruf aus einer Maske der AUSNAHMELISTE, sagt die
                 // Absage das zuerst - mit ihrem Grund statt der Liste aller Masken.
                 // Nur ohne genannte Maske: Wer eine nennt, meint sie.
@@ -956,7 +1001,7 @@ namespace WindowsFormsApplication1
                 if (weg != null) return weg;
 
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.KeineOffen,
-                                     Aufzaehlen(Anzeigenamen()));
+                                     Aufzaehlen(Freigegeben()));
             }
 
             return null;
@@ -1261,29 +1306,27 @@ namespace WindowsFormsApplication1
             return namen.ToArray();
         }
 
-        /// <summary>Die Anzeigenamen aller Katalogmasken - fuer Absagen an den ANWENDER.</summary>
+        /// <summary>
+        /// Die freigegebenen Katalogmasken als „Anzeigename (Schluessel)" - fuer jede
+        /// Absage, die die Liste nennt.
+        /// </summary>
         /// <remarks>
-        /// Der Typname (<c>Form_PufferSp_Bearbeiten</c>) gehoert in das Protokoll und in
-        /// die Parameter des Modells; in einem Satz, den der Anwender liest, hat er nichts
-        /// zu suchen.
+        /// Der Anwender liest den Anzeigenamen, das Modell braucht einen Namen, den es
+        /// wieder als <c>maske</c> uebergeben kann - beides gilt, beides steht da.
         /// </remarks>
-        private static IReadOnlyList<string> Anzeigenamen()
-        {
-            var namen = new List<string>();
-            foreach (KiDialog d in KiDialoge.Katalog.Alle) namen.Add(d.Anzeigename);
-            return namen;
-        }
+        private static IReadOnlyList<string> Freigegeben() => Beschriftungen(KiDialoge.Katalog.Alle);
 
         /// <summary>Warum <c>dialog_oeffnen</c> diese Maske nicht kennt; <c>null</c> = es geht.</summary>
         private static string ZielGrund(string genannt)
         {
             string gesucht = (genannt ?? "").Trim();
 
-            if (gesucht.Length == 0 || !KiDialoge.Katalog.Kennt(gesucht))
+            if (gesucht.Length == 0)
                 return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.MaskeUnbekannt,
-                                     gesucht, Aufzaehlen(KiDialoge.Katalog.Maskennamen()));
+                                     gesucht, Aufzaehlen(Freigegeben()));
 
-            KiDialog eintrag = KiDialoge.Katalog.Finde(gesucht);
+            KiDialog eintrag = AufgeloesteMaske(gesucht, out string unbekannt);
+            if (eintrag == null) return unbekannt;
             if (!KiMaskenziele.Kennt(eintrag.Maskenname))
                 return string.Format(CultureInfo.CurrentCulture,
                                      MyResource.Resource.KI_AKTION_OEFFNEN_OHNE_ZIEL,

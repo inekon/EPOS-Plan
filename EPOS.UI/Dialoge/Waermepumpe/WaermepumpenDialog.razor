@@ -59,7 +59,8 @@
                         UebernehmenText="@LabelHinzu"
                         UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                         EntfernenText="@LabelEntfernen"
-                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiLoeschen">
+                        EntfernenGesperrt="@(_gewaehlt is null)" Entfernen="BeiLoeschen"
+                        SatzArt="@(_gewaehlt is not null ? Satzmarke.Projektsatz : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner)" SatzName="@(_gewaehlt?.Bezeichner ?? _katalogZeile?.Bezeichner)">
 
         <Links>
             <div class="epos-raster-huelle">

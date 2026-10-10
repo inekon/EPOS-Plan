@@ -343,7 +343,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Ein Feld, das es nirgends gibt, fuehrt ebenfalls auf die Liste - und die nennt
-        /// ANZEIGENAMEN, keine Typnamen.
+        /// je Maske den ANZEIGENAMEN und dahinter in Klammern den Schluessel: Der Anwender
+        /// liest den Namen, das Modell kann beides wieder als <c>maske</c> uebergeben.
         /// </summary>
         [Fact]
         public void Ein_unbekanntes_Feld_fuehrt_auf_die_Liste_mit_Anzeigenamen()
@@ -355,8 +356,9 @@ namespace EPOS.Kern.Tests
             Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL).Anzeigename,
                             text, StringComparison.Ordinal);
 
-            // Der Typname gehoert ins Protokoll, nicht in einen Satz fuer den Anwender.
-            Assert.DoesNotContain(KiMaskennamen.HEIZKESSEL, text, StringComparison.Ordinal);
+            // Der Schluessel steht nur in Klammern hinter dem Anzeigenamen.
+            KiDialog hk = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL);
+            Assert.Contains(hk.Anzeigename + " (" + hk.Maskenname + ")", text, StringComparison.Ordinal);
         }
 
         // ============================ Der tolerante Feldname (KI-F1b, KI-D-Q6)
@@ -781,6 +783,160 @@ namespace EPOS.Kern.Tests
 
             Assert.True(fremd.Count == 0,
                 "Diese Anzeigenamen schickt die Absage in eine fremde Maske:\n" + string.Join("\n", fremd));
+        }
+
+        // ===================================================== Die Maske beim Anzeigenamen
+
+        /// <summary>
+        /// Meldet die Wärmepumpe im Projekt mit Vorlauf und Rücklauf an der Brücke an,
+        /// führt <paramref name="pruefen"/> aus und räumt danach ab.
+        /// </summary>
+        private static void MitWaermepumpe(Action<Func<int>, Func<int>> pruefen, string zusaetzlich = null)
+        {
+            KiDialog eintrag = KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE);
+            int vorlauf = 35, ruecklauf = 28;
+
+            Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+            Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+            KiMaskenbruecke.Leeren();
+            try
+            {
+                if (zusaetzlich == null)
+                {
+                    KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, new List<KiFeldzugang>
+                    {
+                        new KiFeldzugang(eintrag.FindeFeld("vorlauf"), () => vorlauf, w => vorlauf = (int)w, typeof(int)),
+                        new KiFeldzugang(eintrag.FindeFeld("ruecklauf"), () => ruecklauf, w => ruecklauf = (int)w, typeof(int))
+                    });
+                }
+                else
+                {
+                    KiDialog offen = KiDialoge.Katalog.Finde(zusaetzlich);
+                    KiMaskenbruecke.Anmelden(offen.Maskenname, offen, new List<KiFeldzugang>
+                    {
+                        new KiFeldzugang(offen.FindeFeld("vorlauf"), () => vorlauf, w => vorlauf = (int)w, typeof(int))
+                    });
+                }
+
+                pruefen(() => vorlauf, () => ruecklauf);
+            }
+            finally
+            {
+                KiMaskenbruecke.Leeren();
+                Schreibnaht.Schreibrecht = schreibrechtVorher;
+            }
+        }
+
+        /// <summary>
+        /// <b>Anwendermeldung 10.10.2026:</b> Das Modell nannte die Maske so, wie der
+        /// Feldblock sie zeigt — „Wärmepumpe im Projekt" —, und jede Aktion sagte ab, die
+        /// Maske sei nicht freigegeben. Der Anzeigename gilt wie der Schlüssel.
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Der_Anzeigename_gilt_als_maske_fuer_jede_Formularaktion(string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+            string anzeige = KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE).Anzeigename;
+
+            MitWaermepumpe((_, _) =>
+            {
+                Assert.Null(Grund("feld_setzen", new Dictionary<string, object>
+                    { ["maske"] = anzeige, ["feld"] = "vorlauf", ["wert"] = "50" }));
+                Assert.Null(Grund("formular_ausfuellen", new Dictionary<string, object>
+                    { ["maske"] = anzeige, ["werte"] = "vorlauf=50; ruecklauf=45" }));
+                Assert.Null(Grund("dialog_lesen", new Dictionary<string, object> { ["maske"] = anzeige }));
+            });
+        }
+
+        [Fact]
+        public void Dialog_lesen_liest_die_Maske_beim_Anzeigenamen()
+        {
+            string anzeige = KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE).Anzeigename;
+            KiErgebnis ergebnis = null;
+
+            MitWaermepumpe((_, _) =>
+            {
+                ergebnis = Frisch().AusfuehrenAsync("dialog_lesen",
+                    new Dictionary<string, object> { ["maske"] = anzeige }).GetAwaiter().GetResult();
+            });
+
+            Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+            Assert.Contains(anzeige, ergebnis.Text, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("waermepumpe im projekt")]
+        [InlineData("WÄRMEPUMPE IM PROJEKT")]
+        [InlineData("Wärmepumpe-im-Projekt")]
+        [InlineData("Form_WP_Anlage")]
+        [InlineData("form_wp_anlage")]
+        public void Gefaltete_Namen_und_der_Schluessel_gelten_weiter(string genannt)
+        {
+            MitWaermepumpe((_, _) =>
+                Assert.Null(Grund("formular_ausfuellen", new Dictionary<string, object>
+                    { ["maske"] = genannt, ["werte"] = "vorlauf=50; ruecklauf=45" })));
+        }
+
+        [Fact]
+        public void Ein_mehrdeutiger_Maskenname_nennt_die_Kandidaten_mit_Schluessel()
+        {
+            MitWaermepumpe((vorlauf, _) =>
+            {
+                string grund = Grund("feld_setzen", new Dictionary<string, object>
+                    { ["maske"] = "Wärmepumpe", ["feld"] = "vorlauf", ["wert"] = "50" });
+
+                Assert.NotNull(grund);
+                Assert.Contains("„Wärmepumpe“", grund, StringComparison.Ordinal);
+                Assert.Contains("Wärmepumpe im Projekt (" + KiMaskennamen.WAERMEPUMPE_ANLAGE + ")", grund,
+                                StringComparison.Ordinal);
+                Assert.Contains("Wärmepumpen verwalten (", grund, StringComparison.Ordinal);
+                Assert.Equal(35, vorlauf());
+            });
+        }
+
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Eine_unbekannte_Maske_nennt_die_Freigaben_mit_Anzeigename_und_Schluessel(string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+            KiDialog erste = KiDialoge.Katalog.Alle[0];
+
+            string grund = Grund("formular_ausfuellen", new Dictionary<string, object>
+                { ["maske"] = "Form_GibtEsNicht", ["werte"] = "vorlauf=50" });
+
+            Assert.NotNull(grund);
+            Assert.Contains("Form_GibtEsNicht", grund, StringComparison.Ordinal);
+            Assert.Contains(erste.Anzeigename + " (" + erste.Maskenname + ")", grund, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Genannt, im Katalog, aber nicht offen — und eine ANDERE Maske ist offen: Die
+        /// Absage nennt den Weg zur genannten und die offene, beide mit Schlüssel.
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Genannt_aber_nicht_offen_nennt_die_offene_Maske(string kultur)
+        {
+            using var k = new Kulturvorrichtung(kultur);
+            KiDialog wp = KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE);
+            KiDialog offen = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_PROJEKT);
+
+            MitWaermepumpe((_, _) =>
+            {
+                string grund = Grund("feld_setzen", new Dictionary<string, object>
+                    { ["maske"] = wp.Anzeigename, ["feld"] = "vorlauf", ["wert"] = "50" });
+
+                Assert.NotNull(grund);
+                Assert.Contains(wp.Anzeigename, grund, StringComparison.Ordinal);
+                Assert.Contains(wp.Maskenname, grund, StringComparison.Ordinal);
+                Assert.Contains("dialog_oeffnen", grund, StringComparison.Ordinal);
+                Assert.Contains(offen.Anzeigename, grund, StringComparison.Ordinal);
+                Assert.Contains("(" + offen.Maskenname + ")", grund, StringComparison.Ordinal);
+            }, zusaetzlich: KiMaskennamen.HEIZKESSEL_PROJEKT);
         }
 
         /// <summary>Führt <paramref name="aktion"/> unter einem Aufruf aus und räumt ihn danach weg.</summary>

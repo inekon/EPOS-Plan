@@ -219,6 +219,15 @@ Bestätigung **und** Sicherungspunkt, weil datenbankwirksam), rechnen (Stufe 3: 
 Flotte bewerten — nebenläufig mit `Fortschritt`, abbrechbar). Speichern durch den Assistenten ist nach KI‑D‑Q4
 erlaubt, aber nie ohne Bestätigung und Sicherungspunkt.
 
+**Die Maske beim Namen.** Der Parameter `maske` aller Dialogaktionen (`dialog_lesen`, `feld_setzen`,
+`formular_ausfuellen`, `reihe_setzen`, `dialog_speichern`, `dialog_aktion_ausfuehren`, `dialog_oeffnen`) nimmt den
+Schlüssel (`Form_WP_Anlage`) oder den Anzeigenamen („Wärmepumpe im Projekt“) nach der Namensregel von `KiWahl` —
+Schlüssel, gefalteter Schlüssel, gefalteter Anzeigename, eindeutiger Anfang, eindeutig enthaltener Teil, zuletzt ohne
+Bindestriche —; ohne Angabe gilt die zuletzt angemeldete Maske. Weiter geht stets der aufgelöste Schlüssel. Ein Name,
+der mehrere Masken trifft, wird mit den Kandidaten abgesagt, ein unbekannter mit der Liste der freigegebenen Masken,
+beide als „Anzeigename (Schlüssel)“; ist die genannte Maske nicht offen, nennt die Absage den Weg dorthin und die
+gerade geöffnete Maske. Der Feldblock im Prompt nennt Anzeigename und Schlüssel der offenen Maske.
+
 **Nebenläufig, mit Fortschritt und Abbruch — seit #214 wirklich.** Auftrag #201 hatte den Weg gebaut und die
 zwei Enden offengelassen: `KiLaufumgebung` trug Melder und Abbruchmarke bis in die drei Rechenaktionen, aber die
 Chat-Hülle reichte `CancellationToken.None` herein und belegte die Senke `KiAusfuehrung.Fortschritt` nicht — ein
