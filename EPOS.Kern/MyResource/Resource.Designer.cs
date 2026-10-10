@@ -53797,6 +53797,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeitstufe gibt es nur auf dem Grafikblatt, solange es eine Reihe zeichnet. ähnelt.
+        /// </summary>
+        public static string KI_BERG_ZEITSTUFE_NUR_GRAFIK {
+            get {
+                return ResourceManager.GetString("KI_BERG_ZEITSTUFE_NUR_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gefundene Hilfeabschnitte: ähnelt.
         /// </summary>
         public static string KI_CHAT_ABSCHNITTE {
@@ -54553,6 +54562,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BERG_TABELLE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BERG_TABELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik das Jahr, eine Woche oder einen Tag? Welche Woche oder welcher Tag, wählt der Anwender mit dem Navigator. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_ZEITSTUFE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_ZEITSTUFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstufe der Grafik ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_ZEITSTUFE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_ZEITSTUFE_NAME", resourceCulture);
             }
         }
         
@@ -64372,6 +64399,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_ADAPTIV_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_ADAPTIV_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schalter der Ergebnisansichten nach einem Lauf — Reihen, sortiert, Zeitraum, Speicher, Einheit und die Stellen der zwei Schieber der Größenrechnung; je Option einer Wahl ein Schalter. Sie stellen nur das Bild ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ANZEIGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ANZEIGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ANZEIGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ANZEIGE_NAME", resourceCulture);
             }
         }
         

@@ -676,6 +676,41 @@ public class BedarfErgebnisDialogTests : EposBunitContext
             Modell = (stufe, nummer) => { ruf.Add((stufe, nummer)); return FENSTER; }
         };
 
+    /// <summary>
+    /// Die Zeitstufe des Grafikreiters ist das Feld „zeitstufe" des Ergebnisdialogs (Freigabe der
+    /// Masken, Teil C): über <c>feld_setzen</c> mit ihrem Text gesetzt, holt das Kind sein Bild wie
+    /// nach der Optionsgruppe; ohne gezeichnete Reihe sagt der Sperrgrund ab.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_die_Zeitstufe_ueber_das_Feld_des_Wirts()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var ruf = new List<(Gangstufe, int)>();
+            var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
+                               "Strombedarf monatlich", "Grafik Strombedarf");
+
+            KiKern.KiErgebnis woche = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.BEDARF_ERGEBNIS, "zeitstufe", "Woche"));
+
+            Assert.True(woche.Status == KiKern.KiStatus.Ausgefuehrt, woche.Text);
+            Assert.Equal(Gangstufe.Woche, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
+            cut.WaitForAssertion(() => Assert.Contains((Gangstufe.Woche, 0), ruf));
+            cut.Instance.Dispose();
+
+            var ohne = Aufbauen(Strom(2), "Strombedarf Ergebnisse", "Strombedarf monatlich", "Grafik Strombedarf");
+            KiVorbereitung abgesagt = await ohne.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Vorbereiten(
+                KiMaskennamen.BEDARF_ERGEBNIS, "zeitstufe", "Woche"));
+            Assert.Null(abgesagt.Freigabe);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
     [Fact]
     public void Der_Grafikreiter_zeigt_Jahr_Woche_und_Tag()
     {

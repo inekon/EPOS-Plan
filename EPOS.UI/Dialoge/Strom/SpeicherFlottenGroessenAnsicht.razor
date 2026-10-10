@@ -83,6 +83,8 @@
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @using SpeicherEngine
+@using EPOS.UI.Seiten.Simulation
+@implements IDisposable
 
 <div class="epos-flotte-groessen">
 
@@ -652,6 +654,57 @@
         _zeile = Stelle(e, _raster.Zeilenwerte.Count);
         Zeichnen();
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Freigabe der Masken, Teil C): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>Das Register der Anzeigeschalter des Wirts; <c>null</c> = ein Prüfstand ohne Wirt.</summary>
+    [CascadingParameter] public Ergebnisanzeige? Anzeige { get; set; }
+
+    protected override void OnInitialized() => Anzeige?.Melden(this, Anzeigeschalter);
+
+    /// <inheritdoc/>
+    public void Dispose() => Anzeige?.Abmelden(this);
+
+    /// <summary>
+    /// Die Schalter der Größenrechnung, wie sie gezeichnet sind: je Einheit eine Option (nur bei
+    /// mehr als einer Einheit) und je Stelle der zwei Schieber eine Option, beschriftet mit dem
+    /// Wert der Achse — ein Schieber steht immer auf einer Stelle, nie dazwischen. Die Filter
+    /// der Kandidatentabelle, „Übernehmen" und CSV bleiben beim Anwender.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter> Anzeigeschalter()
+    {
+        var liste = new List<EPOS.UI.Seiten.Simulation.Anzeigeschalter>();
+        if (Ergebnis is null || Methode == FlottenSuchmethode.Stueckzahl || _raster.IstLeer) return liste;
+
+        if (Einheiten > 1)
+        {
+            foreach ((int Id, string Text) e in Einheitenwahl)
+            {
+                int id = e.Id;
+                liste.Add(Option(Resource.FLOTTE_GROESSEN_LBL_EINHEIT + ": " + e.Text, () => _einheit == id,
+                                 () => EinheitGesetzt(id)));
+            }
+        }
+        for (int i = 0; i < _raster.Spaltenwerte.Count; i++)
+        {
+            int stelle = i;
+            liste.Add(Option(Spaltenschieber + ": " + SpeicherFlottenAnzeigeCtrl.Werttext(_raster.Spaltengroesse, _raster.Spaltenwerte[i]),
+                             () => _spalte == stelle, () => { _spalte = stelle; Zeichnen(); }));
+        }
+        for (int i = 0; i < _raster.Zeilenwerte.Count; i++)
+        {
+            int stelle = i;
+            liste.Add(Option(Zeilenschieber + ": " + SpeicherFlottenAnzeigeCtrl.Werttext(_raster.Zeilengroesse, _raster.Zeilenwerte[i]),
+                             () => _zeile == stelle, () => { _zeile = stelle; Zeichnen(); }));
+        }
+        return liste;
+    }
+
+    private EPOS.UI.Seiten.Simulation.Anzeigeschalter Option(string name, Func<bool> gewaehlt, Action waehlen)
+        => EPOS.UI.Seiten.Simulation.Anzeigeschalter.Wahloption(name, gewaehlt, waehlen,
+                                                                 () => _ = InvokeAsync(StateHasChanged));
 
     /// <summary>Die Stelle aus dem Schieber — außerhalb der Achse wird geklemmt.</summary>
     private static int Stelle(ChangeEventArgs e, int anzahl)

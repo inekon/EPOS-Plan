@@ -183,15 +183,7 @@ namespace WindowsFormsApplication1
             new KiAusnahme("BetriebsmodusDialog", KiAusnahmegrund.FeldDesWirts,
                            "Der Betriebsmodus ist das Feld „betriebsmodus“ der Maske Simulation — " +
                            "derselbe Schreibweg (BetriebsmodusSchreiben); die Überlagerung bleibt dem Anwender.",
-                           hilfeschluessel: "Form_Betriebsmodus.btn_Help"),
-
-            // ---- Anzeigen mit Schaltern eines Bildes ---------------------------------
-            new KiAusnahme("BedarfGangGrafik", KiAusnahmegrund.Anzeige,
-                           "Die Optionsgruppe wählt nur die gezeigte Kurve."),
-            new KiAusnahme("SpeicherFlottenErgebnisAnsicht", KiAusnahmegrund.Anzeige,
-                           "Die Schalter stellen nur das Ergebnisbild der Flotte ein."),
-            new KiAusnahme("SpeicherFlottenGroessenAnsicht", KiAusnahmegrund.Anzeige,
-                           "Die Wahl stellt nur das Bild der Größenrechnung ein.")
+                           hilfeschluessel: "Form_Betriebsmodus.btn_Help")
 
             // ---- Offen ----------------------------------------------------------------
             // Eine Maske mit Einstellwerten, die noch nicht angebunden ist, steht hier als

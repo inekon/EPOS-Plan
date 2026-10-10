@@ -2305,7 +2305,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Die_Stromspeicher_Ansicht_fuehrt_fuenfundachtzig_Felder_und_keinen_Knopf()
+    public void Die_Stromspeicher_Ansicht_fuehrt_sechsundachtzig_Felder_und_keinen_Knopf()
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
 
@@ -2319,10 +2319,13 @@ public class KiDialogkatalogTests : IDisposable
         // Mit der Welle KI-F6 kommen die STATIONEN 1 bis 4 dazu (Statuszeile #420,
         // Punkt b): 23 Spalten je Speichereinheit, 17 Felder der Datenquellen und
         // Kostensätze, 10 der Betriebsführung samt Netz und Prognose und 8 Spalten je
-        // Suchachse — 58 neue, zusammen 85.
-        Assert.Equal(85, d.Felder.Count);
+        // Suchachse — 58 neue, zusammen 85. Mit der Freigabe der Masken (Teil C) die
+        // SPALTE „anzeige" der Schalter beider Ergebnisansichten — 86.
+        Assert.Equal(86, d.Felder.Count);
+        Assert.Equal(1, d.Felder.Count(f => f.Sammlung == "Ergebnisschalter"));
 
-        // ZWEI Sammlungen: die Einheiten der Flotte und die Achsen des Suchraums.
+        // DREI Sammlungen: die Einheiten der Flotte, die Achsen des Suchraums und die
+        // Schalter der Ergebnisansichten.
         // Ihre Zahl steht erst zur Laufzeit fest; deshalb sind sie Spalten und keine
         // Einzelfelder.
         Assert.Equal(23, d.Felder.Count(f => f.Sammlung == "Einheitenzeilen"));

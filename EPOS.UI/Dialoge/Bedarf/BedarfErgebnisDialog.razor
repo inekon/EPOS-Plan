@@ -210,7 +210,7 @@
                                        AuswahlChanged="GrafiksichtWaehlen" />
                     }
 
-                    <BedarfGangGrafik Quelle="@Gangquelle"
+                    <BedarfGangGrafik @ref="_gang" Quelle="@Gangquelle"
                                       StufeJahrText="@StufeJahrText"
                                       StufeWocheText="@StufeWocheText"
                                       StufeTagText="@StufeTagText"
@@ -595,7 +595,16 @@
                 Sichtwahl, e => e.Id, e => e.Text),
 
             JahresverlaufLesen = () => _jahresverlauf,
-            JahresverlaufSetzen = JahresverlaufUmschalten
+            JahresverlaufSetzen = JahresverlaufUmschalten,
+
+            // Freigabe der Masken, Teil C: die Zeitstufe des Grafikreiters (Kind
+            // BedarfGangGrafik) - gelesen und gesetzt ueber die Referenz auf das Kind.
+            ZeitstufeLesen = () => _gang is { StufeGezeigt: true } g ? (int)g.Stufe : null,
+            ZeitstufeSetzen = id => (_gang is { StufeGezeigt: true } g
+                ? g : throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KI_BERG_ZEITSTUFE_NUR_GRAFIK))
+                .StufeSetzen(id),
+            ZeitstufeEintraege = () => KiMaskenanmeldung.Eintraege(
+                _gang?.Stufeneintraege ?? Array.Empty<(int Id, string Text)>(), e => e.Id, e => e.Text)
         };
     }
 
@@ -608,8 +617,14 @@
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
-        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        // Die Zeitstufe gibt es nur, solange der Grafikreiter eine Reihe zeichnet.
+        Sperrgrund = f => f == "zeitstufe" && _gang is not { StufeGezeigt: true }
+            ? WindowsFormsApplication1.MyResource.Resource.KI_BERG_ZEITSTUFE_NUR_GRAFIK : null
     };
+
+    /// <summary>Der Grafikreiter mit den drei Zeitstufen; <c>null</c>, solange er nicht gezeichnet ist.</summary>
+    private BedarfGangGrafik? _gang;
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();

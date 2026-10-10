@@ -2150,6 +2150,8 @@
         internal static string BergGrafiksichtErl => MyResource.Resource.KI_DLG_BERG_GRAFIK_ERL;
         internal static string BergJahresverlaufName => MyResource.Resource.BERG_SCH_JAHRESVERLAUF;
         internal static string BergJahresverlaufErl => MyResource.Resource.KI_DLG_BERG_JAHRESVERLAUF_ERL;
+        internal static string BergZeitstufeName => MyResource.Resource.KI_DLG_BERG_ZEITSTUFE_NAME;
+        internal static string BergZeitstufeErl => MyResource.Resource.KI_DLG_BERG_ZEITSTUFE_ERL;
 
         // ============ Waermebedarf, Solarganglinie und Klimadaten (Welle KI-F3)
 
@@ -3167,6 +3169,10 @@
         internal static string MaskeKatalogDubletten => MyResource.Resource.KI_DLG_MASKE_DUBL;
         internal static string DublKatalogName => MyResource.Resource.KI_DLG_DUBL_KATALOG_NAME;
         internal static string DublKatalogErl => MyResource.Resource.KI_DLG_DUBL_KATALOG_ERL;
+
+        // Die Schalter der Ergebnisansichten der Stromspeicher-Auslegung (eine Spalte des Wirts).
+        internal static string SpaAnzeigeName => MyResource.Resource.KI_DLG_SPA_ANZEIGE_NAME;
+        internal static string SpaAnzeigeErl => MyResource.Resource.KI_DLG_SPA_ANZEIGE_ERL;
 
         // ---- Form_PeakShaving
         internal static string PeakQuelleName => MyResource.Resource.PEAK_GRP_QUELLE;

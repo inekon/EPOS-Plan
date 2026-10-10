@@ -85,6 +85,20 @@ public sealed class StromspeicherKiSicht
     public Action<FlottenBetriebsziel, bool>? BetriebGemeldet { get; init; }
 
     /// <summary>
+    /// Liefert die Schalter der gezeichneten Ergebnisansichten (Größenrechnung und Betrieb der
+    /// Flotte); <c>null</c> oder leer, solange kein Lauf steht (Freigabe der Masken, Teil C).
+    /// </summary>
+    public Func<IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter>>? ErgebnisschalterLesen { get; init; }
+
+    /// <summary>
+    /// Die Schalter der Anzeige der Ergebnisansichten — eine SPALTE, je Schalter eine Zeile mit
+    /// seiner Beschriftung als Kennzeichen. Sie stellen nur das Bild ein; Wahlen (Zeitraum,
+    /// Speicher, Einheit, Stelle eines Schiebers) stehen je Option als Schalter.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter> Ergebnisschalter
+        => ErgebnisschalterLesen?.Invoke() ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>();
+
+    /// <summary>
     /// Der Sperrgrund je Feld (<c>KiMaskenhaken.Sperrgrund</c>); <c>null</c> = frei.
     /// </summary>
     /// <remarks>
@@ -99,11 +113,16 @@ public sealed class StromspeicherKiSicht
     {
         if (string.IsNullOrWhiteSpace(feld)) return null;
         if (string.Equals(feld, FELD_LEISTUNGSPREIS, StringComparison.Ordinal)) return LeistungspreisVonHand;
+        // Die Schalter der Ergebnisansichten stellen nur das Bild ein; es gibt sie nur nach einem Lauf.
+        if (feld.StartsWith(FELD_ANZEIGE, StringComparison.Ordinal)) return null;
         return Flotte is not null ? null : OhneFlotte;
     }
 
     /// <summary>Der Katalogschlüssel des Leistungspreises (gesperrt, siehe <see cref="Sperrgrund"/>).</summary>
     public const string FELD_LEISTUNGSPREIS = "leistungspreis";
+
+    /// <summary>Der Katalogschlüssel der Spalte der Anzeigeschalter (Zeilen <c>anzeige_1</c> …).</summary>
+    public const string FELD_ANZEIGE = "anzeige";
 
     // =====================================================================
     //  Wo der Anwender steht (Auftrag #224)

@@ -36,6 +36,7 @@
 @namespace EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-gang">
 
@@ -229,4 +230,29 @@
         if (_nummer[i] >= Anzahl) _nummer[i] = Anzahl - 1;
         if (_nummer[i] < 0) _nummer[i] = 0;
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Freigabe der Masken, Teil C): die Zeitstufe als Feld des Wirts
+    // =====================================================================
+
+    private bool _entfernt;
+
+    /// <summary>Steht die Zeitstufe gerade im Bild (eine Reihe da, der Baustein montiert)?</summary>
+    public bool StufeGezeigt => Quelle is not null && !_entfernt;
+
+    /// <summary>Die drei Zeitstufen, wie die Optionsgruppe sie führt.</summary>
+    public IReadOnlyList<(int Id, string Text)> Stufeneintraege => Stufenwahl;
+
+    /// <summary>
+    /// Setzt die Zeitstufe auf demselben Weg wie die Optionsgruppe (die Nummer der Stufe wird
+    /// geklemmt) und zeichnet neu. Der Navigator ◀ ▶ bleibt ein Knopf.
+    /// </summary>
+    public void StufeSetzen(int? id)
+    {
+        StufeWaehlen(id);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _entfernt = true;
 }

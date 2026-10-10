@@ -547,6 +547,11 @@
     /// „sortiert" und je Reihe des Bildes ein Schalter — nur, solange das Bild des
     /// Laufs steht (ein Lauf ohne Flottenergebnis, mit Modelldelegat).
     /// </summary>
+    /// <remarks>
+    /// <b>Mit Flottenergebnis</b> steht statt des Bildes die <c>SpeicherFlottenErgebnisAnsicht</c>;
+    /// sie meldet ihre Schalter selbst beim selben Register an (Freigabe der Masken, Teil C) —
+    /// hier stünden sie doppelt.
+    /// </remarks>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
     {
         if (!Daten.LaufVorhanden || Daten.Flottenergebnis is not null || Modell is null)

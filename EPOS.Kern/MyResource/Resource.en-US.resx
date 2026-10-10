@@ -51090,5 +51090,20 @@ chart</value>
   <data name="KI_DUBL_LAEUFT" xml:space="preserve">
     <value>A check is running; the catalogue can be chosen again afterwards.</value>
   </data>
+  <data name="KI_DLG_BERG_ZEITSTUFE_NAME" xml:space="preserve">
+    <value>Time scale of the chart</value>
+  </data>
+  <data name="KI_DLG_BERG_ZEITSTUFE_ERL" xml:space="preserve">
+    <value>Does the chart show the year, a week or a day? Which week or day the user chooses with the navigator.</value>
+  </data>
+  <data name="KI_BERG_ZEITSTUFE_NUR_GRAFIK" xml:space="preserve">
+    <value>The time scale only exists on the chart sheet while it draws a series.</value>
+  </data>
+  <data name="KI_DLG_SPA_ANZEIGE_NAME" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="KI_DLG_SPA_ANZEIGE_ERL" xml:space="preserve">
+    <value>The switches of the result views after a run — series, sorted, period, storage, unit and the positions of the two sliders of the size search; one switch per option of a choice. They only adjust the picture.</value>
+  </data>
 </root>
 

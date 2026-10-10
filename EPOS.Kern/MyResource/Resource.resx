@@ -51097,5 +51097,20 @@ Chart</value>
   <data name="KI_DUBL_LAEUFT" xml:space="preserve">
     <value>Ein Prüflauf läuft gerade; danach lässt sich der Katalog wieder wählen.</value>
   </data>
+  <data name="KI_DLG_BERG_ZEITSTUFE_NAME" xml:space="preserve">
+    <value>Zeitstufe der Grafik</value>
+  </data>
+  <data name="KI_DLG_BERG_ZEITSTUFE_ERL" xml:space="preserve">
+    <value>Zeigt die Grafik das Jahr, eine Woche oder einen Tag? Welche Woche oder welcher Tag, wählt der Anwender mit dem Navigator.</value>
+  </data>
+  <data name="KI_BERG_ZEITSTUFE_NUR_GRAFIK" xml:space="preserve">
+    <value>Die Zeitstufe gibt es nur auf dem Grafikblatt, solange es eine Reihe zeichnet.</value>
+  </data>
+  <data name="KI_DLG_SPA_ANZEIGE_NAME" xml:space="preserve">
+    <value>Anzeige</value>
+  </data>
+  <data name="KI_DLG_SPA_ANZEIGE_ERL" xml:space="preserve">
+    <value>Die Schalter der Ergebnisansichten nach einem Lauf — Reihen, sortiert, Zeitraum, Speicher, Einheit und die Stellen der zwei Schieber der Größenrechnung; je Option einer Wahl ein Schalter. Sie stellen nur das Bild ein.</value>
+  </data>
 </root>
 

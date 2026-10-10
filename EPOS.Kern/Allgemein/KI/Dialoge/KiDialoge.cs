@@ -5140,7 +5140,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("jahresverlauf", "BedarfErgebnisKiSicht.Jahresverlauf",
                                      KiDialogTexte.BergJahresverlaufName,
                                      KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.BergJahresverlaufErl)
+                                     KiDialogTexte.BergJahresverlaufErl),
+                    // Freigabe der Masken, Teil C: die Zeitstufe des Grafikreiters (Kind
+                    // BedarfGangGrafik); der Navigator bleibt ein Knopf.
+                    new KiDialogFeld("zeitstufe", "BedarfErgebnisKiSicht.Zeitstufe",
+                                     KiDialogTexte.BergZeitstufeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergZeitstufeErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -9088,7 +9093,15 @@ namespace WindowsFormsApplication1
                                      "StromspeicherKiSicht.Suchachsen[].AnzahlBis",
                                      KiDialogTexte.Spa4AnzahlBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.Spa4AnzahlBisErl,
-                                     zeilenkennzeichen: ACHSENKENNZEICHEN)
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+
+                    // ---- Freigabe der Masken, Teil C: die Schalter der Ergebnisansichten ----
+                    // Groessenrechnung und Betrieb der Flotte (Kinder SpeicherFlottenGroessenAnsicht
+                    // und SpeicherFlottenErgebnisAnsicht) sind eine SPALTE des Wirts, je Schalter
+                    // eine Zeile - eine eigene Maske verdraengte diese als aktive.
+                    new KiDialogFeld("anzeige", "StromspeicherKiSicht.Ergebnisschalter[].An",
+                                     KiDialogTexte.SpaAnzeigeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaAnzeigeErl, zeilenkennzeichen: "Name")
                 });
         }
 

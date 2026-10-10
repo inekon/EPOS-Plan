@@ -315,6 +315,9 @@
                    (Hausregel Leerzustand). *@
                 @if (_flottenErgebnis.Auslegung is not null)
                 {
+                    @* Die Schalter der Groessenansicht melden sich beim Register der Seite
+                       (Freigabe der Masken, Teil C). *@
+                    <CascadingValue Value="_anzeige" IsFixed="true">
                     <OptimierungsergebnisBlock Ergebnis="@_flottenErgebnis.Auslegung"
                                                Flotte="@Flotte" Methode="@_laufMethode"
                                                Einheiten="@Einheitenzahl"
@@ -326,6 +329,7 @@
                                                       : EventCallback.Factory.Create(this, BesteVarianteUebernehmen))"
                                                BesteGesperrt="@(_veraltet || _laeuft)"
                                                BesteGesperrtGrund="@Resource.FLOTTE_BESTE_GESPERRT" />
+                    </CascadingValue>
                 }
                 else
                 {
@@ -363,6 +367,7 @@
                                                                   gezeigt.KandidatId)</p>
                 }
 
+                <CascadingValue Value="_anzeige" IsFixed="true">
                 <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
                                                 VorausschauPeakZielKw="@_peakVorausschau?.PeakZielKw"
                                                 Csv="@(Dienste?.Csv is null ? default
@@ -370,6 +375,7 @@
                                                 BetriebsfuehrungAendern="ZurBetriebsfuehrung"
                                                 FarbeSetzen="@Dienste?.FarbeSetzen"
                                                 FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />
+                </CascadingValue>
 
                 <div class="epos-simerg-fuss">
                     @if (Dienste?.ProjektflotteAktivieren is not null
@@ -865,7 +871,8 @@
                                             () => _vorpruefung, () => SchrittText)
         {
             Gemeldet = () => _ = InvokeAsync(Geaendert),
-            BetriebGemeldet = (ziel, ratsche) => _ = InvokeAsync(() => BetriebsfolgenZiehen(ziel, ratsche))
+            BetriebGemeldet = (ziel, ratsche) => _ = InvokeAsync(() => BetriebsfolgenZiehen(ziel, ratsche)),
+            ErgebnisschalterLesen = () => _anzeige.Schalter
         };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
                                           () => _kiSicht, KiHaken());
@@ -989,6 +996,12 @@
     /// Zugriff aus den drei lebenden Ständen.
     /// </summary>
     private StromspeicherKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Das Register der Anzeigeschalter der zwei Ergebnisansichten (Größenrechnung und Betrieb
+    /// der Flotte); die Sicht führt sie als Spalte (Freigabe der Masken, Teil C).
+    /// </summary>
+    private readonly Ergebnisanzeige _anzeige = new();
 
     /// <summary>
     /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. <b>Angemeldet heißt nicht

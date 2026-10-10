@@ -92,6 +92,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("LeistungspreisBlock",            "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("OptimierungBlock",               "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        // Freigabe der Masken, Teil C: die zwei Ergebnisansichten der Flotte - ihre Schalter sind
+        // die Spalte „anzeige" des Wirts (Register Ergebnisanzeige). Die Betriebsansicht steht
+        // zugleich im StromspeicherReiter der Simulation und meldet sich dort beim Register der
+        // SimulationSeite; die Tafel kennt einen Wirt je Kind, hier steht der Hauptwirt.
+        new("SpeicherFlottenGroessenAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        new("SpeicherFlottenErgebnisAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        // Die Zeitstufe des Grafikreiters ist das Feld „zeitstufe" des Ergebnisdialogs.
+        new("BedarfGangGrafik",               "BedarfErgebnisDialog",        KiMaskennamen.BEDARF_ERGEBNIS),
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
@@ -282,6 +290,7 @@ public sealed class KiMaskenabdeckungWacheTests
 
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
+        new("BedarfGangGrafik", 1, "die Zeitstufe ist das Feld „zeitstufe“ des Wirts; der Navigator bleibt ein Knopf"),
         new("BedarfReiter", 3),
         // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
         new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
@@ -499,6 +508,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
         new("StromspeicherReiter", 2),
+        new("SpeicherFlottenErgebnisAnsicht", 6, "alle Schalter und Wahlen stehen je Option als Zeile der Spalte „anzeige“ des Wirts"),
+        new("SpeicherFlottenGroessenAnsicht", 3, "Einheit und die Stellen beider Schieber stehen je Option als Zeile der Spalte „anzeige“ des Wirts"),
         // Zapfprofil Z4, Gruppe 2b: der Tagesgang-Editor (Tagtyp, Stundenanteile und Wochenfaktoren als
         // Zahlenreihen, Vorlage, Katalogversion der Kopie).
         new("TagesgangEditor", 5),
