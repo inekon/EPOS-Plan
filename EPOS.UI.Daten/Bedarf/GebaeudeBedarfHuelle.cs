@@ -175,6 +175,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["BildauftragZone"] = zonenbild,
                 ["BildauftragRaumtemperaturZone"] = zonenraumbild,
                 ["Bildauftrag"] = new Func<bool, Zeichenmodell>(

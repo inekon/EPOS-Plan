@@ -75,6 +75,7 @@ namespace WindowsFormsApplication1
 
             var werte = new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
                 // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung - mit

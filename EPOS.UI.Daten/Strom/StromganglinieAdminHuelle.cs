@@ -40,6 +40,7 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
                 // W14a-E-10 / S3.2: die Katalogliste des Hauses, mit Jahresarbeit und
                 // Spitze aus EINER Gruppenabfrage ueber die 78 840 Wertzeilen.
                 ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(KatalogLesen),
