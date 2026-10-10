@@ -44,7 +44,7 @@ In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eint
 * '''Zirkulation vorhanden''' – ''nein'' nimmt die Zone aus dem Zirkulationsanteil.
 * '''Kalender''' – der Kalender der Nutzungsart oder die Ferien eines Gebäudes des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor; eigene Ferien der Zone gehen vor.
 * '''Ferienzeitraum 1 bis 4''' – Beginn und Ende als Tag und Monat. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an.
-* '''Bundesland''' – gesperrt. Feiertage zählen im Brauchwasserprofil als Sonntag; das Feiertagsland des Gebäudes bestimmt die Landesfeiertage, ohne Gebäude gelten die bundeseinheitlichen.
+* '''Bundesland''' – gesperrt. Feiertage zählen im Brauchwasserprofil als Sonntag; das Feiertagsland des Gebäudes bestimmt die Landesfeiertage, ohne Gebäude gelten die bundeseinheitlichen. Feiertage liegen im Gemeinjahr nach festen Regeln; Ostern ist der Sonntag um den 8. April des Kalenderrasters; ein Jahr gilt nur mit einer Preisreihe.
 * '''Jahresmesswert''' – ein gemessener Jahresverbrauch der Zone in kWh/a oder m³/a mit Bilanzgrenze (an der Zapfstelle, mit Verteil- und Zirkulationsverlust oder zusätzlich mit Speicherverlust, dann mit dem Speicherverlust in kWh/a), Quelle und Zeitraum. Der Messwert skaliert die Zone mit einem ausgewiesenen Faktor.
 
 === Tagesbedarf, Ladeleistung, Zirkulation ===

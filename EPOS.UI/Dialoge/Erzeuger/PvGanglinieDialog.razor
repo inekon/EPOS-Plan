@@ -66,7 +66,7 @@
                                     </td>
                                     <td>
                                         @z.Bezeichner
-                                        @{ string abw = AbweichungZu(z.Bezeichner); }
+                                        @{ string abw = IstUngespeichert(z) ? "" : AbweichungZu(z.Bezeichner); }
                                         @if (abw.Length > 0)
                                         {
                                             <span class="epos-pvg-abweichung" role="img" title="@abw"
@@ -116,8 +116,13 @@
     <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
     <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
 
-    @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. *@
-    @if (_projektZeile is not null && ProjektAbweichung.Length > 0)
+    @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. Eine neu
+       aufgenommene Zeile hat vor dem OK noch keine Kopie: sie sagt "noch nicht gespeichert", ohne Zeichen und Knopf. *@
+    @if (_projektZeile is not null && IstUngespeichert(_projektZeile))
+    {
+        <p class="epos-leisezeile epos-pvg-ungespeichert" role="status">@UngespeichertText</p>
+    }
+    else if (_projektZeile is not null && ProjektAbweichung.Length > 0)
     {
         <p class="epos-leisezeile epos-pvg-abweichungszeile" role="status">⚠ @ProjektAbweichung</p>
         @if (AusKatalogErneuern is not null)
@@ -247,6 +252,16 @@
     [Parameter] public Func<string, string>? KatalogAbweichung { get; set; }
 
     /// <summary>
+    /// <b>Ist die Projektzeile noch nicht gespeichert?</b> Die Hülle entscheidet am Zeilenzustand (Zuordnung neu
+    /// aufgenommen, noch ohne OK — also noch ohne Projektkopie). Ohne Weg gilt jede in dieser Sitzung über „◀"
+    /// aufgenommene Zeile als ungespeichert.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, bool>? Ungespeichert { get; set; }
+
+    /// <summary>Der Satz zu einer ungespeicherten Projektzeile — <c>PVG_ABW_UNGESPEICHERT</c>.</summary>
+    [Parameter] public string UngespeichertText { get; set; } = Resource.PVG_ABW_UNGESPEICHERT;
+
+    /// <summary>
     /// <b>Erneuert die Projektkopie eines Namens aus dem Katalog</b> (E113): Kopf und Reihe, Zuordnung und ID
     /// bleiben. Ohne Weg kein Knopf.
     /// </summary>
@@ -316,8 +331,22 @@
     /// <summary>Steht die Rückfrage „Aus dem Katalog erneuern"? (Prüfhilfe.)</summary>
     public bool ErneuernOffen => _erneuernOffen;
 
-    /// <summary>Die Abweichung der markierten Projektzeile; leer ohne. (Prüfhilfe und KI-Sicht.)</summary>
-    public string ProjektAbweichung => _projektZeile is null ? "" : AbweichungZu(_projektZeile.Bezeichner);
+    /// <summary>Die Abweichung der markierten Projektzeile; leer ohne und bei einer ungespeicherten Zeile. (Prüfhilfe.)</summary>
+    public string ProjektAbweichung => _projektZeile is null || IstUngespeichert(_projektZeile)
+        ? "" : AbweichungZu(_projektZeile.Bezeichner);
+
+    /// <summary>
+    /// Der Stand der markierten Projektzeile gegen den Katalog für die KI-Sicht: „noch nicht gespeichert" bei einer
+    /// ungespeicherten Zeile, sonst die Abweichung (leer bei Gleichheit).
+    /// </summary>
+    public string ProjektKatalogzustand => _projektZeile is not null && IstUngespeichert(_projektZeile)
+        ? UngespeichertText : ProjektAbweichung;
+
+    /// <summary>Die in dieser Sitzung aufgenommenen Zeilen — Rückfall, wenn die Hülle keinen Weg <see cref="Ungespeichert"/> gibt.</summary>
+    private readonly HashSet<ErzeugerZeile> _neuAufgenommen = new(ReferenceEqualityComparer.Instance);
+
+    private bool IstUngespeichert(ErzeugerZeile zeile)
+        => Ungespeichert is not null ? Ungespeichert(zeile) : _neuAufgenommen.Contains(zeile);
 
     private string AbweichungZu(string bezeichner)
     {
@@ -406,7 +435,7 @@
             NennleistungLesen = () => _nennleistung,
             ImProjektLesen = () => _name.Length > 0
                 && Zeilen.Any(z => string.Equals(z.Bezeichner, _name, StringComparison.Ordinal)),
-            KatalogAbweichungLesen = () => ProjektAbweichung,
+            KatalogAbweichungLesen = () => ProjektKatalogzustand,
             ImportzustandLesen = Importzustand,
             KatalogbetriebLesen = () => Katalogbetrieb
         };
@@ -531,6 +560,7 @@
         if (neu is null) return;
 
         Zeilen.Add(neu);
+        _neuAufgenommen.Add(neu);
         ProjektZeileWaehlen(neu);
     }
 
@@ -544,6 +574,7 @@
 
         ErzeugerZeile zeile = _projektZeile;
         Zeilen.Remove(zeile);
+        _neuAufgenommen.Remove(zeile);
         Entfernen?.Invoke(zeile);
 
         _projektZeile = null;

@@ -257,11 +257,11 @@ namespace EPOS.Kern.Tests
         public void Die_Laenderregeln_treffen_die_bekannten_Tage_des_Bezugsjahrs()
         {
             // 2026: Ostern am 5. April; Fronleichnam am 4. Juni, Buß- und Bettag am 18. November.
-            Assert.Equal(Feiertage.Gemeinjahrestag(6, 4), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_FRONLEICHNAM, 2026));
-            Assert.Equal(Feiertage.Gemeinjahrestag(11, 18), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, 2026));
-            Assert.Equal(Feiertage.Gemeinjahrestag(11, 22), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, 2023));
-            Assert.Equal(Feiertage.Gemeinjahrestag(1, 6), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE, 2026));
-            Assert.Equal(Feiertage.Gemeinjahrestag(10, 31), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_REFORMATIONSTAG, 2026));
+            Assert.Equal(Feiertage.Gemeinjahrestag(6, 4), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_FRONLEICHNAM, Gemeinjahrkalender.Kalenderjahr(2026)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(11, 18), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, Gemeinjahrkalender.Kalenderjahr(2026)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(11, 22), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, Gemeinjahrkalender.Kalenderjahr(2023)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(1, 6), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_HEILIGE_DREI_KOENIGE, Gemeinjahrkalender.Kalenderjahr(2026)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(10, 31), Feiertage.Jahrestag(DbWerte.KOND_FEIERTAG_REFORMATIONSTAG, Gemeinjahrkalender.Kalenderjahr(2026)));
             Assert.Equal(9, DbWerte.KOND_FEIERTAGE.Count);
             Assert.Equal(17, DbWerte.KOND_FEIERTAGE_ALLE.Count);
             foreach (string r in DbWerte.KOND_FEIERTAGE_ALLE) Assert.True(Feiertage.Bekannt(r), r);
@@ -270,9 +270,9 @@ namespace EPOS.Kern.Tests
             foreach (string land in Landesfeiertage.BUNDESLAENDER)
                 foreach (int jahr in new[] { 2023, 2024, 2026 })
                 {
-                    var tage = new SortedSet<int>(Feiertage.Regeln.Select(r => Feiertage.Jahrestag(r, jahr)));
-                    foreach (string r in Landesfeiertage.Regeln(land)) tage.Add(Feiertage.Jahrestag(r, jahr));
-                    Assert.Equal(Landesfeiertage.Jahrestage(land, jahr), tage.ToList());
+                    var tage = new SortedSet<int>(Feiertage.Regeln.Select(r => Feiertage.Jahrestag(r, Gemeinjahrkalender.Kalenderjahr(jahr))));
+                    foreach (string r in Landesfeiertage.Regeln(land)) tage.Add(Feiertage.Jahrestag(r, Gemeinjahrkalender.Kalenderjahr(jahr)));
+                    Assert.Equal(Landesfeiertage.Jahrestage(land, Gemeinjahrkalender.Kalenderjahr(jahr)), tage.ToList());
                 }
             Assert.Equal(new[] { DbWerte.KOND_FEIERTAG_FRAUENTAG }, Landesfeiertage.Regeln("BE"));
             Assert.Empty(Landesfeiertage.Regeln(null));

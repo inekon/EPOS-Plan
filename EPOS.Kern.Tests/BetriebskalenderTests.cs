@@ -30,23 +30,23 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Feiertage_je_Land()
         {
-            IReadOnlyList<int> de = Landesfeiertage.Jahrestage(null, 2025);
+            IReadOnlyList<int> de = Landesfeiertage.Jahrestage(null, Gemeinjahrkalender.Kalenderjahr(2025));
             Assert.Equal(9, de.Count);
             Assert.Contains(1, de);                                    // Neujahr
             Assert.Contains(Feiertage.Gemeinjahrestag(4, 18), de);     // Karfreitag 2025
 
-            IReadOnlyList<int> by = Landesfeiertage.Jahrestage("BY", 2025);
+            IReadOnlyList<int> by = Landesfeiertage.Jahrestage("BY", Gemeinjahrkalender.Kalenderjahr(2025));
             Assert.Equal(12, by.Count);
             Assert.Contains(6, by);                                    // Heilige Drei Könige
             Assert.Contains(Feiertage.Gemeinjahrestag(6, 19), by);     // Fronleichnam 2025
             Assert.Contains(Feiertage.Gemeinjahrestag(11, 1), by);     // Allerheiligen
 
-            Assert.Contains(Feiertage.Gemeinjahrestag(11, 19), Landesfeiertage.Jahrestage("SN", 2025)); // Buß- und Bettag
-            Assert.Contains(Feiertage.Gemeinjahrestag(10, 31), Landesfeiertage.Jahrestage("NI", 2025));
-            Assert.Contains(Feiertage.Gemeinjahrestag(3, 8), Landesfeiertage.Jahrestage("BE", 2025));
-            Assert.Contains(Feiertage.Gemeinjahrestag(8, 15), Landesfeiertage.Jahrestage("SL", 2025));
-            Assert.Contains(Feiertage.Gemeinjahrestag(9, 20), Landesfeiertage.Jahrestage("TH", 2025));
-            Assert.Equal(9, Landesfeiertage.Jahrestage("XX", 2025).Count);
+            Assert.Contains(Feiertage.Gemeinjahrestag(11, 19), Landesfeiertage.Jahrestage("SN", Gemeinjahrkalender.Kalenderjahr(2025))); // Buß- und Bettag
+            Assert.Contains(Feiertage.Gemeinjahrestag(10, 31), Landesfeiertage.Jahrestage("NI", Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Contains(Feiertage.Gemeinjahrestag(3, 8), Landesfeiertage.Jahrestage("BE", Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Contains(Feiertage.Gemeinjahrestag(8, 15), Landesfeiertage.Jahrestage("SL", Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Contains(Feiertage.Gemeinjahrestag(9, 20), Landesfeiertage.Jahrestage("TH", Gemeinjahrkalender.Kalenderjahr(2025)));
+            Assert.Equal(9, Landesfeiertage.Jahrestage("XX", Gemeinjahrkalender.Kalenderjahr(2025)).Count);
             Assert.Equal(16, Landesfeiertage.BUNDESLAENDER.Distinct().Count());
         }
 
@@ -59,7 +59,7 @@ namespace EPOS.Kern.Tests
                 Ferien = { new Ferienzeitraum(360, 2) },     // über den Jahreswechsel
                 FeiertagWieSonntag = true
             };
-            byte[] t = k.Tagesarten(2025);
+            byte[] t = k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025));
             Assert.Equal(Betriebskalender.TAG_FERIEN, t[0]);            // Neujahr liegt in den Ferien
             Assert.Equal(Betriebskalender.TAG_FERIEN, t[1]);
             Assert.Equal(Betriebskalender.TAG_NORMAL, t[2]);
@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Betriebskalender.TAG_FEIERTAG, t[Feiertage.Gemeinjahrestag(5, 1) - 1]);
 
             k.FeiertagWieSonntag = false;
-            Assert.Equal(Betriebskalender.TAG_NORMAL, k.Tagesarten(2025)[Feiertage.Gemeinjahrestag(5, 1) - 1]);
+            Assert.Equal(Betriebskalender.TAG_NORMAL, k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025))[Feiertage.Gemeinjahrestag(5, 1) - 1]);
 
             Assert.Null(k.Pruefen());
             Assert.NotNull(new Betriebskalender().Pruefen());
@@ -135,7 +135,7 @@ namespace EPOS.Kern.Tests
             double[] wo = Woche();
             double[] mon = Enumerable.Repeat(10.0, 12).ToArray();   // 10 MWh je Monat
             var k = new Betriebskalender { Bezeichner = "K", Bundesland = "BY" };
-            byte[] arten = k.Tagesarten(2025);
+            byte[] arten = k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025));
             var r = new double[8760];
             // 1. Januar 2025 ist ein Mittwoch (Montag = 0).
             Assert.True(Betriebskalenderschicht.WocheZuJahr(wo, mon, r, a, e, 2, arten, 0.0, false));
@@ -159,7 +159,7 @@ namespace EPOS.Kern.Tests
             double[] mon = Enumerable.Repeat(10.0, 12).ToArray();
             int von = Feiertage.Gemeinjahrestag(8, 1), bis = Feiertage.Gemeinjahrestag(8, 21);
             var k = new Betriebskalender { Bezeichner = "Sommer", FeiertagWieSonntag = false, Ferien = { new Ferienzeitraum(von, bis) } };
-            byte[] arten = k.Tagesarten(2025);
+            byte[] arten = k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025));
 
             // f = 0, verteilt um: August behält seine Menge, die Ferientage sind leer.
             var umverteilt = new double[8760];
@@ -197,11 +197,11 @@ namespace EPOS.Kern.Tests
             double[] mon = Enumerable.Repeat(10.0, 12).ToArray();
             var k = new Betriebskalender { Bezeichner = "Februar", FeiertagWieSonntag = false, Ferien = { new Ferienzeitraum(32, 59) } };
             var r = new double[8760];
-            Assert.False(Betriebskalenderschicht.WocheZuJahr(wo, mon, r, a, e, 2, k.Tagesarten(2025), 0.0, false));
+            Assert.False(Betriebskalenderschicht.WocheZuJahr(wo, mon, r, a, e, 2, k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025)), 0.0, false));
             Assert.True(Math.Abs(Monatssumme(r, a, e, 1) - 10000) < 1e-6);
 
             var g = new double[8760];
-            Assert.True(Betriebskalenderschicht.WocheZuJahr(wo, mon, g, a, e, 2, k.Tagesarten(2025), 0.0, true));
+            Assert.True(Betriebskalenderschicht.WocheZuJahr(wo, mon, g, a, e, 2, k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025)), 0.0, true));
             Assert.Equal(0.0, Monatssumme(g, a, e, 1));
         }
 

@@ -608,14 +608,24 @@ namespace WindowsFormsApplication1
         // -----------------------------------------------------------------
 
         /// <summary>
-        /// <b>Das Bezugsjahr einer Kalendervorschau</b> (Entwurf KP2, Festlegung 8): im Projekt das
-        /// des Laufs (<see cref="SolardatenCtrl.Referenzjahr"/> — das Jahr der Spotpreisreihe oder die
-        /// Vorgabe), im Katalog dasselbe wie der Lauf ohne Projekt,
-        /// <c>SolardatenCtrl.Referenzjahr(0)</c> = <see cref="DbWerte.SOLAR_REFERENZJAHR_STANDARD"/>.
+        /// <b>Das Feiertagsjahr eines Projekts</b> (E114): das Jahr seiner Preisreihe
+        /// (<see cref="SolardatenCtrl.Preisreihenjahr"/>), sonst <c>null</c> — der Regelfall, in dem
+        /// kein Jahresdatum relevant ist und die beweglichen Feiertage nach dem Wochentagsraster liegen
+        /// (<see cref="Gemeinjahrkalender"/>). Im Katalog (0 oder kleiner) immer <c>null</c>.
         /// Keine Uhr: Ein laufendes Jahr würde die Vorschau am Jahreswechsel verschieben (B13).
         /// </summary>
         /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog.</param>
-        public static int Bezugsjahr(int idProjekt)
+        public static int? Bezugsjahr(int idProjekt)
+            => idProjekt > 0 ? SolardatenCtrl.Preisreihenjahr(idProjekt) : null;
+
+        /// <summary>
+        /// <b>Das Rasterjahr eines Projekts</b> — das Jahr der Zeitbasis der Solardaten
+        /// (<see cref="SolardatenCtrl.Referenzjahr"/>: Jahr der Preisreihe oder die Vorgabe), aus dem der
+        /// Gebäudelauf seine Wochenendmaske des Ortszeit-Kalenders bildet (U7). Es bestimmt allein das
+        /// Wochentagsraster, nie die Lage eines Feiertags.
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog.</param>
+        public static int Rasterjahr(int idProjekt)
             => SolardatenCtrl.Referenzjahr(idProjekt > 0 ? idProjekt : 0);
 
         // -----------------------------------------------------------------

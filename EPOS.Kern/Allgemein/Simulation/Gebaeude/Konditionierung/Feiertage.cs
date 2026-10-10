@@ -6,9 +6,11 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die neun bundeseinheitlichen Feiertage als Regel</b> (Konzept Konditionierungsprofile 3.2,
     /// Festlegung F11). In der Periode steht die <b>Regelkennung</b>, nicht ein Jahrestag: Das
-    /// Referenzjahr und das Schaltjahr verschieben jeden Jahrestag, die Regel bleibt. Der Lauf löst
-    /// sie gegen das Referenzjahr auf — das Osterdatum als Rechenvorschrift — und bildet Tag und
-    /// Monat im <b>Gemeinjahr</b> (365 Tage, kein 29. Februar) ab.
+    /// Jahr und das Schaltjahr verschieben jeden Jahrestag, die Regel bleibt. Der Lauf löst sie nach
+    /// der Konvention <see cref="Gemeinjahrkalender"/> auf (E114): im Regelfall ohne Jahr nach dem
+    /// Wochentagsraster des Gemeinjahrs (Ostern ist der Sonntag am nächsten zum 8. April), nur mit
+    /// einer Preisreihe mit Jahr nach dem Osterdatum dieses Jahres — immer im <b>Gemeinjahr</b>
+    /// (365 Tage, kein 29. Februar).
     ///
     /// <para>Länderfeiertage sind gewöhnliche Perioden mit Datum; sie stehen nicht in dieser
     /// Liste.</para>
@@ -34,14 +36,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der Jahrestag einer Regel im Gemeinjahr</b> — 1 … 365, aus Tag und Monat des
-        /// Referenzjahres. −1, wenn das Kennwort keine der neun Regeln ist.
+        /// <b>Der Jahrestag einer Regel im Gemeinjahr</b> — 1 … 365 nach der Konvention
+        /// <paramref name="kalender"/> (E114). −1, wenn das Kennwort keine der neun Regeln ist.
         ///
-        /// <para>Der Umweg über Tag und Monat ist Absicht: In einem Schaltjahr liegt Ostern auf
-        /// einem anderen <em>Jahrestag</em> als im Gemeinjahr, aber auf demselben <em>Datum</em> —
-        /// und der Kalender speichert Daten, keine Jahrestage (Konzept 3.2).</para>
+        /// <para>Feste Feiertage liegen auf Tag und Monat; die beweglichen auf dem Ostersonntag der
+        /// Konvention plus ihrem Abstand, Buß- und Bettag auf dem Mittwoch der Konvention. Mit Jahr
+        /// geht der Umweg über Tag und Monat: In einem Schaltjahr liegt Ostern auf einem anderen
+        /// <em>Jahrestag</em>, aber auf demselben <em>Datum</em> (Konzept 3.2).</para>
         /// </summary>
-        public static int Jahrestag(string regel, int referenzjahr)
+        public static int Jahrestag(string regel, Gemeinjahrkalender kalender)
         {
             if (!Bekannt(regel)) return -1;
 
@@ -60,26 +63,21 @@ namespace WindowsFormsApplication1
                 case DbWerte.KOND_FEIERTAG_REFORMATIONSTAG: return Gemeinjahrestag(10, 31);
                 case DbWerte.KOND_FEIERTAG_ALLERHEILIGEN: return Gemeinjahrestag(11, 1);
                 case DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG:
-                {
-                    // Der Mittwoch vor dem 23. November.
-                    DateTime d = new DateTime(referenzjahr, 11, 22);
-                    while (d.DayOfWeek != DayOfWeek.Wednesday) d = d.AddDays(-1);
-                    return Gemeinjahrestag(d.Month, d.Day);
-                }
+                    // Der Mittwoch vor dem 23. November — der des Jahres oder der des Rasters.
+                    return kalender.BussUndBettag;
             }
 
-            DateTime ostern = Ostersonntag(referenzjahr);
-            DateTime tag;
+            // Ostern liegt nach dem 29. Februar: Der Abstand in Tagen ist im Gemeinjahr derselbe.
+            int ostern = kalender.Ostersonntag;
             switch (regel)
             {
-                case DbWerte.KOND_FEIERTAG_KARFREITAG: tag = ostern.AddDays(-2); break;
-                case DbWerte.KOND_FEIERTAG_OSTERMONTAG: tag = ostern.AddDays(1); break;
-                case DbWerte.KOND_FEIERTAG_HIMMELFAHRT: tag = ostern.AddDays(39); break;
-                case DbWerte.KOND_FEIERTAG_PFINGSTMONTAG: tag = ostern.AddDays(50); break;
-                case DbWerte.KOND_FEIERTAG_FRONLEICHNAM: tag = ostern.AddDays(60); break;
+                case DbWerte.KOND_FEIERTAG_KARFREITAG: return ostern - 2;
+                case DbWerte.KOND_FEIERTAG_OSTERMONTAG: return ostern + 1;
+                case DbWerte.KOND_FEIERTAG_HIMMELFAHRT: return ostern + 39;
+                case DbWerte.KOND_FEIERTAG_PFINGSTMONTAG: return ostern + 50;
+                case DbWerte.KOND_FEIERTAG_FRONLEICHNAM: return ostern + 60;
                 default: return -1;
             }
-            return Gemeinjahrestag(tag.Month, tag.Day);
         }
 
         /// <summary>

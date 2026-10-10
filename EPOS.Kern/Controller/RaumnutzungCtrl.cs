@@ -1242,8 +1242,10 @@ namespace WindowsFormsApplication1
         /// <param name="Referenzjahr">Das Bezugsjahr der Reihe.</param>
         /// <param name="Woche">Die 168 Werte der typischen Woche (Rohwerte, „aus" = NaN) oder <c>null</c>.</param>
         /// <param name="Meldung">Warum der Schritt am leeren Ziel abgelehnt hat; <c>null</c> = nichts.</param>
+        /// <param name="Feiertagsjahr">Das Jahr der Preisreihe; <c>null</c> = Regelfall ohne Jahr (E114) — das neutrale
+        /// Vorschauziel trägt keines.</param>
         public sealed record Profilvorschau(Raumnutzungsweg Weg, Raumnutzungshinweis Hinweis, Konditionierungskalender Kalender,
-                                            int Referenzjahr, double[] Woche, string Meldung = null);
+                                            int Referenzjahr, double[] Woche, string Meldung = null, int? Feiertagsjahr = null);
 
         /// <summary>
         /// Der Bestand des neutralen Vorschauziels: was ein Gebäude ohne eigene Konditionierung mitbringt — Heiz- und
@@ -1294,7 +1296,7 @@ namespace WindowsFormsApplication1
             Konditionierungskalender k = schritt.Ok && !schritt.Rueckfrage ? schritt.Stand.Ansichtskalender(groesse, null) : null;
             if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null, schritt.Meldung);
 
-            double[] jahr = k.Auswerten(leer.W0, leer.Referenzjahr);
+            double[] jahr = k.Auswerten(leer.Kalender);
             int start = VORSCHAU_WOCHE_AB_TAG + (7 - (leer.W0 + VORSCHAU_WOCHE_AB_TAG) % 7) % 7;
             var woche = new double[Kalenderwoche.WOCHENWERTE];
             Array.Copy(jahr, start * 24, woche, 0, woche.Length);

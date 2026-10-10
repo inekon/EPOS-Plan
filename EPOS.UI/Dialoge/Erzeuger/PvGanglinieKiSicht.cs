@@ -73,7 +73,8 @@ public sealed class PvGanglinieKiSicht
 
     /// <summary>
     /// Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz abweicht („weicht vom Katalog ab: …");
-    /// leer, wenn sie ihm gleicht oder keine Projektzeile markiert ist.
+    /// „noch nicht gespeichert" bei einer neu aufgenommenen Zeile vor dem OK; leer, wenn sie ihm gleicht oder keine
+    /// Projektzeile markiert ist.
     /// </summary>
     public string KatalogAbweichung => KatalogAbweichungLesen?.Invoke() ?? "";
 

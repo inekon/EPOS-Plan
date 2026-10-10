@@ -426,7 +426,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Bezug eines Projekts — dieselben Quellen wie der Lauf: <see cref="KonfigurationCtrl.AnlagenkopplungLesen"/>,
-        /// <see cref="Konditionierungdatenweg.Bezugsjahr"/> (<c>SolardatenCtrl.Referenzjahr</c>) und
+        /// <see cref="Konditionierungdatenweg.Bezugsjahr"/> (das Jahr der Preisreihe, sonst keines — E114) und
         /// <see cref="KonfigurationCtrl.KuehlbetriebLesen"/>; ohne Projekt (<paramref name="idProjekt"/> ≤ 0)
         /// der des Katalogs.
         /// </summary>
@@ -560,7 +560,7 @@ namespace WindowsFormsApplication1
                 List<KonditionierungProfilposten> posten = an.Posten.Select(x => new KonditionierungProfilposten(
                     Oberflaeche(x.Groesse), x.Weg != Raumnutzungsweg.Keiner, x.Uebernommen, x.Ersetzt, x.Unbeheizt,
                     x.Nennwert.HasValue ? x.Nennwertherleitung ?? "" : "", RaumnutzungHuelle.Hinweistext(x.Hinweis, t))).ToList();
-                string tage = p.IstLeer ? "" : RaumnutzungHuelle.Nutzungstagezeile(p, a.Gebaeude.Bestand, t, a.Referenzjahr);
+                string tage = p.IstLeer ? "" : RaumnutzungHuelle.Nutzungstagezeile(p, a.Gebaeude.Bestand, t, a.Feiertagsjahr);
                 return new KonditionierungProfilergebnis(true, "", neu, name ?? p.Bezeichner ?? "", posten, an.Aufgeteilt, p.IstLeer,
                                                          tage);
             }
@@ -749,7 +749,7 @@ namespace WindowsFormsApplication1
                 SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art, bezug) : null,
                 WochenVorschau = Vorschau,
                 Teppichbild = (s, o) => Teppich(s, art, bezug, o),
-                Bezugsjahr = bezug.Referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,
+                Bezugsjahr = bezug.Referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,   // Rasterjahr der Anzeige (E114)
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),
                 Freigabeband = s => Freigabe(s, art, bezug),
                 Pruefen = s => Pruefen(s, art, bezug),
@@ -1004,7 +1004,7 @@ namespace WindowsFormsApplication1
                 Konditionierungsarbeitsstand a = Arbeitsstand(s, art, bezug);
                 Konditionierungskalender k = a.Ansichtskalender(Kern(o.Groesse), o.Zone);
                 if (k == null) return null;
-                return ChartRenderer.KalenderteppichModell(Kalenderteppich.Bilden(k, a.Referenzjahr), null,
+                return ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(k, a.Referenzjahr, a.Feiertagsjahr), null,
                                                            ChartRenderer.KalenderteppichTexte.AusRessourcen());
             }
             catch (ArgumentException)
@@ -1055,13 +1055,13 @@ namespace WindowsFormsApplication1
                     ? pn.Wert
                     : Konditionierungsarbeit.PersonenNennwertVorschlag(b.Bewohner, 0.0, null);
                 double personenMittel = Konditionierungsarbeit.PersonenJahresmittelW(
-                    a.GeltenderKalender(Konditionierungsgroesse.Personen, ort), a.W0, a.Referenzjahr);
+                    a.GeltenderKalender(Konditionierungsgroesse.Personen, ort), a.Kalender);
                 double geraeteNenn = b.InterneWaermegewinne ?? 0.0;
                 Konditionierungskalender gk = a.GeltenderKalender(Konditionierungsgroesse.Geraete, ort);
                 double geraeteMittel = geraeteNenn;
                 if (gk != null)
                 {
-                    double[] anteil = gk.Auswerten(a.W0, a.Referenzjahr);
+                    double[] anteil = gk.Auswerten(a.Kalender);
                     double summe = 0.0;
                     foreach (double v in anteil) summe += v;
                     geraeteMittel = summe * (gk.Nennwert ?? geraeteNenn) / anteil.Length;

@@ -175,12 +175,12 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-09_R49_KaeltemaschineTeillast`, achtundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-09_R49_KaeltemaschineTeillast`, achtundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
 Stromverbraucher-Zuordnung (über die ID, gehalten von `EPOS.Kern.Tests/StromverbraucherZuordnungTests`),
-Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator (Feiertage zählen im Zapfkalender als Sonntag),
+Projekt 1045 rechnet sein Brauchwasser über den Zapfprofilgenerator (Feiertage zählen im Zapfkalender als Sonntag und liegen im Raster der Klimaregion),
 gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`, Projekt 1049 rechnet als
 Kopie von 1018 ein Kollektorfeld vor BHKW und Kessel, das direkt und über den Puffer deckt —
 mit der Nachrang-Vorgabe 30 % am Puffer und der Arbeitstemperatur aus der untersten Zone des
@@ -313,6 +313,9 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   dem Kühlsollwert 1 K, Bereiche, Vorgabe des Raumeinflusses 3 K/K) und das Abbruchmaß ΔK2
   (`Anlagenkopplung.ABBRUCH_VORLAUF_K`), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Kühlkurve, auch eines
   Mehrzonen-Referenzprojekts mit gekoppelter Kälteseite;
+- die Gemeinjahr-Konvention: die Osterregel (Sonntag am nächsten zum Jahrestag 98 und die Abstände der beweglichen
+  Feiertage), die Regel des Buß- und Bettags (letzter Mittwoch vor dem Jahrestag 327), das Wochentagsraster der
+  Klimaregion der Referenzprojekte und eine Preisreihe mit Jahr an der aktiven Variante eines Referenzprojekts;
 - gesäte Übergabegrenzdaten eines Referenzprojekts: die acht Gerätespalten seiner Wärmepumpe (`Spreizung_*`,
   `Mindestvolumenstrom_Prozent`, `Ruecklauf_Max`, `Ruecklauf_Bezug`, `Ruecklauf_Abwertung_ProzentJeK`, `Kaeltemittel`), an
   seiner Anlage `Einbindung`, `Vorwaermbetrieb` und `Vorlauf_Max`, `Ruecklauf_Max` am BHKW, die Vorgabewerte in

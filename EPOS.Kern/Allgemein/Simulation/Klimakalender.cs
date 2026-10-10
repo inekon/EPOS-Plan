@@ -81,6 +81,13 @@ namespace WindowsFormsApplication1
         internal int Referenzjahr { get; set; }
 
         /// <summary>
+        /// Das Jahr der Preisreihe (<c>SolardatenCtrl.Preisreihenjahr</c>), nach dem die beweglichen Feiertage
+        /// liegen; 0 = Regelfall ohne Jahr — die Feiertage liegen dann nach dem Wochentagsraster
+        /// (<see cref="Gemeinjahrkalender"/>, E114). Das <see cref="Referenzjahr"/> setzt allein das Raster.
+        /// </summary>
+        internal int Feiertagsjahr { get; set; }
+
+        /// <summary>
         /// Die Wochenendmaske auf dem <b>Ortszeit-Kalender</b> (Entscheid U7, E27; F-Ü8):
         /// Samstag und Sonntag ab dem 1. Januar des <see cref="Referenzjahr"/>es, 365 Tage.
         /// Sie gehört dem VDI-Weg; der Tagesbilanz-Weg liest weiter <see cref="WE"/> aus

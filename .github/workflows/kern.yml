@@ -415,7 +415,7 @@ jobs:
       # R47 (09.10.2026): dieselben zehn Projekte; allein 1045 aendert sich
       # (Feiertage zaehlen im Zapfkalender als Sonntag), die neun uebrigen
       # bleiben byte-gleich.
-      # R49 (09.10.2026): dazu 1063 (Kaeltemaschine mit Teillast und Takten);
+      # R49 (10.10.2026): auf dem Stand R48 (Gemeinjahr) dazu 1063 (Kaeltemaschine mit Teillast und Takten);
       # die zehn uebrigen bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''

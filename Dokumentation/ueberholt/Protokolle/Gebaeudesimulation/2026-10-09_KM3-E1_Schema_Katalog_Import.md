@@ -1,6 +1,6 @@
 # Protokoll KM3-E1 — Schemaschritt 210, Katalog, Import der Teillastkurve (09.10.2026)
 
-**Sitzung:** Gebäudesimulation, Statuszeile **#874**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E114 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
+**Sitzung:** Gebäudesimulation, Statuszeile **#876**. Commits E1-a `62cf8611c`, E1-b `10cfef908`, E1-c `e43f346c5`. **Entscheid:** E114 (KM3-Q1 bis Q11). Konzepte: [`Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md) und [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](../../../aktuell/Kälteanlagen/Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 
 ## 1 Auftrag und Entscheidlage
 

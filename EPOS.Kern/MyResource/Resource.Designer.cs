@@ -61514,7 +61514,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht. „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worin die Projektkopie der markierten Projektganglinie vom Katalogsatz gleichen Namens abweicht (Nennleistung, Raster, Jahressumme, Reihe); leer, wenn sie ihm gleicht; „noch nicht gespeichert“ bei einer neu übernommenen Zeile vor dem OK (sie hat noch keine Projektkopie). „Aus dem Katalog erneuern…“ ersetzt Kopf und Reihe der Projektkopie nach einer Rückfrage — eine Handlung des Anwenders; Ergebnisse ändern sich erst mit der nächsten Simulation. ähnelt.
         /// </summary>
         public static string KI_DLG_PVG_ABWEICHUNG_ERL {
             get {
@@ -94123,6 +94123,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVG_ABW_TEXT {
             get {
                 return ResourceManager.GetString("PVG_ABW_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die noch nicht gespeichert ähnelt.
+        /// </summary>
+        public static string PVG_ABW_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("PVG_ABW_UNGESPEICHERT", resourceCulture);
             }
         }
         

@@ -185,7 +185,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Eingang belegt die Feiertage jeder Zone (E112): mit gebundenem Gebäude der Vorgabe nach dessen Feiertagsland,
-        /// ohne Gebäude die bundeseinheitlichen — beide für das Bezugsjahr des Projekts.
+        /// ohne Gebäude die bundeseinheitlichen — beide nach der Konvention des Gemeinjahrs (E114): Wochentagsraster des
+        /// Eingangs (hier w₀ = 0, Montag) und ohne Preisreihe kein Jahr.
         /// </summary>
         [Fact]
         public void Der_Eingang_belegt_die_Feiertage_jeder_Zone()
@@ -193,7 +194,7 @@ namespace EPOS.Kern.Tests
             if (!Bereit()) return;
             int gebaeude = GebaeudeMitBestandsferien();
             Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET Wochenendtage = NULL WHERE ID = ?", new DbParam("@id", gebaeude)));
-            int jahr = Konditionierungdatenweg.Bezugsjahr(PROJEKT);
+            Assert.Null(Konditionierungdatenweg.Bezugsjahr(PROJEKT));
 
             ZonenStand gebunden = Eingang(gebaeude).Zonen[0];
             Assert.NotNull(gebunden.Feiertage);
@@ -207,7 +208,7 @@ namespace EPOS.Kern.Tests
             };
             Zapfprofileingang e = ZapfprofilCtrl.Eingang(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { frei }, null),
                                                          0, new bool[365]);
-            Assert.Equal(Landesfeiertage.Jahrestage(null, jahr), e.Zonen[0].Feiertage);
+            Assert.Equal(Landesfeiertage.Jahrestage(null, new Gemeinjahrkalender(0)), e.Zonen[0].Feiertage);
             ZapfTagtyp[] k = Zapfkalender.Bilden(0, Zapfkalender.KennzeichenDerZone(0, new bool[365], e.Zonen[0]),
                                                  Zapfkalender.FensterDerZone(e.Zonen[0]), e.Zonen[0].Wochenendtage, e.Zonen[0].Feiertage);
             Assert.Equal(ZapfTagtyp.SonnFeiertag, k[0]);      // Neujahr

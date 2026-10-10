@@ -92,7 +92,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-08_R44_Kuehlkurve` | 08.10.2026 | Basis mit der Kühlkurve am Gebäude (Entwurf KK, E105 und E106) und den Referenzprojekten 1061 und 1062, auf Linux eingefroren; Testdatenbank `19e38bc2…` (Schemastand 202), gehoben auf Schemastand 203; sechsundzwanzig Projekte, 841 CSV, 5 801 Skalare — abgelöst durch R45 am 09.10.2026 | [`2026-10-08_R44_Kuehlkurve/protokoll.txt`](2026-10-08_R44_Kuehlkurve/protokoll.txt) |
 | `2026-10-09_R45_Uebergabegrenze` | 09.10.2026 | Basis mit der Übergabegrenze und Bivalenz der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E2) und dem Referenzprojekt 1060, auf Linux eingefroren; Testdatenbank `cd50d465…` (Schemastand 203); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R46 am 09.10.2026 | [`2026-10-09_R45_Uebergabegrenze/protokoll.txt`](2026-10-09_R45_Uebergabegrenze/protokoll.txt) |
 | `2026-10-09_R46_Geraetegrenzen` | 09.10.2026 | Basis mit den Gerätegrenzen der Wärmepumpe (Umsetzungskonzept Übergabegrenze, Etappe UB‑E3: Rücklaufgrenze am gemischten Rücklauf, Spreizungsgrenze), auf Linux eingefroren; Testdatenbank `cd50d465…` (Schemastand 203); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R47 am 09.10.2026 | [`2026-10-09_R46_Geraetegrenzen/protokoll.txt`](2026-10-09_R46_Geraetegrenzen/protokoll.txt) |
-| `2026-10-09_R47_Zapffeiertage` | 09.10.2026 | Basis mit den Feiertagen im Zapfkalender (Anwenderentscheid E112: Feiertage zählen unter jeder Wochenendmaske als Sonntag), auf Linux eingefroren; Testdatenbank `ec23b962…` (Schemastand 207); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R49 am 09.10.2026 | [`2026-10-09_R47_Zapffeiertage/protokoll.txt`](2026-10-09_R47_Zapffeiertage/protokoll.txt) |
+| `2026-10-09_R47_Zapffeiertage` | 09.10.2026 | Basis mit den Feiertagen im Zapfkalender (Anwenderentscheid E112: Feiertage zählen unter jeder Wochenendmaske als Sonntag), auf Linux eingefroren; Testdatenbank `ec23b962…` (Schemastand 207); siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare — abgelöst durch R48 am 09.10.2026 | [`2026-10-09_R47_Zapffeiertage/protokoll.txt`](2026-10-09_R47_Zapffeiertage/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -5152,9 +5152,9 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
 ## Die Basis R47 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
-Der Abschnitt „Aktuelle Basis“ hat am 09.10.2026 die Basis R47 beschrieben — den Anlass (Feiertage im Zapfkalender, Anwenderentscheid E112) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+Der Abschnitt „Aktuelle Basis“ hat am 09.10.2026 die Basis R47 beschrieben — den Anlass (Feiertage im Zapfkalender, E112) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
 
-**Abgelöst wurde R47 durch `2026-10-09_R49_KaeltemaschineTeillast`** (Referenzprojekt 1063, Teillast und Takten der Kältemaschine): die 879 CSV der siebenundzwanzig Projekte sind byte-gleich; hinzu kommt 1063.
+**Abgelöst wurde R47 durch `2026-10-09_R48_Gemeinjahr`** (Gemeinjahr ohne Jahresdatum, Anwenderentscheid E114): die beweglichen Feiertage liegen ohne Preisreihe nach dem Wochentagsraster; 1045, 1051, 1052 und 1054 ändern sich, die übrigen dreiundzwanzig Projekte sind byte-gleich (806/879 CSV).
 
 <!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
 

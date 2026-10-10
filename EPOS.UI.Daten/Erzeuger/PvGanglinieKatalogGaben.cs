@@ -181,6 +181,9 @@ namespace WindowsFormsApplication1
                 }),
                 // Projektkopie und Katalog (E113): die Abweichung je Name und das Erneuern der Kopie.
                 ["KatalogAbweichung"] = new Func<string, string>(n => AbweichungText(projektId, n)),
+                // Eine neu aufgenommene Zuordnung (ID 0, noch ohne OK) hat noch keine Projektkopie: „noch nicht gespeichert".
+                ["Ungespeichert"] = new Func<ErzeugerZeile, bool>(zeile =>
+                    zuModell.TryGetValue(zeile.Schluessel, out PvGanglinieZuordnung z) && z.Id <= 0),
                 ["AusKatalogErneuern"] = new Func<string, Task<PvGanglinieErneuerung>>(n =>
                     Task.FromResult(Erneuern(projektId, n))),
                 ["Entfernen"] = new Action<ErzeugerZeile>(zeile =>

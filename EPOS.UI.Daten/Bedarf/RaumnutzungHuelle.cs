@@ -531,13 +531,12 @@ namespace WindowsFormsApplication1
         /// <param name="p">Das Profil.</param>
         /// <param name="ziel">Die Ferienzeiträume des Ziels (die des Gebäudes); <c>null</c> = ohne Ziel.</param>
         /// <param name="t">Die Texte.</param>
-        /// <param name="referenzjahr">Das Bezugsjahr; <c>null</c> = die Vorgabe der Konditionierung.</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe; <c>null</c> = Regelfall ohne Jahr (E114).</param>
         internal static string Nutzungstagezeile(Raumnutzungsprofil p, Matrixeingang ziel, RaumnutzungTexte t,
                                                  int? referenzjahr = null)
         {
             if (p == null) return "";
-            Raumnutzungstage n = Raumnutzungsgenerator.Nutzungstage(p, ziel,
-                referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE);
+            Raumnutzungstage n = Raumnutzungsgenerator.Nutzungstage(p, ziel, referenzjahr);
             CultureInfo c = CultureInfo.CurrentCulture;
             return n.Ferientage > 0
                 ? string.Format(c, t.TextNutzungstageFerien, n.OhneFerien.ToString(c), n.Ferientage.ToString(c), n.Tage.ToString(c))

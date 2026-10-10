@@ -662,8 +662,8 @@ namespace WindowsFormsApplication1
                 new WissensAbschnitt("Konditionierung: Feiertage als Regel und Zeitstruktur übernehmen (public holidays, apply time structure)",
                     KiChatKontext.B_GEBAEUDE,
                     "'Feiertage als Regel anlegen' in der aufgeklappten Karte legt die neun bundeseinheitlichen " +
-                    "Feiertage als Regeln 'wie Sonntag' an; das Datum löst der Lauf gegen das Bezugsjahr auf (Ostern " +
-                    "als Rechenvorschrift). Eine vorhandene Regel wird nicht doppelt angelegt; ein Feiertag in den " +
+                    "Feiertage als Regeln 'wie Sonntag' an; ihre Lage folgt festen Regeln im Gemeinjahr: Ostern ist der " +
+                    "Sonntag um den 8. April im Wochenraster der Rechnung, ein Jahr gilt nur mit einer Preisreihe. Eine vorhandene Regel wird nicht doppelt angelegt; ein Feiertag in den " +
                     "Ferien behält den Ferienwert. 'Zeitstruktur übernehmen' gibt es bei Kühlen, Lüftung und Geräten: " +
                     "'wie Heizung' nimmt die Stunden, in denen mit dem Tagwert oder höher geheizt wird, 'wie " +
                     "Anwesenheit' die Stunden mit Anwesenheit; diese Stunden bekommen den Tagwert der Größe, alle " +
@@ -675,8 +675,8 @@ namespace WindowsFormsApplication1
                     "Das Teppichbild der aufgeklappten Karte zeigt den Kalender, wie er gilt - angelegt oder aus der " +
                     "Matrix -, über das ganze Jahr: nach rechts die 365 Tage, nach unten die 24 Stunden, die Farbe ist " +
                     "der Wert; 'aus' ist eine eigene schraffierte Fläche. Der Titel und die Zeile darunter nennen das " +
-                    "Bezugsjahr, gegen das Wochentage und Feiertage aufgelöst sind (im Projekt das der Rechnung, im " +
-                    "Katalog 2025). Antippen oder Zeigen auf eine Fläche nennt Zeitraum, Stunden, Wert und Quelle - " +
+                    "Bezugsjahr, dessen Wochenraster gilt (im Projekt das der Rechnung, im Katalog 2025); die Feiertage " +
+                    "liegen darin nach den Regeln des Gemeinjahrs. Antippen oder Zeigen auf eine Fläche nennt Zeitraum, Stunden, Wert und Quelle - " +
                     "Standardwoche, Grundangabe oder die Periode, die dort gilt. Bei sehr vielen Wechseln zeichnet " +
                     "das Bild gröber und sagt es. Ergibt die Matrix für eine Größe keinen Kalender (Geräte oder " +
                     "Personen ohne Anteil), nennt die Karte den Grund statt eines Bilds."),
