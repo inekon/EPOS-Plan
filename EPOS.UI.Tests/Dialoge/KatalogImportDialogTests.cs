@@ -328,6 +328,24 @@ public class KatalogImportDialogTests : EposBunitContext
         Assert.Contains("* 0=modulierend", cut.Markup);
     }
 
+    /// <summary>
+    /// <b>Import für Kälteanlagen</b> (Entscheid E119): dieselbe Maske wie die Wärmepumpe, mit
+    /// eigenem Titel, der Kühlleistung als Zahlenspalte und dem Hinweis, dass nur kühlfähige
+    /// Geräte angeboten werden.
+    /// </summary>
+    [Fact]
+    public void Kaelteimport_zeigt_Titel_Kuehlleistungsspalte_und_Hinweis()
+    {
+        var cut = Bauen(KatalogImportArt.WaermepumpeKuehlung);
+
+        Assert.Equal("Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion",
+                     cut.Find(".epos-dialog-titel").TextContent);
+        Assert.Equal(10, cut.FindAll(".epos-katalogimport-details label").Count);
+        Assert.Contains("Kühlleistung [kW]", cut.Find("thead").TextContent);
+        Assert.Contains("nur Wärmepumpen mit gültiger Kühlkennlinie", cut.Markup);
+        Assert.Contains("fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie", cut.Markup);
+    }
+
     /// <summary>Nur die Wärmepumpe trägt den Stufenhinweis.</summary>
     [Theory]
     [InlineData(KatalogImportArt.Heizkessel)]

@@ -28557,6 +28557,42 @@ Do you want to allow this?</value>
   <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
     <value>Heat pump "{0}": {1} cooling blocks with swapped axes not imported (flow temperature {2} °C) — the temperature axis carries the chilled-water temperature instead of the outdoor or source temperature.</value>
   </data>
+  <data name="MENU_VDI3805_KAELTE" xml:space="preserve">
+    <value>Import cooling systems VDI 3805 (heat pumps with cooling function)</value>
+  </data>
+  <data name="IMP_KAT_TITEL_WP_KAELTE" xml:space="preserve">
+    <value>Read in cooling systems – heat pumps with cooling function</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_KAELTE" xml:space="preserve">
+    <value>Only heat pumps with a valid cooling curve are offered; if the rated cooling capacity is missing, the largest cooling capacity of the curve applies. The log names the others with a reason. * 0=modulating</value>
+  </data>
+  <data name="IMP_KAT_SP_LEISTUNG_KUEHL" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_BILANZ" xml:space="preserve">
+    <value>Cooling import: {0} of {1} heat pumps capable of cooling with a cooling curve, {2} skipped.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE" xml:space="preserve">
+    <value>Heat pump "{0}" skipped: no cooling curve.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_HEIZLAGE" xml:space="preserve">
+    <value>Heat pump "{0}" skipped: cooling blocks only in heating position.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ACHSEN" xml:space="preserve">
+    <value>Heat pump "{0}" skipped: cooling blocks only with swapped axes.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_UNGUELTIG" xml:space="preserve">
+    <value>Heat pump "{0}" skipped: no valid cooling block (heating position or swapped axes).</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_NENNKUEHL" xml:space="preserve">
+    <value>Heat pump "{0}" skipped: no rated cooling capacity given and no cooling capacity in the cooling curve.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ABGELEITET" xml:space="preserve">
+    <value>Heat pump "{0}": rated cooling capacity derived from the cooling curve: {1} kW.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ" xml:space="preserve">
+    <value>Cooling import: rated cooling capacity derived from the cooling curve for {0} heat pumps (largest cooling capacity of the valid cooling blocks).</value>
+  </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>The heat pumps in cooling mode cover {0} MWh/a of the cooling demand ({1} %).</value>
   </data>

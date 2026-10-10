@@ -28564,6 +28564,42 @@ Möchten Sie das zulassen?</value>
   <data name="IMP_KAT_PROT_KUEHLBLOCK_ACHSE" xml:space="preserve">
     <value>Wärmepumpe „{0}": {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur.</value>
   </data>
+  <data name="MENU_VDI3805_KAELTE" xml:space="preserve">
+    <value>Import Kälteanlagen VDI 3805 (Wärmepumpen mit Kühlfunktion)</value>
+  </data>
+  <data name="IMP_KAT_TITEL_WP_KAELTE" xml:space="preserve">
+    <value>Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion</value>
+  </data>
+  <data name="IMP_KAT_HINWEIS_KAELTE" xml:space="preserve">
+    <value>Angeboten werden nur Wärmepumpen mit gültiger Kühlkennlinie; fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie. Die übrigen nennt das Protokoll mit Grund. * 0=modulierend</value>
+  </data>
+  <data name="IMP_KAT_SP_LEISTUNG_KUEHL" xml:space="preserve">
+    <value>Kühlleistung</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_BILANZ" xml:space="preserve">
+    <value>Kälteimport: {0} von {1} Wärmepumpen kühlfähig mit Kühlkennlinie, {2} übergangen.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: keine Kühlkennlinie.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_HEIZLAGE" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: Kühlblöcke nur in Heizlage.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ACHSEN" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: Kühlblöcke nur mit vertauschten Achsen.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_UNGUELTIG" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: kein gültiger Kühlblock (Heizlage oder vertauschte Achsen).</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_NENNKUEHL" xml:space="preserve">
+    <value>Wärmepumpe „{0}" übergangen: keine Nennkühlleistung angegeben und keine Kälteleistung in der Kühlkennlinie.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ABGELEITET" xml:space="preserve">
+    <value>Wärmepumpe „{0}": Nennkühlleistung aus der Kühlkennlinie abgeleitet: {1} kW.</value>
+  </data>
+  <data name="IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ" xml:space="preserve">
+    <value>Kälteimport: bei {0} Wärmepumpen Nennkühlleistung aus der Kühlkennlinie abgeleitet (größte Kälteleistung der gültigen Kühlblöcke).</value>
+  </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
   </data>

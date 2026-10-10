@@ -119,9 +119,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal("VDI_Waermepumpe", wp.Unterordner);
             Assert.Equal("VDI", wp.UnterordnerRueckfall);
 
-            // Nur die Waermepumpe hat ueberhaupt einen Rueckfall.
-            Assert.Single(KatalogImportProfil.AlleArten,
-                x => KatalogImportProfil.Finde(x).UnterordnerRueckfall.Length > 0);
+            // Nur die Waermepumpe hat ueberhaupt einen Rueckfall - in beiden Auspraegungen
+            // (E119: der Kaelteimport liest dieselben Dateien).
+            Assert.Equal(new[] { KatalogImportArt.Waermepumpe, KatalogImportArt.WaermepumpeKuehlung },
+                KatalogImportProfil.AlleArten
+                    .Where(x => KatalogImportProfil.Finde(x).UnterordnerRueckfall.Length > 0).ToArray());
         }
 
         /// <summary>

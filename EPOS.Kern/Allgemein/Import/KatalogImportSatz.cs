@@ -505,18 +505,27 @@ namespace WindowsFormsApplication1
     {
         private readonly WaermepumpenImport _parser;
         private readonly int _index;
+        private readonly bool _kaeltemodus;
 
-        public WaermepumpeImportSatz(WaermepumpenImport parser, int index)
+        /// <param name="parser">Der gelesene Import.</param>
+        /// <param name="index">Der Satz im Import.</param>
+        /// <param name="kaeltemodus">
+        /// Der Kälteimport (Entscheid E119): Die Zahlenspalte trägt die Kühlleistung, und die
+        /// Kühlleistung wird immer übernommen — ohne sie wäre das Gerät im Katalog nach E15
+        /// nicht kühlfähig.
+        /// </param>
+        public WaermepumpeImportSatz(WaermepumpenImport parser, int index, bool kaeltemodus = false)
         {
             _parser = parser;
             _index = index;
+            _kaeltemodus = kaeltemodus;
         }
 
         private _attrribute Satz => _parser._list[_index];
 
         public override string Name => Satz.szName;
         public override string Firma => Satz.szFirma;
-        public override double Filterwert => FilterAus(Satz.szThLeistung);
+        public override double Filterwert => FilterAus(_kaeltemodus ? Satz.szKuehlleistung : Satz.szThLeistung);
 
         public override IDictionary<string, string> Detailwerte => new Dictionary<string, string>
         {
@@ -567,6 +576,12 @@ namespace WindowsFormsApplication1
             if (Satz.szElektrZuheizung != "")
             {
                 ctrl.Heizung = (int)ZahlText.NachDouble(Satz.szElektrZuheizung);
+                ctrl.Kuehlleistung = ZahlText.NachDouble(Satz.szKuehlleistung);
+            }
+            else if (_kaeltemodus)
+            {
+                // E119: Der Kaelteimport uebernimmt die Kuehlleistung unabhaengig von der
+                // Zuheizung (Befund W13-B32 gilt nur fuer den Waermepumpenimport).
                 ctrl.Kuehlleistung = ZahlText.NachDouble(Satz.szKuehlleistung);
             }
         }

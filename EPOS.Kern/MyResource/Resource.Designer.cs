@@ -46803,6 +46803,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angeboten werden nur Wärmepumpen mit gültiger Kühlkennlinie; fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie. Die übrigen nennt das Protokoll mit Grund. * 0=modulierend ähnelt.
+        /// </summary>
+        public static string IMP_KAT_HINWEIS_KAELTE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_HINWEIS_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gelesen werden die Kurvendatei chiller_curves.json der offenen Bibliothek PNNL Copper (BSD-2-Lizenz, Copyright Pacific Northwest National Laboratory) und die CSV-Kennfeldvorlage Kaeltemaschine_Kennfeldvorlage.csv: Kopfzeilen mit Bezeichner, Rückkühlart (LUFT, TROCKENKUEHLER, NASSKUEHLER, WASSER), Nennkälteleistung, Nenn-EER, Mindestteillast und Kältemittel, danach je Zeile Rückkühltemperatur; Kaltwassertemperatur; Kälteleistung in kW; EER. Aus den Kurven entsteht ein Kennfeld mit 6 × 4 Punkten; Nennwerte ge [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string IMP_KAT_HINWEIS_KAELTEMASCHINE {
@@ -46898,6 +46907,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_PROT_GELESEN {
             get {
                 return ResourceManager.GetString("IMP_KAT_PROT_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Nennkühlleistung aus der Kühlkennlinie abgeleitet: {1} kW. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ABGELEITET {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteimport: bei {0} Wärmepumpen Nennkühlleistung aus der Kühlkennlinie abgeleitet (größte Kälteleistung der gültigen Kühlblöcke). ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: Kühlblöcke nur mit vertauschten Achsen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ACHSEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ACHSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteimport: {0} von {1} Wärmepumpen kühlfähig mit Kühlkennlinie, {2} übergangen. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: Kühlblöcke nur in Heizlage. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_HEIZLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: keine Kühlkennlinie. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: keine Nennkühlleistung angegeben und keine Kälteleistung in der Kühlkennlinie. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_NENNKUEHL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_NENNKUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: kein gültiger Kühlblock (Heizlage oder vertauschte Achsen). ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_UNGUELTIG", resourceCulture);
             }
         }
         
@@ -47046,6 +47127,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
+        /// </summary>
+        public static string IMP_KAT_SP_LEISTUNG_KUEHL {
+            get {
+                return ResourceManager.GetString("IMP_KAT_SP_LEISTUNG_KUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Th. Leistung ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_LEISTUNG_TH {
@@ -47132,6 +47222,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_TITEL_WP {
             get {
                 return ResourceManager.GetString("IMP_KAT_TITEL_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteanlagen Einlesen – Wärmepumpen mit Kühlfunktion ähnelt.
+        /// </summary>
+        public static string IMP_KAT_TITEL_WP_KAELTE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_TITEL_WP_KAELTE", resourceCulture);
             }
         }
         
@@ -84389,6 +84488,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MENU_VDI3805 {
             get {
                 return ResourceManager.GetString("MENU_VDI3805", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Import Kälteanlagen VDI 3805 (Wärmepumpen mit Kühlfunktion) ähnelt.
+        /// </summary>
+        public static string MENU_VDI3805_KAELTE {
+            get {
+                return ResourceManager.GetString("MENU_VDI3805_KAELTE", resourceCulture);
             }
         }
         

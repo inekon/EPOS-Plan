@@ -200,7 +200,10 @@ namespace EPOS.UI.Bausteine;
 /// (19.09.2026) faellt der zweite Weg zur Lizenzverwaltung (47 -> 46), weil
 /// derselbe Dialog unter Hilfe -> Lizenz steht. Mit dem Zapfprofilgenerator
 /// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47), mit der
-/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49), mit den Betriebskalendern der Bedarfsprofile um deren Verwaltung (49 -> 50).</para>
+/// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49), mit den Betriebskalendern der Bedarfsprofile um deren Verwaltung (49 -> 50). Mit E119
+/// kommt unter „Daten &amp; Import" der Import fuer Kaelteanlagen hinzu (Waermepumpen mit
+/// Kuehlfunktion aus VDI 3805) - ein echter neuer Weg; die Zaehlung der Tests steht damit bei
+/// 69 Punkten, von denen 55 handeln.</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -374,6 +377,10 @@ public static class Menuetabelle
                 // Pufferspeicher, Photovoltaik, Stromspeicher.
                 new Menuepunkt("MenuItem_Import_Heizkessel", "MENU_IMPORT_HEIZKESSEL", Seitenschluessel.HeizkesselImport),
                 new Menuepunkt("MeniItem_VDI3805", "MENU_VDI3805", Seitenschluessel.WpImport),
+                // E119 (10.10.2026): Fuer Kaelteanlagen gibt es keine VDI-3805-Daten - der
+                // Import fuer Kaelteanlagen liest Blatt 22 und bietet nur die Waermepumpen
+                // mit Kuehlfunktion an. Er steht deshalb gleich hinter dem Waermepumpenimport.
+                new Menuepunkt("MeniItem_VDI3805_Kaelte", "MENU_VDI3805_KAELTE", Seitenschluessel.WpKaelteImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
                 new Menuepunkt("MenuItem_PufferSp_VDI3805", "MENU_PUFFER_SP_VDI3805", Seitenschluessel.PufferSpImport),
                 // W16c-E-7: derselbe Zwischenknoten wie unter
