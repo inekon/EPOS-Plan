@@ -50986,5 +50986,8 @@ Chart</value>
   <data name="SKV_FRAGE_LOESCHEN_NAME" xml:space="preserve">
     <value>Der Katalogeintrag „{0}“ wird für ALLE Projekte gelöscht. Fortfahren?</value>
   </data>
+  <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit.</value>
+  </data>
 </root>
 

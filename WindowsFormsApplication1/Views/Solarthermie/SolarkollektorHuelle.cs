@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -271,6 +272,13 @@ namespace WindowsFormsApplication1
                 ["EditorGaben"] = new Func<string, bool, IReadOnlyDictionary<string, object>>(KatalogGaben),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
 
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-9): der Rueckweg „In die Datenbank übernehmen…" - nur
+                // ausserhalb des Assistenten (dort gibt es keine Projektkopie). Rueckfrage und Schreibweg kommen
+                // aus dem Kern (SolarkollektorenStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = wizard || projektId <= 0 ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("SKV_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit."),
+
                 ["TitelText"] = Text_("SKV_TITEL", "Eingabe der Solarkollektoren"),
                 ["KopfbandText"] = Text_("SKV_KOPFBAND", "Eingabe der Solarkollektoren"),
                 ["LabelProjektliste"] = Text_("SKV_LBL_PROJEKTLISTE", "Auswahl in Projekt:"),
@@ -501,10 +509,40 @@ namespace WindowsFormsApplication1
                     "Der ausgewählte Solarkollektor wurde in den Stammdaten nicht gefunden.");
             if (SolarkollektorenStammCtrl.IsReadOnlyStatic(satz.m_szKollektorname))
                 return MyResource.Resource.ADM_SCHLOSS_ERST_AUFHEBEN;
-            return new SolarkollektorenStammCtrl().Delete(satz.m_szKollektorname)
-                ? ""
-                : Text_("SKK_MSG_FEHLER", "Fehler beim Überschreiben des Datensatzes!");
+            // KA-E-16: der Satz samt seinen Satzvorlagen in EINEM Vorgang.
+            SolarkollektorenStammCtrl.KatalogsatzLoeschung l = SolarkollektorenStammCtrl.KatalogsatzLoeschen(id);
+            if (!l.Ok) return Text_("SKK_MSG_FEHLER", "Fehler beim Überschreiben des Datensatzes!");
+            if (l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return "";
         }
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => SolarkollektorenStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = SolarkollektorenStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = SolarkollektorenStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         /// <summary>
         /// Die Fläche EINES Moduls. Der Vorläufer las dafür die Spalte

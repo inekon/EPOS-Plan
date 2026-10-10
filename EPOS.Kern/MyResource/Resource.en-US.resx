@@ -50979,5 +50979,8 @@ chart</value>
   <data name="SKV_FRAGE_LOESCHEN_NAME" xml:space="preserve">
     <value>The catalogue entry "{0}" will be deleted for ALL projects. Continue?</value>
   </data>
+  <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients, areas and investment costs are transferred.</value>
+  </data>
 </root>
 
