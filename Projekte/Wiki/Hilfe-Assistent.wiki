@@ -8,7 +8,7 @@ Hilfe steht auf drei Ebenen bereit: Kurzhinweise beim Überfahren eines Eingabef
 == Aufruf ==
 {{Anker|aufruf|chatfenster|f1}}
 
-Das Chatfenster öffnen Sie über {{Menü|Hilfe|Hilfe-Assistent (KI)}} oder mit der Taste '''F1'''. In den Masken für Heizkessel, Pufferspeicher, Photovoltaik und Wärmepumpe steht zusätzlich oben rechts ein kleiner Knopf. Das Fenster gehört dann zur Maske, bleibt über ihr sichtbar und auch neben einem geöffneten Dialog bedienbar.
+Das Chatfenster öffnen Sie über {{Menü|Hilfe|Hilfe-Assistent (KI)…}}, mit der Taste '''F1''' oder über die EPOS-Marke rechts neben dem ''i'' oben rechts in jeder Maske. Alle Wege übergeben den Bereich, in dem Sie gerade arbeiten. Wie der Assistent aus einem Dialog heraus arbeitet, beschreibt [[Programm Dokumentation/Hilfe-Assistent|Programm-Dokumentation: Hilfe-Assistent]].
 
 == Suche ohne Zugangsschlüssel ==
 {{Anker|suche-ohne-zugangsschluessel|lokale-suche|nur-suchen}}
@@ -98,6 +98,7 @@ Ihre Frage im Wortlaut, den Namen des Bereichs, in dem Sie arbeiten, und Auszüg
 == Siehe auch ==
 {{Anker|siehe-auch}}
 
+* [[Programm Dokumentation/Hilfe-Assistent|Programm-Dokumentation: Hilfe-Assistent]] – das Chatfenster und der Assistent im Dialog im Einzelnen
 * [[Einstellungen, Hilfe und Sprache]] – Kurzhinweise, Online-Dokumentation und Sprachumschaltung
 * [[Installation und Update]] – Ersteinrichtung und benutzerbezogene Einstellungen
 * [[FAQ]] – häufige Fragen zu Kosten und Datenübertragung

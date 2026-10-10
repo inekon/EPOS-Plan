@@ -8,7 +8,7 @@ Die folgenden Fragen tauchen in der Praxis am häufigsten auf. Ausführlicher be
 === Brauche ich Excel, um EPOS-Plan zu nutzen? ===
 {{Anker|brauche-ich-excel-um-epos-plan-zu-nutzen}}
 
-Nein. EPOS-Plan ist eine eigenständige Windows-Anwendung mit eigener Datenhaltung und eigener Darstellung. Excel wird weder für die Berechnung noch für die Ausgabe benötigt; Ergebnisse lassen sich aber als CSV-Datei exportieren und dort weiterverarbeiten.
+Nein. EPOS-Plan ist eine eigenständige Windows-Anwendung mit eigener Datenhaltung und eigener Darstellung. Excel wird weder für die Berechnung noch für die Ausgabe benötigt; Zeitreihen lassen sich aber als CSV-Datei exportieren, und der Bericht entsteht auf Wunsch zusätzlich als Excel-Arbeitsmappe, die EPOS-Plan selbst schreibt.
 
 === Welche Systemvoraussetzungen gelten? ===
 {{Anker|welche-systemvoraussetzungen-gelten}}
@@ -18,12 +18,12 @@ Windows 10 oder 11 (64 Bit) und die Microsoft Edge WebView2 Runtime; fehlt sie, 
 === Wie sichere ich meine Daten? ===
 {{Anker|wie-sichere-ich-meine-daten}}
 
-Schließen Sie EPOS-Plan und kopieren Sie die Datenbankdatei <code>Kenndaten.sqlite</code> aus dem eingestellten Datenbankordner sowie die beiden Datenverzeichnisse <code>%ProgramData%\EPOS-Plan</code> und <code>%LocalAppData%\EPOS-Plan</code>. Liegen neben der Datenbank noch die Dateien <code>Kenndaten.sqlite-wal</code> und <code>Kenndaten.sqlite-shm</code>, läuft das Programm noch – dann wäre die Kopie unvollständig. Einzelheiten unter [[Installation und Update#datenablage-und-datensicherung|Datenablage und Datensicherung]].
+Schließen Sie EPOS-Plan und kopieren Sie die Datenbankdatei <code>Kenndaten.sqlite</code> aus dem eingestellten Datenbankordner sowie die beiden Datenverzeichnisse <code>%ProgramData%\WP-Plan</code> und <code>%LocalAppData%\WP-Plan</code>. Liegen neben der Datenbank noch die Dateien <code>Kenndaten.sqlite-wal</code> und <code>Kenndaten.sqlite-shm</code>, läuft das Programm noch – dann wäre die Kopie unvollständig. Einzelheiten unter [[Installation und Update#datenablage-und-datensicherung|Datenablage und Datensicherung]].
 
 === Wie genau ist die Berechnung? ===
 {{Anker|wie-genau-ist-die-berechnung}}
 
-Der Wärmebedarf wird tagesweise aus Gebäudekenngrößen und Klimadaten ermittelt und über typabhängige Tagesprofile auf 8.760 Stundenwerte verteilt; der Strombedarf wird in 35.040 Viertelstundenwerten geführt. Wärmepumpen rechnen mit dem vollständigen Herstellerkennfeld, Kollektoren nach EN 12975, Kessel mit brennstoffabhängigem Wirkungsgrad und Bereitschaftsverlust. Die Ergebnisgüte hängt vor allem von der Qualität der Eingangsdaten ab: Verbrauchsabrechnungen, gemessene Lastgänge und die richtige Vorlauftemperatur verbessern sie deutlich stärker als jede Modellverfeinerung.
+Der Wärmebedarf der Gebäude wird stündlich mit dem Gebäudemodell nach VDI 6007 aus Hülle, Nutzung und Klimadaten gerechnet ([[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]); der Tagesbilanz-Weg mit typabhängigen Tagesprofilen bleibt je Gebäude wählbar. Der Strombedarf wird in 35.040 Viertelstundenwerten geführt. Wärmepumpen rechnen mit dem vollständigen Herstellerkennfeld, Kollektoren mit Kennwerten nach EN 12975 oder EN ISO 9806, Kessel mit brennstoffabhängigem Wirkungsgrad und Bereitschaftsverlust. Die Ergebnisgüte hängt vor allem von der Qualität der Eingangsdaten ab: Verbrauchsabrechnungen, gemessene Lastgänge und die richtige Vorlauftemperatur verbessern sie deutlich stärker als jede Modellverfeinerung.
 
 === Ich habe nur die Heizkostenabrechnung – reicht das? ===
 {{Anker|ich-habe-nur-die-heizkostenabrechnung-reicht-das}}
@@ -33,7 +33,7 @@ Ja. Statt der Wohnfläche geben Sie den Jahresverbrauch an Öl, Gas oder Brennst
 === Woher kommen die Klimadaten? ===
 {{Anker|woher-kommen-die-klimadaten}}
 
-Sie werden über die Ortseingabe automatisch als typischer meteorologischer Jahresdatensatz bezogen und enthalten für jede Stunde Außentemperatur sowie Global-, Direkt- und Diffusstrahlung, umgerechnet auf die Ausrichtungen Süd, Ost, West und Nord. Eigene Klimaregionen lassen sich beliebig anlegen; die mitgelieferten sind schreibgeschützt.
+Sie werden über die Ortseingabe automatisch als typischer meteorologischer Jahresdatensatz von PVGIS bezogen oder als Testreferenzjahr des DWD eingelesen und enthalten für jede Stunde Außentemperatur sowie Global-, Direkt- und Diffusstrahlung, umgerechnet auf die Ausrichtungen Süd, Ost, West und Nord. Eigene Klimaregionen lassen sich beliebig anlegen; die mitgelieferten sind schreibgeschützt.
 
 === Warum liegt die Wärmeproduktion über dem Wärmebedarf? ===
 {{Anker|warum-liegt-die-waermeproduktion-ueber-dem-waermebedarf}}
@@ -43,12 +43,12 @@ Weil auch die Bereitschaftsverluste des Pufferspeichers gedeckt werden müssen. 
 === Wie bilde ich Warmwasser und Heizung getrennt ab? ===
 {{Anker|wie-bilde-ich-warmwasser-und-heizung-getrennt-ab}}
 
-Warmwasser wird als eigener Bedarfsanteil erfasst und im Bedarfsdiagramm getrennt dargestellt. In der Simulationskonfiguration können Sie jeder Wärmepumpe eine Wärmesenke zuweisen: gesamter Bedarf, nur Warmwasser oder nur Heizung. Damit lassen sich Booster-Konzepte und getrennte Erzeuger realistisch rechnen.
+Warmwasser wird als eigener Bedarfsanteil erfasst und im Bedarfsdiagramm getrennt dargestellt. In der Simulationskonfiguration weisen Sie jeder Anlage ihre Wärmesenken zu; beim Ziel Heizkreis teilt die ''Bedarfsart'' die Lieferung auf: Warmwasservorrang, nur Warmwasser oder nur Heizwärme ([[Programm Dokumentation/Simulation#senkenzeile|Wärmesenken einer Anlage]]). Damit lassen sich Booster-Konzepte und getrennte Erzeuger realistisch rechnen.
 
 === Wie finde ich die richtige Speichergröße? ===
 {{Anker|wie-finde-ich-die-richtige-speichergroesse}}
 
-Durch Rechnen mehrerer Varianten. Beim Pufferspeicher zeigen Betriebsstunden, Taktzahl und der Verlauf des Füllstands, ob der Speicher passt; beim Batteriespeicher flacht der Zuwachs an Eigenverbrauch ab einer bestimmten Größe deutlich ab – genau dort liegt die wirtschaftliche Grenze.
+Durch Rechnen mehrerer Varianten. Beim Pufferspeicher zeigen Betriebsstunden, Taktzahl und der Verlauf des Füllstands, ob der Speicher passt; beim Batteriespeicher flacht der Zuwachs an Eigenverbrauch ab einer bestimmten Größe deutlich ab – genau dort liegt die wirtschaftliche Grenze. Beide Speicherarten haben eine eigene Auslegung: [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] und die [[Programm Dokumentation/Stromspeicher|Stromspeicher-Auslegung]].
 
 === Kann ich mehrere Wärmepumpen einsetzen? ===
 {{Anker|kann-ich-mehrere-waermepumpen-einsetzen}}
@@ -58,12 +58,12 @@ Ja. Jede Maschine erhält eine eigene Priorität, Wärmequelle, Wärmesenke und 
 === Kann ich eigene Herstellerdaten einlesen? ===
 {{Anker|kann-ich-eigene-herstellerdaten-einlesen}}
 
-Ja. Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht der Import nach VDI 3805 zur Verfügung. Eigene Datensätze lassen sich außerdem direkt in den Katalogen anlegen; werksseitige Einträge sind schreibgeschützt und bleiben als Referenz erhalten.
+Ja. Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht der Import nach VDI 3805 zur Verfügung, für PV-Module, Wechselrichter und Stromspeicher der Import aus der CEC-Liste und weiteren Formaten ([[Stammdaten und Datenimport]]). Eigene Datensätze lassen sich außerdem direkt in den Katalogen anlegen; werksseitige Einträge sind schreibgeschützt und bleiben als Referenz erhalten.
 
 === Wie exportiere ich Ergebnisse? ===
 {{Anker|wie-exportiere-ich-ergebnisse}}
 
-Über die Export-Schaltflächen in den Ergebnisbereichen. Die CSV-Dateien enthalten Zeitstempel und Außentemperatur sowie die jeweiligen Werte – für den Energiebedarf, für die Komponente/Anlage und für die jeweils angezeigte Grafik mit allen aktiven Kurven.
+Über den Knopf ''CSV…'' in der Leiste jedes Zeitreihendiagramms der Ergebnisse. Die Dateien des Energiebedarfs und der Anlagen enthalten Zeitstempel und Außentemperatur sowie die jeweiligen Werte, die übrigen Diagramme die Reihen, die sie gerade zeigen ([[Datenexport]]). Den Vergleich mehrerer Varianten gibt der Bericht als Word-Dokument oder Excel-Arbeitsmappe aus.
 
 === Werden meine Projektdaten übertragen? ===
 {{Anker|werden-meine-projektdaten-uebertragen}}

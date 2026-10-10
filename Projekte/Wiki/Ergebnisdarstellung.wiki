@@ -1,46 +1,48 @@
-Die '''Ergebnisdarstellung''' ist in Registerkarten gegliedert. Sie führt vom Energiebedarf über die einzelnen Erzeuger bis zur zusammenfassenden Ergebnisseite mit Bedarfsdeckung, Autarkieanalyse und Jahresganglinien.
+Die '''Ergebnisdarstellung''' ist in Reiter gegliedert. Sie steht in Schritt ''③ Ergebnis'' der Ansicht ''Simulation'' und ebenso neben dem Lauf im Reiter ''Simulation'' der Startseite. Sie beginnt mit der ''Übersicht'' und führt über den Energiebedarf und die einzelnen Erzeuger bis zum Reiter ''Ergebnis'' mit Jahresganglinien und Autarkie-Analyse. Die Reiter im Einzelnen beschreibt [[Programm Dokumentation/Simulationsergebnisse|Programm-Dokumentation: Simulationsergebnisse]].
 
 == Energiebedarf ==
 {{Anker|energiebedarf|jahresganglinie|jahresdauerlinie}}
 
-Der Energiebedarf zeigt Wärmelast und Strombedarf als Jahresganglinie, wahlweise umschaltbar auf die geordnete Jahresdauerlinie, jeweils mit maximaler Last und Jahressumme. Die Wärmelast ist dabei nach Heizwärme und Warmwasser getrennt dargestellt.
+Der Reiter ''Wärme-/Strombedarf'' zeigt Wärmelast und Strombedarf als Jahresganglinie, mit ''sortiert'' als geordnete Jahresdauerlinie, jeweils mit maximaler Last und Jahressumme. Die Wärmelast liegt nach Heizung, Brauchwasser und Prozesswärme gestapelt vor. Rechnet das Projekt Kälte, steht dort auch der Block ''Kälte'' mit der Kältelast.
 
 == Wärmepumpe ==
 {{Anker|waermepumpe|bivalenzpunkt|vollbenutzungsstunden}}
 
-Die Registerkarte ''Wärmepumpe'' weist die Wärmebedarfsdeckung in Prozent, den ermittelten Bivalenzpunkt, die Kapazität des zugeordneten Pufferspeichers, die durchschnittlichen Vollbenutzungsstunden und die minimal erforderliche Spitzenkesselleistung aus.
+Der Reiter ''Wärmepumpe'' weist die Wärmebedarfsdeckung in Prozent, den ermittelten Bivalenzpunkt, die Kapazität des zugeordneten Pufferspeichers, die durchschnittlichen Vollbenutzungsstunden, die minimal erforderliche Spitzenkesselleistung und die Jahresarbeitszahl aus – für die Wärmepumpe allein und mit Heizstab. Bei einer Wärmepumpe mit Einbindung zeigt eine Kachelzeile die Betriebsbereiche, bei einer Erdreichquelle eine Zeile die Auslegungsprüfung nach VDI 4640.
 
-Drei Diagramme zeigen den Jahresgang von Wärmebedarf, Heizstab und Wärmeproduktion, den Stromverbrauch sowie die Leistung aufgetragen über der Außentemperatur. Eine Modultabelle listet je Maschine die Leistung, die Wärmeproduktion, den Stromverbrauch, den Heizstabanteil und die Betriebsstunden.
+Drei Diagramme zeigen den Jahresgang von Produktion, Stromverbrauch und Speichertemperaturen, ein weiteres die Leistung über der Außentemperatur. Eine Modultabelle listet je Maschine die Leistung, die Wärmeproduktion, den Stromverbrauch, den Heizstabanteil, die Betriebsstunden und die Jahresarbeitszahl.
 
 == Heizkessel, BHKW, Solarthermie und Photovoltaik ==
 {{Anker|heizkessel-bhkw-solarthermie-und-photovoltaik|erzeugerregisterkarten|modultabelle}}
 
-Für Heizkessel, BHKW, Solarthermie und Photovoltaik gibt es jeweils eigene Registerkarten mit Deckungsanteil, Produktion, Restbedarf, den relevanten Verbrauchsgrößen und einer Modultabelle. Beim BHKW wird zusätzlich die Betriebsart eingestellt und erläutert, bei der Solarthermie der nicht nutzbare Überschuss ausgewiesen, bei der Photovoltaik der Speicherfüllstand mit dargestellt.
+Für Heizkessel, BHKW, Solarthermie, Photovoltaik und Stromspeicher gibt es jeweils eigene Reiter mit Deckungsanteil, Produktion, Restbedarf, den relevanten Verbrauchsgrößen und einer Modultabelle. Der Heizkessel nennt Jahresnutzungsgrad und Starts, mit Brennwertkennlinie auch den Anteil des Brennwertbetriebs. Das BHKW zeigt Wärme- und Stromlast; seine Betriebsart wird in der Simulationskonfiguration eingestellt. Die Solarthermie weist den Kollektorertrag brutto mit seinen Teilen ''genutzt'' und ''Überschuss'' aus. Rechnet eine Kältemaschine mit Teillast, zeigt der Reiter ''Kältegang'' Teillast und Takten.
 
 == Ergebnisseite ==
 {{Anker|ergebnisseite|ringdiagramm|jahresarbeit}}
 
-Die Ergebnisseite fasst alles zusammen. Zwei Ringdiagramme zeigen Wärme- und Strombedarfsdeckung nach Erzeugern, Kennzahlkacheln den verbleibenden Rest an Wärme und Strom, eine Tabelle die Jahresarbeit jedes Erzeugers in Megawattstunden.
+Die ''Übersicht'' fasst alles zusammen. Zwei Ringdiagramme zeigen Wärme- und Strombedarfsdeckung nach Erzeugern, Kennzahlen den verbleibenden Rest an Wärme und Strom, eine Tabelle die Jahresarbeit jedes Erzeugers in Megawattstunden. Rechnet das Projekt Kälte, folgt der Block ''Kältedeckung''. Solange nicht gerechnet ist, stehen dort nur Wärme- und Strombedarf.
 
 == Autarkieanalyse ==
 {{Anker|autarkieanalyse|autarkiegrad|nutzungsgrad}}
 
-Die Autarkieanalyse stellt monatsweise gegenüber, welcher Anteil des Strombedarfs direkt aus der Erzeugung, aus dem Speicher oder aus dem Netz gedeckt wird, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und die CO₂-Einsparung aus.
+Die ''Autarkie-Analyse'' im Reiter ''Ergebnis'' stellt monatsweise gegenüber, welcher Anteil des Strombedarfs direkt aus der Erzeugung, aus dem Speicher oder aus dem Netz gedeckt wird, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und die CO₂-Einsparung aus.
 
 == Wärme- und Stromproduktion ==
 {{Anker|waerme-und-stromproduktion|produktionsganglinie|speicherfuellstand}}
 
-Zwei weitere Ansichten zeigen die Wärme- und die Stromproduktion als Jahresganglinie, in denen sich einzelne Erzeuger und der Speicherfüllstand gezielt ein- und ausblenden lassen.
+Die Blätter ''Wärmeproduktion'' und ''Stromproduktion'' im Reiter ''Ergebnis'' zeigen die Erzeugung als Jahresganglinie, in der sich einzelne Erzeuger und der Speicherinhalt gezielt ein- und ausblenden lassen.
 
 == Kennzahlen im Überblick ==
 {{Anker|kennzahlen-im-ueberblick|kennzahlen}}
 
-Zur Verfügung stehen Deckungsanteile je Erzeuger, Bivalenzpunkt, Vollbenutzungsstunden, Jahresnutzungsgrade, Restwärme- und Reststrombedarf, Brennstoffverbräuche, Emissionen, Eigenverbrauchsquote, Autarkiegrad und CO₂-Einsparung. Dargestellt wird alles als Jahresganglinie, Jahresdauerlinie, Leistung über Außentemperatur, Ringdiagramm der Bedarfsdeckung, Monatsbilanz der Autarkie und als Modultabelle je Anlage.
+Zur Verfügung stehen Deckungsanteile je Erzeuger, Bivalenzpunkt, Vollbenutzungsstunden, Jahresarbeitszahl, Jahresnutzungsgrade, Restwärme- und Reststrombedarf, Brennstoffverbräuche, Emissionen, Eigenverbrauchsquote, Autarkiegrad und CO₂-Einsparung. Dargestellt wird alles als Jahresganglinie, Jahresdauerlinie, Leistung über Außentemperatur, Ringdiagramm der Bedarfsdeckung, Monatsbilanz der Autarkie und als Modultabelle je Anlage.
+
+Alle Zeitreihendiagramme tragen dieselbe Bedienung: Mausrad, Ziehen, Kneifgeste und die Tasten ''+'', ''−'' und ''0'' vergrößern den Zeitausschnitt, ''Bereich'' zieht einen Ausschnitt auf, ''1:1'' stellt die volle Ansicht her, und unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen. Die Farben je Größe legen Sie in den Einstellungen fest; sie gelten auch im Bericht. Der Knopf ''CSV…'' speichert die Reihen eines Diagramms als CSV-Datei ([[Datenexport]]).
 
 == Ergebnis speichern ==
 {{Anker|ergebnis-speichern}}
 
-Das jeweils letzte Simulationsergebnis eines Projekts kann gespeichert und später wieder aufgerufen werden.
+Das jeweils letzte Simulationsergebnis eines Projekts kann mit ''Ergebnis speichern'' gespeichert und später wieder aufgerufen werden.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -48,6 +50,7 @@ Das jeweils letzte Simulationsergebnis eines Projekts kann gespeichert und spät
 * [[Grundlagen/Vergleich Energiebilanz|Grundlagen: Vergleich Energiebilanz]] – wie Varianten belastbar verglichen werden
 * [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
 * [[Datenexport]] – Ausgabe der Zeitreihen als CSV-Datei
+* [[Programm Dokumentation/Simulationsergebnisse|Programm-Dokumentation: Simulationsergebnisse]] – die Reiter, die Diagrammbedienung und die Farben im Einzelnen
 
 {{Navigation Programmfunktionen}}
 

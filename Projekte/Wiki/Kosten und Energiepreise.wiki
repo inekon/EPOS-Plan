@@ -3,29 +3,34 @@ Unter '''Kosten und Energiepreise''' werden Investitions-, Betriebs- und Energie
 == Aufbau des Kostenmoduls ==
 {{Anker|aufbau-des-kostenmoduls|kostenmodul}}
 
-Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert.
+Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert. Die Kostenverwaltung öffnen Sie im Bereich ''Berichte & Kosten'' auf dem Reiter ''Kosten'' über ''Kostenverwaltung öffnen…'' oder aus der Verwaltung einer Anlage über ''Investitionskosten…'' und ''Betriebskosten…''. Die Dialoge im Einzelnen beschreibt [[Programm Dokumentation/Kosten|Programm-Dokumentation: Kosten]].
 
 {{Hinweis|Erst wenn die Technik steht, lohnt die Kostenerfassung, denn dann liegen die Mengen fest.}}
 
 == Kostenpositionen je Komponente ==
 {{Anker|kostenpositionen-je-komponente|nutzungsdauer|bandbreite}}
 
-Zu jeder im Projekt vorhandenen Komponente lassen sich Kostenpositionen mit Betrag, Einheit, Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall erfassen.
+Zu jeder im Projekt vorhandenen Komponente lassen sich Kostenpositionen mit Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall erfassen – als fester Betrag oder als Satz mal einer Bezugsgröße, die das Programm beim Rechnen aus der Anlagentechnik, dem jüngsten Simulationslauf oder den Investitionskosten liest ([[Programm Dokumentation/Kosten#bemessung|Bemessung der Positionen]]). Die Gruppe ''Ersatz und Restwert'' zeigt je Position die Ersatzjahre und den Restwert, mit denen die Wirtschaftlichkeit rechnet.
 
 == Übernahme aus dem Technikmodul ==
 {{Anker|uebernahme-aus-dem-technikmodul|planwert|anlagenkosten}}
 
-Die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden.
+Die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden. ''Aus Vorlage übernehmen…'' holt Positionen aus den Kostenvorlagen des Katalogs oder aus einer anderen Variante, ''Sätze vorbelegen…'' die Sätze für Instandsetzung und Wartung aus der Tabelle der Nutzungsdauern.
 
 == Summen ==
 {{Anker|summen|gesamtprojekt}}
 
-Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
+Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen, netto und brutto.
 
 == Energiepreise ==
 {{Anker|energiepreise|arbeitspreis|emissionsfaktoren}}
 
-Bei den Energiepreisen werden je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren gepflegt, jeweils mit Gültigkeitsdatum, sodass sich Preisentwicklungen nachvollziehbar hinterlegen lassen.
+In der ''Energieträgerverwaltung'' werden je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert und die Emissionsfaktoren gepflegt, jeweils mit Gültigkeitsdatum, sodass sich Preisentwicklungen nachvollziehbar hinterlegen lassen. Der Stromträger kann statt des Leistungspreises eine Leistungspreis-Staffel führen. Der Knopf '''±''' an den Preisen hinterlegt eigene Werte für die Szenarien der [[Wirtschaftlichkeit]].
+
+== Nutzungsdauern und gesetzliche Parameter ==
+{{Anker|nutzungsdauern-und-gesetzliche-parameter}}
+
+Im Menü {{Menü|Administration|Kosten}} stehen außerdem die ''Brennstoffe des Projekts'', die ''Nutzungsdauern (AfA)'' je Technik und Positionsart mit den Sätzen für Instandsetzung und Wartung – sie steuern Ersatzbeschaffung und Restwert – und der Katalog der [[Programm Dokumentation/Gesetzesparameter|gesetzlichen Parameter]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -34,6 +39,7 @@ Bei den Energiepreisen werden je Energieträger Arbeits-, Grund- und Leistungspr
 * [[Grundlagen/Wirtschaftlichkeitsrechnung|Grundlagen: Wirtschaftlichkeitsrechnung]] – die fachlichen Hintergründe
 * [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
 * [[Stammdaten und Datenimport]] – Katalog der Energieträger und Kostenkennwerte
+* [[Programm Dokumentation/Kosten|Programm-Dokumentation: Kosten]] – Kostenverwaltung, Bemessung, Energieträger und Nutzungsdauern im Einzelnen
 
 {{Navigation Programmfunktionen}}
 
