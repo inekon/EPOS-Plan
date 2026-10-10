@@ -2,7 +2,8 @@
      EPOS.Kern/Allgemein/Simulation/SimulationStrombedarf.cs, EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs,
      EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Import/GanglinienImportAblauf.cs,
      EPOS.Kern/Controller/GanglinienAuswertungCtrl.cs, EPOS.Kern/Controller/PeakShavingCtrl.cs,
-     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs -->
+     EPOS.Kern/Allgemein/Simulation/SimulationControl.cs, EPOS.Kern/Allgemein/Simulation/Betriebskalenderschicht.cs,
+     EPOS.Kern/Allgemein/Update/StandardlastprofilSaat.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -31,7 +32,7 @@ Ausgewiesen werden die Jahresmenge [MWh], der Anteil aus Profilen und der aus Ga
 |-
 | Raster einer Ganglinie || 1 = Stunde, 4 = Viertelstunde || wird beim Import bestimmt und am Kopfsatz gefuehrt
 |-
-| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion; die Waermerechnung gibt ihn weiter
+| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion, mit einer Spotpreisreihe mit Jahr der Kalender dieses Jahres; die Waermerechnung gibt ihn weiter
 |}
 
 == Formelzeichen und Parameter ==
@@ -113,7 +114,7 @@ Die Formeln dazu stehen unter [[Programm Dokumentation/Berechnung/Brauchwasser|B
 
 '''Die Zuordnung gilt über die ID.''' Jede Zuordnungszeile des Projekts zeigt auf ihre Projektkopie — wie bei Brauchwasser und Prozesswaerme. Kopf- und Typsatz werden nur im eigenen Projekt gelesen, und die gepflegte Jahressumme der Zuordnungszeile skaliert genau diese Kopie; ein gleichnamiges Profil eines anderen Projekts rechnet nicht mit.
 
-'''BDEW-Standardlastprofile.''' Der Katalog „Datenbank Strombedarf" führt die Standardlastprofile Strom 2025 des BDEW für Haushalt (H25), Gewerbe allgemein (G25) und Landwirtschaftsbetriebe (L25) als gesperrte Sätze. Ihre zwölf Monatswerte summieren auf 1 000 MWh — die Normierung des BDEW auf 1 Mio. kWh Jahresverbrauch —; im Projekt gilt der Jahresverbrauch der Zuordnung, auf den die Monatswerte skaliert werden. Das Wochenprofil ist das Jahresmittel der drei Typtage des BDEW: Montag bis Freitag der Werktag, Samstag der Samstag, Sonntag der Sonn- und Feiertag, je Stunde die Summe der vier Viertelstunden. Die Monatswerte des Haushaltsprofils enthalten die Dynamisierung des BDEW über das Jahr. Feiertage rechnen wie Sonntag, wenn die Zuordnung einen Betriebskalender mit „Feiertag wie Sonntag" und dem Bundesland trägt; ohne Kalender zählt ein Feiertag als Werktag.
+'''BDEW-Standardlastprofile.''' Der Katalog „Datenbank Strombedarf" führt die Standardlastprofile Strom 2025 des BDEW für Haushalt (H25), Gewerbe allgemein (G25) und Landwirtschaftsbetriebe (L25) als gesperrte Sätze. Ihre zwölf Monatswerte summieren auf 1 000 MWh — die Normierung des BDEW auf 1 Mio. kWh Jahresverbrauch —; im Projekt gilt der Jahresverbrauch der Zuordnung, auf den die Monatswerte skaliert werden. Das Wochenprofil ist das Jahresmittel der drei Typtage des BDEW: Montag bis Freitag der Werktag, Samstag der Samstag, Sonntag der Sonn- und Feiertag, je Stunde die Summe der vier Viertelstunden. Die Monatswerte des Haushaltsprofils enthalten die Dynamisierung des BDEW über das Jahr. Feiertage rechnen wie Sonntag, wenn die Zuordnung einen Betriebskalender mit „Feiertag wie Sonntag" trägt — die neun bundeseinheitlichen und, mit gewähltem Bundesland, dessen Landesfeiertage; ohne Kalender zählt ein Feiertag als Werktag.
 
 '''Netzbezugsprofile P25 und S25 — keine Verbrauchsprofile.''' Daneben führt der Katalog die BDEW-Profile P25 (Netzbezug eines Haushalts mit PV-Anlage) und S25 (Netzbezug eines Haushalts mit PV-Anlage und Batteriespeicher) als gesperrte Sätze; Name und Beschreibung beider Sätze sagen das. Sie beschreiben nicht, was der Haushalt verbraucht, sondern was er '''nach dem Eigenverbrauch aus dem Netz bezieht''': Im Sommer deckt die PV-Anlage den größten Teil — der Juni trägt bei P25 rund 4 %, bei S25 rund 1 % der Jahresmenge —, im Winter liegt der Bezug entsprechend hoch. Die 1 000 MWh ihrer Monatswerte sind Netzbezug; im Projekt gilt als Jahressumme der Zuordnung der '''Jahresnetzbezug''' der Lieferstelle. Ihre Monatswerte enthalten die Dynamisierung des BDEW wie das Haushaltsprofil; Wochenprofil und Feiertage folgen derselben Regel wie oben. '''Nicht mit einer PV-Rechnung des Projekts kombinieren:''' Rechnet das Projekt die Photovoltaik — und den Stromspeicher — selbst, ist deren Eigenverbrauch in P25 und S25 schon abgezogen, und die PV zählte doppelt. Für einen Haushalt, dessen PV-Anlage das Projekt rechnet, gehört das Haushaltsprofil H25 mit dem Jahresverbrauch in die Zuordnung; P25 und S25 passen, wo allein der Bezug aus dem Netz gefragt ist und die PV-Anlage nicht gerechnet wird.
 
@@ -126,7 +127,9 @@ Die Stundenreihe wird gespreizt, indem der Stundenwert '''in alle vier Viertel d
 : <math>\displaystyle P_{\mathrm{Prof}}(4t) = P_{\mathrm{Prof}}(4t+1) = P_{\mathrm{Prof}}(4t+2) = P_{\mathrm{Prof}}(4t+3) = P_{\mathrm{h}}(t)</math> &nbsp;&nbsp;(1)
 :: <math>P_{\mathrm{Prof}}(k)</math> – Profilanteil im Viertelstundenraster [kW]
 :: <math>P_{\mathrm{h}}(t)</math> – Profilanteil als Stundenreihe [kW]
-:: <math>4</math> – Viertel je Stunde; der Stundenwert steht in allen vier gleich hoch und wird NICHT geviertelt [–] Der Wert bleibt damit eine '''Leistung''' — er wird nicht geviertelt. Genau daraus folgt der Teiler 4 000 in Gleichung (4): vier gleich hohe Viertel je Stunde, danach kWh nach MWh.
+:: <math>4</math> – Viertel je Stunde; der Stundenwert steht in allen vier gleich hoch und wird NICHT geviertelt [–]
+
+Der Wert bleibt damit eine '''Leistung''' — er wird nicht geviertelt. Genau daraus folgt der Teiler 4 000 in Gleichung (4): vier gleich hohe Viertel je Stunde, danach kWh nach MWh.
 
 === 3. Messlastgänge addieren ===
 
@@ -140,7 +143,7 @@ Jede dem Projekt zugeordnete Stromganglinie wird gelesen und muss zu ihrem Raste
 | 4 (Viertelstunde) || genau 35 040
 |}
 
-Jede andere Wertzahl ist ein '''Abbruchgrund''' mit Meldung — bis zur Rasterpruefung lief die Addition stillschweigend ueber die kuerzere der beiden Reihen, der Rest blieb null, und der Jahresbedarf war zu klein.
+Jede andere Wertzahl ist ein '''Abbruchgrund''' mit Meldung: Eine Addition ueber die kuerzere der beiden Reihen liesse den Rest null, und der Jahresbedarf waere zu klein.
 
 Stundenganglinien werden nach derselben Regel wie in (1) gespreizt. Danach wird Viertelstunde fuer Viertelstunde addiert:
 
@@ -149,6 +152,7 @@ Stundenganglinien werden nach derselben Regel wie in (1) gespreizt. Danach wird 
 :: <math>P_{\mathrm{Prof}}(k)</math> – Profilanteil nach (1) [kW]
 :: <math>P_{g}(k)</math> – Stromganglinie g im Viertelstundenraster [kW]
 :: <math>g</math> – laufende Nummer einer dem Projekt zugeordneten Stromganglinie [–]
+
 === 4. Was der Import sicherstellt ===
 
 Die Rasterpruefung im Lauf ist ein Sicherheitsnetz fuer Altbestaende — neu eingelesene Ganglinien sind bereits normalisiert:
@@ -179,7 +183,9 @@ Die EU-Sommerzeitregel ist im Programm '''fest verdrahtet''', damit das Ergebnis
 :: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–]
 : <math>\displaystyle P_{\mathrm{max}} = \max_{k=0 \dots 35\,039} P(k)</math> &nbsp;&nbsp;(6)
 :: <math>P_{\mathrm{max}}</math> – groesste Viertelstundenleistung, die Spitze des Laufs [kW]
-:: <math>P(k)</math> – Strombedarf der Viertelstunde nach (2) [kW] Der '''Anteil aus Profilen''' und der '''Anteil aus Ganglinien''' entstehen nach derselben Gleichung (4), angewandt auf <math>P_{\mathrm{Prof}}(k)</math> allein bzw. auf <math>\sum_{g} P_{g}(k)</math> allein.
+:: <math>P(k)</math> – Strombedarf der Viertelstunde nach (2) [kW]
+
+Der '''Anteil aus Profilen''' und der '''Anteil aus Ganglinien''' entstehen nach derselben Gleichung (4), angewandt auf <math>P_{\mathrm{Prof}}(k)</math> allein bzw. auf <math>\sum_{g} P_{g}(k)</math> allein.
 
 Die Jahresdauerlinie entsteht wie beim Waermebedarf: auf die Spitze <math>P_{\mathrm{max}}</math> normieren (Prozent), aufsteigend sortieren, umdrehen.
 
@@ -196,7 +202,9 @@ Die Jahresdauerlinie entsteht wie beim Waermebedarf: auf die Spitze <math>P_{\ma
 :: <math>t_{\mathrm{V}}</math> – Vollbenutzungsstunden derselben Ganglinie [h/a]
 :: <math>E_{\mathrm{GL}}</math> – Jahresarbeit nach (7) [MWh]
 :: <math>P_{\mathrm{GL,max}}</math> – Spitze nach (8) [kW]
-:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh] Ohne Spitze (<math>P_{\mathrm{GL,max}} = 0</math>) bleibt (9) unbestimmt, und der Dialog zeigt keine Angabe. Die Spitze aus (8) ist '''nicht''' die Spitze des Laufs aus (6): Der Lauf misst im Viertelstundenraster und ueber alle Ganglinien und Profile zusammen, die Kennzahl gehoert zum Bild.
+:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh]
+
+Ohne Spitze (<math>P_{\mathrm{GL,max}} = 0</math>) bleibt (9) unbestimmt, und der Dialog zeigt keine Angabe. Die Spitze aus (8) ist '''nicht''' die Spitze des Laufs aus (6): Der Lauf misst im Viertelstundenraster und ueber alle Ganglinien und Profile zusammen, die Kennzahl gehoert zum Bild.
 
 === 6. Wo der Strombedarf im Lauf steht ===
 
@@ -205,7 +213,9 @@ Der fertige Vektor <math>P(k)</math> ist der '''Reststrombedarf''' zu Beginn der
 : <math>\displaystyle E_{\mathrm{Rest}} = \frac{\sum_{k=0}^{35\,039} P_{\mathrm{Netz}}(k)}{4\,000}</math> &nbsp;&nbsp;(10)
 :: <math>E_{\mathrm{Rest}}</math> – Reststrombedarf des Laufs, also der Netzbezug [MWh]
 :: <math>P_{\mathrm{Netz}}(k)</math> – nach Photovoltaik und Speicher verbleibender Netzbezug [kW]
-:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–] Umgekehrt kommt der Strombedarf der Waermeerzeuger — Waermepumpe, Heizstab, Kesselhilfsenergie — erst waehrend der Kaskade hinzu; er steht nicht in <math>P(k)</math>.
+:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–]
+
+Umgekehrt kommt der Strombedarf der Waermeerzeuger — Waermepumpe, Heizstab, Kesselhilfsenergie — erst waehrend der Kaskade hinzu; er steht nicht in <math>P(k)</math>.
 
 === 7. Peak-Shaving: eine Auswertung, kein Bedarf ===
 
