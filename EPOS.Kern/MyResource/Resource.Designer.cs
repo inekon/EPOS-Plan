@@ -104633,6 +104633,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“ ist luftgekühlt und kennt kein Rückkühlwerk — „{1}“ bleibt unberücksichtigt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_LUFT_IGNORIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_LUFT_IGNORIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befeuchtung (gerechnet wird trocken) ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_MERKMAL_BEFEUCHTUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_MERKMAL_BEFEUCHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die lastabhängige Annäherung ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_MERKMAL_LASTABHAENGIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_MERKMAL_LASTABHAENGIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung in Reihe (gerechnet wird parallel) ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_MERKMAL_REIHE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_MERKMAL_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ventilator (der Hilfsstrom der Rückkühlung an der Kältemaschine gilt) ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_MERKMAL_VENTILATOR {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_MERKMAL_VENTILATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasserbilanz ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_MERKMAL_WASSERBILANZ {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_MERKMAL_WASSERBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ rechnet mit fester Annäherung über der Bezugstemperatur; noch nicht gerechnet: {2}. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_RKW_NICHT_GERECHNET {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_RKW_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt). ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_UNTERDECKUNG {

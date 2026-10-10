@@ -28423,6 +28423,27 @@ Möchten Sie das zulassen?</value>
   <data name="SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE" xml:space="preserve">
     <value>Kältemaschine „{0}": Das Klima führt keine Luftfeuchte — der Nasskühler rechnet in {1} Stunden mit der Außentemperatur − 3 K statt der Feuchtkugeltemperatur.</value>
   </data>
+  <data name="SIMENG_KAELTE_RKW_NICHT_GERECHNET" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Das Rückkühlwerk „{1}“ rechnet mit fester Annäherung über der Bezugstemperatur; noch nicht gerechnet: {2}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_LUFT_IGNORIERT" xml:space="preserve">
+    <value>Kältemaschine „{0}“ ist luftgekühlt und kennt kein Rückkühlwerk — „{1}“ bleibt unberücksichtigt.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_LASTABHAENGIG" xml:space="preserve">
+    <value>lastabhängige Annäherung</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_VENTILATOR" xml:space="preserve">
+    <value>Ventilator (der Hilfsstrom der Rückkühlung an der Kältemaschine gilt)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_BEFEUCHTUNG" xml:space="preserve">
+    <value>Befeuchtung (gerechnet wird trocken)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_WASSERBILANZ" xml:space="preserve">
+    <value>Wasserbilanz</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
+    <value>freie Kühlung in Reihe (gerechnet wird parallel)</value>
+  </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Kältemaschine „{0}": In {1} Stunden lag der Betriebspunkt außerhalb der Kennlinie (Rückkühlung {2} bis {3} °C, Kaltwasser {4} °C) — gerechnet wurde mit dem Randwert.</value>
   </data>

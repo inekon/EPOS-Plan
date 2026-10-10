@@ -299,6 +299,34 @@ namespace WindowsFormsApplication1
         /// <summary>Rückkühltemperatur je Stunde [°C].</summary>
         public double[] Rueckkuehltemperatur_stuendlich;
 
+        /// <summary>
+        /// Das gewählte Rückkühlwerk (K-F1, <c>ID_Rueckkuehlwerk</c> der Anlagenzeile); <c>null</c> = die Rückkühlart rechnet
+        /// mit den Festwerten. Gesetzt über <see cref="RueckkuehlwerkSetzen"/>.
+        /// </summary>
+        public Rueckkuehlwerk Rueckkuehlwerk { get; private set; }
+
+        /// <summary>
+        /// Setzt das Rückkühlwerk (Entwurf 5.2): Seine Bauart gilt statt der Rückkühlart der Maschine — so nehmen
+        /// Rückkühltemperatur und freie Kühlung (<see cref="FreieKuehlungMoeglich"/>) denselben Weg. <c>null</c> lässt die
+        /// Maschine unverändert.
+        /// </summary>
+        public void RueckkuehlwerkSetzen(Rueckkuehlwerk r)
+        {
+            if (r == null) return;
+            Rueckkuehlwerk = r;
+            Rueckkuehlart = r.Rueckkuehlart;
+        }
+
+        /// <summary>
+        /// Die Rückkühltemperaturen eines Jahres für DIESE Maschine: mit Rückkühlwerk über
+        /// <see cref="Rueckkuehlwerk.RueckkuehltemperaturenBilden"/>, sonst über die Rückkühlart
+        /// (<see cref="RueckkuehltemperaturenBilden(string, double[], double[], out int)"/>) — unverändert.
+        /// </summary>
+        public double[] RueckkuehltemperaturenBilden(double[] aussenC, double[] feuchteProzent, out int stundenOhneFeuchte) =>
+            Rueckkuehlwerk != null
+                ? Rueckkuehlwerk.RueckkuehltemperaturenBilden(aussenC, feuchteProzent, out stundenOhneFeuchte)
+                : RueckkuehltemperaturenBilden(Rueckkuehlart, aussenC, feuchteProzent, out stundenOhneFeuchte);
+
         /// <summary>Kann die Maschine frei kühlen (Trocken- oder Nasskühler)?</summary>
         public bool FreieKuehlungMoeglich =>
             Rueckkuehlart == KaeltemaschineSchema.RUECKKUEHLART_TROCKENKUEHLER ||

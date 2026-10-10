@@ -434,8 +434,10 @@ namespace WindowsFormsApplication1
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN,
                                       k.Bezeichner, k.Kaltwassertemperatur.ToString("F1", CultureInfo.CurrentCulture)));
 
-                k.Rueckkuehltemperatur_stuendlich = Kaeltemaschine.RueckkuehltemperaturenBilden(
-                    k.Rueckkuehlart, Stundentemperatur, feuchte, out int ohneFeuchte);
+                // K-F1: das gewählte Rückkühlwerk der Anlagenzeile - seine Bauart gilt statt der Rückkühlart, Rückkühltemperatur
+                // und freie Kühlung nehmen denselben Weg; ohne Rückkühlwerk unverändert die Rückkühlart mit den Festwerten.
+                RueckkuehlwerkAnsetzen(a, k);
+                k.Rueckkuehltemperatur_stuendlich = k.RueckkuehltemperaturenBilden(Stundentemperatur, feuchte, out int ohneFeuchte);
                 if (ohneFeuchte > 0)
                     Protokoll.HinweisEinmal("kuehl-km-feuchte-" + id,
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE,
@@ -482,6 +484,48 @@ namespace WindowsFormsApplication1
             }
             if (angelegt > 0)
                 Protokoll.HinweisEinmal("kuehl-km-reihenfolge", MyResource.Resource.SIMENG_KAELTE_KM_REIHENFOLGE);
+        }
+
+        /// <summary>
+        /// <b>Das Rückkühlwerk einer Kältemaschinen-Anlage</b> (K-F1; Entwurf Split/VRF/Rückkühlwerk 5.1–5.3): liest die
+        /// Projektkopie aus <c>ID_Rueckkuehlwerk</c> über <see cref="RueckkuehlwerkCtrl.LadenStill"/> und setzt sie an die
+        /// Maschine. Eine luftgekühlte Maschine kennt kein Rückkühlwerk — es wird dann mit Hinweis übergangen. Was K-F1 am
+        /// Rückkühlwerk noch nicht rechnet, wird einmal je Anlage benannt; gerechnet wird der Weg <c>FEST</c>.
+        /// </summary>
+        private void RueckkuehlwerkAnsetzen(KaeltemaschineAnlageModel a, Kaeltemaschine k)
+        {
+            if (!a.IdRueckkuehlwerk.HasValue) return;
+            Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(RueckkuehlwerkCtrl.LadenStill(a.IdRueckkuehlwerk.Value));
+            if (r == null) return;
+            if (string.Equals(k.Rueckkuehlart, KaeltemaschineSchema.RUECKKUEHLART_LUFT, StringComparison.Ordinal))
+            {
+                Protokoll.HinweisEinmal("kuehl-rkw-luft-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_LUFT_IGNORIERT,
+                                  k.Bezeichner, r.Bezeichner));
+                return;
+            }
+            k.RueckkuehlwerkSetzen(r);
+            if (r.NichtGerechnet.Count > 0)
+                Protokoll.HinweisEinmal("kuehl-rkw-nicht-gerechnet-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_NICHT_GERECHNET,
+                                  k.Bezeichner, r.Bezeichner, RueckkuehlwerkMerkmale(r.NichtGerechnet)));
+        }
+
+        /// <summary>Die nicht gerechneten Merkmale eines Rückkühlwerks als Aufzählung in der Sprache des Laufs.</summary>
+        internal static string RueckkuehlwerkMerkmale(IReadOnlyList<string> merkmale)
+        {
+            var namen = new List<string>();
+            foreach (string m in merkmale)
+                switch (m)
+                {
+                    case Rueckkuehlwerk.MERKMAL_LASTABHAENGIG: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_LASTABHAENGIG); break;
+                    case Rueckkuehlwerk.MERKMAL_VENTILATOR: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_VENTILATOR); break;
+                    case Rueckkuehlwerk.MERKMAL_BEFEUCHTUNG: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_BEFEUCHTUNG); break;
+                    case Rueckkuehlwerk.MERKMAL_WASSERBILANZ: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_WASSERBILANZ); break;
+                    case Rueckkuehlwerk.MERKMAL_REIHE: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_REIHE); break;
+                    default: namen.Add(m); break;
+                }
+            return string.Join("; ", namen);
         }
 
         // =====================================================================

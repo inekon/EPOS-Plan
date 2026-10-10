@@ -28416,6 +28416,27 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE" xml:space="preserve">
     <value>Chiller "{0}": the climate data carry no humidity — the wet cooler uses the outdoor temperature − 3 K instead of the wet-bulb temperature in {1} hours.</value>
   </data>
+  <data name="SIMENG_KAELTE_RKW_NICHT_GERECHNET" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" uses a fixed approach above the reference temperature; not yet calculated: {2}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_LUFT_IGNORIERT" xml:space="preserve">
+    <value>Chiller "{0}" is air-cooled and has no heat rejection unit — "{1}" is ignored.</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_LASTABHAENGIG" xml:space="preserve">
+    <value>load-dependent approach</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_VENTILATOR" xml:space="preserve">
+    <value>fan (the heat rejection auxiliary power of the chiller applies)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_BEFEUCHTUNG" xml:space="preserve">
+    <value>humidification (calculated dry)</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_WASSERBILANZ" xml:space="preserve">
+    <value>water balance</value>
+  </data>
+  <data name="SIMENG_KAELTE_RKW_MERKMAL_REIHE" xml:space="preserve">
+    <value>free cooling in series (calculated in parallel)</value>
+  </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
   </data>

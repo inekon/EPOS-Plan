@@ -998,14 +998,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Das Rückkühlwerk</b> (<see cref="RueckkuehlwerkSchema"/>, K-F1): Die Rechnung liest die Projektkopie
-        /// (<c>Tab_Rueckkuehlwerk</c>) über <c>Rueckkuehlwerk.AusModell</c> (Welle K-F1-b) — Bauart, Nennleistung, Annäherung
-        /// samt Weg, Ventilator und Schaltung der freien Kühlung. Die Felder der nassen Bauarten (Befeuchtung, Verdunstung,
+        /// (<c>Tab_Rueckkuehlwerk</c>) über <c>Rueckkuehlwerk.AusModell</c> — Bauart und Annäherung rechnen auf dem Weg
+        /// <c>FEST</c> (<c>Rueckkuehlwerk.Rueckkuehltemperatur</c>); lastabhängige Annäherung, Ventilator und Schaltung in
+        /// Reihe liest sie und benennt sie (<c>Rueckkuehlwerk.NichtGerechnet</c>), gerechnet ab K-F2 bzw. K-F3. Die Felder der nassen Bauarten (Befeuchtung, Verdunstung,
         /// Eindickung, Drift) liest erst K-F2; bis dahin stehen sie als Dialogfelder. Modulkosten und Kostenvorlagen sind
         /// Katalogangaben, die die Wirtschaftlichkeit erst mit dem Bericht (K-F5) liest.
         /// </summary>
         private static IReadOnlyList<ParameterEintrag> Rueckkuehlwerk(Func<string, string> t)
         {
-            const string RECHNUNG = "Rueckkuehlwerk.AusModell (Welle K-F1-b); RueckkuehlwerkStammCtrl.Pruefen";
+            const string RECHNUNG = "Rueckkuehlwerk.AusModell; Rueckkuehlwerk.Rueckkuehltemperatur; RueckkuehlwerkStammCtrl.Pruefen";
+            const string BENANNT = "Rueckkuehlwerk.AusModell; Rueckkuehlwerk.NichtGerechnet (benannt, gerechnet ab Welle K-F2 bzw. K-F3); RueckkuehlwerkStammCtrl.Pruefen";
             const string NASS = "RueckkuehlwerkStammCtrl.Pruefen; gerechnet erst ab Welle K-F2 (Wasserbilanz, Befeuchtung)";
             const string KATALOG = "RueckkuehlwerkStammCtrl.Speichern; RueckkuehlwerkCtrl.AusKatalogUebernehmen";
             return new[]
@@ -1014,19 +1016,19 @@ namespace WindowsFormsApplication1
                 E(RueckkuehlwerkSchema.SPALTE_BEZEICHNER, t("RKW_LBL_BEZEICHNER"), "", DLG, KATALOG),
                 E(RueckkuehlwerkSchema.SPALTE_BESCHREIBUNG, t("RKW_LBL_BESCHREIBUNG"), "", DLG, KATALOG),
                 E(RueckkuehlwerkSchema.SPALTE_BAUART, t("RKW_LBL_BAUART"), "", SIM, RECHNUNG),
-                E(RueckkuehlwerkSchema.SPALTE_NENNLEISTUNG, t("RKW_LBL_NENNLEISTUNG"), "kW", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_NENNLEISTUNG, t("RKW_LBL_NENNLEISTUNG"), "kW", SIM, BENANNT),
                 E(RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_NENN, t("RKW_LBL_ANNAEHERUNG_NENN"), "K", SIM, RECHNUNG),
-                E(RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_WEG, t("RKW_LBL_ANNAEHERUNG_WEG"), "", SIM, RECHNUNG),
-                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_NENN, t("RKW_LBL_VENTILATOR_NENN"), "kW", SIM, RECHNUNG),
-                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_REGELUNG, t("RKW_LBL_VENTILATOR_REGELUNG"), "", SIM, RECHNUNG),
-                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_STUFEN, t("RKW_LBL_VENTILATOR_STUFEN"), "-", SIM, RECHNUNG),
-                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_DREHZAHL_MIN, t("RKW_LBL_VENTILATOR_DREHZAHL_MIN"), "-", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_WEG, t("RKW_LBL_ANNAEHERUNG_WEG"), "", SIM, BENANNT),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_NENN, t("RKW_LBL_VENTILATOR_NENN"), "kW", SIM, BENANNT),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_REGELUNG, t("RKW_LBL_VENTILATOR_REGELUNG"), "", SIM, BENANNT),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_STUFEN, t("RKW_LBL_VENTILATOR_STUFEN"), "-", SIM, BENANNT),
+                E(RueckkuehlwerkSchema.SPALTE_VENTILATOR_DREHZAHL_MIN, t("RKW_LBL_VENTILATOR_DREHZAHL_MIN"), "-", SIM, BENANNT),
                 E(RueckkuehlwerkSchema.SPALTE_BEFEUCHTUNG_WIRKUNGSGRAD, t("RKW_LBL_BEFEUCHTUNG_WIRKUNGSGRAD"), "-", DLG, NASS),
                 E(RueckkuehlwerkSchema.SPALTE_BEFEUCHTUNG_AB, t("RKW_LBL_BEFEUCHTUNG_AB"), "°C", DLG, NASS),
                 E(RueckkuehlwerkSchema.SPALTE_VERDUNSTUNG_FAKTOR, t("RKW_LBL_VERDUNSTUNG_FAKTOR"), "-", DLG, NASS),
                 E(RueckkuehlwerkSchema.SPALTE_EINDICKUNG, t("RKW_LBL_EINDICKUNG"), "-", DLG, NASS),
                 E(RueckkuehlwerkSchema.SPALTE_DRIFT_ANTEIL, t("RKW_LBL_DRIFT_ANTEIL"), "-", DLG, NASS),
-                E(RueckkuehlwerkSchema.SPALTE_FREIKUEHLUNG_SCHALTUNG, t("RKW_LBL_FREIKUEHLUNG_SCHALTUNG"), "", SIM, RECHNUNG),
+                E(RueckkuehlwerkSchema.SPALTE_FREIKUEHLUNG_SCHALTUNG, t("RKW_LBL_FREIKUEHLUNG_SCHALTUNG"), "", SIM, BENANNT),
                 E(RueckkuehlwerkSchema.SPALTE_MODULKOSTEN, t("RKW_LBL_MODULKOSTEN"), "€", DLG,
                   "RueckkuehlwerkStammCtrl.Speichern (Katalogangabe; die Wirtschaftlichkeit liest sie ab Welle K-F5)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG, "RueckkuehlwerkStammCtrl.Speichern (Auslieferungssatz)"),
