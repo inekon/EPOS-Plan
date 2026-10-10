@@ -340,7 +340,7 @@ Ein Projekt ohne Kühlung zeigt im Simulationsergebnis und im Bericht keine Käl
 == Export ==
 {{Anker|export}}
 
-Der Knopf ''CSV Export'' im Block ''Kälte'' schreibt die Kältelast des Projekts je Stunde in kW. Die erste Zeile der Datei ist der Satz zur Grenze der Zahl, danach folgen die Spaltenköpfe und die 8.760 Stunden.
+Der Knopf ''CSV…'' in der Leiste des Diagramms ''Kältelast Jahresganglinie'' schreibt die Kältelast des Projekts je Stunde in kW, dazu je Bedarfsart eine Spalte (''Kühlung''). Die erste Zeile der Datei ist der Satz zur Grenze der Zahl, danach folgen die Spaltenköpfe und die 8.760 Stunden.
 
 == Grenzen ==
 {{Anker|grenzen}}

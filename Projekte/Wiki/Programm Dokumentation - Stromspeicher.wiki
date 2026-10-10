@@ -82,7 +82,7 @@ Wie ein Batteriespeicher arbeitet und wie man ihn bemisst, steht unter [[Grundla
 {{Legende|solar=direkt genutzt|speicher=über den Stromspeicher}}
 {{Diagramm-Ende|Beispielwerte, gerundet – vereinfachte Überschlagsrechnung, kein Ergebnis von EPOS-Plan.}}
 
-{{Anker|darstellung-des-ladezustands|speicherfuellstand}}'''Wo Sie es prüfen.''' Reiter ''Stromspeicher'' der Ergebnisseite: Kennzahlen wie ''Ladung aus PV-Überschuss'', ''Einspeisung mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''; das Bild zeigt Netzbezug ohne und mit Speicher und rechts den Ladezustand, ''CSV Export'' schreibt die Zeitreihen. Im Reiter ''Photovoltaik'' blendet der Schalter ''Speicherfüllstand'' den Ladezustand zum PV-Ertrag ein.
+{{Anker|darstellung-des-ladezustands|speicherfuellstand}}'''Wo Sie es prüfen.''' Reiter ''Stromspeicher'' der Ergebnisseite: Kennzahlen wie ''Ladung aus PV-Überschuss'', ''Einspeisung mit Speicher'', ''Eigenverbrauchsquote (mit Speicher)'' und ''Autarkiegrad (mit Speicher)''; das Bild zeigt Netzbezug ohne und mit Speicher und rechts den Ladezustand, ''CSV…'' in der Leiste des Diagramms schreibt die Zeitreihen. Im Reiter ''Photovoltaik'' blendet der Schalter ''Speicherfüllstand'' den Ladezustand zum PV-Ertrag ein.
 
 '''Beispielanlage B (Hotel), Variante mit Stromspeicher für die Lastspitzenkappung:''' 450 MWh Strom im Jahr, BHKW 1 mit 30 kW elektrisch, Photovoltaik 100 kWp; dazu Stromspeicher 1 mit 100 kWh und 50 kW.
 
