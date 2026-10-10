@@ -374,6 +374,10 @@ Ein `KiAufruf` der Stufen 2 und 3 wird **nie** direkt ausgeführt. Ablauf:
    Stufe 3 geben soll, ist offene Entscheidung 4 in Kapitel 9.)
 5. **Verfall.** Eine Vorschau, die älter als eine Minute ist oder auf die eine andere Aktion folgte, wird verworfen
    und neu erzeugt — sonst bestätigt der Anwender einen Zustand, den es nicht mehr gibt.
+6. **Nichts zu ändern.** Trägt der Stand bereits, was verlangt war (`KiAktion.OhneAenderung`, bei `feld_setzen`,
+   `formular_ausfuellen` und `reihe_setzen`), entfällt die Bestätigung: Das Ergebnis ist ein Erfolg mit Status
+   „ausgeführt", Anzahl 0 und `KiErgebnis.Unveraendert` — keine Absage. Der Text nennt Maske, Felder und Werte,
+   der Chat zeigt ihn neutral („Unverändert: …"), das Protokoll vermerkt ihn als ausgeführt mit „0x".
 
 ### 3.6 Rückmeldung und Protokoll
 

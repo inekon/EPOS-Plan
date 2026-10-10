@@ -53761,6 +53761,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unverändert: {0} — {1} ähnelt.
+        /// </summary>
+        public static string KI_AKT_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("KI_AKT_UNVERAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rückfallweg B erzwingen (Modell ohne Werkzeuge) ähnelt.
         /// </summary>
         public static string KI_AKT_WEGB_EINSTELLUNG {
@@ -57041,6 +57050,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trugen den Wert bereits: {0}. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FELDER_BEREITS {
+            get {
+                return ResourceManager.GetString("KI_DLG_FELDER_BEREITS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Felder in „{1}“ gesetzt. ähnelt.
         /// </summary>
         public static string KI_DLG_FELDER_GESETZT {
@@ -57055,6 +57073,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_FELD_GESETZT {
             get {
                 return ResourceManager.GetString("KI_DLG_FELD_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ trägt „{1}“ bereits den Wert {2}. Keine Änderung nötig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FELD_OHNE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_FELD_OHNE_AENDERUNG", resourceCulture);
             }
         }
         
@@ -61811,7 +61838,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ tragen alle genannten Felder den Wert bereits; es gibt nichts zu ändern. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ tragen die Felder bereits die genannten Werte: {1}. Keine Änderung nötig. ähnelt.
         /// </summary>
         public static string KI_DLG_OHNE_AENDERUNG {
             get {
@@ -63458,7 +63485,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ trägt diese Werte bereits; es gibt nichts zu ändern. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{1}“ trägt „{0}“ diese Werte bereits. Keine Änderung nötig. ähnelt.
         /// </summary>
         public static string KI_DLG_REIHE_OHNE_AENDERUNG {
             get {
