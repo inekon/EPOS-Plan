@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Erzeuger;
+using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Strom;
 using KiKern;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge.Hilfe;
@@ -532,6 +537,204 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         await Setzen(KiMaskennamen.PUFFERSPEICHER, "gesamtvolumen", "1500");
 
         Assert.True(gezeichnet > 0, "Die Maske wurde nach dem Setzen nicht aufgefrischt.");
+    }
+
+    // =====================================================================
+    //  Der Anwenderweg in der Verwaltung Heizkessel (Meldung vom 10.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// „setze Rücklauftemperatur auf 65" im offenen Projektdialog — die erste Zeile ist
+    /// gewählt wie beim Öffnen. Der Assistent muss danach DENSELBEN Zustand hinterlassen
+    /// wie eine Eingabe von Hand (<c>BeiRuecklauf</c>): Zeilenwert, Eingabefeld,
+    /// Herleitungszeile weg und die Zeile ins Modell übernommen (die Arbeitskopie, aus
+    /// der der Dialog speichert).
+    /// </summary>
+    [Fact]
+    public async Task Verwaltung_Heizkessel_Ruecklauf_setzen_wirkt_wie_die_Eingabe_von_Hand()
+    {
+        var uebernommen = new List<ErzeugerZeile>();
+        var zeile = Kesselzeile(1, "Kessel A");
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C";
+        var cut = Heizkesseldialog(new List<ErzeugerZeile> { zeile }, uebernommen.Add);
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL_PROJEKT,
+                                           "Rücklauftemperatur", "65");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal(65, cut.Instance.Projektzeile!.Ruecklauf);
+        Assert.Contains("Rücklauf", ergebnis.Text);
+        Assert.Contains("„65“", ergebnis.Text);
+        Assert.Contains("„50“", ergebnis.Text);
+        Assert.Equal("", zeile.TemperaturHerleitung);
+        Assert.Single(uebernommen);
+        Assert.Same(zeile, uebernommen[0]);
+        cut.WaitForAssertion(() =>
+            Assert.Equal("65", cut.FindAll("input[inputmode=numeric]")[1].GetAttribute("value")));
+    }
+
+    /// <summary>
+    /// Ohne gewählte Projektzeile — der Anwender hat eine Katalogzeile angeklickt — gibt
+    /// es keine Anlage, in die der Wert gehört. Erwartet ist eine BENANNTE Absage, kein
+    /// stilles „gesetzt".
+    /// </summary>
+    [Fact]
+    public async Task Verwaltung_Heizkessel_ohne_gewaehlte_Zeile_lehnt_benannt_ab()
+    {
+        var uebernommen = new List<ErzeugerZeile>();
+        var zeilen = new List<ErzeugerZeile> { Kesselzeile(1, "Kessel A"), Kesselzeile(2, "Kessel B") };
+        var cut = Heizkesseldialog(zeilen, uebernommen.Add);
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        Assert.Null(cut.Instance.Projektzeile);
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL_PROJEKT,
+                                           "Rücklauftemperatur", "65");
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Contains(Resource.KI_ERZ_KEINE_PROJEKTZEILE, ergebnis.Text);
+        Assert.All(zeilen, z => Assert.Equal(50, z.Ruecklauf));
+        Assert.Empty(uebernommen);
+    }
+
+    /// <summary>
+    /// Trägt das Projekt GENAU EINE Anlage und ist keine gewählt, wählt der Assistent sie
+    /// wie das Öffnen des Dialogs — es gibt keine zweite, die gemeint sein könnte.
+    /// </summary>
+    [Fact]
+    public async Task Verwaltung_Heizkessel_mit_einer_Zeile_waehlt_sie_wie_beim_Oeffnen()
+    {
+        var uebernommen = new List<ErzeugerZeile>();
+        var zeile = Kesselzeile(1, "Kessel A");
+        var cut = Heizkesseldialog(new List<ErzeugerZeile> { zeile }, uebernommen.Add);
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        Assert.Null(cut.Instance.Projektzeile);
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL_PROJEKT, "ruecklauf", "65");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Same(zeile, cut.Instance.Projektzeile);
+        Assert.Equal(65, zeile.Ruecklauf);
+        Assert.Single(uebernommen);
+    }
+
+    // =====================================================================
+    //  Dasselbe Muster an den übrigen Erzeugermasken
+    // =====================================================================
+
+    /// <summary>
+    /// Die Sichtklasse der Projektzeile (Heizkessel, BHKW, Pufferspeicher,
+    /// Stromspeicher): Jedes Feld der Zeile geht nach dem Setzen den Übernahmeweg der
+    /// Hand — und ohne Zeile lehnt es benannt ab.
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.HEIZKESSEL_PROJEKT, "vorlauf", "75")]
+    [InlineData(KiMaskennamen.HEIZKESSEL_PROJEKT, "ruecklauf", "55")]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT, "vorlauf", "75")]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT, "ruecklauf", "55")]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT, "grenzleistung", "40")]
+    public async Task Erzeugerzeile_Setzen_uebernimmt_wie_die_Hand(string maske, string feld, string wert)
+    {
+        var zeile = Kesselzeile(1, "Anlage");
+        var uebernommen = new List<ErzeugerZeile>();
+        var sicht = new ErzeugerProjektKiSicht { Zeilenquelle = () => zeile, Uebernommen = uebernommen.Add };
+        using var anmeldung = KiMaskenanmeldung.Fuer(maske, () => sicht, Haken());
+
+        KiErgebnis ergebnis = await Setzen(maske, feld, wert);
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Single(uebernommen);
+    }
+
+    [Theory]
+    [InlineData(KiMaskennamen.HEIZKESSEL_PROJEKT, "ruecklauf", "65")]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT, "grenzleistung", "40")]
+    public async Task Erzeugerzeile_ohne_Zeile_lehnt_benannt_ab(string maske, string feld, string wert)
+    {
+        var sicht = new ErzeugerProjektKiSicht { Zeilenquelle = () => null };
+        using var anmeldung = KiMaskenanmeldung.Fuer(maske, () => sicht, Haken());
+
+        KiErgebnis ergebnis = await Setzen(maske, feld, wert);
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Contains(Resource.KI_ERZ_KEINE_PROJEKTZEILE, ergebnis.Text);
+    }
+
+    /// <summary>Photovoltaik: dieselben zwei Zusagen an ihrer eigenen Sicht.</summary>
+    [Fact]
+    public async Task Photovoltaik_Setzen_uebernimmt_und_ohne_Zeile_lehnt_es_ab()
+    {
+        var zeile = new ErzeugerZeile { Neigung = 30 };
+        var uebernommen = new List<ErzeugerZeile>();
+        ErzeugerZeile? gewaehlt = zeile;
+        var sicht = new PhotovoltaikKiSicht { Zeilenquelle = () => gewaehlt, Uebernommen = uebernommen.Add };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => sicht, Haken());
+
+        Assert.Equal(KiStatus.Ausgefuehrt, (await Setzen(KiMaskennamen.PHOTOVOLTAIK, "neigung", "35")).Status);
+        Assert.Equal(35, zeile.Neigung);
+        Assert.Single(uebernommen);
+
+        gewaehlt = null;
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "neigung", "40");
+        Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Contains(Resource.KI_ERZ_KEINE_PROJEKTZEILE, ergebnis.Text);
+        Assert.Equal(35, zeile.Neigung);
+    }
+
+    /// <summary>Solarkollektoren im Projekt: ohne gewählte Zeile kein Arbeitsstand — benannte Absage.</summary>
+    [Fact]
+    public async Task Solarkollektoren_ohne_Zeile_lehnt_benannt_ab()
+    {
+        var sicht = new SolarkollektorenKiSicht { Eingabenquelle = () => null };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, () => sicht, Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, "neigung", "35");
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Contains(Resource.KI_ERZ_KEINE_PROJEKTZEILE, ergebnis.Text);
+    }
+
+    /// <summary>
+    /// Eine Maske, deren Daten-Objekt gerade fehlt (die Photovoltaik ohne jede gewählte
+    /// Zeile meldet gar keine Sicht), verwirft einen Wert nicht still.
+    /// </summary>
+    [Fact]
+    public async Task Ohne_Daten_Objekt_lehnt_das_Setzen_benannt_ab()
+    {
+        using var anmeldung = KiMaskenanmeldung.Fuer<PhotovoltaikKiSicht>(KiMaskennamen.PHOTOVOLTAIK,
+                                                                         () => null, Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "neigung", "35");
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Contains(Resource.KI_FELD_KEIN_SATZ, ergebnis.Text);
+    }
+
+    private static ErzeugerZeile Kesselzeile(int schluessel, string name)
+        => new() { Schluessel = schluessel, Bezeichner = name, GeraetId = 100 + schluessel,
+                   CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 };
+
+    /// <summary>Der Projektdialog Heizkessel mit dem Nötigsten (Muster <c>HeizkesselDialogTests</c>).</summary>
+    private IRenderedComponent<HeizkesselDialog> Heizkesseldialog(List<ErzeugerZeile> zeilen,
+                                                                  Action<ErzeugerZeile> uebernehmen)
+    {
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+        var profil = Katalogfilterprofil.MitVerwendung(Anlagenart.Heizkessel,
+                                                       s => Resource.ResourceManager.GetString(s) ?? s);
+        var detail = new ErzeugerDetail("Kessel A", "Beschreibung",
+                                        new[] { ("Leistung [kW]:", "120,00") });
+        return Render<HeizkesselDialog>(p => p
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogprofil, profil)
+            .Add(x => x.Katalogzeilen, () => new[]
+            {
+                new Katalogfilterzeile(11, "Katalogkessel")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Katalogkessel")
+            })
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.KatalogDetail, _ => detail)
+            .Add(x => x.ProjektDetail, _ => detail)
+            .Add(x => x.Varianten, _ => new[] { (5, "Erdgas E Variante") })
+            .Add(x => x.Uebernehmen, uebernehmen));
     }
 
     // =====================================================================

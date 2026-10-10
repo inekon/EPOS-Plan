@@ -68417,6 +68417,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Projektliste ist keine Anlage gewählt – bitte zuerst die Anlage wählen, deren Wert sich ändern soll; eine Zeile des Katalogs trägt keine Anlagenwerte. ähnelt.
+        /// </summary>
+        public static string KI_ERZ_KEINE_PROJEKTZEILE {
+            get {
+                return ResourceManager.GetString("KI_ERZ_KEINE_PROJEKTZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Feldname aufgelöst: {0} → {1}) ähnelt.
         /// </summary>
         public static string KI_FELD_AUFGELOEST {
@@ -68494,6 +68503,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_KEINE_ZAHL {
             get {
                 return ResourceManager.GetString("KI_FELD_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske zeigt gerade keinen Satz, in den der Wert gehört – bitte zuerst einen Eintrag wählen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_KEIN_SATZ {
+            get {
+                return ResourceManager.GetString("KI_FELD_KEIN_SATZ", resourceCulture);
             }
         }
         

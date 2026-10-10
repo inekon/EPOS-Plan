@@ -1161,6 +1161,7 @@
         _kiSicht = new WaermepumpeAnlageKiSicht
         {
             Datenquelle = () => Daten,
+            VorlaufWeg = BeiVorlauf,
             ExtrapolationLesen = () => _extrapolation,
             ExtrapolationSetzen = KiExtrapolationSetzen,
             Kuehlgaben = () => Kuehlung

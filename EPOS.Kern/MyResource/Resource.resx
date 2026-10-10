@@ -20575,6 +20575,12 @@ Möchten Sie das zulassen?</value>
   <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
     <value>Das Feld „{0}“ ließ sich nicht setzen: {1}</value>
   </data>
+  <data name="KI_ERZ_KEINE_PROJEKTZEILE" xml:space="preserve">
+    <value>In der Projektliste ist keine Anlage gewählt – bitte zuerst die Anlage wählen, deren Wert sich ändern soll; eine Zeile des Katalogs trägt keine Anlagenwerte.</value>
+  </data>
+  <data name="KI_FELD_KEIN_SATZ" xml:space="preserve">
+    <value>Die Maske zeigt gerade keinen Satz, in den der Wert gehört – bitte zuerst einen Eintrag wählen.</value>
+  </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>Die Maske meldet dazu: {0}</value>
   </data>

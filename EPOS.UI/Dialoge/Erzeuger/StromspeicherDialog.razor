@@ -500,6 +500,13 @@
     private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
     {
         Zeilenquelle = () => _projektZeile,
+        // Meldung 10.10.2026: ohne gewählte Zeile wählt der Assistent die EINZIGE wie das
+        // Öffnen; bei mehreren rät er nicht, und die Sicht lehnt benannt ab.
+        Einzelwahl = () =>
+        {
+            if (_projektZeile is null && Zeilen.Count == 1) ProjektZeileWaehlen(Zeilen[0]);
+            return _projektZeile;
+        },
         AlleDaten = new AlleDatenTafel
         {
             Felder = () => _parameterOffen ? _felder : null,

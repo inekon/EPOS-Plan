@@ -42,7 +42,7 @@ ausstehend.
 (Statuszeile #622): Gerätekataloge (724), Gebäude (725), Gebäudeimport (726, Abschnitt „Mehrere Zonen“ aus #620),
 Brauchwasser-Zapfprofil (727). Rücklese byte-gleich, 0 Parse-Warnungen. Das Update-Logbuch blieb unberührt.
 
-**Dritter Sammel-Upload 10.10.2026 (#889), Revisionen 728–827** — durch die Orchestrierung (Benutzer Epos): 99 Seiten (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen; Revisionen 728–826) und das Update-Logbuch (Revision 827); Rücklese byte-gleich, 0 Parse-Warnungen, Dateien und 19 Weiterleitungen unverändert. Vorher waren alle Seiten gegen die Wiki-Regeln geprüft, 47 Live-Seiten ohne Quelle als Repo-Quelle übernommen. **Damit sind alle in Abschnitt 1 als „ausstehend“ vermerkten Punkte veröffentlicht — mit Ausnahme der Seite Programm Dokumentation/Gebäudeimport**, die zurückgehalten bleibt (Abschnitt 3, Punkt „Befund“). Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 10.10.2026“), Protokoll unter `ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md`, Statuszeile #889.
+**Dritter Sammel-Upload 10.10.2026 (#889), Revisionen 728–828** — durch die Orchestrierung (Benutzer Epos): 99 Seiten (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen; Revisionen 728–826) und das Update-Logbuch (Revision 827); Rücklese byte-gleich, 0 Parse-Warnungen, Dateien und 19 Weiterleitungen unverändert. Vorher waren alle Seiten gegen die Wiki-Regeln geprüft, 47 Live-Seiten ohne Quelle als Repo-Quelle übernommen. **Damit sind alle in Abschnitt 1 als „ausstehend“ vermerkten Punkte veröffentlicht**; die Seite Programm Dokumentation/Gebäudeimport folgte am selben Tag als Revision 828 (Abschnitt 3, Punkt „Befund“). Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 10.10.2026“), Protokoll unter `ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md`, Statuszeile #889.
 
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
@@ -59,7 +59,7 @@ vom 24.09.2026 bestätigt.
 
 ## 1 Seiten für den Sammel-Upload
 
-*Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #889 (Revisionen 728–827) veröffentlicht; ausgenommen ist die Seite Gebäudeimport. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
+*Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #889 (Revisionen 728–828) veröffentlicht, die Seite Gebäudeimport als Revision 828. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
 
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
@@ -238,12 +238,13 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
 
-*Die folgenden vier Sätze (#886 bis #888) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
+*Die folgenden fünf Sätze (#886 bis #888 und #890) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
 
 - Seit 10.10.2026: Die Projektdialoge mit Katalogauswahl passen sich kleinen Bildschirmen an — kompaktere Darstellung unter 1 200 × 800 px und ein Rollbalken, wenn die Höhe nicht reicht. (#886)
 - Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
 - Seit 10.10.2026: In der Katalogliste der Projektdialoge sind die Spalten wählbar („Spalten…“); im Projekt verwendete Sätze sind farblich gekennzeichnet statt in einer eigenen Spalte. (#888)
 - Seit 10.10.2026: Im Gebäudedialog steht „Bearbeiten…“ in der Kopfleiste der Projektliste. (#888)
+- Seit 10.10.2026: Der Hilfe-Assistent trägt Werte in den Erzeugermasken des Projekts (Heizkessel, BHKW, Photovoltaik, Solarkollektoren, Wärmepumpe) so ein, dass sie beim Speichern erhalten bleiben, und sagt, wenn keine Anlage gewählt ist. (#890)
 
 *Die folgenden fünf Sätze (#890 bis #894) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
@@ -1063,7 +1064,7 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   als Bestandstreffer vermerkt. Vor dem Upload entscheidet der Anwender: den Bedienbegriff in Oberfläche und Wiki
   umbenennen (wie die Ampelmeldungen der Seite Photovoltaik mit E12) oder ihn als Bedienbegriff zulassen.
   Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt. Die Zurückstellung ist mit dem Auftrag vom 10.10.2026 (#889) aufgehoben;
-  die Seite Gebäudeimport bleibt zurückgehalten, bis der Anwender den Begriff entschieden hat (seine Antwort war unklar).
+  Anwenderentscheid 10.10.2026: „Befund“ ist für den Wiki-Upload nicht relevant; die Seite Gebäudeimport ist als Revision 828 hochgeladen, der Begriff bleibt als wörtlich zitierte Beschriftung der Oberfläche.
   Alle übrigen Seiten sind hochgeladen.
 
 ## 4 Ablauf des Uploads

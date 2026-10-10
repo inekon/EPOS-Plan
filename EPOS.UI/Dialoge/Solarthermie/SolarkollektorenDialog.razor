@@ -584,6 +584,11 @@
     private SolarkollektorenKiSicht KiSicht() => _kiSicht ??= new SolarkollektorenKiSicht
     {
         Eingabenquelle = () => _projektZeile is null ? null : _eingaben,
+        Einzelwahl = () =>
+        {
+            if (_projektZeile is null && Zeilen.Count == 1) ProjektZeileWaehlen(Zeilen[0]);
+            return _projektZeile is null ? null : _eingaben;
+        },
         AlleDaten = new AlleDatenTafel
         {
             Felder = () => _parameterOffen ? _felder : null,
