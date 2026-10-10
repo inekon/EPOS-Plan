@@ -101,6 +101,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): die
            Liste LINKS ueber die ganze Hoehe, rechts die Auswahlleiste und das
@@ -718,7 +723,8 @@
         foreach (string name in namen)
         {
             var felder = new List<Vergleichsfeld>();
-            foreach (BrowserFeldwert f in Wege.Detail(name) ?? Array.Empty<BrowserFeldwert>())
+            foreach (BrowserFeldwert f in Katalogladung.SatzDazu(() => Wege.Detail(name), name, ref _satzFehler)
+                                          ?? Array.Empty<BrowserFeldwert>())
             {
                 if (f.Schluessel == KatalogBrowserProfil.FeldBezeichner) continue;
                 felder.Add(new Vergleichsfeld(f.Schluessel, Feldbeschriftung(f), Feldanzeige(f)));
@@ -774,6 +780,9 @@
 
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
 
     protected override void OnInitialized()
     {
@@ -956,9 +965,12 @@
         // (W14a-E-8). Ohne Bezeichner stehen lauter Leerwerte darin.
         _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
+        // KT-4: Warf das Lesen, ist das Stammblatt leer; der Banner nennt den Grund.
+        _satzFehler = "";
         _felder = _gewaehlt.Length == 0
             ? new List<BrowserFeldwert>()
-            : (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
+            : (Katalogladung.Satz(() => Wege.Detail?.Invoke(_gewaehlt), _gewaehlt, out _satzFehler)
+               ?? Array.Empty<BrowserFeldwert>()).ToList();
 
         // Die zwei Gruppen des Stammblatts (V9) teilen DIESELBEN Objekte - geschrieben
         // wird weiter aus _felder.

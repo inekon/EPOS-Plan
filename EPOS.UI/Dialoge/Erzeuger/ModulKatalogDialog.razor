@@ -71,6 +71,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): Liste
            LINKS ueber die ganze Hoehe, rechts Auswahlleiste und STAMMBLATT - so
@@ -654,7 +659,8 @@
         foreach (string name in namen)
         {
             var felder = new List<Vergleichsfeld>();
-            foreach (ModulFeldwert f in Wege.Detail(name) ?? Array.Empty<ModulFeldwert>())
+            foreach (ModulFeldwert f in Katalogladung.SatzDazu(() => Wege.Detail(name), name, ref _satzFehler)
+                                        ?? Array.Empty<ModulFeldwert>())
             {
                 if (f.Schluessel == ModulKatalogProfil.FeldBezeichner) continue;
                 string titel = f.Feldname + (f.Einheit.Length > 0 ? " [" + f.Einheit + "]" : "");
@@ -693,6 +699,9 @@
 
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
 
     protected override void OnInitialized()
     {
@@ -852,8 +861,11 @@
         // und nicht am Satz — dann stehen lauter Leerwerte darin.
         _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
+        _satzFehler = "";
         if (_gewaehlt.Length == 0) { _felder = new List<ModulFeldwert>(); return; }
-        _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<ModulFeldwert>()).ToList();
+        // KT-4: Warf das Lesen, ist das Stammblatt leer; der Banner nennt den Grund.
+        _felder = (Katalogladung.Satz(() => Wege.Detail?.Invoke(_gewaehlt), _gewaehlt, out _satzFehler)
+                   ?? Array.Empty<ModulFeldwert>()).ToList();
     }
 
     /// <summary>

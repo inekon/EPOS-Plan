@@ -80,6 +80,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     <Zweispaltenauswahl Dialogname="Photovoltaik" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
@@ -813,7 +818,8 @@
     {
         _felder = Katalogfelder is null || _katalogZeile is null
             ? null
-            : Katalogfelder(_katalogZeile.Bezeichner);
+            : Katalogladung.SatzDazu(() => Katalogfelder(_katalogZeile.Bezeichner), _katalogZeile.Bezeichner,
+                                     ref _satzFehler);
         _felderGeaendert = false;
         _feldFehler = false;
     }
@@ -888,6 +894,9 @@
 
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
 
     protected override void OnInitialized()
     {
@@ -1156,7 +1165,8 @@
         _projektZeile = zeile;
         _katalogZeile = null;
         _katalogGewaehlt = "";
-        _detail = (Detail is not null ? Detail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+        _detail = Katalogladung.Satz(() => Detail is not null ? Detail(zeile.Bezeichner) : null,
+                                     zeile.Bezeichner, out _satzFehler) ?? Leer(zeile.Bezeichner);
     }
 
     private void KatalogZeileWaehlen(string bezeichner)
@@ -1164,7 +1174,8 @@
         _katalogGewaehlt = bezeichner ?? "";
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         _projektZeile = null;
-        _detail = (Detail is not null ? Detail(_katalogGewaehlt) : null) ?? Leer(_katalogGewaehlt);
+        _detail = Katalogladung.Satz(() => Detail is not null ? Detail(_katalogGewaehlt) : null,
+                                     _katalogGewaehlt, out _satzFehler) ?? Leer(_katalogGewaehlt);
 
         // DER AUFKLAPPER GEHOERT ZUM GEWAEHLTEN SATZ. Bleibt er ueber den Wechsel
         // offen - und das soll er, sonst muesste man ihn beim Vergleichen zweier
