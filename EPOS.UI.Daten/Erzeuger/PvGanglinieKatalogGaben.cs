@@ -53,7 +53,10 @@ namespace WindowsFormsApplication1
                 NennleistungAusLesung = datei is null ? null : NennleistungAusLesung,
                 EinlesenGelesen = datei is null ? null : EinlesenGelesen,
                 // Die Satzansicht zeigt die Ganglinie des gewaehlten Katalogsatzes als Jahresbild.
-                Ansicht = n => ZeitreihenAdminWege.Ansicht(Zeitreihenart.PvGanglinie, n)
+                Kennzahlen = n => ZeitreihenAdminWege.SatzKennzahlen(Zeitreihenart.PvGanglinie, n),
+                Bild = (n, sortiert) => ZeitreihenAdminWege.SatzBild(Zeitreihenart.PvGanglinie, n, sortiert,
+                                                                     MyResource.Resource.PVG_BILD_TITEL),
+                BildTitel = MyResource.Resource.PVG_BILD_TITEL
             };
         }
 
@@ -134,6 +137,8 @@ namespace WindowsFormsApplication1
             g["LabelBeschreibung"] = Katalogtexte.Fuer("SGL_LBL_BESCHREIBUNG");
             g["SpalteWahl"] = MyResource.Resource.KFAK_SP_WAHL;
             g["HinweisText"] = MyResource.Resource.PVG_HINWEIS_WEICHE;
+            // "CSV..." an jedem Zeitreihenbild des Dialogs (Satzansicht, Optionendialog des Imports).
+            g["CsvSpeichern"] = Diagrammexportnaht.Fuer(MyResource.Resource.PVG_BILD_TITEL);
         }
 
         /// <summary>

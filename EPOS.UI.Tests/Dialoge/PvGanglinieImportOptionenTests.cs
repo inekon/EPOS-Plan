@@ -4,6 +4,7 @@ using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Erzeuger;
+using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
@@ -17,6 +18,8 @@ namespace EPOS.UI.Tests.Dialoge;
 /// steht der Optionendialog (Vorbelegung aus der Formaterkennung des Katalogimports), OK liest die Datei
 /// über die Importkette ohne Ablage und belegt die Nennleistung aus der gelesenen Reihe vor, „Einlesen“
 /// schreibt die gelesene Reihe samt Nennleistung; Abbrechen im Optionendialog importiert nichts.
+/// Dazu das Bild der gelesenen Reihe im Optionendialog (Zeilenzahl, Raster, neu mit „Vorschau
+/// aktualisieren“, kein Bild bei unlesbarer Datei) und die Grafik der Satzansicht des PV-Dialogs.
 /// Gelesen wird eine echte Datei mit dem Kern — ohne Datenbank.
 /// </summary>
 public class PvGanglinieImportOptionenTests : EposBunitContext
@@ -141,5 +144,89 @@ public class PvGanglinieImportOptionenTests : EposBunitContext
         Assert.Null(cut.Instance.Katalogseite.Gelesen);
         Assert.Equal(0, p.Schreibzahl);
         Assert.Empty(cut.FindAll(".epos-importoptionen"));
+    }
+
+    private IRenderedComponent<GanglinieImportOptionenDialog> Optionendialog(
+        Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>> vorschau)
+        => Render<GanglinieImportOptionenDialog>(x => x
+            .Add(d => d.Pfad, _datei)
+            .Add(d => d.Erkennung, StundenganglinieDatei.Erkenne(_datei))
+            .Add(d => d.Vorschau, vorschau));
+
+    [Fact]
+    public void Der_Optionendialog_zeigt_Zeilenzahl_Raster_und_das_Bild_der_gelesenen_Reihe()
+    {
+        var cut = Optionendialog((pfad, o) => Task.FromResult<GanglinienVorschau?>(GanglinienDatei.Vorschau(pfad, o)));
+
+        GanglinienProbe erste = cut.Instance.Probe!;
+        Assert.True(erste.Erfolgreich);
+        Assert.Equal(8760, erste.Datenzeilen);
+        Assert.Contains("8.760 Datenzeilen gelesen", cut.Find(".epos-importoptionen-probe").TextContent);
+        Assert.Contains(Resource.IMPORT_PROBE_STUNDE, cut.Find(".epos-importoptionen-probe").TextContent);
+        Assert.NotEmpty(cut.FindAll(".epos-importoptionen-bild svg"));
+
+        cut.FindAll("button").First(b => b.TextContent.Trim() == Resource.IMPORT_BTN_AKTUALISIEREN).Click();
+        cut.WaitForAssertion(() => Assert.NotSame(erste, cut.Instance.Probe));
+        Assert.True(cut.Instance.Probe!.Erfolgreich);
+        Assert.NotEmpty(cut.FindAll(".epos-importoptionen-bild svg"));
+    }
+
+    [Fact]
+    public void Eine_unlesbare_Datei_zeigt_kein_Bild_nur_den_Grund()
+    {
+        var cut = Optionendialog((pfad, o) =>
+            Task.FromResult<GanglinienVorschau?>(GanglinienDatei.Vorschau(Path.Combine(_ordner, "fehlt.csv"), o)));
+        Assert.NotEmpty(cut.FindAll(".epos-importoptionen-bild svg"));
+
+        cut.FindAll("button").First(b => b.TextContent.Trim() == Resource.IMPORT_BTN_AKTUALISIEREN).Click();
+
+        cut.WaitForAssertion(() => Assert.Null(cut.Instance.Probe));
+        Assert.Empty(cut.FindAll(".epos-importoptionen-bild svg"));
+        Assert.Empty(cut.FindAll(".epos-importoptionen-probe"));
+        Assert.NotEqual("", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Eine_Reihe_ohne_Raster_nennt_Zeilenzahl_und_Grund_ohne_Bild()
+    {
+        string kurz = Path.Combine(_ordner, "kurz.csv");
+        File.WriteAllText(kurz, "1;2.5\r\n2;3.5\r\n3;4.5\r\n");
+        var cut = Render<GanglinieImportOptionenDialog>(x => x
+            .Add(d => d.Pfad, kurz)
+            .Add(d => d.Erkennung, GanglinienDatei.Erkenne(kurz)));
+
+        Assert.False(cut.Instance.Probe!.Erfolgreich);
+        Assert.Contains("3 Datenzeilen gelesen", cut.Find(".epos-importoptionen-probe").TextContent);
+        Assert.Empty(cut.FindAll(".epos-importoptionen-bild svg"));
+    }
+
+    [Fact]
+    public void Die_Satzansicht_zeigt_die_Ganglinie_als_Jahresbild()
+    {
+        double[] werte = Enumerable.Range(0, 8760).Select(h => (double)(h % 24)).ToArray();
+        var wege = new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[]
+            {
+                Zeitreihenproben.Zeile(31, "PV Dach Ost", zeitintervall: 60, jahresarbeitMwh: 9.5, spitzeKw: 10.0)
+            }),
+            Kennzahlen = _ => Task.FromResult<GanglinienKennzahlen?>(new GanglinienKennzahlen(9.5, 10.0, 950)),
+            Bild = (_, _) => ChartRenderer.JahresverlaufModell("", werte, "kW",
+                                                               WindowsFormsApplication1.Zeichnung.Farbrolle.STROM_PV),
+            BildTitel = "PV"
+        };
+        var cut = Render<PvGanglinieDialog>(x => x
+            .Add(d => d.Katalogbetrieb, true)
+            .Add(d => d.Katalogwege, wege)
+            .Add(d => d.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(d => d.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(d => d.CsvSpeichern, (_, _, _) => Task.CompletedTask));
+        Assert.Null(cut.Instance.Grafikkennzahlen);
+
+        cut.Find(".epos-raster tbody tr button").Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Grafikkennzahlen));
+        Assert.NotEmpty(cut.FindAll("svg"));
+        Assert.Contains("CSV", cut.Markup);
     }
 }

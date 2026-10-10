@@ -86,6 +86,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Datei konnte gelesen werden.</summary>
         public bool Lesbar = false;
+
+        private Func<GanglinienProbe> _probeQuelle;
+        private GanglinienProbe _probe;
+
+        /// <summary>
+        /// <b>Die Probelesung der ganzen Datei</b> unter den Optionen dieser Vorschau (Datenzeilen,
+        /// Raster, Jahresbild) — erst beim ersten Zugriff gelesen, denn die Erkennung allein braucht
+        /// nur die ersten Zeilen. <c>null</c> ohne lesbare Datei.
+        /// </summary>
+        public GanglinienProbe Probe
+        {
+            get
+            {
+                if (_probe == null && _probeQuelle != null) _probe = _probeQuelle();
+                return _probe;
+            }
+        }
+
+        /// <summary>Merkt die Probelesung vor; gelesen wird sie erst beim Zugriff auf <see cref="Probe"/>.</summary>
+        internal void ProbeVormerken(Func<GanglinienProbe> quelle)
+        {
+            _probeQuelle = quelle;
+            _probe = null;
+        }
     }
 
     /// <summary>Rohdaten einer Quelldatei, Eingang der <see cref="GanglinienPruefung"/>.</summary>
@@ -317,6 +341,9 @@ namespace WindowsFormsApplication1
                     (o.ZeitSpalte + 1).ToString(CultureInfo.InvariantCulture)));
 
                 v.Lesbar = true;
+                // Die Probe liest mit der Vorbelegung, die zum Zeitpunkt des Zugriffs gilt - eine
+                // nachgezogene Vorbelegung (StundenganglinieDatei.Erkenne) gilt damit auch fuer sie.
+                v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, v.Vorschlag));
                 return v;
             }
             catch (Exception ex)
@@ -363,6 +390,11 @@ namespace WindowsFormsApplication1
                     if (z.Length > v.Spaltenzahl) v.Spaltenzahl = z.Length;
                 for (int i = 0; i < zeilen.Count && i < VorschauZeilen; i++) v.Zeilen.Add(zeilen[i]);
                 v.Lesbar = zeilen.Count > 0;
+                if (v.Lesbar)
+                {
+                    GanglinienImportOptionen gewaehlt = v.Vorschlag.Kopie();
+                    v.ProbeVormerken(() => GanglinienProbe.Lies(pfad, gewaehlt));
+                }
                 return v;
             }
             catch (Exception ex)

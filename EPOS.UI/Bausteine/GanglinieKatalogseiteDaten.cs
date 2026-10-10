@@ -116,10 +116,17 @@ public sealed class GanglinienKatalogwege
     public Func<string, GanglinienImportErgebnis, double?, IProgress<ImportFortschritt>, Task<GanglinienKatalogimport>>? EinlesenGelesen { get; init; }
 
     /// <summary>
-    /// <b>Die Ganglinie eines Katalogsatzes als Jahresbild</b> (Name → Bild und Kennzahlen,
-    /// <c>ZeitreihenAdminWege.Ansicht</c>); der Wirt zeigt sie in seiner Satzansicht. Ohne ihn kein Bild.
+    /// <b>Die Kennzahlen eines Katalogsatzes</b> (Name → Jahresarbeit, Spitze, Vollbenutzungsstunden;
+    /// <c>null</c> = keine brauchbare Reihe) für die Grafik der Satzansicht des Wirts — dieselbe Bauform
+    /// wie der Stromganglinien-Dialog (<see cref="GanglinienGrafik"/>). Ohne ihn keine Grafik.
     /// </summary>
-    public Func<string, Task<Ganglinienansicht>>? Ansicht { get; init; }
+    public Func<string, Task<GanglinienKennzahlen?>>? Kennzahlen { get; init; }
+
+    /// <summary>Das Bild eines Katalogsatzes (Name, sortiert = Dauerlinie); <c>null</c> = keine Reihe.</summary>
+    public Func<string, bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? Bild { get; init; }
+
+    /// <summary>Der Titel des Bildes (auch Name der CSV).</summary>
+    public string BildTitel { get; init; } = "";
 }
 
 /// <summary>

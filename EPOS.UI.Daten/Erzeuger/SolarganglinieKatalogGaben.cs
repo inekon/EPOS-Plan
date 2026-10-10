@@ -43,7 +43,10 @@ namespace WindowsFormsApplication1
                 Vorschau = datei is null ? null : Vorschau,
                 EinlesenGelesen = datei is null ? null : EinlesenGelesen,
                 // Die Satzansicht zeigt die Ganglinie des gewaehlten Katalogsatzes als Jahresbild.
-                Ansicht = n => ZeitreihenAdminWege.Ansicht(Zeitreihenart.Solarganglinie, n)
+                Kennzahlen = n => ZeitreihenAdminWege.SatzKennzahlen(Zeitreihenart.Solarganglinie, n),
+                Bild = (n, sortiert) => ZeitreihenAdminWege.SatzBild(Zeitreihenart.Solarganglinie, n, sortiert,
+                                                                     MyResource.Resource.SGL_BILD_TITEL),
+                BildTitel = MyResource.Resource.SGL_BILD_TITEL
             };
         }
 
@@ -69,7 +72,9 @@ namespace WindowsFormsApplication1
                 ["LabelName"] = Katalogtexte.Fuer("HZK_LBL_NAME"),
                 ["LabelBeschreibung"] = Katalogtexte.Fuer("SGL_LBL_BESCHREIBUNG"),
                 ["SpalteWahl"] = MyResource.Resource.KFAK_SP_WAHL,
-                ["HilfeSchluessel"] = "Form_Solarganglinie_Admin.btn_Help"
+                ["HilfeSchluessel"] = "Form_Solarganglinie_Admin.btn_Help",
+                // "CSV..." an jedem Zeitreihenbild des Dialogs (Satzansicht, Optionendialog des Imports).
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(MyResource.Resource.SGL_BILD_TITEL)
             };
         }
 

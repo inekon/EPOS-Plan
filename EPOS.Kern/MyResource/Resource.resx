@@ -4514,6 +4514,30 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
     <value>Gelesen: {0} Werte, {1} Zeitstempel.</value>
   </data>
+  <data name="IMPORT_PROBE_RASTER" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → Raster {1} ({2} Werte)</value>
+  </data>
+  <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
+    <value>{0} Datenzeilen gelesen → kein Raster: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="IMPORT_PROBE_VIERTEL" xml:space="preserve">
+    <value>Viertelstunde</value>
+  </data>
+  <data name="IMPORT_GRP_GRAFIK" xml:space="preserve">
+    <value>Gelesene Reihe</value>
+  </data>
+  <data name="IMPORT_BILD_TITEL" xml:space="preserve">
+    <value>Gelesene Ganglinie</value>
+  </data>
+  <data name="PVG_BILD_TITEL" xml:space="preserve">
+    <value>Photovoltaik Jahresganglinie</value>
+  </data>
+  <data name="SGL_BILD_TITEL" xml:space="preserve">
+    <value>Solarthermie Jahresganglinie</value>
+  </data>
   <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
     <value>Lastgang einlesen - Format und Vorschau</value>
   </data>

@@ -27,6 +27,7 @@
 @using WindowsFormsApplication1
 @implements IDisposable
 
+<CascadingValue Value="@CsvNaht">
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
@@ -51,6 +52,18 @@
         <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
         <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
                   Mehrzeilig="true" Zeilen="3" />
+
+        @* Die Ganglinie der markierten Zeile als Jahresbild mit Kennzahlen - dieselbe Bauform wie der
+           Stromganglinien-Dialog (GanglinienGrafik); die Daten kommen ueber die Huelle aus dem Kern. *@
+        @if (_grafikKennzahlen is not null)
+        {
+            <GanglinienGrafik Schluessel="@("SGL|" + _grafikName)" Bezeichner="@_grafikName"
+                              Kennzahlen="@_grafikKennzahlen" Bildauftrag="@Grafikbild"
+                              LabelJahresarbeit="@Resource.STROMGL_LBL_JAHRESARBEIT" LabelSpitze="@Resource.STROMGL_LBL_SPITZE"
+                              LabelVollbenutzung="@Resource.GEBB_LBL_VOLLBENUTZUNG" LabelSortiert="@Resource.SIM_CHK_SORTIERT"
+                              LabelEinheit="@Resource.ALLG_LBL_EINHEIT" EinheitStunden="@Resource.GEBB_EINHEIT_STUNDEN"
+                              Bildtext="@Katalogwege.BildTitel" />
+        }
         </div>;
     }
 
@@ -125,6 +138,7 @@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 </div>
+</CascadingValue>
 
 @code {
     /// <summary>
@@ -146,6 +160,56 @@
     /// Import (Hülle <c>SolarganglinieKatalogGaben</c>).
     /// </summary>
     [Parameter] public GanglinienKatalogwege Katalogwege { get; set; } = new();
+
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster); jedes Zeitreihenbild des Dialogs —
+    /// die Grafik der Satzansicht und das Bild im Optionendialog des Imports — trägt damit den Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Export-Kaskade; ohne <see cref="CsvSpeichern"/> keine.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
+    // --- Die Grafik der markierten Ganglinie ------------------------------
+
+    private string _grafikName = "";
+    private GanglinienKennzahlen? _grafikKennzahlen;
+
+    /// <summary>Die Kennzahlen der Grafik; <c>null</c> = keine Grafik (Prüfhilfe).</summary>
+    public GanglinienKennzahlen? Grafikkennzahlen => _grafikKennzahlen;
+
+    /// <summary>Der Bildauftrag der Grafik — der Name steckt schon darin.</summary>
+    private Func<bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? Grafikbild
+        => Katalogwege.Bild is null || _grafikName.Length == 0
+            ? null
+            : sortiert => Katalogwege.Bild(_grafikName, sortiert);
+
+    /// <summary>
+    /// Holt die Kennzahlen zur neuen Wahl — einmal je Markierung; ohne Weg oder ohne Wahl keine Grafik.
+    /// Ein noch laufender Abruf zeichnet nach, solange seine Wahl gilt.
+    /// </summary>
+    private void GrafikLaden(string name)
+    {
+        _grafikName = name ?? "";
+        _grafikKennzahlen = null;
+        if (Katalogwege.Kennzahlen is null || _grafikName.Length == 0) return;
+        Task<GanglinienKennzahlen?> abruf = Katalogwege.Kennzahlen(_grafikName);
+        if (abruf.IsCompletedSuccessfully) { _grafikKennzahlen = abruf.Result; return; }
+        _ = GrafikAbwarten(abruf, _grafikName);
+    }
+
+    private async Task GrafikAbwarten(Task<GanglinienKennzahlen?> abruf, string name)
+    {
+        GanglinienKennzahlen? k;
+        try { k = await abruf; }
+        catch (Exception) { return; }
+        if (name != _grafikName) return;
+        _grafikKennzahlen = k;
+        await InvokeAsync(StateHasChanged);
+    }
 
     /// <summary>Die Beschriftungen der Katalogseite.</summary>
     [Parameter] public GanglinienKatalogtexte Katalogtexte { get; set; } = new();
@@ -293,6 +357,7 @@
         _katalogZeile = null;
         _katalogGewaehlt = "";
         _name = zeile.Bezeichner;
+        GrafikLaden(_name);
         _beschreibung = BeschreibungZu(zeile.Bezeichner);
     }
 
@@ -313,6 +378,7 @@
             _katalogZeile = null;
             _katalogGewaehlt = "";
             _name = "";
+            GrafikLaden(_name);
             _beschreibung = "";
             return;
         }
@@ -325,6 +391,7 @@
         _katalogGewaehlt = zeile.Bezeichner;
         _projektZeile = null;
         _name = zeile.Bezeichner;
+        GrafikLaden(_name);
         _beschreibung = zeile.Text(Katalogfilterprofil.SpBeschreibung);
     }
 
@@ -361,6 +428,7 @@
 
         _projektZeile = null;
         _name = "";
+        GrafikLaden(_name);
         _beschreibung = "";
     }
 

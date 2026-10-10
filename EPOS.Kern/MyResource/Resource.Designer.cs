@@ -41997,6 +41997,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Ganglinie ähnelt.
+        /// </summary>
+        public static string IMPORT_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("IMPORT_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string IMPORT_BTN_ABBRECHEN {
@@ -42128,6 +42137,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_GRP_EINLESEN {
             get {
                 return ResourceManager.GetString("IMPORT_GRP_EINLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesene Reihe ähnelt.
+        /// </summary>
+        public static string IMPORT_GRP_GRAFIK {
+            get {
+                return ResourceManager.GetString("IMPORT_GRP_GRAFIK", resourceCulture);
             }
         }
         
@@ -42398,6 +42416,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMPORT_MSG_VORSCHAU_UNLESBAR {
             get {
                 return ResourceManager.GetString("IMPORT_MSG_VORSCHAU_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → kein Raster: {1} ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_KEIN_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_KEIN_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Datenzeilen gelesen → Raster {1} ({2} Werte) ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_RASTER {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_STUNDE {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstunde ähnelt.
+        /// </summary>
+        public static string IMPORT_PROBE_VIERTEL {
+            get {
+                return ResourceManager.GetString("IMPORT_PROBE_VIERTEL", resourceCulture);
             }
         }
         
@@ -95774,6 +95828,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik Jahresganglinie ähnelt.
+        /// </summary>
+        public static string PVG_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("PVG_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Katalog erneuern… ähnelt.
         /// </summary>
         public static string PVG_BTN_ERNEUERN {
@@ -101974,6 +102037,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SGAD_TITEL {
             get {
                 return ResourceManager.GetString("SGAD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie Jahresganglinie ähnelt.
+        /// </summary>
+        public static string SGL_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("SGL_BILD_TITEL", resourceCulture);
             }
         }
         
