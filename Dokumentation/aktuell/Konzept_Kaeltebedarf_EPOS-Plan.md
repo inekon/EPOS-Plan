@@ -264,7 +264,7 @@ Eine Klasse `KaeltebedarfSchema` (Schritt `KaelteRangSchema.SCHRITT + 1`), einge
 
 | Tabelle | Spalten |
 |---|---|
-| `Tab_Kaeltebedarf_STAMM` | `ID`, `Bezeichner` TEXT NOT NULL, `Typ`, `Beschreibung`, `Monat_1` … `Monat_12` REAL, `Vorlauf`, `Ruecklauf` REAL nullbar (−40 … 100 °C, beide oder keiner, `Vorlauf ≤ Ruecklauf`), `ReadOnly` 0/1, Katalogspalten der Fassung wie die übrigen Bedarfskataloge (`Katalog_Schluessel`, `Katalog_Pruefsumme`, `Katalog_Ausgelaufen` 0/1, `Katalogfassung`); kein `ID_KostenVorlage` (kein Kostenkatalog) |
+| `Tab_Kaeltebedarf_STAMM` | `ID`, `Bezeichner` TEXT NOT NULL, `Typ`, `Beschreibung`, `Monat_1` … `Monat_12` REAL, `Vorlauf`, `Ruecklauf` REAL nullbar (−40 … 100 °C, beide oder keiner, `Vorlauf ≤ Ruecklauf`), `ReadOnly` 0/1, Katalogspalten der Fassung wie die übrigen Bedarfskataloge (`Katalog_Schluessel`, `Katalog_Pruefsumme`, `Katalog_Ausgelaufen` 0/1; die Katalogfassung steht an `Tab_Applikation`); kein `ID_KostenVorlage` (kein Kostenkatalog) |
 | `Tab_Kaeltetyp_STAMM` | `ID`, `Bezeichner` TEXT NOT NULL, `Beschreibung`, `"1"` … `"168"` REAL, `ReadOnly` 0/1, Katalogspalten der Fassung |
 | `Tab_Kaeltebedarf` | Projektkopie des Kopfs: `ID`, `ID_Projekt` (FK, CASCADE), alle Kopfspalten, `ID_Stamm` INTEGER REFERENCES `Tab_Kaeltebedarf_STAMM` ON DELETE SET NULL |
 | `Tab_Kaeltetyp` | Projektkopie des Typs: `ID`, `ID_Projekt`, `ID_Kaeltebedarf` (FK, CASCADE), `Typname`, `"1"` … `"168"` |
