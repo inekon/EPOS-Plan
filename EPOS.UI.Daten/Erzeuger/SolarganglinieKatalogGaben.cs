@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> KatalogGaben()
         {
-            return new Dictionary<string, object>
+            return MitGrafik(new Dictionary<string, object>
             {
                 ["Katalogbetrieb"] = true,
                 ["Katalogwege"] = Wege(),
@@ -63,8 +63,18 @@ namespace WindowsFormsApplication1
                 ["LabelBeschreibung"] = Katalogtexte.Fuer("SGL_LBL_BESCHREIBUNG"),
                 ["SpalteWahl"] = MyResource.Resource.KFAK_SP_WAHL,
                 ["HilfeSchluessel"] = "Form_Solarganglinie_Admin.btn_Help"
-            };
+            });
         }
+
+        /// <summary>
+        /// Fügt einem Parametersatz die Ganglinie der Detailzeile hinzu (DZ1): Kennzahlen,
+        /// Bild, Farbwahl und Anzeigeeinheit — derselbe Weg im Projekt- und im Katalogbetrieb.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> MitGrafik(IReadOnlyDictionary<string, object> gaben)
+            => GanglinienGrafikGaben.Mit(gaben, GanglinienQuelle.Solarganglinie,
+                                         MyResource.Resource.CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE,
+                                         MyResource.Resource.CHART_ACHSE_SOLARERTRAG,
+                                         WindowsFormsApplication1.Zeichnung.Farbrolle.WAERME_SOLAR);
 
         /// <summary>
         /// Die Importkette im Hintergrund (Kulturweitergabe): lesen mit Formaterkennung,

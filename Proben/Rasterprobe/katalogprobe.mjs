@@ -1246,9 +1246,15 @@ try {
 // einzeilig; die Auswahl "Spalten..." oeffnet ohne eigenen Rollbereich und ganz im
 // Bild, Abwaehlen und Waehlen wirken, die Wahl ueberlebt das Neuladen (Einstellungen
 // des Wirts), "Standard" setzt zurueck, Esc schliesst die Auswahl und nicht den Dialog.
-// Die GEGENPROBE gibt der Auswahl eine Rollhoehe und versteckt die Marke - sie MUSS rot sein.
+// DZ1: Die Trefferzahl der Katalog-Kopfleiste kuerzt nie mit Auslassung - die Zahl steht ganz, fehlt
+// Platz, faellt nur das Hauptwort weg; neben jeder angehakten, bei der Breite ausgeblendeten Spalte
+// steht in der Auswahl der Hinweis "bei dieser Breite ausgeblendet", neben keiner sichtbaren.
+// Die GEGENPROBE gibt der Auswahl eine Rollhoehe und versteckt die Marke, kneift die Trefferzahl auf
+// 30 px und versteckt den Hinweis - sie MUSS rot sein.
 const KS_GEGEN_STIL = `.epos-spaltenwahl-auswahl { max-height: 60px !important; overflow-y: auto !important; }
-.epos-verwendet-marke { display: none !important; }`;
+.epos-verwendet-marke { display: none !important; }
+.epos-zweispalten-kopfleiste .epos-katalog-treffer { min-width: 0 !important; max-width: 30px !important; }
+.epos-spaltenwahl-weicht { display: none !important; }`;
 
 async function spaltenwahlfall(browser, f) {
   const kontext = await browser.newContext({ viewport: { width: f.breite, height: f.hoehe }, deviceScaleFactor: 1 });
@@ -1301,6 +1307,15 @@ async function spaltenwahlfall(browser, f) {
       knopfText: knopf ? getComputedStyle(knopf.querySelector('.epos-katalog-spaltenknopftext')).display : '',
       summe: summe ? summe.textContent.trim() : '',
       summeGanz: summe ? summe.scrollWidth <= summe.clientWidth + 0.5 && sichtbar(summe) : false,
+      treffer: (() => {
+        const t = document.querySelector('.epos-zweispalten-bereich--katalog .epos-katalog-treffer');
+        const z = t && t.querySelector('.epos-katalog-treffer-zahl'), w = t && t.querySelector('.epos-katalog-treffer-wort');
+        if (!t || !z) return { da: false };
+        const rt = r(t), rz = r(z), rw = w ? r(w) : null;
+        return { da: true, text: t.textContent.trim(), ellipse: getComputedStyle(t).textOverflow === 'ellipsis',
+                 zahlGanz: rz.left >= rt.left - 0.5 && rz.right <= rt.right + 0.5 && rz.top >= rt.top - 0.5 && rz.bottom <= rt.bottom + 0.5,
+                 wort: !!rw && rw.top < rt.bottom - 1 && rw.right <= rt.right + 2.5 };
+      })(),
       einzeilig: kids.length ? Math.max(...oben) < Math.min(...unten) : false
     };
   });
@@ -1313,6 +1328,12 @@ async function spaltenwahlfall(browser, f) {
   if (!a.knopf) m.push('Knopf "Spalten..." nicht ganz in der Kopfleiste');
   if (!a.summeGanz) m.push('Summe gekuerzt: "' + a.summe + '"');
   if (!a.einzeilig) m.push('Projekt-Kopfleiste nicht einzeilig');
+  if (!a.treffer.da) m.push('Trefferzahl ohne Zahlteil');
+  else {
+    if (a.treffer.ellipse) m.push('Trefferzahl kuerzt mit Auslassung');
+    if (!a.treffer.zahlGanz) m.push('Trefferzahl abgeschnitten');
+    console.log(`  Trefferzahl "${a.treffer.text}": ${a.treffer.wort ? 'mit Hauptwort' : 'ohne Hauptwort'}, Zahl ganz: ${a.treffer.zahlGanz}`);
+  }
   if (FOTOS) await seite.screenshot({ path: `${FOTOS}/${f.name}_verwendet.png` });
 
   // 2. Auswahl offen: ganz im Bild, kein eigener Rollbereich, das Dokument rollt nicht.
@@ -1327,9 +1348,28 @@ async function spaltenwahlfall(browser, f) {
       rollt: w.scrollHeight > w.clientHeight + 1 || /auto|scroll/.test(st.overflowY),
       docRollt: doc.scrollHeight > innerHeight + 1,
       eintraege: w.querySelectorAll('.epos-spaltenwahl-eintrag').length,
-      zwei: !!w.querySelector('.epos-spaltenwahl-liste--zwei')
+      zwei: !!w.querySelector('.epos-spaltenwahl-liste--zwei'),
+      // DZ1: angehakt und bei dieser Breite ausgeblendet <=> Hinweis sichtbar.
+      hinweis: (() => {
+        const kopf = [...document.querySelectorAll('.epos-zweispalten-bereich--katalog thead th')];
+        const steht = text => kopf.some(th => getComputedStyle(th).display !== 'none' && th.textContent.trim().startsWith(text));
+        const fehlt = [], falsch = [], gezeigt = [];
+        for (const e of w.querySelectorAll('.epos-spaltenwahl-eintrag')) {
+          const an = e.querySelector('input').checked;
+          const text = e.querySelector('span').textContent.trim();
+          const h = e.querySelector('.epos-spaltenwahl-weicht');
+          const sichtbar = !!h && getComputedStyle(h).display !== 'none';
+          if (sichtbar) gezeigt.push(text);
+          if (an && !steht(text) && !sichtbar) fehlt.push(text);
+          if (sichtbar && (steht(text) || !an)) falsch.push(text);
+        }
+        return { fehlt, falsch, gezeigt };
+      })()
     };
   });
+  if (b.hinweis.fehlt.length) m.push('Hinweis fehlt bei ausgeblendeter Spalte: ' + b.hinweis.fehlt.join(', '));
+  if (b.hinweis.falsch.length) m.push('Hinweis bei sichtbarer Spalte: ' + b.hinweis.falsch.join(', '));
+  console.log(`  Spaltenwahl: Hinweis "ausgeblendet" bei ${b.hinweis.gezeigt.length ? b.hinweis.gezeigt.join(', ') : 'keiner Spalte'}`);
   if (!b.imBild) m.push('Auswahl nicht ganz im Bild');
   if (b.rollt) m.push('Auswahl rollt in sich (Rollbereich im Rollbereich)');
   if (b.docRollt) m.push('Dokument rollt mit offener Auswahl');
@@ -1402,6 +1442,73 @@ try {
 } catch (fehler) {
   console.log('');
   console.log('ABBRUCH (KS1): ' + fehler.message);
+  await browser.close();
+  process.exit(2);
+}
+
+// ------------------------------------------------------------------
+// MEHRFACHWAHL FOLGT DER UEBERNAHME (DZ1-N2, Konzept Projektdialoge 4.5)
+// ------------------------------------------------------------------
+// Der echte Heizkessel- und BHKW-Dialog der Fensterprobe mit ?aufnahme=1 in 1 280 x 800: das Kaestchen
+// der ersten Projektzeile anklicken, einen Katalogsatz ankreuzen, "In das Projekt uebernehmen" samt
+// Traegerwahl - danach ist genau die neue Projektzeile angekreuzt; "Aus dem Projekt entfernen" entfernt
+// genau sie, die zuvor angeklickte Zeile bleibt.
+async function uebernahmefall(browser, maske) {
+  const kontext = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+  const seite = await kontext.newPage();
+  const m = [];
+  await seite.goto(`${WURZEL}/fensterprobe?fall=${maske}&zeilen=40&aufnahme=1`, { waitUntil: 'domcontentloaded' });
+  await seite.waitForSelector('.epos-zweispalten-bereich--katalog .epos-katalogliste tbody tr', { timeout: 30000 });
+  await schlaf(500);
+  const projekt = () => seite.evaluate(() =>
+    [...document.querySelectorAll('.epos-zweispalten-bereich--projekt tbody tr')]
+      .filter(z => z.querySelector('td .epos-wahlkaestchen'))
+      .map(z => ({ name: (z.querySelector('.epos-zeilenzelle--name') || z).textContent.replace(/[\u2610\u2611\u25A3\u25CF\u25CB]/g, '').trim(),
+                   gewaehlt: z.querySelector('td .epos-wahlkaestchen').getAttribute('aria-checked') === 'true' })));
+  await seite.locator('.epos-zweispalten-bereich--projekt td .epos-wahlkaestchen').first().click();
+  await schlaf(300);
+  const vorher = await projekt();
+  if (!(vorher.length === 2 && vorher[0].gewaehlt && !vorher[1].gewaehlt))
+    m.push('Vorbedingung: erste Projektzeile nicht allein angekreuzt (' + JSON.stringify(vorher) + ')');
+  await seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input').first().check();
+  await schlaf(300);
+  await seite.locator('.epos-zweispalten-knopf--uebernehmen').first().click();
+  await seite.waitForSelector('.epos-ueberlagerung input[type=text]', { timeout: 5000 });
+  const feld = seite.locator('.epos-ueberlagerung input[type=text]').first();
+  if (!(await feld.inputValue())) await feld.fill('Erdgas E Variante');
+  await seite.locator('.epos-ueberlagerung .epos-knopf--primaer').first().click();
+  await schlaf(600);
+  const nachher = await projekt();
+  const neu = nachher.filter(z => !vorher.some(v => v.name === z.name));
+  const gewaehlt = nachher.filter(z => z.gewaehlt).map(z => z.name);
+  console.log(`  nach Uebernahme: ${nachher.length} Zeilen, angekreuzt ${JSON.stringify(gewaehlt)}`);
+  if (neu.length !== 1) m.push(`Uebernahme: ${neu.length} neue Zeilen statt 1`);
+  else if (gewaehlt.length !== 1 || gewaehlt[0] !== neu[0].name)
+    m.push(`Mehrfachwahl folgt der Uebernahme nicht: angekreuzt ${JSON.stringify(gewaehlt)} statt ["${neu[0].name}"]`);
+  await seite.locator('.epos-zweispalten-knopf--entfernen').first().click();
+  await schlaf(500);
+  const rest = (await projekt()).map(z => z.name);
+  console.log(`  nach Entfernen: ${JSON.stringify(rest)}`);
+  if (neu.length === 1 && rest.includes(neu[0].name)) m.push('Entfernen: die eben uebernommene Zeile steht noch da');
+  for (const v of vorher) if (!rest.includes(v.name)) m.push(`Entfernen traf die zuvor angeklickte Zeile "${v.name}"`);
+  await kontext.close();
+  return m;
+}
+
+try {
+  for (const maske of ['heizkessel', 'bhkw']) {
+    const name = `DZ1N2_uebernahme_${maske}_1280x800`;
+    if (NUR && !name.startsWith(NUR)) continue;
+    gezaehlt++;
+    console.log('');
+    console.log(name);
+    const m = await uebernahmefall(browser, maske);
+    if (m.length) { schlecht++; console.log('  VERSTOSS: ' + m.join('; ')); }
+    else console.log('  Mehrfachwahl folgt der Uebernahme, Entfernen trifft die neue Zeile');
+  }
+} catch (fehler) {
+  console.log('');
+  console.log('ABBRUCH (DZ1-N2): ' + fehler.message);
   await browser.close();
   process.exit(2);
 }

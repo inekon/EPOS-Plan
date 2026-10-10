@@ -373,8 +373,15 @@ function rollstand(unten = 0) {
   // Erreichbar: nach dem Rollen des Dialogkoerpers ans Ende steht die Schlussleiste im Fenster.
   let fussErreichbar = false;
   if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight - unten + 1; d.scrollTop = v; }
+  // DZ1: aufgeklappt Listen auf ihrer Untergrenze, die Satzflaeche reicht bis an den unteren Rand des Bausteins.
+  const zw = d.querySelector(':scope > .epos-zweispalten.epos-zweispalten--satz-offen');
+  const satzfl = zw && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
+  const ueber = sel => { const e = zw && zw.querySelector(sel); return e ? Math.round(e.getBoundingClientRect().height - (parseFloat(getComputedStyle(e).minHeight) || 0)) : 0; };
+  const vorrang = satzfl ? { rest: Math.round(zw.getBoundingClientRect().bottom - satzfl.getBoundingClientRect().bottom),
+    projekt: ueber('.epos-zweispalten-bereich--projekt .epos-raster-huelle'), katalog: ueber('.epos-zweispalten-bereich--katalog .epos-raster-huelle'),
+    satz: Math.round(satzfl.getBoundingClientRect().height) } : null;
   return {
-    eng, fussErreichbar,
+    eng, fussErreichbar, vorrang,
     fremd, listen: [...d.querySelectorAll('*')].filter(e => sichtbar(e) && rollt(e) && erlaubt(e)).length,
     dokument: dok.scrollHeight, innen: innerHeight, dialogRollt: d.scrollHeight > d.clientHeight + 1,
     kopf: kopf.getBoundingClientRect().top, kopfPos: getComputedStyle(kopf).position,
@@ -391,6 +398,11 @@ async function nichtsRollt(seite, name, melden, rd = { oben: 0, unten: 0 }) {
     const r = await seite.evaluate(rollstand, rd.unten);
     if (r.fremd.length) m(`${stand}: es rollt ausser Listen und Detailzeile: ${r.fremd.join(', ')}`);
     if (r.dokument > r.innen + TOL) m(`${stand}: das Dokument rollt (${r.dokument} px)`);
+    if (r.vorrang) {
+      if (r.vorrang.rest > 3) m(`${stand}: Satzflaeche ${r.vorrang.satz} px laesst ${r.vorrang.rest} px frei (Vorrang DZ1)`);
+      if (r.vorrang.projekt > 2 || r.vorrang.katalog > 2) m(`${stand}: Listen ueber ihrer Untergrenze (Projekt +${r.vorrang.projekt} px, Katalog +${r.vorrang.katalog} px)`);
+      else console.log(`    Vorrang ${name} ${stand}: Satzflaeche ${r.vorrang.satz} px, Listen auf Untergrenze`);
+    }
     if (r.eng) {
       // KB1: Fenster unter der Mindesthoehe - der Dialogkoerper rollt, die Schlussleiste rollt mit und ist am Ende erreichbar.
       console.log(`    Befund ${name} ${stand}: unter der Mindesthoehe, der Dialogkoerper rollt (KB1), Schlussleiste erreichbar: ${r.fussErreichbar}`);
@@ -556,6 +568,16 @@ try {
       console.log(`    rollender Dialogkoerper ${fall} ${f.breite}x${f.hoehe}: ${r5.n} Verstoesse`);
       if (r5.n === 0) gegenGruen++;
       await s5.close();
+    }
+    // Vorrang der Detailzeile (DZ1): eine auf 40 px begrenzte Satzflaeche muss rot werden.
+    for (const f of FENSTER) for (const fall of KATALOGAUSWAHL) {
+      if (NUR && NUR !== fall) continue;
+      const s6 = await oeffnen(browser, fall, f);
+      await s6.addStyleTag({ content: '.epos-zweispalten-satz { max-height: 40px !important; }' });
+      const r6 = await nichtsRollt(s6, '', false, rand(f));
+      console.log(`    Satzflaeche 40 px ${fall} ${f.breite}x${f.hoehe}: ${r6.n} Verstoesse`);
+      if (r6.n === 0) gegenGruen++;
+      await s6.close();
     }
     // iPad ohne die Token: Kopf und Schlussleiste reichen unter Statusleiste und Home-Anzeige.
     for (const f of FENSTER.filter(f => f.ipad)) {

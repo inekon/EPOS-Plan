@@ -262,8 +262,10 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
+            // KA-E-16: der Katalogsatz geht samt seinen Satzvorlagen, in EINEM Vorgang.
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
         }
 
         /// <summary>
@@ -990,6 +992,217 @@ namespace WindowsFormsApplication1
             {
                 return new SpeicherErgebnis(false,
                     string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Satz nach ID und Mehrfach-Bearbeiten (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die Projektkopien der Pufferspeicher (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
+        public const string TABELLE_PROJEKT = "Tab_Pufferspeicher";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>
+        /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 3, „Bearbeiten…" je
+        /// Bereich): <paramref name="projektkopie"/> = <c>true</c> liest die Projektkopie aus
+        /// <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben Schlüssel und dieselbe rohe Anzeige wie
+        /// <see cref="KatalogsatzAnzeige"/>; <c>null</c>, wenn es die ID nicht gibt. Die projektbezogenen Spalten der
+        /// Kopie (Verwendung, Temperaturpaar, Schwellen, Schichtung …) stehen nicht darin — sie pflegt der
+        /// Projektspeicher-Dialog.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow r = dt.Rows[0];
+            return new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [KatalogBrowserProfil.FeldBezeichner] = RohFeld(r, "Bezeichner"),
+                [KatalogBrowserProfil.FeldFirma] = RohFeld(r, "Hersteller"),
+                [KatalogBrowserProfil.FeldSpeichertyp] = RohFeld(r, "Speichertyp"),
+                [KatalogBrowserProfil.FeldVerluste] = RohFeld(r, "Bereitschaftsverluste"),
+                [KatalogBrowserProfil.FeldVolumen] = RohFeld(r, "Gesamtvolumen"),
+                [KatalogBrowserProfil.FeldInvestitionskosten] = RohFeld(r, "Investitionskosten"),
+            };
+        }
+
+        /// <summary>Die Prüfung der Anzeigefelder (dieselbe wie beim Speichern); leer = in Ordnung.</summary>
+        private static string Feldpruefung(double verluste, double volumen, double investition)
+        {
+            const KatalogBrowserArt art = KatalogBrowserArt.Pufferspeicher;
+            return KatalogFeldPruefung.ErsterGrund(
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldVerluste, verluste),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldVolumen, volumen),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldInvestitionskosten, investition));
+        }
+
+        internal const string SQL_SATZ_AKTUALISIEREN =
+            " SET Hersteller = ?, Speichertyp = ?, Bereitschaftsverluste = ?, Gesamtvolumen = ?, Investitionskosten = ? WHERE ID = ?";
+
+        /// <summary>Die geänderten Felder eines Satzes, benannt über seine ID.</summary>
+        public sealed record Satzaenderung(int Id, AnzeigefelderPufferspeicher Felder);
+
+        /// <summary>
+        /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b> (Konzept Projektdialoge
+        /// mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt die Tabelle: die Projektkopien
+        /// (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchläuft dieselbe Prüfung wie <see cref="AnzeigefelderSchreiben"/>; der Speichertyp geht durch
+        /// dieselbe Bestandsabbildung. Ein gesperrter Katalogsatz, eine fehlende ID oder ein Verstoß rollt die ganze
+        /// Transaktion zurück und nennt den Satz — kein Teilstand. Eine geänderte Projektkopie markiert ihr Projekt als
+        /// geändert: das Volumen ist eine Eingangsgröße der Simulation.
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreibenAlle(bool projektkopie, IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            var projekte = new HashSet<int>();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Felder == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        DataRow r = dt.Rows[0];
+                        string name = RohFeld(r, "Bezeichner");
+                        if (!projektkopie && r.Table.Columns.Contains("ReadOnly") && r["ReadOnly"] != DBNull.Value &&
+                            Convert.ToInt64(r["ReadOnly"], System.Globalization.CultureInfo.InvariantCulture) != 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
+                        }
+                        AnzeigefelderPufferspeicher f = s.Felder;
+                        string grund = Feldpruefung(f.Bereitschaftsverluste, f.Gesamtvolumen, f.Investitionskosten);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name, grund), name);
+                        }
+                        v.Ausfuehren("UPDATE [" + tabelle + "]" + SQL_SATZ_AKTUALISIEREN,
+                            new DbParam("@her", f.Firma ?? ""),
+                            new DbParam("@typ", SpeichertypDbWert(SpeichertypIndex(f.Speichertyp), f.Speichertyp)),
+                            new DbParam("@ver", f.Bereitschaftsverluste),
+                            new DbParam("@vol", f.Gesamtvolumen),
+                            new DbParam("@inv", f.Investitionskosten),
+                            new DbParam("@id", s.Id));
+                        if (projektkopie && r.Table.Columns.Contains("ID_Projekt") && r["ID_Projekt"] != DBNull.Value)
+                            projekte.Add(Convert.ToInt32(r["ID_Projekt"], System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                    v.Commit();
+                }
+                foreach (int p in projekte) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(p);
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+            }
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Rückweg Projekt → Datenbank (KA-E-9, KA-E-14 bis KA-E-16)
+        // =================================================================================
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> des Pufferspeichers.</summary>
+        public const int KOMPONENTE_KOSTEN = 6;
+
+        /// <summary>
+        /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
+        /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_PUFFER</c>, Kostenkomponente 6.
+        /// <b>Keine Kindtabellen</b> — der Katalog führt nur die Gerätewerte (Hersteller, Speichertyp,
+        /// Bereitschaftsverluste, Gesamtvolumen, Investitionskosten); sie gehen mit der Schnittmenge. Die übrigen Spalten
+        /// der Kopie (Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung, Nutzung, Entnahme,
+        /// Frischwassermodul, Aufstellraum) kennt der Katalog nicht; sie bleiben im Projekt, ebenso die Kindzeilen der
+        /// Anlage (<c>Z_AnlageSenke</c>, <c>Z_AnlagePufferVerbund</c>, <c>Z_ProjektPufferSp</c>,
+        /// <c>Tab_PufferAuslegung</c>). Prüfregel wie beim Speichern: die drei Zahlen nicht negativ.
+        /// </summary>
+        public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
+        {
+            Kopietabelle = TABELLE_PROJEKT,
+            Katalogtabelle = TABLE,
+            Anlagenverweis = "ID_PUFFER",
+            KomponentenId = KOMPONENTE_KOSTEN,
+            Pruefung = zeile => Feldpruefung(Zahl(zeile, "Bereitschaftsverluste"), Zahl(zeile, "Gesamtvolumen"),
+                                             Zahl(zeile, "Investitionskosten")),
+        };
+
+        private static double Zahl(DataRow r, string spalte)
+            => r.Table.Columns.Contains(spalte) && r[spalte] != DBNull.Value
+                ? Convert.ToDouble(r[spalte], System.Globalization.CultureInfo.InvariantCulture) : 0.0;
+
+        /// <summary>Die Zeilen der Rückfrage zu den Projektkopien <paramref name="idsKopie"/> (<see cref="Katalogrueckweg.Vorschau"/>).</summary>
+        public static IReadOnlyList<Rueckwegzeile> RueckwegVorschau(IReadOnlyList<int> idsKopie)
+            => Katalogrueckweg.Vorschau(Rueckweg(), idsKopie);
+
+        /// <summary>
+        /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): die Gerätewerte samt Investitionskosten, Betriebs-
+        /// und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
+        /// </summary>
+        public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
+            => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);
+
+        /// <summary>Ist der Name im Pufferspeicherkatalog vergeben?</summary>
+        public static bool RueckwegNameBelegt(string name) => Katalogrueckweg.NameBelegt(Rueckweg(), name);
+
+        /// <summary>Ausgang von <see cref="KatalogsatzLoeschen"/>.</summary>
+        public sealed record KatalogsatzLoeschung(bool Ok, Satzvorlagenabbau Vorlage, string Meldung);
+
+        /// <summary>
+        /// <b>Löscht den Katalogsatz <paramref name="id"/> samt seinen Satzvorlagen</b> (KA‑E‑16, beide Verweise,
+        /// <see cref="Katalogrueckweg.SatzvorlageBeimLoeschen"/>) in einem Vorgang — scheitert eines, bleibt beides. Ein
+        /// gesperrter Satz wird nicht gelöscht. Die Meldung nennt eine Vorlage, die Projektzeilen noch brauchen.
+        /// </summary>
+        public static KatalogsatzLoeschung KatalogsatzLoeschen(int id)
+        {
+            if (id <= 0 || IsReadOnlyStatic(id)) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            var verweise = new List<string>();
+            foreach (string sp in new[] { KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE,
+                                          KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION })
+                if (DataRepository.SpalteVorhanden(TABLE, sp)) verweise.Add(sp);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    string spalten = "";
+                    foreach (string sp in verweise) spalten += ", \"" + sp + "\"";
+                    DataTable satz = v.Lese("SELECT \"Bezeichner\"" + spalten + " FROM \"" + TABLE + "\" WHERE \"ID\" = ?",
+                                            new DbParam("@id", id));
+                    if (satz == null || satz.Rows.Count == 0) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    DataRow z = satz.Rows[0];
+                    string name = Convert.ToString(z[0], System.Globalization.CultureInfo.InvariantCulture) ?? "";
+                    int? Lies(string sp) => satz.Columns.Contains(sp) && z[sp] != DBNull.Value
+                        ? Convert.ToInt32(z[sp], System.Globalization.CultureInfo.InvariantCulture) : (int?)null;
+                    v.Ausfuehren("DELETE FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    Satzvorlagenabbau abbau = Katalogrueckweg.SatzvorlageBeimLoeschen(
+                        v, Lies(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE),
+                        Lies(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION));
+                    v.Commit();
+                    return new KatalogsatzLoeschung(true, abbau, Katalogrueckweg.SatzvorlagenMeldung(abbau, name));
+                }
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurück.
+                return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
             }
         }
 

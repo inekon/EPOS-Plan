@@ -263,6 +263,12 @@
     [Parameter] public ModulKatalogWege Wege { get; set; } = new();
 
     /// <summary>
+    /// Der beim Oeffnen gewaehlte Satz (Bezeichner) — „Bearbeiten…" eines einzelnen Katalogsatzes im Projektdialog
+    /// (Katalogauswahl V1, KA-E-13). Leer oder unbekannt: die erste Zeile, wie bisher.
+    /// </summary>
+    [Parameter] public string? Vorwahl { get; set; }
+
+    /// <summary>
     /// <b>Alle Parameter des gewaehlten Moduls samt ihrer Verwendung</b>
     /// (Anwenderwunsch W14a-E-8) — der Weg zu
     /// <c>ParameterUebersichtCtrl.Werte(art, bezeichner)</c>. Ohne ihn zeigt der
@@ -714,7 +720,10 @@
 
         if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
+        _gewaehlt = Vorwahl ?? "";
         ListeAufbauen();
+        // ListeAufbauen laedt das Detail nur, wenn es die Wahl selbst setzt; die Vorwahl laedt es hier.
+        if (_gewaehlt.Length > 0 && _gewaehlt == Vorwahl) DetailLaden();
 
         // KI-F5: DREI Katalogschluessel auf EINER Komponente - welcher gilt, sagt die
         // Auspraegung. Das Wahlfeld der Zelltechnologie loest die Bruecke ueber die

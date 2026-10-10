@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     // WaermepumpeStammHuelle, WaermepumpeAnlageHuelle und WaermepumpenHuelle, dazu
     // seit iU9-W13 vom Katalogimport ueber WaermepumpeImportSatz. Alle DB-Zugriffe
     // laufen ueber DataRepository.
-    class WPStammCtrl : WPModel
+    partial class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
         public const string CURVE     = "Tab_Kenndaten_STAMM";
@@ -466,18 +466,12 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            try
-            {
-                int id = DataRepository.GetIdByName(TABLE, "Bezeichner", WPName);
-                if (id > 0)
-                {
-                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE   + " WHERE ID_WP = ?", new DbParam("@id", id));
-                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", new DbParam("@id", id));
-                }
-                return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",
-                    new DbParam("@nam", WPName ?? (object)DBNull.Value));
-            }
-            catch (Exception ex) { Console.WriteLine("Fehler bei Delete (STAMM): " + ex.Message); return false; }
+            // KA-E-16: der Katalogsatz geht samt Kennlinien und Satzvorlagen, in EINEM Vorgang.
+            int id = DataRepository.GetIdByName(TABLE, "Bezeichner", WPName);
+            if (id <= 0) return false;
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
         }
 
         /// <summary>

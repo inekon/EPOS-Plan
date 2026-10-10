@@ -41,6 +41,13 @@
                         <input type="checkbox" checked="@(Angezeigt?.Invoke(spalte) ?? false)"
                                @onchange="@(() => Umgeschaltet.InvokeAsync(schluessel))" />
                         <span>@spalte.Kopftext</span>
+                        @* Angehakt, aber bei dieser Breite ausgeblendet (Rang 2, Konzept 4.10): Der
+                           Hinweis steht nur, solange die Breite die Spalte weichen laesst - dieselbe
+                           Containerabfrage wie die Spalte selbst (epos-weicht-ab-N). *@
+                        @if (StufeVon(spalte) is int ab && ab > 0 && (Angezeigt?.Invoke(spalte) ?? false))
+                        {
+                            <span class="@("epos-spaltenwahl-weicht epos-weicht-ab-" + ab.ToString(System.Globalization.CultureInfo.InvariantCulture))">@Texte.SpalteAusgeblendet</span>
+                        }
                     </label>
                 }
             </span>
@@ -60,6 +67,14 @@
 
     /// <summary>Steht die Spalte gerade an (Stand des Kaestchens)?</summary>
     [Parameter] public Func<Katalogspalte, bool>? Angezeigt { get; set; }
+
+    /// <summary>
+    /// Die Stufe, ab der eine Spalte steht (Listenbreite in px; 0 = steht immer). Ohne
+    /// Angabe kein Hinweis.
+    /// </summary>
+    [Parameter] public Func<Katalogspalte, int>? Stufe { get; set; }
+
+    private int StufeVon(Katalogspalte spalte) => Stufe?.Invoke(spalte) ?? 0;
 
     /// <summary>Gibt es eine gemerkte Wahl? Sonst ist „Standard“ ohne Wirkung und gesperrt.</summary>
     [Parameter] public bool Gemerkt { get; set; }

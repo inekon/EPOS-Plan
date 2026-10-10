@@ -18887,11 +18887,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Ertrag ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_PVERTRAG {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_PVERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur [°C] ähnelt.
         /// </summary>
         public static string CHART_ACHSE_QUELLTEMPERATUR {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_QUELLTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarertrag ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_SOLARERTRAG {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_SOLARERTRAG", resourceCulture);
             }
         }
         
@@ -19576,6 +19594,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR {
             get {
                 return ResourceManager.GetString("CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Ertrag Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_PVERTRAG_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_PVERTRAG_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarertrag Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -27685,6 +27721,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FORTSCHRITT_LAEUFT {
             get {
                 return ResourceManager.GetString("FORTSCHRITT_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Diagramm vorhanden ähnelt.
+        /// </summary>
+        public static string GANGLINIE_KEIN_DIAGRAMM {
+            get {
+                return ResourceManager.GetString("GANGLINIE_KEIN_DIAGRAMM", resourceCulture);
             }
         }
         
@@ -51988,6 +52033,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bei dieser Breite ausgeblendet ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTE_AUSGEBLENDET {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTE_AUSGEBLENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die A_ap ähnelt.
         /// </summary>
         public static string KFLT_SP_APERTUR {
@@ -52677,6 +52731,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_TREFFER {
             get {
                 return ResourceManager.GetString("KFLT_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string KFLT_TREFFER_KURZ {
+            get {
+                return ResourceManager.GetString("KFLT_TREFFER_KURZ", resourceCulture);
             }
         }
         
@@ -92865,6 +92928,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Volumen [l]: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: ähnelt.
         /// </summary>
         public static string PSPD_LBL_TYP {
@@ -94602,6 +94674,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung des Speichers, seine Senken, Verbünde und Lade-Prioritäten. ähnelt.
+        /// </summary>
+        public static string PSP_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("PSP_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entladung [kWh/a] ähnelt.
         /// </summary>
         public static string PSP_SPALTE_ENTLADUNG {
@@ -95522,6 +95603,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge und Wechselrichter… ähnelt.
+        /// </summary>
+        public static string PVD_BTN_STRAENGE {
+            get {
+                return ResourceManager.GetString("PVD_BTN_STRAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das Modul löschen? ähnelt.
         /// </summary>
         public static string PVD_FRAGE_LOESCHEN {
@@ -95639,6 +95729,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgewählten Module [kWp]: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("PVD_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das ausgewählte Modul wurde in den Stammdaten nicht gefunden. ähnelt.
         /// </summary>
         public static string PVD_MSG_NICHT_GEFUNDEN {
@@ -95648,11 +95747,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit. ähnelt.
+        /// </summary>
+        public static string PVD_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("PVD_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Stränge ähnelt.
+        /// </summary>
+        public static string PVD_STRAENGE_STAND {
+            get {
+                return ResourceManager.GetString("PVD_STRAENGE_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Photovoltaik Module ähnelt.
         /// </summary>
         public static string PVD_TITEL {
             get {
                 return ResourceManager.GetString("PVD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge und Wechselrichter – {0} ähnelt.
+        /// </summary>
+        public static string PVD_TITEL_STRAENGE {
+            get {
+                return ResourceManager.GetString("PVD_TITEL_STRAENGE", resourceCulture);
             }
         }
         
@@ -113831,6 +113957,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag „{0}“ wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
+        /// </summary>
+        public static string SKV_FRAGE_LOESCHEN_NAME {
+            get {
+                return ResourceManager.GetString("SKV_FRAGE_LOESCHEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektor ähnelt.
         /// </summary>
         public static string SKV_GRP_KOLLEKTOR {
@@ -113993,6 +114128,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Module: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("SKV_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verluste Solarkreis [%]: ähnelt.
         /// </summary>
         public static string SKV_LBL_VERLUSTE {
@@ -114043,6 +114187,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKV_OPT_ARBEITSTEMPERATUR_SPEICHER {
             get {
                 return ResourceManager.GetString("SKV_OPT_ARBEITSTEMPERATUR_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit. ähnelt.
+        /// </summary>
+        public static string SKV_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("SKV_RUECK_BLEIBT", resourceCulture);
             }
         }
         
@@ -114119,6 +114272,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgewählten Speicher [kWh]: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("SPD_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typ: ähnelt.
         /// </summary>
         public static string SPD_LBL_TYP {
@@ -114133,6 +114295,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SPD_MSG_NICHT_GEFUNDEN {
             get {
                 return ResourceManager.GetString("SPD_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit. ähnelt.
+        /// </summary>
+        public static string SPD_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("SPD_RUECK_BLEIBT", resourceCulture);
             }
         }
         
@@ -134357,6 +134528,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage… ähnelt.
+        /// </summary>
+        public static string WPV_BTN_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_BTN_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht ähnelt.
         /// </summary>
         public static string WPV_BTN_ANSICHT {
@@ -134447,6 +134627,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die Anlage prüfen und mit OK bestätigen. ähnelt.
+        /// </summary>
+        public static string WPV_MSG_ANLAGE_PRUEFEN {
+            get {
+                return ResourceManager.GetString("WPV_MSG_ANLAGE_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Modulkosten dürfen nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string WPV_MSG_MODULKOSTEN_NEGATIV {
+            get {
+                return ResourceManager.GetString("WPV_MSG_MODULKOSTEN_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung darf nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string WPV_MSG_NENNLEISTUNG_NEGATIV {
+            get {
+                return ResourceManager.GetString("WPV_MSG_NENNLEISTUNG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken. ähnelt.
+        /// </summary>
+        public static string WPV_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("WPV_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
         /// </summary>
         public static string WPV_SP_AKTION {
@@ -134501,6 +134717,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten ähnelt.
+        /// </summary>
+        public static string WPV_TIP_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_TIP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben. ähnelt.
         /// </summary>
         public static string WPV_TIP_UMSTELLEN {
@@ -134510,11 +134735,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellen braucht genau eine Wärmepumpe im Projekt und genau einen Satz im Katalog. ähnelt.
+        /// </summary>
+        public static string WPV_TIP_UMSTELLEN_EINER {
+            get {
+                return ResourceManager.GetString("WPV_TIP_UMSTELLEN_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Verwaltung ähnelt.
         /// </summary>
         public static string WPV_TITEL {
             get {
                 return ResourceManager.GetString("WPV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage – {0} ähnelt.
+        /// </summary>
+        public static string WPV_TITEL_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_TITEL_ANLAGE", resourceCulture);
             }
         }
         

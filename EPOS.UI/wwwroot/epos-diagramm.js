@@ -306,8 +306,46 @@ export function binden(flaeche, hilfe) {
     });
 }
 
+/**
+ * DAS BEHAELTERMASS (DZ1-N2): Meldet der Komponente die Groesse der Flaeche in ganzen
+ * Bildpunkten (MassGemeldet(breite, hoehe)) - beim Binden und nach jeder Groessenaenderung,
+ * entprellt. Nur eine Flaeche, die ihre Groesse vom Behaelter nimmt (contain: size), wird
+ * beobachtet: Sonst haengt ihre Hoehe am Seitenverhaeltnis des Modells, und ein Modell in
+ * gemessener Groesse koennte sich selbst nachlaufen. Aenderungen unter 2 px zaehlen nicht.
+ */
+export function massBeobachten(flaeche, hilfe) {
+    if (!flaeche || MASSE.has(flaeche) || typeof ResizeObserver === "undefined") return;
+    const contain = getComputedStyle(flaeche).contain || "";
+    if (!/\bsize\b|strict/.test(contain)) return;
+    const b = { uhr: 0, breite: 0, hoehe: 0, beobachter: null };
+    const melden = () => {
+        b.uhr = 0;
+        const breite = Math.floor(flaeche.clientWidth), hoehe = Math.floor(flaeche.clientHeight);
+        if (breite < 1 || hoehe < 1) return;
+        if (Math.abs(breite - b.breite) < 2 && Math.abs(hoehe - b.hoehe) < 2) return;
+        b.breite = breite;
+        b.hoehe = hoehe;
+        try { hilfe.invokeMethodAsync("MassGemeldet", breite, hoehe); } catch (e) { /* Huelle ist weg */ }
+    };
+    b.beobachter = new ResizeObserver(() => {
+        if (b.uhr) clearTimeout(b.uhr);
+        b.uhr = setTimeout(melden, b.breite ? 120 : 0);
+    });
+    b.beobachter.observe(flaeche);
+    MASSE.set(flaeche, b);
+}
+
+/** Beobachtete Flaechen des Behaeltermasses. */
+const MASSE = new WeakMap();
+
 /** Nimmt alle Handler wieder ab (die Komponente wird abgeraeumt). */
 export function loesen(flaeche) {
+    const m = MASSE.get(flaeche);
+    if (m) {
+        if (m.uhr) clearTimeout(m.uhr);
+        m.beobachter.disconnect();
+        MASSE.delete(flaeche);
+    }
     const z = ZUSTAENDE.get(flaeche);
     if (!z) return;
     if (z.radUhr) clearTimeout(z.radUhr);

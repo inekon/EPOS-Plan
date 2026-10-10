@@ -119,6 +119,15 @@ namespace WindowsFormsApplication1
             return mitVerwendung ? p.MitVerwendungsspalte(Katalogtexte.Fuer) : p;
         }
 
+        /// <summary>Die Ganglinie der Detailzeile (DZ1): Kennzahlen, Bild, Farbe, Einheit.</summary>
+        internal static void Grafik(Dictionary<string, object> g)
+        {
+            foreach (KeyValuePair<string, object> e in GanglinienGrafikGaben.Gaben(GanglinienQuelle.PvGanglinie,
+                         MyResource.Resource.CHART_TITEL_PVERTRAG_JAHRESGANGLINIE, MyResource.Resource.CHART_ACHSE_PVERTRAG,
+                         WindowsFormsApplication1.Zeichnung.Farbrolle.STROM_PV))
+                g[e.Key] = e.Value;
+        }
+
         /// <summary>Die gemeinsamen Texte beider Betriebsarten.</summary>
         private static void Texte(IDictionary<string, object> g)
         {
@@ -143,6 +152,7 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluessel"] = "Form_PvGanglinie_Admin.btn_Help"
             };
             Texte(g);
+            Grafik(g);
             return g;
         }
 
@@ -202,6 +212,7 @@ namespace WindowsFormsApplication1
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
             Texte(g);
+            Grafik(g);
             return g;
         }
 
