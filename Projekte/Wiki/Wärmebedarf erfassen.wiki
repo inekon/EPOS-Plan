@@ -2,7 +2,7 @@ Beim Schritt '''Wärmebedarf erfassen''' entsteht der Bedarf aus bis zu vier Ant
 
 == Gebäudeheizwärme ==
 {{Anker|gebaeudeheizwaerme|gebaeude}}
-<!-- Bild: Dialog Eingabe der Gebäudedaten mit Projektliste und Katalog -->
+[[Datei:Bildschirmfoto_Gebaeudedaten.png|mini|zentriert|800px|Eingabe der Gebäudedaten – Bildschirmfoto mit Beispieldaten.]]
 
 Die Gebäude des Projekts ordnen Sie im Dialog ''Eingabe der Gebäudedaten'' zu – im offenen Projekt auf der Startseite im Reiter ''Wärmebedarf'' oder im Assistenten beim Schritt der Gebäude. Die Schritte:
 

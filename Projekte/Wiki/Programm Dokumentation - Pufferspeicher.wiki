@@ -133,7 +133,7 @@ Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und 
 === Katalog und Projektzuordnung ===
 
 Der Dialog ''Verwaltung Pufferspeicher'' hat die Bereiche ''Im Projekt'', ''Katalog (Datenbank)'' und ''Gewählter Satz''. Die gemeinsame Bedienung — Spalten…, Mehrfachwahl, Vergleichen…, Übernehmen, Rückweg und die Zeile ''Gewählter Satz'' — steht unter [[Programm Dokumentation/Gerätekataloge#katalogauswahl|Gerätekataloge: Katalogauswahl im Projektdialog]]. Beim Pufferspeicher stehen in der Kopfleiste ''Im Projekt'' die Summe der Gesamtvolumina in Litern und ''Auslegen…''; ohne gewählte Projektzeile öffnet ''Auslegen…'' die Auslegung für einen neuen Speicher, mit gewählter Zeile die Auslegung dieser Zeile, beides wie Abbrechen den Dialog verlassend. Der Katalogfuß führt kein ''Neu…''; neue Katalogsätze entstehen in der Verwaltung im Menü, mit ''Speichern unter'' im Katalogeditor oder über den Rückweg ''In die Datenbank übernehmen…''. Dabei gehen Hersteller, Speichertyp, Bereitschaftsverluste, Gesamtvolumen und Investitionskosten in den Katalog; Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung, Senken, Verbünde und Lade-Prioritäten bleiben im Projekt.
-<!-- Bild: Verwaltung Pufferspeicher mit Projektliste und Katalog -->
+[[Datei:Bildschirmfoto_Pufferspeicher.png|mini|zentriert|800px|Verwaltung Pufferspeicher – Bildschirmfoto mit Beispieldaten.]]
 
 
 * '''Filtern nach Hersteller und Volumen''' – schränkt die Liste ''Pufferspeicher aus Datenbank'' ein.

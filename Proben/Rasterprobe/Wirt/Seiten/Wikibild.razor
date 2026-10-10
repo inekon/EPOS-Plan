@@ -1,0 +1,364 @@
+﻿@page "/wikibild"
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Waermepumpe
+@inject NavigationManager Navigation
+
+@*  DIE BILDSEITE DES WIKIS.
+
+    Sie stellt je Gabe ?bild=<name> genau EINEN echten Dialog in Fenstergroesse in den
+    Browser, befuellt mit den neutralen Beispieldaten aus Wikibeispiele - fuer die
+    Bildschirmfotos der Wiki-Seiten (Skript wikibilder.mjs, Regel: Konzept Hilfesystem
+    14.3 "PNG-Bilder"). Keine Datenbank: Die Delegaten liefern die Beispielsaetze.
+    Sie ist KEINE Messprobe; die Proben (/katalogprobe usw.) bleiben unberuehrt.
+
+    Gaben: ?bild=heizkessel|bhkw|waermepumpe|pufferspeicher|stromspeicher|photovoltaik|
+                 solarkollektoren|brauchwasser|prozesswaerme|gebaeude|kaeltemaschine
+           ?kultur=de-DE   (die Kultur des Wirtes, siehe Program.cs)
+*@
+
+<div class="epos-probe-wirt epos-wikibild" data-bild="@_bild">
+    @switch (_bild)
+    {
+        case "heizkessel":
+            <HeizkesselDialog Zeilen="@_kessel"
+                              Katalogprofil="@Profil(Anlagenart.Heizkessel)"
+                              Katalogzeilen="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Heizkessel), Wikibeispiele.Heizkessel))"
+                              Filterstandvorgabe="@_filterstand"
+                              KatalogDetail="@(n => Wikibeispiele.HeizkesselDetail(n))"
+                              ProjektDetail="@(_ => Wikibeispiele.HeizkesselDetail("Kessel 2"))"
+                              Varianten="@(_ => new[] { (5, "Erdgas H Standard") })"
+                              Vorbereiten="@(_ => new TraegerVorbereitung(new[] { (3, "Erdgas H") }, 3))"
+                              Aufnehmen="@((_, _) => new AufnahmeErgebnis(null))"
+                              Entfernen="@(_ => { })" Uebernehmen="@(_ => { })"
+                              KatalogLoeschen="@(_ => true)"
+                              SummePtherm="@(() => "50")"
+                              KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                              EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
+                              Schloss="@Schloss"
+                              Geschlossen="@(b => { })" />
+            break;
+
+        case "bhkw":
+            <BhkwDialog Zeilen="@_bhkw"
+                        Katalogprofil="@Profil(Anlagenart.Bhkw)"
+                        Katalogzeilen="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Bhkw), Wikibeispiele.Bhkw))"
+                        Filterstandvorgabe="@_filterstand"
+                        KatalogDetail="@(n => Wikibeispiele.BhkwDetail(n))"
+                        ProjektDetail="@(n => Wikibeispiele.BhkwDetail(n))"
+                        Varianten="@(_ => new[] { (5, "Erdgas H Standard") })"
+                        Vorbereiten="@(_ => new TraegerVorbereitung(new[] { (3, "Erdgas H") }, 3))"
+                        Aufnehmen="@((_, _) => new AufnahmeErgebnis(null))"
+                        Entfernen="@(_ => { })" Uebernehmen="@(_ => { })"
+                        KatalogLoeschen="@(_ => "")"
+                        SummePtherm="@(() => "80")"
+                        KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                        EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
+                        Schloss="@Schloss"
+                        Geschlossen="@(b => { })" />
+            break;
+
+        case "pufferspeicher":
+            <PufferspeicherDialog Zeilen="@_puffer"
+                                  Katalogprofil="@Profil(Anlagenart.Pufferspeicher)"
+                                  Katalogzeilen="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Pufferspeicher), Wikibeispiele.Pufferspeicher))"
+                                  Filterstandvorgabe="@_filterstand"
+                                  KatalogDetail="@(id => Wikibeispiele.PufferDetail(Wikibeispiele.Pufferspeicher[Math.Clamp(id - 1, 0, 4)].Name))"
+                                  ProjektDetail="@(_ => Wikibeispiele.PufferDetail("Pufferspeicher 1"))"
+                                  Dublettenfrage="@(_ => "")"
+                                  Aufnehmen="@((_, _) => new AufnahmeErgebnis(null))"
+                                  Entfernen="@(_ => { })"
+                                  KatalogLoeschen="@(_ => "")"
+                                  SummeVolumen="@(() => "1.000")"
+                                  KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                  Schloss="@Schloss"
+                                  Geschlossen="@(b => { })" />
+            break;
+
+        case "stromspeicher":
+            <StromspeicherDialog Zeilen="@_batterie"
+                                 Katalogprofil="@Profil(Anlagenart.Stromspeicher)"
+                                 Katalogzeilen="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Stromspeicher), Wikibeispiele.Stromspeicher))"
+                                 Filterstandvorgabe="@_filterstand"
+                                 KatalogDetail="@(n => Wikibeispiele.StromspeicherDetail(n))"
+                                 ProjektDetail="@(z => Wikibeispiele.StromspeicherDetail(z.Bezeichner))"
+                                 Aufnehmen="@(_ => new AufnahmeErgebnis(null))"
+                                 Entfernen="@(_ => { })"
+                                 SummeKapazitaet="@(() => "100")"
+                                 KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                 EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
+                                 Schloss="@Schloss"
+                                 Geschlossen="@(b => { })" />
+            break;
+
+        case "photovoltaik":
+            <PhotovoltaikDialog Strangmodule="@(Array.Empty<(int, string)>())"
+                                Zeilen="@_pv"
+                                Katalogprofil="@Profil(Anlagenart.Photovoltaik)"
+                                Katalogzeilen="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Photovoltaik), Wikibeispiele.Photovoltaik))"
+                                Filterstandvorgabe="@_filterstand"
+                                Detail="@(n => Wikibeispiele.PhotovoltaikDetail(n))"
+                                Aufnehmen="@(_ => new AufnahmeErgebnis(null))"
+                                Entfernen="@(_ => { })" Uebernehmen="@(_ => { })"
+                                Gesamtleistung="@(() => "10")"
+                                KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
+                                Schloss="@Schloss"
+                                Geschlossen="@(b => { })" />
+            break;
+
+        case "solarkollektoren":
+            <SolarkollektorenDialog Zeilen="@_solar"
+                                    Katalogprofil="@Profil(Anlagenart.Solarkollektoren)"
+                                    Katalogzeilen="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Solarkollektoren), Wikibeispiele.Solarkollektoren))"
+                                    Filterstandvorgabe="@_filterstand"
+                                    Detail="@(n => Wikibeispiele.KollektorDetail(n))"
+                                    Modulflaeche="@(_ => 2.5)"
+                                    Aufnehmen="@(_ => new AufnahmeErgebnis(null))"
+                                    Entfernen="@(_ => { })" Uebernehmen="@(_ => { })"
+                                    KatalogLoeschen="@(_ => "")"
+                                    KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                    Geschlossen="@(b => { })" />
+            break;
+
+        case "waermepumpe":
+            <WaermepumpenDialog Zeilen="@_wp"
+                                Katalog="@(() => Wikibeispiele.Zeilen(Profil(Anlagenart.Waermepumpe), Wikibeispiele.Waermepumpen))"
+                                Katalogprofil="@Profil(Anlagenart.Waermepumpe)"
+                                AnlageGaben="@WpAnlageGaben"
+                                Anlegen="@(_ => null)"
+                                Uebernehmen="@(_ => { })" Entfernen="@(_ => { })"
+                                Umstellen="@((_, _) => true)"
+                                ProjektSatz="@(d => Wikibeispiele.WaermepumpeStamm(d.Bezeichner, d.Firma, d.Nennleistung))"
+                                KatalogSatz="@(id => Wikibeispiele.WaermepumpeStamm("Wärmepumpe C", "Hersteller B", 20))"
+                                ProjektBilder="@(_ => KennlinienBilder.Leer)"
+                                KatalogBilder="@(_ => KennlinienBilder.Leer)"
+                                KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                Geschlossen="@(b => { })" />
+            break;
+
+        case "brauchwasser":
+        case "prozesswaerme":
+            <BedarfsProfileDialog Art="@_bedarfArt"
+                                  TitelText="@BedarfText("Prozesswärme", "Brauchwasserwärme")"
+                                  KopfbandText="@BedarfText("Prozesswärme", "Brauchwasserwärme")"
+                                  LabelProjektliste="@BedarfText("Ausgewählte Prozesse im Projekt", "Ausgewählte Profile im Projekt")"
+                                  LabelKatalog="@BedarfText("Datenbank Prozesswärme", "Datenbank Profile")"
+                                  LabelJahresverbrauch="@BedarfText("jährlicher Prozesswärmebedarf:", "jährlicher Wärmebedarf:")"
+                                  LabelSumme="@BedarfText("Summe aller ausgew. Prozesse:", "Summe Brauchwasserprofile:")"
+                                  BtnDbAendernText="@BedarfText("Prozess in DB ändern", "Profil in DB ändern")"
+                                  BtnDbNeuText="@BedarfText("Prozess in DB neu", "Profil in DB neu")"
+                                  BtnDbLoeschenText="@BedarfText("Prozess in DB löschen", "Profil in DB löschen")"
+                                  Zeilen="@_bedarf"
+                                  Katalogzeilen="@(() => Wikibeispiele.BedarfZeilen(_bedarfArt == BedarfsArt.Prozesswaerme ? Wikibeispiele.Prozesswaerme : Wikibeispiele.Brauchwasser))"
+                                  Katalogprofil="@Katalogfilterprofil.FuerBedarf(_bedarfArt, Uebersetzt).MitVerwendungsspalte(Uebersetzt)"
+                                  Filterstandvorgabe="@_filterstand"
+                                  Info="@BedarfInfo"
+                                  Jahressumme="@BedarfSumme"
+                                  Aufnehmen="@(n => new BedarfsProfilZeile { IdZ = 100000, IdStamm = 9, Name = n, Summe = BedarfSumme(n) })"
+                                  KatalogLoeschen="@(_ => true)"
+                                  ProjektGespeichert="@(() => true)"
+                                  Simulieren="@(_ => new Dictionary<string, object>())"
+                                  Einheit="Energieeinheit.MWh"
+                                  Betriebskalender="@(new List<(int Id, string Text)> { (1, "Betrieb Montag bis Freitag"), (2, "Betrieb mit Werksferien") })"
+                                  TemperaturPruefen="@(_bedarfArt == BedarfsArt.Prozesswaerme ? Prozesstemperatur.Paarpruefung : null)"
+                                  Schloss="@Schloss"
+                                  Geschlossen="@(b => { })" />
+            break;
+
+        case "gebaeude":
+            <GebaeudeDialog Zeilen="@_gebaeude"
+                            Katalogzeilen="@(() => GebaeudeKatalog)"
+                            Katalogprofil="@GebaeudeProfil"
+                            Filterstandvorgabe="@_filterstand"
+                            StammDetail="@GebaeudeStammdetail"
+                            StammSatz="@(n => GebaeudeKatalog.Where(z => z.Bezeichner == n).Select(z => Gebaeudezeile(z, 100000)).FirstOrDefault())"
+                            ProjektGaben="@(_ => null)"
+                            KatalogLoeschen="@(_ => true)"
+                            Geschlossen="@(b => { })" />
+            break;
+
+        case "kaeltemaschine":
+            <KaeltemaschineAnlageDialog Anlagen="@(() => _kaelte.Select(a => a.Kopie()).ToList())"
+                                        Katalogzeilen="@(() => Wikibeispiele.Zeilen(KaelteProfil, Wikibeispiele.Kaeltemaschinen, schluesselIstId: true))"
+                                        Katalogprofil="@KaelteProfil"
+                                        Katalogwerte="@KaelteWerte"
+                                        Stromtraeger="@(new[] { (1, "Strom"), (2, "Strom Kälte") })"
+                                        ProjektStromtraeger="1"
+                                        Pruefen="@KaeltemaschineAnlageHuelle.Pruefen"
+                                        Anlegen="@((_, _) => -1)"
+                                        Speichern="@(_ => null)"
+                                        Loeschen="@(_ => { })"
+                                        Geschlossen="@(b => { })" />
+            break;
+
+        default:
+            <p>Unbekanntes Bild „@_bild“.</p>
+            break;
+    }
+</div>
+
+@code {
+    private string _bild = "";
+    private readonly Katalogfilterstand _filterstand = new();
+    private BedarfsArt _bedarfArt = BedarfsArt.Brauchwasser;
+
+    private static readonly Schlossweg Schloss =
+        new((ids, _) => new SchlossErgebnis(true, "") { Geaendert = ids });
+
+    protected override void OnInitialized()
+    {
+        var gaben = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        _bild = gaben.TryGetValue("bild", out var b) ? b.ToString() : "";
+        _bedarfArt = _bild == "prozesswaerme" ? BedarfsArt.Prozesswaerme : BedarfsArt.Brauchwasser;
+    }
+
+    private static string Uebersetzt(string schluessel)
+        => Resource.ResourceManager.GetString(schluessel) ?? schluessel;
+
+    private static Katalogfilterprofil Profil(Anlagenart art) => Katalogfilterprofil.MitVerwendung(art, Uebersetzt);
+
+    // ---------------------------------------------------------------- Projektzeilen
+    private readonly List<ErzeugerZeile> _kessel = new()
+    {
+        new() { Schluessel = 1, Bezeichner = "Kessel 2", GeraetId = 2, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 }
+    };
+
+    private readonly List<ErzeugerZeile> _bhkw = new()
+    {
+        new() { Schluessel = 1, Bezeichner = "BHKW 2", GeraetId = 2, CarrierId = 5, Grenzleistung = 50, Vorlauf = 80, Ruecklauf = 60 }
+    };
+
+    private readonly List<ErzeugerZeile> _puffer = new()
+    {
+        new() { Schluessel = 1, Bezeichner = "Pufferspeicher 1", GeraetId = 3, Vorlauf = 70, Ruecklauf = 50 }
+    };
+
+    private readonly List<ErzeugerZeile> _batterie = new()
+    {
+        new() { Schluessel = 1, Bezeichner = "Speicher 1, 100 kWh", GeraetId = 1 }
+    };
+
+    private readonly List<ErzeugerZeile> _pv = new()
+    {
+        new() { Schluessel = 1, Bezeichner = "Modul A", GeraetId = 1, Neigung = 30, Azimut = 180, AnzahlModule = 25 }
+    };
+
+    private readonly List<ErzeugerZeile> _solar = new()
+    {
+        new() { Schluessel = 1, Bezeichner = "Kollektor A", GeraetId = 1, AnzahlModule = 6, Neigung = 45, Azimut = 180 }
+    };
+
+    private readonly List<WaermepumpeAnlageDaten> _wp = new() { Wikibeispiele.WaermepumpeAnlage() };
+
+    private static IReadOnlyDictionary<string, object> WpAnlageGaben(WaermepumpeAnlageDaten daten) => new Dictionary<string, object>
+    {
+        ["Daten"] = daten,
+        ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(
+            () => new[] { new WaermepumpeStammZeile(1, daten.Bezeichner, false),
+                          new WaermepumpeStammZeile(2, "Wärmepumpe C", false) }),
+        ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => null)
+    };
+
+    // ---------------------------------------------------------------- Bedarf
+    private string BedarfText(string prozess, string brauchwasser)
+        => _bedarfArt == BedarfsArt.Prozesswaerme ? prozess : brauchwasser;
+
+    private List<BedarfsProfilZeile> _bedarf => _bedarfArt == BedarfsArt.Prozesswaerme
+        ? _bedarfProzess : _bedarfBw;
+
+    private readonly List<BedarfsProfilZeile> _bedarfBw = new()
+    {
+        new() { IdZ = 1, IdStamm = 1, Name = "Wohnhaus 10 Wohnungen", Summe = 30 }
+    };
+
+    private readonly List<BedarfsProfilZeile> _bedarfProzess = new()
+    {
+        new() { IdZ = 1, IdStamm = 1, Name = "Reinigung Einschicht", Summe = 50, Vorlauf = 60, Ruecklauf = 40 },
+        new() { IdZ = 2, IdStamm = 2, Name = "Trocknung Zweischicht", Summe = 200 }
+    };
+
+    private (string Name, string Typ, double Mwh, string Beschreibung)[] BedarfSaetze
+        => _bedarfArt == BedarfsArt.Prozesswaerme ? Wikibeispiele.Prozesswaerme : Wikibeispiele.Brauchwasser;
+
+    private BedarfsProfilInfo? BedarfInfo(string name)
+    {
+        var s = BedarfSaetze.FirstOrDefault(x => x.Name == name);
+        return s.Name is null ? null : new BedarfsProfilInfo(s.Name, s.Beschreibung, s.Typ);
+    }
+
+    private double BedarfSumme(string name) => BedarfSaetze.FirstOrDefault(x => x.Name == name).Mwh;
+
+    // ---------------------------------------------------------------- Gebäude
+    private Katalogfilterprofil? _gebaeudeProfil;
+    private Katalogfilterprofil GebaeudeProfil => _gebaeudeProfil ??= Katalogfilterprofil.FuerGebaeude(Uebersetzt);
+
+    private IReadOnlyList<Katalogfilterzeile>? _gebaeudeKatalog;
+    private IReadOnlyList<Katalogfilterzeile> GebaeudeKatalog => _gebaeudeKatalog ??= Wikibeispiele.GebaeudeZeilen(GebaeudeProfil);
+
+    private List<GebaeudeProjektZeile>? _gebaeudeZeilen;
+    private List<GebaeudeProjektZeile> _gebaeude => _gebaeudeZeilen ??=
+        GebaeudeKatalog.Take(1).Select((z, i) => Gebaeudezeile(z, i + 1)).ToList();
+
+    private static GebaeudeProjektZeile Gebaeudezeile(Katalogfilterzeile z, int idZ) => new()
+    {
+        IdZ = idZ,
+        IdGebaeude = z.Id,
+        IdKatalog = z.Id,
+        Name = z.Bezeichner,
+        Art = z.Text(Katalogfilterprofil.SpGebaeudeart),
+        Beschreibung = "Beispielgebäude",
+        Wohnflaeche = z.Zahl(Katalogfilterprofil.SpFlaecheM2) ?? 0,
+        Einheit = "Wohnfläche [m²]",
+        Jahresnutzungsgrad = 1,
+        Rechenweg = "VDI 6007",
+        HgesWK = 500
+    };
+
+    private GebaeudeStammDetail? GebaeudeStammdetail(string name)
+    {
+        Katalogfilterzeile? z = GebaeudeKatalog.FirstOrDefault(x => x.Bezeichner == name);
+        return z is null ? null : new GebaeudeStammDetail(z.Bezeichner, z.Text(Katalogfilterprofil.SpGebaeudeart),
+            "Beispielgebäude", z.Text(Katalogfilterprofil.SpFlaecheM2), "VDI 6007", 500);
+    }
+
+    // ---------------------------------------------------------------- Kältemaschine
+    private Katalogfilterprofil? _kaelteProfil;
+    private Katalogfilterprofil KaelteProfil => _kaelteProfil ??= Katalogfilterprofil.MitVerwendung(Anlagenart.Kaeltemaschine, Uebersetzt);
+
+    private readonly List<KaeltemaschineAnlageDaten> _kaelte = new()
+    {
+        new KaeltemaschineAnlageDaten
+        {
+            AnlagenId = 7, GeraetId = 70, StammId = 2, Bezeichner = "Kältemaschine 1", Anzahl = 1,
+            KuehlVorlauf = 6, KuehlHilfsstromanteil = 0.05, KuehlCarrierId = 2, KuehlEigenerZaehler = true,
+            Geraet = KaelteWerte(2)
+        }
+    };
+
+    /// <summary>
+    /// Die Kennwerte eines Beispielgeräts, hergeleitet wie in der Hülle
+    /// (<c>KaeltemaschineAnlageHuelle.Werte</c>) - so stehen die Lesefelder der
+    /// Teillastrechnung mit den Texten der Anwendung da.
+    /// </summary>
+    private static KaeltemaschineGeraetwerte? KaelteWerte(int stamm)
+    {
+        if (stamm < 1 || stamm > Wikibeispiele.Kaeltemaschinen.Length) return null;
+        var s = Wikibeispiele.Kaeltemaschinen[stamm - 1];
+        var w = s.Werte.ToDictionary(x => x.Spalte, x => x.Wert);
+        double kw = (double)w[Katalogfilterprofil.SpNennkaelteleistung];
+        return KaeltemaschineAnlageHuelle.Werte(new KaeltemaschineModel
+        {
+            Bezeichner = s.Name, Firma = "Hersteller A", Typ = "Kaltwassersatz",
+            Nennkaelteleistung_kW = kw, Nenn_EER = (double)w[Katalogfilterprofil.SpEer],
+            Rueckkuehlart = kw < 150 ? KaeltemaschineSchema.RUECKKUEHLART_LUFT : KaeltemaschineSchema.RUECKKUEHLART_WASSER,
+            Mindestteillast_Prozent = 30, Kaltwasser_Vorlauf_Min = 5,
+            Teillast_Weg = KaeltemaschineTeillastSchema.WEG_KURVE,
+            Verdichterregelung = KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL, Taktverlustfaktor_Cd = 0.25,
+            Kennfeld_Randweg = KaeltemaschineTeillastSchema.RANDWEG_GUETEGRAD,
+            Kennlinie = new[] { 6.0, 12.0, 18.0 }.Select(t => new KaeltemaschineKenndatenModel { Kaltwassertemperatur = t, Rueckkuehltemperatur = 30 }).ToList()
+        });
+    }
+}
