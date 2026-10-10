@@ -54755,7 +54755,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKW_TRAEGER_ERL {
             get {
@@ -58184,7 +58184,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_HKP_TRAEGER_ERL {
             get {
@@ -62126,7 +62126,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_PV_TRAEGER_ERL {
             get {
@@ -64448,7 +64448,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_STSP_TRAEGER_ERL {
             get {
@@ -68282,6 +68282,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Energieträger wechseln Sie in der Maske von Hand; der Wechsel schreibt sofort in die Datenbank, deshalb setzt der Assistent ihn nicht. ähnelt.
+        /// </summary>
+        public static string KI_ERZ_TRAEGER_VON_HAND {
+            get {
+                return ResourceManager.GetString("KI_ERZ_TRAEGER_VON_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Feldname aufgelöst: {0} → {1}) ähnelt.
         /// </summary>
         public static string KI_FELD_AUFGELOEST {
@@ -68332,6 +68341,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_DIALOGBEFUND {
             get {
                 return ResourceManager.GetString("KI_FELD_DIALOGBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_FELD_GESPERRT", resourceCulture);
             }
         }
         

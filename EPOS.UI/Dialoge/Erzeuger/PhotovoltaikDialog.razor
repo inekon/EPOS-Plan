@@ -939,6 +939,8 @@
         return _kiSicht ??= new PhotovoltaikKiSicht
         {
             Zeilenquelle = () => _projektZeile,
+            // Die Zeilenzahl sagt dem Sperrgrund, ob die Einzelwahl greift (genau eine Zeile).
+            Zeilenzahl = () => Zeilen.Count,
             // Meldung 10.10.2026: ohne gewählte Zeile die EINZIGE wählen wie das Öffnen;
             // nach dem Setzen derselbe Übernahmeweg wie BeiNeigung/BeiAnzahl.
             Einzelwahl = () =>
@@ -1003,6 +1005,9 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        // Sperrgrund je Feld vor der Bestätigung: Energieträger nur von Hand, ohne gewählte
+        // Zeile (und ohne Einzelwahl) keine Zeilenfelder.
+        Sperrgrund = f => KiSicht() is { } sicht ? sicht.Sperrgrund(f) : ErzeugerSperre.Grund(f, false, () => 0, mitTraeger: true),
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 

@@ -1552,14 +1552,39 @@ namespace WindowsFormsApplication1
         /// geschuetzten Satz, es wechselt nur, welcher bearbeitet wird. Ohne diese
         /// Ausnahme bliebe der Assistent in einer Verwaltung, deren erste Zeile ein
         /// Auslieferungssatz ist, stecken - er koennte den eigenen Satz nicht waehlen.
+        /// <para><b>Der SPERRGRUND JE FELD steht davor und kennt keine Ausnahme</b>
+        /// (<see cref="KiMaskenhaken.Sperrgrund"/>): Die Ausnahmen oben gelten dem Schutz
+        /// des ganzen Satzes; den Sperrgrund meldet die Maske fuer genau dieses Feld, also
+        /// entscheidet sie auch fuer ein Satzwahl- oder <c>np_*</c>-Feld selbst. Er sitzt hier
+        /// und nicht in <see cref="FeldSetzbar"/>, weil erst diese Stelle die Maske kennt und
+        /// alle drei Vorbedingungen (<c>feld_setzen</c>, <c>formular_ausfuellen</c>,
+        /// <c>reihe_setzen</c>) sie vor Vorschau und Bestaetigung rufen; <see cref="FeldSetzbar"/>
+        /// bleibt die Absage an abgeleitete Groessen.</para>
         /// </remarks>
         private static string Schreibschutz(string maske, KiFeldzugang zugang)
         {
+            string sperre = Feldsperre(maske, zugang);
+            if (sperre != null) return sperre;
+
             if (zugang != null && zugang.Feld.Satzwahl) return null;
             // NP2b-5b: Das Blatt „Nutzungsprofile“ ist katalogweit (NP-F3) — der Schreibschutz des gesperrten Gebäudes gilt
             // für seine Felder np_* nicht; ein ausgeliefertes Profil lehnt der Zugang des Blatts selbst ab.
             if (zugang != null && KiNutzungsprofilfelder.Finde(zugang.Feld.Name) != null) return null;
             return KiMaskenbruecke.Haken(maske).IstSchreibgeschuetzt() ? Schutzabsage(maske) : null;
+        }
+
+        /// <summary>
+        /// Die Absage an ein gesperrtes Feld (<see cref="KiMaskenhaken.Sperrgrund"/>):
+        /// Feldname und Grund der Maske; <c>null</c> = das Feld ist frei.
+        /// </summary>
+        private static string Feldsperre(string maske, KiFeldzugang zugang)
+        {
+            if (zugang == null) return null;
+            string grund = KiMaskenbruecke.Haken(maske).Feldsperre(zugang.Feld.Name);
+            return grund.Length == 0
+                ? null
+                : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KI_FELD_GESPERRT,
+                                zugang.Feld.Anzeigename, grund);
         }
 
         /// <summary>

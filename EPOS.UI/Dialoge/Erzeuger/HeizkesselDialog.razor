@@ -959,6 +959,8 @@
     private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
     {
         Zeilenquelle = () => _projektZeile,
+        // Die Zeilenzahl sagt dem Sperrgrund, ob die Einzelwahl greift (genau eine Zeile).
+        Zeilenzahl = () => Zeilen.Count,
         // Meldung 10.10.2026: ohne gewählte Zeile wählt der Assistent die EINZIGE wie das
         // Öffnen; bei mehreren rät er nicht, und die Sicht lehnt benannt ab.
         Einzelwahl = () =>
@@ -1019,6 +1021,9 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        // Sperrgrund je Feld vor der Bestätigung: Energieträger nur von Hand, ohne gewählte
+        // Zeile (und ohne Einzelwahl) keine Zeilenfelder.
+        Sperrgrund = f => KiSicht().Sperrgrund(f),
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 

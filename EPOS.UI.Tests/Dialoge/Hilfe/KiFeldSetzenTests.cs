@@ -587,8 +587,12 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Assert.Null(cut.Instance.Projektzeile);
 
-        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL_PROJEKT,
-                                           "Rücklauftemperatur", "65");
+        // Der Sperrgrund der Maske lehnt VOR der Bestätigung ab — der Anwender bestätigt
+        // nichts, das danach scheitert.
+        KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen",
+            Werte(KiMaskennamen.HEIZKESSEL_PROJEKT, "Rücklauftemperatur", "65"));
+        Assert.Null(vorbereitung.Freigabe);
+        KiErgebnis ergebnis = vorbereitung.Ablehnung;
 
         Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
         Assert.Contains(Resource.KI_ERZ_KEINE_PROJEKTZEILE, ergebnis.Text);
@@ -709,6 +713,173 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         Assert.Contains(Resource.KI_FELD_KEIN_SATZ, ergebnis.Text);
     }
 
+    // =====================================================================
+    //  Sperrgrund je Feld (KiMaskenhaken.Sperrgrund) — Absage vor der Bestätigung
+    // =====================================================================
+
+    private const string GRUND_PROBE = "Probegrund der Maske";
+
+    /// <summary>
+    /// Eine von Hand gebaute Maske sperrt den Vorlauf: <c>feld_setzen</c> lehnt VOR der
+    /// Bestätigung ab und nennt Feldname und Grund; der Rücklauf bleibt frei.
+    /// </summary>
+    [Fact]
+    public async Task Sperrgrund_lehnt_das_gesperrte_Feld_vor_der_Bestaetigung_ab()
+    {
+        var zeile = Kesselzeile(1, "Anlage");
+        var uebernommen = new List<ErzeugerZeile>();
+        var sicht = new ErzeugerProjektKiSicht { Zeilenquelle = () => zeile, Uebernommen = uebernommen.Add };
+        var haken = new KiMaskenhaken { Sperrgrund = f => f == "vorlauf" ? GRUND_PROBE : null };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_PROJEKT, () => sicht, haken);
+
+        KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen",
+            Werte(KiMaskennamen.HEIZKESSEL_PROJEKT, "vorlauf", "75"));
+
+        Assert.Null(vorbereitung.Freigabe);
+        Assert.Equal(KiStatus.Abgelehnt, vorbereitung.Ablehnung.Status);
+        string name = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT, "vorlauf")!.Feld.Anzeigename;
+        Assert.Contains(name, vorbereitung.Ablehnung.Text);
+        Assert.Contains(GRUND_PROBE, vorbereitung.Ablehnung.Text);
+        Assert.Equal(70, zeile.Vorlauf);
+
+        KiErgebnis frei = await Setzen(KiMaskennamen.HEIZKESSEL_PROJEKT, "ruecklauf", "55");
+        Assert.Equal(KiStatus.Ausgefuehrt, frei.Status);
+        Assert.Equal(55, zeile.Ruecklauf);
+        Assert.Single(uebernommen);
+    }
+
+    /// <summary>
+    /// <c>formular_ausfuellen</c> mit einem gesperrten Feld unter mehreren: Der ganze Block
+    /// wird vor der Bestätigung abgelehnt, auch das freie Feld bleibt stehen.
+    /// </summary>
+    [Fact]
+    public async Task Sperrgrund_lehnt_formular_ausfuellen_vor_der_Bestaetigung_ab()
+    {
+        var zeile = Kesselzeile(1, "Anlage");
+        var sicht = new ErzeugerProjektKiSicht { Zeilenquelle = () => zeile };
+        var haken = new KiMaskenhaken { Sperrgrund = f => f == "vorlauf" ? GRUND_PROBE : null };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_PROJEKT, () => sicht, haken);
+
+        KiVorbereitung vorbereitung = await Vorbereiten("formular_ausfuellen",
+            new Dictionary<string, object?>
+            {
+                ["maske"] = KiMaskennamen.HEIZKESSEL_PROJEKT,
+                ["werte"] = "ruecklauf=55; vorlauf=75"
+            });
+
+        Assert.Null(vorbereitung.Freigabe);
+        Assert.Contains(GRUND_PROBE, vorbereitung.Ablehnung.Text);
+        Assert.Equal(70, zeile.Vorlauf);
+        Assert.Equal(50, zeile.Ruecklauf);
+    }
+
+    /// <summary>
+    /// Der Energieträger am GEZEICHNETEN Heizkesseldialog: Absage vor der Bestätigung mit
+    /// dem Hinweis auf den Handweg; die Zeile behält ihren Träger, und <c>dialog_lesen</c>
+    /// zeigt ihn weiterhin.
+    /// </summary>
+    [Fact]
+    public async Task Verwaltung_Heizkessel_Energietraeger_wird_vor_der_Bestaetigung_abgelehnt()
+    {
+        var uebernommen = new List<ErzeugerZeile>();
+        var zeile = Kesselzeile(1, "Kessel A");
+        var cut = Heizkesseldialog(new List<ErzeugerZeile> { zeile }, uebernommen.Add);
+        Assert.Same(zeile, cut.Instance.Projektzeile);
+
+        KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen",
+            Werte(KiMaskennamen.HEIZKESSEL_PROJEKT, "energietraeger", "Erdgas E Variante"));
+
+        Assert.Null(vorbereitung.Freigabe);
+        Assert.Contains(Resource.KI_ERZ_TRAEGER_VON_HAND, vorbereitung.Ablehnung.Text);
+        Assert.Equal(5, zeile.CarrierId);
+        Assert.Empty(uebernommen);
+
+        KiErgebnis gelesen = await new KiAusfuehrung { Schreibrecht = () => true }.AusfuehrenAsync(
+            "dialog_lesen", new Dictionary<string, object> { ["maske"] = KiMaskennamen.HEIZKESSEL_PROJEKT });
+        Assert.Equal(KiStatus.Ausgefuehrt, gelesen.Status);
+        var traeger = Assert.Single(gelesen.Zeilen, z => Equals(z["name"], "energietraeger"));
+        Assert.NotEqual("", Convert.ToString(traeger["wert"]));
+    }
+
+    /// <summary>
+    /// Derselbe Riegel an BHKW, Stromspeicher und Photovoltaik — die Sicht von Hand, ihr
+    /// Sperrgrund als Haken wie im Dialog.
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT)]
+    [InlineData(KiMaskennamen.STROMSPEICHER_PROJEKT)]
+    [InlineData(KiMaskennamen.PHOTOVOLTAIK)]
+    public async Task Erzeuger_Energietraeger_wird_vor_der_Bestaetigung_abgelehnt(string maske)
+    {
+        var zeile = Kesselzeile(1, "Anlage");
+        KiMaskenanmeldung anmeldung = maske == KiMaskennamen.PHOTOVOLTAIK
+            ? Angemeldet(maske, new PhotovoltaikKiSicht { Zeilenquelle = () => zeile, Zeilenzahl = () => 1 },
+                         s => s.Sperrgrund)
+            : Angemeldet(maske, new ErzeugerProjektKiSicht { Zeilenquelle = () => zeile, Zeilenzahl = () => 1 },
+                         s => s.Sperrgrund);
+        using (anmeldung)
+        {
+            KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen", Werte(maske, "energietraeger", "5"));
+
+            Assert.Null(vorbereitung.Freigabe);
+            Assert.Contains(Resource.KI_ERZ_TRAEGER_VON_HAND, vorbereitung.Ablehnung.Text);
+            Assert.Equal(5, zeile.CarrierId);
+            Assert.Equal(5, Convert.ToInt32(KiMaskenbruecke.Feldzugang(maske, "energietraeger")!.Lesen()));
+        }
+    }
+
+    /// <summary>
+    /// Die zweite Sicherung: Ohne Sperrgrund im Haken lehnt der Setzer des Energieträgers
+    /// selbst benannt ab — nach der Bestätigung, aber nie still.
+    /// </summary>
+    [Fact]
+    public async Task Erzeuger_Energietraeger_Setzer_lehnt_auch_ohne_Sperrgrund_ab()
+    {
+        var zeile = Kesselzeile(1, "Anlage");
+        var sicht = new ErzeugerProjektKiSicht { Zeilenquelle = () => zeile };
+        IReadOnlyList<KiWahleintrag> Eintraege()
+            => KiMaskenanmeldung.Eintraege(new[] { (5, "Erdgas"), (6, "Biogas") }, v => v.Item1, v => v.Item2);
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.BHKW_PROJEKT, () => sicht, Haken(),
+                                                     ("energietraeger", Eintraege));
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.BHKW_PROJEKT, "energietraeger", "Biogas");
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Contains(Resource.KI_ERZ_TRAEGER_VON_HAND, ergebnis.Text);
+        Assert.Throws<InvalidOperationException>(() => new PhotovoltaikKiSicht().CarrierId = 7);
+    }
+
+    /// <summary>
+    /// „Keine Anlage gewählt" an der Sicht: gesperrt bei keiner oder zwei Zeilen, frei bei
+    /// genau einer (die Einzelwahl greift) und für die Felder des Aufklappers „Alle Daten".
+    /// </summary>
+    [Fact]
+    public void Erzeuger_Sperrgrund_ohne_Wahl_haengt_an_der_Zeilenzahl()
+    {
+        int zahl = 2;
+        var sicht = new ErzeugerProjektKiSicht { Zeilenquelle = () => null, Zeilenzahl = () => zahl };
+        var solar = new SolarkollektorenKiSicht { Eingabenquelle = () => null, Zeilenzahl = () => zahl };
+        var pv = new PhotovoltaikKiSicht { Zeilenquelle = () => null, Zeilenzahl = () => zahl };
+
+        Assert.Equal(Resource.KI_ERZ_KEINE_PROJEKTZEILE, sicht.Sperrgrund("ruecklauf"));
+        Assert.Equal(Resource.KI_ERZ_KEINE_PROJEKTZEILE, solar.Sperrgrund("neigung"));
+        Assert.Equal(Resource.KI_ERZ_KEINE_PROJEKTZEILE, pv.Sperrgrund("auslegung_kalt"));
+        Assert.Null(sicht.Sperrgrund(KiDialoge.KATALOGFELD_VORSILBE + "leistung"));
+        Assert.Null(pv.Sperrgrund("strang_neigung"));
+
+        zahl = 1;
+        Assert.Null(sicht.Sperrgrund("ruecklauf"));
+        Assert.Null(solar.Sperrgrund("neigung"));
+        Assert.Equal(Resource.KI_ERZ_TRAEGER_VON_HAND, sicht.Sperrgrund("energietraeger"));
+
+        zahl = 0;
+        Assert.Equal(Resource.KI_ERZ_KEINE_PROJEKTZEILE, pv.Sperrgrund("neigung"));
+    }
+
+    private static KiMaskenanmeldung Angemeldet<T>(string maske, T sicht, Func<T, Func<string, string?>> sperre)
+        where T : class
+        => KiMaskenanmeldung.Fuer(maske, () => sicht, new KiMaskenhaken { Sperrgrund = f => sperre(sicht)(f) });
+
     private static ErzeugerZeile Kesselzeile(int schluessel, string name)
         => new() { Schluessel = schluessel, Bezeichner = name, GeraetId = 100 + schluessel,
                    CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 };
@@ -745,6 +916,18 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
 
     private static IReadOnlyDictionary<string, object?> Werte(string maske, string feld, string wert)
         => new Dictionary<string, object?> { ["maske"] = maske, ["feld"] = feld, ["wert"] = wert };
+
+    /// <summary>
+    /// Nur die Vorbereitung: <c>Freigabe is null</c> heißt Absage VOR der Bestätigung
+    /// (<c>Ablehnung</c>).
+    /// </summary>
+    private static async Task<KiVorbereitung> Vorbereiten(string aktion, IReadOnlyDictionary<string, object?> werte)
+    {
+        var schicht = new KiAusfuehrung { Schreibrecht = () => true };
+        KiPruefErgebnis geprueft = KiPruefung.Pruefe(schicht.Register, aktion, werte);
+        Assert.True(geprueft.Gueltig, geprueft.FehlerText());
+        return await schicht.VorbereitenAsync(geprueft.Aufruf, CancellationToken.None);
+    }
 
     /// <summary>Vorbereiten, freigeben, ausführen — der ganze Weg einer Feldsetzung.</summary>
     private static async Task<KiErgebnis> Setzen(string maske, string feld, string wert)

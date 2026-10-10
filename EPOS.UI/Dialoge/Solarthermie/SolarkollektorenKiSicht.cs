@@ -33,6 +33,20 @@ public sealed class SolarkollektorenKiSicht : IKiFeldtafel
     public Func<SolarkollektorenEingaben?>? Einzelwahl { get; init; }
 
     /// <summary>
+    /// Die Zahl der Projektzeilen — sie sagt dem <see cref="Sperrgrund"/>, ob die
+    /// <see cref="Einzelwahl"/> greift (genau eine), ohne dass er schon wählt.
+    /// </summary>
+    public Func<int>? Zeilenzahl { get; init; }
+
+    /// <summary>
+    /// Der Sperrgrund je Feld (<c>KiMaskenhaken.Sperrgrund</c>, <see cref="ErzeugerSperre"/>):
+    /// die Felder der Kollektorgruppe ohne gewählte Zeile, wenn nicht genau eine vorhanden
+    /// ist — vor der Bestätigung statt erst beim Setzen.
+    /// </summary>
+    public string? Sperrgrund(string feld)
+        => ErzeugerSperre.Grund(feld, Stand is not null, Zeilenzahl, mitTraeger: false);
+
+    /// <summary>
     /// Schreibt in den Arbeitsstand der gewählten Zeile — wie die Eingabefelder, die
     /// erst „Übernehmen" in die Zeile trägt; ohne gewählte Zeile eine BENANNTE Absage
     /// statt eines still verworfenen Werts (Meldung 10.10.2026).

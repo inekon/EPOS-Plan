@@ -31,6 +31,24 @@ public class KiMaskenhakenTests : EposBunitContext
     }
 
     /// <summary>
+    /// Der Sperrgrund je Feld: ohne Haken frei, mit Haken der Grund der Maske, ein
+    /// werfender Haken zählt als frei (der Setzer bleibt die zweite Sicherung).
+    /// </summary>
+    [Fact]
+    public void Feldsperre_liefert_den_Grund_der_Maske_und_im_Zweifel_frei()
+    {
+        Assert.Equal("", new KiMaskenhaken().Feldsperre("vorlauf"));
+
+        var haken = new KiMaskenhaken { Sperrgrund = f => f == "vorlauf" ? "gesperrt" : null };
+        Assert.Equal("gesperrt", haken.Feldsperre(" vorlauf "));
+        Assert.Equal("", haken.Feldsperre("ruecklauf"));
+        Assert.Equal("", haken.Feldsperre(""));
+
+        var werfend = new KiMaskenhaken { Sperrgrund = _ => throw new InvalidOperationException() };
+        Assert.Equal("", werfend.Feldsperre("vorlauf"));
+    }
+
+    /// <summary>
     /// Seit Auftrag #211 (Restpunkt aus Bericht #201) meldet auch der Heizkesseleditor
     /// den Schreibschutz — <c>HeizkesselKatalogDaten.NurLesen</c> trägt das
     /// <c>ReadOnly</c> des geladenen Auslieferungssatzes.

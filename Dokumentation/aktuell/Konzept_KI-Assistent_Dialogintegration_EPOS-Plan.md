@@ -194,6 +194,18 @@ ab, der Anwender bestätigte also eine Feldsetzung und scheiterte erst beim Spei
 geladenen Katalog- bzw. Gerätesatz befüllt, ohne den Speicherweg selbst anzufassen —, und alle vier Masken
 melden `Schreibgeschuetzt` an.
 
+**Sperrgrund je Feld.** Neben dem Schutz des ganzen Satzes meldet eine Maske über den Haken
+`KiMaskenhaken.Sperrgrund` (Feldschlüssel → Grund im Klartext) einzelne Felder, die in ihrem gegenwärtigen Zustand
+nicht gesetzt werden dürfen. Die Vorbedingungen von `feld_setzen`, `formular_ausfuellen` und `reihe_setzen` fragen
+ihn im Schreibschutzschritt, also vor Vorschau und Bestätigung, und lehnen mit `KI_FELD_GESPERRT` („Feldname: Grund")
+ab; die Ausnahmen des Satzschutzes (Satzwahl, `np_*`) gelten für ihn nicht, denn die Maske entscheidet je Feld.
+Es gilt die Regel: **Felder, deren Handweg sofort in die Datenbank schreibt, setzt der Assistent nicht, sondern sagt
+es** — so der Energieträger an Heizkessel, BHKW, Stromspeicher und Photovoltaik (`KI_ERZ_TRAEGER_VON_HAND`); er
+bleibt lesbar, und sein Setzer lehnt als zweite Sicherung ebenfalls ab. Ebenso sperren die Erzeugermasken mit
+Projektliste die Felder der Anlage, solange keine Zeile gewählt ist und nicht genau eine vorhanden ist
+(`KI_ERZ_KEINE_PROJEKTZEILE`); bei genau einer Zeile wählt der Assistent sie wie das Öffnen des Dialogs.
+`KI_FELD_NICHT_SETZBAR` bleibt die Absage an abgeleitete Größen.
+
 **Aktionen aus dem Dialog.** Zusätzlich zu den Feldern die Aktionen der Stufen 1 bis 3 des Aufgabensteuerungskonzepts,
 bezogen auf den offenen Dialog: navigieren (`dialog_oeffnen` über `Dienste.Navigation`), speichern (Stufe 2,
 Bestätigung **und** Sicherungspunkt, weil datenbankwirksam), rechnen (Stufe 3: Simulationslauf, „Peak-Ziel bestimmen",

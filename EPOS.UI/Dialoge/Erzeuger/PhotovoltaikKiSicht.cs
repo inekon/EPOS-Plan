@@ -59,6 +59,12 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     /// </summary>
     public Action<ErzeugerZeile>? Uebernommen { get; init; }
 
+    /// <summary>
+    /// Die Zahl der Projektzeilen — sie sagt dem <see cref="Sperrgrund"/>, ob die
+    /// <see cref="Einzelwahl"/> greift (genau eine), ohne dass er schon wählt.
+    /// </summary>
+    public Func<int>? Zeilenzahl { get; init; }
+
     /// <summary>Die lebende Auslegungstemperatur des kalten Falls [°C].</summary>
     public Func<double?>? KaltLesen { get; init; }
 
@@ -88,6 +94,16 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public void Setzen(string schluessel, object? wert) => AlleDaten?.Setzen(schluessel, wert);
 
     private ErzeugerZeile? Zeile => Zeilenquelle?.Invoke();
+
+    /// <summary>
+    /// Der Sperrgrund je Feld (<c>KiMaskenhaken.Sperrgrund</c>, <see cref="ErzeugerSperre"/>):
+    /// der Energieträger immer, die Felder der Anlage und die zwei Auslegungstemperaturen
+    /// ohne gewählte Zeile, wenn nicht genau eine vorhanden ist. Die Strangfelder
+    /// (<c>strang*</c>) stehen in der Strangtabelle der Zeile und lehnen dort selbst ab.
+    /// </summary>
+    public string? Sperrgrund(string feld)
+        => ErzeugerSperre.Grund(feld, Zeile is not null, Zeilenzahl, mitTraeger: true,
+                                ohneZeile: f => f.StartsWith("strang", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Schreibt in die gewählte Zeile — oder in die einzige, die <see cref="Einzelwahl"/>
@@ -121,11 +137,16 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
         set => Schreibe(z => z.Azimut = value, uebernehmen: true);
     }
 
-    /// <summary>Die zugeordnete Energieträgervariante; 0 = keine.</summary>
+    /// <summary>
+    /// Die zugeordnete Energieträgervariante; 0 = keine. Nur lesbar für den Assistenten:
+    /// Der Handweg schreibt sofort in die Datenbank, deshalb lehnt der Setzer benannt ab
+    /// (zweite Sicherung hinter dem <see cref="Sperrgrund"/>).
+    /// </summary>
     public int CarrierId
     {
         get => Zeile?.CarrierId ?? 0;
-        set => Schreibe(z => z.CarrierId = value, uebernehmen: false);
+        set => throw new InvalidOperationException(
+                   WindowsFormsApplication1.MyResource.Resource.KI_ERZ_TRAEGER_VON_HAND);
     }
 
     /// <summary>Anzahl Module der Anlage.</summary>
