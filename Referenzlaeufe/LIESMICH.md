@@ -686,7 +686,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-09_R48_KaeltemaschineTeillast`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-09_R49_KaeltemaschineTeillast`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -715,7 +715,7 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-09_R48_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+**`2026-10-09_R49_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `f8cba5ad9`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
@@ -763,7 +763,7 @@ achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (Schemastand 209, Katalogkosten 208 und 209) mit `Werkzeuge/Testdatenbankschema` auf **210** gezogen (acht Eingabespalten an Katalog und
 > Projektkopie, fünf Kennzahlspalten am Ergebnis, die 34 Typkennfelder des Katalogs um Teillastkurve und
 > Verdichterregelung ergänzt, die Beispielgeräte und Projektkopien leer), danach 1063 gesät und `VACUUM`;
-> `integrity_check` ok; gegen diese Fassung rechnen alle achtundzwanzig Projekte gegen R48 `GESAMT: PASS` und byte-gleich
+> `integrity_check` ok; gegen diese Fassung rechnen alle achtundzwanzig Projekte gegen R49 `GESAMT: PASS` und byte-gleich
 > (911/911 CSV). 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
 > Taktstunden der Kältemaschine stehen in einem Zähler: `Kaelte[0].Taktstunden` und `Takt.Kaelte[0].Taktstunden`
 > zeigen beide 218.
@@ -794,7 +794,7 @@ achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063 \
->   --ziel Referenzlaeufe/2026-10-09_R48_KaeltemaschineTeillast
+>   --ziel Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
 > ```
 >
 > Die Regeln stehen im [Fachkonzept Teillast und Takten der Kältemaschine](../Dokumentation/aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md),
@@ -1137,9 +1137,9 @@ achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 ### Die Vorgängerbasis R47 (Zapffeiertage)
 
 Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen die Testdatenbank `ec23b962…`
-(Schemastand 207, mit den Projekten 1053 bis 1062); mit R48 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
+(Schemastand 207, mit den Projekten 1053 bis 1062); mit R49 aus dem Arbeitsbaum gefallen, Protokoll und Anlass
 (Feiertage im Zapfkalender, E112) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R48 ist
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R49 ist
 das Referenzprojekt 1063 (Teillast und Takten der Kältemaschine); die siebenundzwanzig Projekte sind byte-gleich.
 
 ## Was hier liegt
@@ -1657,7 +1657,7 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R48 (achtundzwanzig Projekte, Referenzprojekt 1063): GESAMT PASS, 867/911 CSV byte-gleich, 1063 ganz
+Stand mit R49 (achtundzwanzig Projekte, Referenzprojekt 1063): GESAMT PASS, 867/911 CSV byte-gleich, 1063 ganz
 byte-gleich; mit R47 (Feiertage im Zapfkalender) GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45
 (Übergabegrenze, Referenzprojekt 1060) war GESAMT PASS, 835/879 CSV
 byte-gleich, `aggregate.csv` bei 26 Projekten byte-gleich (abweichend allein 1057 innerhalb der Toleranz), 1060 ganz

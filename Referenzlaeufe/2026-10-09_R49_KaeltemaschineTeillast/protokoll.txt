@@ -3,7 +3,7 @@
 Quelle:        /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Kenndaten_Test.sqlite
 Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
 Kultur:        de-DE
-Zielordner:    Referenzlaeufe/2026-10-09_R48_KaeltemaschineTeillast
+Zielordner:    Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
 Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063
 Dauer:         00:00:25
 
@@ -12,7 +12,7 @@ Dauer:         00:00:25
 ```
 Referenzlauf (Kern) gestartet.
 Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/km3-e1a
-Zielordner:    Referenzlaeufe/2026-10-09_R48_KaeltemaschineTeillast
+Zielordner:    Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
 
 Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Kenndaten_Test.sqlite
 Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (90 MB)

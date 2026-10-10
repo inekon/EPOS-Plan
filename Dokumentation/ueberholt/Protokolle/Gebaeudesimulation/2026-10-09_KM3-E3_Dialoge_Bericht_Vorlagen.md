@@ -31,7 +31,7 @@
 | `EPOS.Kern.Tests` (Filter E3) | 2538/2538 |
 | `EPOS.UI.Tests` (Filter E3) | 1343/1343 |
 | ChartProben | 254 Bilder, alle grün |
-| Referenzlauf gegen R48 | 28/28 `PASS`, alle Projektdateien byte-gleich; R48 bleibt unverändert |
+| Referenzlauf gegen R49 | 28/28 `PASS`, alle Projektdateien byte-gleich; R49 bleibt unverändert |
 
 ## 5 Festlegungen
 
