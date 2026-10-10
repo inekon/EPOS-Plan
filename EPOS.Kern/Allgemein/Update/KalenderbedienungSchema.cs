@@ -548,8 +548,11 @@ namespace WindowsFormsApplication1
                 }
                 finally
                 {
-                    try { v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
-                    catch (Exception) { /* nach Commit abgeschlossen */ }
+                    // Nur am offenen Vorgang: Nach dem Commit ist er abgeschlossen, und jede weitere Anweisung wuerfe
+                    // "bereits abgeschlossen" (im Ausnahmeprotokoll des Anwenders als ausgeloeste Ausnahme sichtbar). Der
+                    // Neubau hat das PRAGMA dann selbst schon ausgeschaltet; offen ist der Vorgang nur auf dem Fehlerweg.
+                    try { if (v.Offen) v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
+                    catch (Exception) { /* die Verbindung ist dann ohnehin am Ende */ }
                 }
             }
             if (bericht != null) foreach (string z in zeilen) bericht.Add(z);
