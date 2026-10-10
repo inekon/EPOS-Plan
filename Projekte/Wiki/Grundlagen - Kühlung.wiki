@@ -66,7 +66,7 @@ Eine Kältemaschine liefert ihre Nennleistung nur bei Volllast; im Betrieb läuf
 
 '''Folgeschaltung.''' Stehen mehrere gleiche Maschinen bereit, laufen n = ⌈Last / Q_av⌉ Maschinen, mit Q_av als verfügbarer Kälteleistung einer Maschine. Die Last teilen sie gleichmäßig; so bleibt der Lastgrad jeder laufenden Maschine hoch.
 
-Die Bedienung beschreibt [[Programm Dokumentation/Kühlung#kaeltemaschine-teillast|Programm Dokumentation Kühlung]].
+Die Bedienung beschreibt [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-teillast|Programm Dokumentation Kälteerzeugung]].
 
 == Einsatz und Grenzen ==
 {{Anker|einsatz-und-grenzen}}
@@ -76,7 +76,9 @@ Kühlung passt dort, wo solare und innere Lasten oder ein hoher Komfortanspruch 
 == In EPOS-Plan ==
 {{Anker|in-epos-plan}}
 
-In EPOS-Plan schaltet der Schalter '''Kühlung rechnen''' in der Simulationskonfiguration (Menü ''Projekt → Simulation…'', Block ''Weitere Einstellungen'') die Kälteberechnung für das ganze Projekt ein. Am einzelnen Gebäude schaltet der Gebäudedialog die Kühlung mit ''Gebäude wird gekühlt'' in der Gruppe ''Kühlung'' ein; den Kühlsollwert trägt sein Reiter ''Konditionierung'' in der Spalte ''Kühlen'' – als einen Wert für alle Stunden oder als Zeitprogramm mit Nacht-, Wochenend- und Ferienwert, Kühlperiode und Kühlkalender. Gedeckt wird der Kältebedarf von einer Wärmepumpe im Kühlbetrieb: Ihre Gruppe ''Kühlbetrieb'' steht an der Erzeugerkarte der Wärmepumpe in der Simulationskonfiguration oder in der „Wärmepumpen Verwaltung", jeweils hinter dem Knopf '''Konfiguration…'''.
+In EPOS-Plan schaltet der Schalter '''Kühlung rechnen''' in der Simulationskonfiguration (Menü ''Projekt → Simulation…'', Block ''Weitere Einstellungen'') die Kälteberechnung für das ganze Projekt ein. Am einzelnen Gebäude schaltet der Gebäudedialog die Kühlung mit ''Gebäude wird gekühlt'' in der Gruppe ''Kühlung'' ein; den Kühlsollwert trägt sein Reiter ''Konditionierung'' in der Spalte ''Kühlen'' – als einen Wert für alle Stunden oder als Zeitprogramm mit Nacht-, Wochenend- und Ferienwert, Kühlperiode und Kühlkalender. Gedeckt wird der Kältebedarf von Wärmepumpen im Kühlbetrieb und von Kältemaschinen. Die Gruppe ''Kühlbetrieb'' einer Wärmepumpe steht an ihrer Erzeugerkarte in der Simulationskonfiguration oder in der „Wärmepumpen Verwaltung", jeweils hinter dem Knopf '''Konfiguration…'''; eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe kühlt auf Wunsch zuerst frei über ihre Wärmequelle. Die '''Kältemaschine''' legt der Dialog ''Kältemaschinen im Projekt'' an, den die Kachel ''Kühlung und Kälteanlagen'' der Startseite öffnet. Ihre Abwärme geht über die Rückkühlart an die Umgebung – luftgekühlt oder über einen Trocken- oder Nasskühler, der in kühlen Stunden frei kühlt; auf Wunsch rechnet sie Teillast und Takten. Ein Pufferspeicher mit der Nutzung ''Kälte'' wird '''Kältespeicher'''. In jeder Stunde decken zuerst die freie Kühlung der Kältemaschinen, dann die Kältespeicher, dann die Wärmepumpen und zuletzt die Kältemaschinen mit Verdichter.
+
+Einstellung, Reihenfolge und Ergebnisse der Kälteerzeuger stehen auf der Anwendungsseite [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]].
 
 Einbindung, ein Beispiel, das Zusammenspiel mit anderen Technologien und die Fallstricke stehen auf der Anwendungsseite: [[Programm Dokumentation/Kühlung#einbindung|Einbindung]] · [[Programm Dokumentation/Kühlung#beispiel|Beispiel]] · [[Programm Dokumentation/Kühlung#zusammenspiel|Zusammenspiel]] · [[Programm Dokumentation/Kühlung#fallstricke|Fallstricke]].
 
@@ -84,6 +86,7 @@ Einbindung, ein Beispiel, das Zusammenspiel mit anderen Technologien und die Fal
 {{Anker|siehe-auch}}
 
 * [[Programm Dokumentation/Kühlung]] – Einbindung, Beispiel, Zusammenspiel und Fallstricke in EPOS-Plan
+* [[Programm Dokumentation/Kälteerzeugung]] – Wärmepumpe im Kühlbetrieb, Kältemaschine, Kältespeicher und Kältestrom
 * [[Grundlagen/Wärmepumpe]] – Funktionsprinzip und Kennzahlen des Heizbetriebs derselben Maschine
 * [[Programm Dokumentation/Gebäudemodell VDI 6007]] – das Gebäudemodell, das Heiz- und Kühllast stündlich rechnet
 

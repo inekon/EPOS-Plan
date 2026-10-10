@@ -10,7 +10,7 @@ Der Reiter '''Energieerzeuger''' der Startseite bestückt das Projekt mit der Te
 * '''Solarthermie''' – die beiden Schalter ''Profil'' und ''Ganglinie'' wählen den Dialog. ''Profil'' öffnet die ''Eingabe der Solarkollektoren'' mit Kollektortyp, Fläche, Neigung und Azimut, ''Ganglinie'' die Zuordnung einer fertigen Solarthermieganglinie samt Pflege und Import des Ganglinienkatalogs; voreingestellt ist ''Profil''. Ist dem Projekt eine vollständige Ganglinie zugeordnet, rechnet die Simulation sie anstelle des Kollektorfelds, mit dessen Senken, Puffer und Kaskadenplatz ([[Programm Dokumentation/Solarthermie#ganglinie|Ganglinie statt Kollektorfeld]]).
 * '''Photovoltaik''' – öffnet die ''Verwaltung Photovoltaik Module'' mit Modultyp, Modulanzahl, Neigung und Azimut; mehrere Teilfelder für unterschiedliche Dachflächen sind möglich.
 * '''Stromspeicher''' und '''Pufferspeicher''' – öffnen die Dialoge ''Verwaltung Stromspeicher'' und ''Verwaltung Pufferspeicher''. Zugeordnet und mit Schaltschwellen versehen wird der Pufferspeicher anschließend in der Simulationskonfiguration.
-* '''Kühlung und Kälteanlagen''' – Kälteerzeugung mit Kältemaschinen und Wärmepumpen. Der Statuspunkt ist grün, sobald das Projekt eine Kältemaschine oder eine Wärmepumpe im Kühlbetrieb führt. Ein Klick auf die Kachel öffnet den Dialog ''Kältemaschinen im Projekt'' zum Anlegen und Bearbeiten der Kältemaschinen; unter ihrer Liste steht der Block ''Wärmepumpen im Kühlbetrieb'' mit je einem Schalter für die Wärmepumpen mit Kühlfunktion. Ob das Projekt Kälte rechnet, entscheidet ''Kühlung rechnen'' in der ''Simulation Konfiguration''; Einzelheiten unter [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung]].
+* '''Kühlung und Kälteanlagen''' – Kälteerzeugung mit Kältemaschinen und Wärmepumpen. Der Statuspunkt ist grün, sobald das Projekt eine Kältemaschine oder eine Wärmepumpe im Kühlbetrieb führt. Ein Klick auf die Kachel öffnet den Dialog ''Kältemaschinen im Projekt'' zum Anlegen und Bearbeiten der Kältemaschinen; unter ihrer Liste steht der Block ''Wärmepumpen im Kühlbetrieb'' mit je einem Schalter für die Wärmepumpen mit Kühlfunktion. Ob das Projekt Kälte rechnet, entscheidet ''Kühlung rechnen'' in der ''Simulation Konfiguration''; Einzelheiten unter [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]], der Kältebedarf unter [[Programm Dokumentation/Kühlung|Kühlung]].
 * '''Statuspunkt''' – ein grüner Punkt an der Kachel zeigt an, dass für diese Technologie bereits Daten im Projekt vorliegen, ein grauer, dass keine vorliegen; bei der Solarthermie genügt dafür ein Kollektorsatz oder eine vollständige Ganglinie mit 8 760 Stundenwerten.
 
 == Die Techniken im Überblick ==
@@ -39,20 +39,20 @@ Jede Kachel öffnet den Dialog der jeweiligen Technik; die verlinkten Seiten erk
 |-
 | Wärmequelle Erdreich || [[Grundlagen/Wärmequelle Erdreich|Grundlagen]] || [[Programm Dokumentation/Wärmequelle Erdreich|Anwendung]] || [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung]]
 |-
-| Kühlung || [[Grundlagen/Kühlung|Grundlagen]] || [[Programm Dokumentation/Kühlung|Anwendung]] || —
+| Kühlung || [[Grundlagen/Kühlung|Grundlagen]] || [[Programm Dokumentation/Kälteerzeugung|Anwendung]] || —
 |}
 
 == Betriebszeiten ==
 {{Anker|betriebszeiten}}
 
-Im Konfigurationsdialog einer Wärmepumpe – erreichbar über den Knopf ''Konfiguration…'' der Wärmepumpen Verwaltung und über Simulation › Konfiguration – legt die Gruppe '''Betriebszeiten''' fest, wann und mit welchem Vorlauf die Anlage zur Verfügung steht. Sie wirkt mit der Projekteinstellung '''Anlagenkopplung''' ''Fahrplan (AK2)'' auf die gekoppelt gerechneten Gebäude: Steht die Anlage nicht oder nur teilweise zur Verfügung, sinkt dort die Raumtemperatur, statt dass ein Rest ungedeckt bleibt (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#komfort|Komfortstunden]]).
+Im Konfigurationsdialog einer Wärmepumpe – erreichbar über den Knopf ''Konfiguration…'' der Wärmepumpen Verwaltung und über Simulation › Konfiguration – legt die Gruppe '''Betriebszeiten''' fest, wann und mit welchem Vorlauf die Anlage zur Verfügung steht. Sie wirkt mit der Projekteinstellung '''Anlagenkopplung''' ''Heizkreis (AK1)'' oder ''geschlossener Kreis (AK3)'' auf die gekoppelt gerechneten Gebäude: Steht die Anlage nicht oder nur teilweise zur Verfügung, sinkt dort die Raumtemperatur, statt dass ein Rest ungedeckt bleibt (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#komfort|Komfortstunden]]).
 
 * '''Sperrzeit''' – die Sperrfenster der Anlage, wie in der Gruppe ''Sperrzeiten'' gepflegt.
 * '''Zeitprogramm''' – der Knopf ''Wochenraster bearbeiten'' öffnet ein Raster mit 7 × 24 Feldern, Montag 0 Uhr bis Sonntag 23 Uhr. Jedes Feld trägt einen Faktor von 0 (gesperrt) bis 1 (volle Leistung); 0,5 heißt halbe Leistung. Ohne Zeitprogramm ist die Anlage immer verfügbar; die Zeile unter dem Knopf nennt, wie viele Wochenstunden voll verfügbar und wie viele gesperrt sind. Ein gespeichertes Zeitprogramm, das nicht genau 168 Faktoren zwischen 0 und 1 enthält, nennt der Dialog als Fehler mit der gefundenen Zahl; es wird nicht aufgefüllt.
 * '''Höchster Vorlauf''' – der höchste Vorlauf, den die Anlage bietet, in °C. Leer gilt der projektierte Vorlauf der Anlage, der als grauer Text im Feld steht. Verlangt ein gekoppeltes Gebäude einen höheren Vorlauf, gilt dieser Wert.
 * '''Vorrang der Sperrzeit''' – Sperrzeit und Zeitprogramm gelten zusammen; in einer Stunde, in der beide etwas vorgeben, geht die Sperrzeit vor. Überschneiden sie sich, nennt der Dialog die Zahl der betroffenen Wochenstunden.
 
-Die Verfügbarkeit rechnet das Programm einmal je Projekt vorab (Profilweg): Ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein, Ladezustände werden dabei nicht verfolgt. Die Komfortstunden sind deshalb eine obere Abschätzung.
+Auf der Stufe ''Heizkreis (AK1)'' rechnet das Programm die Verfügbarkeit einmal je Projekt vorab (Profilweg): Ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein, Ladezustände werden dabei nicht verfolgt; die Komfortstunden sind deshalb eine obere Abschätzung. Auf der Stufe ''geschlossener Kreis (AK3)'' rechnet der Kreis zwischen Gebäude und Erzeugern Stunde für Stunde, und ein Heizungspuffer überbrückt die Sperrstunden mit seinem Ladezustand.
 
 == Siehe auch ==
 

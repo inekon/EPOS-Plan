@@ -17,7 +17,7 @@ Die Hilfeseiten dieses Bereichs sind in sieben Unterrubriken geordnet. Jede Seit
 |-
 | [[#bedarf|Bedarf]] || [[Programm Dokumentation/Gebäude|Gebäude]] · [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] · [[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]] · [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]] · [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] · [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]] · [[Programm Dokumentation/Kühlung|Kühlung]] · [[Programm Dokumentation/Wärmebedarf|Wärmebedarf]] · [[Programm Dokumentation/Brauchwasser|Brauchwasser]] · [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] · [[Programm Dokumentation/Betriebskalender|Betriebskalender]] · [[Programm Dokumentation/Prozesswärme|Prozesswärme]] · [[Programm Dokumentation/Strombedarf|Strombedarf]] · [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]] || Wärme- und Strombedarf des Projekts: Gebäude, Lastgänge, Brauchwasser, Prozesswärme, Verbraucher.
 |-
-| [[#erzeuger-und-speicher|Erzeuger und Speicher]] || [[Programm Dokumentation/Energieerzeuger|Energieerzeuger]] · [[Programm Dokumentation/Gerätekataloge|Gerätekataloge]] · [[Programm Dokumentation/Heizkessel|Heizkessel]] · [[Programm Dokumentation/BHKW|BHKW]] · [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] · [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] · [[Programm Dokumentation/Solarthermie|Solarthermie]] · [[Programm Dokumentation/Photovoltaik|Photovoltaik]] · [[Programm Dokumentation/Wechselrichter|Wechselrichter]] · [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] · [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] · [[Programm Dokumentation/Stromspeicher|Stromspeicher]] || Die Anlagen des Projekts und ihre Kataloge.
+| [[#erzeuger-und-speicher|Erzeuger und Speicher]] || [[Programm Dokumentation/Energieerzeuger|Energieerzeuger]] · [[Programm Dokumentation/Gerätekataloge|Gerätekataloge]] · [[Programm Dokumentation/Heizkessel|Heizkessel]] · [[Programm Dokumentation/BHKW|BHKW]] · [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] · [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] · [[Programm Dokumentation/Kälteerzeugung|Kälteerzeugung]] · [[Programm Dokumentation/Solarthermie|Solarthermie]] · [[Programm Dokumentation/Photovoltaik|Photovoltaik]] · [[Programm Dokumentation/Wechselrichter|Wechselrichter]] · [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]] · [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] · [[Programm Dokumentation/Stromspeicher|Stromspeicher]] || Die Anlagen des Projekts für Wärme, Strom und Kälte und ihre Kataloge.
 |-
 | [[#simulation|Simulation]] || [[Programm Dokumentation/Klimadaten|Klimadaten]] · [[Programm Dokumentation/Simulation|Simulation]] · [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] || Klimadaten, Konfiguration des Jahreslaufs und seine Ergebnisse.
 |-
@@ -31,7 +31,7 @@ Die Hilfeseiten dieses Bereichs sind in sieben Unterrubriken geordnet. Jede Seit
 == Hilfeseiten ==
 {{Anker|hilfeseiten|seiten}}
 
-Die folgenden Tabellen sind die Zuordnung, an die sich das Programm hält: 147 Aufrufstellen verweisen auf 41 Unterseiten dieses Bereichs. Wer eine Seite umbenennen möchte, sieht hier, welche Programmstellen daran hängen – die Spalte ''Formular / Schaltfläche'' entspricht der Zuordnungsdatei in der Anwendung. Die Zeilen sind nach Unterrubrik gruppiert und innerhalb der Gruppe nach Hilfeseite geordnet; jede Tabelle lässt sich über die Spaltenköpfe umsortieren.
+Die folgenden Tabellen sind die Zuordnung, an die sich das Programm hält: 147 Aufrufstellen verweisen auf 42 Unterseiten dieses Bereichs. Wer eine Seite umbenennen möchte, sieht hier, welche Programmstellen daran hängen – die Spalte ''Formular / Schaltfläche'' entspricht der Zuordnungsdatei in der Anwendung. Die Zeilen sind nach Unterrubrik gruppiert und innerhalb der Gruppe nach Hilfeseite geordnet; jede Tabelle lässt sich über die Spaltenköpfe umsortieren.
 
 Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen neben dem Hilfeknopf zwei weitere: ''Berechnungsweg'' führt in die zugehörige Seite der Unterrubrik [[Programm Dokumentation/Berechnung|Berechnung]], ''Grundlagen'' in die gleichnamige Rubrik [[Grundlagen]]. Beide stehen nicht in den folgenden Tabellen; ihr Ziel legt dieselbe Zuordnungsdatei fest wie der Hilfeknopf.
 
@@ -129,8 +129,6 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 | Ansicht ''Baustoff-Zuordnungen…'' des Gebäudedialogs || <code>Baustoffzuordnungen.btn_Help</code> || [[Programm Dokumentation/Gebäudeimport#baustoffzuordnungen|Gebäudeimport]]
 |-
 | Gruppe ''Kühlung'' im Gebäudedialog (Katalogeditor und Verwaltung) || <code>Form_Gebaeude_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#eingaben|Kühlung]]
-|-
-| Gruppe ''Kühlbetrieb'' der Wärmepumpen-Konfiguration || <code>Form_WP_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung]]
 |-
 | Dialog ''Simulation Konfiguration'', Gruppe ''Kühlung'' || <code>Form_Simulation_Config_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kühlung#einschalten|Kühlung]]
 |-
@@ -264,9 +262,11 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 |-
 | Kältemaschinen einlesen (Administration) || <code>Form_Kaeltemaschine_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
 |-
-| Kältemaschinen-Katalog (Administration) || <code>KaeltemaschineKatalog.btn_Help</code> || [[Programm Dokumentation/Kühlung#kaeltemaschine-katalog|Kühlung]]
+| Kältemaschinen-Katalog (Administration) || <code>KaeltemaschineKatalog.btn_Help</code> || [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-katalog|Kälteerzeugung]]
 |-
-| Kältemaschine der Anlage im Projekt || <code>KaeltemaschineAnlage.btn_Help</code> || [[Programm Dokumentation/Kühlung#kaeltemaschine-anlage|Kühlung]]
+| Kältemaschine der Anlage im Projekt || <code>KaeltemaschineAnlage.btn_Help</code> || [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-anlage|Kälteerzeugung]]
+|-
+| Gruppe ''Kühlbetrieb'' der Wärmepumpen-Konfiguration || <code>Form_WP_Kuehlung.btn_Help</code> || [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kälteerzeugung]]
 |-
 | Photovoltaik-Ganglinie im Projekt || <code>Form_PvGanglinie.btn_Help</code> || [[Programm Dokumentation/Photovoltaik#ganglinie|Photovoltaik]]
 |-

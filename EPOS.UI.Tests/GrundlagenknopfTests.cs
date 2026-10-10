@@ -83,7 +83,7 @@ public sealed class GrundlagenknopfTests : EposBunitContext
         {
             { "Form_PV_Wechselrichter", ("Wechselrichter", "Wechselrichter") },
             { "Form_Gebaeude_Kuehlung", ("Kühlung", "Kühlung") },
-            { "Form_WP_Kuehlung", ("Kühlung", "Kühlung") }
+            { "Form_WP_Kuehlung", ("Kälteerzeugung", "Kühlung") }
         };
 
     public GrundlagenknopfTests()
