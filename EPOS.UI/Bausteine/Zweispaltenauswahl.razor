@@ -403,6 +403,25 @@
         }
     }
 
+    /// <summary>Die Projektliste beim letzten Parametersatz — Vergleichsstand für <see cref="Bereichswahl.ListeFolgen"/>.</summary>
+    private IReadOnlyList<string>? _projektVorher;
+
+    /// <summary>
+    /// <b>Die Mehrfachwahl folgt jeder programmatischen Einzelwahl</b> (DZ1‑N2): Nach Übernehmen,
+    /// Umstellen, Entfernen oder Neu… ändert der Wirt die Projektliste und wählt die neue Zeile.
+    /// Hier — an einer Stelle für alle Wirte — verlässt eine verschwundene Zeile die Wahl, und
+    /// die Wahl springt auf die neu dazugekommene Zeile. Die Projektliste ist ungefiltert; die
+    /// Katalogliste führt ihre Kästchen selbst und bleibt außen vor.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (ProjektWahl is null || ProjektSichtbar is null) return;
+        var jetzt = ProjektSichtbar.ToList();
+        bool gewechselt = ProjektWahl.ListeFolgen(_projektVorher, jetzt);
+        _projektVorher = jetzt;
+        if (gewechselt) Wahlgewechselt?.Invoke();
+    }
+
     /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

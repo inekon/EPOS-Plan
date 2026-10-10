@@ -502,6 +502,68 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Equal(new[] { "1", "3" }, wahl.Gewaehlte);
     }
 
+    /// <summary>
+    /// DZ1‑N2: Nach „In das Projekt übernehmen“ steht die Mehrfachwahl auf genau der neuen
+    /// Zeile — das vorher angeklickte Kästchen ist abgewählt, „Entfernen“ trifft die neue Zeile.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_setzt_die_Mehrfachwahl_auf_die_neue_Zeile_und_Entfernen_trifft_sie()
+    {
+        var wahl = new Bereichswahl();
+        IReadOnlyList<string>? getroffen = null;
+        var cut = Aufbauen(entfernt: () => getroffen = wahl.Gewaehlte.ToList(), mehr: p => p
+            .Add(x => x.ProjektWahl, wahl)
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2" })
+            .Add(x => x.Links, Kaestchenliste(Auswahlbereich.Projekt, new[] { "1", "2" })));
+
+        cut.FindAll(".epos-zweispalten-bereich--projekt .epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)")[0].Click();
+        Assert.Equal(new[] { "1" }, wahl.Gewaehlte);
+
+        // Der Wirt nimmt Zeile 3 auf und wählt sie als Einzelwahl.
+        cut.Render(p => p
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2", "3" })
+            .Add(x => x.Links, Kaestchenliste(Auswahlbereich.Projekt, new[] { "1", "2", "3" })));
+        Assert.Equal(new[] { "3" }, wahl.Gewaehlte);
+        Assert.Equal("3", wahl.Zuletzt);
+        var kaestchen = cut.FindAll(".epos-zweispalten-bereich--projekt .epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)");
+        Assert.Equal("false", kaestchen[0].GetAttribute("aria-checked"));
+        Assert.Equal("true", kaestchen[2].GetAttribute("aria-checked"));
+
+        cut.Find(".epos-zweispalten-knopf--entfernen").Click();
+        Assert.Equal(new[] { "3" }, getroffen);
+
+        // Die Zeile verschwindet aus der Liste und verlässt die Wahl.
+        cut.Render(p => p
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2" })
+            .Add(x => x.Links, Kaestchenliste(Auswahlbereich.Projekt, new[] { "1", "2" })));
+        Assert.Empty(wahl.Gewaehlte);
+    }
+
+    /// <summary>Die Regel von <see cref="Bereichswahl.ListeFolgen"/>: verschwunden raus, neu allein, leer bleibt leer.</summary>
+    [Fact]
+    public void Bereichswahl_folgt_der_Liste()
+    {
+        var w = new Bereichswahl();
+        Assert.False(w.ListeFolgen(null, new[] { "a", "b" }));
+        Assert.False(w.ListeFolgen(new[] { "a", "b" }, new[] { "a", "b", "c" }));   // nichts gewählt: bleibt leer
+        Assert.Empty(w.Gewaehlte);
+
+        w.Klick("a", false, false, new[] { "a", "b", "c" });
+        w.Klick("b", true, false, new[] { "a", "b", "c" });
+        Assert.False(w.ListeFolgen(new[] { "a", "b", "c" }, new[] { "a", "b", "c" }));
+        Assert.Equal(new[] { "a", "b" }, w.Gewaehlte);
+
+        Assert.True(w.ListeFolgen(new[] { "a", "b", "c" }, new[] { "a", "c" }));      // b verschwindet
+        Assert.Equal(new[] { "a" }, w.Gewaehlte);
+
+        Assert.True(w.ListeFolgen(new[] { "a", "c" }, new[] { "a", "c", "d", "e" })); // Sammelübernahme
+        Assert.Equal(new[] { "d", "e" }, w.Gewaehlte);
+        Assert.Equal("e", w.Zuletzt);
+
+        Assert.True(w.ListeFolgen(new[] { "a", "c", "d", "e" }, new[] { "a", "c", "f", "e" })); // Umstellen: d wird f
+        Assert.Equal(new[] { "f" }, w.Gewaehlte);
+    }
+
     /// <summary>Strg+A in einer Liste wählt deren gefilterte Liste (aus dem Skript).</summary>
     [Fact]
     public void StrgA_waehlt_die_gefilterte_Liste()
@@ -1060,7 +1122,8 @@ public class ZweispaltenauswahlTests : EposBunitContext
     /// Der Rollbalken gilt nur unter der Mindesthöhe: Der Baustein steht im eigenen Fenster auf der
     /// gemessenen Summe seiner Untergrenzen (--epos-zweispalten-min), und allein der Dialog mit
     /// <c>data-zweispalten-eng</c> rollt senkrecht. Die Klemme auf eine Katalogzeile gilt nur in
-    /// der Normalstufe, die aufgeklappte Detailzeile hat eine Obergrenze.
+    /// der Normalstufe. Aufgeklappt hat die Detailzeile Vorrang (DZ1): Projektliste und Katalog
+    /// stehen auf ihren Untergrenzen, die Satzfläche nimmt den Rest — ohne Obergrenze.
     /// </summary>
     [Fact]
     public void Der_Dialogkoerper_rollt_nur_unter_der_Mindesthoehe()
@@ -1071,8 +1134,14 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("overflow-y: auto", eng);
         Assert.Contains("overflow-x: hidden", eng);
         Assert.Contains("@media (min-width: 1280px) and (min-height: 800px) {\n    @container katalogauswahl (max-height: 599px)", css);
-        Assert.Contains("max-height: var(--epos-satz-max, 45vh)",
-            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {"));
+        string satz = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {");
+        Assert.Contains("max-height: none", satz);
+        Assert.Contains("flex: 1 1 0", satz);
+        Assert.DoesNotContain("--epos-satz-max", css);
+        string offen = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {");
+        Assert.Contains("8px\n        min-content\n        minmax(var(--epos-satz-min), 1fr);", offen);
+        Assert.Contains("grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);",
+            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog {"));
 
         // Das Skript misst und schaltet; es traegt keine Pixelzahl der Zeilen.
         string js = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-zweispalten.js"));

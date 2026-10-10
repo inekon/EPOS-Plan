@@ -32,6 +32,12 @@ public sealed class Katalogfiltertexte
     /// </summary>
     public string Treffer { get; set; } = Resource.KFLT_TREFFER;
 
+    /// <summary>
+    /// Die Trefferzahl ohne Hauptwort „{0} von {1}" (<c>KFLT_TREFFER_KURZ</c>, Konzept 4.10):
+    /// Bei Platzmangel in der Kopfleiste faellt das Hauptwort weg, die Zahl kuerzt nie.
+    /// </summary>
+    public string TrefferKurz { get; set; } = Resource.KFLT_TREFFER_KURZ;
+
     /// <summary>Der Textknopf „Filter zurücksetzen" (<c>KFLT_ZURUECKSETZEN</c>).</summary>
     public string Zuruecksetzen { get; set; } = Resource.KFLT_ZURUECKSETZEN;
 
@@ -150,6 +156,12 @@ public sealed class Katalogfiltertexte
 
     /// <summary>„Standard“ (<c>KFLT_SPALTEN_STANDARD</c>).</summary>
     public string SpaltenStandard { get; set; } = Resource.KFLT_SPALTEN_STANDARD;
+
+    /// <summary>
+    /// Der Hinweis neben einer angehakten Spalte, die bei der aktuellen Breite weicht
+    /// (<c>KFLT_SPALTE_AUSGEBLENDET</c>, Konzept 4.10).
+    /// </summary>
+    public string SpalteAusgeblendet { get; set; } = Resource.KFLT_SPALTE_AUSGEBLENDET;
 
     /// <summary>Kurztext von „Standard“ (<c>KFLT_SPALTEN_STANDARD_HINWEIS</c>).</summary>
     public string SpaltenStandardHinweis { get; set; } = Resource.KFLT_SPALTEN_STANDARD_HINWEIS;

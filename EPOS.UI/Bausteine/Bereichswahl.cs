@@ -160,6 +160,44 @@
             if (Zuletzt is not null && !menge.Contains(Zuletzt)) Zuletzt = null;
         }
 
+        /// <summary>
+        /// <b>Die Wahl folgt der Liste</b> (Nachzug DZ1‑N2): Der Wirt setzt nach „In das Projekt
+        /// übernehmen“, Umstellen oder Neu… die neue Zeile als Einzelwahl — die Mehrfachwahl
+        /// muss mit, sonst trifft „Aus dem Projekt entfernen“ die zuvor angeklickte Zeile.
+        /// <list type="bullet">
+        /// <item>Zeilen, die aus der Liste verschwunden sind, verlassen die Wahl.</item>
+        /// <item>Sind Zeilen neu dazugekommen und war etwas gewählt, ist die Wahl genau die neuen
+        /// Zeilen (eine Übernahme: genau diese Zeile; die letzte ist <see cref="Zuletzt"/>) — die
+        /// vorher gewählten Kästchen sind abgewählt.</item>
+        /// </list>
+        /// Ist nichts gewählt, bleibt es leer: Dann wirken die Aktionen auf die Einzelwahl des Wirts.
+        /// Gilt nur für eine Liste ohne Filter (die Projektliste) — eine gefilterte Liste blendet
+        /// Zeilen aus, ohne dass sie verschwinden. <paramref name="vorher"/> <c>null</c> = erste
+        /// Liste, nichts zu vergleichen.
+        /// </summary>
+        /// <returns>Ob sich die Wahl geändert hat.</returns>
+        public bool ListeFolgen(IReadOnlyList<string>? vorher, IReadOnlyList<string> jetzt)
+        {
+            ArgumentNullException.ThrowIfNull(jetzt);
+            if (vorher is null) return false;
+            var alt = new HashSet<string>(vorher);
+            var vorhanden = new HashSet<string>(jetzt);
+            int vorAnzahl = _gewaehlt.Count;
+            string? vorZuletzt = Zuletzt;
+            bool hatteWahl = _gewaehlt.Count > 0;
+
+            Bereinigen(vorhanden);
+            var neu = jetzt.Where(s => !alt.Contains(s)).ToList();
+            if (hatteWahl && neu.Count > 0)
+            {
+                _gewaehlt.Clear();
+                foreach (var s in neu) Hinzu(s);
+                Zuletzt = neu[^1];
+                return true;
+            }
+            return _gewaehlt.Count != vorAnzahl || Zuletzt != vorZuletzt;
+        }
+
         private void Hinzu(string schluessel)
         {
             if (!_gewaehlt.Contains(schluessel)) _gewaehlt.Add(schluessel);

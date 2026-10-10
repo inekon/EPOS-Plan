@@ -180,7 +180,7 @@ public class KatalogSatzWirftTests : EposBunitContext
         var cut = Render<StromspeicherDialog>(b => b
             .Add(x => x.Katalogprofil, Profil(Anlagenart.Stromspeicher))
             .Add(x => x.Katalogzeilen, Eine)
-            .Add(x => x.Detail, _ => Wirft<ErzeugerDetail?>()));
+            .Add(x => x.KatalogDetail, _ => Wirft<ErzeugerDetail?>()));
         ZeileWaehlen(cut);
         BannerMitGrund(cut);
     }

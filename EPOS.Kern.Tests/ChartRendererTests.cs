@@ -914,6 +914,38 @@ namespace EPOS.Kern.Tests
         /// <b>Normierte Ganglinie:</b> Die Datenreihen führen die Werte des BILDES,
         /// also PROZENT des gemeinsamen Höchstwerts — die Achse läuft bis 100,2.
         /// </summary>
+        /// <summary>
+        /// DZ1‑N2: Mit Breite und Höhe entsteht das Modell in genau dieser Größe; flach ist es
+        /// kompakt (ohne Titel, Fläche ab der Kopfzeile bis 50 px über dem unteren Rand). Ohne
+        /// Maß bleibt es 1 240 × 560 mit der Fläche bei 100/110 und 1 100 × 360.
+        /// </summary>
+        [Fact]
+        public void GanglinieNormiertModell_nimmt_das_Behaeltermass()
+        {
+            List<ChartRenderer.Reihe> reihen = Stapelreihen();
+            Zeichenmodell vorgabe = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false);
+            Assert.Equal((1240, 560), (vorgabe.Breite, vorgabe.Hoehe));
+            Assert.Equal(110, vorgabe.Flaeche.Bild.Y, 3);
+            Assert.Equal(360, vorgabe.Flaeche.Bild.Hoehe, 3);
+
+            Zeichenmodell flach = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 1100, hoehe: 160);
+            Assert.Equal((1100, 160), (flach.Breite, flach.Hoehe));
+            Assert.Equal(1100 - 140, flach.Flaeche.Bild.Breite, 3);
+            Assert.True(flach.Flaeche.Bild.Y <= 40, "Kompakt: Flaeche direkt unter der Kopfzeile");
+            Assert.True(flach.Flaeche.Bild.Y + flach.Flaeche.Bild.Hoehe <= 160 - 40, "Platz fuer Marken und Achsentitel");
+
+            Zeichenmodell hoch = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 900, hoehe: 600);
+            Assert.Equal((900, 600), (hoch.Breite, hoch.Hoehe));
+            Assert.Equal(400, hoch.Flaeche.Bild.Hoehe, 3);
+
+            Zeichenmodell winzig = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false, breite: 10, hoehe: 10);
+            Assert.Equal((ChartRenderer.MASS_MIN_BREITE, ChartRenderer.MASS_MIN_HOEHE), (winzig.Breite, winzig.Hoehe));
+        }
+
         [Fact]
         public void GanglinieNormiertModell_fuehrt_Prozentwerte()
         {

@@ -3606,7 +3606,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 /* SUCHE IN DER KOPFLEISTE (4.2, 4.8): Die Katalogliste reicht ihre Suchzeile in die
    Kopfleiste des Katalogs. Sie bricht hier nicht um, das Suchfeld traegt nur den
    Platzhalter (die Beschriftung steht als aria-label am Feld) und gibt als Erstes Breite
-   ab; die Trefferzahl kuerzt mit Auslassung. */
+   ab; die Trefferzahl kuerzt nie mit Auslassung, zuerst faellt ihr Hauptwort weg. */
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile {
     flex: 0 1 auto !important;
     flex-wrap: nowrap;
@@ -3621,8 +3621,59 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
 .epos-zweispalten-kopfleiste .epos-katalog-treffer {
-    flex: 0 1 auto !important; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    /* NIE MIT AUSLASSUNG (Konzept 4.10, DZ1): Die Trefferzahl schrumpft nicht; fehlt Platz, gibt
+       zuerst das Suchfeld nach (bis 7rem). Erst in einem schmalen Katalogbereich (unter 700 px) faellt
+       das Hauptwort weg ("40 von 40"), die Zahl steht immer ganz. */
+    flex: 0 0 auto !important;
+    min-width: min-content;
+    white-space: nowrap;
+    overflow: visible;
 }
+.epos-zweispalten-kopfleiste .epos-katalog-treffer-wort { white-space: pre; }
+@container zweispaltenbereich (max-width: 699.98px) {
+    .epos-zweispalten-kopfleiste .epos-katalog-treffer-wort { display: none; }
+}
+
+/* DER HINWEIS DER SPALTENWAHL (Konzept 4.10, DZ1): neben einer angehakten Spalte mit Rang, die bei
+   der aktuellen Breite weicht. Er folgt derselben Breite wie die Spalte - in der Katalogauswahl
+   misst der Katalogbereich (zweispaltenbereich, Inhaltsbreite = Listenbreite), sonst die Liste. */
+.epos-spaltenwahl-weicht { display: none; margin-inline-start: 6px; color: var(--epos-text-leise); font-size: 11px; white-space: nowrap; }
+@container epos-katalogliste (max-width: 399.98px) { .epos-weicht-ab-400 { display: inline; } }
+@container zweispaltenbereich (max-width: 399.98px) { .epos-weicht-ab-400 { display: inline; } }
+@container epos-katalogliste (max-width: 479.98px) { .epos-weicht-ab-480 { display: inline; } }
+@container zweispaltenbereich (max-width: 479.98px) { .epos-weicht-ab-480 { display: inline; } }
+@container epos-katalogliste (max-width: 559.98px) { .epos-weicht-ab-560 { display: inline; } }
+@container zweispaltenbereich (max-width: 559.98px) { .epos-weicht-ab-560 { display: inline; } }
+@container epos-katalogliste (max-width: 639.98px) { .epos-weicht-ab-640 { display: inline; } }
+@container zweispaltenbereich (max-width: 639.98px) { .epos-weicht-ab-640 { display: inline; } }
+@container epos-katalogliste (max-width: 719.98px) { .epos-weicht-ab-720 { display: inline; } }
+@container zweispaltenbereich (max-width: 719.98px) { .epos-weicht-ab-720 { display: inline; } }
+@container epos-katalogliste (max-width: 799.98px) { .epos-weicht-ab-800 { display: inline; } }
+@container zweispaltenbereich (max-width: 799.98px) { .epos-weicht-ab-800 { display: inline; } }
+@container epos-katalogliste (max-width: 879.98px) { .epos-weicht-ab-880 { display: inline; } }
+@container zweispaltenbereich (max-width: 879.98px) { .epos-weicht-ab-880 { display: inline; } }
+@container epos-katalogliste (max-width: 959.98px) { .epos-weicht-ab-960 { display: inline; } }
+@container zweispaltenbereich (max-width: 959.98px) { .epos-weicht-ab-960 { display: inline; } }
+@container epos-katalogliste (max-width: 1039.98px) { .epos-weicht-ab-1040 { display: inline; } }
+@container zweispaltenbereich (max-width: 1039.98px) { .epos-weicht-ab-1040 { display: inline; } }
+@container epos-katalogliste (max-width: 1119.98px) { .epos-weicht-ab-1120 { display: inline; } }
+@container zweispaltenbereich (max-width: 1119.98px) { .epos-weicht-ab-1120 { display: inline; } }
+@container epos-katalogliste (max-width: 1199.98px) { .epos-weicht-ab-1200 { display: inline; } }
+@container zweispaltenbereich (max-width: 1199.98px) { .epos-weicht-ab-1200 { display: inline; } }
+@container epos-katalogliste (max-width: 1279.98px) { .epos-weicht-ab-1280 { display: inline; } }
+@container zweispaltenbereich (max-width: 1279.98px) { .epos-weicht-ab-1280 { display: inline; } }
+@container epos-katalogliste (max-width: 1359.98px) { .epos-weicht-ab-1360 { display: inline; } }
+@container zweispaltenbereich (max-width: 1359.98px) { .epos-weicht-ab-1360 { display: inline; } }
+@container epos-katalogliste (max-width: 1439.98px) { .epos-weicht-ab-1440 { display: inline; } }
+@container zweispaltenbereich (max-width: 1439.98px) { .epos-weicht-ab-1440 { display: inline; } }
+@container epos-katalogliste (max-width: 1519.98px) { .epos-weicht-ab-1520 { display: inline; } }
+@container zweispaltenbereich (max-width: 1519.98px) { .epos-weicht-ab-1520 { display: inline; } }
+@container epos-katalogliste (max-width: 1599.98px) { .epos-weicht-ab-1600 { display: inline; } }
+@container zweispaltenbereich (max-width: 1599.98px) { .epos-weicht-ab-1600 { display: inline; } }
+@container epos-katalogliste (max-width: 1679.98px) { .epos-weicht-ab-1680 { display: inline; } }
+@container zweispaltenbereich (max-width: 1679.98px) { .epos-weicht-ab-1680 { display: inline; } }
+@container epos-katalogliste (max-width: 1759.98px) { .epos-weicht-ab-1760 { display: inline; } }
+@container zweispaltenbereich (max-width: 1759.98px) { .epos-weicht-ab-1760 { display: inline; } }
 
 /* DIE FUSSLEISTE DES KATALOGS (4.2): Name, Knoepfe der Auswahl, rechts Neu…. Eine Zeile,
    sie bricht nicht um; der Name kuerzt mit Auslassung. */
@@ -3817,8 +3868,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten--zieht { cursor: row-resize; user-select: none; }
 
 /* Aufgeklappt haelt die Detailzeile zusaetzlich ihren Inhalt bis --epos-satz-untergrenze (KB1):
-   das Skript setzt --epos-satz-offen-min = min(Inhalt, Untergrenze) am Dialog. Darueber waechst
-   sie bis --epos-satz-max; reicht das Fenster dafuer nicht, rollt der Dialogkoerper. */
+   das Skript setzt --epos-satz-offen-min = min(Inhalt, Untergrenze) am Dialog. Darueber nimmt
+   sie die gesamte Hoehe, die Projektliste und Katalog auf ihren Untergrenzen lassen (DZ1);
+   reicht das Fenster nicht einmal fuer die Untergrenzen, rollt der Dialogkoerper. */
 .epos-zweispalten { --epos-satz-untergrenze: 80px; }
 .epos-zweispalten--satz-offen { --epos-satz-min: calc(var(--epos-touchziel) + 20px + var(--epos-satz-offen-min, 0px)); }
 
@@ -3988,21 +4040,155 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     max-height: none;
 }
 
-/* Die aufgeklappte Detailzeile nimmt den Listen Hoehe ab und rollt in sich. Die Projektliste
-   steht dabei auf ihrer Untergrenze, die Detailzeile waechst mit ihrem Inhalt bis zur
-   Obergrenze --epos-satz-max (45 % der Fensterhoehe), der Rest geht an den Katalog; erst
-   darueber oder wenn das Fenster nicht reicht, rollt allein die Satzflaeche (KB1). */
+/* VORRANG DER DETAILZEILE (DZ1, Konzept 4.4 und 4.8): Aufgeklappt stehen Projektliste und
+   Katalog auf ihren Untergrenzen (Projektliste Kopf und eine Zeile, Katalog Kopf und zwei
+   Zeilen samt Kopf- und Fussleiste), die Satzflaeche nimmt die GESAMTE uebrige Hoehe. Ihr
+   Inhalt fuellt sie (die Ganglinie zeichnet sich in dieser Hoehe); nur was trotzdem nicht
+   passt (Alle Daten), rollt in der Satzflaeche. Zugeklappt gilt das Raster oben. */
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {
     grid-template-rows:
         calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1) + var(--epos-touchziel) + 18px)
         8px
-        minmax(min-content, 1fr)
-        minmax(var(--epos-satz-min), auto);
+        min-content
+        minmax(var(--epos-satz-min), 1fr);
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog {
+    grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);
 }
 
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {
-    flex: 1 1 auto;
-    max-height: var(--epos-satz-max, 45vh);
+    flex: 1 1 0;
+    max-height: none;
+}
+
+/* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
+   fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
+   Beschreibung, Kennwerte nebeneinander, Beschriftung vor dem Feld) und die Kennzahlenzeile, die zugleich
+   Schalter "sortiert", Einheitenwahl, Zoomleiste des Bildes und die Infoknoepfe des Wirts traegt. Die Kurve
+   nimmt den Rest in VOLLER BREITE (DZ1-N2): Breite und Hoehe kommen aus dem Behaelter (contain: size), und
+   GanglinienGrafik laesst das Zeichenmodell in genau dieser Groesse bauen (DiagrammSvg meldet das Mass beim
+   Aufklappen und nach jeder Groessenaenderung) - das Bild steht 1:1, Achsen und Schrift unverzerrt. Damit Zoomleiste und
+   Zeigerzeile im Raster des Bausteins stehen, loest sich der Rahmen von DiagrammSvg hier auf
+   (display: contents); Bezugsbreite der Kurve ist die Breite des Bausteins (container ganglinienbild).
+   Die Zeigerzeile liegt oben rechts ueber dem Bild, statt eine Zeile unter ihm zu belegen.
+   UNTERGRENZE: Kopf plus Mindesthoehe der Kurve (--epos-kurve-min, 150 px) ist die Untergrenze der
+   Satzflaeche (--epos-satz-untergrenze, KB1); die Felder der Kopfzeile sind als Lesefelder 0,7 Beruehrungsziel
+   hoch. Reicht das Fenster nicht dafuer, rollt nach KB1 der Dialogkoerper, nie das Bild. Die Untergrenze
+   steht als fester Wert je Stufe (150 px Kurve + Kennzahlenzeile 44 bzw. 37 px + 8 px; mit Kopfzeile dazu
+   0,7 Beruehrungsziel + 2 px), weil das Skript (satzOffenMin) sie als px-Wert liest, nicht als calc(). */
+.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) {
+    --epos-kurve-min: 150px;
+    --epos-satz-untergrenze: 202px;
+}
+.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 235px; }
+@media (max-width: 1279.98px), (max-height: 799.98px) {
+    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 195px; }
+    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 223px; }
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik {
+    flex: 1 1 0;
+    min-height: min-content;
+    margin-top: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto minmax(var(--epos-kurve-min, 150px), 1fr);
+    grid-template-areas: "kopf kopf kopf" "kennzahlen zoom leiste" "bild bild bild";
+    gap: 4px var(--epos-abstand);
+    align-items: center;
+    container: ganglinienbild / inline-size;
+}
+/* Was neben der Ganglinie in der Satzflaeche steht (Hinweise, Abweichungszeilen), behaelt seine Hoehe. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz:has(.epos-ganglinie-grafik) :is(.epos-zweispalten-satz, .epos-zweispalten-satzblock) > :not(.epos-ganglinie-grafik, .epos-zweispalten-satzblock) {
+    flex-shrink: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-kontextzeile {
+    display: none;
+}
+/* Die Kopfzeile: Felder nebeneinander, die Beschreibung breiter, Beschriftung vor dem Feld. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf {
+    grid-area: kopf;
+    display: flex;
+    gap: 4px var(--epos-abstand);
+    min-width: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld,
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste > .epos-feld {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
+/* Kurze Kennwerte (PV: Raster, Jahresarbeit, Nennleistung) behalten Platz fuer ihren Wert. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz { flex: 0 1 auto; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz .epos-eingabe { width: 9em; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-text,
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste .epos-feld-text {
+    white-space: nowrap;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-zeile { flex: 1 1 0; min-width: 0; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-eingabe {
+    min-width: 0;
+    width: 100%;
+    min-height: calc(0.7 * var(--epos-touchziel));
+    text-overflow: ellipsis;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kennzahlen {
+    grid-area: kennzahlen;
+    flex-direction: row;
+    gap: 4px 16px;
+    min-width: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste {
+    grid-area: leiste;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-knoepfe {
+    display: flex;
+    gap: 6px;
+}
+/* Die Huelle des Knopfpaars in der Kennzahlenzeile: ohne eigenen Unterrand. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
+    margin-bottom: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg {
+    display: contents;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-leiste {
+    grid-area: zoom;
+    flex-wrap: nowrap;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile {
+    grid-area: bild;
+    align-self: start;
+    justify-self: end;
+    z-index: 1;
+    margin: 2px 6px 0 0;
+    padding: 0 4px;
+    min-height: 16px;
+    line-height: 16px;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--epos-karte-flaeche) 85%, transparent);
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
+    display: none;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
+    grid-area: bild;
+    justify-self: stretch;
+    align-self: stretch;
+    contain: size;
+    min-height: 0;
+    width: auto;
+    max-width: 100%;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
+    width: 100%;
+    height: 100%;
 }
 
 /* ---- KOMPAKTSTUFE UND ROLLBALKEN (KB1, Konzept 4.8) -----------------
@@ -12287,10 +12473,12 @@ table.epos-simerg-tabelle {
 .epos-wp-extrapolation {
     margin: 2px 0 10px;
 }
-/* W7-B-3 Nachtrag: "Markierte auf diese Waermepumpe umstellen" unter dem Katalog. */
+/* "Markierte auf diese Waermepumpe umstellen" steht im Leistenzusatz der Kopfleiste der
+   Projektliste: ohne eigenen Rand - die Kopfleiste bleibt so hoch wie das Touchziel, sonst
+   ragt sie bei aufgeklappter Detailzeile aus der Rasterzeile der Projektliste (Untergrenze
+   Kopf und eine Zeile plus Touchziel; gemessen mit Proben/Rasterprobe/rollbereichprobe.mjs). */
 .epos-wp-umstellen {
     justify-content: flex-end;
-    margin-top: 6px;
 }
 .epos-dialog--eingebettet {
     padding: 0;

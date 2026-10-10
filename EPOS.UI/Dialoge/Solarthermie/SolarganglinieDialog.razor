@@ -25,6 +25,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -37,20 +38,51 @@
 
     @{
         // Die Daten des gewaehlten Satzes - im Projektbetrieb die Detailzeile der
-        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
-        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
-        @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
-           entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
-        <div class="epos-berechnungshilfe">
+        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite. Die Huelle
+        // .epos-berechnungshilfe steht genau einmal um das Knopfpaar: mit Grafik in der
+        // Kennzahlenzeile, ohne Grafik als eigene Zeile.
+        RenderFragment knoepfe = @<span class="epos-berechnungshilfe">
             <InfoKnopf Schluessel="Form_Solarganglinie.Grundlagen"
                        StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
             <InfoKnopf Schluessel="Form_Solarganglinie.Berechnung"
                        StandardKurztext="Berechnungsweg Solarthermie" MitAssistent="false" />
-        </div>
+        </span>;
 
-        <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
-        <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-                  Mehrzeilig="true" Zeilen="3" />
+        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
+
+        @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
+           dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik.
+           Mit Grafik steht der Kopf verdichtet (DZ1-N1): Name und Beschreibung in EINER Zeile,
+           die Infoknoepfe rechts in der Kennzahlenzeile - die Kurve bekommt den Rest. *@
+        @if (_grafik.Kennzahlen is not null)
+        {
+            <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
+                              Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)" BildauftragMass="@_grafik.BildMitMass(BildauftragMass)"
+                              Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
+                              LabelJahresarbeit="@LabelJahresarbeit" LabelSpitze="@LabelSpitze"
+                              LabelVollbenutzung="@LabelVollbenutzung"
+                              LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
+                              EinheitStunden="@EinheitStunden"
+                              Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
+                              FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                              Knoepfe="@knoepfe">
+                <Kopfzeile>
+                    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                              Titel="@_beschreibung" />
+                </Kopfzeile>
+            </GanglinienGrafik>
+        }
+        else
+        {
+            @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
+               entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
+            @knoepfe
+
+            <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                      Mehrzeilig="true" Zeilen="3" />
+        }
         </div>;
     }
 
@@ -68,7 +100,8 @@
                             UebernehmenText="@LabelHinzu"
                             UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                             EntfernenText="@LabelEntfernen"
-                            EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+                            EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen"
+                            SatzArt="@SatzArt" SatzName="@SatzName">
 
             <Links>
                 <div class="epos-raster-huelle">
@@ -192,6 +225,38 @@
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Solarganglinie.btn_Help";
 
+    // --- Die Ganglinie in der Detailzeile (DZ1) --------------------------------
+
+    /// <summary>
+    /// Die drei Kennzahlen der gewählten Ganglinie — <c>GanglinienAuswertungCtrl</c> mit
+    /// <c>GanglinienQuelle.Solarganglinie</c> in der Hülle; <c>null</c> = keine Grafik.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? Kennzahlen { get; set; }
+
+    /// <summary>Das Zeichenmodell der gewählten Ganglinie (Wahl, sortiert); gerechnet im Kern.</summary>
+    [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
+
+    [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
+    [Parameter] public Func<Farbrolle, Task>? FarbeZuruecksetzen { get; set; }
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
+    [Parameter] public string LabelJahresarbeit { get; set; } = Resource.STROMGL_LBL_JAHRESARBEIT;
+    [Parameter] public string LabelSpitze { get; set; } = Resource.STROMGL_LBL_SPITZE;
+    [Parameter] public string LabelVollbenutzung { get; set; } = Resource.GEBB_LBL_VOLLBENUTZUNG;
+    [Parameter] public string LabelSortiert { get; set; } = Resource.SIM_CHK_SORTIERT;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.ALLG_LBL_EINHEIT;
+    [Parameter] public string EinheitStunden { get; set; } = Resource.GEBB_EINHEIT_STUNDEN;
+    [Parameter] public string Bildtext { get; set; } = Resource.CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE;
+    [Parameter] public string PlatzhalterBild { get; set; } = Resource.GANGLINIE_KEIN_DIAGRAMM;
+
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private GanglinieKatalogseite? _seite;
@@ -204,6 +269,37 @@
     private string _katalogGewaehlt = "";
     private string _name = "";
     private string _beschreibung = "";
+
+    /// <summary>Die Ganglinie der Detailzeile (DZ1).</summary>
+    private readonly GanglinienGrafikstand _grafik = new();
+
+    /// <summary>
+    /// Die Zeilen, die beim Öffnen schon gespeichert waren: Nur sie tragen die Id ihrer
+    /// Projektkopie. Eine eben aufgenommene Zeile trägt die Katalog-Id — die Grafik fragt
+    /// dann über den Namen den Katalogsatz, aus dem die Kopie entstehen wird.
+    /// </summary>
+    private readonly HashSet<ErzeugerZeile> _gespeichert = new();
+
+    /// <summary>Die Kennzahlen der Grafik; <c>null</c> = keine Grafik. Prüfhilfe.</summary>
+    public GanglinienKennzahlen? Grafikkennzahlen => _grafik.Kennzahlen;
+
+    /// <summary>Die Wahl, zu der die Grafik gehört. Prüfhilfe für die Tests.</summary>
+    public GanglinienWahl? Grafikwahl => _grafik.Wahl;
+
+    /// <summary>Was die Detailzeile zeigt: die Projektzeile, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _projektZeile is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
+    private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _name;
+
+    private void GrafikAnstossen(GanglinienWahl wahl) => _ = GrafikLaden(wahl);
+
+    private async Task GrafikLaden(GanglinienWahl wahl)
+    {
+        await _grafik.LadenAsync(wahl, Kennzahlen);
+        await InvokeAsync(StateHasChanged);
+    }
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
     public ErzeugerZeile? Projektzeile => _projektZeile;
@@ -233,6 +329,7 @@
         // Der Filterstand je Katalog, fuer die Sitzung (Frage Q2).
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
             Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Solarganglinie));
+        foreach (ErzeugerZeile z in Zeilen) _gespeichert.Add(z);
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SOLARGANGLINIE,
                                           () => KiSicht(), KiHaken());
@@ -294,6 +391,7 @@
         _katalogGewaehlt = "";
         _name = zeile.Bezeichner;
         _beschreibung = BeschreibungZu(zeile.Bezeichner);
+        GrafikAnstossen(new GanglinienWahl(false, _gespeichert.Contains(zeile) ? zeile.GeraetId : 0, zeile.Bezeichner));
     }
 
     /// <summary>Die Wahl über den Bezeichner — der Weg des Assistenten.</summary>
@@ -314,6 +412,7 @@
             _katalogGewaehlt = "";
             _name = "";
             _beschreibung = "";
+            _grafik.Verwerfen();
             return;
         }
         Katalogzeile_(zeile);
@@ -326,6 +425,7 @@
         _projektZeile = null;
         _name = zeile.Bezeichner;
         _beschreibung = zeile.Text(Katalogfilterprofil.SpBeschreibung);
+        GrafikAnstossen(new GanglinienWahl(true, zeile.Id, zeile.Bezeichner));
     }
 
     private string BeschreibungZu(string bezeichner)
@@ -362,6 +462,7 @@
         _projektZeile = null;
         _name = "";
         _beschreibung = "";
+        _grafik.Verwerfen();
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);

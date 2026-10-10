@@ -208,13 +208,22 @@ ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Au
 - **Zugeklappt** (Vorgabe beim Öffnen, KA‑E‑4): eine Zeile mit Pfeil, Marke „Projektsatz“ oder
   „Katalogsatz“, Name und den wichtigsten Kenndaten. Sie zeigt den zuletzt gewählten Satz, gleich in
   welchem Bereich.
-- **Aufgeklappt:** die Zeile wird zur Satzfläche mit eigener Rollleiste. Sie nimmt den Listen Höhe ab — der
-  Katalog behält mindestens rund 250 px, die Projektliste wird bei Bedarf bis zur unteren Grenze geklemmt;
-  beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
+- **Aufgeklappt:** die Zeile wird zur Satzfläche und hat Vorrang: Projektliste und Katalog stehen auf ihren
+  Untergrenzen (Projektliste Kopf und eine Zeile, Katalog Kopf und zwei Zeilen samt Kopf- und Fußleiste), die
+  Satzfläche nimmt die gesamte übrige Höhe; beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
   mit „Erst Schloss aufheben“), beim Projektsatz die Kostenknöpfe und die projektbezogenen Felder
   (Abschnitt 4.2).
 - Der Zustand auf/zu wird nicht gemerkt; die Satzfläche des BHKW startet damit nicht mehr aufgeklappt
   (heute `_parameterOffen = true`).
+
+**Präzisiert in DZ1 (gemessen 10.10.2026, Rollbereichprobe):** Aufgeklappt steht die Projektliste auf ihrer
+Untergrenze (85 px, Kompaktstufe 74 px), die Katalogliste auf Kopf und zwei Zeilen (147 bzw. 161 px, Kompaktstufe
+128 bzw. 140 px); die Satzfläche reicht bis an den unteren Rand des Bausteins. Ihr Inhalt füllt sie — eine Ganglinie
+zeichnet sich in dieser Höhe (Abschnitt 4.9) —, und nur was trotzdem nicht passt („Alle Daten“), rollt in der
+Satzfläche; sie ist dann der einzige Rollbereich. Zugeklappt gilt die Aufteilung über die Trennlinie (4.3)
+unverändert. Gemessene Satzfläche mit Kosten und „Alle Daten“ (Heizkessel): 165 px in 1 280 × 800, 172 px in
+1 280 × 720, 152 px in 1 024 × 700, 220 px in 1 024 × 768, 476 px in 768 × 1 024, 97 px in 1 093 × 614.
+Trägt die Satzfläche eine Ganglinie, ist ihre Untergrenze der Kopf plus 150 px Kurve (DZ1‑N2, Maße in 4.9).
 
 ### 4.5 Mehrfachauswahl
 
@@ -225,6 +234,13 @@ ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Au
   übernehmen…, Schloss, Löschen. Die Rückfrage nennt die Zahl und bei Löschen und Schloss die Namen.
 - **Sammelübernahme** (KA‑E‑6): Doppelklick und Enter übernehmen die Zeile bzw. die Auswahl. Die
   Trägerwahl fragt je Brennstoff einmal (AD-Q4). Die Detailzeile zeigt die zuletzt angeklickte Zeile.
+- **Die Wahl folgt der Übernahme** (DZ1‑N2): Wählt der Wirt nach Übernehmen, Umstellen oder Neu… die neue
+  Projektzeile, steht auch die Mehrfachwahl auf genau dieser Zeile (bei einer Sammelübernahme auf den neuen
+  Zeilen); die vorher angekreuzten Kästchen sind abgewählt. Eine Zeile, die aus der Liste verschwindet, verlässt
+  die Wahl. Ist nichts angekreuzt, bleibt es so — dann wirken die Aktionen auf die Einzelwahl. „Aus dem Projekt
+  entfernen“ trifft damit nach einer Übernahme die eben übernommene Zeile. Geregelt an einer Stelle im Baustein
+  (`Bereichswahl.ListeFolgen`, gerufen von der `Zweispaltenauswahl` bei jedem Parametersatz über die
+  ungefilterte Projektliste) für alle Wirte; gehalten von bunit-Fällen und der Katalogprobe.
 
 ### 4.6 Bearbeiten und Mehrfach-Bearbeiten
 
@@ -286,9 +302,10 @@ Normalstufe. Die Klemme auf eine Katalogzeile unter 600 px Bausteinhöhe gilt nu
 Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf, zwei Zeilen und Knopfleiste,
 Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
 senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
-Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts und wächst
-bis 45 % der Fensterhöhe, Projekt- und Katalogliste geben dafür bis zu ihrer Untergrenze ab; erst darüber rollt
-allein die Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
+Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts (mit
+Ganglinie Kopf und 150 px Kurve, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
+Satzfläche nimmt die gesamte übrige Höhe ohne Obergrenze; was trotzdem nicht passt, rollt allein in der
+Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
 768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
 aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebäudedialogs leer. Die Fensterhöhe zählt
 ohne die sicheren Abstände des Geräts (Statusleiste und Home-Anzeige des iPads; Token `--epos-sicher-oben` und
@@ -301,15 +318,70 @@ vollen Fensterhöhe halten sie frei, gemessen zusätzlich in den iPad-11-Zoll-Fe
 | Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |
 |---|---|---|---|---|
 | BHKW, Heizkessel | Summe kWth | Vergleichen, Schloss, Löschen, Bearbeiten · Neu | Alle Daten; Projektsatz: Kosten, Träger, Grenzleistung, VL/RL, Senken | — |
-| Pufferspeicher | Summe Volumen | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Auslegen… | — |
+| Pufferspeicher | Summe Volumen, Auslegen… | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Auslegen… | — |
 | Stromspeicher | Summe kWh | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Träger | — |
 | Photovoltaik | Summe kWp | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Stückzahl, Neigung, Azimut, Albedo | Stränge und Wechselrichter… |
 | Solarkollektoren | Summe Module | dieselben · Neu | Alle Daten; Projektsatz: Kosten, Stückzahl, Neigung, Azimut, Solarkreis | — |
 | Wärmepumpe | Umstellen | Schloss, Löschen, Bearbeiten | Kenndaten; Projektsatz: Kosten | Anlage… (`WaermepumpeAnlageDialog`) |
 | Gebäude | — | Neu, Import, Baustoffzuordnungen, Schloss, Löschen | Kenndaten; Projektsatz: Wohnfläche, Ausrichtung, Simulation, Export | Gebäudedaten… |
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
-| Wärmebedarf extern, Strom-, Solarganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten | Ganglinie mit Kennzahlen | — |
+| Wärmebedarf extern, Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
 | Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
+
+**Präzisiert in DZ1 (Anwenderentscheid 10.10.2026: „Alle Dialoge mit CSV-Import … sollen unter ‚Gewählter
+Satz‘ analog zum Dialog Wärmebedarf extern den Lastgang darstellen“):** Alle vier Ganglinien-Dialoge übergeben der
+Detailzeile Marke und Namen des gewählten Satzes (`SatzArt`, `SatzName`) und zeigen aufgeklappt denselben Baustein
+`GanglinienGrafik` — Jahresarbeit, Spitzenlast, Vollbenutzungsstunden, Schalter „sortiert“ und Einheit, darunter
+die Jahresganglinie. Kennzahlen und Zeichenmodell rechnet der Kern (`GanglinienAuswertungCtrl` mit
+`GanglinienQuelle.Solarganglinie` bzw. `PvGanglinie`, `ChartRenderer.GanglinieNormiertModell`); die Gaben baut
+`GanglinienGrafikGaben` in `EPOS.UI.Daten`. Eine eben aufgenommene Projektzeile trägt noch keine Projektkopie und
+zeigt den Katalogsatz gleichen Namens. Die Zeichenfläche hält das Seitenverhältnis des Zeichenmodells
+(`--epos-bild-verhaeltnis`), ihre Höhe kommt aus dem Behälter, auch beim Vergrößern des Fensters und beim Auf- und
+Zuklappen; das Bild bekommt keinen eigenen Rollbalken.
+
+**Präzisiert in DZ1-N1 (verdichteter Kopf, gemessen 10.10.2026, Rollbereichprobe):** Der Kopf der Satzfläche hat
+höchstens zwei schmale Zeilen. Die **Kopfzeile** (Parameter `Kopfzeile` der `GanglinienGrafik`) trägt Name und
+Beschreibung nebeneinander, die Beschriftung vor dem Feld, die Beschreibung doppelt so breit, beide einzeilige
+Lesefelder (0,7 Berührungsziel hoch, voller Text als Tooltipp); die PV-Ganglinie stellt Raster, Jahresarbeit und
+Nennleistung kurz dazu. Wärmebedarf extern und Stromganglinie haben keine Kopfzeile (der Name steht in der
+Detailzeile). Die **Kennzahlenzeile** trägt Kennzahlen, Zoomleiste („×1 · Bereich · 1:1“), Schalter „sortiert“,
+Einheit (Beschriftung vor dem Feld) und rechts die Infoknöpfe des Wirts (Parameter `Knoepfe`; ohne Grafik bleibt
+die eigene Knopfzeile). Die Zeigerzeile liegt oben rechts über dem Bild. Kopf ohne Polster: 51 px (Kompaktstufe
+44 px) ohne, 84 px (72 px) mit Kopfzeile. Die Untergrenze der Satzfläche ist der Kopf plus 90 px Kurve
+(`--epos-kurve-min`; Satzfläche 142 bzw. 175 px, Kompaktstufe 135 bzw. 163 px); reicht das Fenster dafür nicht,
+rollt nach KB1 der Dialogkörper. Gemessene Kurve, Detailzeile auf:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 |
+|---|---|---|---|
+| Wärmebedarf extern | 93 px, Dialogkörper rollt (KB1) | 94 px, rollt (KB1) | 122 px |
+| Stromganglinie | 139 px | 148 px | 196 px |
+| Solarthermie-, PV-Ganglinie | 96 px | 112 px | 160 px |
+
+Eine Kurve von 180 px ohne Rollen des Dialogkörpers gibt 1 280 × 800 nicht her: Mit Projektliste und Katalogliste
+auf ihren Untergrenzen bleiben der Satzfläche 194 px (Solar, PV), 204 px (Strom) und 118 px (Wärmebedarf extern:
+Kontextzeile und Knopfleiste unter dem Katalog). Mehr Kurve verlangt eine kleinere Untergrenze der Katalogliste
+(Kopf und eine Zeile bei offener Ganglinie) oder ein Rollen des Dialogkörpers — offen zum Entscheid.
+
+**Präzisiert in DZ1-N2 (Kurve in voller Breite, gemessen 10.10.2026, Rollbereichprobe):** Die Kurve nimmt die volle
+Breite der Satzfläche und deren übrige Höhe. Die Zeichenfläche nimmt ihre Größe vom Behälter (`contain: size`, kein
+Seitenverhältnis mehr); `DiagrammSvg` meldet ihr Maß beim Aufklappen und nach jeder Größenänderung
+(`MassGeaendert`, ResizeObserver im Modul, entprellt), und `GanglinienGrafik` lässt das Zeichenmodell über
+`BildauftragMass` in genau dieser Größe bauen (`ChartRenderer.GanglinieNormiertModell` mit `breite`/`hoehe`) — das
+Bild steht 1:1, Achsen und Schrift sind unverzerrt. Unter 400 px Höhe steht das Modell kompakt: ohne Titel (der Name
+steht darüber), Achsentitel und Legende in einer Kopfzeile, die Prozentachse unter 120 px Flächenhöhe in
+50-%-Schritten. Ohne Maß bleibt das Bild 1 240 × 560 und byte-gleich (ChartProben-Messlatte unverändert). Alle vier
+Ganglinien-Dialoge gehen diesen Weg. Die Untergrenze der Kurve ist 150 px (`--epos-kurve-min`; Satzfläche 202 bzw.
+235 px, Kompaktstufe 195 bzw. 223 px); reicht das Fenster nicht, rollt nach KB1 der Dialogkörper. Gemessen,
+Detailzeile auf (Kurve Breite × Höhe, Überhang des rollenden Dialogkörpers):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 768 × 1 024 |
+|---|---|---|---|---|
+| Wärmebedarf extern | 1 110 × 153 px, rollt 100 px | 1 118 × 154 px, rollt 80 px | 982 × 154 px, rollt 32 px | 726 × 377 px |
+| Stromganglinie | 1 110 × 153 px, rollt 14 px | 1 118 × 154 px, rollt 6 px | 982 × 196 px | 726 × 451 px |
+| Solarthermie-, PV-Ganglinie | 1 110 × 153 px, rollt 57 px | 1 118 × 154 px, rollt 42 px | 982 × 160 px | 726 × 396 px |
+
+Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700: 982 px, 1 093 × 614: 1 051 px, je
+154 px hoch, der Dialogkörper rollt dort nach KB1).
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 
@@ -348,13 +420,27 @@ Filtern danach bleiben über die Wahl möglich.
 - Tastatur: Knopf und Kästchen sind mit Tab erreichbar, Esc schließt die Auswahl (nicht den Dialog)
   und gibt den Fokus an den Knopf zurück; ein Klick daneben schließt sie ebenso.
 
+**Hinweis „bei dieser Breite ausgeblendet“ (DZ1).** In der Standardanzeige stehen Spalten mit Rang 2 in
+der Auswahl als angehakt, auch wenn sie bei der aktuellen Breite weichen. Neben einer solchen Spalte steht
+dann leise „bei dieser Breite ausgeblendet“ (`KFLT_SPALTE_AUSGEBLENDET`, englisch „hidden at this width“).
+Der Hinweis folgt derselben Breite wie die Spalte: Er trägt die Stufe der Spalte (`epos-weicht-ab-N` neben
+`epos-spalte-ab-N`) und erscheint unter denselben Containerabfragen — in der Katalogauswahl misst der
+Katalogbereich (`zweispaltenbereich`, seine Inhaltsbreite ist die Listenbreite), sonst die Liste selbst. Mit
+gemerkter Wahl weicht keine Spalte, und es steht kein Hinweis.
+
+**Trefferzahl (DZ1).** Die Trefferzahl in der Kopfleiste des Katalogs kürzt nie mit Auslassung: Sie steht als
+Zahl („40 von 40“, `KFLT_TREFFER_KURZ`) und Hauptwort („ Sätzen“) und schrumpft nicht; fehlt Platz, gibt zuerst
+das Suchfeld nach (bis 7rem), und erst in einem Katalogbereich unter 700 px Breite fällt das Hauptwort weg. Der
+volle Text steht im `title`. Bei 768 px Fensterbreite steht sie ganz („40 von 40 Sätzen“, gemessen 10.10.2026).
+
 **Summe.** In der Kopfleiste des Projekts hat die Summe Vorrang: Zahl und Einheit werden nie gekürzt
 (`flex-shrink: 0`, `white-space: nowrap`); zuerst geben Überschrift und Knöpfe nach (Auslassung, unter
 800 px Bereichsbreite ohne Pfeile), die Kopfleiste bleibt einzeilig.
 
 Nachweis: `EPOS.UI.Tests/Bausteine/KataloglisteSpaltenwahlTests`, die Dialogtests der Wirte und die
 KS1-Fälle von `Proben/Rasterprobe/katalogprobe.mjs` (Heizkessel und BHKW in 1 280 × 800 und
-768 × 1 024, mit Gegenprobe).
+768 × 1 024, mit Gegenprobe; sie messen auch Trefferzahl und Hinweis), dazu
+`EPOS.UI.Tests/Bausteine/KataloglisteTrefferUndHinweisTests`.
 
 ## 5 Rückweg Projekt → Datenbank
 
@@ -505,6 +591,158 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
 
+### 5.5 Wie gebaut (Stufe 3, Pufferspeicher)
+
+Der Pufferspeicher folgt dem BHKW (5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `PufferSpStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Pufferspeicher`, Katalog
+  `Tab_Pufferspeicher_STAMM`, Anlage über `ID_PUFFER`, Kostenkomponente 6), dazu `RueckwegVorschau`,
+  `AusProjektUebernehmen`, `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über ID und Namen läuft über
+  denselben Löschweg samt Satzvorlage. Prüfregel wie beim Speichern: Bereitschaftsverluste, Gesamtvolumen und
+  Investitionskosten nicht negativ. Kein Schemaschritt: 208 und 209 decken beide Tabellen; `PufferSpCtrl.CopyFromStamm`
+  trägt den Ursprung ein (eine schon vorhandene Kopie gleichen Namens behält ihren Verweis).
+- **Volumen:** Die Projekt-Kopfleiste zeigt die Summe der Gesamtvolumina in Litern (je Zeile die Projektkopie, ohne
+  Projekt der Katalogsatz). Mit dem Rückweg gehen die fünf Gerätewerte — Hersteller, Speichertyp, Bereitschaftsverluste,
+  Gesamtvolumen, Investitionskosten — als Schnittmenge.
+- **Projektkopie beim Übernehmen:** Wie bei Heizkessel und BHKW legt „In das Projekt übernehmen" die Kopie sofort an
+  (`PufferSpCtrl.CopyFromStamm`, über den Namen idempotent); eine in der Sitzung neu entstandene Kopie merkt die
+  `Projektkopievormerkung`, Abbrechen (auch „Auslegen…", Kreuz, Esc) räumt sie wieder ab, OK lässt sie stehen. Eine
+  frisch aufgenommene Zeile ist damit sofort bearbeitbar — Bearbeiten…, „In die Datenbank übernehmen…" und „Alle Daten"
+  wirken auf sie. Vor dem Aufnehmen steht weiter die Dublettenfrage, in der Sammelübernahme je Satz.
+- **Auslegen…:** steht zweimal. In der Knopfzeile des Projektsatzes neben den Kostenknöpfen (Investition, Betrieb; kein
+  Energieträger) legt er die gewählte Projektkopie aus; in der Projekt-Kopfleiste öffnet er ohne gewählte Projektzeile
+  (auch bei leerer Liste) die Auslegung für einen neuen Speicher, mit gewählter Zeile dieselbe wie beim Projektsatz.
+  Beide verlassen den Dialog wie Abbrechen.
+- **Kindzeilen und Verwendung:** Technische Kindtabellen hat der Katalog nicht. Im Projekt bleiben die 25 Spalten, die
+  nur die Kopie führt (Verwendung und Nutzung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung,
+  Entnahme, Frischwassermodul, Aufstellraum), und die Kindzeilen der Anlage: Senken (`Z_AnlageSenke`), Verbünde
+  (`Z_AnlagePufferVerbund`), die Lade-Prioritäten der Erzeuger, `Z_ProjektPufferSp` und `Tab_PufferAuslegung`. Die Rückfrage nennt es.
+- **Ohne Neu…:** Der Katalogfuß führt kein „Neu…" (4.9), die Speicherverwaltung als Überlagerung entfällt. Neue
+  Katalogsätze entstehen über die Katalogverwaltung im Menü, über „Speichern unter" im Katalogeditor oder über den
+  Rückweg.
+
+### 5.6 Wie gebaut (Stufe 3, Stromspeicher)
+
+Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `StromspeicherStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Stromspeicher`, Katalog
+  `Tab_Stromspeicher_STAMM`, Anlage über `ID_SP`, Kostenkomponente 5), dazu `RueckwegVorschau`, `AusProjektUebernehmen`,
+  `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über den Namen läuft über denselben Löschweg samt Satzvorlage.
+  Prüfregel wie beim Sammelspeichern (`Pruefen`): Kapazität, Leistung, Kosten, Zyklen und Standby nicht negativ,
+  Ladezustand, Degradation und Selbstentladung 0 bis 100 %, Round-Trip-Wirkungsgrad 0 bis 1. Kein neuer Schemaschritt:
+  208 und 209 führen `ID_Stamm` an `Tab_Stromspeicher` und beide Vorlagenverweise an `Tab_Stromspeicher_STAMM`;
+  `StromspeicherCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Projektkopie sofort:** Bisher entstand die Kopie erst beim Speichern des Projekts, und die Detailzeile las stets den
+  Katalog. Jetzt legt „In das Projekt übernehmen" die Kopie außerhalb des Assistenten sofort an (Muster BHKW, mit
+  `Projektkopievormerkung`); Varianten desselben Speichers teilen sich die Kopie gleichen Namens. Die Projektzeile liest
+  ihr Detail deshalb über die Geräte-ID, nicht über ihren Namen (eine Variante heißt „… (2)“). Die Summe kWh ist die
+  Kapazität der Kopie je Anlage.
+- **Kosten:** Die vier Planwertspalten `Modulkosten` (€/kWh), `Leistungskosten`, `Investition_Fix`, `Verschleisskosten`
+  stehen in „Alle Daten“ und in der Satzbearbeitung und gehen mit der Schnittmenge; Betriebs- und Investitionspositionen
+  der Anlage werden Satzvorlagen wie beim Heizkessel.
+- **Kindzeilen:** keine technischen. Die Betriebsführung (`Tab_StromspeicherVariante`) hängt an der Anlage und bleibt im
+  Projekt, ebenso der Energieträger. `Standby_Verbrauch` und `Selbstentladung_Prozent_Monat` sind Gerätespalten und gehen
+  mit in den Katalog; an der Kopie bleiben sie unberührt. Das Sammelspeichern lässt eine leere Gerätespalte leer, wenn sie
+  als 0 zurückkommt (leer heißt im Rechenweg Fachvorgabe).
+- **Katalogeditor ohne Neu…:** Den Knopf „Neu…“ gibt es im Katalogfuß nicht (4.9). „Bearbeiten…“ auf einen einzelnen
+  ungesperrten Satz öffnet den Modulkatalog (`ModulKatalogDialog`, Parameter `Vorwahl`) mit diesem Satz; dort stehen
+  Neu…, Duplizieren… und Löschen wie bisher hinter „Bearbeiten…“ im Modulbereich. Ein gesperrter Satz allein öffnet nur
+  die lesende Satzbearbeitung — Neu… ist dann nur über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
+- **Löschen:** Der Projektdialog hatte keinen Löschknopf; jetzt steht er im Katalogfuß (Rückfrage, mehrere mit
+  Überspringen der gesperrten), geschrieben über `StromspeicherStammCtrl.Loeschen`.
+
+### 5.7 Wie gebaut (Stufe 3, Solarkollektoren)
+
+Die Solarkollektoren folgen Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `SolarkollektorenStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Solarkollektoren`, Katalog
+  `Tab_Solarkollektoren_STAMM`, Anlage über `ID_Solar`, Kostenkomponente 4), dazu `RueckwegVorschau`,
+  `AusProjektUebernehmen`, `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über den Namen läuft über denselben
+  Löschweg samt Satzvorlage. Prüfregel wie beim Speichern: Flächen und Investitionskosten nicht negativ, h0 zwischen 0 und
+  1, k1, k2, Kdir und Kdiff nicht negativ, Bezugsfläche aus der Liste. Kein neuer Schemaschritt: 208 und 209 führen
+  `ID_Stamm` an `Tab_Solarkollektoren` und beide Vorlagenverweise an `Tab_Solarkollektoren_STAMM`;
+  `SolarkollektorenCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Bearbeiten:** `SatzAnzeige` liest Kopie oder Katalogsatz nach ID, `AnzeigefelderSchreibenAlle` schreibt alle Sätze
+  einer Mehrfachbearbeitung in einer Transaktion; der Name bleibt. Die Projektzeile liest Kenndaten und Modulfläche aus
+  der Projektkopie über die Geräte-ID, weil zwei Zeilen desselben Kollektors sich die Kopie teilen.
+- **Projektkopie sofort:** Die Hülle legte die Kopie schon beim Übernehmen an; das bleibt, mit `Projektkopievormerkung`.
+- **Felder der Anlage:** Modulanzahl samt gerechneter Aperturfläche, Neigung, Azimut, Albedo und der Solarkreis (Pumpe,
+  Verluste, Arbeitstemperatur-Weg, Grädigkeit, Spreizung) stehen beim Projektsatz in der Gruppe „Kollektor“ und gehen
+  weiter erst mit „Übernehmen“ in die Anlagenzeile; die Senken stehen als Zeile darunter. Die Summe in der
+  Projekt-Kopfleiste zählt die Module der Projektliste.
+- **Kosten:** Nur Investitions- und Betriebskosten — Energiekosten gibt es nicht. `Investitionskosten` steht in „Alle
+  Daten“ und in der Satzbearbeitung und geht mit der Schnittmenge; Betriebs- und Investitionspositionen der Anlage werden
+  Satzvorlagen wie beim Heizkessel.
+- **Kindzeilen:** keine. Kennwerte, Flächen und Bezugsfläche sind Spalten am Satz. Anlagenbezogen bleiben die Felder der
+  Anlage und die Senken (`Z_AnlageSenke`); die Ergebnistabellen der Simulation verweisen nicht auf die Kopie.
+- **Neu…:** fragt zuerst den Namen und öffnet dann den `SolarkollektorKatalogDialog` im Modus Neu; danach ist der neue
+  Satz gewählt. „Bearbeiten…“ auf einen einzelnen ungesperrten Satz öffnet denselben Editor im Modus Bearbeiten.
+
+### 5.8 Wie gebaut (Stufe 3, Wärmepumpe)
+
+Die Wärmepumpe folgt dem BHKW (5.4); hier steht nur, was abweicht.
+
+- **Aufbau:** Die Anlagenseite `WaermepumpeAnlageDialog` steht nicht mehr eingebettet unter den Listen, sondern als
+  Überlagerung „Anlage…“ beim Projektsatz (KA‑E‑11). Sie bearbeitet die Zeile an Ort und Stelle; OK prüft und übernimmt
+  sie ins Modell, Abbrechen setzt sie auf den Stand beim Öffnen zurück. Eine einzeln übernommene Zeile öffnet ihre Anlage
+  sofort (Betriebsart, Temperaturen, Sperrzeit, Heizstab); das OK des Dialogs hält bei einer neuen, noch nicht bestätigten
+  Zeile an und öffnet deren Anlage. Die Detailzeile zeigt die Kenndaten des Satzes und die Kennlinie (COP, Leistung) wie
+  das Stammblatt, beim Projektsatz dazu die Kostenknöpfe und „Anlage…“. Die Überlagerung zeigt die Kostenknöpfe nicht noch einmal
+  (`KostenleisteAnzeigen="false"`); nur das eigene Fenster der Anlagenseite behält ihre Kostenleiste.
+- **Knöpfe:** Projekt-Kopfleiste „Umstellen“ (genau eine Projektzeile auf genau einen Katalogsatz; Gerät, Gerätefelder und
+  Kennlinien wechseln, Betriebsdaten und Kosten der Anlage bleiben), „Bearbeiten…“, „In die Datenbank übernehmen…“,
+  Entfernen. Katalogfuß Schloss, Löschen, Bearbeiten — ohne Vergleichen und ohne Neu (beides trägt der Katalogeditor).
+  Ein einzelner ungesperrter Katalogsatz öffnet den Katalogeditor `WaermepumpeStammDialog` mit dem Satz vorgewählt
+  (Parameter `Vorwahl`). „In Stamm übernehmen…“ der Anlagenseite entfällt in diesem Wirt; es bleibt nur im eigenen
+  Fenster der Anlagenseite.
+- **Satzbearbeitung:** Hersteller, Beschreibung und Modulkosten (`WPStammCtrl.SammelfelderSchreibenAlle`, eine
+  Transaktion). Nennleistung, Heizstab, Kühlleistung, Typ und Regelung hängen an der Kennlinie; sie und die Kennlinien
+  bearbeiten Katalogeditor bzw. Anlagenseite, nicht die Sammelbearbeitung.
+- **Projektkopie:** entsteht beim Übernehmen und beim Umstellen sofort über `WPCtrl.CopyFromStamm` samt Heiz- und
+  Kühlkennlinie (`Projektkopievormerkung`); die Zeile trägt danach die Id der Kopie statt der Katalog-Id. Entfernen und
+  die alte Kopie eines Umstellens gehen erst mit OK, wenn keine Zeile mehr auf sie zeigt.
+- **Kernweg:** `WPStammCtrl.Rueckweg()` (Kopie `Tab_WP`, Katalog `Tab_WP_STAMM`, Anlage über `ID_WP`, Kostenkomponente 1),
+  `RueckwegVorschau`, `AusProjektUebernehmen`, `RueckwegNameBelegt`, `KatalogsatzLoeschen`; `Delete` über den Namen läuft
+  über denselben Löschweg. Prüfregel: Nennleistung und Modulkosten nicht negativ. Kein neuer Schemaschritt: Schritt 80
+  führt `Tab_WP.ID_Stamm`, 208 und 209 die beiden Vorlagenverweise an `Tab_WP_STAMM`.
+- **Kindzeilen:** die ersten zwei technischen Kindtabellen des Kernwegs — Heizkennlinie `Tab_Kenndaten` →
+  `Tab_Kenndaten_STAMM` und Kühlkennlinie `Tab_Kenndaten_Kuehlung` → `Tab_Kenndaten_Kuehlung_STAMM`, je über `ID_WP` mit
+  allen Vorlauf-Stützstellen; bei „überschreiben“ ersetzen sie die des Ursprungs. Löschen eines Katalogsatzes löscht seine
+  beiden Kennlinien im selben Vorgang. Mit der Schnittmenge gehen Kühlkonfiguration, Taktwerte und die acht Gerätespalten
+  der Übergabegrenze. Anlagenbezogen bleiben Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten und
+  Zeitprogramm, die Quellfelder `WQ_*`, Einbindung, Vorwärmbetrieb, `Vorlauf_Max` und die Senken; die Rückfrage nennt es.
+
+### 5.9 Wie gebaut (Stufe 3, Photovoltaik)
+
+Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier steht nur, was abweicht.
+
+- **Kernweg:** `PhotovoltaikStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_PV`, Katalog `Tab_PV_STAMM`, Anlage über
+  `ID_PV`, Kostenkomponente 3), dazu `RueckwegVorschau`, `AusProjektUebernehmen`, `RueckwegNameBelegt` und
+  `KatalogsatzLoeschen`; `Delete` über ID und Namen läuft über denselben Löschweg samt Satzvorlage. Prüfregel wie beim
+  Sammelspeichern (`Pruefen`): Leistung, Spannungen, Ströme, Abmessungen, Modulkosten und NOCT nicht negativ, Wirkungsgrad
+  0 bis 100 %; der Temperaturkoeffizient der Leistung ist frei. Kein neuer Schemaschritt: 208 und 209 führen `ID_Stamm` an
+  `Tab_PV` und beide Vorlagenverweise an `Tab_PV_STAMM`; `PhotovoltaikCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Projektkopie sofort:** Bisher legte die Dialogzeile die STAMM-Id ab, die Kopie entstand erst beim Speichern des Projekts
+  (`WizardCtrl`). Jetzt legt „In das Projekt übernehmen" die Kopie außerhalb des Assistenten sofort an (Muster BHKW, mit
+  `Projektkopievormerkung`); Felder desselben Moduls teilen sich die Kopie gleichen Namens. Detail, kWp, Ampel,
+  Wechselrichtervorschlag und Auslegungstemperatur lesen die Kopie über die Geräte-ID — der Name der Anlage darf vom Modul
+  abweichen. Die Strangtabelle bietet weiter Katalog-Ids an; das Band von der Zeile zum Katalog ist der Name des Moduls
+  (`Modulname`). Die Summe kWp ist Anzahl Module mal Modulleistung der Kopie je Anlage.
+- **Projektsatz:** Kostenknöpfe, Anzahl Module, Neigung, Azimut, Energieträger und das Ertragsmodell (`PvModellFelder`
+  samt Albedo) stehen in der Detailzeile; „Stränge und Wechselrichter…" öffnet die Strangtabelle (`PvStraengeFelder`, in der
+  Sache unverändert) als Überlagerung mit der Hilfe zum Wechselrichter (KA‑E‑11). Die Auslegungstemperaturen hält der
+  Dialog über das Schließen der Überlagerung hinweg.
+- **Kosten und Kindzeilen:** `Modulkosten` steht in „Alle Daten" und in der Satzbearbeitung und geht mit der Schnittmenge;
+  Betriebs- und Investitionspositionen der Anlage werden Satzvorlagen. Die Modulkoeffizienten `alpha_SC`, `beta_OC`,
+  `gamma_PMP`, `T_NOCT` sind Spalten des Satzes und gehen mit (Punkt 7.5); `alpha_SC` und `beta_OC` führt die Feldliste des
+  Modulkatalogs nicht, sie stehen als Lesewerte da und das Sammelspeichern lässt sie stehen. Die Stränge (`Z_AnlageStrang`)
+  samt Wechselrichterzuordnung, Neigung, Azimut, Anzahl, Ertragsmodell und Energieträger hängen an der Anlage und bleiben im
+  Projekt.
+- **Katalogeditor ohne Neu…:** wie beim Stromspeicher — „Bearbeiten…" auf einen einzelnen ungesperrten Satz öffnet den
+  Modulkatalog (`ModulKatalogDialog`, Parameter `Vorwahl`) mit Neu…, Duplizieren…, Löschen und Import…; der bisherige Knopf
+  „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
+  gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
@@ -559,7 +797,7 @@ aus; breite Projektsätze, für die V1 keine Fläche hat, öffnen als Überlager
 |---|---|---|
 | **1 Baustein** (umgesetzt 09.10.2026, Statuszeile #861) | `Zweispaltenauswahl` auf V1: Raster ohne rollenden Dialogkörper, drei Rahmen mit Kopfleisten und Kennfarbe, Trennlinie mit Grenzen, Tastatur und Merken über `Dienste.Einstellungen`, Detailzeile, Mehrfachwahl samt Kopfhäkchen auf der gefilterten Liste, Doppelklick und Enter; Ressourcen in beiden Sprachen | bunit-Tests des Bausteins, Rasterprobe, `fensterprobe.mjs` angepasst, neue Probe „kein Rollbereich im Rollbereich“ |
 | **2 Heizkessel** (umgesetzt 09.10.2026, Statuszeile #873; Teil a Knöpfe und Bearbeiten, Teil b Rückweg und Schemaschritt 208) | erster Wirt auf dem neuen Baustein: Knöpfe nach Abschnitt 4.2, Bearbeiten je Bereich und Mehrfach-Bearbeiten, Rückweg in die Datenbank mit Kernweg und — falls Punkt 3 so entschieden — dem Schemaschritt | Kern-Tests des Rückwegs (neu, überschreiben, gesperrt, Ursprung fehlt, belegter Name, Kosten, Transaktion), Dialogtests, SQL-Dialekt-Prüfer, alle Proben |
-| **3 Erzeuger** (BHKW umgesetzt 10.10.2026, Statuszeile #887) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
+| **3 Erzeuger** (umgesetzt 10.10.2026: BHKW Statuszeile #887, übrige Erzeuger Statuszeilen #905–#909) | BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe (Überlagerung „Anlage…“), Photovoltaik (Überlagerung „Stränge und Wechselrichter…“) | je Gruppe Dialogtests und Proben |
 | **4 Bedarf und Zeitreihen** | Gebäude (Überlagerung, Rückweg auf die neue Regel gezogen, Verwaltungsbetriebsart ohne Projektbereich), Bedarfsprofile, Wärmebedarf extern, Strom- und Solarganglinie | Dialogtests, Proben, Gebäude-Rückwegtests |
 | **5 Kältemaschine und Abschluss** | Katalogauswahl der Kältemaschine; Wiki-Quellen der Dialoge, Logbuch-Entwurf; Papier nach `ueberholt/` | Dokumentationswachen, Wiki-Gegenlese |
 

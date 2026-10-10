@@ -50988,6 +50988,87 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>
+  <data name="SPD_LBL_SUMME" xml:space="preserve">
+    <value>Total of all selected storage units [kWh]:</value>
+  </data>
+  <data name="SPD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier and operating strategy of the plant (storage variant). Capacity, power, device values and the four cost items are taken along.</value>
+  </data>
+  <data name="PSPD_LBL_SUMME" xml:space="preserve">
+    <value>Total volume [l]:</value>
+  </data>
+  <data name="PSP_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: usage, temperature pair, thresholds, stratification, charging and discharging power of the storage, its sinks, groupings and charging priorities.</value>
+  </data>
+  <data name="SKV_LBL_SUMME" xml:space="preserve">
+    <value>Total of all modules:</value>
+  </data>
+  <data name="SKV_FRAGE_LOESCHEN_NAME" xml:space="preserve">
+    <value>The catalogue entry "{0}" will be deleted for ALL projects. Continue?</value>
+  </data>
+  <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients, areas and investment costs are transferred.</value>
+  </data>
+  <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
+    <value>Switching needs exactly one heat pump in the project and exactly one catalogue entry.</value>
+  </data>
+  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
+    <value>System…</value>
+  </data>
+  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
+    <value>Edit operating mode, temperatures, blocking times, heating rod, heat source and transfer of this system</value>
+  </data>
+  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
+    <value>System – {0}</value>
+  </data>
+  <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
+    <value>Please check the system and confirm with OK.</value>
+  </data>
+  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
+    <value>The module costs must not be negative.</value>
+  </data>
+  <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
+    <value>The rated output must not be negative.</value>
+  </data>
+  <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
+    <value>The heating and cooling curves with all support points go with the unit. The system data stay in the project: operating mode, temperatures, bivalence, heating rod, blocking times, heat source, integration and transfer limits of the system, and the sinks.</value>
+  </data>
+  <data name="PVD_LBL_SUMME" xml:space="preserve">
+    <value>Total of all selected modules [kWp]:</value>
+  </data>
+  <data name="PVD_BTN_STRAENGE" xml:space="preserve">
+    <value>Strings and inverters…</value>
+  </data>
+  <data name="PVD_TITEL_STRAENGE" xml:space="preserve">
+    <value>Strings and inverters – {0}</value>
+  </data>
+  <data name="PVD_STRAENGE_STAND" xml:space="preserve">
+    <value>{0} strings</value>
+  </data>
+  <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: strings and inverter assignment, tilt, azimuth, number of modules, yield model and energy carrier of the system. All module values including the temperature coefficients and the module costs are transferred.</value>
+  </data>
+  <data name="CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Solar yield, annual profile</value>
+  </data>
+  <data name="CHART_ACHSE_SOLARERTRAG" xml:space="preserve">
+    <value>Solar yield</value>
+  </data>
+  <data name="CHART_TITEL_PVERTRAG_JAHRESGANGLINIE" xml:space="preserve">
+    <value>PV yield, annual profile</value>
+  </data>
+  <data name="CHART_ACHSE_PVERTRAG" xml:space="preserve">
+    <value>PV yield</value>
+  </data>
+  <data name="GANGLINIE_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>No chart available</value>
+  </data>
+  <data name="KFLT_TREFFER_KURZ" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="KFLT_SPALTE_AUSGEBLENDET" xml:space="preserve">
+    <value>hidden at this width</value>
+  </data>
   <data name="KI_FELD_GESPERRT" xml:space="preserve">
     <value>{0}: {1}</value>
   </data>

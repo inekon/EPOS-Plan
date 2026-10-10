@@ -44,8 +44,12 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    @* Ohne Titel (im Katalogeditor des Projektdialogs, Katalogauswahl V1) traegt die Ueberlagerung Titel und Kreuz. *@
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @* Das Kreuz steht beim Titel: Ohne Titel traegt ihn die umschliessende
            Ueberlagerung — und mit ihm das Kreuz. *@

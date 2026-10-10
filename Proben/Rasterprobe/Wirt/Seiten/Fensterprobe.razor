@@ -50,6 +50,7 @@
                               Varianten="@(_ => new[] { (5, "Erdgas E Variante"), (6, "Erdgas LL Variante") })"
                               Vorbereiten="@Vorbereitung"
                               TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
+                              Aufnehmen="@(_aufnahme ? (id, t) => Aufnahme("Kessel", id) : null)"
                               KostenOeffnen="@((_, _) => Task.CompletedTask)"
                               EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
                               Katalogfelder="@(_ => Felder())"
@@ -72,6 +73,7 @@
                         Varianten="@(_ => new[] { (5, "Erdgas E Variante") })"
                         Vorbereiten="@Vorbereitung"
                         TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
+                        Aufnehmen="@(_aufnahme ? (id, t) => Aufnahme("Modul", id) : null)"
                         SummePtherm="@(() => _summe ?? "80")"
                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
                         EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
@@ -147,6 +149,19 @@
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
         if (abfrage.TryGetValue("verwendet", out var v)) _verwendet = v.ToString() == "1";
         if (abfrage.TryGetValue("summe", out var s)) _summe = s.ToString();
+        if (abfrage.TryGetValue("aufnahme", out var u)) _aufnahme = u.ToString() == "1";
+    }
+
+    /// <summary>Mit ?aufnahme=1 nimmt „In das Projekt übernehmen" eine Zeile auf (Katalogprobe DZ1‑N2).</summary>
+    private bool _aufnahme;
+    private int _naechsteZeile = 900;
+
+    /// <summary>Die neue Projektzeile einer Übernahme - der Dialog fügt sie selbst an und wählt sie.</summary>
+    private AufnahmeErgebnis Aufnahme(string praefix, int stammId)
+    {
+        int n = ++_naechsteZeile;
+        return new AufnahmeErgebnis(new ErzeugerZeile { Schluessel = n, Bezeichner = praefix + " neu " + n, GeraetId = n,
+                                                        CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 });
     }
 
     /// <summary>Die Traegerwahl der Erzeugerdialoge; mit ?meldung=1 schlaegt sie fehl.</summary>
