@@ -3788,8 +3788,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten--zieht { cursor: row-resize; user-select: none; }
 
 /* Aufgeklappt haelt die Detailzeile zusaetzlich ihren Inhalt bis --epos-satz-untergrenze (KB1):
-   das Skript setzt --epos-satz-offen-min = min(Inhalt, Untergrenze) am Dialog. Darueber waechst
-   sie bis --epos-satz-max; reicht das Fenster dafuer nicht, rollt der Dialogkoerper. */
+   das Skript setzt --epos-satz-offen-min = min(Inhalt, Untergrenze) am Dialog. Darueber nimmt
+   sie die gesamte Hoehe, die Projektliste und Katalog auf ihren Untergrenzen lassen (DZ1);
+   reicht das Fenster nicht einmal fuer die Untergrenzen, rollt der Dialogkoerper. */
 .epos-zweispalten { --epos-satz-untergrenze: 80px; }
 .epos-zweispalten--satz-offen { --epos-satz-min: calc(var(--epos-touchziel) + 20px + var(--epos-satz-offen-min, 0px)); }
 
@@ -3959,21 +3960,65 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     max-height: none;
 }
 
-/* Die aufgeklappte Detailzeile nimmt den Listen Hoehe ab und rollt in sich. Die Projektliste
-   steht dabei auf ihrer Untergrenze, die Detailzeile waechst mit ihrem Inhalt bis zur
-   Obergrenze --epos-satz-max (45 % der Fensterhoehe), der Rest geht an den Katalog; erst
-   darueber oder wenn das Fenster nicht reicht, rollt allein die Satzflaeche (KB1). */
+/* VORRANG DER DETAILZEILE (DZ1, Konzept 4.4 und 4.8): Aufgeklappt stehen Projektliste und
+   Katalog auf ihren Untergrenzen (Projektliste Kopf und eine Zeile, Katalog Kopf und zwei
+   Zeilen samt Kopf- und Fussleiste), die Satzflaeche nimmt die GESAMTE uebrige Hoehe. Ihr
+   Inhalt fuellt sie (die Ganglinie zeichnet sich in dieser Hoehe); nur was trotzdem nicht
+   passt (Alle Daten), rollt in der Satzflaeche. Zugeklappt gilt das Raster oben. */
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {
     grid-template-rows:
         calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1) + var(--epos-touchziel) + 18px)
         8px
-        minmax(min-content, 1fr)
-        minmax(var(--epos-satz-min), auto);
+        min-content
+        minmax(var(--epos-satz-min), 1fr);
+}
+
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog {
+    grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);
 }
 
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {
-    flex: 1 1 auto;
-    max-height: var(--epos-satz-max, 45vh);
+    flex: 1 1 0;
+    max-height: none;
+}
+
+/* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9): Der Baustein GanglinienGrafik fuellt
+   die Satzflaeche; Kennzahlen und Schalter behalten ihre Hoehe, das Bild nimmt den Rest. Die
+   Zeichenflaeche haelt das Seitenverhaeltnis des Zeichenmodells (--epos-bild-verhaeltnis, von
+   DiagrammSvg gesetzt): Hoehe aus dem Behaelter, Breite daraus, hoechstens die volle Breite.
+   Die Untergrenze --epos-ganglinie-min haelt das Bild lesbar; darunter rollt die Satzflaeche. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik {
+    --epos-ganglinie-min: 220px;
+    flex: 1 1 0;
+    min-height: var(--epos-ganglinie-min);
+    margin-top: 0;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > * {
+    flex: 0 0 auto;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg {
+    flex: 1 1 0;
+    min-height: 0;
+    max-width: none;
+    align-items: center;
+    container: ganglinienbild / size;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > * {
+    align-self: stretch;
+    flex: 0 0 auto;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche {
+    align-self: center;
+    flex: 1 1 0;
+    min-height: 0;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: var(--epos-bild-verhaeltnis, 2 / 1);
+    max-height: calc(100cqw / (var(--epos-bild-verhaeltnis, 2 / 1)));
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
+    width: 100%;
+    height: 100%;
 }
 
 /* ---- KOMPAKTSTUFE UND ROLLBALKEN (KB1, Konzept 4.8) -----------------

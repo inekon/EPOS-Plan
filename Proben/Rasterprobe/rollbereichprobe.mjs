@@ -23,6 +23,12 @@
 // (Rollbalken): ein 400 px hoher Klotz im Dialog muss den Dialogkoerper rollen lassen und die
 // Schlussleiste erreichbar halten; derselbe Klotz mit overflow: hidden muss rot werden.
 //
+// VORRANG DER DETAILZEILE (DZ1, Konzept 4.4 und 4.8): Aufgeklappt stehen Projektliste und
+// Katalogliste auf ihren Untergrenzen (je hoechstens 2 px darueber), und die Satzflaeche reicht bis
+// an den unteren Rand des Bausteins (Rest hoechstens 3 px). Traegt sie eine Ganglinie, nutzt das
+// Bild die Hoehe, die Kennzahlen und Leisten lassen (oder die volle Breite). Dritte Gegenprobe: eine
+// Satzflaeche, die auf 100 px begrenzt kleiner als der Rest bleibt, muss rot werden.
+//
 // Aufruf: node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe] [--fotos <ordner>]
 // Rueckgabe 0 = kein Verstoss und Gegenprobe rot, 1 = Verstoss oder Gegenprobe gruen, 2 = Aufbaufehler.
 
@@ -118,8 +124,27 @@ function messen(KOMPAKT_ABFRAGE) {
     katalogZeile: h(katalog && katalog.querySelector('tbody tr')),
     ueberlagerung: !!document.querySelector('.epos-ueberlagerung'), zweispalten: h(d && d.querySelector('.epos-zweispalten')),
     satzOffen: !!(d && d.querySelector('.epos-zweispalten--satz-offen')), ueberlauf,
-    leistenfehler,
+    leistenfehler, ...satzmasse(d),
   };
+  // DZ1: die Satzflaeche, ihr Rest bis zum unteren Rand des Bausteins und das Bild der Ganglinie.
+  function satzmasse(d) {
+    const zw = d && d.querySelector('.epos-zweispalten');
+    const satz = zw && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
+    if (!satz || satz.hidden || !sichtbar(satz)) return { satz: null };
+    const r = satz.getBoundingClientRect(), z = zw.getBoundingClientRect();
+    const svg = satz.querySelector('.epos-ganglinie-grafik > .epos-diagramm-svg');
+    const fl = svg && svg.querySelector(':scope > .epos-diagramm-svg-flaeche');
+    let bild = null, bildPlatz = null, bildVoll = false;
+    if (fl) {
+      const kinder = [...svg.children].filter(sichtbar);
+      const andere = kinder.filter(k => k !== fl).reduce((s, k) => s + k.getBoundingClientRect().height, 0);
+      bild = Math.round(fl.getBoundingClientRect().height);
+      bildPlatz = Math.round(svg.getBoundingClientRect().height - andere - Math.max(0, kinder.length - 1) * (parseFloat(getComputedStyle(svg).rowGap) || 0));
+      bildVoll = fl.getBoundingClientRect().width >= svg.getBoundingClientRect().width - 2;
+    }
+    return { satz: Math.round(r.height), satzRest: Math.round(z.bottom - r.bottom), satzRollt: satz.scrollHeight > satz.clientHeight + 1,
+             bild, bildPlatz, bildVoll, ganglinie: !!satz.querySelector('.epos-ganglinie-grafik') };
+  }
 }
 
 /** Alle Knoepfe der Schlussleiste nach dem Rollen des Dialogkoerpers ans Ende sichtbar und treffbar? */
@@ -205,6 +230,13 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
       const zeile = m.katalogZeile || (m.kompakt ? ZEILE_KOMPAKT : ZEILE);
       if (m.katalog + 2 < m.katalogKopf + 2 * zeile)
         fehler.push(`Heizkessel: Katalogliste ${m.katalog} px < Kopf ${m.katalogKopf} + 2 Zeilen a ${zeile} px`);
+    }
+    // DZ1: aufgeklappt Listen auf ihren Untergrenzen, die Satzflaeche nimmt den Rest.
+    if (m.satzOffen && m.satz !== null) {
+      if (m.projekt !== null && m.projekt > m.projektMin + 2) fehler.push(`Detailzeile auf: Projektliste ${m.projekt} px ueber ihrer Untergrenze ${Math.round(m.projektMin)} px`);
+      if (m.katalog !== null && m.katalog > m.katalogMin + 2) fehler.push(`Detailzeile auf: Katalogliste ${m.katalog} px ueber ihrer Untergrenze ${Math.round(m.katalogMin)} px`);
+      if (m.satzRest > 3) fehler.push(`Detailzeile auf: Satzflaeche ${m.satz} px laesst ${m.satzRest} px frei`);
+      if (m.bild !== null && !m.bildVoll && m.bild + 2 < m.bildPlatz) fehler.push(`Ganglinie ${m.bild} px hoch, Platz ${m.bildPlatz} px`);
     }
     fehler.push(...m.leistenfehler);
     if (m.ueberlauf.length) fehler.push('Ueberlauf: ' + m.ueberlauf.join('; '));
@@ -351,6 +383,24 @@ try {
     console.log(`Gegenprobe: verschachtelt ${gegen.verschachtelt} Paar(e), Dialogkoerper rollt: ${gegen.dialog}`);
     if (gegen.verschachtelt === 0 || !gegen.dialog) { console.log('  GEGENPROBE GRUEN - die Probe sieht nichts'); rueckgabe = 1; }
 
+    // Vorrang (DZ1): eine Satzflaeche, die auf 100 px begrenzt kleiner als der Rest bleibt, muss rot werden.
+    {
+      const k3 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s3 = await k3.newPage();
+      await s3.goto(WURZEL + '/fensterprobe?fall=heizkessel&zeilen=40', { waitUntil: 'networkidle' });
+      await s3.waitForSelector('.epos-zweispalten');
+      await s3.addStyleTag({ content: '.epos-zweispalten-satz { max-height: 100px !important; }' });
+      await satz(s3, true);
+      const vor = verstoesse.length;
+      const n = zeilen.length;
+      pruefen('gegenprobe-vorrang', { breite: 1280, hoehe: 800 }, 'Satzflaeche 100 px', await s3.evaluate(messen, KOMPAKT), [], true, null);
+      const rot = verstoesse.slice(vor).some(v => v.includes('laesst'));
+      verstoesse.splice(vor); zeilen.splice(n);
+      console.log(`Gegenprobe Vorrang: Satzflaeche auf 100 px begrenzt - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht den Vorrang nicht'); rueckgabe = 1; }
+      await k3.close();
+    }
+
     // Rollbalken (KB1): ein Klotz von 400 px im Dialog - der Baustein faellt auf seine Mindesthoehe,
     // der Dialogkoerper rollt, die Schlussleiste bleibt erreichbar. Derselbe Klotz ohne Rollbalken
     // (overflow: hidden) muss rot werden.
@@ -383,10 +433,10 @@ try {
     }
   }
 
-  console.log('\nFall | Fenster | Zustand | Stufe (Schrift) | Rollbereiche | Baustein | Projektliste (Zeile) | Katalogliste (Kopf, Zeile) | Verstoesse');
+  console.log('\nFall | Fenster | Zustand | Stufe (Schrift) | Rollbereiche | Baustein | Projektliste (Zeile) | Katalogliste (Kopf, Zeile) | Satzflaeche (Bild/Platz) | Verstoesse');
   for (const z of zeilen) {
     const [fall, fenster, ...zust] = z.kennung.split(' ');
-    console.log(`${fall} | ${fenster} | ${zust.join(' ')} | ${z.kompakt ? 'kompakt' : 'normal'} (${z.schrift} px)${z.eng ? ' eng' : ''} | ${z.roller} | ${z.zweispalten ?? '-'} | ${z.projekt ?? '-'} (${z.projektZeile ?? '-'}) | ${z.katalog ?? '-'} (${z.katalogKopf ?? '-'}, ${z.katalogZeile ?? '-'}) | ${z.fehler}`);
+    console.log(`${fall} | ${fenster} | ${zust.join(' ')} | ${z.kompakt ? 'kompakt' : 'normal'} (${z.schrift} px)${z.eng ? ' eng' : ''} | ${z.roller} | ${z.zweispalten ?? '-'} | ${z.projekt ?? '-'} (${z.projektZeile ?? '-'}) | ${z.katalog ?? '-'} (${z.katalogKopf ?? '-'}, ${z.katalogZeile ?? '-'}) | ${z.satz ?? '-'}${z.bild !== null && z.bild !== undefined ? ` (${z.bild}/${z.bildPlatz})` : ''} | ${z.fehler}`);
   }
   console.log(`\n${zeilen.length} Zustaende, ${verstoesse.length} Verstoesse`);
   if (befunde.length) {

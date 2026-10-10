@@ -208,13 +208,21 @@ ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Au
 - **Zugeklappt** (Vorgabe beim Öffnen, KA‑E‑4): eine Zeile mit Pfeil, Marke „Projektsatz“ oder
   „Katalogsatz“, Name und den wichtigsten Kenndaten. Sie zeigt den zuletzt gewählten Satz, gleich in
   welchem Bereich.
-- **Aufgeklappt:** die Zeile wird zur Satzfläche mit eigener Rollleiste. Sie nimmt den Listen Höhe ab — der
-  Katalog behält mindestens rund 250 px, die Projektliste wird bei Bedarf bis zur unteren Grenze geklemmt;
-  beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
+- **Aufgeklappt:** die Zeile wird zur Satzfläche und hat Vorrang: Projektliste und Katalog stehen auf ihren
+  Untergrenzen (Projektliste Kopf und eine Zeile, Katalog Kopf und zwei Zeilen samt Kopf- und Fußleiste), die
+  Satzfläche nimmt die gesamte übrige Höhe; beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
   mit „Erst Schloss aufheben“), beim Projektsatz die Kostenknöpfe und die projektbezogenen Felder
   (Abschnitt 4.2).
 - Der Zustand auf/zu wird nicht gemerkt; die Satzfläche des BHKW startet damit nicht mehr aufgeklappt
   (heute `_parameterOffen = true`).
+
+**Präzisiert in DZ1 (gemessen 10.10.2026, Rollbereichprobe):** Aufgeklappt steht die Projektliste auf ihrer
+Untergrenze (85 px, Kompaktstufe 74 px), die Katalogliste auf Kopf und zwei Zeilen (147 bzw. 161 px, Kompaktstufe
+128 bzw. 140 px); die Satzfläche reicht bis an den unteren Rand des Bausteins. Ihr Inhalt füllt sie — eine Ganglinie
+zeichnet sich in dieser Höhe (Abschnitt 4.9) —, und nur was trotzdem nicht passt („Alle Daten“), rollt in der
+Satzfläche; sie ist dann der einzige Rollbereich. Zugeklappt gilt die Aufteilung über die Trennlinie (4.3)
+unverändert. Gemessene Satzfläche mit Kosten und „Alle Daten“ (Heizkessel): 165 px in 1 280 × 800, 172 px in
+1 280 × 720, 152 px in 1 024 × 700, 220 px in 1 024 × 768, 476 px in 768 × 1 024, 97 px in 1 093 × 614.
 
 ### 4.5 Mehrfachauswahl
 
@@ -285,9 +293,10 @@ Normalstufe. Die Klemme auf eine Katalogzeile unter 600 px Bausteinhöhe gilt nu
 Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf, zwei Zeilen und Knopfleiste,
 Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
 senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
-Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts und wächst
-bis 45 % der Fensterhöhe, Projekt- und Katalogliste geben dafür bis zu ihrer Untergrenze ab; erst darüber rollt
-allein die Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
+Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts (mit
+Ganglinie 200 px, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
+Satzfläche nimmt die gesamte übrige Höhe ohne Obergrenze; was trotzdem nicht passt, rollt allein in der
+Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
 768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
 aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebäudedialogs leer.
 

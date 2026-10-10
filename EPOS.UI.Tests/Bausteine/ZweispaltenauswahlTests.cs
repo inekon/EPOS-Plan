@@ -1034,7 +1034,8 @@ public class ZweispaltenauswahlTests : EposBunitContext
     /// Der Rollbalken gilt nur unter der Mindesthöhe: Der Baustein steht im eigenen Fenster auf der
     /// gemessenen Summe seiner Untergrenzen (--epos-zweispalten-min), und allein der Dialog mit
     /// <c>data-zweispalten-eng</c> rollt senkrecht. Die Klemme auf eine Katalogzeile gilt nur in
-    /// der Normalstufe, die aufgeklappte Detailzeile hat eine Obergrenze.
+    /// der Normalstufe. Aufgeklappt hat die Detailzeile Vorrang (DZ1): Projektliste und Katalog
+    /// stehen auf ihren Untergrenzen, die Satzfläche nimmt den Rest — ohne Obergrenze.
     /// </summary>
     [Fact]
     public void Der_Dialogkoerper_rollt_nur_unter_der_Mindesthoehe()
@@ -1045,8 +1046,14 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("overflow-y: auto", eng);
         Assert.Contains("overflow-x: hidden", eng);
         Assert.Contains("@media (min-width: 1200px) and (min-height: 800px) {\n    @container katalogauswahl (max-height: 599px)", css);
-        Assert.Contains("max-height: var(--epos-satz-max, 45vh)",
-            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {"));
+        string satz = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {");
+        Assert.Contains("max-height: none", satz);
+        Assert.Contains("flex: 1 1 0", satz);
+        Assert.DoesNotContain("--epos-satz-max", css);
+        string offen = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {");
+        Assert.Contains("8px\n        min-content\n        minmax(var(--epos-satz-min), 1fr);", offen);
+        Assert.Contains("grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);",
+            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog {"));
 
         // Das Skript misst und schaltet; es traegt keine Pixelzahl der Zeilen.
         string js = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-zweispalten.js"));

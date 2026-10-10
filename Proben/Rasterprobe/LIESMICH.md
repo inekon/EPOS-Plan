@@ -1311,6 +1311,20 @@ Schlussleiste), Bannerprobe (BHKW und Gebäude in beiden Fenstern), Katalogprobe
 (Gebäude-Projektdialog, 624 px Höhe, also Kompaktstufe) 46,0 px bei `ItemSize` 53, keine Platzhalter,
 4 Sichtbarkeitsmelder nach dem Rollen; verfehlt bleibt allein Z6 (fremd).
 
+**Vorrang der Detailzeile (DZ1, Konzept 4.4 und 4.8).** Je Zustand mit aufgeklappter Detailzeile misst die
+Probe zusätzlich: Projektliste und Katalogliste höchstens 2 px über ihrer Untergrenze, die Satzfläche reicht
+bis an den unteren Rand des Bausteins (Rest höchstens 3 px); trägt sie eine Ganglinie, ist die Zeichenfläche so
+hoch wie der Platz, den Kennzahlen, Schalter und Zoomleiste lassen (oder so breit wie die Satzfläche). Die
+Tabelle am Ende nennt die Höhe der Satzfläche (und Bild/Platz der Ganglinie). **Dritte Gegenprobe:** Heizkessel
+in 1 280 × 800 mit einer auf 100 px begrenzten Satzfläche — sie lässt 66 px frei und muss rot werden.
+**Ergebnis vom 10.10.2026, DZ1, Teil 1:** 618 Zustände, 0 Verstöße, alle drei Gegenproben rot. Satzfläche
+aufgeklappt (Trennlinie oben) in px:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 |
+|---|---|---|---|---|---|---|
+| Heizkessel (Kosten, Alle Daten) | 165 | 172 | 152 | 220 | 476 | 97 |
+| Gebäude | 118 | 132 | 112 | 180 | 436 | 97 |
+
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer

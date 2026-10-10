@@ -112,7 +112,7 @@ else
         @* role="group" statt role="img": Die Legendeneintraege SIND Bedienelemente,
            und eine Sprachausgabe erreicht sie in einem Bild nicht mehr. tabindex
            macht die Flaeche fuer die Tasten + - 0 erreichbar. *@
-        <div class="@Flaechenklassen" @ref="_flaeche"
+        <div class="@Flaechenklassen" @ref="_flaeche" style="@Seitenverhaeltnis"
              tabindex="@(Bedienbar ? "0" : null)" role="group" aria-label="@Bezeichnung"
              @onpointerdown="@(_ => BeiFlaechenzeiger())" @onclick="BeiFlaechenklick">
 
@@ -572,6 +572,17 @@ else
     /// SVG samt Legende über der Schließfläche, und ein Klick auf ein anderes
     /// Farbfeld trifft dieses statt der Fläche darüber (DG-E3-14).
     /// </summary>
+    /// <summary>
+    /// Das Seitenverhältnis des Zeichenmodells als Stilwert (<c>--epos-bild-verhaeltnis</c>):
+    /// Ein Wirt, der das Bild in der Höhe seines Behälters zeichnet (Detailzeile der
+    /// Katalogauswahl, Konzept 4.9), rechnet daraus die Breite der Zeichenfläche.
+    /// </summary>
+    private string? Seitenverhaeltnis
+        => Modell is null || Modell.Breite <= 0 || Modell.Hoehe <= 0
+            ? null
+            : "--epos-bild-verhaeltnis: " + Modell.Breite.ToString(System.Globalization.CultureInfo.InvariantCulture)
+              + " / " + Modell.Hoehe.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
     private string Flaechenklassen
         => _farbwahl is null
             ? "epos-diagramm-svg-flaeche"

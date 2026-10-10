@@ -15,6 +15,9 @@
 //      Untergrenzen seiner Zeilen, gemessen, als --epos-zweispalten-min am
 //      Dialog. Reicht das Fenster nicht dafuer, setzt das Skript
 //      data-zweispalten-eng, und der Dialogkoerper rollt; sonst nie.
+//      Aufgeklappt hat die Detailzeile Vorrang (DZ1, Konzept 4.4): Das Stilblatt stellt
+//      Projektliste und Katalog auf ihre Untergrenzen und gibt der Satzflaeche den Rest;
+//      die Untergrenze der Satzflaeche misst satzOffenMin, die Summe misst mindesthoehe.
 //
 // KEINE PIXELZAHL IM SKRIPT. Die Masse kommen aus dem gerechneten Stilblatt
 // (min-height der Listen, Hoehen der Bereiche, Zeilenabstand). C# fuehrt die
