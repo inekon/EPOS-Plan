@@ -76,22 +76,11 @@ public sealed class BedarfErgebnisDaten
     public IReadOnlyList<Monatssicht> Sichten { get; set; } = Array.Empty<Monatssicht>();
 
     /// <summary>
-    /// Der Jahresverlauf des Brauchwassers (8 760 Stunden) als ZEICHENMODELL;
-    /// <c>null</c> = der Schalter „Jahresverlauf" erscheint nicht.
-    ///
-    /// <para>Es ist ein Bild mit Zeitachse und steht deshalb seit der Etappe DG-E3,
-    /// Gruppe (a), im Baustein <c>DiagrammSvg</c>: Zoom auf der Zeitachse, Werte am
-    /// Mauszeiger, schaltbare Legende. Die MONATSSÄULEN daneben bleiben ein
-    /// Pixelbild — sie zählen zwölf Monate, keine Stunden.</para>
+    /// Die Bildquelle des Grafikreiters: Jahresganglinie und Summen je Monat, Woche und Tag
+    /// für jede Auswahl der Sichten; <c>null</c> = es liegen keine Stundenreihen vor, der
+    /// Reiter zeigt die Monatssäulen der Sichten (<see cref="Monatssicht.Modell"/>) ohne Raster.
     /// </summary>
-    public Zeichenmodell? JahresverlaufModell { get; set; }
-
-    /// <summary>
-    /// Die GANGLINIE hinter dem Grafikreiter — Woche und Tag (Anwenderwunsch W8‑E‑2 der
-    /// Windows-Abnahme 05.09.2026); <c>null</c> = der Reiter zeigt nur die Jahressicht
-    /// wie bisher.
-    /// </summary>
-    public Ganglinienquelle? Ganglinie { get; set; }
+    public Bedarfsgrafikquelle? Grafik { get; set; }
 }
 
 /// <summary>
@@ -117,45 +106,48 @@ public enum Kennzahlart
     Summe
 }
 
-/// <summary>Die Zeitstufe des Ganglinienbildes (W8‑E‑2).</summary>
-public enum Gangstufe
+/// <summary>Das Zeitraster des Grafikreiters — die Knopfgruppe „Jahr | Monat | Woche | Tag“.</summary>
+public enum Bedarfsraster
 {
-    /// <summary>Das ganze Jahr — die Sicht des Bestands (Monatssäulen).</summary>
+    /// <summary>Die Jahresganglinie über alle Stützstellen (Zoom, Zeitachse).</summary>
     Jahr,
 
-    /// <summary>Eine Woche, 168 Stunden, mit Navigator.</summary>
+    /// <summary>Zwölf Monatssummen als Säulen.</summary>
+    Monat,
+
+    /// <summary>52 Wochensummen als Säulen; die 52. Woche trägt den 365. Tag mit.</summary>
     Woche,
 
-    /// <summary>Ein Tag, 24 Stunden, mit Navigator.</summary>
+    /// <summary>365 Tagessummen als Säulen.</summary>
     Tag
 }
 
 /// <summary>
-/// Woher die Bilder der Zeitstufen Woche und Tag kommen (W8‑E‑2).
-///
-/// <para><b>Ein Delegat, kein Bildvorrat.</b> 52 Wochen und 365 Tage sind 417 Bilder;
-/// sie vorab zu zeichnen hieße, für einen Blick auf eine Woche ein Jahr zu rendern.
-/// Die Hülle zeichnet deshalb auf Zuruf — dasselbe Muster, mit dem der Stromgang-Reiter
-/// der Ergebnisseite (W11b) seine Bilder holt. Die Komponente ruft weiterhin keinen
-/// Renderer; sie ruft die Hülle.</para>
+/// <b>Woher der Grafikreiter seine Bilder und seine CSV-Spalten holt.</b> Die Hülle hält die
+/// Stundenreihen der Sichten und antwortet auf Zuruf: Bei drei Sichten, vier Rastern und zwei
+/// Einheiten wären es sonst Dutzende Bilder auf Vorrat. Die Komponente ruft keinen Renderer und
+/// rechnet keine Summe; sie hält die Antworten zwischen, damit <c>DiagrammSvg</c> Zoom und
+/// Zeigerstelle behält.
 /// </summary>
-public sealed class Ganglinienquelle
+public sealed class Bedarfsgrafikquelle
 {
-    /// <summary>Wie viele Wochen der Navigator kennt (52 bei einem vollen Jahr).</summary>
-    public int Wochen { get; init; } = 52;
-
-    /// <summary>Wie viele Tage der Navigator kennt (365 bei einem vollen Jahr).</summary>
-    public int Tage { get; init; } = 365;
+    /// <summary>
+    /// Das Zeichenmodell zu den gewählten Sichten (Indizes in <see cref="BedarfErgebnisDaten.Sichten"/>,
+    /// aufsteigend), dem Raster und der Anzeigeeinheit der Summen; <c>null</c> = kein Bild.
+    /// </summary>
+    public Func<IReadOnlyList<int>, Bedarfsraster, Energieeinheit, Zeichenmodell?>? Modell { get; init; }
 
     /// <summary>
-    /// Liefert das ZEICHENMODELL zu einer Stufe und einer NULLBASIERTEN Nummer;
-    /// <c>null</c> = kein Bild, die Anzeige zeigt ihren Platzhalter.
-    ///
-    /// <para>Der Navigator bleibt: Er wählt den AUSSCHNITT, den die Hülle rechnet
-    /// (eine Woche, einen Tag). Der Zoom IM Bild (DG-E3) kommt oben drauf — er
-    /// verschiebt die <c>viewBox</c> innerhalb dieses Ausschnitts.</para>
+    /// Die Spalten des CSV-Exports zum selben Bild: je Sicht eine, 8 760 bzw. 35 040 Zeilen für das
+    /// Jahr, 12, 52 oder 365 für die Summen.
     /// </summary>
-    public Func<Gangstufe, int, Zeichenmodell?>? Modell { get; init; }
+    public Func<IReadOnlyList<int>, Bedarfsraster, Energieeinheit, IReadOnlyList<ZeitreihenSpalte>>? Spalten { get; init; }
+
+    /// <summary>Der Titel des Bildes zu Wahl und Raster — Bezeichnung am Bild und Dateistamm des CSV-Exports.</summary>
+    public Func<IReadOnlyList<int>, Bedarfsraster, string>? Titel { get; init; }
+
+    /// <summary>Die Sichten, für die eine Stundenreihe vorliegt.</summary>
+    public IReadOnlyList<int> MitReihe { get; init; } = Array.Empty<int>();
 }
 
 /// <summary>
@@ -207,10 +199,7 @@ public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Ei
 /// <c>DiagrammSvg</c>: Es trägt keine Zeitachse — zwölf starre Fächer —, also auch
 /// keinen Zoom, wohl aber den Wert der Säule unter dem Mauszeiger (DG-E3-10).</para>
 /// </param>
-/// <param name="IstBrauchwasser">
-/// Die Brauchwassersicht: Ohne eigenen <see cref="Jahresverlauf"/> zeigt ihr Schalter
-/// „Jahresverlauf" den gemeinsamen <see cref="BedarfErgebnisDaten.JahresverlaufModell"/>.
-/// </param>
+/// <param name="IstBrauchwasser">Die Brauchwassersicht.</param>
 public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Werte,
                                  Zeichenmodell? Modell, bool IstBrauchwasser = false)
 {
@@ -236,19 +225,4 @@ public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Wert
     /// Knotenbaum auch die Zeigerstelle.</para>
     /// </summary>
     public Zeichenmodell? ModellKWh { get; init; }
-
-    /// <summary>
-    /// Der JAHRESVERLAUF dieser Sicht (8 760 Stunden) als Zeichenmodell mit Zeitachse;
-    /// <c>null</c> = die Sicht bietet den Schalter „Jahresverlauf" nicht an (die
-    /// Brauchwassersicht greift dann auf <see cref="BedarfErgebnisDaten.JahresverlaufModell"/>
-    /// zurück). Er ist die Stundenreihe, deren Monatssummen <see cref="Zahlen"/> sind.
-    /// </summary>
-    public Zeichenmodell? Jahresverlauf { get; init; }
-
-    /// <summary>
-    /// Die Bildquelle der Zeitstufen WOCHE und TAG für diese Sicht; <c>null</c> = es
-    /// gilt <see cref="BedarfErgebnisDaten.Ganglinie"/>. So folgt das Ganglinienbild
-    /// der Sichtwahl des Grafikreiters: Prozesse, Gebäude, Brauchwasser.
-    /// </summary>
-    public Ganglinienquelle? Ganglinie { get; init; }
 }

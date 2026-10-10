@@ -209,8 +209,6 @@ namespace WindowsFormsApplication1
                            hilfeschluessel: "Form_Betriebsmodus.btn_Help"),
 
             // ---- Anzeigen mit Schaltern eines Bildes ---------------------------------
-            new KiAusnahme("BedarfGangGrafik", KiAusnahmegrund.Anzeige,
-                           "Die Optionsgruppe wählt nur die gezeigte Kurve."),
             new KiAusnahme("SpeicherFlottenErgebnisAnsicht", KiAusnahmegrund.Anzeige,
                            "Die Schalter stellen nur das Ergebnisbild der Flotte ein."),
             new KiAusnahme("SpeicherFlottenGroessenAnsicht", KiAusnahmegrund.Anzeige,
