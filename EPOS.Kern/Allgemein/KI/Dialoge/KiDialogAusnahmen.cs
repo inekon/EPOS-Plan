@@ -170,6 +170,10 @@ namespace WindowsFormsApplication1
             new KiAusnahme("WaermepumpenKatalogDialog", KiAusnahmegrund.Aktion,
                            "Die Katalogauswahl übernimmt ein Gerät; ihr Schalter filtert nur die Liste.",
                            hilfeschluessel: "Form_WPFilterAuswahl.btn_Help"),
+            new KiAusnahme("WaermepumpenDialog", KiAusnahmegrund.FeldDesWirts,
+                           "Die Satzfelder der Satz-Überlagerung sind die Felder der Wärmepumpen-Stammmaske; der " +
+                           "Assistent setzt sie dort, die Anlage über die Anlagenseite.",
+                           hilfeschluessel: "Form_WPAuswahl.btn_Help"),
             new KiAusnahme("WertAbfrage", KiAusnahmegrund.Rueckfrage,
                            "Die Zahlabfrage ist eine Rückfrage ihres Wirts; die Simulationsansicht führt " +
                            "Priorität und Quelltemperatur als eigene Felder."),
