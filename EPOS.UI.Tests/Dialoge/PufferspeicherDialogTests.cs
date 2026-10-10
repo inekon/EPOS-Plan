@@ -116,7 +116,6 @@ public class PufferspeicherDialogTests : EposBunitContext
         Satzbearbeitungswege? katalogsatzWege = null,
         Rueckwegwege? rueckwegWege = null,
         Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null,
-        Func<ErzeugerZeile, bool>? hatKopie = null,
         Func<string>? summe = null,
         Func<IReadOnlyList<Katalogfilterzeile>>? katalogzeilen = null,
         Func<int, Task>? auslegen = null)
@@ -137,7 +136,6 @@ public class PufferspeicherDialogTests : EposBunitContext
             .Add(x => x.KatalogsatzWege, katalogsatzWege)
             .Add(x => x.RueckwegWege, rueckwegWege)
             .Add(x => x.EditorGaben, editorGaben)
-            .Add(x => x.HatProjektkopie, hatKopie)
             .Add(x => x.SummeVolumen, summe)
             .Add(x => x.AuslegenOeffnen, auslegen)
             .Add(x => x.Katalogfelder, katalogfelder)
@@ -973,30 +971,76 @@ public class PufferspeicherDialogTests : EposBunitContext
         Assert.Equal(51, Assert.Single(gespeichert).Id);
     }
 
+    /// <summary>
+    /// Die Projektkopie entsteht beim Übernehmen (Hülle, wie Heizkessel und BHKW): Die frisch aufgenommene Zeile trägt
+    /// die Id der Kopie und ist sofort bearbeitbar — Bearbeiten…, Rückweg und „Alle Daten" wirken auf sie, ein
+    /// Sperrhinweis „ohne Kopie" gibt es nicht mehr.
+    /// </summary>
     [Fact]
-    public void S3_Ohne_Projektkopie_sperren_Bearbeiten_Rueckweg_und_Alle_Daten_mit_Hinweis()
+    public void S3_Eine_frisch_aufgenommene_Zeile_ist_sofort_bearbeitbar()
     {
-        var cut = Aufbauen(projektsatzWege: Wege(), hatKopie: _ => false,
-                           rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(51, "x", "", Rueckwegsperre.UrsprungUnbekannt, "x") }));
+        var gefragt = new List<IReadOnlyList<int>>();
+        var cut = Aufbauen(new List<ErzeugerZeile>(), projektsatzWege: Wege(),
+                           aufnehmen: (id, _) => new AufnahmeErgebnis(Zeile(9, "Speicher 800 Ltr", 777)),
+                           rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(777, "Speicher 800 Ltr", "", Rueckwegsperre.UrsprungUnbekannt, "Speicher 800 Ltr") },
+                                                  gefragt: gefragt));
 
-        Assert.True(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
-        Assert.True(cut.Find(".epos-knopf--rueckweg").HasAttribute("disabled"));
-        Assert.Contains("entsteht mit OK", cut.Find(".epos-knopf--rueckweg").GetAttribute("title"));
-        Assert.Empty(cut.FindAll(".epos-modulparameter"));
-        Assert.Contains("entsteht mit OK", cut.Find(".epos-pspd-ohne-kopie").TextContent);
+        KatalogZeileWaehlen(cut, 1);
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+
+        Assert.False(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        Assert.False(cut.Find(".epos-knopf--rueckweg").HasAttribute("disabled"));
+        Assert.Equal(Resource.KATRUECK_BTN_HINWEIS, cut.Find(".epos-knopf--rueckweg").GetAttribute("title"));
+        Assert.Single(cut.FindAll(".epos-modulparameter"));
+        Assert.Empty(cut.FindAll(".epos-pspd-ohne-kopie"));
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        Assert.Equal(777, Assert.Single(cut.Instance.Bearbeitung!.Value.Saetze).Id);
+    }
+
+    /// <summary>
+    /// „Auslegen…" in der Kopfleiste des Projektbereichs: ohne gewählte Projektzeile (leere Liste) die Auslegung für
+    /// einen NEUEN Speicher (Gerätenummer 0), mit gewählter Zeile dieselbe wie der Knopf beim Projektsatz.
+    /// </summary>
+    [Fact]
+    public void S3_Auslegen_in_der_Kopfleiste_oeffnet_ohne_Wahl_die_Auslegung_fuer_einen_neuen_Speicher()
+    {
+        var geoeffnet = new List<int>();
+        Func<int, Task> auslegen = id => { geoeffnet.Add(id); return Task.CompletedTask; };
+
+        var leer = Aufbauen(new List<ErzeugerZeile>(), auslegen: auslegen);
+        var kopf = leer.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste button.epos-pspd-auslegen-kopf");
+        Assert.Equal(Resource.PAUS_AUSLEGEN_VERWIRFT, kopf.GetAttribute("title"));
+        Assert.Empty(leer.FindAll("button.epos-pspd-auslegen"));     // kein Projektsatz, kein Satzknopf
+        kopf.Click();
+        Assert.Equal(new[] { 0 }, geoeffnet);
+
+        // Ein Katalogsatz ist gewählt, keine Projektzeile: weiter der neue Speicher.
+        KatalogZeileWaehlen(leer, 0);
+        leer.Find("button.epos-pspd-auslegen-kopf").Click();
+        Assert.Equal(new[] { 0, 0 }, geoeffnet);
+
+        // Mit gewählter Projektzeile: dieselbe Gerätenummer wie der Knopf beim Projektsatz.
+        geoeffnet.Clear();
+        var mit = Aufbauen(auslegen: auslegen);
+        mit.Find("button.epos-pspd-auslegen-kopf").Click();
+        mit.Find("button.epos-pspd-auslegen").Click();
+        Assert.Equal(new[] { 51, 51 }, geoeffnet);
+
+        Assert.Empty(Aufbauen().FindAll("button.epos-pspd-auslegen-kopf"));
     }
 
     [Fact]
     public void S3_Bearbeiten_im_Projektbereich_oeffnet_die_Projektkopien_der_Auswahl_je_Geraet_einmal()
     {
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Speicher A", 51), Zeile(2, "Speicher B", 52), Zeile(3, "Speicher A", 51) };
-        var cut = Aufbauen(zeilen, projektsatzWege: Wege(), hatKopie: z => z.Schluessel != 2);
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege());
 
         ProjektAnkreuzen(cut, 0, 1, 2);
         cut.Find(".epos-knopf--bearbeiten-projekt").Click();
 
         Assert.Equal(Satzmarke.Projektsatz, cut.Instance.Bearbeitung!.Value.Art);
-        Assert.Equal(51, Assert.Single(cut.Instance.Bearbeitung!.Value.Saetze).Id);
+        Assert.Equal(new[] { 51, 52 }, cut.Instance.Bearbeitung!.Value.Saetze.Select(s => s.Id).ToArray());
         var kopf = cut.Find(".epos-ueberlagerung-kopf");
         Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, kopf.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
     }
@@ -1127,11 +1171,11 @@ public class PufferspeicherDialogTests : EposBunitContext
         };
 
     [Fact]
-    public void S3_Der_Rueckweg_steht_nach_Bearbeiten_und_fragt_je_Geraet_mit_Kopie_einmal()
+    public void S3_Der_Rueckweg_steht_nach_Bearbeiten_und_fragt_je_Geraet_einmal()
     {
         var gefragt = new List<IReadOnlyList<int>>();
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Speicher A", 51), Zeile(2, "Speicher B", 52), Zeile(3, "Speicher A", 51) };
-        var cut = Aufbauen(zeilen, projektsatzWege: Wege(), hatKopie: z => z.Schluessel != 2,
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(),
                            rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(51, "Speicher A", "", Rueckwegsperre.UrsprungUnbekannt, "Speicher A") },
                                                   gefragt: gefragt));
 
@@ -1141,7 +1185,7 @@ public class PufferspeicherDialogTests : EposBunitContext
 
         ProjektAnkreuzen(cut, 0, 1, 2);
         cut.Find(".epos-knopf--rueckweg").Click();
-        Assert.Equal(new[] { 51 }, Assert.Single(gefragt).ToArray());
+        Assert.Equal(new[] { 51, 52 }, Assert.Single(gefragt).ToArray());
         Assert.NotNull(cut.Instance.Rueckweg);
     }
 

@@ -8,7 +8,8 @@
    Summe Volumen in der Projekt-Kopfleiste, Bearbeiten… und „In die Datenbank übernehmen…"
    im Projekt, Vergleichen…, Schloss…, Loeschen, Bearbeiten… im Katalogfuss - OHNE Neu…
    (4.9; neue Saetze legt die Katalogverwaltung im Menue an, oder „Speichern unter" im
-   Katalogeditor). Kostenknoepfe und „Auslegen…" nur beim Projektsatz.
+   Katalogeditor). Kostenknoepfe beim Projektsatz; „Auslegen…" beim Projektsatz und in der
+   Projekt-Kopfleiste - dort ohne gewaehlte Zeile fuer einen NEUEN Speicher.
 
    VIER UNTERSCHIEDE ZUM BHKW.
    * Keine Traegerwahl, keine Grenzleistung, kein Temperaturpaar in der Satzflaeche: die
@@ -17,9 +18,9 @@
    * EINE ZEILE JE PROJEKT UND GERAET - und wenn doch zwei, dann ausdruecklich: Vor dem
      Aufnehmen steht die Dublettenfrage (AnlagenEindeutigkeit.BereitsInListe), auch in der
      Sammeluebernahme je Satz.
-   * Die PROJEKTKOPIE entsteht erst beim Speichern der Konfiguration. Eine frisch
-     aufgenommene Zeile hat noch keine (HatProjektkopie); Bearbeiten…, der Rueckweg und
-     „Alle Daten" des Projektsatzes wirken nur auf Zeilen mit Kopie.
+   * Die PROJEKTKOPIE entsteht wie bei Heizkessel und BHKW sofort beim „In das Projekt
+     uebernehmen" (Hülle, Projektkopievormerkung); Abbrechen raeumt eine neu angelegte Kopie
+     wieder ab. Eine frisch aufgenommene Zeile ist damit sofort bearbeitbar.
    * „Auslegen…" oeffnet die Pufferspeicher-Auslegung und VERLAESST den Dialog wie Abbrechen.
 
    ENTSCHEID #76 (05.09.2026). Die zwei Listen stehen im Baustein Zweispaltenauswahl -
@@ -64,20 +65,27 @@
             {
                 <span class="epos-zweispalten-summe">@LabelSumme <b>@_summeText</b></span>
             }
+            @* „Auslegen…" in der Kopfleiste: ohne gewaehlte Projektzeile (auch bei leerer Liste) die
+               Auslegung fuer einen NEUEN Speicher, mit gewaehlter Zeile dieselbe wie beim Projektsatz. *@
+            @if (AuslegenOeffnen is not null)
+            {
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-pspd-auslegen-kopf"
+                        title="@HinweisAuslegenText" @onclick="BeiAuslegen">@BtnAuslegenText</button>
+            }
         </ProjektKopf>
 
         <Leistenzusatz>
             @if (ProjektsatzWege is not null)
             {
                 <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--bearbeiten-projekt"
-                        title="@(KopieHinweis ?? Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS)"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
                         disabled="@(KopieZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
             }
             @if (RueckwegWege is not null)
             {
                 @* KA-E-9: der Rueckweg in die Datenbank, wirksam auf die Auswahl der Projektliste. *@
                 <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--rueckweg"
-                        title="@(KopieHinweis ?? Resource.KATRUECK_BTN_HINWEIS)"
+                        title="@Resource.KATRUECK_BTN_HINWEIS"
                         disabled="@(KopieZiele().Count == 0)" @onclick="BeiRueckweg">@Resource.KATRUECK_BTN</button>
             }
         </Leistenzusatz>
@@ -173,11 +181,6 @@
                 }
                 </KindInhalt>
             </Formularraster>
-
-            @if (_projektZeile is not null && ProjektsatzWege is not null && !Kopie(_projektZeile))
-            {
-                <p class="epos-leisezeile epos-pspd-ohne-kopie">@HinweisOhneKopie</p>
-            }
 
             @* ALLE DATEN DES GEWAEHLTEN SATZES, aufklappbar und BEARBEITBAR: beim Katalogsatz der
                Katalog (gesperrt nur lesen), beim Projektsatz die Projektkopie - dieselben Felder
@@ -300,11 +303,6 @@
     [Parameter] public Func<string>? SummeVolumen { get; set; }
     /// <summary>Die Gaben des Katalogeditors fuer einen Satz („Bearbeiten…", ein ungesperrter Satz, KA-E-13).</summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>>? EditorGaben { get; set; }
-    /// <summary>
-    /// Hat die Projektzeile schon ihre Projektkopie? Die Kopie entsteht beim Speichern der Konfiguration; ohne sie
-    /// wirken Bearbeiten…, der Rueckweg und „Alle Daten" des Projektsatzes nicht. Leer = jede Zeile hat eine.
-    /// </summary>
-    [Parameter] public Func<ErzeugerZeile, bool>? HatProjektkopie { get; set; }
     /// <summary>Die Wege der Satzbearbeitung fuer die PROJEKTKOPIEN (KA-E-8); <c>null</c> = kein Knopf (Assistent).</summary>
     [Parameter] public Satzbearbeitungswege? ProjektsatzWege { get; set; }
     /// <summary>Die Wege der Satzbearbeitung fuer mehrere oder gesperrte KATALOGsaetze.</summary>
@@ -322,7 +320,10 @@
     /// dritter Knopf: ein Speicher verbraucht keinen Energietraeger.
     /// </summary>
     [Parameter] public Func<ErzeugerZeile?, bool, Task>? KostenOeffnen { get; set; }
-    /// <summary>„Auslegen…": die Gerätenummer der gewählten Projektzeile; die Hülle schließt dafür den Dialog wie Abbrechen.</summary>
+    /// <summary>
+    /// „Auslegen…": die Gerätenummer der gewählten Projektzeile, <c>0</c> ohne Wahl (Kopfleiste: Auslegung für einen
+    /// neuen Speicher); die Hülle schließt dafür den Dialog wie Abbrechen.
+    /// </summary>
     [Parameter] public Func<int, Task>? AuslegenOeffnen { get; set; }
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste und keine Kostenleiste.</summary>
     [Parameter] public bool Wizard { get; set; }
@@ -355,9 +356,6 @@
     /// <summary>Die Rückfrage vor dem Löschen aus dem Katalog (<c>PSP_MELDUNG_KATALOG_LOESCHEN</c>).</summary>
     [Parameter] public string FrageLoeschen { get; set; } =
         "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?";
-    /// <summary>Hinweis an einer Projektzeile ohne Projektkopie (<c>PSPD_HINWEIS_OHNE_KOPIE</c>).</summary>
-    [Parameter] public string HinweisOhneKopie { get; set; } =
-        "Die Projektkopie dieses Speichers entsteht mit OK; erst dann lässt sie sich bearbeiten oder in die Datenbank übernehmen.";
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_PufferSp.btn_Help";
     /// <summary>„Auslegen…" (<c>PAUS_BTN_AUSLEGEN</c>).</summary>
     [Parameter] public string BtnAuslegenText { get; set; } = "Auslegen…";
@@ -430,21 +428,11 @@
         return _projektZeile is null ? new() : new() { _projektZeile };
     }
 
-    /// <summary>Hat die Zeile ihre Projektkopie (ohne Weg: ja)?</summary>
-    private bool Kopie(ErzeugerZeile z) => z.GeraetId > 0 && (HatProjektkopie?.Invoke(z) ?? true);
+    /// <summary>Traegt die Zeile ein Geraet? Die Projektkopie legt die Hülle schon beim Uebernehmen an.</summary>
+    private bool Kopie(ErzeugerZeile z) => z.GeraetId > 0;
 
     /// <summary>Die Ziele von Bearbeiten… und Rueckweg: die Projektziele mit Kopie.</summary>
     private List<ErzeugerZeile> KopieZiele() => ProjektZiele().Where(Kopie).ToList();
-
-    /// <summary>Der Hinweis an Bearbeiten… und Rueckweg, wenn gewaehlte Zeilen noch keine Kopie haben.</summary>
-    private string? KopieHinweis
-    {
-        get
-        {
-            var ziele = ProjektZiele();
-            return ziele.Count > 0 && ziele.Any(z => !Kopie(z)) ? HinweisOhneKopie : null;
-        }
-    }
 
     /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Saetze, sonst der gewaehlte.</summary>
     private List<Katalogfilterzeile> KatalogZiele()

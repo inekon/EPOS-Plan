@@ -91569,15 +91569,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie dieses Speichers entsteht mit OK; erst dann lässt sie sich bearbeiten oder in die Datenbank übernehmen. ähnelt.
-        /// </summary>
-        public static string PSPD_HINWEIS_OHNE_KOPIE {
-            get {
-                return ResourceManager.GetString("PSPD_HINWEIS_OHNE_KOPIE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Pufferspeicher ein ähnelt.
         /// </summary>
         public static string PSPD_KOPFBAND {

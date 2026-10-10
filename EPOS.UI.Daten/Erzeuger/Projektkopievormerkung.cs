@@ -29,6 +29,10 @@ namespace WindowsFormsApplication1
     /// der nur löscht, worauf keine Anlagenzeile und keine Preis-, Emissions- oder Ergebniszeile verweist).
     /// OK lässt die Träger stehen — sie sind dann Teil des Projekts.</para>
     ///
+    /// <para><b>Auch der Pufferspeicher</b> (<c>Tab_Pufferspeicher</c>, Katalogauswahl V1 Stufe 3) legt seine Kopie beim
+    /// Übernehmen an und meldet eine neue hier; sein Entfernen räumt weiter der Aufrufer nach OK über
+    /// <c>PufferSpCtrl.ProjektWaisenEntfernen</c> ab.</para>
+    ///
     /// <para>Plattformfrei und ohne Datenbank: Gelöscht wird über den Delegaten der Hülle
     /// (<c>…Ctrl.DeleteFromProjekt(bezeichner, projekt)</c>).</para>
     /// </summary>
