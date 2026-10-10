@@ -7800,7 +7800,7 @@ namespace WindowsFormsApplication1
         /// Um so viel rücken Achsentitel und Stufenhinweis tiefer, wenn unter den
         /// Stundenmarken eine Datumszeile steht.
         /// </summary>
-        internal const float DATUMSZEILE_VERSATZ = 18f;
+        public const float DATUMSZEILE_VERSATZ = 18f;
 
         /// <summary>
         /// <b>Die Datumszeile einer Stundenmarke</b> (Auftrag GX): zweite Zeile unter der

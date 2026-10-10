@@ -50,6 +50,17 @@
 // Region, eine andere Reihe), schreibt Blazor dort neue Grenzen - eine Kopie
 // waere dann still veraltet, und Klemmung wie Zuruecksetzen liefen ins Leere.
 //
+// DER ZEIGER LAEUFT OHNE RUNDLAUF (Auftrag GX: "beim Zoomen ist der senkrechte
+// Balken verlangsamt und nicht synchron zur Maus"). Frueher meldete das Modul die
+// Stelle je Bildaufbau an .NET, und Blazor zeichnete Linie und Zeile neu - bei
+// ×12 mit den roh nachgerechneten Pfaden ein Zeichenlauf ueber den ganzen Baum je
+// Mausbewegung. Jetzt gibt der Baustein einmal je Zeichnen eine ZEIGERTAFEL
+// (zeigertafel: Reihen, abgewaehlte Reihen, Einheiten, Datumsregel, Stufen der
+// stehenden Ansicht). Den Balken setzt das Modul unmittelbar im pointermove, die
+// Zeile rechnet es je Bildaufbau aus der Tafel - nach derselben Regel wie die
+// Zeigerzeile des Bausteins. .NET erfaehrt die Stelle nur noch gedrosselt
+// (MELDE_RUHE) und zeichnet dafuer nichts neu.
+//
 // MEHR STEHT HIER NICHT UND SOLL HIER NICHT STEHEN. Kein Zustand ueber die
 // Sitzung hinaus, keine Ablage, kein Netz.
 
@@ -76,6 +87,12 @@ const RAD_RUHE = 150;
 
 /** Der Klassenname des inneren svg in Datenkoordinaten (SvgSchreiber.KLASSE_FLAECHE). */
 const KLASSE_FLAECHE = "epos-flaeche";
+
+/** Hoechstens so oft meldet das Modul die Zeigerstelle an .NET, solange es die Zeile selbst fuehrt [ms]. */
+const MELDE_RUHE = 100;
+
+/** Die Tage der zwoelf Monate im Gemeinjahr (Feiertage.TageJeMonat des Kerns). */
+const TAGE_JE_MONAT = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /** Je Rahmen ein Zustand; der Rahmen haelt ihn, nicht dieses Modul. */
 const ZUSTAENDE = new WeakMap();
@@ -125,6 +142,10 @@ export function binden(flaeche, hilfe) {
         zeigerStunde: null,// zuletzt gemeldete Zeigerstelle
         zeigerX: null,     // clientX, auf den der naechste Bildaufbau wartet
         zeigerRahmen: 0,   // laufende requestAnimationFrame-Anforderung
+        reihen: null,      // Zeigertafel: die Reihen des Modells (zeigertafel)
+        zustand: null,     // Zeigertafel: abgewaehlte Reihen, Einheiten, Datumsregel, Stufen
+        meldeUhr: 0,       // Drossel der Meldung an .NET, solange das Modul die Zeile fuehrt
+        gemeldeteStelle: undefined,
         handler: []
     };
     if (!z.svg) return;
@@ -181,6 +202,8 @@ export function binden(flaeche, hilfe) {
         // Die ZEIGERSTELLE haengt nicht an einem gedrueckten Knopf: Sie meldet
         // sich bei jeder Bewegung ueber der Flaeche, hoechstens einmal je
         // Bildaufbau (requestAnimationFrame).
+        // Der BALKEN folgt sofort - im selben Ereignis, nicht erst im naechsten Bild.
+        if (z.zustand) balkenSetzen(z, flaeche, e.clientX);
         zeigerMerken(z, e.clientX);
 
         if (!z.zeiger.has(e.pointerId)) return;
@@ -289,6 +312,7 @@ export function loesen(flaeche) {
     if (!z) return;
     if (z.radUhr) clearTimeout(z.radUhr);
     if (z.zeigerRahmen) cancelAnimationFrame(z.zeigerRahmen);
+    if (z.meldeUhr) clearTimeout(z.meldeUhr);
     for (const h of z.handler) flaeche.removeEventListener(h.name, h.fn, h.opt);
     ZUSTAENDE.delete(flaeche);
 }
@@ -466,9 +490,30 @@ function setzeKasten(z, x, breite) {
     }
 }
 
+/**
+ * DAS RECHTECK DER DATENFLAECHE in Fensterkoordinaten - ihr VIEWPORT, nicht die
+ * Huelle ihres Inhalts (Auftrag GX). getBoundingClientRect() eines inneren svg
+ * liefert in Chromium die Ausdehnung der GEZEICHNETEN Pfade: Bei x12 ragen sie
+ * zwoelfmal ueber den Rahmen hinaus, das Rechteck war zwoelfmal zu breit - und die
+ * Zeigerstelle lief zwoelfmal langsamer als die Maus ("der Balken ist verlangsamt").
+ * Gerechnet wird deshalb aus x, y, Breite und Hoehe des inneren svg in den
+ * Koordinaten des aeusseren und dessen Bildschirmmatrix.
+ */
+function flaechenRechteck(z) {
+    const svg = z.svg;
+    const aussen = svg ? svg.ownerSVGElement : null;
+    const m = aussen && aussen.getScreenCTM ? aussen.getScreenCTM() : null;
+    if (!m || !svg.x || !svg.width) return svg.getBoundingClientRect();
+    const left = m.e + m.a * svg.x.baseVal.value;
+    const top = m.f + m.d * svg.y.baseVal.value;
+    const width = m.a * svg.width.baseVal.value;
+    const height = m.d * svg.height.baseVal.value;
+    return { left, top, width, height, right: left + width, bottom: top + height };
+}
+
 /** Der Anteil 0…1, an dem eine Fensterkoordinate ueber der Datenflaeche liegt. */
 function svgAnteil(z, clientX) {
-    const r = z.svg.getBoundingClientRect();
+    const r = flaechenRechteck(z);
     if (!r || r.width <= 0) return 0.5;
     return Math.min(1, Math.max(0, (clientX - r.left) / r.width));
 }
@@ -497,7 +542,7 @@ function setzeViewboxUm(z, breite, clientX) {
 
 /** Verschieben: Der Datenwert unter dem Finger bleibt unter dem Finger. */
 function verschiebeViewbox(z, clientX) {
-    const r = z.svg.getBoundingClientRect();
+    const r = flaechenRechteck(z);
     if (!r || r.width <= 0 || !z.zugAb) return;
     const jeBildpunkt = z.zugAb.kb / r.width;
     setzeKasten(z, z.zugAb.kx - (clientX - z.zugAb.x) * jeBildpunkt, z.zugAb.kb);
@@ -566,16 +611,210 @@ function zeigerMerken(z, clientX) {
         if (schritt > 0) stelle = Math.round(stelle / schritt) * schritt;
         if (stelle === z.zeigerStunde) return;
         z.zeigerStunde = stelle;
+        if (z.zustand) {
+            // DAS MODUL FUEHRT DIE ZEILE: schreiben, .NET nur gedrosselt unterrichten.
+            zeileSchreiben(z, zeigerzeile(z, stelle));
+            meldenGedrosselt(z);
+            return;
+        }
         if (!z.hilfe) return;
         try { z.hilfe.invokeMethodAsync("ZeigerGemeldet", stelle); } catch (e) { /* Huelle ist weg */ }
     });
 }
 
+/** Meldet die Zeigerstelle hoechstens alle MELDE_RUHE Millisekunden an .NET. */
+function meldenGedrosselt(z) {
+    if (z.meldeUhr || !z.hilfe) return;
+    z.meldeUhr = setTimeout(() => {
+        z.meldeUhr = 0;
+        if (z.zeigerStunde === z.gemeldeteStelle) return;
+        z.gemeldeteStelle = z.zeigerStunde;
+        try { z.hilfe.invokeMethodAsync("ZeigerGemeldet", z.zeigerStunde); } catch (e) { /* Huelle ist weg */ }
+    }, MELDE_RUHE);
+}
+
 /** Der Zeiger ist weg: die Zeigerzeile wird leer. */
 function zeigerWeg(z) {
     z.zeigerX = null;
+    if (z.zustand) {
+        const balken = balkenElement(z);
+        if (balken) balken.hidden = true;
+        zeileSchreiben(z, "");
+        if (z.meldeUhr) { clearTimeout(z.meldeUhr); z.meldeUhr = 0; }
+    }
     if (z.zeigerStunde === null) return;
     z.zeigerStunde = null;
+    z.gemeldeteStelle = null;
     if (!z.hilfe) return;
     try { z.hilfe.invokeMethodAsync("ZeigerGemeldet", null); } catch (e) { /* Huelle ist weg */ }
+}
+
+// =====================================================================
+//  DIE ZEIGERTAFEL (Auftrag GX)
+// =====================================================================
+
+/**
+ * Der Baustein gibt einmal je Zeichnen, was die Zeigerzeile braucht. Antwortet
+ * das Modul mit true, fuehrt ES ab jetzt Balken und Zeile.
+ *
+ * @param {HTMLElement} flaeche der gebundene Rahmen
+ * @param {Array|null} reihen die Reihen des Modells ({name, fenster, werte, unten,
+ *        xWerte}); null = dieselben wie zuletzt
+ * @param {object} zustand {versteckt, einheiten, kultur, wertachse, mass, jeStunde,
+ *        monate, muster, stufen}
+ * @returns {boolean} true, wenn die Tafel steht
+ */
+export function zeigertafel(flaeche, reihen, zustand) {
+    const z = ZUSTAENDE.get(flaeche);
+    if (!z || !zustand) return false;
+    if (reihen) z.reihen = reihen;
+    if (!z.reihen) return false;
+    const kultur = zustand.kultur || "de-DE";
+    try {
+        z.zahl3 = new Intl.NumberFormat(kultur, { useGrouping: false, maximumFractionDigits: 3 });
+        z.zahl0 = new Intl.NumberFormat(kultur, { maximumFractionDigits: 0 });
+        z.zahl2 = new Intl.NumberFormat(kultur, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } catch (e) {
+        return false;
+    }
+    z.zustand = zustand;
+    z.versteckt = new Set(zustand.versteckt || []);
+    // Steht der Zeiger gerade ueber dem Bild, gilt die neue Tafel sofort.
+    if (z.zeigerStunde !== null && z.zeigerStunde !== undefined)
+        zeileSchreiben(z, zeigerzeile(z, z.zeigerStunde));
+    return true;
+}
+
+function balkenElement(z) {
+    const svg = z.svg;
+    const rahmen = svg ? svg.closest(".epos-diagramm-svg-flaeche") : null;
+    return rahmen ? rahmen.querySelector(".epos-diagramm-zeigerbalken") : null;
+}
+
+/** Setzt den Balken auf clientX, geklemmt an die Datenflaeche - ohne Rundlauf. */
+function balkenSetzen(z, flaeche, clientX) {
+    const balken = balkenElement(z);
+    if (!balken || !z.svg) return;
+    const fr = flaeche.getBoundingClientRect();
+    const sr = flaechenRechteck(z);
+    if (sr.width <= 0) return;
+    const x = Math.min(sr.right, Math.max(sr.left, clientX));
+    balken.style.left = (x - fr.left - flaeche.clientLeft) + "px";
+    balken.style.top = (sr.top - fr.top - flaeche.clientTop) + "px";
+    balken.style.height = sr.height + "px";
+    balken.hidden = false;
+}
+
+function zeileSchreiben(z, text) {
+    const rahmen = z.svg ? z.svg.closest(".epos-diagramm-svg-flaeche") : null;
+    const wurzel = rahmen ? rahmen.parentElement : null;
+    const zeile = wurzel ? wurzel.querySelector(".epos-diagramm-zeigerzeile--modul") : null;
+    if (zeile && zeile.textContent !== text) zeile.textContent = text;
+}
+
+/** Rundung wie Math.Round in .NET: die Haelfte zur geraden Zahl. */
+function rundeGerade(v) {
+    const f = Math.floor(v);
+    const d = v - f;
+    if (d > 0.5) return f + 1;
+    if (d < 0.5) return f;
+    return f % 2 === 0 ? f : f + 1;
+}
+
+/** Datum des Gemeinjahres zur Jahresstunde (Zeitachse.Datum des Kerns). */
+function datum(t, stunde) {
+    let tag = Math.floor(klemmen(stunde) / 24);
+    let monat = 0;
+    while (monat < 11 && tag >= TAGE_JE_MONAT[monat]) { tag -= TAGE_JE_MONAT[monat]; monat++; }
+    const name = t.monate && t.monate.length === 12 ? t.monate[monat] : String(monat + 1);
+    return (t.muster || "{0}. {1}").replace("{0}", String(tag + 1)).replace("{1}", name);
+}
+
+/** Uhrzeit zur Jahresstunde (Zeitachse.Uhrzeit des Kerns). */
+function uhrzeit(stunde) {
+    const h = klemmen(stunde);
+    let minuten = rundeGerade((h - Math.floor(h / 24) * 24) * 60);
+    if (minuten >= 1440) minuten = 1439;
+    const zwei = n => (n < 10 ? "0" : "") + n;
+    return zwei(Math.floor(minuten / 60)) + ":" + zwei(minuten % 60);
+}
+
+function klemmen(stunde) {
+    if (!(stunde >= 0)) return 0;
+    return Math.min(stunde, 8760 - 1e-6);
+}
+
+/** Die Stelle auf der x-Achse (DiagrammSvg.Zeigerstelle). */
+function zeigerstelle(z, x) {
+    const t = z.zustand;
+    const mass = t.mass || "";
+    if (t.jeStunde > 0) {
+        const stunde = rundeGerade(x) / t.jeStunde;
+        const ganz = Math.abs(stunde - Math.round(stunde)) < 1e-9;
+        const zahl = ganz ? z.zahl0.format(stunde) : z.zahl2.format(stunde);
+        const kopf = mass.length > 0 ? zahl + " " + mass : zahl;
+        return kopf + " · " + datum(t, stunde) + " " + uhrzeit(stunde);
+    }
+    const zahl = t.wertachse ? z.zahl3.format(x) : z.zahl0.format(rundeGerade(x));
+    return mass.length > 0 ? zahl + " " + mass : zahl;
+}
+
+/** Der Index in werte zur Stelle x, -1 ausserhalb (DiagrammSvg.Reihenindex). */
+function reihenindex(r, x) {
+    if (!r.werte || r.werte.length === 0 || !r.fenster) return -1;
+    const von = r.fenster[0], bis = r.fenster[1];
+    if (x < von - 0.5 || x > bis + 0.5) return -1;
+    const n = r.werte.length;
+    if (r.xWerte && r.xWerte.length > 0) {
+        let beste = -1, abstand = Number.MAX_VALUE;
+        const m = Math.min(n, r.xWerte.length);
+        for (let i = 0; i < m; i++) {
+            if (r.xWerte[i] === null) continue;
+            const d = Math.abs(r.xWerte[i] - x);
+            if (d >= abstand) continue;
+            abstand = d;
+            beste = i;
+        }
+        return beste;
+    }
+    const schritt = n > 1 ? (bis - von) / (n - 1) : 0;
+    let index = schritt > 0 ? rundeGerade((x - von) / schritt) : 0;
+    if (index < 0) index = 0;
+    if (index >= n) index = n - 1;
+    return index;
+}
+
+/** Die ganze Zeile unter dem Zeiger (DiagrammSvg.Zeigerzeile). */
+function zeigerzeile(z, stelle) {
+    const t = z.zustand;
+    if (!t || !z.reihen || stelle === null || stelle === undefined) return "";
+
+    let x = stelle;
+    let kopf = null;
+    const st = t.stufen;
+    if (st && st.grenzen && st.grenzen.length > 0) {
+        let s = 0;
+        while (s + 1 < st.grenzen.length && st.grenzen[s + 1] <= stelle) s++;
+        x = st.stellen[s];
+        kopf = st.koepfe[s];
+    }
+    const teile = [kopf !== null ? kopf : zeigerstelle(z, x)];
+
+    const genannt = new Set();
+    for (let i = 0; i < z.reihen.length; i++) {
+        const r = z.reihen[i];
+        const name = r.name || "";
+        if (z.versteckt.has(name) || genannt.has(name)) continue;
+        genannt.add(name);
+        const index = reihenindex(r, x);
+        if (index < 0) continue;
+        let roh = r.werte[index];
+        if (roh === null || roh === undefined || !isFinite(roh)) continue;
+        if (r.unten && index < r.unten.length && r.unten[index] !== null && isFinite(r.unten[index]))
+            roh -= r.unten[index];
+        const einheit = t.einheiten ? (t.einheiten[i] || "") : "";
+        const wert = z.zahl3.format(roh);
+        teile.push(einheit.length > 0 ? name + ": " + wert + " " + einheit : name + ": " + wert);
+    }
+    return teile.join(" · ");
 }

@@ -436,7 +436,9 @@ public class DiagrammSvgTests : EposBunitContext
         await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(4000));
 
         string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
-        Assert.Contains("4.000 h", zeile);
+        // Stunde, Datum und Uhrzeit des Gemeinjahres (Auftrag GX): Stunde 4 000 beginnt
+        // am Tag 166 (ab 0) um 16 Uhr - dem 16. Juni.
+        Assert.StartsWith("4.000 h · 16. Juni 16:00 · ", zeile);
         Assert.Contains(MIT_ROLLE + ": ", zeile);
         Assert.Contains(OHNE_ROLLE + ": ", zeile);
         Assert.Contains("°C", zeile);
@@ -447,6 +449,74 @@ public class DiagrammSvgTests : EposBunitContext
 
         await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(null));
         Assert.Equal("", cut.Find(".epos-diagramm-zeigerzeile").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Auftrag GX: der Zeiger läuft ohne Rundlauf.</b> Der Baustein gibt dem Modul die
+    /// Zeigertafel EINMAL je Zeichnen — die Reihen beim ersten Mal, danach nur den
+    /// geänderten Zustand —, und nimmt das Modul sie an, führt ES Balken und Zeile: Der
+    /// Baustein zeichnet keine Zeigerlinie und keinen Zeilentext mehr, und eine gemeldete
+    /// Stelle löst keinen Zeichenlauf aus. Strenger JS-Modus: jeder andere Aufruf bräche.
+    /// </summary>
+    [Fact]
+    public async Task GX_Die_Zeigertafel_geht_einmal_je_Zeichnen_an_das_Modul()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        modul.SetupVoid("binden", _ => true).SetVoidResult();
+        modul.SetupVoid("nachziehen", _ => true).SetVoidResult();
+        var tafel = modul.Setup<bool>("zeigertafel", _ => true);
+        tafel.SetResult(true);
+
+        var cut = Zeige();
+        cut.WaitForAssertion(() => Assert.Single(tafel.Invocations));
+
+        // Die erste Tafel traegt die Reihen, und das Modul fuehrt ab jetzt die Zeile.
+        Assert.NotNull(tafel.Invocations.First().Arguments[1]);
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-diagramm-zeigerzeile--modul")));
+        Assert.Single(cut.FindAll(".epos-diagramm-zeigerbalken"));
+
+        // Ein Zeichenlauf ohne Aenderung gibt nichts weiter.
+        cut.Render();
+        Assert.Single(tafel.Invocations);
+
+        // Eine gemeldete Stelle zeichnet weder Linie noch Text - das tut das Modul.
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(4000));
+        Assert.Empty(cut.FindAll("line.epos-diagramm-zeiger"));
+        Assert.Equal("", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+
+        // Eine abgewaehlte Reihe aendert den Zustand: eine Tafel mehr, ohne Reihen.
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, tafel.Invocations.Count));
+        Assert.Null(tafel.Invocations.Last().Arguments[1]);
+    }
+
+    /// <summary>
+    /// Kein Blazor-Handler je Mausbewegung (Auftrag GX): Weder Fläche noch Bild tragen
+    /// einen <c>pointermove</c>- oder <c>mousemove</c>-Handler des Bausteins — die Bewegung
+    /// gehört allein dem Modul.
+    /// </summary>
+    [Fact]
+    public void GX_Kein_Blazor_Handler_je_Mausbewegung()
+    {
+        var cut = Zeige();
+        Assert.DoesNotContain("onpointermove", cut.Markup, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("onmousemove", cut.Markup, StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Ohne angenommene Tafel (Prüfstand, kein Modul) bleibt alles beim Baustein: Linie und
+    /// Zeile mit Datum, wie bisher.
+    /// </summary>
+    [Fact]
+    public async Task GX_Ohne_Tafel_zeichnet_der_Baustein_Linie_und_Zeile()
+    {
+        var cut = Zeige();
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(0));
+        Assert.Single(cut.FindAll("line.epos-diagramm-zeiger"));
+        Assert.StartsWith("0 h · 1. Jan. 00:00", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(8759));
+        Assert.StartsWith("8.759 h · 31. Dez. 23:00", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
     }
 
     /// <summary>
@@ -509,11 +579,18 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.NotEmpty(ticks);
         Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
 
-        // Die Beschriftungen sind die der Teilung, dazu der Achsentitel.
+        // Die Beschriftungen sind die der Teilung, je Marke mit Datumszeile (Auftrag GX),
+        // dazu der Achsentitel.
         var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
-        Assert.Equal(ticks.Count + 1, texte.Count);
-        foreach ((int _, string text) in ticks) Assert.Contains(text, texte);
-        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN, texte);
+        Assert.Equal(2 * ticks.Count + 1, texte.Count);
+        foreach ((int stunde, string text) in ticks)
+        {
+            Assert.Contains(text, texte);
+            Assert.Contains(Zeitachse.Markentext(stunde, 400), texte);
+        }
+        Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks text.epos-diagramm-datum").Count);
+        Assert.Contains("6. Mai", texte);   // Stunde 3 000 = Tag 125 = 6. Mai
+        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM, texte);
 
         Assert.Equal((3000, 3400), cut.Instance.Fenster);
         Assert.Single(fenster);
