@@ -348,4 +348,69 @@ public class ProjektKopieDialogTests : EposBunitContext
         kern.Pruefung = DuplizierBefund.ZielExistiert;
         Assert.False(string.IsNullOrEmpty(haken.Pruefen()));
     }
+
+    // =====================================================================
+    // Das offene Projekt ist die erste Wahl (Auftrag SU, Anwender 10.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Mit offenem Projekt steht DESSEN Zeile gewählt (nicht die erste der Sortierung),
+    /// Beschreibung, Kunde und Bearbeiter sind daraus vorbelegt; der neue Name und das
+    /// Suchfeld bleiben leer, beide Zeilen bleiben sichtbar.
+    /// </summary>
+    [Fact]
+    public void Das_offene_Projekt_ist_beim_Oeffnen_die_Wahl_und_belegt_die_Felder_vor()
+    {
+        var cut = Aufbauen(new Kern(), p => p.Add(x => x.AktivesProjekt, 1007));
+
+        Assert.Equal("Zweitprojekt", cut.Instance.Quelle);
+        var markiert = cut.Find("tbody tr.epos-zeile--markiert");
+        Assert.Contains("Zweitprojekt", markiert.TextContent);
+        Assert.Single(cut.FindAll("tbody tr.epos-zeile--markiert"));
+
+        Assert.Equal("B von Zweitprojekt", cut.Find(".epos-projektkopie-felder textarea").TextContent);
+        Assert.Equal("K", Feld(cut, 2).GetAttribute("value"));
+        Assert.Equal("M", Feld(cut, 3).GetAttribute("value"));
+        Assert.True(string.IsNullOrEmpty(Feld(cut, 0).GetAttribute("value")));
+
+        Assert.True(string.IsNullOrEmpty(cut.Find(".epos-projektliste-suche input").GetAttribute("value")));
+        Assert.Equal(2, cut.FindAll("tbody tr").Count);
+    }
+
+    /// <summary>
+    /// Ohne offenes Projekt — und mit einer Id, die die Liste nicht führt — bleibt es beim
+    /// gewohnten Verhalten: Die Liste wählt ihre erste Zeile vor.
+    /// </summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(9999)]
+    public void Ohne_offenes_Projekt_waehlt_die_Liste_wie_gewohnt_die_erste_Zeile(int aktiv)
+    {
+        var cut = Aufbauen(new Kern(), p => p.Add(x => x.AktivesProjekt, aktiv));
+
+        Assert.Equal("Musterprojekt", cut.Instance.Quelle);
+        Assert.Equal("B von Musterprojekt", cut.Find(".epos-projektkopie-felder textarea").TextContent);
+        Assert.True(string.IsNullOrEmpty(cut.Find(".epos-projektliste-suche input").GetAttribute("value")));
+    }
+
+    /// <summary>
+    /// Die Liste rollt die Zeile des offenen Projekts an den oberen Rand — einmal, über
+    /// <c>zeileOben</c> mit dem Index der gezeigten Reihenfolge; ein späterer Klick rollt nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_des_offenen_Projekts_rollt_einmal_nach_oben()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(EPOS.UI.Bausteine.ProjektListe.MODUL);
+        var oben = modul.SetupVoid("zeileOben", _ => true);
+
+        var cut = Aufbauen(new Kern(), p => p.Add(x => x.AktivesProjekt, 1007));
+
+        cut.WaitForAssertion(() => Assert.Single(oben.Invocations));
+        Assert.Equal(1, oben.Invocations.Single().Arguments[1]);
+
+        cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Assert.Equal("Musterprojekt", cut.Instance.Quelle);
+        Assert.Single(oben.Invocations);
+    }
 }
