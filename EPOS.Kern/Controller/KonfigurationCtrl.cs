@@ -62,6 +62,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die vier Waermeerzeuger-Plaetze eines Projekts, so wie sie in der Datenbank
+        /// stehen — ohne Nebenwirkung.</b> Anders als <see cref="LiesProjekt"/> laeuft dieser
+        /// Leser NICHT durch <see cref="HeizkesselNachziehen"/>: Er schreibt nie in
+        /// <c>Tab_Einstellungen.Tool_1..4</c>.
+        ///
+        /// <para>Fuer Leser, die nur nachsehen, ob ein Erzeuger einen Kaskadenplatz hat
+        /// (Kaeltefolge). Liefen sie ueber <see cref="LiesProjekt"/>, zoege jedes
+        /// Auffrischen der Konfigurationsseite einer ungepflegten Kaskade den Heizkessel in
+        /// die DATENBANK — auch zwischen „Automatik uebernehmen" und dem naechsten Oeffnen,
+        /// wo die Seite ihn nur im Arbeitsstand zeigen soll. Ein Vormerksatz und eine
+        /// fehlende Zeile heissen wie dort „kein Satz": vier leere Plaetze.</para>
+        /// </summary>
+        public static List<string> KaskadeLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return Kaskade.Lesen(null);
+
+            KonfigurationModel m = new KonfigurationModel();
+            return ZeileUebernehmen(TabelleJeProjekt(idProjekt), m, nachziehen: false)
+                ? Kaskade.Lesen(m)
+                : Kaskade.Lesen(null);
+        }
+
+        /// <summary>
         /// Dasselbe fuer ein STEUEROBJEKT: fuellt <see cref="model"/> an Ort und Stelle
         /// und setzt <see cref="rows"/> — der wortgleiche Ersatz fuer
         /// <c>ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + id)</c>.
@@ -114,8 +137,11 @@ namespace WindowsFormsApplication1
         /// Uebernimmt die erste Zeile einer gelesenen Tabelle in ein Modell — die
         /// Abbildung, die <see cref="ReadSingle"/> und <see cref="LiesProjekt"/> teilen.
         /// Rueckgabe <c>false</c>, wenn nichts zu uebernehmen war.
+        /// <para><paramref name="nachziehen"/> = <c>false</c> laesst
+        /// <see cref="HeizkesselNachziehen"/> aus — der nebenwirkungsfreie Leser
+        /// <see cref="KaskadeLesen"/> schreibt nichts.</para>
         /// </summary>
-        private static bool ZeileUebernehmen(DataTable dt, KonfigurationModel model)
+        private static bool ZeileUebernehmen(DataTable dt, KonfigurationModel model, bool nachziehen = true)
         {
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -250,7 +276,7 @@ namespace WindowsFormsApplication1
                     ? HeizgrenzeOderLeer(row[KesselHeizgrenzeSchema.SPALTE])
                     : null;
 
-                HeizkesselNachziehen(model);
+                if (nachziehen) HeizkesselNachziehen(model);
 
                 return true;
             }
