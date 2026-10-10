@@ -5,11 +5,11 @@ Die Reihenfolge ist nicht zwingend, hat sich in der Praxis aber bewährt, weil j
 == Die sieben Stufen ==
 {{Anker|die-sieben-stufen|stufen}}
 
-# [[Projekt anlegen]] – Bausteine des Projekts ankreuzen, Projektname, Bearbeiter, Kunde und Klimaregion eintragen.
+# [[Projekt anlegen]] – Projektname, Bearbeiter, Kunde und Klimaregion eintragen; die Komponenten fügen Sie danach über die Reiter der Startseite hinzu.
 # [[Klimadaten festlegen]] – Klimaregion auswählen oder für den Standort neu importieren.
-# [[Wärmebedarf erfassen]] – Gebäudeheizwärme, Warmwasser, Prozesswärme, externer Lastgang und Netzverluste.
+# [[Wärmebedarf erfassen]] – Gebäude mit Heizen und Kühlen, Warmwasser, Prozesswärme, externer Lastgang und Netzverluste.
 # [[Strombedarf erfassen]] – Verbrauchertypen mit Wochenprofilen oder gemessener Lastgang, intern in Viertelstundenwerten.
-# [[Erzeuger und Speicher auswählen]] – Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik, Puffer- und Stromspeicher aus den Katalogen.
+# [[Erzeuger und Speicher auswählen]] – Wärmepumpe, Kältemaschine, Heizkessel, BHKW, Solarthermie, Photovoltaik, Puffer- und Stromspeicher aus den Katalogen.
 # [[Simulation konfigurieren und starten]] – Erzeuger, Reihenfolge und Speicherbewirtschaftung festlegen, Jahressimulation rechnen.
 # [[Ergebnisse auswerten und Kosten hinterlegen]] – Deckungsanteile, Kennzahlen und Ganglinien lesen, Zeitreihen exportieren, Kosten erfassen.
 
