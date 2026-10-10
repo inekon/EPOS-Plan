@@ -53,6 +53,7 @@
             <Katalogliste Profil="@Profil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Vergleichsparameter="@Uebersicht"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
                           GewaehlteChanged="BeiKaestchen">
                 <Werkzeug>
@@ -107,11 +108,18 @@
                     </Stammblattgruppe>
 
                     @* KENNLINIE: ein Zeilenraster; ein Auslieferungssatz als TEXT. *@
+                    @* KENNLINIE (KD-3): ueber dem Zeilenraster die zwei Bilder EER und Kaelteleistung in Reitern -
+                       wie die Waermepumpe; das Bild folgt jeder Aenderung des Rasters. Ein Auslieferungssatz zeigt
+                       die Punkte als TEXT und darunter dieselben Bilder. *@
                     <Stammblattgruppe Titel="@Texte.GruppeKennlinie" Lesemodus="@_auslieferung"
                                       Werte="@(_auslieferung ? Kennlinienwerte(_daten) : null)">
                         <KindInhalt>
+                            @Kennlinienbild(_arbeit)
                             @Kennlinienfelder(_arbeit)
                         </KindInhalt>
+                        <Nachsatz>
+                            @Kennlinienbild(_daten)
+                        </Nachsatz>
                     </Stammblattgruppe>
                 </Gruppen>
             </Stammblatt>
@@ -374,6 +382,24 @@
     /// <summary>Die kleine Kurve „EER-Verhältnis über dem Lastgrad" (<c>KaeltemaschineTeillastbild</c>); ohne sie kein Bild.</summary>
     [Parameter] public Func<KaeltemaschineDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? Teillastbild { get; set; }
 
+    /// <summary>
+    /// KD-3: die zwei Kennlinienbilder (EER, Kälteleistung) zum Arbeitsstand (<c>KaeltemaschineKennlinienbild</c>);
+    /// ohne sie kein Bild, das Zeilenraster bleibt.
+    /// </summary>
+    [Parameter] public Func<KaeltemaschineDaten, KaeltemaschineKennlinienbilder>? Kennlinienbilder { get; set; }
+
+    /// <summary>
+    /// KD-3: die Parameterübersicht eines Satzes über seinen Bezeichner (<c>KaeltemaschineParameteruebersicht.Werte</c>)
+    /// — die Katalogliste vergleicht damit statt über ihre Spalten.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
+
+    /// <summary>
+    /// KD-3: dieselbe Übersicht über die Id (<c>KaeltemaschineParameteruebersicht.WerteZuId</c>) — „Vergleichen" im
+    /// Stammblatt stellt sie nebeneinander; ohne sie vergleicht es die Kenndaten des Stammblatts.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? UebersichtZuId { get; set; }
+
     /// <summary>Der Dialog wurde geschlossen („Beenden", Esc, Kreuz) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
@@ -433,6 +459,19 @@
     private int _loeschBleiben;
 
     private readonly Zeilenauswahl _auswahl = new();
+
+    /// <summary>KD-3: der gewählte Reiter der Kennlinienbilder.</summary>
+    private string _kennlinienreiter = "EER";
+
+    /// <summary>
+    /// KD-3: die zwischengespeicherten Bilder je Stand (Arbeitsstand und Lesestand) samt ihrem Abzug — neu gebaut nur,
+    /// wenn sich Punkte oder Rückkühlart ändern; sonst verlöre <c>DiagrammSvg</c> mit der Referenz Zoom und Legendenwahl.
+    /// </summary>
+    private readonly Dictionary<KaeltemaschineDaten, (string Abzug, KaeltemaschineKennlinienbilder Bilder)> _kennlinienbilder =
+        new(ReferenceEqualityComparer.Instance);
+
+    /// <summary>KD-3: der gewählte Reiter der Kennlinienbilder (Prüfhilfe für Tests).</summary>
+    public string Kennlinienreiter => _kennlinienreiter;
     private IReadOnlyList<string>? _vergleichskoepfe;
     private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
 
@@ -672,6 +711,62 @@
             </KindInhalt>
         </Formularraster>
     };
+
+    /// <summary>
+    /// <b>Die Kennlinie als Bild</b> (KD-3): Reiter EER und Kälteleistung, je ein <c>DiagrammSvg</c> mit dem Modell der
+    /// Hülle — Abszisse Rückkühltemperatur (bei Luft Außentemperatur), eine Linie je Kaltwassertemperatur. Ohne Weg
+    /// der Hülle kein Bild.
+    /// </summary>
+    private RenderFragment Kennlinienbild(KaeltemaschineDaten d) => __builder =>
+    {
+        if (Kennlinienbilder is null) return;
+        KaeltemaschineKennlinienbilder bilder = BilderZu(d);
+        <div class="epos-kaeltemaschine-kennlinienbild">
+            <Reiter Bezeichnung="@Texte.KennlinienbildBezeichnung" Kennung="km-kennlinie" @bind-Aktiv="_kennlinienreiter">
+                <KindInhalt>
+                    <Reiterblatt Schluessel="EER" Titel="@Texte.ReiterEer">
+                        <KindInhalt>
+                            <DiagrammSvg Modell="@bilder.Eer" Kennung="km-kennlinie-eer"
+                                         Bezeichnung="@Texte.ReiterEer" PlatzhalterText="@Texte.PlatzhalterKennlinienbild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                    <Reiterblatt Schluessel="LEISTUNG" Titel="@Texte.ReiterLeistung">
+                        <KindInhalt>
+                            <DiagrammSvg Modell="@bilder.Leistung" Kennung="km-kennlinie-leistung"
+                                         Bezeichnung="@Texte.ReiterLeistung" PlatzhalterText="@Texte.PlatzhalterKennlinienbild" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                </KindInhalt>
+            </Reiter>
+        </div>
+    };
+
+    /// <summary>
+    /// Die Bilder zum Stand <paramref name="d"/> aus dem Zwischenspeicher; neu gebaut nur bei geändertem Abzug
+    /// (Rückkühlart und alle Punkte), damit das Bild jeder Eingabe folgt und sonst seine Referenz behält.
+    /// </summary>
+    private KaeltemaschineKennlinienbilder BilderZu(KaeltemaschineDaten d)
+    {
+        if (Kennlinienbilder is null) return KaeltemaschineKennlinienbilder.Leer;
+        string abzug = Kennlinienabzug(d);
+        if (_kennlinienbilder.TryGetValue(d, out var alt) && alt.Abzug == abzug) return alt.Bilder;
+        if (_kennlinienbilder.Count > 8) _kennlinienbilder.Clear();
+        KaeltemaschineKennlinienbilder neu = Kennlinienbilder(d) ?? KaeltemaschineKennlinienbilder.Leer;
+        _kennlinienbilder[d] = (abzug, neu);
+        return neu;
+    }
+
+    private static string Kennlinienabzug(KaeltemaschineDaten d)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append(d.RueckkuehlartIndex?.ToString(CultureInfo.InvariantCulture) ?? "-");
+        foreach (KaeltemaschinePunktDaten p in d.Kennlinie)
+            sb.Append('|').Append(Abzugswert(p.Rueckkuehltemperatur)).Append(';').Append(Abzugswert(p.Kaltwassertemperatur))
+              .Append(';').Append(Abzugswert(p.Eer)).Append(';').Append(Abzugswert(p.Kaelteleistung));
+        return sb.ToString();
+    }
+
+    private static string Abzugswert(double? v) => v?.ToString("R", CultureInfo.InvariantCulture) ?? "-";
 
     /// <summary>Die Kennlinie als Zeilenraster: vier Zahlen je Punkt, Entfernen je Zeile, Hinzufügen darunter.</summary>
     private RenderFragment Kennlinienfelder(KaeltemaschineDaten d) => __builder =>
@@ -1229,6 +1324,16 @@
         foreach (string s in schluessel)
         {
             Katalogfilterzeile? z = ZeileZu(s);
+            if (UebersichtZuId is not null)
+            {
+                // KD-3: die Parameteruebersicht des Kerns - wie die Waermepumpe ihre Kennwerte nebeneinanderstellt.
+                IReadOnlyList<Parameterwert> werte = (z is null ? null : UebersichtZuId(z.Id)) ?? Array.Empty<Parameterwert>();
+                saetze.Add(werte.Select(w => new Vergleichsfeld(w.Eintrag.Spalte,
+                        w.Eintrag.Einheit.Length > 0 && w.Eintrag.Einheit != "-"
+                            ? w.Eintrag.Anzeigetext + " [" + w.Eintrag.Einheit + "]" : w.Eintrag.Anzeigetext,
+                        w.Wert)).ToList());
+                continue;
+            }
             KaeltemaschineDaten d = (z is null ? null : Lies?.Invoke(z.Id)) ?? new KaeltemaschineDaten();
             var felder = Kenndatenwerte(d)
                 .Skip(1)

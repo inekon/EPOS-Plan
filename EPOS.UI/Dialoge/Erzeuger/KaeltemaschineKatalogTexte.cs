@@ -85,6 +85,14 @@ public sealed class KaeltemaschineKatalogTexte
     public string Lesezeile { get; set; } = Resource.KM_TT_LESEZEILE;
     public string VerweisMindestteillast { get; set; } = Resource.KM_TT_VERWEIS_MINDESTTEILLAST;
     public string BildTeillast { get; set; } = Resource.KM_BILD_TEILLAST;
+    /// <summary>KD-3: Bezeichnung der Reiterleiste der Kennlinienbilder (KM_KL_BEZEICHNUNG).</summary>
+    public string KennlinienbildBezeichnung { get; set; } = Resource.KM_KL_BEZEICHNUNG;
+    /// <summary>KD-3: Reiter „EER" (KM_KL_REITER_EER).</summary>
+    public string ReiterEer { get; set; } = Resource.KM_KL_REITER_EER;
+    /// <summary>KD-3: Reiter „Kälteleistung" (KM_KL_REITER_LEISTUNG).</summary>
+    public string ReiterLeistung { get; set; } = Resource.KM_KL_REITER_LEISTUNG;
+    /// <summary>KD-3: Platzhalter ohne vollständigen Kennlinienpunkt (KM_KL_PLATZHALTER).</summary>
+    public string PlatzhalterKennlinienbild { get; set; } = Resource.KM_KL_PLATZHALTER;
     public string KnopfKurveTypkennfeld { get; set; } = Resource.KM_BTN_KURVE_TYPKENNFELD;
     public string KnopfSkalieren { get; set; } = Resource.KM_BTN_SKALIEREN;
     public string KnopfTeillastpunkte { get; set; } = Resource.KM_BTN_TEILLASTPUNKTE;

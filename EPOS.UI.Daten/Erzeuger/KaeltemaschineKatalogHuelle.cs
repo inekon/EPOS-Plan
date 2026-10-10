@@ -44,7 +44,11 @@ namespace WindowsFormsApplication1
                 ["Lesezeile"] = new Func<KaeltemaschineDaten, KaeltemaschineTeillastLesestand>(Lesezeile),
                 ["NennEerHinweis"] = new Func<KaeltemaschineDaten, string>(d => KaeltemaschineStammCtrl.NennEerHinweis(AlsModell(d))),
                 ["Teillastbild"] = new Func<KaeltemaschineDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
-                    d => KaeltemaschineTeillastbild.Modell(AlsModell(d)))
+                    d => KaeltemaschineTeillastbild.Modell(AlsModell(d))),
+                // KD-3: die Kennlinie als Bild (EER, Kaelteleistung) und die Parameteruebersicht des Vergleichs.
+                ["Kennlinienbilder"] = new Func<KaeltemaschineDaten, KaeltemaschineKennlinienbilder>(KaeltemaschineKennlinienbild.Modelle),
+                ["Uebersicht"] = new Func<string, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.Werte),
+                ["UebersichtZuId"] = new Func<int, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.WerteZuId)
             };
         }
 
