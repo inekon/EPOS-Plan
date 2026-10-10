@@ -1564,4 +1564,79 @@ public class PhotovoltaikDialogTests : EposBunitContext
 
         Assert.Equal(new[] { "(Modul der Anlage)", "Modul Neu" }, Modulklappliste(cut));
     }
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 3: Rückweg „In die Datenbank übernehmen…" (5.2, KA‑E‑9)
+    // =================================================================================
+
+    private static Rueckwegwege Rueckweg(IReadOnlyList<Rueckwegvorschlag> zeilen, List<Rueckwegwahl>? geschrieben = null,
+                                         Func<string, bool>? belegt = null, KatalogSpeicherErgebnis? ergebnis = null,
+                                         List<IReadOnlyList<int>>? gefragt = null)
+        => new()
+        {
+            Vorschau = ids => { gefragt?.Add(ids); return zeilen; },
+            NameBelegt = belegt ?? (_ => false),
+            Uebernehmen = w => { geschrieben?.AddRange(w); return ergebnis ?? new KatalogSpeicherErgebnis(true, "2 Sätze übernommen", ""); },
+        };
+
+    [Fact]
+    public void S3b_Der_Knopf_steht_nach_Bearbeiten_und_fragt_je_Projektkopie_einmal()
+    {
+        var gefragt = new List<IReadOnlyList<int>>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31), Zeile(2, "Modul 500", 32), Zeile(3, "Modul 400 Ost", 31) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(),
+                           rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(31, "Modul 400", "", Rueckwegsperre.UrsprungUnbekannt, "Modul 400") },
+                                                  gefragt: gefragt));
+
+        var knoepfe = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelectorAll("button").ToList();
+        int bearbeiten = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--bearbeiten-projekt"));
+        int rueckweg = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--rueckweg"));
+        Assert.True(bearbeiten >= 0 && rueckweg == bearbeiten + 1);
+
+        foreach (int i in new[] { 0, 1, 2 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Equal(new[] { 31, 32 }, Assert.Single(gefragt).ToArray());
+        Assert.NotNull(cut.Instance.Rueckweg);
+    }
+
+    [Fact]
+    public void S3b_Uebernehmen_meldet_und_liest_den_Katalog_neu()
+    {
+        int gelesen = 0;
+        var geschrieben = new List<Rueckwegwahl>();
+        var zeilen = new[] { new Rueckwegvorschlag(31, "Modul 400", "", Rueckwegsperre.UrsprungUnbekannt, "Modul 400 (Projekt)") };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, geschrieben),
+                           katalogzeilen: () => { gelesen++; return Katalogzeilen(); });
+        int vorher = gelesen;
+        cut.Find(".epos-knopf--rueckweg").Click();
+        cut.Find(".epos-rueckweg-uebernehmen").Click();
+
+        Assert.Equal(new[] { new Rueckwegwahl(31, false, "Modul 400 (Projekt)") }, geschrieben.ToArray());
+        Assert.Null(cut.Instance.Rueckweg);
+        Assert.Equal("2 Sätze übernommen", cut.Instance.Meldung);
+        Assert.True(gelesen > vorher);
+    }
+
+    [Fact]
+    public void S3b_Der_Hinweis_nennt_was_im_Projekt_bleibt()
+    {
+        var zeilen = new[] { new Rueckwegvorschlag(31, "Modul 400", "", Rueckwegsperre.UrsprungUnbekannt, "Modul 400") };
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.RueckwegWege, Rueckweg(zeilen))
+            .Add(x => x.RueckwegBleibtText, "Im Projekt bleiben: Stränge und Wechselrichterzuordnung."));
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Contains("Im Projekt bleiben: Stränge und Wechselrichterzuordnung.", cut.Find(".epos-rueckweg").TextContent);
+    }
+
+    [Fact]
+    public void S3b_Ohne_Wege_kein_Knopf()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
+    }
 }

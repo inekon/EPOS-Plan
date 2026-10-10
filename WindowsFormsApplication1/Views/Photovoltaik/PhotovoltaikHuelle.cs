@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -216,7 +217,14 @@ namespace WindowsFormsApplication1
                     return d == null ? 0.0 : d.Leistung * (zeile.AnzahlModule ?? 0) / 1000.0;
                 }),
 
-                // Loeschen im Katalogfuss: leer = geloescht, sonst der Grund.
+                // KA-E-9: der Rueckweg „In die Datenbank übernehmen…" - nur mit Projektkopie. Rueckfrage und Schreibweg
+                // kommen aus dem Kern (PhotovoltaikStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM
+                // Vorgang. Die Straenge bleiben an der Anlage im Projekt.
+                ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
+                ["RueckwegBleibtText"] = Text_("PVD_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit."),
+
+                // Loeschen im Katalogfuss (samt Satzvorlage, KA-E-16): leer = geloescht, sonst der Grund.
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
 
                 // KATALOGAUSWAHL V1, STUFE 3 - KA-E-8: Bearbeiten je Bereich und Mehrfach-Bearbeiten, geschrieben ueber
@@ -1089,7 +1097,35 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Löscht einen Katalogsatz; leer = gelöscht, sonst der Grund.</summary>
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => PhotovoltaikStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = PhotovoltaikStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = PhotovoltaikStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
+
+        /// <summary>Löscht einen Katalogsatz (samt Satzvorlage, KA‑E‑16); leer = gelöscht, sonst der Grund.</summary>
         private static string KatalogLoeschen(int id)
         {
             string name = PhotovoltaikStammCtrl.BezeichnerZu(id);
