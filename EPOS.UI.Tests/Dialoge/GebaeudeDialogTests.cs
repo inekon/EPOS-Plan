@@ -135,6 +135,44 @@ public class GebaeudeDialogTests : EposBunitContext
         => Katalogzeilen(cut).Select(tr => tr.QuerySelectorAll("td")[1].TextContent.Trim()).ToArray();
 
     // =================================================================================
+    // KB1: die Satzfläche ohne gewählten Satz
+    // =================================================================================
+
+    /// <summary>
+    /// Ohne gewählten Satz (leere Projektliste, nichts im Katalog gewählt) bleibt die Satzfläche
+    /// leer: kein Detailblock, kein Knopf „Ausrichtung ändern…“; die Detailzeile sagt
+    /// „Kein Satz gewählt“ (Anwenderbefund 10.10.2026).
+    /// </summary>
+    [Fact]
+    public void Ohne_gewaehlten_Satz_bleibt_die_Satzflaeche_leer()
+    {
+        IRenderedComponent<GebaeudeDialog> cut = Aufbauen(zeilen: new List<GebaeudeProjektZeile>());
+
+        IElement satz = cut.Find(".epos-zweispalten-satz");
+        Assert.Empty(satz.Children);
+        Assert.Empty(satz.QuerySelectorAll("button, input, textarea"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Mit gewählter Projektzeile nennt die Detailzeile ihren Namen und die Marke „Projektsatz“, und
+    /// die Satzfläche trägt den Detailblock; ein gewählter Katalogsatz ebenso mit „Katalogsatz“.
+    /// </summary>
+    [Fact]
+    public void Die_Detailzeile_nennt_den_gewaehlten_Satz()
+    {
+        IRenderedComponent<GebaeudeDialog> cut = Aufbauen();
+
+        Assert.Equal("Haus 1990", cut.Find(".epos-zweispalten-satzname").TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_MARKE_PROJEKTSATZ, cut.Find(".epos-zweispalten-marke--satz").TextContent.Trim());
+        Assert.NotEmpty(cut.Find(".epos-zweispalten-satz").Children);
+
+        KatalogWaehlen(cut, Katalognamen(cut)[0]);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.AUSWAHL_MARKE_KATALOGSATZ, cut.Find(".epos-zweispalten-marke--satz").TextContent.Trim());
+        Assert.NotEmpty(cut.Find(".epos-zweispalten-satz").Children);
+    }
+
+    // =================================================================================
     // Feldbestand je Betriebsart
     // =================================================================================
 
