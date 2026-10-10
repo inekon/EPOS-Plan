@@ -102,7 +102,8 @@ namespace WindowsFormsApplication1
                              Katalogspaltenart art = Katalogspaltenart.Text,
                              bool sortierbar = true, bool filterbar = true,
                              Katalogspaltenrang rang = Katalogspaltenrang.Immer,
-                             bool standardAus = false)
+                             bool standardAus = false,
+                             string langtext = "")
         {
             StandardAus = standardAus;
             Schluessel = schluessel;
@@ -112,7 +113,19 @@ namespace WindowsFormsApplication1
             Sortierbar = sortierbar;
             Filterbar = filterbar && art != Katalogspaltenart.JaNein;
             Rang = rang;
+            Langtext = langtext ?? "";
         }
+
+        /// <summary>
+        /// <b>Der volle Name eines kurzen Spaltenkopfs</b> („Nennkälteleistung" zu „P_N"),
+        /// bereits uebersetzt; leer, wo der Kopf fuer sich spricht. Die Liste nennt ihn
+        /// beim Verweilen (<c>title</c>) und der Hilfstechnik; Sortierung, Trichter und
+        /// Spaltenbreite bleiben beim kurzen <see cref="Kopftext"/>.
+        /// </summary>
+        public string Langtext { get; }
+
+        /// <summary>Traegt die Spalte einen Langtext?</summary>
+        public bool HatLangtext => Langtext.Length > 0;
 
         /// <summary>
         /// <b>Der Rang der Spalte</b> (Vorschlag V2): in welcher Reihenfolge sie weicht,
@@ -777,7 +790,8 @@ namespace WindowsFormsApplication1
                             // Form_WpFilterAuswahl nannte ihn so.
                             new Katalogspalte(SpBezeichner,   t("KFLT_SP_MODELL")),
                             new Katalogspalte(SpQuelle,       t("KFLT_SP_QUELLE"), rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl),
+                            new Katalogspalte(SpNennleistung, t("KFLT_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl,
+                                              langtext: t("WPS_LBL_NENNLEISTUNG")),
                             new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
                             new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
@@ -904,9 +918,12 @@ namespace WindowsFormsApplication1
                         {
                             new Katalogspalte(SpHersteller,         t("KFLT_SP_HERSTELLER"), rang: Katalogspaltenrang.BeiPlatz),
                             new Katalogspalte(SpBezeichner,         t("KFLT_SP_BEZEICHNER")),
-                            new Katalogspalte(SpNennkaelteleistung, t("KFLT_SP_NENNKAELTELEISTUNG"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpEer,                t("KFLT_SP_EER"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz),
-                            new Katalogspalte(SpRueckkuehlart,      t("KFLT_SP_RUECKKUEHLART"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpNennkaelteleistung, t("KFLT_SP_NENNKAELTELEISTUNG"), "kW", Katalogspaltenart.Zahl,
+                                                                    langtext: t("KFLT_LT_NENNKAELTELEISTUNG")),
+                            new Katalogspalte(SpEer,                t("KFLT_SP_EER"), "", Katalogspaltenart.Zahl, rang: Katalogspaltenrang.BeiPlatz,
+                                                                    langtext: t("KFLT_LT_EER")),
+                            new Katalogspalte(SpRueckkuehlart,      t("KFLT_SP_RUECKKUEHLART"), rang: Katalogspaltenrang.BeiPlatz,
+                                                                    langtext: t("KFLT_LT_RUECKKUEHLART")),
                             // Typkennfeld, Auslieferung oder eigen
                             // (KaeltemaschineStammCtrl.HerkunftText); der Schalter
                             // „Typkennfelder ausblenden" setzt hier den verneinten Trichter.

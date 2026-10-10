@@ -209,15 +209,20 @@
                             {
                                 <button type="button" class="epos-spaltenkopf-titel"
                                         title="@Kurztext(Texte.Sortieren, spalte)"
-                                        aria-label="@Kurztext(Texte.Sortieren, spalte)"
+                                        aria-label="@Sortiername(spalte)"
                                         @onclick="@(() => BeiSortieren(spalte))">
-                                    <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                    @* Der Langtext eines kurzen Kopfs („Nennkälteleistung" zu
+                                       „P_N") steht am TEXT, nicht am Knopf: Beim Verweilen auf
+                                       dem Text gewinnt der innere title, auf dem Pfeil bleibt
+                                       „Sortieren nach …". Die Hilfstechnik hört ihn im Namen
+                                       des Sortierknopfs. Ohne Langtext kein Attribut. *@
+                                    <span class="epos-spaltenkopf-text" title="@Langtitel(spalte)">@spalte.Kopftext</span>
                                     <span class="epos-sortierpfeil" aria-hidden="true">@Sortierzeichen(spalte)</span>
                                 </button>
                             }
                             else
                             {
-                                <span class="epos-spaltenkopf-text">@spalte.Kopftext</span>
+                                <span class="epos-spaltenkopf-text" title="@Langtitel(spalte)">@spalte.Kopftext</span>
                             }
 
                             @if (spalte.Filterbar)
@@ -1307,6 +1312,18 @@
 
     private static string Kurztext(string muster, Katalogspalte spalte) =>
         string.Format(CultureInfo.CurrentCulture, muster ?? "{0}", spalte.Kopftext);
+
+    // Langtext am Spaltenkopf: null laesst Blazor das Attribut weglassen.
+    private static string? Langtitel(Katalogspalte spalte) =>
+        spalte.HatLangtext ? spalte.Langtext : null;
+
+    // Name des Sortierknopfs fuer die Hilfstechnik: mit Langtext
+    // „Sortieren nach Nennkälteleistung (P_N [kW])", sonst wie der Tooltip.
+    private string Sortiername(Katalogspalte spalte) =>
+        spalte.HatLangtext
+            ? string.Format(CultureInfo.CurrentCulture, Texte.Sortieren ?? "{0}",
+                            spalte.Langtext + " (" + spalte.Kopftext + ")")
+            : Kurztext(Texte.Sortieren, spalte);
 
     private string Platzhalter(Katalogspalte spalte) =>
         spalte.Art == Katalogspaltenart.Zahl ? Texte.PlatzhalterZahl : Texte.PlatzhalterText;

@@ -45528,7 +45528,16 @@ Chart</value>
     <value>EER</value>
   </data>
   <data name="KFLT_SP_RUECKKUEHLART" xml:space="preserve">
-    <value>Rückkühlung</value>
+    <value>Rückk.</value>
+  </data>
+  <data name="KFLT_LT_NENNKAELTELEISTUNG" xml:space="preserve">
+    <value>Nennkälteleistung</value>
+  </data>
+  <data name="KFLT_LT_EER" xml:space="preserve">
+    <value>Nenn-EER</value>
+  </data>
+  <data name="KFLT_LT_RUECKKUEHLART" xml:space="preserve">
+    <value>Rückkühlart</value>
   </data>
   <data name="KI_DLG_MASKE_KM" xml:space="preserve">
     <value>Kältemaschinen</value>

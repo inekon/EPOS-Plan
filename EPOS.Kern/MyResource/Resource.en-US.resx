@@ -45521,7 +45521,16 @@ chart</value>
     <value>EER</value>
   </data>
   <data name="KFLT_SP_RUECKKUEHLART" xml:space="preserve">
-    <value>Heat rejection</value>
+    <value>Recool.</value>
+  </data>
+  <data name="KFLT_LT_NENNKAELTELEISTUNG" xml:space="preserve">
+    <value>Nominal cooling capacity</value>
+  </data>
+  <data name="KFLT_LT_EER" xml:space="preserve">
+    <value>Nominal EER</value>
+  </data>
+  <data name="KFLT_LT_RUECKKUEHLART" xml:space="preserve">
+    <value>Heat rejection type</value>
   </data>
   <data name="KI_DLG_MASKE_KM" xml:space="preserve">
     <value>Chillers</value>
