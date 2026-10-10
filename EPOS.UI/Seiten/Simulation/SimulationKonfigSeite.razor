@@ -1944,6 +1944,9 @@
     private const string PRAEFIX_ERZEUGER = "ERZEUGER_";
     private const string PRAEFIX_SPEICHER = "SPEICHER_";
 
+    /// <summary>Auftrag KS: Kaeltespeicher der Kaeltebahn (SchemaModell.PRAEFIX_KAELTE_SPEICHER).</summary>
+    private const string PRAEFIX_KAELTE_SPEICHER = "KSPEICHER_";
+
     private static int IdAusSchluessel(string schluessel, string praefix)
     {
         if (string.IsNullOrEmpty(schluessel) ||
@@ -1983,6 +1986,14 @@
         {
             _offenerSpeicher = idPuffer;
             PufferVerwaltungOeffnen(idPuffer);
+            return;
+        }
+
+        // Auftrag KS: Der Kaeltespeicher oeffnet dieselbe Pufferverwaltung.
+        int idKaeltespeicher = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_SPEICHER);
+        if (idKaeltespeicher > 0)
+        {
+            PufferVerwaltungOeffnen(idKaeltespeicher);
             return;
         }
 
