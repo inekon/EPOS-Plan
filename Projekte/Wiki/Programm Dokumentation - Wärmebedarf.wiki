@@ -8,6 +8,7 @@ Der '''Wärmebedarf''' entsteht aus bis zu vier Anteilen, die getrennt erfasst u
 * '''Wärmebedarf Extern''' – im gleichnamigen Dialog übernehmen Sie eine Ganglinie aus der Datenbank ins Projekt oder lesen über ''Einlesen/Bearbeiten…'' eine Stundenreihe ein; sie wird zum berechneten Bedarf addiert.
 * '''Netzverluste''' – im Block ''Weitere Einstellungen'' der Simulationskonfiguration: ein Gesamtwert in Prozent oder kWh/a, der je Stunde anteilig auf die Kanäle verteilt wird, oder je Kanal – Heizung, Brauchwasser, Prozesswärme – ein eigener Wert als gleichmäßiger Betrag über das Jahr; dazu die Zirkulation des Brauchwassers mit Leistung und Laufzeit ([[Programm Dokumentation/Simulation#netzverluste-je-kanal|Simulation: Netzverluste je Kanal]]).
 * '''Betriebskalender''' – Feiertage und Betriebsferien je Profilzuordnung von Brauchwasser und Prozesswärme ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
+* '''Grafik''' – der Reiter ''Grafik'' im Dialog Wärme-/Strombedarf zeigt die Bedarfsart als Jahresganglinie mit Zoomleiste. Eine Zeile mit zwei Knopfgruppen wählt die Bedarfsart (''Prozesse'', ''Gebäude'', ''Brauchwasser'', mehrere zugleich möglich) und das Zeitraster (''Jahr'', ''Monat'', ''Woche'', ''Tag''); Monat, Woche und Tag zeigen die Summen als gestapelte Säulen. ''CSV…'' am Bild speichert die gewählte Ansicht als CSV-Datei, siehe [[Datenexport]].
 
 == Berechnung ==
 

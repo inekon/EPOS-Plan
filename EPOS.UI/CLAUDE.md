@@ -244,7 +244,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
     (Modell, Titel, Raster), legt `Ganglinienexport` als Kaskade um sein Markup und bekommt den
     Delegat von seiner Hülle über `Diagrammexportnaht.Fuer(kennung)`; jedes Bild darunter, das
     Reihen führt, trägt den Knopf, das Raster folgt der Länge (8 760, 35 040, 365, 168, 52, 24,
-    12) oder steht ausdrücklich (Jahr). Kennlinien und Punktwolken (x = Wert) nicht. Wache
+    12) oder steht ausdrücklich (Jahr; das Raster Jahr zählt ab 0). Kennlinien und Punktwolken (x = Wert) nicht. Der Kalenderteppich trägt keine Datenreihen, sondern die Tafel 365 × 24 (`Zeichenmodell.Tafel`, Record `Tagesstundentafel`, Raster `Zeitraster.Kalendertag`); `Ganglinienexport.Passt` erkennt die Tafel, der Schreiber ist `ZeitreihenCsv.Kalenderteppich`, der Knopf kommt über die Export-Kaskade des Wirts. Wache
     `CsvAmBildWacheTests`.
   - **Die Farbwahl am Bild steht einmal** in `Bausteine/Farbwahlwirt.cs`: Ein Wirt schreibt
     `@inherits Farbwahlwirt` und reicht `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt`

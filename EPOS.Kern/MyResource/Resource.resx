@@ -51346,5 +51346,14 @@ Chart</value>
   <data name="KI_DLG_GIMP_ALSZONE_ERL" xml:space="preserve">
     <value>Übernimmt das Gebäude als Zone mit echten Bauteilen statt der Flächensummen. Nur, wenn sich der Bauteilvorschlag bilden lässt.</value>
   </data>
+  <data name="CSV_KOPF_DATUM" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="CSV_KOPF_WOCHENTAG" xml:space="preserve">
+    <value>Wochentag</value>
+  </data>
+  <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
 </root>
 

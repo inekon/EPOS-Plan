@@ -34,7 +34,13 @@ namespace WindowsFormsApplication1
         Tagesstunde = 7,
 
         /// <summary>168 Stunden eines Wochenprofils — erste Spalte „Wochenstunde“ 1…168.</summary>
-        Wochenstunde = 8
+        Wochenstunde = 8,
+
+        /// <summary>
+        /// Die Tafel eines Kalenderteppichs: 365 Zeilen (Tage des Gemeinjahrs, Datum „TT.MM.“ und
+        /// Wochentag des Rasters), 24 Wertspalten „0 h“ … „23 h“ — <see cref="ZeitreihenCsv.Kalenderteppich(Tagesstundentafel)"/>.
+        /// </summary>
+        Kalendertag = 9
     }
 
     /// <summary>Eine Spalte des Zeitreihenexports: Reihenname, Einheit (darf leer sein) und Werte.</summary>
@@ -78,6 +84,7 @@ namespace WindowsFormsApplication1
             Zeitraster.Jahr => "Jahr",
             Zeitraster.Tagesstunde => "Stunde",
             Zeitraster.Wochenstunde => "Wochenstunde",
+            Zeitraster.Kalendertag => MyResource.Resource.CSV_KOPF_DATUM,
             _ => "Nr."
         };
 
@@ -133,19 +140,93 @@ namespace WindowsFormsApplication1
             }
             sb.Append("\r\n");
 
+            // Die Betrachtungsjahre zählen wie Tafel und Bild ab dem Investitionsjahr 0; jedes
+            // andere Raster zählt seine Stützstellen ab 1.
+            int erste = Erste(raster);
             for (int i = 0; i < zeilen; i++)
             {
-                sb.Append((i + 1).ToString(CultureInfo.InvariantCulture));
+                sb.Append((i + erste).ToString(CultureInfo.InvariantCulture));
                 foreach (ZeitreihenSpalte s in spalten)
                 {
                     sb.Append(SEP);
-                    if (s.Werte != null && i < s.Werte.Length && double.IsFinite(s.Werte[i]))
-                        sb.Append(s.Werte[i].ToString("0.0##", kultur));
+                    if (s.Werte != null && i < s.Werte.Length) sb.Append(Zahl(s.Werte[i], kultur));
                 }
                 sb.Append("\r\n");
             }
             return sb.ToString();
         }
+
+        /// <summary>
+        /// Die Nummer der ersten Zeile: <see cref="Zeitraster.Jahr"/> beginnt mit dem Jahr 0 (das
+        /// Investitionsjahr der Mehrjahrestafel, des Zahlungsstroms und des Kapitalwertverlaufs),
+        /// jedes andere Raster mit 1.
+        /// </summary>
+        public static int Erste(Zeitraster raster) => raster == Zeitraster.Jahr ? 0 : 1;
+
+        /// <summary>Ein Wert der Datei: Dezimalkomma, Format <c>0.0##</c>; nicht endlich = leere Zelle.</summary>
+        private static string Zahl(double wert, CultureInfo kultur)
+            => double.IsFinite(wert) ? wert.ToString("0.0##", kultur) : "";
+
+        /// <summary>
+        /// <b>Die Tafel eines Kalenderteppichs</b> — eine Tabelle wie das Bild: Kopf
+        /// „Datum;Wochentag;0 h;…;23 h“ (aus den Ressourcen, je Stundenspalte mit „[Einheit]“, wenn die
+        /// Tafel eine trägt), danach 365 Zeilen, je Tag des Gemeinjahrs das Datum „TT.MM.“ ohne Jahr
+        /// (kein Schaltjahr), das Wochentagskürzel aus dem Wochentagsraster der Tafel
+        /// (<c>KOND_MSG_TEPPICH_WOCHENTAGE</c>) und die 24 Stundenwerte. Zahlformat, Trenner und
+        /// Zeilenende wie <see cref="Text"/>; eine Stunde „aus“ bleibt leer.
+        /// </summary>
+        public static string Kalenderteppich(Tagesstundentafel tafel)
+            => Kalenderteppich(tafel, MyResource.Resource.CSV_KOPF_DATUM, MyResource.Resource.CSV_KOPF_WOCHENTAG,
+                               MyResource.Resource.CSV_KOPF_TAGESSTUNDE, MyResource.Resource.KOND_MSG_TEPPICH_WOCHENTAGE);
+
+        /// <summary>Wie <see cref="Kalenderteppich(Tagesstundentafel)"/> mit ausdrücklichen Kopftexten.</summary>
+        /// <param name="kopfDatum">Kopf der Datumsspalte.</param>
+        /// <param name="kopfWochentag">Kopf der Wochentagsspalte.</param>
+        /// <param name="kopfStunde">Kopf einer Stundenspalte, {0} = Stunde 0…23.</param>
+        /// <param name="wochentage">Sieben Kürzel ab Montag, durch Semikolon getrennt.</param>
+        public static string Kalenderteppich(Tagesstundentafel tafel, string kopfDatum, string kopfWochentag,
+                                             string kopfStunde, string wochentage)
+        {
+            ArgumentNullException.ThrowIfNull(tafel);
+            const int TAGE = 365, STUNDEN = 24;
+            CultureInfo kultur = new CultureInfo("de-DE");
+            string[] kuerzel = (wochentage ?? "").Split(';');
+            if (kuerzel.Length != 7) kuerzel = new[] { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
+            string einheit = Entschaerft(tafel.Einheit);
+
+            var sb = new StringBuilder();
+            sb.Append(Entschaerft(kopfDatum)).Append(SEP).Append(Entschaerft(kopfWochentag));
+            for (int h = 0; h < STUNDEN; h++)
+            {
+                sb.Append(SEP).Append(Entschaerft(string.Format(CultureInfo.InvariantCulture, kopfStunde ?? "{0} h", h)));
+                if (einheit.Length > 0) sb.Append(" [").Append(einheit).Append(']');
+            }
+            sb.Append("\r\n");
+
+            double[] werte = tafel.Werte ?? Array.Empty<double>();
+            int w0 = ((tafel.WochentagDesErstenTags % 7) + 7) % 7;
+            int tag = 0;
+            for (int m = 0; m < 12; m++)
+                for (int t = 1; t <= Feiertage.TageJeMonat[m]; t++, tag++)
+                {
+                    sb.Append(t.ToString("00", CultureInfo.InvariantCulture)).Append('.')
+                      .Append((m + 1).ToString("00", CultureInfo.InvariantCulture)).Append('.');
+                    sb.Append(SEP).Append(Entschaerft(kuerzel[(w0 + tag) % 7]));
+                    for (int h = 0; h < STUNDEN; h++)
+                    {
+                        sb.Append(SEP);
+                        int i = tag * STUNDEN + h;
+                        if (i < werte.Length) sb.Append(Zahl(werte[i], kultur));
+                    }
+                    sb.Append("\r\n");
+                }
+            System.Diagnostics.Debug.Assert(tag == TAGE);
+            return sb.ToString();
+        }
+
+        /// <summary>Ein Kopftext ohne Trennzeichen und Umbruch.</summary>
+        private static string Entschaerft(string text)
+            => (text ?? "").Replace(SEP, ",").Replace("\r", " ").Replace("\n", " ").Trim();
 
         /// <summary>„Name [Einheit]“, entschärft (kein Trennzeichen, kein Umbruch) und eindeutig (_2, _3 …).</summary>
         private static string Spaltenkopf(ZeitreihenSpalte s, Dictionary<string, int> zaehler)

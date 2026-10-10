@@ -85,7 +85,7 @@ In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eint
 
 == Vorschau ==
 
-{{Anker|vorschau}}Die Vorschau rechnet nach jeder Eingabe neu, auf demselben Rechenweg wie die Simulation. ''Anzeigen für'' wählt die Summe aller Zonen oder eine einzelne Zone. Über den Reitern stehen Zapfung, Zirkulation, Brauchwasser gesamt und der Anteil der Zirkulation.
+{{Anker|vorschau}}Die Vorschau rechnet nach jeder Eingabe neu, auf demselben Rechenweg wie die Simulation. ''Anzeigen für'' wählt die Summe aller Zonen oder eine einzelne Zone. Über den Reitern stehen Zapfung, Zirkulation, Brauchwasser gesamt und der Anteil der Zirkulation. ''CSV…'' in der Leiste des Bildes speichert die Vorschaubilder als CSV-Datei, siehe [[Datenexport]].
 
 * '''Tagesgang''' – die mittlere Stundenleistung eines Werktags, eines Samstags und eines Sonn- oder Feiertags im Monat mit dem größten Bedarf, dazu die Zirkulation. Ferientage einer Zone gehen in keinen Tagtyp ein; in der Summe fehlen die Ferientage aller Zonen.
 * '''Wochenprofil''' – die 168 Stunden der Woche mit dem größten Tagesbedarf des Jahres.
