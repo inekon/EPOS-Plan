@@ -160,7 +160,8 @@ public class StromspeicherReiterTests : EposBunitContext
     /// <summary>Die Knöpfe DES BILDES (CSV, Vergleich) — nicht die des Parameterblocks.</summary>
     private static IReadOnlyList<AngleSharp.Dom.IElement> Bildknoepfe(
         IRenderedComponent<StromspeicherReiter> seite)
-        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
+        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-diagramm-csv, "
+                         + "section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
 
     /// <summary>Der letzte Auftrag des Betriebsbildes — der, den der Reiter gerade zeigt.</summary>
     private Bildauftrag Letzter => _auftraege.Last(a => a.Bild == Bilder.SpeicherBetrieb);

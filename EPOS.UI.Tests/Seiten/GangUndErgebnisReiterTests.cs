@@ -217,7 +217,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         (int Kanal, IReadOnlyList<string> Erz, IReadOnlyList<string> Sp) gemeldet = (0, [], []);
         var seite = WaermeZeichnen(w => gemeldet = w);
 
-        seite.Find("button.epos-simerg-knopf").Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
 
         Assert.Equal(-1, gemeldet.Kanal);
         Assert.NotNull(gemeldet.Erz);
@@ -511,7 +511,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         IReadOnlyList<string> gemeldet = Array.Empty<string>();
         var seite = StromZeichnen(r => gemeldet = r);
 
-        seite.Find("button.epos-simerg-knopf").Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
         Assert.Equal(new[] { "GESAMT" }, gemeldet);
     }
 
