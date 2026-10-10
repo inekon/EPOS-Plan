@@ -582,7 +582,7 @@
         /// </summary>
         internal static string ReiheGesetzt => MyResource.Resource.KI_DLG_REIHE_GESETZT;
 
-        /// <summary>{0} = Reihe.</summary>
+        /// <summary>{0} = Reihe, {1} = Anzeigename der Maske. Erfolg „unveraendert", keine Absage.</summary>
         internal static string ReiheOhneAenderung => MyResource.Resource.KI_DLG_REIHE_OHNE_AENDERUNG;
 
         // ================================================================ Ablehnungen
@@ -678,8 +678,17 @@
         /// <summary>{0} = Feldname.</summary>
         internal static string WerteDoppelt => MyResource.Resource.KI_DLG_WERTE_DOPPELT;
 
-        /// <summary>{0} = Anzeigename der Maske.</summary>
+        /// <summary>
+        /// {0} = Anzeigename der Maske, {1} = „Feld = Wert" der genannten Felder. Erfolg
+        /// „unveraendert", keine Absage.
+        /// </summary>
         internal static string OhneAenderung => MyResource.Resource.KI_DLG_OHNE_AENDERUNG;
+
+        /// <summary>{0} = Maske, {1} = Feld, {2} = Wert. Erfolg „unveraendert", keine Absage.</summary>
+        internal static string FeldOhneAenderung => MyResource.Resource.KI_DLG_FELD_OHNE_AENDERUNG;
+
+        /// <summary>{0} = „Feld = Wert" der Felder, die den Wert schon trugen (Meldung).</summary>
+        internal static string FelderBereits => MyResource.Resource.KI_DLG_FELDER_BEREITS;
 
         // ================================================================= Ergebnisse
 
