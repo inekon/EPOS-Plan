@@ -50964,5 +50964,14 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>
+  <data name="CSV_KOPF_DATUM" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="CSV_KOPF_WOCHENTAG" xml:space="preserve">
+    <value>Weekday</value>
+  </data>
+  <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
+    <value>{0} h</value>
+  </data>
 </root>
 

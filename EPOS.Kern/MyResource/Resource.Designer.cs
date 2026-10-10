@@ -19679,6 +19679,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum ähnelt.
+        /// </summary>
+        public static string CSV_KOPF_DATUM {
+            get {
+                return ResourceManager.GetString("CSV_KOPF_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} h ähnelt.
+        /// </summary>
+        public static string CSV_KOPF_TAGESSTUNDE {
+            get {
+                return ResourceManager.GetString("CSV_KOPF_TAGESSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochentag ähnelt.
+        /// </summary>
+        public static string CSV_KOPF_WOCHENTAG {
+            get {
+                return ResourceManager.GetString("CSV_KOPF_WOCHENTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Intervall muss zwischen {0} und {1} Tagen liegen. ähnelt.
         /// </summary>
         public static string DESINF_PRUEF_INTERVALL {
