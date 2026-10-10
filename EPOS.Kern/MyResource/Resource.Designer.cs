@@ -3237,6 +3237,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ANZAHL {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ANZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_BETRIEB {
@@ -3282,6 +3291,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grenzleistung ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_GRENZLEISTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_GRENZLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Invest ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_INVEST {
@@ -3291,11 +3309,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_LEISTUNG {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwellen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SCHWELLEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SCHWELLEN", resourceCulture);
             }
         }
         
@@ -3314,6 +3350,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_TRAEGER {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Volumen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_VOLUMEN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_VOLUMEN", resourceCulture);
             }
         }
         

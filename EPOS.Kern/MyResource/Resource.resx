@@ -50176,6 +50176,24 @@ Chart</value>
   <data name="AUSWAHL_ZF_EURO_JAHR" xml:space="preserve">
     <value>{0:N0} €/a</value>
   </data>
+  <data name="AUSWAHL_ZF_GRENZLEISTUNG" xml:space="preserve">
+    <value>Grenzleistung</value>
+  </data>
+  <data name="AUSWAHL_ZF_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="AUSWAHL_ZF_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen</value>
+  </data>
+  <data name="AUSWAHL_ZF_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="AUSWAHL_ZF_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Projektsatz bearbeiten – {0}</value>
   </data>
