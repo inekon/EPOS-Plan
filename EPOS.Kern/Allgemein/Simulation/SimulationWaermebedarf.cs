@@ -165,9 +165,10 @@ namespace WindowsFormsApplication1
         public double[] brauchwasserwerte = new double[8760];
 
         /// <summary>
-        /// Wochentag des 1. Januar aus den Klimadaten (Montag = 0 … Sonntag = 6,
-        /// Entscheidung F3). Wird in <see cref="Waermebedarf_berechnen"/> aus
-        /// <c>Tab_Klimadaten.WE</c> abgeleitet und an die Profilroutine gegeben; vor dem
+        /// Wochentag des 1. Januar im Raster des Projekts (Montag = 0 … Sonntag = 6,
+        /// Entscheidung F3, E115). Wird in <see cref="Waermebedarf_berechnen"/> aus
+        /// <c>Tab_Klimadaten.WE</c> abgeleitet — mit Preisreihenjahr der des Jahres
+        /// (<see cref="RasterUebernehmen"/>) — und an Profilroutine und Zapfkalender gegeben; vor dem
         /// ersten Lauf steht hier die Altkonvention (Sonntag).
         /// </summary>
         public int WochentagJan1 = ProfilBedarf.WOCHENTAG_ALTKONVENTION;
@@ -993,7 +994,7 @@ namespace WindowsFormsApplication1
             // F3 (Konzept 4.2): Der Klimadaten-Kalender ist ab Paket K1 für ALLE
             // Bedarfsarten führend. Die Profilkachelung startet damit mit dem
             // tatsächlichen Wochentag des 1. Januar statt fest mit Sonntag.
-            WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
+            Gemeinjahrkalender raster = RasterUebernehmen();
             _kalender.Gemeinsam.WochentagJan1 = WochentagJan1;
 
             // Aufbau des Tagesbilanz-Wegs je Lauf (1.5): Er bekommt den Altweg-Teil des
@@ -1010,7 +1011,7 @@ namespace WindowsFormsApplication1
             KlimaregionCtrl.Koordinaten(ID_Klimaregion, out double laengengrad, out double breitengrad);
             gemeinsam.Laengengrad = laengengrad;
             gemeinsam.Breitengrad = breitengrad;
-            gemeinsam.Raster = Konditionierungdatenweg.Raster(m_ID_Projekt, WochentagJan1);
+            gemeinsam.Raster = raster;
             gemeinsam.Feiertagsjahr = gemeinsam.Raster.Jahr;
             gemeinsam.WochenendeOrtszeit = KlimakalenderGemeinsam.WochenendmaskeBilden(gemeinsam.Raster);
             gemeinsam.WochenendProbeAbweichungen = KlimakalenderGemeinsam.Abweichungen(gemeinsam.WochenendeOrtszeit, WE);
@@ -2209,7 +2210,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="Brauchwasserwaerme_berechnen"/>), in der Vorschau der des Dialogs
         /// (<c>BedarfsVorschauCtrl.ProjektVorschau</c>): derselbe Aufruf, dieselbe Reihe
         /// (Vorschau gleich Lauf, 2.4). Kalender sind <see cref="WochentagJan1"/> und die
-        /// Wochenendkennzeichen des Klimakalenders.
+        /// Wochenendkennzeichen des Rasters (<see cref="RasterUebernehmen"/>).
         ///
         /// <para><b>Kein stiller Rückfall (2.2, N8).</b> Lehnt der Rechenweg eine ZONE benannt
         /// ab (Nutzungsart gelöscht, Parameter fehlt, Bezugsmenge fehlt …) oder die Zirkulation,
@@ -2228,7 +2229,7 @@ namespace WindowsFormsApplication1
             ZapfprofilErgebnis e;
             try
             {
-                e = ZapfprofilCtrl.Rechnen(m_ID_Projekt, stand, WochentagJan1, WE);
+                e = ZapfprofilCtrl.Rechnen(m_ID_Projekt, stand, WochentagJan1, _weRaster ?? WE);
             }
             catch (Exception ex) { return ZapfprofilAbbrechen(ex.Message); }
 
@@ -2322,7 +2323,27 @@ namespace WindowsFormsApplication1
             ctrl_klima.ReadAll(idKlimaregion);
             Array.Clear(WE, 0, WE.Length);
             for (int i = 0; i < ctrl_klima.rows && i < WE.Length; i++) WE[i] = (bool)ctrl_klima.items[i].m_WE;
-            WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
+            RasterUebernehmen();
+        }
+
+        /// <summary>
+        /// Die Wochenendkennzeichen des Rasters, mit denen Zapfkalender und Vorschau rechnen: im Regelfall
+        /// <see cref="WE"/> (<c>Tab_Klimadaten.WE</c>), im Sonderfall mit Preisreihenjahr die Wochenenden des Jahres.
+        /// </summary>
+        private bool[] _weRaster;
+
+        /// <summary>
+        /// <b>Das eine Wochentagsraster des Projekts</b> (E115) aus den Kennzeichen der Klimaregion
+        /// (<see cref="Konditionierungdatenweg.Raster(int, int)"/>): setzt <see cref="WochentagJan1"/> auf sein w₀ —
+        /// ohne Preisreihenjahr das der Klimaregion, mit ihm das des Jahres — und die Wochenendkennzeichen des
+        /// Zapfkalenders. <see cref="WE"/> selbst (der Altweg-Teil) bleibt die Reihe der Klimaregion.
+        /// </summary>
+        private Gemeinjahrkalender RasterUebernehmen()
+        {
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(m_ID_Projekt, ProfilBedarf.WochentagJan1AusWE(WE));
+            WochentagJan1 = raster.W0;
+            _weRaster = raster.MitJahr ? KlimakalenderGemeinsam.WochenendmaskeBilden(raster) : WE;
+            return raster;
         }
 
         /// <summary>
@@ -2331,7 +2352,7 @@ namespace WindowsFormsApplication1
         /// ihres Tagesgangs bildet (<c>Zapfkalender.Bilden</c>), ohne den Klimakalender ein
         /// zweites Mal zu lesen. Nur lesend; die Reihe des Laufs bleibt unberührt.
         /// </summary>
-        internal bool[] WochenendkennzeichenKopie() => (bool[])WE.Clone();
+        internal bool[] WochenendkennzeichenKopie() => (bool[])(_weRaster ?? WE).Clone();
 
         /// <summary>
         /// Weist die gerechnete Stundenreihe <see cref="brauchwasserwerte"/> [kWh] als

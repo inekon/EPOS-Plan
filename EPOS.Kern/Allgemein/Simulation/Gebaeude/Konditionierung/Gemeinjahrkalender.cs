@@ -16,9 +16,10 @@ namespace WindowsFormsApplication1
     /// Donnerstag des Rasters — dieselbe Woche, die Wochenprofile, Standardlastprofile und der
     /// Zapfkalender lesen.</para>
     ///
-    /// <para><b>Sonderfall mit Jahr:</b> Trägt das Projekt eine Preisreihe mit Jahr, liegen Ostern
-    /// und Buß- und Bettag auf den echten Daten dieses Jahres, abgebildet auf den Jahrestag des
-    /// Gemeinjahrs; das Wochentagsraster bleibt das des Laufs.</para>
+    /// <para><b>Sonderfall mit Jahr</b> (<see cref="Kalenderjahr"/>): Trägt das Projekt eine Preisreihe
+    /// mit Jahr, gilt der Kalender dieses Jahres — das Raster seines echten 1. Januar und Ostern und Buß-
+    /// und Bettag auf seinen echten Daten, abgebildet auf den Jahrestag des Gemeinjahrs. Ein Jahr mit
+    /// fremdem Raster gibt es nicht: Jeder Weg zu einem Jahr prüft, dass w₀ das des Jahres ist.</para>
     ///
     /// <para>Feste Feiertage hängen an keinem der beiden Teile. Ohne Datenbank, ohne Uhr.</para>
     /// </summary>
@@ -34,12 +35,15 @@ namespace WindowsFormsApplication1
         private const int MITTWOCH = 2;
 
         /// <summary>
-        /// Baut die Konvention.
+        /// Baut den <b>Regelfall</b>: das Raster w₀, ohne Jahr.
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀: 0 = Montag … 6 = Sonntag für den Jahrestag 1.</param>
-        /// <param name="jahr">Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr.</param>
-        /// <exception cref="ArgumentOutOfRangeException">w₀ außerhalb 0 … 6 oder ein unmögliches Jahr.</exception>
-        public Gemeinjahrkalender(int wochentagDesErstenTags, int jahr = 0)
+        /// <exception cref="ArgumentOutOfRangeException">w₀ außerhalb 0 … 6.</exception>
+        public Gemeinjahrkalender(int wochentagDesErstenTags) : this(wochentagDesErstenTags, 0)
+        {
+        }
+
+        private Gemeinjahrkalender(int wochentagDesErstenTags, int jahr)
         {
             if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
                 throw new ArgumentOutOfRangeException(nameof(wochentagDesErstenTags),
@@ -51,21 +55,44 @@ namespace WindowsFormsApplication1
             Jahr = jahr;
         }
 
-        /// <summary>Die Konvention aus Raster und einem Jahr, das fehlen darf (<c>null</c> oder 0 = Regelfall).</summary>
-        public static Gemeinjahrkalender Aus(int wochentagDesErstenTags, int? jahr)
-            => new Gemeinjahrkalender(wochentagDesErstenTags, jahr ?? 0);
+        /// <summary>
+        /// <b>Der Sonderfall:</b> der Kalender eines echten Jahres — das Raster seines 1. Januar und seine
+        /// Feiertagsdaten.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Das Jahr liegt außerhalb 1583 … 9999.</exception>
+        public static Gemeinjahrkalender Kalenderjahr(int jahr)
+        {
+            if (jahr < 1583 || jahr > 9999)
+                throw new ArgumentOutOfRangeException(nameof(jahr),
+                    "Das Jahr liegt zwischen 1583 und 9999 (das Osterdatum ist gregorianisch).");
+            return new Gemeinjahrkalender(WochentagJan1(jahr), jahr);
+        }
 
         /// <summary>
-        /// Der Kalender eines echten Jahres — Raster und Feiertage dieses Jahres. Für Proben und für
-        /// Wege, deren Raster selbst an einem Kalenderjahr hängt.
+        /// Die Konvention aus einem w₀ und einem Jahr, die getrennt geführt werden (Satz des Laufs,
+        /// Auswertung zu w₀ und Referenzjahr): Jahr 0 ist der Regelfall <c>new Gemeinjahrkalender(w₀)</c>,
+        /// ein Jahr der Sonderfall <see cref="Kalenderjahr"/> — dann muss w₀ das des Jahres sein.
         /// </summary>
-        public static Gemeinjahrkalender Kalenderjahr(int jahr)
-            => new Gemeinjahrkalender(((int)new DateTime(jahr, 1, 1).DayOfWeek + 6) % 7, jahr);
+        /// <exception cref="ArgumentException">Ein Jahr mit einem w₀, das nicht das seines 1. Januar ist.</exception>
+        public static Gemeinjahrkalender Aus(int wochentagDesErstenTags, int jahr)
+        {
+            if (jahr == 0) return new Gemeinjahrkalender(wochentagDesErstenTags);
+            Gemeinjahrkalender k = Kalenderjahr(jahr);
+            if (k.W0 != wochentagDesErstenTags)
+                throw new ArgumentException("w₀ " + wochentagDesErstenTags.ToString(CultureInfo.InvariantCulture) +
+                    " ist nicht der Wochentag des 1. Januar " + jahr.ToString(CultureInfo.InvariantCulture) +
+                    " (w₀ " + k.W0.ToString(CultureInfo.InvariantCulture) + "): Ein Jahr trägt sein eigenes Raster.",
+                    nameof(wochentagDesErstenTags));
+            return k;
+        }
+
+        /// <summary>w₀ eines echten Jahres: der Wochentag seines 1. Januar, 0 = Montag … 6 = Sonntag.</summary>
+        public static int WochentagJan1(int jahr) => ((int)new DateTime(jahr, 1, 1).DayOfWeek + 6) % 7;
 
         /// <summary>w₀: 0 = Montag … 6 = Sonntag für den Jahrestag 1.</summary>
         public int W0 { get; }
 
-        /// <summary>Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr.</summary>
+        /// <summary>Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr. Mit Jahr ist <see cref="W0"/> das dieses Jahres.</summary>
         public int Jahr { get; }
 
         /// <summary>Trägt die Konvention ein Jahr (Sonderfall)?</summary>
@@ -76,7 +103,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Der Jahrestag des Ostersonntags</b> im Gemeinjahr. Ohne Jahr der Sonntag des Rasters am
-        /// nächsten zum 8. April (bei Gleichstand der frühere), mit Jahr das echte Osterdatum.
+        /// nächsten zum 8. April (bei Gleichstand der frühere), mit Jahr das echte Osterdatum — ein Sonntag
+        /// des Rasters, weil das Raster das des Jahres ist.
         /// </summary>
         public int Ostersonntag
         {

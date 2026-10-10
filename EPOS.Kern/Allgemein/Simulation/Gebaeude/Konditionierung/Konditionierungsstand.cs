@@ -641,7 +641,7 @@ namespace WindowsFormsApplication1
         /// <param name="zonen">Die Zonen in Listenfolge; <c>null</c> = keine.</param>
         /// <param name="nutzflaeche">Die Nutzfläche des Gebäudes [m²] für den Flächenschlüssel; <c>null</c> = 0.</param>
         /// <param name="raster">Das Wochentagsraster des Laufs (E115, <see cref="Konditionierungdatenweg.Raster(int)"/>):
-        /// w₀ der Klimaregion und, nur mit Preisreihe, deren Jahr; <c>null</c> = ohne Projekt
+        /// w₀ der Klimaregion, mit Preisreihenjahr der Kalender dieses Jahres; <c>null</c> = ohne Projekt
         /// <see cref="Konditionierungdatenweg.Rueckfallraster"/>.</param>
         public Konditionierungsarbeitsstand(Konditionierungsstand gebaeude, IEnumerable<Konditionierungszone> zonen,
                                             double? nutzflaeche = null, Gemeinjahrkalender? raster = null)
@@ -655,7 +655,7 @@ namespace WindowsFormsApplication1
         /// <summary>Das Jahr der Preisreihe; <c>null</c> = Regelfall ohne Jahr.</summary>
         public int? Feiertagsjahr => Kalender.MitJahr ? Kalender.Jahr : null;
 
-        /// <summary>Das Wochentagsraster (E115): w₀ und, nur mit Preisreihe, deren Jahr für die Feiertagslage.</summary>
+        /// <summary>Das Wochentagsraster (E115): w₀ der Klimaregion, mit Preisreihenjahr Raster und Feiertage dieses Jahres.</summary>
         public Gemeinjahrkalender Kalender { get; }
 
         /// <summary>Die Ebene des Gebäudes bzw. Katalogbaus.</summary>

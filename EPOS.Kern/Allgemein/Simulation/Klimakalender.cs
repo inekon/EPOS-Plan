@@ -79,7 +79,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Wochentagsraster des Laufs (E115, <see cref="Konditionierungdatenweg.Raster(int, int)"/>): w₀ der
-        /// Klimaregion und, nur mit Preisreihe, deren Jahr — dasselbe Raster, das Zapfkalender und Bedarfsprofile lesen.
+        /// Klimaregion, mit Preisreihenjahr der Kalender dieses Jahres — dasselbe Raster, das Zapfkalender und
+        /// Bedarfsprofile lesen.
         /// </summary>
         internal Gemeinjahrkalender Raster { get; set; } = Konditionierungdatenweg.Rueckfallraster;
 

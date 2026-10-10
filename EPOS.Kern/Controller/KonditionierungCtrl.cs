@@ -633,6 +633,11 @@ namespace WindowsFormsApplication1
         /// Zonen in Listenfolge (Rang, Id) mit Name, Nutzfläche und „beheizt"; Nutzfläche des Gebäudes
         /// für den Flächenschlüssel. Für die Rückfragen und die Paritätsprobe.
         /// </summary>
+        /// <param name="idGebaeude">Das Projektgebäude (<c>Tab_Gebaeude.ID</c>).</param>
+        /// <param name="raster">Das Wochentagsraster der Jahresmittel; <c>null</c> = das Raster des Projekts, zu dem das
+        /// Gebäude gehört (<c>Tab_Gebaeude.ID_Projekt</c>, <see cref="Konditionierungdatenweg.Raster(int)"/>, E115) —
+        /// ohne Projekt das <see cref="Konditionierungdatenweg.Rueckfallraster"/>.</param>
+        /// <param name="meldung">Der Grund, wenn ein Stand nicht lesbar ist.</param>
         public Konditionierungsarbeitsstand ArbeitsstandLesen(long idGebaeude, Gemeinjahrkalender? raster, out string meldung)
         {
             Eigner gebaeude = Eigner.Gebaeude(idGebaeude);
@@ -640,6 +645,12 @@ namespace WindowsFormsApplication1
             DataTable kopf = DataRepository.GetDataTable(
                 "SELECT * FROM \"" + Matrixzellenort.TAB_GEBAEUDE + "\" WHERE \"ID\" = ?", new DbParam("@id", idGebaeude));
             double? nutzflaeche = kopf != null && kopf.Rows.Count > 0 ? Zahl(kopf.Rows[0], "Nutzflaeche") : null;
+            if (!raster.HasValue)
+            {
+                // Das Gebäude kennt sein Projekt über Tab_Gebaeude.ID_Projekt; ohne Projekt gilt das Rückfallraster.
+                long? idProjekt = kopf != null && kopf.Rows.Count > 0 ? Lang(kopf.Rows[0], "ID_Projekt") : null;
+                if (idProjekt > 0) raster = Konditionierungdatenweg.Raster((int)idProjekt.Value);
+            }
 
             var zonen = new List<Konditionierungszone>();
             DataTable t = DataRepository.GetDataTable(

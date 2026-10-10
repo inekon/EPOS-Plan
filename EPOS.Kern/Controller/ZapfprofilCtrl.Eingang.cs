@@ -401,7 +401,7 @@ namespace WindowsFormsApplication1
             }
             // Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag (E112): Jede Zone bekommt die
             // Feiertage des Kerns nach der Konvention des Gemeinjahrs — das eine Wochentagsraster des Projekts (E115:
-            // Raster der Klimaregion und, nur mit Preisreihe, deren Jahr; dieselbe Auflösung wie der Gebäudelauf) —,
+            // Raster der Klimaregion, mit Preisreihenjahr der Kalender dieses Jahres; dieselbe Auflösung wie der Gebäudelauf) —,
             // mit gebundenem Gebäude nach dessen Feiertagsland, sonst die bundeseinheitlichen.
             Gemeinjahrkalender bezugsjahr = Konditionierungdatenweg.Raster(idProjekt, wochentagJan1);
             IReadOnlyList<int> bund = null;

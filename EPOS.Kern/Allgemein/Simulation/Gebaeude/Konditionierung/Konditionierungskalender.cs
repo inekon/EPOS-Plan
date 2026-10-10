@@ -118,11 +118,12 @@ namespace WindowsFormsApplication1
         /// keine Kultur.</para>
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀: 0 = Montag … 6 = Sonntag für den 1. Januar.</param>
-        /// <param name="referenzjahr">Das Jahr der Preisreihe, nach dem die beweglichen Feiertage liegen;
-        /// 0 = Regelfall ohne Jahr (<see cref="Gemeinjahrkalender"/>, E114).</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe, dessen Kalender gilt (w₀ muss das dieses Jahres sein);
+        /// 0 = Regelfall ohne Jahr (<see cref="Gemeinjahrkalender.Aus"/>, E114/E115).</param>
         /// <exception cref="ArgumentOutOfRangeException">w₀ liegt außerhalb 0 … 6.</exception>
+        /// <exception cref="ArgumentException">Ein Jahr mit fremdem w₀.</exception>
         public double[] Auswerten(int wochentagDesErstenTags, int referenzjahr)
-            => Auswerten(new Gemeinjahrkalender(wochentagDesErstenTags, referenzjahr));
+            => Auswerten(Gemeinjahrkalender.Aus(wochentagDesErstenTags, referenzjahr));
 
         /// <summary>
         /// Die 8760-Reihe nach der Konvention <paramref name="kalender"/> — Wochentagsraster und, wenn
@@ -186,7 +187,7 @@ namespace WindowsFormsApplication1
         /// finden (E53).
         /// </summary>
         public Kalenderregel Quellperiode(int tag0, int referenzjahr)
-            => Quellperiode(tag0, new Gemeinjahrkalender(0, referenzjahr));
+            => Quellperiode(tag0, referenzjahr > 0 ? Gemeinjahrkalender.Kalenderjahr(referenzjahr) : new Gemeinjahrkalender(0));
 
         /// <summary>Die Periode eines Tags nach der Konvention <paramref name="kalender"/> (E114).</summary>
         public Kalenderregel Quellperiode(int tag0, Gemeinjahrkalender kalender)
