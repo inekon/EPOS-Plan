@@ -1,4 +1,4 @@
-﻿# Referenzlauf (Kern) vom 09.10.2026 19:20
+﻿# Referenzlauf (Kern) vom 10.10.2026 00:23
 
 Quelle:        /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Kenndaten_Test.sqlite
 Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
@@ -15,6 +15,8 @@ Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/km3-e1a
 Zielordner:    Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
 
 Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Kenndaten_Test.sqlite
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-wal. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
+WARNUNG: Neben der Quelldatenbank liegt Kenndaten_Test.sqlite-shm. Die Datenbank wurde nicht sauber geschlossen; die Kopie enthaelt nur den eingecheckpointeten Stand.
 Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (90 MB)
 DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/km3-e1a/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
 
@@ -172,13 +174,13 @@ Projekt 1046 "Prüfprojekt Speicherflotte" wird gerechnet ...
 Simulation startet fuer Projekt 1046 ...
 Simulation beendet, Ergebnis-Kopf-ID 225.
 Projekt 1046: 39 CSV-Dateien, 218 Skalare.
-  OK - 39 Dateien in 00:01
+  OK - 39 Dateien in 00:02
 Projekt 1047 "Referenz Anlagenkopplung AK1" wird gerechnet ...
 Simulation startet fuer Projekt 1047 ...
 Simulation beendet, Ergebnis-Kopf-ID 226.
 Projekt 1047: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
 Projekt 1047: 38 CSV-Dateien, 247 Skalare.
-  OK - 38 Dateien in 00:00
+  OK - 38 Dateien in 00:01
 Projekt 1049 "Referenzprojekt Solarthermie" wird gerechnet ...
 Simulation startet fuer Projekt 1049 ...
 Simulation beendet, Ergebnis-Kopf-ID 227.
@@ -203,7 +205,7 @@ Projekt 1054 "Referenzprojekt Zonen mit Heizkreis" wird gerechnet ...
 Simulation startet fuer Projekt 1054 ...
 Simulation beendet, Ergebnis-Kopf-ID 231.
 Projekt 1054: 28 CSV-Dateien, 227 Skalare.
-  OK - 28 Dateien in 00:01
+  OK - 28 Dateien in 00:00
 Projekt 1055 "Kältemaschine mit Kältespeicher" wird gerechnet ...
 Simulation startet fuer Projekt 1055 ...
 Simulation beendet, Ergebnis-Kopf-ID 232.
@@ -232,7 +234,7 @@ Simulation startet fuer Projekt 1059 ...
 Simulation beendet, Ergebnis-Kopf-ID 236.
 Projekt 1059: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
 Projekt 1059: 41 CSV-Dateien, 315 Skalare.
-  OK - 41 Dateien in 00:00
+  OK - 41 Dateien in 00:01
 Projekt 1060 "Referenzprojekt Übergabegrenze" wird gerechnet ...
 Simulation startet fuer Projekt 1060 ...
 Simulation beendet, Ergebnis-Kopf-ID 237.
@@ -250,7 +252,7 @@ Simulation startet fuer Projekt 1062 ...
 Simulation beendet, Ergebnis-Kopf-ID 239.
 Projekt 1062: waermebedarf_kuehlung.csv - Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber.
 Projekt 1062: 41 CSV-Dateien, 317 Skalare.
-  OK - 41 Dateien in 00:03
+  OK - 41 Dateien in 00:02
 Projekt 1063 "Referenzprojekt Kältemaschine Teillast" wird gerechnet ...
 Simulation startet fuer Projekt 1063 ...
 Simulation beendet, Ergebnis-Kopf-ID 240.

@@ -730,7 +730,7 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-10-09_R49_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `f8cba5ad9`)
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `9c7fe32af`)
 gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
 `32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
@@ -766,8 +766,10 @@ Kältemaschine von Projekt 1063. 1050, 1052, 1054,
 achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
 > **Anlass: das Referenzprojekt 1063 „Referenzprojekt Kältemaschine Teillast“ (Teillast und Takten der Kältemaschine,
-> Etappe KM3‑E2, Schemaschritt 210) — die siebenundzwanzig Projekte der Basis R47 rechnen gegen R47 `GESAMT: PASS` und
-> byte-gleich (879/879 CSV); hinzu kommen 1063 mit 32 CSV und 265 Skalaren.**
+> Etappe KM3‑E2, Schemaschritt 210) auf dem Rechenstand des Gemeinjahrs — die siebenundzwanzig Projekte der Basis R48
+> (Gemeinjahr) rechnen gegen R48 `GESAMT: PASS` und byte-gleich (879/879 CSV); hinzu kommen 1063 mit 32 CSV und
+> 265 Skalaren. Der Rechenweg der Teillast greift nur bei gesetztem `Teillast_Weg`; 1063 trägt keinen Kalender mit
+> Feiertagsregel und ist mit dem Gemeinjahr byte-gleich zu seiner ersten Einfrierung.**
 >
 > **1063** ist eine Kopie von 1055, an deren Kältemaschine die Teillastkurve 0,10/0,60/0,30 (gültig ab Lastgrad 0,2),
 > Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9 (`Taktverlustfaktor_Cd` leer),
@@ -776,7 +778,8 @@ achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > (Schemastand 209, Katalogkosten 208 und 209) mit `Werkzeuge/Testdatenbankschema` auf **210** gezogen (acht Eingabespalten an Katalog und
 > Projektkopie, fünf Kennzahlspalten am Ergebnis, die 34 Typkennfelder des Katalogs um Teillastkurve und
 > Verdichterregelung ergänzt, die Beispielgeräte und Projektkopien leer), danach 1063 gesät und `VACUUM`;
-> `integrity_check` ok; gegen diese Fassung rechnen alle achtundzwanzig Projekte gegen R49 `GESAMT: PASS` und byte-gleich
+> `integrity_check` ok; der Neubau auf dem zusammengeführten Stand ergibt byte-gleich dieselbe Datei; gegen diese Fassung
+> rechnen alle achtundzwanzig Projekte gegen R49 `GESAMT: PASS` und byte-gleich
 > (911/911 CSV). 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
 > Taktstunden der Kältemaschine stehen in einem Zähler: `Kaelte[0].Taktstunden` und `Takt.Kaelte[0].Taktstunden`
 > zeigen beide 218.
@@ -1671,7 +1674,7 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R49 (achtundzwanzig Projekte, Referenzprojekt 1063 auf dem Stand Gemeinjahr): GESAMT PASS, @STOER@ CSV
+Stand mit R49 (achtundzwanzig Projekte, Referenzprojekt 1063 auf dem Stand Gemeinjahr): GESAMT PASS, 867/911 CSV
 byte-gleich, 1063 ganz byte-gleich; mit R48 (Gemeinjahr-Konvention) GESAMT PASS, 835/879 CSV byte-gleich; der Stand mit
 R47 (Feiertage im Zapfkalender) war GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45
 (Übergabegrenze, Referenzprojekt 1060) war GESAMT PASS, 835/879 CSV
