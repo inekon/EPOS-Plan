@@ -91,7 +91,7 @@ Die Wärmepumpe rechnet immer in der '''Speicherstufe''': einer gemeinsamen Stun
 |-
 | Gebäude, Heizkreis || mit ''Heizkreis (AK1)'' bestimmt der gerechnete Vorlauf die Kennlinie der Stunde; in Stunden mit Heizsollwert ''aus'' – etwa außerhalb der Heizperiode, die der Reiter ''Konditionierung'' des Gebäudes festlegt – fordert das Gebäude keine Heizwärme || ohne Heizkurve fährt das Gebäude den höchsten projektierten Vorlauf der Erzeuger im Heizkanal || zwischen zwei Vorlaufstufen linear interpoliert; unter der untersten die unterste, über der obersten die oberste Kennlinie, bei verbotener Extrapolation dort Abbruch; braucht kein gekoppeltes Gebäude Heizwärme, die Kennlinie des ''Vorlaufs'' an der Anlage. Gilt für Module mit Heizwärme.
 |-
-| Kühlung || ein reversibles Gerät kühlt an Tagen, an denen der Kältebedarf den Heizbedarf übersteigt || an diesen Tagen ruht ihr Heizkanal, Warmwasser bleibt || [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]
+| Kühlung || ein reversibles Gerät kühlt an Tagen, an denen der Kältebedarf den Heizbedarf übersteigt || an diesen Tagen ruht ihr Heizkanal, Warmwasser bleibt || [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]
 |}
 
 <!-- Modell hinter den Säulen, kein EPOS-Plan-Lauf: Außentemperatur je Stunde als Quantile einer
@@ -192,7 +192,7 @@ Die Gruppe ''Gerätegrenzen'' der Wärmepumpe (Katalog und Projektkopie) beschre
 * {{Anker|vorwaermbetrieb}}'''Vorwärmbetrieb (Kessel in Reihe)''' – die Wärmepumpe wärmt den Rücklauf bis zum Höchstvorlauf vor, der Kessel hebt auf den Sollvorlauf. Der Haken wirkt nur mit einer Einbindung und einem Kessel hinter der Wärmepumpe in der Kaskade oder einem Heizstab; im Alternativbetrieb nennt eine Zeile den Grund.
 * {{Anker|betriebsbereiche}}'''Betriebsbereiche''' – mit einer Einbindung teilt EPOS-Plan jede Stunde einem von vier Bereichen zu: Wärmepumpe allein, parallel mit dem zweiten Erzeuger, Vorwärmung oder nur Kessel. Die Stunden und die Wärme je Bereich stehen im Reiter ''Wärmepumpe'' der [[Programm Dokumentation/Simulationsergebnisse#betriebsbereiche|Simulationsergebnisse]].
 * {{Anker|energietraeger}}'''Energieträger''' – die Wahl erfolgt in zwei Stufen: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe. Vorbelegt ist der Stromträger des Projekts; ein Gruppenwechsel wählt die erste Art der Gruppe. Strompreis, Aufschläge und Emissionsfaktor der Wärmepumpe folgen dieser Wahl.
-* '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms. Ohne Kühlkennlinie im Projekt oder mit einem Pufferspeicher als Quelle ist der Schalter gesperrt und steht ohne Haken; der Grund steht darunter. Siehe [[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
+* '''Kühlbetrieb''' – ''Maschine auch zum Kühlen benutzen'' mit Kühl-Vorlauf, Hilfsstromanteil, Stromträger und Abrechnung des Kältestroms. Ohne Kühlkennlinie im Projekt oder mit einem Pufferspeicher als Quelle ist der Schalter gesperrt und steht ohne Haken; der Grund steht darunter. Siehe [[Programm Dokumentation/Kälteerzeugung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]].
 
 === Einstellungen der Simulation ===
 

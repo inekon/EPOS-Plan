@@ -67,7 +67,7 @@ Eine '''Heizfläche''' gibt ihre Leistung mit der Übertemperatur ab, der Differ
 * [[Programm Dokumentation/Simulation#anlagenkopplung|Simulation: Anlagenkopplung]] – die Projekteinstellung
 * [[Programm Dokumentation/Gebäudemodell VDI 6007#heizkreis|Gebäudemodell: Heizkreis und Wärmeübergabe]] und [[Programm Dokumentation/Gebäudemodell VDI 6007#komfort|Komfortstunden]]
 * [[Programm Dokumentation/Wärmepumpe#einbindung-hydraulik|Wärmepumpe: Einbindung]] und [[Programm Dokumentation/Wärmepumpe#sperrzeiten|Sperrzeiten]]
-* [[Programm Dokumentation/Kühlung#kaelteschranke|Kühlung: Kälteschranke]]
+* [[Programm Dokumentation/Kälteerzeugung#kaelteschranke|Kühlung: Kälteschranke]]
 * [[Grundlagen/Gebäudemodell VDI 6007]], [[Grundlagen/Wärmepumpe]], [[Grundlagen/Hydraulikschemata]]
 
 {{Navigation Grundlagen}}

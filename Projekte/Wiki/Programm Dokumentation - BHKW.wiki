@@ -120,7 +120,7 @@ Mit seiner Wärme deckt das BHKW zuerst den offenen Bedarf der Stunde; was darü
 |-
 | Stromspeicher || – || der BHKW-Überschuss kann ihn laden || nur, wenn im Reiter ''Stromspeicher'' unter ''Zulässige Ladequellen'' der Schalter ''BHKW-Überschuss'' gesetzt ist
 |-
-| Wärmepumpe, Heizstab, Elektrokessel, Kältestrom || ihr Strom ist Last, die der BHKW-Strom derselben Stunde decken kann || – || Der BHKW-Abzug im Strombedarf wird nicht auf 0 begrenzt; später gerechnete Verbraucher derselben Viertelstunde nutzen so den Überschuss. Nur der Kältestrom einer Wärmepumpe mit ''eigenem Zähler'' bleibt außen vor ([[Programm Dokumentation/Kühlung#abrechnung|Kühlung: Stromträger und Abrechnung]]).
+| Wärmepumpe, Heizstab, Elektrokessel, Kältestrom || ihr Strom ist Last, die der BHKW-Strom derselben Stunde decken kann || – || Der BHKW-Abzug im Strombedarf wird nicht auf 0 begrenzt; später gerechnete Verbraucher derselben Viertelstunde nutzen so den Überschuss. Nur der Kältestrom einer Wärmepumpe mit ''eigenem Zähler'' bleibt außen vor ([[Programm Dokumentation/Kälteerzeugung#abrechnung|Kühlung: Stromträger und Abrechnung]]).
 |-
 | Wirtschaftlichkeit || – || KWK-Zuschlag, Vergütung und Steuern hängen an Strommenge und Vollbenutzungsstunden || [[Programm Dokumentation/Wirtschaftlichkeit#bhkw-wirtschaftlichkeit|Wirtschaftlichkeit: BHKW-Wirtschaftlichkeit]]
 |}
