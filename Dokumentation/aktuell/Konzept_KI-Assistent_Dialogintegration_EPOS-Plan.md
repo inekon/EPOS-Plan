@@ -290,8 +290,9 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
   ausgenommenen Maske gerufen und `feld_setzen` trifft keine angemeldete Maske, nennt die Absage den Grund („Diese
   Maske ist bewusst nicht steuerbar: …", bei `Offen` „noch nicht steuerbar"); erkannt wird die Maske am Hilfeschlüssel
   des Aufrufs (`KiChatKontext.Aufruf`), den der Eintrag führt.
-  **Die zwölf Ausnahmen** stehen in fünf Gruppen: der Assistent selbst (Chat, Eingabezeile, Werkzeugliste, seine
-  Einstellungen); Lizenz und Schlüssel (Feldwerte gingen sonst an den externen Dienst); Rückfragen (Namensdialog,
+  **Die zwölf Ausnahmen** stehen in fünf Gruppen: der Assistent selbst (Chat, Eingabezeile, Werkzeugliste); Lizenz
+  und Schlüssel (KI-Einstellungen mit dem Schlüssel des Dienstes, Lizenzverwaltung — Feldwerte gingen sonst an den
+  externen Dienst); Rückfragen (Namensdialog,
   Wertabfrage, Projektwahl mit dem Sicherungshaken des Löschmodus); Aktionsdialoge mit einem Feld (Bezeichner des
   Katalogimports, Übernahme eines Berichtskapitels, Katalogdialog der Wärmepumpe); Feld des Wirts (Betriebsmodus als
   Feld der Simulationsmaske). Wo eine freigegebene Maske ein Feld führt, dessen Handweg sofort in die Datenbank

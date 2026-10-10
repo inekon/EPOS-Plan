@@ -41,8 +41,9 @@ Wärmepumpe (Anlage) und die Komponentenkonfiguration — der Energieträger ble
 
 ## Zahlen
 
-Katalog 93 → 102 Masken, Ausnahmen 24 → 12 (Assistent selbst 4, Lizenz und Schlüssel 1, Rückfragen 3, Aktionsdialoge 3,
-Feld des Wirts 1). Ressourcen 16 945 Schlüssel. Tests nach dem Merge (Filter): EPOS.Kern.Tests 2 073, EPOS.UI.Tests 1 797,
+Katalog 93 → 102 Masken, Ausnahmen 24 → 12 (nach `KiAusnahmegrund`: Assistent 3, Lizenz oder Schlüssel 2, Anlegen oder Entfernen 1
+(Namensdialog), Import 1 (Katalogimport), Aktion 3 (Projektwahl, BK-Übernahme, Wärmepumpen-Katalogdialog), Rückfrage 1
+(Wertabfrage), Feld des Wirts 1 (Betriebsmodus)). Ressourcen 16 945 Schlüssel. Tests nach dem Merge (Filter): EPOS.Kern.Tests 2 073, EPOS.UI.Tests 1 797,
 KiKern.Tests 549, SpeicherEngine.Tests 153, SpeicherPlanung.Tests 27 (+1 übersprungen), 0 rot; Kern-Filter und
 Windows-Schale je 0 Fehler. Gate 897: ⟨Zahlen folgen⟩.
 
