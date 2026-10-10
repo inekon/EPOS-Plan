@@ -720,19 +720,22 @@ public class SolarkollektorenDialogTests : EposBunitContext
     /// wäre nach der ersten Übernahme veraltet.
     /// </summary>
     [Fact]
-    public void S2_3_Die_Spalte_im_Projekt_verwendet_zaehlt_die_Projektliste()
+    public void S2_3_Die_Verwendungsmarke_zaehlt_die_Projektliste()
     {
         var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Vitosol 200") });
 
         var kopf = cut.FindAll(".epos-raster")[1]
                       .QuerySelectorAll("th").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Contains(kopf, k => k.StartsWith("im Projekt verwendet"));
+        // Konzept 4.10: die Verwendung steht als Marke am Bezeichner, die Spalte ist
+        // nur noch waehlbar (standardmaessig aus).
+        Assert.DoesNotContain(kopf, k => k.StartsWith("im Projekt verwendet"));
 
         var zeilen = Katalogzeilen(cut);
         Assert.Equal(2, zeilen.Count);
-        Assert.Equal(1, zeilen.Count(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja"));
+        Assert.Equal(1, zeilen.Count(z => z.QuerySelector(".epos-verwendet-marke") is not null));
+        Assert.Equal(1, zeilen.Count(z => (z.ClassName ?? "").Contains("epos-zeile--verwendet")));
 
-        var traegt = zeilen.First(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja");
+        var traegt = zeilen.First(z => z.QuerySelector(".epos-verwendet-marke") is not null);
         Assert.Contains("Vitosol 200", traegt.TextContent);
     }
 

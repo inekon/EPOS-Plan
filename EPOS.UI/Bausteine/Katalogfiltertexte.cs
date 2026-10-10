@@ -132,4 +132,25 @@ public sealed class Katalogfiltertexte
 
     /// <summary>Kurztext des ✕ (<c>KFLT_VERGLEICH_SCHLIESSEN</c>).</summary>
     public string VergleichSchliessen { get; set; } = Resource.KFLT_VERGLEICH_SCHLIESSEN;
+
+    /// <summary>Hinweis der Verwendungsmarke (<c>KFLT_VERWENDET_HINWEIS</c>, Konzept 4.10).</summary>
+    public string VerwendetHinweis { get; set; } = Resource.KFLT_VERWENDET_HINWEIS;
+
+    /// <summary>Text der Legende neben der Zählung (<c>KFLT_VERWENDET_LEGENDE</c>).</summary>
+    public string VerwendetLegende { get; set; } = Resource.KFLT_VERWENDET_LEGENDE;
+
+    /// <summary>„Spalten…“ (<c>KFLT_SPALTEN</c>).</summary>
+    public string Spalten { get; set; } = Resource.KFLT_SPALTEN;
+
+    /// <summary>Kurztext des Spaltenknopfs (<c>KFLT_SPALTEN_HINWEIS</c>).</summary>
+    public string SpaltenHinweis { get; set; } = Resource.KFLT_SPALTEN_HINWEIS;
+
+    /// <summary>Überschrift der Spaltenwahl (<c>KFLT_SPALTEN_TITEL</c>).</summary>
+    public string SpaltenTitel { get; set; } = Resource.KFLT_SPALTEN_TITEL;
+
+    /// <summary>„Standard“ (<c>KFLT_SPALTEN_STANDARD</c>).</summary>
+    public string SpaltenStandard { get; set; } = Resource.KFLT_SPALTEN_STANDARD;
+
+    /// <summary>Kurztext von „Standard“ (<c>KFLT_SPALTEN_STANDARD_HINWEIS</c>).</summary>
+    public string SpaltenStandardHinweis { get; set; } = Resource.KFLT_SPALTEN_STANDARD_HINWEIS;
 }

@@ -597,7 +597,7 @@ public class GebaeudeZonenTests : EposBunitContext
         int gerufen = 0;
         var cut = Wirt(false, _ => { gerufen++; return null; });
 
-        IElement knopf = cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
+        IElement knopf = cut.FindAll("button.epos-gebaeude-projekt").Single();
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         knopf.Click();
 
@@ -626,7 +626,7 @@ public class GebaeudeZonenTests : EposBunitContext
             return "";
         });
 
-        IElement knopf = cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
+        IElement knopf = cut.FindAll("button.epos-gebaeude-projekt").Single();
         Assert.Null(knopf.GetAttribute("aria-disabled"));
         knopf.Click();
 
@@ -645,7 +645,7 @@ public class GebaeudeZonenTests : EposBunitContext
         var cut = Wirt(false, _ => { gerufen++; return Editorgaben(); },
                        () => "Die Gebäudeliste wurde nicht gespeichert.");
 
-        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…").Click();
+        cut.FindAll("button.epos-gebaeude-projekt").Single().Click();
 
         Assert.Equal(0, gerufen);
         Assert.False(cut.Instance.ProjekteditorOffen);
@@ -679,7 +679,7 @@ public class GebaeudeZonenTests : EposBunitContext
             ["Zonen"] = weg.Zonenweg()
         });
 
-        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…").Click();
+        cut.FindAll("button.epos-gebaeude-projekt").Single().Click();
 
         Assert.True(cut.Instance.ProjekteditorOffen);
         Assert.Contains(KNOPF, cut.Markup);
@@ -788,7 +788,7 @@ public class GebaeudeZonenTests : EposBunitContext
     {
         var cut = Wirt(true, null);
 
-        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Gebäude im Projekt bearbeiten…");
+        Assert.Empty(cut.FindAll("button.epos-gebaeude-projekt"));
     }
 
     /// <summary>

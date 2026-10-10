@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
                 if (z == null) continue;
                 bool ja = namen.Contains((z.Bezeichner ?? "").Trim());
                 if (ja) treffer++;
+                z.ImProjekt = ja;
                 z.MitKennzeichen(Katalogfilterprofil.SpVerwendet, ja);
             }
             return treffer;

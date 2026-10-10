@@ -312,7 +312,8 @@ async function ueberlagerung(browser, f, marke) {
     return {
       ueberlagerung: r(u), rollhoehe: u.scrollHeight, fenster: u.clientHeight, fuss: r(fuss), fussPos: getComputedStyle(fuss).position,
       kopfPos: getComputedStyle(kopf).position, uekopf: r(uk), dokumentRollt: getComputedStyle(document.documentElement).overflow !== 'hidden',
-      unterFensterfuss: unter(4, wb.top + wb.height / 2), unterFensterkopf: unter(4, wk.top + wk.height / 2),
+      // Steht die Schlussleiste unter dem Fensterrand (KB1: Dialogkoerper unter der Mindesthoehe), zaehlt der unterste Bildpunkt.
+      unterFensterfuss: unter(4, Math.min(wb.top + wb.height / 2, innerHeight - 2)), unterFensterkopf: unter(4, wk.top + wk.height / 2),
       rahmenBorder: parseFloat(getComputedStyle(u).borderBottomWidth),
     };
   });
@@ -339,12 +340,18 @@ function rollstand() {
   const sichtbar = e => { const s = getComputedStyle(e); const b = e.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && b.width > 0 && b.height > 0; };
   const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY);
   const erlaubt = e => e.matches('.epos-zweispalten-bereich .epos-raster-huelle, .epos-zweispalten-satz');
-  const fremd = [...document.querySelectorAll('body *')].filter(e => sichtbar(e) && rollt(e) && !erlaubt(e) && !e.closest('.epos-ueberlagerung'))
+  // KB1: Unter der Mindesthoehe (data-zweispalten-eng) rollt der Dialogkoerper - die eine Ausnahme der Regel.
+  const eng = d.hasAttribute('data-zweispalten-eng');
+  const fremd = [...document.querySelectorAll('body *')].filter(e => sichtbar(e) && rollt(e) && !erlaubt(e) && !e.closest('.epos-ueberlagerung') && !(eng && e === d))
     .map(e => e.tagName.toLowerCase() + '.' + String(e.className).split(' ')[0]);
   const kopf = d.querySelector(':scope > .epos-dialog-kopf');
   const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer') || e.matches('.epos-dialog-fuss'));
   const dok = document.scrollingElement;
+  // Erreichbar: nach dem Rollen des Dialogkoerpers ans Ende steht die Schlussleiste im Fenster.
+  let fussErreichbar = false;
+  if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight + 1; d.scrollTop = v; }
   return {
+    eng, fussErreichbar,
     fremd, listen: [...d.querySelectorAll('*')].filter(e => sichtbar(e) && rollt(e) && erlaubt(e)).length,
     dokument: dok.scrollHeight, innen: innerHeight, dialogRollt: d.scrollHeight > d.clientHeight + 1,
     kopf: kopf.getBoundingClientRect().top, kopfPos: getComputedStyle(kopf).position,
@@ -361,9 +368,16 @@ async function nichtsRollt(seite, name, melden) {
     const r = await seite.evaluate(rollstand);
     if (r.fremd.length) m(`${stand}: es rollt ausser Listen und Detailzeile: ${r.fremd.join(', ')}`);
     if (r.dokument > r.innen + TOL) m(`${stand}: das Dokument rollt (${r.dokument} px)`);
+    if (r.eng) {
+      // KB1: Fenster unter der Mindesthoehe - der Dialogkoerper rollt, die Schlussleiste rollt mit und ist am Ende erreichbar.
+      console.log(`    Befund ${name} ${stand}: unter der Mindesthoehe, der Dialogkoerper rollt (KB1), Schlussleiste erreichbar: ${r.fussErreichbar}`);
+      if (!r.fussErreichbar) m(`${stand}: Schlussleiste auch nach dem Rollen nicht erreichbar`);
+      if (r.kopfPos !== 'static' || r.fussPos !== 'static') m(`${stand}: Kopf ${r.kopfPos}, Schlussleiste ${r.fussPos}`);
+    } else {
     if (r.dialogRollt) m(`${stand}: der Dialogkoerper rollt`);
     if (r.kopf < -TOL || r.kopfPos !== 'static') m(`${stand}: Kopf bei ${zahl(r.kopf)} px, ${r.kopfPos}`);
     if (r.fussBoden > r.innen + TOL || r.fussPos !== 'static') m(`${stand}: Schlussleiste endet bei ${zahl(r.fussBoden)} px, ${r.fussPos}`);
+    }
     return r;
   };
   const a = await pruefe('zu');
@@ -504,6 +518,9 @@ try {
       await s5.evaluate(() => {
         const d = document.querySelector('body > #app > .epos-dialog');
         d.style.setProperty('overflow', 'auto', 'important');
+        // Ein rollender Dialogkoerper OHNE die Ausnahme der Mindesthoehe (KB1): Schalter gesperrt.
+        d.toggleAttribute = () => false;
+        d.removeAttribute('data-zweispalten-eng');
         const klotz = document.createElement('div');
         klotz.style.cssText = 'height: 2000px; flex: 0 0 auto';
         d.insertBefore(klotz, d.querySelector('.epos-zweispalten'));

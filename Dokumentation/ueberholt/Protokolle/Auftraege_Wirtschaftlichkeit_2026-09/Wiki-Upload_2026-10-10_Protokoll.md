@@ -1,6 +1,6 @@
-# Wiki-Sammel-Upload 10.10.2026 (Auftrag #885) — Protokoll
+# Wiki-Sammel-Upload 10.10.2026 (Auftrag #889) — Protokoll
 
-Ablauf des dritten Sammel-Uploads: Auftrag, Ausgangslage, Prüfung, Logbuch, Upload, Offenes. Statuszeile #885; Revisionstafel im [Hilfesystem-Konzept](../../../aktuell/Konzept_Hilfesystem_Wikidokumentation.md) (Abschnitt „Sammel-Upload 10.10.2026“), Seitenliste im [Update-Papier](../../../aktuell/Wiki_Update_2026-09-26.md).
+Ablauf des dritten Sammel-Uploads: Auftrag, Ausgangslage, Prüfung, Logbuch, Upload, Offenes. Statuszeile #889. Die Bearbeitungskommentare im Wiki nennen „#885“, weil die Nummer vor dem Zusammenführen vergeben war; gültig ist #889. Revisionstafel im [Hilfesystem-Konzept](../../../aktuell/Konzept_Hilfesystem_Wikidokumentation.md) (Abschnitt „Sammel-Upload 10.10.2026“), Seitenliste im [Update-Papier](../../../aktuell/Wiki_Update_2026-09-26.md).
 
 ## Auftrag
 Anwenderauftrag 10.10.2026: „nehme den wiki upload vor mit allen änderungen seit dem letzten upload. Prüfe dabei die

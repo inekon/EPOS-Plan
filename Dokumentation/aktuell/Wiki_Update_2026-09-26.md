@@ -42,7 +42,7 @@ ausstehend.
 (Statuszeile #622): Gerätekataloge (724), Gebäude (725), Gebäudeimport (726, Abschnitt „Mehrere Zonen“ aus #620),
 Brauchwasser-Zapfprofil (727). Rücklese byte-gleich, 0 Parse-Warnungen. Das Update-Logbuch blieb unberührt.
 
-**Dritter Sammel-Upload 10.10.2026 (#885), Revisionen 728–827** — durch die Orchestrierung (Benutzer Epos): 99 Seiten (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen; Revisionen 728–826) und das Update-Logbuch (Revision 827); Rücklese byte-gleich, 0 Parse-Warnungen, Dateien und 19 Weiterleitungen unverändert. Vorher waren alle Seiten gegen die Wiki-Regeln geprüft, 47 Live-Seiten ohne Quelle als Repo-Quelle übernommen. **Damit sind alle in Abschnitt 1 als „ausstehend“ vermerkten Punkte veröffentlicht — mit Ausnahme der Seite Programm Dokumentation/Gebäudeimport**, die zurückgehalten bleibt (Abschnitt 3, Punkt „Befund“). Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 10.10.2026“), Protokoll unter `ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md`, Statuszeile #885.
+**Dritter Sammel-Upload 10.10.2026 (#889), Revisionen 728–827** — durch die Orchestrierung (Benutzer Epos): 99 Seiten (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen; Revisionen 728–826) und das Update-Logbuch (Revision 827); Rücklese byte-gleich, 0 Parse-Warnungen, Dateien und 19 Weiterleitungen unverändert. Vorher waren alle Seiten gegen die Wiki-Regeln geprüft, 47 Live-Seiten ohne Quelle als Repo-Quelle übernommen. **Damit sind alle in Abschnitt 1 als „ausstehend“ vermerkten Punkte veröffentlicht — mit Ausnahme der Seite Programm Dokumentation/Gebäudeimport**, die zurückgehalten bleibt (Abschnitt 3, Punkt „Befund“). Revisionstafel im Hilfesystem-Konzept (Abschnitt „Sammel-Upload 10.10.2026“), Protokoll unter `ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md`, Statuszeile #889.
 
 Dieses Papier bereitet den gebündelten Wiki-Upload vor (Regel: Konzept Hilfesystem 13.3). Der
 Termin ist der **26.09.2026** (E12‑Q1, entschieden 24.09.2026 nach Empfehlung: a; dieses Papier,
@@ -59,7 +59,7 @@ vom 24.09.2026 bestätigt.
 
 ## 1 Seiten für den Sammel-Upload
 
-*Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #885 (Revisionen 728–827) veröffentlicht; ausgenommen ist die Seite Gebäudeimport. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
+*Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #889 (Revisionen 728–827) veröffentlicht; ausgenommen ist die Seite Gebäudeimport. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
 
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
@@ -167,7 +167,7 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
-Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#885, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
+Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
 neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
@@ -228,6 +228,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Feiertage zählen im Brauchwasser-Zapfprofil immer als Sonntag; die Landesfeiertage richten sich nach dem Feiertagsland des Gebäudes. (#866)
 - Seit 09.10.2026: Die Nennleistung einer PV-Ganglinie lässt sich im Katalog nachträglich bearbeiten; Excel-Bericht und Variantenvergleich nennen die Quelle der Photovoltaik (Modulmodell oder Ganglinie). (#867)
 - Seit 09.10.2026: In der Kalenderbedienung lassen sich alle Ferienzeiträume benennen, auch die ersten vier. (#868)
+*Ab hier folgen Sätze der Sitzung mit den Statuszeilen #869 bis #888, die nach dem Sammel-Upload #889 hinzugekommen sind: unveröffentlicht, sie gehören zum nächsten Upload. Veröffentlicht ist davon nur der Satz zur Kachel „Kühlung und Kälteanlagen“ (#884, Version 1.2.0.9).*
 - Seit 09.10.2026: Im Dialog Photovoltaik Ganglinie wird eine Projektkopie, die vom Katalog abweicht, gekennzeichnet und lässt sich über „Aus dem Katalog erneuern…“ auf den Katalogstand bringen. (#869)
 - Seit 09.10.2026: Feiertage liegen im Gemeinjahr nach festen Regeln: Ostern ist der Sonntag um den 8. April des Kalenderrasters, ein Jahr gilt nur mit einer Preisreihe. (#874)
 - Seit 10.10.2026: Kalenderbild und Datumsanzeige der Gebäudekalender nennen den Wochentag des 1. Januar der Klimaregion statt eines Bezugsjahrs; Gebäude, Trinkwarmwasser und Bedarfsprofile rechnen mit denselben Wochentagen, eine Preisreihe mit Jahr setzt für alle den Kalender dieses Jahres. (#880)
@@ -237,6 +238,10 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Ein gekürzter Spaltenkopf in den Katalogen nennt beim Verweilen mit der Maus seinen vollen Namen. (#882)
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
+- Seit 10.10.2026: Die Projektdialoge mit Katalogauswahl passen sich kleinen Bildschirmen an — kompaktere Darstellung unter 1 200 × 800 px und ein Rollbalken, wenn die Höhe nicht reicht. (#886)
+- Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
+- Seit 10.10.2026: In der Katalogliste der Projektdialoge sind die Spalten wählbar („Spalten…“); im Projekt verwendete Sätze sind farblich gekennzeichnet statt in einer eigenen Spalte. (#888)
+- Seit 10.10.2026: Im Gebäudedialog steht „Bearbeiten…“ in der Kopfleiste der Projektliste. (#888)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
@@ -1047,7 +1052,7 @@ vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erle
   Gebäudeansicht). Das Gegenlese-Muster der Wiki-Regel in `CLAUDE.md` trifft das Wort; die Spalte war schon mit #707
   als Bestandstreffer vermerkt. Vor dem Upload entscheidet der Anwender: den Bedienbegriff in Oberfläche und Wiki
   umbenennen (wie die Ampelmeldungen der Seite Photovoltaik mit E12) oder ihn als Bedienbegriff zulassen.
-  Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt. Die Zurückstellung ist mit dem Auftrag vom 10.10.2026 (#885) aufgehoben;
+  Anwenderentscheid 09.10.2026: Wiki-Upload zurückgestellt. Die Zurückstellung ist mit dem Auftrag vom 10.10.2026 (#889) aufgehoben;
   die Seite Gebäudeimport bleibt zurückgehalten, bis der Anwender den Begriff entschieden hat (seine Antwort war unklar).
   Alle übrigen Seiten sind hochgeladen.
 

@@ -31,6 +31,10 @@
                            ohne den Schalter steht alles wie fuer die Fensterprobe
       ?marke=0             OHNE Fenstermarke - die Gegenprobe: der Dialog steht wie ohne die Regel
       ?zeilen=40           Katalogzeilen
+      ?verwendet=1         Heizkessel und BHKW: die erste Projektzeile heisst wie die zweite
+                           Katalogzeile - die Katalogliste traegt Verwendungsmarke und Legende
+                           (Spaltenwahlprobe in katalogprobe.mjs, Konzept 4.10)
+      ?summe=<text>        Heizkessel und BHKW: die Summe der Projekt-Kopfleiste (Vorgabe 240 bzw. 80)
       ?kultur=de-DE|en-US  Kultur und Sprache; Program.cs setzt sie. *@
 
 <div id="app">
@@ -54,7 +58,7 @@
                               RueckwegWege="@RueckWege"
                               RueckwegBleibtText="Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage."
                               NeuGaben="@(() => new Dictionary<string, object>())"
-                              SummePtherm="@(() => "240")"
+                              SummePtherm="@(() => _summe ?? "240")"
                               Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -68,7 +72,7 @@
                         Varianten="@(_ => new[] { (5, "Erdgas E Variante") })"
                         Vorbereiten="@Vorbereitung"
                         TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
-                        SummePtherm="@(() => "80")"
+                        SummePtherm="@(() => _summe ?? "80")"
                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
                         EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
                         Katalogfelder="@(_ => Felder())"
@@ -128,6 +132,8 @@
     private string _fall = "heizkessel";
     private bool _marke = true;
     private bool _meldung;
+    private bool _verwendet;
+    private string? _summe;
     private int _anzahl = 40;
     private string _ausgang = "";
     private readonly Katalogfilterstand _filterstand = new();
@@ -139,6 +145,8 @@
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
         if (abfrage.TryGetValue("meldung", out var g)) _meldung = g.ToString() == "1";
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("verwendet", out var v)) _verwendet = v.ToString() == "1";
+        if (abfrage.TryGetValue("summe", out var s)) _summe = s.ToString();
     }
 
     /// <summary>Die Traegerwahl der Erzeugerdialoge; mit ?meldung=1 schlaegt sie fehl.</summary>
@@ -191,10 +199,15 @@
 
     private List<ErzeugerZeile>? _erzeugerZeilen;
 
+    /// <summary>Mit ?verwendet=1 heisst die erste Projektzeile wie die zweite Katalogzeile (4.10).</summary>
+    private string Erstname(string praefix) => !_verwendet
+        ? praefix + " 1"
+        : (praefix == "Kessel" ? HeizkesselZeilen : BhkwZeilen)[1].Bezeichner;
+
     /// <summary>Zwei Projektzeilen - eine Liste mit Inhalt, die erste ist gewaehlt.</summary>
     private List<ErzeugerZeile> ErzeugerZeilen(string praefix) => _erzeugerZeilen ??= new List<ErzeugerZeile>
     {
-        new() { Schluessel = 1, Bezeichner = praefix + " 1", GeraetId = 100, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 },
+        new() { Schluessel = 1, Bezeichner = Erstname(praefix), GeraetId = 100, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 },
         new() { Schluessel = 2, Bezeichner = praefix + " 2", GeraetId = 101, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50 },
     };
 

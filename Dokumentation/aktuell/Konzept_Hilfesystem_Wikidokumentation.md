@@ -1148,7 +1148,7 @@ Gebäude, die vor diesem Upload keine Repo-Quelle hatten, ist keine Revision ver
 Logbuch-Sätze der Berichtsvorlagen (Version offen) und die Repo-Quellen Mehrzonenmodell und Projekttransfer; die Tafel
 der Repo-Quellen oben führt die neuen Seiten noch mit „noch nicht hochgeladen“. Offene Punkte: Statusdatei, Nach #556.
 
-## Sammel-Upload 10.10.2026 (Versionen 1.2.0.7 bis 1.2.0.10, Auftrag #885)
+## Sammel-Upload 10.10.2026 (Versionen 1.2.0.7 bis 1.2.0.10, Auftrag #889)
 
 Dritter gebündelter Upload nach Regel 13.3: 99 Seiten der Rubrik „Programm Dokumentation“ (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen) und das Update-Logbuch mit den Versionen 1.2.0.10, 1.2.0.9, 1.2.0.8 und 1.2.0.7 (70 Sätze). Hochgeladen am 10.10.2026 durch die Orchestrierung (Benutzer Epos), je Seite als vollständiger Ersatz aus der Repo-Quelle unter `Projekte/Wiki/`; die Zugangsdaten standen nur als Umgebungsvariablen des Laufs. Vorher wurden alle Seiten geprüft (Aktualität, Abgleich mit den Logbuch-Änderungen, Parse-Prüfung) und 47 Live-Seiten ohne Repo-Quelle als Quelle übernommen. Rücklese aller Seiten byte-gleich, 0 Parse-Warnungen; Dateien und 19 Weiterleitungen unverändert. Die Seite Programm Dokumentation/Gebäudeimport bleibt zurückgehalten, bis der Anwender den Bedienbegriff „Befund“ entschieden hat. Seitenliste und Logbuch-Sätze: [`Wiki_Update_2026-09-26.md`](Wiki_Update_2026-09-26.md); Ablauf: [`Wiki-Upload_2026-10-10_Protokoll.md`](../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md).
 
