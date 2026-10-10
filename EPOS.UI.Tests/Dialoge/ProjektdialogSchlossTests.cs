@@ -135,14 +135,19 @@ public class ProjektdialogSchlossTests : EposBunitContext
         KatalogsatzWaehlen(cut, 0);
 
         // Gesperrt: kein Speichern im Aufklapper; „Bearbeiten…" im Katalogfuss bleibt
-        // bedienbar, nennt den Grund und öffnet keinen Katalogeditor (KA-E-13, 4.6).
+        // bedienbar, nennt den Grund und öffnet keinen Katalogeditor (KA-E-13, 4.6) -
+        // sondern die Satz-Ueberlagerung nur lesend mit „Erst Schloss aufheben" (UeS1).
         Assert.False(SpeichernSteht(cut));
         var bearbeiten = KatalogBearbeiten(cut);
         Assert.False(bearbeiten.HasAttribute("disabled"));
         Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, bearbeiten.GetAttribute("title"));
         bearbeiten.Click();
         Assert.False(cut.Instance.EditorOffen);
-        Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Instance.Meldung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
 
         // „Schloss aufheben…" - obwohl der Satz im Projekt verwendet wird.
         Schlossknopf(cut).Click();
