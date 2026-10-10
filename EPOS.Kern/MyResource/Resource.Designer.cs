@@ -74230,6 +74230,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung… ähnelt.
+        /// </summary>
+        public static string KM_ANL_BTN_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("KM_ANL_BTN_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Katalogverwaltung öffnen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_MSG_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("KM_ANL_MSG_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogverwaltung der Kältemaschinen lässt sich hier nicht öffnen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_MSG_VERWALTUNG_NICHT {
+            get {
+                return ResourceManager.GetString("KM_ANL_MSG_VERWALTUNG_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
         /// </summary>
         public static string KM_AUSK_AUSSEN {

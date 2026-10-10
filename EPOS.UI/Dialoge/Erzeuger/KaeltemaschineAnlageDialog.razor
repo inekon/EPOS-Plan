@@ -189,7 +189,7 @@
                 <div class="epos-kaeltemaschine-katalogwahl">
                     @if (_katalogMeldung.Length > 0)
                     {
-                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_katalogMeldung" />
+                        <Warnbanner Stufe="@_katalogStufe" Text="@_katalogMeldung" />
                     }
                     @if (_katalog.Count == 0)
                     {
@@ -200,6 +200,17 @@
                         <Katalogliste Profil="@Profil" Zeilen="@_katalog" Filterstand="@_filterstand"
                                       Gewaehlt="@_katalogWahl" GewaehltChanged="BeiKatalogzeile" ZeileIstWahl="true" />
                     }
+                    @* Die Wege zum Katalog: bei leerem Katalog unter dem Leertext, sonst als Nebenknoepfe unter
+                       der Liste. "Typkennfelder laden..." nur, wenn die Gaben den Weg liefern. *@
+                    <div class="epos-leiste epos-kaeltemaschine-katalogwege">
+                        @if (TypkennfelderLaden is not null)
+                        {
+                            <button type="button" class="epos-knopf epos-kaeltemaschine-typkennfelder"
+                                    @onclick="TypkennfelderEinspielen">@Texte.KnopfTypkennfelder</button>
+                        }
+                        <button type="button" class="epos-knopf epos-kaeltemaschine-verwaltung"
+                                @onclick="VerwaltungOeffnen">@Texte.KnopfVerwaltung</button>
+                    </div>
                     <SpeichernLeiste OkText="@Texte.KnopfUebernehmen" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiKatalogErgebnis" />
                 </div>
             }
@@ -261,6 +272,12 @@
     [Parameter] public Action<int>? Loeschen { get; set; }
 
     /// <summary>
+    /// Lädt die eingebauten Typkennfelder in den Katalog (<c>KaeltemaschineKatalogHuelle.TypkennfelderLaden</c>);
+    /// ohne ihn kein Knopf „Typkennfelder laden…" in der Katalogwahl.
+    /// </summary>
+    [Parameter] public Func<KaeltemaschineTypkennfelderErgebnis>? TypkennfelderLaden { get; set; }
+
+    /// <summary>
     /// Die Wärmepumpen des Projekts mit Kühlfunktion samt Kühlbetrieb und Sperrgrund; <c>null</c> = der Block
     /// „Wärmepumpen im Kühlbetrieb“ entfällt.
     /// </summary>
@@ -309,6 +326,7 @@
     private readonly Katalogfilterstand _filterstand = new();
     private string _katalogWahl = "";
     private string _katalogMeldung = "";
+    private WarnStufe _katalogStufe = WarnStufe.Warnung;
     private Katalogfilterprofil? _profil;
 
     private bool _loeschfrage;
@@ -464,6 +482,50 @@
     }
 
     private void BeiKatalogzeile(string schluessel) { _katalogWahl = schluessel ?? ""; _katalogMeldung = ""; }
+
+    private void Katalogmeldung(string text, WarnStufe stufe) { _katalogMeldung = text; _katalogStufe = stufe; }
+
+    /// <summary>„Typkennfelder laden…": lädt über die Gabe, liest den Katalog neu und meldet im Banner der Überlagerung.</summary>
+    private void TypkennfelderEinspielen()
+    {
+        if (TypkennfelderLaden is null) return;
+        KaeltemaschineTypkennfelderErgebnis e = TypkennfelderLaden();
+        if (!e.Ok)
+        {
+            Katalogmeldung(e.Meldung.Length > 0 ? e.Meldung : Texte.TypkennfelderFehler, WarnStufe.Warnung);
+            return;
+        }
+        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        Katalogmeldung(string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderGeladen, e.Neu, e.Uebersprungen),
+                       WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// „Katalogverwaltung…": schließt die Überlagerung und öffnet die Verwaltung über die Naht
+    /// <c>Dienste.Navigation</c> (Windows: eigenes Fenster, iOS: freie Ansicht der Wurzel). Die Naht meldet
+    /// das Schließen der Verwaltung nicht — der nächste Klick auf „Hinzufügen…" liest den Katalog neu.
+    /// Ungespeicherte Änderungen halten an: Auf iOS löst die Verwaltung diese Ansicht ab.
+    /// </summary>
+    private void VerwaltungOeffnen()
+    {
+        if (ArbeitsstandGeaendert)
+        {
+            Katalogmeldung(Texte.VerwaltungUngespeichert, WarnStufe.Warnung);
+            return;
+        }
+        _katalogOffen = false;
+        _katalogMeldung = "";
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog, "");
+        if (offen) return;
+        _katalogOffen = true;
+        Katalogmeldung(Texte.VerwaltungNicht, WarnStufe.Warnung);
+    }
+
+    /// <summary>Steht im Arbeitsstand etwas, das erst der OK-Weg schreibt?</summary>
+    private bool ArbeitsstandGeaendert
+        => _wpArbeit.Count > 0
+           || _zeilen.Any(z => z.Entfernt || z.Gelesen is null || !z.Arbeit.GleicheEingaben(z.Gelesen));
 
     private void BeiKatalogErgebnis(bool ok)
     {

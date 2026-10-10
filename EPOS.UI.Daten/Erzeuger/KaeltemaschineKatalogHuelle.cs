@@ -10,8 +10,9 @@ namespace WindowsFormsApplication1
     /// <b>Die Hülle der Verwaltung „Kältemaschinen"</b> (KU3-1, Teil 2) — sie baut aus
     /// <see cref="KaeltemaschineStammCtrl"/> den Parametersatz der Razor-Komponente
     /// <c>KaeltemaschineKatalogDialog</c> und bildet zwischen <see cref="KaeltemaschineModel"/> und
-    /// <see cref="KaeltemaschineDaten"/> ab. Plattformfrei: Unter Windows reicht die Hauptfensterhülle den
-    /// Satz an die <c>AppWurzel</c> (Seitenschlüssel <c>KAELTEMASCHINE_KATALOG</c>), auf iOS die Projektquelle.
+    /// <see cref="KaeltemaschineDaten"/> ab. Plattformfrei: Unter Windows zeigt ihn die Fensterhülle
+    /// <c>KaeltemaschineKatalogFensterHuelle</c> im eigenen Fenster, auf iOS reicht ihn die Projektquelle an die
+    /// <c>AppWurzel</c> (Seitenschlüssel <c>KAELTEMASCHINE_KATALOG</c>).
     ///
     /// <para><b>Die Rückkühlart</b> geht als Listenplatz in die Oberfläche und kommt als Persistenzwert aus
     /// <see cref="KaeltemaschineSchema.RUECKKUEHLARTEN"/> zurück; die Anzeigetexte liefert der Kern
