@@ -500,6 +500,37 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
 
+### 5.9 Wie gebaut (Stufe 3, Photovoltaik)
+
+Die Photovoltaik folgt Heizkessel, BHKW und Stromspeicher (5.3, 5.4, 5.6); hier steht nur, was abweicht.
+
+- **Kernweg:** `PhotovoltaikStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_PV`, Katalog `Tab_PV_STAMM`, Anlage über
+  `ID_PV`, Kostenkomponente 3), dazu `RueckwegVorschau`, `AusProjektUebernehmen`, `RueckwegNameBelegt` und
+  `KatalogsatzLoeschen`; `Delete` über ID und Namen läuft über denselben Löschweg samt Satzvorlage. Prüfregel wie beim
+  Sammelspeichern (`Pruefen`): Leistung, Spannungen, Ströme, Abmessungen, Modulkosten und NOCT nicht negativ, Wirkungsgrad
+  0 bis 100 %; der Temperaturkoeffizient der Leistung ist frei. Kein neuer Schemaschritt: 208 und 209 führen `ID_Stamm` an
+  `Tab_PV` und beide Vorlagenverweise an `Tab_PV_STAMM`; `PhotovoltaikCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Projektkopie sofort:** Bisher legte die Dialogzeile die STAMM-Id ab, die Kopie entstand erst beim Speichern des Projekts
+  (`WizardCtrl`). Jetzt legt „In das Projekt übernehmen" die Kopie außerhalb des Assistenten sofort an (Muster BHKW, mit
+  `Projektkopievormerkung`); Felder desselben Moduls teilen sich die Kopie gleichen Namens. Detail, kWp, Ampel,
+  Wechselrichtervorschlag und Auslegungstemperatur lesen die Kopie über die Geräte-ID — der Name der Anlage darf vom Modul
+  abweichen. Die Strangtabelle bietet weiter Katalog-Ids an; das Band von der Zeile zum Katalog ist der Name des Moduls
+  (`Modulname`). Die Summe kWp ist Anzahl Module mal Modulleistung der Kopie je Anlage.
+- **Projektsatz:** Kostenknöpfe, Anzahl Module, Neigung, Azimut, Energieträger und das Ertragsmodell (`PvModellFelder`
+  samt Albedo) stehen in der Detailzeile; „Stränge und Wechselrichter…" öffnet die Strangtabelle (`PvStraengeFelder`, in der
+  Sache unverändert) als Überlagerung mit der Hilfe zum Wechselrichter (KA‑E‑11). Die Auslegungstemperaturen hält der
+  Dialog über das Schließen der Überlagerung hinweg.
+- **Kosten und Kindzeilen:** `Modulkosten` steht in „Alle Daten" und in der Satzbearbeitung und geht mit der Schnittmenge;
+  Betriebs- und Investitionspositionen der Anlage werden Satzvorlagen. Die Modulkoeffizienten `alpha_SC`, `beta_OC`,
+  `gamma_PMP`, `T_NOCT` sind Spalten des Satzes und gehen mit (Punkt 7.5); `alpha_SC` und `beta_OC` führt die Feldliste des
+  Modulkatalogs nicht, sie stehen als Lesewerte da und das Sammelspeichern lässt sie stehen. Die Stränge (`Z_AnlageStrang`)
+  samt Wechselrichterzuordnung, Neigung, Azimut, Anzahl, Ertragsmodell und Energieträger hängen an der Anlage und bleiben im
+  Projekt.
+- **Katalogeditor ohne Neu…:** wie beim Stromspeicher — „Bearbeiten…" auf einen einzelnen ungesperrten Satz öffnet den
+  Modulkatalog (`ModulKatalogDialog`, Parameter `Vorwahl`) mit Neu…, Duplizieren…, Löschen und Import…; der bisherige Knopf
+  „Modul Bearbeiten…" öffnete den Modulkatalog ohne Vorwahl auch ohne gewählten Satz. Ist nur ein gesperrter Satz
+  gewählt, ist Neu… allein über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
