@@ -1851,6 +1851,21 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="SIM_SCHEMA_KETTE_KOPF" xml:space="preserve">
     <value>Kaskadenkette</value>
   </data>
+  <data name="SIM_SCHEMA_DK_SENKE" xml:space="preserve">
+    <value>Doppelklick öffnet die Wärmesenke.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_QUELLE" xml:space="preserve">
+    <value>Doppelklick öffnet die Wärmequelle.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_PUFFER" xml:space="preserve">
+    <value>Doppelklick öffnet die Pufferverwaltung.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_KAELTEMASCHINE" xml:space="preserve">
+    <value>Doppelklick öffnet die Kältemaschinen des Projekts.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_RUECKKUEHLUNG" xml:space="preserve">
+    <value>Doppelklick öffnet die Kältemaschinen des Projekts; dort steht die Rückkühlart.</value>
+  </data>
   <data name="SIM_SCHEMA_LEER" xml:space="preserve">
     <value>Für dieses Projekt ist noch keine Hydraulik konfiguriert.</value>
   </data>

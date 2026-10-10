@@ -1851,6 +1851,21 @@ Without a source buffer this reads 0.00.</value>
   <data name="SIM_SCHEMA_KETTE_KOPF" xml:space="preserve">
     <value>Cascade chain</value>
   </data>
+  <data name="SIM_SCHEMA_DK_SENKE" xml:space="preserve">
+    <value>Double-click opens the heat sink.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_QUELLE" xml:space="preserve">
+    <value>Double-click opens the heat source.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_PUFFER" xml:space="preserve">
+    <value>Double-click opens the buffer storage management.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_KAELTEMASCHINE" xml:space="preserve">
+    <value>Double-click opens the project's chillers.</value>
+  </data>
+  <data name="SIM_SCHEMA_DK_RUECKKUEHLUNG" xml:space="preserve">
+    <value>Double-click opens the project's chillers, which show the heat rejection type.</value>
+  </data>
   <data name="SIM_SCHEMA_LEER" xml:space="preserve">
     <value>No hydraulic configuration has been set up for this project yet.</value>
   </data>
