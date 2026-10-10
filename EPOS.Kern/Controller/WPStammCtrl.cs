@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     // WaermepumpeStammHuelle, WaermepumpeAnlageHuelle und WaermepumpenHuelle, dazu
     // seit iU9-W13 vom Katalogimport ueber WaermepumpeImportSatz. Alle DB-Zugriffe
     // laufen ueber DataRepository.
-    class WPStammCtrl : WPModel
+    partial class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
         public const string CURVE     = "Tab_Kenndaten_STAMM";

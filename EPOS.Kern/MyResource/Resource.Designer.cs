@@ -133358,6 +133358,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage… ähnelt.
+        /// </summary>
+        public static string WPV_BTN_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_BTN_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht ähnelt.
         /// </summary>
         public static string WPV_BTN_ANSICHT {
@@ -133448,6 +133457,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte die Anlage prüfen und mit OK bestätigen. ähnelt.
+        /// </summary>
+        public static string WPV_MSG_ANLAGE_PRUEFEN {
+            get {
+                return ResourceManager.GetString("WPV_MSG_ANLAGE_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Modulkosten dürfen nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string WPV_MSG_MODULKOSTEN_NEGATIV {
+            get {
+                return ResourceManager.GetString("WPV_MSG_MODULKOSTEN_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
         /// </summary>
         public static string WPV_SP_AKTION {
@@ -133502,6 +133529,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten ähnelt.
+        /// </summary>
+        public static string WPV_TIP_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_TIP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die links markierte Wärmepumpe durch die rechts markierte ersetzen — Betriebsdaten und Kosten der Zeile bleiben. ähnelt.
         /// </summary>
         public static string WPV_TIP_UMSTELLEN {
@@ -133511,11 +133547,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umstellen braucht genau eine Wärmepumpe im Projekt und genau einen Satz im Katalog. ähnelt.
+        /// </summary>
+        public static string WPV_TIP_UMSTELLEN_EINER {
+            get {
+                return ResourceManager.GetString("WPV_TIP_UMSTELLEN_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen Verwaltung ähnelt.
         /// </summary>
         public static string WPV_TITEL {
             get {
                 return ResourceManager.GetString("WPV_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage – {0} ähnelt.
+        /// </summary>
+        public static string WPV_TITEL_ANLAGE {
+            get {
+                return ResourceManager.GetString("WPV_TITEL_ANLAGE", resourceCulture);
             }
         }
         

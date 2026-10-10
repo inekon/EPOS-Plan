@@ -50968,5 +50968,23 @@ Chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
   </data>
+  <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
+    <value>Umstellen braucht genau eine Wärmepumpe im Projekt und genau einen Satz im Katalog.</value>
+  </data>
+  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
+    <value>Anlage…</value>
+  </data>
+  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
+    <value>Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten</value>
+  </data>
+  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
+    <value>Anlage – {0}</value>
+  </data>
+  <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
+    <value>Bitte die Anlage prüfen und mit OK bestätigen.</value>
+  </data>
+  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
+    <value>Die Modulkosten dürfen nicht negativ sein.</value>
+  </data>
 </root>
 

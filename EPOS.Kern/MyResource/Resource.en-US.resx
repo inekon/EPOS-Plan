@@ -50961,5 +50961,23 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>
+  <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
+    <value>Switching needs exactly one heat pump in the project and exactly one catalogue entry.</value>
+  </data>
+  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
+    <value>System…</value>
+  </data>
+  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
+    <value>Edit operating mode, temperatures, blocking times, heating rod, heat source and transfer of this system</value>
+  </data>
+  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
+    <value>System – {0}</value>
+  </data>
+  <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
+    <value>Please check the system and confirm with OK.</value>
+  </data>
+  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
+    <value>The module costs must not be negative.</value>
+  </data>
 </root>
 
