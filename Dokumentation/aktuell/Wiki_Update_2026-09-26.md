@@ -254,6 +254,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Im Dialog Wärme-/Strombedarf zeigt der Reiter Grafik die Jahresganglinie und wahlweise Monats-, Wochen- und Tagessummen je Bedarfsart, jeweils mit CSV-Export. (#894)
 - Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#895)
 - Seit 10.10.2026: Der Knopf „CSV…“ am Bild exportiert jede Zeitreihe der Anwendung: Bedarfs-, Klimadaten-, Kostenprofil-, Profil- und Zapfprofilbilder, Ganglinienverwaltungen, Speicherflotte, Lastspitzenkappung, Kapitalwertverlauf und Zahlungsstrom. (#896)
+- Seit 10.10.2026: Auf dem iPad halten die Dialoge und Überlagerungen Statusleiste und Home-Anzeige frei; die Kompaktstufe der Projektdialoge gilt unter 1 280 × 800 Punkten und damit auch auf dem iPad 11 Zoll. (#897)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
