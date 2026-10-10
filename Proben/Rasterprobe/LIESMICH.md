@@ -1305,3 +1305,41 @@ rot mit 103 Verstößen** (Rückgabe 0).
 | 1 280, Rahmen 760 | 370 / 370 / 758 px | unter, unter, neben | 2,00 Zeilen | 45 |
 | 480 voll | 478 / 478 / 478 px | unter | 1,27 Zeilen | 13 |
 | 360 voll | 358 / 358 / 358 px | unter | 2,00 Zeilen | 15 |
+
+---
+
+## Kennzahlenprobe (Kennzahlenzeile der Ergebnisübersicht) — Seite `/legendenprobe`
+
+**Zweck.** Die Kennzahlenzeile der Ergebnisübersicht (Wärme, Strom, Kälte mit zwei Bändern) ist ein
+Container (`epos-ui.css`, „Das Kennzahlenband"; Markup einmal in `UebersichtReiter.Kennzahl`): Die Kacheln
+stehen in einer umbrechenden Flexzeile, keine wird schmaler als ihr Inhalt (Zahl samt Einheit, längstes
+Wort der Beschriftung), eine Kachel ohne Platz rückt in die nächste Zeile; ist das Band schmaler als 480 px,
+stehen die Kacheln untereinander, je Kachel Beschriftung links und Zahl rechts. Zahl und Einheit stehen in
+einem Element mit `white-space: nowrap`, die Beschriftung bricht nur an Wortgrenzen. Die Probe nutzt die
+Seite der Legendenprobe (echter `UebersichtReiter`, Kälte mit Erzeuger) und setzt die Breite des Rahmens
+`#legendenprobe-rahmen` per Skript. bunit hält die Struktur (`EPOS.UI.Tests/Seiten/UebersichtReiterTests`,
+Zahl und Einheit in einem Element, die Regel als Regel).
+
+```bash
+node kennzahlenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--ohne-gegenprobe]
+```
+
+**Fälle** (Fenster 1 280 × 900, Rahmen 1 100, 760 und 600 px). Je Kennzahlenband und Kachel: Beschriftung
+und Zahl samt Einheit (per Range gemessen, die Ausdehnung des Textes) liegen in ihrer Kachel; kein
+Inhaltsstück schneidet den Kasten einer anderen Kachel, keine zwei Kacheln überschneiden sich
+(Bounding-Box-Vergleich); Zahl und Einheit liegen auf einer Zeile; kein Wort der Beschriftung ist gebrochen
+(`Range.getClientRects`).
+
+**Gegenprobe** (läuft mit): dieselben Fälle (a) mit der alten Regel (Drittelraster `minmax(0, 1fr)`,
+`min-width: 0`) und (b) mit einer erzwungenen Überlappung (die Zahl jeder Folgekachel 80 px nach links)
+müssen je Verstöße liefern. Rückgabe `0` = kein Verstoß **und** beide Gegenproben rot, `1` = Verstoß oder
+eine Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
+
+**Ergebnis vom 10.10.2026** (Wirt Release, Chromium headless, `kultur=de-DE`): **0 Verstöße, Gegenprobe
+alte Regel rot mit 16, erzwungene Überlappung rot mit 32 Verstößen** (Rückgabe 0).
+
+| Rahmen | Bänder Wärme / Strom / Kälte / Kälte-Deckung | Anordnung | Gegenprobe alt / erzwungen |
+|---|---|---|---|
+| 1 100 | 540 / 540 / 1 098 / 1 098 px | nebeneinander | 0 / 16 |
+| 760 | 370 / 370 / 758 / 758 px | untereinander, untereinander, nebeneinander, nebeneinander | 6 / 8 |
+| 600 | 290 / 290 / 598 / 598 px | untereinander, untereinander, nebeneinander, nebeneinander | 10 / 8 |
