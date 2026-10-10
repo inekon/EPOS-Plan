@@ -12562,9 +12562,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="HZK_LBL_ALLE_DATEN" xml:space="preserve">
     <value>Show all data</value>
   </data>
-  <data name="HZK_BTN_FELDER_SPEICHERN" xml:space="preserve">
-    <value>Save</value>
-  </data>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Module</value>
   </data>
@@ -50255,6 +50252,15 @@ chart</value>
   </data>
   <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
     <value>Count</value>
+  </data>
+  <data name="AUSWAHL_ZF_LEISTUNG_GESAMT" xml:space="preserve">
+    <value>Total power</value>
+  </data>
+  <data name="AUSWAHL_ZF_ALBEDO" xml:space="preserve">
+    <value>Albedo</value>
+  </data>
+  <data name="AUSWAHL_ZF_ERTRAGSMODELL" xml:space="preserve">
+    <value>Yield model</value>
   </data>
   <data name="AUSWAHL_ZF_FLAECHE" xml:space="preserve">
     <value>Area</value>

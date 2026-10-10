@@ -364,9 +364,14 @@ public sealed class GrundlagenknopfTests : EposBunitContext
     {
         var gezeichnet = AusHuelle(Komponente(komponente), Gaben(komponente));
         // Katalogauswahl V1 (KA-E-11): Die Hilfe zum Wechselrichter steht in der Überlagerung
-        // „Stränge und Wechselrichter…" des Photovoltaikdialogs - sie wird dafür geöffnet.
+        // „Stränge und Wechselrichter…" des Photovoltaikdialogs - sie wird dafür geöffnet. Ihr Knopf
+        // steht im Satzfragment, und das zeichnet seit UeS2 nur die Satz-Überlagerung.
         if (komponente == "PhotovoltaikDialog" && schluessel.StartsWith("Form_PV_Wechselrichter", StringComparison.Ordinal))
+        {
+            var baustein = gezeichnet.FindComponent<EPOS.UI.Bausteine.Zweispaltenauswahl>();
+            gezeichnet.InvokeAsync(() => baustein.Instance.SatzUeberlagerungOeffnen()).GetAwaiter().GetResult();
             gezeichnet.Find(".epos-knopf--straenge").Click();
+        }
         BerechnungshilfeTests.SatzUeberlagerungOeffnen(gezeichnet, komponente);
 
         string[] imDialog = gezeichnet.FindComponents<InfoKnopf>().Select(k => k.Instance.Schluessel).ToArray();

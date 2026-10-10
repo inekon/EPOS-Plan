@@ -12569,9 +12569,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="HZK_LBL_ALLE_DATEN" xml:space="preserve">
     <value>Alle Daten anzeigen</value>
   </data>
-  <data name="HZK_BTN_FELDER_SPEICHERN" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Modul</value>
   </data>
@@ -50262,6 +50259,15 @@ Chart</value>
   </data>
   <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
     <value>Anzahl</value>
+  </data>
+  <data name="AUSWAHL_ZF_LEISTUNG_GESAMT" xml:space="preserve">
+    <value>Leistung gesamt</value>
+  </data>
+  <data name="AUSWAHL_ZF_ALBEDO" xml:space="preserve">
+    <value>Albedo</value>
+  </data>
+  <data name="AUSWAHL_ZF_ERTRAGSMODELL" xml:space="preserve">
+    <value>Ertragsmodell</value>
   </data>
   <data name="AUSWAHL_ZF_FLAECHE" xml:space="preserve">
     <value>Fläche</value>

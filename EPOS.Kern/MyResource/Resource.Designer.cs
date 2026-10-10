@@ -3237,6 +3237,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Albedo ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ALBEDO {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ALBEDO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_ANZAHL {
@@ -3278,6 +3287,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_BRENNWERT {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_BRENNWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertragsmodell ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_ERTRAGSMODELL {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_ERTRAGSMODELL", resourceCulture);
             }
         }
         
@@ -3341,6 +3359,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_LEISTUNG {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung gesamt ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_LEISTUNG_GESAMT {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG_GESAMT", resourceCulture);
             }
         }
         
@@ -41993,15 +42020,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZK_BTN_BEARBEITEN {
             get {
                 return ResourceManager.GetString("HZK_BTN_BEARBEITEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
-        /// </summary>
-        public static string HZK_BTN_FELDER_SPEICHERN {
-            get {
-                return ResourceManager.GetString("HZK_BTN_FELDER_SPEICHERN", resourceCulture);
             }
         }
         
