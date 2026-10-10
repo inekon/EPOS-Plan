@@ -1156,6 +1156,19 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt** — keine gesäte Spalte eines Referenzprojekts ändert ihren Wert, keine Einfrierregel ist berührt, kein Leser der
 > Simulation fragt die neuen Spalten.
 
+> **Nachtrag — Testdatenbank auf 211 (Katalogfelder der Kälteerzeuger, K-A), Basis R51 unberührt.**
+> `KaelteKatalogfelderSchema` (211 = `KaeltemaschineTeillastSchema.SCHRITT + 1`) legt an `Tab_Kaeltemaschine_STAMM` und
+> `Tab_Kaeltemaschine` je fünf nullbare Spalten mit Prüfklausel an (`Geraeteart`, `Kaeltemittel_GWP`,
+> `Kaeltemittel_Fuellmenge_kg`, `Saisonkennzahl_Art`, `Saisonkennzahl`) und füllt die Geräteart nach der Rückkühlart
+> zurück (LUFT → `KWS_LUFT`, sonst `KWS_WASSER`): 37 Katalogsätze (12/25), die drei Projektkopien von 1055, 1059 und
+> 1063 (`KWS_WASSER`), 37 Prüfsummen neu. Gehoben aus dem Stand 210 (`3b9097b6…`) mit `Werkzeuge/Testdatenbankschema`;
+> der Zellvergleich zeigt nur `Tab_Applikation.SchemaVersion` und `Tab_Kaeltemaschine_STAMM`, die Projektkopien
+> unterscheiden sich nur um die Zusatzspalten. Die Testdatenbank steht auf **211** (`quick_check` ok,
+> `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen): **95 596 544 Byte, LFS-SHA-256
+> `ee2ba997bc37518e96a53391a6e0f23d45c80c9a58e9e5c5107e81841f0b76ce`**. **Die Basis `2026-10-10_R51_FreieKuehlung`
+> bleibt** — kein Rechenweg liest die Spalten; die Kältemaschinenprojekte 1017, 1055, 1059, 1063 und 1064 rechnen
+> byte-gleich ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_K-A_Katalogfelder_Kaelte.md)).
+
 ### Die Vorgängerbasis R50 (Wochentagsraster)
 
 Achtundzwanzig Projekte, 911 CSV, 6 336 Skalare, auf Linux eingefroren gegen die Testdatenbank `32af2d32…`

@@ -141,7 +141,10 @@ namespace WindowsFormsApplication1
         {
             // KaeltemaschineTeillastSchema (Schritt 210): die acht Eingabespalten haengen hinten an; leer tragen sie nichts
             // zur Pruefsumme bei, eine Datenbank vor dem Schritt fuehrt sie nicht (Katalogfassung.VorhandeneFachspalten).
-            Fachspalten = Grundspalten.Concat(KaeltemaschineTeillastSchema.EINGABESPALTEN).ToArray();
+            // KaelteKatalogfelderSchema (Schritt 211): Geraeteart, GWP, Fuellmenge und saisonale Kennzahl haengen dahinter an;
+            // die Rueckfuellung belegt die Geraeteart jedes Satzes, der Schritt bildet die Pruefsumme neu.
+            Fachspalten = Grundspalten.Concat(KaeltemaschineTeillastSchema.EINGABESPALTEN)
+                                      .Concat(KaelteKatalogfelderSchema.FELDSPALTEN).ToArray();
         }
 
         /// <summary>Die Fachspalten der Kennlinie (ohne <c>ID</c>, Fremdschlüssel, <c>ID_Projekt</c>, <c>ReadOnly</c>).</summary>

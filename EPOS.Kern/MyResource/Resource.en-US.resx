@@ -51414,5 +51414,89 @@ chart</value>
   <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
     <value>The file cannot be read with these settings: {0}</value>
   </data>
+  <data name="KM_MSG_GERAETEART_UNGUELTIG" xml:space="preserve">
+    <value>The unit type is unknown.</value>
+  </data>
+  <data name="KM_MSG_GERAETEART_RUECKKUEHLART" xml:space="preserve">
+    <value>Unit type and heat rejection do not match: an air-cooled chiller rejects heat to air, a water-cooled one does not.</value>
+  </data>
+  <data name="KM_MSG_KAELTEMITTEL_UNGUELTIG" xml:space="preserve">
+    <value>GWP or charge of the refrigerant are outside the permitted range (GWP 0 to 30,000, charge above 0 up to 10,000 kg).</value>
+  </data>
+  <data name="KM_MSG_SAISONKENNZAHL_UNGUELTIG" xml:space="preserve">
+    <value>The seasonal efficiency needs type and value: SEER 1 to 20, ηs,c 50 to 800 %.</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_LUFT" xml:space="preserve">
+    <value>Air-cooled chiller</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_WASSER" xml:space="preserve">
+    <value>Water-cooled chiller</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_FREIKUEHLUNG" xml:space="preserve">
+    <value>Chiller with free cooling</value>
+  </data>
+  <data name="KM_GERAETEART_SPLIT" xml:space="preserve">
+    <value>Split unit</value>
+  </data>
+  <data name="KM_GERAETEART_MULTISPLIT" xml:space="preserve">
+    <value>Multi-split unit</value>
+  </data>
+  <data name="KM_GERAETEART_VRF" xml:space="preserve">
+    <value>VRF system</value>
+  </data>
+  <data name="KM_GERAETEART_ABSORPTION" xml:space="preserve">
+    <value>Absorption chiller</value>
+  </data>
+  <data name="KM_GERAETEART_AUS_RUECKKUEHLUNG" xml:space="preserve">
+    <value>from heat rejection</value>
+  </data>
+  <data name="KM_LBL_GERAETEART" xml:space="preserve">
+    <value>Unit type</value>
+  </data>
+  <data name="KM_LBL_GWP" xml:space="preserve">
+    <value>Refrigerant GWP</value>
+  </data>
+  <data name="KM_LBL_FUELLMENGE" xml:space="preserve">
+    <value>Refrigerant charge</value>
+  </data>
+  <data name="KM_LBL_SAISON_ART" xml:space="preserve">
+    <value>Seasonal efficiency</value>
+  </data>
+  <data name="KM_LBL_SAISONKENNZAHL" xml:space="preserve">
+    <value>Seasonal efficiency value</value>
+  </data>
+  <data name="KM_EINHEIT_KG" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="KM_SAISON_ART_KEINE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="KM_SAISON_SEER" xml:space="preserve">
+    <value>SEER</value>
+  </data>
+  <data name="KM_SAISON_ETA_S_C" xml:space="preserve">
+    <value>ηs,c [%]</value>
+  </data>
+  <data name="KFLT_SP_GERAETEART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="KFLT_LT_GERAETEART" xml:space="preserve">
+    <value>Unit type</value>
+  </data>
+  <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
+    <value>Unit type of the cooling generator (air- or water-cooled chiller, with free cooling, split, multi-split, VRF, absorption); empty = from heat rejection.</value>
+  </data>
+  <data name="KI_DLG_KM_GWP_ERL" xml:space="preserve">
+    <value>Global warming potential (GWP, 100 years) of the refrigerant; descriptive, no emission is calculated.</value>
+  </data>
+  <data name="KI_DLG_KM_FUELLMENGE_ERL" xml:space="preserve">
+    <value>Refrigerant charge in kg.</value>
+  </data>
+  <data name="KI_DLG_KM_SAISON_ART_ERL" xml:space="preserve">
+    <value>Type of seasonal efficiency: SEER or ηs,c; only together with the value.</value>
+  </data>
+  <data name="KI_DLG_KM_SAISONKENNZAHL_ERL" xml:space="preserve">
+    <value>Value of the seasonal efficiency: SEER 1 to 20 or ηs,c 50 to 800 %.</value>
+  </data>
 </root>
 

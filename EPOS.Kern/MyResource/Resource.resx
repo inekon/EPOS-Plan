@@ -51421,5 +51421,89 @@ Chart</value>
   <data name="IMPORT_MSG_VORSCHAU_UNLESBAR" xml:space="preserve">
     <value>Mit diesen Einstellungen ist die Datei nicht lesbar: {0}</value>
   </data>
+  <data name="KM_MSG_GERAETEART_UNGUELTIG" xml:space="preserve">
+    <value>Die Geräteart ist unbekannt.</value>
+  </data>
+  <data name="KM_MSG_GERAETEART_RUECKKUEHLART" xml:space="preserve">
+    <value>Geräteart und Rückkühlart passen nicht zusammen: Ein luftgekühlter Kaltwassersatz rückkühlt mit Luft, ein wassergekühlter nicht.</value>
+  </data>
+  <data name="KM_MSG_KAELTEMITTEL_UNGUELTIG" xml:space="preserve">
+    <value>GWP oder Füllmenge des Kältemittels liegen außerhalb des zulässigen Bereichs (GWP 0 bis 30 000, Füllmenge größer 0 bis 10 000 kg).</value>
+  </data>
+  <data name="KM_MSG_SAISONKENNZAHL_UNGUELTIG" xml:space="preserve">
+    <value>Die saisonale Kennzahl braucht Art und Wert: SEER 1 bis 20, ηs,c 50 bis 800 %.</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_LUFT" xml:space="preserve">
+    <value>Kaltwassersatz luftgekühlt</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_WASSER" xml:space="preserve">
+    <value>Kaltwassersatz wassergekühlt</value>
+  </data>
+  <data name="KM_GERAETEART_KWS_FREIKUEHLUNG" xml:space="preserve">
+    <value>Kaltwassersatz mit Freikühlung</value>
+  </data>
+  <data name="KM_GERAETEART_SPLIT" xml:space="preserve">
+    <value>Splitgerät</value>
+  </data>
+  <data name="KM_GERAETEART_MULTISPLIT" xml:space="preserve">
+    <value>Multisplitgerät</value>
+  </data>
+  <data name="KM_GERAETEART_VRF" xml:space="preserve">
+    <value>VRF-System</value>
+  </data>
+  <data name="KM_GERAETEART_ABSORPTION" xml:space="preserve">
+    <value>Absorptionskältemaschine</value>
+  </data>
+  <data name="KM_GERAETEART_AUS_RUECKKUEHLUNG" xml:space="preserve">
+    <value>nach der Rückkühlart</value>
+  </data>
+  <data name="KM_LBL_GERAETEART" xml:space="preserve">
+    <value>Geräteart</value>
+  </data>
+  <data name="KM_LBL_GWP" xml:space="preserve">
+    <value>GWP des Kältemittels</value>
+  </data>
+  <data name="KM_LBL_FUELLMENGE" xml:space="preserve">
+    <value>Füllmenge</value>
+  </data>
+  <data name="KM_LBL_SAISON_ART" xml:space="preserve">
+    <value>Saisonale Kennzahl</value>
+  </data>
+  <data name="KM_LBL_SAISONKENNZAHL" xml:space="preserve">
+    <value>Wert der saisonalen Kennzahl</value>
+  </data>
+  <data name="KM_EINHEIT_KG" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="KM_SAISON_ART_KEINE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="KM_SAISON_SEER" xml:space="preserve">
+    <value>SEER</value>
+  </data>
+  <data name="KM_SAISON_ETA_S_C" xml:space="preserve">
+    <value>ηs,c [%]</value>
+  </data>
+  <data name="KFLT_SP_GERAETEART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="KFLT_LT_GERAETEART" xml:space="preserve">
+    <value>Geräteart</value>
+  </data>
+  <data name="KI_DLG_KM_GERAETEART_ERL" xml:space="preserve">
+    <value>Geräteart des Kälteerzeugers (Kaltwassersatz luft- oder wassergekühlt, mit Freikühlung, Split, Multisplit, VRF, Absorption); leer = nach der Rückkühlart.</value>
+  </data>
+  <data name="KI_DLG_KM_GWP_ERL" xml:space="preserve">
+    <value>Treibhauspotenzial (GWP, 100 Jahre) des Kältemittels; beschreibend, rechnet keine Emission.</value>
+  </data>
+  <data name="KI_DLG_KM_FUELLMENGE_ERL" xml:space="preserve">
+    <value>Füllmenge des Kältemittels in kg.</value>
+  </data>
+  <data name="KI_DLG_KM_SAISON_ART_ERL" xml:space="preserve">
+    <value>Art der saisonalen Kennzahl: SEER oder ηs,c; nur zusammen mit dem Wert.</value>
+  </data>
+  <data name="KI_DLG_KM_SAISONKENNZAHL_ERL" xml:space="preserve">
+    <value>Wert der saisonalen Kennzahl: SEER 1 bis 20 oder ηs,c 50 bis 800 %.</value>
+  </data>
 </root>
 

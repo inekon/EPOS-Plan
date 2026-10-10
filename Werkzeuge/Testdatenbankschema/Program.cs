@@ -3349,6 +3349,25 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt " + nrKm3 + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrKm3 + " - vollstaendig: " + KaeltemaschineTeillastSchema.Vollstaendig() + " (erwartet True).");
             }
+
+            // ---- Schritt KaelteKatalogfelderSchema.SCHRITT (K-A): Geraeteart, GWP, Fuellmenge und saisonale Kennzahl an
+            //      Tab_Kaeltemaschine_STAMM und Tab_Kaeltemaschine, die Geraeteart nach der Rueckkuehlart rueckgefuellt
+            //      (Katalog samt Pruefsumme, Projektkopien). Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KaelteKatalogfelder.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Spalten.
+            string nrKkf = KaelteKatalogfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKkf + " - Katalogfelder der Kaelteerzeuger: " +
+                              (KaelteKatalogfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKkf = new List<string>();
+                angelegt += KaelteKatalogfelderSchema.Ausfuehren(berichtKkf).Angelegt;
+                foreach (string zeile in berichtKkf)
+                    Console.WriteLine("Schritt " + nrKkf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKkf + " - vollstaendig: " + KaelteKatalogfelderSchema.Vollstaendig() +
+                                  ", ohne Geraeteart: " + KaelteKatalogfelderSchema.ZeilenOhneGeraeteart() + " (erwartet True, 0).");
+            }
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

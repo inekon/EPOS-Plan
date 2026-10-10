@@ -290,6 +290,7 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(m.Rueckkuehlart)) m.Rueckkuehlart = KaeltemaschineSchema.RUECKKUEHLART_LUFT;
             KaeltemaschinenKennfeld.NennwerteErgaenzen(m);
             TeillastAnpassen(e, m, teillast);
+            KatalogfelderAnpassen(e, m);
             e.Geraete.Add(m);
         }
 
@@ -339,6 +340,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Katalogfelder eines Geräts (K-A): fehlt die Geräteart, gilt die Rückfüllregel aus der Rückkühlart
+        /// (<see cref="KaelteKatalogfelderSchema.GeraeteartAusRueckkuehlart"/>); verwirft die Prüfung die Felder, bleiben
+        /// GWP, Füllmenge und saisonale Kennzahl leer und die Geräteart folgt der Regel — mit Hinweis.
+        /// </summary>
+        private static void KatalogfelderAnpassen(Ergebnis e, KaeltemaschineModel m)
+        {
+            m.Geraeteart = KaelteKatalogfelderSchema.GeraeteartWirksam(m.Geraeteart, m.Rueckkuehlart);
+            string grund = KaeltemaschineStammCtrl.KatalogfelderPruefen(m);
+            if (grund == null) return;
+            e.Hinweise.Add(m.Bezeichner + ": " + grund);
+            m.Geraeteart = KaelteKatalogfelderSchema.GeraeteartAusRueckkuehlart(m.Rueckkuehlart);
+            m.Kaeltemittel_GWP = m.Kaeltemittel_Fuellmenge_kg = m.Saisonkennzahl = null;
+            m.Saisonkennzahl_Art = null;
+        }
+
         private static bool KopfSetzen(KaeltemaschineModel m, string schluessel, string wert, char trenn)
         {
             switch (schluessel)
@@ -361,6 +378,23 @@ namespace WindowsFormsApplication1
                 case "MINDESTTEILLAST": case "MINDESTTEILLAST_PROZENT":
                     m.Mindestteillast_Prozent = Zahl(wert, trenn);
                     return m.Mindestteillast_Prozent.HasValue || wert.Length == 0;
+                // ---- Katalogfelder (K-A); leer = Rueckfuellregel bzw. keine Angabe ----
+                case "GERAETEART":
+                    return Auswahl(wert, KaelteKatalogfelderSchema.GERAETEARTEN, w => m.Geraeteart = w);
+                case "GWP": case "KAELTEMITTEL_GWP":
+                    m.Kaeltemittel_GWP = Zahl(wert, trenn);
+                    return m.Kaeltemittel_GWP.HasValue || wert.Length == 0;
+                case "FUELLMENGE": case "KAELTEMITTEL_FUELLMENGE": case "KAELTEMITTEL_FUELLMENGE_KG": case "FUELLMENGE_KG":
+                    m.Kaeltemittel_Fuellmenge_kg = Zahl(wert, trenn);
+                    return m.Kaeltemittel_Fuellmenge_kg.HasValue || wert.Length == 0;
+                case "SEER":
+                    m.Saisonkennzahl = Zahl(wert, trenn);
+                    m.Saisonkennzahl_Art = m.Saisonkennzahl.HasValue ? KaelteKatalogfelderSchema.SAISON_SEER : null;
+                    return m.Saisonkennzahl.HasValue || wert.Length == 0;
+                case "ETA_S_C":
+                    m.Saisonkennzahl = Zahl(wert, trenn);
+                    m.Saisonkennzahl_Art = m.Saisonkennzahl.HasValue ? KaelteKatalogfelderSchema.SAISON_ETA_S_C : null;
+                    return m.Saisonkennzahl.HasValue || wert.Length == 0;
                 // ---- Teillast und Takten (KM3, Fachkonzept 4.1 und 4.3); leer = Vorgabe ----
                 case "TEILLAST_WEG":
                     return Auswahl(wert, KaeltemaschineTeillastSchema.TEILLAST_WEGE, w => m.Teillast_Weg = w);

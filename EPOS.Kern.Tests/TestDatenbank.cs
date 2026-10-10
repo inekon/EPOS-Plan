@@ -1014,6 +1014,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): Teillast und Takten an Katalog, Projektkopie und Ergebnis
                 // der Kaeltemaschine, leer; Ergaenzung der Typkennfelder. Wiederholbar.
                 KaeltemaschineTeillastSchema.Ausfuehren(null);
+                // Schritt KaelteKatalogfelderSchema.SCHRITT (K-A): Geraeteart, GWP, Fuellmenge, saisonale Kennzahl an Katalog und
+                // Projektkopie, die Geraeteart nach der Rueckkuehlart rueckgefuellt. Wiederholbar.
+                KaelteKatalogfelderSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -193,7 +193,7 @@ VDI 3805 Blätter 6, 18, 22, 27, 37.
 
 | Stufe | Inhalt | Recherche-Stufe | Kern | Schema | Oberfläche | Basiswirkung | Aufwand | hängt an |
 |---|---|---|---|---|---|---|---|---|
-| **K-A** | Katalogfelder Geräteart, Hersteller, Kältemittel (mit GWP-Feld), saisonale Kennzahl | 4 (teilweise) | Prüfregeln im Stammcontroller, Prüfsumme der Katalogfassung | Schemaschritt: `Geraeteart` (Wertemenge), `Kaeltemittel_GWP`, `SEER`/`Eta_s_c` an `Tab_Kaeltemaschine(_STAMM)`; Geräteart der 37 Sätze nachtragen | Spalten und Filter im Katalogdialog; Filter in der Kälte-Kachel | keine (nur `_STAMM` und neue leere Projektspalten) | 2–3 PT | Entscheid §14 für das Stammdatum (Frage 3) |
+| **K-A** — gebaut ([Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_K-A_Katalogfelder_Kaelte.md), Schemaschritt 211) | Katalogfelder Geräteart, Hersteller, Kältemittel (mit GWP-Feld), saisonale Kennzahl | 4 (teilweise) | Prüfregeln im Stammcontroller, Prüfsumme der Katalogfassung | Schemaschritt: `Geraeteart` (Wertemenge), `Kaeltemittel_GWP`, `SEER`/`Eta_s_c` an `Tab_Kaeltemaschine(_STAMM)`; Geräteart der 37 Sätze nachtragen | Spalten und Filter im Katalogdialog; Filter in der Kälte-Kachel | keine (nur `_STAMM` und neue leere Projektspalten) | 2–3 PT | Entscheid §14 für das Stammdatum (Frage 3) |
 | **K-B** | Neutraler Startkatalog aus offenen Kurven erweitern (EnergyPlus `Chillers.idf`, `AirCooledChiller.idf`), Auswahlregel je Rückkühlart × Verdichter × Leistungsklasse | 1 (Ausbau) | IDF-Leser in der Importart Kältemaschine | Schemaschritt mit neuen ReadOnly-Typkennfeldern | keine neue | keine | 2–3 PT | K-A; Lizenzprüfung EnergyPlus |
 | **K-C** | Importvarianten der CSV-Vorlage: „Nennwerte allein“, „Ökodesign-Datenblatt A–D“ (Teillastpunkte → Teillastkurve und Taktkennwert, Kennfeld aus Typkennfeld skaliert), Skalierung eines Typkennfelds auf den Nennpunkt; Herkunftscodes; Eintrag „Kältemaschinen“ im Menü „Daten & Import“ | 1, 2 (Rest) | Leser und Umrechnung A–D in der Importart | keines | Menüpunkt, Leseprotokoll | keine | 2–3 PT | K-A |
 | **K-D** | Split und Multisplit als neue Anlagenart: Erzeuger ohne Kaltwasser, Kennfeld Außenluft × Raumluft (Teillast A–D), Übergabe „Umluftgerät am Raum“ ohne Kanal, Zuordnung Außengerät ↔ Zonen, Kombinationsfaktor | 5 | neuer Erzeugerzweig in der Kältekaskade, neue Übergabeart neben `Kuehluebergabe`, Deckung je Zone | neue Anlagenart in `Tab_Typ_Energieanlagen`, `Tab_Klimageraet(_STAMM)` mit Kennfeld, Zuordnung Gerät ↔ Zone; Register in der Katalogfassung | Katalogdialog, Erzeugerdialog, Kälte-Bereich, Bericht | neues Referenzprojekt → neue Basis; bestehende Projekte bitgleich | 18–26 PT | Entscheid §14 (Frage 3), K-A |
@@ -206,7 +206,7 @@ Summe ohne K-G: rund 42–63 PT; der Teil für die vorhandenen Kaltwassersätze 
 
 ### 5.2 Erläuterung je Stufe
 
-**K-A Katalogfelder.** `Typ` bleibt Freitext; die Geräteart wird eine Wertemenge (Kaltwassersatz luftgekühlt,
+**K-A Katalogfelder** — gebaut ([Protokoll](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_K-A_Katalogfelder_Kaelte.md); Schemaschritt 211, Entscheid E118). `Typ` bleibt Freitext; die Geräteart wird eine Wertemenge (Kaltwassersatz luftgekühlt,
 Kaltwassersatz wassergekühlt, Kaltwassersatz mit Freikühlung, später Split, Multisplit, VRF, Absorption),
 neue Spalten mit `CHECK`. Firma füllen nur Anwenderimporte; die ausgelieferten Typkennfelder bleiben ohne
 Firma. Das GWP-Feld beschreibt, rechnet aber keine Emission (direkte Wirkung bleibt nach §14 ausgeschlossen);
