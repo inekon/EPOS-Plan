@@ -281,7 +281,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(projekt.Wirksam,
                          KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude, projekt).Kalender);
             Assert.Equal(2024, KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude,
-                                                                   projekt with { Raster = Gemeinjahrkalender.Aus(projekt.Wirksam.W0, 2024) })
+                                                                   projekt with { Raster = Gemeinjahrkalender.Kalenderjahr(2024) })
                                                     .Feiertagsjahr);
             KonditionierungHuelle.Bezug katalog = KonditionierungHuelle.Projektbezug(0);
             Assert.Null(katalog.Stufe);

@@ -188,7 +188,7 @@ namespace EPOS.Kern.Tests
                                                  Kalenderangabe.AusWoche(w), null, null);
             for (int w0 = 0; w0 < 7; w0++)
             {
-                double[] r = k.Auswerten(w0, JAHR);
+                double[] r = k.Auswerten(w0, 0);
                 for (int d = 0; d < 365; d++)
                     Assert.Equal((w0 + d) % 7, (int)Math.Floor(r[d * 24]));
             }
@@ -207,7 +207,7 @@ namespace EPOS.Kern.Tests
                     Kalenderregel.Zeitraum(900, DbWerte.KOND_ART_BETRIEBSPAUSE, "Pause", 155, 156,
                                            Kalenderangabe.Abgeschaltet),
                 });
-            double[] r = k.Auswerten(0, JAHR);
+            double[] r = k.Auswerten(2, JAHR);
             Assert.Equal(20.0, r[50 * 24]);                       // keine Periode
             Assert.Equal(18.0, r[110 * 24]);                      // Rang 100
             Assert.Equal(16.0, r[152 * 24]);                      // Rang 300 über Rang 100
@@ -241,7 +241,7 @@ namespace EPOS.Kern.Tests
                     Kalenderregel.Zeitraum(400, DbWerte.KOND_ART_ZEITRAUM, "Brückentag", 123, 123,
                                            Kalenderangabe.Abgeschaltet),
                 });
-            double[] r = k.Auswerten(0, JAHR);
+            double[] r = k.Auswerten(2, JAHR);
             Assert.Equal(20.0, r[121 * 24]);
             for (int s = 0; s < 24; s++) Assert.True(double.IsNaN(r[122 * 24 + s]));
             Assert.Equal(20.0, r[123 * 24]);

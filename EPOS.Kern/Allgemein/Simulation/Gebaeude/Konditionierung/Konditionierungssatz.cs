@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para>Unveränderlich, ohne Datenbank. Die Feiertagsregeln liegen nach der Konvention
     /// <see cref="Feiertagskalender"/> (E114): im Regelfall ohne Jahr nach dem Wochentagsraster w₀, mit einer
-    /// Preisreihe nach deren Jahr.</para>
+    /// Preisreihe nach dem Kalender ihres Jahres (E115).</para>
     /// </summary>
     public sealed class Konditionierungssatz
     {
@@ -28,8 +28,10 @@ namespace WindowsFormsApplication1
         /// Baut den Satz.
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀ aus der Wochenendmaske des Ortszeit-Kalenders (U7), 0 = Montag.</param>
-        /// <param name="referenzjahr">Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr (E114).</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe; 0 = Regelfall ohne Jahr (E114). Mit Jahr ist w₀ das
+        /// dieses Jahres (E115, <see cref="Gemeinjahrkalender.Aus"/>).</param>
         /// <exception cref="ArgumentOutOfRangeException">w₀ außerhalb 0 … 6 oder ein unmögliches Jahr.</exception>
+        /// <exception cref="ArgumentException">Ein Jahr mit fremdem w₀.</exception>
         public Konditionierungssatz(int wochentagDesErstenTags, int referenzjahr)
         {
             if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
@@ -38,6 +40,7 @@ namespace WindowsFormsApplication1
             if (referenzjahr != 0 && (referenzjahr < 1583 || referenzjahr > 9999))
                 throw new ArgumentOutOfRangeException(nameof(referenzjahr),
                     "Das Referenzjahr ist 0 (kein Jahr) oder liegt zwischen 1583 und 9999 (das Osterdatum ist gregorianisch).");
+            if (referenzjahr != 0) Gemeinjahrkalender.Aus(wochentagDesErstenTags, referenzjahr);   // prüft das Raster des Jahres
             WochentagDesErstenTags = wochentagDesErstenTags;
             Referenzjahr = referenzjahr;
         }
@@ -52,7 +55,7 @@ namespace WindowsFormsApplication1
         public int Referenzjahr { get; }
 
         /// <summary>Die Konvention der Feiertagslage: Raster w₀ und Jahr (<see cref="Gemeinjahrkalender"/>).</summary>
-        public Gemeinjahrkalender Feiertagskalender => new Gemeinjahrkalender(WochentagDesErstenTags, Referenzjahr);
+        public Gemeinjahrkalender Feiertagskalender => Gemeinjahrkalender.Aus(WochentagDesErstenTags, Referenzjahr);
 
         /// <summary>Trägt der Satz überhaupt einen Kalender? <c>false</c> heißt: wörtlich der Bestandszweig.</summary>
         public bool Wirksam { get; private set; }

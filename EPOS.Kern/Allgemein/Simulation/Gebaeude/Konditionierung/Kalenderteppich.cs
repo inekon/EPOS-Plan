@@ -197,12 +197,12 @@ namespace WindowsFormsApplication1
         /// <exception cref="ArgumentOutOfRangeException">w₀ liegt außerhalb 0 … 6.</exception>
         public static Kalenderteppich Bilden(Konditionierungskalender kalender, int wochentagDesErstenTags,
                                              int bezugsjahr)
-            => Bilden(kalender, new Gemeinjahrkalender(wochentagDesErstenTags, bezugsjahr), bezugsjahr);
+            => Bilden(kalender, Gemeinjahrkalender.Aus(wochentagDesErstenTags, bezugsjahr), bezugsjahr);
 
         /// <summary>
         /// <b>Der Teppich im Gemeinjahr</b> (E115): das Wochentagsraster des Laufs
-        /// (<see cref="Konditionierungdatenweg.Raster(int)"/>) — w₀ und, nur mit Preisreihe, deren Jahr für die
-        /// Feiertage; ohne Jahr liegen die Feiertage nach der Konvention <see cref="Gemeinjahrkalender"/>.
+        /// (<see cref="Konditionierungdatenweg.Raster(int)"/>) — w₀ der Klimaregion, mit Preisreihenjahr Raster und
+        /// Feiertage dieses Jahres; ohne Jahr liegen die Feiertage nach der Konvention <see cref="Gemeinjahrkalender"/>.
         /// </summary>
         public static Kalenderteppich ImGemeinjahr(Konditionierungskalender kalender, Gemeinjahrkalender raster)
             => Bilden(kalender, raster, raster.Jahr);

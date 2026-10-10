@@ -576,7 +576,9 @@ namespace WindowsFormsApplication1
         /// <param name="idProjekt">Projekt; 0 = ohne Projektbezug (keine Jahressummen-Skalierung).</param>
         /// <param name="namen">Zu rechnende Profile (Vorschau); <c>null</c> = die Zuordnungszeilen des
         /// Projekts, je Zeile über die ID (<see cref="ProfilQuelle.ZuordnungIdSpalte"/>).</param>
-        /// <param name="wochentagJan1">Wochentag des 1. Januar, Montag = 0 … Sonntag = 6 (F3).</param>
+        /// <param name="wochentagJan1">Wochentag des 1. Januar im Raster der Klimaregion, Montag = 0 … Sonntag = 6
+        /// (F3). Trägt das Projekt eine Preisreihe mit Jahr, gilt stattdessen das Raster dieses Jahres
+        /// (<see cref="Konditionierungdatenweg.Raster(int, int)"/>, E115).</param>
         /// <param name="moAnfang">Stundenindex des Monatsanfangs (12 Werte).</param>
         /// <param name="moEnde">Stundenindex des Monatsendes, inklusive (12 Werte).</param>
         /// <param name="ziel">Zielvektor [8760], wird AUFADDIERT.</param>
@@ -620,7 +622,13 @@ namespace WindowsFormsApplication1
             // gegen das Referenzjahr des Projekts aufgelöst. Ohne Kalender bleibt beides leer.
             var kalender = new Dictionary<int, Betriebskalender>();
             var tagesarten = new Dictionary<int, byte[]>();
-            int? feiertagsjahr = null;   // Jahr der Preisreihe, 0 = Regelfall ohne Jahr (E114); einmal je Lauf gelesen
+
+            // Das eine Wochentagsraster des Projekts (E115) — dieselbe Auflösung wie Gebäudelauf und Zapfkalender:
+            // ohne Preisreihenjahr w₀ der Klimaregion, mit ihm der Kalender des Jahres, für Kachelung und Feiertage.
+            Gemeinjahrkalender raster = liste.Count > 0
+                ? Konditionierungdatenweg.Raster(idProjekt, wochentagJan1)
+                : default;
+            if (liste.Count > 0) wochentagJan1 = raster.W0;
 
             for (int k = 0; k < liste.Count; k++)
             {
@@ -755,9 +763,7 @@ namespace WindowsFormsApplication1
                 {
                     if (!tagesarten.TryGetValue(kal.ID, out byte[] arten))
                     {
-                        // Das eine Wochentagsraster des Projekts (E115) — dieselbe Auflösung wie Gebäudelauf und Zapfkalender.
-                        feiertagsjahr ??= Konditionierungdatenweg.Raster(idProjekt, wochentagJan1).Jahr;
-                        arten = kal.Tagesarten(new Gemeinjahrkalender(wochentagJan1, feiertagsjahr.Value));
+                        arten = kal.Tagesarten(raster);
                         tagesarten[kal.ID] = arten;
                     }
                     if (!Betriebskalenderschicht.WocheZuJahr(wochenwerte, monatswerte, jahreswerte,

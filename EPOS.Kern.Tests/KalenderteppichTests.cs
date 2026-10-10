@@ -213,7 +213,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(2025, 2)]
         [InlineData(2024, 0)]
-        [InlineData(2026, 5)]
+        [InlineData(2027, 4)]
         public void Ohne_aus_ist_die_Rohreihe_Auswerten_Stunde_fuer_Stunde(int jahr, int w0)
         {
             Konditionierungskalender ohneAus = BueroHeizen(mitSaison: false);
@@ -276,9 +276,11 @@ namespace EPOS.Kern.Tests
             var aus = new Konditionierungskalender(Konditionierungsgroesse.Kuehlsoll, Kalenderangabe.Abgeschaltet, null, null);
             Assert.All(Kalenderteppich.Bilden(aus, JAHR).Rohreihe, v => Assert.True(double.IsNaN(v)));
 
-            Assert.Throws<ArgumentNullException>(() => Kalenderteppich.Bilden(null, 0, JAHR));
-            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, 7, JAHR));
-            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, -1, JAHR));
+            Assert.Throws<ArgumentNullException>(() => Kalenderteppich.Bilden(null, 2, JAHR));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, 7, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, -1, 0));
+            // Ein Jahr trägt sein eigenes Raster (E115): 2025 beginnt an einem Mittwoch, nicht an einem Montag.
+            Assert.Throws<ArgumentException>(() => Kalenderteppich.Bilden(wert, 0, JAHR));
         }
 
         /// <summary>Zwei Quellen derselben Periode sind gleich; die Betriebspause ohne Saisonrang bleibt eine Betriebspause.</summary>

@@ -198,7 +198,7 @@ namespace EPOS.Kern.Tests
 
             // Der Feiertag liegt UNTER den Ferien: am 1. Januar gilt der Ferienwert.
             Assert.Equal("Ferien 1", b.Kalender.Quelle(0, REFERENZJAHR));
-            double[] reihe = b.Kalender.Auswerten(W0_MONTAG, REFERENZJAHR);
+            double[] reihe = b.Kalender.Auswerten(Gemeinjahrkalender.Kalenderjahr(REFERENZJAHR));
             Assert.Equal(12.0, reihe[0]);
             Assert.Equal(12.0, reihe[24 * 9]);          // 10. Januar, noch Ferien
             Assert.Equal(20.0, reihe[24 * 10]);         // 11. Januar, wieder Grundangabe

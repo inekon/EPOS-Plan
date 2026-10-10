@@ -65,7 +65,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Auskunftszeile: Feiertage und Ferientage im Gemeinjahr, im Rückfallraster des Katalogs
         /// (<see cref="Konditionierungdatenweg.Rueckfallraster"/>, E115) und ohne Jahr nach der Konvention
-        /// <see cref="Gemeinjahrkalender"/>; im Lauf gelten das Raster der Klimaregion und die Preisreihe des Projekts.
+        /// <see cref="Gemeinjahrkalender"/>; im Lauf gilt das Raster des Projekts (<see cref="Konditionierungdatenweg.Raster(int)"/>).
         /// </summary>
         internal static string Herleitung(BetriebskalenderDaten d)
         {
