@@ -20,7 +20,7 @@ Jede Variante gehört zu ihrem Stammprojekt. Bringen Sie das geöffnete Projekt 
 == Ablauf eines Berichtslaufs ==
 {{Anker|ablauf-eines-berichtslaufs|neu-rechnen|rechenkette}}
 
-Jeder Lauf rechnet neu, und zwar in dieser Reihenfolge: zuerst die frische Simulation aller gewählten Projekte, dann die Wirtschaftlichkeitsrechnung der gesamten Gruppe, erst danach die Bausteine des Dokuments. Word und Excel nehmen denselben Weg und weisen deshalb zwingend dieselben Zahlen aus. Vor dem Start nennt der Dialog die Zahl der neu zu simulierenden Projekte, denn der Lauf braucht Zeit.
+Jeder Lauf rechnet neu, und zwar in dieser Reihenfolge: zuerst die frische Simulation aller gewählten Projekte, dann die Wirtschaftlichkeitsrechnung der gesamten Gruppe, erst danach die Bausteine des Dokuments. Word und Excel nehmen denselben Weg und weisen deshalb zwingend dieselben Zahlen aus. Unter der Kostentafel nennt eine Fußzeile, wenn der Vergleich den Netzbezug einer Version ohne stromverwendenden Erzeuger bepreist und dabei den Leistungspreis des Stromträgers (und gegebenenfalls des Reststromtarifs) nicht ansetzt ([[Wirtschaftlichkeit#strommatrix|Strommatrix]]). Vor dem Start nennt der Dialog die Zahl der neu zu simulierenden Projekte, denn der Lauf braucht Zeit.
 
 {{Hinweis|Schlägt die Rechnung für ein Projekt fehl, bricht der Lauf nicht ab. Das betroffene Projekt erscheint mit Namen und Begründung in der Abschlussmeldung, in der Anhangtabelle der Simulationsstände und im Kapitel mit den Hinweisen zum Berichtslauf. Einen halben Bericht ohne Hinweis gibt es nicht.}}
 
