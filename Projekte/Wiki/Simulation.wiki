@@ -8,12 +8,12 @@ Eine Jahressimulation mit 8.760 Stundenwerten auf der Wärmeseite und 35.040 Vie
 == Konfiguration ==
 {{Anker|konfiguration|simulation-konfiguration}}
 
-In Schritt ''① Konfiguration'' legen Sie fest, welche Erzeuger an der Deckung teilnehmen und in welcher Reihenfolge sie herangezogen werden. ''Konfiguration speichern'' schreibt die Kaskade ins Projekt; ohne Speichern rechnet der Lauf den zuletzt gespeicherten Stand. Im Block ''Weitere Einstellungen'' stehen die Projekteinstellungen des Laufs, etwa Netzverluste, Anlagenkopplung, Einspeisegrenze und thermische Desinfektion.
+In Schritt ''① Konfiguration'' legen Sie fest, welche Erzeuger an der Deckung teilnehmen und in welcher Reihenfolge sie herangezogen werden. ''Konfiguration speichern'' schreibt die Kaskade ins Projekt; ohne Speichern rechnet der Lauf den zuletzt gespeicherten Stand. Im Block ''Weitere Einstellungen'' stehen die Projekteinstellungen des Laufs, etwa Netzverluste, ''Kühlung rechnen'', Anlagenkopplung, Einspeisegrenze, thermische Desinfektion und Aufheizoptimierung.
 
 === Erzeuger und Reihenfolge ===
 {{Anker|erzeuger-und-reihenfolge|prioritaet|kaskade}}
 
-Die Anlagen des Projekts stehen als Karten in der Spalte ''Wärmeerzeuger, Stromerzeuger und Energiespeicher'': vier Plätze der Wärmekaskade für Wärmepumpe, Heizkessel, BHKW und Solarthermie, dazu je ein Platz für Photovoltaik und Stromspeicher. Die Reihenfolge ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort. Eine noch nie gespeicherte Kaskade schlägt das Programm in der Folge Solarthermie, Wärmepumpe, BHKW, Heizkessel vor. ''Konfiguration…'' an einer Karte öffnet die Einstellungen der Anlage für den Lauf, etwa Betriebsart und untere Leistungsgrenze des BHKW oder Betriebsbereitschaft und Heizgrenze des Heizkessels. Die Konfiguration lässt sich als Liste der Karten oder als Anlagenschema zeigen.
+Die Anlagen des Projekts stehen als Karten in der Spalte ''Wärmeerzeuger, Stromerzeuger und Energiespeicher'': vier Plätze der Wärmekaskade für Wärmepumpe, Heizkessel, BHKW und Solarthermie, dazu je ein Platz für Photovoltaik und Stromspeicher. Die Reihenfolge ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort. Eine noch nie gespeicherte Kaskade schlägt das Programm in der Folge Solarthermie, Wärmepumpe, BHKW, Heizkessel vor. ''Konfiguration…'' an einer Karte öffnet die Einstellungen der Anlage für den Lauf, etwa Betriebsart und untere Leistungsgrenze des BHKW oder Betriebsbereitschaft und Heizgrenze des Heizkessels. Die Konfiguration lässt sich als Liste der Karten oder als Anlagenschema zeigen; rechnet das Projekt Kälte, führt das Schema unter der Wärmeseite eine eigene Bahn ''Kälte'' mit Rückkühlung oder Quelle, Kälteerzeugern, Kältespeichern und dem Kältekreis. Die Kälte-Kaskade belegt das Programm selbst: zuerst die Wärmepumpen im Kühlbetrieb, danach die Kältemaschinen.
 
 {{Hinweis|Nicht angekreuzte Bausteine des Projekts erscheinen hier nicht. Die Auswahl der Bausteine ändern Sie über {{Menü|Projekt|Bearbeiten…}}.}}
 
@@ -25,7 +25,7 @@ Die Anlagen des Projekts stehen als Karten in der Spalte ''Wärmeerzeuger, Strom
 === Übersicht der ausgewählten Erzeuger ===
 {{Anker|uebersicht-der-ausgewaehlten-erzeuger|uebersichtstabelle}}
 
-Zu jeder ausgewählten Anlage zeigt die Konfiguration die Wärmesenke, bei Wärmepumpen außerdem Wärmequelle, Betriebsmodus und die Priorität ''WP-Prio''. Ein Doppelklick auf einen dieser Einträge öffnet den zugehörigen Dialog.
+Zu jeder ausgewählten Anlage zeigt die Konfiguration die Wärmesenke, bei Wärmepumpen außerdem Wärmequelle, Betriebsmodus und die Priorität ''WP-Prio''. Ein Doppelklick auf einen dieser Einträge öffnet den zugehörigen Dialog; im Anlagenschema öffnet ein Doppelklick ebenso den Dialog eines Elements, auch auf der Kältebahn.
 
 == Ablauf auf der Wärmeseite ==
 {{Anker|ablauf-auf-der-waermeseite|waermeseite|restwaermebedarf}}
@@ -33,6 +33,8 @@ Zu jeder ausgewählten Anlage zeigt die Konfiguration die Wärmesenke, bei Wärm
 Die Jahressimulation arbeitet die Wärmeerzeuger in der konfigurierten Reihenfolge ab. Ausgangsgröße ist der Wärmebedarf jeder einzelnen Stunde. Der erste Erzeuger deckt davon so viel, wie es sein Kennfeld, seine Betriebsgrenzen und die Speichersituation zulassen; die verbleibende Restwärme geht an den nächsten Erzeuger.
 
 {{Hinweis|Was am Ende der Kette offenbleibt, wird als Restwärmebedarf ausgewiesen und zeigt an, wo die Auslegung nicht ausreicht.}}
+
+{{Anker|anlagenkopplung}}Mit der Projekteinstellung '''Anlagenkopplung''' rechnen Gebäude mit eingeschalteter Wärmeübergabe ihren Heizkreis: Bei ''Heizkreis (AK1)'' ergeben sich Vorlauf, Rücklauf und die Grenze der Übergabe aus dem Gebäude, und die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Bei ''geschlossener Kreis (AK3)'' wirkt zusätzlich in jeder Stunde die Leistung, die Erzeuger und Heizungspuffer liefern können, auf die Gebäude zurück; reicht sie nicht, sinkt die Raumtemperatur. Sperrzeiten, Zeitprogramm und höchster Vorlauf der Wärmepumpe wirken mit der Kopplung als Fahrplan auf die gekoppelten Gebäude; das Ergebnis zählt die Folgen als Komfortstunden ([[Programm Dokumentation/Simulation#anlagenkopplung|Programm-Dokumentation: Anlagenkopplung]]).
 
 Rechnet das Projekt Kälte, decken Kältemaschinen und Wärmepumpen im Kühlbetrieb den stündlichen Kältebedarf der Gebäude ([[Programm Dokumentation/Kühlung|Kühlung]]).
 

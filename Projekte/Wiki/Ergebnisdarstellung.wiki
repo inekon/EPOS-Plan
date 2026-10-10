@@ -10,12 +10,12 @@ Der Reiter ''Wärme-/Strombedarf'' zeigt Wärmelast und Strombedarf als Jahresga
 
 Der Reiter ''Wärmepumpe'' weist die Wärmebedarfsdeckung in Prozent, den ermittelten Bivalenzpunkt, die Kapazität des zugeordneten Pufferspeichers, die durchschnittlichen Vollbenutzungsstunden, die minimal erforderliche Spitzenkesselleistung und die Jahresarbeitszahl aus – für die Wärmepumpe allein und mit Heizstab. Bei einer Wärmepumpe mit Einbindung zeigt eine Kachelzeile die Betriebsbereiche, bei einer Erdreichquelle eine Zeile die Auslegungsprüfung nach VDI 4640.
 
-Drei Diagramme zeigen den Jahresgang von Produktion, Stromverbrauch und Speichertemperaturen, ein weiteres die Leistung über der Außentemperatur. Eine Modultabelle listet je Maschine die Leistung, die Wärmeproduktion, den Stromverbrauch, den Heizstabanteil, die Betriebsstunden und die Jahresarbeitszahl.
+Drei Diagramme zeigen den Jahresgang von Produktion, Stromverbrauch und Speichertemperaturen, ein weiteres die Leistung über der Außentemperatur. Eine Modultabelle listet je Maschine die Leistung, die Wärmeproduktion, den Stromverbrauch, den Heizstabanteil, die Betriebsstunden und die Jahresarbeitszahl; rechnet ein Modul mit Mindestleistung, kommen Starts und Taktstrom dazu.
 
 == Heizkessel, BHKW, Solarthermie und Photovoltaik ==
 {{Anker|heizkessel-bhkw-solarthermie-und-photovoltaik|erzeugerregisterkarten|modultabelle}}
 
-Für Heizkessel, BHKW, Solarthermie, Photovoltaik und Stromspeicher gibt es jeweils eigene Reiter mit Deckungsanteil, Produktion, Restbedarf, den relevanten Verbrauchsgrößen und einer Modultabelle. Der Heizkessel nennt Jahresnutzungsgrad und Starts, mit Brennwertkennlinie auch den Anteil des Brennwertbetriebs. Das BHKW zeigt Wärme- und Stromlast; seine Betriebsart wird in der Simulationskonfiguration eingestellt. Die Solarthermie weist den Kollektorertrag brutto mit seinen Teilen ''genutzt'' und ''Überschuss'' aus. Rechnet eine Kältemaschine mit Teillast, zeigt der Reiter ''Kältegang'' Teillast und Takten.
+Für Heizkessel, BHKW, Solarthermie, Photovoltaik und Stromspeicher gibt es jeweils eigene Reiter mit Deckungsanteil, Produktion, Restbedarf, den relevanten Verbrauchsgrößen und einer Modultabelle. Der Heizkessel nennt Jahresnutzungsgrad und Starts, mit Brennwertkennlinie auch den Anteil des Brennwertbetriebs. Das BHKW zeigt Wärme- und Stromlast; seine Betriebsart wird in der Simulationskonfiguration eingestellt. Die Solarthermie weist den Kollektorertrag brutto mit seinen Teilen ''genutzt'' und ''Überschuss'' aus. Kältemaschinen haben keinen eigenen Reiter; rechnet eine Kältemaschine mit Teillast, zeigt das Blatt ''Kälteproduktion'' des Reiters ''Ergebnis'' Teillast und Takten.
 
 == Ergebnisseite ==
 {{Anker|ergebnisseite|ringdiagramm|jahresarbeit}}
@@ -30,14 +30,14 @@ Die ''Autarkie-Analyse'' im Reiter ''Ergebnis'' stellt monatsweise gegenüber, w
 == Wärme- und Stromproduktion ==
 {{Anker|waerme-und-stromproduktion|produktionsganglinie|speicherfuellstand}}
 
-Die Blätter ''Wärmeproduktion'' und ''Stromproduktion'' im Reiter ''Ergebnis'' zeigen die Erzeugung als Jahresganglinie, in der sich einzelne Erzeuger und der Speicherinhalt gezielt ein- und ausblenden lassen.
+Die Blätter ''Wärmeproduktion'' und ''Stromproduktion'' im Reiter ''Ergebnis'' zeigen die Erzeugung als Jahresganglinie, in der sich einzelne Erzeuger und der Speicherinhalt gezielt ein- und ausblenden lassen. Rechnet das Projekt Kälte, zeigt das Blatt ''Kälteproduktion'' je Kälteerzeuger – Wärmepumpe im Kühlbetrieb oder Kältemaschine – die gedeckte Kälte, darauf die ungedeckte Kälte und darüber den Kältebedarf.
 
 == Kennzahlen im Überblick ==
 {{Anker|kennzahlen-im-ueberblick|kennzahlen}}
 
-Zur Verfügung stehen Deckungsanteile je Erzeuger, Bivalenzpunkt, Vollbenutzungsstunden, Jahresarbeitszahl, Jahresnutzungsgrade, Restwärme- und Reststrombedarf, Brennstoffverbräuche, Emissionen, Eigenverbrauchsquote, Autarkiegrad und CO₂-Einsparung. Dargestellt wird alles als Jahresganglinie, Jahresdauerlinie, Leistung über Außentemperatur, Ringdiagramm der Bedarfsdeckung, Monatsbilanz der Autarkie und als Modultabelle je Anlage.
+Zur Verfügung stehen Deckungsanteile je Erzeuger, Bivalenzpunkt, Vollbenutzungsstunden, Jahresarbeitszahl, Jahresnutzungsgrade, Restwärme- und Reststrombedarf, Brennstoffverbräuche, Emissionen, Eigenverbrauchsquote, Autarkiegrad und CO₂-Einsparung. Dargestellt wird alles als Jahresganglinie, Jahresdauerlinie, Leistung über Außentemperatur, Ringdiagramm der Bedarfsdeckung, Monatsbilanz der Autarkie und als Modultabelle je Anlage. Rechnet das Projekt mit Anlagenkopplung, führen die gekoppelten Gebäude dazu Komfortstunden und auf Stufe ''geschlossener Kreis (AK3)'' die Kennzahlen des Kreises ([[Programm Dokumentation/Simulationsergebnisse#kopplungskennzahlen|Kennzahlen der Anlagenkopplung]]).
 
-Alle Zeitreihendiagramme tragen dieselbe Bedienung: Mausrad, Ziehen, Kneifgeste und die Tasten ''+'', ''−'' und ''0'' vergrößern den Zeitausschnitt, ''Bereich'' zieht einen Ausschnitt auf, ''1:1'' stellt die volle Ansicht her, und unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen. Die Farben je Größe legen Sie in den Einstellungen fest; sie gelten auch im Bericht. Der Knopf ''CSV…'' speichert die Reihen eines Diagramms als CSV-Datei ([[Datenexport]]).
+Alle Zeitreihendiagramme tragen dieselbe Bedienung: Mausrad, Ziehen, Kneifgeste und die Tasten ''+'', ''−'' und ''0'' vergrößern den Zeitausschnitt, ''Bereich'' zieht einen Ausschnitt auf, ''1:1'' stellt die volle Ansicht her, und unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen. Die Zeitachse nennt an jeder Marke die Jahresstunde und darunter das Datum eines Jahres mit 365 Tagen ohne Jahreszahl. Die Farben je Größe legen Sie in den Einstellungen fest; sie gelten auch im Bericht. Der Knopf ''CSV…'' speichert die Reihen eines Diagramms als CSV-Datei, an den Monatsbildern die Monatswerte ([[Datenexport]]).
 
 == Ergebnis speichern ==
 {{Anker|ergebnis-speichern}}
