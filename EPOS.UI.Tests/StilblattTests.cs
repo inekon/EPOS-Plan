@@ -495,6 +495,7 @@ public sealed class StilblattTests
     {
         string breite = Regelblock("table.epos-simerg-tabelle");
         Assert.Contains("width: auto", breite, StringComparison.Ordinal);
+        Assert.Contains("align-self: flex-start", breite, StringComparison.Ordinal);   // Flex-Block dehnt sonst
 
         string koepfe = Regelblock(".epos-simerg-kennzahlen th.epos-simerg-zahl");
         Assert.Contains("text-align: right", koepfe, StringComparison.Ordinal);

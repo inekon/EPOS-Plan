@@ -5714,10 +5714,15 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
    nimmt nur die Breite ihres Inhalts - jede Tabelle ihre eigene, auch zwei
    untereinander (Modul und Speicher). Waehler mit Typ (0,1,1), damit er die
    Breite von .epos-raster (0,1,0) unabhaengig von der Reihenfolge schlaegt;
-   .epos-raster selbst bleibt unberuehrt (Rasterprobe). */
+   .epos-raster selbst bleibt unberuehrt (Rasterprobe). Der Block der Reiter
+   (.epos-simerg-block) ist ein Flex-Behaelter in Spaltenrichtung und dehnt
+   seine Kinder sonst auf die volle Breite (align-items: normal = stretch) -
+   align-self: flex-start haelt die Tabelle auf ihrer Inhaltsbreite
+   (tabellenprobe.mjs). */
 table.epos-simerg-tabelle {
     width: auto;
     max-width: 100%;
+    align-self: flex-start;
 }
 
 /* Dieselbe Regel fuer die Kennzahlentabelle des Stromspeichers und den
