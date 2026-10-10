@@ -500,6 +500,36 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
 
+### 5.6 Wie gebaut (Stufe 3, Stromspeicher)
+
+Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `StromspeicherStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Stromspeicher`, Katalog
+  `Tab_Stromspeicher_STAMM`, Anlage über `ID_SP`, Kostenkomponente 5), dazu `RueckwegVorschau`, `AusProjektUebernehmen`,
+  `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über den Namen läuft über denselben Löschweg samt Satzvorlage.
+  Prüfregel wie beim Sammelspeichern (`Pruefen`): Kapazität, Leistung, Kosten, Zyklen und Standby nicht negativ,
+  Ladezustand, Degradation und Selbstentladung 0 bis 100 %, Round-Trip-Wirkungsgrad 0 bis 1. Kein neuer Schemaschritt:
+  208 und 209 führen `ID_Stamm` an `Tab_Stromspeicher` und beide Vorlagenverweise an `Tab_Stromspeicher_STAMM`;
+  `StromspeicherCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Projektkopie sofort:** Bisher entstand die Kopie erst beim Speichern des Projekts, und die Detailzeile las stets den
+  Katalog. Jetzt legt „In das Projekt übernehmen" die Kopie außerhalb des Assistenten sofort an (Muster BHKW, mit
+  `Projektkopievormerkung`); Varianten desselben Speichers teilen sich die Kopie gleichen Namens. Die Projektzeile liest
+  ihr Detail deshalb über die Geräte-ID, nicht über ihren Namen (eine Variante heißt „… (2)“). Die Summe kWh ist die
+  Kapazität der Kopie je Anlage.
+- **Kosten:** Die vier Planwertspalten `Modulkosten` (€/kWh), `Leistungskosten`, `Investition_Fix`, `Verschleisskosten`
+  stehen in „Alle Daten“ und in der Satzbearbeitung und gehen mit der Schnittmenge; Betriebs- und Investitionspositionen
+  der Anlage werden Satzvorlagen wie beim Heizkessel.
+- **Kindzeilen:** keine technischen. Die Betriebsführung (`Tab_StromspeicherVariante`) hängt an der Anlage und bleibt im
+  Projekt, ebenso der Energieträger. `Standby_Verbrauch` und `Selbstentladung_Prozent_Monat` sind Gerätespalten und gehen
+  mit in den Katalog; an der Kopie bleiben sie unberührt. Das Sammelspeichern lässt eine leere Gerätespalte leer, wenn sie
+  als 0 zurückkommt (leer heißt im Rechenweg Fachvorgabe).
+- **Katalogeditor ohne Neu…:** Den Knopf „Neu…“ gibt es im Katalogfuß nicht (4.9). „Bearbeiten…“ auf einen einzelnen
+  ungesperrten Satz öffnet den Modulkatalog (`ModulKatalogDialog`, Parameter `Vorwahl`) mit diesem Satz; dort stehen
+  Neu…, Duplizieren… und Löschen wie bisher hinter „Bearbeiten…“ im Modulbereich. Ein gesperrter Satz allein öffnet nur
+  die lesende Satzbearbeitung — Neu… ist dann nur über einen ungesperrten Satz oder die Verwaltung im Menü erreichbar.
+- **Löschen:** Der Projektdialog hatte keinen Löschknopf; jetzt steht er im Katalogfuß (Rückfrage, mehrere mit
+  Überspringen der gesperrten), geschrieben über `StromspeicherStammCtrl.Loeschen`.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
