@@ -273,6 +273,24 @@ nicht eine Zeile als Untergrenze. Vorgabe der Trennlinie: Katalogliste 259 / 179
 1 280 × 800 / 1 280 × 720 / 1 024 × 700 (vorher 178 / 108 / 108); Trennlinie unten und Detailzeile auf
 klemmen auf 147 px. Projektliste unverändert: Zeile 53 px, Untergrenze 85 px, Vorgabe 138 px.
 
+**Präzisiert in KB1 (gemessen 10.10.2026, Rollbereichprobe, Anwenderentscheid vom selben Tag):** Auf kleinen
+Bildschirmen gilt eine **Kompaktstufe** — unter 1 200 px Breite oder 800 px Höhe (iPad quer und hoch, Laptop bei
+125 %, auch 1 280 × 720 und 1 024 × 700) werden Dialograhmen und Baustein rund ein Achtel kleiner: Schrift
+13 → 12 px, Kartentitel 16 → 14 px, Knöpfe, Kopfleisten und Detailzeile 44 → 37 px, Projektzeile 53 → 46 px,
+Katalogzeile 46 → 40 px (Kästchenmodus) bzw. 53 → 46 px, Untergrenze der Projektliste 85 → 74 px, Vorgabe
+138 → 120 px, Katalogliste Kopf und zwei Zeilen 147 → 128 px bzw. 161 → 140 px. Es ist eine Skalenebene über die
+Token des Hauses; die Maße im Programm (Trennlinie, gemerkte Höhe, `KatalogZeile`) bleiben Pixel der
+Normalstufe. Die Klemme auf eine Katalogzeile unter 600 px Bausteinhöhe gilt nur noch in der Normalstufe.
+**Ausnahme von der Rollbereichregel, nur unterhalb der Mindesthöhe:** Reicht das Fenster nicht für Dialogkopf,
+Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf, zwei Zeilen und Knopfleiste,
+Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
+senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
+Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts und wächst
+bis 45 % der Fensterhöhe, Projekt- und Katalogliste geben dafür bis zu ihrer Untergrenze ab; erst darüber rollt
+allein die Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
+768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
+aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebäudedialogs leer.
+
 ### 4.9 Zuschnitt je Dialog (Randnotiz)
 
 | Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |

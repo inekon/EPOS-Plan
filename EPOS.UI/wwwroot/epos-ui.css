@@ -1698,7 +1698,7 @@ body {
    53 px ist genau das - und der Wert, den die Katalogliste ohnehin fuehrt. */
 .epos-raster-huelle--hoch .epos-raster > tbody > tr,
 .epos-raster-huelle--hoch .epos-raster > tbody > tr > td {
-    height: var(--epos-rasterzeile, 53px);
+    height: calc(var(--epos-rasterzeile, 53px) * var(--epos-zeilenskala, 1));
 }
 
 /* Zwei Zeilen umbrochenen Textes waeren 40,6 px und blieben unter dem Mass,
@@ -3700,7 +3700,11 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 
 .epos-zweispalten--zieht { cursor: row-resize; user-select: none; }
 
-.epos-zweispalten--satz-offen { --epos-satz-min: calc(var(--epos-touchziel) + 20px); }
+/* Aufgeklappt haelt die Detailzeile zusaetzlich ihren Inhalt bis --epos-satz-untergrenze (KB1):
+   das Skript setzt --epos-satz-offen-min = min(Inhalt, Untergrenze) am Dialog. Darueber waechst
+   sie bis --epos-satz-max; reicht das Fenster dafuer nicht, rollt der Dialogkoerper. */
+.epos-zweispalten { --epos-satz-untergrenze: 80px; }
+.epos-zweispalten--satz-offen { --epos-satz-min: calc(var(--epos-touchziel) + 20px + var(--epos-satz-offen-min, 0px)); }
 
 /* DIE DETAILZEILE (4.4): zugeklappt eine Zeile; aufgeklappt rollt die
    Satzflaeche in sich. */
@@ -3795,7 +3799,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows:
-        minmax(calc(var(--epos-trenner-min) + var(--epos-touchziel) + 18px), auto)
+        minmax(calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1) + var(--epos-touchziel) + 18px), auto)
         8px
         minmax(min-content, 1fr)
         minmax(var(--epos-satz-min), auto);
@@ -3809,15 +3813,19 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
    Katalog mit Kopf und zwei Zeilen, Fussleiste und Detailzeile (unter 600 px -
    1 280 x 720 und 1 024 x 700 mit Kontextzeile, Suchzeile und Katalog-Fussleiste),
    behaelt die Katalogliste Kopf und EINE Zeile; sonst schnitte das Raster die
-   Detailzeile ab. Gemessen mit Proben/Rasterprobe/rollbereichprobe.mjs. */
-@container katalogauswahl (max-height: 599px) {
-    .epos-zweispalten-bereich--katalog .epos-raster-huelle {
-        --epos-katalog-min: calc(53px + 53px + 2px);
-    }
-    /* Ein Wirt mit eigenem Zeilenmass (Kaestchenmodus, Heizkessel ab Stufe 2) behaelt Kopf
-       und ZWEI Zeilen - Suche in der Kopfleiste und Kontext im Dialogkopf geben die Hoehe. */
-    .epos-zweispalten--zeilenmass .epos-zweispalten-bereich--katalog .epos-raster-huelle {
-        --epos-katalog-min: calc(53px + 2 * var(--epos-katalog-zeile, 53px) + 2px);
+   Detailzeile ab. Gemessen mit Proben/Rasterprobe/rollbereichprobe.mjs.
+   Nur in der Normalstufe (KB1): In der Kompaktstufe behaelt die Katalogliste Kopf und zwei
+   Zeilen, und reicht das Fenster nicht, rollt der Dialogkoerper (Abschnitt Kompaktstufe unten). */
+@media (min-width: 1200px) and (min-height: 800px) {
+    @container katalogauswahl (max-height: 599px) {
+        .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+            --epos-katalog-min: calc(53px + 53px + 2px);
+        }
+        /* Ein Wirt mit eigenem Zeilenmass (Kaestchenmodus, Heizkessel ab Stufe 2) behaelt Kopf
+           und ZWEI Zeilen - Suche in der Kopfleiste und Kontext im Dialogkopf geben die Hoehe. */
+        .epos-zweispalten--zeilenmass .epos-zweispalten-bereich--katalog .epos-raster-huelle {
+            --epos-katalog-min: calc(53px + 2 * var(--epos-katalog-zeile, 53px) + 2px);
+        }
     }
 }
 
@@ -3831,9 +3839,9 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 
 /* Die Projektliste: Wunschhoehe ist die Trennlinie, Untergrenze Kopf + 1 Zeile. */
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--projekt .epos-raster-huelle {
-    flex: 0 1 var(--epos-trenner-hoehe);
+    flex: 0 1 calc(var(--epos-trenner-hoehe) * var(--epos-zeilenskala, 1));
     height: auto;
-    min-height: var(--epos-trenner-min);
+    min-height: calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1));
     max-height: none;
 }
 
@@ -3860,13 +3868,98 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-bereich--katalog .epos-raster-huelle {
     flex: 1 1 0;
     height: auto;
-    min-height: var(--epos-katalog-min);
+    min-height: calc(var(--epos-katalog-min) * var(--epos-zeilenskala, 1));
     max-height: none;
 }
 
-/* Die aufgeklappte Detailzeile nimmt den Listen Hoehe ab und rollt in sich. */
+/* Die aufgeklappte Detailzeile nimmt den Listen Hoehe ab und rollt in sich. Die Projektliste
+   steht dabei auf ihrer Untergrenze, die Detailzeile waechst mit ihrem Inhalt bis zur
+   Obergrenze --epos-satz-max (45 % der Fensterhoehe), der Rest geht an den Katalog; erst
+   darueber oder wenn das Fenster nicht reicht, rollt allein die Satzflaeche (KB1). */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {
+    grid-template-rows:
+        calc(var(--epos-trenner-min) * var(--epos-zeilenskala, 1) + var(--epos-touchziel) + 18px)
+        8px
+        minmax(min-content, 1fr)
+        minmax(var(--epos-satz-min), auto);
+}
+
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {
     flex: 1 1 auto;
+    max-height: var(--epos-satz-max, 45vh);
+}
+
+/* ---- KOMPAKTSTUFE UND ROLLBALKEN (KB1, Konzept 4.8) -----------------
+   Kompaktstufe: unter 1 200 px Breite oder 800 px Hoehe (iPad quer und hoch,
+   Laptop bei 125 %, 1 280 x 720) werden Dialograhmen und Baustein rund ein
+   Achtel kleiner - eine Skalenebene ueber die Token des Hauses, keine zweite
+   Kopie der Regeln: Schrift 13 -> 12 px, Kartentitel 16 -> 14 px, Beruehrungs-
+   ziel (Knoepfe, Kopfleisten, Detailzeile, Wahlknopf) 44 -> 37 px, Rand der
+   Karte 16 -> 12 px, Abstand 10 -> 8 px, und --epos-zeilenskala 46/53: Projekt-
+   zeile 53 -> 46 px, Katalogzeile mit Zeilenmass 46 -> 40 px, Untergrenze der
+   Projektliste 85 -> 74 px, Vorgabe 138 -> 120 px, Katalogliste 147 -> 128 px
+   (161 -> 140 px ohne Zeilenmass). Die Masse im Programm (Trennlinie, gemerkte
+   Hoehe in Dienste.Einstellungen, KatalogZeile des Wirts, ItemSize) bleiben in
+   der Normalstufe; das Stilblatt rechnet sie mit der Skala um, epos-zweispalten.js
+   rechnet gemessene Hoehen zurueck. Die Kaeltemaschinenauswahl (Katalogdialog)
+   nimmt dieselbe Stufe.
+   Rollbalken: Reicht die Fensterhoehe nicht fuer die Mindesthoehe (Kopf,
+   Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit
+   Kopf und zwei Zeilen und Knopfleiste, Detailzeile, Schlussleiste), setzt das
+   Skript --epos-zweispalten-min (Summe der Untergrenzen) und data-zweispalten-eng
+   an den Dialog: Der Baustein steht auf seiner Mindesthoehe, der Dialogkoerper
+   rollt senkrecht, die Schlussleiste rollt mit. Darueber rollt der Dialogkoerper
+   nie (kein Rollbereich im Rollbereich). Gemessen: rollbereichprobe.mjs. */
+@media (max-width: 1199.98px), (max-height: 799.98px) {
+    .epos-dialog:has(> .epos-zweispalten),
+    .epos-dialog.epos-kaeltemaschine-admin {
+        --epos-schriftgroesse: 12px;
+        --epos-schriftgroesse-kartentitel: 14px;
+        --epos-touchziel: 37px;
+        --epos-karte-rand: 12px;
+        --epos-rand: 8px;
+        --epos-zeilenskala: 0.8679;
+        font-size: var(--epos-schriftgroesse);
+    }
+    .epos-dialog:has(> .epos-zweispalten) .epos-zweispalten-marke { font-size: 11px; line-height: 16px; }
+    .epos-dialog:has(> .epos-zweispalten) :is(.epos-zweispalten-wahlzahl, .epos-zweispalten-satzdetails) { font-size: 11px; }
+}
+
+/* SCHMALER BEREICH (iPad hoch, 768 px): Die Kopfleiste bleibt EINE Zeile (4.8). Unter 800 px
+   Bereichsbreite tritt die Ueberschrift hinter die Marke zurueck (sie bleibt fuer den
+   Bildschirmleser stehen), die Pfeile der Knoepfe entfallen, die Knoepfe ruecken enger; reicht
+   es dann noch nicht, kuerzen Summe und Knopftext mit Auslassung - der Knopf bleibt ganz im Bild,
+   sein title nennt den vollen Text. */
+.epos-zweispalten-bereich { container: zweispaltenbereich / inline-size; }
+@container zweispaltenbereich (max-width: 799.98px) {
+    .epos-zweispalten-kopfleiste > .epos-zweispalten-titel {
+        position: absolute; width: 1px; height: 1px; min-width: 0; overflow: hidden; clip-path: inset(50%);
+    }
+    .epos-zweispalten-kopfleiste .epos-zweispalten-pfeil { display: none; }
+    .epos-zweispalten-kopfleiste > .epos-knopf { min-width: 0; padding-inline: 8px; flex: 0 1 auto; overflow: hidden; }
+    .epos-zweispalten-kopfleiste > .epos-knopf .epos-zweispalten-knopftext { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .epos-zweispalten-kopfleiste > :is(.epos-zweispalten-summe, .epos-zweispalten-wahlzahl) { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
+/* Ein Feld des Wirts in der Kopfleiste (BHKW: Summe) behaelt unter 900 px Fensterbreite die
+   Beschriftung NEBEN dem Feld - die Formularregel weiter unten stellte sie darueber, und die
+   Kopfleiste braeche um. Die Beschriftung kuerzt mit Auslassung. */
+@media (max-width: 900px) {
+    .epos-zweispalten-kopfleiste > .epos-formularraster :is(.epos-feld) {
+        grid-template-columns: auto minmax(4rem, 1fr);
+        row-gap: 0;
+        min-height: var(--epos-touchziel);
+    }
+    .epos-zweispalten-kopfleiste > .epos-formularraster :is(.epos-feld) > :is(.epos-feld-zeile, .epos-eingabe) { grid-column: 2; }
+    .epos-zweispalten-kopfleiste > .epos-formularraster :is(.epos-feld-text) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+#app > .epos-dialog > .epos-zweispalten {
+    min-height: var(--epos-zweispalten-min, 0px);
+}
+
+#app > .epos-dialog[data-zweispalten-eng]:has(> .epos-zweispalten) {
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 /* Zeichen VOR dem Wort, in einer Zeile - untereinander sagt der Pfeil die
@@ -9903,8 +9996,8 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 .epos-zeilenzelle {
     display: block;
     box-sizing: border-box;
-    height: 45px;
-    line-height: 45px;
+    height: calc(46px * var(--epos-zeilenskala, 1) - 1px);   /* 45 px, Kompaktstufe 39 px */
+    line-height: calc(46px * var(--epos-zeilenskala, 1) - 1px);
     padding: 0 8px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -10263,7 +10356,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     justify-content: center;
     box-sizing: border-box;
     width: 44px;
-    height: 45px;
+    height: calc(46px * var(--epos-zeilenskala, 1) - 1px);   /* wie .epos-zeilenzelle */
     margin: 0;
     cursor: pointer;
 }

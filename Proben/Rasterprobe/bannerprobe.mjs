@@ -162,7 +162,17 @@ try {
     // Schlussleiste stehen ohnehin im Bild; das Banner nimmt den Listen Hoehe, der Knopf ruckt um sie.
     if (FAELLE[fall].fuellt) {
       if (nach.y > TOL || nach.dokument > nach.innen + TOL) melde(name, `das Dokument rollt (${zahl(nach.y)} / ${nach.dokument} px)`);
-      if (!nach.kopf || nach.kopf.top < -TOL || !nach.fuss || nach.fuss.bottom > nach.innen + TOL) melde(name, 'Kopf oder Schlussleiste ausserhalb des Fensters');
+      // KB1: Unter der Mindesthoehe rollt der Dialogkoerper; die Schlussleiste muss dann am Ende des Rollwegs im Bild stehen.
+      const eng = await seite.evaluate(() => {
+        const d = document.querySelector('body > #app > .epos-dialog');
+        if (!d || !d.hasAttribute('data-zweispalten-eng')) return null;
+        const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer'));
+        const v = d.scrollTop; d.scrollTop = d.scrollHeight;
+        const ok = !!fuss && fuss.getBoundingClientRect().bottom <= innerHeight + 1; d.scrollTop = v; return ok;
+      });
+      if (eng !== null) console.log(`    Befund ${name}: unter der Mindesthoehe, der Dialogkoerper rollt (KB1), Schlussleiste erreichbar: ${eng}`);
+      if (eng === false || (eng === null && (!nach.kopf || nach.kopf.top < -TOL || !nach.fuss || nach.fuss.bottom > nach.innen + TOL)))
+        melde(name, 'Kopf oder Schlussleiste ausserhalb des Fensters');
       if (!nach.knopf || nach.knopf.top - vor.knopf.top > nach.banner.bottom - nach.banner.top + 12 + TOL)
         melde(name, `der ausloesende Knopf sprang um mehr als das Banner (${zahl(vor.knopf.top)} -> ${zahl(nach.knopf && nach.knopf.top)} px)`);
     } else {
