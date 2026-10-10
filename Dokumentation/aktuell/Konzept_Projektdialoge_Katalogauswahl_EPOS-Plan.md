@@ -294,7 +294,7 @@ Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf,
 Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
 senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
 Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts (mit
-Ganglinie 260 px, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
+Ganglinie Kopf und 90 px Kurve, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
 Satzfläche nimmt die gesamte übrige Höhe ohne Obergrenze; was trotzdem nicht passt, rollt allein in der
 Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
 768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
@@ -322,11 +322,32 @@ Detailzeile Marke und Namen des gewählten Satzes (`SatzArt`, `SatzName`) und ze
 die Jahresganglinie. Kennzahlen und Zeichenmodell rechnet der Kern (`GanglinienAuswertungCtrl` mit
 `GanglinienQuelle.Solarganglinie` bzw. `PvGanglinie`, `ChartRenderer.GanglinieNormiertModell`); die Gaben baut
 `GanglinienGrafikGaben` in `EPOS.UI.Daten`. Eine eben aufgenommene Projektzeile trägt noch keine Projektkopie und
-zeigt den Katalogsatz gleichen Namens. In der Satzfläche steht der Name nur in der Detailzeile, Kennzahlen und
-Schalter teilen sich eine Zeile, und das Bild nimmt die übrige Höhe: Die Zeichenfläche hält das Seitenverhältnis
-des Zeichenmodells (`--epos-bild-verhaeltnis`), ihre Höhe kommt aus dem Behälter, auch beim Vergrößern des Fensters
-und beim Auf- und Zuklappen. Die Untergrenze der Satzfläche ist mit Ganglinie 260 px; reicht das Fenster dafür
-nicht, rollt nach KB1 der Dialogkörper, das Bild bekommt keinen eigenen Rollbalken.
+zeigt den Katalogsatz gleichen Namens. Die Zeichenfläche hält das Seitenverhältnis des Zeichenmodells
+(`--epos-bild-verhaeltnis`), ihre Höhe kommt aus dem Behälter, auch beim Vergrößern des Fensters und beim Auf- und
+Zuklappen; das Bild bekommt keinen eigenen Rollbalken.
+
+**Präzisiert in DZ1-N1 (verdichteter Kopf, gemessen 10.10.2026, Rollbereichprobe):** Der Kopf der Satzfläche hat
+höchstens zwei schmale Zeilen. Die **Kopfzeile** (Parameter `Kopfzeile` der `GanglinienGrafik`) trägt Name und
+Beschreibung nebeneinander, die Beschriftung vor dem Feld, die Beschreibung doppelt so breit, beide einzeilige
+Lesefelder (0,7 Berührungsziel hoch, voller Text als Tooltipp); die PV-Ganglinie stellt Raster, Jahresarbeit und
+Nennleistung kurz dazu. Wärmebedarf extern und Stromganglinie haben keine Kopfzeile (der Name steht in der
+Detailzeile). Die **Kennzahlenzeile** trägt Kennzahlen, Zoomleiste („×1 · Bereich · 1:1“), Schalter „sortiert“,
+Einheit (Beschriftung vor dem Feld) und rechts die Infoknöpfe des Wirts (Parameter `Knoepfe`; ohne Grafik bleibt
+die eigene Knopfzeile). Die Zeigerzeile liegt oben rechts über dem Bild. Kopf ohne Polster: 51 px (Kompaktstufe
+44 px) ohne, 84 px (72 px) mit Kopfzeile. Die Untergrenze der Satzfläche ist der Kopf plus 90 px Kurve
+(`--epos-kurve-min`; Satzfläche 142 bzw. 175 px, Kompaktstufe 135 bzw. 163 px); reicht das Fenster dafür nicht,
+rollt nach KB1 der Dialogkörper. Gemessene Kurve, Detailzeile auf:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 |
+|---|---|---|---|
+| Wärmebedarf extern | 93 px, Dialogkörper rollt (KB1) | 94 px, rollt (KB1) | 122 px |
+| Stromganglinie | 139 px | 148 px | 196 px |
+| Solarthermie-, PV-Ganglinie | 96 px | 112 px | 160 px |
+
+Eine Kurve von 180 px ohne Rollen des Dialogkörpers gibt 1 280 × 800 nicht her: Mit Projektliste und Katalogliste
+auf ihren Untergrenzen bleiben der Satzfläche 194 px (Solar, PV), 204 px (Strom) und 118 px (Wärmebedarf extern:
+Kontextzeile und Knopfleiste unter dem Katalog). Mehr Kurve verlangt eine kleinere Untergrenze der Katalogliste
+(Kopf und eine Zeile bei offener Ganglinie) oder ein Rollen des Dialogkörpers — offen zum Entscheid.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 

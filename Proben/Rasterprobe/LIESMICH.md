@@ -1213,6 +1213,26 @@ bleibt ohne Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhal
 verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
 Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
+**Ganglinie mit verdichtetem Kopf (DZ1-N1).** In den vier Ganglinien-Fällen (Wärmebedarf extern, Strom-, Solar-,
+PV-Ganglinie) misst die Probe aufgeklappt zusätzlich: Kopf der Satzfläche (bis zur Oberkante der Kurve, ohne Polster)
+ab 1 024 px Breite höchstens 90 px — in 768 × 1 024 brechen die Kennzahlen um (93 px) —, Kurve mindestens
+`--epos-kurve-min` (90 px), Satzfläche ohne eigenen Rollbalken, und in 1 280 × 800 und 1 280 × 720 rollt der
+Dialogkörper bei Strom-, Solar- und PV-Ganglinie nicht. Beim Wärmebedarf extern gibt das Fenster die Untergrenze
+(Kopf + 90 px) nicht her; dort rollt der Dialogkörper nach KB1 (Befund, 40 px in 1 280 × 800, 20 px in 1 280 × 720).
+Die 1 280 × 720 erreicht in keinem Fall 180 px Kurve; die Untergrenze 90 px ergibt sich aus der Mindesthöhe des
+engsten Ganglinien-Wirts ohne Rollen (Solar, PV: 194 px Satzfläche in 1 280 × 800). **Vierte Gegenprobe:** In der
+Solarganglinie bei 1 280 × 800 muss eine auf 60 px gedrückte Kurve („Kurve < Untergrenze“) und eine Kurven-Untergrenze
+von 300 px („Dialogkörper rollt“) rot werden. Mit `--fotos <ordner>` legt die Probe je Ganglinien-Fall und Fenster ein
+Foto der aufgeklappten Detailzeile ab (`<fall>_<breite>x<hoehe>.png`).
+
+**Ergebnis vom 10.10.2026, DZ1-N1:** 666 Zustände, 0 Verstöße, alle vier Gegenproben rot. Kurve (Detailzeile auf):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 1 024 × 700 | 1 093 × 614 | 768 × 1 024 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern | 93 (rollt) | 94 (rollt) | 122 | 94 (rollt) | 94 (rollt) | 328 |
+| Stromganglinie | 139 | 148 | 196 | 128 | 94 (rollt) | 328 |
+| Solarthermie-, PV-Ganglinie | 96 | 112 | 160 | 94 (rollt) | 94 (rollt) | 328 |
+
 **Heizkessel (Stufe 2a).** Zusätzlich je Fenster: Detailzeile auf mit Kosten (die Satzfläche muss die
 Kostenknöpfe tragen), Überlagerung „Bearbeiten…" für die Projektkopie und für zwei angekreuzte Katalogsätze
 (Blätterleiste oder Hinweiszeile „übersprungen"), danach geschlossen mit Esc. Für den Heizkessel gilt in
@@ -1328,10 +1348,10 @@ aufgeklappt (Trennlinie oben) in px:
 **Ganglinie in der Detailzeile (DZ1, Teil 2, Konzept 4.9).** Der Wirt trägt die vier Ganglinien-Dialoge mit
 synthetischer Reihe (Kennzahlen und ein Zeichenmodell je Schalterstellung): `fall=waermebedarf`, `stromganglinie`,
 `solarganglinie` und neu `pvganglinie`. Die Probe wählt dort vor dem Aufklappen die erste Projektzeile und
-verlangt in der Satzfläche eine Zeichenfläche der Ganglinie. Deren Untergrenze (260 px) gehört zur Mindesthöhe:
+verlangt in der Satzfläche eine Zeichenfläche der Ganglinie. Deren Untergrenze (Kopf plus 90 px Kurve, DZ1-N1) gehört zur Mindesthöhe:
 Reicht das Fenster nicht, rollt der Dialogkörper (Befund, auch in den Fenstern ohne Kompaktstufe), das Bild hat
-keinen eigenen Rollbalken. **Ergebnis vom 10.10.2026:** 666 Zustände, 0 Verstöße, drei Gegenproben rot.
-Satzfläche (Bild/Platz der Zeichenfläche) in px, Trennlinie oben:
+keinen eigenen Rollbalken. **Ergebnis vom 10.10.2026 (vor DZ1-N1, Kopf unverdichtet, Untergrenze 260 px):** 666 Zustände,
+0 Verstöße, drei Gegenproben rot. Satzfläche (Bild/Platz der Zeichenfläche) in px, Trennlinie oben:
 
 | Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 |
 |---|---|---|---|---|---|---|
