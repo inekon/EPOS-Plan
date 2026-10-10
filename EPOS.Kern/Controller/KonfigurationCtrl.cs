@@ -62,6 +62,26 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Wie <see cref="LiesProjekt"/>, aber OHNE <see cref="HeizkesselNachziehen"/>:
+        /// ein reiner Leser ohne Schreibweg. Fuer Leser, die nur die Kaskade ansehen und
+        /// dabei eine Oberflaeche aufbauen (Kaeltefolge im Bereich „Kälte“ der
+        /// Simulationskonfiguration) - sie duerfen die Kaskade nicht hinter dem Ruecken
+        /// des Wirts schreiben. Sonst zoege ein Auffrischen der Seite gleich nach dem
+        /// Handgriff „Automatik wieder uebernehmen“ den Heizkessel nach, und Seite und
+        /// Datenbank liefen auseinander (#307, HeizkesselKaskadeTests). Das Nachziehen
+        /// selbst greift weiter beim naechsten Lesen ueber <see cref="LiesProjekt"/>; es
+        /// fuegt nur einen Heizkessel hinzu, die Frage „steht die Waermepumpe in der
+        /// Kaskade?“ beantworten beide Leser gleich.
+        /// </summary>
+        public static KonfigurationModel LiesProjektOhneNachziehen(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            KonfigurationModel m = new KonfigurationModel();
+            return ZeileUebernehmen(TabelleJeProjekt(idProjekt), m, nachziehen: false) ? m : null;
+        }
+
+        /// <summary>
         /// Dasselbe fuer ein STEUEROBJEKT: fuellt <see cref="model"/> an Ort und Stelle
         /// und setzt <see cref="rows"/> — der wortgleiche Ersatz fuer
         /// <c>ReadSingle("select * from Tab_Einstellungen where ID_Projekt=" + id)</c>.
@@ -115,7 +135,7 @@ namespace WindowsFormsApplication1
         /// Abbildung, die <see cref="ReadSingle"/> und <see cref="LiesProjekt"/> teilen.
         /// Rueckgabe <c>false</c>, wenn nichts zu uebernehmen war.
         /// </summary>
-        private static bool ZeileUebernehmen(DataTable dt, KonfigurationModel model)
+        private static bool ZeileUebernehmen(DataTable dt, KonfigurationModel model, bool nachziehen = true)
         {
             if (dt != null && dt.Rows.Count > 0)
             {
@@ -250,7 +270,7 @@ namespace WindowsFormsApplication1
                     ? HeizgrenzeOderLeer(row[KesselHeizgrenzeSchema.SPALTE])
                     : null;
 
-                HeizkesselNachziehen(model);
+                if (nachziehen) HeizkesselNachziehen(model);
 
                 return true;
             }
