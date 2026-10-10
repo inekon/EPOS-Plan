@@ -246,7 +246,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Im Gebäudedialog steht „Bearbeiten…“ in der Kopfleiste der Projektliste. (#888)
 - Seit 10.10.2026: Der Hilfe-Assistent trägt Werte in den Erzeugermasken des Projekts (Heizkessel, BHKW, Photovoltaik, Solarkollektoren, Wärmepumpe) so ein, dass sie beim Speichern erhalten bleiben, und sagt, wenn keine Anlage gewählt ist. (#890)
 
-*Die folgenden sieben Sätze (#891 bis #897) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden acht Sätze (#891 bis #898) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -255,6 +255,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#895)
 - Seit 10.10.2026: Der Knopf „CSV…“ am Bild exportiert jede Zeitreihe der Anwendung: Bedarfs-, Klimadaten-, Kostenprofil-, Profil- und Zapfprofilbilder, Ganglinienverwaltungen, Speicherflotte, Lastspitzenkappung, Kapitalwertverlauf und Zahlungsstrom. (#896)
 - Seit 10.10.2026: Auf dem iPad halten die Dialoge und Überlagerungen Statusleiste und Home-Anzeige frei; die Kompaktstufe der Projektdialoge gilt unter 1 280 × 800 Punkten und damit auch auf dem iPad 11 Zoll. (#897)
+- Seit 10.10.2026: Die Simulation im Dialog Wärmequelle Erdreich rechnet mit den angezeigten Eingaben und zeigt Ergebnis, Verlauf und Kennwerte der Soletemperatur — Jahresmittel, Tiefst- und Höchstwert mit Zeitpunkt — sofort an. (#898)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
