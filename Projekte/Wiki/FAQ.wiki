@@ -1,0 +1,98 @@
+Die folgenden Fragen tauchen in der Praxis am häufigsten auf. Ausführlicher beschreiben die [[Programmfunktionen]], der [[Programmablauf]] und die [[Grundlagen]] die Zusammenhänge. Direkt im Programm hilft außerdem der [[Hilfe-Assistent]]: Er kennt den Bereich, in dem Sie gerade arbeiten, durchsucht die integrierte Hilfe kostenfrei und beantwortet auf Wunsch – mit eigenem Zugangsschlüssel – auch frei formulierte Fragen. Zusätzlich erscheinen Kurzhinweise, sobald Sie mit der Maus über ein Eingabefeld fahren.
+
+=== Wofür steht der Name EPOS-Plan? ===
+{{Anker|wofuer-steht-der-name-epos-plan}}
+
+'''EPOS''' steht für '''E'''nergie, '''P'''lanung, '''O'''ptimierung und '''S'''imulation. Genau diese vier Schritte bildet das Programm ab: den Energiebedarf ermitteln, die Anlage planen, das Zusammenspiel der Komponenten optimieren und den Betrieb über ein ganzes Jahr simulieren.
+
+=== Brauche ich Excel, um EPOS-Plan zu nutzen? ===
+{{Anker|brauche-ich-excel-um-epos-plan-zu-nutzen}}
+
+Nein. EPOS-Plan ist eine eigenständige Windows-Anwendung mit eigener Datenhaltung und eigener Darstellung. Excel wird weder für die Berechnung noch für die Ausgabe benötigt; Zeitreihen lassen sich aber als CSV-Datei exportieren, und der Bericht entsteht auf Wunsch zusätzlich als Excel-Arbeitsmappe, die EPOS-Plan selbst schreibt.
+
+=== Welche Systemvoraussetzungen gelten? ===
+{{Anker|welche-systemvoraussetzungen-gelten}}
+
+Windows 10 oder 11 (64 Bit) und die Microsoft Edge WebView2 Runtime; fehlt sie, installiert das Setup sie mit. Die Programmlaufzeit bringt EPOS-Plan selbst mit, und für die Datenhaltung ist kein zusätzlicher Fremdtreiber nötig – die Kenndaten-Datenbank ist eine SQLite-Datei. Einzelheiten stehen unter [[Systemvoraussetzungen]], Hinweise zur Fehlersuche unter [[Installation und Update]].
+
+=== Wie sichere ich meine Daten? ===
+{{Anker|wie-sichere-ich-meine-daten}}
+
+Schließen Sie EPOS-Plan und kopieren Sie die Datenbankdatei <code>Kenndaten.sqlite</code> aus dem eingestellten Datenbankordner sowie die beiden Datenverzeichnisse <code>%ProgramData%\WP-Plan</code> und <code>%LocalAppData%\WP-Plan</code>. Liegen neben der Datenbank noch die Dateien <code>Kenndaten.sqlite-wal</code> und <code>Kenndaten.sqlite-shm</code>, läuft das Programm noch – dann wäre die Kopie unvollständig. Einzelheiten unter [[Installation und Update#datenablage-und-datensicherung|Datenablage und Datensicherung]].
+
+=== Wie genau ist die Berechnung? ===
+{{Anker|wie-genau-ist-die-berechnung}}
+
+Der Wärmebedarf der Gebäude wird stündlich mit dem Gebäudemodell nach VDI 6007 aus Hülle, Nutzung und Klimadaten gerechnet ([[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]); der Tagesbilanz-Weg mit typabhängigen Tagesprofilen bleibt je Gebäude wählbar. Der Strombedarf wird in 35.040 Viertelstundenwerten geführt. Wärmepumpen rechnen mit dem vollständigen Herstellerkennfeld, Kollektoren mit Kennwerten nach EN 12975 oder EN ISO 9806, Kessel mit brennstoffabhängigem Wirkungsgrad und Bereitschaftsverlust. Die Ergebnisgüte hängt vor allem von der Qualität der Eingangsdaten ab: Verbrauchsabrechnungen, gemessene Lastgänge und die richtige Vorlauftemperatur verbessern sie deutlich stärker als jede Modellverfeinerung.
+
+=== Ich habe nur die Heizkostenabrechnung – reicht das? ===
+{{Anker|ich-habe-nur-die-heizkostenabrechnung-reicht-das}}
+
+Ja. Statt der Wohnfläche geben Sie den Jahresverbrauch an Öl, Gas oder Brennstoff an; zusammen mit dem Jahresnutzungsgrad der Altanlage rechnet EPOS-Plan daraus die Nutzwärme und skaliert das Gebäudemodell entsprechend. Der Jahresgang ist damit an den realen Verbrauch gebunden.
+
+=== Woher kommen die Klimadaten? ===
+{{Anker|woher-kommen-die-klimadaten}}
+
+Sie werden über die Ortseingabe automatisch als typischer meteorologischer Jahresdatensatz von PVGIS bezogen oder als Testreferenzjahr des DWD eingelesen und enthalten für jede Stunde Außentemperatur sowie Global-, Direkt- und Diffusstrahlung, umgerechnet auf die Ausrichtungen Süd, Ost, West und Nord. Eigene Klimaregionen lassen sich beliebig anlegen; die mitgelieferten sind schreibgeschützt.
+
+=== Warum liegt die Wärmeproduktion über dem Wärmebedarf? ===
+{{Anker|warum-liegt-die-waermeproduktion-ueber-dem-waermebedarf}}
+
+Weil auch die Bereitschaftsverluste des Pufferspeichers gedeckt werden müssen. Die Differenz zwischen Produktion und Bedarf entspricht genau diesen Verlusten – ein Speicher mit rund zwei Kilowattstunden Verlust pro Tag summiert sich über das Jahr auf einige hundert Kilowattstunden.
+
+=== Wie bilde ich Warmwasser und Heizung getrennt ab? ===
+{{Anker|wie-bilde-ich-warmwasser-und-heizung-getrennt-ab}}
+
+Warmwasser wird als eigener Bedarfsanteil erfasst und im Bedarfsdiagramm getrennt dargestellt. In der Simulationskonfiguration weisen Sie jeder Anlage ihre Wärmesenken zu; beim Ziel Heizkreis teilt die ''Bedarfsart'' die Lieferung auf: Warmwasservorrang, nur Warmwasser oder nur Heizwärme ([[Programm Dokumentation/Simulation#senkenzeile|Wärmesenken einer Anlage]]). Damit lassen sich Booster-Konzepte und getrennte Erzeuger realistisch rechnen.
+
+=== Wie finde ich die richtige Speichergröße? ===
+{{Anker|wie-finde-ich-die-richtige-speichergroesse}}
+
+Durch Rechnen mehrerer Varianten. Beim Pufferspeicher zeigen Betriebsstunden, Taktzahl und der Verlauf des Füllstands, ob der Speicher passt; beim Batteriespeicher flacht der Zuwachs an Eigenverbrauch ab einer bestimmten Größe deutlich ab – genau dort liegt die wirtschaftliche Grenze. Beide Speicherarten haben eine eigene Auslegung: [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] und die [[Programm Dokumentation/Stromspeicher|Stromspeicher-Auslegung]].
+
+=== Kann ich mehrere Wärmepumpen einsetzen? ===
+{{Anker|kann-ich-mehrere-waermepumpen-einsetzen}}
+
+Ja. Jede Maschine erhält eine eigene Priorität, Wärmequelle, Wärmesenke und Betriebsart. Die Simulation arbeitet sie in der festgelegten Reihenfolge ab und weist die Ergebnisse je Modul aus.
+
+=== Kann ich eigene Herstellerdaten einlesen? ===
+{{Anker|kann-ich-eigene-herstellerdaten-einlesen}}
+
+Ja. Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht der Import nach VDI 3805 zur Verfügung, für PV-Module, Wechselrichter und Stromspeicher der Import aus der CEC-Liste und weiteren Formaten ([[Stammdaten und Datenimport]]). Eigene Datensätze lassen sich außerdem direkt in den Katalogen anlegen; werksseitige Einträge sind schreibgeschützt und bleiben als Referenz erhalten.
+
+=== Wie exportiere ich Ergebnisse? ===
+{{Anker|wie-exportiere-ich-ergebnisse}}
+
+Über den Knopf ''CSV…'' in der Leiste jedes Zeitreihendiagramms der Ergebnisse. Die Dateien des Energiebedarfs und der Anlagen enthalten Zeitstempel und Außentemperatur sowie die jeweiligen Werte, die übrigen Diagramme die Reihen, die sie gerade zeigen ([[Datenexport]]). Den Vergleich mehrerer Varianten gibt der Bericht als Word-Dokument oder Excel-Arbeitsmappe aus.
+
+=== Werden meine Projektdaten übertragen? ===
+{{Anker|werden-meine-projektdaten-uebertragen}}
+
+Nein. Projekt-, Kunden- und Simulationsdaten bleiben lokal auf Ihrem Rechner. Eine Internetverbindung wird nur für Klimadaten, Ortssuche und Online-Dokumentation genutzt. Verwenden Sie den Hilfe-Assistenten mit eigenem Zugangsschlüssel, werden ausschließlich Ihre Frage, der Bereichsname und die integrierten Hilfetexte übertragen. Erst wenn Sie dort die Aktionen freischalten, gehen zusätzlich die Ergebnisse der ausgeführten Leseaktionen mit – mit Platzhaltern anstelle von Projekt- und Anlagennamen. Näheres unter [[Hilfe-Assistent]].
+
+=== Brauche ich einen Zugangsschlüssel für den Hilfe-Assistenten? ===
+{{Anker|brauche-ich-einen-zugangsschluessel-fuer-den-hilfe-assistenten}}
+
+Nur für frei formulierte Antworten. Die Suche in der mitgelieferten Hilfe läuft ohne Schlüssel, ohne Internet und ohne Kosten. Möchten Sie ausformulierte Antworten, hinterlegen Sie im Chatfenster unter ''Einstellungen…'' einen eigenen Zugangsschlüssel; je Arbeitsplatz und Tag sind 50 Anfragen möglich. Nutzen müssen Sie den Assistenten nicht – Einzelheiten unter [[Hilfe-Assistent]].
+
+=== Was kostet die Nutzung des Hilfe-Assistenten? ===
+{{Anker|was-kostet-die-nutzung-des-hilfe-assistenten}}
+
+Die lokale Suche in der integrierten Hilfe ist kostenfrei und funktioniert ohne Internet. Für frei formulierte Antworten hinterlegen Sie einen eigenen Zugangsschlüssel; abgerechnet wird dann direkt über den jeweiligen Anbieter. Ein Tageslimit im Programm begrenzt die Zahl der Anfragen.
+
+=== Welche Daten überträgt der Hilfe-Assistent? ===
+{{Anker|welche-daten-uebertraegt-der-hilfe-assistent}}
+
+Ihre Frage im Wortlaut, den Namen des Bereichs, in dem Sie arbeiten, und Auszüge aus den mitgelieferten Hilfetexten. Projekt- und Kundendaten, Simulationsergebnisse und Dateipfade gehen nicht hinaus. Vor jedem Absenden können Sie sich anzeigen lassen, was genau übertragen würde; vor der ersten Anfrage legt das Programm einen Rechtshinweis vor, und ohne Ihre Zustimmung wird nichts gesendet. Schalten Sie im Chatfenster zusätzlich die Aktionen frei, kommen die Ergebnisse ausgeführter Leseaktionen hinzu – Projekt- und Anlagennamen darin werden durch Platzhalter ersetzt.
+
+=== Wo finde ich die Lizenzbedingungen? ===
+{{Anker|wo-finde-ich-die-lizenzbedingungen}}
+
+Im Programm unter {{Menü|Hilfe|Lizenz}}. Dort finden Sie die vollständige Lizenzvereinbarung, rechtliche Hinweise zu Nutzung, Haftung und Datenverarbeitung sowie die Angaben zu verwendeten Komponenten und Datenquellen – zum Lesen, Drucken und Speichern.
+
+=== Meine Frage steht hier nicht – was nun? ===
+{{Anker|meine-frage-steht-hier-nicht-was-nun}}
+
+Fragen Sie den Hilfe-Assistenten im Programm; er durchsucht die gesamte Hilfe und diese Online-Dokumentation. Führt das nicht weiter, hilft der Support im Rahmen des Wartungsvertrags weiter.
+
+[[Kategorie:Einstieg]]

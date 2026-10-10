@@ -1,0 +1,65 @@
+EPOS-Plan ist nicht auf Wohngebäude beschränkt. Gerade in Industrie und Gewerbe entscheidet die zeitliche Auflösung darüber, ob eine Auslegung trägt: Produktionsprozesse laufen im Schichtbetrieb, Prozesswärme fällt auf mehreren Temperaturniveaus an, und der Strombedarf bestimmt sowohl die Netzanschlussleistung als auch den Nutzen einer Photovoltaikanlage. Gebäude, Prozesse und Stromseite werden deshalb getrennt erfasst und anschließend gemeinsam bilanziert.
+
+== Gewerbe- und Industriegebäude ==
+{{Anker|gewerbe-und-industriegebaeude|dok-gewerbe-und-industriegebaeude}}
+
+Hallen, Werkstätten, Verwaltungstrakte und Lager werden als Nichtwohngebäude erfasst und wie alle Gebäude Stunde für Stunde nach VDI 6007 gerechnet. Maßgeblich sind neben Geometrie und U-Werten vor allem die Nutzungsrandbedingungen: Betriebszeiten, Nacht- und Wochenendabsenkung, Betriebsferien sowie die Raumsolltemperatur, die in einer Produktionshalle oft deutlich unter der eines Bürogebäudes liegt. Der erhöhte Luftwechsel durch Hallentore, Absauganlagen und Prozesslüftung wird über die Luftwechselrate abgebildet; interne Gewinne aus Maschinen und Beleuchtung senken den Heizwärmebedarf spürbar und sind bei der Auslegung zu berücksichtigen. Gemischt genutzte Objekte – beheizte Halle, temperierte Lagerfläche und Bürotrakt – legen Sie als getrennte Gebäude oder als Zonen eines Gebäudes an ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]), weil sich Nutzungszeiten und Solltemperaturen unterscheiden.
+
+== Prozesswärme ==
+{{Anker|prozesswaerme|dok-prozesswaerme}}
+
+Prozesswärme wird unabhängig vom Gebäude erfasst. Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag mit Jahresverbrauch, Monatsverteilung und einem Wochenprofil aus 168 Stundenwerten an – dieses Profil ist faktisch der Schichtplan. Zwei Schichten von Montag bis Freitag ergeben ein völlig anderes Bild als ein durchlaufender Prozess und führen zu anderen Erzeugergrößen. Feiertage und Betriebsferien legt ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] auf das Wochenprofil. Die Trennung nach Temperaturniveaus ist entscheidend, weil sie bestimmt, welche Technik überhaupt in Frage kommt: Bäder, Reinigungs- und Vorwärmprozesse bis etwa 60 Grad sind für Wärmepumpen zugänglich, Trocknung und Dampferzeugung darüber in der Regel nicht.
+
+Steht Abwärme aus Kälteanlagen, Druckluftkompressoren, Spritzgießmaschinen oder Abluft zur Verfügung, lässt sie sich als Wärmequelle der Wärmepumpe hinterlegen – als konstante Quellentemperatur, als Quellprofil aus 12 Monats-, 365 Tages- oder 8.760 Stundenwerten oder als CSV-Datei mit Stundenwerten. Dass die Abwärme nur begrenzt zur Verfügung steht, bildet die Quelle ''Pufferspeicher'' ab: Die Wärmepumpe entzieht dem Quellspeicher die Verdampferwärme, die eingestellte Regeneration in kW lädt ihn laufend nach, und ist er leer, sinkt ihre Leistung.
+
+== Strombedarf und Lastgang ==
+{{Anker|strombedarf-und-lastgang|dok-strombedarf-und-lastgang}}
+
+In Industrie und Gewerbe ist der gemessene Viertelstundenlastgang die belastbarste Eingangsgröße; ein Jahr Zählerdaten des Netzbetreibers verbessert die Aussage erheblich gegenüber jedem Standardprofil. EPOS-Plan rechnet intern ohnehin in 35.040 Viertelstundenwerten. Damit lassen sich drei Fragen beantworten, die im Gewerbe regelmäßig auftreten: Welcher Anteil einer Photovoltaikanlage wird tatsächlich selbst verbraucht, weil Produktion und Sonnenschein zeitlich zusammenfallen? Wie stark steigt der Jahreshöchstwert der Leistung, wenn Prozesse elektrifiziert werden – und reicht der vorhandene Netzanschluss noch? Und lohnt ein Blockheizkraftwerk in stromgeführter Fahrweise, weil der Eigenstrombedarf ganzjährig hoch ist?
+
+== Typische Anwendungsfälle ==
+{{Anker|typische-anwendungsfaelle|dok-typische-anwendungsfaelle}}
+
+=== Bäckerei und Lebensmittelhandwerk ===
+{{Anker|baeckerei-und-lebensmittelhandwerk}}
+
+Backöfen und Kälteanlagen laufen in den frühen Morgenstunden, wenn keine Sonne scheint – die Abwärme der Öfen und der Kälteanlagen ist dagegen ganzjährig verfügbar. Sie wird als Wärmequelle hinterlegt und deckt über eine Wärmepumpe Warmwasser und Raumheizung; der Strombedarf wird über den gemessenen Lastgang erfasst, weil das Profil stark vom Standardverlauf abweicht.
+
+=== Wäscherei ===
+{{Anker|waescherei}}
+
+Waschen bei 60 bis 90 Grad und Trocknen ergeben einen hohen, gleichmäßigen Wärmebedarf über das ganze Jahr – der klassische Fall für ein Blockheizkraftwerk mit hohen Vollbenutzungsstunden oder für eine Hochtemperatur-Wärmepumpe mit Abwasser-Wärmerückgewinnung als Quelle. Erfassen Sie Waschen und Trocknen als getrennte Prozesseinträge, weil sie unterschiedliche Temperaturniveaus haben.
+
+=== Metallverarbeitung und Galvanik ===
+{{Anker|metallverarbeitung-und-galvanik}}
+
+Beheizte Bäder mit 50 bis 70 Grad bilden eine konstante Grundlast, die sich gut mit einer Wärmepumpe decken lässt; Härterei und Trocknung liegen darüber und bleiben beim Kessel. Getrennte Prozesseinträge je Temperaturniveau machen sichtbar, welcher Anteil elektrifizierbar ist.
+
+=== Kunststoffverarbeitung ===
+{{Anker|kunststoffverarbeitung}}
+
+Spritzgießmaschinen geben Abwärme auf niedrigem Niveau von 35 bis 45 Grad ab. Als Wärmequelle einer Wärmepumpe erreicht sie hohe Leistungszahlen und deckt Hallenheizung und Warmwasser; in der Simulation begrenzen Sie die verfügbare Wärmemenge über die Quelle Pufferspeicher und ihre Regeneration.
+
+=== Lackieren und Trocknen ===
+{{Anker|lackieren-und-trocknen}}
+
+Der Wärmebedarf entsteht überwiegend aus der Erwärmung großer Zuluftmengen und folgt damit unmittelbar der Außentemperatur und den Betriebszeiten. Das Wochenprofil bildet den Schichtbetrieb ab, die Lüftungswärme wird als eigener Prozesseintrag geführt.
+
+=== Lager und Logistik ===
+{{Anker|lager-und-logistik}}
+
+Geringer Wärmebedarf bei großen Dachflächen: Hier steht die Photovoltaik im Vordergrund. Mit dem gemessenen Lastgang von Fördertechnik, Kälte und Ladeinfrastruktur lässt sich der Eigenverbrauch belastbar bestimmen und die sinnvolle Speichergröße eingrenzen.
+
+Ein Fall mit zwei Temperaturniveaus, Hallenheizung und Schichtbetrieb ist beschrieben unter [[Beispiele#industriebetrieb-mit-prozesswaerme|Beispiele]]; weitere gewerbliche Anwendungen finden Sie dort ebenfalls.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Beispiele]] – ausgearbeitete Anwendungsfälle vom Einfamilienhaus über Schwimmbad und Industriebetrieb bis zum Wärmenetz
+* [[Grundlagen]] – die fachlichen Hintergründe zu Wärmebedarfsrechnung, Wärmepumpe, BHKW, Solarkollektoren und Wirtschaftlichkeit
+* [[Grundlagen/Strombedarf und Lastprofile]] – Lastprofile, gemessene Lastgänge und Lastspitzen
+* [[Programm Dokumentation/Prozesswärme]] – Prozesswärmeprofile erfassen
+* [[Programm Dokumentation/Wärmepumpe#waermequelle|Wärmepumpe – Quelle]] – Wärmequellen der Wärmepumpe einstellen
+* [[Update-Logbuch]] – welche Funktionen mit welcher Programmversion hinzugekommen sind
+
+[[Kategorie:Industrie und Gewerbe]]

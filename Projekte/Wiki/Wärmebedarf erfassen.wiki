@@ -1,0 +1,65 @@
+Beim Schritt '''Wärmebedarf erfassen''' entsteht der Bedarf aus bis zu vier Anteilen, die getrennt erfasst und anschließend stundenweise addiert werden: Gebäudeheizwärme, Warmwasser, Prozesswärme und – falls vorhanden – ein extern eingelesener Lastgang. Ergänzend lassen sich Netzverluste aufschlagen.
+
+== Gebäudeheizwärme ==
+{{Anker|gebaeudeheizwaerme|gebaeude}}
+
+Für die Gebäudeheizwärme wählen Sie ein Gebäude aus dem Katalog. Die Liste führt Name, Gebäudeart, Verwendung (Wohngebäude oder Gewerbe+Sonstige), Baualtersklasse – ein Bauzeitraum von „bis 1859“ bis „ab 2021“ – und Fläche; ein Suchfeld mit Platzhaltern, ein Trichter je Spalte und der Sortierpfeil engen sie ein. Ein Gebäude lässt sich auch aus einer gbXML- oder IFC-Datei importieren ([[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]). Das zugeordnete Gebäude wird zu einer Projektkopie, in der Sie die Bezugsgröße anpassen – üblicherweise die Nutzfläche in Quadratmetern – und die Sie über ''Gebäude im Projekt bearbeiten…'' mit Hülle, Zonen und Konditionierung selbst bearbeiten.
+
+=== Bedarf aus Verbrauchsdaten ===
+{{Anker|bedarf-aus-verbrauchsdaten|verbrauchsdaten}}
+
+Liegen statt Flächen Verbrauchsdaten vor, geben Sie diese direkt an:
+
+* Ölverbrauch in Litern pro Jahr
+* Gasverbrauch in Kubikmetern oder Megawattstunden
+* allgemeiner Brennstoffverbrauch in Megawattstunden
+
+EPOS-Plan rechnet den Verbrauch unter Berücksichtigung des Jahresnutzungsgrads der bestehenden Anlage in Nutzwärme um und skaliert das Gebäudemodell so, dass es genau diesen Bedarf abbildet – der Jahresgang ist damit an die reale Abrechnung gebunden. Damit lässt sich ein Bestandsgebäude allein aus der Heizkostenabrechnung realistisch beschreiben.
+
+=== Kenngrößen des Gebäudetyps ===
+{{Anker|kenngroessen-des-gebaeudetyps|gebaeudetyp}}
+
+Die physikalischen Kenngrößen eines Gebäudes stehen im Reiter ''Gebäude und Hülle'': Nutzfläche und Fläche je Nutzer, Baualtersklasse, Baujahr und Energiestandard, Raumhöhe, interne Wärmegewinne, Fensterflächen getrennt nach Nord, Süd, Ost und West, der Fensterdurchlassgrad, die Flächen von Außenwand, Fenster, Dach, Bodenplatte und sonstigen Bauteilen mit den zugehörigen U-Werten, drei Wärmebrücken mit Verlustkoeffizient und Anschlusslänge, die Luftwechselrate und die Bauart – leicht, schwer oder sehr schwer –, die die Speicherfähigkeit bestimmt; dazu die Modellparameter des Gebäudemodells und die Kühlung. Statt der U-Wert-Gruppen kann das Gebäude als Zone aus einzelnen Bauteilen mit Schichtaufbau beschrieben werden ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]]).
+
+Der Reiter ''Konditionierung'' führt, wann und worauf das Gebäude geheizt, gekühlt und gelüftet wird: eine Vorgabe-Matrix mit den Größen Heizen, Kühlen, Lüftung, Geräte und Personen für Nennwert, Tag, Nacht, Wochenende, Ferien und Saison – alle Temperaturen als absolute Raumsolltemperaturen – und je Größe ein Kalender mit Wochenprofilen, Zuordnungen im Jahr, benannten Ferienzeiträumen, Wochenendtagen und Feiertagsland; Vorlagen der Konditionierung lassen sich übernehmen ([[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Konditionierung]]).
+
+=== Berechnung des Jahresgangs ===
+{{Anker|berechnung-des-jahresgangs|jahresgang|tagesverteilung}}
+
+Aus diesen Angaben rechnet das Gebäudemodell nach VDI 6007 den Heizwärmebedarf Stunde für Stunde über das Jahr – mit Speichermasse, Sonneneinstrahlung je Himmelsrichtung, inneren Gewinnen und dem Sollwertfahrplan der Konditionierung; es liefert zugleich Raumtemperatur und Kältebedarf. Das ist die Vorgabe für jedes Gebäude. Wählbar bleibt je Gebäude der Rechenweg ''Tagesbilanz'': Er bilanziert für jeden der 365 Tage solare Gewinne, Transmissions- und Lüftungsverluste zur Tagesheizlast und legt sie über eine typabhängige 24-Stunden-Verteilungskurve auf Stundenwerte um – für Wohngebäude acht Kurven nach Jahreszeit und Wochentag, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkung ([[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]).
+
+Das Ergebnis ist ein durchgängiger Jahresgang der Heizleistung, aus dem sich die maximale Wärmelast und die Jahresdauerlinie ableiten; ''Simulation…'' im Gebäudedialog zeigt ihn je Gebäude samt Kennzahlen, Vergleich der Rechenwege und Verlauf der Raumtemperatur.
+
+== Warmwasser und Prozesswärme ==
+{{Anker|warmwasser-und-prozesswaerme|warmwasser|prozesswaerme}}
+
+Warmwasser und Prozesswärme werden nach demselben Muster erfasst: Sie wählen einen Typ aus dem Katalog, geben den Jahresverbrauch an, und das Programm verteilt diesen über die hinterlegten Monatsanteile und ein Wochenprofil mit 168 Stundenwerten auf das Jahr. Die Wochenprofile lassen sich in einem eigenen Editor tageweise bearbeiten, kopieren und auf alle Tage übertragen; eine Grafik zeigt das Ergebnis unmittelbar.
+
+Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an, wahlweise mit Vorlauf und Rücklauf des Prozesses; der Katalog liefert acht typische Betriebsweisen als Vorlage. Je Zuordnung wählt ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien, die das Wochenprofil tageweise ersetzen.
+
+Statt der Bestandsprofile kann der Zapfprofilgenerator den Brauchwasserbedarf aus Nutzungszonen des Gebäudes erzeugen – mit Zirkulation als eigener Teilreihe, stochastischer Jahresreihe und Speicherauslegung ([[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]]).
+
+{{Tipp|Ein zu niedrig angesetzter Warmwasserbedarf lässt den Sommerbetrieb zu günstig aussehen; bei Zirkulation sind die Verluste mitzurechnen.}}
+
+== Externer Lastgang und Netzverluste ==
+{{Anker|externer-lastgang-und-netzverluste|lastgang|netzverluste}}
+
+Ein bereits vorliegender Wärmelastgang kann alternativ als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden.
+
+Netzverluste tragen Sie im Block ''Weitere Einstellungen'' der Simulationskonfiguration ein: einen Gesamtwert in Prozent oder kWh/a, der je Stunde anteilig auf die Kanäle verteilt wird, oder je Kanal – Heizung, Brauchwasser, Prozesswärme – einen eigenen Wert als gleichmäßigen Betrag über das Jahr; dazu die Zirkulation des Brauchwassers mit Leistung und Laufzeit ([[Programm Dokumentation/Simulation#netzverluste-je-kanal|Simulation: Netzverluste je Kanal]]).
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Gebäude und Gebäudetypen]] – Katalog, Projektzuordnung und Tagesverteilungskurven
+* [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren im Einzelnen
+* [[Industrie und Gewerbe]] – Prozesswärme, Schichtprofile und Nichtwohngebäude
+* [[Programm Dokumentation/Wärmebedarf|Programm-Dokumentation: Wärmebedarf]] – die Dialoge der vier Anteile
+* [[Programm Dokumentation/Gebäude|Programm-Dokumentation: Gebäude]] – Katalog, Projektkopie, Hülle und Zonen, Konditionierung
+* [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] – der Rechenweg mit Formeln
+
+← [[Klimadaten festlegen]] | [[Strombedarf erfassen]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

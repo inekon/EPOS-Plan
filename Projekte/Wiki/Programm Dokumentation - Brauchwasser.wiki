@@ -1,0 +1,26 @@
+Der Dialog '''Brauchwasser''' verwaltet die Brauchwasserprofile des Projekts. Sie wählen einen Profiltyp aus dem Katalog und geben den Jahresverbrauch an; hinterlegte Monatsanteile und ein Wochenprofil aus 168 Stundenwerten verteilen ihn über das Jahr. Wahlweise erzeugt der Zapfprofilgenerator den Bedarf aus Nutzungszonen des Gebäudes; die Optionsgruppe ''Rechenweg Brauchwasser'' wählt zwischen ''Bestandsprofile'' und ''Zapfprofil''.
+
+== Eingaben ==
+
+* {{Anker|profilkatalog|projektprofile}}'''Datenbank Profile und ausgewählte Profile im Projekt''' – ein Profil auswählen und ins Projekt übernehmen; mehrere Profile nebeneinander sind möglich.
+* '''Name, Beschreibung und Typ''' – die Stammangaben des Profils.
+* {{Anker|jahresbedarf|summe}}'''Jährlicher Wärmebedarf''' – der Jahresverbrauch des gewählten Profils; ''Summe Brauchwasserprofile'' weist die Summe aller ausgewählten aus.
+* {{Anker|verbrauch-aendern}}'''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert in MWh eintragen und mit ''Übernehmen'' anwenden; die zeitliche Verteilung des Profils bleibt dabei erhalten.
+* '''Simulation''' – rechnet mit dem Jahresverbrauch, der im Dialog steht, auch vor dem Speichern, und zeigt Monatswerte und Jahresganglinie zur Kontrolle; steht der Rechenweg auf ''Zapfprofil'', rechnet der Knopf die Zonen des Arbeitsstands.
+* '''Profil und Typ in DB''' – neu anlegen, ändern und löschen; hier werden Monatswerte und Wochenprofile gepflegt.
+* '''Zapfprofil erzeugen…''' – öffnet im selben Fenster den Zapfprofilgenerator mit Nutzungszonen, Auslegung und Katalog der Nutzungsarten; ''‹ Brauchwasserwärme'' führt zurück und lässt Listen und Eingaben unverändert. Einzelheiten unter [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]].
+* '''Betriebskalender''' – je Zuordnung des Projekts wählt die Gruppe ''Betriebskalender'' einen Kalender mit Feiertagen und Betriebsferien, der das Wochenprofil tageweise ersetzt; ''ohne Kalender'' lässt es unverändert ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
+* '''Zirkulation und thermische Desinfektion''' – beides sind Einstellungen des Projekts im Block ''Weitere Einstellungen'' der [[Programm Dokumentation/Simulation#netzverluste-je-kanal|Simulationskonfiguration]]: die Zirkulation der Bestandsprofile mit Leistung und Laufzeit je Tag, die Desinfektion mit Intervall, Uhrzeit und Zieltemperatur.
+
+== Berechnung ==
+
+Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des Brauchwasserbedarfs werden, steht unter [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]].
+
+== Siehe auch ==
+
+* [[Wärmebedarf erfassen]] – Warmwasser als einer der vier Anteile des Wärmebedarfs
+* [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren hinter dem Jahresgang
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] – der Zapfprofilgenerator mit Nutzungszonen und Speicherauslegung
+* [[Programm Dokumentation/Betriebskalender|Betriebskalender]] – Feiertage und Betriebsferien im Wochenprofil
+
+[[Kategorie:Programm Dokumentation]]
