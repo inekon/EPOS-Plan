@@ -221,6 +221,57 @@ function erreichbar(rand = { oben: 0, unten: 0 }) {
   return { ok: fehlt.length === 0 && knoepfe.length > 0, n: knoepfe.length, fehlt };
 }
 
+/**
+ * UeS1: die Satz-Ueberlagerung (Konzept 4.4, 4.6). Kopf und Fussleiste sichtbar und treffbar, OK/Abbrechen
+ * ueber der Home-Anzeige (sichere Abstaende), die Ueberlagerung rollt nicht als Ganzes, und in ihr rollt
+ * hoechstens der Koerper - kein anderer Rollbereich in ihr.
+ */
+function satzUeberlagerung(rand = { oben: 0, unten: 0 }) {
+  const u = document.querySelector('.epos-ueberlagerung--satz');
+  if (!u) return { da: false };
+  const sichtbar = e => { const s = getComputedStyle(e); if (s.display === 'none' || s.visibility === 'hidden') return false; const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
+  const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY) || /^(auto|scroll)$/.test(getComputedStyle(e).overflowX);
+  const koerper = u.querySelector('.epos-satzueberlagerung-koerper');
+  const fremdeRoller = [...u.querySelectorAll('*')].filter(e => e !== koerper && sichtbar(e) && rollt(e) && e.scrollHeight > e.clientHeight + 1)
+    .map(e => e.tagName.toLowerCase() + '.' + String(e.className).trim().split(/\s+/)[0]);
+  const treffbar = k => {
+    const r = k.getBoundingClientRect();
+    if (r.width === 0 || r.top < rand.oben - 1 || r.bottom > innerHeight - rand.unten + 1 || r.left < -1 || r.right > innerWidth + 1) return false;
+    const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return !!(e && (e === k || k.contains(e)));
+  };
+  const kopf = u.querySelector(':scope > .epos-ueberlagerung-kopf');
+  const knoepfe = [...u.querySelectorAll('.epos-satzueberlagerung-fuss button')];
+  const r = u.getBoundingClientRect();
+  return {
+    da: true, oben: Math.round(r.top), unten: Math.round(r.bottom), breite: Math.round(r.width),
+    koerper: koerper ? Math.round(koerper.getBoundingClientRect().height) : null,
+    koerperRollt: !!(koerper && koerper.scrollHeight > koerper.clientHeight + 1),
+    ganzRollt: u.scrollHeight > u.clientHeight + 1 && rollt(u),
+    kopf: !!(kopf && sichtbar(kopf) && kopf.getBoundingClientRect().top >= rand.oben - 1),
+    fuss: knoepfe.length > 0 && knoepfe.every(treffbar), knoepfe: knoepfe.map(k => k.textContent.trim()),
+    fragment: document.querySelectorAll('.epos-modulparameter').length,
+    fremdeRoller,
+  };
+}
+
+const satzUebZeilen = [];
+function pruefeSatzUeberlagerung(fall, fenster, zustand, u) {
+  const kennung = `${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}`;
+  const fehler = [];
+  if (!u.da) fehler.push('Satz-Ueberlagerung fehlt');
+  else {
+    if (!u.kopf) fehler.push('Kopf der Satz-Ueberlagerung nicht sichtbar');
+    if (!u.fuss) fehler.push('Fussleiste der Satz-Ueberlagerung nicht sichtbar oder nicht treffbar (' + u.knoepfe.join(', ') + ')');
+    if (u.ganzRollt) fehler.push('Satz-Ueberlagerung rollt als Ganzes');
+    if (u.fremdeRoller.length) fehler.push('Rollbereich in der Satz-Ueberlagerung ausser dem Koerper: ' + u.fremdeRoller.join('; '));
+    if (u.fragment !== 1) fehler.push(`Fragment ${u.fragment}-mal gezeichnet statt einmal`);
+    satzUebZeilen.push(`${kennung}: Ueberlagerung ${u.oben}..${u.unten} px, Breite ${u.breite} px, Koerper ${u.koerper} px${u.koerperRollt ? ' (rollt)' : ''}, Kopf ${u.kopf ? 'sichtbar' : 'FEHLT'}, Fussleiste ${u.fuss ? 'sichtbar' : 'FEHLT'} (${u.knoepfe.join(' / ')})`);
+  }
+  for (const f of fehler) { verstoesse.push(kennung + ': ' + f); console.log('  VERSTOSS ' + kennung + ': ' + f); }
+  return fehler.length;
+}
+
 async function ruhe(seite) {
   await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
   await seite.waitForTimeout(120);
@@ -416,12 +467,27 @@ try {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Kostenknoepfe`);
           await mess('Detailzeile auf mit Kosten');
           await satz(seite, false);
+          // UeS1: „Bearbeiten…" EINER Projektkopie oeffnet die Satz-Ueberlagerung in voller Hoehe.
           await seite.locator('.epos-knopf--bearbeiten-projekt').click();
-          await seite.waitForSelector('.epos-satzbearbeitung', { timeout: 5000 });
+          await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
-          await mess('Bearbeiten Projektsatz offen');
+          await mess('Satz-Ueberlagerung offen');
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          if (FOTOS && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.ipad && (fenster.breite === 1194 || fenster.breite === 834))))
+            await seite.screenshot({ path: `${FOTOS}/heizkessel_satzueberlagerung_${fenster.breite}x${fenster.hoehe}.png` });
           await seite.keyboard.press('Escape');
           await ruhe(seite);
+          if (await seite.locator('.epos-ueberlagerung--satz').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Satz-Ueberlagerung nicht`);
+          // Derselbe Weg ueber „Vergroessern" in der Detailzeile; Abbrechen schliesst.
+          await seite.locator('.epos-zweispalten-vergroessern').click();
+          await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+          await ruhe(seite);
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          await seite.locator('.epos-satzueberlagerung-abbrechen').click();
+          await ruhe(seite);
+          if (await seite.locator('.epos-ueberlagerung--satz').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Abbrechen schliesst die Satz-Ueberlagerung nicht`);
           const k = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
           await k.nth(0).check();
           await k.nth(1).check();
@@ -484,6 +550,36 @@ try {
     await kontext.close();
     console.log(`Gegenprobe: verschachtelt ${gegen.verschachtelt} Paar(e), Dialogkoerper rollt: ${gegen.dialog}`);
     if (gegen.verschachtelt === 0 || !gegen.dialog) { console.log('  GEGENPROBE GRUEN - die Probe sieht nichts'); rueckgabe = 1; }
+
+    // Satz-Ueberlagerung (UeS1): ein Rollbereich im Koerper, eine als Ganzes rollende Ueberlagerung mit
+    // weggerollter Fussleiste muessen rot werden.
+    {
+      const k6 = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+      const s6 = await k6.newPage();
+      await s6.goto(WURZEL + '/fensterprobe?fall=heizkessel&zeilen=40', { waitUntil: 'networkidle' });
+      await s6.waitForSelector('.epos-zweispalten');
+      await s6.locator('.epos-knopf--bearbeiten-projekt').click();
+      await s6.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+      await s6.addStyleTag({ content: '.epos-satzueberlagerung-koerper .epos-modulparameter { overflow: auto !important; max-height: 60px !important; }' });
+      await ruhe(s6);
+      const vor = verstoesse.length;
+      pruefeSatzUeberlagerung('gegenprobe-satzueberlagerung', { breite: 1280, hoehe: 720 }, 'Rollbereich im Koerper', await s6.evaluate(satzUeberlagerung));
+      const rot1 = verstoesse.slice(vor).some(v => v.includes('ausser dem Koerper'));
+      verstoesse.splice(vor); satzUebZeilen.pop();
+      await s6.addStyleTag({ content: '.epos-satzueberlagerung-koerper .epos-modulparameter { overflow: visible !important; max-height: none !important; }'
+        + ' .epos-ueberlagerung.epos-ueberlagerung--satz { overflow-y: auto !important; }'
+        + ' .epos-satzueberlagerung, .epos-ueberlagerung--satz > .epos-ueberlagerung-inhalt, .epos-satzueberlagerung-koerper { flex: 0 0 auto !important; overflow: visible !important; }'
+        + ' .epos-satzueberlagerung-koerper::after { content: ""; display: block; height: 2000px; }' });
+      await ruhe(s6);
+      const vor2 = verstoesse.length;
+      pruefeSatzUeberlagerung('gegenprobe-satzueberlagerung', { breite: 1280, hoehe: 720 }, 'rollt als Ganzes', await s6.evaluate(satzUeberlagerung));
+      const neu2 = verstoesse.slice(vor2);
+      const rot2 = neu2.some(v => v.includes('als Ganzes')) && neu2.some(v => v.includes('Fussleiste'));
+      verstoesse.splice(vor2); satzUebZeilen.pop();
+      console.log(`Gegenprobe Satz-Ueberlagerung: Rollbereich im Koerper - ${rot1 ? 'rot' : 'gruen'}; rollt als Ganzes, Fussleiste weggerollt - ${rot2 ? 'rot' : 'gruen'}`);
+      if (!rot1 || !rot2) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Satz-Ueberlagerung nicht'); rueckgabe = 1; }
+      await k6.close();
+    }
 
     // Vorrang (DZ1): eine Satzflaeche, die auf 100 px begrenzt kleiner als der Rest bleibt, muss rot werden.
     {
@@ -603,6 +699,8 @@ try {
     const [fall, fenster, ...zust] = z.kennung.split(' ');
     console.log(`${fall} | ${fenster} | ${zust.join(' ')} | ${z.kompakt ? 'kompakt' : 'normal'} (${z.schrift} px)${z.eng ? ' eng' : ''} | ${z.roller} | ${z.zweispalten ?? '-'} | ${z.projekt ?? '-'} (${z.projektZeile ?? '-'}) | ${z.katalog ?? '-'} (${z.katalogKopf ?? '-'}, ${z.katalogZeile ?? '-'}) | ${z.satz ?? '-'}${z.bild !== null && z.bild !== undefined ? ` (${z.bild}/${z.bildPlatz})` : ''} | ${z.fehler}`);
   }
+  console.log(`\nSatz-Ueberlagerung (UeS1, ${satzUebZeilen.length}):`);
+  for (const z of satzUebZeilen) console.log('  ' + z);
   console.log(`\nKurven der Ganglinie (DZ1-N2, ${kurven.length}):`);
   for (const k of kurven) console.log('  ' + k);
   console.log(`\n${zeilen.length} Zustaende, ${verstoesse.length} Verstoesse`);

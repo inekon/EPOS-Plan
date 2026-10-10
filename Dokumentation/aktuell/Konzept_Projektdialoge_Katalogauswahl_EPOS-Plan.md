@@ -225,6 +225,18 @@ unverändert. Gemessene Satzfläche mit Kosten und „Alle Daten“ (Heizkessel)
 1 280 × 720, 152 px in 1 024 × 700, 220 px in 1 024 × 768, 476 px in 768 × 1 024, 97 px in 1 093 × 614.
 Trägt die Satzfläche eine Ganglinie, ist ihre Untergrenze der Kopf plus 150 px Kurve (DZ1‑N2, Maße in 4.9).
 
+**Präzisiert in ÜS1 (Anwenderentscheid 10.10.2026 mit Bildschirmfoto Heizkessel):** Der Kopf der Detailzeile trägt
+neben der klappenden Zeile den Knopf **„Vergrößern“** (Sinnbild und Text, in der Kompaktstufe nur das Sinnbild; der
+Tooltipp nennt den Zweck). Er öffnet den gewählten Satz als **Überlagerung über dem ganzen Dialog** in voller
+Fensterhöhe ohne die sicheren Abstände: im Kopf die Marke „Projektsatz“ oder „Katalogsatz“, der Name und die
+Kenndaten, im Körper derselbe Inhalt wie in der Satzfläche, unten die Fußleiste **OK / Abbrechen**. Kopf und Fußleiste
+stehen fest, allein der Körper rollt. Der Inhalt steht zu jedem Zeitpunkt an genau einer Stelle: Solange die
+Überlagerung offen ist, zeigt die Detailzeile nur ihre zugeklappte Zusammenfassung; nach dem Schließen steht die
+Satzfläche wieder, wie sie vorher war (auf oder zu). Der Baustein `Zweispaltenauswahl` trägt die Überlagerung für alle
+Wirte. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster): Körper 633 px in 1 280 × 800, 579 px in 1 280 × 720,
+559 px in 1 024 × 700, 649 px in 1 194 × 834 und 1 009 px in 834 × 1 194, Fußleiste in jedem Fenster sichtbar und über
+der Home-Anzeige.
+
 ### 4.5 Mehrfachauswahl
 
 - Beide Listen tragen eine Kästchenspalte; Klick wählt eine Zeile, Strg+Klick schaltet, Umschalt+Klick
@@ -253,6 +265,17 @@ Trägt die Satzfläche eine Ganglinie, ist ihre Untergrenze der Kopf plus 150 px
 - Ein gesperrter Katalogsatz allein öffnet nur lesend mit „Erst Schloss aufheben“.
 - Ein einzelner ungesperrter Katalogsatz öffnet den vollen Katalogeditor, nicht die Satzbearbeitung (KA‑E‑13).
 - Die Kostenknöpfe stehen nur beim gewählten Projektsatz; die Kostenverwaltung ohne Einengung bleibt im Menü (KA‑E‑12).
+
+**Präzisiert in ÜS1 (Anwenderentscheid 10.10.2026 mit Bildschirmfoto Heizkessel):** Die Überlagerung eines einzelnen
+Satzes ist die Satz-Überlagerung der Detailzeile (4.4) — dasselbe Bauteil an beiden Stellen. „Bearbeiten…“ in der
+Projekt-Kopfleiste öffnet sie für die eine gewählte Projektkopie, „Bearbeiten…“ in der Katalog-Fußleiste für den einen
+gewählten gesperrten Katalogsatz; „Alle Daten“ steht dabei aufgeklappt. **OK** schreibt über den Speicherweg der
+Satzfläche und schließt; lehnt der Speicherweg ab, bleibt die Überlagerung mit dem Grund in der Fußleiste offen, die
+Eingaben bleiben stehen. **Abbrechen**, ✕ und Esc lesen den Satz neu und verwerfen die Änderungen an seinen Feldern.
+Ein gesperrter Katalogsatz öffnet nur lesend: Die Fußleiste trägt allein „Schließen“ und den Hinweis „Erst Schloss
+aufheben“. Mehrere gewählte Sätze öffnen weiter die Satzbearbeitung mit Blätterleiste, ein einzelner ungesperrter
+Katalogsatz weiter den vollen Katalogeditor (KA‑E‑13). Gebaut ist es am Heizkessel; die übrigen Wirte schließen nur
+ihre Knöpfe und die zwei Rückrufe an.
 
 ### 4.7 Tastatur
 
