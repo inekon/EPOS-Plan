@@ -29,6 +29,11 @@
 
         /// <summary>Brauchwasser — <c>Tab_Brauchwasser_STAMM</c> / <c>Tab_Brauchwassertyp_STAMM</c>
         /// (Schluesselspalte: <c>Bezeichner</c>).</summary>
-        Brauchwasser
+        Brauchwasser,
+
+        /// <summary>Kaeltebedarf (Welle K1, Konzept Kaeltebedarf 3.3) — <c>Tab_Kaeltebedarf_STAMM</c> /
+        /// <c>Tab_Kaeltetyp_STAMM</c> (Schluesselspalte: <c>Bezeichner</c>). Vierter Wert, damit die gespeicherten
+        /// Ordnungszahlen der drei anderen bleiben.</summary>
+        Kaelte
     }
 }

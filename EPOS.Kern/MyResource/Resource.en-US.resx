@@ -3249,6 +3249,18 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_PROZESSWAERME_TYP_UNDEFINIERT" xml:space="preserve">
     <value>Process heat: the type of the process '{0}' is not defined. The process is skipped and its share remains 0; the remaining processes are calculated in full.</value>
   </data>
+  <data name="SIMENG_PRAEFIX_KAELTE" xml:space="preserve">
+    <value>Cooling demand: </value>
+  </data>
+  <data name="SIMENG_KAELTE_KOPF_FEHLT" xml:space="preserve">
+    <value>Cooling demand: no record is stored in the project for the cooling demand '{0}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_KAELTE_TYPPROFIL_FEHLT" xml:space="preserve">
+    <value>Cooling demand: no weekly profile is stored in the project for type '{0}' of the cooling demand '{1}'. Its calculation is skipped; its share remains 0.</value>
+  </data>
+  <data name="SIMENG_KAELTE_TYP_UNDEFINIERT" xml:space="preserve">
+    <value>Cooling demand: the type of the cooling demand '{0}' is not defined. It is skipped and its share remains 0; the remaining ones are calculated in full.</value>
+  </data>
   <data name="SIMENG_SIMULATION_ABGEBROCHEN" xml:space="preserve">
     <value>Simulation aborted: {0}</value>
   </data>
@@ -43266,6 +43278,12 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KABG_KATALOG_PWT" xml:space="preserve">
     <value>Process-heat weekly profiles</value>
+  </data>
+  <data name="KABG_KATALOG_KB" xml:space="preserve">
+    <value>Cooling demand profiles</value>
+  </data>
+  <data name="KABG_KATALOG_KBT" xml:space="preserve">
+    <value>Cooling demand weekly profiles</value>
   </data>
   <data name="KABG_KATALOG_BAUSTOFF" xml:space="preserve">
     <value>Building materials</value>

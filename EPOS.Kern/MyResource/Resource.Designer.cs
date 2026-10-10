@@ -48648,6 +48648,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarfsprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KB {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf-Wochenprofile ähnelt.
+        /// </summary>
+        public static string KABG_KATALOG_KBT {
+            get {
+                return ResourceManager.GetString("KABG_KATALOG_KBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
         /// </summary>
         public static string KABG_KATALOG_KESSEL {
@@ -104579,6 +104597,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: Zum Kältebedarf '{0}' ist im Projekt kein Datensatz hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KOPF_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KOPF_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}“: {1} MWh/a Netzbezug des Kältestroms (Kältestrom {2} MWh/a) tragen den Stromträger „{3}“. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_KUEHLTRAEGER_MENGE {
@@ -104611,6 +104638,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_PROJEKT_AUS {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: Zum Typ '{0}' des Kältebedarfs '{1}' ist im Projekt kein Wochenprofil hinterlegt. Seine Rechnung entfällt; sein Anteil bleibt 0. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_TYPPROFIL_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_TYPPROFIL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: Der Typ des Kältebedarfs '{0}' ist nicht definiert. Der Kältebedarf wird übersprungen, sein Anteil bleibt 0; die übrigen werden vollständig gerechnet. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_TYP_UNDEFINIERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_TYP_UNDEFINIERT", resourceCulture);
             }
         }
         
@@ -105241,6 +105286,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_PRAEFIX_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("SIMENG_PRAEFIX_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf:  ähnelt.
+        /// </summary>
+        public static string SIMENG_PRAEFIX_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMENG_PRAEFIX_KAELTE", resourceCulture);
             }
         }
         

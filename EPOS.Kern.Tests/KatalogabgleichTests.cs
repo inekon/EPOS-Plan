@@ -301,7 +301,8 @@ namespace EPOS.Kern.Tests
             // KU3-1: Tab_Kaeltemaschine_STAMM und Tab_Kenndaten_Kaeltemaschine_STAMM dazu - 46.
             // ZK: Tab_Zone_STAMM, Tab_Bauteil_STAMM, Tab_Zonenluftstrom_STAMM dazu (benannt ausgenommen) - 49.
             // PVG: Tab_PvGanglinie_STAMM und Tab_PvGanglinieDaten_STAMM dazu (Register "PVG") - 51.
-            Assert.Equal(51, stamm.Count);
+            // K1: Tab_Kaeltebedarf_STAMM und Tab_Kaeltetyp_STAMM dazu (Register "KB"/"KBT") - 53.
+            Assert.Equal(53, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
