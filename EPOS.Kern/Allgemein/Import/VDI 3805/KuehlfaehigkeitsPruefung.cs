@@ -23,8 +23,18 @@ namespace WindowsFormsApplication1
         /// <summary>Kein Kühlblock ist gültig, die Gründe sind gemischt (Heizlage und vertauschte Achsen).</summary>
         KeinGueltigerKuehlblock,
 
-        /// <summary>Gültige Kühlblöcke, aber keine Nennkühlleistung (Satz <c>700</c>, Feld 20) größer null.</summary>
-        KeineNennkuehlleistung
+        /// <summary>
+        /// Gültige Kühlblöcke, aber weder eine Nennkühlleistung (Satz <c>700</c>, Feld 20) größer null
+        /// noch eine Kälteleistung größer null in den gültigen Blöcken.
+        /// </summary>
+        KeineNennkuehlleistung,
+
+        /// <summary>
+        /// Gültige Kühlblöcke ohne Nennkühlleistung im Satz <c>700</c> — die Nennkühlleistung wird aus
+        /// der Kühlkennlinie abgeleitet (größte Kälteleistung der angenommenen Blöcke, <see cref="KuehlfaehigkeitsPruefung"/>);
+        /// das Gerät wird angeboten.
+        /// </summary>
+        KuehlfaehigAbgeleitet
     }
 
     /// <summary>
@@ -38,6 +48,11 @@ namespace WindowsFormsApplication1
     /// eine Nennkühlleistung größer null aus dem Gerätesatz <c>700</c> (Feld 20). Ein Gerät mit
     /// Nennkühlleistung, aber ohne Kühlblock ist nach dem Katalogkriterium kühlfähig, könnte aber
     /// keine Kälte rechnen — es wird übergangen („keine Kühlkennlinie“).</para>
+    ///
+    /// <para><b>Fehlt die Nennkühlleistung</b> (Entscheid des Anwenders vom 10.10.2026, Auftrag
+    /// VDI-K2), gilt die <b>größte Kälteleistung der angenommenen Kühlblöcke</b> als
+    /// Nennkühlleistung — ohne Normbedingungen und ohne Normwerte. Das Gerät wird angeboten, sein
+    /// Satz trägt die abgeleitete Leistung, und das Protokoll nennt sie je Gerät.</para>
     ///
     /// <para>Die Prüfreihenfolge legt den Grund fest: zuerst die Kühlkennlinie, dann die Gültigkeit
     /// ihrer Blöcke, zuletzt die Nennkühlleistung.</para>
@@ -76,9 +91,34 @@ namespace WindowsFormsApplication1
             }
 
             if (!(ZahlText.NachDouble(nennkuehlleistung ?? "") > 0.0))
-                return KaelteimportBefund.KeineNennkuehlleistung;
+                return AbgeleiteteNennkuehlleistung(gueltig) > 0.0
+                    ? KaelteimportBefund.KuehlfaehigAbgeleitet
+                    : KaelteimportBefund.KeineNennkuehlleistung;
 
             return KaelteimportBefund.Kuehlfaehig;
+        }
+
+        /// <summary>
+        /// Die aus der Kühlkennlinie abgeleitete Nennkühlleistung [kW]: die größte Kälteleistung
+        /// (<c>Pkuehl</c>) der Blöcke, die <see cref="KuehlblockPruefung"/> annimmt; 0 ohne
+        /// angenommenen Block.
+        /// </summary>
+        public static double AbgeleiteteNennkuehlleistung(
+            IReadOnlyCollection<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> kuehlungRoh)
+        {
+            if (kuehlungRoh == null || kuehlungRoh.Count == 0) return 0.0;
+            List<KuehlblockPruefung.Abgelehnt> abgelehnt;
+            var gueltig = KuehlblockPruefung.Pruefen(kuehlungRoh, out abgelehnt);
+            return gueltig.Count == 0 ? 0.0 : gueltig.Max(k => k.Pkuehl);
+        }
+
+        /// <summary>Die abgeleitete Nennkühlleistung des Satzes <paramref name="index"/> [kW].</summary>
+        public static double AbgeleiteteNennkuehlleistung(WaermepumpenImport import, int index)
+        {
+            List<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenn;
+            List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> roh;
+            import.KennlinienRoh(index, out kenn, out roh);
+            return AbgeleiteteNennkuehlleistung(roh);
         }
 
         /// <summary>Der Ressourcenschlüssel der Protokollzeile eines übergangenen Satzes.</summary>
@@ -98,19 +138,32 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Wendet den Filter auf einen gelesenen Import an: liefert die Indizes der angebotenen
         /// Sätze und schreibt je übergangenem Satz eine Protokollzeile mit Grund, dazu eine
-        /// Bilanzzeile. Die Meldungen des Lesers zu abgelehnten Kühlblöcken bleiben nur für die
+        /// Bilanzzeile. Einem angebotenen Satz ohne Nennkühlleistung trägt er die abgeleitete
+        /// Leistung ein (<see cref="AbgeleiteteNennkuehlleistung(WaermepumpenImport, int)"/>) und
+        /// nennt sie je Gerät, dazu eine Bilanzzeile mit ihrer Zahl. Die Meldungen des Lesers zu abgelehnten Kühlblöcken bleiben nur für die
         /// angebotenen Sätze stehen — für einen übergangenen nennt die eigene Zeile den Grund.
         /// </summary>
         public static List<int> Filtern(WaermepumpenImport import, List<PruefMeldung> meldungen)
         {
             var angeboten = new List<int>();
             var uebergangen = new List<PruefMeldung>();
+            var abgeleitet = new List<PruefMeldung>();
             var namenAngeboten = new HashSet<string>();
 
             for (int i = 0; i < import._list.Count; i++)
             {
                 KaelteimportBefund b = Befund(import, i);
                 string name = import._list[i].szName ?? "";
+                if (b == KaelteimportBefund.KuehlfaehigAbgeleitet)
+                {
+                    // VDI-K2: Die abgeleitete Nennkuehlleistung tritt an die Stelle des leeren
+                    // Feldes 20 - Zahlenspalte, Detailfeld und Katalogwert (NachStamm) lesen sie dort.
+                    double kw = AbgeleiteteNennkuehlleistung(import, i);
+                    string text = kw.ToString("R", CultureInfo.InvariantCulture);
+                    import._list[i].szKuehlleistung = text;
+                    abgeleitet.Add(new PruefMeldung(PruefStufe.Info, "IMP_KAT_PROT_KAELTE_ABGELEITET", name, text));
+                    b = KaelteimportBefund.Kuehlfaehig;
+                }
                 if (b == KaelteimportBefund.Kuehlfaehig)
                 {
                     angeboten.Add(i);
@@ -134,6 +187,10 @@ namespace WindowsFormsApplication1
                 angeboten.Count.ToString(CultureInfo.InvariantCulture),
                 import._list.Count.ToString(CultureInfo.InvariantCulture),
                 uebergangen.Count.ToString(CultureInfo.InvariantCulture)));
+            if (abgeleitet.Count > 0)
+                meldungen.Add(new PruefMeldung(PruefStufe.Info, "IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ",
+                    abgeleitet.Count.ToString(CultureInfo.InvariantCulture)));
+            meldungen.AddRange(abgeleitet);
             meldungen.AddRange(uebergangen);
             return angeboten;
         }

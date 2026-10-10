@@ -342,7 +342,8 @@ public class KatalogImportDialogTests : EposBunitContext
                      cut.Find(".epos-dialog-titel").TextContent);
         Assert.Equal(10, cut.FindAll(".epos-katalogimport-details label").Count);
         Assert.Contains("Kühlleistung [kW]", cut.Find("thead").TextContent);
-        Assert.Contains("nur Wärmepumpen mit Kühlleistung und gültiger Kühlkennlinie", cut.Markup);
+        Assert.Contains("nur Wärmepumpen mit gültiger Kühlkennlinie", cut.Markup);
+        Assert.Contains("fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie", cut.Markup);
     }
 
     /// <summary>Nur die Wärmepumpe trägt den Stufenhinweis.</summary>

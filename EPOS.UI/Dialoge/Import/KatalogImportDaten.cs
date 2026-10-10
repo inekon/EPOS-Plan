@@ -202,6 +202,9 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_PROT_KAELTE_ACHSEN": return Resource.IMP_KAT_PROT_KAELTE_ACHSEN;
                 case "IMP_KAT_PROT_KAELTE_UNGUELTIG": return Resource.IMP_KAT_PROT_KAELTE_UNGUELTIG;
                 case "IMP_KAT_PROT_KAELTE_NENNKUEHL": return Resource.IMP_KAT_PROT_KAELTE_NENNKUEHL;
+                // VDI-K2: aus der Kuehlkennlinie abgeleitete Nennkuehlleistung - je Geraet und Bilanz.
+                case "IMP_KAT_PROT_KAELTE_ABGELEITET": return Resource.IMP_KAT_PROT_KAELTE_ABGELEITET;
+                case "IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ": return Resource.IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ;
 
                 case "IMP_TXT_KEIN_PFAD": return Resource.IMP_TXT_KEIN_PFAD;
                 case "IMP_TXT_LESEFEHLER": return Resource.IMP_TXT_LESEFEHLER;

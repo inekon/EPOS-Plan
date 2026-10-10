@@ -46686,7 +46686,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Angeboten werden nur Wärmepumpen mit Kühlleistung und gültiger Kühlkennlinie; die übrigen nennt das Protokoll mit Grund. * 0=modulierend ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angeboten werden nur Wärmepumpen mit gültiger Kühlkennlinie; fehlt die Nennkühlleistung, gilt die größte Kälteleistung der Kennlinie. Die übrigen nennt das Protokoll mit Grund. * 0=modulierend ähnelt.
         /// </summary>
         public static string IMP_KAT_HINWEIS_KAELTE {
             get {
@@ -46794,6 +46794,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Nennkühlleistung aus der Kühlkennlinie abgeleitet: {1} kW. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ABGELEITET {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteimport: bei {0} Wärmepumpen Nennkühlleistung aus der Kühlkennlinie abgeleitet (größte Kälteleistung der gültigen Kühlblöcke). ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: Kühlblöcke nur mit vertauschten Achsen. ähnelt.
         /// </summary>
         public static string IMP_KAT_PROT_KAELTE_ACHSEN {
@@ -46830,7 +46848,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: keine Nennkühlleistung angegeben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot; übergangen: keine Nennkühlleistung angegeben und keine Kälteleistung in der Kühlkennlinie. ähnelt.
         /// </summary>
         public static string IMP_KAT_PROT_KAELTE_NENNKUEHL {
             get {

@@ -12,7 +12,8 @@ namespace EPOS.Kern.Tests
     /// <b>Der Import für Kälteanlagen</b> (Entscheid E119 vom 10.10.2026): Aus einer VDI-3805-Datei nach
     /// Blatt 22 werden nur Wärmepumpen angeboten, die nach E15 kühlfähig sind (Nennkühlleistung größer
     /// null) und mindestens einen gültigen Kühlblock tragen (<see cref="KuehlblockPruefung"/>); die
-    /// übrigen nennt das Leseprotokoll mit Grund.
+    /// übrigen nennt das Leseprotokoll mit Grund. Fehlt die Nennkühlleistung, gilt die größte
+    /// Kälteleistung der angenommenen Kühlblöcke (Auftrag VDI-K2).
     ///
     /// <para>Die Proben sind SYNTHETISCH — Phantasienamen und runde Werte, keine Herstellerdaten.</para>
     /// </summary>
@@ -63,7 +64,8 @@ namespace EPOS.Kern.Tests
         };
 
         /// <summary>
-        /// Sechs Geräte, je eines je Befund — dazu eines ohne Zuheizung, das trotzdem kühlfähig ist.
+        /// Acht Geräte, je eines je Befund — dazu eines ohne Zuheizung, das trotzdem kühlfähig ist, und
+        /// eines ohne Nennkühlleistung mit Kühlblöcken nur in Heizlage.
         /// </summary>
         private string SechsGeraete()
         {
@@ -90,6 +92,7 @@ namespace EPOS.Kern.Tests
             Satz(Geraet("WP Ohne Nennkuehl", "6", ""), KuehlGueltig);
             Satz(Geraet("WP Ohne Zuheizung", "", "9"), KuehlGueltig, KuehlHeizlage);
             Satz(Geraet("WP Gemischt", "6", "8"), KuehlHeizlage, KuehlAchsen);
+            Satz(Geraet("WP Heizlage Ohne Nennkuehl", "6", ""), KuehlHeizlage);
 
             string datei = Path.Combine(_ordner, "phantasie.vdi");
             File.WriteAllLines(datei, z, AnsiEncoding.Get());
@@ -101,7 +104,7 @@ namespace EPOS.Kern.Tests
         {
             var imp = new WaermepumpenImport();
             imp.Import(SechsGeraete());
-            Assert.Equal(7, imp._list.Count);
+            Assert.Equal(8, imp._list.Count);
 
             KaelteimportBefund[] befunde = Enumerable.Range(0, imp._list.Count)
                 .Select(i => KuehlfaehigkeitsPruefung.Befund(imp, i)).ToArray();
@@ -112,9 +115,10 @@ namespace EPOS.Kern.Tests
                 KaelteimportBefund.KeineKuehlkennlinie,
                 KaelteimportBefund.NurHeizlage,
                 KaelteimportBefund.NurAchsenVertauscht,
-                KaelteimportBefund.KeineNennkuehlleistung,
+                KaelteimportBefund.KuehlfaehigAbgeleitet,
                 KaelteimportBefund.Kuehlfaehig,
                 KaelteimportBefund.KeinGueltigerKuehlblock,
+                KaelteimportBefund.NurHeizlage,
             }, befunde);
         }
 
@@ -135,23 +139,26 @@ namespace EPOS.Kern.Tests
         {
             var ablauf = new KatalogImportAblauf(KatalogImportProfil.Finde(KatalogImportArt.WaermepumpeKuehlung));
 
-            Assert.Equal(2, ablauf.Lesen(SechsGeraete()));
-            Assert.Equal(new[] { "WP Kalt", "WP Ohne Zuheizung" }, ablauf.Saetze.Select(s => s.Name).ToArray());
+            Assert.Equal(3, ablauf.Lesen(SechsGeraete()));
+            Assert.Equal(new[] { "WP Kalt", "WP Ohne Nennkuehl", "WP Ohne Zuheizung" },
+                         ablauf.Saetze.Select(s => s.Name).ToArray());
 
-            // Die Zahlenspalte traegt im Kaeltemodus die Kuehlleistung.
-            Assert.Equal(new[] { 12.0, 9.0 }, ablauf.Saetze.Select(s => s.Filterwert).ToArray());
+            // Die Zahlenspalte traegt im Kaeltemodus die Kuehlleistung - ohne Nennkuehlleistung die
+            // aus der Kuehlkennlinie abgeleitete.
+            Assert.Equal(new[] { 12.0, 12.0, 9.0 }, ablauf.Saetze.Select(s => s.Filterwert).ToArray());
 
             PruefMeldung bilanz = Assert.Single(ablauf.Meldungen, m => m.Schluessel == "IMP_KAT_PROT_KAELTE_BILANZ");
-            Assert.Equal(new[] { "2", "7", "5" }, bilanz.Werte);
+            Assert.Equal(new[] { "3", "8", "5" }, bilanz.Werte);
 
             var gruende = ablauf.Meldungen.Where(m => m.Schluessel.StartsWith("IMP_KAT_PROT_KAELTE_")
-                                                  && m.Schluessel != "IMP_KAT_PROT_KAELTE_BILANZ")
+                                                  && m.Schluessel != "IMP_KAT_PROT_KAELTE_BILANZ"
+                                                  && !m.Schluessel.StartsWith("IMP_KAT_PROT_KAELTE_ABGELEITET"))
                                           .ToDictionary(m => m.Werte[0], m => m.Schluessel);
             Assert.Equal(5, gruende.Count);
             Assert.Equal("IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE", gruende["WP Nur Waerme"]);
             Assert.Equal("IMP_KAT_PROT_KAELTE_HEIZLAGE", gruende["WP Heizlage"]);
             Assert.Equal("IMP_KAT_PROT_KAELTE_ACHSEN", gruende["WP Achsen"]);
-            Assert.Equal("IMP_KAT_PROT_KAELTE_NENNKUEHL", gruende["WP Ohne Nennkuehl"]);
+            Assert.Equal("IMP_KAT_PROT_KAELTE_HEIZLAGE", gruende["WP Heizlage Ohne Nennkuehl"]);
             Assert.Equal("IMP_KAT_PROT_KAELTE_UNGUELTIG", gruende["WP Gemischt"]);
             Assert.All(ablauf.Meldungen.Where(m => gruende.ContainsValue(m.Schluessel)),
                        m => Assert.Equal(PruefStufe.Info, m.Stufe));
@@ -168,7 +175,7 @@ namespace EPOS.Kern.Tests
         {
             var ablauf = new KatalogImportAblauf(KatalogImportProfil.Finde(KatalogImportArt.Waermepumpe));
 
-            Assert.Equal(7, ablauf.Lesen(SechsGeraete()));
+            Assert.Equal(8, ablauf.Lesen(SechsGeraete()));
             Assert.DoesNotContain(ablauf.Meldungen, m => m.Schluessel.StartsWith("IMP_KAT_PROT_KAELTE_"));
             Assert.Equal(10.0, ablauf.Saetze[0].Filterwert);
         }
@@ -190,6 +197,79 @@ namespace EPOS.Kern.Tests
             waerme.Lesen(datei);
             KatalogImportSatz bestand = waerme.Saetze.Single(s => s.Name == "WP Ohne Zuheizung");
             Assert.Equal(0.0, Convert.ToDouble(bestand.Vergleichswerte("x")["Kuehlleistung"]));
+        }
+
+        /// <summary>
+        /// VDI-K2: Ohne Nennkühlleistung, aber mit gültigem Kühlblock wird das Gerät angeboten; als
+        /// Nennkühlleistung gilt die größte Kälteleistung der ANGENOMMENEN Kühlblöcke. Das Protokoll
+        /// nennt die Ableitung je Gerät (Info) und zählt sie in einer Bilanzzeile; der Katalogwert
+        /// trägt sie, der Wärmepumpenimport bleibt beim leeren Feld.
+        /// </summary>
+        [Fact]
+        public void Ohne_Nennkuehlleistung_mit_gueltigem_Kuehlblock_wird_aufgenommen_mit_abgeleiteter_Leistung()
+        {
+            string datei = SechsGeraete();
+            var kaelte = new KatalogImportAblauf(KatalogImportProfil.Finde(KatalogImportArt.WaermepumpeKuehlung));
+            kaelte.Lesen(datei);
+
+            KatalogImportSatz satz = kaelte.Saetze.Single(s => s.Name == "WP Ohne Nennkuehl");
+            Assert.Equal(12.0, satz.Filterwert);
+            Assert.Equal(12.0, Convert.ToDouble(satz.Vergleichswerte("x")["Kuehlleistung"]));
+            Assert.Equal("12", satz.Detailwerte["KUEHLLEISTUNG"]);
+
+            PruefMeldung hinweis = Assert.Single(kaelte.Meldungen, m => m.Schluessel == "IMP_KAT_PROT_KAELTE_ABGELEITET");
+            Assert.Equal(PruefStufe.Info, hinweis.Stufe);
+            Assert.Equal(new[] { "WP Ohne Nennkuehl", "12" }, hinweis.Werte);
+            PruefMeldung zahl = Assert.Single(kaelte.Meldungen, m => m.Schluessel == "IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ");
+            Assert.Equal(PruefStufe.Info, zahl.Stufe);
+            Assert.Equal(new[] { "1" }, zahl.Werte);
+
+            var waerme = new KatalogImportAblauf(KatalogImportProfil.Finde(KatalogImportArt.Waermepumpe));
+            waerme.Lesen(datei);
+            KatalogImportSatz bestand = waerme.Saetze.Single(s => s.Name == "WP Ohne Nennkuehl");
+            Assert.Equal(0.0, Convert.ToDouble(bestand.Vergleichswerte("x")["Kuehlleistung"]));
+        }
+
+        /// <summary>
+        /// Die größte Kälteleistung zählt nur aus angenommenen Blöcken: ein Block in Heizlage mit
+        /// höherer Leistung bleibt außen vor.
+        /// </summary>
+        [Fact]
+        public void Die_abgeleitete_Leistung_ist_die_groesste_Kaelteleistung_der_angenommenen_Bloecke()
+        {
+            var roh = new List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)>
+            {
+                (18, 20, 4.8, 12.0, 100),
+                (18, 35, 3.3, 10.0, 100),
+                (18, 27, 4.0, 14.5, 100),
+                (45, -5, 3.0, 30.0, 100),
+                (45, 10, 4.0, 40.0, 100),
+            };
+            Assert.Equal(14.5, KuehlfaehigkeitsPruefung.AbgeleiteteNennkuehlleistung(roh));
+            Assert.Equal(KaelteimportBefund.KuehlfaehigAbgeleitet, KuehlfaehigkeitsPruefung.Befund(roh, ""));
+            Assert.Equal(KaelteimportBefund.Kuehlfaehig, KuehlfaehigkeitsPruefung.Befund(roh, "8"));
+        }
+
+        /// <summary>
+        /// Ohne Nennkühlleistung und mit Kühlblöcken nur in Heizlage gibt es nichts abzuleiten — das
+        /// Gerät wird übergangen, mit dem Grund der Kühlblöcke.
+        /// </summary>
+        [Fact]
+        public void Ohne_Nennkuehlleistung_mit_Kuehlbloecken_nur_in_Heizlage_wird_uebergangen()
+        {
+            var heizlage = new List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)>
+            {
+                (45, -5, 3.0, 6.0, 100),
+                (45, 10, 4.0, 8.0, 100),
+            };
+            Assert.Equal(0.0, KuehlfaehigkeitsPruefung.AbgeleiteteNennkuehlleistung(heizlage));
+            Assert.Equal(KaelteimportBefund.NurHeizlage, KuehlfaehigkeitsPruefung.Befund(heizlage, ""));
+
+            var kaelte = new KatalogImportAblauf(KatalogImportProfil.Finde(KatalogImportArt.WaermepumpeKuehlung));
+            kaelte.Lesen(SechsGeraete());
+            Assert.DoesNotContain(kaelte.Saetze, s => s.Name == "WP Heizlage Ohne Nennkuehl");
+            Assert.DoesNotContain(kaelte.Meldungen, m => m.Schluessel == "IMP_KAT_PROT_KAELTE_ABGELEITET"
+                                                     && m.Werte[0] == "WP Heizlage Ohne Nennkuehl");
         }
 
         [Fact]
