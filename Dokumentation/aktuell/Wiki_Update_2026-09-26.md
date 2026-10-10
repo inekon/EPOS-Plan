@@ -167,16 +167,16 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
-Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#885, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze), 1.2.0.9 (1), 1.2.0.8 (4), 1.2.0.7 (36). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
+Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#885, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
 neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 als Teil von 1.2.0.10 (Revision 827)
+### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
 
-Vermerk: gestrafft und mit dem Block 1.2.0.9 zu "Version 1.2.0.10" vereint (29 Sätze).
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Version noch beim Anwender zu bestätigen.
 
@@ -190,9 +190,9 @@ Version noch beim Anwender zu bestätigen.
 - Seit 10.10.2026: Die Kältemaschine rechnet auf Wunsch ihr Teillastverhalten und das Takten bei kleiner Last; Katalogdialog und Anlagendialog führen die zugehörigen Felder. (#879)
 - Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt die Kachel „Teillast und Takten der Kältemaschinen“ mit Taktstrom, Starts, Teillastanteil, mittlerem Lastgrad und Jahres-EER ohne Hilfsstrom, der Bericht eine Tafel dazu. (#879)
 
-### Version 1.2.0.9 — veröffentlicht 10.10.2026 als Version 1.2.0.10 und 1.2.0.9 (Revision 827)
+### Version 1.2.0.9 — veröffentlicht 10.10.2026 (Revision 827)
 
-Vermerk: Anwenderentscheid 10.10.2026, letzte Stelle um eins erhöhen; der Entwurf dieses Blocks steht im Wiki unter 1.2.0.10 (29 Sätze), der Satz zur Kachel Kühlung unter 1.2.0.9 (1 Satz).
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 
@@ -238,9 +238,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
 
-### Version 1.2.0.8 — veröffentlicht 10.10.2026 als Version 1.2.0.8 (Revision 827)
+### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
-Vermerk: im Wiki 4 Sätze (Zuordnung der Sätze nach Anwenderentscheid 10.10.2026).
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Platzhalter: Version beim Anwender offen (nächste Fassung nach 1.2.0.7); veröffentlicht wird jeder Satz erst, wenn sein
 Schemaschritt der Standardlastprofile ausgeliefert ist (H25/G25/L25: 193; P25/S25: 196).
@@ -248,18 +248,18 @@ Schemaschritt der Standardlastprofile ausgeliefert ist (H25/G25/L25: 193; P25/S2
 - Seit 07.10.2026: Der Katalog „Datenbank Strombedarf“ enthält zusätzlich die BDEW-Profile P25 und S25 für den Netzbezug von Haushalten mit PV-Anlage bzw. mit PV-Anlage und Batteriespeicher (Netzbezugsprofile, keine Verbrauchsprofile). (SLP25b)
 - Seit 06.10.2026: Der Katalog „Datenbank Strombedarf“ enthält die BDEW-Standardlastprofile Strom 2025 für Haushalt (H25), Gewerbe (G25) und Landwirtschaft (L25), normiert auf 1.000 MWh im Jahr. (SLP25)
 
-### Version 1.2.0.7 — veröffentlicht 10.10.2026 als Version 1.2.0.7 (Revision 827)
+### Version 1.2.0.7 — veröffentlicht 10.10.2026 (Revision 827)
 
-Vermerk: im Wiki 36 Sätze (Berichtsseite, Pufferauslegung, Sperrfenster, nie veröffentlichte Sätze aus 1.2.0.5 und der Block 1.2.0.6).
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Version vom Anwender zu bestätigen (Regel 13.4: ein Satz je Auftrag).
 
 - Seit 06.10.2026: Die Berichtsseite ordnet Varianten und Inhalt links, Vorlage und Ausgabe rechts in vier Karten an. (#762)
 - Seit 06.10.2026: Der Wirtschaftlichkeitsbericht lässt sich mit allen drei Szenarien nebeneinander erstellen (VALERI-Darstellung). (#765)
 
-### Version 1.2.0.6 — veröffentlicht 10.10.2026 unter Version 1.2.0.7 (Revision 827)
+### Version 1.2.0.6 — veröffentlicht 10.10.2026 (Revision 827)
 
-Vermerk: die Sätze dieses Blocks stehen im Wiki in 1.2.0.7 (Anwenderentscheid 10.10.2026, letzte Stelle um eins erhöhen).
+Vermerk: gestrafft veröffentlicht am 10.10.2026 (Revision 827); welche Wiki-Version die Sätze tragen, steht im Vermerk zu Beginn dieses Abschnitts.
 
 Anwenderentscheid 29.09.2026: Version 1.2.0.6 für den Satz zum Katalogimport. Ein Satz je Auftrag (Regel 13.4).
 
