@@ -189,12 +189,12 @@ Version noch beim Anwender zu bestätigen.
 - Seit 09.10.2026: Der Heizkessel-Dialog arbeitet auf der neuen Katalogauswahl: Bearbeiten je Bereich, Mehrfachbearbeitung mit „für alle gewählten setzen“ und „In die Datenbank übernehmen…“ als neuer Katalogsatz oder als Überschreiben des Ursprungs; Investitions- und Betriebskosten gehen als Vorlage des Katalogsatzes mit. (#873)
 - Seit 10.10.2026: Die Kältemaschine rechnet auf Wunsch ihr Teillastverhalten und das Takten bei kleiner Last; Katalogdialog und Anlagendialog führen die zugehörigen Felder. (#879)
 - Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt die Kachel „Teillast und Takten der Kältemaschinen“ mit Taktstrom, Starts, Teillastanteil, mittlerem Lastgrad und Jahres-EER ohne Hilfsstrom, der Bericht eine Tafel dazu. (#879)
-- Seit 10.10.2026: Die Kälteerzeugung hat eine eigene Seite unter „Erzeuger und Speicher“. (#933)
-- Seit 10.10.2026: Die Rechenwegseite „Kühlung“ erklärt die Gleichungen; die Kältedialoge tragen Knöpfe zur Berechnung und zu den Grundlagen. (#933)
-- Seit 10.10.2026: Sieben neue Grundlagenseiten: Gebäudemodell VDI 6007, Bauteile am Erdreich, Brauchwasser-Zapfprofile, Gemeinjahr und Feiertage, Anlagenkopplung und Regelung, Brauchwasser und Prozesswärme. (#933)
-- Seit 10.10.2026: Die Programmdokumentation zu Simulation, Gerätekatalogen, Gebäude, Brauchwasser und Prozesswärme ist auf den aktuellen Stand gebracht, mit Konfiguration und hydraulischer Einbindung. (#933)
-- Seit 10.10.2026: Beispieldiagramme und Bildschirmfotos veranschaulichen die Seiten. (#933)
-- Seit 10.10.2026: Die Satzzeile des Bedarfsdialogs zeigt bei gewählter Zeile den gewählten Satz. (#933)
+- Seit 10.10.2026: Die Kälteerzeugung hat eine eigene Seite unter „Erzeuger und Speicher“. (#935)
+- Seit 10.10.2026: Die Rechenwegseite „Kühlung“ erklärt die Gleichungen; die Kältedialoge tragen Knöpfe zur Berechnung und zu den Grundlagen. (#935)
+- Seit 10.10.2026: Sieben neue Grundlagenseiten: Gebäudemodell VDI 6007, Bauteile am Erdreich, Brauchwasser-Zapfprofile, Gemeinjahr und Feiertage, Anlagenkopplung und Regelung, Brauchwasser und Prozesswärme. (#935)
+- Seit 10.10.2026: Die Programmdokumentation zu Simulation, Gerätekatalogen, Gebäude, Brauchwasser und Prozesswärme ist auf den aktuellen Stand gebracht, mit Konfiguration und hydraulischer Einbindung. (#935)
+- Seit 10.10.2026: Beispieldiagramme und Bildschirmfotos veranschaulichen die Seiten. (#935)
+- Seit 10.10.2026: Die Satzzeile des Bedarfsdialogs zeigt bei gewählter Zeile den gewählten Satz. (#935)
 
 ### Version 1.2.0.9 — veröffentlicht 10.10.2026 (Revision 827)
 

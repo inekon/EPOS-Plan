@@ -1,6 +1,6 @@
 # Wiki: Kälteerzeugung, Grundlagen, Brauchwasser und Prozesswärme, Bilder (Protokoll, 10.10.2026)
 
-Statuszeile #933 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Logbuch-Sätze im Abschnitt „Version offen“ von
+Statuszeile #935 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Logbuch-Sätze im Abschnitt „Version offen“ von
 [`Wiki_Update_2026-09-26.md`](../../../aktuell/Wiki_Update_2026-09-26.md); Konzept
 [`Konzept_Hilfesystem_Wikidokumentation.md`](../../../aktuell/Konzept_Hilfesystem_Wikidokumentation.md) (Abschnitt 14.3 „PNG-Bilder“). Zweige
 `claude/wiki-kaelte` und `claude/wiki-sammel` (Sammelstand `49a174c8`), Vormerge mit `origin/ios_migration_september` auf `0be44a78`.
