@@ -155,6 +155,19 @@ public sealed class KaeltemaschinePunktDaten
 }
 
 /// <summary>Der Ausgang eines Schreibwegs der Hülle: bei Erfolg die Id, sonst der Grund.</summary>
+/// <summary>
+/// <b>Die zwei Kennlinienbilder des Stammblatts</b> (KD-3): EER und Kälteleistung über der Rückkühltemperatur (bei
+/// Luft der Außentemperatur), eine Linie je Kaltwassertemperatur — gezeichnet vom Renderer des Kerns
+/// (<c>ChartRenderer.KennlinienModell</c>), gebaut in der Hülle (<c>KaeltemaschineKennlinienbild</c>).
+/// <c>null</c> = kein vollständiger Punkt, der Baustein zeigt den Platzhalter.
+/// </summary>
+public sealed record KaeltemaschineKennlinienbilder(WindowsFormsApplication1.Zeichnung.Zeichenmodell? Eer,
+                                                    WindowsFormsApplication1.Zeichnung.Zeichenmodell? Leistung)
+{
+    /// <summary>Ohne Bild.</summary>
+    public static readonly KaeltemaschineKennlinienbilder Leer = new(null, null);
+}
+
 public sealed record KaeltemaschineSpeicherErgebnis(bool Ok, string Meldung, int Id);
 
 /// <summary>Der Ausgang von „Typkennfelder laden…" (KM1): neu angelegt, übersprungen, bei Fehler der Grund.</summary>
