@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -106,6 +107,11 @@ namespace WindowsFormsApplication1
                 zuModell[m.ID] = m;
             }
 
+            // Die Zeilen, die dieser Dialog frisch aufnimmt: Ihre Projektkopie entsteht erst beim Speichern der
+            // Konfiguration - bis dahin zeigt GeraetId auf den KATALOG (Katalogauswahl V1, Stufe 3).
+            var neu = new HashSet<int>();
+            Func<ErzeugerZeile, bool> hatKopie = z => projektId > 0 && z.GeraetId > 0 && !neu.Contains(z.Schluessel)
+                                                      && PufferSpCtrl.Detail(z.GeraetId, projektId) != null;
             var zaehler = new Zaehler();
             foreach (var m in modelle) if (m.ID >= zaehler.Naechster) zaehler.Naechster = m.ID + 1;
 
@@ -138,8 +144,12 @@ namespace WindowsFormsApplication1
                     stammId => Dublettenfrage(idType, modelle, stammId)),
 
                 ["Aufnehmen"] = new Func<int, bool, AufnahmeErgebnis>(
-                    (stammId, erzwingen) => Aufnehmen(projektId, idType, modelle, zuModell,
-                                                      zaehler, stammId, erzwingen)),
+                    (stammId, erzwingen) =>
+                    {
+                        AufnahmeErgebnis e = Aufnehmen(projektId, idType, modelle, zuModell, zaehler, stammId, erzwingen);
+                        if (e.Zeile != null) neu.Add(e.Zeile.Schluessel);
+                        return e;
+                    }),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
                     zeile =>
@@ -149,13 +159,32 @@ namespace WindowsFormsApplication1
                         zuModell.Remove(zeile.Schluessel);
                     }),
 
-                ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
+                ["KatalogLoeschen"] = new Func<int, string>(id => KatalogLoeschen(stamm, id)),
 
-                // iU9-W14a.1: Die Speicherverwaltung ist die Razor-Komponente
-                // KatalogBrowserDialog und erscheint als UEBERLAGERUNG im selben
-                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
-                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => PufferSpAdminHuelle.Gaben(false)),
+                // KATALOGAUSWAHL V1, STUFE 3 (Konzept 4.9): Summe Volumen in der Projekt-Kopfleiste, der volle
+                // Katalogeditor fuer einen ungesperrten Satz (KA-E-13; die Speicherverwaltung als Ueberlagerung
+                // entfaellt, sie bleibt im Menue), Bearbeiten je Bereich (KA-E-8) und der Rueckweg (KA-E-9) -
+                // die beiden letzten nur fuer Zeilen mit Projektkopie.
+                ["SummeVolumen"] = new Func<string>(
+                    () => SummeVolumen(projektId, idType, modelle, hatKopie)
+                              .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)),
+                ["LabelSumme"] = Text_("PSPD_LBL_SUMME", "Summe Volumen [l]:"),
+                ["HatProjektkopie"] = hatKopie,
+                ["HinweisOhneKopie"] = Text_("PSPD_HINWEIS_OHNE_KOPIE",
+                    "Die Projektkopie dieses Speichers entsteht mit OK; erst dann lässt sie sich bearbeiten oder in die Datenbank übernehmen."),
+                ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
+                    name => OhneRahmen(PufferSpAdminHuelle.EditorGaben(name, false, _ => { }))),
+                ["EditorTitel"] = MyResource.Resource.PSPK_TITEL,
+                ["ProjektsatzWege"] = projektId <= 0 ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(PufferSpAdminHuelle.Profil(), PufferSpStammCtrl.SatzAnzeige(true, id)),
+                    Speichern = saetze => PufferSpAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(PufferSpAdminHuelle.Profil(), PufferSpStammCtrl.SatzAnzeige(false, id)),
+                    Speichern = saetze => PufferSpAdminHuelle.SammelSchreiben(false, saetze)
+                },
 
                 ["TitelText"] = Text_("PSPD_TITEL", "Verwaltung Pufferspeicher"),
                 ["KopfbandText"] = Text_("PSPD_KOPFBAND", "Geben Sie die Daten der Pufferspeicher ein"),
@@ -166,7 +195,6 @@ namespace WindowsFormsApplication1
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
-                ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
                 ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
 
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
@@ -191,9 +219,6 @@ namespace WindowsFormsApplication1
                 ["TitelDublette"] = MyResource.Resource.ANL_DUBLETTE_TITEL,
                 ["TitelLoeschen"] = MyResource.Resource.PSP_TITEL_KATALOG_LOESCHUNG,
                 ["FrageLoeschen"] = MyResource.Resource.PSP_MELDUNG_KATALOG_LOESCHEN,
-                ["MeldungModulWaehlen"] = MyResource.Resource.PSP_MELDUNG_MODUL_WAEHLEN,
-                ["MeldungLoeschFehler"] = Text_("HZK_MSG_LOESCHFEHLER",
-                    "Der Katalogeintrag konnte nicht gelöscht werden."),
 
                 // DIE KOSTENKNOEPFE IM MODULBEREICH (Anwenderentscheid 15.09.2026:
                 // "alle sechs Erzeuger im gleichen Schema"). Der Weg ist derselbe, den
@@ -233,6 +258,47 @@ namespace WindowsFormsApplication1
         /// selbst stellen (Baustein <c>Rueckfrage</c>), also braucht sie den TEXT, nicht
         /// die Handlung. Er kommt aus denselben zwei Ressourcenschlüsseln.
         /// </remarks>
+        /// <summary>
+        /// Löscht einen Katalogsatz samt Satzvorlagen (KA‑E‑16, <c>PufferSpStammCtrl.Delete</c>, der eine Vorlage, die
+        /// Projektzeilen noch brauchen, als Hinweis nennt). Leere Rückgabe = gelöscht; sonst der Grund.
+        /// </summary>
+        private static string KatalogLoeschen(PufferSpStammCtrl stamm, int id)
+        {
+            if (PufferSpStammCtrl.IsReadOnlyStatic(id))
+                return Text_("KBROW_MSG_SCHUTZ_LOESCHEN",
+                    "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.");
+            return stamm.Delete(id) ? ""
+                : Text_("HZK_MSG_LOESCHFEHLER", "Der Katalogeintrag konnte nicht gelöscht werden.");
+        }
+
+        /// <summary>
+        /// Die Summe der Gesamtvolumina der Projektliste in Litern: je Zeile die Projektkopie, ohne Kopie (frisch
+        /// aufgenommen) der Katalogsatz.
+        /// </summary>
+        private static double SummeVolumen(int projektId, int idType, List<WErzeugerModel> modelle,
+                                           Func<ErzeugerZeile, bool> hatKopie)
+        {
+            double summe = 0;
+            foreach (WErzeugerModel m in modelle)
+            {
+                if (m.ID_Type != idType) continue;
+                PufferSpStammCtrl.SpeicherDetail d = hatKopie(ZeileZu(m))
+                    ? PufferSpCtrl.Detail(m.ID_PUFFER, projektId)
+                    : PufferSpStammCtrl.Detail(m.ID_PUFFER);
+                if (d != null && Program.ZahlParsen(d.Gesamtvolumen, out double v)) summe += v;
+            }
+            return summe;
+        }
+
+        /// <summary>Die Gaben des Katalogeditors ohne Titel und ohne eigenen Rückruf - beides setzt der Dialog.</summary>
+        private static IReadOnlyDictionary<string, object> OhneRahmen(IReadOnlyDictionary<string, object> gaben)
+        {
+            var kopie = new Dictionary<string, object>();
+            foreach (KeyValuePair<string, object> kv in gaben)
+                if (kv.Key != "Geschlossen" && kv.Key != "TitelText") kopie[kv.Key] = kv.Value;
+            return kopie;
+        }
+
         private static string Dublettenfrage(int idType, List<WErzeugerModel> modelle, int stammId)
         {
             string bezeichner = PufferSpStammCtrl.Detail(stammId)?.Bezeichner ?? "";

@@ -128,17 +128,33 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
+            PufferSpStammCtrl.SpeicherErgebnis e =
+                PufferSpStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER Transaktion — die
+        /// Projektkopien oder die Katalogsätze, alle oder keiner (<c>PufferSpStammCtrl.AnzeigefelderSchreibenAlle</c>).
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<PufferSpStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new PufferSpStammCtrl.Satzaenderung(id, Werte(felder)));
+            PufferSpStammCtrl.SpeicherErgebnis e = PufferSpStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static PufferSpStammCtrl.AnzeigefelderPufferspeicher Werte(IReadOnlyList<BrowserFeldwert> felder)
+            => new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldSpeichertyp),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldVerluste),
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVolumen),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten));
-
-            PufferSpStammCtrl.SpeicherErgebnis e =
-                PufferSpStammCtrl.AnzeigefelderSchreiben(name, werte);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
-        }
 
         // =====================================================================
         // Der Katalogeditor (W14a.2)

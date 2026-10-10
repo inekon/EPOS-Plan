@@ -993,6 +993,128 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Satz nach ID und Mehrfach-Bearbeiten (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die Projektkopien der Pufferspeicher (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
+        public const string TABELLE_PROJEKT = "Tab_Pufferspeicher";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>
+        /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 3, „Bearbeiten…" je
+        /// Bereich): <paramref name="projektkopie"/> = <c>true</c> liest die Projektkopie aus
+        /// <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben Schlüssel und dieselbe rohe Anzeige wie
+        /// <see cref="KatalogsatzAnzeige"/>; <c>null</c>, wenn es die ID nicht gibt. Die projektbezogenen Spalten der
+        /// Kopie (Verwendung, Temperaturpaar, Schwellen, Schichtung …) stehen nicht darin — sie pflegt der
+        /// Projektspeicher-Dialog.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            DataRow r = dt.Rows[0];
+            return new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [KatalogBrowserProfil.FeldBezeichner] = RohFeld(r, "Bezeichner"),
+                [KatalogBrowserProfil.FeldFirma] = RohFeld(r, "Hersteller"),
+                [KatalogBrowserProfil.FeldSpeichertyp] = RohFeld(r, "Speichertyp"),
+                [KatalogBrowserProfil.FeldVerluste] = RohFeld(r, "Bereitschaftsverluste"),
+                [KatalogBrowserProfil.FeldVolumen] = RohFeld(r, "Gesamtvolumen"),
+                [KatalogBrowserProfil.FeldInvestitionskosten] = RohFeld(r, "Investitionskosten"),
+            };
+        }
+
+        /// <summary>Die Prüfung der Anzeigefelder (dieselbe wie beim Speichern); leer = in Ordnung.</summary>
+        private static string Feldpruefung(double verluste, double volumen, double investition)
+        {
+            const KatalogBrowserArt art = KatalogBrowserArt.Pufferspeicher;
+            return KatalogFeldPruefung.ErsterGrund(
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldVerluste, verluste),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldVolumen, volumen),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldInvestitionskosten, investition));
+        }
+
+        internal const string SQL_SATZ_AKTUALISIEREN =
+            " SET Hersteller = ?, Speichertyp = ?, Bereitschaftsverluste = ?, Gesamtvolumen = ?, Investitionskosten = ? WHERE ID = ?";
+
+        /// <summary>Die geänderten Felder eines Satzes, benannt über seine ID.</summary>
+        public sealed record Satzaenderung(int Id, AnzeigefelderPufferspeicher Felder);
+
+        /// <summary>
+        /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b> (Konzept Projektdialoge
+        /// mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt die Tabelle: die Projektkopien
+        /// (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchläuft dieselbe Prüfung wie <see cref="AnzeigefelderSchreiben"/>; der Speichertyp geht durch
+        /// dieselbe Bestandsabbildung. Ein gesperrter Katalogsatz, eine fehlende ID oder ein Verstoß rollt die ganze
+        /// Transaktion zurück und nennt den Satz — kein Teilstand. Eine geänderte Projektkopie markiert ihr Projekt als
+        /// geändert: das Volumen ist eine Eingangsgröße der Simulation.
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreibenAlle(bool projektkopie, IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            var projekte = new HashSet<int>();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Felder == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        DataRow r = dt.Rows[0];
+                        string name = RohFeld(r, "Bezeichner");
+                        if (!projektkopie && r.Table.Columns.Contains("ReadOnly") && r["ReadOnly"] != DBNull.Value &&
+                            Convert.ToInt64(r["ReadOnly"], System.Globalization.CultureInfo.InvariantCulture) != 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
+                        }
+                        AnzeigefelderPufferspeicher f = s.Felder;
+                        string grund = Feldpruefung(f.Bereitschaftsverluste, f.Gesamtvolumen, f.Investitionskosten);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name, grund), name);
+                        }
+                        v.Ausfuehren("UPDATE [" + tabelle + "]" + SQL_SATZ_AKTUALISIEREN,
+                            new DbParam("@her", f.Firma ?? ""),
+                            new DbParam("@typ", SpeichertypDbWert(SpeichertypIndex(f.Speichertyp), f.Speichertyp)),
+                            new DbParam("@ver", f.Bereitschaftsverluste),
+                            new DbParam("@vol", f.Gesamtvolumen),
+                            new DbParam("@inv", f.Investitionskosten),
+                            new DbParam("@id", s.Id));
+                        if (projektkopie && r.Table.Columns.Contains("ID_Projekt") && r["ID_Projekt"] != DBNull.Value)
+                            projekte.Add(Convert.ToInt32(r["ID_Projekt"], System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                    v.Commit();
+                }
+                foreach (int p in projekte) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(p);
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+            }
+        }
+
         private static string Text(string schluessel, string rueckfall)
         {
             string t = null;

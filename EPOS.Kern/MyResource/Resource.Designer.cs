@@ -91569,6 +91569,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektkopie dieses Speichers entsteht mit OK; erst dann lässt sie sich bearbeiten oder in die Datenbank übernehmen. ähnelt.
+        /// </summary>
+        public static string PSPD_HINWEIS_OHNE_KOPIE {
+            get {
+                return ResourceManager.GetString("PSPD_HINWEIS_OHNE_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Pufferspeicher ein ähnelt.
         /// </summary>
         public static string PSPD_KOPFBAND {
@@ -91628,6 +91637,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSPD_LBL_PROJEKTLISTE {
             get {
                 return ResourceManager.GetString("PSPD_LBL_PROJEKTLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Volumen [l]: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_SUMME", resourceCulture);
             }
         }
         
@@ -93365,6 +93383,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_RUBRIK_LABEL {
             get {
                 return ResourceManager.GetString("PSP_RUBRIK_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung des Speichers, seine Senken, Verbünde und Lade-Prioritäten. ähnelt.
+        /// </summary>
+        public static string PSP_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("PSP_RUECK_BLEIBT", resourceCulture);
             }
         }
         
