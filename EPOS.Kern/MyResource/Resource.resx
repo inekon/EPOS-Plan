@@ -41192,6 +41192,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_TEPPICHBILD" xml:space="preserve">
     <value>Bezugsjahr {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle.</value>
   </data>
+  <data name="KOND_TXT_TEPPICHBILD_RASTER" xml:space="preserve">
+    <value>Gemeinjahr, 1. Januar = {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle.</value>
+  </data>
   <data name="KOND_TXT_QUELLE" xml:space="preserve">
     <value>Quelle: {0}</value>
   </data>
@@ -41548,6 +41551,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_MSG_TEPPICH_TITEL" xml:space="preserve">
     <value>{0} · Bezugsjahr {1}</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_TITEL_RASTER" xml:space="preserve">
+    <value>{0} · Gemeinjahr, 1. Januar = {1}</value>
   </data>
   <data name="KOND_MSG_TEPPICH_HEIZEN" xml:space="preserve">
     <value>Heizen</value>
@@ -47340,7 +47346,7 @@ Chart</value>
     <value>Teppichbild</value>
   </data>
   <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
-    <value>Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag.</value>
+    <value>Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Gemeinjahr mit 1. Januar = {0}; die Woche liegt im Januar ohne Feiertag.</value>
   </data>
   <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
     <value>Die Größe ist nicht belegt; das Ziel behält seinen Kalender.</value>

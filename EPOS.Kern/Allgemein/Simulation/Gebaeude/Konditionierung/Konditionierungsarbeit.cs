@@ -1340,7 +1340,9 @@ namespace WindowsFormsApplication1
         {
             if (stand == null) throw new ArgumentNullException(nameof(stand));
             var sb = new StringBuilder();
-            sb.Append("J").Append(stand.Referenzjahr.ToString(CultureInfo.InvariantCulture))
+            // Das Raster (E115): w₀ und das Jahr der Preisreihe (0 = keines) — ein anderes Raster ist ein anderer Stand.
+            sb.Append("W").Append(stand.Kalender.W0.ToString(CultureInfo.InvariantCulture))
+              .Append("|J").Append(stand.Kalender.Jahr.ToString(CultureInfo.InvariantCulture))
               .Append("|A").Append(Z(stand.Nutzflaeche)).Append('\n');
             Ebenenabdruck(sb, "G", stand.Gebaeude);
             foreach (Konditionierungszone z in stand.Zonen)

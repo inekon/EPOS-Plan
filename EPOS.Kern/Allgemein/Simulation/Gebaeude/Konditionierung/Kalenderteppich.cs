@@ -131,10 +131,10 @@ namespace WindowsFormsApplication1
     /// Stunde für Stunde <see cref="Konditionierungskalender.Auswerten"/> (Rundlauf,
     /// <c>KalenderteppichTests</c>).</para>
     ///
-    /// <para><b>Das Bezugsjahr</b> löst Wochentage und Feiertage auf: im Projekt das des Laufs, im
-    /// Katalog <c>SolardatenCtrl.Referenzjahr(0)</c> — beides liefert
-    /// <see cref="Konditionierungdatenweg.Bezugsjahr"/>. Der Teppich selbst kennt keine Uhr und
-    /// keine Datenbank; er ist eine reine Funktion von Kalender, w₀ und Bezugsjahr.</para>
+    /// <para><b>Das Wochentagsraster</b> löst Wochentage und Feiertage auf: im Projekt dasselbe wie der
+    /// Lauf (<see cref="Konditionierungdatenweg.Raster(int)"/>: w₀ der Klimaregion, mit Preisreihe deren
+    /// Jahr), im Katalog <see cref="Konditionierungdatenweg.Rueckfallraster"/> (E115). Der Teppich selbst
+    /// kennt keine Uhr und keine Datenbank; er ist eine reine Funktion von Kalender und Raster.</para>
     ///
     /// <para>Die Werte stehen in der Einheit des Rechenkerns — Anteile 0 … 1, nicht Prozent; die
     /// Anzeige rechnet mit <see cref="Anzeigefaktor"/> um (<see cref="Einheit"/>).</para>
@@ -166,8 +166,11 @@ namespace WindowsFormsApplication1
         /// <summary>w₀: 0 = Montag … 6 = Sonntag für den 1. Januar des Bezugsjahres.</summary>
         public int WochentagDesErstenTags { get; }
 
-        /// <summary>Das Jahr, gegen das Wochentage und Feiertage aufgelöst sind.</summary>
+        /// <summary>Das Jahr, gegen das die Feiertage aufgelöst sind; 0 = Regelfall ohne Jahr (Gemeinjahr im Raster).</summary>
         public int Bezugsjahr { get; }
+
+        /// <summary>Trägt der Teppich ein Jahr (Preisreihe)? Sonst nennt die Anzeige das Raster (E115).</summary>
+        public bool MitJahr => Bezugsjahr > 0;
 
         /// <summary>
         /// Die Rohreihe über 8 760 Stunden, <c>h = 24 · Tag + Stunde</c>; NaN heißt „aus" — bei
@@ -197,12 +200,12 @@ namespace WindowsFormsApplication1
             => Bilden(kalender, new Gemeinjahrkalender(wochentagDesErstenTags, bezugsjahr), bezugsjahr);
 
         /// <summary>
-        /// <b>Der Teppich im Gemeinjahr</b> (E114): w₀ aus dem <paramref name="rasterjahr"/> — dieselbe
-        /// Wochenendmaske wie der Lauf —, die Feiertage nach dem Jahr der Preisreihe
-        /// <paramref name="feiertagsjahr"/>, ohne es (<c>null</c>) nach der Konvention <see cref="Gemeinjahrkalender"/>.
+        /// <b>Der Teppich im Gemeinjahr</b> (E115): das Wochentagsraster des Laufs
+        /// (<see cref="Konditionierungdatenweg.Raster(int)"/>) — w₀ und, nur mit Preisreihe, deren Jahr für die
+        /// Feiertage; ohne Jahr liegen die Feiertage nach der Konvention <see cref="Gemeinjahrkalender"/>.
         /// </summary>
-        public static Kalenderteppich ImGemeinjahr(Konditionierungskalender kalender, int rasterjahr, int? feiertagsjahr)
-            => Bilden(kalender, Gemeinjahrkalender.Aus(WochentagDesErstenTagsIm(rasterjahr), feiertagsjahr), rasterjahr);
+        public static Kalenderteppich ImGemeinjahr(Konditionierungskalender kalender, Gemeinjahrkalender raster)
+            => Bilden(kalender, raster, raster.Jahr);
 
         private static Kalenderteppich Bilden(Konditionierungskalender kalender, Gemeinjahrkalender konvention,
                                               int bezugsjahr)
@@ -238,15 +241,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Derselbe Teppich mit w₀ aus dem Bezugsjahr — dieselbe Wochenendmaske, aus der der Lauf
-        /// sein w₀ nimmt (<c>KlimakalenderGemeinsam.WochenendmaskeBilden</c>, U7).
+        /// Der Teppich eines echten Kalenderjahres: w₀ ist der Wochentag des 1. Januar dieses Jahres, die
+        /// Feiertage liegen auf seinen Daten. Für Proben; der Dialog nimmt <see cref="ImGemeinjahr"/>.
         /// </summary>
         public static Kalenderteppich Bilden(Konditionierungskalender kalender, int bezugsjahr)
             => Bilden(kalender, WochentagDesErstenTagsIm(bezugsjahr), bezugsjahr);
 
         /// <summary>
-        /// w₀ eines Bezugsjahres — der Wochentag des 1. Januar (0 = Montag), aus derselben
-        /// Wochenendmaske, nach der der Lauf seine Ortszeit-Woche setzt.
+        /// w₀ eines Kalenderjahres — der Wochentag seines 1. Januar (0 = Montag), über die Wochenendmaske
+        /// dieses Jahres bestimmt.
         /// </summary>
         public static int WochentagDesErstenTagsIm(int bezugsjahr)
             => GebaeudeModellEingang.WochentagDesErstenTags(KlimakalenderGemeinsam.WochenendmaskeBilden(bezugsjahr));

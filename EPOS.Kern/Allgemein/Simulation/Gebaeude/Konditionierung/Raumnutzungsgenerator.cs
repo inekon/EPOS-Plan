@@ -423,16 +423,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="profil">Das Profil.</param>
         /// <param name="ferien">Die Ferienzeiträume des Ziels (die des Gebäudes); <c>null</c> = ohne Ziel.</param>
-        /// <param name="referenzjahr">Das Jahr der Preisreihe (Raster und Feiertage); <c>null</c> = Regelfall ohne Jahr —
-        /// das Raster der Vorgabe, die Feiertage nach der Konvention <see cref="Gemeinjahrkalender"/> (E114).</param>
+        /// <param name="raster">Das Wochentagsraster des Ziels (E115, <see cref="Konditionierungdatenweg.Raster(int)"/>);
+        /// <c>null</c> = ohne Projekt <see cref="Konditionierungdatenweg.Rueckfallraster"/>.</param>
         public static Raumnutzungstage Nutzungstage(Raumnutzungsprofil profil, Matrixeingang ferien = null,
-                                                    int? referenzjahr = null)
+                                                    Gemeinjahrkalender? raster = null)
         {
             if (profil == null) throw new ArgumentNullException(nameof(profil));
             bool[] genutzt = Wochenmuster(profil);
-            int w0 = Konditionierungsarbeitsstand.WochentagDesErstenJanuar(
-                referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE);
-            Gemeinjahrkalender kalender = Gemeinjahrkalender.Aus(w0, referenzjahr);
+            Gemeinjahrkalender kalender = raster ?? Konditionierungdatenweg.Rueckfallraster;
+            int w0 = kalender.W0;
             var feiertag = new bool[TAGE_IM_JAHR + 1];
             if (profil.Feiertage_Wie_Sonntag == true)
                 foreach (string regel in DbWerte.KOND_FEIERTAGE)

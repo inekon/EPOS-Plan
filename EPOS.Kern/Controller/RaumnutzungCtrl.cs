@@ -1239,13 +1239,12 @@ namespace WindowsFormsApplication1
         /// <param name="Weg">Woher die Zeilen kamen; <see cref="Raumnutzungsweg.Keiner"/> = nicht belegt (dann ohne Kalender).</param>
         /// <param name="Hinweis">Was der Generator benennt.</param>
         /// <param name="Kalender">Der Kalender am Ziel oder <c>null</c>.</param>
-        /// <param name="Referenzjahr">Das Bezugsjahr der Reihe.</param>
+        /// <param name="Raster">Das Wochentagsraster der Reihe — am neutralen Vorschauziel ohne Projekt das
+        /// <see cref="Konditionierungdatenweg.Rueckfallraster"/> (E115), ohne Jahr.</param>
         /// <param name="Woche">Die 168 Werte der typischen Woche (Rohwerte, „aus" = NaN) oder <c>null</c>.</param>
         /// <param name="Meldung">Warum der Schritt am leeren Ziel abgelehnt hat; <c>null</c> = nichts.</param>
-        /// <param name="Feiertagsjahr">Das Jahr der Preisreihe; <c>null</c> = Regelfall ohne Jahr (E114) — das neutrale
-        /// Vorschauziel trägt keines.</param>
         public sealed record Profilvorschau(Raumnutzungsweg Weg, Raumnutzungshinweis Hinweis, Konditionierungskalender Kalender,
-                                            int Referenzjahr, double[] Woche, string Meldung = null, int? Feiertagsjahr = null);
+                                            Gemeinjahrkalender Raster, double[] Woche, string Meldung = null);
 
         /// <summary>
         /// Der Bestand des neutralen Vorschauziels: was ein Gebäude ohne eigene Konditionierung mitbringt — Heiz- und
@@ -1284,7 +1283,7 @@ namespace WindowsFormsApplication1
             var leer = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, Vorschaubestand()), null);
             Raumnutzungsgroesse r = Raumnutzungsgenerator.Erzeugen(profil, groesse, null);
             if (r.Weg == Raumnutzungsweg.Keiner || r.Vorlage == null)
-                return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null);
+                return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Kalender, null);
 
             var ort = new Konditionierungsort(groesse, null);
             Konditionierungsschritt schritt = Konditionierungsarbeit.VorlageUebernehmen(leer, ort, r.Vorlage);
@@ -1294,13 +1293,13 @@ namespace WindowsFormsApplication1
                 schritt = geteilt.Ok ? Konditionierungsarbeit.VorlageUebernehmen(geteilt.Stand, ort, r.Vorlage) : geteilt;
             }
             Konditionierungskalender k = schritt.Ok && !schritt.Rueckfrage ? schritt.Stand.Ansichtskalender(groesse, null) : null;
-            if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Referenzjahr, null, schritt.Meldung);
+            if (k == null) return new Profilvorschau(r.Weg, r.Hinweis, null, leer.Kalender, null, schritt.Meldung);
 
             double[] jahr = k.Auswerten(leer.Kalender);
             int start = VORSCHAU_WOCHE_AB_TAG + (7 - (leer.W0 + VORSCHAU_WOCHE_AB_TAG) % 7) % 7;
             var woche = new double[Kalenderwoche.WOCHENWERTE];
             Array.Copy(jahr, start * 24, woche, 0, woche.Length);
-            return new Profilvorschau(r.Weg, r.Hinweis, k, leer.Referenzjahr, woche);
+            return new Profilvorschau(r.Weg, r.Hinweis, k, leer.Kalender, woche);
         }
 
         /// <summary>

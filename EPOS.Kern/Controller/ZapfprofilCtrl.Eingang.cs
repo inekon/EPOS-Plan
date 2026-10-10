@@ -400,10 +400,10 @@ namespace WindowsFormsApplication1
                     flaechenteiler[g] = (flaechenteiler.TryGetValue(g, out int n) ? n : 0) + 1;
             }
             // Feiertage zählen im Zapfkalender unter jeder Wochenendmaske als Sonntag (E112): Jede Zone bekommt die
-            // Feiertage des Kerns nach der Konvention des Gemeinjahrs (E114) — Wochentagsraster der Klimaregion und,
-            // nur mit Preisreihe, deren Jahr —, mit gebundenem Gebäude nach dessen Feiertagsland, sonst die
-            // bundeseinheitlichen.
-            Gemeinjahrkalender bezugsjahr = Gemeinjahrkalender.Aus(wochentagJan1, Konditionierungdatenweg.Bezugsjahr(idProjekt));
+            // Feiertage des Kerns nach der Konvention des Gemeinjahrs — das eine Wochentagsraster des Projekts (E115:
+            // Raster der Klimaregion und, nur mit Preisreihe, deren Jahr; dieselbe Auflösung wie der Gebäudelauf) —,
+            // mit gebundenem Gebäude nach dessen Feiertagsland, sonst die bundeseinheitlichen.
+            Gemeinjahrkalender bezugsjahr = Konditionierungdatenweg.Raster(idProjekt, wochentagJan1);
             IReadOnlyList<int> bund = null;
             var ergebnis = new List<ZonenStand>(zonen.Count);
             foreach (ZonenStand z in zonen)

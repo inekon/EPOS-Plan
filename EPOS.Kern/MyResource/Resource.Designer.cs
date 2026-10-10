@@ -77601,6 +77601,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Gemeinjahr, 1. Januar = {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_TITEL_RASTER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_TITEL_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vereinfacht auf {0} Farbstufen, damit das Bild höchstens {1} Elemente trägt. ähnelt.
         /// </summary>
         public static string KOND_MSG_TEPPICH_VEREINFACHT {
@@ -78983,6 +78992,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_TEPPICHBILD {
             get {
                 return ResourceManager.GetString("KOND_TXT_TEPPICHBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gemeinjahr, 1. Januar = {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_TEPPICHBILD_RASTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_TEPPICHBILD_RASTER", resourceCulture);
             }
         }
         
@@ -97820,7 +97838,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Gemeinjahr mit 1. Januar = {0}; die Woche liegt im Januar ohne Feiertag. ähnelt.
         /// </summary>
         public static string RNP_ED_TXT_BEZUG {
             get {

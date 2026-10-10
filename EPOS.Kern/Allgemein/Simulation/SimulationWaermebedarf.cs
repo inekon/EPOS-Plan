@@ -1002,16 +1002,17 @@ namespace WindowsFormsApplication1
 
             // Stufe G1 — was der VDI-Weg zusätzlich aus dem gemeinsamen Teil liest
             // (Umsetzungskonzept 1.2): Koordinaten der Klimaregion und die Wochenendmaske
-            // des Ortszeit-Kalenders mit ihrer Probe gegen Tab_Klimadaten.WE (U7, F-Ü8).
+            // im Wochentagsraster des Projekts (E115: dasselbe Raster wie Zapfkalender und
+            // Bedarfsprofile) mit ihrer Probe gegen Tab_Klimadaten.WE.
             // Die Solarreihe in Ortszeit hat Stundentemperatur_aus_DB bereits abgelegt.
             // Nichts davon erreicht den Tagesbilanz-Weg.
             KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
             KlimaregionCtrl.Koordinaten(ID_Klimaregion, out double laengengrad, out double breitengrad);
             gemeinsam.Laengengrad = laengengrad;
             gemeinsam.Breitengrad = breitengrad;
-            gemeinsam.Referenzjahr = SolardatenCtrl.Referenzjahr(m_ID_Projekt);
-            gemeinsam.Feiertagsjahr = SolardatenCtrl.Preisreihenjahr(m_ID_Projekt) ?? 0;
-            gemeinsam.WochenendeOrtszeit = KlimakalenderGemeinsam.WochenendmaskeBilden(gemeinsam.Referenzjahr);
+            gemeinsam.Raster = Konditionierungdatenweg.Raster(m_ID_Projekt, WochentagJan1);
+            gemeinsam.Feiertagsjahr = gemeinsam.Raster.Jahr;
+            gemeinsam.WochenendeOrtszeit = KlimakalenderGemeinsam.WochenendmaskeBilden(gemeinsam.Raster);
             gemeinsam.WochenendProbeAbweichungen = KlimakalenderGemeinsam.Abweichungen(gemeinsam.WochenendeOrtszeit, WE);
             GebaeudeErgebnisse.Leeren();
 

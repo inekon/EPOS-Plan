@@ -633,7 +633,7 @@ namespace WindowsFormsApplication1
         /// Zonen in Listenfolge (Rang, Id) mit Name, Nutzfläche und „beheizt"; Nutzfläche des Gebäudes
         /// für den Flächenschlüssel. Für die Rückfragen und die Paritätsprobe.
         /// </summary>
-        public Konditionierungsarbeitsstand ArbeitsstandLesen(long idGebaeude, int? referenzjahr, out string meldung)
+        public Konditionierungsarbeitsstand ArbeitsstandLesen(long idGebaeude, Gemeinjahrkalender? raster, out string meldung)
         {
             Eigner gebaeude = Eigner.Gebaeude(idGebaeude);
             Konditionierungsstand g = StandLesen(gebaeude, out meldung);
@@ -654,7 +654,7 @@ namespace WindowsFormsApplication1
                     zonen.Add(new Konditionierungszone(id, Text(r, "Bezeichner") ?? "", Zahl(r, "Nutzflaeche"),
                                                        (Lang(r, "IstBeheizt") ?? 1) != 0, z));
                 }
-            return new Konditionierungsarbeitsstand(g, zonen, nutzflaeche, referenzjahr);
+            return new Konditionierungsarbeitsstand(g, zonen, nutzflaeche, raster);
         }
 
         private static double? Endlich(double? w) => w.HasValue && double.IsFinite(w.Value) ? w : null;

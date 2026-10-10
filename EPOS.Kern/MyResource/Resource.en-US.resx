@@ -41185,6 +41185,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_TEPPICHBILD" xml:space="preserve">
     <value>Reference year {0}: days × hours, colour = value, “off” as a separate area. Touching an hour names its source.</value>
   </data>
+  <data name="KOND_TXT_TEPPICHBILD_RASTER" xml:space="preserve">
+    <value>Common year, 1 January = {0}: days × hours, colour = value, “off” as a separate area. Touching an hour names its source.</value>
+  </data>
   <data name="KOND_TXT_QUELLE" xml:space="preserve">
     <value>Source: {0}</value>
   </data>
@@ -41541,6 +41544,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_MSG_TEPPICH_TITEL" xml:space="preserve">
     <value>{0} · reference year {1}</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_TITEL_RASTER" xml:space="preserve">
+    <value>{0} · common year, 1 January = {1}</value>
   </data>
   <data name="KOND_MSG_TEPPICH_HEIZEN" xml:space="preserve">
     <value>Heating</value>
@@ -47333,7 +47339,7 @@ chart</value>
     <value>Carpet plot</value>
   </data>
   <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
-    <value>Preview for a neutral target (heating 20 °C, cooling 26 °C, air change as default, one person, appliances 100 W, holidays 1 to 14 August), reference year {0}; the week lies in January without a public holiday.</value>
+    <value>Preview for a neutral target (heating 20 °C, cooling 26 °C, air change as default, one person, appliances 100 W, holidays 1 to 14 August), common year with 1 January = {0}; the week lies in January without a public holiday.</value>
   </data>
   <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
     <value>The quantity is not set; the target keeps its calendar.</value>
