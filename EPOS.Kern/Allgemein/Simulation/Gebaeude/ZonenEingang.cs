@@ -128,6 +128,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Aufheizplan Aufheizplan { get; private set; }
 
+        /// <summary>
+        /// Erfasst der Lauf die Massentemperaturen am Ende jeder Stunde (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V2)?
+        /// Gesetzt nur von <see cref="Vorheizplanung"/> für Vorlauf und Lauf; ohne Schalter bleibt jeder Lauf, wie er ist.
+        /// </summary>
+        internal bool MassenErfassen { get => Eingang.MassenErfassen; set => Eingang.MassenErfassen = value; }
+
         /// <summary>Setzt den Aufheizplan der Zone — nur <see cref="Aufheizoptimierung"/>.</summary>
         internal void AufheizplanSetzen(Aufheizplan plan) => Aufheizplan = plan ?? throw new ArgumentNullException(nameof(plan));
 
@@ -406,7 +412,8 @@ namespace WindowsFormsApplication1
             // stehen die Reihen der Nachbarn. Uebergabe, Kaelte, F21 und die stuendliche
             // Kuehlpruefung haben im Eingangsbauer die Reihe ohne Rampe gesehen. Schalter aus =
             // kein Aufruf (Grundsatz 3).
-            if (aufheizvorgabe != null && aufheizvorgabe.An)
+            // Welle V2: Option 1 plant erst nach dem Vorlauf (Zonenrechnung.Rechnen), nicht hier.
+            if (aufheizvorgabe != null && aufheizvorgabe.An && !Vorheizplanung.Anwendbar(aufheizvorgabe))
                 Aufheizoptimierung.AnwendenZonen(ergebnis, aufheizvorgabe, aufheizleistungTestW);
             return ergebnis;
         }

@@ -51715,5 +51715,35 @@ Chart</value>
   <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
     <value>Die Vorgabefolge gilt bereits. Die Pfeile an den Kacheln pflegen die Folge der Kälteerzeuger.</value>
   </data>
+  <data name="SIMENG_VORH_KENNZAHLEN" xml:space="preserve">
+    <value>Vorheizen {0} h vor Nutzungsbeginn: höchste Heizlast am Nutzungsbeginn {1} kW, Deckel {2} kW, Vorheizleistung {3} kW, Spitze des Laufs {4} kW; {5} Nächte ohne Absenkung; Mehrwärme {6} MWh ({7} %).</value>
+  </data>
+  <data name="SIMENG_VORH_TAGE" xml:space="preserve">
+    <value>An {0} Tagen erreicht die Raumluft zum Nutzungsbeginn den Sollwert nicht (bis {1} K darunter).</value>
+  </data>
+  <data name="SIMENG_VORH_FLOOR" xml:space="preserve">
+    <value>In {0} Stunden der Nutzung liegt die Heizlast ohne Aufheizanteil über dem Deckel; dort gilt sie als Grenze.</value>
+  </data>
+  <data name="SIMENG_VORH_TOLERANZ_NULL" xml:space="preserve">
+    <value>Der zulässige Sprung zum Nutzungsbeginn ist 0: Der Deckel liegt auf der höchsten Heizlast am Nutzungsbeginn, und das Vorheizen braucht meist die ganze Nacht.</value>
+  </data>
+  <data name="SIMENG_VORH_OHNE_SPRUNG" xml:space="preserve">
+    <value>{0} beheizte Zonen haben keinen Nutzungsbeginn im Heizkalender; dort wird nicht vorgeheizt.</value>
+  </data>
+  <data name="SIMENG_VORH_AUS" xml:space="preserve">
+    <value>{0} Übergänge aus „aus“ (Heizperiode, Kalender) bekommen kein Vorheizen und zählen nicht in die Prüfung.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_AK3" xml:space="preserve">
+    <value>„Vorheizzeit vorgeben“ rechnet im geschlossenen Kreis (AK3) noch nicht; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_HEIZKREIS" xml:space="preserve">
+    <value>Gebäude mit Heizkreis sind vom Vorheizen ausgenommen; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_OHNE_ZEIT" xml:space="preserve">
+    <value>Für „Vorheizzeit vorgeben“ fehlt die Vorheizzeit; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+  </data>
+  <data name="SIMENG_VORH_RUECKFALL_BERECHNET" xml:space="preserve">
+    <value>„Vorheizzeit berechnen“ rechnet noch nicht; es gilt die Sollwertrampe nach Aufheizleistung.</value>
+  </data>
 </root>
 

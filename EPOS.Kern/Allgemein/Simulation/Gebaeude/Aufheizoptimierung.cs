@@ -287,7 +287,7 @@ namespace WindowsFormsApplication1
         /// (<paramref name="nachbarn"/> <c>null</c>) wörtlich die Außenform der Welle R2; mit Nachbarn θ_eq
         /// in der Nachbarform und die Zuluft θ_Lue an der Stelle der Außenluft (Festlegungen 13, 14).
         /// </summary>
-        private static double PhiStat(Aufheizzone zone, double thetaT, double ta, int tag, double zusatz, double[] nachbarn)
+        internal static double PhiStat(Aufheizzone zone, double thetaT, double ta, int tag, double zusatz, double[] nachbarn)
             => nachbarn == null
                 ? zone.Modell.StationaereHeizlastW(thetaT, ta, zone.AequivalentN(tag, ta), zone.Strahlungsanteil, zusatz)
                 : zone.Modell.StationaereHeizlastW(thetaT, zone.Zuluft(ta, zusatz, nachbarn),
@@ -868,7 +868,7 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        private static int Ring(int h) => ((h % STUNDEN) + STUNDEN) % STUNDEN;
+        internal static int Ring(int h) => ((h % STUNDEN) + STUNDEN) % STUNDEN;
 
         private static int Zaehlen(bool[] tage)
         {
