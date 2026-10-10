@@ -56,6 +56,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ABNEHMER_KAELTEKREIS = "ABNEHMER_KAELTEKREIS";
 
+        // --- Auftrag KS: die KÄLTEBAHN unter der Wärmebahn ------------------------------
+        //
+        // Eigene Schlüsselpräfixe, weil eine Wärmepumpe im Kühlbetrieb in BEIDEN Bahnen
+        // steht (oben als Wärmeerzeuger, unten als Kälteerzeuger) und ein Schlüssel genau
+        // einen Kasten benennt. Der Kältekreis behält seinen Schlüssel und steht unten.
+
+        /// <summary>Rückkühlung bzw. Quelle eines Kälteerzeugers (Spalte 0 der Kältebahn).</summary>
+        public const string PRAEFIX_KAELTE_QUELLE = "KQUELLE_";
+
+        /// <summary>Kälteerzeuger: Kältemaschine oder Wärmepumpe im Kühlbetrieb (Spalte 1).</summary>
+        public const string PRAEFIX_KAELTE_ERZEUGER = "KERZEUGER_";
+
+        /// <summary>Kältespeicher: Projektpuffer mit der Verwendung Kälte (Spalte 2).</summary>
+        public const string PRAEFIX_KAELTE_SPEICHER = "KSPEICHER_";
+
+        /// <summary>Bahn eines Knotens: oben die Wärme, darunter — nur mit Kälte — die Kälte.</summary>
+        public enum Bahn
+        {
+            /// <summary>Die Wärmebahn (Quelle → Erzeuger → Puffer → Heizkreis, Warmwasser, Prozess).</summary>
+            Waerme,
+
+            /// <summary>Die Kältebahn (Rückkühlung → Kälteerzeuger → Kältespeicher → Kältekreis).</summary>
+            Kaelte
+        }
+
         /// <summary>Spalte des Schemas — die vier Rubriken des Mockups.</summary>
         public enum Knotenart
         {
@@ -140,6 +165,9 @@ namespace WindowsFormsApplication1
 
             /// <summary>Kaskadenbezug — blau gestrichelter Rahmen (Mockup: „Spitzenkessel").</summary>
             public bool Kaskade;
+
+            /// <summary>Auftrag KS: die Bahn des Knotens — Wärme (Vorgabe) oder Kälte.</summary>
+            public Bahn Bahn = Bahn.Waerme;
         }
 
         /// <summary>Eine Verbindung zwischen zwei Knoten.</summary>
@@ -173,6 +201,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die abgeleiteten Kaskadenketten; leer, wenn das Projekt keine führt.</summary>
         public readonly List<List<Kettenglied>> Ketten = new List<List<Kettenglied>>();
+
+        /// <summary>
+        /// Auftrag KS: die Kälteerzeuger in der Reihenfolge der Kälte-Kaskade (Bezeichner) —
+        /// dieselbe Reihenfolge, in der der Lauf sie fragt: erst die Wärmepumpen im Kühlbetrieb,
+        /// dann die Kältemaschinen, je in der Folge ihrer Anlagenzeilen. Leer ohne Kälteerzeuger.
+        /// </summary>
+        public readonly List<string> KaelteKette = new List<string>();
+
+        /// <summary>true, wenn mindestens ein Knoten in der Kältebahn steht.</summary>
+        public bool HatKaelte
+        {
+            get
+            {
+                foreach (Knoten k in Knotenliste)
+                    if (k.Bahn == Bahn.Kaelte) return true;
+                return false;
+            }
+        }
 
         /// <summary>Projekt, aus dem das Modell stammt.</summary>
         public int ID_Projekt { get; private set; }
@@ -299,6 +345,15 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>Alle Knoten einer Spalte EINER Bahn, in Aufbaureihenfolge (Auftrag KS).</summary>
+        public List<Knoten> Spalte(Knotenart art, Bahn bahn)
+        {
+            List<Knoten> liste = new List<Knoten>();
+            foreach (Knoten k in Knotenliste)
+                if (k.Art == art && k.Bahn == bahn) liste.Add(k);
+            return liste;
+        }
+
         /// <summary>Alle Knoten einer Spalte, in Aufbaureihenfolge.</summary>
         public List<Knoten> Spalte(Knotenart art)
         {
@@ -404,6 +459,7 @@ namespace WindowsFormsApplication1
             m.ErzeugerKnotenAnlegen(bild, anlagen, pufferJeId, quellpuffer, rangJeTyp);
             m.KantenAnlegen(idProjekt, anlagen, quellpuffer, hatBrauchwasser, hatProzess);
             m.KettenAbleiten(anlagen, pufferJeId, quellpuffer, hatBrauchwasser);
+            m.KaelteBahnAnlegen(idProjekt, anlagen, kanalBedarfMwh);
 
             return m;
         }
@@ -593,19 +649,7 @@ namespace WindowsFormsApplication1
                 OhneVersorgerAnlegen(ABNEHMER_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE,
                                      Kanal.PROZESS, hatProzess, kanalBedarfMwh);
 
-            // KU2 (Kühlkonzept 4.3 #33): der Kältekreis - bedient von den Wärmepumpen im
-            // Kühlbetrieb (KantenAnlegen), sonst mit Warnzeichen, wenn der Lauf Kältebedarf kennt.
-            if (_kaelteerzeuger.Count > 0)
-                Knotenliste.Add(new Knoten
-                {
-                    Schluessel = ABNEHMER_KAELTEKREIS,
-                    Art = Knotenart.Abnehmer,
-                    Titel = MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
-                    Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
-                });
-            else
-                OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
-                                     Kanal.KUEHLUNG, false, kanalBedarfMwh);
+            // Der Kältekreis steht seit Auftrag KS in der Kältebahn (KaelteBahnAnlegen).
         }
 
         /// <summary>
@@ -634,6 +678,250 @@ namespace WindowsFormsApplication1
                 int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
                 if (gezeichnet.Contains(id)) _kaelteerzeuger.Add(id);
             }
+        }
+
+        // --- Auftrag KS: die Kältebahn -------------------------------------------------
+
+        /// <summary>
+        /// Legt die KÄLTEBAHN an (Auftrag KS) — vier Spalten unter der Wärmebahn, mit derselben
+        /// Kantensprache: Rückkühlung bzw. Quelle → Kälteerzeuger (Quellseite), Kälteerzeuger →
+        /// Kältespeicher (Ladung, Kreis = Platz in der Kälte-Kaskade), Kältespeicher → Kältekreis
+        /// (Versorgung), ohne Kältespeicher Kälteerzeuger → Kältekreis.
+        ///
+        /// <para><b>Wer Kälte erzeugt</b>, entscheidet dieselbe Auswahl wie im Lauf: die
+        /// Wärmepumpen mit Kühlbetrieb am Gerät, solange das Projekt Kälte rechnet
+        /// (<see cref="KaelteerzeugerLesen"/>), und jede Kältemaschinen-Anlage
+        /// (<see cref="KaeltemaschineAnlageCtrl.ListeStill"/>). Eine Kältemaschine steht auch
+        /// bei ausgeschaltetem Projektschalter da — sie ist ein Kälteerzeuger von Natur —, der
+        /// Kältekreis sagt dann, dass das Projekt keine Kälte rechnet. Kältespeicher sind die
+        /// Projektpuffer mit der Verwendung Kälte; sie haben keine Senkenzeile, denn alle
+        /// Kälteerzeuger laden den einen Kältekanal (<c>KaeltespeicherLesen</c> im Lauf).</para>
+        ///
+        /// <para>Ohne Kälteerzeuger, Kältespeicher und Kältebedarf entsteht kein Knoten, und das
+        /// Schema bleibt, wie es ohne Kälte war.</para>
+        /// </summary>
+        private void KaelteBahnAnlegen(int idProjekt, List<Hydraulikbild.AnlagenEintrag> anlagen,
+                                       double[] kanalBedarfMwh)
+        {
+            bool projektKaelte = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
+            List<string> erzeuger = new List<string>();
+
+            // 1. Wärmepumpen im Kühlbetrieb - in der Folge ihrer Anlagenzeilen.
+            foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
+            {
+                if (!_kaelteerzeuger.Contains(a.ID)) continue;
+
+                Knoten k = new Knoten
+                {
+                    Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.ID,
+                    Art = Knotenart.Erzeuger,
+                    Bahn = Bahn.Kaelte,
+                    ID = a.ID,
+                    ID_Type = a.ID_Type,
+                    Titel = a.Bezeichner.Length > 0 ? a.Bezeichner : Ladeordnung.ErzeugerName(a.ID_Type)
+                };
+                k.Zeilen.Add(MyResource.Resource.KONF_KS_WP_KUEHLBETRIEB);
+                double? vorlauf = WpKuehlVorlauf(a.ID);
+                if (vorlauf.HasValue)
+                    k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KUEHLVORLAUF, vorlauf.Value));
+                k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                Knotenliste.Add(k);
+                erzeuger.Add(k.Schluessel);
+                KaelteKette.Add(k.Titel);
+
+                // Die Quelle der Wärmepumpe nimmt im Kühlbetrieb die Abwärme auf.
+                string quelle = Quelltext(a);
+                if (quelle.Length > 0)
+                    Knotenliste.Add(new Knoten
+                    {
+                        Schluessel = PRAEFIX_KAELTE_QUELLE + a.ID,
+                        Art = Knotenart.Quelle,
+                        Bahn = Bahn.Kaelte,
+                        ID = a.ID,
+                        ID_Type = a.ID_Type,
+                        Titel = quelle,
+                        Hinweis = string.Format(MyResource.Resource.KONF_KS_ABWAERME, quelle)
+                    });
+            }
+
+            // 2. Kältemaschinen - in der Folge ihrer Anlagenzeilen.
+            foreach (KaeltemaschineAnlageModel a in KaeltemaschineAnlageCtrl.ListeStill(idProjekt))
+            {
+                if (a == null || a.AnlagenId <= 0) continue;
+
+                KaeltemaschineModel m = a.IdKaeltemaschine.HasValue
+                    ? KaeltemaschineCtrl.LadenStill(a.IdKaeltemaschine.Value) : null;
+
+                Knoten k = new Knoten
+                {
+                    Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.AnlagenId,
+                    Art = Knotenart.Erzeuger,
+                    Bahn = Bahn.Kaelte,
+                    ID = a.AnlagenId,
+                    ID_Type = WizardItemClass.KM_TYP,
+                    Titel = !string.IsNullOrWhiteSpace(a.Bezeichner) ? a.Bezeichner
+                          : m != null && !string.IsNullOrWhiteSpace(m.Bezeichner) ? m.Bezeichner
+                          : MyResource.Resource.KONF_KS_KAELTEMASCHINE
+                };
+                k.Zeilen.Add(MyResource.Resource.KONF_KS_KAELTEMASCHINE);
+                if (m != null && m.Nennkaelteleistung_kW.HasValue && m.Nennkaelteleistung_kW.Value > 0)
+                    k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_ANZAHL_LEISTUNG,
+                                               Math.Max(1, a.Anzahl), m.Nennkaelteleistung_kW.Value));
+                double vorlauf = m != null ? Kaltwasservorlauf(m) : double.NaN;
+                if (!double.IsNaN(vorlauf))
+                    k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KALTWASSERVORLAUF, vorlauf));
+                k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                Knotenliste.Add(k);
+                erzeuger.Add(k.Schluessel);
+                KaelteKette.Add(k.Titel);
+
+                string rueckkuehlung = m != null ? KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart) : "";
+                if (string.IsNullOrEmpty(rueckkuehlung)) rueckkuehlung = MyResource.Resource.KM_RUECKKUEHLART_KEINE;
+                Knotenliste.Add(new Knoten
+                {
+                    Schluessel = PRAEFIX_KAELTE_QUELLE + a.AnlagenId,
+                    Art = Knotenart.Quelle,
+                    Bahn = Bahn.Kaelte,
+                    ID = a.AnlagenId,
+                    ID_Type = WizardItemClass.KM_TYP,
+                    Titel = rueckkuehlung,
+                    Hinweis = string.Format(MyResource.Resource.KONF_KS_RUECKKUEHLUNG, rueckkuehlung)
+                });
+            }
+
+            // 3. Kältespeicher - in der Reihenfolge des Laufs (Entladepriorität, 0 hinten).
+            List<WaermesenkeClass.PufferInfo> speicher =
+                (WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE)
+                 ?? new List<WaermesenkeClass.PufferInfo>())
+                .Where(p => p != null)
+                .Select((p, i) => (p, i))
+                .OrderBy(t => t.p.Entladeprio > 0 ? t.p.Entladeprio : int.MaxValue)
+                .ThenBy(t => t.i)
+                .Select(t => t.p).ToList();
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+            {
+                Knoten k = new Knoten
+                {
+                    Schluessel = PRAEFIX_KAELTE_SPEICHER + p.ID,
+                    Art = Knotenart.Speicher,
+                    Bahn = Bahn.Kaelte,
+                    ID = p.ID,
+                    Titel = p.Bezeichner.Length > 0 ? p.Bezeichner : MyResource.Resource.PSP_BEZEICHNER_ERSATZ
+                };
+                if (p.Gesamtvolumen > 0)
+                    k.Zeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_VOLUMEN, p.Gesamtvolumen));
+                if (p.Vorlauf > 0 && p.Ruecklauf > 0)
+                    k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR, p.Vorlauf, p.Ruecklauf));
+                k.Badges.Add(MyResource.Resource.KONF_KS_KAELTE);
+                k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                Knotenliste.Add(k);
+            }
+
+            // 4. Der Kältekreis - bedient, sonst mit Warnzeichen, wenn der Lauf Kältebedarf kennt.
+            if (erzeuger.Count > 0 || speicher.Count > 0)
+            {
+                Knoten k = new Knoten
+                {
+                    Schluessel = ABNEHMER_KAELTEKREIS,
+                    Art = Knotenart.Abnehmer,
+                    Bahn = Bahn.Kaelte,
+                    Titel = MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
+                    Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+                };
+                KuehluebergabeZeilen(idProjekt, k.Zeilen);
+                if (!projektKaelte) k.Zeilen.Add(MyResource.Resource.KONF_KS_PROJEKT_AUS);
+                if (k.Zeilen.Count > 0)
+                    k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                Knotenliste.Add(k);
+            }
+            else
+            {
+                OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
+                                     Kanal.KUEHLUNG, false, kanalBedarfMwh);
+                Knoten ohne = Finden(ABNEHMER_KAELTEKREIS);
+                if (ohne != null) ohne.Bahn = Bahn.Kaelte;
+            }
+
+            // 5. Kanten - dieselbe Sprache wie in der Wärmebahn.
+            for (int i = 0; i < erzeuger.Count; i++)
+            {
+                Knoten e = Finden(erzeuger[i]);
+                Verbinden(PRAEFIX_KAELTE_QUELLE + e.ID, e.Schluessel, Kantenart.Quelle, 0, "");
+
+                if (speicher.Count == 0)
+                {
+                    Verbinden(e.Schluessel, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
+                    continue;
+                }
+
+                string platz = string.Format(MyResource.Resource.KONF_KS_PLATZ, i + 1, erzeuger.Count);
+                foreach (WaermesenkeClass.PufferInfo p in speicher)
+                    Verbinden(e.Schluessel, PRAEFIX_KAELTE_SPEICHER + p.ID, Kantenart.Ladung, i + 1, platz);
+            }
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+                Verbinden(PRAEFIX_KAELTE_SPEICHER + p.ID, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
+
+            // Der Platz in der Kälte-Kaskade steht auch am Kasten (wie der Kaskadenrang der Wärme).
+            if (erzeuger.Count > 1)
+                for (int i = 0; i < erzeuger.Count; i++)
+                    Finden(erzeuger[i]).Rang = (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Kühlvorlauf des Projektgeräts einer Wärmepumpen-Anlage [°C]; <c>null</c> = nicht gepflegt.</summary>
+        private static double? WpKuehlVorlauf(int idAnlage)
+        {
+            object v = StilleDb.Scalar(
+                "SELECT w.Kuehl_Vorlauf FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP WHERE a.ID = ?",
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage));
+            if (v == null || v is DBNull) return null;
+            double d = StilleDb.Kommazahl(v, double.NaN);
+            return double.IsNaN(d) || d <= 0 ? (double?)null : d;
+        }
+
+        /// <summary>
+        /// Der Kaltwasservorlauf einer Kältemaschine [°C] — derselbe Wert, mit dem der Lauf sie
+        /// baut (<see cref="Kaeltemaschine.AusModell"/>); NaN, wenn er nicht bestimmbar ist.
+        /// </summary>
+        private static double Kaltwasservorlauf(KaeltemaschineModel m)
+        {
+            try
+            {
+                double kw = Kaeltemaschine.AusModell(m, out bool _).Kaltwassertemperatur;
+                return double.IsNaN(kw) || double.IsInfinity(kw) ? double.NaN : kw;
+            }
+            catch (Exception) { return double.NaN; }
+        }
+
+        /// <summary>
+        /// Die Kühlübergabe der Gebäude des Projekts als Zeilen des Kältekreises: je Übergabeart
+        /// eine Zeile (Anzeigename wie im Gebäudedialog), dazu die Zahl der Zonen, wenn ein
+        /// Gebäude mit Kühlübergabe in mehr als einer Zone rechnet.
+        /// </summary>
+        private static void KuehluebergabeZeilen(int idProjekt, List<string> zeilen)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT g.Kuehl_Uebergabe_Art, " +
+                "(SELECT COUNT(*) FROM Tab_Zone z WHERE z.ID_Gebaeude = g.ID) AS Zonen " +
+                "FROM Tab_Gebaeude g WHERE g.ID_Projekt = ? AND g.Kuehluebergabe_Aktiv = 1 ORDER BY g.ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return;
+
+            int zonen = 0;
+            HashSet<string> arten = new HashSet<string>(StringComparer.Ordinal);
+            foreach (DataRow r in dt.Rows)
+            {
+                object art = StilleDb.Feld(r, "Kuehl_Uebergabe_Art");
+                string name = Waermeuebergabevorgaben.KuehlAnzeigename(art == null || art is DBNull ? null : art.ToString());
+                if (!string.IsNullOrEmpty(name) && arten.Add(name))
+                    zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KUEHLUEBERGABE, name));
+
+                int n = StilleDb.Zahl(StilleDb.Feld(r, "Zonen"));
+                if (n > 1) zonen += n;
+            }
+
+            if (zonen > 0) zeilen.Add(string.Format(MyResource.Resource.KONF_KS_ZONEN, zonen));
         }
 
         /// <summary>
@@ -863,10 +1151,6 @@ namespace WindowsFormsApplication1
                         DirektkanteAnlegen(erzeuger, z, hatBrauchwasser, hatProzess);
                 }
             }
-
-            // KU2 (4.3 #33): die Wärmepumpen im Kühlbetrieb versorgen den Kältekreis.
-            foreach (int idAnlage in _kaelteerzeuger)
-                Verbinden(PRAEFIX_ERZEUGER + idAnlage, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
 
             // Versorgung: jeder Speicher bedient die Kanäle seines KLASSEN-SETS.
             foreach (Knoten k in Knotenliste)

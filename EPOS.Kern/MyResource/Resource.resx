@@ -50848,5 +50848,59 @@ Chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
   </data>
+  <data name="KONF_KS_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="KONF_KS_SPALTE_QUELLE" xml:space="preserve">
+    <value>Rückkühlung / Quelle</value>
+  </data>
+  <data name="KONF_KS_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Kälteerzeuger</value>
+  </data>
+  <data name="KONF_KS_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Kältespeicher</value>
+  </data>
+  <data name="KONF_KS_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="KONF_KS_WP_KUEHLBETRIEB" xml:space="preserve">
+    <value>Wärmepumpe im Kühlbetrieb</value>
+  </data>
+  <data name="KONF_KS_ANZAHL_LEISTUNG" xml:space="preserve">
+    <value>{0} × {1:0.#} kW</value>
+  </data>
+  <data name="KONF_KS_KALTWASSERVORLAUF" xml:space="preserve">
+    <value>Kaltwasservorlauf {0:0.#} °C</value>
+  </data>
+  <data name="KONF_KS_KUEHLVORLAUF" xml:space="preserve">
+    <value>Kühlvorlauf {0:0.#} °C</value>
+  </data>
+  <data name="KONF_KS_RUECKKUEHLUNG" xml:space="preserve">
+    <value>Rückkühlung: {0}</value>
+  </data>
+  <data name="KONF_KS_ABWAERME" xml:space="preserve">
+    <value>Nimmt im Kühlbetrieb die Abwärme auf: {0}</value>
+  </data>
+  <data name="KONF_KS_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Kühlübergabe: {0}</value>
+  </data>
+  <data name="KONF_KS_ZONEN" xml:space="preserve">
+    <value>{0} Zonen mit Kühlübergabe</value>
+  </data>
+  <data name="KONF_KS_PROJEKT_AUS" xml:space="preserve">
+    <value>Projekt rechnet keine Kälte</value>
+  </data>
+  <data name="KONF_KS_PLATZ" xml:space="preserve">
+    <value>Platz {0} von {1} der Kälte-Kaskade</value>
+  </data>
+  <data name="KONF_KS_KETTE" xml:space="preserve">
+    <value>Kälte-Kaskade: {0}</value>
+  </data>
+  <data name="KONF_KS_KEINE_KETTE" xml:space="preserve">
+    <value>Keine Kälte-Kaskade im Projekt — kein Kälteerzeuger.</value>
+  </data>
+  <data name="KONF_KS_LEGENDE" xml:space="preserve">
+    <value>Kältebahn: Kälteerzeuger laden den Kältespeicher, Kreis = Platz in der Kälte-Kaskade</value>
+  </data>
 </root>
 

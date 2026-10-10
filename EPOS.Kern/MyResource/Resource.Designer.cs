@@ -80481,6 +80481,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nimmt im Kühlbetrieb die Abwärme auf: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_ABWAERME {
+            get {
+                return ResourceManager.GetString("KONF_KS_ABWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} × {1:0.#} kW ähnelt.
+        /// </summary>
+        public static string KONF_KS_ANZAHL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KONF_KS_ANZAHL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string KONF_KS_KAELTE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string KONF_KS_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasservorlauf {0:0.#} °C ähnelt.
+        /// </summary>
+        public static string KONF_KS_KALTWASSERVORLAUF {
+            get {
+                return ResourceManager.GetString("KONF_KS_KALTWASSERVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kälte-Kaskade im Projekt — kein Kälteerzeuger. ähnelt.
+        /// </summary>
+        public static string KONF_KS_KEINE_KETTE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KEINE_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte-Kaskade: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_KETTE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_KUEHLUEBERGABE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KUEHLUEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf {0:0.#} °C ähnelt.
+        /// </summary>
+        public static string KONF_KS_KUEHLVORLAUF {
+            get {
+                return ResourceManager.GetString("KONF_KS_KUEHLVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebahn: Kälteerzeuger laden den Kältespeicher, Kreis = Platz in der Kälte-Kaskade ähnelt.
+        /// </summary>
+        public static string KONF_KS_LEGENDE {
+            get {
+                return ResourceManager.GetString("KONF_KS_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platz {0} von {1} der Kälte-Kaskade ähnelt.
+        /// </summary>
+        public static string KONF_KS_PLATZ {
+            get {
+                return ResourceManager.GetString("KONF_KS_PLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt rechnet keine Kälte ähnelt.
+        /// </summary>
+        public static string KONF_KS_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("KONF_KS_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_RUECKKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KONF_KS_RUECKKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger ähnelt.
+        /// </summary>
+        public static string KONF_KS_SPALTE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("KONF_KS_SPALTE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung / Quelle ähnelt.
+        /// </summary>
+        public static string KONF_KS_SPALTE_QUELLE {
+            get {
+                return ResourceManager.GetString("KONF_KS_SPALTE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string KONF_KS_SPALTE_SPEICHER {
+            get {
+                return ResourceManager.GetString("KONF_KS_SPALTE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe im Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string KONF_KS_WP_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("KONF_KS_WP_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen mit Kühlübergabe ähnelt.
+        /// </summary>
+        public static string KONF_KS_ZONEN {
+            get {
+                return ResourceManager.GetString("KONF_KS_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bedarfsgebunden ähnelt.
         /// </summary>
         public static string KOSTENART_BEDARFSGEBUNDEN {

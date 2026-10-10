@@ -70,6 +70,12 @@ namespace WindowsFormsApplication1
 
         public const int LEGENDE_ZEILE = 20;
 
+        /// <summary>Auftrag KS: Abstand zwischen Waerme- und Kaeltebahn [px].</summary>
+        public const int BAHN_ABSTAND = 26;
+
+        /// <summary>Auftrag KS: Kopf der Kaeltebahn — Titelzeile „Kaelte" plus Spaltenkoepfe [px].</summary>
+        public const int BAHN_KOPF = 20 + KOPF_HOEHE;
+
         /// <summary>Radius des Prioritaetskreises an einer Ladeleitung [px].</summary>
         public const int PRIO_RADIUS = 9;
 
@@ -268,6 +274,12 @@ namespace WindowsFormsApplication1
         /// <summary>Oberkante der Legende [px].</summary>
         public int LegendeOben { get; private set; }
 
+        /// <summary>Auftrag KS: Oberkante der Kaeltebahn (Trennlinie); -1 = keine Kaeltebahn.</summary>
+        public int KaelteOben { get; private set; } = -1;
+
+        /// <summary>Auftrag KS: Oberkante des Satzes der Kaelte-Kaskade; -1 = keine Kaeltebahn.</summary>
+        public int KaelteKetteOben { get; private set; } = -1;
+
         /// <summary>Gesamthoehe der Zeichenflaeche [px].</summary>
         public int Gesamthoehe { get; private set; }
 
@@ -350,37 +362,18 @@ namespace WindowsFormsApplication1
             InhaltBreite = breite > spaltenBreite ? breite : spaltenBreite;
 
             int oben = RAND + KOPF_HOEHE;
-            int unten = oben;
 
-            // 1. Erzeuger — von oben nach unten in Kaskadenreihenfolge.
-            int y = oben;
-            foreach (SchemaModell.Knoten k in Modell.Spalte(SchemaModell.Knotenart.Erzeuger))
+            // 1.-4. Die Waermebahn.
+            int unten = BahnAnordnen(SchemaModell.Bahn.Waerme, oben);
+
+            // Auftrag KS: die Kaeltebahn darunter — nur, wenn das Modell Kaelteknoten fuehrt.
+            // Ohne Kaelte bleibt jede Zahl dieser Anordnung, wie sie war.
+            KaelteOben = -1;
+            if (Modell.HatKaelte)
             {
-                int h = KnotenHoehe(k);
-                _flaechen[k.Schluessel] = new Rechteck(SpaltenX[1], y, SPALTEN_BREITE[1], h);
-                y += h + KNOTEN_ABSTAND;
+                KaelteOben = unten + BAHN_ABSTAND;
+                unten = BahnAnordnen(SchemaModell.Bahn.Kaelte, KaelteOben + BAHN_KOPF);
             }
-            if (y > unten) unten = y;
-
-            // 2. Quellen — je Erzeuger genau eine, also auf dessen Hoehe.
-            foreach (SchemaModell.Knoten k in Modell.Spalte(SchemaModell.Knotenart.Quelle))
-            {
-                int h = KnotenHoehe(k);
-                Rechteck erz = FlaecheVon(SchemaModell.PRAEFIX_ERZEUGER + k.ID);
-                int mitte = erz.IstLeer ? oben + h / 2 : erz.MitteY;
-                _flaechen[k.Schluessel] =
-                    new Rechteck(SpaltenX[0], Math.Max(oben, mitte - h / 2), SPALTEN_BREITE[0], h);
-            }
-            UeberschneidungenAufloesen(Modell.Spalte(SchemaModell.Knotenart.Quelle), oben);
-
-            // 3. Speicher — mittlere Hoehe ihrer Lader.
-            SpalteAusrichten(Modell.Spalte(SchemaModell.Knotenart.Speicher), 2, oben);
-
-            // 4. Abnehmer — mittlere Hoehe ihrer Zufluesse.
-            SpalteAusrichten(Modell.Spalte(SchemaModell.Knotenart.Abnehmer), 3, oben);
-
-            foreach (KeyValuePair<string, Rechteck> f in _flaechen)
-                if (f.Value.Unten > unten) unten = f.Value.Unten;
 
             InhaltHoehe = unten;
 
@@ -413,8 +406,69 @@ namespace WindowsFormsApplication1
             int bandHoehe = BandAnordnen(BandOben);
             LegendeOben = BandOben + bandHoehe + BAND_ABSTAND / 2;
 
+            // Auftrag KS: der Satz der Kaelte-Kaskade steht unter dem Band, die Legende
+            // rueckt um eine Zeile und bekommt eine Zeile mehr (Eintrag der Kaeltebahn).
+            KaelteKetteOben = -1;
+            int legendenzeilen = 3;
+            if (KaelteOben >= 0)
+            {
+                KaelteKetteOben = LegendeOben;
+                LegendeOben += BAND_ZEILE;
+                legendenzeilen = 4;
+            }
+
             // PAKET E1: drei statt zwei Legendenzeilen reserviert (SchemaAnsicht:256-259).
-            Gesamthoehe = LegendeOben + 3 * LEGENDE_ZEILE + RAND;
+            Gesamthoehe = LegendeOben + legendenzeilen * LEGENDE_ZEILE + RAND;
+        }
+
+        /// <summary>
+        /// Ordnet die Kaesten EINER Bahn in den vier Spalten an, beginnend bei
+        /// <paramref name="oben"/>; liefert die Unterkante der Bahn. Die Waermebahn rechnet
+        /// damit genau so wie vor der Kaeltebahn (Auftrag KS) — dieselben Schritte, nur auf
+        /// die Knoten ihrer Bahn beschraenkt.
+        /// </summary>
+        private int BahnAnordnen(SchemaModell.Bahn bahn, int oben)
+        {
+            int unten = oben;
+            string praefixErzeuger = bahn == SchemaModell.Bahn.Kaelte
+                ? SchemaModell.PRAEFIX_KAELTE_ERZEUGER : SchemaModell.PRAEFIX_ERZEUGER;
+
+            // 1. Erzeuger — von oben nach unten in Kaskadenreihenfolge.
+            int y = oben;
+            foreach (SchemaModell.Knoten k in Modell.Spalte(SchemaModell.Knotenart.Erzeuger, bahn))
+            {
+                int h = KnotenHoehe(k);
+                _flaechen[k.Schluessel] = new Rechteck(SpaltenX[1], y, SPALTEN_BREITE[1], h);
+                y += h + KNOTEN_ABSTAND;
+            }
+            if (y > unten) unten = y;
+
+            // 2. Quellen — je Erzeuger genau eine, also auf dessen Hoehe.
+            List<SchemaModell.Knoten> quellen = Modell.Spalte(SchemaModell.Knotenart.Quelle, bahn);
+            foreach (SchemaModell.Knoten k in quellen)
+            {
+                int h = KnotenHoehe(k);
+                Rechteck erz = FlaecheVon(praefixErzeuger + k.ID);
+                int mitte = erz.IstLeer ? oben + h / 2 : erz.MitteY;
+                _flaechen[k.Schluessel] =
+                    new Rechteck(SpaltenX[0], Math.Max(oben, mitte - h / 2), SPALTEN_BREITE[0], h);
+            }
+            UeberschneidungenAufloesen(quellen, oben);
+
+            // 3. Speicher — mittlere Hoehe ihrer Lader.
+            SpalteAusrichten(Modell.Spalte(SchemaModell.Knotenart.Speicher, bahn), 2, oben);
+
+            // 4. Abnehmer — mittlere Hoehe ihrer Zufluesse.
+            SpalteAusrichten(Modell.Spalte(SchemaModell.Knotenart.Abnehmer, bahn), 3, oben);
+
+            foreach (SchemaModell.Knoten k in Modell.Knotenliste)
+            {
+                if (k.Bahn != bahn) continue;
+                Rechteck r = FlaecheVon(k.Schluessel);
+                if (!r.IstLeer && r.Unten > unten) unten = r.Unten;
+            }
+
+            return unten;
         }
 
         /// <summary>Richtet eine Spalte an der mittleren Hoehe der eingehenden Kanten aus.</summary>
