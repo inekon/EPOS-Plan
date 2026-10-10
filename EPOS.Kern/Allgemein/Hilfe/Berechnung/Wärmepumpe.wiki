@@ -1,10 +1,6 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Wärmepumpe | Fassung 4 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, Waermepumpentakt.cs, Kaeltekaskade.cs,
-     WaermequelleClass.cs,
-     WaermequelleClass.Quellenwahl.cs, WaermesenkeClass.cs, ErdreichTemperatur.cs,
-     Kaskadenschleife.cs (Bivalenzpunkt, Phase F), VorlaufInterpolation.cs, Sperrprofil.cs,
-     Sondenquelle.cs, Jahresarbeitszahl.cs, Bivalenz/Betriebsbereich.cs, Bivalenz/Bivalenzrechner.cs,
-     Bivalenz/Geraetegrenzen.cs, Bivalenz/Hydraulikgrenze.cs, Bivalenz/Ruecklaufgrenze.cs,
+     EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, Waermepumpentakt.cs, Kaeltekaskade.cs, WaermequelleClass.cs, WaermequelleClass.Quellenwahl.cs, WaermesenkeClass.cs, ErdreichTemperatur.cs,
+     Kaskadenschleife.cs (Bivalenzpunkt, Phase F), VorlaufInterpolation.cs, Sperrprofil.cs, Sondenquelle.cs, Jahresarbeitszahl.cs, Bivalenz/Betriebsbereich.cs, Bivalenz/Bivalenzrechner.cs, Bivalenz/Geraetegrenzen.cs, Bivalenz/Hydraulikgrenze.cs, Bivalenz/Ruecklaufgrenze.cs,
      Bivalenz/Bivalenzvorgaben.cs; Katalog/ParameterVerwendung.cs -->
 
 == Was berechnet wird ==

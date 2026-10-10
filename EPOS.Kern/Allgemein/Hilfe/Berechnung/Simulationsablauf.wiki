@@ -1,10 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Simulationsablauf | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationRunner.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs,
-     EPOS.Kern/Allgemein/Simulation/Kaskade.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
-     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs,
-     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Allgemein/Simulation/Warnkriterien.cs,
-     EPOS.Kern/Allgemein/Simulation/Init.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.Ak3.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.Kaelte.cs,
-     EPOS.Kern/Allgemein/Simulation/Anlagenkopplung.cs, EPOS.Kern/Allgemein/Simulation/Gebaeude/Komfortkennzahlen.cs -->
+     EPOS.Kern/Allgemein/Simulation/SimulationRunner.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs, EPOS.Kern/Allgemein/Simulation/Kaskade.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
+     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Allgemein/Simulation/Warnkriterien.cs,
+     EPOS.Kern/Allgemein/Simulation/Init.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.Ak3.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.Kaelte.cs, EPOS.Kern/Allgemein/Simulation/Anlagenkopplung.cs, EPOS.Kern/Allgemein/Simulation/Gebaeude/Komfortkennzahlen.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}

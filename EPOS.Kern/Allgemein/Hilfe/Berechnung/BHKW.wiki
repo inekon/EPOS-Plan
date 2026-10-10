@@ -271,8 +271,7 @@ Die Stromproduktion der Stunde mindert den Strombedarf des Projekts:
 
 Bleibt <math>R'_{\mathrm{E}}(t)</math> '''negativ''', ist das BHKW-Stromüberschuss: Er wird bewusst nicht auf 0 geklemmt, damit ein Stromspeicher ihn laden kann, wird aber im Photovoltaikzweig getrennt ausgewiesen und '''nicht''' als PV-Einspeisung behandelt.
 
-'''Einspeisung je Viertelstunde.''' Der Strombedarf liegt je Viertelstunde vor; die Kaskade zieht den BHKW-Strom der Stunde in jeder ihrer vier Viertelstunden gleich ab. Eingespeist ist je Viertelstunde <math>q</math> der Strom, den kein Verbraucher des Anschlusses abnimmt: <math>E_{\mathrm{ein}}(q) = \max\left( 0 , -R'_{\mathrm{E}}(q) 
-ight)</math>, mit dem Reststrombedarf <math>R'_{\mathrm{E}}(q)</math> der Viertelstunde nach der Kaskade. Auf diese eine Reihe greifen der Reiter, die Kennzahl der Einspeisung, die Zeitreihe und die Aufteilung der Strommatrix in Eigenstrom und Einspeisung zu; im Stundenmittel ist sie der Überschuss, den der Photovoltaikzweig sieht. Mit einer Speicherflotte gilt die Netzbilanz der Flotte.
+'''Einspeisung je Viertelstunde.''' Der Strombedarf liegt je Viertelstunde vor; die Kaskade zieht den BHKW-Strom der Stunde in jeder ihrer vier Viertelstunden gleich ab. Eingespeist ist je Viertelstunde <math>q</math> der Strom, den kein Verbraucher des Anschlusses abnimmt: <math>E_{\mathrm{ein}}(q) = \max\left( 0 , -R'_{\mathrm{E}}(q) \right)</math>, mit dem Reststrombedarf <math>R'_{\mathrm{E}}(q)</math> der Viertelstunde nach der Kaskade. Auf diese eine Reihe greifen der Reiter, die Kennzahl der Einspeisung, die Zeitreihe und die Aufteilung der Strommatrix in Eigenstrom und Einspeisung zu; im Stundenmittel ist sie der Überschuss, den der Photovoltaikzweig sieht. Mit einer Speicherflotte gilt die Netzbilanz der Flotte.
 
 === Schritt 5 — Verbrauch, Emissionen, Laufzeiten ===
 

@@ -1,10 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Pufferspeicher | Fassung 4 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs (Energie- und Schichtebene),
-     PufferOptionen.cs (Bereitschaft nach Temperatur, Zonenanteile, Frischwassermodul),
-     Ladeordnung.cs (Lade- und Entladereihenfolge, Obergrenzen), Kaskadenschleife.cs (Phasen A-G),
-     Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität),
-     Kaeltekaskade.cs und Kaelteangebot.cs (Kältespeicher), Stundenangebot.cs (Speicheranteil auf Stufe AK3),
-     Bivalenz/Hydraulikgrenze.cs (Einbindung der Wärmepumpe) -->
+     EPOS.Kern/Allgemein/Simulation/SimulationPufferspeicher.cs (Energie- und Schichtebene), PufferOptionen.cs (Bereitschaft nach Temperatur, Zonenanteile, Frischwassermodul),
+     Ladeordnung.cs (Lade- und Entladereihenfolge, Obergrenzen), Kaskadenschleife.cs (Phasen A-G), Kaskade.cs, Hydraulikbild.cs, Update/ProjektPuffer.cs (nutzbare Kapazität),
+     Kaeltekaskade.cs und Kaelteangebot.cs (Kältespeicher), Stundenangebot.cs (Speicheranteil auf Stufe AK3), Bivalenz/Hydraulikgrenze.cs (Einbindung der Wärmepumpe) -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -445,7 +442,7 @@ Was der Speicher so nicht hergibt, bleibt im Brauchwasserkanal offen und geht an
 === Schritt 11 — Kältespeicher ===
 {{Anker|kaeltespeicher}}
 
-Ein Speicher mit der Verwendung „Kälte" ist ein Kaltwasserspeicher der Kältekaskade. Er rechnet auf demselben Füllstand wie jeder Puffer, nur gespiegelt gelesen: <math>\mathrm{SOC}(t)</math> ist der '''Kältevorrat''', kalt heißt geladen. Die nutzbare Kapazität folgt aus der Spreizung Rücklauf minus Vorlauf:
+Ein Speicher mit der Verwendung „Kälte" speichert Kaltwasser für die Kältekaskade. Er rechnet auf demselben Füllstand wie jeder Puffer, nur gespiegelt gelesen: <math>\mathrm{SOC}(t)</math> ist der '''Kältevorrat''', kalt heißt geladen. Die nutzbare Kapazität folgt aus der Spreizung Rücklauf minus Vorlauf:
 
 : <math>\displaystyle Q_{\mathrm{max}} = \frac{V \cdot c_{\mathrm{W}} \cdot \left( \vartheta_{\mathrm{RL}} - \vartheta_{\mathrm{VL}} \right)}{1\,000}</math> &nbsp;&nbsp;(26)
 :: <math>Q_{\mathrm{max}}</math> – nutzbarer Kältevorrat des Speichers [kWh]

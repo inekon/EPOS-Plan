@@ -1,10 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Photovoltaik | Fassung 4 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationPV.cs, EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs,
-     EPOS.Kern/Allgemein/Simulation/PvGanglinieWeiche.cs, EPOS.Kern/Controller/PvGanglinieImportCtrl.cs,
-     EPOS.Kern/Allgemein/Simulation/PvStrangModell.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
-     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Controller/AnlageStrangCtrl.cs,
-     EPOS.Kern/Controller/WechselrichterCtrl.cs, EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs;
-     Wechselrichter: Konzept_Wechselrichter_EPOS-Plan.md, Kapitel 3 und 4 -->
+     EPOS.Kern/Allgemein/Simulation/SimulationPV.cs, EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs, EPOS.Kern/Allgemein/Simulation/PvGanglinieWeiche.cs, EPOS.Kern/Controller/PvGanglinieImportCtrl.cs,
+     EPOS.Kern/Allgemein/Simulation/PvStrangModell.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs, EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Controller/AnlageStrangCtrl.cs,
+     EPOS.Kern/Controller/WechselrichterCtrl.cs, EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs; Wechselrichter: Konzept_Wechselrichter_EPOS-Plan.md, Kapitel 3 und 4 -->
 
 == Was berechnet wird ==
 {{Anker|was}}
