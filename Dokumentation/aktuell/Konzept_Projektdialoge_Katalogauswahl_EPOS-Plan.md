@@ -244,8 +244,12 @@ hoch, ohne Rollbereich (jede Angabe nennt sich im Tooltipp ganz). Sie hat **kein
 behalten ihre Aufteilung über die Trennlinie, die Detailzeile ist so hoch wie ihr Inhalt. Der Kopf trägt statt des Textes
 „Details“ und des Knopfes „Vergrößern“ den Knopf **„Bearbeiten“** (Stift und Text, in der Kompaktstufe nur der Stift); er
 öffnet die Satz-Überlagerung, beim gesperrten Katalogsatz nur lesend. Der volle Inhalt (Felder, „Alle Daten“,
-Kostenknöpfe, Infoknöpfe) steht dann **ausschließlich in der Überlagerung**. Ohne Kurzangaben (die Ganglinien-Wirte)
-bleibt die Detailzeile wie oben. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster, 130 Zustände ohne Verstoß):
+Kostenknöpfe) steht dann **ausschließlich in der Überlagerung**. Die Infoknöpfe „Grundlagen“ und „Berechnung“ legt der
+Wirt zusätzlich in den Kopf der Detailzeile (`SatzKopfKnoepfe`, rechts vor „Bearbeiten“, als Sinnbilder): So sind sie
+ohne Überlagerung erreichbar; solange die Überlagerung offen ist, zeichnet der Baustein sie im Kopf nicht, und sie
+stehen in der Knopfzeile der Überlagerung — je Ansicht an genau einer Stelle. Gespeichert wird „Alle Daten“ allein
+über das OK der Überlagerung; der Aufklapper trägt keinen eigenen Speicherknopf. Ohne Kurzangaben (die
+Ganglinien-Wirte) bleibt die Detailzeile wie oben. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster, 130 Zustände ohne Verstoß):
 die Zusammenfassung eine Zeile hoch (29 px in 1 280 × 800); die Projektliste folgt der Trennlinie (138 px wie
 zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt nur die Höhe der Detailzeile ab
 (259 → 223 px).
@@ -430,9 +434,15 @@ Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700
 **Präzisiert in ÜS2 (Zusammenfassung der Detailzeile, 4.4):** Heizkessel — Projektsatz: Leistung (kWth), Brennstoff,
 Träger, Vorlauf/Rücklauf (°C), Brennwert, Invest (€), Betrieb (€/a), Senken; Katalogsatz: die Spalten des
 Katalogprofils (Hersteller, Brennstoff, Leistung, η, Brennwert). Die Kostensummen liest die Hülle je Anlage
-(`KostenSummenCtrl.AnlagenSumme`); im Assistenten und ohne Projekt fehlen sie. BHKW, Pufferspeicher, Stromspeicher,
-Photovoltaik, Solarkollektoren und Wärmepumpe: folgt in ÜS2b. Die Ganglinien-Dialoge behalten die Ganglinie in der
-Detailzeile.
+(`KostenSummenCtrl.AnlagenSumme`); im Assistenten und ohne Projekt fehlen sie. BHKW — Projektsatz: P_el/P_th (kWel,
+kWth), Brennstoff, Träger, Grenzleistung (%), Vorlauf/Rücklauf, Invest, Betrieb, Senken; Katalogsatz: Hersteller,
+Brennstoff, P_el, P_th. Pufferspeicher — Projektsatz: Volumen (l), Vorlauf/Rücklauf, Schwellen (Ein/Aus in %),
+Verwendung, Invest, Betrieb; Temperaturpaar, Schwellen und Verwendung liest die Hülle an der Projektkopie
+(`Projektangaben`, `WaermesenkeClass.PufferLesen`); Katalogsatz: Hersteller, Volumen, Bereitschaftsverlust.
+Stromspeicher — Projektsatz: Kapazität (kWh), Leistung (kW), Träger, Anzahl (Projektzeilen auf derselben
+Projektkopie), Invest, Betrieb; Katalogsatz: Hersteller, Kapazität, Leistung. Alle drei tragen die Stifte beider
+Listen wie der Heizkessel und ihre Infoknöpfe im Kopf der Detailzeile (4.4). Photovoltaik, Solarkollektoren und
+Wärmepumpe: folgt in ÜS2b. Die Ganglinien-Dialoge behalten die Ganglinie in der Detailzeile.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 
