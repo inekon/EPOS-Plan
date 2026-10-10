@@ -23,7 +23,7 @@ Die Karte einer Wärmepumpe trägt Chips; ein Doppelklick oder die Eingabetaste 
 
 * '''WP-Prio''' – die Einsatzreihenfolge, wenn mehrere Maschinen im Projekt vorhanden sind.
 * '''Quelle''' – Außenluft (Klimadaten), konstante Temperatur, Pufferspeicher, ein Quellprofil aus Monats-, Tages- oder Stundenwerten, eine CSV-Datei mit Stundenwerten oder Erdreich nach VDI 4640; Luft-Wasser-Wärmepumpen rechnen immer mit der Außenluft.
-* '''Senke''' – die Wärmesenken in Reihenfolge der Belieferung: Heizkreis (Beides mit Warmwasser zuerst, nur Warmwasser oder nur Heizwärme), Prozesswärme oder ein Pufferspeicher.
+* '''Senke''' – die Wärmesenken in Reihenfolge der Belieferung: Heizkreis mit der Bedarfsart ''Beides (Warmwasser zuerst)'', ''nur Warmwasser'' oder ''nur Heizwärme'', Prozesswärme oder ein Pufferspeicher.
 * '''Betriebsmodus''' – laufzeitoptimiert mit maximaler Leistung, leistungsoptimiert mit genau der benötigten Wärmemenge oder PV-optimiert mit Vorrang für selbst erzeugten Strom.
 
 Die Konfiguration wird mit ''Konfiguration speichern'' gespeichert und bleibt dem Projekt erhalten.

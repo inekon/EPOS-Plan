@@ -5,7 +5,7 @@ Der Dialog '''Prozesswärme''' verwaltet die Prozesswärmeprofile des Projekts. 
 * '''Datenbank Prozesswärme und ausgewählte Prozesse im Projekt''' – einen Prozess auswählen und ins Projekt übernehmen; mehrere Prozesse nebeneinander sind möglich.
 * '''Name, Beschreibung und Typ''' – die Stammangaben des Prozesses.
 * '''Jährlicher Prozesswärmebedarf''' – der Jahresverbrauch des gewählten Prozesses; ''Summe aller ausgew. Prozesse'' weist die Summe aus.
-* '''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert eintragen – in MWh mit zwei Nachkommastellen oder in kWh, die Einheit gehört zum Wert – und mit ''Übernehmen'' anwenden; das Wochenprofil bleibt dabei erhalten – es ist faktisch der Schichtplan.
+* '''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert in der Einheit eintragen, die das Feld ''Einheit:'' wählt (MWh oder kWh), und mit ''Übernehmen'' anwenden; das Wochenprofil bleibt dabei erhalten – es ist faktisch der Schichtplan.
 * '''Simulation''' – rechnet mit dem Jahresverbrauch, der im Dialog steht, auch vor dem Speichern, und zeigt Monatswerte und Jahresganglinie zur Kontrolle.
 * '''Prozess und Typ in DB''' – neu anlegen, ändern und löschen; hier werden Monatswerte und das Wochenprofil aus 168 Stundenwerten gepflegt. Der Katalog liefert acht typische Betriebsweisen als Vorlage.
 * '''Temperaturniveau des Prozesses''' – ''Vorlauf'' und ''Rücklauf'' in °C, beide oder keines; ''Temperaturen übernehmen'' setzt sie, gespeichert wird mit ''OK''. Leer rechnet der Prozess als reine Wärmemenge; mit Temperaturpaar werten Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus.

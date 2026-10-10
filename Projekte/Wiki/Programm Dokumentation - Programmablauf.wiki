@@ -3,7 +3,7 @@ Die '''Startmaske''' von EPOS-Plan führt in sechs Registerkarten durch ein Proj
 == Eingaben ==
 
 * '''Projekt''' – ein neues Projekt anlegen (der Assistent öffnet in der Projektkonfiguration), ein gespeichertes öffnen oder bearbeiten, unter anderem Namen speichern, löschen sowie die Projektdetails ansehen. Das Auswahlfeld ''Projekt:'' nennt das geöffnete Projekt; hinter einem Trennstrich stehen dort ''Neue Variante anlegen…'' und – bei einer Variante – ''Variante umbenennen…''.
-* '''Klimaregion''' – die durchsuchbare Klimawahl im Reiter ''Projekt'' gilt für alle Berechnungen im Projekt; gespeichert wird mit dem Knopf daneben, die Rückmeldung steht neben dem Knopf, und eine Zeile darunter nennt Quelle, Bezugsjahr und Szenario der verwendeten Klimadaten.
+* '''Klimaregion''' – die durchsuchbare Klimawahl im Kopf der Maske gilt für alle Berechnungen im Projekt; gespeichert wird mit dem Knopf daneben, die Rückmeldung steht neben dem Knopf, und eine Zeile darunter nennt Quelle, Bezeichnung, Standort und Importdatum der verwendeten Klimadaten.
 * '''Wärmebedarf''' – Gebäudedaten eingeben, Brauchwasserwärme, Prozesswärme sowie der Import bereits vorliegender Wärmebedarfsdaten.
 * '''Strombedarf''' – Standardlastprofil, eigenes Profil oder der Import gemessener Verbrauchsdaten.
 * '''Energieerzeuger''' – Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Pufferspeicher sowie Kühlung und Kälteanlagen; mehrere Technologien lassen sich kombinieren ([[Programm Dokumentation/Energieerzeuger|Energieerzeuger]]).
