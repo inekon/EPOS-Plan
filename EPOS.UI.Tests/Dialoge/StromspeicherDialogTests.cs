@@ -115,9 +115,11 @@ public class StromspeicherDialogTests : EposBunitContext
         Func<IReadOnlyList<Katalogfilterzeile>>? katalogzeilen = null,
         Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
         Func<ErzeugerZeile?, Task>? energiekosten = null,
-        Func<ErzeugerZeile, ErzeugerDetail?>? projektDetail = null)
+        Func<ErzeugerZeile, ErzeugerDetail?>? projektDetail = null,
+        Func<ErzeugerZeile, (double Invest, double Betrieb)>? kostensumme = null)
     {
         return Render<StromspeicherDialog>(p => p
+            .Add(x => x.Kostensumme, kostensumme)
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Speicher 10", 141) })
             .Add(x => x.Katalogprofil, Profil)
             .Add(x => x.Katalogzeilen, katalogzeilen ?? Katalogzeilen)
@@ -143,6 +145,24 @@ public class StromspeicherDialogTests : EposBunitContext
     /// <summary>Wählt eine Katalogzeile — im Katalog ist die ZEILE die Wahl (Kästchenmodus).</summary>
     private static void KatalogzeileWaehlen(IRenderedComponent<StromspeicherDialog> cut, int nummer = 0)
         => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[nummer].Click();
+
+    /// <summary>
+    /// UeS2: Das Fragment des Satzes steht nur in der Satz-Überlagerung — „Bearbeiten" der
+    /// Detailzeile öffnet sie (falls zu); zurück kommt ihr Körper.
+    /// </summary>
+    private static AngleSharp.Dom.IElement Satz(IRenderedComponent<StromspeicherDialog> cut)
+    {
+        if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
+            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+        return cut.Find(".epos-satzueberlagerung-koerper");
+    }
+
+    /// <summary>UeS2: Schließt eine offene Satz-Überlagerung wie Abbrechen bzw. Schließen.</summary>
+    private static void SatzZu(IRenderedComponent<StromspeicherDialog> cut)
+    {
+        var knopf = cut.FindAll(".epos-satzueberlagerung-abbrechen, .epos-satzueberlagerung-schliessen");
+        if (knopf.Count > 0) knopf[0].Click();
+    }
 
     /// <summary>Wählt eine Projektzeile über ihre Wahlspalte.</summary>
     private static void ProjektzeileWaehlen(IRenderedComponent<StromspeicherDialog> cut, int nummer = 0)
@@ -263,6 +283,7 @@ public class StromspeicherDialogTests : EposBunitContext
     {
         var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
         var cut = Aufbauen(projektsatzWege: Wege(gespeichert));
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         Assert.True(cut.Instance.ParameterOffen);
         var felder = cut.FindComponent<Katalogfelder>();
@@ -270,7 +291,7 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Contains(felder.Instance.Felder, f => f.Schluessel == ModulKatalogProfil.FeldInvestitionFix && f.Editierbar);
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
-        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
 
         Assert.Equal(141, Assert.Single(gespeichert).Id);
     }
@@ -337,7 +358,7 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Equal(141, Assert.Single(gespeichert).Id);
         Assert.Contains(Assert.Single(gespeichert).Felder, f => f.Wert == "Neuwerk");
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
-        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-modulparameter"));
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));   // UeS2: zu steht nur die Zusammenfassung
     }
 
     /// <summary>UeS1: Wirft der Speicherweg (KT‑4-Fangweg), bleibt die Überlagerung mit dem Grund offen.</summary>
@@ -374,7 +395,8 @@ public class StromspeicherDialogTests : EposBunitContext
 
         Assert.Empty(gespeichert);
         Assert.False(cut.Instance.SatzUeberlagerungOffen);
-        Assert.Equal(vorher, cut.Find(".epos-zweispalten-satz .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
+        Satz(cut);   // UeS2: wieder geoeffnet steht der verworfene Wert nicht mehr da
+        Assert.Equal(vorher, cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
     }
 
     /// <summary>UeS1: Abbrechen stellt den Träger wieder her, der schon bei der Wahl in die Anlage geht.</summary>
@@ -580,6 +602,7 @@ public class StromspeicherDialogTests : EposBunitContext
     public void Der_Feldbestand_der_Karte_steht()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-knopf--richtung").Count);
@@ -595,6 +618,7 @@ public class StromspeicherDialogTests : EposBunitContext
     public void Die_zwei_berichtigten_Beschriftungen_stehen_da()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
         Assert.Contains("Energie (Kapazität) [kWh]:", texte);
@@ -610,7 +634,7 @@ public class StromspeicherDialogTests : EposBunitContext
         var kopf = cut.FindAll(".epos-raster")[1].QuerySelectorAll("th")
                       .Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Equal(Profil.Spalten.Count(s => !s.StandardAus) + 1, kopf.Count);   // Kästchen + Spalten (4.10)
+        Assert.Equal(Profil.Spalten.Count(s => !s.StandardAus) + 2, kopf.Count);   // dazu die Stiftspalte (UeS2)   // Kästchen + Spalten (4.10)
         Assert.Contains(kopf, k => k.StartsWith("Hersteller"));
         Assert.Contains(kopf, k => k.Contains("kWh"));
         Assert.Empty(cut.FindAll(".epos-mehrzeilig"));
@@ -739,7 +763,7 @@ public class StromspeicherDialogTests : EposBunitContext
                            energiekosten: _ => Task.CompletedTask,
                            projektsatzWege: Wege());
 
-        var kinder = cut.Find(".epos-zweispalten-satz").Children.ToList();
+        var kinder = Satz(cut).Children.ToList();
         Assert.Contains("epos-leiste", kinder[0].ClassList);
         int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
         int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
@@ -749,7 +773,7 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Contains("epos-kostenleiste", teile[0].ClassList);
         Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
         Assert.Contains("epos-berechnungshilfe", teile[2].ClassList);
-        Assert.Empty(cut.Find(".epos-zweispalten-satz").QuerySelectorAll("button")
+        Assert.Empty(Satz(cut).QuerySelectorAll("button")
                         .Where(k => k.TextContent.Trim() == "Bearbeiten..."));
     }
 
@@ -867,6 +891,7 @@ public class StromspeicherDialogTests : EposBunitContext
             })
             .Add(x => x.TraegerWechseln, (ErzeugerZeile z, int neu) => gemeldet = (z, neu)));
 
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         var selects = cut.Find(".epos-traegerwahl").QuerySelectorAll("select");
         Assert.Equal(2, selects.Length);
         selects[1].Change("58");
@@ -875,7 +900,9 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Equal(58, zeile.CarrierId);
 
         // Beim Katalogsatz gibt es nichts zu wählen.
+        SatzZu(cut);
         KatalogzeileWaehlen(cut);
+        Satz(cut);
         Assert.Empty(cut.FindAll(".epos-traegerwahl"));
     }
 
@@ -888,9 +915,12 @@ public class StromspeicherDialogTests : EposBunitContext
     {
         var cut = Aufbauen(katalogfelder: Katalogfelder);
 
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         Assert.Empty(cut.FindAll(".epos-modulparameter-knopf"));
 
+        SatzZu(cut);
         KatalogzeileWaehlen(cut);
+        Satz(cut);
         Assert.Single(cut.FindAll(".epos-modulparameter-knopf"));
     }
 
@@ -911,6 +941,7 @@ public class StromspeicherDialogTests : EposBunitContext
 
         Assert.Equal(0, rufe);
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         var knopf = cut.Find(".epos-modulparameter-knopf");
         Assert.Equal("true", knopf.GetAttribute("aria-expanded"));
@@ -924,6 +955,7 @@ public class StromspeicherDialogTests : EposBunitContext
     {
         var cut = Aufbauen(katalogfelder: Katalogfelder);
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         cut.Find(".epos-modulparameter-knopf").Click();
         Assert.False(cut.Instance.ParameterOffen);
@@ -940,6 +972,7 @@ public class StromspeicherDialogTests : EposBunitContext
         int rufe = 0;
         var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         Assert.Equal("Speicher 10", cut.Find(".epos-modulparameter").QuerySelectorAll("input")[0].GetAttribute("value"));
 
         KatalogzeileWaehlen(cut, 1);
@@ -954,6 +987,7 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: Katalogfelder,
                            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         int erwartet = Modulprofil.Felder.Count(f => f.Gesperrt || f.Art == BrowserFeldArt.Auswahl);
         Assert.True(erwartet > 0, "Das Profil führt kein gesperrtes Feld.");
@@ -976,9 +1010,11 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: Katalogfelder, katalogzeilen: () => MitSchloss(41),
                            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-modulparameter .epos-satzbearbeitung-hinweis").TextContent);
         Assert.Empty(cut.FindAll(".epos-modulparameter .epos-leiste"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));   // UeS2: nur „Schliessen"
     }
 
     [Fact]
@@ -991,30 +1027,39 @@ public class StromspeicherDialogTests : EposBunitContext
             felderSpeichern: (n, f) => { name = n; gesehen = f; return new KatalogSpeicherErgebnis(true, "", n); });
 
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
-        cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
 
         Assert.Equal("Speicher 10", name);
         Assert.Contains(gesehen!, f => f.Wert == "42");
     }
 
     [Fact]
-    public void Speichern_meldet_am_Knopf_und_die_Eingabe_nimmt_den_Vermerk_zurueck()
+    public void UeS2_OK_schreibt_nur_eine_Aenderung_und_ein_zweites_Oeffnen_schreibt_nicht_erneut()
     {
         int schreibvorgaenge = 0;
         var cut = Aufbauen(katalogfelder: Katalogfelder,
                            felderSpeichern: (n, _) => { schreibvorgaenge++; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); });
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
-        cut.Find(".epos-modulparameter .epos-speichervermerk button").Click();
-
+        cut.Find(".epos-satzueberlagerung-ok").Click();
         Assert.Equal(1, schreibvorgaenge);
         Assert.Equal("", cut.Instance.Meldung);
-        Assert.StartsWith("Gespeichert um ", cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]").TextContent);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
 
+        // Wieder geoeffnet und ohne Aenderung bestaetigt: kein zweiter Schreibvorgang.
+        Satz(cut);
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.Equal(1, schreibvorgaenge);
+
+        // Die naechste Eingabe schreibt wieder.
+        Satz(cut);
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("43");
-        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.Equal(2, schreibvorgaenge);
     }
 
     [Fact]
@@ -1023,9 +1068,10 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: Katalogfelder,
                            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("keine Zahl");
-        Assert.True(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").HasAttribute("disabled"));
+        Assert.True(cut.Find(".epos-satzueberlagerung-ok").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -1035,12 +1081,15 @@ public class StromspeicherDialogTests : EposBunitContext
                            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(false, "Der Datensatz ist schreibgeschützt.", n));
 
         KatalogzeileWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
-        cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
 
         Assert.Equal("Der Datensatz ist schreibgeschützt.", cut.Instance.Meldung);
         Assert.Single(cut.FindAll(".epos-warnbanner"));
-        Assert.False(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").HasAttribute("disabled"));
+        // UeS2: Die Ueberlagerung bleibt mit dem Grund offen, ihr OK bleibt bedienbar.
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.False(cut.Find(".epos-satzueberlagerung-ok").HasAttribute("disabled"));
     }
 
     // =====================================================================
@@ -1063,6 +1112,7 @@ public class StromspeicherDialogTests : EposBunitContext
         var cut = Aufbauen(
             kostenOeffnen: (zeile, betrieb) => { gesehen = zeile; kosten.Add(betrieb); return Task.CompletedTask; },
             energiekosten: _ => { energie++; return Task.CompletedTask; });
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         var knoepfe = cut.FindAll(KOSTENKNOEPFE);
         Assert.Equal(3, knoepfe.Count);
@@ -1073,7 +1123,9 @@ public class StromspeicherDialogTests : EposBunitContext
         Assert.Equal(1, energie);
         Assert.Equal(141, gesehen!.GeraetId);
 
+        SatzZu(cut);
         KatalogzeileWaehlen(cut);
+        Satz(cut);
         Assert.Null(cut.Instance.Projektzeile);
         Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
     }
@@ -1181,5 +1233,132 @@ public class StromspeicherDialogTests : EposBunitContext
     {
         var cut = Aufbauen(projektsatzWege: Wege());
         Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
+    }
+    // =================================================================================
+    // UeS2: Zusammenfassung der Detailzeile und Stift je Zeile (Anwenderentscheid 10.10.2026)
+    // =================================================================================
+
+    private static Dictionary<string, string> Angaben(IRenderedComponent<StromspeicherDialog> cut)
+        => cut.FindAll(".epos-satzzusammenfassung-angabe")
+              .ToDictionary(a => a.QuerySelector("dt")!.TextContent, a => a.QuerySelector("dd")!.TextContent);
+
+    [Fact]
+    public void UeS2_Die_Zusammenfassung_des_Projektsatzes_nennt_die_Speicherdaten()
+    {
+        var a = Zeile(1, "Speicher 10", 141);
+        a.CarrierId = 60;
+        var cut = Render<StromspeicherDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { a, Zeile(2, "Speicher 10 b", 141) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.ProjektDetail, z => new ErzeugerDetail(z.Bezeichner, "",
+                new[] { (Resource.SPD_LBL_LEISTUNG, "5"), (Resource.SP_LABEL_ENERGIE, "10") }))
+            .Add(x => x.Traegerkatalog, new[] { new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie") })
+            .Add(x => x.KostenOeffnen, (_, _) => Task.CompletedTask)
+            .Add(x => x.Kostensumme, _ => (8000.0, 120.0)));
+
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var k = System.Globalization.CultureInfo.CurrentCulture;
+        var angaben = Angaben(cut);
+        Assert.Equal("10 kWh", angaben[Resource.AUSWAHL_ZF_KAPAZITAET]);
+        Assert.Equal("5 kW", angaben[Resource.AUSWAHL_ZF_LEISTUNG]);
+        Assert.Equal("Elektrische Energie", angaben[Resource.AUSWAHL_ZF_TRAEGER]);
+        Assert.Equal("2", angaben[Resource.AUSWAHL_ZF_ANZAHL]);   // zwei Zeilen auf derselben Projektkopie
+        Assert.Equal(string.Format(k, Resource.AUSWAHL_ZF_EURO, 8000.0), angaben[Resource.AUSWAHL_ZF_INVEST]);
+        Assert.Equal(string.Format(k, Resource.AUSWAHL_ZF_EURO_JAHR, 120.0), angaben[Resource.AUSWAHL_ZF_BETRIEB]);
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+        Assert.NotEmpty(Satz(cut).QuerySelectorAll(KOSTENKNOEPFE));
+    }
+
+    [Fact]
+    public void UeS2_Ohne_Kostenweg_nennt_die_Zusammenfassung_keine_Kosten()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var angaben = Angaben(cut);
+        Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_INVEST));
+        Assert.Equal("1", angaben[Resource.AUSWAHL_ZF_ANZAHL]);
+    }
+
+    [Fact]
+    public void UeS2_Die_Zusammenfassung_des_Katalogsatzes_nennt_Hersteller_Kapazitaet_und_Leistung()
+    {
+        var cut = Aufbauen();
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var angaben = cut.FindAll(".epos-satzzusammenfassung-angabe dd").Select(e => e.TextContent).ToList();
+        Assert.Equal(3, angaben.Count);
+        Assert.Contains(angaben, t => t.EndsWith(" kWh"));
+        Assert.Contains(angaben, t => t.EndsWith(" kW"));
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_der_Projektzeile_oeffnet_die_Projektkopie_in_der_Ueberlagerung()
+    {
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Speicher 10", 141), Zeile(2, "Speicher 20", 142) };
+        var cut = Aufbauen(zeilen: zeilen, projektsatzWege: Wege());
+
+        var stifte = cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift");
+        Assert.Equal(2, stifte.Length);
+        stifte[1].Click();
+
+        Assert.Equal(142, cut.Instance.Projektzeile!.GeraetId);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void UeS2_Ohne_Weg_der_Projektkopie_traegt_die_Projektliste_keinen_Stift()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift"));
+        Assert.NotEmpty(cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift"));
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_einer_gesperrten_Katalogzeile_oeffnet_nur_lesend()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder, katalogzeilen: () => MitSchloss(41),
+                           felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[0].Click();
+
+        Assert.False(cut.Instance.EditorOffen);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_einer_ungesperrten_Katalogzeile_oeffnet_den_Katalogeditor()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder, editorGaben: _ => new Dictionary<string, object>());
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[0].Click();
+
+        Assert.True(cut.Instance.EditorOffen);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+    }
+
+    /// <summary>UeS2b: „Grundlagen" und „Berechnung" im Kopf der Detailzeile, offen in der Überlagerung — je Ansicht einmal.</summary>
+    [Fact]
+    public void UeS2b_Die_Infoknoepfe_stehen_im_Kopf_der_Detailzeile_und_nie_doppelt()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        string[] schluessel = { "Form_Stromspeicher.Grundlagen", "Form_Stromspeicher.Berechnung" };
+
+        foreach (string s in schluessel)
+            Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-hilfepille").Count);
+
+        Satz(cut);
+        foreach (string s in schluessel)
+            Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
     }
 }
