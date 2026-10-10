@@ -50968,5 +50968,11 @@ Chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
   </data>
+  <data name="SPD_LBL_SUMME" xml:space="preserve">
+    <value>Summe aller ausgewählten Speicher [kWh]:</value>
+  </data>
+  <data name="SPD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit.</value>
+  </data>
 </root>
 

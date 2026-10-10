@@ -50961,5 +50961,11 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>
+  <data name="SPD_LBL_SUMME" xml:space="preserve">
+    <value>Total of all selected storage units [kWh]:</value>
+  </data>
+  <data name="SPD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier and operating strategy of the plant (storage variant). Capacity, power, device values and the four cost items are taken along.</value>
+  </data>
 </root>
 

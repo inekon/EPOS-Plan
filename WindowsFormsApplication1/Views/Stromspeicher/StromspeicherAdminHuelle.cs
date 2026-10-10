@@ -96,7 +96,58 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(IReadOnlyList<ModulFeldwert> felder,
                                                          bool neu, string schluessel)
         {
-            var m = new StromspeicherModel
+            StromspeicherStammCtrl.SpeicherErgebnis e =
+                StromspeicherStammCtrl.SpeichernAus(Modell(felder), neu, schluessel);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        // =====================================================================
+        // Katalogauswahl V1, Stufe 3: Bearbeiten je Bereich (KA-E-8)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Felder des Satzes <paramref name="id"/> — Projektkopie oder Katalog — als <see cref="BrowserFeldwert"/>
+        /// für die Satzbearbeitung und „Alle Daten" des Projektsatzes; dieselbe Abbildung wie der Aufklapper des
+        /// Katalogsatzes (<see cref="ModulFeldwertBruecke"/>). <c>null</c> = kein Satz.
+        /// </summary>
+        internal static IReadOnlyList<BrowserFeldwert> SatzFelder(bool projektkopie, int id)
+            => ModulFeldwertBruecke.Felder(new ModulKatalogWege { Detail = _ => Satz(projektkopie, id) }, "");
+
+        /// <summary>
+        /// <b>Schreibt alle Sätze einer Satzbearbeitung in EINER Transaktion</b>
+        /// (<see cref="StromspeicherStammCtrl.SchreibenAlle"/>): je Satz frisch gelesen, die editierbaren Felder
+        /// übertragen — was die Liste nicht trägt oder nicht setzen darf, behält seinen Wert.
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<StromspeicherStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+            {
+                IReadOnlyList<ModulFeldwert> satz = Satz(projektkopie, id);
+                if (satz != null)
+                    foreach (ModulFeldwert ziel in satz)
+                    {
+                        if (ziel.Gesperrt || ziel.Art == BrowserFeldArt.Auswahl) continue;
+                        foreach (BrowserFeldwert quelle in felder ?? Array.Empty<BrowserFeldwert>())
+                            if (string.Equals(quelle.Schluessel, ziel.Schluessel, StringComparison.Ordinal))
+                                ziel.Wert = quelle.Wert ?? "";
+                    }
+                // Ein verschwundener Satz geht mit leerem Modell: Der Kern findet ihn nicht und nennt ihn.
+                liste.Add(new StromspeicherStammCtrl.Satzaenderung(id, satz == null ? new StromspeicherModel() : Modell(satz)));
+            }
+            StromspeicherStammCtrl.SpeicherErgebnis e = StromspeicherStammCtrl.SchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder eines Satzes nach dem Profil der Ausprägung.</summary>
+        private static IReadOnlyList<ModulFeldwert> Satz(bool projektkopie, int id)
+            => ModulKatalogHuelle.Felder(Profil(), StromspeicherStammCtrl.SatzAnzeige(projektkopie, id));
+
+        /// <summary>Die Felder als Modell — dieselbe Abbildung für Katalogeditor und Satzbearbeitung.</summary>
+        private static StromspeicherModel Modell(IReadOnlyList<ModulFeldwert> felder)
+        {
+            return new StromspeicherModel
             {
                 m_szBezeichner = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldBezeichner),
                 m_szFirma = ModulKatalogHuelle.Wert(felder, ModulKatalogProfil.FeldFirma),
@@ -115,10 +166,6 @@ namespace WindowsFormsApplication1
                 m_StandbyVerbrauch = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldStandby),
                 m_Selbstentladung = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldSelbstentladung)
             };
-
-            StromspeicherStammCtrl.SpeicherErgebnis e =
-                StromspeicherStammCtrl.SpeichernAus(m, neu, schluessel);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 
         private static KatalogSpeicherErgebnis Loeschen(string name)
