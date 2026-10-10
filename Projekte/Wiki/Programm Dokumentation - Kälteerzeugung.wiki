@@ -202,6 +202,8 @@ Fehlt dem gewählten Stromträger der Arbeitspreis, bleiben die Energiekosten au
 
 Die Zahlen des Kältebedarfs – Kältelast, Stunden mit Kühlbedarf, Überhitzungsstunden – beschreibt [[Programm Dokumentation/Kühlung#ergebnisse|Kühlung: Ergebnisse]].
 
+[[Datei:Diagramm_Kaelteproduktion.png|mini|zentriert|800px|Kälteproduktion als Jahresganglinie: die gedeckte Kälte des Kälteerzeugers, darüber die ungedeckte Kälte, als Linie der Kältebedarf. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 == Grenzen ==
 {{Anker|grenzen}}
 

@@ -54,6 +54,10 @@ Die Streuwolke ''Leistung über Außentemperatur'' auf der Seite ''Wärmepumpe''
 
 Alle diese Bilder sind ebenso '''maßstabsfrei''' wie die Zeitreihen; ihre Farben stellen Sie unter [[#diagrammfarben|Farben der Diagramme]] ein.
 
+[[Datei:Diagramm_Waerme_Jahresverlauf.png|mini|zentriert|800px|Wärmeerzeugung im Jahresverlauf als Tagesmittel: die Erzeuger gestapelt, darüber der Wärmebedarf als Linie. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
+[[Datei:Diagramm_Waerme_Dauerlinie.png|mini|zentriert|800px|Jahresdauerlinie Wärme: Bedarf und Erzeuger, jeweils nach Stundenwerten absteigend geordnet. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 == Farben der Diagramme ==
 {{Anker|diagrammfarben}}
 

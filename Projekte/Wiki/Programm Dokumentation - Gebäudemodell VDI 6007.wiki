@@ -179,6 +179,8 @@ Die Vorgaben sind Vorgaben von EPOS-Plan, keine Normwerte. Unter den Feldern nen
 
 Hat ein Lauf mit Kühlkurve gerechnet, zeigen das Ergebnis des Gebäudes und der Bericht (Tafel „Kühlkurve“) drei Kennzahlen des Projekts: den mittleren verlangten Kühlvorlauf der Kühlstunden, die Summe der Absenkung durch den Raumeinfluss in Kelvinstunden und die Kühlstunden, in denen die Kurve an der Vorlaufgrenze stand.
 
+[[Datei:Diagramm_Kuehlvorlauf_Ruecklauf.png|mini|zentriert|800px|Kühlvorlauf und Kühlrücklauf eines Gebäudes über das Jahr, gestrichelt die Auslegungswerte. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 == Komfortstunden ==
 {{Anker|komfort}}
 
@@ -195,6 +197,8 @@ Die Schwelle 1,0 K ist eine Vorgabe von EPOS-Plan, kein Normwert. Gezählt wird 
 '''Feste Last.''' Im Lauf mit Fahrplan rechnet nur ein Gebäude nach VDI 6007 mit Wärmeübergabe ''mit Rückwirkung''. Jedes andere Gebäude – auf dem Rechenweg Tagesbilanz oder ohne Wärmeübergabe – geht als '''feste Last''' ein: Es zehrt an der Verfügbarkeit der Anlage, sein Bedarf bleibt aber wie ohne Fahrplan, und es hat keine Komfortstunden. Der Bericht nennt je Gebäude den Bedarfsbegriff und je Projekt die Zahl der Gebäude als feste Last.
 
 '''Profilweg.''' Die Verfügbarkeit der Anlagen rechnet das Programm einmal je Projekt vorab; ein Pufferspeicher geht nur als Vorrat über die Dauer einer Sperre ein. Die Komfortstunden sind deshalb eine Näherung und eher zu hoch als zu niedrig; der Bericht nennt das.
+
+[[Datei:Diagramm_Raumtemperatur_Komfort.png|mini|zentriert|800px|Raumtemperatur und Sollwert einer Woche; grün markiert die Stunden, in denen der Raum den Sollwert unterschreitet. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
 
 == Lüftung ==
 {{Anker|lueftung}}

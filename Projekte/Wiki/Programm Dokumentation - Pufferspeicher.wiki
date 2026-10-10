@@ -113,6 +113,8 @@ Diese Stundenschleife ist die Speicherstufe. In ihr rechnen die Wärmepumpe und 
 
 {{Anker|speicher-als-waermequelle}}'''Speicher als Wärmequelle.''' Eine Sole-Wasser- oder Wasser-Wasser-Wärmepumpe und ein Heizkessel können einen Pufferspeicher als Quelle nutzen – etwa im Booster-Betrieb, in dem eine zweite Wärmepumpe den von der ersten geladenen Speicher anzapft. Gewählt wird das über ''Quelle: …'' an der Karte der Anlage; der Dialog ''Wärmequelle Pufferspeicher'' fragt für die Wärmepumpe ''Quelltemperatur [°C]:'', ''nutzbare Spreizung [K]:'' und ''Regeneration [kW]:''. Die Wärmepumpe entzieht dem Speicher je Stunde ihre Verdampferwärme; ist er leer, wird ihre Leistung begrenzt. Eine Luft-Wasser-Wärmepumpe nutzt immer die Außenluft; BHKW und Solarthermie haben keinen Quellbezug.
 
+[[Datei:Diagramm_Speicherverlauf.png|mini|zentriert|800px|Füllstand mehrerer Speicher in einer Winter-, Übergangs- und Sommerwoche. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 == Fallstricke ==
 {{Anker|fallstricke}}
 

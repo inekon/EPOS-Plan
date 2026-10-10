@@ -27,6 +27,8 @@ Die ''Übersicht'' fasst alles zusammen. Zwei Ringdiagramme zeigen Wärme- und S
 
 Die ''Autarkie-Analyse'' im Reiter ''Ergebnis'' stellt monatsweise gegenüber, welcher Anteil des Strombedarfs direkt aus der Erzeugung, aus dem Speicher oder aus dem Netz gedeckt wird, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und die CO₂-Einsparung aus.
 
+[[Datei:Diagramm_Strombilanz_Monate.png|mini|zentriert|800px|Strombilanz im Monatsverlauf: Eigenverbrauch, BHKW-Strom und Netzbezug gestapelt, daneben die Einspeisung, als Linie der Strombedarf. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 == Wärme- und Stromproduktion ==
 {{Anker|waerme-und-stromproduktion|produktionsganglinie|speicherfuellstand}}
 

@@ -243,6 +243,8 @@ Eine Stunde mit einem Rücklauf unter dem Taupunkt zählt als Brennwertbetrieb.
 
 '''Beispiel.''' Kessel 1 aus Beispiel A (<math>\eta_{100} = 0{,}97</math>, <math>\eta_{30} = 1{,}05</math>) mit Brennwertkennlinie und dem Rücklauf 45 °C aus ''Auslegung für Verteilung'': Die trockene Kurve beginnt bei <math>1{,}05 - 0{,}08 = 0{,}97</math> und ist damit flach; <math>g = (57 - 45)/27 \approx 0{,}444</math>, also <math>\eta \approx 0{,}97 + 0{,}08 \cdot 0{,}444 \approx 1{,}006</math> in jeder Laststufe. Die Stunde mit 30 kWh Wärme braucht 29,8 kWh Brennstoff; beim Rücklauf 50 °C wären es 30,3 kWh (<math>\eta \approx 0{,}991</math>), bei 30 °C Rücklauf 28,6 kWh (<math>\eta = 1{,}05</math>). Ohne Brennwertkennlinie rechnet dieselbe Stunde mit <math>\eta \approx 1{,}016</math> ([[#teillastkennlinie|Teillastkennlinie]]).
 
+[[Datei:Diagramm_Kessel_Brennwert.png|mini|zentriert|800px|Wirkungsgrad eines Brennwertkessels über der Last für drei Rücklauftemperaturen. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 === Takten ===
 {{Anker|takten|starts|mindestleistung|anfahrverlust|mindestlaufzeit}}
 

@@ -97,6 +97,8 @@ In der Stufe ''Erweitert'' klappt unter der Nutzungsart der Katalog auf: Je Eint
 
 {{Anker|herkunft}}Darunter liegt ab der Stufe ''Erweitert'' die zugeklappte Karte '''Herkunft'''. Aufgeklappt zeigt sie, woher jeder Wert der Rechnung kommt — je Wert eine Zeile in der Reihenfolge, in der der Rechenweg ihn festlegt: die Größe, ihr Wert mit Einheit, die Zone (''Projekt'' bei einem Wert des ganzen Projekts), der Stand (''Vorgabe'', ''überschrieben'', ''kalibriert'' oder ''umgerechnet''), die Quelle mit Regelwerk, Ausgabe, Katalogfassung und Art der Herkunft sowie ein Vermerk mit Faktor, Messwertquelle oder Rechenweg. Gibt es nichts festzuhalten, sagt die Karte das. Die [[#auslegung|Auslegung]] führt dieselbe Karte mit den Werten ihrer Rechnung.
 
+[[Datei:Diagramm_Zapfprofil_Dauerlinie.png|mini|zentriert|800px|Dauerlinie von Zapfung und Zirkulation mit den Perzentilen P50 bis P99 und der Ladeleistung. Beispieldiagramm aus synthetischen Reihen, kein Simulationsergebnis.]]
+
 == Hinweise und Prüfung ==
 
 * Hinweise des Rechenwegs – etwa ein Bedarf außerhalb der Bandbreite des Katalogs – stehen am Eingabeblock der betroffenen Zone und in der Liste ''Hinweise der Bilanz''; sie blockieren nicht.
