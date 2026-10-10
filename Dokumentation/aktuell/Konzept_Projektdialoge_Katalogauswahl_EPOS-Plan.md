@@ -500,6 +500,39 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
 
+### 5.8 Wie gebaut (Stufe 3, Wärmepumpe)
+
+Die Wärmepumpe folgt dem BHKW (5.4); hier steht nur, was abweicht.
+
+- **Aufbau:** Die Anlagenseite `WaermepumpeAnlageDialog` steht nicht mehr eingebettet unter den Listen, sondern als
+  Überlagerung „Anlage…“ beim Projektsatz (KA‑E‑11). Sie bearbeitet die Zeile an Ort und Stelle; OK prüft und übernimmt
+  sie ins Modell, Abbrechen setzt sie auf den Stand beim Öffnen zurück. Eine einzeln übernommene Zeile öffnet ihre Anlage
+  sofort (Betriebsart, Temperaturen, Sperrzeit, Heizstab); das OK des Dialogs hält bei einer neuen, noch nicht bestätigten
+  Zeile an und öffnet deren Anlage. Die Detailzeile zeigt die Kenndaten des Satzes und die Kennlinie (COP, Leistung) wie
+  das Stammblatt, beim Projektsatz dazu die Kostenknöpfe und „Anlage…“.
+- **Knöpfe:** Projekt-Kopfleiste „Umstellen“ (genau eine Projektzeile auf genau einen Katalogsatz; Gerät, Gerätefelder und
+  Kennlinien wechseln, Betriebsdaten und Kosten der Anlage bleiben), „Bearbeiten…“, „In die Datenbank übernehmen…“,
+  Entfernen. Katalogfuß Schloss, Löschen, Bearbeiten — ohne Vergleichen und ohne Neu (beides trägt der Katalogeditor).
+  Ein einzelner ungesperrter Katalogsatz öffnet den Katalogeditor `WaermepumpeStammDialog` mit dem Satz vorgewählt
+  (Parameter `Vorwahl`). „In Stamm übernehmen…“ der Anlagenseite entfällt in diesem Wirt; es bleibt nur im eigenen
+  Fenster der Anlagenseite.
+- **Satzbearbeitung:** Hersteller, Beschreibung und Modulkosten (`WPStammCtrl.SammelfelderSchreibenAlle`, eine
+  Transaktion). Nennleistung, Heizstab, Kühlleistung, Typ und Regelung hängen an der Kennlinie; sie und die Kennlinien
+  bearbeiten Katalogeditor bzw. Anlagenseite, nicht die Sammelbearbeitung.
+- **Projektkopie:** entsteht beim Übernehmen und beim Umstellen sofort über `WPCtrl.CopyFromStamm` samt Heiz- und
+  Kühlkennlinie (`Projektkopievormerkung`); die Zeile trägt danach die Id der Kopie statt der Katalog-Id. Entfernen und
+  die alte Kopie eines Umstellens gehen erst mit OK, wenn keine Zeile mehr auf sie zeigt.
+- **Kernweg:** `WPStammCtrl.Rueckweg()` (Kopie `Tab_WP`, Katalog `Tab_WP_STAMM`, Anlage über `ID_WP`, Kostenkomponente 1),
+  `RueckwegVorschau`, `AusProjektUebernehmen`, `RueckwegNameBelegt`, `KatalogsatzLoeschen`; `Delete` über den Namen läuft
+  über denselben Löschweg. Prüfregel: Nennleistung und Modulkosten nicht negativ. Kein neuer Schemaschritt: Schritt 80
+  führt `Tab_WP.ID_Stamm`, 208 und 209 die beiden Vorlagenverweise an `Tab_WP_STAMM`.
+- **Kindzeilen:** die ersten zwei technischen Kindtabellen des Kernwegs — Heizkennlinie `Tab_Kenndaten` →
+  `Tab_Kenndaten_STAMM` und Kühlkennlinie `Tab_Kenndaten_Kuehlung` → `Tab_Kenndaten_Kuehlung_STAMM`, je über `ID_WP` mit
+  allen Vorlauf-Stützstellen; bei „überschreiben“ ersetzen sie die des Ursprungs. Löschen eines Katalogsatzes löscht seine
+  beiden Kennlinien im selben Vorgang. Mit der Schnittmenge gehen Kühlkonfiguration, Taktwerte und die acht Gerätespalten
+  der Übergabegrenze. Anlagenbezogen bleiben Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten und
+  Zeitprogramm, die Quellfelder `WQ_*`, Einbindung, Vorwärmbetrieb, `Vorlauf_Max` und die Senken; die Rückfrage nennt es.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
