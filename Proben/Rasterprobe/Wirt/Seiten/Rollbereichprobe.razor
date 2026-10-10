@@ -34,19 +34,23 @@
         case "stromspeicher":
             <StromspeicherDialog Zeilen="@Erzeuger("Batterie")" Katalogprofil="@Profil(Anlagenart.Stromspeicher)"
                                  Katalogzeilen="@(() => Katalog(Anlagenart.Stromspeicher))"
-                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                 Filterstandvorgabe="@_filterstand" KatalogDetail="@(n => Detail(n))"
+                                 ProjektDetail="@(z => Detail(z.Bezeichner))"
                                  Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "photovoltaik":
             <PhotovoltaikDialog Zeilen="@Erzeuger("Modul")" Katalogprofil="@Profil(Anlagenart.Photovoltaik)"
                                 Katalogzeilen="@(() => Katalog(Anlagenart.Photovoltaik))"
                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                ProjektDetail="@(z => Detail(z.Bezeichner))" Modulname="@(z => z.Bezeichner)"
                                 Gesamtleistung="@(() => "12,0")" Geschlossen="@(b => Beendet(b))" />
             break;
         case "solarkollektoren":
             <SolarkollektorenDialog Zeilen="@Erzeuger("Kollektor")" Katalogprofil="@Profil(Anlagenart.Solarkollektoren)"
                                     Katalogzeilen="@(() => Katalog(Anlagenart.Solarkollektoren))"
                                     Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                    ProjektDetail="@(z => Detail(z.Bezeichner))"
+                                    ProjektModulflaeche="@(_ => 2.0)"
                                     Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "bedarfsprofile":
