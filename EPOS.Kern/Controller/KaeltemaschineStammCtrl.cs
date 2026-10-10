@@ -52,8 +52,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Zeilen der Katalogliste</b> der Verwaltung (Profil <see cref="Katalogfilterprofil.Finde"/> mit
-        /// <see cref="Anlagenart.Kaeltemaschine"/>): Bezeichner, Firma, Typ, Nennkälteleistung, Nenn-EER und die
-        /// Rückkühlart als ANZEIGETEXT — der Schlüssel der Zeile ist die Id, der Persistenzwert bleibt im Kern.
+        /// <see cref="Anlagenart.Kaeltemaschine"/>): Bezeichner, Firma, Typ, Nennkälteleistung, Nenn-EER, die
+        /// Rückkühlart und die Herkunft (<see cref="HerkunftText"/>) als ANZEIGETEXT — der Schlüssel der Zeile ist die Id, der Persistenzwert bleibt im Kern.
         /// </summary>
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
