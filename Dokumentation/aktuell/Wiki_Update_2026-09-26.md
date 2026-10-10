@@ -226,6 +226,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Die Verwaltung der Kältemaschinen zeigt ihre Liste mit den Spalten der Wärmepumpen-Verwaltung, einer Spalte „Herkunft“, einem Schalter zum Ausblenden der Typkennfelder, die Kennlinie als Diagramm und den Vergleich mit Kennwerten nebeneinander; unter Windows öffnet sie ein eigenes Fenster. (#881)
 - Seit 10.10.2026: Im Dialog der Kachel „Kühlung und Kälteanlagen“ lassen sich unter „Hinzufügen…“ die Typkennfelder laden und die Katalogverwaltung öffnen. (#881)
 - Seit 10.10.2026: In jedem Katalog verneint ein vorangestelltes „!“ den Trichter einer Textspalte. (#881)
+- Seit 10.10.2026: Ein gekürzter Spaltenkopf in den Katalogen nennt beim Verweilen mit der Maus seinen vollen Namen. (#882)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
