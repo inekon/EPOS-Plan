@@ -3120,6 +3120,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergrößern ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_VERGROESSERN {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_VERGROESSERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den gewählten Satz in voller Höhe über dem Dialog öffnen ähnelt.
+        /// </summary>
+        public static string AUSWAHL_SATZ_VERGROESSERN_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_SATZ_VERGROESSERN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe zwischen Projekt und Katalog (ziehen oder Pfeiltasten) ähnelt.
         /// </summary>
         public static string AUSWAHL_TRENNER {

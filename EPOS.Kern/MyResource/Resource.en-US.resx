@@ -50187,6 +50187,12 @@ chart</value>
   <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
     <value>read-only</value>
   </data>
+  <data name="AUSWAHL_SATZ_VERGROESSERN" xml:space="preserve">
+    <value>Enlarge</value>
+  </data>
+  <data name="AUSWAHL_SATZ_VERGROESSERN_HINWEIS" xml:space="preserve">
+    <value>Open the selected record at full height over the dialog</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Edit project record – {0}</value>
   </data>

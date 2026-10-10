@@ -30,20 +30,24 @@
                                   Katalogzeilen="@(() => Katalog(Anlagenart.Pufferspeicher))"
                                   Filterstandvorgabe="@_filterstand"
                                   KatalogDetail="@(n => Detail("Puffer " + n))" ProjektDetail="@(n => Detail("Puffer " + n))"
-                                  Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
+                                  Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
+                                  AuslegenOeffnen="@(_ => Task.CompletedTask)" Geschlossen="@(b => Beendet(b))" />
             break;
         case "stromspeicher":
             <StromspeicherDialog Zeilen="@Erzeuger("Batterie")" Katalogprofil="@Profil(Anlagenart.Stromspeicher)"
                                  Katalogzeilen="@(() => Katalog(Anlagenart.Stromspeicher))"
                                  Filterstandvorgabe="@_filterstand" KatalogDetail="@(n => Detail(n))"
                                  ProjektDetail="@(z => Detail(z.Bezeichner))"
-                                 Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
+                                 Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
+                                 Traegerkatalog="@Traeger" TraegerWechseln="@((_, _) => { })"
+                                 Geschlossen="@(b => Beendet(b))" />
             break;
         case "photovoltaik":
             <PhotovoltaikDialog Zeilen="@Erzeuger("Modul")" Katalogprofil="@Profil(Anlagenart.Photovoltaik)"
                                 Katalogzeilen="@(() => Katalog(Anlagenart.Photovoltaik))"
                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                 ProjektDetail="@(z => Detail(z.Bezeichner))" Modulname="@(z => z.Bezeichner)"
+                                Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
                                 Gesamtleistung="@(() => "12,0")" Geschlossen="@(b => Beendet(b))" />
             break;
         case "solarkollektoren":
@@ -51,7 +55,7 @@
                                     Katalogzeilen="@(() => Katalog(Anlagenart.Solarkollektoren))"
                                     Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                     ProjektDetail="@(z => Detail(z.Bezeichner))"
-                                    ProjektModulflaeche="@(_ => 2.0)"
+                                    ProjektModulflaeche="@(_ => 2.0)" ProjektsatzWege="@SatzWege"
                                     Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "bedarfsprofile":
@@ -140,6 +144,20 @@
     {
         new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
                               Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Musterwerk" },
+    };
+
+    /// <summary>UeS1: die Projektkopie lesen und speichern - ohne Datenbank, damit „Bearbeiten…" die Satz-Ueberlagerung oeffnet.</summary>
+    private Satzbearbeitungswege? _satzWege;
+    private Satzbearbeitungswege SatzWege => _satzWege ??= new Satzbearbeitungswege
+    {
+        Lesen = _ => Felder(),
+        Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
+    };
+
+    /// <summary>Der Energietraeger des Stromspeichers (Gruppe > Art), wie ihn die Huelle liefert.</summary>
+    private static readonly EnergietraegerWahl.Eintrag[] Traeger =
+    {
+        new(5, "Strom", "Elektrische Energie"), new(6, "Strom", "Elektrische Energie 2")
     };
 
     // ------------------------------------------------------- Bedarf

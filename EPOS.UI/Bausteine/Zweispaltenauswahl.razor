@@ -23,7 +23,16 @@
    DETAILZEILE (4.4). Zugeklappt beim Oeffnen; aufgeklappt rollt sie in sich und nimmt
    den Listen Hoehe ab. Ihr Inhalt (Abschnitt Satz) bleibt im Baum, auch zugeklappt -
    er traegt Zustand des Wirts (Felder, eingebettete Ansichten), und ein Ab- und
-   Aufbau bei jedem Klappen verloere ihn.
+   Aufbau bei jedem Klappen verloere ihn. Nur waehrend die Satz-Ueberlagerung offen ist,
+   steht er dort statt hier.
+
+   SATZ-UEBERLAGERUNG (4.4, 4.6, UeS1). „Vergroessern" im Kopf der Detailzeile und die
+   oeffentliche Methode SatzUeberlagerungOeffnen (Knoepfe „Bearbeiten…" des Wirts) zeigen den
+   Satz als Ueberlagerung ueber dem ganzen Dialog: Kopf mit Marke, Name und Kenndaten, Koerper
+   mit DEMSELBEN Fragment Satz (es steht dann nicht mehr in der Detailzeile - zu jedem
+   Zeitpunkt an genau einer Stelle), Fussleiste OK / Abbrechen (nur lesen: Schliessen). Nur der
+   Koerper rollt. OK ruft SatzUebernommen, Abbrechen, ✕ und Esc rufen SatzVerworfen; danach
+   schliesst der Baustein.
 
    MEHRFACHWAHL (4.5). Reicht der Wirt je Bereich eine Bereichswahl und die
    Schluessel der gefilterten Liste, nennt die Kopfleiste „n gewaehlt, m verborgen",
@@ -133,25 +142,93 @@
     {
         <section class="epos-zweispalten-bereich epos-zweispalten-bereich--satz"
                  role="group" aria-label="@Resource.AUSWAHL_MARKE_SATZ">
-            <button type="button" class="epos-zweispalten-satzzeile" aria-expanded="@(_satzOffen ? "true" : "false")"
-                    title="@Resource.AUSWAHL_SATZ_HINWEIS" @onclick="SatzUmschalten" @ref="_satzzeile">
-                <span class="epos-zweispalten-satzpfeil" aria-hidden="true">@(_satzOffen ? "▾" : "▸")</span>
-                <span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@SatzMarke</span>
-                <span class="epos-zweispalten-satzname">@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)</span>
-                @if (!string.IsNullOrEmpty(SatzKenndaten))
+            <div class="epos-zweispalten-satzkopf">
+                <button type="button" class="epos-zweispalten-satzzeile" aria-expanded="@(SatzflaecheOffen ? "true" : "false")"
+                        title="@Resource.AUSWAHL_SATZ_HINWEIS" @onclick="SatzUmschalten" @ref="_satzzeile">
+                    <span class="epos-zweispalten-satzpfeil" aria-hidden="true">@(SatzflaecheOffen ? "▾" : "▸")</span>
+                    <span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@SatzMarke</span>
+                    <span class="epos-zweispalten-satzname">@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)</span>
+                    @if (!string.IsNullOrEmpty(SatzKenndaten))
+                    {
+                        <span class="epos-zweispalten-satzkenndaten">@SatzKenndaten</span>
+                    }
+                    <span class="epos-leiste-fueller"></span>
+                    <span class="epos-zweispalten-satzdetails">@Resource.AUSWAHL_SATZ_DETAILS</span>
+                </button>
+                @* VERGROESSERN (UeS1): derselbe Satz als Ueberlagerung ueber dem ganzen Dialog. *@
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-vergroessern"
+                        title="@Resource.AUSWAHL_SATZ_VERGROESSERN_HINWEIS" aria-label="@Resource.AUSWAHL_SATZ_VERGROESSERN"
+                        disabled="@(SatzArt == Satzmarke.Keiner || _satzGross)" @onclick="SatzUeberlagerungOeffnen">
+                    <span class="epos-zweispalten-pfeil" aria-hidden="true">⤢</span>
+                    <span class="epos-zweispalten-knopftext">@Resource.AUSWAHL_SATZ_VERGROESSERN</span>
+                </button>
+            </div>
+            <div class="epos-zweispalten-satz" hidden="@(!SatzflaecheOffen)">
+                @* Das Fragment steht zu jedem Zeitpunkt an GENAU einer Stelle: hier oder in
+                   der Satz-Ueberlagerung. *@
+                @if (!_satzGross)
                 {
-                    <span class="epos-zweispalten-satzkenndaten">@SatzKenndaten</span>
+                    @Satz
                 }
-                <span class="epos-leiste-fueller"></span>
-                <span class="epos-zweispalten-satzdetails">@Resource.AUSWAHL_SATZ_DETAILS</span>
-            </button>
-            <div class="epos-zweispalten-satz" hidden="@(!_satzOffen)">
-                @Satz
             </div>
         </section>
     }
 
 </div>
+
+@* ---------------------------------------------- die Satz-Ueberlagerung (UeS1) -----
+   AUSSERHALB der Wurzel: Die Wurzel ist ein Groessencontainer (container: katalogauswahl /
+   size), und Layout-Containment machte sie zum umschliessenden Block jedes position:fixed -
+   die Ueberlagerung stuende dann im Baustein statt ueber dem ganzen Dialog. *@
+@if (Satz is not null)
+{
+    <Ueberlagerung Offen="@_satzGross" Titel="@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)"
+                   Zusatzklasse="epos-ueberlagerung--satz" Geschlossen="SatzVerwerfenAsync"
+                   SchliessenText="@(SatzNurLesen || SatzAnsicht ? Resource.SATZBEARB_SCHLIESSEN : Resource.ALLG_BTN_ABBRECHEN)">
+        <Kopfzusatz>
+            <span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@SatzMarke</span>
+        </Kopfzusatz>
+        <Kopfnachsatz>
+            @if (!string.IsNullOrEmpty(SatzKenndaten))
+            {
+                <span class="epos-satzueberlagerung-kenndaten" title="@SatzKenndaten">@SatzKenndaten</span>
+            }
+        </Kopfnachsatz>
+        <KindInhalt>
+            <div class="epos-satzueberlagerung">
+                <div class="epos-satzueberlagerung-koerper">
+                    @if (_satzGross)
+                    {
+                        @Satz
+                    }
+                </div>
+                <div class="epos-leiste epos-satzueberlagerung-fuss">
+                    @if (SatzNurLesen)
+                    {
+                        <span class="epos-satzueberlagerung-hinweis" role="note">@Resource.SATZBEARB_NUR_LESEN @Resource.ADM_SCHLOSS_ERST_AUFHEBEN</span>
+                    }
+                    else if (!string.IsNullOrEmpty(SatzFehler))
+                    {
+                        <span class="epos-satzueberlagerung-hinweis epos-status--fehler" role="alert">@SatzFehler</span>
+                    }
+                    <span class="epos-leiste-fueller"></span>
+                    @if (SatzNurLesen || SatzAnsicht)
+                    {
+                        <button type="button" class="epos-knopf epos-knopf--primaer epos-satzueberlagerung-schliessen"
+                                @onclick="SatzVerwerfenAsync">@Resource.SATZBEARB_SCHLIESSEN</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="epos-knopf epos-satzueberlagerung-abbrechen"
+                                @onclick="SatzVerwerfenAsync">@Resource.ALLG_BTN_ABBRECHEN</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer epos-satzueberlagerung-ok"
+                                disabled="@SatzUebernehmenGesperrt" @onclick="SatzUebernehmenAsync">@Resource.ALLG_BTN_OK</button>
+                    }
+                </div>
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
+}
 </CascadingValue>
 
 @code {
@@ -293,6 +370,91 @@
     [Parameter] public EventCallback<bool> SatzGeklappt { get; set; }
 
     // =====================================================================
+    // Die Satz-Ueberlagerung (UeS1, Anwenderentscheid 10.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Satz ist nur lesbar (gesperrter Katalogsatz): Die Fußleiste der Überlagerung trägt
+    /// nur „Schließen" und den Hinweis „Erst Schloss aufheben".
+    /// </summary>
+    [Parameter] public bool SatzNurLesen { get; set; }
+
+    /// <summary>
+    /// Der Satz ist eine reine Ansicht ohne Speicherweg (Ganglinien: die Kurve groß): Die Fußleiste der
+    /// Überlagerung trägt nur „Schließen", ohne Hinweis. Ohne Rückruf <see cref="SatzUebernommen"/> gilt
+    /// das von selbst — ein OK ohne Speicherweg gäbe es nicht.
+    /// </summary>
+    [Parameter] public bool SatzNurAnsicht { get; set; }
+
+    /// <summary>Reine Ansicht: ausdrücklich oder mangels Speicherweg (und nicht schon nur lesbar).</summary>
+    private bool SatzAnsicht => !SatzNurLesen && (SatzNurAnsicht || !SatzUebernommen.HasDelegate);
+
+    /// <summary>OK der Überlagerung ist gesperrt (ein Feld meldet eine Fehleingabe).</summary>
+    [Parameter] public bool SatzUebernehmenGesperrt { get; set; }
+
+    /// <summary>Grund einer gescheiterten Übernahme, links in der Fußleiste der Überlagerung.</summary>
+    [Parameter] public string? SatzFehler { get; set; }
+
+    /// <summary>
+    /// Die Überlagerung ist soeben aufgegangen („Vergrößern" oder <see cref="SatzUeberlagerungOeffnen"/>):
+    /// Der Wirt zeigt alle Felder (etwa „Alle Daten" aufgeklappt und frisch gelesen).
+    /// </summary>
+    [Parameter] public EventCallback SatzVergroessert { get; set; }
+
+    /// <summary>
+    /// OK: Der Wirt schreibt den Satz über seinen Speicherweg. Danach schließt der Baustein
+    /// die Überlagerung — es sei denn, der Wirt ruft im Rückruf <see cref="SatzOffenHalten"/>
+    /// (Speichern abgelehnt: der Stand bleibt zum Verbessern stehen).
+    /// </summary>
+    [Parameter] public EventCallback SatzUebernommen { get; set; }
+
+    /// <summary>
+    /// Abbrechen, ✕, Esc und im Nur-lesen-Fall „Schließen": Der Wirt verwirft die Änderungen
+    /// (Satz neu laden). Danach schließt der Baustein die Überlagerung.
+    /// </summary>
+    [Parameter] public EventCallback SatzVerworfen { get; set; }
+
+    /// <summary>Steht die Satz-Überlagerung offen?</summary>
+    public bool SatzUeberlagerungOffen => _satzGross;
+
+    private bool _satzGross;
+    private bool _offenHalten;
+
+    /// <summary>Die Satzfläche der Detailzeile ist sichtbar aufgeklappt (nicht bei offener Überlagerung).</summary>
+    private bool SatzflaecheOffen => _satzOffen && !_satzGross;
+
+    /// <summary>
+    /// Öffnet den gewählten Satz als Überlagerung über dem ganzen Dialog — der Weg der Knöpfe
+    /// „Bearbeiten…" des Wirts und des Knopfes „Vergrößern" der Detailzeile.
+    /// </summary>
+    public async Task SatzUeberlagerungOeffnen()
+    {
+        if (Satz is null || _satzGross) return;
+        _satzGross = true;
+        if (SatzVergroessert.HasDelegate) await SatzVergroessert.InvokeAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Im Rückruf <see cref="SatzUebernommen"/>: die Überlagerung bleibt offen.</summary>
+    public void SatzOffenHalten() => _offenHalten = true;
+
+    private async Task SatzUebernehmenAsync()
+    {
+        if (SatzNurLesen || SatzAnsicht || SatzUebernehmenGesperrt) return;
+        _offenHalten = false;
+        if (SatzUebernommen.HasDelegate) await SatzUebernommen.InvokeAsync();
+        if (_offenHalten) { _offenHalten = false; return; }
+        _satzGross = false;
+    }
+
+    private async Task SatzVerwerfenAsync()
+    {
+        if (!_satzGross) return;
+        if (SatzVerworfen.HasDelegate) await SatzVerworfen.InvokeAsync();
+        _satzGross = false;
+    }
+
+    // =====================================================================
     // Die Mehrfachwahl (4.5)
     // =====================================================================
 
@@ -365,7 +527,7 @@
             string k = "epos-zweispalten";
             if (NurRechts) k += " epos-zweispalten--nurkatalog";
             if (Satz is not null) k += " epos-zweispalten--mitsatz";
-            if (_satzOffen) k += " epos-zweispalten--satz-offen";
+            if (SatzflaecheOffen) k += " epos-zweispalten--satz-offen";
             if (KatalogZeile > 0) k += " epos-zweispalten--zeilenmass";
             if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
             return k;

@@ -50194,6 +50194,12 @@ Chart</value>
   <data name="AUSWAHL_SATZ_NUR_LESEN" xml:space="preserve">
     <value>nur lesen</value>
   </data>
+  <data name="AUSWAHL_SATZ_VERGROESSERN" xml:space="preserve">
+    <value>Vergrößern</value>
+  </data>
+  <data name="AUSWAHL_SATZ_VERGROESSERN_HINWEIS" xml:space="preserve">
+    <value>Den gewählten Satz in voller Höhe über dem Dialog öffnen</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Projektsatz bearbeiten – {0}</value>
   </data>

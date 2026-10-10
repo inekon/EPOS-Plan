@@ -78,6 +78,7 @@
                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
                         EnergiekostenOeffnen="@(_ => Task.CompletedTask)"
                         Katalogfelder="@(_ => Felder())"
+                        ProjektsatzWege="@SatzWege"
                         Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -86,6 +87,9 @@
                                 Katalog="@(() => WpKatalog)"
                                 Katalogprofil="@WpProfil"
                                 AnlageGaben="@WpAnlageGaben"
+                                ProjektSatz="@(d => new WaermepumpeStammDaten { Id = 1, Name = d.Bezeichner, Firma = d.Firma, Nennleistung = d.Nennleistung, Heizstab = 6 })"
+                                ProjektsatzWege="@SatzWege"
+                                KostenOeffnen="@((_, _) => Task.CompletedTask)"
                                 Anlegen="@(n => WpZeile(n))"
                                 Geschlossen="@(b => Beendet(b))" />
             break;

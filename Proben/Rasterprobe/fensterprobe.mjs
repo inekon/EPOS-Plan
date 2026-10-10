@@ -349,6 +349,32 @@ async function ueberlagerung(browser, f, marke) {
   return { oben, unten };
 }
 
+/** UeS1: die Satz-Ueberlagerung des Heizkessels im eigenen Fenster (Bearbeiten… der Projektkopie). */
+async function satzueberlagerung(browser, f, marke) {
+  const seite = await oeffnen(browser, 'heizkessel', f, marke ? '' : '&marke=0');
+  await seite.locator('.epos-knopf--bearbeiten-projekt').click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+  await seite.waitForTimeout(400);
+  const m = await seite.evaluate(() => {
+    const u = document.querySelector('.epos-ueberlagerung--satz');
+    const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
+    const w = document.querySelector('body > #app > .epos-dialog');
+    const wfuss = [...w.children].find(e => e.querySelector(':scope > .epos-knopf--primaer'));
+    const wb = wfuss.getBoundingClientRect(), wk = w.firstElementChild.getBoundingClientRect();
+    const unter = (x, y) => { const e = document.elementFromPoint(x, y); return e ? String(e.className).split(' ')[0] : ''; };
+    const k = u.querySelector('.epos-satzueberlagerung-koerper');
+    return {
+      ueberlagerung: r(u), kopf: r(u.querySelector(':scope > .epos-ueberlagerung-kopf')), fuss: r(u.querySelector('.epos-satzueberlagerung-fuss')),
+      koerper: r(k), koerperRollt: getComputedStyle(k).overflowY, ganzRollt: u.scrollHeight > u.clientHeight + 1,
+      dokumentRollt: getComputedStyle(document.documentElement).overflow !== 'hidden',
+      unterFensterfuss: unter(4, Math.min(wb.top + wb.height / 2, innerHeight - 2)), unterFensterkopf: unter(4, wk.top + wk.height / 2),
+    };
+  });
+  if (FOTOS && marke) await seite.screenshot({ path: `${FOTOS}/satzueberlagerung_${f.breite}.png` });
+  await seite.close();
+  return m;
+}
+
 async function katalog(browser, f, marke) {
   const seite = await oeffnen(browser, 'katalog', f, marke ? '' : '&marke=0');
   const m = await seite.evaluate(lage);
@@ -496,6 +522,26 @@ try {
       console.log(`    Ueberlagerung ${JSON.stringify(mit.oben.ueberlagerung)}, Rollhoehe ${mit.oben.rollhoehe}/${mit.oben.fenster} px; `
         + `Fuss oben ${JSON.stringify(mit.oben.fuss)}, unten ${JSON.stringify(mit.unten.fuss)}; Kopf des Unterdialogs ${mit.oben.kopfPos}; `
         + `mit = ohne Marke: ${a === b}`);
+    }
+
+    if (!NUR || NUR === 'satzueberlagerung') {
+      const name = `satzueberlagerung ${kennung}`;
+      console.log(`- ${name}`);
+      const mit = await satzueberlagerung(browser, f, true);
+      const ohne = await satzueberlagerung(browser, f, false);
+      if (mit.ganzRollt) melde(name, 'die Satz-Ueberlagerung rollt als Ganzes');
+      if (mit.koerperRollt !== 'auto') melde(name, 'der Koerper der Satz-Ueberlagerung ist kein Rollbereich (' + mit.koerperRollt + ')');
+      if (mit.dokumentRollt) melde(name, 'das Dokument rollt unter der Satz-Ueberlagerung');
+      if (mit.ueberlagerung[0] < rand(f).oben - TOL || mit.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+        melde(name, `Satz-Ueberlagerung ${mit.ueberlagerung[0]}..${mit.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
+      if (mit.kopf[0] < mit.ueberlagerung[0] - TOL || mit.fuss[1] > mit.ueberlagerung[1] + TOL || mit.koerper[0] < mit.kopf[1] - TOL || mit.koerper[1] > mit.fuss[0] + TOL)
+        melde(name, `Kopf ${JSON.stringify(mit.kopf)}, Koerper ${JSON.stringify(mit.koerper)}, Fuss ${JSON.stringify(mit.fuss)} nicht in dieser Folge in der Ueberlagerung`);
+      if (mit.unterFensterfuss !== 'epos-ueberlagerung-hintergrund' || mit.unterFensterkopf !== 'epos-ueberlagerung-hintergrund')
+        melde(name, `Kopf/Fuss des Fensters liegen nicht unter der Abdunkelung (${mit.unterFensterkopf}/${mit.unterFensterfuss})`);
+      const a = JSON.stringify([mit.ueberlagerung, mit.kopf, mit.koerper, mit.fuss]), b = JSON.stringify([ohne.ueberlagerung, ohne.kopf, ohne.koerper, ohne.fuss]);
+      if (a !== b) melde(name, `mit Marke ${a} != ohne Marke ${b}`);
+      console.log(`    Satz-Ueberlagerung ${JSON.stringify(mit.ueberlagerung)}, Kopf ${JSON.stringify(mit.kopf)}, Koerper ${JSON.stringify(mit.koerper)}, `
+        + `Fuss ${JSON.stringify(mit.fuss)}; mit = ohne Marke: ${a === b}`);
     }
 
     if (!NUR || NUR === 'katalog') {
