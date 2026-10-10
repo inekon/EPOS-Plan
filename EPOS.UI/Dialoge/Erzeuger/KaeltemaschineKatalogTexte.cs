@@ -14,6 +14,8 @@ public sealed class KaeltemaschineKatalogTexte
     public string LeerKatalog { get; set; } = Resource.KM_LEER;
     public string GruppeKenndaten { get; set; } = Resource.ADM_SB_KENNDATEN;
     public string GruppeKennlinie { get; set; } = Resource.KM_GRUPPE_KENNLINIE;
+    /// <summary>Der Schalter über der Liste — <c>KM_CHK_OHNE_TYPKENNFELDER</c>.</summary>
+    public string SchalterOhneTypkennfelder { get; set; } = Resource.KM_CHK_OHNE_TYPKENNFELDER;
 
     // ------------------------------------------------------------ Beschriftungen
     public string LabelBezeichner { get; set; } = Resource.KM_LBL_BEZEICHNER;
