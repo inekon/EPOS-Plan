@@ -45782,6 +45782,24 @@ Chart</value>
   <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>
+  <data name="WURZEL_ANSICHT_FEHLER" xml:space="preserve">
+    <value>Die Ansicht „{0}“ konnte nicht geöffnet werden: {1}</value>
+  </data>
+  <data name="WURZEL_KEINE_OBERFLAECHE" xml:space="preserve">
+    <value>Es ist keine Oberfläche angemeldet, die sie zeigen könnte.</value>
+  </data>
+  <data name="WURZEL_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>Diese Oberfläche führt die Ansicht nicht.</value>
+  </data>
+  <data name="KMA_LADEN_FEHLER" xml:space="preserve">
+    <value>Die Kältemaschinen des Projekts konnten nicht gelesen werden: {0}</value>
+  </data>
+  <data name="KMA_WP_LADEN_FEHLER" xml:space="preserve">
+    <value>Die Wärmepumpen des Projekts konnten nicht gelesen werden: {0}</value>
+  </data>
+  <data name="KMA_KATALOG_LADEN_FEHLER" xml:space="preserve">
+    <value>Der Kältemaschinenkatalog konnte nicht gelesen werden: {0}</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>
   </data>
