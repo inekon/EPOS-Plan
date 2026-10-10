@@ -166,7 +166,7 @@ namespace WindowsFormsApplication1
                 ["Schloss"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
                 ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => new Dictionary<string, object>(WaermepumpeStammHuelle.Gaben()) { ["Vorwahl"] = name ?? "" }),
+                    KatalogEditorGaben),
                 ["KatalogsatzWege"] = new Satzbearbeitungswege
                 {
                     Lesen = id => SatzFelder(false, id),
@@ -512,5 +512,12 @@ namespace WindowsFormsApplication1
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
+
+        /// <summary>
+        /// Die Gaben des Modulkatalogs hinter „Bearbeiten…“ mit dem gewählten Satz als Vorwahl. Eine eigene
+        /// Methode, damit der Parametersatz des Katalogs nicht als Satz des Projektdialogs gelesen wird.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> KatalogEditorGaben(string name) =>
+            new Dictionary<string, object>(WaermepumpeStammHuelle.Gaben()) { ["Vorwahl"] = name ?? "" };
     }
 }

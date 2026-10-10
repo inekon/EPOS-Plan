@@ -311,7 +311,6 @@ namespace WindowsFormsApplication1
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnKatalogAendernText"] = Text_("SKV_BTN_DB_AENDERN", "Kollektor in DB ändern..."),
                 ["BtnKatalogNeuText"] = Text_("SKV_BTN_DB_NEU", "Kollektor in DB neu..."),
-                ["BtnKatalogLoeschenText"] = Text_("SKV_BTN_DB_LOESCHEN", "Kollektor in DB löschen"),
                 ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
 
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).

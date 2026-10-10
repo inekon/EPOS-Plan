@@ -244,7 +244,7 @@ namespace WindowsFormsApplication1
                 // KA-E-13: ein einzelner ungesperrter Katalogsatz oeffnet den Modulkatalog mit diesem Satz
                 // vorgewaehlt; er traegt selbst Neu..., Duplizieren... und Loeschen. Ueberlagerung im selben Fenster.
                 ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => new Dictionary<string, object>(PvAdminHuelle.Gaben()) { ["Vorwahl"] = name }),
+                    KatalogEditorGaben),
 
                 // --- Wechselrichter und Straenge, Stufe S2 (W6-E-2 und W6-E-3) -------
                 // Die Klappliste zeigt den KATALOG; uebernommen wird beim Waehlen, wie
@@ -1241,5 +1241,12 @@ namespace WindowsFormsApplication1
             /// <summary>Der nächste freie Zeilenschlüssel.</summary>
             internal int Naechster = 100000;
         }
+
+        /// <summary>
+        /// Die Gaben des Modulkatalogs hinter „Bearbeiten…“ mit dem gewählten Satz als Vorwahl. Eine eigene
+        /// Methode, damit der Parametersatz des Katalogs nicht als Satz des Projektdialogs gelesen wird.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object> KatalogEditorGaben(string name) =>
+            new Dictionary<string, object>(PvAdminHuelle.Gaben()) { ["Vorwahl"] = name };
     }
 }
