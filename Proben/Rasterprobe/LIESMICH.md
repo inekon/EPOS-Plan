@@ -1386,3 +1386,43 @@ alte Regel rot mit 16, erzwungene Überlappung rot mit 32 Verstößen** (Rückga
 | 1 100 | 540 / 540 / 1 098 / 1 098 px | nebeneinander | 0 / 16 |
 | 760 | 370 / 370 / 758 / 758 px | untereinander, untereinander, nebeneinander, nebeneinander | 6 / 8 |
 | 600 | 290 / 290 / 598 / 598 px | untereinander, untereinander, nebeneinander, nebeneinander | 10 / 8 |
+
+## Spaltenwahlprobe (Spaltenwahl und Verwendungsmarke, KS1) — Seite `/fensterprobe`
+
+**Zweck.** Die Katalogliste der Projektdialoge zeigt die Verwendung im Projekt als Marke am Bezeichner,
+getönte Zeile und Legende „● im Projekt“ statt als Spalte, und ihre Spalten sind über „Spalten…“ in der
+Kopfleiste des Katalogs wählbar (Konzept Projektdialoge mit Katalogauswahl 4.10). Die Probe misst das im
+echten Heizkessel- und BHKW-Dialog der Fensterprobe; sie steht als Fälle `KS1_*` am Ende von
+`katalogprobe.mjs`.
+
+```bash
+node katalogprobe.mjs --url http://127.0.0.1:5299 --nur KS1 [--fotos <ordner außerhalb des Repositorys>]
+```
+
+Die Seite nimmt dafür zwei Gaben: `?verwendet=1` — die erste Projektzeile heißt wie die zweite
+Katalogzeile, die Liste trägt also Marke und Legende — und `?summe=<text>` für die Summe der
+Projekt-Kopfleiste (die Probe setzt „1.240,5“). Gemerkt wird die Wahl in den Einstellungen des Wirts
+(`Dienste.Einstellungen`, flüchtig je Prozess): Ein Neuladen der Seite findet sie wieder.
+
+**Fälle** Heizkessel und BHKW in 1 280 × 800 und 768 × 1 024, je:
+
+1. Standardanzeige: keine Spalte „im Projekt verwendet“; die Marke ist sichtbar und hat die Projektfarbe
+   (`rgb(29, 158, 117)`), die Zeile trägt `epos-zeile--verwendet`, die Legende ist sichtbar, der Knopf
+   „Spalten…“ liegt ganz in der Kopfleiste; die Summe ist nicht gekürzt (`scrollWidth ≤ clientWidth`) und
+   die Projekt-Kopfleiste einzeilig.
+2. Auswahl offen: ganz im Bild, rollt nicht in sich (kein `overflow: auto|scroll`, keine Überhöhe), das
+   Dokument rollt nicht.
+3. „Hersteller“ ab, „im Projekt verwendet“ an: die Köpfe folgen.
+4. Esc im Kästchen schließt die Auswahl, nicht den Dialog.
+5. Neuladen: die Wahl gilt weiter; der Katalogbereich rollt nicht quer (die Liste rollt in ihrem Raster).
+6. „Standard“ schließt die Auswahl und setzt zurück, auch nach dem Neuladen.
+
+**Gegenprobe** `KS1_gegenprobe_heizkessel_768x1024` (läuft mit): Die Auswahl bekommt eine Rollhöhe von
+60 px, die Marke wird versteckt — der Fall MUSS Verstöße liefern.
+
+**Ergebnis vom 10.10.2026** (Wirt Release, Chromium headless): **4 von 4 Fällen erfüllt, Gegenprobe rot**
+(„Verwendungsmarke nicht sichtbar; Auswahl rollt in sich“); der ganze Lauf `katalogprobe.mjs` mit
+64 Fällen ohne Überlagerung (Rückgabe 0). Ebenso grün: `rollbereichprobe.mjs`, `fensterprobe.mjs`,
+`bannerprobe.mjs` (der BHKW-Fall wählt seine Katalogzeile über `.epos-zeilenzelle--name` — der
+Katalog des BHKW-Dialogs ist seit seiner Stufe 3 eine Zeilenwahl ohne Wahlknopf), `legendenprobe.mjs`,
+`kennzahlenprobe.mjs`.

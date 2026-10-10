@@ -3587,7 +3587,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
-.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 1 16rem !important; min-width: 7rem; }
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; }   /* gibt vor Trefferzahl und Legende nach (4.10) */
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
@@ -3610,7 +3610,94 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     flex: 0 0 auto;
 }
 .epos-zweispalten-fussleiste > * { flex: 0 0 auto; white-space: nowrap; }
-.epos-zweispalten-summe { color: var(--epos-text-leise); }
+/* DIE SUMME DER PROJEKT-KOPFLEISTE HAT VORRANG (Sichtabnahme 10.10.2026, Konzept 4.10):
+   Zahl und Einheit werden nie gekuerzt; zuerst geben Ueberschrift und Knoepfe nach. */
+.epos-zweispalten-summe { color: var(--epos-text-leise); flex: 0 0 auto !important; white-space: nowrap; }
+
+/* ---- SPALTENWAHL UND VERWENDUNGSMARKE (Konzept 4.10) ----------------
+   Die Marke: ein Punkt in der Projektfarbe (die Farbe der Plakette "IM PROJEKT")
+   hinter dem Bezeichner; sie kuerzt nie mit. Die verwendete Zeile ist leicht getoent;
+   Fokus- und Markierungsflaeche liegen darueber. Die Legende steht neben der Zaehlung. */
+.epos-verwendet-marke {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--epos-schema-versorgung);
+    vertical-align: middle;
+}
+table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
+    background: color-mix(in srgb, var(--epos-schema-versorgung) 9%, transparent);
+}
+.epos-katalog-verwendetlegende {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--epos-text-leise);
+    font-size: 12px;
+    white-space: nowrap;
+}
+.epos-zweispalten-kopfleiste .epos-katalog-verwendetlegende { flex: 0 0 auto; }
+
+/* Der Knopf "Spalten..." und seine Auswahl. In der Katalog-Kopfleiste haengt die Auswahl
+   am Katalogbereich (die Kopfleiste schneidet mit overflow: clip); sonst am Knopf. Die
+   Auswahl rollt nie: Bei vielen Spalten stehen die Kaestchen in zwei Spalten. */
+.epos-spaltenwahl { position: relative; display: inline-flex; }
+.epos-zweispalten-bereich--katalog { position: relative; }
+.epos-zweispalten-kopfleiste .epos-spaltenwahl { position: static; }
+.epos-katalog-spaltenknopf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    min-width: 0;
+}
+.epos-spaltenwahl-hintergrund {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+}
+.epos-spaltenwahl-auswahl {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 41;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 10px;
+    min-width: 14rem;
+    background: var(--epos-karte-flaeche, var(--epos-flaeche, #fff));
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    overflow: visible;
+    white-space: nowrap;
+}
+.epos-zweispalten-kopfleiste .epos-spaltenwahl-auswahl {
+    top: calc(var(--epos-touchziel) + 6px);
+    right: 8px;
+}
+.epos-spaltenwahl-titel { font-weight: 600; }
+.epos-spaltenwahl-liste {
+    display: grid;
+    grid-template-columns: auto;
+    gap: 2px 16px;
+}
+.epos-spaltenwahl-liste--zwei { grid-template-columns: auto auto; }
+.epos-spaltenwahl-eintrag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 26px;
+    cursor: pointer;
+}
+.epos-spaltenwahl-standard { align-self: flex-start; }
+
+/* Mit gemerkter Wahl stehen genau die gewaehlten Spalten - die Liste rollt dann in ihrem
+   eigenen Raster waagerecht, nie der Bereich. */
+.epos-katalogliste--spaltenwahl table.epos-raster { min-width: 100%; width: max-content; }
 .epos-zweispalten-satzleer { margin: 0; color: var(--epos-text-leise); }
 
 /* KONTEXT IM DIALOGKOPF (Katalogauswahl V1, 4.1): leise hinter dem Titel, kuerzt mit
@@ -3923,6 +4010,8 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     }
     .epos-dialog:has(> .epos-zweispalten) .epos-zweispalten-marke { font-size: 11px; line-height: 16px; }
     .epos-dialog:has(> .epos-zweispalten) :is(.epos-zweispalten-wahlzahl, .epos-zweispalten-satzdetails) { font-size: 11px; }
+    /* Spaltenwahl in der Kompaktstufe: nur das Sinnbild, der title nennt den Text (4.10). */
+    .epos-dialog:has(> .epos-zweispalten) .epos-katalog-spaltenknopftext { display: none; }
 }
 
 /* SCHMALER BEREICH (iPad hoch, 768 px): Die Kopfleiste bleibt EINE Zeile (4.8). Unter 800 px
@@ -3938,7 +4027,7 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     .epos-zweispalten-kopfleiste .epos-zweispalten-pfeil { display: none; }
     .epos-zweispalten-kopfleiste > .epos-knopf { min-width: 0; padding-inline: 8px; flex: 0 1 auto; overflow: hidden; }
     .epos-zweispalten-kopfleiste > .epos-knopf .epos-zweispalten-knopftext { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .epos-zweispalten-kopfleiste > :is(.epos-zweispalten-summe, .epos-zweispalten-wahlzahl) { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .epos-zweispalten-kopfleiste > .epos-zweispalten-wahlzahl { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 }
 /* Ein Feld des Wirts in der Kopfleiste (BHKW: Summe) behaelt unter 900 px Fensterbreite die
    Beschriftung NEBEN dem Feld - die Formularregel weiter unten stellte sie darueber, und die

@@ -962,6 +962,27 @@
   <data name="KFLT_SP_VERWENDET" xml:space="preserve">
     <value>used in project</value>
   </data>
+  <data name="KFLT_VERWENDET_HINWEIS" xml:space="preserve">
+    <value>Used in project</value>
+  </data>
+  <data name="KFLT_VERWENDET_LEGENDE" xml:space="preserve">
+    <value>in project</value>
+  </data>
+  <data name="KFLT_SPALTEN" xml:space="preserve">
+    <value>Columns…</value>
+  </data>
+  <data name="KFLT_SPALTEN_HINWEIS" xml:space="preserve">
+    <value>Choose displayed columns</value>
+  </data>
+  <data name="KFLT_SPALTEN_TITEL" xml:space="preserve">
+    <value>Displayed columns</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="KFLT_SPALTEN_STANDARD_HINWEIS" xml:space="preserve">
+    <value>Reset column choice to the default display</value>
+  </data>
   <data name="KFLT_SP_VLMAX" xml:space="preserve">
     <value>Flow max</value>
   </data>

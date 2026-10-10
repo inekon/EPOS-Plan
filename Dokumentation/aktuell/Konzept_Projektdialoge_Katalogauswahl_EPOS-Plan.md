@@ -306,6 +306,51 @@ aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebä
 | Wärmebedarf extern, Strom-, Solarganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten | Ganglinie mit Kennzahlen | — |
 | Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
 
+### 4.10 Spaltenwahl und Verwendungsmarke
+
+Anwenderentscheid vom 10.10.2026 nach der Sichtabnahme der Kompaktstufe: „Die Spalte ‚im Projekt
+verwendet‘ nimmt zu viel Platz weg. Das kann auch durch eine farbliche Kennzeichnung — mit einem
+Hinweis — erfolgen.“ und „Die Spalten sollen wählbar sein (mehrere verfügbar, nur ausgewählte
+anzeigen).“ Dazu der Befund derselben Abnahme: Die Kopfleiste des Projekts kürzte die Summe
+(„Summe [kWth]: 2…“).
+
+**Verwendungsmarke.** Eine Katalogzeile, deren Satz im Projekt verwendet ist, trägt hinter dem
+Bezeichner einen Punkt in der Projektfarbe (die Farbe der Plakette „IM PROJEKT“), die Zeile ist leicht
+getönt, und der Punkt nennt beim Zeigen „Im Projekt verwendet“ (`KFLT_VERWENDET_HINWEIS`, auch als
+`aria-label`). Neben der Trefferzahl in der Kopfleiste des Katalogs steht die Legende „● im Projekt“
+(`KFLT_VERWENDET_LEGENDE`), sobald mindestens eine Zeile verwendet ist. Das Kennzeichen ist
+`Katalogfilterzeile.ImProjekt`; `Katalogverwendung.Stempeln` setzt es zusammen mit dem Wert der Spalte
+`VERWENDET`, einmal je Liste aus der lebenden Projektliste (Entscheid Q12) — die Wirte stempeln wie
+zuvor. Die Marke kürzt nie mit; sie steht in der Kompaktstufe und bei 768 px Breite.
+
+**Spaltenwahl.** In der Kopfleiste des Katalogs öffnet der Knopf „Spalten…“ (in der Kompaktstufe nur
+das Sinnbild, `title` „Angezeigte Spalten wählen“) eine kleine Auswahl: ein Kästchen je Spalte des
+Profils, „Standard“ zum Zurücksetzen. Die Auswahl rollt nie selbst; ab sechs Spalten stehen die
+Kästchen in zwei Spalten. Der Bezeichner und die Wahlspalte sind immer an und stehen nicht in der
+Auswahl. Wählbar sind alle Spalten, die der Wirt definiert — Rang 1, Rang 2 und „im Projekt
+verwendet“; diese ist `Katalogspalte.StandardAus` und fehlt in der Standardanzeige, Sortieren und
+Filtern danach bleiben über die Wahl möglich.
+
+- Ohne gemerkte Wahl gilt die Standardanzeige: Rang 1 immer, Rang 2 nach der Breite (4.8), ohne die
+  standardmäßig abgewählten Spalten; die Stufen rechnen über die angezeigten Spalten.
+- Mit gemerkter Wahl stehen genau die gewählten Spalten, unabhängig von der Breite; reicht sie nicht,
+  rollt die Liste in ihrem eigenen Raster waagerecht (keine zweite Rollfläche).
+- Gemerkt wird je Dialog über `Dienste.Einstellungen` als Text unter
+  `Katalogauswahl.Spalten.<Dialogname>` — die Spaltenschlüssel kommagetrennt in der Folge des
+  Profils; der Dialogname ist derselbe wie bei der Trennlinie (4.3). „Standard“ löscht den Schlüssel
+  und schließt die Auswahl. Eine Wahl ohne jede Spalte ist eine Wahl (nur der Bezeichner), nicht der
+  Standard. Unbekannte Schlüssel fallen still heraus.
+- Tastatur: Knopf und Kästchen sind mit Tab erreichbar, Esc schließt die Auswahl (nicht den Dialog)
+  und gibt den Fokus an den Knopf zurück; ein Klick daneben schließt sie ebenso.
+
+**Summe.** In der Kopfleiste des Projekts hat die Summe Vorrang: Zahl und Einheit werden nie gekürzt
+(`flex-shrink: 0`, `white-space: nowrap`); zuerst geben Überschrift und Knöpfe nach (Auslassung, unter
+800 px Bereichsbreite ohne Pfeile), die Kopfleiste bleibt einzeilig.
+
+Nachweis: `EPOS.UI.Tests/Bausteine/KataloglisteSpaltenwahlTests`, die Dialogtests der Wirte und die
+KS1-Fälle von `Proben/Rasterprobe/katalogprobe.mjs` (Heizkessel und BHKW in 1 280 × 800 und
+768 × 1 024, mit Gegenprobe).
+
 ## 5 Rückweg Projekt → Datenbank
 
 ### 5.1 Befund im Code

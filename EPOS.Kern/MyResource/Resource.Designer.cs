@@ -51709,6 +51709,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalten… ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angezeigte Spalten wählen ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_STANDARD {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spaltenwahl auf die Standardanzeige zurücksetzen ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_STANDARD_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_STANDARD_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angezeigte Spalten ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTEN_TITEL {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die A_ap ähnelt.
         /// </summary>
         public static string KFLT_SP_APERTUR {
@@ -52497,6 +52542,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_VERGLEICH_TITEL {
             get {
                 return ResourceManager.GetString("KFLT_VERGLEICH_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt verwendet ähnelt.
+        /// </summary>
+        public static string KFLT_VERWENDET_HINWEIS {
+            get {
+                return ResourceManager.GetString("KFLT_VERWENDET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Projekt ähnelt.
+        /// </summary>
+        public static string KFLT_VERWENDET_LEGENDE {
+            get {
+                return ResourceManager.GetString("KFLT_VERWENDET_LEGENDE", resourceCulture);
             }
         }
         

@@ -1,0 +1,98 @@
+﻿@* DIE SPALTENWAHL DER KATALOGLISTE (Konzept Projektdialoge mit Katalogauswahl 4.10,
+   Anwenderentscheid 10.10.2026: "Die Spalten sollen waehlbar sein - mehrere verfuegbar,
+   nur ausgewaehlte anzeigen").
+
+   EIN Knopf "Spalten…" in der Kopfleiste des Katalogs (in der Kompaktstufe nur das
+   Sinnbild, der title nennt den Text) oeffnet eine kleine Auswahl: ein Kaestchen je
+   waehlbarer Spalte und "Standard" zum Zuruecksetzen. Die Auswahl rollt nie selbst - bei
+   vielen Spalten stehen die Kaestchen in zwei Spalten (kein Rollbereich im Rollbereich).
+   Bezeichner und Wahlspalte stehen hier nicht: Sie sind immer an.
+
+   Die Regel der Wahl (was gilt, was gemerkt wird) liegt bei der Katalogliste; dieser
+   Baustein zeigt den Stand und meldet, was angeklickt wurde. Esc schliesst und gibt den
+   Fokus an den Knopf zurueck; ein Klick neben die Auswahl schliesst sie ebenso. *@
+@namespace EPOS.UI.Bausteine
+@using Microsoft.AspNetCore.Components.Web
+@using WindowsFormsApplication1
+
+<span class="epos-spaltenwahl">
+    <button type="button" class="epos-knopf epos-katalog-spaltenknopf" @ref="_knopf"
+            aria-haspopup="true" aria-expanded="@(Offen ? "true" : "false")"
+            title="@Texte.SpaltenHinweis" aria-label="@Texte.SpaltenHinweis"
+            @onclick="Umschalten">
+        <svg class="epos-katalog-spaltenbild" viewBox="0 0 16 16" width="14" height="14"
+             aria-hidden="true" focusable="false">
+            <rect x="1.5" y="2.5" width="13" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.3" />
+            <path d="M6 2.5 v11 M10 2.5 v11" stroke="currentColor" stroke-width="1.3" />
+        </svg>
+        <span class="epos-katalog-spaltenknopftext">@Texte.Spalten</span>
+    </button>
+    @if (Offen)
+    {
+        <span class="epos-spaltenwahl-hintergrund" aria-hidden="true" @onclick="Schliessen"></span>
+        <span class="epos-spaltenwahl-auswahl" role="group" aria-label="@Texte.SpaltenTitel"
+              @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">
+            <span class="epos-spaltenwahl-titel">@Texte.SpaltenTitel</span>
+            <span class="@Listenklasse">
+                @foreach (Katalogspalte spalte in Spalten)
+                {
+                    string schluessel = spalte.Schluessel;
+                    <label class="epos-spaltenwahl-eintrag" data-spalte="@schluessel">
+                        <input type="checkbox" checked="@(Angezeigt?.Invoke(spalte) ?? false)"
+                               @onchange="@(() => Umgeschaltet.InvokeAsync(schluessel))" />
+                        <span>@spalte.Kopftext</span>
+                    </label>
+                }
+            </span>
+            <button type="button" class="epos-knopf epos-spaltenwahl-standard"
+                    title="@Texte.SpaltenStandardHinweis" disabled="@(!Gemerkt)"
+                    @onclick="() => Standard.InvokeAsync()">@Texte.SpaltenStandard</button>
+        </span>
+    }
+</span>
+
+@code {
+    /// <summary>Ab wie vielen Spalten die Kaestchen in zwei Spalten stehen.</summary>
+    public const int ZWEI_SPALTEN_AB = 6;
+
+    /// <summary>Die waehlbaren Spalten in der Folge des Profils (ohne Bezeichner).</summary>
+    [Parameter] public IReadOnlyList<Katalogspalte> Spalten { get; set; } = Array.Empty<Katalogspalte>();
+
+    /// <summary>Steht die Spalte gerade an (Stand des Kaestchens)?</summary>
+    [Parameter] public Func<Katalogspalte, bool>? Angezeigt { get; set; }
+
+    /// <summary>Gibt es eine gemerkte Wahl? Sonst ist „Standard“ ohne Wirkung und gesperrt.</summary>
+    [Parameter] public bool Gemerkt { get; set; }
+
+    /// <summary>Ist die Auswahl offen?</summary>
+    [Parameter] public bool Offen { get; set; }
+
+    [Parameter] public EventCallback<bool> OffenChanged { get; set; }
+
+    /// <summary>Ein Kaestchen wurde umgeschaltet (Spaltenschluessel).</summary>
+    [Parameter] public EventCallback<string> Umgeschaltet { get; set; }
+
+    /// <summary>„Standard“ wurde gedrueckt.</summary>
+    [Parameter] public EventCallback Standard { get; set; }
+
+    [Parameter] public Katalogfiltertexte Texte { get; set; } = new();
+
+    private ElementReference _knopf;
+
+    private string Listenklasse => Spalten.Count >= ZWEI_SPALTEN_AB
+        ? "epos-spaltenwahl-liste epos-spaltenwahl-liste--zwei"
+        : "epos-spaltenwahl-liste";
+
+    private Task Umschalten() => OffenChanged.InvokeAsync(!Offen);
+
+    private Task Schliessen() => OffenChanged.InvokeAsync(false);
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        await OffenChanged.InvokeAsync(false);
+        try { await _knopf.FocusAsync(preventScroll: true); }
+        catch (InvalidOperationException) { /* bunit ohne Browser */ }
+        catch (Microsoft.JSInterop.JSException) { }
+    }
+}
