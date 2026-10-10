@@ -47,7 +47,7 @@ Importvarianten für die vorhandenen Kaltwassersätze (rund 6–9 PT), danach �
 |---|---|---|
 | 1 Importart Kältemaschine, Typkennfelder, CSV-Vorlage | **gebaut** als KM1 (#841) und KM2 (#848, Schemaschritt 203: 34 Typkennfelder in jeder Datenbank) | gilt; die Ausgangslage-Tabelle der Recherche („3 Beispielgeräte, kein Importer“, „fünf Importarten“) ist überholt |
 | 2 Teillast und Takten der Kältemaschine | **gebaut** als KM3 (E116, #876–#879, Schemaschritt 210, Referenzprojekt 1063, Basis R49); Wiki-Upload offen | gilt; die Lücke „konstanter EER, Takten ohne Verlust“ ist geschlossen |
-| 3 Rückkühlung parametrieren, Teil-Freikühlung | **offen**; an der freien Kühlung arbeitet FK (Referenzprojekt 1064, Basis R51 angemeldet) | gilt; Rückkühler als eigener Katalog bleibt offen (hier K-F) |
+| 3 Rückkühlung parametrieren, Teil-Freikühlung | **offen**; die freie Kühlung über die Wärmequelle ist gebaut (KU3-6) und bekommt mit FK ihr Referenzprojekt 1064 (Basis R51), die Teil-Freikühlung am Rückkühler fehlt | gilt; Rückkühler als eigener Katalog bleibt offen (hier K-F) |
 | 4 Kältemittel als Stammdatum | **offen**; `Kaeltemittel` ist Freitext ohne Rechenwirkung, die Wärmepumpe hat eine Kältemittel-Schnellwahl im Stammblatt (UB-E3) | gilt, steht aber gegen Kühlkonzept §14 (unten) |
 | 5 Split/Multisplit ≤ 12 kW als neue Anlagenart | **offen** | gilt fachlich; braucht einen Konzeptentscheid gegen §14 (hier K-D) |
 | 6 Kühlkennfelder der WP ergänzen | **offen** | gilt; VDI-3805-Kühlblöcke bleiben die Hauptquelle |
@@ -113,13 +113,10 @@ die Kälte-Kachel filtern kann.
 
 ### 2.7 Einfrierregel „gesäte Kältemaschinendaten“
 
-[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) führt die Einfrierregeln „gesäte
-Kältemaschinendaten eines Referenzprojekts“ (1055, 1059, AK3) und „gesäte Teillastdaten einer Kältemaschine“
-(1063). Die Liste der Einfrierregeln in [`CLAUDE.md`](../../../CLAUDE.md) („Regressionsnetz“) nennt sie
-**nicht** — sie endet bei den Solardaten von 1049, und ihr Basisname ist auf R23 stehen geblieben. Das ist eine
-Lücke der Hausregel, keine des Rechennachweises (die Wachen halten die Zeilen). Vorschlag: die beiden Regeln
-in `CLAUDE.md` nachtragen, im selben Schritt mit dem Basisnamen (Frage 8). Für die Stufen dieses Papiers gilt:
-Katalogsätze (`_STAMM`) berühren keine Einfrierregel; die Projektkopien der Referenzprojekte schon.
+Die Einfrierregeln „gesäte Kältemaschinendaten eines Referenzprojekts“ (1055, 1059, AK3) und „gesäte
+Teillastdaten einer Kältemaschine“ (1063) stehen in [`CLAUDE.md`](../../../CLAUDE.md) („Regressionsnetz“) und in
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md); mit FK kommt die Regel „gesäte Daten der freien
+Kühlung“ (1064) hinzu. Für die Stufen dieses Papiers gilt: Katalogsätze (`_STAMM`) berühren keine Einfrierregel; die Projektkopien der Referenzprojekte schon.
 
 ### 2.8 Bestandsbefunde, die das Konzept berühren
 
@@ -146,7 +143,7 @@ Priorität aus Sicht der Datenlage und des Nutzens für Planungsprojekte (A hoch
 | Kaltwassersatz wassergekühlt mit Trocken-/Nasskühler | dazu Rückkühltemperatur | **ja** (Festwert-Grädigkeit) | Rückkühler parametrierbar (K-F) | wie oben; Rückkühler: Herstellerdatenblatt, Eurovent HE (Vertrag) | A |
 | Kaltwassersatz mit Brunnen-/Flusswasser | Quelltemperatur | **teilweise** (WASSER fest) | Kopplung an Quelle (K-F) | wie oben | B |
 | Reversible Wärmepumpe im Kühlbetrieb | Kühlkennlinie Vorlauf × Quelle, Takten | **ja** | keine | VDI 3805 Blatt 22 (Kühlblöcke), hplib, CSV | A (Daten ergänzen) |
-| Freie Kühlung (Sonde, Trockenkühler) | Wärmeübertrager, Pumpe | **teilweise** (Festwerte, FK in Arbeit) | Teil-Freikühlung (Recherche Stufe 3, FK) | keine Produktdaten nötig | B |
+| Freie Kühlung (Sonde, Trockenkühler) | Wärmeübertrager, Pumpe | **teilweise** (über die Wärmequelle gebaut, Referenzprojekt 1064; Rückkühler mit Festwerten) | Teil-Freikühlung am Rückkühler (Recherche Stufe 3) | keine Produktdaten nötig | B |
 | Split/Monosplit ≤ 12 kW | Kennfeld Außenluft × Raumluft, Teillast A–D, Raumluft-Übergabe | **nein** | Erzeuger ohne Kaltwasser, Übergabe „Umluftgerät am Raum“, Zuordnung Gerät ↔ Zone (K-D) | EPREL (Stammdaten), Ökodesign-Datenblatt (A–D), offene DX-Kurven | A (nach Entscheid §14) |
 | Multisplit ≤ 12 kW / > 12 kW | dazu mehrere Innengeräte, Kombinationsfaktor | **nein** | wie Split, mehrere Zonen je Außengerät (K-D) | EPREL ≤ 12 kW, Datenblatt, Eurovent (Vertrag) | B |
 | VRF/VRV | Kombinationsverhältnis, Leitungskorrektur, Teillastkurven | **nein** | auf K-D: Außengerät mit vielen Innengeräten, Korrekturen (K-E) | Eurovent VRF (Vertrag), Herstellerprogramme, offene Kurven | C |
@@ -262,4 +259,4 @@ Kurzzeichen **KKP** (Konzeptprüfung Kälte); jede Frage mit Empfehlung.
 | KKP-Q5 | Rückkühlwerk als eigenes Glied (K-F) — E33/K8 („Rückkühlung Bestandteil der Kältemaschine“) entsprechend fortschreiben? | **Ja, nach FK** — Vorgaben gleich den heutigen Festwerten, damit die Basis hält |
 | KKP-Q6 | Absorptions-/Adsorptionskälte (K-G)? | **Zurückstellen**, bis ein Projekt mit sommerlichem Wärmeüberschuss ansteht |
 | KKP-Q7 | Herstellernamen: im Katalog bei Anwenderimporten ja, in ausgelieferten Typkennfeldern und im Wiki nein? | **Ja** — Katalog ja (Anwenderdaten), Auslieferung neutral, Wiki nach Produktdatenregel ohne Hersteller |
-| KKP-Q8 | Hausregel nachziehen: Einfrierregeln „gesäte Kältemaschinendaten“ und „gesäte Teillastdaten“ in `CLAUDE.md` aufnehmen und E74 im Status als abgelöst vermerken? | **Ja**, als kleine Papierpflege mit dem nächsten Statusschritt |
+| KKP-Q8 | Papierpflege: E74 im Status als abgelöst vermerken (die Einfrierregeln stehen bereits in `CLAUDE.md`)? | **Ja**, als kleine Papierpflege mit dem nächsten Statusschritt |
