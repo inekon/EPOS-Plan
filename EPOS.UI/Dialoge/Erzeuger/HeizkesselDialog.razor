@@ -722,12 +722,16 @@
         {
             // Der Projektsatz (Stufe 2): die Projektkopie ueber den Kernweg der Huelle.
             if (ProjektsatzWege?.Speichern is null) return;
-            ergebnis = ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) });
+            ergebnis = Katalogladung.Schreiben(
+                () => ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) }), _projektZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _projektZeile.Bezeichner));
         }
         else
         {
             if (KatalogfelderSpeichern is null || _katalogZeile is null) return;
-            ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+            ergebnis = Katalogladung.Schreiben(
+                () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         }
         if (!ergebnis.Ok)
         {
@@ -1438,12 +1442,19 @@
         _loeschziele = new();
         if (antwort != true || KatalogLoeschen is null || ziele.Count == 0) return;
         bool fehler = false, fokusWeg = false;
+        string loeschGrund = "";
         foreach (Katalogfilterzeile z in ziele)
         {
-            if (!KatalogLoeschen(z.Id)) { fehler = true; continue; }
+            // KT-4: Wirft der Löschweg, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            if (!Katalogladung.Loeschen(() => KatalogLoeschen(z.Id), z.Bezeichner, out string grund))
+            {
+                fehler = true;
+                if (grund.Length > 0) loeschGrund = grund;
+                continue;
+            }
             if (z.Bezeichner == _katalogGewaehlt) fokusWeg = true;
         }
-        if (fehler) Melden(MeldungLoeschFehler, true);
+        if (fehler) Melden(loeschGrund.Length > 0 ? loeschGrund : MeldungLoeschFehler, true);
         if (fehler && ziele.Count == 1) return;
         KatalogKaestchenLeeren();
         if (fokusWeg)

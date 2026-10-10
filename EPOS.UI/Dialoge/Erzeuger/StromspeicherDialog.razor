@@ -754,7 +754,10 @@
     {
         if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        // KT-4: Wirft der Schreibweg, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(
+            () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+            g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         if (!ergebnis.Ok)
         {
             // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.

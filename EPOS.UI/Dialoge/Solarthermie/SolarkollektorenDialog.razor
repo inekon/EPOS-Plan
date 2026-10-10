@@ -820,7 +820,10 @@
     {
         if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        // KT-4: Wirft der Schreibweg, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(
+            () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+            g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         if (!ergebnis.Ok)
         {
             // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
@@ -964,7 +967,13 @@
         _loeschfrage = false;
         if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogZeile.Bezeichner)) return;
+        // KT-4: Wirft der Löschweg, nennt das Warnband den Grund (Katalogladung.Loeschen).
+        string loeschName = _katalogZeile.Bezeichner;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschName), loeschName, out string loeschGrund))
+        {
+            if (loeschGrund.Length > 0) { _meldung = loeschGrund; _meldungStufe = WarnStufe.Warnung; }
+            return;
+        }
         _katalogZeile = null;
         _katalogGewaehlt = "";
         KatalogNeuLaden();

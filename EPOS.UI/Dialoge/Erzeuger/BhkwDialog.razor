@@ -951,12 +951,16 @@
         if (_projektZeile is not null)
         {
             if (ProjektsatzWege?.Speichern is null) return;
-            ergebnis = ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) });
+            ergebnis = Katalogladung.Schreiben(
+                () => ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) }), _projektZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _projektZeile.Bezeichner));
         }
         else
         {
             if (KatalogfelderSpeichern is null || _katalogZeile is null) return;
-            ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+            ergebnis = Katalogladung.Schreiben(
+                () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         }
         if (!ergebnis.Ok)
         {
@@ -1126,7 +1130,8 @@
         int geloescht = 0;
         foreach (Katalogfilterzeile z in ziele)
         {
-            string grund = KatalogLoeschen(z.Id) ?? "";
+            // KT-4: Wirft der Löschweg, kommt sein Grund wie eine Ablehnung zurück.
+            string grund = Katalogladung.Loeschen(() => KatalogLoeschen(z.Id) ?? "", z.Bezeichner, g => g);
             if (grund.Length > 0) { fehler = grund; continue; }
             geloescht++;
             if (z.Bezeichner == _katalogGewaehlt) fokusWeg = true;

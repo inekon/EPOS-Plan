@@ -1134,7 +1134,9 @@
             return;
         }
 
-        KatalogSpeicherErgebnis ergebnis = Speichern(Daten, _neu);
+        // KT-4: Wirft der Schreibweg, bleiben die Eingaben stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Speichern(Daten, _neu), _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
         if (!ergebnis.Ok)
         {
             SpeichernAbgelehnt(ergebnis.Meldung);
@@ -1313,7 +1315,12 @@
                 if (!gruende.Contains(grund)) gruende.Add(grund);
                 continue;
             }
-            if (!Loeschen(name)) continue;
+            if (!Katalogladung.Loeschen(() => Loeschen(name), name, out string loeschGrund))
+            {
+                // KT-4: Warf der Löschweg, nennt das Warnband den Grund.
+                if (loeschGrund.Length > 0 && !gruende.Contains(loeschGrund)) gruende.Add(loeschGrund);
+                continue;
+            }
             geloescht++;
             if (name == _gewaehlt) fokusWeg = true;
         }

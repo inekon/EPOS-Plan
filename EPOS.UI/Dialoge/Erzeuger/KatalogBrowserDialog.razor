@@ -1136,7 +1136,9 @@
     /// </summary>
     private bool Schreiben()
     {
-        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_gewaehlt, _felder);
+        // KT-4: Wirft der Schreibweg, bleiben die Felder stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Wege.Speichern!(_gewaehlt, _felder), _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
 
         if (!ergebnis.Ok)
         {
@@ -1353,7 +1355,8 @@
         var gruende = new List<string>();
         foreach (string name in _loeschziele)
         {
-            KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(name);
+            KatalogSpeicherErgebnis ergebnis = Katalogladung.Loeschen(() => Wege.Loeschen(name), name,
+                                                                      g => new KatalogSpeicherErgebnis(false, g, name));
             if (ergebnis.Ok)
             {
                 geloescht++;

@@ -1209,7 +1209,9 @@
         string? befund = Pruefbefund(_arbeit);
         if (befund is not null) { SpeichernAbgelehnt(befund); return; }
 
-        KaeltemaschineSpeicherErgebnis e = Speichern(_arbeit);
+        // KT-4: Wirft der Schreibweg, bleibt der Arbeitsstand stehen und die Meldung nennt den Grund.
+        KaeltemaschineSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_arbeit), _arbeit.Bezeichner,
+                                                                   g => new KaeltemaschineSpeicherErgebnis(false, g, _arbeit.Id));
         if (!e.Ok) { SpeichernAbgelehnt(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
 
         _geaendert = false;
@@ -1250,7 +1252,8 @@
         string? befund = Pruefbefund(_neu);
         if (befund is not null) { _neuMeldung = befund; return; }
 
-        KaeltemaschineSpeicherErgebnis e = Speichern(_neu);
+        KaeltemaschineSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_neu), _neu.Bezeichner,
+                                                                   g => new KaeltemaschineSpeicherErgebnis(false, g, 0));
         if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
 
         string name = _neu.Bezeichner.Trim();
@@ -1415,7 +1418,8 @@
         {
             Katalogfilterzeile? z = ZeileZu(s);
             if (z is null) continue;
-            KaeltemaschineSpeicherErgebnis e = Loeschen(z.Id);
+            KaeltemaschineSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner,
+                                                                      g => new KaeltemaschineSpeicherErgebnis(false, g, z.Id));
             if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
             else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
         }
