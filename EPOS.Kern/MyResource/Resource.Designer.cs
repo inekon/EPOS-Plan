@@ -4236,6 +4236,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summen als CSV speichern ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TIP_CSV {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Jahresganglinie ähnelt.
         /// </summary>
         public static string BED_GRAFIK_TITEL_JAHR {
@@ -54548,7 +54557,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Bedarfsart die Grafik allein zeigt; im Dialog lassen sich mehrere zugleich wählen, gelesen wird die erste gewählte. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_GRAFIK_ERL {
             get {
@@ -54566,7 +54575,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“)? Aus heißt Zeitraster „Monat“ mit den Monatssummen. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_JAHRESVERLAUF_ERL {
             get {

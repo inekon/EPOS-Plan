@@ -23974,10 +23974,10 @@ Do you want to allow this?</value>
     <value>View of the chart</value>
   </data>
   <data name="KI_DLG_BERG_GRAFIK_ERL" xml:space="preserve">
-    <value>Which view the chart shows; a change away from domestic hot water takes the annual profile along.</value>
+    <value>Which demand type the chart shows alone; the dialog allows several at once, reading returns the first selected.</value>
   </data>
   <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
-    <value>Does the chart show the annual profile? The switch exists only for the domestic hot water view and only when an annual profile is available.</value>
+    <value>Does the chart show the annual load curve (time grid “Year”)? Off means time grid “Month” with the monthly totals.</value>
   </data>
   <data name="KI_DLG_MASKE_WBX" xml:space="preserve">
     <value>External heat demand profiles</value>
@@ -50876,6 +50876,9 @@ chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
+  </data>
+  <data name="BED_GRAFIK_TIP_CSV" xml:space="preserve">
+    <value>Save totals as CSV</value>
   </data>
 </root>
 

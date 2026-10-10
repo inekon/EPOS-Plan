@@ -23981,10 +23981,10 @@ Möchten Sie das zulassen?</value>
     <value>Sicht der Grafik</value>
   </data>
   <data name="KI_DLG_BERG_GRAFIK_ERL" xml:space="preserve">
-    <value>Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit.</value>
+    <value>Welche Bedarfsart die Grafik allein zeigt; im Dialog lassen sich mehrere zugleich wählen, gelesen wird die erste gewählte.</value>
   </data>
   <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
-    <value>Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt.</value>
+    <value>Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“)? Aus heißt Zeitraster „Monat“ mit den Monatssummen.</value>
   </data>
   <data name="KI_DLG_MASKE_WBX" xml:space="preserve">
     <value>Externe Wärmebedarfsganglinien</value>
@@ -50883,6 +50883,9 @@ Chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
+  </data>
+  <data name="BED_GRAFIK_TIP_CSV" xml:space="preserve">
+    <value>Summen als CSV speichern</value>
   </data>
 </root>
 
