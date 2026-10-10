@@ -77,7 +77,7 @@ Sitzung lief auf Opus 5.5.
   1.2.0.10 (29 Sätze), 1.2.0.9 (1), 1.2.0.8 (4), 1.2.0.7 (36). „Version 1.2.6“ (29.09.) bleibt unverändert stehen.
 
 ## Offen für den Anwender (aus den Agentenberichten)
-- Begriff „Befund“ im Gebäudeimport (Oberfläche und Wiki, sechs Stellen).
+- Begriff „Befund“ im Gebäudeimport (Oberfläche und Wiki, sechs Stellen) — entschieden 10.10.2026: für den Wiki-Upload nicht relevant.
 - Feldwert „wie bisher“ des Felds „Teillastrechnung“ (Kältemaschine) ist ein Änderungswort in der Oberfläche.
 - Protokolltext `SIMENG_BHKW_RUECKLAUF_MAX` sagt „an oder über der Rücklaufgrenze“, `Ruecklaufgrenze.BhkwAus` prüft „>“.
 - Rechenweg Wärmepumpe: Kennlinienwahl für Prozesswärme fehlt; Simulationsablauf: Anlagenfahrplan und Übergabegrenze
@@ -128,6 +128,10 @@ Sitzung lief auf Opus 5.5.
   jede Seite byte-gleich zurückgelesen, 0 Parse-Warnungen; 19 Seiten gleich; Dateien und 19 Weiterleitungen gleich.
 - Zurückgehalten: Programm Dokumentation/Gebäudeimport (Repo-Quelle fertig) — der Anwender hat zur Frage „Befund“ mit
   „Something else“ ohne Text geantwortet; Upload der Seite nach seiner Antwort.
+- Nachgereicht: Anwenderentscheid 10.10.2026: „Befund“ ist für den Wiki-Upload nicht relevant. Programm Dokumentation/Gebäudeimport als Revision 828 hochgeladen (vorher 726,
+  letzte Bearbeitung Bot-Upload 30.09., keine Handbearbeitung), byte-gleich zurückgelesen, 0 Parse-Warnungen. Trockenlauf danach:
+  alle Seiten gleich bis auf Programm Dokumentation/Gebäude (Quelle von der Welle #885–#888 nach dem Upload geändert, nächster
+  Upload). Zugangsdatei gelöscht; das Bot-Passwort sollte neu erzeugt werden.
 - Logbuch: Revision 827, 70 Sätze in 1.2.0.10 (29), 1.2.0.9 (1), 1.2.0.8 (4), 1.2.0.7 (36), eingefügt vor „Version 1.2.6 –
   September 2026“; Einleitungssatz berichtigt.
 - Verbindungsabbrüche (Connection reset) während der Läufe: Starter `wu_lauf.py` im Scratchpad wiederholt abgebrochene Anfragen
