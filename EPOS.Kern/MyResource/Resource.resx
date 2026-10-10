@@ -47984,6 +47984,18 @@ Chart</value>
   <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
     <value>Meldung ausblenden</value>
   </data>
+  <data name="WARNBANNER_HINWEISE_ANZEIGEN" xml:space="preserve">
+    <value>Hinweise anzeigen</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_AUSBLENDEN" xml:space="preserve">
+    <value>Hinweise ausblenden</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_EINER" xml:space="preserve">
+    <value>1 Hinweis</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} Hinweise</value>
+  </data>
   <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
     <value>Das Gebäude ist noch nicht im Projekt gespeichert – erst nach Abschluss des Assistenten entsteht seine Projektkopie, die Zonen tragen kann.</value>
   </data>

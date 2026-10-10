@@ -47977,6 +47977,18 @@ chart</value>
   <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
     <value>Hide message</value>
   </data>
+  <data name="WARNBANNER_HINWEISE_ANZEIGEN" xml:space="preserve">
+    <value>Show notes</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_AUSBLENDEN" xml:space="preserve">
+    <value>Hide notes</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes</value>
+  </data>
   <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
     <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created once the wizard has finished.</value>
   </data>

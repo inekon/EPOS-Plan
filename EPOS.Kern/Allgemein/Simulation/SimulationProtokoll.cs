@@ -308,6 +308,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Warnungen und Hinweise als LISTE, ein Eintrag je Meldung, ohne Aufzählungszeichen —
+        /// dieselben Einträge wie <see cref="HinweistextFuerAnzeige"/>. Die Oberfläche zeigt
+        /// sie im Klapper des Banners, statt einen verketteten Absatz zu zerlegen.
+        /// </summary>
+        public IReadOnlyList<string> HinweiseFuerAnzeige()
+        {
+            lock (_sperre)
+            {
+                var liste = new List<string>(_warnungen.Count + _hinweise.Count);
+                liste.AddRange(_warnungen);
+                liste.AddRange(_hinweise);
+                return liste;
+            }
+        }
+
+        /// <summary>
         /// Die FEHLER als Fließtext — das Gegenstück zu
         /// <see cref="HinweistextFuerAnzeige"/> (Nacharbeit Paket 8, Befund N6).
         ///
