@@ -322,6 +322,20 @@ public sealed class SimulationKonfigDienste
     /// Delegat = kein Schreibweg; dann steht kein Schalter da.
     /// </summary>
     public Func<int, bool, string?>? KuehlbetriebWpSchreiben;
+
+    /// <summary>
+    /// Rückt einen Kälteerzeuger im Bereich „Kälte“ einen Platz nach vorn oder hinten (Welle KB-D, Entscheid E117 F1) —
+    /// Kernweg <c>KaeltefolgeCtrl.Verschieben</c>, schreibt SOFORT die ganze Folge als gepflegte. Parameter: Anlagen-ID
+    /// (<see cref="KaelteerzeugerZeile.IdAnlage"/>) und Richtung (<c>-1</c> = nach vorn, <c>+1</c> = nach hinten); Rückgabe
+    /// <c>null</c> = geschrieben, sonst der Grund. <c>null</c> als Delegat = kein Schreibweg; dann stehen keine Pfeile da.
+    /// </summary>
+    public Func<int, int, string?>? KaelteVerschieben;
+
+    /// <summary>
+    /// Stellt die Vorgabefolge der Kälteerzeuger wieder her (Welle KB-D) — Kernweg <c>KaeltefolgeCtrl.VorgabeSetzen</c>,
+    /// schreibt SOFORT. Rückgabe <c>null</c> = geschrieben, sonst der Grund. <c>null</c> als Delegat = kein Knopf.
+    /// </summary>
+    public Func<string?>? KaelteVorgabefolge;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>
