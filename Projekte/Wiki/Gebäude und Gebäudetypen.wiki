@@ -1,50 +1,50 @@
-Unter '''Gebäude und Gebäudetypen''' verwaltet EPOS-Plan die Grundlage der Heizwärmeberechnung. Die Gebäudeverwaltung trennt zwischen dem Katalog der Gebäudetypen und der Zuordnung im Projekt: Im Katalog werden Geometrie, Bauteilqualität, Nutzungsrandbedingungen und Ferienzeiten gepflegt, im Projekt lediglich die Bezugsgröße und der Jahresnutzungsgrad.
+Unter '''Gebäude und Gebäudetypen''' verwaltet EPOS-Plan die Grundlage der Heizwärmeberechnung. EPOS-Plan führt Gebäude an zwei Stellen: im Gebäudekatalog, der Geometrie, Hülle, Konditionierung, Ferienzeiten, Modellparameter und Kühlung eines Gebäudes enthält, und im Projekt, das ein Gebäude als eigene Kopie übernimmt und dazu die Bezugsgröße – Nutzfläche oder Verbrauch – und den Jahresnutzungsgrad pflegt. Die Kopie im Projekt lässt sich über ''Gebäude im Projekt bearbeiten…'' selbst bearbeiten und mit Zonen aus einzelnen Bauteilen beschreiben.
 
 == Auswahl aus dem Katalog ==
 {{Anker|auswahl-aus-dem-katalog|gebaeudekatalog|baualtersklasse}}
 
-Für die Gebäudeheizwärme wählen Sie ein Gebäude aus dem Katalog. Gefiltert wird nach Wohn- oder Nichtwohngebäude, Gebäudeart und Baualtersklasse, wobei die Klassen von „vor 1919“ über die EnEV-Stufen bis zu BEG 55 und BEG 40 reichen; eine Volltextsuche mit Platzhaltern hilft bei großen Katalogen.
+Für die Gebäudeheizwärme wählen Sie ein Gebäude aus dem Katalog. Die Liste führt Name, Gebäudeart, Verwendung (Wohngebäude oder Gewerbe+Sonstige), Baualtersklasse – ein Bauzeitraum von „bis 1859“ bis „ab 2021“, aus dem Baujahr vorgeschlagen und immer wählbar – und Fläche; ein Suchfeld mit Platzhaltern, ein Trichter je Spalte und der Sortierpfeil engen sie ein. Ein Gebäude lässt sich auch aus einer gbXML- oder IFC-Datei importieren ([[Programm Dokumentation/Gebäudeimport|Gebäudeimport]]).
 
-{{Hinweis|Werksseitig gelieferte Typen sind schreibgeschützt, damit sie als Referenz erhalten bleiben; eigene Typen lassen sich jederzeit anlegen.}}
+{{Hinweis|Werksseitig gelieferte Gebäude tragen ein Schloss und sind schreibgeschützt, damit sie als Referenz erhalten bleiben; eigene Gebäude lassen sich jederzeit anlegen, auch als Kopie eines Auslieferungssatzes.}}
 
 == Zuordnung im Projekt ==
 {{Anker|zuordnung-im-projekt|projektkopie|bezugsgroesse}}
 
-Das zugeordnete Gebäude wird zu einer Projektkopie, in der Sie die Bezugsgröße anpassen – üblicherweise die Wohnfläche in Quadratmetern.
+Das zugeordnete Gebäude wird zu einer Projektkopie, in der Sie die Bezugsgröße anpassen – üblicherweise die Nutzfläche in Quadratmetern. ''Simulation…'' rechnet den Wärmebedarf des markierten Gebäudes und zeigt Kennzahlen, Jahresganglinie, den Vergleich der Rechenwege und den Verlauf der Raumtemperatur; ''In DB übernehmen'' schreibt die Projektkopie als eigenen Satz in den Katalog.
 
 == Bedarf aus Verbrauchsdaten ==
 {{Anker|bedarf-aus-verbrauchsdaten|verbrauchsdaten|jahresnutzungsgrad}}
 
-Liegen statt Flächen Verbrauchsdaten vor, geben Sie diese direkt an: Ölverbrauch in Litern pro Jahr, Gasverbrauch in Kubikmetern oder Megawattstunden, allgemeiner Brennstoffverbrauch in Megawattstunden. EPOS-Plan rechnet den Verbrauch unter Berücksichtigung des Jahresnutzungsgrads der bisherigen Anlage in Nutzwärme um und skaliert das Gebäudemodell so, dass es genau diesen Bedarf abbildet. Damit lässt sich ein Bestandsgebäude allein aus der Heizkostenabrechnung realistisch beschreiben.
+Liegen statt Flächen Verbrauchsdaten vor, geben Sie diese direkt an: Ölverbrauch in Litern pro Jahr, Gasverbrauch in Kubikmetern oder Megawattstunden, allgemeiner Brennstoffverbrauch in Megawattstunden. EPOS-Plan rechnet den Verbrauch unter Berücksichtigung des Jahresnutzungsgrads der bestehenden Anlage in Nutzwärme um und skaliert das Gebäudemodell so, dass es genau diesen Bedarf abbildet. Damit lässt sich ein Bestandsgebäude allein aus der Heizkostenabrechnung realistisch beschreiben.
 
 == Kenngrößen des Gebäudetyps ==
 {{Anker|kenngroessen-des-gebaeudetyps|geometrie|u-werte}}
 
-Die physikalischen Kenngrößen eines Gebäudetyps umfassen Wohnfläche und Fläche je Nutzer, Raumhöhe, Fensterflächen getrennt nach Süd, Nord und Ost/West, den Fensterdurchlassgrad, die Flächen von Außenwand, Dach, Grundfläche und sonstigen Bauteilen mit den zugehörigen U-Werten, Wärmebrückenzuschläge mit ihren Anschlusslängen, die Luftwechselrate und die Speicherfähigkeit der Bauweise, die als leicht, schwer oder sehr schwer eingestuft wird.
+Die physikalischen Kenngrößen eines Gebäudes stehen im Reiter ''Gebäude und Hülle'' des Katalogeditors: Nutzfläche und Fläche je Nutzer, Baualtersklasse, Baujahr und Energiestandard, Raumhöhe, interne Wärmegewinne, Fensterflächen getrennt nach Nord, Süd, Ost und West, der Fensterdurchlassgrad, die Flächen von Außenwand, Fenster, Dach, Bodenplatte und sonstigen Bauteilen mit den zugehörigen U-Werten, drei Wärmebrücken mit Verlustkoeffizient und Anschlusslänge, die Luftwechselrate und die Bauart – leicht, schwer oder sehr schwer –, die die Speicherfähigkeit bestimmt; dazu die Modellparameter nach VDI 6007, der Rechenweg und die Kühlung. Statt der U-Wert-Gruppen kann das Gebäude als Zone aus einzelnen Bauteilen mit Schichtaufbau aus dem Baustoffkatalog beschrieben werden ([[Programm Dokumentation/Mehrzonenmodell|Mehrzonenmodell]], [[Programm Dokumentation/Baustoffe und Bauteilaufbauten|Baustoffe und Bauteilaufbauten]]).
 
 == Nutzungsrandbedingungen ==
 {{Anker|nutzungsrandbedingungen|absenkung|ferienzeiten}}
 
-Auf einer zweiten Seite folgen die Nutzungsrandbedingungen: Raumsolltemperatur am Tag, Nachtabsenkung, Wochenend- und Ferienabsenkung, maximale Raumtemperatur sowie vier frei definierbare Ferienzeiträume für Winter, Ostern, Sommer und Herbst.
+Der Reiter ''Konditionierung'' führt, wann und worauf das Gebäude geheizt, gekühlt und gelüftet wird: eine Vorgabe-Matrix mit den Größen Heizen, Kühlen, Lüftung, Geräte und Personen für Nennwert, Tag, Nacht, Wochenende, Ferien und Saison – alle Temperaturen als absolute Raumsolltemperaturen, mit Beginn und Ende der Nacht und der Heiz- und Kühlperiode – und je Größe ein Kalender mit Wochenprofilen, Zuordnungen im Jahr, benannten Ferienzeiträumen, Wochenendtagen und Feiertagsland. Vorlagen der Konditionierung und [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]] lassen sich übernehmen; Einzelheiten unter [[Programm Dokumentation/Gebäude#konditionierung|Gebäude: Konditionierung]].
 
 == Berechnung des Jahresgangs ==
 {{Anker|berechnung-des-jahresgangs|tagesheizlast|jahresdauerlinie}}
 
-Aus diesen Angaben berechnet das Programm für jeden der 365 Tage die solaren Gewinne aus den Fensterflächen, die spezifischen Transmissions- und Lüftungsverluste und daraus unter Berücksichtigung der Gebäudespeicherfähigkeit und der eingestellten Absenkungen die Tagesheizlast. Anschließend wird jeder Tageswert über eine typabhängige 24-Stunden-Verteilungskurve auf Stundenwerte umgelegt.
+Vorgabe für jedes Gebäude ist das Stundenmodell nach VDI 6007: Es rechnet den Heizwärmebedarf Stunde für Stunde über die 8 760 Stunden des Jahres – ein Raummodell mit zwei Speicherkapazitäten für Außen- und Innenbauteile, Sonneneinstrahlung je Himmelsrichtung, inneren Gewinnen und dem Sollwertfahrplan der Konditionierung – und liefert zugleich Raumlufttemperatur, operative Temperatur und Kältebedarf. Je Gebäude wählbar bleibt der Rechenweg ''Tagesbilanz'': Er berechnet für jeden der 365 Tage die solaren Gewinne, die Transmissions- und Lüftungsverluste und daraus unter Berücksichtigung der Speicherfähigkeit und der Absenkungen die Tagesheizlast und legt sie über eine typabhängige 24-Stunden-Verteilungskurve auf Stundenwerte um ([[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]).
 
-Das Ergebnis ist ein durchgängiger Jahresgang der Heizleistung, aus dem sich die maximale Wärmelast und die Jahresdauerlinie ableiten.
+Das Ergebnis ist ein durchgängiger Jahresgang der Heizleistung, aus dem sich die maximale Wärmelast und die Jahresdauerlinie ableiten; auf dem Rechenweg VDI 6007 kommen der Vergleich beider Rechenwege und der Verlauf der Raumtemperatur dazu.
 
 == Tagesverteilungskurven ==
 {{Anker|tagesverteilungskurven|verteilungskurve}}
 
-Für die zeitliche Auflösung sorgen Tagesverteilungskurven, die je Gebäudetyp als Stundenprofile hinterlegt sind und ebenfalls bearbeitet werden können. Für Wohngebäude stehen dafür acht Kurven nach Jahreszeit und Wochentag bereit, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkung.
+Auf dem Rechenweg ''Tagesbilanz'' sorgen Tagesverteilungskurven für die zeitliche Auflösung; sie sind je Gebäudetyp als Stundenprofile hinterlegt und können in der Verwaltung ''Gebäudetypen'' bearbeitet werden. Für Wohngebäude stehen dafür acht Kurven nach Jahreszeit und Wochentag bereit, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkung.
 
 == Weitere Anteile des Wärmebedarfs ==
 {{Anker|weitere-anteile-des-waermebedarfs|warmwasser|netzverluste}}
 
 Der Wärmebedarf setzt sich aus bis zu vier Anteilen zusammen, die getrennt erfasst und anschließend stundenweise addiert werden: Gebäudeheizwärme, Warmwasser, Prozesswärme und – falls vorhanden – ein extern eingelesener Lastgang. Ergänzend lassen sich Netzverluste entweder als Prozentsatz oder als absoluter Jahreswert aufschlagen; sie werden gleichmäßig über das Jahr verteilt.
 
-Warmwasser und Prozesswärme werden nach demselben Muster erfasst wie das Gebäude: Sie wählen einen Typ aus dem Katalog, geben den Jahresverbrauch an, und das Programm verteilt diesen über die hinterlegten Monatsanteile und ein Wochenprofil mit 168 Stundenwerten auf das Jahr. Die Erfassung dieser Anteile beschreibt der Schritt [[Wärmebedarf erfassen]].
+Warmwasser und Prozesswärme werden nach demselben Muster erfasst wie das Gebäude: Sie wählen einen Typ aus dem Katalog, geben den Jahresverbrauch an, und das Programm verteilt diesen über die hinterlegten Monatsanteile und ein Wochenprofil mit 168 Stundenwerten auf das Jahr; wahlweise erzeugt der [[Programm Dokumentation/Brauchwasser-Zapfprofil|Zapfprofilgenerator]] den Brauchwasserbedarf aus Nutzungszonen. Die Erfassung dieser Anteile beschreibt der Schritt [[Wärmebedarf erfassen]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -52,6 +52,10 @@ Warmwasser und Prozesswärme werden nach demselben Muster erfasst wie das Gebäu
 * [[Grundlagen/Wärmebedarfsrechnung|Grundlagen: Wärmebedarfsrechnung]] – die fachlichen Hintergründe
 * [[Wärmebedarf erfassen]] – der zugehörige Schritt im Programmablauf
 * [[Industrie und Gewerbe]] – Besonderheiten von Hallen, Werkstätten und Verwaltungstrakten
+* [[Programm Dokumentation/Gebäude|Programm-Dokumentation: Gebäude]] – Projektdialog, Katalogeditor und Verwaltung im Einzelnen
+* [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] – das stündliche Gebäudemodell, Heizkreis, Kühlübergabe, Komfortstunden
+* [[Programm Dokumentation/Kühlung|Kühlung]] – Kältebedarf je Projekt und Gebäude
+* [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]] – der Rechenweg mit Formeln
 
 {{Navigation Programmfunktionen}}
 

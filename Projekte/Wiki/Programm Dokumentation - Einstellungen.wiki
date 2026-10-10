@@ -1,13 +1,14 @@
-Der Dialog '''Einstellungen''' fasst die globalen Anwendungseinstellungen zusammen. Er ist in die Rubriken ''VDI Datensätze'', ''Datenbank'', ''Web-Schnittstellen (API)'' und ''Anwendung'' gegliedert; die Werte gelten programmweit, nicht je Projekt.
+Der Dialog '''Einstellungen''' fasst die globalen Anwendungseinstellungen zusammen. Er ist in die Rubriken ''VDI Datensätze'', ''Datenbank'', ''Web-Schnittstellen (API)'', ''Klimadaten'', ''Diagramme'', ''Bericht'' und ''Anwendung'' gegliedert; die Werte gelten programmweit, nicht je Projekt, und werden mit ''OK'' übernommen.
 
 == Eingaben ==
 
-* '''VDI Datensätze''' – der Basis-Pfad, unter dem die VDI-3805-Herstellerdaten abgelegt sind.
-* '''Datenbank''' – die Standard-Datenbank sowie die Pfade für Datenbank, Import und Export.
-* '''Online-Dokumentation''' – die Basis-Adresse dieser Dokumentation; sie gilt für den Menüpunkt {{Menü|Dokumentation}} und für die Kurzhinweise an den Eingabefeldern.
-* '''Web-Schnittstellen''' – die Adresse des PVGIS-Servers für die Klimadaten und die Adresse des Dienstes für die Geokodierung.
-* '''Allgemeiner Sicherungspfad''' – der Temp- und Sicherungsordner der Anwendung.
-* '''KI-Assistent vollständig deaktivieren''' – schaltet in der Rubrik ''Anwendung'' jede Übertragung an einen externen Dienst ab; die lokale Hilfesuche bleibt unberührt. Mit ''Standardwerte wiederherstellen'' setzen Sie alle Felder auf die Voreinstellung zurück.
+* '''VDI Datensätze''' – der Ordner, unter dem die VDI-3805-Herstellerdaten abgelegt sind.
+* '''Datenbank''' – der Ordner und der Name der Datenbankdatei sowie die Ordner für Datenbank-Sicherungen und Datenbank-Importe.
+* '''Web-Schnittstellen (API)''' – die Adresse des Wiki, auf das der Menüpunkt {{Menü|Dokumentation}} und die Kurzhinweise an den Eingabefeldern führen, die Adresse der PVGIS-Schnittstelle für die Klimadaten und die Adresse der Geokodierung (Nominatim) für die Ortssuche, dazu der allgemeine Anwendungsordner.
+* '''Klimadaten''' – das Portal der DWD-Testreferenzjahre und die Adresse der TRY-Regionaldaten, aus denen der Dialog [[Programm Dokumentation/Klimadaten#klimaquelle|Klimadaten]] Testreferenzjahre bezieht.
+* '''Diagramme''' – je Größe, die in einem Diagramm vorkommt, eine eigene Farbe in sechs Gruppen; sie gilt in allen Diagrammen und im Bericht, ''Hausfarben'' setzt auf die Auslieferung zurück ([[Programm Dokumentation/Simulationsergebnisse#diagrammfarben|Simulationsergebnisse: Farben der Diagramme]]).
+* '''Bericht''' – Firma und Firmenlogo für die Kopfzeile des Berichts, der Vorlagenordner und die Word- und Excel-Vorlage, mit denen ein Bericht entsteht, solange ein Projekt keine eigene wählt ([[Programm Dokumentation/Berichtsvorlagen#einstellungen|Berichtsvorlagen: Einstellungen]]).
+* '''Anwendung''' – ''KI-Assistent vollständig deaktivieren'' schaltet jede Übertragung an einen externen Dienst ab; die lokale Hilfesuche bleibt unberührt. ''Neue Projekte mit Kühlung anlegen'' legt fest, ob ein neues Projekt mit eingeschalteter Kühlung beginnt ([[Programm Dokumentation/Kühlung#einschalten|Kühlung einschalten]]). Mit ''Standardwerte wiederherstellen'' setzen Sie alle Felder auf die Voreinstellung zurück.
 
 == Siehe auch ==
 

@@ -3,7 +3,7 @@ Beim Schritt '''Strombedarf erfassen''' entsteht der Bedarf auf demselben Weg wi
 == Verbrauchertypen und Wochenprofile ==
 {{Anker|verbrauchertypen-und-wochenprofile|verbrauchertypen}}
 
-Sie wählen einen Verbrauchertyp aus dem Katalog und geben den Jahresverbrauch an; die Verteilung über das Jahr übernehmen die hinterlegten Monatswerte und das Wochenprofil mit 168 Stundenwerten.
+Sie wählen einen Verbrauchertyp aus dem Katalog und geben den Jahresverbrauch an; die Verteilung über das Jahr übernehmen die hinterlegten Monatswerte und das Wochenprofil mit 168 Stundenwerten. Je Zuordnung kann ein [[Programm Dokumentation/Betriebskalender|Betriebskalender]] Feiertage und Betriebsferien auf das Wochenprofil legen.
 
 == Rechnen in Viertelstundenwerten ==
 {{Anker|rechnen-in-viertelstundenwerten|viertelstundenwerte|zeitraster}}
@@ -18,7 +18,7 @@ Gemessene Lastgänge lassen sich importieren und werden je nach Zeitraster – S
 == Ergebnis ==
 {{Anker|ergebnis}}
 
-Als Ergebnis stehen der maximale Leistungsbedarf, der Jahresverbrauch, die Monatswerte und die geordnete Jahresdauerlinie zur Verfügung.
+Als Ergebnis stehen der maximale Leistungsbedarf, der Jahresverbrauch, die Monatswerte und die geordnete Jahresdauerlinie zur Verfügung. Die Jahreshöchstlast und ihre Kappung durch einen Stromspeicher wertet die [[Programm Dokumentation/Stromspeicher#maske-lastspitzenkappung|Lastspitzenkappung]] aus.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}
@@ -26,6 +26,8 @@ Als Ergebnis stehen der maximale Leistungsbedarf, der Jahresverbrauch, die Monat
 * [[Grundlagen/Strombedarf und Lastprofile]] – Herkunft und Aufbau der Lastprofile
 * [[Stammdaten und Datenimport]] – Katalog der Stromverbrauchertypen und Stromganglinien
 * [[Industrie und Gewerbe]] – der gemessene Viertelstundenlastgang als belastbarste Eingangsgröße
+* [[Programm Dokumentation/Strombedarf|Programm-Dokumentation: Strombedarf]] – Standardlastprofil, eigenes Profil und Messdaten im Einzelnen
+* [[Programm Dokumentation/Stromverbraucher|Programm-Dokumentation: Stromverbraucher]] – der Dialog der Standardlastprofile im Projekt
 
 ← [[Wärmebedarf erfassen]] | [[Erzeuger und Speicher auswählen]] →
 

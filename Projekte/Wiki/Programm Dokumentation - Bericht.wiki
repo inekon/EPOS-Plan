@@ -1,17 +1,20 @@
-Die Seite '''Bericht''' erzeugt den Vergleichsbericht einer Vergleichsgruppe als Word-Dokument, als Excel-Arbeitsmappe oder als beides. Jeder Lauf rechnet neu, und zwar in dieser Reihenfolge: zuerst die Simulation aller gewählten Projekte, dann die Wirtschaftlichkeitsrechnung der Gruppe, erst danach die Bausteine des Dokuments.
+Die Seite '''Bericht''' erzeugt den Vergleichsbericht einer Vergleichsgruppe als Word-Dokument, als Excel-Arbeitsmappe oder als beides. Jeder Lauf rechnet neu, und zwar in dieser Reihenfolge: zuerst die Simulation aller gewählten Projekte, dann die Wirtschaftlichkeitsrechnung der Gruppe, erst danach die Bausteine des Dokuments. Die Seite ordnet ihre Eingaben in vier Karten: links ''Varianten'' und ''Inhalt'', rechts ''Vorlage'' und ''Ausgabe''; im schmalen Fenster stehen die Karten untereinander.
 
 == Eingaben ==
 
-* {{Anker|varianten}}'''Varianten''' – die Liste führt Art, Bezeichner, Projektname und den Stand der letzten Simulation; ankreuzen, was in den Bericht eingeht. Das Stammprojekt ist die Referenz und lässt sich nicht abwählen, ''Alle'' und ''Keine'' setzen die übrigen Haken.
+* {{Anker|varianten}}'''Karte Varianten''' – die Liste führt Art, Bezeichner, Projektname, den Stromspeicher der Version und den Stand der letzten Simulation; ankreuzen, was in den Bericht eingeht. Das Stammprojekt ist die Referenz und lässt sich nicht abwählen, ''Alle'' und ''Keine'' setzen die übrigen Haken. Die Auswahl bleibt für den nächsten Bericht gespeichert.
 * '''Simulationsstand''' – fehlt ein Ergebnis oder ist es veraltet, erscheint die Zeile rot und mit einem Warnzeichen. Der Bericht läuft trotzdem, denn er simuliert die beteiligten Projekte ohnehin neu.
-* {{Anker|bausteine}}'''Berichtsbausteine''' – Deckblatt, Inhaltsverzeichnis, Projektbeschreibung, Komponenten & Varianten, Ergebnisse je Variante, Variantenvergleich, Wirtschaftlichkeit und Anhang. ''Wirtschaftlichkeit'' ist nicht vorbelegt, weil der Baustein die Kapitalwertrechnung aller Szenarien anstößt und den Lauf verlängert.
-* {{Anker|ausgabeformat}}'''Ausgabe''' – ''Word'', ''Excel'' oder ''Beide''; Deckblatt, Inhaltsverzeichnis und Anhang gibt es nur im Word-Bericht.
+* {{Anker|bausteine}}'''Karte Inhalt''' – die Berichtsbausteine Deckblatt, Inhaltsverzeichnis, Projektbeschreibung, Komponenten & Varianten, Ergebnisse je Variante, Variantenvergleich, Wirtschaftlichkeit und Anhang. Kapitel, die die gewählte Vorlage nicht führt, sind ausgegraut. ''Wirtschaftlichkeit'' ist nicht vorbelegt, weil der Baustein die Kapitalwertrechnung aller Szenarien anstößt und den Lauf verlängert; unter dem Baustein wählt die Klappliste ''Szenario der Wirtschaftlichkeit'' ''Erwartet'', ''Günstig'', ''Ungünstig'' oder ''Alle drei Szenarien (VALERI)'' – siehe [[Programm Dokumentation/Wirtschaftlichkeit#bericht-szenario|Wirtschaftlichkeit: Szenario der Wirtschaftlichkeit]].
+* '''Karte Vorlage''' – die Word-Vorlage, aus der der Bericht entsteht, mit ''Neue Vorlage…'', ''Hinzufügen…'', ''Prüfen'', ''Platzhalter…'' und dem Menü ''…'', darunter die Prüfzeile. Vorlagen, Platzhalter und Kapitel beschreibt die Seite [[Programm Dokumentation/Berichtsvorlagen|Berichtsvorlagen]].
+* {{Anker|ausgabeformat}}'''Karte Ausgabe''' – ''Word'', ''Excel'' oder ''Beide''; Deckblatt, Inhaltsverzeichnis und Anhang gibt es nur im Word-Bericht. Entsteht eine Excel-Mappe, steht darunter die Zeile ''Excel-Vorlage'' ([[Programm Dokumentation/Berichtsvorlagen#excel-zeile|Berichtsvorlagen: Excel-Vorlage]]).
 * {{Anker|zielordner}}'''Zielordner''' – der Ordner, in den die Dateien geschrieben werden; ''Durchsuchen…'' öffnet die Ordnerauswahl, voreingestellt sind die eigenen Dokumente.
-* '''Erstellen''' – nennt vor dem Start die Zahl der neu zu simulierenden Projekte. Fortschrittsbalken und Statuszeile begleiten den Lauf; am Ende nennt eine Meldung die erzeugten Dateien samt Hinweisen und öffnet den Bericht auf Wunsch sofort.
+* '''Erstellen''' – nennt vor dem Start die Zahl der neu zu simulierenden Projekte und prüft die gewählte Vorlage; bei einem Fehler fragt eine Rückfrage nach dem Weg (''Mit meiner Vorlage'', ''Mit Standardvorlage'', ''Abbrechen''). Fortschrittsbalken und Statuszeile begleiten den Lauf. Danach steht in der Karte ''Ausgabe'' eine Erfolgszeile mit Datei, Vorlage und dem Grund der Vorlagenwahl sowie dem Knopf ''Öffnen''; Warnungen stehen sichtbar darunter, die übrigen Hinweise lassen sich aufklappen.
 
 == Siehe auch ==
 
 * [[Varianten und Bericht]] – Aufbau des Word- und des Excel-Berichts und Ablauf eines Berichtslaufs
+* [[Programm Dokumentation/Berichtsvorlagen|Berichtsvorlagen]] – Word- und Excel-Vorlagen wählen, anlegen, prüfen und anpassen
+* [[Programm Dokumentation/Berichte und Kosten|Berichte und Kosten]] – der Bereich mit den Reitern Übersicht, Kosten, Wirtschaftlichkeit und Bericht
 * [[Wirtschaftlichkeit]] – die Kennzahlen, die der Baustein ''Wirtschaftlichkeit'' mitrechnet
 * [[Ergebnisdarstellung]] – dieselben Ergebnisse am Bildschirm
 

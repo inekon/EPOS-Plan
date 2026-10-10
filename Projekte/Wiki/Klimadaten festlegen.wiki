@@ -3,16 +3,16 @@
 == Klimaregion importieren ==
 {{Anker|klimaregion-importieren|import|pvgis}}
 
-Ist für den Standort noch kein Datensatz vorhanden, legen Sie ihn in der Klimadatenverwaltung an. Dort geben Sie entweder Koordinaten direkt ein oder wählen einen Ort aus der hinterlegten Ortsliste; das Programm ermittelt die Geokoordinaten und lädt anschließend einen typischen meteorologischen Jahresdatensatz (TMY) aus der europäischen PVGIS-Datenbank – getrennt für die Ausrichtungen Süd, Ost, West und Nord, damit später sowohl Fenstergewinne als auch Kollektor- und PV-Erträge richtungsabhängig berechnet werden können. Ergänzend berechnet EPOS-Plan die Sonnenstände.
+Ist für den Standort noch kein Datensatz vorhanden, legen Sie ihn in der Klimadatenverwaltung an. Die Klimaquelle wählt, woher die Stundenwerte kommen: ''PVGIS'' – der Abruf eines typischen meteorologischen Jahres (TMY) über die PVGIS-Schnittstelle, die Vorbelegung –, ''Testreferenzjahr (Datei)'' – eine Datei im Format der Testreferenzjahre des Deutschen Wetterdienstes – oder ''Testreferenzjahr (Regionaldaten)'' – die offenen Regionaldaten, aus denen EPOS-Plan die Region holt, die dem Standort am nächsten liegt; ''Region ermitteln'' nennt sie schon vor dem Einlesen. Bei den Regionaldaten wählen Sie dazu das Bezugsjahr 2015 oder die Projektion 2045 und das Szenario mittel, sommerwarm oder winterkalt. Den Standort geben Sie über einen Ortsnamen an, den das Programm in Koordinaten auflöst, oder von Hand über Longitude, Latitude und eine Bezeichnung; bei einer Testreferenzjahr-Datei trägt das Programm ihn aus dem Dateikopf ein. Die Strahlung wird auf die Ausrichtungen Süd, Ost, West und Nord umgerechnet, damit Fenstergewinne sowie Kollektor- und PV-Erträge richtungsabhängig gerechnet werden können; ergänzend berechnet EPOS-Plan die Sonnenstände.
 
-Zwei Diagramme zeigen den Jahresgang der Temperatur und den Verlauf der Sonnenwinkel zur Kontrolle.
+Die Liste der Regionen hat Suche, Filter und Sortierung und nennt je Region Quelle, Standort, Bezugsjahr, Szenario und Importdatum. Zwei Diagramme zeigen den Jahresgang der Temperatur und den Verlauf der Sonnenwinkel zur Kontrolle. Die Bedienung im Einzelnen beschreibt [[Programm Dokumentation/Klimadaten|Programm-Dokumentation: Klimadaten]].
 
-{{Hinweis|Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.}}
+{{Hinweis|Mitgelieferte Klimaregionen tragen ein Schloss und sind schreibgeschützt; ''Schloss aufheben…'' macht sie zu eigenen Regionen. Eigene Regionen können beliebig angelegt werden.}}
 
 == Klimaregion dem Projekt zuordnen ==
 {{Anker|klimaregion-dem-projekt-zuordnen|zuordnung}}
 
-Auf der Startseite wählen Sie die Region im Auswahlfeld und speichern sie mit der Schaltfläche daneben; damit wird eine projekteigene Kopie angelegt.
+Auf der Startseite wählen Sie die Region im Reiter ''Projekt'' aus der durchsuchbaren Liste und speichern sie mit dem Knopf daneben; die Rückmeldung steht neben dem Knopf, und eine Zeile darunter nennt Quelle, Bezugsjahr, Szenario und Importdatum der verwendeten Klimadaten. Im Projektassistenten steht dieselbe Liste.
 
 {{Achtung|Ein Wechsel der Klimaregion verändert Bedarf und Erträge erheblich und macht eine erneute Simulation erforderlich.}}
 
@@ -23,6 +23,7 @@ Auf der Startseite wählen Sie die Region im Auswahlfeld und speichern sie mit d
 
 * [[Stammdaten und Datenimport]] – Katalog der Klimaregionen und Schnittstellen für Klimadaten und Geokodierung
 * [[Grundlagen/Klimadaten]] – Herkunft und Aufbau der Klimadatensätze
+* [[Programm Dokumentation/Klimadaten|Programm-Dokumentation: Klimadaten]] – Klimaquelle, Standort, Jahr und Szenario, Einlesen
 
 ← [[Projekt anlegen]] | [[Wärmebedarf erfassen]] →
 

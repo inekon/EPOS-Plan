@@ -1,20 +1,20 @@
-Die '''Kurzanleitung''' beschreibt den kürzesten Weg zu einem belastbaren Ergebnis. Einstieg ist die Registerkarte ''Projekt'' der Startmaske mit ihren sechs Karten; neue Projekte legt EPOS-Plan über den '''Projektassistenten''' an, der auf seiner ersten Seite den Komponentenbestand als Kachelfeld zeigt und anschließend nur durch die eingeschalteten Bausteine führt.
+Die '''Kurzanleitung''' beschreibt den kürzesten Weg zu einem belastbaren Ergebnis. Einstieg ist die Registerkarte ''Projekt'' der Startmaske mit ihren sechs Karten; ein neues Projekt legt der '''Projektassistent''' in der Projektkonfiguration an – Name, Bearbeiter, Kunde, Beschreibung und Klimaregion –, die Komponenten kommen danach über die Reiter der Startseite dazu. Beim Bearbeiten eines bestehenden Projekts zeigt der Assistent auf seiner ersten Seite den Komponentenbestand als Kachelfeld und führt anschließend nur durch die eingeschalteten Bausteine.
 
 == Eingaben ==
 
-* '''Neues Projekt''' – öffnet den Projektassistenten für ein leeres Projekt.
-* '''Projekt öffnen/bearbeiten''' – öffnet den Projektassistenten im Bearbeiten-Modus; in seiner linken Spalte steht die Projektliste mit Suchfeld, aus der ''Projekt öffnen'' – Knopf oder Doppelklick – direkt zum gewählten Projekt wechselt, ohne das Detailformular.
+* '''Neues Projekt''' – öffnet den Projektassistenten in der Projektkonfiguration; ''Weiter ▶'' legt das leere Projekt an und springt auf den Reiter ''Wärmebedarf''. Ein ''Zurück'' gibt es hier nicht, hinaus führen ''Abbrechen'' und das Schließkreuz.
+* '''Projekt öffnen/bearbeiten''' – öffnet den Projektassistenten im Bearbeiten-Modus; in seiner linken Spalte steht die Projektliste mit Suchfeld über die volle Fensterhöhe, über den Kacheln die Daten des gewählten Projekts. ''Projekt öffnen'' – Knopf oder Doppelklick – wechselt direkt zum gewählten Projekt, ohne das Detailformular.
 * '''Zuletzt geöffnet''' – wechselt direkt zum zuletzt geöffneten Projekt; nur wenn keines gemerkt ist oder das gemerkte gelöscht wurde, erscheint ersatzweise die Projektliste.
 * '''Speichern unter''' – legt eine Kopie des Projekts unter neuem Namen an; das Ausgangsprojekt bleibt unverändert.
 * '''Projekt löschen''' – entfernt ein Projekt mit allen zugehörigen Daten, geschützt durch eine Sicherheitsabfrage.
 * '''Projekt Details''' – öffnet das Detailformular ''Konfiguration Projekt'' mit allen Listen des Projekts.
-* '''Komponenten auswählen''' – die erste Seite des Assistenten trägt dreizehn Kacheln: ''Gebäude'', ''Wärmebedarfsdaten'', ''Prozesswärme'', ''Brauchwasser'', ''Standard-Stromlastprofil'', ''Stromlastgang'', ''Wärmepumpe'', ''BHKW'', ''Spitzenkessel'', ''Solarthermie'', ''Photovoltaik'', ''Stromspeicher'' und ''Pufferspeicher''. Jede Kachel zeigt den Bestand des Projekts – grün mit der Anzahl (''3 im Projekt'') oder grau (''nicht im Projekt'').
+* '''Komponenten auswählen''' – beim Bearbeiten trägt die erste Seite des Assistenten dreizehn Kacheln: ''Gebäude'', ''Wärmebedarfsdaten'', ''Prozesswärme'', ''Brauchwasser'', ''Standard-Stromlastprofil'', ''Stromlastgang'', ''Wärmepumpe'', ''BHKW'', ''Spitzenkessel'', ''Solarthermie'', ''Photovoltaik'', ''Stromspeicher'' und ''Pufferspeicher''. Jede Kachel zeigt den Bestand des Projekts – grün mit der Anzahl (''3 im Projekt'') oder grau (''nicht im Projekt'').
 * '''Kachel einschalten''' – schaltet den zugehörigen Schritt des Assistenten frei.
 * '''Kachel ausschalten''' – entfernt die Daten. Der Assistent fragt vorher im Klartext nach, nennt Anzahl und Namen der betroffenen Einträge und ist mit ''Nein'' vorbelegt; erst ''Ja'' löscht beim Speichern.
 * '''Brauchwasser und Pufferspeicher''' – reine Anzeigekacheln (''nur Anzeige''): Sie zeigen den Bestand, lassen sich aber nicht umschalten. Zugeordnet werden beide in ihren Fachdialogen.
-* '''Projektdaten''' – Projektname, Bearbeiter, Kunde und Beschreibung. Projektname und Klimaregion sind Pflichtangaben, alles Weitere lässt sich später ergänzen.
-* '''Klimaregion''' – sie gilt für alle Berechnungen des Projekts; fehlt der Standort, legen Sie ihn zuvor in der Klimadatenverwaltung an.
-* '''Weiter ▶ und ◀ Zurück''' – die Knöpfe am unteren Rand des Assistenten führen durch die eingeschalteten Bausteine; ''Speichern'' schreibt Projekt und Zuordnungen in die Datenbank, ''Abbrechen'' verwirft den Durchlauf.
+* '''Projektdaten''' – Projektname, Bearbeiter, Kunde und Beschreibung, kompakt in zwei Spalten. Projektname und Klimaregion sind Pflichtangaben, alles Weitere lässt sich später ergänzen.
+* '''Klimaregion''' – sie gilt für alle Berechnungen des Projekts und wird aus derselben durchsuchbaren Liste gewählt wie auf der Startseite; fehlt der Standort, legen Sie ihn zuvor in der Klimadatenverwaltung an.
+* '''Weiter ▶ und ◀ Zurück''' – die Knöpfe am unteren Rand des Assistenten führen beim Bearbeiten durch die eingeschalteten Bausteine; ''Speichern'' schreibt Projekt und Zuordnungen in die Datenbank, ''Abbrechen'' verwirft den Durchlauf.
 * '''Freie Reihenfolge''' – nach dem Assistenten ist die Startmaske eine Kachelfläche in sechs Registerkarten. Jede Kachel ist farbig markiert, sobald für ihren Baustein Daten vorliegen; ''Weiter'' und ''Zurück'' am unteren Rand sind nur eine Bequemlichkeit, keine Pflichtreihenfolge.
 
 == Siehe auch ==

@@ -1,4 +1,4 @@
-Der Dialog '''Katalog-Dublettensuche''' durchsucht die Stammkataloge nach doppelten Sätzen – nach gleichem Namen und nach gleichem Inhalt. Er stellt die Treffer gegenüber, bereinigt reine Leerkopien auf Wunsch selbst und hält jeden Schritt in einem Protokoll fest. Auslieferungssätze bleiben dabei unangetastet.
+Der Dialog '''Katalog-Dublettensuche''' durchsucht die Stammkataloge nach doppelten Sätzen – nach gleichem Namen und nach gleichem Inhalt. Er stellt die Treffer gegenüber, bereinigt reine Leerkopien auf Wunsch selbst und hält jeden Schritt in einem Protokoll fest. Auslieferungssätze bleiben dabei unangetastet. Er steht unter {{Menü|Administration|Daten & Import|Katalog-Dubletten prüfen…}}.
 
 == Eingaben ==
 
@@ -9,9 +9,15 @@ Der Dialog '''Katalog-Dublettensuche''' durchsucht die Stammkataloge nach doppel
 * '''Satz löschen…''' und '''Satz umbenennen…''' – für die Handentscheidung. Vor dem Löschen prüft das Programm, ob der Satz verwendet wird, und fragt zweimal nach; Auslieferungssätze lassen sich weder löschen noch umbenennen.
 * '''Protokoll speichern…''' – schreibt das Sitzungsprotokoll als Textdatei; ohne Einträge geschieht nichts.
 
+== Katalog aktualisieren ==
+{{Anker|katalog-aktualisieren}}
+
+Jede Programmfassung bringt ein Katalogpaket mit; beim ersten Start gleicht EPOS-Plan die Kataloge damit ab – neue Sätze kommen hinzu, unveränderte Auslieferungssätze werden aktualisiert, eigene Anpassungen bleiben. {{Menü|Administration|Daten & Import|Katalog aktualisieren…}} zeigt die Fassungen, ''Nur prüfen'' listet, was ein Abgleich täte, ''Abgleichen…'' gleicht nach Rückfrage und Sicherung ab. Einzelheiten unter [[Programm Dokumentation/Gerätekataloge#katalog-aktualisieren|Gerätekataloge: Katalog aktualisieren]].
+
 == Siehe auch ==
 
 * [[Stammdaten und Datenimport]] – Aufbau der Kataloge und Schreibschutz der werksseitigen Datensätze
 * [[Erzeuger und Speicher auswählen]] – die Kataloge, aus denen im Projekt ausgewählt wird
+* [[Programm Dokumentation/Gerätekataloge#dubletten|Gerätekataloge: Dubletten]] – die Dublettensuche im Zusammenhang der Verwaltungen, Schreibschutz und Löschen
 
 [[Kategorie:Programm Dokumentation]]

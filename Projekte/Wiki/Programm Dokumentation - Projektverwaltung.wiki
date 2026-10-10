@@ -1,4 +1,4 @@
-Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen. Fünf Dialoge teilen sich diese Seite: die Projektliste hinter {{Menü|Projekte|Öffnen}}, ''Projekt Speichern unter'' für die Kopie unter neuem Namen, das Detailformular ''Konfiguration Projekt'', der Austauschdialog ''Projekt exportieren / importieren'' und dessen Konfliktliste.
+Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen. Fünf Dialoge teilen sich diese Seite: die Projektliste hinter {{Menü|Projekt|Öffnen…}}, ''Projekt Speichern unter'' für die Kopie unter neuem Namen, das Detailformular ''Konfiguration Projekt'', der Austauschdialog ''Projekt exportieren / importieren'' und dessen Konfliktliste.
 
 == Eingaben ==
 
@@ -15,11 +15,13 @@ Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen. Fünf Dia
 
 Der Austauschdialog schreibt einzelne Projekte als Paketdatei mit der Endung ''.wpx'' und liest sie wieder ein – auch in eine andere Datenbank, etwa auf einem zweiten Rechner.
 
-* '''Exportieren''' – wählt ein Projekt und legt es als ''.wpx''-Paket ab; vorhandene Varianten des Projekts lassen sich einzeln mitexportieren.
-* '''Importieren''' – wählt ein Projekt ''Datei''  als .wpx-Paket. Nach ''wählen…'' zeigt der Dialog die Paketvorschau: Quellprojekt, Exportdatum, Schema-Version und die enthaltenen Varianten.
+* '''Exportieren''' – die Projektliste führt alle Projekte mit Kästchen und Suchfeld; mehrere lassen sich auf einmal ausgeben. Eine gewählte Variante nimmt ihr Stammprojekt mit, je Stammgruppe entsteht eine Datei (''Stammname.wpx''); die Varianten einer Gruppe lassen sich einzeln abwählen.
+* '''Importieren''' – ''Dateien wählen…'' nimmt ein oder mehrere Pakete an. Je Datei zeigt der Dialog Dateiname, Hauptprojekt, Varianten und Schemastand; eingelesen wird in der Reihenfolge Stammprojekte zuerst, ihre Varianten dahinter. Ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben, ein Paket eines neueren Programmstands wird benannt abgelehnt.
 * '''Zielname''' – bleibt das Feld leer, gilt der Projektname aus der Datei; ein eigener Name legt das Projekt darunter an.
 * '''Falls der Name bereits existiert''' – wahlweise unter neuem Namen importieren, das vorhandene Projekt überschreiben oder abbrechen.
 * '''Sicherungskopie''' – auf Wunsch legt der Import vorab eine Sicherung der gesamten Datenbank an; der Dateiname wird nach dem Import angezeigt.
+
+Die Dialoge im Einzelnen beschreibt [[Programm Dokumentation/Projekttransfer|Projekttransfer]].
 
 == Konfliktliste ==
 {{Anker|konfliktliste|importkonflikte}}
@@ -35,5 +37,6 @@ Bringt das Paket Datensätze mit, die in der Zieldatenbank bereits vorhanden sei
 
 * [[Projektverwaltung]] – Projektdatenbank, Anlage, Öffnen, Löschen und projekteigene Kopien
 * [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]] – der Projektassistent und die Karten der Registerkarte ''Projekt''
+* [[Programm Dokumentation/Projekttransfer|Projekttransfer]] – Export und Import mehrerer Projekte, Varianten und Schemastände
 
 [[Kategorie:Programm Dokumentation]]
