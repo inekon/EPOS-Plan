@@ -39,6 +39,8 @@ namespace EPOS.Kern.Tests
         private const int WP_REFERENZ_KAELTEMASCHINE = 1672051;
         // Die Wärmepumpe des Referenzprojekts Kältemaschine Teillast 1063 (KM3, Kopie von 1055): heizt nur, Kühlwerte wie 1055.
         private const int WP_REFERENZ_KM_TEILLAST = 1672059;
+        // Die Wärmepumpe des Referenzprojekts Freie Kühlung 1064 (Kopie von 1017): Kühlbetrieb wie 1017.
+        private const int WP_REFERENZ_FREI = 1672060;
 
         /// <summary>Die Kopie von 1047 im Referenzprojekt des Fahrplans 1056 (AK2-4): Kühlbetrieb wie 1047.</summary>
         private const int WP_REFERENZ_FAHRPLAN = 1672052;
@@ -186,7 +188,8 @@ namespace EPOS.Kern.Tests
                           WP_REFERENZ_AK3.ToString(CultureInfo.InvariantCulture) + ", " +
                           WP_REFERENZ_KK.ToString(CultureInfo.InvariantCulture) + ", " +
                           WP_REFERENZ_KKZ.ToString(CultureInfo.InvariantCulture) + ", " +
-                          WP_REFERENZ_UG.ToString(CultureInfo.InvariantCulture);
+                          WP_REFERENZ_UG.ToString(CultureInfo.InvariantCulture) + ", " +
+                          WP_REFERENZ_FREI.ToString(CultureInfo.InvariantCulture);
             foreach (string t in new[] { "Tab_WP", "Tab_WP_STAMM" })
             {
                 Assert.True(Zahl("SELECT COUNT(*) FROM [" + t + "]") > 0);
@@ -197,7 +200,7 @@ namespace EPOS.Kern.Tests
                                       WP_REFERENZ_AK3K.ToString(CultureInfo.InvariantCulture) + ", " +
                                       WP_REFERENZ_KM_TEILLAST.ToString(CultureInfo.InvariantCulture) + ")"));
             }
-            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG, WP_REFERENZ_FAHRPLAN, WP_REFERENZ_AK3 })
+            foreach (int wp in new[] { WP_KOPIE, WP_REFERENZ_KOPPLUNG, WP_REFERENZ_FAHRPLAN, WP_REFERENZ_AK3, WP_REFERENZ_FREI })
                 Assert.Equal("1|18|0.05", Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Zahl("SELECT Kuehl_Vorlauf FROM Tab_WP WHERE ID = " + wp.ToString(CultureInfo.InvariantCulture)) +
                                           "|" + Convert.ToString(DataRepository.ExecuteScalar(
