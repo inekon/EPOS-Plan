@@ -19004,6 +19004,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}_Projekt_{1}.csv ähnelt.
+        /// </summary>
+        public static string CHART_DATEI_GANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_DATEI_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel_Projekt_{0}.csv ähnelt.
         /// </summary>
         public static string CHART_DATEI_HEIZKESSEL {
@@ -20125,6 +20134,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_WARMWASSER {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV… ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_CSV {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresganglinie als CSV speichern ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_TIP_CSV {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_TIP_CSV", resourceCulture);
             }
         }
         

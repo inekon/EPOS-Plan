@@ -50811,5 +50811,14 @@ chart</value>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Per chiller with part-load calculation the cycling electricity, starts, part-load share, mean part-load ratio and seasonal EER without auxiliary power as “column name=value”; empty without such a chiller.</value>
   </data>
+  <data name="CHART_DATEI_GANGLINIE" xml:space="preserve">
+    <value>{0}_Project_{1}.csv</value>
+  </data>
+  <data name="DIAGRAMM_BTN_CSV" xml:space="preserve">
+    <value>CSV…</value>
+  </data>
+  <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
+    <value>Save annual load curve as CSV</value>
+  </data>
 </root>
 

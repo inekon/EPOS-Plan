@@ -50818,5 +50818,14 @@ Chart</value>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom als „Spaltenname=Wert“; leer ohne solche Maschine.</value>
   </data>
+  <data name="CHART_DATEI_GANGLINIE" xml:space="preserve">
+    <value>{0}_Projekt_{1}.csv</value>
+  </data>
+  <data name="DIAGRAMM_BTN_CSV" xml:space="preserve">
+    <value>CSV…</value>
+  </data>
+  <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
+    <value>Jahresganglinie als CSV speichern</value>
+  </data>
 </root>
 

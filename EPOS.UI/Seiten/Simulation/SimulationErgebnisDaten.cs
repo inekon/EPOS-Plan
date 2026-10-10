@@ -1226,6 +1226,13 @@ public sealed class SimulationErgebnisDienste
     /// der Grenze der Zahl in der Kopfzeile; ohne Delegat kein Knopf.
     /// </summary>
     public Action? CsvKaelte;
+
+    /// <summary>
+    /// <b>CSV am Diagramm</b> für jedes Bild ohne eigenen Export: die Hülle schreibt die Reihen des
+    /// Zeichenmodells (Name, Einheit, Werte) mit dem Diagrammtitel als Dateistamm. Die Seite reicht
+    /// ihn als <c>Ganglinienexport</c> an alle Diagramme der Reiter; ohne Delegat kein Knopf.
+    /// </summary>
+    public Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, System.Threading.Tasks.Task>? CsvGanglinie;
     public Action? CsvWaermepumpe;
     public Action? CsvHeizkessel;
     public Action? CsvSpeicher;

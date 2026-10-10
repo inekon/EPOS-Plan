@@ -82,9 +82,22 @@ namespace WindowsFormsApplication1
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.CHART_DATEI_KAELTEBEDARF, m_ID_Projekt),
                 _waermebedarf.Stundentemperatur,
-                new List<CsvSpalte> { new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST, k.KaeltebedarfKwh) },
+                SimulationErgebnisCtrl.KaelteCsvSpalten(k),
                 false,
                 KaelteKopfzeilen(k));
+        }
+
+        /// <summary>
+        /// <b>CSV am Diagramm</b> für jedes Bild ohne eigenen Export: die Reihen, die das Diagramm
+        /// zeigt (<see cref="ZeitreihenCsv.AusModell"/>), das Raster aus ihrer Länge, der Dateiname
+        /// aus dem Diagrammtitel nach dem Muster <c>…_Projekt_{n}.csv</c>.
+        /// </summary>
+        private Task CsvGanglinie(WindowsFormsApplication1.Zeichnung.Zeichenmodell modell, string titel)
+        {
+            IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(modell);
+            return CsvExportClass.ExportZeitreihen(
+                string.Format(MyResource.Resource.CHART_DATEI_GANGLINIE, ZeitreihenCsv.Dateistamm(titel), m_ID_Projekt),
+                ZeitreihenCsv.RasterAus(spalten), spalten);
         }
 
         /// <summary>

@@ -403,6 +403,7 @@ namespace WindowsFormsApplication1
 
                 CsvBedarf = CsvBedarf,
                 CsvKaelte = CsvKaelte,
+                CsvGanglinie = CsvGanglinie,
                 CsvWaermepumpe = CsvWaermepumpe,
                 CsvHeizkessel = CsvHeizkessel,
                 CsvSpeicher = CsvSpeicher,

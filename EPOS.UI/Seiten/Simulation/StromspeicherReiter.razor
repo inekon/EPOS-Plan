@@ -200,7 +200,7 @@
                    in der Vollansicht liegen rund 40 Viertelstunden auf einem
                    Bildpunkt — erst der Ausschnitt zeigt einen einzelnen Zyklus.
                    Der LADEZUSTAND steht auf der zweiten Achse in kWh. *@
-                <DiagrammSvg Modell="@ModellBetrieb" Kennung="simerg-speicherbetrieb"
+                <DiagrammSvg Modell="@ModellBetrieb" Kennung="simerg-speicherbetrieb" CsvExport="Csv"
                              Bezeichnung="@Resource.SP_CHART_TITEL_BETRIEB"
                              Einheit="kW" EinheitRechts="kWh"
                              Palette="@Farbpalette.Aktuell"
@@ -212,11 +212,6 @@
                              VorlagenfeldHinweis="@Resource.VF_ORT_SPEICHERVERLAUF" />
 
                 <div class="epos-simerg-schalter">
-                    @if (Csv.HasDelegate)
-                    {
-                        <button type="button" class="epos-simerg-knopf" @onclick="Csv"
-                                title="@Resource.SP_TOOLTIP_CSV">@Resource.SIM_BTN_CSV_EXPORT</button>
-                    }
                     @* Vergleichen laesst sich erst ab zwei Varianten (Fachkonzept 7.3):
                        Bei einer einzigen zeigte die Maske dieselben Zahlen, die eine
                        Handbreit weiter links bereits stehen. *@

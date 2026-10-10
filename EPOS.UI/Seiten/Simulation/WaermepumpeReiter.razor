@@ -265,7 +265,7 @@
                            eigenen Ausschnitt — sie stehen auf drei Unterblaettern
                            und zeigen verschiedene Groessen, und jedes traegt seine
                            eigene clipPath-Kennung. *@
-                        <DiagrammSvg Modell="@ModellProduktion" Kennung="simerg-wp-produktion"
+                        <DiagrammSvg Modell="@ModellProduktion" Kennung="simerg-wp-produktion" CsvExport="Csv"
                                      Vorlagenfeld="stand.bild.waermepumpe" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                                      Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
@@ -279,7 +279,7 @@
 
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
-                        <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom"
+                        <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom" CsvExport="Csv"
                                      Vorlagenfeld="stand.bild.waermepumpe_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                                      Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
@@ -374,12 +374,6 @@
             </section>
 
         </div>
-
-        @if (Csv.HasDelegate)
-        {
-            <button type="button" class="epos-simerg-knopf" @onclick="Csv"
-                    title="@Resource.SIM_TOOLTIP_CSV_WAERMEPUMPE">@Resource.SIM_BTN_CSV_EXPORT</button>
-        }
     }
 
 </div>

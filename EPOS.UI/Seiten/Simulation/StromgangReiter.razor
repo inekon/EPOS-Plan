@@ -45,7 +45,7 @@
        auf 1 100 Bildpunkten ist er der einzige Weg zu einer einzelnen Stunde —
        dreissig Werte je Bildpunkt kann kein Bildzoom aufloesen. Ab dem Vierfachen
        rechnet der Baustein den Ausschnitt roh nach (DG-E3-3). *@
-    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-stromgang"
+    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-stromgang" CsvExport="@(Csv.HasDelegate ? EventCallback.Factory.Create(this, CsvGewuenscht) : default)"
                  Vorlagenfeld="stand.bild.strombilanz_monate" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                  VorlagenfeldHinweis="@Resource.VF_ORT_STROMGANG"
                  Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE"
@@ -54,13 +54,6 @@
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
                  FarbeZurueckgesetzt="FarbeVerwerfen" />
-
-    @if (Csv.HasDelegate)
-    {
-        <button type="button" class="epos-simerg-knopf" @onclick="CsvGewuenscht">
-            @Resource.SIM_BTN_CSV_EXPORT
-        </button>
-    }
 
 </div>
 

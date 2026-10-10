@@ -92,7 +92,7 @@
        die Tasten + − 0 verschieben die viewBox der Zeichenflaeche; „1:1" holt das
        ganze Jahr zurueck. Die SPEICHERFUELLSTAENDE stehen auf der zweiten Achse in
        kWh, alles andere in kW. *@
-    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-waermegang"
+    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-waermegang" CsvExport="@(Csv.HasDelegate ? EventCallback.Factory.Create(this, CsvGewuenscht) : default)"
                  Vorlagenfeld="stand.bild.waerme_jahresverlauf" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                  VorlagenfeldHinweis="@Resource.VF_ORT_WAERMEGANG"
                  Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
@@ -101,13 +101,6 @@
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
                  FarbeZurueckgesetzt="FarbeVerwerfen" />
-
-    @if (Csv.HasDelegate)
-    {
-        <button type="button" class="epos-simerg-knopf" @onclick="CsvGewuenscht">
-            @Resource.SIM_BTN_CSV_EXPORT
-        </button>
-    }
 
 </div>
 
