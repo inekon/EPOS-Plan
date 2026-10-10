@@ -73,6 +73,9 @@ namespace KiKern
             var fehler = new List<string>();
             var werte = new Dictionary<string, object>(StringComparer.Ordinal);
 
+            // 0. Feste Ausweichnamen auf den deklarierten Namen legen (mask -> maske).
+            rohwerte = MitAusweichnamen(aktion, rohwerte);
+
             // 1. Unbekannte Parameter melden - nicht stillschweigend verwerfen.
             if (rohwerte != null)
             {
@@ -104,6 +107,74 @@ namespace KiKern
 
             if (fehler.Count > 0) return new KiPruefErgebnis(null, fehler);
             return new KiPruefErgebnis(new KiAufruf(aktion, werte), Array.Empty<string>());
+        }
+
+        // ================================================================ Ausweichnamen
+
+        /// <summary>
+        /// Feste Tafel der Ausweichnamen: was ein Modell erfahrungsgemaess statt des
+        /// deklarierten Parameternamens schreibt (englisch, Synonym) - Schluessel ist der
+        /// Ausweichname, Wert der deklarierte Name. Nur die Namen der Dialogaktionen
+        /// (<c>maske</c>, <c>feld</c>, <c>wert</c>, <c>werte</c>, <c>ab</c>, <c>knopf</c>).
+        /// </summary>
+        /// <remarks>
+        /// Anlass: Anwendermeldung 10.10.2026 - <c>formular_ausfuellen</c> mit
+        /// <c>mask</c> statt <c>maske</c> kostete eine Runde und eine rote Absage. Die
+        /// Tafel ist bewusst klein und fest; ein unbekannter Name, der hier nicht steht,
+        /// bleibt benannt abgelehnt.
+        /// </remarks>
+        internal static readonly IReadOnlyDictionary<string, string> Ausweichnamen =
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["mask"] = "maske",
+                ["form"] = "maske",
+                ["formular"] = "maske",
+                ["dialog"] = "maske",
+                ["field"] = "feld",
+                ["value"] = "wert",
+                ["values"] = "werte",
+                ["fields"] = "werte",
+                ["start"] = "ab",
+                ["from"] = "ab",
+                ["button"] = "knopf",
+            };
+
+        /// <summary>
+        /// Legt Ausweichnamen auf den deklarierten Namen - nur wenn die Aktion den
+        /// Ausweichnamen NICHT selbst deklariert und den Zielnamen DOCH. Steht der
+        /// Zielname schon (nicht leer) im Aufruf, gewinnt er, und der Ausweichname
+        /// faellt weg; zwei Ausweichnamen fuer dasselbe Ziel: der erste gewinnt.
+        /// </summary>
+        private static IReadOnlyDictionary<string, object?>? MitAusweichnamen(
+            KiAktion aktion, IReadOnlyDictionary<string, object?>? rohwerte)
+        {
+            if (rohwerte == null) return null;
+
+            bool betroffen = false;
+            foreach (string name in rohwerte.Keys)
+                if (Ziel(aktion, name) != null) { betroffen = true; break; }
+            if (!betroffen) return rohwerte;
+
+            var ergebnis = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, object?> e in rohwerte)
+                if (Ziel(aktion, e.Key) == null) ergebnis[e.Key] = e.Value;
+
+            foreach (KeyValuePair<string, object?> e in rohwerte)
+            {
+                string? ziel = Ziel(aktion, e.Key);
+                if (ziel == null) continue;
+                if (ergebnis.TryGetValue(ziel, out object? schon) && !IstLeer(schon)) continue;
+                ergebnis[ziel] = e.Value;
+            }
+            return ergebnis;
+        }
+
+        /// <summary>Der deklarierte Zielname eines Ausweichnamens fuer diese Aktion, sonst <c>null</c>.</summary>
+        private static string? Ziel(KiAktion aktion, string name)
+        {
+            if (aktion.Finde(name) != null) return null;
+            if (!Ausweichnamen.TryGetValue(name, out string? ziel)) return null;
+            return aktion.Finde(ziel) != null ? ziel : null;
         }
 
         /// <summary>

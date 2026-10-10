@@ -172,12 +172,17 @@ namespace EPOS.Kern.Tests
         [Fact]
         public async Task Ohne_Aenderung_gibt_es_nichts_zu_bestaetigen()
         {
-            new Pruefdialog(KiMaskennamen.TYPSTAMM, "monatswerte", vorbelegung: 5.0);
+            var dialog = new Pruefdialog(KiMaskennamen.TYPSTAMM, "monatswerte", vorbelegung: 5.0);
 
             KiErgebnis ergebnis = await Mit("reihe_setzen",
                                             Aufruf(KiMaskennamen.TYPSTAMM, "monatswerte", new[] { 5.0 }, ab: 7));
 
-            Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+            // Nichts zu aendern ist ein Erfolg „unveraendert", keine Absage
+            // (Anwendermeldung 10.10.2026).
+            Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+            Assert.True(ergebnis.Unveraendert);
+            Assert.Equal(0, ergebnis.Anzahl);
+            Assert.All(dialog.Werte, w => Assert.Equal(5.0, w));
         }
 
         [Fact]

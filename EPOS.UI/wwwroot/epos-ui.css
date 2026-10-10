@@ -519,6 +519,65 @@ body {
     background: rgba(0, 0, 0, 0.06);
 }
 
+/* DIE HINWEISLISTE (Anwenderbefund 10.10.2026: die Hinweise eines Simulationslaufs
+   deckten als ein Absatz die ganze Seite). Zugeklappt EINE Zeile: Kopftext, die Zahl
+   der Hinweise und der Klapper; aufgeklappt steht die Liste unter der Zeile (der
+   Umbruch des Flexkastens) in einem Rollbereich von hoechstens 40 % der Fensterhoehe -
+   sie rollt innen, das Banner selbst bleibt, wo es steht (auch haftend im eigenen
+   Fenster). Der Kopftext waechst hier nicht, die Zahl nimmt den Platz bis zum Klapper. */
+.epos-warnbanner--liste {
+    flex-wrap: wrap;
+}
+
+.epos-warnbanner--liste > .epos-warnbanner-text {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.epos-warnbanner-zahl {
+    flex: 1 1 auto;
+    white-space: nowrap;
+}
+
+/* Der Klapper: ein Knopf in der Anmutung von „erklaeren lassen", das
+   Beruehrungsziel haelt --epos-touchziel, der negative Rand nimmt ihm die Hoehe in
+   der Zeile (wie das Kreuz). */
+.epos-warnbanner-klapper {
+    flex: 0 0 auto;
+    align-self: center;
+    min-height: var(--epos-touchziel);
+    margin-block: -12px;
+    padding: 0 6px;
+    font: inherit;
+    color: inherit;
+    white-space: nowrap;
+    background: transparent;
+    border: none;
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-warnbanner-klapper:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.epos-warnbanner-chevron {
+    font-weight: 700;
+}
+
+.epos-warnbanner-liste {
+    flex: 1 0 100%;
+    max-height: 40vh;
+    margin: 0;
+    padding: 4px 0 0 2em;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.epos-warnbanner-liste > li + li {
+    margin-top: 2px;
+}
+
 /* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
 .epos-warnbanner--hinweis {
     border-color: var(--epos-karte-rahmen-hover);

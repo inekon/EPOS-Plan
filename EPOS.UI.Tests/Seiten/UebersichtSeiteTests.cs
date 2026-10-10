@@ -885,6 +885,34 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal(2, _geladen);
     }
 
+    /// <summary>
+    /// Kopf und Hinweise des Laufs stehen GETRENNT im Banner (Anwenderbefund
+    /// 10.10.2026): zugeklappt eine Zeile mit der Zahl, die Hinweise erst im Klapper.
+    /// </summary>
+    [Fact]
+    public void Die_Simulation_uebergibt_Kopf_und_Hinweise_getrennt()
+    {
+        var hinweise = new[] { "Kessel ohne Kennlinie", "Puffer leer", "Erdsonde knapp" };
+        var cut = Zeige(p => p.Add(x => x.Simulation, (Action<Laufschritt> m) =>
+            Task.FromResult(new LaufErgebnis
+            {
+                Erfolg = true,
+                Statuszeile = "1 Lauf/Läufe beendet.",
+                Meldung = "Stamm: Haus: ok (Ergebnis-ID 357)\r\n    • Kessel ohne Kennlinie",
+                Meldungskopf = "Stamm: Haus: ok (Ergebnis-ID 357)",
+                Laufhinweise = hinweise
+            })));
+
+        Simulierknopf(cut).Click();
+
+        var banner = cut.FindComponent<EPOS.UI.Bausteine.Warnbanner>();
+        Assert.Equal("Stamm: Haus: ok (Ergebnis-ID 357)", banner.Instance.Text);
+        Assert.Equal(hinweise, banner.Instance.Hinweise);
+        Assert.False(banner.Instance.IstOffen);
+        Assert.Equal("· 3 Hinweise", cut.Find(".epos-warnbanner-zahl").TextContent);
+        Assert.DoesNotContain("Puffer leer", cut.Find(".epos-warnbanner").TextContent);
+    }
+
     // =====================================================================
     // Übernahme
     // =====================================================================

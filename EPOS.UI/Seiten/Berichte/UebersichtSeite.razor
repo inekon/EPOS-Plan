@@ -64,7 +64,9 @@
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
-        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+        @* Kopf (Statuszeile je Lauf) und Hinweise getrennt: zugeklappt EINE Zeile mit
+           der Zahl, aufgeklappt die Liste im Rollbereich (Anwenderbefund 10.10.2026). *@
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" Hinweise="@_hinweise" />
     }
 
     @* ------------------------------------------------ Stamm und Filter *@
@@ -423,6 +425,7 @@
     private string _bezeichner = "";
     private string _status = "";
     private string _meldung = "";
+    private IReadOnlyList<string> _hinweise = Array.Empty<string>();
     private bool _laeuft;
 
     private IReadOnlyDictionary<string, object>? _gaben;
@@ -812,6 +815,7 @@
 
         _laeuft = true;
         _meldung = "";
+        _hinweise = Array.Empty<string>();
         StateHasChanged();
         try
         {
@@ -823,7 +827,18 @@
 
             // Der Vorlaeufer zeigte das Protokoll als MessageBox; hier steht
             // es als Meldung im Fenster.
-            _meldung = erg.Meldung ?? "";
+            // Traegt der Lauf seinen Kopf gesondert, steht er im Banner und die
+            // Hinweise im Klapper; sonst die Meldung wie bisher.
+            if (!string.IsNullOrEmpty(erg.Meldungskopf))
+            {
+                _meldung = erg.Meldungskopf;
+                _hinweise = erg.Laufhinweise ?? Array.Empty<string>();
+            }
+            else
+            {
+                _meldung = erg.Meldung ?? "";
+                _hinweise = Array.Empty<string>();
+            }
             if (!string.IsNullOrEmpty(erg.Statuszeile)) _status = erg.Statuszeile;
         }
         finally

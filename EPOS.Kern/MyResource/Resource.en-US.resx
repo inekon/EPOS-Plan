@@ -9549,7 +9549,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>The field “{0}” is named more than once.</value>
   </data>
   <data name="KI_DLG_OHNE_AENDERUNG" xml:space="preserve">
-    <value>In “{0}” all named fields already carry the value; there is nothing to change.</value>
+    <value>In “{0}” the fields already hold the requested values: {1}. No change needed.</value>
   </data>
   <data name="KI_DLG_GELESEN" xml:space="preserve">
     <value>“{0}”: {1} controllable fields, {2} releasable buttons.</value>
@@ -9567,7 +9567,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>“{0}”: {1} of {2} values set ({3} to {4}).</value>
   </data>
   <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
-    <value>“{0}” already carries these values; there is nothing to change.</value>
+    <value>In “{1}”, “{0}” already holds these values. No change needed.</value>
   </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>The button “{0}” in “{1}” has been released.</value>
@@ -47977,6 +47977,18 @@ chart</value>
   <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
     <value>Hide message</value>
   </data>
+  <data name="WARNBANNER_HINWEISE_ANZEIGEN" xml:space="preserve">
+    <value>Show notes</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_AUSBLENDEN" xml:space="preserve">
+    <value>Hide notes</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes</value>
+  </data>
   <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
     <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created once the wizard has finished.</value>
   </data>
@@ -51440,6 +51452,15 @@ chart</value>
   </data>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
+  </data>
+  <data name="KI_DLG_FELD_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In “{0}”, “{1}” already holds the value {2}. No change needed.</value>
+  </data>
+  <data name="KI_DLG_FELDER_BEREITS" xml:space="preserve">
+    <value>Already held the value: {0}.</value>
+  </data>
+  <data name="KI_AKT_UNVERAENDERT" xml:space="preserve">
+    <value>Unchanged: {0} — {1}</value>
   </data>
   <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
     <value>The file “{0}” is not a text file (binary content) – probably an Excel, ZIP or image file with the wrong extension.</value>
