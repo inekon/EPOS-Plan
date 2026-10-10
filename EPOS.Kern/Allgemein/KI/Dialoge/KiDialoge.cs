@@ -586,6 +586,9 @@ namespace WindowsFormsApplication1
         /// <summary>Das Dublettenwerkzeug der Kataloge (<c>KatalogDublettenDialog</c>).</summary>
         public const string KATALOG_DUBLETTEN = "Form_KatalogDubletten";
 
+        /// <summary>Die Kopfeingaben des Gebäudeimports (<c>GebaeudeImportDialog</c>).</summary>
+        public const string GEBAEUDE_IMPORT = "Form_GebaeudeImport";
+
         /// <summary>
         /// Stammdatenverwaltung der Stromganglinien (<c>StromganglinieAdminDialog</c>).
         /// </summary>
@@ -898,6 +901,7 @@ namespace WindowsFormsApplication1
                 ProjektTransfer(),
                 ProjektBrennstoffe(),
                 KatalogDubletten(),
+                GebaeudeImport(),
                 StromganglinieAdmin(),
                 BerichteUebersicht(),
                 Berichtseite(),
@@ -2019,6 +2023,51 @@ namespace WindowsFormsApplication1
                 {
                     new KiDialogFeld("katalog", "KatalogDublettenKiSicht.Katalog", KiDialogTexte.DublKatalogName, KiParameterTyp.Wahl,
                                      KiDialogTexte.DublKatalogErl)
+                });
+        }
+
+        // =====================================================================
+        // Form_GebaeudeImport  ->  GebaeudeImportDialog  (Freigabe der Masken, Teil B, 10.10.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Gebaeudeimport — nur die KOPFEINGABEN (Einlesen und Zuordnung fuer das ganze Gebaeude) ueber die
+        /// Sichtklasse <c>EPOS.UI.Dialoge.Import.GebaeudeImportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Jede Wahl geht den Handweg (neu zuordnen, Zonenvorschlag oder Plan der Projektdatei neu bilden, Datei mit der
+        /// neuen Nordrichtung neu lesen); die Pruefung meldet, was gegen die Uebernahme steht. <b>Kein Speicherweg:</b>
+        /// „Uebernehmen" legt das Gebaeude sofort an und bleibt ein Klick des Anwenders. Draussen bleiben die Eingaben je
+        /// Zeile, Raum, Zone, Bauteil und Baustoff, die Mengenwahlen, die Filter der Listen und die Dateiwahl. Der
+        /// Sperrgrund sagt ab, solange der Schritt eines Feldes nicht vorn steht, und vor jedem Wechsel, vor dem der Dialog
+        /// wegen Zuordnungen von Hand nachfragt. Das Blatt Nutzungsprofile (<c>np_*</c>) fuehrt die Maske des Wirts.
+        /// </remarks>
+        private static KiDialog GebaeudeImport()
+        {
+            const string SICHT = "GebaeudeImportKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_IMPORT,
+                anzeigename: KiDialogTexte.MaskeGebaeudeImport,
+                felder: new[]
+                {
+                    new KiDialogFeld("baualtersklasse", SICHT + "Baualtersklasse", KiDialogTexte.GimpKlasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpKlasseErl, leerErlaubt: true),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.GimpQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("gebaeude", SICHT + "Gebaeude", KiDialogTexte.GimpGebaeudeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpGebaeudeErl),
+                    new KiDialogFeld("name", SICHT + "Name", KiDialogTexte.GimpNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.GimpNameErl),
+                    new KiDialogFeld("cad_sollwert", SICHT + "CadSollwert", KiDialogTexte.GimpCadSollwertName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GimpCadSollwertErl),
+                    new KiDialogFeld("nordrichtung", SICHT + "Nordrichtung", KiDialogTexte.GimpNordrichtungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GimpNordrichtungErl, einheit: "°", min: 0.0, max: 360.0),
+                    new KiDialogFeld("zonenregel", SICHT + "Zonenregel", KiDialogTexte.GimpZonenregelName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpZonenregelErl),
+                    new KiDialogFeld("zonierung", SICHT + "Zonierung", KiDialogTexte.GimpZonierungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpZonierungErl),
+                    new KiDialogFeld("als_zone", SICHT + "AlsZone", KiDialogTexte.GimpAlsZoneName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GimpAlsZoneErl)
                 });
         }
 

@@ -3149,6 +3149,27 @@
         internal static string PtrSicherungName => MyResource.Resource.PTR_CHK_SICHERUNG;
         internal static string PtrSicherungErl => MyResource.Resource.KI_DLG_PTR_SICHERUNG_ERL;
 
+        // Gebaeudeimport, Kopfeingaben (Freigabe der Masken, Teil B): die Namen sind die Beschriftungen der Maske.
+        internal static string MaskeGebaeudeImport => MyResource.Resource.KI_DLG_MASKE_GIMP;
+        internal static string GimpKlasseName => OhneDoppelpunkt(MyResource.Resource.GIMP_FELD_BAUALTERSKLASSE);
+        internal static string GimpKlasseErl => MyResource.Resource.KI_DLG_GIMP_KLASSE_ERL;
+        internal static string GimpQuelleName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_QUELLWAHL);
+        internal static string GimpQuelleErl => MyResource.Resource.KI_DLG_GIMP_QUELLE_ERL;
+        internal static string GimpGebaeudeName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_GEBAEUDE);
+        internal static string GimpGebaeudeErl => MyResource.Resource.KI_DLG_GIMP_GEBAEUDE_ERL;
+        internal static string GimpNameName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_NAME);
+        internal static string GimpNameErl => MyResource.Resource.KI_DLG_GIMP_NAME_ERL;
+        internal static string GimpCadSollwertName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_CAD_SOLLWERT);
+        internal static string GimpCadSollwertErl => MyResource.Resource.KI_DLG_GIMP_CADSOLLWERT_ERL;
+        internal static string GimpNordrichtungName => OhneDoppelpunkt(MyResource.Resource.GEB_AUSRICHTUNG_NORDRICHTUNG);
+        internal static string GimpNordrichtungErl => MyResource.Resource.KI_DLG_GIMP_NORDRICHTUNG_ERL;
+        internal static string GimpZonenregelName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_KOPF_ZONENREGEL);
+        internal static string GimpZonenregelErl => MyResource.Resource.KI_DLG_GIMP_ZONENREGEL_ERL;
+        internal static string GimpZonierungName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_SQ_ZONIERUNG);
+        internal static string GimpZonierungErl => MyResource.Resource.KI_DLG_GIMP_ZONIERUNG_ERL;
+        internal static string GimpAlsZoneName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_ALS_ZONE);
+        internal static string GimpAlsZoneErl => MyResource.Resource.KI_DLG_GIMP_ALSZONE_ERL;
+
         // Die zehn Werte tragen die Spaltenkoepfe der Maske als Namen (mit Einheit) und eine
         // gemeinsame Erlaeuterung: Sie gelten erst mit „Speichern" der Bearbeitung.
         internal static string MaskeProjektBrennstoffe => MyResource.Resource.KI_DLG_MASKE_PBRS;

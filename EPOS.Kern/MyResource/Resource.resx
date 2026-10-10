@@ -51112,5 +51112,65 @@ Chart</value>
   <data name="KI_DLG_SPA_ANZEIGE_ERL" xml:space="preserve">
     <value>Die Schalter der Ergebnisansichten nach einem Lauf — Reihen, sortiert, Zeitraum, Speicher, Einheit und die Stellen der zwei Schieber der Größenrechnung; je Option einer Wahl ein Schalter. Sie stellen nur das Bild ein.</value>
   </data>
+  <data name="KI_GIMP_LAEUFT" xml:space="preserve">
+    <value>Der Gebäudeimport liest oder übernimmt gerade; danach lassen sich die Felder wieder setzen.</value>
+  </data>
+  <data name="KI_GIMP_ERST_LESEN" xml:space="preserve">
+    <value>Dieses Feld gilt erst, wenn eine Gebäudedatei gelesen ist.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_QUELLWAHL" xml:space="preserve">
+    <value>Dieser Import führt keine Wahl der Quelle; das Format folgt der Endung der Datei.</value>
+  </data>
+  <data name="KI_GIMP_EIN_GEBAEUDE" xml:space="preserve">
+    <value>Die Datei trägt nur ein Gebäude; es gibt nichts zu wählen.</value>
+  </data>
+  <data name="KI_GIMP_KEIN_CADSOLLWERT" xml:space="preserve">
+    <value>Die Datei trägt keine Raumtemperaturen, die als Heizsollwert dienen könnten; der Schalter steht nicht zur Wahl.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_NORDRICHTUNG" xml:space="preserve">
+    <value>Die Nordrichtung lässt sich hier nicht ändern: Für diese Datei gibt es keinen Weg, sie mit einer anderen Richtung neu zu lesen.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_ZONENREGEL" xml:space="preserve">
+    <value>Die Datei trägt keine Zonierung; eine Zonenregel gibt es nicht.</value>
+  </data>
+  <data name="KI_GIMP_RUECKFRAGE" xml:space="preserve">
+    <value>Am Zonenplan bestehen Zuordnungen von Hand; vor diesem Wechsel fragt der Dialog nach, ob sie verworfen werden. Diese Wahl trifft der Anwender selbst im Dialog.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_ZONIERUNGSWAHL" xml:space="preserve">
+    <value>Die Wahl der Zonierung gibt es nur, wenn eine Projektdatei mit beiden Zonierungen geladen ist.</value>
+  </data>
+  <data name="KI_GIMP_KEIN_BAUTEILVORSCHLAG" xml:space="preserve">
+    <value>Für diese Datei lässt sich kein Bauteilvorschlag bilden.</value>
+  </data>
+  <data name="KI_DLG_MASKE_GIMP" xml:space="preserve">
+    <value>Gebäudeimport</value>
+  </data>
+  <data name="KI_DLG_GIMP_KLASSE_ERL" xml:space="preserve">
+    <value>Baualtersklasse des neuen Gebäudes. Ohne eigene Wahl gilt die Klasse aus dem Baujahr der Datei; eine eigene Wahl gilt davor und füllt die Werte, die die Datei nicht trägt. Danach ordnet der Dialog neu zu.</value>
+  </data>
+  <data name="KI_DLG_GIMP_QUELLE_ERL" xml:space="preserve">
+    <value>Format der Gebäudedatei, die als Nächstes gewählt wird; es setzt den Filter der Dateiwahl. Ohne Wahl gelten alle Formate, und die Quelle folgt der Endung der Datei.</value>
+  </data>
+  <data name="KI_DLG_GIMP_GEBAEUDE_ERL" xml:space="preserve">
+    <value>Das Gebäude der Datei, das übernommen wird, wenn die Datei mehrere trägt. Ein Wechsel beginnt die Zuordnung neu, ohne Übertrag der Änderungen von Hand.</value>
+  </data>
+  <data name="KI_DLG_GIMP_NAME_ERL" xml:space="preserve">
+    <value>Name, unter dem das neue Gebäude angelegt wird.</value>
+  </data>
+  <data name="KI_DLG_GIMP_CADSOLLWERT_ERL" xml:space="preserve">
+    <value>Übernimmt die Raumtemperatur der Datei als Heizsollwert statt der Normtemperatur. Nur, wenn beheizte Räume eine Raumtemperatur tragen und kein Norm-Sollwert vorliegt; danach ordnet der Dialog neu zu.</value>
+  </data>
+  <data name="KI_DLG_GIMP_NORDRICHTUNG_ERL" xml:space="preserve">
+    <value>Richtung der Planoberseite in Grad (0 bis 360). Der Dialog liest die Datei damit neu und ordnet neu zu; Gebäudewahl, Klasse und Änderungen von Hand bleiben.</value>
+  </data>
+  <data name="KI_DLG_GIMP_ZONENREGEL_ERL" xml:space="preserve">
+    <value>Regel, nach der die Zonen aus den Räumen der Datei gebildet werden. Ein Wechsel bildet den Zonenvorschlag neu; Raumhaken, Werte von Hand und Baustoffe bleiben.</value>
+  </data>
+  <data name="KI_DLG_GIMP_ZONIERUNG_ERL" xml:space="preserve">
+    <value>Zonierung der Projektdatei (DIN oder Simulation), wenn die Datei beide trägt. Trägt der Zonenplan die Zonen der Projektdatei, baut ein Wechsel ihn mit der anderen Zonierung neu auf.</value>
+  </data>
+  <data name="KI_DLG_GIMP_ALSZONE_ERL" xml:space="preserve">
+    <value>Übernimmt das Gebäude als Zone mit echten Bauteilen statt der Flächensummen. Nur, wenn sich der Bauteilvorschlag bilden lässt.</value>
+  </data>
 </root>
 

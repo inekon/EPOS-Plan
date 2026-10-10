@@ -379,6 +379,9 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.GEBAEUDE_ADMIN,   Masken.GebaeudeAdmin },
                 { KiMaskennamen.GEBAEUDE_KATALOG, Masken.GebaeudeAdmin },
                 { KiMaskennamen.GEBAEUDE,         STARTSEITE },
+                // Freigabe der Masken, Teil B: Der GEBAEUDEIMPORT geht als Ueberlagerung der
+                // Gebaeudemaske des Projekts auf (Knopf „Importieren…") - deshalb dasselbe Ziel.
+                { KiMaskennamen.GEBAEUDE_IMPORT,  STARTSEITE },
 
                 // Die Wohn-/Nutzflaechenangabe haengt an einer gewaehlten PROJEKTZEILE
                 // und geht ueber den Knopf „Aendern…" auf; kontextfrei gibt es sie

@@ -332,6 +332,10 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.KATALOG_DUBLETTEN,
           typeof(EPOS.UI.Dialoge.Admin.KatalogDublettenKiSicht) },
 
+        // Freigabe der Masken, Teil B (10.10.2026): die Kopfeingaben des Gebaeudeimports.
+        { KiMaskennamen.GEBAEUDE_IMPORT,
+          typeof(EPOS.UI.Dialoge.Import.GebaeudeImportKiSicht) },
+
         // Welle KI-F6, Schritt 2 (BERICHTE und PROJEKT): zwei Reiterblaetter der
         // Ansicht „Berichte und Kosten" und die zwei Projektmasken.
         { KiMaskennamen.BERICHTE_UEBERSICHT,
@@ -500,7 +504,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(101, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4
+        Assert.Equal(102, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1696,6 +1700,9 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.KATALOG_DUBLETTEN] =
             "bindet über die Sichtklasse KatalogDublettenKiSicht auf die private Katalogwahl; " +
             "Zeuge ist KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.GEBAEUDE_IMPORT] =
+            "bindet über die Sichtklasse GebaeudeImportKiSicht auf die privaten Kopfeingaben des " +
+            "Assistenten (neun Felder); Zeuge ist KiGebaeudeImportTests",
         [KiMaskennamen.STROMSPEICHER_AUSLEGUNG] =
             "bindet über die Sichtklasse StromspeicherKiSicht, nicht über das Markup",
         [KiMaskennamen.SIMULATION] =

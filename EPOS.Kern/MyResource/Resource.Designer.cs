@@ -58184,6 +58184,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimmt das Gebäude als Zone mit echten Bauteilen statt der Flächensummen. Nur, wenn sich der Bauteilvorschlag bilden lässt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_ALSZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_ALSZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimmt die Raumtemperatur der Datei als Heizsollwert statt der Normtemperatur. Nur, wenn beheizte Räume eine Raumtemperatur tragen und kein Norm-Sollwert vorliegt; danach ordnet der Dialog neu zu. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_CADSOLLWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_CADSOLLWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude der Datei, das übernommen wird, wenn die Datei mehrere trägt. Ein Wechsel beginnt die Zuordnung neu, ohne Übertrag der Änderungen von Hand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_GEBAEUDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_GEBAEUDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse des neuen Gebäudes. Ohne eigene Wahl gilt die Klasse aus dem Baujahr der Datei; eine eigene Wahl gilt davor und füllt die Werte, die die Datei nicht trägt. Danach ordnet der Dialog neu zu. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_KLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name, unter dem das neue Gebäude angelegt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtung der Planoberseite in Grad (0 bis 360). Der Dialog liest die Datei damit neu und ordnet neu zu; Gebäudewahl, Klasse und Änderungen von Hand bleiben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_NORDRICHTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_NORDRICHTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format der Gebäudedatei, die als Nächstes gewählt wird; es setzt den Filter der Dateiwahl. Ohne Wahl gelten alle Formate, und die Quelle folgt der Endung der Datei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel, nach der die Zonen aus den Räumen der Datei gebildet werden. Ein Wechsel bildet den Zonenvorschlag neu; Raumhaken, Werte von Hand und Baustoffe bleiben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_ZONENREGEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_ZONENREGEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung der Projektdatei (DIN oder Simulation), wenn die Datei beide trägt. Trägt der Zonenplan die Zonen der Projektdatei, baut ein Wechsel ihn mit der anderen Zonierung neu auf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_ZONIERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_ZONIERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Tabellenblatt einer Excel-Mappe, aus dem gelesen wird. ähnelt.
         /// </summary>
         public static string KI_DLG_GIO_BLATT_ERL {
@@ -60187,6 +60268,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_GEBW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_GEBW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeimport ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GIMP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GIMP", resourceCulture);
             }
         }
         
@@ -69772,6 +69862,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER {
             get {
                 return ResourceManager.GetString("KI_FRAGE_VF_PRUEF_WENN_OHNE_SCHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt nur ein Gebäude; es gibt nichts zu wählen. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_EIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KI_GIMP_EIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Feld gilt erst, wenn eine Gebäudedatei gelesen ist. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_ERST_LESEN {
+            get {
+                return ResourceManager.GetString("KI_GIMP_ERST_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nordrichtung lässt sich hier nicht ändern: Für diese Datei gibt es keinen Weg, sie mit einer anderen Richtung neu zu lesen. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_NORDRICHTUNG {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_NORDRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Import führt keine Wahl der Quelle; das Format folgt der Endung der Datei. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_QUELLWAHL {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_QUELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt keine Zonierung; eine Zonenregel gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wahl der Zonierung gibt es nur, wenn eine Projektdatei mit beiden Zonierungen geladen ist. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_ZONIERUNGSWAHL {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_ZONIERUNGSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Datei lässt sich kein Bauteilvorschlag bilden. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEIN_BAUTEILVORSCHLAG {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEIN_BAUTEILVORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt keine Raumtemperaturen, die als Heizsollwert dienen könnten; der Schalter steht nicht zur Wahl. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEIN_CADSOLLWERT {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEIN_CADSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudeimport liest oder übernimmt gerade; danach lassen sich die Felder wieder setzen. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_GIMP_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Am Zonenplan bestehen Zuordnungen von Hand; vor diesem Wechsel fragt der Dialog nach, ob sie verworfen werden. Diese Wahl trifft der Anwender selbst im Dialog. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("KI_GIMP_RUECKFRAGE", resourceCulture);
             }
         }
         
