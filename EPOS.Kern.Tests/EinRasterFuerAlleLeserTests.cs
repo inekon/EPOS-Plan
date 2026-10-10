@@ -167,6 +167,47 @@ namespace EPOS.Kern.Tests
             Assert.Equal(r, new Konditionierungsarbeitsstand(null, null).Kalender);
         }
 
+        /// <summary>Das Gebäude von 1051 (<c>Tab_Gebaeude.ID</c>).</summary>
+        private const long GEBAEUDE_1051 = 10657;
+
+        /// <summary>
+        /// Der Arbeitsstand ohne Raster des Aufrufers (Raumnutzung, Zonenplan, Gebäudestamm): Das Projektgebäude rechnet im
+        /// Raster seines Projekts (<c>Tab_Gebaeude.ID_Projekt</c>).
+        /// </summary>
+        [Fact]
+        public void Der_Arbeitsstand_eines_Projektgebaeudes_rechnet_im_Raster_seines_Projekts()
+        {
+            if (!_db.Vorhanden) return;
+            Konditionierungsarbeitsstand a = new KonditionierungCtrl().ArbeitsstandLesen(GEBAEUDE_1051, null, out string m);
+            Assert.True(a != null, m);
+            Assert.Equal(Konditionierungdatenweg.Raster(1051), a.Kalender);
+            Assert.Equal(DONNERSTAG, a.Kalender.W0);
+            Assert.NotEqual(Konditionierungdatenweg.Rueckfallraster, a.Kalender);
+            // Ein Raster des Aufrufers geht vor.
+            Assert.Equal(Gemeinjahrkalender.Kalenderjahr(2027),
+                         new KonditionierungCtrl().ArbeitsstandLesen(GEBAEUDE_1051, Gemeinjahrkalender.Kalenderjahr(2027), out _).Kalender);
+        }
+
+        /// <summary>Ein Gebäude ohne Projekt (Katalogbau) rechnet im Rückfallraster.</summary>
+        [Fact]
+        public void Der_Arbeitsstand_eines_Gebaeudes_ohne_Projekt_rechnet_im_Rueckfallraster()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET ID_Projekt = NULL WHERE ID = ?",
+                                                  new DbParam("@g", GEBAEUDE_1051)));
+            try
+            {
+                Konditionierungsarbeitsstand a = new KonditionierungCtrl().ArbeitsstandLesen(GEBAEUDE_1051, null, out string m);
+                Assert.True(a != null, m);
+                Assert.Equal(Konditionierungdatenweg.Rueckfallraster, a.Kalender);
+            }
+            finally
+            {
+                Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Gebaeude SET ID_Projekt = ? WHERE ID = ?",
+                                                      new DbParam("@p", 1051), new DbParam("@g", GEBAEUDE_1051)));
+            }
+        }
+
         [Fact]
         public void Der_Abdruck_aendert_sich_mit_dem_Raster()
         {
