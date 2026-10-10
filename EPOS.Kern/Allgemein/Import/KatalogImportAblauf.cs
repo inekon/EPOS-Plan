@@ -173,6 +173,18 @@ namespace WindowsFormsApplication1
                             break;
                         }
 
+                    case KatalogImportArt.WaermepumpeKuehlung:
+                        {
+                            // E119: dieselbe Datei, derselbe Leser - angeboten werden nur die
+                            // Geraete, die nach E15 kuehlfaehig sind UND einen gueltigen
+                            // Kuehlblock tragen; die uebrigen nennt das Protokoll mit Grund.
+                            var p = new WaermepumpenImport();
+                            p.Import(pfad);
+                            foreach (int i in KuehlfaehigkeitsPruefung.Filtern(p, _meldungen))
+                                _saetze.Add(new WaermepumpeImportSatz(p, i, kaeltemodus: true));
+                            break;
+                        }
+
                     case KatalogImportArt.Stromspeicher:
                         LiesStromspeicher(pfad, quelle);
                         break;
