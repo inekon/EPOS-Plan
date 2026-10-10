@@ -51257,6 +51257,7 @@ chart</value>
   </data>
   <data name="KI_DLG_GIMP_ALSZONE_ERL" xml:space="preserve">
     <value>Imports the building as a zone with real components instead of the area totals. Only if the component proposal can be built.</value>
+  </data>
   <data name="CSV_KOPF_DATUM" xml:space="preserve">
     <value>Date</value>
   </data>
