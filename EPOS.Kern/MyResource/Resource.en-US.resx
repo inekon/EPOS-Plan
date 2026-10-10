@@ -20571,6 +20571,9 @@ Do you want to allow this?</value>
   <data name="KI_FELD_KEIN_SATZ" xml:space="preserve">
     <value>The form currently shows no record the value belongs to – please select an entry first.</value>
   </data>
+  <data name="KI_STROM_KEINE_FLOTTE" xml:space="preserve">
+    <value>The storage design has no working state with a fleet yet that the value belongs to – please open the view with a project first.</value>
+  </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>The form reports on this: {0}</value>
   </data>

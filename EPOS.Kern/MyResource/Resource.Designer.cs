@@ -72950,6 +72950,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromspeicher-Auslegung hat noch keinen Arbeitsstand mit Flotte, in den der Wert gehört – bitte die Ansicht zuerst mit einem Projekt öffnen. ähnelt.
+        /// </summary>
+        public static string KI_STROM_KEINE_FLOTTE {
+            get {
+                return ResourceManager.GetString("KI_STROM_KEINE_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Genau dieser Text ginge bei der nächsten Frage an das Modell {0} ({1}). Es werden keine Projekt-, Kunden- oder Simulationsdaten übertragen. Der API-Schlüssel wird in einer HTTP-Kopfzeile mitgegeben und steht nicht in der Adresse. ähnelt.
         /// </summary>
         public static string KI_VORSCHAU_HINWEIS {

@@ -204,6 +204,13 @@ es** — so der Energieträger an Heizkessel, BHKW, Stromspeicher und Photovolta
 bleibt lesbar, und sein Setzer lehnt als zweite Sicherung ebenfalls ab. Ebenso sperren die Erzeugermasken mit
 Projektliste die Felder der Anlage, solange keine Zeile gewählt ist und nicht genau eine vorhanden ist
 (`KI_ERZ_KEINE_PROJEKTZEILE`); bei genau einer Zeile wählt der Assistent sie wie das Öffnen des Dialogs.
+Die Stromspeicher-Auslegung sperrt jedes Feld, solange ihr Arbeitsstand keine Flotte trägt (`KI_STROM_KEINE_FLOTTE`),
+die Komponentenkonfiguration der Simulation die Felder der Wärmepumpe, solange die Karte keine Anlage führt (mit dem
+Text, den die Maske an ihrer Stelle zeigt). Den Energieträger der Wärmepumpe setzt der Assistent dort und im
+Anlagendialog: Die Trägerwahl schreibt nur in die Arbeitskopie, in die Datenbank trägt sie erst der OK-Weg.
+Nach einer Setzung gehen beide Masken den Meldeweg der Hand — die Stromspeicher-Auslegung zählt ihre Fassung hoch,
+setzt die Ungespeichert- und Veraltet-Marke und zieht bei einer Änderung der Betriebsführung Netzladung, Ratsche und
+Peak-Vorschlag nach wie der Betriebseditor; die Komponentenkonfiguration räumt ihre Warnung und zeichnet neu.
 `KI_FELD_NICHT_SETZBAR` bleibt die Absage an abgeleitete Größen.
 
 **Aktionen aus dem Dialog.** Zusätzlich zu den Feldern die Aktionen der Stufen 1 bis 3 des Aufgabensteuerungskonzepts,

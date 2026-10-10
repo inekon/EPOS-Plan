@@ -382,6 +382,10 @@
         BhkwLeistungsgrenzeLesen = () => Werte.UntersteLeistungsgrenze,
         BhkwLeistungsgrenzeSetzen = w => LeistungsgrenzeGesetzt(w),
         AnlageLesen = () => Anlage,
+        // Nach einer Setzung derselbe Meldeweg wie nach einer Eingabe von Hand: Der Baustein
+        // meldet Geaendert, der Dialog raeumt die Kuehlwarnung und zeichnet neu.
+        AnlageGemeldet = () => _ = InvokeAsync(Neugezeichnet),
+        OhneAnlageText = () => MeldungOhneAnlage,
 
         // Stufe KU2 Welle 3: die Kuehlgaben - mit ihnen loest die Sichtklasse die drei
         // Wahlfelder der Gruppe „Kuehlbetrieb" auf und lehnt ab, was die Maske weich sperrt.
@@ -412,7 +416,10 @@
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
-        Schreibgeschuetzt = () => NurLesen
+        Schreibgeschuetzt = () => NurLesen,
+        // Ohne Anlage zeigt die Maske keine Waermepumpen-Felder - ein Wert dafuer wird vor
+        // der Bestaetigung abgelehnt (KiMaskenhaken.Sperrgrund).
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
     };
 
     /// <inheritdoc/>

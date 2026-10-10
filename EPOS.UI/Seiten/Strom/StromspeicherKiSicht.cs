@@ -61,6 +61,41 @@ public sealed class StromspeicherKiSicht
     }
 
     // =====================================================================
+    //  Der Meldeweg nach einer Setzung und der Sperrgrund
+    // =====================================================================
+
+    /// <summary>
+    /// Der Meldeweg der Ansicht nach jeder Setzung — derselbe, den ein Blatt nach einer
+    /// Eingabe von Hand nimmt (Fassung, Ungespeichert-/Veraltet-Marke, Vorprüfung);
+    /// <c>null</c> = ein Prüfstand ohne Ansicht.
+    /// </summary>
+    /// <remarks>
+    /// Die Sicht schreibt in den lebenden Stand; ohne diese Meldung frischten die Blätter
+    /// mit eigener Arbeitskopie nicht auf und schrieben beim nächsten Feld ihren alten
+    /// Stand zurück.
+    /// </remarks>
+    public Action? Gemeldet { get; init; }
+
+    /// <summary>
+    /// Der Meldeweg der Betriebsführung (Betriebsziel, Peak-Ziel, Ratsche, Netzladung,
+    /// Verteilung, Erzeugerpriorität, Batterieexport) mit dem Betriebsziel und der Ratsche
+    /// VOR der Setzung — die Ansicht zieht daran Netzladung, Ratsche, Startwert und den
+    /// Peak-Vorschlag nach wie beim Betriebseditor. <c>null</c> = es gilt <see cref="Gemeldet"/>.
+    /// </summary>
+    public Action<FlottenBetriebsziel, bool>? BetriebGemeldet { get; init; }
+
+    /// <summary>
+    /// Der Sperrgrund je Feld (<c>KiMaskenhaken.Sperrgrund</c>); <c>null</c> = frei.
+    /// </summary>
+    /// <remarks>
+    /// Ohne Arbeitsstand mit Flotte gibt es nichts, wohin ein Wert gehört: Jede Setzung wird
+    /// VOR der Bestätigung abgelehnt. Die Setzer lehnen denselben Fall als zweite Sicherung
+    /// benannt ab, statt den Wert still zu verwerfen.
+    /// </remarks>
+    public string? Sperrgrund(string feld)
+        => string.IsNullOrWhiteSpace(feld) || Flotte is not null ? null : OhneFlotte;
+
+    // =====================================================================
     //  Wo der Anwender steht (Auftrag #224)
     // =====================================================================
 
@@ -139,9 +174,8 @@ public sealed class StromspeicherKiSicht
         get => Optionen?.Betriebsziel.ToString() ?? "";
         set
         {
-            FlottenSimulationOptionen? o = Optionen;
-            if (o is null || string.IsNullOrWhiteSpace(value)) return;
-            if (Enum.TryParse(value, true, out FlottenBetriebsziel ziel)) o.Betriebsziel = ziel;
+            if (string.IsNullOrWhiteSpace(value)) return;
+            if (Enum.TryParse(value, true, out FlottenBetriebsziel ziel)) Betriebswert(o => o.Betriebsziel = ziel);
         }
     }
 
@@ -171,7 +205,7 @@ public sealed class StromspeicherKiSicht
     public double? PeakZielKw
     {
         get => Optionen?.WirtschaftlicherPeakZielwertKw;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.WirtschaftlicherPeakZielwertKw = value; }
+        set => Betriebswert(o => o.WirtschaftlicherPeakZielwertKw = value);
     }
 
     /// <summary>
@@ -185,14 +219,14 @@ public sealed class StromspeicherKiSicht
     public bool PeakZielAdaptiv
     {
         get => Optionen?.PeakZielAdaptiv == true;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PeakZielAdaptiv = value; }
+        set => Betriebswert(o => o.PeakZielAdaptiv = value);
     }
 
     /// <summary>Ist das Laden aus dem Netz freigegeben?</summary>
     public bool NetzladungErlaubt
     {
         get => Optionen?.NetzladungErlaubt == true;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NetzladungErlaubt = value; }
+        set => Betriebswert(o => o.NetzladungErlaubt = value);
     }
 
     /// <summary>
@@ -216,7 +250,9 @@ public sealed class StromspeicherKiSicht
         }
         set
         {
-            foreach (FlottenEinheit e in Einheiten) e.SocStart = value / 100.0;
+            FlottenStudieKonfiguration f = FlotteZumSetzen;
+            foreach (FlottenEinheit e in f.Einheiten) e.SocStart = value / 100.0;
+            Gemeldet?.Invoke();
         }
     }
 
@@ -226,11 +262,12 @@ public sealed class StromspeicherKiSicht
         get => Summe(e => e.PeakReserveKWh);
         set
         {
-            IReadOnlyList<FlottenEinheit> einheiten = Einheiten;
+            IReadOnlyList<FlottenEinheit> einheiten = FlotteZumSetzen.Einheiten;
             if (einheiten.Count == 0) return;
 
             double jeEinheit = value / einheiten.Count;
             foreach (FlottenEinheit e in einheiten) e.PeakReserveKWh = jeEinheit;
+            Gemeldet?.Invoke();
         }
     }
 
@@ -245,11 +282,7 @@ public sealed class StromspeicherKiSicht
     public bool GroessenOptimieren
     {
         get => _eingaben()?.Auslegung?.FlottenGroessenOptimieren == true;
-        set
-        {
-            SpeicherAuslegungKonfiguration? a = _eingaben()?.Auslegung;
-            if (a is not null) a.FlottenGroessenOptimieren = value;
-        }
+        set => Konfigurationswert(k => k.FlottenGroessenOptimieren = value);
     }
 
     /// <summary>
@@ -281,14 +314,14 @@ public sealed class StromspeicherKiSicht
     public bool Feinraster
     {
         get => Auslegung?.Feinraster == true;
-        set { FlottenAuslegungEingang? a = Auslegung; if (a is not null) a.Feinraster = value; }
+        set => Suchwert(a => a.Feinraster = value);
     }
 
     /// <summary>Obergrenze der Kandidatenzahl über BEIDE Phasen.</summary>
     public int MaximaleKandidaten
     {
         get => Auslegung?.MaximaleKandidaten ?? 0;
-        set { FlottenAuslegungEingang? a = Auslegung; if (a is not null) a.MaximaleKandidaten = value; }
+        set => Suchwert(a => a.MaximaleKandidaten = value);
     }
 
     /// <summary>
@@ -429,7 +462,7 @@ public sealed class StromspeicherKiSicht
             IReadOnlyList<FlottenEinheit> einheiten = Einheiten;
             var zeilen = new List<FlottenEinheitKiZeile>(einheiten.Count);
             for (int i = 0; i < einheiten.Count; i++)
-                zeilen.Add(new FlottenEinheitKiZeile(einheiten[i], i));
+                zeilen.Add(new FlottenEinheitKiZeile(einheiten[i], i, Gemeldet));
             return zeilen;
         }
     }
@@ -446,7 +479,7 @@ public sealed class StromspeicherKiSicht
     public SpeicherAuslegungQuelle Lastquelle
     {
         get => Konfiguration?.Lastquelle ?? SpeicherAuslegungQuelle.Epos;
-        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Lastquelle = value; }
+        set => Konfigurationswert(k => k.Lastquelle = value);
     }
 
     /// <summary>Die drei Quellen der PV-Erzeugung.</summary>
@@ -457,7 +490,7 @@ public sealed class StromspeicherKiSicht
     public SpeicherAuslegungQuelle PvQuelle
     {
         get => Konfiguration?.PvQuelle ?? SpeicherAuslegungQuelle.Epos;
-        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.PvQuelle = value; }
+        set => Konfigurationswert(k => k.PvQuelle = value);
     }
 
     /// <summary>Die drei Quellen des Bezugspreises.</summary>
@@ -468,7 +501,7 @@ public sealed class StromspeicherKiSicht
     public SpeicherAuslegungQuelle Preisquelle
     {
         get => Konfiguration?.Preisquelle ?? SpeicherAuslegungQuelle.Epos;
-        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Preisquelle = value; }
+        set => Konfigurationswert(k => k.Preisquelle = value);
     }
 
     /// <summary>
@@ -478,7 +511,7 @@ public sealed class StromspeicherKiSicht
     public bool EposModelljahrZuordnen
     {
         get => Konfiguration?.EposModelljahrZuordnen == true;
-        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.EposModelljahrZuordnen = value; }
+        set => Konfigurationswert(k => k.EposModelljahrZuordnen = value);
     }
 
     /// <summary>Die zwei Quellen der Kostensätze.</summary>
@@ -489,7 +522,7 @@ public sealed class StromspeicherKiSicht
     public SpeicherKostenQuelle Investitionsquelle
     {
         get => Konfiguration?.Investitionsquelle ?? SpeicherKostenQuelle.Dialog;
-        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Investitionsquelle = value; }
+        set => Konfigurationswert(k => k.Investitionsquelle = value);
     }
 
     /// <summary>Die zwei Quellen der Kostensätze.</summary>
@@ -500,7 +533,7 @@ public sealed class StromspeicherKiSicht
     public SpeicherKostenQuelle Betriebsquelle
     {
         get => Konfiguration?.Betriebsquelle ?? SpeicherKostenQuelle.Dialog;
-        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Betriebsquelle = value; }
+        set => Konfigurationswert(k => k.Betriebsquelle = value);
     }
 
     /// <summary>
@@ -558,12 +591,10 @@ public sealed class StromspeicherKiSicht
         get => _eingaben()?.LeistungspreisEurProKwA ?? 0.0;
         set
         {
-            SpeicherOptimierungEingaben? e = _eingaben();
-            if (e is null) return;
-            e.LeistungspreisEurProKwA = value;
-
-            FlottenStudieKonfiguration? f = Flotte;
-            if (f is not null) (f.Tarif ??= new FlottenTarif()).LeistungspreisEuroProKw = value;
+            FlottenStudieKonfiguration f = FlotteZumSetzen;
+            _eingaben()!.LeistungspreisEurProKwA = value;
+            (f.Tarif ??= new FlottenTarif()).LeistungspreisEuroProKw = value;
+            Gemeldet?.Invoke();
         }
     }
 
@@ -571,7 +602,7 @@ public sealed class StromspeicherKiSicht
     public double? EnergieAusgleich
     {
         get => Optionen?.EnergieAusgleichEuroProKWh;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.EnergieAusgleichEuroProKWh = value; }
+        set => Optionswert(o => o.EnergieAusgleichEuroProKWh = value);
     }
 
     /// <summary>Kalkulationszins der Studie [%].</summary>
@@ -579,7 +610,7 @@ public sealed class StromspeicherKiSicht
     public double KalkulationszinsProzent
     {
         get => (Wirtschaft?.Kalkulationszins ?? 0.0) * 100.0;
-        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.Kalkulationszins = value / 100.0; }
+        set => Wirtschaftswert(w => w.Kalkulationszins = value / 100.0);
     }
 
     /// <summary>Die zwei Jahresprojektionen.</summary>
@@ -593,21 +624,21 @@ public sealed class StromspeicherKiSicht
     public int Jahresprojektion
     {
         get => Wirtschaft?.ReferenzjahrExplizitWiederholen == true ? 1 : 0;
-        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.ReferenzjahrExplizitWiederholen = value == 1; }
+        set => Wirtschaftswert(w => w.ReferenzjahrExplizitWiederholen = value == 1);
     }
 
     /// <summary>Projektlaufzeit bei wiederholtem Referenzjahr [a].</summary>
     public int Projektjahre
     {
         get => Wirtschaft?.ProjektjahreBeiWiederholung ?? 0;
-        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.ProjektjahreBeiWiederholung = value; }
+        set => Wirtschaftswert(w => w.ProjektjahreBeiWiederholung = value);
     }
 
     /// <summary>Zusätzlicher Restwert der Studie [€] — über die Restwerte der Einheiten hinaus.</summary>
     public double RestwertStudieEuro
     {
         get => Wirtschaft?.RestwertEuro ?? 0.0;
-        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.RestwertEuro = value; }
+        set => Wirtschaftswert(w => w.RestwertEuro = value);
     }
 
     // =====================================================================
@@ -623,7 +654,7 @@ public sealed class StromspeicherKiSicht
     public FlottenVerteilung Verteilung
     {
         get => Optionen?.Verteilung ?? FlottenVerteilung.KapazitaetsProportional;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.Verteilung = value; }
+        set => Betriebswert(o => o.Verteilung = value);
     }
 
     /// <summary>Die zwei Erzeugerreihenfolgen der Maske.</summary>
@@ -635,28 +666,28 @@ public sealed class StromspeicherKiSicht
     public FlottenErzeugerPrioritaet ErzeugerPrioritaet
     {
         get => Optionen?.ErzeugerPrioritaet ?? FlottenErzeugerPrioritaet.PvVorBhkw;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.ErzeugerPrioritaet = value; }
+        set => Betriebswert(o => o.ErzeugerPrioritaet = value);
     }
 
     /// <summary>Ist die Einspeisung aus der Batterie ins Netz freigegeben?</summary>
     public bool BatterieexportErlaubt
     {
         get => Optionen?.BatterieexportErlaubt == true;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.BatterieexportErlaubt = value; }
+        set => Betriebswert(o => o.BatterieexportErlaubt = value);
     }
 
     /// <summary>Harte Bezugsgrenze am Netzanschluss [kW]; <c>null</c> = keine.</summary>
     public double? NetzbezugGrenzeKw
     {
         get => Optionen?.NetzbezugGrenzeKw;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NetzbezugGrenzeKw = value; }
+        set => Optionswert(o => o.NetzbezugGrenzeKw = value);
     }
 
     /// <summary>Harte Einspeisegrenze am Netzanschluss [kW]; <c>null</c> = keine.</summary>
     public double? NetzeinspeisungGrenzeKw
     {
         get => Optionen?.NetzeinspeisungGrenzeKw;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NetzeinspeisungGrenzeKw = value; }
+        set => Optionswert(o => o.NetzeinspeisungGrenzeKw = value);
     }
 
     /// <summary>Die zwei Informationsstände der Planung.</summary>
@@ -668,21 +699,21 @@ public sealed class StromspeicherKiSicht
     public PrognoseArt Informationsstand
     {
         get => Optionen?.PrognoseArt ?? PrognoseArt.VerifiziertBekannt;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PrognoseArt = value; }
+        set => Optionswert(o => o.PrognoseArt = value);
     }
 
     /// <summary>Planungshorizont in Intervallen.</summary>
     public int PlanungshorizontIntervalle
     {
         get => Optionen?.PlanungshorizontIntervalle ?? 0;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PlanungshorizontIntervalle = value; }
+        set => Optionswert(o => o.PlanungshorizontIntervalle = value);
     }
 
     /// <summary>Abstand zweier Planungsläufe in Intervallen.</summary>
     public int NeuplanungAlleIntervalle
     {
         get => Optionen?.NeuplanungAlleIntervalle ?? 0;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NeuplanungAlleIntervalle = value; }
+        set => Optionswert(o => o.NeuplanungAlleIntervalle = value);
     }
 
     /// <summary>Die drei Horizont-Endbedingungen.</summary>
@@ -694,14 +725,14 @@ public sealed class StromspeicherKiSicht
     public FlottenEndbedingung Endbedingung
     {
         get => Optionen?.Endbedingung ?? FlottenEndbedingung.KeineVorgabe;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.Endbedingung = value; }
+        set => Optionswert(o => o.Endbedingung = value);
     }
 
     /// <summary>Darf der Lauf auf die reaktive Regel zurückfallen, wenn der Plan scheitert?</summary>
     public bool PrognoseFallbackErlaubt
     {
         get => Optionen?.PrognoseFallbackErlaubt == true;
-        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PrognoseFallbackErlaubt = value; }
+        set => Optionswert(o => o.PrognoseFallbackErlaubt = value);
     }
 
     // =====================================================================
@@ -746,7 +777,7 @@ public sealed class StromspeicherKiSicht
                 foreach (FlottenEinheit e in einheiten)
                     if (e.Id == a.ErsetztEinheitId) { name = e.Name; break; }
 
-                zeilen.Add(new FlottenAchseKiZeile(a, i, name));
+                zeilen.Add(new FlottenAchseKiZeile(a, i, name, Gemeldet));
             }
             return zeilen;
         }
@@ -820,12 +851,13 @@ public sealed class StromspeicherKiSicht
     /// </summary>
     private void KostenSetzen(Action<SpeicherKostensaetze> schreiben, bool invest)
     {
-        SpeicherAuslegungKonfiguration? k = Konfiguration;
-        if (k is null) return;
+        _ = FlotteZumSetzen;
+        SpeicherAuslegungKonfiguration k = Konfiguration!;
 
         SpeicherKostensaetze satz = k.DirekteKosten ??= new SpeicherKostensaetze();
         schreiben(satz);
         if (invest) satz.InvestVorhanden = true; else satz.BetriebVorhanden = true;
+        Gemeldet?.Invoke();
     }
 
     /// <summary>
@@ -855,6 +887,53 @@ public sealed class StromspeicherKiSicht
         return eintraege;
     }
 
+    private static string OhneFlotte => WindowsFormsApplication1.MyResource.Resource.KI_STROM_KEINE_FLOTTE;
+
+    /// <summary>Die Flotte, in die eine Setzung schreibt; ohne sie eine benannte Absage.</summary>
+    private FlottenStudieKonfiguration FlotteZumSetzen
+        => Flotte ?? throw new InvalidOperationException(OhneFlotte);
+
+    /// <summary>Ein Wert der Simulationsoptionen außerhalb der Betriebsführung.</summary>
+    private void Optionswert(Action<FlottenSimulationOptionen> schreiben)
+    {
+        schreiben(FlotteZumSetzen.Optionen);
+        Gemeldet?.Invoke();
+    }
+
+    /// <summary>Ein Wert der Betriebsführung — gemeldet mit Ziel und Ratsche von vorher.</summary>
+    private void Betriebswert(Action<FlottenSimulationOptionen> schreiben)
+    {
+        FlottenSimulationOptionen o = FlotteZumSetzen.Optionen;
+        FlottenBetriebsziel zielVorher = o.Betriebsziel;
+        bool ratscheVorher = o.PeakZielAdaptiv;
+        schreiben(o);
+        if (BetriebGemeldet is not null) BetriebGemeldet(zielVorher, ratscheVorher);
+        else Gemeldet?.Invoke();
+    }
+
+    /// <summary>Ein Wert des Suchraums (Station 4).</summary>
+    private void Suchwert(Action<FlottenAuslegungEingang> schreiben)
+    {
+        schreiben(FlotteZumSetzen.Auslegung);
+        Gemeldet?.Invoke();
+    }
+
+    /// <summary>Ein Wert der Auslegungskonfiguration (Quellen, Größensuche).</summary>
+    private void Konfigurationswert(Action<SpeicherAuslegungKonfiguration> schreiben)
+    {
+        _ = FlotteZumSetzen;
+        schreiben(Konfiguration!);
+        Gemeldet?.Invoke();
+    }
+
+    /// <summary>Ein Wert der Wirtschaftlichkeit der Studie.</summary>
+    private void Wirtschaftswert(Action<FlottenWirtschaftlichkeitEingang> schreiben)
+    {
+        _ = FlotteZumSetzen;
+        schreiben(Wirtschaft!);
+        Gemeldet?.Invoke();
+    }
+
     private double Summe(Func<FlottenEinheit, double> welche)
     {
         double summe = 0.0;
@@ -874,10 +953,13 @@ public sealed class StromspeicherKiSicht
 public sealed class FlottenEinheitKiZeile
 {
     private readonly FlottenEinheit _einheit;
+    private readonly Action? _gemeldet;
 
     /// <summary>Legt die Zeile über die Einheit; <paramref name="platz"/> ist ihre Nummer.</summary>
-    public FlottenEinheitKiZeile(FlottenEinheit einheit, int platz)
+    /// <param name="gemeldet">Der Meldeweg der Ansicht nach einer Setzung; <c>null</c> = keiner.</param>
+    public FlottenEinheitKiZeile(FlottenEinheit einheit, int platz, Action? gemeldet = null)
     {
+        _gemeldet = gemeldet;
         _einheit = einheit ?? throw new ArgumentNullException(nameof(einheit));
         Platz = platz;
     }
@@ -897,147 +979,147 @@ public sealed class FlottenEinheitKiZeile
         get => string.IsNullOrWhiteSpace(_einheit.Name)
                    ? (Platz + 1).ToString(CultureInfo.CurrentCulture)
                    : _einheit.Name;
-        set => _einheit.Name = value ?? "";
+        set { _einheit.Name = value ?? ""; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Nennkapazität [kWh].</summary>
     public double Kapazitaet
     {
         get => _einheit.KapazitaetKWh;
-        set => _einheit.KapazitaetKWh = value;
+        set { _einheit.KapazitaetKWh = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Höchste Ladeleistung [kW].</summary>
     public double Ladeleistung
     {
         get => _einheit.LadeleistungKw;
-        set => _einheit.LadeleistungKw = value;
+        set { _einheit.LadeleistungKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Höchste Entladeleistung [kW].</summary>
     public double Entladeleistung
     {
         get => _einheit.EntladeleistungKw;
-        set => _einheit.EntladeleistungKw = value;
+        set { _einheit.EntladeleistungKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Ladewirkungsgrad [%].</summary>
     public double Ladewirkungsgrad
     {
         get => _einheit.Ladewirkungsgrad * 100.0;
-        set => _einheit.Ladewirkungsgrad = value / 100.0;
+        set { _einheit.Ladewirkungsgrad = value / 100.0; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Entladewirkungsgrad [%].</summary>
     public double Entladewirkungsgrad
     {
         get => _einheit.Entladewirkungsgrad * 100.0;
-        set => _einheit.Entladewirkungsgrad = value / 100.0;
+        set { _einheit.Entladewirkungsgrad = value / 100.0; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Untere Grenze des Ladezustands [%].</summary>
     public double SocMin
     {
         get => _einheit.SocMin * 100.0;
-        set => _einheit.SocMin = value / 100.0;
+        set { _einheit.SocMin = value / 100.0; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Obere Grenze des Ladezustands [%].</summary>
     public double SocMax
     {
         get => _einheit.SocMax * 100.0;
-        set => _einheit.SocMax = value / 100.0;
+        set { _einheit.SocMax = value / 100.0; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Ladezustand zu Beginn [%].</summary>
     public double SocStart
     {
         get => _einheit.SocStart * 100.0;
-        set => _einheit.SocStart = value / 100.0;
+        set { _einheit.SocStart = value / 100.0; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Geschützte Peak-Reserve [kWh].</summary>
     public double PeakReserve
     {
         get => _einheit.PeakReserveKWh;
-        set => _einheit.PeakReserveKWh = value;
+        set { _einheit.PeakReserveKWh = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>AC-Hilfsverbrauch [kW].</summary>
     public double Hilfsverbrauch
     {
         get => _einheit.HilfsverbrauchKw;
-        set => _einheit.HilfsverbrauchKw = value;
+        set { _einheit.HilfsverbrauchKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Marginale Verschleißkosten der Entladung [€/kWh].</summary>
     public double Grenzverschleiss
     {
         get => _einheit.GrenzverschleissEuroProKWhEntladung;
-        set => _einheit.GrenzverschleissEuroProKWhEntladung = value;
+        set { _einheit.GrenzverschleissEuroProKWhEntladung = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Rechnet diese Einheit mit eigenen Kostensätzen?</summary>
     public bool EigeneKosten
     {
         get => _einheit.EigeneKosten;
-        set => _einheit.EigeneKosten = value;
+        set { _einheit.EigeneKosten = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Feste Investition [€].</summary>
     public double InvestitionFix
     {
         get => _einheit.InvestitionEuro;
-        set => _einheit.InvestitionEuro = value;
+        set { _einheit.InvestitionEuro = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Kapazitätsbezogene Investition [€/kWh].</summary>
     public double InvestitionProKWh
     {
         get => _einheit.InvestitionEuroProKWh;
-        set => _einheit.InvestitionEuroProKWh = value;
+        set { _einheit.InvestitionEuroProKWh = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Leistungsbezogene Investition [€/kW].</summary>
     public double InvestitionProKw
     {
         get => _einheit.InvestitionEuroProKw;
-        set => _einheit.InvestitionEuroProKw = value;
+        set { _einheit.InvestitionEuroProKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Feste Betriebskosten [€/a].</summary>
     public double BetriebFix
     {
         get => _einheit.JaehrlicheFixeOpexEuro;
-        set => _einheit.JaehrlicheFixeOpexEuro = value;
+        set { _einheit.JaehrlicheFixeOpexEuro = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Kapazitätsbezogene Betriebskosten [€/(kWh·a)].</summary>
     public double BetriebProKWh
     {
         get => _einheit.JaehrlicheOpexEuroProKWhKapazitaet;
-        set => _einheit.JaehrlicheOpexEuroProKWhKapazitaet = value;
+        set { _einheit.JaehrlicheOpexEuroProKWhKapazitaet = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Leistungsbezogene Betriebskosten [€/(kW·a)].</summary>
     public double BetriebProKw
     {
         get => _einheit.JaehrlicheOpexEuroProKw;
-        set => _einheit.JaehrlicheOpexEuroProKw = value;
+        set { _einheit.JaehrlicheOpexEuroProKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Kosten je entladener Energie [€/kWh].</summary>
     public double Durchsatzkosten
     {
         get => _einheit.DurchsatzkostenEuroProKWhEntladung;
-        set => _einheit.DurchsatzkostenEuroProKWhEntladung = value;
+        set { _einheit.DurchsatzkostenEuroProKWhEntladung = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Ersatzkosten [€].</summary>
     public double Ersatzkosten
     {
         get => _einheit.ErsatzkostenEuro;
-        set => _einheit.ErsatzkostenEuro = value;
+        set { _einheit.ErsatzkostenEuro = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>
@@ -1047,7 +1129,7 @@ public sealed class FlottenEinheitKiZeile
     public int Ersatzintervall
     {
         get => _einheit.ErsatzintervallJahre;
-        set => _einheit.ErsatzintervallJahre = value;
+        set { _einheit.ErsatzintervallJahre = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>
@@ -1058,7 +1140,7 @@ public sealed class FlottenEinheitKiZeile
     public double Restwert
     {
         get => _einheit.RestwertEuro;
-        set => _einheit.RestwertEuro = value;
+        set { _einheit.RestwertEuro = value; _gemeldet?.Invoke(); }
     }
 }
 
@@ -1074,11 +1156,15 @@ public sealed class FlottenEinheitKiZeile
 public sealed class FlottenAchseKiZeile
 {
     private readonly FlottenAuslegungsAchse _achse;
+    private readonly Action? _gemeldet;
     private readonly string _einheitenname;
 
     /// <summary>Legt die Zeile über die Achse.</summary>
-    public FlottenAchseKiZeile(FlottenAuslegungsAchse achse, int platz, string einheitenname)
+    /// <param name="gemeldet">Der Meldeweg der Ansicht nach einer Setzung; <c>null</c> = keiner.</param>
+    public FlottenAchseKiZeile(FlottenAuslegungsAchse achse, int platz, string einheitenname,
+                               Action? gemeldet = null)
     {
+        _gemeldet = gemeldet;
         _achse = achse ?? throw new ArgumentNullException(nameof(achse));
         _einheitenname = einheitenname ?? "";
         Platz = platz;
@@ -1096,7 +1182,7 @@ public sealed class FlottenAchseKiZeile
     public bool Variieren
     {
         get => _achse.Aktiv;
-        set => _achse.Aktiv = value;
+        set { _achse.Aktiv = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Woher die Geräte kommen, unter denen die Größensuche wählt.</summary>
@@ -1108,48 +1194,48 @@ public sealed class FlottenAchseKiZeile
     public FlottenKandidatenquelle Quelle
     {
         get => _achse.Quelle;
-        set => _achse.Quelle = value;
+        set { _achse.Quelle = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Kleinste Kapazität des Suchbereichs [kWh].</summary>
     public double KapazitaetVon
     {
         get => _achse.KapazitaetVonKWh;
-        set => _achse.KapazitaetVonKWh = value;
+        set { _achse.KapazitaetVonKWh = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Größte Kapazität des Suchbereichs [kWh].</summary>
     public double KapazitaetBis
     {
         get => _achse.KapazitaetBisKWh;
-        set => _achse.KapazitaetBisKWh = value;
+        set { _achse.KapazitaetBisKWh = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Kleinste Leistung des Suchbereichs [kW].</summary>
     public double LeistungVon
     {
         get => _achse.LeistungVonKw;
-        set => _achse.LeistungVonKw = value;
+        set { _achse.LeistungVonKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Größte Leistung des Suchbereichs [kW].</summary>
     public double LeistungBis
     {
         get => _achse.LeistungBisKw;
-        set => _achse.LeistungBisKw = value;
+        set { _achse.LeistungBisKw = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Kleinste Stückzahl der Achse.</summary>
     public int AnzahlVon
     {
         get => _achse.AnzahlVon;
-        set => _achse.AnzahlVon = value;
+        set { _achse.AnzahlVon = value; _gemeldet?.Invoke(); }
     }
 
     /// <summary>Größte Stückzahl der Achse.</summary>
     public int AnzahlBis
     {
         get => _achse.AnzahlBis;
-        set => _achse.AnzahlBis = value;
+        set { _achse.AnzahlBis = value; _gemeldet?.Invoke(); }
     }
 }

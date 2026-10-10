@@ -346,8 +346,13 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     public async Task Stromspeicher_Das_Betriebsziel_wird_ueber_seinen_Text_gewaehlt()
     {
         SpeicherOptimierungEingaben eingaben = Eingaben();
+        eingaben.Auslegung!.Flotte!.Optionen.Betriebsziel = SpeicherEngine.FlottenBetriebsziel.PvGreedy;
+        var gemeldet = new List<(SpeicherEngine.FlottenBetriebsziel Ziel, bool Ratsche)>();
         var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
-                                             () => Array.Empty<FlottenHinweis>());
+                                             () => Array.Empty<FlottenHinweis>())
+        {
+            BetriebGemeldet = (ziel, ratsche) => gemeldet.Add((ziel, ratsche))
+        };
 
         using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
                                                      () => sicht, Haken());
@@ -365,14 +370,22 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
         Assert.Equal(SpeicherEngine.FlottenBetriebsziel.PeakShaving,
                      eingaben.Auslegung!.Flotte!.Optionen.Betriebsziel);
+        // Der Meldeweg der Betriebsführung bekommt Ziel und Ratsche von VORHER — daran
+        // zieht die Ansicht Netzladung, Ratsche und Peak-Vorschlag nach.
+        Assert.Equal(new[] { (SpeicherEngine.FlottenBetriebsziel.PvGreedy, false) }, gemeldet);
     }
 
     [Fact]
     public async Task Stromspeicher_Die_Bestaetigung_setzt_die_Netzladefreigabe()
     {
         SpeicherOptimierungEingaben eingaben = Eingaben();
+        int betrieb = 0, allgemein = 0;
         var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
-                                             () => Array.Empty<FlottenHinweis>());
+                                             () => Array.Empty<FlottenHinweis>())
+        {
+            Gemeldet = () => allgemein++,
+            BetriebGemeldet = (_, _) => betrieb++
+        };
 
         using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
                                                      () => sicht, Haken());
@@ -382,6 +395,49 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
 
         Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
         Assert.True(eingaben.Auslegung!.Flotte!.Optionen.NetzladungErlaubt);
+        Assert.Equal(1, betrieb);
+        Assert.Equal(0, allgemein);
+
+        // Ein Wert außerhalb der Betriebsführung meldet über den allgemeinen Weg.
+        KiErgebnis grenze = await Setzen(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                                         "netzbezug_grenze", "80");
+        Assert.Equal(KiStatus.Ausgefuehrt, grenze.Status);
+        Assert.Equal(80, eingaben.Auslegung!.Flotte!.Optionen.NetzbezugGrenzeKw);
+        Assert.Equal(1, allgemein);
+    }
+
+    /// <summary>
+    /// Ohne Arbeitsstand mit Flotte lehnt die Stromspeicher-Ansicht jede Setzung VOR der
+    /// Bestätigung ab; ohne Sperrgrund lehnt der Setzer selbst benannt ab, statt den Wert
+    /// still zu verwerfen und „gesetzt" zu melden.
+    /// </summary>
+    [Fact]
+    public async Task Stromspeicher_ohne_Flotte_lehnt_das_Setzen_vor_der_Bestaetigung_ab()
+    {
+        var eingaben = new SpeicherOptimierungEingaben();
+        int gemeldet = 0;
+        var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
+                                             () => Array.Empty<FlottenHinweis>())
+        { Gemeldet = () => gemeldet++, BetriebGemeldet = (_, _) => gemeldet++ };
+
+        using (Angemeldet(KiMaskennamen.STROMSPEICHER_AUSLEGUNG, sicht, s => s.Sperrgrund))
+        {
+            KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen",
+                Werte(KiMaskennamen.STROMSPEICHER_AUSLEGUNG, "netzladung", "Ja"));
+            Assert.Null(vorbereitung.Freigabe);
+            Assert.Contains(Resource.KI_STROM_KEINE_FLOTTE, vorbereitung.Ablehnung.Text);
+        }
+
+        using (KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG, () => sicht, Haken()))
+        {
+            KiErgebnis ergebnis = await Setzen(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                                               "netzbezug_grenze", "80");
+            Assert.NotEqual(KiStatus.Ausgefuehrt, ergebnis.Status);
+            Assert.Contains(Resource.KI_STROM_KEINE_FLOTTE, ergebnis.Text);
+        }
+
+        Assert.Null(eingaben.Auslegung);
+        Assert.Equal(0, gemeldet);
     }
 
     // =====================================================================
