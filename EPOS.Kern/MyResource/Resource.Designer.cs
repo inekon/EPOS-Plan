@@ -112868,6 +112868,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag „{0}“ wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
+        /// </summary>
+        public static string SKV_FRAGE_LOESCHEN_NAME {
+            get {
+                return ResourceManager.GetString("SKV_FRAGE_LOESCHEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektor ähnelt.
         /// </summary>
         public static string SKV_GRP_KOLLEKTOR {
@@ -113026,6 +113035,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKV_LBL_SPREIZUNG {
             get {
                 return ResourceManager.GetString("SKV_LBL_SPREIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Module: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("SKV_LBL_SUMME", resourceCulture);
             }
         }
         

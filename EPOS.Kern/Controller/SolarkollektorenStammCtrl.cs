@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -502,8 +504,32 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@bez", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
 
-            DataRow r = dt.Rows[0];
+        /// <summary>
+        /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 3, „Bearbeiten…" je
+        /// Bereich, KA‑E‑8): <paramref name="projektkopie"/> = <c>true</c> liest die Projektkopie aus
+        /// <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben Schlüssel wie
+        /// <see cref="KatalogsatzAnzeige"/> samt Investitionskosten; <c>null</c>, wenn es die ID nicht gibt.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
+
+        /// <summary>Die Projektkopien der Kollektoren (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
+        public const string TABELLE_PROJEKT = "Tab_Solarkollektoren";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>Die Anzeigefelder einer Zeile aus Katalog oder Projektkopie (gleiche Fachspalten).</summary>
+        private static IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r)
+        {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
             werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
@@ -685,6 +711,90 @@ namespace WindowsFormsApplication1
             satz.m_Kosten = f.Investitionskosten;
 
             return null;
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Mehrfach-Bearbeiten in EINER Transaktion (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die geänderten Felder eines Satzes, benannt über seine ID.</summary>
+        public sealed record Satzaenderung(int Id, AnzeigefelderSolarkollektor Felder);
+
+        /// <summary>
+        /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b> (Konzept Projektdialoge
+        /// mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt die Tabelle: die Projektkopien
+        /// (<see cref="TABELLE_PROJEKT"/>) oder den Katalog. Der Name bleibt (er ist nicht Teil der Felder).
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchläuft dieselbe Prüfung wie <see cref="AnzeigefelderSchreiben"/> (Flächen und Kosten nicht
+        /// negativ, h0 zwischen 0 und 1, Bezugsfläche aus der Liste). Ein gesperrter Katalogsatz, eine fehlende ID oder
+        /// ein Verstoß rollt die ganze Transaktion zurück und nennt den Satz — kein Teilstand. Die Anlagenfelder
+        /// (Modulanzahl, Neigung, Azimut, Solarkreis) liegen an <c>Tab_Energieanlagen</c> und werden hier nicht berührt.
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreibenAlle(bool projektkopie, IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Felder == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        var satz = new SolarkollektorenStammCtrl();
+                        FillFromRow(satz, dt.Rows[0]);
+                        string name = satz.m_szKollektorname ?? "";
+                        if (!projektkopie && ReadOnlyOf(dt.Rows[0]))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
+                        }
+                        string grund = FelderUebernehmen(satz, s.Felder);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name, grund), name);
+                        }
+                        v.Ausfuehren("UPDATE [" + tabelle + @"] SET
+                            Firma = ?, Beschreibung = ?, Kollektortyp = ?, Modulflaeche = ?, Aperturflaeche = ?,
+                            h0 = ?, k1 = ?, k2 = ?, Kdir = ?, Kdfu = ?, Investitionskosten = ?, Bezugsflaeche = ?
+                          WHERE ID = ?",
+                            new DbParam("@fir", (object)(satz.m_szFirma ?? "")),
+                            new DbParam("@bes", (object)(satz.m_szBeschreibung ?? "")),
+                            new DbParam("@typ", (object)(satz.m_szKollektortyp ?? "")),
+                            new DbParam("@mfl", satz.m_Modulfläche),
+                            new DbParam("@afl", satz.m_Aperturfläche),
+                            new DbParam("@h0", satz.m_h0),
+                            new DbParam("@k1", satz.m_k1),
+                            new DbParam("@k2", satz.m_k2),
+                            new DbParam("@kdir", satz.m_Kdir),
+                            new DbParam("@kdfu", satz.m_Kdfu),
+                            new DbParam("@inv", satz.m_Kosten),
+                            new DbParam("@bezug", Solarkreis.Bezugsflaeche(satz.m_Bezugsflaeche)),
+                            new DbParam("@id", s.Id));
+                    }
+                    v.Commit();
+                }
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, Text("SKK_MSG_FEHLER", "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
         }
 
         private static string Text(string schluessel, string rueckfall)

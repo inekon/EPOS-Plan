@@ -50973,5 +50973,11 @@ chart</value>
   <data name="BED_GRAFIK_TIP_CSV" xml:space="preserve">
     <value>Save totals as CSV</value>
   </data>
+  <data name="SKV_LBL_SUMME" xml:space="preserve">
+    <value>Total of all modules:</value>
+  </data>
+  <data name="SKV_FRAGE_LOESCHEN_NAME" xml:space="preserve">
+    <value>The catalogue entry "{0}" will be deleted for ALL projects. Continue?</value>
+  </data>
 </root>
 
