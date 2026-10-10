@@ -50961,5 +50961,20 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>
+  <data name="PVD_LBL_SUMME" xml:space="preserve">
+    <value>Total of all selected modules [kWp]:</value>
+  </data>
+  <data name="PVD_BTN_STRAENGE" xml:space="preserve">
+    <value>Strings and inverters…</value>
+  </data>
+  <data name="PVD_TITEL_STRAENGE" xml:space="preserve">
+    <value>Strings and inverters – {0}</value>
+  </data>
+  <data name="PVD_STRAENGE_STAND" xml:space="preserve">
+    <value>{0} strings</value>
+  </data>
+  <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: strings and inverter assignment, tilt, azimuth, number of modules, yield model and energy carrier of the system. All module values including the temperature coefficients and the module costs are transferred.</value>
+  </data>
 </root>
 

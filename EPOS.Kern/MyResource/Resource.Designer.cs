@@ -94577,6 +94577,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge und Wechselrichter… ähnelt.
+        /// </summary>
+        public static string PVD_BTN_STRAENGE {
+            get {
+                return ResourceManager.GetString("PVD_BTN_STRAENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das Modul löschen? ähnelt.
         /// </summary>
         public static string PVD_FRAGE_LOESCHEN {
@@ -94694,6 +94703,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgewählten Module [kWp]: ähnelt.
+        /// </summary>
+        public static string PVD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("PVD_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das ausgewählte Modul wurde in den Stammdaten nicht gefunden. ähnelt.
         /// </summary>
         public static string PVD_MSG_NICHT_GEFUNDEN {
@@ -94703,11 +94721,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit. ähnelt.
+        /// </summary>
+        public static string PVD_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("PVD_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Stränge ähnelt.
+        /// </summary>
+        public static string PVD_STRAENGE_STAND {
+            get {
+                return ResourceManager.GetString("PVD_STRAENGE_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Photovoltaik Module ähnelt.
         /// </summary>
         public static string PVD_TITEL {
             get {
                 return ResourceManager.GetString("PVD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stränge und Wechselrichter – {0} ähnelt.
+        /// </summary>
+        public static string PVD_TITEL_STRAENGE {
+            get {
+                return ResourceManager.GetString("PVD_TITEL_STRAENGE", resourceCulture);
             }
         }
         
