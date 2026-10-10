@@ -4182,6 +4182,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_STUNDE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstunde ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_VIERTELSTUNDE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_VIERTELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraster ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_GRP_RASTER {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_GRP_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_GRP_REIHEN {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_GRP_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_RASTER_MONAT {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_RASTER_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag {0} ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TAG_NR {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TAG_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summen als CSV speichern ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TIP_CSV {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TIP_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Jahresganglinie ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_JAHR {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Monatssummen ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_MONAT {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tagessummen ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_TAG {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wochensummen ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_WOCHE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche {0} ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_WOCHE_NR {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_WOCHE_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {
@@ -54467,7 +54584,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Bedarfsart die Grafik allein zeigt; im Dialog lassen sich mehrere zugleich wählen, gelesen wird die erste gewählte. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_GRAFIK_ERL {
             get {
@@ -54485,7 +54602,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“)? Aus heißt Zeitraster „Monat“ mit den Monatssummen. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_JAHRESVERLAUF_ERL {
             get {

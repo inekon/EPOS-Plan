@@ -10977,6 +10977,34 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-variant-numeric: tabular-nums;
 }
 
+/* --- Grafikreiter Waerme-/Strombedarf ------------------------------------
+   Bedarfsart und Zeitraster als zwei Knopfgruppen in EINER Zeile ueber dem
+   Bild (Schaltknoepfe .epos-knopf mit aria-pressed); auf schmalem Schirm
+   bricht die zweite Gruppe darunter. */
+.epos-bedarfgrafik {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.epos-bedarfgrafik-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+}
+
+.epos-bedarfgrafik-gruppe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* Das "CSV..." der Saeulen steht am rechten Ende der Zeile. */
+.epos-bedarfgrafik-csv {
+    margin-left: auto;
+}
+
 /* Projektdialoge (Nutzerauftrag 02.09.2026, Merge 5): Haekchen der Mehrfachauswahl,
    Hinweis unter den Pflichtfeldern des Projektkopfs. Kein Nesting (Hausregel). */
 .epos-projektliste-haken {

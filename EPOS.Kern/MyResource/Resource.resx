@@ -23990,10 +23990,10 @@ Möchten Sie das zulassen?</value>
     <value>Sicht der Grafik</value>
   </data>
   <data name="KI_DLG_BERG_GRAFIK_ERL" xml:space="preserve">
-    <value>Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit.</value>
+    <value>Welche Bedarfsart die Grafik allein zeigt; im Dialog lassen sich mehrere zugleich wählen, gelesen wird die erste gewählte.</value>
   </data>
   <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
-    <value>Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt.</value>
+    <value>Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“)? Aus heißt Zeitraster „Monat“ mit den Monatssummen.</value>
   </data>
   <data name="KI_DLG_MASKE_WBX" xml:space="preserve">
     <value>Externe Wärmebedarfsganglinien</value>
@@ -50910,6 +50910,45 @@ Chart</value>
   </data>
   <data name="KONF_KS_LEGENDE" xml:space="preserve">
     <value>Kältebahn: Kälteerzeuger laden den Kältespeicher, Kreis = Platz in der Kälte-Kaskade</value>
+  </data>
+  <data name="BED_GRAFIK_RASTER_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_REIHEN" xml:space="preserve">
+    <value>Bedarfsart</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_RASTER" xml:space="preserve">
+    <value>Zeitraster</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_JAHR" xml:space="preserve">
+    <value>{0} Jahresganglinie</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_MONAT" xml:space="preserve">
+    <value>{0} Monatssummen</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_WOCHE" xml:space="preserve">
+    <value>{0} Wochensummen</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_TAG" xml:space="preserve">
+    <value>{0} Tagessummen</value>
+  </data>
+  <data name="BED_GRAFIK_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="BED_GRAFIK_WOCHE_NR" xml:space="preserve">
+    <value>Woche {0}</value>
+  </data>
+  <data name="BED_GRAFIK_TAG_NR" xml:space="preserve">
+    <value>Tag {0}</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
+    <value>Viertelstunde</value>
+  </data>
+  <data name="BED_GRAFIK_TIP_CSV" xml:space="preserve">
+    <value>Summen als CSV speichern</value>
   </data>
 </root>
 
