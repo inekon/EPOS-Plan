@@ -66,6 +66,12 @@ public sealed class KaeltemaschineAnlageTexte
     public string WaermepumpenLeer { get; set; } = Resource.KMA_WP_LEER;
     public string WaermepumpenHinweis { get; set; } = Resource.KMA_WP_HINWEIS;
     public string WaermepumpenFehler { get; set; } = Resource.KMA_WP_FEHLER;
+    /// <summary>Format, wenn die Anlagen beim Aufbau nicht zu lesen sind (Ressource KMA_LADEN_FEHLER).</summary>
+    public string LadenFehler { get; set; } = Resource.KMA_LADEN_FEHLER;
+    /// <summary>Format, wenn die Wärmepumpen beim Aufbau nicht zu lesen sind (Ressource KMA_WP_LADEN_FEHLER).</summary>
+    public string WaermepumpenLadenFehler { get; set; } = Resource.KMA_WP_LADEN_FEHLER;
+    /// <summary>Format, wenn der Katalog der Katalogwahl nicht zu lesen ist (Ressource KMA_KATALOG_LADEN_FEHLER).</summary>
+    public string KatalogLadenFehler { get; set; } = Resource.KMA_KATALOG_LADEN_FEHLER;
     public string LabelName { get; set; } = Resource.KMA_LBL_NAME;
     public string LabelAnzahl { get; set; } = Resource.KMA_LBL_ANZAHL;
     public string LabelVorlauf { get; set; } = Resource.KMA_LBL_VORLAUF;
