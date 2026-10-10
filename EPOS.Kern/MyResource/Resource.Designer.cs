@@ -112832,6 +112832,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller ausgewählten Speicher [kWh]: ähnelt.
+        /// </summary>
+        public static string SPD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("SPD_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typ: ähnelt.
         /// </summary>
         public static string SPD_LBL_TYP {
@@ -112846,6 +112855,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SPD_MSG_NICHT_GEFUNDEN {
             get {
                 return ResourceManager.GetString("SPD_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit. ähnelt.
+        /// </summary>
+        public static string SPD_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("SPD_RUECK_BLEIBT", resourceCulture);
             }
         }
         

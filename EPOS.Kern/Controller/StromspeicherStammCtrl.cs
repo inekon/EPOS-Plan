@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -845,7 +846,12 @@ namespace WindowsFormsApplication1
                 new DbParam("@bez", szBezeichner ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
 
-            DataRow r = dt.Rows[0];
+            return Anzeige(dt.Rows[0]);
+        }
+
+        /// <summary>Die Anzeigefelder einer gelesenen Zeile — Katalog und Projektkopie fuehren dieselben Spalten.</summary>
+        private static IReadOnlyDictionary<string, string> Anzeige(DataRow r)
+        {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
             werte[ModulKatalogProfil.FeldBezeichner] = Spaltentext(r, "Bezeichner");
@@ -882,6 +888,176 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Bearbeiten je Bereich und Mehrfach-Bearbeiten (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die Projektkopien der Stromspeicher — <c>Tab_Energieanlagen.ID_SP</c> zeigt hierher.</summary>
+        public const string TABELLE_PROJEKT = "Tab_Stromspeicher";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>
+        /// Die Anzeigefelder des Satzes <paramref name="id"/> — der Projektkopie (<paramref name="projektkopie"/>)
+        /// oder des Katalogs; dieselben Schluessel wie <see cref="KatalogsatzAnzeige"/>. <c>null</c> = kein Satz.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?", new DbParam("@id", id));
+            return dt == null || dt.Rows.Count == 0 ? null : Anzeige(dt.Rows[0]);
+        }
+
+        /// <summary>Der Satz <paramref name="id"/> als Modell (Projektkopie oder Katalog); <c>null</c> = kein Satz.</summary>
+        public static StromspeicherModel Satz(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var m = new StromspeicherModel();
+            FillFromRow(m, dt.Rows[0]);
+            return m;
+        }
+
+        /// <summary>
+        /// <b>Die Pruefregel eines Speichersatzes</b> — beim Sammelspeichern und beim Rueckweg dieselbe: Kapazitaet,
+        /// Leistung, Kosten, Zyklen und Standby nicht negativ, Ladezustand, Degradation und Selbstentladung zwischen 0 und
+        /// 100 %, der Round-Trip-Wirkungsgrad zwischen 0 und 1 (0 = Fachvorgabe). <c>null</c> = in Ordnung.
+        /// </summary>
+        public static string Pruefen(StromspeicherModel m)
+        {
+            if (m == null) return null;
+            return KatalogFeldPruefung.ErsterGrund(
+                Negativ(ModulKatalogProfil.FeldEnergie, m.m_Energie),
+                Negativ(ModulKatalogProfil.FeldLeistung, m.m_Leistung),
+                Bereich(ModulKatalogProfil.FeldDegradation, m.m_Degradation, 0, 100),
+                Bereich(ModulKatalogProfil.FeldLadezustand, m.m_Ladezustand, 0, 100),
+                Negativ(ModulKatalogProfil.FeldModulkosten, m.m_Modulkosten),
+                Bereich(ModulKatalogProfil.FeldWirkungsgradRt, m.m_WirkungsgradRT, 0, 1),
+                Negativ(ModulKatalogProfil.FeldZyklen, m.m_ZyklenZugesichert),
+                Negativ(ModulKatalogProfil.FeldVerschleisskosten, m.m_Verschleisskosten),
+                Negativ(ModulKatalogProfil.FeldLeistungskosten, m.m_Leistungskosten),
+                Negativ(ModulKatalogProfil.FeldInvestitionFix, m.m_InvestitionFix),
+                Negativ(ModulKatalogProfil.FeldStandby, m.m_StandbyVerbrauch),
+                Bereich(ModulKatalogProfil.FeldSelbstentladung, m.m_Selbstentladung, 0, 100));
+        }
+
+        private static string Feldname(string schluessel)
+        {
+            foreach (ModulKatalogFeld f in ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher, s => Text(s, s)).Felder)
+                if (string.Equals(f.Schluessel, schluessel, StringComparison.Ordinal)) return f.Bezeichnung.TrimEnd(':', ' ');
+            return schluessel;
+        }
+
+        private static string Negativ(string schluessel, double wert)
+            => wert >= 0 ? null
+               : string.Format(Text("KBROW_MSG_WERT_NEGATIV", "„{0}“ darf nicht negativ sein."), Feldname(schluessel));
+
+        private static string Bereich(string schluessel, double wert, double von, double bis)
+            => wert >= von && wert <= bis ? null
+               : string.Format(Text("KBROW_MSG_WERT_BEREICH", "„{0}“ muss zwischen {1} und {2} liegen."), Feldname(schluessel),
+                               von.ToString(CultureInfo.CurrentCulture), bis.ToString(CultureInfo.CurrentCulture));
+
+        /// <summary>Die Felder eines Satzes, benannt ueber seine ID — der volle Satz, nicht nur die Aenderung.</summary>
+        public sealed record Satzaenderung(int Id, StromspeicherModel Daten);
+
+        /// <summary>
+        /// <b>Schreibt alle geaenderten Saetze einer Mehrfachbearbeitung — alle oder keiner</b> (Konzept Projektdialoge mit
+        /// Katalogauswahl 4.6). <paramref name="projektkopie"/> waehlt die Tabelle: die Projektkopien
+        /// (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchlaeuft <see cref="Pruefen"/>; ein gesperrter Katalogsatz, eine fehlende ID oder ein Verstoss rollt
+        /// die ganze Transaktion zurueck und nennt den Satz. <b>Der Name bleibt</b> — der Bezeichner ist der Schluessel der
+        /// Verwendung und wird hier nie geschrieben. Eine Spalte, die leer (<c>NULL</c>) war und als 0 zurueckkommt, bleibt
+        /// leer: Die Kopien tragen leere Geraetespalten, und leer heisst im Rechenweg Fachvorgabe.
+        /// </remarks>
+        public static SpeicherErgebnis SchreibenAlle(bool projektkopie, IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            StromspeicherCtrl.StelleGeraetespaltenSicher();   // AP3-Spalten, bevor sie im UPDATE stehen
+            string tabelle = Tabelle(projektkopie);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Daten == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        DataRow alt = dt.Rows[0];
+                        string name = alt["Bezeichner"] == DBNull.Value ? "" : alt["Bezeichner"].ToString();
+                        if (!projektkopie && ReadOnlyOf(alt))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
+                        }
+                        string grund = Pruefen(s.Daten);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name, grund), name);
+                        }
+                        (string sql, DbParam[] ps) = Aktualisierung(s.Daten, alt, tabelle, s.Id);
+                        v.Ausfuehren(sql, ps);
+                    }
+                    v.Commit();
+                }
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+            }
+        }
+
+        /// <summary>Das UPDATE eines Satzes ueber seine ID — alle Geraetespalten ausser dem Bezeichner.</summary>
+        private static (string Sql, DbParam[] Ps) Aktualisierung(StromspeicherModel m, DataRow alt, string tabelle, int id)
+        {
+            object Wert(string spalte, double neu)
+                => alt.Table.Columns.Contains(spalte) && alt[spalte] == DBNull.Value && neu == 0 ? DBNull.Value : (object)neu;
+            object Text_(string spalte, string neu)
+                => alt.Table.Columns.Contains(spalte) && alt[spalte] == DBNull.Value && string.IsNullOrEmpty(neu)
+                    ? DBNull.Value : (object)(neu ?? "");
+
+            string sql = "UPDATE [" + tabelle + @"] SET
+                            Firma = ?, Typ = ?, Leistung = ?, Energie = ?, Degradation = ?, Ladezustand = ?,
+                            Modulkosten = ?, Wirkungsgrad_RT = ?, Zyklen_Zugesichert = ?, Verschleisskosten = ?,
+                            Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?,
+                            Selbstentladung_Prozent_Monat = ?
+                          WHERE ID = ?";
+            DbParam[] ps =
+            {
+                new DbParam("@fir", Text_(SchemaKatalog.SPALTE_SP_FIRMA, m.m_szFirma)),
+                new DbParam("@typ", Text_("Typ", m.m_szTyp)),
+                new DbParam("@lei", Wert("Leistung", m.m_Leistung)),
+                new DbParam("@ene", Wert("Energie", m.m_Energie)),
+                new DbParam("@deg", Wert("Degradation", m.m_Degradation)),
+                new DbParam("@lad", Wert("Ladezustand", m.m_Ladezustand)),
+                new DbParam("@mod", Wert("Modulkosten", m.m_Modulkosten)),
+                new DbParam("@eta", Wert("Wirkungsgrad_RT", m.m_WirkungsgradRT)),
+                new DbParam("@nzyk", Wert("Zyklen_Zugesichert", m.m_ZyklenZugesichert)),
+                new DbParam("@cver", Wert("Verschleisskosten", m.m_Verschleisskosten)),
+                new DbParam("@cpow", Wert("Leistungskosten", m.m_Leistungskosten)),
+                new DbParam("@ifix", Wert("Investition_Fix", m.m_InvestitionFix)),
+                new DbParam("@stby", Wert("Standby_Verbrauch", m.m_StandbyVerbrauch)),
+                new DbParam("@selbst", Wert(StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG, m.m_Selbstentladung)),
+                new DbParam("@id", id)
+            };
+            return (sql, ps);
         }
     }
 }
