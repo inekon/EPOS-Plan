@@ -192,6 +192,8 @@ namespace WindowsFormsApplication1
                 // Spitze und der Spalte "im Projekt verwendet", Vergleichen, Schloss,
                 // Loeschen und Import - plattformfrei in EPOS.UI.Daten.
                 ["Katalogwege"] = SolarganglinieKatalogGaben.Wege(),
+                // "CSV..." an jedem Zeitreihenbild des Dialogs (Satzansicht, Optionendialog des Imports).
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Katalogprofil"] = SolarganglinieKatalogGaben.Profil(true),
 
                 ["Aufnehmen"] = new Func<int, ErzeugerZeile>(

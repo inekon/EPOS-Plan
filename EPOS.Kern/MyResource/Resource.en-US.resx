@@ -4498,6 +4498,30 @@ Please run the simulation with photovoltaics first.</value>
   <data name="IMPORT_PROT_GELESEN" xml:space="preserve">
     <value>Read: {0} values, {1} time stamps.</value>
   </data>
+  <data name="IMPORT_PROBE_RASTER" xml:space="preserve">
+    <value>{0} data rows read → interval {1} ({2} values)</value>
+  </data>
+  <data name="IMPORT_PROBE_KEIN_RASTER" xml:space="preserve">
+    <value>{0} data rows read → no interval: {1}</value>
+  </data>
+  <data name="IMPORT_PROBE_STUNDE" xml:space="preserve">
+    <value>hour</value>
+  </data>
+  <data name="IMPORT_PROBE_VIERTEL" xml:space="preserve">
+    <value>quarter hour</value>
+  </data>
+  <data name="IMPORT_GRP_GRAFIK" xml:space="preserve">
+    <value>Series read</value>
+  </data>
+  <data name="IMPORT_BILD_TITEL" xml:space="preserve">
+    <value>Load profile read</value>
+  </data>
+  <data name="PVG_BILD_TITEL" xml:space="preserve">
+    <value>Photovoltaics annual load profile</value>
+  </data>
+  <data name="SGL_BILD_TITEL" xml:space="preserve">
+    <value>Solar thermal annual load profile</value>
+  </data>
   <data name="IMPORT_TITEL_OPTIONEN" xml:space="preserve">
     <value>Import load curve - format and preview</value>
   </data>

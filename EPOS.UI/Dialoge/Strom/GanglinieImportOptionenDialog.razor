@@ -105,6 +105,24 @@
         </KindInhalt>
     </Raster>
 
+    @* DIE GELESENE REIHE: Zeilenzahl und erkanntes Raster (oder der Grund, warum es keines gibt) und
+       die Reihe als Jahresbild - aus der Probelesung der ganzen Datei unter den gewaehlten Optionen
+       (GanglinienVorschau.Probe, gerechnet im Kern). Sie entsteht mit "Vorschau aktualisieren" neu;
+       eine unlesbare Datei zeigt kein Bild, ihr Grund steht im Banner. "CSV..." am Bild kommt ueber
+       die Export-Kaskade des Wirts. *@
+    @if (_probe is not null)
+    {
+        <p class="epos-leisezeile epos-importoptionen-probe" role="status">@_probe.Zeile</p>
+        @if (_probe.Modell is not null)
+        {
+            <Gruppenkopf Titel="@GruppeGrafik" />
+            <div class="epos-importoptionen-bild">
+                <DiagrammSvg Modell="@_probe.Modell" Kennung="@("importoptionen-" + _probeNummer)"
+                             Bezeichnung="@BildTitel" Einheit="kW" Palette="@WindowsFormsApplication1.Zeichnung.Farbpalette.Aktuell" />
+            </div>
+        }
+    }
+
     @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 1):
        Aktionen · Fueller · Abbrechen · OK (primaer, zuletzt). "Aktualisieren"
        wirkt auf den Eingabeblock - es zerlegt die Datei mit den eingestellten
@@ -169,6 +187,10 @@
     [Parameter] public string VorlageUnlesbar { get; set; } = Resource.IMPORT_MSG_VORSCHAU_UNLESBAR;
     [Parameter] public string SpalteZeile { get; set; } = Resource.IMPORT_SPALTE_ZEILE;
     [Parameter] public string VorlageSpalte { get; set; } = Resource.IMPORT_SPALTE_N;
+    /// <summary>Gruppenkopf über dem Bild der gelesenen Reihe — <c>IMPORT_GRP_GRAFIK</c>.</summary>
+    [Parameter] public string GruppeGrafik { get; set; } = Resource.IMPORT_GRP_GRAFIK;
+    /// <summary>Titel des Bildes (auch Name der CSV) — <c>IMPORT_BILD_TITEL</c>.</summary>
+    [Parameter] public string BildTitel { get; set; } = Resource.IMPORT_BILD_TITEL;
 
     /// <summary>
     /// Beschriftung des Fussknopfes. WOERTLICH <c>SIM_BTN_OK</c> und nicht
@@ -195,6 +217,11 @@
     private bool _kopfzeile;
 
     private GanglinienVorschau? _vorschau;
+    private GanglinienProbe? _probe;
+    private int _probeNummer;
+
+    /// <summary>Die Probelesung der ganzen Datei unter den gewählten Optionen; <c>null</c> = keine (Prüfhilfe).</summary>
+    public GanglinienProbe? Probe => _probe;
     private List<string> _blattnamen = new();
 
     private IReadOnlyList<(int Id, string Text)> _trennzeichen = Array.Empty<(int, string)>();
@@ -252,6 +279,7 @@
     {
         if (_vorschau is not null) return;      // schon aufgebaut
         _vorschau = Erkennung;
+        ProbeSetzen(Erkennung);
         ListenFuellen(Erkennung);
         OptionenInDialog(Erkennung?.Vorschlag ?? new GanglinienImportOptionen());
     }
@@ -434,14 +462,23 @@
             PruefMeldung? fehler = neu?.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
             string grund = fehler is null ? Resource.IMPORT_PROT_DATEI_LEER : GanglinienProtokollText.Text(fehler);
             _meldung = string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageUnlesbar, grund);
+            _probe = null;
             return;
         }
         _meldung = "";
+        ProbeSetzen(neu);
 
         // Woertlich: Die Listen werden neu gefuellt, die OPTIONEN aber gerettet.
         _vorschau = neu;
         ListenFuellen(neu);
         OptionenInDialog(behalten);
+    }
+
+    /// <summary>Die Probelesung einer lesbaren Vorschau; eine unlesbare hat keine.</summary>
+    private void ProbeSetzen(GanglinienVorschau? vorschau)
+    {
+        _probe = vorschau is not null && vorschau.Lesbar ? vorschau.Probe : null;
+        _probeNummer++;
     }
 
     // =====================================================================
