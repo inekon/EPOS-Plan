@@ -318,6 +318,22 @@
                     </ChildContent>
                 </TemplateColumn>
             }
+
+            @* DER STIFT JE ZEILE (UeS2): eine schmale Spalte am Ende, nur mit Rueckruf. Sie
+               steht ausserhalb der Spaltenwahl (nicht in _angezeigt) und aendert das Zeilenmass
+               nicht. Der Klick waehlt die Zeile (ohne Zusatztasten, ohne Kaestchen) und ruft
+               den Rueckruf des Wirts. *@
+            @if (Bearbeiten.HasDelegate)
+            {
+            <TemplateColumn TGridItem="Katalogfilterzeile" Class="epos-spalte-stift">
+                <HeaderTemplate>
+                    <Zeilenstift Kopf="true" />
+                </HeaderTemplate>
+                <ChildContent>
+                    <Zeilenstift Hinweis="@BearbeitenHinweis" Geklickt="@(() => BeiStift(context))" />
+                </ChildContent>
+            </TemplateColumn>
+            }
         </KindInhalt>
     </Raster>
 
@@ -909,6 +925,23 @@
 
     /// <summary>Ein Doppelklick auf eine Zeile („wählen und übernehmen", W6‑E‑5).</summary>
     [Parameter] public EventCallback<Katalogfilterzeile> Doppelklick { get; set; }
+
+    /// <summary>
+    /// <b>Der Stift je Zeile</b> (UeS2): Gesetzt trägt jede Zeile am Ende einen Stiftknopf
+    /// „Bearbeiten". Sein Klick wählt die Zeile (wie ein blanker Klick, ohne Kästchen und
+    /// ohne Markierung) und ruft danach diesen Rückruf mit der Zeile.
+    /// </summary>
+    [Parameter] public EventCallback<Katalogfilterzeile> Bearbeiten { get; set; }
+
+    /// <summary>Kurztext des Stifts; leer = „Bearbeiten" (<c>AUSWAHL_ZEILE_BEARBEITEN</c>).</summary>
+    [Parameter] public string? BearbeitenHinweis { get; set; }
+
+    /// <summary>Der Stift einer Zeile: erst wählen (falls nicht gewählt), dann der Rückruf.</summary>
+    private async Task BeiStift(Katalogfilterzeile zeile)
+    {
+        if (zeile.Schluessel != Gewaehlt) await Waehlen(zeile);
+        await Bearbeiten.InvokeAsync(zeile);
+    }
 
     /// <summary>
     /// Ein Klick in der Mehrfachwahl. <paramref name="Index"/> ist die Stelle in der

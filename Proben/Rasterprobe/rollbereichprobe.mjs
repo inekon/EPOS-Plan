@@ -167,6 +167,12 @@ function messen(KOMPAKT_ABFRAGE) {
     ueberlagerungRahmen: (u => u ? [u.getBoundingClientRect().top, u.getBoundingClientRect().bottom] : null)(document.querySelector('.epos-ueberlagerung')),
     ueberlagerung: !!document.querySelector('.epos-ueberlagerung'), zweispalten: h(d && d.querySelector('.epos-zweispalten')),
     satzOffen: !!(d && d.querySelector('.epos-zweispalten--satz-offen')), ueberlauf,
+    // UeS2: die Zusammenfassung statt des Fragments - Hoehe, Zeilenmass und ob sie rollt.
+    zusammenfassung: (z => z && !z.hidden ? {
+      liste: Math.round((z.querySelector('.epos-satzzusammenfassung')?.getBoundingClientRect().height ?? 0) * 10) / 10,
+      zeile: parseFloat(getComputedStyle(z.closest('.epos-zweispalten')).getPropertyValue('--epos-zf-zeile')) || 20,
+      rollt: z.scrollHeight > z.clientHeight + 1 || ['auto', 'scroll'].includes(getComputedStyle(z).overflowY),
+      angaben: z.querySelectorAll('.epos-satzzusammenfassung-angabe').length } : null)(d && d.querySelector('.epos-zweispalten-satz--zusammenfassung')),
     leistenfehler, ...satzmasse(d),
   };
   // DZ1: die Satzflaeche, ihr Rest bis zum unteren Rand des Bausteins und das Bild der Ganglinie.
@@ -428,8 +434,17 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
       if (m.katalog + 2 < m.katalogKopf + 2 * zeile)
         fehler.push(`Heizkessel: Katalogliste ${m.katalog} px < Kopf ${m.katalogKopf} + 2 Zeilen a ${zeile} px`);
     }
+    // UeS2: Mit Zusammenfassung kein Vorrang - hoechstens drei Zeilen, kein Rollbereich, die
+    // Detailzeile nur so hoch wie ihr Inhalt (die Listen behalten die Aufteilung der Trennlinie).
+    if (m.satzOffen && m.zusammenfassung) {
+      const zf = m.zusammenfassung;
+      if (zf.angaben === 0) fehler.push('Zusammenfassung ohne Angaben');
+      if (zf.liste > 3 * zf.zeile + 1) fehler.push(`Zusammenfassung ${zf.liste} px hoch, mehr als drei Zeilen a ${zf.zeile} px`);
+      if (zf.rollt) fehler.push('Zusammenfassung rollt (Rollbereich in der Detailzeile)');
+      if (m.satz !== null && m.satz > 3 * zf.zeile + 40) fehler.push(`Detailzeile ${m.satz} px - Vorrang trotz Zusammenfassung`);
+    }
     // DZ1: aufgeklappt Listen auf ihren Untergrenzen, die Satzflaeche nimmt den Rest.
-    if (m.satzOffen && m.satz !== null) {
+    if (m.satzOffen && m.satz !== null && !m.zusammenfassung) {
       if (m.projekt !== null && m.projekt > m.projektMin + 2) fehler.push(`Detailzeile auf: Projektliste ${m.projekt} px ueber ihrer Untergrenze ${Math.round(m.projektMin)} px`);
       if (m.katalog !== null && m.katalog > m.katalogMin + 2) fehler.push(`Detailzeile auf: Katalogliste ${m.katalog} px ueber ihrer Untergrenze ${Math.round(m.katalogMin)} px`);
       if (m.satzRest > 3) fehler.push(`Detailzeile auf: Satzflaeche ${m.satz} px laesst ${m.satzRest} px frei`);
@@ -515,13 +530,19 @@ try {
           await t.dblclick();                        // Vorgabe und Ablage geloescht
           await ruhe(seite);
         }
-        // Heizkessel (Stufe 2): Detailzeile auf mit Kosten, Ueberlagerung "Bearbeiten..." fuer die
-        // Projektkopie und fuer zwei angekreuzte Katalogsaetze (Blaetterleiste).
+        // Heizkessel (UeS2): Detailzeile auf = Zusammenfassung ohne Kostenknoepfe und ohne Vorrang;
+        // Ueberlagerung "Bearbeiten..." fuer die Projektkopie (mit Kostenknoepfen), ueber "Bearbeiten"
+        // der Detailzeile, ueber den Stift der Projektzeile und fuer zwei angekreuzte Katalogsaetze.
         if (fall === 'heizkessel') {
           await satz(seite, true);
-          if (await seite.locator('.epos-zweispalten-satz .epos-kostenleiste button').count() === 0)
-            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Kostenknoepfe`);
-          await mess('Detailzeile auf mit Kosten');
+          await massAbwarten(seite);
+          if (await seite.locator('.epos-zweispalten-satz--zusammenfassung .epos-satzzusammenfassung-angabe').count() === 0)
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Zusammenfassung`);
+          if (await seite.locator('.epos-zweispalten-satz .epos-kostenleiste button').count() !== 0)
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Kostenknoepfe in der Zusammenfassung`);
+          await mess('Detailzeile auf, Zusammenfassung');
+          if (FOTOS && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1194 && fenster.hoehe === 834)))
+            await seite.screenshot({ path: `${FOTOS}/heizkessel_zusammenfassung_${fenster.breite}x${fenster.hoehe}.png` });
           await satz(seite, false);
           // UeS1: „Bearbeiten…" EINER Projektkopie oeffnet die Satz-Ueberlagerung in voller Hoehe.
           await seite.locator('.epos-knopf--bearbeiten-projekt').click();
@@ -531,19 +552,30 @@ try {
           pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen', await seite.evaluate(satzUeberlagerung, rand(fenster)));
           if (FOTOS && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.ipad && (fenster.breite === 1194 || fenster.breite === 834))))
             await seite.screenshot({ path: `${FOTOS}/heizkessel_satzueberlagerung_${fenster.breite}x${fenster.hoehe}.png` });
+          if (await seite.locator('.epos-satzueberlagerung-koerper .epos-kostenleiste button').count() === 0)
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Satz-Ueberlagerung ohne Kostenknoepfe`);
           await seite.keyboard.press('Escape');
           await ruhe(seite);
           if (await seite.locator('.epos-ueberlagerung--satz').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Satz-Ueberlagerung nicht`);
-          // Derselbe Weg ueber „Vergroessern" in der Detailzeile; Abbrechen schliesst.
-          await seite.locator('.epos-zweispalten-vergroessern').click();
+          // Derselbe Weg ueber „Bearbeiten" in der Detailzeile (UeS2); Abbrechen schliesst.
+          await seite.locator('.epos-zweispalten-bearbeiten').click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
-          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Bearbeiten', await seite.evaluate(satzUeberlagerung, rand(fenster)));
           await seite.locator('.epos-satzueberlagerung-abbrechen').click();
           await ruhe(seite);
           if (await seite.locator('.epos-ueberlagerung--satz').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Abbrechen schliesst die Satz-Ueberlagerung nicht`);
+          // Der Stift der Projektzeile (UeS2): dieselbe Ueberlagerung; Esc schliesst.
+          if (await seite.locator('.epos-zweispalten-bereich--projekt .epos-zeilenstift').count()) {
+            await seite.locator('.epos-zweispalten-bereich--projekt .epos-zeilenstift').first().click();
+            await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+            await ruhe(seite);
+            pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber den Stift', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+            await seite.keyboard.press('Escape');
+            await ruhe(seite);
+          } else verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Projektliste ohne Stift`);
           const k = seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input');
           await k.nth(0).check();
           await k.nth(1).check();
@@ -573,25 +605,45 @@ try {
           if (await seite.locator('.epos-rueckweg').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
         }
-        // UeS1b: dieselbe Satz-Ueberlagerung in BHKW, Pufferspeicher und Stromspeicher - je Fenster ueber
-        // „Bearbeiten…" der Projektkopie (danach Esc) und ueber „Vergroessern" (danach Abbrechen); dazu traegt der
-        // Koerper die Besonderheit des Wirts (BHKW Kostenknoepfe, Pufferspeicher „Auslegen…", Stromspeicher Traeger).
-        // UeS1c: dazu Solarkollektoren (Kollektorfelder), Waermepumpe („Anlage…", Fragment .epos-wp-satz) und
-        // Photovoltaik („Stränge und Wechselrichter…").
+        // UeS2b: BHKW, Pufferspeicher und Stromspeicher wie der Heizkessel - Detailzeile auf = Zusammenfassung
+        // ohne die Besonderheit des Wirts und ohne Vorrang; dieselbe Satz-Ueberlagerung je Fenster ueber
+        // „Bearbeiten…" der Projektkopie (danach Esc), ueber „Bearbeiten" der Detailzeile (danach Abbrechen) und
+        // ueber den Stift der Projektzeile (danach Esc); ihr Koerper traegt die Besonderheit des Wirts (BHKW
+        // Kostenknoepfe, Pufferspeicher „Auslegen…", Stromspeicher Traeger).
+        // UeS1b/UeS1c (Wirte ohne Zusammenfassung: Solarkollektoren, Waermepumpe, Photovoltaik): ueber
+        // „Bearbeiten…" der Projektkopie (danach Esc) und ueber „Vergroessern" (danach Abbrechen); Solarkollektoren
+        // (Kollektorfelder), Waermepumpe („Anlage…", Fragment .epos-wp-satz), Photovoltaik („Stränge und Wechselrichter…").
         const SATZ_WIRTE = { bhkw: ['.epos-kostenleiste button', 'Kostenknoepfe'],
           pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'],
           solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
           waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
           photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'] };
+        const ZUSAMMENFASSUNG_WIRTE = ['bhkw', 'pufferspeicher', 'stromspeicher'];
         if (SATZ_WIRTE[fall]) {
+          const [wahl, was, marke] = SATZ_WIRTE[fall];
+          const zusammen = ZUSAMMENFASSUNG_WIRTE.includes(fall);
+          if (zusammen) {
+          await satz(seite, true);
+          await massAbwarten(seite);
+          if (await seite.locator('.epos-zweispalten-satz--zusammenfassung .epos-satzzusammenfassung-angabe').count() === 0) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Zusammenfassung`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          if (await seite.locator('.epos-zweispalten-satz ' + wahl).count() !== 0) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${was} in der Zusammenfassung`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          if (await seite.locator('.epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-hilfepille').count() !== 2) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Infoknoepfe fehlen im Kopf der Detailzeile`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          await mess('Detailzeile auf, Zusammenfassung');
+          if (FOTOS && fall !== 'pufferspeicher' && fenster.breite === 1280 && fenster.hoehe === 800)
+            await seite.screenshot({ path: `${FOTOS}/${fall}_zusammenfassung_${fenster.breite}x${fenster.hoehe}.png` });
+          }
           await satz(seite, false);
           await seite.locator('.epos-knopf--bearbeiten-projekt').click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
           await mess('Satz-Ueberlagerung offen');
-          const marke = SATZ_WIRTE[fall][2];
           pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));
-          const [wahl, was] = SATZ_WIRTE[fall];
           if (await seite.locator('.epos-satzueberlagerung-koerper ' + wahl).count() === 0) {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${was} fehlen in der Satz-Ueberlagerung`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
@@ -601,15 +653,27 @@ try {
           await ruhe(seite);
           if (await seite.locator('.epos-ueberlagerung--satz').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Satz-Ueberlagerung nicht`);
-          await satz(seite, true);
-          await seite.locator('.epos-zweispalten-vergroessern').click();
+          if (!zusammen) {
+            await satz(seite, true);
+            await seite.locator('.epos-zweispalten-vergroessern').click();
+          } else await seite.locator('.epos-zweispalten-bearbeiten').click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
-          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));
+          pruefeSatzUeberlagerung(fall, fenster, zusammen ? 'Satz-Ueberlagerung ueber Bearbeiten' : 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));
           await seite.locator('.epos-satzueberlagerung-abbrechen').click();
           await ruhe(seite);
           if (await seite.locator('.epos-ueberlagerung--satz').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Abbrechen schliesst die Satz-Ueberlagerung nicht`);
+          if (zusammen) {
+          if (await seite.locator('.epos-zweispalten-bereich--projekt .epos-zeilenstift').count()) {
+            await seite.locator('.epos-zweispalten-bereich--projekt .epos-zeilenstift').first().click();
+            await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+            await ruhe(seite);
+            pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber den Stift', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));
+            await seite.keyboard.press('Escape');
+            await ruhe(seite);
+          } else { verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Projektliste ohne Stift`); console.log('  VERSTOSS ' + verstoesse.at(-1)); }
+          }
           await mess('nach Satz-Ueberlagerung');
         }
         // UeS1c: die Ganglinien ueber „Vergroessern" - die Kurve fuellt den Koerper, reine Ansicht („Schließen").
@@ -698,11 +762,31 @@ try {
       await k6.close();
     }
 
+    // Zusammenfassung (UeS2): eine Angabe je Zeile ohne Hoechsthoehe (acht Zeilen) muss rot werden.
+    {
+      const k7 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s7 = await k7.newPage();
+      await s7.goto(WURZEL + '/fensterprobe?fall=heizkessel&zeilen=40', { waitUntil: 'networkidle' });
+      await s7.waitForSelector('.epos-zweispalten');
+      await s7.addStyleTag({ content: '.epos-satzzusammenfassung { max-height: none !important; } .epos-satzzusammenfassung-angabe { flex-basis: 100% !important; }' });
+      await satz(s7, true);
+      await ruhe(s7); await massAbwarten(s7);
+      const vor = verstoesse.length, n = zeilen.length, b = befunde.length;
+      pruefen('gegenprobe-zusammenfassung', { breite: 1280, hoehe: 800 }, 'eine Angabe je Zeile', await s7.evaluate(messen, KOMPAKT), [], true, null);
+      const rot = verstoesse.slice(vor).some(v => v.includes('mehr als drei Zeilen'));
+      verstoesse.splice(vor); zeilen.splice(n); befunde.splice(b);
+      console.log(`Gegenprobe Zusammenfassung: eine Angabe je Zeile - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Zusammenfassung nicht'); rueckgabe = 1; }
+      await k7.close();
+    }
+
     // Vorrang (DZ1): eine Satzflaeche, die auf 100 px begrenzt kleiner als der Rest bleibt, muss rot werden.
     {
       const k3 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
       const s3 = await k3.newPage();
-      await s3.goto(WURZEL + '/fensterprobe?fall=heizkessel&zeilen=40', { waitUntil: 'networkidle' });
+      // UeS2b: Heizkessel, BHKW, Puffer- und Stromspeicher zeigen eine Zusammenfassung ohne Vorrang - die
+      // Gegenprobe nimmt einen Ganglinien-Wirt, der das Fragment in der Detailzeile zeigt.
+      await s3.goto(WURZEL + '/rollbereichprobe?fall=stromganglinie', { waitUntil: 'networkidle' });
       await s3.waitForSelector('.epos-zweispalten');
       await s3.addStyleTag({ content: '.epos-zweispalten-satz { max-height: 100px !important; }' });
       await satz(s3, true);

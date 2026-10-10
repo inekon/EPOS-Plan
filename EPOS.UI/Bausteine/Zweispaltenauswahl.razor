@@ -26,6 +26,11 @@
    Aufbau bei jedem Klappen verloere ihn. Nur waehrend die Satz-Ueberlagerung offen ist,
    steht er dort statt hier.
 
+   ZUSAMMENFASSUNG (4.4, UeS2). Reicht der Wirt SatzZusammenfassung, zeigt die aufgeklappte
+   Detailzeile nur diese Kurzangaben (ohne Vorrang, die Listen behalten ihre Aufteilung), der
+   Kopf traegt „Bearbeiten" statt „Details" und „Vergroessern", und das Fragment Satz steht nur
+   noch in der Satz-Ueberlagerung.
+
    SATZ-UEBERLAGERUNG (4.4, 4.6, UeS1). „Vergroessern" im Kopf der Detailzeile und die
    oeffentliche Methode SatzUeberlagerungOeffnen (Knoepfe „Bearbeiten…" des Wirts) zeigen den
    Satz als Ueberlagerung ueber dem ganzen Dialog: Kopf mit Marke, Name und Kenndaten, Koerper
@@ -153,24 +158,79 @@
                         <span class="epos-zweispalten-satzkenndaten">@SatzKenndaten</span>
                     }
                     <span class="epos-leiste-fueller"></span>
-                    <span class="epos-zweispalten-satzdetails">@Resource.AUSWAHL_SATZ_DETAILS</span>
+                    @if (SatzZusammenfassung is null)
+                    {
+                        <span class="epos-zweispalten-satzdetails">@Resource.AUSWAHL_SATZ_DETAILS</span>
+                    }
                 </button>
-                @* VERGROESSERN (UeS1): derselbe Satz als Ueberlagerung ueber dem ganzen Dialog. *@
-                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-vergroessern"
-                        title="@Resource.AUSWAHL_SATZ_VERGROESSERN_HINWEIS" aria-label="@Resource.AUSWAHL_SATZ_VERGROESSERN"
-                        disabled="@(SatzArt == Satzmarke.Keiner || _satzGross)" @onclick="SatzUeberlagerungOeffnen">
-                    <span class="epos-zweispalten-pfeil" aria-hidden="true">⤢</span>
-                    <span class="epos-zweispalten-knopftext">@Resource.AUSWAHL_SATZ_VERGROESSERN</span>
-                </button>
-            </div>
-            <div class="epos-zweispalten-satz" hidden="@(!SatzflaecheOffen)">
-                @* Das Fragment steht zu jedem Zeitpunkt an GENAU einer Stelle: hier oder in
-                   der Satz-Ueberlagerung. *@
-                @if (!_satzGross)
+                @if (SatzKopfKnoepfe is not null && !_satzGross)
                 {
-                    @Satz
+                    @* KOPFKNOEPFE DES WIRTS (UeS2b): seine Infoknoepfe „Grundlagen" und „Berechnung" -
+                       ohne Ueberlagerung erreichbar. Steht die Satz-Ueberlagerung offen, traegt sie
+                       ihr Fragment samt Knoepfen; dann fehlen sie hier (eine Stelle je Ansicht). *@
+                    <span class="epos-zweispalten-satzkopfknoepfe">@SatzKopfKnoepfe</span>
+                }
+                @if (SatzZusammenfassung is not null)
+                {
+                    @* BEARBEITEN (UeS2): ersetzt „Details" und „Vergroessern" - derselbe Weg in die
+                       Satz-Ueberlagerung; beim gesperrten Katalogsatz nur lesend. *@
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-bearbeiten"
+                            title="@(SatzNurLesen ? Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS : Resource.AUSWAHL_SATZ_BEARBEITEN_HINWEIS)"
+                            aria-label="@Resource.AUSWAHL_SATZ_BEARBEITEN"
+                            disabled="@(SatzArt == Satzmarke.Keiner || _satzGross)" @onclick="SatzUeberlagerungOeffnen">
+                        <svg class="epos-zeilenstift-bild" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                            <path d="M11.3 1.6a1.5 1.5 0 0 1 2.1 0l1 1a1.5 1.5 0 0 1 0 2.1L5.6 13.5 1.8 14.2l.7-3.8z M10.2 2.7l3.1 3.1"
+                                  fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                        </svg>
+                        <span class="epos-zweispalten-knopftext">@Resource.AUSWAHL_SATZ_BEARBEITEN</span>
+                    </button>
+                }
+                else
+                {
+                    @* VERGROESSERN (UeS1): derselbe Satz als Ueberlagerung ueber dem ganzen Dialog. *@
+                    <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-vergroessern"
+                            title="@Resource.AUSWAHL_SATZ_VERGROESSERN_HINWEIS" aria-label="@Resource.AUSWAHL_SATZ_VERGROESSERN"
+                            disabled="@(SatzArt == Satzmarke.Keiner || _satzGross)" @onclick="SatzUeberlagerungOeffnen">
+                        <span class="epos-zweispalten-pfeil" aria-hidden="true">⤢</span>
+                        <span class="epos-zweispalten-knopftext">@Resource.AUSWAHL_SATZ_VERGROESSERN</span>
+                    </button>
                 }
             </div>
+            @if (SatzZusammenfassung is not null)
+            {
+                @* DIE ZUSAMMENFASSUNG (UeS2): nur Kurzangaben, hoechstens drei Zeilen, kein
+                   Rollbereich und kein Vorrang - die Listen behalten ihre Aufteilung. Das
+                   Fragment Satz steht dann ausschliesslich in der Satz-Ueberlagerung. *@
+                <div class="epos-zweispalten-satz epos-zweispalten-satz--zusammenfassung" hidden="@(!SatzflaecheOffen)">
+                    @if (SatzZusammenfassung.Count == 0)
+                    {
+                        <p class="epos-zweispalten-satzleer">@Resource.AUSWAHL_SATZ_LEER</p>
+                    }
+                    else
+                    {
+                        <dl class="epos-satzzusammenfassung" aria-label="@Resource.AUSWAHL_SATZ_ZUSAMMENFASSUNG">
+                            @foreach (Satzangabe angabe in SatzZusammenfassung)
+                            {
+                                <div class="epos-satzzusammenfassung-angabe" title="@(angabe.Beschriftung + ": " + angabe.Wert)">
+                                    <dt>@angabe.Beschriftung</dt>
+                                    <dd>@angabe.Wert</dd>
+                                </div>
+                            }
+                        </dl>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="epos-zweispalten-satz" hidden="@(!SatzflaecheOffen)">
+                    @* Das Fragment steht zu jedem Zeitpunkt an GENAU einer Stelle: hier oder in
+                       der Satz-Ueberlagerung. *@
+                    @if (!_satzGross)
+                    {
+                        @Satz
+                    }
+                </div>
+            }
         </section>
     }
 
@@ -366,6 +426,25 @@
     /// <summary>Die wichtigsten Kenndaten des Satzes in einer Zeile.</summary>
     [Parameter] public string? SatzKenndaten { get; set; }
 
+    /// <summary>
+    /// <b>Die Kurzangaben des gewählten Satzes</b> (UeS2). Gesetzt zeigt die aufgeklappte
+    /// Detailzeile NUR diese Angaben (kompaktes Raster, höchstens drei Zeilen, ohne Vorrang),
+    /// der Kopf trägt „Bearbeiten" statt „Details" und „Vergrößern", und das Fragment
+    /// <see cref="Satz"/> wird ausschließlich in der Satz-Überlagerung gezeichnet. Ohne sie
+    /// (Ganglinien-Wirte) bleibt die Detailzeile wie in UeS1. Eine leere Liste zeigt
+    /// „kein Satz gewählt".
+    /// </summary>
+    [Parameter] public IReadOnlyList<Satzangabe>? SatzZusammenfassung { get; set; }
+
+    /// <summary>
+    /// <b>Knöpfe des Wirts im Kopf der Detailzeile</b> (UeS2b), rechts vor „Bearbeiten" bzw.
+    /// „Vergrößern": die Infoknöpfe „Grundlagen" und „Berechnung", die sonst nur im Fragment
+    /// <see cref="Satz"/> stünden — mit Zusammenfassung also nur in der Überlagerung. Solange die
+    /// Satz-Überlagerung offen ist, zeichnet der Baustein sie nicht (das Fragment trägt dann
+    /// seine eigenen); so steht jeder Knopf je Ansicht an genau einer Stelle.
+    /// </summary>
+    [Parameter] public RenderFragment? SatzKopfKnoepfe { get; set; }
+
     /// <summary>Die Detailzeile wurde auf- oder zugeklappt.</summary>
     [Parameter] public EventCallback<bool> SatzGeklappt { get; set; }
 
@@ -528,6 +607,7 @@
             if (NurRechts) k += " epos-zweispalten--nurkatalog";
             if (Satz is not null) k += " epos-zweispalten--mitsatz";
             if (SatzflaecheOffen) k += " epos-zweispalten--satz-offen";
+            if (SatzZusammenfassung is not null) k += " epos-zweispalten--zusammenfassung";
             if (KatalogZeile > 0) k += " epos-zweispalten--zeilenmass";
             if (!string.IsNullOrEmpty(Zusatzklasse)) k += " " + Zusatzklasse;
             return k;

@@ -82,6 +82,8 @@ const FENSTERDIALOGE = ['dubletten'];
 // Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
 const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude'];
+// UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw']);
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
@@ -401,7 +403,10 @@ function rollstand(unten = 0) {
   if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight - unten + 1; d.scrollTop = v; }
   // DZ1: aufgeklappt Listen auf ihrer Untergrenze, die Satzflaeche reicht bis an den unteren Rand des Bausteins.
   const zw = d.querySelector(':scope > .epos-zweispalten.epos-zweispalten--satz-offen');
-  const satzfl = zw && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
+  // UeS2: mit Zusammenfassung (Heizkessel, BHKW) gibt es keinen Vorrang - die Listen behalten ihre Aufteilung;
+  // das haelt die Rollbereichprobe ("Vorrang trotz Zusammenfassung").
+  const satzfl = zw && !zw.classList.contains('epos-zweispalten--zusammenfassung')
+    && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
   const ueber = sel => { const e = zw && zw.querySelector(sel); return e ? Math.round(e.getBoundingClientRect().height - (parseFloat(getComputedStyle(e).minHeight) || 0)) : 0; };
   const vorrang = satzfl ? { rest: Math.round(zw.getBoundingClientRect().bottom - satzfl.getBoundingClientRect().bottom),
     projekt: ueber('.epos-zweispalten-bereich--projekt .epos-raster-huelle'), katalog: ueber('.epos-zweispalten-bereich--katalog .epos-raster-huelle'),
@@ -617,7 +622,7 @@ try {
     }
     // Vorrang der Detailzeile (DZ1): eine auf 40 px begrenzte Satzflaeche muss rot werden.
     for (const f of FENSTER) for (const fall of KATALOGAUSWAHL) {
-      if (NUR && NUR !== fall) continue;
+      if ((NUR && NUR !== fall) || ZUSAMMENFASSUNG.has(fall)) continue;
       const s6 = await oeffnen(browser, fall, f);
       await s6.addStyleTag({ content: '.epos-zweispalten-satz { max-height: 40px !important; }' });
       const r6 = await nichtsRollt(s6, '', false, rand(f));

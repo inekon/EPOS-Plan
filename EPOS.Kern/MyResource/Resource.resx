@@ -50200,6 +50200,69 @@ Chart</value>
   <data name="AUSWAHL_SATZ_VERGROESSERN_HINWEIS" xml:space="preserve">
     <value>Den gewählten Satz in voller Höhe über dem Dialog öffnen</value>
   </data>
+  <data name="AUSWAHL_SATZ_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_SATZ_BEARBEITEN_HINWEIS" xml:space="preserve">
+    <value>Den gewählten Satz über dem Dialog bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_SATZ_ANSEHEN_HINWEIS" xml:space="preserve">
+    <value>Den gewählten Satz über dem Dialog ansehen (nur lesen)</value>
+  </data>
+  <data name="AUSWAHL_SATZ_ZUSAMMENFASSUNG" xml:space="preserve">
+    <value>Kurzangaben des gewählten Satzes</value>
+  </data>
+  <data name="AUSWAHL_ZEILE_BEARBEITEN" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="AUSWAHL_ZF_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="AUSWAHL_ZF_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="AUSWAHL_ZF_TRAEGER" xml:space="preserve">
+    <value>Träger</value>
+  </data>
+  <data name="AUSWAHL_ZF_VORLAUF_RUECKLAUF" xml:space="preserve">
+    <value>Vorlauf/Rücklauf</value>
+  </data>
+  <data name="AUSWAHL_ZF_BRENNWERT" xml:space="preserve">
+    <value>Brennwert</value>
+  </data>
+  <data name="AUSWAHL_ZF_INVEST" xml:space="preserve">
+    <value>Invest</value>
+  </data>
+  <data name="AUSWAHL_ZF_BETRIEB" xml:space="preserve">
+    <value>Betrieb</value>
+  </data>
+  <data name="AUSWAHL_ZF_SENKEN" xml:space="preserve">
+    <value>Senken</value>
+  </data>
+  <data name="AUSWAHL_ZF_EURO" xml:space="preserve">
+    <value>{0:N0} €</value>
+  </data>
+  <data name="AUSWAHL_ZF_EURO_JAHR" xml:space="preserve">
+    <value>{0:N0} €/a</value>
+  </data>
+  <data name="AUSWAHL_ZF_GRENZLEISTUNG" xml:space="preserve">
+    <value>Grenzleistung</value>
+  </data>
+  <data name="AUSWAHL_ZF_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="AUSWAHL_ZF_SCHWELLEN" xml:space="preserve">
+    <value>Schwellen</value>
+  </data>
+  <data name="AUSWAHL_ZF_VERWENDUNG" xml:space="preserve">
+    <value>Verwendung</value>
+  </data>
+  <data name="AUSWAHL_ZF_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Projektsatz bearbeiten – {0}</value>
   </data>

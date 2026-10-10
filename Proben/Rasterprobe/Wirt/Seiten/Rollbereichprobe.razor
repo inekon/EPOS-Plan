@@ -31,7 +31,9 @@
                                   Filterstandvorgabe="@_filterstand"
                                   KatalogDetail="@(n => Detail("Puffer " + n))" ProjektDetail="@(n => Detail("Puffer " + n))"
                                   Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
-                                  AuslegenOeffnen="@(_ => Task.CompletedTask)" Geschlossen="@(b => Beendet(b))" />
+                                  AuslegenOeffnen="@(_ => Task.CompletedTask)" Geschlossen="@(b => Beendet(b))"
+                                  Kostensumme="@(_ => (2500.0, 40.0))"
+                                  Projektangaben="@(_ => new Pufferangaben(70, 50, 10, 95, "Heizung"))" />
             break;
         case "stromspeicher":
             <StromspeicherDialog Zeilen="@Erzeuger("Batterie")" Katalogprofil="@Profil(Anlagenart.Stromspeicher)"
@@ -40,6 +42,7 @@
                                  ProjektDetail="@(z => Detail(z.Bezeichner))"
                                  Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
                                  Traegerkatalog="@Traeger" TraegerWechseln="@((_, _) => { })"
+                                 Kostensumme="@(_ => (8000.0, 120.0))"
                                  Geschlossen="@(b => Beendet(b))" />
             break;
         case "photovoltaik":

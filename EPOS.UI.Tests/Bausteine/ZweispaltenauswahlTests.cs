@@ -1138,10 +1138,10 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("max-height: none", satz);
         Assert.Contains("flex: 1 1 0", satz);
         Assert.DoesNotContain("--epos-satz-max", css);
-        string offen = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog) {");
+        string offen = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen:not(.epos-zweispalten--nurkatalog):not(.epos-zweispalten--zusammenfassung) {");
         Assert.Contains("8px\n        min-content\n        minmax(var(--epos-satz-min), 1fr);", offen);
         Assert.Contains("grid-template-rows: min-content minmax(var(--epos-satz-min), 1fr);",
-            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog {"));
+            Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten--satz-offen.epos-zweispalten--nurkatalog:not(.epos-zweispalten--zusammenfassung) {"));
 
         // Das Skript misst und schaltet; es traegt keine Pixelzahl der Zeilen.
         string js = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-zweispalten.js"));
@@ -1322,4 +1322,161 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("flex: 0 0 auto;", Block(css, ".epos-satzueberlagerung-fuss {"));
         Assert.Contains(".epos-zweispalten-vergroessern .epos-zweispalten-knopftext { display: none; }", css);
     }
+
+    // =====================================================================
+    // Die Zusammenfassung der Detailzeile und „Bearbeiten" (UeS2, Konzept 4.4)
+    // =====================================================================
+
+    private IRenderedComponent<Zweispaltenauswahl> MitZusammenfassung(Rufe r, bool nurLesen = false,
+        IReadOnlyList<Satzangabe>? angaben = null, Satzmarke art = Satzmarke.Projektsatz)
+        => Aufbauen(mehr: p => p
+            .Add(x => x.SatzArt, art)
+            .Add(x => x.SatzName, "Kessel 30 kW")
+            .Add(x => x.SatzKenndaten, "30 kW · Erdgas")
+            .Add(x => x.SatzNurLesen, nurLesen)
+            .Add(x => x.SatzZusammenfassung, angaben ?? new[]
+            {
+                new Satzangabe("Leistung", "30,00 kWth"),
+                new Satzangabe("Vorlauf/Rücklauf", "70/50 °C")
+            })
+            .Add(x => x.SatzVergroessert, () => r.Vergroessert++)
+            .Add(x => x.SatzUebernommen, () => r.Uebernommen++)
+            .Add(x => x.SatzVerworfen, () => r.Verworfen++));
+
+    /// <summary>Mit Zusammenfassung zeigt die aufgeklappte Detailzeile nur die Angaben, nie das Fragment.</summary>
+    [Fact]
+    public void Mit_Zusammenfassung_zeigt_die_Detailzeile_die_Angaben_und_nicht_das_Fragment()
+    {
+        var cut = MitZusammenfassung(new Rufe());
+        Assert.Empty(cut.FindAll(".probe-satz"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzdetails"));
+        Assert.Contains("epos-zweispalten--zusammenfassung", cut.Find(".epos-zweispalten").ClassName);
+
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        Assert.Contains("epos-zweispalten--satz-offen", cut.Find(".epos-zweispalten").ClassName);
+        IElement flaeche = cut.Find(".epos-zweispalten-satz.epos-zweispalten-satz--zusammenfassung");
+        Assert.False(flaeche.HasAttribute("hidden"));
+        var angaben = flaeche.QuerySelectorAll(".epos-satzzusammenfassung-angabe");
+        Assert.Equal(2, angaben.Length);
+        Assert.Equal("Leistung", angaben[0].QuerySelector("dt")!.TextContent);
+        Assert.Equal("30,00 kWth", angaben[0].QuerySelector("dd")!.TextContent);
+        Assert.Equal("Vorlauf/Rücklauf: 70/50 °C", angaben[1].GetAttribute("title"));
+        Assert.Empty(cut.FindAll(".probe-satz"));
+    }
+
+    /// <summary>„Bearbeiten" ersetzt „Details" und „Vergrößern" und öffnet die Überlagerung — dort und nur dort steht das Fragment.</summary>
+    [Fact]
+    public void Bearbeiten_oeffnet_die_Ueberlagerung_mit_dem_Fragment()
+    {
+        var r = new Rufe();
+        var cut = MitZusammenfassung(r);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-vergroessern"));
+        IElement knopf = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten");
+        Assert.Equal(Resource.AUSWAHL_SATZ_BEARBEITEN, knopf.QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+        Assert.Equal(Resource.AUSWAHL_SATZ_BEARBEITEN, knopf.GetAttribute("aria-label"));
+        Assert.Equal(Resource.AUSWAHL_SATZ_BEARBEITEN_HINWEIS, knopf.GetAttribute("title"));
+        Assert.NotNull(knopf.QuerySelector("svg[aria-hidden=true]"));
+
+        knopf.Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(1, r.Vergroessert);
+        Assert.Single(cut.FindAll(".probe-satz"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung--satz .epos-satzueberlagerung-koerper .probe-satz"));
+        Assert.True(cut.Find(".epos-zweispalten-bearbeiten").HasAttribute("disabled"));
+
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.Equal(1, r.Uebernommen);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".probe-satz"));
+    }
+
+    /// <summary>Ein gesperrter Katalogsatz: derselbe Knopf, nur lesend (Hinweis und „Schließen").</summary>
+    [Fact]
+    public void Bearbeiten_eines_gesperrten_Katalogsatzes_oeffnet_nur_lesend()
+    {
+        var cut = MitZusammenfassung(new Rufe(), nurLesen: true, art: Satzmarke.Katalogsatz);
+        IElement knopf = cut.Find(".epos-zweispalten-bearbeiten");
+        Assert.Equal(Resource.AUSWAHL_SATZ_BEARBEITEN, knopf.QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+        Assert.Equal(Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS, knopf.GetAttribute("title"));
+
+        knopf.Click();
+
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-schliessen"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    /// <summary>Ohne Satz sperrt „Bearbeiten"; eine leere Zusammenfassung sagt „kein Satz gewählt".</summary>
+    [Fact]
+    public void Ohne_Satz_ist_Bearbeiten_gesperrt_und_die_Zusammenfassung_leer()
+    {
+        var cut = MitZusammenfassung(new Rufe(), angaben: System.Array.Empty<Satzangabe>(), art: Satzmarke.Keiner);
+        Assert.True(cut.Find(".epos-zweispalten-bearbeiten").HasAttribute("disabled"));
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+        Assert.Equal(Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satz--zusammenfassung .epos-zweispalten-satzleer").TextContent);
+    }
+
+    /// <summary>Ohne Zusammenfassung bleibt alles wie in UeS1: „Details", „Vergrößern", Fragment in der Detailzeile.</summary>
+    [Fact]
+    public void Ohne_Zusammenfassung_bleibt_die_Detailzeile_wie_bisher()
+    {
+        var cut = MitUeberlagerung(new Rufe());
+        Assert.Empty(cut.FindAll(".epos-zweispalten-bearbeiten"));
+        Assert.Equal(Resource.AUSWAHL_SATZ_DETAILS, cut.Find(".epos-zweispalten-satzdetails").TextContent);
+        Assert.Single(cut.FindAll(".epos-zweispalten-vergroessern"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .probe-satz"));
+        Assert.DoesNotContain("epos-zweispalten--zusammenfassung", cut.Find(".epos-zweispalten").ClassName);
+    }
+
+    /// <summary>Die Regel: Zusammenfassung ohne Vorrang und ohne Rollbereich, höchstens drei Zeilen; Kompaktstufe nur der Stift.</summary>
+    [Fact]
+    public void Die_Zusammenfassung_hat_keinen_Vorrang_und_hoechstens_drei_Zeilen()
+    {
+        string css = Stilblatt();
+        string dl = Block(css, ".epos-satzzusammenfassung {");
+        Assert.Contains("max-height: calc(3 * var(--epos-zf-zeile));", dl);
+        Assert.Contains("overflow: hidden;", dl);
+        Assert.Contains("flex-wrap: wrap;", dl);
+        Assert.Contains("overflow: hidden;", Block(css, ".epos-zweispalten-satz.epos-zweispalten-satz--zusammenfassung {"));
+        Assert.Contains("flex: 0 0 auto;", Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz--zusammenfassung {"));
+        Assert.Contains(".epos-zweispalten-bearbeiten .epos-zweispalten-knopftext { display: none; }", css);
+    }
+    /// <summary>
+    /// UeS2b: Die Kopfknöpfe des Wirts stehen rechts im Kopf der Detailzeile vor „Bearbeiten" —
+    /// ohne Überlagerung erreichbar; offen trägt die Überlagerung ihr Fragment, der Kopf nicht mehr.
+    /// </summary>
+    [Fact]
+    public void UeS2b_Die_Kopfknoepfe_stehen_vor_Bearbeiten_und_nur_ohne_Ueberlagerung()
+    {
+        var cut = Aufbauen(mehr: p => p
+            .Add(x => x.SatzArt, Satzmarke.Projektsatz)
+            .Add(x => x.SatzName, "Kessel 30 kW")
+            .Add(x => x.SatzZusammenfassung, new[] { new Satzangabe("Leistung", "30,00 kWth") })
+            .Add(x => x.SatzKopfKnoepfe, (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "button");
+                b.AddAttribute(1, "class", "kopfknopf-probe");
+                b.CloseElement();
+            })));
+
+        var kopf = cut.Find(".epos-zweispalten-satzkopf").Children.ToList();
+        int knoepfe = kopf.FindIndex(k => k.ClassList.Contains("epos-zweispalten-satzkopfknoepfe"));
+        int bearbeiten = kopf.FindIndex(k => k.ClassList.Contains("epos-zweispalten-bearbeiten"));
+        Assert.True(0 < knoepfe && knoepfe < bearbeiten);
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopf .kopfknopf-probe"));
+
+        cut.InvokeAsync(() => cut.Instance.SatzUeberlagerungOeffnen());
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".kopfknopf-probe"));
+
+        // Ohne SatzUebernommen ist der Satz reine Ansicht (UeS1c): die Fussleiste traegt „Schließen".
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopf .kopfknopf-probe"));
+    }
+
+    /// <summary>Ohne Kopfknöpfe gibt es im Kopf der Detailzeile keinen leeren Behälter.</summary>
+    [Fact]
+    public void UeS2b_Ohne_Kopfknoepfe_kein_Behaelter()
+        => Assert.Empty(MitZusammenfassung(new Rufe()).FindAll(".epos-zweispalten-satzkopfknoepfe"));
 }

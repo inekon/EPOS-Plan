@@ -241,6 +241,23 @@ Photovoltaik; bei der Wärmepumpe trägt der Körper unter Kenndaten und Kennlin
 ihren Typ —, nie „Kein Satz gewählt“, solange eine Zeile gewählt ist. Die vier Ganglinien-Dialoge sind reine Ansicht
 (Parameter `SatzNurAnsicht`, von selbst ohne Rückruf für OK): Ihre Fußleiste trägt nur „Schließen“, ohne Schlosshinweis.
 
+**Präzisiert in ÜS2 (Anwenderentscheid 10.10.2026, Wortlaut: „Füge jeweils in die Auswahl (DB und Projekt) ein Bearbeiten Symbol ein. Im Bereich ‚Projektsatz‘ kurze Angaben der Anlagendaten und einen Bearbeiten Button anstelle Details. Das gilt für alle Dialoge, die geändert wurden.“):** Reicht der Wirt
+Kurzangaben (`SatzZusammenfassung`, Liste von `Satzangabe(Beschriftung, Wert)`), zeigt die aufgeklappte Detailzeile
+**nur diese Angaben** als kompaktes Raster — Beschriftung vor Wert, mehrere je Zeile, umbrechend, höchstens drei Zeilen
+hoch, ohne Rollbereich (jede Angabe nennt sich im Tooltipp ganz). Sie hat **keinen Vorrang** (DZ1 gilt nicht): Die Listen
+behalten ihre Aufteilung über die Trennlinie, die Detailzeile ist so hoch wie ihr Inhalt. Der Kopf trägt statt des Textes
+„Details“ und des Knopfes „Vergrößern“ den Knopf **„Bearbeiten“** (Stift und Text, in der Kompaktstufe nur der Stift); er
+öffnet die Satz-Überlagerung, beim gesperrten Katalogsatz nur lesend. Der volle Inhalt (Felder, „Alle Daten“,
+Kostenknöpfe) steht dann **ausschließlich in der Überlagerung**. Die Infoknöpfe „Grundlagen“ und „Berechnung“ legt der
+Wirt zusätzlich in den Kopf der Detailzeile (`SatzKopfKnoepfe`, rechts vor „Bearbeiten“, als Sinnbilder): So sind sie
+ohne Überlagerung erreichbar; solange die Überlagerung offen ist, zeichnet der Baustein sie im Kopf nicht, und sie
+stehen in der Knopfzeile der Überlagerung — je Ansicht an genau einer Stelle. Gespeichert wird „Alle Daten“ allein
+über das OK der Überlagerung; der Aufklapper trägt keinen eigenen Speicherknopf. Ohne Kurzangaben (die
+Ganglinien-Wirte) bleibt die Detailzeile wie oben. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster, 130 Zustände ohne Verstoß):
+die Zusammenfassung eine Zeile hoch (29 px in 1 280 × 800); die Projektliste folgt der Trennlinie (138 px wie
+zugeklappt, 214 px mit der Trennlinie unten, 85 px oben), die Katalogliste gibt nur die Höhe der Detailzeile ab
+(259 → 223 px).
+
 ### 4.5 Mehrfachauswahl
 
 - Beide Listen tragen eine Kästchenspalte; Klick wählt eine Zeile, Strg+Klick schaltet, Umschalt+Klick
@@ -285,6 +302,14 @@ schreibt sie zurück (`Anlagenmerker` bei Heizkessel und BHKW: Träger, Vorlauf,
 Solarkollektoren halten ihre Anlagenfelder (Anzahl, Neigung, Azimut, Albedo, Solarkreis) in einem Arbeitsstand, den
 OK wie „Übernehmen“ in die Anlage gibt und Abbrechen auf den Stand beim Öffnen zurücksetzt; die Wärmepumpe merkt ihre
 Projektzeile und stellt sie bei Abbrechen wieder her, wenn in der Überlagerung „Anlage…“ mit OK bestätigt wurde.
+
+**Präzisiert in ÜS2 (Anwenderentscheid 10.10.2026, Wortlaut in 4.4):** Jede Zeile beider Listen trägt am Ende einen
+**Stift** (Baustein `Zeilenstift`; in der `Katalogliste` über den Parameter `Bearbeiten`, in der Projektliste als eigene
+Spalte des Wirts). Er ist ein Berührungsziel wie die übrigen Zeilenknöpfe, ändert die Zeilenhöhe nicht, zählt nicht zur
+Spaltenwahl und berührt die Kästchen der Mehrfachwahl nicht. Sein Klick wählt die Zeile und öffnet ihren Satz: eine
+Projektzeile ihre Projektkopie in der Satz-Überlagerung (nur, wo der Wirt den Weg der Projektkopie hat), eine gesperrte
+Katalogzeile die Satz-Überlagerung nur lesend, eine ungesperrte den Katalogeditor (KA‑E‑13). „Bearbeiten…“ in den
+Bereichsleisten bleibt der Weg für mehrere gewählte Sätze.
 
 ### 4.7 Tastatur
 
@@ -421,6 +446,19 @@ des Stilblatts gelten am Körper `.epos-satzueberlagerung-koerper`, und `Diagram
 das Modell gebaut wird — gemessen (Rollbereichprobe, Kurve Breite × Höhe): 1 226 × 581 px in 1 280 × 800 bei Wärmebedarf extern und
 Stromganglinie, 1 226 × 548 px bei Solarthermie- und PV-Ganglinie, dort 1 148 × 576 px in 1 194 × 834 und 1 047 × 400 px in
 1 093 × 614. Die Fußleiste trägt dort nur „Schließen“..
+
+**Präzisiert in ÜS2 (Zusammenfassung der Detailzeile, 4.4):** Heizkessel — Projektsatz: Leistung (kWth), Brennstoff,
+Träger, Vorlauf/Rücklauf (°C), Brennwert, Invest (€), Betrieb (€/a), Senken; Katalogsatz: die Spalten des
+Katalogprofils (Hersteller, Brennstoff, Leistung, η, Brennwert). Die Kostensummen liest die Hülle je Anlage
+(`KostenSummenCtrl.AnlagenSumme`); im Assistenten und ohne Projekt fehlen sie. BHKW — Projektsatz: P_el/P_th (kWel,
+kWth), Brennstoff, Träger, Grenzleistung (%), Vorlauf/Rücklauf, Invest, Betrieb, Senken; Katalogsatz: Hersteller,
+Brennstoff, P_el, P_th. Pufferspeicher — Projektsatz: Volumen (l), Vorlauf/Rücklauf, Schwellen (Ein/Aus in %),
+Verwendung, Invest, Betrieb; Temperaturpaar, Schwellen und Verwendung liest die Hülle an der Projektkopie
+(`Projektangaben`, `WaermesenkeClass.PufferLesen`); Katalogsatz: Hersteller, Volumen, Bereitschaftsverlust.
+Stromspeicher — Projektsatz: Kapazität (kWh), Leistung (kW), Träger, Anzahl (Projektzeilen auf derselben
+Projektkopie), Invest, Betrieb; Katalogsatz: Hersteller, Kapazität, Leistung. Alle drei tragen die Stifte beider
+Listen wie der Heizkessel und ihre Infoknöpfe im Kopf der Detailzeile (4.4). Photovoltaik, Solarkollektoren und
+Wärmepumpe: folgt in ÜS2b. Die Ganglinien-Dialoge behalten die Ganglinie in der Detailzeile.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 

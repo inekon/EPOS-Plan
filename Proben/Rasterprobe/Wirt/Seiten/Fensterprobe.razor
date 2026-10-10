@@ -71,6 +71,7 @@
                         KatalogDetail="@(n => Detail(n))"
                         ProjektDetail="@(n => Detail(n))"
                         Varianten="@(_ => new[] { (5, "Erdgas E Variante") })"
+                        Kostensumme="@(_ => (95000.0, 6200.0))"
                         Vorbereiten="@Vorbereitung"
                         TraegerGaben="@(_ => new Dictionary<string, object> { ["Energietraeger"] = new[] { (3, "Erdgas E") } })"
                         Aufnehmen="@(_aufnahme ? (id, t) => Aufnahme("Modul", id) : null)"

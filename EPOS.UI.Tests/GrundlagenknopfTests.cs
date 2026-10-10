@@ -367,6 +367,7 @@ public sealed class GrundlagenknopfTests : EposBunitContext
         // „Stränge und Wechselrichter…" des Photovoltaikdialogs - sie wird dafür geöffnet.
         if (komponente == "PhotovoltaikDialog" && schluessel.StartsWith("Form_PV_Wechselrichter", StringComparison.Ordinal))
             gezeichnet.Find(".epos-knopf--straenge").Click();
+        BerechnungshilfeTests.SatzUeberlagerungOeffnen(gezeichnet, komponente);
 
         string[] imDialog = gezeichnet.FindComponents<InfoKnopf>().Select(k => k.Instance.Schluessel).ToArray();
 
