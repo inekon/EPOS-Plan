@@ -4252,6 +4252,42 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     min-height: 100%;
 }
 
+/* Die Unterleiste (Uebersicht, Kosten, Wirtschaftlichkeit, Bericht) hebt sich
+   vom Rahmen ab: Titel in Kachelgroesse und Textfarbe statt leise, der aktive
+   Reiter auf getoenter Flaeche mit abgerundeter Zunge, die Linie darunter
+   kraeftiger. Die Statuszeile darunter bleibt leise. Nur dieser Rahmen,
+   damit die Reiter der Dialoge ihr ruhiges Bild behalten. */
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile {
+    border-bottom: 2px solid var(--epos-quelle-rahmen);
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste {
+    gap: 4px;
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf {
+    color: var(--epos-text);
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste .epos-reiter-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {
+    color: var(--epos-quelle-text);
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-quelle-rahmen);
+    border-bottom-color: var(--epos-quelle-rahmen);
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf:disabled,
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+    background: transparent;
+}
+
 /* Der Stammname im Leistenende: fett in der Titelfarbe der Karten, die
    Beschriftung davor leise. Er nimmt den Platz, den Umschalter, Hilfe und
    Rueckweg lassen, und sprengt die Zeile nie: Der Name kuerzt sich mit
