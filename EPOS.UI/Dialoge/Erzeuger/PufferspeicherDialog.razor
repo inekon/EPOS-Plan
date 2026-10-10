@@ -56,6 +56,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     <Zweispaltenauswahl Dialogname="Pufferspeicher" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
@@ -474,6 +479,9 @@
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
 
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Pufferspeicher);
@@ -603,7 +611,8 @@
         _katalogZeile = null;
         _katalogGewaehlt = "";
         _felder = null;                       // der Aufklapper gehoert dem KATALOGsatz
-        _detail = (ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null) ?? Leer(zeile.Bezeichner);
+        _detail = Katalogladung.Satz(() => ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null,
+                                     zeile.Bezeichner, out _satzFehler) ?? Leer(zeile.Bezeichner);
     }
 
     private void KatalogZeileWaehlen(string bezeichner)
@@ -611,8 +620,9 @@
         _katalogGewaehlt = bezeichner ?? "";
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         _projektZeile = null;
-        _detail = (_katalogZeile is not null && KatalogDetail is not null
-                      ? KatalogDetail(_katalogZeile.Id) : null)
+        _detail = Katalogladung.Satz(() => _katalogZeile is not null && KatalogDetail is not null
+                                         ? KatalogDetail(_katalogZeile.Id) : null,
+                                     _katalogGewaehlt, out _satzFehler)
                   ?? Leer(_katalogGewaehlt);
 
         // Der offene Aufklapper zeigt den NEUEN Satz, der geschlossene holt nichts.
@@ -639,7 +649,8 @@
     {
         _felder = Katalogfelder is null || _katalogZeile is null
             ? null
-            : Katalogfelder(_katalogZeile.Bezeichner);
+            : Katalogladung.SatzDazu(() => Katalogfelder(_katalogZeile.Bezeichner), _katalogZeile.Bezeichner,
+                                     ref _satzFehler);
         _felderGeaendert = false;
         _feldFehler = false;
     }
@@ -668,7 +679,10 @@
     {
         if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        // KT-4: Wirft der Schreibweg, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(
+            () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+            g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         if (!ergebnis.Ok)
         {
             // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
@@ -808,7 +822,14 @@
         _loeschfrage = false;
         if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogZeile.Id)) { Melden(MeldungLoeschFehler, true); return; }
+        // KT-4: Wirft der Löschweg, nennt die Meldung den Grund (Katalogladung.Loeschen).
+        string loeschName = _katalogZeile.Bezeichner;
+        int loeschId = _katalogZeile.Id;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschId), loeschName, out string loeschGrund))
+        {
+            Melden(loeschGrund.Length > 0 ? loeschGrund : MeldungLoeschFehler, true);
+            return;
+        }
 
         _katalogZeile = null;
         _katalogGewaehlt = "";
