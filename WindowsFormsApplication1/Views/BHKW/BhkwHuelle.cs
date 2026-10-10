@@ -501,7 +501,24 @@ namespace WindowsFormsApplication1
                     }),
 
                 ["SummePtherm"] = new Func<string>(
-                    () => SummeLeistung(projektId, idType, modelle).ToString()),
+                    () => SummeLeistung(projektId, idType, modelle)
+                              .ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)),
+
+                // KATALOGAUSWAHL V1, STUFE 3 (KA-E-8): Bearbeiten je Bereich und Mehrfach-Bearbeiten.
+                // Die Projektkopie gibt es nur ausserhalb des Assistenten - dort zeigt ID_BHKW auf den
+                // Katalog. Geschrieben wird ueber den Kernweg in EINER Transaktion
+                // (BHKWStammCtrl.AnzeigefelderSchreibenAlle) - samt den fuenf Kostenposten; die
+                // Investition je kWel rechnet der Kern nach.
+                ["ProjektsatzWege"] = wizard || projektId <= 0 ? null : new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(BhkwAdminHuelle.Profil(), BHKWStammCtrl.SatzAnzeige(true, id)),
+                    Speichern = saetze => BhkwAdminHuelle.SammelSchreiben(true, saetze)
+                },
+                ["KatalogsatzWege"] = new Satzbearbeitungswege
+                {
+                    Lesen = id => KatalogBrowserHuelle.Felder(BhkwAdminHuelle.Profil(), BHKWStammCtrl.SatzAnzeige(false, id)),
+                    Speichern = saetze => BhkwAdminHuelle.SammelSchreiben(false, saetze)
+                },
 
                 // #187: Die Ueberlagerung traegt den Titel schon (EditorTitel,
                 // derselbe Schluessel BHKWK_TITEL wie KatalogGaben). KatalogGaben

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -170,72 +172,8 @@ namespace WindowsFormsApplication1
 
             try
             {
-                string sql = @"UPDATE " + TABLE + @" SET
-                               Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
-                               Brennstoff=?, Wirkungsgrad=?, Wirkungsgrad_el=?, Wirkungsgrad_th=?,
-                               Investition_kwel=?, Raumbedarf=?,
-                               Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
-                               CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
-                               Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?,
-                               Vorlauf=?, Ruecklauf=?
-                               WHERE Bezeichner=?";
-
-                // EINE WAHRHEIT (Schemaschritt 99, Anwenderentscheid 20.09.2026): Der
-                // Gesamtwirkungsgrad ist die SUMME der zwei Anteile und wird hier
-                // nachgezogen - wie Investition_kwel aus den fuenf Kostenposten. Sind
-                // die Anteile nicht gepflegt (Altbestand vor Schritt 99), bleibt der
-                // Gesamtwert stehen, wie er war; SimulationBHKW liest ihn unveraendert.
-                model.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
-                    model.m_Wirkungsgrad_el, model.m_Wirkungsgrad_th, model.m_Wirkungsgrad);
-
-                // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
-                // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
-                // abgeleitet. Damit kann kein Schreibweg die beiden Groessen
-                // auseinanderlaufen lassen - auch Form_BHKWAdmin nicht, das nur Pel
-                // aendert und den vollstaendig gelesenen Satz sonst unveraendert
-                // zurueckschreibt. Der Bestand wird dadurch erst beim Speichern
-                // angeglichen, nicht schon beim Lesen oder Kopieren.
-                model.m_Investition_KWel = BHKWKosten.JeKWel(
-                    BHKWKosten.Summe(model.m_Kosten_Modul, model.m_Kosten_Montage,
-                                     model.m_Kosten_Lieferung, model.m_Kosten_Schallschutzhaube,
-                                     model.m_Kosten_Abgasreinigung),
-                    model.m_Pel);
-
-                // ARBEITSPAKET iU6: Die Parametersammlung des DBCommand war hier nur
-                // ZWISCHENSPEICHER - unten wurde sie sofort in ein Array kopiert und an
-                // die Zugriffsschicht gegeben. Ein OleDbParameter wuerde dafuer heute
-                // nur noch auf Nicht-Windows scheitern, also sammelt eine Liste die
-                // DbParam direkt. Reihenfolge, Namen und Werte unveraendert; gebunden
-                // wird ohnehin nach Position.
-                List<DbParam> werte = new List<DbParam>();
-
-                werte.Add(new DbParam("@besch", model.m_szBeschreibung ?? ""));
-                werte.Add(new DbParam("@firma", model.m_szFirma ?? ""));
-                werte.Add(new DbParam("@motor", model.m_szMotortyp ?? ""));
-                werte.Add(new DbParam("@ptherm", model.m_Ptherm));
-                werte.Add(new DbParam("@pel", model.m_Pel));
-                werte.Add(new DbParam("@brenn", model.m_Brennstoff));
-                werte.Add(new DbParam("@wirk", model.m_Wirkungsgrad));
-                werte.Add(Anteil("@wirkEl", model.m_Wirkungsgrad_el));
-                werte.Add(Anteil("@wirkTh", model.m_Wirkungsgrad_th));
-                werte.Add(new DbParam("@inv", model.m_Investition_KWel));
-                werte.Add(new DbParam("@raum", model.m_Raumbedarf));
-                werte.Add(new DbParam("@wart", model.m_Wartungskosten_kWhel));
-                werte.Add(new DbParam("@nutz", model.m_Nutzungsdauer));
-                werte.Add(new DbParam("@nox", model.m_NOx));
-                werte.Add(new DbParam("@so2", model.m_SO2));
-                werte.Add(new DbParam("@co", model.m_CO));
-                werte.Add(new DbParam("@co2", model.m_CO2));
-                werte.Add(new DbParam("@staub", model.m_Staub));
-                werte.Add(new DbParam("@grenz", model.m_Grenzleistung));
-                werte.Add(new DbParam("@modul", model.m_Kosten_Modul));
-                werte.Add(new DbParam("@mont", model.m_Kosten_Montage));
-                werte.Add(new DbParam("@lief", model.m_Kosten_Lieferung));
-                werte.Add(new DbParam("@schall", model.m_Kosten_Schallschutzhaube));
-                werte.Add(new DbParam("@abgas", model.m_Kosten_Abgasreinigung));
-                werte.Add(new DbParam("@vl", model.m_Vorlauf));
-                werte.Add(new DbParam("@rl", model.m_Ruecklauf));
-                werte.Add(new DbParam("@key", model.m_szBezeichner ?? ""));
+                (string sql, DbParam[] ps) = Aktualisierung(model, TABLE, "Bezeichner", model.m_szBezeichner ?? "");
+                List<DbParam> werte = new List<DbParam>(ps);
 
                 // ARBEITSPAKET S4b/S4e: Ohne fremden Vorgang laeuft der Schreibvorgang
                 // ueber die Zugriffsschicht - die eigene Standalone-Verbindung entfaellt.
@@ -267,6 +205,84 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Fehler beim Aktualisieren des BHKW-Stammsatzes: " + ex.Message);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Die UPDATE-Anweisung der Fachspalten samt Parametern für <paramref name="tabelle"/> — den Katalog
+        /// (<see cref="TABLE"/>, Schlüssel <c>Bezeichner</c>) oder die Projektkopien (<see cref="TABELLE_PROJEKT"/>,
+        /// Schlüssel <c>ID</c>). Zieht den Gesamtwirkungsgrad und die Investition je kWel nach (eine Wahrheit).
+        /// Teillast und Rücklaufgrenze schreibt der Aufrufer in eigenen Schritten.
+        /// </summary>
+        private static (string Sql, DbParam[] Parameter) Aktualisierung(BHKWStammModel m, string tabelle,
+                                                                       string schluesselspalte, object schluessel)
+        {
+            string sql = @"UPDATE [" + tabelle + @"] SET
+                           Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
+                           Brennstoff=?, Wirkungsgrad=?, Wirkungsgrad_el=?, Wirkungsgrad_th=?,
+                           Investition_kwel=?, Raumbedarf=?,
+                           Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
+                           CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
+                           Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?,
+                           Vorlauf=?, Ruecklauf=?
+                           WHERE [" + schluesselspalte + "]=?";
+
+            // EINE WAHRHEIT (Schemaschritt 99, Anwenderentscheid 20.09.2026): Der
+            // Gesamtwirkungsgrad ist die SUMME der zwei Anteile und wird hier
+            // nachgezogen - wie Investition_kwel aus den fuenf Kostenposten. Sind
+            // die Anteile nicht gepflegt (Altbestand vor Schritt 99), bleibt der
+            // Gesamtwert stehen, wie er war; SimulationBHKW liest ihn unveraendert.
+            m.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
+                m.m_Wirkungsgrad_el, m.m_Wirkungsgrad_th, m.m_Wirkungsgrad);
+
+            // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
+            // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
+            // abgeleitet. Damit kann kein Schreibweg die beiden Groessen
+            // auseinanderlaufen lassen - auch Form_BHKWAdmin nicht, das nur Pel
+            // aendert und den vollstaendig gelesenen Satz sonst unveraendert
+            // zurueckschreibt. Der Bestand wird dadurch erst beim Speichern
+            // angeglichen, nicht schon beim Lesen oder Kopieren.
+            m.m_Investition_KWel = BHKWKosten.JeKWel(
+                BHKWKosten.Summe(m.m_Kosten_Modul, m.m_Kosten_Montage,
+                                 m.m_Kosten_Lieferung, m.m_Kosten_Schallschutzhaube,
+                                 m.m_Kosten_Abgasreinigung),
+                m.m_Pel);
+
+            // ARBEITSPAKET iU6: Die Parametersammlung des DBCommand war hier nur
+            // ZWISCHENSPEICHER - unten wurde sie sofort in ein Array kopiert und an
+            // die Zugriffsschicht gegeben. Ein OleDbParameter wuerde dafuer heute
+            // nur noch auf Nicht-Windows scheitern, also sammelt eine Liste die
+            // DbParam direkt. Reihenfolge, Namen und Werte unveraendert; gebunden
+            // wird ohnehin nach Position.
+            List<DbParam> werte = new List<DbParam>();
+
+            werte.Add(new DbParam("@besch", m.m_szBeschreibung ?? ""));
+            werte.Add(new DbParam("@firma", m.m_szFirma ?? ""));
+            werte.Add(new DbParam("@motor", m.m_szMotortyp ?? ""));
+            werte.Add(new DbParam("@ptherm", m.m_Ptherm));
+            werte.Add(new DbParam("@pel", m.m_Pel));
+            werte.Add(new DbParam("@brenn", m.m_Brennstoff));
+            werte.Add(new DbParam("@wirk", m.m_Wirkungsgrad));
+            werte.Add(Anteil("@wirkEl", m.m_Wirkungsgrad_el));
+            werte.Add(Anteil("@wirkTh", m.m_Wirkungsgrad_th));
+            werte.Add(new DbParam("@inv", m.m_Investition_KWel));
+            werte.Add(new DbParam("@raum", m.m_Raumbedarf));
+            werte.Add(new DbParam("@wart", m.m_Wartungskosten_kWhel));
+            werte.Add(new DbParam("@nutz", m.m_Nutzungsdauer));
+            werte.Add(new DbParam("@nox", m.m_NOx));
+            werte.Add(new DbParam("@so2", m.m_SO2));
+            werte.Add(new DbParam("@co", m.m_CO));
+            werte.Add(new DbParam("@co2", m.m_CO2));
+            werte.Add(new DbParam("@staub", m.m_Staub));
+            werte.Add(new DbParam("@grenz", m.m_Grenzleistung));
+            werte.Add(new DbParam("@modul", m.m_Kosten_Modul));
+            werte.Add(new DbParam("@mont", m.m_Kosten_Montage));
+            werte.Add(new DbParam("@lief", m.m_Kosten_Lieferung));
+            werte.Add(new DbParam("@schall", m.m_Kosten_Schallschutzhaube));
+            werte.Add(new DbParam("@abgas", m.m_Kosten_Abgasreinigung));
+            werte.Add(new DbParam("@vl", m.m_Vorlauf));
+            werte.Add(new DbParam("@rl", m.m_Ruecklauf));
+            werte.Add(new DbParam("@key", schluessel));
+            return (sql, werte.ToArray());
         }
 
         // Loescht einen Stammdatensatz per Bezeichner, sofern nicht schreibgeschuetzt.
@@ -777,8 +793,33 @@ namespace WindowsFormsApplication1
                 "SELECT * FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@name", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
 
-            DataRow r = dt.Rows[0];
+        /// <summary>
+        /// <b>Die Anzeigefelder eines Satzes nach seiner ID</b> (Katalogauswahl V1, Stufe 3, „Bearbeiten…" je
+        /// Bereich, KA‑E‑8): <paramref name="projektkopie"/> = <c>true</c> liest die Projektkopie aus
+        /// <see cref="TABELLE_PROJEKT"/>, sonst den Katalogsatz. Dieselben Schlüssel wie
+        /// <see cref="KatalogsatzAnzeige"/> — samt den fünf Kostenposten, der abgeleiteten Investition je kWel und der
+        /// Wartung je kWhel; <c>null</c>, wenn es die ID nicht gibt.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> SatzAnzeige(bool projektkopie, int id)
+        {
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + Tabelle(projektkopie) + "] WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return AnzeigeAusZeile(dt.Rows[0]);
+        }
+
+        /// <summary>Die Projektkopien der BHKW-Module (alle Projekte, Spalte <c>ID_Projekt</c>).</summary>
+        public const string TABELLE_PROJEKT = "Tab_BHKW";
+
+        private static string Tabelle(bool projektkopie) => projektkopie ? TABELLE_PROJEKT : TABLE;
+
+        /// <summary>Die Anzeigefelder einer Zeile aus Katalog oder Projektkopie (gleiche Fachspalten).</summary>
+        private static IReadOnlyDictionary<string, string> AnzeigeAusZeile(DataRow r)
+        {
             var werte = new Dictionary<string, string>(StringComparer.Ordinal);
 
             werte[KatalogBrowserProfil.FeldBezeichner] = Feld(r, "Bezeichner");
@@ -971,15 +1012,8 @@ namespace WindowsFormsApplication1
                     return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
                         "Fehler beim Überschreiben des Datensatzes!"), "");
 
-                m.m_szFirma = felder.Firma ?? "";
-                m.m_Ptherm = felder.Ptherm;
-                m.m_Pel = felder.Pel;
-                m.m_Grenzleistung = felder.Grenzleistung;
-                m.m_Vorlauf = felder.Vorlauf;
-                m.m_Ruecklauf = felder.Ruecklauf;
-
-                // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
-                string verstoss = FelderUebernehmen(m, felder);
+                // --- Die Grundfelder und der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+                string verstoss = Anwenden(m, felder);
                 if (!string.IsNullOrEmpty(verstoss))
                     return new SpeicherErgebnis(false, verstoss, "");
 
@@ -999,6 +1033,89 @@ namespace WindowsFormsApplication1
             {
                 return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
                     "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Mehrfach-Bearbeiten in EINER Transaktion (KA-E-8)
+        // =================================================================================
+
+        /// <summary>Die sechs Grundfelder und der volle Feldbestand auf einen geladenen Satz.</summary>
+        private static string Anwenden(BHKWStammModel satz, AnzeigefelderBhkw felder)
+        {
+            satz.m_szFirma = felder.Firma ?? "";
+            satz.m_Ptherm = felder.Ptherm;
+            satz.m_Pel = felder.Pel;
+            satz.m_Grenzleistung = felder.Grenzleistung;
+            satz.m_Vorlauf = felder.Vorlauf;
+            satz.m_Ruecklauf = felder.Ruecklauf;
+            return FelderUebernehmen(satz, felder);
+        }
+
+        /// <summary>Die geänderten Felder eines Satzes, benannt über seine ID.</summary>
+        public sealed record Satzaenderung(int Id, AnzeigefelderBhkw Felder);
+
+        /// <summary>
+        /// <b>Schreibt alle geänderten Sätze einer Mehrfachbearbeitung — alle oder keiner</b> (Konzept Projektdialoge
+        /// mit Katalogauswahl 4.6). <paramref name="projektkopie"/> wählt die Tabelle: die Projektkopien
+        /// (<see cref="TABELLE_PROJEKT"/>) oder den Katalog.
+        /// </summary>
+        /// <remarks>
+        /// Jede Zeile durchläuft dieselbe Prüfung wie <see cref="AnzeigefelderSchreiben"/> (Zahlenbereiche, die zwei
+        /// Wirkungsgradanteile, Teillast und Takten, Rücklaufgrenze, Brennstoff); die Investition je kWel und der
+        /// Gesamtwirkungsgrad werden nachgezogen. Ein gesperrter Katalogsatz, eine fehlende ID oder ein Verstoß rollt
+        /// die ganze Transaktion zurück und nennt den Satz — kein Teilstand.
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreibenAlle(bool projektkopie, IReadOnlyList<Satzaenderung> saetze)
+        {
+            if (saetze == null || saetze.Count == 0)
+                return new SpeicherErgebnis(true, Text("HZK_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+            string tabelle = Tabelle(projektkopie);
+            var leser = new BHKWStammCtrl();
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    foreach (Satzaenderung s in saetze)
+                    {
+                        if (s == null || s.Felder == null) continue;
+                        DataTable dt = v.Lese("SELECT * FROM [" + tabelle + "] WHERE ID = ?", new DbParam("@id", s.Id));
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("HZK_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                s.Id), "");
+                        }
+                        BHKWStammModel satz = leser.MapRowToModel(dt.Rows[0]);
+                        string name = satz.m_szBezeichner ?? "";
+                        if (!projektkopie && satz.m_bReadOnly)
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("HZK_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."), name), name);
+                        }
+                        string grund = Anwenden(satz, s.Felder);
+                        if (!string.IsNullOrEmpty(grund))
+                        {
+                            v.Rollback();
+                            return new SpeicherErgebnis(false, string.Format(
+                                Text("HZK_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."), name, grund), name);
+                        }
+                        (string sql, DbParam[] ps) = Aktualisierung(satz, tabelle, "ID", s.Id);
+                        v.Ausfuehren(sql, ps);
+                        ErzeugerTeillastWerte.BhkwSchreiben(tabelle, "ID", s.Id, ErzeugerTeillastWerte.Bhkw(satz), v);
+                        GeraetegrenzWerte.BhkwSchreiben(tabelle, "ID", s.Id, satz.m_Ruecklauf_Max, v);
+                    }
+                    v.Commit();
+                }
+                return new SpeicherErgebnis(true, string.Format(
+                    Text("HZK_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurueck.
+                return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER", "Fehler beim Überschreiben des Datensatzes!"), "");
             }
         }
 
