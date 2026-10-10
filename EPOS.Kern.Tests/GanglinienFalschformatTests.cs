@@ -186,6 +186,9 @@ namespace EPOS.Kern.Tests
             // Der Leser des Quellprofils ist nachsichtig (letzte Zahl je Zeile): 8 760 lesbare Zeilen sind ihm recht.
             if (fall != "csv_als_xlsx" && fall != "anfuehrung_offen")
                 Assert.Null(WaermequelleClass.WerteAusCsv(pfad, 8760));
+            RaumnutzungCsvLesung rn = RaumnutzungCsv.Lesen(File.ReadAllBytes(pfad));
+            Assert.Empty(rn.Zeilen);
+            Assert.True(!string.IsNullOrEmpty(rn.Abbruch) || rn.Meldungen.Count > 0, "Raumnutzung ohne Befund: " + fall);
         }
         [Fact]
         public void Binaerdatei_heisst_keine_Textdatei()
