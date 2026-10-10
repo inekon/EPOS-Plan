@@ -43,9 +43,24 @@
 
 @if (!_verfallen)
 {
-    <div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
+    <div class="@Klassen" role="alert">
         <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
         <span class="epos-warnbanner-text">@Text</span>
+        @if (HatListe)
+        {
+            <span class="epos-warnbanner-zahl">· @Zahltext</span>
+            @* DER KLAPPER DER HINWEISLISTE (Anwenderbefund 10.10.2026: rund 25 Hinweise
+               eines Simulationslaufs, zu einem Absatz verkettet, deckten die ganze Seite).
+               Zugeklappt traegt das Banner EINE Zeile - Kopftext und Zahl -, aufgeklappt
+               steht die Liste darunter in einem Rollbereich begrenzter Hoehe. Ein echter
+               Knopf: Enter und Leertaste bedient der Browser, aria-expanded und
+               aria-controls sagen der Sprachausgabe, was er tut. *@
+            <button type="button" class="epos-warnbanner-klapper"
+                    aria-expanded="@(IstOffen ? "true" : "false")" aria-controls="@_listenId"
+                    title="@KlapperText" @onclick="Umklappen">
+                @KlapperText <span class="epos-warnbanner-chevron" aria-hidden="true">@(IstOffen ? "▴" : "▾")</span>
+            </button>
+        }
         @if (AktionSichtbar)
         {
             @* DER WEG VON DER MELDUNG ZUR HANDLUNG (Anwenderentscheid vom
@@ -82,6 +97,15 @@
            und Seite rollt das Banner mit und braucht ihn nicht. *@
         <button type="button" class="epos-warnbanner-schliessen" title="@SchliessenKurztext"
                 aria-label="@SchliessenKurztext" @onclick="Schliessen">✕</button>
+        @if (HatListe && IstOffen)
+        {
+            <ul class="epos-warnbanner-liste" id="@_listenId">
+                @for (int i = 0; i < Hinweise!.Count; i++)
+                {
+                    <li @key="i">@Hinweise[i]</li>
+                }
+            </ul>
+        }
     </div>
 }
 
@@ -263,6 +287,70 @@
         await Verfallen.InvokeAsync();
     }
 
+    // =====================================================================
+    //  Die Hinweisliste (Anwenderbefund 10.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Hinweise zur Meldung, ein Eintrag je Hinweis; <see cref="Text"/> ist dann der
+    /// Kopf (etwa die Statuszeile des Laufs). Leer oder <c>null</c> = das Banner zeigt
+    /// nur <see cref="Text"/>, wie es immer tat.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die Liste kommt ausdruecklich, nicht als verketteter Absatz:</b> Die Huelle
+    /// kennt die Grenzen der Hinweise, das Banner muesste sie aus einem Fliesstext raten.
+    /// </remarks>
+    [Parameter] public IReadOnlyList<string>? Hinweise { get; set; }
+
+    /// <summary>
+    /// Anfangsstellung der Liste; <c>null</c> = nach der Stufe: Fehler und Warnung offen
+    /// (eine Fehlermeldung wird nicht versteckt), Hinweis und Erfolg zugeklappt.
+    /// </summary>
+    [Parameter] public bool? HinweiseOffen { get; set; }
+
+    /// <summary>Beschriftung des Klappers im zugeklappten Zustand (<c>WARNBANNER_HINWEISE_ANZEIGEN</c>).</summary>
+    [Parameter] public string AnzeigenText { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_ANZEIGEN", "Hinweise anzeigen");
+
+    /// <summary>Beschriftung des Klappers im aufgeklappten Zustand (<c>WARNBANNER_HINWEISE_AUSBLENDEN</c>).</summary>
+    [Parameter] public string AusblendenText { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_AUSBLENDEN", "Hinweise ausblenden");
+
+    /// <summary>Zahl bei genau einem Hinweis (<c>WARNBANNER_HINWEISE_EINER</c>).</summary>
+    [Parameter] public string ZahlEiner { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_EINER", "1 Hinweis");
+
+    /// <summary>Zahl bei mehreren Hinweisen, {0} ist die Zahl (<c>WARNBANNER_HINWEISE_MEHRERE</c>).</summary>
+    [Parameter] public string ZahlMehrere { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_MEHRERE", "{0} Hinweise");
+
+    /// <summary>Traegt das Banner eine Hinweisliste? (Pruefhilfe fuer Tests.)</summary>
+    public bool HatListe => Hinweise is { Count: > 0 };
+
+    /// <summary>
+    /// Steht die Liste offen? Die Stellung, die der Anwender waehlt, bleibt, solange das
+    /// Banner lebt - auch ueber einen neuen Text; gespeichert wird sie nicht.
+    /// </summary>
+    public bool IstOffen => _offen ?? HinweiseOffen ?? Stufe is WarnStufe.Fehler or WarnStufe.Warnung;
+
+    private bool? _offen;
+
+    private readonly string _listenId = "epos-warnbanner-liste-" + Guid.NewGuid().ToString("N")[..8];
+
+    private string KlapperText => IstOffen ? AusblendenText : AnzeigenText;
+
+    private string Zahltext
+    {
+        get
+        {
+            int n = Hinweise?.Count ?? 0;
+            return n == 1 ? ZahlEiner
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, ZahlMehrere, n);
+        }
+    }
+
+    private void Umklappen() => _offen = !IstOffen;
+
     /// <inheritdoc/>
     public void Dispose() => Abbrechen();
 
@@ -273,6 +361,9 @@
         WarnStufe.Erfolg => "erfolg",
         _ => "warnung"
     };
+
+    private string Klassen => "epos-warnbanner epos-warnbanner--" + Klasse
+                              + (HatListe ? " epos-warnbanner--liste" : "");
 
     private string Zeichen => Stufe switch
     {

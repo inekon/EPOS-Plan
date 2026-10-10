@@ -387,6 +387,7 @@ namespace WindowsFormsApplication1
                 wirkung: KiAktionsTexte.WirkungFeldSetzen,
                 parameter: new[] { MaskeParameter(), FeldParameter(), WertParameter() },
                 vorbedingung: a => EinzelfeldGrund(a),
+                ohneAenderung: a => EinzelfeldUnveraendert(a),
                 vorschau: a =>
                 {
                     string maske = Maskenschluessel(a.Text("maske"));
@@ -475,6 +476,7 @@ namespace WindowsFormsApplication1
                 wirkung: KiAktionsTexte.WirkungFormularAusfuellen,
                 parameter: new[] { MaskeParameter(), WerteParameter() },
                 vorbedingung: a => MehrfeldGrund(a),
+                ohneAenderung: a => MehrfeldUnveraendert(a),
                 vorschau: a =>
                 {
                     string maske = Maskenschluessel(a.Text("maske"));
@@ -499,6 +501,7 @@ namespace WindowsFormsApplication1
 
                     var zeilen = KiHilfe.Liste();
                     var meldungen = new List<string>();
+                    var bereits = new List<string>();
                     int gesetzt = 0;
                     string aufgeloest = "";
 
@@ -512,6 +515,15 @@ namespace WindowsFormsApplication1
                         }
 
                         string alt = Feldtext(zugang);
+
+                        // Traegt das Feld den Wert schon, wird es weder gesetzt noch
+                        // gezaehlt - es stand auch nicht im bestaetigten Block.
+                        if (string.Equals(alt, Neutext(zugang, werte[i]), StringComparison.Ordinal))
+                        {
+                            bereits.Add(Zuweisung(zugang));
+                            continue;
+                        }
+
                         string hindernis = Setze(zugang, werte[i]);
                         if (hindernis != null)
                         {
@@ -530,6 +542,10 @@ namespace WindowsFormsApplication1
                     }
 
                     haken.Auffrischung();
+
+                    if (bereits.Count > 0)
+                        meldungen.Add(string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FelderBereits,
+                                                    string.Join(", ", bereits)));
 
                     KiErgebnis e = KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FelderGesetzt,
@@ -585,6 +601,7 @@ namespace WindowsFormsApplication1
                 wirkung: KiAktionsTexte.WirkungReiheSetzen,
                 parameter: new[] { MaskeParameter(), FeldParameter(), ReihenwerteParameter(), AbParameter() },
                 vorbedingung: a => ReihenGrund(a),
+                ohneAenderung: a => ReiheUnveraendert(a),
                 vorschau: a =>
                 {
                     string maske = Maskenschluessel(a.Text("maske"));
@@ -1401,7 +1418,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Vorbedingung von <c>formular_ausfuellen</c>: Maske bedienbar, Zuweisungen
-        /// lesbar, jedes Feld setzbar, mindestens eine echte Aenderung darunter.
+        /// lesbar, jedes Feld setzbar. Ob es ueberhaupt etwas zu aendern gibt, prueft
+        /// <see cref="MehrfeldUnveraendert"/> - der Fall ist ein Erfolg, keine Absage.
         /// </summary>
         private static string MehrfeldGrund(KiAufruf a)
         {
@@ -1436,22 +1454,94 @@ namespace WindowsFormsApplication1
                 if (!umsetzung.Ok) return umsetzung.Grund;
             }
 
-            var aenderungen = new List<KiFeldAenderung>();
-            Sammle(maske, a.Text("werte"), aenderungen);
-            if (aenderungen.Count == 0)
+            return null;
+        }
+
+        // =====================================================================
+        // Nichts zu aendern - Erfolg ohne Bestaetigung (Anwendermeldung 10.10.2026)
+        // =====================================================================
+
+        // Diese drei Pruefungen laufen erst NACH der jeweiligen Vorbedingung: Maske,
+        // Felder, Setzbarkeit und Umsetzung sind dann schon geprueft. Traegt der Stand
+        // bereits, was verlangt war, liefern sie den Klartext - der Ausfuehrer meldet
+        // daraus einen Erfolg „unveraendert" (KiErgebnis.OhneAenderung) ohne Vorschau und
+        // ohne Klick. Vorher stand der Fall als Absage in der Vorbedingung und erschien
+        // im Chat rot als „Aktion nicht ausgefuehrt" - gelesen als Fehlschlag.
+
+        /// <summary>Leerlauf von <c>feld_setzen</c>: das Feld traegt den Wert schon.</summary>
+        private static string EinzelfeldUnveraendert(KiAufruf a)
+        {
+            string maske = Maskenschluessel(a.Text("maske"));
+            KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+            if (zugang == null) return null;
+
+            string alt = Feldtext(zugang);
+            if (!string.Equals(alt, Neutext(zugang, a.Text("wert")), StringComparison.Ordinal)) return null;
+
+            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FeldOhneAenderung,
+                                 Maskenanzeige(maske), zugang.Feld.Anzeigename, Sichtbar(alt));
+        }
+
+        /// <summary>Leerlauf von <c>formular_ausfuellen</c>: jedes genannte Feld traegt seinen Wert schon.</summary>
+        private static string MehrfeldUnveraendert(KiAufruf a)
+        {
+            string maske = Maskenschluessel(a.Text("maske"));
+            var namen = new List<string>();
+            var werte = new List<string>();
+            if (Zerlegen(a.Text("werte"), namen, werte) != null) return null;
+
+            var stand = new List<string>();
+            for (int i = 0; i < namen.Count; i++)
             {
-                KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
-                return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.OhneAenderung,
-                                     eintrag == null ? maske : eintrag.Anzeigename);
+                KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, namen[i]);
+                if (zugang == null) return null;
+                if (!string.Equals(Feldtext(zugang), Neutext(zugang, werte[i]), StringComparison.Ordinal))
+                    return null;
+                stand.Add(Zuweisung(zugang));
             }
 
-            return null;
+            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.OhneAenderung,
+                                 Maskenanzeige(maske), string.Join(", ", stand));
+        }
+
+        /// <summary>Leerlauf von <c>reihe_setzen</c>: die genannten Stellen tragen ihre Werte schon.</summary>
+        private static string ReiheUnveraendert(KiAufruf a)
+        {
+            string maske = Maskenschluessel(a.Text("maske"));
+            KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
+            if (zugang == null || !zugang.Feld.IstReihe) return null;
+
+            KiFeldumsetzung umsetzung = KiFeldwandler.WandleReihe(zugang, a.ZahlListe("werte"), Ab(a));
+            if (!umsetzung.Ok) return null;
+
+            IReadOnlyList<double?> alt = KiFeldwandler.Reihenwerte(zugang);
+            IReadOnlyList<double?> neu = KiZahlenreihe.Werte(umsetzung.Wert) ?? Array.Empty<double?>();
+            for (int i = 0; i < neu.Count; i++)
+            {
+                double? vorher = i < alt.Count ? alt[i] : null;
+                if (vorher != neu[i]) return null;
+            }
+
+            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.ReiheOhneAenderung,
+                                 zugang.Feld.Anzeigename, Maskenanzeige(maske));
+        }
+
+        /// <summary>„Feld = Wert" fuer die Meldungen des Unveraendert-Falls.</summary>
+        private static string Zuweisung(KiFeldzugang zugang)
+            => zugang.Feld.Anzeigename + " = " + Sichtbar(Feldtext(zugang));
+
+        /// <summary>Der Anzeigename der Maske, sonst ihr Schluessel.</summary>
+        private static string Maskenanzeige(string maske)
+        {
+            KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+            return eintrag == null ? maske : eintrag.Anzeigename;
         }
 
         /// <summary>
         /// Vorbedingung von <c>reihe_setzen</c> (Welle #458 Stufe 3b): Maske angemeldet,
         /// Feld da, eine Zahlenreihe und setzbar, kein Lesemodus, kein Schreibschutz,
-        /// Laenge und Grenzen passend, mindestens eine echte Aenderung.
+        /// Laenge und Grenzen passend. Den Fall „nichts zu aendern" prueft
+        /// <see cref="ReiheUnveraendert"/>.
         /// </summary>
         /// <remarks>
         /// Dieselbe Reihenfolge wie bei <see cref="EinzelfeldGrund"/> - die Vorbedingung
@@ -1482,19 +1572,8 @@ namespace WindowsFormsApplication1
             if (grund != null) return grund;
 
             KiFeldumsetzung umsetzung = KiFeldwandler.WandleReihe(zugang, a.ZahlListe("werte"), Ab(a));
-            if (!umsetzung.Ok) return umsetzung.Grund;
-
-            // Ohne Aenderung kein Block - dieselbe Regel wie bei formular_ausfuellen.
-            IReadOnlyList<double?> alt = KiFeldwandler.Reihenwerte(zugang);
-            IReadOnlyList<double?> neu = KiZahlenreihe.Werte(umsetzung.Wert) ?? Array.Empty<double?>();
-            for (int i = 0; i < neu.Count; i++)
-            {
-                double? vorher = i < alt.Count ? alt[i] : null;
-                if (vorher != neu[i]) return null;
-            }
-
-            return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.ReiheOhneAenderung,
-                                 zugang.Feld.Anzeigename);
+            // Ohne Aenderung kein Block - das prueft ReiheUnveraendert, als Erfolg.
+            return umsetzung.Ok ? null : umsetzung.Grund;
         }
 
         /// <summary>Die Stelle des ersten Wertes; <c>0</c> = nicht genannt, die ganze Reihe.</summary>

@@ -41,6 +41,14 @@ namespace KiKern
         /// </summary>
         public int Anzahl { get; private set; }
 
+        /// <summary>
+        /// true, wenn die Aktion nichts zu aendern fand: Der Stand trug bereits, was
+        /// verlangt war. Das ist ein ERFOLG (<see cref="Status"/> = Ausgefuehrt,
+        /// <see cref="Anzahl"/> = 0) und keine Absage - der Chat zeigt ihn neutral, und das
+        /// Modell bestaetigt den Stand, statt sich zu entschuldigen.
+        /// </summary>
+        public bool Unveraendert { get; private set; }
+
         /// <summary>Laufzeit; wird vom Ausfuehrer gesetzt.</summary>
         public TimeSpan Dauer { get; set; }
 
@@ -60,6 +68,19 @@ namespace KiKern
             var e = new KiErgebnis(KiStatus.Ausgefuehrt, text);
             if (zeilen != null) e.Zeilen = zeilen;
             e.Anzahl = anzahl ?? e.Zeilen.Count;
+            return e;
+        }
+
+        /// <summary>
+        /// Nichts zu aendern: Der Stand traegt bereits, was verlangt war. Status
+        /// Ausgefuehrt, Anzahl 0, <see cref="Unveraendert"/> gesetzt; der Text nennt, was
+        /// schon so steht.
+        /// </summary>
+        public static KiErgebnis OhneAenderung(string text)
+        {
+            var e = new KiErgebnis(KiStatus.Ausgefuehrt, text);
+            e.Anzahl = 0;
+            e.Unveraendert = true;
             return e;
         }
 

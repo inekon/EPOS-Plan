@@ -1861,10 +1861,10 @@ Without a source buffer this reads 0.00.</value>
     <value>Double-click opens the buffer storage management.</value>
   </data>
   <data name="SIM_SCHEMA_DK_KAELTEMASCHINE" xml:space="preserve">
-    <value>Double-click opens the project's chillers.</value>
+    <value>Double-click opens the chiller's configuration.</value>
   </data>
   <data name="SIM_SCHEMA_DK_RUECKKUEHLUNG" xml:space="preserve">
-    <value>Double-click opens the project's chillers, which show the heat rejection type.</value>
+    <value>Double-click opens the chiller's configuration; its unit data show the heat rejection type.</value>
   </data>
   <data name="SIM_SCHEMA_LEER" xml:space="preserve">
     <value>No hydraulic configuration has been set up for this project yet.</value>
@@ -9549,7 +9549,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>The field “{0}” is named more than once.</value>
   </data>
   <data name="KI_DLG_OHNE_AENDERUNG" xml:space="preserve">
-    <value>In “{0}” all named fields already carry the value; there is nothing to change.</value>
+    <value>In “{0}” the fields already hold the requested values: {1}. No change needed.</value>
   </data>
   <data name="KI_DLG_GELESEN" xml:space="preserve">
     <value>“{0}”: {1} controllable fields, {2} releasable buttons.</value>
@@ -9567,7 +9567,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>“{0}”: {1} of {2} values set ({3} to {4}).</value>
   </data>
   <data name="KI_DLG_REIHE_OHNE_AENDERUNG" xml:space="preserve">
-    <value>“{0}” already carries these values; there is nothing to change.</value>
+    <value>In “{1}”, “{0}” already holds these values. No change needed.</value>
   </data>
   <data name="KI_DLG_KNOPF_AUSGELOEST" xml:space="preserve">
     <value>The button “{0}” in “{1}” has been released.</value>
@@ -47977,6 +47977,18 @@ chart</value>
   <data name="WARNBANNER_SCHLIESSEN_TOOLTIP" xml:space="preserve">
     <value>Hide message</value>
   </data>
+  <data name="WARNBANNER_HINWEISE_ANZEIGEN" xml:space="preserve">
+    <value>Show notes</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_AUSBLENDEN" xml:space="preserve">
+    <value>Hide notes</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_EINER" xml:space="preserve">
+    <value>1 note</value>
+  </data>
+  <data name="WARNBANNER_HINWEISE_MEHRERE" xml:space="preserve">
+    <value>{0} notes</value>
+  </data>
   <data name="GEBZ_SPERRE_PROJEKT_ASSISTENT" xml:space="preserve">
     <value>The building has not been saved in the project yet – its project copy, which can carry zones, is created once the wizard has finished.</value>
   </data>
@@ -51441,6 +51453,15 @@ chart</value>
   <data name="CSV_KOPF_TAGESSTUNDE" xml:space="preserve">
     <value>{0} h</value>
   </data>
+  <data name="KI_DLG_FELD_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In “{0}”, “{1}” already holds the value {2}. No change needed.</value>
+  </data>
+  <data name="KI_DLG_FELDER_BEREITS" xml:space="preserve">
+    <value>Already held the value: {0}.</value>
+  </data>
+  <data name="KI_AKT_UNVERAENDERT" xml:space="preserve">
+    <value>Unchanged: {0} — {1}</value>
+  </data>
   <data name="IMPORT_PROT_KEIN_TEXT" xml:space="preserve">
     <value>The file “{0}” is not a text file (binary content) – probably an Excel, ZIP or image file with the wrong extension.</value>
   </data>
@@ -51536,6 +51557,156 @@ chart</value>
   </data>
   <data name="KI_DLG_KM_SAISONKENNZAHL_ERL" xml:space="preserve">
     <value>Value of the seasonal efficiency: SEER 1 to 20 or ηs,c 50 to 800 %.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_SCHEMA" xml:space="preserve">
+    <value>The database does not yet hold the order of the cooling generators (schema step {0}).</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project selected.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER" xml:space="preserve">
+    <value>Unit {0} is not a cooling generator of this project.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_DOPPELT" xml:space="preserve">
+    <value>“{0}” appears twice in the order of the cooling generators.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG" xml:space="preserve">
+    <value>“{0}” is missing from the order of the cooling generators; the order names every cooling generator exactly once.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_RAND" xml:space="preserve">
+    <value>The cooling generator is already at the end of the order.</value>
+  </data>
+  <data name="KAELTEFOLGE_FEHLER_SCHREIBEN" xml:space="preserve">
+    <value>The order of the cooling generators could not be saved: {0}</value>
+  </data>
+  <data name="KAELTEFOLGE_HINWEIS_VORGABE" xml:space="preserve">
+    <value>Default order: free cooling, cold storage, heat pumps, chillers.</value>
+  </data>
+  <data name="KAELTEFOLGE_HINWEIS_GEPFLEGT" xml:space="preserve">
+    <value>Custom order: free cooling, cold storage, then the generators in the order shown.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_NAME" xml:space="preserve">
+    <value>Order of the cooling generators</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_ERL" xml:space="preserve">
+    <value>The cooling generators in the order in which they cover the cooling demand, after free cooling and cold storage. Read-only; the order is changed in the Cooling section.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME" xml:space="preserve">
+    <value>Custom cooling order</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL" xml:space="preserve">
+    <value>On = the order of the cooling generators is customised. Off restores the default order (heat pumps, then chillers); written immediately. On can only be set with the arrows in the Cooling section.</value>
+  </data>
+  <data name="KI_SIM_KAELTEFOLGE_NUR_VORGABE" xml:space="preserve">
+    <value>The order of the cooling generators is customised with the arrows in the Cooling section; here it can only be reset to the default order.</value>
+  </data>
+  <data name="SIMKONF_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMKONF_KAELTE_ERZEUGER" xml:space="preserve">
+    <value>Cooling generators (calculation order)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_SPEICHER" xml:space="preserve">
+    <value>Cold storage</value>
+  </data>
+  <data name="SIMKONF_KAELTE_SPEICHER_LEER" xml:space="preserve">
+    <value>No cold storage in the project. The buffer management creates one as a storage with use “cooling”.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FOLGE" xml:space="preserve">
+    <value>Calculation order in each cooling hour: {0}. The numbers on the tiles show it; the order is fixed.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_FREI" xml:space="preserve">
+    <value>free cooling</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_SPEICHER" xml:space="preserve">
+    <value>cold storage</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_WP" xml:space="preserve">
+    <value>heat pumps in the order of the heat cascade</value>
+  </data>
+  <data name="SIMKONF_KAELTE_STUFE_KM" xml:space="preserve">
+    <value>chillers in plant order</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AUS" xml:space="preserve">
+    <value>The project does not calculate cooling. Present: {0} chillers, {1} heat pumps with cooling function, {2} cold storages — they remain saved and have no effect.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AUS_LEER" xml:space="preserve">
+    <value>The project does not calculate cooling.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_LEER" xml:space="preserve">
+    <value>No cooling generators in the project. Chillers are added with the tile “Cooling and chillers”; a heat pump with cooling function cools once its cooling mode is switched on.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI" xml:space="preserve">
+    <value>Free cooling: {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI_VORN" xml:space="preserve">
+    <value>{0} (ahead of all generators)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_FREI_PLATZ" xml:space="preserve">
+    <value>{0} (at its position)</value>
+  </data>
+  <data name="SIMKONF_KAELTE_NICHT_KASKADE" xml:space="preserve">
+    <value>Not in the heat cascade — without a position there the heat pump does not cool. Add it under “Heat generators”.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_GILT_FUER" xml:space="preserve">
+    <value>Supply temperature and auxiliary power apply to {0} plants sharing the same project copy.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_AN" xml:space="preserve">
+    <value>+ cooling mode</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_AN" xml:space="preserve">
+    <value>Switch on the heat pump's cooling mode</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_AUS" xml:space="preserve">
+    <value>Switch off the heat pump's cooling mode</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_KONFIG" xml:space="preserve">
+    <value>Open configuration</value>
+  </data>
+  <data name="SIMKONF_KAELTE_KM_TITEL" xml:space="preserve">
+    <value>Configure chiller — {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_WP_TITEL" xml:space="preserve">
+    <value>Cooling mode — {0}</value>
+  </data>
+  <data name="SIMKONF_KAELTE_KM_FEHLT" xml:space="preserve">
+    <value>The chiller is no longer in the project.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_WP_FEHLER" xml:space="preserve">
+    <value>The heat pump's cooling mode was not written: {0}</value>
+  </data>
+  <data name="KMK_GERAET_ZEILE" xml:space="preserve">
+    <value>Unit: {0}</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTEERZEUGER_ERL" xml:space="preserve">
+    <value>The cooling generators of the “Cooling” area in calculation order, each with number, name and key values; read-only.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTESPEICHER_ERL" xml:space="preserve">
+    <value>The project's cold storages with volume and temperature pair; read-only. They are created in the buffer management.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_WP_ERL" xml:space="preserve">
+    <value>The names of the heat pumps whose cooling mode is on, separated by commas. Each named one switches it on, each unnamed one off; written immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_WP_UNBEKANNT" xml:space="preserve">
+    <value>No heat pump with cooling function in the “Cooling” area: {0}</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_AUS" xml:space="preserve">
+    <value>cooling mode off</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_VOR" xml:space="preserve">
+    <value>Move forward in the cooling sequence – covers earlier; saves immediately</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_ZURUECK" xml:space="preserve">
+    <value>Move back in the cooling sequence – covers later; saves immediately</value>
+  </data>
+  <data name="SIMKONF_KAELTE_BTN_VORGABE" xml:space="preserve">
+    <value>Default sequence</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_VORGABE" xml:space="preserve">
+    <value>Restores the default sequence (heat pumps, then chillers); saves immediately.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
+    <value>The default sequence already applies. The arrows on the tiles maintain the sequence of the cooling generators.</value>
   </data>
 </root>
 

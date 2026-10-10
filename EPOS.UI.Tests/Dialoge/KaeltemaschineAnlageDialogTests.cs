@@ -128,6 +128,23 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// KB-B (E117 F2): Die Betriebseingaben stehen in der Komponente <see cref="KaeltemaschineKonfiguration"/> —
+    /// derselben wie im Bereich „Kälte“ der Simulationskonfiguration —, und die Liste zieht einer Eingabe nach.
+    /// </summary>
+    [Fact]
+    public void Die_Betriebseingaben_sind_die_Komponente_der_Simulationskonfiguration()
+    {
+        var p = new Projekt();
+        var cut = Aufbauen(this, p);
+
+        IRenderedComponent<KaeltemaschineKonfiguration> komponente = cut.FindComponent<KaeltemaschineKonfiguration>();
+        Assert.Same(cut.Instance.Arbeitsstand, komponente.Instance.Daten);
+
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("3");
+        Assert.Contains("300", cut.Find(".epos-kaeltemaschine-anlagen tbody tr").TextContent);   // 3 × 100 kW
+    }
+
+    /// <summary>
     /// KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Lesewerte der Teillastrechnung der Projektkopie und der
     /// Hinweis „Folgeschaltung von n Maschinen“ - nur bei Anzahl &gt; 1 und gesetztem Weg.
     /// </summary>

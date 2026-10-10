@@ -607,7 +607,7 @@ namespace WindowsFormsApplication1
                 finally
                 {
                     // Der Legacy-Modus darf die Verbindung nicht ueberleben (Muster der Schritte 96 und 152).
-                    try { v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
+                    try { if (v.Offen) v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
                     catch (Exception) { /* nach Commit abgeschlossen - dann stand er schon aus */ }
                 }
             }

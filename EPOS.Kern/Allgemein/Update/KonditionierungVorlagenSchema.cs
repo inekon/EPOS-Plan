@@ -530,7 +530,7 @@ namespace WindowsFormsApplication1
                 {
                     // DER LEGACY-MODUS DARF DIE VERBINDUNG NICHT UEBERLEBEN - die Klammer fuer
                     // einen Abbruch zwischen den beiden PRAGMAs (Muster aus Schritt 96).
-                    try { v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
+                    try { if (v.Offen) v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
                     catch (Exception) { /* nach Commit abgeschlossen - dann stand er schon aus */ }
                 }
             }

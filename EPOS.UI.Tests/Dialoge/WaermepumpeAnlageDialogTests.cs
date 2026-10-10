@@ -2422,4 +2422,82 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
             Schreibnaht.Schreibrecht = vorher;
         }
     }
+
+    /// <summary>
+    /// Die Anwendermeldung selbst: Vorlauf 55 und Rücklauf 45 stehen schon, der Assistent
+    /// schreibt <c>mask</c> statt <c>maske</c>. Der Ausweichname greift, und „nichts zu
+    /// ändern" kommt als Erfolg ohne Bestätigung zurück — nicht als rote Absage.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_meldet_unveraendert_wenn_Vorlauf_und_Ruecklauf_schon_stehen()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var daten = Voll();
+            daten.Vorlauf = 55;
+            daten.Ruecklauf = 45;
+            var cut = Aufbauen(daten);
+
+            KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Ausfuehren(
+                "formular_ausfuellen",
+                new Dictionary<string, object?>
+                {
+                    ["mask"] = "Wärmepumpe im Projekt",
+                    ["werte"] = "vorlauf=55; ruecklauf=45"
+                }));
+
+            Assert.True(ergebnis.Status == KiKern.KiStatus.Ausgefuehrt, ergebnis.Text);
+            Assert.True(ergebnis.Unveraendert, ergebnis.Text);
+            Assert.Equal(0, ergebnis.Anzahl);
+            Assert.Contains("Wärmepumpe im Projekt", ergebnis.Text, StringComparison.Ordinal);
+            Assert.Contains("55", ergebnis.Text, StringComparison.Ordinal);
+            Assert.Contains("45", ergebnis.Text, StringComparison.Ordinal);
+            Assert.Equal(55, daten.Vorlauf);
+            Assert.Equal(45, daten.Ruecklauf);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
+    /// <summary>
+    /// Gemischt: Der Vorlauf ändert sich (55 → 50), der Rücklauf steht schon. Gesetzt und
+    /// gezählt wird nur der Vorlauf; der Rücklauf steht als Meldung „trug den Wert bereits".
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_nur_das_geaenderte_Feld()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var daten = Voll();
+            daten.Vorlauf = 55;
+            daten.Ruecklauf = 45;
+            var cut = Aufbauen(daten);
+
+            KiKern.KiErgebnis ergebnis = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Ausfuehren(
+                "formular_ausfuellen",
+                new Dictionary<string, object?>
+                {
+                    ["maske"] = "Wärmepumpe im Projekt",
+                    ["werte"] = "vorlauf=50; ruecklauf=45"
+                }));
+
+            Assert.True(ergebnis.Status == KiKern.KiStatus.Ausgefuehrt, ergebnis.Text);
+            Assert.False(ergebnis.Unveraendert);
+            Assert.Equal(1, ergebnis.Anzahl);
+            Assert.Single(ergebnis.Zeilen);
+            Assert.Contains(ergebnis.Meldungen, m => m.Contains("45", StringComparison.Ordinal));
+            Assert.Equal(50, daten.Vorlauf);
+            Assert.Equal(45, daten.Ruecklauf);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
 }

@@ -405,6 +405,9 @@ namespace WindowsFormsApplication1
             // seiner Kaeltemaschinen bekommen die Katalogfelder leer, die Geraeteart liest sich nach der Rueckfuellregel.
             new Stufe(KaelteKatalogfelderSchema.SCHRITT, Art.Katalog,
                       "Katalogfelder der Kälteerzeuger (Geräteart, GWP und Füllmenge des Kältemittels, saisonale Kennzahl)"),
+            // Ein älteres Paket führt keinen Rang der Kälteerzeuger; die Spalte kommt leer an (Vorgabefolge).
+            new Stufe(KaelteRangSchema.SCHRITT, Art.Ddl,
+                      "Pflegbare Kältefolge (Rang der Kälteerzeuger an der Anlagenzeile)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

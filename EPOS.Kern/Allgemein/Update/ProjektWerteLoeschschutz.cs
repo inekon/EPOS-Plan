@@ -415,7 +415,7 @@ namespace WindowsFormsApplication1
                     // Sichten und Trigger nicht mehr um. Laeuft der Umbau durch, hat ihn
                     // die Anweisungsliste selbst schon abgeschaltet - diese Zeile ist die
                     // Klammer fuer den ABBRUCH zwischen den beiden PRAGMAs.
-                    try { v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
+                    try { if (v.Offen) v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); }
                     catch (Exception) { /* die Verbindung ist dann ohnehin am Ende */ }
                 }
             }

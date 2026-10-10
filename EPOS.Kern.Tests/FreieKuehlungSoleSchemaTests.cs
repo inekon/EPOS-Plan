@@ -153,8 +153,8 @@ namespace EPOS.Kern.Tests
                                       (s.Tabelle == FreieKuehlungSoleSchema.TAB_ANLAGEN ? " AND ID_Projekt <> 1064" : "")));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(FreieKuehlungSoleSchema.TAB_ANLAGEN);
             // Hinter den drei Spalten stehen allein die sechs des Erdsondenfeldes (Schritt 195) und die zwei der
-            // Uebergabegrenze (Schritt 205).
-            int sonde = ErdsondenfeldSchema.SPALTEN.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
+            // Uebergabegrenze (Schritt 205) und der Rang der Kaeltefolge (Schritt 212).
+            int sonde = ErdsondenfeldSchema.SPALTEN.Count + UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count;
             Assert.Equal(FreieKuehlungSoleSchema.SPALTEN_ANLAGE.ToArray(), anlagen.Skip(anlagen.Count - sonde - 3).Take(3).ToArray());
             foreach (string t in FreieKuehlungSoleSchema.TABELLEN_ERGEBNIS)
             {

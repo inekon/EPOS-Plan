@@ -15,7 +15,7 @@ Die Kühlung hat zwei Seiten: den '''Kältebedarf''' eines Gebäudes und den '''
 # '''Gebäude''' – Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'': ''Gebäude wird gekühlt'', bei Bedarf ''Kühlleistungsgrenze''; den ''Kühlsollwert'' trägt der Reiter ''Konditionierung'' in der Spalte ''Kühlen'', Zeile ''Tag'' ([[#eingaben|Eingaben]]). Kältebedarf entsteht nur auf dem Rechenweg nach VDI 6007 oder aus einem Lastgang im Kanal ''Kühlung''.
 # '''Gerät''' – Eine Wärmepumpe deckt Kälte nur mit '''Kühlkennlinie''': Kälteleistung und EER je Kühl-Vorlauf über der Außen- bzw. Quellentemperatur. Sie kommt mit dem Herstellerdaten-Import nach VDI 3805 in den Katalog und mit dem Gerät ins Projekt. Im ''Wärmepumpen-Katalog'' zeigt ''nur mit Kühlfunktion'' die Geräte mit Kühlleistung.
 # '''Kühlbetrieb''' – ''Konfiguration…'' der Wärmepumpe, Gruppe ''Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
-# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Block ''Weitere Einstellungen'' ''Kühlung rechnen'' einschalten.
+# '''Simulation Konfiguration''' (Startseite, Reiter ''Simulation'', Knopf ''Simulation Konfiguration...''; ebenso Menü ''Projekt → Simulation…'') – die Wärmepumpe unter ''Komponenten der Simulation'' in die Kaskade aufnehmen, sonst kühlt sie nicht, und im Bereich ''Kälte'' unter den Komponenten ''Kühlung rechnen'' einschalten.
 # '''Kühlübergabe''' (wahlweise) – Mit ''Anlagenkopplung'' ''Heizkreis (AK1)'' und ''Kühlübergabe rechnen (statt idealer Kühlung)'' am Gebäude rechnet EPOS-Plan Kühldecke, Flächenkühlung oder Gebläsekonvektor mit festem Kaltwasser-Vorlauf, mit mehreren Zonen je Zone ([[Programm Dokumentation/Gebäudemodell VDI 6007#kuehluebergabe|Gebäudemodell]]); auf der Stufe ''geschlossener Kreis (AK3)'' gleitet der Vorlauf wahlweise mit der [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Kühlkurve]].
 
 {{Diagramm-Anfang|titel=Ein Tag mit Kühlung in EPOS-Plan}}
@@ -154,7 +154,7 @@ In Monaten mit Heiz- und Kältebedarf entscheidet der Tag, ob die Wärmepumpe he
 
 Gerechnet wird die Kälte, wenn zwei Schalter stehen:
 
-# '''Projekt''' – In der ''Simulation Konfiguration'' steht im Block ''Weitere Einstellungen'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
+# '''Projekt''' – In der ''Simulation Konfiguration'' steht im Kopf des Bereichs ''Kälte'' unter den Komponenten der Schalter '''Kühlung rechnen'''. Er gilt für das ganze Projekt und wird sofort gespeichert. Ist er aus, rechnet der Lauf keinen Kältebedarf; die Kühleingaben der Gebäude bleiben stehen, wirken aber nicht, und das Laufprotokoll nennt, wie viele Gebäude und Lastgänge davon betroffen sind.
 # '''Gebäude''' – Im Gebäudedialog, Reiter ''Gebäude und Hülle'', Gruppe ''Kühlung'', setzen Sie den Haken '''Gebäude wird gekühlt'''; den '''Kühlsollwert''' tragen Sie im Reiter ''Konditionierung'' in die Spalte ''Kühlen'', Zeile ''Tag'' ein.
 
 Im Einstellungsdialog des Programms legt '''Neue Projekte mit Kühlung anlegen''' fest, ob ein neu angelegtes Projekt mit eingeschaltetem Projektschalter beginnt; die Vorgabe ist aus. Vorhandene Projekte schaltet diese Einstellung nicht um, und ein kopiertes Projekt übernimmt den Schalter seiner Vorlage.
@@ -215,7 +215,7 @@ Wärmeerzeuger decken keine Kälte. Kälte deckt eine '''Wärmepumpe im Kühlbet
 === Kühlbetrieb der Wärmepumpe ===
 {{Anker|kuehlbetrieb}}
 
-Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''. Schneller geht es im Dialog ''Kältemaschinen im Projekt'' (Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite): Der Block ''Wärmepumpen im Kühlbetrieb'' unter der Anlagenliste führt alle Wärmepumpen des Projekts mit Kühlkennlinie mit je einem Schalter für denselben Wert, gespeichert mit ''OK''; Kühl-Vorlauf und Hilfsstromanteil bleiben dabei, wie sie sind. Ein gesperrter Schalter nennt seinen Grund, wenn der Zeiger darauf ruht.
+Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe oder an ihrer Kachel im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] – dort schaltet ''+ Kühlbetrieb'' bzw. × den Kühlbetrieb auch direkt und sofort –, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''. Schneller geht es im Dialog ''Kältemaschinen im Projekt'' (Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite): Der Block ''Wärmepumpen im Kühlbetrieb'' unter der Anlagenliste führt alle Wärmepumpen des Projekts mit Kühlkennlinie mit je einem Schalter für denselben Wert, gespeichert mit ''OK''; Kühl-Vorlauf und Hilfsstromanteil bleiben dabei, wie sie sind. Ein gesperrter Schalter nennt seinen Grund, wenn der Zeiger darauf ruht.
 
 {| class="wikitable"
 ! Feld !! Vorgabe !! Bedeutung
@@ -278,7 +278,9 @@ Die '''Kältemaschine''' ist ein eigener Kälteerzeuger neben der Wärmepumpe im
 | eigener Zähler || aus || wirkt nur bei einem Kühlträger, der vom Stromträger des Projekts abweicht; siehe [[#abrechnung|Stromträger und Abrechnung]]
 |}
 
-'''Reihenfolge.''' Die Kälte deckt zuerst die freie Kühlung, dann die Wärmepumpen im Kühlbetrieb, dann die Kältemaschinen in der Reihenfolge der Anlagen. Die Kaskade der Wärmeerzeuger ordnet die Kältemaschinen nicht. Eine Kältemaschine im Projektkatalog ohne Anlage rechnet nicht, der Lauf weist darauf hin.
+'''Konfiguration in der Simulation.''' Dieselben Felder öffnet ''Konfiguration…'' an der Kachel der Kältemaschine im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] der ''Simulation Konfiguration''; ebenso ein Doppelklick auf die Kältemaschine oder ihre Rückkühlung im Anlagenschema. ''OK'' prüft und schreibt, ''Abbrechen'' verwirft. Teilen sich mehrere Anlagen dieselbe Projektkopie, sagt ein Hinweis, dass Kaltwasservorlauf und Hilfsstrom für alle gelten.
+
+'''Reihenfolge.''' Die Kälte deckt zuerst die freie Kühlung, dann die Kältespeicher, dann die Wärmepumpen im Kühlbetrieb in der Folge der Wärmekaskade, dann die Kältemaschinen in der Reihenfolge der Anlagen – das ist die Vorgabefolge. Die Folge der Erzeuger lässt sich im Bereich ''Kälte'' mit den Pfeilen an den Kacheln ändern, etwa eine Kältemaschine vor die Wärmepumpe; freie Kühlung und Kältespeicher bleiben vorn. ''Vorgabefolge'' stellt die Vorgabe wieder her. Die Kaskade der Wärmeerzeuger ordnet die Kältemaschinen nicht. Eine Kältemaschine im Projektkatalog ohne Anlage rechnet nicht, der Lauf weist darauf hin.
 
 '''Freie Kühlung.''' Sie ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Bei Trocken- und Nasskühler gilt sie, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit einem festen Ersatz-EER von 15 plus Hilfsstrom, der Verdichter steht. Stunden und Kälte der freien Kühlung zählt der Lauf. Bei der luftgekühlten Maschine gibt es keine freie Kühlung.
 
@@ -306,7 +308,7 @@ Die Kältemaschine ist Kostenkomponente der Wirtschaftlichkeit: Investition aus 
 === Kältespeicher ===
 {{Anker|kaeltespeicher}}
 
-Ein Pufferspeicher wird zum '''Kältespeicher''', wenn seine ''Nutzung'' auf ''Kälte'' steht (Dialog ''Pufferspeicher'', Feld ''Nutzung''). ''Kälte'' steht allein, ohne Heizung, Brauchwasser und Prozesswärme; eine Senke braucht der Speicher nicht. Das Temperaturpaar heißt hier ''Kaltwasser-Vorlauf'' und ''Kaltwasser-Rücklauf'' (üblich 6 und 12 °C). Die Kapazität folgt aus Volumen und Spreizung: Volumen mal 1,16 Wh/(l·K) mal (Rücklauf minus Vorlauf).
+Ein Pufferspeicher wird zum '''Kältespeicher''', wenn seine ''Nutzung'' auf ''Kälte'' steht (Dialog ''Pufferspeicher'', Feld ''Nutzung''). In der ''Simulation Konfiguration'' steht er im Bereich ''Kälte'', nicht in der Spalte der Pufferspeicher. ''Kälte'' steht allein, ohne Heizung, Brauchwasser und Prozesswärme; eine Senke braucht der Speicher nicht. Das Temperaturpaar heißt hier ''Kaltwasser-Vorlauf'' und ''Kaltwasser-Rücklauf'' (üblich 6 und 12 °C). Die Kapazität folgt aus Volumen und Spreizung: Volumen mal 1,16 Wh/(l·K) mal (Rücklauf minus Vorlauf).
 
 * '''Laden''' – alle Kälteerzeuger laden ihn, aber nur an Kühltagen und in der Ladephase: Sie beginnt an der Einschaltschwelle und endet an der Abschaltschwelle, der Lauf beginnt leer. Der Raum hat Vorrang; geladen wird nur, was die Erzeuger über den Raumbedarf hinaus liefern, begrenzt durch die Ladeleistung.
 * '''Entladen''' – in jeder Stunde mit Vorrat, nach der freien Kühlung und vor der Wärmepumpe und der Kältemaschine.

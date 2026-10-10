@@ -331,7 +331,7 @@ public class SimulationKonfigSeiteTests : BunitContext
             .Add(x => x.StartProjekt, 1030));
 
         List<IElement> folge = seite.FindAll(
-            "section.epos-simkonfig-erzeuger, section.epos-simkonfig-speicher, " +
+            "section.epos-simkonfig-erzeuger, section.epos-simkonfig-speicher, section.epos-simkonfig-kaelte, " +
             "div.epos-simkonfig-fuss, fieldset.epos-simkonfig-einstellungen, " +
             "section.epos-simkonfig-bedarf").ToList();
         List<string> namen = folge.Select(e => e.LocalName == "section"
@@ -339,9 +339,13 @@ public class SimulationKonfigSeiteTests : BunitContext
                                               : e.ClassName!).ToList();
         Assert.Equal(new[]
         {
-            "epos-simkonfig-erzeuger", "epos-simkonfig-speicher", "epos-simkonfig-fuss",
-            "epos-simkonfig-einstellungen", "epos-simkonfig-bedarf", "epos-simkonfig-kuehlung"
+            // KB-B: „Kühlung rechnen“ steht im Bereich „Kälte“ unter den Komponenten, nicht mehr unter den
+            // weiteren Einstellungen; dort bleibt der Wärmebedarf.
+            "epos-simkonfig-erzeuger", "epos-simkonfig-speicher", "epos-simkonfig-kaelte", "epos-simkonfig-fuss",
+            "epos-simkonfig-einstellungen", "epos-simkonfig-bedarf"
         }, namen);
+        Assert.NotNull(seite.Find("section.epos-simkonfig-kaelte").QuerySelector("section.epos-simkonfig-kuehlung"));
+        Assert.Null(seite.Find("fieldset.epos-simkonfig-einstellungen").QuerySelector(".epos-simkonfig-kuehlung"));
 
         // Der Speicherknopf steht in der Fußzeile direkt unter den Komponenten, nicht unter den Einstellungen.
         IElement fuss = seite.Find("div.epos-simkonfig-fuss");
@@ -400,7 +404,7 @@ public class SimulationKonfigSeiteTests : BunitContext
             .Add(x => x.StartProjekt, 1030));
 
     /// <summary>
-    /// Der Abschnitt „Kühlung" steht neben dem Wärmebedarf: der Schalter „Kühlung rechnen"
+    /// Der Abschnitt „Kühlung" steht im Kopf des Bereichs „Kälte“ (KB-B): der Schalter „Kühlung rechnen"
     /// mit dem Stand der Datenbank und der Herleitungszeile, die sagt, dass er für das ganze
     /// Projekt gilt. Er schreibt SOFORT, wie die Netzverluste.
     /// </summary>
@@ -421,7 +425,9 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal(new[] { true }, _kuehlGeschrieben);
         Assert.True(seite.Instance.Laufparameter.Kuehlbetrieb);
 
-        // Der Wärmebedarfsabschnitt bleibt der erste der weiteren Einstellungen - und unverändert.
+        // Der Schalter steht im Bereich „Kälte“; der Wärmebedarfsabschnitt bleibt der erste der weiteren
+        // Einstellungen - und unverändert.
+        Assert.NotNull(abschnitt.Closest("section.epos-simkonfig-kaelte"));
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_GRP_WAERMEBEDARF,
                      seite.Find("section.epos-simkonfig-bedarf").GetAttribute("aria-label"));
     }

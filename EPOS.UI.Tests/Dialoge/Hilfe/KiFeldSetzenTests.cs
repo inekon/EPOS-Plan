@@ -965,6 +965,80 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     }
 
     // =====================================================================
+    //  Nichts zu ändern — Erfolg ohne Bestätigung (Anwendermeldung 10.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <c>feld_setzen</c> mit dem Wert, den das Feld schon trägt: keine Freigabe, kein
+    /// Klick, und das Ergebnis ist ein ERFOLG „unverändert" — keine Absage.
+    /// </summary>
+    [Fact]
+    public async Task Feld_setzen_mit_dem_Stand_meldet_unveraendert_ohne_Bestaetigung()
+    {
+        var daten = new HeizkesselKatalogDaten { Ptherm = 100 };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => daten, Haken());
+        KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL, "th_leistung")!;
+        string stand = KiMaskenbruecke.Feldtext(zugang);
+
+        KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen",
+            Werte(KiMaskennamen.HEIZKESSEL, "th_leistung", stand));
+
+        Assert.Null(vorbereitung.Freigabe);
+        KiErgebnis ergebnis = vorbereitung.Ablehnung;
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.True(ergebnis.Unveraendert);
+        Assert.Equal(0, ergebnis.Anzahl);
+        Assert.Contains(zugang.Feld.Anzeigename, ergebnis.Text, StringComparison.Ordinal);
+        Assert.Contains(stand, ergebnis.Text, StringComparison.Ordinal);
+        Assert.Equal(100, daten.Ptherm);
+    }
+
+    /// <summary>
+    /// <c>formular_ausfuellen</c>, in dem jedes genannte Feld den Wert schon trägt:
+    /// Erfolg „unverändert" ohne Bestätigungsblock; der Text nennt Maske, Felder, Werte.
+    /// </summary>
+    [Fact]
+    public async Task Formular_ausfuellen_mit_dem_Stand_meldet_unveraendert_ohne_Bestaetigung()
+    {
+        var daten = new HeizkesselKatalogDaten { Ptherm = 100 };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => daten, Haken());
+        KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL, "th_leistung")!;
+        string stand = KiMaskenbruecke.Feldtext(zugang);
+
+        KiVorbereitung vorbereitung = await Vorbereiten("formular_ausfuellen",
+            new Dictionary<string, object?>
+            {
+                ["maske"] = KiMaskennamen.HEIZKESSEL,
+                ["werte"] = "th_leistung=" + stand
+            });
+
+        Assert.Null(vorbereitung.Freigabe);
+        KiErgebnis ergebnis = vorbereitung.Ablehnung;
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.True(ergebnis.Unveraendert);
+        string maske = KiMaskenbruecke.Katalogeintrag(KiMaskennamen.HEIZKESSEL).Anzeigename;
+        Assert.Contains(maske, ergebnis.Text, StringComparison.Ordinal);
+        Assert.Contains(zugang.Feld.Anzeigename + " = " + stand, ergebnis.Text, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Eine echte Änderung bleibt bestätigungspflichtig — die Leerlaufprüfung greift nur,
+    /// wenn WIRKLICH nichts zu tun ist (Gegenprobe).
+    /// </summary>
+    [Fact]
+    public async Task Feld_setzen_mit_neuem_Wert_bleibt_bestaetigungspflichtig()
+    {
+        var daten = new HeizkesselKatalogDaten { Ptherm = 100 };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => daten, Haken());
+
+        KiVorbereitung vorbereitung = await Vorbereiten("feld_setzen",
+            Werte(KiMaskennamen.HEIZKESSEL, "th_leistung", "250"));
+
+        Assert.NotNull(vorbereitung.Freigabe);
+        Assert.Equal(100, daten.Ptherm);
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
 

@@ -140,36 +140,10 @@
                 </KindInhalt>
             </Formulargruppe>
 
-            <Formulargruppe Titel="@Texte.GruppeBetrieb">
-                <KindInhalt>
-                    <Textfeld Bezeichnung="@Texte.LabelName" Wert="@d.Bezeichner" WertChanged="BeiName" />
-                    <Ganzzahlfeld Bezeichnung="@Texte.LabelAnzahl" Feldname="@Texte.LabelAnzahl" Wert="@d.Anzahl"
-                                  WertChanged="BeiAnzahl" />
-                    @if (Folgeschaltung(d) is string folge)
-                    {
-                        <Herleitungszeile Text="@folge" />
-                    }
-                    <Zahlenfeld Bezeichnung="@Texte.LabelVorlauf" Feldname="@Texte.LabelVorlauf" Einheit="@Texte.EinheitGradC"
-                                Wert="@d.KuehlVorlauf" Platzhalter="@PlatzhalterVorlauf(d)" WertChanged="BeiVorlauf" />
-                    @if (d.Geraet?.KaltwasserMin is double min)
-                    {
-                        <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisVorlaufMin, Zahl(min, 1))" />
-                    }
-                    <Zahlenfeld Bezeichnung="@Texte.LabelHilfsstrom" Feldname="@Texte.LabelHilfsstrom" Einheit="@Texte.EinheitProzent"
-                                Wert="@AnteilAlsProzent(d.KuehlHilfsstromanteil)" Platzhalter="0" Min="0"
-                                WertChanged="BeiHilfsstrom" />
-                    <Herleitungszeile Text="@Texte.HinweisHilfsstrom" />
-                    <Auswahlfeld Bezeichnung="@Texte.LabelTraeger" Eintraege="@TraegerEintraege(d)"
-                                 Auswahl="@d.KuehlCarrierId" Platzhalter="@Texte.PlatzhalterTraeger"
-                                 AuswahlChanged="BeiTraeger" />
-                    <Schalter Bezeichnung="@Texte.LabelZaehler" Wert="@d.KuehlEigenerZaehler" WertChanged="BeiZaehler" />
-                    @if (!TraegerAbweichend(d))
-                    {
-                        <Herleitungszeile Text="@Texte.HinweisZaehler" />
-                    }
-                    <Herleitungszeile Text="@Texte.HinweisReihenfolge" />
-                </KindInhalt>
-            </Formulargruppe>
+            @* Die Betriebseingaben: dieselbe Komponente wie im Bereich „Kälte“ der Simulationskonfiguration
+               (Welle KB-B, E117 F2); sie schreibt in den Arbeitsstand der gewaehlten Anlage. *@
+            <KaeltemaschineKonfiguration @key="a.Schluessel" Daten="@d" Texte="@Texte" Stromtraeger="@Stromtraeger"
+                                         ProjektStromtraeger="@ProjektStromtraeger" Geaendert="Nachziehen" />
         }
     </div>
 
@@ -225,14 +199,6 @@
     // =====================================================================
     // Gaben — die Datenseite liegt in der Hülle (KaeltemaschineAnlageHuelle)
     // =====================================================================
-
-    /// <summary>
-    /// KM3-E3-b: der Hinweis „Folgeschaltung von n Maschinen“ — nur bei Anzahl &gt; 1 und gesetzter Teillastrechnung;
-    /// sonst <c>null</c>.
-    /// </summary>
-    internal string? Folgeschaltung(KaeltemaschineAnlageDaten d)
-        => d.Anzahl is int n && n > 1 && d.Geraet?.TeillastGesetzt == true
-            ? string.Format(CultureInfo.CurrentCulture, Texte.HinweisFolgeschaltung, n) : null;
 
     /// <summary>Die gespeicherten Anlagen des Projekts samt Kennwerten ihrer Projektkopie.</summary>
     [Parameter] public Func<IReadOnlyList<KaeltemaschineAnlageDaten>>? Anlagen { get; set; }
@@ -416,39 +382,16 @@
         _meldung = "";
     }
 
-    private Task BeiName(string wert) { if (Aktuell is Zeile a) a.Arbeit.Bezeichner = wert ?? ""; return Task.CompletedTask; }
-    private Task BeiAnzahl(int? wert) { if (Aktuell is Zeile a) a.Arbeit.Anzahl = wert; return Task.CompletedTask; }
-    private Task BeiVorlauf(double? wert) { if (Aktuell is Zeile a) a.Arbeit.KuehlVorlauf = wert; return Task.CompletedTask; }
-    private Task BeiHilfsstrom(double? prozent) { if (Aktuell is Zeile a) a.Arbeit.KuehlHilfsstromanteil = ProzentAlsAnteil(prozent); return Task.CompletedTask; }
-    private Task BeiTraeger(int? id) { if (Aktuell is Zeile a) a.Arbeit.KuehlCarrierId = id; return Task.CompletedTask; }
-    private Task BeiZaehler(bool wert) { if (Aktuell is Zeile a) a.Arbeit.KuehlEigenerZaehler = wert; return Task.CompletedTask; }
-
     /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
-    public static double? AnteilAlsProzent(double? anteil) => anteil is double x ? Math.Round(x * 100.0, 6) : null;
+    public static double? AnteilAlsProzent(double? anteil) => KaeltemaschineKonfiguration.AnteilAlsProzent(anteil);
 
     /// <summary>Die gezeigten Prozent als gespeicherter Anteil [—].</summary>
-    public static double? ProzentAlsAnteil(double? prozent) => prozent is double p ? p / 100.0 : null;
+    public static double? ProzentAlsAnteil(double? prozent) => KaeltemaschineKonfiguration.ProzentAlsAnteil(prozent);
 
-    /// <summary>Weicht der Kühlträger vom Stromträger des Projekts ab? Nur dann wirkt der eigene Zähler.</summary>
-    private bool TraegerAbweichend(KaeltemaschineAnlageDaten d)
-        => d.KuehlCarrierId is int id && id > 0 && id != ProjektStromtraeger;
+    private static string Zahl(double? wert, int stellen) => KaeltemaschineKonfiguration.Zahl(wert, stellen);
 
-    /// <summary>Die Stromträger des Projekts, dazu ein gespeicherter Kühlträger, der keiner (mehr) ist.</summary>
-    private IReadOnlyList<(int Id, string Text)> TraegerEintraege(KaeltemaschineAnlageDaten d)
-    {
-        var l = new List<(int, string)>(Stromtraeger);
-        if (d.KuehlCarrierId is int id && !l.Any(e => e.Item1 == id)) l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
-        return l;
-    }
-
-    private string PlatzhalterVorlauf(KaeltemaschineAnlageDaten d)
-    {
-        IReadOnlyList<double> stuetz = d.Geraet?.Kaltwasserstuetzstellen ?? Array.Empty<double>();
-        return string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterVorlauf, stuetz.Count > 0 ? Zahl(stuetz.Min(), 1) : "—");
-    }
-
-    private static string Zahl(double? wert, int stellen)
-        => wert is double w ? Math.Round(w, stellen).ToString("0." + new string('#', Math.Max(stellen, 1)), CultureInfo.CurrentCulture) : "";
+    /// <summary>Eine Eingabe der Konfiguration: die Liste (Name, Anzahl, Leistung) zieht nach.</summary>
+    private void Nachziehen() { }
 
     private static string Leistung(KaeltemaschineAnlageDaten d)
         => d.Geraet?.Nennkaelteleistung is double kw ? Zahl(kw * Math.Max(1, d.Anzahl ?? 1), 1) : "";

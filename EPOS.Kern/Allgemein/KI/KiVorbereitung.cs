@@ -18,7 +18,10 @@ namespace WindowsFormsApplication1
     /// Entweder liegt eine offene <see cref="Freigabe"/> vor - dann ist alles geprueft,
     /// die Vorschau erzeugt und der Sicherungspunkt angelegt, und es fehlt nur noch der
     /// Klick. Oder es liegt eine <see cref="Ablehnung"/> vor; die ist dann bereits
-    /// protokolliert und geht als <c>functionResponse</c> an das Modell zurueck.
+    /// protokolliert und geht als <c>functionResponse</c> an das Modell zurueck. Ein
+    /// Sonderfall dieses zweiten Zweigs ist KEINE Absage: Traegt der Stand bereits, was
+    /// verlangt war (<see cref="KiAktion.OhneAenderung"/>), liegt hier ein Erfolg mit
+    /// <see cref="KiErgebnis.Unveraendert"/> - ohne Freigabe, weil nichts zu bestaetigen ist.
     /// </remarks>
     public sealed class KiVorbereitung
     {
@@ -31,7 +34,11 @@ namespace WindowsFormsApplication1
         /// <summary>Die offene Freigabe; <c>null</c>, wenn abgelehnt wurde.</summary>
         public KiFreigabe Freigabe { get; }
 
-        /// <summary>Die Ablehnung; <c>null</c>, wenn die Vorbereitung gelungen ist.</summary>
+        /// <summary>
+        /// Das Ergebnis ohne Freigabe - meist eine Ablehnung, im Fall „nichts zu aendern"
+        /// ein Erfolg (<see cref="KiErgebnis.Unveraendert"/>); <c>null</c>, wenn eine
+        /// Freigabe vorliegt.
+        /// </summary>
         public KiErgebnis Ablehnung { get; }
 
         /// <summary>Liegt eine offene Freigabe vor?</summary>
