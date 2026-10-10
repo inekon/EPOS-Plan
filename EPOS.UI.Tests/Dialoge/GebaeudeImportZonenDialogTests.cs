@@ -157,7 +157,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
 
     private static void Einlesen(IRenderedComponent<GebaeudeImportDialog> cut, string knopf = "Datei wählen")
     {
-        cut.FindAll("button").First(k => k.TextContent.Contains(knopf)).Click();
+        cut.FindAll("button").First(k => k.TextContent.Contains(knopf)).KlickAbgewartet();
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-gebimport-zeilen tbody tr")));
     }
 
@@ -167,14 +167,14 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
     private static void RegelWaehlen(IRenderedComponent<GebaeudeImportDialog> cut, string schluessel)
     {
         IElement wahl = Regelwahl(cut);
-        wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith(schluessel, StringComparison.Ordinal)).GetAttribute("value"));
+        wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith(schluessel, StringComparison.Ordinal)).GetAttribute("value"));
     }
 
     private static IElement Schalter(IRenderedComponent<GebaeudeImportDialog> cut, string beschriftung)
         => cut.FindAll("label.epos-schalter").First(l => l.TextContent.Contains(beschriftung)).QuerySelector("input")!;
 
     private static void Ok(IRenderedComponent<GebaeudeImportDialog> cut)
-        => cut.Find(".epos-leiste button.epos-knopf--primaer").Click();
+        => cut.Find(".epos-leiste button.epos-knopf--primaer").KlickAbgewartet();
 
     // =====================================================================
     //  Regelwahl und Bilanz
@@ -237,7 +237,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
 
         IElement knopf = cut.Find("button.epos-gebimport-groeber-knopf");
         Assert.Equal("Gröbere Regel übernehmen: A1 – je Geschoss", knopf.TextContent);
-        knopf.Click();
+        knopf.KlickAbgewartet();
         Assert.Equal("A1", p.Anfragen.Last().Zonenregel);
         Assert.Empty(cut.FindAll("button.epos-gebimport-groeber-knopf"));
         Assert.True(cut.Instance.AlsZoneWirksam);
@@ -262,13 +262,13 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
         Assert.Equal(30, liste.Instance.Angezeigt.Count);
 
-        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(true);
         Assert.Equal(10, cut.Instance.Flaechenzeilen.Count);          // 0, 3, …, 27
-        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").Change(true);
+        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").WechselAbgewartet(true);
         Assert.Equal(2, cut.Instance.Flaechenzeilen.Count);           // 0 und 15
-        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(false);
-        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").Change(false);
-        Schalter(cut, "Nur Flächen mit Befund").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(false);
+        Schalter(cut, "Nur Flächen ohne U-Wert und Aufbau").WechselAbgewartet(false);
+        Schalter(cut, "Nur Flächen mit Befund").WechselAbgewartet(true);
         Assert.Equal(14, cut.Instance.Flaechenzeilen.Count);          // Vielfache von 3 oder 5 unter 30
         Assert.Equal(14, cut.FindComponent<Katalogliste>().Instance.Angezeigt.Count);
 
@@ -367,8 +367,8 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
 
         // Nach den Zonen der Datei: Flächen ohne Gegenstück, der Filter zeigt nur sie.
         IElement wahl = cut.FindAll("select").First(s => s.TextContent.Contains("Z4 –"));
-        wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
-        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
+        wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(true);
         Assert.NotEmpty(cut.Instance.Flaechenzeilen);
         Assert.All(cut.Instance.Flaechenzeilen, z => Assert.Contains("ohne Gegenstück", z.Text("BEFUND")));
     }
@@ -503,7 +503,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         IElement? Knopf() => cut.FindAll(".epos-gebansicht button[role=tab]")
                                 .FirstOrDefault(k => k.TextContent.Trim().StartsWith(name, StringComparison.Ordinal));
         cut.WaitForAssertion(() => Assert.NotNull(Knopf()));
-        Knopf()!.Click();
+        Knopf()!.KlickAbgewartet();
         cut.WaitForAssertion(() => Assert.Equal(name, Ansicht(cut).Instance.GezeigtesGeschoss!.Name));
     }
 
@@ -511,7 +511,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         => cut.FindAll("label.epos-feld").First(l => l.QuerySelector(".epos-feld-text")?.TextContent == beschriftung).QuerySelector("select")!;
 
     private static void Waehlen(IElement wahl, Func<string, bool> eintrag)
-        => wahl.Change(wahl.QuerySelectorAll("option").First(o => eintrag(o.TextContent)).GetAttribute("value"));
+        => wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => eintrag(o.TextContent)).GetAttribute("value"));
 
     private static void Ziel(IRenderedComponent<GebaeudeImportDialog> cut, string zone)
         => Waehlen(Wahl(cut, "Räume zuordnen zu"), t => t == zone);
@@ -543,7 +543,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
 
         // Ein Klick meldet nichts: Die Ansicht ist reine Anzeige.
         int anfragen = p.Anfragen.Count;
-        Raumbild(cut, "r-keller").Click();
+        Raumbild(cut, "r-keller").KlickAbgewartet();
         Assert.Equal(anfragen, p.Anfragen.Count);
         Assert.Empty(cut.Instance.Planschritte);
     }
@@ -581,14 +581,14 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         // Die Küche als eigene Zone.
         Ziel(cut, "als eigene Zone");
         Geschoss(cut, "Erdgeschoss");
-        Raumbild(cut, kueche).Click();
+        Raumbild(cut, kueche).KlickAbgewartet();
         Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss", "Küche" }, Zonenzeilen(cut));
         Assert.Equal("4", cut.Find("dl.epos-gebimport-bilanz dd").TextContent);
 
         // Das Lager (unbeheizt) ins Erdgeschoss: abgelehnt mit der Meldung des Kerns.
         Ziel(cut, "Erdgeschoss");
         Geschoss(cut, "Kellergeschoss");
-        Raumbild(cut, lager).Click();
+        Raumbild(cut, lager).KlickAbgewartet();
         Assert.Contains("nicht gleich beheizt", cut.Instance.Ablehnung);
         Assert.Equal("IMP_IFC_PROT_PLAN_BEHEIZUNG", cut.Find(".epos-gebimport-ausweg").GetAttribute("data-kennung"));
         Assert.Single(cut.Instance.Planschritte);
@@ -598,7 +598,7 @@ public partial class GebaeudeImportZonenDialogTests : EposBunitContext
         IElement ausweg = cut.Find(".epos-gebimport-ausweg label.epos-schalter");
         Assert.Contains("Beheizt: Lager", ausweg.TextContent);
         Assert.False(ausweg.QuerySelector("input")!.HasAttribute("checked"));
-        ausweg.QuerySelector("input")!.Change(true);
+        ausweg.QuerySelector("input")!.WechselAbgewartet(true);
         Assert.Equal(new[] { GebaeudePlanschrittArt.EIGENE, GebaeudePlanschrittArt.HAKEN, GebaeudePlanschrittArt.ZUORDNEN },
                      cut.Instance.Planschritte.Select(x => x.Art));
         Assert.Equal(new[] { lager }, cut.Instance.Planschritte[2].Raeume);

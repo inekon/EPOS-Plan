@@ -50,14 +50,14 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Equal(4, cut.FindAll(".epos-gebimport-flaechenfilter label.epos-schalter").Count);
 
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
-        Schalter(cut, "Nur Bauteile mit Befund").Change(true);
+        Schalter(cut, "Nur Bauteile mit Befund").WechselAbgewartet(true);
         Assert.Equal(8, cut.Instance.Flaechenzeilen.Count);              // 0, 4, …, 28
         Assert.Equal(8, cut.FindComponent<Katalogliste>().Instance.Angezeigt.Count);
         // Zusammen mit „ohne Nachbarfläche" gilt „und": 0, 12, 24.
-        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(true);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(true);
         Assert.Equal(3, cut.Instance.Flaechenzeilen.Count);
-        Schalter(cut, "Nur Flächen ohne Nachbarfläche").Change(false);
-        Schalter(cut, "Nur Bauteile mit Befund").Change(false);
+        Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(false);
+        Schalter(cut, "Nur Bauteile mit Befund").WechselAbgewartet(false);
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
     }
 

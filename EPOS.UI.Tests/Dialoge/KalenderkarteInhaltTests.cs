@@ -383,18 +383,31 @@ public class KalenderkarteInhaltTests : EposBunitContext
                 return basis.Teppichbild!(s, o);
             }
         };
-        IRenderedComponent<KonditionierungReiter> cut = Aufbauen(weg, entprellungMs: 150);
+        // Befund WT-b: Mit 150 ms Ruhezeit feuerte unter Last eine Entprellung ZWISCHEN zwei Eingaben (der Prüfstand
+        // braucht dann mehr als 150 ms je Eingabe), und der Fall war rot, ohne dass sich an der Karte etwas änderte. Die
+        // Ruhezeit steht deshalb während der Eingaben auf einer Minute, die kein Prüfstand überschreitet, und erst vor der
+        // letzten Eingabe auf 1 ms (Muster VorpruefungEntprelltTests).
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen(weg, entprellungMs: 60_000);
         AnlegenUndAufklappen(cut, KonditionierungGroesse.Heizen);
         Assert.Equal(1, bilder);                          // beim Öffnen sofort
 
-        foreach (string eingabe in new[] { "21", "22", "23" })
+        foreach (string eingabe in new[] { "21", "22" })
         {
             Rasterzelle(Inhalt(cut, KonditionierungGroesse.Heizen), "Heizen · Mo 07 Uhr").Input(eingabe);
             cut.Render();
         }
-        Assert.Equal(1, bilder);
+        Assert.Equal(1, bilder);                          // in der Ruhezeit kein Bild
+
+        cut.Render(p => p.Add(x => x.EntprellungMs, 1));
+        Assert.Equal(1, bilder);                          // derselbe Stand rechnet nicht neu
+        Rasterzelle(Inhalt(cut, KonditionierungGroesse.Heizen), "Heizen · Mo 07 Uhr").Input("23");
+        cut.Render();
+
+        // Auf den gezeichneten Zustand warten, nicht auf die Uhr.
         cut.WaitForAssertion(() => Assert.Equal(2, bilder), TimeSpan.FromSeconds(5));
-        Thread.Sleep(300);
+        Assert.Equal(23.0, Heizkalender.Woche![7]);
+        // Die überholten Entprellungen sind abgebrochen — kämen sie noch, stünde der Zähler hier höher.
+        cut.Render();
         Assert.Equal(2, bilder);                          // und kein zweites
     }
 

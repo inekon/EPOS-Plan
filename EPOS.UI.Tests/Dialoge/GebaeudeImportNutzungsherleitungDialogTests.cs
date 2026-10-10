@@ -84,7 +84,7 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Equal(new[] { "#1", "#2" }, wahl.QuerySelectorAll("optgroup[label=\"EPOS-Muster\"] option").Select(o => o.GetAttribute("value")));
         Assert.True(wahl.QuerySelector("optgroup[label=\"Eigene Profile\"] option[value=\"#12\"]")!.HasAttribute("selected"));
 
-        cut.FindAll("select.epos-gebimport-nutzung")[1].Change("#2");
+        cut.FindAll("select.epos-gebimport-nutzung")[1].WechselAbgewartet("#2");
         Assert.Equal(GebaeudePlanschrittArt.NUTZUNG, p.Letzter.Art);
         Assert.Equal("#2", p.Letzter.Nutzung);
     }
@@ -134,8 +134,8 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Empty(hinweis.QuerySelectorAll("select, input"));
 
         einzonig = false;
-        cut.Find("[data-aktion=\"anlegen\"]").Click();
-        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        cut.Find("[data-aktion=\"anlegen\"]").KlickAbgewartet();
+        cut.Find(".epos-gebimport-anlegen-ok").KlickAbgewartet();
         Assert.Empty(cut.FindAll(".epos-gebimport-sqvorschlag"));
     }
 
@@ -153,18 +153,18 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.False(ki.Angebunden);
         Assert.Throws<InvalidOperationException>(() => sicht.Setzen("np_name", "x"));
 
-        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").Click();
-        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").Click();
-        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").Click();
+        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").KlickAbgewartet();
+        cut.Find("[data-kategorie=\"2\"] .epos-raumnutzung-kategorie-waehlen").KlickAbgewartet();
+        cut.Find("[data-profil=\"12\"] .epos-raumnutzung-profil-waehlen").KlickAbgewartet();
         Assert.True(ki.Angebunden);
         Assert.Equal("Mein Büro", sicht.Lesen("np_name"));
-        cut.InvokeAsync(() => sicht.Setzen("np_kuehl_soll", 25.0));
+        AbgewarteteHandlungen.Abwarten(cut.InvokeAsync(() => sicht.Setzen("np_kuehl_soll", 25.0)));
         Assert.Equal(25.0, cut.FindComponent<RaumnutzungBlatt>().Instance.Arbeitsstand!.KuehlSoll);
 
         KiKern.KiDialog maske = KiDialoge.Katalog.Finde(KiMaskennamen.GEBAEUDE)!;
         Assert.Contains(maske.Felder, f => f.Name == "np_name" && f.Eigenschaftspfad == "GebaeudeKiSicht.np_name");
 
-        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").Click();
+        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").KlickAbgewartet();
         Assert.False(ki.Angebunden);
         Assert.Null(sicht.Lesen("np_name"));
     }
@@ -184,14 +184,14 @@ public partial class GebaeudeImportZonenDialogTests
             Nutzungen = new[] { new GebaeudeZonenregelDaten("#99", "Neues Profil") }.Concat(plan.Nutzungen).ToList(),
         }), Nutzungskatalog());
 
-        Aktion(cut, "anlegen").Click();
+        Aktion(cut, "anlegen").KlickAbgewartet();
         Waehlen(Wahl(cut, "Nutzung"), t => t == "Büro");
-        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").Click();
+        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").KlickAbgewartet();
         geaendert = true;
-        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").Click();
+        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").KlickAbgewartet();
         Assert.False(cut.Instance.NutzungsprofileOffen);
 
-        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        cut.Find(".epos-gebimport-anlegen-ok").KlickAbgewartet();
         Assert.Equal(GebaeudePlanschrittArt.ANLEGEN, p.Letzter.Art);
         Assert.Equal("BUERO", p.Letzter.Nutzung);
     }

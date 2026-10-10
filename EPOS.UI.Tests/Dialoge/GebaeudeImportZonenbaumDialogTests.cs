@@ -50,13 +50,13 @@ public partial class GebaeudeImportZonenDialogTests
               .First(z => z.QuerySelector("input.epos-gebimport-zonenname")!.GetAttribute("value") == name);
 
     private static void ZoneWaehlen(IRenderedComponent<GebaeudeImportDialog> cut, string name, bool an = true)
-        => Zonenzeile(cut, name).QuerySelector("input.epos-gebimport-wahl")!.Change(an);
+        => Zonenzeile(cut, name).QuerySelector("input.epos-gebimport-wahl")!.WechselAbgewartet(an);
 
     private static void Aufklappen(IRenderedComponent<GebaeudeImportDialog> cut, string name)
-        => Zonenzeile(cut, name).QuerySelector("button.epos-gebimport-aufklappen")!.Click();
+        => Zonenzeile(cut, name).QuerySelector("button.epos-gebimport-aufklappen")!.KlickAbgewartet();
 
     private static void RaumWaehlen(IRenderedComponent<GebaeudeImportDialog> cut, string kennung)
-        => cut.FindAll("tr[data-raum='" + kennung + "'] input.epos-gebimport-wahl").First().Change(true);
+        => cut.FindAll("tr[data-raum='" + kennung + "'] input.epos-gebimport-wahl").First().WechselAbgewartet(true);
 
     private static IElement Aktion(IRenderedComponent<GebaeudeImportDialog> cut, string aktion)
         => cut.Find("button[data-aktion='" + aktion + "']");
@@ -118,11 +118,11 @@ public partial class GebaeudeImportZonenDialogTests
         var p = new Zonenbaumprobe();
         IRenderedComponent<GebaeudeImportDialog> cut = Zonenbaum(p);
 
-        Aktion(cut, "anlegen").Click();
+        Aktion(cut, "anlegen").KlickAbgewartet();
         IElement zeile = cut.Find(".epos-gebimport-neuezone");
         Assert.Equal("Zone 4", zeile.QuerySelector("input")!.GetAttribute("value"));
         Waehlen(Wahl(cut, "Nutzung"), t => t == "Büro");
-        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        cut.Find(".epos-gebimport-anlegen-ok").KlickAbgewartet();
 
         Assert.Equal(new GebaeudePlanschritt(GebaeudePlanschrittArt.ANLEGEN, Name: "Zone 4", Nutzung: "BUERO"), p.Letzter);
         Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss", "Zone 4" }, Zonenzeilen(cut));
@@ -137,28 +137,28 @@ public partial class GebaeudeImportZonenDialogTests
         RaumWaehlen(cut, og[1]!);
         Assert.True(Aktion(cut, "zuordnen").HasAttribute("disabled"));
         ZoneWaehlen(cut, "Zone 4");
-        Aktion(cut, "zuordnen").Click();
+        Aktion(cut, "zuordnen").KlickAbgewartet();
         Assert.Equal(GebaeudePlanschrittArt.ZUORDNEN, p.Letzter.Art);
         Assert.Equal(new[] { og[0], og[1] }, p.Letzter.Raeume);
         Assert.Equal(Zonenzeile(cut, "Zone 4").GetAttribute("data-zone"), p.Letzter.Zone);
         Assert.Equal(new[] { og[0], og[1] }, Raeume(cut, "Zone 4"));
 
         // Umbenennen und Nutzung im Baum.
-        Zonenzeile(cut, "Zone 4").QuerySelector("input.epos-gebimport-zonenname")!.Change("Büro OG");
+        Zonenzeile(cut, "Zone 4").QuerySelector("input.epos-gebimport-zonenname")!.WechselAbgewartet("Büro OG");
         Assert.Equal(GebaeudePlanschrittArt.UMBENENNEN, p.Letzter.Art);
         Assert.Equal("Büro OG", p.Letzter.Name);
-        Zonenzeile(cut, "Büro OG").QuerySelector("select.epos-gebimport-nutzung")!.Change("SCHULE");
+        Zonenzeile(cut, "Büro OG").QuerySelector("select.epos-gebimport-nutzung")!.WechselAbgewartet("SCHULE");
         Assert.Equal(new GebaeudePlanschritt(GebaeudePlanschrittArt.NUTZUNG, Zone: p.Letzter.Zone, Nutzung: "SCHULE"), p.Letzter);
 
         // Ein doppelter Name lehnt der Kern ab: Banner, Schritt fällt heraus.
         int schritte = cut.Instance.Planschritte.Count;
-        Zonenzeile(cut, "Büro OG").QuerySelector("input.epos-gebimport-zonenname")!.Change("Erdgeschoss");
+        Zonenzeile(cut, "Büro OG").QuerySelector("input.epos-gebimport-zonenname")!.WechselAbgewartet("Erdgeschoss");
         Assert.Equal(schritte, cut.Instance.Planschritte.Count);
         Assert.Equal("IMP_IFC_PROT_PLAN_NAME_DOPPELT", cut.Find(".epos-gebimport-ausweg").GetAttribute("data-kennung"));
         Assert.Contains("Büro OG", Zonenzeilen(cut));
 
         // Das Ergebnis trägt die Schritte und die Haken des Plans.
-        OkKnopf(cut).Click();
+        OkKnopf(cut).KlickAbgewartet();
         GebaeudeImportErgebnis ergebnis = Assert.Single(p.Uebernommen);
         Assert.Equal(cut.Instance.Planschritte, ergebnis.Planschritte);
         Assert.NotNull(ergebnis.Plangrundhaken);
@@ -175,7 +175,7 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.True(Aktion(cut, "loeschen").HasAttribute("disabled"));
         ZoneWaehlen(cut, "Obergeschoss");
         ZoneWaehlen(cut, "Erdgeschoss");
-        Aktion(cut, "loeschen").Click();
+        Aktion(cut, "loeschen").KlickAbgewartet();
         Assert.Equal(GebaeudePlanschrittArt.LOESCHEN, p.Letzter.Art);
         Assert.Equal(2, p.Letzter.Zonen!.Count);
         Assert.Equal(new[] { "Kellergeschoss" }, Zonenzeilen(cut));
@@ -188,17 +188,17 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Contains(n + " Räume sind keiner Zone zugeordnet", ok.GetAttribute("title"));
         Assert.Contains(n + " Räume", cut.Find(".epos-gebimport-okhinweis").TextContent);
         Assert.Equal(n, cut.Instance.NichtZugeordnet);
-        ok.Click();
+        ok.KlickAbgewartet();
         Assert.Empty(p.Uebernommen);
 
         // „Rest nach Regel zuordnen" am OK: nur die nicht zugeordneten, nach der gewählten Regel (Z4).
-        cut.Find(".epos-gebimport-okhinweis button[data-aktion='rest-ok']").Click();
+        cut.Find(".epos-gebimport-okhinweis button[data-aktion='rest-ok']").KlickAbgewartet();
         Assert.Equal(new GebaeudePlanschritt(GebaeudePlanschrittArt.REST, Regel: "Z4"), p.Letzter);
         Assert.Empty(Offen(cut));
         Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss" }, Zonenzeilen(cut));
         Assert.Empty(cut.FindAll(".epos-gebimport-okhinweis"));
         Assert.Null(OkKnopf(cut).GetAttribute("aria-disabled"));
-        OkKnopf(cut).Click();
+        OkKnopf(cut).KlickAbgewartet();
         Assert.Single(p.Uebernommen);
     }
 
@@ -209,25 +209,25 @@ public partial class GebaeudeImportZonenDialogTests
         IRenderedComponent<GebaeudeImportDialog> cut = Zonenbaum(p);
         IReadOnlyList<string?> og = Raeume(cut, "Obergeschoss");
 
-        Aktion(cut, "aufheben").Click();
+        Aktion(cut, "aufheben").KlickAbgewartet();
         Assert.True(cut.Instance.AufhebenFrageOffen);
-        cut.FindAll("button").First(k => k.TextContent == "Nein").Click();
+        cut.FindAll("button").First(k => k.TextContent == "Nein").KlickAbgewartet();
         Assert.False(cut.Instance.AufhebenFrageOffen);
         Assert.Empty(cut.Instance.Planschritte);
 
-        Aktion(cut, "aufheben").Click();
-        cut.FindAll("button").First(k => k.TextContent == "Ja").Click();
+        Aktion(cut, "aufheben").KlickAbgewartet();
+        cut.FindAll("button").First(k => k.TextContent == "Ja").KlickAbgewartet();
         Assert.Equal(GebaeudePlanschrittArt.AUFHEBEN, p.Letzter.Art);
         Assert.Empty(Zonenzeilen(cut));
         Assert.NotEmpty(Offen(cut));
         Assert.Contains("OK", cut.Find(".epos-gebimport-okhinweis").TextContent);
 
         // Eine neue Zone, das Obergeschoss hinein.
-        Aktion(cut, "anlegen").Click();
-        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        Aktion(cut, "anlegen").KlickAbgewartet();
+        cut.Find(".epos-gebimport-anlegen-ok").KlickAbgewartet();
         ZoneWaehlen(cut, "Zone 1");
         Waehlen(Wahl(cut, "Geschoss"), t => t == "Obergeschoss");
-        Aktion(cut, "geschoss").Click();
+        Aktion(cut, "geschoss").KlickAbgewartet();
         Assert.Equal(GebaeudePlanschrittArt.GESCHOSS, p.Letzter.Art);
         Assert.Equal(Zonenzeile(cut, "Zone 1").GetAttribute("data-zone"), p.Letzter.Zone);
         Assert.False(string.IsNullOrEmpty(p.Letzter.Geschoss));
@@ -246,14 +246,14 @@ public partial class GebaeudeImportZonenDialogTests
         Aufklappen(cut, "Kellergeschoss");
         RaumWaehlen(cut, lager);
         ZoneWaehlen(cut, "Erdgeschoss");
-        Aktion(cut, "zuordnen").Click();
+        Aktion(cut, "zuordnen").KlickAbgewartet();
         Assert.Empty(cut.Instance.Planschritte);
         IElement banner = cut.Find(".epos-gebimport-ausweg");
         Assert.Equal("IMP_IFC_PROT_PLAN_BEHEIZUNG", banner.GetAttribute("data-kennung"));
         Assert.Contains("nicht gleich beheizt", banner.TextContent);
         Assert.Equal(kg, Raeume(cut, "Kellergeschoss"));
 
-        banner.QuerySelector("label.epos-schalter input")!.Change(true);
+        banner.QuerySelector("label.epos-schalter input")!.WechselAbgewartet(true);
         Assert.Equal(GebaeudePlanschrittArt.ZUORDNEN, p.Letzter.Art);
         Assert.Contains(lager, Raeume(cut, "Erdgeschoss"));
         Assert.Empty(cut.FindAll(".epos-gebimport-ausweg"));
@@ -265,20 +265,20 @@ public partial class GebaeudeImportZonenDialogTests
     {
         var p = new Zonenbaumprobe();
         IRenderedComponent<GebaeudeImportDialog> cut = Zonenbaum(p);
-        Aktion(cut, "anlegen").Click();
-        cut.Find(".epos-gebimport-anlegen-ok").Click();
+        Aktion(cut, "anlegen").KlickAbgewartet();
+        cut.Find(".epos-gebimport-anlegen-ok").KlickAbgewartet();
         Assert.Single(cut.Instance.Planschritte);
 
         IElement wahl = cut.FindAll("select").First(s => s.TextContent.Contains("Z4 –"));
-        wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
+        wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
         Assert.True(cut.Instance.RegelFrageOffen);
-        cut.FindAll("button").First(k => k.TextContent == "Nein").Click();
+        cut.FindAll("button").First(k => k.TextContent == "Nein").KlickAbgewartet();
         Assert.Single(cut.Instance.Planschritte);
         Assert.Equal("Z4", cut.Instance.Zonenregel);
 
         wahl = cut.FindAll("select").First(s => s.TextContent.Contains("Z4 –"));
-        wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
-        cut.FindAll("button").First(k => k.TextContent == "Ja").Click();
+        wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z1", StringComparison.Ordinal)).GetAttribute("value"));
+        cut.FindAll("button").First(k => k.TextContent == "Ja").KlickAbgewartet();
         Assert.Empty(cut.Instance.Planschritte);
         Assert.Equal("Z1", cut.Instance.Zonenregel);
     }
@@ -289,7 +289,7 @@ public partial class GebaeudeImportZonenDialogTests
         var p = new Zonenbaumprobe();
         IRenderedComponent<GebaeudeImportDialog> cut = Zonenbaum(p);
         IElement wahl = cut.FindAll("select").First(s => s.TextContent.Contains("Z4 –"));
-        wahl.Change(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z5", StringComparison.Ordinal)).GetAttribute("value"));
+        wahl.WechselAbgewartet(wahl.QuerySelectorAll("option").First(o => o.TextContent.StartsWith("Z5", StringComparison.Ordinal)).GetAttribute("value"));
 
         Assert.Single(Zonenzeilen(cut));
         Assert.Contains("Als Zone mit Bauteilen übernehmen", cut.Find(".epos-gebimport-bauteile").TextContent);
@@ -326,5 +326,26 @@ public partial class GebaeudeImportZonenDialogTests
         using (new Kulturvorrichtung("en-US")) cut = Zonenbaum(p, englisch);
         Assert.Contains("Add rooms to the selected zone", cut.Find(".epos-gebimport-planleiste").TextContent);
         Assert.Contains("Unassigned rooms (0)", cut.Find(".epos-gebimport-offentitel").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Jede Handlung wird abgewartet</b> (Befund WT-c). bunits synchrones <c>Click()</c>/<c>Change()</c> reiht die Handlung
+    /// nur ein, solange der Verteiler der Komponente noch arbeitet — nach dem Lesen etwa die Nachläufe des Lesegangs und der
+    /// Ansicht —, und kehrt sofort zurück; ein Sofort-Assert las dann den Stand vor der Handlung (unter Last sporadisch rot).
+    /// Hier hält ein eigener Arbeitsschritt den Verteiler belegt: Die Handlung des Prüfstands muss trotzdem gewirkt haben.
+    /// </summary>
+    [Fact]
+    public void Eine_Handlung_bei_belegtem_Verteiler_wirkt_vor_dem_naechsten_Assert()
+    {
+        var p = new Zonenbaumprobe();
+        IRenderedComponent<GebaeudeImportDialog> cut = Zonenbaum(p);
+        using var begonnen = new ManualResetEventSlim();
+        Task belegt = Task.Run(() => cut.InvokeAsync(() => { begonnen.Set(); Thread.Sleep(300); }));
+        Assert.True(begonnen.Wait(TimeSpan.FromSeconds(10)));
+
+        Aktion(cut, "anlegen").KlickAbgewartet();
+
+        Assert.Equal("Zone 4", cut.Find(".epos-gebimport-neuezone input").GetAttribute("value"));
+        belegt.Wait(TimeSpan.FromSeconds(10));
     }
 }
