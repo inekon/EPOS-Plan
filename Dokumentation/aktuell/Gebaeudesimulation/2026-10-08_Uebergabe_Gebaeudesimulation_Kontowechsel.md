@@ -68,20 +68,20 @@ aber erst auf Auftrag des Anwenders.
 
 ## 4. Technisch offen, ohne Entscheid
 
-- Schemastand-Wache im breiten Lauf nicht reihenfest (#721, #722; nicht untersucht) — erledigt (umgesetzt 10.10.2026, #907).
+- Schemastand-Wache im breiten Lauf nicht reihenfest (#721, #722; nicht untersucht) — erledigt (umgesetzt 10.10.2026, #913).
 - `Umschaltung` als Verfügbarkeitsgrund (Konzept Anlagenkopplung 7.4) und `GebaeudeModellErgebnis.Skaliert` ohne Zonen (#732).
 - Komfortwerte je Gebäude ohne Datenbankspalte, der Bericht zeigt „—“ (#733).
-- Freie Kühlung ohne Regressionsnetz (kein Referenzprojekt nutzt sie, #728) — erledigt (umgesetzt 10.10.2026, #906: Referenzprojekt 1064, Basis R51).
+- Freie Kühlung ohne Regressionsnetz (kein Referenzprojekt nutzt sie, #728) — erledigt (umgesetzt 10.10.2026, #912: Referenzprojekt 1064, Basis R51).
 - Feste deutsche Texte in `AbweichungsErmittler` (#790, Bestand).
-- Sporadisch rot gesehen: `KalenderkarteInhaltTests` (Teppichbild, Zeitsteuerung), `GebaeudeImportZonenDialogTests` — erledigt (umgesetzt 10.10.2026, #907).
+- Sporadisch rot gesehen: `KalenderkarteInhaltTests` (Teppichbild, Zeitsteuerung), `GebaeudeImportZonenDialogTests` — erledigt (umgesetzt 10.10.2026, #913).
 - [Konzept Heizlastspitzen-Glättung](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md): Umsetzung nicht erkennbar, Entscheid
   beim Anwender klären.
 - Papierpflege: Die Statusdatei Gebäudesimulation führt veraltete Statuswörter (E58–E60 „offen“, E67 „in Umsetzung“, Stufe NP
-  „offen“, KP3 „teilweise“), obwohl die Wellen gebaut sind — mit der nächsten Statuspflege nachziehen (`sonnet-mechanik`) — erledigt (umgesetzt 10.10.2026, #905).
+  „offen“, KP3 „teilweise“), obwohl die Wellen gebaut sind — mit der nächsten Statuspflege nachziehen (`sonnet-mechanik`) — erledigt (umgesetzt 10.10.2026, #911).
 - Aufräumen nach den Sichtabnahmen: [Entwurf AK3](../../ueberholt/2026-10-07_Entwurf_AK3.md), [Entwurf AK3-K](../../ueberholt/2026-10-07_Entwurf_AK3-K.md),
   [Entwurf KK](../../ueberholt/2026-10-08_Entwurf_KK_Kuehlkurve.md), [Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md) und
   [Übergabe KP3](../../ueberholt/2026-10-02_Uebergabe_KP3.md) nach `ueberholt/` (Verweise nachziehen, Indexzeile entfernen; die Konzepte
-  Anlagenkopplung und Kühlung verweisen auf die Entwürfe) — die fünf Papiere samt Übergaben 22.09. und 26.09. erledigt (umgesetzt 10.10.2026, #905). Die Befund- und Gegenlese-Papiere vom 15.–17.09. sind ebenfalls
+  Anlagenkopplung und Kühlung verweisen auf die Entwürfe) — die fünf Papiere samt Übergaben 22.09. und 26.09. erledigt (umgesetzt 10.10.2026, #911). Die Befund- und Gegenlese-Papiere vom 15.–17.09. sind ebenfalls
   Kandidaten.
 
 ## 5. Offen beim Anwender
