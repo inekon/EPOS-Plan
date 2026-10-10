@@ -89,6 +89,10 @@ public class ProjektdialogSchlossTests : EposBunitContext
     private static AngleSharp.Dom.IElement Knopf(IRenderedComponent<BhkwDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
+    /// <summary>„Bearbeiten…" im Katalogfuss.</summary>
+    private static AngleSharp.Dom.IElement KatalogBearbeiten(IRenderedComponent<BhkwDialog> cut)
+        => cut.Find(".epos-knopf--bearbeiten-katalog");
+
     private static bool SpeichernSteht(IRenderedComponent<BhkwDialog> cut)
         => cut.FindAll(".epos-modulparameter .epos-speichervermerk").Count > 0;
 
@@ -130,12 +134,14 @@ public class ProjektdialogSchlossTests : EposBunitContext
 
         KatalogsatzWaehlen(cut, 0);
 
-        // Gesperrt: kein Speichern im Aufklapper, „Bearbeiten…" weich gesperrt mit Grund.
+        // Gesperrt: kein Speichern im Aufklapper; „Bearbeiten…" im Katalogfuss bleibt
+        // bedienbar, nennt den Grund und öffnet keinen Katalogeditor (KA-E-13, 4.6).
         Assert.False(SpeichernSteht(cut));
-        var bearbeiten = Knopf(cut, "Bearbeiten...");
-        Assert.Equal("true", bearbeiten.GetAttribute("aria-disabled"));
+        var bearbeiten = KatalogBearbeiten(cut);
+        Assert.False(bearbeiten.HasAttribute("disabled"));
         Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, bearbeiten.GetAttribute("title"));
         bearbeiten.Click();
+        Assert.False(cut.Instance.EditorOffen);
         Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Instance.Meldung);
 
         // „Schloss aufheben…" - obwohl der Satz im Projekt verwendet wird.
@@ -149,14 +155,18 @@ public class ProjektdialogSchlossTests : EposBunitContext
         Assert.False(pruefung.Aufrufe[0].Gesperrt);
         Assert.False(cut.Instance.Schlossfrage);
 
-        // Entsperrt: Beschriftung wechselt, Speichern steht, „Bearbeiten…" geht.
+        // Entsperrt: Beschriftung wechselt, Speichern steht, „Bearbeiten…" ohne Sperrgrund.
         Assert.Equal(Resource.ADM_AW_SCHLOSS_SETZEN, Schlossknopf(cut).TextContent.Trim());
         Assert.True(SpeichernSteht(cut));
-        Assert.False(Knopf(cut, "Bearbeiten...").HasAttribute("aria-disabled"));
+        Assert.Equal(Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS, KatalogBearbeiten(cut).GetAttribute("title"));
 
         cut.Find(".epos-modulparameter input").Input("Anderes Werk");
         Knopf(cut, "Speichern").Click();
         Assert.Equal("Modul A", gespeichert);
+
+        // Ein einzelner ungesperrter Satz öffnet den vollen Katalogeditor (KA-E-13).
+        KatalogBearbeiten(cut).Click();
+        Assert.True(cut.Instance.EditorOffen);
     }
 
     [Fact]
