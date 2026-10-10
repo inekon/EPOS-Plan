@@ -112850,6 +112850,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag „{0}“ wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
+        /// </summary>
+        public static string SKV_FRAGE_LOESCHEN_NAME {
+            get {
+                return ResourceManager.GetString("SKV_FRAGE_LOESCHEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kollektor ähnelt.
         /// </summary>
         public static string SKV_GRP_KOLLEKTOR {
@@ -113012,6 +113021,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Module: ähnelt.
+        /// </summary>
+        public static string SKV_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("SKV_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verluste Solarkreis [%]: ähnelt.
         /// </summary>
         public static string SKV_LBL_VERLUSTE {
@@ -113062,6 +113080,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKV_OPT_ARBEITSTEMPERATUR_SPEICHER {
             get {
                 return ResourceManager.GetString("SKV_OPT_ARBEITSTEMPERATUR_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit. ähnelt.
+        /// </summary>
+        public static string SKV_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("SKV_RUECK_BLEIBT", resourceCulture);
             }
         }
         

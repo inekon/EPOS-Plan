@@ -50973,5 +50973,14 @@ chart</value>
   <data name="PSP_RUECK_BLEIBT" xml:space="preserve">
     <value>Remaining in the project: usage, temperature pair, thresholds, stratification, charging and discharging power of the storage, its sinks, groupings and charging priorities.</value>
   </data>
+  <data name="SKV_LBL_SUMME" xml:space="preserve">
+    <value>Total of all modules:</value>
+  </data>
+  <data name="SKV_FRAGE_LOESCHEN_NAME" xml:space="preserve">
+    <value>The catalogue entry "{0}" will be deleted for ALL projects. Continue?</value>
+  </data>
+  <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: number of modules, tilt, azimuth, albedo, the solar circuit (pump, losses, working temperature, approach, spread) and the sinks of the plant. Coefficients, areas and investment costs are transferred.</value>
+  </data>
 </root>
 

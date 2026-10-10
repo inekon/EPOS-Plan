@@ -325,4 +325,77 @@ public class ProjektkopievormerkungTests : EposBunitContext
 
         Assert.Empty(h.Geloescht);
     }
+
+    // =================================================================================
+    // Solarkollektoren (Katalogauswahl V1, Stufe 3): Übernehmen legt die Kopie SOFORT an
+    // =================================================================================
+
+    /// <summary>
+    /// Der Solarkollektorendialog mit einer Hülle nach dem Muster von <c>SolarkollektorHuelle.Aufnehmen</c>: „In das
+    /// Projekt übernehmen" legt die Projektkopie sofort an und meldet sie der Vormerkung; die Zeile hängt der Dialog
+    /// selbst an die geteilte Liste.
+    /// </summary>
+    private IRenderedComponent<EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog> SolarAufbauen(Huelle h, List<int> angelegt)
+        => Render<EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog>(p => p
+            .Add(x => x.Zeilen, h.Anlagen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.MitVerwendung(Anlagenart.Solarkollektoren, s => s))
+            .Add(x => x.Katalogzeilen, () => new List<Katalogfilterzeile>
+            {
+                new Katalogfilterzeile(11, "Kollektor K").MitText(Katalogfilterprofil.SpBezeichner, "Kollektor K")
+            })
+            .Add(x => x.Aufnehmen, stammId =>
+            {
+                int kopie = 500 + angelegt.Count;
+                angelegt.Add(kopie);
+                h.Vormerkung.Angelegt("Kollektor K", kopie);
+                return new AufnahmeErgebnis(new ErzeugerZeile { Schluessel = 90 + angelegt.Count, Bezeichner = "Kollektor K", GeraetId = kopie });
+            })
+            .Add(x => x.Entfernen, h.Entfernen)
+            .Add(x => x.Geschlossen, h.Geschlossen));
+
+    private static void SolarUebernehmen(IRenderedComponent<EPOS.UI.Dialoge.Solarthermie.SolarkollektorenDialog> cut)
+    {
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.Find(".epos-zweispalten-knopf--uebernehmen").Click();
+    }
+
+    [Fact]
+    public void Solarkollektoren_Uebernehmen_legt_die_Kopie_sofort_an()
+    {
+        var h = new Huelle();
+        var angelegt = new List<int>();
+        var cut = SolarAufbauen(h, angelegt);
+
+        SolarUebernehmen(cut);
+
+        Assert.Equal(new[] { 500 }, angelegt);       // vor OK und Abbrechen
+        Assert.Equal(500, Assert.Single(h.Anlagen).GeraetId);
+        Assert.Null(h.Ergebnis);
+    }
+
+    [Fact]
+    public void Solarkollektoren_Abbrechen_raeumt_die_neue_Kopie_ab()
+    {
+        var h = new Huelle();
+        var cut = SolarAufbauen(h, new List<int>());
+
+        SolarUebernehmen(cut);
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+
+        Assert.False(h.Ergebnis);
+        Assert.Equal(new[] { "Kollektor K" }, h.Geloescht);
+    }
+
+    [Fact]
+    public void Solarkollektoren_OK_laesst_die_neue_Kopie_stehen()
+    {
+        var h = new Huelle();
+        var cut = SolarAufbauen(h, new List<int>());
+
+        SolarUebernehmen(cut);
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.True(h.Ergebnis);
+        Assert.Empty(h.Geloescht);
+    }
 }

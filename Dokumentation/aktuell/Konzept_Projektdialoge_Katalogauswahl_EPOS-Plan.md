@@ -560,6 +560,33 @@ Der Stromspeicher folgt Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abwe
 - **Löschen:** Der Projektdialog hatte keinen Löschknopf; jetzt steht er im Katalogfuß (Rückfrage, mehrere mit
   Überspringen der gesperrten), geschrieben über `StromspeicherStammCtrl.Loeschen`.
 
+### 5.7 Wie gebaut (Stufe 3, Solarkollektoren)
+
+Die Solarkollektoren folgen Heizkessel und BHKW (5.3, 5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `SolarkollektorenStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Solarkollektoren`, Katalog
+  `Tab_Solarkollektoren_STAMM`, Anlage über `ID_Solar`, Kostenkomponente 4), dazu `RueckwegVorschau`,
+  `AusProjektUebernehmen`, `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über den Namen läuft über denselben
+  Löschweg samt Satzvorlage. Prüfregel wie beim Speichern: Flächen und Investitionskosten nicht negativ, h0 zwischen 0 und
+  1, k1, k2, Kdir und Kdiff nicht negativ, Bezugsfläche aus der Liste. Kein neuer Schemaschritt: 208 und 209 führen
+  `ID_Stamm` an `Tab_Solarkollektoren` und beide Vorlagenverweise an `Tab_Solarkollektoren_STAMM`;
+  `SolarkollektorenCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Bearbeiten:** `SatzAnzeige` liest Kopie oder Katalogsatz nach ID, `AnzeigefelderSchreibenAlle` schreibt alle Sätze
+  einer Mehrfachbearbeitung in einer Transaktion; der Name bleibt. Die Projektzeile liest Kenndaten und Modulfläche aus
+  der Projektkopie über die Geräte-ID, weil zwei Zeilen desselben Kollektors sich die Kopie teilen.
+- **Projektkopie sofort:** Die Hülle legte die Kopie schon beim Übernehmen an; das bleibt, mit `Projektkopievormerkung`.
+- **Felder der Anlage:** Modulanzahl samt gerechneter Aperturfläche, Neigung, Azimut, Albedo und der Solarkreis (Pumpe,
+  Verluste, Arbeitstemperatur-Weg, Grädigkeit, Spreizung) stehen beim Projektsatz in der Gruppe „Kollektor“ und gehen
+  weiter erst mit „Übernehmen“ in die Anlagenzeile; die Senken stehen als Zeile darunter. Die Summe in der
+  Projekt-Kopfleiste zählt die Module der Projektliste.
+- **Kosten:** Nur Investitions- und Betriebskosten — Energiekosten gibt es nicht. `Investitionskosten` steht in „Alle
+  Daten“ und in der Satzbearbeitung und geht mit der Schnittmenge; Betriebs- und Investitionspositionen der Anlage werden
+  Satzvorlagen wie beim Heizkessel.
+- **Kindzeilen:** keine. Kennwerte, Flächen und Bezugsfläche sind Spalten am Satz. Anlagenbezogen bleiben die Felder der
+  Anlage und die Senken (`Z_AnlageSenke`); die Ergebnistabellen der Simulation verweisen nicht auf die Kopie.
+- **Neu…:** fragt zuerst den Namen und öffnet dann den `SolarkollektorKatalogDialog` im Modus Neu; danach ist der neue
+  Satz gewählt. „Bearbeiten…“ auf einen einzelnen ungesperrten Satz öffnet denselben Editor im Modus Bearbeiten.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
