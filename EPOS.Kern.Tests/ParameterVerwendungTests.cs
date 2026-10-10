@@ -595,7 +595,7 @@ namespace EPOS.Kern.Tests
 
                 case Anlagenart.Kaeltemaschine:
                     // KaeltemaschineKatalogDialog (KU3-1): die zwoelf Grundspalten der einen Liste und die acht Spalten der
-                    // Gruppe „Teillast und Takten" (KM3-E3-a).
+                    // Gruppe „Teillast und Takten" (KM3-E3-a), dazu die fuenf Katalogfelder in den Kenndaten (K-A).
                     return KaeltemaschineSchema.Fachspalten;
 
                 default:

@@ -31,7 +31,7 @@ namespace EPOS.Kern.Tests
             => Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, s => R.ResourceManager.GetString(s) ?? s);
 
         [Fact]
-        public void Das_Profil_fuehrt_sieben_Spalten_in_der_Folge_der_Waermepumpe()
+        public void Das_Profil_fuehrt_acht_Spalten_in_der_Folge_der_Waermepumpe()
         {
             Katalogfilterprofil p = Profil();
 
@@ -39,13 +39,13 @@ namespace EPOS.Kern.Tests
             {
                 Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpBezeichner, Katalogfilterprofil.SpNennkaelteleistung,
                 Katalogfilterprofil.SpEer, Katalogfilterprofil.SpRueckkuehlart, Katalogfilterprofil.SpHerkunft,
-                Katalogfilterprofil.SpTyp
+                Katalogfilterprofil.SpGeraeteart, Katalogfilterprofil.SpTyp
             }, p.Spalten.Select(s => s.Schluessel));
             Assert.Equal(new[]
             {
                 Katalogspaltenrang.BeiPlatz, Katalogspaltenrang.Immer, Katalogspaltenrang.Immer,
                 Katalogspaltenrang.BeiPlatz, Katalogspaltenrang.BeiPlatz, Katalogspaltenrang.BeiPlatz,
-                Katalogspaltenrang.Breit
+                Katalogspaltenrang.BeiPlatz, Katalogspaltenrang.Breit
             }, p.Spalten.Select(s => s.Rang));
             Assert.Equal(R.KFLT_SP_HERKUNFT, p.Spalte(Katalogfilterprofil.SpHerkunft).Titel);
             Assert.True(p.Spalte(Katalogfilterprofil.SpHerkunft).Filterbar);
@@ -66,6 +66,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Nenn-EER", p.Spalte(Katalogfilterprofil.SpEer).Langtext);
             Assert.Equal("Rückkühlart", p.Spalte(Katalogfilterprofil.SpRueckkuehlart).Langtext);
             Assert.Equal("Rückk.", p.Spalte(Katalogfilterprofil.SpRueckkuehlart).Titel);
+            Assert.Equal("Geräteart", p.Spalte(Katalogfilterprofil.SpGeraeteart).Langtext);
+            Assert.Equal("Art", p.Spalte(Katalogfilterprofil.SpGeraeteart).Titel);
             Assert.Equal("P_N [kW]", p.Spalte(Katalogfilterprofil.SpNennkaelteleistung).Kopftext);
             foreach (string ohne in new[] { Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpBezeichner,
                                             Katalogfilterprofil.SpHerkunft, Katalogfilterprofil.SpTyp })
