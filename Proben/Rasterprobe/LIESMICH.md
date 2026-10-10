@@ -281,6 +281,13 @@ maßen — Listenhülle gegen Eingabeblock (KL-5), Stammblatt mit Bild „Gangli
 den `rasterprobe.mjs` misst; Wärmebedarf (W1, N13) und Stromganglinie (N15) bleiben als Zeitreihen
 im Rahmen gemessen.
 
+**Mehrfachwahl folgt der Übernahme (DZ1-N2).** Zwei weitere Fälle `DZ1N2_uebernahme_heizkessel_1280x800` und
+`DZ1N2_uebernahme_bhkw_1280x800` öffnen den echten Projektdialog der Fensterprobe mit `?aufnahme=1` (der Wirt nimmt
+dann bei „In das Projekt übernehmen“ eine Zeile auf): Kästchen der ersten Projektzeile, einen Katalogsatz ankreuzen,
+übernehmen samt Trägerwahl — danach muss genau die neue Projektzeile angekreuzt sein, und „Aus dem Projekt
+entfernen“ muss genau sie entfernen, die zuvor angeklickte Zeile bleibt. Ergebnis vom 10.10.2026: beide grün,
+der volle Lauf 66 Fälle ohne Verstoß.
+
 ### Ergebnis vom 19.09.2026 (Auftrag KL-5)
 
 **Vorher** (`node katalogprobe.mjs --vorher`, Rückgabe 1 — 8 von 11 Fällen rot):
@@ -1233,6 +1240,25 @@ Foto der aufgeklappten Detailzeile ab (`<fall>_<breite>x<hoehe>.png`).
 | Stromganglinie | 139 | 148 | 196 | 128 | 94 (rollt) | 328 |
 | Solarthermie-, PV-Ganglinie | 96 | 112 | 160 | 94 (rollt) | 94 (rollt) | 328 |
 
+**Kurve in voller Breite (DZ1-N2).** Die Zeichenfläche nimmt ihre Größe vom Behälter, und das Zeichenmodell entsteht
+in genau dieser Größe (`BildauftragMass`, Behältermaß von `DiagrammSvg`). Die Untergrenze der Kurve ist 150 px. Die
+Probe misst aufgeklappt zusätzlich: Kurve mindestens 90 % so breit wie die Satzfläche (ohne Polster), das Modell in
+Behältergröße (viewBox gegen die Fläche, je höchstens 3 px), und bei Strom-, Solar- und PV-Ganglinie rollt der
+Dialogkörper in 1 280 × 800 und 1 280 × 720 nur, solange die Kurve auf ihrer Untergrenze steht (höchstens 5 px
+darüber; KB1). Vor dem Messen wartet sie, bis das Modell im gemessenen Maß steht. Je Zustand schreibt sie eine Zeile
+„Kurve B × H px, Satzfläche, Modell, Dialog rollt“. **Vierte Gegenprobe** (Solarganglinie, 1 280 × 800): eine auf 60 px
+gedrückte Kurve, eine auf 300 px Breite begrenzte Kurve und eine Untergrenze der Satzfläche von 600 px (der
+Dialogkörper rollt, obwohl die Kurve über ihrer Untergrenze steht) müssen rot werden.
+
+**Ergebnis vom 10.10.2026, DZ1-N2:** 666 Zustände, 0 Verstöße, alle Gegenproben rot. Kurve Breite × Höhe in px
+(Detailzeile auf; Satzfläche jeweils gleich breit wie die Kurve), in Klammern der Überhang des rollenden Dialogkörpers:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 1 024 × 700 | 1 093 × 614 | 768 × 1 024 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern | 1 110 × 153 (100) | 1 118 × 154 (80) | 982 × 154 (32) | 982 × 154 (100) | 1 051 × 154 (186) | 726 × 377 |
+| Stromganglinie | 1 110 × 153 (14) | 1 118 × 154 (6) | 982 × 196 | 982 × 154 (26) | 1 051 × 154 (112) | 726 × 451 |
+| Solarthermie-, PV-Ganglinie | 1 110 × 153 (57) | 1 118 × 154 (42) | 982 × 160 | 982 × 154 (62) | 1 051 × 154 (148) | 726 × 396 |
+
 **Heizkessel (Stufe 2a).** Zusätzlich je Fenster: Detailzeile auf mit Kosten (die Satzfläche muss die
 Kostenknöpfe tragen), Überlagerung „Bearbeiten…" für die Projektkopie und für zwei angekreuzte Katalogsätze
 (Blätterleiste oder Hinweiszeile „übersprungen"), danach geschlossen mit Esc. Für den Heizkessel gilt in
@@ -1348,7 +1374,7 @@ aufgeklappt (Trennlinie oben) in px:
 **Ganglinie in der Detailzeile (DZ1, Teil 2, Konzept 4.9).** Der Wirt trägt die vier Ganglinien-Dialoge mit
 synthetischer Reihe (Kennzahlen und ein Zeichenmodell je Schalterstellung): `fall=waermebedarf`, `stromganglinie`,
 `solarganglinie` und neu `pvganglinie`. Die Probe wählt dort vor dem Aufklappen die erste Projektzeile und
-verlangt in der Satzfläche eine Zeichenfläche der Ganglinie. Deren Untergrenze (Kopf plus 90 px Kurve, DZ1-N1) gehört zur Mindesthöhe:
+verlangt in der Satzfläche eine Zeichenfläche der Ganglinie. Deren Untergrenze (Kopf plus 150 px Kurve, DZ1-N2) gehört zur Mindesthöhe:
 Reicht das Fenster nicht, rollt der Dialogkörper (Befund, auch in den Fenstern ohne Kompaktstufe), das Bild hat
 keinen eigenen Rollbalken. **Ergebnis vom 10.10.2026 (vor DZ1-N1, Kopf unverdichtet, Untergrenze 260 px):** 666 Zustände,
 0 Verstöße, drei Gegenproben rot. Satzfläche (Bild/Platz der Zeichenfläche) in px, Trennlinie oben:

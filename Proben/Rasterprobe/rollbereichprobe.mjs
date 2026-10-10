@@ -32,11 +32,16 @@
 // VERDICHTETER KOPF DER GANGLINIE (DZ1-N1, Konzept 4.9): Aufgeklappt mit Ganglinie ist der Kopf der
 // Satzflaeche (Kopfzeile, Kennzahlenzeile mit Zoom und Infoknoepfen) ab 1 024 px Breite hoechstens 90 px hoch
 // (768 x 1 024 bricht die Kennzahlen um: 93 px), die Kurve
-// mindestens --epos-kurve-min (90 px) hoch, die Satzflaeche rollt nicht in sich. In 1 280 x 800 und
-// 1 280 x 720 rollt der Dialogkoerper bei Strom-, Solar- und PV-Ganglinie nicht (ROLLT_NICHT); beim
-// Waermebedarf extern gibt das Fenster die Untergrenze nicht her, dort rollt er nach KB1 (Befund). Vierte
-// Gegenprobe: eine Kurve, die auf 60 px gedrueckt wird, und eine Kurven-Untergrenze von 300 px in der
-// Solarganglinie bei 1 280 x 800 muessen rot werden.
+// mindestens --epos-kurve-min (150 px) hoch, die Satzflaeche rollt nicht in sich.
+//
+// KURVE IN VOLLER BREITE (DZ1-N2, Konzept 4.9): Die Kurve ist mindestens 90 % so breit wie die
+// Satzflaeche, und das Zeichenmodell steht in Behaeltergroesse (viewBox = Flaeche, je hoechstens 3 px
+// Abweichung - Achsen und Schrift 1:1). Bei Strom-, Solar- und PV-Ganglinie (ROLLT_NICHT) rollt der
+// Dialogkoerper in 1 280 x 800 und 1 280 x 720 nur, solange die Kurve auf ihrer Untergrenze steht (KB1;
+// bei 1 280 x 800 rund 40 px, gewollt). Vierte Gegenprobe in der Solarganglinie bei 1 280 x 800: eine
+// Kurve, die auf 60 px gedrueckt wird, eine Kurve, die auf 300 px Breite begrenzt wird, und eine
+// Untergrenze der Satzflaeche von 600 px (der Dialogkoerper rollt, obwohl die Kurve ueber ihrer
+// Untergrenze steht) muessen rot werden.
 //
 // Aufruf: node rollbereichprobe.mjs --url http://127.0.0.1:5299 [--nur <fall>] [--ohne-gegenprobe] [--fotos <ordner>]
 // Rueckgabe 0 = kein Verstoss und Gegenprobe rot, 1 = Verstoss oder Gegenprobe gruen, 2 = Aufbaufehler.
@@ -63,7 +68,10 @@ const KOMPAKT = '(max-width: 1199.98px), (max-height: 799.98px)';   // Medienabf
 const ZEILE = 53;   // Zeilenhoehe, falls die Liste keine Zeile zeigt; sonst gemessen
 const ZEILE_KOMPAKT = 46;   // dieselbe in der Kompaktstufe
 const KOPF_MAX = 90;   // DZ1-N1: Kopf der Satzflaeche mit Ganglinie (ohne Polster)
-const ROLLT_NICHT = ['stromganglinie', 'solarganglinie', 'pvganglinie'];   // DZ1-N1: kein Rollen in 1 280 x 800 / 720
+const BREITE_ANTEIL = 0.9;   // DZ1-N2: Kurvenbreite mindestens 90 % der Satzflaechenbreite
+const MASS_TOLERANZ = 3;     // DZ1-N2: Zeichenmodell in Behaeltergroesse, je Richtung hoechstens 3 px
+const UNTERGRENZE_SPIEL = 5; // DZ1-N2: "auf der Untergrenze" heisst Kurve hoechstens 5 px ueber --epos-kurve-min (Rand der Flaeche, Rundung der Kopfmasse)
+const ROLLT_NICHT = ['stromganglinie', 'solarganglinie', 'pvganglinie'];   // DZ1-N2: Rollen in 1 280 x 800 / 720 nur auf der Untergrenze
 
 const FENSTER = [{ breite: 1280, hoehe: 800 }, { breite: 1280, hoehe: 720 }, { breite: 1024, hoehe: 700 },
   { breite: 1024, hoehe: 768, neu: true }, { breite: 768, hoehe: 1024, neu: true }, { breite: 1093, hoehe: 614, neu: true }];
@@ -85,6 +93,7 @@ const FAELLE = [
 ].filter(([n]) => !NUR || n.startsWith(NUR));
 
 const verstoesse = [];
+const kurven = [];      // DZ1-N2: gemessene Kurvenmasse je Fall, Fenster und Zustand
 const befunde = [];     // ausserhalb des Bausteins: Kaeltemaschinenkatalog (Stufe 5), Ueberlagerungen des Hauses
 const zeilen = [];
 
@@ -149,16 +158,23 @@ function messen(KOMPAKT_ABFRAGE) {
     const grafik = satz.querySelector('.epos-ganglinie-grafik');
     const fl = grafik && grafik.querySelector(':scope > .epos-diagramm-svg > .epos-diagramm-svg-flaeche');
     let bild = null, bildPlatz = null, bildVoll = false, kopf = null, kurveMin = null;
+    let bildBreite = null, satzBreite = null, modell = null;
     if (fl) {
       const f = fl.getBoundingClientRect(), g = grafik.getBoundingClientRect();
       bild = Math.round(f.height);
+      bildBreite = Math.round(f.width);
+      const sp = getComputedStyle(satz);
+      satzBreite = Math.round(satz.clientWidth - (parseFloat(sp.paddingLeft) || 0) - (parseFloat(sp.paddingRight) || 0));
+      const vb = fl.querySelector(':scope > svg')?.viewBox?.baseVal;
+      if (vb && vb.width > 0) modell = { breite: Math.round(vb.width), hoehe: Math.round(vb.height) };
       bildPlatz = Math.round(g.bottom - f.top);
       bildVoll = f.width >= g.width - 2;
       kopf = Math.round(f.top - r.top - (parseFloat(getComputedStyle(satz).paddingTop) || 0));
       kurveMin = parseFloat(getComputedStyle(grafik).getPropertyValue('--epos-kurve-min')) || 0;
     }
     return { satz: Math.round(r.height), satzRest: Math.round(z.bottom - r.bottom), satzRollt: satz.scrollHeight > satz.clientHeight + 1,
-             bild, bildPlatz, bildVoll, kopf, kurveMin, ganglinie: !!grafik };
+             bild, bildPlatz, bildVoll, kopf, kurveMin, bildBreite, satzBreite, modell, ganglinie: !!grafik,
+             dialogUeberhang: (() => { const d = document.querySelector('body > #app > .epos-dialog'); return d ? Math.max(0, d.scrollHeight - d.clientHeight) : 0; })() };
   }
 }
 
@@ -186,6 +202,17 @@ function erreichbar() {
 async function ruhe(seite) {
   await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
   await seite.waitForTimeout(120);
+}
+
+/** DZ1-N2: wartet, bis das Zeichenmodell der Ganglinie in der gemessenen Behaeltergroesse steht (hoechstens 4 s). */
+async function massAbwarten(seite) {
+  await seite.waitForFunction(t => {
+    const fl = document.querySelector('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche');
+    const vb = fl && fl.querySelector(':scope > svg')?.viewBox?.baseVal;
+    if (!fl || !vb) return true;
+    return Math.abs(vb.width - fl.clientWidth) <= t && Math.abs(vb.height - fl.clientHeight) <= t;
+  }, MASS_TOLERANZ, { timeout: 4000 }).catch(() => {});
+  await ruhe(seite);
 }
 
 async function taste(seite, key) {
@@ -231,8 +258,15 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
     if (fenster.breite >= 1024 && m.kopf > KOPF_MAX) fehler.push(`Ganglinie: Kopf der Satzflaeche ${m.kopf} px > ${KOPF_MAX} px`);
     if (m.bild + 1 < m.kurveMin) fehler.push(`Ganglinie: Kurve ${m.bild} px < Untergrenze ${m.kurveMin} px`);
     if (m.satzRollt) fehler.push('Ganglinie: Satzflaeche rollt in sich');
-    if (fenster.breite === 1280 && (fenster.hoehe === 800 || fenster.hoehe === 720) && ROLLT_NICHT.includes(fall) && m.dialogRollt)
-      fehler.push(`Ganglinie: Dialogkoerper rollt bei ${fenster.breite} x ${fenster.hoehe}`);
+    // DZ1-N2: volle Breite und Zeichenmodell in Behaeltergroesse.
+    if (m.bildBreite < BREITE_ANTEIL * m.satzBreite)
+      fehler.push(`Ganglinie: Kurve ${m.bildBreite} px breit < ${Math.round(BREITE_ANTEIL * 100)} % der Satzflaeche (${m.satzBreite} px)`);
+    if (!m.modell || Math.abs(m.modell.breite - m.bildBreite) > MASS_TOLERANZ || Math.abs(m.modell.hoehe - m.bild) > MASS_TOLERANZ)
+      fehler.push(`Ganglinie: Zeichenmodell ${m.modell ? m.modell.breite + ' x ' + m.modell.hoehe : 'fehlt'} nicht in Behaeltergroesse ${m.bildBreite} x ${m.bild}`);
+    if (fenster.breite === 1280 && (fenster.hoehe === 800 || fenster.hoehe === 720) && ROLLT_NICHT.includes(fall) && m.dialogRollt
+        && m.bild > m.kurveMin + UNTERGRENZE_SPIEL)
+      fehler.push(`Ganglinie: Dialogkoerper rollt bei ${fenster.breite} x ${fenster.hoehe}, obwohl die Kurve (${m.bild} px) ueber ihrer Untergrenze steht`);
+    kurven.push(`${fall} ${fenster.breite}x${fenster.hoehe} ${zustand}: Kurve ${m.bildBreite} x ${m.bild} px, Satzflaeche ${m.satzBreite} px, Modell ${m.modell ? m.modell.breite + ' x ' + m.modell.hoehe : '-'}, Dialog rollt ${m.dialogUeberhang} px`);
   }
   if (m.eng && (fenster.neu || (m.satzOffen && m.ganglinie))) { befunde.push(kennung + ': Dialogkoerper rollt (unter der Mindesthoehe)'); m = { ...m, dialogRollt: false }; }
   const aussen = p => fall === 'kaeltemaschine' || / in div\.epos-ueberlagerung/.test(p);
@@ -312,10 +346,11 @@ try {
           if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche').count() === 0) {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Ganglinie`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
+          await massAbwarten(seite);
           await mess('Detailzeile auf, Trennlinie unten');
           if (FOTOS && /ganglinie|waermebedarf/.test(fall))
             await seite.screenshot({ path: `${FOTOS}/${fall}_${fenster.breite}x${fenster.hoehe}.png` });
-          if (await taste(seite, 'Home')) await mess('Detailzeile auf, Trennlinie oben');
+          if (await taste(seite, 'Home')) { await massAbwarten(seite); await mess('Detailzeile auf, Trennlinie oben'); }
           await satz(seite, false);
           await mess('Detailzeile wieder zu');
         }
@@ -441,7 +476,8 @@ try {
     // (der Dialogkoerper muss dann rollen) in der Solarganglinie bei 1 280 x 800 muessen rot werden.
     for (const [art, stil, muster] of [
       ['Kurve 60 px', '.epos-ganglinie-grafik .epos-diagramm-svg-flaeche { max-height: 60px !important; }', 'Untergrenze'],
-      ['Untergrenze 300 px', '.epos-zweispalten { --epos-kurve-min: 300px !important; --epos-satz-untergrenze: 400px !important; }', 'Dialogkoerper rollt bei']]) {
+      ['Breite 300 px', '.epos-ganglinie-grafik .epos-diagramm-svg-flaeche { max-width: 300px !important; }', 'der Satzflaeche'],
+      ['Satzflaeche 600 px', '.epos-zweispalten { --epos-satz-untergrenze: 600px !important; }', 'Dialogkoerper rollt bei']]) {
       const k4 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
       const s4 = await k4.newPage();
       await s4.goto(WURZEL + '/rollbereichprobe?fall=solarganglinie&zeilen=40', { waitUntil: 'networkidle' });
@@ -450,11 +486,11 @@ try {
       await s4.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
       await ruhe(s4);
       await satz(s4, true);
-      await ruhe(s4); await ruhe(s4);
-      const vor = verstoesse.length, n = zeilen.length, b = befunde.length;
+      await ruhe(s4); await massAbwarten(s4);
+      const vor = verstoesse.length, n = zeilen.length, b = befunde.length, kn = kurven.length;
       pruefen('solarganglinie', { breite: 1280, hoehe: 800 }, 'Gegenprobe ' + art, await s4.evaluate(messen, KOMPAKT), [], true, null);
       const rot = verstoesse.slice(vor).some(v => v.includes(muster));
-      verstoesse.splice(vor); zeilen.splice(n); befunde.splice(b);
+      verstoesse.splice(vor); zeilen.splice(n); befunde.splice(b); kurven.splice(kn);
       console.log(`Gegenprobe verdichteter Kopf: ${art} - ${rot ? 'rot' : 'gruen'}`);
       if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Ganglinie nicht'); rueckgabe = 1; }
       await k4.close();
@@ -497,6 +533,8 @@ try {
     const [fall, fenster, ...zust] = z.kennung.split(' ');
     console.log(`${fall} | ${fenster} | ${zust.join(' ')} | ${z.kompakt ? 'kompakt' : 'normal'} (${z.schrift} px)${z.eng ? ' eng' : ''} | ${z.roller} | ${z.zweispalten ?? '-'} | ${z.projekt ?? '-'} (${z.projektZeile ?? '-'}) | ${z.katalog ?? '-'} (${z.katalogKopf ?? '-'}, ${z.katalogZeile ?? '-'}) | ${z.satz ?? '-'}${z.bild !== null && z.bild !== undefined ? ` (${z.bild}/${z.bildPlatz})` : ''} | ${z.fehler}`);
   }
+  console.log(`\nKurven der Ganglinie (DZ1-N2, ${kurven.length}):`);
+  for (const k of kurven) console.log('  ' + k);
   console.log(`\n${zeilen.length} Zustaende, ${verstoesse.length} Verstoesse`);
   if (befunde.length) {
     console.log(`\nBefunde ausserhalb des Bausteins (${befunde.length}, nicht gezaehlt):`);

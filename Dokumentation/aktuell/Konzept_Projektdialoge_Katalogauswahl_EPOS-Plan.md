@@ -223,6 +223,7 @@ zeichnet sich in dieser Höhe (Abschnitt 4.9) —, und nur was trotzdem nicht pa
 Satzfläche; sie ist dann der einzige Rollbereich. Zugeklappt gilt die Aufteilung über die Trennlinie (4.3)
 unverändert. Gemessene Satzfläche mit Kosten und „Alle Daten“ (Heizkessel): 165 px in 1 280 × 800, 172 px in
 1 280 × 720, 152 px in 1 024 × 700, 220 px in 1 024 × 768, 476 px in 768 × 1 024, 97 px in 1 093 × 614.
+Trägt die Satzfläche eine Ganglinie, ist ihre Untergrenze der Kopf plus 150 px Kurve (DZ1‑N2, Maße in 4.9).
 
 ### 4.5 Mehrfachauswahl
 
@@ -233,6 +234,13 @@ unverändert. Gemessene Satzfläche mit Kosten und „Alle Daten“ (Heizkessel)
   übernehmen…, Schloss, Löschen. Die Rückfrage nennt die Zahl und bei Löschen und Schloss die Namen.
 - **Sammelübernahme** (KA‑E‑6): Doppelklick und Enter übernehmen die Zeile bzw. die Auswahl. Die
   Trägerwahl fragt je Brennstoff einmal (AD-Q4). Die Detailzeile zeigt die zuletzt angeklickte Zeile.
+- **Die Wahl folgt der Übernahme** (DZ1‑N2): Wählt der Wirt nach Übernehmen, Umstellen oder Neu… die neue
+  Projektzeile, steht auch die Mehrfachwahl auf genau dieser Zeile (bei einer Sammelübernahme auf den neuen
+  Zeilen); die vorher angekreuzten Kästchen sind abgewählt. Eine Zeile, die aus der Liste verschwindet, verlässt
+  die Wahl. Ist nichts angekreuzt, bleibt es so — dann wirken die Aktionen auf die Einzelwahl. „Aus dem Projekt
+  entfernen“ trifft damit nach einer Übernahme die eben übernommene Zeile. Geregelt an einer Stelle im Baustein
+  (`Bereichswahl.ListeFolgen`, gerufen von der `Zweispaltenauswahl` bei jedem Parametersatz über die
+  ungefilterte Projektliste) für alle Wirte; gehalten von bunit-Fällen und der Katalogprobe.
 
 ### 4.6 Bearbeiten und Mehrfach-Bearbeiten
 
@@ -294,7 +302,7 @@ Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf,
 Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
 senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
 Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts (mit
-Ganglinie Kopf und 90 px Kurve, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
+Ganglinie Kopf und 150 px Kurve, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
 Satzfläche nimmt die gesamte übrige Höhe ohne Obergrenze; was trotzdem nicht passt, rollt allein in der
 Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
 768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
@@ -348,6 +356,27 @@ Eine Kurve von 180 px ohne Rollen des Dialogkörpers gibt 1 280 × 800 nicht her
 auf ihren Untergrenzen bleiben der Satzfläche 194 px (Solar, PV), 204 px (Strom) und 118 px (Wärmebedarf extern:
 Kontextzeile und Knopfleiste unter dem Katalog). Mehr Kurve verlangt eine kleinere Untergrenze der Katalogliste
 (Kopf und eine Zeile bei offener Ganglinie) oder ein Rollen des Dialogkörpers — offen zum Entscheid.
+
+**Präzisiert in DZ1-N2 (Kurve in voller Breite, gemessen 10.10.2026, Rollbereichprobe):** Die Kurve nimmt die volle
+Breite der Satzfläche und deren übrige Höhe. Die Zeichenfläche nimmt ihre Größe vom Behälter (`contain: size`, kein
+Seitenverhältnis mehr); `DiagrammSvg` meldet ihr Maß beim Aufklappen und nach jeder Größenänderung
+(`MassGeaendert`, ResizeObserver im Modul, entprellt), und `GanglinienGrafik` lässt das Zeichenmodell über
+`BildauftragMass` in genau dieser Größe bauen (`ChartRenderer.GanglinieNormiertModell` mit `breite`/`hoehe`) — das
+Bild steht 1:1, Achsen und Schrift sind unverzerrt. Unter 400 px Höhe steht das Modell kompakt: ohne Titel (der Name
+steht darüber), Achsentitel und Legende in einer Kopfzeile, die Prozentachse unter 120 px Flächenhöhe in
+50-%-Schritten. Ohne Maß bleibt das Bild 1 240 × 560 und byte-gleich (ChartProben-Messlatte unverändert). Alle vier
+Ganglinien-Dialoge gehen diesen Weg. Die Untergrenze der Kurve ist 150 px (`--epos-kurve-min`; Satzfläche 202 bzw.
+235 px, Kompaktstufe 195 bzw. 223 px); reicht das Fenster nicht, rollt nach KB1 der Dialogkörper. Gemessen,
+Detailzeile auf (Kurve Breite × Höhe, Überhang des rollenden Dialogkörpers):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 768 × 1 024 |
+|---|---|---|---|---|
+| Wärmebedarf extern | 1 110 × 153 px, rollt 100 px | 1 118 × 154 px, rollt 80 px | 982 × 154 px, rollt 32 px | 726 × 377 px |
+| Stromganglinie | 1 110 × 153 px, rollt 14 px | 1 118 × 154 px, rollt 6 px | 982 × 196 px | 726 × 451 px |
+| Solarthermie-, PV-Ganglinie | 1 110 × 153 px, rollt 57 px | 1 118 × 154 px, rollt 42 px | 982 × 160 px | 726 × 396 px |
+
+Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700: 982 px, 1 093 × 614: 1 051 px, je
+154 px hoch, der Dialogkörper rollt dort nach KB1).
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 

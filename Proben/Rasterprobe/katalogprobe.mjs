@@ -1446,6 +1446,73 @@ try {
   process.exit(2);
 }
 
+// ------------------------------------------------------------------
+// MEHRFACHWAHL FOLGT DER UEBERNAHME (DZ1-N2, Konzept Projektdialoge 4.5)
+// ------------------------------------------------------------------
+// Der echte Heizkessel- und BHKW-Dialog der Fensterprobe mit ?aufnahme=1 in 1 280 x 800: das Kaestchen
+// der ersten Projektzeile anklicken, einen Katalogsatz ankreuzen, "In das Projekt uebernehmen" samt
+// Traegerwahl - danach ist genau die neue Projektzeile angekreuzt; "Aus dem Projekt entfernen" entfernt
+// genau sie, die zuvor angeklickte Zeile bleibt.
+async function uebernahmefall(browser, maske) {
+  const kontext = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
+  const seite = await kontext.newPage();
+  const m = [];
+  await seite.goto(`${WURZEL}/fensterprobe?fall=${maske}&zeilen=40&aufnahme=1`, { waitUntil: 'domcontentloaded' });
+  await seite.waitForSelector('.epos-zweispalten-bereich--katalog .epos-katalogliste tbody tr', { timeout: 30000 });
+  await schlaf(500);
+  const projekt = () => seite.evaluate(() =>
+    [...document.querySelectorAll('.epos-zweispalten-bereich--projekt tbody tr')]
+      .filter(z => z.querySelector('td .epos-wahlkaestchen'))
+      .map(z => ({ name: (z.querySelector('.epos-zeilenzelle--name') || z).textContent.replace(/[\u2610\u2611\u25A3\u25CF\u25CB]/g, '').trim(),
+                   gewaehlt: z.querySelector('td .epos-wahlkaestchen').getAttribute('aria-checked') === 'true' })));
+  await seite.locator('.epos-zweispalten-bereich--projekt td .epos-wahlkaestchen').first().click();
+  await schlaf(300);
+  const vorher = await projekt();
+  if (!(vorher.length === 2 && vorher[0].gewaehlt && !vorher[1].gewaehlt))
+    m.push('Vorbedingung: erste Projektzeile nicht allein angekreuzt (' + JSON.stringify(vorher) + ')');
+  await seite.locator('.epos-zweispalten-bereich--katalog td .epos-kaestchenzelle input').first().check();
+  await schlaf(300);
+  await seite.locator('.epos-zweispalten-knopf--uebernehmen').first().click();
+  await seite.waitForSelector('.epos-ueberlagerung input[type=text]', { timeout: 5000 });
+  const feld = seite.locator('.epos-ueberlagerung input[type=text]').first();
+  if (!(await feld.inputValue())) await feld.fill('Erdgas E Variante');
+  await seite.locator('.epos-ueberlagerung .epos-knopf--primaer').first().click();
+  await schlaf(600);
+  const nachher = await projekt();
+  const neu = nachher.filter(z => !vorher.some(v => v.name === z.name));
+  const gewaehlt = nachher.filter(z => z.gewaehlt).map(z => z.name);
+  console.log(`  nach Uebernahme: ${nachher.length} Zeilen, angekreuzt ${JSON.stringify(gewaehlt)}`);
+  if (neu.length !== 1) m.push(`Uebernahme: ${neu.length} neue Zeilen statt 1`);
+  else if (gewaehlt.length !== 1 || gewaehlt[0] !== neu[0].name)
+    m.push(`Mehrfachwahl folgt der Uebernahme nicht: angekreuzt ${JSON.stringify(gewaehlt)} statt ["${neu[0].name}"]`);
+  await seite.locator('.epos-zweispalten-knopf--entfernen').first().click();
+  await schlaf(500);
+  const rest = (await projekt()).map(z => z.name);
+  console.log(`  nach Entfernen: ${JSON.stringify(rest)}`);
+  if (neu.length === 1 && rest.includes(neu[0].name)) m.push('Entfernen: die eben uebernommene Zeile steht noch da');
+  for (const v of vorher) if (!rest.includes(v.name)) m.push(`Entfernen traf die zuvor angeklickte Zeile "${v.name}"`);
+  await kontext.close();
+  return m;
+}
+
+try {
+  for (const maske of ['heizkessel', 'bhkw']) {
+    const name = `DZ1N2_uebernahme_${maske}_1280x800`;
+    if (NUR && !name.startsWith(NUR)) continue;
+    gezaehlt++;
+    console.log('');
+    console.log(name);
+    const m = await uebernahmefall(browser, maske);
+    if (m.length) { schlecht++; console.log('  VERSTOSS: ' + m.join('; ')); }
+    else console.log('  Mehrfachwahl folgt der Uebernahme, Entfernen trifft die neue Zeile');
+  }
+} catch (fehler) {
+  console.log('');
+  console.log('ABBRUCH (DZ1-N2): ' + fehler.message);
+  await browser.close();
+  process.exit(2);
+}
+
 await browser.close();
 
 console.log('');
