@@ -50841,5 +50841,59 @@ chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
   </data>
+  <data name="KONF_KS_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="KONF_KS_SPALTE_QUELLE" xml:space="preserve">
+    <value>Heat rejection / source</value>
+  </data>
+  <data name="KONF_KS_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Cooling generators</value>
+  </data>
+  <data name="KONF_KS_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Cold storage</value>
+  </data>
+  <data name="KONF_KS_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="KONF_KS_WP_KUEHLBETRIEB" xml:space="preserve">
+    <value>Heat pump in cooling mode</value>
+  </data>
+  <data name="KONF_KS_ANZAHL_LEISTUNG" xml:space="preserve">
+    <value>{0} × {1:0.#} kW</value>
+  </data>
+  <data name="KONF_KS_KALTWASSERVORLAUF" xml:space="preserve">
+    <value>Chilled water flow {0:0.#} °C</value>
+  </data>
+  <data name="KONF_KS_KUEHLVORLAUF" xml:space="preserve">
+    <value>Cooling flow {0:0.#} °C</value>
+  </data>
+  <data name="KONF_KS_RUECKKUEHLUNG" xml:space="preserve">
+    <value>Heat rejection: {0}</value>
+  </data>
+  <data name="KONF_KS_ABWAERME" xml:space="preserve">
+    <value>Takes up the waste heat in cooling mode: {0}</value>
+  </data>
+  <data name="KONF_KS_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Cooling emission: {0}</value>
+  </data>
+  <data name="KONF_KS_ZONEN" xml:space="preserve">
+    <value>{0} zones with cooling emission</value>
+  </data>
+  <data name="KONF_KS_PROJEKT_AUS" xml:space="preserve">
+    <value>Project does not calculate cooling</value>
+  </data>
+  <data name="KONF_KS_PLATZ" xml:space="preserve">
+    <value>Position {0} of {1} in the cooling cascade</value>
+  </data>
+  <data name="KONF_KS_KETTE" xml:space="preserve">
+    <value>Cooling cascade: {0}</value>
+  </data>
+  <data name="KONF_KS_KEINE_KETTE" xml:space="preserve">
+    <value>No cooling cascade in the project — no cooling generator.</value>
+  </data>
+  <data name="KONF_KS_LEGENDE" xml:space="preserve">
+    <value>Cooling lane: cooling generators charge the cold storage, circle = position in the cooling cascade</value>
+  </data>
 </root>
 
