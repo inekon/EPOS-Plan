@@ -50,10 +50,26 @@ namespace WindowsFormsApplication1
             if (besitzer == null) throw new ArgumentNullException(nameof(besitzer));
             _kontext = kontext ?? throw new ArgumentNullException(nameof(kontext));
 
+            // KATALOGAUSWAHL V1, STUFE 3: dieselbe Projektkopievormerkung wie in
+            // WaermepumpenHuelle.Oeffnen - je Oeffnen des Dialogs eine; Abbrechen raeumt die in
+            // der Sitzung angelegten Kopien ab, OK die nicht mehr referenzierten.
+            Projektkopievormerkung vormerkung = null;
             _quelle = new SimulationAnsichtQuelle(bedarf, new SimulationPlattformwege
             {
                 WaermepumpeGaben = (idProjekt, modelle) =>
-                    WaermepumpenHuelle.Gaben(besitzer(), idProjekt, modelle, wizard: false),
+                {
+                    vormerkung = new Projektkopievormerkung(
+                        name => new WPCtrl().DeleteFromProjekt(name, idProjekt));
+                    return WaermepumpenHuelle.Gaben(besitzer(), idProjekt, modelle, wizard: false,
+                                                    vormerkung: vormerkung);
+                },
+                WaermepumpeAbschluss = (ok, modelle) =>
+                {
+                    Projektkopievormerkung offen = vormerkung;
+                    vormerkung = null;
+                    offen?.Abschliessen(ok, id => modelle.Exists(it => it.ID_WP == id &&
+                        (it.ID_Type == WizardItemClass.WP_TYP || it.ID_Type == WizardItemClass.REF_WP_TYP)));
+                },
 
                 // ANWENDERWUNSCH 16.09.2026: die Konfiguration EINER Waermepumpe hinter
                 // dem Knopf ihrer Karte. Windows ist hier nicht die Ursache - die

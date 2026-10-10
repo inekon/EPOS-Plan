@@ -48,6 +48,16 @@ namespace WindowsFormsApplication1
         internal Action<int, List<WErzeugerModel>> WaermepumpeUebernehmen;
 
         /// <summary>
+        /// Der Abschluss der Projektkopien, wenn der Wärmepumpendialog schließt
+        /// (Katalogauswahl Stufe 3): <c>true</c> nach OK — NACH dem Schreiben der Anlagen —
+        /// löscht die Kopien, auf die keine Zeile der Liste mehr verweist; <c>false</c> nach
+        /// Abbrechen räumt die in dieser Sitzung angelegten ab. Unter Windows schließt sie die
+        /// <c>Projektkopievormerkung</c>, die <see cref="WaermepumpeGaben"/> angelegt hat.
+        /// <c>null</c> = die Plattform legt keine Projektkopien an; dann geschieht nichts.
+        /// </summary>
+        internal Action<bool, List<WErzeugerModel>> WaermepumpeAbschluss;
+
+        /// <summary>
         /// Der Grund, aus dem der Wärmepumpenweg auf DIESER Plattform nicht geht —
         /// die benannte Ablehnung. Leer = er geht.
         /// </summary>
