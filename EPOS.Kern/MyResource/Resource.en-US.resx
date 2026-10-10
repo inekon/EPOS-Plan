@@ -20538,6 +20538,12 @@ Do you want to allow this?</value>
   <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
     <value>The field „{0}“ could not be set: {1}</value>
   </data>
+  <data name="KI_ERZ_KEINE_PROJEKTZEILE" xml:space="preserve">
+    <value>No plant is selected in the project list – please first select the plant whose value is to change; a catalogue row carries no plant values.</value>
+  </data>
+  <data name="KI_FELD_KEIN_SATZ" xml:space="preserve">
+    <value>The form currently shows no record the value belongs to – please select an entry first.</value>
+  </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>The form reports on this: {0}</value>
   </data>

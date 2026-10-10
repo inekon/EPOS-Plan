@@ -69,7 +69,26 @@ public sealed class WaermepumpeAnlageKiSicht
     /// <summary>Bezeichner der gewählten Wärmepumpe (nur lesbar im Katalog).</summary>
     public string Bezeichner => D?.Bezeichner ?? "";
 
-    public int? Vorlauf { get => D?.Vorlauf; set { if (D is { } d) d.Vorlauf = value; } }
+    /// <summary>
+    /// Der Vorlauf geht den Weg seines Eingabefelds (<see cref="VorlaufWeg"/>): Steht der
+    /// Rücklauf noch auf der Vorgabe, zieht die Hand ihn mit — dasselbe tut der Assistent.
+    /// </summary>
+    public int? Vorlauf
+    {
+        get => D?.Vorlauf;
+        set
+        {
+            if (VorlaufWeg is not null) { VorlaufWeg(value); return; }
+            if (D is { } d) d.Vorlauf = value;
+        }
+    }
+
+    /// <summary>
+    /// Der Handweg des Vorlaufs (<c>BeiVorlauf</c> des Dialogs) samt Rücklauf-Vorbelegung;
+    /// <c>null</c> = nur der Wert.
+    /// </summary>
+    public Action<int?>? VorlaufWeg { get; init; }
+
     public int? Ruecklauf
     {
         get => D?.Ruecklauf;

@@ -697,6 +697,16 @@
     private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
     {
         Zeilenquelle = () => _projektZeile,
+        // Meldung 10.10.2026: ohne gewählte Zeile wählt der Assistent die EINZIGE wie das
+        // Öffnen; bei mehreren rät er nicht, und die Sicht lehnt benannt ab.
+        Einzelwahl = () =>
+        {
+            if (_projektZeile is null && Zeilen.Count == 1) ProjektZeileWaehlen(Zeilen[0]);
+            return _projektZeile;
+        },
+        // Nach dem Setzen derselbe Übernahmeweg wie BeiVorlauf/BeiRuecklauf (Arbeitskopie,
+        // nicht die Datenbank) - sonst stünde der Wert nur in der Zeile.
+        Uebernommen = z => Uebernehmen?.Invoke(z),
         AlleDaten = new AlleDatenTafel
         {
             Felder = () => _parameterOffen ? _felder : null,
