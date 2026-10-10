@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Kältemittel als Stammdatum (KM4)
 
-**Stand 10.10.2026 — Fassung 2 (nach Gegenlesen), Umsetzungsentwurf zur Abnahme durch den Anwender** · Codestand
+**Stand 10.10.2026 — Fassung 3 (Entscheide E123 eingetragen), Umsetzungsentwurf zur Abnahme durch den Anwender** · Codestand
 `d21de06f9` (Zweig `ios_migration_september`) · Schemastand 212 (`KaelteRangSchema`, KB‑D; 213 bei der Sitzung
 „Dialoge und Korrekturen“ angemeldet (K1), KM4 meldet die nächste freie Nummer vor dem Bau an) · Referenzbasis R51
 `2026-10-10_R51_FreieKuehlung` (29 Projekte) · Fachkonzept
@@ -10,7 +10,7 @@ KM4‑Q1 bis KM4‑Q17 offen).
 **Geltung und Abgrenzung.** Das Fachkonzept sagt, *was* entsteht (Kältemitteltabelle, Verweise, Zuordnung,
 Zulässigkeitsprüfung, Meldungsweg, Eingaben, Schema, Oberfläche, Regressionsnetz, Fragen). Dieses Papier sagt,
 *wie, wo, in welcher Reihenfolge und mit welcher Abnahme* es gebaut wird; Verweise der Form „FK 3.3“ zeigen auf
-Abschnitte des Fachkonzepts. Es plant nach den Empfehlungen zu KM4‑Q1 bis KM4‑Q17; entscheidet der Anwender anders,
+Abschnitte des Fachkonzepts. Es plant nach E123 (KM4‑Q1 bis KM4‑Q17, alle nach Empfehlung entschieden); entscheidet der Anwender anders,
 ändert sich der Schnitt dort, wo es angegeben ist. Dieses Papier ist kein Rechtsrat.
 
 ---
