@@ -118,7 +118,6 @@ namespace WindowsFormsApplication1
                 ["HinweisVorbehalt"] =
                     Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_ERDREICH_HINWEIS_VORBEHALT),
                 ["AenderungHinweis"] = MyResource.Resource.SIMQ_ERDREICH_AENDERUNG_HINWEIS,
-                ["SimNurGespeichert"] = MyResource.Resource.SIMQ_ERDREICH_SIM_NUR_GESPEICHERT,
 
                 ["WarteTitel"] = MyResource.Resource.SIMQ_ERDREICH_BTN_SIMULATION,
                 ["WarteText"] = MyResource.Resource.SIMQ_ERDREICH_SIM_LAEUFT,
@@ -165,29 +164,76 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der Delegat <c>Simulieren</c>: rechnet das Projekt durch und ordnet der
         /// Anlage ihr Ergebnis zu. Der LAUF läuft auf einem eigenen Faden.
+        ///
+        /// <para><b>Gerechnet wird mit den ANGEZEIGTEN Eingaben</b> (Anwendermeldung 10.10.2026):
+        /// Der Dialog reicht seinen geprüften Eingabesatz herein, und die Hülle legt ihn als
+        /// <see cref="ErdreichLaufvorgabe"/> über die gespeicherten Werte der Anlage — gelesen, nicht
+        /// geschrieben; geschrieben wird erst im OK-Weg. Ohne Satz rechnet der Lauf mit dem Stand beim
+        /// Öffnen.</para>
         /// </summary>
-        private static Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>
+        private static Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>
             Simulationslauf(QuelleErdreichDaten daten)
         {
-            return idProjekt => SpeicherEngine.Kulturweitergabe.Starten(() =>
+            return eingaben => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
-                string fehler;
-                bool ok = new SimulationRunner().Simuliere(idProjekt, out fehler);
-                if (!ok)
+                QuelleErdreichDaten satz = eingaben ?? daten;
+                using (Laufvorgabe(satz).Anwenden())
                 {
-                    // Ein Lauf ohne Fehlertext ist kein stiller Erfolg - der Dialog
-                    // braucht etwas zu sagen.
-                    return (null,
-                            string.IsNullOrEmpty(fehler)
-                                ? MyResource.Resource.SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS
-                                : fehler);
-                }
+                    string fehler;
+                    bool ok = new SimulationRunner().Simuliere(satz.IdProjekt, out fehler);
+                    if (!ok)
+                    {
+                        // Ein Lauf ohne Fehlertext ist kein stiller Erfolg - der Dialog
+                        // braucht etwas zu sagen.
+                        return (null,
+                                string.IsNullOrEmpty(fehler)
+                                    ? MyResource.Resource.SIMQ_ERDREICH_MSG_SIM_OHNE_ERGEBNIS
+                                    : fehler);
+                    }
 
-                ErdreichAuswertung.ErdreichLaufErgebnis erg =
-                    ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(daten));
-                return (erg.Vorhanden ? erg : null, (string)null);
+                    ErdreichAuswertung.ErdreichLaufErgebnis erg =
+                        ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(satz));
+                    return (erg.Vorhanden ? erg : null, (string)null);
+                }
             });
         }
+
+        /// <summary>
+        /// Die Wärmequelle des Eingabesatzes, wie der OK-Weg sie schreibt
+        /// (<see cref="WaermequelleClass.QuelleSchreiben"/>, Typ Erdreich) — EINE Abbildung für
+        /// Schreiben und Lauf.
+        /// </summary>
+        internal static QuelleErgebnis Quelle(QuelleErdreichDaten e) => new QuelleErgebnis
+        {
+            Typ = WaermequelleClass.TYP_ERDREICH,
+            Quellsystem = e.Quellsystem,
+            Tiefe = e.Tiefe,
+            Flaeche = e.Flaeche,
+            Anzahl = e.Anzahl,
+            Bodentyp = e.Bodentyp,
+            SpreizungErdreich = e.Spreizung
+        };
+
+        /// <summary>
+        /// Das Sondenfeld des Eingabesatzes (Konzept 23.3) — nur beim Quellsystem Sonde, sonst
+        /// <c>null</c>; leer heißt Vorgabe.
+        /// </summary>
+        internal static ErdsondenfeldEingabe Sondenfeld(QuelleErdreichDaten e)
+            => string.Equals(e.Quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE, StringComparison.OrdinalIgnoreCase)
+                ? new ErdsondenfeldEingabe
+                {
+                    AbstandM = e.Sondenabstand,
+                    BohrlochdurchmesserMm = e.Bohrlochdurchmesser,
+                    Bohrlochwiderstand = e.Bohrlochwiderstand,
+                    KopfueberdeckungM = e.Kopfueberdeckung,
+                    Betrachtungsjahr = e.Betrachtungsjahr,
+                    Anordnung = ErdsondenfeldCtrl.AnordnungAusText(e.Sondenanordnung)
+                }
+                : null;
+
+        /// <summary>Der Eingabesatz als Vorgabe des Laufs (<see cref="ErdreichLaufvorgabe"/>).</summary>
+        internal static ErdreichLaufvorgabe Laufvorgabe(QuelleErdreichDaten e)
+            => ErdreichLaufvorgabe.Aus(e.IdProjekt, e.IdAnlage, Quelle(e), Sondenfeld(e), e.Klimazone);
 
         /// <summary>
         /// Der Delegat <c>Jahresgangmodell</c>: zwei Stundenreihen (dazu nach einem Lauf die gerechnete) hinein, ein

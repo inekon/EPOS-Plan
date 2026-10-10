@@ -704,6 +704,8 @@ namespace WindowsFormsApplication1
         /// <summary>Klimazone (DIN 4710) der Klimaregion des Projekts; 0 = nicht zugeordnet.</summary>
         internal static int KlimazoneDesProjekts(int idProjekt)
         {
+            int? vorgabe = ErdreichLaufvorgabe.KlimazoneFuer(idProjekt);
+            if (vorgabe.HasValue) return vorgabe.Value;
             try
             {
                 DataTable dt = DataRepository.GetDataTable(

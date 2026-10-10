@@ -49,10 +49,12 @@
    fehlerfrei), die Komponente zeigt derweil eine Ueberlagerung "Simulation
    laeuft …" und sperrt OK.
 
-   WOERTLICH TROTZ BEFUND (W10-B10, Anwenderentscheid steht aus): Die PRUEFUNG
-   rechnet mit den ANGEZEIGTEN Eingaben, der LAUF mit den GESPEICHERTEN. Genau
-   das benennt der Aenderungshinweis SIMQ_ERDREICH_SIM_NUR_GESPEICHERT; die
-   Halbheit bleibt, sie wird nicht stillschweigend repariert.
+   PRUEFUNG UND LAUF RECHNEN MIT DEN ANGEZEIGTEN EINGABEN: Der Knopf "Simulation"
+   prueft dieselben acht Regeln wie OK und reicht den Eingabesatz an die Huelle,
+   die ihn fuer den Lauf ueber die gespeicherten Werte legt (ErdreichLaufvorgabe) -
+   geschrieben wird erst beim OK. Ergebnis, Kennwerte und gerechnete Reihe stehen
+   sofort im Dialog; aendert der Anwender danach eine Eingabe, verlangt der
+   Aenderungshinweis einen neuen Lauf.
 
    TASTATUR: Esc bricht ab - erst die Karte, dann der Dialog. Enter ist NICHT
    belegt: Acht Pruefregeln haengen an OK, und ein versehentliches Enter waere
@@ -344,8 +346,10 @@
     /// W10-B9). Kommt weder Ergebnis noch Fehler zurück, hat der Lauf für diese Anlage
     /// nichts geliefert — der dritte Fall des Vorläufers.</para>
     /// </summary>
+    /// <para>Herein geht der geprüfte EINGABESATZ des Dialogs — derselbe, den OK zurückgibt;
+    /// gerechnet wird mit ihm, gespeichert wird er nicht.</para>
     [Parameter]
-    public Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis? Ergebnis, string? Fehler)>>?
+    public Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis? Ergebnis, string? Fehler)>>?
         Simulieren { get; set; }
 
     /// <summary>
@@ -480,10 +484,6 @@
     [Parameter] public string AenderungHinweis { get; set; }
         = "Eingaben geändert — die Auslegungsprüfung zeigt noch den letzten " +
           "Simulationslauf. Bitte die Simulation neu starten.";
-    [Parameter] public string SimNurGespeichert { get; set; }
-        = "Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier " +
-          "geänderten Eingaben wirken erst nach „OK“ und einem neuen Lauf. " +
-          "Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.";
 
     [Parameter] public string WarteTitel { get; set; } = "Simulation";
     [Parameter] public string WarteText { get; set; } = "Simulation läuft …";
@@ -568,8 +568,11 @@
     /// <summary>Der Eingabestand beim Öffnen — Vergleichsgröße des Änderungshinweises.</summary>
     private string _standGeladen = "";
 
-    /// <summary>Ist der angezeigte Lauf aus DIESEM Dialog angestoßen worden?</summary>
-    private bool _laufAusDialog;
+    /// <summary>
+    /// Der Eingabestand, mit dem der angezeigte Lauf gerechnet hat: beim Öffnen der gespeicherte,
+    /// nach einem Lauf aus DIESEM Dialog dessen Eingaben.
+    /// </summary>
+    private string _standLauf = "";
 
     private bool _karteOffen;
     private bool _laeuft;
@@ -751,7 +754,7 @@
         // Ausgangsstand festhalten, BEVOR der Anwender etwas aendern kann (Befund 4
         // des Bestands). Er ist der Stand der Datenbank.
         _standGeladen = Eingabestand();
-        _laufAusDialog = false;
+        _standLauf = _standGeladen;
 
         Aktualisieren();
 
@@ -947,9 +950,9 @@
         _kennwertzeile = kw.Zeile() + (jg.AusKlimadaten ? "" : OhneKlimadaten);
 
         double[]? gerechnet = GerechneteReihe();
-        _kennwertzeileLauf = gerechnet is null
-            ? ""
-            : string.Format(ci, KennwerteLaufZeile, ErdreichTemperatur.ProfilKennwerte(gerechnet).Zeile());
+        // Jahresmittel, Tiefst- und Hoechstwert samt Zeitpunkt - gebildet im Kern, hier nur gezeigt.
+        ErdreichTemperatur.Laufkennwerte? lk = gerechnet is null ? null : ErdreichTemperatur.LaufKennwerte(gerechnet);
+        _kennwertzeileLauf = lk is null ? "" : string.Format(ci, KennwerteLaufZeile, lk.Zeile());
 
         PruefungAktualisieren(boden);
         AenderungshinweisAktualisieren();
@@ -1056,17 +1059,14 @@
            _betrachtungsjahr + "" + _anordnung;
 
     /// <summary>
-    /// Die drei Zustände des Änderungshinweises
-    /// (<c>AenderungshinweisAktualisieren</c>:961-974). Ohne Lauf oder ohne Änderung
-    /// steht keiner; sonst entscheidet, ob HIER gerechnet wurde.
+    /// Der Änderungshinweis: Ohne Lauf oder ohne Änderung seit den Eingaben des angezeigten
+    /// Laufs steht keiner; sonst verlangt er einen neuen Lauf.
     /// </summary>
     private void AenderungshinweisAktualisieren()
     {
-        bool geaendert = !string.Equals(Eingabestand(), _standGeladen, StringComparison.Ordinal);
+        bool geaendert = !string.Equals(Eingabestand(), _standLauf, StringComparison.Ordinal);
 
-        _aenderungshinweis = (!_lauf.ErgebnisseVorhanden || !geaendert)
-            ? ""
-            : _laufAusDialog ? SimNurGespeichert : AenderungHinweis;
+        _aenderungshinweis = (!_lauf.ErgebnisseVorhanden || !geaendert) ? "" : AenderungHinweis;
     }
 
     private async Task BildZeichnen()
@@ -1113,6 +1113,15 @@
             return;
         }
 
+        // Dieselben acht Regeln wie OK: Gerechnet wird mit dem Satz, den OK zurückgäbe.
+        string? regel = Eingabesatz(out QuelleErdreichDaten satz);
+        if (regel is not null)
+        {
+            Melden(regel, WarnStufe.Warnung);
+            return;
+        }
+        string stand = Eingabestand();
+
         _meldung = "";
         _laeuft = true;
         StateHasChanged();
@@ -1120,7 +1129,7 @@
         (ErdreichAuswertung.ErdreichLaufErgebnis? erg, string? fehler) antwort;
         try
         {
-            antwort = await Simulieren(Daten.IdProjekt);
+            antwort = await Simulieren(satz);
         }
         finally
         {
@@ -1140,7 +1149,7 @@
         }
 
         _lauf = antwort.erg;
-        _laufAusDialog = true;
+        _standLauf = stand;
         _meldung = "";
         Aktualisieren();
         await BildZeichnen();
@@ -1162,37 +1171,49 @@
     {
         if (!ok) return Geschlossen.InvokeAsync(null);
 
+        string? regel = Eingabesatz(out QuelleErdreichDaten satz);
+        if (regel is not null) return Meldet(regel);
+
+        _meldung = "";
+        return Geschlossen.InvokeAsync(satz);
+    }
+
+    /// <summary>
+    /// Prüft die Eingaben und bildet den Eingabesatz — für OK und für den Lauf derselbe.
+    /// Liefert den Text der ersten verletzten Regel, sonst <c>null</c>.
+    /// </summary>
+    private string? Eingabesatz(out QuelleErdreichDaten satz)
+    {
+        satz = Daten;
         double tiefe = 0, flaeche = 0, laenge = 0;
         int anzahl = 0;
 
         if (!_sonde)
         {
-            if (_tiefe is null || _flaeche is null) return Meldet(MsgZahlKollektor);
+            if (_tiefe is null || _flaeche is null) return MsgZahlKollektor;
             tiefe = _tiefe.Value;
             flaeche = _flaeche.Value;
 
-            if (tiefe <= 0) return Meldet(MsgTiefeNull);
-            if (tiefe > 10) return Meldet(MsgTiefeMax);
-            if (flaeche <= 0) return Meldet(MsgFlaeche);
+            if (tiefe <= 0) return MsgTiefeNull;
+            if (tiefe > 10) return MsgTiefeMax;
+            if (flaeche <= 0) return MsgFlaeche;
         }
         else
         {
-            if (_laenge is null || _anzahl is null) return Meldet(MsgZahlSonde);
+            if (_laenge is null || _anzahl is null) return MsgZahlSonde;
             laenge = _laenge.Value;
             anzahl = _anzahl.Value;
 
-            if (laenge <= 0) return Meldet(MsgLaengeNull);
-            if (anzahl < 1) return Meldet(MsgAnzahlMin);
+            if (laenge <= 0) return MsgLaengeNull;
+            if (anzahl < 1) return MsgAnzahlMin;
         }
 
-        if (_sonde && !Sondenfeld().Zulaessig()) return Meldet(MsgSondenfeld);
+        if (_sonde && !Sondenfeld().Zulaessig()) return MsgSondenfeld;
 
-        if (_spreizung is null || _spreizung.Value <= 0) return Meldet(MsgSpreizung);
-
-        _meldung = "";
+        if (_spreizung is null || _spreizung.Value <= 0) return MsgSpreizung;
 
         // Rueckschreiben je Zweig - :1224-1227 bzw. :1248-1251, woertlich.
-        return Geschlossen.InvokeAsync(Daten with
+        satz = Daten with
         {
             Quellsystem = _sonde
                 ? ErdreichTemperatur.QUELLSYSTEM_SONDE
@@ -1209,7 +1230,8 @@
             Sondenanordnung = _anordnung.HasValue ? ((Sondenanordnung)_anordnung.Value).ToString() : null,
             Bodentyp = Bodentyp,
             Klimazone = Klimazone
-        });
+        };
+        return null;
     }
 
     /// <summary>Die Eingaben des Sondenfeldes als Satz des Kerns (null = Vorgabe).</summary>

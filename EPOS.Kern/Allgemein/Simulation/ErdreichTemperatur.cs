@@ -563,6 +563,88 @@ namespace WindowsFormsApplication1
             return k;
         }
 
+        /// <summary>
+        /// Die Kennwerte der GERECHNETEN Soletemperatur am Quelleintritt eines Laufs
+        /// (<see cref="ErdreichAuswertung.ErdreichLaufErgebnis.QuelltemperaturStuendlich"/>):
+        /// Jahresmittel, Tiefst- und Höchstwert samt der Jahresstunde, in der sie zuerst auftreten.
+        /// Nicht endliche Werte zählen nicht.
+        /// </summary>
+        public sealed class Laufkennwerte
+        {
+            /// <summary>Jahresmittel [°C] über die endlichen Stundenwerte.</summary>
+            public double Mittel { get; init; }
+
+            /// <summary>Tiefstwert [°C].</summary>
+            public double Min { get; init; }
+
+            /// <summary>Höchstwert [°C].</summary>
+            public double Max { get; init; }
+
+            /// <summary>Jahresstunde (0…8759) des ersten Tiefstwerts.</summary>
+            public int StundeMin { get; init; }
+
+            /// <summary>Jahresstunde (0…8759) des ersten Höchstwerts.</summary>
+            public int StundeMax { get; init; }
+
+            /// <summary>
+            /// Die Anzeigezeile (<c>SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE</c>): °C mit einer
+            /// Nachkommastelle in der Kultur der Anzeige, der Zeitpunkt nach <see cref="Zeitpunkt"/>.
+            /// </summary>
+            public string Zeile()
+            {
+                CultureInfo ci = CultureInfo.CurrentCulture;
+                return string.Format(ci, MyResource.Resource.SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE,
+                    Mittel.ToString("F1", ci),
+                    Min.ToString("F1", ci), Zeitpunkt(StundeMin),
+                    Max.ToString("F1", ci), Zeitpunkt(StundeMax));
+            }
+        }
+
+        /// <summary>
+        /// Bildet die <see cref="Laufkennwerte"/> einer gerechneten Stundenreihe; <c>null</c> ohne
+        /// endlichen Wert. Gezählt werden höchstens <see cref="STUNDEN_JAHR"/> Stunden.
+        /// </summary>
+        public static Laufkennwerte LaufKennwerte(double[] reihe)
+        {
+            if (reihe == null) return null;
+
+            int n = Math.Min(reihe.Length, STUNDEN_JAHR);
+            double min = double.MaxValue, max = double.MinValue, summe = 0;
+            int iMin = -1, iMax = -1, anzahl = 0;
+            for (int i = 0; i < n; i++)
+            {
+                double v = reihe[i];
+                if (!double.IsFinite(v)) continue;
+                if (v < min) { min = v; iMin = i; }
+                if (v > max) { max = v; iMax = i; }
+                summe += v;
+                anzahl++;
+            }
+            if (anzahl == 0) return null;
+
+            return new Laufkennwerte
+            {
+                Mittel = summe / anzahl,
+                Min = min,
+                Max = max,
+                StundeMin = iMin,
+                StundeMax = iMax
+            };
+        }
+
+        /// <summary>
+        /// Der Zeitpunkt einer Jahresstunde im Raster des Kerns (8760 Stunden, Gemeinjahr, ohne
+        /// Jahreszahl): Tag, Monat und Beginn der Stunde nach <c>SIMQ_ERDREICH_LAUF_ZEITPUNKT</c>
+        /// in der Kultur der Anzeige — Stunde 0 ist der 1. Januar, 00:00.
+        /// </summary>
+        public static string Zeitpunkt(int stunde)
+        {
+            int h = Math.Max(0, Math.Min(STUNDEN_JAHR - 1, stunde));
+            // 2001 ist ein Gemeinjahr - es traegt nur Tag und Monat, die Jahreszahl zeigt der Text nicht.
+            DateTime t = new DateTime(2001, 1, 1, 0, 0, 0, DateTimeKind.Unspecified).AddHours(h);
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMQ_ERDREICH_LAUF_ZEITPUNKT, t);
+        }
+
         /// <summary>Monatsindex (0…11) einer Jahresstunde.</summary>
         public static int MonatAusStunde(int stunde)
         {

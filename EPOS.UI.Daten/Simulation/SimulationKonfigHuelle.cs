@@ -2252,28 +2252,12 @@ namespace WindowsFormsApplication1
             if (e.Klimazone != KlimaregionCtrl.KlimazoneJeProjekt(m_ID_Projekt))
                 KlimaregionCtrl.KlimazoneJeProjektSchreiben(m_ID_Projekt, e.Klimazone);
 
-            WaermequelleClass.QuelleSchreiben(idAnlage, new QuelleErgebnis
-            {
-                Typ = WaermequelleClass.TYP_ERDREICH,
-                Quellsystem = e.Quellsystem,
-                Tiefe = e.Tiefe,
-                Flaeche = e.Flaeche,
-                Anzahl = e.Anzahl,
-                Bodentyp = e.Bodentyp,
-                SpreizungErdreich = e.Spreizung
-            });
+            // Dieselbe Abbildung wie im Lauf aus dem Dialog (QuelleErdreichHuelle.Laufvorgabe).
+            WaermequelleClass.QuelleSchreiben(idAnlage, QuelleErdreichHuelle.Quelle(e));
 
             // Das Sondenfeld je Anlage (Konzept 23.3) - nur beim Quellsystem Sonde; leer heisst Vorgabe.
-            if (string.Equals(e.Quellsystem, ErdreichTemperatur.QUELLSYSTEM_SONDE, StringComparison.OrdinalIgnoreCase))
-                ErdsondenfeldCtrl.Schreiben(idAnlage, new ErdsondenfeldEingabe
-                {
-                    AbstandM = e.Sondenabstand,
-                    BohrlochdurchmesserMm = e.Bohrlochdurchmesser,
-                    Bohrlochwiderstand = e.Bohrlochwiderstand,
-                    KopfueberdeckungM = e.Kopfueberdeckung,
-                    Betrachtungsjahr = e.Betrachtungsjahr,
-                    Anordnung = ErdsondenfeldCtrl.AnordnungAusText(e.Sondenanordnung)
-                });
+            ErdsondenfeldEingabe feld = QuelleErdreichHuelle.Sondenfeld(e);
+            if (feld != null) ErdsondenfeldCtrl.Schreiben(idAnlage, feld);
         }
 
         /// <summary>

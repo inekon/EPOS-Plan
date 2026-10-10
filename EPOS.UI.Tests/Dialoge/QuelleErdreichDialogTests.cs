@@ -66,7 +66,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
         QuelleErdreichDaten daten,
         Action<QuelleErdreichDaten?>? geschlossen = null,
         ErdreichAuswertung.ErdreichLaufErgebnis? lauf = null,
-        Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
+        Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
         bool titelAnzeigen = true,
         Func<double[], double[]?, double[]?, Task<Zeichenmodell?>>? modell = null)
     {
@@ -663,18 +663,53 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Contains("noch kein Simulationslauf", cut.Instance.Pruefungstext);
     }
 
-    /// <summary>Nach dem Lauf AUS DIESEM DIALOG steht der andere Aenderungshinweis.</summary>
+    /// <summary>
+    /// Der Lauf AUS DIESEM DIALOG rechnet mit den ANGEZEIGTEN Eingaben (Anwendermeldung 10.10.2026): Der
+    /// Rückruf bekommt den Satz, den OK zurückgäbe. Ohne Änderung danach steht kein Hinweis; eine Eingabe
+    /// nach dem Lauf verlangt einen neuen.
+    /// </summary>
     [Fact]
-    public void Nach_einem_Lauf_aus_dem_Dialog_steht_der_zweite_Hinweis()
+    public void Der_Lauf_aus_dem_Dialog_rechnet_mit_den_angezeigten_Eingaben()
     {
-        var cut = Zeige(Kollektor(),
-            simulieren: _ => Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>(
-                (MitLauf(), null)));
+        QuelleErdreichDaten? gerechnet = null;
+        var cut = Zeige(Sonde(),
+            simulieren: satz =>
+            {
+                gerechnet = satz;
+                return Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>((MitLauf(), null));
+            });
 
+        cut.FindAll("input.epos-eingabe")[2].Input("90");   // Länge je Sonde
+        cut.FindAll("input.epos-eingabe")[3].Input("8");    // Anzahl Sonden
         cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
-        cut.FindAll("input.epos-eingabe")[0].Input("2,5");
 
-        Assert.Contains("GESPEICHERTEN", cut.Instance.Aenderungshinweis);
+        Assert.NotNull(gerechnet);
+        Assert.Equal(ErdreichTemperatur.QUELLSYSTEM_SONDE, gerechnet!.Quellsystem);
+        Assert.Equal(90, gerechnet.Tiefe);
+        Assert.Equal(8, gerechnet.Anzahl);
+        Assert.Equal("", cut.Instance.Aenderungshinweis);
+
+        cut.FindAll("input.epos-eingabe")[3].Input("9");
+        Assert.Contains("neu starten", cut.Instance.Aenderungshinweis);
+    }
+
+    /// <summary>Eine verletzte Regel hält den Lauf an und meldet wie OK.</summary>
+    [Fact]
+    public void Eine_verletzte_Regel_haelt_den_Lauf_an()
+    {
+        bool gerufen = false;
+        var cut = Zeige(Sonde(),
+            simulieren: _ =>
+            {
+                gerufen = true;
+                return Task.FromResult<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>((MitLauf(), null));
+            });
+
+        cut.FindAll("input.epos-eingabe")[3].Input("0");
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        Assert.False(gerufen);
+        Assert.Contains("mindestens eine Sonde", cut.Instance.Meldung);
     }
 
     // ================================================================== Karte
@@ -1111,6 +1146,55 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Null(ohneLauf);
         Assert.Equal("", ohne.Instance.KennwertzeileLauf);
         Assert.Empty(ohne.FindAll("[data-zeile=kennwerte-lauf]"));
+    }
+
+    /// <summary>
+    /// Anwendermeldung 10.10.2026 („Referenzprojekt AK3-K“): Der Lauf AUS DEM DIALOG zeigt sein Ergebnis
+    /// sofort — Kennwertzeile und zweite Reihe im Bild —, nicht erst nach OK und Wiederöffnen. Lauf und
+    /// Zeichenmodell kommen wie in der Hülle von einem fremden Faden.
+    /// </summary>
+    [Fact]
+    public void Der_Lauf_aus_dem_Dialog_zeigt_Kennwerte_und_Reihe_sofort()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++) reihe[i] = i < 4380 ? 1.0 : 7.0;
+        var lauf = MitLauf() with { QuelltemperaturStuendlich = reihe };
+
+        double[]? erhalten = null;
+        var cut = Zeige(Sonde(),
+            simulieren: async _ =>
+            {
+                await Task.Run(() => Thread.Sleep(30));
+                return (lauf, null);
+            },
+            modell: async (quelle, _, gerechnet) =>
+            {
+                await Task.Run(() => Thread.Sleep(10));
+                if (gerechnet is not null) erhalten = gerechnet;
+                var reihen = new List<ChartRenderer.Reihe>
+                {
+                    new("ungestört", quelle, ChartRenderer.C_QUELLTEMPERATUR)
+                };
+                if (gerechnet is not null)
+                    reihen.Add(new ChartRenderer.Reihe("gerechnet (letzter Lauf)", gerechnet, ChartRenderer.C_QUELLTEMPERATUR));
+                return ChartRenderer.JahresgangModell("Jahresgang", reihen, "Monat", "°C");
+            });
+
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Bild));
+        Assert.Empty(cut.FindAll("[data-zeile=kennwerte-lauf]"));
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-zeile=kennwerte-lauf]")), TimeSpan.FromSeconds(5));
+        cut.WaitForAssertion(() => Assert.Equal(reihe, erhalten), TimeSpan.FromSeconds(5));
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.Instance.Bild!.Reihen.Count), TimeSpan.FromSeconds(5));
+        Assert.Contains("gerechnet (letzter Lauf)", cut.Markup, StringComparison.Ordinal);
+
+        // Die Kennwerte charakterisieren den Lauf: Jahresmittel, Tiefstwert mit Zeitpunkt, Höchstwert.
+        string zeile = cut.Find("[data-zeile=kennwerte-lauf]").TextContent;
+        Assert.Contains("Jahresmittel 4,0 °C", zeile, StringComparison.Ordinal);
+        Assert.Contains("Tiefstwert 1,0 °C am 01.01., 00:00 Uhr", zeile, StringComparison.Ordinal);
+        Assert.Contains("Höchstwert 7,0 °C am 02.07., 12:00 Uhr", zeile, StringComparison.Ordinal);
     }
 
     // =====================================================================

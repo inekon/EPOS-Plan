@@ -3645,9 +3645,6 @@ prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.</val
   <data name="SIMQ_ERDREICH_RB_SONDE_WAHL" xml:space="preserve">
     <value>Erdsonde als Quellsystem</value>
   </data>
-  <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
-    <value>Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK" und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.</value>
-  </data>
   <data name="SIMQ_ERDREICH_SPEICHERLADUNG" xml:space="preserve">
     <value>Entzugsarbeit und Spitze enthalten die Wärme, mit der die Wärmepumpe den Pufferspeicher lädt.</value>
   </data>
@@ -50871,6 +50868,12 @@ Chart</value>
   </data>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
+  </data>
+  <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
+    <value>Jahresmittel {0} °C  ·  Tiefstwert {1} °C am {2}  ·  Höchstwert {3} °C am {4}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_LAUF_ZEITPUNKT" xml:space="preserve">
+    <value>{0:dd.MM.}, {0:HH:mm} Uhr</value>
   </data>
 </root>
 
