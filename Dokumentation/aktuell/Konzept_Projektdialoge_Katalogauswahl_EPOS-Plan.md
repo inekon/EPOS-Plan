@@ -500,6 +500,32 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
 
+### 5.5 Wie gebaut (Stufe 3, Pufferspeicher)
+
+Der Pufferspeicher folgt dem BHKW (5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `PufferSpStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Pufferspeicher`, Katalog
+  `Tab_Pufferspeicher_STAMM`, Anlage über `ID_PUFFER`, Kostenkomponente 6), dazu `RueckwegVorschau`,
+  `AusProjektUebernehmen`, `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über ID und Namen läuft über
+  denselben Löschweg samt Satzvorlage. Prüfregel wie beim Speichern: Bereitschaftsverluste, Gesamtvolumen und
+  Investitionskosten nicht negativ. Kein Schemaschritt: 208 und 209 decken beide Tabellen; `PufferSpCtrl.CopyFromStamm`
+  trägt den Ursprung ein (eine schon vorhandene Kopie gleichen Namens behält ihren Verweis).
+- **Volumen:** Die Projekt-Kopfleiste zeigt die Summe der Gesamtvolumina in Litern (je Zeile die Projektkopie, ohne
+  Kopie der Katalogsatz). Mit dem Rückweg gehen die fünf Gerätewerte — Hersteller, Speichertyp, Bereitschaftsverluste,
+  Gesamtvolumen, Investitionskosten — als Schnittmenge.
+- **Projektkopie erst mit OK:** Die Kopie entsteht beim Speichern der Konfiguration. Eine frisch aufgenommene Zeile hat
+  noch keine; Bearbeiten…, „In die Datenbank übernehmen…" und „Alle Daten" des Projektsatzes sind für sie gesperrt und
+  nennen den Grund. Vor dem Aufnehmen steht weiter die Dublettenfrage, in der Sammelübernahme je Satz.
+- **Auslegen…:** steht in der Knopfzeile des Projektsatzes neben den Kostenknöpfen (Investition, Betrieb; kein
+  Energieträger) und verlässt den Dialog wie Abbrechen.
+- **Kindzeilen und Verwendung:** Technische Kindtabellen hat der Katalog nicht. Im Projekt bleiben die 25 Spalten, die
+  nur die Kopie führt (Verwendung und Nutzung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung,
+  Entnahme, Frischwassermodul, Aufstellraum), und die Kindzeilen der Anlage: Senken (`Z_AnlageSenke`), Verbünde
+  (`Z_AnlagePufferVerbund`), die Lade-Prioritäten der Erzeuger, `Z_ProjektPufferSp` und `Tab_PufferAuslegung`. Die Rückfrage nennt es.
+- **Ohne Neu…:** Der Katalogfuß führt kein „Neu…" (4.9), die Speicherverwaltung als Überlagerung entfällt. Neue
+  Katalogsätze entstehen über die Katalogverwaltung im Menü, über „Speichern unter" im Katalogeditor oder über den
+  Rückweg.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt
