@@ -1483,7 +1483,7 @@ namespace WindowsFormsApplication1
             if (dt == null || dt.Rows.Count == 0) return 0;
 
             DataRow r = dt.Rows[0];
-            if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+            if (!string.Equals(ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                 return 0;
 

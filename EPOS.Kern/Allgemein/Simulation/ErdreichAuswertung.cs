@@ -230,6 +230,28 @@ namespace WindowsFormsApplication1
             return new List<AnlageErgebnis>();
         }
 
+        /// <summary>
+        /// Der Stand eines Projekts im Zwischenspeicher, so wie er liegt — <c>null</c> ohne Lauf.
+        /// Gegenstück zu <see cref="StandZuruecklegen"/>: Der Erdreichdialog sichert ihn vor seinem
+        /// ersten Lauf und legt ihn beim Abbrechen zurück, wenn sein Lauf mit Eingaben gerechnet hat,
+        /// die nie gespeichert wurden.
+        /// </summary>
+        internal static List<AnlageErgebnis> StandDesProjekts(int idProjekt)
+        {
+            lock (_proProjekt)
+                return _proProjekt.TryGetValue(idProjekt, out List<AnlageErgebnis> liste) ? liste : null;
+        }
+
+        /// <summary>Legt einen mit <see cref="StandDesProjekts"/> gesicherten Stand zurück; <c>null</c> = kein Lauf.</summary>
+        internal static void StandZuruecklegen(int idProjekt, List<AnlageErgebnis> stand)
+        {
+            lock (_proProjekt)
+            {
+                if (stand == null) _proProjekt.Remove(idProjekt);
+                else _proProjekt[idProjekt] = stand;
+            }
+        }
+
         /// <summary>Ergebnis einer einzelnen Energieanlage oder null.</summary>
         public static AnlageErgebnis FuerAnlage(int idProjekt, int idAnlage)
         {

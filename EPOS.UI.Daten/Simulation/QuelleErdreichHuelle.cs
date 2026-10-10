@@ -49,7 +49,8 @@ namespace WindowsFormsApplication1
         /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn ab W10b
         /// auch die Überlagerung in der Simulationsseite nehmen kann.
         /// </summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(QuelleErdreichDaten daten)
+        internal static IReadOnlyDictionary<string, object> Gaben(QuelleErdreichDaten daten,
+                                                                  ErdreichLaufsitzung sitzung = null)
         {
             return new Dictionary<string, object>
             {
@@ -57,7 +58,7 @@ namespace WindowsFormsApplication1
                 ["Lauf"] = LaufOderGespeichert(daten),
                 ["StandDesLaufs"] = MyResource.Resource.SIMQ_ERDREICH_STAND_LAUF,
 
-                ["Simulieren"] = Simulationslauf(daten),
+                ["Simulieren"] = Simulationslauf(daten, sitzung),
                 ["Jahresgangmodell"] = Modellzeichner(),
 
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
@@ -172,12 +173,14 @@ namespace WindowsFormsApplication1
         /// Öffnen.</para>
         /// </summary>
         private static Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>
-            Simulationslauf(QuelleErdreichDaten daten)
+            Simulationslauf(QuelleErdreichDaten daten, ErdreichLaufsitzung sitzung)
         {
             return eingaben => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
                 QuelleErdreichDaten satz = eingaben ?? daten;
+                sitzung?.VorDemLauf();
                 using (Laufvorgabe(satz).Anwenden())
+                try
                 {
                     string fehler;
                     bool ok = new SimulationRunner().Simuliere(satz.IdProjekt, out fehler);
@@ -195,7 +198,29 @@ namespace WindowsFormsApplication1
                         ErdreichAuswertung.ErgebnisZuordnen(ErgebnisDesLaufs(satz));
                     return (erg.Vorhanden ? erg : null, (string)null);
                 }
+                finally
+                {
+                    sitzung?.NachDemLauf(satz);
+                }
             });
+        }
+
+        /// <summary>
+        /// Der Schlüssel eines Eingabesatzes, wie ihn der OK-Weg schreibt: Quelle, Sondenfeld und
+        /// Klimazone. Zwei Sätze mit gleichem Schlüssel rechnen denselben Lauf.
+        /// </summary>
+        internal static string Eingabeschluessel(QuelleErdreichDaten e)
+        {
+            if (e == null) return "";
+            QuelleErgebnis q = Quelle(e);
+            ErdsondenfeldEingabe f = Sondenfeld(e);
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            return string.Join("|",
+                (q.Quellsystem ?? "").ToUpperInvariant(), q.Tiefe.ToString("R", ci), q.Flaeche.ToString("R", ci),
+                q.Anzahl.ToString(ci), q.Bodentyp ?? "", q.SpreizungErdreich.ToString("R", ci),
+                f?.AbstandM?.ToString("R", ci), f?.BohrlochdurchmesserMm?.ToString("R", ci),
+                f?.Bohrlochwiderstand?.ToString("R", ci), f?.KopfueberdeckungM?.ToString("R", ci),
+                f?.Betrachtungsjahr?.ToString(ci), f?.Anordnung?.ToString(), e.Klimazone.ToString(ci));
         }
 
         /// <summary>
@@ -349,6 +374,52 @@ namespace WindowsFormsApplication1
             }
 
             return anzahl == 1 ? einziges : null;
+        }
+    }
+
+    /// <summary>
+    /// Ein geöffneter Erdreichdialog und seine Läufe (Hausregel „Abbrechen schließt ohne zu
+    /// speichern“): Vor dem ersten Lauf sichert sie den Stand des Projekts im Zwischenspeicher
+    /// (<see cref="ErdreichAuswertung.StandDesProjekts"/>); endet der Dialog mit Abbrechen, ✕ oder Esc
+    /// und hat der letzte Lauf mit einem Eingabesatz gerechnet, der vom gespeicherten abweicht, legt
+    /// sie den gesicherten Stand zurück. Ein Lauf mit dem gespeicherten Satz und jeder Lauf vor einem
+    /// OK bleibt.
+    /// </summary>
+    internal sealed class ErdreichLaufsitzung
+    {
+        private readonly int _idProjekt;
+        private readonly string _gespeichert;
+        private bool _gesichert;
+        private List<ErdreichAuswertung.AnlageErgebnis> _vorher;
+        private bool _abweichend;
+
+        /// <param name="gespeichert">Der Satz beim Öffnen — der gespeicherte Stand der Anlage.</param>
+        public ErdreichLaufsitzung(QuelleErdreichDaten gespeichert)
+        {
+            _idProjekt = gespeichert?.IdProjekt ?? 0;
+            _gespeichert = QuelleErdreichHuelle.Eingabeschluessel(gespeichert);
+        }
+
+        /// <summary>Hat der letzte Lauf mit einem ungespeicherten Satz gerechnet?</summary>
+        public bool LaufAbweichend => _abweichend;
+
+        internal void VorDemLauf()
+        {
+            if (_gesichert) return;
+            _vorher = ErdreichAuswertung.StandDesProjekts(_idProjekt);
+            _gesichert = true;
+        }
+
+        internal void NachDemLauf(QuelleErdreichDaten satz)
+            => _abweichend = !string.Equals(QuelleErdreichHuelle.Eingabeschluessel(satz), _gespeichert,
+                                            StringComparison.Ordinal);
+
+        /// <summary>Der Dialog endet ohne OK: einen Lauf mit ungespeicherten Eingaben verwerfen.</summary>
+        public void Abgebrochen()
+        {
+            if (!_gesichert || !_abweichend) return;
+            ErdreichAuswertung.StandZuruecklegen(_idProjekt, _vorher);
+            _abweichend = false;
         }
     }
 }

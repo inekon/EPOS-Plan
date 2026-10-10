@@ -431,6 +431,11 @@ namespace WindowsFormsApplication1
                     }),
                 QuelleErdreichGaben = QuelleErdreichGaben,
                 QuelleErdreichSchreiben = QuelleErdreichSchreiben,
+                QuelleErdreichAbgebrochen = _ =>
+                {
+                    _erdreichSitzung?.Abgebrochen();
+                    _erdreichSitzung = null;
+                },
                 QuelleCsvWaehlen = QuelleCsvWaehlen,
 
                 WaermesenkeGaben = WaermesenkeGaben,
@@ -2237,8 +2242,15 @@ namespace WindowsFormsApplication1
                 Auslegung = QuelleErdreichHuelle.Auslegung(m_ID_Projekt, idAnlage)
             };
 
-            return QuelleErdreichHuelle.Gaben(daten);
+            _erdreichSitzung = new ErdreichLaufsitzung(daten);
+            return QuelleErdreichHuelle.Gaben(daten, _erdreichSitzung);
         }
+
+        /// <summary>
+        /// Die Läufe des offenen Erdreichdialogs — sie entscheidet beim Abbrechen, ob ein Lauf mit
+        /// ungespeicherten Eingaben verworfen wird (<see cref="ErdreichLaufsitzung"/>).
+        /// </summary>
+        private ErdreichLaufsitzung _erdreichSitzung;
 
         /// <summary>
         /// Die Klimazone ist eine Eigenschaft der REGION, nicht der Anlage
@@ -2248,6 +2260,9 @@ namespace WindowsFormsApplication1
             int idAnlage, EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten e)
         {
             if (e == null) return;
+
+            // OK: Die Eingaben werden gespeichert, ein Lauf des Dialogs bleibt.
+            _erdreichSitzung = null;
 
             if (e.Klimazone != KlimaregionCtrl.KlimazoneJeProjekt(m_ID_Projekt))
                 KlimaregionCtrl.KlimazoneJeProjektSchreiben(m_ID_Projekt, e.Klimazone);

@@ -264,6 +264,12 @@ public sealed class SimulationKonfigDienste
     public Action<int, EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten>? QuelleErdreichSchreiben;
 
     /// <summary>
+    /// Der Erdreich-Dialog endet ohne OK (Abbrechen, ✕, Esc): Die Hülle verwirft einen Lauf des
+    /// Dialogs, der mit ungespeicherten Eingaben gerechnet hat.
+    /// </summary>
+    public Action<int>? QuelleErdreichAbgebrochen;
+
+    /// <summary>
     /// Der CSV-Zweig: Datei waehlen, das Profil pruefen, den Pfad schreiben. Die
     /// Rueckmeldung traegt bei einem unlesbaren Profil dessen Meldung.
     /// </summary>

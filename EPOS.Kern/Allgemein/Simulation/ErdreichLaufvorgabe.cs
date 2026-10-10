@@ -104,6 +104,15 @@ namespace WindowsFormsApplication1
             return v._spalten.TryGetValue(spalte, out wert);
         }
 
+        /// <summary>
+        /// Der Quelltyp einer Anlage für den Lauf: der Typ der angewandten Vorgabe, sonst der
+        /// <paramref name="gespeichert"/>e Wert. Für die Stellen, die <c>WQ_Typ</c> zeilenweise aus
+        /// einer Tabellenabfrage lesen und damit an <see cref="WaermequelleClass.WertLesenStill(int,string)"/>
+        /// vorbeigehen.
+        /// </summary>
+        internal static string Quelltyp(int idAnlage, string gespeichert)
+            => Wert(idAnlage, "WQ_Typ", out object wert) ? wert as string : gespeichert;
+
         /// <summary>Die Klimazone der angewandten Vorgabe für dieses Projekt, sonst <c>null</c>.</summary>
         internal static int? KlimazoneFuer(int idProjekt)
         {

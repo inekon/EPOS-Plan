@@ -33,9 +33,10 @@ namespace EPOS.Kern.Tests
             Spreizung = Convert.ToDouble(WaermequelleClass.WertLesen(ANLAGE, "WQ_Spreizung") ?? 3.0)
         };
 
-        private static async Task<ErdreichAuswertung.ErdreichLaufErgebnis> Lauf(QuelleErdreichDaten satz)
+        private static async Task<ErdreichAuswertung.ErdreichLaufErgebnis> Lauf(QuelleErdreichDaten satz,
+            QuelleErdreichDaten geoeffnet = null, ErdreichLaufsitzung sitzung = null)
         {
-            IReadOnlyDictionary<string, object> gaben = QuelleErdreichHuelle.Gaben(satz);
+            IReadOnlyDictionary<string, object> gaben = QuelleErdreichHuelle.Gaben(geoeffnet ?? satz, sitzung);
             var simulieren = (Func<QuelleErdreichDaten, Task<(ErdreichAuswertung.ErdreichLaufErgebnis, string)>>)gaben["Simulieren"];
             (ErdreichAuswertung.ErdreichLaufErgebnis erg, string fehler) = await simulieren(satz);
             Assert.True(string.IsNullOrEmpty(fehler), "Fehlertext: " + fehler);
@@ -79,6 +80,71 @@ namespace EPOS.Kern.Tests
             // Das Wiederöffnen zeigt den letzten Lauf dieser Sitzung.
             ErdreichAuswertung.ErdreichLaufErgebnis wieder = QuelleErdreichHuelle.LaufOderGespeichert(gespeichert);
             Assert.Equal(mitAngezeigtem.MaxEntzugW, wieder.MaxEntzugW);
+        }
+
+        /// <summary>
+        /// Abbrechen hinterlässt keinen Lauf mit ungespeicherten Eingaben: Nach dem Abbrechen zeigt das
+        /// Wiederöffnen den Stand vor dem Dialog (hier: kein Lauf dieser Sitzung, also keine gerechnete
+        /// Reihe). Ohne Abbrechen (OK) und bei einem Lauf mit dem gespeicherten Satz bleibt der Lauf.
+        /// </summary>
+        [Fact]
+        public async Task Abbrechen_verwirft_den_Lauf_mit_ungespeicherten_Eingaben()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            QuelleErdreichDaten gespeichert = Gespeichert();
+            QuelleErdreichDaten geaendert = gespeichert with { Anzahl = 2, Tiefe = 60 };
+
+            // Abbrechen nach einem Lauf mit geändertem Feld: verworfen.
+            ErdreichAuswertung.StandZuruecklegen(PROJEKT, null);
+            var sitzung = new ErdreichLaufsitzung(gespeichert);
+            await Lauf(geaendert, gespeichert, sitzung);
+            Assert.True(sitzung.LaufAbweichend);
+            Assert.NotNull(ErdreichAuswertung.StandDesProjekts(PROJEKT));
+            sitzung.Abgebrochen();
+            Assert.Null(ErdreichAuswertung.StandDesProjekts(PROJEKT));
+            Assert.Null(QuelleErdreichHuelle.LaufOderGespeichert(gespeichert).QuelltemperaturStuendlich);
+
+            // Dasselbe mit OK (kein Abbrechen): Der Lauf bleibt.
+            sitzung = new ErdreichLaufsitzung(gespeichert);
+            await Lauf(geaendert, gespeichert, sitzung);
+            Assert.NotNull(QuelleErdreichHuelle.LaufOderGespeichert(gespeichert).QuelltemperaturStuendlich);
+
+            // Ein Lauf mit dem gespeicherten Satz bleibt auch beim Abbrechen.
+            ErdreichAuswertung.StandZuruecklegen(PROJEKT, null);
+            sitzung = new ErdreichLaufsitzung(gespeichert);
+            await Lauf(gespeichert, gespeichert, sitzung);
+            Assert.False(sitzung.LaufAbweichend);
+            sitzung.Abgebrochen();
+            Assert.NotNull(QuelleErdreichHuelle.LaufOderGespeichert(gespeichert).QuelltemperaturStuendlich);
+        }
+
+        /// <summary>
+        /// Der Quelltyp aus dem Dialog wirkt auch dort, wo der Lauf <c>WQ_Typ</c> zeilenweise liest:
+        /// Eine gespeicherte Pufferquelle (Projekt 1042, Anlage 14818) ist unter der Vorgabe „Erdreich“
+        /// keine Pufferquelle mehr.
+        /// </summary>
+        [Fact]
+        public void Der_Quelltyp_der_Vorgabe_wirkt_an_den_zeilenweisen_Lesestellen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const int projektPuffer = 1042, anlagePuffer = 14818;
+            Assert.True(WaermesenkeClass.QuellPufferDerAnlage(projektPuffer, anlagePuffer) > 0);
+            Assert.Equal(WaermequelleClass.TYP_PUFFER, ErdreichLaufvorgabe.Quelltyp(anlagePuffer, WaermequelleClass.TYP_PUFFER));
+
+            var vorgabe = ErdreichLaufvorgabe.Aus(projektPuffer, anlagePuffer,
+                new QuelleErgebnis { Quellsystem = ErdreichTemperatur.QUELLSYSTEM_SONDE, Tiefe = 100, Anzahl = 2 },
+                null, 6);
+            using (vorgabe.Anwenden())
+            {
+                Assert.Equal(WaermequelleClass.TYP_ERDREICH,
+                             ErdreichLaufvorgabe.Quelltyp(anlagePuffer, WaermequelleClass.TYP_PUFFER));
+                Assert.Equal(0, WaermesenkeClass.QuellPufferDerAnlage(projektPuffer, anlagePuffer));
+            }
+            Assert.True(WaermesenkeClass.QuellPufferDerAnlage(projektPuffer, anlagePuffer) > 0);
         }
 
         [Fact]

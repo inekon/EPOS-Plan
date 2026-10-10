@@ -692,7 +692,7 @@
 
     @if (_gaben2 is not null && _ebene2 == Editor.QuelleErdreich)
     {
-        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="Ebene2Schliessen">
+        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="() => ErdreichFertig(null)">
             <KindInhalt>
                 <EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog @attributes="_gaben2" TitelAnzeigen="false"
                                                                  Geschlossen="ErdreichFertig" />
@@ -2353,7 +2353,13 @@
         ErzeugerZeile? zeile = _zeile;
         Ebene2Schliessen();
 
-        if (ergebnis is null || zeile is null) return;
+        if (zeile is null) return;
+        if (ergebnis is null)
+        {
+            // Abbrechen, ✕ oder Esc: Ein Lauf mit ungespeicherten Eingaben bleibt nicht stehen.
+            Dienste?.QuelleErdreichAbgebrochen?.Invoke(zeile.IdAnlage);
+            return;
+        }
 
         Dienste?.QuelleErdreichSchreiben?.Invoke(zeile.IdAnlage, ergebnis);
         Neuladen();
