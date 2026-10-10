@@ -158,6 +158,7 @@ namespace EPOS.UI.Dialoge.Import
                 // ein Kopf ist keine Feldbeschriftung.
                 case "IMP_KAT_SP_EINTRAG": return Resource.IMP_KAT_SP_EINTRAG;
                 case "IMP_KAT_SP_LEISTUNG_TH": return Resource.IMP_KAT_SP_LEISTUNG_TH;
+                case "IMP_KAT_SP_LEISTUNG_KUEHL": return Resource.IMP_KAT_SP_LEISTUNG_KUEHL;
                 case "IMP_KAT_SP_VOLUMEN": return Resource.IMP_KAT_SP_VOLUMEN;
                 case "IMP_KAT_SP_APERTUR": return Resource.IMP_KAT_SP_APERTUR;
                 case "IMP_KAT_SP_QUELLE": return Resource.IMP_KAT_SP_QUELLE;
@@ -172,6 +173,7 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_QUELLE_BSLIB": return Resource.IMP_KAT_QUELLE_BSLIB;
                 case "IMP_KAT_HINWEIS_KOSTEN": return Resource.IMP_KAT_HINWEIS_KOSTEN;
                 case "IMP_KAT_HINWEIS_STUFEN": return Resource.IMP_KAT_HINWEIS_STUFEN;
+                case "IMP_KAT_HINWEIS_KAELTE": return Resource.IMP_KAT_HINWEIS_KAELTE;
 
                 case "IMP_KAT_EINH_KWTH": return Resource.IMP_KAT_EINH_KWTH;
                 case "IMP_KAT_EINH_KW": return Resource.IMP_KAT_EINH_KW;
@@ -193,6 +195,16 @@ namespace EPOS.UI.Dialoge.Import
                 case "IMP_KAT_PROT_AUFSTELLUNG": return Resource.IMP_KAT_PROT_AUFSTELLUNG;
                 case "IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE": return Resource.IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE;
                 case "IMP_KAT_PROT_KUEHLBLOCK_ACHSE": return Resource.IMP_KAT_PROT_KUEHLBLOCK_ACHSE;
+                // E119: der Kaelteimport - Bilanz und je uebergangenem Geraet der Grund.
+                case "IMP_KAT_PROT_KAELTE_BILANZ": return Resource.IMP_KAT_PROT_KAELTE_BILANZ;
+                case "IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE": return Resource.IMP_KAT_PROT_KAELTE_KEINE_KENNLINIE;
+                case "IMP_KAT_PROT_KAELTE_HEIZLAGE": return Resource.IMP_KAT_PROT_KAELTE_HEIZLAGE;
+                case "IMP_KAT_PROT_KAELTE_ACHSEN": return Resource.IMP_KAT_PROT_KAELTE_ACHSEN;
+                case "IMP_KAT_PROT_KAELTE_UNGUELTIG": return Resource.IMP_KAT_PROT_KAELTE_UNGUELTIG;
+                case "IMP_KAT_PROT_KAELTE_NENNKUEHL": return Resource.IMP_KAT_PROT_KAELTE_NENNKUEHL;
+                // VDI-K2: aus der Kuehlkennlinie abgeleitete Nennkuehlleistung - je Geraet und Bilanz.
+                case "IMP_KAT_PROT_KAELTE_ABGELEITET": return Resource.IMP_KAT_PROT_KAELTE_ABGELEITET;
+                case "IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ": return Resource.IMP_KAT_PROT_KAELTE_ABGELEITET_BILANZ;
 
                 case "IMP_TXT_KEIN_PFAD": return Resource.IMP_TXT_KEIN_PFAD;
                 case "IMP_TXT_LESEFEHLER": return Resource.IMP_TXT_LESEFEHLER;

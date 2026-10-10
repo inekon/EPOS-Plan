@@ -181,7 +181,8 @@ namespace EPOS.Kern.Tests
                 .Where(a => KatalogImportProfil.Finde(a).Hinweis.Length > 0)
                 .Select(a => a.ToString()).ToArray();
 
-            Assert.Equal(new[] { "Waermepumpe", "Stromspeicher", "Kaeltemaschine" }, mitHinweis);
+            // E119: der Kaelteimport sagt, dass er nur kuehlfaehige Geraete anbietet.
+            Assert.Equal(new[] { "Waermepumpe", "Stromspeicher", "Kaeltemaschine", "WaermepumpeKuehlung" }, mitHinweis);
         }
 
         // ==================================================================

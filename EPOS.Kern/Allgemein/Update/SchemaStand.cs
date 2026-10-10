@@ -999,7 +999,11 @@ namespace WindowsFormsApplication1
         /// acht Eingabespalten an Katalog und Projektkopie der Kältemaschine, fünf Kennzahlspalten an ihrem Ergebnis
         /// (<see cref="KaeltemaschineTeillastSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer, jede Maschine
         /// rechnet auf dem heutigen Weg.
-        public const int Zielversion = KaeltemaschineTeillastSchema.SCHRITT;
+        /// Danach, mit den KATALOGFELDERN DER KÄLTEERZEUGER (K-A, Entscheid E118), steht das Ziel auf
+        /// <see cref="KaelteKatalogfelderSchema.SCHRITT"/>: Geräteart, GWP und Füllmenge des Kältemittels und saisonale
+        /// Kennzahl an Katalog und Projektkopie der Kältemaschine (<see cref="KaelteKatalogfelderSchema"/>), die Geräteart
+        /// nach der Rückkühlart rückgefüllt. <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalten.
+        public const int Zielversion = KaelteKatalogfelderSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

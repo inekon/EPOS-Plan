@@ -290,6 +290,10 @@ namespace WindowsFormsApplication1
             bool mitWaermepumpe = _kaelteerzeuger.Count > 0;
             KaeltemaschinenVorbereiten(erhoben, ref projekttraeger);
 
+            // KB-A: die Folge der Kälteerzeuger aus der einen Quelle (Kaeltefolge) - dieselbe Regel liest der
+            // Bereich „Kälte“ der Simulationskonfiguration.
+            _kaelteerzeuger = Kaeltefolge.ErzeugerOrdnen(_kaelteerzeuger);
+
             if (_kaelteerzeuger.Count == 0) return;
 
             // K8a (5.2): die Tagesbetriebsart aus den Tagessummen des PROJEKTbedarfs - Heizkanal
@@ -381,7 +385,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void KaeltemaschinenVorbereiten(bool erhoben, ref int projekttraeger)
         {
-            IReadOnlyList<KaeltemaschineAnlageModel> anlagen = KaeltemaschineAnlageCtrl.ListeStill(m_ID_Projekt);
+            IReadOnlyList<KaeltemaschineAnlageModel> anlagen = Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(m_ID_Projekt));
             var gefuehrt = new HashSet<int>(anlagen.Where(a => a.IdKaeltemaschine.HasValue).Select(a => a.IdKaeltemaschine.Value));
             foreach (int id in KaeltemaschineCtrl.IdsImProjektStill(m_ID_Projekt))
                 if (!gefuehrt.Contains(id))
@@ -768,11 +772,8 @@ namespace WindowsFormsApplication1
                                       sp.BezeichnerAnzeige(), sp.KaltVorlauf, sp.KaltRuecklauf));
                 liste.Add(sp);
             }
-            // Stabil sortieren: gepflegte Entladepriorität vorn, 0 (automatisch) hinten.
-            return liste.Select((sp, i) => (sp, i))
-                        .OrderBy(t => t.sp.Entladeprio > 0 ? t.sp.Entladeprio : int.MaxValue)
-                        .ThenBy(t => t.i)
-                        .Select(t => t.sp).ToList();
+            // Stabil sortieren: gepflegte Entladepriorität vorn, 0 (automatisch) hinten (KB-A: die Regel der Kaeltefolge).
+            return Kaeltefolge.KaeltespeicherOrdnen(liste, sp => sp.Entladeprio);
         }
 
         /// <summary>Lade- und Entladeleistungsgrenze [kW] eines Kältespeichers aus seiner Projektzeile (0 = unbegrenzt).</summary>

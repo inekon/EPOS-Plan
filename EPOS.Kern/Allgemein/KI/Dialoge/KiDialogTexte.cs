@@ -1506,6 +1506,17 @@
         internal static string KmKaltwasserMinErl => MyResource.Resource.KI_DLG_KM_KALTWASSER_MIN_ERL;
         internal static string KmModulkostenName => MyResource.Resource.KM_LBL_MODULKOSTEN;
         internal static string KmModulkostenErl => MyResource.Resource.KI_DLG_KM_MODULKOSTEN_ERL;
+        // K-A: Katalogfelder der Kaelteerzeuger.
+        internal static string KmGeraeteartName => MyResource.Resource.KM_LBL_GERAETEART;
+        internal static string KmGeraeteartErl => MyResource.Resource.KI_DLG_KM_GERAETEART_ERL;
+        internal static string KmGwpName => MyResource.Resource.KM_LBL_GWP;
+        internal static string KmGwpErl => MyResource.Resource.KI_DLG_KM_GWP_ERL;
+        internal static string KmFuellmengeName => MyResource.Resource.KM_LBL_FUELLMENGE;
+        internal static string KmFuellmengeErl => MyResource.Resource.KI_DLG_KM_FUELLMENGE_ERL;
+        internal static string KmSaisonArtName => MyResource.Resource.KM_LBL_SAISON_ART;
+        internal static string KmSaisonArtErl => MyResource.Resource.KI_DLG_KM_SAISON_ART_ERL;
+        internal static string KmSaisonkennzahlName => MyResource.Resource.KM_LBL_SAISONKENNZAHL;
+        internal static string KmSaisonkennzahlErl => MyResource.Resource.KI_DLG_KM_SAISONKENNZAHL_ERL;
         // KM3-E3-a: Teillast und Takten.
         internal static string KmTeillastWegName => MyResource.Resource.KM_LBL_TEILLAST_WEG;
         internal static string KmTeillastWegErl => MyResource.Resource.KI_DLG_KM_TEILLAST_WEG_ERL;

@@ -1,6 +1,6 @@
 # Entwurf KB — Kältebereich: Kälte-Kachel als Auswahldialog, Konfiguration in der Simulationskonfiguration
 
-**Stand 10.10.2026 · Entwurf, nichts gebaut.** Gelesen auf `8100e397` (Zweig `ios_migration_september`, Basis R50, R51 für
+**Stand 10.10.2026 · Entwurf; Welle KB-A gebaut (Abschnitt 7), KB-B bis KB-D offen.** Gelesen auf `8100e397` (Zweig `ios_migration_september`, Basis R50, R51 für
 FK angemeldet). Auftrag der Sitzung Gebäudesimulation; die Katalogauswahl der Kältemaschine ist Stufe 5 des
 [Konzepts Projektdialoge Katalogauswahl](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), das der Sitzung „Dialoge und
 Korrekturen“ gehört — Abschnitt 4 schlägt den Schnitt zwischen beiden Sitzungen vor.
@@ -397,28 +397,47 @@ der Referenzlauf. Eine neue Basis braucht es erst, wenn ein Referenzprojekt eine
 1. **F1 Folge der Kälteerzeuger:** zunächst fest und sichtbar oder gleich pflegbar mit Pfeilen (KB-D, +1,5–2 PT, Schemaschritt)?
    **Empfehlung:** fest und sichtbar (KB-B), KB-D erst auf Wunsch. Heute rechnet die freie Kühlung zuerst, dann der
    Kältespeicher, dann die Wärmepumpe, dann die Kältemaschine — das ist für die Fälle im Bestand die wirtschaftliche Folge.
+   **entschieden (E117): konfigurierbar, KB-D wird gebaut (Schemaschritt 212); Vorgabe freie Kühlung, Kältespeicher, Wärmepumpen, Kältemaschinen.**
 2. **F2 Ort der Anlagenkonfiguration der Kältemaschine:** nur in der Simulationskonfiguration oder zusätzlich als Überlagerung
    „Anlage…“ im Dialog („mit Möglichkeit der Konfiguration“)? **Empfehlung:** beide Orte mit **derselben** Komponente, Hauptort
    Simulationskonfiguration — wie bei der Wärmepumpe.
+   **entschieden (E117): beide Orte mit derselben Komponente.**
 3. **F3 Wärmepumpen im Kühlbetrieb im Dialog:** als Lesezeile mit Verweis auf „Simulation › Kälte“ oder gar nicht? **Empfehlung:**
    Lesezeile ohne Schalter. Die Kachel heißt „Kühlung und Kälteanlagen“ und soll alle Kälteerzeuger nennen.
+   **entschieden (E117): konfigurierbar an beiden Orten, nicht nur Lesezeile.**
 4. **F4 Kältespeicher:** nur im Kältebereich oder auch weiter in der Speicherspalte der Wärme? **Empfehlung:** nur im
    Kältebereich, weil ein Kältespeicher keine Wärme puffert.
+   **entschieden (E117): nur im Kältebereich.**
 5. **F5 Doppelklick im Schema auf Kälteerzeuger:** in der Seite die Konfiguration öffnen statt in den Dialog zu springen
    (#902)? **Empfehlung:** ja, Konfiguration in der Seite. Den Katalogdialog erreicht man weiter über die Kachel.
+   **entschieden (E117): Doppelklick öffnet die Konfiguration in der Seite.**
 6. **F6 Zuständigkeit:** Stufe 5 baut die Sitzung „Dialoge und Korrekturen“ nach KB-B (Abschnitt 4), oder übernimmt die
    Gebäudesimulation alles? **Empfehlung:** Teilung nach Abschnitt 4.1. Das Konzept, der Baustein und das Muster 5.3/5.4 liegen
    dort.
+   **entschieden (E117): Stufe 5 baut die Sitzung „Dialoge und Korrekturen“.**
+   KB-1 (eigene Projektkopie je neuer Anlage): **entschieden (E117): nach Empfehlung.**
+
+**Folgen der Entscheide.** KB-D wird gebaut (Schemaschritt 212). Die Gruppe Kühlbetrieb der Wärmepumpe erscheint im Kältebereich und im Kältedialog als konfigurierbare Zeile, nicht mehr als Lesezeile.
 
 ## 7 Wellenplan
 
 | Welle | Sitzung | Inhalt | Aufwand | Abnahme |
 |---|---|---|---|---|
-| **KB-A** | Gebäudesimulation | `Kaelteerzeugerfolge.Lesen`, Schema liest daraus; KB-1 in `Anlegen`; `KaelteGruppe` und DTO in der Hülle; Kältespeicher aus der Wärmespalte | 1 PT | Kern-Filter grün; `dotnet test` mit `--filter "FullyQualifiedName~Kaelte"` (Kern) und `~Schema`; Schale auf Linux (`dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -p:Platform=x64 -p:EnableWindowsTargeting=true`, 0 Fehler); `SqlDialektPruefer`; Referenzlauf der sieben Projekte gegen die Basis PASS |
+| **KB-A** (gebaut) | Gebäudesimulation | `Kaelteerzeugerfolge.Lesen`, Schema liest daraus; KB-1 in `Anlegen`; `KaelteGruppe` und DTO in der Hülle; Kältespeicher aus der Wärmespalte | 1 PT | Kern-Filter grün; `dotnet test` mit `--filter "FullyQualifiedName~Kaelte"` (Kern) und `~Schema`; Schale auf Linux (`dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -p:Platform=x64 -p:EnableWindowsTargeting=true`, 0 Fehler); `SqlDialektPruefer`; Referenzlauf der sieben Projekte gegen die Basis PASS |
 | **KB-B** | Gebäudesimulation | Bereich Kälte der Seite, Schalterumzug, Kopf „Wärme“, Kacheln mit Aufnehmen = Kühlbetrieb, Komponente `KaeltemaschineKonfiguration` (aus dem Dialog herausgelöst und dort eingebunden), Doppelklickziele, KI-Sicht und Feldkarte, Ressourcen beider Sprachen | 2–2,5 PT | bunit `--filter "FullyQualifiedName~SimulationKonfig\|FullyQualifiedName~Kaeltemaschine\|FullyQualifiedName~Schema\|FullyQualifiedName~KiSimulation\|FullyQualifiedName~KiMaskenabdeckung"`; Schale auf Linux; `designer_neu.py` ohne Befund; Dokumentationswachen |
 | **KB-C** | Gebäudesimulation | Probenfall `simkonfig-kaelte` (Rollbereich, Fenstergrößen 1 280 × 800, 1 280 × 720, 1 210 × 834), `fensterprobe.mjs` für die Überlagerung, Wiki-Quellen und Logbuch-Entwurf | 0,5–0,75 PT | Proben grün mit Gegenprobe; Wiki-Gegenlese mit dem Suchmuster der `CLAUDE.md`; `WikiProduktdatenWacheTests` |
 | **Stufe 5** | Dialoge und Korrekturen | Dialog auf `Zweispaltenauswahl`, Umstellen, Rückweggewerk mit Kindzeilen, Löschweg, Kopie bearbeiten, Felder heraus (nach KB-B) | 2,5–3,5 PT | nach Konzept Abschnitt 8: Kern-Tests des Rückwegs, Dialogtests, SQL-Dialekt, Rasterprobe, `fensterprobe.mjs`, `rollbereichprobe.mjs` ohne Ausnahme |
 | **KB-D** (optional) | Gebäudesimulation | Schemaschritt `Kaelte_Rang`, Kern sortiert, Pfeile, Arbeitsstand, Einfrierregel-Satz | 1,5–2 PT | wie KB-A, dazu Schematests, Referenzlauf byte-gleich, `Werkzeuge/Testdatenbankschema` |
+
+**KB-A gebaut (10.10.2026, Zweig `gs-kba`):** Die Kältefolge hat eine Quelle, `Kaeltefolge` im Kern (Stufen fest;
+Ordnungsregeln `ErzeugerOrdnen`, `KaeltemaschinenOrdnen`, `KaeltespeicherOrdnen`). Lauf und Schema ordnen darüber, der Leser
+`Kaeltefolge.Lesen` liefert dieselbe Folge für die Anzeige — Probe gegen `Kaeltekaskade.Erzeuger` und `.Speicher` eines Laufs,
+Referenzlauf gegen R51 byte-gleich. Der Leser heißt `Kaeltefolge.Lesen` statt `Kaelteerzeugerfolge.Lesen` (er liest auch
+Kältespeicher und freie Kühlung). DTO `KaeltebereichDaten` in `SimulationKonfigDaten.Kaeltebereich`, Schreibweg
+`SimulationKonfigDienste.KuehlbetriebWpSchreiben`, Hülle `KaeltebereichBau`. KB-1: `Anlegen` legt über
+`KaeltemaschineCtrl.EigeneKopieAnlegen` je Anlage eine eigene Kopie an; die Testdatenbank führt keine geteilte Kopie. Die
+Kältespeicher bleiben bis KB-B zusätzlich in der Wärmespalte (die Seite zeigt den Bereich noch nicht). Protokoll:
+[`2026-10-10_KB-A_Kaeltefolge_Projektkopie.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-A_Kaeltefolge_Projektkopie.md).
 
 **Summe:** Gebäudesimulation 3,5–4,25 PT, mit KB-D 5–6,25 PT; Dialoge 2,5–3,5 PT. **Voraussetzung:** Welle FK (R51) ist
 gemergt, damit KB-B ihre Eingaben der freien Kühlung übernimmt.

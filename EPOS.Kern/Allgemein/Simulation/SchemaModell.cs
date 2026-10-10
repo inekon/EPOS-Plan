@@ -706,10 +706,14 @@ namespace WindowsFormsApplication1
             bool projektKaelte = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
             List<string> erzeuger = new List<string>();
 
-            // 1. Wärmepumpen im Kühlbetrieb - in der Folge ihrer Anlagenzeilen.
-            foreach (Hydraulikbild.AnlagenEintrag a in anlagen)
+            // 1. Wärmepumpen im Kühlbetrieb - in der Folge ihrer Module (KB-A: die Regel der Kaeltefolge).
+            List<int> module = SimulationControl.WaermepumpenanlagenLesen(idProjekt) ?? new List<int>();
+            List<Hydraulikbild.AnlagenEintrag> wpKaelte = Kaeltefolge.ErzeugerOrdnen(
+                anlagen.Where(a => a != null && _kaelteerzeuger.Contains(a.ID)),
+                a => KaeltefolgeStufe.Waermepumpe,
+                a => module.IndexOf(a.ID) >= 0 ? module.IndexOf(a.ID) : int.MaxValue);
+            foreach (Hydraulikbild.AnlagenEintrag a in wpKaelte)
             {
-                if (!_kaelteerzeuger.Contains(a.ID)) continue;
 
                 Knoten k = new Knoten
                 {
@@ -745,7 +749,7 @@ namespace WindowsFormsApplication1
             }
 
             // 2. Kältemaschinen - in der Folge ihrer Anlagenzeilen.
-            foreach (KaeltemaschineAnlageModel a in KaeltemaschineAnlageCtrl.ListeStill(idProjekt))
+            foreach (KaeltemaschineAnlageModel a in Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(idProjekt)))
             {
                 if (a == null || a.AnlagenId <= 0) continue;
 
@@ -790,14 +794,10 @@ namespace WindowsFormsApplication1
             }
 
             // 3. Kältespeicher - in der Reihenfolge des Laufs (Entladepriorität, 0 hinten).
-            List<WaermesenkeClass.PufferInfo> speicher =
+            List<WaermesenkeClass.PufferInfo> speicher = Kaeltefolge.KaeltespeicherOrdnen(
                 (WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE)
-                 ?? new List<WaermesenkeClass.PufferInfo>())
-                .Where(p => p != null)
-                .Select((p, i) => (p, i))
-                .OrderBy(t => t.p.Entladeprio > 0 ? t.p.Entladeprio : int.MaxValue)
-                .ThenBy(t => t.i)
-                .Select(t => t.p).ToList();
+                 ?? new List<WaermesenkeClass.PufferInfo>()).Where(p => p != null),
+                p => p.Entladeprio);
 
             foreach (WaermesenkeClass.PufferInfo p in speicher)
             {

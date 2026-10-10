@@ -601,6 +601,8 @@
             TeillastWege = () => Texte.TeillastWege,
             Verdichterregelungen = () => Texte.Verdichterregelungen,
             Randwege = () => Texte.Randwege,
+            Geraetearten = () => Texte.Geraetearten,
+            SaisonArten = () => Texte.SaisonArten,
             ArbeitLesen = () => _daten.Id > 0 && !_auslieferung ? _arbeit : null,
             Geaendert = Nachziehen
         };
@@ -698,7 +700,7 @@
     private string RueckkuehlText(int? platz)
         => platz is int p && p >= 0 && p < Rueckkuehltexte.Count ? Rueckkuehltexte[p] : "";
 
-    /// <summary>Die zwölf Kenndaten als Felder — im Stammblatt und in „Neu…" dieselben.</summary>
+    /// <summary>Die siebzehn Kenndaten (zwölf Grundfelder, fünf Katalogfelder K-A) als Felder — im Stammblatt und in „Neu…" dieselben.</summary>
     private RenderFragment Kenndatenfelder(KaeltemaschineDaten d) => __builder =>
     {
         <Formularraster>
@@ -733,6 +735,19 @@
                 <Zahlenfeld Bezeichnung="@Texte.LabelModulkosten" Einheit="@Texte.EinheitEuro"
                             Feldname="@Texte.LabelModulkosten"
                             Wert="@d.Modulkosten" WertChanged="w => Feld(d, () => d.Modulkosten = w)" />
+                @* K-A: die fuenf Katalogfelder hinter den zwoelf Grundfeldern - Geraeteart, Kaeltemittel, saisonale Kennzahl. *@
+                <Auswahlfeld Bezeichnung="@Texte.LabelGeraeteart" Eintraege="@Eintraege(Texte.Geraetearten)"
+                             Platzhalter="@Texte.GeraeteartAusRueckkuehlung"
+                             Auswahl="@d.GeraeteartIndex" AuswahlChanged="w => Feld(d, () => d.GeraeteartIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelGwp" Feldname="@Texte.LabelGwp"
+                            Wert="@d.Gwp" WertChanged="w => Feld(d, () => d.Gwp = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelFuellmenge" Einheit="@Texte.EinheitKg" Feldname="@Texte.LabelFuellmenge"
+                            Wert="@d.Fuellmenge" WertChanged="w => Feld(d, () => d.Fuellmenge = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelSaisonArt" Eintraege="@Eintraege(Texte.SaisonArten)"
+                             Platzhalter="@Texte.SaisonArtKeine"
+                             Auswahl="@d.SaisonArtIndex" AuswahlChanged="w => Feld(d, () => d.SaisonArtIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelSaisonkennzahl" Feldname="@Texte.LabelSaisonkennzahl"
+                            Wert="@d.Saisonkennzahl" WertChanged="w => Feld(d, () => d.Saisonkennzahl = w)" />
             </KindInhalt>
         </Formularraster>
     };
@@ -1161,7 +1176,12 @@
         new Stammblattwert(Texte.LabelHilfsstrom, d.Hilfsstrom.HasValue ? Zahl(d.Hilfsstrom, "0.###", "") : Texte.HilfsstromLeer,
                            d.Hilfsstrom.HasValue ? Texte.EinheitKw : ""),
         new Stammblattwert(Texte.LabelKaltwasserMin, Zahl(d.KaltwasserMin, "0.#", ""), d.KaltwasserMin.HasValue ? Texte.EinheitGradC : ""),
-        new Stammblattwert(Texte.LabelModulkosten, Zahl(d.Modulkosten, "#,##0.##", ""), d.Modulkosten.HasValue ? Texte.EinheitEuro : "")
+        new Stammblattwert(Texte.LabelModulkosten, Zahl(d.Modulkosten, "#,##0.##", ""), d.Modulkosten.HasValue ? Texte.EinheitEuro : ""),
+        new Stammblattwert(Texte.LabelGeraeteart, Text(Texte.Geraetearten, d.GeraeteartIndex, Texte.GeraeteartAusRueckkuehlung)),
+        new Stammblattwert(Texte.LabelGwp, Zahl(d.Gwp, "#,##0.#", "")),
+        new Stammblattwert(Texte.LabelFuellmenge, Zahl(d.Fuellmenge, "0.0##", ""), d.Fuellmenge.HasValue ? Texte.EinheitKg : ""),
+        new Stammblattwert(Texte.LabelSaisonArt, Text(Texte.SaisonArten, d.SaisonArtIndex, Texte.SaisonArtKeine)),
+        new Stammblattwert(Texte.LabelSaisonkennzahl, Zahl(d.Saisonkennzahl, "0.0##", ""))
     };
 
     /// <summary>Die Kennlinie als Text — je Punkt „35 °C / 7 °C" → „EER 3,6 · 98 kW".</summary>

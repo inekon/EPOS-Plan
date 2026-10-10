@@ -369,6 +369,9 @@ namespace WindowsFormsApplication1
                 Laden = Laden,
                 SchemaLaden = SchemaLaden,
 
+                // KB-A: der Kühlbetrieb einer Wärmepumpe im Bereich „Kälte“ - der Kernweg des Kühlschalters.
+                KuehlbetriebWpSchreiben = (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(m_ID_Projekt, idWp, an),
+
                 // DIE DREI HANDGRIFFE AN DER KASKADE - und nur sie - machen die Kaskade
                 // zu einer GEPFLEGTEN (Anwenderentscheid 16.09.2026, Schemaschritt 82).
                 // Der Merkweg liegt an EINER Stelle (KaskadeGepflegtMerken); die
@@ -590,6 +593,9 @@ namespace WindowsFormsApplication1
             // ARBEITSSTAND, nicht die Datenbank - ein Handgriff an der Kaskade setzt
             // die Marke, und die Zeile steht schon bei der naechsten Auffrischung da.
             d.KaskadeGepflegt = _konfiguration != null && _konfiguration.Kaskade_Gepflegt;
+
+            // KB-A: der Bereich „Kälte“ aus dem Kernleser der Kältefolge - dieselbe Folge wie der Lauf.
+            d.Kaeltebereich = KaeltebereichBau.Daten(m_ID_Projekt, SpeicherKarteDaten);
 
             return d;
         }

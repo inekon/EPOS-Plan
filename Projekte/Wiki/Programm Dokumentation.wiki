@@ -208,6 +208,8 @@ Die Dialoge, die eine Technik projektieren oder ihren Katalog pflegen, tragen ne
 |-
 | Wärmepumpendaten einlesen (Administration) || <code>Form_WP_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
 |-
+| Kälteanlagen einlesen – Wärmepumpen mit Kühlfunktion (Administration) || <code>Form_WP_Kaelte_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import-kaelteanlagen|Gerätekataloge]]
+|-
 | Stromspeicherdaten einlesen (Administration) || <code>Form_Stromspeicher_einlesen.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]
 |-
 | Import von PV-Moduldaten (CEC und PAN) || <code>Main_PV_Test.btn_Help</code> || [[Programm Dokumentation/Gerätekataloge#import|Gerätekataloge]]

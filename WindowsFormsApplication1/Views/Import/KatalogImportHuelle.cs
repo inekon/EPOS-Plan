@@ -141,7 +141,7 @@ namespace WindowsFormsApplication1
                 ["Sammelmeldung"] = new Func<ImportBilanz, string>(VdiAuswahlFilter.LadeMeldung),
                 ["Meldungstext"] = new Func<PruefMeldung, string>(Texte.Zu),
                 ["Fortschrittstext"] = new Func<ImportFortschritt, string>(Texte.Zu),
-                ["DateiText"] = art == KatalogImportArt.Waermepumpe
+                ["DateiText"] = art == KatalogImportArt.Waermepumpe || art == KatalogImportArt.WaermepumpeKuehlung
                     ? MyResource.Resource.IMP_KAT_BTN_DATEI_WP
                     : MyResource.Resource.IMP_KAT_BTN_DATEI
             };
@@ -159,6 +159,7 @@ namespace WindowsFormsApplication1
                 case KatalogImportArt.Pufferspeicher: return MyResource.Resource.IMP_KAT_TITEL_PUFFERSPEICHER;
                 case KatalogImportArt.Solarkollektoren: return MyResource.Resource.IMP_KAT_TITEL_SOLAR;
                 case KatalogImportArt.Waermepumpe: return MyResource.Resource.IMP_KAT_TITEL_WP;
+                case KatalogImportArt.WaermepumpeKuehlung: return MyResource.Resource.IMP_KAT_TITEL_WP_KAELTE;
                 case KatalogImportArt.Stromspeicher: return MyResource.Resource.IMP_KAT_TITEL_STROMSPEICHER;
                 case KatalogImportArt.Kaeltemaschine: return MyResource.Resource.IMP_KAT_TITEL_KAELTEMASCHINE;
                 default: return MyResource.Resource.IMP_KAT_TITEL_HEIZKESSEL;

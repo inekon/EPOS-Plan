@@ -206,8 +206,22 @@ namespace WindowsFormsApplication1
             /// <summary>Das erkannte Trennzeichen.</summary>
             public char Trennzeichen { get; set; }
 
-            /// <summary>Hinweise zu gelesenen Geräten (Teillastkurve), „Bezeichner: Grund“.</summary>
+            /// <summary>Hinweise zu gelesenen Geräten (Teillastkurve, Typkennfeld), „Bezeichner: Grund“.</summary>
             public List<string> Hinweise { get; } = new List<string>();
+
+            /// <summary>Die Form je Gerät (<see cref="KaeltemaschineImportVarianten.FORMEN"/>), in der Folge von <see cref="Geraete"/>.</summary>
+            public List<string> Formen { get; } = new List<string>();
+        }
+
+        /// <summary>Was ein Gerät außer seinem Modell in der Datei angibt (K-C): Form, Pdesignc, Verdichter, Kaltwasser, Punkte.</summary>
+        private sealed class Geraetangaben
+        {
+            public string Form;
+            public double? PdesignKw;
+            public string Verdichter;
+            public double? KaltwasserC;
+            public readonly List<OekodesignPunkteLeser.Punkt> Punkte = new List<OekodesignPunkteLeser.Punkt>();
+            public readonly List<(double Lastgrad, double Verhaeltnis)> Teillast = new List<(double, double)>();
         }
 
         /// <summary>Erkennt das Trennzeichen über die Nicht-Kommentarzeilen.</summary>
@@ -227,7 +241,7 @@ namespace WindowsFormsApplication1
             char trenn = TrennzeichenErkennen(zeilen);
             e.Trennzeichen = trenn;
             KaeltemaschineModel aktuell = null;
-            var teillast = new List<(double Lastgrad, double Verhaeltnis)>();
+            var angaben = new Geraetangaben();
 
             for (int i = 0; i < zeilen.Length; i++)
             {
@@ -259,9 +273,9 @@ namespace WindowsFormsApplication1
                 switch (schluessel)
                 {
                     case "BEZEICHNER":
-                        if (aktuell != null) Abschliessen(e, aktuell, teillast);
+                        if (aktuell != null) Abschliessen(e, aktuell, angaben);
                         aktuell = new KaeltemaschineModel { Bezeichner = wert };
-                        teillast = new List<(double, double)>();
+                        angaben = new Geraetangaben();
                         break;
                     case "RUECKKUEHLTEMPERATUR":
                         break; // die Spaltenkopfzeile
@@ -271,7 +285,46 @@ namespace WindowsFormsApplication1
                         if (aktuell == null) e.Uebergangen.Add(Zeile(i, "Teillastzeile ohne Bezeichner"));
                         else if (!x.HasValue || !g.HasValue || !(x.Value > 0) || x.Value > 1 || !(g.Value > 0))
                             e.Uebergangen.Add(Zeile(i, "Teillastzeile ungültig (Lastgrad 0 bis 1, EER-Verhältnis > 0)"));
-                        else teillast.Add((x.Value, g.Value));
+                        else angaben.Teillast.Add((x.Value, g.Value));
+                        break;
+                    case OekodesignPunkteLeser.SCHLUESSEL:
+                        // Teillastpunkt A–D eines Ökodesign-Datenblatts (K-C).
+                        OekodesignPunkteLeser.Punkt punkt = OekodesignPunkteLeser.ZeileLesen(f, trenn, i + 1, out string pf);
+                        if (pf != null) e.Uebergangen.Add(Zeile(i, pf));
+                        else if (punkt == null) break; // Spaltenkopfzeile
+                        else if (aktuell == null) e.Uebergangen.Add(Zeile(i, "Teillastpunkt ohne Bezeichner"));
+                        else angaben.Punkte.Add(punkt);
+                        break;
+                    case "FORM":
+                        if (aktuell == null) { e.Uebergangen.Add(Zeile(i, "Kopfzeile vor dem Bezeichner")); break; }
+                        angaben.Form = KaeltemaschineImportVarianten.Form(wert);
+                        if (angaben.Form == null)
+                            e.Uebergangen.Add(Zeile(i, "unbekannte Form „" + wert + "“ (KENNFELD, NENNWERTE oder OEKODESIGN)"));
+                        break;
+                    case "PDESIGNC": case "PDESIGN":
+                        if (aktuell == null) { e.Uebergangen.Add(Zeile(i, "Kopfzeile vor dem Bezeichner")); break; }
+                        angaben.PdesignKw = Zahl(wert, trenn);
+                        if (!(angaben.PdesignKw > 0) && wert.Length > 0)
+                        {
+                            angaben.PdesignKw = null;
+                            e.Uebergangen.Add(Zeile(i, "Pdesignc keine Zahl größer 0"));
+                        }
+                        break;
+                    case "VERDICHTER":
+                        if (aktuell == null) { e.Uebergangen.Add(Zeile(i, "Kopfzeile vor dem Bezeichner")); break; }
+                        string vd = Schluessel(wert);
+                        angaben.Verdichter = vd.Length == 0 ? null : vd;
+                        if (vd.Length > 0 && !KaeltemaschineImportVarianten.VERDICHTER.ContainsKey(vd))
+                        {
+                            angaben.Verdichter = null;
+                            e.Uebergangen.Add(Zeile(i, "unbekannter Verdichter „" + wert + "“ (SCROLL, SCHRAUBE, TURBO oder HUBKOLBEN)"));
+                        }
+                        break;
+                    case "KALTWASSERTEMPERATUR":
+                        if (aktuell == null) { e.Uebergangen.Add(Zeile(i, "Kopfzeile vor dem Bezeichner")); break; }
+                        angaben.KaltwasserC = Zahl(wert, trenn);
+                        if (!angaben.KaltwasserC.HasValue && wert.Length > 0)
+                            e.Uebergangen.Add(Zeile(i, "Kaltwassertemperatur keine Zahl"));
                         break;
                     default:
                         if (aktuell == null) { e.Uebergangen.Add(Zeile(i, "Kopfzeile vor dem Bezeichner")); break; }
@@ -280,17 +333,120 @@ namespace WindowsFormsApplication1
                         break;
                 }
             }
-            if (aktuell != null) Abschliessen(e, aktuell, teillast);
+            if (aktuell != null) Abschliessen(e, aktuell, angaben);
             return e;
         }
 
-        private static void Abschliessen(Ergebnis e, KaeltemaschineModel m, List<(double Lastgrad, double Verhaeltnis)> teillast)
+        private static void Abschliessen(Ergebnis e, KaeltemaschineModel m, Geraetangaben a)
         {
             if (string.IsNullOrWhiteSpace(m.Bezeichner)) { e.Uebergangen.Add("Gerät ohne Bezeichner"); return; }
-            if (string.IsNullOrEmpty(m.Rueckkuehlart)) m.Rueckkuehlart = KaeltemaschineSchema.RUECKKUEHLART_LUFT;
+            if (string.IsNullOrEmpty(m.Rueckkuehlart))
+                m.Rueckkuehlart = m.Geraeteart == KaelteKatalogfelderSchema.GERAETEART_KWS_WASSER
+                    ? KaeltemaschineSchema.RUECKKUEHLART_NASSKUEHLER
+                    : KaeltemaschineSchema.RUECKKUEHLART_LUFT;
+            string form = KaeltemaschineImportVarianten.FormErkennen(a.Form, m.Kennlinie.Count > 0, a.Punkte.Count > 0);
+            string grund = form switch
+            {
+                KaeltemaschineImportVarianten.FORM_NENNWERTE => Nennwerte(e, m, a),
+                KaeltemaschineImportVarianten.FORM_OEKODESIGN => Oekodesign(e, m, a),
+                _ => m.Kennlinie.Count == 0 ? "Form KENNFELD ohne Kennfeldzeilen" : null
+            };
+            if (grund != null) { e.Uebergangen.Add(m.Bezeichner + ": " + grund); return; }
             KaeltemaschinenKennfeld.NennwerteErgaenzen(m);
-            TeillastAnpassen(e, m, teillast);
+            // Punkte A–D neben einem Kennfeld: sie geben die Teillastkurve gegen dieses Kennfeld (Entwurf K-D 2.2).
+            if (form == KaeltemaschineImportVarianten.FORM_KENNFELD && a.Punkte.Count > 0)
+                PunkteAnwenden(e, m, a);
+            TeillastAnpassen(e, m, a.Teillast);
+            KatalogfelderAnpassen(e, m);
             e.Geraete.Add(m);
+            e.Formen.Add(form);
+        }
+
+        /// <summary>
+        /// Form „Nennwerte“ (K-C): Nennkälteleistung und Nenn-EER sind Pflicht; das Kennfeld kommt aus dem gewählten
+        /// Typkennfeld, am Eurovent-Nennpunkt der Rückkühlart auf die Nennwerte skaliert; Teillast und Takten des Typs,
+        /// soweit die Vorlage nichts angibt. <c>null</c> = gelesen, sonst der Grund.
+        /// </summary>
+        private static string Nennwerte(Ergebnis e, KaeltemaschineModel m, Geraetangaben a)
+        {
+            if (m.Kennlinie.Count > 0) return "Form NENNWERTE verträgt keine Kennfeldzeilen";
+            if (a.Punkte.Count > 0) return "Form NENNWERTE verträgt keine Teillastpunkte (Form OEKODESIGN)";
+            if (!(m.Nennkaelteleistung_kW > 0) || !(m.Nenn_EER > 0))
+                return "Form NENNWERTE braucht Nennkälteleistung und Nenn-EER größer 0";
+            string fehler = AusTypkennfeld(e, m, a, KaeltemaschinenKennfeld.Nennrueckkuehltemperatur(m.Rueckkuehlart),
+                                           KaeltemaschinenKennfeld.NENN_KALTWASSER_C, m.Nennkaelteleistung_kW.Value, m.Nenn_EER.Value,
+                                           "auf den Nennpunkt", out KaeltemaschineImportVarianten.Wahl wahl);
+            if (fehler != null) return fehler;
+            if (a.Teillast.Count == 0) KaeltemaschineImportVarianten.TeillastVomTyp(m, wahl);
+            return null;
+        }
+
+        /// <summary>
+        /// Form „Ökodesign-Datenblatt A–D“ (K-C): die Punkte A–D (Pflicht), die Kaltwassertemperatur der Prüfung (Pflicht),
+        /// bei Wasserkühlung je Punkt die Rückkühltemperatur. Das Kennfeld kommt aus dem gewählten Typkennfeld, am
+        /// Bezugspunkt (<see cref="OekodesignPunkteLeser.Bezugspunkt"/>) auf dessen Leistung und EER skaliert; die
+        /// Teillastkurve aus den Punkten gegen dieses Kennfeld. <c>null</c> = gelesen, sonst der Grund.
+        /// </summary>
+        private static string Oekodesign(Ergebnis e, KaeltemaschineModel m, Geraetangaben a)
+        {
+            if (m.Kennlinie.Count > 0) return "Form OEKODESIGN verträgt keine Kennfeldzeilen";
+            string grund = OekodesignPunkteLeser.Pruefen(a.Punkte, a.PdesignKw);
+            if (grund != null) return grund;
+            if (!a.KaltwasserC.HasValue) return "Form OEKODESIGN braucht die Kaltwassertemperatur der Prüfung";
+            OekodesignPunkteLeser.Punkt fehlt = a.Punkte.FirstOrDefault(p => !KaeltemaschineImportVarianten.Rueckkuehltemperatur(p, m.Rueckkuehlart).HasValue);
+            if (fehlt != null)
+                return "Teillastpunkt " + fehlt.Name + " (Zeile " + fehlt.Zeile.ToString(CultureInfo.InvariantCulture) +
+                       ") ohne Rückkühltemperatur — bei Wasserkühlung Pflicht";
+            OekodesignPunkteLeser.Punkt bezug = OekodesignPunkteLeser.Bezugspunkt(a.Punkte);
+            if (a.PdesignKw.HasValue && Math.Abs(bezug.LeistungKw - a.PdesignKw.Value) > OekodesignPunkteLeser.TOLERANZ_TAKT * a.PdesignKw.Value)
+                e.Hinweise.Add(m.Bezeichner + ": Leistung des Punkts " + bezug.Name + " weicht von Pdesignc ab; das Kennfeld folgt dem Punkt");
+            string fehler = AusTypkennfeld(e, m, a, KaeltemaschineImportVarianten.Rueckkuehltemperatur(bezug, m.Rueckkuehlart).Value,
+                                           a.KaltwasserC.Value, bezug.LeistungKw, bezug.Eer, "auf den Punkt " + bezug.Name, out _);
+            if (fehler != null) return fehler;
+            m.Nennkaelteleistung_kW = null;
+            m.Nenn_EER = null;
+            KaeltemaschinenKennfeld.NennwerteErgaenzen(m);
+            PunkteAnwenden(e, m, a);
+            return null;
+        }
+
+        /// <summary>Wählt und skaliert das Typkennfeld, schreibt Hinweis und Herkunft in die Beschreibung (wenn leer).</summary>
+        private static string AusTypkennfeld(Ergebnis e, KaeltemaschineModel m, Geraetangaben a, double rk, double kw, double q, double eer,
+                                             string bezugText, out KaeltemaschineImportVarianten.Wahl wahl)
+        {
+            wahl = KaeltemaschineImportVarianten.TypkennfeldWaehlen(KaeltemaschinenTypkennfelder.Lesen(), m.Rueckkuehlart,
+                                                                     a.Verdichter, m.Verdichterregelung, q);
+            if (wahl == null) return "kein Typkennfeld zur Rückkühlart " + m.Rueckkuehlart;
+            (double FaktorLeistung, double FaktorEer)? f = KaeltemaschineImportVarianten.Skalieren(m, wahl, rk, kw, q, eer);
+            if (!f.HasValue) return wahl.Begruendung + " ohne Wert am Bezugspunkt";
+            string text = "Kennfeld aus " + wahl.Begruendung + " " + bezugText + " skaliert (Leistung × " +
+                          KaeltemaschineImportVarianten.Faktortext(f.Value.FaktorLeistung) + ", EER × " +
+                          KaeltemaschineImportVarianten.Faktortext(f.Value.FaktorEer) + ")";
+            e.Hinweise.Add(m.Bezeichner + ": " + text);
+            m.Beschreibung ??= text;
+            return null;
+        }
+
+        /// <summary>Die Teillast aus den Punkten A–D, sofern die Vorlage keine Teillastzeilen und keine Beiwerte nennt.</summary>
+        private static void PunkteAnwenden(Ergebnis e, KaeltemaschineModel m, Geraetangaben a)
+        {
+            if (a.Teillast.Count > 0 || m.Teillastkurve_a.HasValue || m.Teillastkurve_b.HasValue || m.Teillastkurve_c.HasValue)
+            {
+                e.Hinweise.Add(m.Bezeichner + ": Teillastzeilen bzw. Beiwerte gehen vor, Punkte A–D nicht für die Teillastkurve genutzt");
+                return;
+            }
+            if (!a.KaltwasserC.HasValue)
+            {
+                e.Hinweise.Add(m.Bezeichner + ": Punkte A–D ohne Kaltwassertemperatur, keine Teillastkurve");
+                return;
+            }
+            if (a.Punkte.Any(p => !KaeltemaschineImportVarianten.Rueckkuehltemperatur(p, m.Rueckkuehlart).HasValue))
+            {
+                e.Hinweise.Add(m.Bezeichner + ": Punkte A–D ohne Rückkühltemperatur, keine Teillastkurve");
+                return;
+            }
+            OekodesignPunkteLeser.Teillastabbildung t = KaeltemaschineImportVarianten.TeillastAusPunkten(m, a.Punkte, a.PdesignKw, a.KaltwasserC.Value);
+            foreach (string h in t.Hinweise) e.Hinweise.Add(m.Bezeichner + ": " + h);
         }
 
         /// <summary>
@@ -339,6 +495,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die Katalogfelder eines Geräts (K-A): fehlt die Geräteart, gilt die Rückfüllregel aus der Rückkühlart
+        /// (<see cref="KaelteKatalogfelderSchema.GeraeteartAusRueckkuehlart"/>); verwirft die Prüfung die Felder, bleiben
+        /// GWP, Füllmenge und saisonale Kennzahl leer und die Geräteart folgt der Regel — mit Hinweis.
+        /// </summary>
+        private static void KatalogfelderAnpassen(Ergebnis e, KaeltemaschineModel m)
+        {
+            m.Geraeteart = KaelteKatalogfelderSchema.GeraeteartWirksam(m.Geraeteart, m.Rueckkuehlart);
+            string grund = KaeltemaschineStammCtrl.KatalogfelderPruefen(m);
+            if (grund == null) return;
+            e.Hinweise.Add(m.Bezeichner + ": " + grund);
+            m.Geraeteart = KaelteKatalogfelderSchema.GeraeteartAusRueckkuehlart(m.Rueckkuehlart);
+            m.Kaeltemittel_GWP = m.Kaeltemittel_Fuellmenge_kg = m.Saisonkennzahl = null;
+            m.Saisonkennzahl_Art = null;
+        }
+
         private static bool KopfSetzen(KaeltemaschineModel m, string schluessel, string wert, char trenn)
         {
             switch (schluessel)
@@ -361,6 +533,23 @@ namespace WindowsFormsApplication1
                 case "MINDESTTEILLAST": case "MINDESTTEILLAST_PROZENT":
                     m.Mindestteillast_Prozent = Zahl(wert, trenn);
                     return m.Mindestteillast_Prozent.HasValue || wert.Length == 0;
+                // ---- Katalogfelder (K-A); leer = Rueckfuellregel bzw. keine Angabe ----
+                case "GERAETEART":
+                    return Auswahl(wert, KaelteKatalogfelderSchema.GERAETEARTEN, w => m.Geraeteart = w);
+                case "GWP": case "KAELTEMITTEL_GWP":
+                    m.Kaeltemittel_GWP = Zahl(wert, trenn);
+                    return m.Kaeltemittel_GWP.HasValue || wert.Length == 0;
+                case "FUELLMENGE": case "KAELTEMITTEL_FUELLMENGE": case "KAELTEMITTEL_FUELLMENGE_KG": case "FUELLMENGE_KG":
+                    m.Kaeltemittel_Fuellmenge_kg = Zahl(wert, trenn);
+                    return m.Kaeltemittel_Fuellmenge_kg.HasValue || wert.Length == 0;
+                case "SEER":
+                    m.Saisonkennzahl = Zahl(wert, trenn);
+                    m.Saisonkennzahl_Art = m.Saisonkennzahl.HasValue ? KaelteKatalogfelderSchema.SAISON_SEER : null;
+                    return m.Saisonkennzahl.HasValue || wert.Length == 0;
+                case "ETA_S_C":
+                    m.Saisonkennzahl = Zahl(wert, trenn);
+                    m.Saisonkennzahl_Art = m.Saisonkennzahl.HasValue ? KaelteKatalogfelderSchema.SAISON_ETA_S_C : null;
+                    return m.Saisonkennzahl.HasValue || wert.Length == 0;
                 // ---- Teillast und Takten (KM3, Fachkonzept 4.1 und 4.3); leer = Vorgabe ----
                 case "TEILLAST_WEG":
                     return Auswahl(wert, KaeltemaschineTeillastSchema.TEILLAST_WEGE, w => m.Teillast_Weg = w);
@@ -368,7 +557,7 @@ namespace WindowsFormsApplication1
                     return Auswahl(wert, KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN, w => m.Verdichterregelung = w);
                 case "KENNFELD_RANDWEG": case "RANDWEG":
                     return Auswahl(wert, KaeltemaschineTeillastSchema.RANDWEGE, w => m.Kennfeld_Randweg = w);
-                case "TAKTVERLUSTFAKTOR_CD": case "TAKTVERLUSTFAKTOR":
+                case "TAKTVERLUSTFAKTOR_CD": case "TAKTVERLUSTFAKTOR": case "CDC": case "CD":
                     m.Taktverlustfaktor_Cd = Zahl(wert, trenn);
                     return m.Taktverlustfaktor_Cd.HasValue || wert.Length == 0;
                 case "TEILLASTKURVE_LASTGRAD_MIN":
@@ -465,8 +654,22 @@ namespace WindowsFormsApplication1
         /// <summary>Quellkennung eines Copper-Satzes.</summary>
         public const string QUELLE_COPPER = "PNNL Copper";
 
-        /// <summary>Quellkennung der CSV-Vorlage.</summary>
+        /// <summary>Quellkennung der CSV-Vorlage (Form Kennfeld).</summary>
         public const string QUELLE_CSV = "CSV";
+
+        /// <summary>Quellkennung der CSV-Vorlage in der Form „Nennwerte“ (K-C).</summary>
+        public const string QUELLE_CSV_NENNWERTE = "CSV Nennwerte";
+
+        /// <summary>Quellkennung der CSV-Vorlage in der Form „Ökodesign-Datenblatt A–D“ (K-C).</summary>
+        public const string QUELLE_CSV_OEKODESIGN = "CSV Ökodesign A–D";
+
+        /// <summary>Die Quellkennung einer Form der CSV-Vorlage.</summary>
+        public static string Quelle(string form) => form switch
+        {
+            KaeltemaschineImportVarianten.FORM_NENNWERTE => QUELLE_CSV_NENNWERTE,
+            KaeltemaschineImportVarianten.FORM_OEKODESIGN => QUELLE_CSV_OEKODESIGN,
+            _ => QUELLE_CSV
+        };
 
         /// <summary>Liest eine Datei vom Datenträger.</summary>
         public static Ergebnis Lesen(string pfad) => AusText(File.ReadAllText(pfad, Encoding.UTF8));
@@ -491,7 +694,8 @@ namespace WindowsFormsApplication1
                 return e;
             }
             KaeltemaschineCsvLeser.Ergebnis v = KaeltemaschineCsvLeser.Lesen(text);
-            foreach (KaeltemaschineModel m in v.Geraete) e.Saetze.Add((m, QUELLE_CSV));
+            for (int i = 0; i < v.Geraete.Count; i++)
+                e.Saetze.Add((v.Geraete[i], Quelle(v.Formen[i])));
             e.Uebergangen.AddRange(v.Uebergangen);
             e.Hinweise.AddRange(v.Hinweise);
             return e;

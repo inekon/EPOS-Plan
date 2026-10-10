@@ -87,6 +87,8 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
                         .MitText(Katalogfilterprofil.SpTyp, s.Typ)
                         .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, s.Nennkaelteleistung, 1)
                         .MitZahl(Katalogfilterprofil.SpEer, s.NennEer, 2)
+                        .MitText(Katalogfilterprofil.SpGeraeteart, KaeltemaschineStammCtrl.GeraeteartText(
+                            KaelteKatalogfelderSchema.GeraeteartWirksam(m.Geraeteart, m.Rueckkuehlart)))
                         .MitText(Katalogfilterprofil.SpRueckkuehlart, KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart))
                         // Der Stub kennt keinen Katalogschlüssel; ausgeliefert ist hier, was das Schloss trägt.
                         .MitText(Katalogfilterprofil.SpHerkunft, KaeltemaschineStammCtrl.HerkunftText(s.Typ, s.Auslieferung));
@@ -252,15 +254,17 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         Dictionary<string, int> stufen = Spaltenraenge.Stufen(profil, Spaltenraenge.Laengen(profil, zeilen), _ => false);
 
         // KD-4: mit den kurzen Köpfen „P_N [kW]" und „Rückk." (voller Name im Tooltip) stehen bei 640 px
-        // Bezeichner, P_N, Hersteller und EER, ab 720 px dazu die Rückkühlart, ab 880 px die Herkunft, ab 960 px
-        // der Typ.
+        // Bezeichner, P_N, Hersteller und EER, ab 720 px dazu die Rückkühlart, ab 880 px die Herkunft, ab 1040 px
+        // die Geräteart, ab 1120 px der Typ.
         Assert.Equal(0, stufen[Katalogfilterprofil.SpBezeichner]);
         Assert.Equal(0, stufen[Katalogfilterprofil.SpNennkaelteleistung]);
         Assert.Equal(560, stufen[Katalogfilterprofil.SpHersteller]);
         Assert.Equal(640, stufen[Katalogfilterprofil.SpEer]);
         Assert.Equal(720, stufen[Katalogfilterprofil.SpRueckkuehlart]);
         Assert.Equal(880, stufen[Katalogfilterprofil.SpHerkunft]);
-        Assert.Equal(960, stufen[Katalogfilterprofil.SpTyp]);
+        // K-A: die Geräteart (lange Texte) kommt nach der Herkunft, vor dem Typ.
+        Assert.Equal(1040, stufen[Katalogfilterprofil.SpGeraeteart]);
+        Assert.Equal(1120, stufen[Katalogfilterprofil.SpTyp]);
     }
 
     [Fact]
