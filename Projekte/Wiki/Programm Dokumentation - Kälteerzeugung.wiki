@@ -11,7 +11,7 @@ In der Reihenfolge der Bedienung:
 # '''Kühlung einschalten''' – Projektschalter ''Kühlung rechnen'' in der ''Simulation Konfiguration'' und am Gebäude ''Gebäude wird gekühlt'' mit Kühlsollwert ([[Programm Dokumentation/Kühlung#einschalten|Kühlung einschalten]]). Ohne Kältebedarf rechnet kein Kälteerzeuger.
 # '''Kälteerzeuger anlegen''' – Die Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite öffnet den Dialog ''Kältemaschinen im Projekt'': oben die Kältemaschinen des Projekts ([[#kaeltemaschine|Kältemaschine]]), darunter der Block ''Wärmepumpen im Kühlbetrieb'' ([[#kuehlbetrieb|Kühlbetrieb der Wärmepumpe]]).
 # '''Kältespeicher''' (wahlweise) – ein Pufferspeicher mit der Nutzung ''Kälte'' ([[#kaeltespeicher|Kältespeicher]]).
-# '''Kaskade''' – Eine Wärmepumpe im Kühlbetrieb kühlt nur, wenn sie unter ''Komponenten der Simulation'' in der Kaskade steht; die Kältemaschinen folgen ihr in der Reihenfolge ihrer Anlagen ([[#deckung|Deckung und Reihenfolge]]).
+# '''Kaskade''' – Eine Wärmepumpe im Kühlbetrieb kühlt nur, wenn sie unter ''Komponenten der Simulation'' in der Kaskade steht; die Kältemaschinen folgen ihr in der Reihenfolge ihrer Anlagen, die Pfeile im Bereich ''Kälte'' ändern diese Folge ([[#deckung|Deckung und Reihenfolge]]).
 # '''Kältestrom''' (wahlweise) – ein eigener Stromträger und ein eigener Zähler für den Kältestrom ([[#abrechnung|Stromträger und Abrechnung]]).
 
 [[Datei:Kaelteanlage_Kaeltemaschine.svg|mini|600px|Prinzipbild: Kältemaschine mit Trocken-Rückkühler, Kältespeicher und Kühlübergabe im Gebäude; der Kältestrom läuft über einen eigenen Zähler.]]
@@ -25,8 +25,10 @@ Wärmeerzeuger decken keine Kälte. Kälte decken die Wärmepumpen im Kühlbetri
 
 # '''Freie Kühlung der Kältemaschinen''' – Kältemaschinen mit Trocken- oder Nasskühler, deren Rückkühler kalt genug ist ([[#rueckkuehlung|Rückkühlung]]).
 # '''Kältespeicher''' – sie entladen ihren Vorrat ([[#kaeltespeicher|Kältespeicher]]).
-# '''Wärmepumpen im Kühlbetrieb''' – in der Reihenfolge der Kaskade; jede zuerst über die [[#freie-kuehlung-waermequelle|freie Kühlung ihrer Wärmequelle]], wenn sie eingeschaltet ist, dann mit dem Verdichter.
+# '''Wärmepumpen im Kühlbetrieb''' – in der Folge der Wärmekaskade; jede zuerst über die [[#freie-kuehlung-waermequelle|freie Kühlung ihrer Wärmequelle]], wenn sie eingeschaltet ist, dann mit dem Verdichter.
 # '''Kältemaschinen''' – mit dem Verdichter, untereinander in der Reihenfolge ihrer Anlagen. Die Kaskade der Wärmeerzeuger ordnet sie nicht.
+
+Diese Folge ist die '''Vorgabefolge'''. Die Folge der Erzeuger lässt sich im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] der ''Simulation Konfiguration'' mit den Pfeilen an den Kacheln ändern, etwa eine Kältemaschine vor die Wärmepumpe; freie Kühlung und Kältespeicher bleiben vorn. ''Vorgabefolge'' stellt die Vorgabe wieder her.
 
 Was keine Stufe deckt, bleibt ungedeckt; das Laufprotokoll nennt Menge und Spitze. Ohne Kälteerzeuger bleibt der ganze Kältebedarf ungedeckt. Die Kühlung steht in der Knappheitsreihenfolge immer an letzter Stelle; ein Bedienelement für ihren Rang gibt es nicht.
 
@@ -37,7 +39,7 @@ Was keine Stufe deckt, bleibt ungedeckt; das Laufprotokoll nennt Menge und Spitz
 == Kühlbetrieb der Wärmepumpe ==
 {{Anker|kuehlbetrieb}}
 
-Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''. Schneller geht es im Dialog ''Kältemaschinen im Projekt'' (Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite): Der Block ''Wärmepumpen im Kühlbetrieb'' unter der Anlagenliste führt alle Wärmepumpen des Projekts mit Kühlkennlinie mit je einem Schalter für denselben Wert, gespeichert mit ''OK''; Kühl-Vorlauf und Hilfsstromanteil bleiben dabei, wie sie sind. Ein gesperrter Schalter nennt seinen Grund, wenn der Zeiger darauf ruht.
+Den Kühlbetrieb stellen Sie je Wärmepumpe ein, in der Gruppe ''Kühlbetrieb'' ihrer Konfiguration: in der ''Simulation Konfiguration'' über ''Konfiguration…'' an der Karte der Wärmepumpe oder an ihrer Kachel im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] – dort schaltet ''+ Kühlbetrieb'' bzw. × den Kühlbetrieb auch direkt und sofort –, in der ''Wärmepumpen Verwaltung'' hinter ''Konfiguration…''. Schneller geht es im Dialog ''Kältemaschinen im Projekt'' (Kachel ''Kühlung und Kälteanlagen'' im Reiter ''Energieerzeuger'' der Startseite): Der Block ''Wärmepumpen im Kühlbetrieb'' unter der Anlagenliste führt alle Wärmepumpen des Projekts mit Kühlkennlinie mit je einem Schalter für denselben Wert, gespeichert mit ''OK''; Kühl-Vorlauf und Hilfsstromanteil bleiben dabei, wie sie sind. Ein gesperrter Schalter nennt seinen Grund, wenn der Zeiger darauf ruht.
 
 {| class="wikitable"
 ! Feld !! Vorgabe !! Bedeutung
@@ -103,6 +105,8 @@ Die '''Kältemaschine''' ist ein eigener Kälteerzeuger neben der Wärmepumpe im
 | eigener Zähler || aus || wirkt nur bei einem Kühlträger, der vom Stromträger des Projekts abweicht; siehe [[#abrechnung|Stromträger und Abrechnung]]
 |}
 
+'''Konfiguration in der Simulation.''' Dieselben Felder öffnet ''Konfiguration…'' an der Kachel der Kältemaschine im [[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]] der ''Simulation Konfiguration''; ebenso ein Doppelklick auf die Kältemaschine oder ihre Rückkühlung im Anlagenschema. ''OK'' prüft und schreibt, ''Abbrechen'' verwirft. Teilen sich mehrere Anlagen dieselbe Projektkopie, sagt ein Hinweis, dass Kaltwasservorlauf und Hilfsstrom für alle gelten.
+
 {{Anker|rueckkuehlung}}
 '''Rückkühlung und freie Kühlung.''' Die Abwärme der Kältemaschine geht über ihre ''Rückkühlart'' an die Umgebung: luftgekühlt direkt an die Außenluft, wassergekühlt über einen Trocken- oder Nasskühler. Die Kennlinie trägt die Rückkühltemperatur als zweite Achse; die Rückkühlung ist darin enthalten. Freie Kühlung ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Sie ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Bei Trocken- und Nasskühler gilt sie, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit einem festen Ersatz-EER von 15 plus Hilfsstrom, der Verdichter steht. Stunden und Kälte der freien Kühlung zählt der Lauf. Bei der luftgekühlten Maschine gibt es keine freie Kühlung.
 
@@ -130,7 +134,7 @@ Die Kältemaschine ist Kostenkomponente der Wirtschaftlichkeit: Investition aus 
 == Kältespeicher ==
 {{Anker|kaeltespeicher}}
 
-Ein Pufferspeicher wird zum '''Kältespeicher''', wenn seine ''Nutzung'' auf ''Kälte'' steht (Dialog ''Pufferspeicher'', Feld ''Nutzung''). ''Kälte'' steht allein, ohne Heizung, Brauchwasser und Prozesswärme; eine Senke braucht der Speicher nicht. Das Temperaturpaar heißt hier ''Kaltwasser-Vorlauf'' und ''Kaltwasser-Rücklauf'' (üblich 6 und 12 °C). Die Kapazität folgt aus Volumen und Spreizung: Volumen mal 1,16 Wh/(l·K) mal (Rücklauf minus Vorlauf).
+Ein Pufferspeicher wird zum '''Kältespeicher''', wenn seine ''Nutzung'' auf ''Kälte'' steht (Dialog ''Pufferspeicher'', Feld ''Nutzung''). In der ''Simulation Konfiguration'' steht er im Bereich ''Kälte'', nicht in der Spalte der Pufferspeicher. ''Kälte'' steht allein, ohne Heizung, Brauchwasser und Prozesswärme; eine Senke braucht der Speicher nicht. Das Temperaturpaar heißt hier ''Kaltwasser-Vorlauf'' und ''Kaltwasser-Rücklauf'' (üblich 6 und 12 °C). Die Kapazität folgt aus Volumen und Spreizung: Volumen mal 1,16 Wh/(l·K) mal (Rücklauf minus Vorlauf).
 
 * '''Laden''' – alle Kälteerzeuger laden ihn, aber nur an Kühltagen und in der Ladephase: Sie beginnt an der Einschaltschwelle und endet an der Abschaltschwelle, der Lauf beginnt leer. Der Raum hat Vorrang; geladen wird nur, was die Erzeuger über den Raumbedarf hinaus liefern, begrenzt durch die Ladeleistung.
 * '''Entladen''' – in jeder Stunde mit Vorrat, nach der freien Kühlung und vor der Wärmepumpe und der Kältemaschine.

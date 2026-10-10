@@ -519,6 +519,65 @@ body {
     background: rgba(0, 0, 0, 0.06);
 }
 
+/* DIE HINWEISLISTE (Anwenderbefund 10.10.2026: die Hinweise eines Simulationslaufs
+   deckten als ein Absatz die ganze Seite). Zugeklappt EINE Zeile: Kopftext, die Zahl
+   der Hinweise und der Klapper; aufgeklappt steht die Liste unter der Zeile (der
+   Umbruch des Flexkastens) in einem Rollbereich von hoechstens 40 % der Fensterhoehe -
+   sie rollt innen, das Banner selbst bleibt, wo es steht (auch haftend im eigenen
+   Fenster). Der Kopftext waechst hier nicht, die Zahl nimmt den Platz bis zum Klapper. */
+.epos-warnbanner--liste {
+    flex-wrap: wrap;
+}
+
+.epos-warnbanner--liste > .epos-warnbanner-text {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.epos-warnbanner-zahl {
+    flex: 1 1 auto;
+    white-space: nowrap;
+}
+
+/* Der Klapper: ein Knopf in der Anmutung von „erklaeren lassen", das
+   Beruehrungsziel haelt --epos-touchziel, der negative Rand nimmt ihm die Hoehe in
+   der Zeile (wie das Kreuz). */
+.epos-warnbanner-klapper {
+    flex: 0 0 auto;
+    align-self: center;
+    min-height: var(--epos-touchziel);
+    margin-block: -12px;
+    padding: 0 6px;
+    font: inherit;
+    color: inherit;
+    white-space: nowrap;
+    background: transparent;
+    border: none;
+    border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+
+.epos-warnbanner-klapper:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.epos-warnbanner-chevron {
+    font-weight: 700;
+}
+
+.epos-warnbanner-liste {
+    flex: 1 0 100%;
+    max-height: 40vh;
+    margin: 0;
+    padding: 4px 0 0 2em;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.epos-warnbanner-liste > li + li {
+    margin-top: 2px;
+}
+
 /* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
 .epos-warnbanner--hinweis {
     border-color: var(--epos-karte-rahmen-hover);
@@ -5594,6 +5653,55 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     background: var(--epos-flaeche);
     padding: 8px;
     border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+/* Welle KB-B: der Bereich „Kälte“ unter dem Waermeteil - dasselbe Raster (61,5/38,5, unter 900 px
+   einspaltig), dieselben Flaechen wie Erzeuger- und Speicherspalte, kein eigener Rollbereich (es rollt
+   die Seite). Der Kopfschalter steht als eigene Zeile unter dem Gruppenkopf. */
+.epos-simkonfig-kaelte {
+    margin-top: var(--epos-karte-rand);
+    min-width: 0;
+}
+
+.epos-simkonfig-kaelte .epos-simkonfig-kuehlung {
+    padding: 6px 8px 0 8px;
+}
+
+.epos-simkonfig-kaelte-spalten {
+    margin-top: 6px;
+}
+
+.epos-simkonfig-kaelte-erzeuger,
+.epos-simkonfig-kaelte-speicher {
+    background: var(--epos-flaeche);
+    padding: 8px;
+    border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+.epos-simkonfig-kaelte-aus {
+    padding: 6px 8px;
+}
+
+.epos-simkonfig-kaelte-parameter {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.epos-simkonfig-kaelte-parameter .epos-simkonfig-hinweis {
+    margin: 0;
+}
+
+/* Welle KB-D2: Herleitungszeile der Kaeltefolge und Knopf „Vorgabefolge“ in einer Zeile, die im
+   schmalen Fenster und in der Kompaktstufe umbricht statt quer zu rollen. */
+.epos-simkonfig-kaelte-folge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
     min-width: 0;
 }
 

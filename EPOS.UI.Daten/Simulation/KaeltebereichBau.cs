@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     /// baut aus dem Kernleser <see cref="Kaeltefolge.Lesen"/> das DTO <see cref="KaeltebereichDaten"/> — dieselbe Folge,
     /// in der der Lauf die Kälteerzeuger rechnet. Plattformfrei: Lesen und die Schreibwege (Projektschalter
     /// <c>KonfigurationCtrl.KuehlbetriebSetzen</c>, Kühlbetrieb der Wärmepumpe
-    /// <c>WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten</c>) sind reine Kernwege und gelten auf beiden Plattformen
+    /// <c>WaermepumpeGeraeteCtrl.KuehlbetriebUmschalten</c>, Folge der Erzeuger <c>KaeltefolgeCtrl</c>, Welle KB-D) sind reine Kernwege und gelten auf beiden Plattformen
     /// gleich; eine Plattformnaht braucht der Bereich nicht.
     /// </summary>
     internal static class KaeltebereichBau
@@ -34,8 +34,17 @@ namespace WindowsFormsApplication1
             var erzeuger = new List<KaelteerzeugerZeile>();
             int nummer = 0;
             foreach (KaelteerzeugerEintrag e in stand.Erzeuger)
-                erzeuger.Add(Zeile(e, ++nummer));
+            {
+                KaelteerzeugerZeile z = Zeile(e, ++nummer);
+                z.NachVornMoeglich = nummer > 1;
+                z.NachHintenMoeglich = nummer < stand.Erzeuger.Count;
+                erzeuger.Add(z);
+            }
             d.Erzeuger = erzeuger;
+            // KB-D: die Folge der Erzeuger ist pflegbar; die Herleitungszeile sagt, welche gilt.
+            d.FolgeGepflegt = stand.Gepflegt;
+            d.FolgeHinweis = stand.Gepflegt ? MyResource.Resource.KAELTEFOLGE_HINWEIS_GEPFLEGT
+                                            : MyResource.Resource.KAELTEFOLGE_HINWEIS_VORGABE;
 
             d.Kaeltespeicher = stand.Kaeltespeicher
                 .Select(p => speicherkachel != null ? speicherkachel(p) : SchlichteKachel(p))
@@ -106,7 +115,8 @@ namespace WindowsFormsApplication1
                 EigenerZaehler = e.EigenerZaehler,
                 FreieKuehlung = e.FreieKuehlung,
                 Rueckkuehlart = rueckkuehlart,
-                AnlagenJeKopie = e.AnlagenJeKopie
+                AnlagenJeKopie = e.AnlagenJeKopie,
+                KaelteRang = e.KaelteRang
             };
         }
 

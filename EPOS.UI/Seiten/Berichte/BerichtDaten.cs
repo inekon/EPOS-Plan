@@ -516,6 +516,19 @@ public sealed class LaufErgebnis
     /// <summary>Mehrzeilige Meldung (Pfade, Hinweise) — leer = keine.</summary>
     public string Meldung { get; set; } = "";
 
+    /// <summary>
+    /// Der Kopf der Meldung für das Banner mit Hinweisliste (etwa „Stamm: … ok
+    /// (Ergebnis-ID 357)"); leer = die Seite zeigt <see cref="Meldung"/> wie bisher.
+    /// <see cref="Meldung"/> bleibt der vollständige Text (Kopf und Hinweise).
+    /// </summary>
+    public string Meldungskopf { get; set; } = "";
+
+    /// <summary>
+    /// Die Hinweise des Laufs, ein Eintrag je Hinweis — das Banner klappt sie ein
+    /// (Simulation der Übersicht); leer = keine.
+    /// </summary>
+    public IReadOnlyList<string> Laufhinweise { get; set; } = Array.Empty<string>();
+
     /// <summary>Die Frage „öffnen?" — leer = keine Rückfrage.</summary>
     public string Frage { get; set; } = "";
 

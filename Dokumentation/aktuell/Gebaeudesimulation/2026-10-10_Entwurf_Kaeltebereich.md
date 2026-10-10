@@ -1,6 +1,6 @@
 # Entwurf KB — Kältebereich: Kälte-Kachel als Auswahldialog, Konfiguration in der Simulationskonfiguration
 
-**Stand 10.10.2026 · Entwurf; Welle KB-A gebaut (Abschnitt 7), KB-B bis KB-D offen.** Gelesen auf `8100e397` (Zweig `ios_migration_september`, Basis R50, R51 für
+**Stand 10.10.2026 · Entwurf; Wellen KB-A, KB-B und KB-D gebaut (Abschnitt 7; KB-D2: Pfeile der Folge an der Seite), KB-C offen.** Gelesen auf `8100e397` (Zweig `ios_migration_september`, Basis R50, R51 für
 FK angemeldet). Auftrag der Sitzung Gebäudesimulation; die Katalogauswahl der Kältemaschine ist Stufe 5 des
 [Konzepts Projektdialoge Katalogauswahl](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), das der Sitzung „Dialoge und
 Korrekturen“ gehört — Abschnitt 4 schlägt den Schnitt zwischen beiden Sitzungen vor.
@@ -424,10 +424,10 @@ der Referenzlauf. Eine neue Basis braucht es erst, wenn ein Referenzprojekt eine
 | Welle | Sitzung | Inhalt | Aufwand | Abnahme |
 |---|---|---|---|---|
 | **KB-A** (gebaut) | Gebäudesimulation | `Kaelteerzeugerfolge.Lesen`, Schema liest daraus; KB-1 in `Anlegen`; `KaelteGruppe` und DTO in der Hülle; Kältespeicher aus der Wärmespalte | 1 PT | Kern-Filter grün; `dotnet test` mit `--filter "FullyQualifiedName~Kaelte"` (Kern) und `~Schema`; Schale auf Linux (`dotnet build WindowsFormsApplication1/WindowsFormsApplication1.csproj -c Debug -p:Platform=x64 -p:EnableWindowsTargeting=true`, 0 Fehler); `SqlDialektPruefer`; Referenzlauf der sieben Projekte gegen die Basis PASS |
-| **KB-B** | Gebäudesimulation | Bereich Kälte der Seite, Schalterumzug, Kopf „Wärme“, Kacheln mit Aufnehmen = Kühlbetrieb, Komponente `KaeltemaschineKonfiguration` (aus dem Dialog herausgelöst und dort eingebunden), Doppelklickziele, KI-Sicht und Feldkarte, Ressourcen beider Sprachen | 2–2,5 PT | bunit `--filter "FullyQualifiedName~SimulationKonfig\|FullyQualifiedName~Kaeltemaschine\|FullyQualifiedName~Schema\|FullyQualifiedName~KiSimulation\|FullyQualifiedName~KiMaskenabdeckung"`; Schale auf Linux; `designer_neu.py` ohne Befund; Dokumentationswachen |
+| **KB-B** (gebaut) | Gebäudesimulation | Bereich Kälte der Seite, Schalterumzug, Kopf „Wärme“, Kacheln mit Aufnehmen = Kühlbetrieb, Komponente `KaeltemaschineKonfiguration` (aus dem Dialog herausgelöst und dort eingebunden), Doppelklickziele, KI-Sicht und Feldkarte, Ressourcen beider Sprachen | 2–2,5 PT | bunit `--filter "FullyQualifiedName~SimulationKonfig\|FullyQualifiedName~Kaeltemaschine\|FullyQualifiedName~Schema\|FullyQualifiedName~KiSimulation\|FullyQualifiedName~KiMaskenabdeckung"`; Schale auf Linux; `designer_neu.py` ohne Befund; Dokumentationswachen |
 | **KB-C** | Gebäudesimulation | Probenfall `simkonfig-kaelte` (Rollbereich, Fenstergrößen 1 280 × 800, 1 280 × 720, 1 210 × 834), `fensterprobe.mjs` für die Überlagerung, Wiki-Quellen und Logbuch-Entwurf | 0,5–0,75 PT | Proben grün mit Gegenprobe; Wiki-Gegenlese mit dem Suchmuster der `CLAUDE.md`; `WikiProduktdatenWacheTests` |
 | **Stufe 5** | Dialoge und Korrekturen | Dialog auf `Zweispaltenauswahl`, Umstellen, Rückweggewerk mit Kindzeilen, Löschweg, Kopie bearbeiten, Felder heraus (nach KB-B) | 2,5–3,5 PT | nach Konzept Abschnitt 8: Kern-Tests des Rückwegs, Dialogtests, SQL-Dialekt, Rasterprobe, `fensterprobe.mjs`, `rollbereichprobe.mjs` ohne Ausnahme |
-| **KB-D** (optional) | Gebäudesimulation | Schemaschritt `Kaelte_Rang`, Kern sortiert, Pfeile, Arbeitsstand, Einfrierregel-Satz | 1,5–2 PT | wie KB-A, dazu Schematests, Referenzlauf byte-gleich, `Werkzeuge/Testdatenbankschema` |
+| **KB-D** (gebaut; Pfeile an der Seite: KB-D2) | Gebäudesimulation | Schemaschritt `Kaelte_Rang`, Kern sortiert, Pfeile, Arbeitsstand, Einfrierregel-Satz | 1,5–2 PT | wie KB-A, dazu Schematests, Referenzlauf byte-gleich, `Werkzeuge/Testdatenbankschema` |
 
 **KB-A gebaut (10.10.2026, Zweig `gs-kba`):** Die Kältefolge hat eine Quelle, `Kaeltefolge` im Kern (Stufen fest;
 Ordnungsregeln `ErzeugerOrdnen`, `KaeltemaschinenOrdnen`, `KaeltespeicherOrdnen`). Lauf und Schema ordnen darüber, der Leser
@@ -438,6 +438,21 @@ Kältespeicher und freie Kühlung). DTO `KaeltebereichDaten` in `SimulationKonfi
 `KaeltemaschineCtrl.EigeneKopieAnlegen` je Anlage eine eigene Kopie an; die Testdatenbank führt keine geteilte Kopie. Die
 Kältespeicher bleiben bis KB-B zusätzlich in der Wärmespalte (die Seite zeigt den Bereich noch nicht). Protokoll:
 [`2026-10-10_KB-A_Kaeltefolge_Projektkopie.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-A_Kaeltefolge_Projektkopie.md).
+
+**KB-D gebaut (10.10.2026, Zweig `gs-kbd`; Kern, Schema, Dienste; Pfeile an der Seite mit KB-D2):** Entscheid E117 F1 — die Folge der
+Kälteerzeuger ist pflegbar. Schemaschritt 212 `KaelteRangSchema` legt `Tab_Energieanlagen.Kaelte_Rang` an (INTEGER ≥ 1,
+NULL = Vorgabefolge); die Stufen bleiben fest (freie Kühlung vorn, Kältespeicher nach Entladepriorität). `Kaeltefolge`
+ordnet Erzeuger mit Rang vorn, ohne Rang in der Vorgabefolge; Lauf, Schema und Leser ordnen darüber. Schreibweg
+`KaeltefolgeCtrl` (`FolgeSetzen`, `Verschieben`, `VorgabeSetzen`, Prüfregeln). Die Pfeile schreiben **sofort** wie der
+Kühlbetrieb im selben Bereich, nicht in den Arbeitsstand (Abweichung von 3.4). Dienste `KaelteVerschieben`,
+`KaelteVorgabefolge`; DTO `FolgeGepflegt`, `FolgeHinweis`, je Zeile `KaelteRang`, `NachVornMoeglich`, `NachHintenMoeglich`.
+Referenzprojekte ohne Rang, Basis R51 byte-gleich; der Einfrierregel-Satz bleibt offen, bis ein Referenzprojekt einen Rang
+bekommt. **KB-D2:** ▲/▼ je Erzeugerkachel im Bereich „Kälte“ (nur mit Schreibweg und ab zwei Erzeugern, am
+Rand ausgegraut), Knopf „Vorgabefolge“ (weich gesperrt, solange die Vorgabe gilt), Herleitungszeile aus `FolgeHinweis`.
+Protokoll:
+[`2026-10-10_KB-D_Kaeltefolge_pflegbar.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-D_Kaeltefolge_pflegbar.md).
+
+**KB-B gebaut (10.10.2026, Zweig `gs-kbb`):** Bereich „Kälte“ der Seite mit Kopfschalter, Kälteerzeugern in Rechenfolge, Kühlbetrieb der Wärmepumpe an der Kachel, Kältespeichern nur hier und Hinweiszeile bei „aus“; Komponenten `KaeltemaschineKonfiguration` (aus dem Dialog herausgelöst, dort eingebunden) und `WaermepumpeKuehlbetriebGruppe` (aus der Wärmepumpen-Konfiguration herausgelöst); Schema-Doppelklick auf die Kältemaschine öffnet die Konfiguration in der Seite; KI-Sicht um drei Felder. Kopf „Wärme“ und der Doppelklick der Wärmepumpe im Kühlbetrieb (3.6) bleiben offen. Protokoll: [`2026-10-10_KB-B_Kaeltebereich.md`](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-B_Kaeltebereich.md).
 
 **Summe:** Gebäudesimulation 3,5–4,25 PT, mit KB-D 5–6,25 PT; Dialoge 2,5–3,5 PT. **Voraussetzung:** Welle FK (R51) ist
 gemergt, damit KB-B ihre Eingaben der freien Kühlung übernimmt.

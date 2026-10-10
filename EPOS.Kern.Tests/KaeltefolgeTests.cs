@@ -157,6 +157,21 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { 1071273 }, geladen.Kaeltebereich.Kaeltespeicher.Select(s => s.IdPuffer));
             Assert.NotNull(dienste.KuehlbetriebWpSchreiben);
 
+            // KB-B (E117 F4): Der Kältespeicher steht NUR im Bereich „Kälte“, nicht in der Speicherspalte der Wärme.
+            Assert.DoesNotContain(1071273, geladen.Speicher.Select(s => s.IdPuffer));
+
+            // KB-B (E117 F2): die Konfiguration der Kältemaschine - dieselben Daten wie der Dialog, OK prüft und schreibt.
+            KaelteerzeugerZeile kmZeile = d.Erzeuger.Single(z => z.Art == KaelteStufe.Kaeltemaschine);
+            EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben kmGaben = dienste.KaeltemaschineKonfigurationLaden(kmZeile.IdAnlage);
+            Assert.NotNull(kmGaben);
+            Assert.Equal(kmZeile.IdAnlage, kmGaben.Daten.AnlagenId);
+            Assert.NotEmpty(kmGaben.Stromtraeger);
+            Assert.Null(dienste.KaeltemaschineKonfigurationLaden(-1));
+            Assert.True(string.IsNullOrEmpty(dienste.KaeltemaschineKonfigurationSpeichern(kmGaben.Daten.Kopie())));
+            EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten ungueltig = kmGaben.Daten.Kopie();
+            ungueltig.Anzahl = 0;
+            Assert.False(string.IsNullOrEmpty(dienste.KaeltemaschineKonfigurationSpeichern(ungueltig)));
+
             KaelteerzeugerZeile wp = d.Erzeuger.FirstOrDefault(z => z.Art == KaelteStufe.Waermepumpe && z.Sperrgrund == null);
             if (wp == null) return;
             Assert.False(wp.Kuehlbetrieb);

@@ -226,9 +226,12 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>KP3 O1b: siebzig — der Aufschlag der Aufheizoptimierung in Stunden und Prozent.</para>
     /// <para>UB‑E4: einundsiebzig — die Betriebsbereiche der Wärmepumpe (nur lesend).</para>
     /// <para>KM3‑E3‑b: zweiundsiebzig — Teillast und Takten der Kältemaschinen (nur lesend).</para>
+    /// <para>KB‑D: vierundsiebzig — die Folge der Kälteerzeuger (lesend) und „gepflegt“ (aus = Vorgabefolge).</para>
+    /// <para>KB‑B: siebenundsiebzig — der Bereich „Kälte“: Kälteerzeuger und Kältespeicher (nur lesend), die
+    /// Wärmepumpen im Kühlbetrieb.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_zweiundsiebzig_Felder_an()
+    public void Die_Ansicht_meldet_siebenundsiebzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -238,8 +241,9 @@ public class KiSimulationMaskeTests : IDisposable
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
         // 63 und die fünf der thermischen Desinfektion (Welle M7, BW5), dazu die zwei des Aufschlags (O1b)
-        // und die Betriebsbereiche der Wärmepumpe (UB-E4), dazu Teillast und Takten der Kältemaschinen (KM3-E3-b).
-        Assert.Equal(72, felder.Count);
+        // und die Betriebsbereiche der Wärmepumpe (UB-E4), dazu Teillast und Takten der Kältemaschinen (KM3-E3-b)
+        // und die Folge der Kälteerzeuger mit ihrem Schalter (KB-D) und die drei des Bereichs „Kälte“ (KB-B).
+        Assert.Equal(77, felder.Count);
     }
 
     /// <summary>
@@ -453,7 +457,8 @@ public class KiSimulationMaskeTests : IDisposable
         {
             "reiter",
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb",
+            "kessel_bereitschaft", "kessel_heizgrenze", "kuehlbetrieb", "kaeltefolge_gepflegt",
+            "kuehlbetrieb_waermepumpen",
             "netzverlust_heizung", "netzverlust_heizung_einheit", "netzverlust_brauchwasser",
             "netzverlust_brauchwasser_einheit", "netzverlust_prozess", "netzverlust_prozess_einheit",
             "zirkulation_leistung", "zirkulation_laufzeit", "anlagenkopplung",

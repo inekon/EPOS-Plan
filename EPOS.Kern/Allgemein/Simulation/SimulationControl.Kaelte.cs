@@ -291,8 +291,8 @@ namespace WindowsFormsApplication1
             KaeltemaschinenVorbereiten(erhoben, ref projekttraeger);
 
             // KB-A: die Folge der Kälteerzeuger aus der einen Quelle (Kaeltefolge) - dieselbe Regel liest der
-            // Bereich „Kälte“ der Simulationskonfiguration.
-            _kaelteerzeuger = Kaeltefolge.ErzeugerOrdnen(_kaelteerzeuger);
+            // Bereich „Kälte“ der Simulationskonfiguration. KB-D: gepflegte Ränge vorn, ohne Rang die Vorgabefolge.
+            _kaelteerzeuger = Kaeltefolge.ErzeugerOrdnen(_kaelteerzeuger, Kaeltefolge.RaengeLesen(m_ID_Projekt));
 
             if (_kaelteerzeuger.Count == 0) return;
 

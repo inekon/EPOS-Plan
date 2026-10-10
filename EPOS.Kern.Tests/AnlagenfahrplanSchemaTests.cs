@@ -142,9 +142,10 @@ namespace EPOS.Kern.Tests
             List<string> anlagen = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ANLAGEN);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(AnlagenfahrplanSchema.TAB_ERGEBNIS);
             // Hinter den zwei Spalten stehen allein die drei der freien Kühlung (Schritt 187) und die sechs des
-            // Erdsondenfeldes (Schritt 195) und die zwei der Uebergabegrenze (Schritt 205).
+            // Erdsondenfeldes (Schritt 195), die zwei der Uebergabegrenze (Schritt 205) und der Rang der Kaeltefolge
+            // (Schritt 212).
             int frei = FreieKuehlungSoleSchema.SPALTEN_ANLAGE.Count + ErdsondenfeldSchema.SPALTEN.Count +
-                       UebergabegrenzeSchema.SPALTEN_ANLAGE.Count;
+                       UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count;
             Assert.Equal(new[] { "Zeitprogramm", "Vorlauf_Max" }, anlagen.Skip(anlagen.Count - frei - 2).Take(2).ToArray());
             // Dahinter stehen allein die sechs Kennzahlen des Kreises (Ak3Schema), die sieben von AK3-K (Ak3KSchema) und
             // die drei der Kuehlkurve (KuehlkurveSchema).

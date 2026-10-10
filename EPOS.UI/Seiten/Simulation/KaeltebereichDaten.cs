@@ -84,6 +84,15 @@ public sealed class KaelteerzeugerZeile
 
     /// <summary>Wie viele Anlagen dieselbe Projektkopie führen; größer 1 = Vorlauf und Hilfsstrom gelten für alle.</summary>
     public int AnlagenJeKopie = 1;
+
+    /// <summary>Der gepflegte Rang (<c>Tab_Energieanlagen.Kaelte_Rang</c>, Welle KB-D); <c>null</c> = Vorgabefolge.</summary>
+    public int? KaelteRang;
+
+    /// <summary>Lässt sich der Erzeuger einen Platz nach vorn rücken (nicht der erste)?</summary>
+    public bool NachVornMoeglich;
+
+    /// <summary>Lässt sich der Erzeuger einen Platz nach hinten rücken (nicht der letzte)?</summary>
+    public bool NachHintenMoeglich;
 }
 
 /// <summary>Ein Erzeuger mit freier Kühlung — die Lesezeile des Bereichs „Kälte“.</summary>
@@ -104,7 +113,7 @@ public sealed class KaeltebereichDaten
     /// <summary>„Kühlung rechnen“ des Projekts (<c>Tab_Einstellungen.Kuehlbetrieb</c>).</summary>
     public bool Kuehlbetrieb;
 
-    /// <summary>Die Stufen in Rechenfolge — heute fest; die Herleitungszeile nennt sie.</summary>
+    /// <summary>Die Stufen in Rechenfolge — fest; die Herleitungszeile nennt sie. Gepflegt wird die Folge der Erzeuger.</summary>
     public IReadOnlyList<KaelteStufe> Folge = new List<KaelteStufe>();
 
     /// <summary>Die Kälteerzeuger in Rechenfolge: Wärmepumpen mit Kühlfunktion, dann Kältemaschinen.</summary>
@@ -115,6 +124,16 @@ public sealed class KaeltebereichDaten
 
     /// <summary>Die Erzeuger mit freier Kühlung: Kältemaschinen (vor allen), dann Wärmepumpen.</summary>
     public IReadOnlyList<FreieKuehlungZeile> FreieKuehlung = new List<FreieKuehlungZeile>();
+
+    /// <summary>
+    /// Ist die Folge der Erzeuger gepflegt (Welle KB-D)? <c>false</c> = die Vorgabefolge gilt (Wärmepumpen, dann
+    /// Kältemaschinen); <c>true</c> = der Knopf „Vorgabefolge“ (<see cref="SimulationKonfigDienste.KaelteVorgabefolge"/>)
+    /// hat etwas zu tun.
+    /// </summary>
+    public bool FolgeGepflegt;
+
+    /// <summary>Die Herleitungszeile der Folge in der Oberflächensprache (gepflegt oder Vorgabe).</summary>
+    public string FolgeHinweis = "";
 
     /// <summary>true = weder Kälteerzeuger noch Kältespeicher — die Leerzeile sagt, wo man sie anlegt.</summary>
     public bool Leer => Erzeuger.Count == 0 && Kaeltespeicher.Count == 0;

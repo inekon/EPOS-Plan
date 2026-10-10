@@ -7,7 +7,9 @@ Die Anlagen des Projekts stehen als Karten in der Spalte ''Wärmeerzeuger, Strom
 
 {{Hinweis|Die Reihenfolge der Karten ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort. ''Konfiguration speichern'' schreibt die Kaskade – ungespeichert rechnet der Lauf den zuletzt gespeicherten Stand.}}
 
-Im Block ''Weitere Einstellungen'' darunter stehen die Projekteinstellungen des Laufs: Netzverluste gesamt oder je Kanal samt Zirkulation, ''Kühlung rechnen'', Anlagenkopplung, Einspeisegrenze, thermische Desinfektion und Aufheizoptimierung. Die Anlagenkopplung steht auf ''aus'', ''Heizkreis (AK1)'' oder ''geschlossener Kreis (AK3)''; mit ihr rechnen die Gebäude ihren Heizkreis, und die Betriebszeiten der Wärmepumpe wirken auf die Raumtemperatur ([[Programm Dokumentation/Simulation#anlagenkopplung|Anlagenkopplung]]).
+Unter den Spalten steht der Bereich ''Kälte'' mit dem Schalter ''Kühlung rechnen'', den Kälteerzeugern in ihrer Folge und den Kältespeichern ([[Programm Dokumentation/Simulation#bereich-kaelte|Bereich Kälte]]).
+
+Im Block ''Weitere Einstellungen'' darunter stehen die Projekteinstellungen des Laufs: Netzverluste gesamt oder je Kanal samt Zirkulation, Anlagenkopplung, Einspeisegrenze, thermische Desinfektion und Aufheizoptimierung. Die Anlagenkopplung steht auf ''aus'', ''Heizkreis (AK1)'' oder ''geschlossener Kreis (AK3)''; mit ihr rechnen die Gebäude ihren Heizkreis, und die Betriebszeiten der Wärmepumpe wirken auf die Raumtemperatur ([[Programm Dokumentation/Simulation#anlagenkopplung|Anlagenkopplung]]).
 
 == Pufferspeicher zuordnen ==
 {{Anker|pufferspeicher-zuordnen|speicherbewirtschaftung}}

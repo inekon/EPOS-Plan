@@ -1169,6 +1169,16 @@ neunundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt** — kein Rechenweg liest die Spalten; die Kältemaschinenprojekte 1017, 1055, 1059, 1063 und 1064 rechnen
 > byte-gleich ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_K-A_Katalogfelder_Kaelte.md)).
 
+> **Nachtrag — Testdatenbank auf 212 (pflegbare Kältefolge, KB-D), Basis R51 unberührt.** `KaelteRangSchema`
+> (212 = `KaelteKatalogfelderSchema.SCHRITT + 1`) legt `Tab_Energieanlagen.Kaelte_Rang` an (INTEGER ≥ 1, NULL =
+> Vorgabefolge), reines DDL. Gehoben aus dem Stand 211 (`ee2ba997…`) mit `Werkzeuge/Testdatenbankschema`; geändert sind
+> nur die Spalte und `Tab_Applikation.SchemaVersion`, kein Referenzprojekt trägt einen Rang. Die Testdatenbank steht auf
+> **212** (`quick_check` ok, `foreign_key_check` leer, SQL-Dialektprüfer 0 Fundstellen): **95 596 544 Byte, LFS-SHA-256
+> `5b7a63e21a9a402df3ae6925e7a23fbcf4e405c197aa96f63aebf2fc5cbd91aa`**. **Die Basis `2026-10-10_R51_FreieKuehlung`
+> bleibt** — ohne Rang ist die Kältefolge die bisherige; 1017, 1047, 1055, 1058, 1059, 1061, 1062, 1063 und 1064 rechnen
+> byte-gleich (330 von 330 Dateien). Ein Rang in einem Referenzprojekt friert neu ein
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-10_KB-D_Kaeltefolge_pflegbar.md)).
+
 ### Die Vorgängerbasis R50 (Wochentagsraster)
 
 Achtundzwanzig Projekte, 911 CSV, 6 336 Skalare, auf Linux eingefroren gegen die Testdatenbank `32af2d32…`

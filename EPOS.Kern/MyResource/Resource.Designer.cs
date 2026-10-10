@@ -48828,6 +48828,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht zweimal in der Folge der Kälteerzeuger. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_DOPPELT {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage {0} ist kein Kälteerzeuger dieses Projekts. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_KEIN_KAELTEERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Projekt gewählt. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kälteerzeuger steht bereits am Rand der Folge. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_RAND {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_RAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datenbank führt die Folge der Kälteerzeuger noch nicht (Schemaschritt {0}). ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_SCHEMA {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Folge der Kälteerzeuger ließ sich nicht speichern: {0} ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_SCHREIBEN {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_SCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ fehlt in der Folge der Kälteerzeuger; die Folge nennt jeden Kälteerzeuger genau einmal. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_FEHLER_UNVOLLSTAENDIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gepflegte Folge: freie Kühlung, Kältespeicher, dann die Erzeuger in der gezeigten Reihenfolge. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_HINWEIS_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_HINWEIS_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabefolge: freie Kühlung, Kältespeicher, Wärmepumpen, Kältemaschinen. ähnelt.
+        /// </summary>
+        public static string KAELTEFOLGE_HINWEIS_VORGABE {
+            get {
+                return ResourceManager.GetString("KAELTEFOLGE_HINWEIS_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sensible Kälte ohne Entfeuchtung: Feuchte und latente Last sind nicht enthalten — der Kältebedarf einer Anlage mit Entfeuchtung liegt darüber. ähnelt.
         /// </summary>
         public static string KAELTE_GRENZE_FEUCHTE {
@@ -63863,6 +63944,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kälteerzeuger des Bereichs „Kälte“ in Rechenfolge, je Eintrag Nummer, Name und Kennwerte; nur lesend. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEERZEUGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEERZEUGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kälteerzeuger in der Reihenfolge, in der sie den Kältebedarf decken, nach freier Kühlung und Kältespeicher. Nur lesbar; umgeordnet wird im Bereich Kälte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Folge der Kälteerzeuger ist gepflegt. Aus stellt die Vorgabefolge her (Wärmepumpen, dann Kältemaschinen); schreibt sofort. An lässt sich nur über die Pfeile im Bereich Kälte setzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältefolge gepflegt ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Folge der Kälteerzeuger ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEFOLGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEFOLGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältespeicher des Projekts mit Volumen und Temperaturpaar; nur lesend. Angelegt werden sie in der Pufferverwaltung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTESPEICHER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTESPEICHER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die aufgenommenen Erzeuger in der Reihenfolge, in der die Simulation sie einsetzt — je Gruppe eine Aufzählung. Der Rang entscheidet, welcher Erzeuger den Bedarf zuerst deckt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_KASKADE_ERL {
@@ -63904,6 +64039,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_KUEHLBETRIEB_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_KUEHLBETRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb aus ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHL_AUS {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Namen der Wärmepumpen, deren Kühlbetrieb an ist, durch Komma getrennt. Jede genannte schaltet ihn an, jede ungenannte aus; geschrieben wird sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHL_WP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHL_WP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wärmepumpe mit Kühlfunktion im Bereich „Kälte“: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHL_WP_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHL_WP_UNBEKANNT", resourceCulture);
             }
         }
         
@@ -74210,6 +74372,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Folge der Kälteerzeuger wird über die Pfeile im Bereich Kälte gepflegt; hier lässt sie sich nur auf die Vorgabefolge zurücksetzen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_KAELTEFOLGE_NUR_VORGABE {
+            get {
+                return ResourceManager.GetString("KI_SIM_KAELTEFOLGE_NUR_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Wert schreibt die Plattform hier nicht. ähnelt.
         /// </summary>
         public static string KI_SIM_KEIN_SCHREIBWEG {
@@ -75738,6 +75909,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_WP_LEER {
             get {
                 return ResourceManager.GetString("KMA_WP_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät: {0} ähnelt.
+        /// </summary>
+        public static string KMK_GERAET_ZEILE {
+            get {
+                return ResourceManager.GetString("KMK_GERAET_ZEILE", resourceCulture);
             }
         }
         
@@ -107583,6 +107763,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string SIMKONF_GRP_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMKONF_GRP_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
         /// </summary>
         public static string SIMKONF_GRP_KUEHLUNG {
@@ -107732,6 +107921,267 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_HRL_ZIRK_MENGE {
             get {
                 return ResourceManager.GetString("SIMKONF_HRL_ZIRK_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die + Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_AN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte. Angelegt: {0} Kältemaschinen, {1} Wärmepumpen mit Kühlfunktion, {2} Kältespeicher — sie bleiben gespeichert und wirken nicht. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_AUS {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet keine Kälte. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_AUS_LEER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_AUS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabefolge ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_BTN_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_BTN_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger (Rechenfolge) ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenfolge je Kältestunde: {0}. Die Nummern an den Kacheln zeigen sie; die Folge ist fest. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_FOLGE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_FOLGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freie Kühlung: {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_FREI {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (an ihrem Platz) ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_FREI_PLATZ {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_FREI_PLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (vor allen Erzeugern) ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_FREI_VORN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_FREI_VORN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf und Hilfsstrom gelten für {0} Anlagen mit derselben Projektkopie. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_GILT_FUER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_GILT_FUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschine steht nicht (mehr) im Projekt. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_KM_FEHLT {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_KM_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine konfigurieren — {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_KM_TITEL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_KM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kälteerzeuger im Projekt. Kältemaschinen legt die Kachel „Kühlung und Kälteanlagen“ an; eine Wärmepumpe mit Kühlfunktion kühlt mit eingeschaltetem Kühlbetrieb. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_LEER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht nicht in der Wärmekaskade — ohne Platz dort kühlt die Wärmepumpe nicht. Aufnehmen unter „Wärmeerzeuger“. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_NICHT_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_NICHT_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Kältespeicher im Projekt. Einen Kältespeicher legt die Pufferverwaltung als Speicher mit Nutzung Kälte an. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_SPEICHER_LEER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_SPEICHER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_STUFE_FREI {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_STUFE_FREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen in Anlagenfolge ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_STUFE_KM {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_STUFE_KM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_STUFE_SPEICHER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_STUFE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpen in der Folge der Wärmekaskade ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_STUFE_WP {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_STUFE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb der Wärmepumpe einschalten ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_AN {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_AN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb der Wärmepumpe ausschalten ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_AUS {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration öffnen ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_KONFIG {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Kältefolge nach vorn – deckt früher; schreibt sofort ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_VOR {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_VOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stellt die Vorgabefolge wieder her (Wärmepumpen, dann Kältemaschinen); schreibt sofort. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Kältefolge nach hinten – deckt später; schreibt sofort ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_ZURUECK {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorgabefolge gilt bereits. Die Pfeile an den Kacheln pflegen die Folge der Kälteerzeuger. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_VORGABE_GILT {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_VORGABE_GILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kühlbetrieb der Wärmepumpe wurde nicht geschrieben: {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_WP_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_WP_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb — {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_WP_TITEL {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_WP_TITEL", resourceCulture);
             }
         }
         
@@ -112978,7 +113428,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Kältemaschinen des Projekts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Konfiguration der Kältemaschine. ähnelt.
         /// </summary>
         public static string SIM_SCHEMA_DK_KAELTEMASCHINE {
             get {
@@ -113005,7 +113455,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Kältemaschinen des Projekts; dort steht die Rückkühlart. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelklick öffnet die Konfiguration der Kältemaschine; ihre Gerätedaten nennen die Rückkühlart. ähnelt.
         /// </summary>
         public static string SIM_SCHEMA_DK_RUECKKUEHLUNG {
             get {
@@ -124773,6 +125223,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VPOS_TITEL {
             get {
                 return ResourceManager.GetString("VPOS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise anzeigen ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_ANZEIGEN {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_ANZEIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise ausblenden ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_AUSBLENDEN {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_AUSBLENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 Hinweis ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_EINER {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_EINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Hinweise ähnelt.
+        /// </summary>
+        public static string WARNBANNER_HINWEISE_MEHRERE {
+            get {
+                return ResourceManager.GetString("WARNBANNER_HINWEISE_MEHRERE", resourceCulture);
             }
         }
         
