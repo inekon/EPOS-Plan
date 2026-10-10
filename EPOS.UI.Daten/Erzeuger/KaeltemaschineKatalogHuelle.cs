@@ -10,8 +10,9 @@ namespace WindowsFormsApplication1
     /// <b>Die Hülle der Verwaltung „Kältemaschinen"</b> (KU3-1, Teil 2) — sie baut aus
     /// <see cref="KaeltemaschineStammCtrl"/> den Parametersatz der Razor-Komponente
     /// <c>KaeltemaschineKatalogDialog</c> und bildet zwischen <see cref="KaeltemaschineModel"/> und
-    /// <see cref="KaeltemaschineDaten"/> ab. Plattformfrei: Unter Windows reicht die Hauptfensterhülle den
-    /// Satz an die <c>AppWurzel</c> (Seitenschlüssel <c>KAELTEMASCHINE_KATALOG</c>), auf iOS die Projektquelle.
+    /// <see cref="KaeltemaschineDaten"/> ab. Plattformfrei: Unter Windows zeigt ihn die Fensterhülle
+    /// <c>KaeltemaschineKatalogFensterHuelle</c> im eigenen Fenster, auf iOS reicht ihn die Projektquelle an die
+    /// <c>AppWurzel</c> (Seitenschlüssel <c>KAELTEMASCHINE_KATALOG</c>).
     ///
     /// <para><b>Die Rückkühlart</b> geht als Listenplatz in die Oberfläche und kommt als Persistenzwert aus
     /// <see cref="KaeltemaschineSchema.RUECKKUEHLARTEN"/> zurück; die Anzeigetexte liefert der Kern
@@ -44,7 +45,11 @@ namespace WindowsFormsApplication1
                 ["Lesezeile"] = new Func<KaeltemaschineDaten, KaeltemaschineTeillastLesestand>(Lesezeile),
                 ["NennEerHinweis"] = new Func<KaeltemaschineDaten, string>(d => KaeltemaschineStammCtrl.NennEerHinweis(AlsModell(d))),
                 ["Teillastbild"] = new Func<KaeltemaschineDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell>(
-                    d => KaeltemaschineTeillastbild.Modell(AlsModell(d)))
+                    d => KaeltemaschineTeillastbild.Modell(AlsModell(d))),
+                // KD-3: die Kennlinie als Bild (EER, Kaelteleistung) und die Parameteruebersicht des Vergleichs.
+                ["Kennlinienbilder"] = new Func<KaeltemaschineDaten, KaeltemaschineKennlinienbilder>(KaeltemaschineKennlinienbild.Modelle),
+                ["Uebersicht"] = new Func<string, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.Werte),
+                ["UebersichtZuId"] = new Func<int, IReadOnlyList<Parameterwert>>(KaeltemaschineParameteruebersicht.WerteZuId)
             };
         }
 

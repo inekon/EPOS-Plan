@@ -26,6 +26,18 @@ public sealed class KaeltemaschineAnlageTexte
     public string TitelKatalog { get; set; } = Resource.KMA_TITEL_KATALOG;
     public string KatalogKeineWahl { get; set; } = Resource.KMA_KATALOG_KEINE_WAHL;
     public string KatalogLeer { get; set; } = Resource.KMA_KATALOG_LEER;
+    /// <summary>„Typkennfelder laden…" in der Katalogwahl — derselbe Text wie in der Verwaltung.</summary>
+    public string KnopfTypkennfelder { get; set; } = Resource.KM_BTN_TYPKENNFELDER;
+    /// <summary>Ergebnis des Ladens; {0} = neu angelegt, {1} = übersprungen.</summary>
+    public string TypkennfelderGeladen { get; set; } = Resource.KM_MSG_TYPKENNFELDER;
+    /// <summary>Das Laden der Typkennfelder ist gescheitert, ohne Grund des Kerns.</summary>
+    public string TypkennfelderFehler { get; set; } = Resource.KM_MSG_FEHLER;
+    /// <summary>„Katalogverwaltung…" in der Katalogwahl.</summary>
+    public string KnopfVerwaltung { get; set; } = Resource.KM_ANL_BTN_VERWALTUNG;
+    /// <summary>Die Plattform öffnet die Verwaltung nicht.</summary>
+    public string VerwaltungNicht { get; set; } = Resource.KM_ANL_MSG_VERWALTUNG_NICHT;
+    /// <summary>Ungespeicherte Änderungen halten „Katalogverwaltung…" an.</summary>
+    public string VerwaltungUngespeichert { get; set; } = Resource.KM_ANL_MSG_UNGESPEICHERT;
 
     public string GruppeGeraet { get; set; } = Resource.KMA_GRUPPE_GERAET;
     public string HinweisKatalog { get; set; } = Resource.KMA_HINWEIS_KATALOG;

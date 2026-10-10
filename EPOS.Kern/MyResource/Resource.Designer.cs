@@ -52105,7 +52105,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_N ähnelt.
         /// </summary>
         public static string KFLT_SP_NENNKAELTELEISTUNG {
             get {
@@ -74239,6 +74239,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung… ähnelt.
+        /// </summary>
+        public static string KM_ANL_BTN_VERWALTUNG {
+            get {
+                return ResourceManager.GetString("KM_ANL_BTN_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Katalogverwaltung öffnen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_MSG_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("KM_ANL_MSG_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Katalogverwaltung der Kältemaschinen lässt sich hier nicht öffnen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_MSG_VERWALTUNG_NICHT {
+            get {
+                return ResourceManager.GetString("KM_ANL_MSG_VERWALTUNG_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
         /// </summary>
         public static string KM_AUSK_AUSSEN {
@@ -74401,6 +74428,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder ausblenden ähnelt.
+        /// </summary>
+        public static string KM_CHK_OHNE_TYPKENNFELDER {
+            get {
+                return ResourceManager.GetString("KM_CHK_OHNE_TYPKENNFELDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Soll die Kältemaschine „{0}“ gelöscht werden? ähnelt.
         /// </summary>
         public static string KM_FRAGE_LOESCHEN {
@@ -74424,6 +74460,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_GRUPPE_KENNLINIE {
             get {
                 return ResourceManager.GetString("KM_GRUPPE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferung ähnelt.
+        /// </summary>
+        public static string KM_HERKUNFT_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("KM_HERKUNFT_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigen ähnelt.
+        /// </summary>
+        public static string KM_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("KM_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfeld ähnelt.
+        /// </summary>
+        public static string KM_HERKUNFT_TYPKENNFELD {
+            get {
+                return ResourceManager.GetString("KM_HERKUNFT_TYPKENNFELD", resourceCulture);
             }
         }
         
@@ -74523,6 +74586,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_KENNLINIE_RASTER {
             get {
                 return ResourceManager.GetString("KM_KENNLINIE_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außenluft [°C] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_AUSSEN {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER [-] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_EER {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung [kW] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung [°C] ähnelt.
+        /// </summary>
+        public static string KM_KL_ACHSE_RUECKKUEHL {
+            get {
+                return ResourceManager.GetString("KM_KL_ACHSE_RUECKKUEHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinie: ähnelt.
+        /// </summary>
+        public static string KM_KL_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine vollständigen Kennlinienpunkte vorhanden ähnelt.
+        /// </summary>
+        public static string KM_KL_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("KM_KL_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER ähnelt.
+        /// </summary>
+        public static string KM_KL_REITER_EER {
+            get {
+                return ResourceManager.GetString("KM_KL_REITER_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung ähnelt.
+        /// </summary>
+        public static string KM_KL_REITER_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_REITER_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER je Kaltwassertemperatur ähnelt.
+        /// </summary>
+        public static string KM_KL_TITEL_EER {
+            get {
+                return ResourceManager.GetString("KM_KL_TITEL_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteleistung je Kaltwassertemperatur ähnelt.
+        /// </summary>
+        public static string KM_KL_TITEL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KM_KL_TITEL_LEISTUNG", resourceCulture);
             }
         }
         
@@ -75288,6 +75441,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_TYPKENNFELD_WAEHLEN {
             get {
                 return ResourceManager.GetString("KM_TYPKENNFELD_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EER-Verhältnis g({0}) ähnelt.
+        /// </summary>
+        public static string KM_VGL_G {
+            get {
+                return ResourceManager.GetString("KM_VGL_G", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinienstützstellen ähnelt.
+        /// </summary>
+        public static string KM_VGL_STUETZSTELLEN {
+            get {
+                return ResourceManager.GetString("KM_VGL_STUETZSTELLEN", resourceCulture);
             }
         }
         

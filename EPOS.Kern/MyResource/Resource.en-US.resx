@@ -45418,6 +45418,18 @@ chart</value>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(not specified)</value>
   </data>
+  <data name="KM_HERKUNFT_TYPKENNFELD" xml:space="preserve">
+    <value>Type map</value>
+  </data>
+  <data name="KM_HERKUNFT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Supplied</value>
+  </data>
+  <data name="KM_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>own</value>
+  </data>
+  <data name="KM_CHK_OHNE_TYPKENNFELDER" xml:space="preserve">
+    <value>Hide type maps</value>
+  </data>
   <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
     <value>Air-cooled</value>
   </data>
@@ -45482,7 +45494,7 @@ chart</value>
     <value>Chillers</value>
   </data>
   <data name="KFLT_SP_NENNKAELTELEISTUNG" xml:space="preserve">
-    <value>Cooling capacity</value>
+    <value>P_N</value>
   </data>
   <data name="KFLT_SP_EER" xml:space="preserve">
     <value>EER</value>
@@ -45669,6 +45681,15 @@ chart</value>
   </data>
   <data name="KMA_KATALOG_LEER" xml:space="preserve">
     <value>The catalogue contains no chiller. Create units under Administration › Chillers.</value>
+  </data>
+  <data name="KM_ANL_BTN_VERWALTUNG" xml:space="preserve">
+    <value>Catalogue management…</value>
+  </data>
+  <data name="KM_ANL_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>The chiller catalogue management cannot be opened here.</value>
+  </data>
+  <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>There are unsaved changes. Apply them with OK or discard them with Cancel before opening the catalogue management.</value>
   </data>
   <data name="KMA_GRUPPE_GERAET" xml:space="preserve">
     <value>Unit</value>
@@ -50564,6 +50585,42 @@ chart</value>
   </data>
   <data name="KM_BILD_ACHSE_G" xml:space="preserve">
     <value>EER ratio g</value>
+  </data>
+  <data name="KM_KL_BEZEICHNUNG" xml:space="preserve">
+    <value>Performance map:</value>
+  </data>
+  <data name="KM_KL_REITER_EER" xml:space="preserve">
+    <value>EER</value>
+  </data>
+  <data name="KM_KL_REITER_LEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KM_KL_TITEL_EER" xml:space="preserve">
+    <value>EER per chilled water temperature</value>
+  </data>
+  <data name="KM_KL_TITEL_LEISTUNG" xml:space="preserve">
+    <value>Cooling capacity per chilled water temperature</value>
+  </data>
+  <data name="KM_KL_ACHSE_EER" xml:space="preserve">
+    <value>EER [-]</value>
+  </data>
+  <data name="KM_KL_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Cooling capacity [kW]</value>
+  </data>
+  <data name="KM_KL_ACHSE_RUECKKUEHL" xml:space="preserve">
+    <value>Rejection [°C]</value>
+  </data>
+  <data name="KM_KL_ACHSE_AUSSEN" xml:space="preserve">
+    <value>Outdoor air [°C]</value>
+  </data>
+  <data name="KM_KL_PLATZHALTER" xml:space="preserve">
+    <value>No complete performance map points</value>
+  </data>
+  <data name="KM_VGL_G" xml:space="preserve">
+    <value>EER ratio g({0})</value>
+  </data>
+  <data name="KM_VGL_STUETZSTELLEN" xml:space="preserve">
+    <value>Performance map points</value>
   </data>
   <data name="KM_BTN_KURVE_TYPKENNFELD" xml:space="preserve">
     <value>Curve from type map…</value>
