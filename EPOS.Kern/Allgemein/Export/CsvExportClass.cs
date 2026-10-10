@@ -130,6 +130,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>CSV am Diagramm, der eine Weg jeder Hülle:</b> die Reihen, die das Bild zeigt
+        /// (<see cref="ZeitreihenCsv.AusModell"/>), unter dem ausdrücklichen Raster oder dem aus
+        /// ihrer Länge, Dateiname nach <c>CHART_DATEI_GANGLINIE</c> aus Bildtitel und Kennung
+        /// (Projekt- oder Satznummer).
+        /// </summary>
+        public static Task ExportDiagramm(WindowsFormsApplication1.Zeichnung.Zeichenmodell modell, string titel,
+                                          object kennung, Zeitraster? raster = null)
+        {
+            IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(modell);
+            return ExportZeitreihen(
+                string.Format(MyResource.Resource.CHART_DATEI_GANGLINIE, ZeitreihenCsv.Dateistamm(titel), kennung),
+                raster ?? ZeitreihenCsv.RasterAus(spalten), spalten);
+        }
+
+        /// <summary>
         /// Die Dateiwahl beider Exporte: gemerkter Ordner, sonst „Dokumente“; der gewählte Ordner
         /// wird für den nächsten Export gemerkt. <c>null</c> bei Abbruch.
         /// </summary>

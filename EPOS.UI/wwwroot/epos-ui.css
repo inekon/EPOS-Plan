@@ -11034,11 +11034,6 @@ table.epos-simerg-tabelle {
     gap: 4px;
 }
 
-/* Das "CSV..." der Saeulen steht am rechten Ende der Zeile. */
-.epos-bedarfgrafik-csv {
-    margin-left: auto;
-}
-
 /* Projektdialoge (Nutzerauftrag 02.09.2026, Merge 5): Haekchen der Mehrfachauswahl,
    Hinweis unter den Pflichtfeldern des Projektkopfs. Kein Nesting (Hausregel). */
 .epos-projektliste-haken {

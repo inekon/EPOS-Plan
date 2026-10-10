@@ -5732,8 +5732,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
         ///
-        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
-        /// <c>Datenreihe</c>. Jede Stapelschicht trägt <c>reihe:&lt;Reihenname&gt;</c>
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche; die Reihen stehen
+        /// nur als <c>Datenreihe</c> ohne Zeichnung im Modell, damit „CSV…“ sie schreiben kann
+        /// (<see cref="Saeulenreihen"/>). Jede Stapelschicht trägt <c>reihe:&lt;Reihenname&gt;</c>
         /// — denselben Schlüssel, den der Helfer <see cref="Legende"/> als
         /// <c>legende:&lt;Reihenname&gt;</c> setzt — und als Wert
         /// „Jan · Eigenverbrauch: 1.234 kWh", im Zahlenformat SEINER y-Achse.</para>
@@ -5812,6 +5813,7 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            Saeulenreihen(z, gueltig, 12, einheit);
             return z;
         }
 

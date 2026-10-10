@@ -216,6 +216,32 @@ namespace EPOS.Kern.Tests
         /// <c>&lt;svg&gt;</c> — und genau das muss so bleiben, sonst zeigte die
         /// Oberfläche einen Zoomgriff, hinter dem nichts steht.
         /// </summary>
+        /// <summary>
+        /// <b>CSV am Säulenbild:</b> Der Monatsstapel trägt je Schicht eine Datenreihe mit zwölf
+        /// Werten und der Einheit des Bildes — ohne Zeichenfläche, also ohne Zeichnung im SVG; der
+        /// Export schreibt daraus zwölf Zeilen unter dem Raster „Monat“.
+        /// </summary>
+        [Fact]
+        public void MonatsStapel_traegt_seine_Reihen_fuer_den_Export()
+        {
+            Zeichenmodell m = ChartRenderer.MonatsStapelModell("Deckung", "kWh", Stapelreihen());
+            Assert.Null(m.Flaeche);
+            Assert.Equal(new[] { "Direkt", "Speicher" }, m.Reihen.Select(r => r.Name).ToArray());
+            Assert.All(m.Reihen, r => Assert.Equal(12, r.Werte.Length));
+            Assert.All(m.Reihen, r => Assert.Equal("kWh", r.Einheit));
+            Assert.Equal(100.0, m.Reihen[1].Werte[0]);
+
+            var spalten = ZeitreihenCsv.AusModell(m);
+            Assert.Equal(Zeitraster.Monat, ZeitreihenCsv.RasterAus(spalten));
+            string[] zeilen = ZeitreihenCsv.Text(Zeitraster.Monat, spalten)
+                .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+            Assert.Equal("Monat;Direkt [kWh];Speicher [kWh]", zeilen[0]);
+            Assert.Equal(13, zeilen.Length);
+
+            // Ohne gültige Reihe bleibt das Modell leer.
+            Assert.Empty(ChartRenderer.MonatsStapelModell("M", "kWh", new List<ChartRenderer.Reihe>()).Reihen);
+        }
+
         [Fact]
         public void KeinesDerSiebenBilderFuehrtFlaecheOderReihen()
         {
@@ -223,7 +249,9 @@ namespace EPOS.Kern.Tests
             {
                 Zeichenmodell m = b.Value();
                 Assert.True(m.Flaeche == null, b.Key + ": führt eine Zeichenfläche.");
-                Assert.True(m.Reihen.Count == 0, b.Key + ": führt Datenreihen.");
+                // Der Monatsstapel führt seine Schichten als Datenreihen OHNE Zeichnung (CSV am Bild).
+                if (b.Key != "MonatsStapel")
+                    Assert.True(m.Reihen.Count == 0, b.Key + ": führt Datenreihen.");
 
                 string svg = SvgSchreiber.Text(m, Farbpalette.Vorgabe);
                 Assert.DoesNotContain(SvgSchreiber.KLASSE_FLAECHE, svg, StringComparison.Ordinal);

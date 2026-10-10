@@ -769,8 +769,9 @@ public class BedarfErgebnisDialogTests : EposBunitContext
 
         Rasterknopf(cut, raster).Click();
         Assert.Single(cut.FindAll("button.epos-diagramm-csv"));
-        cut.Find(raster == Bedarfsraster.Jahr ? "div.epos-diagramm-leiste button.epos-diagramm-csv"
-                                              : ".epos-bedarfgrafik-leiste button.epos-diagramm-csv").Click();
+        // Ganglinie wie Säulen: „CSV…“ steht in der Leiste des Bildes, nicht mehr in der Knopfzeile.
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+        Assert.Empty(cut.FindAll(".epos-bedarfgrafik-leiste button.epos-diagramm-csv"));
 
         var (titel, spalten) = Assert.Single(exporte);
         Assert.Single(spalten);

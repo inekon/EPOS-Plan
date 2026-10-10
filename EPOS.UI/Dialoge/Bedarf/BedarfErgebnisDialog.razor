@@ -228,24 +228,17 @@
                                     }
                                 </div>
                             }
-                            @* Die Saeulen haben keine Zeitachse und damit keine Zoomleiste, in der
-                               "CSV..." stuende; ihr Knopf steht deshalb am Ende dieser Zeile, in
-                               derselben Knopfart wie an der Ganglinie. *@
-                            @if (SummenCsvDa)
-                            {
-                                <button type="button" class="epos-diagramm-knopf epos-diagramm-csv epos-bedarfgrafik-csv"
-                                        title="@CsvSummenHilfe" aria-label="@CsvSummenHilfe"
-                                        @onclick="SummenSpeichern">@Resource.DIAGRAMM_BTN_CSV</button>
-                            }
                         </div>
 
                         @if (Daten.Grafik is not null)
                         {
                             @* Die Ganglinie traegt eine Zeitachse: Zoom und "CSV..." ueber den
-                               Ganglinienexport der Kaskade. Die Kennung wechselt mit dem
-                               Raster - ein Bild je Blatt. *@
+                               Ganglinienexport der Kaskade. Die Saeulen (Monat, Woche, Tag) haben
+                               keine Zeitachse: Ihre Leiste traegt allein "CSV..." mit dem eigenen
+                               Summenexport. Die Kennung wechselt mit dem Raster - ein Bild je Blatt. *@
                             <CascadingValue Value="@Exportnaht">
                                 <DiagrammSvg Modell="@Grafikmodell" Kennung="@Grafikkennung"
+                                             CsvExport="@SummenExport"
                                              Bezeichnung="@Grafiktitel" Einheit="@Grafikeinheit"
                                              PlatzhalterText="@PlatzhalterBild"
                                              Palette="@Farbpalette.Aktuell"
@@ -560,6 +553,10 @@
     /// </summary>
     private bool SummenCsvDa => _raster != Bedarfsraster.Jahr && CsvSpeichern is not null
                                 && Daten.Grafik?.Spalten is not null;
+
+    /// <summary>Der Summenexport der Säulen als Delegat der Leiste; an der Ganglinie keiner.</summary>
+    private EventCallback SummenExport => SummenCsvDa
+        ? EventCallback.Factory.Create(this, SummenSpeichern) : default;
 
     /// <summary>Die Summenspalten der Hülle (12, 52 oder 365 Zeilen) an die Naht der Plattform.</summary>
     private Task SummenSpeichern()

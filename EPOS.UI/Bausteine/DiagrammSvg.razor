@@ -96,7 +96,7 @@ else
         @if (!string.IsNullOrEmpty(Vorlagenfeld))
         {
             <div class="epos-diagramm-kopf">
-                @if (Bedienbar)
+                @if (LeisteDa)
                 {
                     @Leiste
                 }
@@ -104,7 +104,7 @@ else
                                    StufenHinweis="@VorlagenfeldHinweis" />
             </div>
         }
-        else if (Bedienbar)
+        else if (LeisteDa)
         {
             @Leiste
         }
@@ -236,14 +236,19 @@ else
 
     /// <summary>Die Zoomleiste — einmal geschrieben, mit und ohne Platzhaltermarke.</summary>
     private RenderFragment Leiste => @<div class="epos-diagramm-leiste">
-        <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
+        @* OHNE ZEITACHSE KEIN ZOOM: Ein Saeulenbild, das seine Reihen im Modell traegt, zeigt
+           die Leiste allein fuer "CSV..." - Stufe, Bereich und 1:1 stehen nur am bedienbaren Bild. *@
+        @if (Bedienbar)
+        {
+            <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
 
-        <button type="button" class="epos-diagramm-knopf"
-                aria-pressed="@(_bereich ? "true" : "false")"
-                title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
+            <button type="button" class="epos-diagramm-knopf"
+                    aria-pressed="@(_bereich ? "true" : "false")"
+                    title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
 
-        <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
-                @onclick="ZurueckGewaehlt">@ZurueckText</button>
+            <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
+                    @onclick="ZurueckGewaehlt">@ZurueckText</button>
+        }
 
         @* CSV AM DIAGRAMM: rechts neben „1:1“, dieselbe Knopfart — der benannte Export des
            Wirts (CsvExport) oder, ohne ihn, der Ganglinienexport aus der Kaskade, der die
@@ -566,6 +571,12 @@ else
     /// gebunden. Es zeigt statt dessen den Wert am Element.
     /// </summary>
     private bool Bedienbar => !OhneZoom && HatFlaeche;
+
+    /// <summary>
+    /// Steht die Leiste? Am bedienbaren Bild immer; an einem Bild ohne Zeitachse (Säulen,
+    /// Stapel mit Indexachse), sobald es „CSV…“ gibt — dann nur mit diesem Knopf.
+    /// </summary>
+    private bool LeisteDa => Bedienbar || CsvDa;
 
     /// <summary>
     /// Steht eine Zeigerzeile unter dem Bild? Bei einem Bild MIT Zeichenfläche immer
