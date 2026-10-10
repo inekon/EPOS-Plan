@@ -50989,5 +50989,29 @@ Chart</value>
   <data name="SKV_RUECK_BLEIBT" xml:space="preserve">
     <value>Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit.</value>
   </data>
+  <data name="WPV_TIP_UMSTELLEN_EINER" xml:space="preserve">
+    <value>Umstellen braucht genau eine Wärmepumpe im Projekt und genau einen Satz im Katalog.</value>
+  </data>
+  <data name="WPV_BTN_ANLAGE" xml:space="preserve">
+    <value>Anlage…</value>
+  </data>
+  <data name="WPV_TIP_ANLAGE" xml:space="preserve">
+    <value>Betriebsart, Temperaturen, Sperrzeiten, Heizstab, Wärmequelle und Übergabe dieser Anlage bearbeiten</value>
+  </data>
+  <data name="WPV_TITEL_ANLAGE" xml:space="preserve">
+    <value>Anlage – {0}</value>
+  </data>
+  <data name="WPV_MSG_ANLAGE_PRUEFEN" xml:space="preserve">
+    <value>Bitte die Anlage prüfen und mit OK bestätigen.</value>
+  </data>
+  <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
+    <value>Die Modulkosten dürfen nicht negativ sein.</value>
+  </data>
+  <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
+    <value>Die Nennleistung darf nicht negativ sein.</value>
+  </data>
+  <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken.</value>
+  </data>
 </root>
 

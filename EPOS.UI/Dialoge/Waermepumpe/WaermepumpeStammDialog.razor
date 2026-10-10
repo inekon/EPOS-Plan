@@ -418,6 +418,9 @@
     /// <summary><c>true</c> = mit „Beenden" geschlossen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
+    /// <summary>Der Satz, der beim Öffnen gewählt ist (Name); leer oder unbekannt = die erste Zeile.</summary>
+    [Parameter] public string? Vorwahl { get; set; }
+
     // --- Feste Listen ----------------------------------------------------------
 
     /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
@@ -957,8 +960,12 @@
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
 
         ListeNeuLaden();
-        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
-        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus; aus dem Projektdialog kommt
+        // der Satz vorgewaehlt (Katalogauswahl V1, KA-E-13: "Bearbeiten…" auf einen ungesperrten Katalogsatz).
+        Katalogfilterzeile? vorwahl = string.IsNullOrEmpty(Vorwahl) ? null
+            : _liste.FirstOrDefault(z => z.Bezeichner == Vorwahl);
+        if (vorwahl is not null) ZeileWaehlen(vorwahl);
+        else if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
 
         // KI-F1b: Die vier Klapplisten der Stammfelder sind WAHLFELDER; ihre Einträge
         // sind genau die Listen, die der Baustein zeichnet.

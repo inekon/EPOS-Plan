@@ -398,4 +398,126 @@ public class ProjektkopievormerkungTests : EposBunitContext
         Assert.True(h.Ergebnis);
         Assert.Empty(h.Geloescht);
     }
+    // =================================================================================
+    // Wärmepumpe (Katalogauswahl V1, Stufe 3): Übernehmen legt die Kopie SOFORT an
+    // =================================================================================
+
+    /// <summary>
+    /// Die Wärmepumpenverwaltung mit einer Hülle nach dem Muster von <c>WaermepumpenHuelle.Anlegen</c>: „In das Projekt
+    /// übernehmen" legt die Projektkopie sofort an (die Zeile trägt deren Id) und meldet sie der Vormerkung; „Entfernen"
+    /// merkt die Kopie der Zeile vor; der Abschluss prüft, ob eine Zeile noch auf die Kopie zeigt.
+    /// </summary>
+    private sealed class WpHuelle
+    {
+        public readonly List<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten> Zeilen = new();
+        public readonly List<string> Geloescht = new();
+        public readonly Projektkopievormerkung Vormerkung;
+        public readonly List<int> Angelegt = new();
+        public bool? Ergebnis;
+
+        public WpHuelle() => Vormerkung = new Projektkopievormerkung(name => Geloescht.Add(name));
+
+        public EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten Anlegen(string name)
+        {
+            int kopie = 700 + Angelegt.Count;
+            Angelegt.Add(kopie);
+            Vormerkung.Angelegt(name, kopie);
+            return new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten
+            {
+                Bezeichner = name, IdWp = kopie, Vorlauf = 35, Ruecklauf = 28, HeizstabLeistung = 6, SperrzeitVon = 0, SperrzeitBis = 0,
+                Betriebsart = DbWerte.WP_BETRIEBSART_PARALLEL
+            };
+        }
+
+        public void Geschlossen(bool ok)
+        {
+            Ergebnis = ok;
+            Vormerkung.Abschliessen(ok, id => Zeilen.Any(z => z.IdWp == id));
+        }
+    }
+
+    private IRenderedComponent<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog> WpAufbauen(WpHuelle h)
+        => Render<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog>(p => p
+            .Add(x => x.Zeilen, h.Zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.MitVerwendung(Anlagenart.Waermepumpe, s => s))
+            .Add(x => x.Katalog, () => new List<Katalogfilterzeile>
+            {
+                new Katalogfilterzeile(31, "WP K").MitText(Katalogfilterprofil.SpBezeichner, "WP K")
+            })
+            .Add(x => x.Anlegen, h.Anlegen)
+            .Add(x => x.AnlageGaben, d => new Dictionary<string, object>
+            {
+                ["Daten"] = d,
+                ["Stammliste"] = new Func<IReadOnlyList<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammZeile>>(
+                    () => new[] { new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammZeile(d.IdWp, "WP K", false) }),
+                ["TemperaturenPruefen"] = new Func<int?, int?, string?>((_, _) => null)
+            })
+            .Add(x => x.Entfernen, z => h.Vormerkung.Entfernt(z.Bezeichner, z.IdWp))
+            .Add(x => x.Geschlossen, h.Geschlossen));
+
+    private static void WpUebernehmen(IRenderedComponent<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog> cut)
+    {
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.Find(".epos-zweispalten-knopf--uebernehmen").Click();
+        // Eine einzelne neue Zeile öffnet „Anlage…" - mit OK bestätigt geht sie ins Modell.
+        cut.FindAll(".epos-wp-anlage-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+    }
+
+    private static void WpAbschluss(IRenderedComponent<EPOS.UI.Dialoge.Waermepumpe.WaermepumpenDialog> cut, string text)
+        => cut.FindAll(".epos-dialog > .epos-leiste button, .epos-dialog > * .epos-leiste button")
+              .Last(b => b.TextContent.Trim() == text).Click();
+
+    [Fact]
+    public void Waermepumpe_Uebernehmen_legt_die_Kopie_sofort_an()
+    {
+        var h = new WpHuelle();
+        var cut = WpAufbauen(h);
+
+        WpUebernehmen(cut);
+
+        Assert.Equal(new[] { 700 }, h.Angelegt);
+        Assert.Equal(700, Assert.Single(h.Zeilen).IdWp);
+        Assert.Null(h.Ergebnis);
+    }
+
+    [Fact]
+    public void Waermepumpe_Abbrechen_raeumt_die_neue_Kopie_ab()
+    {
+        var h = new WpHuelle();
+        var cut = WpAufbauen(h);
+
+        WpUebernehmen(cut);
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.False(h.Ergebnis);
+        Assert.Equal(new[] { "WP K" }, h.Geloescht);
+    }
+
+    [Fact]
+    public void Waermepumpe_OK_laesst_die_neue_Kopie_stehen()
+    {
+        var h = new WpHuelle();
+        var cut = WpAufbauen(h);
+
+        WpUebernehmen(cut);
+        Assert.False(cut.Instance.DetailOffen);
+        WpAbschluss(cut, "OK");
+
+        Assert.True(h.Ergebnis);
+        Assert.Empty(h.Geloescht);
+    }
+
+    [Fact]
+    public void Waermepumpe_Uebernommen_und_wieder_entfernt_geht_beim_OK_einmal()
+    {
+        var h = new WpHuelle();
+        var cut = WpAufbauen(h);
+
+        WpUebernehmen(cut);
+        cut.Find(".epos-zweispalten-knopf--entfernen").Click();
+        WpAbschluss(cut, "OK");
+
+        Assert.True(h.Ergebnis);
+        Assert.Equal(new[] { "WP K" }, h.Geloescht);
+    }
 }

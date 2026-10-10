@@ -842,6 +842,21 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     /// dem Kostenpositionen und Projektträger gehörten. Dieselbe Weiche wie in den
     /// sechs Erzeugerdialogen — die Wärmepumpen Verwaltung reicht den Schalter durch.
     /// </summary>
+    /// <summary>
+    /// Eigenständig geöffnet (eigenes Fenster der Hülle) behält die Anlagenseite ihre
+    /// Kostenknöpfe: Ohne den Schalter <c>KostenleisteAnzeigen</c> steht die Leiste,
+    /// denn dort gibt es keine Detailzeile, die sie trüge.
+    /// </summary>
+    [Fact]
+    public void Ohne_Schalter_steht_die_Kostenleiste_weiter()
+    {
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.True(cut.Instance.KostenleisteAnzeigen);
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
+    }
+
     [Fact]
     public void Im_Assistenten_fehlt_die_Kostenleiste()
     {

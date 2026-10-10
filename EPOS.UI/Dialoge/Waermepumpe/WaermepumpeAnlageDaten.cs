@@ -243,6 +243,30 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Pufferspeicher mit optimiertem Ladesystem — Ä19, nicht gezeichnet.</summary>
     public bool RendeMix { get; set; }
 
+    /// <summary>
+    /// Übernimmt JEDEN Wert von <paramref name="quelle"/> (alle les- und schreibbaren Eigenschaften, die Sperrfenster
+    /// als eigene Kopie) — der Rückweg eines abgebrochenen „Anlage…" (Katalogauswahl V1, Stufe 3): Die Überlagerung
+    /// bearbeitet die Zeile an Ort und Stelle, Abbrechen setzt sie auf den Stand beim Öffnen zurück.
+    /// </summary>
+    public void WerteVon(WaermepumpeAnlageDaten quelle)
+    {
+        ArgumentNullException.ThrowIfNull(quelle);
+        foreach (System.Reflection.PropertyInfo p in typeof(WaermepumpeAnlageDaten).GetProperties())
+        {
+            if (!p.CanRead || !p.CanWrite || p.GetIndexParameters().Length > 0) continue;
+            p.SetValue(this, p.GetValue(quelle));
+        }
+        Sperrfenster = quelle.Sperrfenster?.Select(z => z.Kopie()).ToList();
+    }
+
+    /// <summary>Ein Schnappschuss mit JEDEM Wert (<see cref="WerteVon"/>) — anders als <see cref="Kopie"/> vollständig.</summary>
+    public WaermepumpeAnlageDaten Schnappschuss()
+    {
+        var s = new WaermepumpeAnlageDaten();
+        s.WerteVon(this);
+        return s;
+    }
+
     /// <summary>Eine wortgleiche Kopie — der Dialog bearbeitet nie das Original der Hülle.</summary>
     public WaermepumpeAnlageDaten Kopie() => new()
     {

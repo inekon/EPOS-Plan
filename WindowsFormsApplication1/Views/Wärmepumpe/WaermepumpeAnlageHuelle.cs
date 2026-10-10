@@ -379,7 +379,7 @@ namespace WindowsFormsApplication1
             return Task.CompletedTask;
         }
 
-        private static KennlinienBilder BilderZuAnlage(int idWp)
+        internal static KennlinienBilder BilderZuAnlage(int idWp)
         {
             WaermepumpeKennlinienCtrl.Quelle quelle = WaermepumpeKennlinienCtrl.FuerAnlage(idWp);
             if (quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Ohne)
@@ -477,7 +477,7 @@ namespace WindowsFormsApplication1
                                                         int projektId)
             => WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(modelle, projektId);
 
-        private static WaermepumpeStammDaten StammdatenZu(int idWp)
+        internal static WaermepumpeStammDaten StammdatenZu(int idWp)
         {
             WPModel m = WaermepumpeGeraeteCtrl.Geraetedaten(idWp);
             if (m == null) return null;
