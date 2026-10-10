@@ -233,6 +233,6 @@ Eigene Sätze und alle Projekte bleiben unberührt — ein Projekt rechnet mit s
 * [[Programm Dokumentation/Pufferspeicher]] – Übernahme und Bewirtschaftung im Projekt
 * [[Programm Dokumentation/Photovoltaik]] – die PV-Anlage im Projekt, samt Wechselrichter
 * [[Programm Dokumentation/Stromspeicher]] – die im Projekt geplante Speicherauslegung
-* [[Berechnung/Heizkessel]], [[Berechnung/BHKW]], [[Berechnung/Wärmepumpe]], [[Berechnung/Solarthermie]], [[Berechnung/Pufferspeicher]], [[Berechnung/Photovoltaik]], [[Berechnung/Stromspeicher]] – die Rechenwege
+* [[Programm Dokumentation/Berechnung/Heizkessel|Heizkessel]], [[Programm Dokumentation/Berechnung/BHKW|BHKW]], [[Programm Dokumentation/Berechnung/Wärmepumpe|Wärmepumpe]], [[Programm Dokumentation/Berechnung/Solarthermie|Solarthermie]], [[Programm Dokumentation/Berechnung/Pufferspeicher|Pufferspeicher]], [[Programm Dokumentation/Berechnung/Photovoltaik|Photovoltaik]], [[Programm Dokumentation/Berechnung/Stromspeicher|Stromspeicher]] – die Rechenwege
 
 [[Kategorie:Programm Dokumentation]]

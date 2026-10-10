@@ -316,7 +316,7 @@ Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen''
 
 == Siehe auch ==
 
-* [[Brauchwasser]] – die Bestandsprofile und der Jahresverbrauch
+* [[Programm Dokumentation/Brauchwasser|Brauchwasser]] – die Bestandsprofile und der Jahresverbrauch
 * [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] – der Rechenweg der Bestandsprofile
 
 [[Kategorie:Programm Dokumentation]]
