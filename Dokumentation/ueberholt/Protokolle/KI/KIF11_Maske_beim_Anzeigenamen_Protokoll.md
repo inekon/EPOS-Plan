@@ -53,7 +53,7 @@ Anzeigename der Maske, z. B. „Form_WP_Anlage“ oder „Wärmepumpe im Projekt
 - `KiMaskenbrueckeTests`: Feldblock-Kopf.
 - bunit `EPOS.UI.Tests/Dialoge/WaermepumpeAnlageDialogTests.Der_Assistent_fuellt_die_Maske_beim_Anzeigenamen_aus` (vorher rot mit dem Text
   der Bildschirmfotos): Vorlauf 50, Rücklauf 45, Klappliste „50, 35, 45, 55“; Helfer `KiSetzweg.Ausfuehren`.
-- Filterlauf: EPOS.Kern.Tests 699, EPOS.UI.Tests 1 010, KiKern.Tests 549, SpeicherEngine.Tests 1, 0 rot; Build 0 Fehler. Gate 904: ⟨Zahlen folgen⟩.
+- Filterlauf: EPOS.Kern.Tests 699, EPOS.UI.Tests 1 010, KiKern.Tests 549, SpeicherEngine.Tests 1, 0 rot; Build 0 Fehler. Gate 904 auf `6321fc0b` grün: Kern-Build 0 Fehler; ChartProben alle grün, 222 Hashes gleich der Messlatte 2026-10-10; Tests 22 220 grün, 0 rot (EPOS.Kern.Tests 12 982 + 7 übersprungen, EPOS.UI.Tests 8 265, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen); Dokumentationswachen 35 grün; Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz); Plattformnachweis (gestörter Lauf) PASS.
 
 ## Offen
 
