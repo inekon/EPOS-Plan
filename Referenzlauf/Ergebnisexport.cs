@@ -83,6 +83,9 @@ namespace WindowsFormsApplication1.Referenzlauf
             // Ergebnistabellen der Waermepumpe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn ein Modul mit
             // gesetzter Einbindung rechnet (U-1); die Bestandsprojekte behalten ihre Schluessel.
             foreach (string s in UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL) namen.Add(s);
+            // Schemaschritt 213 (K1, Konzept Kaeltebedarf 5): die Kennzahlen des Kaeltebedarfs ohne Gebaeudemodell - dieselbe
+            // Regel, sie stehen erst in aggregate.csv, wenn ein Lauf ein Kaelteprofil oder eine Split-Zeile rechnet (K3).
+            foreach (string s in KaeltebedarfSchema.ERGEBNISSPALTEN) namen.Add(s);
             return namen;
         }
 

@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
             // KU3-1: die Kaeltemaschine dazu - 26.
             // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen dazu (Schloss) - 27.
             // PVG (Schemaschritt 206): die PV-Ganglinie dazu - 28.
-            Assert.Equal(28, KatalogRegistry.Alle.Count);
+            Assert.Equal(30, KatalogRegistry.Alle.Count);   // K1: KAELTEBEDARF, KAELTETYP
         }
 
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
@@ -89,7 +89,7 @@ namespace EPOS.Kern.Tests
                 "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
                 // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
                 "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
-                "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
+                "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP", "KAELTEBEDARF", "KAELTETYP",
                 "STROMGANGLINIE", "SOLARGANGLINIE", "PVGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP",
                 // Anwenderentscheid 08.10.2026: die Konditionierungsvorlagen (Schloss der Vorlagenverwaltung).
                 "KONDITIONIERUNGSVORLAGE"
@@ -200,7 +200,7 @@ namespace EPOS.Kern.Tests
                 .Select(k => k.Schluessel).ToArray();
             // Gebaeudesimulation G3: der Baustoff - eine Katalogschicht zeigt ueber die ID auf ihn.
             Assert.Equal(new[] { "BAUSTOFF", "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
-                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
+                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "KAELTETYP", "GEBAEUDETYP" },
                          mitPruefung);
         }
 
