@@ -228,7 +228,6 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Feiertage zählen im Brauchwasser-Zapfprofil immer als Sonntag; die Landesfeiertage richten sich nach dem Feiertagsland des Gebäudes. (#866)
 - Seit 09.10.2026: Die Nennleistung einer PV-Ganglinie lässt sich im Katalog nachträglich bearbeiten; Excel-Bericht und Variantenvergleich nennen die Quelle der Photovoltaik (Modulmodell oder Ganglinie). (#867)
 - Seit 09.10.2026: In der Kalenderbedienung lassen sich alle Ferienzeiträume benennen, auch die ersten vier. (#868)
-*Ab hier folgen Sätze der Sitzung mit den Statuszeilen #869 bis #888, die nach dem Sammel-Upload #889 hinzugekommen sind: unveröffentlicht, sie gehören zum nächsten Upload. Veröffentlicht ist davon nur der Satz zur Kachel „Kühlung und Kälteanlagen“ (#884, Version 1.2.0.9).*
 - Seit 09.10.2026: Im Dialog Photovoltaik Ganglinie wird eine Projektkopie, die vom Katalog abweicht, gekennzeichnet und lässt sich über „Aus dem Katalog erneuern…“ auf den Katalogstand bringen. (#869)
 - Seit 09.10.2026: Feiertage liegen im Gemeinjahr nach festen Regeln: Ostern ist der Sonntag um den 8. April des Kalenderrasters, ein Jahr gilt nur mit einer Preisreihe. (#874)
 - Seit 10.10.2026: Kalenderbild und Datumsanzeige der Gebäudekalender nennen den Wochentag des 1. Januar der Klimaregion statt eines Bezugsjahrs; Gebäude, Trinkwarmwasser und Bedarfsprofile rechnen mit denselben Wochentagen, eine Preisreihe mit Jahr setzt für alle den Kalender dieses Jahres. (#880)
@@ -238,6 +237,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Ein gekürzter Spaltenkopf in den Katalogen nennt beim Verweilen mit der Maus seinen vollen Namen. (#882)
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
+
+*Die folgenden vier Sätze (#886 bis #888) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
+
 - Seit 10.10.2026: Die Projektdialoge mit Katalogauswahl passen sich kleinen Bildschirmen an — kompaktere Darstellung unter 1 200 × 800 px und ein Rollbalken, wenn die Höhe nicht reicht. (#886)
 - Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
 - Seit 10.10.2026: In der Katalogliste der Projektdialoge sind die Spalten wählbar („Spalten…“); im Projekt verwendete Sätze sind farblich gekennzeichnet statt in einer eigenen Spalte. (#888)
