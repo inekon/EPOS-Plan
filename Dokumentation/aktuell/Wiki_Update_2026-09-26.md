@@ -222,6 +222,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: In der Kalenderbedienung lassen sich alle Ferienzeiträume benennen, auch die ersten vier. (#868)
 - Seit 09.10.2026: Im Dialog Photovoltaik Ganglinie wird eine Projektkopie, die vom Katalog abweicht, gekennzeichnet und lässt sich über „Aus dem Katalog erneuern…“ auf den Katalogstand bringen. (#869)
 - Seit 09.10.2026: Feiertage liegen im Gemeinjahr nach festen Regeln: Ostern ist der Sonntag um den 8. April des Kalenderrasters, ein Jahr gilt nur mit einer Preisreihe. (#874)
+- Seit 10.10.2026: Kalenderbild und Datumsanzeige der Gebäudekalender nennen den Wochentag des 1. Januar der Klimaregion statt eines Bezugsjahrs; Gebäude, Trinkwarmwasser und Bedarfsprofile rechnen mit denselben Wochentagen, eine Preisreihe mit Jahr setzt für alle den Kalender dieses Jahres. (#880)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
