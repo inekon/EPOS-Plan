@@ -1,0 +1,53 @@
+Beim Schritt '''Simulation konfigurieren und starten''' legen Sie in der Ansicht ''Simulation'' fest, welche Erzeuger an der Deckung teilnehmen und in welcher Reihenfolge sie herangezogen werden. Die Ansicht führt den Lauf in drei Schritten – ''① Konfiguration'', ''② Simulation starten ▶'' und ''③ Ergebnis'' – und öffnet über {{Menü|Projekt|Simulation…}} oder über ''Simulation Konfiguration…'' im Reiter ''Simulation'' der Startseite. Schritt ① ist die Schaltzentrale des Projekts; die Bedienung im Einzelnen beschreibt [[Programm Dokumentation/Simulation|Programm-Dokumentation: Simulation]].
+
+== Erzeuger und Reihenfolge ==
+{{Anker|erzeuger-und-reihenfolge|prioritaet}}
+
+Die Anlagen des Projekts stehen als Karten in der Spalte ''Wärmeerzeuger, Stromerzeuger und Energiespeicher'': vier Plätze der Wärmekaskade für Wärmepumpe, Heizkessel, BHKW und Solarthermie, dazu Photovoltaik und Stromspeicher. Eine noch nie gespeicherte Kaskade schlägt das Programm in der Folge Solarthermie, Wärmepumpe, BHKW, Heizkessel vor; eine angelegte Anlage ohne Platz nehmen Sie mit ''+ aufnehmen'' auf. ''Konfiguration…'' an einer Karte öffnet die Einstellungen der Anlage – Betriebsart und untere Leistungsgrenze des BHKW, Heizstab, Bivalenz, Einbindung und Sperrzeiten der Wärmepumpe, Betriebsbereitschaft und Heizgrenze des Heizkessels, Kühlbetrieb. Die Umschaltung ''Liste'' oder ''Schema'' zeigt dieselbe Konfiguration als Karten oder als Anlagenschema.
+
+{{Hinweis|Die Reihenfolge der Karten ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort. ''Konfiguration speichern'' schreibt die Kaskade – ungespeichert rechnet der Lauf den zuletzt gespeicherten Stand.}}
+
+Im Block ''Weitere Einstellungen'' darunter stehen die Projekteinstellungen des Laufs: Netzverluste gesamt oder je Kanal samt Zirkulation, ''Kühlung rechnen'', Anlagenkopplung, Einspeisegrenze, thermische Desinfektion und Aufheizoptimierung.
+
+== Pufferspeicher zuordnen ==
+{{Anker|pufferspeicher-zuordnen|speicherbewirtschaftung}}
+
+''Pufferspeicher Zuordnung einblenden'' öffnet die Rubrik, in der Sie den ausgewählten Erzeugern Speicher zuordnen und Vorlauf- und Rücklauftemperatur sowie die Ein- und Abschaltschwellen der Speicherbewirtschaftung festlegen. Die rechte Spalte ''Speicher im Projekt'' führt alle Speicher als Kacheln; darunter stehen ''Pufferspeicher anlegen / verwalten…'', ''Pufferspeicher auslegen…'' und ''Stromspeicher auslegen…''.
+
+{{Achtung|Ein Pufferspeicher ohne sinnvoll gesetzte Schaltschwellen führt entweder zu Dauerbetrieb oder zu ständigem Takten.}}
+
+== Einstellungen je Wärmepumpe ==
+{{Anker|einstellungen-je-waermepumpe|waermequelle|betriebsmodus}}
+
+Die Karte einer Wärmepumpe trägt Chips; ein Doppelklick oder die Eingabetaste auf einem Chip öffnet seinen Dialog:
+
+* '''WP-Prio''' – die Einsatzreihenfolge, wenn mehrere Maschinen im Projekt vorhanden sind.
+* '''Quelle''' – Außenluft (Klimadaten), konstante Temperatur, Pufferspeicher, ein Quellprofil aus Monats-, Tages- oder Stundenwerten, eine CSV-Datei mit Stundenwerten oder Erdreich nach VDI 4640; Luft-Wasser-Wärmepumpen rechnen immer mit der Außenluft.
+* '''Senke''' – die Wärmesenken in Reihenfolge der Belieferung: Heizkreis (Beides mit Warmwasser zuerst, nur Warmwasser oder nur Heizwärme), Prozesswärme oder ein Pufferspeicher.
+* '''Betriebsmodus''' – laufzeitoptimiert mit maximaler Leistung, leistungsoptimiert mit genau der benötigten Wärmemenge oder PV-optimiert mit Vorrang für selbst erzeugten Strom.
+
+Die Konfiguration wird mit ''Konfiguration speichern'' gespeichert und bleibt dem Projekt erhalten.
+
+== Simulation durchführen ==
+{{Anker|simulation-durchfuehren|jahressimulation}}
+
+''② Simulation starten ▶'' – oder der Hauptknopf im Reiter ''Simulation'' der Startseite – rechnet das Jahr in Stundenschritten auf der Wärmeseite und in Viertelstundenschritten auf der Stromseite durch – 8.760 Stunden Wärme und 35.040 Viertelstunden Strom. Der Lauf läuft im Hintergrund mit Fortschrittsbalken und ''Abbrechen'' und endet in ''③ Ergebnis'', das mit der ''Übersicht'' aufmacht.
+
+Ausgangsgröße jeder Stunde ist der Wärmebedarf; der erste Erzeuger deckt davon so viel, wie Kennfeld, Betriebsgrenzen und Speicherstand zulassen, die Restwärme geht an den nächsten. Was am Ende offen bleibt, erscheint als Restwärmebedarf. Rechnet das Projekt Kälte, decken Kältemaschinen und Wärmepumpen im Kühlbetrieb den Kältebedarf.
+
+Parallel wird die Strombilanz geführt: Zum Bedarf des Objekts kommen die Verbräuche der Wärmeerzeuger, davon abgezogen werden BHKW-Strom, Photovoltaik und Speicherentladung; der Rest ist Netzbezug, negative Werte sind Einspeisung. Photovoltaik, Stromspeicher und Reststrom werden in derselben Viertelstundenauflösung bilanziert; eine Einspeisegrenze regelt Überschuss ab.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Simulation]] – Erzeugerkaskade und Strombilanz im Einzelnen
+* [[Pufferspeicher]] – Hysterese, Schaltschwellen und Bereitschaftsverluste
+* [[Wärmepumpe]] – Wärmequelle, Wärmesenke und Betriebsmodus im Einzelnen
+* [[Programm Dokumentation/Simulation|Programm-Dokumentation: Simulation]] – die Ansicht mit ihren drei Schritten im Einzelnen
+* [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] – der Rechenweg des Laufs
+
+← [[Erzeuger und Speicher auswählen]] | [[Ergebnisse auswerten und Kosten hinterlegen]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

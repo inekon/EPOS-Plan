@@ -1,0 +1,24 @@
+Der Dialog '''Prozesswärme''' verwaltet die Prozesswärmeprofile des Projekts. Prozesswärme wird unabhängig vom Gebäude erfasst: Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an.
+
+== Eingaben ==
+
+* '''Datenbank Prozesswärme und ausgewählte Prozesse im Projekt''' – einen Prozess auswählen und ins Projekt übernehmen; mehrere Prozesse nebeneinander sind möglich.
+* '''Name, Beschreibung und Typ''' – die Stammangaben des Prozesses.
+* '''Jährlicher Prozesswärmebedarf''' – der Jahresverbrauch des gewählten Prozesses; ''Summe aller ausgew. Prozesse'' weist die Summe aus.
+* '''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert eintragen – in MWh mit zwei Nachkommastellen oder in kWh, die Einheit gehört zum Wert – und mit ''Übernehmen'' anwenden; das Wochenprofil bleibt dabei erhalten – es ist faktisch der Schichtplan.
+* '''Simulation''' – rechnet mit dem Jahresverbrauch, der im Dialog steht, auch vor dem Speichern, und zeigt Monatswerte und Jahresganglinie zur Kontrolle.
+* '''Prozess und Typ in DB''' – neu anlegen, ändern und löschen; hier werden Monatswerte und das Wochenprofil aus 168 Stundenwerten gepflegt. Der Katalog liefert acht typische Betriebsweisen als Vorlage.
+* '''Temperaturniveau des Prozesses''' – ''Vorlauf'' und ''Rücklauf'' in °C, beide oder keines; ''Temperaturen übernehmen'' setzt sie, gespeichert wird mit ''OK''. Leer rechnet der Prozess als reine Wärmemenge; mit Temperaturpaar werten Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus.
+* '''Betriebskalender''' – je Zuordnung des Projekts wählt die Gruppe ''Betriebskalender'' einen Kalender mit Feiertagen und Betriebsferien, der das Wochenprofil tageweise ersetzt ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
+
+== Berechnung ==
+
+Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des Prozesswärmebedarfs werden und wie das Temperaturniveau in den Lauf eingeht, steht unter [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]].
+
+== Siehe auch ==
+
+* [[Wärmebedarf erfassen]] – Prozesswärme als einer der vier Anteile des Wärmebedarfs
+* [[Industrie und Gewerbe]] – Temperaturniveaus, Schichtprofile und Abwärme als Wärmequelle
+* [[Programm Dokumentation/Betriebskalender|Betriebskalender]] – Feiertage und Betriebsferien im Wochenprofil
+
+[[Kategorie:Programm Dokumentation]]

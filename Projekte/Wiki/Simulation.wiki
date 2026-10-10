@@ -1,0 +1,56 @@
+Die '''Simulation''' rechnet ein komplettes Jahr durch: 8.760 Stunden auf der Wärmeseite und 35.040 Viertelstunden auf der Stromseite. Die Wärmeerzeuger arbeiten in einer frei konfigurierbaren Kaskade, parallel dazu wird die Strombilanz geführt.
+
+== Zeitliche Auflösung ==
+{{Anker|zeitliche-aufloesung|stundenwerte|viertelstundenwerte}}
+
+Eine Jahressimulation mit 8.760 Stundenwerten auf der Wärmeseite und 35.040 Viertelstundenwerten auf der Stromseite bildet die Erzeugerkaskade in der von Ihnen festgelegten Reihenfolge ab, einschließlich Speicherbewirtschaftung, Sperrzeiten und Betriebsstrategien.
+
+== Konfiguration ==
+{{Anker|konfiguration|simulation-konfiguration}}
+
+Im Dialog ''Simulation Konfiguration'' legen Sie fest, welche Erzeuger an der Deckung teilnehmen und in welcher Reihenfolge sie herangezogen werden. Die Konfiguration wird gespeichert und bleibt dem Projekt erhalten.
+
+=== Erzeuger und Reihenfolge ===
+{{Anker|erzeuger-und-reihenfolge|prioritaet|kaskade}}
+
+Vier Auswahlfelder stehen für die Wärmeerzeuger bereit – Wärmepumpe, Heizkessel, BHKW und Solarthermie –, dazu je ein Feld für Photovoltaik und Stromspeicher. Die Reihenfolge der Felder ist die Priorität: Der erste Erzeuger deckt so viel Bedarf wie möglich, der zweite bekommt den Rest, und so fort.
+
+{{Hinweis|Nicht angekreuzte Bausteine des Projekts erscheinen hier nicht. Die Auswahl der Bausteine ändern Sie über {{Menü|Projekte|Bearbeiten}}.}}
+
+=== Pufferspeicher ===
+{{Anker|pufferspeicher|speicherzuordnung}}
+
+Eine eigene Rubrik ist dem Pufferspeicher gewidmet. Hier ordnen Sie den ausgewählten Erzeugern Speicher zu und legen Vorlauf- und Rücklauftemperatur sowie die Ein- und Abschaltschwellen der Speicherbewirtschaftung fest.
+
+=== Übersicht der ausgewählten Erzeuger ===
+{{Anker|uebersicht-der-ausgewaehlten-erzeuger|uebersichtstabelle}}
+
+Eine Übersichtstabelle rechts zeigt fortlaufend alle ausgewählten Erzeuger mit den zugehörigen Anlagen des Projekts. Bei Wärmepumpen lassen sich dort per Doppelklick die Priorität, die Wärmequelle, die Wärmesenke und der Betriebsmodus einstellen.
+
+== Ablauf auf der Wärmeseite ==
+{{Anker|ablauf-auf-der-waermeseite|waermeseite|restwaermebedarf}}
+
+Die Jahressimulation arbeitet die Wärmeerzeuger in der konfigurierten Reihenfolge ab. Ausgangsgröße ist der Wärmebedarf jeder einzelnen Stunde. Der erste Erzeuger deckt davon so viel, wie es sein Kennfeld, seine Betriebsgrenzen und die Speichersituation zulassen; die verbleibende Restwärme geht an den nächsten Erzeuger.
+
+{{Hinweis|Was am Ende der Kette offenbleibt, wird als Restwärmebedarf ausgewiesen und zeigt an, wo die Auslegung nicht ausreicht.}}
+
+== Strombilanz ==
+{{Anker|strombilanz|netzbezug|einspeisung}}
+
+Die Strombilanz wird parallel in Viertelstundenschritten geführt. Zum Strombedarf des Objekts kommen die Verbräuche der Wärmeerzeuger – Wärmepumpen, Heizstäbe und Hilfsantriebe – hinzu. Davon abgezogen werden nacheinander die Stromerzeugung des BHKW, die Photovoltaik und die Entladung des Stromspeichers. Was übrig bleibt, ist der Netzbezug; negative Werte entsprechen der Einspeisung.
+
+== Ergebnis speichern ==
+{{Anker|ergebnis-speichern}}
+
+Das jeweils letzte Simulationsergebnis eines Projekts kann gespeichert und später wieder aufgerufen werden.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Vergleich Energiebilanz|Grundlagen: Vergleich Energiebilanz]] – Bilanzgrenzen und Bezugsgrößen
+* [[Simulation konfigurieren und starten]] – der zugehörige Schritt im Programmablauf
+* [[Ergebnisdarstellung]] – Auswertung der berechneten Zeitreihen
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

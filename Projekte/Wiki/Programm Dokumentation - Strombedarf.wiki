@@ -1,0 +1,23 @@
+Der '''Strombedarf''' entsteht auf demselben Weg wie der Wärmebedarf: aus Verbrauchertypen mit Monatswerten und Wochenprofilen aus 168 Stundenwerten. Ein gemessener Lastgang lässt sich zusätzlich einlesen.
+
+== Eingaben ==
+
+* '''Standardlastprofil''' – einen typischen Verbrauchertyp aus dem Katalog wählen und den Jahresverbrauch angeben; die Verteilung über das Jahr übernehmen Monatswerte und Wochenprofil.
+* '''Eigenes Profil''' – ein individuelles Stromprofil erstellen, wenn kein Standardtyp passt.
+* '''Messdaten importieren''' – einen gemessenen Lastgang einlesen; Stunden- und Viertelstundenwerte werden automatisch eingepasst und dem berechneten Profil überlagert.
+* '''Betriebskalender''' – je Zuordnung eines Standardlastprofils wählt die Gruppe ''Betriebskalender'' einen Kalender mit Feiertagen und Betriebsferien, der das Wochenprofil tageweise ersetzt ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
+* '''Zeitraster''' – EPOS-Plan rechnet die Stromseite intern in 35.040 Viertelstundenwerten, weil Eigenverbrauch und Speicherbewirtschaftung in Stundenmittelwerten zu günstig ausfallen.
+* '''Ergebnis''' – maximaler Leistungsbedarf, Jahresverbrauch, Monatswerte und die geordnete Jahresdauerlinie.
+
+== Berechnung ==
+
+Profile, eingelesene Messlastgänge, Viertelstundenraster und Jahresdauerlinie: der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]].
+
+== Siehe auch ==
+
+* [[Strombedarf erfassen]] – der zugehörige Schritt im Programmablauf
+* [[Grundlagen/Strombedarf und Lastprofile]] – Herkunft und Aufbau der Lastprofile
+* [[Programm Dokumentation/Stromverbraucher|Stromverbraucher]] – der Dialog der Standardlastprofile im Projekt
+* [[Programm Dokumentation/Stromspeicher#maske-lastspitzenkappung|Stromspeicher: Lastspitzenkappung]] – die Auswertung der Jahreshöchstlast
+
+[[Kategorie:Programm Dokumentation]]

@@ -1,0 +1,65 @@
+Die '''Stammdaten''' von EPOS-Plan sind umfangreiche Kataloge, die Ihnen den größten Teil der Eingabearbeit abnehmen: Gebäudetypen mit Baualtersklassen, Brauchwasser- und Prozesswärmeprofile, Stromverbraucherprofile, Wärmepumpen mit vollständigen Kennfeldern, Kessel, BHKW-Module, Kollektoren, PV-Module und Speicher. Gepflegt werden sie über das Menü {{Menü|Administration}}.
+
+== Kataloge im Menü Administration ==
+{{Anker|kataloge-im-menue-administration|kataloge|administration}}
+
+Sämtliche Kataloge werden über das Menü {{Menü|Administration}} gepflegt:
+
+* Gebäudetypen und Tagesverteilungen
+* Brauchwasser- und Prozesswärmetypen
+* Stromverbrauchertypen und Stromganglinien
+* Wärmepumpen mit Kennfeldern
+* Heizkessel
+* Pufferspeicher
+* BHKW-Module
+* Solarkollektoren und Kollektorganglinien
+* PV-Module
+* Stromspeicher
+* Klimaregionen
+* Energieträger und Kostenkennwerte
+
+== Schreibschutz werksseitiger Datensätze ==
+{{Anker|schreibschutz-werksseitiger-datensaetze|schreibschutz}}
+
+{{Hinweis|Werksseitige Datensätze sind schreibgeschützt und lassen sich nicht versehentlich überschreiben. Eigene Einträge legen Sie daneben an.}}
+
+== Projekteigene Kopien ==
+{{Anker|projekteigene-kopien|projektkopie}}
+
+Was Sie im Projekt ändern, wirkt sich nie auf den Katalog aus, denn beim Zuordnen wird stets eine projekteigene Kopie angelegt.
+
+== Profile bearbeiten ==
+{{Anker|profile-bearbeiten|wochenprofil|profileditor}}
+
+Die Wochenprofile mit 168 Stundenwerten lassen sich in einem eigenen Editor tageweise bearbeiten, kopieren und auf alle Tage übertragen; eine Grafik zeigt das Ergebnis unmittelbar. Auch die Tagesverteilungskurven der Gebäudetypen sind als Stundenprofile hinterlegt und können bearbeitet werden.
+
+== Import nach VDI 3805 ==
+{{Anker|import-nach-vdi-3805|vdi-3805|herstellerdaten}}
+
+Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Import von Herstellerdatensätzen nach VDI 3805 zur Verfügung, dem Standard für den Austausch von Produktdaten in der technischen Gebäudeausrüstung.
+
+{{Tipp|Den Pfad zu den VDI-3805-Herstellerdaten legen Sie unter {{Menü|Administration|Einstellungen}} fest.}}
+
+== Klimadaten beziehen ==
+{{Anker|klimadaten-beziehen|klimadaten|ortsliste}}
+
+Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter. Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.
+
+== Lastgänge einlesen ==
+{{Anker|lastgaenge-einlesen|lastgang|messdaten}}
+
+Ein bereits vorliegender Wärmelastgang kann als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden. Gemessene Stromlastgänge lassen sich importieren und werden je nach Zeitraster – Stunden- oder Viertelstundenwerte – automatisch eingepasst und dem berechneten Profil überlagert.
+
+Für Wärmepumpen kann außerdem ein Quellentemperaturprofil als CSV-Datei mit Stundenwerten über ein Jahr eingelesen werden.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Erzeuger und Speicher auswählen]] – Auswahl der Geräte aus den Katalogen
+* [[Klimadaten festlegen]] – der zugehörige Schritt im Programmablauf
+* [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse und Schnittstellen
+* [[Datenexport]] – Ausgabe von Zeitreihen als CSV-Datei
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

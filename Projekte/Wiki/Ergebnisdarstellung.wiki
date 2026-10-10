@@ -1,0 +1,54 @@
+Die '''Ergebnisdarstellung''' ist in Registerkarten gegliedert. Sie führt vom Energiebedarf über die einzelnen Erzeuger bis zur zusammenfassenden Ergebnisseite mit Bedarfsdeckung, Autarkieanalyse und Jahresganglinien.
+
+== Energiebedarf ==
+{{Anker|energiebedarf|jahresganglinie|jahresdauerlinie}}
+
+Der Energiebedarf zeigt Wärmelast und Strombedarf als Jahresganglinie, wahlweise umschaltbar auf die geordnete Jahresdauerlinie, jeweils mit maximaler Last und Jahressumme. Die Wärmelast ist dabei nach Heizwärme und Warmwasser getrennt dargestellt.
+
+== Wärmepumpe ==
+{{Anker|waermepumpe|bivalenzpunkt|vollbenutzungsstunden}}
+
+Die Registerkarte ''Wärmepumpe'' weist die Wärmebedarfsdeckung in Prozent, den ermittelten Bivalenzpunkt, die Kapazität des zugeordneten Pufferspeichers, die durchschnittlichen Vollbenutzungsstunden und die minimal erforderliche Spitzenkesselleistung aus.
+
+Drei Diagramme zeigen den Jahresgang von Wärmebedarf, Heizstab und Wärmeproduktion, den Stromverbrauch sowie die Leistung aufgetragen über der Außentemperatur. Eine Modultabelle listet je Maschine die Leistung, die Wärmeproduktion, den Stromverbrauch, den Heizstabanteil und die Betriebsstunden.
+
+== Heizkessel, BHKW, Solarthermie und Photovoltaik ==
+{{Anker|heizkessel-bhkw-solarthermie-und-photovoltaik|erzeugerregisterkarten|modultabelle}}
+
+Für Heizkessel, BHKW, Solarthermie und Photovoltaik gibt es jeweils eigene Registerkarten mit Deckungsanteil, Produktion, Restbedarf, den relevanten Verbrauchsgrößen und einer Modultabelle. Beim BHKW wird zusätzlich die Betriebsart eingestellt und erläutert, bei der Solarthermie der nicht nutzbare Überschuss ausgewiesen, bei der Photovoltaik der Speicherfüllstand mit dargestellt.
+
+== Ergebnisseite ==
+{{Anker|ergebnisseite|ringdiagramm|jahresarbeit}}
+
+Die Ergebnisseite fasst alles zusammen. Zwei Ringdiagramme zeigen Wärme- und Strombedarfsdeckung nach Erzeugern, Kennzahlkacheln den verbleibenden Rest an Wärme und Strom, eine Tabelle die Jahresarbeit jedes Erzeugers in Megawattstunden.
+
+== Autarkieanalyse ==
+{{Anker|autarkieanalyse|autarkiegrad|nutzungsgrad}}
+
+Die Autarkieanalyse stellt monatsweise gegenüber, welcher Anteil des Strombedarfs direkt aus der Erzeugung, aus dem Speicher oder aus dem Netz gedeckt wird, und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und die CO₂-Einsparung aus.
+
+== Wärme- und Stromproduktion ==
+{{Anker|waerme-und-stromproduktion|produktionsganglinie|speicherfuellstand}}
+
+Zwei weitere Ansichten zeigen die Wärme- und die Stromproduktion als Jahresganglinie, in denen sich einzelne Erzeuger und der Speicherfüllstand gezielt ein- und ausblenden lassen.
+
+== Kennzahlen im Überblick ==
+{{Anker|kennzahlen-im-ueberblick|kennzahlen}}
+
+Zur Verfügung stehen Deckungsanteile je Erzeuger, Bivalenzpunkt, Vollbenutzungsstunden, Jahresnutzungsgrade, Restwärme- und Reststrombedarf, Brennstoffverbräuche, Emissionen, Eigenverbrauchsquote, Autarkiegrad und CO₂-Einsparung. Dargestellt wird alles als Jahresganglinie, Jahresdauerlinie, Leistung über Außentemperatur, Ringdiagramm der Bedarfsdeckung, Monatsbilanz der Autarkie und als Modultabelle je Anlage.
+
+== Ergebnis speichern ==
+{{Anker|ergebnis-speichern}}
+
+Das jeweils letzte Simulationsergebnis eines Projekts kann gespeichert und später wieder aufgerufen werden.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Vergleich Energiebilanz|Grundlagen: Vergleich Energiebilanz]] – wie Varianten belastbar verglichen werden
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
+* [[Datenexport]] – Ausgabe der Zeitreihen als CSV-Datei
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]
