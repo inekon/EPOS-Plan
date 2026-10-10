@@ -290,6 +290,12 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
   ausgenommenen Maske gerufen und `feld_setzen` trifft keine angemeldete Maske, nennt die Absage den Grund („Diese
   Maske ist bewusst nicht steuerbar: …", bei `Offen` „noch nicht steuerbar"); erkannt wird die Maske am Hilfeschlüssel
   des Aufrufs (`KiChatKontext.Aufruf`), den der Eintrag führt.
+  **Die zwölf Ausnahmen** stehen in fünf Gruppen: der Assistent selbst (Chat, Eingabezeile, Werkzeugliste, seine
+  Einstellungen); Lizenz und Schlüssel (Feldwerte gingen sonst an den externen Dienst); Rückfragen (Namensdialog,
+  Wertabfrage, Projektwahl mit dem Sicherungshaken des Löschmodus); Aktionsdialoge mit einem Feld (Bezeichner des
+  Katalogimports, Übernahme eines Berichtskapitels, Katalogdialog der Wärmepumpe); Feld des Wirts (Betriebsmodus als
+  Feld der Simulationsmaske). Wo eine freigegebene Maske ein Feld führt, dessen Handweg sofort in die Datenbank
+  schreibt, sperrt sie es über den Sperrgrund (3.4, „Sperrgrund je Feld"), statt den Dialog auszunehmen.
 - **Stand der Abdeckung.** Angemeldet sind alle Masken mit Einstellwerten; die Ausnahmeliste führt keinen
   `Offen`-Eintrag, und kein Vermerk der Eingabebilanz wartet mehr auf einen Auftrag: Die drei Zapfprofil-Überlagerungen
   und die Rechenweg-Wahl der Bedarfsprofile stehen im Katalog (Stufe 3a), die Zahlenfolgen (Monatswerte eines
@@ -311,7 +317,9 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
   Sichtklasse beantwortet sie als `IKiFeldtafel`, und ein Profilwächter ersetzt Markup- und Reflection-Probe. **Die
   Anzeigeschalter eines Ergebnisblattes** (sortiert, Reihen ein/aus) sind eine Spalte seines Wirts: Jedes Blatt meldet
   beim Aufbau seine gezeichneten Schalter beim Register der Seite an, nie eine eigene Maske — eine im Blatt
-  angemeldete Maske verdrängte die Maske der Ansicht als aktive.
+  angemeldete Maske verdrängte die Maske der Ansicht als aktive Dasselbe gilt für die Anzeige von
+  Ansichten, die ein Wirt trägt: die Ergebnis- und die Größenansicht der Speicherflotte sind die Spalte `anzeige` der
+  Stromspeicher-Auslegung, das Zeitraster der Bedarfsgrafik (Jahr, Monat, Woche, Tag) ein Feld des Bedarfsergebnisses.
 - **Zahlenfolgen: Tabelle oder Zahlenreihe** (#458 Stufe 3b). Der Rahmen kennt zwei Formen, und die Wahl folgt der
   Maske. Eine **Tabelle mit benannten Zeilen** bleibt die Spaltenform (`Typ.Zeilen[].Eigenschaft` mit
   Zeilenkennzeichen): Jede Zeile wird ein eigenes Feld mit eigener Bestätigungszeile, gesetzt mit `feld_setzen` oder
