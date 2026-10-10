@@ -210,7 +210,7 @@ public class SimulationKonfigKaeltebereichTests : EposBunitContext
             Resource.SIMKONF_KAELTE_STUFE_SPEICHER, Resource.SIMKONF_KAELTE_STUFE_WP, Resource.SIMKONF_KAELTE_STUFE_KM)), text);
         Assert.Contains(string.Format(Resource.SIMKONF_KAELTE_FREI, string.Format(Resource.SIMKONF_KAELTE_FREI_VORN, "Kältemaschine 1")),
                         cut.Find("p.epos-simkonfig-kaelte-frei").TextContent);
-        // Die Folge ist fest: keine Pfeile an den Kacheln.
+        // Ohne Schreibweg der Folge (KaelteVerschieben) keine Pfeile an den Kacheln.
         Assert.DoesNotContain("▲", cut.Find("div.epos-simkonfig-kaelte-erzeuger").TextContent);
     }
 

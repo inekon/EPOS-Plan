@@ -59,3 +59,29 @@ An der Seite je Erzeugerkachel zwei Pfeile (`KaelteVerschieben(z.IdAnlage, -1/+1
 `NachHintenMoeglich`, nur mit Delegat), ein Knopf „Vorgabefolge“ (`KaelteVorgabefolge`, aktiv bei `FolgeGepflegt`), die
 Herleitungszeile aus `FolgeHinweis`, nach jedem Schreiben `Laden` und ein zurückgegebener Grund als Meldung. Texte für
 Pfeile und Knopf samt Tooltips legt die Folgewelle an (beide Sprachen); die Rollbereich- und Fensterproben laufen nach.
+
+## KB-D2 Pfeile
+
+**10.10.2026 · Zweig `gs-merge4`, nach dem Merge von KB-B.** Die Seite bedient die Folge:
+
+- **Pfeile:** Je Kälteerzeugerkachel ▲/▼ über die vorhandenen Glyphen der `ErzeugerKachel` (`Reihenfolge`,
+  `AufMoeglich`, `AbMoeglich`, gesetzt in `SimulationKonfigSeite.KaelteKachel`) auf
+  `SimulationKonfigDienste.KaelteVerschieben(z.IdAnlage, -1/+1)`. Sie stehen nur mit Delegat und nur, wenn der Erzeuger
+  rücken kann (ab zwei Erzeugern); am Rand und im Lesemodus sind sie ausgegraut wie in der Wärmekaskade, damit die
+  Kopfzeile der Kachel nicht springt. Tooltips `SIMKONF_KAELTE_TIP_VOR`/`_ZURUECK`.
+- **Knopf „Vorgabefolge“** (`SIMKONF_KAELTE_BTN_VORGABE`) neben der Herleitungszeile auf `KaelteVorgabefolge`, nur mit
+  Delegat und ab zwei Erzeugern; weich gesperrt (`aria-disabled`, Grund `SIMKONF_KAELTE_VORGABE_GILT` im Tooltip und
+  nach dem Versuch im Banner), solange die Vorgabe gilt; im Lesemodus hart gesperrt.
+- **Herleitungszeile** aus `KaeltebereichDaten.FolgeHinweis`; ohne Hinweis die Stufenzeile wie bisher.
+- Nach jedem Schreiben laden Kacheln und Schema neu (`KachelnNeuladen`); eine Ablehnung des Kernwegs steht als
+  Warnung im Banner. Zeile und Knopf brechen in der Kompaktstufe um (`.epos-simkonfig-kaelte-folge`, `flex-wrap`).
+- Fünf Ressourcen je Sprache, `designer_neu.py schreiben`. Wiki-Quellen `Programm Dokumentation - Simulation.wiki`
+  (Bereich Kälte) und `… - Kühlung.wiki` (Reihenfolge) nachgezogen; Logbuch-Vorschlag: „Die Reihenfolge der
+  Kälteerzeuger lässt sich im Bereich Kälte der Simulationskonfiguration mit Pfeilen ändern.“
+
+**Nachweis:** `SimulationKonfigKaeltefolgeTests` (9 Fälle: Pfeile am Rand ausgegraut, ohne Delegat weder Pfeile noch
+Knopf, ein Erzeuger ohne Pfeile, Schreiben mit Neuladen, Ablehnung im Banner, Knopf weich gesperrt mit Grund, Knopf stellt
+die Vorgabe her, Ablehnung der Vorgabe, Lesemodus). Gefilterte Läufe: `EPOS.UI.Tests` 987/987, `EPOS.Kern.Tests`
+1 537/1 537 grün. Fensterprobe erfüllt, Rollbereichprobe 1 110 Zustände ohne Verstoß (die Seite selbst misst erst der
+Probenfall von KB-C). Referenzlauf 1017, 1055, 1064 gegen `Referenzlaeufe/2026-10-10_R51_FreieKuehlung`: 3 × PASS,
+96 von 96 Dateien byte-gleich.
