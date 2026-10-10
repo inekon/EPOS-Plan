@@ -911,4 +911,63 @@ public class KataloglisteTests : EposBunitContext
         var werkzeug = mit.Find(".epos-katalog-suchzeile > .epos-katalog-werkzeug");
         Assert.NotNull(werkzeug.QuerySelector("#schalter"));
     }
+
+    // =====================================================================
+    //  KD-4 - der Langtext am kurzen Spaltenkopf
+    // =====================================================================
+
+    /// <summary>
+    /// KD-4: Ein kurzer Kopf mit Langtext („P_N" → „Nennkälteleistung") trägt ihn am Kopftext als
+    /// <c>title</c> und nennt ihn im Namen des Sortierknopfs; ein Kopf ohne Langtext trägt keines von
+    /// beidem, der Trichter bleibt unberührt. Der Profiltext ohne Übersetzung ist der Schlüssel selbst.
+    /// </summary>
+    [Fact]
+    public void Ein_kurzer_Kopf_nennt_seinen_Langtext_im_Tooltip_und_der_Hilfstechnik()
+    {
+        Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, s => s);
+        var zeilen = new List<Katalogfilterzeile>
+        {
+            new Katalogfilterzeile(1, "Kaelte 1")
+                .MitText(Katalogfilterprofil.SpBezeichner, "Kaelte 1")
+                .MitText(Katalogfilterprofil.SpHersteller, "Firma")
+                .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, 100.0)
+                .MitZahl(Katalogfilterprofil.SpEer, 3.5, 2)
+                .MitText(Katalogfilterprofil.SpRueckkuehlart, "Luft")
+        };
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, profil)
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        var kopf = cut.FindAll(".epos-spaltenkopf-text")
+                      .Single(e => e.TextContent == "KFLT_SP_NENNKAELTELEISTUNG [kW]");
+        Assert.Equal("KFLT_LT_NENNKAELTELEISTUNG", kopf.GetAttribute("title"));
+        var knopf = kopf.Closest("button")!;
+        Assert.Contains("KFLT_LT_NENNKAELTELEISTUNG", knopf.GetAttribute("aria-label"));
+        Assert.Contains("KFLT_SP_NENNKAELTELEISTUNG [kW]", knopf.GetAttribute("aria-label"));
+
+        var rueck = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent == "KFLT_SP_RUECKKUEHLART");
+        Assert.Equal("KFLT_LT_RUECKKUEHLART", rueck.GetAttribute("title"));
+
+        // Ohne Langtext: kein title am Text, der Knopfname wie bisher.
+        var hersteller = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent == "KFLT_SP_HERSTELLER");
+        Assert.False(hersteller.HasAttribute("title"));
+        Assert.DoesNotContain("KFLT_LT_", hersteller.Closest("button")!.GetAttribute("aria-label"));
+
+        // Der Trichter nennt weiter den kurzen Kopf.
+        Assert.All(cut.FindAll("button.epos-trichter"),
+                   t => Assert.DoesNotContain("KFLT_LT_", t.GetAttribute("aria-label")));
+    }
+
+    /// <summary>KD-4: Ein Profil ohne Langtexte (Heizkessel) zeichnet keinen title am Kopftext.</summary>
+    [Fact]
+    public void Ohne_Langtext_traegt_kein_Kopftext_einen_Tooltip()
+    {
+        var cut = Aufbauen();
+
+        Assert.NotEmpty(cut.FindAll(".epos-spaltenkopf-text"));
+        Assert.All(cut.FindAll(".epos-spaltenkopf-text"), e => Assert.False(e.HasAttribute("title")));
+        Assert.All(cut.FindAll("button.epos-spaltenkopf-titel"),
+                   b => Assert.Equal(b.GetAttribute("title"), b.GetAttribute("aria-label")));
+    }
 }

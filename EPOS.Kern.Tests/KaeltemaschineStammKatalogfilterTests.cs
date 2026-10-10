@@ -52,6 +52,50 @@ namespace EPOS.Kern.Tests
             Assert.True(p.Spalte(Katalogfilterprofil.SpHerkunft).Sortierbar);
         }
 
+        /// <summary>
+        /// KD-4: Die kurzen Köpfe tragen ihren vollen Namen als Langtext — P_N „Nennkälteleistung“, EER
+        /// „Nenn-EER“, Rückk. „Rückkühlart“; die übrigen Spalten keinen. Die Wärmepumpe nennt allein zu P_N
+        /// den Stammblatt-Text „Nennleistung“; jedes andere Profil bleibt ohne Langtext.
+        /// </summary>
+        [Fact]
+        public void Die_kurzen_Koepfe_tragen_ihren_Langtext()
+        {
+            Katalogfilterprofil p = Profil();
+
+            Assert.Equal("Nennkälteleistung", p.Spalte(Katalogfilterprofil.SpNennkaelteleistung).Langtext);
+            Assert.Equal("Nenn-EER", p.Spalte(Katalogfilterprofil.SpEer).Langtext);
+            Assert.Equal("Rückkühlart", p.Spalte(Katalogfilterprofil.SpRueckkuehlart).Langtext);
+            Assert.Equal("Rückk.", p.Spalte(Katalogfilterprofil.SpRueckkuehlart).Titel);
+            Assert.Equal("P_N [kW]", p.Spalte(Katalogfilterprofil.SpNennkaelteleistung).Kopftext);
+            foreach (string ohne in new[] { Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpBezeichner,
+                                            Katalogfilterprofil.SpHerkunft, Katalogfilterprofil.SpTyp })
+            {
+                Assert.Equal("", p.Spalte(ohne).Langtext);
+                Assert.False(p.Spalte(ohne).HatLangtext);
+            }
+
+            Katalogfilterprofil wp = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, s => R.ResourceManager.GetString(s) ?? s);
+            Assert.Equal(R.WPS_LBL_NENNLEISTUNG, wp.Spalte(Katalogfilterprofil.SpNennleistung).Langtext);
+            Assert.Single(wp.Spalten, s => s.HatLangtext);
+
+            foreach (Anlagenart art in Katalogfilterprofil.AlleArten)
+            {
+                if (art == Anlagenart.Kaeltemaschine || art == Anlagenart.Waermepumpe) continue;
+                Assert.All(Katalogfilterprofil.Finde(art).Spalten, s => Assert.False(s.HatLangtext));
+            }
+        }
+
+        /// <summary>KD-4: Der Langtext ist in beiden Sprachen gepflegt.</summary>
+        [Fact]
+        public void Die_Langtexte_stehen_in_beiden_Sprachen()
+        {
+            var en = System.Globalization.CultureInfo.GetCultureInfo("en-US");
+            Assert.Equal("Nominal cooling capacity", R.ResourceManager.GetString("KFLT_LT_NENNKAELTELEISTUNG", en));
+            Assert.Equal("Nominal EER", R.ResourceManager.GetString("KFLT_LT_EER", en));
+            Assert.Equal("Heat rejection type", R.ResourceManager.GetString("KFLT_LT_RUECKKUEHLART", en));
+            Assert.Equal("Recool.", R.ResourceManager.GetString("KFLT_SP_RUECKKUEHLART", en));
+        }
+
         [Fact]
         public void Die_Herkunft_folgt_dem_Typ_und_dem_Katalogschluessel()
         {
