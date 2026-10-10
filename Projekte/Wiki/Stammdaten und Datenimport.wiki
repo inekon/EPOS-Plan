@@ -33,7 +33,7 @@ Die Wochenprofile mit 168 Stundenwerten lassen sich in einem eigenen Editor tage
 == Import nach VDI 3805 ==
 {{Anker|import-nach-vdi-3805|vdi-3805|herstellerdaten}}
 
-Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Import von Herstellerdatensätzen nach VDI 3805 zur Verfügung, dem Standard für den Austausch von Produktdaten in der technischen Gebäudeausrüstung. PV-Module lesen Sie aus der CEC-Liste oder aus PVsyst-Dateien (<code>.PAN</code>), Wechselrichter aus der CEC-Liste oder aus <code>.OND</code>-Dateien und Stromspeicher aus der CEC-Liste oder der bslib ein – alle Importe stehen unter {{Menü|Administration|Daten & Import}}.
+Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Import von Herstellerdatensätzen nach VDI 3805 zur Verfügung, dem Standard für den Austausch von Produktdaten in der technischen Gebäudeausrüstung. PV-Module lesen Sie aus der CEC-Liste oder aus PVsyst-Dateien (<code>.PAN</code>), Wechselrichter aus der CEC-Liste oder aus <code>.OND</code>-Dateien und Stromspeicher aus der CEC-Liste oder der bslib ein – alle Importe stehen unter {{Menü|Administration|Daten & Import}}. Für Kälteanlagen liest ''Import Kälteanlagen VDI 3805 (Wärmepumpen mit Kühlfunktion)'' dieselben Wärmepumpendateien und bietet nur die Wärmepumpen an, die Kälte erzeugen können ([[Programm Dokumentation/Gerätekataloge#import-kaelteanlagen|Gerätekataloge]]).
 
 {{Tipp|Den Pfad zu den VDI-3805-Herstellerdaten legen Sie unter {{Menü|Administration|Einstellungen}} fest.}}
 
