@@ -208,7 +208,6 @@ namespace WindowsFormsApplication1
                 ["KatalogfelderSpeichern"] =
                     new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
                         (name, felder) => PufferSpAdminHuelle.Wege().Speichern!(name, felder)),
-                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
@@ -235,6 +234,18 @@ namespace WindowsFormsApplication1
                             besitzer, projektId, DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER,
                             zeile, betrieb))
                     : null,
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, zeile))
+                    : null,
+                // UeS2b: Temperaturpaar, Schwellen und Verwendung der Projektkopie (Tab_Pufferspeicher)
+                // fuer dieselbe Zusammenfassung - gelesen wie im Projektspeicher-Dialog (PufferLesen).
+                ["Projektangaben"] = projektId > 0
+                    ? new Func<ErzeugerZeile, Pufferangaben>(zeile => Pufferangaben(zeile.GeraetId))
+                    : null,
+
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…")
             };
@@ -385,6 +396,18 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Abbildungen
         // =================================================================================
+
+        /// <summary>
+        /// Die projektbezogenen Werte einer Projektkopie fuer die Zusammenfassung der Detailzeile
+        /// (UeS2b); ohne Satz <c>null</c>.
+        /// </summary>
+        private static Pufferangaben Pufferangaben(int idPuffer)
+        {
+            WaermesenkeClass.PufferInfo p = WaermesenkeClass.PufferLesen(idPuffer);
+            if (p == null) return null;
+            return new Pufferangaben(p.Vorlauf, p.Ruecklauf, p.SchwelleEin, p.SchwelleAus,
+                                     WaermesenkeClass.VerwendungAnzeige(WaermesenkeClass.WirksameVerwendung(p)));
+        }
 
         private static ErzeugerZeile ZeileZu(WErzeugerModel m)
         {

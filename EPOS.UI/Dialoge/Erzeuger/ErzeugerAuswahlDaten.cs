@@ -231,3 +231,15 @@ public sealed record TraegerVorbereitung(
 /// unterschied das nicht — er zeigte alle vier Ausgänge als schlichte Meldung.
 /// </param>
 public sealed record AufnahmeErgebnis(ErzeugerZeile? Zeile, string Meldung = "", bool Fehler = false);
+
+/// <summary>
+/// <b>Die projektbezogenen Werte eines Pufferspeichers</b> für die Zusammenfassung der
+/// Detailzeile (UeS2b): Temperaturpaar, Schwellen und Verwendung stehen an der Projektkopie,
+/// gepflegt im Projektspeicher-Dialog — die Verwaltung zeigt sie nur kurz an.
+/// </summary>
+/// <param name="Vorlauf">Vorlauf in °C; <c>null</c> oder 0 = nicht gepflegt.</param>
+/// <param name="Ruecklauf">Rücklauf in °C; <c>null</c> oder 0 = nicht gepflegt.</param>
+/// <param name="SchwelleEin">Einschaltschwelle in %.</param>
+/// <param name="SchwelleAus">Abschaltschwelle in %.</param>
+/// <param name="Verwendung">Die wirksame Verwendung als Anzeigetext; leer = keine.</param>
+public sealed record Pufferangaben(int? Vorlauf, int? Ruecklauf, double? SchwelleEin, double? SchwelleAus, string Verwendung);
