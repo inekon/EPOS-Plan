@@ -1,8 +1,8 @@
 # Umsetzungskonzept: Kältemittel als Stammdatum (KM4)
 
 **Stand 10.10.2026 — Fassung 2 (nach Gegenlesen), Umsetzungsentwurf zur Abnahme durch den Anwender** · Codestand
-`abe290f70` (Zweig `ios_migration_september`) · Schemastand 211 (`KaelteKatalogfelderSchema`, K‑A; 212 KB‑D bei der
-Sitzung Gebäudesimulation angemeldet, nächster freier Schritt 213) · Referenzbasis R51
+`d21de06f9` (Zweig `ios_migration_september`) · Schemastand 212 (`KaelteRangSchema`, KB‑D; 213 bei der Sitzung
+„Dialoge und Korrekturen“ angemeldet (K1), KM4 meldet die nächste freie Nummer vor dem Bau an) · Referenzbasis R51
 `2026-10-10_R51_FreieKuehlung` (29 Projekte) · Fachkonzept
 [`Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md`](Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) (Fassung 2, Fragen
 KM4‑Q1 bis KM4‑Q17 offen).
@@ -68,13 +68,14 @@ gegen `origin` messen.
 ### 3.0 Vorarbeit (keine Welle)
 
 - Entscheide zu KM4‑Q1 bis KM4‑Q17 beim Anwender; Entscheidnummer nach Abgleich mit `origin`, nicht selbst vergeben.
-- **Abhängigkeiten auf `origin`:** KB‑D (212) vor KM4‑E1 (Schemakette) und vor dem Kältebahn‑Teil von KM4‑E3
-  (`KaelteBahnAnlegen`); KB‑B (`KaeltemaschineKonfiguration`, Seite) und Stufe 5 (E117 F6, Katalogauswahl im
-  Anlagendialog) vor den Lesezeilen von KM4‑E3; der Katalogdialog nur nach Abstimmung mit der Sitzung „Dialoge und
-  Korrekturen“. K‑A (211), KB‑A und K‑C liegen auf `origin`. Bis dahin baut keine Welle in den belegten Dateien.
+- **Abhängigkeiten:** KB‑D (212, #927), KB‑B (`KaeltemaschineKonfiguration`, #928), KB‑D2 (#929), K‑A (211), KB‑A und
+  K‑C liegen auf `origin`. Offen sind Stufe 5 (E117 F6, Katalogauswahl im Anlagendialog) vor der Lesezeile im
+  Anlagendialog der Kältemaschine und die Abstimmung mit der Sitzung „Dialoge und Korrekturen“ für den Katalogdialog.
+  Mit E120 (KD‑Q10) läuft K‑F1 vor KM4‑E1; beide berühren Katalogregister, Schemakette und `KaelteBahnAnlegen` —
+  nacheinander, nicht parallel.
 - EUR‑Lex‑Volltext der Verordnung (EU) 2024/573 (Anhänge I, II, IV, Art. 13) vom Anwender bereitstellen lassen (die
   Umgebung erreicht EUR‑Lex nicht); ohne Text bleiben Regeln und Werte `VORLAEUFIG` bis KM4‑E2‑c.
-- Schemanummer (nächste freie ab 213) in der Kopfzeile „Schemaschritt angemeldet“ der
+- Schemanummer (nächste freie zur Bauzeit; 213 ist für K1 Kältebedarf vergeben) in der Kopfzeile „Schemaschritt angemeldet“ der
   [Statusdatei](../Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“ anmelden und allein pushen.
 
 ### 3.1 KM4‑E1 — Kältemitteltabelle, Verweis, Inbetriebnahmejahr, Zuordnung
@@ -160,8 +161,8 @@ gegen `origin` messen.
   die Stufe 5 umbaut (KM4‑Q15). **E3‑b** Feld „Inbetriebnahmejahr“ in `ProjektKopfSeite.razor` mit `ProjektCtrl`
   (frei, KM4‑Q5 a); Lesezeile unter der Klappliste der Wärmepumpe in `WaermepumpeGeraetegrenzenFelder.razor` und
   Lesezeile „Zulässigkeit“ in `WaermepumpeAnlageDialog.razor` (frei, nur lesend); Hinweiszeile der Kachel „Kühlung
-  und Kälteanlagen“ (`KuehlungKachelBau`, frei); Lesezeile „Zulässigkeit“ in `KaeltemaschineKonfiguration` (nach
-  KB‑B) und im Anlagendialog der Kältemaschine (nach Stufe 5) — wartet, der Rest nicht. **E3‑c** Verwaltungsdialog
+  und Kälteanlagen“ (`KuehlungKachelBau`, frei); Lesezeile „Zulässigkeit“ in `KaeltemaschineKonfiguration` (KB‑B,
+  gebaut) und im Anlagendialog der Kältemaschine (nach Stufe 5) — der Anlagendialog wartet, der Rest nicht. **E3‑c** Verwaltungsdialog
   „Kältemittel“ im Menü „Daten & Import“ (`Menuetabelle.cs`, kein Untermenü mit nur einem Punkt; Seitenschlüssel,
   Hilfeziel, Menüband; Hülle; KI‑Sicht). Ressourcen in beiden Sprachen je Welle, `designer_neu.py schreiben`.
 - **Tests:** bunit `KaeltemaschineKatalogDialogTests` (Klappliste, Bestandseintrag, Lesezeilen, Schnellwahl,
@@ -174,7 +175,7 @@ gegen `origin` messen.
   (Klappliste, Lesezeilen, Inbetriebnahmejahr, Kachel, Kältebahn, Verwaltung).
 - **Wellen (3):** **E3‑a** `opus` Katalogdialog, Hülle, Schnellwahl, KI‑Sicht, bunit (≈ 140; wartet auf die
   Abstimmung); **E3‑b** `opus` Projektdaten, Wärmepumpen‑Lesezeilen, Kachel, Lesezeile `KaeltemaschineKonfiguration`
-  und Anlagendialog (≈ 110; die zwei Lesezeilen warten auf KB‑B und Stufe 5); **E3‑c** `opus` Verwaltungsdialog mit
+  und Anlagendialog (≈ 110; die Lesezeile im Anlagendialog wartet auf Stufe 5); **E3‑c** `opus` Verwaltungsdialog mit
   Menü, Seitenschlüssel, Hilfeziel und Tests (≈ 80).
 - **Statuszeile:** „Sitzung Kälteanlagen — KM4‑E3 Kältemittel‑Klappliste und Lesezeilen, Inbetriebnahmejahr an
   den Projektdaten, Kachel‑Hinweis, Verwaltung Kältemittel“.
@@ -201,8 +202,8 @@ gegen `origin` messen.
 **Summe:** **10 Wellen** (E1 2, E2 3, E3 3, E4 2), davon 9 `opus` und 1 `sonnet`, rund 940 Werkzeugaufrufe; dazu je
 Etappe Merge, Gate, Statuszeile und Protokoll durch die Orchestrierung (`fable`; Merges ohne Fachkonflikt, Gate und
 Textpflege an `sonnet`, Zählungen an `haiku`). Ein iOS‑Lauf ist nicht begründet (keine Änderung an der iOS‑Hülle).
-Abhängigkeiten: E1 nach KB‑D (212) auf `origin`; E2 nach E1 (Kältebahn‑Teil nach KB‑D); E3‑a nach E2 und der
-Abstimmung; E3‑b nach E2 (zwei Lesezeilen nach KB‑B und Stufe 5); E3‑c nach E1; E4 nach E3. E2‑a kann parallel zu
+Abhängigkeiten: E1 nach K‑F1 (KB‑D, 212, liegt auf `origin`); E2 nach E1; E3‑a nach E2 und der
+Abstimmung; E3‑b nach E2 (Lesezeile im Anlagendialog nach Stufe 5); E3‑c nach E1; E4 nach E3. E2‑a kann parallel zu
 E1‑b laufen (reine Klassen und Regelsaat ohne Schemaschritt).
 
 ## 4 Prüfungen und Abnahme
@@ -234,8 +235,8 @@ des Regelabgleichs (E2‑c) mit Fundstelle je Zeile.
 
 | Risiko | Festlegung |
 |---|---|
-| Parallelsitzungen und Schemanummern (212 angemeldet, 213 frei) | Nummer vor dem Bau in der Kopfzeile mit Vermerk „Sitzung Kälteanlagen“ anmelden; `SCHRITT` hängt über `+ 1` an der Vorgängerklasse zur Bauzeit; bei Verschiebung nur Konstante und Statuszeile anpassen |
-| KB‑B, KB‑D und Stufe 5 noch nicht auf `origin`; Katalogdialog als Überlagerung der Katalogauswahl | keine Welle baut vorher in deren Dateien; E1 wartet auf 212, der Kältebahn‑Teil auf KB‑D, die zwei Lesezeilen auf KB‑B und Stufe 5, der Katalogdialog auf die Abstimmung |
+| Parallelsitzungen und Schemanummern (213 für K1 Kältebedarf vergeben, nächste freie zur Bauzeit) | Nummer vor dem Bau in der Kopfzeile mit Vermerk „Sitzung Kälteanlagen“ anmelden; `SCHRITT` hängt über `+ 1` an der Vorgängerklasse zur Bauzeit; bei Verschiebung nur Konstante und Statuszeile anpassen |
+| KB‑B und KB‑D erledigt; offen Stufe 5; K‑F1 vorher; Katalogdialog als Überlagerung der Katalogauswahl | keine Welle baut vorher in den Dateien der Stufe 5; E1 folgt nach K‑F1 (E120, KD‑Q10; beide berühren Katalogregister, Schemakette und `KaelteBahnAnlegen`, nacheinander), die Lesezeile im Anlagendialog wartet auf Stufe 5, der Katalogdialog auf die Abstimmung |
 | UB‑Schnittstelle (`Bivalenzvorgaben`, `Tab_WP`, Klappliste, Einfrierregel „gesäte Übergabegrenzdaten“); Prüfung jeder Wärmepumpe (KM4‑Q16) | nur lesend; Wache „Codes ⊆ Tabelle“; jede Erweiterung der Klappliste oder eine ID an `Tab_WP` vorher mit der Sitzung Gebäudesimulation abstimmen |
 | Rechtsangaben ohne Primärquelle; Berichtigungen des deutschen Texts | `Status = VORLAEUFIG` bis E2‑c; n.b.‑Regeln und Nr. 9 a (Füllmengenkriterium) werden nicht gesät; Warntext nennt Regel, Stichtag, Jahr und Leistung; nie sperrend; kein Rechtsrat |
 | Normwerte und Normtexte | GWP nur aus der Verordnung (amtliches Werk) mit Quelle und Bezug je Zeile (KM4‑Q2); Sicherheitsgruppen leer (KM4‑Q3); keine Tafeln in Papier, Code oder Wiki |
@@ -244,7 +245,7 @@ des Regelabgleichs (E2‑c) mit Fundstelle je Zeile.
 | Geräte‑GWP mit unbekanntem Bezug | Tabellen‑GWP vor Geräte‑GWP (KM4‑Q17); Abweichung über 1 % als Hinweis |
 | Testdatenbank in parallelen Wellen | nur E1‑a (Schema) und E2‑a (Generation 10) heben sie; LFS‑Filter aktiv; vor dem Merge den Stand von `origin` mergen und Schritt und Nachsaat neu laufen lassen |
 | Prüfsumme der Auslieferungssätze | Zuordnung setzt nur die leere ID; Prüfsumme über `KatalogSchluesselSaat` neu; Projektkopien und Anwendersätze unberührt; Katalogabgleich prüft die neue Fassung |
-| Unsichtbarer Befund der Kältemaschine auf der Karte | Kältebahn‑Warntext (E2‑b, nach KB‑D) und Kachel‑Hinweiszeile (E3‑b); bis dahin Protokoll und Bericht |
+| Unsichtbarer Befund der Kältemaschine auf der Karte | Kältebahn‑Warntext (E2‑b) und Kachel‑Hinweiszeile (E3‑b); bis dahin Protokoll und Bericht |
 | Wiki‑Wache gegen Typcode‑Muster (`R290`, `R1234ze` u. a.) | Codes als Normbezeichnungen in `WikiProduktdatenWacheTests` aufnehmen; Wiki nennt keine Produkte |
 | Ein späterer Entscheid zu E118 (Treibhauswirkung) | dann eigenes Konzept mit Rechenwirkung und Einfrierregel; KM4 legt nur Füllmenge (K‑A) und GWP bereit |
 

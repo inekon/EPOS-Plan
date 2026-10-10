@@ -1,10 +1,10 @@
 # Konzept — Kältemittel als Stammdatum (KM4)
 
 **Stufe 4 der Kälteanlagen-Empfehlung** · **Stand 10.10.2026 — Fassung 2 (nach Gegenlesen), Fachkonzept zur Abnahme
-durch den Anwender; Fragen KM4‑Q1 bis KM4‑Q17 offen (Abschnitt 9)** · Codestand `abe290f70` (Zweig
-`ios_migration_september`, Schemastand 211 `KaelteKatalogfelderSchema`, Referenzbasis R51
-`2026-10-10_R51_FreieKuehlung` mit 29 Projekten; Schemaschritt 212 (KB‑D) bei der Sitzung Gebäudesimulation
-angemeldet, nächster freier Schritt 213) · Vorarbeit: [Recherche Kälteanlagen](2026-10-08_Recherche_Kaelteanlagen_Herstellerdaten_Rechenmodelle.md)
+durch den Anwender; Fragen KM4‑Q1 bis KM4‑Q17 offen (Abschnitt 9)** · Codestand `d21de06f9` (Zweig
+`ios_migration_september`, Schemastand 212 `KaelteRangSchema`, Referenzbasis R51
+`2026-10-10_R51_FreieKuehlung` mit 29 Projekten; 213 bei der Sitzung „Dialoge und Korrekturen“ angemeldet (K1),
+KM4 meldet die nächste freie Nummer vor dem Bau an) · Vorarbeit: [Recherche Kälteanlagen](2026-10-08_Recherche_Kaelteanlagen_Herstellerdaten_Rechenmodelle.md)
 (Abschnitte „Kältemittel“, „Stufe 4“, „Offene Klärungen“), [Konzeptprüfung Katalog und Import](2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md)
 (Stufe K‑A, Frage KKP‑Q3), [Übergabe Kälteanlagen](2026-10-10_Uebergabe_Kaelteanlagen.md) und
 [Übergabe Teil Programm](2026-10-10_Uebergabe_Kaelteanlagen_Programm.md), Entscheid E118 im
@@ -45,7 +45,7 @@ Split/VRF/Rückkühlwerk setzt darauf auf.
 | Vorgabeklassen der Wärmepumpe je Kältemittel (`Bivalenzvorgaben`, Gerätegrenzen), Klappliste, `Tab_WP(_STAMM)` | Übergabegrenze und Bivalenz (UB), Sitzung Gebäudesimulation | Übergabe §1; jede Änderung ist eine Schnittstelle mit Abstimmungspflicht |
 | Split, Multisplit, VRF, Absorption als Geräteart mit eigener Prüfung | K‑D, K‑E (Entwurf Split/VRF/Rückkühlwerk) | hier nur als künftige Geräteklasse mitgedacht |
 | Katalogauswahl des Anlagendialogs (Stufe 5 der Katalogauswahl, E117 F6) und Katalogdialog als Überlagerung | Sitzung „Dialoge und Korrekturen“ | KM4 meldet seine Felder dort an |
-| Bereich „Kälte“ der Simulationskonfiguration, Komponente `KaeltemaschineKonfiguration` (KB‑B), Kältefolge `Kaelte_Rang` (KB‑D, Schritt 212) | Sitzung Gebäudesimulation bis zu deren Push | danach Lesezeile und Kältebahn‑Warnung |
+| Bereich „Kälte“ der Simulationskonfiguration, Komponente `KaeltemaschineKonfiguration` (KB‑B, #928), Kältefolge `Kaelte_Rang` (KB‑D, Schritt 212, #927; Pfeile KB‑D2, #929) | Sitzung Gebäudesimulation, gebaut | Lesezeile und Kältebahn‑Warnung sind nicht mehr blockiert |
 | Rückkühlung, Teil‑Freikühlung | K‑F | — |
 
 **Warum jetzt.** Die Verbote des Inverkehrbringens nach Anhang IV der Verordnung (EU) 2024/573 greifen gestaffelt
@@ -379,10 +379,10 @@ CSV‑Export unverändert.
 
 ## 6 Schema
 
-- **Ein Schritt**, Klasse `KaeltemittelSchema`, Nummer **nächste freie ab 213** — vor dem Bau in der Kopfzeile
+- **Ein Schritt**, Klasse `KaeltemittelSchema`, Nummer **nächste freie zur Bauzeit** (213 ist für K1 Kältebedarf vergeben) — vor dem Bau in der Kopfzeile
   „Schemaschritt angemeldet“ der [Statusdatei](../Status_iOS_Migration.md) mit dem Vermerk „Sitzung Kälteanlagen“
   anmelden und allein pushen; `SCHRITT = <Vorgängerklasse>.SCHRITT + 1` an der Klasse, die zur Bauzeit die höchste
-  Nummer trägt (nach KB‑D 212, sobald es auf `origin` liegt).
+  Nummer trägt (KB‑D, 212, liegt auf `origin`; K‑F1 läuft vor KM4‑E1, siehe Umsetzungskonzept 3.0).
 - Inhalt: `Tab_Kaeltemittel_STAMM` (4.1) mit Registereintrag und Katalogschlüsseln; `ID_Kaeltemittel` an beiden
   Kältemaschinentabellen (4.2) und in `KaeltemaschineSchema.Fachspalten`; `Inbetriebnahmejahr` (4.4); Saat der
   Kältemittelzeilen (KM4‑Q2, Q3, Q10, Q11) mit `Status`; Zuordnung des Textbestands (3.2) mit neuer Prüfsumme über
@@ -413,17 +413,17 @@ umbaut** — KM4 baut dort erst nach Abstimmung (KM4‑Q15).
 
 **7.2 Anlagendialog und `KaeltemaschineKonfiguration`:** Lesezeile „Zulässigkeit“ nach dem Muster der
 KM3‑Lesewerte (Ergebnisklasse, Regel, Stichtag, Jahr; bei „nicht prüfbar“ die fehlende Größe) — in der Komponente
-`KaeltemaschineKonfiguration` nach KB‑B, im Anlagendialog nach Stufe 5. Keine neue Eingabe.
+`KaeltemaschineKonfiguration` (KB‑B, gebaut), im Anlagendialog nach Stufe 5. Keine neue Eingabe.
 
 **7.3 Wärmepumpe:** In der Gruppe „Gerätegrenzen“ nur eine Lesezeile unter der Klappliste (GWP, F‑Gas,
 Sicherheitsgruppe, PFAS, natürlich aus der Tabelle; leer bei `SONSTIGES`); Lesezeile „Zulässigkeit“ im Anlagendialog
 jeder Wärmepumpe (KM4‑Q16). Klappliste, Schnellwahlknöpfe und Vorgabeklassen unverändert (UB).
 
 **7.4 Inbetriebnahmejahr:** mit KM4‑Q5 a Eingabe in `ProjektKopfSeite.razor` (Projektdaten; nicht von KB‑B belegt),
-Platzhalter „leer: keine Zulässigkeitsprüfung“; mit KM4‑Q5 b auf der Simulationskonfigurationsseite nach KB‑B.
+Platzhalter „leer: keine Zulässigkeitsprüfung“; mit KM4‑Q5 b auf der Simulationskonfigurationsseite (KB‑B, gebaut).
 
-**7.5 Karte und Kachel:** Kältebahn‑Knoten mit `Warnung`/`Warntext` aus `SchemaModell.KaelteBahnAnlegen` (nach
-KB‑D), Kachel „Kühlung und Kälteanlagen“ mit Hinweiszeile (5.2).
+**7.5 Karte und Kachel:** Kältebahn‑Knoten mit `Warnung`/`Warntext` aus `SchemaModell.KaelteBahnAnlegen` (KB‑D,
+gebaut), Kachel „Kühlung und Kälteanlagen“ mit Hinweiszeile (5.2).
 
 **7.6 Verwaltung der Kältemittel:** eine einfache Liste (Anzeige, Anwenderzeile anlegen, bearbeiten, löschen
 sofern unbenutzt; Code einer verwendeten Zeile gesperrt) im Menü „Daten & Import“ — Muster der Katalogdialoge,
