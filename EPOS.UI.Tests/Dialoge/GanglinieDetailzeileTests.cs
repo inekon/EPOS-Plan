@@ -267,4 +267,99 @@ public class GanglinieDetailzeileTests : EposBunitContext
         Assert.Equal(Resource.AUSWAHL_MARKE_KATALOGSATZ, Satzmarke(cut));
         Assert.True(AufgeklapptMitGanglinie(cut));
     }
+
+    // =================================================================================
+    // UeS1c: die Ganglinie in der Satz-Ueberlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// Prüft „Vergrößern": Die Überlagerung trägt die Grafik genau einmal im Körper, die Fußleiste nur
+    /// „Schließen" ohne Schlosshinweis (reine Ansicht), und das gemeldete Behältermaß baut das Modell in
+    /// genau dieser Größe. Schließen stellt die Grafik zurück in die Satzfläche.
+    /// </summary>
+    private static void UeberlagerungPruefen<T>(IRenderedComponent<T> cut, List<(bool Sortiert, int Breite, int Hoehe)> masse,
+                                                Func<IRenderedComponent<DiagrammSvg>> grafik)
+        where T : Microsoft.AspNetCore.Components.IComponent
+    {
+        cut.Find(".epos-zweispalten-vergroessern").Click();
+
+        Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-ganglinie-grafik"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-abbrechen"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-hinweis"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-schliessen"));
+
+        var svg = grafik();
+        cut.InvokeAsync(() => svg.Instance.MassGemeldet(1240, 560));
+        Assert.Equal((false, 1240, 560), masse[^1]);
+
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung--satz"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-grafik"));
+    }
+
+    [Fact]
+    public void UeS1c_Solarganglinie_Vergroessern_zeichnet_die_Kurve_im_Mass_der_Ueberlagerung()
+    {
+        var masse = new List<(bool Sortiert, int Breite, int Hoehe)>();
+        var cut = Render<SolarganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Ganglinie Nord", 501) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, Kennzahlen)
+            .Add(x => x.Bildauftrag, Bild)
+            .Add(x => x.BildauftragMass, (w, s, b, h) => { masse.Add((s, b, h)); return null; }));
+        Waehlen(cut, 1, 1);
+        UeberlagerungPruefen(cut, masse, () => cut.FindComponent<DiagrammSvg>());
+    }
+
+    [Fact]
+    public void UeS1c_PvGanglinie_Vergroessern_zeichnet_die_Kurve_im_Mass_der_Ueberlagerung()
+    {
+        var masse = new List<(bool Sortiert, int Breite, int Hoehe)>();
+        var cut = Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Ganglinie Nord", 601) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, Kennzahlen)
+            .Add(x => x.Bildauftrag, Bild)
+            .Add(x => x.BildauftragMass, (w, s, b, h) => { masse.Add((s, b, h)); return null; }));
+        Waehlen(cut, 0, 0);
+        UeberlagerungPruefen(cut, masse, () => cut.FindComponent<DiagrammSvg>());
+    }
+
+    [Fact]
+    public void UeS1c_Stromganglinie_Vergroessern_zeichnet_die_Kurve_im_Mass_der_Ueberlagerung()
+    {
+        var masse = new List<(bool Sortiert, int Breite, int Hoehe)>();
+        var cut = Render<StromganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<GanglinienProjektZeile> { new(1, 701, "Ganglinie Nord") })
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Katalog))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Stromganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, Kennzahlen)
+            .Add(x => x.Bildauftrag, Bild)
+            .Add(x => x.BildauftragMass, (w, s, b, h) => { masse.Add((s, b, h)); return null; }));
+        Waehlen(cut, 0, 0);
+        UeberlagerungPruefen(cut, masse, () => cut.FindComponent<DiagrammSvg>());
+    }
+
+    [Fact]
+    public void UeS1c_WaermebedarfExtern_Vergroessern_zeichnet_die_Kurve_im_Mass_der_Ueberlagerung()
+    {
+        var masse = new List<(bool Sortiert, int Breite, int Hoehe)>();
+        var cut = Render<WaermebedarfExternDialog>(p => p
+            .Add(x => x.Zeilen, new List<WaermebedarfExternZeile>
+                 { new() { IdZ = 1, IdGanglinie = 801, Bezeichner = "Ganglinie Nord", Kanal = "HEIZUNG" } })
+            .Add(x => x.Katalogzeilen, () => Task.FromResult(Katalog))
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Waermebedarf))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, Kennzahlen)
+            .Add(x => x.Bildauftrag, Bild)
+            .Add(x => x.BildauftragMass, (w, s, b, h) => { masse.Add((s, b, h)); return null; }));
+        UeberlagerungPruefen(cut, masse, () => cut.FindComponent<DiagrammSvg>());
+    }
 }

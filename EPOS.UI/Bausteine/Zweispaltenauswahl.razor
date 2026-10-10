@@ -184,7 +184,7 @@
 {
     <Ueberlagerung Offen="@_satzGross" Titel="@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)"
                    Zusatzklasse="epos-ueberlagerung--satz" Geschlossen="SatzVerwerfenAsync"
-                   SchliessenText="@(SatzNurLesen ? Resource.SATZBEARB_SCHLIESSEN : Resource.ALLG_BTN_ABBRECHEN)">
+                   SchliessenText="@(SatzNurLesen || SatzAnsicht ? Resource.SATZBEARB_SCHLIESSEN : Resource.ALLG_BTN_ABBRECHEN)">
         <Kopfzusatz>
             <span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@SatzMarke</span>
         </Kopfzusatz>
@@ -212,7 +212,7 @@
                         <span class="epos-satzueberlagerung-hinweis epos-status--fehler" role="alert">@SatzFehler</span>
                     }
                     <span class="epos-leiste-fueller"></span>
-                    @if (SatzNurLesen)
+                    @if (SatzNurLesen || SatzAnsicht)
                     {
                         <button type="button" class="epos-knopf epos-knopf--primaer epos-satzueberlagerung-schliessen"
                                 @onclick="SatzVerwerfenAsync">@Resource.SATZBEARB_SCHLIESSEN</button>
@@ -379,6 +379,16 @@
     /// </summary>
     [Parameter] public bool SatzNurLesen { get; set; }
 
+    /// <summary>
+    /// Der Satz ist eine reine Ansicht ohne Speicherweg (Ganglinien: die Kurve groß): Die Fußleiste der
+    /// Überlagerung trägt nur „Schließen", ohne Hinweis. Ohne Rückruf <see cref="SatzUebernommen"/> gilt
+    /// das von selbst — ein OK ohne Speicherweg gäbe es nicht.
+    /// </summary>
+    [Parameter] public bool SatzNurAnsicht { get; set; }
+
+    /// <summary>Reine Ansicht: ausdrücklich oder mangels Speicherweg (und nicht schon nur lesbar).</summary>
+    private bool SatzAnsicht => !SatzNurLesen && (SatzNurAnsicht || !SatzUebernommen.HasDelegate);
+
     /// <summary>OK der Überlagerung ist gesperrt (ein Feld meldet eine Fehleingabe).</summary>
     [Parameter] public bool SatzUebernehmenGesperrt { get; set; }
 
@@ -430,7 +440,7 @@
 
     private async Task SatzUebernehmenAsync()
     {
-        if (SatzNurLesen || SatzUebernehmenGesperrt) return;
+        if (SatzNurLesen || SatzAnsicht || SatzUebernehmenGesperrt) return;
         _offenHalten = false;
         if (SatzUebernommen.HasDelegate) await SatzUebernommen.InvokeAsync();
         if (_offenHalten) { _offenHalten = false; return; }
