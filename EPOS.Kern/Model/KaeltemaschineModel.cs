@@ -89,6 +89,24 @@ namespace WindowsFormsApplication1
         /// <summary>Weg an den Rändern des Kennfelds (<c>RANDWERT</c>, <c>GUETEGRAD</c>); <c>null</c> = <c>RANDWERT</c>.</summary>
         public string Kennfeld_Randweg { get; set; }
 
+        // ---- Katalogfelder (KaelteKatalogfelderSchema, Schritt 211, Stufe K-A) ----
+
+        /// <summary>Geräteart — Persistenzwert aus <see cref="KaelteKatalogfelderSchema.GERAETEARTEN"/>; gelesen nie <c>null</c>
+        /// (ein leerer Wert liest sich nach der Rückfüllregel), <c>null</c> beim Schreiben = Rückfüllregel.</summary>
+        public string Geraeteart { get; set; }
+
+        /// <summary>GWP des Kältemittels [—]; beschreibend, rechnet keine Emission.</summary>
+        public double? Kaeltemittel_GWP { get; set; }
+
+        /// <summary>Füllmenge des Kältemittels [kg].</summary>
+        public double? Kaeltemittel_Fuellmenge_kg { get; set; }
+
+        /// <summary>Art der saisonalen Kennzahl (<c>SEER</c>, <c>ETA_S_C</c>); <c>null</c> = keine Angabe.</summary>
+        public string Saisonkennzahl_Art { get; set; }
+
+        /// <summary>Wert der saisonalen Kennzahl: SEER [—] oder η<sub>s,c</sub> [%].</summary>
+        public double? Saisonkennzahl { get; set; }
+
         /// <summary>Die Kennlinie des Geräts.</summary>
         public List<KaeltemaschineKenndatenModel> Kennlinie { get; set; } = new List<KaeltemaschineKenndatenModel>();
     }

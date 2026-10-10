@@ -945,7 +945,25 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
-            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).Concat(KaeltemaschineTeillast(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).Concat(KaeltemaschineTeillast(t)).Concat(KaelteKatalogfelder(t)).ToList();
+        }
+
+        /// <summary>
+        /// <b>Die Katalogfelder der Kälteerzeuger</b> (<see cref="KaelteKatalogfelderSchema"/>, Schritt 211; Stufe K-A): Die
+        /// fünf Spalten stehen im Katalogdialog (Gruppe Kenndaten), in der Katalogliste (Geräteart) und gehen in die
+        /// Projektkopie mit; kein Rechenweg liest sie — das GWP beschreibt, es rechnet keine Emission.
+        /// </summary>
+        private static IReadOnlyList<ParameterEintrag> KaelteKatalogfelder(Func<string, string> t)
+        {
+            const string WEG = "KaeltemaschineStammCtrl.Lesen/KatalogfelderSchreiben/KatalogfelderPruefen, Katalogliste";
+            return new[]
+            {
+                E(KaelteKatalogfelderSchema.SPALTE_GERAETEART, t("KM_LBL_GERAETEART"), "", DLG, WEG),
+                E(KaelteKatalogfelderSchema.SPALTE_GWP, t("KM_LBL_GWP"), "-", DLG, WEG),
+                E(KaelteKatalogfelderSchema.SPALTE_FUELLMENGE, t("KM_LBL_FUELLMENGE"), "kg", DLG, WEG),
+                E(KaelteKatalogfelderSchema.SPALTE_SAISON_ART, t("KM_LBL_SAISON_ART"), "", DLG, WEG),
+                E(KaelteKatalogfelderSchema.SPALTE_SAISON_WERT, t("KM_LBL_SAISONKENNZAHL"), "-", DLG, WEG),
+            };
         }
 
         /// <summary>

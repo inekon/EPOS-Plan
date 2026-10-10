@@ -658,6 +658,9 @@ namespace WindowsFormsApplication1
         /// <summary>Kältemaschine (KU3-1): Rückkühlart als Anzeigetext (<c>KaeltemaschineStammCtrl.RueckkuehlartText</c>).</summary>
         public const string SpRueckkuehlart = "RUECKKUEHLART";
 
+        /// <summary>Kältemaschine (K-A): Geräteart als Anzeigetext (<c>KaeltemaschineStammCtrl.GeraeteartText</c>).</summary>
+        public const string SpGeraeteart = "GERAETEART";
+
         /// <summary>
         /// <b>Der Ausdruck „ohne Wert"</b> — ein Gleichheitszeichen ohne Operand (Konzept_Katalogfilter
         /// V1: <c>=15</c> heißt „gleich 15", <c>=</c> allein „gleich nichts"). Er trifft genau die
@@ -902,14 +905,16 @@ namespace WindowsFormsApplication1
                     };
 
                 // ----------------------------------------------------------
-                // Kaeltemaschine (3 Beispielgeraete, 34 Typkennfelder) - SIEBEN Spalten
+                // Kaeltemaschine (3 Beispielgeraete, 34 Typkennfelder) - ACHT Spalten
                 // ----------------------------------------------------------
                 // Nach dem Muster der Waermepumpe: Hersteller vorn, dann der
                 // Bezeichner (mit dem Schloss - es haengt am Bezeichner, nicht am
                 // Platz) und der Hauptkennwert; beide Immer. Die weichenden Spalten
                 // kommen in der Folge Hersteller, EER, Rueckkuehlung, Herkunft dazu,
                 // der Typ zuletzt (er sagt fuer die Typkennfelder dasselbe wie die
-                // Herkunft).
+                // Herkunft). Die Geraeteart (K-A) kommt nach der Herkunft und vor dem
+                // Typ: solange der Katalog nur Kaltwassersaetze fuehrt, sagt die
+                // Rueckkuehlung mehr; ihre langen Texte duerfen sie nicht verdraengen.
                 case Anlagenart.Kaeltemaschine:
                     return new Katalogfilterprofil
                     {
@@ -928,6 +933,8 @@ namespace WindowsFormsApplication1
                             // (KaeltemaschineStammCtrl.HerkunftText); der Schalter
                             // „Typkennfelder ausblenden" setzt hier den verneinten Trichter.
                             new Katalogspalte(SpHerkunft,           t("KFLT_SP_HERKUNFT"), rang: Katalogspaltenrang.BeiPlatz),
+                            new Katalogspalte(SpGeraeteart,         t("KFLT_SP_GERAETEART"), rang: Katalogspaltenrang.BeiPlatz,
+                                                                    langtext: t("KFLT_LT_GERAETEART")),
                             new Katalogspalte(SpTyp,                t("KFLT_SP_TYP"), rang: Katalogspaltenrang.Breit)
                         }
                     };

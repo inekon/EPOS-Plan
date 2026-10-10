@@ -25,7 +25,7 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile der Katalogliste.</summary>
         public sealed record Listenzeile(int Id, string Bezeichner, string Firma, double? Nennkaelteleistung_kW,
                                          double? Nenn_EER, string Rueckkuehlart, bool ReadOnly, string Typ = null,
-                                         bool Katalogsatz = false);
+                                         bool Katalogsatz = false, string Geraeteart = null);
 
         // =================================================================
         //  Lesen
@@ -35,18 +35,26 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<Listenzeile> Liste()
         {
             var liste = new List<Listenzeile>();
+            // Schritt 211: die Geraeteart nur, wenn die Spalte steht; sonst (und leer) nach der Rueckfuellregel.
+            bool mitArt = DataRepository.SpalteVorhanden(TABLE, KaelteKatalogfelderSchema.SPALTE_GERAETEART);
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT ID, Bezeichner, Firma, Typ, " + KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG + ", " +
                 KaeltemaschineSchema.SPALTE_NENN_EER + ", " + KaeltemaschineSchema.SPALTE_RUECKKUEHLART +
+                (mitArt ? ", " + KaelteKatalogfelderSchema.SPALTE_GERAETEART : "") +
                 ", ReadOnly, " + Katalogfassung.SPALTE_SCHLUESSEL + " FROM " + TABLE + " ORDER BY Bezeichner");
             if (dt == null) return liste;
             foreach (DataRow r in dt.Rows)
+            {
+                string rueck = Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]);
                 liste.Add(new Listenzeile(Ganz(r["ID"]), Text(r["Bezeichner"]) ?? "", Text(r["Firma"]),
                                           Zahl(r[KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG]),
                                           Zahl(r[KaeltemaschineSchema.SPALTE_NENN_EER]),
-                                          Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]),
+                                          rueck,
                                           Ganz(r["ReadOnly"]) == 1, Text(r["Typ"]),
-                                          !string.IsNullOrEmpty(Text(r[Katalogfassung.SPALTE_SCHLUESSEL]))));
+                                          !string.IsNullOrEmpty(Text(r[Katalogfassung.SPALTE_SCHLUESSEL])),
+                                          KaelteKatalogfelderSchema.GeraeteartWirksam(
+                                              mitArt ? Text(r[KaelteKatalogfelderSchema.SPALTE_GERAETEART]) : null, rueck)));
+            }
             return liste;
         }
 
@@ -71,6 +79,7 @@ namespace WindowsFormsApplication1
                     .MitText(Katalogfilterprofil.SpTyp, z.Typ)
                     .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, z.Nennkaelteleistung_kW, 1)
                     .MitZahl(Katalogfilterprofil.SpEer, z.Nenn_EER, 2)
+                    .MitText(Katalogfilterprofil.SpGeraeteart, GeraeteartText(z.Geraeteart))
                     .MitText(Katalogfilterprofil.SpRueckkuehlart, RueckkuehlartText(z.Rueckkuehlart))
                     .MitText(Katalogfilterprofil.SpHerkunft, HerkunftText(z.Typ, z.Katalogsatz)));
             }
@@ -168,7 +177,60 @@ namespace WindowsFormsApplication1
                 if (!punkte.Add((k.Rueckkuehltemperatur, k.Kaltwassertemperatur)))
                     return MyResource.Resource.KM_MSG_KENNLINIE_DOPPELT;
             }
-            return TeillastPruefen(m);
+            return TeillastPruefen(m) ?? KatalogfelderPruefen(m);
+        }
+
+        /// <summary>
+        /// Prüft die fünf Katalogfelder (<see cref="KaelteKatalogfelderSchema"/>) — ohne Datenbank: Geräteart aus der
+        /// Wertemenge und verträglich mit der Rückkühlart (ein luftgekühlter Kaltwassersatz rückkühlt mit Luft, ein
+        /// wassergekühlter nicht), GWP und Füllmenge im Bereich, saisonale Kennzahl nur mit Art und im Bereich ihrer Art.
+        /// </summary>
+        public static string KatalogfelderPruefen(KaeltemaschineModel m)
+        {
+            if (m == null) return null;
+            if (!string.IsNullOrEmpty(m.Geraeteart) && !KaelteKatalogfelderSchema.GERAETEARTEN.Contains(m.Geraeteart))
+                return MyResource.Resource.KM_MSG_GERAETEART_UNGUELTIG;
+            if (m.Rueckkuehlart != null &&
+                ((m.Geraeteart == KaelteKatalogfelderSchema.GERAETEART_KWS_LUFT && m.Rueckkuehlart != KaeltemaschineSchema.RUECKKUEHLART_LUFT) ||
+                 (m.Geraeteart == KaelteKatalogfelderSchema.GERAETEART_KWS_WASSER && m.Rueckkuehlart == KaeltemaschineSchema.RUECKKUEHLART_LUFT)))
+                return MyResource.Resource.KM_MSG_GERAETEART_RUECKKUEHLART;
+            if ((m.Kaeltemittel_GWP.HasValue && (m.Kaeltemittel_GWP.Value < 0 || m.Kaeltemittel_GWP.Value > KaelteKatalogfelderSchema.GWP_MAX)) ||
+                (m.Kaeltemittel_Fuellmenge_kg.HasValue && (m.Kaeltemittel_Fuellmenge_kg.Value <= 0 ||
+                                                           m.Kaeltemittel_Fuellmenge_kg.Value > KaelteKatalogfelderSchema.FUELLMENGE_MAX)))
+                return MyResource.Resource.KM_MSG_KAELTEMITTEL_UNGUELTIG;
+            if (m.Saisonkennzahl_Art != null && !KaelteKatalogfelderSchema.SAISON_ARTEN.Contains(m.Saisonkennzahl_Art))
+                return MyResource.Resource.KM_MSG_SAISONKENNZAHL_UNGUELTIG;
+            if (m.Saisonkennzahl.HasValue != (m.Saisonkennzahl_Art != null))
+                return MyResource.Resource.KM_MSG_SAISONKENNZAHL_UNGUELTIG;
+            if (m.Saisonkennzahl.HasValue)
+            {
+                double w = m.Saisonkennzahl.Value;
+                bool seer = m.Saisonkennzahl_Art == KaelteKatalogfelderSchema.SAISON_SEER;
+                double von = seer ? KaelteKatalogfelderSchema.SEER_MIN : KaelteKatalogfelderSchema.ETA_S_C_MIN;
+                double bis = seer ? KaelteKatalogfelderSchema.SEER_MAX : KaelteKatalogfelderSchema.ETA_S_C_MAX;
+                if (double.IsNaN(w) || w < von || w > bis) return MyResource.Resource.KM_MSG_SAISONKENNZAHL_UNGUELTIG;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Der Anzeigetext einer Geräteart in der Oberflächensprache; leer für <c>null</c>, der Wert selbst für einen
+        /// unbekannten. <b>Nie ein Steuerwert</b> — geschrieben wird allein der Persistenzwert.
+        /// </summary>
+        public static string GeraeteartText(string persistenzwert)
+        {
+            switch (persistenzwert)
+            {
+                case null: return "";
+                case KaelteKatalogfelderSchema.GERAETEART_KWS_LUFT: return MyResource.Resource.KM_GERAETEART_KWS_LUFT;
+                case KaelteKatalogfelderSchema.GERAETEART_KWS_WASSER: return MyResource.Resource.KM_GERAETEART_KWS_WASSER;
+                case KaelteKatalogfelderSchema.GERAETEART_KWS_FREIKUEHLUNG: return MyResource.Resource.KM_GERAETEART_KWS_FREIKUEHLUNG;
+                case KaelteKatalogfelderSchema.GERAETEART_SPLIT: return MyResource.Resource.KM_GERAETEART_SPLIT;
+                case KaelteKatalogfelderSchema.GERAETEART_MULTISPLIT: return MyResource.Resource.KM_GERAETEART_MULTISPLIT;
+                case KaelteKatalogfelderSchema.GERAETEART_VRF: return MyResource.Resource.KM_GERAETEART_VRF;
+                case KaelteKatalogfelderSchema.GERAETEART_ABSORPTION: return MyResource.Resource.KM_GERAETEART_ABSORPTION;
+                default: return persistenzwert;
+            }
         }
 
         /// <summary>
@@ -381,6 +443,17 @@ namespace WindowsFormsApplication1
                 m.Verdichterregelung = Text(r[KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG]);
                 m.Kennfeld_Randweg = Text(r[KaeltemaschineTeillastSchema.SPALTE_RANDWEG]);
             }
+            // Schritt 211: Katalogfelder - vor dem Schritt fehlen die Spalten; die Geraeteart liest sich dann (und bei
+            // einem leeren Wert aus einem aelteren Paket) nach der Rueckfuellregel.
+            if (r.Table.Columns.Contains(KaelteKatalogfelderSchema.SPALTE_GERAETEART))
+            {
+                m.Geraeteart = Text(r[KaelteKatalogfelderSchema.SPALTE_GERAETEART]);
+                m.Kaeltemittel_GWP = Zahl(r[KaelteKatalogfelderSchema.SPALTE_GWP]);
+                m.Kaeltemittel_Fuellmenge_kg = Zahl(r[KaelteKatalogfelderSchema.SPALTE_FUELLMENGE]);
+                m.Saisonkennzahl_Art = Text(r[KaelteKatalogfelderSchema.SPALTE_SAISON_ART]);
+                m.Saisonkennzahl = Zahl(r[KaelteKatalogfelderSchema.SPALTE_SAISON_WERT]);
+            }
+            m.Geraeteart = KaelteKatalogfelderSchema.GeraeteartWirksam(m.Geraeteart, m.Rueckkuehlart);
             if (katalog) m.ReadOnly = Ganz(r["ReadOnly"]) == 1;
             else
             {
@@ -437,6 +510,7 @@ namespace WindowsFormsApplication1
                 v.Ausfuehren("INSERT INTO " + tabelle + " (" + spalten + zusatz + ") VALUES (" + marken + ")", p.ToArray());
                 int neueId = Convert.ToInt32(v.Skalar("SELECT last_insert_rowid()"), CultureInfo.InvariantCulture);
                 TeillastSchreiben(v, tabelle, neueId, m);
+                KatalogfelderSchreiben(v, tabelle, neueId, m);
                 return neueId;
             }
             string setzen = string.Join(", ", KaeltemaschineSchema.Grundspalten.Select(s => "\"" + s + "\" = ?"));
@@ -444,6 +518,7 @@ namespace WindowsFormsApplication1
             q.Add(new DbParam("?", m.Id));
             v.Ausfuehren("UPDATE " + tabelle + " SET " + setzen + " WHERE ID = ?", q.ToArray());
             TeillastSchreiben(v, tabelle, m.Id, m);
+            KatalogfelderSchreiben(v, tabelle, m.Id, m);
             return m.Id;
         }
 
@@ -467,6 +542,27 @@ namespace WindowsFormsApplication1
                 new DbParam("?", Wert(m.Teillastkurve_b)), new DbParam("?", Wert(m.Teillastkurve_c)),
                 new DbParam("?", Wert(m.Teillastkurve_Lastgrad_Min)), new DbParam("?", Wert(m.Taktverlustfaktor_Cd)),
                 new DbParam("?", Wert(m.Verdichterregelung)), new DbParam("?", Wert(m.Kennfeld_Randweg)),
+                new DbParam("?", id));
+        }
+
+        /// <summary>
+        /// Schreibt die fünf Katalogfelder (<see cref="KaelteKatalogfelderSchema"/>) an den Satz <paramref name="id"/> — in
+        /// einem eigenen Schritt und nur, wenn die Spalten stehen (Schritt <see cref="KaelteKatalogfelderSchema.SCHRITT"/>). Die
+        /// Geräteart wird nie leer geschrieben: fehlt sie, gilt die Rückfüllregel aus der Rückkühlart.
+        /// </summary>
+        internal static void KatalogfelderSchreiben(DbVorgang v, string tabelle, int id, KaeltemaschineModel m)
+        {
+            object da = v.Skalar("SELECT COUNT(*) FROM pragma_table_info(?) WHERE name IN (?, ?, ?, ?, ?)",
+                new[] { new DbParam("?", tabelle) }
+                    .Concat(KaelteKatalogfelderSchema.FELDSPALTEN.Select(s => new DbParam("?", s))).ToArray());
+            if (da == null || da == DBNull.Value ||
+                Convert.ToInt32(da, CultureInfo.InvariantCulture) < KaelteKatalogfelderSchema.FELDSPALTEN.Count)
+                return;
+            string setzen = string.Join(", ", KaelteKatalogfelderSchema.FELDSPALTEN.Select(s => "\"" + s + "\" = ?"));
+            v.Ausfuehren("UPDATE " + tabelle + " SET " + setzen + " WHERE ID = ?",
+                new DbParam("?", KaelteKatalogfelderSchema.GeraeteartWirksam(m.Geraeteart, m.Rueckkuehlart)),
+                new DbParam("?", Wert(m.Kaeltemittel_GWP)), new DbParam("?", Wert(m.Kaeltemittel_Fuellmenge_kg)),
+                new DbParam("?", Wert(m.Saisonkennzahl_Art)), new DbParam("?", Wert(m.Saisonkennzahl)),
                 new DbParam("?", id));
         }
 
