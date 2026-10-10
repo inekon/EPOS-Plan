@@ -468,7 +468,7 @@ Form_SolarKollektoren_einlesen.btn_Help = Gerätekataloge#import
 Form_WP_einlesen.btn_Help               = Gerätekataloge#import
 Form_WP_Kaelte_einlesen.btn_Help        = Gerätekataloge#import-kaelteanlagen
 Form_Stromspeicher_einlesen.btn_Help    = Gerätekataloge#import
-Form_Kaeltemaschine_einlesen.btn_Help   = Gerätekataloge#import
+Form_Kaeltemaschine_einlesen.btn_Help   = Gerätekataloge#import-kaeltemaschinen
 Main_PV_Test.btn_Help                   = Gerätekataloge#import
 Form_WechselrichterImport.btn_Help      = Gerätekataloge#import
 # Berichtsvorlagen (BV-E1): Die Ueberlagerungen "Pruefliste" und "Platzhalterkatalog"

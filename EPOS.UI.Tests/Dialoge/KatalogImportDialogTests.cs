@@ -1711,4 +1711,25 @@ public class KatalogImportDialogTests : EposBunitContext
         Assert.Contains("BSD-2", hilfe, StringComparison.Ordinal);
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.IMP_KAT_SP_KAELTELEISTUNG, cut.Markup);
     }
+
+    /// <summary>
+    /// <b>Kältemaschine</b> (K-C): Die Hilfe am Import nennt die beiden neuen Vorlagen „Nennwerte“ und „Ökodesign-Datenblatt
+    /// A–D“ und das gewählte Typkennfeld im Leseprotokoll — in beiden Sprachen mit denselben Dateinamen.
+    /// </summary>
+    [Fact]
+    public void Die_Kaeltemaschine_nennt_die_Vorlagen_Nennwerte_und_Oekodesign()
+    {
+        var cut = Bauen(KatalogImportArt.Kaeltemaschine);
+        string text = string.Concat(cut.Nodes.Select(n => n.TextContent));
+        Assert.Contains("Kaeltemaschine_Nennwertvorlage.csv", text, StringComparison.Ordinal);
+        Assert.Contains("Kaeltemaschine_Oekodesignvorlage.csv", text, StringComparison.Ordinal);
+        Assert.Contains("A–D", text, StringComparison.Ordinal);
+        Assert.Contains("Typkennfeld", text, StringComparison.Ordinal);
+
+        string englisch = WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(
+            "IMP_KAT_HINWEIS_KAELTEMASCHINE", System.Globalization.CultureInfo.GetCultureInfo("en-US"));
+        Assert.Contains("Kaeltemaschine_Nennwertvorlage.csv", englisch, StringComparison.Ordinal);
+        Assert.Contains("Kaeltemaschine_Oekodesignvorlage.csv", englisch, StringComparison.Ordinal);
+        Assert.DoesNotContain("Typkennfeld", englisch, StringComparison.Ordinal);
+    }
 }

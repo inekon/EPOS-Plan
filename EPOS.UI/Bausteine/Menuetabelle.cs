@@ -202,8 +202,9 @@ namespace EPOS.UI.Bausteine;
 /// (5.4) waechst sie um den Katalog der Brauchwasser-Nutzungsarten (46 -> 47), mit der
 /// Gebaeudesimulation G3 um die Kataloge der Baustoffe und der Bauteilaufbauten (47 -> 49), mit den Betriebskalendern der Bedarfsprofile um deren Verwaltung (49 -> 50). Mit E119
 /// kommt unter „Daten &amp; Import" der Import fuer Kaelteanlagen hinzu (Waermepumpen mit
-/// Kuehlfunktion aus VDI 3805) - ein echter neuer Weg; die Zaehlung der Tests steht damit bei
-/// 69 Punkten, von denen 55 handeln.</para>
+/// Kuehlfunktion aus VDI 3805) - ein echter neuer Weg -, mit K-C (E118) dahinter der Import der
+/// Kaeltemaschinen (CSV-Vorlage, Copper-Kurvendatei), ebenfalls ein echter Weg; die Zaehlung der
+/// Tests steht damit bei 70 Punkten, von denen 56 handeln.</para>
 ///
 /// <para><b>Jeder Klick ist ein <see cref="Seitenschluessel"/>.</b> Der Vorlaeufer
 /// fuehrte 34 Ereignishandler mit je einer Wirkzeile, dazu neun Lambdas in den
@@ -381,6 +382,9 @@ public static class Menuetabelle
                 // Import fuer Kaelteanlagen liest Blatt 22 und bietet nur die Waermepumpen
                 // mit Kuehlfunktion an. Er steht deshalb gleich hinter dem Waermepumpenimport.
                 new Menuepunkt("MeniItem_VDI3805_Kaelte", "MENU_VDI3805_KAELTE", Seitenschluessel.WpKaelteImport),
+                // K-C (E118): die Kaeltemaschinen aus der CSV-Vorlage (Kennfeld, Nennwerte, Oekodesign A-D)
+                // oder einer Copper-Kurvendatei - derselbe Importdialog wie der Knopf im Katalog.
+                new Menuepunkt("MenuItem_Import_Kaeltemaschinen", "MENU_IMPORT_KAELTEMASCHINEN", Seitenschluessel.KaeltemaschineImport),
                 new Menuepunkt("MenuItem_ST_Import", "MENU_ST_IMPORT", Seitenschluessel.SolarkollektorenImport),
                 new Menuepunkt("MenuItem_PufferSp_VDI3805", "MENU_PUFFER_SP_VDI3805", Seitenschluessel.PufferSpImport),
                 // W16c-E-7: derselbe Zwischenknoten wie unter

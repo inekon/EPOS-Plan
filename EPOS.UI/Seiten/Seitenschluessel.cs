@@ -252,6 +252,9 @@ public static class Seitenschluessel
     /// <summary>Herstellerdaten Kälteanlagen einlesen: Wärmepumpen mit Kühlfunktion aus VDI 3805 (E119).</summary>
     public const string WpKaelteImport = WindowsFormsApplication1.Masken.WpKaelteImport;
 
+    /// <summary>Kältemaschinen einlesen: CSV-Vorlage (Kennfeld, Nennwerte, Ökodesign A–D) oder Copper-Kurvendatei (K-C).</summary>
+    public const string KaeltemaschineImport = WindowsFormsApplication1.Masken.KaeltemaschineImport;
+
     /// <summary>Stammdaten Heizkessel (Razor seit W14a.1).</summary>
     public const string HeizkesselAdmin = WindowsFormsApplication1.Masken.HeizkesselAdmin;
 
@@ -485,7 +488,7 @@ public static class Seitenschluessel
         WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
-        WpImport, WpKaelteImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
+        WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
         HeizkesselImport, PufferSpImport, PufferSpAdmin, BrauchwasserAdmin,
         BrauchwasserNutzungsarten,
         SolarkollektorenImport, PvImport, WechselrichterAdmin, WechselrichterImport,
