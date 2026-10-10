@@ -226,7 +226,41 @@ else
 
         <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
                 @onclick="ZurueckGewaehlt">@ZurueckText</button>
+
+        @* CSV AM DIAGRAMM: rechts neben „1:1“, dieselbe Knopfart — der benannte Export des
+           Wirts (CsvExport) oder, ohne ihn, der Ganglinienexport aus der Kaskade, der die
+           Reihen des Modells schreibt. Kein Delegat, kein Knopf. *@
+        @if (CsvDa)
+        {
+            <button type="button" class="epos-diagramm-knopf epos-diagramm-csv"
+                    title="@Resource.DIAGRAMM_TIP_CSV" aria-label="@Resource.DIAGRAMM_TIP_CSV"
+                    @onclick="CsvGewaehlt">@Resource.DIAGRAMM_BTN_CSV</button>
+        }
     </div>;
+
+    /// <summary>
+    /// Der BENANNTE CSV-Export des Wirts (eigene Datei mit Zeitstempel, Außentemperatur und
+    /// festen Spalten); er hat Vorrang vor dem <see cref="Ganglinienexport"/> der Kaskade.
+    /// </summary>
+    [Parameter] public EventCallback CsvExport { get; set; }
+
+    /// <summary>
+    /// Der allgemeine Export „Reihen des Diagramms als CSV“, von einem Wirt als
+    /// <c>CascadingValue</c> gereicht — EIN Handgriff schließt damit jedes Zeitreihenbild darunter
+    /// an. Punktwolken (x = Wert) bekommen keinen Knopf.
+    /// </summary>
+    [CascadingParameter] public Ganglinienexport? Ganglinienexport { get; set; }
+
+    /// <summary>Steht der Knopf „CSV…“ in der Leiste? (Prüfhilfe)</summary>
+    public bool CsvDa => CsvExport.HasDelegate || (Ganglinienexport is not null && Ganglinienexport.Passt(Modell));
+
+    private Task CsvGewaehlt()
+    {
+        if (CsvExport.HasDelegate) return CsvExport.InvokeAsync();
+        return Ganglinienexport is null || Modell is null
+            ? Task.CompletedTask
+            : Ganglinienexport.Speichern(Modell, Bezeichnung);
+    }
 
     /// <summary>
     /// Die Palette, gegen die die Farbrollen aufgelöst werden; <c>null</c> nimmt
