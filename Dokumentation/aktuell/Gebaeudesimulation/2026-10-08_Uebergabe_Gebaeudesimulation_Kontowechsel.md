@@ -78,9 +78,9 @@ aber erst auf Auftrag des Anwenders.
   beim Anwender klären.
 - Papierpflege: Die Statusdatei Gebäudesimulation führt veraltete Statuswörter (E58–E60 „offen“, E67 „in Umsetzung“, Stufe NP
   „offen“, KP3 „teilweise“), obwohl die Wellen gebaut sind — mit der nächsten Statuspflege nachziehen (`sonnet-mechanik`).
-- Aufräumen nach den Sichtabnahmen: [Entwurf AK3](2026-10-07_Entwurf_AK3.md), [Entwurf AK3-K](2026-10-07_Entwurf_AK3-K.md),
-  [Entwurf KK](2026-10-08_Entwurf_KK_Kuehlkurve.md), [Entwurf KP3](2026-10-02_Entwurf_KP3.md) und
-  [Übergabe KP3](2026-10-02_Uebergabe_KP3.md) nach `ueberholt/` (Verweise nachziehen, Indexzeile entfernen; die Konzepte
+- Aufräumen nach den Sichtabnahmen: [Entwurf AK3](../../ueberholt/2026-10-07_Entwurf_AK3.md), [Entwurf AK3-K](../../ueberholt/2026-10-07_Entwurf_AK3-K.md),
+  [Entwurf KK](../../ueberholt/2026-10-08_Entwurf_KK_Kuehlkurve.md), [Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md) und
+  [Übergabe KP3](../../ueberholt/2026-10-02_Uebergabe_KP3.md) nach `ueberholt/` (Verweise nachziehen, Indexzeile entfernen; die Konzepte
   Anlagenkopplung und Kühlung verweisen auf die Entwürfe). Die Befund- und Gegenlese-Papiere vom 15.–17.09. sind ebenfalls
   Kandidaten.
 

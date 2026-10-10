@@ -3,7 +3,7 @@
 **15.09.2026 — Architekturentwurf, zur Abnahme durch Philipp**
 
 > **Nachzug 04.10.2026 — Konditionierung und Aufheizoptimierung (KP1 bis KP3, EV1; nachgezogen mit KP4)**
-> ([Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md), [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md), [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.61, N1.63, N1.66, N1.69):
+> ([Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md), [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md), [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.61, N1.63, N1.66, N1.69):
 > Die Klassen des Kalenderwegs, der Aufheizoptimierung und des Erdreichwiderstands stehen mit Ort und Aufrufer in 1.3,
 > die Tabellen und Spalten als Verweis in 2.2, die Stufen in Kapitel 5. Die Konzeption führt das Teilkonzept; dieses
 > Papier verweist nur.
@@ -1100,7 +1100,7 @@ Anzeigen, keine Eingaben** (Mehrzonenkonzept 4.3). Sichtbar gemacht wird das üb
 176) stehen mit ihren Spalten im [Teilkonzept Konditionierungsprofile](Konzept_Konditionierungsprofile_EPOS-Plan.md) 5.1, 5.6 und 5.7. Die Spalten
 der Aufheizoptimierung — Schritt 160 an `Tab_Einstellungen`, Schritt 161 an `Tab_ErgebnisGebaeude` und
 `Tab_ErgebnisZone`, Schritt 174 mit Aufschlag, `Tab_Gebaeude.Aufheizzeit_Manuell_H`, `Aufheiz_Art` und den Spalten der
-Auslegungsgröße — führt der [Entwurf KP3](Gebaeudesimulation/2026-10-02_Entwurf_KP3.md) in Abschnitt 4 (Teilkonzept 5.3, 5.4). Schritt 180
+Auslegungsgröße — führt der [Entwurf KP3](../ueberholt/2026-10-02_Entwurf_KP3.md) in Abschnitt 4 (Teilkonzept 5.3, 5.4). Schritt 180
 (`ErdreichVorgabeSchema`) legt `Erdreich_U_Wirksam` (REAL, NULL oder > 0) an `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`
 an und baut die Sicht `Abfrage_Projektgebaeude` neu ([Protokoll EV1](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-04_EV1_Erdreichvorgabe_Reservehinweis.md)).
 

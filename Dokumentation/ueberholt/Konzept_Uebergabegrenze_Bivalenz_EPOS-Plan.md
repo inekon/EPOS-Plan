@@ -253,7 +253,7 @@ Steht die Wärmepumpe vorn, deckt sie bis zur Kennfeldleistung, der Kessel den R
 
 **3.4 Abgrenzung zu AK3.** AK3 schließt den Kreis zwischen Gebäude und Erzeugern; der Vorlauf bleibt dort eine
 **Vorgabe** (Heizkurve, `Vorlauf_Max`, H2-Raumeinfluss), die Angebotsfunktion `Angebot(h, V)` summiert die
-Kapazitäten der verfügbaren Erzeuger beim Vorlauf V ([Entwurf AK3](../aktuell/Gebaeudesimulation/2026-10-07_Entwurf_AK3.md),
+Kapazitäten der verfügbaren Erzeuger beim Vorlauf V ([Entwurf AK3](2026-10-07_Entwurf_AK3.md),
 Festlegungen 5–8). AK3‑I (E102) interpoliert das Kennfeld über den Vorlauf. **Dieses Papier ändert keine der beiden
 Festlegungen;** es ersetzt in der Kapazität der Wärmepumpe „Kennfeld bei V" durch „Kennfeld bei min(V, Höchstvorlauf),
 begrenzt durch Übergabe und Hydraulik" (4.3–4.5). Ohne Kopplung (Übergabeart `IDEAL` oder Kopplungsstufe aus) gibt

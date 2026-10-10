@@ -4,9 +4,9 @@
 
 Sitzung „Gebäudesimulation“ (Cloud, Orchestrierung Fable 5.1, Agenten Opus 5.5), Zweig `ios_migration_september`. Dieses Papier
 hält alles, was die Fortsetzung braucht; es wandert nach `Dokumentation/ueberholt/` sobald KP3 abgeschlossen ist. Grundlage und
-Regeln: [`CLAUDE.md`](../../../CLAUDE.md), [Entwurf KP3](2026-10-02_Entwurf_KP3.md),
-[Protokoll KP3](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md),
-[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md), [Statusdatei iOS-Migration](../Status_iOS_Migration.md).
+Regeln: [`CLAUDE.md`](../../CLAUDE.md), [Entwurf KP3](2026-10-02_Entwurf_KP3.md),
+[Protokoll KP3](Protokolle/Gebaeudesimulation/2026-10-02_KP3_Aufheizoptimierung.md),
+[Statusdatei Gebäudesimulation](../aktuell/Status_Gebaeudesimulation_VDI6007.md), [Statusdatei iOS-Migration](../aktuell/Status_iOS_Migration.md).
 
 ## 1. Stand der Umsetzung KP3 (Aufheizoptimierung)
 
@@ -68,7 +68,7 @@ Bauweise (leicht 1–2 h, mittel 2–4 h, schwer 4–8 h), außerhalb Hinweis st
 ein Schemaschritt (Nummer spät gegen origin); Wellen R5, O1b, Erweiterung O2/O3; Leitkonzept N1.68 = E59, Festlegungen der
 Umsetzung werden N1.69.
 
-**E60 (03.10.2026, Vorschlag 1 des [Konzepts Heizlastspitzen](2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)):** Auslegungsgröße =
+**E60 (03.10.2026, Vorschlag 1 des [Konzepts Heizlastspitzen](../aktuell/Gebaeudesimulation/2026-10-03_Konzept_Heizlastspitzen_Glaettung.md)):** Auslegungsgröße =
 stationäre Auslegungsheizlast + Aufheizleistung aus der KP3-Bemessung; O2 und O3 zeigen ideale Spitze, Tagesmittel und P_auf nebeneinander;
 kein Filter im Rechenweg. Der E59-Papierauftrag trägt E60 mit ein (Register, Statusdatei Zeile E60, Teilkonzept 4.8/7.6, Entwurf KP3 Zeilen
 O2/O3).

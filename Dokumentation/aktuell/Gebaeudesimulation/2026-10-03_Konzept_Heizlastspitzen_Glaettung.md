@@ -7,7 +7,7 @@ Jahresstunden-Array einbezieht?“ — samt des mitgelieferten Vorschlags (Tiefp
 Transformation, wahlweise FFT-Tiefpass, Vorwärts-Rückwärts-Filterung gegen die Phasenverschiebung).
 
 Grundlagen: [Teilkonzept Konditionierungsprofile](../Konzept_Konditionierungsprofile_EPOS-Plan.md) (Abschnitte 4.3–4.8),
-[Entwurf KP3](2026-10-02_Entwurf_KP3.md), [Leitkonzept VDI 6007](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+[Entwurf KP3](../../ueberholt/2026-10-02_Entwurf_KP3.md), [Leitkonzept VDI 6007](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 (Abschnitte 4.5, 4.7), Code `EPOS.Kern/Allgemein/Simulation/Gebaeude/` (`Zonenmodell2K`, `Aufheizantwort`, `Aufheizoptimierung`,
 `GebaeudeModellErgebnis`, `GebaeudeModellEingang`), `EPOS.Kern/Allgemein/Simulation/GebaeudeKennzahlen.cs`.
 
