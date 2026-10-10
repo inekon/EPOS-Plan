@@ -185,6 +185,9 @@ namespace WindowsFormsApplication1
                     Lesen = id => KatalogBrowserHuelle.Felder(PufferSpAdminHuelle.Profil(), PufferSpStammCtrl.SatzAnzeige(false, id)),
                     Speichern = saetze => PufferSpAdminHuelle.SammelSchreiben(false, saetze)
                 },
+                ["RueckwegWege"] = projektId <= 0 ? null : RueckwegWege(),
+                ["RueckwegBleibtText"] = Text_("PSP_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung des Speichers, seine Senken, Verbünde und Lade-Prioritäten."),
 
                 ["TitelText"] = Text_("PSPD_TITEL", "Verwaltung Pufferspeicher"),
                 ["KopfbandText"] = Text_("PSPD_KOPFBAND", "Geben Sie die Daten der Pufferspeicher ein"),
@@ -258,6 +261,34 @@ namespace WindowsFormsApplication1
         /// selbst stellen (Baustein <c>Rueckfrage</c>), also braucht sie den TEXT, nicht
         /// die Handlung. Er kommt aus denselben zwei Ressourcenschlüsseln.
         /// </remarks>
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang (<c>PufferSpStammCtrl.RueckwegVorschau</c> / <c>AusProjektUebernehmen</c>).
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => PufferSpStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = PufferSpStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = PufferSpStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
+
         /// <summary>
         /// Löscht einen Katalogsatz samt Satzvorlagen (KA‑E‑16, <c>PufferSpStammCtrl.Delete</c>, der eine Vorlage, die
         /// Projektzeilen noch brauchen, als Hinweis nennt). Leere Rückgabe = gelöscht; sonst der Grund.

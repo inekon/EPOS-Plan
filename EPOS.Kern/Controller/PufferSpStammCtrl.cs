@@ -262,8 +262,10 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-            string sql = "DELETE FROM [" + TABLE + "] WHERE ID = ?";
-            return DataRepository.ExecuteSQL(sql, new DbParam("@id", id));
+            // KA-E-16: der Katalogsatz geht samt seinen Satzvorlagen, in EINEM Vorgang.
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
         }
 
         /// <summary>
@@ -1112,6 +1114,95 @@ namespace WindowsFormsApplication1
             {
                 // DbVorgang.Dispose rollt ohne Commit zurueck.
                 return new SpeicherErgebnis(false, MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+            }
+        }
+
+        // =================================================================================
+        // Katalogauswahl V1, Stufe 3: Rückweg Projekt → Datenbank (KA-E-9, KA-E-14 bis KA-E-16)
+        // =================================================================================
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> des Pufferspeichers.</summary>
+        public const int KOMPONENTE_KOSTEN = 6;
+
+        /// <summary>
+        /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
+        /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_PUFFER</c>, Kostenkomponente 6.
+        /// <b>Keine Kindtabellen</b> — der Katalog führt nur die Gerätewerte (Hersteller, Speichertyp,
+        /// Bereitschaftsverluste, Gesamtvolumen, Investitionskosten); sie gehen mit der Schnittmenge. Die übrigen Spalten
+        /// der Kopie (Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung, Nutzung, Entnahme,
+        /// Frischwassermodul, Aufstellraum) kennt der Katalog nicht; sie bleiben im Projekt, ebenso die Kindzeilen der
+        /// Anlage (<c>Z_AnlageSenke</c>, <c>Z_AnlagePufferVerbund</c>, <c>Z_ProjektPufferSp</c>,
+        /// <c>Tab_PufferAuslegung</c>). Prüfregel wie beim Speichern: die drei Zahlen nicht negativ.
+        /// </summary>
+        public static Rueckweggewerk Rueckweg() => new Rueckweggewerk
+        {
+            Kopietabelle = TABELLE_PROJEKT,
+            Katalogtabelle = TABLE,
+            Anlagenverweis = "ID_PUFFER",
+            KomponentenId = KOMPONENTE_KOSTEN,
+            Pruefung = zeile => Feldpruefung(Zahl(zeile, "Bereitschaftsverluste"), Zahl(zeile, "Gesamtvolumen"),
+                                             Zahl(zeile, "Investitionskosten")),
+        };
+
+        private static double Zahl(DataRow r, string spalte)
+            => r.Table.Columns.Contains(spalte) && r[spalte] != DBNull.Value
+                ? Convert.ToDouble(r[spalte], System.Globalization.CultureInfo.InvariantCulture) : 0.0;
+
+        /// <summary>Die Zeilen der Rückfrage zu den Projektkopien <paramref name="idsKopie"/> (<see cref="Katalogrueckweg.Vorschau"/>).</summary>
+        public static IReadOnlyList<Rueckwegzeile> RueckwegVorschau(IReadOnlyList<int> idsKopie)
+            => Katalogrueckweg.Vorschau(Rueckweg(), idsKopie);
+
+        /// <summary>
+        /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): die Gerätewerte samt Investitionskosten, Betriebs-
+        /// und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
+        /// </summary>
+        public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
+            => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);
+
+        /// <summary>Ist der Name im Pufferspeicherkatalog vergeben?</summary>
+        public static bool RueckwegNameBelegt(string name) => Katalogrueckweg.NameBelegt(Rueckweg(), name);
+
+        /// <summary>Ausgang von <see cref="KatalogsatzLoeschen"/>.</summary>
+        public sealed record KatalogsatzLoeschung(bool Ok, Satzvorlagenabbau Vorlage, string Meldung);
+
+        /// <summary>
+        /// <b>Löscht den Katalogsatz <paramref name="id"/> samt seinen Satzvorlagen</b> (KA‑E‑16, beide Verweise,
+        /// <see cref="Katalogrueckweg.SatzvorlageBeimLoeschen"/>) in einem Vorgang — scheitert eines, bleibt beides. Ein
+        /// gesperrter Satz wird nicht gelöscht. Die Meldung nennt eine Vorlage, die Projektzeilen noch brauchen.
+        /// </summary>
+        public static KatalogsatzLoeschung KatalogsatzLoeschen(int id)
+        {
+            if (id <= 0 || IsReadOnlyStatic(id)) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+            var verweise = new List<string>();
+            foreach (string sp in new[] { KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE,
+                                          KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION })
+                if (DataRepository.SpalteVorhanden(TABLE, sp)) verweise.Add(sp);
+            try
+            {
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    string spalten = "";
+                    foreach (string sp in verweise) spalten += ", \"" + sp + "\"";
+                    DataTable satz = v.Lese("SELECT \"Bezeichner\"" + spalten + " FROM \"" + TABLE + "\" WHERE \"ID\" = ?",
+                                            new DbParam("@id", id));
+                    if (satz == null || satz.Rows.Count == 0) return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
+                    DataRow z = satz.Rows[0];
+                    string name = Convert.ToString(z[0], System.Globalization.CultureInfo.InvariantCulture) ?? "";
+                    int? Lies(string sp) => satz.Columns.Contains(sp) && z[sp] != DBNull.Value
+                        ? Convert.ToInt32(z[sp], System.Globalization.CultureInfo.InvariantCulture) : (int?)null;
+                    v.Ausfuehren("DELETE FROM \"" + TABLE + "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+                    Satzvorlagenabbau abbau = Katalogrueckweg.SatzvorlageBeimLoeschen(
+                        v, Lies(KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE),
+                        Lies(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION));
+                    v.Commit();
+                    return new KatalogsatzLoeschung(true, abbau, Katalogrueckweg.SatzvorlagenMeldung(abbau, name));
+                }
+            }
+            catch (Exception)
+            {
+                // DbVorgang.Dispose rollt ohne Commit zurück.
+                return new KatalogsatzLoeschung(false, Satzvorlagenabbau.KeineVorlage, "");
             }
         }
 
