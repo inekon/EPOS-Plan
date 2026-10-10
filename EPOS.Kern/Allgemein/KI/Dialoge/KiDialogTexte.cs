@@ -841,6 +841,17 @@
 
         internal static string SimKuehlbetriebName => MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB;
         internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
+        // Die pflegbare Kaeltefolge (Welle KB-D).
+        internal static string SimKaeltefolgeName => MyResource.Resource.KI_DLG_SIM_KAELTEFOLGE_NAME;
+        internal static string SimKaeltefolgeErl => MyResource.Resource.KI_DLG_SIM_KAELTEFOLGE_ERL;
+        internal static string SimKaeltefolgeGepflegtName => MyResource.Resource.KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_NAME;
+        internal static string SimKaeltefolgeGepflegtErl => MyResource.Resource.KI_DLG_SIM_KAELTEFOLGE_GEPFLEGT_ERL;
+        internal static string SimKaelteerzeugerName => MyResource.Resource.SIMKONF_KAELTE_ERZEUGER;
+        internal static string SimKaelteerzeugerErl => MyResource.Resource.KI_DLG_SIM_KAELTEERZEUGER_ERL;
+        internal static string SimKaeltespeicherName => MyResource.Resource.SIMKONF_KAELTE_SPEICHER;
+        internal static string SimKaeltespeicherErl => MyResource.Resource.KI_DLG_SIM_KAELTESPEICHER_ERL;
+        internal static string SimKuehlWpName => MyResource.Resource.KMA_GRUPPE_WP;
+        internal static string SimKuehlWpErl => MyResource.Resource.KI_DLG_SIM_KUEHL_WP_ERL;
         internal static string SimAnlagenkopplungName => MyResource.Resource.SIMKONF_LBL_ANLAGENKOPPLUNG;
         internal static string SimAnlagenkopplungErl => MyResource.Resource.KI_DLG_SIM_ANLAGENKOPPLUNG_ERL;
         // Die Aufheizoptimierung (Entwurf KP3, Welle O1): Namen = Beschriftungen des Abschnitts.

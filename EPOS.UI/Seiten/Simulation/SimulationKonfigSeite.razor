@@ -263,6 +263,113 @@
                     }
                 </section>
             </div>
+
+            @* DER BEREICH „KÄLTE“ (Welle KB-B; Entwurf Kaeltebereich 3, Entscheide E117 F1-F5) - unter dem
+               Waermeteil, im selben fieldset und damit unter derselben Sperre. Im Kopf der Schalter „Kühlung
+               rechnen" (die EINE Stelle, an der das Projekt die Kuehlung an- und abschaltet; Kuehlkonzept 8.3,
+               K10, E27): schreibt sofort, scheitert das Schreiben, kehrt er zurueck (@key) und die Fusszeile sagt
+               es. Links die Kaelteerzeuger in der Rechenfolge des Kerns (Kaeltefolge.Lesen - die Nummer ist
+               Anzeige, die Folge ist fest), rechts die Kaeltespeicher (nur hier, F4). Bei „aus“ klappt der
+               Bereich auf den Kopf zusammen und nennt, was angelegt ist und nicht wirkt. *@
+            @if (KaeltebereichSichtbar)
+            {
+                <section class="epos-simkonfig-kaelte" aria-label="@Resource.SIMKONF_GRP_KAELTE">
+                    <Gruppenkopf Titel="@Resource.SIMKONF_GRP_KAELTE" />
+
+                    @if (KuehlschalterDa)
+                    {
+                        <section class="epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
+                            @* Hilfe zum Projektschalter: der Abschnitt "Kühlung einschalten" der
+                               Anwendungsseite (Konzept Technikdokumentation, Abschnitt 7). *@
+                            <div class="epos-berechnungshilfe">
+                                <InfoKnopf Schluessel="Form_Simulation_Config_Kuehlung.btn_Help"
+                                           StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
+                            </div>
+                            <Formularraster Einspaltig="true" @key="_kuehlbetriebSchluessel">
+                                <KindInhalt>
+                                    <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
+                                              Wert="@_parameter.Kuehlbetrieb"
+                                              Aktiv="@(!_daten.Gesperrt)"
+                                              WertChanged="KuehlbetriebGesetzt" />
+                                    <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
+                                </KindInhalt>
+                            </Formularraster>
+                        </section>
+                    }
+
+                    @if (!KuehlungAn)
+                    {
+                        <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-aus">@KaelteAusText</p>
+                    }
+                    else
+                    {
+                        <div class="epos-simkonfig-spalten epos-simkonfig-kaelte-spalten">
+                            <div class="epos-simkonfig-kaelte-erzeuger">
+                                <h3 class="epos-simkonfig-gruppe">@Resource.SIMKONF_KAELTE_ERZEUGER</h3>
+                                @foreach (KaelteerzeugerZeile k in _daten.Kaeltebereich.Erzeuger)
+                                {
+                                    KaelteerzeugerZeile kz = k;
+                                    <div class="epos-simkonfig-kaelte-element" data-anlage="@kz.IdAnlage" @key="kz.Kachel.Schluessel">
+                                        <ErzeugerKachel Aufbau="@KaelteKachel(kz)"
+                                                        Parameterbereich="@KaelteParameter(kz)"
+                                                        AufnehmenText="@Resource.SIMKONF_KAELTE_AN"
+                                                        TipHoch="@Resource.SIMKONF_KAELTE_TIP_VOR"
+                                                        TipRunter="@Resource.SIMKONF_KAELTE_TIP_ZURUECK"
+                                                        NachOben="() => KaelteFolgeVerschieben(kz, -1)"
+                                                        NachUnten="() => KaelteFolgeVerschieben(kz, +1)"
+                                                        TipBearbeiten="@Resource.SIMKONF_KAELTE_TIP_KONFIG"
+                                                        TipEntfernen="@Resource.SIMKONF_KAELTE_TIP_AUS"
+                                                        TipAufnehmen="@Resource.SIMKONF_KAELTE_TIP_AN"
+                                                        Bearbeiten="() => KaelteKonfigurieren(kz)"
+                                                        Aufnehmen="() => KuehlbetriebWpSetzen(kz, true)"
+                                                        Entfernen="() => KuehlbetriebWpSetzen(kz, false)" />
+                                    </div>
+                                }
+                                @if (_daten.Kaeltebereich.Erzeuger.Count == 0)
+                                {
+                                    <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-leer">@Resource.SIMKONF_KAELTE_LEER</p>
+                                }
+                                @if (FreieKuehlungText is string frei)
+                                {
+                                    <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-frei">@frei</p>
+                                }
+                                @* KB-D2: die Herleitungszeile sagt, welche Folge gilt (gepflegt oder Vorgabe); der Knopf
+                                   „Vorgabefolge“ steht nur mit Delegat und ist weich gesperrt, solange die Vorgabe gilt. *@
+                                <div class="epos-simkonfig-kaelte-folge">
+                                    <Herleitungszeile Text="@KaelteHerleitung" />
+                                    @if (Dienste?.KaelteVorgabefolge is not null && _daten.Kaeltebereich.Erzeuger.Count > 1)
+                                    {
+                                        <button type="button" class="epos-knopf epos-simkonfig-kaelte-vorgabe"
+                                                disabled="@_daten.Gesperrt"
+                                                aria-disabled="@(_daten.Kaeltebereich.FolgeGepflegt ? null : "true")"
+                                                title="@(_daten.Kaeltebereich.FolgeGepflegt ? Resource.SIMKONF_KAELTE_TIP_VORGABE : Resource.SIMKONF_KAELTE_VORGABE_GILT)"
+                                                @onclick="KaelteVorgabefolgeSetzen">@Resource.SIMKONF_KAELTE_BTN_VORGABE</button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="epos-simkonfig-kaelte-speicher">
+                                <h3 class="epos-simkonfig-gruppe">@Resource.SIMKONF_KAELTE_SPEICHER</h3>
+                                @foreach (Bausteine.SpeicherKachelDaten s in _daten.Kaeltebereich.Kaeltespeicher)
+                                {
+                                    Bausteine.SpeicherKachelDaten sp = s;
+                                    <SpeicherKachel Inhalt="@sp" Aufgeklappt="@(sp.IdPuffer == _offenerSpeicher)"
+                                                    BilanzText="@BilanzText"
+                                                    TipBearbeiten="@TipSpeicherBearbeiten"
+                                                    TipAufklappen="@TipSpeicherAufklappen"
+                                                    Umschalten="SpeicherUmschalten"
+                                                    Bearbeiten="PufferVerwaltungOeffnen"
+                                                    Ausgewaehlt="SpeicherAusgewaehlt" />
+                                }
+                                @if (_daten.Kaeltebereich.Kaeltespeicher.Count == 0)
+                                {
+                                    <p class="epos-simkonfig-hinweis">@Resource.SIMKONF_KAELTE_SPEICHER_LEER</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </section>
+            }
         }
     </fieldset>
 
@@ -314,10 +421,7 @@
        umrechnet und ueber SimulationKanaele.NetzverlusteVerteilen anteilig auf die
        Bedarfskanaele legt - sie gehoeren zum WAERMEBEDARF des Projekts.
 
-       „Kuehlung rechnen" (Stufe KU1, Kuehlkonzept 8.3; K10, E27) ist die EINE Stelle, an der ein
-       Anwender die Kuehlung projektweit an- und abschaltet - bewusst nicht im Gebaeudedialog.
-       Den Anfangswert eines neuen Projekts setzt die Programmeinstellung. Scheitert das
-       Schreiben, kehrt der Schalter zurueck (@key) und die Seite sagt es.
+       „Kuehlung rechnen" steht im Kopf des Bereichs „Kälte“ oben (Welle KB-B).
 
        „Anlagenkopplung" (Konzept Anlagenkopplung 9.4 und 9.6 Maske 1): Ohne sie ist jede
        Eingabe der Waermeuebergabe am Gebaeude wirkungslos. Waehlbar sind nur die gebauten
@@ -397,27 +501,6 @@
                                         Wert="@_parameter.Netzkanaele.ZirkulationLaufzeitHd" Min="0" Max="24" Nachkommastellen="1"
                                         Einheit="h/d" Aktiv="@(!_daten.Gesperrt)" WertChanged="ZirkLaufzeitGesetzt" />
                             <Herleitungszeile Text="@ZirkulationZeile" />
-                        </KindInhalt>
-                    </Formularraster>
-                </section>
-            }
-
-            @if (Parameter.KuehlbetriebSchreiben is not null)
-            {
-                <section class="epos-simkonfig-bedarf epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
-                    @* Hilfe zum Projektschalter: der Abschnitt "Kühlung einschalten" der
-                       Anwendungsseite (Konzept Technikdokumentation, Abschnitt 7). *@
-                    <div class="epos-berechnungshilfe">
-                        <InfoKnopf Schluessel="Form_Simulation_Config_Kuehlung.btn_Help"
-                                   StandardKurztext="@Resource.HILFE_KUEHLUNG_KNOPF" MitAssistent="false" />
-                    </div>
-                    <Formularraster Einspaltig="true" @key="_kuehlbetriebSchluessel">
-                        <KindInhalt>
-                            <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
-                                      Wert="@_parameter.Kuehlbetrieb"
-                                      Aktiv="@(!_daten.Gesperrt)"
-                                      WertChanged="KuehlbetriebGesetzt" />
-                            <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
                         </KindInhalt>
                     </Formularraster>
                 </section>
@@ -651,6 +734,55 @@
                     HilfeSchluessel="@HilfeSchluesselBerechnung"
                     HilfeKurztext="@HilfeKurztextBerechnung"
                     NurLesen="@_daten.Gesperrt" Geschlossen="KonfigFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @* DIE KONFIGURATION EINES KÄLTEERZEUGERS (Welle KB-B, E117 F2/F3/F5): die Kaeltemaschine mit der
+       Komponente KaeltemaschineKonfiguration (dieselbe wie im Dialog „Kältemaschinen im Projekt“), die
+       Waermepumpe mit ihrer Gruppe „Kühlbetrieb“ (dieselbe wie in ihrer Konfiguration). Arbeitskopie; erst
+       OK schreibt, Abbrechen verwirft. Eine Ablehnung steht im Banner der Ueberlagerung, sie bleibt offen. *@
+    @if (_kmArbeit is not null && _kmGaben is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@_kaelteTitel" Geschlossen="KaelteKonfigSchliessen">
+            <KindInhalt>
+                <div class="epos-dialog epos-simkonfig-kaelte-konfig epos-simkonfig-kaelte-km">
+                    @if (_kaelteMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_kaelteMeldung" />
+                    }
+                    <EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfiguration
+                        Daten="@_kmArbeit" Stromtraeger="@_kmGaben.Stromtraeger"
+                        ProjektStromtraeger="@_kmGaben.ProjektStromtraeger"
+                        AnlagenJeKopie="@_kaelteAnlagenJeKopie" GeraetZeigen="true"
+                        Aktiv="@(!_daten.Gesperrt)" />
+                    <SpeichernLeiste OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                     OkErlaubt="@(!_daten.Gesperrt)" Ergebnis="KaeltemaschineKonfigFertig" />
+                </div>
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
+    @if (_wpKuehlArbeit is not null && _wpKuehlGaben is not null)
+    {
+        <Ueberlagerung Offen="true" Titel="@_kaelteTitel" Geschlossen="KaelteKonfigSchliessen">
+            <KindInhalt>
+                <div class="epos-dialog epos-simkonfig-kaelte-konfig epos-simkonfig-kaelte-wp">
+                    @if (_kaelteMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_kaelteMeldung" />
+                    }
+                    <div class="epos-wp-konfiguration">
+                        <Formularraster Einspaltig="true">
+                            <KindInhalt>
+                                <EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlbetriebGruppe
+                                    Daten="@_wpKuehlArbeit" Kuehlung="@_wpKuehlGaben" Aktiv="@(!_daten.Gesperrt)" />
+                            </KindInhalt>
+                        </Formularraster>
+                    </div>
+                    <SpeichernLeiste OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                     OkErlaubt="@(!_daten.Gesperrt)" Ergebnis="WpKuehlKonfigFertig" />
+                </div>
             </KindInhalt>
         </Ueberlagerung>
     }
@@ -1245,6 +1377,346 @@
 
         _netzkanalSchluessel++;
         Melden(grund ?? Resource.SIMKONF_MSG_NV_KANAL_FEHLER, WarnStufe.Warnung);
+    }
+
+    // =====================================================================
+    // Der Bereich „Kälte“ (Welle KB-B; Entwurf Kältebereich 3, Entscheide E117)
+    // =====================================================================
+
+    /// <summary>Steht der Schalter „Kühlung rechnen“? Nur mit Parametersatz und Schreibweg der Hülle.</summary>
+    private bool KuehlschalterDa => Parameter?.Laden is not null && Parameter.KuehlbetriebSchreiben is not null;
+
+    /// <summary>
+    /// Steht der Bereich? Mit dem Schalter oder mit angelegten Kälteerzeugern bzw. Kältespeichern — ohne beides
+    /// gäbe es nichts zu zeigen und nichts zu schalten.
+    /// </summary>
+    private bool KaeltebereichSichtbar => IdProjekt > 0 && (KuehlschalterDa || !_daten.Kaeltebereich.Leer);
+
+    /// <summary>Rechnet das Projekt Kälte? Der Stand des Schalters, ohne Schalter der gelesene Stand des Bereichs.</summary>
+    public bool KuehlungAn => KuehlschalterDa ? _parameter.Kuehlbetrieb : _daten.Kaeltebereich.Kuehlbetrieb;
+
+    /// <summary>Die Hinweiszeile des zusammengeklappten Bereichs: was angelegt ist und nicht wirkt.</summary>
+    private string KaelteAusText
+    {
+        get
+        {
+            KaeltebereichDaten k = _daten.Kaeltebereich;
+            int km = k.Erzeuger.Count(z => z.Art == KaelteStufe.Kaeltemaschine);
+            int wp = k.Erzeuger.Count(z => z.Art == KaelteStufe.Waermepumpe);
+            int ks = k.Kaeltespeicher.Count;
+            return km + wp + ks == 0
+                ? Resource.SIMKONF_KAELTE_AUS_LEER
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_AUS, km, wp, ks);
+        }
+    }
+
+    /// <summary>Die Herleitungszeile der Rechenfolge — aus den Stufen des Kernlesers, nicht aus eigener Sortierung.</summary>
+    private string KaelteFolgeText
+    {
+        get
+        {
+            IReadOnlyList<KaelteStufe> folge = _daten.Kaeltebereich.Folge.Count > 0
+                ? _daten.Kaeltebereich.Folge
+                : new[] { KaelteStufe.FreieKuehlung, KaelteStufe.Kaeltespeicher, KaelteStufe.Waermepumpe, KaelteStufe.Kaeltemaschine };
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_FOLGE,
+                                 string.Join(", ", folge.Select(StufeText)));
+        }
+    }
+
+    private static string StufeText(KaelteStufe s) => s switch
+    {
+        KaelteStufe.FreieKuehlung => Resource.SIMKONF_KAELTE_STUFE_FREI,
+        KaelteStufe.Kaeltespeicher => Resource.SIMKONF_KAELTE_STUFE_SPEICHER,
+        KaelteStufe.Waermepumpe => Resource.SIMKONF_KAELTE_STUFE_WP,
+        _ => Resource.SIMKONF_KAELTE_STUFE_KM
+    };
+
+    /// <summary>
+    /// Die Herleitungszeile unter den Kälteerzeugern (Welle KB-D2): der Hinweis der Hülle, welche Folge gilt
+    /// (<see cref="KaeltebereichDaten.FolgeHinweis"/>); ohne ihn die Stufenzeile des Kernlesers.
+    /// </summary>
+    private string KaelteHerleitung => string.IsNullOrEmpty(_daten.Kaeltebereich.FolgeHinweis)
+        ? KaelteFolgeText
+        : _daten.Kaeltebereich.FolgeHinweis;
+
+    /// <summary>
+    /// Die Kachel eines Kälteerzeugers mit den Pfeilen der Folge (Welle KB-D2): ▲▼ nur mit Schreibweg
+    /// (<see cref="SimulationKonfigDienste.KaelteVerschieben"/>) und nur, wenn der Erzeuger überhaupt rücken kann
+    /// (mehr als ein Erzeuger); am Rand ausgegraut wie in der Wärmekaskade, damit die Kopfzeile nicht springt.
+    /// </summary>
+    private ErzeugerKachelDaten KaelteKachel(KaelteerzeugerZeile z)
+    {
+        ErzeugerKachelDaten k = z.Kachel;
+        bool pfeile = Dienste?.KaelteVerschieben is not null && (z.NachVornMoeglich || z.NachHintenMoeglich);
+        k.Reihenfolge = pfeile;
+        k.AufMoeglich = pfeile && z.NachVornMoeglich && !_daten.Gesperrt;
+        k.AbMoeglich = pfeile && z.NachHintenMoeglich && !_daten.Gesperrt;
+        return k;
+    }
+
+    /// <summary>
+    /// ▲/▼ an einer Kälteerzeugerkachel (Welle KB-D2): rückt den Erzeuger einen Platz nach vorn (<c>-1</c>) oder hinten
+    /// (<c>+1</c>) — schreibt SOFORT über den Kernweg (<c>KaeltefolgeCtrl.Verschieben</c>), danach laden Kacheln und
+    /// Schema neu. Ein Grund der Ablehnung steht im Banner.
+    /// </summary>
+    private void KaelteFolgeVerschieben(KaelteerzeugerZeile z, int richtung)
+    {
+        Func<int, int, string?>? weg = Dienste?.KaelteVerschieben;
+        if (weg is null || _daten.Gesperrt) return;
+
+        string? grund;
+        try { grund = weg(z.IdAnlage, richtung); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>
+    /// „Vorgabefolge“ (Welle KB-D2): stellt die Vorgabefolge der Kälteerzeuger wieder her — schreibt SOFORT über den
+    /// Kernweg (<c>KaeltefolgeCtrl.VorgabeSetzen</c>). Weich gesperrt, solange die Vorgabe gilt: dann meldet der
+    /// Versuch den Grund.
+    /// </summary>
+    private void KaelteVorgabefolgeSetzen()
+    {
+        Func<string?>? weg = Dienste?.KaelteVorgabefolge;
+        if (weg is null || _daten.Gesperrt) return;
+        if (!_daten.Kaeltebereich.FolgeGepflegt)
+        {
+            Melden(Resource.SIMKONF_KAELTE_VORGABE_GILT, WarnStufe.Hinweis);
+            return;
+        }
+
+        string? grund;
+        try { grund = weg(); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>Die Lesezeile der freien Kühlung; <c>null</c> = kein Erzeuger kühlt frei.</summary>
+    private string? FreieKuehlungText
+    {
+        get
+        {
+            IReadOnlyList<FreieKuehlungZeile> frei = _daten.Kaeltebereich.FreieKuehlung;
+            if (frei.Count == 0) return null;
+            var c = System.Globalization.CultureInfo.CurrentCulture;
+            return string.Format(c, Resource.SIMKONF_KAELTE_FREI, string.Join(", ", frei.Select(f => string.Format(c,
+                f.VorAllenErzeugern ? Resource.SIMKONF_KAELTE_FREI_VORN : Resource.SIMKONF_KAELTE_FREI_PLATZ, f.Bezeichner))));
+        }
+    }
+
+    /// <summary>Hat der Kälteerzeuger einen Weg zu seiner Konfiguration? Ohne Weg kein Knopf.</summary>
+    private bool KaelteKonfigurierbar(KaelteerzeugerZeile z) => z.Art == KaelteStufe.Kaeltemaschine
+        ? Dienste?.KaeltemaschineKonfigurationLaden is not null && Dienste.KaeltemaschineKonfigurationSpeichern is not null
+        : Parameter?.WaermepumpeKonfigurationLaden is not null && Parameter.WaermepumpeKonfigurationSpeichern is not null
+          && Parameter.WaermepumpeKuehlGaben is not null && z.IdAnlage > 0;
+
+    /// <summary>
+    /// Der Parameterbereich einer Kälteerzeugerkachel: die Gründe am Element (Sperrgrund, „nicht in der
+    /// Wärmekaskade“, „gilt für n Anlagen“) und der Knopf „Konfiguration…“.
+    /// </summary>
+    private RenderFragment<KaelteerzeugerZeile> KaelteParameter => z =>
+        @<div class="epos-simkonfig-kaelte-parameter">
+            @if (z.Art == KaelteStufe.Waermepumpe && !z.InWaermekaskade)
+            {
+                <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-kaskade">@Resource.SIMKONF_KAELTE_NICHT_KASKADE</p>
+            }
+            @if (!z.Kuehlbetrieb && !string.IsNullOrEmpty(z.Sperrgrund))
+            {
+                <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-sperrgrund">@z.Sperrgrund</p>
+            }
+            @if (z.AnlagenJeKopie > 1)
+            {
+                <p class="epos-simkonfig-hinweis">@string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_GILT_FUER, z.AnlagenJeKopie)</p>
+            }
+            @if (KaelteKonfigurierbar(z))
+            {
+                <button type="button" class="epos-knopf epos-simkonfig-kaelte-konfigknopf" disabled="@_daten.Gesperrt"
+                        @onclick="() => KaelteKonfigurieren(z)">@BtnKonfigurationText</button>
+            }
+        </div>;
+
+    /// <summary>„Konfiguration…“ bzw. ✎ an einer Kälteerzeugerkachel.</summary>
+    private void KaelteKonfigurieren(KaelteerzeugerZeile z)
+    {
+        if (z.Art == KaelteStufe.Kaeltemaschine)
+        {
+            if (!KaeltemaschineKonfigurationOeffnen(z.IdAnlage)) KaeltemaschinenOeffnen();
+            return;
+        }
+        WpKuehlKonfigurationOeffnen(z);
+    }
+
+    /// <summary>
+    /// Aufnehmen/Entfernen an der Kachel einer Wärmepumpe = Kühlbetrieb an/aus — schreibt SOFORT über den Kernweg
+    /// des Kühlschalters (<see cref="SimulationKonfigDienste.KuehlbetriebWpSchreiben"/>). Ein Sperrgrund oder eine
+    /// Ablehnung steht im Banner; geschrieben, laden die Kacheln neu.
+    /// </summary>
+    private void KuehlbetriebWpSetzen(KaelteerzeugerZeile z, bool an)
+    {
+        if (z.Art != KaelteStufe.Waermepumpe || Dienste?.KuehlbetriebWpSchreiben is null || _daten.Gesperrt) return;
+
+        string? grund = KuehlbetriebWpGrund(z, an);
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>Schreibt den Kühlbetrieb einer Wärmepumpe; <c>null</c> = geschrieben, sonst der benannte Grund.</summary>
+    private string? KuehlbetriebWpGrund(KaelteerzeugerZeile z, bool an)
+    {
+        Func<int, bool, string?>? weg = Dienste?.KuehlbetriebWpSchreiben;
+        if (weg is null) return Resource.KI_SIM_KEIN_SCHREIBWEG;
+
+        string? grund;
+        if (an && !string.IsNullOrEmpty(z.Sperrgrund)) grund = z.Sperrgrund;
+        else
+        {
+            try { grund = weg(z.IdGeraet, an); }
+            catch (Exception ex) { grund = ex.Message; }
+        }
+        return string.IsNullOrEmpty(grund) ? null
+            : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_WP_FEHLER, grund);
+    }
+
+    /// <summary>
+    /// Der Hilfe-Assistent (Welle KB-B): der Kühlbetrieb einer Wärmepumpe des Bereichs „Kälte“ — derselbe Weg wie
+    /// Aufnehmen/Entfernen an ihrer Kachel. Rückgabe <c>null</c> = geschrieben, sonst der benannte Grund.
+    /// </summary>
+    public string? KiKuehlbetriebWpSetzen(int idAnlage, bool an)
+    {
+        KaelteerzeugerZeile? z = _daten.Kaeltebereich.Erzeuger
+            .FirstOrDefault(e => e.IdAnlage == idAnlage && e.Art == KaelteStufe.Waermepumpe);
+        if (z is null) return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                            Resource.KI_DLG_SIM_KUEHL_WP_UNBEKANNT, idAnlage);
+        if (z.Kuehlbetrieb == an) return null;
+        if (_daten.Gesperrt) return _daten.Sperrgrund;
+
+        string? grund = KuehlbetriebWpGrund(z, an);
+        if (grund is not null) return grund;
+        KachelnNeuladen();
+        KiZeichnen();
+        return null;
+    }
+
+    // ---- Die Überlagerung der Konfiguration eines Kälteerzeugers ----
+
+    private EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben? _kmGaben;
+    private EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten? _kmArbeit;
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? _wpKuehlArbeit;
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? _wpKuehlGaben;
+    private int _wpKuehlAnlage;
+    private int _kaelteAnlagenJeKopie = 1;
+    private string _kaelteTitel = "";
+    private string _kaelteMeldung = "";
+
+    /// <summary>Steht die Konfiguration einer Kältemaschine offen? (Prüfhilfe)</summary>
+    public bool KaeltemaschineKonfigurationOffen => _kmArbeit is not null;
+
+    /// <summary>Steht die Gruppe „Kühlbetrieb“ einer Wärmepumpe offen? (Prüfhilfe)</summary>
+    public bool WpKuehlKonfigurationOffen => _wpKuehlArbeit is not null;
+
+    /// <summary>
+    /// Öffnet die Konfiguration einer Kältemaschine in der Seite. <c>false</c> = kein Weg (dann nimmt der Aufrufer
+    /// den Dialog über die Navigation); fehlt die Anlage, steht der Grund im Banner und es gilt als behandelt.
+    /// </summary>
+    private bool KaeltemaschineKonfigurationOeffnen(int idAnlage)
+    {
+        Func<int, EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben?>? laden = Dienste?.KaeltemaschineKonfigurationLaden;
+        if (laden is null || Dienste?.KaeltemaschineKonfigurationSpeichern is null || idAnlage <= 0) return false;
+
+        EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben? gaben;
+        try { gaben = laden(idAnlage); }
+        catch (Exception ex) { Melden(ex.Message, WarnStufe.Warnung); return true; }
+        if (gaben is null) { Melden(Resource.SIMKONF_KAELTE_KM_FEHLT, WarnStufe.Warnung); return true; }
+
+        KaelteKonfigSchliessen();
+        _kmGaben = gaben;
+        _kmArbeit = gaben.Daten.Kopie();
+        _kaelteAnlagenJeKopie = _daten.Kaeltebereich.Erzeuger.FirstOrDefault(z => z.IdAnlage == idAnlage)?.AnlagenJeKopie ?? 1;
+        _kaelteTitel = string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_KM_TITEL,
+                                     gaben.Daten.Bezeichner);
+        return true;
+    }
+
+    /// <summary>OK prüft und schreibt über die Hülle; eine Ablehnung hält die Überlagerung offen.</summary>
+    private void KaeltemaschineKonfigFertig(bool ok)
+    {
+        EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten? arbeit = _kmArbeit;
+        if (!ok || arbeit is null || Dienste?.KaeltemaschineKonfigurationSpeichern is null)
+        {
+            KaelteKonfigSchliessen();
+            return;
+        }
+
+        string? grund;
+        try { grund = Dienste.KaeltemaschineKonfigurationSpeichern(arbeit); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund)) { _kaelteMeldung = grund; return; }
+
+        KaelteKonfigSchliessen();
+        KachelnNeuladen();
+    }
+
+    /// <summary>Öffnet die Gruppe „Kühlbetrieb“ einer Wärmepumpe — dieselbe wie in ihrer Konfiguration.</summary>
+    private void WpKuehlKonfigurationOeffnen(KaelteerzeugerZeile z)
+    {
+        if (!KaelteKonfigurierbar(z)) return;
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? anlage = Parameter!.WaermepumpeKonfigurationLaden!(z.IdAnlage);
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKuehlGaben? gaben = Parameter.WaermepumpeKuehlGaben!();
+        if (ZeileZuAnlage(z.IdAnlage) is ErzeugerZeile zeile) gaben = MitFreiSperrgrund(gaben, zeile);
+        if (anlage is null || gaben is null) return;
+
+        KaelteKonfigSchliessen();
+        _wpKuehlArbeit = anlage;
+        _wpKuehlGaben = gaben;
+        _wpKuehlAnlage = z.IdAnlage;
+        _kaelteTitel = string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_WP_TITEL, z.Bezeichner);
+    }
+
+    /// <summary>OK schreibt die Anlagenfelder der Wärmepumpe über ihren Weg; eine Ablehnung hält offen.</summary>
+    private void WpKuehlKonfigFertig(bool ok)
+    {
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? arbeit = _wpKuehlArbeit;
+        Func<int, EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten, AnlagenkonfigErgebnis>? speichern
+            = Parameter?.WaermepumpeKonfigurationSpeichern;
+        if (!ok || arbeit is null || speichern is null)
+        {
+            KaelteKonfigSchliessen();
+            return;
+        }
+
+        AnlagenkonfigErgebnis ergebnis = speichern(_wpKuehlAnlage, arbeit);
+        if (!ergebnis.Ok)
+        {
+            _kaelteMeldung = string.IsNullOrEmpty(ergebnis.Meldung) ? StatusKonfigFehler : ergebnis.Meldung;
+            return;
+        }
+
+        KaelteKonfigSchliessen();
+        KachelnNeuladen();
+    }
+
+    private void KaelteKonfigSchliessen()
+    {
+        _kmGaben = null;
+        _kmArbeit = null;
+        _wpKuehlArbeit = null;
+        _wpKuehlGaben = null;
+        _wpKuehlAnlage = 0;
+        _kaelteMeldung = "";
     }
 
     /// <summary>@key des Kühlschalters — ein Neuaufbau nach gescheitertem Schreiben.</summary>
@@ -2106,7 +2578,10 @@
                 WaermequelleBearbeiten(zeile);
                 break;
             case Schemaweg.Kaeltemaschinen:
-                KaeltemaschinenOeffnen();
+                // KB-B (E117 F5): die Konfiguration in der Seite; ohne Weg der Dialog ueber die Navigation.
+                int idKm = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_ERZEUGER);
+                if (idKm <= 0) idKm = IdAusSchluessel(schluessel, PRAEFIX_KAELTE_QUELLE);
+                if (!KaeltemaschineKonfigurationOeffnen(idKm)) KaeltemaschinenOeffnen();
                 break;
         }
     }

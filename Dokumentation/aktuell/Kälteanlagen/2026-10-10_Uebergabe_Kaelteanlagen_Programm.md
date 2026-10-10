@@ -10,7 +10,7 @@ folgt der [Übergabe vom 08.10.2026](../Gebaeudesimulation/2026-10-08_Uebergabe_
 [Übergabe des gebauten Kältestands](2026-10-10_Uebergabe_Kaelteanlagen.md) geschrieben (KU3, AK3-K, Kühlkurve, KM1–KM3, Code-Landkarte).
 Dieses Papier ergänzt sie um das **Kälteprogramm** der Sitzung „Gebäudesimulation“ auf Konto 2 (session_01X2CX69qnhXXtc6epxnPUv6):
 Entscheide E117–E121, die Wellen K-A, KB-A, VDI-K, K-C und die Wellenfolge. Die Kopfzeilen **R51** (eingefroren mit #916) und die
-Schemaschritte **211** (gebaut mit #919) und **212** (KB-D, wird von dieser Sitzung gebaut) gehören dieser Sitzung, nicht der Sitzung
+Schemaschritte **211** (gebaut mit #919) und **212** (KB-D, gebaut mit #927) gehören dieser Sitzung, nicht der Sitzung
 „Kälteanlage“; ab 213 meldet die Sitzung „Kälteanlage“ selbst an.
 
 ## 1. Anlass und Abgrenzung
@@ -20,7 +20,7 @@ Der Anwender hat am 10.10.2026 den Kälteteil aus der Sitzung „Gebäudesimulat
 
 - **Sitzung Kälteanlage:** K-B, K-D, K-E, K-F, K-H samt Aufwand und Entscheiden dazu.
 - **Sitzung Gebäudesimulation:** behält Gebäudemodell und Aufheizung (Entwurf [Vorheizrampe](../Gebaeudesimulation/2026-10-10_Entwurf_Vorheizrampe.md),
-  Fassung 2 in Arbeit) und schließt KB-B und KB-D ab; K-C ist gebaut (#923).
+  Fassung 2 in Arbeit) und hat KB-B, KB-D und KB-D2 abgeschlossen (#927–#929); K-C ist gebaut (#923).
 - **Sitzung Dialoge und Korrekturen:** baut Stufe 5 der Katalogauswahl (Dialogumbau Kältemaschine; E117 F6).
 
 ## 2. Stand
@@ -32,11 +32,12 @@ Der Anwender hat am 10.10.2026 den Kälteteil aus der Sitzung „Gebäudesimulat
 | KB-A, KB-1 | Kältefolge als eine Quelle, Daten des Kältebereichs, eigene Projektkopie je Anlage (E117) | gebaut (#920) |
 | VDI-K, VDI-K2 | Import Kälteanlagen VDI 3805 (E119, E121) | gebaut (#921) |
 | Entscheide | E117–E121, Entwurf Split/VRF/Rückkühlwerk | #922 |
-| KB-B | Bereich „Kälte“ in `SimulationKonfigSeite.razor` | in Arbeit (Gebäudesimulation) |
-| KB-D | Schemaschritt 212 `KaelteRangSchema` (pflegbare Kältefolge) | in Arbeit (Gebäudesimulation) |
+| KB-B | Bereich „Kälte“ in `SimulationKonfigSeite.razor` | gebaut (#928) |
+| KB-D | Schemaschritt 212 `KaelteRangSchema` (pflegbare Kältefolge) | gebaut (#927) |
+| KB-D2 | Pfeile der Kältefolge und Knopf „Vorgabefolge“ | gebaut (#929) |
 | K-C | CSV-Varianten Nennwerte und Ökodesign A–D, Menüpunkt „Import Kältemaschinen (CSV, Copper)“ | gebaut (#923) |
 
-Referenzbasis **R51** (29 Projekte), Testdatenbank auf Schemaschritt **211** (nach KB-D 212), nächster freier Schemaschritt
+Referenzbasis **R51** (29 Projekte), Testdatenbank auf Schemaschritt **212** (gebaut mit #927), nächster freier Schemaschritt
 **213**, nächste Basis **R52**. Maßgeblich ist der Kopf der Statusdatei, vor jeder Vergabe gegen origin messen.
 
 ## 3. Nächste Arbeit der Sitzung Kälteanlage
@@ -107,7 +108,7 @@ und Wiki. Antworten auf Deutsch, knapp, Zahlen in Tabellen. Abschnitt 5 der Übe
 
 Erste Schritte: (1) Stand prüfen — git status sauber, keine Konfliktmarker, keine liegen gebliebene AGENT_LAEUFT, Kopf der
 Statusdatei (Schemaschritt 211/212, nächster freier 213, Basis R51, nächste R52). (2) Den Stand in höchstens fünf Zeilen melden.
-(3) Auf den Push von KB-B und KB-D durch die Sitzung Gebäudesimulation warten bzw. danach origin mergen. (4) K-F1
+(3) KB-B und KB-D sind gebaut (#927–#929); origin mergen, sobald die Sitzung Gebäudesimulation gepusht hat. (4) K-F1
 (Rückkühlwerk als Glied mit Festwerten, byte-gleich) mit Aufwandsschätzung vorschlagen; ohne meinen Auftrag keine neue Welle
 beginnen.
 ```

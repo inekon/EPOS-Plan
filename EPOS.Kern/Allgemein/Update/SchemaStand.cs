@@ -1003,7 +1003,11 @@ namespace WindowsFormsApplication1
         /// <see cref="KaelteKatalogfelderSchema.SCHRITT"/>: Geräteart, GWP und Füllmenge des Kältemittels und saisonale
         /// Kennzahl an Katalog und Projektkopie der Kältemaschine (<see cref="KaelteKatalogfelderSchema"/>), die Geräteart
         /// nach der Rückkühlart rückgefüllt. <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalten.
-        public const int Zielversion = KaelteKatalogfelderSchema.SCHRITT;
+        /// Danach, mit der PFLEGBAREN KÄLTEFOLGE (KB-D, Entscheid E117 F1), steht das Ziel auf
+        /// <see cref="KaelteRangSchema.SCHRITT"/>: der Rang eines Kälteerzeugers an seiner Anlagenzeile
+        /// (<c>Tab_Energieanlagen.Kaelte_Rang</c>, <see cref="KaelteRangSchema"/>). <b>Ergebnisneutral:</b> Jede Zeile
+        /// steht danach auf NULL, und NULL ist die Vorgabefolge.
+        public const int Zielversion = KaelteRangSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

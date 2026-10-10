@@ -1,0 +1,147 @@
+﻿@* DIE KONFIGURATION EINER KAELTEMASCHINEN-ANLAGE (Welle KB-B; Entwurf Kaeltebereich 3.3, Entscheid E117 F2) -
+   herausgeloest aus dem Erzeugerdialog „Kältemaschinen im Projekt“, damit der Dialog und der Bereich „Kälte“ der
+   Simulationskonfiguration DIESELBE Komponente zeigen: Name, Anzahl (mit Folgeschaltungshinweis),
+   Kaltwasservorlauf (Platzhalter kleinste Stuetzstelle, Untergrenze des Geraets), Hilfsstromanteil in Prozent,
+   Kuehltraeger und eigener Zaehler.
+
+   Die Komponente schreibt AN ORT UND STELLE in den Feldsatz des Wirts und meldet jede Eingabe ueber „Geaendert“.
+   Geprueft und geschrieben wird im OK-Weg des Wirts (KaeltemaschineAnlageCtrl.Pruefen und Speichern ueber die
+   Huelle); Abbrechen verwirft die Arbeitskopie. Keine Datenbank (Hausregel EPOS.UI). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<Formulargruppe Titel="@Texte.GruppeBetrieb">
+    <KindInhalt>
+        <div class="epos-kaeltemaschine-konfiguration">
+            @if (GeraetZeigen && GeraetZeile is string geraet)
+            {
+                <Herleitungszeile Text="@geraet" />
+            }
+            <Textfeld Bezeichnung="@Texte.LabelName" Wert="@Daten.Bezeichner" NurLesen="@(!Aktiv)" WertChanged="BeiName" />
+            <Ganzzahlfeld Bezeichnung="@Texte.LabelAnzahl" Feldname="@Texte.LabelAnzahl" Wert="@Daten.Anzahl"
+                          Aktiv="@Aktiv" WertChanged="BeiAnzahl" />
+            @if (Folgeschaltung is string folge)
+            {
+                <Herleitungszeile Text="@folge" />
+            }
+            <Zahlenfeld Bezeichnung="@Texte.LabelVorlauf" Feldname="@Texte.LabelVorlauf" Einheit="@Texte.EinheitGradC"
+                        Wert="@Daten.KuehlVorlauf" Platzhalter="@PlatzhalterVorlauf" Aktiv="@Aktiv" WertChanged="BeiVorlauf" />
+            @if (Daten.Geraet?.KaltwasserMin is double min)
+            {
+                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisVorlaufMin, Zahl(min, 1))" />
+            }
+            <Zahlenfeld Bezeichnung="@Texte.LabelHilfsstrom" Feldname="@Texte.LabelHilfsstrom" Einheit="@Texte.EinheitProzent"
+                        Wert="@AnteilAlsProzent(Daten.KuehlHilfsstromanteil)" Platzhalter="0" Min="0"
+                        Aktiv="@Aktiv" WertChanged="BeiHilfsstrom" />
+            <Herleitungszeile Text="@Texte.HinweisHilfsstrom" />
+            @if (AnlagenJeKopie > 1)
+            {
+                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_GILT_FUER, AnlagenJeKopie)" />
+            }
+            <Auswahlfeld Bezeichnung="@Texte.LabelTraeger" Eintraege="@TraegerEintraege"
+                         Auswahl="@Daten.KuehlCarrierId" Platzhalter="@Texte.PlatzhalterTraeger"
+                         Aktiv="@Aktiv" AuswahlChanged="BeiTraeger" />
+            <Schalter Bezeichnung="@Texte.LabelZaehler" Wert="@Daten.KuehlEigenerZaehler" Aktiv="@Aktiv" WertChanged="BeiZaehler" />
+            @if (!TraegerAbweichend)
+            {
+                <Herleitungszeile Text="@Texte.HinweisZaehler" />
+            }
+            <Herleitungszeile Text="@Texte.HinweisReihenfolge" />
+        </div>
+    </KindInhalt>
+</Formulargruppe>
+
+@code {
+    /// <summary>Der bearbeitete Feldsatz — die Arbeitskopie des Wirts; die Komponente schreibt hinein.</summary>
+    [Parameter] public KaeltemaschineAnlageDaten Daten { get; set; } = new();
+
+    /// <summary>Die Anzeigetexte — das Bündel des Erzeugerdialogs.</summary>
+    [Parameter] public KaeltemaschineAnlageTexte Texte { get; set; } = new();
+
+    /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Der Stromträger des Projekts (bepreist den Netzbezug); 0 = keiner.</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
+
+    /// <summary>Wie viele Anlagen dieselbe Projektkopie führen; größer 1 = Hinweis „gilt für n Anlagen“.</summary>
+    [Parameter] public int AnlagenJeKopie { get; set; } = 1;
+
+    /// <summary>Die Gerätekenndaten als Lesezeile über den Feldern — dort, wo keine Gerätegruppe daneben steht.</summary>
+    [Parameter] public bool GeraetZeigen { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt jedes Feld (gesperrte Seite).</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Jede Eingabe meldet sich; geschrieben wird erst im OK-Weg des Wirts.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// KM3-E3-b: der Hinweis „Folgeschaltung von n Maschinen“ — nur bei Anzahl &gt; 1 und gesetzter Teillastrechnung;
+    /// sonst <c>null</c>.
+    /// </summary>
+    internal string? Folgeschaltung
+        => Daten.Anzahl is int n && n > 1 && Daten.Geraet?.TeillastGesetzt == true
+            ? string.Format(CultureInfo.CurrentCulture, Texte.HinweisFolgeschaltung, n) : null;
+
+    /// <summary>Die Gerätekenndaten in einer Zeile: Bezeichner, Nennkälteleistung, Rückkühlart; <c>null</c> ohne Gerät.</summary>
+    public string? GeraetZeile
+    {
+        get
+        {
+            KaeltemaschineGeraetwerte? g = Daten.Geraet;
+            if (g is null) return null;
+            var teile = new List<string>();
+            if (!string.IsNullOrWhiteSpace(g.Bezeichner)) teile.Add(g.Bezeichner);
+            if (g.Nennkaelteleistung is double kw) teile.Add(Zahl(kw, 1) + " " + Texte.EinheitKw);
+            if (g.NennEer is double eer) teile.Add(Texte.LabelNennEer + " " + Zahl(eer, 2));
+            if (!string.IsNullOrWhiteSpace(g.Rueckkuehlart)) teile.Add(g.Rueckkuehlart);
+            return teile.Count == 0 ? null
+                : string.Format(CultureInfo.CurrentCulture, Resource.KMK_GERAET_ZEILE, string.Join(" · ", teile));
+        }
+    }
+
+    private Task BeiName(string wert) { Daten.Bezeichner = wert ?? ""; return Melden(); }
+    private Task BeiAnzahl(int? wert) { Daten.Anzahl = wert; return Melden(); }
+    private Task BeiVorlauf(double? wert) { Daten.KuehlVorlauf = wert; return Melden(); }
+    private Task BeiHilfsstrom(double? prozent) { Daten.KuehlHilfsstromanteil = ProzentAlsAnteil(prozent); return Melden(); }
+    private Task BeiTraeger(int? id) { Daten.KuehlCarrierId = id; return Melden(); }
+    private Task BeiZaehler(bool wert) { Daten.KuehlEigenerZaehler = wert; return Melden(); }
+
+    private Task Melden() => Geaendert.InvokeAsync();
+
+    /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
+    public static double? AnteilAlsProzent(double? anteil) => anteil is double x ? Math.Round(x * 100.0, 6) : null;
+
+    /// <summary>Die gezeigten Prozent als gespeicherter Anteil [—].</summary>
+    public static double? ProzentAlsAnteil(double? prozent) => prozent is double p ? p / 100.0 : null;
+
+    /// <summary>Weicht der Kühlträger vom Stromträger des Projekts ab? Nur dann wirkt der eigene Zähler.</summary>
+    private bool TraegerAbweichend
+        => Daten.KuehlCarrierId is int id && id > 0 && id != ProjektStromtraeger;
+
+    /// <summary>Die Stromträger des Projekts, dazu ein gespeicherter Kühlträger, der keiner (mehr) ist.</summary>
+    private IReadOnlyList<(int Id, string Text)> TraegerEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>(Stromtraeger);
+            if (Daten.KuehlCarrierId is int id && !l.Any(e => e.Item1 == id)) l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+            return l;
+        }
+    }
+
+    private string PlatzhalterVorlauf
+    {
+        get
+        {
+            IReadOnlyList<double> stuetz = Daten.Geraet?.Kaltwasserstuetzstellen ?? Array.Empty<double>();
+            return string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterVorlauf, stuetz.Count > 0 ? Zahl(stuetz.Min(), 1) : "—");
+        }
+    }
+
+    internal static string Zahl(double? wert, int stellen)
+        => wert is double w ? Math.Round(w, stellen).ToString("0." + new string('#', Math.Max(stellen, 1)), CultureInfo.CurrentCulture) : "";
+}

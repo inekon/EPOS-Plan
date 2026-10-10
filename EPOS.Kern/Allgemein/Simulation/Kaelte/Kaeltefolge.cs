@@ -87,6 +87,12 @@ namespace WindowsFormsApplication1
         /// Wärmepumpen-Anlagen tragen). Größer 1 heißt: Vorlauf und Hilfsstrom gelten für alle diese Anlagen.
         /// </summary>
         public int AnlagenJeKopie = 1;
+
+        /// <summary>
+        /// Der gepflegte Rang in der Kältefolge (<c>Tab_Energieanlagen.Kaelte_Rang</c>, Welle KB-D); <c>null</c> = kein Rang,
+        /// der Erzeuger steht nach der Vorgabefolge (hinter allen gepflegten).
+        /// </summary>
+        public int? KaelteRang;
     }
 
     /// <summary>Ein Eintrag der freien Kühlung (<see cref="KaeltefolgeStand.FreieKuehlung"/>).</summary>
@@ -105,7 +111,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Projekteinstellung „Kühlung rechnen“ (<c>Tab_Einstellungen.Kuehlbetrieb</c>).</summary>
         public bool Kuehlbetrieb;
 
-        /// <summary>Die Stufen in ihrer Folge — heute fest (<see cref="Kaeltefolge.Stufen"/>).</summary>
+        /// <summary>Die Stufen in ihrer Folge — fest (<see cref="Kaeltefolge.Stufen"/>); gepflegt wird die Folge der Erzeuger.</summary>
         public IReadOnlyList<KaeltefolgeStufe> Stufen = Kaeltefolge.Stufen;
 
         /// <summary>Die Kälteerzeuger in Rechenfolge: Wärmepumpen mit Kühlfunktion, dann Kältemaschinen.</summary>
@@ -116,14 +122,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Erzeuger mit freier Kühlung: zuerst die Kältemaschinen (vor allen), dann die Wärmepumpen.</summary>
         public IReadOnlyList<FreieKuehlungEintrag> FreieKuehlung = Array.Empty<FreieKuehlungEintrag>();
+
+        /// <summary>
+        /// Ist die Folge der Erzeuger gepflegt (mindestens ein Erzeuger mit <see cref="KaelteerzeugerEintrag.KaelteRang"/>)?
+        /// <c>false</c> = die Vorgabefolge gilt.
+        /// </summary>
+        public bool Gepflegt;
     }
 
     /// <summary>
     /// <b>Die Kältefolge — eine Quelle der Wahrheit</b> (Entwurf Kältebereich 3.4, Welle KB-A): Die Ordnungsregeln
     /// der Kälteseite stehen hier einmal, und der Lauf (<c>SimulationControl.KaelteerzeugerVorbereiten</c>,
     /// <c>KaeltemaschinenVorbereiten</c>, <c>KaeltespeicherLesen</c>), das Schema (<c>SchemaModell.KaelteBahnAnlegen</c>)
-    /// und der Bereich „Kälte“ der Simulationskonfiguration (<see cref="Lesen"/>) ordnen damit. Heute ist die Folge
-    /// fest; pflegbar wird sie, indem allein diese Regeln eine Quelle bekommen (Welle KB-D).
+    /// und der Bereich „Kälte“ der Simulationskonfiguration (<see cref="Lesen"/>) ordnen damit.
+    /// <para><b>Pflegbar (Welle KB-D, Entscheid E117 F1):</b> Die Stufen bleiben fest — freie Kühlung, Kältespeicher (nach
+    /// Entladepriorität), Erzeuger. Die Folge der Erzeuger trägt ein Rang an der Anlagenzeile
+    /// (<c>Tab_Energieanlagen.Kaelte_Rang</c>, <see cref="RaengeLesen"/>): Erzeuger mit Rang stehen vorn, aufsteigend; ohne
+    /// Rang folgen sie in der Vorgabefolge (Wärmepumpen nach Modulfolge, dann Kältemaschinen nach Anlagen-ID). Ohne jeden
+    /// Rang ist die Folge Zeichen für Zeichen die Vorgabefolge. Geschrieben wird der Rang allein über
+    /// <see cref="KaeltefolgeCtrl"/>.</para>
     /// </summary>
     public static class Kaeltefolge
     {
@@ -146,30 +163,63 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Ordnet Kälteerzeuger nach Stufe und Platz in der Stufe, stabil (gleicher Schlüssel = Eingangsfolge).
+        /// Ordnet Kälteerzeuger, stabil (gleicher Schlüssel = Eingangsfolge): zuerst die mit gepflegtem Rang
+        /// (<paramref name="rang"/>, aufsteigend), dann die ohne Rang nach Stufe und Platz in der Stufe (Vorgabefolge).
+        /// <paramref name="rang"/> <c>null</c> oder ohne Wert für alle = die Vorgabefolge.
         /// </summary>
-        public static List<T> ErzeugerOrdnen<T>(IEnumerable<T> erzeuger, Func<T, KaeltefolgeStufe> stufe, Func<T, int> platz)
+        public static List<T> ErzeugerOrdnen<T>(IEnumerable<T> erzeuger, Func<T, KaeltefolgeStufe> stufe, Func<T, int> platz,
+                                                Func<T, int?> rang = null)
         {
             if (erzeuger == null) return new List<T>();
-            return erzeuger.Select((e, i) => (e, i))
-                           .OrderBy(t => Rang(stufe(t.e)))
+            return erzeuger.Select((e, i) => (e, i, r: rang?.Invoke(e)))
+                           .OrderBy(t => t.r.HasValue ? 0 : 1)
+                           .ThenBy(t => t.r ?? 0)
+                           .ThenBy(t => Rang(stufe(t.e)))
                            .ThenBy(t => platz(t.e))
                            .ThenBy(t => t.i)
                            .Select(t => t.e).ToList();
         }
 
         /// <summary>
-        /// Die Erzeuger des Laufs in Kältefolge: Wärmepumpen nach Modulindex, dann Kältemaschinen in der Folge, in
-        /// der <see cref="KaeltemaschinenOrdnen"/> sie geliefert hat.
+        /// Die gepflegten Ränge der Anlagen eines Projekts (<c>Tab_Energieanlagen.Kaelte_Rang</c>): Anlagen-ID → Rang, nur
+        /// Zeilen mit Rang. Leer ohne Projekt, ohne Spalte (Stand vor Schritt <see cref="KaelteRangSchema.SCHRITT"/>) oder
+        /// ohne gepflegten Rang.
         /// </summary>
-        internal static List<Kaelteerzeuger> ErzeugerOrdnen(IList<Kaelteerzeuger> erzeuger)
+        public static Dictionary<int, int> RaengeLesen(int idProjekt)
+        {
+            var raenge = new Dictionary<int, int>();
+            if (idProjekt <= 0 || !KaelteRangSchema.Vollstaendig()) return raenge;
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT ID, Kaelte_Rang FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND Kaelte_Rang IS NOT NULL",
+                StilleDb.Par("@p", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return raenge;
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                int rang = StilleDb.Zahl(StilleDb.Feld(r, KaelteRangSchema.SPALTE_RANG));
+                if (id > 0 && rang >= 1) raenge[id] = rang;
+            }
+            return raenge;
+        }
+
+        /// <summary>Der Rang einer Anlage aus <paramref name="raenge"/>; <c>null</c> = keiner.</summary>
+        private static int? RangVon(IReadOnlyDictionary<int, int> raenge, int anlagenId)
+            => raenge != null && raenge.TryGetValue(anlagenId, out int r) ? r : (int?)null;
+
+        /// <summary>
+        /// Die Erzeuger des Laufs in Kältefolge: die gepflegten nach Rang (<paramref name="raenge"/>, Anlagen-ID → Rang),
+        /// dann Wärmepumpen nach Modulindex und Kältemaschinen in der Folge, in der <see cref="KaeltemaschinenOrdnen"/> sie
+        /// geliefert hat. Ohne Ränge die Vorgabefolge.
+        /// </summary>
+        internal static List<Kaelteerzeuger> ErzeugerOrdnen(IList<Kaelteerzeuger> erzeuger, IReadOnlyDictionary<int, int> raenge = null)
         {
             if (erzeuger == null) return new List<Kaelteerzeuger>();
             var listenplatz = new Dictionary<Kaelteerzeuger, int>();
             for (int i = 0; i < erzeuger.Count; i++) listenplatz[erzeuger[i]] = i;
             return ErzeugerOrdnen(erzeuger,
                 e => e.Maschine != null ? KaeltefolgeStufe.Kaeltemaschine : KaeltefolgeStufe.Waermepumpe,
-                e => e.Maschine != null ? listenplatz[e] : e.Modulindex);
+                e => e.Maschine != null ? listenplatz[e] : e.Modulindex,
+                e => RangVon(raenge, e.AnlagenID));
         }
 
         /// <summary>Die Kältemaschinen-Anlagen in Kältefolge: nach Anlagen-ID.</summary>
@@ -210,7 +260,10 @@ namespace WindowsFormsApplication1
             var erzeuger = new List<KaelteerzeugerEintrag>();
             erzeuger.AddRange(WaermepumpenLesen(idProjekt));
             erzeuger.AddRange(KaeltemaschinenLesen(idProjekt));
-            stand.Erzeuger = ErzeugerOrdnen(erzeuger, e => e.Art, e => e.Platz);
+            Dictionary<int, int> raenge = RaengeLesen(idProjekt);
+            foreach (KaelteerzeugerEintrag e in erzeuger) e.KaelteRang = RangVon(raenge, e.AnlagenId);
+            stand.Erzeuger = ErzeugerOrdnen(erzeuger, e => e.Art, e => e.Platz, e => e.KaelteRang);
+            stand.Gepflegt = erzeuger.Any(e => e.KaelteRang.HasValue);
 
             stand.Kaeltespeicher = KaeltespeicherOrdnen(
                 (WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE)
@@ -237,7 +290,9 @@ namespace WindowsFormsApplication1
                 if (m != null) modelle[m.ID] = m;
             Dictionary<int, WPCtrl.KuehlfaehigesGeraet> kuehlfaehig = WPCtrl.KuehlfaehigeGeraete(idProjekt)
                 .GroupBy(g => g.IdWp).ToDictionary(g => g.Key, g => g.First());
-            bool inKaskade = Kaskade.Lesen(KonfigurationCtrl.LiesProjekt(idProjekt))
+            // Nebenwirkungsfrei gelesen: LiesProjekt zoege bei ungepflegter Kaskade den
+            // Heizkessel in die Datenbank - aus jedem Auffrischen der Konfigurationsseite.
+            bool inKaskade = KonfigurationCtrl.KaskadeLesen(idProjekt)
                 .Contains(DbWerte.ERZEUGER_WAERMEPUMPE);
 
             Dictionary<int, int> jeGeraet = module.Where(modelle.ContainsKey).GroupBy(id => modelle[id].ID_WP)

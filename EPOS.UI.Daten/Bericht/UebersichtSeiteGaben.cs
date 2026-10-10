@@ -795,6 +795,8 @@ namespace WindowsFormsApplication1
             try
             {
                 var meldungen = new List<string>();
+                var koepfe = new List<string>();
+                var hinweisliste = new List<string>();
                 for (int i = 0; i < laeufe.Count; i++)
                 {
                     Tuple<int, string> lauf = laeufe[i];
@@ -809,9 +811,17 @@ namespace WindowsFormsApplication1
                         string fehler;
                         var runner = new SimulationRunner();
                         int erg = runner.SimuliereUndSpeichere(lauf.Item1, out fehler);
-                        meldungen.Add(erg > 0
+                        string kopf = erg > 0
                             ? string.Format(MyResource.Resource.BK_MSG_SIM_OK, lauf.Item2, erg)
-                            : string.Format(MyResource.Resource.BK_MSG_SIM_FEHLER, lauf.Item2, fehler));
+                            : string.Format(MyResource.Resource.BK_MSG_SIM_FEHLER, lauf.Item2, fehler);
+                        meldungen.Add(kopf);
+                        koepfe.Add(kopf);
+
+                        // Die Hinweise als Liste für den Klapper des Banners; laufen
+                        // Stamm und Variante, nennt jeder Hinweis seinen Stand.
+                        if (runner.Protokoll != null)
+                            foreach (string h in runner.Protokoll.HinweiseFuerAnzeige())
+                                hinweisliste.Add(laeufe.Count > 1 ? lauf.Item2 + ": " + h : h);
 
                         // Auch ein ERFOLGREICHER Lauf kann mit einer
                         // Ersatzannahme gerechnet haben (Paket-8-Fehlerkanal).
@@ -828,7 +838,9 @@ namespace WindowsFormsApplication1
                 {
                     Erfolg = true,
                     Statuszeile = string.Format(MyResource.Resource.BK_MSG_SIM_FERTIG, laeufe.Count),
-                    Meldung = string.Join("\r\n", meldungen)
+                    Meldung = string.Join("\r\n", meldungen),
+                    Meldungskopf = string.Join(" · ", koepfe),
+                    Laufhinweise = hinweisliste
                 };
             }
             catch (Exception ex)
