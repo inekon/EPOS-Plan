@@ -5699,6 +5699,35 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     font-variant-numeric: tabular-nums;
 }
 
+/* KOPF UND WERT STEHEN UEBEREINANDER (Auftrag TA, 10.10.2026).
+
+   Die Ergebnistabellen der Simulationsreiter (Waermepumpe Modul und Speicher,
+   Heizkessel, BHKW, Solarthermie, Photovoltaik samt Wechselrichtern) setzten
+   .epos-simerg-zahl nur an die WERTzellen. Die Koepfe erbten text-align: left
+   der Hausregel .epos-raster th, und die Tabelle spannte mit width: 100 % ihre
+   Spalten ueber die volle Breite: Der Kopf stand am linken, der Wert am
+   rechten Rand einer breiten Spalte - "0,72" (Heizstab) lag unter "JAZ".
+
+   Die Regel: Eine Zahlenspalte traegt .epos-simerg-zahl an Kopf UND Zellen
+   (rechtsbuendig ueber die Regel darueber), eine Textspalte keine (links);
+   Kopf- und Datenzellen haben dieselbe Polsterung der Hausregel. Die Tabelle
+   nimmt nur die Breite ihres Inhalts - jede Tabelle ihre eigene, auch zwei
+   untereinander (Modul und Speicher). Waehler mit Typ (0,1,1), damit er die
+   Breite von .epos-raster (0,1,0) unabhaengig von der Reihenfolge schlaegt;
+   .epos-raster selbst bleibt unberuehrt (Rasterprobe). */
+table.epos-simerg-tabelle {
+    width: auto;
+    max-width: 100%;
+}
+
+/* Dieselbe Regel fuer die Kennzahlentabelle des Stromspeichers und den
+   Variantenvergleich: Deren Koepfe stehen per Hausregel links, ein Zahlenkopf
+   folgt seinen Werten nach rechts. */
+.epos-simerg-kennzahlen th.epos-simerg-zahl,
+.epos-simerg-vergleich th.epos-simerg-zahl {
+    text-align: right;
+}
+
 .epos-simerg-kennzahlen tr.epos-stufe-ok { background: rgb(215, 245, 215); }
 .epos-simerg-kennzahlen tr.epos-stufe-knapp { background: rgb(255, 240, 190); }
 .epos-simerg-kennzahlen tr.epos-stufe-ueberschritten { background: rgb(255, 205, 205); }
