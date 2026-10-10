@@ -144,11 +144,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Task<GanglinienImportErgebnis> Einlesen(
             string pfad, GanglinienImportRueckrufe rueckrufe)
-            => Kulturweitergabe.StartenAsync(() => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe));
+            => Importfang.StartenAsync(pfad, () => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe),
+                                       Importfang.AlsGanglinienimport);
 
         /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
         private static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
-            => Kulturweitergabe.Starten(() => GanglinienDatei.Vorschau(pfad, optionen));
+            => Importfang.Starten(pfad, () => GanglinienDatei.Vorschau(pfad, optionen), Importfang.AlsVorschau);
 
         // =====================================================================
         // Die zwei Rechenläufe

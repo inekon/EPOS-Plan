@@ -226,7 +226,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Vorbelegung der Nennleistung aus der gewählten Datei (Kern: <c>PvGanglinieImportCtrl.Vorschlagen</c>).</summary>
         internal static async Task<GanglinienNennleistungsvorschlag> Vorschlagen(string pfad)
         {
-            PvGanglinieVorschlag v = await Kulturweitergabe.Starten(() => PvGanglinieImportCtrl.Vorschlagen(pfad));
+            PvGanglinieVorschlag v = await Importfang.Starten(pfad, () => PvGanglinieImportCtrl.Vorschlagen(pfad),
+                                                              _ => new PvGanglinieVorschlag());
             return new GanglinienNennleistungsvorschlag(v.VorschlagKwp, v.AusDateikopf, v.SpitzeKw);
         }
 
@@ -235,7 +236,10 @@ namespace WindowsFormsApplication1
                                                                                     IProgress<ImportFortschritt> melder)
         {
             melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
-            PvGanglinieImportBericht b = await Kulturweitergabe.Starten(() => PvGanglinieImportCtrl.Einlesen(pfad, nennleistungKwp));
+            PvGanglinieImportBericht b = await Importfang.Starten(pfad,
+                () => PvGanglinieImportCtrl.Einlesen(pfad, nennleistungKwp),
+                a => new PvGanglinieImportBericht { IstFehler = true, Meldung = a.Text,
+                                                    Bezeichner = System.IO.Path.GetFileNameWithoutExtension(pfad ?? "") });
             return new GanglinienKatalogimport(b.Erfolgreich, b.IstFehler, b.Bezeichner ?? "",
                                                b.Meldung ?? "", b.Protokoll ?? "");
         }

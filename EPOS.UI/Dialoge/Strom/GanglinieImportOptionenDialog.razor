@@ -46,6 +46,11 @@
         <Schliesskreuz Geschlossen="BeiAbbrechen" />
     </div>
 
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_meldung" />
+    }
+
     <p class="epos-importoptionen-datei">@DateiZeile</p>
 
     <Gruppenkopf Titel="@GruppeFormat" />
@@ -160,6 +165,8 @@
     [Parameter] public string AktualisierenText { get; set; } = Resource.IMPORT_BTN_AKTUALISIEREN;
     [Parameter] public string VorlageVorschau { get; set; } = Resource.IMPORT_GRP_VORSCHAU;
     [Parameter] public string HinweisText { get; set; } = Resource.IMPORT_HINWEIS_OPTIONEN;
+    /// <summary>Banner, wenn „Vorschau aktualisieren" mit den gewählten Optionen nichts lesen kann ({0} = Grund).</summary>
+    [Parameter] public string VorlageUnlesbar { get; set; } = Resource.IMPORT_MSG_VORSCHAU_UNLESBAR;
     [Parameter] public string SpalteZeile { get; set; } = Resource.IMPORT_SPALTE_ZEILE;
     [Parameter] public string VorlageSpalte { get; set; } = Resource.IMPORT_SPALTE_N;
 
@@ -410,13 +417,26 @@
     // Vorschau aktualisieren (Aktualisieren_Click)
     // =====================================================================
 
+    private string _meldung = "";
+
+    /// <summary>Der Banner des Dialogs (Prüfhilfe); leer ohne Meldung.</summary>
+    public string Meldung => _meldung;
+
     private async Task BeiAktualisieren()
     {
         if (Vorschau is null) return;
 
         GanglinienImportOptionen behalten = Optionen();
         GanglinienVorschau? neu = await Vorschau(Pfad, behalten);
-        if (neu is null || !neu.Lesbar) return;
+        if (neu is null || !neu.Lesbar)
+        {
+            // Nicht still bleiben (IM-1): Der Grund steht im Banner, Optionen und alte Vorschau bleiben.
+            PruefMeldung? fehler = neu?.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+            string grund = fehler is null ? Resource.IMPORT_PROT_DATEI_LEER : GanglinienProtokollText.Text(fehler);
+            _meldung = string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageUnlesbar, grund);
+            return;
+        }
+        _meldung = "";
 
         // Woertlich: Die Listen werden neu gefuellt, die OPTIONEN aber gerettet.
         _vorschau = neu;

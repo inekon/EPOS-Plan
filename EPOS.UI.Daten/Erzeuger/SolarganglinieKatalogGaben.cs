@@ -73,7 +73,9 @@ namespace WindowsFormsApplication1
         internal static async Task<GanglinienKatalogimport> Einlesen(string pfad, IProgress<ImportFortschritt> melder)
         {
             melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
-            SolarganglinieImportBericht b = await Kulturweitergabe.Starten(() => SolarganglinieImportCtrl.Einlesen(pfad));
+            SolarganglinieImportBericht b = await Importfang.Starten(pfad, () => SolarganglinieImportCtrl.Einlesen(pfad),
+                a => new SolarganglinieImportBericht { IstFehler = true, Meldung = a.Text,
+                                                       Bezeichner = System.IO.Path.GetFileNameWithoutExtension(pfad ?? "") });
             return new GanglinienKatalogimport(b.Erfolgreich, b.IstFehler, b.Bezeichner ?? "",
                                                b.Meldung ?? "", b.Protokoll ?? "");
         }
