@@ -3246,6 +3246,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung/Azimut ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_AUSRICHTUNG {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_AUSRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betrieb ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_BETRIEB {
@@ -3287,6 +3296,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_EURO_JAHR {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_EURO_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_FLAECHE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_FLAECHE", resourceCulture);
             }
         }
         
@@ -3341,6 +3359,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_SENKEN {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_SENKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarkreis ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_SOLARKREIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_SOLARKREIS", resourceCulture);
             }
         }
         

@@ -50263,6 +50263,15 @@ Chart</value>
   <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
     <value>Anzahl</value>
   </data>
+  <data name="AUSWAHL_ZF_FLAECHE" xml:space="preserve">
+    <value>Fläche</value>
+  </data>
+  <data name="AUSWAHL_ZF_AUSRICHTUNG" xml:space="preserve">
+    <value>Neigung/Azimut</value>
+  </data>
+  <data name="AUSWAHL_ZF_SOLARKREIS" xml:space="preserve">
+    <value>Solarkreis</value>
+  </data>
   <data name="SATZBEARB_TITEL_PROJEKT" xml:space="preserve">
     <value>Projektsatz bearbeiten – {0}</value>
   </data>
