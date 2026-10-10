@@ -124,6 +124,12 @@ function messen(KOMPAKT_ABFRAGE) {
   for (const l of leisten) {
     const r = l.getBoundingClientRect();
     if (r.height > 52) leistenfehler.push('Kopfleiste ' + Math.round(r.height) + ' px hoch (umgebrochen)');
+    // MO3: Die Rasterzeile der Projektliste rechnet bei aufgeklappter Detailzeile mit einer Kopfleiste in
+    // Touchzielhoehe; ein Rand an einem Knopf im Leistenzusatz liess sie 6 px ueberlaufen (Waermepumpen).
+    else if (l.closest('.epos-zweispalten-bereich--projekt') && d.querySelector('.epos-zweispalten--satz-offen')) {
+      const ziel = parseFloat(getComputedStyle(l).minHeight) || 0;
+      if (ziel > 0 && r.height > ziel + 1) leistenfehler.push('Kopfleiste der Projektliste ' + Math.round(r.height) + ' px hoeher als das Touchziel ' + ziel + ' px');
+    }
     for (const k of l.querySelectorAll('button')) {
       const b = k.getBoundingClientRect();
       if (b.right > r.right + 1 || b.left < r.left - 1) leistenfehler.push('Knopf "' + k.textContent.trim() + '" abgeschnitten');
@@ -470,6 +476,24 @@ try {
       console.log(`Gegenprobe Vorrang: Satzflaeche auf 100 px begrenzt - ${rot ? 'rot' : 'gruen'}`);
       if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht den Vorrang nicht'); rueckgabe = 1; }
       await k3.close();
+    }
+
+    // Kopfleiste (MO3): ein Rand von 6 px am Umstellknopf der Waermepumpen laesst die Kopfleiste der
+    // Projektliste bei aufgeklappter Detailzeile ueberlaufen - das muss rot werden.
+    {
+      const k5 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s5 = await k5.newPage();
+      await s5.goto(WURZEL + '/fensterprobe?fall=waermepumpen&zeilen=40', { waitUntil: 'networkidle' });
+      await s5.waitForSelector('.epos-zweispalten');
+      await s5.addStyleTag({ content: '.epos-wp-umstellen { margin-top: 6px !important; }' });
+      await satz(s5, true);
+      const vor = verstoesse.length, n = zeilen.length, b = befunde.length;
+      pruefen('waermepumpen', { breite: 1280, hoehe: 800 }, 'Gegenprobe Kopfleiste', await s5.evaluate(messen, KOMPAKT), [], true, null);
+      const rot = verstoesse.slice(vor).some(v => v.includes('Touchziel')) && verstoesse.slice(vor).some(v => v.includes('Ueberlauf'));
+      verstoesse.splice(vor); zeilen.splice(n); befunde.splice(b);
+      console.log(`Gegenprobe Kopfleiste: Umstellknopf mit 6 px Rand - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Kopfleiste nicht'); rueckgabe = 1; }
+      await k5.close();
     }
 
     // Verdichteter Kopf (DZ1-N1): eine auf 60 px gedrueckte Kurve und eine Kurven-Untergrenze von 300 px

@@ -12456,10 +12456,12 @@ table.epos-simerg-tabelle {
 .epos-wp-extrapolation {
     margin: 2px 0 10px;
 }
-/* W7-B-3 Nachtrag: "Markierte auf diese Waermepumpe umstellen" unter dem Katalog. */
+/* "Markierte auf diese Waermepumpe umstellen" steht im Leistenzusatz der Kopfleiste der
+   Projektliste: ohne eigenen Rand - die Kopfleiste bleibt so hoch wie das Touchziel, sonst
+   ragt sie bei aufgeklappter Detailzeile aus der Rasterzeile der Projektliste (Untergrenze
+   Kopf und eine Zeile plus Touchziel; gemessen mit Proben/Rasterprobe/rollbereichprobe.mjs). */
 .epos-wp-umstellen {
     justify-content: flex-end;
-    margin-top: 6px;
 }
 .epos-dialog--eingebettet {
     padding: 0;

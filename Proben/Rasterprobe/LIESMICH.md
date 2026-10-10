@@ -1363,6 +1363,7 @@ bis an den unteren Rand des Bausteins (Rest höchstens 3 px); trägt sie eine Ga
 hoch wie der Platz, den Kennzahlen, Schalter und Zoomleiste lassen (oder so breit wie die Satzfläche). Die
 Tabelle am Ende nennt die Höhe der Satzfläche (und Bild/Platz der Ganglinie). **Dritte Gegenprobe:** Heizkessel
 in 1 280 × 800 mit einer auf 100 px begrenzten Satzfläche — sie lässt 66 px frei und muss rot werden.
+**Kopfleiste der Projektliste.** Mit aufgeklappter Detailzeile rechnet die Rasterzeile der Projektliste mit einer Kopfleiste in Touchzielhöhe; die Probe meldet jede höhere Kopfleiste (ein Rand am Knopf im Leistenzusatz ließ die Wärmepumpen 6 px überlaufen). Gegenprobe: Wärmepumpen in 1 280 × 800 mit 6 px Rand am Umstellknopf muss rot werden.
 **Ergebnis vom 10.10.2026, DZ1, Teil 1:** 618 Zustände, 0 Verstöße, alle drei Gegenproben rot. Satzfläche
 aufgeklappt (Trennlinie oben) in px:
 
