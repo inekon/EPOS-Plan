@@ -22,7 +22,7 @@ Nach dem Start zeigt die Kopfzeile Programmname und Version. Prüfen Sie einmali
 === Schritt 2 – Projekt anlegen ===
 {{Anker|schritt-2-projekt-anlegen}}
 
-Über {{Menü|Projekt|Neu…}} starten Sie den Projektassistenten. Schalten Sie zuerst die Kacheln ein, die das Projekt braucht – etwa Gebäude, Wärmebedarfsdaten, Wärmepumpe, Photovoltaik –, alles andere wird übersprungen. Tragen Sie danach Projektname und Bearbeiter ein und wählen Sie die Klimaregion. Beides ist Pflicht, alles Übrige lässt sich später ergänzen. Beim Bearbeiten eines bestehenden Projekts gilt: Eine ausgeschaltete Kachel entfernt ihre Daten – der Assistent fragt vorher im Klartext nach und ist mit ''Nein'' vorbelegt.
+Über {{Menü|Projekt|Neu…}} starten Sie den Projektassistenten. Schalten Sie zuerst die Kacheln ein, die das Projekt braucht – etwa Gebäude, Wärmebedarfsdaten, Wärmepumpe, Photovoltaik –, alles andere wird übersprungen. Tragen Sie danach Projektname, Bearbeiter und Kunde ein und wählen Sie die Klimaregion. Projektname und Klimaregion sind Pflicht, alles Übrige lässt sich später ergänzen. Beim Bearbeiten eines bestehenden Projekts gilt: Eine ausgeschaltete Kachel entfernt ihre Daten – der Assistent fragt vorher im Klartext nach und ist mit ''Nein'' vorbelegt.
 
 === Schritt 3 – Klimaregion sicherstellen ===
 {{Anker|schritt-3-klimaregion-sicherstellen}}

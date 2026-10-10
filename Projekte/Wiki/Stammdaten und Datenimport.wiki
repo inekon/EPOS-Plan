@@ -40,7 +40,7 @@ Für Wärmepumpen, Heizkessel, Pufferspeicher und Solarkollektoren steht ein Imp
 == Klimadaten beziehen ==
 {{Anker|klimadaten-beziehen|klimadaten|ortsliste}}
 
-Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter – weltweit über PVGIS, für Deutschland auch als Testreferenzjahr des DWD ([[Programm Dokumentation/Klimadaten|Programm-Dokumentation: Klimadaten]]). Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.
+Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter – weltweit über PVGIS, für Deutschland auch als Testreferenzjahr des DWD ([[Programm Dokumentation/Klimadaten|Programm-Dokumentation: Klimadaten]]). Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden. Neue und geänderte Sätze der mitgelieferten Kataloge gleicht ''Katalog aktualisieren…'' mit dem Katalogpaket der Auslieferung ab.
 
 == Lastgänge einlesen ==
 {{Anker|lastgaenge-einlesen|lastgang|messdaten}}
@@ -56,7 +56,7 @@ Für Wärmepumpen kann außerdem ein Quellentemperaturprofil als CSV-Datei mit S
 * [[Klimadaten festlegen]] – der zugehörige Schritt im Programmablauf
 * [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse und Schnittstellen
 * [[Datenexport]] – Ausgabe von Zeitreihen als CSV-Datei
-* [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] – Gebäude aus gbXML- und IFC-Dateien einlesen
+* [[Programm Dokumentation/Gebäudeimport|Gebäudeimport]] – Gebäude aus gbXML-, IFC- und Projektdateien (.sqproj) einlesen
 
 {{Navigation Programmfunktionen}}
 
