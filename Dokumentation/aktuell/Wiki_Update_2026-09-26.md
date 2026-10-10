@@ -107,7 +107,8 @@ Simulation (#554: Absatz zur Autarkie-Analyse mit Wärmediagramm, Monatsdeckung 
 #563: Simulationskonfiguration mit Komponenten oben und dem Block „Weitere Einstellungen“ darunter; Stand `363096aa` am 28.09.2026 mit #611 hochgeladen, spätere Änderungen ausstehend),
 Kühlung (#563: Schalter „Kühlung rechnen“ im Block „Weitere Einstellungen“ der Simulationskonfiguration; hochgeladen 28.09.2026 mit #611;
 #699: Satz zum Platzhalter des Kältebilds im Punkt „Bericht“, ausstehend;
-#843: Kühlsollwert über die Konditionierung — Spalte „Kühlen“, Kühlperiode, Kühlkalender —, Kühlsollwert der Stunde, Nachtauskühlung, ausstehend),
+#843: Kühlsollwert über die Konditionierung — Spalte „Kühlen“, Kühlperiode, Kühlkalender —, Kühlsollwert der Stunde, Nachtauskühlung, ausstehend;
+#879: Abschnitt „Teillast und Takten der Kältemaschine“, ausstehend),
 Simulationsergebnisse (#557: Absatz zum Solarthermie-Block mit Kollektorertrag brutto, genutzt und
 Überschuss; #562: Kollektortabelle je Feld brutto, genutzt, Überschuss, Schreibung „Überschuss“;
 #576: Punkt „Wärmelast Jahresganglinie“ mit den gestapelten Bedarfsarten und der Summe als Linie),
@@ -139,7 +140,7 @@ Teillast- und Brennwertkennlinie, Takten und Anfahrverlust, Betriebsbereitschaft
 Gerätekataloge (#854: Gruppe „Gerätegrenzen“ bei den Wärmepumpen, „Höchster Rücklauf (Abschaltgrenze)“ beim BHKW, ausstehend),
 Wärmepumpe, Grundlagen/Wärmepumpe, Berechnung/Wärmepumpe (hochgeladen 28.09.2026 mit #611; #843: Vorlaufwahl in der Verwaltung,
 Kennlinie in Stunden ohne Heizbedarf, Fundorte der Eingaben, ; #853/#854: Einbindung, Vorwärmbetrieb und Betriebsbereiche in der Konfiguration, Abschnitt „Gerätegrenzen“, ausstehend),
-Grundlagen/Kühlung (hochgeladen 28.09.2026 mit #611; #843: Kühlsollwert über die Konditionierung, ausstehend),
+Grundlagen/Kühlung (hochgeladen 28.09.2026 mit #611; #843: Kühlsollwert über die Konditionierung, ausstehend; #879: Abschnitt „Teillast und Takten der Kältemaschine“, ausstehend),
 Berechnung/Prozesswärme, Berechnung/Strombedarf (#575: Monatswerte und Stundenreihe mit dem
 Jahresverbrauch, der im jeweiligen Dialog steht, auch vor dem Speichern; hochgeladen 28.09.2026 mit #611),
 Projekttransfer (#580: ein Paket eines älteren Programmstands wird beim Import auf den aktuellen Stand gehoben,
@@ -180,6 +181,8 @@ Version noch beim Anwender zu bestätigen.
 - Seit 09.10.2026: Die Berichtsvorlagen kennen die Kennzahlen `wp.bivalenz.*` der Betriebsbereiche. (#855)
 - Seit 09.10.2026: Die Projektdialoge mit Katalogauswahl zeigen Projekt und Katalog gerahmt untereinander mit ziehbarer Trennlinie und einer Zeile für den gewählten Satz; nur die Listen rollen. (#861)
 - Seit 09.10.2026: Der Heizkessel-Dialog arbeitet auf der neuen Katalogauswahl: Bearbeiten je Bereich, Mehrfachbearbeitung mit „für alle gewählten setzen“ und „In die Datenbank übernehmen…“ als neuer Katalogsatz oder als Überschreiben des Ursprungs; Investitions- und Betriebskosten gehen als Vorlage des Katalogsatzes mit. (#873)
+- Seit 10.10.2026: Die Kältemaschine rechnet auf Wunsch ihr Teillastverhalten und das Takten bei kleiner Last; Katalogdialog und Anlagendialog führen die zugehörigen Felder. (#879)
+- Seit 10.10.2026: Der Reiter „Kältegang“ der Simulationsergebnisse zeigt die Kachel „Teillast und Takten der Kältemaschinen“ mit Taktstrom, Starts, Teillastanteil, mittlerem Lastgrad und Jahres-EER ohne Hilfsstrom, der Bericht eine Tafel dazu. (#879)
 
 ### Version 1.2.0.9 — nicht veröffentlicht
 

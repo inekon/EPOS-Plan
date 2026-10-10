@@ -169,9 +169,32 @@ namespace WindowsFormsApplication1
         /// <summary><c>true</c> = die Last lag unter der Mindestteillast; die Maschine taktet.</summary>
         public readonly bool Takt;
 
+        /// <summary>KM3: Mehrstrom des Taktens [kWh] — Teil von <see cref="VerdichterKwh"/>; 0 ohne <c>Teillast_Weg</c>.</summary>
+        public readonly double MehrstromKwh;
+
+        /// <summary>KM3: Starts der Taktstunde aller laufenden Maschinen; 0 ohne Takt oder ohne <c>Teillast_Weg</c>.</summary>
+        public readonly int Starts;
+
+        /// <summary>KM3: Lastgrad PLR je laufender Maschine; 0 ohne <c>Teillast_Weg</c> oder in freier Kühlung.</summary>
+        public readonly double Lastgrad;
+
+        /// <summary>KM3: <c>true</c> = der EER wurde mit dem Gütegrad über den Kennfeldrand fortgesetzt.</summary>
+        public readonly bool Extrapoliert;
+
+        /// <summary>KM3: laufende Maschinen der Stunde nach der Folgeschaltung; 0 ohne <c>Teillast_Weg</c>.</summary>
+        public readonly int Laufend;
+
         /// <summary>Legt das Stundenergebnis an.</summary>
         public KaeltemaschinenStunde(double kaelte, double verdichter, double hilfs, double kapazitaet,
                                      bool frei, bool rand, bool takt)
+            : this(kaelte, verdichter, hilfs, kapazitaet, frei, rand, takt, 0.0, 0, 0.0, false, 0)
+        {
+        }
+
+        /// <summary>KM3: Legt das Stundenergebnis samt Teillast, Takt und Randweg an.</summary>
+        public KaeltemaschinenStunde(double kaelte, double verdichter, double hilfs, double kapazitaet,
+                                     bool frei, bool rand, bool takt, double mehrstrom, int starts, double lastgrad,
+                                     bool extrapoliert, int laufend)
         {
             KaelteKwh = kaelte;
             VerdichterKwh = verdichter;
@@ -180,6 +203,11 @@ namespace WindowsFormsApplication1
             FreieKuehlung = frei;
             Randwert = rand;
             Takt = takt;
+            MehrstromKwh = mehrstrom;
+            Starts = starts;
+            Lastgrad = lastgrad;
+            Extrapoliert = extrapoliert;
+            Laufend = laufend;
         }
 
         /// <summary>Strom der Stunde [kWh] — Verdichter und Rückkühlung.</summary>
@@ -252,6 +280,22 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kennlinie der Projektkopie.</summary>
         public KaeltemaschinenKennlinie Kennlinie;
 
+        /// <summary>
+        /// KM3 (Fachkonzept Teillast und Takten 3, 5): die wirksame Teillast der Projektkopie
+        /// (<see cref="Kaeltemaschinenteillast.AusModell"/>); <c>null</c> oder Bestandsweg mit Randweg RANDWERT = der
+        /// heutige Weg Zeichen für Zeichen.
+        /// </summary>
+        public Kaeltemaschinenteillast Teillast;
+
+        /// <summary>KM3: <c>true</c> = <c>Teillast_Weg</c> ist gesetzt — Lastachse, Takten mit Mehrstrom und Folgeschaltung.</summary>
+        public bool TeillastWirksam => Teillast != null && !Teillast.Bestandsweg;
+
+        /// <summary>KM3: <c>true</c> = <c>Kennfeld_Randweg = GUETEGRAD</c> — der EER wird über den Kennfeldrand fortgesetzt.</summary>
+        public bool GuetegradWirksam => Teillast != null && KaeltemaschinenRand.IstGuetegrad(Teillast.Randweg);
+
+        /// <summary>KM3: rechnet die Maschine auf einem der neuen Wege (Teillast oder Randweg)? Ohne beide der heutige Weg.</summary>
+        public bool MitWeg => TeillastWirksam || GuetegradWirksam;
+
         /// <summary>Rückkühltemperatur je Stunde [°C].</summary>
         public double[] Rueckkuehltemperatur_stuendlich;
 
@@ -284,6 +328,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public KaeltemaschinenStunde Stunde(int h, double lastKwh, double kaltwasserC)
         {
+            // KM3: nur mit Teillast_Weg oder Randweg GUETEGRAD der neue Weg; freie Kühlung bleibt unverändert.
+            if (MitWeg && lastKwh > 0 && !FreieKuehlung(h, kaltwasserC)) return StundeMitWeg(h, lastKwh, kaltwasserC);
             if (Anzahl <= 1) return StundeEinzeln(h, lastKwh, kaltwasserC);
             KaeltemaschinenStunde s = StundeEinzeln(h, lastKwh / Anzahl, kaltwasserC);
             return new KaeltemaschinenStunde(s.KaelteKwh * Anzahl, s.VerdichterKwh * Anzahl, s.HilfsstromKwh * Anzahl,
@@ -318,6 +364,42 @@ namespace WindowsFormsApplication1
             double anteil = deckung / p.LeistungKw;
             return new KaeltemaschinenStunde(deckung, deckung / p.Eer, HilfsstromRueckkuehlungKw * anteil,
                                              p.LeistungKw, false, p.Randwert, takt);
+        }
+
+        /// <summary>
+        /// KM3 (Fachkonzept Teillast und Takten 5.1): eine Verdichterstunde der Anlagenzeile auf dem neuen Weg —
+        /// Kennfeldpunkt nach Randweg, Folgeschaltung (nur mit <c>Teillast_Weg</c>, sonst gleichmäßige Teilung auf alle),
+        /// Lastgrad, Strom nach Lastachse bzw. Takten mit Mehrstrom, Hilfsstrom der Rückkühlung nach Laufanteil.
+        /// </summary>
+        private KaeltemaschinenStunde StundeMitWeg(int h, double lastKwh, double kaltwasserC)
+        {
+            if (Kennlinie == null || Kennlinie.Leer) return default;
+            int anzahl = Math.Max(1, Anzahl);
+            double rk = Rueckkuehltemperatur_stuendlich != null && h >= 0 && h < Rueckkuehltemperatur_stuendlich.Length
+                ? Rueckkuehltemperatur_stuendlich[h] : KaelteFestwerte.RUECKKUEHLTEMPERATUR_WASSER_C;
+            KaeltemaschinenRandpunkt p = KaeltemaschinenRand.Auswerten(Kennlinie, rk, kaltwasserC, Teillast.Randweg);
+            if (!(p.LeistungKw > 0) || !(p.Eer > 0))
+                return new KaeltemaschinenStunde(0, 0, 0, 0, false, p.Randwert, false, 0.0, 0, 0.0, p.Extrapoliert, 0);
+
+            int laufend;
+            double lastJe;
+            if (TeillastWirksam)
+            {
+                (laufend, lastJe) = Kaeltemaschinenteillast.Folgeschaltung(lastKwh, p.LeistungKw, anzahl);
+            }
+            else
+            {
+                laufend = anzahl;
+                lastJe = lastKwh / anzahl;
+            }
+            KaeltemaschinenTeillaststunde t = Teillast.Stunde(lastJe, p.LeistungKw, p.Eer, NennleistungKw, Mindestteillast);
+            if (!(t.KaelteKwh > 0))
+                return new KaeltemaschinenStunde(0, 0, 0, p.LeistungKw * anzahl, false, p.Randwert, false, 0.0, 0, 0.0, p.Extrapoliert, 0);
+            double anteil = t.KaelteKwh / p.LeistungKw;
+            return new KaeltemaschinenStunde(t.KaelteKwh * laufend, t.VerdichterKwh * laufend,
+                                             HilfsstromRueckkuehlungKw * anteil * laufend, p.LeistungKw * anzahl,
+                                             false, p.Randwert, t.Takt, t.MehrstromKwh * laufend, t.Starts * laufend,
+                                             t.Lastgrad, p.Extrapoliert, laufend);
         }
 
         // =====================================================================
@@ -427,7 +509,9 @@ namespace WindowsFormsApplication1
                 HilfsstromRueckkuehlungKw = Math.Max(0.0, m.Hilfsstrom_Rueckkuehlung_kW ?? 0.0),
                 Kaltwassertemperatur = kw,
                 KaltwasserVorlaufMinC = untergrenze,
-                Kennlinie = k
+                Kennlinie = k,
+                // KM3: die wirksame Teillast der Projektkopie, einmal je Maschine gebildet.
+                Teillast = Kaeltemaschinenteillast.AusModell(m)
             };
         }
     }

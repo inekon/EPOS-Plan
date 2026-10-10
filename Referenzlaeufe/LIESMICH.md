@@ -699,7 +699,7 @@ spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-09_R48_Gemeinjahr`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-09_R49_KaeltemaschineTeillast`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
 stehen.**
 
@@ -728,13 +728,13 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-09_R48_Gemeinjahr/`** — **siebenundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062), **879 CSV**, **6 071 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 09.10.2026, Stand `0a395e3e4`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **209**, 93 958 144 Byte, LFS-SHA-256
-`7b6b2cc8144e581e60304156e7986f8bebc3186c54b9f091eb3a7a156f29ea40`, mit den Projekten 1053 bis 1062; Testdatenbank nach dem Einfrieren (Stand 207, `ec23b962…`) durch Schritte 208–209 gehoben, Ergebnisse unverändert (Gate REST7928); Nachträge der
+**`2026-10-09_R49_KaeltemaschineTeillast/`** — **achtundzwanzig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063), **911 CSV**, **6 336 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 10.10.2026, Stand `9c7fe32af`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **210**, 94 781 440 Byte, LFS-SHA-256
+`32af2d32d06b104ceb944e82dcb621ec0f481d58312e0d3b6d2b370c62dcf4fa`, mit den Projekten 1053 bis 1063; Nachträge der
 Schemaschritte unten — die Schritte legen nur leere Tabellen, leere Spalten und Saat an, die kein Rechenweg liest). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060) jeden Push und rechnet dieselben Projekte
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
@@ -759,54 +759,63 @@ und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojek
 von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
 `EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
 `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
-Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze. 1050, 1052, 1054,
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063. 1050, 1052, 1054,
 1055, 1056, 1057, 1059, 1061 und 1062 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
-siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
+achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Gemeinjahr ohne Jahresdatum (Anwenderentscheid E114 vom 09.10.2026, „Im Regelfall ist kein Jahresdatum
-> relevant“, Konzept Konditionierungsprofile 3.2 und 9.10) — vier Projekte ändern sich (1045, 1051, 1052, 1054), die
-> dreiundzwanzig übrigen sind byte-gleich; 806/879 CSV byte-gleich, Dateizahl (879 CSV) und Skalarzahl (6 071) bleiben.**
+> **Anlass: das Referenzprojekt 1063 „Referenzprojekt Kältemaschine Teillast“ (Teillast und Takten der Kältemaschine,
+> Etappe KM3‑E2, Schemaschritt 210) auf dem Rechenstand des Gemeinjahrs — die siebenundzwanzig Projekte der Basis R48
+> (Gemeinjahr) rechnen gegen R48 `GESAMT: PASS` und byte-gleich (879/879 CSV); hinzu kommen 1063 mit 32 CSV und
+> 265 Skalaren. Der Rechenweg der Teillast greift nur bei gesetztem `Teillast_Weg`; 1063 trägt keinen Kalender mit
+> Feiertagsregel und ist mit dem Gemeinjahr byte-gleich zu seiner ersten Einfrierung.**
 >
-> **Die Konvention:** Trägt ein Projekt keine Preisreihe mit Jahr — kein Referenzprojekt trägt eine —, liegen die
-> beweglichen Feiertage nach dem Wochentagsraster des Laufs (`Gemeinjahrkalender`): Ostersonntag ist der Sonntag des
-> Rasters am nächsten zum Jahrestag 98 (8. April; ein Gleichstand kann in einer Woche von sieben Tagen nicht eintreten),
-> Karfreitag −2, Ostermontag +1, Himmelfahrt +39, Pfingstmontag +50, Fronleichnam +60; Buß- und Bettag ist der letzte
-> Mittwoch des Rasters vor dem Jahrestag 327 (23. November). Feste Feiertage bleiben auf Tag und Monat. Mit Preisreihe
-> gelten die echten Daten ihres Jahres. Das Raster ist das, das der Leser ohnehin führt: im Gebäudelauf die
-> Wochenendmaske des Ortszeit-Kalenders (Rasterjahr der Solardaten, Vorgabe 2025: Jahrestag 1 = Mittwoch), im
-> Zapfkalender die Kennzeichen der Klimaregion (Testdatenbank: Jahrestag 1 = Donnerstag).
+> **1063** ist eine Kopie von 1055, an deren Kältemaschine die Teillastkurve 0,10/0,60/0,30 (gültig ab Lastgrad 0,2),
+> Mindestteillast 30 %, Takten mit dem Vorgabe-Taktverlustfaktor 0,9 (`Taktverlustfaktor_Cd` leer),
+> Verdichterregelung `STUFEN` und der Randweg `GUETEGRAD` wirken; gesät von
+> `Skripte/referenzprojekt_1063_kaeltemaschine_teillast.cs`. Die Testdatenbank ist aus der Fassung `7b6b2cc8…`
+> (Schemastand 209, Katalogkosten 208 und 209) mit `Werkzeuge/Testdatenbankschema` auf **210** gezogen (acht Eingabespalten an Katalog und
+> Projektkopie, fünf Kennzahlspalten am Ergebnis, die 34 Typkennfelder des Katalogs um Teillastkurve und
+> Verdichterregelung ergänzt, die Beispielgeräte und Projektkopien leer), danach 1063 gesät und `VACUUM`;
+> `integrity_check` ok; der Neubau auf dem zusammengeführten Stand ergibt byte-gleich dieselbe Datei; gegen diese Fassung
+> rechnen alle achtundzwanzig Projekte gegen R49 `GESAMT: PASS` und byte-gleich
+> (911/911 CSV). 1063 tritt in die CI-Auswahl (kein anderes CI-Projekt rechnet eine Kältemaschine). Die
+> Taktstunden der Kältemaschine stehen in einem Zähler: `Kaelte[0].Taktstunden` und `Takt.Kaelte[0].Taktstunden`
+> zeigen beide 218.
 >
-> **Was wandert** (bisher die Daten des Vorgabejahrs 2025: Karfreitag 108, Ostermontag 111, Himmelfahrt 149,
-> Pfingstmontag 160):
+> | Kennzahl | 1055 | 1063 |
+> |---|---|---|
+> | Kälte der Maschine (MWh) | 4,1526 | 4,1526 |
+> | Kältestrom samt Hilfsstrom (MWh) | 1,24647 | 1,24511 |
+> | Hilfsstrom (MWh) | 0,17961 | 0,17955 |
+> | Jahres-EER (Bedarf / Strom) | 3,2496 | 3,2531 |
+> | Taktstunden (unter der Mindestteillast 30 %) | — | 218 |
+> | Starts | — | 717 |
+> | Taktstrom (Mehrstrom, kWh) | — | 17,27 |
+> | Teillaststunden (Lastgrad < 0,95) | — | 202 |
+> | mittlerer Lastgrad (kältegewichtet) | — | 0,702 |
+> | Stunden mit Gütegrad-Extrapolation | — | 1 |
+> | Kältespeicher Ladung / Entladung (MWh) | 2,478 / 2,376 | 2,478 / 2,376 |
 >
-> - **Gebäude 1051, 1052, 1054** (Mittwochsraster, Ostern 96): Karfreitag 108 → 94, Ostermontag 111 → 97, Himmelfahrt
->   149 → 135, Pfingstmontag 160 → 146; Buß- und Bettag bliebe 323. Die Kalender mit Feiertagsregeln: der gemeinsame
->   Kalender von Gebäude 10657 (1051, Referenzbau Konditionierung), der Heizsollwert der Zone 2 von 10658 (1052) und der
->   Zone 5 von 10660 (1054). Die Feiertage fallen in kältere Tage: Jahresheizwärme 1051 24,328 → 24,281 MWh
->   (−0,19 %), 1052 53,996 → 53,958 MWh (−0,07 %), 1054 47,576 → 47,557 MWh (−0,04 %); BHKW-Strom 1052 18 150,6 →
->   18 124,3 kWh, 1054 13 832,9 → 13 818,0 kWh; Reststrom 1051 34,721 → 34,692 MWh. Geändert 23/36 (1051), 16/25 (1052),
->   18/28 (1054) CSV.
-> - **1045** (Zapfkalender, Donnerstagsraster, Ostern 95, Gebäude 10651 ohne Feiertagsland): Karfreitag 108 → 93,
->   Ostermontag 111 → 96, Himmelfahrt 149 → 134, Pfingstmontag 160 → 145 tragen die Sonntagsmenge; die Jahresmenge des
->   Brauchwassers bleibt. Wärmepumpe 61 172,05 → 61 177,72 kWh, Kessel 20 930,66 → 20 924,99 kWh, Reststrom 28,405 →
->   28,409 MWh, PV-Einspeisung 0,791 → 0,792 MWh (Anker `StromViertelstundenTests` nachgezogen); 16/32 CSV geändert.
-> - **Unberührt** sind 1056 und 1058 bis 1062: Ihre Gebäude tragen keinen Kalender mit Feiertagsregel; die übrigen
->   Projekte rechnen weder Konditionierungskalender mit Feiertagen noch den Zapfprofilgenerator.
+> Der Strom von 1063 liegt um 1,35 kWh (0,11 %) unter 1055: Die Kurve hebt den EER im Teillastbereich (g(0,5) = 1,05,
+> mittlerer Lastgrad 0,70) und spart mehr, als der Taktverlust (17,3 kWh) kostet. Die Rückkühlung des Trockenkühlers
+> liegt nur in einer Kühlstunde unter dem Kennfeld (25 °C), daher eine extrapolierte Stunde.
 >
-> Zwei Läufe sind byte-gleich (879/879 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 835/879 CSV
-> byte-gleich. **Die nächste Basis wird R49** — die Sitzung Gebäudesimulation plant sie für ihre Kältemaschinen-Welle
-> (Projekt 1063).
+> Zwei Läufe sind byte-gleich (911/911 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 867/911 CSV
+> byte-gleich (1063 ganz byte-gleich).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062 \
->   --ziel Referenzlaeufe/2026-10-09_R48_Gemeinjahr
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063 \
+>   --ziel Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
 > ```
 >
-> Die Regel steht im [Konzept Konditionierungsprofile](../Dokumentation/aktuell/Konzept_Konditionierungsprofile_EPOS-Plan.md),
-> Abschnitte 3.2 und 9.10 (E114).
+> Die Regeln stehen im [Fachkonzept Teillast und Takten der Kältemaschine](../Dokumentation/ueberholt/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md),
+> Abschnitte 5.3 und 8.2.
+
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
 > Pufferauslegung), Basis unverändert.** `WaermepumpeSperrprofilSchema` (177 = `KonditionierungNutzungSchema.SCHRITT + 1`):
@@ -1141,13 +1150,14 @@ siebenundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > bleibt** — keine gesäte Spalte eines Referenzprojekts ändert ihren Wert, keine Einfrierregel ist berührt, kein Leser der
 > Simulation fragt die neuen Spalten.
 
-### Die Vorgängerbasis R47 (Zapffeiertage)
+### Die Vorgängerbasis R48 (Gemeinjahr)
 
 Siebenundzwanzig Projekte, 879 CSV, 6 071 Skalare, auf Linux eingefroren gegen die Testdatenbank `ec23b962…`
-(Schemastand 207); mit R48 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Feiertage im Zapfkalender, E112) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R48 ist
-die Konvention des Gemeinjahrs (E114); 1045, 1051, 1052 und 1054 ändern sich, die dreiundzwanzig übrigen Projekte sind
-byte-gleich.
+(Schemastand 207, danach ohne Ergebnisänderung auf 209 `7b6b2cc8…` gehoben); mit R49 aus dem Arbeitsbaum gefallen,
+Protokoll und Anlass (Gemeinjahr ohne Jahresdatum) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R49 ist
+das Referenzprojekt 1063 (Teillast und Takten der Kältemaschine) auf dem Rechenstand des Gemeinjahrs; die
+siebenundzwanzig Projekte sind byte-gleich.
 
 ## Was hier liegt
 
@@ -1664,7 +1674,8 @@ Vergleich an diesen drei Stellen fallen 1008, 1018, 1023, 1024, 1039 und 1042 du
 genau die Kanten, die der Rand geschlossen hat. Ohne den Schalter rechnet die Naht bitgleich `Math.*`
 (`EPOS.Kern.Tests/PlattformrundungTests`); ein Lauf ohne Schalter ist mit R31 487/487 CSV byte-gleich.
 
-Stand mit R48 (siebenundzwanzig Projekte, Gemeinjahr-Konvention): GESAMT PASS, 835/879 CSV byte-gleich; der Stand mit
+Stand mit R49 (achtundzwanzig Projekte, Referenzprojekt 1063 auf dem Stand Gemeinjahr): GESAMT PASS, 867/911 CSV
+byte-gleich, 1063 ganz byte-gleich; mit R48 (Gemeinjahr-Konvention) GESAMT PASS, 835/879 CSV byte-gleich; der Stand mit
 R47 (Feiertage im Zapfkalender) war GESAMT PASS, 835/879 CSV byte-gleich, 1045 ganz byte-gleich; für R46 war der gestörte Lauf nicht gemessen; der Stand mit R45
 (Übergabegrenze, Referenzprojekt 1060) war GESAMT PASS, 835/879 CSV
 byte-gleich, `aggregate.csv` bei 26 Projekten byte-gleich (abweichend allein 1057 innerhalb der Toleranz), 1060 ganz

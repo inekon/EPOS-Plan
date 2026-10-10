@@ -1181,6 +1181,25 @@ public sealed class SimulationKiSicht
     }
 
     /// <summary>
+    /// KM3‑E3‑b (Fachkonzept Teillast und Takten 5.4): Teillast und Takten je Kältemaschine mit Teillastweg —
+    /// „Anlage: Spaltenname=Wert; …“, Maschinen durch „ | “ getrennt; leer ohne solche Maschine.
+    /// </summary>
+    public string KmTeillast
+    {
+        get
+        {
+            IReadOnlyList<KaeltemaschineTeillastKachel>? l = _ergebnis()?.Bedarf?.Kaelte?.Teillast;
+            if (l is null || l.Count == 0) return "";
+            static string W(double? x) => x is double d ? d.ToString("0.###", CultureInfo.InvariantCulture) : "";
+            return string.Join(" | ", l.Select(k => k.Anlage + ": " + string.Join("; ", new[]
+            {
+                "Taktstrom_kWh=" + W(k.TaktstromKwh), "Starts=" + W(k.Starts), "Teillastanteil_Prozent=" + W(k.TeillastanteilProzent),
+                "Lastgrad_Mittel=" + W(k.Lastgrad), "EER_ohne_Hilfsstrom=" + W(k.EerOhneHilfsstrom)
+            })));
+        }
+    }
+
+    /// <summary>
     /// Die Speicherkapazität [kWh] der Autarkierechnung auf dem Blatt „Ergebnis"
     /// (Welle KI‑F6).
     /// </summary>

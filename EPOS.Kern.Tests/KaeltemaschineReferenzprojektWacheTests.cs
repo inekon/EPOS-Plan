@@ -182,8 +182,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1L, Zahl("SELECT Kuehlbetrieb FROM Tab_WP WHERE ID = 1017033"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt = ?", VORLAGE));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = ?", VORLAGE));
-            // 1055 und seine Übernahme in 1059 (AK3-K-K5a) sind die einzigen Projekte der Testdatenbank mit einer Kältemaschine.
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Type = ?", TYP_KAELTEMASCHINE));
+            // 1055, seine Übernahme in 1059 (AK3-K-K5a) und seine Kopie 1063 (KM3) sind die einzigen Projekte der Testdatenbank mit einer Kältemaschine.
+            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Type = ?", TYP_KAELTEMASCHINE));
         }
 
         // =====================================================================
@@ -222,7 +222,7 @@ namespace EPOS.Kern.Tests
             _aus.WriteLine("1055: Bedarf {0:F1} kWh, Deckung {1:F1} kWh, Rest {2:F3} kWh, Kälte Maschine {3:F1} kWh, Strom {4:F1} kWh, Netzbezug {5:F1} kWh, " +
                            "freie Kühlung {6} h, Takt {7} h, Speicher Ladung {8:F1} kWh, Entladung {9:F1} kWh",
                            kaskade.BedarfGesamtKwh, kaskade.DeckungGesamtKwh, kaskade.RestGesamtKwh, e.KaelteGesamtKwh, e.StromGesamtKwh,
-                           e.NetzbezugKwh, e.StundenFreieKuehlung, e.StundenTakt, kaskade.SpeicherladungKwh, kaskade.SpeicherentladungKwh);
+                           e.NetzbezugKwh, e.StundenFreieKuehlung, e.Taktstunden, kaskade.SpeicherladungKwh, kaskade.SpeicherentladungKwh);
         }
     }
 }

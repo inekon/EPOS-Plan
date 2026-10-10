@@ -88,6 +88,21 @@ namespace WindowsFormsApplication1
         /// <summary>Kurve des Leistungsverhältnisses EIRFT.</summary>
         public KaeltemaschinenKurve EirFT { get; set; }
 
+        /// <summary>
+        /// Form der Teillastkurve EIRFPLR der Quelle (<c>quad</c>, <c>cubic</c>); <c>null</c> = keine lesbare Kurve
+        /// (KM3, Fachkonzept Teillast und Takten 3.2 und 4.3).
+        /// </summary>
+        public string TeillastForm { get; set; }
+
+        /// <summary>
+        /// Die Beiwerte der Teillastkurve in der Folge der Quelle (<c>coeff1</c> …): drei bei <c>quad</c> —
+        /// <c>coeff4</c> und folgende einer quadratischen Kurve werden nicht gelesen —, vier bei <c>cubic</c>.
+        /// </summary>
+        public double[] TeillastBeiwerte { get; set; }
+
+        /// <summary>Untere Gültigkeitsgrenze <c>x_min</c> der Teillastkurve [—]; <c>null</c> = keine Angabe.</summary>
+        public double? TeillastXMin { get; set; }
+
         /// <summary>Ist der Satz luftgekühlt?</summary>
         public bool IstLuft => string.Equals(Kondensator, "air", StringComparison.OrdinalIgnoreCase);
     }
@@ -224,14 +239,17 @@ namespace WindowsFormsApplication1
         /// Ein Satz mit wassergekühltem Kurvensatz und <see cref="KaeltemaschineSchema.RUECKKUEHLART_LUFT"/> ist
         /// nicht zulässig (die Achse passte nicht) — dann gilt die Vorgabe des Satzes.
         /// </summary>
+        /// <remarks>Teillast und Takten (KM3) übernimmt <see cref="KaeltemaschineTeillastkurve.Uebernehmen"/>; ihre
+        /// Hinweise landen in <paramref name="hinweise"/>.</remarks>
         public static KaeltemaschineModel Modell(KaeltemaschinenKurvensatz satz, string bezeichner, string rueckkuehlart = null,
-                                                 double? klasseKw = null, string typ = null, string beschreibung = null)
+                                                 double? klasseKw = null, string typ = null, string beschreibung = null,
+                                                 IList<string> hinweise = null)
         {
             string art = rueckkuehlart ?? VorgabeRueckkuehlart(satz);
             if (satz.IstLuft != (art == KaeltemaschineSchema.RUECKKUEHLART_LUFT)) art = VorgabeRueckkuehlart(satz);
             (double qNenn, double eerNenn) = Nennpunkt(satz);
             double faktor = klasseKw.HasValue && qNenn > 0 ? klasseKw.Value / qNenn : 1.0;
-            return new KaeltemaschineModel
+            var m = new KaeltemaschineModel
             {
                 Bezeichner = bezeichner ?? "",
                 Firma = null,
@@ -244,6 +262,8 @@ namespace WindowsFormsApplication1
                 Mindestteillast_Prozent = Mindestteillast(satz),
                 Kennlinie = Raster(satz, art, faktor)
             };
+            KaeltemaschineTeillastkurve.Uebernehmen(m, satz, hinweise);
+            return m;
         }
 
         /// <summary>Der deutsche Anzeigename einer Verdichterart der Quelle (für neutrale Bezeichner).</summary>

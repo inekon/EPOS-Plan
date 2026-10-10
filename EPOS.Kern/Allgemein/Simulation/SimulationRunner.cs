@@ -765,7 +765,7 @@ namespace WindowsFormsApplication1
                                 Hilfsstrom_MWh = e.HilfsstromGesamtKwh / 1000.0,
                                 FreieKuehlung_MWh = e.KaelteFreiKwh / 1000.0,
                                 FreieKuehlung_Stunden = e.StundenFreieKuehlung,
-                                Taktstunden = e.StundenTakt,
+                                Taktstunden = e.Taktstunden,
                                 Unterdeckung_MWh = e.OffenAnLeistungsgrenzeKwh / 1000.0,
                                 Stunden_Leistungsgrenze = e.StundenLeistungsgrenze,
                                 // KU3-4d (Schritt 184): die Abrechnung des Kaeltestroms wie an der Modulzeile der WP.
@@ -773,6 +773,12 @@ namespace WindowsFormsApplication1
                                 Kuehl_CarrierId = e.Kuehltraeger > 0 ? (int?)e.Kuehltraeger : null,
                                 Kuehl_EigenerZaehler = e.Kuehltraeger > 0 ? (bool?)e.EigenerZaehler : null,
                                 Stromspitze_kW = Kaeltestromabrechnung.Stundenspitze(e.Strom_stuendlich),
+                                // KM3 (Schritt 210): nur mit Teillast_Weg bzw. Randweg GUETEGRAD belegt, sonst NULL.
+                                Taktstrom_MWh = e.Maschine.TeillastWirksam ? (double?)(e.TaktstromKwh / 1000.0) : null,
+                                Starts = e.Maschine.TeillastWirksam ? (int?)e.Starts : null,
+                                Teillaststunden = e.Maschine.TeillastWirksam ? (int?)e.StundenTeillast : null,
+                                Lastgrad_Mittel = e.Maschine.TeillastWirksam ? (double?)e.LastgradMittel : null,
+                                Stunden_Extrapoliert = e.Maschine.GuetegradWirksam ? (int?)e.StundenExtrapoliert : null,
                             });
             }
 

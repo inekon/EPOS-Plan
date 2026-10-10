@@ -945,7 +945,28 @@ namespace WindowsFormsApplication1
                   "TechnikPlanwertCtrl.BasenFuellen (ERZEUGER_KAELTEMASCHINE: Geraetepreis x Anzahl der Anlagenzeile)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "KaeltemaschineStammCtrl.Speichern (Auslieferungssatz)"),
-            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).ToList();
+            }.Concat(Katalogspalten(t)).Concat(Kostenvorlage(t)).Concat(KaeltemaschineTeillast(t)).ToList();
+        }
+
+        /// <summary>
+        /// <b>Teillast und Takten der Kältemaschine</b> (<see cref="KaeltemaschineTeillastSchema"/>, Schritt 210; Welle
+        /// KM3): Die acht Spalten stehen im Katalogdialog (Gruppe „Teillast und Takten") und gehen über
+        /// <c>Kaeltemaschinenteillast.AusModell</c> in die Stunde der Kältemaschine (Lastachse, Takten, Kennfeldrand).
+        /// </summary>
+        private static IReadOnlyList<ParameterEintrag> KaeltemaschineTeillast(Func<string, string> t)
+        {
+            const string WEG = "Kaeltemaschinenteillast.AusModell; Kaeltemaschine.Stunde (Lastachse, Takten, Kennfeldrand)";
+            return new[]
+            {
+                E(KaeltemaschineTeillastSchema.SPALTE_TEILLAST_WEG, t("KM_LBL_TEILLAST_WEG"), "", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_A, t("KM_LBL_TEILLASTKURVE_A"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_B, t("KM_LBL_TEILLASTKURVE_B"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_C, t("KM_LBL_TEILLASTKURVE_C"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_KURVE_LASTGRAD_MIN, t("KM_LBL_TEILLASTKURVE_LASTGRAD_MIN"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_CD, t("KM_LBL_TAKTVERLUST_CD"), "-", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_VERDICHTERREGELUNG, t("KM_LBL_VERDICHTERREGELUNG"), "", SIM, WEG),
+                E(KaeltemaschineTeillastSchema.SPALTE_RANDWEG, t("KM_LBL_KENNFELD_RANDWEG"), "", SIM, WEG),
+            };
         }
 
         private static IReadOnlyList<ParameterEintrag> Wechselrichter(Func<string, string> t)

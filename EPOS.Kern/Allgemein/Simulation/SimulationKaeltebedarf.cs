@@ -749,6 +749,18 @@ namespace WindowsFormsApplication1
                     s.Add(new KeyValuePair<string, double>(p + "HilfsstromMwh", e.HilfsstromGesamtKwh / 1000.0));
                     s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungStunden", e.StundenFreieKuehlung));
                     s.Add(new KeyValuePair<string, double>(p + "FreieKuehlungMwh", e.KaelteFreiKwh / 1000.0));
+                    // KM3 (Fachkonzept Teillast und Takten 5.3, 8.1): nur eine Maschine mit Teillast_Weg bzw. Randweg
+                    // GUETEGRAD trägt die neuen Schlüssel; ohne Weg bleibt die Datei Zeichen für Zeichen wie zuvor.
+                    if (e.Maschine.TeillastWirksam)
+                    {
+                        s.Add(new KeyValuePair<string, double>(p + "TaktstromMwh", e.TaktstromKwh / 1000.0));
+                        s.Add(new KeyValuePair<string, double>(p + "Starts", e.Starts));
+                        s.Add(new KeyValuePair<string, double>(p + "Taktstunden", e.Taktstunden));
+                        s.Add(new KeyValuePair<string, double>(p + "Teillaststunden", e.StundenTeillast));
+                        s.Add(new KeyValuePair<string, double>(p + "LastgradMittel", e.LastgradMittel));
+                    }
+                    if (e.Maschine.GuetegradWirksam)
+                        s.Add(new KeyValuePair<string, double>(p + "StundenExtrapoliert", e.StundenExtrapoliert));
                 }
                 // KU3-6: die Wärmepumpe mit wirksamer freier Kühlung über die Wärmequelle - eigene
                 // Schlüssel; ohne sie bleibt die Datei Zeichen für Zeichen wie zuvor.

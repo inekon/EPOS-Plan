@@ -995,7 +995,11 @@ namespace WindowsFormsApplication1
         /// Danach, mit KATALOGKOSTEN INVESTITION (KA‑E‑14), steht das Ziel auf
         /// <see cref="KatalogkostenInvestitionSchema.SCHRITT"/>: <c>ID_KostenVorlageInvestition</c> an den acht
         /// Katalogen mit Kosten. <b>Ergebnisneutral:</b> Die Spalte entsteht leer.
-        public const int Zielversion = KatalogkostenInvestitionSchema.SCHRITT;
+        /// Danach, mit TEILLAST UND TAKTEN DER KÄLTEMASCHINE (KM3), steht das Ziel auf <see cref="KaeltemaschineTeillastSchema.SCHRITT"/>:
+        /// acht Eingabespalten an Katalog und Projektkopie der Kältemaschine, fünf Kennzahlspalten an ihrem Ergebnis
+        /// (<see cref="KaeltemaschineTeillastSchema"/>). <b>Ergebnisneutral:</b> Alle Spalten entstehen leer, jede Maschine
+        /// rechnet auf dem heutigen Weg.
+        public const int Zielversion = KaeltemaschineTeillastSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

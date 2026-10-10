@@ -37,6 +37,28 @@
 
 </div>
 
+@* KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Kachelzeile „Teillast und Takten“ - je Kaeltemaschine mit
+   Teillastweg Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom. Ohne solche
+   Maschine steht keine Kachelzeile; der Reiter bleibt wie zuvor. *@
+@if (Teillast is { Count: > 0 } teillast)
+{
+    <div class="epos-simerg-spalten" data-kachel="km-teillast">
+        @foreach (KaeltemaschineTeillastKachel k in teillast)
+        {
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile" data-anlage="@k.Anlage">
+                <Gruppenkopf Titel="@($"{Resource.SIM_KACHEL_KM_TEILLAST} – {k.Anlage}")" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIM_LBL_KM_TAKTSTROM, Zahl(k.TaktstromKwh, 2), "kWh")
+                    @Wertzeile(Resource.SIM_LBL_KM_STARTS, Zahl(k.Starts, 0), "")
+                    @Wertzeile(Resource.SIM_LBL_KM_TEILLASTANTEIL, Zahl(k.TeillastanteilProzent, 1), "%")
+                    @Wertzeile(Resource.SIM_LBL_KM_LASTGRAD, Zahl(k.Lastgrad, 2), "")
+                    @Wertzeile(Resource.SIM_LBL_KM_JAZ_VERDICHTER, Zahl(k.EerOhneHilfsstrom, 2), "")
+                </dl>
+            </section>
+        }
+    </div>
+}
+
 @code {
     /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
     [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
@@ -46,6 +68,19 @@
     /// <see cref="Ganglinienregister"/>; es merkt „sortiert" ueber den Blattwechsel.
     /// </summary>
     [Parameter] public Ganglinienstand? Gedaechtnis { get; set; }
+
+    /// <summary>KM3-E3-b: die Kachelzeile je Kaeltemaschine mit Teillastweg; leer oder <c>null</c> = keine.</summary>
+    [Parameter] public IReadOnlyList<KaeltemaschineTeillastKachel>? Teillast { get; set; }
+
+    private static string Zahl(double? wert, int stellen)
+        => wert is double w && !double.IsNaN(w) && !double.IsInfinity(w)
+            ? w.ToString("N" + stellen, System.Globalization.CultureInfo.CurrentCulture) : "–";
+
+    private static RenderFragment Wertzeile(string text, string wert, string einheit) => @<text>
+        <dt>@text</dt>
+        <dd>@wert</dd>
+        <dd class="epos-simerg-einheit">@einheit</dd>
+    </text>;
 
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;

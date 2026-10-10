@@ -50430,5 +50430,320 @@ chart</value>
   <data name="KATRUECK_TITEL_LOESCHEN" xml:space="preserve">
     <value>Catalogue record deleted</value>
   </data>
+  <data name="SIMENG_KAELTE_KM_KURVE_VERWORFEN" xml:space="preserve">
+    <value>Chiller "{0}": the part-load curve is incomplete or not plausible — calculated linearly with cycling loss.</value>
+  </data>
+  <data name="SIMENG_KAELTE_KM_EXTRAPOLIERT" xml:space="preserve">
+    <value>Chiller "{0}": in {1} hours the EER was continued beyond the edge of the performance map using the efficiency grade.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTWEG_UNGUELTIG" xml:space="preserve">
+    <value>The part-load method must be “linear”, “curve” or empty.</value>
+  </data>
+  <data name="KM_MSG_VERDICHTERREGELUNG_UNGUELTIG" xml:space="preserve">
+    <value>The compressor control must be “on/off”, “staged”, “variable speed” or empty.</value>
+  </data>
+  <data name="KM_MSG_RANDWEG_UNGUELTIG" xml:space="preserve">
+    <value>The method at the edges of the performance map must be “edge value”, “efficiency grade” or empty.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTANTEIL_UNGUELTIG" xml:space="preserve">
+    <value>The minimum load ratio of the part-load curve and the cycling loss factor C_d must be between 0 and 1.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_BEIWERTE" xml:space="preserve">
+    <value>The part-load curve needs all three coefficients: a between −1 and 2, b and c between −2 and 3.</value>
+  </data>
+  <data name="KM_MSG_TEILLASTKURVE_UNPLAUSIBEL" xml:space="preserve">
+    <value>The part-load curve is not plausible: at full load a + b + c must be between 0.9 and 1.1, and the EER ratio must stay between 0.3 and 2.0 within the valid load range.</value>
+  </data>
+  <data name="KM_IMP_MSG_TEILLAST_HINWEISE" xml:space="preserve">
+    <value>{0} note(s) on the part-load curve: {1}</value>
+  </data>
+  <data name="KM_MSG_NENN_EER_ABWEICHUNG" xml:space="preserve">
+    <value>Note: The rated EER {0} deviates by {2} from the EER of the performance map at the rating point ({1}). Please check the rated EER and the map.</value>
+  </data>
+  <data name="KM_LBL_TEILLAST_WEG" xml:space="preserve">
+    <value>Part-load calculation</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_A" xml:space="preserve">
+    <value>Part-load curve a</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_B" xml:space="preserve">
+    <value>Part-load curve b</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_C" xml:space="preserve">
+    <value>Part-load curve c</value>
+  </data>
+  <data name="KM_LBL_TEILLASTKURVE_LASTGRAD_MIN" xml:space="preserve">
+    <value>Curve valid from load ratio</value>
+  </data>
+  <data name="KM_LBL_TAKTVERLUST_CD" xml:space="preserve">
+    <value>Cycling loss factor C_d</value>
+  </data>
+  <data name="KM_LBL_VERDICHTERREGELUNG" xml:space="preserve">
+    <value>Compressor control</value>
+  </data>
+  <data name="KM_LBL_KENNFELD_RANDWEG" xml:space="preserve">
+    <value>Map edge</value>
+  </data>
+  <data name="KM_TT_HINWEIS_BESTAND" xml:space="preserve">
+    <value>Without a part-load method the machine calculates as before: linear and without cycling loss.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_LINEAR" xml:space="preserve">
+    <value>Linear: the EER stays the same at part load; below the minimum part load the machine cycles with cycling loss.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_VORGABEKURVE" xml:space="preserve">
+    <value>Without coefficients the default curve of the compressor control applies.</value>
+  </data>
+  <data name="KM_TT_HINWEIS_VERWORFEN" xml:space="preserve">
+    <value>The curve is incomplete or not plausible — the calculation is linear with cycling loss.</value>
+  </data>
+  <data name="KM_TT_SKALIERT_NAME" xml:space="preserve">
+    <value>{0} (scaled)</value>
+  </data>
+  <data name="KM_TT_SKALIERT_BESCHREIBUNG" xml:space="preserve">
+    <value>Scaled from the type map "{0}" to {1} kW and EER {2} at the rating point.</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELD_UNBEKANNT" xml:space="preserve">
+    <value>The type map "{0}" is unknown.</value>
+  </data>
+  <data name="KM_MSG_SKALIEREN_UNGUELTIG" xml:space="preserve">
+    <value>Scaling needs a type map, a rated cooling capacity above 0 kW and a rated EER above 0.</value>
+  </data>
+  <data name="KM_MSG_AUSKUNFT_KEIN_KENNFELD" xml:space="preserve">
+    <value>The calculation needs a map with EER and cooling capacity at the rating point.</value>
+  </data>
+  <data name="KM_MSG_AUSKUNFT_EINGABE" xml:space="preserve">
+    <value>Each point needs an outdoor temperature and a load ratio above 0 % up to 100 %; at most four points.</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_BESTAND" xml:space="preserve">
+    <value>as before</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_LINEAR" xml:space="preserve">
+    <value>linear</value>
+  </data>
+  <data name="KM_TEILLAST_WEG_KURVE" xml:space="preserve">
+    <value>curve</value>
+  </data>
+  <data name="KM_REGELUNG_KEINE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="KM_REGELUNG_EIN_AUS" xml:space="preserve">
+    <value>on/off</value>
+  </data>
+  <data name="KM_REGELUNG_STUFEN" xml:space="preserve">
+    <value>staged</value>
+  </data>
+  <data name="KM_REGELUNG_DREHZAHL" xml:space="preserve">
+    <value>variable speed</value>
+  </data>
+  <data name="KM_RANDWEG_RANDWERT" xml:space="preserve">
+    <value>edge value</value>
+  </data>
+  <data name="KM_RANDWEG_GUETEGRAD" xml:space="preserve">
+    <value>efficiency grade</value>
+  </data>
+  <data name="KM_PH_VORGABE" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="KM_PH_CD_VORGABE" xml:space="preserve">
+    <value>0.9 (default)</value>
+  </data>
+  <data name="KM_PH_RANDWEG_VORGABE" xml:space="preserve">
+    <value>edge value (default)</value>
+  </data>
+  <data name="KM_TT_LESEZEILE" xml:space="preserve">
+    <value>g(0.25) = {0} · g(0.5) = {1} · g(0.75) = {2}</value>
+  </data>
+  <data name="KM_TT_VERWEIS_MINDESTTEILLAST" xml:space="preserve">
+    <value>The minimum part load is in the key data; below it the machine cycles. g is the ratio of the EER at part load to the EER at full load.</value>
+  </data>
+  <data name="KM_BILD_TEILLAST" xml:space="preserve">
+    <value>EER ratio over load ratio</value>
+  </data>
+  <data name="KM_BILD_ACHSE_LASTGRAD" xml:space="preserve">
+    <value>Load ratio [%]</value>
+  </data>
+  <data name="KM_BILD_ACHSE_G" xml:space="preserve">
+    <value>EER ratio g</value>
+  </data>
+  <data name="KM_BTN_KURVE_TYPKENNFELD" xml:space="preserve">
+    <value>Curve from type map…</value>
+  </data>
+  <data name="KM_BTN_SKALIEREN" xml:space="preserve">
+    <value>Scale type map to data sheet…</value>
+  </data>
+  <data name="KM_BTN_TEILLASTPUNKTE" xml:space="preserve">
+    <value>Check part-load points…</value>
+  </data>
+  <data name="KM_LBL_TYPKENNFELD" xml:space="preserve">
+    <value>Type map</value>
+  </data>
+  <data name="KM_TYPKENNFELD_WAEHLEN" xml:space="preserve">
+    <value>please select</value>
+  </data>
+  <data name="KM_MSG_TYPKENNFELD_WAEHLEN" xml:space="preserve">
+    <value>Please select a type map.</value>
+  </data>
+  <data name="KM_MSG_KURVE_UEBERNOMMEN" xml:space="preserve">
+    <value>Part-load curve taken from "{0}".</value>
+  </data>
+  <data name="KM_SKAL_HINWEIS" xml:space="preserve">
+    <value>A separate record is created: map and rated values are scaled so that the rating point (chilled water 7 °C; air 35 °C, cooling water 30 °C) matches the data sheet.</value>
+  </data>
+  <data name="KM_AUSK_HINWEIS" xml:space="preserve">
+    <value>The check calculates from the own map at chilled water 7 °C; the load ratio refers to the rated cooling capacity. Nothing is saved.</value>
+  </data>
+  <data name="KM_AUSK_PUNKT" xml:space="preserve">
+    <value>Point {0}</value>
+  </data>
+  <data name="KM_AUSK_AUSSEN" xml:space="preserve">
+    <value>Outdoor temperature</value>
+  </data>
+  <data name="KM_AUSK_LASTGRAD" xml:space="preserve">
+    <value>Load ratio</value>
+  </data>
+  <data name="KM_AUSK_RECHNEN" xml:space="preserve">
+    <value>Calculate</value>
+  </data>
+  <data name="KM_AUSK_SP_RUECKKUEHL" xml:space="preserve">
+    <value>Heat rejection</value>
+  </data>
+  <data name="KM_AUSK_SP_KAELTE" xml:space="preserve">
+    <value>Cooling capacity</value>
+  </data>
+  <data name="KM_AUSK_SP_LASTGRAD_MASCHINE" xml:space="preserve">
+    <value>Machine load ratio</value>
+  </data>
+  <data name="KM_AUSK_SP_LEISTUNGSAUFNAHME" xml:space="preserve">
+    <value>Power input</value>
+  </data>
+  <data name="KM_AUSK_TAKT" xml:space="preserve">
+    <value>cycling</value>
+  </data>
+  <data name="KM_AUSK_RAND" xml:space="preserve">
+    <value>map edge</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLAST_WEG_ERL" xml:space="preserve">
+    <value>Part-load method of the machine: empty = as before (linear, without cycling loss), linear or curve.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_A_ERL" xml:space="preserve">
+    <value>Coefficient a of the part-load curve a + b·x + c·x² (power input over load ratio); all three or none.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_B_ERL" xml:space="preserve">
+    <value>Coefficient b of the part-load curve; all three or none.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_C_ERL" xml:space="preserve">
+    <value>Coefficient c of the part-load curve; all three or none.</value>
+  </data>
+  <data name="KI_DLG_KM_TEILLASTKURVE_LASTGRAD_MIN_ERL" xml:space="preserve">
+    <value>Load ratio (0 to 1) from which the curve applies; empty = minimum part load.</value>
+  </data>
+  <data name="KI_DLG_KM_TAKTVERLUST_CD_ERL" xml:space="preserve">
+    <value>Cycling loss factor C_d (0 to 1) below the minimum part load; empty = 0.9.</value>
+  </data>
+  <data name="KI_DLG_KM_VERDICHTERREGELUNG_ERL" xml:space="preserve">
+    <value>Compressor control; selects the default curve when no coefficients are maintained.</value>
+  </data>
+  <data name="KI_DLG_KM_KENNFELD_RANDWEG_ERL" xml:space="preserve">
+    <value>Method outside the map: edge value (default) or efficiency grade.</value>
+  </data>
+  <data name="KM_TT_WEG_VORGABEKURVE" xml:space="preserve">
+    <value>curve (default curve)</value>
+  </data>
+  <data name="KM_TT_WEG_VERWORFEN" xml:space="preserve">
+    <value>linear (curve rejected)</value>
+  </data>
+  <data name="KMA_HINWEIS_FOLGESCHALTUNG" xml:space="preserve">
+    <value>Sequencing of {0} machines: each hour the load goes to as few machines as needed; the part-load calculation applies per running machine.</value>
+  </data>
+  <data name="SIM_KACHEL_KM_TEILLAST" xml:space="preserve">
+    <value>Part load and cycling of the chillers</value>
+  </data>
+  <data name="BER_TAFEL_KM_TEILLAST" xml:space="preserve">
+    <value>Part load and cycling of the chillers</value>
+  </data>
+  <data name="BV_GRUND_KEINE_KM_TEILLAST" xml:space="preserve">
+    <value>no chiller with part-load calculation (part-load calculation “as before”)</value>
+  </data>
+  <data name="VF_STAND__TABELLE__KM_TEILLAST" xml:space="preserve">
+    <value>Table “Part load and cycling of the chillers” of the current state: per chiller with part-load calculation the method, compressor control, C_d, cycling hours, starts, cycling electricity, part-load hours and share, mean part-load ratio, extrapolated hours, seasonal EER without auxiliary power; only in the block {{#je stand}}.</value>
+  </data>
+  <data name="BER_KMT_WEG" xml:space="preserve">
+    <value>Part-load calculation (origin)</value>
+  </data>
+  <data name="BER_KMT_REGELUNG" xml:space="preserve">
+    <value>Compressor control</value>
+  </data>
+  <data name="BER_KMT_CD" xml:space="preserve">
+    <value>Cycling loss factor C_d</value>
+  </data>
+  <data name="BER_KMT_TAKTSTUNDEN" xml:space="preserve">
+    <value>Cycling hours below the minimum part load [h/a]</value>
+  </data>
+  <data name="BER_KMT_STARTS" xml:space="preserve">
+    <value>Starts [1/a]</value>
+  </data>
+  <data name="BER_KMT_TAKTSTROM" xml:space="preserve">
+    <value>Cycling electricity [kWh/a]</value>
+  </data>
+  <data name="BER_KMT_TEILLASTSTUNDEN" xml:space="preserve">
+    <value>Part-load hours [h/a]</value>
+  </data>
+  <data name="BER_KMT_TEILLASTANTEIL" xml:space="preserve">
+    <value>Part-load share of compressor hours [%]</value>
+  </data>
+  <data name="BER_KMT_LASTGRAD" xml:space="preserve">
+    <value>Mean part-load ratio, cooling-weighted [–]</value>
+  </data>
+  <data name="BER_KMT_EXTRAPOLIERT" xml:space="preserve">
+    <value>Hours beyond the map edge (efficiency grade) [h/a]</value>
+  </data>
+  <data name="BER_KMT_JAZ" xml:space="preserve">
+    <value>Seasonal EER without auxiliary power [–]</value>
+  </data>
+  <data name="SIM_LBL_KM_TAKTSTROM" xml:space="preserve">
+    <value>Cycling electricity</value>
+  </data>
+  <data name="SIM_LBL_KM_STARTS" xml:space="preserve">
+    <value>Starts</value>
+  </data>
+  <data name="SIM_LBL_KM_TEILLASTANTEIL" xml:space="preserve">
+    <value>Part-load share</value>
+  </data>
+  <data name="SIM_LBL_KM_LASTGRAD" xml:space="preserve">
+    <value>Mean part-load ratio</value>
+  </data>
+  <data name="SIM_LBL_KM_JAZ_VERDICHTER" xml:space="preserve">
+    <value>Seasonal EER without auxiliary power</value>
+  </data>
+  <data name="KI_DLG_KMA_TEILLAST_WEG_NAME" xml:space="preserve">
+    <value>Part-load calculation (read-only)</value>
+  </data>
+  <data name="KI_DLG_KMA_TEILLAST_WEG_ERL" xml:space="preserve">
+    <value>Part-load calculation of the project copy including the origin of the curve (as before, linear, curve, default curve, rejected) — read-only, maintained in the “Chillers” management.</value>
+  </data>
+  <data name="KI_DLG_KMA_REGELUNG_NAME" xml:space="preserve">
+    <value>Compressor control (read-only)</value>
+  </data>
+  <data name="KI_DLG_KMA_REGELUNG_ERL" xml:space="preserve">
+    <value>Compressor control of the project copy — read-only.</value>
+  </data>
+  <data name="KI_DLG_KMA_CD_NAME" xml:space="preserve">
+    <value>Cycling loss factor C_d (read-only)</value>
+  </data>
+  <data name="KI_DLG_KMA_CD_ERL" xml:space="preserve">
+    <value>Cycling loss factor C_d of the project copy; without a maintained value “(default)” is shown — read-only.</value>
+  </data>
+  <data name="KI_DLG_KMA_RANDWEG_NAME" xml:space="preserve">
+    <value>Map edge (read-only)</value>
+  </data>
+  <data name="KI_DLG_KMA_RANDWEG_ERL" xml:space="preserve">
+    <value>Treatment of the map beyond its edge (edge value or efficiency grade) — read-only.</value>
+  </data>
+  <data name="KI_DLG_SIM_KM_TEILLAST_NAME" xml:space="preserve">
+    <value>Part load and cycling of the chillers</value>
+  </data>
+  <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
+    <value>Per chiller with part-load calculation the cycling electricity, starts, part-load share, mean part-load ratio and seasonal EER without auxiliary power as “column name=value”; empty without such a chiller.</value>
+  </data>
 </root>
 

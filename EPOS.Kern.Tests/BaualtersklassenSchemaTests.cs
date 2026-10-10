@@ -202,7 +202,8 @@ namespace EPOS.Kern.Tests
             // E6: dazu die Gebäudekopie des Referenzprojekts AK3-K 1059 (Vorlage 1058, AK3-K-K5a).
             // E8: dazu die Gebäudekopien der Referenzprojekte der Kühlkurve 1061 und 1062 (Vorlage 1058, KK5a).
             // E9: dazu die Gebäudekopie des Referenzprojekts Übergabegrenze 1060 (Vorlage 1056, UB-E2-d).
-            Assert.Equal(new[] { "B19", "E9", "G5", "H6", "I2", "J1" }, kopien);
+            // E10: dazu die Gebäudekopie des Referenzprojekts Kältemaschine Teillast 1063 (Vorlage 1055, KM3).
+            Assert.Equal(new[] { "B19", "E10", "G5", "H6", "I2", "J1" }, kopien);
         }
 
         /// <summary>

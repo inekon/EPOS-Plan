@@ -3,9 +3,9 @@
 **Stufe 2 der Kälteanlagen-Empfehlung** · **Stand 09.10.2026 — Fassung 1, Fachkonzept zur Abnahme durch den
 Anwender; Fragen KM3‑Q1 bis KM3‑Q11 offen (Abschnitt 9)** · Codestand `adb2c94db` (Zweig `ios_migration_september`,
 Schemastand 205, Referenzbasis `2026-10-09_R46_Geraetegrenzen`) · Vorarbeit:
-Recherche Kälteanlagen vom 08.10.2026 (dieser Ordner, Zeile im [Index](../../LIESMICH.md)) (Abschnitte „Die
+Recherche Kälteanlagen vom 08.10.2026 (dieser Ordner, Zeile im [Index](../LIESMICH.md)) (Abschnitte „Die
 Teillast ist die eigentliche Lücke“, „Typische Werte für die Plausibilisierung“, „Stufe 2“) und
-[Umsetzung KM1](2026-10-09_Umsetzung_KM1_Typkennfelder.md) („Was Stufe 2 noch braucht“).
+[Umsetzung KM1](../aktuell/Kälteanlagen/2026-10-09_Umsetzung_KM1_Typkennfelder.md) („Was Stufe 2 noch braucht“).
 **Umsetzung:** [`Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md`](Umsetzungskonzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md).
 
 Ziel: Die Kältemaschine rechnet ihre Leistungsaufnahme heute mit dem EER des Kennfelds, gleich wie weit sie unter
@@ -77,7 +77,7 @@ Maschine ist `Verdichter · (1 + Kuehl_Hilfsstromanteil) + Hilfsstrom`. Zähler 
 `KennzahlenKatalog` (darunter `kaelte.km.jaz` und `kaelte.km.takt`); Bild `KaelteProduktionBild`.
 
 **2.7 Das Hausmuster „Teillast und Takten“** (Welle M4, Schritt `ErzeugerTeillastSchema`;
-[Entscheidungsvorlage Modellgrenzen](../Entscheidungsvorlage_Modellgrenzen_Rechenwege.md), Punkt WP1):
+[Entscheidungsvorlage Modellgrenzen](../aktuell/Entscheidungsvorlage_Modellgrenzen_Rechenwege.md), Punkt WP1):
 `Waermepumpentakt` rechnet zustandslos — Lastverhältnis `CR = Q / P_min`, Teillastfaktor
 `f = CR / (C_d · CR + (1 − C_d))` für 0 < CR < 1, Mehrstrom `P · (1/f − 1)`, Starts über
 `Kesselkennlinie.StartsImTakt` mit `MINDESTLAUFZEIT_MIN` (10 min), Vorgabe `VORGABE_CD` = 0,9, wirksamer Wert
@@ -149,8 +149,10 @@ Zeilen, sonst nur linear), x_u = kleinster Lastgrad der Zeilen. (c) Eingabe im K
 (d) Vorgabekurve je Verdichterregelung, wenn `Teillast_Weg = KURVE` ohne Beiwerte gewählt ist (KM3‑Q3).
 
 **Plausibilität (Prüfregel, Vorgabe).** Eine Kurve gilt, wenn `E(x) > 0` auf [x_u, 1], `0,9 ≤ EIRFPLR(1) ≤ 1,1` und
-`0,5 ≤ g(x) ≤ 2,0` auf [x_u, 1]; sonst lehnt `KaeltemaschineStammCtrl.Pruefen` sie benannt ab. Im Lauf rechnet eine
-ungültige Kurve (etwa aus einem Altbestand) linear und meldet das einmal je Maschine im Protokoll.
+`0,3 ≤ g(x) ≤ 2,0` auf [max(x_u, 0,1), 1]; sonst lehnt `KaeltemaschineStammCtrl.Pruefen` sie benannt ab. Die untere
+Grenze 0,3 fängt Unsinn ab, lässt aber die starke Teillastabwertung von Turbo- und Schraubenverdichtern mit fester
+Drehzahl (g ≈ 0,35 bis 0,5) als reale Kurve zu. Dieselbe Grenze gilt für Import, Katalogprüfung und Vorgabekurven. Im
+Lauf rechnet eine ungültige Kurve (etwa aus einem Altbestand) linear und meldet das einmal je Maschine im Protokoll.
 
 **Zahlenbeispiel (nachgerechnet).** EER_KF = 4,0, Q_av = 20 kW, Kurve a = 0,10, b = 0,60, c = 0,30 (EIRFPLR(1) = 1,0),
 x_u = 0,2. Last 10 kWh, PLR 0,5: E(0,5) = 0,475; P_el = 20/4 · 0,475 = **2,375 kWh**, EER 4,21 (linear: 2,500 kWh).
@@ -347,9 +349,9 @@ Vorlage + 1. KI-Sicht des Katalog- und des Anlagendialogs mit den Spaltennamen a
 
 ## 6 Schema
 
-- **Ein Schritt** für Eingabe- und Ergebnisspalten: nächste freie Nummer, **derzeit 208** (205 `UebergabegrenzeSchema`
-  gebaut, 206 PVG und 207 K2 angemeldet). Die Nummer wird **vor dem Bau** in der Zeile „Schemaschritt angemeldet“
-  der [Statusdatei](../Status_iOS_Migration.md) angemeldet; die Klasse `KaeltemaschineTeillastSchema` hängt über
+- **Ein Schritt** für Eingabe- und Ergebnisspalten: nächste freie Nummer, **gebaut als 210** (hängt an 209
+  `KatalogkostenInvestitionSchema`; 208 und 209 sind mit KA1 gebaut). Die Nummer wird **vor dem Bau** in der Zeile „Schemaschritt angemeldet“
+  der [Statusdatei](../aktuell/Status_iOS_Migration.md) angemeldet; die Klasse `KaeltemaschineTeillastSchema` hängt über
   `SCHRITT = <Vorgängerklasse>.SCHRITT + 1` an der Klasse, die zur Bauzeit die höchste Nummer trägt.
 - Spalten nach 4.1 und 5.3, alle nullbar, Texte mit `CHECK … IN (…)`, Bereiche mit `CHECK … BETWEEN`; Tabellen
   bleiben `STRICT`; kein Boolean neu (sonst `CHECK (… IN (0,1))`).
@@ -421,7 +423,7 @@ Wache `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` (Muster
 `KaeltemaschineReferenzprojektWacheTests`): jede gesäte Zelle, Kopie von 1055, im Lauf Taktstunden > 0,
 `Taktstrom_MWh` > 0, `Stunden_Extrapoliert` > 0, Jahres-EER ≠ 1055. **CI-Auswahl:** Vorschlag aufnehmen (KM3‑Q10),
 weil kein CI-Projekt eine Kältemaschine rechnet. Neue Basis **R47** im Schritt des Referenzprojekts, begründet in
-[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+[`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md).
 
 **8.3 Einfrierregel (Entwurf für `CLAUDE.md`, nicht dort eingetragen):**
 
@@ -466,14 +468,32 @@ an der Wärmepumpe.
 
 ## 11 Quellen
 
-- Recherche Kälteanlagen vom 08.10.2026 (dieser Ordner, Zeile im [Index](../../LIESMICH.md)) — EIR-Modell,
+- Recherche Kälteanlagen vom 08.10.2026 (dieser Ordner, Zeile im [Index](../LIESMICH.md)) — EIR-Modell,
   Teillastlücke, Plausibilisierungswerte, Stufe 2, offene Klärungen (Normkauf EN 14825:2022 für Taktformeln und
   Bin-Verfahren beim Anwender; im Konzept nur genannt).
-- [Umsetzung KM1](2026-10-09_Umsetzung_KM1_Typkennfelder.md) — Formate, Rasterregel, Bezug +5 K, Nennpunkt,
+- [Umsetzung KM1](../aktuell/Kälteanlagen/2026-10-09_Umsetzung_KM1_Typkennfelder.md) — Formate, Rasterregel, Bezug +5 K, Nennpunkt,
   Typkennfelder, Schritt 203.
-- [Entscheidungsvorlage Modellgrenzen](../Entscheidungsvorlage_Modellgrenzen_Rechenwege.md) — WP1 Taktverlust.
-- [Konzept Kühlung Gebäudesimulation](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — Kältemaschine,
+- [Entscheidungsvorlage Modellgrenzen](../aktuell/Entscheidungsvorlage_Modellgrenzen_Rechenwege.md) — WP1 Taktverlust.
+- [Konzept Kühlung Gebäudesimulation](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — Kältemaschine,
   Kältespeicher, Kühlkurve.
-- Vorlage für Aufbau und Entscheide: [Konzept Übergabegrenze und Bivalenz](../../ueberholt/Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
+- Vorlage für Aufbau und Entscheide: [Konzept Übergabegrenze und Bivalenz](Konzept_Uebergabegrenze_Bivalenz_EPOS-Plan.md).
 - Normen und Verordnungen, nur genannt: EN 14825, EN 15316-4-2, Verordnung (EU) 2016/2281, DIN/TS 18599-7.
-- Offene Kurvendaten: PNNL Copper (BSD-2), Lizenzhinweis [`Quellen/LIZENZ_Kaeltemaschinen_Typkennfelder.txt`](../../../Quellen/LIZENZ_Kaeltemaschinen_Typkennfelder.txt).
+- Offene Kurvendaten: PNNL Copper (BSD-2), Lizenzhinweis [`Quellen/LIZENZ_Kaeltemaschinen_Typkennfelder.txt`](../../Quellen/LIZENZ_Kaeltemaschinen_Typkennfelder.txt).
+
+
+## Umsetzung — wie gebaut
+
+Gebaut in den Etappen KM3‑E1 bis KM3‑E4 unter dem Entscheid E116 (Anwender, 09.10.2026), Statuszeilen #876 bis #879.
+
+| Etappe | Gebaut | Protokoll |
+|---|---|---|
+| KM3‑E1 | Schemaschritt 210 `KaeltemaschineTeillastSchema` (Teillast- und Taktspalten im Katalog und in der Projektkopie, Ergebnisspalten), Import der Teillastkurve aus Copper und CSV, Vorgabekurven je Verdichterregelung (#876) | [`2026-10-09_KM3-E1_Schema_Katalog_Import.md`](Protokolle/Gebaeudesimulation/2026-10-09_KM3-E1_Schema_Katalog_Import.md) |
+| KM3‑E2 | Rechenweg (Teillastkurve, Takten an der Mindestteillast, Kennfeldrand, Folgeschaltung), Referenzprojekt 1063, Basis R49 (#877) | [`2026-10-09_KM3-E2_Rechenweg_1063_R49.md`](Protokolle/Gebaeudesimulation/2026-10-09_KM3-E2_Rechenweg_1063_R49.md) |
+| KM3‑E3 | Katalogdialog (Gruppe „Teillast und Takten“), Lesewerte im Anlagendialog, Kachel „Teillast und Takten der Kältemaschinen“, Kennzahlen `kaelte.km.*`, Tafel „Teillast und Takten der Kältemaschinen“ (`stand.tabelle.km_teillast`), Vorlagen-Katalogfassung 18 (#878) | [`2026-10-09_KM3-E3_Dialoge_Bericht_Vorlagen.md`](Protokolle/Gebaeudesimulation/2026-10-09_KM3-E3_Dialoge_Bericht_Vorlagen.md) |
+| KM3‑E4 | Wiki-Quellen „Kühlung“ und „Grundlagen Kühlung“, Logbuch-Entwurf, diese Konzepte nach `ueberholt/` (#879) | [`2026-10-10_KM3-E4_Wiki_Logbuch_Konzepte.md`](Protokolle/Gebaeudesimulation/2026-10-10_KM3-E4_Wiki_Logbuch_Konzepte.md) |
+
+**Abweichungen vom Konzept:** Schemaschritt 210 statt 208; Basis R49 statt R47; Plausibilitätsgrenze des Gütemaßes g ≥ 0,3 statt 0,5; ein gemeinsamer Taktstunden-Zähler; der Taktstrom der Kachel kommt im Kern in kWh; Vorlagen-Katalogfassung 18.
+
+**Nachweis:** Referenzlauf 28 Projekte gegen R49, `GESAMT: PASS`, alle Projektdateien byte-gleich. Offen: Wiki-Upload (Freigabe und Versionsnummer beim Anwender).
+
+**Sachverhalt Takten:** Das Takten löst die Mindestteillast aus (Nennleistung × Mindestteillast; Mehrstrom mit C_d, Startzähler). Die Grenze „Kurve gültig ab Lastgrad“ (`Teillastkurve_Lastgrad_Min`) begrenzt nur die Gültigkeit der Teillastkurve und ihre Plausibilitätsprüfung; leer gilt die Mindestteillast.

@@ -1011,6 +1011,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KatalogkostenInvestitionSchema.SCHRITT (KA1): ID_KostenVorlageInvestition an den Katalogen mit
                 // Kosten, reines DDL. Wiederholbar.
                 KatalogkostenInvestitionSchema.Ausfuehren(null);
+                // Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): Teillast und Takten an Katalog, Projektkopie und Ergebnis
+                // der Kaeltemaschine, leer; Ergaenzung der Typkennfelder. Wiederholbar.
+                KaeltemaschineTeillastSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

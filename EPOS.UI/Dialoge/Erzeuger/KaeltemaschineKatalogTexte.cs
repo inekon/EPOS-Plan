@@ -53,6 +53,58 @@ public sealed class KaeltemaschineKatalogTexte
     public string PunktEntfernen { get; set; } = Resource.KM_KENNLINIE_ENTFERNEN;
     public string KennlinieAnzahl { get; set; } = Resource.KM_KENNLINIE_ANZAHL;
 
+    // ------------------------------------------------------------ Teillast und Takten (KM3-E3-a)
+    /// <summary>Die Gruppe „Teillast und Takten" — derselbe Text wie bei BHKW und Heizkessel.</summary>
+    public string GruppeTeillast { get; set; } = Resource.BHKWK_GRP_TEILLAST;
+    public string LabelTeillastWeg { get; set; } = Resource.KM_LBL_TEILLAST_WEG;
+    public string LabelVerdichterregelung { get; set; } = Resource.KM_LBL_VERDICHTERREGELUNG;
+    public string LabelKurveA { get; set; } = Resource.KM_LBL_TEILLASTKURVE_A;
+    public string LabelKurveB { get; set; } = Resource.KM_LBL_TEILLASTKURVE_B;
+    public string LabelKurveC { get; set; } = Resource.KM_LBL_TEILLASTKURVE_C;
+    public string LabelKurveLastgradMin { get; set; } = Resource.KM_LBL_TEILLASTKURVE_LASTGRAD_MIN;
+    public string LabelCd { get; set; } = Resource.KM_LBL_TAKTVERLUST_CD;
+    public string LabelRandweg { get; set; } = Resource.KM_LBL_KENNFELD_RANDWEG;
+    /// <summary>Platzhalter der Teillastrechnung: leer = wie bisher.</summary>
+    public string TeillastWegBestand { get; set; } = Resource.KM_TEILLAST_WEG_BESTAND;
+    /// <summary>Die Teillastwege in der Folge von <c>KaeltemaschineTeillastSchema.TEILLAST_WEGE</c>.</summary>
+    public IReadOnlyList<string> TeillastWege { get; set; } = new[] { Resource.KM_TEILLAST_WEG_LINEAR, Resource.KM_TEILLAST_WEG_KURVE };
+    public string RegelungKeine { get; set; } = Resource.KM_REGELUNG_KEINE;
+    /// <summary>Die Verdichterregelungen in der Folge von <c>KaeltemaschineTeillastSchema.VERDICHTERREGELUNGEN</c>.</summary>
+    public IReadOnlyList<string> Verdichterregelungen { get; set; } = new[]
+    {
+        Resource.KM_REGELUNG_EIN_AUS, Resource.KM_REGELUNG_STUFEN, Resource.KM_REGELUNG_DREHZAHL
+    };
+    /// <summary>Die Wege am Kennfeldrand in der Folge von <c>KaeltemaschineTeillastSchema.RANDWEGE</c>.</summary>
+    public IReadOnlyList<string> Randwege { get; set; } = new[] { Resource.KM_RANDWEG_RANDWERT, Resource.KM_RANDWEG_GUETEGRAD };
+    public string PlatzhalterVorgabe { get; set; } = Resource.KM_PH_VORGABE;
+    public string PlatzhalterCd { get; set; } = Resource.KM_PH_CD_VORGABE;
+    public string PlatzhalterRandweg { get; set; } = Resource.KM_PH_RANDWEG_VORGABE;
+    /// <summary>„g(0,25) = {0} · g(0,5) = {1} · g(0,75) = {2}".</summary>
+    public string Lesezeile { get; set; } = Resource.KM_TT_LESEZEILE;
+    public string VerweisMindestteillast { get; set; } = Resource.KM_TT_VERWEIS_MINDESTTEILLAST;
+    public string BildTeillast { get; set; } = Resource.KM_BILD_TEILLAST;
+    public string KnopfKurveTypkennfeld { get; set; } = Resource.KM_BTN_KURVE_TYPKENNFELD;
+    public string KnopfSkalieren { get; set; } = Resource.KM_BTN_SKALIEREN;
+    public string KnopfTeillastpunkte { get; set; } = Resource.KM_BTN_TEILLASTPUNKTE;
+    public string LabelTypkennfeld { get; set; } = Resource.KM_LBL_TYPKENNFELD;
+    public string TypkennfeldWaehlen { get; set; } = Resource.KM_TYPKENNFELD_WAEHLEN;
+    public string MeldungTypkennfeldWaehlen { get; set; } = Resource.KM_MSG_TYPKENNFELD_WAEHLEN;
+    /// <summary>„Teillastkurve aus „{0}" übernommen."</summary>
+    public string KurveUebernommen { get; set; } = Resource.KM_MSG_KURVE_UEBERNOMMEN;
+    public string SkalierenHinweis { get; set; } = Resource.KM_SKAL_HINWEIS;
+    public string AuskunftHinweis { get; set; } = Resource.KM_AUSK_HINWEIS;
+    /// <summary>„Punkt {0}".</summary>
+    public string AuskunftPunkt { get; set; } = Resource.KM_AUSK_PUNKT;
+    public string AuskunftAussen { get; set; } = Resource.KM_AUSK_AUSSEN;
+    public string AuskunftLastgrad { get; set; } = Resource.KM_AUSK_LASTGRAD;
+    public string AuskunftRechnen { get; set; } = Resource.KM_AUSK_RECHNEN;
+    public string AuskunftRueckkuehl { get; set; } = Resource.KM_AUSK_SP_RUECKKUEHL;
+    public string AuskunftKaelte { get; set; } = Resource.KM_AUSK_SP_KAELTE;
+    public string AuskunftLastgradMaschine { get; set; } = Resource.KM_AUSK_SP_LASTGRAD_MASCHINE;
+    public string AuskunftLeistungsaufnahme { get; set; } = Resource.KM_AUSK_SP_LEISTUNGSAUFNAHME;
+    public string AuskunftTakt { get; set; } = Resource.KM_AUSK_TAKT;
+    public string AuskunftRand { get; set; } = Resource.KM_AUSK_RAND;
+
     // ------------------------------------------------------------ Einheiten (Symbole)
     public string EinheitKw { get; set; } = "kW";
     public string EinheitProzent { get; set; } = "%";

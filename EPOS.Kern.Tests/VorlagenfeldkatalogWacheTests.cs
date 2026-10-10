@@ -96,8 +96,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(17, Vorlagenfeldkatalog.KATALOGFASSUNG);
-            Assert.Equal(17, Vorlagenfeldkatalog.KatalogfassungWord);
+            Assert.Equal(18, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(18, Vorlagenfeldkatalog.KatalogfassungWord);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {

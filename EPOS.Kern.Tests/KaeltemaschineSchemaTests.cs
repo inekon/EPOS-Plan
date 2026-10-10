@@ -126,17 +126,18 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             Assert.True(KaeltemaschineSchema.Vollstaendig());
-            Assert.Equal(19, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count); // 17 + ID_KostenVorlage (208), + ID_KostenVorlageInvestition (209)
-            Assert.Equal(17, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
+            // Je + acht Spalten von Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 210).
+            Assert.Equal(27, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_STAMM).Count); // 17 + ID_KostenVorlage (208), + ID_KostenVorlageInvestition (209), + 8 (210)
+            Assert.Equal(25, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_PROJEKT).Count); // + Kuehl_Vorlauf, Kuehl_Hilfsstromanteil (183)
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN_STAMM).Count);
             Assert.Equal(7, DataRepository.SpaltenVonTabelle(KaeltemaschineSchema.TAB_KENNDATEN).Count);
             // Drei Beispielgeräte (182) und die eingebauten Typkennfelder mit je 24 Kennlinienpunkten (203, KM2).
             Assert.Equal(3L + TYPKENNFELDER, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));
             Assert.Equal(18L + 24L * TYPKENNFELDER, Zahl("SELECT COUNT(*) FROM Tab_Kenndaten_Kaeltemaschine_STAMM WHERE ReadOnly = 1"));
             Assert.Equal(3L + TYPKENNFELDER, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Katalog_Schluessel LIKE 'KM:%' AND length(Katalog_Pruefsumme) = 64"));
-            // Projektkopien tragen allein die Referenzprojekte 1055 (KU3-4b) und 1059 (AK3-K-K5a, Ak3KReferenzprojektWacheTests).
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt NOT IN (1055, 1059)"));
-            Assert.Equal(2L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine"));
+            // Projektkopien tragen allein die Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a, Ak3KReferenzprojektWacheTests) und 1063 (KM3).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt NOT IN (1055, 1059, 1063)"));
+            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine"));
             foreach (string t in new[] { KaeltemaschineSchema.TAB_STAMM, KaeltemaschineSchema.TAB_PROJEKT,
                                          KaeltemaschineSchema.TAB_KENNDATEN_STAMM, KaeltemaschineSchema.TAB_KENNDATEN })
                 Assert.Contains("STRICT", Convert.ToString(DataRepository.ExecuteScalar(

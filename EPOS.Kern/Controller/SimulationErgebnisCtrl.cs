@@ -1589,6 +1589,26 @@ namespace WindowsFormsApplication1
 
             /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [MWh/a] (Welle M4, WP1).</summary>
             public double TaktstromMwh;
+
+            /// <summary>KM3‑E3‑b: derselbe Mehrstrom in kWh/a — der Kachelwert der Kältemaschine, im Kern umgerechnet (Regel W8‑O‑5c).</summary>
+            public double TaktstromKwh;
+
+            /// <summary>
+            /// KM3‑E3‑b (Fachkonzept Teillast und Takten 5.3, 7.2): die Werte einer Kältemaschine mit Teillastweg im Satz
+            /// des Ergebnisses — dieselben Felder wie <c>Tab_ErgebnisKaeltemaschine</c>; <c>null</c> ohne Weg (dann keine
+            /// Kachelzeile, keine Kopfzeile im Export).
+            /// </summary>
+            public ErgebnisKaeltemaschineModel Teillast;
+
+            /// <summary>KM3‑E3‑b: die Verdichterstunden des Laufs — Nenner des Teillastanteils; <c>null</c> ohne Weg.</summary>
+            public int? Verdichterstunden;
+
+            /// <summary>
+            /// KM3‑E3‑b: die Kennzahlen „Teillast und Takten“ unter ihren Schlüsseln (Export, KI-Sicht), je mit dem
+            /// Bezeichner davor („Anlage.Schlüssel“); leer ohne Weg.
+            /// </summary>
+            public IReadOnlyList<KeyValuePair<string, double>> TeillastSchluesselwerte()
+                => KaeltemaschineTeillastKennzahlen.Schluesselwerte(Teillast, Verdichterstunden);
         }
 
         /// <summary>
@@ -1642,7 +1662,23 @@ namespace WindowsFormsApplication1
                         Kuehltraeger = z.Kuehltraeger,
                         EigenerZaehler = z.NebenDerStufenrechnung,
                         Starts = z.Starts,
-                        TaktstromMwh = z.TaktstromKwh / 1000.0
+                        TaktstromMwh = z.TaktstromKwh / 1000.0,
+                        TaktstromKwh = z.TaktstromKwh,
+                        Teillast = z.Maschine != null && z.Maschine.TeillastWirksam ? new ErgebnisKaeltemaschineModel
+                        {
+                            Bezeichner = z.Bezeichner ?? "",
+                            Kaelteproduktion_MWh = z.KaelteGesamtKwh / 1000.0,
+                            Stromverbrauch_MWh = z.StromGesamtKwh / 1000.0,
+                            Hilfsstrom_MWh = z.HilfsstromGesamtKwh / 1000.0,
+                            FreieKuehlung_MWh = z.KaelteFreiKwh / 1000.0,
+                            Taktstunden = z.Taktstunden,
+                            Taktstrom_MWh = z.TaktstromKwh / 1000.0,
+                            Starts = z.Starts,
+                            Teillaststunden = z.StundenTeillast,
+                            Lastgrad_Mittel = z.LastgradMittel,
+                            Stunden_Extrapoliert = z.Maschine.GuetegradWirksam ? (int?)z.StundenExtrapoliert : null,
+                        } : null,
+                        Verdichterstunden = z.Maschine != null && z.Maschine.TeillastWirksam ? (int?)z.StundenVerdichter : null
                     });
                 }
                 e.KaeltestromNetzbezugMwh = netz / 1000.0;

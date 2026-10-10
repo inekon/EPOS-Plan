@@ -802,6 +802,8 @@
         internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
         internal static string SimWpBereicheName => MyResource.Resource.KI_DLG_SIM_WP_BEREICHE_NAME;
         internal static string SimWpBereicheErl => MyResource.Resource.KI_DLG_SIM_WP_BEREICHE_ERL;
+        internal static string SimKmTeillastName => MyResource.Resource.KI_DLG_SIM_KM_TEILLAST_NAME;
+        internal static string SimKmTeillastErl => MyResource.Resource.KI_DLG_SIM_KM_TEILLAST_ERL;
         internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
         internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
 
@@ -1458,6 +1460,15 @@
         internal static string KmaTraegerErl => MyResource.Resource.KI_DLG_KMA_TRAEGER_ERL;
         internal static string KmaZaehlerName => MyResource.Resource.KI_DLG_KMA_ZAEHLER_NAME;
         internal static string KmaZaehlerErl => MyResource.Resource.KI_DLG_KMA_ZAEHLER_ERL;
+        // KM3-E3-b: die Lesewerte der Teillastrechnung im Anlagendialog.
+        internal static string KmaTeillastWegName => MyResource.Resource.KI_DLG_KMA_TEILLAST_WEG_NAME;
+        internal static string KmaTeillastWegErl => MyResource.Resource.KI_DLG_KMA_TEILLAST_WEG_ERL;
+        internal static string KmaRegelungName => MyResource.Resource.KI_DLG_KMA_REGELUNG_NAME;
+        internal static string KmaRegelungErl => MyResource.Resource.KI_DLG_KMA_REGELUNG_ERL;
+        internal static string KmaCdName => MyResource.Resource.KI_DLG_KMA_CD_NAME;
+        internal static string KmaCdErl => MyResource.Resource.KI_DLG_KMA_CD_ERL;
+        internal static string KmaRandwegName => MyResource.Resource.KI_DLG_KMA_RANDWEG_NAME;
+        internal static string KmaRandwegErl => MyResource.Resource.KI_DLG_KMA_RANDWEG_ERL;
         internal static string KmGeraetErl => MyResource.Resource.KI_DLG_KM_GERAET_ERL;
         internal static string KmBezeichnerName => MyResource.Resource.KM_LBL_BEZEICHNER;
         internal static string KmBezeichnerErl => MyResource.Resource.KI_DLG_KM_BEZEICHNER_ERL;
@@ -1483,6 +1494,23 @@
         internal static string KmKaltwasserMinErl => MyResource.Resource.KI_DLG_KM_KALTWASSER_MIN_ERL;
         internal static string KmModulkostenName => MyResource.Resource.KM_LBL_MODULKOSTEN;
         internal static string KmModulkostenErl => MyResource.Resource.KI_DLG_KM_MODULKOSTEN_ERL;
+        // KM3-E3-a: Teillast und Takten.
+        internal static string KmTeillastWegName => MyResource.Resource.KM_LBL_TEILLAST_WEG;
+        internal static string KmTeillastWegErl => MyResource.Resource.KI_DLG_KM_TEILLAST_WEG_ERL;
+        internal static string KmVerdichterregelungName => MyResource.Resource.KM_LBL_VERDICHTERREGELUNG;
+        internal static string KmVerdichterregelungErl => MyResource.Resource.KI_DLG_KM_VERDICHTERREGELUNG_ERL;
+        internal static string KmKurveAName => MyResource.Resource.KM_LBL_TEILLASTKURVE_A;
+        internal static string KmKurveAErl => MyResource.Resource.KI_DLG_KM_TEILLASTKURVE_A_ERL;
+        internal static string KmKurveBName => MyResource.Resource.KM_LBL_TEILLASTKURVE_B;
+        internal static string KmKurveBErl => MyResource.Resource.KI_DLG_KM_TEILLASTKURVE_B_ERL;
+        internal static string KmKurveCName => MyResource.Resource.KM_LBL_TEILLASTKURVE_C;
+        internal static string KmKurveCErl => MyResource.Resource.KI_DLG_KM_TEILLASTKURVE_C_ERL;
+        internal static string KmKurveLastgradMinName => MyResource.Resource.KM_LBL_TEILLASTKURVE_LASTGRAD_MIN;
+        internal static string KmKurveLastgradMinErl => MyResource.Resource.KI_DLG_KM_TEILLASTKURVE_LASTGRAD_MIN_ERL;
+        internal static string KmCdName => MyResource.Resource.KM_LBL_TAKTVERLUST_CD;
+        internal static string KmCdErl => MyResource.Resource.KI_DLG_KM_TAKTVERLUST_CD_ERL;
+        internal static string KmKennfeldrandName => MyResource.Resource.KM_LBL_KENNFELD_RANDWEG;
+        internal static string KmKennfeldrandErl => MyResource.Resource.KI_DLG_KM_KENNFELD_RANDWEG_ERL;
         internal static string KmPunktRueckkuehltemperaturName => MyResource.Resource.KM_SP_RUECKKUEHLTEMPERATUR;
         internal static string KmPunktRueckkuehltemperaturErl => MyResource.Resource.KI_DLG_KM_RUECKKUEHLTEMPERATUR_ERL;
         internal static string KmPunktKaltwassertemperaturName => MyResource.Resource.KM_SP_KALTWASSERTEMPERATUR;

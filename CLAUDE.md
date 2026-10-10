@@ -175,7 +175,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-09_R48_Gemeinjahr`, siebenundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-09_R49_KaeltemaschineTeillast`, achtundzwanzig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -205,13 +205,14 @@ Projekt 1059 rechnet als Kopie von 1058 seine Kälte mit einer zu kleinen Kälte
 Projekt 1060 rechnet als Kopie von 1056 mit Übergabegrenze — Heizkörper 75/60 °C, Höchstvorlauf 55 °C, Einbindung direkt, Vorwärmbetrieb mit Kessel in Reihe, mit Überströmventil, Rücklauf- und Spreizungsgrenzen —, gehalten von `EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests`,
 Projekt 1061 rechnet als Kopie von 1058 seinen Kühlvorlauf über eine Kühlkurve am Gebäude — Raumeinfluss 3 K/K, Auslegungsweg Tagesmittel, Kühlvorlauf der Wärmepumpe 12 °C —, gehalten von `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1062 rechnet als Kopie von 1061 das Gebäude in zwei Zonen mit Kühlübergabe je Zone, gehalten von `EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1063 rechnet als Kopie von 1055 seine Kältemaschine mit Teillastkurve, Takten unter der Mindestteillast von 30 % mit dem Vorgabe-Taktverlustfaktor und Gütegrad-Extrapolation an den Kennfeldrändern, gehalten von `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
 allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
-1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058 und 1060; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
+1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060 und 1063; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
 
 **Einfrierregeln** — wer eines davon ändert, friert im selben Schritt die Basis neu ein und
@@ -319,6 +320,11 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Mindestvolumenstrom_Prozent`, `Ruecklauf_Max`, `Ruecklauf_Bezug`, `Ruecklauf_Abwertung_ProzentJeK`, `Kaeltemittel`), an
   seiner Anlage `Einbindung`, `Vorwaermbetrieb` und `Vorlauf_Max`, `Ruecklauf_Max` am BHKW, die Vorgabewerte in
   `Bivalenzvorgaben`, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Übergabegrenze.
+- gesäte Teillastdaten einer Kältemaschine eines Referenzprojekts: an ihrer Projektkopie `Teillast_Weg`,
+  `Teillastkurve_a`, `Teillastkurve_b`, `Teillastkurve_c`, `Teillastkurve_Lastgrad_Min`, `Taktverlustfaktor_Cd`,
+  `Verdichterregelung`, `Kennfeld_Randweg` und `Mindestteillast_Prozent`, die Festwerte des Rechenwegs (Mindesthub
+  und Extrapolationsweite des Gütegrads, Vorgabekurven je Verdichterregelung, Grenze der Teillaststunden) und die
+  Vorgabe `Waermepumpentakt.VORGABE_CD`, dazu das Anlegen oder Entfernen eines Referenzprojekts mit Teillastkurve.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).

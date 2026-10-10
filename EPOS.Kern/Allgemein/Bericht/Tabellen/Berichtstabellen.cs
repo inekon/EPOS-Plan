@@ -687,6 +687,64 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b><c>stand.tabelle.km_teillast</c></b> (Katalog v18, KM3‑E3‑b, Fachkonzept Teillast und Takten 5.4) — die Tafel
+        /// „Teillast und Takten der Kältemaschinen“: je Maschine mit Teillastweg eine Spalte mit Weg und Herkunft,
+        /// Verdichterregelung, C_d, Taktstunden, Starts, Taktstrom, Teillaststunden, Teillastanteil, mittlerem Lastgrad,
+        /// extrapolierten Stunden und Jahres-EER ohne Hilfsstrom; darunter der Hinweis zum Stundenmodell.
+        /// </summary>
+        /// <remarks>
+        /// Die Zahlen kommen aus dem gespeicherten Lauf (<c>Tab_ErgebnisKaeltemaschine</c>), die Lesewerte aus den
+        /// Projektkopien (<see cref="VariantenDaten.KaeltemaschineTeillast"/>), die Verdichterstunden des Teillastanteils aus
+        /// dem Zeitreihensatz. Ohne Maschine mit Weg bleibt die Tafel mit Grund leer.
+        /// </remarks>
+        public static Berichtstabelle KaeltemaschineTeillast(VariantenDaten v, CultureInfo kultur)
+        {
+            if (v == null) return Leer(nameof(R.BV_GRUND_KEIN_STAND), kultur);
+            List<ErgebnisKaeltemaschineModel> alle = v.Ergebnis?.Kaeltemaschinen ?? new List<ErgebnisKaeltemaschineModel>();
+            var km = alle.Select((k, i) => (Platz: i, K: k)).Where(x => KaeltemaschineTeillastKennzahlen.MitWeg(x.K)).ToList();
+            if (km.Count == 0) return Leer(nameof(R.BV_GRUND_KEINE_KM_TEILLAST), kultur);
+
+            int breite = Math.Max(1200, 5155 / km.Count);
+            var t = new Berichtstabelle().Feste(new[] { 4200 }.Concat(Enumerable.Repeat(breite, km.Count)).ToArray());
+            t.MitKopf(new[] { Zellen.Kopf(Grund(nameof(R.BER_BIV_GROESSE), kultur), Tabellenausrichtung.Links) }
+                .Concat(km.Select(x => Zellen.Kopf(string.IsNullOrWhiteSpace(x.K.Bezeichner) ? "–" : x.K.Bezeichner))).ToArray());
+
+            KaeltemaschineTeillastLesewerte Lese(ErgebnisKaeltemaschineModel k)
+                => k.ID_Kaeltemaschine is int id && v.KaeltemaschineTeillast != null
+                   && v.KaeltemaschineTeillast.TryGetValue(id, out KaeltemaschineTeillastLesewerte w) ? w : null;
+            void Textzeile(string res, Func<KaeltemaschineTeillastLesewerte, string> text)
+                => t.Zeile(new[] { Zellen.Text(Grund(res, kultur)) }
+                    .Concat(km.Select(x => Lese(x.K) is { } w ? Zellen.Text(text(w), Tabellenausrichtung.Rechts)
+                                                              : Zellen.Zahl(Tabellenzelle.STRICH, null, null))).ToArray());
+            void Zeile(string res, Func<(int Platz, ErgebnisKaeltemaschineModel K), double?> wert, int stellen)
+                => t.Zeile(new[] { Zellen.Text(Grund(res, kultur)) }
+                    .Concat(km.Select(x =>
+                    {
+                        double? z = wert(x);
+                        return z is double d && !double.IsNaN(d) && !double.IsInfinity(d)
+                            ? Zellen.Zahl(Tabellenformat.F(d, stellen, kultur), d, "N" + stellen)
+                            : Zellen.Zahl(Tabellenzelle.STRICH, null, null);
+                    })).ToArray());
+
+            Dictionary<int, int> vs = v.Zeitreihen?.KaeltemaschineVerdichterstunden;
+            Textzeile(nameof(R.BER_KMT_WEG), w => w.WegText(kultur));
+            Textzeile(nameof(R.BER_KMT_REGELUNG), w => w.RegelungText(kultur));
+            Textzeile(nameof(R.BER_KMT_CD), w => w.CdText(kultur));
+            Zeile(nameof(R.BER_KMT_TAKTSTUNDEN), x => x.K.Taktstunden, 0);
+            Zeile(nameof(R.BER_KMT_STARTS), x => x.K.Starts, 0);
+            Zeile(nameof(R.BER_KMT_TAKTSTROM), x => x.K.Taktstrom_MWh * 1000.0, 2);
+            Zeile(nameof(R.BER_KMT_TEILLASTSTUNDEN), x => x.K.Teillaststunden, 0);
+            Zeile(nameof(R.BER_KMT_TEILLASTANTEIL), x => KaeltemaschineTeillastKennzahlen.TeillastanteilProzent(
+                x.K.Teillaststunden, vs != null && vs.TryGetValue(x.Platz, out int n) ? n : (int?)null), 1);
+            Zeile(nameof(R.BER_KMT_LASTGRAD), x => x.K.Lastgrad_Mittel, 2);
+            Zeile(nameof(R.BER_KMT_EXTRAPOLIERT), x => x.K.Stunden_Extrapoliert, 0);
+            Zeile(nameof(R.BER_KMT_JAZ), x => KaeltemaschineTeillastKennzahlen.JazVerdichter(x.K), 2);
+
+            t.Hinweis(Grund(nameof(R.BER_HINWEIS_STUNDENMODELL), kultur));
+            return t;
+        }
+
+        /// <summary>
         /// <b><c>stand.tabelle.brennstoffmengen</c></b> — Erzeuger, Bezeichner und Menge in der Abrechnungseinheit
         /// (<see cref="VariantenDaten.Brennstoffmengen"/>, im Sammler erhoben). <paramref name="mitLeerzeile"/>: ohne
         /// Mengen die Zeile „(keine Brennstoffdaten)“ wie im Kapitel; sonst bleibt die Tabelle leer.

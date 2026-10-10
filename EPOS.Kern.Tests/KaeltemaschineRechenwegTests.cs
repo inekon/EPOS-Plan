@@ -226,5 +226,206 @@ namespace EPOS.Kern.Tests
             Assert.Equal(310.0, kaskade.DeckungGesamtKwh, 9);
             Assert.True(kaskade.HilfsstromGesamtKwh > 0);
         }
+
+        // =====================================================================
+        //  KM3-E2-b: Teillast, Takten und Randweg im Rechenweg (Fachkonzept Teillast und Takten 3, 5, 8.1)
+        // =====================================================================
+
+        /// <summary>Kurve des Zahlenbeispiels 3.2 (a 0,10, b 0,60, c 0,30, x_u 0,2) mit der Mindestteillast der Saat (25 %).</summary>
+        private static Kaeltemaschinenteillast Kurve(string randweg = null)
+            => Kaeltemaschinenteillast.Bilden(KaeltemaschineTeillastSchema.WEG_KURVE, 0.10, 0.60, 0.30, 0.2, null, null, randweg, 0.25);
+
+        private static Kaeltemaschinenteillast Weg(string weg, string randweg = null)
+            => Kaeltemaschinenteillast.Bilden(weg, null, null, null, null, null, null, randweg, 0.25);
+
+        [Fact]
+        public void Kurve_Verdichterstrom_je_Stunde_wie_die_Teillastklasse()
+        {
+            Kaeltemaschine k = Maschine(0, 35.0, 35.0);
+            k.Teillast = Kurve();
+            Assert.True(k.TeillastWirksam);
+            // 35/6: Q_av 50 kW, EER 3,0. Last 25 kWh, PLR 0,5 -> E(0,5) = 0,475; P_el = 50/3 * 0,475.
+            KaeltemaschinenStunde s = k.Stunde(0, 25.0);
+            KaeltemaschinenTeillaststunde t = k.Teillast.Stunde(25.0, 50.0, 3.0, 50.0, 0.25);
+            Assert.Equal(t.VerdichterKwh, s.VerdichterKwh, 12);
+            Assert.Equal(50.0 / 3.0 * 0.475, s.VerdichterKwh, 9);
+            Assert.Equal(25.0, s.KaelteKwh, 9);
+            Assert.Equal(0.5, s.Lastgrad, 12);
+            Assert.False(s.Takt);
+            Assert.Equal(0.0, s.MehrstromKwh);
+            Assert.Equal(1, s.Laufend);
+            Assert.Equal(50.0, s.KapazitaetKw, 9);
+            Assert.NotEqual(25.0 / 3.0, s.VerdichterKwh, 6);   // der Bestand rechnete linear
+        }
+
+        [Fact]
+        public void Taktstunde_liefert_Mehrstrom_und_Start()
+        {
+            Kaeltemaschine k = Maschine(0, 35.0);
+            k.Teillast = Kurve();
+            // P_min 12,5 kW; Last 5 kWh taktet.
+            KaeltemaschinenStunde s = k.Stunde(0, 5.0);
+            KaeltemaschinenTeillaststunde t = k.Teillast.Stunde(5.0, 50.0, 3.0, 50.0, 0.25);
+            Assert.True(s.Takt);
+            Assert.True(s.MehrstromKwh > 0);
+            Assert.Equal(t.MehrstromKwh, s.MehrstromKwh, 12);
+            Assert.Equal(t.VerdichterKwh, s.VerdichterKwh, 12);
+            Assert.Equal(Waermepumpentakt.StartsImTakt(5.0, 12.5), s.Starts);
+            Assert.True(s.Starts >= 1);
+
+            // Bestand: dieselbe Stunde taktet nur als Kennzeichen, ohne Mehrstrom.
+            Kaeltemaschine b = Maschine(0, 35.0);
+            KaeltemaschinenStunde sb = b.Stunde(0, 5.0);
+            Assert.True(sb.Takt);
+            Assert.Equal(0.0, sb.MehrstromKwh);
+            Assert.Equal(5.0 / 3.0, sb.VerdichterKwh, 12);
+        }
+
+        [Fact]
+        public void Randweg_Guetegrad_setzt_eine_Randstunde_fort_und_zaehlt_sie()
+        {
+            // Rückkühlung 50 °C über dem Rand 45 °C: Randwert 44 kW, EER 2,5 bei 45/6.
+            Kaeltemaschine k = Maschine(0, 50.0, 35.0);
+            k.Teillast = Weg(null, KaeltemaschineTeillastSchema.RANDWEG_GUETEGRAD);
+            Assert.False(k.TeillastWirksam);
+            Assert.True(k.GuetegradWirksam);
+            double eer = KaeltemaschinenRand.EerFortgesetzt(2.5, 6.0, 45.0, 6.0, 50.0);
+            Assert.True(eer < 2.5);
+            KaeltemaschinenStunde s = k.Stunde(0, 30.0);
+            Assert.True(s.Randwert);
+            Assert.True(s.Extrapoliert);
+            Assert.Equal(44.0, s.KapazitaetKw, 9);
+            Assert.Equal(30.0 / eer, s.VerdichterKwh, 12);
+            // Im Kennfeld: wie der Bestand.
+            KaeltemaschinenStunde innen = k.Stunde(1, 30.0);
+            Assert.False(innen.Extrapoliert);
+            Assert.Equal(10.0, innen.VerdichterKwh, 12);
+
+            var e = new Kaelteerzeuger { Bezeichner = "KM", Modulindex = -1, Maschine = k };
+            var kaskade = new Kaeltekaskade { Erzeuger = { e } };
+            var bedarf = new double[Kaeltekaskade.STUNDEN];
+            bedarf[0] = 30.0;
+            bedarf[1] = 30.0;
+            kaskade.Rechnen(bedarf, false);
+            Assert.Equal(1, e.StundenExtrapoliert);
+            Assert.Equal(1, e.StundenRandwert);
+            Assert.Equal(30.0 / eer + 10.0, e.StromGesamtKwh, 9);
+            Assert.Equal(0, e.Starts);   // ohne Teillast_Weg keine Startzählung
+        }
+
+        [Fact]
+        public void Folgeschaltung_zweier_Maschinen_nur_mit_Weg()
+        {
+            // Drei Maschinen je 50 kW; Last 60 kWh: mit Weg laufen zwei je 30 kWh, ohne Weg drei je 20 kWh.
+            Kaeltemaschine mit = Maschine(0, 35.0, 35.0);
+            mit.Anzahl = 3;
+            mit.Teillast = Weg(KaeltemaschineTeillastSchema.WEG_LINEAR);
+            KaeltemaschinenStunde s = mit.Stunde(0, 60.0);
+            Assert.Equal(2, s.Laufend);
+            Assert.Equal(60.0, s.KaelteKwh, 9);
+            Assert.Equal(0.6, s.Lastgrad, 12);
+            Assert.Equal(20.0, s.VerdichterKwh, 9);
+            Assert.Equal(150.0, s.KapazitaetKw, 9);
+
+            // Schwachlast 15 kWh: ohne Weg takten drei Maschinen (je 5 < 12,5), mit Weg läuft eine ohne Takt.
+            Kaeltemaschine ohne = Maschine(0, 35.0);
+            ohne.Anzahl = 3;
+            Assert.True(ohne.Stunde(0, 15.0).Takt);
+            KaeltemaschinenStunde f = mit.Stunde(1, 15.0);
+            Assert.Equal(1, f.Laufend);
+            Assert.False(f.Takt);
+            Assert.Equal(0.3, f.Lastgrad, 12);
+        }
+
+        [Fact]
+        public void Ohne_Weg_rechnet_das_Jahr_Zeichen_fuer_Zeichen_wie_ohne_Einbau()
+        {
+            var rk = Enumerable.Range(0, Kaeltekaskade.STUNDEN).Select(h => 20.0 + 30.0 * (h % 24) / 23.0).ToArray();
+            var bedarf = Enumerable.Range(0, Kaeltekaskade.STUNDEN).Select(h => (h % 7) * 9.5).ToArray();
+            Kaelteerzeuger Lauf(Kaeltemaschinenteillast t)
+            {
+                Kaeltemaschine k = Maschine(0);
+                k.Rueckkuehltemperatur_stuendlich = rk;
+                k.Anzahl = 2;
+                k.Teillast = t;
+                var e = new Kaelteerzeuger { Bezeichner = "KM", Modulindex = -1, Maschine = k, Hilfsstromanteil = 0.05 };
+                new Kaeltekaskade { Erzeuger = { e } }.Rechnen(bedarf, false);
+                return e;
+            }
+            Kaelteerzeuger alt = Lauf(null);
+            Kaelteerzeuger bestand = Lauf(Weg(null));
+            Kaelteerzeuger randwert = Lauf(Weg(null, KaeltemaschineTeillastSchema.RANDWEG_RANDWERT));
+            Assert.False(Kaeltemaschine.AusModell(Saatgeraet(0), out _).MitWeg);
+            foreach (Kaelteerzeuger e in new[] { bestand, randwert })
+            {
+                Assert.False(e.Maschine.MitWeg);
+                for (int h = 0; h < Kaeltekaskade.STUNDEN; h++)
+                {
+                    Assert.Equal(BitConverter.DoubleToInt64Bits(alt.Strom_stuendlich[h]), BitConverter.DoubleToInt64Bits(e.Strom_stuendlich[h]));
+                    Assert.Equal(BitConverter.DoubleToInt64Bits(alt.Kaelte_stuendlich[h]), BitConverter.DoubleToInt64Bits(e.Kaelte_stuendlich[h]));
+                }
+                Assert.Equal(alt.Taktstunden, e.Taktstunden);
+                Assert.Equal(alt.StundenRandwert, e.StundenRandwert);
+                Assert.Equal(0, e.Starts);
+                Assert.Equal(0.0, e.TaktstromKwh);
+                Assert.Equal(0, e.StundenExtrapoliert);
+            }
+        }
+
+        [Fact]
+        public void Kaskade_bucht_Mehrstrom_vor_dem_Hilfsstromzuschlag_und_Starts_je_Laufphase()
+        {
+            Kaeltemaschine k = Maschine(0);
+            k.Teillast = Kurve();
+            var e = new Kaelteerzeuger { Bezeichner = "KM", Modulindex = -1, Maschine = k, Hilfsstromanteil = 0.1 };
+            var kaskade = new Kaeltekaskade { Erzeuger = { e } };
+            var bedarf = new double[Kaeltekaskade.STUNDEN];
+            bedarf[0] = 30.0; bedarf[1] = 30.0; bedarf[2] = 50.0;   // eine Laufphase: ein Start
+            bedarf[4] = 30.0;                                       // neue Laufphase: ein Start
+            bedarf[5] = 5.0;                                        // Taktstunde: Starts im Takt
+            kaskade.Rechnen(bedarf, false);
+
+            KaeltemaschinenStunde takt = k.Stunde(5, 5.0);
+            Assert.Equal(takt.VerdichterKwh * 1.1, e.Strom_stuendlich[5], 12);
+            Assert.Equal(takt.MehrstromKwh, e.Taktstrom_stuendlich[5], 12);
+            Assert.Equal(takt.MehrstromKwh, e.TaktstromKwh, 12);
+            Assert.Equal(2 + takt.Starts, e.Starts);
+            Assert.Equal(1, e.Taktstunden);
+            Assert.Equal(3, e.StundenTeillast);   // 0,6 in Stunde 0, 1, 4; Volllast in Stunde 2 zählt nicht
+            double gewichtet = (30.0 * 0.6 * 3 + 50.0 * 1.0 + 5.0 * 0.1) / 145.0;
+            Assert.Equal(gewichtet, e.LastgradMittel, 12);
+            Assert.Equal(e.Strom_stuendlich.Sum(), kaskade.StromGesamtKwh, 9);
+        }
+
+        [Fact]
+        public void Kaeltespeicher_senkt_die_Taktstunden()
+        {
+            int Taktstunden(bool mitSpeicher, out double taktstrom)
+            {
+                Kaeltemaschine k = Maschine(0);
+                k.Teillast = Kurve();
+                var e = new Kaelteerzeuger { Bezeichner = "KM", Modulindex = -1, Maschine = k };
+                var kaskade = new Kaeltekaskade { Erzeuger = { e }, Kuehltage = Enumerable.Repeat(true, Kaeltekaskade.TAGE).ToArray() };
+                if (mitSpeicher)
+                {
+                    var sp = new SimulationPufferspeicher { Bezeichner = "Kaltwasser", ID_Pufferspeicher = 7 };
+                    sp.InitKaelte(2000, 6, 12, 0);
+                    sp.SchwelleEin = 0.10;
+                    sp.SchwelleAus = 0.95;
+                    kaskade.Speicher.Add(sp);
+                }
+                var bedarf = new double[Kaeltekaskade.STUNDEN];
+                for (int h = 0; h < 48; h++) bedarf[h] = 5.0;
+                kaskade.Rechnen(bedarf, false);
+                Assert.Equal(0.0, kaskade.RestGesamtKwh, 9);
+                taktstrom = e.TaktstromKwh;
+                return e.Taktstunden;
+            }
+            int ohne = Taktstunden(false, out double stromOhne);
+            int mit = Taktstunden(true, out double stromMit);
+            Assert.Equal(48, ohne);
+            Assert.True(mit < ohne, "mit Speicher " + mit + ", ohne " + ohne);
+            Assert.True(stromMit < stromOhne);
+        }
     }
 }

@@ -18,14 +18,14 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         [Fact]
-        public void Die_Nummer_ist_210_und_das_Ziel_und_steht_im_Register()
+        public void Die_Nummer_ist_209_und_steht_im_Register()
         {
             Assert.Equal(209, KatalogkostenInvestitionSchema.SCHRITT);
             Assert.Equal(KatalogkostenUrsprungSchema.SCHRITT + 1, KatalogkostenInvestitionSchema.SCHRITT);
-            Assert.Equal(KatalogkostenInvestitionSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= KatalogkostenInvestitionSchema.SCHRITT); // 210 KaeltemaschineTeillastSchema haengt an
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KatalogkostenInvestitionSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             object stand = DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation");
-            if (_db.Vorhanden) Assert.Equal(KatalogkostenInvestitionSchema.SCHRITT, Convert.ToInt32(stand, CultureInfo.InvariantCulture));
+            if (_db.Vorhanden) Assert.True(Convert.ToInt32(stand, CultureInfo.InvariantCulture) >= KatalogkostenInvestitionSchema.SCHRITT);
         }
 
         [Fact]

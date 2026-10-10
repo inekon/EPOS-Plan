@@ -58,7 +58,7 @@ betroffenen Klassen und den xUnit-Schaltern aus `CLAUDE.md`. Das Modell wird je 
 - **Ziel:** FK 4 und FK 6 — Spalten, Lesen und Schreiben, Prüfregeln, Import, ergänzte Typkennfelder; **keine
   Rechenwirkung** (die Felder werden gelesen, aber nicht gerechnet).
 - **Vorher:** Schemanummer in der Zeile „Schemaschritt angemeldet“ der
-  [Statusdatei](../Status_iOS_Migration.md) anmelden (derzeit 208) und allein diese Zeile sofort pushen lassen
+  [Statusdatei](../aktuell/Status_iOS_Migration.md) anmelden (gebaut als 210) und allein diese Zeile sofort pushen lassen
   (Orchestrierung).
 - **Schema:** `EPOS.Kern/Allgemein/Update/KaeltemaschineTeillastSchema.cs` (acht Eingabespalten an beiden Tabellen,
   fünf Ergebnisspalten, CHECK, Wiederholbarkeit, DML nur über `KaeltemaschinenTypkennfelder.Ergaenzen()`), Einträge in
@@ -193,3 +193,21 @@ E2‑c); Toleranz der CI (Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01). Erwa
 
 Dazu die Orchestrierung: vier Merges mit Gate (`sonnet`), Statuszeilen und Protokolle (`sonnet`), eine
 Anmeldung der Schemanummer.
+
+
+## Umsetzung — wie gebaut
+
+Gebaut in den Etappen KM3‑E1 bis KM3‑E4 unter dem Entscheid E116 (Anwender, 09.10.2026), Statuszeilen #876 bis #879.
+
+| Etappe | Gebaut | Protokoll |
+|---|---|---|
+| KM3‑E1 | Schemaschritt 210 `KaeltemaschineTeillastSchema` (Teillast- und Taktspalten im Katalog und in der Projektkopie, Ergebnisspalten), Import der Teillastkurve aus Copper und CSV, Vorgabekurven je Verdichterregelung (#876) | [`2026-10-09_KM3-E1_Schema_Katalog_Import.md`](Protokolle/Gebaeudesimulation/2026-10-09_KM3-E1_Schema_Katalog_Import.md) |
+| KM3‑E2 | Rechenweg (Teillastkurve, Takten an der Mindestteillast, Kennfeldrand, Folgeschaltung), Referenzprojekt 1063, Basis R49 (#877) | [`2026-10-09_KM3-E2_Rechenweg_1063_R49.md`](Protokolle/Gebaeudesimulation/2026-10-09_KM3-E2_Rechenweg_1063_R49.md) |
+| KM3‑E3 | Katalogdialog (Gruppe „Teillast und Takten“), Lesewerte im Anlagendialog, Kachel „Teillast und Takten der Kältemaschinen“, Kennzahlen `kaelte.km.*`, Tafel „Teillast und Takten der Kältemaschinen“ (`stand.tabelle.km_teillast`), Vorlagen-Katalogfassung 18 (#878) | [`2026-10-09_KM3-E3_Dialoge_Bericht_Vorlagen.md`](Protokolle/Gebaeudesimulation/2026-10-09_KM3-E3_Dialoge_Bericht_Vorlagen.md) |
+| KM3‑E4 | Wiki-Quellen „Kühlung“ und „Grundlagen Kühlung“, Logbuch-Entwurf, diese Konzepte nach `ueberholt/` (#879) | [`2026-10-10_KM3-E4_Wiki_Logbuch_Konzepte.md`](Protokolle/Gebaeudesimulation/2026-10-10_KM3-E4_Wiki_Logbuch_Konzepte.md) |
+
+**Abweichungen vom Konzept:** Schemaschritt 210 statt 208; Basis R49 statt R47; Plausibilitätsgrenze des Gütemaßes g ≥ 0,3 statt 0,5; ein gemeinsamer Taktstunden-Zähler; der Taktstrom der Kachel kommt im Kern in kWh; Vorlagen-Katalogfassung 18.
+
+**Nachweis:** Referenzlauf 28 Projekte gegen R49, `GESAMT: PASS`, alle Projektdateien byte-gleich. Offen: Wiki-Upload (Freigabe und Versionsnummer beim Anwender).
+
+**Sachverhalt Takten:** Das Takten löst die Mindestteillast aus (Nennleistung × Mindestteillast; Mehrstrom mit C_d, Startzähler). Die Grenze „Kurve gültig ab Lastgrad“ (`Teillastkurve_Lastgrad_Min`) begrenzt nur die Gültigkeit der Teillastkurve und ihre Plausibilitätsprüfung; leer gilt die Mindestteillast.

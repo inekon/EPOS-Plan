@@ -95,6 +95,22 @@ public sealed class KaeltemaschineAnlageKiSicht
         set => Setzen(d => d.KuehlEigenerZaehler = value);
     }
 
+    // =====================================================================
+    //  KM3-E3-b: die Lesewerte der Teillastrechnung (nur zu lesen)
+    // =====================================================================
+
+    /// <summary>Teillastrechnung der Projektkopie samt Herkunft der Kurve (Spalte <c>Teillast_Weg</c>).</summary>
+    public string TeillastWeg => ArbeitLesen?.Invoke()?.Geraet?.TeillastWeg ?? "";
+
+    /// <summary>Verdichterregelung der Projektkopie (Spalte <c>Verdichterregelung</c>).</summary>
+    public string Verdichterregelung => ArbeitLesen?.Invoke()?.Geraet?.Verdichterregelung ?? "";
+
+    /// <summary>Taktverlustfaktor C_d der Projektkopie mit Herkunft (Spalte <c>Taktverlustfaktor_Cd</c>).</summary>
+    public string TaktverlustfaktorCd => ArbeitLesen?.Invoke()?.Geraet?.Taktverlustfaktor ?? "";
+
+    /// <summary>Weg am Kennfeldrand (Spalte <c>Kennfeld_Randweg</c>).</summary>
+    public string KennfeldRandweg => ArbeitLesen?.Invoke()?.Geraet?.Kennfeldrand ?? "";
+
     private void Setzen(Action<KaeltemaschineAnlageDaten> schritt)
     {
         KaeltemaschineAnlageDaten? d = ArbeitLesen?.Invoke();

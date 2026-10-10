@@ -82,6 +82,21 @@
                         </KindInhalt>
                     </Stammblattgruppe>
 
+                    @* TEILLAST UND TAKTEN (KM3-E3-a, Fachkonzept Teillast und Takten 7.1): Teillastrechnung,
+                       Verdichterregelung, Kurve a/b/c, ihre Gueltigkeit, C_d und Kennfeldrand; darunter die Lesezeile
+                       g(0,25)/g(0,5)/g(0,75), die kleine Kurve, die Schnellwahlen und die Auskunft. Die Mindestteillast
+                       bleibt in den Kenndaten. Ein Auslieferungssatz als TEXT, Lesezeile, Kurve und Auskunft bleiben. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeTeillast" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Teillastwerte(_daten) : null)">
+                        <KindInhalt>
+                            @Teillastfelder(_arbeit)
+                            @Teillastlesung(_arbeit)
+                        </KindInhalt>
+                        <Nachsatz>
+                            @Teillastlesung(_daten)
+                        </Nachsatz>
+                    </Stammblattgruppe>
+
                     @* KENNLINIE: ein Zeilenraster; ein Auslieferungssatz als TEXT. *@
                     <Stammblattgruppe Titel="@Texte.GruppeKennlinie" Lesemodus="@_auslieferung"
                                       Werte="@(_auslieferung ? Kennlinienwerte(_daten) : null)">
@@ -141,6 +156,112 @@
                     }
                     @Kenndatenfelder(_neu)
                     <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="NeuErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KM3-E3-a: Wahl eines Typkennfelds - "Kurve aus Typkennfeld..." uebernimmt Beiwerte, x_u und Regelung
+           in den Arbeitsstand; "Typkennfeld auf Datenblatt skalieren..." fuehrt mit dem skalierten Satz in "Neu..." --- *@
+    <Ueberlagerung Offen="@(_typwahl != Typwahl.Zu)" Titel="@TypwahlTitel" Geschlossen="TypwahlSchliessen">
+        <KindInhalt>
+            @if (_typwahl != Typwahl.Zu)
+            {
+                <div class="epos-kaeltemaschine-typwahl">
+                    @if (_typwahlMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_typwahlMeldung" />
+                    }
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@Texte.LabelTypkennfeld" Eintraege="@Typkennfeldeintraege"
+                                         Platzhalter="@Texte.TypkennfeldWaehlen"
+                                         Auswahl="@_typwahlPlatz" AuswahlChanged="w => { _typwahlPlatz = w; _typwahlMeldung = string.Empty; }" />
+                            @if (_typwahl == Typwahl.Skalieren)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.LabelNennkaelteleistung" Einheit="@Texte.EinheitKw"
+                                            Feldname="@(Texte.KnopfSkalieren + " – " + Texte.LabelNennkaelteleistung)"
+                                            Wert="@_skalierLeistung" WertChanged="w => _skalierLeistung = w" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelNennEer"
+                                            Feldname="@(Texte.KnopfSkalieren + " – " + Texte.LabelNennEer)"
+                                            Wert="@_skalierEer" WertChanged="w => _skalierEer = w" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    @if (_typwahl == Typwahl.Skalieren)
+                    {
+                        <p class="epos-leisezeile">@Texte.SkalierenHinweis</p>
+                    }
+                    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="TypwahlErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KM3-E3-a: Auskunft "Teillastpunkte pruefen..." (Fachkonzept 3.7) - bis zu vier Paare aus
+           Aussentemperatur und Lastgrad, gerechnet aus dem eigenen Kennfeld; keine Normtafel, keine
+           voreingetragenen Punkte, keine Speicherung. --- *@
+    <Ueberlagerung Offen="@_auskunftOffen" Titel="@Texte.KnopfTeillastpunkte" Geschlossen="AuskunftSchliessen">
+        <KindInhalt>
+            @if (_auskunftOffen)
+            {
+                <div class="epos-kaeltemaschine-auskunft">
+                    <p class="epos-leisezeile">@Texte.AuskunftHinweis</p>
+                    @if (_auskunftMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_auskunftMeldung" />
+                    }
+                    <Formularraster>
+                        <KindInhalt>
+                            @for (int i = 0; i < _auskunftEingaben.Length; i++)
+                            {
+                                int index = i;
+                                string punkt = string.Format(CultureInfo.CurrentCulture, Texte.AuskunftPunkt, AuskunftName(index));
+                                <Zahlenfeld Bezeichnung="@(punkt + " – " + Texte.AuskunftAussen)" Einheit="@Texte.EinheitGradC"
+                                            Feldname="@(punkt + " – " + Texte.AuskunftAussen)"
+                                            Wert="@_auskunftEingaben[index].Aussen" WertChanged="w => _auskunftEingaben[index].Aussen = w" />
+                                <Zahlenfeld Bezeichnung="@(punkt + " – " + Texte.AuskunftLastgrad)" Einheit="@Texte.EinheitProzent"
+                                            Feldname="@(punkt + " – " + Texte.AuskunftLastgrad)"
+                                            Wert="@_auskunftEingaben[index].Lastgrad" WertChanged="w => _auskunftEingaben[index].Lastgrad = w" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    <button type="button" class="epos-knopf epos-kaeltemaschine-rechnen" @onclick="AuskunftRechnen">@Texte.AuskunftRechnen</button>
+                    @if (_auskunftZeilen is { Count: > 0 })
+                    {
+                        <table class="epos-raster epos-kaeltemaschine-auskunfttafel">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>@Texte.AuskunftAussen [@Texte.EinheitGradC]</th>
+                                    <th>@Texte.AuskunftRueckkuehl [@Texte.EinheitGradC]</th>
+                                    <th>@Texte.AuskunftKaelte [@Texte.EinheitKw]</th>
+                                    <th>@Texte.AuskunftLastgradMaschine [@Texte.EinheitProzent]</th>
+                                    <th>@Texte.AuskunftLeistungsaufnahme [@Texte.EinheitKw]</th>
+                                    <th>@Texte.SpalteEer</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (KaeltemaschineAuskunftZeile z in _auskunftZeilen)
+                                {
+                                    <tr @key="z.Name">
+                                        <td>@z.Name</td>
+                                        <td>@z.AussenC.ToString("0.#", CultureInfo.CurrentCulture)</td>
+                                        <td>@z.RueckkuehlC.ToString("0.#", CultureInfo.CurrentCulture)</td>
+                                        <td>@z.KaelteKw.ToString("0.0", CultureInfo.CurrentCulture)</td>
+                                        <td>@((z.LastgradMaschine * 100).ToString("0", CultureInfo.CurrentCulture))</td>
+                                        <td>@z.LeistungsaufnahmeKw.ToString("0.00", CultureInfo.CurrentCulture)</td>
+                                        <td>@z.Eer.ToString("0.00", CultureInfo.CurrentCulture)</td>
+                                        <td>@AuskunftVermerk(z)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf" @onclick="AuskunftSchliessen">@Texte.Ok</button>
+                    </div>
                 </div>
             }
         </KindInhalt>
@@ -220,6 +341,29 @@
 
     /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15, <c>KaeltemaschineStammCtrl.SchlossSetzen</c>).</summary>
     [Parameter] public Schlossweg? Schloss { get; set; }
+
+    // ---- Teillast und Takten (KM3-E3-a): Rechnungen des Kerns über die Hülle ----
+
+    /// <summary>Die Namen der eingebauten Typkennfelder (Schnellwahlen); ohne sie keine Schnellwahl.</summary>
+    [Parameter] public IReadOnlyList<string>? Typkennfeldnamen { get; set; }
+
+    /// <summary>„Kurve aus Typkennfeld…": die Teillastfelder eines Typkennfelds; <c>null</c> = unbekannt.</summary>
+    [Parameter] public Func<string, KaeltemaschineTypkurve?>? KurveAusTypkennfeld { get; set; }
+
+    /// <summary>„Typkennfeld auf Datenblatt skalieren…" (Typkennfeld, Nennkälteleistung, Nenn-EER) — nur Rückgabe.</summary>
+    [Parameter] public Func<string, double?, double?, KaeltemaschineSkalierErgebnis>? Skalieren { get; set; }
+
+    /// <summary>„Teillastpunkte prüfen…": rechnet die Paare am Stand, ohne Speicherung.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, IReadOnlyList<KaeltemaschineAuskunftEingabe>, KaeltemaschineAuskunftErgebnis>? Auskunft { get; set; }
+
+    /// <summary>Die Lesezeile g(0,25)/g(0,5)/g(0,75) samt Hinweis; ohne sie keine Lesezeile.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, KaeltemaschineTeillastLesestand>? Lesezeile { get; set; }
+
+    /// <summary>Der Kontrollwert Nenn-EER (<c>KaeltemaschineStammCtrl.NennEerHinweis</c>); <c>null</c> = kein Hinweis.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, string?>? NennEerHinweis { get; set; }
+
+    /// <summary>Die kleine Kurve „EER-Verhältnis über dem Lastgrad" (<c>KaeltemaschineTeillastbild</c>); ohne sie kein Bild.</summary>
+    [Parameter] public Func<KaeltemaschineDaten, WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? Teillastbild { get; set; }
 
     /// <summary>Der Dialog wurde geschlossen („Beenden", Esc, Kreuz) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -314,6 +458,12 @@
     public bool Schlossfrage => _schloss.FrageOffen;
     /// <summary>Steht die Rückfrage „Typkennfelder laden…"? (Prüfhilfe)</summary>
     public bool Typfrage => _typfrage;
+    /// <summary>Steht die Wahl eines Typkennfelds (Kurve oder Skalierung)? (Prüfhilfe)</summary>
+    public bool TypwahlOffen => _typwahl != Typwahl.Zu;
+    /// <summary>Steht die Auskunft „Teillastpunkte prüfen…"? (Prüfhilfe)</summary>
+    public bool AuskunftOffen => _auskunftOffen;
+    /// <summary>Die Zeilen der letzten Auskunft (Prüfhilfe).</summary>
+    public IReadOnlyList<KaeltemaschineAuskunftZeile>? AuskunftZeilen => _auskunftZeilen;
     /// <summary>Steht der Import als Überlagerung? (Prüfhilfe)</summary>
     public bool ImportOffen => _importGaben is not null;
 
@@ -366,6 +516,9 @@
             SatzSetzen = BeiZeile,
             SatzEintraege = () => KiMaskenanmeldung.Eintraege(_katalog, z => z.Schluessel, z => z.Bezeichner),
             Rueckkuehlarten = () => Rueckkuehltexte,
+            TeillastWege = () => Texte.TeillastWege,
+            Verdichterregelungen = () => Texte.Verdichterregelungen,
+            Randwege = () => Texte.Randwege,
             ArbeitLesen = () => _daten.Id > 0 && !_auslieferung ? _arbeit : null,
             Geaendert = Nachziehen
         };
@@ -560,6 +713,227 @@
         Texte.SpalteKaelteleistung + " [" + Texte.EinheitKw + "]",
         ""
     };
+
+    // =====================================================================
+    // Teillast und Takten (KM3-E3-a)
+    // =====================================================================
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> texte)
+        => texte.Select((t, i) => (i, t)).ToList();
+
+    private static string Text(IReadOnlyList<string> texte, int? platz, string leer)
+        => platz is int p && p >= 0 && p < texte.Count ? texte[p] : leer;
+
+    /// <summary>Die acht Felder der Gruppe — Auswahl und Zahlen, leer = Vorgabe (Platzhalter).</summary>
+    private RenderFragment Teillastfelder(KaeltemaschineDaten d) => __builder =>
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@Texte.LabelTeillastWeg" Eintraege="@Eintraege(Texte.TeillastWege)"
+                             Platzhalter="@Texte.TeillastWegBestand"
+                             Auswahl="@d.TeillastWegIndex" AuswahlChanged="w => Feld(d, () => d.TeillastWegIndex = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelVerdichterregelung" Eintraege="@Eintraege(Texte.Verdichterregelungen)"
+                             Platzhalter="@Texte.RegelungKeine"
+                             Auswahl="@d.VerdichterregelungIndex" AuswahlChanged="w => Feld(d, () => d.VerdichterregelungIndex = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveA" Feldname="@Texte.LabelKurveA" Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveA" WertChanged="w => Feld(d, () => d.KurveA = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveB" Feldname="@Texte.LabelKurveB" Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveB" WertChanged="w => Feld(d, () => d.KurveB = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveC" Feldname="@Texte.LabelKurveC" Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveC" WertChanged="w => Feld(d, () => d.KurveC = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelKurveLastgradMin" Feldname="@Texte.LabelKurveLastgradMin"
+                            Platzhalter="@Texte.PlatzhalterVorgabe"
+                            Wert="@d.KurveLastgradMin" WertChanged="w => Feld(d, () => d.KurveLastgradMin = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelCd" Feldname="@Texte.LabelCd" Platzhalter="@Texte.PlatzhalterCd"
+                            Wert="@d.Cd" WertChanged="w => Feld(d, () => d.Cd = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelRandweg" Eintraege="@Eintraege(Texte.Randwege)"
+                             Platzhalter="@Texte.PlatzhalterRandweg"
+                             Auswahl="@d.RandwegIndex" AuswahlChanged="w => Feld(d, () => d.RandwegIndex = w)" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    /// <summary>Verweis, Lesezeile, Nenn-EER-Hinweis, kleine Kurve, Schnellwahlen und Auskunft zum Stand <paramref name="d"/>.</summary>
+    private RenderFragment Teillastlesung(KaeltemaschineDaten d) => __builder =>
+    {
+        <p class="epos-leisezeile">@Texte.VerweisMindestteillast</p>
+        @if (Lesezeile is not null)
+        {
+            KaeltemaschineTeillastLesestand l = Lesezeile(d);
+            <p class="epos-leisezeile epos-kaeltemaschine-lesezeile">@LesezeileText(l)</p>
+            @if (l.Hinweis.Length > 0)
+            {
+                <p class="epos-leisezeile epos-kaeltemaschine-teillasthinweis">@l.Hinweis</p>
+            }
+        }
+        @if (NennEerHinweis?.Invoke(d) is string nenn && nenn.Length > 0)
+        {
+            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@nenn" />
+        }
+        @if (Teillastbild is not null)
+        {
+            <DiagrammSvg Modell="@Teillastbild(d)" Kennung="km-teillast" Bezeichnung="@Texte.BildTeillast" />
+        }
+        <div class="epos-knopfreihe epos-kaeltemaschine-schnellwahl">
+            @if (!_auslieferung && KurveAusTypkennfeld is not null && TypkennfeldVorhanden)
+            {
+                <button type="button" class="epos-textknopf" @onclick="() => TypwahlOeffnen(Typwahl.Kurve)">@Texte.KnopfKurveTypkennfeld</button>
+            }
+            @if (Skalieren is not null && Speichern is not null && TypkennfeldVorhanden)
+            {
+                <button type="button" class="epos-textknopf" @onclick="() => TypwahlOeffnen(Typwahl.Skalieren)">@Texte.KnopfSkalieren</button>
+            }
+            @if (Auskunft is not null)
+            {
+                <button type="button" class="epos-textknopf" @onclick="AuskunftOeffnen">@Texte.KnopfTeillastpunkte</button>
+            }
+        </div>
+    };
+
+    private string LesezeileText(KaeltemaschineTeillastLesestand l)
+        => string.Format(CultureInfo.CurrentCulture, Texte.Lesezeile,
+                         l.G25.ToString("0.00", CultureInfo.CurrentCulture), l.G50.ToString("0.00", CultureInfo.CurrentCulture),
+                         l.G75.ToString("0.00", CultureInfo.CurrentCulture));
+
+    /// <summary>Die Gruppe als Text — ein Auslieferungssatz; leer heißt Vorgabe.</summary>
+    private IReadOnlyList<Stammblattwert> Teillastwerte(KaeltemaschineDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelTeillastWeg, Text(Texte.TeillastWege, d.TeillastWegIndex, Texte.TeillastWegBestand)),
+        new Stammblattwert(Texte.LabelVerdichterregelung, Text(Texte.Verdichterregelungen, d.VerdichterregelungIndex, Texte.RegelungKeine)),
+        new Stammblattwert(Texte.LabelKurveA, Vorgabe(d.KurveA, "0.######")),
+        new Stammblattwert(Texte.LabelKurveB, Vorgabe(d.KurveB, "0.######")),
+        new Stammblattwert(Texte.LabelKurveC, Vorgabe(d.KurveC, "0.######")),
+        new Stammblattwert(Texte.LabelKurveLastgradMin, Vorgabe(d.KurveLastgradMin, "0.###")),
+        new Stammblattwert(Texte.LabelCd, d.Cd.HasValue ? d.Cd.Value.ToString("0.###", CultureInfo.CurrentCulture) : Texte.PlatzhalterCd),
+        new Stammblattwert(Texte.LabelRandweg, Text(Texte.Randwege, d.RandwegIndex, Texte.PlatzhalterRandweg))
+    };
+
+    private string Vorgabe(double? wert, string format)
+        => wert.HasValue ? wert.Value.ToString(format, CultureInfo.CurrentCulture) : Texte.PlatzhalterVorgabe;
+
+    // ---- Schnellwahlen: Kurve aus Typkennfeld, Skalierung auf das Datenblatt ----
+
+    private enum Typwahl { Zu, Kurve, Skalieren }
+
+    private Typwahl _typwahl = Typwahl.Zu;
+    private int? _typwahlPlatz;
+    private string _typwahlMeldung = "";
+    private double? _skalierLeistung;
+    private double? _skalierEer;
+
+    private bool TypkennfeldVorhanden => Typkennfeldnamen is { Count: > 0 };
+
+    private IReadOnlyList<(int Id, string Text)> Typkennfeldeintraege
+        => Eintraege(Typkennfeldnamen ?? Array.Empty<string>());
+
+    private string TypwahlTitel => _typwahl == Typwahl.Skalieren ? Texte.KnopfSkalieren : Texte.KnopfKurveTypkennfeld;
+
+    private void TypwahlOeffnen(Typwahl art)
+    {
+        if (art == Typwahl.Kurve && _auslieferung) { Warnen(Texte.SpeichernGesperrt); return; }
+        if (art == Typwahl.Skalieren && _geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _typwahl = art;
+        _typwahlPlatz = null;
+        _typwahlMeldung = "";
+        _skalierLeistung = null;
+        _skalierEer = null;
+    }
+
+    private void TypwahlSchliessen()
+    {
+        _typwahl = Typwahl.Zu;
+        _typwahlMeldung = "";
+    }
+
+    /// <summary>
+    /// OK der Typkennfeldwahl: „Kurve" schreibt Weg, Beiwerte, x_u und Regelung in den Arbeitsstand (Speichern wie
+    /// jede Eingabe); „Skalieren" öffnet „Neu…" mit dem skalierten, ungespeicherten Satz — es entsteht ein eigener Satz.
+    /// </summary>
+    private void TypwahlErgebnis(bool ok)
+    {
+        if (!ok) { TypwahlSchliessen(); return; }
+        string name = _typwahlPlatz is int p && Typkennfeldnamen is not null && p >= 0 && p < Typkennfeldnamen.Count
+            ? Typkennfeldnamen[p] : "";
+        if (name.Length == 0) { _typwahlMeldung = Texte.MeldungTypkennfeldWaehlen; return; }
+
+        if (_typwahl == Typwahl.Kurve)
+        {
+            KaeltemaschineTypkurve? k = KurveAusTypkennfeld?.Invoke(name);
+            if (k is null) { _typwahlMeldung = Texte.MeldungTypkennfeldWaehlen; return; }
+            _arbeit.TeillastWegIndex = k.TeillastWegIndex;
+            _arbeit.KurveA = k.KurveA;
+            _arbeit.KurveB = k.KurveB;
+            _arbeit.KurveC = k.KurveC;
+            _arbeit.KurveLastgradMin = k.KurveLastgradMin;
+            _arbeit.VerdichterregelungIndex = k.VerdichterregelungIndex;
+            TypwahlSchliessen();
+            Nachziehen();
+            _status = string.Format(CultureInfo.CurrentCulture, Texte.KurveUebernommen, name);
+            return;
+        }
+
+        if (Skalieren is null) return;
+        KaeltemaschineSkalierErgebnis e = Skalieren(name, _skalierLeistung, _skalierEer);
+        if (e.Satz is null) { _typwahlMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
+        TypwahlSchliessen();
+        _meldung = "";
+        _neu = e.Satz;
+        _neu.Id = 0;
+        _neu.Auslieferung = false;
+        _neuMeldung = "";
+        _neuOffen = true;
+    }
+
+    // ---- Auskunft „Teillastpunkte prüfen…" ----
+
+    private sealed class Auskunftseingabe
+    {
+        public double? Aussen { get; set; }
+        public double? Lastgrad { get; set; }
+    }
+
+    private bool _auskunftOffen;
+    private Auskunftseingabe[] _auskunftEingaben = Array.Empty<Auskunftseingabe>();
+    private IReadOnlyList<KaeltemaschineAuskunftZeile>? _auskunftZeilen;
+    private string _auskunftMeldung = "";
+
+    private static string AuskunftName(int index) => ((char)('A' + index)).ToString();
+
+    /// <summary>Öffnet die Auskunft mit vier leeren Paaren — keine voreingetragenen Punkte (Fachkonzept 3.7).</summary>
+    private void AuskunftOeffnen()
+    {
+        _auskunftEingaben = Enumerable.Range(0, 4).Select(_ => new Auskunftseingabe()).ToArray();
+        _auskunftZeilen = null;
+        _auskunftMeldung = "";
+        _auskunftOffen = true;
+    }
+
+    private void AuskunftSchliessen()
+    {
+        _auskunftOffen = false;
+        _auskunftZeilen = null;
+        _auskunftMeldung = "";
+    }
+
+    /// <summary>Rechnet die Paare am Stand des Blatts (Arbeitsstand, beim Auslieferungssatz der gespeicherte).</summary>
+    private void AuskunftRechnen()
+    {
+        if (Auskunft is null) return;
+        var eingaben = _auskunftEingaben
+            .Select((e, i) => new KaeltemaschineAuskunftEingabe(AuskunftName(i), e.Aussen, e.Lastgrad))
+            .ToList();
+        KaeltemaschineAuskunftErgebnis r = Auskunft(_auslieferung ? _daten : _arbeit, eingaben);
+        _auskunftZeilen = r.Zeilen;
+        _auskunftMeldung = r.Zeilen is null ? (r.Meldung.Length > 0 ? r.Meldung : Texte.Fehler) : "";
+    }
+
+    private string AuskunftVermerk(KaeltemaschineAuskunftZeile z)
+    {
+        var teile = new List<string>(2);
+        if (z.Takt) teile.Add(Texte.AuskunftTakt);
+        if (z.Randwert) teile.Add(Texte.AuskunftRand);
+        return string.Join(" · ", teile);
+    }
 
     /// <summary>Eine Eingabe in ein Feld — im Stammblatt zieht sie „geändert" nach, in „Neu…" nicht.</summary>
     private void Feld(KaeltemaschineDaten d, Action schritt)

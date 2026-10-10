@@ -180,6 +180,12 @@ namespace WindowsFormsApplication1
                         Kuehl_CarrierId = km.Kuehl_CarrierId,
                         Kuehl_EigenerZaehler = km.Kuehl_EigenerZaehler,
                         Stromspitze_kW = Mal(km.Stromspitze_kW, f),
+                        // KM3: der Mehrstrom skaliert als Menge, Starts, Stunden und Lastgrad bleiben.
+                        Taktstrom_MWh = Mal(km.Taktstrom_MWh, f),
+                        Starts = km.Starts,
+                        Teillaststunden = km.Teillaststunden,
+                        Lastgrad_Mittel = km.Lastgrad_Mittel,
+                        Stunden_Extrapoliert = km.Stunden_Extrapoliert,
                     });
 
             if (m.BHKW != null)

@@ -112,6 +112,9 @@ namespace WindowsFormsApplication1
             // KU3-4d (Schritt 184): die Abrechnungsspalten je Kaeltemaschine - ebenso vor der Transaktion gefragt.
             bool kmAbrechnung = System.Linq.Enumerable.All(KaeltestromabrechnungSchema.SPALTEN,
                                     s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte));
+            // KM3 (Schritt 210): die fünf Ergebnisspalten von Teillast und Takten; vor dem Schritt nicht geschrieben.
+            bool kmTeillast = System.Linq.Enumerable.All(KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN,
+                                    s => DataRepository.SpalteVorhanden(KaeltemaschineTeillastSchema.TAB_ERGEBNIS, s.Spalte));
             bool kuehlkreisEnergie = System.Linq.Enumerable.All(KuehluebergabeSchema.Ergebnisspalten,
                                          s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
             // AK2-1 (Schritt 186): die Komfort- und Fahrplanspalten des Energiebedarfs - ebenso vor der
@@ -359,7 +362,8 @@ namespace WindowsFormsApplication1
                             "Bezeichner, Anzahl, Kaelteproduktion_MWh, Stromverbrauch_MWh, Hilfsstrom_MWh, FreieKuehlung_MWh, " +
                             "FreieKuehlung_Stunden, Taktstunden, Unterdeckung_MWh, Stunden_Leistungsgrenze" +
                             (kmAbrechnung ? ", Kaeltestrom_Netzbezug_MWh, Kuehl_ID_Carrier, Kuehl_EigenerZaehler, Stromspitze_kW" : "") +
-                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + ")";
+                            (kmTeillast ? ", Taktstrom_MWh, Starts, Teillaststunden, Lastgrad_Mittel, Stunden_Extrapoliert" : "") +
+                            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?" + (kmAbrechnung ? ",?,?,?,?" : "") + (kmTeillast ? ",?,?,?,?,?" : "") + ")";
                         foreach (ErgebnisKaeltemaschineModel km in m.Kaeltemaschinen)
                         {
                             var pk = new List<DbParam>
@@ -385,6 +389,15 @@ namespace WindowsFormsApplication1
                                 pk.Add(new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)km.Kuehl_CarrierId.Value : DBNull.Value });
                                 pk.Add(new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && km.Kuehl_EigenerZaehler.HasValue ? (object)(km.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value });
                                 pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = km.Stromspitze_kW.HasValue ? (object)R(km.Stromspitze_kW.Value) : DBNull.Value });
+                            }
+                            // KM3 (Schritt 210): ohne Teillast_Weg NULL - der Satz bleibt wie ohne KM3.
+                            if (kmTeillast)
+                            {
+                                pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = WertOderNull(km.Taktstrom_MWh) });
+                                pk.Add(new DbParam("@st", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Starts) });
+                                pk.Add(new DbParam("@tl", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Teillaststunden) });
+                                pk.Add(new DbParam("@lg", DbParamTyp.Double) { Wert = WertOderNull(km.Lastgrad_Mittel) });
+                                pk.Add(new DbParam("@ex", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Extrapoliert) });
                             }
                             v.Ausfuehren(sqlKm, pk.ToArray());
                         }
@@ -1208,6 +1221,12 @@ namespace WindowsFormsApplication1
                             Kuehl_EigenerZaehler = DN(rk, KaeltestromabrechnungSchema.SPALTE_KUEHL_EIGENER_ZAEHLER) is double z
                                 ? (bool?)(z != 0) : null,
                             Stromspitze_kW = DN(rk, KaeltestromabrechnungSchema.SPALTE_STROMSPITZE),
+                            // KM3 (Schritt 210); vor dem Schritt bzw. ohne Teillast_Weg NULL.
+                            Taktstrom_MWh = DN(rk, KaeltemaschineTeillastSchema.SPALTE_TAKTSTROM),
+                            Starts = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STARTS),
+                            Teillaststunden = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_TEILLASTSTUNDEN),
+                            Lastgrad_Mittel = DN(rk, KaeltemaschineTeillastSchema.SPALTE_LASTGRAD_MITTEL),
+                            Stunden_Extrapoliert = GanzOderNull(rk, KaeltemaschineTeillastSchema.SPALTE_STUNDEN_EXTRAPOLIERT),
                         });
                     }
             }

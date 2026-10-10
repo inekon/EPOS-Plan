@@ -91,11 +91,13 @@ namespace EPOS.Kern.Tests
                 new DbParam("?", 11), new DbParam("?", DbWerte.KOSTEN_KATEGORIE_INVESTITION),
                 new DbParam("?", KaeltemaschineAnlageSchema.POSITION_AGGREGAT))));
             // Schritt 184 (KU3-4d) haengt seine Abrechnungsspalten an dieselbe Tabelle.
-            Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length + KaeltestromabrechnungSchema.SPALTEN.Count,
+            // + fuenf Kennzahlspalten von Teillast und Takten (KaeltemaschineTeillastSchema, Schritt 210).
+            Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length + KaeltestromabrechnungSchema.SPALTEN.Count +
+                         KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN.Count,
                          DataRepository.SpaltenVonTabelle(KaeltemaschineAnlageSchema.TAB_ERGEBNIS).Count);
-            // Eine Anlagenzeile der Kältemaschine führen allein die Referenzprojekte 1055 (KU3-4b) und 1059 (AK3-K-K5a).
+            // Eine Anlagenzeile der Kältemaschine führen allein die Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a) und 1063 (KM3).
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE (ID_Kaeltemaschine IS NOT NULL OR ID_Type = ?) AND ID_Projekt NOT IN (1055, 1059)", new DbParam("?", 13))));
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE (ID_Kaeltemaschine IS NOT NULL OR ID_Type = ?) AND ID_Projekt NOT IN (1055, 1059, 1063)", new DbParam("?", 13))));
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kaeltemaschine_Anzahl <> 1")));
 

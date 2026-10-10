@@ -340,10 +340,13 @@ namespace EPOS.Kern.Tests
             // KU3-6: davor die zwei der freien Kühlung der Wärmepumpe über die Wärmequelle.
             Assert.Equal(new[] { "kaelte.erzeugung", "kaelte.wp.frei", "kaelte.wp.frei_stunden", "kaelte.km.erzeugung", "kaelte.km.strom", "kaelte.km.hilfsstrom",
                                  "kaelte.km.jaz", "kaelte.km.frei", "kaelte.km.frei_stunden", "kaelte.km.takt",
+                                 // KM3-E3-b (Katalog v18): die fuenf Kennzahlen „Teillast und Takten“.
+                                 "kaelte.km.taktstrom", "kaelte.km.starts", "kaelte.km.teillastanteil", "kaelte.km.lastgrad",
+                                 "kaelte.km.jaz_verdichter",
                                  "kaelte.rest", "kaelte.jaz", "kaelte.strom",
                                  "kaelte.netzbezug", "kaelte.kosten", "kaelte.co2" },
                          kaelte.Where(k => k.Gruppe == KennzahlenKatalog.GR_KAELTE).Select(k => k.Schluessel));
-            Assert.Equal(20, kaelte.Count);
+            Assert.Equal(25, kaelte.Count);
         }
 
         /// <summary>

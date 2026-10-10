@@ -127,6 +127,59 @@ public class KaeltemaschineAnlageDialogTests : EposBunitContext
                      cut.FindAll(".epos-kaeltemaschine-anlage > .epos-leiste button").Select(b => b.TextContent.Trim()).ToArray());
     }
 
+    /// <summary>
+    /// KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Lesewerte der Teillastrechnung der Projektkopie und der
+    /// Hinweis „Folgeschaltung von n Maschinen“ - nur bei Anzahl &gt; 1 und gesetztem Weg.
+    /// </summary>
+    [Fact]
+    public void Die_Teillast_Lesewerte_stehen_und_die_Folgeschaltung_nur_mit_Weg_und_mehreren_Maschinen()
+    {
+        var p = new Projekt();
+        KaeltemaschineGeraetwerte alt = p.Gespeicherte[0].Geraet!;
+        p.Gespeicherte[0].Geraet = new KaeltemaschineGeraetwerte
+        {
+            Bezeichner = alt.Bezeichner, Nennkaelteleistung = alt.Nennkaelteleistung, KaltwasserMin = alt.KaltwasserMin,
+            Kaltwasserstuetzstellen = alt.Kaltwasserstuetzstellen,
+            TeillastWeg = R.KM_TT_WEG_VORGABEKURVE, Verdichterregelung = R.KM_REGELUNG_STUFEN,
+            Taktverlustfaktor = R.KM_PH_CD_VORGABE, Kennfeldrand = R.KM_RANDWEG_GUETEGRAD, TeillastGesetzt = true
+        };
+        var cut = Aufbauen(this, p);
+        Assert.Equal(R.KM_TT_WEG_VORGABEKURVE, Feld(cut, R.KM_LBL_TEILLAST_WEG).GetAttribute("value"));
+        Assert.Equal(R.KM_REGELUNG_STUFEN, Feld(cut, R.KM_LBL_VERDICHTERREGELUNG).GetAttribute("value"));
+        Assert.Equal(R.KM_PH_CD_VORGABE, Feld(cut, R.KM_LBL_TAKTVERLUST_CD).GetAttribute("value"));
+        Assert.Equal(R.KM_RANDWEG_GUETEGRAD, Feld(cut, R.KM_LBL_KENNFELD_RANDWEG).GetAttribute("value"));
+        string folge = string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KMA_HINWEIS_FOLGESCHALTUNG, 2);
+        Assert.Contains(folge, cut.Markup);
+
+        // Eine Maschine: kein Hinweis.
+        Feld(cut, R.KMA_LBL_ANZAHL).Input("1");
+        Assert.DoesNotContain(folge, cut.Markup);
+        Assert.DoesNotContain(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KMA_HINWEIS_FOLGESCHALTUNG, 1), cut.Markup);
+
+        // Ohne Weg (Bestand): kein Hinweis, auch bei zwei Maschinen.
+        var q = new Projekt();
+        var ohne = Aufbauen(this, q);
+        Assert.DoesNotContain(folge, ohne.Markup);
+    }
+
+    /// <summary>KM3-E3-b: die Hülle liest die Lesewerte über den Kern (Kaeltemaschinenteillast), wie der Lauf.</summary>
+    [Fact]
+    public void Die_Huelle_liest_Weg_mit_Herkunft_Regelung_und_Cd()
+    {
+        KaeltemaschineGeraetwerte w = KaeltemaschineAnlageHuelle.Werte(new KaeltemaschineModel
+        {
+            Teillast_Weg = KaeltemaschineTeillastSchema.WEG_KURVE, Verdichterregelung = KaeltemaschineTeillastSchema.REGELUNG_DREHZAHL
+        });
+        Assert.True(w.TeillastGesetzt);
+        Assert.Equal(R.KM_TT_WEG_VORGABEKURVE, w.TeillastWeg);
+        Assert.Equal(R.KM_REGELUNG_DREHZAHL, w.Verdichterregelung);
+        Assert.Equal(R.KM_PH_CD_VORGABE, w.Taktverlustfaktor);
+        Assert.Equal(R.KM_PH_RANDWEG_VORGABE, w.Kennfeldrand);
+        KaeltemaschineGeraetwerte b = KaeltemaschineAnlageHuelle.Werte(new KaeltemaschineModel());
+        Assert.False(b.TeillastGesetzt);
+        Assert.Equal(R.KM_TEILLAST_WEG_BESTAND, b.TeillastWeg);
+    }
+
     [Fact]
     public void Die_Katalogwahl_legt_die_Projektkopie_erst_beim_OK_an()
     {

@@ -39,6 +39,14 @@ public sealed class KaeltemaschineAnlageTexte
     public string LabelMindestteillast { get; set; } = Resource.KM_LBL_MINDESTTEILLAST;
     public string LabelKaltwasserMin { get; set; } = Resource.KM_LBL_KALTWASSER_MIN;
 
+    // KM3-E3-b: die Lesewerte der Teillastrechnung (dieselben Beschriftungen wie in der Verwaltung).
+    public string LabelTeillastWeg { get; set; } = Resource.KM_LBL_TEILLAST_WEG;
+    public string LabelVerdichterregelung { get; set; } = Resource.KM_LBL_VERDICHTERREGELUNG;
+    public string LabelTaktverlust { get; set; } = Resource.KM_LBL_TAKTVERLUST_CD;
+    public string LabelKennfeldrand { get; set; } = Resource.KM_LBL_KENNFELD_RANDWEG;
+    /// <summary>„Folgeschaltung von {0} Maschinen: …“ — nur bei Anzahl &gt; 1 und gesetzter Teillastrechnung.</summary>
+    public string HinweisFolgeschaltung { get; set; } = Resource.KMA_HINWEIS_FOLGESCHALTUNG;
+
     public string GruppeBetrieb { get; set; } = Resource.KMA_GRUPPE_BETRIEB;
 
     /// <summary>Block „Wärmepumpen im Kühlbetrieb“ unter der Anlagenliste.</summary>

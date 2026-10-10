@@ -107,6 +107,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(beispieleVorher, Beispielgeraete());
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));
             Assert.Equal(0, KatalogSchluesselSaat.OffeneSaetze(Katalogfassung.Stufe3));
+            // KM3 (Schritt 210 steht auf der Arbeitskopie): Das Einspielen trägt Teillastkurve und Verdichterregelung mit.
+            if (KaeltemaschineTeillastSchema.EingabespaltenVorhanden(TAB))
+            {
+                Assert.Equal((long)Anzahl, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE ReadOnly = 1 AND Verdichterregelung IS NOT NULL"));
+                Assert.Equal(34L, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE Teillast_Weg IS NOT NULL"));
+                Assert.Equal(31L, Zahl("SELECT COUNT(*) FROM " + TAB + " WHERE Teillast_Weg = 'KURVE' AND Teillastkurve_c IS NOT NULL"));
+                Assert.Equal(0, KaeltemaschinenTypkennfelder.Ergaenzen());
+            }
 
             long punkte = Zahl("SELECT COUNT(*) FROM " + TAB_K);
             KaeltemaschinenTypkennfelder.Einspielergebnis z = KaeltemaschinenTypkennfelderSchema.Ausfuehren(null);

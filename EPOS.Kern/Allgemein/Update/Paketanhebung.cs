@@ -397,6 +397,10 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket führt keine Investitionsvorlage am Katalogsatz; die Spalte kommt leer an.
             new Stufe(KatalogkostenInvestitionSchema.SCHRITT, Art.Ddl,
                       "Katalogkosten Investition (Investitionsvorlage am Katalogsatz)"),
+            // Ein Paket fuehrt keinen Katalog der Kaeltemaschinen (das Ziel fuehrt die Typkennfelder samt Ergaenzung); die
+            // Projektkopien seiner Kaeltemaschinen und ihre Ergebnisse bekommen die Spalten leer (heutiger Weg).
+            new Stufe(KaeltemaschineTeillastSchema.SCHRITT, Art.Katalog,
+                      "Teillast und Takten der Kältemaschine (Teillastkurve, C_d, Verdichterregelung, Randweg, Kennzahlen)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

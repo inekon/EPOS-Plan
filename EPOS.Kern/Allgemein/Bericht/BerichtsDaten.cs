@@ -185,6 +185,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public BivalenzBerichtswerte Bivalenz;
 
+        /// <summary>
+        /// KM3‑E3‑b: die Lesewerte der Teillastrechnung je Projektkopie einer Kältemaschine (<c>ID_Kaeltemaschine</c>) für
+        /// die Tafel „Teillast und Takten der Kältemaschinen“; leer ohne Kältemaschine.
+        /// </summary>
+        public Dictionary<int, KaeltemaschineTeillastLesewerte> KaeltemaschineTeillast = new Dictionary<int, KaeltemaschineTeillastLesewerte>();
+
         /// <summary>Kennzahlwerte je Katalogschlüssel (null = für dieses Projekt nicht verfügbar).</summary>
         public Dictionary<string, double?> Kennzahlen = new Dictionary<string, double?>();
 
@@ -1012,6 +1018,13 @@ namespace WindowsFormsApplication1
         /// nicht als Reihe.</para>
         /// </summary>
         public Dictionary<int, Netzbezugsspitze> Kaeltestromspitzen = new Dictionary<int, Netzbezugsspitze>();
+
+        /// <summary>
+        /// KM3 (Fachkonzept Teillast und Takten 5.3): die Verdichterstunden je Kältemaschine mit Teillastweg — Schlüssel
+        /// ist der Platz in der Ergebnisliste <c>Kaeltemaschinen</c>. Nenner des Teillastanteils; das Ergebnis speichert
+        /// ihn nicht, darum kommt er aus dem Lauf des Zeitreihensatzes.
+        /// </summary>
+        public Dictionary<int, int> KaeltemaschineVerdichterstunden = new Dictionary<int, int>();
 
         /// <summary>
         /// <b>Der Betrieb je Heizkessel</b> (Konzept Kesselkennlinie 5, Bericht): Jahresnutzungsgrad, Anteil des

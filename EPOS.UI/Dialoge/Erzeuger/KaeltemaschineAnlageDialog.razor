@@ -124,6 +124,12 @@
                                       Wert="@Zahl(d.Geraet?.Mindestteillast, 0)" NurLesen="true" Kurz="true" />
                             <Textfeld Bezeichnung="@Texte.LabelKaltwasserMin" Einheit="@Texte.EinheitGradC"
                                       Wert="@Zahl(d.Geraet?.KaltwasserMin, 1)" NurLesen="true" Kurz="true" />
+                            @* KM3-E3-b (Fachkonzept Teillast und Takten 7.2): die Lesewerte der Teillastrechnung der
+                               Projektkopie - gepflegt in der Verwaltung, hier keine Eingabe. *@
+                            <Textfeld Bezeichnung="@Texte.LabelTeillastWeg" Wert="@(d.Geraet?.TeillastWeg ?? "")" NurLesen="true" />
+                            <Textfeld Bezeichnung="@Texte.LabelVerdichterregelung" Wert="@(d.Geraet?.Verdichterregelung ?? "")" NurLesen="true" />
+                            <Textfeld Bezeichnung="@Texte.LabelTaktverlust" Wert="@(d.Geraet?.Taktverlustfaktor ?? "")" NurLesen="true" Kurz="true" />
+                            <Textfeld Bezeichnung="@Texte.LabelKennfeldrand" Wert="@(d.Geraet?.Kennfeldrand ?? "")" NurLesen="true" />
                         </KindInhalt>
                     </Formularraster>
                     <Herleitungszeile Text="@Texte.HinweisKatalog" />
@@ -139,6 +145,10 @@
                     <Textfeld Bezeichnung="@Texte.LabelName" Wert="@d.Bezeichner" WertChanged="BeiName" />
                     <Ganzzahlfeld Bezeichnung="@Texte.LabelAnzahl" Feldname="@Texte.LabelAnzahl" Wert="@d.Anzahl"
                                   WertChanged="BeiAnzahl" />
+                    @if (Folgeschaltung(d) is string folge)
+                    {
+                        <Herleitungszeile Text="@folge" />
+                    }
                     <Zahlenfeld Bezeichnung="@Texte.LabelVorlauf" Feldname="@Texte.LabelVorlauf" Einheit="@Texte.EinheitGradC"
                                 Wert="@d.KuehlVorlauf" Platzhalter="@PlatzhalterVorlauf(d)" WertChanged="BeiVorlauf" />
                     @if (d.Geraet?.KaltwasserMin is double min)
@@ -204,6 +214,14 @@
     // =====================================================================
     // Gaben — die Datenseite liegt in der Hülle (KaeltemaschineAnlageHuelle)
     // =====================================================================
+
+    /// <summary>
+    /// KM3-E3-b: der Hinweis „Folgeschaltung von n Maschinen“ — nur bei Anzahl &gt; 1 und gesetzter Teillastrechnung;
+    /// sonst <c>null</c>.
+    /// </summary>
+    internal string? Folgeschaltung(KaeltemaschineAnlageDaten d)
+        => d.Anzahl is int n && n > 1 && d.Geraet?.TeillastGesetzt == true
+            ? string.Format(CultureInfo.CurrentCulture, Texte.HinweisFolgeschaltung, n) : null;
 
     /// <summary>Die gespeicherten Anlagen des Projekts samt Kennwerten ihrer Projektkopie.</summary>
     [Parameter] public Func<IReadOnlyList<KaeltemaschineAnlageDaten>>? Anlagen { get; set; }

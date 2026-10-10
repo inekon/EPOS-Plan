@@ -137,8 +137,16 @@ namespace WindowsFormsApplication1
         internal static KaeltemaschineGeraetwerte Werte(KaeltemaschineModel m)
         {
             if (m == null) return null;
+            // KM3-E3-b: die Lesewerte der Teillastrechnung - dieselbe Herleitung wie der Lauf (Kaeltemaschinenteillast).
+            KaeltemaschineTeillastLesewerte t = KaeltemaschineTeillastLesewerte.Aus(m);
+            var kultur = System.Globalization.CultureInfo.CurrentUICulture;
             return new KaeltemaschineGeraetwerte
             {
+                TeillastWeg = t.WegText(kultur),
+                Verdichterregelung = t.RegelungText(kultur),
+                Taktverlustfaktor = t.CdText(System.Globalization.CultureInfo.CurrentCulture),
+                Kennfeldrand = t.RandwegText(kultur),
+                TeillastGesetzt = t.Gesetzt,
                 Bezeichner = m.Bezeichner ?? "",
                 Firma = m.Firma ?? "",
                 Typ = m.Typ ?? "",

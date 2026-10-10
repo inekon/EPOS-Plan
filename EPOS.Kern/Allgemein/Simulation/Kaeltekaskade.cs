@@ -114,9 +114,6 @@ namespace WindowsFormsApplication1
         /// <summary>Stunden mit Kennlinie am Rand (nur Kältemaschine).</summary>
         public int StundenRandwert;
 
-        /// <summary>Stunden unter der Mindestteillast — die Maschine taktet (nur Kältemaschine).</summary>
-        public int StundenTakt;
-
         /// <summary>Stunden, in denen die Kennlinienleistung die Last nicht trug (nur Kältemaschine).</summary>
         public int StundenLeistungsgrenze;
 
@@ -213,7 +210,10 @@ namespace WindowsFormsApplication1
         /// <summary>Starts im Kühlbetrieb [1/a] — nur mit <see cref="Mindestanteil"/> &gt; 0.</summary>
         public int Starts;
 
-        /// <summary>Taktstunden im Kühlbetrieb [h/a]: Kühlstunden unter der Mindestleistung.</summary>
+        /// <summary>
+        /// Taktstunden im Kühlbetrieb [h/a]: Kühlstunden unter der Mindestleistung (Wärmepumpe) bzw. unter der
+        /// Mindestteillast (Kältemaschine) — ein Zähler für beide Wege (Fachkonzept Teillast und Takten 5.3).
+        /// </summary>
         public int Taktstunden;
 
         /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [kWh/a] — Teil von <see cref="StromGesamtKwh"/>.</summary>
@@ -222,6 +222,34 @@ namespace WindowsFormsApplication1
         /// <summary>Die Stunde des letzten Kühllaufs (für die Zählung der Laufphasen); −2 = keiner.</summary>
         internal int LetzteKuehlstunde = -2;
 
+        // ---- KM3: Teillast und Takten der Kältemaschine (Fachkonzept 5.3) ------------
+        // Nur mit Teillast_Weg (bzw. Kennfeld_Randweg GUETEGRAD für die extrapolierten Stunden) belegt; Starts und
+        // TaktstromKwh/Taktstrom_stuendlich tragen dann den Mehrstrom und die Starts der Maschine.
+
+        /// <summary>KM3: Verdichterstunden mit PLR_min ≤ PLR &lt; <see cref="KaelteFestwerte.TEILLASTSTUNDEN_LASTGRAD_GRENZE"/>.</summary>
+        public int StundenTeillast;
+
+        /// <summary>KM3: Stunden mit Gütegrad-Extrapolation über den Kennfeldrand.</summary>
+        public int StundenExtrapoliert;
+
+        /// <summary>
+        /// KM3: Verdichterstunden der Maschine mit Weg (Stunden mit Kälte über den Verdichter, ohne freie Kühlung) — der
+        /// Nenner des Teillastanteils (Fachkonzept 5.3, <c>kaelte.km.teillastanteil</c>); nicht gespeichert.
+        /// </summary>
+        public int StundenVerdichter;
+
+        /// <summary>KM3: Σ Kälte · Lastgrad der Verdichterstunden [kWh] — Zähler des kältegewichteten Lastgrads.</summary>
+        public double LastgradGewichtKwh;
+
+        /// <summary>KM3: Σ Kälte der Verdichterstunden mit Weg [kWh] — Nenner des kältegewichteten Lastgrads.</summary>
+        public double LastgradKaelteKwh;
+
+        /// <summary>KM3: kältegewichteter mittlerer Lastgrad der Verdichterstunden; 0 ohne solche Stunde.</summary>
+        public double LastgradMittel => LastgradKaelteKwh > 0 ? LastgradGewichtKwh / LastgradKaelteKwh : 0.0;
+
+        /// <summary>KM3: laufende Maschinen der Vorstunde <see cref="LetzteKuehlstunde"/> (Starts der Folgeschaltung).</summary>
+        internal int LaufendVorstunde;
+
         /// <summary>Setzt das Ergebnis auf den Laufanfang.</summary>
         internal void Nullen()
         {
@@ -229,6 +257,12 @@ namespace WindowsFormsApplication1
             Taktstunden = 0;
             TaktstromKwh = 0;
             LetzteKuehlstunde = -2;
+            StundenTeillast = 0;
+            StundenExtrapoliert = 0;
+            StundenVerdichter = 0;
+            LastgradGewichtKwh = 0;
+            LastgradKaelteKwh = 0;
+            LaufendVorstunde = 0;
             Array.Clear(Kaelte_stuendlich, 0, Kaelte_stuendlich.Length);
             Array.Clear(Strom_stuendlich, 0, Strom_stuendlich.Length);
             Array.Clear(Taktstrom_stuendlich, 0, Taktstrom_stuendlich.Length);
@@ -244,7 +278,6 @@ namespace WindowsFormsApplication1
             StundenFreieKuehlung = 0;
             KaelteFreiKwh = 0;
             StundenRandwert = 0;
-            StundenTakt = 0;
             StundenLeistungsgrenze = 0;
             OffenAnLeistungsgrenzeKwh = 0;
         }
@@ -781,6 +814,7 @@ namespace WindowsFormsApplication1
             double last = rest + lade;
             KaeltemaschinenStunde s = e.Maschine.Stunde(h, last, kaltwasserC);
             if (s.Randwert) e.StundenRandwert++;
+            if (s.Extrapoliert) e.StundenExtrapoliert++;
             if (!(s.KaelteKwh > 0))
             {
                 if (rest > 0)
@@ -804,7 +838,8 @@ namespace WindowsFormsApplication1
             e.HilfsstromGesamtKwh += hilfs;
             e.StundenMitKaelte++;
             if (s.FreieKuehlung) { e.StundenFreieKuehlung++; e.KaelteFreiKwh += s.KaelteKwh; }
-            if (s.Takt) e.StundenTakt++;
+            if (s.Takt) e.Taktstunden++;
+            if (e.Maschine.TeillastWirksam) TeillastBuchen(e, h, s);
 
             Deckung_stuendlich[h] += raum;
             Stromverbrauch_Kuehlung_stuendlich[h] += strom;
@@ -821,6 +856,32 @@ namespace WindowsFormsApplication1
             }
             if (ladung > 0) lade -= SpeicherLaden(h, ladung);
             if (lade < 0) lade = 0;
+        }
+
+        /// <summary>
+        /// KM3 (Fachkonzept Teillast und Takten 3.3, 5.1 Schritt 7): bucht Mehrstrom, Starts, Teillaststunden und Lastgrad
+        /// einer Verdichterstunde der Kältemaschine mit <c>Teillast_Weg</c>. Der Mehrstrom steckt schon im Verdichterstrom
+        /// der Stunde (vor dem Hilfsstromzuschlag, wie an der Wärmepumpe); hier steht er zusätzlich in
+        /// <see cref="Kaelteerzeuger.Taktstrom_stuendlich"/>. Starts: in einer Taktstunde die Starts im Takt, sonst je
+        /// Maschine, die gegenüber der Vorstunde neu läuft (Übergang aus → an, Muster <see cref="Taktverlust"/>).
+        /// </summary>
+        private static void TeillastBuchen(Kaelteerzeuger e, int h, KaeltemaschinenStunde s)
+        {
+            if (s.FreieKuehlung || !(s.KaelteKwh > 0)) return;
+            e.StundenVerdichter++;
+            if (s.MehrstromKwh > 0)
+            {
+                e.TaktstromKwh += s.MehrstromKwh;
+                if (h >= 0 && h < e.Taktstrom_stuendlich.Length) e.Taktstrom_stuendlich[h] += s.MehrstromKwh;
+            }
+            int vorher = e.LetzteKuehlstunde == h - 1 ? e.LaufendVorstunde : 0;
+            if (s.Takt) e.Starts += s.Starts;
+            else if (s.Laufend > vorher) e.Starts += s.Laufend - vorher;
+            e.LetzteKuehlstunde = h;
+            e.LaufendVorstunde = s.Laufend;
+            if (!s.Takt && s.Lastgrad < KaelteFestwerte.TEILLASTSTUNDEN_LASTGRAD_GRENZE) e.StundenTeillast++;
+            e.LastgradGewichtKwh += s.KaelteKwh * s.Lastgrad;
+            e.LastgradKaelteKwh += s.KaelteKwh;
         }
 
         /// <summary>

@@ -409,6 +409,10 @@ namespace WindowsFormsApplication1
                 Kaeltemaschine k = Kaeltemaschine.AusModell(m, out bool angehoben);
                 if (!string.IsNullOrWhiteSpace(a.Bezeichner)) k.Bezeichner = a.Bezeichner;
                 k.Anzahl = Math.Max(1, a.Anzahl);
+                // KM3: eine gewählte, aber verworfene Teillastkurve rechnet linear mit Taktverlust - einmal je Maschine gemeldet.
+                if (k.Teillast != null && k.Teillast.Herkunft == KaeltemaschinenKurvenherkunft.Verworfen)
+                    Protokoll.HinweisEinmal("kuehl-km-kurve-verworfen-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KURVE_VERWORFEN, k.Bezeichner));
                 if (!erhoben)
                 {
                     Protokoll.HinweisEinmal("kuehl-km-projekt-aus-" + id,
@@ -927,13 +931,18 @@ namespace WindowsFormsApplication1
                     (e.KaelteFreiKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
                     e.StundenFreieKuehlung,
                     (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    e.StundenTakt));
+                    e.Taktstunden));
             if (e.StundenRandwert > 0)
                 Protokoll.HinweisEinmal("kuehl-km-randwert-" + e.AnlagenID,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_RANDWERT,
                         e.Bezeichner, e.StundenRandwert,
                         k.Kennlinie.RueckkuehlMin.ToString("F1", CultureInfo.CurrentCulture),
                         k.Kennlinie.RueckkuehlMax.ToString("F1", CultureInfo.CurrentCulture), kw));
+            // KM3: die Stunden mit Gütegrad-Extrapolation - nur mit Kennfeld_Randweg GUETEGRAD.
+            if (k.GuetegradWirksam && e.StundenExtrapoliert > 0)
+                Protokoll.HinweisEinmal("kuehl-km-extrapoliert-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_EXTRAPOLIERT,
+                        e.Bezeichner, e.StundenExtrapoliert));
             if (e.StundenLeistungsgrenze > 0)
                 Protokoll.WarnungEinmal("kuehl-km-unterdeckung-" + e.AnlagenID,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_UNTERDECKUNG,

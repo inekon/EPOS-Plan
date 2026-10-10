@@ -594,7 +594,8 @@ namespace EPOS.Kern.Tests
                                    "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht" };
 
                 case Anlagenart.Kaeltemaschine:
-                    // KaeltemaschineKatalogDialog (KU3-1): die zwoelf Fachspalten der einen Liste.
+                    // KaeltemaschineKatalogDialog (KU3-1): die zwoelf Grundspalten der einen Liste und die acht Spalten der
+                    // Gruppe „Teillast und Takten" (KM3-E3-a).
                     return KaeltemaschineSchema.Fachspalten;
 
                 default:
