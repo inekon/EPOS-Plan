@@ -237,11 +237,6 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Ein gekürzter Spaltenkopf in den Katalogen nennt beim Verweilen mit der Maus seinen vollen Namen. (#882)
 - Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
 - Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
-- Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#885)
-- Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#886)
-- Seit 10.10.2026: Die Zeitachse der Diagramme nennt unter jeder Stunde das Datum, und der Strich an der Mausstelle folgt der Maus auch im vergrößerten Ausschnitt. (#887)
-- Seit 10.10.2026: Im Dialog Wärme-/Strombedarf zeigt der Reiter Grafik die Jahresganglinie und wahlweise Monats-, Wochen- und Tagessummen je Bedarfsart, jeweils mit CSV-Export. (#888)
-- Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#889)
 
 *Die folgenden vier Sätze (#886 bis #888) sind nach dem Sammel-Upload #889 hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer. Die Sätze darüber lagen dem Upload vor; was davon nicht im Logbuch steht (etwa #884, eine Fehlerbehebung), ist nach Regel 13.4 entfallen.*
 
@@ -249,6 +244,14 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der BHKW-Dialog folgt dem Muster des Heizkesseldialogs: Bearbeiten je Bereich, Mehrfachbearbeitung und „In die Datenbank übernehmen…“. (#887)
 - Seit 10.10.2026: In der Katalogliste der Projektdialoge sind die Spalten wählbar („Spalten…“); im Projekt verwendete Sätze sind farblich gekennzeichnet statt in einer eigenen Spalte. (#888)
 - Seit 10.10.2026: Im Gebäudedialog steht „Bearbeiten…“ in der Kopfleiste der Projektliste. (#888)
+
+*Die folgenden fünf Sätze (#890 bis #894) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+
+- Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#890)
+- Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#891)
+- Seit 10.10.2026: Die Zeitachse der Diagramme nennt unter jeder Stunde das Datum, und der Strich an der Mausstelle folgt der Maus auch im vergrößerten Ausschnitt. (#892)
+- Seit 10.10.2026: Im Dialog Wärme-/Strombedarf zeigt der Reiter Grafik die Jahresganglinie und wahlweise Monats-, Wochen- und Tagessummen je Bedarfsart, jeweils mit CSV-Export. (#893)
+- Seit 10.10.2026: In den Ergebnistabellen der Simulation stehen die Spaltenköpfe über ihren Werten. (#894)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
