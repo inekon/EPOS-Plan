@@ -1023,4 +1023,79 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.DoesNotContain("word-break", block, StringComparison.Ordinal);
         Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
     }
+
+    // =====================================================================
+    //  Die Kennzahlenzeile — keine Kachel überlappt (Wärme, Strom, Kälte)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Zahl und Einheit stehen in EINEM Element:</b> Jedes Kennzahlenband (Wärme, Strom,
+    /// Kälte zweimal) trägt nur Kacheln, jede Kachel schliesst mit dem Wertelement, und darin
+    /// stehen die Zahl als Text und die Einheit als einziges Kind <c>small</c> — das Element,
+    /// das das Stilblatt nicht umbrechen lässt. Breite und Überlappung misst
+    /// <c>Proben/Rasterprobe/kennzahlenprobe.mjs</c>; hier steht die Struktur.
+    /// </summary>
+    [Fact]
+    public void Jede_Kennzahl_traegt_Zahl_und_Einheit_in_einem_Element()
+    {
+        var seite = ZeichnenMitKaelteerzeuger(_ring);
+
+        var baender = seite.FindAll("div.epos-simueb-kennzahlen");
+        Assert.Equal(4, baender.Count);
+        foreach (var band in baender)
+        {
+            Assert.NotEmpty(band.Children);
+            foreach (var kachel in band.Children)
+            {
+                Assert.Contains("epos-simueb-kennzahl", kachel.ClassList);
+                var wert = kachel.Children[^1];
+                Assert.Equal("epos-simueb-kennzahl-wert", wert.ClassName);
+                Assert.Single(wert.Children);
+                Assert.Equal("SMALL", wert.Children[0].TagName);
+                string zahl = wert.TextContent.Substring(0, wert.TextContent.Length - wert.Children[0].TextContent.Length);
+                Assert.False(string.IsNullOrWhiteSpace(zahl));
+                Assert.DoesNotContain(" ", zahl.Trim(), StringComparison.Ordinal);
+            }
+        }
+        Assert.Equal("MWh/a", baender[0].QuerySelector(".epos-simueb-kennzahl-wert small")!.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Regel als Regel:</b> Das Kennzahlenband ist ein Container, unter 480 px stehen die
+    /// Kacheln untereinander, der Wert bricht nicht um, und keine Kachel wird schmaler als ihr
+    /// Inhalt — kein <c>minmax(0, …)</c>-Raster, kein <c>min-width: 0</c>, kein Wortbruch, kein
+    /// Abschneiden.
+    /// </summary>
+    [Fact]
+    public void Das_Stilblatt_haelt_die_Kennzahlen_als_Container_ohne_Ueberlappung()
+    {
+        var d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+        Assert.NotNull(d);
+        string css = System.IO.File.ReadAllText(System.IO.Path.Combine(d!.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))
+                                   .Replace("\r\n", "\n");
+
+        int a = css.IndexOf(".epos-simueb-kennzahlen {", StringComparison.Ordinal);
+        int e = css.IndexOf(".epos-simueb-eigenverbrauch {", a, StringComparison.Ordinal);
+        Assert.True(a > 0 && e > a);
+        string block = css.Substring(a, e - a);
+
+        Assert.Contains("container-type: inline-size;", block, StringComparison.Ordinal);
+        Assert.Contains("container-name: epos-simueb-kennzahlen;", block, StringComparison.Ordinal);
+        Assert.Contains("@container epos-simueb-kennzahlen (max-width: 479.98px)", block, StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap;", block, StringComparison.Ordinal);
+
+        int w = block.IndexOf("\n.epos-simueb-kennzahl-wert {", StringComparison.Ordinal);
+        Assert.True(w >= 0);
+        Assert.Contains("white-space: nowrap;", block.Substring(w, block.IndexOf('}', w) - w), StringComparison.Ordinal);
+
+        Assert.DoesNotContain("minmax(0", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("min-width: 0", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("overflow-wrap: anywhere", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("word-break", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("text-overflow", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("overflow: hidden", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("@media", block, StringComparison.Ordinal);
+    }
 }
