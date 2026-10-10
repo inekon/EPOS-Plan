@@ -267,6 +267,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
         // Stufe G7a (W3): der Gebaeudeexport - die Postleitzahl und die Bestaetigung der Meldungen;
         // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
+        // Freigabe der Importdialoge, Teil A (10.10.2026): alle Eingabestellen im Katalog.
+        new("SpeicherFlottenCsvDialog", 26),
+        new("GanglinieImportOptionenDialog", 9),
+        new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
+        new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
         new("GebaeudeExportDialog", 5, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen; die Formatwahl gbXML/IFC trifft der Anwender, sie nimmt die Bestätigung zurück; die Wahl „Originaldatei anreichern“ und die Bestätigung des Beipackzettels (fremde Datei verändert weitergeben) sind Handlungen des Anwenders, die eine Dateiwahl voraussetzen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
@@ -712,7 +717,11 @@ public sealed class KiMaskenabdeckungWacheTests
                     "Nur " + geltung.Count(k => k.Angemeldet) + " Anmeldungen gefunden.");
         Assert.True(geltung.Count(k => k.Eingaben.Count > 0) > 100,
                     "Nur " + geltung.Count(k => k.Eingaben.Count > 0) + " Dateien mit Eingabefeldern.");
-        Assert.True(KiDialogAusnahmen.Alle.Count > 20, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
+        // Die Ausnahmeliste schrumpft mit der Freigabe der Importdialoge (Anwenderauftrag
+        // 10.10.2026) auf zwölf Einträge — der Assistent selbst, Lizenz und Schlüssel und die
+        // bewusst ausgenommenen Rückfragen bleiben. Die Schwelle hält den Bestand gegen eine
+        // Wache, die ihre Liste nicht mehr findet, nicht gegen die Freigabe.
+        Assert.True(KiDialogAusnahmen.Alle.Count >= 10, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
     }
 
     /// <summary>

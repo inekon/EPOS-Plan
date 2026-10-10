@@ -50890,5 +50890,122 @@ Chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
   </data>
+  <data name="KI_DLG_MASKE_FCSV" xml:space="preserve">
+    <value>Einlesen einer CSV-Datei der Flotte</value>
+  </data>
+  <data name="KI_DLG_MASKE_GIO" xml:space="preserve">
+    <value>Importoptionen einer Ganglinie</value>
+  </data>
+  <data name="KI_DLG_MASKE_SPOT" xml:space="preserve">
+    <value>Spotpreise einlesen</value>
+  </data>
+  <data name="KI_DLG_MASKE_IKF" xml:space="preserve">
+    <value>Konflikte beim Import</value>
+  </data>
+  <data name="KI_DLG_FCSV_INTERVALL_ERL" xml:space="preserve">
+    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet.</value>
+  </data>
+  <data name="KI_DLG_FCSV_LAST_ERL" xml:space="preserve">
+    <value>Die Spalte mit der Bruttolast der Flotte.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PV_ERL" xml:space="preserve">
+    <value>Die Spalte mit der PV-Leistung; „nicht vorhanden“, wenn die Datei keine führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BHKW_ERL" xml:space="preserve">
+    <value>Die Spalte mit der BHKW-Leistung; „nicht vorhanden“, wenn die Datei keine führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BEZUG_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Bezugspreis.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PVPREIS_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Verkaufspreis des PV-Stroms; „nicht vorhanden“, wenn die Datei keinen führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BHKWPREIS_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Verkaufspreis des BHKW-Stroms; „nicht vorhanden“, wenn die Datei keinen führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BATTERIEPREIS_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Verkaufspreis des Batteriestroms; „nicht vorhanden“, wenn die Datei keinen führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_LEISTUNGSEINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Leistungsspalten der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PREISEINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Preisspalten der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_SNAPSHOT_ERL" xml:space="preserve">
+    <value>Die Spalte mit der Kennung des Prognosestands; nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BEKANNT_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Zeitpunkt, seit dem die Prognose bekannt ist; nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_ENTSCHEIDUNG_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Entscheidungszeitpunkt; nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_FCSV_NUR_EINE_SPALTE" xml:space="preserve">
+    <value>Zeitstempelspalte und Zeitstempelformat gelten nur bei der Zeitangabe „eine Spalte“ – bitte zuerst die Zeitangabe umstellen.</value>
+  </data>
+  <data name="KI_FCSV_NUR_GETRENNT" xml:space="preserve">
+    <value>Datums- und Uhrzeitspalte und ihre Formate gelten nur bei getrennter Zeitangabe – bitte zuerst die Zeitangabe umstellen.</value>
+  </data>
+  <data name="KI_FCSV_NUR_PROGNOSEN" xml:space="preserve">
+    <value>Die Prognosezuordnung gibt es nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_DLG_GIO_TRENNZEICHEN_ERL" xml:space="preserve">
+    <value>Das Zeichen, das die Spalten der Datei trennt. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_DEZIMAL_ERL" xml:space="preserve">
+    <value>Das Zeichen, das in den Zahlen der Datei Ganz- und Nachkommateil trennt. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_WERTSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit den Werten der Ganglinie.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEITSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Zeitstempel; „(keine)“, wenn die Datei die Werte ohne Zeitangabe in Folge führt.</value>
+  </data>
+  <data name="KI_DLG_GIO_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Werte der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_GIO_RASTER_ERL" xml:space="preserve">
+    <value>Das Zeitraster der Werte in der Datei.</value>
+  </data>
+  <data name="KI_DLG_GIO_KONVENTION_ERL" xml:space="preserve">
+    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet.</value>
+  </data>
+  <data name="KI_DLG_GIO_BLATT_ERL" xml:space="preserve">
+    <value>Das Tabellenblatt einer Excel-Mappe, aus dem gelesen wird.</value>
+  </data>
+  <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
+    <value>Trägt die erste Zeile die Spaltennamen statt Werte? Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
+    <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
+  </data>
+  <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name, unter dem die Preisreihe abgelegt wird; leer wird er beim Wählen der Datei mit dem Dateinamen vorbelegt.</value>
+  </data>
+  <data name="KI_DLG_SPOT_STAMM_NAME" xml:space="preserve">
+    <value>Für alle Projekte</value>
+  </data>
+  <data name="KI_DLG_SPOT_STAMM_ERL" xml:space="preserve">
+    <value>Steht die Preisreihe allen Projekten zur Verfügung oder nur dem geöffneten?</value>
+  </data>
+  <data name="KI_SPOT_KEINE_DATEI" xml:space="preserve">
+    <value>Es ist noch keine Datei gewählt und geprüft – die Datei wählen Sie in der Maske von Hand.</value>
+  </data>
+  <data name="KI_DLG_IKF_NAME_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KI_DLG_IKF_NAME_ERL" xml:space="preserve">
+    <value>Der Name, unter dem der Eintrag angelegt wird; änderbar nur bei der Aktion „Umbenennen“.</value>
+  </data>
+  <data name="KI_DLG_IKF_AKTION_ERL" xml:space="preserve">
+    <value>Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt vom Befund der Zeile ab.</value>
+  </data>
+  <data name="KI_IKF_NAME_NUR_UMBENENNEN" xml:space="preserve">
+    <value>Den Namen ändern Sie nur bei der Aktion „Umbenennen“ – bitte zuerst die Aktion der Zeile umstellen.</value>
+  </data>
+  <data name="KI_IKF_AKTION_NICHT_ERLAUBT" xml:space="preserve">
+    <value>Für diesen Eintrag ist die Aktion nicht erlaubt; zur Wahl stehen: {0}.</value>
+  </data>
 </root>
 

@@ -587,6 +587,18 @@ namespace WindowsFormsApplication1
                 // Begruendung wie bei den Ueberlagerungen der
                 // Energietraegerverwaltung.
                 { KiMaskennamen.SPEICHER_ZEITREIHEN, STROMSPEICHER_AUSLEGUNG },
+                // Das FORMAT einer CSV-Datei der Flotte geht ebenso als Ueberlagerung der
+                // Stromspeicher-Auslegung auf und braucht eine gewaehlte Datei.
+                { KiMaskennamen.SPEICHER_FLOTTEN_CSV, STROMSPEICHER_AUSLEGUNG },
+                // Die IMPORTOPTIONEN einer Ganglinie gehen im Einlesen einer Gangliniendatei auf
+                // (Stromganglinien, Lastspitzenkappung, Waermebedarf); kontextfrei gibt es sie nicht,
+                // ihr Ziel ist die Stromganglinien-Verwaltung, aus der der Anwender einliest.
+                { KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, Masken.StromganglinieAdmin },
+                // Der SPOTPREISIMPORT geht als Ueberlagerung aus der Energietraegerverwaltung auf.
+                { KiMaskennamen.SPOTPREIS_IMPORT, ENERGIETRAEGER_VERWALTUNG },
+                // Die KONFLIKTLISTE geht nur im Lauf eines Herstellerimports auf; kontextfrei gibt
+                // es sie nicht - ihr Ziel ist die Startseite wie bei den Ueberlagerungen des Gebaeudes.
+                { KiMaskennamen.IMPORT_KONFLIKTE, STARTSEITE },
 
                 // ---- Welle KI-F6: BERICHTE und PROJEKT -----------------------
                 //

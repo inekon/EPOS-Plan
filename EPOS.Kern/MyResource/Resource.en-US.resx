@@ -50883,5 +50883,122 @@ chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
   </data>
+  <data name="KI_DLG_MASKE_FCSV" xml:space="preserve">
+    <value>Reading a fleet CSV file</value>
+  </data>
+  <data name="KI_DLG_MASKE_GIO" xml:space="preserve">
+    <value>Import options of a load profile</value>
+  </data>
+  <data name="KI_DLG_MASKE_SPOT" xml:space="preserve">
+    <value>Import spot prices</value>
+  </data>
+  <data name="KI_DLG_MASKE_IKF" xml:space="preserve">
+    <value>Import conflicts</value>
+  </data>
+  <data name="KI_DLG_FCSV_INTERVALL_ERL" xml:space="preserve">
+    <value>Whether the time stamp marks the start or the end of the interval.</value>
+  </data>
+  <data name="KI_DLG_FCSV_LAST_ERL" xml:space="preserve">
+    <value>The column holding the gross load of the fleet.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PV_ERL" xml:space="preserve">
+    <value>The column holding the PV output; “not present” if the file has none.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BHKW_ERL" xml:space="preserve">
+    <value>The column holding the CHP output; “not present” if the file has none.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BEZUG_ERL" xml:space="preserve">
+    <value>The column holding the purchase price.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PVPREIS_ERL" xml:space="preserve">
+    <value>The column holding the selling price of PV power; “not present” if the file has none.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BHKWPREIS_ERL" xml:space="preserve">
+    <value>The column holding the selling price of CHP power; “not present” if the file has none.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BATTERIEPREIS_ERL" xml:space="preserve">
+    <value>The column holding the selling price of battery power; “not present” if the file has none.</value>
+  </data>
+  <data name="KI_DLG_FCSV_LEISTUNGSEINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the power columns of the file.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PREISEINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the price columns of the file.</value>
+  </data>
+  <data name="KI_DLG_FCSV_SNAPSHOT_ERL" xml:space="preserve">
+    <value>The column holding the forecast snapshot ID; only when reading forecasts.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BEKANNT_ERL" xml:space="preserve">
+    <value>The column holding the time since which the forecast is known; only when reading forecasts.</value>
+  </data>
+  <data name="KI_DLG_FCSV_ENTSCHEIDUNG_ERL" xml:space="preserve">
+    <value>The column holding the decision time; only when reading forecasts.</value>
+  </data>
+  <data name="KI_FCSV_NUR_EINE_SPALTE" xml:space="preserve">
+    <value>Time stamp column and format only apply when the time is given in one column – please switch the time setting first.</value>
+  </data>
+  <data name="KI_FCSV_NUR_GETRENNT" xml:space="preserve">
+    <value>Date and time columns and their formats only apply when date and time are separate – please switch the time setting first.</value>
+  </data>
+  <data name="KI_FCSV_NUR_PROGNOSEN" xml:space="preserve">
+    <value>The forecast mapping only exists when reading forecasts.</value>
+  </data>
+  <data name="KI_DLG_GIO_TRENNZEICHEN_ERL" xml:space="preserve">
+    <value>The character separating the columns of the file. The preview shows the change only after “Refresh preview”.</value>
+  </data>
+  <data name="KI_DLG_GIO_DEZIMAL_ERL" xml:space="preserve">
+    <value>The character separating integer and decimal part in the numbers of the file. The preview shows the change only after “Refresh preview”.</value>
+  </data>
+  <data name="KI_DLG_GIO_WERTSPALTE_ERL" xml:space="preserve">
+    <value>The column holding the values of the load profile.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEITSPALTE_ERL" xml:space="preserve">
+    <value>The column holding the time stamp; “(none)” if the file lists the values in sequence without time.</value>
+  </data>
+  <data name="KI_DLG_GIO_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the values in the file.</value>
+  </data>
+  <data name="KI_DLG_GIO_RASTER_ERL" xml:space="preserve">
+    <value>The time grid of the values in the file.</value>
+  </data>
+  <data name="KI_DLG_GIO_KONVENTION_ERL" xml:space="preserve">
+    <value>Whether the time stamp marks the start or the end of the interval.</value>
+  </data>
+  <data name="KI_DLG_GIO_BLATT_ERL" xml:space="preserve">
+    <value>The worksheet of an Excel workbook to read from.</value>
+  </data>
+  <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
+    <value>Does the first row hold column names instead of values? The preview shows the change only after “Refresh preview”.</value>
+  </data>
+  <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
+    <value>A worksheet only exists for an Excel workbook.</value>
+  </data>
+  <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name under which the price series is stored; if empty, it is prefilled with the file name when the file is chosen.</value>
+  </data>
+  <data name="KI_DLG_SPOT_STAMM_NAME" xml:space="preserve">
+    <value>For all projects</value>
+  </data>
+  <data name="KI_DLG_SPOT_STAMM_ERL" xml:space="preserve">
+    <value>Is the price series available to all projects or only to the open one?</value>
+  </data>
+  <data name="KI_SPOT_KEINE_DATEI" xml:space="preserve">
+    <value>No file has been chosen and checked yet – choose the file by hand in the form.</value>
+  </data>
+  <data name="KI_DLG_IKF_NAME_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KI_DLG_IKF_NAME_ERL" xml:space="preserve">
+    <value>The name under which the entry is created; changeable only with the action “Rename”.</value>
+  </data>
+  <data name="KI_DLG_IKF_AKTION_ERL" xml:space="preserve">
+    <value>What happens to the entry: import, skip, overwrite or rename; which actions are allowed depends on the finding of the row.</value>
+  </data>
+  <data name="KI_IKF_NAME_NUR_UMBENENNEN" xml:space="preserve">
+    <value>The name can only be changed with the action “Rename” – please switch the action of the row first.</value>
+  </data>
+  <data name="KI_IKF_AKTION_NICHT_ERLAUBT" xml:space="preserve">
+    <value>This action is not allowed for this entry; available are: {0}.</value>
+  </data>
 </root>
 

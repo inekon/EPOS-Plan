@@ -310,6 +310,17 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.STROMGANGLINIE_ADMIN,
           typeof(EPOS.UI.Dialoge.Strom.StromganglinieAdminKiSicht) },
 
+        // Freigabe der Importdialoge, Teil A (10.10.2026): vier Importoptions-Dialoge, vier
+        // Sichtklassen - die Dialoge fuehren ihren Stand in privaten Feldern.
+        { KiMaskennamen.SPEICHER_FLOTTEN_CSV,
+          typeof(EPOS.UI.Dialoge.Strom.SpeicherFlottenCsvKiSicht) },
+        { KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN,
+          typeof(EPOS.UI.Dialoge.Strom.GanglinieImportOptionenKiSicht) },
+        { KiMaskennamen.SPOTPREIS_IMPORT,
+          typeof(EPOS.UI.Dialoge.Kosten.SpotpreisImportKiSicht) },
+        { KiMaskennamen.IMPORT_KONFLIKTE,
+          typeof(EPOS.UI.Dialoge.Import.ImportKonflikteKiSicht) },
+
         // Welle KI-F6, Schritt 2 (BERICHTE und PROJEKT): zwei Reiterblaetter der
         // Ansicht „Berichte und Kosten" und die zwei Projektmasken.
         { KiMaskennamen.BERICHTE_UEBERSICHT,
@@ -478,7 +489,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(93, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien
+        Assert.Equal(97, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1649,6 +1660,18 @@ public class KiDialogkatalogTests : IDisposable
     /// </remarks>
     private static readonly Dictionary<string, string> OhneMarkupprobe = new()
     {
+        [KiMaskennamen.SPEICHER_FLOTTEN_CSV] =
+            "bindet über die Sichtklasse SpeicherFlottenCsvKiSicht auf den privaten Optionssatz " +
+            "(drei Stufen tief); Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN] =
+            "bindet über die Sichtklasse GanglinieImportOptionenKiSicht auf die privaten Plätze " +
+            "der Klapplisten; Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.SPOTPREIS_IMPORT] =
+            "bindet über die Sichtklasse SpotpreisImportKiSicht auf zwei private Felder; " +
+            "Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.IMPORT_KONFLIKTE] =
+            "bindet über die Sichtklasse ImportKonflikteKiSicht auf die öffentlichen FELDER der " +
+            "Zeilen (keine Eigenschaften); Zeuge ist KiImportoptionenTests",
         [KiMaskennamen.STROMSPEICHER_AUSLEGUNG] =
             "bindet über die Sichtklasse StromspeicherKiSicht, nicht über das Markup",
         [KiMaskennamen.SIMULATION] =
