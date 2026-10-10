@@ -40,7 +40,8 @@ public sealed class Ganglinienexport
 
     /// <summary>Das Raster, unter dem das Modell geschrieben wird.</summary>
     public Zeitraster RasterFuer(Zeichenmodell modell)
-        => Raster ?? ZeitreihenCsv.RasterAus(ZeitreihenCsv.AusModell(modell));
+        => modell?.Tafel is not null ? Zeitraster.Kalendertag
+         : Raster ?? ZeitreihenCsv.RasterAus(ZeitreihenCsv.AusModell(modell));
 
     /// <summary>Speichert die Reihen des Modells; der Titel wird Dateistamm.</summary>
     public Task Speichern(Zeichenmodell modell, string titel) => _speichern(modell, titel ?? "", RasterFuer(modell));
@@ -48,12 +49,14 @@ public sealed class Ganglinienexport
     /// <summary>
     /// Trägt das Modell eine Zeitreihe? Eine Zeichenfläche mit Stunden- oder Indexachse, oder ein
     /// Säulenbild ohne Zeichenfläche, das seine Reihen im Modell führt — und dazu mindestens eine
-    /// Linie oder Fläche mit Werten. Punktwolken (x = Wert), Kennlinien und Ringe nicht; eine
+    /// Linie oder Fläche mit Werten, oder ein Kalenderteppich mit seiner Tafel (<see cref="Zeitraster.Kalendertag"/>). Punktwolken (x = Wert), Kennlinien und Ringe nicht; eine
     /// Wertachse nur mit dem ausdrücklichen Raster <see cref="Zeitraster.Jahr"/>.
     /// </summary>
     public bool Passt(Zeichenmodell? modell)
     {
         if (modell is null) return false;
+        // Ein Kalenderteppich trägt seine Tafel (365 Tage × 24 Stunden) statt einer Reihe.
+        if (modell.Tafel is { Werte.Length: > 0 }) return true;
         // Eine Wertachse ist eine Kennlinie — außer die Naht sagt ausdrücklich „Jahr“: Der
         // Kapitalwertverlauf zählt Betrachtungsjahre auf einer Wertachse („a“), gleichabständig
         // und ohne eigene x-Werte.

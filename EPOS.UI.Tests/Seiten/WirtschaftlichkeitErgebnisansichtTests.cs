@@ -1449,5 +1449,11 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         var (modell, raster) = Assert.Single(exporte);
         Assert.Equal(WindowsFormsApplication1.Zeitraster.Jahr, raster);
         Assert.All(WindowsFormsApplication1.ZeitreihenCsv.AusModell(modell), s => Assert.Equal(2, s.Werte.Length));
+        // CSV-4: Die Zeitspalte zählt wie die Tafel ab dem Investitionsjahr 0.
+        string[] zeilen = WindowsFormsApplication1.ZeitreihenCsv.Text(raster, WindowsFormsApplication1.ZeitreihenCsv.AusModell(modell))
+                                                                 .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+        Assert.Equal(3, zeilen.Length);
+        Assert.StartsWith("0;", zeilen[1], StringComparison.Ordinal);
+        Assert.StartsWith("1;", zeilen[2], StringComparison.Ordinal);
     }
 }

@@ -894,6 +894,34 @@ namespace WindowsFormsApplication1.Zeichnung
     }
 
     /// <summary>
+    /// <b>Die Tafel eines Teppichbilds</b> (CSV am Kalenderteppich): die Werte, die das Bild als
+    /// Farbe zeigt, Tag für Tag des Gemeinjahrs und Stunde für Stunde (365 × 24, Index
+    /// <c>tag0 · 24 + stunde</c>), samt Wochentag des ersten Tags im Wochentagsraster (0 = Montag).
+    /// Sie trägt keine Zeichnung — PNG und SVG übergehen sie, das Bild bleibt byte-gleich —, nur
+    /// den Export: <c>ZeitreihenCsv.Kalenderteppich</c> schreibt daraus eine Zeile je Tag.
+    /// </summary>
+    /// <param name="Name">Die Größe des Bildes (Heizen, Kühlen, Lüftung …).</param>
+    /// <param name="Einheit">Die Einheit der Werte; leer = keine.</param>
+    /// <param name="Werte">Die 8 760 Werte in Anzeigeeinheit; nicht endlich = „aus“.</param>
+    /// <param name="WochentagDesErstenTags">Der Wochentag des 1. Januar (0 = Montag … 6 = Sonntag).</param>
+    public sealed record Tagesstundentafel(string Name, string Einheit, double[] Werte, int WochentagDesErstenTags)
+    {
+        /// <summary>Wertgleichheit samt Werten (ein Record vergliche das Array über die Referenz).</summary>
+        public bool Gleicht(Tagesstundentafel andere)
+        {
+            if (andere == null) return false;
+            if (!string.Equals(Name, andere.Name, StringComparison.Ordinal)) return false;
+            if (!string.Equals(Einheit, andere.Einheit, StringComparison.Ordinal)) return false;
+            if (WochentagDesErstenTags != andere.WochentagDesErstenTags) return false;
+            if (Werte == null || andere.Werte == null) return Werte == andere.Werte;
+            if (Werte.Length != andere.Werte.Length) return false;
+            for (int i = 0; i < Werte.Length; i++)
+                if (!Werte[i].Equals(andere.Werte[i])) return false;
+            return true;
+        }
+    }
+
+    /// <summary>
     /// Ein ganzes Bild: Fläche, Hintergrund und die Befehle in Zeichenreihenfolge.
     /// </summary>
     public sealed class Zeichenmodell : IZeichenziel
@@ -924,6 +952,12 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <summary>Die Reihen des Bildes in Datenwerten, in Zeichenreihenfolge.</summary>
         public IReadOnlyList<Datenreihe> Reihen => _reihen;
 
+        /// <summary>
+        /// Die Tafel eines Teppichbilds (365 Tage × 24 Stunden) für den CSV-Export; <c>null</c> bei
+        /// jedem anderen Bild. Gezeichnet wird sie nicht.
+        /// </summary>
+        public Tagesstundentafel Tafel { get; set; }
+
         public void Fuege(Zeichenbefehl befehl) { if (befehl != null) _befehle.Add(befehl); }
 
         /// <summary>Eine Reihe in Datenwerten hinzufügen.</summary>
@@ -947,6 +981,8 @@ namespace WindowsFormsApplication1.Zeichnung
             if (_reihen.Count != andere._reihen.Count) return false;
             for (int i = 0; i < _reihen.Count; i++)
                 if (!_reihen[i].Gleicht(andere._reihen[i])) return false;
+            if ((Tafel == null) != (andere.Tafel == null)) return false;
+            if (Tafel != null && !Tafel.Gleicht(andere.Tafel)) return false;
             return true;
         }
     }
