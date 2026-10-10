@@ -333,6 +333,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Sichert den Zustand der Zone</b> (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V1) — für die Vorausschau: sichern,
+        /// n Stunden rechnen, mit <see cref="ZustandSetzen"/> zurück; dieselben n Stunden ergeben danach bitgleiche Werte.
+        /// Zwischen zwei Stunden trägt das Modell nur die beiden Massentemperaturen; der Regler der Übergabe
+        /// (<see cref="SchrittUebergabe"/>) rechnet je Stunde aus Rand und Zustand und führt keinen Übertrag. Mitgesichert wird
+        /// das Muster der zuletzt gerechneten Stunde (<see cref="LetztesMuster"/>, <see cref="LetzteFolgeGleich"/>), damit auch
+        /// die Mustertreue der Zonenschleife denselben Stand sieht. Die Rechenpuffer (Fallsysteme, Aufheizantworten) sind
+        /// kein Zustand und bleiben samt ihren Zählern unberührt.
+        /// </summary>
+        internal Zonenzustand ZustandSichern()
+            => new Zonenzustand(_thetaMAw, _thetaMIw, _letzteAnzahl > 0 ? LetztesMuster : null);
+
+        /// <summary>
+        /// <b>Setzt einen gesicherten Zustand</b> (<see cref="ZustandSichern"/>): beide Massentemperaturen und das Muster der
+        /// zuletzt gerechneten Stunde. Ein Zustand eines anderen Modells derselben Parameter ist erlaubt.
+        /// </summary>
+        /// <exception cref="GebaeudeModellException"><see cref="GebaeudeModellFehler.RandUngueltig"/> bei einem nicht
+        /// endlichen Zustand (etwa <c>default</c>); das Modell bleibt dann unverändert.</exception>
+        internal void ZustandSetzen(in Zonenzustand zustand)
+        {
+            Zuruecksetzen(zustand.ThetaMAw, zustand.ThetaMIw);
+            Stundenmuster muster = zustand.Muster;
+            if (muster == null || muster.Anzahl > _letzteFolge.Length)
+            {
+                _letzteAnzahl = 0;
+                return;
+            }
+            muster.Folge.CopyTo(_letzteFolge);
+            muster.Dauer.CopyTo(_letzteDauer);
+            _letzteAnzahl = muster.Anzahl;
+        }
+
+        /// <summary>
         /// Rechnet eine Blockstunde mit den Randbedingungen <paramref name="r"/> und
         /// schreibt den Zustand fort.
         /// </summary>
@@ -2076,6 +2108,31 @@ namespace WindowsFormsApplication1
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// <b>Der Zustand einer Zone zwischen zwei Stunden</b> (Entwurf Vorheizrampe Fassung 2, 2.4, Welle V1) — unveränderlich:
+    /// die Massentemperaturen der Außen- und Innenbauteile [°C] und das Muster der zuletzt gerechneten Stunde
+    /// (<c>null</c> vor der ersten Stunde). Gebildet von <see cref="Zonenmodell2K.ZustandSichern"/>, gesetzt mit
+    /// <see cref="Zonenmodell2K.ZustandSetzen"/>.
+    /// </summary>
+    internal readonly struct Zonenzustand
+    {
+        internal Zonenzustand(double thetaMAw, double thetaMIw, Stundenmuster muster)
+        {
+            ThetaMAw = thetaMAw;
+            ThetaMIw = thetaMIw;
+            Muster = muster;
+        }
+
+        /// <summary>Massentemperatur der Außenbauteile [°C].</summary>
+        internal double ThetaMAw { get; }
+
+        /// <summary>Massentemperatur der Innenbauteile [°C].</summary>
+        internal double ThetaMIw { get; }
+
+        /// <summary>Das Muster der zuletzt gerechneten Stunde; <c>null</c> vor der ersten Stunde.</summary>
+        internal Stundenmuster Muster { get; }
     }
 
     /// <summary>
