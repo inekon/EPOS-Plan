@@ -50848,5 +50848,41 @@ Chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
   </data>
+  <data name="BED_GRAFIK_RASTER_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_REIHEN" xml:space="preserve">
+    <value>Bedarfsart</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_RASTER" xml:space="preserve">
+    <value>Zeitraster</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_JAHR" xml:space="preserve">
+    <value>{0} Jahresganglinie</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_MONAT" xml:space="preserve">
+    <value>{0} Monatssummen</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_WOCHE" xml:space="preserve">
+    <value>{0} Wochensummen</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_TAG" xml:space="preserve">
+    <value>{0} Tagessummen</value>
+  </data>
+  <data name="BED_GRAFIK_WAERMEBEDARF" xml:space="preserve">
+    <value>Wärmebedarf</value>
+  </data>
+  <data name="BED_GRAFIK_WOCHE_NR" xml:space="preserve">
+    <value>Woche {0}</value>
+  </data>
+  <data name="BED_GRAFIK_TAG_NR" xml:space="preserve">
+    <value>Tag {0}</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
+    <value>Viertelstunde</value>
+  </data>
 </root>
 

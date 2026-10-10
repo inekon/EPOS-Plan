@@ -50841,5 +50841,41 @@ chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Save annual load curve as CSV</value>
   </data>
+  <data name="BED_GRAFIK_RASTER_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_REIHEN" xml:space="preserve">
+    <value>Demand type</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_RASTER" xml:space="preserve">
+    <value>Time grid</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_JAHR" xml:space="preserve">
+    <value>{0} annual load curve</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_MONAT" xml:space="preserve">
+    <value>{0} monthly totals</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_WOCHE" xml:space="preserve">
+    <value>{0} weekly totals</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_TAG" xml:space="preserve">
+    <value>{0} daily totals</value>
+  </data>
+  <data name="BED_GRAFIK_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand</value>
+  </data>
+  <data name="BED_GRAFIK_WOCHE_NR" xml:space="preserve">
+    <value>Week {0}</value>
+  </data>
+  <data name="BED_GRAFIK_TAG_NR" xml:space="preserve">
+    <value>Day {0}</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
+    <value>Quarter hour</value>
+  </data>
 </root>
 
