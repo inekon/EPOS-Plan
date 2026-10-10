@@ -92,6 +92,12 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("LeistungspreisBlock",            "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("OptimierungBlock",               "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        // Freigabe der Masken, Teil C: die zwei Ergebnisansichten der Flotte - ihre Schalter sind
+        // die Spalte „anzeige" des Wirts (Register Ergebnisanzeige). Die Betriebsansicht steht
+        // zugleich im StromspeicherReiter der Simulation und meldet sich dort beim Register der
+        // SimulationSeite; die Tafel kennt einen Wirt je Kind, hier steht der Hauptwirt.
+        new("SpeicherFlottenGroessenAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
+        new("SpeicherFlottenErgebnisAnsicht", "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
@@ -267,11 +273,29 @@ public sealed class KiMaskenabdeckungWacheTests
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),
         // Stufe G7a (W3): der Gebaeudeexport - die Postleitzahl und die Bestaetigung der Meldungen;
         // die Bestaetigung liest der Assistent nur, setzen kann sie allein der Anwender.
+        // Freigabe der Importdialoge, Teil A (10.10.2026): alle Eingabestellen im Katalog.
+        new("SpeicherFlottenCsvDialog", 26),
+        new("GanglinieImportOptionenDialog", 9),
+        new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
+        new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
+        // Freigabe der Masken, Teil C (10.10.2026).
+        new("VorlagenUebernahmeDialog", 6),
+        new("ProjektTransferDialog", 3, "die Projektliste und die Variantenwahl des Exports (Mengen von Verweisen) und die Dateiwahl bleiben beim Anwender; Zielname, Konfliktmodus und Sicherung stehen im Katalog"),
+        new("ProjektBrennstoffeDialog", 2, "das Zahlenfeld steht in einer Schleife über die zehn Werte der Bearbeitung, die alle im Katalog stehen"),
+        new("KatalogDublettenDialog", 1),
+        // Freigabe der Masken, Teil B (10.10.2026): der Gebäudeimport mit seinen Kopfeingaben.
+        new("GebaeudeImportDialog", 31, "im Katalog stehen die acht Kopfeingaben (Baualtersklasse, Quelle, Gebäude, " +
+            "Name, Heizsollwert aus der Datei, Zonenregel, Zonierung, als Zone mit Bauteilen) und die Nordrichtung " +
+            "(ein Baustein ohne gezählte Eingabe); draußen bleiben die Eingaben je Raum, Feldzeile, Zone, Baustoff und " +
+            "Aufbauzeile (Haken, Werte, Namen, Nutzungen — Zeilen, keine Kopfwerte), die Mengenwahlen der Zonen und Räume " +
+            "(Haken je Zeile für eine Massenaktion), die Eingaben der Schritte am Zonenplan (neue Zone, Geschoss, Regel " +
+            "für den Rest, Ziel- und Raumwahl im Grundriss, Ausweg-Haken — sie wirken erst mit ihrem Knopf), die fünf " +
+            "Filter der Listen (Anzeige, kein Einstellwert) und die Dateiwahl (Betriebssystemdialog)"),
         new("GebaeudeExportDialog", 5, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen; die Formatwahl gbXML/IFC trifft der Anwender, sie nimmt die Bestätigung zurück; die Wahl „Originaldatei anreichern“ und die Bestätigung des Beipackzettels (fremde Datei verändert weitergeben) sind Handlungen des Anwenders, die eine Dateiwahl voraussetzen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 
         new("BedarfAdminDialog", 3),
-        new("BedarfErgebnisDialog", 2, "die Knopfgruppen Bedarfsart und Zeitraster des Grafikreiters sind Schaltknöpfe; der Assistent setzt sie über „grafiksicht“ und „jahresverlauf“"),
+        new("BedarfErgebnisDialog", 2, "die Knopfgruppen Bedarfsart und Zeitraster des Grafikreiters sind Schaltknöpfe; der Assistent setzt sie über „grafiksicht“, „jahresverlauf“ und „zeitstufe“"),
         new("BedarfReiter", 3),
         // PW2/BW2: die Wahl des Betriebskalenders der gewählten Zuordnung - Katalogfeld betriebskalender (5 → 6).
         new("BedarfsProfileDialog", 6, "die beiden Temperaturfelder der Prozesswärme (PW1 Stufe 1) sind Eingaben des Knopfes „Temperaturen übernehmen“ an der gewählten Projektzeile, wie der neue Jahresverbrauch; die Werte führt die Zeile, nicht die Maske"),
@@ -489,6 +513,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
         new("StromspeicherReiter", 2),
+        new("SpeicherFlottenErgebnisAnsicht", 6, "alle Schalter und Wahlen stehen je Option als Zeile der Spalte „anzeige“ des Wirts"),
+        new("SpeicherFlottenGroessenAnsicht", 3, "Einheit und die Stellen beider Schieber stehen je Option als Zeile der Spalte „anzeige“ des Wirts"),
         // Zapfprofil Z4, Gruppe 2b: der Tagesgang-Editor (Tagtyp, Stundenanteile und Wochenfaktoren als
         // Zahlenreihen, Vorlage, Katalogversion der Kopie).
         new("TagesgangEditor", 5),
@@ -712,7 +738,11 @@ public sealed class KiMaskenabdeckungWacheTests
                     "Nur " + geltung.Count(k => k.Angemeldet) + " Anmeldungen gefunden.");
         Assert.True(geltung.Count(k => k.Eingaben.Count > 0) > 100,
                     "Nur " + geltung.Count(k => k.Eingaben.Count > 0) + " Dateien mit Eingabefeldern.");
-        Assert.True(KiDialogAusnahmen.Alle.Count > 20, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
+        // Die Ausnahmeliste schrumpft mit der Freigabe der Importdialoge (Anwenderauftrag
+        // 10.10.2026) auf zwölf Einträge — der Assistent selbst, Lizenz und Schlüssel und die
+        // bewusst ausgenommenen Rückfragen bleiben. Die Schwelle hält den Bestand gegen eine
+        // Wache, die ihre Liste nicht mehr findet, nicht gegen die Freigabe.
+        Assert.True(KiDialogAusnahmen.Alle.Count >= 10, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
     }
 
     /// <summary>

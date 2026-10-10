@@ -160,24 +160,6 @@ namespace WindowsFormsApplication1
                            "Die Namensabfrage gehört zu Neu… und Duplizieren…, die Sätze anlegen."),
             new KiAusnahme("KatalogImportDialog", KiAusnahmegrund.Import,
                            "Der Herstellerimport legt Katalogsätze an."),
-            // Mit eigenem Hilfeschlüssel (beide Importprofile, Seite „Gebäudeimport"): Der Editor
-            // behält Form_Gebaeude1.btn_Help und damit seinen Assistenten.
-            new KiAusnahme("GebaeudeImportDialog", KiAusnahmegrund.Import,
-                           "Der Gebäudeimport ordnet eine Gebäudedatei den Feldern eines neuen Gebäudes zu; was übernommen wird, entscheidet der Anwender Zeile für Zeile.",
-                           hilfeschluessel: GebaeudeImportProfil.HILFE_ZUORDNUNG),
-            new KiAusnahme("ImportKonflikteDialog", KiAusnahmegrund.Import,
-                           "Die Konfliktliste des Herstellerimports entscheidet über anzulegende Sätze.",
-                           hilfeschluessel: "Form_ImportKonflikte.btn_Help"),
-            new KiAusnahme("SpotpreisImportDialog", KiAusnahmegrund.Import,
-                           "Der Spotpreisimport liest eine Preisreihe aus einer Datei ein.",
-                           hilfeschluessel: "Form_SpotpreisImport.btn_Help"),
-            new KiAusnahme("GanglinieImportOptionenDialog", KiAusnahmegrund.Import,
-                           "Die Optionen gelten nur für das Einlesen einer Gangliniendatei.",
-                           hilfeschluessel: "Form_GanglinieImportOptionen.btn_Help"),
-            new KiAusnahme("SpeicherFlottenCsvDialog", KiAusnahmegrund.Import,
-                           "Das Format einer CSV-Datei der Flotte gilt nur für ihr Einlesen."),
-            new KiAusnahme("ProjektTransferDialog", KiAusnahmegrund.Export,
-                           "Der Projekttransfer schreibt und liest Projektpakete als Datei."),
 
             // ---- Aktionen, Rückfragen, Werkzeuge -------------------------------------
             new KiAusnahme("ProjektWahlDialog", KiAusnahmegrund.Aktion,
@@ -185,34 +167,18 @@ namespace WindowsFormsApplication1
             new KiAusnahme("BkUebernahmeDialog", KiAusnahmegrund.Aktion,
                            "Die Übernahme in die Kostenaufstellung ist eine Aktion, keine Einstellung.",
                            hilfeschluessel: "Form_BkUebernahme.btn_Help"),
-            new KiAusnahme("VorlagenUebernahmeDialog", KiAusnahmegrund.Aktion,
-                           "Die Vorlagenübernahme legt Kostenpositionen an; ihre Wahl ist eine Aktion.",
-                           hilfeschluessel: "Form_VorlagenUebernahme.btn_Help"),
             new KiAusnahme("WaermepumpenKatalogDialog", KiAusnahmegrund.Aktion,
                            "Die Katalogauswahl übernimmt ein Gerät; ihr Schalter filtert nur die Liste.",
                            hilfeschluessel: "Form_WPFilterAuswahl.btn_Help"),
             new KiAusnahme("WertAbfrage", KiAusnahmegrund.Rueckfrage,
                            "Die Zahlabfrage ist eine Rückfrage ihres Wirts; die Simulationsansicht führt " +
                            "Priorität und Quelltemperatur als eigene Felder."),
-            new KiAusnahme("KatalogDublettenDialog", KiAusnahmegrund.Werkzeug,
-                           "Das Dublettenwerkzeug führt Katalogsätze zusammen; der Eingriff bleibt beim Anwender.",
-                           hilfeschluessel: "Form_KatalogDubletten.btn_Help"),
-            new KiAusnahme("ProjektBrennstoffeDialog", KiAusnahmegrund.Werkzeug,
-                           "Die Brennstoffe des Projekts schreiben je Satz sofort; Bearbeiten, Zurücksetzen auf den " +
-                           "Katalog und Übernehmen bleiben beim Anwender.",
-                           hilfeschluessel: "Form_ProjektBrennstoffe.btn_Help"),
 
             // ---- Überlagerung, deren Wert der Wirt führt -----------------------------
             new KiAusnahme("BetriebsmodusDialog", KiAusnahmegrund.FeldDesWirts,
                            "Der Betriebsmodus ist das Feld „betriebsmodus“ der Maske Simulation — " +
                            "derselbe Schreibweg (BetriebsmodusSchreiben); die Überlagerung bleibt dem Anwender.",
-                           hilfeschluessel: "Form_Betriebsmodus.btn_Help"),
-
-            // ---- Anzeigen mit Schaltern eines Bildes ---------------------------------
-            new KiAusnahme("SpeicherFlottenErgebnisAnsicht", KiAusnahmegrund.Anzeige,
-                           "Die Schalter stellen nur das Ergebnisbild der Flotte ein."),
-            new KiAusnahme("SpeicherFlottenGroessenAnsicht", KiAusnahmegrund.Anzeige,
-                           "Die Wahl stellt nur das Bild der Größenrechnung ein.")
+                           hilfeschluessel: "Form_Betriebsmodus.btn_Help")
 
             // ---- Offen ----------------------------------------------------------------
             // Eine Maske mit Einstellwerten, die noch nicht angebunden ist, steht hier als

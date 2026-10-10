@@ -1316,7 +1316,7 @@ Bannerprobe erfüllt (Gegenprobe rot), Fensterprobe erfüllt (Gegenprobe rot), K
 Überlagerung, Rasterprobe 28 von 29 (Z6 `kategorien_ueberlagerung`, quer 47 px, war vorher schon rot).
 **Kompaktstufe und Rollbalken (KB1).** Drei weitere Fenster: 1 024 × 768 und 768 × 1 024 (iPad quer
 und hoch), 1 093 × 614 (Laptop bei 125 %). Die Stufe misst die Probe in jedem Fenster nach der
-Medienabfrage `(max-width: 1199.98px), (max-height: 799.98px)` — Normalstufe nur in 1 280 × 800, die
+Medienabfrage `(max-width: 1279.98px), (max-height: 799.98px)` — Normalstufe nur in 1 280 × 800, die
 Kompaktstufe auch in 1 280 × 720 und 1 024 × 700. Je Zustand zusätzlich: Schrift 13 bzw. 12 px,
 Projektzeile 53 bzw. 46 px, Katalogzeile 53/46 bzw. 46/40 px (mit Zeilenmaß), Projektliste mindestens ihre
 Untergrenze, alle Knöpfe der Schlussleiste nach dem Rollen des Dialogkörpers sichtbar und treffbar (gerollt
@@ -1390,6 +1390,42 @@ keinen eigenen Rollbalken. **Ergebnis vom 10.10.2026 (vor DZ1-N1, Kopf unverdich
 Außer in 768 × 1 024 rollt mit aufgeklappter Ganglinie der Dialogkörper (`data-zweispalten-eng`). Die
 **Fensterprobe** misst aufgeklappt ebenso Listen auf Untergrenze und den Rest der Satzfläche; ihre Gegenprobe
 begrenzt die Satzfläche auf 40 px und muss rot werden.
+**iPad 11 Zoll — Schwelle und sichere Abstände.** Die Kompaktstufe gilt unter dem Normalmaß 1 280 × 800
+(Breitenschwelle `1279.98px`; die Klemme der Normalstufe steht auf `min-width: 1280px`). Das Thema führt die
+sicheren Abstände des Geräts als Token `--epos-sicher-oben`/`--epos-sicher-unten` (aus `env(safe-area-inset-*)`,
+unter Windows 0): `#app` polstert um sie, die Überlagerung steht zwischen ihnen, jede Regel mit der vollen
+Fensterhöhe zieht beide ab, Fensterkopf und Schlussleiste haften unter bzw. über ihnen. Die Proben simulieren die
+Abstände, indem sie die zwei Token setzen (`:root{--epos-sicher-oben:24px;--epos-sicher-unten:20px}` per
+`addStyleTag`), nicht über `env()`. **Rollbereichprobe:** vier weitere Fenster mit Abständen 24/20 — 1 180 × 820
+(iPad Air 11"), 1 194 × 834 (iPad Pro 11"), 1 210 × 834 (iPad Pro 11" M4) quer und 834 × 1 194 hochkant
+(`ipad: true` in der Fensterliste); dort zusätzlich: Dialog und offene Überlagerung ganz zwischen den Abständen,
+jeder Knopf der Schlussleiste über der Home-Anzeige. Dritte Gegenprobe: Heizkessel bei 1 194 × 834 ohne die Token
+muss rot werden. **Fensterprobe** und **Bannerprobe:** Fenster 1 194 × 834 mit Abständen — Kopf haftet bei 24 px,
+Schlussleiste endet bei 814 px, Katalogauswahl, Katalogdialog, Überlagerung und Banner zwischen beiden; die
+Dublettenprüfung bekommt dort einen Füllblock von 600 px, sonst rollte sie nicht. Gegenprobe je Fall: dasselbe
+Fenster ohne die Token muss rot werden. Die AppWurzel zeigt auf iOS keine Kopfleiste; ein weiterer oberer Abzug
+entfällt.
+
+**Ergebnis vom 10.10.2026, iPad 11 Zoll** (Wirt Release, Chromium headless): Vor der Änderung mit den neuen
+Fenstern 1 030 Zustände, 1 086 Verstöße, alle in den iPad-Fenstern (Dialog von 0 bis zur Fensterkante statt
+zwischen den Abständen, Schlussleiste unter der Home-Anzeige; in 1 210 × 834 Normalstufe statt Kompaktstufe).
+Danach **1 030 Zustände, 0 Verstöße**, drei Gegenproben rot — Rückgabe 0; die 618 Zustände der sechs bisherigen
+Fenster unverändert bis auf die zeitabhängige Höhe der Katalogliste bei „Detailzeile auf, Trennlinie unten“ von
+Wärmebedarf und Stromganglinie, die schon zwischen zwei Läufen am alten Stand schwankt. Vorgabe der Trennlinie
+(Bausteinhöhe / Projektliste / Katalogliste in px):
+
+| Dialog | 1 180 × 820 | 1 194 × 834 | 1 210 × 834 | 834 × 1 194 |
+|---|---|---|---|---|
+| Heizkessel, BHKW (Zeile 46 / 40) | 652 / 120 / 309 | 666 / 120 / 323 | 666 / 120 / 323 | 1 026 / 120 / 683 |
+| Gebäude, Wärmepumpen | 627 / 120 / 281 bzw. 283 | 641 / 120 / 295 bzw. 297 | 641 / 120 / 295 bzw. 297 | 1 001 / 120 / 655 bzw. 657 |
+| Stromganglinie | 652 / 120 / 355 | 666 / 120 / 369 | 666 / 120 / 369 | 1 026 / 120 / 729 |
+
+In keinem iPad-Zustand rollt der Dialogkörper (kein `data-zweispalten-eng`). Befunde außerhalb des Bausteins wie
+bisher (Kältemaschinenauswahl, Überlagerung „Simulation…“), je iPad-Fenster zwei. Fensterprobe erfüllt
+(1 194 × 834: Katalogauswahl Kopf ab 36 px, Schlussleiste bis 802 px; Dublettenprüfung Kopf haftet bei 24 px;
+Überlagerung 43,7 bis 794,3 px; Gegenprobe ohne Token 4 bis 8 Verstöße je Fall), Bannerprobe erfüllt (Kopf bis
+75 px, Banner 83 bis 118 px, Schlussleiste ab 765 px; ohne Token Kopf ab 12 px, Schlussleiste bis 822 px, rot).
+Die Zahlen der Fenster 1 088 × 624 und 520 × 624 sind unverändert.
 
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 

@@ -32,6 +32,14 @@
 //  KATALOGDIALOG (Bedarfsverwaltung): Kopf und Fuss statisch, das Dokument
 //    rollt nicht, jede Zahl dieselbe wie ohne Fenstermarke.
 //
+//  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
+//    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
+//    Token --epos-sicher-oben/-unten des Themas, nicht ueber env()). Dort haftet der
+//    Kopf unter dem oberen Abstand (top 24) und die Schlussleiste ueber dem unteren
+//    (bottom = Fensterhoehe - 20); Katalogauswahl, Katalogdialog und Ueberlagerung
+//    stehen ganz zwischen beiden. Gegenprobe: dasselbe Fenster ohne die Token muss rot
+//    werden.
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -64,7 +72,11 @@ const NUR = arg('nur', '');
 const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
 const TOL = 1;   // px - Rollstaende sind gebrochen (Unterpixel)
 
-const FENSTER = [{ breite: 1088, hoehe: 624 }, { breite: 520, hoehe: 624 }];
+const FENSTER = [{ breite: 1088, hoehe: 624 }, { breite: 520, hoehe: 624 }, { breite: 1194, hoehe: 834, ipad: true }];
+// Sichere Abstaende des iPads (Punkte = CSS-Pixel); die Probe setzt die Token des Themas.
+const SICHER = { oben: 24, unten: 20 };
+const SICHER_TOKEN = `:root { --epos-sicher-oben: ${SICHER.oben}px; --epos-sicher-unten: ${SICHER.unten}px; }`;
+const rand = f => f.ipad ? SICHER : { oben: 0, unten: 0 };
 const FENSTERDIALOGE = ['dubletten'];
 // Projektdialoge mit Katalogauswahl (Baustein Zweispaltenauswahl, Konzept Projektdialoge mit
 // Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
@@ -171,13 +183,23 @@ function fokusLage() {
 async function oeffnen(browser, fall, f, zusatz = '') {
   const seite = await browser.newPage({ viewport: { width: f.breite, height: f.hoehe } });
   await seite.goto(`${WURZEL}/fensterprobe?fall=${fall}&kultur=de-DE${zusatz}`);
+  if (f.ipad && !f.ohneToken) await seite.addStyleTag({ content: SICHER_TOKEN });
   await seite.waitForSelector('body > #app > .epos-dialog', { timeout: 20000 });
+  // iPad: Die Dublettenpruefung ist bei 834 px Fensterhoehe kuerzer als das Fenster und rollt
+  // nicht; ein Fuellblock von 600 px unter dem Kopf macht sie lang, damit Haften messbar ist.
+  if (f.ipad && fall === 'dubletten') await seite.evaluate(() => {
+    const d = document.querySelector('body > #app > .epos-dialog');
+    const fueller = document.createElement('div');
+    fueller.className = 'ipad-fueller';
+    fueller.style.cssText = 'height: 600px; flex: 0 0 auto';
+    d.insertBefore(fueller, d.firstElementChild.nextSibling);
+  });
   await seite.waitForTimeout(800);
   return seite;
 }
 
 /** Die Haft-Kriterien; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
-async function haften(seite, name, melden, nachlauf = false) {
+async function haften(seite, name, melden, nachlauf = false, r = { oben: 0, unten: 0 }) {
   let n = 0;
   const fehler = t => { n++; if (melden) melde(name, t); };
   const oben = await rollen(seite, 0);
@@ -189,16 +211,17 @@ async function haften(seite, name, melden, nachlauf = false) {
     if (nachlauf) {
       // Der Fuss steht ganz im Bild zwischen Kopf und Fensterrand - am Fensterrand, solange
       // sein Platz darunter laege, sonst an seinem Platz ueber dem Nachlauf ...
-      if (m.fuss.top < (stand === 'oben' ? 0 : m.kopf.bottom) - 0.5 || m.fuss.bottom > m.innen + TOL)
+      if (m.fuss.top < (stand === 'oben' ? r.oben : m.kopf.bottom) - 0.5 || m.fuss.bottom > m.innen - r.unten + TOL)
         fehler(`${stand}: Fussleiste ${zahl(m.fuss.top)}..${zahl(m.fuss.bottom)} px nicht ganz im Bild (Kopf bis ${zahl(m.kopf.bottom)})`);
       // ... und am Ende steht der Nachlauf frei darunter.
-      if (stand === 'Ende' && (!m.nachfolger || m.nachfolger.top < m.fuss.bottom - 0.5 || m.nachfolger.bottom > m.innen + TOL))
+      if (stand === 'Ende' && (!m.nachfolger || m.nachfolger.top < m.fuss.bottom - 0.5 || m.nachfolger.bottom > m.innen - r.unten + TOL))
         fehler(`Ende: Nachlauf ${m.nachfolger ? zahl(m.nachfolger.top) + '..' + zahl(m.nachfolger.bottom) : 'fehlt'} px, Fussleiste bis ${zahl(m.fuss.bottom)} px - ueberdeckt oder abgeschnitten`);
     } else {
-      if (Math.abs(m.fuss.bottom - m.innen) > TOL) fehler(`${stand}: Fussleiste endet bei ${zahl(m.fuss.bottom)} statt ${m.innen} px (Rollstand ${zahl(m.y)})`);
+      if (Math.abs(m.fuss.bottom - (m.innen - r.unten)) > TOL) fehler(`${stand}: Fussleiste endet bei ${zahl(m.fuss.bottom)} statt ${m.innen - r.unten} px (Rollstand ${zahl(m.y)})`);
       if (m.fuss.top >= m.innen) fehler(`${stand}: Fussleiste ausserhalb des Bildes`);
     }
-    if (stand !== 'oben' && Math.abs(m.kopf.top) > TOL) fehler(`${stand}: Kopf steht bei ${zahl(m.kopf.top)} statt 0 px`);
+    if (stand !== 'oben' && Math.abs(m.kopf.top - r.oben) > TOL) fehler(`${stand}: Kopf steht bei ${zahl(m.kopf.top)} statt ${r.oben} px`);
+    if (m.kopf.top < r.oben - TOL) fehler(`${stand}: Kopf beginnt bei ${zahl(m.kopf.top)} px, unter dem oberen Abstand ${r.oben} px`);
     if (Math.abs(m.kopf.left - m.wurzel.left) > TOL || Math.abs(m.fuss.right - m.wurzel.right) > TOL)
       fehler(`${stand}: Kopf/Fuss nicht ueber die volle Breite der Wurzel`);
   }
@@ -335,7 +358,7 @@ async function katalog(browser, f, marke) {
 }
 
 /** Katalogauswahl: welche Elemente rollen, ob Dokument oder Dialog rollen, wo Kopf und Fuss stehen. */
-function rollstand() {
+function rollstand(unten = 0) {
   const d = document.querySelector('body > #app > .epos-dialog');
   const sichtbar = e => { const s = getComputedStyle(e); const b = e.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && b.width > 0 && b.height > 0; };
   const rollt = e => /^(auto|scroll)$/.test(getComputedStyle(e).overflowY);
@@ -349,7 +372,7 @@ function rollstand() {
   const dok = document.scrollingElement;
   // Erreichbar: nach dem Rollen des Dialogkoerpers ans Ende steht die Schlussleiste im Fenster.
   let fussErreichbar = false;
-  if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight + 1; d.scrollTop = v; }
+  if (eng && fuss) { const v = d.scrollTop; d.scrollTop = d.scrollHeight; fussErreichbar = fuss.getBoundingClientRect().bottom <= innerHeight - unten + 1; d.scrollTop = v; }
   // DZ1: aufgeklappt Listen auf ihrer Untergrenze, die Satzflaeche reicht bis an den unteren Rand des Bausteins.
   const zw = d.querySelector(':scope > .epos-zweispalten.epos-zweispalten--satz-offen');
   const satzfl = zw && zw.querySelector(':scope > .epos-zweispalten-bereich--satz > .epos-zweispalten-satz');
@@ -368,11 +391,11 @@ function rollstand() {
 }
 
 /** Prueft eine Katalogauswahl; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
-async function nichtsRollt(seite, name, melden) {
+async function nichtsRollt(seite, name, melden, rd = { oben: 0, unten: 0 }) {
   let n = 0;
   const m = melden ? (t => { n++; melde(name, t); }) : (() => n++);
   const pruefe = async stand => {
-    const r = await seite.evaluate(rollstand);
+    const r = await seite.evaluate(rollstand, rd.unten);
     if (r.fremd.length) m(`${stand}: es rollt ausser Listen und Detailzeile: ${r.fremd.join(', ')}`);
     if (r.dokument > r.innen + TOL) m(`${stand}: das Dokument rollt (${r.dokument} px)`);
     if (r.vorrang) {
@@ -387,8 +410,8 @@ async function nichtsRollt(seite, name, melden) {
       if (r.kopfPos !== 'static' || r.fussPos !== 'static') m(`${stand}: Kopf ${r.kopfPos}, Schlussleiste ${r.fussPos}`);
     } else {
     if (r.dialogRollt) m(`${stand}: der Dialogkoerper rollt`);
-    if (r.kopf < -TOL || r.kopfPos !== 'static') m(`${stand}: Kopf bei ${zahl(r.kopf)} px, ${r.kopfPos}`);
-    if (r.fussBoden > r.innen + TOL || r.fussPos !== 'static') m(`${stand}: Schlussleiste endet bei ${zahl(r.fussBoden)} px, ${r.fussPos}`);
+    if (r.kopf < rd.oben - TOL || r.kopfPos !== 'static') m(`${stand}: Kopf bei ${zahl(r.kopf)} px, ${r.kopfPos}`);
+    if (r.fussBoden > r.innen - rd.unten + TOL || r.fussPos !== 'static') m(`${stand}: Schlussleiste endet bei ${zahl(r.fussBoden)} px, ${r.fussPos}`);
     }
     return r;
   };
@@ -419,7 +442,7 @@ try {
       const name = `${fall} ${kennung}`;
       console.log(`- ${name} (Katalogauswahl)`);
       const seite = await oeffnen(browser, fall, f);
-      const r = await nichtsRollt(seite, name, true);
+      const r = await nichtsRollt(seite, name, true, rand(f));
       console.log(`    rollend nur ${r.listen} Listen, Kopf ab ${zahl(r.kopf)} px, Schlussleiste bis ${zahl(r.fuss)} px, Dokument ${r.dokument} px`);
       await seite.close();
     }
@@ -433,7 +456,7 @@ try {
         wurzel: !!document.querySelector('body > #app > .epos-dialog:not(.epos-katalog-dialog)'),
       }));
       if (!aufbau.marke || !aufbau.wurzel) { console.log('  AUFBAUFEHLER: ' + JSON.stringify(aufbau)); process.exit(2); }
-      const h = await haften(seite, name, true, NACHLAUF.has(fall));
+      const h = await haften(seite, name, true, NACHLAUF.has(fall), rand(f));
       if (h.zahlen) console.log(`    Kopf ${h.zahlen.kopf} px, Fuss ${h.zahlen.fuss} px, Dokument ${h.zahlen.dokument} px, Rollweg ${h.zahlen.rollweg} px; `
         + `am Ende Inhalt bis ${h.zahlen.boden} px, Leiste ${h.zahlen.fussDecke}..${h.zahlen.fussBoden} px`
         + (NACHLAUF.has(fall) && h.zahlen.nachlauf ? `, Nachlauf ${h.zahlen.nachlauf[0]}..${h.zahlen.nachlauf[1]} px` : ''));
@@ -462,6 +485,8 @@ try {
         if (m.fussPos !== 'sticky') melde(name, 'Fuss des Unterdialogs haftet nicht');
         if (m.kopfPos !== 'static') melde(name, 'Kopf des Unterdialogs haftet (' + m.kopfPos + ') - doppelter Kopf');
         if (m.dokumentRollt) melde(name, 'das Dokument rollt unter der Ueberlagerung');
+        if (m.ueberlagerung[0] < rand(f).oben - TOL || m.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+          melde(name, `${stand}: Ueberlagerung ${m.ueberlagerung[0]}..${m.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
         if (m.unterFensterfuss !== 'epos-ueberlagerung-hintergrund' || m.unterFensterkopf !== 'epos-ueberlagerung-hintergrund')
           melde(name, `Kopf/Fuss des Fensters liegen nicht unter der Abdunkelung (${m.unterFensterkopf}/${m.unterFensterfuss})`);
       }
@@ -480,6 +505,8 @@ try {
       const ohne = await katalog(browser, f, false);
       if (mit.kopfPos !== 'static' || mit.fussPos !== 'static') melde(name, `Kopf/Fuss haften (${mit.kopfPos}/${mit.fussPos})`);
       if (mit.dokument > mit.innen + TOL) melde(name, `das Dokument rollt (${mit.dokument} px)`);
+      if (mit.kopf.top < rand(f).oben - TOL || mit.fuss.bottom > mit.innen - rand(f).unten + TOL)
+        melde(name, `Kopf ab ${zahl(mit.kopf.top)} / Fuss bis ${zahl(mit.fuss.bottom)} px nicht zwischen den sicheren Abstaenden`);
       const a = JSON.stringify([mit.kopf, mit.fuss, mit.dokument]), b = JSON.stringify([ohne.kopf, ohne.fuss, ohne.dokument]);
       if (a !== b) melde(name, `mit Marke ${a} != ohne Marke ${b}`);
       console.log(`    Kopf ${zahl(mit.kopf.top)}..${zahl(mit.kopf.bottom)}, Fuss ${zahl(mit.fuss.top)}..${zahl(mit.fuss.bottom)} px, `
@@ -547,10 +574,29 @@ try {
       if (NUR && NUR !== fall) continue;
       const s6 = await oeffnen(browser, fall, f);
       await s6.addStyleTag({ content: '.epos-zweispalten-satz { max-height: 40px !important; }' });
-      const r6 = await nichtsRollt(s6, '', false);
+      const r6 = await nichtsRollt(s6, '', false, rand(f));
       console.log(`    Satzflaeche 40 px ${fall} ${f.breite}x${f.hoehe}: ${r6.n} Verstoesse`);
       if (r6.n === 0) gegenGruen++;
       await s6.close();
+    }
+    // iPad ohne die Token: Kopf und Schlussleiste reichen unter Statusleiste und Home-Anzeige.
+    for (const f of FENSTER.filter(f => f.ipad)) {
+      for (const fall of FENSTERDIALOGE) {
+        if (NUR && NUR !== fall) continue;
+        const s6 = await oeffnen(browser, fall, { ...f, ohneToken: true });
+        const h6 = await haften(s6, '', false, NACHLAUF.has(fall), rand(f));
+        console.log(`    ohne sichere Abstaende ${fall} ${f.breite}x${f.hoehe}: ${h6.n} Verstoesse`);
+        if (h6.n === 0) gegenGruen++;
+        await s6.close();
+      }
+      for (const fall of KATALOGAUSWAHL) {
+        if (NUR && NUR !== fall) continue;
+        const s7 = await oeffnen(browser, fall, { ...f, ohneToken: true });
+        const r7 = await nichtsRollt(s7, '', false, rand(f));
+        console.log(`    ohne sichere Abstaende ${fall} ${f.breite}x${f.hoehe}: ${r7.n} Verstoesse`);
+        if (r7.n === 0) gegenGruen++;
+        await s7.close();
+      }
     }
     if (gegenGruen) console.log(`  GEGENPROBE GRUEN in ${gegenGruen} Faellen - die Probe misst die Regel nicht`);
     // Die Projektdialoge mit Katalogauswahl rollen nicht mehr; der einzige lange Fensterdialog des

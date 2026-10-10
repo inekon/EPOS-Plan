@@ -53977,6 +53977,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitraster gibt es nur auf dem Grafikblatt, solange es eine Reihe zeichnet. ähnelt.
+        /// </summary>
+        public static string KI_BERG_ZEITSTUFE_NUR_GRAFIK {
+            get {
+                return ResourceManager.GetString("KI_BERG_ZEITSTUFE_NUR_GRAFIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gefundene Hilfeabschnitte: ähnelt.
         /// </summary>
         public static string KI_CHAT_ABSCHNITTE {
@@ -54737,6 +54746,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“) oder die Summen je Monat, Woche oder Tag als Säulen? ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_ZEITSTUFE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_ZEITSTUFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraster der Grafik ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_ZEITSTUFE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_ZEITSTUFE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist bewusst nicht steuerbar: {0} ähnelt.
         /// </summary>
         public static string KI_DLG_BEWUSST_NICHT_STEUERBAR {
@@ -54935,7 +54962,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKW_TRAEGER_ERL {
             get {
@@ -56024,6 +56051,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog, den „Prüfen“ nach Dubletten durchsucht, oder alle Kataloge. Prüfen, Bereinigen, Löschen und Umbenennen bleiben Handlungen des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_DLG_DUBL_KATALOG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_DUBL_KATALOG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_DUBL_KATALOG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_DUBL_KATALOG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
         /// </summary>
         public static string KI_DLG_EINHEIT_JAHRE {
@@ -56641,6 +56686,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_FALSCHER_THREAD {
             get {
                 return ResourceManager.GetString("KI_DLG_FALSCHER_THREAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Verkaufspreis des Batteriestroms; „nicht vorhanden“, wenn die Datei keinen führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_BATTERIEPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_BATTERIEPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Zeitpunkt, seit dem die Prognose bekannt ist; nur beim Einlesen von Prognosen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_BEKANNT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_BEKANNT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Bezugspreis. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_BEZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_BEZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Verkaufspreis des BHKW-Stroms; „nicht vorhanden“, wenn die Datei keinen führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_BHKWPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_BHKWPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit der BHKW-Leistung; „nicht vorhanden“, wenn die Datei keine führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_BHKW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_BHKW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Entscheidungszeitpunkt; nur beim Einlesen von Prognosen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_ENTSCHEIDUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_ENTSCHEIDUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_INTERVALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_INTERVALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit der Bruttolast der Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_LAST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_LAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der die Leistungsspalten der Datei stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_LEISTUNGSEINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_LEISTUNGSEINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der die Preisspalten der Datei stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_PREISEINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_PREISEINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Verkaufspreis des PV-Stroms; „nicht vorhanden“, wenn die Datei keinen führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_PVPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_PVPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit der PV-Leistung; „nicht vorhanden“, wenn die Datei keine führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_PV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_PV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit der Kennung des Prognosestands; nur beim Einlesen von Prognosen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FCSV_SNAPSHOT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FCSV_SNAPSHOT_ERL", resourceCulture);
             }
         }
         
@@ -58202,6 +58364,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimmt das Gebäude als Zone mit echten Bauteilen statt der Flächensummen. Nur, wenn sich der Bauteilvorschlag bilden lässt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_ALSZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_ALSZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimmt die Raumtemperatur der Datei als Heizsollwert statt der Normtemperatur. Nur, wenn beheizte Räume eine Raumtemperatur tragen und kein Norm-Sollwert vorliegt; danach ordnet der Dialog neu zu. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_CADSOLLWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_CADSOLLWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gebäude der Datei, das übernommen wird, wenn die Datei mehrere trägt. Ein Wechsel beginnt die Zuordnung neu, ohne Übertrag der Änderungen von Hand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_GEBAEUDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_GEBAEUDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baualtersklasse des neuen Gebäudes. Ohne eigene Wahl gilt die Klasse aus dem Baujahr der Datei; eine eigene Wahl gilt davor und füllt die Werte, die die Datei nicht trägt. Danach ordnet der Dialog neu zu. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_KLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name, unter dem das neue Gebäude angelegt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Richtung der Planoberseite in Grad (0 bis 360). Der Dialog liest die Datei damit neu und ordnet neu zu; Gebäudewahl, Klasse und Änderungen von Hand bleiben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_NORDRICHTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_NORDRICHTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format der Gebäudedatei, die als Nächstes gewählt wird; es setzt den Filter der Dateiwahl. Ohne Wahl gelten alle Formate, und die Quelle folgt der Endung der Datei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regel, nach der die Zonen aus den Räumen der Datei gebildet werden. Ein Wechsel bildet den Zonenvorschlag neu; Raumhaken, Werte von Hand und Baustoffe bleiben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_ZONENREGEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_ZONENREGEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonierung der Projektdatei (DIN oder Simulation), wenn die Datei beide trägt. Trägt der Zonenplan die Zonen der Projektdatei, baut ein Wechsel ihn mit der anderen Zonierung neu auf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIMP_ZONIERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIMP_ZONIERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Tabellenblatt einer Excel-Mappe, aus dem gelesen wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_BLATT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_BLATT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeichen, das in den Zahlen der Datei Ganz- und Nachkommateil trennt. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_DEZIMAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_DEZIMAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der die Werte der Datei stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_KONVENTION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_KONVENTION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt die erste Zeile die Spaltennamen statt Werte? Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_KOPFZEILE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_KOPFZEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeitraster der Werte in der Datei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_RASTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_RASTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeichen, das die Spalten der Datei trennt. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_TRENNZEICHEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_TRENNZEICHEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit den Werten der Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_WERTSPALTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_WERTSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Zeitstempel; „(keine)“, wenn die Datei die Werte ohne Zeitangabe in Folge führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GIO_ZEITSPALTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GIO_ZEITSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse, deren Jahreszeilen die Liste zeigt — CO₂-Preispfad, KWKG-Sätze, Energie- und Stromsteuer und die übrigen Rubriken des Katalogs. ähnelt.
         /// </summary>
         public static string KI_DLG_GSK_KLASSE_ERL {
@@ -58364,7 +58688,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_HKP_TRAEGER_ERL {
             get {
@@ -58594,6 +58918,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_HK_WG_OEL_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_HK_WG_OEL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt vom Befund der Zeile ab. ähnelt.
+        /// </summary>
+        public static string KI_DLG_IKF_AKTION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_IKF_AKTION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem der Eintrag angelegt wird; änderbar nur bei der Aktion „Umbenennen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_IKF_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_IKF_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string KI_DLG_IKF_NAME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_IKF_NAME_NAME", resourceCulture);
             }
         }
         
@@ -59561,6 +59912,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitions- oder Betriebskosten der Vorlage; ein Wechsel zieht die Variantenliste nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_KATEGORIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_KATEGORIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_KATEGORIE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_KATEGORIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage des Quellprojekts, deren Positionen übernommen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Positionen kommen: aus einer Vorlage/Variante des Katalogs oder aus einer Anlage eines anderen Projekts. Führt der Katalog keine Vorlage, steht nur das Projekt zur Wahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, aus dessen Anlage die Positionen kommen; ein Wechsel zieht die Anlagenliste nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLPROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLPROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante der Vorlage, deren Positionen übernommen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_VARIANTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_VARIANTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, in dessen Anlage die Kostenpositionen übernommen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht. ähnelt.
         /// </summary>
         public static string KI_DLG_KV_BEMESSUNG_ERL {
@@ -59939,6 +60362,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog-Dubletten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_DUBL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_DUBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsarten und Katalog ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_EMK {
@@ -59962,6 +60394,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_ETV {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_ETV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einlesen einer CSV-Datei der Flotte ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_FCSV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_FCSV", resourceCulture);
             }
         }
         
@@ -60011,6 +60452,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudeimport ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GIMP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GIMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importoptionen einer Ganglinie ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GIO {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_GSK {
@@ -60052,6 +60511,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_HEIZKESSEL_PROJEKT {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konflikte beim Import ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_IKF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_IKF", resourceCulture);
             }
         }
         
@@ -60119,6 +60587,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ins Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KUEB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KUEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KV {
@@ -60173,6 +60650,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe des Projekts ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PBRS {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PBRS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PEAK {
@@ -60214,6 +60700,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_PSPV {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_PSPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt exportieren / importieren ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PTR {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PTR", resourceCulture);
             }
         }
         
@@ -60340,6 +60835,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_SPA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_SPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spotpreise einlesen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SPOT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SPOT", resourceCulture);
             }
         }
         
@@ -61118,6 +61622,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Brennstoff des Katalogs, den „Übernehmen“ in das Projekt kopiert; die Liste führt nur Brennstoffe, die das Projekt noch nicht hat. Übernehmen bleibt ein Klick des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PBRS_KATALOGWAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PBRS_KATALOGWAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wert der Zeile, die gerade bearbeitet wird; er gilt erst mit „Speichern“ der Bearbeitung, das der Anwender drückt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PBRS_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PBRS_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zieht die Schwelle im Lauf nach, sobald der Speicher eine Spitze nicht halten kann; sonst steht sie fest. ähnelt.
         /// </summary>
         public static string KI_DLG_PEAK_ADAPTIV_ERL {
@@ -61802,6 +62324,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was geschieht, wenn der Name schon vergeben ist: unter neuem Namen importieren, das vorhandene Projekt überschreiben (der Import fragt vorher nach) oder abbrechen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_KONFLIKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_KONFLIKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei vorhandenem Namen ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_KONFLIKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_KONFLIKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt der Import vorher eine Sicherungskopie der Datenbank an? ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_SICHERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_SICHERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem das Paket eingespielt wird; leer übernimmt den Namen aus der Datei. Gilt nur beim Import eines einzelnen Pakets. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_ZIELNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_ZIELNAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad des Wechselrichters an diesem Lastpunkt als Faktor zwischen 0 und 1 (0,97 = 97 %), nicht in Prozent. Leer oder 0 heißt „nicht bekannt“; dann rechnet die Anlage mit den Vorgabewerten. ähnelt.
         /// </summary>
         public static string KI_DLG_PVA_ETA_ERL {
@@ -62306,7 +62864,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_PV_TRAEGER_ERL {
             get {
@@ -63863,7 +64421,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte. Der Assistent setzt ihn nicht, weil die Maske ihn sofort projektweit speichert. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA2_LEISTUNGSPREIS_ERL {
             get {
@@ -64111,6 +64669,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_ADAPTIV_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_ADAPTIV_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Schalter der Ergebnisansichten nach einem Lauf — Reihen, sortiert, Zeitraum, Speicher, Einheit und die Stellen der zwei Schieber der Größenrechnung; je Option einer Wahl ein Schalter. Sie stellen nur das Bild ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ANZEIGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ANZEIGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA_ANZEIGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA_ANZEIGE_NAME", resourceCulture);
             }
         }
         
@@ -64583,6 +65159,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem die Preisreihe abgelegt wird; leer wird er beim Wählen der Datei mit dem Dateinamen vorbelegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPOT_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPOT_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Preisreihe allen Projekten zur Verfügung oder nur dem geöffneten? ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPOT_STAMM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPOT_STAMM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für alle Projekte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPOT_STAMM_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPOT_STAMM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt. ähnelt.
         /// </summary>
         public static string KI_DLG_START_KEIN_PROJEKT {
@@ -64628,7 +65231,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_STSP_TRAEGER_ERL {
             get {
@@ -68327,6 +68930,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Prüflauf läuft gerade; danach lässt sich der Katalog wieder wählen. ähnelt.
+        /// </summary>
+        public static string KI_DUBL_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_DUBL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_EINST_BTN_ABBRECHEN {
@@ -68462,6 +69074,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Energieträger wechseln Sie in der Maske von Hand; der Wechsel schreibt sofort in die Datenbank, deshalb setzt der Assistent ihn nicht. ähnelt.
+        /// </summary>
+        public static string KI_ERZ_TRAEGER_VON_HAND {
+            get {
+                return ResourceManager.GetString("KI_ERZ_TRAEGER_VON_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelspalte und Zeitstempelformat gelten nur bei der Zeitangabe „eine Spalte“ – bitte zuerst die Zeitangabe umstellen. ähnelt.
+        /// </summary>
+        public static string KI_FCSV_NUR_EINE_SPALTE {
+            get {
+                return ResourceManager.GetString("KI_FCSV_NUR_EINE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datums- und Uhrzeitspalte und ihre Formate gelten nur bei getrennter Zeitangabe – bitte zuerst die Zeitangabe umstellen. ähnelt.
+        /// </summary>
+        public static string KI_FCSV_NUR_GETRENNT {
+            get {
+                return ResourceManager.GetString("KI_FCSV_NUR_GETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Prognosezuordnung gibt es nur beim Einlesen von Prognosen. ähnelt.
+        /// </summary>
+        public static string KI_FCSV_NUR_PROGNOSEN {
+            get {
+                return ResourceManager.GetString("KI_FCSV_NUR_PROGNOSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Feldname aufgelöst: {0} → {1}) ähnelt.
         /// </summary>
         public static string KI_FELD_AUFGELOEST {
@@ -68512,6 +69160,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_DIALOGBEFUND {
             get {
                 return ResourceManager.GetString("KI_FELD_DIALOGBEFUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_FELD_GESPERRT", resourceCulture);
             }
         }
         
@@ -69389,6 +70046,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt nur ein Gebäude; es gibt nichts zu wählen. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_EIN_GEBAEUDE {
+            get {
+                return ResourceManager.GetString("KI_GIMP_EIN_GEBAEUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Feld gilt erst, wenn eine Gebäudedatei gelesen ist. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_ERST_LESEN {
+            get {
+                return ResourceManager.GetString("KI_GIMP_ERST_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nordrichtung lässt sich hier nicht ändern: Für diese Datei gibt es keinen Weg, sie mit einer anderen Richtung neu zu lesen. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_NORDRICHTUNG {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_NORDRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Import führt keine Wahl der Quelle; das Format folgt der Endung der Datei. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_QUELLWAHL {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_QUELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt keine Zonierung; eine Zonenregel gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_ZONENREGEL {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_ZONENREGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wahl der Zonierung gibt es nur, wenn eine Projektdatei mit beiden Zonierungen geladen ist. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEINE_ZONIERUNGSWAHL {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEINE_ZONIERUNGSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Datei lässt sich kein Bauteilvorschlag bilden. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEIN_BAUTEILVORSCHLAG {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEIN_BAUTEILVORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei trägt keine Raumtemperaturen, die als Heizsollwert dienen könnten; der Schalter steht nicht zur Wahl. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_KEIN_CADSOLLWERT {
+            get {
+                return ResourceManager.GetString("KI_GIMP_KEIN_CADSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudeimport liest oder übernimmt gerade; danach lassen sich die Felder wieder setzen. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_GIMP_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Am Zonenplan bestehen Zuordnungen von Hand; vor diesem Wechsel fragt der Dialog nach, ob sie verworfen werden. Diese Wahl trifft der Anwender selbst im Dialog. ähnelt.
+        /// </summary>
+        public static string KI_GIMP_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("KI_GIMP_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Tabellenblatt gibt es nur bei einer Excel-Mappe. ähnelt.
+        /// </summary>
+        public static string KI_GIO_NUR_EXCEL {
+            get {
+                return ResourceManager.GetString("KI_GIO_NUR_EXCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie ein Stichwort ein und klicken Sie auf „Suchen“. Durchsucht wird die mitgelieferte Hilfe - dabei verlässt keine Angabe diesen Rechner. ähnelt.
         /// </summary>
         public static string KI_HILFEBETRIEB_BEGRUESSUNG {
@@ -69649,6 +70405,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_HINWEIS_ZEILE_LINK {
             get {
                 return ResourceManager.GetString("KI_HINWEIS_ZEILE_LINK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Eintrag ist die Aktion nicht erlaubt; zur Wahl stehen: {0}. ähnelt.
+        /// </summary>
+        public static string KI_IKF_AKTION_NICHT_ERLAUBT {
+            get {
+                return ResourceManager.GetString("KI_IKF_AKTION_NICHT_ERLAUBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Namen ändern Sie nur bei der Aktion „Umbenennen“ – bitte zuerst die Aktion der Zeile umstellen. ähnelt.
+        /// </summary>
+        public static string KI_IKF_NAME_NUR_UMBENENNEN {
+            get {
+                return ResourceManager.GetString("KI_IKF_NAME_NUR_UMBENENNEN", resourceCulture);
             }
         }
         
@@ -70211,6 +70985,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dieser Wahl lässt sich nichts übernehmen. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_NICHT_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_KUEB_NICHT_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt und Quellanlage gelten nur für die Quelle „Aus Projekt/Anlage“. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_NUR_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_KUEB_NUR_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie und Variante gelten nur für die Quelle „Aus Vorlage/Variante“. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_NUR_VORLAGE {
+            get {
+                return ResourceManager.GetString("KI_KUEB_NUR_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zielprojekt steht fest; diese Übernahme geht in das geöffnete Projekt. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_ZIEL_FEST {
+            get {
+                return ResourceManager.GetString("KI_KUEB_ZIEL_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbruch angefordert – der Lauf hält an der nächsten Phasengrenze. ähnelt.
         /// </summary>
         public static string KI_LAUF_ABBRUCH {
@@ -70310,6 +71120,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske schreibt gerade; danach lassen sich die Felder wieder setzen. ähnelt.
+        /// </summary>
+        public static string KI_PBRS_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_PBRS_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte eines Brennstoffs lassen sich erst setzen, wenn der Anwender seine Zeile mit „Bearbeiten…“ geöffnet hat. ähnelt.
+        /// </summary>
+        public static string KI_PBRS_NICHT_IN_BEARBEITUNG {
+            get {
+                return ResourceManager.GetString("KI_PBRS_NICHT_IN_BEARBEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hier lässt sich kein Brennstoff aus dem Katalog übernehmen. ähnelt.
+        /// </summary>
+        public static string KI_PBRS_OHNE_UEBERNAHME {
+            get {
+                return ResourceManager.GetString("KI_PBRS_OHNE_UEBERNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender. ähnelt.
         /// </summary>
         public static string KI_PEAK_KEINE_DATEI {
@@ -70324,6 +71161,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_PEAK_KEINE_GANGLINIE {
             get {
                 return ResourceManager.GetString("KI_PEAK_KEINE_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf diesem Gerät legt der Import keine Sicherungskopie an. ähnelt.
+        /// </summary>
+        public static string KI_PTR_KEINE_SICHERUNG {
+            get {
+                return ResourceManager.GetString("KI_PTR_KEINE_SICHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Export oder Import läuft gerade; danach lassen sich die Felder wieder setzen. ähnelt.
+        /// </summary>
+        public static string KI_PTR_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_PTR_LAEUFT", resourceCulture);
             }
         }
         
@@ -73108,6 +73963,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_SIM_WERT_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KI_SIM_WERT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch keine Datei gewählt und geprüft – die Datei wählen Sie in der Maske von Hand. ähnelt.
+        /// </summary>
+        public static string KI_SPOT_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("KI_SPOT_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromspeicher-Auslegung hat noch keinen Arbeitsstand mit Flotte, in den der Wert gehört – bitte die Ansicht zuerst mit einem Projekt öffnen. ähnelt.
+        /// </summary>
+        public static string KI_STROM_KEINE_FLOTTE {
+            get {
+                return ResourceManager.GetString("KI_STROM_KEINE_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Leistungspreis setzen Sie in der Maske von Hand; er wird sofort projektweit gespeichert, deshalb setzt der Assistent ihn nicht. ähnelt.
+        /// </summary>
+        public static string KI_STROM_LEISTUNGSPREIS_VON_HAND {
+            get {
+                return ResourceManager.GetString("KI_STROM_LEISTUNGSPREIS_VON_HAND", resourceCulture);
             }
         }
         
@@ -107021,6 +107903,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmittel {0} °C  ·  Tiefstwert {1} °C am {2}  ·  Höchstwert {3} °C am {4} ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:dd.MM.}, {0:HH:mm} Uhr ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_LAUF_ZEITPUNKT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_LAUF_ZEITPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es muss mindestens eine Sonde vorhanden sein! ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_MSG_ANZAHL_MIN {
@@ -107200,15 +108100,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_SIM_LAEUFT {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_SIM_LAEUFT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK&quot; und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet. ähnelt.
-        /// </summary>
-        public static string SIMQ_ERDREICH_SIM_NUR_GESPEICHERT {
-            get {
-                return ResourceManager.GetString("SIMQ_ERDREICH_SIM_NUR_GESPEICHERT", resourceCulture);
             }
         }
         

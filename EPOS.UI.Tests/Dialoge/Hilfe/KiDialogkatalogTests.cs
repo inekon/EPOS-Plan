@@ -310,6 +310,32 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.STROMGANGLINIE_ADMIN,
           typeof(EPOS.UI.Dialoge.Strom.StromganglinieAdminKiSicht) },
 
+        // Freigabe der Importdialoge, Teil A (10.10.2026): vier Importoptions-Dialoge, vier
+        // Sichtklassen - die Dialoge fuehren ihren Stand in privaten Feldern.
+        { KiMaskennamen.SPEICHER_FLOTTEN_CSV,
+          typeof(EPOS.UI.Dialoge.Strom.SpeicherFlottenCsvKiSicht) },
+        { KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN,
+          typeof(EPOS.UI.Dialoge.Strom.GanglinieImportOptionenKiSicht) },
+        { KiMaskennamen.SPOTPREIS_IMPORT,
+          typeof(EPOS.UI.Dialoge.Kosten.SpotpreisImportKiSicht) },
+        { KiMaskennamen.IMPORT_KONFLIKTE,
+          typeof(EPOS.UI.Dialoge.Import.ImportKonflikteKiSicht) },
+
+        // Freigabe der Masken, Teil C (10.10.2026): Uebernahme, Transfer, Brennstoffe und
+        // Dubletten - vier Sichtklassen ueber private Felder.
+        { KiMaskennamen.VORLAGEN_UEBERNAHME,
+          typeof(EPOS.UI.Dialoge.Kosten.VorlagenUebernahmeKiSicht) },
+        { KiMaskennamen.PROJEKT_TRANSFER,
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektTransferKiSicht) },
+        { KiMaskennamen.PROJEKT_BRENNSTOFFE,
+          typeof(EPOS.UI.Dialoge.Kosten.ProjektBrennstoffeKiSicht) },
+        { KiMaskennamen.KATALOG_DUBLETTEN,
+          typeof(EPOS.UI.Dialoge.Admin.KatalogDublettenKiSicht) },
+
+        // Freigabe der Masken, Teil B (10.10.2026): die Kopfeingaben des Gebaeudeimports.
+        { KiMaskennamen.GEBAEUDE_IMPORT,
+          typeof(EPOS.UI.Dialoge.Import.GebaeudeImportKiSicht) },
+
         // Welle KI-F6, Schritt 2 (BERICHTE und PROJEKT): zwei Reiterblaetter der
         // Ansicht „Berichte und Kosten" und die zwei Projektmasken.
         { KiMaskennamen.BERICHTE_UEBERSICHT,
@@ -478,7 +504,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(93, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien
+        Assert.Equal(102, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1649,6 +1675,34 @@ public class KiDialogkatalogTests : IDisposable
     /// </remarks>
     private static readonly Dictionary<string, string> OhneMarkupprobe = new()
     {
+        [KiMaskennamen.SPEICHER_FLOTTEN_CSV] =
+            "bindet über die Sichtklasse SpeicherFlottenCsvKiSicht auf den privaten Optionssatz " +
+            "(drei Stufen tief); Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN] =
+            "bindet über die Sichtklasse GanglinieImportOptionenKiSicht auf die privaten Plätze " +
+            "der Klapplisten; Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.SPOTPREIS_IMPORT] =
+            "bindet über die Sichtklasse SpotpreisImportKiSicht auf zwei private Felder; " +
+            "Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.IMPORT_KONFLIKTE] =
+            "bindet über die Sichtklasse ImportKonflikteKiSicht auf die öffentlichen FELDER der " +
+            "Zeilen (keine Eigenschaften); Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.VORLAGEN_UEBERNAHME] =
+            "bindet über die Sichtklasse VorlagenUebernahmeKiSicht auf sechs private Felder; " +
+            "Zeuge ist KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.PROJEKT_TRANSFER] =
+            "bindet über die Sichtklasse ProjektTransferKiSicht auf drei private Felder des " +
+            "Importblatts; Zeuge ist KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.PROJEKT_BRENNSTOFFE] =
+            "bindet über die Sichtklasse ProjektBrennstoffeKiSicht auf die Katalogwahl und den " +
+            "Arbeitsstand der Bearbeitung (zehn Zahlenfelder in einer Schleife); Zeuge ist " +
+            "KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.KATALOG_DUBLETTEN] =
+            "bindet über die Sichtklasse KatalogDublettenKiSicht auf die private Katalogwahl; " +
+            "Zeuge ist KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.GEBAEUDE_IMPORT] =
+            "bindet über die Sichtklasse GebaeudeImportKiSicht auf die privaten Kopfeingaben des " +
+            "Assistenten (neun Felder); Zeuge ist KiGebaeudeImportTests",
         [KiMaskennamen.STROMSPEICHER_AUSLEGUNG] =
             "bindet über die Sichtklasse StromspeicherKiSicht, nicht über das Markup",
         [KiMaskennamen.SIMULATION] =
@@ -2258,7 +2312,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Die_Stromspeicher_Ansicht_fuehrt_fuenfundachtzig_Felder_und_keinen_Knopf()
+    public void Die_Stromspeicher_Ansicht_fuehrt_sechsundachtzig_Felder_und_keinen_Knopf()
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
 
@@ -2272,10 +2326,13 @@ public class KiDialogkatalogTests : IDisposable
         // Mit der Welle KI-F6 kommen die STATIONEN 1 bis 4 dazu (Statuszeile #420,
         // Punkt b): 23 Spalten je Speichereinheit, 17 Felder der Datenquellen und
         // Kostensätze, 10 der Betriebsführung samt Netz und Prognose und 8 Spalten je
-        // Suchachse — 58 neue, zusammen 85.
-        Assert.Equal(85, d.Felder.Count);
+        // Suchachse — 58 neue, zusammen 85. Mit der Freigabe der Masken (Teil C) die
+        // SPALTE „anzeige" der Schalter beider Ergebnisansichten — 86.
+        Assert.Equal(86, d.Felder.Count);
+        Assert.Equal(1, d.Felder.Count(f => f.Sammlung == "Ergebnisschalter"));
 
-        // ZWEI Sammlungen: die Einheiten der Flotte und die Achsen des Suchraums.
+        // DREI Sammlungen: die Einheiten der Flotte, die Achsen des Suchraums und die
+        // Schalter der Ergebnisansichten.
         // Ihre Zahl steht erst zur Laufzeit fest; deshalb sind sie Spalten und keine
         // Einzelfelder.
         Assert.Equal(23, d.Felder.Count(f => f.Sammlung == "Einheitenzeilen"));
@@ -2589,12 +2646,14 @@ public class KiDialogkatalogTests : IDisposable
         var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
                                              () => Array.Empty<FlottenHinweis>());
 
-        sicht.Leistungspreis = 137.5;
-        Assert.Equal(137.5, eingaben.LeistungspreisEurProKwA);
-        Assert.Equal(137.5, eingaben.Auslegung!.Flotte!.Tarif.LeistungspreisEuroProKw);
+        // Den Leistungspreis setzt der Assistent nicht — die Maske speichert ihn von Hand
+        // sofort projektweit; der Setzer lehnt benannt ab.
+        double leistungspreis = eingaben.LeistungspreisEurProKwA;
+        Assert.Throws<InvalidOperationException>(() => sicht.Leistungspreis = 137.5);
+        Assert.Equal(leistungspreis, eingaben.LeistungspreisEurProKwA);
 
         sicht.KalkulationszinsProzent = 4.5;
-        Assert.Equal(0.045, eingaben.Auslegung.Flotte.Wirtschaftlichkeit.Kalkulationszins, 9);
+        Assert.Equal(0.045, eingaben.Auslegung!.Flotte!.Wirtschaftlichkeit.Kalkulationszins, 9);
 
         sicht.InvestitionProKWh = 350.0;
         Assert.Equal(350.0, eingaben.Auslegung.DirekteKosten.InvestEurProKwh);

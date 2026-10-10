@@ -19,6 +19,9 @@
 @using System.Globalization
 @using EPOS.UI.Standards
 @using WindowsFormsApplication1
+@using KiKern
+@using EPOS.UI.Dienste
+@implements IDisposable
 
 <div class="epos-dialog epos-projektbrennstoffe" tabindex="-1" @onkeydown="BeiTaste">
 
@@ -219,7 +222,53 @@
     {
         _stand = Stand ?? ProjektBrennstoffeStand.Leer;
         _katalogwahl = _stand.Katalog.Count > 0 ? _stand.Katalog[0].IdBrennstoff : 0;
+
+        _kiSicht = new ProjektBrennstoffeKiSicht(
+            f => _bearbeiten is null ? null : Arbeitswert(f),
+            KiWertSetzen)
+        {
+            KatalogwahlLesen = () => _katalogwahl,
+            KatalogwahlSetzen = id => { _katalogwahl = id; _ = InvokeAsync(StateHasChanged); },
+            KatalogwahlEintraege = () => KiMaskenanmeldung.Eintraege(_stand.Katalog, k => k.IdBrennstoff, k => k.Bezeichner)
+        };
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PROJEKT_BRENNSTOFFE, () => _kiSicht, KiHaken());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil C)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ProjektBrennstoffeKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf. <b>Kein Speicherweg:</b> „Speichern"
+    /// der Bearbeitung, „Zurücksetzen" und „Übernehmen" schreiben sofort je Satz in die
+    /// Datenbank und bleiben Klicks des Anwenders. Während eines Schreiblaufs ist die Maske
+    /// gesperrt; die zehn Werte gibt es nur in der Bearbeitung, die Katalogwahl nur mit
+    /// Übernahmeweg und Katalogsätzen.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _laeuft,
+        Schreibschutzgrund = () => WindowsFormsApplication1.MyResource.Resource.KI_PBRS_LAEUFT,
+        Sperrgrund = f => f == "katalogwahl"
+            ? (Uebernehmen is null ? WindowsFormsApplication1.MyResource.Resource.KI_PBRS_OHNE_UEBERNAHME
+               : _stand.Katalog.Count == 0 ? T.UebernehmenLeer : null)
+            : (_bearbeiten is null ? WindowsFormsApplication1.MyResource.Resource.KI_PBRS_NICHT_IN_BEARBEITUNG : null)
+    };
+
+    /// <summary>Der Handweg des Zahlenfeldes: der Wert geht in den Arbeitsstand der Bearbeitung.</summary>
+    private void KiWertSetzen(string feld, double? wert)
+    {
+        if (_bearbeiten is null) throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KI_PBRS_NICHT_IN_BEARBEITUNG);
+        _arbeit[feld] = wert;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     private string Feldtext(string feld) => T.Felder.TryGetValue(feld, out string? t) ? t : feld;
 

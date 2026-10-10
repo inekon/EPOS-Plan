@@ -315,6 +315,9 @@
                    (Hausregel Leerzustand). *@
                 @if (_flottenErgebnis.Auslegung is not null)
                 {
+                    @* Die Schalter der Groessenansicht melden sich beim Register der Seite
+                       (Freigabe der Masken, Teil C). *@
+                    <CascadingValue Value="_anzeige" IsFixed="true">
                     <OptimierungsergebnisBlock Ergebnis="@_flottenErgebnis.Auslegung"
                                                Flotte="@Flotte" Methode="@_laufMethode"
                                                Einheiten="@Einheitenzahl"
@@ -326,6 +329,7 @@
                                                       : EventCallback.Factory.Create(this, BesteVarianteUebernehmen))"
                                                BesteGesperrt="@(_veraltet || _laeuft)"
                                                BesteGesperrtGrund="@Resource.FLOTTE_BESTE_GESPERRT" />
+                    </CascadingValue>
                 }
                 else
                 {
@@ -363,6 +367,7 @@
                                                                   gezeigt.KandidatId)</p>
                 }
 
+                <CascadingValue Value="_anzeige" IsFixed="true">
                 <SpeicherFlottenErgebnisAnsicht Ergebnis="@_flottenErgebnis" Veraltet="@_veraltet"
                                                 VorausschauPeakZielKw="@_peakVorausschau?.PeakZielKw"
                                                 Csv="@(Dienste?.Csv is null ? default
@@ -370,6 +375,7 @@
                                                 BetriebsfuehrungAendern="ZurBetriebsfuehrung"
                                                 FarbeSetzen="@Dienste?.FarbeSetzen"
                                                 FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />
+                </CascadingValue>
 
                 <div class="epos-simerg-fuss">
                     @if (Dienste?.ProjektflotteAktivieren is not null
@@ -858,8 +864,16 @@
         // Auftrag #200 (Stufe S2): die fuenfte Maske des Dialogkatalogs. Angemeldet wird
         // ein SICHTMODELL und nicht der Eingabestand - der liegt drei bis fuenf Stufen
         // tief, und ein Katalogfeld ist genau zwei Stufen tief (KiEigenschaftspfad).
+        // Nach einer Setzung geht die Sicht denselben Meldeweg wie ein Blatt von Hand:
+        // Geaendert() fuer jeden Wert, die Folgen des Betriebseditors fuer die
+        // Betriebsfuehrung (Netzladung, Ratsche, Startwert, Peak-Vorschlag).
         _kiSicht = new StromspeicherKiSicht(() => _eingaben, () => _flottenErgebnis,
-                                            () => _vorpruefung, () => SchrittText);
+                                            () => _vorpruefung, () => SchrittText)
+        {
+            Gemeldet = () => _ = InvokeAsync(Geaendert),
+            BetriebGemeldet = (ziel, ratsche) => _ = InvokeAsync(() => BetriebsfolgenZiehen(ziel, ratsche)),
+            ErgebnisschalterLesen = () => _anzeige.Schalter
+        };
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
                                           () => _kiSicht, KiHaken());
     }
@@ -893,7 +907,9 @@
            {
                Auffrischen = () => _ = InvokeAsync(StateHasChanged),
                Pruefen = KiVorpruefung,
-               Speichern = KiSpeichern
+               Speichern = KiSpeichern,
+               // Ohne Arbeitsstand mit Flotte wird jede Setzung vor der Bestaetigung abgelehnt.
+               Sperrgrund = f => _kiSicht?.Sperrgrund(f)
            }
            .Rechenweg("flotte_bewerten", KiBewerten)
            .Rechenweg("peak_ziel_bestimmen", KiPeakZiel);
@@ -980,6 +996,12 @@
     /// Zugriff aus den drei lebenden Ständen.
     /// </summary>
     private StromspeicherKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Das Register der Anzeigeschalter der zwei Ergebnisansichten (Größenrechnung und Betrieb
+    /// der Flotte); die Sicht führt sie als Spalte (Freigabe der Masken, Teil C).
+    /// </summary>
+    private readonly Ergebnisanzeige _anzeige = new();
 
     /// <summary>
     /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. <b>Angemeldet heißt nicht
@@ -1073,6 +1095,16 @@
         // Der Betriebseditor reicht bereits Kopie(_wert) heraus - der Stand gehoert
         // danach uns allein, eine zweite Kopie waere Arbeit ohne Wirkung (#248).
         Flotte.Optionen = optionen ?? new FlottenSimulationOptionen();
+        BetriebsfolgenZiehen(vorher, ratscheVorher);
+    }
+
+    /// <summary>
+    /// Die Folgen einer Änderung der Betriebsführung — gerufen vom Betriebseditor
+    /// (<see cref="BetriebsoptionenGeaendert"/>) und nach einer Setzung des Assistenten, der
+    /// den Stand an Ort und Stelle beschreibt und Ziel und Ratsche von vorher mitgibt.
+    /// </summary>
+    private void BetriebsfolgenZiehen(FlottenBetriebsziel vorher, bool ratscheVorher)
+    {
         if (Flotte.Optionen.Betriebsziel != vorher)
         {
             Flotte.Optionen.NetzladungErlaubt = FlottenVorgaben.NetzladungFuer(Flotte.Optionen.Betriebsziel);

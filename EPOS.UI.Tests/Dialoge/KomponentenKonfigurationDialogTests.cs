@@ -553,4 +553,71 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_WPA_KUEHLUNG_NICHT_EINSTELLBAR, abgelehnt.Message);
         Assert.Null(ohneGaben.KuehlHilfsstromanteil);
     }
+
+    // ================================================================== Sperrgrund und Meldeweg
+
+    /// <summary>
+    /// Ohne Anlage zeigt die Maske keine Wärmepumpen-Felder: Der Sperrgrund lehnt sie vor der
+    /// Bestätigung ab — mit dem Text, den die Maske an ihrer Stelle zeigt —, und der Setzer verwirft nicht still, sondern lehnt benannt ab.
+    /// </summary>
+    [Fact]
+    public void Ohne_Anlage_sind_die_Waermepumpen_Felder_gesperrt_und_der_Setzer_lehnt_ab()
+    {
+        Zeige(Komponentenart.Waermepumpe);
+
+        string grund = WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_WP_OHNE_ANLAGE;
+        WindowsFormsApplication1.KiMaskenhaken haken = WindowsFormsApplication1.KiMaskenbruecke
+            .Haken(WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION);
+        Assert.Equal(grund, haken.Feldsperre("heizstab"));
+        Assert.Equal(grund, haken.Feldsperre("energietraeger"));
+        Assert.Equal(grund, haken.Feldsperre("kuehlbetrieb"));
+        Assert.Equal("", haken.Feldsperre("bereitschaft"));
+
+        WindowsFormsApplication1.KiFeldzugang heizstab =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION, "heizstab");
+        var abgelehnt = Assert.ThrowsAny<Exception>(() => heizstab.Setzen(true));
+        Assert.Contains(grund, (abgelehnt.InnerException ?? abgelehnt).Message);
+    }
+
+    /// <summary>
+    /// Mit Anlage ist dasselbe Feld frei — auch der Energieträger: Seine Wahl schreibt nur in
+    /// die Arbeitskopie, in die Datenbank trägt sie erst der OK-Weg des Wirts.
+    /// </summary>
+    [Fact]
+    public void Mit_Anlage_sind_die_Waermepumpen_Felder_frei()
+    {
+        Zeige(Komponentenart.Waermepumpe, new WaermepumpeAnlageDaten());
+
+        WindowsFormsApplication1.KiMaskenhaken haken = WindowsFormsApplication1.KiMaskenbruecke
+            .Haken(WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION);
+        Assert.Equal("", haken.Feldsperre("heizstab"));
+        Assert.Equal("", haken.Feldsperre("energietraeger"));
+    }
+
+    /// <summary>
+    /// Nach einer Setzung geht die Maske den Meldeweg der Hand: Die Warnung eines
+    /// abgewiesenen OK verschwindet wie nach einer Eingabe im Feld.
+    /// </summary>
+    [Fact]
+    public void Eine_Setzung_raeumt_die_Warnung_wie_die_Eingabe_von_Hand()
+    {
+        var anlage = new WaermepumpeAnlageDaten { VorlaufMax = 999 };
+        var cut = Zeige(Komponentenart.Waermepumpe, anlage);
+
+        Leiste(cut, 1).Click();
+        Assert.Empty(_ergebnis);
+        Assert.Contains(cut.FindComponents<EPOS.UI.Bausteine.Warnbanner>(),
+                        b => b.Instance.Stufe == EPOS.UI.Bausteine.WarnStufe.Warnung);
+
+        WindowsFormsApplication1.KiFeldzugang vorlauf =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION, "vorlauf_max");
+        cut.InvokeAsync(() => vorlauf.Setzen(50.0)).GetAwaiter().GetResult();
+        cut.Render();
+
+        Assert.Equal(50.0, anlage.VorlaufMax);
+        Assert.DoesNotContain(cut.FindComponents<EPOS.UI.Bausteine.Warnbanner>(),
+                              b => b.Instance.Stufe == EPOS.UI.Bausteine.WarnStufe.Warnung);
+    }
 }

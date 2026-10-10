@@ -558,6 +558,46 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
     /// <c>EPOS.Kern.Tests/SpeicherFlottenGroessenCtrlTests</c>: sieben Kandidaten,
     /// darunter ein arbeitsloser, ein unzulässiger und ein Loch bei 30 kWh / 1,0 C.
     /// </summary>
+    /// <summary>
+    /// Die Stellen der zwei Schieber sind Zeilen der Spalte „anzeige" der Stromspeicher-Auslegung
+    /// (Freigabe der Masken, Teil C): eine Stelle über <c>feld_setzen</c> am Wirt gewählt, und die
+    /// Ansicht steht danach dort wie nach dem Schieber von Hand.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_waehlt_eine_Stelle_des_Schiebers_ueber_die_Spalte_des_Wirts()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var anzeige = new EPOS.UI.Seiten.Simulation.Ergebnisanzeige();
+            var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+                .AddCascadingValue(anzeige).Add(x => x.Ergebnis, Ergebnis()));
+            var sicht = new EPOS.UI.Seiten.Strom.StromspeicherKiSicht(() => null, () => null,
+                                                                      () => Array.Empty<FlottenHinweis>())
+            {
+                ErgebnisschalterLesen = () => anzeige.Schalter
+            };
+            using var anmeldung = EPOS.UI.Dienste.KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                () => sicht, new KiMaskenhaken { Sperrgrund = sicht.Sperrgrund });
+
+            Assert.Equal(1.0, cut.Instance.GewaehlterSpaltenwert, 9);
+            int platz = anzeige.Schalter.Select(s => s.Name).ToList()
+                .FindIndex(n => n.StartsWith(Resource.FLOTTE_GROESSEN_LBL_CRATE, StringComparison.Ordinal));
+            Assert.True(platz >= 0);
+
+            KiKern.KiErgebnis stelle = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.STROMSPEICHER_AUSLEGUNG, "anzeige_" + (platz + 1), "true"));
+
+            Assert.True(stelle.Status == KiKern.KiStatus.Ausgefuehrt, stelle.Text);
+            Assert.Equal(0.5, cut.Instance.GewaehlterSpaltenwert, 9);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
     private static FlottenAuslegungErgebnis Ergebnis()
     {
         var bester = Kandidat("K-20-1,0", 20, 20, 2000, true, 220);

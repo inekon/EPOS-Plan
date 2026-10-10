@@ -578,6 +578,19 @@
     private void RasterWaehlen(Bedarfsraster raster) => _raster = raster;
 
     /// <summary>
+    /// Der Weg des Assistenten zum Zeitraster: derselbe wie der Klick auf den Schaltknopf;
+    /// leer heißt Jahr. Ohne Grafik gibt es keine Knopfgruppe und damit nichts zu setzen.
+    /// </summary>
+    private void ZeitrasterSetzen(int? id)
+    {
+        if (Daten.Grafik is null)
+            throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KI_BERG_ZEITSTUFE_NUR_GRAFIK);
+        var raster = (Bedarfsraster)(id ?? (int)Bedarfsraster.Jahr);
+        if (!Enum.IsDefined(raster)) throw new ArgumentOutOfRangeException(nameof(id));
+        RasterWaehlen(raster);
+    }
+
+    /// <summary>
     /// Die MONATSSÄULEN der gewählten Sicht als Zeichenmodell (Etappe DG-E3,
     /// Gruppe (c)).
     ///
@@ -665,7 +678,14 @@
 
             // „Jahresverlauf“ des Assistenten ist das Zeitraster Jahr; aus heißt Monat.
             JahresverlaufLesen = () => Daten.Grafik is not null && _raster == Bedarfsraster.Jahr,
-            JahresverlaufSetzen = an => _raster = an ? Bedarfsraster.Jahr : Bedarfsraster.Monat
+            JahresverlaufSetzen = an => _raster = an ? Bedarfsraster.Jahr : Bedarfsraster.Monat,
+
+            // Freigabe der Masken, Teil C: das Zeitraster des Grafikreiters (Jahr, Monat,
+            // Woche, Tag) - derselbe Weg wie der Klick auf seinen Schaltknopf.
+            ZeitstufeLesen = () => Daten.Grafik is not null ? (int)_raster : null,
+            ZeitstufeSetzen = ZeitrasterSetzen,
+            ZeitstufeEintraege = () => KiMaskenanmeldung.Eintraege(
+                Rasterwahl, e => (int)e.Item1, e => e.Item2)
         };
     }
 
@@ -678,7 +698,10 @@
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
-        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        // Das Zeitraster gibt es nur, solange der Grafikreiter eine Reihe zeichnet.
+        Sperrgrund = f => f == "zeitstufe" && Daten.Grafik is null
+            ? WindowsFormsApplication1.MyResource.Resource.KI_BERG_ZEITSTUFE_NUR_GRAFIK : null
     };
 
     /// <inheritdoc/>

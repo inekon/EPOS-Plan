@@ -22,6 +22,13 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// Projekt genau eine Anlage, wählt <see cref="Einzelwahl"/> sie wie das Öffnen des
 /// Dialogs.</para>
 ///
+/// <para><b>Der Sperrgrund kommt vor der Bestätigung</b> (<see cref="Sperrgrund"/>, angemeldet
+/// als <c>KiMaskenhaken.Sperrgrund</c>): Fehlt die Zeile und greift die
+/// <see cref="Einzelwahl"/> nicht, lehnt schon die Vorbedingung ab; den Energieträger setzt
+/// der Assistent nie — sein Handweg schreibt sofort in die Datenbank, er wird von Hand
+/// gewechselt (<c>KI_ERZ_TRAEGER_VON_HAND</c>). Die Absagen der Setzer bleiben die zweite
+/// Sicherung.</para>
+///
 /// <para><b>Nach dem Setzen geht die Zeile den Weg der Hand</b>: <see cref="Uebernommen"/>
 /// ist derselbe Übernahmeweg, den die Eingabefelder rufen (<c>Uebernehmen</c> des Dialogs,
 /// in die Arbeitskopie der Hülle — nicht in die Datenbank).</para>
@@ -44,6 +51,12 @@ public sealed class ErzeugerProjektKiSicht : IKiFeldtafel
     /// Grenzleistung) — der Dialog reicht hier sein <c>Uebernehmen</c> herein.
     /// </summary>
     public Action<ErzeugerZeile>? Uebernommen { get; init; }
+
+    /// <summary>
+    /// Die Zahl der Projektzeilen der Maske — sie sagt dem <see cref="Sperrgrund"/>, ob
+    /// die <see cref="Einzelwahl"/> greift (genau eine), ohne dass er schon wählt.
+    /// </summary>
+    public Func<int>? Zeilenzahl { get; init; }
 
     /// <summary>Die Feldtafel des Aufklappers „Alle Daten".</summary>
     public AlleDatenTafel? AlleDaten { get; init; }
@@ -68,14 +81,16 @@ public sealed class ErzeugerProjektKiSicht : IKiFeldtafel
     }
 
     /// <summary>
-    /// Die zugeordnete Energieträgervariante (Wahlfeld). Sie geht NICHT über
-    /// <see cref="Uebernommen"/>: Den Träger hängt von Hand ein eigener Weg um, der sofort
-    /// schreibt (<c>TraegerWechseln</c>) — den nimmt <c>feld_setzen</c> nicht.
+    /// Die zugeordnete Energieträgervariante (Wahlfeld, nur lesbar für den Assistenten).
+    /// Den Träger hängt von Hand ein eigener Weg um, der sofort in die Datenbank schreibt
+    /// (<c>TraegerWechseln</c>); der Assistent setzt ihn deshalb nicht — der Setzer lehnt
+    /// benannt ab, als zweite Sicherung hinter dem <see cref="Sperrgrund"/>.
     /// </summary>
     public int? CarrierId
     {
         get => Zeile?.CarrierId;
-        set => Schreibe(z => { if (value is int id) z.CarrierId = id; }, uebernehmen: false);
+        set => throw new InvalidOperationException(
+                   WindowsFormsApplication1.MyResource.Resource.KI_ERZ_TRAEGER_VON_HAND);
     }
 
     /// <summary>Untere Grenzleistung des BHKW [%]; 0 = Projektvorgabe.</summary>
@@ -97,6 +112,18 @@ public sealed class ErzeugerProjektKiSicht : IKiFeldtafel
         schreiben(z);
         if (uebernehmen) Uebernommen?.Invoke(z);
     }
+
+    /// <summary>
+    /// Der Sperrgrund je Feld (<c>KiMaskenhaken.Sperrgrund</c>); <c>null</c> = frei.
+    /// </summary>
+    /// <remarks>
+    /// Der Energieträger ist immer gesperrt. Ein Feld der Zeile ist gesperrt, solange keine
+    /// gewählt ist und nicht genau eine vorhanden ist; die Felder des Aufklappers „Alle
+    /// Daten" (Vorsilbe <c>KiDialoge.KATALOGFELD_VORSILBE</c>) gehören dem Katalogsatz und
+    /// brauchen keine Zeile.
+    /// </remarks>
+    public string? Sperrgrund(string feld)
+        => ErzeugerSperre.Grund(feld, Zeile is not null, Zeilenzahl, mitTraeger: true);
 
     /// <inheritdoc/>
     public object? Lesen(string schluessel) => AlleDaten?.Lesen(schluessel);

@@ -559,6 +559,37 @@ namespace WindowsFormsApplication1
         public const string SPEICHER_ZEITREIHEN = "Speicherzeitreihen";
 
         /// <summary>
+        /// Das Format einer CSV-Datei der Flotte (<c>SpeicherFlottenCsvDialog</c>), eine
+        /// Ueberlagerung der Stromspeicher-Auslegung; ohne WinForms-Vorlaeufer, daher ohne
+        /// <c>Form_</c>-Vorsilbe.
+        /// </summary>
+        public const string SPEICHER_FLOTTEN_CSV = "SpeicherFlottenCsv";
+
+        /// <summary>Die Importoptionen einer Gangliniendatei (<c>GanglinieImportOptionenDialog</c>).</summary>
+        public const string GANGLINIE_IMPORT_OPTIONEN = "Form_GanglinieImportOptionen";
+
+        /// <summary>Der Import einer Spotpreisdatei (<c>SpotpreisImportDialog</c>).</summary>
+        public const string SPOTPREIS_IMPORT = "Form_SpotpreisImport";
+
+        /// <summary>Die Konfliktliste des Herstellerimports (<c>ImportKonflikteDialog</c>).</summary>
+        public const string IMPORT_KONFLIKTE = "Form_ImportKonflikte";
+
+        /// <summary>Die Übernahme von Kostenpositionen ins Projekt (<c>VorlagenUebernahmeDialog</c>).</summary>
+        public const string VORLAGEN_UEBERNAHME = "Form_VorlagenUebernahme";
+
+        /// <summary>Export und Import von Projektpaketen (<c>ProjektTransferDialog</c>).</summary>
+        public const string PROJEKT_TRANSFER = "Form_ProjektExportImport";
+
+        /// <summary>Die Brennstoffe des Projekts (<c>ProjektBrennstoffeDialog</c>).</summary>
+        public const string PROJEKT_BRENNSTOFFE = "Form_ProjektBrennstoffe";
+
+        /// <summary>Das Dublettenwerkzeug der Kataloge (<c>KatalogDublettenDialog</c>).</summary>
+        public const string KATALOG_DUBLETTEN = "Form_KatalogDubletten";
+
+        /// <summary>Die Kopfeingaben des Gebäudeimports (<c>GebaeudeImportDialog</c>).</summary>
+        public const string GEBAEUDE_IMPORT = "Form_GebaeudeImport";
+
+        /// <summary>
         /// Stammdatenverwaltung der Stromganglinien (<c>StromganglinieAdminDialog</c>).
         /// </summary>
         public const string STROMGANGLINIE_ADMIN = "Form_Stromganglinie_Admin";
@@ -862,6 +893,15 @@ namespace WindowsFormsApplication1
                 ErzeugerVerwaltung(KatalogBrowserArt.Pufferspeicher),
                 PeakShaving(),
                 Speicherzeitreihen(),
+                SpeicherFlottenCsv(),
+                GanglinieImportOptionen(),
+                SpotpreisImport(),
+                ImportKonflikte(),
+                VorlagenUebernahme(),
+                ProjektTransfer(),
+                ProjektBrennstoffe(),
+                KatalogDubletten(),
+                GebaeudeImport(),
                 StromganglinieAdmin(),
                 BerichteUebersicht(),
                 Berichtseite(),
@@ -1685,6 +1725,349 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("einheit", "SpeicherZeitreihenKiSicht.Einheit",
                                      KiDialogTexte.SzrEinheitName, KiParameterTyp.Wahl,
                                      KiDialogTexte.SzrEinheitErl)
+                });
+        }
+
+        // =====================================================================
+        // Importoptionen  (Freigabe der Importdialoge, Teil A, 10.10.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Format einer CSV-Datei der Flotte — sechsundzwanzig Felder ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Strom.SpeicherFlottenCsvKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Eine Maske, die REGELN einstellt, ist kein Ladevorgang</b> — dieselbe Lage wie bei
+        /// <see cref="Speicherzeitreihen"/>: „Uebernehmen" liest die Datei ein und reicht die Reihe an
+        /// den Arbeitsstand der Auslegung; das bleibt ein Klick des Anwenders, einen Speicherweg gibt es
+        /// nicht. Jedes Setzen geht ueber den Handweg der Maske (Vorschau neu, Meldung geloescht).</para>
+        /// <para><b>Gesperrt statt still:</b> Die Felder der gerade nicht gezeigten Zeitangabe und die
+        /// Prognosezuordnung beim Einlesen von Projektjahren lehnt der Sperrgrund vor der Bestaetigung ab.
+        /// Die Vorschautabelle bleibt draussen; sie ist eine Anzeige.</para>
+        /// </remarks>
+        private static KiDialog SpeicherFlottenCsv()
+        {
+            const string SICHT = "SpeicherFlottenCsvKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.SPEICHER_FLOTTEN_CSV,
+                anzeigename: KiDialogTexte.MaskeSpeicherFlottenCsv,
+                felder: new[]
+                {
+                    new KiDialogFeld("trennzeichen", SICHT + "Trennzeichen", KiDialogTexte.SzrTrennzeichenName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrTrennzeichenErl),
+                    new KiDialogFeld("dezimaltrenner", SICHT + "Dezimaltrenner", KiDialogTexte.SzrDezimalName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrDezimalErl),
+                    new KiDialogFeld("kodierung", SICHT + "Kodierung", KiDialogTexte.SzrKodierungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrKodierungErl),
+                    new KiDialogFeld("kopfzeile", SICHT + "Kopfzeile", KiDialogTexte.SzrKopfzeileName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SzrKopfzeileErl),
+                    new KiDialogFeld("zeilen_ueberspringen", SICHT + "ZeilenUeberspringen", KiDialogTexte.SzrUeberspringenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SzrUeberspringenErl, min: 0.0),
+                    new KiDialogFeld("zeitangabe", SICHT + "Zeitangabe", KiDialogTexte.SzrZeitangabeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrZeitangabeErl),
+                    new KiDialogFeld("zeitstempelspalte", SICHT + "Zeitstempelspalte", KiDialogTexte.SzrZeitstempelspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrZeitstempelspalteErl),
+                    new KiDialogFeld("zeitstempelformat", SICHT + "Zeitstempelformat", KiDialogTexte.SzrZeitstempelformatName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrZeitstempelformatErl, leerErlaubt: true),
+                    new KiDialogFeld("datumsspalte", SICHT + "Datumsspalte", KiDialogTexte.SzrDatumsspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrDatumsspalteErl),
+                    new KiDialogFeld("uhrzeitspalte", SICHT + "Uhrzeitspalte", KiDialogTexte.SzrUhrzeitspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrUhrzeitspalteErl),
+                    new KiDialogFeld("datumsformat", SICHT + "Datumsformat", KiDialogTexte.SzrDatumsformatName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrDatumsformatErl, leerErlaubt: true),
+                    new KiDialogFeld("uhrzeitformat", SICHT + "Uhrzeitformat", KiDialogTexte.SzrUhrzeitformatName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrUhrzeitformatErl, leerErlaubt: true),
+                    new KiDialogFeld("zeitzone", SICHT + "Zeitzone", KiDialogTexte.SzrZeitzoneName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrZeitzoneErl, leerErlaubt: true),
+                    new KiDialogFeld("intervallbezug", SICHT + "Intervall", KiDialogTexte.FcsvIntervallName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvIntervallErl),
+                    new KiDialogFeld("last", SICHT + "Last", KiDialogTexte.FcsvLastName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvLastErl),
+                    new KiDialogFeld("pv", SICHT + "Pv", KiDialogTexte.FcsvPvName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvPvErl),
+                    new KiDialogFeld("bhkw", SICHT + "Bhkw", KiDialogTexte.FcsvBhkwName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvBhkwErl),
+                    new KiDialogFeld("bezugspreis", SICHT + "Bezug", KiDialogTexte.FcsvBezugName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvBezugErl),
+                    new KiDialogFeld("pv_preis", SICHT + "PvPreis", KiDialogTexte.FcsvPvPreisName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvPvPreisErl),
+                    new KiDialogFeld("bhkw_preis", SICHT + "BhkwPreis", KiDialogTexte.FcsvBhkwPreisName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvBhkwPreisErl),
+                    new KiDialogFeld("batterie_preis", SICHT + "BatteriePreis", KiDialogTexte.FcsvBatteriePreisName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvBatteriePreisErl),
+                    new KiDialogFeld("leistungseinheit", SICHT + "LeistungEinheit", KiDialogTexte.FcsvLeistungEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvLeistungEinheitErl),
+                    new KiDialogFeld("preiseinheit", SICHT + "PreisEinheit", KiDialogTexte.FcsvPreisEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvPreisEinheitErl),
+                    new KiDialogFeld("snapshot_id", SICHT + "SnapshotId", KiDialogTexte.FcsvSnapshotName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvSnapshotErl),
+                    new KiDialogFeld("bekannt_seit", SICHT + "BekanntSeit", KiDialogTexte.FcsvBekanntName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvBekanntErl),
+                    new KiDialogFeld("entscheidung", SICHT + "Entscheidung", KiDialogTexte.FcsvEntscheidungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.FcsvEntscheidungErl)
+                });
+        }
+
+        /// <summary>
+        /// Die Importoptionen einer Gangliniendatei — neun Felder ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Strom.GanglinieImportOptionenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Der Dialog fuehrt nur PLAETZE seiner Klapplisten; der Assistent setzt sie wie ein Griff
+        /// in die Liste. Die Vorschau ist bewusst nicht reaktiv — sie folgt erst „Vorschau
+        /// aktualisieren", ein Knopf und kein Feld. OK gibt die Optionen an den Wirt zurueck; das
+        /// bestaetigt der Anwender, einen Speicherweg gibt es nicht. Das Tabellenblatt gibt es nur
+        /// bei einer Excel-Mappe (Sperrgrund).
+        /// </remarks>
+        private static KiDialog GanglinieImportOptionen()
+        {
+            const string SICHT = "GanglinieImportOptionenKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN,
+                anzeigename: KiDialogTexte.MaskeGanglinieImportOptionen,
+                felder: new[]
+                {
+                    new KiDialogFeld("trennzeichen", SICHT + "Trennzeichen", KiDialogTexte.GioTrennzeichenName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioTrennzeichenErl),
+                    new KiDialogFeld("dezimaltrenner", SICHT + "Dezimaltrenner", KiDialogTexte.GioDezimalName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioDezimalErl),
+                    new KiDialogFeld("wertspalte", SICHT + "Wertspalte", KiDialogTexte.GioWertspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioWertspalteErl),
+                    new KiDialogFeld("zeitspalte", SICHT + "Zeitspalte", KiDialogTexte.GioZeitspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioZeitspalteErl),
+                    new KiDialogFeld("einheit", SICHT + "Einheit", KiDialogTexte.GioEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioEinheitErl),
+                    new KiDialogFeld("raster", SICHT + "Raster", KiDialogTexte.GioRasterName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioRasterErl),
+                    new KiDialogFeld("konvention", SICHT + "Konvention", KiDialogTexte.GioKonventionName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioKonventionErl),
+                    new KiDialogFeld("blatt", SICHT + "Blatt", KiDialogTexte.GioBlattName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GioBlattErl),
+                    new KiDialogFeld("kopfzeile", SICHT + "Kopfzeile", KiDialogTexte.GioKopfzeileName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GioKopfzeileErl)
+                });
+        }
+
+        /// <summary>
+        /// Der Import einer Spotpreisdatei — Bezeichnung und Ablage ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Kosten.SpotpreisImportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Kein Speicherweg:</b> „Uebernehmen" schreibt rund 8 760 Werte in die Datenbank und
+        /// bleibt ein Klick des Anwenders; die Dateiwahl ist der Dialog des Betriebssystems und
+        /// bleibt draussen. Die Pruefung meldet den Stand der Dateipruefung.
+        /// </remarks>
+        private static KiDialog SpotpreisImport()
+        {
+            const string SICHT = "SpotpreisImportKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.SPOTPREIS_IMPORT,
+                anzeigename: KiDialogTexte.MaskeSpotpreisImport,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichnung", SICHT + "Bezeichnung", KiDialogTexte.SpotBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.SpotBezeichnerErl, leerErlaubt: true),
+                    new KiDialogFeld("fuer_alle_projekte", SICHT + "FuerAlleProjekte", KiDialogTexte.SpotStammName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpotStammErl)
+                });
+        }
+
+        /// <summary>
+        /// Die Konfliktliste des Herstellerimports — ein Raster ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Import.ImportKonflikteKiSicht</c>, Kennzeichen die Zeilennummer ab 1.
+        /// </summary>
+        /// <remarks>
+        /// Je Zeile die Aktion (Wahl; erlaubt ist, was der Befund der Zeile zulaesst) und der Name
+        /// (nur bei „Umbenennen"). Der Dialog schreibt nicht — er gibt die Entscheidungen an den
+        /// Import zurueck, und dessen OK bestaetigt der Anwender. Die Pruefung ist dieselbe wie am
+        /// OK-Knopf; „Alle auslassen" ist ein Knopf und bleibt draussen.
+        /// </remarks>
+        private static KiDialog ImportKonflikte()
+        {
+            string zeile = "ImportKonflikteKiSicht.Zeilen" + KiEigenschaftspfad.Sammlungszeichen + ".";
+            const string NUMMER = "Nummer";
+            return new KiDialog(
+                maskenname: KiMaskennamen.IMPORT_KONFLIKTE,
+                anzeigename: KiDialogTexte.MaskeImportKonflikte,
+                felder: new[]
+                {
+                    new KiDialogFeld("aktion", zeile + "Aktion", KiDialogTexte.IkfAktionName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.IkfAktionErl,
+                                     zeilenkennzeichen: NUMMER),
+                    new KiDialogFeld("name", zeile + "Name", KiDialogTexte.IkfNameName,
+                                     KiParameterTyp.Text, KiDialogTexte.IkfNameErl,
+                                     leerErlaubt: true, zeilenkennzeichen: NUMMER)
+                });
+        }
+
+        // =====================================================================
+        // Uebernahme, Transfer, Brennstoffe, Dubletten  (Freigabe der Masken, Teil C, 10.10.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Uebernahme von Kostenpositionen ins Projekt — sechs Wahlfelder ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Kosten.VorlagenUebernahmeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Jede Wahl geht den Handweg (Anlagen und Varianten nachziehen, Vorschau neu); die Pruefung
+        /// meldet, was die Vorschau gegen eine Uebernahme sagt. <b>Kein Speicherweg:</b> „OK" legt die
+        /// Positionen sofort an und bleibt ein Klick des Anwenders. Kategorie und Variante sperrt der
+        /// Sperrgrund bei der Quelle „Projekt", Quellprojekt und -anlage bei der Quelle „Vorlage".
+        /// </remarks>
+        private static KiDialog VorlagenUebernahme()
+        {
+            const string SICHT = "VorlagenUebernahmeKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.VORLAGEN_UEBERNAHME,
+                anzeigename: KiDialogTexte.MaskeVorlagenUebernahme,
+                felder: new[]
+                {
+                    new KiDialogFeld("zielprojekt", SICHT + "Zielprojekt", KiDialogTexte.KuebZielName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebZielErl),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.KuebQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebQuelleErl),
+                    new KiDialogFeld("kategorie", SICHT + "Kategorie", KiDialogTexte.KuebKategorieName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebKategorieErl),
+                    new KiDialogFeld("variante", SICHT + "Variante", KiDialogTexte.KuebVarianteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebVarianteErl),
+                    new KiDialogFeld("quellprojekt", SICHT + "Quellprojekt", KiDialogTexte.KuebQuellprojektName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebQuellprojektErl),
+                    new KiDialogFeld("quellanlage", SICHT + "Quellanlage", KiDialogTexte.KuebQuellanlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebQuellanlageErl)
+                });
+        }
+
+        /// <summary>
+        /// Das Importblatt des Projekttransfers — Zielname, Konfliktmodus und Sicherung ueber die
+        /// Sichtklasse <c>EPOS.UI.Dialoge.Projekt.ProjektTransferKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Dateiwahl (Betriebssystemdialog), die Projektliste des Exports (Mehrfachwahl von
+        /// Verweisen), „Exportieren…" und „Importieren…" bleiben beim Anwender; der Import schreibt
+        /// Projekte in die Datenbank und fragt vor dem Ueberschreiben nach. Waehrend eines Laufs
+        /// ist die Maske schreibgeschuetzt.
+        /// </remarks>
+        private static KiDialog ProjektTransfer()
+        {
+            const string SICHT = "ProjektTransferKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKT_TRANSFER,
+                anzeigename: KiDialogTexte.MaskeProjektTransfer,
+                felder: new[]
+                {
+                    new KiDialogFeld("zielname", SICHT + "Zielname", KiDialogTexte.PtrZielnameName, KiParameterTyp.Text,
+                                     KiDialogTexte.PtrZielnameErl, leerErlaubt: true),
+                    new KiDialogFeld("konflikt", SICHT + "Konflikt", KiDialogTexte.PtrKonfliktName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PtrKonfliktErl),
+                    new KiDialogFeld("sicherung", SICHT + "Sicherung", KiDialogTexte.PtrSicherungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PtrSicherungErl)
+                });
+        }
+
+        /// <summary>
+        /// Die Brennstoffe des Projekts — die Katalogwahl zum Uebernehmen und die zehn Werte der
+        /// Bearbeitung ueber die Sichtklasse <c>EPOS.UI.Dialoge.Kosten.ProjektBrennstoffeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Kein Feld schreibt sofort</b> — erst „Uebernehmen", „Zuruecksetzen" und „Speichern" der
+        /// Bearbeitung schreiben je Satz, und sie bleiben Klicks des Anwenders (kein Speicherweg).
+        /// Die zehn Werte sperrt der Sperrgrund, solange keine Zeile in Bearbeitung steht.
+        /// </remarks>
+        private static KiDialog ProjektBrennstoffe()
+        {
+            const string SICHT = "ProjektBrennstoffeKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKT_BRENNSTOFFE,
+                anzeigename: KiDialogTexte.MaskeProjektBrennstoffe,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogwahl", SICHT + "Katalogwahl", KiDialogTexte.PbrsKatalogwahlName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PbrsKatalogwahlErl),
+                    new KiDialogFeld("hi", SICHT + "Hi", KiDialogTexte.PbrsHiName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("hs", SICHT + "Hs", KiDialogTexte.PbrsHsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("co2", SICHT + "Co2", KiDialogTexte.PbrsCo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("so2", SICHT + "So2", KiDialogTexte.PbrsSo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("nox", SICHT + "Nox", KiDialogTexte.PbrsNoxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("staub", SICHT + "Staub", KiDialogTexte.PbrsStaubName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("pe_faktor", SICHT + "PeFaktor", KiDialogTexte.PbrsPeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("grundpreis", SICHT + "Grundpreis", KiDialogTexte.PbrsGrundpreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("arbeitspreis", SICHT + "Arbeitspreis", KiDialogTexte.PbrsArbeitspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("leistungspreis", SICHT + "Leistungspreis", KiDialogTexte.PbrsLeistungspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true)
+                });
+        }
+
+        /// <summary>
+        /// Das Dublettenwerkzeug — die Katalogwahl ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Admin.KatalogDublettenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Suchlauf, Bereinigen, Loeschen, Umbenennen und das Protokoll bleiben beim Anwender; die
+        /// Eingriffe schreiben sofort. Waehrend eines Laufs ist die Wahl schreibgeschuetzt.
+        /// </remarks>
+        private static KiDialog KatalogDubletten()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KATALOG_DUBLETTEN,
+                anzeigename: KiDialogTexte.MaskeKatalogDubletten,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalog", "KatalogDublettenKiSicht.Katalog", KiDialogTexte.DublKatalogName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.DublKatalogErl)
+                });
+        }
+
+        // =====================================================================
+        // Form_GebaeudeImport  ->  GebaeudeImportDialog  (Freigabe der Masken, Teil B, 10.10.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Gebaeudeimport — nur die KOPFEINGABEN (Einlesen und Zuordnung fuer das ganze Gebaeude) ueber die
+        /// Sichtklasse <c>EPOS.UI.Dialoge.Import.GebaeudeImportKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Jede Wahl geht den Handweg (neu zuordnen, Zonenvorschlag oder Plan der Projektdatei neu bilden, Datei mit der
+        /// neuen Nordrichtung neu lesen); die Pruefung meldet, was gegen die Uebernahme steht. <b>Kein Speicherweg:</b>
+        /// „Uebernehmen" legt das Gebaeude sofort an und bleibt ein Klick des Anwenders. Draussen bleiben die Eingaben je
+        /// Zeile, Raum, Zone, Bauteil und Baustoff, die Mengenwahlen, die Filter der Listen und die Dateiwahl. Der
+        /// Sperrgrund sagt ab, solange der Schritt eines Feldes nicht vorn steht, und vor jedem Wechsel, vor dem der Dialog
+        /// wegen Zuordnungen von Hand nachfragt. Das Blatt Nutzungsprofile (<c>np_*</c>) fuehrt die Maske des Wirts.
+        /// </remarks>
+        private static KiDialog GebaeudeImport()
+        {
+            const string SICHT = "GebaeudeImportKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_IMPORT,
+                anzeigename: KiDialogTexte.MaskeGebaeudeImport,
+                felder: new[]
+                {
+                    new KiDialogFeld("baualtersklasse", SICHT + "Baualtersklasse", KiDialogTexte.GimpKlasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpKlasseErl, leerErlaubt: true),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.GimpQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("gebaeude", SICHT + "Gebaeude", KiDialogTexte.GimpGebaeudeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpGebaeudeErl),
+                    new KiDialogFeld("name", SICHT + "Name", KiDialogTexte.GimpNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.GimpNameErl),
+                    new KiDialogFeld("cad_sollwert", SICHT + "CadSollwert", KiDialogTexte.GimpCadSollwertName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GimpCadSollwertErl),
+                    new KiDialogFeld("nordrichtung", SICHT + "Nordrichtung", KiDialogTexte.GimpNordrichtungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GimpNordrichtungErl, einheit: "°", min: 0.0, max: 360.0),
+                    new KiDialogFeld("zonenregel", SICHT + "Zonenregel", KiDialogTexte.GimpZonenregelName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpZonenregelErl),
+                    new KiDialogFeld("zonierung", SICHT + "Zonierung", KiDialogTexte.GimpZonierungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GimpZonierungErl),
+                    new KiDialogFeld("als_zone", SICHT + "AlsZone", KiDialogTexte.GimpAlsZoneName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GimpAlsZoneErl)
                 });
         }
 
@@ -4778,8 +5161,7 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Die KENNZAHLEN selbst bleiben draussen</b>: Sie sind eine Liste von
         /// Zeilen mit eigenen Bezeichnern und wechseln mit der Auspraegung; ein
-        /// Katalogfeld traegt EINEN Wert. Ebenso die zwoelf Monatswerte und die drei
-        /// Zeitstufen des Ganglinienbausteins — ein Bild mit eigenem Navigator.
+        /// Katalogfeld traegt EINEN Wert. Ebenso die zwoelf Monatswerte.
         /// </para>
         /// <para>
         /// <b>Der REITER steht nicht im Katalog:</b> Er wechselt nur das Blatt, nicht
@@ -4806,7 +5188,12 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("jahresverlauf", "BedarfErgebnisKiSicht.Jahresverlauf",
                                      KiDialogTexte.BergJahresverlaufName,
                                      KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.BergJahresverlaufErl)
+                                     KiDialogTexte.BergJahresverlaufErl),
+                    // Freigabe der Masken, Teil C: das Zeitraster des Grafikreiters (Jahr,
+                    // Monat, Woche, Tag) - die zweite Knopfgruppe.
+                    new KiDialogFeld("zeitstufe", "BedarfErgebnisKiSicht.Zeitstufe",
+                                     KiDialogTexte.BergZeitstufeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergZeitstufeErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -8754,7 +9141,15 @@ namespace WindowsFormsApplication1
                                      "StromspeicherKiSicht.Suchachsen[].AnzahlBis",
                                      KiDialogTexte.Spa4AnzahlBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.Spa4AnzahlBisErl,
-                                     zeilenkennzeichen: ACHSENKENNZEICHEN)
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+
+                    // ---- Freigabe der Masken, Teil C: die Schalter der Ergebnisansichten ----
+                    // Groessenrechnung und Betrieb der Flotte (Kinder SpeicherFlottenGroessenAnsicht
+                    // und SpeicherFlottenErgebnisAnsicht) sind eine SPALTE des Wirts, je Schalter
+                    // eine Zeile - eine eigene Maske verdraengte diese als aktive.
+                    new KiDialogFeld("anzeige", "StromspeicherKiSicht.Ergebnisschalter[].An",
+                                     KiDialogTexte.SpaAnzeigeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SpaAnzeigeErl, zeilenkennzeichen: "Name")
                 });
         }
 

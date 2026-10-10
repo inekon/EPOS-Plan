@@ -623,7 +623,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
     {
         string css = Stilblatt();
         string dialog = Block(css, "#app > .epos-dialog:has(> .epos-zweispalten),\n.epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {");
-        Assert.Contains("height: 100dvh", dialog);
+        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten))", dialog);
         Assert.Contains("overflow: hidden", dialog);
 
         string raster = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten {");
@@ -1044,16 +1044,17 @@ public class ZweispaltenauswahlTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die Kompaktstufe ist EINE Skalenebene: Unter 1 200 px Breite oder 800 px Höhe setzt die
+    /// Die Kompaktstufe ist EINE Skalenebene: Unter dem Normalmaß 1 280 × 800 — unter 1 280 px
+    /// Breite (auch iPad 11 Zoll quer, 1 180 bis 1 210 px) oder 800 px Höhe — setzt die
     /// Medienabfrage die Token des Hauses am Dialog mit dem Baustein (und an der
     /// Kältemaschinenauswahl) neu — Schrift 12 px, Kartentitel 14 px, Berührungsziel 37 px,
     /// Zeilenskala 46/53 —, keine zweite Kopie der Regeln.
     /// </summary>
     [Fact]
-    public void Die_Kompaktstufe_setzt_die_Token_unter_1200_mal_800_px()
+    public void Die_Kompaktstufe_setzt_die_Token_unter_1280_mal_800_px()
     {
         string css = Stilblatt();
-        const string abfrage = "@media (max-width: 1199.98px), (max-height: 799.98px) {";
+        const string abfrage = "@media (max-width: 1279.98px), (max-height: 799.98px) {";
         int a = css.IndexOf(abfrage, StringComparison.Ordinal);
         Assert.True(a >= 0, "Die Medienabfrage der Kompaktstufe fehlt");
         string token = Block(css.Substring(a), ".epos-dialog:has(> .epos-zweispalten),\n    .epos-dialog.epos-kaeltemaschine-admin {");
@@ -1093,6 +1094,31 @@ public class ZweispaltenauswahlTests : EposBunitContext
     }
 
     /// <summary>
+    /// Die sicheren Abstände des Geräts (iOS-Hülle mit <c>viewport-fit=cover</c>): Zwei Token an
+    /// <c>:root</c> aus <c>env(safe-area-inset-*)</c>, <c>#app</c> polstert um sie, die Überlagerung
+    /// steht zwischen ihnen, und keine Regel nimmt mehr die volle Fensterhöhe — jede zieht beide
+    /// Abstände ab. Unter Windows sind beide 0; gemessen mit den iPad-Fenstern der Proben.
+    /// </summary>
+    [Fact]
+    public void Die_Fensterhoehe_haelt_die_sicheren_Abstaende_frei()
+    {
+        string css = Stilblatt();
+        Assert.Contains("--epos-sicher-oben: env(safe-area-inset-top, 0px);", css);
+        Assert.Contains("--epos-sicher-unten: env(safe-area-inset-bottom, 0px);", css);
+        string wurzel = Block(css, "\n#app {");
+        Assert.Contains("padding-top: var(--epos-sicher-oben)", wurzel);
+        Assert.Contains("padding-bottom: var(--epos-sicher-unten)", wurzel);
+        string ueberlagerung = Block(css, "\n.epos-ueberlagerung {");
+        Assert.Contains("inset: var(--epos-sicher-oben) 0 var(--epos-sicher-unten);", ueberlagerung);
+        Assert.Contains("max-height: min(90vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));", ueberlagerung);
+        // Keine Höhe des ganzen Fensters ohne Abzug.
+        foreach (string voll in new[] { "height: 100vh;", "height: 100dvh;", "min-height: 100vh;", "calc(100dvh - var(--epos-assistent-band-abzug))" })
+            Assert.DoesNotContain(voll, css);
+        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));",
+            Block(css, "#app > .epos-dialog:has(> .epos-zweispalten),\n.epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {"));
+    }
+
+    /// <summary>
     /// Der Rollbalken gilt nur unter der Mindesthöhe: Der Baustein steht im eigenen Fenster auf der
     /// gemessenen Summe seiner Untergrenzen (--epos-zweispalten-min), und allein der Dialog mit
     /// <c>data-zweispalten-eng</c> rollt senkrecht. Die Klemme auf eine Katalogzeile gilt nur in
@@ -1107,7 +1133,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
         string eng = Block(css, "#app > .epos-dialog[data-zweispalten-eng]:has(> .epos-zweispalten) {");
         Assert.Contains("overflow-y: auto", eng);
         Assert.Contains("overflow-x: hidden", eng);
-        Assert.Contains("@media (min-width: 1200px) and (min-height: 800px) {\n    @container katalogauswahl (max-height: 599px)", css);
+        Assert.Contains("@media (min-width: 1280px) and (min-height: 800px) {\n    @container katalogauswahl (max-height: 599px)", css);
         string satz = Block(css, ":is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten > .epos-zweispalten-bereich--satz .epos-zweispalten-satz {");
         Assert.Contains("max-height: none", satz);
         Assert.Contains("flex: 1 1 0", satz);

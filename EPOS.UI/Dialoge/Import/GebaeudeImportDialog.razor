@@ -110,6 +110,8 @@
 @namespace EPOS.UI.Dialoge.Import
 @using System.Globalization
 @using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dienste
+@using KiKern
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -1406,6 +1408,9 @@
     protected override void OnInitialized()
     {
         _klasse = GueltigeKlasse(BaualtersklasseVorgabe);
+
+        _kiSicht = new GebaeudeImportKiSicht(KiLesen, KiSetzen, KiWahl, KiSperrgrund);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_IMPORT, () => _kiSicht, KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -2537,8 +2542,132 @@
 
     public void Dispose()
     {
+        _kiMaske?.Dispose();
         try { _abbruch?.Cancel(); }
         catch (ObjectDisposedException) { }
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil B): nur die Kopfeingaben
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeImportKiSicht? _kiSicht;
+
+    /// <summary>Die Plätze der Zonierungswahl: 1 = DIN, 2 = Simulation.</summary>
+    private static readonly string[] KI_ZONIERUNGEN = { GebaeudeZonierungSchluessel.DIN, GebaeudeZonierungSchluessel.SIMULATION };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> meldet, was gegen die Übernahme steht (dieselbe
+    /// weiche Sperre und dieselbe Prüfung der Datenseite wie „Übernehmen"). <b>Kein Speicherweg:</b> „Übernehmen" legt das
+    /// Gebäude sofort in der Datenbank an und bleibt ein Klick des Anwenders. Solange gelesen oder geschrieben wird, ist die
+    /// Maske schreibgeschützt.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = KiPruefen,
+        Schreibgeschuetzt = () => Beschaeftigt,
+        Schreibschutzgrund = () => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_LAEUFT,
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
+    };
+
+    private string KiPruefen()
+    {
+        if (Beschaeftigt) return WindowsFormsApplication1.MyResource.Resource.KI_GIMP_LAEUFT;
+        if (OkSperrgrund is string sperre) return sperre;
+        if (_stand is null || Pruefen is null) return "";
+        IEnumerable<string> fehler = Pruefen(ErgebnisBauen()).Where(m => m.Stufe == WarnStufe.Fehler).Select(m => m.Text);
+        return string.Join(Environment.NewLine, fehler);
+    }
+
+    private object? KiLesen(string feld) => feld switch
+    {
+        nameof(GebaeudeImportKiSicht.Baualtersklasse) => KlasseAngezeigt,
+        nameof(GebaeudeImportKiSicht.Quelle) => QuellenId(_quelle),
+        nameof(GebaeudeImportKiSicht.Gebaeude) => _lesestand is null ? null : _gebaeudeIndex,
+        nameof(GebaeudeImportKiSicht.Name) => _name,
+        nameof(GebaeudeImportKiSicht.CadSollwert) => _cadSollwert,
+        nameof(GebaeudeImportKiSicht.Nordrichtung) => _nord is GebaeudeNordrichtungDaten nord
+            ? (string.Equals(nord.Herkunft, "ANNAHME", StringComparison.Ordinal) && nord.DateiPlanoberseiteGrad.HasValue
+                   ? nord.DateiPlanoberseiteGrad : nord.PlanoberseiteGrad)
+            : null,
+        nameof(GebaeudeImportKiSicht.Zonenregel) => _stand?.Zonierung is GebaeudeZonierungDaten zon ? Regelstelle(zon) : null,
+        nameof(GebaeudeImportKiSicht.Zonierung) => KiZonierungsplatz(),
+        nameof(GebaeudeImportKiSicht.AlsZone) => AlsZoneWirksam,
+        _ => throw new InvalidOperationException(feld)
+    };
+
+    /// <summary>Der Platz der gezeigten Zonierung (wie die Klappliste: eigene Wahl, sonst die der Projektdatei).</summary>
+    private int? KiZonierungsplatz()
+    {
+        if (_stand?.Projektdatei is not { Gelesen: true } sq) return null;
+        int i = Array.IndexOf(KI_ZONIERUNGEN, _sqZonierung ?? sq.Zonierung);
+        return i < 0 ? null : i + 1;
+    }
+
+    /// <summary>Die Wahl je Feld — dieselben Listen wie die Bedienelemente.</summary>
+    private IReadOnlyList<KiWahleintrag> KiWahl(string feld)
+    {
+        IEnumerable<(int Id, string Text)> liste = feld switch
+        {
+            nameof(GebaeudeImportKiSicht.Baualtersklasse) => Klassenliste,
+            nameof(GebaeudeImportKiSicht.Quelle) => Quelleneintraege,
+            nameof(GebaeudeImportKiSicht.Gebaeude) => Gebaeudeliste,
+            nameof(GebaeudeImportKiSicht.Zonenregel) => _stand?.Zonierung is GebaeudeZonierungDaten zon
+                ? Regelliste(zon) : Array.Empty<(int, string)>(),
+            nameof(GebaeudeImportKiSicht.Zonierung) => new[] { (1, Texte.SqZonierungDin), (2, Texte.SqZonierungSim) },
+            _ => Array.Empty<(int, string)>()
+        };
+        return KiMaskenanmeldung.Eintraege(liste, z => z.Id, z => z.Text);
+    }
+
+    /// <summary>
+    /// Der Sperrgrund je Katalogfeld: was der Dialog in seinem jetzigen Schritt nicht führt, und ein Wechsel, vor dem er
+    /// wegen Zuordnungen von Hand nachfragt — die Rückfrage beantwortet der Anwender, nie der Assistent.
+    /// </summary>
+    private string? KiSperrgrund(string feld) => feld switch
+    {
+        "quelle" when Quellenliste.Count == 0 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_QUELLWAHL,
+        "gebaeude" or "name" or "cad_sollwert" or "nordrichtung" or "zonenregel" or "zonierung" or "als_zone"
+            when _stand is null || _lesestand is null => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_ERST_LESEN,
+        "gebaeude" when _lesestand!.Gebaeude.Count < 2 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_EIN_GEBAEUDE,
+        "cad_sollwert" when !_stand!.CadSollwertMoeglich => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEIN_CADSOLLWERT,
+        "nordrichtung" when _nord is null || NordrichtungSetzen is null => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_NORDRICHTUNG,
+        "zonenregel" when _stand!.Zonierung is null => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_ZONENREGEL,
+        "zonenregel" when _planschritte.Count > 0 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_RUECKFRAGE,
+        "zonierung" when _stand!.Projektdatei is not { Gelesen: true, BeideZonierungen: true } => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEINE_ZONIERUNGSWAHL,
+        "zonierung" when PlanMitProjektdatei && Handschritte > 0 => WindowsFormsApplication1.MyResource.Resource.KI_GIMP_RUECKFRAGE,
+        "als_zone" when _stand!.Bauteile is not { Moeglich: true }
+            => _stand.Bauteile is { } bt ? Format(Texte.AlsZoneNicht, bt.Ablehnung) : WindowsFormsApplication1.MyResource.Resource.KI_GIMP_KEIN_BAUTEILVORSCHLAG,
+        _ => null
+    };
+
+    /// <summary>
+    /// Der Handweg je Feld — wie das Bedienelement: Klasse, Gebäude und Sollwertschalter ordnen neu zu, die Zonenregel bildet
+    /// den Vorschlag neu, die Zonierung den Plan der Projektdatei, die Nordrichtung liest die Datei neu.
+    /// </summary>
+    private void KiSetzen(string feld, object? wert)
+    {
+        switch (feld)
+        {
+            case nameof(GebaeudeImportKiSicht.Baualtersklasse): BeiKlasse(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Quelle): BeiQuelle(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Gebaeude): BeiGebaeude(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Name): BeiName(wert as string ?? ""); break;
+            case nameof(GebaeudeImportKiSicht.CadSollwert): BeiCadSollwert(wert is true); break;
+            case nameof(GebaeudeImportKiSicht.Nordrichtung):
+                if (wert is double grad) _ = InvokeAsync(() => BeiNordrichtung(grad));
+                break;
+            case nameof(GebaeudeImportKiSicht.Zonenregel): BeiRegel(wert as int?); break;
+            case nameof(GebaeudeImportKiSicht.Zonierung):
+                if (wert is int platz && platz >= 1 && platz <= KI_ZONIERUNGEN.Length)
+                    BeiZonierung(new ChangeEventArgs { Value = KI_ZONIERUNGEN[platz - 1] });
+                break;
+            case nameof(GebaeudeImportKiSicht.AlsZone): BeiAlsZone(wert is true); break;
+            default: throw new InvalidOperationException(feld);
+        }
+        _ = InvokeAsync(StateHasChanged);
     }
 
     // =====================================================================

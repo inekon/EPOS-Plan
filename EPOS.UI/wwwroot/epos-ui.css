@@ -149,6 +149,16 @@
     --epos-assistent-band-abzug: 14rem;
     --epos-assistent-band-min: 24rem;
 
+    /* DIE SICHEREN ABSTAENDE DES GERAETS. Die iOS-Huelle setzt viewport-fit=cover:
+       Die Seite reicht unter Statusleiste (oben, 20 bis 24 px) und Home-Anzeige
+       (unten, 20 px) des iPads. Jede Regel, die mit der Hoehe des Fensters rechnet,
+       zieht diese zwei Abstaende ab; #app polstert um sie, und was am Fenster haftet
+       oder fest steht, haelt sie frei. Unter Windows (und wo die Huelle selbst schon
+       einrueckt) sind beide 0 - dort aendert sich nichts. Die Proben setzen die zwei
+       Token, nicht env() (Proben/Rasterprobe, iPad-Fenster). */
+    --epos-sicher-oben: env(safe-area-inset-top, 0px);
+    --epos-sicher-unten: env(safe-area-inset-bottom, 0px);
+
     /* DIE OBERGRENZE EINES DIAGRAMMS (Windows-Abnahme V2 07.09.2026, Befund
        W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu gross").
        Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf und
@@ -335,6 +345,12 @@ body {
     line-height: 1.4;
     color: var(--epos-text);
     background: var(--epos-karte-flaeche);
+}
+
+/* Die Wurzel der BlazorWebView haelt die sicheren Abstaende frei (Token oben). */
+#app {
+    padding-top: var(--epos-sicher-oben);
+    padding-bottom: var(--epos-sicher-unten);
 }
 
 /* Wurzel eines Dialogs. tabindex="-1" traegt die Tastenbehandlung
@@ -2316,14 +2332,14 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-ueberlagerung {
     position: fixed;
     z-index: 41;
-    inset: 0;
+    inset: var(--epos-sicher-oben) 0 var(--epos-sicher-unten);
     margin: auto;
     display: flex;
     flex-direction: column;
     gap: var(--epos-rand);
     width: min(92vw, 900px);
     height: fit-content;
-    max-height: 90vh;
+    max-height: min(90vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
     min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
@@ -2562,7 +2578,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    ========================================================================== */
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-kopf:first-child {
     position: sticky;
-    top: 0;
+    top: var(--epos-sicher-oben);
     z-index: 2;
     margin: calc(-1 * var(--epos-karte-rand)) calc(-1 * var(--epos-karte-rand)) 0;
     padding: var(--epos-karte-rand) var(--epos-karte-rand) 8px;
@@ -2573,7 +2589,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-leiste:has(> .epos-knopf--primaer),
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog, :has(> .epos-zweispalten)) > .epos-dialog-fuss {
     position: sticky;
-    bottom: 0;
+    bottom: var(--epos-sicher-unten);
     z-index: 2;
     margin-inline: calc(-1 * var(--epos-karte-rand));
     padding: 8px var(--epos-karte-rand) var(--epos-karte-rand);
@@ -2615,7 +2631,7 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    schon unter dem Kopf. Die geschaetzte Kopfhoehe darf es dort nicht verschieben - der
    Heizkessel traegt seine Kontextzeile im Kopf, der Kopf ist niedriger als die Schaetzung. */
 #app:has(> .epos-fenstermarke) > .epos-dialog:has(> .epos-zweispalten) > .epos-warnbanner {
-    top: 0;
+    top: var(--epos-sicher-oben);
 }
 
 #app:has(> .epos-fenstermarke) > .epos-dialog:not(.epos-katalog-dialog) > .epos-warnbanner > .epos-warnbanner-schliessen {
@@ -2634,8 +2650,8 @@ html:has(.epos-ueberlagerung) .epos-hilfepille {
    Knopfzeile mehr; einzeilige Leisten lassen dann nur etwas mehr Luft.
    Gemessen: Fensterprobe (Proben/Rasterprobe/LIESMICH.md). */
 html:has(> body > #app > .epos-fenstermarke) {
-    --epos-fenster-kopf: calc(var(--epos-karte-rand) + var(--epos-touchziel) + 11px);
-    --epos-fenster-fuss: calc(var(--epos-touchziel) + var(--epos-karte-rand) + 9px);
+    --epos-fenster-kopf: calc(var(--epos-sicher-oben) + var(--epos-karte-rand) + var(--epos-touchziel) + 11px);
+    --epos-fenster-fuss: calc(var(--epos-sicher-unten) + var(--epos-touchziel) + var(--epos-karte-rand) + 9px);
     --epos-fenster-polster-oben: calc(var(--epos-fenster-kopf) + var(--epos-rand));
     --epos-fenster-polster-unten: calc(var(--epos-fenster-fuss) + var(--epos-rand));
     scroll-padding-top: var(--epos-fenster-polster-oben);
@@ -3929,8 +3945,8 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 
 #app > .epos-dialog:has(> .epos-zweispalten),
 .epos-ueberlagerung-inhalt > .epos-dialog:has(> .epos-zweispalten) {
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -3968,7 +3984,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    Detailzeile ab. Gemessen mit Proben/Rasterprobe/rollbereichprobe.mjs.
    Nur in der Normalstufe (KB1): In der Kompaktstufe behaelt die Katalogliste Kopf und zwei
    Zeilen, und reicht das Fenster nicht, rollt der Dialogkoerper (Abschnitt Kompaktstufe unten). */
-@media (min-width: 1200px) and (min-height: 800px) {
+@media (min-width: 1280px) and (min-height: 800px) {
     @container katalogauswahl (max-height: 599px) {
         .epos-zweispalten-bereich--katalog .epos-raster-huelle {
             --epos-katalog-min: calc(53px + 53px + 2px);
@@ -4066,7 +4082,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     --epos-satz-untergrenze: 202px;
 }
 .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 235px; }
-@media (max-width: 1199.98px), (max-height: 799.98px) {
+@media (max-width: 1279.98px), (max-height: 799.98px) {
     .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 195px; }
     .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 223px; }
 }
@@ -4176,8 +4192,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 
 /* ---- KOMPAKTSTUFE UND ROLLBALKEN (KB1, Konzept 4.8) -----------------
-   Kompaktstufe: unter 1 200 px Breite oder 800 px Hoehe (iPad quer und hoch,
-   Laptop bei 125 %, 1 280 x 720) werden Dialograhmen und Baustein rund ein
+   Kompaktstufe: unter dem Normalmass 1 280 x 800 - unter 1 280 px Breite oder
+   800 px Hoehe (iPad quer und hoch, auch iPad 11 Zoll mit 1 180 bis 1 210 px quer,
+   Laptop bei 125 %, 1 280 x 720) - werden Dialograhmen und Baustein rund ein
    Achtel kleiner - eine Skalenebene ueber die Token des Hauses, keine zweite
    Kopie der Regeln: Schrift 13 -> 12 px, Kartentitel 16 -> 14 px, Beruehrungs-
    ziel (Knoepfe, Kopfleisten, Detailzeile, Wahlknopf) 44 -> 37 px, Rand der
@@ -4196,7 +4213,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    an den Dialog: Der Baustein steht auf seiner Mindesthoehe, der Dialogkoerper
    rollt senkrecht, die Schlussleiste rollt mit. Darueber rollt der Dialogkoerper
    nie (kein Rollbereich im Rollbereich). Gemessen: rollbereichprobe.mjs. */
-@media (max-width: 1199.98px), (max-height: 799.98px) {
+@media (max-width: 1279.98px), (max-height: 799.98px) {
     .epos-dialog:has(> .epos-zweispalten),
     .epos-dialog.epos-kaeltemaschine-admin {
         --epos-schriftgroesse: 12px;
@@ -7383,7 +7400,7 @@ table.epos-simerg-tabelle {
     position: sticky;
     top: 0;
     align-self: start;
-    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug)));
+    height: max(var(--epos-assistent-band-min), calc(100dvh - var(--epos-assistent-band-abzug) - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
 .epos-assistentseite .epos-assistent-band > .epos-projektliste {
@@ -7541,7 +7558,7 @@ table.epos-simerg-tabelle {
    -------------------------------------------------------------------------- */
 #app > .epos-projektwahl,
 #app > .epos-projektkopie {
-    height: 100vh;
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
 }
 
 /* Wachsen von null aus (flex-basis 0) - aber nie unter den Inhalt: Die
@@ -8462,7 +8479,7 @@ table.epos-simerg-tabelle {
     flex-direction: column;
     gap: 12px;
     min-width: 0;
-    min-height: 100vh;
+    min-height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
 }
 
 /* Kopfzeile: Titel und Untertitel links, der Hilfeknopf rechts - dieselbe Lage
@@ -9696,8 +9713,8 @@ table.epos-simerg-tabelle {
    die ehrliche Antwort; hidden schnitte die Knoepfe ab. */
 .epos-katalog-dialog {
     max-width: none;
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
+    height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
     overflow: auto;
 }
 
@@ -11511,7 +11528,7 @@ table.epos-simerg-tabelle {
    ========================================================================== */
 
 .epos-kichat {
-    height: 100vh;
+    height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten));
     padding: var(--epos-rand);
     gap: 10px;
 }
@@ -12431,7 +12448,7 @@ table.epos-simerg-tabelle {
 /* Mindestbreiten plus Abstaende und Innenrand.                          */
 .epos-ueberlagerung--breit {
     width: min(96vw, 1400px);
-    max-height: 94vh;
+    max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
 /* Ein breites BLATT (N35, Zapfprofil) weitet die tragende Ueberlagerung auf dasselbe
@@ -12440,7 +12457,7 @@ table.epos-simerg-tabelle {
    nur die Marke, an der :has() hier greift. */
 .epos-ueberlagerung:has(.epos-blatt--breit) {
     width: min(96vw, 1400px);
-    max-height: 94vh;
+    max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)));
 }
 
 /* Der Dialog des Hauses ist auf 1160 px gedeckelt, damit im maximierten */

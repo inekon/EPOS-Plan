@@ -379,6 +379,9 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.GEBAEUDE_ADMIN,   Masken.GebaeudeAdmin },
                 { KiMaskennamen.GEBAEUDE_KATALOG, Masken.GebaeudeAdmin },
                 { KiMaskennamen.GEBAEUDE,         STARTSEITE },
+                // Freigabe der Masken, Teil B: Der GEBAEUDEIMPORT geht als Ueberlagerung der
+                // Gebaeudemaske des Projekts auf (Knopf „Importieren…") - deshalb dasselbe Ziel.
+                { KiMaskennamen.GEBAEUDE_IMPORT,  STARTSEITE },
 
                 // Die Wohn-/Nutzflaechenangabe haengt an einer gewaehlten PROJEKTZEILE
                 // und geht ueber den Knopf „Aendern…" auf; kontextfrei gibt es sie
@@ -587,6 +590,25 @@ namespace WindowsFormsApplication1
                 // Begruendung wie bei den Ueberlagerungen der
                 // Energietraegerverwaltung.
                 { KiMaskennamen.SPEICHER_ZEITREIHEN, STROMSPEICHER_AUSLEGUNG },
+                // Das FORMAT einer CSV-Datei der Flotte geht ebenso als Ueberlagerung der
+                // Stromspeicher-Auslegung auf und braucht eine gewaehlte Datei.
+                { KiMaskennamen.SPEICHER_FLOTTEN_CSV, STROMSPEICHER_AUSLEGUNG },
+                // Die IMPORTOPTIONEN einer Ganglinie gehen im Einlesen einer Gangliniendatei auf
+                // (Stromganglinien, Lastspitzenkappung, Waermebedarf); kontextfrei gibt es sie nicht,
+                // ihr Ziel ist die Stromganglinien-Verwaltung, aus der der Anwender einliest.
+                { KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, Masken.StromganglinieAdmin },
+                // Der SPOTPREISIMPORT geht als Ueberlagerung aus der Energietraegerverwaltung auf.
+                { KiMaskennamen.SPOTPREIS_IMPORT, ENERGIETRAEGER_VERWALTUNG },
+                // Die KONFLIKTLISTE geht nur im Lauf eines Herstellerimports auf; kontextfrei gibt
+                // es sie nicht - ihr Ziel ist die Startseite wie bei den Ueberlagerungen des Gebaeudes.
+                { KiMaskennamen.IMPORT_KONFLIKTE, STARTSEITE },
+                // Freigabe der Masken, Teil C: Die UEBERNAHME geht als Ueberlagerung der
+                // Kostenverwaltung einer Anlage auf; Projekttransfer, Brennstoffe des Projekts und
+                // Dublettenwerkzeug sind Menuepunkte mit eigenem Seitenschluessel der AppWurzel.
+                { KiMaskennamen.VORLAGEN_UEBERNAHME, KOSTENVERWALTUNG },
+                { KiMaskennamen.PROJEKT_TRANSFER, "PROJEKT_TRANSFER" },
+                { KiMaskennamen.PROJEKT_BRENNSTOFFE, "PROJEKT_BRENNSTOFFE" },
+                { KiMaskennamen.KATALOG_DUBLETTEN, "KATALOG_DUBLETTEN" },
 
                 // ---- Welle KI-F6: BERICHTE und PROJEKT -----------------------
                 //

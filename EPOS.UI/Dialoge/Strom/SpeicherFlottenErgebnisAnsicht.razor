@@ -57,6 +57,7 @@
 
 @namespace EPOS.UI.Dialoge.Strom
 @inherits Farbwahlwirt
+@implements IDisposable
 @using System.Globalization
 @using EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1
@@ -351,7 +352,7 @@
                     <button type="button" class="epos-gang-knopf" title="@Resource.FLOTTE_NAV_VOR_TITEL"
                             @onclick="Vor">▶</button>
                 }
-                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_LBL_SOC_EINHEIT" Eintraege="Speicherwahl"
+                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_LBL_SOC_EINHEIT" Eintraege="@Speicherwahl"
                              Auswahl="@_speicher" AuswahlChanged="SpeicherGesetzt" />
             </div>
 
@@ -677,6 +678,71 @@
         _speicher = wert ?? 0;
         Zeichnen();
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Freigabe der Masken, Teil C): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>
+    /// Das Register der Anzeigeschalter des Wirts — der Stromspeicher-Auslegung oder des
+    /// Ergebnisblatts der Simulation; <c>null</c> = ein Prüfstand ohne Wirt.
+    /// </summary>
+    [CascadingParameter] public Ergebnisanzeige? Anzeige { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Anzeige?.Melden(this, Anzeigeschalter);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => Anzeige?.Abmelden(this);
+
+    /// <summary>
+    /// Die Schalter der Ansicht, wie sie gezeichnet sind: die Reihen der Projektion (nur mit
+    /// Wirtschaftlichkeit), „sortiert", das zweite Bild, die Reihen des Betriebsbildes, je
+    /// Zeitraum und je Speicher eine Option. Jedes Setzen geht den Weg des Bedienelements;
+    /// der Navigator ◀ ▶ und die CSV-Knöpfe bleiben Knöpfe.
+    /// </summary>
+    public IReadOnlyList<Anzeigeschalter> Anzeigeschalter()
+    {
+        if (Ergebnis?.Studie is not { } studie) return Array.Empty<Anzeigeschalter>();
+
+        var liste = new List<Anzeigeschalter>();
+        if (studie.Wirtschaftlichkeit is not null)
+        {
+            foreach ((string Schluessel, string Text) reihe in SpeicherFlottenAnzeigeCtrl.Projektionsreihen())
+            {
+                string schluessel = reihe.Schluessel;
+                liste.Add(Umschalter(reihe.Text, () => ProjektionsreiheAn(schluessel), an => ProjektionsreiheGesetzt(schluessel, an)));
+            }
+        }
+        liste.Add(Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, SortiertGesetzt));
+        liste.Add(Umschalter(Resource.FLOTTE_CHK_ZWEITES_BILD, () => _zweitesBild, ZweitesBildGesetzt));
+        foreach ((string Schluessel, string Text) reihe in Betriebsreihen)
+        {
+            string schluessel = reihe.Schluessel;
+            liste.Add(Umschalter(reihe.Text, () => ReiheAn(schluessel), an => ReiheGesetzt(schluessel, an)));
+        }
+        foreach ((int Id, string Text) stufe in Stufenwahl)
+        {
+            int id = stufe.Id;
+            liste.Add(EPOS.UI.Seiten.Simulation.Anzeigeschalter.Wahloption(
+                Resource.FLOTTE_LBL_ZEITRAUM + ": " + stufe.Text, () => _stufe == id, () => StufeGesetzt(id), Auffrischen));
+        }
+        foreach ((int Id, string Text) speicher in Speicherwahl)
+        {
+            int id = speicher.Id;
+            liste.Add(EPOS.UI.Seiten.Simulation.Anzeigeschalter.Wahloption(
+                Resource.FLOTTE_LBL_SOC_EINHEIT + ": " + speicher.Text, () => _speicher == id, () => SpeicherGesetzt(id), Auffrischen));
+        }
+        return liste;
+    }
+
+    private EPOS.UI.Seiten.Simulation.Anzeigeschalter Umschalter(string name, Func<bool> lesen, Action<bool> setzen)
+        => new(name, lesen, w => { setzen(w); Auffrischen(); });
+
+    private void Auffrischen() => _ = InvokeAsync(StateHasChanged);
 
     // --- Die vier Kacheln -----------------------------------------------------
 

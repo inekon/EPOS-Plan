@@ -2150,6 +2150,8 @@
         internal static string BergGrafiksichtErl => MyResource.Resource.KI_DLG_BERG_GRAFIK_ERL;
         internal static string BergJahresverlaufName => MyResource.Resource.BERG_SCH_JAHRESVERLAUF;
         internal static string BergJahresverlaufErl => MyResource.Resource.KI_DLG_BERG_JAHRESVERLAUF_ERL;
+        internal static string BergZeitstufeName => MyResource.Resource.KI_DLG_BERG_ZEITSTUFE_NAME;
+        internal static string BergZeitstufeErl => MyResource.Resource.KI_DLG_BERG_ZEITSTUFE_ERL;
 
         // ============ Waermebedarf, Solarganglinie und Klimadaten (Welle KI-F3)
 
@@ -3056,6 +3058,142 @@
         internal static string MaskePeakShaving => MyResource.Resource.KI_DLG_MASKE_PEAK;
         internal static string MaskeSpeicherzeitreihen => MyResource.Resource.KI_DLG_MASKE_SZR;
         internal static string MaskeStromganglinieAdmin => MyResource.Resource.KI_DLG_MASKE_SGA;
+
+        // ---- Importoptionen (Freigabe der Importdialoge, Teil A) ----
+        internal static string MaskeSpeicherFlottenCsv => MyResource.Resource.KI_DLG_MASKE_FCSV;
+        internal static string MaskeGanglinieImportOptionen => MyResource.Resource.KI_DLG_MASKE_GIO;
+        internal static string MaskeSpotpreisImport => MyResource.Resource.KI_DLG_MASKE_SPOT;
+        internal static string MaskeImportKonflikte => MyResource.Resource.KI_DLG_MASKE_IKF;
+
+        // Form „CSV-Datei der Flotte“: die Format- und Zeitfelder teilen Namen und Erläuterung
+        // mit den Leseregeln einer Speicher-Zeitreihe (Szr*); eigene Texte haben die Wertspalten.
+        internal static string FcsvIntervallName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_INTERVALLLAGE);
+        internal static string FcsvIntervallErl => MyResource.Resource.KI_DLG_FCSV_INTERVALL_ERL;
+        internal static string FcsvLastName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_LAST);
+        internal static string FcsvLastErl => MyResource.Resource.KI_DLG_FCSV_LAST_ERL;
+        internal static string FcsvPvName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_PV);
+        internal static string FcsvPvErl => MyResource.Resource.KI_DLG_FCSV_PV_ERL;
+        internal static string FcsvBhkwName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_BHKW);
+        internal static string FcsvBhkwErl => MyResource.Resource.KI_DLG_FCSV_BHKW_ERL;
+        internal static string FcsvBezugName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_BEZUG);
+        internal static string FcsvBezugErl => MyResource.Resource.KI_DLG_FCSV_BEZUG_ERL;
+        internal static string FcsvPvPreisName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_PVPREIS);
+        internal static string FcsvPvPreisErl => MyResource.Resource.KI_DLG_FCSV_PVPREIS_ERL;
+        internal static string FcsvBhkwPreisName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_BHKWPREIS);
+        internal static string FcsvBhkwPreisErl => MyResource.Resource.KI_DLG_FCSV_BHKWPREIS_ERL;
+        internal static string FcsvBatteriePreisName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_BATTERIEPREIS);
+        internal static string FcsvBatteriePreisErl => MyResource.Resource.KI_DLG_FCSV_BATTERIEPREIS_ERL;
+        internal static string FcsvLeistungEinheitName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_LEISTUNGSEINHEIT);
+        internal static string FcsvLeistungEinheitErl => MyResource.Resource.KI_DLG_FCSV_LEISTUNGSEINHEIT_ERL;
+        internal static string FcsvPreisEinheitName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_PREISEINHEIT);
+        internal static string FcsvPreisEinheitErl => MyResource.Resource.KI_DLG_FCSV_PREISEINHEIT_ERL;
+        internal static string FcsvSnapshotName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_SNAPSHOT_ID);
+        internal static string FcsvSnapshotErl => MyResource.Resource.KI_DLG_FCSV_SNAPSHOT_ERL;
+        internal static string FcsvBekanntName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_BEKANNT_SEIT);
+        internal static string FcsvBekanntErl => MyResource.Resource.KI_DLG_FCSV_BEKANNT_ERL;
+        internal static string FcsvEntscheidungName => OhneDoppelpunkt(MyResource.Resource.FLOTTE_CSV_ENTSCHEIDUNG);
+        internal static string FcsvEntscheidungErl => MyResource.Resource.KI_DLG_FCSV_ENTSCHEIDUNG_ERL;
+
+        // Form_GanglinieImportOptionen
+        internal static string GioTrennzeichenName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_TRENNZEICHEN);
+        internal static string GioTrennzeichenErl => MyResource.Resource.KI_DLG_GIO_TRENNZEICHEN_ERL;
+        internal static string GioDezimalName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_DEZIMALTRENNER);
+        internal static string GioDezimalErl => MyResource.Resource.KI_DLG_GIO_DEZIMAL_ERL;
+        internal static string GioWertspalteName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_WERTSPALTE);
+        internal static string GioWertspalteErl => MyResource.Resource.KI_DLG_GIO_WERTSPALTE_ERL;
+        internal static string GioZeitspalteName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_ZEITSPALTE);
+        internal static string GioZeitspalteErl => MyResource.Resource.KI_DLG_GIO_ZEITSPALTE_ERL;
+        internal static string GioEinheitName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_EINHEIT);
+        internal static string GioEinheitErl => MyResource.Resource.KI_DLG_GIO_EINHEIT_ERL;
+        internal static string GioRasterName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_RASTER);
+        internal static string GioRasterErl => MyResource.Resource.KI_DLG_GIO_RASTER_ERL;
+        internal static string GioKonventionName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_KONVENTION);
+        internal static string GioKonventionErl => MyResource.Resource.KI_DLG_GIO_KONVENTION_ERL;
+        internal static string GioBlattName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_BLATT);
+        internal static string GioBlattErl => MyResource.Resource.KI_DLG_GIO_BLATT_ERL;
+        internal static string GioKopfzeileName => OhneDoppelpunkt(MyResource.Resource.IMPORT_LBL_KOPFZEILE);
+        internal static string GioKopfzeileErl => MyResource.Resource.KI_DLG_GIO_KOPFZEILE_ERL;
+
+        // Form_SpotpreisImport
+        internal static string SpotBezeichnerName => OhneDoppelpunkt(MyResource.Resource.PREIS_IMPORT_LABEL_BEZEICHNER);
+        internal static string SpotBezeichnerErl => MyResource.Resource.KI_DLG_SPOT_BEZEICHNER_ERL;
+        internal static string SpotStammName => MyResource.Resource.KI_DLG_SPOT_STAMM_NAME;
+        internal static string SpotStammErl => MyResource.Resource.KI_DLG_SPOT_STAMM_ERL;
+
+        // Form_ImportKonflikte
+        internal static string IkfNameName => MyResource.Resource.KI_DLG_IKF_NAME_NAME;
+        internal static string IkfNameErl => MyResource.Resource.KI_DLG_IKF_NAME_ERL;
+        internal static string IkfAktionName => OhneDoppelpunkt(MyResource.Resource.IMP_KONFLIKT_SPALTE_AKTION);
+        internal static string IkfAktionErl => MyResource.Resource.KI_DLG_IKF_AKTION_ERL;
+
+        // ---- Uebernahme, Transfer, Brennstoffe, Dubletten (Freigabe der Masken, Teil C) ----
+        internal static string MaskeVorlagenUebernahme => MyResource.Resource.KI_DLG_MASKE_KUEB;
+        internal static string KuebZielName => OhneDoppelpunkt(MyResource.Resource.KUEB_LBL_ZIEL);
+        internal static string KuebZielErl => MyResource.Resource.KI_DLG_KUEB_ZIEL_ERL;
+        internal static string KuebQuelleName => MyResource.Resource.KI_DLG_KUEB_QUELLE_NAME;
+        internal static string KuebQuelleErl => MyResource.Resource.KI_DLG_KUEB_QUELLE_ERL;
+        internal static string KuebKategorieName => MyResource.Resource.KI_DLG_KUEB_KATEGORIE_NAME;
+        internal static string KuebKategorieErl => MyResource.Resource.KI_DLG_KUEB_KATEGORIE_ERL;
+        internal static string KuebVarianteName => OhneDoppelpunkt(MyResource.Resource.KDLG_LBL_VARIANTE);
+        internal static string KuebVarianteErl => MyResource.Resource.KI_DLG_KUEB_VARIANTE_ERL;
+        internal static string KuebQuellprojektName => OhneDoppelpunkt(MyResource.Resource.KUEB_LBL_QUELLPROJEKT);
+        internal static string KuebQuellprojektErl => MyResource.Resource.KI_DLG_KUEB_QUELLPROJEKT_ERL;
+        internal static string KuebQuellanlageName => OhneDoppelpunkt(MyResource.Resource.KUEB_LBL_QUELLANLAGE);
+        internal static string KuebQuellanlageErl => MyResource.Resource.KI_DLG_KUEB_QUELLANLAGE_ERL;
+
+        internal static string MaskeProjektTransfer => MyResource.Resource.KI_DLG_MASKE_PTR;
+        internal static string PtrZielnameName => OhneDoppelpunkt(MyResource.Resource.PTR_LBL_ZIELNAME);
+        internal static string PtrZielnameErl => MyResource.Resource.KI_DLG_PTR_ZIELNAME_ERL;
+        internal static string PtrKonfliktName => MyResource.Resource.KI_DLG_PTR_KONFLIKT_NAME;
+        internal static string PtrKonfliktErl => MyResource.Resource.KI_DLG_PTR_KONFLIKT_ERL;
+        internal static string PtrSicherungName => MyResource.Resource.PTR_CHK_SICHERUNG;
+        internal static string PtrSicherungErl => MyResource.Resource.KI_DLG_PTR_SICHERUNG_ERL;
+
+        // Gebaeudeimport, Kopfeingaben (Freigabe der Masken, Teil B): die Namen sind die Beschriftungen der Maske.
+        internal static string MaskeGebaeudeImport => MyResource.Resource.KI_DLG_MASKE_GIMP;
+        internal static string GimpKlasseName => OhneDoppelpunkt(MyResource.Resource.GIMP_FELD_BAUALTERSKLASSE);
+        internal static string GimpKlasseErl => MyResource.Resource.KI_DLG_GIMP_KLASSE_ERL;
+        internal static string GimpQuelleName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_QUELLWAHL);
+        internal static string GimpQuelleErl => MyResource.Resource.KI_DLG_GIMP_QUELLE_ERL;
+        internal static string GimpGebaeudeName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_GEBAEUDE);
+        internal static string GimpGebaeudeErl => MyResource.Resource.KI_DLG_GIMP_GEBAEUDE_ERL;
+        internal static string GimpNameName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_NAME);
+        internal static string GimpNameErl => MyResource.Resource.KI_DLG_GIMP_NAME_ERL;
+        internal static string GimpCadSollwertName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_CAD_SOLLWERT);
+        internal static string GimpCadSollwertErl => MyResource.Resource.KI_DLG_GIMP_CADSOLLWERT_ERL;
+        internal static string GimpNordrichtungName => OhneDoppelpunkt(MyResource.Resource.GEB_AUSRICHTUNG_NORDRICHTUNG);
+        internal static string GimpNordrichtungErl => MyResource.Resource.KI_DLG_GIMP_NORDRICHTUNG_ERL;
+        internal static string GimpZonenregelName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_KOPF_ZONENREGEL);
+        internal static string GimpZonenregelErl => MyResource.Resource.KI_DLG_GIMP_ZONENREGEL_ERL;
+        internal static string GimpZonierungName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_SQ_ZONIERUNG);
+        internal static string GimpZonierungErl => MyResource.Resource.KI_DLG_GIMP_ZONIERUNG_ERL;
+        internal static string GimpAlsZoneName => OhneDoppelpunkt(MyResource.Resource.GIMP_DLG_ALS_ZONE);
+        internal static string GimpAlsZoneErl => MyResource.Resource.KI_DLG_GIMP_ALSZONE_ERL;
+
+        // Die zehn Werte tragen die Spaltenkoepfe der Maske als Namen (mit Einheit) und eine
+        // gemeinsame Erlaeuterung: Sie gelten erst mit „Speichern" der Bearbeitung.
+        internal static string MaskeProjektBrennstoffe => MyResource.Resource.KI_DLG_MASKE_PBRS;
+        internal static string PbrsKatalogwahlName => MyResource.Resource.PBRS_UEBERNEHMEN_WAHL;
+        internal static string PbrsKatalogwahlErl => MyResource.Resource.KI_DLG_PBRS_KATALOGWAHL_ERL;
+        internal static string PbrsWertErl => MyResource.Resource.KI_DLG_PBRS_WERT_ERL;
+        internal static string PbrsHiName => MyResource.Resource.PBRS_SP_HI;
+        internal static string PbrsHsName => MyResource.Resource.PBRS_SP_HS;
+        internal static string PbrsCo2Name => MyResource.Resource.PBRS_SP_CO2;
+        internal static string PbrsSo2Name => MyResource.Resource.PBRS_SP_SO2;
+        internal static string PbrsNoxName => MyResource.Resource.PBRS_SP_NOX;
+        internal static string PbrsStaubName => MyResource.Resource.PBRS_SP_STAUB;
+        internal static string PbrsPeName => MyResource.Resource.PBRS_SP_PE;
+        internal static string PbrsGrundpreisName => MyResource.Resource.PBRS_SP_GRUNDPREIS;
+        internal static string PbrsArbeitspreisName => MyResource.Resource.PBRS_SP_ARBEITSPREIS;
+        internal static string PbrsLeistungspreisName => MyResource.Resource.PBRS_SP_LEISTUNGSPREIS;
+
+        internal static string MaskeKatalogDubletten => MyResource.Resource.KI_DLG_MASKE_DUBL;
+        internal static string DublKatalogName => MyResource.Resource.KI_DLG_DUBL_KATALOG_NAME;
+        internal static string DublKatalogErl => MyResource.Resource.KI_DLG_DUBL_KATALOG_ERL;
+
+        // Die Schalter der Ergebnisansichten der Stromspeicher-Auslegung (eine Spalte des Wirts).
+        internal static string SpaAnzeigeName => MyResource.Resource.KI_DLG_SPA_ANZEIGE_NAME;
+        internal static string SpaAnzeigeErl => MyResource.Resource.KI_DLG_SPA_ANZEIGE_ERL;
 
         // ---- Form_PeakShaving
         internal static string PeakQuelleName => MyResource.Resource.PEAK_GRP_QUELLE;

@@ -3654,9 +3654,6 @@ prüft sie dessen Entzugsleistung, Jahresentzugsarbeit und Volllaststunden.</val
   <data name="SIMQ_ERDREICH_RB_SONDE_WAHL" xml:space="preserve">
     <value>Erdsonde als Quellsystem</value>
   </data>
-  <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
-    <value>Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK" und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.</value>
-  </data>
   <data name="SIMQ_ERDREICH_SPEICHERLADUNG" xml:space="preserve">
     <value>Entzugsarbeit und Spitze enthalten die Wärme, mit der die Wärmepumpe den Pufferspeicher lädt.</value>
   </data>
@@ -23342,16 +23339,16 @@ Möchten Sie das zulassen?</value>
     <value>Die Kühlleistung des Katalogsatzes; in der Katalogpflege eine Anzeige, änderbar ist sie an der Anlage.</value>
   </data>
   <data name="KI_DLG_HKP_TRAEGER_ERL" xml:space="preserve">
-    <value>Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels.</value>
+    <value>Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht.</value>
   </data>
   <data name="KI_DLG_BHKW_TRAEGER_ERL" xml:space="preserve">
-    <value>Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls.</value>
+    <value>Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht.</value>
   </data>
   <data name="KI_DLG_STSP_TRAEGER_ERL" xml:space="preserve">
-    <value>Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms.</value>
+    <value>Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht.</value>
   </data>
   <data name="KI_DLG_PV_TRAEGER_ERL" xml:space="preserve">
-    <value>Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms.</value>
+    <value>Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms. Gewechselt wird er von Hand in der Maske; der Assistent liest ihn, setzt ihn aber nicht.</value>
   </data>
   <data name="KI_DLG_WPA_TRAEGER_ERL" xml:space="preserve">
     <value>Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms.</value>
@@ -25370,7 +25367,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Betriebskosten je entladener Kilowattstunde.</value>
   </data>
   <data name="KI_DLG_SPA2_LEISTUNGSPREIS_ERL" xml:space="preserve">
-    <value>Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte.</value>
+    <value>Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte. Der Assistent setzt ihn nicht, weil die Maske ihn sofort projektweit speichert.</value>
   </data>
   <data name="KI_DLG_SPA2_AUSGLEICH_ERL" xml:space="preserve">
     <value>Der Wert, mit dem am Jahresende eine veränderte Speicherfüllung ausgeglichen wird.</value>
@@ -50878,6 +50875,12 @@ Chart</value>
   <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
     <value>Jahresganglinie als CSV speichern</value>
   </data>
+  <data name="SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE" xml:space="preserve">
+    <value>Jahresmittel {0} °C  ·  Tiefstwert {1} °C am {2}  ·  Höchstwert {3} °C am {4}</value>
+  </data>
+  <data name="SIMQ_ERDREICH_LAUF_ZEITPUNKT" xml:space="preserve">
+    <value>{0:dd.MM.}, {0:HH:mm} Uhr</value>
+  </data>
   <data name="KONF_KS_KAELTE" xml:space="preserve">
     <value>Kälte</value>
   </data>
@@ -51048,6 +51051,300 @@ Chart</value>
   </data>
   <data name="KFLT_SPALTE_AUSGEBLENDET" xml:space="preserve">
     <value>bei dieser Breite ausgeblendet</value>
+  </data>
+  <data name="KI_FELD_GESPERRT" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="KI_ERZ_TRAEGER_VON_HAND" xml:space="preserve">
+    <value>Den Energieträger wechseln Sie in der Maske von Hand; der Wechsel schreibt sofort in die Datenbank, deshalb setzt der Assistent ihn nicht.</value>
+  </data>
+  <data name="KI_STROM_KEINE_FLOTTE" xml:space="preserve">
+    <value>Die Stromspeicher-Auslegung hat noch keinen Arbeitsstand mit Flotte, in den der Wert gehört – bitte die Ansicht zuerst mit einem Projekt öffnen.</value>
+  </data>
+  <data name="KI_STROM_LEISTUNGSPREIS_VON_HAND" xml:space="preserve">
+    <value>Den Leistungspreis setzen Sie in der Maske von Hand; er wird sofort projektweit gespeichert, deshalb setzt der Assistent ihn nicht.</value>
+  </data>
+  <data name="KI_DLG_MASKE_FCSV" xml:space="preserve">
+    <value>Einlesen einer CSV-Datei der Flotte</value>
+  </data>
+  <data name="KI_DLG_MASKE_GIO" xml:space="preserve">
+    <value>Importoptionen einer Ganglinie</value>
+  </data>
+  <data name="KI_DLG_MASKE_SPOT" xml:space="preserve">
+    <value>Spotpreise einlesen</value>
+  </data>
+  <data name="KI_DLG_MASKE_IKF" xml:space="preserve">
+    <value>Konflikte beim Import</value>
+  </data>
+  <data name="KI_DLG_FCSV_INTERVALL_ERL" xml:space="preserve">
+    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet.</value>
+  </data>
+  <data name="KI_DLG_FCSV_LAST_ERL" xml:space="preserve">
+    <value>Die Spalte mit der Bruttolast der Flotte.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PV_ERL" xml:space="preserve">
+    <value>Die Spalte mit der PV-Leistung; „nicht vorhanden“, wenn die Datei keine führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BHKW_ERL" xml:space="preserve">
+    <value>Die Spalte mit der BHKW-Leistung; „nicht vorhanden“, wenn die Datei keine führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BEZUG_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Bezugspreis.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PVPREIS_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Verkaufspreis des PV-Stroms; „nicht vorhanden“, wenn die Datei keinen führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BHKWPREIS_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Verkaufspreis des BHKW-Stroms; „nicht vorhanden“, wenn die Datei keinen führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BATTERIEPREIS_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Verkaufspreis des Batteriestroms; „nicht vorhanden“, wenn die Datei keinen führt.</value>
+  </data>
+  <data name="KI_DLG_FCSV_LEISTUNGSEINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Leistungsspalten der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_PREISEINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Preisspalten der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_SNAPSHOT_ERL" xml:space="preserve">
+    <value>Die Spalte mit der Kennung des Prognosestands; nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_BEKANNT_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Zeitpunkt, seit dem die Prognose bekannt ist; nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_DLG_FCSV_ENTSCHEIDUNG_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Entscheidungszeitpunkt; nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_FCSV_NUR_EINE_SPALTE" xml:space="preserve">
+    <value>Zeitstempelspalte und Zeitstempelformat gelten nur bei der Zeitangabe „eine Spalte“ – bitte zuerst die Zeitangabe umstellen.</value>
+  </data>
+  <data name="KI_FCSV_NUR_GETRENNT" xml:space="preserve">
+    <value>Datums- und Uhrzeitspalte und ihre Formate gelten nur bei getrennter Zeitangabe – bitte zuerst die Zeitangabe umstellen.</value>
+  </data>
+  <data name="KI_FCSV_NUR_PROGNOSEN" xml:space="preserve">
+    <value>Die Prognosezuordnung gibt es nur beim Einlesen von Prognosen.</value>
+  </data>
+  <data name="KI_DLG_GIO_TRENNZEICHEN_ERL" xml:space="preserve">
+    <value>Das Zeichen, das die Spalten der Datei trennt. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_DEZIMAL_ERL" xml:space="preserve">
+    <value>Das Zeichen, das in den Zahlen der Datei Ganz- und Nachkommateil trennt. Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_DLG_GIO_WERTSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit den Werten der Ganglinie.</value>
+  </data>
+  <data name="KI_DLG_GIO_ZEITSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Zeitstempel; „(keine)“, wenn die Datei die Werte ohne Zeitangabe in Folge führt.</value>
+  </data>
+  <data name="KI_DLG_GIO_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Werte der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_GIO_RASTER_ERL" xml:space="preserve">
+    <value>Das Zeitraster der Werte in der Datei.</value>
+  </data>
+  <data name="KI_DLG_GIO_KONVENTION_ERL" xml:space="preserve">
+    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet.</value>
+  </data>
+  <data name="KI_DLG_GIO_BLATT_ERL" xml:space="preserve">
+    <value>Das Tabellenblatt einer Excel-Mappe, aus dem gelesen wird.</value>
+  </data>
+  <data name="KI_DLG_GIO_KOPFZEILE_ERL" xml:space="preserve">
+    <value>Trägt die erste Zeile die Spaltennamen statt Werte? Die Vorschau zeigt die Änderung erst nach „Vorschau aktualisieren“.</value>
+  </data>
+  <data name="KI_GIO_NUR_EXCEL" xml:space="preserve">
+    <value>Ein Tabellenblatt gibt es nur bei einer Excel-Mappe.</value>
+  </data>
+  <data name="KI_DLG_SPOT_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name, unter dem die Preisreihe abgelegt wird; leer wird er beim Wählen der Datei mit dem Dateinamen vorbelegt.</value>
+  </data>
+  <data name="KI_DLG_SPOT_STAMM_NAME" xml:space="preserve">
+    <value>Für alle Projekte</value>
+  </data>
+  <data name="KI_DLG_SPOT_STAMM_ERL" xml:space="preserve">
+    <value>Steht die Preisreihe allen Projekten zur Verfügung oder nur dem geöffneten?</value>
+  </data>
+  <data name="KI_SPOT_KEINE_DATEI" xml:space="preserve">
+    <value>Es ist noch keine Datei gewählt und geprüft – die Datei wählen Sie in der Maske von Hand.</value>
+  </data>
+  <data name="KI_DLG_IKF_NAME_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KI_DLG_IKF_NAME_ERL" xml:space="preserve">
+    <value>Der Name, unter dem der Eintrag angelegt wird; änderbar nur bei der Aktion „Umbenennen“.</value>
+  </data>
+  <data name="KI_DLG_IKF_AKTION_ERL" xml:space="preserve">
+    <value>Was mit dem Eintrag geschieht: importieren, auslassen, überschreiben oder umbenennen; welche Aktionen erlaubt sind, hängt vom Befund der Zeile ab.</value>
+  </data>
+  <data name="KI_IKF_NAME_NUR_UMBENENNEN" xml:space="preserve">
+    <value>Den Namen ändern Sie nur bei der Aktion „Umbenennen“ – bitte zuerst die Aktion der Zeile umstellen.</value>
+  </data>
+  <data name="KI_IKF_AKTION_NICHT_ERLAUBT" xml:space="preserve">
+    <value>Für diesen Eintrag ist die Aktion nicht erlaubt; zur Wahl stehen: {0}.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KUEB" xml:space="preserve">
+    <value>Übernahme ins Projekt</value>
+  </data>
+  <data name="KI_DLG_KUEB_ZIEL_ERL" xml:space="preserve">
+    <value>Das Projekt, in dessen Anlage die Kostenpositionen übernommen werden.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLE_NAME" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Positionen kommen: aus einer Vorlage/Variante des Katalogs oder aus einer Anlage eines anderen Projekts. Führt der Katalog keine Vorlage, steht nur das Projekt zur Wahl.</value>
+  </data>
+  <data name="KI_DLG_KUEB_KATEGORIE_NAME" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="KI_DLG_KUEB_KATEGORIE_ERL" xml:space="preserve">
+    <value>Investitions- oder Betriebskosten der Vorlage; ein Wechsel zieht die Variantenliste nach.</value>
+  </data>
+  <data name="KI_DLG_KUEB_VARIANTE_ERL" xml:space="preserve">
+    <value>Die Variante der Vorlage, deren Positionen übernommen werden.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLPROJEKT_ERL" xml:space="preserve">
+    <value>Das Projekt, aus dessen Anlage die Positionen kommen; ein Wechsel zieht die Anlagenliste nach.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLANLAGE_ERL" xml:space="preserve">
+    <value>Die Anlage des Quellprojekts, deren Positionen übernommen werden.</value>
+  </data>
+  <data name="KI_KUEB_ZIEL_FEST" xml:space="preserve">
+    <value>Das Zielprojekt steht fest; diese Übernahme geht in das geöffnete Projekt.</value>
+  </data>
+  <data name="KI_KUEB_NUR_VORLAGE" xml:space="preserve">
+    <value>Kategorie und Variante gelten nur für die Quelle „Aus Vorlage/Variante“.</value>
+  </data>
+  <data name="KI_KUEB_NUR_PROJEKT" xml:space="preserve">
+    <value>Quellprojekt und Quellanlage gelten nur für die Quelle „Aus Projekt/Anlage“.</value>
+  </data>
+  <data name="KI_KUEB_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Mit dieser Wahl lässt sich nichts übernehmen.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PTR" xml:space="preserve">
+    <value>Projekt exportieren / importieren</value>
+  </data>
+  <data name="KI_DLG_PTR_ZIELNAME_ERL" xml:space="preserve">
+    <value>Der Name, unter dem das Paket eingespielt wird; leer übernimmt den Namen aus der Datei. Gilt nur beim Import eines einzelnen Pakets.</value>
+  </data>
+  <data name="KI_DLG_PTR_KONFLIKT_NAME" xml:space="preserve">
+    <value>Bei vorhandenem Namen</value>
+  </data>
+  <data name="KI_DLG_PTR_KONFLIKT_ERL" xml:space="preserve">
+    <value>Was geschieht, wenn der Name schon vergeben ist: unter neuem Namen importieren, das vorhandene Projekt überschreiben (der Import fragt vorher nach) oder abbrechen.</value>
+  </data>
+  <data name="KI_DLG_PTR_SICHERUNG_ERL" xml:space="preserve">
+    <value>Legt der Import vorher eine Sicherungskopie der Datenbank an?</value>
+  </data>
+  <data name="KI_PTR_LAEUFT" xml:space="preserve">
+    <value>Ein Export oder Import läuft gerade; danach lassen sich die Felder wieder setzen.</value>
+  </data>
+  <data name="KI_PTR_KEINE_SICHERUNG" xml:space="preserve">
+    <value>Auf diesem Gerät legt der Import keine Sicherungskopie an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PBRS" xml:space="preserve">
+    <value>Brennstoffe des Projekts</value>
+  </data>
+  <data name="KI_DLG_PBRS_KATALOGWAHL_ERL" xml:space="preserve">
+    <value>Der Brennstoff des Katalogs, den „Übernehmen“ in das Projekt kopiert; die Liste führt nur Brennstoffe, die das Projekt noch nicht hat. Übernehmen bleibt ein Klick des Anwenders.</value>
+  </data>
+  <data name="KI_DLG_PBRS_WERT_ERL" xml:space="preserve">
+    <value>Ein Wert der Zeile, die gerade bearbeitet wird; er gilt erst mit „Speichern“ der Bearbeitung, das der Anwender drückt.</value>
+  </data>
+  <data name="KI_PBRS_LAEUFT" xml:space="preserve">
+    <value>Die Maske schreibt gerade; danach lassen sich die Felder wieder setzen.</value>
+  </data>
+  <data name="KI_PBRS_NICHT_IN_BEARBEITUNG" xml:space="preserve">
+    <value>Die Werte eines Brennstoffs lassen sich erst setzen, wenn der Anwender seine Zeile mit „Bearbeiten…“ geöffnet hat.</value>
+  </data>
+  <data name="KI_PBRS_OHNE_UEBERNAHME" xml:space="preserve">
+    <value>Hier lässt sich kein Brennstoff aus dem Katalog übernehmen.</value>
+  </data>
+  <data name="KI_DLG_MASKE_DUBL" xml:space="preserve">
+    <value>Katalog-Dubletten</value>
+  </data>
+  <data name="KI_DLG_DUBL_KATALOG_NAME" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="KI_DLG_DUBL_KATALOG_ERL" xml:space="preserve">
+    <value>Der Katalog, den „Prüfen“ nach Dubletten durchsucht, oder alle Kataloge. Prüfen, Bereinigen, Löschen und Umbenennen bleiben Handlungen des Anwenders.</value>
+  </data>
+  <data name="KI_DUBL_LAEUFT" xml:space="preserve">
+    <value>Ein Prüflauf läuft gerade; danach lässt sich der Katalog wieder wählen.</value>
+  </data>
+  <data name="KI_DLG_BERG_ZEITSTUFE_NAME" xml:space="preserve">
+    <value>Zeitraster der Grafik</value>
+  </data>
+  <data name="KI_DLG_BERG_ZEITSTUFE_ERL" xml:space="preserve">
+    <value>Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“) oder die Summen je Monat, Woche oder Tag als Säulen?</value>
+  </data>
+  <data name="KI_BERG_ZEITSTUFE_NUR_GRAFIK" xml:space="preserve">
+    <value>Das Zeitraster gibt es nur auf dem Grafikblatt, solange es eine Reihe zeichnet.</value>
+  </data>
+  <data name="KI_DLG_SPA_ANZEIGE_NAME" xml:space="preserve">
+    <value>Anzeige</value>
+  </data>
+  <data name="KI_DLG_SPA_ANZEIGE_ERL" xml:space="preserve">
+    <value>Die Schalter der Ergebnisansichten nach einem Lauf — Reihen, sortiert, Zeitraum, Speicher, Einheit und die Stellen der zwei Schieber der Größenrechnung; je Option einer Wahl ein Schalter. Sie stellen nur das Bild ein.</value>
+  </data>
+  <data name="KI_GIMP_LAEUFT" xml:space="preserve">
+    <value>Der Gebäudeimport liest oder übernimmt gerade; danach lassen sich die Felder wieder setzen.</value>
+  </data>
+  <data name="KI_GIMP_ERST_LESEN" xml:space="preserve">
+    <value>Dieses Feld gilt erst, wenn eine Gebäudedatei gelesen ist.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_QUELLWAHL" xml:space="preserve">
+    <value>Dieser Import führt keine Wahl der Quelle; das Format folgt der Endung der Datei.</value>
+  </data>
+  <data name="KI_GIMP_EIN_GEBAEUDE" xml:space="preserve">
+    <value>Die Datei trägt nur ein Gebäude; es gibt nichts zu wählen.</value>
+  </data>
+  <data name="KI_GIMP_KEIN_CADSOLLWERT" xml:space="preserve">
+    <value>Die Datei trägt keine Raumtemperaturen, die als Heizsollwert dienen könnten; der Schalter steht nicht zur Wahl.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_NORDRICHTUNG" xml:space="preserve">
+    <value>Die Nordrichtung lässt sich hier nicht ändern: Für diese Datei gibt es keinen Weg, sie mit einer anderen Richtung neu zu lesen.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_ZONENREGEL" xml:space="preserve">
+    <value>Die Datei trägt keine Zonierung; eine Zonenregel gibt es nicht.</value>
+  </data>
+  <data name="KI_GIMP_RUECKFRAGE" xml:space="preserve">
+    <value>Am Zonenplan bestehen Zuordnungen von Hand; vor diesem Wechsel fragt der Dialog nach, ob sie verworfen werden. Diese Wahl trifft der Anwender selbst im Dialog.</value>
+  </data>
+  <data name="KI_GIMP_KEINE_ZONIERUNGSWAHL" xml:space="preserve">
+    <value>Die Wahl der Zonierung gibt es nur, wenn eine Projektdatei mit beiden Zonierungen geladen ist.</value>
+  </data>
+  <data name="KI_GIMP_KEIN_BAUTEILVORSCHLAG" xml:space="preserve">
+    <value>Für diese Datei lässt sich kein Bauteilvorschlag bilden.</value>
+  </data>
+  <data name="KI_DLG_MASKE_GIMP" xml:space="preserve">
+    <value>Gebäudeimport</value>
+  </data>
+  <data name="KI_DLG_GIMP_KLASSE_ERL" xml:space="preserve">
+    <value>Baualtersklasse des neuen Gebäudes. Ohne eigene Wahl gilt die Klasse aus dem Baujahr der Datei; eine eigene Wahl gilt davor und füllt die Werte, die die Datei nicht trägt. Danach ordnet der Dialog neu zu.</value>
+  </data>
+  <data name="KI_DLG_GIMP_QUELLE_ERL" xml:space="preserve">
+    <value>Format der Gebäudedatei, die als Nächstes gewählt wird; es setzt den Filter der Dateiwahl. Ohne Wahl gelten alle Formate, und die Quelle folgt der Endung der Datei.</value>
+  </data>
+  <data name="KI_DLG_GIMP_GEBAEUDE_ERL" xml:space="preserve">
+    <value>Das Gebäude der Datei, das übernommen wird, wenn die Datei mehrere trägt. Ein Wechsel beginnt die Zuordnung neu, ohne Übertrag der Änderungen von Hand.</value>
+  </data>
+  <data name="KI_DLG_GIMP_NAME_ERL" xml:space="preserve">
+    <value>Name, unter dem das neue Gebäude angelegt wird.</value>
+  </data>
+  <data name="KI_DLG_GIMP_CADSOLLWERT_ERL" xml:space="preserve">
+    <value>Übernimmt die Raumtemperatur der Datei als Heizsollwert statt der Normtemperatur. Nur, wenn beheizte Räume eine Raumtemperatur tragen und kein Norm-Sollwert vorliegt; danach ordnet der Dialog neu zu.</value>
+  </data>
+  <data name="KI_DLG_GIMP_NORDRICHTUNG_ERL" xml:space="preserve">
+    <value>Richtung der Planoberseite in Grad (0 bis 360). Der Dialog liest die Datei damit neu und ordnet neu zu; Gebäudewahl, Klasse und Änderungen von Hand bleiben.</value>
+  </data>
+  <data name="KI_DLG_GIMP_ZONENREGEL_ERL" xml:space="preserve">
+    <value>Regel, nach der die Zonen aus den Räumen der Datei gebildet werden. Ein Wechsel bildet den Zonenvorschlag neu; Raumhaken, Werte von Hand und Baustoffe bleiben.</value>
+  </data>
+  <data name="KI_DLG_GIMP_ZONIERUNG_ERL" xml:space="preserve">
+    <value>Zonierung der Projektdatei (DIN oder Simulation), wenn die Datei beide trägt. Trägt der Zonenplan die Zonen der Projektdatei, baut ein Wechsel ihn mit der anderen Zonierung neu auf.</value>
+  </data>
+  <data name="KI_DLG_GIMP_ALSZONE_ERL" xml:space="preserve">
+    <value>Übernimmt das Gebäude als Zone mit echten Bauteilen statt der Flächensummen. Nur, wenn sich der Bauteilvorschlag bilden lässt.</value>
   </data>
 </root>
 

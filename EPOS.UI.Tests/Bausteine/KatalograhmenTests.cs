@@ -105,7 +105,7 @@ public class KatalograhmenTests : EposBunitContext
         string block = Stilblock(".epos-katalog-dialog {");
 
         Assert.Contains("max-width: none", block);
-        Assert.Contains("height: 100dvh", block);
+        Assert.Contains("height: calc(100dvh - var(--epos-sicher-oben) - var(--epos-sicher-unten))", block);
         Assert.Contains("overflow: auto", block);
     }
 

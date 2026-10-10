@@ -50,6 +50,9 @@
 @namespace EPOS.UI.Dialoge.Admin
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@using KiKern
+@using EPOS.UI.Dienste
+@implements IDisposable
 
 <div class="epos-dialog epos-katalogdubletten" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -336,6 +339,39 @@
         _katalogIndex = index;
         _meldung = "";
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Masken, Teil C)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KatalogDublettenKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new KatalogDublettenKiSicht
+        {
+            KatalogLesen = () => _katalogIndex,
+            KatalogSetzen = i => { BeiKatalog(i); _ = InvokeAsync(StateHasChanged); },
+            KatalogEintraege = () => KiMaskenanmeldung.Eintraege(KatalogEintraege, z => z.Id, z => z.Text)
+        };
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KATALOG_DUBLETTEN, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Katalogwahl hinaus darf. <b>Kein Speicherweg und kein
+    /// Rechenweg:</b> Der Suchlauf und jeder Eingriff (Bereinigen, Löschen, Umbenennen) bleiben
+    /// beim Anwender; während eines Laufs ist die Wahl gesperrt wie die Klappliste.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _laeuft,
+        Schreibschutzgrund = () => WindowsFormsApplication1.MyResource.Resource.KI_DUBL_LAEUFT
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// Bildet den Kern-Baum auf die Anzeigeform des Bausteins ab. Der Baustein kennt

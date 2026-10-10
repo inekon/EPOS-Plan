@@ -1,6 +1,9 @@
 @namespace EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@using KiKern
+@using EPOS.UI.Dienste
+@implements IDisposable
 
 <div class="epos-dialog" role="dialog" aria-modal="true">
     @* Ein Titel, eine Stelle: dieser Dialog steht ausschliesslich als Ueberlagerung in
@@ -180,6 +183,96 @@
         try { _vorschau = SpeicherZeitreihenImport.Vorschau(Datei.Inhalt, _optionen.Zeitbasis); _fehler = ""; }
         catch (Exception ex) { _vorschau = null; _fehler = ex.Message; }
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Importdialoge, Teil A)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private SpeicherFlottenCsvKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new SpeicherFlottenCsvKiSicht(() => _optionen, () => _getrennteZeit, () => Prognosen,
+                                                 KiSetzen, KiWahl);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SPEICHER_FLOTTEN_CSV, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf. <b>Kein Speicherweg:</b>
+    /// „Übernehmen" liest die Datei ein und reicht die Reihen an den Arbeitsstand — ein
+    /// Ladevorgang, den der Anwender auslöst. Die Prüfung ist das Fehlerbanner der Vorschau.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => _fehler,
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
+    };
+
+    /// <summary>Die Klappliste je Eigenschaft der Sicht — dieselben Listen wie im Markup.</summary>
+    private IReadOnlyList<KiWahleintrag> KiWahl(string feld)
+    {
+        IReadOnlyList<(int Id, string Text)> liste = feld switch
+        {
+            nameof(SpeicherFlottenCsvKiSicht.Trennzeichen) => Trennzeichen,
+            nameof(SpeicherFlottenCsvKiSicht.Dezimaltrenner) => Dezimaltrenner,
+            nameof(SpeicherFlottenCsvKiSicht.Kodierung) => Kodierungen,
+            nameof(SpeicherFlottenCsvKiSicht.Zeitangabe) => Zeitarten,
+            nameof(SpeicherFlottenCsvKiSicht.Intervall) => Konventionen,
+            nameof(SpeicherFlottenCsvKiSicht.LeistungEinheit) => LeistungEinheiten,
+            nameof(SpeicherFlottenCsvKiSicht.PreisEinheit) => PreisEinheiten,
+            nameof(SpeicherFlottenCsvKiSicht.Pv) or nameof(SpeicherFlottenCsvKiSicht.Bhkw)
+                or nameof(SpeicherFlottenCsvKiSicht.PvPreis) or nameof(SpeicherFlottenCsvKiSicht.BhkwPreis)
+                or nameof(SpeicherFlottenCsvKiSicht.BatteriePreis) => OptionaleSpalten,
+            _ => Pflichtspalten
+        };
+        return KiMaskenanmeldung.Eintraege(liste, z => z.Id, z => z.Text);
+    }
+
+    /// <summary>
+    /// Der Handweg je Feld — dieselbe Methode, die das Bedienelement ruft; danach zeichnet
+    /// sich die Maske neu (Blazor zeichnet sonst nur nach einem Ereignis des Browsers).
+    /// </summary>
+    private void KiSetzen(string feld, object? wert)
+    {
+        int? zahl = wert as int?;
+        string text = wert as string ?? "";
+        switch (feld)
+        {
+            case nameof(SpeicherFlottenCsvKiSicht.Trennzeichen): TrennzeichenSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Dezimaltrenner): DezimalSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Kodierung): KodierungSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Kopfzeile): KopfzeileSetzen(wert is true); break;
+            case nameof(SpeicherFlottenCsvKiSicht.ZeilenUeberspringen): UeberspringenSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Zeitangabe): ZeitartSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Zeitstempelspalte): ZeitstempelSpalteSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Datumsspalte): DatumSpalteSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Uhrzeitspalte): UhrzeitSpalteSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Zeitstempelformat): ZeitstempelFormatSetzen(text); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Datumsformat): DatumFormatSetzen(text); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Uhrzeitformat): UhrzeitFormatSetzen(text); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Zeitzone): ZeitzoneSetzen(text); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Intervall): KonventionSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.LeistungEinheit): LeistungEinheitSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.PreisEinheit): PreisEinheitSetzen(zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Last): SpalteSetzen(x => _optionen.LastSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Pv): SpalteSetzen(x => _optionen.PvSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Bhkw): SpalteSetzen(x => _optionen.BhkwSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Bezug): SpalteSetzen(x => _optionen.BezugSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.PvPreis): SpalteSetzen(x => _optionen.PvPreisSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.BhkwPreis): SpalteSetzen(x => _optionen.BhkwPreisSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.BatteriePreis): SpalteSetzen(x => _optionen.BatteriePreisSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.SnapshotId): SpalteSetzen(x => _optionen.SnapshotIdSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.BekanntSeit): SpalteSetzen(x => _optionen.BekanntSeitSpalte = x, zahl); break;
+            case nameof(SpeicherFlottenCsvKiSicht.Entscheidung): SpalteSetzen(x => _optionen.EntscheidungSpalte = x, zahl); break;
+            default: throw new InvalidOperationException(feld);
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     private void FormatGeaendert() => VorschauLesen();
     private void TrennzeichenSetzen(int? v) { _optionen.Zeitbasis.Trennzeichen = v switch { 1 => ',', 2 => '\t', _ => ';' }; FormatGeaendert(); }

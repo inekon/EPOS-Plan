@@ -616,6 +616,41 @@ public class BedarfErgebnisDialogTests : EposBunitContext
                 .ToList()
         };
 
+    /// <summary>
+    /// Das Zeitraster des Grafikreiters ist das Feld „zeitstufe" des Ergebnisdialogs (Freigabe der
+    /// Masken, Teil C): über <c>feld_setzen</c> mit seinem Text gesetzt, wechselt es das Bild wie der
+    /// Klick auf den Schaltknopf; ohne Bildquelle sagt der Sperrgrund ab.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_das_Zeitraster_ueber_das_Feld_des_Wirts()
+    {
+        Func<bool> vorher = Schreibnaht.Schreibrecht;
+        Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+        try
+        {
+            var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+            var cut = Aufbauen(WaermeMitGrafik(ruf));
+
+            KiKern.KiErgebnis woche = await cut.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Setzen(
+                KiMaskennamen.BEDARF_ERGEBNIS, "zeitstufe", "Woche"));
+
+            Assert.True(woche.Status == KiKern.KiStatus.Ausgefuehrt, woche.Text);
+            Assert.Equal(Bedarfsraster.Woche, cut.Instance.Raster);
+            cut.WaitForAssertion(() => Assert.Equal(Bedarfsraster.Woche, ruf[^1].Raster));
+            cut.WaitForAssertion(() => Assert.Equal("true", Rasterknopf(cut, Bedarfsraster.Woche).GetAttribute("aria-pressed")));
+            cut.Instance.Dispose();
+
+            var ohne = Aufbauen(Waerme(true, 2));
+            KiVorbereitung abgesagt = await ohne.InvokeAsync(() => EPOS.UI.Tests.Dialoge.Hilfe.KiSetzweg.Vorbereiten(
+                KiMaskennamen.BEDARF_ERGEBNIS, "zeitstufe", "Woche"));
+            Assert.Null(abgesagt.Freigabe);
+        }
+        finally
+        {
+            Schreibnaht.Schreibrecht = vorher;
+        }
+    }
+
     private static BedarfErgebnisDaten WaermeMitGrafik(
         List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)> ruf)
     {

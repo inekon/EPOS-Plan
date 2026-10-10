@@ -34,6 +34,9 @@
 @using System.Globalization
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@using KiKern
+@using EPOS.UI.Dienste
+@implements IDisposable
 
 <div class="epos-dialog epos-importoptionen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -245,6 +248,85 @@
         ListenFuellen(Erkennung);
         OptionenInDialog(Erkennung?.Vorschlag ?? new GanglinienImportOptionen());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Importdialoge, Teil A)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GanglinieImportOptionenKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new GanglinieImportOptionenKiSicht(KiPlatz, () => _kopfzeile, KiSetzen, KiWahl, () => IstExcel);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GANGLINIE_IMPORT_OPTIONEN, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf. <b>Keine Prüfung und kein
+    /// Speicherweg:</b> Der Dialog prüft am OK nichts, und OK gibt die Optionen an den Wirt
+    /// zurück — das bestätigt der Anwender. „Vorschau aktualisieren" ist ein Knopf.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Sperrgrund = f => _kiSicht?.Sperrgrund(f)
+    };
+
+    private int KiPlatz(string feld) => feld switch
+    {
+        nameof(GanglinieImportOptionenKiSicht.Trennzeichen) => _iTrennzeichen,
+        nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner) => _iDezimal,
+        nameof(GanglinieImportOptionenKiSicht.Wertspalte) => _iWertspalte,
+        nameof(GanglinieImportOptionenKiSicht.Zeitspalte) => _iZeitspalte,
+        nameof(GanglinieImportOptionenKiSicht.Einheit) => _iEinheit,
+        nameof(GanglinieImportOptionenKiSicht.Raster) => _iRaster,
+        nameof(GanglinieImportOptionenKiSicht.Konvention) => _iKonvention,
+        nameof(GanglinieImportOptionenKiSicht.Blatt) => _iBlatt,
+        _ => throw new InvalidOperationException(feld)
+    };
+
+    private IReadOnlyList<KiWahleintrag> KiWahl(string feld)
+    {
+        IReadOnlyList<(int Id, string Text)> liste = feld switch
+        {
+            nameof(GanglinieImportOptionenKiSicht.Trennzeichen) => _trennzeichen,
+            nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner) => _dezimal,
+            nameof(GanglinieImportOptionenKiSicht.Wertspalte) => _wertspalten,
+            nameof(GanglinieImportOptionenKiSicht.Zeitspalte) => _zeitspalten,
+            nameof(GanglinieImportOptionenKiSicht.Einheit) => _einheit,
+            nameof(GanglinieImportOptionenKiSicht.Raster) => _raster,
+            nameof(GanglinieImportOptionenKiSicht.Konvention) => _konvention,
+            _ => _blaetter
+        };
+        return KiMaskenanmeldung.Eintraege(liste, z => z.Id, z => z.Text);
+    }
+
+    /// <summary>
+    /// Der Handweg je Feld — wie die Klappliste: der Platz wechselt, die Vorschau bleibt bis
+    /// „Vorschau aktualisieren" stehen. Danach zeichnet sich die Maske neu.
+    /// </summary>
+    private void KiSetzen(string feld, object? wert)
+    {
+        int platz = wert as int? ?? 0;
+        switch (feld)
+        {
+            case nameof(GanglinieImportOptionenKiSicht.Kopfzeile): _kopfzeile = wert is true; break;
+            case nameof(GanglinieImportOptionenKiSicht.Trennzeichen): _iTrennzeichen = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Dezimaltrenner): _iDezimal = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Wertspalte): _iWertspalte = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Zeitspalte): _iZeitspalte = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Einheit): _iEinheit = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Raster): _iRaster = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Konvention): _iKonvention = platz; break;
+            case nameof(GanglinieImportOptionenKiSicht.Blatt): _iBlatt = platz; break;
+            default: throw new InvalidOperationException(feld);
+        }
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

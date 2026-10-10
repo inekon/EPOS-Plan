@@ -67,7 +67,7 @@ public sealed class KiChatAnmutungTests
     {
         string regel = LetzteRegel(".epos-kichat");
 
-        Assert.Contains("height: 100vh", regel, StringComparison.Ordinal);
+        Assert.Contains("height: calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten))", regel, StringComparison.Ordinal);
         Assert.DoesNotContain("height: 100%", regel, StringComparison.Ordinal);
     }
 

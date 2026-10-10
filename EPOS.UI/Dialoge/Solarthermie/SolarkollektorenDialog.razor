@@ -677,6 +677,8 @@
         Eingabenquelle = () => _projektZeile is null ? null : _eingaben,
         // Meldung 10.10.2026: ohne gewählte Zeile wählt der Assistent die EINZIGE wie das
         // Öffnen; bei mehreren rät er nicht, und die Sicht lehnt benannt ab.
+        // Die Zeilenzahl sagt dem Sperrgrund, ob die Einzelwahl greift (genau eine Zeile).
+        Zeilenzahl = () => Zeilen.Count,
         Einzelwahl = () =>
         {
             if (_projektZeile is null && Zeilen.Count == 1) ProjektZeileWaehlen(Zeilen[0]);
@@ -699,6 +701,9 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        // Sperrgrund je Feld vor der Bestätigung: Energieträger nur von Hand, ohne gewählte
+        // Zeile (und ohne Einzelwahl) keine Zeilenfelder.
+        Sperrgrund = f => KiSicht().Sperrgrund(f),
         Speichern = () => Task.FromResult(KiSpeichern())
     };
 

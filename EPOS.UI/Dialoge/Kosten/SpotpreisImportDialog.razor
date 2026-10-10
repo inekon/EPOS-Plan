@@ -20,6 +20,10 @@
    TASTATUR: Esc schliesst. Enter ist NICHT belegt (A-7 aus B5b). *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using KiKern
+@using EPOS.UI.Dienste
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -189,6 +193,41 @@
 
     /// <summary>Darf geschrieben werden? Wie <c>_btnUebernehmen.Enabled</c>.</summary>
     private bool UebernehmenErlaubt => _geprueftOk && !_laeuft;
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Freigabe der Importdialoge, Teil A)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private SpotpreisImportKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new SpotpreisImportKiSicht
+        {
+            BezeichnungLesen = () => _bezeichner,
+            BezeichnungSetzen = w => { _bezeichner = w; _ = InvokeAsync(StateHasChanged); },
+            StammLesen = () => _stamm,
+            StammSetzen = w => { _stamm = w; _ = InvokeAsync(StateHasChanged); }
+        };
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SPOTPREIS_IMPORT, () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: <c>Pruefen</c> meldet den Stand der
+    /// Dateiprüfung. <b>Kein Speicherweg:</b> „Übernehmen" schreibt die Preisreihe sofort in die
+    /// Datenbank und bleibt ein Klick des Anwenders.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => _statusFehler ? _status
+                      : _geprueftOk ? ""
+                      : WindowsFormsApplication1.MyResource.Resource.KI_SPOT_KEINE_DATEI
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
