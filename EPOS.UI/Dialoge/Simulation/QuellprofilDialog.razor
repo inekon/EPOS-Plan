@@ -180,13 +180,17 @@
                 <KindInhalt>
                     @* Der Jahresverlauf des Profils im SVG-Baustein (Etappe DG-E3,
                        Gruppe (a)): Zoom auf der Zeitachse, Wert am Mauszeiger. *@
-                    <DiagrammSvg Modell="@_modell" Kennung="quellprofil"
-                                 Bezeichnung="@BildAlt" PlatzhalterText="@PlatzhalterText"
-                                 Einheit="°C"
-                                 Palette="@Farbpalette.Aktuell"
-                                 FarbwahlErlaubt="@Farbwahl"
-                                 FarbeGewaehlt="FarbeUebernehmen"
-                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
+                    @* "CSV..." am Bild schreibt den gezeigten Jahresverlauf (Ausgabe);
+                       "CSV einlesen..." bleibt der Einleseweg. *@
+                    <CascadingValue Value="@Exportnaht">
+                        <DiagrammSvg Modell="@_modell" Kennung="quellprofil"
+                                     Bezeichnung="@BildAlt" PlatzhalterText="@PlatzhalterText"
+                                     Einheit="°C"
+                                     Palette="@Farbpalette.Aktuell"
+                                     FarbwahlErlaubt="@Farbwahl"
+                                     FarbeGewaehlt="FarbeUebernehmen"
+                                     FarbeZurueckgesetzt="FarbeVerwerfen" />
+                    </CascadingValue>
                 </KindInhalt>
             </Reiterblatt>
 
@@ -245,6 +249,17 @@
     /// oder abgebrochen. Ohne Delegat fehlt der Knopf — Hausregel.
     /// </summary>
     [Parameter] public Func<int, Task<double[]?>>? CsvLesen { get; set; }
+
+    /// <summary>
+    /// „CSV…“ am Jahresbild: die Naht der Hülle (Modell, Bildtitel, Raster); ohne Delegat kein
+    /// Knopf.
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell, string, Zeitraster, Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _exportnaht;
+
+    private Ganglinienexport? Exportnaht => CsvSpeichern is null ? null
+        : _exportnaht ??= new Ganglinienexport(CsvSpeichern);
 
     /// <summary>Rechnet das Zeichenmodell des Jahresbildes aus Betriebsart und Werten.</summary>
     [Parameter] public Func<string, double[], Task<Zeichenmodell?>>? Jahresbild { get; set; }

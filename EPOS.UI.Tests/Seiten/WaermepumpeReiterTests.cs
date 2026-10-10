@@ -717,4 +717,46 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Equal(0, naht);
         Assert.Empty(seite.FindAll("button.epos-simerg-knopf[title]"));
     }
+
+    /// <summary>
+    /// CSV am Diagramm (CSV-2): Die Speichertemperaturen haben keinen benannten Export; ihr
+    /// „CSV…“ kommt aus der Naht der Seite und schreibt die Reihen des Bildes.
+    /// </summary>
+    [Fact]
+    public void Die_Speichertemperaturen_tragen_CSV_ueber_die_Naht()
+    {
+        var exporte = new List<Zeichenmodell>();
+        var seite = Render<WaermepumpeReiter>(p => p
+            .Add(x => x.Daten, Erg())
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Speichertemperaturen, true)
+            .Add(x => x.Csv, EventCallback.Factory.Create(this, () => { }))
+            .AddCascadingValue(new Ganglinienexport((m, t) => { exporte.Add(m); return Task.CompletedTask; })));
+
+        seite.FindAll("button[role='tab']")[2].Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        Zeichenmodell modell = Assert.Single(exporte);
+        var spalten = ZeitreihenCsv.AusModell(modell);
+        Assert.Equal(2, spalten.Count);
+        Assert.Equal(168, spalten[0].Werte.Length);
+        Assert.Equal(Zeitraster.Wochenstunde, ZeitreihenCsv.RasterAus(spalten));
+    }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Modul- und Speichertabelle: Zahlenköpfe rechts wie ihre Werte,
+    /// Modul, Speicher und Rolle links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Modul_und_Speichertabelle_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var raster = Zeichnen(Erg()).FindAll("table.epos-raster");
+
+        Assert.Equal(new[] { 6, 6 }, Tabellenausrichtung.PruefeAlle(raster));
+        Tabellenausrichtung.TextkopfLinks(raster[0], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 1);
+    }
 }

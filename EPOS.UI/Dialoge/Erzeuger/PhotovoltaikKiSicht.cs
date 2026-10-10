@@ -33,9 +33,9 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// <b>Seit Welle #458 (Stufe 2) dazu der Aufklapper „Alle Daten"</b> — der gewählte
 /// KATALOGsatz des Moduls als FELDTAFEL (<see cref="AlleDaten"/>, Feldkarte aus dem
 /// <c>ModulKatalogProfil</c>). Die Sicht steht deshalb auch, solange nur eine Katalogzeile
-/// gewählt ist; die Felder der Anlage und die zwei Auslegungstemperaturen sind dann leer
-/// und nehmen nichts an — wie auf der Maske, die den Strangabschnitt nur zu einer
-/// Projektzeile zeigt.
+/// gewählt ist; die Felder der Anlage und die zwei Auslegungstemperaturen sind dann leer,
+/// und ein Setzen lehnt benannt ab — die Maske zeigt den Strangabschnitt nur zu einer
+/// Projektzeile.
 /// </remarks>
 public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 {
@@ -45,6 +45,19 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 
     /// <summary>Die GEWÄHLTE Projektzeile; <c>null</c> = keine gewählt.</summary>
     public Func<ErzeugerZeile?>? Zeilenquelle { get; init; }
+
+    /// <summary>
+    /// Wählt die EINZIGE Projektzeile, wenn keine gewählt ist, und liefert sie;
+    /// <c>null</c> = keine oder mehrere Zeilen (dann wird nicht geraten).
+    /// </summary>
+    public Func<ErzeugerZeile?>? Einzelwahl { get; init; }
+
+    /// <summary>
+    /// Der Übernahmeweg der Hand nach dem Setzen eines Felds der Anlage — dasselbe
+    /// <c>Uebernehmen</c>, das die Eingabefelder rufen (Arbeitskopie, nicht Datenbank).
+    /// Der Energieträger und die zwei Auslegungstemperaturen gehen eigene Wege.
+    /// </summary>
+    public Action<ErzeugerZeile>? Uebernommen { get; init; }
 
     /// <summary>Die lebende Auslegungstemperatur des kalten Falls [°C].</summary>
     public Func<double?>? KaltLesen { get; init; }
@@ -76,6 +89,20 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 
     private ErzeugerZeile? Zeile => Zeilenquelle?.Invoke();
 
+    /// <summary>
+    /// Schreibt in die gewählte Zeile — oder in die einzige, die <see cref="Einzelwahl"/>
+    /// wählt — und geht danach den Übernahmeweg; ohne Zeile eine BENANNTE Absage
+    /// (Meldung 10.10.2026: vorher verwarf der Setzer den Wert still).
+    /// </summary>
+    private void Schreibe(Action<ErzeugerZeile> schreiben, bool uebernehmen)
+    {
+        ErzeugerZeile z = Zeile ?? Einzelwahl?.Invoke()
+            ?? throw new InvalidOperationException(
+                   WindowsFormsApplication1.MyResource.Resource.KI_ERZ_KEINE_PROJEKTZEILE);
+        schreiben(z);
+        if (uebernehmen) Uebernommen?.Invoke(z);
+    }
+
     // =====================================================================
     //  Die Anlage
     // =====================================================================
@@ -84,28 +111,28 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public int? Neigung
     {
         get => Zeile?.Neigung;
-        set { if (Zeile is ErzeugerZeile z) z.Neigung = value; }
+        set => Schreibe(z => z.Neigung = value, uebernehmen: true);
     }
 
     /// <summary>Azimut [°].</summary>
     public int? Azimut
     {
         get => Zeile?.Azimut;
-        set { if (Zeile is ErzeugerZeile z) z.Azimut = value; }
+        set => Schreibe(z => z.Azimut = value, uebernehmen: true);
     }
 
     /// <summary>Die zugeordnete Energieträgervariante; 0 = keine.</summary>
     public int CarrierId
     {
         get => Zeile?.CarrierId ?? 0;
-        set { if (Zeile is ErzeugerZeile z) z.CarrierId = value; }
+        set => Schreibe(z => z.CarrierId = value, uebernehmen: false);
     }
 
     /// <summary>Anzahl Module der Anlage.</summary>
     public double? AnzahlModule
     {
         get => Zeile?.AnzahlModule;
-        set { if (Zeile is ErzeugerZeile z) z.AnzahlModule = value; }
+        set => Schreibe(z => z.AnzahlModule = value, uebernehmen: true);
     }
 
     // =====================================================================
@@ -119,7 +146,7 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public bool ModellErweitert
     {
         get => Zeile?.ModellErweitert ?? false;
-        set { if (Zeile is ErzeugerZeile z) z.ModellErweitert = value; }
+        set => Schreibe(z => z.ModellErweitert = value, uebernehmen: true);
     }
 
     /// <summary>Die zwei Einträge des Auswahlfelds „Rechenmodell" (KI‑D‑Q6).</summary>
@@ -130,21 +157,21 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public double? WrWirkungsgrad
     {
         get => Zeile?.WrWirkungsgrad;
-        set { if (Zeile is ErzeugerZeile z) z.WrWirkungsgrad = value; }
+        set => Schreibe(z => z.WrWirkungsgrad = value, uebernehmen: true);
     }
 
     /// <summary>Pauschale Systemverluste [%]; <c>null</c> = 0.</summary>
     public double? Systemverluste
     {
         get => Zeile?.Systemverluste;
-        set { if (Zeile is ErzeugerZeile z) z.Systemverluste = value; }
+        set => Schreibe(z => z.Systemverluste = value, uebernehmen: true);
     }
 
     /// <summary>Bodenalbedo vor der Anlage (0…1); <c>null</c> = 0,2.</summary>
     public double? Albedo
     {
         get => Zeile?.Albedo;
-        set { if (Zeile is ErzeugerZeile z) z.Albedo = value; }
+        set => Schreibe(z => z.Albedo = value, uebernehmen: true);
     }
 
     // =====================================================================
@@ -155,7 +182,7 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public bool MitWechselrichter
     {
         get => Zeile?.MitWechselrichter ?? false;
-        set { if (Zeile is ErzeugerZeile z) z.MitWechselrichter = value; }
+        set => Schreibe(z => z.MitWechselrichter = value, uebernehmen: true);
     }
 
     /// <summary>
@@ -178,7 +205,7 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public double? AuslegungKalt
     {
         get => Zeile is null ? null : KaltLesen?.Invoke();
-        set { if (Zeile is not null) KaltSetzen?.Invoke(value); }
+        set => Schreibe(_ => KaltSetzen?.Invoke(value), uebernehmen: false);
     }
 
     /// <summary>
@@ -188,6 +215,6 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public double? AuslegungHeiss
     {
         get => Zeile is null ? null : HeissLesen?.Invoke();
-        set { if (Zeile is not null) HeissSetzen?.Invoke(value); }
+        set => Schreibe(_ => HeissSetzen?.Invoke(value), uebernehmen: false);
     }
 }

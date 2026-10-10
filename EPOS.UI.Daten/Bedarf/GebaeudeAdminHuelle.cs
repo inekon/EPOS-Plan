@@ -37,6 +37,7 @@ namespace WindowsFormsApplication1
         {
             var werte = new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
                 // Festlegung 15 (KP2): samt Spalte „Kalender" - die angelegten Kalender je Katalogbau,
                 // dasselbe Profil wie die Katalogauswahl des Projekts.
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(

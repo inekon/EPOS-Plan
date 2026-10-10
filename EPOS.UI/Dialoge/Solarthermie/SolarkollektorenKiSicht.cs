@@ -14,7 +14,7 @@ namespace EPOS.UI.Dialoge.Solarthermie;
 /// (<see cref="AlleDatenTafel"/>). Die Brücke kennt je Maske EIN Daten-Objekt.</para>
 ///
 /// <para><b>Ohne gewählte Projektzeile</b> gibt es die Kollektorgruppe nicht; die drei
-/// Felder sind dann leer und nehmen nichts an.</para>
+/// Felder sind dann leer, und ein Setzen lehnt benannt ab.</para>
 /// </summary>
 public sealed class SolarkollektorenKiSicht : IKiFeldtafel
 {
@@ -26,29 +26,48 @@ public sealed class SolarkollektorenKiSicht : IKiFeldtafel
 
     private SolarkollektorenEingaben? Stand => Eingabenquelle?.Invoke();
 
+    /// <summary>
+    /// Wählt die EINZIGE Projektzeile, wenn keine gewählt ist, und liefert ihren
+    /// Arbeitsstand; <c>null</c> = keine oder mehrere Zeilen (dann wird nicht geraten).
+    /// </summary>
+    public Func<SolarkollektorenEingaben?>? Einzelwahl { get; init; }
+
+    /// <summary>
+    /// Schreibt in den Arbeitsstand der gewählten Zeile — wie die Eingabefelder, die
+    /// erst „Übernehmen" in die Zeile trägt; ohne gewählte Zeile eine BENANNTE Absage
+    /// statt eines still verworfenen Werts (Meldung 10.10.2026).
+    /// </summary>
+    private void Schreibe(Action<SolarkollektorenEingaben> schreiben)
+    {
+        SolarkollektorenEingaben s = Stand ?? Einzelwahl?.Invoke()
+            ?? throw new InvalidOperationException(
+                   WindowsFormsApplication1.MyResource.Resource.KI_ERZ_KEINE_PROJEKTZEILE);
+        schreiben(s);
+    }
+
     public int? Anzahl
     {
         get => Stand?.Anzahl;
-        set { if (Stand is SolarkollektorenEingaben s) s.Anzahl = value; }
+        set => Schreibe(s => s.Anzahl = value);
     }
 
     public int? Neigung
     {
         get => Stand?.Neigung;
-        set { if (Stand is SolarkollektorenEingaben s) s.Neigung = value; }
+        set => Schreibe(s => s.Neigung = value);
     }
 
     public int? Azimut
     {
         get => Stand?.Azimut;
-        set { if (Stand is SolarkollektorenEingaben s) s.Azimut = value; }
+        set => Schreibe(s => s.Azimut = value);
     }
 
     /// <summary>Bodenalbedo vor dem Kollektorfeld (0…1); <c>null</c> = 0,2.</summary>
     public double? Albedo
     {
         get => Stand?.Albedo;
-        set { if (Stand is SolarkollektorenEingaben s) s.Albedo = value; }
+        set => Schreibe(s => s.Albedo = value);
     }
 
     // --- Solarkreis (Welle M2) ---------------------------------------------------------
@@ -56,31 +75,31 @@ public sealed class SolarkollektorenKiSicht : IKiFeldtafel
     public double? PumpenleistungW
     {
         get => Stand?.PumpenleistungW;
-        set { if (Stand is SolarkollektorenEingaben s) s.PumpenleistungW = value; }
+        set => Schreibe(s => s.PumpenleistungW = value);
     }
 
     public double? VerlusteProzent
     {
         get => Stand?.VerlusteProzent;
-        set { if (Stand is SolarkollektorenEingaben s) s.VerlusteProzent = value; }
+        set => Schreibe(s => s.VerlusteProzent = value);
     }
 
     public double? GraedigkeitK
     {
         get => Stand?.GraedigkeitK;
-        set { if (Stand is SolarkollektorenEingaben s) s.GraedigkeitK = value; }
+        set => Schreibe(s => s.GraedigkeitK = value);
     }
 
     public double? SpreizungK
     {
         get => Stand?.SpreizungK;
-        set { if (Stand is SolarkollektorenEingaben s) s.SpreizungK = value; }
+        set => Schreibe(s => s.SpreizungK = value);
     }
 
     public bool ArbeitstemperaturAusSpeicher
     {
         get => Stand?.ArbeitstemperaturAusSpeicher ?? false;
-        set { if (Stand is SolarkollektorenEingaben s) s.ArbeitstemperaturAusSpeicher = value; }
+        set => Schreibe(s => s.ArbeitstemperaturAusSpeicher = value);
     }
 
 

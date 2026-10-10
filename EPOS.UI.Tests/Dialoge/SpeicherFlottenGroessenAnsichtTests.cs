@@ -67,6 +67,29 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         Assert.Empty(cut.FindAll("img"));
     }
 
+    /// <summary>
+    /// CSV am Bild (CSV-2): Der Variantenvergleich steht als „CSV…“ an der Rasterkarte und ruft
+    /// den Wirt; der Knopf unter der Tabelle entfällt. Ohne Delegat kein Knopf.
+    /// </summary>
+    [Fact]
+    public void Der_Variantenvergleich_steht_als_CSV_an_der_Rasterkarte()
+    {
+        Assert.Empty(Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()))
+            .FindAll("button.epos-diagramm-csv"));
+
+        int gerufen = 0;
+        var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
+            .Add(x => x.Ergebnis, Ergebnis())
+            .Add(x => x.Csv, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => gerufen++)));
+
+        var knoepfe = cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.Single(knoepfe);
+        knoepfe[0].Click();
+        Assert.Equal(1, gerufen);
+        Assert.DoesNotContain(cut.FindAll("button.epos-simerg-knopf"),
+                              b => b.TextContent.Trim() == Resource.FLOTTE_BTN_CSV_VERGLEICH);
+    }
+
     /// <summary>Die Aussage des Laufs und der SP‑O‑4-Hinweis stehen über den Bildern.</summary>
     [Fact]
     public void Aussage_und_SPO4_Hinweis_stehen_ueber_den_Bildern()

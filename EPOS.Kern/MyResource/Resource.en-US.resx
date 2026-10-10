@@ -1986,6 +1986,15 @@ Without a source buffer this reads 0.00.</value>
   <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
     <value>Hours of the year [h]</value>
   </data>
+  <data name="CHART_ACHSE_DATUM_MUSTER" xml:space="preserve">
+    <value>{1} {0}</value>
+  </data>
+  <data name="CHART_ACHSE_JAHRESSTUNDEN_DATUM" xml:space="preserve">
+    <value>Hours of the year [h] · date</value>
+  </data>
+  <data name="CHART_ACHSE_MONATSKUERZEL" xml:space="preserve">
+    <value>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec</value>
+  </data>
   <data name="CHART_ACHSE_LEISTUNG" xml:space="preserve">
     <value>Power [kW]</value>
   </data>
@@ -5049,9 +5058,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="PEAK_CHK_SOC" xml:space="preserve">
     <value>Show state of charge in the chart</value>
-  </data>
-  <data name="PEAK_BTN_CSV" xml:space="preserve">
-    <value>CSV export</value>
   </data>
   <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
     <value>Key figures</value>
@@ -18630,14 +18636,8 @@ Please go through the project page again so that the data of the selected projec
   <data name="FLOTTE_NAV_VOR_TITEL" xml:space="preserve">
     <value>One step forward</value>
   </data>
-  <data name="FLOTTE_BTN_CSV_JAHRESKONTEN" xml:space="preserve">
-    <value>Annual accounts as CSV</value>
-  </data>
   <data name="FLOTTE_BTN_CSV_VERGLEICH" xml:space="preserve">
     <value>Variant comparison as CSV</value>
-  </data>
-  <data name="FLOTTE_BTN_CSV_ZEITREIHEN" xml:space="preserve">
-    <value>All time series and storage units as CSV</value>
   </data>
   <data name="FLOTTE_ZIEL_PVGREEDY" xml:space="preserve">
     <value>PV self-consumption (reactive)</value>
@@ -20555,6 +20555,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_FELD_SETZEN_FEHLER" xml:space="preserve">
     <value>The field „{0}“ could not be set: {1}</value>
+  </data>
+  <data name="KI_ERZ_KEINE_PROJEKTZEILE" xml:space="preserve">
+    <value>No plant is selected in the project list – please first select the plant whose value is to change; a catalogue row carries no plant values.</value>
+  </data>
+  <data name="KI_FELD_KEIN_SATZ" xml:space="preserve">
+    <value>The form currently shows no record the value belongs to – please select an entry first.</value>
   </data>
   <data name="KI_FELD_DIALOGBEFUND" xml:space="preserve">
     <value>The form reports on this: {0}</value>
@@ -23992,10 +23998,10 @@ Do you want to allow this?</value>
     <value>View of the chart</value>
   </data>
   <data name="KI_DLG_BERG_GRAFIK_ERL" xml:space="preserve">
-    <value>Which view the chart shows; a change away from domestic hot water takes the annual profile along.</value>
+    <value>Which demand type the chart shows alone; the dialog allows several at once, reading returns the first selected.</value>
   </data>
   <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
-    <value>Does the chart show the annual profile? The switch exists only for the domestic hot water view and only when an annual profile is available.</value>
+    <value>Does the chart show the annual load curve (time grid “Year”)? Off means time grid “Month” with the monthly totals.</value>
   </data>
   <data name="KI_DLG_MASKE_WBX" xml:space="preserve">
     <value>External heat demand profiles</value>
@@ -50867,6 +50873,96 @@ chart</value>
   </data>
   <data name="SIMQ_ERDREICH_LAUF_ZEITPUNKT" xml:space="preserve">
     <value>{0:MMM d}, {0:HH:mm}</value>
+  </data>
+  <data name="KONF_KS_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="KONF_KS_SPALTE_QUELLE" xml:space="preserve">
+    <value>Heat rejection / source</value>
+  </data>
+  <data name="KONF_KS_SPALTE_ERZEUGER" xml:space="preserve">
+    <value>Cooling generators</value>
+  </data>
+  <data name="KONF_KS_SPALTE_SPEICHER" xml:space="preserve">
+    <value>Cold storage</value>
+  </data>
+  <data name="KONF_KS_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="KONF_KS_WP_KUEHLBETRIEB" xml:space="preserve">
+    <value>Heat pump in cooling mode</value>
+  </data>
+  <data name="KONF_KS_ANZAHL_LEISTUNG" xml:space="preserve">
+    <value>{0} × {1:0.#} kW</value>
+  </data>
+  <data name="KONF_KS_KALTWASSERVORLAUF" xml:space="preserve">
+    <value>Chilled water flow {0:0.#} °C</value>
+  </data>
+  <data name="KONF_KS_KUEHLVORLAUF" xml:space="preserve">
+    <value>Cooling flow {0:0.#} °C</value>
+  </data>
+  <data name="KONF_KS_RUECKKUEHLUNG" xml:space="preserve">
+    <value>Heat rejection: {0}</value>
+  </data>
+  <data name="KONF_KS_ABWAERME" xml:space="preserve">
+    <value>Takes up the waste heat in cooling mode: {0}</value>
+  </data>
+  <data name="KONF_KS_KUEHLUEBERGABE" xml:space="preserve">
+    <value>Cooling emission: {0}</value>
+  </data>
+  <data name="KONF_KS_ZONEN" xml:space="preserve">
+    <value>{0} zones with cooling emission</value>
+  </data>
+  <data name="KONF_KS_PROJEKT_AUS" xml:space="preserve">
+    <value>Project does not calculate cooling</value>
+  </data>
+  <data name="KONF_KS_PLATZ" xml:space="preserve">
+    <value>Position {0} of {1} in the cooling cascade</value>
+  </data>
+  <data name="KONF_KS_KETTE" xml:space="preserve">
+    <value>Cooling cascade: {0}</value>
+  </data>
+  <data name="KONF_KS_KEINE_KETTE" xml:space="preserve">
+    <value>No cooling cascade in the project — no cooling generator.</value>
+  </data>
+  <data name="KONF_KS_LEGENDE" xml:space="preserve">
+    <value>Cooling lane: cooling generators charge the cold storage, circle = position in the cooling cascade</value>
+  </data>
+  <data name="BED_GRAFIK_RASTER_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_REIHEN" xml:space="preserve">
+    <value>Demand type</value>
+  </data>
+  <data name="BED_GRAFIK_GRP_RASTER" xml:space="preserve">
+    <value>Time grid</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_JAHR" xml:space="preserve">
+    <value>{0} annual load curve</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_MONAT" xml:space="preserve">
+    <value>{0} monthly totals</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_WOCHE" xml:space="preserve">
+    <value>{0} weekly totals</value>
+  </data>
+  <data name="BED_GRAFIK_TITEL_TAG" xml:space="preserve">
+    <value>{0} daily totals</value>
+  </data>
+  <data name="BED_GRAFIK_WAERMEBEDARF" xml:space="preserve">
+    <value>Heat demand</value>
+  </data>
+  <data name="BED_GRAFIK_WOCHE_NR" xml:space="preserve">
+    <value>Week {0}</value>
+  </data>
+  <data name="BED_GRAFIK_TAG_NR" xml:space="preserve">
+    <value>Day {0}</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
+    <value>Quarter hour</value>
   </data>
 </root>
 

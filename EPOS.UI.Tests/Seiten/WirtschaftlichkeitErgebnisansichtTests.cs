@@ -1425,4 +1425,29 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
         Assert.Equal(5, Abschnittskoepfe(cut).Length);
         Assert.Single(Abschnitt(cut, 1).QuerySelectorAll(".epos-herleitung-text"));
     }
+
+    /// <summary>
+    /// CSV-3: Das Zahlungsstrombild trägt „CSV…“ im Raster Jahr — je belegter Spalte eine Reihe
+    /// über die Jahre der Tafel; der Klick gibt das Modell an die Naht der Seite.
+    /// </summary>
+    [Fact]
+    public void Das_Zahlungsstrombild_schreibt_CSV_im_Raster_Jahr()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Darstellung = WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+        stand.Ansicht.Leitversion = WP;
+        stand.Ansicht.Zahlungsstaende = new[] { (WP, "WP klein") };
+        ZahlungsreihenTafel wp = Zahlungstafel(WP, 0, "W0");
+        wp.Bild = Zahlungsstrombild(-500.0);
+        stand.Ansicht.Zahlungsreihen = new[] { wp };
+        var exporte = new List<(WindowsFormsApplication1.Zeichnung.Zeichenmodell M, WindowsFormsApplication1.Zeitraster R)>();
+        var cut = Zeige(stand, p => p.Add(x => x.CsvSpeichern,
+            (m, t, r) => { exporte.Add((m, r)); return Task.CompletedTask; }));
+
+        Abschnitt(cut, 1).QuerySelector(".epos-wirt-zahlungsstrom-teil button.epos-diagramm-csv")!.Click();
+
+        var (modell, raster) = Assert.Single(exporte);
+        Assert.Equal(WindowsFormsApplication1.Zeitraster.Jahr, raster);
+        Assert.All(WindowsFormsApplication1.ZeitreihenCsv.AusModell(modell), s => Assert.Equal(2, s.Werte.Length));
+    }
 }

@@ -1841,6 +1841,10 @@ namespace WindowsFormsApplication1
 
             foreach (SchemaModell.Knoten k in modell.Knotenliste)
             {
+                // Auftrag KS: Die Kaeltebahn behaelt ihre eigenen Hinweise — die Kachelkurzinfo
+                // beschreibt die Waermeseite derselben Anlage.
+                if (k.Bahn != SchemaModell.Bahn.Waerme) continue;
+
                 string text;
                 if (k.Art == SchemaModell.Knotenart.Erzeuger && chips.TryGetValue(k.ID, out text))
                     k.Hinweis = text;
@@ -1866,7 +1870,10 @@ namespace WindowsFormsApplication1
                     k.Knoten.Rang, k.Knoten.Titel, k.TitelAnzeige,
                     k.Knoten.Zeilen, k.Knoten.Badges,
                     k.Knoten.Hinweis, k.Knoten.Warnung, k.Knoten.Warntext, k.Knoten.Kaskade,
-                    k.Knoten.ID_Type == ProjektPuffer.TYP_WP));
+                    k.Knoten.ID_Type == ProjektPuffer.TYP_WP)
+                {
+                    Kaelte = k.Knoten.Bahn == SchemaModell.Bahn.Kaelte
+                });
 
             List<SchemaKante> kanten = new List<SchemaKante>();
             foreach (SchemaLayout.Kantenzug z in l.Kanten)
@@ -1898,6 +1905,22 @@ namespace WindowsFormsApplication1
                                          SchemaKantenart.Kaskade, true)
             };
 
+            // Auftrag KS: Mit Kaeltebahn erklaert ein sechster Eintrag die Marke „Kaelte" —
+            // die Kanten der Kaeltebahn tragen dieselben Farben wie die der Waerme.
+            bool kaelte = l.KaelteOben >= 0;
+            if (kaelte)
+                legende.Add(new SchemaLegendeeintrag(MyResource.Resource.KONF_KS_LEGENDE,
+                                                     SchemaKantenart.Versorgung, false)
+                {
+                    Marke = true,
+                    MarkeText = MyResource.Resource.KONF_KS_KAELTE
+                });
+
+            List<string> kette = l.Modell != null ? l.Modell.KaelteKette : new List<string>();
+            string ketteText = kette.Count > 0
+                ? string.Format(MyResource.Resource.KONF_KS_KETTE, string.Join(" → ", kette))
+                : MyResource.Resource.KONF_KS_KEINE_KETTE;
+
             return new SchemaBild(
                 knoten, kanten, band, legende,
                 new List<string>
@@ -1912,7 +1935,22 @@ namespace WindowsFormsApplication1
                 l.InhaltBreite, l.Gesamthoehe, SchemaLayout.RAND, SchemaLayout.KOPF_HOEHE,
                 l.BandOben, l.LegendeOben,
                 SchemaLayout.LINIE_BREITE, SchemaLayout.LINIE_BREITE_HERVOR,
-                l.Modell != null && l.Modell.HatKaskade, false);
+                l.Modell != null && l.Modell.HatKaskade, false)
+            {
+                KaelteOben = l.KaelteOben,
+                KaelteTitel = kaelte ? MyResource.Resource.KONF_KS_KAELTE : "",
+                KaelteSpaltenkoepfe = kaelte
+                    ? new List<string>
+                    {
+                        MyResource.Resource.KONF_KS_SPALTE_QUELLE,
+                        MyResource.Resource.KONF_KS_SPALTE_ERZEUGER,
+                        MyResource.Resource.KONF_KS_SPALTE_SPEICHER,
+                        MyResource.Resource.SIM_SCHEMA_SPALTE_ABNEHMER
+                    }
+                    : new List<string>(),
+                KaelteKetteOben = l.KaelteKetteOben,
+                KaelteKetteText = kaelte ? ketteText : ""
+            };
         }
 
         /// <summary>

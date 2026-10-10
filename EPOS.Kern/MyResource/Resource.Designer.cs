@@ -4182,6 +4182,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_STUNDE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Viertelstunde ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_VIERTELSTUNDE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_VIERTELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraster ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_GRP_RASTER {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_GRP_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_GRP_REIHEN {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_GRP_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_RASTER_MONAT {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_RASTER_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag {0} ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TAG_NR {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TAG_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Jahresganglinie ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_JAHR {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Monatssummen ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_MONAT {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Tagessummen ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_TAG {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Wochensummen ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_TITEL_WOCHE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_TITEL_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_WAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_WAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche {0} ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_WOCHE_NR {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_WOCHE_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [kW] ähnelt.
         /// </summary>
         public static string BERG_ACHSE_STROMBEDARF {
@@ -18698,6 +18806,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}. {1} ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_DATUM_MUSTER {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_DATUM_MUSTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie-Bedarf &amp; Deckung ähnelt.
         /// </summary>
         public static string CHART_ACHSE_ENERGIEBEDARF_DECKUNG {
@@ -18712,6 +18829,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_JAHRESSTUNDEN {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_JAHRESSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresstunden [h] · Datum ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_JAHRESSTUNDEN_DATUM {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_JAHRESSTUNDEN_DATUM", resourceCulture);
             }
         }
         
@@ -18748,6 +18874,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_ACHSE_MONATE {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jan.|Feb.|März|Apr.|Mai|Juni|Juli|Aug.|Sep.|Okt.|Nov.|Dez. ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_MONATSKUERZEL {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_MONATSKUERZEL", resourceCulture);
             }
         }
         
@@ -22514,29 +22649,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahreskonten als CSV ähnelt.
-        /// </summary>
-        public static string FLOTTE_BTN_CSV_JAHRESKONTEN {
-            get {
-                return ResourceManager.GetString("FLOTTE_BTN_CSV_JAHRESKONTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variantenvergleich als CSV ähnelt.
         /// </summary>
         public static string FLOTTE_BTN_CSV_VERGLEICH {
             get {
                 return ResourceManager.GetString("FLOTTE_BTN_CSV_VERGLEICH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Zeitreihen und Speicher als CSV ähnelt.
-        /// </summary>
-        public static string FLOTTE_BTN_CSV_ZEITREIHEN {
-            get {
-                return ResourceManager.GetString("FLOTTE_BTN_CSV_ZEITREIHEN", resourceCulture);
             }
         }
         
@@ -54512,7 +54629,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Bedarfsart die Grafik allein zeigt; im Dialog lassen sich mehrere zugleich wählen, gelesen wird die erste gewählte. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_GRAFIK_ERL {
             get {
@@ -54530,7 +54647,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik die Jahresganglinie (Zeitraster „Jahr“)? Aus heißt Zeitraster „Monat“ mit den Monatssummen. ähnelt.
         /// </summary>
         public static string KI_DLG_BERG_JAHRESVERLAUF_ERL {
             get {
@@ -68273,6 +68390,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Projektliste ist keine Anlage gewählt – bitte zuerst die Anlage wählen, deren Wert sich ändern soll; eine Zeile des Katalogs trägt keine Anlagenwerte. ähnelt.
+        /// </summary>
+        public static string KI_ERZ_KEINE_PROJEKTZEILE {
+            get {
+                return ResourceManager.GetString("KI_ERZ_KEINE_PROJEKTZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (Feldname aufgelöst: {0} → {1}) ähnelt.
         /// </summary>
         public static string KI_FELD_AUFGELOEST {
@@ -68350,6 +68476,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_KEINE_ZAHL {
             get {
                 return ResourceManager.GetString("KI_FELD_KEINE_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske zeigt gerade keinen Satz, in den der Wert gehört – bitte zuerst einen Eintrag wählen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_KEIN_SATZ {
+            get {
+                return ResourceManager.GetString("KI_FELD_KEIN_SATZ", resourceCulture);
             }
         }
         
@@ -80553,6 +80688,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nimmt im Kühlbetrieb die Abwärme auf: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_ABWAERME {
+            get {
+                return ResourceManager.GetString("KONF_KS_ABWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} × {1:0.#} kW ähnelt.
+        /// </summary>
+        public static string KONF_KS_ANZAHL_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KONF_KS_ANZAHL_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string KONF_KS_KAELTE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string KONF_KS_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaltwasservorlauf {0:0.#} °C ähnelt.
+        /// </summary>
+        public static string KONF_KS_KALTWASSERVORLAUF {
+            get {
+                return ResourceManager.GetString("KONF_KS_KALTWASSERVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kälte-Kaskade im Projekt — kein Kälteerzeuger. ähnelt.
+        /// </summary>
+        public static string KONF_KS_KEINE_KETTE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KEINE_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte-Kaskade: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_KETTE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_KUEHLUEBERGABE {
+            get {
+                return ResourceManager.GetString("KONF_KS_KUEHLUEBERGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlvorlauf {0:0.#} °C ähnelt.
+        /// </summary>
+        public static string KONF_KS_KUEHLVORLAUF {
+            get {
+                return ResourceManager.GetString("KONF_KS_KUEHLVORLAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebahn: Kälteerzeuger laden den Kältespeicher, Kreis = Platz in der Kälte-Kaskade ähnelt.
+        /// </summary>
+        public static string KONF_KS_LEGENDE {
+            get {
+                return ResourceManager.GetString("KONF_KS_LEGENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Platz {0} von {1} der Kälte-Kaskade ähnelt.
+        /// </summary>
+        public static string KONF_KS_PLATZ {
+            get {
+                return ResourceManager.GetString("KONF_KS_PLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt rechnet keine Kälte ähnelt.
+        /// </summary>
+        public static string KONF_KS_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("KONF_KS_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung: {0} ähnelt.
+        /// </summary>
+        public static string KONF_KS_RUECKKUEHLUNG {
+            get {
+                return ResourceManager.GetString("KONF_KS_RUECKKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger ähnelt.
+        /// </summary>
+        public static string KONF_KS_SPALTE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("KONF_KS_SPALTE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung / Quelle ähnelt.
+        /// </summary>
+        public static string KONF_KS_SPALTE_QUELLE {
+            get {
+                return ResourceManager.GetString("KONF_KS_SPALTE_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string KONF_KS_SPALTE_SPEICHER {
+            get {
+                return ResourceManager.GetString("KONF_KS_SPALTE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe im Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string KONF_KS_WP_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("KONF_KS_WP_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Zonen mit Kühlübergabe ähnelt.
+        /// </summary>
+        public static string KONF_KS_ZONEN {
+            get {
+                return ResourceManager.GetString("KONF_KS_ZONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die bedarfsgebunden ähnelt.
         /// </summary>
         public static string KOSTENART_BEDARFSGEBUNDEN {
@@ -89224,15 +89521,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_BTN_BEENDEN {
             get {
                 return ResourceManager.GetString("PEAK_BTN_BEENDEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
-        /// </summary>
-        public static string PEAK_BTN_CSV {
-            get {
-                return ResourceManager.GetString("PEAK_BTN_CSV", resourceCulture);
             }
         }
         

@@ -44,6 +44,7 @@ namespace WindowsFormsApplication1
                 ["ProfilLesen"] = new Func<int, QuellprofilInhalt>(ProfilLesen),
                 ["Speichern"] = new Func<QuellprofilInhalt, int>(k => Speichern(idProjekt, k)),
                 ["CsvLesen"] = new Func<int, Task<double[]>>(CsvLesen),
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(idProjekt),
                 ["Jahresbild"] = Bildzeichner(daten),
                 ["Werteanzahl"] = new Func<string, int>(DbWerte.QuellprofilWerteanzahl),
 

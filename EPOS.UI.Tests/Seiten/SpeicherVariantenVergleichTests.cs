@@ -192,4 +192,19 @@ public class SpeicherVariantenVergleichTests : EposBunitContext
         Assert.Equal(1, csv);
         Assert.Equal(1, zu);
     }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Variantenvergleich: Zahlenköpfe rechts wie ihre Werte, Bezeichnung,
+    /// Betriebsart, Berechnungsart und Amortisation links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Vergleichstabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabelle = Zeichnen(Daten()).Find("table.epos-simerg-vergleich");
+        Assert.Equal(7, Tabellenausrichtung.Pruefe(tabelle));
+        Tabellenausrichtung.TextkopfLinks(tabelle, 1);
+        Tabellenausrichtung.TextkopfLinks(tabelle, 2);
+    }
 }
