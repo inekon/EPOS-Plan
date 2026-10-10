@@ -58,6 +58,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Bezeichner"] = modell.Bezeichner ?? "",
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(idProjekt),
                 ["Monatswerte"] = (IReadOnlyList<double>)new List<double>(monat),
                 ["Wochenwerte"] = (IReadOnlyList<double>)new List<double>(woche),
                 ["Monatsnamen"] = (IReadOnlyList<string>)Monatsnamen(),

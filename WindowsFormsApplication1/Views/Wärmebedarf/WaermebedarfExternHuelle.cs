@@ -95,6 +95,7 @@ namespace WindowsFormsApplication1
 
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
                 ["Geaendert"] = geaendert,

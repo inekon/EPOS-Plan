@@ -173,6 +173,37 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Equal("°C", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
     }
 
+    /// <summary>
+    /// CSV am Bild (CSV-2): Mit der Naht der Hülle trägt der Jahresverlauf „CSV…“; der Export
+    /// bekommt das gezeigte Modell, den Bildtitel und das Raster aus der Länge. Der Einleseknopf
+    /// „CSV einlesen…“ bleibt. Ohne Naht kein Knopf.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresverlauf_traegt_CSV_ueber_die_Naht()
+    {
+        var ohne = Zeige(Neu(), new Pruefstand(), mitBild: true);
+        ohne.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+        Assert.Empty(ohne.FindAll("button.epos-diagramm-csv"));
+
+        var exporte = new List<(Zeichenmodell M, string T, Zeitraster R)>();
+        var cut = Render<QuellprofilDialog>(p =>
+        {
+            p.Add(x => x.Jahresbild, (_, _) => Task.FromResult<Zeichenmodell?>(MODELL));
+            p.Add(x => x.Daten, Neu());
+            p.Add(x => x.Profile, Array.Empty<QuellprofilZeile>());
+            p.Add(x => x.Betriebsarten, new[] { MONAT, TAG, STUNDE });
+            p.Add(x => x.Werteanzahl, Anzahl);
+            p.Add(x => x.CsvSpeichern, (m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        });
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, _, r) = Assert.Single(exporte);
+        Assert.Same(MODELL, m);
+        Assert.Equal(168, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+        Assert.Equal(Zeitraster.Wochenstunde, r);
+    }
+
     /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>
     [Fact]
     public void Ohne_Bilddelegat_steht_der_Platzhalter()

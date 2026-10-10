@@ -24,7 +24,10 @@ namespace EPOS.Kern.Tests
         [InlineData(35040, Zeitraster.Viertelstunde, "Viertelstunde")]
         [InlineData(365, Zeitraster.Tag, "Tag")]
         [InlineData(12, Zeitraster.Monat, "Monat")]
-        [InlineData(168, Zeitraster.Index, "Nr.")]
+        [InlineData(168, Zeitraster.Wochenstunde, "Wochenstunde")]
+        [InlineData(24, Zeitraster.Tagesstunde, "Stunde")]
+        [InlineData(52, Zeitraster.Woche, "Woche")]
+        [InlineData(7, Zeitraster.Index, "Nr.")]
         public void Das_Raster_folgt_der_Laenge_und_benennt_die_erste_Spalte(int laenge, Zeitraster raster, string kopf)
         {
             Assert.Equal(raster, ZeitreihenCsv.RasterAus(laenge));

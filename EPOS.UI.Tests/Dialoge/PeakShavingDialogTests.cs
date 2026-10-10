@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
@@ -224,8 +225,8 @@ public class PeakShavingDialogTests : EposBunitContext
                         csv: r => Task.FromResult(true));
         Assert.Single(mit.FindAll("button.epos-importknopf"));
         Assert.Equal(2, Fussleiste(mit).QuerySelectorAll("button").Length);   // Datei, Beenden
-        Assert.Equal(new[] { "CSV-Export" },
-                     Werkzeugknoepfe(mit).Select(b => b.TextContent.Trim()).ToArray());
+        // „CSV…“ steht am Lastgangbild, nicht in der Werkzeugleiste: ohne Variante keine Gruppe.
+        Assert.Empty(mit.FindAll(".epos-katalog-werkzeug"));
     }
 
     /// <summary>Die Vorbelegung steht in den Feldern, die Herkunftszeile nennt den Speicher.</summary>
@@ -426,17 +427,31 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.Empty(cut.Instance.Kennzahlen);
     }
 
-    /// <summary>Ohne Ergebnis meldet der CSV-Knopf „Bitte zuerst rechnen."</summary>
+    /// <summary>
+    /// <b>CSV am Lastgangbild</b> (CSV-2): Ohne Ergebnis gibt es kein Bild und keinen Knopf; nach
+    /// dem Lauf steht „CSV…“ in der Leiste des Bildes und ruft den Export der Hülle mit dem
+    /// Ergebnis (fünf Spalten, Datei unverändert). In der Werkzeugleiste steht er nicht mehr.
+    /// </summary>
     [Fact]
-    public void Der_CSV_Knopf_meldet_ohne_Ergebnis()
+    public void CSV_steht_am_Lastgangbild()
     {
-        bool geschrieben = false;
-        var cut = Zeige(csv: r => { geschrieben = true; return Task.FromResult(true); });
+        var geschrieben = new List<PeakShavingErgebnis>();
+        var reihen = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Last", Enumerable.Repeat(1.0, 12).ToArray(), SkiaSharp.SKColors.Gold)
+        };
+        Zeichenmodell bild = ChartRenderer.MonatsStapelModell("Lastgang", "kW", reihen);
+        var cut = Zeige(csv: r => { geschrieben.Add(r); return Task.FromResult(true); },
+                        modell: (r, soc) => bild);
+        Assert.Empty(cut.FindAll("button.epos-diagramm-csv"));
 
-        Werkzeugknopf(cut, "CSV-Export").Click();
+        Rechenknopf(cut).Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Kennzahlen));
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Trim() == Resource.PEAK_TAB_CHART).Click();
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
 
-        Assert.False(geschrieben);
-        Assert.Contains("Bitte zuerst rechnen", cut.Instance.Meldung);
+        cut.WaitForAssertion(() => Assert.Single(geschrieben));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "CSV-Export");
     }
 
     // =====================================================================
@@ -524,10 +539,10 @@ public class PeakShavingDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Handlungen am Ergebnis stehen in der Werkzeugleiste</b> (Konzept
-    /// Administrationsdialoge 7.1 c): „CSV-Export" und „In Variante übernehmen" im Schlitz
-    /// <c>Werkzeug</c> der Suchzeile, NACH dem Suchfeld (Tabulatorfolge Suche → CSV-Export →
-    /// In Variante übernehmen → Liste), keiner primär, keiner in der Fußleiste. Die
-    /// Sperre bleibt, wie sie war: Solange gerechnet wird, sind beide gesperrt; danach frei.
+    /// Administrationsdialoge 7.1 c): „In Variante übernehmen" im Schlitz
+    /// <c>Werkzeug</c> der Suchzeile, NACH dem Suchfeld (Tabulatorfolge Suche →
+    /// In Variante übernehmen → Liste), nicht primär, nicht in der Fußleiste; „CSV…“ steht am
+    /// Lastgangbild. Solange gerechnet wird, ist der Knopf gesperrt; danach frei.
     /// </summary>
     [Fact]
     public void CSV_und_Variante_stehen_in_der_Werkzeugleiste_und_sperren_im_Lauf()
@@ -539,7 +554,7 @@ public class PeakShavingDialogTests : EposBunitContext
                         variante: (ziel, adaptiv) => Task.FromResult(true),
                         rechnen: (reihe, e) => { reiheImLauf = reihe; eingabenImLauf = e; return lauf.Task; });
 
-        Assert.Equal(new[] { "CSV-Export", "In Variante übernehmen" },
+        Assert.Equal(new[] { "In Variante übernehmen" },
                      Werkzeugknoepfe(cut).Select(b => b.TextContent.Trim()).ToArray());
         Assert.All(Werkzeugknoepfe(cut), b =>
         {
@@ -567,9 +582,9 @@ public class PeakShavingDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Schmal zusätzlich im Stammblattkopf</b> (Konzept Administrationsdialoge 7.1 c):
-    /// Unter 900 px liegt das Blatt über Werkzeugleiste und Liste; „CSV-Export" und „In
-    /// Variante übernehmen" stehen deshalb auch in der Kopfzeile neben „‹ Liste" — dieselben
-    /// Rückrufe, dieselben Sperren: ohne Ergebnis „Bitte zuerst rechnen.", im Lauf gesperrt,
+    /// Unter 900 px liegt das Blatt über Werkzeugleiste und Liste; „In
+    /// Variante übernehmen" steht deshalb auch in der Kopfzeile neben „‹ Liste" — derselbe
+    /// Rückruf, dieselbe Sperre: ohne Ergebnis „Bitte zuerst rechnen.", im Lauf gesperrt,
     /// danach frei und wirksam.
     /// </summary>
     [Fact]
@@ -587,7 +602,7 @@ public class PeakShavingDialogTests : EposBunitContext
         // Schmal: über "Stammblatt ›" steht das Blatt an der Stelle der Liste.
         cut.FindAll(".epos-auswahlleiste button").Single(b => b.TextContent.Trim() == "Stammblatt ›").Click();
 
-        Assert.Equal(new[] { "CSV-Export", "In Variante übernehmen" },
+        Assert.Equal(new[] { "In Variante übernehmen" },
                      Kopfknoepfe(cut).Select(b => b.TextContent.Trim()).ToArray());
         IElement zeile = cut.Find(".epos-stammblatt-kopf > .epos-stammblatt-kopfzeile");
         Assert.Contains("epos-nur-schmal", zeile.ClassName ?? "");
@@ -595,9 +610,6 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.All(Kopfknoepfe(cut), b => Assert.DoesNotContain("epos-knopf--primaer", b.ClassName ?? ""));
 
         // Ohne Ergebnis: derselbe Sperrgrund wie in der Werkzeugleiste.
-        Kopfknopf(cut, "CSV-Export").Click();
-        Assert.Equal(0, csvGeschrieben);
-        Assert.Contains("Bitte zuerst rechnen", cut.Instance.Meldung);
         Kopfknopf(cut, "In Variante übernehmen").Click();
         Assert.Null(uebernommen);
         Assert.Contains("Bitte zuerst rechnen", cut.Instance.Meldung);
@@ -612,9 +624,8 @@ public class PeakShavingDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Kennzahlen));
         Assert.All(Kopfknoepfe(cut), b => Assert.False(b.HasAttribute("disabled")));
 
-        // Danach wirken sie wie die Knöpfe der Werkzeugleiste.
-        Kopfknopf(cut, "CSV-Export").Click();
-        cut.WaitForAssertion(() => Assert.Equal(1, csvGeschrieben));
+        // Danach wirkt er wie der Knopf der Werkzeugleiste.
+        Assert.Equal(0, csvGeschrieben);
         // Ohne Wirt der Berechnungsart meldet "In Variante übernehmen" hier wie dort dasselbe.
         Kopfknopf(cut, "In Variante übernehmen").Click();
         string? ausDemKopf = cut.Instance.Meldung;
@@ -637,7 +648,7 @@ public class PeakShavingDialogTests : EposBunitContext
 
         Assert.All(Werkzeugknoepfe(cut), b => Assert.Null(b.Closest(".epos-nur-schmal")));
         Assert.All(Kopfknoepfe(cut), b => Assert.NotNull(b.Closest(".epos-nur-schmal")));
-        Assert.Equal(2, Kopfknoepfe(cut).Count);
+        Assert.Single(Kopfknoepfe(cut));
 
         string css = Stilblatt();
         int breit = css.IndexOf("@container epos-katalograhmen (min-width: 900px)", StringComparison.Ordinal);

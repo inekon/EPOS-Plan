@@ -653,7 +653,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ChartRenderer.ZAHLUNGSSTROM_BREITE, m.Breite);
             Assert.Equal(ChartRenderer.ZAHLUNGSSTROM_HOEHE, m.Hoehe);
             Assert.Null(m.Flaeche);
-            Assert.Empty(m.Reihen);
+            // CSV-3: die Spalten stehen als Datenreihen OHNE Zeichnung im Modell (CSV am Bild, Raster Jahr).
+            Assert.All(m.Reihen, r => Assert.Equal("€", r.Einheit));
             Assert.True(m.Gleicht(ChartRenderer.ZahlungsstromModell(reihen, ersatz, texte)));
 
             var null0 = (WindowsFormsApplication1.Zeichnung.Linie)m.Befehle.Single(b => b.Marke == "nulllinie");

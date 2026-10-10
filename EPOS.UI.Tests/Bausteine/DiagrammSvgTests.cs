@@ -2106,4 +2106,52 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-farbwahl"));
         Assert.False(cut.Instance.IstAus(GERECHNET));   // geschaltet wird dabei NICHT
     }
+
+    /// <summary>
+    /// <b>CSV am Säulenbild</b> (CSV-2): Ein Bild ohne Zeichenfläche, das seine Reihen im Modell
+    /// trägt (Monatsstapel), zeigt die Leiste allein mit „CSV…“ — ohne Stufe, Bereich und 1:1.
+    /// Ohne Naht steht keine Leiste.
+    /// </summary>
+    [Fact]
+    public void Saeulenbild_mit_Reihen_zeigt_die_Leiste_nur_mit_CSV()
+    {
+        var reihen = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Direkt", Enumerable.Repeat(1.0, 12).ToArray(), SkiaSharp.SKColors.Gold)
+        };
+        Zeichenmodell modell = ChartRenderer.MonatsStapelModell("Deckung", "kWh", reihen);
+
+        var ohne = Render<DiagrammSvg>(p => p.Add(x => x.Modell, modell).Add(x => x.Kennung, "s0"));
+        Assert.Empty(ohne.FindAll("div.epos-diagramm-leiste"));
+
+        var exporte = new List<(Zeichenmodell Modell, string Titel, Zeitraster Raster)>();
+        var naht = new Ganglinienexport((m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, modell).Add(x => x.Kennung, "s1").Add(x => x.Bezeichnung, "Deckung")
+            .AddCascadingValue(naht));
+
+        IElement leiste = cut.Find("div.epos-diagramm-leiste");
+        Assert.Single(leiste.QuerySelectorAll("button"));
+        Assert.Empty(leiste.QuerySelectorAll(".epos-diagramm-stufe"));
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, titel, raster) = Assert.Single(exporte);
+        Assert.Equal("Deckung", titel);
+        Assert.Equal(Zeitraster.Monat, raster);
+        Assert.Equal(12, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+    }
+
+    /// <summary>Das ausdrückliche Raster der Naht schlägt die Länge (24 Werte als Jahre).</summary>
+    [Fact]
+    public void Ganglinienexport_nimmt_das_ausdrueckliche_Raster()
+    {
+        Zeichenmodell modell = new(10, 10, new Farbton(default(Farbrolle)));
+        modell.FuegeReihe(new Datenreihe("A", new Farbton(default(Farbrolle)), 1f, null, new double[24]));
+        Zeitraster? gemeldet = null;
+        var jahre = new Ganglinienexport((_, _, r) => { gemeldet = r; return Task.CompletedTask; }, Zeitraster.Jahr);
+        jahre.Speichern(modell, "x");
+        Assert.Equal(Zeitraster.Jahr, gemeldet);
+        Assert.Equal(Zeitraster.Tagesstunde, new Ganglinienexport((_, _) => Task.CompletedTask).RasterFuer(modell));
+        Assert.True(jahre.Passt(modell));
+    }
 }

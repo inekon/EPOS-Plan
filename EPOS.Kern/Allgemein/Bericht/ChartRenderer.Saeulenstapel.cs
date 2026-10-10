@@ -24,9 +24,9 @@ namespace WindowsFormsApplication1
         /// die Schichten wie beim <see cref="MonatsStapelModell"/> — <c>reihe:&lt;Name&gt;</c> mit dem
         /// Wert „Woche 7 · Gebäude: 12,3 MWh“ am Zeiger.
         ///
-        /// <para><b>Ein reines Pixelbild</b> wie der Monatsstapel: keine Zeichenfläche, keine
-        /// <c>Datenreihe</c> — Fächer sind keine Zeitachse, es gibt nichts zu zoomen. Den CSV-Export
-        /// der Summen trägt der Wirt.</para>
+        /// <para><b>Ein reines Pixelbild</b> wie der Monatsstapel: keine Zeichenfläche — Fächer sind
+        /// keine Zeitachse, es gibt nichts zu zoomen. Die Schichten stehen als <c>Datenreihe</c> ohne
+        /// Zeichnung im Modell (<see cref="Saeulenreihen"/>), damit „CSV…“ sie schreiben kann.</para>
         /// </summary>
         /// <param name="titel">Überschrift.</param>
         /// <param name="einheit">Einheit für Überschrift und Zeigetext; leer = ohne.</param>
@@ -107,7 +107,25 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            Saeulenreihen(z, gueltig, n, einheit);
             return z;
+        }
+
+        /// <summary>
+        /// <b>Die Reihen eines Säulenbilds im Modell</b> (CSV am Diagramm): je Schicht eine
+        /// <see cref="Datenreihe"/> mit den ersten <paramref name="n"/> Werten in ihrer Einheit.
+        /// Ohne Zeichenfläche zeichnet weder SVG noch PNG eine Reihe — das Bild bleibt Pixel für
+        /// Pixel dasselbe; der Baustein zeigt damit „CSV…“, ohne Zoom.
+        /// </summary>
+        private static void Saeulenreihen(Zeichenmodell z, IReadOnlyList<Reihe> gueltig, int n, string einheit)
+        {
+            foreach (Reihe r in gueltig)
+            {
+                var werte = new double[n];
+                Array.Copy(r.Werte, werte, n);
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), 0f, null, werte,
+                                            Einheit: string.IsNullOrEmpty(einheit) ? null : einheit));
+            }
         }
     }
 }

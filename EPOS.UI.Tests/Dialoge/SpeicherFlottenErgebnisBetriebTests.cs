@@ -44,6 +44,27 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     // Kopfzeile, Kacheln und Banner
     // =====================================================================
 
+    /// <summary>
+    /// CSV am Bild (CSV-2): Jahreskonten an der Jahresprojektion, Zeitreihen an Netz- und
+    /// Ladezustandsbild — derselbe Text wie zuvor an den Knöpfen; die alten Knöpfe entfallen.
+    /// </summary>
+    [Fact]
+    public void Die_CSV_Exporte_stehen_an_den_Bildern()
+    {
+        var texte = new List<string>();
+        var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p
+            .Add(x => x.Ergebnis, Vollstaendig())
+            .Add(x => x.Csv, EventCallback.Factory.Create<string>(this, t => texte.Add(t))));
+
+        // Jahresprojektion und Netzbild (das Ladezustandsbild erst auf Wunsch).
+        var knoepfe = cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.True(knoepfe.Count >= 2);
+        foreach (var k in cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv").ToList())
+            k.Click();
+        Assert.Equal(knoepfe.Count, texte.Count);
+        Assert.All(texte, t => Assert.False(string.IsNullOrEmpty(t)));
+    }
+
     [Fact]
     public void Ergebnis_erklaert_den_berechneten_Betrieb_und_nicht_erreichten_Peak()
     {

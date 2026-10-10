@@ -133,7 +133,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Je Fach und Reihe mit Wert über null eine Säulenschicht mit Marke und Zeigewert; ein reines
-        /// Pixelbild ohne Zeichenfläche und Datenreihe; Maß wie der Jahresgang.
+        /// Pixelbild ohne Zeichenfläche, die Reihen nur als Datenreihen für „CSV…“ (je Fach ein Wert,
+        /// Einheit des Bildes); Maß wie der Jahresgang.
         /// </summary>
         [Theory]
         [InlineData(12)]
@@ -146,7 +147,10 @@ namespace EPOS.Kern.Tests
             Zeichenmodell m = ChartRenderer.SaeulenstapelModell("Wärmebedarf", "MWh", Reihen(n), namen, achse);
 
             Assert.Null(m.Flaeche);
-            Assert.Empty(m.Reihen);
+            Assert.Equal(new[] { "Prozesse", "Gebäude" }, m.Reihen.Select(r => r.Name).ToArray());
+            Assert.All(m.Reihen, r => Assert.Equal(n, r.Werte.Length));
+            Assert.All(m.Reihen, r => Assert.Equal("MWh", r.Einheit));
+            Assert.Equal(ZeitreihenCsv.RasterAus(n), ZeitreihenCsv.RasterAus(ZeitreihenCsv.AusModell(m)));
             Assert.Equal(ChartRenderer.SAEULENSTAPEL_BREITE, m.Breite);
             Assert.Equal(ChartRenderer.SAEULENSTAPEL_HOEHE, m.Hoehe);
 
