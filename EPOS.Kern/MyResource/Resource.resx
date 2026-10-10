@@ -50974,5 +50974,11 @@ Chart</value>
   <data name="SPD_RUECK_BLEIBT" xml:space="preserve">
     <value>Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit.</value>
   </data>
+  <data name="PSPD_LBL_SUMME" xml:space="preserve">
+    <value>Summe Volumen [l]:</value>
+  </data>
+  <data name="PSP_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung des Speichers, seine Senken, Verbünde und Lade-Prioritäten.</value>
+  </data>
 </root>
 

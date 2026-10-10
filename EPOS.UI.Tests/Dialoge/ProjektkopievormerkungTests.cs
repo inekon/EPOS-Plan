@@ -229,4 +229,100 @@ public class ProjektkopievormerkungTests : EposBunitContext
 
         Assert.Equal(new[] { "Kollektor A" }, geloescht);
     }
+
+    // =================================================================================
+    // Pufferspeicher (Katalogauswahl V1, Stufe 3): dasselbe Muster wie Heizkessel und BHKW
+    // =================================================================================
+
+    /// <summary>
+    /// Die Pufferspeicher-Hülle im Kleinen, nach <c>PufferspeicherHuelle.Oeffnen</c>: „In das Projekt übernehmen"
+    /// legt die Projektkopie SOFORT an (Mitschrift <see cref="Angelegt"/>, neue Kopie-Id) und meldet eine neue Kopie
+    /// der Vormerkung; der Abschluss räumt ab wie beim Kessel.
+    /// </summary>
+    private sealed class PufferHuelle
+    {
+        public readonly List<ErzeugerZeile> Anlagen = new();
+        public readonly List<string> Angelegt = new();
+        public readonly List<string> Geloescht = new();
+        public readonly Projektkopievormerkung Vormerkung;
+        private int _naechsteKopie = 900;
+
+        public PufferHuelle() => Vormerkung = new Projektkopievormerkung(name => Geloescht.Add(name));
+
+        public AufnahmeErgebnis Aufnehmen(int stammId, bool erzwingen)
+        {
+            string name = "Speicher " + stammId;
+            var z = new ErzeugerZeile { Schluessel = Anlagen.Count + 1, Bezeichner = name, GeraetId = ++_naechsteKopie };
+            Angelegt.Add(name);
+            Vormerkung.Angelegt(name, z.GeraetId);
+            Anlagen.Add(z);
+            return new AufnahmeErgebnis(z);
+        }
+
+        public void Geschlossen(bool ok) => Vormerkung.Abschliessen(ok, id => Anlagen.Any(a => a.GeraetId == id));
+    }
+
+    private IRenderedComponent<PufferspeicherDialog> PufferAufbauen(PufferHuelle h)
+        => Render<PufferspeicherDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile>())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.MitVerwendung(Anlagenart.Pufferspeicher, s => s))
+            .Add(x => x.Katalogzeilen, () => new List<Katalogfilterzeile>
+            {
+                new Katalogfilterzeile(51, "Speicher 51").MitText(Katalogfilterprofil.SpBezeichner, "Speicher 51")
+            })
+            .Add(x => x.Aufnehmen, h.Aufnehmen)
+            .Add(x => x.Entfernen, z => h.Anlagen.Remove(z))
+            .Add(x => x.ProjektsatzWege, new Satzbearbeitungswege
+            {
+                Lesen = _ => new List<BrowserFeldwert>(),
+                Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
+            })
+            .Add(x => x.Geschlossen, h.Geschlossen));
+
+    private static void PufferUebernehmen(IRenderedComponent<PufferspeicherDialog> cut)
+    {
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+    }
+
+    private static void PufferAbschluss(IRenderedComponent<PufferspeicherDialog> cut, string text)
+        => cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == text).Click();
+
+    [Fact]
+    public void Pufferspeicher_Uebernehmen_legt_die_Kopie_sofort_an_und_die_Zeile_ist_bearbeitbar()
+    {
+        var h = new PufferHuelle();
+        var cut = PufferAufbauen(h);
+
+        PufferUebernehmen(cut);
+
+        Assert.Equal(new[] { "Speicher 51" }, h.Angelegt);              // vor OK, nicht erst beim Speichern
+        Assert.Equal(901, Assert.Single(h.Vormerkung.Angelegte).KopieId);
+        Assert.False(cut.Find(".epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
+        Assert.Empty(h.Geloescht);
+    }
+
+    [Fact]
+    public void Pufferspeicher_Uebernehmen_und_Abbrechen_raeumt_die_neue_Kopie_ab()
+    {
+        var h = new PufferHuelle();
+        var cut = PufferAufbauen(h);
+
+        PufferUebernehmen(cut);
+        PufferAbschluss(cut, "Abbrechen");
+
+        Assert.Equal(new[] { "Speicher 51" }, h.Geloescht);
+    }
+
+    [Fact]
+    public void Pufferspeicher_Uebernehmen_und_OK_laesst_die_neue_Kopie_stehen()
+    {
+        var h = new PufferHuelle();
+        var cut = PufferAufbauen(h);
+
+        PufferUebernehmen(cut);
+        PufferAbschluss(cut, "OK");
+
+        Assert.Empty(h.Geloescht);
+    }
 }

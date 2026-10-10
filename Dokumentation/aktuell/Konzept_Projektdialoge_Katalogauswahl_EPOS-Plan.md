@@ -296,7 +296,7 @@ aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebä
 | Dialog | Projekt-Kopfleiste | Katalog-Fußleiste | Detailzeile aufgeklappt | Überlagerung |
 |---|---|---|---|---|
 | BHKW, Heizkessel | Summe kWth | Vergleichen, Schloss, Löschen, Bearbeiten · Neu | Alle Daten; Projektsatz: Kosten, Träger, Grenzleistung, VL/RL, Senken | — |
-| Pufferspeicher | Summe Volumen | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Auslegen… | — |
+| Pufferspeicher | Summe Volumen, Auslegen… | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Auslegen… | — |
 | Stromspeicher | Summe kWh | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Träger | — |
 | Photovoltaik | Summe kWp | dieselben ohne Neu | Alle Daten; Projektsatz: Kosten, Stückzahl, Neigung, Azimut, Albedo | Stränge und Wechselrichter… |
 | Solarkollektoren | Summe Module | dieselben · Neu | Alle Daten; Projektsatz: Kosten, Stückzahl, Neigung, Azimut, Solarkreis | — |
@@ -499,6 +499,36 @@ Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
   Anlage, Senken und Zeitprogramm.
 - **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
   steht wie beim Heizkessel rechts im Katalogfuß.
+
+### 5.5 Wie gebaut (Stufe 3, Pufferspeicher)
+
+Der Pufferspeicher folgt dem BHKW (5.4); hier steht nur, was abweicht.
+
+- **Kernweg:** `PufferSpStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_Pufferspeicher`, Katalog
+  `Tab_Pufferspeicher_STAMM`, Anlage über `ID_PUFFER`, Kostenkomponente 6), dazu `RueckwegVorschau`,
+  `AusProjektUebernehmen`, `RueckwegNameBelegt` und `KatalogsatzLoeschen`; `Delete` über ID und Namen läuft über
+  denselben Löschweg samt Satzvorlage. Prüfregel wie beim Speichern: Bereitschaftsverluste, Gesamtvolumen und
+  Investitionskosten nicht negativ. Kein Schemaschritt: 208 und 209 decken beide Tabellen; `PufferSpCtrl.CopyFromStamm`
+  trägt den Ursprung ein (eine schon vorhandene Kopie gleichen Namens behält ihren Verweis).
+- **Volumen:** Die Projekt-Kopfleiste zeigt die Summe der Gesamtvolumina in Litern (je Zeile die Projektkopie, ohne
+  Projekt der Katalogsatz). Mit dem Rückweg gehen die fünf Gerätewerte — Hersteller, Speichertyp, Bereitschaftsverluste,
+  Gesamtvolumen, Investitionskosten — als Schnittmenge.
+- **Projektkopie beim Übernehmen:** Wie bei Heizkessel und BHKW legt „In das Projekt übernehmen" die Kopie sofort an
+  (`PufferSpCtrl.CopyFromStamm`, über den Namen idempotent); eine in der Sitzung neu entstandene Kopie merkt die
+  `Projektkopievormerkung`, Abbrechen (auch „Auslegen…", Kreuz, Esc) räumt sie wieder ab, OK lässt sie stehen. Eine
+  frisch aufgenommene Zeile ist damit sofort bearbeitbar — Bearbeiten…, „In die Datenbank übernehmen…" und „Alle Daten"
+  wirken auf sie. Vor dem Aufnehmen steht weiter die Dublettenfrage, in der Sammelübernahme je Satz.
+- **Auslegen…:** steht zweimal. In der Knopfzeile des Projektsatzes neben den Kostenknöpfen (Investition, Betrieb; kein
+  Energieträger) legt er die gewählte Projektkopie aus; in der Projekt-Kopfleiste öffnet er ohne gewählte Projektzeile
+  (auch bei leerer Liste) die Auslegung für einen neuen Speicher, mit gewählter Zeile dieselbe wie beim Projektsatz.
+  Beide verlassen den Dialog wie Abbrechen.
+- **Kindzeilen und Verwendung:** Technische Kindtabellen hat der Katalog nicht. Im Projekt bleiben die 25 Spalten, die
+  nur die Kopie führt (Verwendung und Nutzung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung,
+  Entnahme, Frischwassermodul, Aufstellraum), und die Kindzeilen der Anlage: Senken (`Z_AnlageSenke`), Verbünde
+  (`Z_AnlagePufferVerbund`), die Lade-Prioritäten der Erzeuger, `Z_ProjektPufferSp` und `Tab_PufferAuslegung`. Die Rückfrage nennt es.
+- **Ohne Neu…:** Der Katalogfuß führt kein „Neu…" (4.9), die Speicherverwaltung als Überlagerung entfällt. Neue
+  Katalogsätze entstehen über die Katalogverwaltung im Menü, über „Speichern unter" im Katalogeditor oder über den
+  Rückweg.
 
 ### 5.6 Wie gebaut (Stufe 3, Stromspeicher)
 

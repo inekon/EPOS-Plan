@@ -91920,6 +91920,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Volumen [l]: ähnelt.
+        /// </summary>
+        public static string PSPD_LBL_SUMME {
+            get {
+                return ResourceManager.GetString("PSPD_LBL_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichertyp: ähnelt.
         /// </summary>
         public static string PSPD_LBL_TYP {
@@ -93653,6 +93662,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_RUBRIK_LABEL {
             get {
                 return ResourceManager.GetString("PSP_RUBRIK_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Verwendung, Temperaturpaar, Schwellen, Schichtung, Lade- und Entladeleistung des Speichers, seine Senken, Verbünde und Lade-Prioritäten. ähnelt.
+        /// </summary>
+        public static string PSP_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("PSP_RUECK_BLEIBT", resourceCulture);
             }
         }
         

@@ -50967,5 +50967,11 @@ chart</value>
   <data name="SPD_RUECK_BLEIBT" xml:space="preserve">
     <value>Remaining in the project: energy carrier and operating strategy of the plant (storage variant). Capacity, power, device values and the four cost items are taken along.</value>
   </data>
+  <data name="PSPD_LBL_SUMME" xml:space="preserve">
+    <value>Total volume [l]:</value>
+  </data>
+  <data name="PSP_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: usage, temperature pair, thresholds, stratification, charging and discharging power of the storage, its sinks, groupings and charging priorities.</value>
+  </data>
 </root>
 
