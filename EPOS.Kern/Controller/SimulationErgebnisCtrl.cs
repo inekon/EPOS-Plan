@@ -1590,6 +1590,9 @@ namespace WindowsFormsApplication1
             /// <summary>Mehrstrom aus Taktverlust im Kühlbetrieb [MWh/a] (Welle M4, WP1).</summary>
             public double TaktstromMwh;
 
+            /// <summary>KM3‑E3‑b: derselbe Mehrstrom in kWh/a — der Kachelwert der Kältemaschine, im Kern umgerechnet (Regel W8‑O‑5c).</summary>
+            public double TaktstromKwh;
+
             /// <summary>
             /// KM3‑E3‑b (Fachkonzept Teillast und Takten 5.3, 7.2): die Werte einer Kältemaschine mit Teillastweg im Satz
             /// des Ergebnisses — dieselben Felder wie <c>Tab_ErgebnisKaeltemaschine</c>; <c>null</c> ohne Weg (dann keine
@@ -1660,6 +1663,7 @@ namespace WindowsFormsApplication1
                         EigenerZaehler = z.NebenDerStufenrechnung,
                         Starts = z.Starts,
                         TaktstromMwh = z.TaktstromKwh / 1000.0,
+                        TaktstromKwh = z.TaktstromKwh,
                         Teillast = z.Maschine != null && z.Maschine.TeillastWirksam ? new ErgebnisKaeltemaschineModel
                         {
                             Bezeichner = z.Bezeichner ?? "",
