@@ -250,9 +250,65 @@ function satzUeberlagerung(rand = { oben: 0, unten: 0 }) {
     ganzRollt: u.scrollHeight > u.clientHeight + 1 && rollt(u),
     kopf: !!(kopf && sichtbar(kopf) && kopf.getBoundingClientRect().top >= rand.oben - 1),
     fuss: knoepfe.length > 0 && knoepfe.every(treffbar), knoepfe: knoepfe.map(k => k.textContent.trim()),
-    fragment: document.querySelectorAll('.epos-modulparameter').length,
+    fragment: document.querySelectorAll(rand.marke || '.epos-modulparameter').length,
     fremdeRoller,
   };
+}
+
+/**
+ * UeS1c: die Kurve einer Ganglinie im Koerper der Satz-Ueberlagerung - Breite und Hoehe ihrer Zeichenflaeche,
+ * die Innenbreite des Koerpers und das Mass des gezeichneten Modells (viewBox).
+ */
+function kurveImKoerper() {
+  const k = document.querySelector('.epos-ueberlagerung--satz .epos-satzueberlagerung-koerper');
+  const fl = k && k.querySelector('.epos-ganglinie-grafik .epos-diagramm-svg-flaeche');
+  if (!fl) return { da: false };
+  const r = fl.getBoundingClientRect();
+  const vb = fl.querySelector(':scope > svg')?.viewBox?.baseVal;
+  const st = getComputedStyle(k);
+  const innen = k.clientWidth - parseFloat(st.paddingLeft) - parseFloat(st.paddingRight);
+  return { da: true, breite: Math.round(r.width), hoehe: Math.round(r.height), koerper: Math.round(innen),
+           vbBreite: vb ? Math.round(vb.width) : 0, vbHoehe: vb ? Math.round(vb.height) : 0 };
+}
+
+const kurveUebZeilen = [];
+/** Prueft die Kurve in der Ueberlagerung: volle Breite des Koerpers, Hoehe >= 300 px bei 1 280 x 800, Modell im Mass. */
+function pruefeKurveImKoerper(fall, fenster, k) {
+  const kennung = `${fall} ${fenster.breite}x${fenster.hoehe} Satz-Ueberlagerung`;
+  const fehler = [];
+  if (!k.da) fehler.push('Kurve fehlt im Koerper der Satz-Ueberlagerung');
+  else {
+    if (k.breite < k.koerper - 2) fehler.push(`Kurve ${k.breite} px schmaler als der Koerper (${k.koerper} px)`);
+    const min = fenster.breite === 1280 && fenster.hoehe === 800 ? 300 : 150;
+    if (k.hoehe < min) fehler.push(`Kurve ${k.hoehe} px hoch, unter ${min} px`);
+    if (Math.abs(k.vbBreite - k.breite) > MASS_TOLERANZ + 1 || Math.abs(k.vbHoehe - k.hoehe) > MASS_TOLERANZ + 1)
+      fehler.push(`Modell ${k.vbBreite} x ${k.vbHoehe} statt im Behaeltermass ${k.breite} x ${k.hoehe}`);
+    kurveUebZeilen.push(`${kennung}: Kurve ${k.breite} x ${k.hoehe} px (Koerper ${k.koerper} px), Modell ${k.vbBreite} x ${k.vbHoehe}`);
+  }
+  for (const f of fehler) { verstoesse.push(kennung + ': ' + f); console.log('  VERSTOSS ' + kennung + ': ' + f); }
+  return fehler.length;
+}
+
+/** UeS1c: wartet, bis das Modell der Kurve im Koerper der Ueberlagerung im gemessenen Mass steht (hoechstens 4 s). */
+async function massAbwartenUeberlagerung(seite) {
+  await seite.waitForFunction(t => {
+    const fl = document.querySelector('.epos-satzueberlagerung-koerper .epos-ganglinie-grafik .epos-diagramm-svg-flaeche');
+    const vb = fl && fl.querySelector(':scope > svg')?.viewBox?.baseVal;
+    if (!fl || !vb) return true;
+    return Math.abs(vb.width - fl.clientWidth) <= t && Math.abs(vb.height - fl.clientHeight) <= t;
+  }, MASS_TOLERANZ, { timeout: 4000 }).catch(() => {});
+  await ruhe(seite);
+}
+
+/** UeS1c: oeffnet in einem Ganglinien-Wirt die Projektzeile, klappt die Detailzeile auf und vergroessert. */
+async function gangliniePerVergroessern(seite) {
+  if (await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').count())
+    await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
+  await ruhe(seite);
+  await satz(seite, true);
+  await seite.locator('.epos-zweispalten-vergroessern').click();
+  await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+  await massAbwartenUeberlagerung(seite);
 }
 
 const satzUebZeilen = [];
@@ -520,20 +576,26 @@ try {
         // UeS1b: dieselbe Satz-Ueberlagerung in BHKW, Pufferspeicher und Stromspeicher - je Fenster ueber
         // „Bearbeiten…" der Projektkopie (danach Esc) und ueber „Vergroessern" (danach Abbrechen); dazu traegt der
         // Koerper die Besonderheit des Wirts (BHKW Kostenknoepfe, Pufferspeicher „Auslegen…", Stromspeicher Traeger).
+        // UeS1c: dazu Solarkollektoren (Kollektorfelder), Waermepumpe („Anlage…", Fragment .epos-wp-satz) und
+        // Photovoltaik („Stränge und Wechselrichter…").
         const SATZ_WIRTE = { bhkw: ['.epos-kostenleiste button', 'Kostenknoepfe'],
-          pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'] };
+          pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'],
+          solarkollektoren: ['.epos-gruppenkopf-koerper input', 'Kollektorfelder'],
+          waermepumpen: ['button.epos-knopf--anlage', '„Anlage…"', '.epos-wp-satz'],
+          photovoltaik: ['button.epos-knopf--straenge', '„Stränge und Wechselrichter…"'] };
         if (SATZ_WIRTE[fall]) {
           await satz(seite, false);
           await seite.locator('.epos-knopf--bearbeiten-projekt').click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
           await mess('Satz-Ueberlagerung offen');
-          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          const marke = SATZ_WIRTE[fall][2];
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));
           const [wahl, was] = SATZ_WIRTE[fall];
           if (await seite.locator('.epos-satzueberlagerung-koerper ' + wahl).count() === 0) {
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${was} fehlen in der Satz-Ueberlagerung`); console.log('  VERSTOSS ' + verstoesse.at(-1));
           }
-          if (FOTOS && fall !== 'stromspeicher' && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1194 && fenster.hoehe === 834)))
+          if (FOTOS && !['stromspeicher', 'solarkollektoren', 'photovoltaik'].includes(fall) && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1194 && fenster.hoehe === 834)))
             await seite.screenshot({ path: `${FOTOS}/${fall}_satzueberlagerung_${fenster.breite}x${fenster.hoehe}.png` });
           await seite.keyboard.press('Escape');
           await ruhe(seite);
@@ -543,11 +605,33 @@ try {
           await seite.locator('.epos-zweispalten-vergroessern').click();
           await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
           await ruhe(seite);
-          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke }));
           await seite.locator('.epos-satzueberlagerung-abbrechen').click();
           await ruhe(seite);
           if (await seite.locator('.epos-ueberlagerung--satz').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Abbrechen schliesst die Satz-Ueberlagerung nicht`);
+          await mess('nach Satz-Ueberlagerung');
+        }
+        // UeS1c: die Ganglinien ueber „Vergroessern" - die Kurve fuellt den Koerper, reine Ansicht („Schließen").
+        if (/ganglinie|waermebedarf/.test(fall)) {
+          await satz(seite, false);
+          await gangliniePerVergroessern(seite);
+          await mess('Satz-Ueberlagerung offen');
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen',
+            await seite.evaluate(satzUeberlagerung, { ...rand(fenster), marke: '.epos-ganglinie-grafik' }));
+          pruefeKurveImKoerper(fall, fenster, await seite.evaluate(kurveImKoerper));
+          const knoepfe = await seite.locator('.epos-satzueberlagerung-fuss button').count();
+          if (knoepfe !== 1 || await seite.locator('.epos-satzueberlagerung-schliessen').count() !== 1
+              || await seite.locator('.epos-satzueberlagerung-fuss .epos-satzueberlagerung-hinweis').count()) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Fussleiste der Ansicht nicht nur „Schließen"`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          if (FOTOS && fall === 'pvganglinie' && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1194 && fenster.hoehe === 834)))
+            await seite.screenshot({ path: `${FOTOS}/${fall}_satzueberlagerung_${fenster.breite}x${fenster.hoehe}.png` });
+          await seite.locator('.epos-satzueberlagerung-schliessen').click();
+          await ruhe(seite);
+          if (await seite.locator('.epos-ueberlagerung--satz').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Schließen schliesst die Satz-Ueberlagerung nicht`);
+          await massAbwarten(seite);              // die Satzflaeche zeichnet die Kurve wieder in ihrem Mass
           await mess('nach Satz-Ueberlagerung');
         }
         // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
@@ -650,6 +734,26 @@ try {
       await k5.close();
     }
 
+    // UeS1c: die Kurve im Koerper der Satz-Ueberlagerung - auf 120 px gedrueckt und auf 300 px Breite begrenzt
+    // muss sie in der PV-Ganglinie bei 1 280 x 800 rot werden.
+    for (const [art, stil, muster] of [
+      ['Kurve 120 px', '.epos-satzueberlagerung-koerper .epos-ganglinie-grafik .epos-diagramm-svg-flaeche { max-height: 120px !important; }', 'unter 300 px'],
+      ['Breite 300 px', '.epos-satzueberlagerung-koerper .epos-ganglinie-grafik .epos-diagramm-svg-flaeche { max-width: 300px !important; }', 'schmaler als der Koerper']]) {
+      const k7 = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+      const s7 = await k7.newPage();
+      await s7.goto(WURZEL + '/rollbereichprobe?fall=pvganglinie&zeilen=40', { waitUntil: 'networkidle' });
+      await s7.waitForSelector('.epos-zweispalten');
+      await s7.addStyleTag({ content: stil });
+      await gangliniePerVergroessern(s7);
+      const vor = verstoesse.length, n = kurveUebZeilen.length;
+      pruefeKurveImKoerper('gegenprobe-pvganglinie', { breite: 1280, hoehe: 800 }, await s7.evaluate(kurveImKoerper));
+      const rot = verstoesse.slice(vor).some(v => v.includes(muster));
+      verstoesse.splice(vor); kurveUebZeilen.splice(n);
+      console.log(`Gegenprobe Kurve in der Satz-Ueberlagerung: ${art} - ${rot ? 'rot' : 'gruen'}`);
+      if (!rot) { console.log('  GEGENPROBE GRUEN - die Probe sieht die Kurve in der Ueberlagerung nicht'); rueckgabe = 1; }
+      await k7.close();
+    }
+
     // Verdichteter Kopf (DZ1-N1): eine auf 60 px gedrueckte Kurve und eine Kurven-Untergrenze von 300 px
     // (der Dialogkoerper muss dann rollen) in der Solarganglinie bei 1 280 x 800 muessen rot werden.
     for (const [art, stil, muster] of [
@@ -734,6 +838,8 @@ try {
   }
   console.log(`\nSatz-Ueberlagerung (UeS1, ${satzUebZeilen.length}):`);
   for (const z of satzUebZeilen) console.log('  ' + z);
+  console.log(`\nKurve in der Satz-Ueberlagerung (UeS1c, ${kurveUebZeilen.length}):`);
+  for (const z of kurveUebZeilen) console.log('  ' + z);
   console.log(`\nKurven der Ganglinie (DZ1-N2, ${kurven.length}):`);
   for (const k of kurven) console.log('  ' + k);
   console.log(`\n${zeilen.length} Zustaende, ${verstoesse.length} Verstoesse`);

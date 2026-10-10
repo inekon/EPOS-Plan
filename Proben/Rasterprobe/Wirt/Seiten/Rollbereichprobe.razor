@@ -47,6 +47,7 @@
                                 Katalogzeilen="@(() => Katalog(Anlagenart.Photovoltaik))"
                                 Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                 ProjektDetail="@(z => Detail(z.Bezeichner))" Modulname="@(z => z.Bezeichner)"
+                                Katalogfelder="@(_ => Felder())" ProjektsatzWege="@SatzWege"
                                 Gesamtleistung="@(() => "12,0")" Geschlossen="@(b => Beendet(b))" />
             break;
         case "solarkollektoren":
@@ -54,7 +55,7 @@
                                     Katalogzeilen="@(() => Katalog(Anlagenart.Solarkollektoren))"
                                     Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
                                     ProjektDetail="@(z => Detail(z.Bezeichner))"
-                                    ProjektModulflaeche="@(_ => 2.0)"
+                                    ProjektModulflaeche="@(_ => 2.0)" ProjektsatzWege="@SatzWege"
                                     Katalogfelder="@(_ => Felder())" Geschlossen="@(b => Beendet(b))" />
             break;
         case "bedarfsprofile":
