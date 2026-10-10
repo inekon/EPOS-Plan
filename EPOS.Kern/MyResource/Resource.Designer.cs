@@ -51673,6 +51673,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenn-EER ähnelt.
+        /// </summary>
+        public static string KFLT_LT_EER {
+            get {
+                return ResourceManager.GetString("KFLT_LT_EER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
+        /// </summary>
+        public static string KFLT_LT_NENNKAELTELEISTUNG {
+            get {
+                return ResourceManager.GetString("KFLT_LT_NENNKAELTELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlart ähnelt.
+        /// </summary>
+        public static string KFLT_LT_RUECKKUEHLART {
+            get {
+                return ResourceManager.GetString("KFLT_LT_RUECKKUEHLART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die enthält… ähnelt.
         /// </summary>
         public static string KFLT_PLATZ_TEXT {
@@ -52177,7 +52204,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückk. ähnelt.
         /// </summary>
         public static string KFLT_SP_RUECKKUEHLART {
             get {
