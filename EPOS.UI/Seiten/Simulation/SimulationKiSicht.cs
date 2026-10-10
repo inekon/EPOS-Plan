@@ -368,6 +368,50 @@ public sealed class SimulationKiSicht
         }
     }
 
+    // ---- Der Bereich „Kälte“ (Welle KB-B; Entwurf Kältebereich 3, 5.4) ----
+
+    /// <summary>
+    /// Die Kälteerzeuger in Rechenfolge (nur lesend) — „Nummer. Name (Kennwerte)“, wie die Kacheln des Bereichs.
+    /// </summary>
+    public string Kaelteerzeuger
+        => string.Join("; ", (_konfiguration()?.Kaeltebereich.Erzeuger ?? Array.Empty<KaelteerzeugerZeile>())
+               .Select(z => z.Nummer.ToString(System.Globalization.CultureInfo.CurrentCulture) + ". " + z.Bezeichner +
+                            " (" + string.Join(", ", z.Kachel.Chips.Select(c => c.Text)
+                                .Concat(z.Art == KaelteStufe.Waermepumpe && !z.Kuehlbetrieb
+                                    ? new[] { Resource.KI_DLG_SIM_KUEHL_AUS } : Array.Empty<string>())) + ")"));
+
+    /// <summary>Die Kältespeicher des Bereichs „Kälte“ (nur lesend): Name, Volumen, Temperaturpaar.</summary>
+    public string Kaeltespeicher
+        => string.Join("; ", (_konfiguration()?.Kaeltebereich.Kaeltespeicher ?? Array.Empty<Bausteine.SpeicherKachelDaten>())
+               .Select(s => string.Join(" · ", new[] { s.Bezeichner, s.Volumen, s.Temperaturpaar }.Where(t => !string.IsNullOrEmpty(t)))));
+
+    /// <summary>
+    /// Die Wärmepumpen im Kühlbetrieb, durch Komma getrennt — setzbar: Jede genannte Wärmepumpe des Bereichs schaltet
+    /// den Kühlbetrieb an, jede ungenannte aus, über denselben Weg wie die Kachel (<c>KuehlbetriebWpSchreiben</c>),
+    /// sofort. Ein unbekannter Name oder ein Sperrgrund lehnt benannt ab.
+    /// </summary>
+    public string KuehlbetriebWaermepumpen
+    {
+        get => string.Join(", ", (_konfiguration()?.Kaeltebereich.Erzeuger ?? Array.Empty<KaelteerzeugerZeile>())
+                   .Where(z => z.Art == KaelteStufe.Waermepumpe && z.Kuehlbetrieb).Select(z => z.Bezeichner));
+        set
+        {
+            SimulationKonfigSeite seite = SeiteOderAbsage();
+            List<KaelteerzeugerZeile> wps = (_konfiguration()?.Kaeltebereich.Erzeuger ?? Array.Empty<KaelteerzeugerZeile>())
+                .Where(z => z.Art == KaelteStufe.Waermepumpe).ToList();
+            List<string> namen = (value ?? "").Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+            foreach (string n in namen)
+                if (!wps.Any(w => string.Equals(w.Bezeichner, n, StringComparison.OrdinalIgnoreCase)))
+                    throw new InvalidOperationException(string.Format(Resource.KI_DLG_SIM_KUEHL_WP_UNBEKANNT, n));
+            foreach (KaelteerzeugerZeile w in wps)
+            {
+                bool an = namen.Any(n => string.Equals(w.Bezeichner, n, StringComparison.OrdinalIgnoreCase));
+                Absage(seite.KiKuehlbetriebWpSetzen(w.IdAnlage, an));
+            }
+        }
+    }
+
     /// <summary>
     /// Die Projekteinstellung „Anlagenkopplung" (Konzept Anlagenkopplung 9.4) als Steuerwert
     /// (<c>DbWerte.ANLAGENKOPPLUNG_*</c>) — geschrieben über denselben Delegaten wie die Wahl

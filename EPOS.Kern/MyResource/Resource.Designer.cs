@@ -63503,6 +63503,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kälteerzeuger des Bereichs „Kälte“ in Rechenfolge, je Eintrag Nummer, Name und Kennwerte; nur lesend. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTEERZEUGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTEERZEUGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältespeicher des Projekts mit Volumen und Temperaturpaar; nur lesend. Angelegt werden sie in der Pufferverwaltung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KAELTESPEICHER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KAELTESPEICHER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die aufgenommenen Erzeuger in der Reihenfolge, in der die Simulation sie einsetzt — je Gruppe eine Aufzählung. Der Rang entscheidet, welcher Erzeuger den Bedarf zuerst deckt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_KASKADE_ERL {
@@ -63544,6 +63562,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_KUEHLBETRIEB_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_KUEHLBETRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb aus ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHL_AUS {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHL_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Namen der Wärmepumpen, deren Kühlbetrieb an ist, durch Komma getrennt. Jede genannte schaltet ihn an, jede ungenannte aus; geschrieben wird sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHL_WP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHL_WP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wärmepumpe mit Kühlfunktion im Bereich „Kälte“: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHL_WP_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHL_WP_UNBEKANNT", resourceCulture);
             }
         }
         

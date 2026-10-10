@@ -322,6 +322,21 @@ public sealed class SimulationKonfigDienste
     /// Delegat = kein Schreibweg; dann steht kein Schalter da.
     /// </summary>
     public Func<int, bool, string?>? KuehlbetriebWpSchreiben;
+
+    /// <summary>
+    /// Die Konfiguration EINER Kältemaschinen-Anlage im Bereich „Kälte“ (Welle KB-B, Entwurf Kältebereich 3.3) —
+    /// Parameter: <c>Tab_Energieanlagen.ID</c>; Rückgabe <c>null</c> = die Anlage steht nicht (mehr) im Projekt.
+    /// <c>null</c> als Delegat = kein Weg; dann steht kein Knopf „Konfiguration…“, und der Doppelklick im Schema
+    /// öffnet den Dialog „Kältemaschinen im Projekt“ über die Navigation.
+    /// </summary>
+    public Func<int, EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben?>? KaeltemaschineKonfigurationLaden;
+
+    /// <summary>
+    /// Der OK-Weg der Kältemaschinen-Konfiguration: prüft mit den Regeln des Kerns
+    /// (<c>KaeltemaschineAnlageCtrl.Pruefen</c>) und schreibt Anlagenzeile und Kühleingaben in einem Vorgang
+    /// (<c>KaeltemaschineAnlageCtrl.Speichern</c>). Rückgabe <c>null</c> oder leer = geschrieben, sonst der Grund.
+    /// </summary>
+    public Func<EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten, string?>? KaeltemaschineKonfigurationSpeichern;
 }
 
 /// <summary>Ein waehlbarer Quellentyp: Steuerwert und Anzeigetext.</summary>

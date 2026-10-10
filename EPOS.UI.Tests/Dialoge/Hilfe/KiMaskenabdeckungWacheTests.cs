@@ -80,6 +80,10 @@ public sealed class KiMaskenabdeckungWacheTests
         new("WaermepumpeStammFelder",         "WaermepumpeStammDialog",      KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeGeraetegrenzenFelder", "WaermepumpeStammDialog",     KiMaskennamen.WAERMEPUMPE),
         new("WaermepumpeKonfiguration",       "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        // KB-B: die Gruppe „Kühlbetrieb“ (in WaermepumpeKonfiguration, auch im Bereich „Kälte“ der
+        // Simulationskonfiguration) und die Betriebseingaben der Kältemaschine (im Dialog und im Bereich „Kälte“).
+        new("WaermepumpeKuehlbetriebGruppe",  "WaermepumpeAnlageDialog",     KiMaskennamen.WAERMEPUMPE_ANLAGE),
+        new("KaeltemaschineKonfiguration",    "KaeltemaschineAnlageDialog",  KiMaskennamen.KAELTEMASCHINE_ANLAGE),
         new("EnergietraegerEinstellungen",    "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("BrennstoffBestandteile",         "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
         new("StrompreisDetails",              "EnergietraegerDialog",        KiMaskennamen.ENERGIETRAEGER),
@@ -244,11 +248,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
         // Zahlen je Punkt (die Spalten punkt_* der Feldkarte).
         // KM3-E3-a: dazu die acht Felder der Gruppe „Teillast und Takten“ (drei Auswahlen, fünf Zahlen).
+        new("KaeltemaschineKonfiguration", 6, "die Betriebseingaben der Kältemaschine (KB-B) - im Dialog unter der Karte „KaeltemaschineAnlage“, im Bereich „Kälte“ der Simulationskonfiguration als Überlagerung derselben Felder"),
         new("KaeltemaschineKatalogDialog", 30, "der Werkzeugschalter „Typkennfelder ausblenden“ setzt den Filter der Liste; die Typkennfeldwahl der Schnellwahlen (eine Auswahl, Nennkälteleistung und Nenn-EER der Skalierung) und die Paare der Auskunft „Teillastpunkte prüfen…“ sind Eingaben einer Rechnung ohne Speicherung, keine Werte der Maske"),
         // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
         // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste
         // der Geraetewahl ist eine Auswahl, kein Wert.
-        new("KaeltemaschineAnlageDialog", 7, "die Schalter „Wärmepumpen im Kühlbetrieb“ schreiben beim OK den Kühlbetrieb des Geräts über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, keine Eingabe der Kältemaschine"),
+        new("KaeltemaschineAnlageDialog", 1, "die Schalter „Wärmepumpen im Kühlbetrieb“ schreiben beim OK den Kühlbetrieb des Geräts über den Kernweg der Wärmepumpen-Konfiguration — derselbe Wert wie das Katalogfeld „kuehlbetrieb“ der Maske WaermepumpeKonfiguration, keine Eingabe der Kältemaschine"),
         // ---- Ende Gebäudesimulation G3, Welle C ----
 
         // ---- Gebäudesimulation G3, Welle D2 (Zone und Bauteil) ----
@@ -555,13 +560,14 @@ public sealed class KiMaskenabdeckungWacheTests
         // UB-E2: die Gruppe „Bivalenz und Übergabe“ bringt die Klappliste „Einbindung“ und den Schalter „Vorwärmbetrieb“
         // (24 -> 26); beide stehen in der KI-Sicht („einbindung“, „vorwaermbetrieb“), ebenso jetzt „kaeltemittel“ (Spalte
         // Kaeltemittel des Geräts). Die Lesewerte der Gruppe sind Text und keine Eingabestellen.
-        new("WaermepumpeKonfiguration", 26, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
+        new("WaermepumpeKonfiguration", 17, "das nackte input ist der weich gesperrte Kühlschalter (Grund im title) — " +
             "derselbe Wert wie „kuehlbetrieb“, kein eigenes Feld; das Zeitprogramm der Gruppe „Betriebszeiten“ ist ein " +
             "Wochenraster mit 168 Faktoren und steht nicht in der KI-Sicht, der höchste Vorlauf als „vorlauf_max“; " +
             "die vier Felder je Sperrfenster (Beginn, Dauer, " +
             "Wochentag, Heizstab) führt die Maske als ein Textfeld „sperrfenster“; das Kästchen " +
             "„Sperrzeiten vorhanden“ ist derselbe Wert wie „sperrfenster“ leer oder nicht leer; Einbindung, Vorwärmbetrieb und " +
             "Kältemittel stehen als „einbindung“, „vorwaermbetrieb“ und „kaeltemittel“ in der KI-Sicht"),
+        new("WaermepumpeKuehlbetriebGruppe", 9, "die Gruppe „Kühlbetrieb“ (KB-B) unter der Karte der Wärmepumpen-Konfiguration; die zwei nackten inputs sind der weich gesperrte Kühlschalter und der Schalter „freie Kühlung“ (Grund im title) - dieselben Werte wie die Katalogfelder der Maske"),
         new("WaermepumpeReiter", 9, "der Schalter „Heizstab in die JAZ einrechnen“ steht als Anzeigeschalter im Katalog"),
         new("WaermesenkeDialog", 9),
         // WirtschaftlichkeitParameterDialog: siehe Block ETAPPE E9b oben.

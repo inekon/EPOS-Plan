@@ -51376,5 +51376,20 @@ Chart</value>
   <data name="KMK_GERAET_ZEILE" xml:space="preserve">
     <value>Gerät: {0}</value>
   </data>
+  <data name="KI_DLG_SIM_KAELTEERZEUGER_ERL" xml:space="preserve">
+    <value>Die Kälteerzeuger des Bereichs „Kälte“ in Rechenfolge, je Eintrag Nummer, Name und Kennwerte; nur lesend.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTESPEICHER_ERL" xml:space="preserve">
+    <value>Die Kältespeicher des Projekts mit Volumen und Temperaturpaar; nur lesend. Angelegt werden sie in der Pufferverwaltung.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_WP_ERL" xml:space="preserve">
+    <value>Die Namen der Wärmepumpen, deren Kühlbetrieb an ist, durch Komma getrennt. Jede genannte schaltet ihn an, jede ungenannte aus; geschrieben wird sofort.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_WP_UNBEKANNT" xml:space="preserve">
+    <value>Keine Wärmepumpe mit Kühlfunktion im Bereich „Kälte“: {0}</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_AUS" xml:space="preserve">
+    <value>Kühlbetrieb aus</value>
+  </data>
 </root>
 

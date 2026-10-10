@@ -160,6 +160,37 @@ public class SimulationKonfigKaeltebahnTests : EposBunitContext
         Assert.Equal(new[] { Seitenschluessel.KaeltemaschineAnlage }, Navigation.Masken);
     }
 
+    /// <summary>
+    /// KB-B (E117 F5): Bietet die Seite die Konfiguration der Kältemaschine, öffnet der Doppelklick auf die
+    /// Kältemaschine und auf ihre Rückkühlung sie IN DER SEITE — die Navigation bleibt unberührt.
+    /// </summary>
+    [Theory]
+    [InlineData("Kältemaschine 1")]
+    [InlineData("Trockenkühler")]
+    public void Mit_Konfigurationsweg_oeffnet_der_Doppelklick_die_Konfiguration_in_der_Seite(string element)
+    {
+        SimulationKonfigDienste dienste = Dienste();
+        var geladen = new System.Collections.Generic.List<int>();
+        dienste.KaeltemaschineKonfigurationLaden = id =>
+        {
+            geladen.Add(id);
+            return new EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben
+            {
+                Daten = new EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten { AnlagenId = id, Bezeichner = "Kältemaschine 1" }
+            };
+        };
+        dienste.KaeltemaschineKonfigurationSpeichern = _ => null;
+        var cut = Render<SimulationKonfigSeite>(p => p.Add(x => x.Dienste, dienste).Add(x => x.StartProjekt, 1017));
+        cut.FindAll("button.epos-simkonfig-ansichtknopf")[1].Click();
+
+        Element(cut, element).DoubleClick();
+
+        Assert.Empty(Navigation.Masken);
+        Assert.Equal(new[] { ID_KM }, geladen);
+        Assert.True(cut.Instance.KaeltemaschineKonfigurationOffen);
+        Assert.Single(cut.FindComponents<EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfiguration>());
+    }
+
     [Fact]
     public void Der_Doppelklick_auf_die_Waermepumpe_im_Kuehlbetrieb_oeffnet_ihren_Senkendialog()
     {
@@ -217,7 +248,7 @@ public class SimulationKonfigKaeltebahnTests : EposBunitContext
                         Element(cut, "Wärmepumpe 1 (Kühlen)").QuerySelector("title")!.TextContent);
         Assert.EndsWith(Resource.SIM_SCHEMA_DK_QUELLE,
                         Element(cut, "Erdreich (Abwärme)").QuerySelector("title")!.TextContent);
-        Assert.Equal("Doppelklick öffnet die Kältemaschinen des Projekts.", Resource.SIM_SCHEMA_DK_KAELTEMASCHINE);
+        Assert.Equal("Doppelklick öffnet die Konfiguration der Kältemaschine.", Resource.SIM_SCHEMA_DK_KAELTEMASCHINE);
     }
 
     /// <summary>

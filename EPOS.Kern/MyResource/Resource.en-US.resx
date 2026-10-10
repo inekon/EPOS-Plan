@@ -51369,5 +51369,20 @@ chart</value>
   <data name="KMK_GERAET_ZEILE" xml:space="preserve">
     <value>Unit: {0}</value>
   </data>
+  <data name="KI_DLG_SIM_KAELTEERZEUGER_ERL" xml:space="preserve">
+    <value>The cooling generators of the “Cooling” area in calculation order, each with number, name and key values; read-only.</value>
+  </data>
+  <data name="KI_DLG_SIM_KAELTESPEICHER_ERL" xml:space="preserve">
+    <value>The project's cold storages with volume and temperature pair; read-only. They are created in the buffer management.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_WP_ERL" xml:space="preserve">
+    <value>The names of the heat pumps whose cooling mode is on, separated by commas. Each named one switches it on, each unnamed one off; written immediately.</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_WP_UNBEKANNT" xml:space="preserve">
+    <value>No heat pump with cooling function in the “Cooling” area: {0}</value>
+  </data>
+  <data name="KI_DLG_SIM_KUEHL_AUS" xml:space="preserve">
+    <value>cooling mode off</value>
+  </data>
 </root>
 
