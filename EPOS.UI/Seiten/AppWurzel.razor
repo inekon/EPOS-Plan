@@ -101,6 +101,13 @@
     @* DER REITERWUNSCH (16.09.2026): Wer die Startseite mit einem Auftrag zeigt,
        nennt den Reiter, mit dem sie aufmacht - nach dem Anlegen eines Projekts im
        Assistenten ist das „Waermebedarf". *@
+    @* KT-2: Eine Ansicht, die aus der Startseite heraus nicht aufging (kein Projekt, Ausnahme beim
+       Aufbau der Gaben), sagt es HIER - die Statuszeile der Wurzel steht sonst nur unter der
+       Projektliste, und der Klick auf eine Kachel endete still. *@
+    @if (!string.IsNullOrEmpty(_ansichtFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_ansichtFehler" />
+    }
     <EPOS.UI.Seiten.Start.Startseite @ref="_startseiteSeite"
                                      @attributes="_startseite"
                                      KopfbandZeigen="@(Kopfleiste is null)"
@@ -463,6 +470,15 @@ else
     private IReadOnlyDictionary<string, object>? _betriebskalender;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
+
+    /// <summary>
+    /// Warum die zuletzt über <see cref="OeffneMaske"/> verlangte Ansicht nicht aufging; leer = sie ging
+    /// auf. Steht als Banner über der Startseite (KT-2).
+    /// </summary>
+    private string _ansichtFehler = "";
+
+    /// <summary>Der Grund aus <see cref="_ansichtFehler"/> — lesbar für Prüfstände.</summary>
+    public string AnsichtFehler => _ansichtFehler;
 
     /// <summary>
     /// Die stehende Assistentenseite — sie beantwortet, ob der Lauf ungespeicherte
@@ -1302,16 +1318,18 @@ else
         // bleibt die Ansicht stehen und sagt warum.
         if (maske == Seitenschluessel.BaustoffKatalog)
         {
-            _baustoffKatalog = BaustoffKatalogGaben?.Invoke() ?? Quelle.BaustoffKatalogGaben();
-            if (_baustoffKatalog is null) { _statuszeile = KeinBaustoffKatalogText; return false; }
+            _baustoffKatalog = GabenSicher(maske,
+                () => BaustoffKatalogGaben?.Invoke() ?? Quelle.BaustoffKatalogGaben(), out string? fehler);
+            if (_baustoffKatalog is null) { _statuszeile = fehler ?? KeinBaustoffKatalogText; return false; }
             _ansicht = maske;
             return true;
         }
 
         if (maske == Seitenschluessel.BauteilaufbauKatalog)
         {
-            _bauteilaufbauKatalog = BauteilaufbauKatalogGaben?.Invoke() ?? Quelle.BauteilaufbauKatalogGaben();
-            if (_bauteilaufbauKatalog is null) { _statuszeile = KeinBauteilaufbauKatalogText; return false; }
+            _bauteilaufbauKatalog = GabenSicher(maske,
+                () => BauteilaufbauKatalogGaben?.Invoke() ?? Quelle.BauteilaufbauKatalogGaben(), out string? fehler);
+            if (_bauteilaufbauKatalog is null) { _statuszeile = fehler ?? KeinBauteilaufbauKatalogText; return false; }
             _ansicht = maske;
             return true;
         }
@@ -1319,8 +1337,9 @@ else
         // ---- Die Kaeltemaschinen (KU3-1) - derselbe Weg ---------------------------
         if (maske == Seitenschluessel.KaeltemaschineKatalog)
         {
-            _kaeltemaschineKatalog = KaeltemaschineKatalogGaben?.Invoke() ?? Quelle.KaeltemaschineKatalogGaben();
-            if (_kaeltemaschineKatalog is null) { _statuszeile = KeinKaeltemaschineKatalogText; return false; }
+            _kaeltemaschineKatalog = GabenSicher(maske,
+                () => KaeltemaschineKatalogGaben?.Invoke() ?? Quelle.KaeltemaschineKatalogGaben(), out string? fehler);
+            if (_kaeltemaschineKatalog is null) { _statuszeile = fehler ?? KeinKaeltemaschineKatalogText; return false; }
             _ansicht = maske;
             return true;
         }
@@ -1328,10 +1347,16 @@ else
         // ---- Die Kaeltemaschinen des offenen Projekts (KU3-4c) --------------------
         if (maske == Seitenschluessel.KaeltemaschineAnlage)
         {
-            int idProjekt = _projekt?.Id ?? 0;
+            // KT-2: Das offene Projekt kennt unter Windows nur der Projektkontext des Kerns — die
+            // Wurzel setzt _projekt allein über die Projektliste (iOS). Ohne diesen Rückfall lehnte
+            // die Ansicht unter Windows JEDEN Klick der Kachel „Kühlung und Kälteanlagen“ ab.
+            int idProjekt = OffenesProjekt();
+            string? fehler = null;
             _kaeltemaschineAnlage = idProjekt <= 0 ? null
-                : KaeltemaschineAnlageGaben?.Invoke(idProjekt) ?? Quelle.KaeltemaschineAnlageGaben(idProjekt);
-            if (_kaeltemaschineAnlage is null) { _statuszeile = KeineKaeltemaschineAnlageText; return false; }
+                : GabenSicher(maske,
+                    () => KaeltemaschineAnlageGaben?.Invoke(idProjekt) ?? Quelle.KaeltemaschineAnlageGaben(idProjekt),
+                    out fehler);
+            if (_kaeltemaschineAnlage is null) { _statuszeile = fehler ?? KeineKaeltemaschineAnlageText; return false; }
             _ansicht = maske;
             return true;
         }
@@ -1968,6 +1993,65 @@ else
            // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
            || maske == Seitenschluessel.BrauchwasserNutzungsarten;
 
+    /// <summary>
+    /// Das offene Projekt: das in der Projektliste gewählte (iOS), sonst das des Projektkontexts im
+    /// Kern (<c>Dienste.Projekt</c>, Windows); 0 = keins.
+    /// </summary>
+    private int OffenesProjekt()
+    {
+        if ((_projekt?.Id ?? 0) > 0) return _projekt!.Id;
+        WindowsFormsApplication1.IProjektKontext? kontext = WindowsFormsApplication1.Dienste.Projekt;
+        return kontext is { Vorhanden: true } ? kontext.Id : 0;
+    }
+
+    /// <summary>
+    /// Baut den Parametersatz einer Ansicht und fängt eine Ausnahme dabei ab (KT-2, Hausblatt „benannt
+    /// ablehnen, nie still übergehen“): Dann ist das Ergebnis <c>null</c> und <paramref name="fehler"/>
+    /// nennt Maske und Meldung. Die Ausnahme selbst steht samt Aufrufstapel schon im Ausnahmeprotokoll
+    /// (<c>Logs\Ausnahmen.txt</c> der Windows-Schale schreibt jede beim Auslösen); der Vermerk dazu nennt
+    /// den Maskenschlüssel.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? GabenSicher(
+        string maske, Func<IReadOnlyDictionary<string, object>?> bau, out string? fehler)
+    {
+        fehler = null;
+        try
+        {
+            return bau();
+        }
+        catch (Exception ex)
+        {
+            fehler = AnsichtFehlerFormat(maske, ex.Message);
+            WindowsFormsApplication1.Ausnahmeprotokoll.Vermerken(
+                "Ansicht " + maske + ": Aufbau der Gaben gescheitert - " + ex.GetType().Name + ": " + ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>„Die Ansicht „…“ konnte nicht geöffnet werden: …“ für einen Maskenschlüssel.</summary>
+    private string AnsichtFehlerFormat(string maske, string grund)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, AnsichtFehlerText, Maskenname(maske), grund);
+
+    /// <summary>Der Anzeigename einer Ansicht für den Banner; ohne eigenen Namen der Schlüssel.</summary>
+    private static string Maskenname(string maske)
+        => maske == Seitenschluessel.KaeltemaschineAnlage ? Resource.START_E_KUEHL_TITEL
+         : maske == Seitenschluessel.KaeltemaschineKatalog ? Resource.KM_TITEL
+         : maske == Seitenschluessel.BaustoffKatalog ? Resource.BST_TITEL
+         : maske == Seitenschluessel.BauteilaufbauKatalog ? Resource.BTA_TITEL
+         : maske;
+
+    /// <summary>
+    /// Eine über <see cref="OeffneMaske"/> verlangte Ansicht ging nicht auf: Der Grund (die Statuszeile,
+    /// die der Fall gesetzt hat) steht als Banner über der Startseite und als Vermerk im Ausnahmeprotokoll.
+    /// </summary>
+    private void AnsichtAbgelehnt(string maske)
+    {
+        _ansichtFehler = string.IsNullOrEmpty(_statuszeile)
+            ? AnsichtFehlerFormat(maske, Resource.WURZEL_NICHT_GEFUEHRT)
+            : _statuszeile;
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerken("Ansicht " + maske + " nicht geoeffnet: " + _ansichtFehler);
+    }
+
     /// <inheritdoc />
     public bool OeffneMaske(string maske, params object[] argumente)
     {
@@ -2009,7 +2093,21 @@ else
             if (maske == Seitenschluessel.Startseite) _reiterwunschOffen = platz;
             else if (maske == Seitenschluessel.BerichteKosten) _blattwunschOffen = platz;
 
-            Zeige(maske, betriebsart, marke);
+            // KT-2: Der Wechsel laeuft hier NACH der Rueckgabe; was er ablehnt oder wirft, kaeme beim
+            // Aufrufer nie an (der Task ist verworfen). Deshalb steht der Grund als Banner ueber der
+            // Startseite und als Vermerk im Ausnahmeprotokoll.
+            _ansichtFehler = "";
+            bool gezeigt;
+            try
+            {
+                gezeigt = Zeige(maske, betriebsart, marke);
+            }
+            catch (Exception ex)
+            {
+                gezeigt = false;
+                _statuszeile = AnsichtFehlerFormat(maske, ex.Message);
+            }
+            if (!gezeigt) AnsichtAbgelehnt(maske);
             StateHasChanged();
         });
         return true;
@@ -2190,6 +2288,9 @@ else
 
     /// <summary>Meldung, wenn der Erzeugerdialog der Kältemaschinen nicht aufzubauen ist (etwa ohne Projekt).</summary>
     [Parameter] public string KeineKaeltemaschineAnlageText { get; set; } = Resource.KMA_KEINE_ANSICHT;
+
+    /// <summary>Format „Die Ansicht „{0}“ konnte nicht geöffnet werden: {1}“ (Ressource WURZEL_ANSICHT_FEHLER).</summary>
+    [Parameter] public string AnsichtFehlerText { get; set; } = Resource.WURZEL_ANSICHT_FEHLER;
 
     /// <summary>Meldung, wenn die Verwaltung der Betriebskalender nicht aufzubauen ist.</summary>
     [Parameter] public string KeinBetriebskalenderText { get; set; } = Resource.BKAL_KEINE_ANSICHT;
