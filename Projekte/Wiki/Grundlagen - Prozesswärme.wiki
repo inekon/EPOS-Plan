@@ -1,0 +1,68 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Prozesswärme
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Prozesswärme.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+'''Prozesswärme''' ist Wärme, die ein Betrieb für seine Produktion braucht: zum Reinigen und Spülen, Trocknen und Lackieren, für Bäder, Waschanlagen oder die Lüftung einer Halle. Anders als die Raumheizung folgt sie dem Schichtplan und nicht der Außentemperatur, und sie verlangt oft ein festes, höheres Temperaturniveau. Wer sie neben Heizung und Warmwasser plant, muss deshalb neben der Menge auch Zeitpunkt und Temperatur kennen.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Drei Größen beschreiben einen Prozess:
+
+* '''Menge''' – die Nutzwärme am Prozess im Jahr, verteilt über die Monate; Betriebsferien und Revisionen senken einzelne Monate.
+* '''Zeitlicher Verlauf''' – der Wochengang des Betriebs: Einschicht, Zweischicht, Dreischicht oder Durchlauf, dazu Anfahrspitzen zu Schichtbeginn und Pausen am Wochenende und an Feiertagen.
+* '''Temperaturniveau''' – der Vorlauf, den der Prozess mindestens braucht, und der Rücklauf, mit dem das Wasser zurückkommt. Eine Hallenlüftung kommt mit 50/30&nbsp;°C aus, eine Trocknung braucht deutlich über 100&nbsp;°C.
+
+Das Temperaturniveau entscheidet, welcher Erzeuger in Frage kommt. Ein Kessel oder ein BHKW erreicht hohe Vorläufe ohne Weiteres; eine Wärmepumpe verliert mit jedem Grad Vorlauf an Leistungszahl und erreicht hohe Niveaus nur als Hochtemperaturgerät. Ein Pufferspeicher gleicht Schichtwechsel und Anfahrspitzen aus, hilft aber nur, wenn er die geforderte Temperatur hält: Geschichtet liefert er dem Prozess nur das Wasser aus Schichten, die heiß genug sind.
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+EPOS-Plan führt die Prozesswärme als eigenen Wärmekanal neben Heizung und Brauchwasser. Jeder Prozess bringt zwölf Monatswerte und einen Wochengang aus 168 Stundenwerten mit; der Jahresverbrauch skaliert die Monatswerte, und der Wochengang verteilt jeden Monat auf seine Stunden. Ein Betriebskalender legt Feiertage – sie tragen den Sonntag des Wochengangs – und Betriebsferien darauf. Der Katalog liefert acht typische Betriebsweisen als Vorlage.
+
+[[Datei:Wochenprofil_Prozesswaerme.svg|mini|600px|Prinzipbild: Wochenprofile im Ein- und Zweischichtbetrieb, unten dieselbe Woche mit einem Feiertag aus dem Betriebskalender.]]
+
+Trägt ein Prozess ein Temperaturpaar, bildet der Lauf je Stunde den höchsten geforderten Vorlauf aller laufenden Prozesse und ihren mengengewichteten Rücklauf. Ein Erzeuger, der diesen Vorlauf nicht erreicht, deckt den Prozess in dieser Stunde nicht; eine Wärmepumpe rechnet an der Kennlinie, die ihn erreicht; ein geschichteter Speicher gibt nur aus ausreichend heißen Schichten ab. Ohne Temperaturpaar ist der Prozess eine reine Wärmemenge.
+
+Gedeckt wird der Kanal nur von Erzeugern, deren Wärmesenke ihn ausdrücklich bedient – direkt oder über einen Pufferspeicher mit der Nutzung Prozesswärme. Die Rangfolge der Senken einer Anlage entscheidet, ob der Prozess vor der Heizung beliefert wird.
+
+[[Datei:Einbindung_Prozesswaerme.svg|mini|600px|Prinzipbild: Kessel mit Prozesspuffer auf Rang 1 und Heizkreis auf Rang 2; die Wärmepumpe erreicht den Prozessvorlauf nicht.]]
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| Betriebsweise und Jahresverbrauch || Menge und Wochengang des Prozesses
+|-
+| Betriebskalender || Feiertage und Betriebsferien im Verlauf
+|-
+| Vorlauf und Rücklauf || welcher Erzeuger und welcher Speicher den Prozess in einer Stunde erreicht
+|-
+| Wärmesenke ''Prozesswärme'' oder ''Pufferspeicher Prozesswärme'' || welcher Erzeuger den Prozess deckt, direkt oder über einen Speicher
+|-
+| Rangfolge der Senken || ob der Prozess vor der Heizung beliefert wird
+|-
+| Nutzung und Schichtung des Speichers || ob und ab welcher Temperatur der Speicher an den Prozess abgibt
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Kein Erzeuger für den Prozess.''' Die Senke Heizkreis bedient die Prozesswärme nicht; ohne eigene Senke bleibt der Prozess ungedeckt.
+* '''Niveau zu hoch für die Wärmepumpe.''' Liegt der Prozessvorlauf über ihrer Kennlinie, deckt sie den Prozess nicht; bedient sie Prozess und Heizung in einer Stunde, rechnet sie die ganze Stunde am hohen Vorlauf.
+* '''Ein Niveau je Prozess.''' Chargen mit wechselnder Temperatur lassen sich nur als getrennte Prozesse abbilden.
+* '''Das Schichtmodell ist kein Messwert.''' Die Katalogvorlagen geben einen typischen Verlauf; für einen konkreten Betrieb sind Monatswerte, Wochengang und Temperaturen zu prüfen.
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Programm Dokumentation/Prozesswärme|Prozesswärme]] – Bedienung: Prozesse, Jahresverbrauch, Temperaturniveau und Einbindung in die Anlage
+* [[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]] – Rechenweg und Temperaturniveau des Kanals
+* [[Industrie und Gewerbe]] – Temperaturniveaus, Schichtprofile und Abwärme als Wärmequelle
+* [[Grundlagen/Pufferspeicher|Pufferspeicher]] – Schichtung, Kapazität und Schaltschwellen
+* [[Grundlagen/Hydraulikschemata#prozesswaerme-einbindung|Hydraulikschemata]] – Prozesswärme direkt und über einen Prozesspuffer
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
