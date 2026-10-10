@@ -65,6 +65,10 @@ public static class Satzangaben
         if (senken.Length > 0) liste.Add(new(Resource.AUSWAHL_ZF_SENKEN, senken));
     }
 
+    /// <summary>Eine Zahl mit bis zu zwei Nachkommastellen in der Kultur des Anwenders, dahinter die Einheit.</summary>
+    public static string Zahl(double wert, string einheit)
+        => wert.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture) + (einheit.Length > 0 ? " " + einheit : "");
+
     /// <summary>Vorlauf/Rücklauf in °C; ohne beide nichts.</summary>
     public static void Temperaturpaar(List<Satzangabe> liste, int? vorlauf, int? ruecklauf)
     {

@@ -1253,7 +1253,8 @@ public class StromspeicherDialogTests : EposBunitContext
             .Add(x => x.Katalogzeilen, Katalogzeilen)
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.ProjektDetail, z => new ErzeugerDetail(z.Bezeichner, "",
-                new[] { (Resource.SPD_LBL_LEISTUNG, "5"), (Resource.SP_LABEL_ENERGIE, "10") }))
+                new[] { ("Leistung [kW]:", "999"), ("Energie [kWh]:", "999") },
+                Kennwerte: new ErzeugerKennwerte { LeistungKw = 5, KapazitaetKwh = 10 }))
             .Add(x => x.Traegerkatalog, new[] { new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie") })
             .Add(x => x.KostenOeffnen, (_, _) => Task.CompletedTask)
             .Add(x => x.Kostensumme, _ => (8000.0, 120.0)));
@@ -1280,7 +1281,8 @@ public class StromspeicherDialogTests : EposBunitContext
 
         var angaben = Angaben(cut);
         Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_INVEST));
-        Assert.Equal("1", angaben[Resource.AUSWAHL_ZF_ANZAHL]);
+        // UeS2b: eine Projektzeile auf ihrer Projektkopie - die Anzahl entfaellt.
+        Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_ANZAHL));
     }
 
     [Fact]

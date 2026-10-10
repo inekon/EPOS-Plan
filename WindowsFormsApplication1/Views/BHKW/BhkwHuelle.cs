@@ -884,7 +884,9 @@ namespace WindowsFormsApplication1
                 felder.Add((Text_("BHKWK_LBL_MINDESTLAUFZEIT", "Mindestlaufzeit:"),
                             d.Teillast.MindestlaufzeitMin.Value.ToString(k) + " min"));
 
-            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+            // UeS2b: die Zahlwerte fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftungen.
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
+                                      Kennwerte: new ErzeugerKennwerte { PthermKw = d.Ptherm, PelKw = d.Pel });
         }
 
         /// <summary>

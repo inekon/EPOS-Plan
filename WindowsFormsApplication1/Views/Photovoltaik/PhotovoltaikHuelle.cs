@@ -1069,7 +1069,9 @@ namespace WindowsFormsApplication1
                 (Text_("PVD_LBL_LEISTUNG", "Modul Leistung [W]:"), d.Leistung.ToString("F2"))
             };
 
-            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+            // UeS2b: die Modulleistung als Zahl fuer die Zusammenfassung (kWp gesamt der Anlage).
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
+                                      Kennwerte: new ErzeugerKennwerte { ModulleistungW = d.Leistung });
         }
 
         // =================================================================================

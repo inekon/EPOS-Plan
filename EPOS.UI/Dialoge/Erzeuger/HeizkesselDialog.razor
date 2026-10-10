@@ -1508,9 +1508,8 @@
         CultureInfo k = CultureInfo.CurrentCulture;
         if (_projektZeile is ErzeugerZeile p)
         {
-            string? leistung = _detail.Felder.Where(f => f.Feld != LabelBrennstofftyp && ErzeugerDetail.IstZahl(f.Wert))
-                                             .Select(f => f.Wert).FirstOrDefault();
-            if (leistung is not null) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG, leistung + " kWth"));
+            // UeS2b: der Zahlwert des Details, nicht die Lage seiner Felder.
+            if (_detail.Kennwerte?.PthermKw is double leistung) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG, Satzangaben.Zahl(leistung, "kWth")));
             string? brennstoff = _detail.Felder.Where(f => f.Feld == LabelBrennstofftyp).Select(f => f.Wert).FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(brennstoff)) liste.Add(new(Resource.AUSWAHL_ZF_BRENNSTOFF, brennstoff));
             string traeger = _varianten.Where(v => v.Id == p.CarrierId).Select(v => v.Text).FirstOrDefault() ?? "";

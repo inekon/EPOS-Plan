@@ -234,7 +234,8 @@
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung des Satzes " + name,
         new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") },
-        ("Brennwertkessel", true));
+        ("Brennwertkessel", true),
+        new ErzeugerKennwerte { PthermKw = 120, PelKw = 60 });   // UeS2b: die Zahlwerte der Zusammenfassung
 
     /// <summary>Die Felder des Aufklappers "Alle Daten anzeigen" - ein Text, eine Zahl, ein Schalter.</summary>
     private static List<BrowserFeldwert> Felder() => new()

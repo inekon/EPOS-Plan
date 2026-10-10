@@ -889,7 +889,8 @@ namespace WindowsFormsApplication1
             };
 
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
-                                      (Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"), d.Brennwert));
+                                      (Text_("HZKK_LBL_BRENNWERT", "Brennwertkessel"), d.Brennwert),
+                                      new ErzeugerKennwerte { PthermKw = d.Ptherm });   // UeS2b: fuer die Zusammenfassung
         }
 
 

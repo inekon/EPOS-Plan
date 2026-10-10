@@ -1038,11 +1038,6 @@
         catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
     }
 
-    /// <summary>Der Wert des Detailfelds mit dieser Beschriftung; <c>null</c>, wenn es fehlt oder leer ist.</summary>
-    private string? Detailwert(string beschriftung)
-        => _detail.Felder.Where(f => f.Feld == beschriftung && !string.IsNullOrWhiteSpace(f.Wert))
-                         .Select(f => f.Wert).FirstOrDefault();
-
     /// <summary>Die projektbezogenen Werte der gewählten Projektzeile — gelesen mit den Kosten, nicht je Zeichnung.</summary>
     private Pufferangaben? _angaben;
 
@@ -1058,7 +1053,7 @@
         CultureInfo k = CultureInfo.CurrentCulture;
         if (_projektZeile is not null)
         {
-            if (Detailwert(Resource.PSPD_LBL_VOLUMEN) is { } volumen) liste.Add(new(Resource.AUSWAHL_ZF_VOLUMEN, volumen + " l"));
+            if (_detail.Kennwerte?.VolumenLiter is double volumen) liste.Add(new(Resource.AUSWAHL_ZF_VOLUMEN, Satzangaben.Zahl(volumen, "l")));
             if (_angaben is { } a)
             {
                 Satzangaben.Temperaturpaar(liste, a.Vorlauf > 0 ? a.Vorlauf : null, a.Ruecklauf > 0 ? a.Ruecklauf : null);

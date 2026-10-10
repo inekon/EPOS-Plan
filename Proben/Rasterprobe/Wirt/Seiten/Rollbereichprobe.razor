@@ -141,7 +141,13 @@
 
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung des Satzes " + name,
-        new[] { ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") }, ("Schalter", true));
+        new[] { ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") }, ("Schalter", true), KENNWERTE);
+
+    /// <summary>UeS2b: die Zahlwerte der Zusammenfassung - jeder Wirt liest seine (Volumen, Kapazitaet, Modulleistung).</summary>
+    private static readonly ErzeugerKennwerte KENNWERTE = new()
+    {
+        PthermKw = 120, PelKw = 60, VolumenLiter = 1000, KapazitaetKwh = 20, LeistungKw = 10, ModulleistungW = 400
+    };
 
     private static List<BrowserFeldwert> Felder() => new()
     {

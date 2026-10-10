@@ -1361,7 +1361,8 @@ public class PufferspeicherDialogTests : EposBunitContext
     {
         var cut = Aufbauen(
             projektDetail: id => new ErzeugerDetail("Projektkopie " + id, "",
-                new[] { (Resource.PSPD_LBL_HERSTELLER, "Musterwerk"), (Resource.PSPD_LBL_VOLUMEN, "600") }),
+                new[] { (Resource.PSPD_LBL_HERSTELLER, "Musterwerk"), ("Volumen [l]:", "999") },
+                Kennwerte: new ErzeugerKennwerte { VolumenLiter = 600 }),
             kostenOeffnen: (_, _) => Task.CompletedTask,
             kostensumme: _ => (2500.0, 40.0),
             projektangaben: _ => new Pufferangaben(70, 50, 10, 95, "Heizung"));
