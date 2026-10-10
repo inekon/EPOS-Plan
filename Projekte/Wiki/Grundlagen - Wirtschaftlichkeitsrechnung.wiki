@@ -54,7 +54,7 @@ DIN EN 17463 – im Sprachgebrauch nach ihrem englischen Titel „Valuation of E
 * eine '''Begründung des Betrachtungszeitraums''';
 * und am Ende einen '''Entscheidungsvorschlag''', nicht nur ein Ergebnis.
 
-Der zweite Grundgedanke der Norm ist der '''Referenzfall''': Bewertet wird die Maßnahme gegen den Weiterbetrieb. Nicht die Frage „verdient die neue Anlage Geld?" ist zu beantworten, sondern „ist die neue Anlage über den Betrachtungszeitraum günstiger als das Weitermachen wie bisher?". Das ist ein Unterschied mit Folgen: Eine Maßnahme mit negativem absolutem Kapitalwert kann gegenüber einem noch teureren Weiterbetrieb eindeutig vorteilhaft sein.
+Der zweite Grundgedanke der Norm ist der '''Referenzfall''': Bewertet wird die Maßnahme gegen den Weiterbetrieb. Nicht die Frage „verdient die neue Anlage Geld?" ist zu beantworten, sondern „ist die neue Anlage über den Betrachtungszeitraum günstiger als der Weiterbetrieb der bestehenden?". Das ist ein Unterschied mit Folgen: Eine Maßnahme mit negativem absolutem Kapitalwert kann gegenüber einem noch teureren Weiterbetrieb eindeutig vorteilhaft sein.
 
 === Wie EPOS-Plan die Anforderungen abbildet ===
 {{Anker|valeri-abbildung}}
@@ -62,9 +62,9 @@ Der zweite Grundgedanke der Norm ist der '''Referenzfall''': Bewertet wird die M
 {| class="wikitable"
 ! Was die Norm verlangt !! Wie EPOS-Plan es abbildet
 |-
-| Kapitalwert über den gesamten Zahlungsstrom || Kapitalwertmethode mit Barwerten je Zahlungsreihe (Betrieb, Energie, CO₂-Abgabe, Ersatz, Erlöse)
+| Kapitalwert über den gesamten Zahlungsstrom || Kapitalwertmethode mit Barwerten je Zahlungsreihe (Investition, Betrieb, Energie einschließlich CO₂-Abgabe, Erlöse, Ersatz, Restwert)
 |-
-| Zahlungsströme je Jahr || Mehrjahresübersicht im Bericht und der Kapitalwert-Verlauf als Diagramm bzw. Jahresreihe
+| Zahlungsströme je Jahr || Block „2 · Zahlungsreihen“ der Seite Wirtschaftlichkeit, Mehrjahresübersicht im Bericht und der Kapitalwert-Verlauf als Diagramm bzw. Jahresreihe
 |-
 | Begründeter Betrachtungszeitraum || frei wählbar; eine Hinweiszeile stellt ihn den kürzesten und längsten Nutzungsdauern gegenüber und nennt die Folge (Restwert, Ersatz, deckungsgleich)
 |-
@@ -72,23 +72,25 @@ Der zweite Grundgedanke der Norm ist der '''Referenzfall''': Bewertet wird die M
 |-
 | Ersatzbeschaffung und Restwert || eigene ausgewiesene Zeilen, preisindiziert bzw. linear auf der Preisbasis der letzten Beschaffung
 |-
-| Preisentwicklung || drei Sätze: Energie, Betrieb und kapitalgebundene Kosten; CO₂-Preispfad und PV-Vergütung jahresgenau
+| Preisentwicklung || drei Sätze: Energie, Betrieb und Investition/Ersatz; CO₂-Preispfad und PV-Vergütung jahresgenau
 |-
 | Förderungen || Investitionszuschuss, KWK-Zuschlag und Steuergutschriften als jahresgenaue Reihen
 |-
 | Bandbreite ungünstig / erwartet / best || zwei Quellen: gepflegte Best-/Worst-Werte je Kostenzeile mit Vorrang und ein pauschaler Parametersatz je Szenario
 |-
-| Sensitivität || vier automatisch variierte Größen sowie die Zeile „ohne KWKG-Bonus"
+| Sensitivität || je Einflussgröße die Kapitalwertdifferenz bei −Δ, in der Basis und bei +Δ samt Steigung, jeder Wert vollständig neu gerechnet
 |-
-| Referenzfall Weiterbetrieb || Stammprojekt als Referenz; Varianten werden als Differenz dazu bewertet
+| Referenzfall Weiterbetrieb || wählbare Referenz der Vergleichsgruppe, vorgewählt das Stammprojekt; alle Differenzkennzahlen rechnen gegen sie
+|-
+| Risiko || wahlweise als Zuschlag auf den Kalkulationszins oder als zusätzliche Auszahlung je Jahr, in allen Szenarien gleich
 |-
 | Offenlegung der Annahmen || Parameternachweis mit Zins, Zeitraum, Preissteigerungen und Rechtsständen, dazu die Annahmenzeilen der Szenarien
 |-
-| Nicht monetäre Wirkungen || Freitextfeld am Projekt, das in den Bericht übernommen wird
+| Nicht monetäre Wirkungen || Liste der Wirkungen am Projekt mit Kategorie und Beurteilung, im Bericht als Tabelle
 |-
 | Entscheidungsvorschlag || Einstufung je Variante (empfohlen, bedingt empfohlen, nicht empfohlen) und ein Vorschlagssatz
 |-
-| Weitere Kennzahlen || Annuität, dynamische Amortisationszeit, interner Zinsfuß, Gestehungskosten
+| Weitere Kennzahlen || Annuität, Wärmegestehungskosten, dazu nachrichtlich dynamische Amortisationszeit und interner Zinsfuß
 |}
 
 An einer Stelle geht EPOS-Plan über die übliche Bewertungsvorlage hinaus: '''Eigenverbrauchsquote und Einspeiseanteil''' werden nicht als Annahme erfragt, sondern aus der Stundensimulation abgeleitet. Weil ein Leser sie sonst für eine Schätzung halten könnte, steht die Herleitung ausdrücklich im Bericht.
@@ -112,7 +114,7 @@ Die in der Kostenerfassung vorgesehenen Bandbreiten zwischen günstigem und ung�
 == Rolle von EPOS-Plan ==
 {{Anker|rolle-von-epos-plan}}
 
-EPOS-Plan liefert das vollständige, zeitaufgelöste Mengengerüst und die strukturierte Erfassung von Investitions-, Betriebs- und Energiekosten einschließlich Nutzungsdauern, Preisstände und Emissionsfaktoren. Auf dieser Grundlage rechnet EPOS-Plan Kapitalwert, Annuität und die Barwerte der einzelnen Zahlungsreihen selbst, bildet die Bandbreite aus ungünstigem, erwartetem und bestem Fall, weist Ersatzbeschaffungen und Restwert gesondert aus und formuliert einen Vorschlag zur Entscheidung. Welche Eingaben der zugehörige Dialog dafür bereithält und wie die Ergebnisse in Bericht und Arbeitsmappe erscheinen, beschreibt [[Wirtschaftlichkeit]].
+EPOS-Plan liefert das vollständige, zeitaufgelöste Mengengerüst und die strukturierte Erfassung von Investitions-, Betriebs- und Energiekosten einschließlich Nutzungsdauern, Preisstände und Emissionsfaktoren. Auf dieser Grundlage rechnet EPOS-Plan Kapitalwert, Annuität und die Barwerte der einzelnen Zahlungsreihen selbst, bildet die Bandbreite aus ungünstigem, erwartetem und bestem Fall, weist Ersatzbeschaffungen und Restwert gesondert aus und formuliert einen Vorschlag zur Entscheidung. Welche Eingaben der zugehörige Dialog dafür bereithält und wie die Ergebnisse in Bericht und Arbeitsmappe erscheinen, beschreibt [[Programm Dokumentation/Wirtschaftlichkeit]]; einen Überblick gibt [[Wirtschaftlichkeit]].
 
 Was das Programm nicht leisten kann, bleibt Sache der Bearbeiterin oder des Bearbeiters: die Begründung des Betrachtungszeitraums, die Beschreibung der nicht monetären Wirkungen und die Prüfung, ob die angesetzten Preise, Förderungen und Rechtsstände für das konkrete Projekt zutreffen.
 
@@ -123,6 +125,7 @@ Die Eingangsgrößen im Einzelnen beschreiben [[Grundlagen/Kostenrechnung|Kosten
 == Siehe auch ==
 {{Anker|siehe-auch}}
 
+* [[Programm Dokumentation/Wirtschaftlichkeit]] – Seite Wirtschaftlichkeit mit Referenz, Szenarien, Sensitivität und Bewertung nach DIN EN 17463
 * [[Wirtschaftlichkeit]] – Programmfunktion: Kalkulationszins, Betrachtungszeitraum, Preissteigerungen und die Auswertung je Variante
 * [[Kosten und Energiepreise]] – Programmfunktion: Investitions-, Betriebs- und Energiekosten mit Nutzungsdauern
 * [[Ergebnisdarstellung]] – Kennzahlen und Variantenvergleich im Ergebnis

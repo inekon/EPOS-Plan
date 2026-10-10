@@ -17,6 +17,8 @@ Wird Wärme geliefert – etwa in einem Nahwärmenetz oder bei Contracting –, 
 
 EPOS-Plan liefert die dafür nötigen Mengen zeitaufgelöst: Stromerzeugung aus BHKW und Photovoltaik, davon direkt genutzt, in den Speicher geladen und eingespeist, den verbleibenden Netzbezug, die Wärmeproduktion je Erzeuger, Betriebsstunden, Brennstoffeinsatz sowie Rest- und Überschussmengen. Damit lassen sich Eigenverbrauchsquote und Autarkiegrad ebenso bestimmen wie die Mengen, auf die Vergütungen und Zuschläge anzuwenden sind. Für die weitere Auswertung stehen sämtliche Zeitreihen als CSV-Export bereit.
 
+In der Wirtschaftlichkeitsrechnung bucht EPOS-Plan eingespeisten BHKW-Strom mit Vergütung, KWK-Zuschlag und Energiesteuer-Entlastung; selbst genutzter Strom zählt als vermiedener Bezug zum Arbeitspreis des Netzbezugs. Weil dieser Arbeitspreis die Stromsteuer bereits enthält, zählt die Stromsteuer nur einmal. Die Sätze für KWK-Zuschlag, Steuern und CO₂-Preis führt der Katalog der gesetzlichen Parameter, die Vergütung des PV-Stroms ein eigener Vergütungsdialog; Einzelheiten beschreibt [[Programm Dokumentation/Wirtschaftlichkeit]].
+
 == Typische Stellschrauben ==
 {{Anker|typische-stellschrauben}}
 
@@ -27,6 +29,7 @@ Der Eigenverbrauchsanteil lässt sich mit vergleichsweise geringem Aufwand erhö
 
 * [[Kosten und Energiepreise]] – Programmfunktion: Preise, Vergütungen und Zuschläge hinterlegen
 * [[Ergebnisdarstellung]] – Eigenverbrauch, Einspeisung und Autarkiegrad im Ergebnis
+* [[Programm Dokumentation/Gesetzesparameter]] – KWK-Zuschläge, Steuersätze und CO₂-Preis mit ihren Rechtsständen
 
 {{Navigation Grundlagen}}
 

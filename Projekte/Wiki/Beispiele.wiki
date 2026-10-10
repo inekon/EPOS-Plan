@@ -29,7 +29,7 @@ Die folgenden Beispiele zeigen, wie typische Aufgabenstellungen in EPOS-Plan abg
 
 '''Ausgangssituation.''' Ein Bürogebäude mit 4.500 Quadratmetern Nutzfläche, Betrieb werktags von 7 bis 18 Uhr, geringer Warmwasserbedarf, hoher Strombedarf durch Beleuchtung, IT und Lüftung.
 
-'''Vorgehen.''' Wählen Sie im Gebäudekatalog ein Nichtwohngebäude; für diese Gebäudeklasse verwendet EPOS-Plan Tagesverteilungskurven nach Jahreszeit und Bewölkung, die den werktäglichen Betrieb abbilden. Entscheidend sind hier die Nutzungsrandbedingungen: Nachtabsenkung, Wochenendabsenkung und die Ferien- beziehungsweise Betriebsruhezeiten. Der Strombedarf wird über Verbrauchertypen erfasst; liegt ein Viertelstundenlastgang des Netzbetreibers vor, lesen Sie ihn direkt ein – für Bürogebäude ist das die mit Abstand belastbarste Grundlage.
+'''Vorgehen.''' Wählen Sie im Gebäudekatalog ein Nichtwohngebäude; EPOS-Plan rechnet es Stunde für Stunde nach VDI 6007. Entscheidend sind hier die Nutzungsrandbedingungen im Reiter ''Konditionierung'': Sollwerte für Tag, Nacht und Wochenende, Ferien- beziehungsweise Betriebsruhezeiten, Lüftung, Geräte und Personen; Vorlagen dafür liefert der Katalog der [[Programm Dokumentation/Nutzungsprofile|Nutzungsprofile]]. Der Strombedarf wird über Verbrauchertypen erfasst; liegt ein Viertelstundenlastgang des Netzbetreibers vor, lesen Sie ihn direkt ein – für Bürogebäude ist das die mit Abstand belastbarste Grundlage.
 
 '''Auslegung.''' Typisch ist die Kombination aus Wärmepumpe und Photovoltaik. Der Vorteil liegt in der Gleichzeitigkeit: Anders als im Wohngebäude fällt der Strombedarf genau dann an, wenn die Sonne scheint, sodass sich hohe Eigenverbrauchsanteile ohne großen Batteriespeicher erreichen lassen. Prüfen Sie deshalb zuerst die Variante ohne Speicher und ergänzen Sie ihn nur, wenn die Autarkieanalyse einen nennenswerten Zuwachs zeigt.
 
@@ -53,7 +53,7 @@ Die folgenden Beispiele zeigen, wie typische Aufgabenstellungen in EPOS-Plan abg
 
 '''Vorgehen.''' Erfassen Sie die Prozesswärme über eigene Prozesstypen mit Monatswerten und einem Wochenprofil, das den Schichtbetrieb abbildet – zwei Schichten von Montag bis Freitag ergeben ein völlig anderes Profil als ein durchlaufender Prozess und führen zu anderen Erzeugergrößen. Legen Sie für jedes Temperaturniveau einen eigenen Prozesswärmeeintrag an. Die Hallenheizung kommt aus dem Gebäudemodul, der Strombedarf idealerweise aus dem gemessenen Viertelstundenlastgang.
 
-'''Auslegung.''' Konfigurieren Sie die Erzeuger als Kaskade: zuerst der Grundlasterzeuger – BHKW oder Hochtemperatur-Wärmepumpe –, danach der Kessel für die Spitzen. Für die Wärmepumpe entscheidet die verfügbare Wärmequelle über die Wirtschaftlichkeit; steht Prozessabwärme zur Verfügung, hinterlegen Sie sie als konstante Quellentemperatur oder als Quellprofil und nutzen die Regenerationsleistung, um die begrenzte Verfügbarkeit korrekt abzubilden.
+'''Auslegung.''' Konfigurieren Sie die Erzeuger als Kaskade: zuerst der Grundlasterzeuger – BHKW oder Hochtemperatur-Wärmepumpe –, danach der Kessel für die Spitzen. Für die Wärmepumpe entscheidet die verfügbare Wärmequelle über die Wirtschaftlichkeit; steht Prozessabwärme zur Verfügung, hinterlegen Sie sie als konstante Quellentemperatur oder als Quellprofil; ist ihre Menge begrenzt, bilden Sie das über die Quelle Pufferspeicher mit ihrer Regeneration ab.
 
 '''Worauf zu achten ist.''' Achten Sie auf den Restwärmebedarf am Ende der Kaskade – er zeigt, ob die Auslegung die Lastspitzen trägt. Der CSV-Export der Stundenwerte ist hier besonders nützlich, weil sich Prozess- und Heizwärme in der Weiterverarbeitung getrennt auswerten und mit Betriebsdaten abgleichen lassen. Bei elektrifizierten Prozessen sollten Sie die Rückwirkung auf die Netzanschlussleistung prüfen: Der Jahreshöchstwert des Strombedarfs steigt durch Wärmepumpen und Elektrokessel deutlich an.
 
@@ -86,7 +86,7 @@ Weitere gewerbliche Anwendungen sind unter [[Industrie und Gewerbe]] zusammenges
 
 '''Ausgangssituation.''' Beherbergung oder Pflege mit ganzjährig hohem Warmwasserbedarf, Zirkulation, erhöhten Hygieneanforderungen an die Speichertemperatur und gleichmäßigem Strombedarf für Küche, Wäscherei und Lüftung.
 
-'''Vorgehen.''' Der Schwerpunkt liegt auf dem Brauchwasser. Wählen Sie einen Typ mit passendem Tagesprofil – im Hotel mit ausgeprägter Morgenspitze, im Pflegeheim gleichmäßiger über den Tag verteilt – und setzen Sie den Jahresverbrauch einschließlich Zirkulationsverlusten an. Die Raumheizung ergänzen Sie über das Gebäudemodul.
+'''Vorgehen.''' Der Schwerpunkt liegt auf dem Brauchwasser. Wählen Sie einen Typ mit passendem Tagesprofil – im Hotel mit ausgeprägter Morgenspitze, im Pflegeheim gleichmäßiger über den Tag verteilt – und setzen Sie den Jahresverbrauch einschließlich Zirkulationsverlusten an. Alternativ erzeugt das [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] den Bedarf nach VDI 6002 aus Nutzungszonen, mit der Zirkulation als eigener Teilreihe. Die Raumheizung ergänzen Sie über das Gebäudemodul.
 
 '''Auslegung.''' Die hohen Temperaturanforderungen sprechen für eine Kombination: Eine Wärmepumpe deckt Heizung und Warmwasservorwärmung, ein zweiter Erzeuger übernimmt die Nacherwärmung. In EPOS-Plan bilden Sie das über die Wärmesenken ab – eine Maschine mit der Senke Heizung, eine zweite mit der Senke Warmwasser, jeweils mit eigener Vorlauftemperatur und eigener Priorität. Der gleichmäßige Bedarf macht das Objekt zugleich zu einem guten Einsatzfall für ein BHKW.
 
@@ -97,11 +97,11 @@ Weitere gewerbliche Anwendungen sind unter [[Industrie und Gewerbe]] zusammenges
 
 '''Ausgangssituation.''' Schulgebäude mit angeschlossener Sporthalle, Unterrichtsbetrieb an Werktagen, ausgeprägte Ferienzeiten, Hallennutzung durch Vereine auch abends und am Wochenende.
 
-'''Vorgehen.''' Hier zahlt sich die Ferienverwaltung des Gebäudemoduls aus: Vier frei definierbare Ferienzeiträume mit eigener Absenktemperatur bilden den realen Betrieb ab. Legen Sie Schulgebäude und Sporthalle als getrennte Gebäude an, da sich Nutzungszeiten und Solltemperaturen unterscheiden. Die Duschen der Halle erfassen Sie über einen eigenen Brauchwassertyp mit Abendspitzen.
+'''Vorgehen.''' Hier zahlen sich die [[Programm Dokumentation/Gebäude#kalender|Kalender]] des Gebäudes aus: Ferien, Feiertage und Betriebspausen als Perioden mit eigenen Sollwerten bilden den realen Betrieb ab. Legen Sie Schulgebäude und Sporthalle als getrennte Gebäude an, da sich Nutzungszeiten und Solltemperaturen unterscheiden. Die Duschen der Halle erfassen Sie über einen eigenen Brauchwassertyp mit Abendspitzen.
 
 '''Auslegung.''' Die stark schwankende Last mit ausgeprägten Aufheizspitzen nach Wochenenden und Ferien ist die eigentliche Herausforderung. Ein Pufferspeicher glättet die Spitzen und erlaubt eine kleinere Grundlastmaschine; rechnen Sie mehrere Speichergrößen und beobachten Sie die Wirkung auf die Spitzenkesselleistung.
 
-'''Worauf zu achten ist.''' Der Kennwert „minimale Spitzenkesselleistung“ im Ergebnisbereich der Wärmepumpe zeigt, welche Reserve tatsächlich benötigt wird. Prüfen Sie außerdem, ob die Aufheizspitzen durch eine frühere Anhebung der Solltemperatur entschärft werden können – im Modell lässt sich das über die Absenkzeiten unmittelbar nachvollziehen.
+'''Worauf zu achten ist.''' Der Kennwert „minimale Spitzenkesselleistung“ im Ergebnisbereich der Wärmepumpe zeigt, welche Reserve tatsächlich benötigt wird. Prüfen Sie außerdem, ob die Aufheizspitzen durch eine zeitigere Anhebung der Solltemperatur entschärft werden können – im Modell lässt sich das über die Kalender oder die [[Programm Dokumentation/Gebäudemodell VDI 6007#aufheizoptimierung|Aufheizoptimierung]] unmittelbar nachvollziehen.
 
 == Empfohlenes Vorgehen bei eigenen Projekten ==
 {{Anker|empfohlenes-vorgehen-bei-eigenen-projekten|ab-vorgehen}}
