@@ -1,0 +1,73 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Brauchwasser
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Brauchwasser.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+'''Brauchwasser''' – auch Trinkwarmwasser – ist das erwärmte Trinkwasser für Duschen, Waschen und Küche. Sein Wärmebedarf hängt nicht vom Wetter ab, sondern von den Menschen im Gebäude: Er fällt in kurzen Spitzen an, morgens und abends gehäuft, und verlangt höhere Temperaturen als eine moderne Heizung. Damit prägt er die Wahl des Speichers und die Arbeitsweise der Erzeuger stärker, als sein Anteil an der Jahresmenge vermuten lässt.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Die Wärme für Brauchwasser folgt aus Menge und Temperaturhub:
+
+: <math>Q = V \cdot c_{\mathrm{w}} \cdot (\vartheta_{\mathrm{Zapf}} - \vartheta_{\mathrm{KW}})</math>
+:: <math>V</math> – gezapfte Menge [l]
+:: <math>c_{\mathrm{w}}</math> – spezifische Wärmekapazität von Wasser, rund 1,163 [Wh/(l·K)]
+:: <math>\vartheta_{\mathrm{Zapf}}</math>, <math>\vartheta_{\mathrm{KW}}</math> – Zapf- und Kaltwassertemperatur [°C]
+
+Ein Bewohner, der am Tag 40 Liter mit 60&nbsp;°C aus 10&nbsp;°C kaltem Wasser zapft, braucht damit rund <math>40 \cdot 1{,}163 \cdot 50 \approx 2\,300</math>&nbsp;Wh am Tag, gut 0,8&nbsp;MWh im Jahr. Dazu kommen Verluste: der Speicher kühlt aus, und eine '''Zirkulation''' hält das Warmwasser in den Leitungen auf Temperatur, damit es an jeder Zapfstelle sofort ankommt. In großen Gebäuden mit langen Leitungen erreicht die Zirkulation einen erheblichen Teil der Nutzwärme.
+
+Weil die Zapfung in Spitzen kommt, die Erzeuger aber gleichmäßig arbeiten sollen, steht fast immer ein '''Speicher''' dazwischen: ein Trinkwasserspeicher, ein Pufferspeicher mit '''Frischwasserstation''', die das Trinkwasser erst im Durchfluss erwärmt, oder ein '''Kombispeicher''', der Heizung und Warmwasser aus einem Vorrat bedient. Für Großanlagen gelten die Hygieneregeln des DVGW-Arbeitsblatts W 551; die Temperatur am Speicheraustritt und im Zirkulationsrücklauf darf dort nicht beliebig sinken.
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+EPOS-Plan führt das Brauchwasser als eigenen Wärmekanal neben Heizung und Prozesswärme, Stunde für Stunde über ein Jahr. Den Bedarf liefert einer von zwei Wegen:
+
+* '''Bestandsprofile''' – ein Profil aus dem Katalog mit zwölf Monatswerten und einem Wochengang aus 168 Stundenwerten, skaliert auf den Jahresverbrauch. Das ergibt geglättete Stundenmittel.
+* '''Zapfprofil''' – Nutzungszonen mit Nutzungsart und Bezugsgröße, etwa Wohnungen, Hotelzimmer oder Beschäftigte. Der Generator bildet daraus Tagesbedarf, Tagesgang und Jahresgang, auf Wunsch aus gezogenen Zapfereignissen, und rechnet die Zirkulation als eigene Teilreihe ([[Grundlagen/Zapfprofile|Zapfprofile nach VDI 6002]]).
+
+Auf beiden Wegen liegt der Wochengang auf dem Wochentagsraster der Klimaregion; Feiertage zählen im Zapfprofil wie ein Sonntag, ein Betriebskalender legt Feiertage und Ferien auf die Bestandsprofile. Die '''Zirkulation''' kommt als eigene Teilreihe hinzu, die '''thermische Desinfektion''' als eigener Posten.
+
+Gedeckt wird der Kanal von den Erzeugern, deren Wärmesenke ihn bedient – direkt oder über einen Brauchwasser- oder Kombispeicher. Die Temperatur wirkt am Speicher: Ein geschichteter Speicher gibt an das Brauchwasser nur aus warmen Schichten ab, ein Frischwassermodul nur, solange oben die Zapftemperatur plus Grädigkeit anliegt.
+
+[[Datei:Einbindung_Brauchwasser.svg|mini|600px|Prinzipbild: Kessel und Wärmepumpe laden einen Kombispeicher, das Frischwassermodul zapft oben, die Zirkulation läuft zum Modul zurück.]]
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| Profil und Jahresverbrauch || Menge und zeitlicher Verlauf des Bedarfs auf dem Weg der Bestandsprofile
+|-
+| Nutzungszonen des Zapfprofils || Menge, Tagesgang und Spitzen aus Nutzung und Bezugsgröße
+|-
+| Zirkulation || eine Dauerlast in den Laufstunden, unabhängig von der Zapfung
+|-
+| Thermische Desinfektion || regelmäßiges Aufheizen des Speichervolumens auf die Zieltemperatur
+|-
+| Wärmesenke der Erzeuger || wer das Brauchwasser deckt, direkt oder über welchen Speicher
+|-
+| Nutzung, Schichtung und Frischwassermodul des Speichers || aus welchem Vorrat und ab welcher Temperatur gezapft wird
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* '''Der Jahresanteil täuscht.''' Brauchwasser ist oft der kleinere Teil der Jahreswärme, bestimmt aber Speichergröße, Spitzenleistung und das Temperaturniveau, auf dem ein Erzeuger arbeiten muss.
+* '''Hohe Temperatur kostet Wärmepumpen Effizienz.''' Je höher der Vorlauf für das Warmwasser, desto kleiner die Leistungszahl; ein Kombispeicher mit Nachheizung oben oder ein Booster hält die Hauptwärmepumpe auf niedrigem Niveau.
+* '''Zirkulation unterschätzt.''' In weitläufigen Gebäuden kann sie mehr Wärme brauchen als erwartet; sie gehört als eigene Größe in die Rechnung.
+* '''Stundenmittel glätten.''' Für die Jahresbilanz genügen sie, für Speicher- und Leistungsauslegung zählen die Spitzen des Zapfprofils.
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Programm Dokumentation/Brauchwasser|Brauchwasser]] – Bedienung: Profile, Jahresverbrauch und Einbindung in die Anlage
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil|Brauchwasser-Zapfprofil]] – Nutzungszonen, Auslegung und Katalog der Nutzungsarten
+* [[Grundlagen/Zapfprofile|Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
+* [[Grundlagen/Pufferspeicher|Pufferspeicher]] – Schichtung, Kapazität und Schaltschwellen
+* [[Grundlagen/Hydraulikschemata#brauchwasser-und-prozesswaerme|Hydraulikschemata]] – Brauchwasser und Prozesswärme als Wärmesenken
+* [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] – der Rechenweg der Bestandsprofile
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
