@@ -223,6 +223,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 09.10.2026: Im Dialog Photovoltaik Ganglinie wird eine Projektkopie, die vom Katalog abweicht, gekennzeichnet und lässt sich über „Aus dem Katalog erneuern…“ auf den Katalogstand bringen. (#869)
 - Seit 09.10.2026: Feiertage liegen im Gemeinjahr nach festen Regeln: Ostern ist der Sonntag um den 8. April des Kalenderrasters, ein Jahr gilt nur mit einer Preisreihe. (#874)
 - Seit 10.10.2026: Kalenderbild und Datumsanzeige der Gebäudekalender nennen den Wochentag des 1. Januar der Klimaregion statt eines Bezugsjahrs; Gebäude, Trinkwarmwasser und Bedarfsprofile rechnen mit denselben Wochentagen, eine Preisreihe mit Jahr setzt für alle den Kalender dieses Jahres. (#880)
+- Seit 10.10.2026: Die Verwaltung der Kältemaschinen zeigt ihre Liste mit den Spalten der Wärmepumpen-Verwaltung, einer Spalte „Herkunft“, einem Schalter zum Ausblenden der Typkennfelder, die Kennlinie als Diagramm und den Vergleich mit Kennwerten nebeneinander; unter Windows öffnet sie ein eigenes Fenster. (#881)
+- Seit 10.10.2026: Im Dialog der Kachel „Kühlung und Kälteanlagen“ lassen sich unter „Hinzufügen…“ die Typkennfelder laden und die Katalogverwaltung öffnen. (#881)
+- Seit 10.10.2026: In jedem Katalog verneint ein vorangestelltes „!“ den Trichter einer Textspalte. (#881)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 
