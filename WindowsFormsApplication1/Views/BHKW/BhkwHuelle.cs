@@ -611,7 +611,8 @@ namespace WindowsFormsApplication1
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = Text_("ALLG_BTN_JA", "Ja"),
                 ["NeinText"] = Text_("ALLG_BTN_NEIN", "Nein"),
-                ["FrageLoeschen"] = Text_("BHKWV_FRAGE_LOESCHEN", "Wollen Sie wirklich das BHKW löschen?"),
+                ["FrageLoeschen"] = Text_("BHKWV_FRAGE_LOESCHEN",
+                    "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?"),
                 ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
                 ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!"),
 

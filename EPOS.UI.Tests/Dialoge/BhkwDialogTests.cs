@@ -847,6 +847,17 @@ public class BhkwDialogTests : EposBunitContext
     }
 
     [Fact]
+    public void Die_Loeschfrage_nennt_den_Namen_des_gewaehlten_Satzes()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        Knopf(cut, "Löschen").Click();
+
+        Assert.Contains("\"Modul A\"", cut.Find(".epos-rueckfrage").TextContent);
+    }
+
+    [Fact]
     public void Ein_schreibgeschuetzter_Satz_wird_mit_Grund_abgelehnt()
     {
         var cut = Aufbauen(katalogLoeschen: _ =>

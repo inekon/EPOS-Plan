@@ -12740,7 +12740,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Return</value>
   </data>
   <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
-    <value>Do you really want to delete this CHP?</value>
+    <value>The catalogue entry "{0}" is deleted for ALL projects. Continue?</value>
   </data>
   <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>This master record is write-protected (ReadOnly) and cannot be deleted.</value>
@@ -50058,19 +50058,19 @@ chart</value>
   <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
     <value>No change</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_KEINE" xml:space="preserve">
     <value>No change.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_FEHLT" xml:space="preserve">
     <value>The record with number {0} was not found. Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPERRT" xml:space="preserve">
     <value>“{0}” is locked. Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
     <value>“{0}”: {1} Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} records saved.</value>
   </data>
   <data name="HZK_LBL_SUMME" xml:space="preserve">

@@ -5748,7 +5748,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das BHKW löschen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag &quot;{0}&quot; wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
         /// </summary>
         public static string BHKWV_FRAGE_LOESCHEN {
             get {
@@ -41727,51 +41727,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_FEHLT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_GESPEICHERT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPEICHERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_GESPERRT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPERRT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_KEINE {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_KEINE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_VERSTOSS {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_VERSTOSS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage. ähnelt.
         /// </summary>
         public static string HZK_RUECK_BLEIBT {
@@ -48851,6 +48806,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATRUECK_WAHL_UEBERSCHREIBEN {
             get {
                 return ResourceManager.GetString("KATRUECK_WAHL_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_FEHLT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_KEINE {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_VERSTOSS {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_VERSTOSS", resourceCulture);
             }
         }
         

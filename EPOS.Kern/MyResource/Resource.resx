@@ -12747,7 +12747,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Rücklauf</value>
   </data>
   <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
-    <value>Wollen Sie wirklich das BHKW löschen?</value>
+    <value>Der Katalogeintrag "{0}" wird für ALLE Projekte gelöscht. Fortfahren?</value>
   </data>
   <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
@@ -50065,19 +50065,19 @@ Chart</value>
   <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
     <value>Keine Änderung</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_KEINE" xml:space="preserve">
     <value>Keine Änderung.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_FEHLT" xml:space="preserve">
     <value>Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPERRT" xml:space="preserve">
     <value>„{0}“ ist gesperrt. Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
     <value>„{0}“: {1} Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} Sätze gespeichert.</value>
   </data>
   <data name="HZK_LBL_SUMME" xml:space="preserve">
