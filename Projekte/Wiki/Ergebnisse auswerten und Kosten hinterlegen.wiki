@@ -1,0 +1,56 @@
+Beim Schritt '''Ergebnisse auswerten und Kosten hinterlegen''' stehen nach dem Start der Simulation die Ergebnisse in einer mehrstufigen Auswertung bereit – zunächst als Überblick über die Deckungsanteile, dann getrennt nach Erzeugern mit Jahresganglinien, Kennzahlen und Modultabellen. Parallel dazu erfassen Sie im Kostenmodul die Investitions-, Betriebs- und Energiekosten der Anlage, sodass technische und wirtschaftliche Bewertung auf demselben Datenstand beruhen.
+
+{{Tipp|Sehen Sie sich zuerst diese vier Größen an: den Anteil der Zusatzheizung, den Bivalenzpunkt, die Vollbenutzungsstunden und den Restwärmebedarf. Bleibt Restwärme offen, trägt die Auslegung die Spitzen nicht. Auf der Stromseite geben Eigenverbrauchsquote und Autarkiegrad die Antwort auf die Speicherfrage.}}
+
+== Energiebedarf ==
+{{Anker|energiebedarf|jahresdauerlinie}}
+
+Der Bereich ''Energiebedarf'' zeigt Wärmelast und Strombedarf als Jahresganglinie oder Jahresdauerlinie mit Maximum und Jahressumme, die Wärmelast getrennt nach Heizwärme und Warmwasser.
+
+== Auswertung je Erzeuger ==
+{{Anker|auswertung-je-erzeuger|erzeuger}}
+
+Der Bereich ''Wärmepumpe'' weist Wärmebedarfsdeckung, Bivalenzpunkt, Speicherkapazität, durchschnittliche Vollbenutzungsstunden und minimale Spitzenkesselleistung aus, dazu Ganglinien für Bedarf, Heizstab und Produktion, den Stromverbrauch, die Leistung über der Außentemperatur und eine Modultabelle.
+
+Für ''Heizkessel'', ''BHKW'', ''Solarthermie'' und ''Photovoltaik'' gibt es entsprechende Bereiche mit Deckungsanteil, Produktion, Restbedarf, Verbrauchs- und Emissionswerten.
+
+== Ergebnisseite und Autarkieanalyse ==
+{{Anker|ergebnisseite-und-autarkieanalyse|ergebnisseite|autarkie}}
+
+Die Ergebnisseite fasst zusammen: zwei Ringdiagramme für Wärme- und Strombedarfsdeckung, Kennzahlkacheln für den verbleibenden Rest, eine Tabelle der Jahresarbeit je Erzeuger.
+
+Die Autarkieanalyse stellt monatsweise Direktverbrauch, Speichernutzung und Netzbezug gegenüber und weist Autarkiegrad, solarthermische Deckung, thermischen Nutzungsgrad und CO₂-Einsparung aus.
+
+Zwei weitere Ansichten zeigen Wärme- und Stromproduktion als Jahresganglinie mit ein- und ausblendbaren Erzeugern und dem Speicherfüllstand. Das Ergebnis lässt sich je Projekt speichern.
+
+{{Tipp|Ändern Sie jeweils nur eine Größe – Vorlauftemperatur, Maschinengröße, Speichervolumen, Betriebsmodus – und rechnen Sie erneut; so bleibt der Effekt jeder Entscheidung sichtbar.}}
+
+== Zeitreihen exportieren ==
+{{Anker|zeitreihen-exportieren|export|csv}}
+
+Alle Zeitreihen können als CSV-Datei mit Zeitstempel und Außentemperatur exportiert werden.
+
+== Kosten hinterlegen ==
+{{Anker|kosten-hinterlegen|kosten|energiepreise}}
+
+Erst wenn die Technik steht, lohnt die Kostenerfassung, denn dann liegen die Mengen fest. Das Kostenmodul gliedert sich in Investitions-, Betriebs- und Energiekosten: je Komponente Positionen mit Betrag, Einheit, Nutzungsdauer und einer Bandbreite zwischen günstigem und ungünstigem Fall, wobei sich die im Technikmodul hinterlegten Anlagenkosten als Planwert übernehmen lassen.
+
+Bei den Energiepreisen pflegen Sie je Energieträger Arbeits-, Grund- und Leistungspreis, Heiz- beziehungsweise Brennwert sowie Emissionsfaktoren mit Gültigkeitsdatum.
+== Wirtschaftlichkeit und Bericht ==
+{{Anker|wirtschaftlichkeit-und-bericht|bewertung}}
+
+Auf dem erfassten Kostenstand bewertet die [[Wirtschaftlichkeit]] das Projekt und seine Varianten nach der Kapitalwertmethode gemäß DIN EN 17463 – mit Szenarien, Sensitivitäten, KWKG-Zuschlag, CO₂-Abgabe und Emissionsbilanz. Für die Weitergabe fasst [[Varianten und Bericht]] die Vergleichsgruppe in einem Word-Bericht und einer Excel-Arbeitsmappe zusammen; jeder Berichtslauf simuliert die beteiligten Projekte zuvor neu.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Ergebnisdarstellung]] – Registerkarten, Kennzahlen und Diagramme im Einzelnen
+* [[Datenexport]] – Umfang und Aufbau der CSV-Dateien
+* [[Kosten und Energiepreise]] – Kostenpositionen, Preise und Emissionsfaktoren
+* [[Grundlagen/Wirtschaftlichkeitsrechnung]] – Bewertung der erfassten Kosten
+
+← [[Simulation konfigurieren und starten]] | [[Programmablauf|Übersicht]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

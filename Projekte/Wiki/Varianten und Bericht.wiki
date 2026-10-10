@@ -1,0 +1,59 @@
+'''Varianten''' sind eigenständige Kopien eines Projekts, die zusammen mit ihrem Stammprojekt eine Vergleichsgruppe bilden. Der '''Bericht''' stellt diese Gruppe in einem Word-Dokument und einer Excel-Arbeitsmappe gegenüber. Jeder Berichtslauf simuliert die beteiligten Projekte zuvor neu und rechnet anschließend ihre Wirtschaftlichkeit, sodass ein Bericht nie auf veralteten Ergebnissen steht.
+
+== Vergleichsgruppe aus Stammprojekt und Varianten-Projekt ==
+{{Anker|vergleichsgruppe-aus-stamm-und-varianten|vergleichsgruppe|stammprojekt}}
+
+Eine Vergleichsgruppe besteht aus dem Stammprojekt und den daraus abgeleiteten Varianten. Das Stammprojekt ist der Bezugspunkt jedes Vergleichs: Die Kennzahlen einer Variante werden als Differenz gegen den Stamm ausgewiesen. Jede Variante führt eigene Datensätze – was Sie dort ändern, wirkt sich weder auf das Stammprojekt noch auf die übrigen Varianten aus.
+
+== Variante anlegen ==
+{{Anker|variante-anlegen|als-variante-speichern}}
+
+Varianten entstehen immer aus dem Stamm. Bringen Sie das geöffnete Projekt auf den gewünschten Stand und rufen Sie {{Menü|Projekte|Als Variante speichern…}} auf. Sie vergeben einen Namen, unter dem der aktuelle Stand als Variante weitergeführt wird; das Stammprojekt bleibt unverändert. Anschließend ändern Sie in der Variante gezielt eine Größe – Maschinengröße, Speichervolumen, Betriebsmodus oder die Reihenfolge der Erzeuger.
+
+{{Tipp|Ändern Sie je Variante nur eine Größe. Nur dann lässt sich ein Unterschied im Vergleich eindeutig einer Ursache zuordnen.}}
+
+== Bericht zusammenstellen ==
+{{Anker|bericht-zusammenstellen|berichtsdialog|bausteine}}
+
+Den Berichtsdialog öffnen Sie über {{Menü|Projekte|Varianten/Bericht}}. Dort wählen Sie, welche Projekte der Gruppe in den Bericht eingehen, und legen fest, aus welchen Bausteinen er besteht. Die Zusammenstellung wird gespeichert und steht beim nächsten Bericht wieder zur Verfügung. Texte, Beschriftungen und Zahlenformate folgen der eingestellten Sprache..
+
+== Ablauf eines Berichtslaufs ==
+{{Anker|ablauf-eines-berichtslaufs|neu-rechnen|rechenkette}}
+
+Jeder Lauf rechnet neu, und zwar in dieser Reihenfolge: zuerst die frische Simulation aller gewählten Projekte, dann die Wirtschaftlichkeitsrechnung der gesamten Gruppe, erst danach die Bausteine des Dokuments. Word und Excel nehmen denselben Weg und weisen deshalb zwingend dieselben Zahlen aus. Vor dem Start nennt der Dialog die Zahl der beteiligten Projekte, denn der Lauf braucht Zeit: Für drei Projekte sind rund 35 Sekunden zu veranschlagen.
+
+{{Hinweis|Schlägt die Rechnung für ein Projekt fehl, bricht der Lauf nicht ab. Das betroffene Projekt erscheint mit Namen und Begründung in der Abschlussmeldung, in der Anhangtabelle der Simulationsstände und im Kapitel mit den Hinweisen zum Berichtslauf. Einen halben Bericht ohne Hinweis gibt es nicht.}}
+
+== Word-Bericht ==
+{{Anker|word-bericht|vergleichsbericht}}
+
+Der Word-Bericht ist als Vergleichsbericht aufgebaut: Deckblatt, Inhaltsverzeichnis und Projektbeschreibung einschließlich der Gebäudedaten, eine Komponenten-Matrix mit den Kenndaten und den Abweichungen je Variante, die Ergebnisse je Variante, der Variantenvergleich mit Differenz-Tabellen sowie ein Anhang mit den Simulationsständen und der Methodik.
+
+=== Diagramme ===
+{{Anker|diagramme}}
+
+Eingebettet sind Kuchendiagramme der Bedarfsdeckung, Balkendiagramme für den Variantenvergleich sowie vier Ganglinien: der Wärme-Jahresverlauf, die Jahresdauerlinie, die Strombilanz je Monat und der Speicherverlauf. Alle Diagramme stammen aus der Simulation desselben Laufs, sodass keine gemischten Rechenstände nebeneinanderstehen.
+
+== Excel-Bericht ==
+{{Anker|excel-bericht|arbeitsmappe}}
+
+Parallel entsteht eine Excel-Arbeitsmappe mit Kennzahlen-, Vergleichs- und Detailblättern. Sie ist der richtige Weg, wenn Sie einzelne Werte weiterverarbeiten oder eigene Auswertungen anhängen möchten.
+
+== Vorlage und Ausgabe ==
+{{Anker|vorlage-und-ausgabe|berichtsvorlage}}
+
+Der Word-Bericht entsteht aus einer mitgelieferten Vorlage, die sich an das eigene Erscheinungsbild anpassen lässt. Kopf- und Fußzeilen, Schriften und Farben bleiben damit in Ihrer Hand, ohne dass am Aufbau des Berichts etwas zu ändern wäre.
+
+{{Hinweis|Für die Ausgabe ist keine Office-Installation erforderlich. EPOS-Plan schreibt die Word- und die Excel-Datei selbst.}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Wirtschaftlichkeit]] – die Kennzahlen, die jeder Berichtslauf mitrechnet
+* [[Kosten und Energiepreise]] – die Eingangsgrößen der Bewertung
+* [[Simulation]] – der Rechenlauf, den der Bericht für jedes Projekt auslöst
+* [[Ergebnisdarstellung]] – dieselben Ergebnisse am Bildschirm
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

@@ -1,0 +1,39 @@
+Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen. Fünf Dialoge teilen sich diese Seite: die Projektliste hinter {{Menü|Projekte|Öffnen}}, ''Projekt Speichern unter'' für die Kopie unter neuem Namen, das Detailformular ''Konfiguration Projekt'', der Austauschdialog ''Projekt exportieren / importieren'' und dessen Konfliktliste.
+
+== Eingaben ==
+
+* '''Projektliste''' – der Dialog ''Projekt öffnen'' führt die Spalten ''Projektname'', ''Kunde'' und ''Geändert''. Ein Klick auf einen Spaltenkopf sortiert um, ein zweiter kehrt die Richtung um; unter der Liste steht die Anzahl der angezeigten Projekte.
+* '''Suchen''' – filtert die Liste nach Projektname, Kunde und Beschreibung, ohne Rücksicht auf Groß- und Kleinschreibung. Gesucht wird im bereits gelesenen Bestand, die Liste folgt der Eingabe ohne Verzögerung.
+* '''Öffnen''' – ''OK'' oder ein Doppelklick öffnet das gewählte Projekt und füllt alle Listen des Detailformulars. Dupliziert wird dabei nichts; dafür ist ''Speichern unter'' da.
+* '''Zuletzt geöffnet''' – die Kachel wechselt direkt zum zuletzt geöffneten Projekt; die Projektliste erscheint hier nur als Rückfall (nach ''Geändert'' absteigend vorsortiert), wenn kein gemerktes Projekt mehr existiert.
+* '''Projektauswahl''' – das Projekt, das unter einem neuen Namen abgelegt werden soll; die Auswahl bestimmt zugleich, womit Beschreibung, Kunde und Bearbeiter vorbelegt werden.
+* '''Neuer Projektname''' – der Name der Kopie; das Ausgangsprojekt bleibt unverändert erhalten.
+* '''Beschreibung, Kunde, Bearbeiter''' – aus dem gewählten Quellprojekt vorbelegt; Änderungen gelten nur für die Kopie.
+
+== Projekt exportieren und importieren ==
+{{Anker|export-import|wpx|projektaustausch}}
+
+Der Austauschdialog schreibt einzelne Projekte als Paketdatei mit der Endung ''.wpx'' und liest sie wieder ein – auch in eine andere Datenbank, etwa auf einem zweiten Rechner.
+
+* '''Exportieren''' – wählt ein Projekt und legt es als ''.wpx''-Paket ab; vorhandene Varianten des Projekts lassen sich einzeln mitexportieren.
+* '''Importieren''' – wählt ein Projekt ''Datei''  als .wpx-Paket. Nach ''wählen…'' zeigt der Dialog die Paketvorschau: Quellprojekt, Exportdatum, Schema-Version und die enthaltenen Varianten.
+* '''Zielname''' – bleibt das Feld leer, gilt der Projektname aus der Datei; ein eigener Name legt das Projekt darunter an.
+* '''Falls der Name bereits existiert''' – wahlweise unter neuem Namen importieren, das vorhandene Projekt überschreiben oder abbrechen.
+* '''Sicherungskopie''' – auf Wunsch legt der Import vorab eine Sicherung der gesamten Datenbank an; der Dateiname wird nach dem Import angezeigt.
+
+== Konfliktliste ==
+{{Anker|konfliktliste|importkonflikte}}
+
+Bringt das Paket Datensätze mit, die in der Zieldatenbank bereits vorhanden sein können, prüft der Import jeden einzeln:
+
+* '''Konfliktliste beim Import''' – je geprüftem Datensatz stehen Name, Befund und Aktion nebeneinander.
+* '''Befund''' – ob der Datensatz neu ist, identisch vorliegt, denselben Inhalt unter anderem Namen hat, ob der Name bereits vergeben ist oder in der Auswahl mehrfach vorkommt.
+* '''Aktion''' – importieren, auslassen, überschreiben oder unter neuem Namen umbenennen; ''Alle auslassen'' setzt jede Konfliktzeile auf ''auslassen''.
+* '''Schreibgeschützte Datensätze''' – mitgelieferte Katalogeinträge werden nicht überschrieben; der Dialog weist darauf hin.
+
+== Siehe auch ==
+
+* [[Projektverwaltung]] – Projektdatenbank, Anlage, Öffnen, Löschen und projekteigene Kopien
+* [[Programm Dokumentation/Kurzanleitung|Kurzanleitung]] – der Projektassistent und die Karten der Registerkarte ''Projekt''
+
+[[Kategorie:Programm Dokumentation]]

@@ -1,0 +1,22 @@
+Der '''Wärmebedarf''' entsteht aus bis zu vier Anteilen, die getrennt erfasst und anschließend stundenweise addiert werden: Gebäudeheizwärme, Warmwasser, Prozesswärme und – falls vorhanden – ein extern eingelesener Lastgang. Ergänzend lassen sich Netzverluste aufschlagen.
+
+== Eingaben ==
+
+* '''Gebäudedaten''' – ein Gebäude aus dem Katalog wählen und ins Projekt übernehmen; als Bezugsgröße dient die Wohnfläche oder, wenn vorhanden, der Jahresverbrauch an Öl, Gas oder Brennstoff.
+* '''Brauchwasserwärme''' – ein Profil aus dem Katalog wählen und den Jahresverbrauch angeben; hinterlegte Monatsanteile und ein Wochenprofil aus 168 Stundenwerten verteilen ihn über das Jahr.
+* '''Prozesswärme''' – nach demselben Muster erfasst; für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an.
+* '''Wärmebedarf Extern''' – im gleichnamigen Dialog übernehmen Sie eine Ganglinie aus der Datenbank ins Projekt oder lesen über ''Einlesen/Bearbeiten…'' eine Stundenreihe ein; sie wird zum berechneten Bedarf addiert.
+* '''Netzverluste''' – als Prozentsatz oder als absoluter Jahreswert; sie werden gleichmäßig über das Jahr verteilt.
+
+== Siehe auch ==
+
+* [[Wärmebedarf erfassen]] – der zugehörige Schritt im Programmablauf mit allen vier Anteilen
+* [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren hinter dem Jahresgang
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Wie aus Gebaeuden, Ganglinien, Brauchwasser und Prozesswaerme die stuendliche Waermelast
+des Projekts entsteht — Formeln, Kanaele und die Verteilung der Netzverluste — steht unter
+[[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].

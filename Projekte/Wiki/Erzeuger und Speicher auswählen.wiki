@@ -1,0 +1,59 @@
+Beim Schritt '''Erzeuger und Speicher auswählen''' bestücken Sie das Projekt mit der Technik. Für jede Gerätegattung existiert ein Katalog mit Herstellerdaten, aus dem Sie über Filter und Suche auswählen; die Auslegungsdaten des ausgewählten Geräts werden dann projektbezogen ergänzt.
+
+== Wärmepumpe ==
+{{Anker|waermepumpe|kennfeld}}
+
+Im Auswahldialog filtern Sie den Katalog nach Hersteller, Funktionsprinzip, Regelung, Bauart, Aufstellung, vorhandener Zusatzheizung, Vorlauftemperaturbereich und Nennleistung. Nach der Übernahme legen Sie Vor- und Rücklauftemperatur, den Umgang mit dem Heizstab, die bivalente Betriebsweise und mögliche Sperrzeiten fest.
+
+Maßgeblich für das Ergebnis ist das Kennfeld: Für die gewählte Vorlauftemperatur enthält es zu jeder Quellentemperatur Wärmeleistung und Leistungszahl, zwischen denen die Simulation stündlich interpoliert.
+
+{{Tipp|Achten Sie bei der Wärmepumpe auf die Vorlauftemperatur – sie bestimmt das verwendete Kennfeld und damit die Effizienz. Wird sie zu optimistisch angenommen, stimmt das Kennfeld nicht mehr, und die Jahresarbeitszahl fällt in der Praxis niedriger aus.}}
+
+== Heizkessel ==
+{{Anker|heizkessel|kessel}}
+
+Auswahl nach Brennstoffart und Leistungsklasse; hinterlegt sind Nennleistung, brennstoffabhängige Wirkungsgrade, Brennwertkennzeichnung und Betriebsbereitschaftsverlust. Ein Elektrokessel wird abgebildet, indem als Energieträger Strom gewählt wird.
+
+== Blockheizkraftwerk ==
+{{Anker|blockheizkraftwerk|bhkw}}
+
+Auswahl nach Brennstoff und thermischer Leistungsklasse mit thermischer und elektrischer Leistung, Gesamtwirkungsgrad und unterer Modulationsgrenze. Die Fahrweise – wärmegeführt, stromgeführt oder ohne Einspeisung – stellen Sie im Ergebnisbereich ein und können sie dort direkt vergleichen.
+
+== Solarthermie ==
+{{Anker|solarthermie|kollektor}}
+
+Kollektortyp, Modulanzahl, Apertur- und Modulfläche sowie Neigung und Azimut. Die Ertragsberechnung nutzt die Kollektorkennwerte nach EN 12975.
+
+== Photovoltaik ==
+{{Anker|photovoltaik|pv}}
+
+Modultyp, Modulanzahl, Neigung und Azimut; mehrere Teilfelder für unterschiedliche Dachflächen sind möglich und in der Praxis oft sinnvoll.
+
+== Pufferspeicher ==
+{{Anker|pufferspeicher|thermischer-speicher}}
+
+Thermische Pufferspeicher werden über Volumen, Vor- und Rücklauftemperatur und Bereitschaftsverlust beschrieben; die nutzbare Kapazität ergibt sich aus Volumen und Temperaturspreizung.
+
+Im nächsten Schritt ordnen Sie den Speicher einem oder mehreren Erzeugern zu und legen die Schwellen fest, ab denen geladen und wieder abgeschaltet wird – beides geschieht im Dialog ''Simulation Konfiguration'', siehe [[Simulation konfigurieren und starten#pufferspeicher-zuordnen|Pufferspeicher zuordnen]].
+
+== Stromspeicher ==
+{{Anker|stromspeicher|batteriespeicher}}
+
+Batteriespeicher beschreiben Sie über Kapazität, Leistung und Ladezustandsgrenzen; sie nehmen in der Simulation Überschüsse auf und decken später den Reststrombedarf.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Wärmepumpe]] – Kennfeld, Betriebsweise, Wärmequelle und Betriebsmodus
+* [[Heizkessel]] – Wirkungsgrade, Bereitschaftsverlust und Emissionen
+* [[Blockheizkraftwerk]] – Fahrweisen und Modulationsgrenze
+* [[Solarthermie]] – Ertragsberechnung nach EN 12975
+* [[Photovoltaik]] – Moduldaten, Zelltemperatur und Rangfolge in der Strombilanz
+* [[Pufferspeicher]] – nutzbare Kapazität und Hysterese der Bewirtschaftung
+* [[Stromspeicher]] – Kapazität, Leistung und Ladezustand
+
+← [[Strombedarf erfassen]] | [[Simulation konfigurieren und starten]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

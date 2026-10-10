@@ -1,0 +1,17 @@
+Der Dialog '''Einstellungen''' fasst die globalen Anwendungseinstellungen zusammen. Er ist in die Rubriken ''VDI Datensätze'', ''Datenbank'', ''Web-Schnittstellen (API)'' und ''Anwendung'' gegliedert; die Werte gelten programmweit, nicht je Projekt.
+
+== Eingaben ==
+
+* '''VDI Datensätze''' – der Basis-Pfad, unter dem die VDI-3805-Herstellerdaten abgelegt sind.
+* '''Datenbank''' – die Standard-Datenbank sowie die Pfade für Datenbank, Import und Export.
+* '''Online-Dokumentation''' – die Basis-Adresse dieser Dokumentation; sie gilt für den Menüpunkt {{Menü|Dokumentation}} und für die Kurzhinweise an den Eingabefeldern.
+* '''Web-Schnittstellen''' – die Adresse des PVGIS-Servers für die Klimadaten und die Adresse des Dienstes für die Geokodierung.
+* '''Allgemeiner Sicherungspfad''' – der Temp- und Sicherungsordner der Anwendung.
+* '''KI-Assistent vollständig deaktivieren''' – schaltet in der Rubrik ''Anwendung'' jede Übertragung an einen externen Dienst ab; die lokale Hilfesuche bleibt unberührt. Mit ''Standardwerte wiederherstellen'' setzen Sie alle Felder auf die Voreinstellung zurück.
+
+== Siehe auch ==
+
+* [[Einstellungen, Hilfe und Sprache]] – Einstellungen, Sprachumschaltung und das dreistufige Hilfesystem
+* [[Systemvoraussetzungen]] – Windows-Versionen und Internetverbindung
+
+[[Kategorie:Programm Dokumentation]]

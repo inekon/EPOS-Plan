@@ -1,0 +1,38 @@
+Die technische Simulation liefert das Mengengerüst – Wärme- und Strommengen, Brennstoffverbräuche, Betriebsstunden, Eigenverbrauch und Netzbezug. Die '''Kostenrechnung''' bewertet dieses Mengengerüst. Erst beides zusammen ergibt eine belastbare Entscheidungsgrundlage, denn eine technisch elegante Lösung kann an den Investitionen scheitern und eine günstige Anlage an den Betriebskosten.
+
+== Kostenarten ==
+{{Anker|kostenarten}}
+
+Üblich ist die Gliederung in vier Gruppen. '''Kapitalgebundene Kosten''' entstehen aus den Investitionen und werden über die Nutzungsdauer der jeweiligen Komponente verteilt – Erzeuger, Speicher, Hydraulik, Elektroinstallation, Planung und Inbetriebnahme haben dabei sehr unterschiedliche Lebensdauern. '''Verbrauchsgebundene Kosten''' sind Brennstoff- und Strombezugskosten und ergeben sich direkt aus der Simulation. '''Betriebsgebundene Kosten''' umfassen Wartung, Instandsetzung, Schornsteinfeger, Messung und Bedienung; bei motorischen Anlagen werden sie häufig als Betrag je erzeugter Kilowattstunde angesetzt. Hinzu kommen '''sonstige Kosten''' wie Versicherungen, Pacht oder Verwaltung.
+
+== Erfassung in EPOS-Plan ==
+{{Anker|erfassung-in-epos-plan}}
+
+Das Kostenmodul ist in Investitionskosten, Betriebskosten und Energiekosten gegliedert. Zu jeder im Projekt vorhandenen Komponente – Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik, Puffer- und Stromspeicher – lassen sich beliebig viele Positionen erfassen, jeweils mit Betrag, Einheit, Nutzungsdauer in Jahren und einer Bandbreite zwischen günstigem und ungünstigem Fall. Die im Technikmodul hinterlegten Anlagenkosten können auf Knopfdruck als Planwert übernommen werden, sodass Auslegung und Kalkulation nicht auseinanderlaufen. Summen werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
+
+== Bandbreiten statt Scheingenauigkeit ==
+{{Anker|bandbreiten-statt-scheingenauigkeit}}
+
+Kostenangaben sind in frühen Projektphasen unsicher. Die Erfassung eines günstigen und eines ungünstigen Werts je Position ist deshalb kein Umweg, sondern der ehrlichere Weg: Sie zeigt, wie robust eine Entscheidung ist. Kippt die Rangfolge zweier Varianten schon innerhalb der Bandbreite, ist die Entscheidung nicht durch die Rechnung, sondern durch andere Kriterien zu treffen.
+
+== Energiepreise ==
+{{Anker|energiepreise}}
+
+Für jeden Energieträger werden Arbeitspreis, Grundpreis und – wo zutreffend – Leistungspreis gepflegt, dazu Heiz- beziehungsweise Brennwert, die Einheitenumrechnung und die Emissionsfaktoren. Preise lassen sich mit Gültigkeitsdatum hinterlegen, sodass eine nachvollziehbare Historie entsteht und Preisstände dokumentiert bleiben. Bei Strom ist zwischen Bezugspreis, vermiedenem Bezug durch Eigenverbrauch und Einspeisevergütung zu unterscheiden – diese drei Größen haben in der Bewertung völlig unterschiedliches Gewicht.
+
+== Nutzungsdauern ==
+{{Anker|nutzungsdauern}}
+
+Die Nutzungsdauer bestimmt, wie stark eine Investition die Jahreskosten belastet. Übliche Ansätze liegen bei Kesseln und Wärmepumpen im Bereich von 15 bis 20 Jahren, bei BHKW-Motoren deutlich darunter und für Hydraulik, Speicher und Verteilnetze darüber. Weil Komponenten mit kurzer Lebensdauer innerhalb des Betrachtungszeitraums ersetzt werden müssen, gehören Ersatzinvestitionen in die Betrachtung.
+
+Wie aus Kosten und Erlösen eine Kennzahl wird, beschreibt die [[Grundlagen/Wirtschaftlichkeitsrechnung|Wirtschaftlichkeitsrechnung]]; die Ertragsseite behandelt die [[Grundlagen/Erlösrechnung|Erlösrechnung]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Kosten und Energiepreise]] – Programmfunktion: Investitions-, Betriebs- und Energiekosten erfassen
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – Kostenerfassung im Programmablauf
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

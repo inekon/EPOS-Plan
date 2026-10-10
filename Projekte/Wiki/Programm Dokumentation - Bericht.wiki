@@ -1,0 +1,18 @@
+Die Seite '''Bericht''' erzeugt den Vergleichsbericht einer Vergleichsgruppe als Word-Dokument, als Excel-Arbeitsmappe oder als beides. Jeder Lauf rechnet neu, und zwar in dieser Reihenfolge: zuerst die Simulation aller gewählten Projekte, dann die Wirtschaftlichkeitsrechnung der Gruppe, erst danach die Bausteine des Dokuments.
+
+== Eingaben ==
+
+* {{Anker|varianten}}'''Varianten''' – die Liste führt Art, Bezeichner, Projektname und den Stand der letzten Simulation; ankreuzen, was in den Bericht eingeht. Das Stammprojekt ist die Referenz und lässt sich nicht abwählen, ''Alle'' und ''Keine'' setzen die übrigen Haken.
+* '''Simulationsstand''' – fehlt ein Ergebnis oder ist es veraltet, erscheint die Zeile rot und mit einem Warnzeichen. Der Bericht läuft trotzdem, denn er simuliert die beteiligten Projekte ohnehin neu.
+* {{Anker|bausteine}}'''Berichtsbausteine''' – Deckblatt, Inhaltsverzeichnis, Projektbeschreibung, Komponenten & Varianten, Ergebnisse je Variante, Variantenvergleich, Wirtschaftlichkeit und Anhang. ''Wirtschaftlichkeit'' ist nicht vorbelegt, weil der Baustein die Kapitalwertrechnung aller Szenarien anstößt und den Lauf verlängert.
+* {{Anker|ausgabeformat}}'''Ausgabe''' – ''Word'', ''Excel'' oder ''Beide''; Deckblatt, Inhaltsverzeichnis und Anhang gibt es nur im Word-Bericht.
+* {{Anker|zielordner}}'''Zielordner''' – der Ordner, in den die Dateien geschrieben werden; ''Durchsuchen…'' öffnet die Ordnerauswahl, voreingestellt sind die eigenen Dokumente.
+* '''Erstellen''' – nennt vor dem Start die Zahl der neu zu simulierenden Projekte. Fortschrittsbalken und Statuszeile begleiten den Lauf; am Ende nennt eine Meldung die erzeugten Dateien samt Hinweisen und öffnet den Bericht auf Wunsch sofort.
+
+== Siehe auch ==
+
+* [[Varianten und Bericht]] – Aufbau des Word- und des Excel-Berichts und Ablauf eines Berichtslaufs
+* [[Wirtschaftlichkeit]] – die Kennzahlen, die der Baustein ''Wirtschaftlichkeit'' mitrechnet
+* [[Ergebnisdarstellung]] – dieselben Ergebnisse am Bildschirm
+
+[[Kategorie:Programm Dokumentation]]

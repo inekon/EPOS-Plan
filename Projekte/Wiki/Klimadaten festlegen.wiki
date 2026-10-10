@@ -1,0 +1,31 @@
+'''Klimadaten festlegen''' ist die zweite Stufe des [[Programmablauf|Programmablaufs]]. Jedes Projekt ist genau einer Klimaregion zugeordnet. Ein Klimadatensatz enthält für alle 8.760 Stunden des Jahres die Außentemperatur, die Global-, Direkt- und Diffusstrahlung sowie die daraus berechneten Sonnenstände.
+
+== Klimaregion importieren ==
+{{Anker|klimaregion-importieren|import|pvgis}}
+
+Ist für den Standort noch kein Datensatz vorhanden, legen Sie ihn in der Klimadatenverwaltung an. Dort geben Sie entweder Koordinaten direkt ein oder wählen einen Ort aus der hinterlegten Ortsliste; das Programm ermittelt die Geokoordinaten und lädt anschließend einen typischen meteorologischen Jahresdatensatz (TMY) aus der europäischen PVGIS-Datenbank – getrennt für die Ausrichtungen Süd, Ost, West und Nord, damit später sowohl Fenstergewinne als auch Kollektor- und PV-Erträge richtungsabhängig berechnet werden können. Ergänzend berechnet EPOS-Plan die Sonnenstände.
+
+Zwei Diagramme zeigen den Jahresgang der Temperatur und den Verlauf der Sonnenwinkel zur Kontrolle.
+
+{{Hinweis|Mitgelieferte Klimaregionen sind schreibgeschützt, eigene Regionen können beliebig angelegt werden.}}
+
+== Klimaregion dem Projekt zuordnen ==
+{{Anker|klimaregion-dem-projekt-zuordnen|zuordnung}}
+
+Auf der Startseite wählen Sie die Region im Auswahlfeld und speichern sie mit der Schaltfläche daneben; damit wird eine projekteigene Kopie angelegt.
+
+{{Achtung|Ein Wechsel der Klimaregion verändert Bedarf und Erträge erheblich und macht eine erneute Simulation erforderlich.}}
+
+{{Tipp|Eine falsch gewählte Klimaregion verschiebt Bedarf und Bivalenzpunkt spürbar – lieber den nächstgelegenen Standort selbst importieren.}}
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Stammdaten und Datenimport]] – Katalog der Klimaregionen und Schnittstellen für Klimadaten und Geokodierung
+* [[Grundlagen/Klimadaten]] – Herkunft und Aufbau der Klimadatensätze
+
+← [[Projekt anlegen]] | [[Wärmebedarf erfassen]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

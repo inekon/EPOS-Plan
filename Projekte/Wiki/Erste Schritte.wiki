@@ -1,0 +1,80 @@
+Diese Kurzanleitung führt in zehn Schritten durch ein vollständiges Projekt – von der Installation bis zum ausgewerteten Ergebnis. Sie beschreibt den kürzesten Weg zu einem belastbaren Resultat; die ausführliche Beschreibung der einzelnen Arbeitsschritte steht unter [[Programmablauf]], der vollständige Funktionsumfang unter [[Programmfunktionen]].
+
+{{Hinweis|Sie möchten EPOS-Plan vor einer Entscheidung selbst ausprobieren? Die kostenlose {{Website|/epos-plan/epos-plan-demoversion/|Demoversion}} enthält den vollen Funktionsumfang für ein Beispielprojekt und rechnet mit demselben Kern wie die Vollversion.}}
+
+== Einfache Handhabung ==
+{{Anker|einfache-handhabung|dok-einfache-handhabung}}
+
+EPOS-Plan führt neue Projekte über den '''Projektassistenten'''. Seine erste Seite zeigt die Komponenten als Kachelfeld: Sie schalten ein, was Ihr Projekt enthält, und die nicht benötigten Schritte werden übersprungen. Jede Kachel zeigt zugleich, was schon im Projekt liegt – grün mit der Anzahl oder grau. Die Startseite ist danach eine Kachelfläche in sechs Registerkarten; auch dort ist jede Kachel farbig markiert, sobald für ihren Baustein Daten vorliegen. So ist jederzeit erkennbar, was noch fehlt, und Sie wechseln in beliebiger Reihenfolge zwischen den Bereichen – ''Weiter'' und ''Zurück'' am unteren Rand sind nur eine Bequemlichkeit, keine Pflichtreihenfolge.
+
+Umfangreiche Stammdatenkataloge nehmen Ihnen den größten Teil der Eingabearbeit ab: Gebäudetypen mit Baualtersklassen, Brauchwasser- und Prozesswärmeprofile, Stromverbraucherprofile, Wärmepumpen mit vollständigen Kennfeldern, Kessel, BHKW-Module, Kollektoren, PV-Module und Speicher. Was Sie im Projekt ändern, wirkt sich nie auf den Katalog aus, denn beim Zuordnen wird stets eine projekteigene Kopie angelegt. Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter.
+
+Hilfe steht überall dort zur Verfügung, wo sie gebraucht wird. Beim Überfahren eines Eingabefelds erscheint ein Kurzhinweis mit Verweis auf das passende Kapitel dieser Online-Dokumentation. Mit '''F1''' öffnen Sie zusätzlich den [[Hilfe-Assistent]]en, der den Bereich kennt, in dem Sie gerade arbeiten, und Fragen zur Bedienung beantwortet. Seine Suche in der mitgelieferten Hilfe kostet nichts und kommt ohne Internetverbindung aus; ein Zugangsschlüssel ist nur für frei formulierte Antworten nötig.
+
+== In zehn Schritten zum Ergebnis ==
+{{Anker|in-zehn-schritten-zum-ergebnis}}
+
+=== Schritt 1 – Programm starten und Einstellungen prüfen ===
+{{Anker|schritt-1-programm-starten-und-einstellungen-pruefen}}
+
+Nach dem Start zeigt die Kopfzeile Programmname und Version. Prüfen Sie einmalig unter {{Menü|Administration|Einstellungen}} die Verzeichnisse für Import und Export sowie den Pfad zu den VDI-3805-Herstellerdaten. Die Sprache stellen Sie im Hauptmenü um; das Programm startet dafür neu.
+
+=== Schritt 2 – Projekt anlegen ===
+{{Anker|schritt-2-projekt-anlegen}}
+
+Über {{Menü|Projekte|Neu}} starten Sie den Projektassistenten. Schalten Sie zuerst die Kacheln ein, die das Projekt braucht – etwa Gebäude, Wärmebedarfsdaten, Wärmepumpe, Photovoltaik –, alles andere wird übersprungen. Tragen Sie danach Projektname und Bearbeiter ein und wählen Sie die Klimaregion. Beides ist Pflicht, alles Übrige lässt sich später ergänzen. Beim Bearbeiten eines bestehenden Projekts gilt: Eine ausgeschaltete Kachel entfernt ihre Daten – der Assistent fragt vorher im Klartext nach und ist mit ''Nein'' vorbelegt.
+
+=== Schritt 3 – Klimaregion sicherstellen ===
+{{Anker|schritt-3-klimaregion-sicherstellen}}
+
+Fehlt der Standort, legen Sie ihn in der Klimadatenverwaltung an: Ort eingeben, Import starten. EPOS-Plan lädt einen typischen Jahresdatensatz mit Temperatur und Strahlung in Stundenwerten und rechnet ihn auf die vier Hauptausrichtungen um. Auf der Startseite die Region auswählen und speichern.
+
+=== Schritt 4 – Wärmebedarf erfassen ===
+{{Anker|schritt-4-waermebedarf-erfassen}}
+
+Gebäude aus dem Katalog wählen – Filter nach Wohn- oder Nichtwohngebäude, Gebäudeart und Baualtersklasse – und ins Projekt übernehmen. Als Bezugsgröße entweder die Wohnfläche eintragen oder, wenn vorhanden, den Jahresverbrauch an Öl, Gas oder Brennstoff; daraus skaliert das Programm den Bedarf auf den realen Verbrauch. Warmwasser als eigenen Eintrag mit Jahresverbrauch ergänzen, bei Bedarf Prozesswärme ebenso. Netzverluste nicht vergessen, wenn ein Netz vorliegt.
+
+=== Schritt 5 – Strombedarf erfassen ===
+{{Anker|schritt-5-strombedarf-erfassen}}
+
+Verbrauchertyp wählen und Jahresverbrauch eintragen oder – deutlich genauer – einen gemessenen Lastgang einlesen. EPOS-Plan rechnet intern in Viertelstundenwerten, was für Eigenverbrauch und Speicher entscheidend ist.
+
+=== Schritt 6 – Erzeuger auswählen ===
+{{Anker|schritt-6-erzeuger-auswaehlen}}
+
+Für jede Gattung führt ein Katalog mit Herstellerdaten zur Auswahl: Wärmepumpen mit vollständigen Kennfeldern, Kessel, BHKW-Module, Kollektoren und PV-Module. Bei der Wärmepumpe achten Sie auf die Vorlauftemperatur – sie bestimmt das verwendete Kennfeld und damit die Effizienz. Heizstab, Betriebsweise und eventuelle Sperrzeiten gleich mit einstellen.
+
+=== Schritt 7 – Speicher zuordnen ===
+{{Anker|schritt-7-speicher-zuordnen}}
+
+Pufferspeicher über Volumen und Temperaturen anlegen und im nächsten Schritt dem Erzeuger zuordnen. Batteriespeicher mit Kapazität und Leistung ergänzen, wenn Photovoltaik im Spiel ist.
+
+=== Schritt 8 – Simulation konfigurieren ===
+{{Anker|schritt-8-simulation-konfigurieren}}
+
+Im Dialog ''Simulation Konfiguration'' die Erzeuger in der gewünschten Reihenfolge auswählen – die Reihenfolge ist die Priorität. Speicher zuordnen und Ein- und Abschaltschwellen festlegen. In der Übersicht rechts per Doppelklick auf die Wärmepumpe Priorität, Wärmequelle, Wärmesenke und Betriebsmodus einstellen. Konfiguration speichern.
+
+=== Schritt 9 – Simulation starten und Ergebnis lesen ===
+{{Anker|schritt-9-simulation-starten-und-ergebnis-lesen}}
+
+Die Jahressimulation rechnet 8.760 Stunden Wärme und 35.040 Viertelstunden Strom. Sehen Sie sich zuerst diese vier Größen an: den Anteil der Zusatzheizung, den Bivalenzpunkt, die Vollbenutzungsstunden und den Restwärmebedarf. Bleibt Restwärme offen, trägt die Auslegung die Spitzen nicht. Auf der Stromseite geben Eigenverbrauchsquote und Autarkiegrad die Antwort auf die Speicherfrage. Alle Zeitreihen lassen sich als CSV-Datei exportieren.
+
+=== Schritt 10 – Varianten vergleichen und Kosten hinterlegen ===
+{{Anker|schritt-10-varianten-vergleichen-und-kosten-hinterlegen}}
+
+Ändern Sie jeweils nur eine Größe – Vorlauftemperatur, Maschinengröße, Speichervolumen, Betriebsmodus – und rechnen Sie erneut; so bleibt der Effekt jeder Entscheidung sichtbar. Steht die Technik, erfassen Sie Investitions-, Betriebs- und Energiekosten je Komponente mit Nutzungsdauer und Preisen.
+
+== Die häufigsten Stolpersteine ==
+{{Anker|die-haeufigsten-stolpersteine}}
+
+Eine falsch gewählte Klimaregion verschiebt Bedarf und Bivalenzpunkt spürbar – lieber den nächstgelegenen Standort selbst importieren. Ein zu niedrig angesetzter Warmwasserbedarf lässt den Sommerbetrieb zu günstig aussehen; bei Zirkulation sind die Verluste mitzurechnen. Wird die Vorlauftemperatur zu optimistisch angenommen, stimmt das Kennfeld nicht mehr, und die Jahresarbeitszahl fällt in der Praxis niedriger aus. Und ein Pufferspeicher ohne sinnvoll gesetzte Schaltschwellen führt entweder zu Dauerbetrieb oder zu ständigem Takten.
+
+== Wie geht es weiter? ==
+{{Anker|wie-geht-es-weiter}}
+
+* [[Programmablauf]] – die einzelnen Arbeitsschritte einer Planung ausführlich beschrieben
+* [[Programmfunktionen]] – jeder Dialog und jede Eingabe im Einzelnen erklärt
+* [[Grundlagen]] – die fachlichen Hintergründe hinter Simulation und Wirtschaftlichkeit
+* [[Beispiele]] – ausgearbeitete Anwendungsfälle vom Einfamilienhaus bis zum Wärmenetz
+
+[[Kategorie:Einstieg]]

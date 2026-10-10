@@ -1,0 +1,16 @@
+Die '''Startmaske''' von EPOS-Plan führt in sechs Registerkarten durch ein Projekt: Projekt, Wärmebedarf, Strombedarf, Energieerzeuger, Simulation sowie Berichte & Kosten. Jede Registerkarte bündelt die Kacheln des zugehörigen Arbeitsschritts; eine Kachel ist farbig markiert, sobald für ihren Baustein Daten vorliegen, und mit ''Weiter'' und ''Zurück'' arbeiten Sie die Reihenfolge ab.
+
+== Eingaben ==
+
+* '''Projekt''' – ein neues Projekt anlegen, ein gespeichertes öffnen oder bearbeiten, unter anderem Namen speichern, löschen sowie die Projektdetails ansehen.
+* '''Klimaregion''' – das Auswahlfeld im Kopf der Maske gilt für alle Berechnungen im Projekt; die Auswahl wird mit der Schaltfläche daneben gespeichert. Das Feld ''Stamm / Variante'' zeigt daneben an, ob das geöffnete Projekt das Stammprojekt oder eine daraus abgeleitete Variante ist.
+* '''Wärmebedarf''' – Gebäudedaten eingeben, Brauchwasserwärme, Prozesswärme sowie der Import bereits vorliegender Wärmebedarfsdaten.
+* '''Strombedarf''' – Standardlastprofil, eigenes Profil oder der Import gemessener Verbrauchsdaten.
+* '''Energieerzeuger''' – Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik, Pufferspeicher und Stromspeicher; mehrere Technologien lassen sich kombinieren.
+* '''Simulation''' und '''Berichte & Kosten''' – Projektzusammenfassung, Aufruf der Simulationskonfiguration und Start der Jahressimulation; danach Varianten und Kostenerfassung.
+
+== Siehe auch ==
+
+* [[Programmablauf]] – die sieben Stufen einer Planung von der Projektanlage bis zur Auswertung
+
+[[Kategorie:Programm Dokumentation]]

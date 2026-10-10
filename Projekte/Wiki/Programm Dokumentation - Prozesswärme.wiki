@@ -1,0 +1,23 @@
+Der Dialog '''Prozesswärme''' verwaltet die Prozesswärmeprofile des Projekts. Prozesswärme wird unabhängig vom Gebäude erfasst: Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an.
+
+== Eingaben ==
+
+* '''Datenbank Prozesswärme und ausgewählte Prozesse im Projekt''' – einen Prozess auswählen und ins Projekt übernehmen; mehrere Prozesse nebeneinander sind möglich.
+* '''Name, Beschreibung und Typ''' – die Stammangaben des Prozesses.
+* '''Jährlicher Prozesswärmebedarf''' – der Jahresverbrauch des gewählten Prozesses; ''Summe aller ausgew. Prozesse'' weist die Summe aus.
+* '''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert in MWh eintragen und mit ''Übernehmen'' anwenden; das Wochenprofil bleibt dabei erhalten – es ist faktisch der Schichtplan.
+* '''Monatlicher Verlauf''' – zeigt die Monatswerte des gewählten Prozesses zur Kontrolle.
+* '''Prozess und Typ in DB''' – neu anlegen, ändern und löschen; hier werden Monatswerte und das Wochenprofil aus 168 Stundenwerten gepflegt.
+
+== Siehe auch ==
+
+* [[Wärmebedarf erfassen]] – Prozesswärme als einer der vier Anteile des Wärmebedarfs
+* [[Industrie und Gewerbe]] – Temperaturniveaus, Schichtprofile und Abwärme als Wärmequelle
+
+[[Kategorie:Programm Dokumentation]]
+
+
+== Berechnung ==
+Wie aus Jahressumme, Monatswerten und Wochen-Stundenprofil die 8 760 Stundenwerte des
+Prozesswaermebedarfs werden, steht unter
+[[Programm Dokumentation/Berechnung/Prozesswärme|Berechnung: Prozesswärme]].

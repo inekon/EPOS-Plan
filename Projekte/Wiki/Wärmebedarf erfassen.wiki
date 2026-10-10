@@ -1,0 +1,60 @@
+Beim Schritt '''Wärmebedarf erfassen''' entsteht der Bedarf aus bis zu vier Anteilen, die getrennt erfasst und anschließend stundenweise addiert werden: Gebäudeheizwärme, Warmwasser, Prozesswärme und – falls vorhanden – ein extern eingelesener Lastgang. Ergänzend lassen sich Netzverluste aufschlagen.
+
+== Gebäudeheizwärme ==
+{{Anker|gebaeudeheizwaerme|gebaeude}}
+
+Für die Gebäudeheizwärme wählen Sie ein Gebäude aus dem Katalog. Gefiltert wird nach Wohn- oder Nichtwohngebäude, Gebäudeart und Baualtersklasse, wobei die Klassen von „vor 1919“ über die EnEV-Stufen bis zu BEG 55 und BEG 40 reichen; eine Volltextsuche mit Platzhaltern hilft bei großen Katalogen. Das zugeordnete Gebäude wird zu einer Projektkopie, in der Sie die Bezugsgröße anpassen – üblicherweise die Wohnfläche in Quadratmetern.
+
+=== Bedarf aus Verbrauchsdaten ===
+{{Anker|bedarf-aus-verbrauchsdaten|verbrauchsdaten}}
+
+Liegen statt Flächen Verbrauchsdaten vor, geben Sie diese direkt an:
+
+* Ölverbrauch in Litern pro Jahr
+* Gasverbrauch in Kubikmetern oder Megawattstunden
+* allgemeiner Brennstoffverbrauch in Megawattstunden
+
+EPOS-Plan rechnet den Verbrauch unter Berücksichtigung des Jahresnutzungsgrads der bisherigen Anlage in Nutzwärme um und skaliert das Gebäudemodell so, dass es genau diesen Bedarf abbildet – der Jahresgang ist damit an die reale Abrechnung gebunden. Damit lässt sich ein Bestandsgebäude allein aus der Heizkostenabrechnung realistisch beschreiben.
+
+=== Kenngrößen des Gebäudetyps ===
+{{Anker|kenngroessen-des-gebaeudetyps|gebaeudetyp}}
+
+Die physikalischen Kenngrößen eines Gebäudetyps umfassen Wohnfläche und Fläche je Nutzer, Raumhöhe, Fensterflächen getrennt nach Süd, Nord und Ost/West, den Fensterdurchlassgrad, die Flächen von Außenwand, Dach, Grundfläche und sonstigen Bauteilen mit den zugehörigen U-Werten, Wärmebrückenzuschläge mit ihren Anschlusslängen, die Luftwechselrate und die Speicherfähigkeit der Bauweise, die als leicht, schwer oder sehr schwer eingestuft wird.
+
+Auf einer zweiten Seite folgen die Nutzungsrandbedingungen: Raumsolltemperatur am Tag, Nachtabsenkung, Wochenend- und Ferienabsenkung, maximale Raumtemperatur sowie vier frei definierbare Ferienzeiträume für Winter, Ostern, Sommer und Herbst.
+
+=== Berechnung des Jahresgangs ===
+{{Anker|berechnung-des-jahresgangs|jahresgang|tagesverteilung}}
+
+Aus diesen Angaben berechnet das Programm für jeden der 365 Tage die solaren Gewinne aus den Fensterflächen, die spezifischen Transmissions- und Lüftungsverluste und daraus unter Berücksichtigung der Gebäudespeicherfähigkeit und der eingestellten Absenkungen die Tagesheizlast. Anschließend wird jeder Tageswert über eine typabhängige 24-Stunden-Verteilungskurve auf Stundenwerte umgelegt. Für Wohngebäude stehen dafür acht Kurven nach Jahreszeit und Wochentag bereit, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkung.
+
+Das Ergebnis ist ein durchgängiger Jahresgang der Heizleistung, aus dem sich die maximale Wärmelast und die Jahresdauerlinie ableiten.
+
+== Warmwasser und Prozesswärme ==
+{{Anker|warmwasser-und-prozesswaerme|warmwasser|prozesswaerme}}
+
+Warmwasser und Prozesswärme werden nach demselben Muster erfasst: Sie wählen einen Typ aus dem Katalog, geben den Jahresverbrauch an, und das Programm verteilt diesen über die hinterlegten Monatsanteile und ein Wochenprofil mit 168 Stundenwerten auf das Jahr. Die Wochenprofile lassen sich in einem eigenen Editor tageweise bearbeiten, kopieren und auf alle Tage übertragen; eine Grafik zeigt das Ergebnis unmittelbar.
+
+Für jedes Temperaturniveau und jeden Prozess legen Sie einen eigenen Eintrag an.
+
+{{Tipp|Ein zu niedrig angesetzter Warmwasserbedarf lässt den Sommerbetrieb zu günstig aussehen; bei Zirkulation sind die Verluste mitzurechnen.}}
+
+== Externer Lastgang und Netzverluste ==
+{{Anker|externer-lastgang-und-netzverluste|lastgang|netzverluste}}
+
+Ein bereits vorliegender Wärmelastgang kann alternativ als Stundenreihe eingelesen und direkt zum berechneten Bedarf addiert werden.
+
+Netzverluste tragen Sie entweder als Prozentsatz oder als absoluten Jahreswert ein; sie werden gleichmäßig über das Jahr verteilt.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Gebäude und Gebäudetypen]] – Katalog, Projektzuordnung und Tagesverteilungskurven
+* [[Grundlagen/Wärmebedarfsrechnung]] – das Rechenverfahren im Einzelnen
+* [[Industrie und Gewerbe]] – Prozesswärme, Schichtprofile und Nichtwohngebäude
+
+← [[Klimadaten festlegen]] | [[Strombedarf erfassen]] →
+
+{{Navigation Programmablauf}}
+
+[[Kategorie:Programmablauf]]

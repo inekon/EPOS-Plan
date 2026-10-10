@@ -1,0 +1,42 @@
+Der '''Wärmebedarf''' ist die Grundlage jeder Auslegung. EPOS-Plan ermittelt ihn nicht als Jahreswert, sondern als vollständige Zeitreihe über 8.760 Stunden – erst diese zeitliche Auflösung zeigt, wann welche Leistung gebraucht wird und wie sich Erzeuger und Speicher tatsächlich verhalten.
+
+== Modellansatz ==
+{{Anker|modellansatz}}
+
+Ein einzelnes Gebäude ließe sich mit einem detaillierten dynamischen Modell nachbilden. Für Nahwärmegebiete mit vielen bauphysikalisch unterschiedlichen Gebäuden steht der dafür nötige Aufnahmeaufwand jedoch in keinem sinnvollen Verhältnis zum Gewinn an Genauigkeit – zumal das Nutzerverhalten, also Raumtemperaturen, Absenkzeiten, beheizte Flächenanteile und Warmwasserbedarf, ohnehin nur statistisch erfasst werden kann. EPOS-Plan verwendet deshalb ein bewusst robustes Verfahren: Für jeden der 365 Tage wird eine Tagesheizlast bilanziert und anschließend über eine typabhängige Tagesverteilungskurve auf Stundenwerte umgelegt.
+
+In die Tagesbilanz gehen die solaren Gewinne über die Fensterflächen ein, getrennt nach Süd, Nord und Ost/West und bewertet mit dem Fensterdurchlassgrad, die Transmissionsverluste über Außenwand, Fenster, Dach, Grundfläche und sonstige Bauteile mit ihren U-Werten, die Wärmebrückenverluste über die zugehörigen Anschlusslängen, die Lüftungsverluste aus Luftwechselrate und Raumvolumen sowie die internen Gewinne. Die Speicherfähigkeit des Baukörpers – als leichte, schwere oder sehr schwere Bauart eingestuft – dämpft die Tagesgänge und sorgt dafür, dass Absenkphasen nicht unmittelbar auf die Heizleistung durchschlagen.
+
+== Nutzung und Randbedingungen ==
+{{Anker|nutzung-und-randbedingungen}}
+
+Neben der Bauphysik bestimmt die Nutzung das Ergebnis: Raumsolltemperatur am Tag, Nachtabsenkung, Wochenendabsenkung, maximale Raumtemperatur und vier frei definierbare Ferienzeiträume mit eigener Absenktemperatur. Gerade bei Nichtwohngebäuden – Verwaltung, Schule, Sporthalle – entscheidet dieser Block über Höhe und Lage der Lastspitzen, etwa beim Wiederaufheizen nach Wochenenden und Ferien.
+
+Für die Umlage der Tageswerte auf Stunden stehen typabhängige Verteilungskurven bereit: für Wohngebäude acht Kurven nach Jahreszeit und Wochentag, für Nichtwohngebäude fünf Kurven nach Jahreszeit und Bewölkungsgrad. Die Zuordnung erfolgt automatisch über den Gebäudetyp und die aus den Klimadaten abgeleitete Tagtypklassifizierung. Eigene Kurven lassen sich im Katalog anlegen und stundenweise bearbeiten.
+
+== Bedarf aus Verbrauchsdaten ==
+{{Anker|bedarf-aus-verbrauchsdaten}}
+
+Im Bestand ist der gemessene Verbrauch oft die belastbarste Information. Statt der Wohnfläche kann deshalb der Jahresverbrauch angegeben werden – Heizöl in Litern, Erdgas in Kubikmetern oder Megawattstunden, allgemein Brennstoff in Megawattstunden. Zusammen mit dem Jahresnutzungsgrad der Altanlage rechnet EPOS-Plan daraus die Nutzwärme und skaliert das Gebäudemodell so, dass es genau diesen Bedarf ergibt. Der Jahresgang bleibt dabei physikalisch begründet, die Jahressumme entspricht der Abrechnung.
+
+== Warmwasser, Prozesswärme und Netzverluste ==
+{{Anker|warmwasser-prozesswaerme-und-netzverluste}}
+
+Warmwasser und Prozesswärme werden getrennt geführt, jeweils über zwölf Monatswerte und ein Wochenprofil mit 168 Stundenwerten. Diese Trennung ist wichtig, weil der Warmwasserbedarf den Sommerbetrieb allein bestimmt und für die Auslegung von Wärmepumpe und Speicher oft entscheidender ist als die Heizlast; bei vorhandener Zirkulation gehören deren Verluste in den Jahresverbrauch. Prozesswärme wird je Temperaturniveau oder Prozess als eigener Eintrag erfasst, wobei das Wochenprofil den Schichtbetrieb abbildet. Liegt ein gemessener Wärmelastgang vor, lässt er sich als Stundenreihe einlesen und wird direkt addiert. Netzverluste tragen Sie als Prozentsatz des Gesamtbedarfs oder als absoluten Jahreswert ein; sie werden gleichmäßig über das Jahr verteilt und heben insbesondere die Sommerlast an.
+
+== Ergebnisse ==
+{{Anker|ergebnisse}}
+
+Aus der Summe aller Anteile entstehen der Jahresgang der Wärmeleistung, die maximale Wärmelast, die Monatswerte und die geordnete Jahresdauerlinie. Die Dauerlinie zeigt unmittelbar, welcher Leistungsanteil über wie viele Stunden benötigt wird – die klassische Begründung dafür, den Grundlasterzeuger klein und den Spitzenlasterzeuger groß auszulegen.
+
+Wie der Wärmebedarf im Programmablauf erfasst wird, beschreibt der [[Programmablauf]]; die Einordnung in das Gesamtmodell finden Sie unter [[Grundlagen]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Wärmebedarf erfassen]] – Eingabe des Wärmebedarfs im Programmablauf
+* [[Gebäude und Gebäudetypen]] – Gebäudekenngrößen, Gebäudetypen und Verteilungskurven
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

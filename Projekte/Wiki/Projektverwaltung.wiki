@@ -1,0 +1,64 @@
+Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen: Stammdaten, Klimaregion, Bedarfs- und Anlagendaten, Simulationskonfiguration, gespeichertes Ergebnis und Kosten. Ein Assistent führt durch die Neuanlage und blendet dabei nur die Bausteine ein, die das Projekt tatsächlich enthält.
+
+== Projektdatenbank ==
+{{Anker|projektdatenbank|datenbank}}
+
+Alle Projekte liegen in einer gemeinsamen Datenbank, zusammen mit den Stammdatenkatalogen. Ein Projekt umfasst die Stammdaten, die gewählte Klimaregion, sämtliche Bedarfs- und Anlagendaten, die Simulationskonfiguration, das zuletzt gespeicherte Simulationsergebnis und die Kostendaten.
+
+Das zuletzt geöffnete Projekt wird gemerkt und lässt sich direkt wieder aufrufen.
+
+== Projekt anlegen ==
+{{Anker|projekt-anlegen|neues-projekt|assistent}}
+
+Über {{Menü|Projekte|Neu}} oder die Kachel ''Neues Projekt'' startet der Assistent.
+
+=== Bausteine des Projekts ===
+{{Anker|bausteine-des-projekts|bausteine}}
+
+Auf der ersten Seite legen Sie durch Ankreuzen fest, welche Bausteine das Projekt umfasst – Gebäude, externer Wärmebedarf, Prozesswärme, Stromverbraucher, Stromlastgang, Wärmepumpe, Heizkessel, BHKW, Solarthermie, Photovoltaik und Stromspeicher. Diese Auswahl steuert den weiteren Verlauf – nicht angekreuzte Bausteine werden übersprungen und tauchen später auch nicht in der Simulationskonfiguration auf.
+
+=== Projektdaten und Klimaregion ===
+{{Anker|projektdaten-und-klimaregion|projektname|klimaregion}}
+
+Auf der folgenden Seite tragen Sie Projektname, Bearbeiter, Kunde und Beschreibung ein und wählen die Klimaregion aus. Projektname und Klimaregion sind Pflichtangaben, alles Weitere lässt sich später ergänzen. Der Assistent führt anschließend nur durch die tatsächlich aktivierten Bausteine; mit ''Speichern'' werden Projekt und alle Zuordnungen in die Datenbank geschrieben.
+
+== Projekt öffnen und bearbeiten ==
+{{Anker|projekt-oeffnen-und-bearbeiten|projekt-oeffnen}}
+
+Bestehende Projekte öffnen Sie über {{Menü|Projekte|Öffnen}}, wobei eine Liste mit Name und Beschreibung erscheint; das zuletzt bearbeitete Projekt lässt sich mit einem Klick direkt wieder aufrufen. Beim Öffnen werden sämtliche belegte Listen des Hauptfensters gefüllt: Wärmepumpen, BHKW, Kessel, Speicher, Gebäude, Bedarfsdaten und Erzeuger.
+
+{{Menü|Projekte|Bearbeiten}} öffnet dasselbe Projekt erneut im Assistenten, etwa um nachträglich eine Komponente hinzuzufügen. Die Auswahl der Bausteine lässt sich damit jederzeit ändern.
+
+== Projekt löschen ==
+{{Anker|projekt-loeschen}}
+
+{{Achtung|Das Löschen eines Projekts entfernt alle zugehörigen Daten und ist deshalb durch eine Sicherheitsabfrage geschützt.}}
+
+== Projekteigene Kopien ==
+{{Anker|projekteigene-kopien|projektkopie|katalogkopie}}
+
+Beim Zuordnen einer Katalogkomponente entsteht immer eine projekteigene Kopie – Änderungen an einer Wärmepumpe im Projekt A wirken sich also weder auf den Katalog noch auf Projekt B aus.
+
+{{Hinweis|Was Sie im Projekt ändern, wirkt sich nie auf den Katalog aus, denn beim Zuordnen wird stets eine projekteigene Kopie angelegt.}}
+
+== Startseite und Projektfortschritt ==
+{{Anker|startseite-und-projektfortschritt|startseite|kacheln}}
+
+Die Startseite zeigt für jeden Baustein eine Kachel, die farbig markiert ist, sobald dafür Daten vorliegen. So ist jederzeit erkennbar, was noch fehlt, und Sie können in beliebiger Reihenfolge zwischen den Bereichen wechseln.
+
+== Projekte austauschen ==
+{{Anker|projekte-austauschen|export-import}}
+
+Einzelne Projekte lassen sich als ''.wpx''-Paket exportieren und – auch auf einem anderen Rechner oder in einer anderen Datenbank – wieder importieren, wahlweise mitsamt Varianten. Beim Import zeigt der Dialog eine Paketvorschau (Quellprojekt, Exportdatum, Schema-Version), bietet bei Namensgleichheit neuen Namen, Überschreiben oder Abbruch an und legt auf Wunsch vorab eine Sicherungskopie der Datenbank an. Verweist das Paket auf Datensätze, die bereits vorhanden sind, entscheidet eine Konfliktliste je Eintrag.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Projekt anlegen]] – der zugehörige Schritt im Programmablauf
+* [[Stammdaten und Datenimport]] – die Kataloge, aus denen ein Projekt bestückt wird
+* [[Klimadaten festlegen]] – Auswahl und Anlage der Klimaregion
+* [[Programm Dokumentation/Projektverwaltung|Programm-Dokumentation: Projektverwaltung]] – die Dialoge im Einzelnen, samt Export und Import
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

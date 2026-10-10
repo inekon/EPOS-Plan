@@ -1,0 +1,67 @@
+Die '''Programmfunktionen''' von EPOS-Plan bilden ein vollständiges Energiesystem in einem Modell ab: Wärme- und Strombedarf, Erzeuger, Speicher, Betrieb über ein ganzes Jahr und die zugehörigen Kosten. Alle Module greifen auf denselben Datenbestand zu, sodass Bedarf, Technik und Wirtschaftlichkeit immer zusammenpassen.
+
+== EPOS-Plan im Überblick ==
+{{Anker|epos-plan-im-ueberblick|ueberblick}}
+
+EPOS-Plan ist eine Planungssoftware für die integrierte Auslegung von Wärme- und Stromversorgungssystemen. Sie richtet sich an Ingenieurbüros, Energieberaterinnen und Energieberater, Stadtwerke, Planungsabteilungen in Industrie und Wohnungswirtschaft sowie an Hochschulen. Das Programm bildet ein vollständiges Energiesystem in einem einzigen Modell ab: den Wärmebedarf von Gebäuden, Warmwasser und Prozessen, den Strombedarf, die erzeugende Technik von der Wärmepumpe über Heizkessel, BHKW und Solarthermie bis zur Photovoltaik sowie die thermischen und elektrischen Speicher. Auf dieser Grundlage rechnet EPOS-Plan ein komplettes Jahr in Stundenschritten durch und zeigt, wie sich die geplante Anlagenkonfiguration tatsächlich verhält.
+
+Der entscheidende Unterschied zu einer überschlägigen Auslegung liegt in dieser zeitlichen Auflösung. Erst wenn Bedarf und Erzeugung Stunde für Stunde gegenübergestellt werden, wird sichtbar, wie hoch der Anteil des Heizstabs im Februar wirklich ausfällt, wie viele Betriebsstunden eine Wärmepumpe im ausgelegten Betriebspunkt erreicht, wie viel Solarstrom im Sommer ungenutzt bleibt und ab welcher Speichergröße sich der Eigenverbrauch nicht mehr nennenswert steigern lässt. Genau diese Fragen entscheiden über Investition, Förderfähigkeit und Betriebskosten einer Anlage.
+
+== Was die Software leistet ==
+{{Anker|was-die-software-leistet|leistungsumfang}}
+
+'''Energiebedarf ermitteln.''' Der Wärmebedarf lässt sich aus Gebäudekenndaten berechnen, aus vorhandenen Verbrauchsdaten zurückrechnen oder als gemessener Lastgang einlesen. Warmwasser- und Prozesswärmebedarf werden über Monatswerte und typspezifische Wochenprofile ergänzt, der Strombedarf über Verbraucherprofile oder einen importierten Viertelstundenlastgang.
+
+'''Anlagen auslegen.''' Wärmepumpen, Heizkessel, BHKW-Module, Solarkollektoren, Photovoltaikmodule, Puffer- und Stromspeicher werden aus mitgelieferten Herstellerkatalogen ausgewählt oder als eigene Datensätze angelegt. Die Auslegung erfolgt mit den realen Kennfeldern der Geräte, nicht mit pauschalen Wirkungsgraden.
+
+'''Betrieb simulieren.''' Eine Jahressimulation mit 8.760 Stundenwerten auf der Wärmeseite und 35.040 Viertelstundenwerten auf der Stromseite bildet die Erzeugerkaskade in der von Ihnen festgelegten Reihenfolge ab, einschließlich Speicherbewirtschaftung, Sperrzeiten und Betriebsstrategien.
+
+'''Ergebnisse bewerten.''' Deckungsanteile, Bivalenzpunkt, Vollbenutzungsstunden, Jahresnutzungsgrade, Brennstoffverbräuche, Eigenverbrauch, Autarkiegrad und CO₂-Einsparung stehen als Kennzahlen, Diagramme und Tabellen bereit und lassen sich als CSV-Datei für die Weiterverarbeitung exportieren.
+
+'''Kosten erfassen.''' Investitions-, Betriebs- und Energiekosten werden je Komponente mit Nutzungsdauer und Preishistorie hinterlegt und bilden damit die Eingangsgrößen der wirtschaftlichen Bewertung.
+
+'''Wirtschaftlich bewerten und berichten.''' Die Vergleichsgruppe aus Stammprojekt und Varianten wird nach der Kapitalwertmethode gemäß DIN EN 17463 bewertet und in einem Word-Vergleichsbericht samt Excel-Auswertung zusammengefasst – ohne Office-Installation.
+
+== Einfache Handhabung ==
+{{Anker|einfache-handhabung|bedienung}}
+
+EPOS-Plan führt neue Projekte über einen Assistenten. Sie wählen zu Beginn aus, welche Komponenten Ihr Projekt überhaupt enthält; alle nicht benötigten Schritte werden anschließend übersprungen. Die Startseite zeigt danach für jeden Baustein eine Kachel, die farbig markiert ist, sobald dafür Daten vorliegen. So ist jederzeit erkennbar, was noch fehlt, und Sie können in beliebiger Reihenfolge zwischen den Bereichen wechseln.
+
+Umfangreiche Stammdatenkataloge nehmen Ihnen den größten Teil der Eingabearbeit ab: Gebäudetypen mit Baualtersklassen, Brauchwasser- und Prozesswärmeprofile, Stromverbraucherprofile, Wärmepumpen mit vollständigen Kennfeldern, Kessel, BHKW-Module, Kollektoren, PV-Module und Speicher. Was Sie im Projekt ändern, wirkt sich nie auf den Katalog aus, denn beim Zuordnen wird stets eine projekteigene Kopie angelegt. Klimadaten holt sich das Programm auf Wunsch selbst: Sie geben einen Ort ein, EPOS-Plan ermittelt die Koordinaten und lädt einen vollständigen Klimadatensatz herunter.
+
+Hilfe steht überall dort zur Verfügung, wo sie gebraucht wird. Beim Überfahren eines Eingabefelds erscheint ein Kurzhinweis mit Verweis auf das passende Kapitel dieser Online-Dokumentation. Zusätzlich lässt sich der [[Hilfe-Assistent]] öffnen, der den Bereich kennt, in dem Sie gerade arbeiten, und Fragen zur Bedienung und zur Rechenlogik beantwortet. Er durchsucht die mitgelieferte Hilfe kostenfrei und ohne Internetverbindung; nutzen müssen Sie ihn nicht.
+
+== Die Funktionen im Einzelnen ==
+{{Anker|die-funktionen-im-einzelnen|funktionen}}
+
+* [[Projektverwaltung]] – Projekte liegen mit Stammdaten, Klimaregion, Bedarfs- und Anlagendaten, Simulationskonfiguration, gespeichertem Ergebnis und Kosten in einer gemeinsamen Datenbank.
+* [[Gebäude und Gebäudetypen]] – Geometrie, Bauteilqualität, Nutzungsrandbedingungen und Ferienzeiten im Katalog, Bezugsgröße und Jahresnutzungsgrad im Projekt.
+* [[Wärmepumpe]] – Auswahl aus dem Herstellerkatalog und Berechnung mit dem vollständigen Kennfeld, einschließlich Wärmequelle, Wärmesenke und Betriebsmodus.
+* [[Heizkessel]] – Nennleistung, brennstoffabhängige Wirkungsgrade, Brennwertkennzeichnung und Betriebsbereitschaftsverlust bis hin zum Jahresnutzungsgrad.
+* [[Blockheizkraftwerk]] – thermische und elektrische Leistung, Modulationsgrenze und drei Fahrweisen: wärmegeführt, stromgeführt oder ohne Netzeinspeisung.
+* [[Solarthermie]] – Kollektorfelder nach dem Wirkungsgradmodell EN 12975 mit nutzbarem Ertrag und nicht verwertbarem Überschuss.
+* [[Photovoltaik]] – Einstrahlung auf die Modulebene, Zelltemperatur und Wechselrichterverluste, Strombilanz nach der Rangfolge Direktverbrauch, Speicherladung, Einspeisung.
+* [[Pufferspeicher]] – Volumen, Temperaturen und Bereitschaftsverluste, bewirtschaftet über einstellbare Ein- und Abschaltschwellen.
+* [[Stromspeicher]] – Kapazität, Leistung und Ladezustandsgrenzen; der Füllstand lässt sich als eigene Kurve darstellen.
+* [[Simulation]] – 8.760 Stunden auf der Wärmeseite und 35.040 Viertelstunden auf der Stromseite in einer frei konfigurierbaren Erzeugerkaskade.
+* [[Ergebnisdarstellung]] – Deckungsanteile, Kennzahlen, Jahresganglinien, Ringdiagramme, Autarkieanalyse und Modultabellen in Registerkarten.
+* [[Datenexport]] – Zeitreihen und die angezeigte Grafik als CSV-Datei mit Zeitstempel und Außentemperatur.
+* [[Kosten und Energiepreise]] – Investitions-, Betriebs- und Energiekosten je Komponente sowie Energiepreise mit Gültigkeitsdatum.
+* [[Wirtschaftlichkeit]] – Kapitalwertmethode nach DIN EN 17463 mit Szenarien, Sensitivitäten, KWKG-Zuschlag, CO₂-Abgabe und Emissionsbilanz.
+* [[Varianten und Bericht]] – Vergleichsgruppen aus Stamm und Varianten, Word-Vergleichsbericht und Excel-Auswertung ohne Office-Installation.
+* [[Stammdaten und Datenimport]] – Kataloge im Menü Administration und Import von Herstellerdaten nach VDI 3805.
+* [[Einstellungen, Hilfe und Sprache]] – Verzeichnisse und Schnittstellen, Bedienoberfläche in Deutsch und Englisch, dreistufiges Hilfesystem.
+* [[Hilfe-Assistent]] – Fragen im Chatfenster, kostenfreie Hilfesuche ohne Zugangsschlüssel, Datenübertragung und bestätigungspflichtige Aktionen.
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Programmablauf]] – die sieben Stufen eines Projekts in ihrer Reihenfolge
+* [[Grundlagen]] – die fachlichen Hintergründe der Rechenverfahren
+* [[Systemvoraussetzungen]] – Windows-Versionen, lokale Datenbank und Internetverbindung
+* [[Beispiele]] – ausgearbeitete Anwendungsfälle vom Einfamilienhaus bis zum Wärmenetz
+* [[Update-Logbuch]] – welche Funktionen mit welcher Programmversion hinzugekommen sind
+
+{{Navigation Programmfunktionen}}
+
+[[Kategorie:Programmfunktionen]]

@@ -1,0 +1,36 @@
+Die Registerkarte '''Berichte & Kosten''' der Startmaske führt Auswertung, Kostenerfassung und Ausgabe in einem Bereich zusammen. Eine senkrechte Navigation am linken Rand führt zu vier Seiten – ''Übersicht'', ''Kosten'', ''Wirtschaftlichkeit'' und ''Bericht''. Jede Seite wird erst beim ersten Aufruf aufgebaut, damit sich der Reiter ohne Rechenlauf öffnet; die Kopfzeile nennt die geöffnete Seite und dahinter den Namen des Stammprojekts. Der Hilfeknopf in dieser Kopfzeile führt zur Hilfe der jeweils geöffneten Seite; einen zweiten Seitenkopf gibt es nicht mehr.
+
+== Eingaben ==
+
+* '''Übersicht''' – Stammprojekt und Varianten der Vergleichsgruppe mit ihrem Simulationsstand. Hier legen Sie Varianten an, benennen sie um, löschen sie, starten die Simulation der Gruppe und stellen die Komponenten von Stamm und Variante gegenüber.
+* '''Kosten''' – die Kosten des markierten Projekts nach Investition, Betrieb und Energie, dazu die Investitionssummen je Komponente und die Energieträger des Projekts; ''Kostenverwaltung öffnen…'' führt in den vollständigen Kostendialog, ''Energieträgerverwaltung…'' zu den [[Programm Dokumentation/Kosten#energietraegerverwaltung|Energieträgern des Projekts]].
+* '''Wirtschaftlichkeit''' – die Kapitalwertrechnung der Vergleichsgruppe nach DIN EN 17463, je Szenario.
+* '''Bericht''' – die Word- und Excel-Ausgabe der Gruppe mit Variantenauswahl, Bausteinen, Ausgabeformat und Zielordner.
+* '''Stammprojekt''' – ''Wirtschaftlichkeit'' und ''Bericht'' setzen ein gewähltes Stammprojekt voraus; fehlt es, melden sie ''Kein Stammprojekt gewählt''. Wählen Sie es zuerst auf der Seite ''Übersicht''.
+* '''Einstieg über das Menü''' – {{Menü|Projekte|Varianten und Bericht…}} öffnet denselben Bereich, beginnend bei der Übersicht.
+
+== Vergleichswahl ==
+{{Anker|vergleichswahl}}
+
+Eine einzige Wahl bestimmt, welche Versionen der Gruppe auf den Seiten ''Übersicht'', ''Kosten'' und ''Wirtschaftlichkeit'' nebeneinanderstehen.
+
+* '''Im Vergleich:''' – die Zeile auf der Übersicht und auf der Kostenseite führt je Version einen Haken. Das Stammprojekt ist stets gesetzt und lässt sich nicht abwählen; vorbelegt sind alle Versionen, eine neu angelegte Variante ist von selbst dabei. Die Wahl gilt für alle drei Seiten gemeinsam und wirkt sofort, ohne neuen Rechenlauf.
+* '''Übersicht''' – die Gegenüberstellung ''Komponenten im Vergleich'' führt nur die gewählten Varianten als Spalten.
+* '''Kosten im Vergleich''' – der Block ''Kosten im Vergleich — Stammprojekt und Varianten'' stellt Investition [€], Betrieb [€/a] und Energie [€/a] je gewählter Version nebeneinander. Karten und Detailtabellen darüber gelten weiterhin dem Projekt der Projektzeile.
+* '''Wirtschaftlichkeit''' – die Kennzahltabelle führt eine Spalte je gewählter Version; siehe [[Programm Dokumentation/Wirtschaftlichkeit#vergleichswahl|Wirtschaftlichkeit]].
+* '''Bericht''' – die Seite ''Bericht'' behält ihre eigene, gespeicherte Variantenauswahl; die Vergleichswahl gilt dort nicht.
+
+== Kostenpositionen ohne Anlagenzuordnung ==
+{{Anker|lose-positionen}}
+
+Wird eine Anlage getauscht oder gelöscht, können Kostenpositionen zurückbleiben, die zu keiner Anlage mehr gehören. Sie erscheinen auf der Kostenseite als gelb hinterlegte Zeile ''ohne Anlagenzuordnung''.
+
+* '''Positionen ohne Anlagenzuordnung löschen''' – entfernt diese verwaisten Zeilen der Komponente, und zwar auch verwaiste Pflichtpositionen. Positionen lebender Anlagen bleiben unberührt; der Pflichtschutz gilt weiterhin für sie.
+
+== Siehe auch ==
+
+* [[Ergebnisse auswerten und Kosten hinterlegen]] – der zugehörige Schritt im Programmablauf
+* [[Varianten und Bericht]] – Vergleichsgruppe, Berichtslauf und Aufbau der Ausgabe
+* [[Kosten und Energiepreise]] – Aufbau des Kostenmoduls und Pflege der Energiepreise
+
+[[Kategorie:Programm Dokumentation]]
