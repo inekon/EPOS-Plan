@@ -538,36 +538,109 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Dezimaltrenner aus den Zahlenfeldern: gezaehlt wird, welches Zeichen in
-        /// den Feldern zuletzt steht. Ist das Komma bereits Feldtrennzeichen,
-        /// kann es kein Dezimaltrenner sein.
+        /// <b>Dezimaltrenner aus den Zahlenfeldern.</b> Gezählt werden nur Felder, die eine Zahl sind
+        /// (Ziffern, Vorzeichen, Punkt, Komma, Exponent) — ein Komma im Text einer Kopf- oder
+        /// Beschreibungszeile entscheidet nichts. Je Feld:
+        /// <list type="bullet">
+        /// <item>beide Zeichen („1.234,5“, „1,234.5“): das letzte ist der Dezimaltrenner — sicher;</item>
+        /// <item>ein Zeichen mehrfach („1.234.567“): Tausendertrenner, das andere ist der Dezimaltrenner — sicher;</item>
+        /// <item>ein Zeichen einmal, ohne Tausendermuster („0.0“, „0.013“, „1234.5“, „11,5“): es ist der Dezimaltrenner — sicher;</item>
+        /// <item>ein Zeichen einmal mit Tausendermuster (ein- bis dreistellige Ganzzahl ungleich 0, genau drei
+        /// Ziffern danach: „11.013“, „11,013“): im Zweifel der Dezimaltrenner.</item>
+        /// </list>
+        /// Es entscheiden die sicheren Felder der Spalten; nur ohne sie die Zweifelsfälle; bei Gleichstand
+        /// der Punkt. Ist das Komma bereits Feldtrennzeichen, kann es kein Dezimaltrenner sein.
         /// </summary>
         internal static char ErkannterDezimaltrenner(List<string[]> zeilen, char trennzeichen)
         {
             if (trennzeichen == ',') return '.';
 
-            int komma = 0, punkt = 0;
+            int kommaSicher = 0, punktSicher = 0, kommaZweifel = 0, punktZweifel = 0;
             for (int z = 0; z < zeilen.Count; z++)
             {
                 string[] felder = zeilen[z];
                 for (int s = 0; s < felder.Length; s++)
                 {
-                    string f = felder[s];
-                    if (string.IsNullOrEmpty(f)) continue;
+                    string f = (felder[s] ?? "").Trim();
+                    if (f.Length == 0 || !IstZahlfeld(f)) continue;
                     if (SiehtNachZeitAus(f)) continue;          // 01.01.2024 ist kein Dezimalpunkt
 
-                    int iK = f.LastIndexOf(',');
-                    int iP = f.LastIndexOf('.');
-                    if (iK < 0 && iP < 0) continue;
+                    int nK = 0, nP = 0;
+                    foreach (char c in f) { if (c == ',') nK++; else if (c == '.') nP++; }
+                    if (nK == 0 && nP == 0) continue;
 
-                    // Ein Trenner mit genau drei Folgeziffern ist ein Tausendertrenner.
-                    if (iK > iP) { if (!DreiZiffernDanach(f, iK)) komma++; }
-                    else if (iP > iK) { if (!DreiZiffernDanach(f, iP)) punkt++; }
+                    if (nK > 0 && nP > 0)
+                    {
+                        if (f.LastIndexOf(',') > f.LastIndexOf('.')) kommaSicher++; else punktSicher++;
+                        continue;
+                    }
+
+                    bool komma = nK > 0;
+                    if (Math.Max(nK, nP) > 1)
+                    {
+                        // Ein mehrfaches Zeichen gruppiert Tausender - Dezimaltrenner ist das andere.
+                        if (komma) punktSicher++; else kommaSicher++;
+                        continue;
+                    }
+
+                    if (Tausendermuster(f, f.IndexOf(komma ? ',' : '.')))
+                    {
+                        if (komma) kommaZweifel++; else punktZweifel++;
+                    }
+                    else
+                    {
+                        if (komma) kommaSicher++; else punktSicher++;
+                    }
                 }
             }
-            if (komma > punkt) return ',';
-            if (punkt > komma) return '.';
+            if (kommaSicher > punktSicher) return ',';
+            if (punktSicher > kommaSicher) return '.';
+            if (kommaZweifel > punktZweifel) return ',';
             return '.';                                          // Gleichstand: invariant wie der Altweg
+        }
+
+        /// <summary>Besteht das Feld nur aus Zeichen einer Zahl (mindestens eine Ziffer)?</summary>
+        private static bool IstZahlfeld(string f)
+        {
+            bool ziffer = false;
+            foreach (char c in f)
+            {
+                if (c >= '0' && c <= '9') ziffer = true;
+                else if (c != '.' && c != ',' && c != '-' && c != '+' && c != 'e' && c != 'E') return false;
+            }
+            return ziffer;
+        }
+
+        /// <summary>
+        /// Könnte das einzige Trennzeichen an <paramref name="pos"/> Tausender gruppieren? Davor eine ein- bis
+        /// dreistellige Ganzzahl ungleich 0 (Vorzeichen erlaubt), danach genau drei Ziffern.
+        /// </summary>
+        private static bool Tausendermuster(string f, int pos)
+        {
+            if (pos < 0 || !DreiZiffernDanach(f, pos)) return false;
+            int anfang = f.Length > 0 && (f[0] == '-' || f[0] == '+') ? 1 : 0;
+            int stellen = pos - anfang;
+            if (stellen < 1 || stellen > 3) return false;
+            for (int i = anfang; i < pos; i++) if (!char.IsDigit(f[i])) return false;
+            return !(stellen == 1 && f[anfang] == '0');
+        }
+
+        /// <summary>Steht in der Spalte eine laufende Nummer (ganze Zahlen, je Zeile um eins höher)?</summary>
+        private static bool IstLaufendeNummer(List<string[]> zeilen, int von, int spalte, char dezimal)
+        {
+            double vorher = double.NaN;
+            int gezaehlt = 0;
+            for (int z = von; z < zeilen.Count; z++)
+            {
+                string[] f = zeilen[z];
+                if (spalte >= f.Length || string.IsNullOrEmpty(f[spalte])) return false;
+                foreach (char c in f[spalte].Trim()) if (!char.IsDigit(c)) return false;
+                if (!VersucheZahl(f[spalte], dezimal, out double w)) return false;
+                if (!double.IsNaN(vorher) && w != vorher + 1) return false;
+                vorher = w;
+                gezaehlt++;
+            }
+            return gezaehlt >= 2;
         }
 
         private static bool DreiZiffernDanach(string f, int pos)
@@ -642,6 +715,11 @@ namespace WindowsFormsApplication1
             for (int s = 0; s < spalten; s++)
                 if (istZeit[s]) { o.ZeitSpalte = s; break; }
 
+            // Eine laufende Nummer (1, 2, 3 ... - die erste Spalte der Zeitreihenexporte) ist keine
+            // Wertspalte, solange eine andere Zahlenspalte dasteht: der Rueckweg eines Exports.
+            for (int s = 0; s < spalten; s++)
+                if (istZahl[s] && s != o.ZeitSpalte && !IstLaufendeNummer(zeilen, von, s, o.Dezimaltrenner))
+                { o.WertSpalte = s; return; }
             for (int s = 0; s < spalten; s++)
                 if (istZahl[s] && s != o.ZeitSpalte) { o.WertSpalte = s; return; }
 
