@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Bodenplatte am Erdreich nach DIN EN ISO 13370 (Prinzipbild)
+
+Inhalt: Schnitt durch ein Gebäude auf einer Bodenplatte. Der Wärmestrom läuft in Bögen
+durch das Erdreich zur Oberfläche: am Plattenrand auf kurzem Weg mit großem Wärmestrom,
+unter der Mitte auf langem Weg mit kleinem. Das charakteristische Maß B' = A / (0,5 · P)
+fasst Grundfläche A und freiliegenden Umfang P zusammen. Rechts die Reihenschaltung von
+Bauteil und Erdreichwiderstand zum wirksamen U-Wert.
+
+Darstellung: Farben nach Vorlage:Diagrammfarbe (waerme für den Wärmestrom, kessel für
+Erdreich). Prinzipbild ohne Zahlenwerte, keinem Produkt zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <marker id="p-waerme" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#c56a1a"/></marker>
+  <marker id="p-mass" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 Z" fill="#57606a"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="498" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Bauteil am Erdreich: der Weg des Wärmestroms</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Bodenplatte nach DIN EN ISO 13370 – das Erdreich wirkt als zusätzlicher Widerstand</text>
+
+  <!-- Erdreich -->
+  <rect x="30" y="200" width="590" height="270" fill="#f1e9d1"/>
+  <line x1="30" y1="200" x2="620" y2="200" stroke="#8c5a3c" stroke-width="2"/>
+  <text x="40" y="190" font-size="12" fill="#57606a">Außenluft</text>
+  <text x="40" y="456" font-size="13" fill="#8c5a3c">Erdreich</text>
+
+  <!-- Gebäude und Platte -->
+  <rect x="220" y="110" width="260" height="86" fill="#f9f0e8" stroke="#57606a" stroke-width="3"/>
+  <text x="292" y="150" font-size="14" fill="#1f2328" font-weight="600">beheizter Raum</text>
+  <rect x="216" y="196" width="268" height="16" fill="#c3c9d0" stroke="#57606a" stroke-width="1.5"/>
+  <text x="300" y="230" font-size="12" fill="#1f2328">Bodenplatte (U)</text>
+
+  <!-- Wärmeströme links -->
+  <path d="M240,212 A20,20 0 0 1 200,200" fill="none" stroke="#c56a1a" stroke-width="4" marker-end="url(#p-waerme)"/>
+  <path d="M275,212 A55,55 0 0 1 165,200" fill="none" stroke="#c56a1a" stroke-width="3" stroke-opacity="0.8" marker-end="url(#p-waerme)"/>
+  <path d="M315,212 A95,95 0 0 1 125,200" fill="none" stroke="#c56a1a" stroke-width="2" stroke-opacity="0.6" marker-end="url(#p-waerme)"/>
+  <!-- Wärmeströme rechts -->
+  <path d="M460,212 A20,20 0 0 0 500,200" fill="none" stroke="#c56a1a" stroke-width="4" marker-end="url(#p-waerme)"/>
+  <path d="M425,212 A55,55 0 0 0 535,200" fill="none" stroke="#c56a1a" stroke-width="3" stroke-opacity="0.8" marker-end="url(#p-waerme)"/>
+  <path d="M385,212 A95,95 0 0 0 575,200" fill="none" stroke="#c56a1a" stroke-width="2" stroke-opacity="0.6" marker-end="url(#p-waerme)"/>
+
+  <text x="40" y="305" font-size="12" fill="#c56a1a">Rand: kurzer Weg,</text>
+  <text x="40" y="320" font-size="12" fill="#c56a1a">großer Wärmestrom</text>
+  <text x="292" y="330" font-size="12" fill="#c56a1a">Mitte: langer Weg,</text>
+  <text x="292" y="345" font-size="12" fill="#c56a1a">kleiner Wärmestrom</text>
+
+  <!-- Erdreichtemperatur -->
+  <line x1="30" y1="390" x2="620" y2="390" stroke="#8c5a3c" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="40" y="410" font-size="12" fill="#8c5a3c">Erdreichtemperatur in 1 m Tiefe: Jahresgang der Außenluft, gedämpft und verzögert</text>
+
+  <!-- Maße -->
+  <line x1="220" y1="92" x2="480" y2="92" stroke="#57606a" stroke-width="1.5" marker-start="url(#p-mass)" marker-end="url(#p-mass)"/>
+  <text x="250" y="84" font-size="12" fill="#57606a">Grundfläche A, freiliegender Umfang P</text>
+
+  <!-- Rechte Tafel -->
+  <rect x="640" y="90" width="236" height="370" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="656" y="116" font-size="14" fill="#1f2328" font-weight="600">Charakteristisches Maß</text>
+  <text x="656" y="142" font-size="16" fill="#1f2328">B′ = A / (0,5 · P)</text>
+  <text x="656" y="164" font-size="12" fill="#57606a">groß und kompakt: großes B′,</text>
+  <text x="656" y="179" font-size="12" fill="#57606a">kleiner Verlust je m²</text>
+
+  <text x="656" y="214" font-size="14" fill="#1f2328" font-weight="600">In Reihe</text>
+  <rect x="656" y="226" width="204" height="34" rx="6" fill="#e4e7eb" stroke="#57606a"/>
+  <text x="668" y="248" font-size="13" fill="#1f2328">Bauteil: 1 / U</text>
+  <text x="752" y="276" font-size="16" fill="#57606a">+</text>
+  <rect x="656" y="286" width="204" height="34" rx="6" fill="#f1e9d1" stroke="#8c5a3c"/>
+  <text x="668" y="308" font-size="13" fill="#8c5a3c">Erdreichwiderstand R<tspan dy="4" font-size="10">g</tspan><tspan dy="-4"></tspan></text>
+  <text x="752" y="338" font-size="16" fill="#57606a">=</text>
+  <rect x="656" y="348" width="204" height="34" rx="6" fill="#f9f0e8" stroke="#c56a1a"/>
+  <text x="668" y="370" font-size="13" fill="#c56a1a">U<tspan dy="4" font-size="10">wirk</tspan><tspan dy="-4"> = 1 / (1/U + R</tspan><tspan dy="4" font-size="10">g</tspan><tspan dy="-4">)</tspan></text>
+  <text x="656" y="408" font-size="12" fill="#57606a">Wand am Erdreich: Neigung</text>
+  <text x="656" y="423" font-size="12" fill="#57606a">45° bis 135°, sonst Boden</text>
+  <text x="656" y="446" font-size="12" fill="#57606a">λ = 2,0 W/(m·K) fest</text>
+</svg>

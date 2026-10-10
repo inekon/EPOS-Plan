@@ -3,6 +3,10 @@
 * [[Grundlagen/Klimadaten|Klimadaten]]
 * [[Grundlagen/Wärmebedarfsrechnung|Wärmebedarfsrechnung]]
 * [[Grundlagen/Strombedarf und Lastprofile|Strombedarf und Lastprofile]]
+* [[Grundlagen/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]]
+* [[Grundlagen/Bauteile am Erdreich|Bauteile am Erdreich]]
+* [[Grundlagen/Brauchwasser-Zapfprofile|Brauchwasser-Zapfprofile]]
+* [[Grundlagen/Gemeinjahr und Feiertage|Gemeinjahr und Feiertage]]
 * [[Grundlagen/Wärmepumpe|Wärmepumpe]]
 * [[Grundlagen/Wärmequelle Erdreich|Wärmequelle Erdreich]]
 * [[Grundlagen/BHKW|BHKW]]
@@ -14,6 +18,7 @@
 * [[Grundlagen/Pufferspeicher|Pufferspeicher]]
 * [[Grundlagen/Stromspeicher|Stromspeicher]]
 * [[Grundlagen/Hydraulikschemata|Hydraulikschemata]]
+* [[Grundlagen/Anlagenkopplung und Regelung|Anlagenkopplung und Regelung]]
 * [[Grundlagen/Vergleich Energiebilanz|Vergleich Energiebilanz]]
 * [[Grundlagen/Kostenrechnung|Kostenrechnung]]
 * [[Grundlagen/Erlösrechnung|Erlösrechnung]]
@@ -35,7 +40,7 @@ Navigationsbox für das Ende jeder Seite des Kapitels „Grundlagen“. Die Unte
 
 === Enthaltene Seiten ===
 
-Grundlagen · Grundlagen/Klimadaten · Grundlagen/Wärmebedarfsrechnung · Grundlagen/Strombedarf und Lastprofile · Grundlagen/Wärmepumpe · Grundlagen/Wärmequelle Erdreich · Grundlagen/BHKW · Grundlagen/Solarkollektoren · Grundlagen/Photovoltaik · Grundlagen/Wechselrichter · Grundlagen/Kessel und Spitzenlast · Grundlagen/Kühlung · Grundlagen/Pufferspeicher · Grundlagen/Stromspeicher · Grundlagen/Hydraulikschemata · Grundlagen/Vergleich Energiebilanz · Grundlagen/Kostenrechnung · Grundlagen/Erlösrechnung · Grundlagen/Wirtschaftlichkeitsrechnung
+Grundlagen · Grundlagen/Klimadaten · Grundlagen/Wärmebedarfsrechnung · Grundlagen/Strombedarf und Lastprofile · Grundlagen/Gebäudemodell VDI 6007 · Grundlagen/Bauteile am Erdreich · Grundlagen/Brauchwasser-Zapfprofile · Grundlagen/Gemeinjahr und Feiertage · Grundlagen/Wärmepumpe · Grundlagen/Wärmequelle Erdreich · Grundlagen/BHKW · Grundlagen/Solarkollektoren · Grundlagen/Photovoltaik · Grundlagen/Wechselrichter · Grundlagen/Kessel und Spitzenlast · Grundlagen/Kühlung · Grundlagen/Pufferspeicher · Grundlagen/Stromspeicher · Grundlagen/Hydraulikschemata · Grundlagen/Anlagenkopplung und Regelung · Grundlagen/Vergleich Energiebilanz · Grundlagen/Kostenrechnung · Grundlagen/Erlösrechnung · Grundlagen/Wirtschaftlichkeitsrechnung
 
 Damit die Unterseiten funktionieren, muss <code>$wgNamespacesWithSubpages[NS_MAIN] = true;</code> gesetzt sein.
 

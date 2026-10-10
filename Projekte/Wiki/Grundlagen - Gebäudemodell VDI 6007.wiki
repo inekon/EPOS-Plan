@@ -1,0 +1,63 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Gebäudemodell VDI 6007
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Gebäudemodell VDI 6007.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Das '''Gebäudemodell nach VDI 6007''' rechnet Heiz- und Kühlbedarf eines Gebäudes Stunde für Stunde über ein ganzes Jahr. Es behandelt das Gebäude als thermisches Netz aus Widerständen und zwei Speichermassen – eine für die Außenbauteile, eine für die Innenbauteile – und bilanziert in jeder Stunde Transmission, Lüftung, Sonneneinstrahlung, innere Gewinne und die Leistung von Heizung oder Kühlung. So entstehen nicht nur Jahressummen, sondern Raumtemperatur, Lastspitzen und Aufheizvorgänge.
+
+== Worum es geht ==
+{{Anker|worum-es-geht}}
+
+Ein Gebäude reagiert träge: Wände und Decken speichern Wärme, Absenkzeiten kühlen sie aus, und nach jeder Absenkung muss die Heizung die Masse wieder aufladen. Ein Tageswertverfahren sieht davon nur das Mittel; das Stundenmodell zeigt, wann und wie hoch die Leistung gebraucht wird. Gerade für Wärmepumpe, Pufferspeicher und Kälteanlage zählt dieser Verlauf mehr als die Jahressumme.
+
+Ein {{Anker|zone|zonen}}'''Zonenmodell''' teilt ein Gebäude in Bereiche unterschiedlicher Nutzung und Temperatur – etwa Wohnungen und ein unbeheiztes Treppenhaus oder Büro und Halle. Jede Zone rechnet mit ihren eigenen Bauteilen, Sollwerten und Nutzungsdaten; Trennflächen und Luftaustausch koppeln die Zonen. Ohne Zonen ist das Gebäude ein einziger Raum.
+
+[[Datei:Gebaeudemodell_Zonen.svg|mini|600px|Prinzipbild: Zwei Zonen mit ihren Wärmeströmen – Transmission, Lüftung, Sonne, innere Gewinne, Erdreich und die Trennfläche zwischen den Zonen.]]
+
+== So rechnet EPOS-Plan ==
+{{Anker|so-rechnet-epos-plan}}
+
+* {{Anker|stundenbilanz}}'''Stundenbilanz.''' Jede Zone rechnet das Raummodell nach VDI 6007 Blatt 1 über 8&nbsp;760 Stunden; vor dem Jahr läuft ein Vorlauf von mindestens 30 Tagen, damit die Speichermassen eingeschwungen beginnen.
+* {{Anker|kopplung-der-zonen}}'''Kopplung der Zonen.''' Die Zonen eines Gebäudes werden Stunde für Stunde gemeinsam gerechnet und so lange abgeglichen, bis sich ihre Raumtemperaturen nicht mehr nennenswert ändern. Eine unbeheizte Zone schwingt frei mit.
+* {{Anker|tagesbetriebsart}}'''Heizen oder Kühlen je Tag.''' Eine Zone wird an einem Tag entweder geheizt oder gekühlt, nie beides. Freigegeben wird eine Seite durch den Heiz- bzw. Kühlkalender und die Heiz- bzw. Kühlperiode; sind beide Seiten frei, entscheiden die Tagessummen eines unbegrenzt gerechneten Probetags. Die Gegenseite steht den Tag über auf „aus“.
+* {{Anker|sollwerte}}'''Sollwerte und Nachtabsenkung.''' Die Kalender der Konditionierung führen je Stunde einen Heiz- und einen Kühlsollwert: Tag, Nacht, Wochenende, Ferien und Feiertage. Wie die Wochentage im Jahr liegen, beschreibt [[Grundlagen/Gemeinjahr und Feiertage|Gemeinjahr und Feiertage]].
+* {{Anker|aufheizoptimierung}}'''Aufheizoptimierung.''' Springt der Heizsollwert nach einer Absenkung zurück, verlangt das Modell die Wärme sonst in einer Stunde. Mit Aufheizoptimierung steigt der Sollwert in einer Rampe vor Nutzungsbeginn an, sodass die Heizleistung eine Aufheizleistung nicht übersteigt; die Spitze sinkt, die Wärmemenge bleibt.
+* {{Anker|uebergabe}}'''Ideal oder mit Übergabe.''' Ohne weitere Angaben bringt die Heizung genau die Wärme, die den Sollwert hält. Mit [[Grundlagen/Anlagenkopplung und Regelung|Anlagenkopplung]] rechnet das Gebäude seinen Heizkreis: Heizkörper oder Heizflächen geben je nach Vorlauf nur eine begrenzte Leistung ab, die Heizkurve führt den Vorlauf nach der Außentemperatur, und mit mehreren Zonen stellt jede Zone ihre eigene Übergabe am gemeinsamen Vorlauf ein.
+* {{Anker|erdreich}}'''Erdreich.''' Bodenplatte und Kellerwände rechnen mit dem Erdreichwiderstand nach DIN EN ISO 13370 – siehe [[Grundlagen/Bauteile am Erdreich|Bauteile am Erdreich]].
+
+== Eingaben und Wirkung ==
+{{Anker|eingaben-und-wirkung}}
+
+{| class="wikitable"
+! Eingabe !! Wirkung
+|-
+| U-Werte und Flächen der Bauteile, Bauweise || Transmission und Speichermasse: eine schwere Bauweise glättet Spitzen und verlängert das Aufheizen
+|-
+| Fensterflächen je Himmelsrichtung, Durchlassgrad, Verschattung || solare Gewinne, im Sommer der größte Treiber des Kühlbedarfs
+|-
+| Luftwechsel, Sommerlüftung, Nachtauskühlung || Lüftungswärmeverlust und nächtliche Entwärmung
+|-
+| Sollwerte, Kalender, Heiz- und Kühlperiode || wann und auf welches Niveau geheizt oder gekühlt wird
+|-
+| Heizleistungsgrenze, Aufheizvorgabe || Höhe der Spitze nach Absenkungen und Länge der Aufheizrampe
+|-
+| Zonen mit Bauteilen und Trennflächen || getrennte Raumtemperaturen; die Heizlast des Gebäudes ist die Summe der Zonen
+|}
+
+== Fallstricke ==
+{{Anker|fallstricke}}
+
+* Eine Heizperiode schneidet Bedarf ab: Außerhalb heizt das Modell nicht, auch wenn der Raum auskühlt. Das Laufprotokoll nennt solche Stunden.
+* Ein unsaniertes Gebäude braucht oft keine Aufheizrampe, weil seine Spitze kaum über der stationären Last liegt; die Optimierung wirkt vor allem bei guter Dämmung und knapper Heizleistung.
+* Die Spitze der idealen Rechnung ist keine Auslegungsgröße. Für die Heizung zählt die stationäre Auslegungsheizlast zuzüglich des Aufheizzuschlags; eine Heizlastberechnung nach Norm ersetzt das Modell nicht.
+* Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung; die Verschattung ist ein pauschaler Faktor.
+
+== Weiterführend ==
+{{Anker|weiterfuehrend}}
+
+* [[Programm Dokumentation/Gebäudemodell VDI 6007]] – Rechenweg, Eingaben, Heizkreis, Kühlübergabe, Komfortstunden und Aufheizoptimierung im Programm
+* [[Programm Dokumentation/Mehrzonenmodell]] – Zonen anlegen, Trennflächen, Luftaustausch, Übergabe je Zone
+* [[Grundlagen/Wärmebedarfsrechnung]] – der Wärmebedarf im Überblick
+* [[Grundlagen/Kühlung]] – Kühllast, Kältebedarf und Kälteerzeugung
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]
