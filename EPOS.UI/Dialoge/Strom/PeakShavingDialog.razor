@@ -26,7 +26,7 @@
    (V14); Optionen und Protokoll der Kette erscheinen darueber.
 
    DIE HANDLUNGEN AM ERGEBNIS STEHEN IN DER WERKZEUGLEISTE (Konzept
-   Administrationsdialoge 7.1 c): "CSV-Export" und "In Variante uebernehmen"
+   Administrationsdialoge 7.1 c): "In Variante uebernehmen" ("CSV..." steht am Lastgangbild)
    wirken auf das Ergebnis, nicht auf den Dialog - sie stehen im Schlitz
    Werkzeug der Katalogliste neben der Suche. Im schmalen Fenster verdeckt das
    Stammblatt die Werkzeugleiste; dort stehen dieselben Knoepfe zusaetzlich im
@@ -226,7 +226,10 @@
                                                       Aktiv="@(!_laeuft)" />
                                             @* DER LASTGANG ALS ZEICHENMODELL (Etappe DG-E3): Zoom auf
                                                der Zeitachse, der Ladezustand auf der zweiten Achse. *@
+                                            @* "CSV..." steht in der Leiste dieses Bildes: dieselben
+                                               fuenf Spalten wie bisher (CsvSpeichern der Huelle). *@
                                             <DiagrammSvg Modell="@_modell" Kennung="peakshaving-lastgang"
+                                                         CsvExport="@CsvAmBild"
                                                          Bezeichnung="@ReiterChart" PlatzhalterText="@LeerText"
                                                          Einheit="kW" EinheitRechts="kWh" />
                                         </KindInhalt>
@@ -271,7 +274,7 @@
 
     @* DIE FUSSLEISTE (V14, V15) - nur, was das Geruest vorsieht: "Lastgang aus
        Datei..." an der Stelle von Import..., Statuszeile, zuletzt der eine
-       Schlussknopf "Beenden". CSV-Export und "In Variante uebernehmen" stehen in
+       Schlussknopf "Beenden". "In Variante uebernehmen" steht in
        der Werkzeugleiste (Konzept Administrationsdialoge 7.1 c). *@
     <div class="epos-leiste">
         @if (Einlesen is not null && DateiWaehlen is not null)
@@ -1197,20 +1200,15 @@
 
     /// <summary>
     /// <b>Die Handlungen am Ergebnis</b> im Schlitz <c>Werkzeug</c> der Katalogliste
-    /// (Konzept Administrationsdialoge 7.1 c): „CSV-Export" und „In Variante übernehmen",
+    /// (Konzept Administrationsdialoge 7.1 c): „In Variante übernehmen“ („CSV…“ steht am Lastgangbild),
     /// in dieser Reihenfolge nach der Suche; im schmalen Fenster dasselbe Fragment zusätzlich
     /// im Kopf des Stammblatts (<c>Kopfhandlungen</c>). Beide sind gesperrt, solange gerechnet wird;
     /// ohne Ergebnis meldet jeder „Bitte zuerst rechnen.". Ohne Delegat fehlt der Knopf,
     /// ohne beide Delegaten die ganze Gruppe — die Suchzeile trägt dann keine leere Zelle.
     /// </summary>
-    private RenderFragment? Werkzeughandlungen => CsvSpeichern is null && VarianteUebernehmen is null
+    private RenderFragment? Werkzeughandlungen => VarianteUebernehmen is null
         ? null
         : @<span class="epos-werkzeughandlungen">
-              @if (CsvSpeichern is not null)
-              {
-                  <button type="button" class="epos-knopf" disabled="@_laeuft"
-                          @onclick="BeiCsv">@CsvText</button>
-              }
               @* DER AUSGANG DER MASKE (LS-E-1 (a)): Berechnungsart, Ziel und Adaptiv-Flag in
                  die AKTIVE Speichervariante; fuehrt die eine andere Art, wird vorher gefragt. *@
               @if (VarianteUebernehmen is not null)
@@ -1223,6 +1221,13 @@
     // =====================================================================
     // CSV
     // =====================================================================
+
+    /// <summary>
+    /// „CSV…“ am Lastgangbild (CSV am Diagramm): der Export der Hülle mit den fünf Spalten; im
+    /// Lauf und ohne Delegat kein Knopf (ohne Ergebnis gibt es kein Bild).
+    /// </summary>
+    private EventCallback CsvAmBild => CsvSpeichern is null || _laeuft
+        ? default : EventCallback.Factory.Create(this, BeiCsv);
 
     private async Task BeiCsv()
     {
