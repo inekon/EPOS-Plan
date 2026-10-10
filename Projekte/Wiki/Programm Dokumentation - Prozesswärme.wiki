@@ -6,7 +6,7 @@ Der Dialog '''Prozesswärme''' verwaltet die Prozesswärmeprofile des Projekts. 
 * '''Name, Beschreibung und Typ''' – die Stammangaben des Prozesses.
 * '''Jährlicher Prozesswärmebedarf''' – der Jahresverbrauch des gewählten Prozesses; ''Summe aller ausgew. Prozesse'' weist die Summe aus.
 * '''Ändern des Jahresverbrauchs''' – einen neuen Jahreswert in der Einheit eintragen, die das Feld ''Einheit:'' wählt (MWh oder kWh), und mit ''Übernehmen'' anwenden; das Wochenprofil bleibt dabei erhalten – es ist faktisch der Schichtplan.
-* '''Simulation''' – rechnet mit dem Jahresverbrauch, der im Dialog steht, auch vor dem Speichern, und zeigt Monatswerte und Jahresganglinie zur Kontrolle.
+* '''Simulation''' – rechnet mit dem Jahresverbrauch, der im Dialog steht, auch vor dem Speichern, und zeigt Monatswerte und Jahresganglinie zur Kontrolle. ''CSV…'' in der Leiste des Bildes speichert die Jahresganglinie als CSV-Datei, siehe [[Datenexport]].
 * '''Prozess und Typ in DB''' – neu anlegen, ändern und löschen; hier werden Monatswerte und das Wochenprofil aus 168 Stundenwerten gepflegt. Der Katalog liefert acht typische Betriebsweisen als Vorlage.
 * '''Temperaturniveau des Prozesses''' – ''Vorlauf'' und ''Rücklauf'' in °C, beide oder keines; ''Temperaturen übernehmen'' setzt sie, gespeichert wird mit ''OK''. Leer rechnet der Prozess als reine Wärmemenge; mit Temperaturpaar werten Wärmepumpe, Kessel und Puffer am geforderten Prozessvorlauf aus.
 * '''Betriebskalender''' – je Zuordnung des Projekts wählt die Gruppe ''Betriebskalender'' einen Kalender mit Feiertagen und Betriebsferien, der das Wochenprofil tageweise ersetzt ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
