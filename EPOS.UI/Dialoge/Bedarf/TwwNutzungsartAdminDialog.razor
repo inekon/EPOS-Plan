@@ -58,6 +58,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     <Katalograhmen BlattOffen="@_blattOffen" Gestapelt="true">
         <Liste>
@@ -427,6 +432,9 @@
 
     /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
     private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private string _kennung = "";
     private string _status = "";
 
@@ -538,7 +546,13 @@
     private void Waehlen(string schluessel)
     {
         _gewaehlt = schluessel ?? "";
-        _detail = GewaehltId > 0 ? Detail?.Invoke(GewaehltId) : null;
+        _satzFehler = "";
+        // KT-4: Warf das Lesen, ist das Stammblatt leer; der Banner nennt den Grund.
+        _detail = GewaehltId > 0
+            ? Katalogladung.Satz(() => Detail?.Invoke(GewaehltId),
+                                 _katalog.FirstOrDefault(z => z.Schluessel == _gewaehlt)?.Bezeichner ?? _gewaehlt,
+                                 out _satzFehler)
+            : null;
     }
 
     // =====================================================================
@@ -623,7 +637,10 @@
     {
         _loeschfrageOffen = false;
         if (antwort != true || Loeschen is null || _loeschziel <= 0) return;
-        TwwNutzungsartSpeicherErgebnis e = Loeschen(_loeschziel);
+        int ziel = _loeschziel;
+        TwwNutzungsartSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(ziel),
+            _katalog.FirstOrDefault(z => z.Id == ziel)?.Bezeichner ?? ziel.ToString(CultureInfo.InvariantCulture),
+            g => new TwwNutzungsartSpeicherErgebnis(false, ziel, g, ""));
         _loeschziel = 0;
         if (!e.Ok)
         {

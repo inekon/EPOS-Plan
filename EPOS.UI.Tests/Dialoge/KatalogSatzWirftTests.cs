@@ -1,5 +1,6 @@
 ﻿using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dialoge.Waermepumpe;
@@ -256,6 +257,55 @@ public class KatalogSatzWirftTests : EposBunitContext
             }));
         ZeileWaehlen(cut);
         OhneBanner(cut);
+    }
+
+    // =================================================================================
+    // Die vier Bedarfsdialoge (Stammblatt aus dem Satz)
+    // =================================================================================
+
+    [Fact]
+    public void GebaeudeAdmin_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<GebaeudeAdminDialog>(b => b
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Satz, _ => Wirft<GebaeudeStammblattDaten?>()));
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void Gebaeude_wirft_der_Katalogsatz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<GebaeudeDialog>(b => b
+            .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(s => R.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.StammDetail, _ => Wirft<GebaeudeStammDetail?>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void BedarfsProfile_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<BedarfsProfileDialog>(b => b
+            .Add(x => x.Zeilen, new List<BedarfsProfilZeile>())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Prozesswaerme, s => s).MitVerwendungsspalte(s => s))
+            .Add(x => x.Katalogzeilen, Eine)
+            .Add(x => x.Info, _ => Wirft<BedarfsProfilInfo?>()));
+        ZeileWaehlen(cut);
+        BannerMitGrund(cut);
+    }
+
+    [Fact]
+    public void TwwNutzungsart_wirft_der_Satz_zeigt_der_Dialog_den_Grund()
+    {
+        var cut = Render<TwwNutzungsartAdminDialog>(b => b
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerTwwNutzungsart(s => R.ResourceManager.GetString(s) ?? s))
+            // Die Nutzungsarten wählen über die Id im Schlüssel.
+            .Add(x => x.Katalogzeilen, () => new[] { new Katalogfilterzeile(1, NAME) { Schluessel = "1" } })
+            .Add(x => x.Detail, _ => Wirft<TwwNutzungsartDetailDaten?>()));
+        BannerMitGrund(cut);
     }
 
     // =================================================================================

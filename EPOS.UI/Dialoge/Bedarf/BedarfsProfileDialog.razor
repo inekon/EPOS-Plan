@@ -100,6 +100,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @if (MitRechenweg)
     {
@@ -714,6 +719,9 @@
 
     /// <summary>Der Grund, wenn das Lesen der Katalogliste warf (Katalogladung); sonst leer.</summary>
     private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
     private IReadOnlyDictionary<string, object>? _zapfprofilGaben;
     private ZapfprofilWeg _rechenweg = ZapfprofilWeg.Bestand;
@@ -1011,7 +1019,8 @@
 
     private void InfoSetzen(string name)
     {
-        BedarfsProfilInfo? info = Info?.Invoke(name);
+        // KT-4: Warf das Lesen, bleibt das Stammblatt wie es war; der Banner nennt den Grund.
+        BedarfsProfilInfo? info = Katalogladung.Satz(() => Info?.Invoke(name), name, out _satzFehler);
         if (info is null) return;
 
         _infoName = info.Name;
@@ -1239,7 +1248,13 @@
         _loeschfrage = false;
         if (antwort != true || _katalogzeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogzeile.Bezeichner)) return;
+        string loeschName = _katalogzeile.Bezeichner;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschName), loeschName, out string loeschGrund))
+        {
+            // KT-4: Warf der Löschweg, nennt die Meldung den Grund.
+            if (loeschGrund.Length > 0) Melden(loeschGrund, WarnStufe.Warnung);
+            return;
+        }
 
         _katalogzeile = null;
         KatalogLaden();
@@ -1346,7 +1361,8 @@
     {
         if (ok && Speichern is not null)
         {
-            string grund = Speichern() ?? "";
+            // KT-4: Wirft der Schreibweg, bleibt der Dialog offen und die Meldung nennt den Grund.
+            string grund = Katalogladung.Schreiben(() => Speichern() ?? "", TitelText, g => g);
             if (grund.Length > 0)
             {
                 Melden(grund, WarnStufe.Fehler);
