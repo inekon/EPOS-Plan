@@ -128,25 +128,25 @@
                 <Schalter Bezeichnung="@Resource.SIMERG_CHK_JAZ_HEIZSTAB"
                           Wert="@_jazMitHeizstab" WertChanged="@(w => _jazMitHeizstab = w)" />
             </div>
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
                         <th scope="col">@Resource.SIM_SPALTE_MODUL</th>
-                        <th scope="col">@Resource.SIM_SPALTE_LEISTUNG</th>
-                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
-                        <th scope="col">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
-                        <th scope="col">@Resource.SIM_SPALTE_HEIZSTAB</th>
-                        <th scope="col"
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_LEISTUNG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_HEIZSTAB</th>
+                        <th scope="col" class="epos-simerg-zahl"
                             title="@(_jazMitHeizstab ? Resource.SIMERG_TIP_SPALTE_JAZ_HEIZSTAB : Resource.SIMERG_TIP_SPALTE_JAZ)">
                             @(_jazMitHeizstab ? Resource.SIMERG_SPALTE_JAZ_HEIZSTAB : Resource.SIMERG_SPALTE_JAZ)
                         </th>
-                        <th scope="col">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
                         @* Welle M4 (WP1): Starts und Mehrstrom aus Taktverlust - nur, wenn ein
                            Modul mit Mindestleistung rechnet; sonst bleibt die Tabelle, wie sie war. *@
                         @if (MitTakt)
                         {
-                            <th scope="col">@Resource.SIM_SPALTE_STARTS</th>
-                            <th scope="col">@Resource.SIM_SPALTE_TAKTSTROM</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STARTS</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_TAKTSTROM</th>
                         }
                     </tr>
                 </thead>
@@ -175,17 +175,17 @@
         @* ---- Die Pufferrubrik (Konzept 13.3): eine Zeile je Speicher ---- *@
         @if (Daten.Puffer.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
                         <th scope="col">@Resource.PSP_BEZEICHNER_ERSATZ</th>
                         <th scope="col">@Resource.PSP_SPALTE_ROLLE</th>
-                        <th scope="col">@Resource.PSP_SPALTE_KAPAZITAET</th>
-                        <th scope="col">@Resource.PSP_SPALTE_LADUNG</th>
-                        <th scope="col">@Resource.PSP_SPALTE_ENTLADUNG</th>
-                        <th scope="col">@Resource.PSP_SPALTE_VERLUSTE</th>
-                        <th scope="col">@Resource.PSP_SPALTE_VOLLZYKLEN</th>
-                        <th scope="col">@Resource.PSP_SPALTE_FUELLSTAND_ENDE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_KAPAZITAET</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_LADUNG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_ENTLADUNG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_VERLUSTE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_VOLLZYKLEN</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_FUELLSTAND_ENDE</th>
                     </tr>
                 </thead>
                 <tbody>
