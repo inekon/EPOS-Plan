@@ -249,7 +249,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Hilfe-Assistent setzt Werte jetzt auch in den Importdialogen (Flotten-CSV, Ganglinien, Spotpreise, Importkonflikte), in der Übernahme ins Projekt, im Projekt-Export/-Import, in den Brennstoffen des Projekts, im Dublettenwerkzeug, in den Kopfeinstellungen des Gebäudeimports und in den Ergebnisansichten der Speicherflotte und des Bedarfs. (#899)
 - Seit 10.10.2026: Der Hilfe-Assistent erkennt Masken auch an ihrem angezeigten Namen, etwa „Wärmepumpe im Projekt“, und füllt sie damit aus. (#911)
 
-*Die folgenden vierzehn Sätze (#891 bis #898, #900, #902, #905 bis #910 und #914) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
+*Die folgenden fünfzehn Sätze (#891 bis #898, #900, #902, #905 bis #910, #914 und #925) sind nach dem Sammel-Upload #889 und nach den Sätzen darüber hinzugekommen: unveröffentlicht, sie gehören zum nächsten Upload und brauchen dort eine neue Versionsnummer.*
 
 - Seit 10.10.2026: „Projekt Speichern unter“ wählt beim Öffnen das offene Projekt vor und zeigt es oben in der Liste. (#891)
 - Seit 10.10.2026: Das Anlagenschema der Simulationskonfiguration zeigt bei Projekten mit Kälte eine eigene Kältebahn mit Rückkühlung, Kälteerzeugern, Kältespeichern und Kältekreis. (#892)
@@ -265,6 +265,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Der Kalenderteppich der Konditionierung und der Raumnutzung lässt sich über „CSV…“ als Tabelle mit 365 Tageszeilen (Datum, Wochentag) und 24 Stundenspalten speichern; Zahlungsstrom und Kapitalwertverlauf zählen in der CSV-Datei wie in der Tafel ab Jahr 0. (#900)
 - Seit 10.10.2026: Im Anlagenschema öffnet ein Doppelklick auf Kältemaschine, Rückkühlung, Wärmepumpe im Kühlbetrieb und ihre Quelle den jeweiligen Dialog; der Tooltipp jedes Elements nennt, was der Doppelklick öffnet. (#902)
 - Seit 10.10.2026: Der Import von PV- und Solarganglinien läuft über den Dialog „Format und Vorschau“ mit Formatprüfung, Zeilenzahl und Jahresbild der gelesenen Reihe; die Satzansicht der PV- und Solarganglinien zeigt die Ganglinie als Grafik. (#914)
+- Seit 10.10.2026: Die Hinweise eines Simulationslaufs in der Übersicht der Berichte lassen sich ein- und ausklappen; zugeklappt bleibt eine Zeile mit der Zahl der Hinweise. (#925)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
