@@ -3273,6 +3273,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_BRENNSTOFF {
@@ -3354,6 +3363,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
         /// </summary>
         public static string AUSWAHL_ZF_LEISTUNG {
@@ -3368,6 +3386,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_ZF_LEISTUNG_GESAMT {
             get {
                 return ResourceManager.GetString("AUSWAHL_ZF_LEISTUNG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string AUSWAHL_ZF_QUELLE {
+            get {
+                return ResourceManager.GetString("AUSWAHL_ZF_QUELLE", resourceCulture);
             }
         }
         

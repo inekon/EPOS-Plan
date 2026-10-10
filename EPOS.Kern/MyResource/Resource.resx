@@ -50260,6 +50260,15 @@ Chart</value>
   <data name="AUSWAHL_ZF_ANZAHL" xml:space="preserve">
     <value>Anzahl</value>
   </data>
+  <data name="AUSWAHL_ZF_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="AUSWAHL_ZF_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="AUSWAHL_ZF_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlbetrieb</value>
+  </data>
   <data name="AUSWAHL_ZF_LEISTUNG_GESAMT" xml:space="preserve">
     <value>Leistung gesamt</value>
   </data>

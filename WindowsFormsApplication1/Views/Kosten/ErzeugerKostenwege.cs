@@ -167,11 +167,17 @@ namespace WindowsFormsApplication1
         /// Ohne Anlage beide 0.
         /// </summary>
         internal static (double Invest, double Betrieb) Summen(int projektId, string erzeugerart, ErzeugerZeile zeile)
+            => Summen(projektId, AnlageZu(projektId, erzeugerart, zeile));
+
+        /// <summary>
+        /// Invest- und Betriebssumme einer schon bekannten Anlagenzeile (<c>Tab_Energieanlagen.ID</c>)
+        /// — für Wirte, die ihre Anlage selbst führen (Wärmepumpe); 0 = nicht gespeichert, keine Kosten.
+        /// </summary>
+        internal static (double Invest, double Betrieb) Summen(int projektId, int idAnlage)
         {
-            int anlage = AnlageZu(projektId, erzeugerart, zeile);
-            if (projektId <= 0 || anlage <= 0) return (0, 0);
-            return (KostenSummenCtrl.AnlagenSumme(projektId, KostenSummenCtrl.KATEGORIE_INVESTITION, anlage),
-                    KostenSummenCtrl.AnlagenSumme(projektId, KostenSummenCtrl.KATEGORIE_BETRIEB, anlage));
+            if (projektId <= 0 || idAnlage <= 0) return (0, 0);
+            return (KostenSummenCtrl.AnlagenSumme(projektId, KostenSummenCtrl.KATEGORIE_INVESTITION, idAnlage),
+                    KostenSummenCtrl.AnlagenSumme(projektId, KostenSummenCtrl.KATEGORIE_BETRIEB, idAnlage));
         }
 
         /// <summary>Der Projektname für die Titelzeile der Kostenverwaltung.</summary>

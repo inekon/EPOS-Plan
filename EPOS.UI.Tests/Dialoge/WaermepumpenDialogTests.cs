@@ -84,7 +84,8 @@ public class WaermepumpenDialogTests : EposBunitContext
         Func<int, string>? katalogLoeschen = null,
         Rueckwegwege? rueckweg = null,
         Func<WaermepumpeAnlageDaten, bool, Task>? kosten = null,
-        Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>? anlageGaben = null)
+        Func<WaermepumpeAnlageDaten, IReadOnlyDictionary<string, object>>? anlageGaben = null,
+        Func<WaermepumpeAnlageDaten, (double Invest, double Betrieb)>? kostensumme = null)
         => Render<WaermepumpenDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<WaermepumpeAnlageDaten> { Zeile("WP Alpha") })
             .Add(x => x.Katalog, () => katalog ?? Katalog)
@@ -104,6 +105,7 @@ public class WaermepumpenDialogTests : EposBunitContext
             .Add(x => x.KatalogLoeschen, katalogLoeschen)
             .Add(x => x.RueckwegWege, rueckweg)
             .Add(x => x.KostenOeffnen, kosten)
+            .Add(x => x.Kostensumme, kostensumme)
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
@@ -147,6 +149,28 @@ public class WaermepumpenDialogTests : EposBunitContext
         foreach (int i in zeilen)
             cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody td.epos-spalte-kaestchen .epos-wahlkaestchen")[i].Click();
     }
+
+    /// <summary>
+    /// UeS2: Das Fragment des Satzes steht nur in der Satz-Überlagerung — „Bearbeiten" der
+    /// Detailzeile öffnet sie (falls zu); zurück kommt ihr Körper.
+    /// </summary>
+    private static AngleSharp.Dom.IElement Satz(IRenderedComponent<WaermepumpenDialog> cut)
+    {
+        if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
+            cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten").Click();
+        return cut.Find(".epos-satzueberlagerung-koerper");
+    }
+
+    /// <summary>UeS2: Schließt eine offene Satz-Überlagerung wie Abbrechen bzw. Schließen.</summary>
+    private static void SatzZu(IRenderedComponent<WaermepumpenDialog> cut)
+    {
+        var knopf = cut.FindAll(".epos-satzueberlagerung-abbrechen, .epos-satzueberlagerung-schliessen");
+        if (knopf.Count > 0) knopf[0].Click();
+    }
+
+    /// <summary>UeS2: Das OK der Satz-Überlagerung — es speichert, wie früher „Speichern" des Aufklappers.</summary>
+    private static void Ok(IRenderedComponent<WaermepumpenDialog> cut)
+        => cut.Find(".epos-satzueberlagerung-ok").Click();
 
     private static IElement Knopf(IRenderedComponent<WaermepumpenDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
@@ -265,7 +289,8 @@ public class WaermepumpenDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         Assert.Equal(Satzmarke.Projektsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
-        var werte = cut.Find(".epos-wp-satz").TextContent;
+        Assert.Empty(cut.FindAll(".epos-wp-satz"));   // UeS2: zu steht nur die Zusammenfassung
+        var werte = Satz(cut).QuerySelector(".epos-wp-satz")!.TextContent;
         Assert.Contains("Bosch", werte);
         Assert.Contains("WP Alpha", werte);
     }
@@ -274,9 +299,12 @@ public class WaermepumpenDialogTests : EposBunitContext
     public void Die_Detailzeile_zeigt_beim_Katalogsatz_dessen_Kenndaten_ohne_Kosten_und_Anlage()
     {
         var cut = Aufbauen(kosten: (_, _) => Task.CompletedTask);
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         Assert.Single(cut.FindAll(".epos-kostenleiste"));
+        SatzZu(cut);
 
         KatalogzeileWaehlen(cut);
+        Satz(cut);
 
         Assert.Null(cut.Instance.Gewaehlt);
         Assert.Equal(Satzmarke.Katalogsatz, cut.FindComponent<Zweispaltenauswahl>().Instance.SatzArt);
@@ -292,6 +320,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         var gerufen = new List<(WaermepumpeAnlageDaten, bool)>();
         var cut = Aufbauen(zeilen, kosten: (d, b) => { gerufen.Add((d, b)); return Task.CompletedTask; });
 
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         cut.FindAll(".epos-kostenleiste button.epos-knopf")[0].Click();
 
         var (zeile, betrieb) = Assert.Single(gerufen);
@@ -305,7 +334,9 @@ public class WaermepumpenDialogTests : EposBunitContext
         var cut = Aufbauen(new List<WaermepumpeAnlageDaten>());
 
         Assert.False(cut.Instance.DetailOffen);
-        Assert.Contains("Links eine Wärmepumpe markieren", cut.Markup);
+        // UeS2: ohne Satz nennt die Detailzeile den Leersatz, „Bearbeiten" ist gesperrt.
+        Assert.Equal(Resource.AUSWAHL_SATZ_LEER, cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.True(cut.Find(".epos-zweispalten-bearbeiten").HasAttribute("disabled"));
         Assert.True(Pfeil(cut, 1).HasAttribute("disabled"));
     }
 
@@ -341,6 +372,7 @@ public class WaermepumpenDialogTests : EposBunitContext
                 ["KostenBereit"] = new Func<bool>(() => true),
                 ["KostenOeffnen"] = new Func<bool, Task>(_ => Task.CompletedTask)
             });
+        Satz(cut);   // UeS2: die Kostenknoepfe stehen in der Satz-Ueberlagerung
         Assert.NotEmpty(cut.FindAll(".epos-kostenleiste button.epos-knopf"));
 
         Knopf(cut, "Anlage…").Click();
@@ -620,7 +652,7 @@ public class WaermepumpenDialogTests : EposBunitContext
         Projektwahl(cut, 1).Click();
         Assert.Equal("Typ B", cut.Find(".epos-zweispalten-satzname").TextContent);
 
-        var flaeche = cut.Find(".epos-zweispalten-satz");
+        var flaeche = Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         Assert.NotEmpty(flaeche.QuerySelectorAll(".epos-wp-satz"));
         Assert.Empty(flaeche.QuerySelectorAll(".epos-wp-anlage"));
         Assert.DoesNotContain("Auslegung für Verteilung", flaeche.TextContent);
@@ -820,5 +852,146 @@ public class WaermepumpenDialogTests : EposBunitContext
             a => a.Identifier == "Blazor._internal.domWrapper.focus");
         Assert.Equal(wurzel, ((Microsoft.AspNetCore.Components.ElementReference)fokus.Arguments[0]!).Id);
         Assert.Equal(true, fokus.Arguments[1]);
+    }
+
+    // =================================================================================
+    // UeS2: Zusammenfassung der Detailzeile und Stift je Zeile (Anwenderentscheid 10.10.2026)
+    // =================================================================================
+
+    private static Dictionary<string, string> Angaben(IRenderedComponent<WaermepumpenDialog> cut)
+        => cut.FindAll(".epos-satzzusammenfassung-angabe")
+              .ToDictionary(a => a.QuerySelector("dt")!.TextContent, a => a.QuerySelector("dd")!.TextContent);
+
+    [Fact]
+    public void UeS2_Die_Zusammenfassung_des_Projektsatzes_nennt_die_Anlagendaten_und_ist_nur_Anzeige()
+    {
+        var zeile = Zeile("WP Alpha");
+        zeile.Typ = "Sole-Wasser";
+        zeile.Kuehlbetrieb = true;
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { zeile }, kosten: (_, _) => Task.CompletedTask,
+                           kostensumme: _ => (15000.0, 250.0));
+
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var k = System.Globalization.CultureInfo.CurrentCulture;
+        var angaben = Angaben(cut);
+        Assert.Equal("12 kW", angaben[Resource.AUSWAHL_ZF_LEISTUNG]);
+        Assert.Equal("Sole-Wasser", angaben[Resource.AUSWAHL_ZF_QUELLE]);
+        Assert.Equal("35/28 °C", angaben[Resource.AUSWAHL_ZF_VORLAUF_RUECKLAUF]);
+        Assert.Equal(DbWerte.WP_BETRIEBSART_PARALLEL, angaben[Resource.AUSWAHL_ZF_BETRIEBSART]);
+        Assert.Equal(Resource.ALLG_BTN_JA, angaben[Resource.AUSWAHL_ZF_KUEHLBETRIEB]);
+        Assert.Equal(string.Format(k, Resource.AUSWAHL_ZF_EURO, 15000.0), angaben[Resource.AUSWAHL_ZF_INVEST]);
+        Assert.Equal(string.Format(k, Resource.AUSWAHL_ZF_EURO_JAHR, 250.0), angaben[Resource.AUSWAHL_ZF_BETRIEB]);
+        // Nur Anzeige: Kenndaten, Kennlinien und Kostenknoepfe stehen in der Ueberlagerung.
+        Assert.Empty(cut.FindAll(".epos-wp-satz"));
+        Assert.Empty(cut.FindAll(".epos-kostenleiste"));
+        Assert.Empty(cut.FindAll(".epos-satzzusammenfassung input, .epos-satzzusammenfassung button"));
+    }
+
+    [Fact]
+    public void UeS2_Ohne_Kostenweg_keine_Kosten_und_Kuehlbetrieb_Nein()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var angaben = Angaben(cut);
+        Assert.Equal(Resource.ALLG_BTN_NEIN, angaben[Resource.AUSWAHL_ZF_KUEHLBETRIEB]);
+        Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_INVEST));
+        Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_BETRIEB));
+    }
+
+    [Fact]
+    public void UeS2_Die_Zusammenfassung_des_Katalogsatzes_nennt_Hersteller_Quelle_Leistung_und_VL_max()
+    {
+        var cut = Aufbauen();
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var texte = cut.FindAll(".epos-satzzusammenfassung-angabe dd").Select(e => e.TextContent).ToList();
+        Assert.Equal(4, texte.Count);
+        Assert.Equal("Alpha", texte[0]);
+        Assert.Equal("Sole-Wasser", texte[1]);
+        Assert.EndsWith(" kW", texte[2]);
+        Assert.StartsWith("60", texte[3]);
+        Assert.EndsWith(" °C", texte[3]);
+    }
+
+    [Fact]
+    public void UeS2_Anlage_steht_im_Kopf_der_Detailzeile_und_je_Ansicht_einmal()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-knopf--anlage"));
+        Assert.Single(cut.FindAll(".epos-knopf--anlage"));
+        cut.Find(".epos-zweispalten-satzkopf .epos-knopf--anlage").Click();
+        Assert.True(cut.Instance.DetailOffen);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Knopf(cut, "Abbrechen").Click();
+
+        Satz(cut);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-knopf--anlage"));
+
+        // Beim Katalogsatz gibt es keine Anlage.
+        SatzZu(cut);
+        KatalogzeileWaehlen(cut);
+        Assert.Empty(cut.FindAll(".epos-knopf--anlage"));
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_der_Projektzeile_oeffnet_die_Projektkopie_in_der_Ueberlagerung()
+    {
+        var a = Zeile("WP Alpha");
+        var b = Zeile("WP Beta", 20);
+        b.IdWp = 2;
+        var cut = Aufbauen(new List<WaermepumpeAnlageDaten> { a, b }, projektsatzWege: Wege());
+
+        var stifte = cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift");
+        Assert.Equal(2, stifte.Length);
+        stifte[1].Click();
+
+        Assert.Same(b, cut.Instance.Gewaehlt);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void UeS2_Ohne_Weg_der_Projektkopie_traegt_die_Projektliste_keinen_Stift()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift"));
+        Assert.Single(cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift"));   // ein Katalogsatz
+        // Der Projektsatz ist trotzdem nicht nur lesend: das OK behaelt, was „Anlage…" geschrieben hat.
+        Satz(cut);
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_einer_gesperrten_Katalogzeile_oeffnet_nur_lesend()
+    {
+        var cut = Aufbauen(katalog: ZweiSaetze(1), katalogsatzWege: Wege(),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[0].Click();
+
+        Assert.Equal("WP Neu", cut.FindComponent<Zweispaltenauswahl>().Instance.SatzName);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_einer_ungesperrten_Katalogzeile_oeffnet_den_Katalogeditor()
+    {
+        var cut = Aufbauen(katalog: ZweiSaetze(), katalogsatzWege: Wege(),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[1].Click();
+
+        Assert.Equal("WP Zwei", cut.FindComponent<Zweispaltenauswahl>().Instance.SatzName);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.True(cut.Instance.EditorOffen);
     }
 }

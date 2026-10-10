@@ -54,9 +54,10 @@
                         WahlGeaendert="BeiWahlGeaendert"
                         KatalogFussName="@_katalogZeile?.Bezeichner"
                         SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten"
-                        SatzNurLesen="@(!SatzfelderSpeicherbar)" SatzUebernehmenGesperrt="@_feldFehler"
+                        SatzNurLesen="@SatzNurLesen" SatzUebernehmenGesperrt="@_feldFehler"
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
+                        SatzZusammenfassung="@Zusammenfassung()"
                         @ref="_zweispalten">
 
         <Leistenzusatz>
@@ -93,6 +94,10 @@
                             <th>@SpalteVorlauf</th>
                             <th>@SpalteRuecklauf</th>
                             <th>@SpalteBetriebsart</th>
+                            @if (ProjektsatzWege is not null)
+                            {
+                                <th class="epos-spalte-stift"><Zeilenstift Kopf="true" /></th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -114,6 +119,15 @@
                                 <td>@z.Vorlauf</td>
                                 <td>@z.Ruecklauf</td>
                                 <td>@z.Betriebsart</td>
+                                @* UeS2: der Stift je Projektzeile - die Projektkopie in der Satz-Ueberlagerung;
+                                   nur, wo es den Weg der Projektkopie gibt (wie „Bearbeiten…"). *@
+                                @if (ProjektsatzWege is not null)
+                                {
+                                    <td class="epos-spalte-stift">
+                                        <Zeilenstift Hinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                                                     Geklickt="@(() => BeiProjektStift(z))" />
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -128,7 +142,8 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter"
                           ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
-                          GewaehlteChanged="BeiKatalogKaestchen" />
+                          GewaehlteChanged="BeiKatalogKaestchen"
+                          Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
         </Rechts>
 
         <KatalogFuss>
@@ -147,6 +162,18 @@
                         disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
             }
         </KatalogFuss>
+
+        <SatzKopfKnoepfe>
+            @* „ANLAGE…" IM KOPF DER DETAILZEILE (UeS2b): Die Zusammenfassung ist nur Anzeige; die Anlage
+               bleibt ohne Ueberlagerung erreichbar. Grundlagen und Berechnung der Waermepumpe traegt der
+               Anlagendialog. In der Ueberlagerung steht der Knopf in der Knopfzeile des Fragments (der
+               Baustein zeigt je Ansicht eine Stelle). *@
+            @if (_gewaehlt is not null && AnlageGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-knopf--anlage"
+                        title="@TipAnlage" @onclick="AnlageOeffnen">@BtnAnlageText</button>
+            }
+        </SatzKopfKnoepfe>
 
         <Satz>
         @* DIE KNOPFZEILE DER SATZFLAECHE: beim Projektsatz die Kostenknoepfe (KA-E-12) und "Anlage…"
@@ -375,6 +402,13 @@
 
     /// <summary>Öffnet Investitions- (<c>false</c>) oder Betriebskosten (<c>true</c>) der gewählten Projektzeile.</summary>
     [Parameter] public Func<WaermepumpeAnlageDaten, bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>
+    /// <b>Invest- und Betriebskosten einer Projektzeile</b> für die Zusammenfassung der
+    /// Detailzeile (UeS2) — die Summen der Kostenverwaltung dieser Anlage in € bzw. €/a.
+    /// <c>null</c> (Assistent, kein Projekt): die Zusammenfassung nennt keine Kosten.
+    /// </summary>
+    [Parameter] public Func<WaermepumpeAnlageDaten, (double Invest, double Betrieb)>? Kostensumme { get; set; }
 
     /// <summary>Öffnet die Energiekosten der gewählten Projektzeile.</summary>
     [Parameter] public Func<WaermepumpeAnlageDaten, Task>? EnergiekostenOeffnen { get; set; }
@@ -643,6 +677,13 @@
     /// <summary>Die Id des Satzes für <see cref="SatzfelderWege"/>; 0 = keiner.</summary>
     private int SatzfelderId => _gewaehlt?.IdWp ?? _katalogZeile?.Id ?? 0;
 
+    /// <summary>
+    /// UeS2: Beim Projektsatz ist die Satz-Überlagerung nie nur lesend — „Anlage…" schreibt aus ihr
+    /// heraus, ihr OK behält das, ihr Abbrechen stellt es zurück; ohne Weg der Projektkopie
+    /// (Assistent) stünde sonst nur „Schließen" da, das wie Abbrechen verwirft.
+    /// </summary>
+    private bool SatzNurLesen => !SatzfelderSpeicherbar && _gewaehlt is null;
+
     private bool SatzfelderSpeicherbar => _satzfelder is not null && SatzfelderWege?.Speichern is not null
                                           && (_gewaehlt is not null || _katalogZeile?.Geschuetzt != true);
 
@@ -770,8 +811,83 @@
     }
 
     /// <summary>Kenndaten und Kennlinie des gewählten Satzes — Projektkopie bzw. Katalogsatz.</summary>
+    /// <summary>
+    /// UeS2: der Stift einer Projektzeile — sie wird gewählt (ohne die Kästchen der
+    /// Mehrfachwahl anzufassen) und ihre Projektkopie öffnet in der Satz-Überlagerung.
+    /// </summary>
+    private async Task BeiProjektStift(WaermepumpeAnlageDaten zeile)
+    {
+        if (ProjektsatzWege is null || _zweispalten is null) return;
+        if (_gewaehlt != zeile) ProjektZeileWaehlen(zeile);
+        await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Katalogliste hat sie schon gewählt) — ein
+    /// gesperrter Satz öffnet nur lesend in der Satz-Überlagerung, ein ungesperrter den
+    /// Katalogeditor (KA‑E‑13); ohne Editor die Überlagerung.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Bezeichner != zeile.Bezeichner) KatalogZeileWaehlen(zeile.Bezeichner);
+        if (!zeile.Geschuetzt && EditorGaben is not null)
+        {
+            _editorGaben = EditorGaben(zeile.Bezeichner);
+            return;
+        }
+        if (_zweispalten is not null)
+        {
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+        if (zeile.Geschuetzt) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+    }
+
+    // =================================================================================
+    // Die Zusammenfassung der Detailzeile (UeS2)
+    // =================================================================================
+
+    /// <summary>Die Kostensummen der gewählten Projektzeile — gelesen mit dem Detail, nicht je Zeichnung.</summary>
+    private (double Invest, double Betrieb)? _kosten;
+
+    private void KostenNachziehen()
+    {
+        _kosten = null;
+        if (Wizard || Kostensumme is null || _gewaehlt is null) return;
+        try { _kosten = Kostensumme(_gewaehlt); }
+        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+    }
+
+    /// <summary>
+    /// <b>Die Kurzangaben des gewählten Satzes</b> für die Detailzeile — nur Anzeige, die Anlage
+    /// bleibt der Weg über „Anlage…". Projektsatz: Leistung, Quelle (Typ der Wärmepumpe),
+    /// Vorlauf/Rücklauf, Betriebsart, Kühlbetrieb, Invest, Betrieb. Katalogsatz: Hersteller,
+    /// Quelle, P_N und VL max aus den Spalten des Katalogprofils. Ohne Satz eine leere Liste —
+    /// nie <c>null</c>, sonst zeichnete der Baustein das Fragment in der Detailzeile.
+    /// </summary>
+    internal IReadOnlyList<Satzangabe> Zusammenfassung()
+    {
+        var liste = new List<Satzangabe>();
+        if (_gewaehlt is WaermepumpeAnlageDaten p)
+        {
+            if (p.Nennleistung > 0) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG, Satzangaben.Zahl(p.Nennleistung, "kW")));
+            if (!string.IsNullOrWhiteSpace(p.Typ)) liste.Add(new(Resource.AUSWAHL_ZF_QUELLE, p.Typ.Trim()));
+            Satzangaben.Temperaturpaar(liste, p.Vorlauf, p.Ruecklauf);
+            if (!string.IsNullOrWhiteSpace(p.Betriebsart)) liste.Add(new(Resource.AUSWAHL_ZF_BETRIEBSART, p.Betriebsart));
+            liste.Add(new(Resource.AUSWAHL_ZF_KUEHLBETRIEB, p.Kuehlbetrieb ? Resource.ALLG_BTN_JA : Resource.ALLG_BTN_NEIN));
+            Satzangaben.Kosten(liste, _kosten);
+        }
+        else if (_katalogZeile is Katalogfilterzeile z && Katalogprofil is not null)
+        {
+            Satzangaben.Katalog(liste, z, Katalogprofil, Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpQuelle,
+                                Katalogfilterprofil.SpNennleistung, Katalogfilterprofil.SpVlMax);
+        }
+        return liste;
+    }
+
     private void DetailNachziehen()
     {
+        KostenNachziehen();
         if (_gewaehlt is not null)
         {
             _satz = ProjektSatz?.Invoke(_gewaehlt);
