@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -157,7 +158,13 @@ namespace WindowsFormsApplication1
                 ["EditorGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
                     name => new Dictionary<string, object>(StromspeicherAdminHuelle.Gaben()) { ["Vorwahl"] = name }),
 
-                // Loeschen im Katalogfuss: leer = geloescht, sonst der Grund.
+                // KA-E-9: der Rueckweg „In die Datenbank übernehmen…" - nur mit Projektkopie. Rueckfrage und Schreibweg
+                // kommen aus dem Kern (StromspeicherStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
+                ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
+                ["RueckwegBleibtText"] = Text_("SPD_RUECK_BLEIBT",
+                    "Im Projekt bleiben: Energieträger und Betriebsführung der Anlage (Speichervariante). Kapazität, Leistung, Gerätewerte und die vier Kostenposten gehen mit."),
+
+                // Loeschen im Katalogfuss (samt Satzvorlage, KA-E-16): leer = geloescht, sonst der Grund.
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
 
                 // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
@@ -294,6 +301,34 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Abbildungen
         // =================================================================================
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => StromspeicherStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = StromspeicherStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = StromspeicherStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         /// <summary>Die Summe der Kapazitaeten der Projektliste (Projektkopie bzw. Katalogsatz je Zeile).</summary>
         private static double SummeKapazitaet(int idType, bool mitKopie, List<WErzeugerModel> modelle)
