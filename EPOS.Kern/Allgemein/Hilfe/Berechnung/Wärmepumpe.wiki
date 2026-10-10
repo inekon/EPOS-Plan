@@ -2,7 +2,10 @@
      EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, Waermepumpentakt.cs, Kaeltekaskade.cs,
      WaermequelleClass.cs,
      WaermequelleClass.Quellenwahl.cs, WaermesenkeClass.cs, ErdreichTemperatur.cs,
-     Kaskadenschleife.cs (Bivalenzpunkt, Phase F); Katalog/ParameterVerwendung.cs -->
+     Kaskadenschleife.cs (Bivalenzpunkt, Phase F), VorlaufInterpolation.cs, Sperrprofil.cs,
+     Sondenquelle.cs, Jahresarbeitszahl.cs, Bivalenz/Betriebsbereich.cs, Bivalenz/Bivalenzrechner.cs,
+     Bivalenz/Geraetegrenzen.cs, Bivalenz/Hydraulikgrenze.cs, Bivalenz/Ruecklaufgrenze.cs,
+     Bivalenz/Bivalenzvorgaben.cs; Katalog/ParameterVerwendung.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -37,9 +40,15 @@ Ergebnisgrößen sind die Wärmeproduktion, der Strombedarf der Wärmepumpe, der
 |-
 | Heizstab ein/aus || — || „Konfiguration…" der Wärmepumpe, Schalter „Heizstab mitrechnen"
 |-
-| Sperrzeit ein/aus, von, bis || —, h || derselbe Abschnitt
+| Sperrzeit ein/aus, von, bis; Sperrfenster mit Beginn, Dauer, Wochentagen und „Heizstab mitgesperrt" || —, h || derselbe Abschnitt, Kästchen „Sperrzeiten vorhanden"
 |-
 | Bivalenter Betrieb, Betriebsart, Bivalenztemperatur || —, °C || derselbe Abschnitt; die Bivalenztemperatur erscheint nur, wenn sie rechenwirksam ist
+|-
+| Höchster Vorlauf, Zeitprogramm || °C, — || derselbe Abschnitt, Gruppe „Betriebszeiten"; leer = projektierter Vorlauf bzw. immer verfügbar
+|-
+| Einbindung (direkt, Puffer, Weiche), Vorwärmbetrieb || — || derselbe Abschnitt, Gruppe „Bivalenz und Übergabe"; leer = ohne Übergabegrenze
+|-
+| Gerätegrenzen: Auslegungs-, größte und kleinste Spreizung, Mindestvolumenstrom, größter Rücklauf, Bezugsrücklauf, Abwertung je Kelvin, Kältemittel || K, %, °C, %/K, — || Wärmepumpenkatalog und Projektkopie, Gruppe „Gerätegrenzen"; leer = Vorgabe des Kältemittels
 |-
 | Wärmequelle (Außenluft, konstant, Erdreich, Quellprofil, CSV-Reihe, Pufferspeicher) || — || Simulationskonfiguration, Karte der Anlage, Chip „Quelle:"
 |-
@@ -86,13 +95,27 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>r</math> || Ladepriorität des Moduls in der Ladeordnung || — || Simulationskonfiguration; '''Vorgabe: 20''' (Solarthermie 10, BHKW 30, Heizkessel 40)
 |-
-| <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 9''' — mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht
+| <math>N_{\mathrm{max}}</math> || größte Zahl Module je Projekt || Stück || '''Konstante: 10''' — mit elf oder mehr Wärmepumpen bricht der Lauf mit einer Meldung ab
 |-
 | <math>P_{\mathrm{min}}</math> || Mindestleistung des Geräts, unterhalb derer es taktet || kW || Wärmepumpenkatalog, Feld „Mindestleistung"; leer oder 0 = kein Takten
 |-
 | <math>C_{\mathrm{d}}</math> || Teillastkoeffizient nach EN 14825 || — || Wärmepumpenkatalog, Feld „Teillastkoeffizient C_d"; '''Vorgabe: 0,9'''
 |-
 | <math>t_{\mathrm{min}}</math> || Mindestlaufzeit je Start, mit der die Starts gezählt werden || min || '''Konstante: 10''' — dieselbe Vorgabe wie beim Heizkessel
+|-
+| <math>\vartheta_{\mathrm{WP,max}}</math> || Höchster Vorlauf der Wärmepumpe || °C || „Konfiguration…", Gruppe „Betriebszeiten"; leer = Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math> der Anlage
+|-
+| <math>\Delta\vartheta_{\mathrm{A}}</math>, <math>\Delta\vartheta_{\mathrm{max}}</math>, <math>\Delta\vartheta_{\mathrm{min}}</math> || Auslegungs-, größte und kleinste Spreizung der Wärmepumpe || K || Gruppe „Gerätegrenzen"; '''Vorgabe: 5, 10 und 3&nbsp;K''', bei R744 größte Spreizung 30&nbsp;K
+|-
+| <math>x_{\mathrm{min}}</math> || Mindestvolumenstrom als Anteil des Auslegungsvolumenstroms || — || Gruppe „Gerätegrenzen"; '''Vorgabe: 60&nbsp;%'''
+|-
+| <math>\vartheta_{\mathrm{R,max}}</math> || größter Rücklauf || °C || Gruppe „Gerätegrenzen"; leer bei R744 '''40&nbsp;°C''', sonst ohne Feldwert
+|-
+| <math>\vartheta_{\mathrm{R,bez}}</math>, <math>k</math> || Bezugsrücklauf und Abwertung je Kelvin Rücklauf || °C, %/K || Gruppe „Gerätegrenzen"; leer bei R744 '''30&nbsp;°C und 2,5&nbsp;%/K''', sonst keine Abwertung; <math>k = 0</math> schaltet sie ab
+|-
+| <math>P_{\mathrm{N}}</math> || Nennleistung der Wärmepumpe || kW || Wärmepumpenkatalog
+|-
+| <math>W_{\mathrm{H}}</math> || Kapazitätsstrom des Heizkreises, <math>\sum P_{\mathrm{N},z} / (\vartheta_{\mathrm{V,N},z} - \vartheta_{\mathrm{R,N},z})</math> über die gekoppelten Übergaben <math>z</math> || kW/K || Auslegungspunkt der Wärmeübergabe am Gebäude bzw. an den Zonen
 |}
 
 === Variablen ===
@@ -161,12 +184,30 @@ Größen, die der Lauf je Stunde oder je Modul bildet.
 | <math>\Delta E(t)</math> || Mehrstrom der Taktstunde || kWh || (17)
 |-
 | <math>n_{\mathrm{S}}(t)</math> || Starts der Stunde || — || (18)
+|-
+| <math>\vartheta_{\mathrm{V,soll}}(t)</math>, <math>\vartheta_{\mathrm{R}}(t)</math> || Vorlauf und Rücklauf, die der Heizkreis in der Stunde verlangt || °C || Anlagenkopplung (Eingang)
+|-
+| <math>\vartheta_{\mathrm{R,WP}}(t)</math> || Rücklauf zur Wärmepumpe || °C || Schritt 9, nach der Einbindung
+|-
+| <math>\vartheta_{\mathrm{R,grenz}}</math> || wirksame Rücklaufgrenze || °C || (19)
+|-
+| <math>f_{\mathrm{R}}(t)</math> || Abwertungsfaktor auf Leistung und Leistungszahl || — || (20)
+|-
+| <math>\Delta\vartheta_{\mathrm{max,eff}}(t)</math> || größte Spreizung nach dem Mindestvolumenstrom || K || (21)
+|-
+| <math>P_{\mathrm{KF}}(t)</math> || Kennfeldleistung bei <math>\min(\vartheta_{\mathrm{V,soll}}, \vartheta_{\mathrm{WP,max}})</math> || kW || Schritt 2
+|-
+| <math>P_{\mathrm{Hyd}}(t)</math> || Leistungsgrenze der Hydraulik || kW || Schritt 9, nach der Einbindung
+|-
+| <math>P_{\mathrm{grenz}}(t)</math> || Leistung der Wärmepumpe unter dem Höchsten Vorlauf || kW || (22)
+|-
+| <math>P_{\mathrm{VW}}(t)</math>, <math>a(t)</math> || Leistung und Anteil der Wärmepumpe im Vorwärmbetrieb || kW, — || (23)
 |}
 
 == Rechenweg ==
 {{Anker|rechenweg}}
 
-Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht wiederholt. Höchstens <math>N_{\mathrm{max}} = 9</math> Module je Projekt gehen in die Rechnung ein — mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht —; sie arbeiten in jeder Stunde in Anlagenpriorität nacheinander.
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht wiederholt. Höchstens <math>N_{\mathrm{max}} = 10</math> Module je Projekt gehen in die Rechnung ein — mit elf oder mehr Wärmepumpen bricht der Lauf mit einer Meldung ab —; sie arbeiten in jeder Stunde in Anlagenpriorität nacheinander.
 
 === Schritt 1 — Quelltemperatur je Stunde ===
 
@@ -179,7 +220,7 @@ Sie entscheidet über alles Weitere. Eine '''Luft/Wasser'''-Wärmepumpe nimmt im
 |-
 | Konstante Temperatur || der eingegebene Wert, für alle 8&nbsp;760 Stunden
 |-
-| Erdreich, Erdsonde || konstant über das Jahr, aus dem Jahresmittel der Außentemperatur plus dem geothermischen Anteil über die Sondenlänge (VDI 4640 Blatt 1)
+| Erdreich, Erdsonde || stündlich aus dem Sondenfeld: die ungestörte Erdreichtemperatur (Jahresmittel der Außentemperatur plus geothermischer Anteil über die Sondenlänge, VDI 4640 Blatt 1), abgesenkt um die Wirkung des Entzugs bis zum Ende der Vorstunde und der Vorjahre bis zum Betrachtungsjahr ([[Programm Dokumentation/Berechnung/Wärmequelle Erdreich#sondenfeld|Berechnung: Wärmequelle Erdreich]]); ohne Sondenlänge gilt die ungestörte Temperatur konstant über das Jahr
 |-
 | Erdreich, Kollektor || Jahreswelle nach Kusuda über die Verlegetiefe <math>z</math> und die Bodenart; ohne Werte gelten 1,5&nbsp;m und „Sand feucht"
 |-
@@ -199,7 +240,7 @@ Lässt sich eine Quelle nicht auflösen — kein Profil, keine lesbare Datei, ke
 
 === Schritt 2 — Kennfeldauswertung ===
 
-Gerechnet wird mit der Kennlinie der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math>, die an der Anlage steht. Mit der Anlagenkopplung „Heizkreis (AK1)" wertet der Lauf für Module mit Heizwärme je Stunde die zwei Vorlaufstufen aus, zwischen denen der gerechnete Heizkreisvorlauf liegt, und interpoliert Heizleistung und COP je für sich linear über den Vorlauf; die elektrische Leistung folgt als Heizleistung durch COP. Auf einer Stufe gilt deren Kennlinie, unter der untersten die unterste, über der obersten die oberste — bei verbotener Extrapolation bricht der Lauf dort ab —, und das Protokoll nennt je Gerät die Stunden über der obersten Stufe. Braucht in einer Stunde kein gekoppeltes Gebäude Heizwärme — auch weil sein Heizsollwert dort „aus" ist, etwa außerhalb der Heizperiode, die sein Reiter „Konditionierung" festlegt —, gilt wieder die Kennlinie von <math>\vartheta_{\mathrm{VL}}</math>. Die Lesart lehnt sich an VDI 4650 Blatt 1 und DIN EN 14825 an. Das Kennfeld führt je Vorlauftemperatur Stützstellen aus Quelltemperatur, COP und thermischer Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math> '''innerhalb''' des Feldes, wird zwischen den zwei umgebenden Stützstellen linear interpoliert — getrennt für COP und für die Leistung:
+Gerechnet wird mit der Kennlinie der Vorlauftemperatur <math>\vartheta_{\mathrm{VL}}</math>, die an der Anlage steht. Mit der Anlagenkopplung (ab der Stufe „Heizkreis (AK1)") wertet der Lauf für Module mit Heizwärme je Stunde die zwei Vorlaufstufen aus, zwischen denen der gerechnete Heizkreisvorlauf liegt, und interpoliert Heizleistung und COP je für sich linear über den Vorlauf; die elektrische Leistung folgt als Heizleistung durch COP. Auf einer Stufe gilt deren Kennlinie, unter der untersten die unterste, über der obersten die oberste — bei verbotener Extrapolation bricht der Lauf dort ab —, und das Protokoll nennt je Gerät die Stunden über der obersten Stufe. Hat die Anlage eine Einbindung (Schritt 9), gilt statt des gerechneten Vorlaufs der kleinere Wert aus ihm und dem Höchsten Vorlauf <math>\vartheta_{\mathrm{WP,max}}</math>. Braucht in einer Stunde kein gekoppeltes Gebäude Heizwärme — auch weil sein Heizsollwert dort „aus" ist, etwa außerhalb der Heizperiode, die sein Reiter „Konditionierung" festlegt —, gilt wieder die Kennlinie von <math>\vartheta_{\mathrm{VL}}</math>. Die Lesart lehnt sich an VDI 4650 Blatt 1 und DIN EN 14825 an. Das Kennfeld führt je Vorlauftemperatur Stützstellen aus Quelltemperatur, COP und thermischer Leistung, nach Quelltemperatur absteigend. Liegt <math>\vartheta_{\mathrm{Q}}(t)</math> '''innerhalb''' des Feldes, wird zwischen den zwei umgebenden Stützstellen linear interpoliert — getrennt für COP und für die Leistung:
 
 : <math>\displaystyle \operatorname{COP}(t) = \operatorname{COP}_{\mathrm{u}} + \left( \operatorname{COP}_{\mathrm{o}} - \operatorname{COP}_{\mathrm{u}} \right) \cdot \frac{\vartheta_{\mathrm{Q}}(t) - \vartheta_{\mathrm{u}}}{\vartheta_{\mathrm{o}} - \vartheta_{\mathrm{u}}}</math> &nbsp;&nbsp;(2)
 :: <math>\operatorname{COP}(t)</math> – Leistungszahl der Stunde [–]
@@ -237,6 +278,8 @@ Außerhalb des Feldes gilt:
 
 Beide Kappungen werden je Modul gezählt und einmal am Laufende gemeldet — mit der Zahl der betroffenen Stunden und dem Temperaturbereich. Bei einem Booster (Quelle 30…50&nbsp;°C, Herstellerkennlinien meist bis rund 20&nbsp;°C) ist die Kappung nach oben der Normalfall.
 
+'''Geschlossener Kreis (AK3).''' Auf dieser Stufe gleicht der Lauf Raumtemperatur, Bedarf und Vorlauf je Stunde mit dem ab, was die Erzeuger und ein Heizungspuffer liefern können ([[Programm Dokumentation/Pufferspeicher#ak3|Pufferspeicher: Heizungspuffer im geschlossenen Kreis]]). Die Wärmepumpe geht dort als Leistungsangebot ein: Leistung aus der Kennlinie am Vorlauf des Kreises — zwischen zwei Vorlaufstufen linear gewichtet — und an der Quelltemperatur zu Beginn der Stunde, an einer Erdsonde aus dem Zustand des Sondenfelds. Unter der untersten Vorlaufstufe gilt die unterste Kennlinie, über der obersten bei erlaubter Extrapolation die oberste; bei verbotener Extrapolation bietet die Wärmepumpe dort nichts an. In einer Sperrstunde und unter dem Abschaltpunkt des bivalenten Betriebs bietet sie nichts an, sonst gilt der Faktor ihres Zeitprogramms. Verlangt der Kreis einen Vorlauf über ihrem Höchsten Vorlauf, liefert sie nur im Vorwärmbetrieb (Schritt 9).
+
 === Schritt 3 — Betriebsarten und Sperrzeiten ===
 
 Auf das Kennfeldergebnis wirken drei Regeln, in dieser Reihenfolge.
@@ -255,12 +298,14 @@ Auf das Kennfeldergebnis wirken drei Regeln, in dieser Reihenfolge.
 
 Der Unterschied zwischen <math>\le</math> und dem strengen „kleiner" betrifft nur die Stunden mit exakter Gleichheit. Der Vorbelegungswert <math>\vartheta_{\mathrm{biv}} = 0</math>&nbsp;°C gilt '''wörtlich''' — eine Ersatzregel für 0 würde die Anlagen falsch rechnen, die diesen Wert bewusst führen. Steht eine alternativ betriebene Anlage auf 0&nbsp;°C, weist der Lauf einmalig darauf hin.
 
-'''Sperrzeit''' — ist sie eingeschaltet und liegt die Tagesstunde im Fenster:
+'''Sperrzeit''' — ist das Fenster aus „von" und „bis" eingeschaltet und liegt die Tagesstunde darin:
 
 : <math>\displaystyle h_{\mathrm{von}} \le h_{\mathrm{T}}(t) < h_{\mathrm{bis}} \; \to \; P_{\mathrm{th}}(t) = 0 \; ; \quad P_{\mathrm{el}}(t) = 0</math> &nbsp;&nbsp;(5)
 :: <math>P_{\mathrm{th}}(t)</math>, <math>P_{\mathrm{el}}(t)</math> – thermische und elektrische Leistung der Stunde; in der Sperrzeit beide 0 [kW]
 :: <math>h_{\mathrm{von}}</math>, <math>h_{\mathrm{bis}}</math> – Grenzen des Sperrzeitfensters [h]
 :: <math>h_{\mathrm{T}}(t)</math> – Tagesstunde, 0…23 [–]
+
+Dieses Fenster gilt jeden Tag und reicht nicht über Mitternacht; der Heizstab rechnet darin weiter. Mit '''Sperrfenstern''' (Kästchen „Sperrzeiten vorhanden") ist eine Stunde gesperrt, wenn ihr Beginn in einem Fenster aus Beginn und Dauer an einem seiner Wochentage liegt; ein Fenster über Mitternacht läuft in den Folgetag, das des 31. Dezember in den 1. Januar. Ein Fenster mit „Heizstab mitgesperrt" sperrt auch den Heizstab. Die Sperrzeit geht dem Zeitprogramm der Anlage vor.
 
 '''Wärmequelle Pufferspeicher''' — die Verdampferwärme muss aus dem Speicher kommen:
 
@@ -388,6 +433,79 @@ Der Mehrstrom geht in den Strombedarf der Stunde, des Moduls und des Jahres ein.
 
 '''Im Kühlbetrieb''' gilt dieselbe Rechnung in der Kältekaskade: Die Mindestleistung der Kühlung ist <math>P_{\mathrm{min}}</math> im Verhältnis zur Nennleistung auf die Kühlleistung der Stunde umgelegt, und der Mehrstrom erhöht den Kältestrom.
 
+=== Schritt 9 — Übergabegrenze, Gerätegrenzen und Betriebsbereiche ===
+{{Anker|uebergabegrenze}}
+
+Dieser Schritt rechnet nur für eine Wärmepumpe mit gesetzter '''Einbindung''' bei aktiver Anlagenkopplung und nur in Stunden, für die der Heizkreis einen Vorlauf <math>\vartheta_{\mathrm{V,soll}}</math> gerechnet hat; ohne Einbindung bleibt es bei den Schritten 1 bis 8. Er wirkt auf die Heizwärme der Stunde, nach Betriebsart und Sperrzeit und vor der Quellentnahme.
+
+'''Gerätegrenzen.''' Jedes leere Feld der Gruppe „Gerätegrenzen" nimmt die Vorgabe des Kältemittels, ohne Kältemittel die allgemeine Vorgabe. Die Rücklaufgrenze ist der kleinere Wert aus dem größten Rücklauf und dem Abstand der kleinsten Spreizung unter dem Höchsten Vorlauf:
+
+: <math>\displaystyle \vartheta_{\mathrm{R,grenz}} = \min\left( \vartheta_{\mathrm{R,max}} , \vartheta_{\mathrm{WP,max}} - \Delta\vartheta_{\mathrm{min}} \right)</math> &nbsp;&nbsp;(19)
+:: <math>\vartheta_{\mathrm{R,grenz}}</math> – wirksame Rücklaufgrenze; ohne Wert für <math>\vartheta_{\mathrm{R,max}}</math> gilt der zweite Ausdruck [°C]
+:: <math>\vartheta_{\mathrm{WP,max}}</math> – Höchster Vorlauf der Wärmepumpe [°C]
+:: <math>\Delta\vartheta_{\mathrm{min}}</math> – kleinste Spreizung [K]
+
+Liegt der Rücklauf zur Wärmepumpe <math>\vartheta_{\mathrm{R,WP}}(t)</math> über <math>\vartheta_{\mathrm{R,grenz}}</math>, liefert sie in der Stunde nichts. Darunter wertet eine gepflegte Abwertung Leistung und Leistungszahl ab, die Stromaufnahme bleibt:
+
+: <math>\displaystyle f_{\mathrm{R}}(t) = 1 - \frac{k}{100} \cdot \left( \vartheta_{\mathrm{R,WP}}(t) - \vartheta_{\mathrm{R,bez}} \right)</math> &nbsp;&nbsp;(20)
+:: <math>f_{\mathrm{R}}(t)</math> – Abwertungsfaktor auf Leistung und Leistungszahl, nicht unter 0; er gilt für <math>\vartheta_{\mathrm{R,bez}} < \vartheta_{\mathrm{R,WP}}(t) \le \vartheta_{\mathrm{R,max}}</math>, sonst ist er 1 [–]
+:: <math>k</math> – Abwertung je Kelvin Rücklauf [%/K]
+:: <math>\vartheta_{\mathrm{R,bez}}</math> – Bezugsrücklauf [°C]
+
+'''Hydraulik.''' Aus der Nennleistung folgt der Nennstrom der Wärmepumpe, aus dem Mindestvolumenstrom eine Obergrenze der Spreizung; gelten beide Grenzen, gilt die strengere:
+
+: <math>\displaystyle W_{\mathrm{N}} = \frac{P_{\mathrm{N}}}{\Delta\vartheta_{\mathrm{A}}} \; ; \quad W_{\mathrm{min}} = x_{\mathrm{min}} \cdot W_{\mathrm{N}} \; ; \quad \Delta\vartheta_{\mathrm{max,eff}}(t) = \min\left( \Delta\vartheta_{\mathrm{max}} , \frac{P_{\mathrm{KF}}(t)}{W_{\mathrm{min}}} \right)</math> &nbsp;&nbsp;(21)
+:: <math>W_{\mathrm{N}}</math>, <math>W_{\mathrm{min}}</math> – Kapazitätsstrom der Wärmepumpe bei Nenn- und bei Mindestvolumenstrom [kW/K]
+:: <math>P_{\mathrm{KF}}(t)</math> – Kennfeldleistung der Stunde [kW]
+:: <math>\Delta\vartheta_{\mathrm{max,eff}}(t)</math> – wirksame größte Spreizung [K]
+
+{| class="wikitable"
+! Einbindung !! Rücklauf zur Wärmepumpe <math>\vartheta_{\mathrm{R,WP}}</math> !! Leistungsgrenze <math>P_{\mathrm{Hyd}}</math>
+|-
+| direkt (mit Überströmventil) || Heizkreisrücklauf; strömt durch die Wärmepumpe mehr als durch den Heizkreis (<math>\max(W_{\mathrm{H}}, W_{\mathrm{min}})</math>), steigt er durch Beimischung || <math>\max(W_{\mathrm{H}}, W_{\mathrm{min}}) \cdot \Delta\vartheta_{\mathrm{max,eff}}</math>, wenn die Stunde eine größere Spreizung verlangt; sonst keine
+|-
+| Weiche, Wärmepumpenstrom nicht kleiner als Heizkreisstrom || gemischt wie bei direkt || keine
+|-
+| Weiche, Wärmepumpenstrom kleiner als Heizkreisstrom || Heizkreisrücklauf; der Heizkreisvorlauf ist die Mischung || <math>W_{\mathrm{N}} \cdot \min(\vartheta_{\mathrm{WP,max}} - \vartheta_{\mathrm{R}}, \Delta\vartheta_{\mathrm{max,eff}})</math>
+|-
+| Puffer || unterste Pufferzone zu Beginn der Stunde || Ladeseite <math>W_{\mathrm{N}} \cdot \Delta\vartheta_{\mathrm{max,eff}}</math>; die Entladeseite rechnet der Lauf nicht, das Protokoll nennt es
+|}
+
+Ohne Heizkreistemperaturen begrenzt die Hydraulik nicht; ohne Nennleistung entfallen Nennstrom und Mindestvolumenstrom, am Puffer auch die Grenze. Bleibt die Spreizung der Wärmepumpe unter <math>\Delta\vartheta_{\mathrm{min}}</math>, zählt die Stunde als „Spreizung unterschritten"; die Energie der Stunde bleibt.
+
+'''Betriebsbereiche.''' Unter dem Höchsten Vorlauf gilt
+
+: <math>\displaystyle P_{\mathrm{grenz}}(t) = \min\left( P_{\mathrm{KF}}(t) \cdot f_{\mathrm{R}}(t) , P_{\mathrm{Hyd}}(t) \right)</math> &nbsp;&nbsp;(22)
+:: <math>P_{\mathrm{grenz}}(t)</math> – Leistung der Wärmepumpe unter dem Höchsten Vorlauf [kW]
+:: <math>P_{\mathrm{KF}}(t)</math> – Kennfeldleistung bei <math>\min(\vartheta_{\mathrm{V,soll}}, \vartheta_{\mathrm{WP,max}})</math> [kW]
+:: <math>P_{\mathrm{Hyd}}(t)</math> – Leistungsgrenze der Hydraulik nach der Tafel [kW]
+
+und jede Stunde mit Heizbedarf fällt in einen Bereich:
+
+{| class="wikitable"
+! Bereich !! Bedingung !! Wärmepumpe
+|-
+| B0 nur Kessel || Sperrzeit, Abschaltpunkt, Umschaltung am Kühltag oder Rücklauf über <math>\vartheta_{\mathrm{R,grenz}}</math> || liefert nichts
+|-
+| B1 Wärmepumpe allein || <math>\vartheta_{\mathrm{V,soll}} \le \vartheta_{\mathrm{WP,max}}</math>, Bedarf höchstens <math>P_{\mathrm{grenz}}</math> || höchstens <math>P_{\mathrm{grenz}}</math>
+|-
+| B2 parallel || <math>\vartheta_{\mathrm{V,soll}} \le \vartheta_{\mathrm{WP,max}}</math>, Bedarf über <math>P_{\mathrm{grenz}}</math> || <math>P_{\mathrm{grenz}}</math>, der zweite Erzeuger deckt den Rest am selben Vorlauf; im Alternativbetrieb deckt er allein (B4)
+|-
+| B3 Vorwärmung || <math>\vartheta_{\mathrm{V,soll}} > \vartheta_{\mathrm{WP,max}}</math> mit Vorwärmbetrieb, nicht alternativ || <math>P_{\mathrm{VW}}</math> nach (23), der Kessel hebt in Reihe auf <math>\vartheta_{\mathrm{V,soll}}</math>
+|-
+| B4 nur Kessel || <math>\vartheta_{\mathrm{V,soll}} > \vartheta_{\mathrm{WP,max}}</math> ohne Vorwärmbetrieb oder im Alternativbetrieb || liefert nichts
+|}
+
+: <math>\displaystyle P_{\mathrm{VW}}(t) = \min\left( W_{\mathrm{H}} \cdot \left( \vartheta_{\mathrm{WP,max}} - \vartheta_{\mathrm{R}}(t) \right) , P_{\mathrm{KF}}(t) , P_{\mathrm{Hyd}}(t) \right) \; ; \quad a(t) = \frac{\vartheta_{\mathrm{WP,max}} - \vartheta_{\mathrm{R}}(t)}{\vartheta_{\mathrm{V,soll}}(t) - \vartheta_{\mathrm{R}}(t)}</math> &nbsp;&nbsp;(23)
+:: <math>P_{\mathrm{VW}}(t)</math> – Leistung der Wärmepumpe im Vorwärmbetrieb, Kennfeld bei <math>\vartheta_{\mathrm{WP,max}}</math> [kW]
+:: <math>a(t)</math> – Anteil der Wärmepumpe am Temperaturhub des Heizkreises [–]
+:: <math>W_{\mathrm{H}}</math> – Kapazitätsstrom des Heizkreises [kW/K]
+:: <math>\vartheta_{\mathrm{R}}(t)</math> – Heizkreisrücklauf der Stunde [°C]
+
+Ist <math>\vartheta_{\mathrm{WP,max}} - \vartheta_{\mathrm{R}}</math> kleiner als <math>\Delta\vartheta_{\mathrm{min}}</math> oder der Rücklauf unbekannt, liefert die Wärmepumpe in B3 nichts. Der Vorwärmbetrieb verlangt die Wärmepumpe in der Kaskade vor dem Heizkessel; steht sie dahinter, rechnet die Stunde als B4, und das Protokoll weist darauf hin. Ohne zweiten Erzeuger — kein Heizkessel in der Kaskade und kein Heizstab — fährt die Wärmepumpe über <math>\vartheta_{\mathrm{WP,max}}</math> allein am Höchsten Vorlauf, höchstens mit dem kleinsten Wert aus Kennfeldleistung bei <math>\vartheta_{\mathrm{WP,max}}</math>, <math>P_{\mathrm{Hyd}}</math> und der Übergabegrenze der Gebäude bei <math>\vartheta_{\mathrm{WP,max}}</math> und der Raumtemperatur der Stunde; der Fehlbetrag bleibt offen.
+
+'''Bivalenzpunkte.''' Mit Einbindung weist der Lauf je Modul zusätzlich die berechneten Bivalenzpunkte aus, statisch und ohne Wirkung auf die Stundenrechnung: Die Heizlast wird lastlinear zwischen Auslegungs-Außentemperatur und Raumtemperatur angesetzt und gegen die Kennfeldleistung bei <math>\vartheta_{\mathrm{WP,max}}</math> gehalten — allein und begrenzt durch die Übergabe —; mit Vorwärmbetrieb kommt der Punkt dazu, an dem der Rücklauf der Heizkurve <math>\vartheta_{\mathrm{WP,max}} - \Delta\vartheta_{\mathrm{min}}</math> erreicht. Gesucht wird in Schritten von 0,25&nbsp;K mit anschließender Bisektion. Im Teilparallel- und Alternativbetrieb ist der maßgebende Punkt der wärmere aus Bivalenztemperatur und berechnetem Punkt.
+
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
@@ -398,23 +516,25 @@ Der Mehrstrom geht in den Strombedarf der Stunde, des Moduls und des Jahres ein.
 * '''Der Kühlbetrieb rechnet getrennt.''' Eine Wärmepumpe mit Kühlkennlinie und eingeschaltetem Kühlbetrieb deckt an Kühltagen den Kältebedarf in einer eigenen Kältekaskade nach der Wärmekaskade; an diesen Tagen ist ihr Heizkanal gesperrt, Warmwasser bleibt. Die Kühlkennlinie wird ebenso linear zwischen den zwei Kühl-Vorläufen interpoliert, die den Kühl-Vorlauf der Anlage einschließen; rechnet das Projekt auf der Stufe ''geschlossener Kreis (AK3)'' und fährt das Gebäude eine [[Programm Dokumentation/Gebäudemodell VDI 6007#kuehlkurve|Kühlkurve]], tritt an seine Stelle in jeder Stunde der Vorlauf der Kurve. Kälte und Kältestrom stehen in eigenen Reihen und gehen in die Wärmebilanz und die Jahresarbeitszahl der Wärme nicht ein ([[Programm Dokumentation/Kühlung#kuehlbetrieb|Kühlung: Kühlbetrieb der Wärmepumpe]]).
 * '''Der Heizstab hat keinen eigenen Wirkungsgrad''' — <math>\operatorname{COP}_{\mathrm{HS}} = 1</math> nach (12).
 * '''Katalogspalten ohne Leser''': Länge, Breite, Höhe, Gewicht und Raumbedarf kommen aus dem VDI‑3805-Import, werden ins Projekt kopiert und im ganzen Bestand nirgends gelesen.
-* '''Höchstens neun Module''' je Projekt; mit zehn oder mehr Wärmepumpen rechnet die Stufe nicht.
+* '''Höchstens zehn Module''' je Projekt; mit elf oder mehr Wärmepumpen bricht der Lauf mit einer Meldung ab.
 * '''Strompreis, Wärmepumpentarif und Kapitaldienst''' gehören zur Wirtschaftlichkeit; der Lauf liefert ihr die Strommengen <math>E_{\mathrm{a}}</math> und <math>E_{\mathrm{HS,a}}</math>.
 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — im Block „Strom“ die Jahresarbeitszahlen <math>\mathrm{JAZ}_{\mathrm{WP}}</math> und <math>\mathrm{JAZ}</math> nach (14); je Modul Wärmeproduktion, Strombedarf, Heizstabanteil, Jahresarbeitszahl (ohne Heizstab, auf Wunsch mit) und Laufzeit, mit Mindestleistung dazu Starts und Mehrstrom des Taktens; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>.
+* '''Simulationsergebnis, Reiter „Wärmepumpe"''' — im Block „Strom“ die Jahresarbeitszahlen <math>\mathrm{JAZ}_{\mathrm{WP}}</math> und <math>\mathrm{JAZ}</math> nach (14); je Modul Wärmeproduktion, Strombedarf, Heizstabanteil, Jahresarbeitszahl (ohne Heizstab, auf Wunsch mit) und Laufzeit, mit Mindestleistung dazu Starts und Mehrstrom des Taktens; in der Gruppe „Auslegung" Bivalenzpunkt, durchschnittliche Vollbenutzungsstunden und Minimale Spitzenkesselleistung, dazu der Stromverbrauch des Heizstabs und die Ganglinien von Produktion, Strombedarf und Quelltemperatur <math>\vartheta_{\mathrm{Q}}</math>. Bei einer Wärmepumpe mit Einbindung zeigt eine Kachelzeile Stunden und Wärme je Betriebsbereich (B0 und B4 zusammen als „nur Kessel"), die Bivalenzpunkte und den höchsten Übergabevorlauf; Stunden mit unterschrittener Spreizung und überschrittenem Rücklauf erscheinen nur, wenn es welche gibt ([[Programm Dokumentation/Simulationsergebnisse#betriebsbereiche|Simulationsergebnisse: Betriebsbereiche]]).
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Wärmepumpe an der Jahreswärme. Die Jahresarbeitszahl <math>\mathrm{JAZ}</math> steht nicht dort, sondern im Reiter „Wärmepumpe" und im Bericht („Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab").
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — der Anteil der Wärmepumpe am Strombedarf.
-* '''Simulationsprotokoll''' — Kappungen nach oben und unten mit Stundenzahl und Temperaturbereich, Extrapolationshinweis, nicht auflösbare Quellen, Bivalenztemperatur auf dem Vorbelegungswert.
-* '''Bericht''' und '''Wirtschaftlichkeit''' — Strommengen, JAZ und Vollbenutzungsstunden.
+* '''Simulationsprotokoll''' — Kappungen nach oben und unten mit Stundenzahl und Temperaturbereich, Extrapolationshinweis, nicht auflösbare Quellen, Bivalenztemperatur auf dem Vorbelegungswert, ungerechnete Entladeseite am Puffer, Vorwärmbetrieb mit der Wärmepumpe hinter dem Kessel.
+* '''Bericht''' und '''Wirtschaftlichkeit''' — Strommengen, JAZ und Vollbenutzungsstunden; mit Einbindung im Bericht das Bivalenzdiagramm und die Tafel der Bivalenzpunkte.
 
 == Bezüge ==
 {{Anker|bezuege}}
 
-* [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] — Bedienung der Dialoge, Katalog, Kennlinien-Editor
+* [[Programm Dokumentation/Wärmepumpe|Wärmepumpe]] — Bedienung der Dialoge, Katalog, Kennlinien-Editor, [[Programm Dokumentation/Wärmepumpe#geraetegrenzen|Gerätegrenzen]] und [[Programm Dokumentation/Wärmepumpe#einbindung-hydraulik|Einbindung]]
+* [[Grundlagen/Wärmepumpe|Grundlagen: Wärmepumpe]] — Funktionsweise, Kennzahlen, Bivalenzpunkt
 * [[Programm Dokumentation/Wärmequelle Erdreich|Wärmequelle Erdreich]] — Sonden- und Kollektorauslegung, VDI 4640
+* [[Programm Dokumentation/Berechnung/Wärmequelle Erdreich|Berechnung: Wärmequelle Erdreich]] — Quelltemperatur, Sondenfeld und Entzug
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, die sieben Phasen der Stundenschleife
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Ladeordnung, Schichtung und die Quelle „Pufferspeicher"
 * [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — Herkunft des PV-Überschusses der Leistungssteuerung
