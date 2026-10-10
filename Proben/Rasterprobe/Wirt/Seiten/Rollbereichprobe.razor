@@ -4,6 +4,7 @@
 @using EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Strom
+@using WindowsFormsApplication1.Zeichnung
 @inject NavigationManager Navigation
 
 @*  DIE ROLLBEREICHPROBE (Konzept Projektdialoge mit Katalogauswahl, Abschnitt 8,
@@ -17,7 +18,7 @@
 
     Gaben ueber die Adresse:
       ?fall=pufferspeicher|stromspeicher|photovoltaik|solarkollektoren|
-            bedarfsprofile|waermebedarf|stromganglinie|solarganglinie|kaeltemaschine
+            bedarfsprofile|waermebedarf|stromganglinie|solarganglinie|pvganglinie|kaeltemaschine
       ?zeilen=40   Katalogzeilen
       ?projekt=2   Projektzeilen *@
 
@@ -62,16 +63,26 @@
         case "waermebedarf":
             <WaermebedarfExternDialog Zeilen="@WaermeZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Waermebedarf)"
                                       Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Waermebedarf)))"
-                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))" />
+                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
             break;
         case "stromganglinie":
             <StromganglinieDialog Zeilen="@StromZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Stromganglinie)"
                                   Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Stromganglinie)))"
-                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))" />
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
             break;
         case "solarganglinie":
             <SolarganglinieDialog Zeilen="@Erzeuger("Solar")" Katalogprofil="@Zeitreihe(Zeitreihenart.Solarganglinie)"
-                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))" />
+                                  Katalogwege="@Gangwege(Zeitreihenart.Solarganglinie)"
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
+            break;
+        case "pvganglinie":
+            <PvGanglinieDialog Zeilen="@Erzeuger("PV")" Katalogprofil="@Zeitreihe(Zeitreihenart.PvGanglinie)"
+                               Katalogwege="@Gangwege(Zeitreihenart.PvGanglinie)"
+                               Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                               Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
             break;
         case "kaeltemaschine":
             <KaeltemaschineKatalogDialog Katalogprofil="@Profil(Anlagenart.Kaeltemaschine)"
@@ -152,6 +163,40 @@
     private List<WaermebedarfExternZeile> WaermeZeilen => _waerme ??= Enumerable.Range(1, _projekt)
         .Select(i => new WaermebedarfExternZeile { IdZ = i, IdGanglinie = 100 + i, Bezeichner = "Ganglinie " + i })
         .ToList();
+
+    // ------------------------------------------------------- Ganglinie der Detailzeile (DZ1)
+    // Synthetische Reihe, je Schalterstellung EINE Instanz (DiagrammSvg vergleicht die Referenz).
+    private static readonly Zeichenmodell GANG = Gang(false), DAUER = Gang(true);
+    private static Zeichenmodell Gang(bool sortiert) => GangModell(sortiert, 0, 0);
+    private static Zeichenmodell GangModell(bool sortiert, int breite, int hoehe)
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 20.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0) + 5.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (a, b) => b.CompareTo(a));
+        return ChartRenderer.GanglinieNormiertModell("Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Leistung", werte, ChartRenderer.C_BEDARF) },
+            "kW", sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate, sortiert,
+            breite: breite, hoehe: hoehe);
+    }
+    private static Task<GanglinienKennzahlen?> GangKennzahlen(GanglinienWahl w)
+        => Task.FromResult<GanglinienKennzahlen?>(new GanglinienKennzahlen(175.2, 37.0, 4735));
+    private static Zeichenmodell? GangBild(GanglinienWahl w, bool sortiert) => sortiert ? DAUER : GANG;
+    // DZ1-N2: das Modell in Behaeltergroesse - je Mass und Schalterstellung einmal gebaut.
+    private static readonly Dictionary<(bool, int, int), Zeichenmodell> _gangMass = new();
+    private static Zeichenmodell? GangBildMass(GanglinienWahl w, bool sortiert, int breite, int hoehe)
+    {
+        if (breite <= 0 || hoehe <= 0) return GangBild(w, sortiert);
+        lock (_gangMass)
+            return _gangMass.TryGetValue((sortiert, breite, hoehe), out var m) ? m
+                : _gangMass[(sortiert, breite, hoehe)] = GangModell(sortiert, breite, hoehe);
+    }
+    private readonly Dictionary<Zeitreihenart, GanglinienKatalogwege> _gangwege = new();
+    private GanglinienKatalogwege Gangwege(Zeitreihenart art)
+        => _gangwege.TryGetValue(art, out var w) ? w : _gangwege[art] = new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(Zeitreihenkatalog(art))
+        };
 
     private List<GanglinienProjektZeile>? _strom;
     private List<GanglinienProjektZeile> StromZeilen => _strom ??= Enumerable.Range(1, _projekt)

@@ -208,13 +208,22 @@ ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Au
 - **Zugeklappt** (Vorgabe beim Öffnen, KA‑E‑4): eine Zeile mit Pfeil, Marke „Projektsatz“ oder
   „Katalogsatz“, Name und den wichtigsten Kenndaten. Sie zeigt den zuletzt gewählten Satz, gleich in
   welchem Bereich.
-- **Aufgeklappt:** die Zeile wird zur Satzfläche mit eigener Rollleiste. Sie nimmt den Listen Höhe ab — der
-  Katalog behält mindestens rund 250 px, die Projektliste wird bei Bedarf bis zur unteren Grenze geklemmt;
-  beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
+- **Aufgeklappt:** die Zeile wird zur Satzfläche und hat Vorrang: Projektliste und Katalog stehen auf ihren
+  Untergrenzen (Projektliste Kopf und eine Zeile, Katalog Kopf und zwei Zeilen samt Kopf- und Fußleiste), die
+  Satzfläche nimmt die gesamte übrige Höhe; beide Listen bleiben bedienbar. Inhalt: „Alle Daten“ (bearbeitbar, beim gesperrten Katalogsatz nur lesen
   mit „Erst Schloss aufheben“), beim Projektsatz die Kostenknöpfe und die projektbezogenen Felder
   (Abschnitt 4.2).
 - Der Zustand auf/zu wird nicht gemerkt; die Satzfläche des BHKW startet damit nicht mehr aufgeklappt
   (heute `_parameterOffen = true`).
+
+**Präzisiert in DZ1 (gemessen 10.10.2026, Rollbereichprobe):** Aufgeklappt steht die Projektliste auf ihrer
+Untergrenze (85 px, Kompaktstufe 74 px), die Katalogliste auf Kopf und zwei Zeilen (147 bzw. 161 px, Kompaktstufe
+128 bzw. 140 px); die Satzfläche reicht bis an den unteren Rand des Bausteins. Ihr Inhalt füllt sie — eine Ganglinie
+zeichnet sich in dieser Höhe (Abschnitt 4.9) —, und nur was trotzdem nicht passt („Alle Daten“), rollt in der
+Satzfläche; sie ist dann der einzige Rollbereich. Zugeklappt gilt die Aufteilung über die Trennlinie (4.3)
+unverändert. Gemessene Satzfläche mit Kosten und „Alle Daten“ (Heizkessel): 165 px in 1 280 × 800, 172 px in
+1 280 × 720, 152 px in 1 024 × 700, 220 px in 1 024 × 768, 476 px in 768 × 1 024, 97 px in 1 093 × 614.
+Trägt die Satzfläche eine Ganglinie, ist ihre Untergrenze der Kopf plus 150 px Kurve (DZ1‑N2, Maße in 4.9).
 
 ### 4.5 Mehrfachauswahl
 
@@ -225,6 +234,13 @@ ausgegraut. Ein Satzname als erstes Wort der Leiste folgt dem Haus-Muster der Au
   übernehmen…, Schloss, Löschen. Die Rückfrage nennt die Zahl und bei Löschen und Schloss die Namen.
 - **Sammelübernahme** (KA‑E‑6): Doppelklick und Enter übernehmen die Zeile bzw. die Auswahl. Die
   Trägerwahl fragt je Brennstoff einmal (AD-Q4). Die Detailzeile zeigt die zuletzt angeklickte Zeile.
+- **Die Wahl folgt der Übernahme** (DZ1‑N2): Wählt der Wirt nach Übernehmen, Umstellen oder Neu… die neue
+  Projektzeile, steht auch die Mehrfachwahl auf genau dieser Zeile (bei einer Sammelübernahme auf den neuen
+  Zeilen); die vorher angekreuzten Kästchen sind abgewählt. Eine Zeile, die aus der Liste verschwindet, verlässt
+  die Wahl. Ist nichts angekreuzt, bleibt es so — dann wirken die Aktionen auf die Einzelwahl. „Aus dem Projekt
+  entfernen“ trifft damit nach einer Übernahme die eben übernommene Zeile. Geregelt an einer Stelle im Baustein
+  (`Bereichswahl.ListeFolgen`, gerufen von der `Zweispaltenauswahl` bei jedem Parametersatz über die
+  ungefilterte Projektliste) für alle Wirte; gehalten von bunit-Fällen und der Katalogprobe.
 
 ### 4.6 Bearbeiten und Mehrfach-Bearbeiten
 
@@ -285,9 +301,10 @@ Normalstufe. Die Klemme auf eine Katalogzeile unter 600 px Bausteinhöhe gilt nu
 Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf, zwei Zeilen und Knopfleiste,
 Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
 senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
-Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts und wächst
-bis 45 % der Fensterhöhe, Projekt- und Katalogliste geben dafür bis zu ihrer Untergrenze ab; erst darüber rollt
-allein die Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
+Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts (mit
+Ganglinie Kopf und 150 px Kurve, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
+Satzfläche nimmt die gesamte übrige Höhe ohne Obergrenze; was trotzdem nicht passt, rollt allein in der
+Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
 768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
 aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebäudedialogs leer.
 
@@ -303,8 +320,63 @@ aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebä
 | Wärmepumpe | Umstellen | Schloss, Löschen, Bearbeiten | Kenndaten; Projektsatz: Kosten | Anlage… (`WaermepumpeAnlageDialog`) |
 | Gebäude | — | Neu, Import, Baustoffzuordnungen, Schloss, Löschen | Kenndaten; Projektsatz: Wohnfläche, Ausrichtung, Simulation, Export | Gebäudedaten… |
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
-| Wärmebedarf extern, Strom-, Solarganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten | Ganglinie mit Kennzahlen | — |
+| Wärmebedarf extern, Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
 | Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
+
+**Präzisiert in DZ1 (Anwenderentscheid 10.10.2026: „Alle Dialoge mit CSV-Import … sollen unter ‚Gewählter
+Satz‘ analog zum Dialog Wärmebedarf extern den Lastgang darstellen“):** Alle vier Ganglinien-Dialoge übergeben der
+Detailzeile Marke und Namen des gewählten Satzes (`SatzArt`, `SatzName`) und zeigen aufgeklappt denselben Baustein
+`GanglinienGrafik` — Jahresarbeit, Spitzenlast, Vollbenutzungsstunden, Schalter „sortiert“ und Einheit, darunter
+die Jahresganglinie. Kennzahlen und Zeichenmodell rechnet der Kern (`GanglinienAuswertungCtrl` mit
+`GanglinienQuelle.Solarganglinie` bzw. `PvGanglinie`, `ChartRenderer.GanglinieNormiertModell`); die Gaben baut
+`GanglinienGrafikGaben` in `EPOS.UI.Daten`. Eine eben aufgenommene Projektzeile trägt noch keine Projektkopie und
+zeigt den Katalogsatz gleichen Namens. Die Zeichenfläche hält das Seitenverhältnis des Zeichenmodells
+(`--epos-bild-verhaeltnis`), ihre Höhe kommt aus dem Behälter, auch beim Vergrößern des Fensters und beim Auf- und
+Zuklappen; das Bild bekommt keinen eigenen Rollbalken.
+
+**Präzisiert in DZ1-N1 (verdichteter Kopf, gemessen 10.10.2026, Rollbereichprobe):** Der Kopf der Satzfläche hat
+höchstens zwei schmale Zeilen. Die **Kopfzeile** (Parameter `Kopfzeile` der `GanglinienGrafik`) trägt Name und
+Beschreibung nebeneinander, die Beschriftung vor dem Feld, die Beschreibung doppelt so breit, beide einzeilige
+Lesefelder (0,7 Berührungsziel hoch, voller Text als Tooltipp); die PV-Ganglinie stellt Raster, Jahresarbeit und
+Nennleistung kurz dazu. Wärmebedarf extern und Stromganglinie haben keine Kopfzeile (der Name steht in der
+Detailzeile). Die **Kennzahlenzeile** trägt Kennzahlen, Zoomleiste („×1 · Bereich · 1:1“), Schalter „sortiert“,
+Einheit (Beschriftung vor dem Feld) und rechts die Infoknöpfe des Wirts (Parameter `Knoepfe`; ohne Grafik bleibt
+die eigene Knopfzeile). Die Zeigerzeile liegt oben rechts über dem Bild. Kopf ohne Polster: 51 px (Kompaktstufe
+44 px) ohne, 84 px (72 px) mit Kopfzeile. Die Untergrenze der Satzfläche ist der Kopf plus 90 px Kurve
+(`--epos-kurve-min`; Satzfläche 142 bzw. 175 px, Kompaktstufe 135 bzw. 163 px); reicht das Fenster dafür nicht,
+rollt nach KB1 der Dialogkörper. Gemessene Kurve, Detailzeile auf:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 |
+|---|---|---|---|
+| Wärmebedarf extern | 93 px, Dialogkörper rollt (KB1) | 94 px, rollt (KB1) | 122 px |
+| Stromganglinie | 139 px | 148 px | 196 px |
+| Solarthermie-, PV-Ganglinie | 96 px | 112 px | 160 px |
+
+Eine Kurve von 180 px ohne Rollen des Dialogkörpers gibt 1 280 × 800 nicht her: Mit Projektliste und Katalogliste
+auf ihren Untergrenzen bleiben der Satzfläche 194 px (Solar, PV), 204 px (Strom) und 118 px (Wärmebedarf extern:
+Kontextzeile und Knopfleiste unter dem Katalog). Mehr Kurve verlangt eine kleinere Untergrenze der Katalogliste
+(Kopf und eine Zeile bei offener Ganglinie) oder ein Rollen des Dialogkörpers — offen zum Entscheid.
+
+**Präzisiert in DZ1-N2 (Kurve in voller Breite, gemessen 10.10.2026, Rollbereichprobe):** Die Kurve nimmt die volle
+Breite der Satzfläche und deren übrige Höhe. Die Zeichenfläche nimmt ihre Größe vom Behälter (`contain: size`, kein
+Seitenverhältnis mehr); `DiagrammSvg` meldet ihr Maß beim Aufklappen und nach jeder Größenänderung
+(`MassGeaendert`, ResizeObserver im Modul, entprellt), und `GanglinienGrafik` lässt das Zeichenmodell über
+`BildauftragMass` in genau dieser Größe bauen (`ChartRenderer.GanglinieNormiertModell` mit `breite`/`hoehe`) — das
+Bild steht 1:1, Achsen und Schrift sind unverzerrt. Unter 400 px Höhe steht das Modell kompakt: ohne Titel (der Name
+steht darüber), Achsentitel und Legende in einer Kopfzeile, die Prozentachse unter 120 px Flächenhöhe in
+50-%-Schritten. Ohne Maß bleibt das Bild 1 240 × 560 und byte-gleich (ChartProben-Messlatte unverändert). Alle vier
+Ganglinien-Dialoge gehen diesen Weg. Die Untergrenze der Kurve ist 150 px (`--epos-kurve-min`; Satzfläche 202 bzw.
+235 px, Kompaktstufe 195 bzw. 223 px); reicht das Fenster nicht, rollt nach KB1 der Dialogkörper. Gemessen,
+Detailzeile auf (Kurve Breite × Höhe, Überhang des rollenden Dialogkörpers):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 768 × 1 024 |
+|---|---|---|---|---|
+| Wärmebedarf extern | 1 110 × 153 px, rollt 100 px | 1 118 × 154 px, rollt 80 px | 982 × 154 px, rollt 32 px | 726 × 377 px |
+| Stromganglinie | 1 110 × 153 px, rollt 14 px | 1 118 × 154 px, rollt 6 px | 982 × 196 px | 726 × 451 px |
+| Solarthermie-, PV-Ganglinie | 1 110 × 153 px, rollt 57 px | 1 118 × 154 px, rollt 42 px | 982 × 160 px | 726 × 396 px |
+
+Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700: 982 px, 1 093 × 614: 1 051 px, je
+154 px hoch, der Dialogkörper rollt dort nach KB1).
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 
@@ -343,13 +415,27 @@ Filtern danach bleiben über die Wahl möglich.
 - Tastatur: Knopf und Kästchen sind mit Tab erreichbar, Esc schließt die Auswahl (nicht den Dialog)
   und gibt den Fokus an den Knopf zurück; ein Klick daneben schließt sie ebenso.
 
+**Hinweis „bei dieser Breite ausgeblendet“ (DZ1).** In der Standardanzeige stehen Spalten mit Rang 2 in
+der Auswahl als angehakt, auch wenn sie bei der aktuellen Breite weichen. Neben einer solchen Spalte steht
+dann leise „bei dieser Breite ausgeblendet“ (`KFLT_SPALTE_AUSGEBLENDET`, englisch „hidden at this width“).
+Der Hinweis folgt derselben Breite wie die Spalte: Er trägt die Stufe der Spalte (`epos-weicht-ab-N` neben
+`epos-spalte-ab-N`) und erscheint unter denselben Containerabfragen — in der Katalogauswahl misst der
+Katalogbereich (`zweispaltenbereich`, seine Inhaltsbreite ist die Listenbreite), sonst die Liste selbst. Mit
+gemerkter Wahl weicht keine Spalte, und es steht kein Hinweis.
+
+**Trefferzahl (DZ1).** Die Trefferzahl in der Kopfleiste des Katalogs kürzt nie mit Auslassung: Sie steht als
+Zahl („40 von 40“, `KFLT_TREFFER_KURZ`) und Hauptwort („ Sätzen“) und schrumpft nicht; fehlt Platz, gibt zuerst
+das Suchfeld nach (bis 7rem), und erst in einem Katalogbereich unter 700 px Breite fällt das Hauptwort weg. Der
+volle Text steht im `title`. Bei 768 px Fensterbreite steht sie ganz („40 von 40 Sätzen“, gemessen 10.10.2026).
+
 **Summe.** In der Kopfleiste des Projekts hat die Summe Vorrang: Zahl und Einheit werden nie gekürzt
 (`flex-shrink: 0`, `white-space: nowrap`); zuerst geben Überschrift und Knöpfe nach (Auslassung, unter
 800 px Bereichsbreite ohne Pfeile), die Kopfleiste bleibt einzeilig.
 
 Nachweis: `EPOS.UI.Tests/Bausteine/KataloglisteSpaltenwahlTests`, die Dialogtests der Wirte und die
 KS1-Fälle von `Proben/Rasterprobe/katalogprobe.mjs` (Heizkessel und BHKW in 1 280 × 800 und
-768 × 1 024, mit Gegenprobe).
+768 × 1 024, mit Gegenprobe; sie messen auch Trefferzahl und Hinweis), dazu
+`EPOS.UI.Tests/Bausteine/KataloglisteTrefferUndHinweisTests`.
 
 ## 5 Rückweg Projekt → Datenbank
 

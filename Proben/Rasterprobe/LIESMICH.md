@@ -281,6 +281,13 @@ maßen — Listenhülle gegen Eingabeblock (KL-5), Stammblatt mit Bild „Gangli
 den `rasterprobe.mjs` misst; Wärmebedarf (W1, N13) und Stromganglinie (N15) bleiben als Zeitreihen
 im Rahmen gemessen.
 
+**Mehrfachwahl folgt der Übernahme (DZ1-N2).** Zwei weitere Fälle `DZ1N2_uebernahme_heizkessel_1280x800` und
+`DZ1N2_uebernahme_bhkw_1280x800` öffnen den echten Projektdialog der Fensterprobe mit `?aufnahme=1` (der Wirt nimmt
+dann bei „In das Projekt übernehmen“ eine Zeile auf): Kästchen der ersten Projektzeile, einen Katalogsatz ankreuzen,
+übernehmen samt Trägerwahl — danach muss genau die neue Projektzeile angekreuzt sein, und „Aus dem Projekt
+entfernen“ muss genau sie entfernen, die zuvor angeklickte Zeile bleibt. Ergebnis vom 10.10.2026: beide grün,
+der volle Lauf 66 Fälle ohne Verstoß.
+
 ### Ergebnis vom 19.09.2026 (Auftrag KL-5)
 
 **Vorher** (`node katalogprobe.mjs --vorher`, Rückgabe 1 — 8 von 11 Fällen rot):
@@ -1213,6 +1220,45 @@ bleibt ohne Fehler. **Gegenprobe** (läuft mit): ein absichtlich rollender Inhal
 verschachtelter Rollbereich, ein rollender Dialogkörper als solcher erkannt werden. Rückgabe `0` = kein
 Verstoß und Gegenprobe rot, `1` = Verstoß oder Gegenprobe grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
+**Ganglinie mit verdichtetem Kopf (DZ1-N1).** In den vier Ganglinien-Fällen (Wärmebedarf extern, Strom-, Solar-,
+PV-Ganglinie) misst die Probe aufgeklappt zusätzlich: Kopf der Satzfläche (bis zur Oberkante der Kurve, ohne Polster)
+ab 1 024 px Breite höchstens 90 px — in 768 × 1 024 brechen die Kennzahlen um (93 px) —, Kurve mindestens
+`--epos-kurve-min` (90 px), Satzfläche ohne eigenen Rollbalken, und in 1 280 × 800 und 1 280 × 720 rollt der
+Dialogkörper bei Strom-, Solar- und PV-Ganglinie nicht. Beim Wärmebedarf extern gibt das Fenster die Untergrenze
+(Kopf + 90 px) nicht her; dort rollt der Dialogkörper nach KB1 (Befund, 40 px in 1 280 × 800, 20 px in 1 280 × 720).
+Die 1 280 × 720 erreicht in keinem Fall 180 px Kurve; die Untergrenze 90 px ergibt sich aus der Mindesthöhe des
+engsten Ganglinien-Wirts ohne Rollen (Solar, PV: 194 px Satzfläche in 1 280 × 800). **Vierte Gegenprobe:** In der
+Solarganglinie bei 1 280 × 800 muss eine auf 60 px gedrückte Kurve („Kurve < Untergrenze“) und eine Kurven-Untergrenze
+von 300 px („Dialogkörper rollt“) rot werden. Mit `--fotos <ordner>` legt die Probe je Ganglinien-Fall und Fenster ein
+Foto der aufgeklappten Detailzeile ab (`<fall>_<breite>x<hoehe>.png`).
+
+**Ergebnis vom 10.10.2026, DZ1-N1:** 666 Zustände, 0 Verstöße, alle vier Gegenproben rot. Kurve (Detailzeile auf):
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 1 024 × 700 | 1 093 × 614 | 768 × 1 024 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern | 93 (rollt) | 94 (rollt) | 122 | 94 (rollt) | 94 (rollt) | 328 |
+| Stromganglinie | 139 | 148 | 196 | 128 | 94 (rollt) | 328 |
+| Solarthermie-, PV-Ganglinie | 96 | 112 | 160 | 94 (rollt) | 94 (rollt) | 328 |
+
+**Kurve in voller Breite (DZ1-N2).** Die Zeichenfläche nimmt ihre Größe vom Behälter, und das Zeichenmodell entsteht
+in genau dieser Größe (`BildauftragMass`, Behältermaß von `DiagrammSvg`). Die Untergrenze der Kurve ist 150 px. Die
+Probe misst aufgeklappt zusätzlich: Kurve mindestens 90 % so breit wie die Satzfläche (ohne Polster), das Modell in
+Behältergröße (viewBox gegen die Fläche, je höchstens 3 px), und bei Strom-, Solar- und PV-Ganglinie rollt der
+Dialogkörper in 1 280 × 800 und 1 280 × 720 nur, solange die Kurve auf ihrer Untergrenze steht (höchstens 5 px
+darüber; KB1). Vor dem Messen wartet sie, bis das Modell im gemessenen Maß steht. Je Zustand schreibt sie eine Zeile
+„Kurve B × H px, Satzfläche, Modell, Dialog rollt“. **Vierte Gegenprobe** (Solarganglinie, 1 280 × 800): eine auf 60 px
+gedrückte Kurve, eine auf 300 px Breite begrenzte Kurve und eine Untergrenze der Satzfläche von 600 px (der
+Dialogkörper rollt, obwohl die Kurve über ihrer Untergrenze steht) müssen rot werden.
+
+**Ergebnis vom 10.10.2026, DZ1-N2:** 666 Zustände, 0 Verstöße, alle Gegenproben rot. Kurve Breite × Höhe in px
+(Detailzeile auf; Satzfläche jeweils gleich breit wie die Kurve), in Klammern der Überhang des rollenden Dialogkörpers:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 768 | 1 024 × 700 | 1 093 × 614 | 768 × 1 024 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern | 1 110 × 153 (100) | 1 118 × 154 (80) | 982 × 154 (32) | 982 × 154 (100) | 1 051 × 154 (186) | 726 × 377 |
+| Stromganglinie | 1 110 × 153 (14) | 1 118 × 154 (6) | 982 × 196 | 982 × 154 (26) | 1 051 × 154 (112) | 726 × 451 |
+| Solarthermie-, PV-Ganglinie | 1 110 × 153 (57) | 1 118 × 154 (42) | 982 × 160 | 982 × 154 (62) | 1 051 × 154 (148) | 726 × 396 |
+
 **Heizkessel (Stufe 2a).** Zusätzlich je Fenster: Detailzeile auf mit Kosten (die Satzfläche muss die
 Kostenknöpfe tragen), Überlagerung „Bearbeiten…" für die Projektkopie und für zwei angekreuzte Katalogsätze
 (Blätterleiste oder Hinweiszeile „übersprungen"), danach geschlossen mit Esc. Für den Heizkessel gilt in
@@ -1310,6 +1356,39 @@ Schlussleiste), Bannerprobe (BHKW und Gebäude in beiden Fenstern), Katalogprobe
 **Rasterprobe** misst in (c) das gesetzte Zeilenmaß mal `--epos-zeilenskala` der Hülle: GD1 bis GD3
 (Gebäude-Projektdialog, 624 px Höhe, also Kompaktstufe) 46,0 px bei `ItemSize` 53, keine Platzhalter,
 4 Sichtbarkeitsmelder nach dem Rollen; verfehlt bleibt allein Z6 (fremd).
+
+**Vorrang der Detailzeile (DZ1, Konzept 4.4 und 4.8).** Je Zustand mit aufgeklappter Detailzeile misst die
+Probe zusätzlich: Projektliste und Katalogliste höchstens 2 px über ihrer Untergrenze, die Satzfläche reicht
+bis an den unteren Rand des Bausteins (Rest höchstens 3 px); trägt sie eine Ganglinie, ist die Zeichenfläche so
+hoch wie der Platz, den Kennzahlen, Schalter und Zoomleiste lassen (oder so breit wie die Satzfläche). Die
+Tabelle am Ende nennt die Höhe der Satzfläche (und Bild/Platz der Ganglinie). **Dritte Gegenprobe:** Heizkessel
+in 1 280 × 800 mit einer auf 100 px begrenzten Satzfläche — sie lässt 66 px frei und muss rot werden.
+**Ergebnis vom 10.10.2026, DZ1, Teil 1:** 618 Zustände, 0 Verstöße, alle drei Gegenproben rot. Satzfläche
+aufgeklappt (Trennlinie oben) in px:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 |
+|---|---|---|---|---|---|---|
+| Heizkessel (Kosten, Alle Daten) | 165 | 172 | 152 | 220 | 476 | 97 |
+| Gebäude | 118 | 132 | 112 | 180 | 436 | 97 |
+
+**Ganglinie in der Detailzeile (DZ1, Teil 2, Konzept 4.9).** Der Wirt trägt die vier Ganglinien-Dialoge mit
+synthetischer Reihe (Kennzahlen und ein Zeichenmodell je Schalterstellung): `fall=waermebedarf`, `stromganglinie`,
+`solarganglinie` und neu `pvganglinie`. Die Probe wählt dort vor dem Aufklappen die erste Projektzeile und
+verlangt in der Satzfläche eine Zeichenfläche der Ganglinie. Deren Untergrenze (Kopf plus 150 px Kurve, DZ1-N2) gehört zur Mindesthöhe:
+Reicht das Fenster nicht, rollt der Dialogkörper (Befund, auch in den Fenstern ohne Kompaktstufe), das Bild hat
+keinen eigenen Rollbalken. **Ergebnis vom 10.10.2026 (vor DZ1-N1, Kopf unverdichtet, Untergrenze 260 px):** 666 Zustände,
+0 Verstöße, drei Gegenproben rot. Satzfläche (Bild/Platz der Zeichenfläche) in px, Trennlinie oben:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern | 276 (139/139) | 277 (148/148) | 277 (148/148) | 277 (148/148) | 436 (307/307) | 277 (148/148) |
+| Stromganglinie | 276 (139/139) | 277 (148/148) | 277 (148/148) | 277 (148/148) | 510 (328, volle Breite) | 277 (148/148) |
+| Solarthermieganglinie | 276 (136/136) | 277 (144/144) | 277 (144/144) | 277 (144/144) | 502 (213/213) | 277 (144/144) |
+| PV-Ganglinie | 276 (136/136) | 277 (144/144) | 277 (144/144) | 277 (144/144) | 502 (144/144) | 277 (144/144) |
+
+Außer in 768 × 1 024 rollt mit aufgeklappter Ganglinie der Dialogkörper (`data-zweispalten-eng`). Die
+**Fensterprobe** misst aufgeklappt ebenso Listen auf Untergrenze und den Rest der Satzfläche; ihre Gegenprobe
+begrenzt die Satzfläche auf 40 px und muss rot werden.
 
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
@@ -1480,3 +1559,13 @@ Projekt-Kopfleiste (die Probe setzt „1.240,5“). Gemerkt wird die Wahl in den
 `bannerprobe.mjs` (der BHKW-Fall wählt seine Katalogzeile über `.epos-zeilenzelle--name` — der
 Katalog des BHKW-Dialogs ist seit seiner Stufe 3 eine Zeilenwahl ohne Wahlknopf), `legendenprobe.mjs`,
 `kennzahlenprobe.mjs`.
+
+**Trefferzahl und Hinweis der Spaltenwahl (DZ1, Konzept 4.10).** Dieselben KS1-Fälle messen zusätzlich: Die
+Trefferzahl der Katalog-Kopfleiste kürzt nicht mit Auslassung und ihr Zahlteil steht ganz in ihrem Kasten (das
+Hauptwort darf fehlen, die Probe meldet, ob es steht); in der offenen Auswahl steht neben jeder angehakten
+Spalte, deren Kopf bei der Breite ausgeblendet ist, der Hinweis „bei dieser Breite ausgeblendet“, und neben
+keiner sichtbaren. Die Gegenprobe kneift die Trefferzahl zusätzlich auf 30 px und versteckt den Hinweis.
+**Ergebnis vom 10.10.2026:** 4 von 4 Fällen erfüllt, Gegenprobe rot („Trefferzahl abgeschnitten; Hinweis fehlt
+bei ausgeblendeter Spalte: Brennstoff, η, Brennwert“). Trefferzahl in allen vier Fällen „40 von 40 Sätzen“ mit
+Hauptwort; Hinweis bei 768 × 1 024 am Heizkessel neben Brennstoff, η und Brennwert, am BHKW neben Brennstoff,
+P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkessel neben keiner Spalte.

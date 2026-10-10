@@ -1764,4 +1764,35 @@ public class BhkwDialogTests : EposBunitContext
         var cut = Aufbauen(projektsatzWege: Wege());
         Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
     }
+
+    /// <summary>
+    /// DZ1‑N2: Nach „In das Projekt übernehmen“ folgt die Mehrfachwahl der neuen Zeile —
+    /// „Aus dem Projekt entfernen“ entfernt die eben übernommene Zeile, nicht die zuvor angeklickte.
+    /// </summary>
+    [Fact]
+    public void DZ1N2_Uebernehmen_dann_Entfernen_entfernt_die_eben_uebernommene_Zeile()
+    {
+        var entfernt = new List<int>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul A", 100), Zeile(2, "Modul B", 101) };
+        var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z.Schluessel),
+            aufnehmen: (id, _) => new AufnahmeErgebnis(Zeile(30 + id, "Neu " + id, 300 + id)));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[0].Click();
+        Assert.Equal(new[] { "1" }, cut.Instance.ProjektWahl.Gewaehlte);
+
+        KatalogAnkreuzen(cut, 0);
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+        var traeger = cut.FindComponent<EnergietraegerVarianteDialog>();
+        cut.InvokeAsync(() => traeger.Instance.Geschlossen.InvokeAsync(new EnergietraegerVarianteErgebnis(3, "Erdgas E", "Var")));
+
+        Assert.Equal(3, zeilen.Count);
+        int neu = zeilen[2].Schluessel;
+        Assert.Equal(neu, cut.Instance.Projektzeile!.Schluessel);
+        Assert.Equal(new[] { neu.ToString(System.Globalization.CultureInfo.InvariantCulture) }, cut.Instance.ProjektWahl.Gewaehlte);
+
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
+
+        Assert.Equal(new[] { neu }, entfernt.ToArray());
+        Assert.Equal(new[] { 1, 2 }, zeilen.Select(z => z.Schluessel).ToArray());
+    }
 }

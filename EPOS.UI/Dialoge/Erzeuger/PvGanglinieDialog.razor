@@ -21,6 +21,7 @@
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -31,20 +32,102 @@
         <Schliesskreuz Geschlossen="BeiKreuz" />
     </div>
 
+    @{
+        // Die Daten des gewaehlten Satzes (DZ1) - im Projektbetrieb die Detailzeile der
+        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
+        RenderFragment knoepfe = @<text>
+            <InfoKnopf Schluessel="Form_PvGanglinie.Grundlagen"
+                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+            <InfoKnopf Schluessel="Form_PvGanglinie.Berechnung"
+                       StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
+        </text>;
+
+        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
+        @* Die Weiche in einem Satz: eine zugeordnete Ganglinie ersetzt die Modulrechnung. *@
+        @if (!string.IsNullOrEmpty(HinweisText))
+        {
+            <p class="epos-leisezeile">@HinweisText</p>
+        }
+        @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. Eine neu
+           aufgenommene Zeile hat vor dem OK noch keine Kopie: sie sagt "noch nicht gespeichert", ohne Zeichen und Knopf. *@
+        @if (_projektZeile is not null && IstUngespeichert(_projektZeile))
+        {
+            <p class="epos-leisezeile epos-pvg-ungespeichert" role="status">@UngespeichertText</p>
+        }
+        else if (_projektZeile is not null && ProjektAbweichung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-pvg-abweichungszeile" role="status">⚠ @ProjektAbweichung</p>
+            @if (AusKatalogErneuern is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf epos-pvg-erneuernknopf"
+                            @onclick="ErneuernOeffnen">@ErneuernKnopf</button>
+                </div>
+            }
+        }
+        @if (_erneuernStatus.Length > 0)
+        {
+            <p class="epos-leisezeile epos-pvg-erneuernstatus" role="status">@_erneuernStatus</p>
+        }
+
+        @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
+           dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik.
+           Mit Grafik steht der Kopf verdichtet (DZ1-N1): Name, Beschreibung und die Kennwerte in EINER
+           Zeile, die Infoknoepfe rechts in der Kennzahlenzeile - die Kurve bekommt den Rest. *@
+        @if (_grafik.Kennzahlen is not null)
+        {
+            <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
+                              Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)" BildauftragMass="@_grafik.BildMitMass(BildauftragMass)"
+                              Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
+                              LabelJahresarbeit="@LabelGrafikJahresarbeit" LabelSpitze="@LabelSpitze"
+                              LabelVollbenutzung="@LabelVollbenutzung"
+                              LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
+                              EinheitStunden="@EinheitStunden"
+                              Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
+                              FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                              Knoepfe="@knoepfe">
+                <Kopfzeile>
+                    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                              Titel="@_beschreibung" />
+                    <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" Kurz="true" />
+                </Kopfzeile>
+            </GanglinienGrafik>
+        }
+        else
+        {
+            <div class="epos-berechnungshilfe">@knoepfe</div>
+
+            <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                      Mehrzeilig="true" Zeilen="3" />
+            @* Die Kennwerte der markierten Ganglinie: Raster, Jahresarbeit und die gepflegte Nennleistung
+               (Tab_PvGanglinie_STAMM.Nennleistung_kWp) - ohne sie rechnet der Lauf mit der Spitze der Reihe. *@
+            <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
+        }
+        </div>;
+    }
+
     @if (Katalogbetrieb)
     {
         <GanglinieKatalogseite @ref="_seite" Wege="@Katalogwege" Profil="@Katalogprofil"
                                Filterstand="@_filterstand" Filtertexte="@Filtertexte"
                                Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
                                ZeileGewaehlt="BeiKatalogzeile" />
+        @satzinhalt
     }
     else
     {
-        <Zweispaltenauswahl LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+        <Zweispaltenauswahl Dialogname="PvGanglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                             UebernehmenText="@LabelHinzu"
                             UebernehmenGesperrt="@(_katalogZeile is null)" Uebernehmen="BeiHinzu"
                             EntfernenText="@LabelEntfernen"
-                            EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen">
+                            EntfernenGesperrt="@(_projektZeile is null)" Entfernen="BeiEntfernen"
+                            SatzArt="@SatzArt" SatzName="@SatzName">
 
             <Links>
                 <div class="epos-raster-huelle">
@@ -92,50 +175,9 @@
                                        Geaendert="BeiKatalogGeaendert" />
             </Rechts>
 
+            <Satz>@satzinhalt</Satz>
+
         </Zweispaltenauswahl>
-    }
-
-    @* Die Weiche in einem Satz: eine zugeordnete Ganglinie ersetzt die Modulrechnung. *@
-    @if (!string.IsNullOrEmpty(HinweisText))
-    {
-        <p class="epos-leisezeile">@HinweisText</p>
-    }
-    <div class="epos-berechnungshilfe">
-        <InfoKnopf Schluessel="Form_PvGanglinie.Grundlagen"
-                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
-        <InfoKnopf Schluessel="Form_PvGanglinie.Berechnung"
-                   StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
-    </div>
-
-    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
-    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
-              Mehrzeilig="true" Zeilen="3" />
-    @* Die Kennwerte der markierten Ganglinie: Raster, Jahresarbeit und die gepflegte Nennleistung
-       (Tab_PvGanglinie_STAMM.Nennleistung_kWp) - ohne sie rechnet der Lauf mit der Spitze der Reihe. *@
-    <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" />
-    <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
-    <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
-
-    @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. Eine neu
-       aufgenommene Zeile hat vor dem OK noch keine Kopie: sie sagt "noch nicht gespeichert", ohne Zeichen und Knopf. *@
-    @if (_projektZeile is not null && IstUngespeichert(_projektZeile))
-    {
-        <p class="epos-leisezeile epos-pvg-ungespeichert" role="status">@UngespeichertText</p>
-    }
-    else if (_projektZeile is not null && ProjektAbweichung.Length > 0)
-    {
-        <p class="epos-leisezeile epos-pvg-abweichungszeile" role="status">⚠ @ProjektAbweichung</p>
-        @if (AusKatalogErneuern is not null)
-        {
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf epos-pvg-erneuernknopf"
-                        @onclick="ErneuernOeffnen">@ErneuernKnopf</button>
-            </div>
-        }
-    }
-    @if (_erneuernStatus.Length > 0)
-    {
-        <p class="epos-leisezeile epos-pvg-erneuernstatus" role="status">@_erneuernStatus</p>
     }
 
     @* DIE RUECKFRAGE als kurze Ueberlagerung: OK erneuert sofort die Projektkopie, Abbrechen, Kreuz und
@@ -278,6 +320,62 @@
 
     /// <summary>Der Hinweis zur Simulation — <c>PVG_ERNEUERN_SIMULATION</c>.</summary>
     [Parameter] public string ErneuernSimulation { get; set; } = Resource.PVG_ERNEUERN_SIMULATION;
+
+    // --- Die Ganglinie in der Detailzeile (DZ1) --------------------------------
+
+    /// <summary>
+    /// Die drei Kennzahlen der gewählten Ganglinie — <c>GanglinienAuswertungCtrl</c> mit
+    /// <c>GanglinienQuelle.PvGanglinie</c>; <c>null</c> = keine Grafik.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? Kennzahlen { get; set; }
+
+    /// <summary>Das Zeichenmodell der gewählten Ganglinie (Wahl, sortiert); gerechnet im Kern.</summary>
+    [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
+
+    [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
+    [Parameter] public Func<Farbrolle, Task>? FarbeZuruecksetzen { get; set; }
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
+    [Parameter] public string LabelGrafikJahresarbeit { get; set; } = Resource.STROMGL_LBL_JAHRESARBEIT;
+    [Parameter] public string LabelSpitze { get; set; } = Resource.STROMGL_LBL_SPITZE;
+    [Parameter] public string LabelVollbenutzung { get; set; } = Resource.GEBB_LBL_VOLLBENUTZUNG;
+    [Parameter] public string LabelSortiert { get; set; } = Resource.SIM_CHK_SORTIERT;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.ALLG_LBL_EINHEIT;
+    [Parameter] public string EinheitStunden { get; set; } = Resource.GEBB_EINHEIT_STUNDEN;
+    [Parameter] public string Bildtext { get; set; } = Resource.CHART_TITEL_PVERTRAG_JAHRESGANGLINIE;
+    [Parameter] public string PlatzhalterBild { get; set; } = Resource.GANGLINIE_KEIN_DIAGRAMM;
+
+    /// <summary>Die Ganglinie der Detailzeile (DZ1).</summary>
+    private readonly GanglinienGrafikstand _grafik = new();
+
+    /// <summary>Die Kennzahlen der Grafik; <c>null</c> = keine Grafik. Prüfhilfe.</summary>
+    public GanglinienKennzahlen? Grafikkennzahlen => _grafik.Kennzahlen;
+
+    /// <summary>Die Wahl, zu der die Grafik gehört. Prüfhilfe für die Tests.</summary>
+    public GanglinienWahl? Grafikwahl => _grafik.Wahl;
+
+    /// <summary>Was die Detailzeile zeigt: die Projektzeile, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _projektZeile is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
+    private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _name;
+
+    private void GrafikAnstossen(GanglinienWahl wahl) => _ = GrafikLaden(wahl);
+
+    private async Task GrafikLaden(GanglinienWahl wahl)
+    {
+        await _grafik.LadenAsync(wahl, Kennzahlen);
+        await InvokeAsync(StateHasChanged);
+    }
 
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
@@ -489,6 +587,8 @@
         _name = zeile.Bezeichner;
         _beschreibung = BeschreibungZu(zeile.Bezeichner);
         Kennwerte(KatalogzeileZu(zeile.Bezeichner));
+        // Eine noch nicht gespeicherte Zeile traegt die Katalog-Id: dann ueber den Namen den Katalogsatz.
+        GrafikAnstossen(new GanglinienWahl(false, IstUngespeichert(zeile) ? 0 : zeile.GeraetId, zeile.Bezeichner));
     }
 
     /// <summary>Die Wahl über den Bezeichner — der Weg des Assistenten.</summary>
@@ -510,6 +610,7 @@
             _name = "";
             _beschreibung = "";
             Kennwerte(null);
+            _grafik.Verwerfen();
             return;
         }
         Katalogzeile_(zeile);
@@ -523,6 +624,7 @@
         _name = zeile.Bezeichner;
         _beschreibung = zeile.Text(Katalogfilterprofil.SpBeschreibung);
         Kennwerte(zeile);
+        GrafikAnstossen(new GanglinienWahl(true, zeile.Id, zeile.Bezeichner));
     }
 
     private string BeschreibungZu(string bezeichner)
@@ -581,6 +683,7 @@
         _name = "";
         _beschreibung = "";
         Kennwerte(null);
+        _grafik.Verwerfen();
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);

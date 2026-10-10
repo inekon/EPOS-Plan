@@ -51028,5 +51028,26 @@ Chart</value>
   <data name="PVD_RUECK_BLEIBT" xml:space="preserve">
     <value>Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit.</value>
   </data>
+  <data name="CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Solarertrag Jahresganglinie</value>
+  </data>
+  <data name="CHART_ACHSE_SOLARERTRAG" xml:space="preserve">
+    <value>Solarertrag</value>
+  </data>
+  <data name="CHART_TITEL_PVERTRAG_JAHRESGANGLINIE" xml:space="preserve">
+    <value>PV-Ertrag Jahresganglinie</value>
+  </data>
+  <data name="CHART_ACHSE_PVERTRAG" xml:space="preserve">
+    <value>PV-Ertrag</value>
+  </data>
+  <data name="GANGLINIE_KEIN_DIAGRAMM" xml:space="preserve">
+    <value>Kein Diagramm vorhanden</value>
+  </data>
+  <data name="KFLT_TREFFER_KURZ" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="KFLT_SPALTE_AUSGEBLENDET" xml:space="preserve">
+    <value>bei dieser Breite ausgeblendet</value>
+  </data>
 </root>
 

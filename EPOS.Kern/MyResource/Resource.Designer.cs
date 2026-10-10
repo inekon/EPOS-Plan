@@ -18887,11 +18887,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Ertrag ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_PVERTRAG {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_PVERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur [°C] ähnelt.
         /// </summary>
         public static string CHART_ACHSE_QUELLTEMPERATUR {
             get {
                 return ResourceManager.GetString("CHART_ACHSE_QUELLTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarertrag ähnelt.
+        /// </summary>
+        public static string CHART_ACHSE_SOLARERTRAG {
+            get {
+                return ResourceManager.GetString("CHART_ACHSE_SOLARERTRAG", resourceCulture);
             }
         }
         
@@ -19576,6 +19594,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR {
             get {
                 return ResourceManager.GetString("CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Ertrag Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_PVERTRAG_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_PVERTRAG_JAHRESGANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarertrag Jahresganglinie ähnelt.
+        /// </summary>
+        public static string CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_TITEL_SOLARERTRAG_JAHRESGANGLINIE", resourceCulture);
             }
         }
         
@@ -27658,6 +27694,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FORTSCHRITT_LAEUFT {
             get {
                 return ResourceManager.GetString("FORTSCHRITT_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Diagramm vorhanden ähnelt.
+        /// </summary>
+        public static string GANGLINIE_KEIN_DIAGRAMM {
+            get {
+                return ResourceManager.GetString("GANGLINIE_KEIN_DIAGRAMM", resourceCulture);
             }
         }
         
@@ -51925,6 +51970,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bei dieser Breite ausgeblendet ähnelt.
+        /// </summary>
+        public static string KFLT_SPALTE_AUSGEBLENDET {
+            get {
+                return ResourceManager.GetString("KFLT_SPALTE_AUSGEBLENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die A_ap ähnelt.
         /// </summary>
         public static string KFLT_SP_APERTUR {
@@ -52614,6 +52668,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KFLT_TREFFER {
             get {
                 return ResourceManager.GetString("KFLT_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string KFLT_TREFFER_KURZ {
+            get {
+                return ResourceManager.GetString("KFLT_TREFFER_KURZ", resourceCulture);
             }
         }
         
