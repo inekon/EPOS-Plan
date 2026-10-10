@@ -4001,11 +4001,11 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
             {
-                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (!string.Equals(ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                    WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                     continue;
 
-                int idAnlage = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
                 int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"));
                 int idPuffer = StilleDb.Zahl(StilleDb.Feld(r, "WQ_ID_Puffer"));
                 if (idAnlage <= 0 || idPuffer <= 0) continue;

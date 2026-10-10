@@ -2386,7 +2386,8 @@ public class SimulationKonfigSeiteTests : BunitContext
                         Spreizung = 4
                     }
                 },
-                QuelleErdreichSchreiben = (a, d) => _dialogSchreiben.Add("erdreich:" + a)
+                QuelleErdreichSchreiben = (a, d) => _dialogSchreiben.Add("erdreich:" + a),
+                QuelleErdreichAbgebrochen = a => _dialogSchreiben.Add("erdreich-abgebrochen:" + a)
             })
             .Add(x => x.StartProjekt, 1030));
 
@@ -2570,7 +2571,9 @@ public class SimulationKonfigSeiteTests : BunitContext
         cut.FindAll("input.epos-eingabe")[0].Input("0");
         cut.FindAll("div.epos-ueberlagerung .epos-leiste button")[0].Click();
 
-        Assert.Empty(_dialogSchreiben);
+        // Nichts geschrieben; die Hülle erfährt den Abbruch und verwirft einen Lauf mit
+        // ungespeicherten Eingaben.
+        Assert.Equal(new[] { "erdreich-abgebrochen:10353" }, _dialogSchreiben);
         Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
     }
 
@@ -2584,7 +2587,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         Kreuz(cut);
 
         Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
-        Assert.Empty(_dialogSchreiben);
+        Assert.Equal(new[] { "erdreich-abgebrochen:10353" }, _dialogSchreiben);
     }
 
     /// <summary>

@@ -510,6 +510,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static object WertLesenStill(int idEnergieanlage, string spalte)
         {
+            // Der Lauf aus dem Erdreichdialog rechnet mit den angezeigten Eingaben (ErdreichLaufvorgabe).
+            if (ErdreichLaufvorgabe.Wert(idEnergieanlage, spalte, out object vorgabe)) return vorgabe;
             return WertLesenStill("Tab_Energieanlagen", spalte, idEnergieanlage);
         }
 
@@ -518,6 +520,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static object WertLesen(int idEnergieanlage, string spalte)
         {
+            if (ErdreichLaufvorgabe.Wert(idEnergieanlage, spalte, out object vorgabe)) return vorgabe;
             try
             {
                 object v = DataRepository.ExecuteScalar(

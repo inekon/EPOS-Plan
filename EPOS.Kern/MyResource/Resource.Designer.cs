@@ -107777,6 +107777,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmittel {0} °C  ·  Tiefstwert {1} °C am {2}  ·  Höchstwert {3} °C am {4} ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_LAUF_KENNWERTE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0:dd.MM.}, {0:HH:mm} Uhr ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_LAUF_ZEITPUNKT {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_LAUF_ZEITPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es muss mindestens eine Sonde vorhanden sein! ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_MSG_ANZAHL_MIN {
@@ -107956,15 +107974,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMQ_ERDREICH_SIM_LAEUFT {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_SIM_LAEUFT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK&quot; und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet. ähnelt.
-        /// </summary>
-        public static string SIMQ_ERDREICH_SIM_NUR_GESPEICHERT {
-            get {
-                return ResourceManager.GetString("SIMQ_ERDREICH_SIM_NUR_GESPEICHERT", resourceCulture);
             }
         }
         

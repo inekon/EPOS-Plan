@@ -1070,9 +1070,9 @@ namespace WindowsFormsApplication1
                 // (WaermequelleClass.OhneQuelle ueber DbWerte.WQ_TYP_OHNE). Bis dahin
                 // stand hier Trim().Length > 0 - zeichengleich in der Wirkung, aber der
                 // Persistenzwert kam als Literal-Vergleich daher statt aus DbWerte.
-                if (!WaermequelleClass.OhneQuelle(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")))) continue;
-
                 int idAnlage = (int)StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                if (!WaermequelleClass.OhneQuelle(
+                        ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))))) continue;
                 befunde.Add(Befund(QUELLE_NICHT_KONFIGURIERT, false, idAnlage, 0,
                     string.Format(MyResource.Resource.SIMWARN_QUELLE_FEHLT,
                                   StilleDb.Text(StilleDb.Feld(r, "Bezeichner")), bauart)));
@@ -1103,7 +1103,8 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
             {
-                if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+                if (!string.Equals(ErdreichLaufvorgabe.Quelltyp((int)StilleDb.Zahl(StilleDb.Feld(r, "ID")),
+                                                                StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                    WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                     continue;
 

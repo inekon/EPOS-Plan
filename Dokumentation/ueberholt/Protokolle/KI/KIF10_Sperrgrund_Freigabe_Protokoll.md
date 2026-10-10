@@ -1,6 +1,6 @@
 # KIF10 — Sperrgrund je Feld und Freigabe der Ausnahmen im Hilfe-Assistenten (Protokoll, 10.10.2026)
 
-Statuszeile #897 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzepte
+Statuszeile #899 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Konzepte
 [`Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](../../../aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md)
 (Abschnitte 3.4 und 4) und [`Konzept_KI-Assistent_Aufgabensteuerung.md`](../../../aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md)
 (Abschnitte 4.5 und 5.2); Vorgänger [`KIF9_Setzer_Erzeugermasken_Protokoll.md`](KIF9_Setzer_Erzeugermasken_Protokoll.md).
@@ -45,7 +45,7 @@ Katalog 93 → 102 Masken, Ausnahmen 24 → 12 (nach `KiAusnahmegrund`: Assisten
 (Namensdialog), Import 1 (Katalogimport), Aktion 3 (Projektwahl, BK-Übernahme, Wärmepumpen-Katalogdialog), Rückfrage 1
 (Wertabfrage), Feld des Wirts 1 (Betriebsmodus)). Ressourcen 16 945 Schlüssel. Tests nach dem Merge (Filter): EPOS.Kern.Tests 2 073, EPOS.UI.Tests 1 797,
 KiKern.Tests 549, SpeicherEngine.Tests 153, SpeicherPlanung.Tests 27 (+1 übersprungen), 0 rot; Kern-Filter und
-Windows-Schale je 0 Fehler. Gate 897 auf `be110ecb` grün: Kern-Build 0 Fehler; ChartProben alle grün, 222 Hashes gleich der Messlatte 2026-10-10; Tests 22 156 grün, 0 rot (EPOS.Kern.Tests 12 954 + 7 übersprungen, EPOS.UI.Tests 8 229, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen); Dokumentationswachen 35 grün; Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz); Plattformnachweis (gestörter Lauf) PASS.
+Windows-Schale je 0 Fehler. Gate 899 auf `be110ecb` grün: Kern-Build 0 Fehler; ChartProben alle grün, 222 Hashes gleich der Messlatte 2026-10-10; Tests 22 156 grün, 0 rot (EPOS.Kern.Tests 12 954 + 7 übersprungen, EPOS.UI.Tests 8 229, KiKern.Tests 549, SpeicherEngine.Tests 397, SpeicherPlanung.Tests 27 + 1 übersprungen); Dokumentationswachen 35 grün; Referenzlauf 28 von 28 PASS gegen R50 (9 686 136 Werte in Toleranz); Plattformnachweis (gestörter Lauf) PASS.
 
 ## Merge-Befund Bedarfsgrafik
 
@@ -68,6 +68,6 @@ Wirts `BEDARF_ERGEBNIS` setzt nun das Zeitraster Jahr/Monat/Woche/Tag des Grafik
 
 ## Verweise
 
-Statuszeile #897 und Nach #897; KIF9 ([`KIF9_Setzer_Erzeugermasken_Protokoll.md`](KIF9_Setzer_Erzeugermasken_Protokoll.md));
+Statuszeile #899 und Nach #899; KIF9 ([`KIF9_Setzer_Erzeugermasken_Protokoll.md`](KIF9_Setzer_Erzeugermasken_Protokoll.md));
 Konzepte Dialogintegration 3.4/4 und Aufgabensteuerung 4.5/5.2; Wiki-Quelle
 `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki`.

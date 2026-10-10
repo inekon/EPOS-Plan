@@ -710,7 +710,8 @@ public sealed class StilblattTests
 
         Assert.DoesNotContain("transform", block, StringComparison.Ordinal);
         Assert.Contains("position: fixed", block, StringComparison.Ordinal);
-        Assert.Contains("inset: 0", block, StringComparison.Ordinal);
+        // Zwischen den sicheren Abstaenden des Geraets (unter Windows 0, also inset: 0).
+        Assert.Contains("inset: var(--epos-sicher-oben) 0 var(--epos-sicher-unten)", block, StringComparison.Ordinal);
         Assert.Contains("margin: auto", block, StringComparison.Ordinal);
         Assert.Contains("height: fit-content", block, StringComparison.Ordinal);
         Assert.Contains("overflow-x: hidden", block, StringComparison.Ordinal);
@@ -774,7 +775,7 @@ public sealed class StilblattTests
     {
         string breit = Regelblock(".epos-ueberlagerung:has(.epos-blatt--breit) {");
         Assert.Contains("width: min(96vw, 1400px)", breit, StringComparison.Ordinal);
-        Assert.Contains("max-height: 94vh", breit, StringComparison.Ordinal);
+        Assert.Contains("max-height: min(94vh, calc(100vh - var(--epos-sicher-oben) - var(--epos-sicher-unten)))", breit, StringComparison.Ordinal);
 
         // Dasselbe Maß wie die ausdrückliche Zusatzklasse - eine Zahl, zwei Wege.
         string ausdruecklich = Regelblock(".epos-ueberlagerung--breit {");
