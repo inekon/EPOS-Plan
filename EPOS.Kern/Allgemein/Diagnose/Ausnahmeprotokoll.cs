@@ -139,6 +139,30 @@ namespace WindowsFormsApplication1
             finally { _imSchreiben = false; }
         }
 
+        /// <summary>
+        /// Ein VERMERK ohne Ausnahme: ein Weg, der benannt ablehnt, aber nichts wirft — etwa eine
+        /// Ansicht, die ohne gezeichnete Oberfläche nicht aufgehen kann. Gedrosselt und still wie
+        /// <see cref="Schreiben"/>.
+        /// </summary>
+        /// <param name="zeile">Der Vermerk; leer = nichts zu schreiben.</param>
+        public void Vermerk(string zeile)
+        {
+            if (string.IsNullOrEmpty(zeile) || _imSchreiben) return;
+            _imSchreiben = true;
+            try
+            {
+                Anhaengen(Zeit() + " [VERMERK] " + zeile + Environment.NewLine, gedrosselt: true);
+            }
+            catch { /* ein Protokoll darf nie der Grund eines Fehlers sein */ }
+            finally { _imSchreiben = false; }
+        }
+
+        /// <summary>
+        /// <see cref="Vermerk"/> in das eingeschaltete Protokoll des Prozesses; ohne
+        /// eingeschaltetes Protokoll (Tests, Referenzlauf) geschieht nichts.
+        /// </summary>
+        public static void Vermerken(string zeile) => _eingeschaltet?.Vermerk(zeile);
+
         /// <summary>Der Text eines Eintrags — ohne Zeitstempel-Kopf der Drosselung.</summary>
         internal string Text(string art, Exception ausnahme, string stapel)
         {

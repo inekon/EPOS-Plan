@@ -45775,6 +45775,27 @@ chart</value>
   <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>The cooling mode of the heat pump could not be saved.</value>
   </data>
+  <data name="WURZEL_ANSICHT_FEHLER" xml:space="preserve">
+    <value>The view “{0}” could not be opened: {1}</value>
+  </data>
+  <data name="WURZEL_KEINE_OBERFLAECHE" xml:space="preserve">
+    <value>No user interface is registered that could show it.</value>
+  </data>
+  <data name="WURZEL_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>This user interface does not offer the view.</value>
+  </data>
+  <data name="KMA_LADEN_FEHLER" xml:space="preserve">
+    <value>The project chillers could not be read: {0}</value>
+  </data>
+  <data name="KMA_WP_LADEN_FEHLER" xml:space="preserve">
+    <value>The project heat pumps could not be read: {0}</value>
+  </data>
+  <data name="KMA_KATALOG_LADEN_FEHLER" xml:space="preserve">
+    <value>The chiller catalogue could not be read: {0}</value>
+  </data>
+  <data name="WURZEL_LISTE_FEHLER" xml:space="preserve">
+    <value>The list “{0}” could not be read: {1}</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Chillers in the project</value>
   </data>

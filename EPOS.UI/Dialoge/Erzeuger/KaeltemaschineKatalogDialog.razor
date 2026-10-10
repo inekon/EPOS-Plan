@@ -552,7 +552,16 @@
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
 
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
-        ListeLaden();
+        // KT-2: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - der Banner nennt die Meldung
+        // (Hausblatt „benannt ablehnen, nie still übergehen“; der Fang sitzt am Rand, nicht in der Hülle).
+        try
+        {
+            ListeLaden();
+        }
+        catch (Exception ex)
+        {
+            _meldung = string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, Texte.Titel, ex.Message);
+        }
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_KATALOG, () => KiSicht(), KiHaken());
     }
