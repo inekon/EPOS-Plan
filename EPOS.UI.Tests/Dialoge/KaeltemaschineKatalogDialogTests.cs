@@ -176,7 +176,7 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
 
     /// <summary>
     /// KD-1: die Spalten in der Folge der Wärmepumpe — Hersteller vor dem Bezeichner, dahinter Kälteleistung,
-    /// EER, Rückkühlung, Herkunft, Typ —, das Schloss am Bezeichner und die Herkunft je Satzart.
+    /// EER, Rückk., Herkunft, Typ —, das Schloss am Bezeichner und die Herkunft je Satzart.
     /// </summary>
     [Fact]
     public void Die_Liste_fuehrt_die_Spalten_der_Waermepumpe_und_die_Herkunft()
@@ -247,14 +247,14 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
 
         Dictionary<string, int> stufen = Spaltenraenge.Stufen(profil, Spaltenraenge.Laengen(profil, zeilen), _ => false);
 
-        // KD-3: mit dem kurzen Kopf „P_N [kW]" (wie die Wärmepumpe) statt „Kälteleistung [kW]" rücken die
-        // weichenden Spalten um eine Stufe vor: bei 640 und 720 px Bezeichner, P_N, Hersteller und EER, ab 800 px
-        // dazu die Rückkühlung, ab 880 px die Herkunft, ab 960 px der Typ.
+        // KD-4: mit den kurzen Köpfen „P_N [kW]" und „Rückk." (voller Name im Tooltip) stehen bei 640 px
+        // Bezeichner, P_N, Hersteller und EER, ab 720 px dazu die Rückkühlart, ab 880 px die Herkunft, ab 960 px
+        // der Typ.
         Assert.Equal(0, stufen[Katalogfilterprofil.SpBezeichner]);
         Assert.Equal(0, stufen[Katalogfilterprofil.SpNennkaelteleistung]);
         Assert.Equal(560, stufen[Katalogfilterprofil.SpHersteller]);
         Assert.Equal(640, stufen[Katalogfilterprofil.SpEer]);
-        Assert.Equal(800, stufen[Katalogfilterprofil.SpRueckkuehlart]);
+        Assert.Equal(720, stufen[Katalogfilterprofil.SpRueckkuehlart]);
         Assert.Equal(880, stufen[Katalogfilterprofil.SpHerkunft]);
         Assert.Equal(960, stufen[Katalogfilterprofil.SpTyp]);
     }
