@@ -1342,6 +1342,52 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal("Musterwerk", cut.Find(".epos-zweispalten-satz .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
     }
 
+    /// <summary>
+    /// UeS1: Abbrechen stellt auch die anlagenbezogenen Felder wieder her — Vorlauf, Rücklauf
+    /// (samt Herkunftszeile) und Träger, die schon bei der Eingabe in die Anlage gehen.
+    /// </summary>
+    [Fact]
+    public void UeS1_Abbrechen_stellt_Vorlauf_Ruecklauf_und_Traeger_wieder_her()
+    {
+        var wechsel = new List<int>();
+        var uebernommen = new List<(int? Vorlauf, int? Ruecklauf)>();
+        var zeile = Zeile(1, "Kessel A", 100);
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C";
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektsatzWege: Wege(),
+                           traegerWechseln: (_, n) => wechsel.Add(n),
+                           uebernehmen: z => uebernommen.Add((z.Vorlauf, z.Ruecklauf)));
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        var zahlen = cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=numeric]");
+        zahlen[0].Input("75");
+        cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=numeric]")[1].Input("55");
+        cut.FindAll(".epos-satzueberlagerung-koerper select")[0].Change("6");
+        Assert.Equal((75, 55, 6), (zeile.Vorlauf, zeile.Ruecklauf, zeile.CarrierId));
+
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal((70, 50, 5), (zeile.Vorlauf, zeile.Ruecklauf, zeile.CarrierId));
+        Assert.Equal("Vorgabe 70/50 °C", zeile.TemperaturHerleitung);
+        Assert.Equal(new[] { 6, 5 }, wechsel);
+        Assert.Equal((70, 50), uebernommen[^1]);
+    }
+
+    /// <summary>UeS1: OK behält die Eingaben an der Anlage — kein Zurückschreiben.</summary>
+    [Fact]
+    public void UeS1_OK_behaelt_den_Vorlauf()
+    {
+        var zeile = Zeile(1, "Kessel A", 100);
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektsatzWege: Wege());
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=numeric]")[0].Input("75");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(75, zeile.Vorlauf);
+    }
+
     /// <summary>UeS1: „Vergrößern" in der Detailzeile öffnet dieselbe Überlagerung für den gewählten Satz.</summary>
     [Fact]
     public void UeS1_Vergroessern_oeffnet_den_gewaehlten_Katalogsatz()

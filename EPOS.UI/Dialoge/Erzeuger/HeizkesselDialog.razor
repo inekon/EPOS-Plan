@@ -784,6 +784,8 @@
         _satzGross = true;
         _satzUeberlagerungFehler = null;
         _felderVermerk = null;   // der Knopf der Satzflaeche steht in der Ueberlagerung nicht
+        // Traeger, Vorlauf und Ruecklauf gehen schon bei der Eingabe in die Anlage - Abbrechen stellt sie wieder her.
+        _anlagenmerker = _projektZeile is not null ? Anlagenmerker.Von(_projektZeile) : null;
         if (AlleDatenDa && (!_parameterOffen || _felder is null))
         {
             _parameterOffen = true;
@@ -810,13 +812,23 @@
         }
         _satzGross = false;
         _satzUeberlagerungFehler = null;
+        _anlagenmerker = null;
     }
 
-    /// <summary>Abbrechen, ✕, Esc oder Schließen der Überlagerung: der Satz wird neu gelesen, Änderungen verworfen.</summary>
+    /// <summary>Der Stand von Träger, Vorlauf und Rücklauf der Projektzeile beim Öffnen der Überlagerung.</summary>
+    private Anlagenmerker? _anlagenmerker;
+
+    /// <summary>
+    /// Abbrechen, ✕, Esc oder Schließen der Überlagerung: der Satz wird neu gelesen, Änderungen
+    /// verworfen — auch Träger, Vorlauf und Rücklauf stehen wieder wie beim Öffnen.
+    /// </summary>
     private void BeiSatzVerworfen()
     {
         _satzGross = false;
         _satzUeberlagerungFehler = null;
+        if (_anlagenmerker is { } merker && _projektZeile is not null)
+            merker.Zurueckschreiben(_projektZeile, TraegerWechseln, Uebernehmen);
+        _anlagenmerker = null;
         if (_felder is not null) FelderHolen();
     }
 
