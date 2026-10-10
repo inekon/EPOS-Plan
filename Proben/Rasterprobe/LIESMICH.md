@@ -1292,17 +1292,21 @@ Dialogkörper rollt) — Rückgabe 0; Liste unverändert (648 / 138 / 259, 568 /
 Rollbereiche (Projekt, Katalog, Überlagerung), keiner im anderen — die Rückfrage hat keinen eigenen. Am selben Stand
 `fensterprobe.mjs`, `bannerprobe.mjs` und `katalogprobe.mjs` grün; `rasterprobe.mjs` wie vor (Z6 verfehlt, fremd).
 
-**Heizkessel (ÜS1, Satz-Überlagerung).** „Bearbeiten…" EINER Projektkopie öffnet die Satz-Überlagerung in voller Höhe
+**Heizkessel, BHKW, Pufferspeicher, Stromspeicher (ÜS1, Satz-Überlagerung).** „Bearbeiten…" EINER Projektkopie öffnet die Satz-Überlagerung in voller Höhe
 (Konzept 4.4, 4.6); die Probe misst je Fenster den Zustand „Satz-Ueberlagerung offen" (danach Esc) und denselben Weg über
 „Vergrößern" in der Detailzeile (danach Abbrechen): Kopf sichtbar, OK/Abbrechen sichtbar und treffbar über der
 Home-Anzeige, die Überlagerung rollt nicht als Ganzes, in ihr rollt kein Element außer dem Körper, das Fragment steht
-genau einmal; rot, wenn Esc oder Abbrechen nicht schließen. Mit `--fotos` legt sie
-`heizkessel_satzueberlagerung_<breite>x<hoehe>.png` in 1 280 × 800, 1 194 × 834 und 834 × 1 194 ab. **Gegenprobe**
+genau einmal; rot, wenn Esc oder Abbrechen nicht schließen. Der Körper trägt die Besonderheit des Wirts — BHKW die
+Kostenknöpfe, Pufferspeicher „Auslegen…", Stromspeicher die Trägerwahl —, sonst rot; die Wirtseiten geben BHKW,
+Pufferspeicher und Stromspeicher dafür Projektsatzwege ohne Datenbank. Mit `--fotos` legt sie
+`heizkessel_satzueberlagerung_<breite>x<hoehe>.png` in 1 280 × 800, 1 194 × 834 und 834 × 1 194 ab, dazu
+`bhkw_…` und `pufferspeicher_…` in 1 280 × 800 und 1 194 × 834. **Gegenprobe**
 (1 280 × 720): ein Rollbereich im Körper und eine als Ganzes rollende Überlagerung mit weggerollter Fußleiste müssen rot
 werden. `fensterprobe.mjs` misst dazu den Fall `satzueberlagerung` im eigenen Fenster (Kopf, Körper und Fuß in dieser
 Folge in der Überlagerung, Fensterkopf und -fuß unter der Abdunkelung, mit = ohne Fenstermarke).
-**Ergebnis vom 10.10.2026, ÜS1** (`--nur heizkessel`): **130 Zustände, 0 Verstöße, alle Gegenproben rot** — Rückgabe 0;
-Fensterprobe erfüllt. Körper der Satz-Überlagerung in px:
+**Ergebnis vom 10.10.2026, ÜS1** (je `--nur <fall>`): Heizkessel **130 Zustände**, BHKW, Pufferspeicher und
+Stromspeicher je **100 Zustände** (davon je 20 mit offener Satz-Überlagerung), **0 Verstöße, alle Gegenproben rot** —
+Rückgabe 0; Fensterprobe erfüllt. Körper der Satz-Überlagerung in px, in allen vier Wirten gleich:
 
 | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 | 1 180 × 820 | 1 194 × 834 | 1 210 × 834 | 834 × 1 194 |
 |---|---|---|---|---|---|---|---|---|---|

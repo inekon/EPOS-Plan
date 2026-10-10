@@ -517,6 +517,39 @@ try {
           if (await seite.locator('.epos-rueckweg').count())
             verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Rueckfrage nicht`);
         }
+        // UeS1b: dieselbe Satz-Ueberlagerung in BHKW, Pufferspeicher und Stromspeicher - je Fenster ueber
+        // „Bearbeiten…" der Projektkopie (danach Esc) und ueber „Vergroessern" (danach Abbrechen); dazu traegt der
+        // Koerper die Besonderheit des Wirts (BHKW Kostenknoepfe, Pufferspeicher „Auslegen…", Stromspeicher Traeger).
+        const SATZ_WIRTE = { bhkw: ['.epos-kostenleiste button', 'Kostenknoepfe'],
+          pufferspeicher: ['button.epos-pspd-auslegen', '„Auslegen…"'], stromspeicher: ['.epos-traegerwahl select', 'Traegerwahl'] };
+        if (SATZ_WIRTE[fall]) {
+          await satz(seite, false);
+          await seite.locator('.epos-knopf--bearbeiten-projekt').click();
+          await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+          await ruhe(seite);
+          await mess('Satz-Ueberlagerung offen');
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung offen', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          const [wahl, was] = SATZ_WIRTE[fall];
+          if (await seite.locator('.epos-satzueberlagerung-koerper ' + wahl).count() === 0) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: ${was} fehlen in der Satz-Ueberlagerung`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
+          if (FOTOS && fall !== 'stromspeicher' && ((fenster.breite === 1280 && fenster.hoehe === 800) || (fenster.breite === 1194 && fenster.hoehe === 834)))
+            await seite.screenshot({ path: `${FOTOS}/${fall}_satzueberlagerung_${fenster.breite}x${fenster.hoehe}.png` });
+          await seite.keyboard.press('Escape');
+          await ruhe(seite);
+          if (await seite.locator('.epos-ueberlagerung--satz').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Esc schliesst die Satz-Ueberlagerung nicht`);
+          await satz(seite, true);
+          await seite.locator('.epos-zweispalten-vergroessern').click();
+          await seite.waitForSelector('.epos-ueberlagerung--satz', { timeout: 5000 });
+          await ruhe(seite);
+          pruefeSatzUeberlagerung(fall, fenster, 'Satz-Ueberlagerung ueber Vergroessern', await seite.evaluate(satzUeberlagerung, rand(fenster)));
+          await seite.locator('.epos-satzueberlagerung-abbrechen').click();
+          await ruhe(seite);
+          if (await seite.locator('.epos-ueberlagerung--satz').count())
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Abbrechen schliesst die Satz-Ueberlagerung nicht`);
+          await mess('nach Satz-Ueberlagerung');
+        }
         // Ueberlagerung offen: Gebaeude -> "Simulation..." (wie die Fensterprobe).
         if (fall === 'gebaeude') {
           const k = seite.locator('body > #app > .epos-dialog button', { hasText: 'Simulation...' });
