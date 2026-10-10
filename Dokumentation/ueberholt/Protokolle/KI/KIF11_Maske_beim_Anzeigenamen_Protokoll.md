@@ -33,7 +33,7 @@ deshalb ab und listeten die Anzeigenamen der Katalogmasken: 20 gezeigt, „… (
   `KI_DLG_OFFENE_MASKE`.
 - `KiDialogTexte`: `MaskeNameMehrdeutig`, `OffeneMaske`. `KiMaskenbruecke.Dialogdaten`: Feldblock-Kopf nennt den Schlüssel.
 - Werkzeugkatalog Weg A und B ziehen die Beschreibung des Parameters `maske` aus denselben Ressourcen.
-- `EPOS.UI/.../WaermepumpenDialog.razor` (Randbefund): setzt `SatzArt`/`SatzName` der `Zweispaltenauswahl`; der Kopf zeigte „Kein Satz gewählt“.
+- `EPOS.UI/Dialoge/Waermepumpe/WaermepumpenDialog.razor` (Randbefund): setzt `SatzArt`/`SatzName` der `Zweispaltenauswahl`; der Kopf zeigte „Kein Satz gewählt“.
 - Konzept Dialogintegration 3.4: Absatz „Die Maske beim Namen“.
 
 ## Texte (beide Sprachen)
