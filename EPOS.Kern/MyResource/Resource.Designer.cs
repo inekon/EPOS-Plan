@@ -133475,6 +133475,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung darf nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string WPV_MSG_NENNLEISTUNG_NEGATIV {
+            get {
+                return ResourceManager.GetString("WPV_MSG_NENNLEISTUNG_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken. ähnelt.
+        /// </summary>
+        public static string WPV_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("WPV_RUECK_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aktion ähnelt.
         /// </summary>
         public static string WPV_SP_AKTION {

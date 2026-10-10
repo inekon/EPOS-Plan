@@ -50979,5 +50979,11 @@ chart</value>
   <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
     <value>The module costs must not be negative.</value>
   </data>
+  <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
+    <value>The rated output must not be negative.</value>
+  </data>
+  <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
+    <value>The heating and cooling curves with all support points go with the unit. The system data stay in the project: operating mode, temperatures, bivalence, heating rod, blocking times, heat source, integration and transfer limits of the system, and the sinks.</value>
+  </data>
 </root>
 

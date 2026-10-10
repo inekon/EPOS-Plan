@@ -50986,5 +50986,11 @@ Chart</value>
   <data name="WPV_MSG_MODULKOSTEN_NEGATIV" xml:space="preserve">
     <value>Die Modulkosten dürfen nicht negativ sein.</value>
   </data>
+  <data name="WPV_MSG_NENNLEISTUNG_NEGATIV" xml:space="preserve">
+    <value>Die Nennleistung darf nicht negativ sein.</value>
+  </data>
+  <data name="WPV_RUECK_BLEIBT" xml:space="preserve">
+    <value>Mit dem Gerät gehen Heiz- und Kühlkennlinie mit allen Stützstellen. Im Projekt bleiben die Anlagendaten: Betriebsart, Temperaturen, Bivalenz, Heizstab, Sperrzeiten, Wärmequelle, Einbindung und Übergabegrenzen der Anlage sowie die Senken.</value>
+  </data>
 </root>
 

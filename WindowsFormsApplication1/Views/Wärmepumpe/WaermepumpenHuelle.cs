@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -176,6 +177,9 @@ namespace WindowsFormsApplication1
                     Lesen = id => SatzFelder(true, id),
                     Speichern = saetze => SammelSchreiben(true, saetze, zuModell)
                 } : null,
+                // KA-E-9: der Rueckweg "In die Datenbank übernehmen…" - Projektkopie samt Heiz- und Kuehlkennlinie.
+                ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
+                ["RueckwegBleibtText"] = MyResource.Resource.WPV_RUECK_BLEIBT,
                 ["FrageLoeschen"] = Text_("WPS_FRAGE_LOESCHEN",
                     "Der Katalogeintrag \"{0}\" wird für ALLE Projekte gelöscht. Fortfahren?"),
                 ["BtnLoeschenText"] = Text_("WPS_BTN_LOESCHEN", "Löschen"),
@@ -392,19 +396,42 @@ namespace WindowsFormsApplication1
             return WErzeugerCtrl.AnlagenzeileNachziehen(m, projektId) ? m : null;
         }
 
-        /// <summary>Löscht einen Katalogsatz samt Kennlinien; leer = gelöscht, sonst der Grund.</summary>
+        /// <summary>Löscht einen Katalogsatz samt Kennlinien und Satzvorlagen (KA-E-16); leer = gelöscht, sonst der Grund.</summary>
         private static string KatalogLoeschen(int id)
         {
-            WPStammCtrl.Sammelsatz satz = WPStammCtrl.SammelsatzLesen(false, id);
-            if (satz == null || satz.Gesperrt)
-                return Text_("KBROW_MSG_LOESCHEN_FEHLER", "Der Datensatz konnte nicht gelöscht werden.");
-            var ctrl = new WPStammCtrl();
-            ctrl.ReadAll("ID=" + id);
-            if (ctrl.rows == 0) return Text_("KBROW_MSG_LOESCHEN_FEHLER", "Der Datensatz konnte nicht gelöscht werden.");
-            WPStammCtrl geraet = ctrl;
-            geraet.WPName = satz.Bezeichner;
-            return geraet.Delete() ? "" : Text_("KBROW_MSG_LOESCHEN_FEHLER", "Der Datensatz konnte nicht gelöscht werden.");
+            WPStammCtrl.KatalogsatzLoeschung l = WPStammCtrl.KatalogsatzLoeschen(id);
+            if (!l.Ok) return Text_("KBROW_MSG_LOESCHEN_FEHLER", "Der Datensatz konnte nicht gelöscht werden.");
+            if (l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return "";
         }
+
+        /// <summary>
+        /// Die Wege des Rückwegs (KA‑E‑9): die Zeilen des Kerns in die DTO der Rückfrage übersetzt, der Schreibweg in
+        /// EINEM Vorgang. Die Hülle entscheidet nichts.
+        /// </summary>
+        internal static Rueckwegwege RueckwegWege() => new Rueckwegwege
+        {
+            Vorschau = ids => WPStammCtrl.RueckwegVorschau(ids)
+                .Select(z => new Rueckwegvorschlag(z.IdKopie, z.NameKopie, z.NameUrsprung, Sperre(z.Ueberschreiben),
+                                                   z.Namensvorschlag))
+                .ToList(),
+            NameBelegt = WPStammCtrl.RueckwegNameBelegt,
+            Uebernehmen = wahl =>
+            {
+                Rueckwegergebnis e = WPStammCtrl.AusProjektUebernehmen(
+                    wahl.Select(w => new Rueckwegauftrag(w.Id, w.Ueberschreiben ? Rueckwegart.Ueberschreiben : Rueckwegart.Neu,
+                                                         w.Name)).ToList());
+                return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Saetze.Count == 1 ? e.Saetze[0].Name : "");
+            },
+        };
+
+        private static Rueckwegsperre Sperre(Rueckwegabsage a) => a switch
+        {
+            Rueckwegabsage.Keine => Rueckwegsperre.Keine,
+            Rueckwegabsage.UrsprungGesperrt => Rueckwegsperre.Gesperrt,
+            Rueckwegabsage.UrsprungFehlt => Rueckwegsperre.UrsprungFehlt,
+            _ => Rueckwegsperre.UrsprungUnbekannt,
+        };
 
         // =================================================================================
         // Die Satzbearbeitung (KA-E-8): Hersteller, Beschreibung, Modulkosten
