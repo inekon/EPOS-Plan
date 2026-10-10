@@ -283,6 +283,7 @@ namespace WindowsFormsApplication1
 
             var gaben = new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Art"] = art,
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,

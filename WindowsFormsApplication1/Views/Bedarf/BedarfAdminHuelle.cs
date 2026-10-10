@@ -75,6 +75,7 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
                 ["Art"] = art,
 
                 // W14a-E-10 / S3.1: die Liste traegt seither FUENF Spalten - Bezeichner,

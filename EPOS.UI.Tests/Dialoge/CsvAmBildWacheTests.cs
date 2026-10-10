@@ -32,6 +32,12 @@ public class CsvAmBildWacheTests
         { "GebaeudeBedarfDialog", "EPOS.UI/Dialoge/Bedarf/GebaeudeBedarfDialog.razor", "EPOS.UI.Daten/Bedarf/GebaeudeBedarfHuelle.cs" },
         { "KlimadatenDialog", "EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor", "EPOS.UI.Daten/Klimadaten/KlimadatenHuelle.cs" },
         { "KostenprofilDialog", "EPOS.UI/Dialoge/Kosten/KostenprofilDialog.razor", "EPOS.UI.Daten/Kosten/KostenprofilHuelle.cs" },
+        // Wochen- und Tagesprofile, Zapfprofile: Typprofil, Zapfprofil samt Auslegung (in den Bedarfsprofilen),
+        // Gebäudetyp, Raumnutzung, Nutzungsprofil, Konditionierungsvorlagen (in Gebäude und Gebäudekatalog).
+        { "BedarfsProfileDialog", "EPOS.UI/Dialoge/Bedarf/BedarfsProfileDialog.razor", "WindowsFormsApplication1/Views/Bedarf/BedarfsProfileHuelle.cs" },
+        { "BedarfAdminDialog", "EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog.razor", "WindowsFormsApplication1/Views/Bedarf/BedarfAdminHuelle.cs" },
+        { "TwwNutzungsartAdminDialog", "EPOS.UI/Dialoge/Bedarf/TwwNutzungsartAdminDialog.razor", "EPOS.UI.Daten/Bedarf/ZapfprofilHuelle.Katalogdialog.cs" },
+        { "GebaeudeAdminDialog", "EPOS.UI/Dialoge/Bedarf/GebaeudeAdminDialog.razor", "EPOS.UI.Daten/Bedarf/GebaeudeAdminHuelle.cs" },
     };
 
     [Theory]
