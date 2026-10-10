@@ -81,7 +81,7 @@ public class ProjektdialogSchlossTests : EposBunitContext
     }
 
     private static void KatalogsatzWaehlen(IRenderedComponent<BhkwDialog> cut, int index)
-        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[index].Click();
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[index].Click();
 
     private static AngleSharp.Dom.IElement Schlossknopf(IRenderedComponent<BhkwDialog> cut)
         => cut.Find("button.epos-katalogschloss");
