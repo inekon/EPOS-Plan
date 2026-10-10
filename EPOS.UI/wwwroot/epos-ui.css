@@ -4134,6 +4134,10 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     display: flex;
     gap: 6px;
 }
+/* Die Huelle des Knopfpaars in der Kennzahlenzeile: ohne eigenen Unterrand. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
+    margin-bottom: 0;
+}
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg {
     display: contents;
 }

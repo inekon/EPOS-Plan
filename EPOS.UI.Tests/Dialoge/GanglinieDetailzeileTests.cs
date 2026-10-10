@@ -177,7 +177,9 @@ public class GanglinieDetailzeileTests : EposBunitContext
         // alle fuenf in der Kopfzeile, die Infoknoepfe in der Kennzahlenzeile, keine eigene Knopfzeile.
         Assert.Equal(5, cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld").Count);
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-leiste .epos-ganglinie-knoepfe .epos-infoknopf").Count);
-        Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+        // Die Huelle .epos-berechnungshilfe steht genau einmal - in der Kennzahlenzeile.
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-leiste .epos-ganglinie-knoepfe > .epos-berechnungshilfe"));
     }
 
     // =================================================================================
@@ -206,7 +208,9 @@ public class GanglinieDetailzeileTests : EposBunitContext
         Assert.NotNull(leiste.QuerySelector("input[type=checkbox]"));
         Assert.NotNull(leiste.QuerySelector("select"));
         Assert.Equal(2, leiste.QuerySelectorAll(".epos-ganglinie-knoepfe .epos-infoknopf").Length);
-        Assert.Empty(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+        // Die Huelle .epos-berechnungshilfe steht genau einmal - in der Kennzahlenzeile.
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-berechnungshilfe"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz .epos-ganglinie-leiste .epos-ganglinie-knoepfe > .epos-berechnungshilfe"));
     }
 
     [Fact]

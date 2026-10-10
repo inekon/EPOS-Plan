@@ -38,13 +38,15 @@
 
     @{
         // Die Daten des gewaehlten Satzes - im Projektbetrieb die Detailzeile der
-        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
-        RenderFragment knoepfe = @<text>
+        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite. Die Huelle
+        // .epos-berechnungshilfe steht genau einmal um das Knopfpaar: mit Grafik in der
+        // Kennzahlenzeile, ohne Grafik als eigene Zeile.
+        RenderFragment knoepfe = @<span class="epos-berechnungshilfe">
             <InfoKnopf Schluessel="Form_Solarganglinie.Grundlagen"
                        StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
             <InfoKnopf Schluessel="Form_Solarganglinie.Berechnung"
                        StandardKurztext="Berechnungsweg Solarthermie" MitAssistent="false" />
-        </text>;
+        </span>;
 
         RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
 
@@ -75,7 +77,7 @@
         {
             @* Der Weg in die Wikirubriken "Grundlagen" und "Berechnung": wie der Solarertrag
                entsteht. Der Fensterknopf oben rechts bleibt, was er ist. *@
-            <div class="epos-berechnungshilfe">@knoepfe</div>
+            @knoepfe
 
             <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"

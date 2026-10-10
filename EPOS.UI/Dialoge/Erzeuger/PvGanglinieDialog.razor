@@ -34,13 +34,15 @@
 
     @{
         // Die Daten des gewaehlten Satzes (DZ1) - im Projektbetrieb die Detailzeile der
-        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite.
-        RenderFragment knoepfe = @<text>
+        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite. Die Huelle
+        // .epos-berechnungshilfe steht genau einmal um das Knopfpaar: mit Grafik in der
+        // Kennzahlenzeile, ohne Grafik als eigene Zeile.
+        RenderFragment knoepfe = @<span class="epos-berechnungshilfe">
             <InfoKnopf Schluessel="Form_PvGanglinie.Grundlagen"
                        StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
             <InfoKnopf Schluessel="Form_PvGanglinie.Berechnung"
                        StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
-        </text>;
+        </span>;
 
         RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
         @* Die Weiche in einem Satz: eine zugeordnete Ganglinie ersetzt die Modulrechnung. *@
@@ -98,7 +100,7 @@
         }
         else
         {
-            <div class="epos-berechnungshilfe">@knoepfe</div>
+            @knoepfe
 
             <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
