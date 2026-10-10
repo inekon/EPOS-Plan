@@ -14339,6 +14339,15 @@ table.epos-simerg-tabelle {
     width: 9em;
 }
 
+/* ... und ohne die 1 rem Luft, die QuickGrids Thema an jeden Spaltenkopf haengt
+   (--col-gap, wie in der Katalogliste): Die Koepfe sind die breitesten Zellen ihrer
+   Spalten, und die Summe der Mindestbreiten lag in der Ueberlagerung bei 1 088 px
+   47 px ueber der Huelle (988 px) - "Entfernen" rollte wieder quer (Rasterprobe Z6).
+   Ohne die Luft bleiben rund 18 px Reserve. */
+.epos-zapfprofil-kategorienraster table.quickgrid {
+    --col-gap: 0px;
+}
+
 .epos-zapfprofil-reihenfolge .epos-knopf {
     min-width: var(--epos-touchziel);
     padding-inline: 0;
