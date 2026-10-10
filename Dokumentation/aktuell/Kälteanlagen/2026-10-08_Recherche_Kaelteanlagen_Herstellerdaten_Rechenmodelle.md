@@ -228,7 +228,7 @@ Die Reihenfolge folgt drei Regeln. Zuerst kommt, was den vorhandenen Schreibweg 
 
 **Offene Klärungen:** Konzeptentscheid zum Ausschluss im Kühlkonzept §14; Abschluss des PFAS-Verfahrens (SEAC Ende 2026); KfW-458-Regel an der Primärquelle prüfen.
 
-### Stufe 5 (später): Split und Multisplit bis 12 kW als neue Anlagenart
+### Stufe 5 (später): Split und Multisplit bis 12 kW als neue Anlagenart — **aufgenommen (E118, K-D)**
 
 **Datenquelle:** EPREL `airconditioners` für die Stammdaten, A–D, Cdc und Nebenaufnahmen aus ErP-Datenblättern oder Eurovent-AC-Modellseiten.
 
@@ -252,7 +252,7 @@ Die Reihenfolge folgt drei Regeln. Zuerst kommt, was den vorhandenen Schreibweg 
 
 **Offene Klärungen:** Versionsstand und widersprüchliche Modellzahl in hplib; Nutzungsrechte bei Eurovent; fehlende Katalogspalten an `Tab_Kenndaten_Kuehlung_STAMM`.
 
-### Stufe 7 (später, bedingt): R744-Modell, passive Erdkühlung und VRF über 12 kW
+### Stufe 7 (später, bedingt): R744-Modell, passive Erdkühlung und VRF über 12 kW — VRF **aufgenommen (E118, K-E)**
 
 **Datenquelle:** für R744 Herstellerkennfelder mit dichtem Raster um 25–35 °C, CoolProp-Tabellen und die Korrelationen nach Sarkar bzw. Okasha; für passive Erdkühlung das vorhandene Sondenmodell; für VRF Eurovent VRF.
 

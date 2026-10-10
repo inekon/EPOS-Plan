@@ -397,18 +397,27 @@ der Referenzlauf. Eine neue Basis braucht es erst, wenn ein Referenzprojekt eine
 1. **F1 Folge der Kälteerzeuger:** zunächst fest und sichtbar oder gleich pflegbar mit Pfeilen (KB-D, +1,5–2 PT, Schemaschritt)?
    **Empfehlung:** fest und sichtbar (KB-B), KB-D erst auf Wunsch. Heute rechnet die freie Kühlung zuerst, dann der
    Kältespeicher, dann die Wärmepumpe, dann die Kältemaschine — das ist für die Fälle im Bestand die wirtschaftliche Folge.
+   **entschieden (E117): konfigurierbar, KB-D wird gebaut (Schemaschritt 212); Vorgabe freie Kühlung, Kältespeicher, Wärmepumpen, Kältemaschinen.**
 2. **F2 Ort der Anlagenkonfiguration der Kältemaschine:** nur in der Simulationskonfiguration oder zusätzlich als Überlagerung
    „Anlage…“ im Dialog („mit Möglichkeit der Konfiguration“)? **Empfehlung:** beide Orte mit **derselben** Komponente, Hauptort
    Simulationskonfiguration — wie bei der Wärmepumpe.
+   **entschieden (E117): beide Orte mit derselben Komponente.**
 3. **F3 Wärmepumpen im Kühlbetrieb im Dialog:** als Lesezeile mit Verweis auf „Simulation › Kälte“ oder gar nicht? **Empfehlung:**
    Lesezeile ohne Schalter. Die Kachel heißt „Kühlung und Kälteanlagen“ und soll alle Kälteerzeuger nennen.
+   **entschieden (E117): konfigurierbar an beiden Orten, nicht nur Lesezeile.**
 4. **F4 Kältespeicher:** nur im Kältebereich oder auch weiter in der Speicherspalte der Wärme? **Empfehlung:** nur im
    Kältebereich, weil ein Kältespeicher keine Wärme puffert.
+   **entschieden (E117): nur im Kältebereich.**
 5. **F5 Doppelklick im Schema auf Kälteerzeuger:** in der Seite die Konfiguration öffnen statt in den Dialog zu springen
    (#902)? **Empfehlung:** ja, Konfiguration in der Seite. Den Katalogdialog erreicht man weiter über die Kachel.
+   **entschieden (E117): Doppelklick öffnet die Konfiguration in der Seite.**
 6. **F6 Zuständigkeit:** Stufe 5 baut die Sitzung „Dialoge und Korrekturen“ nach KB-B (Abschnitt 4), oder übernimmt die
    Gebäudesimulation alles? **Empfehlung:** Teilung nach Abschnitt 4.1. Das Konzept, der Baustein und das Muster 5.3/5.4 liegen
    dort.
+   **entschieden (E117): Stufe 5 baut die Sitzung „Dialoge und Korrekturen“.**
+   KB-1 (eigene Projektkopie je neuer Anlage): **entschieden (E117): nach Empfehlung.**
+
+**Folgen der Entscheide.** KB-D wird gebaut (Schemaschritt 212). Die Gruppe Kühlbetrieb der Wärmepumpe erscheint im Kältebereich und im Kältedialog als konfigurierbare Zeile, nicht mehr als Lesezeile.
 
 ## 7 Wellenplan
 

@@ -3263,6 +3263,8 @@ Mehrzonen 12):
   `NetzverlusteVerteilen` entsteht **nicht** — das ist eine **benannte** Abweichung von der
   Symmetrie nach E21, kein Versehen (4.2, 5.5).
 
+**Fortschreibung E118 (10.10.2026).** Luftführung für Direktverdampfer (Split, Multisplit, VRF mit Umluftgerät am Raum) und Kältemittel als Stammdatum (Kältemittel, GWP, Füllmenge) sind nicht mehr ausgeschlossen; Kanalnetze und RLT bleiben es. Einzelheiten: [Konzeptprüfung](Kälteanlagen/2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md).
+
 **Nicht hier, sondern in den Schwesterpapieren:**
 
 - **Die Physik des Gebäudemodells** — Knotenbilanzen, Diskretisierung, Randbedingungen,
