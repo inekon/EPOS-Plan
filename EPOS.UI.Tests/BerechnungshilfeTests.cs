@@ -795,6 +795,17 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     };
 
     /// <summary>
+    /// UeS2: Ein Wirt mit Zusammenfassung (Heizkessel) zeichnet sein Satzfragment samt
+    /// Infoknöpfen nur in der Satz-Überlagerung — sie wird dafür geöffnet.
+    /// </summary>
+    internal static void SatzUeberlagerungOeffnen(IRenderedComponent<DynamicComponent> gezeichnet, string komponente)
+    {
+        if (komponente != "HeizkesselDialog") return;
+        var baustein = gezeichnet.FindComponent<EPOS.UI.Bausteine.Zweispaltenauswahl>();
+        gezeichnet.InvokeAsync(() => baustein.Instance.SatzUeberlagerungOeffnen()).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
     /// Der Berechnungsknopf ist im gezeichneten Dialog wirklich da — nicht nur im
     /// Quelltext. Gezeichnet wird auf dem Weg der Windows-Hülle (Wörterbuch →
     /// Parametersatz, Muster <c>StartkachelDialogeTests</c>), also mit dem
@@ -808,6 +819,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     public void Jeder_Dialog_traegt_seinen_Berechnungsknopf(string komponente, string schluessel)
     {
         var gezeichnet = AusHuelle(Komponente(komponente), Gaben(komponente));
+        SatzUeberlagerungOeffnen(gezeichnet, komponente);
 
         string[] schluesselImDialog = gezeichnet.FindComponents<InfoKnopf>()
                                                 .Select(k => k.Instance.Schluessel)
@@ -825,6 +837,7 @@ public sealed class BerechnungshilfeTests : EposBunitContext
     public void Der_Fensterknopf_bleibt_neben_dem_Berechnungsknopf(string komponente, string schluessel)
     {
         var gezeichnet = AusHuelle(Komponente(komponente), Gaben(komponente));
+        SatzUeberlagerungOeffnen(gezeichnet, komponente);
 
         string[] schluesselImDialog = gezeichnet.FindComponents<InfoKnopf>()
                                                 .Select(k => k.Instance.Schluessel)

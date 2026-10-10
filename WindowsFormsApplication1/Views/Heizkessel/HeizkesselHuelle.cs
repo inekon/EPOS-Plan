@@ -668,6 +668,13 @@ namespace WindowsFormsApplication1
                             besitzer, projektId, DbWerte.ERZEUGER_HEIZKESSEL, zeile))
                     : null,
 
+                // UeS2: die Kostensummen der Anlage fuer die Zusammenfassung der Detailzeile -
+                // dieselbe Anlagenzuordnung wie die Kostenknoepfe (ErzeugerKostenwege).
+                ["Kostensumme"] = projektId > 0
+                    ? new Func<ErzeugerZeile, (double Invest, double Betrieb)>(
+                        zeile => ErzeugerKostenwege.Summen(projektId, DbWerte.ERZEUGER_HEIZKESSEL, zeile))
+                    : null,
+
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
                 ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…")

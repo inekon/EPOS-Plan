@@ -102,6 +102,7 @@
                         SatzNurLesen="@(!FelderSpeicherbar)" SatzUebernehmenGesperrt="@_feldFehler"
                         SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
+                        SatzZusammenfassung="@Zusammenfassung()"
                         @ref="_zweispalten">
 
         <ProjektKopf>
@@ -145,6 +146,20 @@
                     </TemplateColumn>
                     <PropertyColumn TGridItem="ErzeugerZeile" TProp="string"
                                     Property="@(z => z.Bezeichner)" Title="@LabelProjektliste" />
+                    @* UeS2: der Stift je Projektzeile - die Projektkopie in der Satz-Ueberlagerung;
+                       nur, wo es den Weg der Projektkopie gibt (wie „Bearbeiten…"). *@
+                    @if (ProjektsatzWege is not null)
+                    {
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-stift">
+                            <HeaderTemplate>
+                                <Zeilenstift Kopf="true" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Zeilenstift Hinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                                             Geklickt="@(() => BeiProjektStift(context))" />
+                            </ChildContent>
+                        </TemplateColumn>
+                    }
                 </KindInhalt>
             </Raster>
         </Links>
@@ -158,7 +173,8 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter"
                           ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
-                          GewaehlteChanged="BeiKatalogKaestchen" Gefiltert="BeiGefiltert" />
+                          GewaehlteChanged="BeiKatalogKaestchen" Gefiltert="BeiGefiltert"
+                          Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
         </Rechts>
 
         <KatalogFuss>
@@ -513,6 +529,13 @@
     [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
     [Parameter] public string KostenEnergieText { get; set; } = "Energiekosten…";
 
+    /// <summary>
+    /// <b>Invest- und Betriebskosten einer Projektzeile</b> für die Zusammenfassung der
+    /// Detailzeile (UeS2) — die Summen der Kostenverwaltung dieser Anlage in € bzw. €/a.
+    /// <c>null</c> (Assistent, kein Projekt): die Zusammenfassung nennt keine Kosten.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, (double Invest, double Betrieb)>? Kostensumme { get; set; }
+
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Verwaltung Heizkessel";
@@ -813,6 +836,7 @@
         _satzGross = false;
         _satzUeberlagerungFehler = null;
         _anlagenmerker = null;
+        KostenNachziehen();   // die Kostenknoepfe der Ueberlagerung koennen die Summen geaendert haben
     }
 
     /// <summary>Der Stand von Träger, Vorlauf und Rücklauf der Projektzeile beim Öffnen der Überlagerung.</summary>
@@ -830,6 +854,7 @@
             merker.Zurueckschreiben(_projektZeile, TraegerWechseln, Uebernehmen);
         _anlagenmerker = null;
         if (_felder is not null) FelderHolen();
+        KostenNachziehen();
     }
 
     /// <summary>Nach dem Speichern einer Projektkopie: Kenndaten und Summe neu.</summary>
@@ -1217,6 +1242,7 @@
         _varianten = Varianten is not null ? Varianten(zeile.CarrierId) : Array.Empty<(int, string)>();
         _detail = Katalogladung.Satz(() => ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null,
                                      zeile.Bezeichner, out _satzFehler) ?? Leer(zeile.Bezeichner);
+        KostenNachziehen();
         FelderNachziehen();
     }
 
@@ -1427,6 +1453,107 @@
             return;
         }
         _bearbeitung = (Satzmarke.Projektsatz, saetze);
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Projektzeile — sie wird gewählt (ohne die Kästchen der
+    /// Mehrfachwahl anzufassen) und ihre Projektkopie öffnet in der Satz-Überlagerung.
+    /// </summary>
+    private async Task BeiProjektStift(ErzeugerZeile zeile)
+    {
+        if (ProjektsatzWege is null || _zweispalten is null) return;
+        if (_projektZeile != zeile) ProjektZeileWaehlen(zeile);
+        await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Katalogliste hat sie schon gewählt) — ein
+    /// gesperrter Satz öffnet nur lesend in der Satz-Überlagerung, ein ungesperrter den
+    /// Katalogeditor (KA‑E‑13); ohne Editor die Überlagerung.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Schluessel != zeile.Schluessel) KatalogZeileWaehlen(zeile.Bezeichner);
+        if (!zeile.Geschuetzt && EditorGaben is not null)
+        {
+            _editorGaben = EditorGaben(zeile.Bezeichner);
+            return;
+        }
+        if (Katalogfelder is not null && _zweispalten is not null)
+        {
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+        if (zeile.Geschuetzt) BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN);
+    }
+
+    // =================================================================================
+    // Die Zusammenfassung der Detailzeile (UeS2)
+    // =================================================================================
+
+    /// <summary>Die Kostensummen der gewählten Projektzeile — gelesen bei der Wahl und nach der Überlagerung.</summary>
+    private (double Invest, double Betrieb)? _kosten;
+
+    private void KostenNachziehen()
+    {
+        _kosten = null;
+        if (Wizard || Kostensumme is null || _projektZeile is null) return;
+        try { _kosten = Kostensumme(_projektZeile); }
+        catch { _kosten = null; }   // die Zusammenfassung ist Anzeige; ohne Summe fehlt die Angabe
+    }
+
+    /// <summary>
+    /// <b>Die Kurzangaben des gewählten Satzes</b> für die Detailzeile. Projektsatz: Leistung,
+    /// Brennstoff, Träger, Vorlauf/Rücklauf, Brennwert, Invest, Betrieb, Senken. Katalogsatz: die
+    /// Spalten des Katalogprofils (Hersteller, Brennstoff, Leistung, η, Brennwert). Ohne Satz eine
+    /// leere Liste — nie <c>null</c>, sonst zeichnete der Baustein das Fragment in der Detailzeile.
+    /// </summary>
+    internal IReadOnlyList<Satzangabe> Zusammenfassung()
+    {
+        var liste = new List<Satzangabe>();
+        CultureInfo k = CultureInfo.CurrentCulture;
+        if (_projektZeile is ErzeugerZeile p)
+        {
+            string? leistung = _detail.Felder.Where(f => f.Feld != LabelBrennstofftyp && ErzeugerDetail.IstZahl(f.Wert))
+                                             .Select(f => f.Wert).FirstOrDefault();
+            if (leistung is not null) liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG, leistung + " kWth"));
+            string? brennstoff = _detail.Felder.Where(f => f.Feld == LabelBrennstofftyp).Select(f => f.Wert).FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(brennstoff)) liste.Add(new(Resource.AUSWAHL_ZF_BRENNSTOFF, brennstoff));
+            string traeger = _varianten.Where(v => v.Id == p.CarrierId).Select(v => v.Text).FirstOrDefault() ?? "";
+            if (traeger.Length > 0) liste.Add(new(Resource.AUSWAHL_ZF_TRAEGER, traeger));
+            if (p.Vorlauf is not null || p.Ruecklauf is not null)
+                liste.Add(new(Resource.AUSWAHL_ZF_VORLAUF_RUECKLAUF,
+                              (p.Vorlauf?.ToString(k) ?? ParameterVerwendung.LEER) + "/" +
+                              (p.Ruecklauf?.ToString(k) ?? ParameterVerwendung.LEER) + " °C"));
+            if (_detail.Schalter is { } brennwert)
+                liste.Add(new(Resource.AUSWAHL_ZF_BRENNWERT, brennwert.Wert ? Resource.ALLG_BTN_JA : Resource.ALLG_BTN_NEIN));
+            if (_kosten is { } kosten)
+            {
+                liste.Add(new(Resource.AUSWAHL_ZF_INVEST, string.Format(k, Resource.AUSWAHL_ZF_EURO, kosten.Invest)));
+                liste.Add(new(Resource.AUSWAHL_ZF_BETRIEB, string.Format(k, Resource.AUSWAHL_ZF_EURO_JAHR, kosten.Betrieb)));
+            }
+            string senken = Senkenwert(p.Senken);
+            if (senken.Length > 0) liste.Add(new(Resource.AUSWAHL_ZF_SENKEN, senken));
+        }
+        else if (_katalogZeile is Katalogfilterzeile z && Katalogprofil is not null)
+        {
+            foreach (Katalogspalte spalte in Katalogprofil.Spalten)
+            {
+                if (spalte.Schluessel is Katalogfilterprofil.SpBezeichner or Katalogfilterprofil.SpVerwendet) continue;
+                string wert = z.Text(spalte.Schluessel);
+                if (string.IsNullOrWhiteSpace(wert) || wert == ParameterVerwendung.LEER) continue;
+                liste.Add(new(spalte.Titel, spalte.Einheit.Length > 0 ? wert + " " + spalte.Einheit : wert));
+            }
+        }
+        return liste;
+    }
+
+    /// <summary>Die Senkenzeile ohne ihr Präfix „Senken: " (<c>ANL_SENKEN_ZEILE</c>).</summary>
+    private static string Senkenwert(string zeile)
+    {
+        if (string.IsNullOrWhiteSpace(zeile)) return "";
+        string praefix = Resource.ANL_SENKEN_ZEILE.Split("{0}")[0];
+        return praefix.Length > 0 && zeile.StartsWith(praefix, StringComparison.Ordinal) ? zeile[praefix.Length..].Trim() : zeile.Trim();
     }
 
     /// <summary>Die Satzbearbeitung ist zu; gespeichert: Listen, Detail und Summe neu.</summary>
