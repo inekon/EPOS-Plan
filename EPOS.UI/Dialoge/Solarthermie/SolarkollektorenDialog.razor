@@ -55,6 +55,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     <Zweispaltenauswahl Dialogname="Solarkollektoren" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         UebernehmenText="@LabelHinzu"
@@ -565,6 +570,9 @@
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
 
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Katalogprofil?.Art ?? Anlagenart.Solarkollektoren);
@@ -710,7 +718,8 @@
 
     private void DetailSetzen(string name)
     {
-        _detail = (Detail is not null ? Detail(name) : null) ?? new ErzeugerDetail(name, "", Array.Empty<(string, string)>());
+        _detail = Katalogladung.Satz(() => Detail is not null ? Detail(name) : null, name, out _satzFehler)
+                  ?? new ErzeugerDetail(name, "", Array.Empty<(string, string)>());
         _modulflaeche = Modulflaeche?.Invoke(name) ?? 0;
     }
 
@@ -775,7 +784,8 @@
     {
         _felder = Katalogfelder is null || _katalogZeile is null
             ? null
-            : Katalogfelder(_katalogZeile.Bezeichner);
+            : Katalogladung.SatzDazu(() => Katalogfelder(_katalogZeile.Bezeichner), _katalogZeile.Bezeichner,
+                                     ref _satzFehler);
         _felderGeaendert = false;
         _feldFehler = false;
     }
@@ -810,7 +820,10 @@
     {
         if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        // KT-4: Wirft der Schreibweg, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(
+            () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+            g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         if (!ergebnis.Ok)
         {
             // Das Band oben bleibt fuer den Fehler - dazu der Grund rot am Knopf.
@@ -954,7 +967,13 @@
         _loeschfrage = false;
         if (antwort != true || _katalogZeile is null || KatalogLoeschen is null) return;
 
-        if (!KatalogLoeschen(_katalogZeile.Bezeichner)) return;
+        // KT-4: Wirft der Löschweg, nennt das Warnband den Grund (Katalogladung.Loeschen).
+        string loeschName = _katalogZeile.Bezeichner;
+        if (!Katalogladung.Loeschen(() => KatalogLoeschen(loeschName), loeschName, out string loeschGrund))
+        {
+            if (loeschGrund.Length > 0) { _meldung = loeschGrund; _meldungStufe = WarnStufe.Warnung; }
+            return;
+        }
         _katalogZeile = null;
         _katalogGewaehlt = "";
         KatalogNeuLaden();

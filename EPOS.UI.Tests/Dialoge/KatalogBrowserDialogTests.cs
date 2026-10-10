@@ -424,6 +424,28 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Equal(name, geloescht);
     }
 
+    /// <summary>KT-4: Wirft der Löschweg, bleibt der Satz in der Liste und das Warnband nennt den Grund.</summary>
+    [Fact]
+    public void Wirft_Loeschen_bleibt_der_Satz_und_das_Warnband_nennt_den_Grund()
+    {
+        const KatalogBrowserArt art = KatalogBrowserArt.Heizkessel;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(art),
+            Detail = name => Felder(art, name),
+            Loeschen = _ => throw new InvalidOperationException("Datenbank gesperrt")
+        };
+        var cut = Aufbauen(art, wege: wege);
+        string name = cut.Instance.Zeilen[0].Bezeichner;
+        int vorher = cut.Instance.Zeilen.Count;
+
+        Loeschknopf(cut, art).Click();
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.WURZEL_LOESCHEN_FEHLER, name, "Datenbank gesperrt"), cut.Instance.Meldung);
+        Assert.Equal(vorher, cut.Instance.Zeilen.Count);
+    }
+
     [Fact]
     public void Nein_in_der_Rueckfrage_loescht_nicht()
     {
