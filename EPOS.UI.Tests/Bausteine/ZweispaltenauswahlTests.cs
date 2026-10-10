@@ -502,6 +502,68 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Equal(new[] { "1", "3" }, wahl.Gewaehlte);
     }
 
+    /// <summary>
+    /// DZ1‑N2: Nach „In das Projekt übernehmen“ steht die Mehrfachwahl auf genau der neuen
+    /// Zeile — das vorher angeklickte Kästchen ist abgewählt, „Entfernen“ trifft die neue Zeile.
+    /// </summary>
+    [Fact]
+    public void Uebernehmen_setzt_die_Mehrfachwahl_auf_die_neue_Zeile_und_Entfernen_trifft_sie()
+    {
+        var wahl = new Bereichswahl();
+        IReadOnlyList<string>? getroffen = null;
+        var cut = Aufbauen(entfernt: () => getroffen = wahl.Gewaehlte.ToList(), mehr: p => p
+            .Add(x => x.ProjektWahl, wahl)
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2" })
+            .Add(x => x.Links, Kaestchenliste(Auswahlbereich.Projekt, new[] { "1", "2" })));
+
+        cut.FindAll(".epos-zweispalten-bereich--projekt .epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)")[0].Click();
+        Assert.Equal(new[] { "1" }, wahl.Gewaehlte);
+
+        // Der Wirt nimmt Zeile 3 auf und wählt sie als Einzelwahl.
+        cut.Render(p => p
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2", "3" })
+            .Add(x => x.Links, Kaestchenliste(Auswahlbereich.Projekt, new[] { "1", "2", "3" })));
+        Assert.Equal(new[] { "3" }, wahl.Gewaehlte);
+        Assert.Equal("3", wahl.Zuletzt);
+        var kaestchen = cut.FindAll(".epos-zweispalten-bereich--projekt .epos-wahlkaestchen:not(.epos-wahlkaestchen--kopf)");
+        Assert.Equal("false", kaestchen[0].GetAttribute("aria-checked"));
+        Assert.Equal("true", kaestchen[2].GetAttribute("aria-checked"));
+
+        cut.Find(".epos-zweispalten-knopf--entfernen").Click();
+        Assert.Equal(new[] { "3" }, getroffen);
+
+        // Die Zeile verschwindet aus der Liste und verlässt die Wahl.
+        cut.Render(p => p
+            .Add(x => x.ProjektSichtbar, new[] { "1", "2" })
+            .Add(x => x.Links, Kaestchenliste(Auswahlbereich.Projekt, new[] { "1", "2" })));
+        Assert.Empty(wahl.Gewaehlte);
+    }
+
+    /// <summary>Die Regel von <see cref="Bereichswahl.ListeFolgen"/>: verschwunden raus, neu allein, leer bleibt leer.</summary>
+    [Fact]
+    public void Bereichswahl_folgt_der_Liste()
+    {
+        var w = new Bereichswahl();
+        Assert.False(w.ListeFolgen(null, new[] { "a", "b" }));
+        Assert.False(w.ListeFolgen(new[] { "a", "b" }, new[] { "a", "b", "c" }));   // nichts gewählt: bleibt leer
+        Assert.Empty(w.Gewaehlte);
+
+        w.Klick("a", false, false, new[] { "a", "b", "c" });
+        w.Klick("b", true, false, new[] { "a", "b", "c" });
+        Assert.False(w.ListeFolgen(new[] { "a", "b", "c" }, new[] { "a", "b", "c" }));
+        Assert.Equal(new[] { "a", "b" }, w.Gewaehlte);
+
+        Assert.True(w.ListeFolgen(new[] { "a", "b", "c" }, new[] { "a", "c" }));      // b verschwindet
+        Assert.Equal(new[] { "a" }, w.Gewaehlte);
+
+        Assert.True(w.ListeFolgen(new[] { "a", "c" }, new[] { "a", "c", "d", "e" })); // Sammelübernahme
+        Assert.Equal(new[] { "d", "e" }, w.Gewaehlte);
+        Assert.Equal("e", w.Zuletzt);
+
+        Assert.True(w.ListeFolgen(new[] { "a", "c", "d", "e" }, new[] { "a", "c", "f", "e" })); // Umstellen: d wird f
+        Assert.Equal(new[] { "f" }, w.Gewaehlte);
+    }
+
     /// <summary>Strg+A in einer Liste wählt deren gefilterte Liste (aus dem Skript).</summary>
     [Fact]
     public void StrgA_waehlt_die_gefilterte_Liste()
