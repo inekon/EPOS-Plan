@@ -75,6 +75,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
     }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
 
     @* KATALOGAUSWAHL V1, STUFE 2 (Konzept Projektdialoge mit Katalogauswahl 4.2): jede
        Funktion an genau einem Ort. P = Kopfleiste „Im Projekt" (Summe, Bearbeiten…,
@@ -661,10 +666,12 @@
     private void FelderHolen()
     {
         _felder = _projektZeile is not null
-            ? ProjektsatzWege?.Lesen(_projektZeile.GeraetId)
+            ? Katalogladung.SatzDazu(() => ProjektsatzWege?.Lesen(_projektZeile.GeraetId), _projektZeile.Bezeichner,
+                                     ref _satzFehler)
             : Katalogfelder is null || _katalogZeile is null
                 ? null
-                : Katalogfelder(_katalogZeile.Bezeichner);
+                : Katalogladung.SatzDazu(() => Katalogfelder(_katalogZeile.Bezeichner), _katalogZeile.Bezeichner,
+                                         ref _satzFehler);
         _felderGeaendert = false;
         _feldFehler = false;
     }
@@ -715,12 +722,16 @@
         {
             // Der Projektsatz (Stufe 2): die Projektkopie ueber den Kernweg der Huelle.
             if (ProjektsatzWege?.Speichern is null) return;
-            ergebnis = ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) });
+            ergebnis = Katalogladung.Schreiben(
+                () => ProjektsatzWege.Speichern(new[] { (_projektZeile.GeraetId, _felder) }), _projektZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _projektZeile.Bezeichner));
         }
         else
         {
             if (KatalogfelderSpeichern is null || _katalogZeile is null) return;
-            ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+            ergebnis = Katalogladung.Schreiben(
+                () => KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder), _katalogZeile.Bezeichner,
+                g => new KatalogSpeicherErgebnis(false, g, _katalogZeile.Bezeichner));
         }
         if (!ergebnis.Ok)
         {
@@ -743,7 +754,8 @@
     private void ProjektNeuLesen()
     {
         if (_projektZeile is null) return;
-        _detail = (ProjektDetail is not null ? ProjektDetail(_projektZeile.GeraetId) : null) ?? _detail;
+        _detail = Katalogladung.SatzDazu(() => ProjektDetail is not null ? ProjektDetail(_projektZeile.GeraetId) : null,
+                                         _projektZeile.Bezeichner, ref _satzFehler) ?? _detail;
         SummeNachziehen();
     }
 
@@ -932,6 +944,9 @@
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
     private string _listeFehler = "";
 
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
+
     protected override void OnInitialized()
     {
         // S2.5: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit der
@@ -1118,7 +1133,8 @@
         _katalogZeile = null;
         _katalogGewaehlt = "";
         _varianten = Varianten is not null ? Varianten(zeile.CarrierId) : Array.Empty<(int, string)>();
-        _detail = (ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null) ?? Leer(zeile.Bezeichner);
+        _detail = Katalogladung.Satz(() => ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null,
+                                     zeile.Bezeichner, out _satzFehler) ?? Leer(zeile.Bezeichner);
         FelderNachziehen();
     }
 
@@ -1132,7 +1148,8 @@
         _katalogZeile = Katalogsatz(_katalogGewaehlt);
         _projektZeile = null;
         _varianten = Array.Empty<(int, string)>();
-        _detail = (KatalogDetail is not null ? KatalogDetail(_katalogGewaehlt) : null)
+        _detail = Katalogladung.Satz(() => KatalogDetail is not null ? KatalogDetail(_katalogGewaehlt) : null,
+                                     _katalogGewaehlt, out _satzFehler)
                   ?? Leer(_katalogGewaehlt);
         FelderNachziehen();
     }
@@ -1425,12 +1442,19 @@
         _loeschziele = new();
         if (antwort != true || KatalogLoeschen is null || ziele.Count == 0) return;
         bool fehler = false, fokusWeg = false;
+        string loeschGrund = "";
         foreach (Katalogfilterzeile z in ziele)
         {
-            if (!KatalogLoeschen(z.Id)) { fehler = true; continue; }
+            // KT-4: Wirft der Löschweg, nennt die Meldung den Grund (Katalogladung.Loeschen).
+            if (!Katalogladung.Loeschen(() => KatalogLoeschen(z.Id), z.Bezeichner, out string grund))
+            {
+                fehler = true;
+                if (grund.Length > 0) loeschGrund = grund;
+                continue;
+            }
             if (z.Bezeichner == _katalogGewaehlt) fokusWeg = true;
         }
-        if (fehler) Melden(MeldungLoeschFehler, true);
+        if (fehler) Melden(loeschGrund.Length > 0 ? loeschGrund : MeldungLoeschFehler, true);
         if (fehler && ziele.Count == 1) return;
         KatalogKaestchenLeeren();
         if (fokusWeg)

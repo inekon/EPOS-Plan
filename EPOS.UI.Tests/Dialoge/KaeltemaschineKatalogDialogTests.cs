@@ -37,6 +37,8 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         internal readonly List<int> Geloescht = new();
         internal readonly List<(int Id, string Name)> Dupliziert = new();
         internal bool? Geschlossen;
+        /// <summary>KT-4: Speichern bzw. Löschen werfen wie eine gesperrte Datenbank.</summary>
+        internal bool SpeichernWirft, LoeschenWirft;
         private int _naechste = 100;
 
         /// <param name="mitTypkennfeldern">Dazu die 34 eingebauten Typkennfelder als Auslieferungssätze — der Stand
@@ -93,6 +95,7 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
 
         internal KaeltemaschineSpeicherErgebnis Speichern(KaeltemaschineDaten d)
         {
+            if (SpeichernWirft) throw new InvalidOperationException(SCHREIBSPERRE);
             KaeltemaschineDaten kopie = d.Kopie();
             Gespeichert.Add(kopie);
             Modelle.Add(KaeltemaschineKatalogHuelle.AlsModell(kopie));
@@ -125,6 +128,7 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
             .Add(x => x.Speichern, kat.Speichern)
             .Add(x => x.Loeschen, id =>
             {
+                if (kat.LoeschenWirft) throw new InvalidOperationException(SCHREIBSPERRE);
                 kat.Geloescht.Add(id);
                 kat.Saetze.RemoveAll(s => s.Id == id);
                 return new KaeltemaschineSpeicherErgebnis(true, "", id);
@@ -435,6 +439,71 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         Assert.Equal("Eigene Kältemaschine", k.Gespeichert.Single().Bezeichner);
         Assert.Equal(string.Format(R.KM_MSG_ANGELEGT, "Eigene Kältemaschine"), cut.Instance.Status);
         Assert.False(cut.Instance.Auslieferung);
+    }
+
+    /// <summary>KT-4: der Grund der werfenden Schreibwege im Stub.</summary>
+    private const string SCHREIBSPERRE = "Datenbank gesperrt";
+
+    /// <summary>Fängt die Vermerke des Ausnahmeprotokolls während <paramref name="tun"/>.</summary>
+    private static List<string> Vermerke(Action tun)
+    {
+        var liste = new List<string>();
+        void Mit(string z) { lock (liste) liste.Add(z); }
+        Ausnahmeprotokoll.Vermerkt += Mit;
+        try { tun(); }
+        finally { Ausnahmeprotokoll.Vermerkt -= Mit; }
+        return liste;
+    }
+
+    [Fact]
+    public void Wirft_Speichern_bleiben_Eingaben_und_Dialog_und_die_Meldung_nennt_den_Grund()
+    {
+        var k = new Katalog();
+        var cut = MitKopie(k);
+        string name = cut.Instance.Arbeitsstand.Bezeichner;
+        cut.FindAll(".epos-kaeltemaschine-punkt button").First().Click();
+        k.SpeichernWirft = true;
+
+        List<string> vermerke = Vermerke(() => Knopf(cut, R.ADM_BTN_SPEICHERN).Click());
+
+        Assert.Equal(string.Format(R.WURZEL_SCHREIBEN_FEHLER, name, SCHREIBSPERRE), cut.Instance.Meldung);
+        Assert.True(cut.Instance.Geaendert);
+        Assert.Equal(5, cut.Instance.Arbeitsstand.Kennlinie.Count);
+        Assert.Null(k.Geschlossen);
+        Assert.Contains(vermerke, v => v.Contains("nicht gespeichert") && v.Contains(SCHREIBSPERRE));
+    }
+
+    [Fact]
+    public void Wirft_Neu_bleibt_die_Eingabe_offen_und_nennt_den_Grund()
+    {
+        var k = new Katalog { SpeichernWirft = true };
+        var cut = Aufbauen(k);
+
+        Knopf(cut, R.ADM_BTN_NEU).Click();
+        cut.Find(".epos-kaeltemaschine-neu input").Input("Eigene Kältemaschine");
+        Vermerke(() => cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
+                          .First(b => b.TextContent.Trim() == R.ALLG_BTN_OK).Click());
+
+        Assert.True(cut.Instance.NeuOffen);
+        Assert.Contains(SCHREIBSPERRE, cut.Find(".epos-kaeltemaschine-neu").TextContent);
+    }
+
+    [Fact]
+    public void Wirft_Loeschen_bleibt_der_Satz_und_die_Meldung_nennt_den_Grund()
+    {
+        var k = new Katalog { LoeschenWirft = true };
+        var cut = MitKopie(k);
+        string name = cut.Instance.Arbeitsstand.Bezeichner;
+        int vorher = k.Saetze.Count;
+
+        Handlung(cut, R.BST_BTN_LOESCHEN).Click();
+        List<string> vermerke = Vermerke(() => cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-knopf")
+                                                 .First(b => b.TextContent.Trim() == R.ALLG_BTN_JA).Click());
+
+        Assert.Equal(string.Format(R.WURZEL_LOESCHEN_FEHLER, name, SCHREIBSPERRE), cut.Instance.Meldung);
+        Assert.Equal(vorher, k.Saetze.Count);
+        Assert.Null(k.Geschlossen);
+        Assert.Contains(vermerke, v => v.Contains("nicht gelöscht") && v.Contains(SCHREIBSPERRE));
     }
 
     [Fact]

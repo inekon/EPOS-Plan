@@ -135779,11 +135779,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz „{0}“ wurde nicht gelöscht: {1} ähnelt.
+        /// </summary>
+        public static string WURZEL_LOESCHEN_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_LOESCHEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Oberfläche führt die Ansicht nicht. ähnelt.
         /// </summary>
         public static string WURZEL_NICHT_GEFUEHRT {
             get {
                 return ResourceManager.GetString("WURZEL_NICHT_GEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz „{0}“ konnte nicht gelesen werden: {1} ähnelt.
+        /// </summary>
+        public static string WURZEL_SATZ_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_SATZ_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz „{0}“ wurde nicht gespeichert: {1} ähnelt.
+        /// </summary>
+        public static string WURZEL_SCHREIBEN_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_SCHREIBEN_FEHLER", resourceCulture);
             }
         }
         
