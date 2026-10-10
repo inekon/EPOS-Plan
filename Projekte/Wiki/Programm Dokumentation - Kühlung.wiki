@@ -282,6 +282,25 @@ Die '''Kältemaschine''' ist ein eigener Kälteerzeuger neben der Wärmepumpe im
 
 '''Freie Kühlung.''' Sie ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Bei Trocken- und Nasskühler gilt sie, wenn die Rückkühltemperatur mindestens 3 K unter der Kaltwassertemperatur liegt: Die Maschine deckt dann bis zur Nennkälteleistung mit einem festen Ersatz-EER von 15 plus Hilfsstrom, der Verdichter steht. Stunden und Kälte der freien Kühlung zählt der Lauf. Bei der luftgekühlten Maschine gibt es keine freie Kühlung.
 
+=== Teillast und Takten der Kältemaschine ===
+{{Anker|kaeltemaschine-teillast}}
+
+Im Katalogdialog der Kältemaschine steuert die Gruppe '''Teillast und Takten''' das Teillastverhalten des Geräts. Das Feld '''Teillastrechnung''' kennt drei Werte: ''wie bisher'' rechnet mit der Kennlinie bei Volllast, ''linear'' nimmt den Strom proportional zur Last, ''Kurve'' rechnet mit einer Teillastkurve. Bei ''Kurve'' tragen Sie die '''Teillastkurve a/b/c''', die Grenze '''Kurve gültig ab Lastgrad''' (leer heißt: die ''Mindestteillast'' des Geräts) und den '''Taktverlustfaktor C_d''' ein. Unterhalb der ''Mindestteillast'' aus den Kenndaten der Kältemaschine taktet die Maschine. Die '''Verdichterregelung''' (Ein/Aus, Stufen, Drehzahl) wählt den Vorschlag der Kurve; ''Kurve aus Typkennfeld…'' füllt die Felder aus einem Typkennfeld je Verdichterregelung, ''Typkennfelder laden…'' liest die Typkennfelder ein. Der '''Kennfeldrand''' bestimmt, was außerhalb der Stützpunkte der Kennlinie gilt: ''Randwert'' (Vorgabe) oder ''Gütegrad'' (Carnot-Gütegrad, begrenzt auf wenige Kelvin über den Rand hinaus). ''Teillastpunkte prüfen…'' beurteilt die Kurve; ein Bild zeigt das EER-Verhältnis über dem Lastgrad. Das Projektgerät trägt dieselben Felder als Kopie. Eine unplausible Kurve weist der Dialog ab und nennt den Grund.
+
+Im Anlagendialog ''Kältemaschinen im Projekt'' zeigt die Gruppe ''Gerät'' diese Werte nur lesend. Bei mehreren Maschinen steht dort ein Hinweis auf die Folgeschaltung: Es laufen nur so viele Maschinen, wie die Last braucht.
+
+Die Ergebnisse je Kältemaschine:
+
+* '''Taktstrom''' – Mehrstrom des Taktens unter der Mindestteillast.
+* '''Starts''' – Zahl der Anläufe im Jahr.
+* '''Teillaststunden''' – Stunden unter Volllast.
+* '''Lastgrad (Mittel)''' – mittlerer Lastgrad der Betriebsstunden.
+* '''Stunden extrapoliert''' – Stunden außerhalb der Stützpunkte der Kennlinie.
+
+Im Reiter ''Kältegang'' des Simulationsergebnisses zeigt die Kachel '''Teillast und Takten der Kältemaschinen''' die Werte ''Taktstrom'', ''Starts'', ''Teillastanteil'', ''Mittlerer Lastgrad'' und ''Jahres-EER ohne Hilfsstrom''; der Bericht führt sie in der Tafel ''Teillast und Takten der Kältemaschinen''. Ohne Teillastrechnung entfallen Kachel und Tafel. Der Taktstrom geht wie der übrige Kältestrom in die Energiekosten ein. Das Rechenverfahren erklärt die Seite [[Grundlagen/Kühlung#teillast-takten|Grundlagen Kühlung]].
+
+'''Beispiel.''' Kältemaschine 1, 100 kW, Mindestteillast 20 %, Teillastrechnung ''Kurve'': Bei 60 % Last gilt der Strom der Kurve; fällt die Last unter 20 %, taktet die Maschine, und der Lauf zählt Starts und Taktstrom. Zwei solche Maschinen decken eine Last von 150 kW beide mit 75 %; bei 90 kW läuft nur eine.
+
 Die Kältemaschine ist Kostenkomponente der Wirtschaftlichkeit: Investition aus Nennkälteleistung mal Anzahl, wählbare Standardvorlagen für Investition und Betrieb; ihr Kältestrom geht zum Strompreis des Projekts beziehungsweise des Kühlträgers in die Energiekosten ein.
 
 === Kältespeicher ===

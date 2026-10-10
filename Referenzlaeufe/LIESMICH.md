@@ -813,7 +813,7 @@ achtundzwanzig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >   --ziel Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast
 > ```
 >
-> Die Regeln stehen im [Fachkonzept Teillast und Takten der Kältemaschine](../Dokumentation/aktuell/Kälteanlagen/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md),
+> Die Regeln stehen im [Fachkonzept Teillast und Takten der Kältemaschine](../Dokumentation/ueberholt/Konzept_Kaeltemaschine_Teillast_Takten_EPOS-Plan.md),
 > Abschnitte 5.3 und 8.2.
 
 
