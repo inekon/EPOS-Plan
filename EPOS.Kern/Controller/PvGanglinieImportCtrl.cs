@@ -76,6 +76,16 @@ namespace WindowsFormsApplication1
         /// <param name="pfad">Die Quelldatei.</param>
         /// <param name="nennleistungKwp">Die Nennleistung der Anlage [kWp]; <c>null</c> = nicht bekannt.</param>
         public static PvGanglinieImportBericht Einlesen(string pfad, double? nennleistungKwp = null)
+            => Einlesen(pfad, string.IsNullOrWhiteSpace(pfad) ? null : StundenganglinieDatei.Lies(pfad), nennleistungKwp);
+
+        /// <summary>
+        /// Prüft den Namen und schreibt eine schon gelesene Reihe — der Weg über den Optionendialog
+        /// (<see cref="StundenganglinieDatei.AusImport"/>). Wirft nicht.
+        /// </summary>
+        /// <param name="pfad">Die Quelldatei (Bezeichner aus dem Dateinamen).</param>
+        /// <param name="lesung">Die gelesene Reihe samt Format und Kopftext.</param>
+        /// <param name="nennleistungKwp">Die Nennleistung der Anlage [kWp]; <c>null</c> = nicht bekannt.</param>
+        public static PvGanglinieImportBericht Einlesen(string pfad, StundenganglinieLesung lesung, double? nennleistungKwp)
         {
             var bericht = new PvGanglinieImportBericht
             {
@@ -88,7 +98,7 @@ namespace WindowsFormsApplication1
                 return bericht;
             }
 
-            StundenganglinieLesung lesung = StundenganglinieDatei.Lies(pfad);
+            lesung ??= new StundenganglinieLesung();
             bericht.Lesung = lesung;
             if (!lesung.Erfolgreich)
             {
@@ -147,11 +157,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static PvGanglinieVorschlag Vorschlagen(string pfad)
         {
-            var v = new PvGanglinieVorschlag();
-            if (string.IsNullOrWhiteSpace(pfad)) return v;
+            if (string.IsNullOrWhiteSpace(pfad)) return new PvGanglinieVorschlag();
             StundenganglinieLesung lesung;
             try { lesung = StundenganglinieDatei.Lies(pfad); }
-            catch { return v; }
+            catch { return new PvGanglinieVorschlag(); }
+            return Vorschlagen(lesung);
+        }
+
+        /// <summary>
+        /// Die Vorbelegung der Nennleistung zu einer schon gelesenen Reihe (Weg über den Optionendialog):
+        /// Dateikopf vor Spitze wie <see cref="Vorschlagen(string)"/>. Wirft nicht.
+        /// </summary>
+        public static PvGanglinieVorschlag Vorschlagen(StundenganglinieLesung lesung)
+        {
+            var v = new PvGanglinieVorschlag();
             if (lesung == null || !lesung.Erfolgreich) return v;
 
             v.SpitzeKw = lesung.SpitzeKw;

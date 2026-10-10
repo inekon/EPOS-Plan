@@ -36,7 +36,14 @@ namespace WindowsFormsApplication1
                 MitSystemOeffnen = datei?.MitSystemOeffnen,
                 Ordner = datei?.Ordner ?? "",
                 Einlesen = datei is null ? null : Einlesen,
-                ImportAbgelehnt = datei is null ? MyResource.Resource.SGL_IMP_NICHT_VERFUEGBAR : ""
+                ImportAbgelehnt = datei is null ? MyResource.Resource.SGL_IMP_NICHT_VERFUEGBAR : "",
+                // Der Import liest ueber den Optionendialog "Format und Vorschau" (Vorbelegung aus der
+                // Formaterkennung des Katalogimports) und schreibt die gelesene Reihe.
+                Lesen = datei is null ? null : Lesen,
+                Vorschau = datei is null ? null : Vorschau,
+                EinlesenGelesen = datei is null ? null : EinlesenGelesen,
+                // Die Satzansicht zeigt die Ganglinie des gewaehlten Katalogsatzes als Jahresbild.
+                Ansicht = n => ZeitreihenAdminWege.Ansicht(Zeitreihenart.Solarganglinie, n)
             };
         }
 
@@ -70,6 +77,33 @@ namespace WindowsFormsApplication1
         /// Die Importkette im Hintergrund (Kulturweitergabe): lesen mit Formaterkennung,
         /// Namen prüfen, schreiben in einer Transaktion — alles im Kern.
         /// </summary>
+        /// <summary>
+        /// Liest die Datei über den Optionendialog: die Importkette ohne Ablage mit der Formaterkennung
+        /// des Katalogimports (<see cref="StundenganglinieDatei.Erkenne"/>).
+        /// </summary>
+        internal static Task<GanglinienImportErgebnis> Lesen(string pfad, GanglinienImportRueckrufe rueckrufe)
+            => Importfang.StartenAsync(pfad,
+                () => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe, StundenganglinieDatei.Erkenne),
+                Importfang.AlsGanglinienimport);
+
+        /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
+        internal static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
+            => Importfang.Starten(pfad, () => GanglinienDatei.Vorschau(pfad, optionen), Importfang.AlsVorschau);
+
+        /// <summary>Schreibt die über den Optionendialog gelesene Reihe in den Katalog.</summary>
+        internal static async Task<GanglinienKatalogimport> EinlesenGelesen(string pfad, GanglinienImportErgebnis gelesen,
+                                                                            double? nennleistungKwp,
+                                                                            IProgress<ImportFortschritt> melder)
+        {
+            melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
+            SolarganglinieImportBericht b = await Importfang.Starten(pfad,
+                () => SolarganglinieImportCtrl.Einlesen(pfad, StundenganglinieDatei.AusImport(pfad, gelesen)),
+                a => new SolarganglinieImportBericht { IstFehler = true, Meldung = a.Text,
+                                                       Bezeichner = System.IO.Path.GetFileNameWithoutExtension(pfad ?? "") });
+            return new GanglinienKatalogimport(b.Erfolgreich, b.IstFehler, b.Bezeichner ?? "",
+                                               b.Meldung ?? "", b.Protokoll ?? "");
+        }
+
         internal static async Task<GanglinienKatalogimport> Einlesen(string pfad, IProgress<ImportFortschritt> melder)
         {
             melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));

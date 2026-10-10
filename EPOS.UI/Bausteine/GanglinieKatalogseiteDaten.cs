@@ -90,6 +90,36 @@ public sealed class GanglinienKatalogwege
     /// Leer = kein Knopf.
     /// </summary>
     public string ImportAbgelehnt { get; init; } = "";
+
+    /// <summary>
+    /// <b>Das Lesen über den Optionendialog „Format und Vorschau“</b>: Ist der Weg gesetzt, öffnet die
+    /// Import-Überlagerung nach der Dateiwahl den Optionendialog (Vorbelegung aus der Formaterkennung
+    /// der Art) und liest die Datei mit den bestätigten Optionen über die Importkette
+    /// (<c>GanglinienImportAblauf.OhneAblage</c>). Abbrechen im Optionendialog bricht den Import ab;
+    /// „Einlesen“ schreibt danach über <see cref="EinlesenGelesen"/>.
+    /// </summary>
+    public Func<string, GanglinienImportRueckrufe, Task<GanglinienImportErgebnis>>? Lesen { get; init; }
+
+    /// <summary>Zerlegt die Datei mit gesetzten Optionen neu (für „Vorschau aktualisieren“ des Optionendialogs).</summary>
+    public Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>? Vorschau { get; init; }
+
+    /// <summary>
+    /// Die Vorbelegung der Nennleistung aus der schon gelesenen Reihe (nur PV-Ganglinie) — Dateikopf
+    /// vor Spitze; gilt statt <see cref="NennleistungVorschlagen"/>, wenn <see cref="Lesen"/> gesetzt ist.
+    /// </summary>
+    public Func<string, GanglinienImportErgebnis, Task<GanglinienNennleistungsvorschlag>>? NennleistungAusLesung { get; init; }
+
+    /// <summary>
+    /// Schreibt die über <see cref="Lesen"/> gelesene Reihe in den Katalog (Pfad, Lesung, Nennleistung
+    /// [kWp] oder <c>null</c>); gesetzt, wenn <see cref="Lesen"/> gesetzt ist.
+    /// </summary>
+    public Func<string, GanglinienImportErgebnis, double?, IProgress<ImportFortschritt>, Task<GanglinienKatalogimport>>? EinlesenGelesen { get; init; }
+
+    /// <summary>
+    /// <b>Die Ganglinie eines Katalogsatzes als Jahresbild</b> (Name → Bild und Kennzahlen,
+    /// <c>ZeitreihenAdminWege.Ansicht</c>); der Wirt zeigt sie in seiner Satzansicht. Ohne ihn kein Bild.
+    /// </summary>
+    public Func<string, Task<Ganglinienansicht>>? Ansicht { get; init; }
 }
 
 /// <summary>

@@ -45,7 +45,15 @@ namespace WindowsFormsApplication1
                 ImportAbgelehnt = datei is null ? MyResource.Resource.PVG_IMP_NICHT_VERFUEGBAR : "",
                 // Die Nennleistung eines Katalogsatzes nachtraeglich: auf jeder Plattform (keine Datei noetig).
                 NennleistungSchreiben = (n, kwp) => Task.FromResult(NennleistungSchreiben(n, kwp)),
-                NennleistungPruefenFuer = PvGanglinieStammCtrl.Pruefhinweis
+                NennleistungPruefenFuer = PvGanglinieStammCtrl.Pruefhinweis,
+                // Der Import liest ueber den Optionendialog "Format und Vorschau" (Vorbelegung aus der
+                // Formaterkennung des Katalogimports), danach die Nennleistung aus der gelesenen Reihe.
+                Lesen = datei is null ? null : Lesen,
+                Vorschau = datei is null ? null : Vorschau,
+                NennleistungAusLesung = datei is null ? null : NennleistungAusLesung,
+                EinlesenGelesen = datei is null ? null : EinlesenGelesen,
+                // Die Satzansicht zeigt die Ganglinie des gewaehlten Katalogsatzes als Jahresbild.
+                Ansicht = n => ZeitreihenAdminWege.Ansicht(Zeitreihenart.PvGanglinie, n)
             };
         }
 
@@ -222,6 +230,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static Task<GanglinienKatalogimport> Einlesen(string pfad, IProgress<ImportFortschritt> melder)
             => EinlesenMitNennleistung(pfad, null, melder);
+
+        /// <summary>
+        /// Liest die Datei über den Optionendialog: die Importkette ohne Ablage mit der Formaterkennung
+        /// des Katalogimports (<see cref="StundenganglinieDatei.Erkenne"/>); das Raster der Datei bleibt.
+        /// </summary>
+        internal static Task<GanglinienImportErgebnis> Lesen(string pfad, GanglinienImportRueckrufe rueckrufe)
+            => Importfang.StartenAsync(pfad,
+                () => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe, StundenganglinieDatei.Erkenne),
+                Importfang.AlsGanglinienimport);
+
+        /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
+        internal static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
+            => Importfang.Starten(pfad, () => GanglinienDatei.Vorschau(pfad, optionen), Importfang.AlsVorschau);
+
+        /// <summary>Die Vorbelegung der Nennleistung aus der gelesenen Reihe (Dateikopf vor Spitze).</summary>
+        internal static async Task<GanglinienNennleistungsvorschlag> NennleistungAusLesung(string pfad, GanglinienImportErgebnis gelesen)
+        {
+            PvGanglinieVorschlag v = await Importfang.Starten(pfad,
+                () => PvGanglinieImportCtrl.Vorschlagen(StundenganglinieDatei.AusImport(pfad, gelesen)),
+                _ => new PvGanglinieVorschlag());
+            return new GanglinienNennleistungsvorschlag(v.VorschlagKwp, v.AusDateikopf, v.SpitzeKw);
+        }
+
+        /// <summary>Schreibt die über den Optionendialog gelesene Reihe samt Nennleistung in den Katalog.</summary>
+        internal static async Task<GanglinienKatalogimport> EinlesenGelesen(string pfad, GanglinienImportErgebnis gelesen,
+                                                                            double? nennleistungKwp,
+                                                                            IProgress<ImportFortschritt> melder)
+        {
+            melder?.Report(new ImportFortschritt(null, "IMP_KAT_PROT_LESEN"));
+            PvGanglinieImportBericht b = await Importfang.Starten(pfad,
+                () => PvGanglinieImportCtrl.Einlesen(pfad, StundenganglinieDatei.AusImport(pfad, gelesen), nennleistungKwp),
+                a => new PvGanglinieImportBericht { IstFehler = true, Meldung = a.Text,
+                                                    Bezeichner = System.IO.Path.GetFileNameWithoutExtension(pfad ?? "") });
+            return new GanglinienKatalogimport(b.Erfolgreich, b.IstFehler, b.Bezeichner ?? "",
+                                               b.Meldung ?? "", b.Protokoll ?? "");
+        }
 
         /// <summary>Die Vorbelegung der Nennleistung aus der gewählten Datei (Kern: <c>PvGanglinieImportCtrl.Vorschlagen</c>).</summary>
         internal static async Task<GanglinienNennleistungsvorschlag> Vorschlagen(string pfad)
