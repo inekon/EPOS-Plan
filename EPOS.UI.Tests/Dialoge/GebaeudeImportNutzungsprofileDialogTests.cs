@@ -72,7 +72,7 @@ public partial class GebaeudeImportZonenDialogTests
 
         IElement knopf = cut.Find(".epos-gebimport-nutzungsprofile-oeffnen");
         Assert.Empty(cut.FindAll(".epos-gebimport-nutzungsblatt"));
-        knopf.Click();
+        knopf.KlickAbgewartet();
 
         Assert.True(cut.Instance.NutzungsprofileOffen);
         IElement blatt = cut.Find(".epos-ueberlagerung.epos-gebimport-nutzungsblatt");
@@ -93,18 +93,18 @@ public partial class GebaeudeImportZonenDialogTests
         var p = new Zonenbaumprobe();
         var zu = new List<GebaeudeImportErgebnis?>();
         IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumMitKatalog(p, zu);
-        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").Click();
+        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").KlickAbgewartet();
         int anfragen = p.Anfragen.Count;
 
         // Erreicht die Taste die Wurzel des Dialogs, solange die Überlagerung steht, schließt er nicht.
-        cut.Find(".epos-dialog.epos-gebimport").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        cut.Find(".epos-dialog.epos-gebimport").TasteAbgewartet(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
         Assert.True(cut.Instance.NutzungsprofileOffen);
         Assert.Empty(zu);
         Assert.Equal(anfragen, p.Anfragen.Count);
 
         // Esc in der Überlagerung schließt sie, der Dialog bleibt, und der Plan liest Katalog und Zuordnung neu.
         cut.Find(".epos-ueberlagerung.epos-gebimport-nutzungsblatt")
-           .KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+           .TasteAbgewartet(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
         Assert.False(cut.Instance.NutzungsprofileOffen);
         Assert.Empty(cut.FindAll(".epos-gebimport-nutzungsblatt"));
         Assert.Empty(zu);
@@ -112,7 +112,7 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonenbaum"));
 
         // Erst jetzt gilt Esc dem Dialog.
-        cut.Find(".epos-dialog.epos-gebimport").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        cut.Find(".epos-dialog.epos-gebimport").TasteAbgewartet(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
         cut.WaitForAssertion(() => Assert.Single(zu));
         Assert.Null(zu[0]);
     }
@@ -124,10 +124,10 @@ public partial class GebaeudeImportZonenDialogTests
         var p = new Zonenbaumprobe();
         var zu = new List<GebaeudeImportErgebnis?>();
         IRenderedComponent<GebaeudeImportDialog> cut = ZonenbaumMitKatalog(p, zu);
-        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").Click();
+        cut.Find(".epos-gebimport-nutzungsprofile-oeffnen").KlickAbgewartet();
         int anfragen = p.Anfragen.Count;
 
-        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").Click();
+        cut.Find(".epos-gebimport-nutzungsblatt .epos-ueberlagerung-zu").KlickAbgewartet();
 
         Assert.False(cut.Instance.NutzungsprofileOffen);
         Assert.Equal(anfragen + 1, p.Anfragen.Count);
