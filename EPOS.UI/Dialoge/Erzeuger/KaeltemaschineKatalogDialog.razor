@@ -43,6 +43,11 @@
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
     }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
     @if (_katalog.Count == 0)
     {
         <p class="epos-leisezeile epos-kaeltemaschine-leer">@Texte.LeerKatalog</p>
@@ -542,6 +547,9 @@
     // Aufbau
     // =====================================================================
 
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
     protected override void OnInitialized()
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
@@ -552,16 +560,9 @@
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
 
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
-        // KT-2: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - der Banner nennt die Meldung
-        // (Hausblatt „benannt ablehnen, nie still übergehen“; der Fang sitzt am Rand, nicht in der Hülle).
-        try
-        {
-            ListeLaden();
-        }
-        catch (Exception ex)
-        {
-            _meldung = string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, Texte.Titel, ex.Message);
-        }
+        // KT-2/KT-3: Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - Katalogladung fängt
+        // am Rand, der eigene Banner nennt den Grund, das Ausnahmeprotokoll trägt den Vermerk.
+        ListeLaden();
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_KATALOG, () => KiSicht(), KiHaken());
     }
@@ -630,7 +631,7 @@
     /// <summary>Lädt die Liste; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
     private void ListeLaden(string? wunsch = null)
     {
-        _katalog = Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _katalog = Katalogladung.Lesen(Katalogzeilen, Texte.Titel, out _listeFehler);
 
         _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
         if (_auswahl.Vergleich) VergleichBauen();
