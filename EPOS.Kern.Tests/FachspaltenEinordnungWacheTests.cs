@@ -31,7 +31,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die eingeordneten Fachspalten: KWKG (Schritte 22/61/105), Quellangaben,
-        /// Steuer und Aufteilung, Kältemaschine (KU3), Sondenfeld (Schritt 195).
+        /// Steuer und Aufteilung, Kältemaschine (KU3), Sondenfeld (Schritt 195), Kältefolge (Schritt 212).
         /// </summary>
         private static readonly string[] FACHSPALTEN =
         {
@@ -42,7 +42,9 @@ namespace EPOS.Kern.Tests
             "Energiesteuer_Wahl", "Aufteilung_Methode", "Hilfsenergie_Anteil",
             "ID_Kaeltemaschine", "Kaeltemaschine_Anzahl",
             "WQ_Sondenabstand", "WQ_Bohrlochdurchmesser", "WQ_Bohrlochwiderstand",
-            "WQ_Kopfueberdeckung", "WQ_Betrachtungsjahr", "WQ_Sondenanordnung"
+            "WQ_Kopfueberdeckung", "WQ_Betrachtungsjahr", "WQ_Sondenanordnung",
+            // KB-D (Schritt 212): der Rang in der Kaeltefolge - die Zeile traegt ihn durch Assistent und Kopie.
+            "Kaelte_Rang"
         };
 
         /// <summary>

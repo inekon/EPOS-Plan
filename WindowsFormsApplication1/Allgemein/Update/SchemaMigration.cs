@@ -5390,6 +5390,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTE_KATALOGFELDER = KaelteKatalogfelderSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KaelteRangSchema.SCHRITT"/> — <b>pflegbare Kältefolge</b> (KB-D, Entscheid E117 F1): der Rang
+        /// eines Kälteerzeugers an seiner Anlagenzeile (<c>Tab_Energieanlagen.Kaelte_Rang</c>, ≥ 1; NULL = Vorgabefolge).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Zeile steht danach auf NULL, und NULL ist die Vorgabefolge.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTE_RANG = KaelteRangSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -7880,6 +7888,12 @@ namespace WindowsFormsApplication1
                         "Eine Kaeltemaschine koennte keine Geraeteart, kein GWP, keine Fuellmenge und keine saisonale Kennzahl " +
                         "tragen. KEIN Rechenergebnis aendert sich - kein Rechenweg liest die Spalten.",
                         Schritt_KaelteKatalogfelder),
+            // KB-D: pflegbare Kaeltefolge. Quelle ist KaelteRangSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTE_RANG,
+                        "Tab_Energieanlagen: Kaelte_Rang (Rang des Kaelteerzeugers, leer = Vorgabefolge)",
+                        "Die Folge der Kaelteerzeuger liesse sich nicht pflegen. KEIN Rechenergebnis aendert sich - " +
+                        "jede Zeile steht auf NULL, und NULL ist die Vorgabefolge.",
+                        Schritt_KaelteRang),
         };
 
         /// <summary>
@@ -15215,6 +15229,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Teillast und Takten der Kaeltemaschine - " +
                     (e.Angelegt == 0 ? "stand bereits." : e.Angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Pflegbare Kältefolge" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTE_RANG"/>,
+        /// die Anweisungen bei <see cref="KaelteRangSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaelteRang(Lauf l)
+        {
+            string nr = KaelteRangSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaelteRangSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaelteRangSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaelteRangSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Kaelte_Rang steht nach dem Schritt nicht an Tab_Energieanlagen.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Pflegbare Kaeltefolge - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
