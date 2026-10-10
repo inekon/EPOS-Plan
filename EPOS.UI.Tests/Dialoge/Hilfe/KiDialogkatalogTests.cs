@@ -321,6 +321,17 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.IMPORT_KONFLIKTE,
           typeof(EPOS.UI.Dialoge.Import.ImportKonflikteKiSicht) },
 
+        // Freigabe der Masken, Teil C (10.10.2026): Uebernahme, Transfer, Brennstoffe und
+        // Dubletten - vier Sichtklassen ueber private Felder.
+        { KiMaskennamen.VORLAGEN_UEBERNAHME,
+          typeof(EPOS.UI.Dialoge.Kosten.VorlagenUebernahmeKiSicht) },
+        { KiMaskennamen.PROJEKT_TRANSFER,
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektTransferKiSicht) },
+        { KiMaskennamen.PROJEKT_BRENNSTOFFE,
+          typeof(EPOS.UI.Dialoge.Kosten.ProjektBrennstoffeKiSicht) },
+        { KiMaskennamen.KATALOG_DUBLETTEN,
+          typeof(EPOS.UI.Dialoge.Admin.KatalogDublettenKiSicht) },
+
         // Welle KI-F6, Schritt 2 (BERICHTE und PROJEKT): zwei Reiterblaetter der
         // Ansicht „Berichte und Kosten" und die zwei Projektmasken.
         { KiMaskennamen.BERICHTE_UEBERSICHT,
@@ -489,7 +500,7 @@ public class KiDialogkatalogTests : IDisposable
         // der Luftaustausch zwischen den Zonen. Stufe G7a, Welle W3: der Gebaeudeexport.
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
-        Assert.Equal(97, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4
+        Assert.Equal(101, katalog.Anzahl);                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1672,6 +1683,19 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.IMPORT_KONFLIKTE] =
             "bindet über die Sichtklasse ImportKonflikteKiSicht auf die öffentlichen FELDER der " +
             "Zeilen (keine Eigenschaften); Zeuge ist KiImportoptionenTests",
+        [KiMaskennamen.VORLAGEN_UEBERNAHME] =
+            "bindet über die Sichtklasse VorlagenUebernahmeKiSicht auf sechs private Felder; " +
+            "Zeuge ist KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.PROJEKT_TRANSFER] =
+            "bindet über die Sichtklasse ProjektTransferKiSicht auf drei private Felder des " +
+            "Importblatts; Zeuge ist KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.PROJEKT_BRENNSTOFFE] =
+            "bindet über die Sichtklasse ProjektBrennstoffeKiSicht auf die Katalogwahl und den " +
+            "Arbeitsstand der Bearbeitung (zehn Zahlenfelder in einer Schleife); Zeuge ist " +
+            "KiUebernahmeWerkzeugTests",
+        [KiMaskennamen.KATALOG_DUBLETTEN] =
+            "bindet über die Sichtklasse KatalogDublettenKiSicht auf die private Katalogwahl; " +
+            "Zeuge ist KiUebernahmeWerkzeugTests",
         [KiMaskennamen.STROMSPEICHER_AUSLEGUNG] =
             "bindet über die Sichtklasse StromspeicherKiSicht, nicht über das Markup",
         [KiMaskennamen.SIMULATION] =

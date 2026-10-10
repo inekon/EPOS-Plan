@@ -55844,6 +55844,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog, den „Prüfen“ nach Dubletten durchsucht, oder alle Kataloge. Prüfen, Bereinigen, Löschen und Umbenennen bleiben Handlungen des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_DLG_DUBL_KATALOG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_DUBL_KATALOG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_DUBL_KATALOG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_DUBL_KATALOG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
         /// </summary>
         public static string KI_DLG_EINHEIT_JAHRE {
@@ -59606,6 +59624,78 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitions- oder Betriebskosten der Vorlage; ein Wechsel zieht die Variantenliste nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_KATEGORIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_KATEGORIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_KATEGORIE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_KATEGORIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage des Quellprojekts, deren Positionen übernommen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Positionen kommen: aus einer Vorlage/Variante des Katalogs oder aus einer Anlage eines anderen Projekts. Führt der Katalog keine Vorlage, steht nur das Projekt zur Wahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, aus dessen Anlage die Positionen kommen; ein Wechsel zieht die Anlagenliste nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_QUELLPROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_QUELLPROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Variante der Vorlage, deren Positionen übernommen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_VARIANTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_VARIANTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, in dessen Anlage die Kostenpositionen übernommen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KUEB_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KUEB_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht. ähnelt.
         /// </summary>
         public static string KI_DLG_KV_BEMESSUNG_ERL {
@@ -59984,6 +60074,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog-Dubletten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_DUBL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_DUBL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsarten und Katalog ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_EMK {
@@ -60191,6 +60290,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ins Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KUEB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KUEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KV {
@@ -60245,6 +60353,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffe des Projekts ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PBRS {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PBRS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PEAK {
@@ -60286,6 +60403,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_PSPV {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_PSPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt exportieren / importieren ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PTR {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PTR", resourceCulture);
             }
         }
         
@@ -61199,6 +61325,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Brennstoff des Katalogs, den „Übernehmen“ in das Projekt kopiert; die Liste führt nur Brennstoffe, die das Projekt noch nicht hat. Übernehmen bleibt ein Klick des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PBRS_KATALOGWAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PBRS_KATALOGWAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wert der Zeile, die gerade bearbeitet wird; er gilt erst mit „Speichern“ der Bearbeitung, das der Anwender drückt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PBRS_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PBRS_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zieht die Schwelle im Lauf nach, sobald der Speicher eine Spitze nicht halten kann; sonst steht sie fest. ähnelt.
         /// </summary>
         public static string KI_DLG_PEAK_ADAPTIV_ERL {
@@ -61879,6 +62023,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSP_VOLUMEN_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PSP_VOLUMEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was geschieht, wenn der Name schon vergeben ist: unter neuem Namen importieren, das vorhandene Projekt überschreiben (der Import fragt vorher nach) oder abbrechen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_KONFLIKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_KONFLIKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei vorhandenem Namen ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_KONFLIKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_KONFLIKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt der Import vorher eine Sicherungskopie der Datenbank an? ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_SICHERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_SICHERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem das Paket eingespielt wird; leer übernimmt den Namen aus der Datei. Gilt nur beim Import eines einzelnen Pakets. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PTR_ZIELNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PTR_ZIELNAME_ERL", resourceCulture);
             }
         }
         
@@ -68435,6 +68615,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Prüflauf läuft gerade; danach lässt sich der Katalog wieder wählen. ähnelt.
+        /// </summary>
+        public static string KI_DUBL_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_DUBL_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_EINST_BTN_ABBRECHEN {
@@ -70391,6 +70580,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit dieser Wahl lässt sich nichts übernehmen. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_NICHT_MOEGLICH {
+            get {
+                return ResourceManager.GetString("KI_KUEB_NICHT_MOEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt und Quellanlage gelten nur für die Quelle „Aus Projekt/Anlage“. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_NUR_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_KUEB_NUR_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kategorie und Variante gelten nur für die Quelle „Aus Vorlage/Variante“. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_NUR_VORLAGE {
+            get {
+                return ResourceManager.GetString("KI_KUEB_NUR_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zielprojekt steht fest; diese Übernahme geht in das geöffnete Projekt. ähnelt.
+        /// </summary>
+        public static string KI_KUEB_ZIEL_FEST {
+            get {
+                return ResourceManager.GetString("KI_KUEB_ZIEL_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbruch angefordert – der Lauf hält an der nächsten Phasengrenze. ähnelt.
         /// </summary>
         public static string KI_LAUF_ABBRUCH {
@@ -70490,6 +70715,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske schreibt gerade; danach lassen sich die Felder wieder setzen. ähnelt.
+        /// </summary>
+        public static string KI_PBRS_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_PBRS_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte eines Brennstoffs lassen sich erst setzen, wenn der Anwender seine Zeile mit „Bearbeiten…“ geöffnet hat. ähnelt.
+        /// </summary>
+        public static string KI_PBRS_NICHT_IN_BEARBEITUNG {
+            get {
+                return ResourceManager.GetString("KI_PBRS_NICHT_IN_BEARBEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hier lässt sich kein Brennstoff aus dem Katalog übernehmen. ähnelt.
+        /// </summary>
+        public static string KI_PBRS_OHNE_UEBERNAHME {
+            get {
+                return ResourceManager.GetString("KI_PBRS_OHNE_UEBERNAHME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender. ähnelt.
         /// </summary>
         public static string KI_PEAK_KEINE_DATEI {
@@ -70504,6 +70756,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_PEAK_KEINE_GANGLINIE {
             get {
                 return ResourceManager.GetString("KI_PEAK_KEINE_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf diesem Gerät legt der Import keine Sicherungskopie an. ähnelt.
+        /// </summary>
+        public static string KI_PTR_KEINE_SICHERUNG {
+            get {
+                return ResourceManager.GetString("KI_PTR_KEINE_SICHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Export oder Import läuft gerade; danach lassen sich die Felder wieder setzen. ähnelt.
+        /// </summary>
+        public static string KI_PTR_LAEUFT {
+            get {
+                return ResourceManager.GetString("KI_PTR_LAEUFT", resourceCulture);
             }
         }
         

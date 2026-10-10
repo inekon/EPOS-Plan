@@ -599,6 +599,13 @@ namespace WindowsFormsApplication1
                 // Die KONFLIKTLISTE geht nur im Lauf eines Herstellerimports auf; kontextfrei gibt
                 // es sie nicht - ihr Ziel ist die Startseite wie bei den Ueberlagerungen des Gebaeudes.
                 { KiMaskennamen.IMPORT_KONFLIKTE, STARTSEITE },
+                // Freigabe der Masken, Teil C: Die UEBERNAHME geht als Ueberlagerung der
+                // Kostenverwaltung einer Anlage auf; Projekttransfer, Brennstoffe des Projekts und
+                // Dublettenwerkzeug sind Menuepunkte mit eigenem Seitenschluessel der AppWurzel.
+                { KiMaskennamen.VORLAGEN_UEBERNAHME, KOSTENVERWALTUNG },
+                { KiMaskennamen.PROJEKT_TRANSFER, "PROJEKT_TRANSFER" },
+                { KiMaskennamen.PROJEKT_BRENNSTOFFE, "PROJEKT_BRENNSTOFFE" },
+                { KiMaskennamen.KATALOG_DUBLETTEN, "KATALOG_DUBLETTEN" },
 
                 // ---- Welle KI-F6: BERICHTE und PROJEKT -----------------------
                 //

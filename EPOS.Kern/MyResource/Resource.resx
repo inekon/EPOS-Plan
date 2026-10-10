@@ -51007,5 +51007,95 @@ Chart</value>
   <data name="KI_IKF_AKTION_NICHT_ERLAUBT" xml:space="preserve">
     <value>Für diesen Eintrag ist die Aktion nicht erlaubt; zur Wahl stehen: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_KUEB" xml:space="preserve">
+    <value>Übernahme ins Projekt</value>
+  </data>
+  <data name="KI_DLG_KUEB_ZIEL_ERL" xml:space="preserve">
+    <value>Das Projekt, in dessen Anlage die Kostenpositionen übernommen werden.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLE_NAME" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Positionen kommen: aus einer Vorlage/Variante des Katalogs oder aus einer Anlage eines anderen Projekts. Führt der Katalog keine Vorlage, steht nur das Projekt zur Wahl.</value>
+  </data>
+  <data name="KI_DLG_KUEB_KATEGORIE_NAME" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="KI_DLG_KUEB_KATEGORIE_ERL" xml:space="preserve">
+    <value>Investitions- oder Betriebskosten der Vorlage; ein Wechsel zieht die Variantenliste nach.</value>
+  </data>
+  <data name="KI_DLG_KUEB_VARIANTE_ERL" xml:space="preserve">
+    <value>Die Variante der Vorlage, deren Positionen übernommen werden.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLPROJEKT_ERL" xml:space="preserve">
+    <value>Das Projekt, aus dessen Anlage die Positionen kommen; ein Wechsel zieht die Anlagenliste nach.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLANLAGE_ERL" xml:space="preserve">
+    <value>Die Anlage des Quellprojekts, deren Positionen übernommen werden.</value>
+  </data>
+  <data name="KI_KUEB_ZIEL_FEST" xml:space="preserve">
+    <value>Das Zielprojekt steht fest; diese Übernahme geht in das geöffnete Projekt.</value>
+  </data>
+  <data name="KI_KUEB_NUR_VORLAGE" xml:space="preserve">
+    <value>Kategorie und Variante gelten nur für die Quelle „Aus Vorlage/Variante“.</value>
+  </data>
+  <data name="KI_KUEB_NUR_PROJEKT" xml:space="preserve">
+    <value>Quellprojekt und Quellanlage gelten nur für die Quelle „Aus Projekt/Anlage“.</value>
+  </data>
+  <data name="KI_KUEB_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Mit dieser Wahl lässt sich nichts übernehmen.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PTR" xml:space="preserve">
+    <value>Projekt exportieren / importieren</value>
+  </data>
+  <data name="KI_DLG_PTR_ZIELNAME_ERL" xml:space="preserve">
+    <value>Der Name, unter dem das Paket eingespielt wird; leer übernimmt den Namen aus der Datei. Gilt nur beim Import eines einzelnen Pakets.</value>
+  </data>
+  <data name="KI_DLG_PTR_KONFLIKT_NAME" xml:space="preserve">
+    <value>Bei vorhandenem Namen</value>
+  </data>
+  <data name="KI_DLG_PTR_KONFLIKT_ERL" xml:space="preserve">
+    <value>Was geschieht, wenn der Name schon vergeben ist: unter neuem Namen importieren, das vorhandene Projekt überschreiben (der Import fragt vorher nach) oder abbrechen.</value>
+  </data>
+  <data name="KI_DLG_PTR_SICHERUNG_ERL" xml:space="preserve">
+    <value>Legt der Import vorher eine Sicherungskopie der Datenbank an?</value>
+  </data>
+  <data name="KI_PTR_LAEUFT" xml:space="preserve">
+    <value>Ein Export oder Import läuft gerade; danach lassen sich die Felder wieder setzen.</value>
+  </data>
+  <data name="KI_PTR_KEINE_SICHERUNG" xml:space="preserve">
+    <value>Auf diesem Gerät legt der Import keine Sicherungskopie an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PBRS" xml:space="preserve">
+    <value>Brennstoffe des Projekts</value>
+  </data>
+  <data name="KI_DLG_PBRS_KATALOGWAHL_ERL" xml:space="preserve">
+    <value>Der Brennstoff des Katalogs, den „Übernehmen“ in das Projekt kopiert; die Liste führt nur Brennstoffe, die das Projekt noch nicht hat. Übernehmen bleibt ein Klick des Anwenders.</value>
+  </data>
+  <data name="KI_DLG_PBRS_WERT_ERL" xml:space="preserve">
+    <value>Ein Wert der Zeile, die gerade bearbeitet wird; er gilt erst mit „Speichern“ der Bearbeitung, das der Anwender drückt.</value>
+  </data>
+  <data name="KI_PBRS_LAEUFT" xml:space="preserve">
+    <value>Die Maske schreibt gerade; danach lassen sich die Felder wieder setzen.</value>
+  </data>
+  <data name="KI_PBRS_NICHT_IN_BEARBEITUNG" xml:space="preserve">
+    <value>Die Werte eines Brennstoffs lassen sich erst setzen, wenn der Anwender seine Zeile mit „Bearbeiten…“ geöffnet hat.</value>
+  </data>
+  <data name="KI_PBRS_OHNE_UEBERNAHME" xml:space="preserve">
+    <value>Hier lässt sich kein Brennstoff aus dem Katalog übernehmen.</value>
+  </data>
+  <data name="KI_DLG_MASKE_DUBL" xml:space="preserve">
+    <value>Katalog-Dubletten</value>
+  </data>
+  <data name="KI_DLG_DUBL_KATALOG_NAME" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="KI_DLG_DUBL_KATALOG_ERL" xml:space="preserve">
+    <value>Der Katalog, den „Prüfen“ nach Dubletten durchsucht, oder alle Kataloge. Prüfen, Bereinigen, Löschen und Umbenennen bleiben Handlungen des Anwenders.</value>
+  </data>
+  <data name="KI_DUBL_LAEUFT" xml:space="preserve">
+    <value>Ein Prüflauf läuft gerade; danach lässt sich der Katalog wieder wählen.</value>
+  </data>
 </root>
 

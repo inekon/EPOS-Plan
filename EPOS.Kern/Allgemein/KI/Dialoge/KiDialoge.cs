@@ -574,6 +574,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Konfliktliste des Herstellerimports (<c>ImportKonflikteDialog</c>).</summary>
         public const string IMPORT_KONFLIKTE = "Form_ImportKonflikte";
 
+        /// <summary>Die Übernahme von Kostenpositionen ins Projekt (<c>VorlagenUebernahmeDialog</c>).</summary>
+        public const string VORLAGEN_UEBERNAHME = "Form_VorlagenUebernahme";
+
+        /// <summary>Export und Import von Projektpaketen (<c>ProjektTransferDialog</c>).</summary>
+        public const string PROJEKT_TRANSFER = "Form_ProjektExportImport";
+
+        /// <summary>Die Brennstoffe des Projekts (<c>ProjektBrennstoffeDialog</c>).</summary>
+        public const string PROJEKT_BRENNSTOFFE = "Form_ProjektBrennstoffe";
+
+        /// <summary>Das Dublettenwerkzeug der Kataloge (<c>KatalogDublettenDialog</c>).</summary>
+        public const string KATALOG_DUBLETTEN = "Form_KatalogDubletten";
+
         /// <summary>
         /// Stammdatenverwaltung der Stromganglinien (<c>StromganglinieAdminDialog</c>).
         /// </summary>
@@ -882,6 +894,10 @@ namespace WindowsFormsApplication1
                 GanglinieImportOptionen(),
                 SpotpreisImport(),
                 ImportKonflikte(),
+                VorlagenUebernahme(),
+                ProjektTransfer(),
+                ProjektBrennstoffe(),
+                KatalogDubletten(),
                 StromganglinieAdmin(),
                 BerichteUebersicht(),
                 Berichtseite(),
@@ -1877,6 +1893,132 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("name", zeile + "Name", KiDialogTexte.IkfNameName,
                                      KiParameterTyp.Text, KiDialogTexte.IkfNameErl,
                                      leerErlaubt: true, zeilenkennzeichen: NUMMER)
+                });
+        }
+
+        // =====================================================================
+        // Uebernahme, Transfer, Brennstoffe, Dubletten  (Freigabe der Masken, Teil C, 10.10.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Uebernahme von Kostenpositionen ins Projekt — sechs Wahlfelder ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Kosten.VorlagenUebernahmeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Jede Wahl geht den Handweg (Anlagen und Varianten nachziehen, Vorschau neu); die Pruefung
+        /// meldet, was die Vorschau gegen eine Uebernahme sagt. <b>Kein Speicherweg:</b> „OK" legt die
+        /// Positionen sofort an und bleibt ein Klick des Anwenders. Kategorie und Variante sperrt der
+        /// Sperrgrund bei der Quelle „Projekt", Quellprojekt und -anlage bei der Quelle „Vorlage".
+        /// </remarks>
+        private static KiDialog VorlagenUebernahme()
+        {
+            const string SICHT = "VorlagenUebernahmeKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.VORLAGEN_UEBERNAHME,
+                anzeigename: KiDialogTexte.MaskeVorlagenUebernahme,
+                felder: new[]
+                {
+                    new KiDialogFeld("zielprojekt", SICHT + "Zielprojekt", KiDialogTexte.KuebZielName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebZielErl),
+                    new KiDialogFeld("quelle", SICHT + "Quelle", KiDialogTexte.KuebQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebQuelleErl),
+                    new KiDialogFeld("kategorie", SICHT + "Kategorie", KiDialogTexte.KuebKategorieName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebKategorieErl),
+                    new KiDialogFeld("variante", SICHT + "Variante", KiDialogTexte.KuebVarianteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebVarianteErl),
+                    new KiDialogFeld("quellprojekt", SICHT + "Quellprojekt", KiDialogTexte.KuebQuellprojektName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebQuellprojektErl),
+                    new KiDialogFeld("quellanlage", SICHT + "Quellanlage", KiDialogTexte.KuebQuellanlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KuebQuellanlageErl)
+                });
+        }
+
+        /// <summary>
+        /// Das Importblatt des Projekttransfers — Zielname, Konfliktmodus und Sicherung ueber die
+        /// Sichtklasse <c>EPOS.UI.Dialoge.Projekt.ProjektTransferKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Dateiwahl (Betriebssystemdialog), die Projektliste des Exports (Mehrfachwahl von
+        /// Verweisen), „Exportieren…" und „Importieren…" bleiben beim Anwender; der Import schreibt
+        /// Projekte in die Datenbank und fragt vor dem Ueberschreiben nach. Waehrend eines Laufs
+        /// ist die Maske schreibgeschuetzt.
+        /// </remarks>
+        private static KiDialog ProjektTransfer()
+        {
+            const string SICHT = "ProjektTransferKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKT_TRANSFER,
+                anzeigename: KiDialogTexte.MaskeProjektTransfer,
+                felder: new[]
+                {
+                    new KiDialogFeld("zielname", SICHT + "Zielname", KiDialogTexte.PtrZielnameName, KiParameterTyp.Text,
+                                     KiDialogTexte.PtrZielnameErl, leerErlaubt: true),
+                    new KiDialogFeld("konflikt", SICHT + "Konflikt", KiDialogTexte.PtrKonfliktName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PtrKonfliktErl),
+                    new KiDialogFeld("sicherung", SICHT + "Sicherung", KiDialogTexte.PtrSicherungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PtrSicherungErl)
+                });
+        }
+
+        /// <summary>
+        /// Die Brennstoffe des Projekts — die Katalogwahl zum Uebernehmen und die zehn Werte der
+        /// Bearbeitung ueber die Sichtklasse <c>EPOS.UI.Dialoge.Kosten.ProjektBrennstoffeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Kein Feld schreibt sofort</b> — erst „Uebernehmen", „Zuruecksetzen" und „Speichern" der
+        /// Bearbeitung schreiben je Satz, und sie bleiben Klicks des Anwenders (kein Speicherweg).
+        /// Die zehn Werte sperrt der Sperrgrund, solange keine Zeile in Bearbeitung steht.
+        /// </remarks>
+        private static KiDialog ProjektBrennstoffe()
+        {
+            const string SICHT = "ProjektBrennstoffeKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKT_BRENNSTOFFE,
+                anzeigename: KiDialogTexte.MaskeProjektBrennstoffe,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogwahl", SICHT + "Katalogwahl", KiDialogTexte.PbrsKatalogwahlName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PbrsKatalogwahlErl),
+                    new KiDialogFeld("hi", SICHT + "Hi", KiDialogTexte.PbrsHiName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("hs", SICHT + "Hs", KiDialogTexte.PbrsHsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("co2", SICHT + "Co2", KiDialogTexte.PbrsCo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("so2", SICHT + "So2", KiDialogTexte.PbrsSo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("nox", SICHT + "Nox", KiDialogTexte.PbrsNoxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("staub", SICHT + "Staub", KiDialogTexte.PbrsStaubName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("pe_faktor", SICHT + "PeFaktor", KiDialogTexte.PbrsPeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("grundpreis", SICHT + "Grundpreis", KiDialogTexte.PbrsGrundpreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("arbeitspreis", SICHT + "Arbeitspreis", KiDialogTexte.PbrsArbeitspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true),
+                    new KiDialogFeld("leistungspreis", SICHT + "Leistungspreis", KiDialogTexte.PbrsLeistungspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PbrsWertErl, min: 0.0, leerErlaubt: true)
+                });
+        }
+
+        /// <summary>
+        /// Das Dublettenwerkzeug — die Katalogwahl ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Admin.KatalogDublettenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Suchlauf, Bereinigen, Loeschen, Umbenennen und das Protokoll bleiben beim Anwender; die
+        /// Eingriffe schreiben sofort. Waehrend eines Laufs ist die Wahl schreibgeschuetzt.
+        /// </remarks>
+        private static KiDialog KatalogDubletten()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KATALOG_DUBLETTEN,
+                anzeigename: KiDialogTexte.MaskeKatalogDubletten,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalog", "KatalogDublettenKiSicht.Katalog", KiDialogTexte.DublKatalogName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.DublKatalogErl)
                 });
         }
 

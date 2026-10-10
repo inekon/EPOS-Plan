@@ -165,8 +165,6 @@ namespace WindowsFormsApplication1
             new KiAusnahme("GebaeudeImportDialog", KiAusnahmegrund.Import,
                            "Der Gebäudeimport ordnet eine Gebäudedatei den Feldern eines neuen Gebäudes zu; was übernommen wird, entscheidet der Anwender Zeile für Zeile.",
                            hilfeschluessel: GebaeudeImportProfil.HILFE_ZUORDNUNG),
-            new KiAusnahme("ProjektTransferDialog", KiAusnahmegrund.Export,
-                           "Der Projekttransfer schreibt und liest Projektpakete als Datei."),
 
             // ---- Aktionen, Rückfragen, Werkzeuge -------------------------------------
             new KiAusnahme("ProjektWahlDialog", KiAusnahmegrund.Aktion,
@@ -174,22 +172,12 @@ namespace WindowsFormsApplication1
             new KiAusnahme("BkUebernahmeDialog", KiAusnahmegrund.Aktion,
                            "Die Übernahme in die Kostenaufstellung ist eine Aktion, keine Einstellung.",
                            hilfeschluessel: "Form_BkUebernahme.btn_Help"),
-            new KiAusnahme("VorlagenUebernahmeDialog", KiAusnahmegrund.Aktion,
-                           "Die Vorlagenübernahme legt Kostenpositionen an; ihre Wahl ist eine Aktion.",
-                           hilfeschluessel: "Form_VorlagenUebernahme.btn_Help"),
             new KiAusnahme("WaermepumpenKatalogDialog", KiAusnahmegrund.Aktion,
                            "Die Katalogauswahl übernimmt ein Gerät; ihr Schalter filtert nur die Liste.",
                            hilfeschluessel: "Form_WPFilterAuswahl.btn_Help"),
             new KiAusnahme("WertAbfrage", KiAusnahmegrund.Rueckfrage,
                            "Die Zahlabfrage ist eine Rückfrage ihres Wirts; die Simulationsansicht führt " +
                            "Priorität und Quelltemperatur als eigene Felder."),
-            new KiAusnahme("KatalogDublettenDialog", KiAusnahmegrund.Werkzeug,
-                           "Das Dublettenwerkzeug führt Katalogsätze zusammen; der Eingriff bleibt beim Anwender.",
-                           hilfeschluessel: "Form_KatalogDubletten.btn_Help"),
-            new KiAusnahme("ProjektBrennstoffeDialog", KiAusnahmegrund.Werkzeug,
-                           "Die Brennstoffe des Projekts schreiben je Satz sofort; Bearbeiten, Zurücksetzen auf den " +
-                           "Katalog und Übernehmen bleiben beim Anwender.",
-                           hilfeschluessel: "Form_ProjektBrennstoffe.btn_Help"),
 
             // ---- Überlagerung, deren Wert der Wirt führt -----------------------------
             new KiAusnahme("BetriebsmodusDialog", KiAusnahmegrund.FeldDesWirts,

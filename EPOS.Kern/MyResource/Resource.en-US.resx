@@ -51000,5 +51000,95 @@ chart</value>
   <data name="KI_IKF_AKTION_NICHT_ERLAUBT" xml:space="preserve">
     <value>This action is not allowed for this entry; available are: {0}.</value>
   </data>
+  <data name="KI_DLG_MASKE_KUEB" xml:space="preserve">
+    <value>Transfer to project</value>
+  </data>
+  <data name="KI_DLG_KUEB_ZIEL_ERL" xml:space="preserve">
+    <value>The project whose plant receives the cost items.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLE_NAME" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLE_ERL" xml:space="preserve">
+    <value>Where the items come from: a template/variant of the catalogue or a plant of another project. If the catalogue has no template, only the project can be chosen.</value>
+  </data>
+  <data name="KI_DLG_KUEB_KATEGORIE_NAME" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="KI_DLG_KUEB_KATEGORIE_ERL" xml:space="preserve">
+    <value>Investment or operating costs of the template; a change refreshes the list of variants.</value>
+  </data>
+  <data name="KI_DLG_KUEB_VARIANTE_ERL" xml:space="preserve">
+    <value>The template variant whose items are transferred.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLPROJEKT_ERL" xml:space="preserve">
+    <value>The project whose plant supplies the items; a change refreshes the list of plants.</value>
+  </data>
+  <data name="KI_DLG_KUEB_QUELLANLAGE_ERL" xml:space="preserve">
+    <value>The plant of the source project whose items are transferred.</value>
+  </data>
+  <data name="KI_KUEB_ZIEL_FEST" xml:space="preserve">
+    <value>The target project is fixed; this transfer goes into the open project.</value>
+  </data>
+  <data name="KI_KUEB_NUR_VORLAGE" xml:space="preserve">
+    <value>Category and variant only apply to the source “From template/variant”.</value>
+  </data>
+  <data name="KI_KUEB_NUR_PROJEKT" xml:space="preserve">
+    <value>Source project and source plant only apply to the source “From project/plant”.</value>
+  </data>
+  <data name="KI_KUEB_NICHT_MOEGLICH" xml:space="preserve">
+    <value>Nothing can be transferred with this selection.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PTR" xml:space="preserve">
+    <value>Export / import project</value>
+  </data>
+  <data name="KI_DLG_PTR_ZIELNAME_ERL" xml:space="preserve">
+    <value>The name under which the package is imported; empty takes the name from the file. Only applies when importing a single package.</value>
+  </data>
+  <data name="KI_DLG_PTR_KONFLIKT_NAME" xml:space="preserve">
+    <value>If the name exists</value>
+  </data>
+  <data name="KI_DLG_PTR_KONFLIKT_ERL" xml:space="preserve">
+    <value>What happens if the name is already taken: import under a new name, overwrite the existing project (the import asks first) or cancel.</value>
+  </data>
+  <data name="KI_DLG_PTR_SICHERUNG_ERL" xml:space="preserve">
+    <value>Does the import create a backup copy of the database first?</value>
+  </data>
+  <data name="KI_PTR_LAEUFT" xml:space="preserve">
+    <value>An export or import is running; the fields can be set again afterwards.</value>
+  </data>
+  <data name="KI_PTR_KEINE_SICHERUNG" xml:space="preserve">
+    <value>On this device the import does not create a backup copy.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PBRS" xml:space="preserve">
+    <value>Fuels of the project</value>
+  </data>
+  <data name="KI_DLG_PBRS_KATALOGWAHL_ERL" xml:space="preserve">
+    <value>The catalogue fuel that “Transfer” copies into the project; the list only shows fuels the project does not have yet. Transferring remains a click by the user.</value>
+  </data>
+  <data name="KI_DLG_PBRS_WERT_ERL" xml:space="preserve">
+    <value>A value of the row being edited; it only applies once the user presses “Save” in the editor.</value>
+  </data>
+  <data name="KI_PBRS_LAEUFT" xml:space="preserve">
+    <value>The form is writing; the fields can be set again afterwards.</value>
+  </data>
+  <data name="KI_PBRS_NICHT_IN_BEARBEITUNG" xml:space="preserve">
+    <value>The values of a fuel can only be set once the user has opened its row with “Edit…”.</value>
+  </data>
+  <data name="KI_PBRS_OHNE_UEBERNAHME" xml:space="preserve">
+    <value>No catalogue fuel can be transferred here.</value>
+  </data>
+  <data name="KI_DLG_MASKE_DUBL" xml:space="preserve">
+    <value>Catalogue duplicates</value>
+  </data>
+  <data name="KI_DLG_DUBL_KATALOG_NAME" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="KI_DLG_DUBL_KATALOG_ERL" xml:space="preserve">
+    <value>The catalogue that “Check” searches for duplicates, or all catalogues. Checking, cleaning up, deleting and renaming remain actions of the user.</value>
+  </data>
+  <data name="KI_DUBL_LAEUFT" xml:space="preserve">
+    <value>A check is running; the catalogue can be chosen again afterwards.</value>
+  </data>
 </root>
 

@@ -272,6 +272,11 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GanglinieImportOptionenDialog", 9),
         new("SpotpreisImportDialog", 2, "die Dateiwahl (Betriebssystemdialog) und das Protokoll zählen nicht; Bezeichnung und Ablage stehen im Katalog"),
         new("ImportKonflikteDialog", 2, "Name und Aktion je Zeile stehen als Spalten im Katalog"),
+        // Freigabe der Masken, Teil C (10.10.2026).
+        new("VorlagenUebernahmeDialog", 6),
+        new("ProjektTransferDialog", 3, "die Projektliste und die Variantenwahl des Exports (Mengen von Verweisen) und die Dateiwahl bleiben beim Anwender; Zielname, Konfliktmodus und Sicherung stehen im Katalog"),
+        new("ProjektBrennstoffeDialog", 2, "das Zahlenfeld steht in einer Schleife über die zehn Werte der Bearbeitung, die alle im Katalog stehen"),
+        new("KatalogDublettenDialog", 1),
         new("GebaeudeExportDialog", 5, "die Bestätigung der Meldungen ist ein Katalogfeld nur zum Lesen; die Formatwahl gbXML/IFC trifft der Anwender, sie nimmt die Bestätigung zurück; die Wahl „Originaldatei anreichern“ und die Bestätigung des Beipackzettels (fremde Datei verändert weitergeben) sind Handlungen des Anwenders, die eine Dateiwahl voraussetzen"),
         // ---- Ende Gebäudesimulation G3, Welle D2 ----
 

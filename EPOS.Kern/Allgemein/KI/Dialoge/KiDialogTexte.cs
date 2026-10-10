@@ -3124,6 +3124,50 @@
         internal static string IkfAktionName => OhneDoppelpunkt(MyResource.Resource.IMP_KONFLIKT_SPALTE_AKTION);
         internal static string IkfAktionErl => MyResource.Resource.KI_DLG_IKF_AKTION_ERL;
 
+        // ---- Uebernahme, Transfer, Brennstoffe, Dubletten (Freigabe der Masken, Teil C) ----
+        internal static string MaskeVorlagenUebernahme => MyResource.Resource.KI_DLG_MASKE_KUEB;
+        internal static string KuebZielName => OhneDoppelpunkt(MyResource.Resource.KUEB_LBL_ZIEL);
+        internal static string KuebZielErl => MyResource.Resource.KI_DLG_KUEB_ZIEL_ERL;
+        internal static string KuebQuelleName => MyResource.Resource.KI_DLG_KUEB_QUELLE_NAME;
+        internal static string KuebQuelleErl => MyResource.Resource.KI_DLG_KUEB_QUELLE_ERL;
+        internal static string KuebKategorieName => MyResource.Resource.KI_DLG_KUEB_KATEGORIE_NAME;
+        internal static string KuebKategorieErl => MyResource.Resource.KI_DLG_KUEB_KATEGORIE_ERL;
+        internal static string KuebVarianteName => OhneDoppelpunkt(MyResource.Resource.KDLG_LBL_VARIANTE);
+        internal static string KuebVarianteErl => MyResource.Resource.KI_DLG_KUEB_VARIANTE_ERL;
+        internal static string KuebQuellprojektName => OhneDoppelpunkt(MyResource.Resource.KUEB_LBL_QUELLPROJEKT);
+        internal static string KuebQuellprojektErl => MyResource.Resource.KI_DLG_KUEB_QUELLPROJEKT_ERL;
+        internal static string KuebQuellanlageName => OhneDoppelpunkt(MyResource.Resource.KUEB_LBL_QUELLANLAGE);
+        internal static string KuebQuellanlageErl => MyResource.Resource.KI_DLG_KUEB_QUELLANLAGE_ERL;
+
+        internal static string MaskeProjektTransfer => MyResource.Resource.KI_DLG_MASKE_PTR;
+        internal static string PtrZielnameName => OhneDoppelpunkt(MyResource.Resource.PTR_LBL_ZIELNAME);
+        internal static string PtrZielnameErl => MyResource.Resource.KI_DLG_PTR_ZIELNAME_ERL;
+        internal static string PtrKonfliktName => MyResource.Resource.KI_DLG_PTR_KONFLIKT_NAME;
+        internal static string PtrKonfliktErl => MyResource.Resource.KI_DLG_PTR_KONFLIKT_ERL;
+        internal static string PtrSicherungName => MyResource.Resource.PTR_CHK_SICHERUNG;
+        internal static string PtrSicherungErl => MyResource.Resource.KI_DLG_PTR_SICHERUNG_ERL;
+
+        // Die zehn Werte tragen die Spaltenkoepfe der Maske als Namen (mit Einheit) und eine
+        // gemeinsame Erlaeuterung: Sie gelten erst mit „Speichern" der Bearbeitung.
+        internal static string MaskeProjektBrennstoffe => MyResource.Resource.KI_DLG_MASKE_PBRS;
+        internal static string PbrsKatalogwahlName => MyResource.Resource.PBRS_UEBERNEHMEN_WAHL;
+        internal static string PbrsKatalogwahlErl => MyResource.Resource.KI_DLG_PBRS_KATALOGWAHL_ERL;
+        internal static string PbrsWertErl => MyResource.Resource.KI_DLG_PBRS_WERT_ERL;
+        internal static string PbrsHiName => MyResource.Resource.PBRS_SP_HI;
+        internal static string PbrsHsName => MyResource.Resource.PBRS_SP_HS;
+        internal static string PbrsCo2Name => MyResource.Resource.PBRS_SP_CO2;
+        internal static string PbrsSo2Name => MyResource.Resource.PBRS_SP_SO2;
+        internal static string PbrsNoxName => MyResource.Resource.PBRS_SP_NOX;
+        internal static string PbrsStaubName => MyResource.Resource.PBRS_SP_STAUB;
+        internal static string PbrsPeName => MyResource.Resource.PBRS_SP_PE;
+        internal static string PbrsGrundpreisName => MyResource.Resource.PBRS_SP_GRUNDPREIS;
+        internal static string PbrsArbeitspreisName => MyResource.Resource.PBRS_SP_ARBEITSPREIS;
+        internal static string PbrsLeistungspreisName => MyResource.Resource.PBRS_SP_LEISTUNGSPREIS;
+
+        internal static string MaskeKatalogDubletten => MyResource.Resource.KI_DLG_MASKE_DUBL;
+        internal static string DublKatalogName => MyResource.Resource.KI_DLG_DUBL_KATALOG_NAME;
+        internal static string DublKatalogErl => MyResource.Resource.KI_DLG_DUBL_KATALOG_ERL;
+
         // ---- Form_PeakShaving
         internal static string PeakQuelleName => MyResource.Resource.PEAK_GRP_QUELLE;
         internal static string PeakQuelleErl => MyResource.Resource.KI_DLG_PEAK_QUELLE_ERL;
