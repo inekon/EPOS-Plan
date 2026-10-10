@@ -235,7 +235,11 @@ stehen fest, allein der Körper rollt. Der Inhalt steht zu jedem Zeitpunkt an ge
 Satzfläche wieder, wie sie vorher war (auf oder zu). Der Baustein `Zweispaltenauswahl` trägt die Überlagerung für alle
 Wirte. Gemessen am Heizkessel (Rollbereichprobe, zehn Fenster): Körper 633 px in 1 280 × 800, 579 px in 1 280 × 720,
 559 px in 1 024 × 700, 649 px in 1 194 × 834 und 1 009 px in 834 × 1 194, Fußleiste in jedem Fenster sichtbar und über
-der Home-Anzeige.
+der Home-Anzeige. Angeschlossen sind Heizkessel, BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe und
+Photovoltaik; bei der Wärmepumpe trägt der Körper unter Kenndaten und Kennlinien die Felder des Satzes („Alle Daten“),
+„Anlage…“ bleibt dort der Weg für die Anlage. Die Detailzeile nennt immer die gewählte Projektzeile — ohne Bezeichner
+ihren Typ —, nie „Kein Satz gewählt“, solange eine Zeile gewählt ist. Die vier Ganglinien-Dialoge sind reine Ansicht
+(Parameter `SatzNurAnsicht`, von selbst ohne Rückruf für OK): Ihre Fußleiste trägt nur „Schließen“, ohne Schlosshinweis.
 
 ### 4.5 Mehrfachauswahl
 
@@ -275,7 +279,12 @@ Eingaben bleiben stehen. **Abbrechen**, ✕ und Esc lesen den Satz neu und verwe
 Ein gesperrter Katalogsatz öffnet nur lesend: Die Fußleiste trägt allein „Schließen“ und den Hinweis „Erst Schloss
 aufheben“. Mehrere gewählte Sätze öffnen weiter die Satzbearbeitung mit Blätterleiste, ein einzelner ungesperrter
 Katalogsatz weiter den vollen Katalogeditor (KA‑E‑13). Gebaut ist es am Heizkessel; die übrigen Wirte schließen nur
-ihre Knöpfe und die zwei Rückrufe an.
+ihre Knöpfe und die zwei Rückrufe an. Felder, die schon bei der Eingabe in die Arbeitskopie der Anlage gehen, merkt der Wirt beim Öffnen; Abbrechen
+schreibt sie zurück (`Anlagenmerker` bei Heizkessel und BHKW: Träger, Vorlauf, Rücklauf samt Herleitung, Grenzleistung;
+`PvAnlagenmerker` bei der Photovoltaik: Träger, Neigung, Azimut, Modulanzahl, Ertragsmodell mit Albedo). Die
+Solarkollektoren halten ihre Anlagenfelder (Anzahl, Neigung, Azimut, Albedo, Solarkreis) in einem Arbeitsstand, den
+OK wie „Übernehmen“ in die Anlage gibt und Abbrechen auf den Stand beim Öffnen zurücksetzt; die Wärmepumpe merkt ihre
+Projektzeile und stellt sie bei Abbrechen wieder her, wenn in der Überlagerung „Anlage…“ mit OK bestätigt wurde.
 
 ### 4.7 Tastatur
 
@@ -405,6 +414,12 @@ Detailzeile auf (Kurve Breite × Höhe, Überhang des rollenden Dialogkörpers):
 
 Die Kurve ist in allen sechs Fenstern so breit wie die Satzfläche (1 024 × 700: 982 px, 1 093 × 614: 1 051 px, je
 154 px hoch, der Dialogkörper rollt dort nach KB1).
+
+In der Satz-Überlagerung (4.4, „Vergrößern“) füllt die Kurve den Körper: volle Breite, übrige Höhe; dieselben Regeln
+des Stilblatts gelten am Körper `.epos-satzueberlagerung-koerper`, und `DiagrammSvg` meldet auch dort das Maß, in dem
+das Modell gebaut wird — gemessen (Rollbereichprobe, Kurve Breite × Höhe): 1 226 × 581 px in 1 280 × 800 bei Wärmebedarf extern und
+Stromganglinie, 1 226 × 548 px bei Solarthermie- und PV-Ganglinie, dort 1 148 × 576 px in 1 194 × 834 und 1 047 × 400 px in
+1 093 × 614. Die Fußleiste trägt dort nur „Schließen“..
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 
