@@ -44,6 +44,11 @@
         public const string PvGanglinieAdmin = "Form_PvGanglinie_Admin";
         /// <summary>Herstellerdaten Wärmepumpen einlesen.</summary>
         public const string WpImport = "Form_WP_einlesen";
+        /// <summary>
+        /// Herstellerdaten für Kälteanlagen einlesen: nur Wärmepumpen mit Kühlfunktion aus VDI 3805
+        /// Blatt 22 (Entscheid E119) — dieselbe Komponente wie <see cref="WpImport"/> im Kältemodus.
+        /// </summary>
+        public const string WpKaelteImport = "Form_WP_Kaelte_einlesen";
         /// <summary>Stammdaten Heizkessel.</summary>
         public const string HeizkesselAdmin = "Form_Heizkessel_Admin";
         /// <summary>Stammdaten BHKW.</summary>
