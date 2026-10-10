@@ -1305,3 +1305,29 @@ rot mit 103 Verstößen** (Rückgabe 0).
 | 1 280, Rahmen 760 | 370 / 370 / 758 px | unter, unter, neben | 2,00 Zeilen | 45 |
 | 480 voll | 478 / 478 / 478 px | unter | 1,27 Zeilen | 13 |
 | 360 voll | 358 / 358 / 358 px | unter | 2,00 Zeilen | 15 |
+
+## Diagrammprobe (Zeigerbalken im Zoom, Auftrag GX) — Seite `/diagrammsvg`
+
+**Wozu.** Der senkrechte Balken an der Mausstelle eines Diagramms (`DiagrammSvg`) soll der Maus im selben Bild
+folgen, auch bei ×12. Er gehört dem Modul `epos-diagramm.js`: gesetzt unmittelbar im `pointermove`, die Zeile
+darunter aus der Zeigertafel, die der Baustein einmal je Zeichnen mitgibt — kein Rundlauf nach .NET je Bewegung.
+Die Stelle rechnet das Modul gegen den **Viewport** der Datenfläche (Bildschirmmatrix des äußeren svg), nicht gegen
+`getBoundingClientRect()` des inneren svg — das meldet im Zoom die Hülle der Pfade, ein Vielfaches zu breit.
+bunit hat weder Layout noch JavaScript; die Probe misst es im Chromium.
+
+```bash
+node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--ohne-gegenprobe]
+```
+
+**Ablauf und Sollwerte.** Seite laden, per Rad auf ×12 zoomen, warten, bis die Zeile dem Modul gehört
+(`.epos-diagramm-zeigerzeile--modul`), dann die Maus in 40 Schritten über die Datenfläche führen. Je Schritt,
+unmittelbar nach der Bewegung: Balken sichtbar und **|Balkenmitte − Maus x| ≤ 1 px**; nach dem nächsten Bildaufbau
+nennt die Zeile **Stunde und Datum**. Über die ganze Bewegung: die Pfade der Reihen sind **dieselben Elemente** mit
+unverändertem `d`, **0 Mutationen** (MutationObserver auf der Datenfläche).
+
+**Gegenprobe** (läuft mit): Die Probe liefert das Modul so aus, dass es die Tafel ablehnt — dann zeichnet der Baustein
+Linie und Zeile nach einem Rundlauf selbst, und die Linie steht nicht im Bild der Maus. Sie muss verfehlen.
+
+**Ergebnis vom 10.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): Stufe ×12, 41 Schritte,
+größter Abstand **0,50 px**, Zeile mit Datum **41/41**, 3 Pfade, **0 Mutationen** — Rückgabe 0. Gegenprobe:
+13 von 41 Schritten über 1 px (verfehlt, richtig).

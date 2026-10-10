@@ -2058,6 +2058,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     pointer-events: none;
 }
 
+/* Der Zeigerbalken des Moduls (Auftrag GX): ein HTML-Element ueber der Datenflaeche,
+   das epos-diagramm.js im pointermove setzt (left, top, height) - ohne Rundlauf nach
+   .NET und ohne Neuzeichnen des Bildes. 1 px breit wie die Zeigerlinie. */
+.epos-diagramm-zeigerbalken {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    border-left: 1px solid var(--epos-text);
+    pointer-events: none;
+    will-change: left;
+}
+
 /* Die Werte am Mauszeiger. Ziffern in fester Breite, damit die Zeile beim
    Wandern des Zeigers nicht springt; sie steht auch leer da und haelt so die
    Hoehe des Bildes ruhig. */

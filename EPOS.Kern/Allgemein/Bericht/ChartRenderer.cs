@@ -3163,7 +3163,7 @@ namespace WindowsFormsApplication1
                     }
                 });
             }
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, true));
 
             using (var f = Schrift(15f))
             {
@@ -4478,7 +4478,7 @@ namespace WindowsFormsApplication1
                         }
                 });
             }
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, true));
 
             using (var f = Schrift(15f))
                 z.Markiert("yachse", zy =>
@@ -4704,8 +4704,8 @@ namespace WindowsFormsApplication1
 
             z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc));
             Achsenkreuz(z, rc);
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length));
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length, !sortiert));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length, !sortiert));
             using (var f = Schrift(15f))
                 z.Markiert("yachse", zy =>
                     Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
@@ -4786,7 +4786,8 @@ namespace WindowsFormsApplication1
                                gesamtN, abN, bezug: stapelbezug);
                 // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
                 // sagt welche (nur bei dichten Reihen).
-                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n));
+                bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamtN);
+                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n, hinweisUnterDatum));
             }
 
             return z;
@@ -4988,8 +4989,8 @@ namespace WindowsFormsApplication1
 
             z.Markiert("yachse", zy => YRasterOhneKreuz(zy, rc, max));
             Achsenkreuz(z, rc);
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, n));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, n, !sortiert));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, !sortiert));
             using (var f = Schrift(15f))
                 z.Markiert("yachse", zy =>
                     Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
@@ -5095,7 +5096,8 @@ namespace WindowsFormsApplication1
                                STAPEL_DECKEND, z, fensterLinks, gesamt, abN, bezug: stapelbezug);
                 // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
                 // sagt welche (nur mit Stapel, bei dichten Reihen und ueber die volle Breite).
-                if (mitStapel && !nebeneinander) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamt, n));
+                bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamt);
+                if (mitStapel && !nebeneinander) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamt, n, hinweisUnterDatum));
             }
 
             // (3) Die Linien darueber, in Zeichenreihenfolge — ueber einem Stapel als
@@ -5383,7 +5385,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="gesamt">Die Länge der ganzen Reihe (das Tagesraster); <c>0</c> = <paramref name="n"/>.</param>
         /// <param name="n">Die gezeichneten Werte.</param>
-        private static void Stufenhinweis(IZeichenziel z, SKRect rc, int gesamt, int n)
+        /// <param name="unterDatum">Die Marken tragen eine Datumszeile (<see cref="Zeitachse"/>):
+        /// Achsentitel und Hinweis rücken um diese Zeile tiefer.</param>
+        private static void Stufenhinweis(IZeichenziel z, SKRect rc, int gesamt, int n, bool unterDatum = false)
         {
             int spalten = Bildpunktspalten(rc);
             if (n <= spalten) return;
@@ -5393,7 +5397,8 @@ namespace WindowsFormsApplication1
             if (string.IsNullOrEmpty(text)) return;
             using (var f = Schrift(13f))
                 Text(z, text, f, Farbrolle.ACHSE,
-                     rc.Left + (rc.Width - f.MeasureText(text)) / 2f, rc.Bottom + 52f);
+                     rc.Left + (rc.Width - f.MeasureText(text)) / 2f,
+                     rc.Bottom + 52f + (unterDatum ? DATUMSZEILE_VERSATZ : 0f));
         }
 
         // ------------------------------------------------------------------ B4
@@ -6220,8 +6225,8 @@ namespace WindowsFormsApplication1
                         Text(zy, yTitel, f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
 
             int n = mitY1 ? gueltig[0].Werte.Length : zweiteAchse.Werte.Length;
-            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, Achse.Jahresstunden, n));
-            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
+            if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, Achse.Jahresstunden, n, !sortiert));
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt, !sortiert));
 
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER DER LINKEN ACHSE (Etappe E3).
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
@@ -7746,8 +7751,12 @@ namespace WindowsFormsApplication1
         /// Marken (<see cref="XAchsentitel"/>); er kommt aus dem Ressourcenkatalog und
         /// wechselt damit die Sprache mit der Oberfläche.</para>
         /// </summary>
-        private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n)
+        /// <param name="datum">Die Achse zählt die ZEIT (keine Dauerlinie): Unter jeder
+        /// Stundenmarke steht dann das Datum des Gemeinjahres (<see cref="Zeitachse"/>), sofern
+        /// die Reihe ein ganzes Jahresraster ist.</param>
+        private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n, bool datum = false)
         {
+            bool mitDatum = achse == Achse.Jahresstunden && datum && Zeitachse.WerteJeStunde(n) > 0;
             var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
             {
@@ -7775,13 +7784,46 @@ namespace WindowsFormsApplication1
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = h.ToString("N0", Zahlkultur);
                         Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                        if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, Zeitachse.STUNDEN_JAHR));
                     }
                 }
             }
 
             XAchsentitel(z, rc, achse == Achse.Monate
                                 ? MyResource.Resource.CHART_ACHSE_MONAT
-                                : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+                                : mitDatum ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
+                                           : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN,
+                         mitDatum);
+        }
+
+        /// <summary>
+        /// Um so viel rücken Achsentitel und Stufenhinweis tiefer, wenn unter den
+        /// Stundenmarken eine Datumszeile steht.
+        /// </summary>
+        public const float DATUMSZEILE_VERSATZ = 18f;
+
+        /// <summary>
+        /// <b>Die Datumszeile einer Stundenmarke</b> (Auftrag GX): zweite Zeile unter der
+        /// Stundenzahl, etwas kleiner (13 pt), mittig unter der Marke. Die Stundenzahl steht
+        /// bei <c>rc.Bottom + 8</c>, die Datumszeile bei <c>rc.Bottom + 26</c>; der Titel
+        /// rückt um <see cref="DATUMSZEILE_VERSATZ"/> nach unten.
+        /// </summary>
+        private static void Datumszeile(IZeichenziel z, float x, SKRect rc, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            using (var f = Schrift(13f))
+                Text(z, text, f, Farbrolle.ACHSE, x - f.MeasureText(text) / 2f, rc.Bottom + 26f);
+        }
+
+        /// <summary>
+        /// Trägt die x-Achse eines Zeitreihenbildes eine Datumszeile? Im Ausschnitt jede
+        /// Zeitachse eines Jahresrasters, in der Vollansicht nur die Stundenachse — die
+        /// Monatsachse nennt ihre Monate schon. Die Dauerlinie (sortiert) nie.
+        /// </summary>
+        private static bool DatumUnterMarken(Achsenfenster fenster, Achse achse, bool sortiert, int gesamt)
+        {
+            if (sortiert || Zeitachse.WerteJeStunde(gesamt) == 0) return false;
+            return fenster != null || achse == Achse.Jahresstunden;
         }
 
         /// <summary>
@@ -7792,12 +7834,13 @@ namespace WindowsFormsApplication1
         /// liegt <c>rc.Bottom</c> bei 460…470 und die Bildhöhe bei 542…560 — der Titel
         /// bleibt damit innerhalb der Fläche, und kein Bildmaß ändert sich.
         /// </summary>
-        private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel)
+        private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel, bool unterDatum = false)
         {
             if (string.IsNullOrEmpty(titel)) return;
             using (var f = Schrift(15f))
                 Text(z, titel, f, Farbrolle.ACHSE,
-                     rc.Left + (rc.Width - f.MeasureText(titel)) / 2f, rc.Bottom + 30f);
+                     rc.Left + (rc.Width - f.MeasureText(titel)) / 2f,
+                     rc.Bottom + 30f + (unterDatum ? DATUMSZEILE_VERSATZ : 0f));
         }
 
         // =================================================================== Schrift
@@ -8754,12 +8797,13 @@ namespace WindowsFormsApplication1
         /// <para>Auch ein Monatsbild bekommt im Fenster Stundenmarken: Monatsgrenzen
         /// sagen im Ausschnitt nichts mehr, die Stunde schon.</para>
         /// </summary>
-        private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt)
+        private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt, bool datum = false)
         {
             double stundenJeWert = gesamt > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
             double h0 = f.Von * stundenJeWert;
             double h1 = (f.Bis - 1) * stundenJeWert;
             if (h1 - h0 < 1e-9) return;
+            bool mitDatum = datum && Zeitachse.WerteJeStunde(gesamt) > 0;
 
             var raster = Stift(Farbrolle.RASTER, 1f);
             using (var schrift = Schrift(15f))
@@ -8769,11 +8813,13 @@ namespace WindowsFormsApplication1
                     z.Linie(x, rc.Top, x, rc.Bottom, raster);
                     Text(z, lab, schrift, Farbrolle.ACHSE,
                          x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    if (mitDatum) Datumszeile(z, x, rc, Zeitachse.Markentext(h, h1 - h0));
                 }
 
             // #234: derselbe Achsentitel wie in der Vollansicht - im Fenster zaehlt die
             // Achse IMMER Jahresstunden, auch wenn das Bild sonst Monatsgrenzen traegt.
-            XAchsentitel(z, rc, MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+            XAchsentitel(z, rc, mitDatum ? MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM
+                                         : MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN, mitDatum);
         }
 
         /// <summary>
@@ -8842,6 +8888,15 @@ namespace WindowsFormsApplication1
 
             if (flaeche.X == Achsenart.Stunden)
             {
+                // EINE VIERTELSTUNDENREIHE zaehlt auf x ihre Stuetzstelle, beschriftet wird
+                // aber die JAHRESSTUNDE (Auftrag GX) - geteilt in Stunden, gesetzt in Stellen.
+                int jeStunde = Zeitachse.WerteJeStunde(flaeche);
+                if (jeStunde > 1)
+                {
+                    foreach ((double stunde, string text) in Stundenteilung(von / jeStunde, bis / jeStunde))
+                        liste.Add((stunde * jeStunde, text));
+                    return liste;
+                }
                 foreach ((int stunde, string text) in
                          Jahresstundenteilung((int)Math.Ceiling(von), (int)Math.Floor(bis)))
                     liste.Add((stunde, text));
@@ -8862,6 +8917,24 @@ namespace WindowsFormsApplication1
                 // der Streuwolke und der Schnittkurve.
                 liste.Add((wert, (wert == 0 ? 0.0 : wert).ToString(format, Zahlkultur)));
             return liste;
+        }
+
+        /// <summary>
+        /// <b>Die zweite Zeile einer Marke der Achsenteilung</b> (Auftrag GX): auf der
+        /// Stundenachse einer Jahresreihe das Datum des Gemeinjahres, bei einem Ausschnitt
+        /// unter einem Tag dazu die Uhrzeit (<see cref="Zeitachse.Markentext"/>) — dieselbe
+        /// Regel wie im Bild. Leer auf jeder anderen Achse (Index, Wert, Dauerlinie,
+        /// Reihe ohne Jahresraster).
+        /// </summary>
+        /// <param name="flaeche">Die Zeichenfläche des Modells.</param>
+        /// <param name="wert">Die Stelle der Marke auf x (aus <see cref="Achsenteilung"/>).</param>
+        /// <param name="von">Linker Rand des Ausschnitts.</param>
+        /// <param name="bis">Rechter Rand des Ausschnitts.</param>
+        public static string Datumszeile(Zeichenflaeche flaeche, double wert, double von, double bis)
+        {
+            int jeStunde = Zeitachse.WerteJeStunde(flaeche);
+            if (jeStunde == 0) return "";
+            return Zeitachse.Markentext(wert / jeStunde, (bis - von) / jeStunde);
         }
 
         /// <summary>

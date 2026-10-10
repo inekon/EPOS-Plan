@@ -1972,6 +1972,15 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="CHART_ACHSE_JAHRESSTUNDEN" xml:space="preserve">
     <value>Jahresstunden [h]</value>
   </data>
+  <data name="CHART_ACHSE_DATUM_MUSTER" xml:space="preserve">
+    <value>{0}. {1}</value>
+  </data>
+  <data name="CHART_ACHSE_JAHRESSTUNDEN_DATUM" xml:space="preserve">
+    <value>Jahresstunden [h] · Datum</value>
+  </data>
+  <data name="CHART_ACHSE_MONATSKUERZEL" xml:space="preserve">
+    <value>Jan.|Feb.|März|Apr.|Mai|Juni|Juli|Aug.|Sep.|Okt.|Nov.|Dez.</value>
+  </data>
   <data name="CHART_ACHSE_LEISTUNG" xml:space="preserve">
     <value>Leistung [kW]</value>
   </data>
