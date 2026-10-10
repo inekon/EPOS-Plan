@@ -310,9 +310,13 @@
                                 {
                                     KaelteerzeugerZeile kz = k;
                                     <div class="epos-simkonfig-kaelte-element" data-anlage="@kz.IdAnlage" @key="kz.Kachel.Schluessel">
-                                        <ErzeugerKachel Aufbau="@kz.Kachel"
+                                        <ErzeugerKachel Aufbau="@KaelteKachel(kz)"
                                                         Parameterbereich="@KaelteParameter(kz)"
                                                         AufnehmenText="@Resource.SIMKONF_KAELTE_AN"
+                                                        TipHoch="@Resource.SIMKONF_KAELTE_TIP_VOR"
+                                                        TipRunter="@Resource.SIMKONF_KAELTE_TIP_ZURUECK"
+                                                        NachOben="() => KaelteFolgeVerschieben(kz, -1)"
+                                                        NachUnten="() => KaelteFolgeVerschieben(kz, +1)"
                                                         TipBearbeiten="@Resource.SIMKONF_KAELTE_TIP_KONFIG"
                                                         TipEntfernen="@Resource.SIMKONF_KAELTE_TIP_AUS"
                                                         TipAufnehmen="@Resource.SIMKONF_KAELTE_TIP_AN"
@@ -329,7 +333,19 @@
                                 {
                                     <p class="epos-simkonfig-hinweis epos-simkonfig-kaelte-frei">@frei</p>
                                 }
-                                <Herleitungszeile Text="@KaelteFolgeText" />
+                                @* KB-D2: die Herleitungszeile sagt, welche Folge gilt (gepflegt oder Vorgabe); der Knopf
+                                   „Vorgabefolge“ steht nur mit Delegat und ist weich gesperrt, solange die Vorgabe gilt. *@
+                                <div class="epos-simkonfig-kaelte-folge">
+                                    <Herleitungszeile Text="@KaelteHerleitung" />
+                                    @if (Dienste?.KaelteVorgabefolge is not null && _daten.Kaeltebereich.Erzeuger.Count > 1)
+                                    {
+                                        <button type="button" class="epos-knopf epos-simkonfig-kaelte-vorgabe"
+                                                disabled="@_daten.Gesperrt"
+                                                aria-disabled="@(_daten.Kaeltebereich.FolgeGepflegt ? null : "true")"
+                                                title="@(_daten.Kaeltebereich.FolgeGepflegt ? Resource.SIMKONF_KAELTE_TIP_VORGABE : Resource.SIMKONF_KAELTE_VORGABE_GILT)"
+                                                @onclick="KaelteVorgabefolgeSetzen">@Resource.SIMKONF_KAELTE_BTN_VORGABE</button>
+                                    }
+                                </div>
                             </div>
 
                             <div class="epos-simkonfig-kaelte-speicher">
@@ -1414,6 +1430,76 @@
         KaelteStufe.Waermepumpe => Resource.SIMKONF_KAELTE_STUFE_WP,
         _ => Resource.SIMKONF_KAELTE_STUFE_KM
     };
+
+    /// <summary>
+    /// Die Herleitungszeile unter den Kälteerzeugern (Welle KB-D2): der Hinweis der Hülle, welche Folge gilt
+    /// (<see cref="KaeltebereichDaten.FolgeHinweis"/>); ohne ihn die Stufenzeile des Kernlesers.
+    /// </summary>
+    private string KaelteHerleitung => string.IsNullOrEmpty(_daten.Kaeltebereich.FolgeHinweis)
+        ? KaelteFolgeText
+        : _daten.Kaeltebereich.FolgeHinweis;
+
+    /// <summary>
+    /// Die Kachel eines Kälteerzeugers mit den Pfeilen der Folge (Welle KB-D2): ▲▼ nur mit Schreibweg
+    /// (<see cref="SimulationKonfigDienste.KaelteVerschieben"/>) und nur, wenn der Erzeuger überhaupt rücken kann
+    /// (mehr als ein Erzeuger); am Rand ausgegraut wie in der Wärmekaskade, damit die Kopfzeile nicht springt.
+    /// </summary>
+    private ErzeugerKachelDaten KaelteKachel(KaelteerzeugerZeile z)
+    {
+        ErzeugerKachelDaten k = z.Kachel;
+        bool pfeile = Dienste?.KaelteVerschieben is not null && (z.NachVornMoeglich || z.NachHintenMoeglich);
+        k.Reihenfolge = pfeile;
+        k.AufMoeglich = pfeile && z.NachVornMoeglich && !_daten.Gesperrt;
+        k.AbMoeglich = pfeile && z.NachHintenMoeglich && !_daten.Gesperrt;
+        return k;
+    }
+
+    /// <summary>
+    /// ▲/▼ an einer Kälteerzeugerkachel (Welle KB-D2): rückt den Erzeuger einen Platz nach vorn (<c>-1</c>) oder hinten
+    /// (<c>+1</c>) — schreibt SOFORT über den Kernweg (<c>KaeltefolgeCtrl.Verschieben</c>), danach laden Kacheln und
+    /// Schema neu. Ein Grund der Ablehnung steht im Banner.
+    /// </summary>
+    private void KaelteFolgeVerschieben(KaelteerzeugerZeile z, int richtung)
+    {
+        Func<int, int, string?>? weg = Dienste?.KaelteVerschieben;
+        if (weg is null || _daten.Gesperrt) return;
+
+        string? grund;
+        try { grund = weg(z.IdAnlage, richtung); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
+
+    /// <summary>
+    /// „Vorgabefolge“ (Welle KB-D2): stellt die Vorgabefolge der Kälteerzeuger wieder her — schreibt SOFORT über den
+    /// Kernweg (<c>KaeltefolgeCtrl.VorgabeSetzen</c>). Weich gesperrt, solange die Vorgabe gilt: dann meldet der
+    /// Versuch den Grund.
+    /// </summary>
+    private void KaelteVorgabefolgeSetzen()
+    {
+        Func<string?>? weg = Dienste?.KaelteVorgabefolge;
+        if (weg is null || _daten.Gesperrt) return;
+        if (!_daten.Kaeltebereich.FolgeGepflegt)
+        {
+            Melden(Resource.SIMKONF_KAELTE_VORGABE_GILT, WarnStufe.Hinweis);
+            return;
+        }
+
+        string? grund;
+        try { grund = weg(); }
+        catch (Exception ex) { grund = ex.Message; }
+        if (!string.IsNullOrEmpty(grund))
+        {
+            Melden(grund, WarnStufe.Warnung);
+            return;
+        }
+        KachelnNeuladen();
+    }
 
     /// <summary>Die Lesezeile der freien Kühlung; <c>null</c> = kein Erzeuger kühlt frei.</summary>
     private string? FreieKuehlungText

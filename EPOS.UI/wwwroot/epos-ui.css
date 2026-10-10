@@ -5636,6 +5636,16 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     margin: 0;
 }
 
+/* Welle KB-D2: Herleitungszeile der Kaeltefolge und Knopf „Vorgabefolge“ in einer Zeile, die im
+   schmalen Fenster und in der Kompaktstufe umbricht statt quer zu rollen. */
+.epos-simkonfig-kaelte-folge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    min-width: 0;
+}
+
 .epos-simkonfig-gruppe {
     margin: 10px 0 4px 0;
     font-size: var(--epos-schriftgroesse);

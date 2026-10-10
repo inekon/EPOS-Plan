@@ -107925,6 +107925,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabefolge ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_BTN_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_BTN_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeuger (Rechenfolge) ähnelt.
         /// </summary>
         public static string SIMKONF_KAELTE_ERZEUGER {
@@ -108092,6 +108101,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_KAELTE_TIP_KONFIG {
             get {
                 return ResourceManager.GetString("SIMKONF_KAELTE_TIP_KONFIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Kältefolge nach vorn – deckt früher; schreibt sofort ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_VOR {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_VOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stellt die Vorgabefolge wieder her (Wärmepumpen, dann Kältemaschinen); schreibt sofort. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_VORGABE {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In der Kältefolge nach hinten – deckt später; schreibt sofort ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_TIP_ZURUECK {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_TIP_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorgabefolge gilt bereits. Die Pfeile an den Kacheln pflegen die Folge der Kälteerzeuger. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KAELTE_VORGABE_GILT {
+            get {
+                return ResourceManager.GetString("SIMKONF_KAELTE_VORGABE_GILT", resourceCulture);
             }
         }
         

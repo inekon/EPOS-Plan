@@ -51679,5 +51679,20 @@ Chart</value>
   <data name="KI_DLG_SIM_KUEHL_AUS" xml:space="preserve">
     <value>Kühlbetrieb aus</value>
   </data>
+  <data name="SIMKONF_KAELTE_TIP_VOR" xml:space="preserve">
+    <value>In der Kältefolge nach vorn – deckt früher; schreibt sofort</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_ZURUECK" xml:space="preserve">
+    <value>In der Kältefolge nach hinten – deckt später; schreibt sofort</value>
+  </data>
+  <data name="SIMKONF_KAELTE_BTN_VORGABE" xml:space="preserve">
+    <value>Vorgabefolge</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_VORGABE" xml:space="preserve">
+    <value>Stellt die Vorgabefolge wieder her (Wärmepumpen, dann Kältemaschinen); schreibt sofort.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
+    <value>Die Vorgabefolge gilt bereits. Die Pfeile an den Kacheln pflegen die Folge der Kälteerzeuger.</value>
+  </data>
 </root>
 

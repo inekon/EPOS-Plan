@@ -51672,5 +51672,20 @@ chart</value>
   <data name="KI_DLG_SIM_KUEHL_AUS" xml:space="preserve">
     <value>cooling mode off</value>
   </data>
+  <data name="SIMKONF_KAELTE_TIP_VOR" xml:space="preserve">
+    <value>Move forward in the cooling sequence – covers earlier; saves immediately</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_ZURUECK" xml:space="preserve">
+    <value>Move back in the cooling sequence – covers later; saves immediately</value>
+  </data>
+  <data name="SIMKONF_KAELTE_BTN_VORGABE" xml:space="preserve">
+    <value>Default sequence</value>
+  </data>
+  <data name="SIMKONF_KAELTE_TIP_VORGABE" xml:space="preserve">
+    <value>Restores the default sequence (heat pumps, then chillers); saves immediately.</value>
+  </data>
+  <data name="SIMKONF_KAELTE_VORGABE_GILT" xml:space="preserve">
+    <value>The default sequence already applies. The arrows on the tiles maintain the sequence of the cooling generators.</value>
+  </data>
 </root>
 
