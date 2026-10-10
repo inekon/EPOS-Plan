@@ -45418,6 +45418,18 @@ chart</value>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(not specified)</value>
   </data>
+  <data name="KM_HERKUNFT_TYPKENNFELD" xml:space="preserve">
+    <value>Type map</value>
+  </data>
+  <data name="KM_HERKUNFT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Supplied</value>
+  </data>
+  <data name="KM_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>own</value>
+  </data>
+  <data name="KM_CHK_OHNE_TYPKENNFELDER" xml:space="preserve">
+    <value>Hide type maps</value>
+  </data>
   <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
     <value>Air-cooled</value>
   </data>
@@ -45669,6 +45681,15 @@ chart</value>
   </data>
   <data name="KMA_KATALOG_LEER" xml:space="preserve">
     <value>The catalogue contains no chiller. Create units under Administration › Chillers.</value>
+  </data>
+  <data name="KM_ANL_BTN_VERWALTUNG" xml:space="preserve">
+    <value>Catalogue management…</value>
+  </data>
+  <data name="KM_ANL_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>The chiller catalogue management cannot be opened here.</value>
+  </data>
+  <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>There are unsaved changes. Apply them with OK or discard them with Cancel before opening the catalogue management.</value>
   </data>
   <data name="KMA_GRUPPE_GERAET" xml:space="preserve">
     <value>Unit</value>

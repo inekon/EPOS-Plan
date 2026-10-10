@@ -98,6 +98,18 @@ namespace WindowsFormsApplication1
                 case Masken.BrauchwasserNutzungsarten:
                     return TwwNutzungsartAdminHuelle.Oeffnen(null);
 
+                // Die Verwaltung der Kaeltemaschinen (KiMaskenziele.KAELTEMASCHINE_KATALOG) oeffnet ein
+                // EIGENES Fenster wie die Waermepumpe; auf iOS bleibt sie eine freie Ansicht der Wurzel.
+                // Der Weg kommt auch aus einem Knopf einer Razor-Ansicht (Anlagendialog, "Katalogverwaltung...")
+                // - darum ueber Blazorsprung wie der Assistent: "true" heisst "behandelt", das Fenster
+                // geht nach dem Ereignis auf, und kein Rueckweg meldet sein Schliessen.
+                case Seitenschluessel.KaeltemaschineKatalog:
+                    {
+                        Form wirt = Blazorsprung.Wirtsfenster(Form.ActiveForm);
+                        Blazorsprung.Verzoegert(wirt, () => KaeltemaschineKatalogFensterHuelle.Oeffnen(wirt));
+                        return true;
+                    }
+
                 // iU9-W13.1: Die vier VDI-3805-Katalogimporte sind EINE
                 // Razor-Komponente mit vier Auspraegungen; die Huelle waehlt sie
                 // ueber KatalogImportArt. Der Rueckgabewert sagt jetzt, ob etwas
@@ -293,8 +305,6 @@ namespace WindowsFormsApplication1
                 // (KiMaskenziele.BAUSTOFF_KATALOG, …BAUTEILAUFBAU_KATALOG) die Verwaltungen.
                 case Seitenschluessel.BaustoffKatalog:
                 case Seitenschluessel.BauteilaufbauKatalog:
-                // Die Kaeltemaschinen (KU3-1): dieselbe freie Ansicht (KiMaskenziele.KAELTEMASCHINE_KATALOG).
-                case Seitenschluessel.KaeltemaschineKatalog:
                 // Die Kaeltemaschinen des Projekts (KU3-4c): dieselbe freie Ansicht (KiMaskenziele.KAELTEMASCHINE_ANLAGE).
                 case Seitenschluessel.KaeltemaschineAnlage:
                     return AnsichtZeigen(maske, "");

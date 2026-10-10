@@ -300,8 +300,8 @@ public static class Menuetabelle
                 // W16c-E-6: aus "Energiesysteme" hierher.
                 new Menuepunkt("MenuItem_BHKW", "MENU_BHKW", Seitenschluessel.BhkwAdmin, katalog: true),
                 new Menuepunkt("MenuItem_WP", "MENU_WP", Seitenschluessel.WpAdministration, katalog: true),
-                // KU3-1: die Kaeltemaschinen neben der Waermepumpe - eine freie Ansicht der
-                // Wurzel auf beiden Plattformen (Seitenschluessel.KaeltemaschineKatalog).
+                // KU3-1: die Kaeltemaschinen neben der Waermepumpe (Seitenschluessel.KaeltemaschineKatalog) -
+                // unter Windows ein eigenes Fenster wie die Waermepumpe, auf iOS eine freie Ansicht der Wurzel.
                 new Menuepunkt("MenuItem_Kaeltemaschinen", "MENU_KAELTEMASCHINEN", Seitenschluessel.KaeltemaschineKatalog, katalog: true),
                 // W16c-E-6: aus "Energiesysteme" hierher - und dabei aus seinem
                 // Untermenue heraus. Es fuehrte nur "Bearbeiten"

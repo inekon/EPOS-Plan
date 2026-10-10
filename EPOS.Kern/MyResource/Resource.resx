@@ -45425,6 +45425,18 @@ Chart</value>
   <data name="KM_RUECKKUEHLART_KEINE" xml:space="preserve">
     <value>(keine Angabe)</value>
   </data>
+  <data name="KM_HERKUNFT_TYPKENNFELD" xml:space="preserve">
+    <value>Typkennfeld</value>
+  </data>
+  <data name="KM_HERKUNFT_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferung</value>
+  </data>
+  <data name="KM_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>eigen</value>
+  </data>
+  <data name="KM_CHK_OHNE_TYPKENNFELDER" xml:space="preserve">
+    <value>Typkennfelder ausblenden</value>
+  </data>
   <data name="KM_RUECKKUEHLART_LUFT" xml:space="preserve">
     <value>Luftgekühlt</value>
   </data>
@@ -45676,6 +45688,15 @@ Chart</value>
   </data>
   <data name="KMA_KATALOG_LEER" xml:space="preserve">
     <value>Der Katalog enthält keine Kältemaschine. Legen Sie Geräte unter Administration › Kältemaschinen an.</value>
+  </data>
+  <data name="KM_ANL_BTN_VERWALTUNG" xml:space="preserve">
+    <value>Katalogverwaltung…</value>
+  </data>
+  <data name="KM_ANL_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>Die Katalogverwaltung der Kältemaschinen lässt sich hier nicht öffnen.</value>
+  </data>
+  <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Katalogverwaltung öffnen.</value>
   </data>
   <data name="KMA_GRUPPE_GERAET" xml:space="preserve">
     <value>Gerät</value>

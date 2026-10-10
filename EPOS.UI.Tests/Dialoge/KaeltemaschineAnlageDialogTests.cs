@@ -379,3 +379,199 @@ public sealed class KaeltemaschineAnlageDialogEnglischTests : EposBunitContext
         Assert.Contains("Add…", cut.Find(".epos-kaeltemaschine-anlage > .epos-leiste").TextContent);
     }
 }
+
+/// <summary>
+/// <b>Die Wege zum Katalog in der Katalogwahl „Hinzufügen…"</b>: „Typkennfelder laden…" über die Gabe der Hülle
+/// und „Katalogverwaltung…" über die Naht <c>Dienste.Navigation</c> — bei leerem Katalog unter dem Leertext, bei
+/// gefülltem als Nebenknöpfe unter der Liste. Der Fall tauscht <c>Dienste.Navigation</c> und steht deshalb in der
+/// seriellen Sammlung.
+/// </summary>
+[Collection("KiDialogweg")]
+public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
+{
+    private readonly INavigation _vorher;
+
+    public KaeltemaschineAnlageKatalogwegeTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+        _vorher = WindowsFormsApplication1.Dienste.Navigation;
+        Navigation = new TestNavigation();
+        WindowsFormsApplication1.Dienste.Navigation = Navigation;
+    }
+
+    /// <summary>Die Mitschrift der Maskenaufrufe.</summary>
+    private TestNavigation Navigation { get; }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) WindowsFormsApplication1.Dienste.Navigation = _vorher;
+        base.Dispose(disposing);
+    }
+
+    /// <summary>Der Katalog des Stubs — leer, bis die Typkennfelder geladen sind (oder von Anfang an gefüllt).</summary>
+    private sealed class Katalogstand
+    {
+        internal readonly KaeltemaschineAnlageDialogTests.Projekt Projekt = new();
+        internal bool Gefuellt;
+        internal int Ladungen;
+
+        internal IReadOnlyList<Katalogfilterzeile> Zeilen()
+            => Gefuellt ? Projekt.Katalog() : Array.Empty<Katalogfilterzeile>();
+
+        internal KaeltemaschineTypkennfelderErgebnis Laden()
+        {
+            Ladungen++;
+            Gefuellt = true;
+            return new KaeltemaschineTypkennfelderErgebnis(true, 2, 0, "");
+        }
+    }
+
+    private IRenderedComponent<KaeltemaschineAnlageDialog> Aufbauen(Katalogstand k, bool mitTypkennfeldern = true)
+        => Render<KaeltemaschineAnlageDialog>(b =>
+        {
+            b.Add(x => x.Anlagen, () => k.Projekt.Gespeicherte.Select(a => a.Kopie()).ToList())
+             .Add(x => x.Katalogzeilen, k.Zeilen)
+             .Add(x => x.Katalogwerte, k.Projekt.Werte)
+             .Add(x => x.Stromtraeger, new[] { (KaeltemaschineAnlageDialogTests.STROM, "Strom") })
+             .Add(x => x.ProjektStromtraeger, KaeltemaschineAnlageDialogTests.STROM)
+             .Add(x => x.Pruefen, KaeltemaschineAnlageHuelle.Pruefen)
+             .Add(x => x.Anlegen, k.Projekt.Anlegen)
+             .Add(x => x.Speichern, k.Projekt.Speichern)
+             .Add(x => x.Geschlossen, ok => k.Projekt.Geschlossen = ok);
+            if (mitTypkennfeldern) b.Add(x => x.TypkennfelderLaden, k.Laden);
+        });
+
+    private static IElement Knopf(IRenderedComponent<KaeltemaschineAnlageDialog> cut, string text)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+
+    private static string[] Katalogwege(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
+        => cut.FindAll(".epos-kaeltemaschine-katalogwege button").Select(b => b.TextContent.Trim()).ToArray();
+
+    [Fact]
+    public void Leerer_Katalog_zeigt_den_Leertext_und_beide_Knoepfe()
+    {
+        var k = new Katalogstand();
+        var cut = Aufbauen(k);
+
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        Assert.Contains(R.KMA_KATALOG_LEER, cut.Markup);
+        Assert.Empty(cut.FindAll(".epos-katalogliste"));
+        Assert.Equal(new[] { R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(cut));
+    }
+
+    [Fact]
+    public void Typkennfelder_laden_fuellt_die_Liste_ueber_die_Gabe_und_meldet_im_Banner()
+    {
+        var k = new Katalogstand();
+        var cut = Aufbauen(k);
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        Knopf(cut, R.KM_BTN_TYPKENNFELDER).Click();
+
+        Assert.Equal(1, k.Ladungen);
+        Assert.True(cut.Instance.KatalogOffen);
+        Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
+        Assert.DoesNotContain(R.KMA_KATALOG_LEER, cut.Markup);
+        Assert.Contains(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_MSG_TYPKENNFELDER, 2, 0),
+                        cut.Markup);
+
+        // Das geladene Gerät lässt sich gleich übernehmen.
+        Zeilenklick.Zeile(cut, 1);
+        Knopf(cut, R.KMA_BTN_UEBERNEHMEN).Click();
+        Assert.False(cut.Instance.KatalogOffen);
+        Assert.Equal(12, cut.Instance.Arbeitsstand!.StammId);
+    }
+
+    [Fact]
+    public void Ein_gescheitertes_Laden_meldet_den_Grund_des_Kerns()
+    {
+        var k = new Katalogstand();
+        var cut = Render<KaeltemaschineAnlageDialog>(b => b
+            .Add(x => x.Anlagen, () => k.Projekt.Gespeicherte.Select(a => a.Kopie()).ToList())
+            .Add(x => x.Katalogzeilen, k.Zeilen)
+            .Add(x => x.TypkennfelderLaden, () => new KaeltemaschineTypkennfelderErgebnis(false, 0, 0, "Grund des Kerns")));
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        Knopf(cut, R.KM_BTN_TYPKENNFELDER).Click();
+
+        Assert.Contains("Grund des Kerns", cut.Markup);
+        Assert.Contains(R.KMA_KATALOG_LEER, cut.Markup);
+    }
+
+    [Fact]
+    public void Katalogverwaltung_schliesst_die_Ueberlagerung_und_ruft_die_Naht()
+    {
+        var k = new Katalogstand();
+        var cut = Aufbauen(k);
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        Knopf(cut, R.KM_ANL_BTN_VERWALTUNG).Click();
+
+        Assert.Equal(new[] { EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog }, Navigation.Masken);
+        Assert.False(cut.Instance.KatalogOffen);
+
+        // Der nächste Klick auf „Hinzufügen…" liest den Katalog neu.
+        k.Gefuellt = true;
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+        Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
+    }
+
+    [Fact]
+    public void Lehnt_die_Plattform_ab_bleibt_die_Ueberlagerung_offen_und_nennt_es()
+    {
+        Navigation.Antwort = false;
+        var cut = Aufbauen(new Katalogstand());
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        Knopf(cut, R.KM_ANL_BTN_VERWALTUNG).Click();
+
+        Assert.Single(Navigation.Masken);
+        Assert.True(cut.Instance.KatalogOffen);
+        Assert.Contains(R.KM_ANL_MSG_VERWALTUNG_NICHT, cut.Markup);
+    }
+
+    [Fact]
+    public void Ungespeicherte_Aenderungen_halten_die_Katalogverwaltung_an()
+    {
+        var k = new Katalogstand { Gefuellt = true };
+        var cut = Aufbauen(k);
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+        Zeilenklick.Zeile(cut, 1);
+        Knopf(cut, R.KMA_BTN_UEBERNEHMEN).Click();          // neue Anlage im Arbeitsstand, noch ohne OK
+
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+        Knopf(cut, R.KM_ANL_BTN_VERWALTUNG).Click();
+
+        Assert.Empty(Navigation.Masken);
+        Assert.True(cut.Instance.KatalogOffen);
+        Assert.Contains(R.KM_ANL_MSG_UNGESPEICHERT, cut.Markup);
+    }
+
+    [Fact]
+    public void Gefuellter_Katalog_zeigt_die_Knoepfe_als_Nebenknoepfe_unter_der_Liste()
+    {
+        var cut = Aufbauen(new Katalogstand { Gefuellt = true });
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        var wahl = cut.Find(".epos-kaeltemaschine-katalogwahl");
+        var kinder = wahl.Children.ToList();
+        int liste = kinder.FindIndex(e => e.QuerySelector(".epos-katalogliste") is not null
+                                          || e.ClassList.Contains("epos-katalogliste"));
+        int wege = kinder.FindIndex(e => e.ClassList.Contains("epos-kaeltemaschine-katalogwege"));
+        Assert.True(liste >= 0 && wege > liste);
+        Assert.Equal(new[] { R.KM_BTN_TYPKENNFELDER, R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(cut));
+        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-katalogwege .epos-knopf--primaer"));
+        Assert.DoesNotContain(R.KMA_KATALOG_LEER, cut.Markup);
+    }
+
+    [Fact]
+    public void Ohne_Gabe_kein_Knopf_Typkennfelder_laden()
+    {
+        var cut = Aufbauen(new Katalogstand(), mitTypkennfeldern: false);
+        Knopf(cut, R.KMA_BTN_HINZU).Click();
+
+        Assert.Equal(new[] { R.KM_ANL_BTN_VERWALTUNG }, Katalogwege(cut));
+    }
+}
