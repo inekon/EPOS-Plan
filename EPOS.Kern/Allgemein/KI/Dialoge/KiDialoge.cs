@@ -9320,6 +9320,20 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaeltefolge_gepflegt", "SimulationKiSicht.KaeltefolgeGepflegt",
                                      KiDialogTexte.SimKaeltefolgeGepflegtName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimKaeltefolgeGepflegtErl),
+                    // ---- Der Bereich „Kaelte" (Welle KB-B) ---------------------------
+                    //
+                    // Die Kaelteerzeuger in Rechenfolge und die Kaeltespeicher nur lesend; der
+                    // Kuehlbetrieb der Waermepumpen als Namensliste, sofort geschrieben ueber
+                    // denselben Weg wie Aufnehmen/Entfernen an der Kachel.
+                    new KiDialogFeld("kaelteerzeuger", "SimulationKiSicht.Kaelteerzeuger",
+                                     KiDialogTexte.SimKaelteerzeugerName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKaelteerzeugerErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("kaeltespeicher", "SimulationKiSicht.Kaeltespeicher",
+                                     KiDialogTexte.SimKaeltespeicherName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKaeltespeicherErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("kuehlbetrieb_waermepumpen", "SimulationKiSicht.KuehlbetriebWaermepumpen",
+                                     KiDialogTexte.SimKuehlWpName, KiParameterTyp.Text,
+                                     KiDialogTexte.SimKuehlWpErl, leerErlaubt: true),
 
                     // ---- Netzverluste je Kanal und Zirkulation (Entscheidungsvorlage BW4) ----
                     //

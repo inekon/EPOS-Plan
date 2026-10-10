@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
@@ -376,6 +377,15 @@ namespace WindowsFormsApplication1
                     richtung < 0 ? KaeltefolgeCtrl.NACH_VORN : KaeltefolgeCtrl.NACH_HINTEN),
                 KaelteVorgabefolge = () => KaeltefolgeCtrl.VorgabeSetzen(m_ID_Projekt),
 
+                // KB-B: die Konfiguration einer Kältemaschine im Bereich „Kälte“ - dieselben Daten und Wege wie der
+                // Dialog „Kältemaschinen im Projekt“ (KaeltemaschineAnlageHuelle), ohne Plattformnaht.
+                KaeltemaschineKonfigurationLaden = KaeltemaschineKonfigurationLaden,
+                KaeltemaschineKonfigurationSpeichern = d =>
+                {
+                    string grund = KaeltemaschineAnlageHuelle.Pruefen(d);
+                    return string.IsNullOrEmpty(grund) ? KaeltemaschineAnlageHuelle.Speichern(d) : grund;
+                },
+
                 // DIE DREI HANDGRIFFE AN DER KASKADE - und nur sie - machen die Kaskade
                 // zu einer GEPFLEGTEN (Anwenderentscheid 16.09.2026, Schemaschritt 82).
                 // Der Merkweg liegt an EINER Stelle (KaskadeGepflegtMerken); die
@@ -600,6 +610,11 @@ namespace WindowsFormsApplication1
 
             // KB-A: der Bereich „Kälte“ aus dem Kernleser der Kältefolge - dieselbe Folge wie der Lauf.
             d.Kaeltebereich = KaeltebereichBau.Daten(m_ID_Projekt, SpeicherKarteDaten);
+
+            // KB-B (E117 F4): Ein Kältespeicher steht NUR im Bereich „Kälte“ - er puffert keine Wärme.
+            var kaeltespeicher = new HashSet<int>(d.Kaeltebereich.Kaeltespeicher.Select(s => s.IdPuffer));
+            if (kaeltespeicher.Count > 0)
+                d.Speicher = d.Speicher.Where(s => !kaeltespeicher.Contains(s.IdPuffer)).ToList();
 
             return d;
         }
@@ -1368,6 +1383,22 @@ namespace WindowsFormsApplication1
         {
             if (string.IsNullOrEmpty(text)) return;
             chips.Add(new ChipDaten(text, stil));
+        }
+
+        /// <summary>KB-B: die Gaben der Kältemaschinen-Konfiguration einer Anlage; <c>null</c> = nicht (mehr) im Projekt.</summary>
+        private EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben KaeltemaschineKonfigurationLaden(int idAnlage)
+        {
+            if (m_ID_Projekt <= 0 || idAnlage <= 0) return null;
+            EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten daten = KaeltemaschineAnlageHuelle.Liste(m_ID_Projekt)
+                .FirstOrDefault(a => a.AnlagenId == idAnlage);
+            if (daten == null) return null;
+            return new EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben
+            {
+                Daten = daten,
+                Stromtraeger = Kaeltestromabrechnung.StromtraegerDesProjekts(m_ID_Projekt)
+                    .Select(t => (t.Key, t.Value)).ToList(),
+                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt)
+            };
         }
 
         // =================================================================

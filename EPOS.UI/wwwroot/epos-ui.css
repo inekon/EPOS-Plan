@@ -5597,6 +5597,45 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     min-width: 0;
 }
 
+/* Welle KB-B: der Bereich „Kälte“ unter dem Waermeteil - dasselbe Raster (61,5/38,5, unter 900 px
+   einspaltig), dieselben Flaechen wie Erzeuger- und Speicherspalte, kein eigener Rollbereich (es rollt
+   die Seite). Der Kopfschalter steht als eigene Zeile unter dem Gruppenkopf. */
+.epos-simkonfig-kaelte {
+    margin-top: var(--epos-karte-rand);
+    min-width: 0;
+}
+
+.epos-simkonfig-kaelte .epos-simkonfig-kuehlung {
+    padding: 6px 8px 0 8px;
+}
+
+.epos-simkonfig-kaelte-spalten {
+    margin-top: 6px;
+}
+
+.epos-simkonfig-kaelte-erzeuger,
+.epos-simkonfig-kaelte-speicher {
+    background: var(--epos-flaeche);
+    padding: 8px;
+    border-radius: var(--epos-ecke);
+    min-width: 0;
+}
+
+.epos-simkonfig-kaelte-aus {
+    padding: 6px 8px;
+}
+
+.epos-simkonfig-kaelte-parameter {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.epos-simkonfig-kaelte-parameter .epos-simkonfig-hinweis {
+    margin: 0;
+}
+
 .epos-simkonfig-gruppe {
     margin: 10px 0 4px 0;
     font-size: var(--epos-schriftgroesse);
