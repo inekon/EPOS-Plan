@@ -1612,6 +1612,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die Spalten des Kälte-Exports</b> (CSV am Diagramm „Kältelast Jahresganglinie“): die
+        /// Kältelast je Stunde [kW] und dazu je Bedarfsart eine Spalte — gegenwärtig die eine,
+        /// „Kühlung“ —, gebildet wie die Kanalspalten der Wärme („Wärmelast [kW] Heizung“).
+        /// </summary>
+        public static List<CsvSpalte> KaelteCsvSpalten(KaelteErgebnis k)
+        {
+            if (k == null) return new List<CsvSpalte>();
+            return new List<CsvSpalte>
+            {
+                new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST, k.KaeltebedarfKwh),
+                new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST + " " + Warnkriterien.KanalAnzeige(Kanal.KUEHLUNG),
+                              k.KaeltebedarfKwh)
+            };
+        }
+
+        /// <summary>
         /// Die Kälteseite des Laufs; <c>null</c>, wenn nicht erhoben (Projektschalter aus) — das
         /// ist etwas anderes als ein Kältebedarf von 0.
         /// </summary>

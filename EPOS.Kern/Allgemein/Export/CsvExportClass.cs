@@ -87,6 +87,54 @@ namespace WindowsFormsApplication1
                 return;
             }
 
+            string dateiname = await DateiWaehlenAsync(vorschlagDateiname);
+            if (string.IsNullOrEmpty(dateiname)) return;
+
+            try
+            {
+                Schreiben(dateiname, temperaturStuendlich, spalten, viertelstundenwerte, kopfzeilen);
+                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
+            }
+            catch (Exception ex)
+            {
+                Dienste.Dialog.Fehler("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export");
+            }
+        }
+
+        /// <summary>
+        /// <b>Der Export einer Diagrammzeitreihe</b> (CSV am Diagramm): derselbe Speichern-Dialog
+        /// über <c>Dienste.Datei</c>, derselbe gemerkte Ordner, dieselben Meldungen — der Inhalt
+        /// kommt aus <see cref="ZeitreihenCsv.Text"/>.
+        /// </summary>
+        public static async Task ExportZeitreihen(string vorschlagDateiname, Zeitraster raster,
+                                                  IReadOnlyList<ZeitreihenSpalte> spalten)
+        {
+            if (spalten == null || spalten.Count == 0)
+            {
+                Dienste.Dialog.Meldung("Keine Datenreihe für den Export ausgewählt!", "CSV Export");
+                return;
+            }
+
+            string dateiname = await DateiWaehlenAsync(vorschlagDateiname);
+            if (string.IsNullOrEmpty(dateiname)) return;
+
+            try
+            {
+                File.WriteAllText(dateiname, ZeitreihenCsv.Text(raster, spalten), new UTF8Encoding(true));
+                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
+            }
+            catch (Exception ex)
+            {
+                Dienste.Dialog.Fehler("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export");
+            }
+        }
+
+        /// <summary>
+        /// Die Dateiwahl beider Exporte: gemerkter Ordner, sonst „Dokumente“; der gewählte Ordner
+        /// wird für den nächsten Export gemerkt. <c>null</c> bei Abbruch.
+        /// </summary>
+        private static async Task<string> DateiWaehlenAsync(string vorschlagDateiname)
+        {
             // Zuletzt verwendeten Export-Ordner vorschlagen, sonst "Dokumente"
             string startOrdner = LetztenPfadLesen();
             if (string.IsNullOrEmpty(startOrdner) || !Directory.Exists(startOrdner))
@@ -100,20 +148,11 @@ namespace WindowsFormsApplication1
                 "CSV Dateien (*.csv)|*.csv|Alle Dateien (*.*)|*.*",
                 Path.Combine(startOrdner, vorschlagDateiname));
 
-            if (string.IsNullOrEmpty(dateiname)) return;
+            if (string.IsNullOrEmpty(dateiname)) return null;
 
             // Ordner für den nächsten Export merken
             PfadMerken(dateiname);
-
-            try
-            {
-                Schreiben(dateiname, temperaturStuendlich, spalten, viertelstundenwerte, kopfzeilen);
-                Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
-            }
-            catch (Exception ex)
-            {
-                Dienste.Dialog.Fehler("Fehler beim Schreiben der CSV-Datei:\n" + ex.Message, "CSV Export");
-            }
+            return dateiname;
         }
 
         /// <summary>
