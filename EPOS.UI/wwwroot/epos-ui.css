@@ -4091,7 +4091,9 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld { flex: 2 1 0; }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld:nth-child(2) { flex-grow: 4; }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz { flex: 1 1 0; }
+/* Kurze Kennwerte (PV: Raster, Jahresarbeit, Nennleistung) behalten Platz fuer ihren Wert. */
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz { flex: 0 1 auto; }
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf > .epos-feld--kurz .epos-eingabe { width: 9em; }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kopf .epos-feld-text,
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-leiste .epos-feld-text {
     white-space: nowrap;
