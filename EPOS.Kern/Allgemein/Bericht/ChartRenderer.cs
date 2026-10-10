@@ -4667,16 +4667,31 @@ namespace WindowsFormsApplication1
         /// Summe aus sortierten Reihen wäre frei erfunden (dieselbe Regel wie
         /// <see cref="ErzeugerStapelModell"/>). Ohne Flächenreihe bleibt das Bild
         /// byte-gleich.</para>
+        ///
+        /// <para><b>Die Zeichenfläche in Behältergröße</b> (DZ1‑N2): Mit
+        /// <paramref name="breite"/> und <paramref name="hoehe"/> entsteht das Modell in
+        /// genau dieser Größe — die Oberfläche zeichnet es 1:1, Achsen und Schrift bleiben
+        /// unverzerrt. Unter <see cref="KOMPAKT_HOEHE"/> steht es kompakt: kein Titel (der
+        /// Name steht über dem Bild), Achsentitel und Legende in einer Kopfzeile, die
+        /// Prozentachse bei weniger als <see cref="PROZENT_FEIN_AB"/> Bildpunkten Höhe in
+        /// 50‑%-Schritten. Ohne Maß (Vorgabe <c>0</c>) bleibt das Bild 1 240 × 560 und
+        /// byte-gleich.</para>
         /// </summary>
+        /// <param name="breite">Breite der Zeichenfläche in px; <c>0</c> = 1 240.</param>
+        /// <param name="hoehe">Höhe der Zeichenfläche in px; <c>0</c> = 560.</param>
         public static Zeichenmodell GanglinieNormiertModell(string titel, IReadOnlyList<Reihe> reihen,
                                                             string yTitel, Achse achse, bool sortiert,
                                                             Achsenfenster fenster = null,
-                                                            double bezugswert = 0)
+                                                            double bezugswert = 0,
+                                                            int breite = 0, int hoehe = 0)
         {
-            int W = 1240, H = 560;
+            bool mitMass = breite > 0 && hoehe > 0;
+            int W = mitMass ? Math.Max(breite, MASS_MIN_BREITE) : 1240;
+            int H = mitMass ? Math.Max(hoehe, MASS_MIN_HOEHE) : 560;
+            bool kompakt = mitMass && H < KOMPAKT_HOEHE;
             var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
-            var rc = SKRect.Create(100f, 110f, W - 140f, 360f);
+            if (!kompakt) z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
+            var rc = SKRect.Create(100f, 110f, W - 140f, H - 200f);
 
             List<Reihe> ganz = Brauchbare(reihen);
             List<Reihe> gueltig = fenster == null
@@ -4688,8 +4703,21 @@ namespace WindowsFormsApplication1
                 return z;
             }
 
-            Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
-                    100f, 66f, W - 30f);
+            if (kompakt)
+            {
+                // Kopfzeile: Achsentitel links, Legende rechts daneben; die Fläche darunter.
+                float legendeX;
+                using (var f = Schrift(15f)) legendeX = rc.Left + f.MeasureText(yTitel ?? "") + 24f;
+                float legende = Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
+                                        legendeX, 4f, W - 30f);
+                float oben = KOMPAKT_OBEN + (legende - LEGENDE_ZEILE);
+                bool mitStufe = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
+                float unten = mitStufe ? KOMPAKT_UNTEN + 20f : KOMPAKT_UNTEN;
+                rc = SKRect.Create(100f, oben, W - 140f, Math.Max(20f, H - oben - unten));
+            }
+            else
+                Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
+                        100f, 66f, W - 30f);
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
             // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
@@ -4702,7 +4730,8 @@ namespace WindowsFormsApplication1
             if (bezugswert > bezug && !double.IsInfinity(bezugswert)) bezug = bezugswert;
             if (bezug <= 0) bezug = 1;
 
-            z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc));
+            int prozentSchritt = rc.Height < PROZENT_FEIN_AB ? 50 : 20;
+            z.Markiert("yachse", zy => ProzentRasterOhneKreuz(zy, rc, prozentSchritt));
             Achsenkreuz(z, rc);
             if (fenster == null) z.Markiert("xachse", zx => XAchse(zx, rc, achse, gueltig[0].Werte.Length));
             else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, ganz[0].Werte.Length));
@@ -4794,6 +4823,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Obergrenze der Prozentachse — woertlich aus <c>init_Chart</c> :3378.</summary>
         private const double Y_PROZENT_MAX = 100.2;
+
+        /// <summary>Unter dieser Höhe [px] steht die Ganglinie mit Maß kompakt (ohne Titel, Kopfzeile).</summary>
+        public const int KOMPAKT_HOEHE = 400;
+
+        /// <summary>Kleinste Zeichenfläche mit Maß [px] — darunter wird nicht verkleinert.</summary>
+        public const int MASS_MIN_BREITE = 320, MASS_MIN_HOEHE = 120;
+
+        /// <summary>Oberkante der Fläche in der Kompaktform [px]: Kopfzeile mit Achsentitel und Legende.</summary>
+        private const float KOMPAKT_OBEN = 30f;
+
+        /// <summary>Platz unter der Fläche in der Kompaktform [px]: Marken (+8) und x-Achsentitel (+30).</summary>
+        private const float KOMPAKT_UNTEN = 50f;
+
+        /// <summary>Unter dieser Flächenhöhe [px] teilt die Prozentachse in 50‑%-Schritten statt 20 %.</summary>
+        private const float PROZENT_FEIN_AB = 120f;
 
         // ------------------------------------------------------------------ B2 / B3
 
@@ -7689,11 +7733,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Derselbe Block ohne das Achsenkreuz — siehe <see cref="BedarfsRasterOhneKreuz"/>.</summary>
-        private static void ProzentRasterOhneKreuz(IZeichenziel z, SKRect rc)
+        private static void ProzentRasterOhneKreuz(IZeichenziel z, SKRect rc, int schritt = 20)
         {
             var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
-                for (int p = 0; p <= 100; p += 20)
+                for (int p = 0; p <= 100; p += schritt)
                 {
                     float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);

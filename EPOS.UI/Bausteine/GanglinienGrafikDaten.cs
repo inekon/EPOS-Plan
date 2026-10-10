@@ -42,3 +42,12 @@ public sealed record GanglinienWahl(bool AusKatalog, int GanglinieId, string Bez
 /// </param>
 public sealed record GanglinienKennzahlen(double JahresarbeitMwh, double SpitzeKw,
                                           double? VollbenutzungsstundenH);
+
+/// <summary>
+/// <b>Das Behältermaß einer Zeichenfläche</b> (DZ1‑N2): Breite und Höhe in px, in denen
+/// <c>DiagrammSvg</c> ein Zeichenmodell 1:1 zeigt — gemeldet über
+/// <c>DiagrammSvg.MassGeaendert</c>.
+/// </summary>
+/// <param name="Breite">Breite in px.</param>
+/// <param name="Hoehe">Höhe in px.</param>
+public readonly record struct Flaechenmass(int Breite, int Hoehe);

@@ -28,7 +28,8 @@ namespace WindowsFormsApplication1
             {
                 ["Kennzahlen"] = new Func<GanglinienWahl, Task<GanglinienKennzahlen>>(
                     w => Task.FromResult(vorrat.Kennzahlen(w))),
-                ["Bildauftrag"] = new Func<GanglinienWahl, bool, Zeichenmodell>(vorrat.Modell),
+                ["Bildauftrag"] = new Func<GanglinienWahl, bool, Zeichenmodell>((w, s) => vorrat.Modell(w, s, 0, 0)),
+                ["BildauftragMass"] = new Func<GanglinienWahl, bool, int, int, Zeichenmodell>(vorrat.Modell),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>((r, f) =>
                 {
                     Diagrammfarben.Setze(r, f);
@@ -79,7 +80,7 @@ namespace WindowsFormsApplication1
                 return new GanglinienKennzahlen(a.JahresarbeitMwh, a.SpitzeKw, a.VollbenutzungsstundenH);
             }
 
-            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert)
+            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert, int breite, int hoehe)
             {
                 GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
@@ -88,7 +89,8 @@ namespace WindowsFormsApplication1
                     new ChartRenderer.Reihe(_achse, (double[])a.Stundenwerte.Clone(), _farbe)
                 };
                 return ChartRenderer.GanglinieNormiertModell(_titel, reihen, _achse,
-                    sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate, sortiert);
+                    sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate, sortiert,
+                    breite: breite, hoehe: hoehe);
             }
 
             private GanglinienAuswertung Lesen(GanglinienWahl wahl)

@@ -4037,24 +4037,25 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
    Beschreibung, Kennwerte nebeneinander, Beschriftung vor dem Feld) und die Kennzahlenzeile, die zugleich
    Schalter "sortiert", Einheitenwahl, Zoomleiste des Bildes und die Infoknoepfe des Wirts traegt. Die Kurve
-   nimmt den Rest: Hoehe aus dem Behaelter, Breite daraus ueber das Seitenverhaeltnis des Zeichenmodells
-   (--epos-bild-verhaeltnis, von DiagrammSvg gesetzt), hoechstens die volle Breite. Damit Zoomleiste und
+   nimmt den Rest in VOLLER BREITE (DZ1-N2): Breite und Hoehe kommen aus dem Behaelter (contain: size), und
+   GanglinienGrafik laesst das Zeichenmodell in genau dieser Groesse bauen (DiagrammSvg meldet das Mass beim
+   Aufklappen und nach jeder Groessenaenderung) - das Bild steht 1:1, Achsen und Schrift unverzerrt. Damit Zoomleiste und
    Zeigerzeile im Raster des Bausteins stehen, loest sich der Rahmen von DiagrammSvg hier auf
    (display: contents); Bezugsbreite der Kurve ist die Breite des Bausteins (container ganglinienbild).
    Die Zeigerzeile liegt oben rechts ueber dem Bild, statt eine Zeile unter ihm zu belegen.
-   UNTERGRENZE: Kopf plus Mindesthoehe der Kurve (--epos-kurve-min, 90 px) ist die Untergrenze der
+   UNTERGRENZE: Kopf plus Mindesthoehe der Kurve (--epos-kurve-min, 150 px) ist die Untergrenze der
    Satzflaeche (--epos-satz-untergrenze, KB1); die Felder der Kopfzeile sind als Lesefelder 0,7 Beruehrungsziel
    hoch. Reicht das Fenster nicht dafuer, rollt nach KB1 der Dialogkoerper, nie das Bild. Die Untergrenze
-   steht als fester Wert je Stufe (90 px Kurve + Kennzahlenzeile 44 bzw. 37 px + 8 px; mit Kopfzeile dazu
+   steht als fester Wert je Stufe (150 px Kurve + Kennzahlenzeile 44 bzw. 37 px + 8 px; mit Kopfzeile dazu
    0,7 Beruehrungsziel + 2 px), weil das Skript (satzOffenMin) sie als px-Wert liest, nicht als calc(). */
 .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) {
-    --epos-kurve-min: 90px;
-    --epos-satz-untergrenze: 142px;
+    --epos-kurve-min: 150px;
+    --epos-satz-untergrenze: 202px;
 }
-.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 175px; }
+.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 235px; }
 @media (max-width: 1199.98px), (max-height: 799.98px) {
-    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 135px; }
-    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 163px; }
+    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 195px; }
+    .epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-kopf) { --epos-satz-untergrenze: 223px; }
 }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik {
     flex: 1 1 0;
@@ -4062,7 +4063,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     margin-top: 0;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
-    grid-template-rows: auto auto minmax(var(--epos-kurve-min, 90px), 1fr);
+    grid-template-rows: auto auto minmax(var(--epos-kurve-min, 150px), 1fr);
     grid-template-areas: "kopf kopf kopf" "kennzahlen zoom leiste" "bild bild bild";
     gap: 4px var(--epos-abstand);
     align-items: center;
@@ -4145,14 +4146,12 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
     grid-area: bild;
-    justify-self: center;
+    justify-self: stretch;
     align-self: stretch;
     contain: size;
     min-height: 0;
     width: auto;
     max-width: 100%;
-    aspect-ratio: var(--epos-bild-verhaeltnis, 2 / 1);
-    max-height: calc(100cqw / (var(--epos-bild-verhaeltnis, 2 / 1)));
 }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche > svg {
     width: 100%;

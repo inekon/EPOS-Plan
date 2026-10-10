@@ -93,6 +93,34 @@ public class GanglinieDetailzeileTests : EposBunitContext
         Assert.Contains("4", cut.Find(".epos-zweispalten-satz .epos-ganglinie-kennzahlen").TextContent);
     }
 
+    /// <summary>
+    /// DZ1‑N2: Mit <c>BildauftragMass</c> entsteht das Modell zuerst in Vorgabegröße (0 × 0) und nach
+    /// der Meldung des Behältermaßes in genau dieser Größe neu — die Kurve nimmt die volle Breite.
+    /// </summary>
+    [Fact]
+    public void Solarganglinie_baut_das_Modell_im_gemeldeten_Behaeltermass()
+    {
+        var masse = new List<(bool Sortiert, int Breite, int Hoehe)>();
+        var cut = Render<SolarganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Ganglinie Nord", 501) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, Kennzahlen)
+            .Add(x => x.Bildauftrag, Bild)
+            .Add(x => x.BildauftragMass, (w, s, b, h) => { masse.Add((s, b, h)); return null; }));
+
+        Waehlen(cut, 1, 1);
+        Assert.True(AufgeklapptMitGanglinie(cut));
+        Assert.Contains((false, 0, 0), masse);
+
+        var svg = cut.FindComponent<DiagrammSvg>();
+        cut.InvokeAsync(() => svg.Instance.MassGemeldet(900, 180));
+
+        Assert.Equal((false, 900, 180), masse[^1]);
+        Assert.Equal(new Flaechenmass(900, 180), cut.FindComponent<GanglinienGrafik>().Instance.Zeichenmass);
+    }
+
     [Fact]
     public void Solarganglinie_Projektzeile_fragt_ihre_Projektkopie_eine_neue_den_Katalog()
     {

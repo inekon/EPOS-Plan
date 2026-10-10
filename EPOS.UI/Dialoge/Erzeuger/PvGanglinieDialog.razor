@@ -77,7 +77,7 @@
         @if (_grafik.Kennzahlen is not null)
         {
             <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
-                              Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)"
+                              Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)" BildauftragMass="@_grafik.BildMitMass(BildauftragMass)"
                               Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
                               LabelJahresarbeit="@LabelGrafikJahresarbeit" LabelSpitze="@LabelSpitze"
                               LabelVollbenutzung="@LabelVollbenutzung"
@@ -331,6 +331,13 @@
 
     /// <summary>Das Zeichenmodell der gewählten Ganglinie (Wahl, sortiert); gerechnet im Kern.</summary>
     [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
 
     [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
     [Parameter] public Func<Farbrolle, Task>? FarbeZuruecksetzen { get; set; }

@@ -227,7 +227,7 @@
     @if (_kennzahlen is not null)
     {
         <GanglinienGrafik Schluessel="@Grafikschluessel" Bezeichner="@GewaehlterName"
-                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild"
+                          Kennzahlen="@_kennzahlen" Bildauftrag="@Grafikbild" BildauftragMass="@GrafikbildMass"
                           Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
                           LabelJahresarbeit="@LabelJahresarbeit" LabelSpitze="@LabelSpitze"
                           LabelVollbenutzung="@LabelVollbenutzung"
@@ -373,6 +373,13 @@
     /// Zeitausschnitt liegt seither im Bild (DG-E3-9).</para>
     /// </summary>
     [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
 
     /// <summary>Die Farbe einer Rolle anwendungsweit setzen; ohne ihn kein Farbwähler.</summary>
     [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
@@ -711,6 +718,12 @@
         => (Bildauftrag is null || _wahl is null)
             ? null
             : sortiert => Bildauftrag(_wahl, sortiert);
+
+    /// <summary>Der Bildauftrag in Behältergröße (DZ1‑N2) — die Wahl steckt schon darin.</summary>
+    private Func<bool, int, int, Zeichenmodell?>? GrafikbildMass
+        => (BildauftragMass is null || _wahl is null)
+            ? null
+            : (sortiert, breite, hoehe) => BildauftragMass(_wahl, sortiert, breite, hoehe);
 
     private void Melden(string text, WarnStufe stufe)
     {

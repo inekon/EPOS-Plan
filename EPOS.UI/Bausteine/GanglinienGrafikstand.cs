@@ -52,4 +52,14 @@ public sealed class GanglinienGrafikstand
         GanglinienWahl? wahl = Wahl;
         return auftrag is null || wahl is null ? null : sortiert => auftrag(wahl, sortiert);
     }
+
+    /// <summary>
+    /// Der Bildauftrag in Behältergröße (DZ1‑N2) für die gewählte Ganglinie: Schalterstellung,
+    /// Breite und Höhe der Zeichenfläche in px. <c>null</c> ohne Auftrag oder ohne Wahl.
+    /// </summary>
+    public Func<bool, int, int, Zeichenmodell?>? BildMitMass(Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? auftrag)
+    {
+        GanglinienWahl? wahl = Wahl;
+        return auftrag is null || wahl is null ? null : (sortiert, breite, hoehe) => auftrag(wahl, sortiert, breite, hoehe);
+    }
 }
