@@ -1739,10 +1739,13 @@
             @if (tafel.Bild is not null)
             {
                 <div class="epos-wirt-zahlungsstrom-teil">
+                    @* "CSV..." am Zahlungsstrombild: erste Spalte das Jahr der Tafel (Raster Jahr). *@
+                    <CascadingValue Value="@Jahresexport">
                     <DiagrammSvg Modell="@tafel.Bild" Kennung="@($"zahlungsstrom-{tafel.IdStand}-{tafel.Szenario}")"
                                  Bezeichnung="@Texte.ZahlungsstromBild" OhneZoom="true" LegendeSchaltbar="false"
                                  Vorlagenfeld="stand.bild.zahlungsstrom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                  VorlagenfeldHinweis="@Resource.VF_ORT_ZAHLUNGSREIHEN" />
+                    </CascadingValue>
                 </div>
             }
             </CascadingValue>

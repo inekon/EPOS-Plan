@@ -54,6 +54,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(daten.IdProjekt),
                 ["Lauf"] = LaufOderGespeichert(daten),
                 ["StandDesLaufs"] = MyResource.Resource.SIMQ_ERDREICH_STAND_LAUF,
 

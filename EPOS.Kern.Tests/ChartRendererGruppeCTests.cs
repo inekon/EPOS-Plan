@@ -249,8 +249,8 @@ namespace EPOS.Kern.Tests
             {
                 Zeichenmodell m = b.Value();
                 Assert.True(m.Flaeche == null, b.Key + ": führt eine Zeichenfläche.");
-                // Der Monatsstapel führt seine Schichten als Datenreihen OHNE Zeichnung (CSV am Bild).
-                if (b.Key != "MonatsStapel")
+                // Monatsstapel, Monatssäulen und Strombilanz führen ihre Säulen als Datenreihen OHNE Zeichnung (CSV am Bild).
+                if (b.Key is not ("MonatsStapel" or "MonatsSaeulen" or "StrombilanzMonate"))
                     Assert.True(m.Reihen.Count == 0, b.Key + ": führt Datenreihen.");
 
                 string svg = SvgSchreiber.Text(m, Farbpalette.Vorgabe);
@@ -565,6 +565,58 @@ namespace EPOS.Kern.Tests
                 letzter = b.Wert;
             }
             return werte;
+        }
+
+        /// <summary>CSV-3: Die Monatssäulen führen ihre zwölf Werte als Reihe im Modell, ohne Zeichenfläche.</summary>
+        [Fact]
+        public void MonatsSaeulen_traegt_seine_Reihe_fuer_den_Export()
+        {
+            var werte = Enumerable.Range(1, 12).Select(i => (double)i).ToArray();
+            Zeichenmodell m = ChartRenderer.MonatsSaeulenModell("Heizwärme", werte, Farbrolle.HEIZWAERME, "MWh", null);
+
+            Assert.Null(m.Flaeche);
+            Datenreihe r = Assert.Single(m.Reihen);
+            Assert.Equal("Heizwärme", r.Name);
+            Assert.Equal("MWh", r.Einheit);
+            Assert.Equal(werte, r.Werte);
+            Assert.Equal(Zeitraster.Monat, ZeitreihenCsv.RasterAus(ZeitreihenCsv.AusModell(m)));
+        }
+
+        /// <summary>CSV-3: Die Strombilanz im Monatsverlauf führt Stapel und Bedarfslinie je Monat im Modell.</summary>
+        [Fact]
+        public void StrombilanzMonate_traegt_Stapel_und_Linie_fuer_den_Export()
+        {
+            var z = new ZeitreihenSatz();
+            double[] eins = Enumerable.Repeat(1.0, 8760).ToArray();
+            z.Reihen[ZeitreihenSatz.STROMBEDARF] = eins;
+            z.Reihen[ZeitreihenSatz.BHKW_STROM] = Enumerable.Repeat(0.5, 8760).ToArray();
+            z.Reihen[ZeitreihenSatz.NETZBEZUG] = Enumerable.Repeat(0.5, 8760).ToArray();
+
+            Zeichenmodell m = ChartRenderer.StrombilanzMonateModell(z);
+
+            Assert.NotEmpty(m.Reihen);
+            Assert.All(m.Reihen, r => Assert.Equal(12, r.Werte.Length));
+            Assert.Contains(m.Reihen, r => r.Name == "Strombedarf");
+            Assert.Equal(Zeitraster.Monat, ZeitreihenCsv.RasterAus(ZeitreihenCsv.AusModell(m)));
+        }
+
+        /// <summary>CSV-3: Das Zahlungsstrombild führt je belegter Spalte eine Reihe über alle Jahre der Tafel.</summary>
+        [Fact]
+        public void Zahlungsstrom_traegt_seine_Spalten_je_Jahr_fuer_den_Export()
+        {
+            var reihen = new List<ChartRenderer.Zahlungsstromreihe>
+            {
+                new() { Schluessel = ChartRenderer.Zahlungsstromreihe.INVEST_ERSATZ, Name = "Investition",
+                        JeJahr = new[] { -40000.0, 0.0, -6000.0, 0.0 } },
+                new() { Schluessel = "ERLOES", Name = "Erlöse", JeJahr = new[] { 0.0, 9000.0, 9000.0, 9000.0 } },
+                new() { Schluessel = "LEER", Name = "Leer", JeJahr = new[] { 0.0, 0.0, 0.0, 0.0 } }
+            };
+            Zeichenmodell m = ChartRenderer.ZahlungsstromModell(reihen, new[] { 2 }, null);
+
+            Assert.Equal(new[] { "Investition", "Erlöse" }, m.Reihen.Select(r => r.Name).ToArray());
+            Assert.All(m.Reihen, r => Assert.Equal(4, r.Werte.Length));
+            Assert.Equal(-6000.0, m.Reihen[0].Werte[2]);
+            Assert.Equal("€", m.Reihen[0].Einheit);
         }
     }
 }

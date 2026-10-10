@@ -964,6 +964,15 @@ namespace WindowsFormsApplication1
             var leg = serien.Select(r => Eintrag(r)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             Legende(z, leg, 90f, H - 56f - mehr, umbruch);
+            // Die Reihen stehen im Modell, ohne Zeichnung — „CSV…“ schreibt sie je Monat.
+            Saeulenreihen(z, serien.Where(r => r?.Werte != null && r.Werte.Length >= 12).ToList(), 12, einheit);
+            if (linie != null && linie.Length >= 12)
+            {
+                var linienwerte = new double[12];
+                Array.Copy(linie, linienwerte, 12);
+                z.FuegeReihe(new Datenreihe(linienName ?? "", C_BEDARF.Ton(), 0f, null, linienwerte,
+                                            Einheit: string.IsNullOrEmpty(einheit) ? null : einheit));
+            }
             return z;
         }
 
@@ -2809,6 +2818,13 @@ namespace WindowsFormsApplication1
                         Text(zm, ersatzText, f, Farbrolle.TEXT, links + 30f, ky - 1f);
                 });
             }
+            // Die Reihen stehen im Modell, ohne Zeichnung — „CSV…“ schreibt sie je Jahr der Tafel.
+            for (int i = 0; i < gueltig.Count; i++)
+            {
+                var werte = new double[n];
+                for (int t = 0; t < n; t++) werte[t] = Zahlungsbetrag(gueltig[i], t);
+                z.FuegeReihe(new Datenreihe(gueltig[i].Name ?? "", farben[i].Ton(), 0f, null, werte, Einheit: "€"));
+            }
             return z;
         }
 
@@ -3677,6 +3693,11 @@ namespace WindowsFormsApplication1
                              rc.Bottom + 8f));
                 }
 
+            // Die Reihe steht im Modell, ohne Zeichnung — „CSV…“ schreibt die zwölf Monatswerte.
+            var monatswerte = new double[12];
+            Array.Copy(werte, monatswerte, 12);
+            z.FuegeReihe(new Datenreihe(titel ?? "", ton, 0f, null, monatswerte,
+                                        Einheit: string.IsNullOrEmpty(einheit) ? null : einheit));
             return z;
         }
 
