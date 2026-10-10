@@ -76,7 +76,7 @@
                         <ul class="epos-kalb-ferienliste">
                             @foreach (KalenderFerienzeile f in a.Ferien)
                             {
-                                <li>@(f.Name + ": " + Kalendertage.Kurz(f.Beginn, Jahr) + " – " + Kalendertage.Kurz(f.Ende, Jahr))</li>
+                                <li>@(f.Name + ": " + Tagtext(f.Beginn) + " – " + Tagtext(f.Ende))</li>
                             }
                         </ul>
                         <p class="epos-leisezeile">@Texte.HinweisKalbFerienZone</p>
@@ -238,7 +238,7 @@
                     @foreach (KalenderBandabschnitt b in a.Band)
                     {
                         KalenderBandabschnitt abschnitt = b;
-                        string titel = Kalendertage.Kurz(b.Beginn, Jahr) + " – " + Kalendertage.Kurz(b.Ende, Jahr) + " · " + Quelltext(b.Art, b.Quelle);
+                        string titel = Tagtext(b.Beginn) + " – " + Tagtext(b.Ende) + " · " + Quelltext(b.Art, b.Quelle);
                         string stil = "flex-grow: " + (b.Ende - b.Beginn + 1).ToString(CultureInfo.InvariantCulture);
                         @if (abschnitt.Schluessel is KalenderZeilenschluessel s)
                         {
@@ -275,8 +275,8 @@
                             {
                                 KalenderZuordnungszeile zeile = z;
                                 <tr class="epos-kalb-zeile @(zeile.Schluessel == _gewaehlt ? "epos-kalb-zeile--gewaehlt" : "")" data-name="@zeile.Schluessel.Name">
-                                    <td>@Kalendertage.Kurz(zeile.Schluessel.Beginn, Jahr)</td>
-                                    <td>@Kalendertage.Kurz(zeile.Schluessel.Ende, Jahr)</td>
+                                    <td>@Tagtext(zeile.Schluessel.Beginn)</td>
+                                    <td>@Tagtext(zeile.Schluessel.Ende)</td>
                                     <td>@zeile.Schluessel.Name</td>
                                     <td>@Wirkungstext(zeile.Wirkung)</td>
                                     <td>@Maske(zeile)</td>
@@ -341,7 +341,7 @@
                         {
                             KalenderZuordnungszeile zeile = z;
                             <tr class="epos-kalb-tag @(zeile.Schluessel == _gewaehlt ? "epos-kalb-zeile--gewaehlt" : "")" data-name="@zeile.Schluessel.Name">
-                                <td>@Kalendertage.Kurz(zeile.ErsterTag, Jahr)</td>
+                                <td>@Tagtext(zeile.ErsterTag)</td>
                                 <td>@zeile.Schluessel.Name</td>
                                 <td>@Wirkungstext(zeile.Wirkung)</td>
                                 <td>@Maske(zeile)</td>
@@ -398,7 +398,7 @@
                                 continue;
                             }
                             KalenderRastertag tag = a.Raster[Kalendertage.Jahrestag(monat, t) - 1];
-                            string titel = Kalendertage.Kurz(tag.Tag, Jahr) + " · " + Quelltext(tag.Art, tag.Quelle);
+                            string titel = Tagtext(tag.Tag) + " · " + Quelltext(tag.Art, tag.Quelle);
                             <button type="button" class="epos-kalb-jahrtag epos-kalb-art-@((int)tag.Art) @(tag.Schluessel is not null && tag.Schluessel == _gewaehlt ? "epos-kalb-jahrtag--gewaehlt" : "") @(IstGemeinsam(tag.Schluessel) ? "epos-kalb-jahrtag--gemeinsam" : "")"
                                     data-tag="@tag.Tag" title="@titel" aria-label="@titel" @onclick="() => TagGeklickt(tag)">@t</button>
                         }
@@ -437,8 +437,17 @@
     /// <summary>Die Ansicht, die gerade gezeichnet ist. Prüfhilfe.</summary>
     public KalenderAnsicht? Ansicht => _ansicht;
 
-    /// <summary>Das Bezugsjahr des Wegs (Vorgabe 2025).</summary>
-    private int Jahr => Bearbeitung.Weg.Bezugsjahr ?? 2025;
+    /// <summary>Der Wochentag des 1. Januar im Raster des Wegs (E115); ohne Angabe das Rückfallraster.</summary>
+    private int W0 => Bearbeitung.Weg.WochentagJan1 ?? Kalendertage.WOCHENTAG_RUECKFALL;
+
+    /// <summary>
+    /// Das Jahr der Datumsfelder: mit Preisreihe deren Jahr, sonst ein Gemeinjahr mit demselben Raster
+    /// (<see cref="Kalendertage.Darstellungsjahr"/>).
+    /// </summary>
+    private int Jahr => Kalendertage.Darstellungsjahr(W0, Bearbeitung.Weg.Bezugsjahr);
+
+    /// <summary>Die Anzeige eines Jahrestags: „Do 15.01." im Raster, mit Preisreihe „15.01.2027".</summary>
+    private string Tagtext(int tag) => Kalendertage.Anzeige(tag, W0, Bearbeitung.Weg.Bezugsjahr);
 
     private DateOnly ErsterTag => new(Jahr, 1, 1);
     private DateOnly LetzterTag => new(Jahr, 12, 31);
@@ -1111,7 +1120,7 @@
 
     private void TagGeklickt(KalenderRastertag t)
     {
-        _tagzeile = Kalendertage.Kurz(t.Tag, Jahr) + " · " + Quelltext(t.Art, t.Quelle);
+        _tagzeile = Tagtext(t.Tag) + " · " + Quelltext(t.Art, t.Quelle);
         if (t.Schluessel is KalenderZeilenschluessel s) ZeileOeffnen(s);
     }
 

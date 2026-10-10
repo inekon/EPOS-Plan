@@ -1343,8 +1343,9 @@ q(h) = b(h) / Σ_M a · M_m · 1000                     „Ferien kürzen die Mo
 h = 24 d + s, M die Stunden des Monats m, M_m seine Menge [MWh]. Ferien gehen Feiertagen vor;
 Feiertage verteilen stets nur um. Die Feiertage kommen aus `Feiertage` (die neun
 bundeseinheitlichen, Ostern als Rechenvorschrift) und `Landesfeiertage` (die landesweiten
-Feiertage des gewählten Landes), aufgelöst gegen das Referenzjahr des Projekts
-(`SolardatenCtrl.Referenzjahr`) und als Tag im Gemeinjahr abgebildet. Hat ein Monat ohne Kürzen
+Feiertage des gewählten Landes), aufgelöst im Wochentagsraster des Projekts — dem der Klimaregion, mit
+Preisreihe deren Jahr (`Konditionierungdatenweg.Raster`, E115; dasselbe Raster wie Gebäudelauf und
+Zapfkalender) — und als Tag im Gemeinjahr abgebildet. Hat ein Monat ohne Kürzen
 keine Stunde mit Bedarf mehr, rechnet er ohne Ferien und das Laufprotokoll nennt es. Ohne Kalender
 ruft die Routine die Kachelung `BhkwPlan.StromWocheToJahr` wie zuvor.
 

@@ -199,14 +199,13 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             int geb = Zonenprojekt1052.Gebaeude(PROJEKT);
             List<ZoneModel> z = new GebaeudeZonenCtrl().LesenJeGebaeude(geb);
-            const int JAHR = Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE;
-            int w0 = Konditionierungsarbeitsstand.WochentagDesErstenJanuar(JAHR);
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(PROJEKT);   // das Raster des Laufs (E115)
             var kond = new KonditionierungCtrl();
             (HashSet<int> hoch, HashSet<int> runter, double min, double max) Spruenge(ZoneModel x)
             {
                 Konditionierungsstand s = kond.StandLesen(KonditionierungCtrl.Eigner.Zone(geb, x.ID), out string m);
                 Assert.Null(m);
-                double[] reihe = s.Kalender(Konditionierungsgroesse.Heizsoll).Auswerten(w0, JAHR);
+                double[] reihe = s.Kalender(Konditionierungsgroesse.Heizsoll).Auswerten(raster);
                 Assert.Equal(8760, reihe.Length);
                 var hoch = new HashSet<int>();
                 var runter = new HashSet<int>();

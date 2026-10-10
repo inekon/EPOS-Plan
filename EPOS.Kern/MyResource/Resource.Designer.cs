@@ -5748,7 +5748,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wollen Sie wirklich das BHKW löschen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogeintrag &quot;{0}&quot; wird für ALLE Projekte gelöscht. Fortfahren? ähnelt.
         /// </summary>
         public static string BHKWV_FRAGE_LOESCHEN {
             get {
@@ -6032,6 +6032,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKW_INVEST_JEKW_FELD {
             get {
                 return ResourceManager.GetString("BHKW_INVEST_JEKW_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit. ähnelt.
+        /// </summary>
+        public static string BHKW_RUECK_BLEIBT {
+            get {
+                return ResourceManager.GetString("BHKW_RUECK_BLEIBT", resourceCulture);
             }
         }
         
@@ -8106,7 +8115,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Gemeinjahr mit 1. Januar = {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Wochentagsraster der Klimaregion des Projekts. ähnelt.
         /// </summary>
         public static string BKAL_HRL_JAHR {
             get {
@@ -41718,51 +41727,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_FEHLT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_GESPEICHERT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPEICHERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_GESPERRT {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_GESPERRT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_KEINE {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_KEINE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
-        /// </summary>
-        public static string HZK_MSG_SAMMEL_VERSTOSS {
-            get {
-                return ResourceManager.GetString("HZK_MSG_SAMMEL_VERSTOSS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Im Projekt bleiben: Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage. ähnelt.
         /// </summary>
         public static string HZK_RUECK_BLEIBT {
@@ -48842,6 +48806,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KATRUECK_WAHL_UEBERSCHREIBEN {
             get {
                 return ResourceManager.GetString("KATRUECK_WAHL_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_FEHLT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist gesperrt. Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_GESPERRT {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Änderung. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_KEINE {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} Es wurde nichts gespeichert. ähnelt.
+        /// </summary>
+        public static string KAT_MSG_SAMMEL_VERSTOSS {
+            get {
+                return ResourceManager.GetString("KAT_MSG_SAMMEL_VERSTOSS", resourceCulture);
             }
         }
         
@@ -78465,6 +78474,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Gemeinjahr, 1. Januar = {1} ähnelt.
+        /// </summary>
+        public static string KOND_MSG_TEPPICH_TITEL_RASTER {
+            get {
+                return ResourceManager.GetString("KOND_MSG_TEPPICH_TITEL_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vereinfacht auf {0} Farbstufen, damit das Bild höchstens {1} Elemente trägt. ähnelt.
         /// </summary>
         public static string KOND_MSG_TEPPICH_VEREINFACHT {
@@ -79847,6 +79865,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOND_TXT_TEPPICHBILD {
             get {
                 return ResourceManager.GetString("KOND_TXT_TEPPICHBILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gemeinjahr, 1. Januar = {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle. ähnelt.
+        /// </summary>
+        public static string KOND_TXT_TEPPICHBILD_RASTER {
+            get {
+                return ResourceManager.GetString("KOND_TXT_TEPPICHBILD_RASTER", resourceCulture);
             }
         }
         
@@ -98684,7 +98711,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Gemeinjahr mit 1. Januar = {0}; die Woche liegt im Januar ohne Feiertag. ähnelt.
         /// </summary>
         public static string RNP_ED_TXT_BEZUG {
             get {

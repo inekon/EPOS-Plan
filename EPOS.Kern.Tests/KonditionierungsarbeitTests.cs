@@ -45,7 +45,7 @@ namespace EPOS.Kern.Tests
 
         internal static Konditionierungsarbeitsstand Stand(params Konditionierungszone[] zonen)
             => new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, Bestand()),
-                                                zonen, 201.0, 2025);
+                                                zonen, 201.0, Gemeinjahrkalender.Kalenderjahr(2025));
 
         internal static Konditionierungszone Zone(long id, string name, Action<Matrixeingang> eigene = null)
         {
@@ -176,8 +176,8 @@ namespace EPOS.Kern.Tests
             Assert.True(b.Gebaeude.Herkunft(Konditionierungsgroesse.Heizsoll).IstLeer);
 
             // „Anlegen ändert keine Reihe": die Reihe aus dem Speicher ist dieselbe wie abgeleitet.
-            double[] abgeleitet = l.Kalender.Auswerten(a.W0, a.Referenzjahr);
-            double[] angelegt = b.GeltenderKalender(Konditionierungsgroesse.Heizsoll, null).Auswerten(a.W0, a.Referenzjahr);
+            double[] abgeleitet = l.Kalender.Auswerten(a.Kalender);
+            double[] angelegt = b.GeltenderKalender(Konditionierungsgroesse.Heizsoll, null).Auswerten(a.Kalender);
             Assert.Equal(abgeleitet, angelegt);
 
             // Zweimal anlegen ersetzt — derselbe Kalender.
@@ -462,7 +462,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(satz.Reihe(Konditionierungsgroesse.Heizsoll), angelegt.Reihe(Konditionierungsgroesse.Heizsoll));
 
             // Die Zone ohne eigene Zelle nimmt den Kalender des Gebäudes.
-            Konditionierungsarbeitsstand d = new Konditionierungsarbeitsstand(c.Gebaeude, new[] { Zone(-1, "Anbau") }, 201.0, 2025);
+            Konditionierungsarbeitsstand d = new Konditionierungsarbeitsstand(c.Gebaeude, new[] { Zone(-1, "Anbau") }, 201.0, Gemeinjahrkalender.Kalenderjahr(2025));
             Konditionierungssatz zone = Konditionierungdatenweg.Satz(d, -1, Vdi6007Probe.Wochenende(), 2025, false, false);
             Assert.Equal(satz.Reihe(Konditionierungsgroesse.Heizsoll), zone.Reihe(Konditionierungsgroesse.Heizsoll));
         }

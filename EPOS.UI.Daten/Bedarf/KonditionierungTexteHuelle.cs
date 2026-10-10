@@ -132,6 +132,7 @@ namespace WindowsFormsApplication1
             t.LabelVorschauWoche = Text_("KOND_LBL_VORSCHAU_WOCHE", t.LabelVorschauWoche);
             t.LabelTeppichbild = Text_("KOND_LBL_TEPPICHBILD", t.LabelTeppichbild);
             t.TextTeppichbild = Text_("KOND_TXT_TEPPICHBILD", t.TextTeppichbild);
+            t.TextTeppichbildRaster = Text_("KOND_TXT_TEPPICHBILD_RASTER", t.TextTeppichbildRaster);
             t.TextQuelle = Text_("KOND_TXT_QUELLE", t.TextQuelle);
             t.HinweisPerioden = Text_("KOND_TXT_HINWEIS_PERIODEN", t.HinweisPerioden);
             t.HinweisFeiertage = Text_("KOND_TXT_HINWEIS_FEIERTAGE", t.HinweisFeiertage);

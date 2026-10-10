@@ -93,7 +93,7 @@ namespace EPOS.Kern.Tests
             // Nennwert ist der der Zone.
             Konditionierungskalender zone = a.GeltenderKalender(Konditionierungsgroesse.Personen, -1);
             Assert.Equal(500.0, zone.Nennwert);
-            Assert.Equal(gebaeude.Auswerten(a.W0, a.Referenzjahr), zone.Auswerten(a.W0, a.Referenzjahr));
+            Assert.Equal(gebaeude.Auswerten(a.Kalender), zone.Auswerten(a.Kalender));
         }
 
         [Fact]
@@ -136,9 +136,9 @@ namespace EPOS.Kern.Tests
             // P1 an der Zone: Das Jahresmittel der Personenwärme ist das der Zone.
             Konditionierungsarbeitsstand a = MitPersonen(Zone(-1, 100.5));
             double gebaeude = Konditionierungsarbeit.PersonenJahresmittelW(
-                a.GeltenderKalender(Konditionierungsgroesse.Personen, null), a.W0, a.Referenzjahr);
+                a.GeltenderKalender(Konditionierungsgroesse.Personen, null), a.Kalender);
             double zone = Konditionierungsarbeit.PersonenJahresmittelW(
-                a.GeltenderKalender(Konditionierungsgroesse.Personen, -1), a.W0, a.Referenzjahr);
+                a.GeltenderKalender(Konditionierungsgroesse.Personen, -1), a.Kalender);
             Assert.Equal(gebaeude / 2.0, zone, 9);
         }
     }

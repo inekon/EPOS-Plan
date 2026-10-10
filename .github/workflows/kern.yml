@@ -417,6 +417,8 @@ jobs:
       # bleiben byte-gleich.
       # R49 (10.10.2026): auf dem Stand R48 (Gemeinjahr) dazu 1063 (Kaeltemaschine mit Teillast und Takten);
       # die zehn uebrigen bleiben byte-gleich.
+      # R50 (10.10.2026): Wochentagsraster der Klimaregion fuer alle Leser (E115); 1051 aendert sich
+      # (kein Tag mit begrenzter Aufheizzeit mehr), die zehn uebrigen bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -429,21 +431,21 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-09_R49_KaeltemaschineTeillast
+      - name: Vergleich mit Referenzbasis 2026-10-10_R50_Wochentagsraster
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1058 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1060 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-09_R49_KaeltemaschineTeillast/Projekt_1063 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-10_R50_Wochentagsraster/Projekt_1063 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063; do

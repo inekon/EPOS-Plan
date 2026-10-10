@@ -350,7 +350,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Stufe KP1: EINE Naht für alle Zonen — der Datenweg liest je Zone ihren Satz (Konzept 3.4); das
-        /// Referenzjahr kommt aus dem Klimakalender des Laufs (F11).
+        /// Wochentagsraster kommt aus dem Klimakalender des Laufs (E115).
         /// </summary>
         private Func<long?, Konditionierungssatz> Zonenkonditionierung(ProjektGebaeudeModel gebaeude, KlimakalenderGemeinsam gemeinsam)
         {
@@ -450,8 +450,8 @@ namespace WindowsFormsApplication1
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " — der Jahresgang der Außentemperatur ist " +
                           "unplausibel; die Erdreichtemperatur steht auf den Ersatzwerten des Erdreichmodells.");
             p.HinweisEinmal("vdi6007-wochenende",
-                "Gebäudemodell VDI 6007: Wochenendmaske aus dem Ortszeit-Kalender des Referenzjahres " +
-                gemeinsam.Referenzjahr.ToString(CultureInfo.InvariantCulture) + "; Probe gegen Tab_Klimadaten.WE: " +
+                "Gebäudemodell VDI 6007: Wochenendmaske im Wochentagsraster des Projekts (" +
+                gemeinsam.Raster + "); Probe gegen Tab_Klimadaten.WE: " +
                 (gemeinsam.WochenendProbeAbweichungen == 0
                     ? "gleich."
                     : gemeinsam.WochenendProbeAbweichungen.ToString(CultureInfo.InvariantCulture) + " Tage verschieden (Befund der Probe, kein Rechenfehler)."));
@@ -955,8 +955,8 @@ namespace WindowsFormsApplication1
                     (8760 - e.StundenMitGegenstrahlung).ToString(CultureInfo.InvariantCulture) +
                     " Stunden keine Gegenstrahlung — dort rechnet nur der kurzwellige Term (Δθ_lw = 0).");
             p.HinweisEinmal("vdi6007-wochenende",
-                "Gebäudemodell VDI 6007: Wochenendmaske aus dem Ortszeit-Kalender des Referenzjahres " +
-                gemeinsam.Referenzjahr.ToString(CultureInfo.InvariantCulture) + "; Probe gegen Tab_Klimadaten.WE: " +
+                "Gebäudemodell VDI 6007: Wochenendmaske im Wochentagsraster des Projekts (" +
+                gemeinsam.Raster + "); Probe gegen Tab_Klimadaten.WE: " +
                 (gemeinsam.WochenendProbeAbweichungen == 0
                     ? "gleich."
                     : gemeinsam.WochenendProbeAbweichungen.ToString(CultureInfo.InvariantCulture) + " Tage verschieden (Befund der Probe, kein Rechenfehler)."));

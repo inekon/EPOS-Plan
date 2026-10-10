@@ -410,36 +410,38 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der Bezug des Wegs</b> (Stufe KP2, Welle U1, Teilschritt 4 (c)) — was der Lauf aus dem
         /// PROJEKT nimmt und der Arbeitsstand deshalb auch: die Stufe der Anlagenkopplung
-        /// (<c>Tab_Einstellungen.Anlagenkopplung</c>), das Referenzjahr des Laufs und den Projektschalter
-        /// „Kühlung rechnen". Ein Katalogbau kennt kein Projekt: keine Kopplung, das Bezugsjahr
-        /// <see cref="Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE"/>, die Kühlung allein nach dem
-        /// Gebäude.
+        /// (<c>Tab_Einstellungen.Anlagenkopplung</c>), das Wochentagsraster des Laufs und den Projektschalter
+        /// „Kühlung rechnen". Ein Katalogbau kennt kein Projekt: keine Kopplung, das Rückfallraster
+        /// <see cref="Konditionierungdatenweg.Rueckfallraster"/>, die Kühlung allein nach dem Gebäude.
         /// </summary>
         /// <param name="Stufe">Die Kopplungsstufe des Projekts; <c>null</c> = keine.</param>
-        /// <param name="Referenzjahr">Das Referenzjahr; <c>null</c> = das Bezugsjahr der Vorgabe.</param>
+        /// <param name="Raster">Das Wochentagsraster (E115); <c>null</c> = das Rückfallraster des Katalogs.</param>
         /// <param name="Kuehlbetrieb">Rechnet das Projekt die Kühlung? Im Katalog <c>true</c> (unbekannt).</param>
-        internal sealed record Bezug(string Stufe, int? Referenzjahr, bool Kuehlbetrieb = true)
+        internal sealed record Bezug(string Stufe, Gemeinjahrkalender? Raster, bool Kuehlbetrieb = true)
         {
             /// <summary>Der Bezug eines Katalogbaus.</summary>
             internal static Bezug Katalog { get; } = new Bezug(null, null);
+
+            /// <summary>Das wirksame Raster: das des Projekts, sonst das Rückfallraster.</summary>
+            internal Gemeinjahrkalender Wirksam => Raster ?? Konditionierungdatenweg.Rueckfallraster;
         }
 
         /// <summary>
         /// Der Bezug eines Projekts — dieselben Quellen wie der Lauf: <see cref="KonfigurationCtrl.AnlagenkopplungLesen"/>,
-        /// <see cref="Konditionierungdatenweg.Bezugsjahr"/> (das Jahr der Preisreihe, sonst keines — E114) und
+        /// <see cref="Konditionierungdatenweg.Raster(int)"/> (w₀ der Klimaregion, mit Preisreihe deren Jahr — E115) und
         /// <see cref="KonfigurationCtrl.KuehlbetriebLesen"/>; ohne Projekt (<paramref name="idProjekt"/> ≤ 0)
         /// der des Katalogs.
         /// </summary>
         internal static Bezug Projektbezug(int idProjekt)
             => idProjekt > 0
-                ? new Bezug(KonfigurationCtrl.AnlagenkopplungLesen(idProjekt), Konditionierungdatenweg.Bezugsjahr(idProjekt),
+                ? new Bezug(KonfigurationCtrl.AnlagenkopplungLesen(idProjekt), Konditionierungdatenweg.Raster(idProjekt),
                             KonfigurationCtrl.KuehlbetriebLesen(idProjekt))
                 : Bezug.Katalog;
 
         /// <summary>
         /// Der reine Arbeitsstand zu einem Stand der Oberfläche (<paramref name="art"/>: Gebäude oder
         /// Katalogbau) mit dem Bezug des Projekts: Kopplung und Kühlung nach denselben Regeln wie der Lauf
-        /// (<c>Vdi6007Rechenweg</c>), das Referenzjahr des Laufs.
+        /// (<c>Vdi6007Rechenweg</c>), das Wochentagsraster des Laufs.
         /// </summary>
         /// <exception cref="ArgumentException">Ein Kalender der Oberfläche ist unvollständig oder ungültig.</exception>
         internal static Konditionierungsarbeitsstand Arbeitsstand(KonditionierungStand s, Kalendereigentuemer art,
@@ -454,7 +456,7 @@ namespace WindowsFormsApplication1
             foreach (ZoneDaten z in s.Zonen ?? Array.Empty<ZoneDaten>())
                 zonen.Add(new Konditionierungszone(z.Id, z.Bezeichner ?? "", z.Nutzflaeche, z.IstBeheizt,
                                                    Ebene(z.Konditionierung, Zonenart(art), Bestand(z))));
-            return new Konditionierungsarbeitsstand(gebaeude, zonen, g.WohnflaecheGesamt, bezug.Referenzjahr);
+            return new Konditionierungsarbeitsstand(gebaeude, zonen, g.WohnflaecheGesamt, bezug.Raster);
         }
 
         /// <summary>Die Art der Zonen zu einer Gebäudeebene: am Katalogbau die Katalogzone (Welle ZK-b), sonst die Zone.</summary>
@@ -560,7 +562,7 @@ namespace WindowsFormsApplication1
                 List<KonditionierungProfilposten> posten = an.Posten.Select(x => new KonditionierungProfilposten(
                     Oberflaeche(x.Groesse), x.Weg != Raumnutzungsweg.Keiner, x.Uebernommen, x.Ersetzt, x.Unbeheizt,
                     x.Nennwert.HasValue ? x.Nennwertherleitung ?? "" : "", RaumnutzungHuelle.Hinweistext(x.Hinweis, t))).ToList();
-                string tage = p.IstLeer ? "" : RaumnutzungHuelle.Nutzungstagezeile(p, a.Gebaeude.Bestand, t, a.Feiertagsjahr);
+                string tage = p.IstLeer ? "" : RaumnutzungHuelle.Nutzungstagezeile(p, a.Gebaeude.Bestand, t, a.Kalender);
                 return new KonditionierungProfilergebnis(true, "", neu, name ?? p.Bezeichner ?? "", posten, an.Aufgeteilt, p.IstLeer,
                                                          tage);
             }
@@ -749,7 +751,9 @@ namespace WindowsFormsApplication1
                 SpeichernUnterRueckfrage = projekt ? s => SpeichernUnterBefund(s, art, bezug) : null,
                 WochenVorschau = Vorschau,
                 Teppichbild = (s, o) => Teppich(s, art, bezug, o),
-                Bezugsjahr = bezug.Referenzjahr ?? Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,   // Rasterjahr der Anzeige (E114)
+                // Das Raster der Anzeige (E115): mit Preisreihe deren Jahr, sonst w₀ im Gemeinjahr.
+                Bezugsjahr = bezug.Wirksam.MitJahr ? bezug.Wirksam.Jahr : null,
+                WochentagJan1 = bezug.Wirksam.W0,
                 Lasten = (s, zone) => Lasten(s, art, bezug, zone),
                 Freigabeband = s => Freigabe(s, art, bezug),
                 Pruefen = s => Pruefen(s, art, bezug),
@@ -990,9 +994,9 @@ namespace WindowsFormsApplication1
         /// <b>Das Teppichbild</b> einer Karte (Teilkonzept 7.5, Entwurf KP2 Festlegung 8; Welle U3): der
         /// Kalender, den der Dialog für die Größe am Ort zeigt (angelegt, sonst der Generator aus der
         /// wirksamen Matrix, <see cref="Konditionierungsarbeitsstand.Ansichtskalender"/>), als
-        /// <see cref="Kalenderteppich"/> gegen das Bezugsjahr des Wegs — im Projekt das des Laufs, im
-        /// Katalog 2025 — und über den Renderer aus K4 (<see cref="ChartRenderer.KalenderteppichModell"/>)
-        /// mit den Texten der Oberflächensprache. Das Bezugsjahr steht im Titel, der <c>data-wert</c> jedes
+        /// <see cref="Kalenderteppich"/> im Wochentagsraster des Wegs — im Projekt das des Laufs, im
+        /// Katalog das Rückfallraster — und über den Renderer aus K4 (<see cref="ChartRenderer.KalenderteppichModell"/>)
+        /// mit den Texten der Oberflächensprache. Raster bzw. Bezugsjahr stehen im Titel, der <c>data-wert</c> jedes
         /// Felds nennt Zeitraum, Stunden, Wert und Quelle. <c>null</c> = kein Kalender (etwa Personen ohne Anteil).
         /// </summary>
         private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Teppich(KonditionierungStand s, Kalendereigentuemer art,
@@ -1004,7 +1008,7 @@ namespace WindowsFormsApplication1
                 Konditionierungsarbeitsstand a = Arbeitsstand(s, art, bezug);
                 Konditionierungskalender k = a.Ansichtskalender(Kern(o.Groesse), o.Zone);
                 if (k == null) return null;
-                return ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(k, a.Referenzjahr, a.Feiertagsjahr), null,
+                return ChartRenderer.KalenderteppichModell(Kalenderteppich.ImGemeinjahr(k, a.Kalender), null,
                                                            ChartRenderer.KalenderteppichTexte.AusRessourcen());
             }
             catch (ArgumentException)

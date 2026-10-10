@@ -12747,7 +12747,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Rücklauf</value>
   </data>
   <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
-    <value>Wollen Sie wirklich das BHKW löschen?</value>
+    <value>Der Katalogeintrag "{0}" wird für ALLE Projekte gelöscht. Fortfahren?</value>
   </data>
   <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
@@ -41192,6 +41192,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="KOND_TXT_TEPPICHBILD" xml:space="preserve">
     <value>Bezugsjahr {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle.</value>
   </data>
+  <data name="KOND_TXT_TEPPICHBILD_RASTER" xml:space="preserve">
+    <value>Gemeinjahr, 1. Januar = {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde nennt ihre Quelle.</value>
+  </data>
   <data name="KOND_TXT_QUELLE" xml:space="preserve">
     <value>Quelle: {0}</value>
   </data>
@@ -41548,6 +41551,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="KOND_MSG_TEPPICH_TITEL" xml:space="preserve">
     <value>{0} · Bezugsjahr {1}</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_TITEL_RASTER" xml:space="preserve">
+    <value>{0} · Gemeinjahr, 1. Januar = {1}</value>
   </data>
   <data name="KOND_MSG_TEPPICH_HEIZEN" xml:space="preserve">
     <value>Heizen</value>
@@ -42474,7 +42480,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.</value>
   </data>
   <data name="BKAL_HRL_JAHR" xml:space="preserve">
-    <value>Im Jahr {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Referenzjahr des Projekts.</value>
+    <value>Im Gemeinjahr mit 1. Januar = {0}: {1} Feiertage wie Sonntag, {2} Ferientage. Im Lauf gilt das Wochentagsraster der Klimaregion des Projekts.</value>
   </data>
   <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
     <value>Betriebskalender gespeichert.</value>
@@ -47340,7 +47346,7 @@ Chart</value>
     <value>Teppichbild</value>
   </data>
   <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
-    <value>Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag.</value>
+    <value>Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Gemeinjahr mit 1. Januar = {0}; die Woche liegt im Januar ohne Feiertag.</value>
   </data>
   <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
     <value>Die Größe ist nicht belegt; das Ziel behält seinen Kalender.</value>
@@ -50059,19 +50065,19 @@ Chart</value>
   <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
     <value>Keine Änderung</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_KEINE" xml:space="preserve">
     <value>Keine Änderung.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_FEHLT" xml:space="preserve">
     <value>Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPERRT" xml:space="preserve">
     <value>„{0}“ ist gesperrt. Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
     <value>„{0}“: {1} Es wurde nichts gespeichert.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} Sätze gespeichert.</value>
   </data>
   <data name="HZK_LBL_SUMME" xml:space="preserve">
@@ -50745,6 +50751,9 @@ Chart</value>
   </data>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Je Kältemaschine mit Teillastrechnung Taktstrom, Starts, Teillastanteil, mittlerer Lastgrad und Jahres-EER ohne Hilfsstrom als „Spaltenname=Wert“; leer ohne solche Maschine.</value>
+  </data>
+  <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
+    <value>Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit.</value>
   </data>
 </root>
 

@@ -87,7 +87,7 @@ namespace EPOS.Kern.Tests
             WocheGleich(Anwesenheit(), k.Grundangabe);
             Assert.Equal(100.0, k.Nennwert);
 
-            double erwartet = Math.Round(Konditionierungsarbeit.GeraeteNennwertNachPersonen(500.0, k, b.W0, b.Referenzjahr), 4,
+            double erwartet = Math.Round(Konditionierungsarbeit.GeraeteNennwertNachPersonen(500.0, k, b.Kalender), 4,
                                          MidpointRounding.AwayFromZero);
             Assert.True(erwartet < 500.0);
             Assert.Equal(erwartet, b.Gebaeude.Bestand.InterneWaermegewinne);

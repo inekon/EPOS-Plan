@@ -127,7 +127,7 @@ namespace EPOS.Kern.Tests
                 SolarOrtszeit = klima,
                 Laengengrad = LAENGE,
                 Breitengrad = BREITE,
-                Referenzjahr = 2025,
+                Raster = Gemeinjahrkalender.Kalenderjahr(2025),
                 WochenendeOrtszeit = Wochenende(),
             };
             return gemeinsam;

@@ -272,20 +272,21 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(k.Woche);
             Assert.Equal(woche, k.Woche);
 
-            // Der Bezug selbst: Stufe und Feiertagsjahr aus dem Projekt (E114: ohne Preisreihe keines), im Katalog keiner;
-            // das Raster des Arbeitsstands ist das Rasterjahr des Laufs.
+            // Der Bezug selbst: Stufe und Raster aus dem Projekt (E115: w₀ der Klimaregion, ohne Preisreihe kein Jahr),
+            // im Katalog das Rückfallraster; der Arbeitsstand rechnet im Raster des Bezugs.
             KonditionierungHuelle.Bezug projekt = KonditionierungHuelle.Projektbezug(AK1);
             Assert.Equal(DbWerte.ANLAGENKOPPLUNG_AK1, projekt.Stufe);
-            Assert.Equal(SolardatenCtrl.Preisreihenjahr(AK1), projekt.Referenzjahr);
-            Assert.Null(projekt.Referenzjahr);
-            Assert.Equal(SolardatenCtrl.Referenzjahr(AK1),
-                         KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude, projekt).Referenzjahr);
+            Assert.Equal(Konditionierungdatenweg.Raster(AK1), projekt.Raster);
+            Assert.Equal(SolardatenCtrl.Preisreihenjahr(AK1) ?? 0, projekt.Wirksam.Jahr);
+            Assert.Equal(projekt.Wirksam,
+                         KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude, projekt).Kalender);
             Assert.Equal(2024, KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Gebaeude,
-                                                                   projekt with { Referenzjahr = 2024 }).Referenzjahr);
+                                                                   projekt with { Raster = Gemeinjahrkalender.Kalenderjahr(2024) })
+                                                    .Feiertagsjahr);
             KonditionierungHuelle.Bezug katalog = KonditionierungHuelle.Projektbezug(0);
             Assert.Null(katalog.Stufe);
-            Assert.Equal(Konditionierungsarbeitsstand.BEZUGSJAHR_VORGABE,
-                         KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Katalogbau, katalog).Referenzjahr);
+            Assert.Equal(Konditionierungdatenweg.Rueckfallraster,
+                         KonditionierungHuelle.Arbeitsstand(Stand(daten), Kalendereigentuemer.Katalogbau, katalog).Kalender);
         }
 
         /// <summary>

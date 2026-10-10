@@ -431,6 +431,30 @@ Wärmepumpe, Pufferspeicher).
   bleibt (Energieträger, Temperaturpaar, Senken und Zeitprogramm der Anlage). Die Meldung danach (Banner) nennt
   Zahl und Namen.
 
+### 5.4 Wie gebaut (Stufe 3, BHKW)
+
+Das BHKW folgt dem Heizkessel (5.3); hier steht nur, was abweicht.
+
+- **Kernweg:** `BHKWStammCtrl.Rueckweg()` trägt das Gewerk ein (Kopie `Tab_BHKW`, Katalog `Tab_BHKW_STAMM`, Anlage über
+  `ID_BHKW`, Kostenkomponente 7), dazu `RueckwegVorschau`, `AusProjektUebernehmen`, `RueckwegNameBelegt` und
+  `KatalogsatzLoeschen`. Prüfregel wie beim Speichern: die zwei Wirkungsgradanteile, Teillast und Takten, die
+  Rücklaufgrenze. `Delete` über den Namen läuft über denselben Löschweg samt Satzvorlage. Kein neuer Schemaschritt:
+  208 und 209 führen `ID_Stamm` an `Tab_BHKW` und beide Vorlagenverweise an `Tab_BHKW_STAMM`;
+  `BHKWCtrl.CopyFromStamm` trägt den Ursprung ein.
+- **Nebenposten:** Die Investition hat fünf Posten (`Kosten_Modul`, `Kosten_Montage`, `Kosten_Lieferung`,
+  `Kosten_Schallschutzhaube`, `Kosten_Abgasreinigung`); sie stehen in „Alle Daten“ und in der Satzbearbeitung,
+  `Investition_kwel` ist dort nur Anzeige und wird vom Kern beim Schreiben aus Posten und `Pel` nachgerechnet, ebenso
+  der Gesamtwirkungsgrad aus seinen zwei Anteilen. Mit dem Rückweg gehen Posten, `Investition_kwel` und
+  `Wartungskosten_kwhel` als Schnittmenge.
+- **Grenzleistung:** Zwei Orte. Das Feld beim Projektsatz (mit Herleitung „0 = Projektvorgabe“) ist die Grenzleistung
+  der Anlagenzeile und bleibt im Projekt; `Tab_BHKW.Grenzleistung` ist Spalte des Moduls und geht mit (5.1). Die
+  Rückfrage nennt beides.
+- **Kindzeilen:** Das BHKW hat keine technischen Kindtabellen — Teillast und Takten, Rücklaufgrenze und die
+  Wirkungsgradanteile sind Spalten am Satz. Anlagenbezogen bleiben Energieträger, Grenzleistung und Temperaturpaar der
+  Anlage, Senken und Zeitprogramm.
+- **Neu…:** fragt zuerst den Namen und öffnet dann den Katalogeditor (`BhkwKatalogDialog` braucht ihn); der Knopf
+  steht wie beim Heizkessel rechts im Katalogfuß.
+
 ## 6 Abwägung: die fünf Varianten
 
 Zur Wahl standen fünf Varianten mit gemeinsamen Regeln — der Dialogkörper rollt nicht, jeder Bereich trägt

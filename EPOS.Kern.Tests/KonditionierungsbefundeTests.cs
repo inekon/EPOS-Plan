@@ -34,7 +34,7 @@ namespace EPOS.Kern.Tests
         private const Konditionierungsgroesse HEIZ = Konditionierungsgroesse.Heizsoll;
 
         private static double[] Reihe(Konditionierungskalender k, Konditionierungsarbeitsstand a)
-            => k.Auswerten(a.W0, a.Referenzjahr);
+            => k.Auswerten(a.Kalender);
 
         private static Konditionierungszone Unbeheizt(long id, string name)
         {
@@ -49,7 +49,7 @@ namespace EPOS.Kern.Tests
             b.LuftwechselNutzer = null;
             b.Luftwechselrate = rate;
             Konditionierungsarbeit.HerkunftDesLuftwechsels(b);
-            return new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, b), null, 201.0, 2025);
+            return new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, b), null, 201.0, Gemeinjahrkalender.Kalenderjahr(2025));
         }
 
         // =============================================================================
@@ -131,7 +131,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(350.0, b.Gebaeude.Vorgabe(Konditionierungsgroesse.Personen, DbWerte.KOND_ZEILE_NENNWERT).Wert);
             Konditionierungskalender p = b.GeltenderKalender(Konditionierungsgroesse.Personen, null);
             Assert.NotNull(p);
-            double mittel = Konditionierungsarbeit.PersonenJahresmittelW(p, b.W0, b.Referenzjahr);
+            double mittel = Konditionierungsarbeit.PersonenJahresmittelW(p, b.Kalender);
             Assert.True(mittel > 0.0);
             Assert.Equal(462.0, b.Gebaeude.Bestand.InterneWaermegewinne.Value + mittel, 3);
 
@@ -142,7 +142,7 @@ namespace EPOS.Kern.Tests
 
             // Zurück: ohne Nennwert gilt kein Personenkalender, die Geräte bekommen das Jahresmittel wieder.
             double mittelC = Konditionierungsarbeit.PersonenJahresmittelW(
-                c.GeltenderKalender(Konditionierungsgroesse.Personen, null), c.W0, c.Referenzjahr);
+                c.GeltenderKalender(Konditionierungsgroesse.Personen, null), c.Kalender);
             Konditionierungsarbeitsstand d = Gut(Konditionierungsarbeit.ZelleSetzen(
                 c, Ort(Konditionierungsgroesse.Personen), DbWerte.KOND_ZEILE_NENNWERT, Matrixzelle.Leer));
             Assert.Null(d.GeltenderKalender(Konditionierungsgroesse.Personen, null));
@@ -161,7 +161,7 @@ namespace EPOS.Kern.Tests
             Konditionierungsarbeitsstand b = Gut(Konditionierungsarbeit.Anlegen(a, Ort(Konditionierungsgroesse.Personen)));
             Konditionierungskalender p = b.Gebaeude.Kalender(Konditionierungsgroesse.Personen);
             Assert.Equal(350.0, p.Nennwert);
-            double mittel = Konditionierungsarbeit.PersonenJahresmittelW(p, b.W0, b.Referenzjahr);
+            double mittel = Konditionierungsarbeit.PersonenJahresmittelW(p, b.Kalender);
             Assert.Equal(462.0, b.Gebaeude.Bestand.InterneWaermegewinne.Value + mittel, 3);
         }
 
@@ -226,7 +226,7 @@ namespace EPOS.Kern.Tests
             Matrixeingang bestand = Bestand();
             bestand.Ferienmerker = 0.0;
             bestand.Wochenendmerker = 0.0;
-            var a = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, bestand), null, 201.0, 2025);
+            var a = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, bestand), null, 201.0, Gemeinjahrkalender.Kalenderjahr(2025));
 
             Konditionierungsarbeitsstand b = Gut(Setzen(a, HEIZ, DbWerte.KOND_ZEILE_FERIEN, 15.0));
             Assert.Equal(1.0, b.Gebaeude.Bestand.Ferienmerker);
@@ -337,7 +337,7 @@ namespace EPOS.Kern.Tests
             bestand.SollFerien = 12.0;
             bestand.Ferienbeginn[1] = 355.0;
             bestand.Ferienende[1] = 365.0;
-            var a = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, bestand), null, 201.0, 2025);
+            var a = new Konditionierungsarbeitsstand(Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, bestand), null, 201.0, Gemeinjahrkalender.Kalenderjahr(2025));
 
             Konditionierungsarbeitsstand b = Gut(Konditionierungsarbeit.VorlageUebernehmen(a, Ort(HEIZ), vorlage));
             Konditionierungskalender k = b.Gebaeude.Kalender(HEIZ);
@@ -346,7 +346,7 @@ namespace EPOS.Kern.Tests
             Assert.All(feiertage, p => Assert.InRange(p.Rang, Standardfahrplan.RANG_FEIERTAG, Standardfahrplan.RANG_FEIERTAG_LETZTER));
 
             // Der 25. Dezember (Tag 359) liegt in den Ferien: der Ferienwert, nicht „wie Sonntag".
-            double[] reihe = k.Auswerten(b.W0, b.Referenzjahr);
+            double[] reihe = k.Auswerten(b.Kalender);
             Assert.Equal(12.0, reihe[(359 - 1) * 24 + 12]);
         }
 
@@ -365,7 +365,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(1, s.Bilanz.ErsetztAnzahl(Konditionierungspostenart.Luftwechsel));
 
             // Auch eine Zone, die die Gesamtangabe des Gebäudes erbt, fragt.
-            Konditionierungsarbeitsstand z = new Konditionierungsarbeitsstand(a.Gebaeude, new[] { Zone(-1, "Anbau") }, 201.0, 2025);
+            Konditionierungsarbeitsstand z = new Konditionierungsarbeitsstand(a.Gebaeude, new[] { Zone(-1, "Anbau") }, 201.0, Gemeinjahrkalender.Kalenderjahr(2025));
             Assert.True(Setzen(z, Konditionierungsgroesse.Lueftung, DbWerte.KOND_ZEILE_WOCHENENDE, 0.2, -1).Rueckfrage);
         }
 

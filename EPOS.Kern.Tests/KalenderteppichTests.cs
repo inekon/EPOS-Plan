@@ -213,7 +213,7 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(2025, 2)]
         [InlineData(2024, 0)]
-        [InlineData(2026, 5)]
+        [InlineData(2027, 4)]
         public void Ohne_aus_ist_die_Rohreihe_Auswerten_Stunde_fuer_Stunde(int jahr, int w0)
         {
             Konditionierungskalender ohneAus = BueroHeizen(mitSaison: false);
@@ -248,16 +248,17 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Im Katalog gibt es kein Feiertagsjahr (E114), das Rasterjahr ist das des Laufs ohne Projekt (2025), w₀ kommt
-        /// aus derselben Wochenendmaske wie im Lauf — keine Uhr.
+        /// Im Katalog gibt es kein Feiertagsjahr, das Raster ist das Rückfallraster ohne Projekt (E115: 1. Januar =
+        /// Sonntag, <see cref="ProfilBedarf.WOCHENTAG_ALTKONVENTION"/>) — keine Uhr, keine Datenbank.
         /// </summary>
         [Fact]
-        public void Das_Bezugsjahr_im_Katalog_ist_das_des_Laufs_ohne_Projekt()
+        public void Das_Raster_im_Katalog_ist_das_Rueckfallraster()
         {
             Assert.Null(Konditionierungdatenweg.Bezugsjahr(0));
             Assert.Null(Konditionierungdatenweg.Bezugsjahr(-1));
-            Assert.Equal(DbWerte.SOLAR_REFERENZJAHR_STANDARD, Konditionierungdatenweg.Rasterjahr(0));
-            Assert.Equal(SolardatenCtrl.Referenzjahr(0), Konditionierungdatenweg.Rasterjahr(-1));
+            Assert.Equal(new Gemeinjahrkalender(ProfilBedarf.WOCHENTAG_ALTKONVENTION), Konditionierungdatenweg.Raster(0));
+            Assert.Equal(Konditionierungdatenweg.Rueckfallraster, Konditionierungdatenweg.Raster(-1));
+            Assert.False(Konditionierungdatenweg.Raster(0).MitJahr);
             Assert.Equal(2, Kalenderteppich.WochentagDesErstenTagsIm(2025));
             Assert.Equal(0, Kalenderteppich.WochentagDesErstenTagsIm(2024));
             Assert.Equal(GebaeudeModellEingang.WochentagDesErstenTags(KlimakalenderGemeinsam.WochenendmaskeBilden(2031)),
@@ -275,9 +276,11 @@ namespace EPOS.Kern.Tests
             var aus = new Konditionierungskalender(Konditionierungsgroesse.Kuehlsoll, Kalenderangabe.Abgeschaltet, null, null);
             Assert.All(Kalenderteppich.Bilden(aus, JAHR).Rohreihe, v => Assert.True(double.IsNaN(v)));
 
-            Assert.Throws<ArgumentNullException>(() => Kalenderteppich.Bilden(null, 0, JAHR));
-            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, 7, JAHR));
-            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, -1, JAHR));
+            Assert.Throws<ArgumentNullException>(() => Kalenderteppich.Bilden(null, 2, JAHR));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, 7, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Kalenderteppich.Bilden(wert, -1, 0));
+            // Ein Jahr trägt sein eigenes Raster (E115): 2025 beginnt an einem Mittwoch, nicht an einem Montag.
+            Assert.Throws<ArgumentException>(() => Kalenderteppich.Bilden(wert, 0, JAHR));
         }
 
         /// <summary>Zwei Quellen derselben Periode sind gleich; die Betriebspause ohne Saisonrang bleibt eine Betriebspause.</summary>

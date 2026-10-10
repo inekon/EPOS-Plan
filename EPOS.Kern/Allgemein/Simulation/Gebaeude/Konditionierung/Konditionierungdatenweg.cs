@@ -619,14 +619,49 @@ namespace WindowsFormsApplication1
             => idProjekt > 0 ? SolardatenCtrl.Preisreihenjahr(idProjekt) : null;
 
         /// <summary>
-        /// <b>Das Rasterjahr eines Projekts</b> — das Jahr der Zeitbasis der Solardaten
-        /// (<see cref="SolardatenCtrl.Referenzjahr"/>: Jahr der Preisreihe oder die Vorgabe), aus dem der
-        /// Gebäudelauf seine Wochenendmaske des Ortszeit-Kalenders bildet (U7). Es bestimmt allein das
-        /// Wochentagsraster, nie die Lage eines Feiertags.
+        /// <b>Das Rückfallraster</b> (E115): ohne Projekt oder ohne Klimaregion liegt der 1. Januar auf
+        /// <see cref="ProfilBedarf.WOCHENTAG_ALTKONVENTION"/> (Sonntag), ohne Jahr — dieselbe Konvention, mit
+        /// der Zapfkalender und Bedarfsprofile ohne Klimaregion rechnen.
+        /// </summary>
+        public static Gemeinjahrkalender Rueckfallraster => new Gemeinjahrkalender(ProfilBedarf.WOCHENTAG_ALTKONVENTION);
+
+        /// <summary>
+        /// <b>Das Wochentagsraster eines Projekts</b> (E115) — die eine Quelle für alle Leser: Gebäudelauf
+        /// (Konditionierungskalender, Wochenendmaske, Jahresmittel, Feiertagslage), Zapfkalender und
+        /// Bedarfsprofile.
+        /// <list type="bullet">
+        /// <item><b>Regelfall</b> (kein Preisreihenjahr): w₀ ist der Wochentag des 1. Januar im Raster der
+        /// Klimaregion des Projekts (<see cref="ProfilBedarf.WochentagJan1AusKlimaregion"/>, aus
+        /// <c>Tab_Klimadaten.WE</c>), ohne Jahr.</item>
+        /// <item><b>Sonderfall</b> (Preisreihe mit Jahr, <see cref="Bezugsjahr"/>): der Kalender dieses Jahres
+        /// (<see cref="Gemeinjahrkalender.Kalenderjahr"/>) — Raster des echten 1. Januar und echte
+        /// Feiertagsdaten, für alle Leser; Wochenenden und Feiertage des Bedarfs liegen dann auf denen der
+        /// Preisreihe.</item>
+        /// <item><b>Rückfall</b>: im Katalog (0 oder kleiner) und ohne Klimaregion <see cref="Rueckfallraster"/>.</item>
+        /// </list>
         /// </summary>
         /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog.</param>
-        public static int Rasterjahr(int idProjekt)
-            => SolardatenCtrl.Referenzjahr(idProjekt > 0 ? idProjekt : 0);
+        public static Gemeinjahrkalender Raster(int idProjekt)
+        {
+            if (idProjekt <= 0) return Rueckfallraster;
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(idProjekt);
+            return Raster(idProjekt, ProfilBedarf.WochentagJan1AusKlimaregion(projekt.m_ID_Klimaregion));
+        }
+
+        /// <summary>
+        /// Das Wochentagsraster eines Projekts zu einem w₀, das der Aufrufer aus derselben Klimaregion schon
+        /// gelesen hat (<c>SimulationWaermebedarf</c> aus <c>Tab_Klimadaten.WE</c>) — dieselbe Regel wie
+        /// <see cref="Raster(int)"/>: ohne Preisreihenjahr das Raster w₀ der Klimaregion, mit Preisreihenjahr der
+        /// Kalender dieses Jahres (w₀ der Klimaregion gilt dann nicht).
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt; 0 oder kleiner heißt Katalog (ohne Jahr).</param>
+        /// <param name="wochentagJan1Klimaregion">w₀ der Klimaregion: 0 = Montag … 6 = Sonntag.</param>
+        public static Gemeinjahrkalender Raster(int idProjekt, int wochentagJan1Klimaregion)
+        {
+            int? jahr = Bezugsjahr(idProjekt);
+            return jahr > 0 ? Gemeinjahrkalender.Kalenderjahr(jahr.Value) : new Gemeinjahrkalender(wochentagJan1Klimaregion);
+        }
 
         // -----------------------------------------------------------------
         //  Die angelegten Kalender je Katalogbau (Spalte „Kalender", Welle K4)

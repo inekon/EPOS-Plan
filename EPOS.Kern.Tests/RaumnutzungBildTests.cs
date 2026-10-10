@@ -128,16 +128,16 @@ namespace EPOS.Kern.Tests
                 Konditionierungsschritt s = Konditionierungsarbeit.VorlageUebernehmen(leer, ort, vorlage);
                 if (s.Rueckfrage) s = Konditionierungsarbeit.VorlageUebernehmen(Konditionierungsarbeit.LuftwechselAufteilen(leer).Stand, ort, vorlage);
                 Assert.True(s.Ok && !s.Rueckfrage, s.Meldung);
-                double[] ausVorlage = s.Stand.Ansichtskalender(kg, null).Auswerten(leer.W0, leer.Referenzjahr);
+                double[] ausVorlage = s.Stand.Ansichtskalender(kg, null).Auswerten(leer.Kalender);
 
                 RaumnutzungCtrl.Profilvorschau v = RaumnutzungCtrl.Vorschau(profil, kg);
                 Assert.Equal(Raumnutzungsweg.Zeilenbild, v.Weg);
-                Bitgleich(ausVorlage, v.Kalender.Auswerten(leer.W0, leer.Referenzjahr), muster + " " + g);
+                Bitgleich(ausVorlage, v.Kalender.Auswerten(leer.Kalender), muster + " " + g);
 
                 // Das ausgelieferte Muster selbst sieht in der Vorschau dieselbe Reihe (NP1: Profil = Vorlage).
                 RaumnutzungCtrl.Profilvorschau vm = RaumnutzungCtrl.Vorschau(musterprofil, kg);
                 Assert.True(vm.Kalender != null, muster + " " + g + ": Muster ohne Kalender, Weg " + vm.Weg + ", Hinweis " + vm.Hinweis + ", " + vm.Meldung);
-                Bitgleich(ausVorlage, vm.Kalender.Auswerten(leer.W0, leer.Referenzjahr), muster + " " + g + " (Muster)");
+                Bitgleich(ausVorlage, vm.Kalender.Auswerten(leer.Kalender), muster + " " + g + " (Muster)");
                 geprueft++;
             }
             Assert.True(geprueft >= 3, muster + ": nur " + geprueft + " Größen mit ausgelieferter Vorlage");
@@ -233,7 +233,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(17.0, heizen.Woche[3]);            // Montag 3 Uhr
             Assert.Equal(17.0, heizen.Woche[6 * 24 + 10]);  // Sonntag
             Assert.NotNull(heizen.Teppich);
-            Assert.Contains("2025", heizen.Bezug);
+            Assert.Contains("1. Januar = Sonntag", heizen.Bezug);   // das Rückfallraster des neutralen Ziels (E115)
+            Assert.DoesNotContain("Bezugsjahr", heizen.Bezug);
 
             RaumnutzungBildvorschau personen = RaumnutzungBildHuelle.Vorschau(d, KonditionierungGroesse.Personen, t);
             Assert.Equal(100.0, personen.Woche![10]);         // Anteil in Prozent

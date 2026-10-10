@@ -86,7 +86,7 @@ namespace EPOS.Kern.Tests
             Assert.True(ebene.Gleich(gelesen, mitBestand: false));
 
             // Die eigene Nachtzeile macht die Heizspalte der Zone wirksam (Festlegung 5) — aus der Datenbank gelesen.
-            Konditionierungsarbeitsstand a = kond.ArbeitsstandLesen(Gebaeude, 2025, out _);
+            Konditionierungsarbeitsstand a = kond.ArbeitsstandLesen(Gebaeude, Gemeinjahrkalender.Kalenderjahr(2025), out _);
             Assert.NotNull(a.GeltenderKalender(HEIZ, id));
             Assert.Null(a.GeltenderKalender(HEIZ, null));
         }

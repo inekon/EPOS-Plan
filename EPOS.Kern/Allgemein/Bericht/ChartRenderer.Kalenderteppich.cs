@@ -25,6 +25,10 @@ namespace WindowsFormsApplication1
             /// <summary><c>KOND_MSG_TEPPICH_TITEL</c> — {0} = Größe bzw. Titel, {1} = Bezugsjahr.</summary>
             public string Titel { get; set; } = "{0} · Bezugsjahr {1}";
 
+            /// <summary><c>KOND_MSG_TEPPICH_TITEL_RASTER</c> — der Titel ohne Jahr (E115): {0} = Größe bzw. Titel,
+            /// {1} = der Wochentag des 1. Januar im Raster (Kürzel aus <see cref="Wochentage"/>).</summary>
+            public string TitelRaster { get; set; } = "{0} · Gemeinjahr, 1. Januar = {1}";
+
             /// <summary><c>KOND_MSG_TEPPICH_HEIZEN</c></summary>
             public string Heizen { get; set; } = "Heizen";
 
@@ -133,6 +137,7 @@ namespace WindowsFormsApplication1
                 return new KalenderteppichTexte
                 {
                     Titel = MyResource.Resource.KOND_MSG_TEPPICH_TITEL,
+                    TitelRaster = MyResource.Resource.KOND_MSG_TEPPICH_TITEL_RASTER,
                     Heizen = MyResource.Resource.KOND_MSG_TEPPICH_HEIZEN,
                     Kuehlen = MyResource.Resource.KOND_MSG_TEPPICH_KUEHLEN,
                     Lueftung = MyResource.Resource.KOND_MSG_TEPPICH_LUEFTUNG,
@@ -247,8 +252,12 @@ namespace WindowsFormsApplication1
             Konditionierungsgroesse g = teppich.Groesse;
             string groesse = t.Groessenname(g);
             string einheit = Kalenderteppich.Einheit(g);
-            z.Markiert("titel", zt => Titel(zt, string.Format(Zahlkultur, t.Titel, titel ?? groesse,
-                                                              teppich.Bezugsjahr), W));
+            // Mit Jahr (Preisreihe) nennt der Titel das Bezugsjahr, im Regelfall das Raster (E115).
+            string kopf = teppich.MitJahr
+                ? string.Format(Zahlkultur, t.Titel, titel ?? groesse, teppich.Bezugsjahr)
+                : string.Format(Zahlkultur, t.TitelRaster, titel ?? groesse,
+                                Kuerzel(t.Wochentage, 7, new[] { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" })[teppich.WochentagDesErstenTags]);
+            z.Markiert("titel", zt => Titel(zt, kopf, W));
 
             // ---- Die Felder: die feinste Stufe, die unter der Grenze bleibt ----
             double[] werte = teppich.Anzeigereihe();

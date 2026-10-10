@@ -629,39 +629,34 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// <b>Der Arbeitsstand eines Gebäudes samt Zonen</b> (bzw. eines Katalogbaus ohne Zonen) — dazu
-    /// Nutzfläche (Flächenschlüssel), Referenzjahr und w₀, gegen die die Jahresmittel der Lasten
+    /// Nutzfläche (Flächenschlüssel) und das Wochentagsraster, gegen das die Jahresmittel der Lasten
     /// gerechnet werden (P1). Unveränderlich; jede Änderung liefert einen neuen.
     /// </summary>
     public sealed class Konditionierungsarbeitsstand
     {
-        /// <summary>Das Bezugsjahr, wo keines gegeben ist — wie der Lauf ohne Projekt (Entwurf KP2, Festlegung 8).</summary>
-        public const int BEZUGSJAHR_VORGABE = 2025;
-
         private readonly Konditionierungszone[] _zonen;
 
         /// <summary>Baut den Arbeitsstand.</summary>
         /// <param name="gebaeude">Die Ebene des Gebäudes bzw. Katalogbaus.</param>
         /// <param name="zonen">Die Zonen in Listenfolge; <c>null</c> = keine.</param>
         /// <param name="nutzflaeche">Die Nutzfläche des Gebäudes [m²] für den Flächenschlüssel; <c>null</c> = 0.</param>
-        /// <param name="referenzjahr">Das Jahr der Preisreihe (E114): Es setzt Raster und Feiertagslage; <c>null</c> =
-        /// Regelfall ohne Jahr — das Raster der Vorgabe <see cref="BEZUGSJAHR_VORGABE"/>, die Feiertage nach der
-        /// Konvention <see cref="Gemeinjahrkalender"/>.</param>
+        /// <param name="raster">Das Wochentagsraster des Laufs (E115, <see cref="Konditionierungdatenweg.Raster(int)"/>):
+        /// w₀ der Klimaregion, mit Preisreihenjahr der Kalender dieses Jahres; <c>null</c> = ohne Projekt
+        /// <see cref="Konditionierungdatenweg.Rueckfallraster"/>.</param>
         public Konditionierungsarbeitsstand(Konditionierungsstand gebaeude, IEnumerable<Konditionierungszone> zonen,
-                                            double? nutzflaeche = null, int? referenzjahr = null)
+                                            double? nutzflaeche = null, Gemeinjahrkalender? raster = null)
         {
             Gebaeude = gebaeude ?? Konditionierungsstand.Leer(Kalendereigentuemer.Gebaeude, null);
             _zonen = zonen == null ? Array.Empty<Konditionierungszone>() : new List<Konditionierungszone>(zonen).ToArray();
             Nutzflaeche = nutzflaeche;
-            Feiertagsjahr = referenzjahr;
-            Referenzjahr = referenzjahr ?? BEZUGSJAHR_VORGABE;
-            W0 = WochentagDesErstenJanuar(Referenzjahr);
+            Kalender = raster ?? Konditionierungdatenweg.Rueckfallraster;
         }
 
-        /// <summary>Das Jahr der Preisreihe; <c>null</c> = Regelfall ohne Jahr (E114).</summary>
-        public int? Feiertagsjahr { get; }
+        /// <summary>Das Jahr der Preisreihe; <c>null</c> = Regelfall ohne Jahr.</summary>
+        public int? Feiertagsjahr => Kalender.MitJahr ? Kalender.Jahr : null;
 
-        /// <summary>Die Konvention der Feiertagslage: Raster <see cref="W0"/> und <see cref="Feiertagsjahr"/>.</summary>
-        public Gemeinjahrkalender Kalender => Gemeinjahrkalender.Aus(W0, Feiertagsjahr);
+        /// <summary>Das Wochentagsraster (E115): w₀ der Klimaregion, mit Preisreihenjahr Raster und Feiertage dieses Jahres.</summary>
+        public Gemeinjahrkalender Kalender { get; }
 
         /// <summary>Die Ebene des Gebäudes bzw. Katalogbaus.</summary>
         public Konditionierungsstand Gebaeude { get; }
@@ -672,15 +667,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Nutzfläche des Gebäudes [m²] — der Nenner des Flächenschlüssels.</summary>
         public double? Nutzflaeche { get; }
 
-        /// <summary>Das Rasterjahr — es setzt die Wochentage der Jahresmittel (<see cref="W0"/>).</summary>
-        public int Referenzjahr { get; }
-
-        /// <summary>w₀ des Bezugsjahrs: 0 = Montag … 6 = Sonntag für den 1. Januar.</summary>
-        public int W0 { get; }
-
-        /// <summary>Der Wochentag des 1. Januar, 0 = Montag.</summary>
-        public static int WochentagDesErstenJanuar(int jahr)
-            => ((int)new DateTime(jahr, 1, 1).DayOfWeek + 6) % 7;
+        /// <summary>w₀ des Rasters: 0 = Montag … 6 = Sonntag für den 1. Januar.</summary>
+        public int W0 => Kalender.W0;
 
         /// <summary>Die Zone mit dieser Id; <c>null</c> = keine.</summary>
         public Konditionierungszone Zone(long id)
@@ -694,7 +682,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Derselbe Arbeitsstand mit einer anderen Ebene des Gebäudes.</summary>
         public Konditionierungsarbeitsstand MitGebaeude(Konditionierungsstand gebaeude)
-            => new Konditionierungsarbeitsstand(gebaeude, _zonen, Nutzflaeche, Feiertagsjahr);
+            => new Konditionierungsarbeitsstand(gebaeude, _zonen, Nutzflaeche, Kalender);
 
         /// <summary>Derselbe Arbeitsstand mit einer anderen Ebene am Ort <paramref name="zone"/> (<c>null</c> = Gebäude).</summary>
         /// <exception cref="ArgumentException">Die Zone gibt es nicht.</exception>
@@ -710,7 +698,7 @@ namespace WindowsFormsApplication1
             }
             if (!gefunden) throw new ArgumentException("Die Zone " + zone.Value.ToString(CultureInfo.InvariantCulture) +
                                                        " steht nicht im Arbeitsstand.", nameof(zone));
-            return new Konditionierungsarbeitsstand(Gebaeude, liste, Nutzflaeche, Feiertagsjahr);
+            return new Konditionierungsarbeitsstand(Gebaeude, liste, Nutzflaeche, Kalender);
         }
 
         /// <summary>
@@ -832,8 +820,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Sprachunabhängige Kurzfassung.</summary>
         public override string ToString()
-            => Gebaeude + " · " + _zonen.Length.ToString(CultureInfo.InvariantCulture) + " Zone(n), Jahr " +
-               Referenzjahr.ToString(CultureInfo.InvariantCulture);
+            => Gebaeude + " · " + _zonen.Length.ToString(CultureInfo.InvariantCulture) + " Zone(n), " + Kalender;
     }
 
     /// <summary>

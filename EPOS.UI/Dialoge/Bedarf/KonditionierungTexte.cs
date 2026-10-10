@@ -411,9 +411,15 @@ public sealed class KonditionierungTexte
     /// <summary><c>KOND_LBL_TEPPICHBILD</c> — Überschrift des Jahresbilds</summary>
     public string LabelTeppichbild { get; set; } = "Teppichbild";
 
-    /// <summary><c>KOND_TXT_TEPPICHBILD</c> — Bildunterschrift; „{0}“ ist das Bezugsjahr</summary>
+    /// <summary><c>KOND_TXT_TEPPICHBILD</c> — Bildunterschrift mit Preisreihenjahr; „{0}“ ist das Bezugsjahr</summary>
     public string TextTeppichbild { get; set; }
         = "Bezugsjahr {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde "
+        + "nennt ihre Quelle.";
+
+    /// <summary><c>KOND_TXT_TEPPICHBILD_RASTER</c> — Bildunterschrift im Regelfall ohne Jahr; „{0}“ ist der
+    /// Wochentag des 1. Januar im Raster</summary>
+    public string TextTeppichbildRaster { get; set; }
+        = "Gemeinjahr, 1. Januar = {0}: Tage × Stunden, Farbe = Wert, „aus“ als eigene Fläche. Berühren einer Stunde "
         + "nennt ihre Quelle.";
 
     /// <summary>

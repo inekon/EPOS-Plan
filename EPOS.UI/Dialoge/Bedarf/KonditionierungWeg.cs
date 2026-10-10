@@ -28,8 +28,8 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// dem Kern (<c>Vorgabematrix</c>, <c>Matrixzelle</c>, <c>Konditionierungskalender</c>,
 /// <c>Kalenderregel</c>, <c>KonditionierungCtrl.Eigner</c>) steht allein in der Hülle. Im Projekt
 /// rechnet der Arbeitsstand mit dem Bezug des Projekts wie der Lauf — Stufe der Anlagenkopplung,
-/// Referenzjahr, Kühlbetrieb (<c>KonditionierungHuelle.Projektbezug</c>) —, im Katalog ohne Kopplung
-/// mit dem Bezugsjahr 2025. Gebunden wird das Bündel vom Reiter „Konditionierung" über
+/// Wochentagsraster, Kühlbetrieb (<c>KonditionierungHuelle.Projektbezug</c>) —, im Katalog ohne Kopplung
+/// mit dem Rückfallraster (1. Januar = Sonntag). Gebunden wird das Bündel vom Reiter „Konditionierung" über
 /// <see cref="KonditionierungBearbeitung"/>.</para>
 /// <para><b>Zusammensetzen statt Sonderwege.</b> Die Vorschau einer Vorlage an den
 /// Ferienzeiträumen des Ziels (Teilkonzept 7.4) ist <see cref="WochenVorschau"/> bzw.
@@ -423,18 +423,25 @@ public sealed class KonditionierungWeg
     /// <b>Das Teppichbild</b> (Teilkonzept 7.5, Festlegung 8): Tage × Stunden des Kalenders, „aus" als
     /// eigene Fläche, die Quelle je Tag am Element; <c>null</c> = kein Bild.
     /// <para>Kern: <c>Konditionierungskalender.Auswerten</c>/<c>Quelle</c> und der Renderer
-    /// <c>Kalenderteppich</c> mit dem Bezugsjahr <c>Konditionierungdatenweg.Bezugsjahr</c>; die Hülle
+    /// <c>Kalenderteppich</c> im Raster <c>Konditionierungdatenweg.Raster</c>; die Hülle
     /// belegt den Delegaten mit dem Karteninhalt (Welle U3).</para>
     /// </summary>
     public Func<KonditionierungStand, KonditionierungOrt, Zeichenmodell?>? Teppichbild { get; init; }
 
     /// <summary>
-    /// Das Bezugsjahr, gegen das Vorschau und Teppichbild Wochentage und Feiertage auflösen — im Projekt das
-    /// des Laufs, im Katalog das der Vorgabe (Festlegung 8); die Karte nennt es unter dem Teppichbild.
-    /// <c>null</c> = keins.
-    /// <para>Kern: <c>Konditionierungsarbeitsstand.Referenzjahr</c> über den Bezug der Hülle.</para>
+    /// Das Jahr der Preisreihe, nach dem die Feiertage liegen (Sonderfall, E115) — dann nennen Bildunterschrift
+    /// und Datumsanzeige das Jahr und volle Daten. <c>null</c> = Regelfall ohne Jahr: Sie nennen das Raster
+    /// (<see cref="WochentagJan1"/>).
+    /// <para>Kern: <c>Konditionierungsarbeitsstand.Feiertagsjahr</c> über den Bezug der Hülle.</para>
     /// </summary>
     public int? Bezugsjahr { get; init; }
+
+    /// <summary>
+    /// Das Wochentagsraster des Wegs: der Wochentag des 1. Januar, 0 = Montag … 6 = Sonntag — im Projekt das der
+    /// Klimaregion wie im Lauf, im Katalog das Rückfallraster (E115). <c>null</c> = keins (keine Bildunterschrift).
+    /// <para>Kern: <c>Konditionierungdatenweg.Raster</c> über den Bezug der Hülle.</para>
+    /// </summary>
+    public int? WochentagJan1 { get; init; }
 
     /// <summary>
     /// <b>Die Herleitung der Lasten</b> (P1, Teilkonzept 7.2) für die Nennwertzeile und die Zeile der

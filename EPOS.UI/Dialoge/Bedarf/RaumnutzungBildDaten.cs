@@ -145,8 +145,8 @@ public sealed class RaumnutzungBildTexte
     /// <summary>Überschrift des Teppichbilds.</summary>
     public string LabelTeppich { get; set; } = "Teppichbild";
 
-    /// <summary>Die Zeile zum neutralen Vorschauziel und Bezugsjahr ({0} = Jahr).</summary>
-    public string TextBezug { get; set; } = "Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Bezugsjahr {0}; die Woche liegt im Januar ohne Feiertag.";
+    /// <summary>Die Zeile zum neutralen Vorschauziel und seinem Raster ({0} = Wochentag des 1. Januar).</summary>
+    public string TextBezug { get; set; } = "Vorschau an einem neutralen Ziel (Heizen 20 °C, Kühlen 26 °C, Luftwechsel nach Vorgabe, eine Person, Geräte 100 W, Ferien 1. bis 14. August), Gemeinjahr mit 1. Januar = {0}; die Woche liegt im Januar ohne Feiertag.";
 
     /// <summary>Die Größe ist nicht belegt.</summary>
     public string TextNichtBelegt { get; set; } = "Die Größe ist nicht belegt; das Ziel behält seinen Kalender.";

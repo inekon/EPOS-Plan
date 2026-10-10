@@ -70,7 +70,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Feste_Feiertage_haengen_an_keinem_Teil_der_Konvention()
         {
-            foreach (var k in new[] { new Gemeinjahrkalender(DONNERSTAG), new Gemeinjahrkalender(MONTAG, 2024), Gemeinjahrkalender.Kalenderjahr(2026) })
+            foreach (var k in new[] { new Gemeinjahrkalender(DONNERSTAG), Gemeinjahrkalender.Kalenderjahr(2024), Gemeinjahrkalender.Kalenderjahr(2026) })
             {
                 Assert.Equal(1, Tag(DbWerte.KOND_FEIERTAG_NEUJAHR, k));
                 Assert.Equal(121, Tag(DbWerte.KOND_FEIERTAG_ERSTER_MAI, k));
@@ -94,20 +94,22 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Mit_Jahr_bleiben_die_echten_Daten_unabhaengig_vom_Raster()
+        public void Mit_Jahr_gelten_Raster_und_echte_Daten_des_Jahres()
         {
-            foreach (int w0 in new[] { MONTAG, DONNERSTAG, SONNTAG })
             {
-                var k = new Gemeinjahrkalender(w0, 2025);
+                var k = Gemeinjahrkalender.Kalenderjahr(2025);
                 Assert.True(k.MitJahr);
+                Assert.Equal(2, k.W0);   // 1. Januar 2025 = Mittwoch
+                Assert.Equal(SONNTAG, k.Wochentag(k.Ostersonntag));
+                Assert.Equal(2, k.Wochentag(k.BussUndBettag));
                 Assert.Equal(Feiertage.Gemeinjahrestag(4, 20), k.Ostersonntag);
                 Assert.Equal(Feiertage.Gemeinjahrestag(4, 18), Tag(DbWerte.KOND_FEIERTAG_KARFREITAG, k));
                 Assert.Equal(Feiertage.Gemeinjahrestag(6, 19), Tag(DbWerte.KOND_FEIERTAG_FRONLEICHNAM, k));
                 Assert.Equal(Feiertage.Gemeinjahrestag(11, 19), Tag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, k));
             }
             // Schaltjahr: dasselbe Datum, nicht derselbe Jahrestag des Schaltjahrs.
-            Assert.Equal(Feiertage.Gemeinjahrestag(3, 29), Tag(DbWerte.KOND_FEIERTAG_KARFREITAG, new Gemeinjahrkalender(0, 2024)));
-            Assert.Equal(Feiertage.Gemeinjahrestag(11, 22), Tag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, new Gemeinjahrkalender(0, 2023)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(3, 29), Tag(DbWerte.KOND_FEIERTAG_KARFREITAG, Gemeinjahrkalender.Kalenderjahr(2024)));
+            Assert.Equal(Feiertage.Gemeinjahrestag(11, 22), Tag(DbWerte.KOND_FEIERTAG_BUSS_UND_BETTAG, Gemeinjahrkalender.Kalenderjahr(2023)));
         }
 
         [Fact]
@@ -115,9 +117,12 @@ namespace EPOS.Kern.Tests
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new Gemeinjahrkalender(7));
             Assert.Throws<ArgumentOutOfRangeException>(() => new Gemeinjahrkalender(-1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => new Gemeinjahrkalender(0, 1500));
-            Assert.Equal(new Gemeinjahrkalender(3), Gemeinjahrkalender.Aus(3, null));
-            Assert.Equal(new Gemeinjahrkalender(3, 2026), Gemeinjahrkalender.Aus(3, 2026));
+            Assert.Throws<ArgumentOutOfRangeException>(() => Gemeinjahrkalender.Kalenderjahr(1500));
+            Assert.Equal(new Gemeinjahrkalender(3), Gemeinjahrkalender.Aus(3, 0));
+            Assert.Equal(Gemeinjahrkalender.Kalenderjahr(2026), Gemeinjahrkalender.Aus(3, 2026));
+            // Ein Jahr mit fremdem Raster ist nicht baubar (E115): 2027 beginnt an einem Freitag.
+            Assert.Throws<ArgumentException>(() => Gemeinjahrkalender.Aus(3, 2027));
+            Assert.Throws<ArgumentException>(() => new Konditionierungssatz(3, 2027));
             Assert.Equal(DONNERSTAG, Gemeinjahrkalender.Kalenderjahr(2026).W0);
             Assert.Equal(-1, Tag("ROSENMONTAG", new Gemeinjahrkalender(0)));
         }

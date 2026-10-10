@@ -12740,7 +12740,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Return</value>
   </data>
   <data name="BHKWV_FRAGE_LOESCHEN" xml:space="preserve">
-    <value>Do you really want to delete this CHP?</value>
+    <value>The catalogue entry "{0}" is deleted for ALL projects. Continue?</value>
   </data>
   <data name="BHKWV_MSG_SCHREIBGESCHUETZT" xml:space="preserve">
     <value>This master record is write-protected (ReadOnly) and cannot be deleted.</value>
@@ -41185,6 +41185,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="KOND_TXT_TEPPICHBILD" xml:space="preserve">
     <value>Reference year {0}: days × hours, colour = value, “off” as a separate area. Touching an hour names its source.</value>
   </data>
+  <data name="KOND_TXT_TEPPICHBILD_RASTER" xml:space="preserve">
+    <value>Common year, 1 January = {0}: days × hours, colour = value, “off” as a separate area. Touching an hour names its source.</value>
+  </data>
   <data name="KOND_TXT_QUELLE" xml:space="preserve">
     <value>Source: {0}</value>
   </data>
@@ -41541,6 +41544,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="KOND_MSG_TEPPICH_TITEL" xml:space="preserve">
     <value>{0} · reference year {1}</value>
+  </data>
+  <data name="KOND_MSG_TEPPICH_TITEL_RASTER" xml:space="preserve">
+    <value>{0} · common year, 1 January = {1}</value>
   </data>
   <data name="KOND_MSG_TEPPICH_HEIZEN" xml:space="preserve">
     <value>Heating</value>
@@ -42467,7 +42473,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Off: the monthly amount stays and is spread over the remaining days. On: the monthly amount decreases in proportion to the holiday hours.</value>
   </data>
   <data name="BKAL_HRL_JAHR" xml:space="preserve">
-    <value>In {0}: {1} holidays like Sunday, {2} holiday days. The run uses the reference year of the project.</value>
+    <value>In a common year with 1 January = {0}: {1} holidays like Sunday, {2} holiday days. The run uses the weekday grid of the project's climate region.</value>
   </data>
   <data name="BKAL_MSG_GESPEICHERT" xml:space="preserve">
     <value>Operating calendar saved.</value>
@@ -47333,7 +47339,7 @@ chart</value>
     <value>Carpet plot</value>
   </data>
   <data name="RNP_ED_TXT_BEZUG" xml:space="preserve">
-    <value>Preview for a neutral target (heating 20 °C, cooling 26 °C, air change as default, one person, appliances 100 W, holidays 1 to 14 August), reference year {0}; the week lies in January without a public holiday.</value>
+    <value>Preview for a neutral target (heating 20 °C, cooling 26 °C, air change as default, one person, appliances 100 W, holidays 1 to 14 August), common year with 1 January = {0}; the week lies in January without a public holiday.</value>
   </data>
   <data name="RNP_ED_TXT_NICHT_BELEGT" xml:space="preserve">
     <value>The quantity is not set; the target keeps its calendar.</value>
@@ -50052,19 +50058,19 @@ chart</value>
   <data name="SATZBEARB_KEINE_AENDERUNG" xml:space="preserve">
     <value>No change</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_KEINE" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_KEINE" xml:space="preserve">
     <value>No change.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_FEHLT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_FEHLT" xml:space="preserve">
     <value>The record with number {0} was not found. Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPERRT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPERRT" xml:space="preserve">
     <value>“{0}” is locked. Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_VERSTOSS" xml:space="preserve">
     <value>“{0}”: {1} Nothing was saved.</value>
   </data>
-  <data name="HZK_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
+  <data name="KAT_MSG_SAMMEL_GESPEICHERT" xml:space="preserve">
     <value>{0} records saved.</value>
   </data>
   <data name="HZK_LBL_SUMME" xml:space="preserve">
@@ -50738,6 +50744,9 @@ chart</value>
   </data>
   <data name="KI_DLG_SIM_KM_TEILLAST_ERL" xml:space="preserve">
     <value>Per chiller with part-load calculation the cycling electricity, starts, part-load share, mean part-load ratio and seasonal EER without auxiliary power as “column name=value”; empty without such a chiller.</value>
+  </data>
+  <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
+    <value>Remaining in the project: energy carrier, minimum load and temperature pair of the plant, sinks and time schedule. The minimum load of the module is taken along.</value>
   </data>
 </root>
 

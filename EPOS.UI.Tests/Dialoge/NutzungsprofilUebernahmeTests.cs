@@ -130,7 +130,7 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
 
     /// <summary>
     /// E93: Die Vorschau nennt die Nutzungstage am Ziel — abgeleitet aus Wochenmuster und Feiertagen (Mo–Fr ohne
-    /// Feiertagsvorgabe im Bezugsjahr 2025: 261), abzüglich der Ferientage des Gebäudes (1. bis 30. Juli: 22 Werktage).
+    /// Feiertagsvorgabe im Rückfallraster des Katalogs, 1. Januar = Sonntag: 260), abzüglich der Ferientage des Gebäudes (1. bis 30. Juli: 20 Werktage).
     /// </summary>
     [Fact]
     public void Die_Vorschau_nennt_die_Nutzungstage_am_Ziel_abzueglich_seiner_Ferien()
@@ -142,7 +142,7 @@ public class NutzungsprofilUebernahmeTests : EposBunitContext
         cut.Find(".epos-nutzungsuebernahme-oeffnen").Click();
         cut.Find("[data-profil='11']").Click();
 
-        const string erwartet = "Nutzungstage im Jahr: 261 (aus Wochenmuster und Feiertagen), abzüglich 22 Ferientage = 239";
+        const string erwartet = "Nutzungstage im Jahr: 260 (aus Wochenmuster und Feiertagen), abzüglich 20 Ferientage = 240";
         Assert.Equal(erwartet, b.Profilnutzungstage());
         Assert.Equal(erwartet, cut.Find(".epos-nutzungsuebernahme-tage .epos-herleitung-text").TextContent);
 

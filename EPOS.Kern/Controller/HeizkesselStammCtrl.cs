@@ -1225,7 +1225,7 @@ namespace WindowsFormsApplication1
                                                                   IReadOnlyList<Satzaenderung> saetze)
         {
             if (saetze == null || saetze.Count == 0)
-                return new SpeicherErgebnis(true, Text("HZK_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
+                return new SpeicherErgebnis(true, Text("KAT_MSG_SAMMEL_KEINE", "Keine Änderung."), "");
             string tabelle = Tabelle(projektkopie);
             // Die Nachschlagelisten (Brennstoffe) VOR der Transaktion lesen.
             var satz = new HeizkesselStammCtrl();
@@ -1242,7 +1242,7 @@ namespace WindowsFormsApplication1
                         {
                             v.Rollback();
                             return new SpeicherErgebnis(false, string.Format(
-                                Text("HZK_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
+                                Text("KAT_MSG_SAMMEL_FEHLT", "Der Satz mit der Nummer {0} wurde nicht gefunden. Es wurde nichts gespeichert."),
                                 s.Id), "");
                         }
                         satz.FillModelFromRow(satz, dt.Rows[0]);
@@ -1251,7 +1251,7 @@ namespace WindowsFormsApplication1
                         {
                             v.Rollback();
                             return new SpeicherErgebnis(false, string.Format(
-                                Text("HZK_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."),
+                                Text("KAT_MSG_SAMMEL_GESPERRT", "„{0}“ ist gesperrt. Es wurde nichts gespeichert."),
                                 name), name);
                         }
                         string grund = Anwenden(satz, s.Felder);
@@ -1261,7 +1261,7 @@ namespace WindowsFormsApplication1
                         {
                             v.Rollback();
                             return new SpeicherErgebnis(false, string.Format(
-                                Text("HZK_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."),
+                                Text("KAT_MSG_SAMMEL_VERSTOSS", "„{0}“: {1} Es wurde nichts gespeichert."),
                                 name, grund), name);
                         }
                         (string sql, DbParam[] ps) = satz.Aktualisierung(tabelle);
@@ -1270,7 +1270,7 @@ namespace WindowsFormsApplication1
                     v.Commit();
                 }
                 return new SpeicherErgebnis(true, string.Format(
-                    Text("HZK_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
+                    Text("KAT_MSG_SAMMEL_GESPEICHERT", "{0} Sätze gespeichert."), saetze.Count), "");
             }
             catch (Exception)
             {

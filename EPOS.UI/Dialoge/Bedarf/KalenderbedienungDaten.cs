@@ -185,6 +185,46 @@ public static class Kalendertage
         return new DateOnly(jahr, m, t);
     }
 
+    /// <summary>Der Wochentag des 1. Januar im Rückfallraster (Sonntag) — wie der Kern ohne Projekt (E115).</summary>
+    public const int WOCHENTAG_RUECKFALL = 6;
+
+    /// <summary>
+    /// Der Name eines Wochentags (0 = Montag … 6 = Sonntag) in der Oberflächensprache
+    /// (<see cref="System.Globalization.CultureInfo.CurrentUICulture"/>); <paramref name="kurz"/> = das Kürzel ohne Punkt.
+    /// </summary>
+    public static string Wochentagname(int wochentag, bool kurz = false)
+    {
+        var f = System.Globalization.CultureInfo.CurrentUICulture.DateTimeFormat;
+        int i = (((wochentag % 7) + 7) % 7 + 1) % 7;   // DayNames beginnt mit Sonntag
+        return kurz ? f.AbbreviatedDayNames[i].TrimEnd('.') : f.DayNames[i];
+    }
+
+    /// <summary>
+    /// Das Jahr, in dem die Datumsfelder einen Jahrestag darstellen (E115): mit Preisreihe deren Jahr, sonst das
+    /// erste Gemeinjahr ab 2001, dessen 1. Januar auf <paramref name="wochentagJan1"/> fällt — so zeigt auch ein
+    /// Datumswähler die Wochentage des Rasters.
+    /// </summary>
+    public static int Darstellungsjahr(int wochentagJan1, int? jahr)
+    {
+        if (jahr is int j) return j;
+        for (int y = 2001; ; y++)
+            if (!DateTime.IsLeapYear(y) && ((int)new DateTime(y, 1, 1).DayOfWeek + 6) % 7 == wochentagJan1) return y;
+    }
+
+    /// <summary>
+    /// Die Anzeige eines Jahrestags (E115): mit Preisreihenjahr das volle Datum „TT.MM.JJJJ", im Regelfall der
+    /// Wochentag des Rasters vor „TT.MM." („Do 15.01."); leer außerhalb.
+    /// </summary>
+    public static string Anzeige(int tag, int wochentagJan1, int? jahr)
+    {
+        if (Datum(tag, jahr ?? 2001) is not DateOnly d) return "";
+        var c = System.Globalization.CultureInfo.InvariantCulture;
+        string kurz = d.Day.ToString("00", c) + "." + d.Month.ToString("00", c) + ".";
+        return jahr is int j
+            ? kurz + j.ToString(c)
+            : Wochentagname((wochentagJan1 + tag - 1) % 7, kurz: true) + " " + kurz;
+    }
+
     /// <summary>„TT.MM." eines Jahrestags; leer außerhalb.</summary>
     public static string Kurz(int tag, int jahr)
         => Datum(tag, jahr) is DateOnly d ? d.Day.ToString("00", System.Globalization.CultureInfo.InvariantCulture) + "."

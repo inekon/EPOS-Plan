@@ -344,8 +344,10 @@ public class KalenderkarteInhaltTests : EposBunitContext
         Assert.NotEmpty(felder);
         Assert.True(felder.Length <= 2000);
         Assert.Contains(felder, f => f.GetAttribute("data-wert")!.Contains("20 °C") && f.GetAttribute("data-wert")!.Contains("·"));
-        Assert.Contains("2025", teppich.QuerySelector(".epos-kond-teppich-zeile")!.TextContent);
-        Assert.Contains("2025", teppich.TextContent);
+        // Im Katalog das Rückfallraster ohne Jahr (E115): Bildunterschrift und Titel nennen das Raster, kein Jahr.
+        Assert.Contains("Gemeinjahr, 1. Januar = Sonntag", teppich.QuerySelector(".epos-kond-teppich-zeile")!.TextContent);
+        Assert.DoesNotContain("Bezugsjahr", teppich.TextContent);
+        Assert.Contains("1. Januar = So", teppich.TextContent);
 
         // Nach dem Anlegen und einem Zeitfenster mit „aus": das Bild zeigt die eigene Fläche „aus".
         Knopf(Karte(cut, KonditionierungGroesse.Heizen), "epos-kond-anlegen").Click();
@@ -394,6 +396,43 @@ public class KalenderkarteInhaltTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Equal(2, bilder), TimeSpan.FromSeconds(5));
         Thread.Sleep(300);
         Assert.Equal(2, bilder);                          // und kein zweites
+    }
+
+    /// <summary>
+    /// E115: Die Bildunterschrift nennt im Regelfall das Raster des Wegs („Gemeinjahr, 1. Januar = Donnerstag") und kein
+    /// Jahr, im Sonderfall mit Preisreihenjahr das Bezugsjahr.
+    /// </summary>
+    [Theory]
+    [InlineData(null, "Gemeinjahr, 1. Januar = Donnerstag", "Bezugsjahr")]
+    [InlineData(2027, "Bezugsjahr 2027", "Gemeinjahr")]
+    public void Die_Bildunterschrift_nennt_das_Raster_und_nur_mit_Preisreihe_das_Jahr(int? jahr, string erwartet, string fremd)
+    {
+        KonditionierungWeg basis = KalenderkarteTests.Weg(null);
+        var weg = new KonditionierungWeg
+        {
+            ZelleSetzen = basis.ZelleSetzen, Anlegen = basis.Anlegen, Standardwoche = basis.Standardwoche,
+            Grundangabe = basis.Grundangabe, Teppichbild = basis.Teppichbild,
+            Bezugsjahr = jahr, WochentagJan1 = 3,
+        };
+        IRenderedComponent<KonditionierungReiter> cut = Aufbauen(weg);
+        Knopf(Karte(cut, KonditionierungGroesse.Heizen), "epos-kond-einzelheiten").Click();
+        string zeile = Inhalt(cut, KonditionierungGroesse.Heizen).QuerySelector(".epos-kond-teppich-zeile")!.TextContent;
+        Assert.Contains(erwartet, zeile);
+        Assert.DoesNotContain(fremd, zeile);
+        if (jahr is null) Assert.DoesNotContain("20", zeile.Split(':')[0]);
+    }
+
+    /// <summary>E115: Die Datumsanzeige trägt im Regelfall den Wochentag des Rasters, mit Preisreihe das volle Datum.</summary>
+    [Fact]
+    public void Die_Datumsanzeige_folgt_dem_Raster()
+    {
+        Assert.Equal("Do 15.01.", Kalendertage.Anzeige(15, 3, null));     // Raster Donnerstag: der 15. Januar ist ein Donnerstag
+        Assert.Equal("Do 01.01.", Kalendertage.Anzeige(1, 3, null));
+        Assert.Equal("15.01.2027", Kalendertage.Anzeige(15, 3, 2027));
+        Assert.Equal("", Kalendertage.Anzeige(0, 3, null));
+        Assert.Equal(2009, Kalendertage.Darstellungsjahr(3, null));       // erstes Gemeinjahr ab 2001 mit 1. Januar Donnerstag
+        Assert.Equal(2027, Kalendertage.Darstellungsjahr(3, 2027));
+        Assert.Equal("Donnerstag", Kalendertage.Wochentagname(3));
     }
 
     // =================================================================================

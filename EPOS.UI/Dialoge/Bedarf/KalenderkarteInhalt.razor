@@ -287,11 +287,16 @@
     /// <summary>Wie oft das Teppichbild gerechnet wurde. Prüfhilfe (entprellt, nicht je Eingabe).</summary>
     public int Teppichlaeufe { get; private set; }
 
-    /// <summary>Die Bildunterschrift mit dem Bezugsjahr des Wegs; ohne Bezugsjahr keine.</summary>
+    /// <summary>
+    /// Die Bildunterschrift (E115): mit Preisreihenjahr das Bezugsjahr, sonst das Raster („Gemeinjahr,
+    /// 1. Januar = Donnerstag"); ohne beides keine.
+    /// </summary>
     private string? Teppichzeile
         => Bearbeitung.Weg.Bezugsjahr is int jahr
             ? string.Format(CultureInfo.CurrentCulture, Texte.TextTeppichbild, jahr.ToString(CultureInfo.InvariantCulture))
-            : null;
+            : Bearbeitung.Weg.WochentagJan1 is int w0
+                ? string.Format(CultureInfo.CurrentCulture, Texte.TextTeppichbildRaster, Kalendertage.Wochentagname(w0))
+                : null;
 
     protected override void OnParametersSet()
     {
