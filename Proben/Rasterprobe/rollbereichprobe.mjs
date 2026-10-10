@@ -69,6 +69,7 @@ const FAELLE = [
   ['waermebedarf', '/rollbereichprobe?fall=waermebedarf'],
   ['stromganglinie', '/rollbereichprobe?fall=stromganglinie'],
   ['solarganglinie', '/rollbereichprobe?fall=solarganglinie'],
+  ['pvganglinie', '/rollbereichprobe?fall=pvganglinie'],
   ['kaeltemaschine', '/rollbereichprobe?fall=kaeltemaschine'],
 ].filter(([n]) => !NUR || n.startsWith(NUR));
 
@@ -208,7 +209,9 @@ function pruefen(fall, fenster, zustand, m, konsole, istWirt, frei) {
   if (istWirt && m.projekt !== null && m.projekt + 1 < m.projektMin) fehler.push(`Projektliste ${m.projekt} px unter ihrer Untergrenze ${Math.round(m.projektMin)} px`);
   if (frei && !frei.ok && !m.ueberlagerung) fehler.push('Schlussleiste nicht erreichbar: ' + frei.fehlt.join(', '));
   // Unter der Mindesthoehe rollt der Dialogkoerper (nur in den neuen Fenstern erlaubt, dort Befund).
-  if (m.eng && fenster.neu) { befunde.push(kennung + ': Dialogkoerper rollt (unter der Mindesthoehe)'); m = { ...m, dialogRollt: false }; }
+  // DZ1: Mit aufgeklappter Ganglinie gehoert deren Untergrenze (260 px) zur Mindesthoehe - dann darf der
+  // Dialogkoerper in jedem Fenster rollen (Befund).
+  if (m.eng && (fenster.neu || (m.satzOffen && m.ganglinie))) { befunde.push(kennung + ': Dialogkoerper rollt (unter der Mindesthoehe)'); m = { ...m, dialogRollt: false }; }
   const aussen = p => fall === 'kaeltemaschine' || / in div\.epos-ueberlagerung/.test(p);
   const eigen = m.verschachtelt.filter(p => !aussen(p)), fremd = m.verschachtelt.filter(aussen);
   if (eigen.length) fehler.push('Rollbereich im Rollbereich: ' + eigen.join('; '));
@@ -277,7 +280,15 @@ try {
       if (istWirt) {
         if (await taste(seite, 'Home')) await mess('Trennlinie oben');
         if (await taste(seite, 'End')) await mess('Trennlinie unten');
+        // Ganglinien-Dialoge (DZ1): erst eine Projektzeile waehlen - die Detailzeile zeigt dann ihre Ganglinie.
+        if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').count()) {
+          await seite.locator('.epos-zweispalten-bereich--projekt tbody tr button').first().click();
+          await ruhe(seite);
+        }
         if (await satz(seite, true)) {
+          if (/ganglinie|waermebedarf/.test(fall) && await seite.locator('.epos-zweispalten-satz .epos-ganglinie-grafik .epos-diagramm-svg-flaeche').count() === 0) {
+            verstoesse.push(`${fall} ${fenster.breite}x${fenster.hoehe}: Detailzeile ohne Ganglinie`); console.log('  VERSTOSS ' + verstoesse.at(-1));
+          }
           await mess('Detailzeile auf, Trennlinie unten');
           if (await taste(seite, 'Home')) await mess('Detailzeile auf, Trennlinie oben');
           await satz(seite, false);

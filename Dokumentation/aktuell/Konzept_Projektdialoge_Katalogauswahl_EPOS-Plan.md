@@ -294,7 +294,7 @@ Kontextzeile, Projektrahmen mit Untergrenze, Trennlinie, Katalograhmen mit Kopf,
 Detailzeile und Schlussleiste, steht der Baustein auf seiner gemessenen Mindesthöhe, und der Dialogkörper rollt
 senkrecht; die Schlussleiste rollt mit (Kopf und Schlussleiste stehen statisch, wie es die Fensterprobe misst).
 Darüber rollt der Dialogkörper nie. Die aufgeklappte Detailzeile hält mindestens 80 px ihres Inhalts (mit
-Ganglinie 200 px, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
+Ganglinie 260 px, 4.9) und hat Vorrang (DZ1, 4.4): Projekt- und Katalogliste stehen auf ihrer Untergrenze, die
 Satzfläche nimmt die gesamte übrige Höhe ohne Obergrenze; was trotzdem nicht passt, rollt allein in der
 Satzfläche. Gemessen in sechs Fenstern (1 280 × 800, 1 280 × 720, 1 024 × 700, 1 024 × 768,
 768 × 1 024, 1 093 × 614), 618 Zustände ohne Verstoß; der Dialogkörper rollt allein in 1 093 × 614 mit
@@ -312,8 +312,21 @@ aufgeklappter Detailzeile. Ohne gewählten Satz bleibt die Satzfläche des Gebä
 | Wärmepumpe | Umstellen | Schloss, Löschen, Bearbeiten | Kenndaten; Projektsatz: Kosten | Anlage… (`WaermepumpeAnlageDialog`) |
 | Gebäude | — | Neu, Import, Baustoffzuordnungen, Schloss, Löschen | Kenndaten; Projektsatz: Wohnfläche, Ausrichtung, Simulation, Export | Gebäudedaten… |
 | Bedarfsprofile | Jahressumme | Neu, Typ ändern, DB ändern, Schloss, Löschen | Verbrauch, Temperatur, Kalender | — |
-| Wärmebedarf extern, Strom-, Solarganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten | Ganglinie mit Kennzahlen | — |
+| Wärmebedarf extern, Strom-, Solarthermie-, PV-Ganglinie | — | Speichern unter, Schloss, Löschen, Bearbeiten (Solarthermie und PV: Vergleichen, Schloss, Löschen, Import) | Ganglinie mit Kennzahlen; Solarthermie und PV davor Name, Beschreibung (PV: Raster, Jahresarbeit, Nennleistung) | — |
 | Kältemaschine (Katalogauswahl) | — | Schloss, Löschen, Bearbeiten | Kenndaten | die Anlage bleibt im Anlagendialog |
+
+**Präzisiert in DZ1 (Anwenderentscheid 10.10.2026: „Alle Dialoge mit CSV-Import … sollen unter ‚Gewählter
+Satz‘ analog zum Dialog Wärmebedarf extern den Lastgang darstellen“):** Alle vier Ganglinien-Dialoge übergeben der
+Detailzeile Marke und Namen des gewählten Satzes (`SatzArt`, `SatzName`) und zeigen aufgeklappt denselben Baustein
+`GanglinienGrafik` — Jahresarbeit, Spitzenlast, Vollbenutzungsstunden, Schalter „sortiert“ und Einheit, darunter
+die Jahresganglinie. Kennzahlen und Zeichenmodell rechnet der Kern (`GanglinienAuswertungCtrl` mit
+`GanglinienQuelle.Solarganglinie` bzw. `PvGanglinie`, `ChartRenderer.GanglinieNormiertModell`); die Gaben baut
+`GanglinienGrafikGaben` in `EPOS.UI.Daten`. Eine eben aufgenommene Projektzeile trägt noch keine Projektkopie und
+zeigt den Katalogsatz gleichen Namens. In der Satzfläche steht der Name nur in der Detailzeile, Kennzahlen und
+Schalter teilen sich eine Zeile, und das Bild nimmt die übrige Höhe: Die Zeichenfläche hält das Seitenverhältnis
+des Zeichenmodells (`--epos-bild-verhaeltnis`), ihre Höhe kommt aus dem Behälter, auch beim Vergrößern des Fensters
+und beim Auf- und Zuklappen. Die Untergrenze der Satzfläche ist mit Ganglinie 260 px; reicht das Fenster dafür
+nicht, rollt nach KB1 der Dialogkörper, das Bild bekommt keinen eigenen Rollbalken.
 
 ### 4.10 Spaltenwahl und Verwendungsmarke
 

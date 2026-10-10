@@ -3987,17 +3987,31 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
    Zeichenflaeche haelt das Seitenverhaeltnis des Zeichenmodells (--epos-bild-verhaeltnis, von
    DiagrammSvg gesetzt): Hoehe aus dem Behaelter, Breite daraus, hoechstens die volle Breite.
    Die Untergrenze --epos-ganglinie-min haelt das Bild lesbar; darunter rollt die Satzflaeche. */
+/* Der Name steht schon in der Detailzeile; Kennzahlen und Schalter teilen sich EINE Zeile. Die
+   Untergrenze der Satzflaeche (--epos-satz-untergrenze, KB1) ist mit Ganglinie deren Untergrenze:
+   Reicht das Fenster nicht dafuer, rollt der Dialogkoerper, nicht das Bild. */
+.epos-zweispalten:has(> .epos-zweispalten-bereich--satz .epos-ganglinie-grafik) { --epos-satz-untergrenze: 260px; }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik {
-    --epos-ganglinie-min: 220px;
+    --epos-ganglinie-min: 260px;
     flex: 1 1 0;
     min-height: var(--epos-ganglinie-min);
     margin-top: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 4px var(--epos-abstand);
+    align-items: center;
 }
-:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > * {
-    flex: 0 0 auto;
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-kontextzeile {
+    display: none;
+}
+:is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-kennzahlen {
+    flex-direction: row;
+    gap: 4px 16px;
 }
 :is(#app, .epos-ueberlagerung-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz .epos-ganglinie-grafik > .epos-diagramm-svg {
-    flex: 1 1 0;
+    grid-column: 1 / -1;
+    align-self: stretch;
     min-height: 0;
     max-width: none;
     align-items: center;

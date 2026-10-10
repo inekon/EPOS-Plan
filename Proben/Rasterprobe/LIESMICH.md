@@ -1325,6 +1325,25 @@ aufgeklappt (Trennlinie oben) in px:
 | Heizkessel (Kosten, Alle Daten) | 165 | 172 | 152 | 220 | 476 | 97 |
 | Gebäude | 118 | 132 | 112 | 180 | 436 | 97 |
 
+**Ganglinie in der Detailzeile (DZ1, Teil 2, Konzept 4.9).** Der Wirt trägt die vier Ganglinien-Dialoge mit
+synthetischer Reihe (Kennzahlen und ein Zeichenmodell je Schalterstellung): `fall=waermebedarf`, `stromganglinie`,
+`solarganglinie` und neu `pvganglinie`. Die Probe wählt dort vor dem Aufklappen die erste Projektzeile und
+verlangt in der Satzfläche eine Zeichenfläche der Ganglinie. Deren Untergrenze (260 px) gehört zur Mindesthöhe:
+Reicht das Fenster nicht, rollt der Dialogkörper (Befund, auch in den Fenstern ohne Kompaktstufe), das Bild hat
+keinen eigenen Rollbalken. **Ergebnis vom 10.10.2026:** 666 Zustände, 0 Verstöße, drei Gegenproben rot.
+Satzfläche (Bild/Platz der Zeichenfläche) in px, Trennlinie oben:
+
+| Dialog | 1 280 × 800 | 1 280 × 720 | 1 024 × 700 | 1 024 × 768 | 768 × 1 024 | 1 093 × 614 |
+|---|---|---|---|---|---|---|
+| Wärmebedarf extern | 276 (139/139) | 277 (148/148) | 277 (148/148) | 277 (148/148) | 436 (307/307) | 277 (148/148) |
+| Stromganglinie | 276 (139/139) | 277 (148/148) | 277 (148/148) | 277 (148/148) | 510 (328, volle Breite) | 277 (148/148) |
+| Solarthermieganglinie | 276 (136/136) | 277 (144/144) | 277 (144/144) | 277 (144/144) | 502 (213/213) | 277 (144/144) |
+| PV-Ganglinie | 276 (136/136) | 277 (144/144) | 277 (144/144) | 277 (144/144) | 502 (144/144) | 277 (144/144) |
+
+Außer in 768 × 1 024 rollt mit aufgeklappter Ganglinie der Dialogkörper (`data-zweispalten-eng`). Die
+**Fensterprobe** misst aufgeklappt ebenso Listen auf Untergrenze und den Rest der Satzfläche; ihre Gegenprobe
+begrenzt die Satzfläche auf 40 px und muss rot werden.
+
 ## Legendenprobe (Ringlegende der Ergebnisübersicht) — Seite `/legendenprobe`
 
 **Zweck.** Die Legende neben den Ringen der Ergebnisübersicht (Wärme, Strom, Kälte) steht in einer
