@@ -310,6 +310,18 @@ Steht der Rechenweg auf ''Zapfprofil'', rechnet ''Simulation'' im Bedarfsprofil-
 
 {{Anker|desinfektion-frischwasser}}'''Thermische Desinfektion und Frischwassermodul.''' Die Speichertemperatur der Auslegung und die Zapftemperatur der Zonen gehen in zwei Optionen der Simulation ein: Die [[Programm Dokumentation/Simulation#desinfektion|thermische Desinfektion]] heizt das Speichervolumen von der Speichertemperatur auf ihre Zieltemperatur, und ein [[Programm Dokumentation/Pufferspeicher#bereitschaft|Frischwassermodul]] am Pufferspeicher braucht oben die höchste Zapftemperatur der Zonen plus seine Grädigkeit. Ohne Zapfprofil gelten für beide 60 °C.
 
+== Einbindung in die Anlage ==
+{{Anker|einbindung}}
+
+Was der Dialog erzeugt, ist ein Bedarf, keine Anlage. Die Summe der Zonen – Zapfung und Zirkulation – geht als Brauchwasserkanal in die Simulation; gedeckt wird er wie jedes Brauchwasser von den Erzeugern, deren Wärmesenke ihn bedient, direkt über den ''Heizkreis'' oder über einen ''Pufferspeicher Brauchwasser'' bzw. ''Pufferspeicher Kombi (Heizung + Warmwasser)'' ([[Programm Dokumentation/Brauchwasser#einbindung|Brauchwasser: Einbindung in die Anlage]]).
+
+* Die '''Anlagentopologie''' einer Zone – Speicher, Frischwasserstation, Durchfluss oder Wohnungsstation – wirkt nur auf die [[#auslegung|Auslegung]]; sie legt keinen Speicher im Projekt an und verbindet keinen Erzeuger.
+* Die '''Auslegung''' empfiehlt Speichervolumen und Ladeleistung; ''An Speicherauslegung übergeben…'' reicht ihre Eingaben an die [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher-Auslegung]] weiter, die das Volumen eines Pufferspeichers des Projekts vorschlägt.
+* Die '''Speichertemperatur''' der Auslegung und die '''Zapftemperatur''' der Zonen gehen in die thermische Desinfektion und in das Frischwassermodul des Pufferspeichers ein (siehe [[#desinfektion-frischwasser|Thermische Desinfektion und Frischwassermodul]]).
+* Die '''Zirkulation''' bleibt in der Simulation eine eigene Teilreihe; sie wird von denselben Erzeugern und Speichern gedeckt wie die Zapfung und erscheint im Ergebnis als eigener Posten.
+
+[[Datei:Tagesgang_Brauchwasser.svg|mini|600px|Prinzipbild: derselbe Tagesbedarf als Stundenmittel des Bestandsprofils und als eine Realisierung des Zapfprofils.]]
+
 == Beispiel ==
 
 Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen'' mit der Nutzungsart Wohnen, 20 Wohneinheiten, Niveau ''mittel'', und ''Zone 2 Büro'' mit der Nutzungsart Büro, 50 Beschäftigte, Niveau ''mittel''. ''Anzeigen für'' zeigt die Summe beider Zonen oder jede Zone für sich; die Liste nennt den Jahresbedarf je Zone. ''Auslegung…'' fasst beide Zonen zu einer Speichergruppe zusammen und empfiehlt etwa einen Speicher von 300 l bei 25 kW; ''OK'' übernimmt diesen Punkt in das Zapfprofil.
@@ -318,5 +330,8 @@ Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen''
 
 * [[Programm Dokumentation/Brauchwasser|Brauchwasser]] – die Bestandsprofile und der Jahresverbrauch
 * [[Programm Dokumentation/Berechnung/Brauchwasser|Berechnung: Brauchwasser]] – der Rechenweg der Bestandsprofile
+* [[Grundlagen/Brauchwasser]] – Bedarf, Speicherung und Einbindung des Trinkwarmwassers
+* [[Grundlagen/Zapfprofile|Grundlagen: Zapfprofile nach VDI 6002]] – Zapfereignisse, Gleichzeitigkeit und Speicherauslegung
+* [[Programm Dokumentation/Pufferspeicher auslegen|Pufferspeicher auslegen]] – das Volumen des Brauchwasser- oder Kombispeichers
 
 [[Kategorie:Programm Dokumentation]]
