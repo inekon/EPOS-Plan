@@ -173,9 +173,10 @@ namespace EPOS.Kern.Tests
         /// <c>A100</c> (Beiblatt zu DIN EN 12831-3) und <c>W551</c> (DVGW-Arbeitsblatt W 551). Sie
         /// stehen in Oberflächentexten des Zapfprofilgenerators und — geklebt — in den Schlüsseln
         /// seines Parameterkatalogs (<c>A100.Ladungsfaktor</c>, <c>W551.Mindesttemperatur</c>); ein
-        /// Produkt sind sie nicht.
+        /// Produkt sind sie nicht. Dazu die Kältemittelbezeichnung <c>R744</c> (CO₂, ISO 817), die die
+        /// Oberfläche der Wärmepumpe im Feld „Kältemittel“ und in den Gerätegrenzen so nennt.
         /// </summary>
-        private static readonly string[] Normbezeichnungen = { "A100", "W551" };
+        private static readonly string[] Normbezeichnungen = { "A100", "W551", "R744" };
 
         // =====================================================================
         //  Der Wächter
@@ -265,6 +266,7 @@ namespace EPOS.Kern.Tests
                 "Zeitstempel nach ISO 8601, Emissionen aus GEMIS und vom UBA.",
                 "EPOS.Kern/Allgemein/Simulation/VDI4640Pruefung.cs trägt die Prüfung.",
                 "Ein Modul B mit 400 W und ein Speicher 1 mit 100 kWh.",
+                "Bei R744 (CO₂) begrenzt die Wärmepumpe den Rücklauf auf 40 °C.",
             };
 
             List<string> funde = Fundstellen("probe.wiki", string.Join("\n", zeilen), begriffe);

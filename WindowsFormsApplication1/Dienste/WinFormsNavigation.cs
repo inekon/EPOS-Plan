@@ -399,8 +399,14 @@ namespace WindowsFormsApplication1
         /// </param>
         private static bool AnsichtZeigen(string ansicht, string argument)
         {
-            return EPOS.UI.Dienste.Navigationsziel.Aktuell?
-                       .OeffneMaske(ansicht, argument) ?? false;
+            EPOS.UI.Dienste.INavigationsZiel ziel = EPOS.UI.Dienste.Navigationsziel.Aktuell;
+            if (ziel != null) return ziel.OeffneMaske(ansicht, argument);
+
+            // KT-2: Ohne gezeichnete Wurzel bleibt es bei false (der Aufrufer meldet es benannt), aber
+            // nicht spurlos: ein Vermerk mit dem Maskenschluessel im Ausnahmeprotokoll (Logs\Ausnahmen.txt).
+            // Keine MessageBox - der Aufruf kommt aus einem Blazor-Ereignis (Hausregel b).
+            Ausnahmeprotokoll.Vermerken("Ansicht " + ansicht + " nicht geoeffnet: keine Wurzel angemeldet");
+            return false;
         }
 
         /// <summary>Die MARKE aus dem ersten Argument; leer = keine.</summary>

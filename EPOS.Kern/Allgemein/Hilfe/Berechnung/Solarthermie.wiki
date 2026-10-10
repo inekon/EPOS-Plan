@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Solarthermie | Fassung 4 | Rechenkern:
      EPOS.Kern/Allgemein/Simulation/SimulationSolarthermie.cs, EPOS.Kern/Allgemein/Simulation/Solarkreis.cs,
      EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
-     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, Ladeordnung.cs;
+     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, Ladeordnung.cs, SimulationPufferspeicher.cs (T_unten);
      Katalogverwendung: EPOS.Kern/Allgemein/Katalog/ParameterVerwendung.cs -->
 
 == Was berechnet wird ==
@@ -196,7 +196,7 @@ Die Kennlinie des Kollektors bezieht sich auf die '''mittlere Fluidtemperatur'''
 :: <math>\Delta\vartheta_{\mathrm{WT}}</math> – Grädigkeit des Wärmeübertragers [K], Vorgabe 5
 :: <math>\Delta\vartheta_{\mathrm{Koll}}</math> – Spreizung des Kollektorkreises [K], Vorgabe 10
 
-Die unterste Zone ist die des Puffers mit dem kleinsten Rang unter den Senken des Feldes. Führt der Puffer eine Zone, ist ihre Temperatur <math>\vartheta_{\mathrm{RL}} + \frac{\mathrm{SOC}}{Q_{\mathrm{max}}} \cdot \left( \vartheta_{\mathrm{VL}} - \vartheta_{\mathrm{RL}} \right)</math> mit dem Temperaturpaar des Puffers. Lädt das Feld keinen Puffer und ist kein Gebäude mit dem Heizkreis gekoppelt, rechnet es mit 50&nbsp;°C und sagt es im Simulationsprotokoll.
+Die unterste Zone ist die des Puffers mit dem kleinsten Rang unter den Senken des Feldes. Bei mehreren Zonen gilt die Temperatur der untersten. Führt der Puffer eine Zone, ist ihre Temperatur <math>\vartheta_{\mathrm{RL}} + \frac{\mathrm{SOC}}{Q_{\mathrm{max}}} \cdot \left( \vartheta_{\mathrm{VL}} - \vartheta_{\mathrm{RL}} \right)</math> mit dem Temperaturpaar des Puffers. Lädt das Feld keinen Puffer und ist kein Gebäude mit dem Heizkreis gekoppelt, rechnet es mit 50&nbsp;°C und sagt es im Simulationsprotokoll.
 
 : <math>\displaystyle \Delta\vartheta(t) = \vartheta_{\mathrm{m}}(t) - \vartheta_{\mathrm{Luft}}(t)</math> &nbsp;&nbsp;(5)
 :: <math>\Delta\vartheta(t)</math> – Übertemperatur des Kollektors gegen die Umgebung [K]
@@ -283,7 +283,7 @@ Ohne gepflegte Pumpenleistung gilt hilfsweise der Hilfsenergieanteil der Anlage 
 == Ergebnisse und wo sie stehen ==
 {{Anker|ergebnisse}}
 
-* '''Simulationsergebnis, Reiter „Solarthermie"''' — je Kollektorfeld Name, rechnende Fläche <math>A_{\mathrm{ges}}</math>, Anzahl, nutzbarer Jahresertrag und verworfener Überschuss; mit gepflegter Pumpe der Pumpenstrom des Jahres.
+* '''Simulationsergebnis, Reiter „Solarthermie"''' — Wärmebedarf, '''Kollektorertrag brutto''' (die Jahressumme von <math>Q_{\mathrm{pot}}</math> nach (9), also genutzt plus Überschuss), '''davon genutzt''' (<math>Q_{\mathrm{nutz}}</math> nach (10)), '''Überschuss''', Restwärmebedarf und Wärmebedarfsdeckung; je Kollektorfeld Name, rechnende Fläche <math>A_{\mathrm{ges}}</math>, Anzahl, nutzbarer Jahresertrag und verworfener Überschuss; mit gepflegter Pumpe der Pumpenstrom des Jahres.
 * '''Simulationsergebnis, Reiter „Übersicht"''' — der Deckungsanteil der Solarthermie an der Jahreswärme.
 * '''Simulationsergebnis, Reiter „Ergebnis", Blatt „Wärme Produktion Chart"''' — <math>Q_{\mathrm{direkt}}</math> und <math>Q_{\mathrm{lad}}</math> im Stapel der Erzeuger.
 * '''Simulationsprotokoll''' — nicht lesbare Klimaregion, Felder ohne Senke, der Puffer, aus dem ein Feld seine Arbeitstemperatur bildet, ein Feld ohne Senkentemperatur und eine Bruttofläche ohne Modulfläche.
@@ -293,6 +293,7 @@ Ohne gepflegte Pumpenleistung gilt hilfsweise der Hilfsenergieanteil der Anlage 
 {{Anker|bezuege}}
 
 * [[Programm Dokumentation/Solarthermie|Solarthermie]] — Bedienung von Katalog, Projektdialog und Ganglinienverwaltung
+* [[Grundlagen/Solarkollektoren|Grundlagen: Solarkollektoren]] — Bauarten, Kennlinie und Einsatz
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Kaskade, Phasen der Stundenschleife, Ladeordnung
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]] — Abschaltschwelle, Reservezone, Schichten und die Zurechnung der Entladung
 * [[Programm Dokumentation/Berechnung/Photovoltaik|Berechnung: Photovoltaik]] — dieselbe Sonnengeometrie und Zeitbasis, anderes Ertragsmodell

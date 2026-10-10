@@ -45803,6 +45803,27 @@ Chart</value>
   <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>Der Kühlbetrieb der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>
+  <data name="WURZEL_ANSICHT_FEHLER" xml:space="preserve">
+    <value>Die Ansicht „{0}“ konnte nicht geöffnet werden: {1}</value>
+  </data>
+  <data name="WURZEL_KEINE_OBERFLAECHE" xml:space="preserve">
+    <value>Es ist keine Oberfläche angemeldet, die sie zeigen könnte.</value>
+  </data>
+  <data name="WURZEL_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>Diese Oberfläche führt die Ansicht nicht.</value>
+  </data>
+  <data name="KMA_LADEN_FEHLER" xml:space="preserve">
+    <value>Die Kältemaschinen des Projekts konnten nicht gelesen werden: {0}</value>
+  </data>
+  <data name="KMA_WP_LADEN_FEHLER" xml:space="preserve">
+    <value>Die Wärmepumpen des Projekts konnten nicht gelesen werden: {0}</value>
+  </data>
+  <data name="KMA_KATALOG_LADEN_FEHLER" xml:space="preserve">
+    <value>Der Kältemaschinenkatalog konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="WURZEL_LISTE_FEHLER" xml:space="preserve">
+    <value>Die Liste „{0}“ konnte nicht gelesen werden: {1}</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Kältemaschinen im Projekt</value>
   </data>
@@ -50841,6 +50862,15 @@ Chart</value>
   </data>
   <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
     <value>Im Projekt bleiben: Energieträger, Grenzleistung und Temperaturpaar der Anlage, Senken und Zeitprogramm. Die Grenzleistung des Moduls geht mit.</value>
+  </data>
+  <data name="CHART_DATEI_GANGLINIE" xml:space="preserve">
+    <value>{0}_Projekt_{1}.csv</value>
+  </data>
+  <data name="DIAGRAMM_BTN_CSV" xml:space="preserve">
+    <value>CSV…</value>
+  </data>
+  <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
+    <value>Jahresganglinie als CSV speichern</value>
   </data>
 </root>
 

@@ -1,9 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Simulationsablauf | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationRunner.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs,
-     EPOS.Kern/Allgemein/Simulation/Kaskade.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
-     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs,
-     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Allgemein/Simulation/Warnkriterien.cs,
-     EPOS.Kern/Allgemein/Simulation/Init.cs -->
+     EPOS.Kern/Allgemein/Simulation/SimulationRunner.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.cs, EPOS.Kern/Allgemein/Simulation/Kaskade.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
+     EPOS.Kern/Allgemein/Simulation/Ladeordnung.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Allgemein/Simulation/Warnkriterien.cs,
+     EPOS.Kern/Allgemein/Simulation/Init.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.Ak3.cs, EPOS.Kern/Allgemein/Simulation/SimulationControl.Kaelte.cs, EPOS.Kern/Allgemein/Simulation/Anlagenkopplung.cs, EPOS.Kern/Allgemein/Simulation/Gebaeude/Komfortkennzahlen.cs -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -39,6 +37,8 @@ Der Lauf rechnet '''nicht''' die Waerme- und Strommengen selbst, sondern setzt s
 | Knappheitsreihenfolge der Kanaele || — || Einstellungen; Vorbelegung Brauchwasser, Prozess, Heizung
 |-
 | Extrapolation der Waermepumpen-Kennlinie || ja/nein || Simulationskonfiguration; ohne Konfigurationssatz gilt „erlaubt"
+|-
+| Anlagenkopplung || aus, AK1, AK3 || Simulationskonfiguration, Feld „Anlagenkopplung": „aus", „Heizkreis (AK1)", „geschlossener Kreis (AK3)"; leer = aus
 |}
 
 == Formelzeichen und Parameter ==
@@ -117,6 +117,7 @@ Die Werte einer Viertelstundenreihe sind '''Leistungen''' [kW] — ein Stundenwe
 :: <math>Q_{\mathrm{a}}</math> – Jahresmenge einer Stundenreihe [MWh]
 :: <math>Q(t)</math> – Wert der Reihe in der Stunde, eine Waermemenge [kWh]
 :: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
+
 === 2. Vorpruefungen — der Lauf bricht ab, wenn ===
 
 # die Datenbankmigration nicht abgeschlossen ist,
@@ -129,15 +130,17 @@ Der Abbruch ist bewusst hart: Ein Lauf, der mit leerem Stromprofil weiterrechnet
 
 === 3. Bedarf zuerst ===
 
-Vor jedem Erzeuger werden Waerme- und Strombedarf gerechnet. Beide benutzen '''denselben Kalender''': Der Wochentag des 1. Januar wird aus den Wochenendkennzeichen der Klimadaten abgeleitet und von der Waermerechnung an die Stromrechnung weitergegeben. Steht der Samstag des ersten Wochenendpaares am Tagesindex ''i'', so gilt
+Vor jedem Erzeuger werden Waerme- und Strombedarf gerechnet. Beide benutzen '''denselben Kalender''': Der Wochentag des 1. Januar wird aus den Wochenendkennzeichen der Klimadaten abgeleitet und von der Waermerechnung an die Stromrechnung weitergegeben; traegt das Projekt eine Spotpreisreihe mit Jahr, gilt fuer alle der Kalender dieses Jahres. Steht der Samstag des ersten Wochenendpaares am Tagesindex ''i'', so gilt
 
 : <math>\displaystyle w = (5 - i)\ \operatorname{mod}\ 7</math> &nbsp;&nbsp;(3)
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>i</math> – Tagesindex des ersten Wochenend-Samstags, 0 bis 13 [–]
 :: <math>5</math> – Wochentagsnummer des Samstags [–]
-:: <math>7</math> – Tage je Woche [d] Damit kacheln Gebaeudeprofile, Brauchwasser, Prozesswaerme und Stromprofile auf denselben Wochentagen. Die Einzelheiten der Suche nach ''i'' — und der Rueckfallwert, wenn es kein Wochenendpaar gibt — stehen unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1.
+:: <math>7</math> – Tage je Woche [d]
 
-Der Waermebedarf entsteht in '''drei Kanaelen''' und wird auch so weitergereicht:
+Damit kacheln Gebaeudeprofile, Brauchwasser, Prozesswaerme und Stromprofile auf denselben Wochentagen. Die Einzelheiten der Suche nach ''i'' — und der Rueckfallwert, wenn es kein Wochenendpaar gibt — stehen unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1.
+
+Der Waermebedarf entsteht in '''drei Kanaelen''' und wird auch so weitergereicht; die Kaelte fuehrt ein vierter Kanal:
 
 {| class="wikitable"
 ! Kanal !! Inhalt
@@ -147,6 +150,8 @@ Der Waermebedarf entsteht in '''drei Kanaelen''' und wird auch so weitergereicht
 | 1 || Brauchwasser
 |-
 | 2 || Prozesswaerme
+|-
+| 3 || Kuehlung — nur in Projekten, die Kaelte rechnen; er zaehlt nicht zum Waermebedarf
 |}
 
 === 4. Zeitbasis der Klimadaten: Ortszeit ===
@@ -157,7 +162,9 @@ Die Klimadatenreihe einer Region wird von PVGIS in '''UTC''' geliefert, Lastgaen
 :: <math>U</math> – Index derselben Stunde in der gelieferten UTC-Reihe [–]
 :: <math>L</math> – Ortszeit-Index der Stunde, 0 bis 8 759 [–]
 :: <math>\Delta t(L)</math> – Versatz Ortszeit minus UTC: 1 h in der Normalzeit (MEZ), 2 h in der Sommerzeit (MESZ) [h]
-:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h] Fuer den Versatz gilt <math>\Delta t(L) = 1</math>&nbsp;h in der Normalzeit (MEZ) und <math>\Delta t(L) = 2</math>&nbsp;h in der Sommerzeit (MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ = 31. Dezember 23:00 UTC".
+:: <math>8\,760</math> – Stunden je Jahr; hier der Jahresumlauf [h]
+
+Fuer den Versatz gilt <math>\Delta t(L) = 1</math>&nbsp;h in der Normalzeit (MEZ) und <math>\Delta t(L) = 2</math>&nbsp;h in der Sommerzeit (MESZ); der zweite Fall von (4) fasst den Fall „1. Januar 00:00 MEZ = 31. Dezember 23:00 UTC".
 
 Die Sommerzeit laeuft nach der EU-Regel vom letzten Maerzsonntag 02:00 Ortszeit bis zum letzten Oktobersonntag 03:00 Ortszeit; die Regel ist im Rechenkern fest hinterlegt, damit das Ergebnis eines Laufs nicht von der Zeitzonentabelle des Rechners abhaengt. Weil das Raster starre 8 760 Faecher hat, wird an der Fruehjahrsumstellung '''eine UTC-Stunde doppelt gelesen''' und an der Herbstumstellung '''eine ausgelassen'''. Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null.
 
@@ -196,13 +203,28 @@ Diese Stundenfolge ist die '''Speicherstufe'''. In ihr rechnen die Waermepumpe �
 
 Der Grund fuer diese Ordnung: Zwei Erzeuger, die denselben Speicher bedienen, muessen in derselben Stundenschleife laufen. Ein Modul, das sein ganzes Jahr fuer sich durchrechnet, gaebe der naechsten Stufe einen Fuellstand vom Silvesterabend in ihre Stunde 0.
 
+'''Kaelteseite.''' Rechnet das Projekt Kaelte, fuehrt der Lauf neben den drei Waermekanaelen einen '''Kuehlkanal'''; er geht nicht in die Summe des Waermebedarfs ein. Die '''Kaeltekaskade''' rechnet nach der Waermekaskade der Waermepumpen, und ihr Strom geht als eigene Reihe in den Reststrombedarf. Steht keine Waermepumpe in der Stundenschleife, rechnen die Kaeltemaschinen allein, nach der ganzen Waermekaskade.
+
+'''Anlagenkopplung.''' Die Projekteinstellung „Anlagenkopplung" legt fest, ob die Erzeuger auf die Gebaeude zurueckwirken. Bei „aus" gilt ideale Regelung: Die Gebaeude rechnen ihren Bedarf vorab, die Kaskade deckt ihn. Bei '''AK1''' rechnet das Gebaeude seine Waermeuebergabe mit Heizkurve und Vorlauf schon in der Bedarfsrechnung (Heizkreis als Randbedingung); die Erzeuger wirken nicht zurueck. Bei '''AK3''' rechnen Gebaeude und Kaskade '''je Stunde im geschlossenen Kreis''':
+
+# Vor der ersten Stunde schwingen die Gebaeude 720 Stunden ohne Kaskade ein.
+# Je Stunde bietet die Kaskade am Vorlauf der Stunde eine Leistung an; sie wird auf Gebaeude und Zonen verteilt, und jedes Gebaeude rechnet die Stunde mit dieser Schranke.
+# Aus der Loesung bildet der Lauf den Vorlauf bedarfsgewichtet neu und fragt das Angebot erneut ab — bis sich Raumluft um hoechstens 0,01 K, Heizleistung um hoechstens 0,1 W, Vorlauf um hoechstens 0,05 K und Angebot um hoechstens 0,1 W aendern.
+# Danach laeuft die eigentliche Kaskadenstunde einmal mit dem gefundenen Bedarf.
+
+Hoechstens 20 Durchlaeufe sind zugelassen, mit mehreren Zonen hoechstens 120 als Produkt aus Zonenzahl und Durchlaeufen; wird die Grenze gerissen, bricht der Lauf mit Gebaeude, Stunde und groesster Abweichung ab, statt still zu naehern. Auf AK3 liegt auch die Kaelteseite im Kreis: Die Kaeltekaskade rechnet je Stunde nach der Waermestunde, und das Kaelteangebot begrenzt als '''Kaelteschranke''' die Kuehlleistung der Zonen. Ein Gebaeude auf dem Rechenweg Tagesbilanz rechnet keine Anlagenkopplung.
+
+'''Komfortstunden.''' Mit Anlagenkopplung zaehlt der Lauf je gekoppeltem Gebaeude die Stunden der Nutzungszeit, in denen die Raumluft um mehr als 1 K unter dem Heizsollwert liegt — mit wirksamer Kuehlung ebenso ueber dem Kuehlsollwert —, dazu die Summe dieser Abweichungen in Kelvinstunden und die laengste zusammenhaengende Folge solcher Stunden. Mit mehreren Zonen zaehlt eine Stunde, sobald eine Zone die Schwelle reisst.
+
 === 7. Ladepriorität — wer den Speicher zuerst fuellen darf ===
 
 Die Reihenfolge der Bedarfsdeckung (Schritt 2 oben) ist die '''Kaskade'''. Die Reihenfolge des Ladens ist eine andere: Sie folgt der Ladepriorität, und die '''kleinere''' Zahl laedt zuerst:
 
 : <math>\displaystyle r_{\mathrm{Lade}}(A) < r_{\mathrm{Lade}}(B) \;\to\; A\ \text{laedt vor}\ B</math> &nbsp;&nbsp;(5)
 :: <math>r_{\mathrm{Lade}}(A)</math> – Ladeprioritaet der Anlage A, 1 bis 99; nicht gepflegt = 99 [–]
-:: <math>A</math>, <math>B</math> – zwei Anlagen, die in derselben Stunde laden wollen [–] Die Vorgabewerte stehen nach Grenzkosten:
+:: <math>A</math>, <math>B</math> – zwei Anlagen, die in derselben Stunde laden wollen [–]
+
+Die Vorgabewerte stehen nach Grenzkosten:
 
 {| class="wikitable"
 ! Anlagenart !! <math>r_{\mathrm{Lade}}</math> !! warum dieser Platz
@@ -233,7 +255,9 @@ Ein Puffer wird mit '''Hysterese''' gefahren: Unterschreitet der Fuellstand die 
 :: <math>Q_{\mathrm{Sp}}(t)</math> – Inhalt des Pufferspeichers in der Stunde [kWh]
 :: <math>s_{\mathrm{aus}}</math> – Abschaltschwelle des Speichers; Vorgabe 95 [%]
 :: <math>Q_{\mathrm{Sp,max}}</math> – nutzbare Kapazitaet des Speichers [kWh]
-:: <math>100</math> – Umrechnung Prozent in Anteil [–] Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}} = 10</math>&nbsp;% und <math>s_{\mathrm{aus}} = 95</math>&nbsp;% der nutzbaren Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste den Fuellstand laufend absenken.
+:: <math>100</math> – Umrechnung Prozent in Anteil [–]
+
+Ohne eigene Vorgabe gelten <math>s_{\mathrm{ein}} = 10</math>&nbsp;% und <math>s_{\mathrm{aus}} = 95</math>&nbsp;% der nutzbaren Kapazitaet. Die Abschaltschwelle liegt bewusst unter 100 %, weil die Bereitschaftsverluste den Fuellstand laufend absenken.
 
 === 9. Warnkriterien am Laufstart ===
 
@@ -258,14 +282,16 @@ Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch a
 : <math>\displaystyle E_{\mathrm{Rest}} = \frac{\sum_{k=1}^{35\,040} P_{\mathrm{Netz}}(k)}{4\,000}</math> &nbsp;&nbsp;(9)
 :: <math>E_{\mathrm{Rest}}</math> – Reststrombedarf des Laufs, also der Netzbezug [MWh]
 :: <math>P_{\mathrm{Netz}}(k)</math> – nach Photovoltaik und Speicher verbleibender Netzbezug der Viertelstunde [kW]
-:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–] Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstand, Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
+:: <math>4\,000</math> – Teiler: vier Viertel je Stunde mal 1 000 kWh je MWh [–]
+
+Danach bildet der Lauf die Speicherkennzahlen (mittlerer und maximaler Fuellstand, Vollzyklen) und die Eingangsgroessen der Auslegungspruefung fuer Erdreichquellen.
 
 == Grenzen und Annahmen ==
 {{Anker|grenzen}}
 
 * '''Ein Jahr, keine Alterung.''' Gerechnet wird ein einziges Jahr mit dem Klimadatensatz der gewaehlten Region. Degradation, Verschleiss und Betriebsjahre kommen erst in der Wirtschaftlichkeitsrechnung vor.
 * '''Kein Schaltjahr.''' 365 Tage, 8 760 Stunden — fest.
-* '''Stundenaufloesung in der Waerme.''' Vorgaenge innerhalb einer Stunde (Takten, Anfahrverluste, Regelschwingungen) bildet der Lauf nicht ab.
+* '''Stundenaufloesung in der Waerme.''' Vorgaenge innerhalb einer Stunde (Regelschwingungen, der Zeitpunkt eines Takts) bildet der Lauf nicht ab; wo ein Erzeuger Takten und Anfahrverluste rechnet, gehen sie als Stundenwerte ein (siehe [[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]]).
 * '''Keine Hydraulik im engeren Sinn.''' Rohrnetze, Druckverluste, Pumpen und Mischer werden nicht gerechnet; die Netzverluste sind ein pauschaler Aufschlag.
 * '''Zwei Umstellstunden je Jahr''' liegen wegen des starren Rasters doppelt bzw. gar nicht vor (siehe Schritt 4 und Gleichung (4)). Sie liegen nachts und veraendern die Jahressumme der Einstrahlung nicht.
 * '''Ein Lauf zur Zeit.''' Der Rechenkern ist nicht darauf ausgelegt, zwei Simulationen gleichzeitig zu fahren.
@@ -278,7 +304,7 @@ Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch a
 * '''Simulationsergebnis''', Reiter „Übersicht" — Jahresmengen und Deckungsgrade je Erzeuger, <math>Q_{\mathrm{Rest}}</math> nach (8) und <math>E_{\mathrm{Rest}}</math> nach (9).
 * '''Simulationsergebnis''', Reiter „Wärme-/Strombedarf" — die Jahresganglinien und die Jahresdauerlinien des Bedarfs.
 * '''Simulationsergebnis''', je ein Reiter pro beteiligtem Erzeuger.
-* '''Laufprotokoll''' — Hinweise, Warnungen und der Abbruchgrund; hier stehen auch die Warnkriterien aus Schritt 9.
+* '''Laufprotokoll''' — Hinweise, Warnungen und der Abbruchgrund; hier stehen auch die Warnkriterien aus Schritt 9 und, auf AK3 mit Kaelteseite, die Zaehler des Kreises (Stunden an der Kaelteschranke, Umschaltstunden, Kaelte-Restbedarf, Fallwechsel).
 * '''Bericht und Wirtschaftlichkeit''' rechnen auf denselben Jahresmengen weiter.
 
 == Bezüge ==
@@ -288,5 +314,7 @@ Was die Kaskade offen gelassen hat und was nach Photovoltaik und Speicher noch a
 * [[Programm Dokumentation/Simulationsergebnisse|Simulationsergebnisse]] — die Reiter des Ergebnisfensters
 * [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]]
 * [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]]
+* [[Programm Dokumentation/Gebäudemodell VDI 6007|Gebäudemodell VDI 6007]] — das Gebaeude im geschlossenen Kreis
+* [[Programm Dokumentation/Kühlung|Kühlung]] — Kaelteerzeuger und Kaelteseite
 * [[Programm Dokumentation/Berechnung/Pufferspeicher|Berechnung: Pufferspeicher]]
 * [[Programm Dokumentation/Berechnung|Berechnung]] — alle Rechenwege im Überblick

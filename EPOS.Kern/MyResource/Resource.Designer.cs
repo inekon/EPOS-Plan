@@ -19013,6 +19013,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}_Projekt_{1}.csv ähnelt.
+        /// </summary>
+        public static string CHART_DATEI_GANGLINIE {
+            get {
+                return ResourceManager.GetString("CHART_DATEI_GANGLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel_Projekt_{0}.csv ähnelt.
         /// </summary>
         public static string CHART_DATEI_HEIZKESSEL {
@@ -20134,6 +20143,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_WARMWASSER {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV… ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_BTN_CSV {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_BTN_CSV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresganglinie als CSV speichern ähnelt.
+        /// </summary>
+        public static string DIAGRAMM_TIP_CSV {
+            get {
+                return ResourceManager.GetString("DIAGRAMM_TIP_CSV", resourceCulture);
             }
         }
         
@@ -74104,6 +74131,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kältemaschinenkatalog konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string KMA_KATALOG_LADEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_KATALOG_LADEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog enthält keine Kältemaschine. Legen Sie Geräte unter Administration › Kältemaschinen an. ähnelt.
         /// </summary>
         public static string KMA_KATALOG_LEER {
@@ -74118,6 +74154,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_KEINE_ANSICHT {
             get {
                 return ResourceManager.GetString("KMA_KEINE_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kältemaschinen des Projekts konnten nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string KMA_LADEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_LADEN_FEHLER", resourceCulture);
             }
         }
         
@@ -74271,6 +74316,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMA_WP_HINWEIS {
             get {
                 return ResourceManager.GetString("KMA_WP_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpen des Projekts konnten nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string KMA_WP_LADEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KMA_WP_LADEN_FEHLER", resourceCulture);
             }
         }
         
@@ -134200,6 +134254,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WRK_TITEL_VERWALTUNG {
             get {
                 return ResourceManager.GetString("WRK_TITEL_VERWALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ansicht „{0}“ konnte nicht geöffnet werden: {1} ähnelt.
+        /// </summary>
+        public static string WURZEL_ANSICHT_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_ANSICHT_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Oberfläche angemeldet, die sie zeigen könnte. ähnelt.
+        /// </summary>
+        public static string WURZEL_KEINE_OBERFLAECHE {
+            get {
+                return ResourceManager.GetString("WURZEL_KEINE_OBERFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste „{0}“ konnte nicht gelesen werden: {1} ähnelt.
+        /// </summary>
+        public static string WURZEL_LISTE_FEHLER {
+            get {
+                return ResourceManager.GetString("WURZEL_LISTE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Oberfläche führt die Ansicht nicht. ähnelt.
+        /// </summary>
+        public static string WURZEL_NICHT_GEFUEHRT {
+            get {
+                return ResourceManager.GetString("WURZEL_NICHT_GEFUEHRT", resourceCulture);
             }
         }
         

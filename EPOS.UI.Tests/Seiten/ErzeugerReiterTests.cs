@@ -509,7 +509,7 @@ public class ErzeugerReiterTests : EposBunitContext
 
         var folge = seite.FindAll(
                 "h2.epos-gruppenkopf-titel, table.epos-raster, div.epos-simerg-schalter, "
-                + "div.epos-diagramm-svg, button.epos-simerg-knopf")
+                + "div.epos-diagramm-svg, button.epos-diagramm-csv")
             .Select(e => e.TagName.ToLowerInvariant() switch
             {
                 "h2" => e.TextContent.Trim(),
@@ -523,8 +523,8 @@ public class ErzeugerReiterTests : EposBunitContext
         {
             "Wärme", "Strom", "Brennstoffverbrauch der Spitzenkessel", "Betrieb",
             "Wärmeproduktion der einzelnen Spitzenkessel", "Tabelle",
-            "Schalter", "Schalter", "Ganglinie",
-            "Auslegung", "CSV",
+            "Schalter", "Schalter", "Ganglinie", "CSV",
+            "Auslegung",
         }, folge);
 
         // Die Ganglinie ist das einzige Bild des Reiters und steht vor der Auslegung.
@@ -691,7 +691,7 @@ public class ErzeugerReiterTests : EposBunitContext
         int gerufen = 0;
         var seite = KesselZeichnen(Kessel(), csv: () => gerufen++);
 
-        seite.Find("button.epos-simerg-knopf").Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
         Assert.Equal(1, gerufen);
     }
 
@@ -1704,5 +1704,108 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(soll, Knoepfe(SolarZeichnen()));
         Assert.Equal(soll, Knoepfe(BhkwZeichnen(Bhkw())));
         Assert.Equal(soll, Knoepfe(PvZeichnen()));
+    }
+
+    // =====================================================================
+    //  CSV AM DIAGRAMM: der Ganglinienexport aus der Kaskade
+    // =====================================================================
+
+    private readonly List<(Zeichenmodell Modell, string Titel)> _exporte = new();
+
+    /// <summary>Die Naht der Ergebnisseite als Fälschung: merkt Modell und Titel.</summary>
+    private Ganglinienexport Naht() => new((m, t) =>
+    {
+        _exporte.Add((m, t));
+        return Task.CompletedTask;
+    });
+
+    /// <summary>
+    /// Der Klick auf „CSV…“ gibt das GEZEIGTE Modell samt Diagrammtitel an die Naht; der Schreiber
+    /// des Kerns macht daraus Kopf plus je Stützstelle eine Zeile, erste Spalte die Stunde.
+    /// </summary>
+    private void PruefeExport<T>(IRenderedComponent<T> seite, int bilder) where T : IComponent
+    {
+        var knoepfe = seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.Equal(bilder, knoepfe.Count);
+        for (int i = 0; i < knoepfe.Count; i++)
+        {
+            seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv")[i].Click();
+            (Zeichenmodell modell, string titel) = _exporte[^1];
+            Assert.False(string.IsNullOrWhiteSpace(titel));
+
+            IReadOnlyList<ZeitreihenSpalte> spalten = ZeitreihenCsv.AusModell(modell);
+            Assert.NotEmpty(spalten);
+            string[] zeilen = ZeitreihenCsv.Text(ZeitreihenCsv.RasterAus(spalten), spalten)
+                                           .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+            int laenge = spalten.Max(s => s.Werte.Length);
+            Assert.Equal(laenge + 1, zeilen.Length);
+            Assert.Equal(spalten.Count + 1, zeilen[0].Split(';').Length);
+        }
+        Assert.Equal(bilder, _exporte.Count);
+    }
+
+    [Fact]
+    public void Bhkw_traegt_CSV_an_beiden_Bildern()
+    {
+        var seite = Render<BhkwReiter>(p => p
+            .Add(x => x.Daten, Bhkw())
+            .Add(x => x.Praesent, true)
+            .Add(x => x.Modell, Modell)
+            .AddCascadingValue(Naht()));
+        PruefeExport(seite, 2);
+    }
+
+    [Fact]
+    public void Photovoltaik_traegt_CSV_am_Bild()
+    {
+        var seite = Render<PhotovoltaikReiter>(p => p
+            .Add(x => x.Daten, Pv())
+            .Add(x => x.Modell, Modell)
+            .AddCascadingValue(Naht()));
+        PruefeExport(seite, 1);
+    }
+
+    [Fact]
+    public void Solarthermie_traegt_CSV_am_Bild()
+    {
+        var seite = Render<SolarthermieReiter>(p => p
+            .Add(x => x.Daten, Solar())
+            .Add(x => x.Modell, Modell)
+            .AddCascadingValue(Naht()));
+        PruefeExport(seite, 1);
+    }
+
+    /// <summary>
+    /// Ein benannter Export am Bild hat Vorrang: Der Kesselreiter führt seine eigene Datei, die
+    /// Naht der Kaskade bleibt ungerufen.
+    /// </summary>
+    [Fact]
+    public void Der_benannte_Export_hat_Vorrang_vor_der_Naht()
+    {
+        int gerufen = 0;
+        var seite = Render<HeizkesselReiter>(p => p
+            .Add(x => x.Daten, Kessel())
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Csv, EventCallback.Factory.Create(this, () => gerufen++))
+            .AddCascadingValue(Naht()));
+
+        var knoepfe = seite.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv");
+        Assert.Single(knoepfe);
+        knoepfe[0].Click();
+        Assert.Equal(1, gerufen);
+        Assert.Empty(_exporte);
+    }
+
+    /// <summary>Ohne Naht und ohne benannten Export kein Knopf; eine Punktwolke (x = Wert) bekommt keinen.</summary>
+    [Fact]
+    public void Ohne_Naht_kein_Knopf_und_keine_Punktwolke()
+    {
+        Assert.Empty(PvZeichnen().FindAll("button.epos-diagramm-csv"));
+
+        Zeichenmodell bild = Erzeugerbild(Bilder.Photovoltaik, false);
+        Assert.True(Naht().Passt(bild));
+        bild.Flaeche = bild.Flaeche with { X = Achsenart.Wert };
+        Assert.False(Naht().Passt(bild));
+        Assert.False(Naht().Passt(null));
     }
 }

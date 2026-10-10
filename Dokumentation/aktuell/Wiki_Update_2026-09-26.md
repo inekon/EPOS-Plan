@@ -227,6 +227,8 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 10.10.2026: Im Dialog der Kachel „Kühlung und Kälteanlagen“ lassen sich unter „Hinzufügen…“ die Typkennfelder laden und die Katalogverwaltung öffnen. (#881)
 - Seit 10.10.2026: In jedem Katalog verneint ein vorangestelltes „!“ den Trichter einer Textspalte. (#881)
 - Seit 10.10.2026: Ein gekürzter Spaltenkopf in den Katalogen nennt beim Verweilen mit der Maus seinen vollen Namen. (#882)
+- Seit 10.10.2026: Der CSV-Export steht als Knopf „CSV…“ am Diagramm, auch für Kältelast, BHKW, Photovoltaik, Solarthermie und Kältegang. (#883)
+- Seit 10.10.2026: Die Kachel „Kühlung und Kälteanlagen“ öffnet ihren Dialog auch unter Windows; eine Ansicht, die sich nicht öffnen lässt, nennt den Grund. (#884)
 
 ### Version 1.2.0.8 — nicht veröffentlicht
 

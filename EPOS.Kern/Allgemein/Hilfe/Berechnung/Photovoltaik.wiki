@@ -1,16 +1,16 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Photovoltaik | Fassung 4 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/SimulationPV.cs, EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs,
-     EPOS.Kern/Allgemein/Simulation/PvStrangModell.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs,
-     EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Controller/AnlageStrangCtrl.cs,
-     EPOS.Kern/Controller/WechselrichterCtrl.cs, EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs;
-     Wechselrichter: Konzept_Wechselrichter_EPOS-Plan.md, Kapitel 3 und 4 -->
+     EPOS.Kern/Allgemein/Simulation/SimulationPV.cs, EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs, EPOS.Kern/Allgemein/Simulation/PvGanglinieWeiche.cs, EPOS.Kern/Controller/PvGanglinieImportCtrl.cs,
+     EPOS.Kern/Allgemein/Simulation/PvStrangModell.cs, EPOS.Kern/Allgemein/SolarPVGISCalculator.cs, EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs, EPOS.Kern/Controller/AnlageStrangCtrl.cs,
+     EPOS.Kern/Controller/WechselrichterCtrl.cs, EPOS.Kern/Allgemein/Import/StrangPlausibilitaet.cs; Wechselrichter: Konzept_Wechselrichter_EPOS-Plan.md, Kapitel 3 und 4 -->
 
 == Was berechnet wird ==
 {{Anker|was}}
 
 Der Photovoltaik-Zweig rechnet für jede PV-Anlage des Projekts den Wechselstromertrag Stunde für Stunde, verteilt ihn nach dem Sonnenstand auf Viertelstunden und verrechnet ihn je Viertelstunde mit dem Strombedarf. Ergebnisgrößen sind die '''Erzeugung''' [kWh], der '''Direktverbrauch''' (der Teil der Erzeugung, der in derselben Viertelstunde im Haus verbraucht wird), der '''Überschuss''' (die Einspeisung ins Netz), die '''Abregelung''' (Überschuss über einer Einspeisegrenze) und der '''Reststrom''' (der verbleibende Netzbezug). Der Stromspeicher wird hier '''nicht''' gerechnet — er sieht Überschuss und Reststrom als Eingang und wird getrennt bilanziert.
 
-Es gibt zwei Rechenmodelle, die je Anlage gewählt werden: '''einfach''' (isotrope Einstrahlung, linearer Temperaturgang, pauschaler Wechselrichter-Wirkungsgrad) und '''erweitert''' (anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld, Wechselrichterkennlinie mit Clipping).
+Ist dem Projekt eine '''PV-Ganglinie''' zugeordnet, ersetzt sie die Modulrechnung ganz; die Bilanz je Viertelstunde bleibt dieselbe (Abschnitt „Rechnen mit einer PV-Ganglinie").
+
+Für die Modulrechnung gibt es zwei Rechenmodelle, die je Anlage gewählt werden: '''einfach''' (isotrope Einstrahlung, linearer Temperaturgang, pauschaler Wechselrichter-Wirkungsgrad) und '''erweitert''' (anisotrope Einstrahlung nach Hay-Davies, Schwachlichtmodell nach Huld, Wechselrichterkennlinie mit Clipping).
 
 == Eingangsgrößen ==
 {{Anker|eingang}}
@@ -57,6 +57,10 @@ Es gibt zwei Rechenmodelle, die je Anlage gewählt werden: '''einfach''' (isotro
 | Gerätedaten (AC-Nennleistung, sechs Kennlinienpunkte, Einschaltschwelle, Nachtverbrauch, Kosten) || kW, —, W, W, € || Wechselrichterkatalog über die Projektkopie; nur im Weg „mit Wechselrichter"
 |-
 | Strombedarf des Projekts || kWh je Viertelstunde || Strombedarf des Projekts, nach Abzug der vorgelagerten Erzeuger
+|-
+| Einspeisegrenze || kW oder % || Projekteinstellung „Einspeisegrenze"; leer = keine
+|-
+| PV-Ganglinie (Stunden- oder Viertelstundenwerte) und ihre Nennleistung || kW, kWp || Katalog der PV-Ganglinien, dem Projekt zugeordnet; ersetzt alle Größen der Module und der Klimadaten außer dem Sonnenstand
 |}
 
 == Formelzeichen und Parameter ==
@@ -179,13 +183,13 @@ Größen, die der Lauf je Stunde oder je Anlage bildet.
 |-
 | <math>P_{\mathrm{PV}}(q)</math> || Erzeugung der Viertelstunde nach dem Sonnenstand || kW || (24)
 |-
-| <math>B(t)</math> || zu deckender Strombedarf der Stunde || kW || (25)
+| <math>B(q)</math> || zu deckender Strombedarf der Viertelstunde || kW || (25)
 |-
-| <math>P_{\mathrm{direkt}}(t)</math> || Direktverbrauch || kW || (26)
+| <math>P_{\mathrm{direkt}}(q)</math> || Direktverbrauch || kW || (26)
 |-
-| <math>P_{\mathrm{ueber}}(t)</math> || Überschuss vor dem Speicher || kW || (27)
+| <math>P_{\mathrm{ueber}}(q)</math> || Überschuss vor dem Speicher || kW || (27)
 |-
-| <math>P_{\mathrm{netz}}(t)</math> || Reststrom, Netzbezug || kW || (28)
+| <math>P_{\mathrm{netz}}(q)</math> || Reststrom, Netzbezug || kW || (28)
 |-
 | <math>P_{\mathrm{ein}}(q)</math> || Einspeisung ins Netz || kW || (29)
 |-
@@ -209,7 +213,7 @@ Größen, die der Lauf je Stunde oder je Anlage bildet.
 == Rechenweg ==
 {{Anker|rechenweg}}
 
-Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht wiederholt. Der Strombedarf kommt viertelstündlich herein und wird zuerst zum Stundenmittel zusammengefasst; die Ergebnisreihen gehen am Schluss als Treppenfunktion wieder auf Viertelstunden zurück.
+Gerechnet wird im festen Jahresraster von '''8&nbsp;760 Stunden'''; <math>t</math> ist in allen Gleichungen dieser Seite die laufende Stunde des Jahres und wird deshalb in den Legenden nicht wiederholt. Der Ertrag entsteht je Stunde (Schritte 1 bis 5). Die Bilanz mit dem Strombedarf rechnet je Viertelstunde, also über die 35&nbsp;040 Viertelstunden des Jahres (Schritt 6); die Stundenreihen der Ergebnisse sind die Mittel ihrer vier Viertelstunden.
 
 Die Klimadatenreihe wird in '''Ortszeit''' gelesen: Die gespeicherte Reihe steht in UTC, gelesen wird sie um eine Stunde (Normalzeit) beziehungsweise zwei Stunden (Sommerzeit) versetzt. Die Umstellung liegt auf dem letzten Sonntag im März und im Oktober. Sonnenstand und Einfallswinkel rechnen weiter auf der UTC-Zeitmarke, die jede Zeile mitführt.
 
@@ -434,40 +438,52 @@ Die stündlichen Wechselstromleistungen aller PV-Anlagen des Projekts werden auf
 :: <math>\cos\theta_{z}(q)</math> – Kosinus des Zenitwinkels der Sonne in der Mitte der Viertelstunde, 0 bei Sonne unter dem Horizont [–]
 :: <math>4</math> – Viertelstunden je Stunde [–]
 
-Die Verteilung ist '''energieerhaltend''': Das Mittel der vier Viertel ist der Stundenwert. Steht die Sonne in allen vier Vierteln unter dem Horizont, tragen alle vier den Stundenwert. Danach gilt je Viertelstunde (in (25) bis (28) steht <math>q</math> für <math>t</math>):
+Die Verteilung ist '''energieerhaltend''': Das Mittel der vier Viertel ist der Stundenwert. Steht die Sonne in allen vier Vierteln unter dem Horizont, tragen alle vier den Stundenwert. Danach gilt je Viertelstunde:
 
-: <math>\displaystyle B(t) = \max\left( 0 , P_{\mathrm{Rest}}(t) \right)</math> &nbsp;&nbsp;(25)
-:: <math>B(t)</math> – zu deckender Strombedarf der Stunde [kW]
-:: <math>P_{\mathrm{Rest}}(t)</math> – Reststrombedarf nach den vorgelagerten Erzeugern; negativ = BHKW-Überschuss [kW]
+: <math>\displaystyle B(q) = \max\left( 0 , P_{\mathrm{Rest}}(q) \right)</math> &nbsp;&nbsp;(25)
+:: <math>B(q)</math> – zu deckender Strombedarf der Viertelstunde [kW]
+:: <math>P_{\mathrm{Rest}}(q)</math> – Reststrombedarf nach den vorgelagerten Erzeugern; negativ = BHKW-Überschuss [kW]
 
-: <math>\displaystyle P_{\mathrm{direkt}}(t) = \min\left( P_{\mathrm{PV}}(t) , B(t) \right)</math> &nbsp;&nbsp;(26)
-:: <math>P_{\mathrm{direkt}}(t)</math> – Direktverbrauch der Stunde [kW]
-:: <math>P_{\mathrm{PV}}(t)</math> – Erzeugung aller PV-Anlagen aus (23) [kW]
-:: <math>B(t)</math> – zu deckender Strombedarf aus (25) [kW]
+: <math>\displaystyle P_{\mathrm{direkt}}(q) = \min\left( P_{\mathrm{PV}}(q) , B(q) \right)</math> &nbsp;&nbsp;(26)
+:: <math>P_{\mathrm{direkt}}(q)</math> – Direktverbrauch der Viertelstunde [kW]
+:: <math>P_{\mathrm{PV}}(q)</math> – Erzeugung der Viertelstunde aus (24) [kW]
+:: <math>B(q)</math> – zu deckender Strombedarf aus (25) [kW]
 
-: <math>\displaystyle P_{\mathrm{ueber}}(t) = P_{\mathrm{PV}}(t) - P_{\mathrm{direkt}}(t)</math> &nbsp;&nbsp;(27)
-:: <math>P_{\mathrm{ueber}}(t)</math> – Überschuss, Einspeisung ins Netz [kW]
-:: <math>P_{\mathrm{PV}}(t)</math> – Erzeugung aller PV-Anlagen [kW]
-:: <math>P_{\mathrm{direkt}}(t)</math> – Direktverbrauch aus (26) [kW]
+: <math>\displaystyle P_{\mathrm{ueber}}(q) = P_{\mathrm{PV}}(q) - P_{\mathrm{direkt}}(q)</math> &nbsp;&nbsp;(27)
+:: <math>P_{\mathrm{ueber}}(q)</math> – Überschuss vor Speicher und Einspeisegrenze [kW]
+:: <math>P_{\mathrm{PV}}(q)</math> – Erzeugung der Viertelstunde aus (24) [kW]
+:: <math>P_{\mathrm{direkt}}(q)</math> – Direktverbrauch aus (26) [kW]
 
-: <math>\displaystyle P_{\mathrm{netz}}(t) = B(t) - P_{\mathrm{direkt}}(t)</math> &nbsp;&nbsp;(28)
-:: <math>P_{\mathrm{netz}}(t)</math> – Reststrom, Netzbezug [kW]
-:: <math>B(t)</math> – zu deckender Strombedarf aus (25) [kW]
-:: <math>P_{\mathrm{direkt}}(t)</math> – Direktverbrauch aus (26) [kW]
+: <math>\displaystyle P_{\mathrm{netz}}(q) = B(q) - P_{\mathrm{direkt}}(q)</math> &nbsp;&nbsp;(28)
+:: <math>P_{\mathrm{netz}}(q)</math> – Reststrom, Netzbezug [kW]
+:: <math>B(q)</math> – zu deckender Strombedarf aus (25) [kW]
+:: <math>P_{\mathrm{direkt}}(q)</math> – Direktverbrauch aus (26) [kW]
 
 Mit einer '''Einspeisegrenze''' (Projekteinstellung, in kW oder in Prozent der installierten Leistung) wird der Überschuss über ihr abgeregelt:
 
 : <math>\displaystyle P_{\mathrm{ein}}(q) = \min\left( P_{\mathrm{ueber}}(q) - P_{\mathrm{lade}}(q) , P_{\mathrm{grenz}} \right)</math> &nbsp;&nbsp;(29)
 :: <math>P_{\mathrm{ein}}(q)</math> – eingespeiste Leistung [kW]
 :: <math>P_{\mathrm{lade}}(q)</math> – Ladung des Stromspeichers und Standby des Speichersystems aus dem Überschuss, ohne Speicher 0 [kW]
-:: <math>P_{\mathrm{grenz}}</math> – Einspeisegrenze; in Prozent: Anteil der installierten Leistung <math>P_{\mathrm{STC}}</math> [kW]
+:: <math>P_{\mathrm{grenz}}</math> – Einspeisegrenze; in Prozent: Anteil der installierten Leistung des Projekts (Summe der Modulfelder, bei einer PV-Ganglinie deren Kennleistung) [kW]
 
 : <math>\displaystyle P_{\mathrm{ab}}(q) = P_{\mathrm{ueber}}(q) - P_{\mathrm{lade}}(q) - P_{\mathrm{ein}}(q)</math> &nbsp;&nbsp;(30)
 :: <math>P_{\mathrm{ab}}(q)</math> – abgeregelte Leistung [kW]
 
 Der Speicher lädt '''vor''' dem Abregeln: Was er aufnimmt, wird weder eingespeist noch abgeregelt. Ohne Einspeisegrenze ist <math>P_{\mathrm{ein}} = P_{\mathrm{ueber}} - P_{\mathrm{lade}}</math> und <math>P_{\mathrm{ab}} = 0</math>.
 
-<math>P_{\mathrm{ueber}}</math> ist der Überschuss vor dem Speicher, <math>P_{\mathrm{ein}}</math> die Einspeisung, <math>P_{\mathrm{netz}}</math> der Netzbezug. Die Stundenwerte der Ergebnisreihen sind die Mittel ihrer vier Viertelstunden. Ein '''negativer''' Reststrombedarf <math>P_{\mathrm{Rest}}(t)</math> ist BHKW-Überschuss aus einer vorgelagerten Kaskadenstufe. Er ist keine PV-Erzeugung, wird deshalb in (25) auf 0 geklemmt und getrennt ausgewiesen — sonst würde er als PV-Einspeisung vergütet.
+<math>P_{\mathrm{ueber}}</math> ist der Überschuss vor dem Speicher, <math>P_{\mathrm{ein}}</math> die Einspeisung, <math>P_{\mathrm{netz}}</math> der Netzbezug. Die Stundenwerte der Ergebnisreihen sind die Mittel ihrer vier Viertelstunden. Ein '''negativer''' Reststrombedarf <math>P_{\mathrm{Rest}}(q)</math> ist BHKW-Überschuss aus einer vorgelagerten Kaskadenstufe. Er ist keine PV-Erzeugung, wird deshalb in (25) auf 0 geklemmt und getrennt ausgewiesen — sonst würde er als PV-Einspeisung vergütet.
+
+=== Rechnen mit einer PV-Ganglinie ===
+{{Anker|ganglinie}}
+
+Statt der Module kann eine importierte '''PV-Ganglinie''' die Erzeugung liefern. Sie rechnet, sobald dem Projekt eine Ganglinie zugeordnet ist, deren Projektkopie vollständig ist: 8&nbsp;760 Werte im Stundenraster oder 35&nbsp;040 Werte im Viertelstundenraster, jeder Wert endlich und nicht negativ. Dann entfallen die Schritte 1 bis 5 und die Module der Anlagen rechnen nicht. Eine unvollständige Ganglinie rechnet nicht: Die Module rechnen, und das Simulationsprotokoll nennt den Mangel. Sind mehrere Ganglinien zugeordnet, rechnet die zuerst zugeordnete.
+
+Ein Wert ist die Wechselstromleistung der Anlage im Zeitschritt [kW]. Die Jahresarbeit ist die Summe der Werte mal der Dauer des Zeitschritts (1&nbsp;h oder 0{,}25&nbsp;h).
+
+* '''Stundenraster:''' Die Werte sind die Stundenerträge <math>P_{\mathrm{PV}}(t)</math> und werden wie die Module nach dem Sonnenstand auf die Viertelstunden verteilt (24).
+* '''Viertelstundenraster:''' Die Werte gehen unmittelbar als <math>P_{\mathrm{PV}}(q)</math> in die Bilanz; der Stundenertrag ist das Mittel der vier Viertel.
+
+Die Bilanz (25) bis (30) ist dieselbe wie bei den Modulen. Die '''Kennleistung''' der Ganglinie ist ihre gepflegte Nennleistung, ohne Nennleistung ihr Höchstwert; sie gilt als installierte Leistung für die Einspeisegrenze in Prozent, für Bericht und Wirtschaftlichkeit. Beim Import wird die Nennleistung aus dem Dateikopf vorbelegt, nennt er keine, mit dem Höchstwert der Reihe. Liegt der Höchstwert über der 1{,}1-fachen Nennleistung, gibt der Import einen Hinweis (Nennleistung oder Einheit der Datei prüfen); der Import läuft trotzdem durch.
 
 == Wechselrichter ==
 {{Anker|wechselrichter}}
@@ -761,7 +777,7 @@ Für das Rechenbeispiel oben ergibt das <math>n = 4 \dots 14</math> Module in Re
 {{Anker|grenzen}}
 
 * '''Keine Verschattung.''' Weder Horizont noch Eigenverschattung der Modulreihen gehen ein.
-* '''Eine Ausrichtung je Anlage — außer im Weg „mit Wechselrichter".''' <math>\beta</math> und <math>\gamma</math> hängen an der Anlagenzeile; im Strangweg trägt jeder Strang wahlweise eigene,  und damit ist das Ost/West-Feld eine Anlage (siehe Abschnitt „Wechselrichter", Option 2).
+* '''Eine Ausrichtung je Anlage — außer im Weg „mit Wechselrichter".''' <math>\beta</math> und <math>\gamma</math> hängen an der Anlagenzeile; im Strangweg trägt jeder Strang wahlweise eigene Werte, und damit ist das Ost/West-Feld eine Anlage (siehe Abschnitt „Wechselrichter", Option 2).
 
 * '''Kein Ein-Dioden-Modell.''' Spannungen und Ströme des Strangs werden nicht gerechnet. Die sechs elektrischen Kenngrößen des Modulkatalogs (<math>U_{\mathrm{MPP}}</math>, <math>U_{\mathrm{OC}}</math>, <math>I_{\mathrm{MPP}}</math>, <math>I_{\mathrm{SC}}</math>, <math>\alpha_{\mathrm{SC}}</math>, <math>\beta_{\mathrm{OC}}</math>) gehen in die  '''Auslegungsprüfungen''' P1 bis P5 ein, aber in keine Stundenrechnung.
 
@@ -775,7 +791,7 @@ Für das Rechenbeispiel oben ergibt das <math>n = 4 \dots 14</math> Module in Re
 
 * '''Kein Clipping im einfachen Modell''' auf dem vereinfachten Weg, auch dann nicht, wenn eine AC-Nennleistung gepflegt ist — sie wirkt dort nur im erweiterten Modell (22). Im Weg „mit  Wechselrichter" klemmt das Gerät dagegen in '''beiden''' Modellen (36): Ein Wechselrichter ist ein  Gerät, keine Modellverfeinerung.
 
-* '''Klimadaten in Stunden.''' Die Erzeugung entsteht stündlich; innerhalb der Stunde folgt sie allein dem Sonnenstand (24). Wolkenzüge innerhalb einer Stunde sind nicht abgebildet.
+* '''Klimadaten in Stunden.''' Die Erzeugung entsteht stündlich; innerhalb der Stunde folgt sie allein dem Sonnenstand (24). Wolkenzüge innerhalb einer Stunde sind nicht abgebildet — außer eine PV-Ganglinie im Viertelstundenraster bringt sie mit.
 * '''Die Einspeisegrenze ist eine Leistungsgrenze je Viertelstunde''' am Netzanschluss; sie regelt nur Photovoltaik ab, nie BHKW-Strom.
 * Der '''Boden-Albedo <math>\rho</math> gilt je Anlage''' für das ganze Jahr und für alle Stränge der Anlage; Schnee im Winter und ein heller Sommerboden lassen sich nicht getrennt angeben.
 * Zwei Stunden im Jahr sind durch die Ortszeitumstellung doppelt beziehungsweise gar nicht belegt. Beide liegen nachts; Einstrahlung und Sonnenwinkel sind dort null, die Jahressumme der Globalstrahlung bleibt unverändert.
@@ -788,6 +804,7 @@ Für das Rechenbeispiel oben ergibt das <math>n = 4 \dots 14</math> Module in Re
 
 * '''Karte „Photovoltaik" der Simulationskonfiguration''' — Zahl der Geräte und Stränge sowie das DC/AC-Verhältnis, sobald eine Strangzuordnung rechnet.
 
+* '''Simulationsergebnis, Reiter „Photovoltaik"''' und '''Bericht''' — rechnet eine PV-Ganglinie, steht statt der Moduldaten die Quelle: Name der Ganglinie, Raster und Nennleistung.
 * '''Simulationsergebnis, Reiter „Photovoltaik"''' — mit Einspeisegrenze zusätzlich die Abregelung in kWh/a und in Prozent der Erzeugung sowie die Grenze in kW.
 * '''Simulationsergebnis, Reiter „Ergebnis"''' — Eigenverbrauch, Einspeisung, Netzbezug und Autarkie.
 * '''Simulationsergebnis, Reiter „Stromgang"''' — die Ganglinien von Erzeugung, Direktverbrauch, Überschuss und Reststrom, also <math>P_{\mathrm{PV}}</math>, <math>P_{\mathrm{direkt}}</math>, <math>P_{\mathrm{ueber}}</math> und <math>P_{\mathrm{netz}}</math>.
@@ -798,7 +815,8 @@ Für das Rechenbeispiel oben ergibt das <math>n = 4 \dots 14</math> Module in Re
 == Bezüge ==
 {{Anker|bezuege}}
 
-* [[Programm Dokumentation/Photovoltaik|Photovoltaik]] — Bedienung des Dialogs, Modulkatalog, Import
+* [[Programm Dokumentation/Photovoltaik|Photovoltaik]] — Bedienung des Dialogs, Modulkatalog, Import, PV-Ganglinie
+* [[Grundlagen/Photovoltaik|Grundlagen: Photovoltaik]] — Begriffe und Zusammenhänge
 * [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] — Reihenfolge der Erzeuger, Kaskade und Stundenschleife
 * [[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung: Stromspeicher]] — was mit Überschuss und Reststrom danach geschieht
 * [[Programm Dokumentation/Berechnung/Solarthermie|Berechnung: Solarthermie]] — dieselbe Sonnengeometrie, anderes Kollektormodell

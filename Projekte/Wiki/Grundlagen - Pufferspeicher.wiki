@@ -76,6 +76,8 @@ Die Größe eines Pufferspeichers folgt nicht aus einer einzigen Formel, sondern
 |-
 | Solarthermie || Fasst der Puffer den Tagesertrag des Kollektorfelds? || DIN EN 12977
 |-
+| Aufheizen nach Absenkung || Stützt der Puffer die Aufheizleistung der Gebäude nach einer Absenkung der Raumtemperatur? || Aufheizoptimierung der Gebäude
+|-
 | Brauchwasser || Deckt die Brauchwasserzone die größte Zapfspitze des Tages? || DIN EN 12831-3, DVGW W 551
 |-
 | Bereitschaftsverlust || Wie viel Wärme verliert der gewählte Inhalt im Stillstand? Ein Speicher mit 1 000 l verliert an der Grenze der Klasse C rund 3,6 kWh je Tag bei 45 K. || EN 15332

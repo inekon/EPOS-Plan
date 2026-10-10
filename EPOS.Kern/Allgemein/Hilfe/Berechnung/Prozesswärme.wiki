@@ -1,6 +1,7 @@
 <!-- EPOS-Plan Hilferubrik Berechnung | Seite: Prozesswärme | Fassung 3 | Rechenkern:
-     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, SimulationWaermebedarf.cs, Prozesstemperatur.cs, SimulationWaermepumpe.cs, SimulationSPK.cs,
-     Kaskadenschleife.cs, Init.cs, SimulationKanaele.cs, EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Energieeinheit.cs,
+     EPOS.Kern/Allgemein/Simulation/ProfilBedarf.cs, EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs, EPOS.Kern/Allgemein/Simulation/Prozesstemperatur.cs,
+     EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs, EPOS.Kern/Allgemein/Simulation/SimulationSPK.cs, EPOS.Kern/Allgemein/Simulation/Kaskadenschleife.cs,
+     EPOS.Kern/Allgemein/Simulation/Init.cs, EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs, EPOS.Kern/Allgemein/Simulation/Betriebskalenderschicht.cs, EPOS.Kern/Allgemein/BhkwPlan.cs, EPOS.Kern/Allgemein/Energieeinheit.cs,
      EPOS.Kern/Allgemein/Update/ProzesstypSaat.cs -->
 
 == Was berechnet wird ==
@@ -28,7 +29,7 @@ Traegt ein Profil ein '''Temperaturpaar''' (Vorlauf und Ruecklauf), bildet der L
 |-
 | Jahressumme des Projekts || MWh oder kWh (waehlbar) || Dialog „Prozesswärme", Feld „Jahresverbrauch"; leer oder 0 = Katalogwerte gelten unveraendert
 |-
-| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet
+| Wochentag des 1. Januar || — || aus den Klimadaten der Projektregion abgeleitet; mit einer Spotpreisreihe mit Jahr der Kalender dieses Jahres
 |-
 | Vorlauf und Ruecklauf je Profil || °C || Kopfsatz des Profils, Gruppe „Temperaturniveau des Prozesses"; im Projekt die Projektkopie (Dialog „Prozesswärme", „Temperaturen übernehmen"); beide leer = ohne Temperaturniveau
 |}
@@ -91,7 +92,7 @@ Was die Rechnung selbst bildet:
 
 === 1. Profile des Projekts sammeln ===
 
-Alle dem Projekt zugeordneten Prozessprofile werden nacheinander '''in denselben Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den '''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten, nicht mit denen des Katalogs.
+Alle dem Projekt zugeordneten Prozessprofile werden '''ueber die ID ihrer Zuordnungszeile''' geholt und nacheinander '''in denselben Zielvektor''' gerechnet; die Stundenwerte addieren sich. Kopf- und Typdaten kommen aus den '''Projektkopien''' — ein im Projekt geaendertes Profil rechnet mit seinen eigenen Werten, nicht mit denen des Katalogs. Weil die Zuordnung ueber die ID der Projektkopie laeuft, gelten Kopfsatz und gepflegte Jahressumme auch dann, wenn die Kopie anders heisst als der Katalogsatz.
 
 Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt der Typbezug''', gilt dasselbe: Ohne Typ gibt es keine Verteilung, das Profil geht mit '''Anteil 0''' ein, der Lauf meldet es mit seinem Namen, und die uebrigen Profile rechnen vollstaendig. Die Summe haengt damit nicht an der Reihenfolge der Profile.
 
@@ -105,7 +106,9 @@ Ohne Kopfsatz geht ein Profil mit '''Anteil 0''' ein und wird gemeldet. '''Fehlt
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach der Skalierung auf die Projektsumme [MWh]
 :: <math>Q_{\mathrm{M,Kat}}(m)</math> – Monatswert des Profils aus dem Katalog [MWh]
 :: <math>Q_{\mathrm{a,Proj}}</math> – Jahressumme des Projekts, intern in MWh gefuehrt; leer oder 0 = keine Skalierung [MWh]
-:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh] Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m) = Q_{\mathrm{M,Kat}}(m)</math>. Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt und <math>Q_{\mathrm{a,Kat}}</math> null, wird das Profil uebersprungen und gemeldet.
+:: <math>Q_{\mathrm{a,Kat}}</math> – Summe der Katalog-Monatswerte nach (1) [MWh]
+
+Die Verteilung ueber das Jahr bleibt unveraendert; skaliert wird nur die Hoehe. Ohne eigene Jahressumme gilt <math>Q_{\mathrm{M}}(m) = Q_{\mathrm{M,Kat}}(m)</math>. Ist <math>Q_{\mathrm{a,Proj}}</math> gesetzt und <math>Q_{\mathrm{a,Kat}}</math> null, wird das Profil uebersprungen und gemeldet.
 
 Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh, wahlweise kWh) und intern in MWh gefuehrt — (2) rechnet also immer mit MWh.
 
@@ -116,9 +119,11 @@ Der Wert wird im Dialog in der '''gewaehlten Einheit''' eingegeben (Vorgabe MWh,
 :: <math>P_{\mathrm{W}}(j)</math> – Wochenprofil, 168 Stundenwerte [beliebige Skala]
 :: <math>w</math> – Wochentag des 1. Januar, 0 = Montag bis 6 = Sonntag [–]
 :: <math>24</math> – Stunden je Tag [h]
-:: <math>168</math> – Stunden je Woche [h] Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index <math>j</math> von (3) sind das <math>j = 0 \dots 23</math> bzw. <math>j = 144 \dots 167</math>. Ein Profil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
+:: <math>168</math> – Stunden je Woche [h]
 
-Mit einem '''Betriebskalender''' an der Zuordnung (Auswahl im Bedarfsprofil-Dialog, gepflegt unter ''Betriebskalender'') wird <math>x(t)</math> vor der Normierung tageweise ersetzt: Ein '''Feiertag''' traegt die 24 Werte des Sonntags im Wochenprofil (<math>j = 144 \dots 167</math>), sofern der Kalender „Feiertag wie Sonntag" fuehrt; ein '''Ferientag''' traegt je Stunde <math>s</math> den Ferienfaktor <math>f</math> mal dem Tagesmittel des Wochenprofils, <math>f \cdot \frac{1}{7} \sum_{d=0}^{6} P_{\mathrm{W}}(24 d + s)</math>. Ferien gehen Feiertagen vor. Die Feiertage sind die neun bundeseinheitlichen und, mit gewaehltem Bundesland, die landesweiten Feiertage dieses Landes im Referenzjahr des Projekts. Normiert wird danach wie in (4) und der Normierung: Die Monatsmenge bleibt erhalten und verteilt sich auf die uebrigen Tage. Mit „Ferien kuerzen die Monatsmenge" steht im Nenner von der Normierung statt <math>S(m)</math> die Monatssumme OHNE die Ferientage — die Menge des Monats sinkt dann im Verhaeltnis der Ferienstunden; Feiertage verteilen stets nur um. Ohne Kalender bleibt <math>x(t)</math>, wie es (3) bildet.
+Stunden 1 bis 24 des Wochenprofils sind der Montag, 145 bis 168 der Sonntag; im Index <math>j</math> von (3) sind das <math>j = 0 \dots 23</math> bzw. <math>j = 144 \dots 167</math>. Ein Profil, dessen 168 Werte in der Summe null sind, wird uebersprungen und gemeldet.
+
+Mit einem '''Betriebskalender''' an der Zuordnung (Auswahl im Bedarfsprofil-Dialog, gepflegt unter ''Betriebskalender'') wird <math>x(t)</math> vor der Normierung tageweise ersetzt: Ein '''Feiertag''' traegt die 24 Werte des Sonntags im Wochenprofil (<math>j = 144 \dots 167</math>), sofern der Kalender „Feiertag wie Sonntag" fuehrt; ein '''Ferientag''' traegt je Stunde <math>s</math> den Ferienfaktor <math>f</math> mal dem Tagesmittel des Wochenprofils, <math>f \cdot \frac{1}{7} \sum_{d=0}^{6} P_{\mathrm{W}}(24 d + s)</math>. Ferien gehen Feiertagen vor. Die Feiertage sind die neun bundeseinheitlichen und, mit gewaehltem Bundesland, die landesweiten Feiertage dieses Landes, nach festen Regeln in das Wochentagsraster des Projekts gelegt (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 1). Normiert wird danach wie in (4) und (5): Die Monatsmenge bleibt erhalten und verteilt sich auf die uebrigen Tage. Mit „Ferien kuerzen die Monatsmenge" steht im Nenner von (5) statt <math>S(m)</math> die Monatssumme OHNE die Ferientage — die Menge des Monats sinkt dann im Verhaeltnis der Ferienstunden; Feiertage verteilen stets nur um. Ohne Kalender bleibt <math>x(t)</math>, wie es (3) bildet.
 
 === 4. Monatsweise auf die Monatswerte normieren ===
 
@@ -131,7 +136,9 @@ Mit einem '''Betriebskalender''' an der Zuordnung (Auswahl im Bedarfsprofil-Dial
 :: <math>x(t)</math> – gekachelter Wochenprofilwert nach (3) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>S(m)</math> – Monatssumme derselben Werte nach (4) [Skala von <math>P_{\mathrm{W}}</math>]
 :: <math>Q_{\mathrm{M}}(m)</math> – Monatswert nach (2) [MWh]
-:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh] Die '''Skala des Wochenprofils ist damit frei''' — <math>x(t)</math> steht in (5) im Zaehler und ueber <math>S(m)</math> im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in kWh.
+:: <math>1\,000</math> – Umrechnung MWh in kWh [kWh/MWh]
+
+Die '''Skala des Wochenprofils ist damit frei''' — <math>x(t)</math> steht in (5) im Zaehler und ueber <math>S(m)</math> im Nenner, es zaehlt also nur das Verhaeltnis der 168 Werte zueinander. Die '''Energiemenge bestimmen allein die Monatswerte'''; der Faktor 1 000 rechnet sie von MWh in kWh.
 
 Der '''monatliche Verlauf''', den der Dialog auf Knopfdruck zeigt, ist genau das Ergebnis dieses Schrittes: die zwoelf Monatssummen des fertigen Stundenvektors. Er ist deshalb bis zur ersten Vorschaurechnung gesperrt — ohne sie gibt es nichts zu zeigen.
 
@@ -142,7 +149,9 @@ Der Vektor geht in den '''Prozesskanal'''. Ausgewiesen wird
 : <math>\displaystyle Q_{\mathrm{a}} = \frac{\sum_{t=0}^{8\,759} Q_{\mathrm{Pro}}(t)}{1\,000}</math> &nbsp;&nbsp;(6)
 :: <math>Q_{\mathrm{a}}</math> – ausgewiesene Jahresmenge des Kanals [MWh]
 :: <math>Q_{\mathrm{Pro}}(t)</math> – Prozesswaermebedarf der Stunde nach (5) [kWh]
-:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh] und zwar '''vor''' der Verteilung der Netzverluste; der Stundenvektor bekommt seinen Anteil daran anschliessend (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und Gleichung (21) dort).
+:: <math>1\,000</math> – Umrechnung kWh in MWh [kWh/MWh]
+
+Diese Menge gilt '''vor''' der Verteilung der Netzverluste; der Stundenvektor bekommt seinen Anteil daran anschliessend (siehe [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]], Schritt 7 und Gleichung (21) dort).
 
 '''Die Einheit gehoert zum Wert.''' Die Umrechnung steht an EINER Stelle, und die Anzeigeeinheit ist waehlbar: MWh mit zwei Nachkommastellen (Vorgabe) oder kWh ohne.
 
@@ -157,7 +166,8 @@ Jedes Profil p mit Temperaturpaar traegt in den Stunden mit Bedarf <math>Q_{\mat
 : <math>\displaystyle T_{\mathrm{RL}}(t) = \frac{\sum_{p} Q_{\mathrm{Pro},p}(t) \cdot T_{\mathrm{RL},p}}{\sum_{p} Q_{\mathrm{Pro},p}(t)}</math> &nbsp;&nbsp;(8)
 :: <math>T_{\mathrm{RL}}(t)</math> – mengengewichteter Ruecklauf der Stunde [°C]
 :: <math>T_{\mathrm{RL},p}</math> – Ruecklauf des Profils p [°C]
-:: Summiert wird ueber dieselben Profile wie in (7). In Stunden ohne ein solches Profil gibt es kein Niveau; ohne ein einziges Temperaturpaar im Projekt rechnet der Lauf wie fuer eine reine Waermemenge.
+
+Summiert wird ueber dieselben Profile wie in (7). In Stunden ohne ein solches Profil gibt es kein Niveau; ohne ein einziges Temperaturpaar im Projekt rechnet der Lauf wie fuer eine reine Waermemenge.
 
 Wirkung in Stunden mit Prozessbedarf und gefordertem Vorlauf:
 

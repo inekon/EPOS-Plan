@@ -106,7 +106,7 @@ Alle drei sind Textfelder. ''Standardwerte'' setzt sie auf die Vorgaben der Ausl
 == Berechnung ==
 {{Anker|berechnung}}
 
-Wie die Klimadaten in den Lauf eingehen — Außentemperatur in Ortszeit, Tagtypen, Wochenendkennzeichen und der daraus abgeleitete Kalender —, steht unter [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
+Die Wochentage des Jahres richten sich nach dem Wochentag des 1. Januar der Klimaregion; Gebäude, Trinkwarmwasser und Bedarfsprofile rechnen mit denselben Wochentagen. Wie die Klimadaten in den Lauf eingehen — Außentemperatur in Ortszeit, Tagtypen, Wochenendkennzeichen und der daraus abgeleitete Kalender —, steht unter [[Programm Dokumentation/Berechnung/Simulationsablauf|Berechnung: Simulationsablauf]] und [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].
 
 == Siehe auch ==
 

@@ -6,16 +6,16 @@ Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, 
 == Aufruf ==
 {{Anker|aufruf}}
 
-Alle acht Verwaltungen liegen im Menü '''Administration''':
+Alle neun Verwaltungen liegen im Menü '''Administration''':
 
-* '''Wärme- und Kälteerzeugung''' – Heizkessel, BHKW, Wärmepumpen, Solarkollektoren
+* '''Wärme- und Kälteerzeugung''' – Heizkessel, BHKW, Wärmepumpen, Kältemaschinen, Solarkollektoren; darunter die Rubrik ''Profile & Lastgänge'' mit den Katalogen der Solarthermie- und der PV-Ganglinien (siehe [[#ganglinien|Ganglinien]])
 * '''Strombedarf & Speicher''' – Stromspeicher
 * '''Energiesysteme''' – Photovoltaik (darunter PV Module und Wechselrichter), Pufferspeicher
 
 == Aufbau der Verwaltung ==
 {{Anker|aufbau}}
 
-'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses; ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten und Pos1/Ende) — und rechts seine Felder im Stammblatt, direkt bearbeitbar; in einem schmalen Fenster schiebt sich das Stammblatt als Blatt über die Liste. Ein Kästchen je Zeile erlaubt die Mehrfachwahl, ein Kästchen im Spaltenkopf wählt alle sichtbaren Sätze; darüber erscheint dann eine Leiste mit ''Vergleichen'', ''Duplizieren…'', ''Schloss aufheben…'' bzw. ''Schloss setzen…'' und ''Löschen'' für die gewählten Sätze. ''Speichern'' schreibt die Änderungen in den Satz zurück, ''Verwerfen'' nimmt sie zurück und lädt die Felder des Satzes neu; ''Neu…'' fragt einen Namen ab und legt einen leeren Satz an; ''Beenden'' schließt die Verwaltung, ebenso das Kreuz und Esc. Der Name selbst lässt sich nicht ändern.
+'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses (ein vorangestelltes ''!'' im Filtertext einer Textspalte verneint ihn: ''!Luft'' zeigt alle Sätze ohne „Luft“); ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten und Pos1/Ende) — und rechts seine Felder im Stammblatt, direkt bearbeitbar; in einem schmalen Fenster schiebt sich das Stammblatt als Blatt über die Liste. Ein Kästchen je Zeile erlaubt die Mehrfachwahl, ein Kästchen im Spaltenkopf wählt alle sichtbaren Sätze; darüber erscheint dann eine Leiste mit ''Vergleichen'', ''Duplizieren…'', ''Schloss aufheben…'' bzw. ''Schloss setzen…'' und ''Löschen'' für die gewählten Sätze. ''Speichern'' schreibt die Änderungen in den Satz zurück, ''Verwerfen'' nimmt sie zurück und lädt die Felder des Satzes neu; ''Neu…'' fragt einen Namen ab und legt einen leeren Satz an; ''Beenden'' schließt die Verwaltung, ebenso das Kreuz und Esc. Der Name selbst lässt sich nicht ändern.
 
 '''PV-Module, Wechselrichter und Stromspeicher''' fassen Liste und Felder ebenso in Liste und Stammblatt zusammen: Ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten), ein Kästchen je Zeile erlaubt die Mehrfachwahl mit ''Vergleichen'', ''Duplizieren…'', ''Schloss aufheben…'' bzw. ''Schloss setzen…'' und ''Löschen'' für die gewählten Sätze. ''Speichern'' schreibt sofort, ''Verwerfen'' nimmt ungespeicherte Änderungen zurück, ''Neu…'' fragt einen Namen ab und öffnet eine leere Zeile, ''Beenden'' schließt die Maske.
 
@@ -116,6 +116,14 @@ Ein Auslieferungssatz trägt das Schloss und steht in der Liste gedimmt; seine F
 
 Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
+== Kältemaschinen ==
+{{Anker|kaeltemaschinen}}
+
+Die Verwaltung ''Kältemaschinen'' (Administration → Wärme- und Kälteerzeugung; unter Windows in einem eigenen Fenster) pflegt die Geräte für die Kälteanlage eines Projekts; Anlage, Kennlinie und Rechenweg beschreibt die Seite [[Programm Dokumentation/Kühlung#kaeltemaschine-katalog|Kühlung]]. Die Liste führt neben Bezeichnung, Nennkälteleistung (''P_N''), Hersteller und EER die Rückkühlart sowie die Spalte ''Herkunft'': ''Typkennfeld'' für die eingebauten Typkennfelder, ''Auslieferung'' für die übrigen ausgelieferten Sätze und ''eigen'' für alles, was Sie angelegt oder eingelesen haben. Der Schalter ''Typkennfelder ausblenden'' nimmt die Typkennfelder aus der Liste. Die Kennlinie des gewählten Satzes steht als Diagramm mit den Reitern ''EER'' und ''Kälteleistung''; ''Vergleichen'' stellt die Parameter mehrerer Sätze nebeneinander.
+
+* ''Typkennfelder laden…'' legt nach einer Rückfrage die eingebauten Typkennfelder (Luft, Trockenkühler, Nasskühler und Wasser; Scroll, Schraube, Turbo und Hubkolben) als gesperrte Sätze an; vorhandene Sätze bleiben unverändert, die Meldung nennt die Zahl der neuen und übersprungenen Sätze. Ein Typkennfeld trägt keinen Herstellernamen.
+* ''Import…'' liest Kältemaschinen aus einer Kurvendatei oder aus der CSV-Kennfeldvorlage ein ([[#import|Import]]); gesperrte Sätze überschreibt der Import nie. Auf dem iPad steht der Import aus einer Datei nicht zur Verfügung, ''Typkennfelder laden…'' schon.
+
 == PV-Module ==
 {{Anker|pv-module}}
 
@@ -163,10 +171,15 @@ Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Spe
 
 Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
+== Ganglinien ==
+{{Anker|ganglinien}}
+
+Die Kataloge der '''Solarthermie-Ganglinien''' (Menü ''Solarthermieganglinie'') und der '''PV-Ganglinien''' (Menü ''PV-Ganglinie'') liegen in der Rubrik ''Profile & Lastgänge''; derselbe Dialog öffnet auch an der Kachel des Projekts. Beide führen die Katalogsätze mit ''Vergleichen'', Schloss und ''Löschen'' (gesperrt bei Auslieferungssätzen und bei Sätzen, die ein Projekt verwendet; der Grund nennt das Projekt) und lesen Ganglinien mit ''Import…'' ein, wahlweise als Stunden- oder Viertelstundenwerte; das Programm erkennt das Format. Bei den PV-Ganglinien lässt sich die Nennleistung eines eigenen Satzes nachträglich bearbeiten. Die Verwendung im Projekt beschreiben [[Programm Dokumentation/Solarthermie|Solarthermie]] und [[Programm Dokumentation/Photovoltaik#ganglinie|Photovoltaik]].
+
 == Import ==
 {{Anker|import}}
 
-Fünf Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
+Vier Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
 
 Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa Verschleißkosten oder Zyklen —, sagt eine Hinweiszeile am Import.
 
@@ -174,7 +187,7 @@ Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, d
 
 {{Anker|import-kuehlkennlinien}}Bei Wärmepumpen übernimmt der Import eine Kühlkennlinie nur, wenn sie den Kühlbetrieb beschreibt. Einen Kühlblock in '''Heizlage''' – mit einem Vorlauf ab 30 °C oder mit Quellentemperaturen, die durchweg kälter sind als der Vorlauf – und einen Kühlblock mit '''vertauschten Achsen''' übernimmt er nicht; das Leseprotokoll nennt beides je Satz. Die Wärmepumpe selbst wird übernommen; bleibt ihr keine Kühlkennlinie, rechnet sie nur Wärme. ''Mindestleistung'' und ''Teillastkoeffizient C_d'' setzt der Import nicht: Die Datei nennt einen Modulationsbereich in Prozent, aber keine Mindestleistung in kW und keinen Teillastkoeffizienten. Eine schon gespeicherte Kühlkennlinie in Heizlage oder mit vertauschten Achsen rechnet nicht, und der Simulationslauf nennt den Grund.
 
-Sieben der acht Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme sind die neuen Sätze in der Liste gewählt — mehrere über ihre Kästchen, sodass ''Vergleichen'', ''Schloss setzen…'' oder ''Löschen'' gleich auf sie wirken —, der erste steht im Stammblatt, und die Statuszeile nennt die Zahl der übernommenen Sätze.
+Acht der neun Verwaltungen — nicht die des BHKW — bieten denselben Import zusätzlich über ''Import…'' in der eigenen Fußleiste an: Er öffnet als Überlagerung im selben Fenster; nach der Übernahme sind die neuen Sätze in der Liste gewählt — mehrere über ihre Kästchen, sodass ''Vergleichen'', ''Schloss setzen…'' oder ''Löschen'' gleich auf sie wirken —, der erste steht im Stammblatt, und die Statuszeile nennt die Zahl der übernommenen Sätze.
 
 == Übernahme in ein Projekt ==
 {{Anker|uebernahme}}
@@ -216,9 +229,10 @@ Eigene Sätze und alle Projekte bleiben unberührt — ein Projekt rechnet mit s
 
 == Siehe auch ==
 
+* [[Programm Dokumentation/Kühlung]] – Kältemaschinen und Kälteanlage im Projekt
 * [[Programm Dokumentation/Pufferspeicher]] – Übernahme und Bewirtschaftung im Projekt
 * [[Programm Dokumentation/Photovoltaik]] – die PV-Anlage im Projekt, samt Wechselrichter
 * [[Programm Dokumentation/Stromspeicher]] – die im Projekt geplante Speicherauslegung
-* [[Berechnung/Heizkessel]], [[Berechnung/BHKW]], [[Berechnung/Wärmepumpe]], [[Berechnung/Solarthermie]], [[Berechnung/Pufferspeicher]], [[Berechnung/Photovoltaik]], [[Berechnung/Stromspeicher]] – die Rechenwege
+* [[Programm Dokumentation/Berechnung/Heizkessel|Heizkessel]], [[Programm Dokumentation/Berechnung/BHKW|BHKW]], [[Programm Dokumentation/Berechnung/Wärmepumpe|Wärmepumpe]], [[Programm Dokumentation/Berechnung/Solarthermie|Solarthermie]], [[Programm Dokumentation/Berechnung/Pufferspeicher|Pufferspeicher]], [[Programm Dokumentation/Berechnung/Photovoltaik|Photovoltaik]], [[Programm Dokumentation/Berechnung/Stromspeicher|Stromspeicher]] – die Rechenwege
 
 [[Kategorie:Programm Dokumentation]]

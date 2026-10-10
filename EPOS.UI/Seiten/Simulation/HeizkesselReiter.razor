@@ -280,7 +280,7 @@
            und die Tasten + − 0 verschieben die viewBox der Zeichenflaeche, „1:1"
            holt das ganze Jahr zurueck. Er gilt in BEIDEN Zweigen — auch die
            Dauerlinie laesst sich aufziehen. *@
-        <DiagrammSvg Modell="@ModellKessel" Kennung="simerg-heizkessel"
+        <DiagrammSvg Modell="@ModellKessel" Kennung="simerg-heizkessel" CsvExport="Csv"
                      Vorlagenfeld="stand.bild.heizkessel" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                      Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
@@ -303,12 +303,6 @@
                 </dl>
             </section>
         </div>
-
-        @if (Csv.HasDelegate)
-        {
-            <button type="button" class="epos-simerg-knopf" @onclick="Csv"
-                    title="@Resource.SIM_TOOLTIP_CSV_HEIZKESSEL">@Resource.SIM_BTN_CSV_EXPORT</button>
-        }
     }
 
 </div>

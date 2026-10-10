@@ -105,6 +105,13 @@
         </KindInhalt>
     </Kachelraster>
 
+    @* KT-2: Ein Klick auf die Kachel „Kuehlung und Kaelteanlagen" endet nie still - geht die
+       Ansicht nicht auf, steht der Grund hier, nach dem Versuch. *@
+    @if (!string.IsNullOrEmpty(_oeffnenFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_oeffnenFehler" />
+    }
+
     <Warnbanner Stufe="WarnStufe.Hinweis" Text="@(TippTitelText + ": " + TippText)" />
 </div>
 
@@ -175,10 +182,39 @@
             ? Kachelstand.An
             : Kachelstand.Aus;
 
-    /// <summary>Öffnet den Erzeugerdialog der Kältemaschinen; ohne Wurzel bleibt der Klick folgenlos.</summary>
-    private static void KaeltemaschinenOeffnen()
-        => _ = WindowsFormsApplication1.Dienste.Navigation
-               .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, "");
+    /// <summary>Format „Die Ansicht „{0}“ konnte nicht geöffnet werden: {1}“ (Ressource WURZEL_ANSICHT_FEHLER).</summary>
+    [Parameter] public string AnsichtFehlerText { get; set; } = WindowsFormsApplication1.MyResource.Resource.WURZEL_ANSICHT_FEHLER;
+
+    /// <summary>Grund ohne angemeldete Oberfläche (Ressource WURZEL_KEINE_OBERFLAECHE).</summary>
+    [Parameter] public string KeineOberflaecheText { get; set; } = WindowsFormsApplication1.MyResource.Resource.WURZEL_KEINE_OBERFLAECHE;
+
+    /// <summary>Grund, wenn die Oberfläche die Ansicht nicht führt (Ressource WURZEL_NICHT_GEFUEHRT).</summary>
+    [Parameter] public string NichtGefuehrtText { get; set; } = WindowsFormsApplication1.MyResource.Resource.WURZEL_NICHT_GEFUEHRT;
+
+    /// <summary>Warum die Ansicht „Kühlung und Kälteanlagen“ beim letzten Klick nicht aufging; leer = sie ging auf.</summary>
+    private string _oeffnenFehler = "";
+
+    /// <summary>Was der Banner nach einem gescheiterten Klick sagt; leer = nichts.</summary>
+    public string OeffnenFehler => _oeffnenFehler;
+
+    /// <summary>
+    /// Öffnet den Erzeugerdialog der Kältemaschinen über <c>Dienste.Navigation</c>. Lehnt die Naht ab
+    /// (<c>false</c>), steht der Grund im Banner des Reiters (KT-2, Hausblatt „benannt ablehnen, nie still
+    /// übergehen“): ohne gezeichnete Wurzel „keine Oberfläche“, sonst „führt die Ansicht nicht“. Was die
+    /// Wurzel danach beim Aufbau der Ansicht ablehnt (kein Projekt, Ausnahme in den Gaben), zeigt sie selbst
+    /// über der Startseite — ihr Wechsel läuft auf dem Renderfaden nach, die Rückgabe kennt ihn noch nicht.
+    /// </summary>
+    private void KaeltemaschinenOeffnen()
+    {
+        _oeffnenFehler = "";
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, "");
+        if (offen) return;
+
+        string grund = EPOS.UI.Dienste.Navigationsziel.Aktuell is null ? KeineOberflaecheText : NichtGefuehrtText;
+        _oeffnenFehler = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                       AnsichtFehlerText, KuehlungTitelText, grund);
+    }
 
     /// <summary>Die Stellung „Profil" der Weiche.</summary>
     private const int PROFIL = 0;

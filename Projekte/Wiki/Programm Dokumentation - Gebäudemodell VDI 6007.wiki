@@ -22,7 +22,7 @@ Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzf
 
 Für einen Satz des Gebäudekatalogs pflegen Sie dieselben Angaben im Stammblatt der Gebäudeverwaltung (Menü '''Administration''' › ''Gebäude'' › ''Bearbeiten''): unter ''Kenndaten'' Wohn-/Nutzfläche und Bauart, unter ''Hülle'' Kennwert und Größe je Bauteil samt der Randbedingung der Bodenplatte, dazu ''Fenster nach Orientierung'', ''Kenngrößen'' und aufklappbar ''Alle Daten'' mit der Konditionierung, den Modellparametern, dem Rechenweg und der Kühlung. ''Speichern'' prüft sie mit denselben Regeln wie der Gebäudedialog; ''Neu…'' legt einen neuen Satz über dessen Eingabemaske an. Einen Wärmebedarf zeigt die Verwaltung nicht – er hängt an der Klimaregion und den Angaben des Projekts und steht im Gebäudedialog des Projekts unter ''Simulation…''.
 
-Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]].
+Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]]. Ob an einem Tag geheizt oder gekühlt wird, regelt die [[Programm Dokumentation/Gebäude#freigabe|Freigabe Heizen und Kühlen]] der Konditionierung: Eine Zone wird an einem Tag entweder geheizt oder gekühlt, nie beides.
 
 Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert, sondern „leer".
 
@@ -85,7 +85,7 @@ Ein Beispiel: ''Gebäude 1'' führt die Zone ''Gebäude'' mit 250 m² Nutzfläch
 Ohne weitere Angaben rechnet das Modell mit '''idealer Regelung''': In jeder Stunde kommt genau die Wärme in den Raum, die den Sollwert hält – begrenzt nur durch die Heizleistungsgrenze. Mit der '''Wärmeübergabe''' rechnet es statt dessen den Heizkreis des Gebäudes: Heizkörper oder Heizflächen geben je nach Vorlauftemperatur nur eine bestimmte Leistung ab, ein Raumregler öffnet nach der Abweichung vom Sollwert, und reicht die Übergabe nicht, sinkt die Raumtemperatur. Die Spitze nach einer Nachtabsenkung wird dadurch gekappt und auf mehrere Stunden verteilt, und die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf.
 
 Gerechnet wird der Heizkreis, wenn drei Dinge zusammenkommen:
-* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'';
+* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'' oder einer höheren Stufe;
 * im Gebäude ist der Haken '''Übergabe rechnen (statt idealer Regelung)''' gesetzt;
 * eine Übergabeart ist gewählt: '''Radiator''', '''Flächenheizung''' oder '''Konvektor'''. ''ideal'' rechnet wie ohne Haken.
 
@@ -125,7 +125,7 @@ Die hergeleiteten Zahlen stehen als Vorgabe im Feld und in einer Zeile darunter,
 Ein gekühltes Gebäude rechnet ohne weitere Angaben mit '''idealer Kühlung''': In jeder Stunde wird genau die Kälte in den Raum gebracht, die den Kühlsollwert hält – begrenzt nur durch die Kühlleistungsgrenze. Mit der '''Kühlübergabe''' rechnet es statt dessen die Kühlflächen oder Gebläsekonvektoren des Gebäudes: Sie nehmen je nach Kaltwasser-Vorlauf nur eine bestimmte Leistung auf, derselbe Raumregler wie beim Heizen öffnet nach der Abweichung vom Kühlsollwert, und reicht die Übergabe nicht, steigt die Raumtemperatur über den Kühlsollwert.
 
 Gerechnet wird die Kühlübergabe, wenn diese Dinge zusammenkommen:
-* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'', und die Projekteinstellung ''Kühlung rechnen'' ist eingeschaltet;
+* in der [[Programm Dokumentation/Simulation#anlagenkopplung|Simulationskonfiguration]] steht die Projekteinstellung '''Anlagenkopplung''' auf ''Heizkreis (AK1)'' oder einer höheren Stufe, und die Projekteinstellung ''Kühlung rechnen'' ist eingeschaltet;
 * das Gebäude wird gekühlt – Haken und Kühlsollwert, siehe [[Programm Dokumentation/Kühlung#eingaben|Kühlung]];
 * im Gebäude ist der Haken '''Kühlübergabe rechnen (statt idealer Kühlung)''' gesetzt;
 * eine Kühlübergabeart ist gewählt: '''Kühldecke''', '''Flächenkühlung''' oder '''Gebläsekonvektor'''. ''ideal'' rechnet wie ohne Haken.
@@ -251,7 +251,7 @@ Für die Abstrahlung braucht das Modell die '''atmosphärische Gegenstrahlung'''
 == Klimadaten ==
 {{Anker|klimadaten}}
 
-Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden – auf dem [[#bauteilweg|Bauteilweg]] auf jede Neigung und Richtung eines Bauteils – rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden und Ferien folgen dem Kalender des Projekts. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
+Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden – auf dem [[#bauteilweg|Bauteilweg]] auf jede Neigung und Richtung eines Bauteils – rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden, Feiertage und Ferien folgen den Kalendern des Gebäudes; die Wochentage des Jahres richten sich nach dem Wochentag des 1. Januar der Klimaregion. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
 
 == Ergebnisse ==
 {{Anker|ergebnisse}}

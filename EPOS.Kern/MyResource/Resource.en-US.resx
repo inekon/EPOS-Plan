@@ -45796,6 +45796,27 @@ chart</value>
   <data name="KMA_WP_FEHLER" xml:space="preserve">
     <value>The cooling mode of the heat pump could not be saved.</value>
   </data>
+  <data name="WURZEL_ANSICHT_FEHLER" xml:space="preserve">
+    <value>The view “{0}” could not be opened: {1}</value>
+  </data>
+  <data name="WURZEL_KEINE_OBERFLAECHE" xml:space="preserve">
+    <value>No user interface is registered that could show it.</value>
+  </data>
+  <data name="WURZEL_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>This user interface does not offer the view.</value>
+  </data>
+  <data name="KMA_LADEN_FEHLER" xml:space="preserve">
+    <value>The project chillers could not be read: {0}</value>
+  </data>
+  <data name="KMA_WP_LADEN_FEHLER" xml:space="preserve">
+    <value>The project heat pumps could not be read: {0}</value>
+  </data>
+  <data name="KMA_KATALOG_LADEN_FEHLER" xml:space="preserve">
+    <value>The chiller catalogue could not be read: {0}</value>
+  </data>
+  <data name="WURZEL_LISTE_FEHLER" xml:space="preserve">
+    <value>The list “{0}” could not be read: {1}</value>
+  </data>
   <data name="KI_DLG_MASKE_KMA" xml:space="preserve">
     <value>Chillers in the project</value>
   </data>
@@ -50834,6 +50855,15 @@ chart</value>
   </data>
   <data name="BHKW_RUECK_BLEIBT" xml:space="preserve">
     <value>Remaining in the project: energy carrier, minimum load and temperature pair of the plant, sinks and time schedule. The minimum load of the module is taken along.</value>
+  </data>
+  <data name="CHART_DATEI_GANGLINIE" xml:space="preserve">
+    <value>{0}_Project_{1}.csv</value>
+  </data>
+  <data name="DIAGRAMM_BTN_CSV" xml:space="preserve">
+    <value>CSV…</value>
+  </data>
+  <data name="DIAGRAMM_TIP_CSV" xml:space="preserve">
+    <value>Save annual load curve as CSV</value>
   </data>
 </root>
 

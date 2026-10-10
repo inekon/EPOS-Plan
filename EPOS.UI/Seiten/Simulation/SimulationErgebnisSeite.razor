@@ -95,6 +95,9 @@
         @* Die Position des gezeigten Stands fuer die Positionsform der Platzhaltermarken
            (stand.<n>.…, variante.<n>.…); ohne sie nennt die Marke keine. *@
         <CascadingValue Value="@_daten.Vorlagenfeldposition">
+        @* CSV AM DIAGRAMM: Jedes Zeitreihenbild der Reiter bekommt in seiner Zoomleiste den
+           Knopf „CSV…“; wer einen benannten Export hat, reicht ihn am Bild selbst (CsvExport). *@
+        <CascadingValue Value="@GanglinienexportNaht">
         <Reiter @ref="_reiter" @bind-Aktiv="_blatt" Bezeichnung="@Resource.SIMERG_TITEL"
                 Reihenfolge="@Blattfolge">
             <KindInhalt>
@@ -248,6 +251,7 @@
 
             </KindInhalt>
         </Reiter>
+        </CascadingValue>
         </CascadingValue>
         </CascadingValue>
 
@@ -918,6 +922,16 @@
     // null, solange der Projektschalter Kuehlbetrieb aus ist (nicht erhoben).
     private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen" Teillast="@_daten.Bedarf?.Kaelte?.Teillast"
         FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />;
+
+    private Ganglinienexport? _ganglinienexport;
+
+    /// <summary>
+    /// Die Naht „Reihen des Diagramms als CSV“ fuer alle Bilder der Reiter — EINE Instanz, damit
+    /// die Kaskade nicht je Zeichenlauf neu verteilt; ohne Delegat der Huelle keine.
+    /// </summary>
+    private Ganglinienexport? GanglinienexportNaht =>
+        Dienste?.CsvGanglinie is null ? null
+            : _ganglinienexport ??= new Ganglinienexport((m, t) => Dienste!.CsvGanglinie!(m, t));
 
     /// <summary>Ein Rueckruf aus einem Delegaten; ohne Delegat bleibt der Knopf weg.</summary>
     private EventCallback Rueckruf(Action? aktion)
